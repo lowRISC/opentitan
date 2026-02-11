@@ -71,33 +71,37 @@ class IsfbTest : public rom_test::RomTest {
   owner_config_t owner_config_;
 };
 
-const manifest_ext_isfb_t kManifestExtGood = {
-    .header =
-        {
-            .identifier = kManifestExtIdIsfb,
-            .name = kManifestExtIdIsfb,
-        },
-    .strike_mask =
-        {
-            // Only the first word is struck.
-            0xfffffffe,
-            0xffffffff,
-            0xffffffff,
-            0xffffffff,
-        },
-    .product_expr_count = 2,
-    .product_expr =
-        {
-            {
-                .mask = 0xffffffff,
-                .value = 0xa5a5a5a5,
-            },
-            {
-                .mask = 0xf0f0f0f0,
-                .value = 0xa0a0a0a0,
-            },
-        },
-};
+manifest_ext_isfb_t *GetManifestExtGood() {
+  size_t size =
+      sizeof(manifest_ext_isfb_t) + 2 * sizeof(manifest_ext_product_expr_t);
+  manifest_ext_isfb_t *ext =
+      reinterpret_cast<manifest_ext_isfb_t *>(malloc(size));
+  *ext = (manifest_ext_isfb_t){
+      .header =
+          {
+              .identifier = kManifestExtIdIsfb,
+              .name = kManifestExtIdIsfb,
+          },
+      .strike_mask =
+          {
+              // Only the first word is struck.
+              0xfffffffe,
+              0xffffffff,
+              0xffffffff,
+              0xffffffff,
+          },
+      .product_expr_count = 2,
+  };
+  ext->product_expr[0] = {
+      .mask = 0xffffffff,
+      .value = 0xa5a5a5a5,
+  };
+  ext->product_expr[1] = {
+      .mask = 0xf0f0f0f0,
+      .value = 0xa0a0a0a0,
+  };
+  return ext;
+}
 
 TEST_F(IsfbTest, OwnershipIsfbNotPreset) {
   manifest_ext_isfb_t ext = {
@@ -136,6 +140,7 @@ TEST_F(IsfbTest, InvalidManifestProductExpressionCount) {
 }
 
 TEST_F(IsfbTest, BootRequestProcess) {
+  manifest_ext_isfb_t *ext_good = GetManifestExtGood();
   EXPECT_CALL(flash_ctrl_, InfoType0ParamsBuild(0, 5, _))
       .WillOnce(Return(kErrorOk));
 
@@ -143,19 +148,20 @@ TEST_F(IsfbTest, BootRequestProcess) {
   // `strike_mask` field value.
   ExpectInfoRead(StrikeFlashWords(/*strike_count=*/1), /*offset=*/0, kErrorOk);
 
-  ExpectInfoRead(ProductExpressionInit(kManifestExtGood), /*offset=*/1024,
-                 kErrorOk);
+  ExpectInfoRead(ProductExpressionInit(*ext_good), /*offset=*/1024, kErrorOk);
 
   uint32_t checks_performed_count;
-  rom_error_t error = isfb_boot_request_process(
-      &kManifestExtGood, &owner_config_, &checks_performed_count);
+  rom_error_t error = isfb_boot_request_process(ext_good, &owner_config_,
+                                                &checks_performed_count);
   EXPECT_EQ(error, kErrorOk);
   EXPECT_EQ(checks_performed_count,
-            kStrikeCntMax + kManifestExtGood.product_expr_count);
+            kStrikeCntMax + ext_good->product_expr_count);
+  free(ext_good);
 }
 
 // This test checks the anti-rollback mechanism in the ISFB strike mask.
 TEST_F(IsfbTest, AntiRollbackBootFailure) {
+  manifest_ext_isfb_t *ext_good = GetManifestExtGood();
   EXPECT_CALL(flash_ctrl_, InfoType0ParamsBuild(0, 5, _))
       .WillOnce(Return(kErrorOk));
   enum {
@@ -167,7 +173,7 @@ TEST_F(IsfbTest, AntiRollbackBootFailure) {
 
   // Sanity check to ensure that the strike mask only has the first word struck.
   // Plase update the test if the strike mask is changed.
-  EXPECT_EQ(kManifestExtGood.strike_mask[0], 0xfffffffe);
+  EXPECT_EQ(ext_good->strike_mask[0], 0xfffffffe);
 
   // The state of device is such that the number of strikes is larger than what
   // is defined in the manifest extension. This must result in an anti-rollback
@@ -176,15 +182,17 @@ TEST_F(IsfbTest, AntiRollbackBootFailure) {
                  kErrorOk);
 
   uint32_t checks_performed_count;
-  rom_error_t error = isfb_boot_request_process(
-      &kManifestExtGood, &owner_config_, &checks_performed_count);
+  rom_error_t error = isfb_boot_request_process(ext_good, &owner_config_,
+                                                &checks_performed_count);
   EXPECT_EQ(error, kErrorOwnershipISFBStrikeMask);
   EXPECT_EQ(checks_performed_count, UINT32_MAX);
+  free(ext_good);
 }
 
 // This test checks that an invalid product association detected at boot time
 // results in an error.
 TEST_F(IsfbTest, ProductAssociationError) {
+  manifest_ext_isfb_t *ext_good = GetManifestExtGood();
   EXPECT_CALL(flash_ctrl_, InfoType0ParamsBuild(0, 5, _))
       .WillOnce(Return(kErrorOk));
   ExpectInfoRead(StrikeFlashWords(/*strike_count=*/1), /*offset=*/0, kErrorOk);
@@ -203,10 +211,11 @@ TEST_F(IsfbTest, ProductAssociationError) {
                  /*offset=*/1024, kErrorOk);
 
   uint32_t checks_performed_count;
-  rom_error_t error = isfb_boot_request_process(
-      &kManifestExtGood, &owner_config_, &checks_performed_count);
+  rom_error_t error = isfb_boot_request_process(ext_good, &owner_config_,
+                                                &checks_performed_count);
   EXPECT_EQ(error, kErrorOwnershipISFBProductExp);
   EXPECT_EQ(checks_performed_count, UINT32_MAX);
+  free(ext_good);
 }
 
 TEST_F(IsfbTest, ErasePolicyOwnershipIsfbNotPreset) {
