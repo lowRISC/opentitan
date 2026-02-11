@@ -100,6 +100,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
     logic rdback_phase_wrreadback;
     logic rdback_wait;
     logic readback_err;
+    logic sync_fifo_a_size_outputs_mismatch;
     state_e state_d, state_q;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -121,7 +122,6 @@ module tlul_sram_byte import tlul_pkg::*; #(
     logic hold_tx_data;
 
     localparam int unsigned PendingTxnCntW = prim_util_pkg::vbits(Outstanding+1);
-    logic [PendingTxnCntW-1:0] pending_txn_cnt;
 
     // prim fifo for capturing info
     typedef struct packed {
@@ -136,6 +136,16 @@ module tlul_sram_byte import tlul_pkg::*; #(
 
     tl_txn_data_t held_data;
 
+    // Outputs of the sync_fifo_a_size FIFOs.
+    typedef struct packed {
+      logic [PendingTxnCntW-1:0]  pending_txn_cnt;
+      logic [top_pkg::TL_SZW-1:0] a_size;
+      logic                       size_fifo_rdy;
+    } sync_fifo_a_size_outputs_t;
+
+    sync_fifo_a_size_outputs_t sync_fifo_a_size_outputs;
+    sync_fifo_a_size_outputs_t sync_fifo_a_size_shadow_outputs;
+
     assign a_ack = tl_i.a_valid & tl_o.a_ready;
     assign d_ack = tl_o.d_valid & tl_i.d_ready;
     assign sram_a_ack = tl_sram_o.a_valid & tl_sram_i.a_ready;
@@ -146,7 +156,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
     assign byte_wr_txn = tl_i.a_valid & ~&tl_i.a_mask & wr_txn;
 
     // Alert generation.
-    assign alert_o = readback_err;
+    assign alert_o = readback_err | sync_fifo_a_size_outputs_mismatch;
 
     logic                     rdback_chk_ok;
     mubi4_t                   rdback_check_q, rdback_check_d;
@@ -299,7 +309,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
         StWaitRd: begin
           rd_phase = 1'b1;
           stall_host = 1'b1;
-          if (pending_txn_cnt == PendingTxnCntW'(1)) begin
+          if (sync_fifo_a_size_outputs.pending_txn_cnt == PendingTxnCntW'(1)) begin
             rd_wait = 1'b1;
             if (sram_d_ack) begin
               state_d = StWriteCmd;
@@ -332,7 +342,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
 
           // Need to ensure there's no other transactions in flight before we do the readback (the
           // initial write we're doing the readback for should be the only one active).
-          if (pending_txn_cnt == PendingTxnCntW'(1)) begin
+          if (sync_fifo_a_size_outputs.pending_txn_cnt == PendingTxnCntW'(1)) begin
             wait_phase  = 1'b1;
             // Data we're checking against the readback is captured from the write transaction that
             // was sent.
@@ -458,7 +468,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
 
           // Need to ensure there's no other transactions in flight before we do the readback (the
           // read we're doing the readback for should be the only one active).
-          if (pending_txn_cnt == PendingTxnCntW'(1)) begin
+          if (sync_fifo_a_size_outputs.pending_txn_cnt == PendingTxnCntW'(1)) begin
             rdback_phase = 1'b1;
 
             if (d_ack) begin
@@ -635,8 +645,6 @@ module tlul_sram_byte import tlul_pkg::*; #(
 
     assign error_o = error_i & ~stall_host;
 
-    logic size_fifo_rdy;
-    logic [top_pkg::TL_SZW-1:0] a_size;
     prim_fifo_sync #(
       .Width(top_pkg::TL_SZW),
       .Pass(1'b0),
@@ -648,21 +656,79 @@ module tlul_sram_byte import tlul_pkg::*; #(
       .rst_ni,
       .clr_i(1'b0),
       .wvalid_i(a_ack),
-      .wready_o(size_fifo_rdy),
+      .wready_o(sync_fifo_a_size_outputs.size_fifo_rdy),
       .wdata_i(tl_i.a_size),
       .rvalid_o(),
       .rready_i(d_ack),
-      .rdata_o(a_size),
+      .rdata_o(sync_fifo_a_size_outputs.a_size),
       .full_o(),
-      .depth_o(pending_txn_cnt),
+      .depth_o(sync_fifo_a_size_outputs.pending_txn_cnt),
       .err_o()
     );
+
+    // Create a shadow copy of the u_sync_fifo_a_size FIFO and compare its output.
+    localparam int NumBufferBitsSyncASize = $bits({
+      a_ack,
+      tl_i.a_size,
+      d_ack
+    });
+
+    logic [NumBufferBitsSyncASize-1:0] buf_sync_fifo_a_size_in, buf_sync_fifo_a_size_out;
+    logic a_ack_buf;
+    logic d_ack_buf;
+    logic [top_pkg::TL_SZW-1:0] a_size_buf;
+
+    assign buf_sync_fifo_a_size_in = {
+      a_ack,
+      tl_i.a_size,
+      d_ack
+    };
+
+    assign {
+      a_ack_buf,
+      a_size_buf,
+      d_ack_buf
+    } = buf_sync_fifo_a_size_out;
+
+    // Buffer the inputs of the FIFO to avoid synthesis optimizations.
+    prim_buf #(
+      .Width(NumBufferBitsSyncASize)
+    ) u_sync_fifo_a_size_prim_buf (
+      .in_i(buf_sync_fifo_a_size_in),
+      .out_o(buf_sync_fifo_a_size_out)
+    );
+
+    prim_fifo_sync #(
+      .Width(top_pkg::TL_SZW),
+      .Pass(1'b0),
+      .Depth(Outstanding),
+      .OutputZeroIfEmpty(1'b1),
+      .NeverClears(1'b1)
+    ) u_sync_fifo_a_size_shadow (
+      .clk_i,
+      .rst_ni,
+      .clr_i(1'b0),
+      .wvalid_i(a_ack_buf),
+      .wready_o(sync_fifo_a_size_shadow_outputs.size_fifo_rdy),
+      .wdata_i(a_size_buf),
+      .rvalid_o(),
+      .rready_i(d_ack_buf),
+      .rdata_o(sync_fifo_a_size_shadow_outputs.a_size),
+      .full_o(),
+      .depth_o(sync_fifo_a_size_shadow_outputs.pending_txn_cnt),
+      .err_o()
+    );
+
+    // Raise an alert if there is a mismatch in the duplicated FIFOs.
+    assign sync_fifo_a_size_outputs_mismatch =
+      (sync_fifo_a_size_shadow_outputs != sync_fifo_a_size_outputs);
 
     always_comb begin
       tl_o = tl_sram_i;
 
       // pass a_ready through directly if we are not stalling
-      tl_o.a_ready = tl_sram_i.a_ready & ~stall_host & fifo_rdy & size_fifo_rdy;
+      tl_o.a_ready = tl_sram_i.a_ready & ~stall_host & fifo_rdy &
+        sync_fifo_a_size_outputs.size_fifo_rdy;
 
       // when internal logic has taken over, do not show response to host during
       // read phase.  During write phase, allow the host to see the completion.
@@ -671,7 +737,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
       // the size returned by tl_sram_i does not always correspond to the actual
       // transaction size in cases where a read modify write operation is
       // performed. Hence, we always return the registered size here.
-      tl_o.d_size  = a_size;
+      tl_o.d_size  = sync_fifo_a_size_outputs.a_size;
     end // always_comb
 
     // unused info from tl_sram_i
@@ -684,7 +750,8 @@ module tlul_sram_byte import tlul_pkg::*; #(
       state_q inside {StWaitRd})
     // when in wait for read, a successful response should move to write phase
     `ASSERT(ReadCompleteStateChange_A,
-        (state_q == StWaitRd) && (pending_txn_cnt == 1) && sram_d_ack |=> state_q == StWriteCmd)
+        (state_q == StWaitRd) && (sync_fifo_a_size_outputs.pending_txn_cnt == 1) &&
+        sram_d_ack |=> state_q == StWriteCmd)
     // The readback logic assumes that any request on the readback channel will be instantly granted
     // (i.e. after the initial SRAM read or write request from the external requester has been
     // granted). This helps simplify the logic. It is guaranteed when connected to an SRAM as it
@@ -704,7 +771,8 @@ module tlul_sram_byte import tlul_pkg::*; #(
     // will always be 1. We will have seen StWaitRd -> StWriteCmd -> StByteWrReadBackInit
     // to get to this FSM state and the FIFO cannot be pushed or popped along that path.
     `ASSERT(WrReadBackInitPendingTxn_A,
-      (state_q == StByteWrReadBackInit) |-> pending_txn_cnt == PendingTxnCntW'(1))
+      (state_q == StByteWrReadBackInit) |-> sync_fifo_a_size_outputs.pending_txn_cnt ==
+      PendingTxnCntW'(1))
 
     assign compound_txn_in_progress_o = wr_phase | rdback_phase | rdback_phase_wrreadback;
   end else begin : gen_no_integ_handling
