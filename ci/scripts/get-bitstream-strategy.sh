@@ -5,6 +5,13 @@
 
 set -e
 
+# FIXME: Remove this
+bitstream_strategy=cached
+echo "Bitstream strategy is ${bitstream_strategy}"
+echo "##vso[task.setvariable variable=bitstreamStrategy]${bitstream_strategy}"
+echo "bitstreamStrategy=${bitstream_strategy}" >> "${GITHUB_OUTPUT:-/dev/null}"
+exit 0
+
 usage_string="
 Usage: get-bitstream-strategy.sh <cached-bitstream-design> [pathspec]...
 
