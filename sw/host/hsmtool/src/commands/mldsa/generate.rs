@@ -32,10 +32,13 @@ pub enum MlDsaType {
 
 #[derive(clap::Args, Debug, Serialize, Deserialize)]
 pub struct Generate {
+    /// Unique identifier for the generated key.
     #[arg(long)]
     id: Option<String>,
+    /// Label for the generated key.
     #[arg(short, long)]
     label: Option<String>,
+    /// Use this key for wrapping other keys.
     #[arg(long)]
     wrapping: bool,
     /// Permit the generated key to be extractable.

@@ -20,20 +20,25 @@ use crate::util::signing::{MlDsaDomain, SignData};
 
 #[derive(clap::Args, Debug, Serialize, Deserialize)]
 pub struct Sign {
+    /// Unique identifier of the key to use for signing.
     #[arg(long)]
     id: Option<String>,
+    /// Label of the key to use for signing.
     #[arg(short, long)]
     label: Option<String>,
+    /// Format of the input data.
     #[arg(short, long, default_value = "sha256-hash", help=SignData::HELP)]
     format: SignData,
     /// The ML-DSA domain (pure or pre-hashed).
     #[arg(long, default_value = "pure")]
     domain: MlDsaDomain,
+    /// Path to the file where the signature will be saved.
     #[arg(short, long)]
     output: Option<PathBuf>,
-    /// Update the given byte range in the input file.
+    /// Update the given byte range in the input file with the signature.
     #[arg(short, long, value_parser=helper::parse_range)]
     update_in_place: Option<Range<usize>>,
+    /// Path to the file containing the data to be signed.
     input: PathBuf,
 }
 

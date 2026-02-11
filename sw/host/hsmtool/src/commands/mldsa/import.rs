@@ -21,8 +21,10 @@ use crate::util::wrap::{Wrap, WrapPrivateKey};
 
 #[derive(clap::Args, Debug, Serialize, Deserialize)]
 pub struct Import {
+    /// Unique identifier for the imported key.
     #[arg(long)]
     id: Option<String>,
+    /// Label for the imported key.
     #[arg(short, long)]
     label: Option<String>,
     /// Import a private key.
@@ -31,7 +33,7 @@ pub struct Import {
     /// Unwrap the imported key with a wrapping key.
     #[arg(long)]
     unwrap: Option<String>,
-    // Wrapping key mechanism. Required when unwrap is specified.
+    /// Wrapping key mechanism. Required when unwrap is specified.
     #[arg(long, default_value = "aes-key-wrap-pad")]
     unwrap_mechanism: Option<WrapPrivateKey>,
     /// Template for creating the public key.
@@ -40,6 +42,7 @@ pub struct Import {
     /// Template for creating the private key.
     #[arg(long)]
     private_template: Option<AttributeMap>,
+    /// Path to the file containing the key to import.
     filename: PathBuf,
 }
 

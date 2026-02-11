@@ -20,10 +20,13 @@ use crate::util::signing::{MlDsaDomain, SignData};
 
 #[derive(clap::Args, Debug, Serialize, Deserialize)]
 pub struct Verify {
+    /// Unique identifier of the key to use for verification.
     #[arg(long)]
     id: Option<String>,
+    /// Label of the key to use for verification.
     #[arg(short, long)]
     label: Option<String>,
+    /// Format of the input data.
     #[arg(short, long, default_value = "sha256-hash", help=SignData::HELP)]
     format: SignData,
     /// The ML-DSA domain (pure or pre-hashed).
@@ -32,7 +35,9 @@ pub struct Verify {
     /// The signature is at the given byte range of the input file.
     #[arg(short, long, value_parser=helper::parse_range, conflicts_with="signature")]
     signature_at: Option<Range<usize>>,
+    /// Path to the file containing the data to be verified.
     input: PathBuf,
+    /// Path to the file containing the signature.
     #[arg(conflicts_with = "signature_at")]
     signature: Option<PathBuf>,
 }

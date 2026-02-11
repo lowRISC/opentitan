@@ -26,12 +26,16 @@ use crate::util::key::mldsa;
 
 #[derive(clap::Args, Debug, Serialize, Deserialize)]
 pub struct ExportCsr {
+    /// Unique identifier of the key to use for the CSR.
     #[arg(long)]
     id: Option<String>,
+    /// Label of the key to use for the CSR.
     #[arg(short, long)]
     label: Option<String>,
+    /// Subject name for the CSR (e.g., "CN=OpenTitan").
     #[arg(long)]
     subject: String,
+    /// Path to the file where the CSR will be saved.
     #[arg(short, long)]
     output: PathBuf,
 }
