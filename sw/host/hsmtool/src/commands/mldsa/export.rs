@@ -21,21 +21,25 @@ use crate::util::wrap::{Wrap, WrapPrivateKey};
 
 #[derive(clap::Args, Debug, Serialize, Deserialize)]
 pub struct Export {
+    /// Unique identifier of the key.
     #[arg(long)]
     id: Option<String>,
+    /// Label of the key.
     #[arg(short, long)]
     label: Option<String>,
     /// Export the private key.
     #[arg(long)]
     private: bool,
-    /// Wrap the exported key a wrapping key.
+    /// Wrap the exported key with a wrapping key.
     #[arg(long)]
     wrap: Option<String>,
-    // Wrapping key mechanism. Required when wrap is specified.
+    /// Wrapping key mechanism. Required when wrap is specified.
     #[arg(long, default_value = "aes-key-wrap-pad")]
     wrap_mechanism: Option<WrapPrivateKey>,
+    /// Encoding format of the exported key.
     #[arg(short, long, value_enum, default_value = "der")]
     format: KeyEncoding,
+    /// Path to the file where the key will be saved.
     filename: PathBuf,
 }
 

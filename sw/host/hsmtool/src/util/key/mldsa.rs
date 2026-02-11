@@ -6,7 +6,7 @@ use anyhow::{anyhow, Context, Result};
 use const_oid::ObjectIdentifier;
 use der::{Encode, EncodePem};
 use ml_dsa::{
-    EncodedSigningKey, EncodedVerifyingKey, KeyGen, MlDsa44, MlDsa65, MlDsa87, SigningKey,
+    EncodedSigningKey, EncodedVerifyingKey, MlDsa44, MlDsa65, MlDsa87, SigningKey,
     VerifyingKey,
 };
 use pem_rfc7468;
@@ -357,7 +357,7 @@ pub fn save_public_key<P: AsRef<Path>>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ml_dsa::{MlDsa44, MlDsa65, MlDsa87};
+    use ml_dsa::{KeyGen, MlDsa44, MlDsa65, MlDsa87};
     use rand::thread_rng;
 
     #[test]
