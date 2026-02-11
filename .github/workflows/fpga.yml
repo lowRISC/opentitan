@@ -33,6 +33,9 @@ on:
       vivado_version:
         default: "2021.1"
         type: string
+      mode:
+        default: "test"
+        type: string
 
 jobs:
   fpga:
@@ -72,7 +75,7 @@ jobs:
 
           # Run FPGA tests
           if [[ -s target_pattern_file.txt ]]; then
-            ci/scripts/run-fpga-tests.sh "${{ inputs.interface }}" target_pattern_file.txt || {
+            ci/scripts/run-fpga-tests.sh "--mode=${{ inputs.mode }}" "${{ inputs.interface }}" target_pattern_file.txt || {
               res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}";
             }
           else
