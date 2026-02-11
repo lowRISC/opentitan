@@ -99,6 +99,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
     logic rdback_phase;
     logic rdback_phase_wrreadback;
     logic rdback_wait;
+    logic readback_err;
     state_e state_d, state_q;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -143,6 +144,9 @@ module tlul_sram_byte import tlul_pkg::*; #(
 
     assign byte_req_ack = byte_wr_txn & a_ack & ~error_i;
     assign byte_wr_txn = tl_i.a_valid & ~&tl_i.a_mask & wr_txn;
+
+    // Alert generation.
+    assign alert_o = readback_err;
 
     logic                     rdback_chk_ok;
     mubi4_t                   rdback_check_q, rdback_check_d;
@@ -247,7 +251,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
       rdback_wait = 1'b0;
       state_d = state_q;
       hold_tx_data = 1'b0;
-      alert_o = 1'b0;
+      readback_err = 1'b0;
       rdback_check_d = rdback_check_q;
       rdback_en_d = rdback_en_q;
       rdback_data_exp_d  = rdback_data_exp_q;
@@ -265,7 +269,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
 
             // Perform the readback check.
             if (!rdback_chk_ok) begin
-              alert_o = 1'b1;
+              readback_err = 1'b1;
             end
           end
 
@@ -320,7 +324,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
           // in the readback, wait until the write was processed by the memory module.
           if (EnableReadback == 0) begin : gen_inv_state_StWrReadBackInit
             // If readback is disabled, we shouldn't be in this state.
-            alert_o = 1'b1;
+            readback_err = 1'b1;
           end
 
           // Stall the host to perform the readback in the next cycle.
@@ -350,7 +354,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
           // Perform readback and check response in StPassThru.
           if (EnableReadback == 0) begin : gen_inv_state_StWrReadBack
             // If readback is disabled, we shouldn't be in this state.
-            alert_o = 1'b1;
+            readback_err = 1'b1;
           end
 
           stall_host = 1'b1;
@@ -365,7 +369,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
           // for the valid signal.
           if (EnableReadback == 0) begin : gen_inv_state_StWrReadBackDWait
             // If readback is disabled, we shouldn't be in this state.
-            alert_o = 1'b1;
+            readback_err = 1'b1;
           end
 
           // Wait until we get write response.
@@ -385,7 +389,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
           // in the readback, do the actual readback check in the next FSM state.
           if (EnableReadback == 0) begin : gen_inv_state_StByteWrReadBackInit
             // If readback is disabled, we shouldn't be in this state.
-            alert_o = 1'b1;
+            readback_err = 1'b1;
           end
 
           // Sends out a read to a readback check on a partial write. The host is stalled whilst
@@ -414,7 +418,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
           // Perform readback and check response in StPassThru.
           if (EnableReadback == 0) begin : gen_inv_state_StByteWrReadBack
             // If readback is disabled, we shouldn't be in this state.
-            alert_o = 1'b1;
+            readback_err = 1'b1;
           end
 
           stall_host = 1'b1;
@@ -427,7 +431,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
         StByteWrReadBackDWait: begin
           if (EnableReadback == 0) begin : gen_inv_state_StByteWrReadBackDWait
             // If readback is disabled, we shouldn't be in this state.
-            alert_o = 1'b1;
+            readback_err = 1'b1;
           end
 
           stall_host = 1'b1;
@@ -445,7 +449,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
         StRdReadBack: begin
           if (EnableReadback == 0) begin : gen_inv_state_StRdReadBack
             // If readback is disabled, we shouldn't be in this state.
-            alert_o = 1'b1;
+            readback_err = 1'b1;
           end
 
           // Sends out a read to a readback check on a read. The host is stalled whilst
@@ -473,7 +477,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
         StRdReadBackDWait : begin
           if (EnableReadback == 0) begin : gen_inv_state_StRdReadBackDWait
             // If readback is disabled, we shouldn't be in this state.
-            alert_o = 1'b1;
+            readback_err = 1'b1;
           end
 
           stall_host = 1'b1;
@@ -490,7 +494,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
         end
 
         default: begin
-          alert_o = 1'b1;
+          readback_err = 1'b1;
         end
       endcase // unique case (state_q)
 
