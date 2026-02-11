@@ -73,6 +73,17 @@ jobs:
             "${{ inputs.tag_filters }}",-manual,-broken,-skip_in_ci \
             //... @manufacturer_test_hooks//...
 
+          # In coverage mode, filter for tests with the "coverage" tag.
+          # FIXME: Enable all tests after we filtered out the broken tests properly.
+          if [[ "${{ inputs.mode }}" == "coverage" ]]; then
+            wc -l target_pattern_file.txt
+            ./bazelisk.sh query \
+              "attr(tags, '[\[,]coverage[,\]]', set($(cat target_pattern_file.txt)))" \
+              > target_pattern_file.coverage.txt
+            wc -l target_pattern_file.coverage.txt
+            mv target_pattern_file.coverage.txt target_pattern_file.txt
+          fi
+
           # Run FPGA tests
           if [[ -s target_pattern_file.txt ]]; then
             ci/scripts/run-fpga-tests.sh "--mode=${{ inputs.mode }}" "${{ inputs.interface }}" target_pattern_file.txt || {

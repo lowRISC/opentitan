@@ -1,0 +1,257 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: Coverage
+on:
+  push:
+    branches-ignore:
+      - "backport-*"
+    tags:
+      - "*"
+
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to run the coverage tests'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  # Needed for workload identity federation
+  id-token: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  VIVADO_VERSION: "2021.1"
+  # Release tag from https://github.com/lowRISC/lowrisc-toolchains/releases
+  TOOLCHAIN_VERSION: 20220210-1
+
+jobs:
+  chip_earlgrey_cw310:
+    name: Earl Grey for CW310
+    uses: ./.github/workflows/bitstream.yml
+    secrets: inherit
+    with:
+      top_name: earlgrey
+      design_suffix: cw310
+
+  chip_earlgrey_cw310_hyperdebug:
+    name: Earl Grey for CW310 Hyperdebug
+    uses: ./.github/workflows/bitstream.yml
+    secrets: inherit
+    with:
+      top_name: earlgrey
+      design_suffix: cw310_hyperdebug
+
+  chip_earlgrey_cw340:
+    name: Earl Grey for CW340
+    uses: ./.github/workflows/bitstream.yml
+    secrets: inherit
+    with:
+      top_name: earlgrey
+      design_suffix: cw340
+
+  # CW310 FPGA jobs.
+  execute_test_rom_fpga_tests_cw310:
+    name: CW310 Test ROM Tests
+    needs: chip_earlgrey_cw310
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_test_rom_fpga_tests_cw310
+      bitstream: chip_earlgrey_cw310
+      board: cw310
+      interface: cw310
+      tag_filters: "cw310_test_rom,-coverage_broken"
+      mode: coverage
+
+  execute_rom_fpga_tests_cw310:
+    name: CW310 ROM Tests
+    needs: chip_earlgrey_cw310
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_rom_fpga_tests_cw310
+      bitstream: chip_earlgrey_cw310
+      board: cw310
+      interface: cw310
+      tag_filters: "cw310_rom_with_fake_keys,cw310_rom_with_real_keys,-manuf,-coverage_broken"
+      timeout: 90
+      mode: coverage
+
+  execute_rom_ext_fpga_tests_cw310:
+    name: CW310 ROM_EXT Tests
+    needs: chip_earlgrey_cw310
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_rom_ext_fpga_tests_cw310
+      bitstream: chip_earlgrey_cw310
+      board: cw310
+      interface: cw310
+      tag_filters: "cw310_rom_ext,-coverage_broken"
+      mode: coverage
+
+  execute_sival_fpga_tests_cw310:
+    name: CW310 SiVal Tests
+    needs: chip_earlgrey_cw310_hyperdebug
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_sival_fpga_tests_cw310
+      bitstream: chip_earlgrey_cw310_hyperdebug
+      board: cw310
+      interface: hyper310
+      tag_filters: "cw310_sival,-manuf,-coverage_broken"
+      mode: coverage
+
+  execute_sival_rom_ext_fpga_tests_cw310:
+    name: CW310 SiVal ROM_EXT Tests
+    needs: chip_earlgrey_cw310_hyperdebug
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_sival_rom_ext_fpga_tests_cw310
+      bitstream: chip_earlgrey_cw310_hyperdebug
+      board: cw310
+      interface: hyper310
+      tag_filters: "cw310_sival_rom_ext,-coverage_broken"
+      mode: coverage
+
+  execute_manuf_fpga_tests_cw310:
+    name: CW310 Manufacturing Tests
+    needs: chip_earlgrey_cw310_hyperdebug
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_manuf_fpga_tests_cw310
+      bitstream: chip_earlgrey_cw310_hyperdebug
+      board: cw310
+      interface: hyper310
+      tag_filters: "manuf,-cw340,-qemu,-coverage_broken"
+      mode: coverage
+
+  execute_fpga_rom_ext_tests_hyper310:
+    name: Hyper310 ROM_EXT Tests
+    needs: chip_earlgrey_cw310_hyperdebug
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_fpga_rom_ext_tests_hyper310
+      bitstream: chip_earlgrey_cw310_hyperdebug
+      board: cw310
+      interface: hyper310
+      tag_filters: "hyper310_rom_ext,-coverage_broken"
+      mode: coverage
+
+  # CW340 FPGA jobs
+  execute_test_rom_fpga_tests_cw340:
+    name: CW340 Test ROM Tests
+    needs: chip_earlgrey_cw340
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_test_rom_fpga_tests_cw340
+      bitstream: chip_earlgrey_cw340
+      board: cw340
+      interface: cw340
+      tag_filters: "cw340_test_rom,-coverage_broken"
+      mode: coverage
+
+  execute_rom_fpga_tests_cw340:
+    name: CW340 ROM Tests
+    needs: chip_earlgrey_cw340
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_rom_fpga_tests_cw340
+      bitstream: chip_earlgrey_cw340
+      board: cw340
+      interface: cw340
+      tag_filters: "cw340_rom_with_fake_keys,cw340_rom_with_real_keys,-manuf,-coverage_broken"
+      mode: coverage
+
+  execute_rom_ext_fpga_tests_cw340:
+    name: CW340 ROM_EXT Tests
+    needs: chip_earlgrey_cw340
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_rom_ext_fpga_tests_cw340
+      bitstream: chip_earlgrey_cw340
+      board: cw340
+      interface: cw340
+      tag_filters: "cw340_rom_ext,-coverage_broken"
+      mode: coverage
+
+  execute_sival_fpga_tests_cw340:
+    name: CW340 SiVal Tests
+    needs: chip_earlgrey_cw340
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_sival_fpga_tests_cw340
+      bitstream: chip_earlgrey_cw340
+      board: cw340
+      interface: cw340
+      tag_filters: "cw340_sival,-manuf,-coverage_broken"
+      mode: coverage
+
+  execute_sival_rom_ext_fpga_tests_cw340:
+    name: CW340 SiVal ROM_EXT Tests
+    needs: chip_earlgrey_cw340
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_sival_rom_ext_fpga_tests_cw340
+      bitstream: chip_earlgrey_cw340
+      board: cw340
+      interface: cw340
+      tag_filters: "cw340_sival_rom_ext,-coverage_broken"
+      mode: coverage
+
+  execute_manuf_fpga_tests_cw340:
+    name: CW340 Manufacturing Tests
+    needs: chip_earlgrey_cw340
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_manuf_fpga_tests_cw340
+      bitstream: chip_earlgrey_cw340
+      board: cw340
+      interface: cw340
+      tag_filters: "manuf,-hyper310,-qemu,-coverage_broken"
+      mode: coverage
+
+  coverage_quick:
+    name: Coverage (quick)
+    uses: ./.github/workflows/coverage-quick.yml
+    secrets: inherit
+
+  publish_coverage_report:
+    name: Publish Coverage Report
+    needs:
+      - execute_test_rom_fpga_tests_cw310
+      - execute_rom_fpga_tests_cw310
+      - execute_rom_ext_fpga_tests_cw310
+      - execute_sival_fpga_tests_cw310
+      - execute_sival_rom_ext_fpga_tests_cw310
+      - execute_manuf_fpga_tests_cw310
+      - execute_fpga_rom_ext_tests_hyper310
+      - execute_test_rom_fpga_tests_cw340
+      - execute_rom_fpga_tests_cw340
+      - execute_rom_ext_fpga_tests_cw340
+      - execute_sival_fpga_tests_cw340
+      - execute_sival_rom_ext_fpga_tests_cw340
+      - execute_manuf_fpga_tests_cw340
+      - coverage_quick
+    if: success() || failure()
+    uses: ./.github/workflows/publish-coverage-report.yml
+    secrets: inherit
+    with:
+      branch: ${{ inputs.branch || 'earlgrey_1.0.0' }}
