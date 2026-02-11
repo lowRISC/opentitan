@@ -8,13 +8,35 @@ set -e
 
 . util/build_consts.sh
 
-if [ $# == 0 ]; then
-    echo >&2 "Usage: run-fpga-tests.sh <fpga> <target_pattern_file>"
+function usage() {
+    echo >&2 "Usage: run-fpga-tests.sh [--mode=(coverage|test)] <fpga> <target_pattern_file>"
     echo >&2 "E.g. ./run-fpga-tests.sh cw310 list_of_test.txt"
+    echo >&2 "E.g. ./run-fpga-tests.sh --mode=coverage cw310 list_of_test.txt"
+}
+
+mode="test"
+
+# Parse arguments
+TEMP=$(getopt -o '' --long mode: -n 'run-fpga-tests.sh' -- "$@")
+eval set -- "$TEMP"
+
+while true; do
+    case "$1" in
+        --mode) mode="$2"; shift 2 ;;
+        --) shift; break ;;
+        *) break ;;
+    esac
+done
+
+if [ $# -lt 2 ]; then
+    usage
     exit 1
 fi
+
 fpga="$1"
 target_pattern_file="$2"
+
+echo "Running $mode with $fpga on $target_pattern_file"
 
 # Copy bitstreams and related files into the cache directory so Bazel will have
 # the corresponding targets in the @bitstreams workspace.
@@ -46,12 +68,22 @@ ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface="$fpga" fpga
 # Print the SAM3X firmware version. HyperDebug transports don't currently support this, so we ignore errors.
 ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface="$fpga" fpga get-sam3x-fw-version || true
 
-ci/bazelisk.sh test \
-    --define DISABLE_VERILATOR_BUILD=true \
-    --nokeep_going \
-    --test_timeout_filters=short,moderate \
-    --test_output=all \
-    --build_tests_only \
-    --define "$fpga"=lowrisc \
-    --flaky_test_attempts=2 \
+TEST_ARGS=(
+    --define DISABLE_VERILATOR_BUILD=true
+    --nokeep_going
+    --test_timeout_filters="short,moderate"
+    --test_output=all
+    --build_tests_only
+    --define "${fpga}=lowrisc"
+    --flaky_test_attempts=2
     --target_pattern_file="${target_pattern_file}"
+)
+
+if [[ "${mode}" == "coverage" ]]; then
+  TEST_ARGS+=(
+    --config=ot_coverage
+    --keep_going
+  )
+fi
+
+ci/bazelisk.sh "${mode}" "${TEST_ARGS[@]}"

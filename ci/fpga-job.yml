@@ -32,6 +32,10 @@ parameters:
 - name: target_pattern_file
   type: string
   default: $(Pipeline.Workspace)/target_pattern_file.txt
+# Test mode or coverage mode.
+- name: mode
+  type: string
+  default: test
 
 jobs:
 - job: ${{ parameters.job_name }}
@@ -81,7 +85,7 @@ jobs:
         //... @manufacturer_test_hooks//...
       # Run FPGA tests.
       if [ -s "${{ parameters.target_pattern_file }}" ]; then
-        ci/scripts/run-fpga-tests.sh "${{ parameters.interface }}" "${{ parameters.target_pattern_file }}" || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
+        ci/scripts/run-fpga-tests.sh "--mode=${{ parameters.mode }}" "${{ parameters.interface }}" "${{ parameters.target_pattern_file }}" || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
       else
         echo "No tests to run after filtering"
       fi
