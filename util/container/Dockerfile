@@ -114,12 +114,14 @@ RUN sed -i -e '/^$/d' -e '/^#/d' -e 's/#.*//' /tmp/apt-requirements.txt \
 # `llvm-remark-size-diff` and `llvm-tli-checker`.
 #
 # Uses the modern signed-by keyring approach (apt-key was removed in Ubuntu 24.04+).
-# The Ubuntu codename is detected dynamically so this works on jammy and noble.
+# apt.llvm.org only hosts packages for LTS releases (jammy, noble), so non-LTS
+# codenames (e.g. questing/25.04) fall back to the nearest supported LTS (noble).
 RUN apt-get update && apt-get install -y gnupg \
     && mkdir -p /etc/apt/keyrings \
     && curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key \
         | gpg --dearmor -o /etc/apt/keyrings/llvm-archive-keyring.gpg \
     && CODENAME="$(. /etc/os-release && echo $UBUNTU_CODENAME)" \
+    && case "$CODENAME" in jammy|noble) ;; *) CODENAME="noble" ;; esac \
     && echo "deb [signed-by=/etc/apt/keyrings/llvm-archive-keyring.gpg] https://apt.llvm.org/${CODENAME}/ llvm-toolchain-${CODENAME}-${CLANG_VERSION} main" \
         > /etc/apt/sources.list.d/llvm-${CLANG_VERSION}.list \
     && apt-get update \
