@@ -22,10 +22,10 @@ ARG CLANG_VERSION=16
 
 # Open-source FPGA toolchain versions for CW310 (Kintex-7 XC7K410T) bitstream
 # generation without Vivado. See PLAN_opensource_cw310_bitstream.md for details.
-ARG YOSYS_VERSION=yosys-0.46
+ARG YOSYS_VERSION=v0.62
 ARG SV2V_VERSION=v0.0.13
 ARG NEXTPNR_XILINX_VERSION=0.8.2
-ARG OPENFPGALOADER_VERSION=v0.12.2
+ARG OPENFPGALOADER_VERSION=v1.0.0
 
 # =============================================================================
 # Base image: Claude Code sandbox
