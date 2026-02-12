@@ -15,6 +15,13 @@ ARG BAZELISK_VERSION=v1.24.1
 # This should match the version of the lowRISC RISC-V toolchain.
 ARG CLANG_VERSION=16
 
+# Open-source FPGA toolchain versions for CW310 (Kintex-7 XC7K410T) bitstream
+# generation without Vivado. See PLAN_opensource_cw310_bitstream.md for details.
+ARG YOSYS_VERSION=yosys-0.46
+ARG SV2V_VERSION=v0.0.13
+ARG NEXTPNR_XILINX_VERSION=0.8.2
+ARG OPENFPGALOADER_VERSION=v0.12.2
+
 # Main container image.
 FROM ubuntu:22.04 AS opentitan
 ARG VERILATOR_VERSION
@@ -22,6 +29,10 @@ ARG VERIBLE_VERSION
 ARG RISCV_TOOLCHAIN_TAR_VERSION
 ARG BAZELISK_VERSION
 ARG CLANG_VERSION
+ARG YOSYS_VERSION
+ARG SV2V_VERSION
+ARG NEXTPNR_XILINX_VERSION
+ARG OPENFPGALOADER_VERSION
 
 LABEL version="1.0"
 LABEL description="OpenTitan development container."
@@ -122,6 +133,112 @@ RUN curl -f -Ls -o verible.tar.gz \
     && mkdir -p /tools/verible \
     && tar -C /tools/verible -xf verible.tar.gz --strip-components=1
 ENV PATH="/tools/verible/bin:${PATH}"
+
+# =============================================================================
+# Open-source FPGA toolchain
+# =============================================================================
+# These tools enable building bitstreams for the CW310 (Kintex-7 XC7K410T)
+# without Vivado, using the Yosys + nextpnr-xilinx + Project X-Ray flow.
+# See PLAN_opensource_cw310_bitstream.md for the full usage guide.
+
+# Install additional build dependencies for the open-source FPGA tools.
+# Many base deps (cmake, build-essential, git, python3, libftdi1-dev, etc.)
+# are already present from apt-requirements.txt.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        tcl-dev \
+        libreadline-dev \
+        libffi-dev \
+        libboost-system-dev \
+        libboost-filesystem-dev \
+        libboost-thread-dev \
+        libboost-program-options-dev \
+        libboost-iostreams-dev \
+        libboost-dev \
+        libeigen3-dev \
+        gawk \
+        python3-yaml \
+        libhidapi-dev \
+        pypy3 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Install Yosys (open-source synthesis)
+# Supports Xilinx 7-series via: synth_xilinx -family xc7
+RUN git clone --depth 1 --branch ${YOSYS_VERSION} \
+        https://github.com/YosysHQ/yosys.git /tmp/yosys \
+    && cd /tmp/yosys \
+    && make config-gcc \
+    && make -j$(nproc) PREFIX=/tools/yosys \
+    && make install PREFIX=/tools/yosys \
+    && rm -rf /tmp/yosys
+ENV PATH "/tools/yosys/bin:${PATH}"
+
+# Install sv2v (SystemVerilog to Verilog converter)
+# Used to preprocess OpenTitan's SystemVerilog into Verilog that Yosys can
+# consume natively, bypassing SV frontend limitations.
+RUN curl -sSfL -o /tmp/sv2v.tgz \
+        https://github.com/zachjs/sv2v/releases/download/${SV2V_VERSION}/sv2v-Linux.tar.gz \
+    && mkdir -p /tools/sv2v/bin \
+    && tar -C /tools/sv2v -xzf /tmp/sv2v.tgz --strip-components=1 \
+    && rm /tmp/sv2v.tgz
+ENV PATH "/tools/sv2v/bin:${PATH}"
+
+# Install Project X-Ray: bitstream tools + database for Xilinx 7-series.
+# prjxray provides fasm2frames and xc7frames2bit for bitstream generation.
+# prjxray-db provides the prebuilt device database (includes xc7k410t).
+RUN git clone https://github.com/f4pga/prjxray.git /tools/prjxray \
+    && cd /tools/prjxray \
+    && git submodule update --init --recursive \
+    && mkdir build && cd build \
+    && cmake -DCMAKE_INSTALL_PREFIX=/tools/prjxray .. \
+    && make -j$(nproc) \
+    && cd .. \
+    && pip3 install --break-system-packages -e . \
+    && git clone https://github.com/f4pga/prjxray-db.git /tools/prjxray-db
+ENV XRAY_DIR="/tools/prjxray"
+ENV XRAY_DATABASE_DIR="/tools/prjxray-db"
+ENV XRAY_TOOLS_DIR="/tools/prjxray/build/tools"
+ENV XRAY_UTILS_DIR="/tools/prjxray/utils"
+ENV PATH "/tools/prjxray/build/tools:${PATH}"
+
+# Install nextpnr-xilinx (open-source place & route for Xilinx 7-series)
+# From the openXC7 fork which adds MMCME2_ADV, BRAM, and other 7-series support.
+#
+# IMPORTANT: After building the container, you must generate the chip database
+# for the target part before running place & route. For the CW310's XC7K410T:
+#
+#   cd /tools/nextpnr-xilinx/share/python
+#   pypy3 bbaexport.py --device xc7k410tffg676-1 \
+#       --bba /tools/nextpnr-xilinx/share/xc7k410t.bba
+#   bbasm --l /tools/nextpnr-xilinx/share/xc7k410t.bba \
+#       /tools/nextpnr-xilinx/share/xc7k410t.bin
+#
+# This requires ~16-32 GB RAM and may take 1-2 hours with pypy3.
+# The resulting .bin file will be several GB.
+RUN git clone --depth 1 --branch ${NEXTPNR_XILINX_VERSION} \
+        https://github.com/openXC7/nextpnr-xilinx.git /tmp/nextpnr-xilinx \
+    && cd /tmp/nextpnr-xilinx \
+    && cmake -DARCH=xilinx -DBUILD_GUI=OFF \
+        -DCMAKE_INSTALL_PREFIX=/tools/nextpnr-xilinx . \
+    && make -j$(nproc) \
+    && make install \
+    && mkdir -p /tools/nextpnr-xilinx/share/python \
+    && cp -r xilinx/python/* /tools/nextpnr-xilinx/share/python/ \
+    && rm -rf /tmp/nextpnr-xilinx
+ENV PATH "/tools/nextpnr-xilinx/bin:${PATH}"
+
+# Install openFPGALoader (open-source FPGA programming via JTAG/SPI)
+# Replaces Vivado Hardware Manager for loading bitstreams onto the CW310.
+RUN git clone --depth 1 --branch ${OPENFPGALOADER_VERSION} \
+        https://github.com/trabucayre/openFPGALoader.git /tmp/openFPGALoader \
+    && cd /tmp/openFPGALoader \
+    && mkdir build && cd build \
+    && cmake -DCMAKE_INSTALL_PREFIX=/tools/openFPGALoader .. \
+    && make -j$(nproc) \
+    && make install \
+    && rm -rf /tmp/openFPGALoader
+ENV PATH "/tools/openFPGALoader/bin:${PATH}"
 
 # Set Locale to utf-8 everywhere
 ENV LC_ALL=en_US.UTF-8
