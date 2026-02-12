@@ -52,6 +52,7 @@ JITTER_TESTCASES = [
         "name": "enabled",
         "fpga": fpga_params(
             otp = ":otp_img_jitter_enabled",
+            tags = ["coverage"],
         ),
         "defines": ["TEST_JITTER_ENABLED"],
     },

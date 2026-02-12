@@ -180,6 +180,7 @@ opentitan_test(
     name = "entropy_test",
     srcs = ["entropy_test.c"],
     exec_env = EARLGREY_TEST_ENVS,
+    fpga = fpga_params(tags = ["coverage"]),
     verilator = verilator_params(
         timeout = "long",
         tags = ["broken"],  # TODO #16672 test broken by icache

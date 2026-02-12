@@ -8,6 +8,7 @@ load(
 )
 load(
     "//rules/opentitan:defs.bzl",
+    "fpga_params",
     "opentitan_test",
 )
 
@@ -215,6 +216,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:sim_qemu_rom_ext": None,
     },
+    fpga = fpga_params(tags = ["coverage"]),
     deps = [
         ":dice_cwt",
         "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
