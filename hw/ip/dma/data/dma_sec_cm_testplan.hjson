@@ -41,5 +41,11 @@
       stage: V2S
       tests: []
     }
+    {
+      name: sec_cm_fsm_sparse
+      desc: "Verify the countermeasure(s) FSM.SPARSE."
+      stage: V2S
+      tests: []
+    }
   ]
 }

@@ -109,7 +109,7 @@ bazel query 'tests(//sw/device/tests/...)'
 ```
 ### Tags and wildcards
 
-TLDR: `bazelisk.sh test --test_tag_filters=-cw310,-verilator,-vivado,-jtag,-eternal,-broken --build_tag_filters=-vivado,-verilator //...`
+TLDR: `bazel test --test_tag_filters=-cw310,-verilator,-vivado,-jtag,-eternal,-broken --build_tag_filters=-vivado,-verilator //...`
 *Should* be able to run all the tests and build steps in OpenTitan that don't require optional setup steps, and
 
 You may find it useful to use wildcards to build/test all targets in the OpenTitan repository instead of individual targets.
@@ -137,7 +137,7 @@ These tags can then be used to filter tests using `--build_tests_only --test_tag
 These tags can also be used to filter builds using `--build_tag_filters=-cw310,-verilator,-vivado`.
 
 `--build_tests_only` is important when matching wildcards if you aren't using
-`--build_tag_filters` to prevent `bazelisk.sh test //...` from building targets that are filtered out by `--test_tag_filters`.
+`--build_tag_filters` to prevent `bazel test //...` from building targets that are filtered out by `--test_tag_filters`.
 
 There is no way to filter out dependencies of a test\_suite such as `//sw/device/tests:uart_smoketest` (Which is a suite that's assembled by the `opentitan_test` rule) from a build.
 
@@ -284,22 +284,23 @@ A disassembly of all executable sections is produced by the build system by defa
 It can be found by looking for files with the `.dis` extension next to the corresponding ELF file.
 
 ```console
-./bazelisk.sh build //sw/device/tests:uart_smoketest_prog_sim_verilator_dis
+bazel build //sw/device/tests:uart_smoketest_prog_sim_verilator_dis
 
-less "$(./bazelisk.sh outquery //sw/device/tests:uart_smoketest_prog_sim_verilator_dis)"
+less "$(bazel outquery //sw/device/tests:uart_smoketest_prog_sim_verilator_dis)"
 ```
 
 To get a different type of disassembly, e.g. one which includes data sections in addition to executable sections, objdump can be called manually.
 For example the following command shows how to disassemble all sections of the UART DIF smoke test interleaved with the actual source code:
 
 ```console
-./bazelisk.sh build --config=riscv32 //sw/device/tests:uart_smoketest_prog_sim_verilator.elf
+bazel build --config=riscv32 //sw/device/tests:uart_smoketest_prog_sim_verilator.elf
 
-riscv32-unknown-elf-objdump --disassemble-all --headers --line-numbers --source \
-  "$(./bazelisk.sh outquery --config=riscv32 //sw/device/tests:uart_smoketest_prog_sim_verilator.elf)"
+bazel run @lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-objdump -- \
+  --disassemble-all --headers --line-numbers --source \
+  "$(bazel outquery --config=riscv32 //sw/device/tests:uart_smoketest_prog_sim_verilator.elf)"
 ```
 
-Refer to the output of `riscv32-unknown-elf-objdump --help` for a full list of options.
+Refer to the output of the command with `--help` for a full list of options.
 
 ## Troubleshooting
 
@@ -311,10 +312,10 @@ We try to always keep the main branch healthy, but the project is in active deve
 
 ### Debugging a failed verilator test
 
-If your `bazelisk.sh` build failed trying to run a test on Verilator, the first step is to see if you can build the chip simulation on its own:
+If your bazel build failed trying to run a test on Verilator, the first step is to see if you can build the chip simulation on its own:
 
 ```console
-./bazelisk.sh build //hw:verilator
+bazel build //hw:verilator
 ```
 This build can take a long time; it's creating a simulation for the entire OpenTitan SoC.
 Expect up to an hour for a successful build, depending on your machine.
@@ -325,7 +326,7 @@ If your system is close to that limit, you may want to exit web browsers or othe
 
 If the `//hw:verilator` build failed pretty much immediately, try running `util/check_tool_requirements.py` to make sure you meet the tool requirements.
 
-If the `//hw:verilator` build succeeeded, but running a particular test fails, try running a different test (you can find many options under `sw/device/tests/`).
+If the `//hw:verilator` build succeeded, but running a particular test fails, try running a different test (you can find many options under `sw/device/tests/`).
 If that works, then it may be a problem with the specific test you're running.
-See if you can build, but not run, the test with `./bazelisk.sh build` instead of `./bazelisk.sh test`.
+See if you can build, but not run, the test with `bazel build` instead of `bazel test`.
 If the test fails to build, that indicates some issue with the source code or possibly the RISC-V toolchain installation.

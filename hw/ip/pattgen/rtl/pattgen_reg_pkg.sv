@@ -16,6 +16,11 @@ package pattgen_reg_pkg;
   // Number of registers for every interface
   parameter int NumRegs = 12;
 
+  // Alert indices
+  typedef enum int {
+    AlertFatalFaultIdx = 0
+  } pattgen_alert_idx_t;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -116,11 +121,11 @@ package pattgen_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } done_ch0;
+    } done_ch1;
     struct packed {
       logic        d;
       logic        de;
-    } done_ch1;
+    } done_ch0;
   } pattgen_hw2reg_intr_state_reg_t;
 
   // Register -> HW type

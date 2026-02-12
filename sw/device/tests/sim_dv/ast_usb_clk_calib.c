@@ -12,7 +12,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "ast_regs.h"  // Generated.
+#include "hw/top/ast_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -20,6 +20,8 @@ OTTF_DEFINE_TEST_CONFIG();
 static dif_clkmgr_t clkmgr;
 static dif_usbdev_t usbdev;
 static dif_pinmux_t pinmux;
+
+static dif_clkmgr_measure_clock_t clkmgr_measure_clk_usb;
 
 static uint32_t device_usb_count;
 static uint32_t aon_clk_period_us;
@@ -53,7 +55,7 @@ static volatile const uint32_t kSoFPeriodUs = 1000;
 static void enable_usb_meas_get_code(dif_clkmgr_t *clkmgr,
                                      dif_clkmgr_recov_err_codes_t *codes) {
   CHECK_STATUS_OK(clkmgr_testutils_enable_clock_count(
-      clkmgr, kDifClkmgrMeasureClockUsb,
+      clkmgr, clkmgr_measure_clk_usb,
       usb_count_info.count - usb_count_info.variability,
       usb_count_info.count + usb_count_info.variability));
 
@@ -64,8 +66,11 @@ static void enable_usb_meas_get_code(dif_clkmgr_t *clkmgr,
 };
 
 bool test_main(void) {
-  CHECK_DIF_OK(dif_clkmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
+  CHECK_DIF_OK(dif_clkmgr_init_from_dt(kDtClkmgrAon, &clkmgr));
+
+  dt_clock_t usb_clk = dt_usbdev_clock(kDtUsbdev, kDtUsbdevClockClk);
+  CHECK_DIF_OK(
+      dif_clkmgr_find_measure_clock(&clkmgr, usb_clk, &clkmgr_measure_clk_usb));
 
   CHECK_DIF_OK(dif_usbdev_init(
       mmio_region_from_addr(TOP_EARLGREY_USBDEV_BASE_ADDR), &usbdev));
@@ -95,7 +100,7 @@ bool test_main(void) {
   dif_clkmgr_recov_err_codes_t codes = 0;
 
   CHECK_DIF_OK(
-      dif_clkmgr_disable_measure_counts(&clkmgr, kDifClkmgrMeasureClockUsb));
+      dif_clkmgr_disable_measure_counts(&clkmgr, clkmgr_measure_clk_usb));
   CHECK_DIF_OK(dif_clkmgr_recov_err_code_clear_codes(&clkmgr, codes));
   busy_spin_micros(5 * aon_clk_period_us);
 

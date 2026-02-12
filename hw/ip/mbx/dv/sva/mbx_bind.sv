@@ -4,39 +4,50 @@
 
 module mbx_bind;
 
+  // Bind assertion module to RoT-side SRAM interface
   bind mbx tlul_assert #(
     .EndpointType("Host")
-  ) mbx_agx_tlul_assert_core (
-    .clk_i(hstRegAccL3),
-    .rst_ni(hstRegReset),
-    .h2d  (mbx_agx_tlReQH2d),
-    .d2h  (agx_mbx_tlRsPD2h)
+  ) sram_tlul_assert_core (
+    .clk_i,
+    .rst_ni,
+    .h2d  (sram_tl_h_o),
+    .d2h  (sram_tl_h_i)
   );
 
+  // Bind assertion module to RoT-side config interface
   bind mbx tlul_assert #(
     .EndpointType("Device")
-  ) agx_mbx_tlul_assert_device (
-    .clk_i(hstRegAccL3),
-    .rst_ni(hstRegReset),
-    .h2d  (agx_mbx_tlReQH2d),
-    .d2h  (mbx_agx_tlRsPD2h)
+  ) core_tlul_assert_device (
+    .clk_i,
+    .rst_ni,
+    .h2d  (core_tl_d_i),
+    .d2h  (core_tl_d_o)
   );
 
+  // Bind assertion module to SoC-side config interface
   bind mbx tlul_assert #(
     .EndpointType("Device")
-  ) scx_mbx_tlul_assert_device(
-    .clk_i(sysRegAccL3),
-    .rst_ni(sysRegReset),
-    .h2d  (scx_mbx_tlReQH2d),
-    .d2h  (mbx_scx_tlRsPD2h)
+  ) soc_tlul_assert_device(
+    .clk_i,
+    .rst_ni,
+    .h2d  (soc_tl_d_i),
+    .d2h  (soc_tl_d_o)
   );
 
-  // TODO: Revisit this
-  // bind mbx mbx_regs_csr_assert_fpv mbx_regs_csr_assert (
-  //   .clk_i,
-  //   .rst_ni,
-  //   .h2d    (regs_tl_i),
-  //   .d2h    (regs_tl_o)
-  // );
+  // FPV CSR read and write assertions on ROT-side config interface
+  bind mbx mbx_core_csr_assert_fpv mbx_core_csr_assert (
+     .clk_i,
+     .rst_ni,
+     .h2d (core_tl_d_i),
+     .d2h (core_tl_d_o)
+  );
+
+  // FPV CSR read and write assertions on SoC-side config interface
+  bind mbx mbx_soc_csr_assert_fpv mbx_soc_csr_assert (
+     .clk_i,
+     .rst_ni,
+     .h2d (soc_tl_d_i),
+     .d2h (soc_tl_d_o)
+  );
 
 endmodule

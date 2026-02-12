@@ -11,9 +11,11 @@ module alert_handler
   import prim_alert_pkg::*;
   import prim_esc_pkg::*;
 #(
+  // Number of cycles a differential skew is tolerated on the alert and escalation signal
+  parameter int unsigned AlertSkewCycles = 1,
   parameter int EscNumSeverities = 4,
   parameter int EscPingCountWidth = 16,
-  // Compile time random constants, to be overriden by topgen.
+  // Compile time random constants, to be overridden by topgen.
   parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault
 ) (
@@ -187,7 +189,8 @@ module alert_handler
   // Target interrupt notification
   for (genvar k = 0 ; k < NAlerts ; k++) begin : gen_alerts
     prim_alert_receiver #(
-      .AsyncOn(AsyncOn[k])
+      .AsyncOn(AsyncOn[k]),
+      .SkewCycles(AlertSkewCycles)
     ) u_alert_receiver (
       .clk_i,
       .rst_ni,
@@ -292,7 +295,9 @@ module alert_handler
     // put this RTL label inside that module due to the way our countermeasure annotation check
     // script discovers the RTL files. The label is thus put here. Please refer to
     // prim_esc_receiver.sv for the actual implementation of this mechanism.
-    prim_esc_sender u_esc_sender (
+    prim_esc_sender # (
+      .SkewCycles(AlertSkewCycles)
+    ) u_esc_sender (
       .clk_i,
       .rst_ni,
       .ping_req_i   ( esc_ping_req[k]  ),

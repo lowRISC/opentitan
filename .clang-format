@@ -14,7 +14,7 @@ PointerAlignment: Right
 #
 # This is slightly more confusing as some headers are auto-generated at build
 # time (*_regs.h), and some are auto-generated and checked in to the repo
-# (hw/top_earlgrey/sw/autogen/*.h). These rules cover both occurences.
+# (hw/top_earlgrey/sw/autogen/*.h). These rules cover both occurrences.
 #
 # The version of clang-format that we use does not regroup include statements,
 # but this is something we could do in future.

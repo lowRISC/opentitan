@@ -51,8 +51,9 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
             name = name,
             src = elf,
             suffix = "39.scr.vmem",
-            rom_scramble_config = exec_env.rom_scramble_config,
             rom_scramble_tool = ctx.executable.rom_scramble_tool,
+            top_gen_hjson = exec_env.top_gen_hjson,
+            top_secret_cfg = exec_env.top_secret_cfg,
         )
 
         # We may want to run non-scrambled ROM in DV environment, for faster
@@ -104,7 +105,7 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
             src = vmem_base,
             otp = get_fallback(ctx, "file.otp", exec_env),
             otp_mmap = exec_env.otp_mmap,
-            otp_seed = exec_env.otp_seed,
+            top_secret_cfg = exec_env.top_secret_cfg,
             otp_data_perm = exec_env.otp_data_perm,
             _tool = exec_env.flash_scramble_tool.files_to_run,
         )

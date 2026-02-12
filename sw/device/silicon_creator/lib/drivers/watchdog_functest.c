@@ -5,6 +5,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "hw/top/dt/aon_timer.h"
+#include "hw/top/dt/api.h"
+#include "hw/top/dt/rstmgr.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
@@ -20,8 +23,7 @@
 #include "sw/device/silicon_creator/lib/drivers/watchdog.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "rstmgr_regs.h"
+#include "hw/top/rstmgr_regs.h"
 
 static uint32_t compute_ticks_per_ms(uint64_t hz) {
   const uint64_t kTicksPerMs = udiv64_slow(hz, 1000, NULL);
@@ -131,7 +133,9 @@ bool test_main(void) {
 
     *phase = kTestPhaseDone;
     LOG_ERROR("Test failure: should have reset before this line.");
-  } else if (bitfield_bit32_read(reason, kRstmgrReasonWatchdog)) {
+  } else if (rstmgr_is_hw_reset_reason(kDtRstmgrAon, reason,
+                                       kDtInstanceIdAonTimerAon,
+                                       kDtAonTimerResetReqAonTimer)) {
     LOG_INFO("Detected reset after escalation test");
     if (*phase != kTestPhaseBite) {
       LOG_ERROR("Test failure: expected phase %d but got phase %d",

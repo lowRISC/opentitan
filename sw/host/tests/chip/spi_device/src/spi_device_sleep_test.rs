@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use clap::Parser;
 use regex::Regex;
 use std::time::Duration;
@@ -97,15 +97,14 @@ fn main() -> Result<()> {
     execute_test!(spi_wakeup_test, &opts, &transport,);
 
     let uart = transport.uart("console")?;
-    let mut console = UartConsole {
-        timeout: Some(opts.timeout),
-        exit_success: Some(Regex::new(r"PASS!\r\n")?),
-        exit_failure: Some(Regex::new(r"FAIL:")?),
-        ..Default::default()
-    };
+    let mut console = UartConsole::new(
+        Some(opts.timeout),
+        Some(Regex::new(r"PASS!\r\n")?),
+        Some(Regex::new(r"FAIL:")?),
+    );
 
     // Now watch the console for the exit conditions.
-    let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
+    let result = console.interact(&*uart, false)?;
     if result != ExitStatus::ExitSuccess {
         bail!("FAIL: {:?}", result);
     };
@@ -114,13 +113,13 @@ fn main() -> Result<()> {
 }
 
 fn wait_sleep(gpio: &dyn GpioPin, uart: &dyn Uart, timeout: Duration) -> Result<()> {
-    let _ = UartConsole::wait_for(uart, r"SYNC: Sleeping\r\n", timeout)?;
+    let _ = UartConsole::wait_for(uart, r"SYNC: Sleeping", timeout)?;
     while gpio.read()? {}
     Ok(())
 }
 
 fn wait_awake(gpio: &dyn GpioPin, uart: &dyn Uart, timeout: Duration) -> Result<()> {
     while !gpio.read()? {}
-    let _ = UartConsole::wait_for(uart, r"SYNC: Awaked\r\n", timeout)?;
+    let _ = UartConsole::wait_for(uart, r"SYNC: Awaked", timeout)?;
     Ok(())
 }

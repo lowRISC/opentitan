@@ -15,6 +15,11 @@ package aon_timer_reg_pkg;
   // Number of registers for every interface
   parameter int NumRegs = 14;
 
+  // Alert indices
+  typedef enum int {
+    AlertFatalFaultIdx = 0
+  } aon_timer_alert_idx_t;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -114,11 +119,11 @@ package aon_timer_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } wkup_timer_expired;
+    } wdog_timer_bark;
     struct packed {
       logic        d;
       logic        de;
-    } wdog_timer_bark;
+    } wkup_timer_expired;
   } aon_timer_hw2reg_intr_state_reg_t;
 
   typedef struct packed {

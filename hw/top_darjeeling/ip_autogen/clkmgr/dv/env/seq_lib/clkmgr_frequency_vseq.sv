@@ -10,10 +10,12 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
   `uvm_object_new
 
   // This is measured in aon clocks. This is cannot be too precise because of a synchronizer.
-  localparam int CyclesToGetMeasurements = 6;
+  // It takes into account cases where some clocks need multiple aon clock cycles to get
+  // a measurement.
+  localparam int CyclesToGetMeasurements = 37;
 
   // The aon cycles between measurements, to make sure the previous measurement settles.
-  localparam int CyclesBetweenMeasurements = 6;
+  localparam int CyclesBetweenMeasurements = 37;
 
   // This is measured in clkmgr clk_i clocks. It is set to cover worst case delays.
   // The clk_i frequency is randomized for IPs, but the clkmgr is hooked to io_div4, which would
@@ -95,15 +97,6 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
     cfg.clk_rst_vif.wait_clks(CyclesForErrUpdate);
   endtask
 
-  // If clocks become uncalibrated measure_ctrl_regwen is re-enabled.
-  task check_measure_ctrl_regwen_for_calib_rdy();
-    logic value;
-    csr_wr(.ptr(ral.measure_ctrl_regwen), .value(0));
-    cfg.clkmgr_vif.update_calib_rdy(MuBi4False);
-    cfg.clk_rst_vif.wait_clks(20);
-    calibration_lost_checks();
-  endtask
-
   task body();
     logic [TL_DW-1:0] value;
     int prior_alert_count;
@@ -144,18 +137,6 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
       logic [ClkMesrSize-1:0] expected_recov_meas_err = '0;
       bit expect_alert = 0;
       `DV_CHECK_RANDOMIZE_FATAL(this)
-      // Update calib_rdy input: if calibration is not ready the measurements
-      // don't happen, so we should not get faults.
-      cfg.clkmgr_vif.update_calib_rdy(calib_rdy);
-      `uvm_info(`gfn, $sformatf(
-                "Updating calib_rdy to 0x%x, predicted regwen 0x%x",
-                calib_rdy,
-                ral.measure_ctrl_regwen.get()
-                ), UVM_MEDIUM)
-      `uvm_info(`gfn, $sformatf("New round targetting %s", clk_tested), UVM_MEDIUM)
-      // Allow calib_rdy to generate side-effects.
-      cfg.clk_rst_vif.wait_clks(3);
-      if (calib_rdy == MuBi4False) calibration_lost_checks();
       prior_alert_count = cfg.scoreboard.get_alert_count("recov_fault");
       if (cause_saturation) begin
         `uvm_info(`gfn, $sformatf(
@@ -239,8 +220,6 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
       csr_wr(.ptr(ral.recov_err_code), .value('1));
       cfg.aon_clk_rst_vif.wait_clks(12);
     end
-    // And finally, check that unsetting calib_rdy causes meaesure_ctrl_regwen to be set to 1.
-    check_measure_ctrl_regwen_for_calib_rdy();
   endtask
 
 endclass

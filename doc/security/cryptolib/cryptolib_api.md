@@ -132,16 +132,12 @@ Data structures for key types and modes help the cryptolib recognize and prevent
 
 #### Elliptic curve data structures
 
-{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_eddsa_sign_mode }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_eddsa_sign_mode }}
 
 #### Hash data structures
 
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_hash_mode }}
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_hash_digest }}
-
-#### Message authentication data structures
-
-{{#header-snippet sw/device/lib/crypto/include/mac.h otcrypto_kmac_mode }}
 
 #### RSA data structures
 
@@ -154,8 +150,8 @@ The following data structures are considered implementation specific.
 The caller knows their size and must allocate space for them.
 However, they are essentially scratchpad space for the underlying implementation and should not be modified directly.
 
-{{#header-snippet sw/device/lib/crypto/include/hash.h otcrypto_hash_context }}
-{{#header-snippet sw/device/lib/crypto/include/mac.h otcrypto_hmac_context }}
+{{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_context }}
+{{#header-snippet sw/device/lib/crypto/include/hmac.h otcrypto_hmac_context }}
 
 ## AES
 
@@ -210,26 +206,30 @@ Note that hardware support for one-shot SHA-256 means that the one-shot version 
 
 This mode is used when the entire data to be hashed is available upfront.
 
-This is a generic hash API where the required digest type and length is passed as an input parameter.
-The supported hash modes are SHA256, SHA384, SHA512, SHA3-224, SHA3-256, SHA3-384 and SHA3-512.
+{{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_256 }}
+{{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_384 }}
+{{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_512 }}
+{{#header-snippet sw/device/lib/crypto/include/sha3.h otcrypto_sha3_224 }}
+{{#header-snippet sw/device/lib/crypto/include/sha3.h otcrypto_sha3_256 }}
+{{#header-snippet sw/device/lib/crypto/include/sha3.h otcrypto_sha3_384 }}
+{{#header-snippet sw/device/lib/crypto/include/sha3.h otcrypto_sha3_512 }}
 
-{{#header-snippet sw/device/lib/crypto/include/hash.h otcrypto_hash }}
-
-The cryptolib supports the SHAKE and cSHAKE extendable-output functions, which can produce a varaible-sized digest.
+The cryptolib supports the SHAKE and cSHAKE extendable-output functions, which can produce a variable-sized digest.
 To avoid locking up the KMAC block, only a one-shot mode is supported.
 
-{{#header-snippet sw/device/lib/crypto/include/hash.h otcrypto_xof_shake }}
-{{#header-snippet sw/device/lib/crypto/include/hash.h otcrypto_xof_cshake }}
+{{#header-snippet sw/device/lib/crypto/include/sha3.h otcrypto_shake128 }}
+{{#header-snippet sw/device/lib/crypto/include/sha3.h otcrypto_shake256 }}
+{{#header-snippet sw/device/lib/crypto/include/sha3.h otcrypto_cshake128 }}
+{{#header-snippet sw/device/lib/crypto/include/sha3.h otcrypto_cshake256 }}
 
 ### Streaming mode
 
 The streaming mode API is used for incremental hashing, where the data to be hashed is split and passed in multiple blocks.
-Streaming is supported **only for SHA2** hash modes (SHA256, SHA384, SHA512), because these hash functions are implemented in software and their state can therefore be saved without locking up hardware blocks.
-Attempting to use the streaming API for SHA3 will result in an error.
+Streaming is supported **only for SHA2** hash modes (SHA256, SHA384, SHA512), because the SHA-3 hardware does not support saving and restoring a hash context.
 
-{{#header-snippet sw/device/lib/crypto/include/hash.h otcrypto_hash_init }}
-{{#header-snippet sw/device/lib/crypto/include/hash.h otcrypto_hash_update }}
-{{#header-snippet sw/device/lib/crypto/include/hash.h otcrypto_hash_final }}
+{{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_init }}
+{{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_update }}
+{{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_final }}
 
 ## Message Authentication
 
@@ -242,8 +242,8 @@ The [KMAC block][kmac] supports KMAC128 and KMAC256, with a key length of 128, 1
 
 ### One-shot mode
 
-{{#header-snippet sw/device/lib/crypto/include/mac.h otcrypto_hmac }}
-{{#header-snippet sw/device/lib/crypto/include/mac.h otcrypto_kmac }}
+{{#header-snippet sw/device/lib/crypto/include/hmac.h otcrypto_hmac }}
+{{#header-snippet sw/device/lib/crypto/include/kmac.h otcrypto_kmac }}
 
 ### Streaming mode
 
@@ -251,9 +251,9 @@ The streaming mode API is used for incremental hashing use-case, where the data 
 
 To avoid locking up the KMAC hardware, the streaming mode is supported **only for HMAC**.
 
-{{#header-snippet sw/device/lib/crypto/include/mac.h otcrypto_hmac_init }}
-{{#header-snippet sw/device/lib/crypto/include/mac.h otcrypto_hmac_update }}
-{{#header-snippet sw/device/lib/crypto/include/mac.h otcrypto_hmac_final }}
+{{#header-snippet sw/device/lib/crypto/include/hmac.h otcrypto_hmac_init }}
+{{#header-snippet sw/device/lib/crypto/include/hmac.h otcrypto_hmac_update }}
+{{#header-snippet sw/device/lib/crypto/include/hmac.h otcrypto_hmac_final }}
 
 ## RSA
 
@@ -296,6 +296,9 @@ Always ensure that you fully understand the security implications of the padding
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_private_key_from_exponents }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_sign }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_verify }}
+{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_encrypt }}
+{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_decrypt }}
+{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_keypair_from_cofactor }}
 
 ### RSA Asynchronous API
 
@@ -305,6 +308,12 @@ Always ensure that you fully understand the security implications of the padding
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_sign_async_finalize }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_verify_async_start }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_verify_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_encrypt_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_encrypt_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_decrypt_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_decrypt_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_keypair_from_cofactor_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_keypair_from_cofactor_async_finalize }}
 
 ## Elliptic curve cryptography
 
@@ -357,10 +366,12 @@ For ECDSA, the cryptography library supports keypair generation, signing, and si
 
 {{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_keygen }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_sign }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_sign_verify }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_verify }}
 
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_keygen }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_sign }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_sign_verify }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_verify }}
 
 #### ECDH
@@ -378,9 +389,9 @@ Each party should generate a key pair, exchange public keys, and then generate t
 
 For Ed25519 (a curve-specialized version of EdDSA, the Edwards curve digital signature algorithm), the cryptography library supports keypair generation, signature generation, and signature verification.
 
-{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_keygen }}
-{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_sign }}
-{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_verify }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_sign }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_verify }}
 
 #### X25519
 
@@ -428,14 +439,15 @@ Each party should generate a key pair, exchange public keys, and then generate t
 
 #### Ed25519
 
-{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_keygen_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_keygen_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_keygen_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_keygen_async_finalize }}
 
-{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_sign_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_sign_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_sign_part1_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_sign_part2_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_sign_async_finalize }}
 
-{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_verify_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_verify_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_verify_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_verify_async_finalize }}
 
 #### X25519
 
@@ -486,17 +498,19 @@ To learn more about PRFs, various key derivation mechanisms and security conside
 
 ### API
 
-#### KDF-CTR
-
-{{#header-snippet sw/device/lib/crypto/include/kdf.h otcrypto_kdf_hmac_ctr }}
-{{#header-snippet sw/device/lib/crypto/include/kdf.h otcrypto_kdf_kmac }}
-
-
 #### HKDF
 
-{{#header-snippet sw/device/lib/crypto/include/kdf.h otcrypto_kdf_hkdf }}
-{{#header-snippet sw/device/lib/crypto/include/kdf.h otcrypto_kdf_hkdf_extract }}
-{{#header-snippet sw/device/lib/crypto/include/kdf.h otcrypto_kdf_hkdf_expand }}
+{{#header-snippet sw/device/lib/crypto/include/hkdf.h otcrypto_hkdf }}
+{{#header-snippet sw/device/lib/crypto/include/hkdf.h otcrypto_hkdf_extract }}
+{{#header-snippet sw/device/lib/crypto/include/hkdf.h otcrypto_hkdf_expand }}
+
+#### KDF-CTR
+
+{{#header-snippet sw/device/lib/crypto/include/kdf_ctr.h otcrypto_kdf_ctr_hmac }}
+
+#### KMAC-KDF
+
+{{#header-snippet sw/device/lib/crypto/include/kmac_kdf.h otcrypto_kmac_kdf }}
 
 ## Key transport
 
@@ -539,7 +553,7 @@ The crypto library will always refuse to export these keys.
 ## Asynchronous operations
 
 For some functions, OpenTitan's cryptolib supports asynchronous calls.
-All operations which take longer than 10ms should have an asychronous interface.
+All operations which take longer than 10ms should have an asynchronous interface.
 This is helpful for compatibility with TockOS, which has a low latency return call programming model.
 
 The OpenTitan cryptolib does not implement any thread management.

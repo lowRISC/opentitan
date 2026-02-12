@@ -15,6 +15,7 @@ from importlib.util import module_from_spec, spec_from_file_location
 
 from reggen.ip_block import IpBlock
 from dtgen.helper import TopHelper, IpHelper, Extension
+from dtgen.ipgen_ext import IpgenExt
 from topgen.lib import CArrayMapping, CEnum
 
 TOPGEN_TEMPLATE_PATH = Path(__file__).parents[1].resolve() / "util" / "dtgen"
@@ -44,10 +45,10 @@ def load_extension(plugin_path: Path):
 
 def find_extension_class(ext_mod, cls):
     if ext_mod is None:
-        return None
+        return []
 
     # Look for a class extended `cls`
-    ext_cls = None
+    ext_cls = []
     for (name, obj) in inspect.getmembers(ext_mod):
         if not inspect.isclass(obj):
             continue
@@ -57,12 +58,9 @@ def find_extension_class(ext_mod, cls):
         if not issubclass(obj, cls):
             continue
         # Found one.
-        if ext_cls is not None:
-            logging.error(f"extension defines several extension classes: {ext_cls} and {obj}")
-            raise RuntimeError("invalid extension")
-        ext_cls = obj
+        ext_cls.append(obj)
 
-    if ext_cls is None:
+    if not ext_cls:
         logging.error("extension does not define any extension class")
         raise RuntimeError("invalid extension")
 
@@ -141,7 +139,7 @@ def main():
     )
 
     args = parser.parse_args()
-    outdir = Path(args.outdir) / "dt"
+    outdir = Path(args.outdir)
     outdir.mkdir(parents = True, exist_ok = True)
 
     name_to_block = {}
@@ -170,13 +168,13 @@ def main():
 
         render_template(
             TOPGEN_TEMPLATE_PATH / "dt_api.h.tpl",
-            outdir / "dt_api.h",
+            outdir / "api.h",
             helper = top_helper,
             top_lib_header = top_lib_header,
         )
         render_template(
             TOPGEN_TEMPLATE_PATH / "dt_api.c.tpl",
-            outdir / "dt_api.c",
+            outdir / "api.c",
             helper = top_helper,
         )
 
@@ -184,13 +182,17 @@ def main():
         for (ipname, ip) in name_to_block.items():
             default_node = args.default_node
             if default_node is None:
-                # Pick the first one.
-                default_node = list(ip.reg_blocks.keys())[0]
+                if len(ip.reg_blocks) == 0:
+                    default_node = None
+                else:
+                    # Pick the first one.
+                    default_node = list(ip.reg_blocks.keys())[0]
                 if len(ip.reg_blocks) > 1:
                     logging.warning(f"IP {ipname} has more than one register block node " +
                                     f"but no default was specified, will use {default_node}")
 
             extension_cls = find_extension_class(ext_mod, Extension)
+            extension_cls.append(IpgenExt)
 
             # The instance name is 'top_{topname}_{ipname}'.
             ipconfig = name_to_ipconfig.get('top_{}_{}'.format(topcfg["name"], ipname), None)
@@ -200,14 +202,12 @@ def main():
 
             render_template(
                 TOPGEN_TEMPLATE_PATH / "dt_ip.h.tpl",
-                outdir / "dt_{}.h".format(ipname),
-                default_node = default_node,
+                outdir / "{}.h".format(ipname),
                 helper = helper,
             )
             render_template(
                 TOPGEN_TEMPLATE_PATH / "dt_ip.c.tpl",
-                outdir / "dt_{}.c".format(ipname),
-                default_node = default_node,
+                outdir / "{}.c".format(ipname),
                 helper = helper,
             )
 

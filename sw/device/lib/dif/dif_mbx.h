@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/mbx/doc/">DOE Mailbox</a> Device Interface
+ * @brief <a href="/book/hw/ip/mbx/">DOE Mailbox</a> Device Interface
  * Functions
  */
 #include <stdint.h>

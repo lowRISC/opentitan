@@ -4,6 +4,14 @@
 
 #include <string.h>
 
+#include "hw/top/dt/aes.h"
+#include "hw/top/dt/csrng.h"
+#include "hw/top/dt/edn.h"
+#include "hw/top/dt/entropy_src.h"
+#include "hw/top/dt/kmac.h"
+#include "hw/top/dt/otbn.h"
+#include "hw/top/dt/rv_core_ibex.h"
+#include "hw/top/dt/rv_plic.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_aes.h"
@@ -25,13 +33,12 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/tests/otbn_randomness_impl.h"
 
-#include "entropy_src_regs.h"                         // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+#include "hw/top/entropy_src_regs.h"  // Generated.
 
 OTTF_DEFINE_TEST_CONFIG();
 
 enum {
-  kEntropySrcHealthTestWindowSize = 0x200,
+  kEntropySrcHealthTestWindowSize = 512,
   /**
    * Observe FIFO threshold: half of the FIFO size.
    */
@@ -91,6 +98,10 @@ enum {
    * than other environments, and so is given a longer timeout.
    */
   kVerilatorAesTestutilsTimeoutUsec = 48 * 1000 * 1000,
+  /**
+   * PLIC target for the Ibex core.
+   */
+  kDtRvPlicTargetIbex0 = 0,
 };
 
 static dif_aes_t aes;
@@ -147,12 +158,14 @@ bool entropy_src_fifo_has_overflowed(void) {
 
 void ottf_external_isr(uint32_t *exc_info) {
   dif_rv_plic_irq_id_t plic_irq_id;
-  CHECK_DIF_OK(dif_rv_plic_irq_claim(&rv_plic, kTopEarlgreyPlicTargetIbex0,
-                                     &plic_irq_id));
+  CHECK_DIF_OK(
+      dif_rv_plic_irq_claim(&rv_plic, kDtRvPlicTargetIbex0, &plic_irq_id));
 
-  top_earlgrey_plic_peripheral_t peripheral =
-      top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
-  CHECK(peripheral == kTopEarlgreyPlicPeripheralEntropySrc);
+  // Get the instance ID for the peripheral that generated the interrupt
+  dt_instance_id_t inst_id = dt_plic_id_to_instance_id(plic_irq_id);
+  CHECK(inst_id == dt_entropy_src_instance_id(kDtEntropySrc),
+        "Interrupt from incorrect peripheral: (exp: %d, obs: %d)",
+        dt_entropy_src_instance_id(kDtEntropySrc), inst_id);
 
   // If the observe buffer overflows while we're still collecting samples
   // then we need to drain it and start again or our samples won't be
@@ -220,26 +233,30 @@ void ottf_external_isr(uint32_t *exc_info) {
         &entropy_src, kDifToggleDisabled));
   }
 
-  CHECK_DIF_OK(dif_entropy_src_irq_acknowledge(
-      &entropy_src, kDifEntropySrcIrqEsObserveFifoReady));
+  // Get the specific IRQ type from the PLIC IRQ ID
+  dt_entropy_src_irq_t irq =
+      dt_entropy_src_irq_from_plic_id(kDtEntropySrc, plic_irq_id);
+  CHECK(irq == kDtEntropySrcIrqEsObserveFifoReady, "Unexpected irq: 0x%x", irq);
+  CHECK_DIF_OK(dif_entropy_src_irq_acknowledge(&entropy_src, irq));
 
-  CHECK_DIF_OK(dif_rv_plic_irq_complete(&rv_plic, kTopEarlgreyPlicTargetIbex0,
-                                        plic_irq_id));
+  CHECK_DIF_OK(
+      dif_rv_plic_irq_complete(&rv_plic, kDtRvPlicTargetIbex0, plic_irq_id));
 }
 
 static status_t configure_interrupts(void) {
-  TRY(dif_rv_plic_irq_set_priority(
-      &rv_plic, kTopEarlgreyPlicIrqIdEntropySrcEsObserveFifoReady, 0x1));
+  // Get PLIC IRQ ID using DT API
+  dt_plic_irq_id_t entropy_src_irq_id = dt_entropy_src_irq_to_plic_id(
+      kDtEntropySrc, kDtEntropySrcIrqEsObserveFifoReady);
 
-  TRY(dif_rv_plic_target_set_threshold(&rv_plic, kTopEarlgreyPlicTargetIbex0,
-                                       0x0));
+  TRY(dif_rv_plic_irq_set_priority(&rv_plic, entropy_src_irq_id, 0x1));
 
-  TRY(dif_rv_plic_irq_set_enabled(
-      &rv_plic, kTopEarlgreyPlicIrqIdEntropySrcEsObserveFifoReady,
-      kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
+  TRY(dif_rv_plic_target_set_threshold(&rv_plic, kDtRvPlicTargetIbex0, 0x0));
+
+  TRY(dif_rv_plic_irq_set_enabled(&rv_plic, entropy_src_irq_id,
+                                  kDtRvPlicTargetIbex0, kDifToggleEnabled));
 
   TRY(dif_entropy_src_irq_set_enabled(
-      &entropy_src, kDifEntropySrcIrqEsObserveFifoReady, kDifToggleEnabled));
+      &entropy_src, kDtEntropySrcIrqEsObserveFifoReady, kDifToggleEnabled));
 
   return OK_STATUS();
 }
@@ -466,26 +483,15 @@ status_t firmware_override_extract_insert(
 }
 
 bool test_main(void) {
-  mmio_region_t base_addr;
-
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR);
-  CHECK_DIF_OK(dif_aes_init(base_addr, &aes));
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR);
-  CHECK_DIF_OK(dif_csrng_init(base_addr, &csrng));
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR);
-  CHECK_DIF_OK(dif_edn_init(base_addr, &edn0));
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR);
-  CHECK_DIF_OK(dif_edn_init(base_addr, &edn1));
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR);
-  CHECK_DIF_OK(dif_entropy_src_init(base_addr, &entropy_src));
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR);
-  CHECK_DIF_OK(dif_kmac_init(base_addr, &kmac));
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR);
-  CHECK_DIF_OK(dif_otbn_init(base_addr, &otbn));
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
-  CHECK_DIF_OK(dif_rv_core_ibex_init(base_addr, &rv_core_ibex));
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
-  CHECK_DIF_OK(dif_rv_plic_init(base_addr, &rv_plic));
+  CHECK_DIF_OK(dif_aes_init_from_dt(kDtAes, &aes));
+  CHECK_DIF_OK(dif_csrng_init_from_dt(kDtCsrng, &csrng));
+  CHECK_DIF_OK(dif_edn_init_from_dt(kDtEdn0, &edn0));
+  CHECK_DIF_OK(dif_edn_init_from_dt(kDtEdn1, &edn1));
+  CHECK_DIF_OK(dif_entropy_src_init_from_dt(kDtEntropySrc, &entropy_src));
+  CHECK_DIF_OK(dif_kmac_init_from_dt(kDtKmac, &kmac));
+  CHECK_DIF_OK(dif_otbn_init_from_dt(kDtOtbn, &otbn));
+  CHECK_DIF_OK(dif_rv_core_ibex_init_from_dt(kDtRvCoreIbex, &rv_core_ibex));
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kDtRvPlic, &rv_plic));
 
   LOG_INFO("Configuring interrupts...");
   configure_interrupts();

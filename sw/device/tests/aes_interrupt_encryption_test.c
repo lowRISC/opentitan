@@ -16,8 +16,6 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 enum {
   kTestTimeout = (1000 * 1000),
 };
@@ -71,10 +69,12 @@ status_t execute_test(void) {
         aes_mode = kDifAesModeCtr;
         memcpy(iv_mode.iv, kAesModesIvCtr, sizeof(kAesModesIvCtr));
         break;
+      default:
+        break;
     }
     // Initialise AES.
     dif_aes_t aes;
-    TRY(dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
+    TRY(dif_aes_init_from_dt(kDtAes, &aes));
     TRY(dif_aes_reset(&aes));
 
     // Mask the key. Note that this should not be done manually. Software is
@@ -140,7 +140,7 @@ status_t execute_test(void) {
     //***************  Perform an trial encryption using a different data and
     // key. Message size, key size and mode can be chosen arbitrarily.
 
-    TRY(dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
+    TRY(dif_aes_init_from_dt(kDtAes, &aes));
 
     // Mask the key. Note that this should not be done manually. Software is
     // expected to get the key in two shares right from the beginning.

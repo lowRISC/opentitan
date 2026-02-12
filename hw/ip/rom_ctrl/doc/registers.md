@@ -1,7 +1,7 @@
 # Registers
 
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/rom_ctrl/data/rom_ctrl.hjson -->
-## Summary of the **`regs`** interface's registers
+## Summary
 
 | Name                                               | Offset   |   Length | Description                                         |
 |:---------------------------------------------------|:---------|---------:|:----------------------------------------------------|
@@ -121,5 +121,5 @@ The expected digest, stored in the top words of ROM
 |:------:|:------:|:-------:|:-------|:----------------------|
 |  31:0  |   ro   |   0x0   | DIGEST | 32 bits of the digest |
 
-This interface does not expose any registers.
+
 <!-- END CMDGEN -->

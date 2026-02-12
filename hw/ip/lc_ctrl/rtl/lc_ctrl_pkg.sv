@@ -101,6 +101,20 @@ package lc_ctrl_pkg;
     return prim_mubi_pkg::mubi4_t'(val ^ (On ^ prim_mubi_pkg::MuBi4True));
   endfunction : lc_to_mubi4
 
+  // Same as lc_to_mubi4 but, but for an input that is Off, return MuBi4True
+  // for an input that is On, return MuBi4False
+  function automatic prim_mubi_pkg::mubi4_t lc_to_mubi4_inv(lc_tx_t val);
+    return prim_mubi_pkg::mubi4_t'(val ^ (Off ^ prim_mubi_pkg::MuBi4True));
+  endfunction : lc_to_mubi4_inv
+
+  // Convert a life cycle signal to mubi8. See also lc_to_mubi4.
+  function automatic prim_mubi_pkg::mubi8_t lc_to_mubi8(lc_tx_t val);
+    return prim_mubi_pkg::mubi8_t'({
+      lc_to_mubi4_inv(val),
+      lc_to_mubi4(val)
+    });
+  endfunction : lc_to_mubi8
+
   function automatic lc_tx_t mubi4_to_lc(prim_mubi_pkg::mubi4_t val);
     return lc_tx_t'(val ^ (prim_mubi_pkg::MuBi4True ^ On));
   endfunction : mubi4_to_lc
@@ -191,7 +205,7 @@ package lc_ctrl_pkg;
   // !act | act  | !act
   // act  | act  | act
   //
-  // Noite: The lc_tx_and() function does not suffer from the strictness problem
+  // Note: The lc_tx_and() function does not suffer from the strictness problem
   // that the lc_tx_or function above does, since only one output value in the
   // truth table is strictly "act". It can hence be used in most scenarios without issues.
   // If however the lc_tx_and() function should be strictly rectifying (i.e., only

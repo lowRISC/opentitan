@@ -142,7 +142,7 @@ static void execute_test(dif_uart_t *uart) {
   // Force UART RX overflow interrupt.
   uart_rx_overflow_handled = false;
   CHECK_DIF_OK(dif_uart_irq_force(uart, kDifUartIrqRxOverflow, true));
-  // Check if the IRQ has occured and has been handled appropriately.
+  // Check if the IRQ has occurred and has been handled appropriately.
   if (!uart_rx_overflow_handled) {
     busy_spin_micros(10);
   }
@@ -151,7 +151,7 @@ static void execute_test(dif_uart_t *uart) {
   // Force UART TX done interrupt.
   uart_tx_done_handled = false;
   CHECK_DIF_OK(dif_uart_irq_force(uart, kDifUartIrqTxDone, true));
-  // Check if the IRQ has occured and has been handled appropriately.
+  // Check if the IRQ has occurred and has been handled appropriately.
   if (!uart_tx_done_handled) {
     busy_spin_micros(10);
   }

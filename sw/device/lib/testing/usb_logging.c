@@ -4,8 +4,6 @@
 
 #include "sw/device/lib/testing/usb_logging.h"
 
-#include <ctype.h>
-
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
@@ -144,8 +142,8 @@ static const bool kDevLogging = false;
 
 /**
  * Character map, used to ensure that non-printable characters are dropped;
- * isprint() available so this assumes ASCII and drops the control characters
- * that could could issues with inappropriate terminal settings at the host.
+ * This assumes ASCII and drops the control characters that could could issues
+ * with inappropriate terminal settings at the host.
  */
 static const uint32_t kCtrlChars =
     ((uint32_t)1u << '\t') | ((uint32_t)1u << '\n') | ((uint32_t)1u << '\r');
@@ -163,10 +161,9 @@ static size_t usb_log(void *data, const char *buf, size_t len);
  */
 static uint8_t config_descriptors[kCfgDscrLenMax];
 
-// Since isprint() is unavailable, use a simple bitmap to test whether it is
-// safe to transmit the given ASCII character unmodified.
-static bool isprintable(uint8_t ch) {
-  return ((kMap[ch >> 5] >> (ch & 0x1fu)) & 1u) != 0u;
+// implementation of <ctype.h> `isprint` that covers ASCII.
+static int isprint(int ch) {
+  return ((kMap[ch >> 5] >> ((uint32_t)ch & 0x1fu)) & 1u) != 0u;
 }
 
 // Place all buffers into the free list
@@ -317,7 +314,7 @@ static status_t usb_logging_send(usb_logging_ctx_t *ctx,
         // stimulated software flow control (XON/XOFF) at the host.
         uint8_t *dp = &buf->data[buf->bytes_used];
         for (size_t i = 0u; i < chunk; ++i) {
-          dp[i] = isprintable(data[i]) ? data[i] : '.';
+          dp[i] = isprint(data[i]) ? data[i] : '.';
         }
       } else {
         memcpy(&buf->data[buf->bytes_used], data, chunk);

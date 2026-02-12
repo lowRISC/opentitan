@@ -1,0 +1,7 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for top_darjeeling_pkg
+waive -rules {LINE_LENGTH} -location {top_darjeeling_pkg.sv} -regexp {Line length of [0-9]+ exceeds 100 character limit} \
+      -comment "top_darjeeling_pkg is auto-generated and adhering to the line length limit is not always feasible for auto-generated code"

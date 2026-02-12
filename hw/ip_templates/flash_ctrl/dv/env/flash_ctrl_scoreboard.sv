@@ -158,7 +158,11 @@ class flash_ctrl_scoreboard #(
                 "Received eflash_tl d_chan item:\n%0s", item.sprint(uvm_default_line_printer)),
                 UVM_HIGH)
       // check tl packet integrity
-      void'(item.is_ok());
+      if (!item.is_ok()) begin
+        `uvm_error(`gfn,
+                   $sformatf("a_source: 0x%0h & d_source: 0x%0h mismatch",
+                             item.a_source, item.d_source))
+      end
 
       // check that address phase for this read is done
       `DV_CHECK_GT_FATAL(eflash_addr_phase_queue.size(), 0)
@@ -213,13 +217,13 @@ class flash_ctrl_scoreboard #(
     if (skip_read_check) do_read_check = 0;
     // if access was to a valid csr, get the csr handle
     if ((is_mem_addr(
-            item, ral_name
+            item.a_addr, cfg.ral_models[ral_name]
         ) || (csr_addr inside {cfg.ral_models[ral_name].csr_addrs})) &&
             !cfg.dir_rd_in_progress) begin
 
       // if incoming access is a write to a valid csr, then make updates right away.
       if (addr_phase_write) begin
-        if (is_mem_addr(item, ral_name) && cfg.scb_check) begin  // prog fifo
+        if (is_mem_addr(item.a_addr, cfg.ral_models[ral_name]) && cfg.scb_check) begin  // prog fifo
           if (idx_wr == 0) begin
             csr_rd(.ptr(ral.addr), .value(data), .backdoor(1'b1));
             wr_addr = word_align_addr(get_field_val(ral.addr.start, data));
@@ -333,7 +337,7 @@ class flash_ctrl_scoreboard #(
           `DV_CHECK_NE_FATAL(csr, null)
           // process the csr req
           // for write, update local variable and fifo at address phase
-          // for read, update predication at address phase and compare at data phase
+          // for read, update prediction at address phase and compare at data phase
           if(!uvm_re_match("err_code*",csr.get_name())) begin
             if (cfg.en_cov) begin
               cov.sw_error_cg.sample(item.d_data);
@@ -378,7 +382,8 @@ class flash_ctrl_scoreboard #(
                          "reg name: %0s", csr.get_full_name()))
           end
           void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
-        end else if (is_mem_addr(item, ral_name) && cfg.scb_check) begin  // rd fifo
+        end else if (is_mem_addr(item.a_addr, cfg.ral_models[ral_name]) && cfg.scb_check) begin
+          // rd fifo
           if (idx_rd == 0) begin
             csr_rd(.ptr(ral.addr), .value(data), .backdoor(1'b1));
             rd_addr = word_align_addr(get_field_val(ral.addr.start, data));
@@ -502,7 +507,7 @@ class flash_ctrl_scoreboard #(
     endcase
   endfunction
 
-  // In opensource, `sel` is always 0.
+  // In open-source, `sel` is always 0.
   // When `sel` is 1, which indicates bank erase,
   // task `erase_bank` is called.
   virtual function void erase_data(flash_dv_part_e part, addr_t addr, bit sel);
@@ -814,7 +819,7 @@ class flash_ctrl_scoreboard #(
     end
   endfunction
 
-  // Overriden function from cip_base_scoreboard, to handle TL/UL Error seen on Hardware Interface
+  // Overridden function from cip_base_scoreboard, to handle TL/UL Error seen on Hardware Interface
   // when using Code Access Restrictions (EXEC)
   virtual function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
     bit   ecc_err, in_err;

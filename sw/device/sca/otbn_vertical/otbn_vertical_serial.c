@@ -16,8 +16,8 @@
 #include "sw/device/sca/otbn_vertical/ecc256_modinv_serial.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 
+#include "hw/top/otbn_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otbn_regs.h"
 
 /**
  * OpenTitan program for OTBN vertical side-channel analysis.
@@ -64,7 +64,6 @@ static void ecc256_app_select(const uint8_t *app_cmd, size_t app_cmd_len) {
  */
 static void simple_serial_main(void) {
   SS_CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
-
   pentest_init(kPentestTriggerSourceOtbn,
                kPentestPeripheralEntropy | kPentestPeripheralIoDiv4 |
                    kPentestPeripheralOtbn | kPentestPeripheralCsrng |

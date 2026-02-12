@@ -71,7 +71,7 @@ class SynCfg(OneShotCfg):
         #     },
         #
         #     "timing": {
-        #         # per timing group (ususally a clock domain)
+        #         # per timing group (usually a clock domain)
         #         # in nano seconds
         #         <group>  : {
         #             "tns"    : <value>,
@@ -92,7 +92,7 @@ class SynCfg(OneShotCfg):
         #         "macro"  : <value>,
         #         "total"  : <value>,
         #
-        #         # hierchical report of first submodule level
+        #         # hierarchical report of first submodule level
         #         "instances" : {
         #             <name> : {
         #               "comb"  : <value>,

@@ -39,7 +39,8 @@ typedef enum otcrypto_aes_gcm_tag_len {
  * change.
  */
 typedef struct otcrypto_aes_gcm_context {
-  uint32_t data[98];
+  // TODO: update the size and the restore and save context functions.
+  uint32_t data[194];
 } otcrypto_aes_gcm_context_t;
 
 /**
@@ -66,7 +67,7 @@ typedef struct otcrypto_aes_gcm_context {
  * @return Result of the authenticated encryption.
  * operation
  */
-otcrypto_status_t otcrypto_aes_gcm_encrypt(const otcrypto_blinded_key_t *key,
+otcrypto_status_t otcrypto_aes_gcm_encrypt(otcrypto_blinded_key_t *key,
                                            otcrypto_const_byte_buf_t plaintext,
                                            otcrypto_const_word32_buf_t iv,
                                            otcrypto_const_byte_buf_t aad,
@@ -102,7 +103,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(const otcrypto_blinded_key_t *key,
  * operation
  */
 otcrypto_status_t otcrypto_aes_gcm_decrypt(
-    const otcrypto_blinded_key_t *key, otcrypto_const_byte_buf_t ciphertext,
+    otcrypto_blinded_key_t *key, otcrypto_const_byte_buf_t ciphertext,
     otcrypto_const_word32_buf_t iv, otcrypto_const_byte_buf_t aad,
     otcrypto_aes_gcm_tag_len_t tag_len, otcrypto_const_word32_buf_t auth_tag,
     otcrypto_byte_buf_t plaintext, hardened_bool_t *success);
@@ -130,7 +131,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
  * @return Result of the initialization operation.
  */
 otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
-    const otcrypto_blinded_key_t *key, otcrypto_const_word32_buf_t iv,
+    otcrypto_blinded_key_t *key, otcrypto_const_word32_buf_t iv,
     otcrypto_aes_gcm_context_t *ctx);
 
 /**
@@ -160,7 +161,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
  * @return Result of the initialization operation.
  */
 otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
-    const otcrypto_blinded_key_t *key, otcrypto_const_word32_buf_t iv,
+    otcrypto_blinded_key_t *key, otcrypto_const_word32_buf_t iv,
     otcrypto_aes_gcm_context_t *ctx);
 /**
  * Updates additional authenticated data for an AES-GCM operation.

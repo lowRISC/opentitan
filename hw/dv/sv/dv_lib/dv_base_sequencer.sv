@@ -11,10 +11,10 @@ class dv_base_sequencer #(type ITEM_T     = uvm_sequence_item,
                                                  .CFG_T      (CFG_T),
                                                  .RSP_ITEM_T (RSP_ITEM_T)))
 
-  // These fifos collects items when req/rsp is received, which are used to communicate between
-  // monitor and sequences. These fifos are optional
+  // These FIFOs collect items when req/rsp is received, which are used to communicate between
+  // monitor and sequences. These FIFOs are optional
   // When device is re-active, it gets items from req_analysis_fifo and send rsp to driver
-  // When this is a high-level agent, monitors put items to these 2 fifos for high-level seq
+  // When this is a high-level agent, monitors put items to these 2 FIFOs for high-level seq
   uvm_tlm_analysis_fifo #(ITEM_T)     req_analysis_fifo;
   uvm_tlm_analysis_fifo #(RSP_ITEM_T) rsp_analysis_fifo;
 

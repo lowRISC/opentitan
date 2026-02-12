@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 <%
-  rg_srcs = list(sorted({sig['src_name'] for sig
-                         in typed_clocks['rg_clks'].values()}))
+from ipgen.clkmgr_gen import get_rg_srcs
+rg_srcs = get_rg_srcs(typed_clocks)
 %>\
 
 module clkmgr_bind;
@@ -56,6 +56,7 @@ module clkmgr_bind;
   );
 
 % endfor
+% if ext_clk_bypass:
   bind clkmgr clkmgr_extclk_sva_if clkmgr_extclk_sva_if (
     .clk_i,
     .rst_ni,
@@ -67,28 +68,24 @@ module clkmgr_bind;
     .all_clk_byp_req_o,
     .hi_speed_sel_o
   );
+% endif
 
+% for name, dc in derived_clks.items():
+<% ref_clk = f"io_div{int(dc['div'] / 2)}" if dc['div'] > 2 else "io" %>\
+  % if dc['div'] > 2:
+  // The div${int(dc['div'] / 2)} clk also steps, so not a good reference. Instead, check it always tracks ${ref_clk}.
+  % endif
   bind clkmgr clkmgr_div_sva_if #(
-    .DIV(2)
-  ) clkmgr_div2_sva_if (
-    .clk(clocks_o.clk_io_powerup),
+    .DIV(${dc['div']})
+  ) clkmgr_div${dc['div']}_sva_if (
+    .clk(clocks_o.clk_${ref_clk}_powerup),
     .rst_n(rst_ni),
-    .maybe_divided_clk(clocks_o.clk_io_div2_powerup),
+    .maybe_divided_clk(clocks_o.clk_${dc['name']}_powerup),
     .div_step_down_req_i(div_step_down_req_i == prim_mubi_pkg::MuBi4True),
     .scanmode(scanmode_i == prim_mubi_pkg::MuBi4True)
   );
 
-  // The div2 clk also steps, so not a good reference. Instead, check it always tracks io_div2.
-  bind clkmgr clkmgr_div_sva_if #(
-    .DIV(4)
-  ) clkmgr_div4_sva_if (
-    .clk(clocks_o.clk_io_div2_powerup),
-    .rst_n(rst_ni),
-    .maybe_divided_clk(clocks_o.clk_io_div4_powerup),
-    .div_step_down_req_i(div_step_down_req_i == prim_mubi_pkg::MuBi4True),
-    .scanmode(scanmode_i == prim_mubi_pkg::MuBi4True)
-  );
-
+% endfor
   // AON clock gating enables.
 % for clk in sorted(typed_clocks['ft_clks']):
 <% suffix = clk.split('clk_')[-1] %>\
@@ -136,6 +133,7 @@ module clkmgr_bind;
   );
 
  % endfor
+% if ext_clk_bypass:
   // Calibration assertions.
   bind clkmgr clkmgr_lost_calib_regwen_sva_if clkmgr_lost_calib_regwen_sva_if (
     .clk(clk_i),
@@ -167,5 +165,6 @@ module clkmgr_bind;
     .step_down_acks_sync(u_clkmgr_byp.step_down_acks_sync),
     .extclk_ctrl_sel
   );
+% endif
 `endif
 endmodule : clkmgr_bind

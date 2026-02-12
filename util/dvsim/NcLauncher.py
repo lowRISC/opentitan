@@ -72,7 +72,7 @@ class NcLauncher(Launcher):
                 ['--', f'{odir}/run.sh'])
 
     def _pre_launch(self):
-        # store the start_time (correspoinding to job wait time counter)
+        # store the start_time (corresponding to job wait time counter)
         super()._pre_launch()
         # set the nc_job_state to the initial state - waiting for resource
         self.nc_job_state = 'waiting'

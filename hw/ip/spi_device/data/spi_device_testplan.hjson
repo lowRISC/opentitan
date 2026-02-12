@@ -14,7 +14,7 @@
     {
       name: smoke
       desc: '''
-            Configures Flash/Passtrhough modes as well as TPM and drive reads/writes
+            Configures Flash/Passthrough modes as well as TPM and drive reads/writes
             through SPI alternating between TPM and SPI commands.
             Sequences spi_device_flash_all_vseq and spi_device_tpm_all_vseq are
             launched in parallel'''
@@ -486,7 +486,7 @@
       desc: '''
             Cover read commands targeting inside mailbox space.
             Cover command starting outside mailbox and crossing into mailbox space.
-            Cover command starting in mailbox comming outside mailbox space.
+            Cover command starting in mailbox coming outside mailbox space.
             Cover command starting outside mailbox and crossing the entire mailbox space and coming
             outside mailbox.
             Cross above with filter on and off.'''

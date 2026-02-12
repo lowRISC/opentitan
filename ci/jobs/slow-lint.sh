@@ -29,11 +29,20 @@ bazel test //quality:buildifier_check --test_output=streamed
 echo "### Check vendored directories are up-to-date"
 ci/scripts/check-vendoring.sh
 
-echo -e "\n### Style-Lint RTL Verilog source files with Verible"
-ci/scripts/verible-lint.sh rtl
+echo -e "\n### Style-Lint RTL Verilog source files with Verible for earlgrey"
+ci/scripts/verible-lint.sh rtl earlgrey
 
-echo -e "\n### Style-Lint DV Verilog source files with Verible"
-ci/scripts/verible-lint.sh dv
+echo -e "\n### Style-Lint DV Verilog source files with Verible for earlgrey"
+ci/scripts/verible-lint.sh dv earlgrey
 
-echo -e "\n### Style-Lint FPV Verilog source files with Verible"
-ci/scripts/verible-lint.sh fpv
+echo -e "\n### Style-Lint FPV Verilog source files with Verible for earlgrey"
+ci/scripts/verible-lint.sh fpv earlgrey
+
+echo -e "\n### Style-Lint RTL Verilog source files with Verible for darjeeling"
+ci/scripts/verible-lint.sh rtl darjeeling
+
+echo -e "\n### Style-Lint DV Verilog source files with Verible for darjeeling"
+ci/scripts/verible-lint.sh dv darjeeling
+
+echo -e "\n### Style-Lint FPV Verilog source files with Verible for darjeeling"
+ci/scripts/verible-lint.sh fpv darjeeling

@@ -23,7 +23,7 @@ secret_parts = [part for part in parts if part["secret"]]
 #include "sw/device/lib/base/mock_mmio.h"
 #include "sw/device/lib/dif/dif_test_base.h"
 
-#include "otp_ctrl_regs.h"  // Generated.
+#include "hw/top/otp_ctrl_regs.h"  // Generated.
 
 namespace dif_otp_ctrl_unittest {
 namespace {
@@ -232,8 +232,7 @@ TEST_F(ReadLockTest, NotLockablePartitions) {
   bool flag;
 % for part in [p for p in parts if p not in read_locked_csr_parts]:
 <%
-  part_name = Name.from_snake_case(part["name"])
-  part_name_camel = part_name.as_camel_case()
+  part_name_camel = Name.to_camel_case(part["name"])
 %>\
   EXPECT_DIF_BADARG(
       dif_otp_ctrl_lock_reading(&otp_, kDifOtpCtrlPartition${part_name_camel}));
@@ -250,8 +249,7 @@ TEST_F(ReadLockTest, NullArgs) {
   bool flag;
 % for part in read_locked_csr_parts:
 <%
-  part_name = Name.from_snake_case(part["name"])
-  part_name_camel = part_name.as_camel_case()
+  part_name_camel = Name.to_camel_case(part["name"])
   lock_reading_line = f"dif_otp_ctrl_lock_reading(nullptr, kDifOtpCtrlPartition{part_name_camel}));"
 %>\
   EXPECT_DIF_BADARG(dif_otp_ctrl_reading_is_locked(

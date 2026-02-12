@@ -9,14 +9,14 @@ use anyhow::Result;
 use clap::Parser;
 use regex::Regex;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::debug::elf_debugger::{ElfSymbols, SymbolicAddress};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::{JtagTap, RiscvCsr, RiscvGpr};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::{ExitStatus, UartConsole};
 
-use top_earlgrey::top_earlgrey;
+use ot_hal::top::earlgrey as top_earlgrey;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -44,7 +44,7 @@ fn debug_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     // This test requires RV_DM access so first strap and reset.
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
 
     let uart = transport.uart("console")?;
 
@@ -83,7 +83,7 @@ fn debug_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // Disable watchdog config
     dbg.write_u32(
         top_earlgrey::AON_TIMER_AON_BASE_ADDR as u32
-            + opentitanlib::dif::aon_timer::AonTimerReg::WdogCtrl as u32,
+            + ot_hal::dif::aon_timer::AonTimerReg::WdogCtrl as u32,
         0,
     )?;
 
@@ -323,7 +323,7 @@ fn debug_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     // Manually write bytes to UART0
     let uart_base = top_earlgrey::UART0_BASE_ADDR as u32;
-    let uart_wdata = opentitanlib::dif::uart::UartReg::Wdata as u32;
+    let uart_wdata = ot_hal::dif::uart::UartReg::Wdata as u32;
 
     dbg.write_u32(uart_base + uart_wdata, 'O' as u32)?;
     dbg.write_u32(uart_base + uart_wdata, 'K' as u32)?;
@@ -338,12 +338,12 @@ fn debug_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     dbg.resume()?;
 
     const CONSOLE_TIMEOUT: Duration = Duration::from_secs(5);
-    let mut console = UartConsole {
-        timeout: Some(CONSOLE_TIMEOUT),
-        exit_success: Some(Regex::new(r"OK!GDB-OK(?s:.*)BFV:0142500d")?),
-        ..Default::default()
-    };
-    let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
+    let mut console = UartConsole::new(
+        Some(CONSOLE_TIMEOUT),
+        Some(Regex::new(r"OK!GDB-OK(?s:.*)BFV:0142500d")?),
+        None,
+    );
+    let result = console.interact(&*uart, false)?;
     assert_eq!(result, ExitStatus::ExitSuccess);
 
     dbg.disconnect()?;

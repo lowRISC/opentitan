@@ -4,13 +4,12 @@
 
 use std::time::Duration;
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use clap::Parser;
 use regex::Regex;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::backend;
-use opentitanlib::dif::lc_ctrl::DifLcCtrlState;
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
@@ -19,6 +18,7 @@ use opentitanlib::test_utils::load_sram_program::{
     ExecutionMode, ExecutionResult, SramProgramParams,
 };
 use opentitanlib::uart::console::{ExitStatus, UartConsole};
+use ot_hal::dif::lc_ctrl::DifLcCtrlState;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -40,7 +40,7 @@ struct Opts {
 fn manuf_cp_device_info_flash_wr(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // Set CPU TAP straps, reset, and connect to the JTAG interface.
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
     let mut jtag = opts
         .init
         .jtag_params
@@ -96,7 +96,6 @@ fn manuf_cp_device_info_flash_wr(opts: &Opts, transport: &TransportWrapper) -> R
         opts.target_lc_state,
         Some(TEST_EXIT_TOKEN),
         /*use_external_clk=*/ true,
-        opts.init.bootstrap.options.reset_delay,
         /*reset_tap_straps=*/ None,
     )?;
 
@@ -105,24 +104,14 @@ fn manuf_cp_device_info_flash_wr(opts: &Opts, transport: &TransportWrapper) -> R
     opts.init.bootstrap.init(transport)?;
 
     // Reset chip, run flash stage, and wait for test status pass over the UART.
-    let mut console = UartConsole {
-        timeout: Some(opts.timeout),
-        exit_success: Some(Regex::new(r"PASS.*\n")?),
-        exit_failure: Some(Regex::new(r"(FAIL|FAULT).*\n")?),
-        newline: true,
-        ..Default::default()
-    };
-    let mut stdout = std::io::stdout();
-    let result = console.interact(&*uart, None, Some(&mut stdout))?;
+    let mut console = UartConsole::new(
+        Some(opts.timeout),
+        Some(Regex::new(r"PASS.*\n")?),
+        Some(Regex::new(r"(FAIL|FAULT).*\n")?),
+    );
+    let result = console.interact(&*uart, false)?;
     match result {
-        ExitStatus::None | ExitStatus::CtrlC => Ok(()),
-        ExitStatus::Timeout => {
-            if console.exit_success.is_some() {
-                Err(anyhow!("Console timeout exceeded"))
-            } else {
-                Ok(())
-            }
-        }
+        ExitStatus::Timeout => Err(anyhow!("Console timeout exceeded")),
         ExitStatus::ExitSuccess => {
             log::info!(
                 "ExitSuccess({:?})",
@@ -148,7 +137,10 @@ fn main() -> Result<()> {
     // want to perform bootstrap yet.
     let transport = backend::create(&opts.init.backend_opts)?;
     transport.apply_default_configuration(None)?;
-    InitializeTest::print_result("load_bitstream", opts.init.load_bitstream.init(&transport))?;
+    InitializeTest::print_result(
+        "load_bitstream",
+        opts.init.load_bitstream.init(&transport).map(|_| None),
+    )?;
 
     execute_test!(manuf_cp_device_info_flash_wr, &opts, &transport);
 

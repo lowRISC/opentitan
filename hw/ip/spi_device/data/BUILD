@@ -8,3 +8,8 @@ filegroup(
     name = "all_files",
     srcs = glob(["**"]),
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = glob(["*_testplan.hjson"]),
+)

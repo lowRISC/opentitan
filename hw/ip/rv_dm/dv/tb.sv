@@ -8,6 +8,7 @@ module tb;
   import dv_utils_pkg::*;
   import rv_dm_env_pkg::*;
   import rv_dm_test_pkg::*;
+  import top_racl_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -15,6 +16,8 @@ module tb;
 
   wire clk, rst_n, clk_lc, rst_lc_n;
   wire jtag_tdo_oe;
+  racl_policy_vec_t racl_policies;
+  assign racl_policies = 0; // Not currently used
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
@@ -63,12 +66,15 @@ module tb;
     .rst_ni                    (rst_n),
     .clk_lc_i                  (clk_lc  ),
     .rst_lc_ni                 (rst_lc_n),
-
+    .racl_policies_i           (racl_policies),
+    .racl_error_o              (),
     // We don't currently model systems with multiple debug modules. Tie this port off with the same
     // value as given as a default for next_dm_addr in rv_dm.hjson.
     .next_dm_addr_i            ('0),
 
     // the strapping behavior of lc_hw_debug_en_i will be tested at the top-level.
+    .lc_init_done_i            (rv_dm_if.lc_init_done             ),
+    .lc_hw_debug_clr_i         (rv_dm_if.lc_hw_debug_clr          ),
     .lc_hw_debug_en_i          (rv_dm_if.lc_hw_debug_en           ),
     .pinmux_hw_debug_en_i      (rv_dm_if.pinmux_hw_debug_en       ),
     .lc_dft_en_i               (rv_dm_if.lc_dft_en                ),
@@ -168,11 +174,11 @@ module tb;
   initial begin
     forever @rv_dm_if.disable_tlul_assert_host_sba_resp_svas begin
       if (rv_dm_if.disable_tlul_assert_host_sba_resp_svas) begin
-        $assertoff(0, dut.tlul_assert_host_sba.gen_host.respOpcode_M);
-        $assertoff(0, dut.tlul_assert_host_sba.gen_host.respSzEqReqSz_M);
+        $assertoff(0, dut.tlul_assert_host_sba.gen_host.gen_d2h.respOpcode_M);
+        $assertoff(0, dut.tlul_assert_host_sba.gen_host.gen_d2h.respSzEqReqSz_M);
       end else begin
-        $asserton(0, dut.tlul_assert_host_sba.gen_host.respOpcode_M);
-        $asserton(0, dut.tlul_assert_host_sba.gen_host.respSzEqReqSz_M);
+        $asserton(0, dut.tlul_assert_host_sba.gen_host.gen_d2h.respOpcode_M);
+        $asserton(0, dut.tlul_assert_host_sba.gen_host.gen_d2h.respSzEqReqSz_M);
       end
     end
   end

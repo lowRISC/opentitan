@@ -5,7 +5,7 @@
 use std::ops::{Deref, DerefMut};
 use std::time::Duration;
 
-use anyhow::{bail, ensure, Result};
+use anyhow::{Result, bail, ensure};
 use thiserror::Error;
 
 use super::openocd::OpenOcd;

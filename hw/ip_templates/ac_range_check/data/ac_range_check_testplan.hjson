@@ -6,7 +6,9 @@
     import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
                        "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
                        "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
-                       "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
+                       "hw/dv/tools/dvsim/testplans/shadow_reg_errors_testplan.hjson",
+                       "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
+                       "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson"]
     testpoints: [
       {
         name: ac_range_check_smoke
@@ -45,7 +47,15 @@
         tests: ["ac_range_check_smoke"]
       }
       {
-        name: ac_range_lock_range
+        name: ac_range_check_smoke_racl
+        desc: '''
+              TODO
+              '''
+        stage: V1
+        tests: ["ac_range_check_smoke_racl"]
+      }
+      {
+        name: ac_range_check_lock_range
         desc: '''
               Test the range lock functionality
 
@@ -61,7 +71,7 @@
                 cleared, the reconfigured values should have replaced the original ones.
               '''
         stage: V2
-        tests: ["ac_range_lock_range"]
+        tests: ["ac_range_check_lock_range"]
       }
       {
         name: ac_range_bypass_enable
@@ -81,6 +91,15 @@
               '''
         stage: V2
         tests: ["ac_range_check_bypass"]
+      }
+      {
+        name: stress_all
+        desc: '''
+              Combine above sequences in one test and then randomly select for running (except CSR
+              tests).
+              '''
+        stage: V2
+        tests: ["ac_range_check_stress_all"]
       }
     ]
     covergroups: [

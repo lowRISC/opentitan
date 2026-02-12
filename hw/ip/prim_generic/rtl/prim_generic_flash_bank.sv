@@ -153,9 +153,10 @@ module prim_generic_flash_bank #(
   assign ack_o = ack & !init_busy_o;
 
   prim_fifo_sync #(
-    .Width   ($bits(cmd_payload_t)),
-    .Pass    (0),
-    .Depth   (2)
+    .Width       ($bits(cmd_payload_t)),
+    .Pass        (0),
+    .Depth       (2),
+    .NeverClears (1'b1)
   ) u_cmd_fifo (
     .clk_i,
     .rst_ni,
@@ -214,7 +215,7 @@ module prim_generic_flash_bank #(
     end
   end
 
-  // latch partiton being read since the command fifo is popped early
+  // latch partition being read since the command fifo is popped early
   flash_ctrl_top_specific_pkg::flash_part_e rd_part_q;
   logic [InfoTypesWidth-1:0] info_sel_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -276,7 +277,7 @@ module prim_generic_flash_bank #(
         end
       end
 
-      // Emulate flash initilaization with a wait timer
+      // Emulate flash initialization with a wait timer
       StInit: begin
         init_busy_o = 1'h1;
         if (index_cnt < InitCycles) begin
@@ -458,4 +459,4 @@ module prim_generic_flash_bank #(
   logic unused_he;
   assign unused_he = he_i;
 
-endmodule // prim_generic_flash
+endmodule // prim_generic_flash_bank

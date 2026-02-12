@@ -11,15 +11,15 @@
 use std::mem;
 use std::time::Duration;
 
-use anyhow::{bail, Context};
+use anyhow::{Context, bail};
 use thiserror::Error;
 
-use top_earlgrey::top_earlgrey;
-
-use crate::dif::otp_ctrl::{
+use ot_hal::dif::otp_ctrl::{
     DaiParam, DirectAccessCmd, Granularity, OtpCtrlReg, OtpCtrlStatus, OtpParamMmap, Partition,
     SECRET_PARTITIONS,
 };
+use ot_hal::top::earlgrey as top_earlgrey;
+
 use crate::io::jtag::Jtag;
 use crate::test_utils::poll;
 

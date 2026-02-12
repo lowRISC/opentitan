@@ -2,24 +2,18 @@
 
 ## OTP Memory Map Translation Script
 
-The `gen-otp-mmap.py` script is used to translate the OTP memory map definition Hjson file into documentation and SV package collateral.
-The memory map definition file for top_earlgrey is currently located at `hw/top_earlgrey/data/otp/otp_ctrl_mmap.hjson`.
+The OTP_CTRL is generated via ipgen, and most of the templates depend exclusively on a OTP memory map.
+Each top that uses OTP has a memory map Hjson configuration file located at hw/top_<topname>/data/otp/otp_ctrl_mmap.hjson.
 
-The script can either be invoked via the makefile
-```console
-$ cd ${PROJ_ROOT}
-$ make -C hw otp-mmap
-
-```
-
-or directly using the command
+The `gen-otp-mmap.py` script can also be used to translate the OTP memory map definition Hjson file into documentation and SV package collateral.
 
 ```console
 $ cd ${PROJ_ROOT}
-$ ./util/design/gen-otp-mmap.py
+$ ./util/design/gen-otp-mmap.py --topname <mytop>
 ```
 
-The seed value used for generating OTP-related random netlist constants can optionally be overridden with the `--seed` switch when calling the script directly.
+The `--topname` switch is mandatory and is used to select the given topname's hjon configuration file.
+The seed value used to generate OTP-related random netlist constants can optionally be overridden with the `--seed` switch when calling the script directly.
 Otherwise that seed value is taken from the Hjson file, or generated on-the-fly if the Hjson file does not contain a seed.
 
 ## Life Cycle State Encoding Generator
@@ -171,10 +165,12 @@ Common example configuration files that can be used for simulation and emulation
 
 Note that the preload image generator script automatically scrambles secret partitions, computes digests of locked partitions using the PRESENT cipher, and computes the OTP ECC bits.
 
-The OTP preload image generator expects at least one main image configuration file to be specified with the `--img-cfg` switch, for example:
+The OTP preload image generator expects at least one main image configuration file to be specified with the `--img-cfg` switch and a top secret configuration provided vie the `--top-secret-cfg` switch, for example:
 ```console
 $ cd ${PROJ_ROOT}
 $ ./util/design/gen-otp-img.py --img-cfg hw/top_earlgrey/data/otp/otp_ctrl_img_dev.hjson \
+                               --mmap-def hw/top_earlgrey/data/otp/otp_ctrl_mmap.hjson \
+                               --top-secret-cfg hw/top_earlgrey/data/autogen/top_earlgrey.secrets.testing.gen.hjson \
                                --out otp-img.mem
 ```
 
@@ -221,13 +217,28 @@ The generator script call would then look as follows:
 ```console
 $ cd ${PROJ_ROOT}
 $ ./util/design/gen-otp-img.py --img-cfg hw/top_earlgrey/data/otp/otp_ctrl_img_dev.hjson \
+                               --top-secret-cfg hw/top_earlgrey/data/autogen/top_earlgrey.secrets.testing.gen.hjson \
                                --add-cfg otp_ctrl_img_sw_cfg.hjson \
                                --out otp-img.mem
 ```
 
 ## ECC Generator Tool
 
-TODO
+The `./util/design/secded_gen.py` script is used to create C and SV artifacts related to SECDED.
+It uses the `./util/design/data/secded_cfg.hjson` file to determine the secded type and widths supported.
+It creates artifacts to implement and emulate the encode and decode operations for each supported secded, and to instantiate these modules in parameterized contexts.
+The artifacts are generated for each type and width, and include the following:
+
+- RTL for decoder and encoders for each supported secded type and width
+- Testbench, assertions, bind, and core files to be used in the formal verification flow
+- C code and header files to emulate secded encoding and decoding
+- SV package with relevant types and code to emulate each encoder and decoder
+- SV types and constant functions that can be used in generate blocks
+- Macros to instantiate encode and decode prims driven by parameters using case generates
+
+The functions and macros to be used for parameterized cases have comments that explain their use.
+These functions are in `hw/ip/prim/rtl/prim_secded_pkg.sv`, and the macros in `hw/ip/prim/rtl/prim_secded_inc.svh`.
+An example of how to parameterize secded is in `hw/ip/otp_macro/rtl/otp_macro.sv`.
 
 ## LFSR Coefficient Generator Tool
 
@@ -261,7 +272,7 @@ produces the following parameters for an 8-bit LFSR.
 ```
 ------------------------------------------------
 | COPY PASTE THE CODE TEMPLATE BELOW INTO YOUR |
-| RTL CODE, INLUDING THE COMMENT IN ORDER TO   |
+| RTL CODE, INCLUDING THE COMMENT IN ORDER TO  |
 | EASE AUDITABILITY AND REPRODUCIBILITY.       |
 ------------------------------------------------
 
@@ -286,3 +297,45 @@ TODO
 ## KECCAK Coefficient Generation Tool
 
 TODO
+
+## Netlist checker script
+
+`check-netlist.py netlist.v` will report the number of preserved, `size_only` cells.
+In addition, it will parse the netlist for suspicious synthesis optimizations
+such as constant propagation accross preserved instances.
+
+On the `prim_sdc_example.sv` design, the script produces the following output:
+
+```
+================================================================================
+DISCLAIMER:
+This script parses a synthesized netlist for suspicious constructs.
+It does not guarantee that there are no issues in the netlist(!)
+================================================================================
+
+================================================================================
+Final Summary:
+--------------------------------------------------------------------------------
+Found the following size_only instances:
+--------------------------------------------------------------------------------
+u_size_only_xor               120
+u_size_only_xnor              56
+u_size_only_and               56
+u_size_only_mux               0
+u_size_only_flop              252
+u_size_only_buf               328
+u_size_only_clock_gate        2
+others                        2
+--------------------------------------------------------------------------------
+Total                         816
+================================================================================
+Found 0 potential netlist problems in 0 modules!
+================================================================================
+```
+
+If the script reports potential issues, it is likely because the synthesis constraints are not set
+correctly.
+Please refer to the sections [creating-a-technology-library] and [synthesis-constraints].
+
+[creating-a-technology-library]: https://github.com/lowRISC/opentitan/tree/master/hw/ip/prim#creating-a-technology-library
+[synthesis-constraints]: https://github.com/lowRISC/opentitan/tree/master/hw/ip/prim#important-synthesis-constraints-to-keep-important-redundant-constructs

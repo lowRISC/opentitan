@@ -15,7 +15,7 @@
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/dif/dif_test_base.h"
 
-#include "lc_ctrl_regs.h"  // Generated.
+#include "hw/top/lc_ctrl_regs.h"  // Generated.
 
 namespace dif_lc_ctrl_unittest {
 namespace {

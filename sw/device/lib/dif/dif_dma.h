@@ -7,13 +7,13 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/dma/doc/">DMA Controller</a> Device Interface
+ * @brief <a href="/book/hw/ip/dma/">DMA Controller</a> Device Interface
  * Functions
  */
 
 #include <stdint.h>
 
-#include "dma_regs.h"  // Generated.
+#include "hw/top/dma_regs.h"  // Generated.
 #include "sw/device/lib/dif/autogen/dif_dma_autogen.h"
 
 #ifdef __cplusplus

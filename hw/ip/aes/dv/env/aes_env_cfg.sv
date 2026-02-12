@@ -35,6 +35,8 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   int                num_messages_max            = 1;
   int                message_len_min             = 128;
   int                message_len_max             = 128;
+  int                aad_len_min                 = 128;
+  int                aad_len_max                 = 128;
   bit                use_key_mask                = 0;
   bit                use_c_model_pct             = 0;
 
@@ -44,13 +46,14 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   bit                random_data_key_iv_order    = 1;
 
   // Mode distribution //
-  // There are 5 modes (ecb, cbc, ofb, cfb, ctr). The weight for mode X is called X_weight. By
-  // default, all weights are set equal at 10 (so each is selected 10/50 = 20% of the time).
+  // There are 6 modes (ecb, cbc, ofb, cfb, ctr, gcm). The weight for mode X is called X_weight. By
+  // default, all weights are set equal at 10 (so each is selected 10/60 = 16.66% of the time).
   int                ecb_weight                 = 10;
   int                cbc_weight                 = 10;
   int                ofb_weight                 = 10;
   int                cfb_weight                 = 10;
   int                ctr_weight                 = 10;
+  int                gcm_weight                 = 10;
 
   // KEYLEN weights
   // change of selecting 128b key
@@ -59,7 +62,7 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   int                key_192b_weight            = 10;
   int                key_256b_weight            = 10;
 
-  // reseed weigth
+  // reseed weight
   int                per1_weight                = 60;
   int                per64_weight               = 30;
   int                per8k_weight               = 10;
@@ -79,6 +82,8 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   bit [1:0]          fixed_operation            = AES_ENC;
   // fixed iv (will set all to bits 0)
   bit                fixed_iv_en                = 0;
+  // fixed aad (will set all to bits 0)
+  bit                fixed_aad_en               = 0;
 
   bit                fixed_keylen_en            = 0;
   bit [2:0]          fixed_keylen               = 3'b001;
@@ -154,7 +159,7 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   // number of messages to encrypt/decrypt
   rand int           num_messages;
 
-  // TL UL contraints //
+  // TL UL constraints //
   rand tl_ul_access_e host_resp_speed;
 
   rand bit           do_reseed;
@@ -218,6 +223,8 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
     str = {str,  $sformatf("\n\t ----| Min Number of message %d \t ", num_messages_min)};
     str = {str,  $sformatf("\n\t ----| Max message len %d bytes \t ", message_len_max)};
     str = {str,  $sformatf("\n\t ----| Min message len %d bytes \t ", message_len_min)};
+    str = {str,  $sformatf("\n\t ----| Max aad len %d bytes     \t ", aad_len_max)};
+    str = {str,  $sformatf("\n\t ----| Min aad len %d bytes     \t ", aad_len_min)};
     str = {str,  $sformatf("\n\t ----| Host response speed %s   \t ", host_resp_speed.name())};
     str = {str,  $sformatf("\n\t ----| Reference model:\t    %s              \t ",
          (ref_model==0) ? "C-MODEL" : "OPEN_SSL" )};
@@ -225,6 +232,7 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
     str = {str,  $sformatf("\n\t ----| ECB Weight: %d         \t ", ecb_weight)};
     str = {str,  $sformatf("\n\t ----| CBC Weight: %d         \t ", cbc_weight)};
     str = {str,  $sformatf("\n\t ----| CFB Weight: %d         \t ", cfb_weight)};
+    str = {str,  $sformatf("\n\t ----| GCM Weight: %d         \t ", gcm_weight)};
     str = {str,  $sformatf("\n\t ----| OFB Weight: %d         \t ", ofb_weight)};
     str = {str,  $sformatf("\n\t ----| CTR Weight: %d         \t ", ctr_weight)};
     str = {str,  $sformatf("\n\t ----| key mask:   %b         \t ", key_mask)};

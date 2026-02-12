@@ -6,15 +6,19 @@
 import argparse
 import json
 import logging as log
+import os
 import re
 import shutil
 import subprocess
 import sys
+import time
 import tempfile
 from pathlib import Path
-from urllib.request import urlopen, urlretrieve
+from urllib3 import PoolManager, Retry
+from urllib3.exceptions import HTTPError, MaxRetryError
 
 log.basicConfig(level=log.INFO, format="%(levelname)s: %(message)s")
+http = PoolManager()
 
 # the keys in this dictionary specify valid toolchain kinds
 ASSET_PREFIXES = {
@@ -28,6 +32,7 @@ RELEASES_URL_BASE = 'https://api.github.com/repos/lowRISC/lowrisc-toolchains/rel
 INSTALL_DIR = '/tools/riscv'
 TOOLCHAIN_VERSION = 'latest'
 TOOLCHAIN_KIND = 'combined'
+TOOLCHAIN_ARCHS = ["x86_64", "aarch64"]
 
 FILE_PATTERNS_TO_REWRITE = [
     "riscv32-unknown-elf-*.cmake",
@@ -35,30 +40,45 @@ FILE_PATTERNS_TO_REWRITE = [
 ]
 
 
-def get_available_toolchain_info(version, kind):
+def get_available_toolchain_info(version, kind, arch):
     assert kind in ASSET_PREFIXES
+    assert arch in TOOLCHAIN_ARCHS
 
     if version == 'latest':
         releases_url = '%s/%s' % (RELEASES_URL_BASE, version)
     else:
         releases_url = '%s/tags/%s' % (RELEASES_URL_BASE, version)
 
-    with urlopen(releases_url) as f:
-        release_info = json.loads(f.read().decode('utf-8'))
+    try:
+        retry = Retry(connect=4, backoff_factor=1,
+                      status_forcelist=[403, 408, 429, 500, 502, 503, 504])
+        response = http.request("GET", releases_url, retries=retry)
+        if response.status != 200:
+            log.error("Request to %s failed with status code %d", releases_url, response.status)
+            sys.exit(1)
+        release_info = json.loads(response.data.decode("utf-8"))
+    except (HTTPError, MaxRetryError) as e:
+        log.error("Request to %s failed after retries: %s", releases_url, str(e))
+        sys.exit(1)
 
-    for asset in release_info["assets"]:
-        if (asset["name"].startswith(ASSET_PREFIXES[kind]) and
-                asset["name"].endswith(ASSET_SUFFIX)):
-            return {
-                'download_url': asset['browser_download_url'],
-                'name': asset['name'],
-                'version': release_info['tag_name'],
-                'kind': kind
-            }
+    # Search for the desired asset. Newer releases have builds for different architectures whereas
+    # older releases don't specify an architecture. To maintain compatibility we first search for
+    # an architecture specific asset. If none is found, we repeat the search without the
+    # architecture flag.
+    for name in [ASSET_PREFIXES[kind] + arch, ASSET_PREFIXES[kind]]:
+        for asset in release_info["assets"]:
+            if (asset["name"].startswith(name) and
+                    asset["name"].endswith(ASSET_SUFFIX)):
+                return {
+                    'download_url': asset['browser_download_url'],
+                    'name': asset['name'],
+                    'version': release_info['tag_name'],
+                    'kind': kind
+                }
 
     # No matching asset found for the toolchain kind requested
-    log.error("No available downloads found for %s toolchain version: %s",
-              kind, release_info['tag_name'])
+    log.error("No available downloads found for %s toolchain version: %s for architecture %s",
+              kind, release_info['tag_name'], arch)
     raise SystemExit(1)
 
 
@@ -98,10 +118,34 @@ def get_installed_toolchain_info(unpack_dir):
         return None
 
 
-def download(url):
+def download(url, max_attempts=5):
     log.info("Downloading toolchain from %s", url)
     tmpfile = tempfile.mkstemp(suffix=".tar.xz")[1]
-    urlretrieve(url, tmpfile)
+    attempt = 0
+    while attempt < max_attempts:
+        try:
+            # Do not use urllib3 retry logic as we also need to handle stream
+            # disruption failures after an initial successful HTTP status
+            with http.request("GET", url, preload_content=False) as response:
+                if response.status != 200:
+                    raise Exception(f"Unexpected status code: {response.status}")
+                with open(tmpfile, 'wb') as target_file:
+                    for part in response.stream(1024):
+                        target_file.write(part)
+                response.release_conn()
+            break
+        except Exception as e:
+            # If we get a failure (initial HTTP or mid-stream), retry by
+            # restarting the entire operation.
+            attempt += 1
+            log.error(f"Toolchain download attempt {attempt} failed: {e}")
+            if os.path.exists(tmpfile):
+                os.remove(tmpfile)
+            if attempt >= max_attempts:
+                log.error(f"Toolchain download failed after {attempt} retries.")
+                sys.exit(1)
+            else:
+                time.sleep(2 ** (attempt - 1))
     log.info("Download complete")
     return Path(tmpfile)
 
@@ -182,6 +226,11 @@ def main():
                         default=TOOLCHAIN_KIND,
                         choices=ASSET_PREFIXES.keys(),
                         help="Toolchain kind (default: %(default)s)")
+    parser.add_argument('--arch',
+                        required=False,
+                        default=TOOLCHAIN_ARCHS[0],
+                        choices=TOOLCHAIN_ARCHS,
+                        help="Specify the toolchain architecture (default: %(default)s)")
     parser.add_argument(
         '--update',
         '-u',
@@ -192,7 +241,8 @@ def main():
     args = parser.parse_args()
 
     available_toolchain = get_available_toolchain_info(args.release_version,
-                                                       args.kind)
+                                                       args.kind,
+                                                       args.arch)
 
     if args.download_only and args.update:
         print('specify only one of --download-only and --update')

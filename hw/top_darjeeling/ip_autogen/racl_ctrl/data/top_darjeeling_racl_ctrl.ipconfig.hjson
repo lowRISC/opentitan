@@ -10,6 +10,7 @@
     nr_ctn_uid_bits: 5
     nr_policies: 3
     nr_subscribing_ips: 11
+    racl_group: Null
     policies:
     [
       {
@@ -64,5 +65,7 @@
     ]
     topname: darjeeling
     uniquified_modules: {}
+    enable_shadow_reg: true
+    nr_external_subscribing_ips: 1
   }
 }

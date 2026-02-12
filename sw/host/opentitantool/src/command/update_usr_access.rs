@@ -4,13 +4,12 @@
 
 use anyhow::Result;
 use clap::Args;
-use serde_annotate::Annotate;
 use std::any::Any;
 use std::fs;
 use std::path::PathBuf;
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::util::parse_int::ParseInt;
 use opentitanlib::util::usr_access::{usr_access_crc32, usr_access_set};
 
@@ -33,7 +32,7 @@ impl CommandDispatch for UpdateUsrAccess {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let mut bs = fs::read(&self.input)?;
 
         let usr_access_val = match self.usr_access {

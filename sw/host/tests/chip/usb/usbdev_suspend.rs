@@ -14,7 +14,7 @@
 // The above are sub-sections of the following full sequence test:
 // - usbdev_suspend_full_test
 
-use anyhow::{anyhow, bail, ensure, Context, Result};
+use anyhow::{Context, Result, anyhow, bail, ensure};
 use clap::{Parser, ValueEnum};
 use std::time::Duration;
 
@@ -310,7 +310,7 @@ fn main() -> Result<()> {
 
     // Wait until test is running.
     let uart = transport.uart("console")?;
-    UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
+    UartConsole::wait_for(&*uart, r"Running ", opts.timeout)?;
 
     execute_test!(usbdev_suspend, &opts, &transport, &*uart);
     Ok(())

@@ -10,6 +10,11 @@ load("//rules:bitstreams.bzl", "bitstream_fragment_from_manifest")
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
+)
+
 # By default, targets in this file will use cached artifacts from the GCP bucket
 # instead of building them from scratch.
 #
@@ -83,6 +88,7 @@ filegroup(
 # Create manifest fragments for all the cached bitstreams
 bitstream_fragment_from_manifest(
     name = "chip_earlgrey_cw310_cached_fragment",
+    testonly = True,
     srcs = [
         "@bitstreams//:chip_earlgrey_cw310_bitstream",
         "@bitstreams//:chip_earlgrey_cw310_mmi",
@@ -125,6 +131,7 @@ pkg_tar(
 
 bitstream_fragment_from_manifest(
     name = "chip_earlgrey_cw340_cached_fragment",
+    testonly = True,
     srcs = [
         "@bitstreams//:chip_earlgrey_cw340_bitstream",
         "@bitstreams//:chip_earlgrey_cw340_mmi",

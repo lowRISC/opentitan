@@ -19,7 +19,7 @@ class aes_seq_item extends uvm_sequence_item;
   bit             manual_op;
   // 0: output data cannot be overwritten
 
-  // lenth of plaintext / cypher (max is 128b/16b per block)
+  // length of plaintext / cypher (max is 128b/16b per block)
   // used to mask bits that are not part of the data vector
   bit [3:0]       data_len            = 0;
   // key len 0: 128, 1: 192, 2: 256 3: NOT VALID
@@ -175,7 +175,7 @@ class aes_seq_item extends uvm_sequence_item;
       , UVM_FULL)
 
     return &data_out_vld;
-  endfunction // data_in_valid
+  endfunction // data_out_valid
 
   // if ret_clean = 0
   // return 1 only of all registers have been written
@@ -203,7 +203,7 @@ class aes_seq_item extends uvm_sequence_item;
 
   // if ret_clean = 0
   // return 1 only of all registers have been written
-  // if ret_celan = 1
+  // if ret_clean = 1
   // return 1 if all or none of the registers have been written
   function bit iv_clean(bit ret_clean, bit clear);
     `uvm_info(`gfn, $sformatf("\n\t ----| IV status %b ", iv_vld), UVM_MEDIUM)
@@ -250,6 +250,12 @@ class aes_seq_item extends uvm_sequence_item;
       AES_CTR: begin
         `uvm_info(`gfn, $sformatf("return key vld(%b, %b) %b AND iv (%b) &%b",
                    key_vld[0], key_vld[1], (&key_vld[0] && &key_vld[1]), iv_vld, &iv_vld), UVM_MEDIUM)
+        return ((&key_vld[0] && &key_vld[1]) && &iv_vld);
+      end
+      AES_GCM: begin
+        `uvm_info(`gfn, $sformatf("return key vld(%b, %b) %b AND iv (%b) &%b",
+                   key_vld[0], key_vld[1], (&key_vld[0] && &key_vld[1]), iv_vld,
+                   &iv_vld), UVM_MEDIUM)
         return ((&key_vld[0] && &key_vld[1]) && &iv_vld);
       end
       default: begin
@@ -347,7 +353,7 @@ class aes_seq_item extends uvm_sequence_item;
     for (int i=0; i <8; i++) begin
       str = {str, $psprintf("%h ",key[1][i])};
     end
-    str = {str,  $sformatf("\n\t ----| Initializaion vector:         \t ")};
+    str = {str,  $sformatf("\n\t ----| Initialization vector:         \t ")};
     for (int i=0; i <4; i++) begin
       str = {str, $sformatf("%h ",iv[i])};
     end

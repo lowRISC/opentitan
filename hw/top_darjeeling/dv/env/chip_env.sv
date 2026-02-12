@@ -16,7 +16,7 @@ class chip_env extends cip_base_env #(
   i2c_agent              m_i2c_agents[NUM_I2CS];
   jtag_riscv_agent       m_jtag_riscv_agent;
   jtag_riscv_reg_adapter m_jtag_riscv_reg_adapter;
-  // spi host agent that transmits trasnactions to dut spi device
+  // spi host agent that transmits transactions to dut spi device
   spi_agent              m_spi_host_agent;
 
   `uvm_component_new
@@ -83,13 +83,6 @@ class chip_env extends cip_base_env #(
             this, "", "ast_supply_vif", cfg.ast_supply_vif
         )) begin
       `uvm_fatal(`gfn, "failed to get ast_supply_vif from uvm_config_db")
-    end
-
-    // get the handle to the ast io_ext_clk interface.
-    if (!uvm_config_db#(ast_ext_clk_vif)::get(
-            this, "", "ast_ext_clk_vif", cfg.ast_ext_clk_vif
-        )) begin
-      `uvm_fatal(`gfn, "failed to get ast_ext_clk_vif from uvm_config_db")
     end
 
     // create components

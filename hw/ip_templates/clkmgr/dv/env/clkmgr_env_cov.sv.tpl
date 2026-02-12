@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 <%
-  rg_srcs = list(sorted({sig['src_name'] for sig
-                         in typed_clocks['rg_clks'].values()}))
+from ipgen.clkmgr_gen import get_rg_srcs
+rg_srcs = get_rg_srcs(typed_clocks)
 %>\
 /**
- * Covergoups that are dependent on run-time parameters that may be available
+ * Covergroups that are dependent on run-time parameters that may be available
  * only in build_phase can be defined here
  * Covergroups may also be wrapped inside helper classes if needed.
  */
@@ -114,6 +114,7 @@ class clkmgr_env_cov extends cip_base_env_cov #(
   // These covergroups collect outcomes of clock frequency measurements.
   freq_measure_cg_wrap freq_measure_cg_wrap[${len(rg_srcs)}];
 
+% if ext_clk_bypass:
   // This embeded covergroup collects coverage for the external clock functionality.
   covergroup extclk_cg with function sample (
       bit csr_sel, bit csr_low_speed, bit hw_debug_en, bit byp_req, bit scanmode
@@ -127,6 +128,7 @@ class clkmgr_env_cov extends cip_base_env_cov #(
     extclk_cross: cross csr_sel_cp, csr_low_speed_cp, hw_debug_en_cp, byp_req_cp, scanmode_cp;
   endgroup
 
+% endif
   // This collects coverage for recoverable errors.
   covergroup recov_err_cg with function sample (
 % for src in reversed(rg_srcs):
@@ -157,7 +159,7 @@ class clkmgr_env_cov extends cip_base_env_cov #(
 
   function new(string name, uvm_component parent);
     super.new(name, parent);
-    // The peripheral covergoups.
+    // The peripheral Covergroups.
     foreach (peri_cg_wrap[i]) begin
       clkmgr_env_pkg::peri_e peri = clkmgr_env_pkg::peri_e'(i);
       peri_cg_wrap[i] = new(peri.name);
@@ -171,7 +173,9 @@ class clkmgr_env_cov extends cip_base_env_cov #(
       clk_mesr_e clk_mesr = clk_mesr_e'(i);
       freq_measure_cg_wrap[i] = new(clk_mesr.name);
     end
+  % if ext_clk_bypass:
     extclk_cg = new();
+  % endif
     recov_err_cg = new();
     fatal_err_cg = new();
   endfunction : new

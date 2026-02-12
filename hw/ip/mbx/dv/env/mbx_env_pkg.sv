@@ -12,7 +12,6 @@ package mbx_env_pkg;
   import prim_mubi_pkg::*;
   import mbx_core_ral_pkg::*;
   import mbx_soc_ral_pkg::*;
-  import mbx_mem_ral_pkg::*;
   import tl_agent_pkg::*;
   import cip_base_pkg::*;
   import dv_base_reg_pkg::*;
@@ -25,7 +24,7 @@ package mbx_env_pkg;
 
   // parameters
   parameter int unsigned NUM_ALERTS = 2;
-  parameter string LIST_OF_ALERTS[] = {"fatal_fault", "recov_fault"};
+  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"fatal_fault", "recov_fault"};
 
   parameter int unsigned MBX_DV_DW_SIZE_BYTES = 4;
   parameter int unsigned MBX_DV_MAX_DW = 1024;

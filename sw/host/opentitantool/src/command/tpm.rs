@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use clap::{Args, Subcommand};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use serde_annotate::Annotate;
 use std::any::Any;
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::tpm;
 
 /// Read the value of a given TPM register.
@@ -24,7 +24,7 @@ pub struct TpmReadRegister {
     length: Option<usize>,
 }
 
-#[derive(Annotate, Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Annotate, Deserialize, Debug, PartialEq, Eq)]
 pub struct TpmReadRegisterResponse {
     hexdata: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -38,7 +38,7 @@ impl CommandDispatch for TpmReadRegister {
         &self,
         context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let tpm = context.downcast_ref::<Box<dyn tpm::Driver>>().unwrap();
         let length = self
             .length
@@ -94,7 +94,7 @@ pub struct TpmWriteRegister {
     uint8: Option<u8>,
 }
 
-#[derive(Annotate, Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Annotate, Deserialize, Debug, PartialEq, Eq)]
 pub struct TpmWriteRegisterResponse {}
 
 impl CommandDispatch for TpmWriteRegister {
@@ -102,7 +102,7 @@ impl CommandDispatch for TpmWriteRegister {
         &self,
         context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let tpm = context.downcast_ref::<Box<dyn tpm::Driver>>().unwrap();
         if let Some(hexdata) = &self.hexdata {
             tpm.write_register(self.register, &hex::decode(hexdata)?)?;
@@ -123,7 +123,7 @@ pub struct TpmExecuteCommand {
     hexdata: String,
 }
 
-#[derive(Annotate, Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Annotate, Deserialize, Debug, PartialEq, Eq)]
 pub struct TpmExecuteCommandResponse {
     hexdata: String,
 }
@@ -133,7 +133,7 @@ impl CommandDispatch for TpmExecuteCommand {
         &self,
         context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let tpm = context.downcast_ref::<Box<dyn tpm::Driver>>().unwrap();
         let resp = tpm.execute_command(&hex::decode(&self.hexdata)?)?;
         Ok(Some(Box::new(TpmExecuteCommandResponse {

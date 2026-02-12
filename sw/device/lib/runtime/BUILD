@@ -92,8 +92,17 @@ cc_library(
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/dif:spi_device",
+        "//sw/device/lib/runtime:hart",
+    ],
+)
+
+cc_library(
+    name = "print_uart",
+    srcs = ["print_uart.c"],
+    hdrs = ["print_uart.h"],
+    deps = [
         "//sw/device/lib/dif:uart",
+        "//sw/device/lib/runtime:print",
     ],
 )
 

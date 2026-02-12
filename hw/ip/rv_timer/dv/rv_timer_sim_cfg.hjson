@@ -38,7 +38,7 @@
   sim_tops: ["rv_timer_bind", "sec_cm_prim_onehot_check_bind"]
 
   // Default iterations for all tests - each test entry can override this.
-  reseed: 50
+  reseed: 20
 
   // Add specific exclusion files.
   vcs_cov_excl_files: ["{proj_root}/hw/ip/rv_timer/dv/cov/rv_timer_unr_excl.el",
@@ -56,18 +56,33 @@
     {
       name: rv_timer_random
       uvm_test_seq: rv_timer_random_vseq
-      reseed: 200
+      run_opts: ["+test_timeout_ns=10000000000"]
+    }
+
+    {
+      name: rv_timer_min
+      uvm_test_seq: rv_timer_min_vseq
+      reseed: 10
+      run_opts: ["+test_timeout_ns=10000000000"]
+    }
+
+    {
+      name: rv_timer_max
+      uvm_test_seq: rv_timer_max_vseq
+      reseed: 10
       run_opts: ["+test_timeout_ns=10000000000"]
     }
 
     {
       name: rv_timer_disabled
       uvm_test_seq: rv_timer_disabled_vseq
+      run_opts: ["+test_timeout_ns=10000000000"]
     }
 
     {
       name: rv_timer_cfg_update_on_fly
       uvm_test_seq: rv_timer_cfg_update_on_fly_vseq
+      reseed: 10
       // 10s
       run_opts: ["+zero_delays=1", "+test_timeout_ns=10000000000"]
     }

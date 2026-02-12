@@ -8,14 +8,14 @@ use anyhow::Result;
 use clap::Parser;
 use regex::Regex;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::load_sram_program::{ExecutionMode, SramProgramParams};
 use opentitanlib::uart::console::UartConsole;
 
-// use top_earlgrey::top_earlgrey;
+// use ot_hal::top::earlgrey as top_earlgrey;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -32,7 +32,7 @@ fn test_sram_load(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // Connect to the RISC-V TAP
     //
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
 
     log::info!("Connecting to RISC-V TAP");
     let mut jtag = opts
@@ -47,14 +47,14 @@ fn test_sram_load(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         .load_and_execute(&mut *jtag, ExecutionMode::Jump)?;
 
     const CONSOLE_TIMEOUT: Duration = Duration::from_secs(5);
-    let mut console = UartConsole {
-        timeout: Some(CONSOLE_TIMEOUT),
-        exit_success: Some(Regex::new(
+    let mut console = UartConsole::new(
+        Some(CONSOLE_TIMEOUT),
+        Some(Regex::new(
             r"sram_program\.c:\d+\] PC: 0x1000[0-2][0-9a-f]{3}, SRAM: \[0x10000000, 0x10020000\)",
         )?),
-        ..Default::default()
-    };
-    let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
+        None,
+    );
+    let result = console.interact(&*uart, false)?;
     log::info!("result: {:?}", result);
     jtag.halt()?;
     jtag.disconnect()?;

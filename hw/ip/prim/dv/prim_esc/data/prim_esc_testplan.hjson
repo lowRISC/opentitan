@@ -38,7 +38,7 @@
             - Force `esc_n` signal to stay high to trigger an integrity error.
             - Verify that prim_esc_sender identifies the error by setting `integ_fail` signal.
             - Release the `esc_n` signal.
-            - Send a ping request and repeat the above sequence and checkings.
+            - Send a ping request and repeat the above sequence and checks.
             '''
       stage: V1
       tests: ["prim_esc_test"]

@@ -152,7 +152,7 @@ class ${module_instance_name}_base_vseq extends cip_base_vseq #(
   endtask
 
   // alert_handler scb will compare the read value with expected value
-  // Not using "clear_all_interrupts" function in cip_base_vseq because of the signal interity
+  // Not using "clear_all_interrupts" function in cip_base_vseq because of the signal integrity
   // error: after clearing intr_state, intr_state might come back to 1 in the next cycle.
   virtual task check_alert_interrupts();
     bit [TL_DW-1:0] intr;
@@ -272,7 +272,7 @@ class ${module_instance_name}_base_vseq extends cip_base_vseq #(
   // Enable alert's LPG based on alert_i input.
   //
   // Only enable this alert's LPG if the lgp input `lpg_cg_en` or `lpg_rst_en` if not Mubi4True.
-  // Because one LPG will turn off a set of alert sensers. So this task will also set all LPG's
+  // Because one LPG will turn off a set of alert sensors. So this task will also set all LPG's
   // alert_host_cfgs' `en_alert_lpg` to 1.
   virtual function void set_alert_lpg(int alert_i);
     int       lpg_i = ${module_instance_name}_reg_pkg::LpgMap[alert_i];

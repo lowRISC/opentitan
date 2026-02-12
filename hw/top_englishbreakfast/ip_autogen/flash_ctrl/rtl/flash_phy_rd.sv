@@ -333,10 +333,11 @@ module flash_phy_rd
   // response order FIFO
   logic rsp_order_fifo_err;
   prim_fifo_sync #(
-    .Width  (RspOrderFifoWidth),
-    .Pass   (0),
-    .Depth  (RspOrderDepth),
-    .Secure (1'b1) // SEC_CM: FIFO.CTR.REDUN
+    .Width       (RspOrderFifoWidth),
+    .Pass        (0),
+    .Depth       (RspOrderDepth),
+    .NeverClears (1'b1),
+    .Secure      (1'b1) // SEC_CM: FIFO.CTR.REDUN
   ) u_rsp_order_fifo (
     .clk_i,
     .rst_ni,
@@ -525,11 +526,12 @@ module flash_phy_rd
   // See comment above on how FIFO popping can be improved in the future
   logic rd_stage_fifo_err;
   prim_fifo_sync #(
-    .Width   (PlainDataWidth + 4 + NumBuf),
-    .Pass    (0),
-    .Depth   (2),
+    .Width             (PlainDataWidth + 4 + NumBuf),
+    .Pass              (0),
+    .Depth             (2),
     .OutputZeroIfEmpty (1),
-    .Secure  (1'b1) // SEC_CM: FIFO.CTR.REDUN
+    .NeverClears       (1'b1),
+    .Secure            (1'b1) // SEC_CM: FIFO.CTR.REDUN
   ) u_rd_storage (
     .clk_i,
     .rst_ni,
@@ -547,9 +549,10 @@ module flash_phy_rd
 
   // storage for mask calculations
   prim_fifo_sync #(
-    .Width   (DataWidth),
-    .Pass    (0),
-    .Depth   (2),
+    .Width             (DataWidth),
+    .Pass              (0),
+    .Depth             (2),
+    .NeverClears       (1'b1),
     .OutputZeroIfEmpty (1)
   ) u_mask_storage (
     .clk_i,
@@ -567,9 +570,10 @@ module flash_phy_rd
   );
 
   prim_fifo_sync #(
-    .Width   (BankAddrW),
-    .Pass    (0),
-    .Depth   (RspOrderDepth),
+    .Width             (BankAddrW),
+    .Pass              (0),
+    .Depth             (RspOrderDepth),
+    .NeverClears       (1'b1),
     .OutputZeroIfEmpty (1)
   ) u_addr_xor_storage (
     .clk_i,

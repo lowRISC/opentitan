@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 <%
+import math
 from topgen.lib import Name
 
 parts_without_lc = [part for part in otp_mmap["partitions"] if
@@ -20,7 +21,7 @@ package otp_ctrl_env_pkg;
   import csr_utils_pkg::*;
   import push_pull_agent_pkg::*;
   import otp_ctrl_core_ral_pkg::*;
-  import otp_ctrl_prim_ral_pkg::*;
+  import otp_macro_prim_ral_pkg::*;
   import otp_ctrl_reg_pkg::*;
   import otp_ctrl_pkg::*;
   import otp_ctrl_part_pkg::*;
@@ -37,17 +38,17 @@ package otp_ctrl_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter string LIST_OF_ALERTS[] = {"fatal_macro_error",
-                                       "fatal_check_error",
-                                       "fatal_bus_integ_error",
-                                       "fatal_prim_otp_alert",
-                                       "recov_prim_otp_alert"};
-  parameter uint NUM_ALERTS              = 5;
-  parameter uint NUM_EDN                 = 1;
+  parameter uint NUM_ALERTS = 5;
+  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"fatal_macro_error",
+                                                 "fatal_check_error",
+                                                 "fatal_bus_integ_error",
+                                                 "fatal_prim_otp_alert",
+                                                 "recov_prim_otp_alert"};
+  parameter uint NUM_EDN             = 1;
 
-  parameter uint DIGEST_SIZE             = 8;
-  parameter uint SW_WINDOW_BASE_ADDR     = 'h${otp_size_as_hex_text};
-  parameter uint SW_WINDOW_SIZE          = NumSwCfgWindowWords * 4;
+  parameter uint DIGEST_SIZE         = 8;
+  parameter uint SW_WINDOW_BASE_ADDR = 'h${otp_size_as_hex_text};
+  parameter uint SW_WINDOW_SIZE      = NumSwCfgWindowWords * 4;
 
   parameter uint TL_SIZE = (TL_DW / 8);
   // LC has its own storage in scb
@@ -72,7 +73,11 @@ package otp_ctrl_env_pkg;
   parameter uint NUM_SRAM_EDN_REQ = 12;
   parameter uint NUM_OTBN_EDN_REQ = 10;
 
+  // This is used to randomize CHECK_TIMEOUT in sequences, set to a low value
+  // so it will certainly cause a check error due to a timeout.
   parameter uint CHK_TIMEOUT_CYC = 40;
+  // This is some slack for a timeout error propagation to become an alert.
+  parameter uint CHK_TIMEOUT_SLACK = 4;
 
   // When fatal alert triggered, all partitions and the DAI & LCI go to error state and status will
   // be set to 1.
@@ -82,8 +87,7 @@ package otp_ctrl_env_pkg;
   parameter int PART_BASE_ADDRS [NumPart-1] = {
 % for part in parts_without_lc:
 <%
-  part_name = Name.from_snake_case(part["name"])
-  part_name_camel = part_name.as_camel_case()
+  part_name_camel = Name.to_camel_case(part["name"])
 %>\
     ${part_name_camel}Offset${"" if loop.last else ","}
 % endfor
@@ -93,13 +97,25 @@ package otp_ctrl_env_pkg;
   parameter int PART_OTP_DIGEST_ADDRS [NumPart-1] = {
 % for part in parts_without_lc:
 <%
-  part_name = Name.from_snake_case(part["name"])
-  part_name_camel = part_name.as_camel_case()
+  part_name_camel = Name.to_camel_case(part["name"])
 %>\
 % if part["sw_digest"] or part["hw_digest"]:
     ${part_name_camel}DigestOffset >> 2${"" if loop.last else ","}
 % else:
     -1${"" if loop.last else ","} // This partition does not have a digest.
+% endif
+% endfor
+  };
+
+  parameter int PART_OTP_ZEROIZED_ADDRS [NumPart-1] = {
+% for part in parts_without_lc:
+<%
+  part_name_camel = Name.to_camel_case(part["name"])
+%>\
+% if part["zeroizable"]:
+    ${part_name_camel}ZerOffset >> 2${"" if loop.last else ","}
+% else:
+    -1${"" if loop.last else ","} // This partition has no zeroized field.
 % endif
 % endfor
   };
@@ -111,14 +127,8 @@ package otp_ctrl_env_pkg;
     NumOtpCtrlIntr
   } otp_intr_e;
 
-  typedef enum bit [5:0] {
-% for part in otp_mmap["partitions"]:
-<%
-  part_name = Name.from_snake_case(part["name"])
-  part_name_camel = part_name.as_camel_case()
-%>\
-    Otp${part_name_camel}ErrIdx,
-% endfor
+  typedef enum bit [3:0] {
+    OtpPartitionErrorIdx,
     OtpDaiErrIdx,
     OtpLciErrIdx,
     OtpTimeoutErrIdx,
@@ -130,6 +140,16 @@ package otp_ctrl_env_pkg;
     OtpCheckPendingIdx,
     OtpStatusFieldSize
   } otp_status_e;
+
+  typedef enum int {
+% for part in otp_mmap["partitions"]:
+<%
+  part_name_camel = Name.to_camel_case(part["name"])
+%>\
+    OtpPartition${part_name_camel}Idx${"" if loop.last else ","}
+% endfor
+  } otp_partition_e;
+
 
   typedef enum bit [2:0] {
     OtpNoError,
@@ -201,24 +221,38 @@ package otp_ctrl_env_pkg;
     return PartInfo[part_idx].hw_digest;
   endfunction
 
+  // Return the address of the last 64 bits of the given partition
+  function automatic bit [TL_DW-1:0] last_64_addr(int unsigned part_idx);
+    return (PartInfo[part_idx].offset + PartInfo[part_idx].size) - 8;
+  endfunction
+
+  // Return true if the address points into the first 32 bits of a partition digest for the given
+  // partition (HW or SW)
+  function automatic bit is_digest_for(bit [TL_DW-1:0] addr, int unsigned part_idx);
+    if (!PartInfo[part_idx].sw_digest && !PartInfo[part_idx].hw_digest) return 0;
+
+    // If the partition contains a digest, it will be the last 64 bits of the partition, unless
+    // there is also a zeroization marker. When both are present, the digest comes just before the
+    // zeroisation marker.
+    return {addr[TL_DW-1:3], 3'b0} == (last_64_addr(part_idx) -
+                                       (PartInfo[part_idx].zeroizable ? 8 : 0));
+  endfunction
+
   function automatic bit is_sw_digest(bit [TL_DW-1:0] addr);
     int part_idx = get_part_index(addr);
-    if (PartInfo[part_idx].sw_digest) begin
-      // If the partition contains a digest, it will be located in the last 64bit of the partition.
-      return {addr[TL_DW-1:3], 3'b0} == ((PartInfo[part_idx].offset + PartInfo[part_idx].size) - 8);
-    end else begin
-      return 0;
-    end
+    return PartInfo[part_idx].sw_digest && is_digest_for(addr, part_idx);
   endfunction
 
   function automatic bit is_digest(bit [TL_DW-1:0] addr);
-    int part_idx = get_part_index(addr);
-    if (PartInfo[part_idx].sw_digest || PartInfo[part_idx].hw_digest) begin
-      // If the partition contains a digest, it will be located in the last 64bit of the partition.
-      return {addr[TL_DW-1:3], 3'b0} == ((PartInfo[part_idx].offset + PartInfo[part_idx].size) - 8);
-    end else begin
-      return 0;
-    end
+    return is_digest_for(addr, get_part_index(addr));
+  endfunction
+
+  // Return true if this is the address of the Zeroize marker for a partition with zeroization
+  function automatic bit is_zeroize_marker(bit [TL_DW-1:0] addr);
+    int unsigned part_idx = get_part_index(addr);
+
+    // If the partition is zeroizable, its Zeroize status is in the last 64 bits of the partition.
+    return (PartInfo[part_idx].zeroizable && (addr == last_64_addr(part_idx)));
   endfunction
 
   function automatic bit is_sw_part(bit [TL_DW-1:0] addr);

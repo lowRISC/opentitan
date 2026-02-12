@@ -11,7 +11,7 @@ ${fileheader}
 // See the following include file for details on the types used in this file.
 #include "sw/device/silicon_creator/manuf/lib/otp_img_types.h"
 
-#include "otp_ctrl_regs.h"  // Generated.
+#include "hw/top/otp_ctrl_regs.h"  // Generated.
 
 <%
   def ToPascalCase(in_str):
@@ -67,6 +67,7 @@ ${fileheader}
     if item['name'] not in [
         'CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN',
         'CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG',
+        'CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG',
         'CREATOR_SW_CFG_MANUF_STATE',
         'OWNER_SW_CFG_ROM_BOOTSTRAP_DIS',
     ]:

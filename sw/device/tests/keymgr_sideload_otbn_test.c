@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "hw/top/dt/otbn.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/dif/dif_keymgr.h"
@@ -16,14 +17,17 @@
 #include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/otbn_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
+#include "hw/top/otbn_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otbn_regs.h"  // Generated.
 
 static dif_keymgr_t keymgr;
 static dif_kmac_t kmac;
 static dif_otbn_t otbn;
+
+static const dt_otbn_t kOtbnDt = (dt_otbn_t)0;
 
 /* Set up pointers to symbols in the OTBN application. */
 OTBN_DECLARE_APP_SYMBOLS(x25519_sideload);
@@ -45,8 +49,7 @@ static void init_peripheral_handles(void) {
       dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
   CHECK_DIF_OK(dif_keymgr_init(
       mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), &keymgr));
-  CHECK_DIF_OK(
-      dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
+  CHECK_DIF_OK(dif_otbn_init_from_dt(kOtbnDt, &otbn));
 }
 
 /**
@@ -136,11 +139,15 @@ static void test_otbn_with_sideloaded_key(dif_keymgr_t *keymgr,
 
   // Clear the sideload key and check that OTBN errors with the correct error
   // code (`KEY_INVALID` bit 5 = 1).
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_start(
+      dt_otbn_alert_to_alert_id(kOtbnDt, kDtOtbnAlertRecov)));
   CHECK_DIF_OK(
       dif_keymgr_sideload_clear_set_enabled(keymgr, kDifToggleEnabled));
   LOG_INFO("Clearing the Keymgr generated sideload keys.");
   uint32_t at_clear_salt_result[8];
   run_x25519_app(otbn, at_clear_salt_result, kOtbnInvalidKeyErr);
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_finish(
+      dt_otbn_alert_to_alert_id(kOtbnDt, kDtOtbnAlertRecov)));
 
   // Disable sideload key clearing.
   CHECK_DIF_OK(

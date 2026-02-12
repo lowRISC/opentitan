@@ -328,7 +328,7 @@
       desc: '''
             Verify the functionality of isochronous transfer for OUT transaction.
 
-            - Set the 'out_iso' register's bit to 1 for a paricular endpoint, then host issues an OUT token to that
+            - Set the 'out_iso' register's bit to 1 for a particular endpoint, then host issues an OUT token to that
               endpoint followed by the OUT data packet.
             - Verify that the device does not send any handshake packet in response.
             '''
@@ -341,7 +341,7 @@
             Verify the functionality of isochronous transfer for IN transaction.
 
             - Set the 'in_iso' register's bit to 1 for an endpoint, then host issues an IN token to that endpoint.
-            - Configure the DUT with a data packet availabile for collection from that endpoint.
+            - Configure the DUT with a data packet available for collection from that endpoint.
             - Host sends an IN request and collects the IN data packet, but does not send a handshake response.
             - Verify that the device signals successful transmission of the packet via the 'in_sent' register
               without awaiting a handshake packet from the host.
@@ -792,7 +792,7 @@
             - Verify that full length packet transmission to and from the host occurs successfully
               without reports of bit stuffing errors or CRC errors.
             - Repeat the above with the USB host agent at the minimum permissible frequency and
-              the USB device starting at the maximum frequecy.
+              the USB device starting at the maximum frequency.
             '''
       stage: V2
       tests: ["usbdev_freq_loclk_max",
@@ -806,7 +806,7 @@
             - Clock the device and the agent with opposite corners of phases and initiate a
               transaction with maximum data length.
             - Verify that the transaction between the host agent and device must be successful by
-              raising interrupts for succesful packet reception or transmission after the end
+              raising interrupts for successful packet reception or transmission after the end
               of the transaction.
             '''
       stage: V2
@@ -1236,6 +1236,25 @@
             '''
       stage: V2
       tests: ["usbdev_fifo_levels"]
+    }
+    {
+      name: rxenable_out_conditional
+      desc: '''
+            Test the conditional update functionality of the `rxenable_out` register. This register
+            has been modified to accept changes conditionally, based upon corresponding 'preserve'
+            bits being set in the upper half of the word written, in order to avoid a potential
+            race hazard when the hardware is clearing the enable bit of another output endpoint
+            because the `set_nak_out` functionality is in use.
+
+            - Perform the following steps a number of times:
+             - Read the current `rxenable_out` state.
+             - Choose a random set of OUT endpoints to enable/disable.
+             - Choose randomly for each such endpoint whether to enable/disable it.
+             - Write the new enable state, using a `preserve` bit of 0 for only those endpoints
+               that shall be reconfigured, and a value of 1 for all other endpoints.
+            '''
+      stage: V2
+      tests: ["usbdev_rxenable_out"]
     }
     {
       name: dpi_config_host

@@ -10,7 +10,8 @@ from collections import OrderedDict
 from collections.abc import Mapping
 from enum import Enum
 
-from topgen.lib import CEnum, CArrayMapping, Name
+from basegen.lib import Name
+from topgen.lib import CEnum, CArrayMapping, find_modules
 from reggen.ip_block import IpBlock
 
 import logging
@@ -194,7 +195,7 @@ class StructType(BaseType):
         for (name, (field_type, _)) in self.fields.items():
             assert isinstance(name, Name), "StructType can only render mappings with `Name` keys"
             if name not in value:
-                logging.warn("field {} not found in {}".format(name, value))
+                logging.warning("field {} not found in {}".format(name, value))
                 continue
             text += ".{} = {},\n".format(name.as_snake_case(), field_type.render_value(value[name]))
             unused_keys.remove(name)
@@ -237,12 +238,13 @@ class Extension(ABC):
         return `None`.
         """
 
-    def extend_dt_ip(self) -> Optional[StructType]:
+    def extend_dt_ip(self) -> Optional[tuple[Name, StructType]]:
         """
         Override this function to add some fields to the structure storing
         fields for a given IP. This method MUST not modify `ip_helper` but
         it can access its public fields. Return `None` if you don't want to
-        add more fields.
+        add more fields. Otherwise return a tuple (name, struct): the ext
+        struct will be placed in the DT struct under the name `name`.
         """
 
     def fill_dt_ip(self, m) -> Optional[dict]:
@@ -258,6 +260,7 @@ class Extension(ABC):
         HeaderEnd = 0  # At the end of `dt_<ip>.h`
         SourceEnd = 1  # At the end of `dt_<ip>.c`
         SourceIncludes = 2  # At the include stage of `dt_<ip>.c`
+        HeaderIncludes = 3  # At the include stage of `dt_<ip>.h`
 
     def render_dt_ip(self, pos: DtIpPos) -> str:
         """
@@ -266,9 +269,20 @@ class Extension(ABC):
         return ""
 
 
-class EmptyExtension(Extension):
-    def create_ext(ip_helper: "IpHelper") -> Optional[Extension]:
-        return None
+class TopGenHelper:
+    """
+    We cannot easily import the TopGen class from topgen.lib so we need to replicate some
+    of the logic when it comes to type/enum naming. This helper classes encapsulats this logic.
+    """
+    def __init__(self, topcfg):
+        self.top = topcfg
+
+    def irq_id_type_name(self, plic_name: str) -> Name:
+        """
+        Given a PLIC name, return the full naem of the `irq_id_t` type.
+        """
+        return Name(["top"]) + Name.from_snake_case(self.top["name"]) + \
+            Name.from_snake_case(plic_name.removeprefix("rv_")) + Name(["irq", "id"])
 
 
 class TopHelper:
@@ -302,6 +316,7 @@ class TopHelper:
     def __init__(self, topcfg, enum_type, array_mapping_type):
         self.top = topcfg
         self._top_name = Name(["top"]) + Name.from_snake_case(topcfg["name"])
+        self._topgen = TopGenHelper(topcfg)
 
         assert enum_type in [CEnum], "Unsupported enum type"
         assert array_mapping_type in [CArrayMapping], \
@@ -352,18 +367,38 @@ class TopHelper:
         # List all muxed pads directly from the top.
         pads = [pad for pad in self.top['pinout']['pads'] if pad['connection'] == 'muxed']
         # List direct pads from the pinmux to avoid pins which are not relevant.
-        pads += [pad for pad in self.top['pinmux']['ios'] if pad['connection'] != 'muxed']
+        if self.top.get("pinmux", {}).get("ios"):
+            pads += [pad for pad in self.top['pinmux']['ios'] if pad['connection'] != 'muxed']
 
         # List all pads and put them in an enum.
         self.pad_enum = self._enum_type(Name([]), self.DT_PAD_NAME)
+        self.pad_enum.add_constant(Name.from_snake_case("constant_zero"),
+                                   "Pad that is constantly tied to zero (input)")
+        self.pad_enum.add_constant(Name.from_snake_case("constant_one"),
+                                   "Pad that is constantly tied to one (input)")
         self._pad_map = OrderedDict()
         for pad in pads:
             name = pad['name']
             if 'width' in pad and pad['width'] > 1:
                 name += str(pad['idx'])
             self._pad_map[name] = pad
+            # Direct pads usually do not have a description, instead the "pad" attribute
+            # points to the actual pad in top.pinout.pads which contains the details.
+            if pad["connection"] == "direct":
+                desc = None
+                for io_pad in self.top["pinout"]["pads"]:
+                    if io_pad["name"] == pad["pad"]:
+                        desc = io_pad["desc"]
+                        break
+                if desc is None:
+                    logging.warning(f"could not find description of pad {name}:" +
+                                    " could not find {} in pinout.pads".format(pad["pad"]))
+                    desc = ""
+            else:
+                desc = pad["desc"]
             self.pad_enum.add_constant(
                 Name.from_snake_case(name),
+                desc
             )
         if isinstance(self.pad_enum, CEnum):
             self.pad_enum.add_count_constant("Number of pads")
@@ -373,7 +408,13 @@ class TopHelper:
         clocks = self.top['clocks']
         for clock in clocks["srcs"] + clocks["derived_srcs"]:
             clock_name = Name.from_snake_case(clock["name"])
+            self.clock_enum.add_constant(clock_name, "clock {}".format(clock["name"]))
+
+        # Unmanaged clocks
+        for clock in self.top['unmanaged_clocks']:
+            clock_name = Name.from_snake_case(clock)
             self.clock_enum.add_constant(clock_name)
+
         self.clock_enum.add_count_constant("Number of clocks")
 
         # List of all reset nodes and put them in an enum.
@@ -381,7 +422,13 @@ class TopHelper:
         self.reset_enum.add_constant(Name(["unknown"]), "Unknown reset")
         for reset_node in self.top["resets"]["nodes"]:
             reset_name = Name.from_snake_case(reset_node["name"])
+            self.reset_enum.add_constant(reset_name, "Reset node {}".format(reset_node["name"]))
+
+        # Unmanaged resets
+        for reset in self.top['unmanaged_resets']:
+            reset_name = Name.from_snake_case(reset)
             self.reset_enum.add_constant(reset_name)
+
         self.reset_enum.add_count_constant("Number of resets")
 
         # Create structure to describe a peripheral I/O and a pad.
@@ -464,8 +511,22 @@ registers to connect a peripheral to this pad.""",  # noqa:E501
             length = Name(["count"])
         )
         self.pad_dt_values = OrderedDict()
+        topname = self.top["name"]
+
+        self.pad_dt_values[Name.from_snake_case("constant_zero")] = {
+            self.DT_PAD_TYPE_FIELD_NAME: Name.from_snake_case("mio"),
+            self.DT_PAD_MIO_OUT_DIO_FIELD_NAME: "0",
+            self.DT_PAD_INSEL_FIELD_NAME:
+                Name.from_snake_case(f"top_{topname}_pinmux_insel_constant_zero").as_c_enum(),
+        }
+        self.pad_dt_values[Name.from_snake_case("constant_one")] = {
+            self.DT_PAD_TYPE_FIELD_NAME: Name.from_snake_case("mio"),
+            self.DT_PAD_MIO_OUT_DIO_FIELD_NAME: "0",
+            self.DT_PAD_INSEL_FIELD_NAME:
+                Name.from_snake_case(f"top_{topname}_pinmux_insel_constant_one").as_c_enum(),
+        }
+
         for (padname, pad) in self._pad_map.items():
-            topname = self.top["name"]
             if pad["connection"] == "muxed":
                 pad_type = Name.from_snake_case("mio")
                 pad_mio_out_or_direct_pad = "0"
@@ -495,11 +556,14 @@ registers to connect a peripheral to this pad.""",  # noqa:E501
         """
         Create the array mappings to dispatch interrupts.
         """
+
+        plic_names = [m["name"] for m in find_modules(self.top["module"], "rv_plic")]
+        assert len(plic_names) == 1, "dtgen assumes that there is exactly one PLIC"
+        self.the_plic_irq_id_type_name = self._topgen.irq_id_type_name(plic_names[0])
+
         self.inst_from_irq_map = ArrayMapType(
             elem_type = ScalarType(self.instance_id_enum.name),
-            index_type = ScalarType(Name(["top"]) +
-                                    Name.from_snake_case(self.top["name"]) +
-                                    Name(["plic", "irq", "id"])),
+            index_type = ScalarType(self.the_plic_irq_id_type_name),
             length = Name(["count"])
         )
         self.inst_from_irq_values = OrderedDict(
@@ -518,7 +582,7 @@ registers to connect a peripheral to this pad.""",  # noqa:E501
                 self.inst_from_irq_values[name] = module_name
 
     def has_alert_handler(self):
-        # FIXME find a better way then just harcoding this module name
+        # FIXME find a better way then just hardcoding this module name
         return any(module["name"] == "alert_handler" for module in self.top["module"])
 
     def _init_alert_map(self):
@@ -572,7 +636,9 @@ registers to connect a peripheral to this pad.""",  # noqa:E501
 class IpHelper:
     UNNAMED_REG_BLOCK_NAME = "core"
     INST_ID_FIELD_NAME = Name(["inst", "id"])
-    BASE_ADDR_FIELD_NAME = Name(["base", "addr"])
+    REG_BLOCK_ADDR_FIELD_NAME = Name(["reg", "addr"])
+    MEM_ADDR_FIELD_NAME = Name(["mem", "addr"])
+    MEM_SIZE_FIELD_NAME = Name(["mem", "size"])
     CLOCK_FIELD_NAME = Name(["clock"])
     RESET_FIELD_NAME = Name(["reset"])
     PERIPH_IO_FIELD_NAME = Name(["periph", "io"])
@@ -582,7 +648,8 @@ class IpHelper:
     EXTENSION_FIELD_NAME = Name(["ext"])
 
     def __init__(self, top_helper: TopHelper, ip: IpBlock, ipconfig: object, default_node: str,
-                 enum_type: object, array_mapping_type: object, extension_cls = None):
+                 enum_type: object, array_mapping_type: object,
+                 extension_cls: Optional[list[Extension]] = None):
         self.top_helper = top_helper
         self.top = top_helper.top
         self.ip = ip
@@ -603,6 +670,7 @@ class IpHelper:
             self.default_node = self.UNNAMED_REG_BLOCK_NAME
 
         self._init_reg_blocks()
+        self._init_memories()
         self._init_irqs()
         self._init_alerts()
         self._init_clocks()
@@ -611,21 +679,24 @@ class IpHelper:
         self._init_resets()
         self._init_periph_io()
         self._init_features()
-        self.extension = (extension_cls or EmptyExtension).create_ext(self)
+        self.extensions = list(filter(lambda x: x is not None,
+                                      [ext_cls.create_ext(self)
+                                       for ext_cls in extension_cls or []]))
 
         self._init_instances()
 
     def _init_reg_blocks(self):
         reg_blocks = []
-        self._reg_block_map = {}
         for rb in self.ip.reg_blocks.keys():
             if rb is None:
                 reg_blocks.append(self.UNNAMED_REG_BLOCK_NAME)
             else:
                 reg_blocks.append(rb)
 
-        assert self.default_node in reg_blocks, \
-            "default node ({}) is invalid".format(self.default_node)
+        # If there are no register blocks, we don't need to validate default_node
+        if reg_blocks:
+            assert self.default_node in reg_blocks, \
+                "default node ({}) is invalid".format(self.default_node)
 
         self.reg_block_enum = self._enum_type(
             Name([]), Name(["dt"]) + self.ip_name + Name(["reg", "block"]))
@@ -633,6 +704,16 @@ class IpHelper:
             self.reg_block_enum.add_constant(Name.from_snake_case(rb))
         if isinstance(self.reg_block_enum, CEnum):
             self.reg_block_enum.add_count_constant("Number of register blocks")
+
+    def _init_memories(self):
+        memories = list(self.ip.memories.keys())
+
+        self.memory_enum = self._enum_type(
+            Name([]), Name(["dt"]) + self.ip_name + Name(["memory"]))
+        for mem in memories:
+            self.memory_enum.add_constant(Name.from_snake_case(mem))
+        if isinstance(self.memory_enum, CEnum):
+            self.memory_enum.add_count_constant("Number of memories")
 
     def has_irqs(self):
         return len(self.ip.interrupts) > 0
@@ -656,7 +737,7 @@ class IpHelper:
         return len(self.ip.alerts) > 0
 
     def has_alert_handler(self):
-        # FIXME find a better way then just harcoding this module name
+        # FIXME find a better way then just hardcoding this module name
         return any(module["name"] == "alert_handler" for module in self.top["module"])
 
     def _init_alerts(self):
@@ -697,7 +778,7 @@ class IpHelper:
             else:
                 clk = clk.removeprefix("clk_").removesuffix("_i")
             self.clock_map[clk_orig] = clk
-            self.clock_enum.add_constant(Name.from_snake_case(clk))
+            self.clock_enum.add_constant(Name.from_snake_case(clk), f"Clock port {clk_orig}")
         if isinstance(self.reg_block_enum, CEnum):
             self.clock_enum.add_count_constant("Number of clock ports")
 
@@ -718,12 +799,13 @@ class IpHelper:
         self.reset_req_map = OrderedDict()
         # Resets are listed alongside clocks.
         for req in self.ip.reset_requests:
+            desc = req.desc
             req = req.name
             req_orig = req
             req = self.simplify_reset_request_name(req)
 
             self.reset_req_map[req_orig] = req
-            self.reset_req_enum.add_constant(Name.from_snake_case(req))
+            self.reset_req_enum.add_constant(Name.from_snake_case(req), desc)
         if isinstance(self.reset_req_enum, CEnum):
             self.reset_req_enum.add_count_constant("Number of reset requests")
 
@@ -745,7 +827,7 @@ class IpHelper:
             else:
                 rst = rst.removeprefix("rst_").removesuffix("_ni")
             self.reset_map[rst_orig] = rst
-            self.reset_enum.add_constant(Name.from_snake_case(rst))
+            self.reset_enum.add_constant(Name.from_snake_case(rst), f"Reset port {rst_orig}")
         if isinstance(self.reset_enum, CEnum):
             self.reset_enum.add_count_constant("Number of reset ports")
 
@@ -808,15 +890,22 @@ class IpHelper:
             else:
                 inst_name = m["name"]
             inst_name = Name.from_snake_case(inst_name) if inst_name != "" else Name([])
-            self.inst_enum.add_constant(inst_name)
+            self.inst_enum.add_constant(inst_name, m["name"])
             if self.first_inst_id is None:
                 self.first_inst_id = TopHelper.DT_INSTANCE_ID_NAME + Name.from_snake_case(m["name"])
             self.last_inst_id = TopHelper.DT_INSTANCE_ID_NAME + Name.from_snake_case(m["name"])
             self.inst_dt_values[inst_name] = self._create_instance(m)
             self.inst_map[inst_name] = m
         if isinstance(self.inst_enum, CEnum):
-            self.inst_enum.add_first_constant("First instance")
+            if self.inst_enum.constants:
+                self.inst_enum.add_first_constant("First instance")
             self.inst_enum.add_count_constant("Number of instances")
+
+    def has_reg_blocks(self):
+        return len(self.ip.reg_blocks) > 0
+
+    def has_memories(self):
+        return len(self.ip.memories) > 0
 
     def has_features(self):
         return len(self.ip.features) > 0
@@ -834,22 +923,40 @@ class IpHelper:
             field_type = ScalarType(TopHelper.DT_INSTANCE_ID_NAME),
             docstring = "Instance ID"
         )
-        self.inst_struct.add_field(
-            name = self.BASE_ADDR_FIELD_NAME,
-            field_type = ArrayMapType(
-                elem_type = ScalarType("uint32_t"),
-                index_type = ScalarType(self.reg_block_enum.name),
-                length = Name(["count"]),
-            ),
-            docstring = "Base address of each register block"
-        )
+        if self.has_reg_blocks():
+            self.inst_struct.add_field(
+                name = self.REG_BLOCK_ADDR_FIELD_NAME,
+                field_type = ArrayMapType(
+                    elem_type = ScalarType("uint32_t"),
+                    index_type = ScalarType(self.reg_block_enum.name),
+                    length = Name(["count"]),
+                ),
+                docstring = "Base address of each register block"
+            )
+        if self.has_memories():
+            self.inst_struct.add_field(
+                name = self.MEM_ADDR_FIELD_NAME,
+                field_type = ArrayMapType(
+                    elem_type = ScalarType("uint32_t"),
+                    index_type = ScalarType(self.memory_enum.name),
+                    length = Name(["count"]),
+                ),
+                docstring = "Base address of each memory"
+            )
+            self.inst_struct.add_field(
+                name = self.MEM_SIZE_FIELD_NAME,
+                field_type = ArrayMapType(
+                    elem_type = ScalarType("uint32_t"),
+                    index_type = ScalarType(self.memory_enum.name),
+                    length = Name(["count"]),
+                ),
+                docstring = "Size in bytes of each memory"
+            )
         if self.has_irqs():
             # FIXME We need to handle better the case where a block is not connected to the PLIC.
             self.inst_struct.add_field(
                 name = self.FIRST_IRQ_FIELD_NAME,
-                field_type = ScalarType(Name(["top"]) +
-                                        Name.from_snake_case(self.top["name"]) +
-                                        Name(["plic", "irq", "id"])),
+                field_type = ScalarType(self.top_helper.the_plic_irq_id_type_name),
                 docstring = """PLIC ID of the first IRQ of this instance
 
 This can be `kDtPlicIrqIdNone` if the block is not connected to the PLIC."""
@@ -897,14 +1004,17 @@ This value is undefined if the block is not connected to the Alert Handler."""
                 docstring = "Description of each peripheral I/O"
             )
         # Add extension fields.
-        if self.extension:
-            ext_struct = self.extension.extend_dt_ip()
-            if ext_struct:
+        self._extension_structs = {}
+        for ext in self.extensions:
+            ext_desc = ext.extend_dt_ip()
+            if ext_desc:
+                ext_name, ext_struct = ext_desc
                 self.inst_struct.add_field(
-                    name = self.EXTENSION_FIELD_NAME,
+                    name = ext_name,
                     field_type = ext_struct,
-                    docstring = "Extension"
+                    docstring = "Extension",
                 )
+                self._extension_structs[ext] = ext_name
 
     def _create_instance(self, m):
         """
@@ -914,17 +1024,36 @@ This value is undefined if the block is not connected to the Alert Handler."""
         inst_desc = OrderedDict()
         # Instance ID.
         inst_desc[self.INST_ID_FIELD_NAME] = Name.from_snake_case(modname)
-        # Base address map.
-        base_addr_map = OrderedDict()
-        for (rb, addr) in m["base_addrs"].items():
-            if rb == "null":
-                rb = self.UNNAMED_REG_BLOCK_NAME
-            rb = Name.from_snake_case(rb)
-            # It is possible that this module is not accessible in this
-            # address space. In this case, return a dummy value.
-            # FIXME Maybe find a better way of doing this.
-            base_addr_map[rb] = addr.get(self._addr_space, "0xffffffff")
-        inst_desc[self.BASE_ADDR_FIELD_NAME] = base_addr_map
+        # Reg block address map.
+        if self.has_reg_blocks():
+            reg_block_map = OrderedDict()
+            for rb in self.ip.reg_blocks.keys():
+                rb_key = rb
+                if rb is None:
+                    rb = self.UNNAMED_REG_BLOCK_NAME
+                    rb_key = "null"  # Due to json serializing, None appears as null.
+                rb = Name.from_snake_case(rb)
+                # It is possible that this module is not accessible in this
+                # address space. In this case, return a dummy value.
+                # FIXME Maybe find a better way of doing this.
+                assert rb_key in m["base_addrs"]
+                reg_block_map[rb] = m["base_addrs"][rb_key].get(self._addr_space, "0xffffffff")
+            inst_desc[self.REG_BLOCK_ADDR_FIELD_NAME] = reg_block_map
+        # Memories.
+        if self.has_memories():
+            mem_addr_map = OrderedDict()
+            mem_size_map = OrderedDict()
+            for mem in self.ip.memories.keys():
+                mem_name = Name.from_snake_case(mem)
+                # It is possible that this module is not accessible in this
+                # address space. In this case, return a dummy value.
+                # FIXME Maybe find a better way of doing this.
+                assert mem in m["base_addrs"]
+                mem_addr_map[mem_name] = m["base_addrs"][mem].get(self._addr_space, "0xffffffff")
+                assert mem in m["memory"] and "size" in m["memory"][mem]
+                mem_size_map[mem_name] = m["memory"][mem]["size"]
+            inst_desc[self.MEM_ADDR_FIELD_NAME] = mem_addr_map
+            inst_desc[self.MEM_SIZE_FIELD_NAME] = mem_size_map
         # Clock map.
         if self.has_clocks():
             inst_clock_map = OrderedDict()
@@ -995,7 +1124,7 @@ This value is undefined if the block is not connected to the Alert Handler."""
             periph_ios = OrderedDict()
             for (sig, (port, idx)) in self._device_signals.items():
                 found = False
-                for conn in self.top["pinmux"]["ios"]:
+                for conn in self.top.get("pinmux", {}).get("ios", []):
                     if conn["name"] != m["name"] + "_" + port or idx != conn["idx"]:
                         continue
                     if found:
@@ -1010,10 +1139,11 @@ This value is undefined if the block is not connected to the Alert Handler."""
                     periph_ios[Name.from_snake_case(sig)] = self._create_periph_io_missing_desc()
             inst_desc[self.PERIPH_IO_FIELD_NAME] = periph_ios
         # Add extension fields.
-        if self.extension:
-            ext_fields = self.extension.fill_dt_ip(m)
-            if ext_fields:
-                inst_desc[self.EXTENSION_FIELD_NAME] = ext_fields
+        for (ext, ext_field_name) in self._extension_structs.items():
+            ext_fields = ext.fill_dt_ip(m)
+            assert ext_fields is not None, \
+                "extension did not return fields data despite creating extension fields"
+            inst_desc[ext_field_name] = ext_fields
 
         return inst_desc
 
@@ -1049,7 +1179,7 @@ This value is undefined if the block is not connected to the Alert Handler."""
             # names from top.pinmux.ios for DIOs, but that the connections use the names
             # from top.pinmux.pads, we need to map between the two.
             padname = None
-            for io in self.top['pinmux']['ios']:
+            for io in self.top_helper._pad_map.values():
                 if io["connection"] == "direct" and io["pad"] == conn["pad"]:
                     if padname is not None:
                         raise RuntimeError(
@@ -1091,4 +1221,7 @@ This value is undefined if the block is not connected to the Alert Handler."""
         }
 
     def render_extension(self, ip_pos: Extension.DtIpPos) -> str:
-        return self.extension.render_dt_ip(ip_pos) if self.extension else ""
+        out = ""
+        for ext in self.extensions:
+            out += "\n" + ext.render_dt_ip(ip_pos) + "\n"
+        return out

@@ -8,6 +8,7 @@ package(default_visibility = ["//visibility:public"])
 
 TARGETS = [
     "sim_dv",
+    "sim_verilator",
 ]
 
 [
@@ -17,7 +18,7 @@ TARGETS = [
             "{}.c".format(target),
         ],
         deps = [
-            "//hw/top:dt_api",
+            "//hw/top/dt:api",
             "//sw/device/lib/base:macros",
         ],
     )

@@ -7,14 +7,14 @@ use crate::util::parse_int::ParseInt;
 use std::fmt;
 use std::path::Path;
 
-use anyhow::{anyhow, bail, Result};
+use anyhow::{Result, anyhow, bail};
 
 use serde::de::{self, Unexpected};
 use serde::{Deserialize, Serialize};
 
 use serde_annotate::Annotate;
 
-#[derive(Annotate, Serialize, Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 #[serde(untagged)]
 pub enum OtpImgValue {
     Word(u64),
@@ -92,19 +92,19 @@ impl<'de> Deserialize<'de> for OtpImgValue {
     }
 }
 
-#[derive(Annotate, Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Annotate, Deserialize, Debug, PartialEq, Eq)]
 pub struct OtpImgItem {
     pub name: String,
     pub value: OtpImgValue,
 }
 
-#[derive(Annotate, Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Annotate, Deserialize, Debug, PartialEq, Eq)]
 pub struct OtpImgPartition {
     pub name: String,
     pub items: Option<Vec<OtpImgItem>>,
 }
 
-#[derive(Annotate, Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Annotate, Deserialize, Debug, PartialEq, Eq)]
 pub struct OtpImg {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub seed: Option<u64>,
@@ -124,7 +124,7 @@ pub trait OtpRead {
 
 impl OtpRead for OtpImg {
     fn read32_offset(&self, name: &str, offset: usize) -> Result<u32> {
-        if offset % 4 != 0 {
+        if !offset.is_multiple_of(4) {
             bail!("offset not word aligned");
         }
         Ok(
@@ -176,10 +176,9 @@ impl std::str::FromStr for OtpImg {
 mod tests {
     use super::*;
     use std::str::FromStr;
+    use std::sync::LazyLock;
 
     use serde_annotate::serialize;
-
-    use once_cell::sync::Lazy;
 
     const TEST_OTP_JSON: &str = r#"
         {
@@ -212,7 +211,7 @@ mod tests {
             ]
         }"#;
 
-    static TEST_OTP: Lazy<OtpImg> = Lazy::new(|| OtpImg {
+    static TEST_OTP: LazyLock<OtpImg> = LazyLock::new(|| OtpImg {
         seed: None,
         partitions: vec![OtpImgPartition {
             name: "CREATOR_SW_CFG".to_owned(),

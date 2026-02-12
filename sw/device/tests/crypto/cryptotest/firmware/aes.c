@@ -13,6 +13,7 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/tests/crypto/cryptotest/json/aes_commands.h"
+#include "sw/device/tests/crypto/lib/crypto_test_lib.h"
 
 enum {
   kAesBlockBytes = 128 / 8,
@@ -108,13 +109,17 @@ status_t handle_aes_block(ujson_t *uj) {
       .len = (size_t)uj_data.input_len,
   };
 
+  // Select a random security level.
+  otcrypto_key_security_level_t sec_level;
+  TRY(determine_security_level(&sec_level));
+
   // Build the key configuration
   otcrypto_key_config_t config = {
       .version = kOtcryptoLibVersion1,
       .key_mode = key_mode,
       .key_length = uj_data.key_length,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelLow,
+      .security_level = sec_level,
   };
   // Create buffer to store key
   uint32_t key_buf[kAesMaxKeyWords];

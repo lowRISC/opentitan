@@ -33,6 +33,7 @@ package chip_env_pkg;
   import kmac_pkg::*;
   import aes_pkg::*;
   import lc_ctrl_state_pkg::*;
+  import lc_ctrl_token_pkg::*;
   import lc_ctrl_dv_utils_pkg::*;
   import flash_ctrl_bkdr_util_pkg::*;
   import mem_bkdr_util_pkg::*;
@@ -61,14 +62,14 @@ package chip_env_pkg;
   `include "dv_macros.svh"
   `include "chip_hier_macros.svh"
 
-  // LC token paramters
+  // LC token parameters
   // LC sends two 64-bit msg as input token.
   localparam uint TokenWidthBit  = kmac_pkg::MsgWidth * 2;
   localparam uint TokenWidthByte = TokenWidthBit / 8;
 
   // ROM digest parameters
   localparam uint RomDigestDw = 256;
-  localparam uint RomMaxCheckAddr = top_earlgrey_pkg::TOP_EARLGREY_ROM_SIZE_BYTES -
+  localparam uint RomMaxCheckAddr = top_earlgrey_pkg::TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES -
                                     (RomDigestDw / 8);
 
   typedef virtual sw_logger_if         sw_logger_vif;
@@ -99,8 +100,10 @@ package chip_env_pkg;
     Rom
   } chip_mem_e;
 
-  // On OpenTitan, we deal with 4 types of SW - ROM, the main test, the OTBN test and the OTP image.
+  // On Earlgrey, we deal with 6 types of SW.
   // This basically puts these SW types into 'slots' that the external regression tool can set.
+  // Note: This enum must be consistent across tops.
+  // Note: If this enum is updated, then also update the file `build_sw_collateral_for_sim.py`.
   typedef enum {
     SwTypeRom       = 0, // Ibex SW - first stage boot ROM.
     SwTypeTestSlotA = 1, // Ibex SW - test SW in (flash) slot A.

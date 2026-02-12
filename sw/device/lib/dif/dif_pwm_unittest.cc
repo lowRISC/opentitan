@@ -14,7 +14,7 @@
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_test_base.h"
 
-#include "pwm_regs.h"  // Generated.
+#include "hw/top/pwm_regs.h"  // Generated.
 
 namespace dif_pwm_unittest {
 namespace {
@@ -86,31 +86,20 @@ class ConfigChannelTest : public PwmTest {};
 
 TEST_F(ConfigChannelTest, NullArgs) {
   EXPECT_DIF_BADARG(
-      dif_pwm_configure_channel(nullptr, kDifPwmChannel0, channel_config_));
+      dif_pwm_configure_channel(nullptr, /* channel = */ 0, channel_config_));
 }
 
 TEST_F(ConfigChannelTest, Locked) {
   EXPECT_READ32(PWM_REGWEN_REG_OFFSET, 0);
-  EXPECT_EQ(dif_pwm_configure_channel(&pwm_, kDifPwmChannel0, channel_config_),
-            kDifLocked);
+  EXPECT_EQ(
+      dif_pwm_configure_channel(&pwm_, /* channel = */ 0, channel_config_),
+      kDifLocked);
 }
 
 TEST_F(ConfigChannelTest, BadChannel) {
-  EXPECT_READ32(PWM_REGWEN_REG_OFFSET, 1);
-  EXPECT_READ32(PWM_CFG_REG_OFFSET,
-                {{PWM_CFG_DC_RESN_OFFSET, duty_cycle_resolution_}});
-  EXPECT_READ32(PWM_INVERT_REG_OFFSET, 0);
   EXPECT_DIF_BADARG(dif_pwm_configure_channel(
-      &pwm_, static_cast<dif_pwm_channel_t>(1U << (PWM_PARAM_N_OUTPUTS + 1)),
+      &pwm_, static_cast<dif_pwm_channel_t>(PWM_PARAM_N_OUTPUTS),
       channel_config_));
-
-  // Channel enums should be one-hot encoded.
-  EXPECT_READ32(PWM_REGWEN_REG_OFFSET, 1);
-  EXPECT_READ32(PWM_CFG_REG_OFFSET,
-                {{PWM_CFG_DC_RESN_OFFSET, duty_cycle_resolution_}});
-  EXPECT_READ32(PWM_INVERT_REG_OFFSET, 0);
-  EXPECT_DIF_BADARG(dif_pwm_configure_channel(
-      &pwm_, static_cast<dif_pwm_channel_t>(3), channel_config_));
 }
 
 TEST_F(ConfigChannelTest, BadDutyCycle) {
@@ -120,7 +109,7 @@ TEST_F(ConfigChannelTest, BadDutyCycle) {
 
   channel_config_.duty_cycle_a = config_.beats_per_pulse_cycle;
   EXPECT_DIF_BADARG(
-      dif_pwm_configure_channel(&pwm_, kDifPwmChannel0, channel_config_));
+      dif_pwm_configure_channel(&pwm_, /* channel = */ 0, channel_config_));
 
   EXPECT_READ32(PWM_REGWEN_REG_OFFSET, 1);
   EXPECT_READ32(PWM_CFG_REG_OFFSET,
@@ -128,7 +117,7 @@ TEST_F(ConfigChannelTest, BadDutyCycle) {
   channel_config_.duty_cycle_a = 24;
   channel_config_.duty_cycle_b = config_.beats_per_pulse_cycle;
   EXPECT_DIF_BADARG(
-      dif_pwm_configure_channel(&pwm_, kDifPwmChannel0, channel_config_));
+      dif_pwm_configure_channel(&pwm_, /* channel = */ 0, channel_config_));
 }
 
 TEST_F(ConfigChannelTest, BadPhaseDelay) {
@@ -138,7 +127,7 @@ TEST_F(ConfigChannelTest, BadPhaseDelay) {
 
   channel_config_.phase_delay = config_.beats_per_pulse_cycle;
   EXPECT_DIF_BADARG(
-      dif_pwm_configure_channel(&pwm_, kDifPwmChannel0, channel_config_));
+      dif_pwm_configure_channel(&pwm_, /* channel = */ 0, channel_config_));
 }
 
 TEST_F(ConfigChannelTest, BadMode) {
@@ -149,13 +138,13 @@ TEST_F(ConfigChannelTest, BadMode) {
 
   channel_config_.mode = static_cast<dif_pwm_mode_t>(3);
   EXPECT_DIF_BADARG(
-      dif_pwm_configure_channel(&pwm_, kDifPwmChannel0, channel_config_));
+      dif_pwm_configure_channel(&pwm_, /* channel = */ 0, channel_config_));
 }
 
 TEST_F(ConfigChannelTest, BadPolarity) {
   channel_config_.polarity = static_cast<dif_pwm_polarity_t>(3);
   EXPECT_DIF_BADARG(
-      dif_pwm_configure_channel(&pwm_, kDifPwmChannel0, channel_config_));
+      dif_pwm_configure_channel(&pwm_, /* channel = */ 0, channel_config_));
 }
 
 TEST_F(ConfigChannelTest, BadBlinkParameterX) {
@@ -167,7 +156,7 @@ TEST_F(ConfigChannelTest, BadBlinkParameterX) {
   channel_config_.mode = kDifPwmModeHeartbeat;
   channel_config_.blink_parameter_y = config_.beats_per_pulse_cycle;
   EXPECT_DIF_BADARG(
-      dif_pwm_configure_channel(&pwm_, kDifPwmChannel0, channel_config_));
+      dif_pwm_configure_channel(&pwm_, /* channel = */ 0, channel_config_));
 }
 
 TEST_F(ConfigChannelTest, FirmwareModeSuccess) {
@@ -188,7 +177,7 @@ TEST_F(ConfigChannelTest, FirmwareModeSuccess) {
   EXPECT_WRITE32(PWM_INVERT_REG_OFFSET, 0);
 
   EXPECT_DIF_OK(
-      dif_pwm_configure_channel(&pwm_, kDifPwmChannel0, channel_config_));
+      dif_pwm_configure_channel(&pwm_, /* channel = */ 0, channel_config_));
 }
 
 TEST_F(ConfigChannelTest, BlinkModeSuccess) {
@@ -214,7 +203,7 @@ TEST_F(ConfigChannelTest, BlinkModeSuccess) {
 
   channel_config_.mode = kDifPwmModeBlink;
   EXPECT_DIF_OK(
-      dif_pwm_configure_channel(&pwm_, kDifPwmChannel0, channel_config_));
+      dif_pwm_configure_channel(&pwm_, /* channel = */ 0, channel_config_));
 }
 
 TEST_F(ConfigChannelTest, HeartbeatModeSuccess) {
@@ -241,7 +230,7 @@ TEST_F(ConfigChannelTest, HeartbeatModeSuccess) {
 
   channel_config_.mode = kDifPwmModeHeartbeat;
   EXPECT_DIF_OK(
-      dif_pwm_configure_channel(&pwm_, kDifPwmChannel0, channel_config_));
+      dif_pwm_configure_channel(&pwm_, /* channel = */ 0, channel_config_));
 }
 
 class PhaseCntrSetEnabledTest : public PwmTest {};
@@ -291,21 +280,21 @@ TEST_F(PhaseCntrGetEnabledTest, Success) {
 class PwmChannelSetEnabledTest : public PwmTest {};
 
 TEST_F(PwmChannelSetEnabledTest, NullArgs) {
-  EXPECT_DIF_BADARG(dif_pwm_channel_set_enabled(nullptr, 0, kDifToggleEnabled));
+  EXPECT_DIF_BADARG(
+      dif_pwm_channels_set_enabled(nullptr, 0, kDifToggleEnabled));
 }
 
 TEST_F(PwmChannelSetEnabledTest, BadArgs) {
-  EXPECT_DIF_BADARG(dif_pwm_channel_set_enabled(
+  EXPECT_DIF_BADARG(dif_pwm_channels_set_enabled(
       &pwm_, 1U << PWM_PARAM_N_OUTPUTS, kDifToggleEnabled));
   EXPECT_DIF_BADARG(
-      dif_pwm_channel_set_enabled(&pwm_, 0, static_cast<dif_toggle_t>(2)));
+      dif_pwm_channels_set_enabled(&pwm_, 0, static_cast<dif_toggle_t>(2)));
 }
 
 TEST_F(PwmChannelSetEnabledTest, Locked) {
   EXPECT_READ32(PWM_REGWEN_REG_OFFSET, 0);
-  EXPECT_EQ(
-      dif_pwm_channel_set_enabled(&pwm_, kDifPwmChannel0, kDifToggleEnabled),
-      kDifLocked);
+  EXPECT_EQ(dif_pwm_channels_set_enabled(&pwm_, 1 << 0, kDifToggleEnabled),
+            kDifLocked);
 }
 
 TEST_F(PwmChannelSetEnabledTest, Success) {
@@ -313,15 +302,15 @@ TEST_F(PwmChannelSetEnabledTest, Success) {
   EXPECT_READ32(PWM_REGWEN_REG_OFFSET, 1);
   EXPECT_READ32(PWM_PWM_EN_REG_OFFSET, 0xA);
   EXPECT_WRITE32(PWM_PWM_EN_REG_OFFSET, 0x1E);
-  EXPECT_DIF_OK(dif_pwm_channel_set_enabled(
-      &pwm_, kDifPwmChannel2 | kDifPwmChannel4, kDifToggleEnabled));
+  EXPECT_DIF_OK(dif_pwm_channels_set_enabled(&pwm_, (1 << 2) | (1 << 4),
+                                             kDifToggleEnabled));
 
   // Set Disabled.
   EXPECT_READ32(PWM_REGWEN_REG_OFFSET, 1);
   EXPECT_READ32(PWM_PWM_EN_REG_OFFSET, 0x1A);
   EXPECT_WRITE32(PWM_PWM_EN_REG_OFFSET, 0x2);
-  EXPECT_DIF_OK(dif_pwm_channel_set_enabled(
-      &pwm_, kDifPwmChannel3 | kDifPwmChannel4, kDifToggleDisabled));
+  EXPECT_DIF_OK(dif_pwm_channels_set_enabled(&pwm_, (1 << 3) | (1 << 4),
+                                             kDifToggleDisabled));
 }
 
 class PwmChannelGetEnabledTest : public PwmTest {};
@@ -329,16 +318,15 @@ class PwmChannelGetEnabledTest : public PwmTest {};
 TEST_F(PwmChannelGetEnabledTest, NullArgs) {
   dif_toggle_t is_enabled;
   EXPECT_DIF_BADARG(
-      dif_pwm_channel_get_enabled(nullptr, kDifPwmChannel0, &is_enabled));
+      dif_pwm_channel_get_enabled(nullptr, /* channel = */ 0, &is_enabled));
   EXPECT_DIF_BADARG(
-      dif_pwm_channel_get_enabled(&pwm_, kDifPwmChannel0, nullptr));
+      dif_pwm_channel_get_enabled(&pwm_, /* channel = */ 0, nullptr));
 }
 
 TEST_F(PwmChannelGetEnabledTest, BadArgs) {
   dif_toggle_t is_enabled;
   EXPECT_DIF_BADARG(dif_pwm_channel_get_enabled(
-      &pwm_, static_cast<dif_pwm_channel_t>(1U << PWM_PARAM_N_OUTPUTS),
-      &is_enabled));
+      &pwm_, static_cast<dif_pwm_channel_t>(PWM_PARAM_N_OUTPUTS), &is_enabled));
 }
 
 TEST_F(PwmChannelGetEnabledTest, Success) {
@@ -346,12 +334,12 @@ TEST_F(PwmChannelGetEnabledTest, Success) {
 
   EXPECT_READ32(PWM_PWM_EN_REG_OFFSET, 0xA);
   EXPECT_DIF_OK(
-      dif_pwm_channel_get_enabled(&pwm_, kDifPwmChannel1, &is_enabled));
+      dif_pwm_channel_get_enabled(&pwm_, /* channel = */ 1, &is_enabled));
   EXPECT_EQ(is_enabled, kDifToggleEnabled);
 
   EXPECT_READ32(PWM_PWM_EN_REG_OFFSET, 0xA);
   EXPECT_DIF_OK(
-      dif_pwm_channel_get_enabled(&pwm_, kDifPwmChannel2, &is_enabled));
+      dif_pwm_channel_get_enabled(&pwm_, /* channel = */ 2, &is_enabled));
   EXPECT_EQ(is_enabled, kDifToggleDisabled);
 }
 

@@ -21,9 +21,9 @@
 #include "sw/device/silicon_creator/lib/drivers/mock_rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_spi_device.h"
 
-#include "flash_ctrl_regs.h"
+#include "hw/top/flash_ctrl_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otp_ctrl_regs.h"
 
 namespace bootstrap_fuzzer {
 
@@ -71,8 +71,8 @@ void AbstractBootstrapMockGroup::ConfigureMocks() {
                : stream_.ParseIntOr<uint32_t>("flash_status", 0);
   });
 
-  ON_CALL(spi_device_, CmdGet(testing::NotNull()))
-      .WillByDefault([&](spi_device_cmd_t *cmd) -> rom_error_t {
+  ON_CALL(spi_device_, CmdGet(testing::NotNull(), true))
+      .WillByDefault([&](spi_device_cmd_t *cmd, bool blocking) -> rom_error_t {
         spi_cmd_count_++;
 
         if (spi_cmd_count_ < max_spi_cmd_count_) {

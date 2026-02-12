@@ -1,0 +1,16 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:rv_timer_reg_pkg"
+description: "RISC-V timer reg pkg"
+filesets:
+  files_rtl:
+    files:
+      - rtl/rv_timer_reg_pkg.sv
+    file_type: systemVerilogSource
+
+targets:
+  default: &default_target
+    filesets:
+      - files_rtl

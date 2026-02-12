@@ -182,7 +182,7 @@
   features: [
     { name: "I2C.MODE.HOST",
       desc: '''
-            The I2C block can be configued in host mode.
+            The I2C block can be configured in host mode.
             '''
     },
     { name: "I2C.MODE.TARGET",
@@ -606,7 +606,7 @@
           desc: "Value for SDA Override. Set to 0 to drive TX Low, and set to 1 for high-Z"
         }
       ]
-      tags: [// Overriding can cause sda/scl_interference interrupts to trigger continously.
+      tags: [// Overriding can cause sda/scl_interference interrupts to trigger continuously.
              // These then become unclearable interrupts at the end of csr_tests (clear_all_interrupts() fails).
              "excl:CsrRwTest:CsrExclWriteCheck"]
     }

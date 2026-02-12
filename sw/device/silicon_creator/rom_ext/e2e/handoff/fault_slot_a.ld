@@ -17,7 +17,7 @@ INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
 /* Slot A starts at the start of the eFlash plus the fixed size of the first
  * Silicon Owner stage */
  /* TODO(#9045): Move ROM_EXT size to a common location. */
-_slot_start_address = ORIGIN(eflash) + 0x10000;
+_slot_start_address = ORIGIN(eflash) + _rom_ext_size;
 
 REGION_ALIAS("owner_flash", eflash);
 

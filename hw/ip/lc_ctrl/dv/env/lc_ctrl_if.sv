@@ -9,7 +9,7 @@
 `endif
 
 interface lc_ctrl_if #(
-  parameter int NumRmaAckSigs
+  parameter int NumRmaAckSigs = lc_ctrl_dv_utils_pkg::NUM_RMA_ACK_SIGS
 ) (
   input clk,
   input rst_n
@@ -30,6 +30,7 @@ interface lc_ctrl_if #(
   lc_token_t hashed_token;
   prim_mubi_pkg::mubi4_t scanmode_i = prim_mubi_pkg::MuBi4False;
   logic scan_rst_ni = 1;
+  lc_tx_t lc_init_done_o;
   lc_tx_t lc_dft_en_o;
   lc_tx_t lc_nvm_debug_en_o;
   lc_tx_t lc_hw_debug_en_o;
@@ -39,6 +40,7 @@ interface lc_ctrl_if #(
   lc_tx_t lc_iso_part_sw_rd_en_o;
   lc_tx_t lc_iso_part_sw_wr_en_o;
   lc_tx_t lc_seed_hw_rd_en_o;
+  lc_tx_t lc_rma_state_o;
   lc_tx_t lc_keymgr_en_o;
   lc_tx_t lc_escalate_en_o;
   lc_tx_t lc_check_byp_en_o;
@@ -52,8 +54,8 @@ interface lc_ctrl_if #(
   lc_flash_rma_seed_t flash_rma_seed_o;
 
   // OTP test signals
-  logic [OtpTestCtrlWidth-1:0] otp_vendor_test_ctrl_o;
-  logic [OtpTestStatusWidth-1:0] otp_vendor_test_status_i;
+  logic [CsrOtpTestCtrlWidth-1:0] otp_vendor_test_ctrl_o;
+  logic [CsrOtpTestStatusWidth-1:0] otp_vendor_test_status_i;
 
   logic strap_en_override_o;
 
@@ -91,18 +93,18 @@ interface lc_ctrl_if #(
   lc_ctrl_env_pkg::lc_ctrl_test_phase_e test_phase;
   bit [79:0][7:0] test_sequence_typename;
 
-  task automatic init(lc_state_e                     lc_state = LcStRaw,
-                      lc_cnt_e                       lc_cnt = LcCnt0,
-                      lc_tx_t                        clk_byp_ack = Off,
-                      lc_tx_t [NumRmaAckSigs-1:0]    flash_rma_ack = {NumRmaAckSigs{Off}},
-                      logic                          otp_partition_err = 0,
-                      otp_device_id_t                otp_device_id = 0,
-                      logic                          otp_lc_data_i_valid = 1,
-                      otp_device_id_t                otp_manuf_state = 0,
-                      logic [OtpTestStatusWidth-1:0] otp_vendor_test_status = 0,
-                      lc_tx_t                        otp_secrets_valid = Off,
-                      lc_tx_t                        otp_test_tokens_valid = On,
-                      lc_tx_t                        otp_rma_token_valid = On);
+  task automatic init(lc_state_e                        lc_state = LcStRaw,
+                      lc_cnt_e                          lc_cnt = LcCnt0,
+                      lc_tx_t                           clk_byp_ack = Off,
+                      lc_tx_t [NumRmaAckSigs-1:0]       flash_rma_ack = {NumRmaAckSigs{Off}},
+                      logic                             otp_partition_err = 0,
+                      otp_device_id_t                   otp_device_id = 0,
+                      logic                             otp_lc_data_i_valid = 1,
+                      otp_device_id_t                   otp_manuf_state = 0,
+                      logic [CsrOtpTestStatusWidth-1:0] otp_vendor_test_status = 0,
+                      lc_tx_t                           otp_secrets_valid = Off,
+                      lc_tx_t                           otp_test_tokens_valid = On,
+                      lc_tx_t                           otp_rma_token_valid = On);
     otp_i.valid             = otp_lc_data_i_valid;
     otp_i.error             = otp_partition_err;
     otp_i.state             = lc_state;

@@ -81,6 +81,7 @@ package chip_common_pkg;
     LcCtrlSignalKeyMgrEn,
     LcCtrlSignalEscEn,
     LcCtrlSignalCheckBypEn,
+    LcCtrlSignalRmaState,
     LcCtrlSignalNumTotal
   } lc_ctrl_signal_e;
 

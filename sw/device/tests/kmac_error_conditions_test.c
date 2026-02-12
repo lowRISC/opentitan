@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/kmac.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
@@ -11,14 +12,16 @@
 #include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/kmac_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "keymgr_regs.h"  // Generated.
-#include "kmac_regs.h"    // Generated.
+#include "hw/top/keymgr_regs.h"  // Generated.
+#include "hw/top/kmac_regs.h"    // Generated.
 
 static dif_kmac_t kmac;
 static dif_keymgr_t keymgr;
+
+static const dt_kmac_t kKmacDt = (dt_kmac_t)0;
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -178,7 +181,7 @@ status_t test_err_wait_timer_expired(void) {
   LOG_INFO("Testing ErrWaitTimerExpired error.");
 
   // Init the KMAC block.
-  TRY(dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+  TRY(dif_kmac_init_from_dt(kDtKmac, &kmac));
 
   const dif_kmac_config_t config = (dif_kmac_config_t){
       .entropy_mode = kDifKmacEntropyModeEdn,
@@ -267,7 +270,7 @@ status_t test_err_incorrect_entropy_mode(void) {
   LOG_INFO("Testing ErrIncorrectEntropyMode error.");
 
   // Re-init KMAC for the test.
-  TRY(dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+  TRY(dif_kmac_init_from_dt(kDtKmac, &kmac));
 
   // Write configuration register.
   uint32_t cfg_reg = 0;
@@ -307,7 +310,7 @@ status_t test_err_incorrect_entropy_mode(void) {
 status_t test_err_sw_hashing_without_entropy_ready(void) {
   LOG_INFO("Testing ErrSwHashingWithoutEntropyReady error.");
 
-  TRY(dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+  TRY(dif_kmac_init_from_dt(kDtKmac, &kmac));
 
   // Manually init the KMAC block and do not set entropy_ready bit.
   // Write entropy period register.
@@ -402,7 +405,7 @@ status_t test_err_sw_hashing_without_entropy_ready(void) {
 status_t test_err_incorrect_fnc_name(void) {
   LOG_INFO("Testing kDifErrorIncorrectFunctionName error.");
   // Re-init KMAC for the test.
-  TRY(dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+  TRY(dif_kmac_init_from_dt(kDtKmac, &kmac));
   TRY(kmac_testutils_config(&kmac, false));
 
   // Configure cSHAKE mode with the given strength and enable KMAC mode.
@@ -468,7 +471,7 @@ status_t test_err_incorrect_fnc_name(void) {
 status_t test_err_key_not_valid(void) {
   LOG_INFO("Testing ErrKeyNotValid error.");
   // Re-init KMAC for the test.
-  TRY(dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+  TRY(dif_kmac_init_from_dt(kDtKmac, &kmac));
   // Configure KMAC to use the sideloaded key.
   TRY(kmac_testutils_config(&kmac, true));
 
@@ -496,7 +499,7 @@ status_t test_err_shadow_reg_update(void) {
   LOG_INFO("Testing shadow register update error.");
 
   // Init the KMAC block.
-  TRY(dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+  TRY(dif_kmac_init_from_dt(kDtKmac, &kmac));
 
   // Configure KMAC hardware.
   TRY(kmac_testutils_config(&kmac, false));
@@ -512,7 +515,11 @@ status_t test_err_shadow_reg_update(void) {
   mmio_region_write32(kmac.base_addr, KMAC_CFG_SHADOWED_REG_OFFSET, cfg_reg);
   // Change the value of one config bit and write again.
   cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_KMAC_EN_BIT, false);
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_start(
+      dt_kmac_alert_to_alert_id(kKmacDt, kDtKmacAlertRecovOperationErr)));
   mmio_region_write32(kmac.base_addr, KMAC_CFG_SHADOWED_REG_OFFSET, cfg_reg);
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_finish(
+      dt_kmac_alert_to_alert_id(kKmacDt, kDtKmacAlertRecovOperationErr)));
 
   // On a mismatch between first and second write, the recoverable alert should
   // trigger.
@@ -547,8 +554,7 @@ status_t test_err_sw_cmd_sequence(void) {
 
   for (int it = 0; it < ARRAYSIZE(cmds); it++) {
     // Re-init KMAC for the test.
-    TRY(dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR),
-                      &kmac));
+    TRY(dif_kmac_init_from_dt(kDtKmac, &kmac));
     // Configure KMAC hardware (using software key and software entropy).
     TRY(kmac_testutils_config(&kmac, false));
 
@@ -582,8 +588,7 @@ status_t test_err_unexpected_mode_strength(void) {
 
   for (int it = 0; it < ARRAYSIZE(mode); it++) {
     // Re-init KMAC for the test.
-    TRY(dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR),
-                      &kmac));
+    TRY(dif_kmac_init_from_dt(kDtKmac, &kmac));
     TRY(kmac_testutils_config(&kmac, false));
 
     uint32_t cfg_reg =

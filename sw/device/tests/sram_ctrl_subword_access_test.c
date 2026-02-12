@@ -11,8 +11,6 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 enum {
   kSramCtrlTestDataSizeWords = 3,
   kSramCtrlTestDataSizeBytes = kSramCtrlTestDataSizeWords * 4,
@@ -132,15 +130,11 @@ static void write_subwords_check(mmio_region_t region) {
 }
 
 bool test_main(void) {
-  // Initialize SRAM_CTRL hardware.
+  // Initialize SRAM_CTRL hardware using device tables
   dif_sram_ctrl_t sram_ctrl_main;
   dif_sram_ctrl_t sram_ctrl_ret;
-  CHECK_DIF_OK(dif_sram_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR),
-      &sram_ctrl_main));
-  CHECK_DIF_OK(dif_sram_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR),
-      &sram_ctrl_ret));
+  CHECK_DIF_OK(dif_sram_ctrl_init_from_dt(kDtSramCtrlMain, &sram_ctrl_main));
+  CHECK_DIF_OK(dif_sram_ctrl_init_from_dt(kDtSramCtrlRetAon, &sram_ctrl_ret));
 
   dif_sram_ctrl_status_bitfield_t status_main;
   dif_sram_ctrl_status_bitfield_t status_ret;
@@ -160,7 +154,7 @@ bool test_main(void) {
   // Ret SRAM will start at the beginning of the owner section, allowing this
   // test to run on silicon where creator SRAM is in use.
   uintptr_t sram_ret_buffer_addr =
-      TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR +
+      dt_sram_ctrl_memory_base(kDtSramCtrlRetAon, kDtSramCtrlMemoryRam) +
       offsetof(retention_sram_t, owner);
 
   mmio_region_t sram_region_main_addr =

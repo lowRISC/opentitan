@@ -17,8 +17,8 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
+#include "hw/top/mbx_regs.h"  // Generated
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
-#include "mbx_regs.h"  // Generated
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -106,7 +106,7 @@ void configure_mbx_peripherals(void) {
 
   for (dt_mbx_t mbx_idx = 0; mbx_idx < kDtMbxCount; mbx_idx++) {
     uint32_t sram_start =
-        dt_sram_ctrl_reg_block(kDtSramCtrlMbox, kDtSramCtrlRegBlockRam);
+        dt_sram_ctrl_memory_base(kDtSramCtrlMbox, kDtSramCtrlMemoryRam);
     uint32_t mbx_region_base = sram_start + (mbx_size_bytes * 2 * mbx_idx);
     // Set the memory ranges
     dif_mbx_range_config_t config = {

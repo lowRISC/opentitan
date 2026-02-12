@@ -19,6 +19,11 @@ package spi_host_reg_pkg;
   // Number of registers for every interface
   parameter int NumRegs = 12;
 
+  // Alert indices
+  typedef enum int {
+    AlertFatalFaultIdx = 0
+  } spi_host_alert_idx_t;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -186,62 +191,18 @@ package spi_host_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } error;
+    } spi_event;
     struct packed {
       logic        d;
       logic        de;
-    } spi_event;
+    } error;
   } spi_host_hw2reg_intr_state_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [7:0]  d;
-      logic        de;
-    } txqd;
-    struct packed {
-      logic [7:0]  d;
-      logic        de;
-    } rxqd;
-    struct packed {
-      logic [3:0]  d;
-      logic        de;
-    } cmdqd;
-    struct packed {
       logic        d;
       logic        de;
-    } rxwm;
-    struct packed {
-      logic        d;
-      logic        de;
-    } byteorder;
-    struct packed {
-      logic        d;
-      logic        de;
-    } rxstall;
-    struct packed {
-      logic        d;
-      logic        de;
-    } rxempty;
-    struct packed {
-      logic        d;
-      logic        de;
-    } rxfull;
-    struct packed {
-      logic        d;
-      logic        de;
-    } txwm;
-    struct packed {
-      logic        d;
-      logic        de;
-    } txstall;
-    struct packed {
-      logic        d;
-      logic        de;
-    } txempty;
-    struct packed {
-      logic        d;
-      logic        de;
-    } txfull;
+    } ready;
     struct packed {
       logic        d;
       logic        de;
@@ -249,26 +210,58 @@ package spi_host_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } ready;
+    } txfull;
+    struct packed {
+      logic        d;
+      logic        de;
+    } txempty;
+    struct packed {
+      logic        d;
+      logic        de;
+    } txstall;
+    struct packed {
+      logic        d;
+      logic        de;
+    } txwm;
+    struct packed {
+      logic        d;
+      logic        de;
+    } rxfull;
+    struct packed {
+      logic        d;
+      logic        de;
+    } rxempty;
+    struct packed {
+      logic        d;
+      logic        de;
+    } rxstall;
+    struct packed {
+      logic        d;
+      logic        de;
+    } byteorder;
+    struct packed {
+      logic        d;
+      logic        de;
+    } rxwm;
+    struct packed {
+      logic [3:0]  d;
+      logic        de;
+    } cmdqd;
+    struct packed {
+      logic [7:0]  d;
+      logic        de;
+    } rxqd;
+    struct packed {
+      logic [7:0]  d;
+      logic        de;
+    } txqd;
   } spi_host_hw2reg_status_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
-    } cmdbusy;
-    struct packed {
-      logic        d;
-      logic        de;
-    } overflow;
-    struct packed {
-      logic        d;
-      logic        de;
-    } underflow;
-    struct packed {
-      logic        d;
-      logic        de;
-    } cmdinval;
+    } accessinval;
     struct packed {
       logic        d;
       logic        de;
@@ -276,7 +269,19 @@ package spi_host_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } accessinval;
+    } cmdinval;
+    struct packed {
+      logic        d;
+      logic        de;
+    } underflow;
+    struct packed {
+      logic        d;
+      logic        de;
+    } overflow;
+    struct packed {
+      logic        d;
+      logic        de;
+    } cmdbusy;
   } spi_host_hw2reg_error_status_reg_t;
 
   // Register -> HW type

@@ -27,21 +27,21 @@ enum {
   // Keymgr hjson files from HW, so we need to hardcode it for the moment.
   kKmacSideloadKeyLength = 256,
   // Length of a SHA3-224 digest in bytes.
-  kSha3_224DigestBytes = 224 / 8,
+  kKmacSha3224DigestBytes = 224 / 8,
   // Length of a SHA3-224 digest in 32-bit words.
-  kSha3_224DigestWords = kSha3_224DigestBytes / sizeof(uint32_t),
+  kKmacSha3224DigestWords = kKmacSha3224DigestBytes / sizeof(uint32_t),
   // Length of a SHA3_256 digest in bytes.
-  kSha3_256DigestBytes = 256 / 8,
+  kKmacSha3256DigestBytes = 256 / 8,
   // Length of a SHA3_256 digest in 32-bit words.
-  kSha3_256DigestWords = kSha3_256DigestBytes / sizeof(uint32_t),
+  kKmacSha3256DigestWords = kKmacSha3256DigestBytes / sizeof(uint32_t),
   // Length of a SHA3_384 digest in bytes.
-  kSha3_384DigestBytes = 384 / 8,
+  kKmacSha3384DigestBytes = 384 / 8,
   // Length of a SHA3_384 digest in 32-bit words.
-  kSha3_384DigestWords = kSha3_384DigestBytes / sizeof(uint32_t),
+  kKmacSha3384DigestWords = kKmacSha3384DigestBytes / sizeof(uint32_t),
   // Length of a SHA3_512 digest in bytes.
-  kSha3_512DigestBytes = 512 / 8,
+  kKmacSha3512DigestBytes = 512 / 8,
   // Length of a SHA3_512 digest in 32-bit words.
-  kSha3_512DigestWords = kSha3_512DigestBytes / sizeof(uint32_t),
+  kKmacSha3512DigestWords = kKmacSha3512DigestBytes / sizeof(uint32_t),
 };
 
 /**

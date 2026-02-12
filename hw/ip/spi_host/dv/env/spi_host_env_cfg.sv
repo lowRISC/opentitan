@@ -31,6 +31,10 @@ class spi_host_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_host_reg_block));
   // higher values
   uint csr_spinwait_timeout_ns = csr_utils_pkg::default_spinwait_timeout_ns;
 
+  // Used to provide a faster decrement via forcing internal RTL signals, so simulations
+  // finish more quickly.
+  virtual interface spi_host_fsm_if force_spi_fsm_vif;
+
   constraint dummy_c {
     num_dummy inside { [min_dummy_cycles:max_dummy_cycles]};
   }
@@ -42,7 +46,7 @@ class spi_host_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_host_reg_block));
 
 
 
-  `uvm_object_param_utils_begin(spi_host_env_cfg)
+  `uvm_object_utils_begin(spi_host_env_cfg)
     `uvm_field_object(m_spi_agent_cfg, UVM_DEFAULT)
   `uvm_object_utils_end
   `uvm_object_new
@@ -69,8 +73,14 @@ class spi_host_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_host_reg_block));
     // create the seq_cfg
     seq_cfg = spi_host_seq_cfg::type_id::create("seq_cfg");
 
+    set_default_csr_timeout();
+
     // set num_interrupts & num_alerts
     num_interrupts = ral.intr_state.get_n_used_bits();
+  endfunction
+
+  function void set_default_csr_timeout();
+    csr_spinwait_timeout_ns = csr_utils_pkg::default_spinwait_timeout_ns;
   endfunction
 
   // clk_core_freq_mhz is set by

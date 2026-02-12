@@ -14,6 +14,7 @@ from .edn_client import EdnClient
 from .ext_regs import OTBNExtRegs
 from .flags import FlagReg
 from .gpr import GPRs
+from .kmac import Kmac
 from .loop import LoopStack
 from .reg import RegFile
 from .trace import Trace, TracePC
@@ -82,7 +83,8 @@ class OTBNState:
 
         self.ext_regs = OTBNExtRegs()
         self.wsrs = WSRFile(self.ext_regs)
-        self.csrs = CSRFile()
+        self.csrs = CSRFile(self.wsrs)
+        self.kmac = Kmac(self.csrs, self.wsrs)
 
         self.pc = 0
         self._pc_next_override: Optional[int] = None
@@ -110,6 +112,7 @@ class OTBNState:
 
         self._err_bits = 0
         self.pending_halt = False
+        self._pending_err_bits = 0
 
         self._urnd_client = EdnClient()
 
@@ -127,6 +130,10 @@ class OTBNState:
         # to catch bugs if we forget to set it.
         self.wipe_cycles = -1
 
+        # Remember the last state we were in. This is used to determine whether we
+        # need to delay zeroing INSN_CNT when locking after a wipe.
+        self.old_state = self._fsm_state
+
         # This controls which state we move to when the next secure wipe ends
         self.lock_after_wipe = False
 
@@ -138,6 +145,14 @@ class OTBNState:
         # cancelled).
         self.injected_err_bits = 0
         self.lock_immediately = False
+
+        # The DV environment can request a stall for one cycle.
+        # This is used to model situations where OTBN is stalled due to
+        # injected errors. The DV environment can decide whether a stall
+        # request should be enforced even if there is a pending halt. If not
+        # enforced, any pending halt will override the stall request.
+        self._stall_requested = False
+        self._enforce_stall_request = False
 
         # OTBN might zero its insn_cnt register during a secure wipe. The
         # precise cycle that this happens depends slightly on how we decide to
@@ -272,7 +287,7 @@ class OTBNState:
         c += self.loop_stack.changes()
         c += self.ext_regs.changes()
         c += self.wsrs.changes()
-        c += self.csrs.flags.changes()
+        c += self.csrs.changes()
         c += self.wdrs.changes()
         return c
 
@@ -295,6 +310,7 @@ class OTBNState:
             self.take_injected_err_bits()
         self.ext_regs.step()
         self._urnd_client.step()
+        self.kmac.step()
 
     def commit(self, sim_stalled: bool) -> None:
         if self._time_to_imem_invalidation is not None:
@@ -303,11 +319,11 @@ class OTBNState:
                 self.invalidated_imem = True
                 self._time_to_imem_invalidation = None
 
-        old_state = self._fsm_state
+        self.old_state = self._fsm_state
 
         self._fsm_state = self._next_fsm_state
 
-        if self._fsm_state == old_state:
+        if self._fsm_state == self.old_state:
             self.cycles_in_this_state += 1
         else:
             self.cycles_in_this_state = 0
@@ -323,15 +339,16 @@ class OTBNState:
         # register) but nothing else. This is just an optimisation: if
         # everything is working properly, there won't be any other pending
         # changes.
-        if old_state not in [FsmState.EXEC, FsmState.WIPING]:
+        if self.old_state not in [FsmState.EXEC, FsmState.WIPING]:
             return
 
         self.gprs.commit()
         self.dmem.commit()
         self.loop_stack.commit()
         self.wsrs.commit()
-        self.csrs.flags.commit()
+        self.csrs.commit()
         self.wdrs.commit()
+        self.kmac.end_cycle()
 
         if not sim_stalled:
             self.pc = self.get_next_pc()
@@ -345,8 +362,9 @@ class OTBNState:
         self.loop_stack.abort()
         self.ext_regs.abort()
         self.wsrs.abort()
-        self.csrs.flags.abort()
+        self.csrs.abort()
         self.wdrs.abort()
+        self.kmac.end_cycle()
 
     def start(self) -> None:
         '''Start running; perform state init'''
@@ -363,8 +381,10 @@ class OTBNState:
         # Reset CSRs, WSRs, loop stack and call stack. WSRs have special
         # treatment because some of them have values that persist across
         # operations.
-        self.csrs = CSRFile()
+        # TODO: Figure out when and how kmac should be reset.
         self.wsrs.on_start()
+        self.csrs = CSRFile(self.wsrs)
+        self.kmac.on_start(self.csrs, self.wsrs)
         self.loop_stack = LoopStack()
         self.gprs.empty_call_stack()
 
@@ -536,9 +556,45 @@ class OTBNState:
         Any bits set in err_bits will be set in the ERR_BITS register when
         we're done.
 
+        Some errors are delayed by one cycle to match the RTL's behaviour.
         '''
+        # Delay certain errors due to the registering of escalation signals.
+        # For some fatal escalation sources (like predecode errors) OTBN
+        # escalates one cycle after the error is detected. This is not directly
+        # modeled in this simulator as such errors only occur in real HW or
+        # during tests that inject errors into the simulation model. In case
+        # such a test injects an error it can notify the model in the correct
+        # cycle using the send_err_escalation command of the stepped simulator.
+        # However, this method cannot cover all possible escalation sources.
+        # One such example is the DMEM integrity violation error. If the test
+        # invalidates the DMEM it cannot know when the next DMEM read will
+        # happen as the binary being executed is not known to the testbench.
+        # When the memory is invalidated the next load instruction will
+        # trigger the DMEM integrity violation error by calling
+        # stop_at_end_of_cycle with the DMEM_INTG_VIOLATION error set. The
+        # model now detects that this error is set and must delay the
+        # escalation by one cycle. For this the error bit is added to the
+        # pending errors and removed from the current error bits. If there are
+        # no other error bits set the model must still commit the current
+        # instruction and thus may not set the pending_halt flag.
+        if err_bits & ErrBits.DMEM_INTG_VIOLATION:
+            # Clear the flag so it's not applied below
+            err_bits &= ~ErrBits.DMEM_INTG_VIOLATION
+            self._pending_err_bits |= ErrBits.DMEM_INTG_VIOLATION
+            # We don't want to stop if this is the only error bit set
+            if err_bits == 0:
+                return
+
+        # Any other stop request (with or without errors) happens immediately
         self._err_bits |= err_bits
         self.pending_halt = True
+
+    def take_pending_err_bits(self) -> None:
+        '''Apply any pending error bits'''
+        if self._pending_err_bits:
+            self._err_bits |= self._pending_err_bits
+            self._pending_err_bits = 0
+            self.pending_halt = True
 
     def invalidate_imem(self) -> None:
         self._time_to_imem_invalidation = 2
@@ -559,3 +615,29 @@ class OTBNState:
         if self.injected_err_bits != 0:
             self.stop_at_end_of_cycle(self.injected_err_bits)
             self.injected_err_bits = 0
+
+    def request_stall(self, enforce: bool) -> None:
+        '''Make the model stall for one cycle instead of retiring the next
+        instruction.
+
+        In case there is a pending halt, the stall request is ignored except
+        if enforced is True.'''
+        self._stall_requested = True
+        self._enforce_stall_request = enforce
+
+    def stall_requested(self) -> bool:
+        '''Returns whether a stall should happen. Any call resets a pending
+        stall request.
+
+        If there is also a pending halt, the stall request is ignored unless
+        it was requested to be enforced.
+        '''
+        # Stall if there is an enforced stall request or if there is a request
+        # but no pending halt.
+        should_stall = (self._stall_requested and
+                        (self._enforce_stall_request or (not self.pending_halt)))
+
+        # Any stall request is only valid for one cycle.
+        self._stall_requested = False
+        self._enforce_stall_request = False
+        return should_stall

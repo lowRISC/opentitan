@@ -37,7 +37,7 @@ module kmac_reduced
 
   // SHA3 control and status
   input  logic                  start_i,           // 1 pulse after reseeding PRNG and injecting
-                                                   // messsage
+                                                   // message
   input  logic                  process_i,         // 1 pulse after loading message into SHA3
   input  logic                  run_i,             // drive to 0
   input  prim_mubi_pkg::mubi4_t done_i,            // drive to MuBi4True after

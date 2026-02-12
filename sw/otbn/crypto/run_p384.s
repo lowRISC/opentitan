@@ -15,9 +15,9 @@
  * 7. MODE_SIDELOAD_ECDH: ECDH key exchange using a secret key from a sideloaded seed
  */
 
- /**
+/**
  * Mode magic values generated with
- * $ ./util/design/sparse-fsm-encode.py -d 6 -m 4 -n 11 --avoid-zero -s 1654842154
+ * $ ./util/design/sparse-fsm-encode.py -d 6 -m 8 -n 11 --avoid-zero -s 1654842154
  *
  * Call the same utility with the same arguments and a higher -m to generate
  * additional value(s) without changing the others or sacrificing mutual HD.
@@ -27,19 +27,21 @@
  * as `li`. If support is added, we could use 32-bit values here instead of
  * 11-bit.
  */
-.equ MODE_KEYGEN, 0x0e7
-.equ MODE_SIGN, 0x633
-.equ MODE_VERIFY, 0x54d
-.equ MODE_ECDH, 0x3bd
-.equ MODE_SIDELOAD_KEYGEN, 0x4da
-.equ MODE_SIDELOAD_SIGN, 0x786
-.equ MODE_SIDELOAD_ECDH, 0x36a
+.equ MODE_KEYGEN, 0x3CC
+.equ MODE_SIGN, 0x7A1
+.equ MODE_SIGN_CONFIG_K, 0x655
+.equ MODE_VERIFY, 0x0BD
+.equ MODE_ECDH, 0x578
+.equ MODE_SIDELOAD_KEYGEN, 0x31B
+.equ MODE_SIDELOAD_SIGN, 0x2F2
+.equ MODE_SIDELOAD_ECDH, 0x4CB
 
 /**
  * Make the mode constants visible to Ibex.
  */
 .globl MODE_KEYGEN
 .globl MODE_SIGN
+.globl MODE_SIGN_CONFIG_K
 .globl MODE_VERIFY
 .globl MODE_ECDH
 .globl MODE_SIDELOAD_KEYGEN
@@ -64,14 +66,8 @@ start:
   addi  x3, x0, MODE_KEYGEN
   beq   x2, x3, keypair_random
 
-  addi  x3, x0, MODE_SIGN
-  beq   x2, x3, ecdsa_sign
-
   addi  x3, x0, MODE_VERIFY
   beq   x2, x3, ecdsa_verify
-
-  addi  x3, x0, MODE_ECDH
-  beq   x2, x3, shared_key
 
   addi  x3, x0, MODE_SIDELOAD_KEYGEN
   beq   x2, x3, keypair_from_seed
@@ -82,10 +78,70 @@ start:
   addi  x3, x0, MODE_SIDELOAD_ECDH
   beq   x2, x3, shared_key_from_seed
 
+  /* Copy the caller-provided secret key shares into scratchpad memory.
+       dmem[d0] <= dmem[d0_io]
+       dmem[d1] <= dmem[d1_io] */
+  la       x13, d0_io
+  la       x14, d0
+  jal      x1, copy_share
+  la       x13, d1_io
+  la       x14, d1
+  jal      x1, copy_share
+
+  addi  x3, x0, MODE_SIGN
+  beq   x2, x3, ecdsa_sign
+
+  addi  x3, x0, MODE_ECDH
+  beq   x2, x3, shared_key
+
+  /* Copy the caller-provided secret scalar shares into scratchpad memory.
+       dmem[k0] <= dmem[k0_io]
+       dmem[k1] <= dmem[k1_io] */
+  la       x13, k0_io
+  la       x14, k0
+  jal      x1, copy_share
+  la       x13, k1_io
+  la       x14, k1
+  jal      x1, copy_share
+
+  addi  x3, x0, MODE_SIGN_CONFIG_K
+  beq   x2, x3, ecdsa_sign_config_k
+
   /* Invalid mode; fail. */
   unimp
   unimp
   unimp
+
+/**
+ * Helper routine to copy secret key shares.
+ *
+ * Copies 64 bytes from the source to destination location in DMEM. The source
+ * and destination may be the same but should not otherwise overlap.
+ *
+ * @param x13: dptr_src, pointer to source DMEM location
+ * @param x14: dptr_dst, pointer to destination DMEM location
+ * @param      dmem[dptr_src..dptr_src+64]: source data
+ * @param[out] dmem[dptr_dst..dptr_dst+64]: copied data
+ *
+ * clobbered registers: x10, w10, w31
+ * clobbered flag groups: none
+ */
+copy_share:
+  /* Randomize the content of w10 to prevent leakage. */
+  bn.wsrr  w10, URND
+
+  /* Copy the secret key shares into Ibex-visible memory. */
+  li       x10, 10
+  bn.lid   x10, 0(x13)
+  bn.sid   x10, 0(x14)
+  bn.lid   x10, 32(x13)
+  bn.sid   x10, 32(x14)
+
+  /* Write zero to the most significant 256 bits of the share. */
+  li       x10, 31
+  bn.xor   w31, w31, w31
+  bn.sid   x10, 64(x14)
+  ret
 
 /**
  * Generate a fresh random keypair.
@@ -103,7 +159,7 @@ start:
  * @param[out]   dmem[x]: Public key x-coordinate
  * @param[out]   dmem[y]: Public key y-coordinate
  *
- * clobbered registers: x2, x3, x9 to x13, x18 to x21, x26 to x30, w0 to w30
+ * clobbered registers: x2, x3, x9 to x13, x18 to x23, x26 to x30, w0 to w30
  * clobbered flag groups: FG0
  */
 keypair_random:
@@ -115,7 +171,35 @@ keypair_random:
   /* Generate public key d*G.
        dmem[x] <= (d*G).x
        dmem[y] <= (d*G).y */
-  jal       x1, p384_base_mult
+  jal       x1, p384_base_mult_checked
+
+  /* Copy the secret key shares into Ibex-visible memory.
+       dmem[d0_io] <= dmem[d0]
+       dmem[d1_io] <= dmem[d1] */
+  la       x13, d0
+  la       x14, d0_io
+  jal      x1, copy_share
+  la       x13, d1
+  la       x14, d1_io
+  jal      x1, copy_share
+
+  ecall
+
+/**
+ * P-384 ECDSA signature generation.
+ * Generate the secret scalar k from a random seed.
+ *
+ * @param[in]  dmem[msg]: message to be signed in dmem
+ * @param[in]   dmem[d0]: 1st private key share d0
+ * @param[in]   dmem[d1]: 2nd private key share d1
+ * @param[in]   dmem[k0]: 1st secret scalar share k0
+ * @param[in]   dmem[k1]: 2nd secret scalar share k1
+ * @param[out]   dmem[r]: r component of signature
+ * @param[out]   dmem[s]: s component of signature
+ */
+ecdsa_sign_config_k:
+  /* Generate the signature. */
+  jal      x1, p384_sign
 
   ecall
 
@@ -156,6 +240,10 @@ ecdsa_sign_sideloaded:
        w10,w11 <= seed1 */
   bn.wsrr   w20, KEY_S0_L
   bn.wsrr   w21, KEY_S0_H
+
+  /* Dummy instruction to avoid consecutive share access. */
+  bn.xor    w31, w31, w31
+
   bn.wsrr   w10, KEY_S1_L
   bn.wsrr   w11, KEY_S1_H
 
@@ -274,7 +362,7 @@ shared_key:
  * @param[out]  dmem[x]: Public key x-coordinate
  * @param[out]  dmem[y]: Public key y-coordinate
  *
- * clobbered registers: x2, x3, x9 to x13, x18 to x21, x26 to x30, w0 to w30
+ * clobbered registers: x2, x3, x9 to x13, x18 to x23, x26 to x30, w0 to w30
  * clobbered flag groups: FG0
  */
 keypair_from_seed:
@@ -283,6 +371,10 @@ keypair_from_seed:
        w10,w11 <= seed1 */
   bn.wsrr   w20, KEY_S0_L
   bn.wsrr   w21, KEY_S0_H
+
+  /* Dummy instruction to avoid consecutive share access. */
+  bn.xor    w31, w31, w31
+
   bn.wsrr   w10, KEY_S1_L
   bn.wsrr   w11, KEY_S1_H
 
@@ -294,7 +386,7 @@ keypair_from_seed:
   /* Generate public key d*G.
        dmem[x] <= (d*G).x
        dmem[y] <= (d*G).y */
-  jal       x1, p384_base_mult
+  jal       x1, p384_base_mult_checked
 
   ecall
 
@@ -322,6 +414,10 @@ shared_key_from_seed:
        w10,w11 <= seed1 */
   bn.wsrr   w20, KEY_S0_L
   bn.wsrr   w21, KEY_S0_H
+
+  /* Dummy instruction to avoid consecutive share access. */
+  bn.xor    w31, w31, w31
+
   bn.wsrr   w10, KEY_S1_L
   bn.wsrr   w11, KEY_S1_H
 
@@ -332,77 +428,3 @@ shared_key_from_seed:
 
   /* Jump to shared key computation. */
   jal       x0, shared_key
-
-
-.data
-
-/* Operational mode. */
-.globl mode
-.balign 4
-mode:
-  .zero 4
-
-/* Success code for basic validity checks on the public key and signature. */
-.globl ok
-.balign 4
-ok:
-  .zero 4
-
-/* Message digest. */
-.globl msg
-.balign 32
-msg:
-  .zero 64
-
-/* Signature R. */
-.globl r
-.balign 32
-r:
-  .zero 64
-
-/* Signature S. */
-.globl s
-.balign 32
-s:
-  .zero 64
-
-/* Public key x-coordinate. */
-.globl x
-.balign 32
-x:
-  .zero 64
-
-/* Public key y-coordinate. */
-.globl y
-.balign 32
-y:
-  .zero 64
-
-/* Private key (d) in two shares: d = (d0 + d1) mod n. */
-.globl d0
-.balign 32
-d0:
-  .zero 64
-.globl d1
-.balign 32
-d1:
-  .zero 64
-
-/* Verification result x_r (aka x_1). */
-.globl x_r
-.balign 32
-x_r:
-  .zero 64
-
-.section .scratchpad
-
-/* Secret scalar (k) in two shares: k = (k0 + k1) mod n */
-.globl k0
-.balign 32
-k0:
-  .zero 64
-
-.globl k1
-.balign 32
-k1:
-  .zero 64

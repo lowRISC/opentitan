@@ -28,6 +28,13 @@ package lc_ctrl_reg_pkg;
   parameter int NumRegsRegs = 35;
   parameter int NumRegsDmi = 0;
 
+  // Alert indices
+  typedef enum int {
+    AlertFatalProgErrorIdx = 0,
+    AlertFatalStateErrorIdx = 1,
+    AlertFatalBusIntegErrorIdx = 2
+  } lc_ctrl_alert_idx_t;
+
   ///////////////////////////////////////////////
   // Typedefs for registers for regs interface //
   ///////////////////////////////////////////////
@@ -86,40 +93,40 @@ package lc_ctrl_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        d;
-    } initialized;
-    struct packed {
-      logic        d;
-    } ready;
-    struct packed {
-      logic        d;
-    } ext_clock_switched;
-    struct packed {
-      logic        d;
-    } transition_successful;
-    struct packed {
-      logic        d;
-    } transition_count_error;
-    struct packed {
-      logic        d;
-    } transition_error;
-    struct packed {
-      logic        d;
-    } token_error;
-    struct packed {
-      logic        d;
-    } flash_rma_error;
-    struct packed {
-      logic        d;
-    } otp_error;
-    struct packed {
-      logic        d;
-    } state_error;
+    } otp_partition_error;
     struct packed {
       logic        d;
     } bus_integ_error;
     struct packed {
       logic        d;
-    } otp_partition_error;
+    } state_error;
+    struct packed {
+      logic        d;
+    } otp_error;
+    struct packed {
+      logic        d;
+    } flash_rma_error;
+    struct packed {
+      logic        d;
+    } token_error;
+    struct packed {
+      logic        d;
+    } transition_error;
+    struct packed {
+      logic        d;
+    } transition_count_error;
+    struct packed {
+      logic        d;
+    } transition_successful;
+    struct packed {
+      logic        d;
+    } ext_clock_switched;
+    struct packed {
+      logic        d;
+    } ready;
+    struct packed {
+      logic        d;
+    } initialized;
   } lc_ctrl_hw2reg_status_reg_t;
 
   typedef struct packed {
@@ -133,10 +140,10 @@ package lc_ctrl_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        d;
-    } ext_clock_en;
+    } volatile_raw_unlock;
     struct packed {
       logic        d;
-    } volatile_raw_unlock;
+    } ext_clock_en;
   } lc_ctrl_hw2reg_transition_ctrl_reg_t;
 
   typedef struct packed {
@@ -170,19 +177,19 @@ package lc_ctrl_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [15:0] d;
-    } product_id;
+    } silicon_creator_id;
     struct packed {
       logic [15:0] d;
-    } silicon_creator_id;
+    } product_id;
   } lc_ctrl_hw2reg_hw_revision0_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [7:0]  d;
-    } revision_id;
-    struct packed {
       logic [23:0] d;
     } reserved;
+    struct packed {
+      logic [7:0]  d;
+    } revision_id;
   } lc_ctrl_hw2reg_hw_revision1_reg_t;
 
   typedef struct packed {

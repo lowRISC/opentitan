@@ -2,12 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, ensure, Context, Result};
-use clap::Parser;
-use once_cell::sync::Lazy;
+use std::sync::LazyLock;
 use std::time::Duration;
 
-use opentitanlib::app::TransportWrapper;
+use anyhow::{Context, Result, bail, ensure};
+use clap::Parser;
+
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::gpio::{Edge, MonitoringEvent, PinMode};
 use opentitanlib::io::uart::Uart;
@@ -16,7 +17,7 @@ use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::test_status::TestStatus;
 use opentitanlib::uart::console::UartConsole;
 
-use sysrst_ctrl::{read_pins, set_pins, setup_pins, Config};
+use sysrst_ctrl::{Config, read_pins, set_pins, setup_pins};
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -42,7 +43,7 @@ enum TestPhase {
 // Keep this consistent with device code.
 const DEBOUNCE_SW_VALUE_USEC: u64 = 100;
 
-static CONFIG: Lazy<Config> = Lazy::new(|| {
+static CONFIG: LazyLock<Config> = LazyLock::new(|| {
     Config {
         // pwrb_in_i, ac_present_i, lid_open_i
         output_pins: vec!["IOR10", "IOR11", "IOR12"],
@@ -103,7 +104,7 @@ fn chip_sw_sysrst_ctrl_ulp_z3_wakeup(
     set_test_phase(transport, TestPhase::Init)?;
 
     // Reset target.
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
     // Set pins to zero.
     set_pins(transport, config, pins_initial)?;
 
@@ -212,7 +213,7 @@ fn main() -> Result<()> {
 
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"Running ", opts.timeout)?;
 
     // Setup transport pins.
     setup_pins(&transport, &CONFIG)?;

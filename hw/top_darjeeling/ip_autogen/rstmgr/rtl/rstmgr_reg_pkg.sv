@@ -20,6 +20,12 @@ package rstmgr_reg_pkg;
   // Number of registers for every interface
   parameter int NumRegs = 18;
 
+  // Alert indices
+  typedef enum int {
+    AlertFatalFaultIdx = 0,
+    AlertFatalCnstyFaultIdx = 1
+  } rstmgr_alert_idx_t;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -89,17 +95,17 @@ package rstmgr_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic        d;
+      logic [4:0]  d;
       logic        de;
-    } low_power_exit;
+    } hw_req;
     struct packed {
       logic        d;
       logic        de;
     } sw_reset;
     struct packed {
-      logic [4:0]  d;
+      logic        d;
       logic        de;
-    } hw_req;
+    } low_power_exit;
   } rstmgr_hw2reg_reset_info_reg_t;
 
   typedef struct packed {
@@ -136,7 +142,7 @@ package rstmgr_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } reg_intg_err;
+    } fsm_err;
     struct packed {
       logic        d;
       logic        de;
@@ -144,7 +150,7 @@ package rstmgr_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } fsm_err;
+    } reg_intg_err;
   } rstmgr_hw2reg_err_code_reg_t;
 
   // Register -> HW type

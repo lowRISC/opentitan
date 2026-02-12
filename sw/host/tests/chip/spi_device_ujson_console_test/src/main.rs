@@ -36,11 +36,11 @@ struct Opts {
     firmware_elf: PathBuf,
 }
 
-const SYNC_MSG: &str = r"SYNC:.*\r\n";
+const SYNC_MSG: &str = r"SYNC:";
 
 fn test_perso_blob_strcut(opts: &Opts, spi_console: &SpiConsoleDevice) -> Result<()> {
     UartConsole::wait_for(spi_console, SYNC_MSG, opts.timeout)?;
-    let perso_blob = PersoBlob::recv(spi_console, opts.timeout, true)?;
+    let perso_blob = PersoBlob::recv(spi_console, opts.timeout, true, false)?;
     UartConsole::wait_for(spi_console, SYNC_MSG, opts.timeout)?;
     perso_blob.send(spi_console)?;
     Ok(())
@@ -83,7 +83,7 @@ fn test_end(opts: &Opts, end_test_address: u32, spi_console: &SpiConsoleDevice) 
     let end_test_value = MemRead32Req::execute(spi_console, end_test_address)?;
     assert!(end_test_value == 0);
     MemWrite32Req::execute(spi_console, end_test_address, /*value=*/ 1)?;
-    let _ = UartConsole::wait_for(spi_console, r"PASS![^\r\n]*", opts.timeout)?;
+    let _ = UartConsole::wait_for(spi_console, r"PASS!", opts.timeout)?;
     Ok(())
 }
 
@@ -109,8 +109,8 @@ fn main() -> Result<()> {
 
     let transport = opts.init.init_target()?;
     let spi = transport.spi(&opts.console_spi)?;
-    let spi_console_device = SpiConsoleDevice::new(&*spi)?;
-    let _ = UartConsole::wait_for(&spi_console_device, r"Running [^\r\n]*", opts.timeout)?;
+    let spi_console_device = SpiConsoleDevice::new(&*spi, None, /*ignore_frame_num=*/ false)?;
+    let _ = UartConsole::wait_for(&spi_console_device, r"Running ", opts.timeout)?;
 
     execute_test!(test_perso_blob_strcut, &opts, &spi_console_device);
     execute_test!(

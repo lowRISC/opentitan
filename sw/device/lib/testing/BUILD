@@ -2,10 +2,19 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
-load("//hw/top:defs.bzl", "opentitan_if_ip")
+load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "OPENTITAN_PLATFORM")
+load("//hw/top:defs.bzl", "ALL_IP_NAMES", "ALL_TOP_NAMES", "opentitan_if_ip", "opentitan_select_top")
+load("//rules/opentitan:util.bzl", "flatten")
+load("//rules:doxygen.bzl", "doxygen_gather_cc")
 
 package(default_visibility = ["//visibility:public"])
+
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]) + [
+        "//sw/device/lib/testing/test_framework:doc_files",
+    ],
+)
 
 alias(
     name = "isr_testutils",
@@ -16,17 +25,35 @@ cc_library(
     name = "aes_testutils",
     srcs = ["aes_testutils.c"],
     hdrs = ["aes_testutils.h"],
+    defines = opentitan_if_ip(
+        "csrng",
+        # Assume that if csrng is present then so is the edn.
+        ["AES_TESTUTILS_HAS_EDN_AND_CSRNG"],
+        [],
+    ),
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/ip/aes:model",
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/dif:aes",
-        "//sw/device/lib/dif:csrng_shared",
-        "//sw/device/lib/dif:edn",
         "//sw/device/lib/runtime:ibex",
-        "//sw/device/lib/testing:csrng_testutils",
         "//sw/device/lib/testing/test_framework:check",
-    ],
+    ] + opentitan_if_ip(
+        "csrng",
+        # Assume that if csrng is present then so is the edn.
+        [
+            "//sw/device/lib/dif:csrng_shared",
+            "//sw/device/lib/dif:edn",
+            "//sw/device/lib/testing:csrng_testutils",
+        ],
+        [],
+    ) + opentitan_if_ip(
+        "alert_handler",
+        [
+            "//sw/device/lib/dif:alert_handler",
+        ],
+        [],
+    ),
 )
 
 cc_library(
@@ -35,7 +62,7 @@ cc_library(
     hdrs = ["alert_handler_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/dif:alert_handler",
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:rstmgr",
@@ -49,7 +76,7 @@ cc_library(
     hdrs = ["aon_timer_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:math",
         "//sw/device/lib/dif:aon_timer",
@@ -83,6 +110,7 @@ cc_library(
     hdrs = ["csrng_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        "//hw/top:csrng_c_regs",
         "//sw/device/lib/dif:csrng",
         "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing/test_framework:check",
@@ -141,8 +169,8 @@ cc_library(
     hdrs = ["flash_ctrl_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top:dt",
         "//hw/top:flash_ctrl_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:flash_ctrl",
@@ -204,7 +232,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/top:i2c_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top/dt",
         "//sw/device/lib/dif:i2c",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/runtime:ibex",
@@ -225,6 +253,7 @@ cc_library(
         ":otp_ctrl_testutils",
         ":rstmgr_testutils",
         "//hw/top:keymgr_c_regs",
+        "//hw/top/dt",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:boot_stage",
         "//sw/device/lib/base:mmio",
@@ -284,7 +313,7 @@ cc_library(
         ":otbn_testutils",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:otbn",
-        "//sw/otbn/crypto:rsa",
+        "//sw/otbn/crypto:run_rsa",
     ],
 )
 
@@ -307,7 +336,7 @@ cc_library(
     hdrs = ["pinmux_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:gpio",
@@ -447,7 +476,7 @@ cc_library(
     hdrs = ["spi_device_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:spi_device",
@@ -463,7 +492,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":pinmux_testutils",
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:spi_host",
@@ -514,7 +543,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/top:uart_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top/dt",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:ibex",
@@ -601,8 +630,8 @@ cc_library(
         ":kmac_testutils",
         ":otp_ctrl_testutils",
         ":rstmgr_testutils",
-        "//hw/top:dt",
         "//hw/top:keymgr_dpe_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/arch:boot_stage",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:keymgr_dpe",
@@ -612,4 +641,34 @@ cc_library(
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/silicon_creator/lib/base:chip",
     ],
+)
+
+# Some testutils are not multitop yet.
+TESTUTILS_EXCEPTIONS = [
+    "rstmgr",
+]
+
+# We need to transition to the opentitan platform since
+# testutils are not compatible with the host platform.
+doxygen_gather_cc(
+    name = "doxy_target",
+    platform = OPENTITAN_PLATFORM,
+    deps = [
+        "isr_testutils",
+    ] + flatten([
+        # Add all compatible register headers
+        opentitan_if_ip(
+            ip,
+            [":{}_testutils".format(ip)],
+            [],
+        )
+        for ip in ALL_IP_NAMES
+        if existing_rule("{}_testutils".format(ip)) != None and
+           ip not in TESTUTILS_EXCEPTIONS
+    ]) + opentitan_select_top(
+        {
+            "earlgrey": ["{}_testutils".format(ip) for ip in TESTUTILS_EXCEPTIONS],
+        },
+        [],
+    ),
 )

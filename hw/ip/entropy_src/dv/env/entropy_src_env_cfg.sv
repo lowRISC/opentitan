@@ -8,12 +8,10 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   `uvm_object_new
 
   // Ext component cfgs
-  rand push_pull_agent_cfg#(.HostDataWidth(RNG_BUS_WIDTH))
+  rand push_pull_agent_cfg#(.HostDataWidth(`RNG_BUS_WIDTH))
        m_rng_agent_cfg;
   rand push_pull_agent_cfg#(.HostDataWidth(FIPS_CSRNG_BUS_WIDTH))
        m_csrng_agent_cfg;
-  rand push_pull_agent_cfg#(.HostDataWidth(0))
-       m_aes_halt_agent_cfg;
   entropy_src_xht_agent_cfg m_xht_agent_cfg;
 
   // Additional reset interface for the csrng.
@@ -92,9 +90,9 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   uint          otp_en_es_fw_read_pct, otp_en_es_fw_read_inval_pct,
                 otp_en_es_fw_over_pct, otp_en_es_fw_over_inval_pct;
 
-  // Behavioral constrint knob: dictates how often each sequence
+  // Behavioral constraint knob: dictates how often each sequence
   // performs a survey of the health test diagnostics.
-  // (100% corresponds to a full diagnostic chack after every HT alert,
+  // (100% corresponds to a full diagnostic check after every HT alert,
   // If less than 100%, this full-diagnostic is skipped after some alerts)
   uint          do_check_ht_diag_pct;
 
@@ -114,7 +112,7 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
 
   // When expecting an alert, the cip scoreboarding routines expect a to see the
   // alert within alert_max_delay clock cycles.
-  int      alert_max_delay;
+  int alert_max_delay = 5;
 
   // host_delay_max value for the RNG agent. This can be overwritten using a plusarg.
   int rng_max_delay = 12;
@@ -144,6 +142,7 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   rand uint  which_cntr_replicate;
 
   rand uint  which_bin;
+  rand uint  which_ht_inst;
 
   rand bit   induce_targeted_transition;
   // Read the entropy over the entropy_data register if this is set.
@@ -200,9 +199,12 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
       fifo_state_err    :/ 4,
       fifo_cntr_err     :/ 4};}
 
-  constraint which_cntr_replicate_c {which_cntr_replicate inside {[0:RNG_BUS_WIDTH-1]};}
-  int        num_bins = 2**RNG_BUS_WIDTH;
+  constraint which_cntr_replicate_c {which_cntr_replicate inside {[0:`RNG_BUS_WIDTH-1]};}
+  int        num_bins = 2**entropy_src_pkg::bucket_ht_data_width(`RNG_BUS_WIDTH);
   constraint which_bin_c {which_bin inside {[0:num_bins-1]};}
+  constraint which_ht_inst_c {which_ht_inst inside {
+    [0:entropy_src_pkg::num_bucket_ht_inst(`RNG_BUS_WIDTH)-1]};
+  }
 
   // Choose the counter to probe by the number of bins or channels with each counter
   constraint which_cntr_c {which_cntr dist {
@@ -238,12 +240,12 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   constraint es_route_sw_c {es_route_sw inside {MuBi4False, MuBi4True};}
 
   // We need to make sure that we can read out 1024 contiguous symbols, that's why
-  // we set the probability for 128 seeds to 40 pct (this is exactly 1024 symbols
-  // when using all 4 lanes).
+  // we set the probability for the last value to 40 pct (this is exactly 1024 symbols
+  // when using all lanes).
   constraint fw_ov_rd_cnt_c {fw_ov_rd_cnt dist {
-    1                         :/ 40,
-    [2:127]                   :/ 20,
-    128                       :/ 40 };}
+    1                              :/ 40,
+    [2:(1024*`RNG_BUS_WIDTH/32-1)] :/ 20,
+    1024*`RNG_BUS_WIDTH/32         :/ 40 };}
 
   ///////////////
   // Functions //
@@ -257,12 +259,10 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
     dut_cfg = entropy_src_dut_cfg::type_id::create("dut_cfg");
 
     // create agent config objs
-    m_rng_agent_cfg       = push_pull_agent_cfg#(.HostDataWidth(RNG_BUS_WIDTH))::
+    m_rng_agent_cfg       = push_pull_agent_cfg#(.HostDataWidth(`RNG_BUS_WIDTH))::
                             type_id::create("m_rng_agent_cfg");
     m_csrng_agent_cfg     = push_pull_agent_cfg#(.HostDataWidth(FIPS_CSRNG_BUS_WIDTH))::
                             type_id::create("m_csrng_agent_cfg");
-    m_aes_halt_agent_cfg  = push_pull_agent_cfg#(.HostDataWidth(0))::
-                            type_id::create("m_aes_halt_agent_cfg");
     m_xht_agent_cfg       = entropy_src_xht_agent_cfg::type_id::create("m_xht_agent_cfg");
 
     // set num_interrupts & num_alerts
@@ -281,7 +281,7 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
        0: path = {path, ".i_sync_n"};
        1: path = {path, ".i_sync_p"};
      endcase
-     disabled_prim_cdc_rand_delays[i] = {path, ".gen_generic.u_impl_generic.u_prim_cdc_rand_delay"};
+     disabled_prim_cdc_rand_delays[i] = {path, ".u_prim_cdc_rand_delay"};
     end
   endfunction
 

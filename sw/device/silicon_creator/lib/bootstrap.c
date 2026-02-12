@@ -16,7 +16,7 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/stack_utilization.h"
 
-#include "flash_ctrl_regs.h"
+#include "hw/top/flash_ctrl_regs.h"
 
 enum {
   /*
@@ -209,7 +209,7 @@ static rom_error_t bootstrap_handle_erase(bootstrap_state_t *state) {
   HARDENED_CHECK_EQ(*state, kBootstrapStateErase);
 
   spi_device_cmd_t cmd;
-  RETURN_IF_ERROR(spi_device_cmd_get(&cmd));
+  RETURN_IF_ERROR(spi_device_cmd_get(&cmd, /*blocking=*/true));
   // Erase requires WREN, ignore if WEL is not set.
   if (!bitfield_bit32_read(spi_device_flash_status_get(), kSpiDeviceWelBit)) {
     return kErrorOk;
@@ -275,7 +275,7 @@ static rom_error_t bootstrap_handle_program(bootstrap_state_t *state) {
   HARDENED_CHECK_EQ(*state, kBootstrapStateProgram);
 
   spi_device_cmd_t cmd;
-  RETURN_IF_ERROR(spi_device_cmd_get(&cmd));
+  RETURN_IF_ERROR(spi_device_cmd_get(&cmd, /*blocking=*/true));
   // Erase and program require WREN, ignore if WEL is not set.
   if (cmd.opcode != kSpiDeviceOpcodeReset &&
       !bitfield_bit32_read(spi_device_flash_status_get(), kSpiDeviceWelBit)) {
@@ -319,7 +319,7 @@ static rom_error_t bootstrap_handle_program(bootstrap_state_t *state) {
 }
 
 rom_error_t enter_bootstrap(void) {
-  spi_device_init();
+  spi_device_init_bootstrap();
 
   // Bootstrap event loop.
   bootstrap_state_t state = kBootstrapStateErase;

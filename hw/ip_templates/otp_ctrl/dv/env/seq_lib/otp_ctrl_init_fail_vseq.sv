@@ -17,7 +17,7 @@
 // - Status register reflect the correct error
 // - Otp_ctrl's power init output stays 0
 // This sequence will check the following items if OTP init failed with correctable error:
-// - Otp_initialtion passed with power init output changes to 1
+// - Otp_initialization passed with power init output changes to 1
 // - Otp status and interrupt reflect the correct error message
 
 class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
@@ -47,6 +47,7 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
 
   task body();
     bit [TL_DW-1:0] exp_status;
+    bit [NumErrorEntries-1:0] exp_partition_status;
     `uvm_info(`gfn, $sformatf("Number of dai operation is %0d, number to lock digest is %0d",
               num_dai_op, num_to_lock_digests), UVM_MEDIUM)
 
@@ -72,7 +73,7 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
       // If write sw partitions, check tlul window
       if (is_sw_part(dai_addr)) begin
         uvm_reg_addr_t tlul_addr = cfg.ral.get_addr_from_offset(get_sw_window_offset(dai_addr));
-        tl_access(.addr(tlul_addr), .write(0), .data(tlul_val), .blocking(1), .check_rsp(0));
+        tl_access(.addr(tlul_addr), .write(0), .data(tlul_val), .blocking(1), .check_err_rsp(0));
       end
 
       if (i == num_to_lock_digests) begin
@@ -92,11 +93,14 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
       `uvm_info(`gfn, $sformatf("OTP_init check failure with init error = %0h", init_chk_err),
                 UVM_LOW)
       foreach(init_chk_err[i]) begin
-  if (cfg.stop_transaction_generators()) break;
-        if (init_chk_err[i]) exp_status |= 1'b1 << i;
+        if (cfg.stop_transaction_generators()) break;
+        if (init_chk_err[i]) begin
+          exp_status[OtpPartitionErrorIdx] |= 1;
+          exp_partition_status[i] = 1;
+        end
       end
 
-      check_otp_fatal_err("fatal_check_error", exp_status);
+      check_otp_fatal_err("fatal_check_error", exp_status, exp_partition_status);
 
     // If not check error, force ECC correctable and uncorrectable error
     end else begin
@@ -112,7 +116,7 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
           addr = PART_OTP_DIGEST_ADDRS[i] << 2;
         end else begin
           // During OTP init, non SW partitions read all value
-          addr = $urandom_range(PartInfo[i].offset, PartInfo[i].offset + PartInfo[i].size - 1);
+          addr = PartInfo[i].offset + $urandom_range(0, PartInfo[i].size - 1);
         end
 
         void'(backdoor_inject_ecc_err(addr, ecc_otp_err));
@@ -122,30 +126,37 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
         end else if (!is_correctable && ecc_otp_err == OtpEccCorrErr && part_has_integrity(i)) begin
           is_correctable = 1;
         end
-        if (ecc_otp_err != OtpNoEccErr && part_has_integrity(i)) exp_status[i] = 1;
+        if (ecc_otp_err != OtpNoEccErr && part_has_integrity(i)) begin
+          exp_status[OtpPartitionErrorIdx] = 1;
+          exp_partition_status[i] = 1;
+        end
       end
 
       if (is_fatal) begin
         // ECC uncorrectable error.
         `uvm_info(`gfn, "OTP_init macro ECC uncorrectable failure", UVM_LOW)
-        check_otp_fatal_err("fatal_macro_error", exp_status);
+        check_otp_fatal_err("fatal_macro_error", exp_status, exp_partition_status);
       end else if ($urandom_range(0, 1)) begin
 
         // Randomly force ECC reg in sw partitions to create a check failure.
-        // Totaly three sw partitions, and each bit indexes a partition.
+        // Totally three sw partitions, and each bit indexes a partition.
         bit [NumPartUnbuf-1:0] sw_check_fail = $urandom_range(1, (1'b1<<NumPartUnbuf)-1);
         cfg.otp_ctrl_vif.force_sw_check_fail(sw_check_fail);
         `uvm_info(`gfn, $sformatf("OTP_init SW ECC check failure with index %0h", sw_check_fail),
                   UVM_LOW)
         foreach(sw_check_fail[i]) begin
-          if (sw_check_fail[i]) exp_status[i] = 1;
+          if (sw_check_fail[i]) begin
+            exp_status[OtpPartitionErrorIdx] = 1;
+            exp_partition_status[i] = 1;
+          end
         end
-        check_otp_fatal_err("fatal_check_error", exp_status);
+        check_otp_fatal_err("fatal_check_error", exp_status, exp_partition_status);
       end else begin
 
         // Expect the OTP init to continue with an ECC correctable interrupt.
         `uvm_info(`gfn, "OTP_init macro ECC correctable failure", UVM_LOW)
         exp_status[OtpDaiIdleIdx] = 1;
+        exp_partition_status[DaiIdx] = 1;
         cfg.otp_ctrl_vif.drive_pwr_otp_init(1);
         wait(cfg.otp_ctrl_vif.pwr_otp_done_o == 1);
         wait(cfg.otp_ctrl_vif.pwr_otp_idle_o == 1);
@@ -161,27 +172,31 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
           // Since OtpHwCfg0 is the first partition with HW digest, this partition's check error
           // will be triggered first.
           `uvm_info(`gfn, "OTP digest check failure", UVM_LOW)
-          exp_status[OtpHwCfg0ErrIdx] = 1;
+          exp_status[OtpPartitionErrorIdx] = 1;
+          exp_partition_status[OtpPartitionHwCfg0Idx] = 1;
         end else begin
           // Create LC check failure.
           `uvm_info(`gfn, "OTP_init LC failure", UVM_LOW)
           cfg.otp_ctrl_vif.lc_check_byp_en = 0;
           req_lc_transition(1);
-          exp_status[OtpLifeCycleErrIdx] = 1;
+          exp_status[OtpPartitionErrorIdx] = 1;
+          exp_partition_status[OtpPartitionLifeCycleIdx] = 1;
         end
         trigger_checks(.val('1), .wait_done(0));
-        check_otp_fatal_err("fatal_check_error", exp_status);
+        check_otp_fatal_err("fatal_check_error", exp_status, exp_partition_status);
       end
     end
   endtask
 
-  virtual task check_otp_fatal_err(string alert_name, bit [TL_DW-1:0] exp_status);
+  virtual task check_otp_fatal_err(string alert_name, bit [TL_DW-1:0] exp_status,
+                                   bit [NumErrorEntries-1:0] exp_partition_status);
     int            error_cnt;
     otp_err_code_e exp_err_code = (alert_name == "fatal_check_error") ?
                                   OtpCheckFailError : OtpMacroEccUncorrError;
     uvm_reg_data_t err_code_raw;
     otp_err_code_e err_code;
     dv_base_reg_field err_code_flds[$];
+    bit [TL_DW-1:0] fatal_exp_status_mask;
 
     cfg.otp_ctrl_vif.drive_pwr_otp_init(1);
 
@@ -202,23 +217,40 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
     // Here we should see alert is triggered by one of the fatal errors, then it triggers internal
     // escalation. The logic below tries to confirm the first fatal alert is triggered with the
     // correct error code.
-    for (int i = 0; i <= OtpLciErrIdx; i++) begin
-      ral.err_code[i].get_dv_base_reg_fields(err_code_flds);
-      if (exp_status[i]) begin
+    for (int err_code_idx = 0; err_code_idx <= LciIdx; err_code_idx++) begin
+      int status_err_idx;
+      bit check;
+      case (err_code_idx)
+        DaiIdx: begin
+          status_err_idx = OtpDaiErrIdx;
+          check = exp_status[status_err_idx];
+        end
+        LciIdx: begin
+          status_err_idx = OtpLciErrIdx;
+          check = exp_status[status_err_idx];
+        end
+        default: begin
+          status_err_idx = OtpPartitionErrorIdx;
+          check = exp_status[status_err_idx] && exp_partition_status[err_code_idx];
+        end
+      endcase
+      ral.err_code[err_code_idx].get_dv_base_reg_fields(err_code_flds);
+      if(check) begin
         csr_rd(err_code_flds[0], err_code_raw);
         err_code = otp_err_code_e'(err_code_raw);
         if (err_code == exp_err_code) begin
           error_cnt++;
         end else if (err_code != OtpFsmStateError) begin
-          `uvm_error(`gfn, $sformatf("Unexpected error code_%0d: %0s", i, err_code.name))
+          `uvm_error(`gfn, $sformatf("Unexpected error code_%0d: %0s", err_code_idx, err_code.name))
         end
-        if (cfg.en_cov) cov.collect_err_code_cov(i, err_code);
+        if (cfg.en_cov) cov.collect_err_code_cov(part_idx_e'(err_code_idx), err_code);
       end
     end
 
     // More than one fatal alert causes could be triggered at the same time
     `DV_CHECK_GT(error_cnt, 0)
-    csr_rd_check(.ptr(ral.status), .compare_value(exp_status | FATAL_EXP_STATUS));
+    fatal_exp_status_mask = {FATAL_EXP_STATUS[LciIdx:DaiIdx], |FATAL_EXP_STATUS[DaiIdx-1:0]};
+    csr_rd_check(.ptr(ral.status), .compare_value(exp_status | fatal_exp_status_mask));
 
     `DV_CHECK_EQ(cfg.otp_ctrl_vif.pwr_otp_done_o, 1)
     `DV_CHECK_EQ(cfg.otp_ctrl_vif.pwr_otp_idle_o, 1)

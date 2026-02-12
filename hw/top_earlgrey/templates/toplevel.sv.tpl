@@ -9,7 +9,8 @@ import topgen.lib as lib
 from reggen.params import Parameter
 from topgen.clocks import Clocks
 from topgen.resets import Resets
-from topgen.merge import is_unmanaged_reset, get_alerts_with_unique_lpg_idx
+from topgen.merge import (is_unmanaged_reset, get_alerts_with_unique_lpg_idx,
+                         alert_handler_signals)
 
 num_mio_inputs = top['pinmux']['io_counts']['muxed']['inouts'] + \
                  top['pinmux']['io_counts']['muxed']['inputs']
@@ -41,13 +42,14 @@ cpu_clk = top['clocks'].hier_paths['top'] + "clk_proc_main"
 unused_resets = lib.get_unused_resets(top)
 unused_im_defs, undriven_im_defs = lib.get_dangling_im_def(top["inter_signal"]["definitions"])
 
-has_toplevel_rom = False
-for m in top['memory']:
-  if m['type'] == 'rom':
-    has_toplevel_rom = True
-
 last_modidx_with_params = lib.idx_of_last_module_with_params(top)
 
+# plic -> {count, prefix}
+plic_info = {}
+
+default_handler = top.get("default_alert_handler", None)
+
+alert_handlers = [handler["type"] for handler in lib.find_modules(top["module"], "alert_handler")]
 %>\
 module top_${top["name"]} #(
   // Manually defined parameters
@@ -138,7 +140,7 @@ module top_${top["name"]} #(
   output prim_mubi_pkg::mubi4_t     [top_${top["name"]}_pkg::NOutgoingLpgs${alert_group.capitalize()}-1:0]   outgoing_lpg_rst_en_${alert_group}_o,
   % endfor
   % for alert_group in top['incoming_alert'].keys():
-  
+
   // Incoming alerts for group ${alert_group}
   input  prim_alert_pkg::alert_tx_t [top_${top["name"]}_pkg::NIncomingAlerts${alert_group.capitalize()}-1:0] incoming_alert_${alert_group}_tx_i,
   output prim_alert_pkg::alert_rx_t [top_${top["name"]}_pkg::NIncomingAlerts${alert_group.capitalize()}-1:0] incoming_alert_${alert_group}_rx_o,
@@ -232,39 +234,24 @@ module top_${top["name"]} #(
 % endfor
 
 
-<%
-  # Interrupt source 0 is tied to 0 to conform RISC-V PLIC spec.
-  # So, total number of interrupts are the number of entries in the list + 1
-  interrupt_num = sum([x["width"] if "width" in x else 1 for x in top["interrupt"]]) + 1
-%>\
-  logic [${interrupt_num-1}:0]  intr_vector;
-  // Interrupt source list
-% for m in top["module"]:
-<%
-  block = name_to_block[m['type']]
-%>\
-    % if not lib.is_inst(m):
-<% continue %>
-    % endif
-    % for intr in block.interrupts:
-        % if intr.bits.width() != 1:
-  logic [${intr.bits.width()-1}:0] intr_${m["name"]}_${intr.name};
-        % else:
-  logic intr_${m["name"]}_${intr.name};
-        % endif
-    % endfor
-% endfor
+<%include file="/toplevel_interrupts.tpl" args="lib=lib,top=top,name_to_block=name_to_block,plic_info=plic_info" />\
 
   // Alert list
-  prim_alert_pkg::alert_tx_t [alert_handler_pkg::NAlerts-1:0]  alert_tx;
-  prim_alert_pkg::alert_rx_t [alert_handler_pkg::NAlerts-1:0]  alert_rx;
+% for handler in alert_handlers:
+<%  alert_tx, alert_rx = alert_handler_signals(handler) %>\
+  prim_alert_pkg::alert_tx_t [${handler}_pkg::NAlerts-1:0]  ${alert_tx};
+  prim_alert_pkg::alert_rx_t [${handler}_pkg::NAlerts-1:0]  ${alert_rx};
+% endfor
 
 % if not top["alert"]:
-  for (genvar k = 0; k < alert_handler_pkg::NAlerts; k++) begin : gen_alert_tie_off
+%    for handler in alert_handlers:
+<%     alert_tx, _ = alert_handler_signals(handler) %>
+  for (genvar k = 0; k < ${handler}_pkg::NAlerts; k++) begin : gen_alert_tie_off
     // tie off if no alerts present in the system
-    assign alert_tx[k].alert_p = 1'b0;
-    assign alert_tx[k].alert_n = 1'b1;
+    assign ${alert_tx}[k].alert_p = 1'b0;
+    assign ${alert_tx}[k].alert_n = 1'b1;
   end
+%    endfor
 % endif
 
 ## Inter-module Definitions
@@ -382,11 +369,6 @@ module top_${top["name"]} #(
   assign rv_core_ibex_boot_addr = ADDR_SPACE_ROM;
 % endif
 
-  ## Not all top levels have a lifecycle controller.
-  ## For those that do not, always enable ibex.
-% if not lib.find_module(top["module"], 'lc_ctrl'):
-  assign rv_core_ibex_lc_cpu_en = lc_ctrl_pkg::On;
-% endif
 
   // Struct breakout module tool-inserted DFT TAP signals
   pinmux_jtag_breakout u_dft_tap_breakout (
@@ -433,9 +415,10 @@ for rst in output_rsts:
     })
 %>\
 
-% for k, lpg in enumerate(top['alert_lpgs']):
+<% k = 0 %>\
+% for lpg in top['alert_lpgs']:
   // ${lpg['name']}
-<% 
+<%
   cg_en = lib.get_clock_lpg_path(top, lpg['clock_connection'], lpg['unmanaged_clock'])
   rst_en = lib.get_reset_lpg_path(top, lpg['reset_connection'], False, None, lpg['unmanaged_reset'])
   known_clocks[cg_en] = 0
@@ -443,12 +426,13 @@ for rst in output_rsts:
 %>\
   assign lpg_cg_en[${k}] = ${cg_en};
   assign lpg_rst_en[${k}] = ${rst_en};
+<% k += 1 %>\
 % endfor
 % for alert_group, alerts in top['incoming_alert'].items():
   % for unique_alert_lpg_entry in get_alerts_with_unique_lpg_idx(alerts):
-<% k += 1 %>\
   assign lpg_cg_en[${k}] = incoming_lpg_cg_en_${alert_group}_i[${unique_alert_lpg_entry["lpg_idx"]}];
   assign lpg_rst_en[${k}] = incoming_lpg_rst_en_${alert_group}_i[${unique_alert_lpg_entry["lpg_idx"]}];
+<% k += 1 %>\
   % endfor
 % endfor
 
@@ -489,8 +473,7 @@ for rst in output_rsts:
 
   // Peripheral Instantiation
 
-<% alert_idx = 0 %>\
-<% outgoing_alert_idx = defaultdict(int) %>
+
 <% outgoing_interrupt_idx = defaultdict(int) %>\
 % for m in top["module"]:
 <%
@@ -504,28 +487,14 @@ port_list = inputs + outputs + inouts
 max_sigwidth = max(len(x.name) for x in port_list) if port_list else 0
 max_intrwidth = (max(len(x.name) for x in block.interrupts)
                  if block.interrupts else 0)
+alert_info = top["alert_connections"].get("module_" + m["name"], {})
+has_params, param_items = lib.get_params(top, m)
 %>\
-  % if m["param_list"] or block.alerts:
+  % if has_params:
   ${m["type"]} #(
 <%include file="/toplevel_racl_parameters.tpl" args="module=m,top=top,block=block"/>\
-  % if block.alerts:
-<%
-w = len(block.alerts)
-if 'outgoing_alert' in m:
-  outgoing_alert = m['outgoing_alert']
-  lo = outgoing_alert_idx[outgoing_alert]
-else:
-  lo = alert_idx
-slice = f"{lo+w-1}:{lo}"
-%>\
-  % if 'outgoing_alert' in m:
-    .AlertAsyncOn(AsyncOnOutgoingAlert${alert_group.capitalize()}[${slice}])${"," if m["param_list"] else ""}
-  % else:
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[${slice}])${"," if m["param_list"] else ""}
-  % endif
-  % endif
-    % for i in m["param_list"]:
-    .${i["name"]}(${i["name_top" if i.get("expose") == "true" or i.get("randtype", "none") != "none" else "default"]})${"," if not loop.last else ""}
+    % for param_name, param_value in param_items:
+    ${param_name}(${param_value})${"," if not loop.last else ""}
     % endfor
   ) u_${m["name"]} (
   % else:
@@ -564,21 +533,12 @@ slice = f"{lo+w-1}:{lo}"
       .${lib.ljust("intr_"+intr.name+"_o",max_intrwidth+7)} (intr_${m["name"]}_${intr.name}),
       % endif
     % endfor
-    % if block.alerts:
-      % for alert in block.alerts:
-        % if 'outgoing_alert' in m:
-      // External alert group "${m['outgoing_alert']}" [${outgoing_alert_idx[m['outgoing_alert']]}]: ${alert.name}<% outgoing_alert_idx[m['outgoing_alert']] += 1 %>
-        % else:
-      // [${alert_idx}]: ${alert.name}<% alert_idx += 1 %>
-        % endif
+    % if alert_info:
+      % for comment in alert_info["comments"]:
+      // ${comment}
       % endfor
-      % if 'outgoing_alert' in m:
-      .alert_tx_o  ( outgoing_alert_${m['outgoing_alert']}_tx_o[${slice}] ),
-      .alert_rx_i  ( outgoing_alert_${m['outgoing_alert']}_rx_i[${slice}] ),
-      % else:
-      .alert_tx_o  ( alert_tx[${slice}] ),
-      .alert_rx_i  ( alert_rx[${slice}] ),
-      % endif
+      .alert_tx_o  ( ${alert_info["tx_expr"]} ),
+      .alert_rx_i  ( ${alert_info["rx_expr"]} ),
     % endif
 <%include file="/toplevel_racl_signals.tpl" args="module=m,top=top,block=block"/>\
     ## TODO: Inter-module Connection
@@ -600,7 +560,7 @@ slice = f"{lo+w-1}:{lo}"
       % endfor
     % endif
     % if m.get("template_type") == "rv_plic":
-      .intr_src_i (intr_vector),
+      .intr_src_i (${plic_info[m["name"]]["vector"]}),
     % endif
     % if m.get("template_type") == "pinmux":
 
@@ -624,9 +584,10 @@ slice = f"{lo+w-1}:{lo}"
 
     % endif
     % if m.get("template_type") == "alert_handler":
+<% alert_tx, alert_rx = alert_handler_signals(m["type"]) %>\
       // alert signals
-      .alert_rx_o  ( alert_rx ),
-      .alert_tx_i  ( alert_tx ),
+      .alert_rx_o  ( ${alert_rx} ),
+      .alert_tx_i  ( ${alert_tx} ),
       // synchronized clock gated / reset asserted
       // indications for each alert
       .lpg_cg_en_i  ( lpg_cg_en  ),
@@ -662,34 +623,20 @@ slice = f"{lo+w-1}:{lo}"
 % endfor
 
 % for alert_group, alerts in top['incoming_alert'].items():
-<%
-w = len(alerts)
-slice = str(alert_idx+w-1) + ":" + str(alert_idx)
-%>
+<% alert_info = top["alert_connections"]["incoming_" + alert_group] %>\
+% if not alert_info:
+<% continue %>\
+% endif
   // Alert mapping to the alert handler for alert group ${alert_group}
-  % for alert in alerts:
-  // [${alert_idx}]: ${alert['name']}<% alert_idx += 1 %>
+  % for comment in alert_info["comments"]:
+  // ${comment}
   % endfor
-  assign alert_tx[${slice}] = incoming_alert_${alert_group}_tx_i;
-  assign incoming_alert_${alert_group}_rx_o = alert_rx[${slice}];
+  assign ${alert_info["tx_expr"]} = incoming_alert_${alert_group}_tx_i;
+  assign incoming_alert_${alert_group}_rx_o = ${alert_info["rx_expr"]};
 % endfor
 
   // interrupt assignments
-<% base = interrupt_num %>\
-  assign intr_vector = {
-  % for irq_group, irqs in reversed(top['incoming_interrupt'].items()):
-  <% base -= len(irqs) %>\
-    incoming_interrupt_${irq_group}_i, // IDs [${base} +: ${len(irqs)}]
-  % endfor
-  % for intr in top["interrupt"][::-1]:
-    % if intr['incoming']:
-<% continue %>\
-    % endif
-<% base -= intr["width"] %>\
-      intr_${intr["name"]}, // IDs [${base} +: ${intr['width']}]
-  % endfor
-      1'b 0 // ID [0 +: 1] is a special case and tied to zero.
-  };
+<%include file="/toplevel_interrupt_assignments.tpl" args="top=top,plic_info=plic_info" />\
 
   // TL-UL Crossbar
 % for xbar in top["xbar"]:

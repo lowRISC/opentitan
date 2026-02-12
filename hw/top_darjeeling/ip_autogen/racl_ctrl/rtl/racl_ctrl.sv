@@ -2,8 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`include "prim_assert.sv"
+
 module racl_ctrl import racl_ctrl_reg_pkg::*; #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn              = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned          AlertSkewCycles           = 1,
   parameter int unsigned          NumSubscribingIps         = 1,
   parameter int unsigned          NumExternalSubscribingIps = 1,
   parameter bit                   RaclErrorRsp              = 1'b1
@@ -43,7 +47,7 @@ module racl_ctrl import racl_ctrl_reg_pkg::*; #(
   racl_ctrl_reg_top #(
     .EnableRacl   ( 1'b1         ),
     .RaclErrorRsp ( RaclErrorRsp )
-  ) u_racl_ctrl_reg (
+  ) u_reg (
     .clk_i                  ( clk_i                    ),
     .rst_ni                 ( rst_ni                   ),
     .rst_shadowed_ni        ( rst_shadowed_ni          ),
@@ -62,22 +66,19 @@ module racl_ctrl import racl_ctrl_reg_pkg::*; #(
   //////////////////////////////////////////////////////////////////////////////////////////////////
   logic [NumAlerts-1:0] alert_test, alert;
 
-  localparam logic [NumAlerts-1:0] IsFatal = {1'b1, 1'b0};
+  assign alert[AlertFatalFaultIdx]         = reg_intg_error | shadowed_storage_err;
+  assign alert[AlertRecovCtrlUpdateErrIdx] = shadowed_update_err;
 
-  assign alert[0]  = shadowed_update_err;
-  assign alert[1]  = reg_intg_error | shadowed_storage_err;
-
-  assign alert_test = {
-    reg2hw.alert_test.fatal_fault.q &
-    reg2hw.alert_test.fatal_fault.qe,
-    reg2hw.alert_test.recov_ctrl_update_err.q &
-    reg2hw.alert_test.recov_ctrl_update_err.qe
-  };
+  assign alert_test[AlertFatalFaultIdx] = reg2hw.alert_test.fatal_fault.q &
+                                          reg2hw.alert_test.fatal_fault.qe;
+  assign alert_test[AlertRecovCtrlUpdateErrIdx] = reg2hw.alert_test.recov_ctrl_update_err.q &
+                                                  reg2hw.alert_test.recov_ctrl_update_err.qe;
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
-      .AsyncOn ( AlertAsyncOn[i] ),
-      .IsFatal ( IsFatal[i]      )
+      .AsyncOn    ( AlertAsyncOn[i]         ),
+      .SkewCycles ( AlertSkewCycles         ),
+      .IsFatal    ( i == AlertFatalFaultIdx )
     ) u_prim_alert_sender (
       .clk_i         ( clk_i         ),
       .rst_ni        ( rst_ni        ),
@@ -179,8 +180,14 @@ module racl_ctrl import racl_ctrl_reg_pkg::*; #(
   assign hw2reg.error_log.ctn_uid.d  = clear_log ? '0 : racl_error_arb.ctn_uid;
   assign hw2reg.error_log.ctn_uid.de = first_error | clear_log;
 
-  assign hw2reg.error_log_address.d  = clear_log ? '0 : racl_error_arb.request_address;
+  assign hw2reg.error_log_address.d  = clear_log
+                                       ? '0
+                                       : racl_error_arb.request_address[top_pkg::TL_AW-1:2];
   assign hw2reg.error_log_address.de = first_error | clear_log;
+
+  // unused request_address bits
+  logic unused_request_address;
+  assign unused_request_address = ^racl_error_arb.request_address[1:0];
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // Interrupt handling
@@ -215,7 +222,10 @@ module racl_ctrl import racl_ctrl_reg_pkg::*; #(
 
   `ASSERT_KNOWN(RaclErrorKnown_A, racl_policies_o)
 
-  // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_racl_ctrl_reg,
-                                                 alert_tx_o[0])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT_IN(
+      RegWeOnehotCheck_A,
+      u_reg,
+      gen_alert_tx[AlertFatalFaultIdx].u_prim_alert_sender.alert_req_i
+  )
+
 endmodule

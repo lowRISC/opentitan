@@ -56,7 +56,7 @@ typedef struct boot_svc_min_bl0_sec_ver_res {
   /**
    * Status response from ROM_EXT.
    */
-  rom_error_t status;
+  uint32_t status;
 } boot_svc_min_bl0_sec_ver_res_t;
 
 OT_ASSERT_MEMBER_OFFSET(boot_svc_min_bl0_sec_ver_res_t, header, 0);

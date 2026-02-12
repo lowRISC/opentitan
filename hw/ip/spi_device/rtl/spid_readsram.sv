@@ -294,9 +294,10 @@ module spid_readsram
   // Instance //
   //////////////
   prim_fifo_sync #(
-    .Width ($bits(sram_data_t)),
-    .Pass  (1'b 1),
-    .Depth (1),
+    .Width       ($bits(sram_data_t)),
+    .Pass        (1'b 1),
+    .Depth       (1),
+    .NeverClears (1'b1),
     .OutputZeroIfEmpty (1'b 0)
   ) u_sram_fifo (
     .clk_i,
@@ -321,7 +322,8 @@ module spid_readsram
     .Width             ($bits(spi_byte_t)),
     .Pass              (1'b1),
     .Depth             (2),
-    .OutputZeroIfEmpty (1'b0)
+    .OutputZeroIfEmpty (1'b0),
+    .NeverClears       (1'b1)
   ) u_fifo (
     .clk_i,
     .rst_ni,

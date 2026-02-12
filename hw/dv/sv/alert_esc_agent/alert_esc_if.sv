@@ -97,14 +97,13 @@ interface alert_esc_if(input clk, input rst_n);
     end
   end
 
-  // Used by the monitor for "symetrical" sampling with equal delay from both sides
+  // Used by the monitor for "symmetrical" sampling with equal delay from both sides
   // This ensures correct sampling. Otherwise there can be race conditions where the monitor misses
   // a ping due to a delay.
   assign alert_tx_final = alert_tx_sync_dly2;
   assign alert_rx_final = alert_rx_sync_dly2;
 
   clocking sender_cb @(posedge async_clk);
-    input  rst_n;
     output alert_tx_int;
     input  alert_rx;
     output esc_tx_int;
@@ -112,7 +111,6 @@ interface alert_esc_if(input clk, input rst_n);
   endclocking
 
   clocking receiver_cb @(posedge async_clk);
-    input  rst_n;
     input  alert_tx;
     output alert_rx_int;
     input  esc_tx;
@@ -120,7 +118,6 @@ interface alert_esc_if(input clk, input rst_n);
   endclocking
 
   clocking monitor_cb @(posedge clk);
-    input rst_n;
     input alert_tx_final;
     input alert_rx_final;
     input esc_tx;
@@ -143,10 +140,9 @@ interface alert_esc_if(input clk, input rst_n);
 
   function automatic bit get_alert();
     if (alert_tx_final.alert_p === 1'b1 && ping_pending) begin
-      `uvm_info("alert_esc_if::get_alert", $sformatf(
-                "This alert is a ping response: alert_p:%b, alert_n:%b, ping_pending:%p",
-                alert_tx_final.alert_p, alert_tx_final.alert_n, ping_pending),
-                UVM_MEDIUM)
+      `uvm_info($sformatf("%m"),
+                $sformatf("This alert is a ping response: alert_p:%b, alert_n:%b, ping_pending:%p",
+                          alert_tx_final.alert_p, alert_tx_final.alert_n, ping_pending), UVM_MEDIUM)
     end
     get_alert = (alert_tx_final.alert_p === 1'b1 && alert_tx_final.alert_n === 1'b0 &&
                  ! ping_pending);

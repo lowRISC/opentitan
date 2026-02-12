@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/status.h"
-#include "sw/device/lib/crypto/include/hash.h"
+#include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -63,13 +63,13 @@ status_t sha384_test(const unsigned char *msg, const size_t msg_len,
   otcrypto_hash_digest_t actual_digest = {
       .data = actual_digest_data,
       .len = ARRAYSIZE(actual_digest_data),
-      .mode = kOtcryptoHashModeSha384,
   };
-  TRY(otcrypto_hash(input_message, actual_digest));
+  TRY(otcrypto_sha2_384(input_message, &actual_digest));
 
   // Check that the expected and actual digests match.
   TRY_CHECK_ARRAYS_EQ((unsigned char *)actual_digest_data, expected_digest,
                       sizeof(actual_digest_data));
+  TRY_CHECK(actual_digest.mode == kOtcryptoHashModeSha384);
 
   return OTCRYPTO_OK;
 }
@@ -79,8 +79,8 @@ status_t sha384_test(const unsigned char *msg, const size_t msg_len,
  */
 status_t sha384_streaming_test(const unsigned char *msg, size_t msg_len,
                                const uint8_t *expected_digest) {
-  otcrypto_hash_context_t ctx;
-  TRY(otcrypto_hash_init(&ctx, kOtcryptoHashModeSha384));
+  otcrypto_sha2_context_t ctx;
+  TRY(otcrypto_sha2_init(kOtcryptoHashModeSha384, &ctx));
 
   // Send the message 5 bytes at a time.
   while (msg_len > 0) {
@@ -92,7 +92,7 @@ status_t sha384_streaming_test(const unsigned char *msg, size_t msg_len,
     };
     msg += len;
     msg_len -= len;
-    TRY(otcrypto_hash_update(&ctx, input_message));
+    TRY(otcrypto_sha2_update(&ctx, input_message));
   }
 
   // Allocate space for the computed digest.
@@ -100,13 +100,13 @@ status_t sha384_streaming_test(const unsigned char *msg, size_t msg_len,
   otcrypto_hash_digest_t actual_digest = {
       .data = actual_digest_data,
       .len = ARRAYSIZE(actual_digest_data),
-      .mode = kOtcryptoHashModeSha384,
   };
-  TRY(otcrypto_hash_final(&ctx, actual_digest));
+  TRY(otcrypto_sha2_final(&ctx, &actual_digest));
 
   // Check that the expected and actual digests match.
   TRY_CHECK_ARRAYS_EQ((unsigned char *)actual_digest_data, expected_digest,
                       sizeof(actual_digest_data));
+  TRY_CHECK(actual_digest.mode == kOtcryptoHashModeSha384);
 
   return OTCRYPTO_OK;
 }
@@ -135,6 +135,8 @@ static volatile status_t test_result;
 
 bool test_main(void) {
   test_result = OK_STATUS();
+  // Even though the HMAC IP itself does not need entropy, we need to initialize
+  // the entropy complex to be able to clear HMAC with randomness.
   CHECK_STATUS_OK(entropy_complex_init());
   EXECUTE_TEST(test_result, empty_test);
   EXECUTE_TEST(test_result, one_block_test);

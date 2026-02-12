@@ -13,6 +13,9 @@ filesets:
       - lowrisc:systems:top_earlgrey_ast
       - lowrisc:systems:top_earlgrey_padring
       - lowrisc:earlgrey_systems:scan_role_pkg
+      - lowrisc:earlgrey_ip:flash_ctrl_prim_reg_top
+      - lowrisc:prim_xilinx_ultrascale:all
+      - lowrisc:prim_generic:flash
     files:
       - rtl/clkgen_xil_ultrascale.sv
       - rtl/usr_access_xil7series.sv
@@ -54,16 +57,11 @@ parameters:
     description: Scrambled boot ROM initialization file in 40 bit vmem hex format
     default: ""
     paramtype: vlogparam
-  OtpCtrlMemInitFile:
+  OtpMacroMemInitFile:
     datatype: str
     description: OTP initialization file in vmem hex format
     default: ""
     paramtype: vlogparam
-  # For value definition, please see ip/prim/rtl/prim_pkg.sv
-  PRIM_DEFAULT_IMPL:
-    datatype: str
-    paramtype: vlogdefine
-    description: Primitives implementation to use, e.g. "prim_pkg::ImplGeneric".
   AST_BYPASS_CLK:
     datatype: bool
     paramtype: vlogdefine
@@ -86,8 +84,7 @@ targets:
     toplevel: chip_earlgrey_cw340
     parameters:
       - BootRomInitFile
-      - OtpCtrlMemInitFile
-      - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx_ultrascale
+      - OtpMacroMemInitFile
       - AST_BYPASS_CLK=true
     tools:
       vivado:

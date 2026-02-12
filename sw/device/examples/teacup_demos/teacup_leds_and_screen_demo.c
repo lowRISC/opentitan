@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "dt/dt_api.h"  // Generated
+#include "hw/top/dt/api.h"  // Generated
 #include "sw/device/examples/teacup_demos/data/bitmaps.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/boards/teacup_v1_3_0/leds.h"
@@ -148,7 +148,8 @@ static status_t peripheral_init(void) {
 
 static status_t configure_led_i2c_controller(void) {
   TRY(dif_i2c_host_set_enabled(&i2c, kDifToggleEnabled));
-  TRY(i2c_testutils_set_speed(&i2c, kDifI2cSpeedFastPlus));
+  TRY(i2c_testutils_set_speed(&i2c, kDifI2cSpeedFastPlus,
+                              /*sda_rise_nanos=*/400, /*sda_fall_nanos=*/110));
   TRY(leds_i2c_controller_configure(&i2c));
   return OK_STATUS();
 }

@@ -10,7 +10,6 @@ rust_library(
     name = "cryptotest_parser",
     srcs = ["cryptotest_parser.rs"],
     deps = [
-        "@crate_index//:once_cell",
         "@crate_index//:regex",
         "@crate_index//:thiserror",
     ],

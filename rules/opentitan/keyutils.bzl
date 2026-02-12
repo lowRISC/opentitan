@@ -43,10 +43,8 @@ key_sphincs_plus = rule(
             doc = "The type of the key. Can be TestKey, DevKey or ProdKey.",
             values = ["TestKey", "DevKey", "ProdKey"],
         ),
-        "config": attr.string(
-            default = "Sha2128s",
-            doc = "The config of the key. Can be Sha2128s[Q20][Prehash].",
-            values = ["Sha2128s", "Sha2128sQ20", "Sha2128sPrehash", "Sha2128sQ20Prehash"],
+        "config": attr.string_dict(
+            doc = "The config properties of the key.  `domain` can be `Pure` or `PreHashedSha256`.",
         ),
         "method": attr.string(
             doc = "Mechanism used to access the key. Can be local or hsmtool.",
@@ -71,10 +69,8 @@ key_ecdsa = rule(
             doc = "The type of the key. Can be TestKey, DevKey or ProdKey.",
             values = ["TestKey", "DevKey", "ProdKey"],
         ),
-        "config": attr.string(
-            default = "EcdsaP256",
-            doc = "The config of the key. Only EcdsaP256 is supported at the moment.",
-            values = ["EcdsaP256"],
+        "config": attr.string_dict(
+            doc = "The config properties of the key.  Currently, there are no properties for ECDSA keys.",
         ),
         # TODO(cfrantz, moidx, #22155): To support signing with opentitantool or
         # hsmtool, the `method` should be replaced with a `token` and `profile`
@@ -198,6 +194,15 @@ def create_test_key(name, label):
 
 def create_dev_key(name, label):
     return create_key_(name, label, [
+        CONST.LCV.TEST_UNLOCKED0,
+        CONST.LCV.TEST_UNLOCKED1,
+        CONST.LCV.TEST_UNLOCKED2,
+        CONST.LCV.TEST_UNLOCKED3,
+        CONST.LCV.TEST_UNLOCKED4,
+        CONST.LCV.TEST_UNLOCKED5,
+        CONST.LCV.TEST_UNLOCKED6,
+        CONST.LCV.TEST_UNLOCKED7,
+        CONST.LCV.RMA,
         CONST.LCV.DEV,
     ])
 

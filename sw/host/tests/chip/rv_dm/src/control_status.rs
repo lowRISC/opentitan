@@ -5,8 +5,8 @@
 use anyhow::Result;
 use clap::Parser;
 
-use opentitanlib::app::TransportWrapper;
-use opentitanlib::debug::dmi::{consts, DmiDebugger, OpenOcdDmi};
+use opentitanlib::app::{TransportWrapper, UartRx};
+use opentitanlib::debug::dmi::{DmiDebugger, OpenOcdDmi, consts};
 use opentitanlib::execute_test;
 use opentitanlib::test_utils::init::InitializeTest;
 
@@ -21,7 +21,7 @@ const RISCV_IDCODE: u32 = 0x10001cdf;
 
 fn test_control_status(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
 
     let mut openocd = opts.init.jtag_params.create(transport)?.into_raw()?;
 

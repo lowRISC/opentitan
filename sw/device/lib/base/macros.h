@@ -625,6 +625,18 @@ extern "C++" {
 #define OT_USED __attribute__((used))
 
 /**
+ * An attribute used to indicate that a character array variable is not intended
+ * to be treated as a null-terminated string.
+ */
+#if defined(__clang__) && __clang_major__ >= 21
+#define OT_NONSTRING __attribute__((nonstring))
+#elif defined(__GNUC__) && !defined(__clang__)
+#define OT_NONSTRING __attribute__((nonstring))
+#else
+#define OT_NONSTRING
+#endif
+
+/**
  * OT_BUILD_FOR_STATIC_ANALYZER indicates whether we are compiling for the
  * purpose of static analysis. Currently, this macro only detects
  * Clang-Analyzer, which is used as a backend by Clang-Tidy.
@@ -718,5 +730,36 @@ class SignConverter {
 // The ISR context size is 30 words.  There are 32 cpu registers; 30 of them
 // need to be saved.  The two that do not are `sp` and `gp` (x2 and x3).
 #define OT_CONTEXT_SIZE (OT_WORD_SIZE * 30)
+
+/**
+ * A macro that returns the minimum of two values.
+ *
+ * @param a First value.
+ * @param b Second value.
+ */
+#ifndef MIN
+#define MIN(a, b)       \
+  ({                    \
+    typeof(a) _a = (a); \
+    typeof(b) _b = (b); \
+    _a < _b ? _a : _b;  \
+  })
+#endif
+
+/**
+ * A macro that returns the maximum of two values.
+ *
+ * @param a First value.
+ * @param b Second value.
+ *
+ */
+#ifndef MAX
+#define MAX(a, b)       \
+  ({                    \
+    typeof(a) _a = (a); \
+    typeof(b) _b = (b); \
+    _a > _b ? _a : _b;  \
+  })
+#endif
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_MACROS_H_

@@ -9,7 +9,7 @@
 // Verify in DEV state, only the LC tap and RISC-V taps can be selected.
 // Verify DFT test mode straps are sampled and output to AST via
 // top_earlgrey.dft_strap_test_o in TEST_UNLOCKED* and RMA states.
-// Verify pimux.dft_strap_test_o is always 0 in the states other than TEST_UNLOCKED* and
+// Verify pinmux.dft_strap_test_o is always 0 in the states other than TEST_UNLOCKED* and
 // RMA, regardless of the value on DFT SW straps.
 
 class chip_tap_straps_vseq extends chip_sw_base_vseq;
@@ -275,12 +275,12 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
   bit [1:0] dft_straps_val;
   bit partner;
   virtual function void randomize_dft_straps();
-    if ($value$plusargs("PARTNER_N=%b",partner))
-    begin
-        randomize(dft_straps_val) with {dft_straps_val inside {0,2,3};};
+    if ($value$plusargs("PARTNER_N=%b", partner)) begin
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(dft_straps_val, dft_straps_val inside {0,2,3};)
     end else begin
-        randomize(dft_straps_val) with {dft_straps_val inside {0,1,2,3};};
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(dft_straps_val, dft_straps_val inside {0,1,2,3};)
     end
+
     `uvm_info(`gfn, $sformatf("LC state is = %0s, DFT straps = %2b\n",
               cur_lc_state.name(),dft_straps_val), UVM_LOW)
     cfg.chip_vif.dft_straps_if.drive(dft_straps_val);

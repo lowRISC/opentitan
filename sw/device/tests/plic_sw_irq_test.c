@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "dt/dt_api.h"      // Generated
-#include "dt/dt_rv_plic.h"  // Generated
+#include "hw/top/dt/api.h"      // Generated
+#include "hw/top/dt/rv_plic.h"  // Generated
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/runtime/hart.h"
@@ -13,7 +13,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 
-#include "rv_plic_regs.h"  // Generated.
+#include "hw/top/rv_plic_regs.h"  // Generated.
 
 OTTF_DEFINE_TEST_CONFIG();
 

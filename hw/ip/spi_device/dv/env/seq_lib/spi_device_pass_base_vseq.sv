@@ -34,7 +34,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
 
   rand device_mode_e device_mode;
 
-  // overide this to enable other modes
+  // override this to enable other modes
   constraint device_mode_c {
     device_mode == PassthroughMode;
   }
@@ -509,7 +509,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
       end
     end
 
-    // set busy enabled, when this flas is set and cmd is updated with payload
+    // set busy enabled, when this flash is set and cmd is updated with payload
     if (always_set_busy_when_upload_contain_payload && ral.cmd_info[idx].upload.get()
        && (ral.cmd_info[idx].payload_en.get() == 0 ||
            ral.cmd_info[idx].payload_dir.get() == PayloadIn)) begin
@@ -669,7 +669,8 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
 
         wait_sck_count--;
         if (wait_sck_count == 0 && busy_unset_early == 0) begin
-          uvm_hdl_read("tb.dut.u_spid_status.sck_status_committed", rtl_sck_committed_status);
+          `DV_CHECK(uvm_hdl_read(sck_committed_status_path, rtl_sck_committed_status))
+
           // The busy clear hasn't made it towards the SCK committed value yet - so there's a chance
           // if we're towards the end of a flash_cmd the flash_status write wasn't taken for that
           // command and hence the busy bit won't be unset until the next command, since the write

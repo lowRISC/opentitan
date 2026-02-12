@@ -7,15 +7,15 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/uart/doc/">UART</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/uart/">UART</a> Device Interface Functions
  */
 
 #include <stdint.h>
 
 #include "sw/device/lib/base/mmio.h"
 
+#include "hw/top/uart_regs.h"
 #include "sw/device/lib/dif/autogen/dif_uart_autogen.h"
-#include "uart_regs.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -140,7 +140,7 @@ typedef enum dif_uart_datapath {
  */
 typedef enum dif_uart_loopback {
   /**
-   * Indicates that outgoing TX bits should be recieved through RX.
+   * Indicates that outgoing TX bits should be received through RX.
    */
   kDifUartLoopbackSystem = 0,
   /**

@@ -35,7 +35,8 @@ def _fusesoc_build_impl(ctx):
     # Vivado expects `HOME` environment variable to exist. Redirect it to a fake directory.
     home_dir = "{}/homeless-shelter".format(out_dir)
 
-    cache_dir = "{}/fusesoc-cache".format(out_dir)
+    # TODO(#27346): Use of `/tmp` here isn't hermetic.
+    cache_dir = "/tmp/fusesoc-cache"
     cfg_file_path = "build.{}.fusesoc_config.toml".format(ctx.label.name)
     cfg_file = ctx.actions.declare_file(cfg_file_path)
     cfg_str = "[main]\n  cache_root = {}".format(cache_dir)

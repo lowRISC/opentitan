@@ -32,7 +32,7 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_core_reg_block
 
   // ext interfaces
   otp_ctrl_vif otp_ctrl_vif;
-  virtual clk_rst_if clk_rst_vif_otp_ctrl_prim_reg_block;
+  virtual clk_rst_if clk_rst_vif_otp_macro_prim_reg_block;
 
   bit backdoor_clear_mem;
 
@@ -58,7 +58,7 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_core_reg_block
   }
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
-    string prim_ral_name = "otp_ctrl_prim_reg_block";
+    string prim_ral_name = "otp_macro_prim_reg_block";
     ral_model_names.push_back(prim_ral_name);
     clk_freqs_mhz[prim_ral_name] = clk_freq_mhz;
 
@@ -99,7 +99,7 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_core_reg_block
 
     // only support 1 outstanding TL items in tlul_adapter
     m_tl_agent_cfg.max_outstanding_req = 1;
-    m_tl_agent_cfgs["otp_ctrl_prim_reg_block"].max_outstanding_req = 1;
+    m_tl_agent_cfgs["otp_macro_prim_reg_block"].max_outstanding_req = 1;
 
     // create the inputs cfg instance
     dut_cfg = otp_ctrl_ast_inputs_cfg::type_id::create("dut_cfg");

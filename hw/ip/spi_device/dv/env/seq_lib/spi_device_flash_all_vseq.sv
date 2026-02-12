@@ -42,7 +42,7 @@ class spi_device_flash_all_vseq extends spi_device_pass_base_vseq;
     join
   endtask : body
 
-  // Empty task to be overriden by child sequences in case any different configuration is needed
+  // Empty task to be overridden by child sequences in case any different configuration is needed
   virtual task knobs_before_randomize_op_addr_size();
   endtask
 

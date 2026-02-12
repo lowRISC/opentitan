@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Write enable and data arbitration logic for register slice conforming to Comportibility guide.
+// Write enable and data arbitration logic for register slice conforming to Comportability guide.
 
 module prim_subreg_arb
   import prim_subreg_pkg::*;

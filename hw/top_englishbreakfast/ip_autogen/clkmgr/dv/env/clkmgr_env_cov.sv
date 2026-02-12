@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * Covergoups that are dependent on run-time parameters that may be available
+ * Covergroups that are dependent on run-time parameters that may be available
  * only in build_phase can be defined here
  * Covergroups may also be wrapped inside helper classes if needed.
  */
@@ -157,7 +157,7 @@ class clkmgr_env_cov extends cip_base_env_cov #(
 
   function new(string name, uvm_component parent);
     super.new(name, parent);
-    // The peripheral covergoups.
+    // The peripheral Covergroups.
     foreach (peri_cg_wrap[i]) begin
       clkmgr_env_pkg::peri_e peri = clkmgr_env_pkg::peri_e'(i);
       peri_cg_wrap[i] = new(peri.name);

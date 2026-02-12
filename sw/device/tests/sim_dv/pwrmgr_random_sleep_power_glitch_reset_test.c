@@ -7,7 +7,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "dt/dt_adc_ctrl.h"
+#include "hw/top/dt/adc_ctrl.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
@@ -70,6 +70,7 @@ static_assert(kDtAlertHandlerCount == 1,
 dif_pwrmgr_request_sources_t aon_timer_wakeup_sources;
 dif_pwrmgr_request_sources_t adc_ctrl_wakeup_sources;
 dif_pwrmgr_request_sources_t all_wakeup_sources;
+dif_pwrmgr_request_sources_t wdog_reset_sources;
 
 /**
  * Program the alert handler to escalate on alerts upto phase 2 (i.e. reset) but
@@ -182,6 +183,9 @@ void init_peripherals(void) {
   CHECK_DIF_OK(dif_pwrmgr_find_request_source(
       &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_adc_ctrl_instance_id(kAdcCtrlDt),
       kDtAdcCtrlWakeupWkupReq, &adc_ctrl_wakeup_sources));
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      &pwrmgr, kDifPwrmgrReqTypeReset, dt_aon_timer_instance_id(kDtAonTimerAon),
+      kDtAonTimerResetReqAonTimer, &wdog_reset_sources));
   CHECK_DIF_OK(dif_pwrmgr_get_all_request_sources(
       &pwrmgr, kDifPwrmgrReqTypeWakeup, &all_wakeup_sources));
 }
@@ -320,9 +324,8 @@ static void config_wdog(const dif_aon_timer_t *aon_timer,
   CHECK_STATUS_OK(aon_timer_testutils_watchdog_config(aon_timer, bark_cycles,
                                                       bite_cycles, false));
   // Set wdog as a reset source.
-  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(pwrmgr, kDifPwrmgrReqTypeReset,
-                                              kDifPwrmgrResetRequestSourceTwo,
-                                              kDifToggleEnabled));
+  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
+      pwrmgr, kDifPwrmgrReqTypeReset, wdog_reset_sources, kDifToggleEnabled));
 }
 
 /**
@@ -363,9 +366,8 @@ static void normal_sleep_wdog(const dif_pwrmgr_t *pwrmgr) {
 
 static void low_power_por(const dif_pwrmgr_t *pwrmgr) {
   // Set por as a reset source.
-  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(pwrmgr, kDifPwrmgrReqTypeReset,
-                                              kDifPwrmgrResetRequestSourceTwo,
-                                              kDifToggleEnabled));
+  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
+      pwrmgr, kDifPwrmgrReqTypeReset, wdog_reset_sources, kDifToggleEnabled));
 
   // Program the pwrmgr to go to deep sleep state (clocks off).
   CHECK_STATUS_OK(
@@ -378,9 +380,8 @@ static void low_power_por(const dif_pwrmgr_t *pwrmgr) {
 
 static void normal_sleep_por(const dif_pwrmgr_t *pwrmgr) {
   // Set por as a reset source.
-  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(pwrmgr, kDifPwrmgrReqTypeReset,
-                                              kDifPwrmgrResetRequestSourceTwo,
-                                              kDifToggleEnabled));
+  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
+      pwrmgr, kDifPwrmgrReqTypeReset, wdog_reset_sources, kDifToggleEnabled));
 
   // Place device into low power and immediately wake.
   dif_pwrmgr_domain_config_t config;

@@ -42,6 +42,7 @@ class usb20_monitor extends dv_base_monitor #(
   endfunction
 
   task run_phase(uvm_phase phase);
+    super.run_phase(phase);
     detect_reset();
 
     // Wait for VBUS assertion; this will be the first attempt of the driver to connect to the DUT;

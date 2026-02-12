@@ -195,9 +195,9 @@ SPI Device flash operation mode.
 
 | Value   | Name        | Description                                                                                                                                                                                                                                                                |
 |:--------|:------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0x0     | disabled    | SPI Flash operations disabled. SPI device flash operations are disabled, and all transactions are ignored. Note that SPI TPM operations are controlled by !!TPM_CFG                                                                                                        |
+| 0x0     | disabled    | SPI Flash operations disabled. SPI device flash operations are disabled, and all transactions are ignored. Note that SPI TPM operations are controlled by [`TPM_CFG`](#tpm_cfg)                                                                                            |
 | 0x1     | flashmode   | SPI Flash Emulation mode. In flash mode, SPI Device IP accepts SPI Flash commands and processes internally, then returns data for the read commands. HW processes the Status, JEDEC ID, SFDP commands. The current version does not support Dual/Quad IO and QPI commands. |
-| 0x2     | passthrough | In passthrough mode, SPI Device IP forwards the incoming SPI flash traffics to the attached downstream flash device. HW may processes commands internally and returns data. SW may configure the device to drop inadmissable commands.                                     |
+| 0x2     | passthrough | In passthrough mode, SPI Device IP forwards the incoming SPI flash traffics to the attached downstream flash device. HW may processes commands internally and returns data. SW may configure the device to drop inadmissible commands.                                     |
 
 Other values are reserved.
 
@@ -1606,7 +1606,7 @@ TPM_RID
 ## TPM_CMD_ADDR
 TPM Command and Address buffer
 
-The SW may get the received TPM command and address by readin gthis CSR.
+The SW may get the received TPM command and address by reading this CSR.
 - Offset: `0x830`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`

@@ -16,6 +16,12 @@ package csrng_reg_pkg;
   // Number of registers for every interface
   parameter int NumRegs = 24;
 
+  // Alert indices
+  typedef enum int {
+    AlertRecovAlertIdx = 0,
+    AlertFatalAlertIdx = 1
+  } csrng_alert_idx_t;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -137,11 +143,7 @@ package csrng_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } cs_cmd_req_done;
-    struct packed {
-      logic        d;
-      logic        de;
-    } cs_entropy_req;
+    } cs_fatal_err;
     struct packed {
       logic        d;
       logic        de;
@@ -149,7 +151,11 @@ package csrng_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } cs_fatal_err;
+    } cs_entropy_req;
+    struct packed {
+      logic        d;
+      logic        de;
+    } cs_cmd_req_done;
   } csrng_hw2reg_intr_state_reg_t;
 
   typedef struct packed {
@@ -158,26 +164,26 @@ package csrng_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic        d;
+      logic [2:0]  d;
       logic        de;
-    } cmd_rdy;
+    } cmd_sts;
     struct packed {
       logic        d;
       logic        de;
     } cmd_ack;
     struct packed {
-      logic [2:0]  d;
+      logic        d;
       logic        de;
-    } cmd_sts;
+    } cmd_rdy;
   } csrng_hw2reg_sw_cmd_sts_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
-    } genbits_vld;
+    } genbits_fips;
     struct packed {
       logic        d;
-    } genbits_fips;
+    } genbits_vld;
   } csrng_hw2reg_genbits_vld_reg_t;
 
   typedef struct packed {
@@ -197,31 +203,7 @@ package csrng_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } enable_field_alert;
-    struct packed {
-      logic        d;
-      logic        de;
-    } sw_app_enable_field_alert;
-    struct packed {
-      logic        d;
-      logic        de;
-    } read_int_state_field_alert;
-    struct packed {
-      logic        d;
-      logic        de;
-    } fips_force_enable_field_alert;
-    struct packed {
-      logic        d;
-      logic        de;
-    } acmd_flag0_field_alert;
-    struct packed {
-      logic        d;
-      logic        de;
-    } cs_bus_cmp_alert;
-    struct packed {
-      logic        d;
-      logic        de;
-    } cmd_stage_invalid_acmd_alert;
+    } cmd_stage_reseed_cnt_alert;
     struct packed {
       logic        d;
       logic        de;
@@ -229,106 +211,38 @@ package csrng_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } cmd_stage_reseed_cnt_alert;
+    } cmd_stage_invalid_acmd_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } cs_bus_cmp_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } acmd_flag0_field_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } fips_force_enable_field_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } read_int_state_field_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } sw_app_enable_field_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } enable_field_alert;
   } csrng_hw2reg_recov_alert_sts_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
-    } sfifo_cmd_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } sfifo_genbits_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } sfifo_cmdreq_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } sfifo_rcstage_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } sfifo_keyvrc_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } sfifo_updreq_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } sfifo_bencreq_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } sfifo_bencack_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } sfifo_pdata_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } sfifo_final_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } sfifo_gbencack_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } sfifo_grcstage_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } sfifo_ggenreq_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } sfifo_gadstage_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } sfifo_ggenbits_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } sfifo_blkenc_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } cmd_stage_sm_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } main_sm_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } drbg_gen_sm_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } drbg_updbe_sm_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } drbg_updob_sm_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } aes_cipher_sm_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } cmd_gen_cnt_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } fifo_write_err;
+    } fifo_state_err;
     struct packed {
       logic        d;
       logic        de;
@@ -336,11 +250,39 @@ package csrng_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } fifo_state_err;
+    } fifo_write_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } ctr_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } aes_cipher_sm_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } ctr_drbg_sm_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } main_sm_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } cmd_stage_sm_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } sfifo_genbits_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } sfifo_cmd_err;
   } csrng_hw2reg_err_code_reg_t;
 
   typedef struct packed {
-    logic [7:0]  d;
+    logic [5:0]  d;
     logic        de;
   } csrng_hw2reg_main_sm_state_reg_t;
 
@@ -363,16 +305,16 @@ package csrng_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    csrng_hw2reg_intr_state_reg_t intr_state; // [273:266]
-    csrng_hw2reg_reseed_counter_mreg_t [2:0] reseed_counter; // [265:170]
-    csrng_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [169:162]
-    csrng_hw2reg_genbits_vld_reg_t genbits_vld; // [161:160]
-    csrng_hw2reg_genbits_reg_t genbits; // [159:128]
-    csrng_hw2reg_int_state_val_reg_t int_state_val; // [127:96]
-    csrng_hw2reg_hw_exc_sts_reg_t hw_exc_sts; // [95:79]
-    csrng_hw2reg_recov_alert_sts_reg_t recov_alert_sts; // [78:61]
-    csrng_hw2reg_err_code_reg_t err_code; // [60:9]
-    csrng_hw2reg_main_sm_state_reg_t main_sm_state; // [8:0]
+    csrng_hw2reg_intr_state_reg_t intr_state; // [239:232]
+    csrng_hw2reg_reseed_counter_mreg_t [2:0] reseed_counter; // [231:136]
+    csrng_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [135:128]
+    csrng_hw2reg_genbits_vld_reg_t genbits_vld; // [127:126]
+    csrng_hw2reg_genbits_reg_t genbits; // [125:94]
+    csrng_hw2reg_int_state_val_reg_t int_state_val; // [93:62]
+    csrng_hw2reg_hw_exc_sts_reg_t hw_exc_sts; // [61:45]
+    csrng_hw2reg_recov_alert_sts_reg_t recov_alert_sts; // [44:27]
+    csrng_hw2reg_err_code_reg_t err_code; // [26:7]
+    csrng_hw2reg_main_sm_state_reg_t main_sm_state; // [6:0]
   } csrng_hw2reg_t;
 
   // Register offsets

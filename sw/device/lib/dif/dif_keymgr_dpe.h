@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/keymgr_dpe/doc/">Key Manager DPE</a> Device Interface
+ * @brief <a href="/book/hw/ip/keymgr_dpe/">Key Manager DPE</a> Device Interface
  * Functions
  */
 

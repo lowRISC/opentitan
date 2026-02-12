@@ -68,7 +68,10 @@ cc_library(
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
-    ],
+    ] + select({
+        "@platforms//cpu:riscv32": ["//sw/device/lib/runtime:log"],
+        "//conditions:default": [],
+    }),
 )
 
 cc_library(

@@ -231,20 +231,6 @@ pub const FLASH_CTRL_PRIM_BASE_ADDR: usize = 0x41008000;
 /// `FLASH_CTRL_PRIM_BASE_ADDR + FLASH_CTRL_PRIM_SIZE_BYTES`.
 pub const FLASH_CTRL_PRIM_SIZE_BYTES: usize = 0x80;
 
-/// Peripheral base address for mem device on flash_ctrl in top englishbreakfast.
-///
-/// This should be used with #mmio_region_from_addr to access the memory-mapped
-/// registers associated with the peripheral (usually via a DIF).
-pub const FLASH_CTRL_MEM_BASE_ADDR: usize = 0x20000000;
-
-/// Peripheral size for mem device on flash_ctrl in top englishbreakfast.
-///
-/// This is the size (in bytes) of the peripheral's reserved memory area. All
-/// memory-mapped registers associated with this peripheral should have an
-/// address between #FLASH_CTRL_MEM_BASE_ADDR and
-/// `FLASH_CTRL_MEM_BASE_ADDR + FLASH_CTRL_MEM_SIZE_BYTES`.
-pub const FLASH_CTRL_MEM_SIZE_BYTES: usize = 0x10000;
-
 /// Peripheral base address for rv_plic in top englishbreakfast.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -287,20 +273,6 @@ pub const SRAM_CTRL_MAIN_REGS_BASE_ADDR: usize = 0x411C0000;
 /// `SRAM_CTRL_MAIN_REGS_BASE_ADDR + SRAM_CTRL_MAIN_REGS_SIZE_BYTES`.
 pub const SRAM_CTRL_MAIN_REGS_SIZE_BYTES: usize = 0x40;
 
-/// Peripheral base address for ram device on sram_ctrl_main in top englishbreakfast.
-///
-/// This should be used with #mmio_region_from_addr to access the memory-mapped
-/// registers associated with the peripheral (usually via a DIF).
-pub const SRAM_CTRL_MAIN_RAM_BASE_ADDR: usize = 0x10000000;
-
-/// Peripheral size for ram device on sram_ctrl_main in top englishbreakfast.
-///
-/// This is the size (in bytes) of the peripheral's reserved memory area. All
-/// memory-mapped registers associated with this peripheral should have an
-/// address between #SRAM_CTRL_MAIN_RAM_BASE_ADDR and
-/// `SRAM_CTRL_MAIN_RAM_BASE_ADDR + SRAM_CTRL_MAIN_RAM_SIZE_BYTES`.
-pub const SRAM_CTRL_MAIN_RAM_SIZE_BYTES: usize = 0x20000;
-
 /// Peripheral base address for regs device on rom_ctrl in top englishbreakfast.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -314,20 +286,6 @@ pub const ROM_CTRL_REGS_BASE_ADDR: usize = 0x411E0000;
 /// address between #ROM_CTRL_REGS_BASE_ADDR and
 /// `ROM_CTRL_REGS_BASE_ADDR + ROM_CTRL_REGS_SIZE_BYTES`.
 pub const ROM_CTRL_REGS_SIZE_BYTES: usize = 0x80;
-
-/// Peripheral base address for rom device on rom_ctrl in top englishbreakfast.
-///
-/// This should be used with #mmio_region_from_addr to access the memory-mapped
-/// registers associated with the peripheral (usually via a DIF).
-pub const ROM_CTRL_ROM_BASE_ADDR: usize = 0x8000;
-
-/// Peripheral size for rom device on rom_ctrl in top englishbreakfast.
-///
-/// This is the size (in bytes) of the peripheral's reserved memory area. All
-/// memory-mapped registers associated with this peripheral should have an
-/// address between #ROM_CTRL_ROM_BASE_ADDR and
-/// `ROM_CTRL_ROM_BASE_ADDR + ROM_CTRL_ROM_SIZE_BYTES`.
-pub const ROM_CTRL_ROM_SIZE_BYTES: usize = 0x8000;
 
 /// Peripheral base address for cfg device on rv_core_ibex in top englishbreakfast.
 ///
@@ -343,23 +301,23 @@ pub const RV_CORE_IBEX_CFG_BASE_ADDR: usize = 0x411F0000;
 /// `RV_CORE_IBEX_CFG_BASE_ADDR + RV_CORE_IBEX_CFG_SIZE_BYTES`.
 pub const RV_CORE_IBEX_CFG_SIZE_BYTES: usize = 0x100;
 
-/// Memory base address for eflash in top englishbreakfast.
-pub const EFLASH_BASE_ADDR: usize = 0x20000000;
+/// Memory base address for mem memory on flash_ctrl in top englishbreakfast.
+pub const FLASH_CTRL_MEM_BASE_ADDR: usize = 0x20000000;
 
-/// Memory size for eflash in top englishbreakfast.
-pub const EFLASH_SIZE_BYTES: usize = 0x10000;
+/// Memory size for mem memory on flash_ctrl in top englishbreakfast.
+pub const FLASH_CTRL_MEM_SIZE_BYTES: usize = 0x10000;
 
-/// Memory base address for ram_main in top englishbreakfast.
-pub const RAM_MAIN_BASE_ADDR: usize = 0x10000000;
+/// Memory base address for ram memory on sram_ctrl_main in top englishbreakfast.
+pub const SRAM_CTRL_MAIN_RAM_BASE_ADDR: usize = 0x10000000;
 
-/// Memory size for ram_main in top englishbreakfast.
-pub const RAM_MAIN_SIZE_BYTES: usize = 0x20000;
+/// Memory size for ram memory on sram_ctrl_main in top englishbreakfast.
+pub const SRAM_CTRL_MAIN_RAM_SIZE_BYTES: usize = 0x20000;
 
-/// Memory base address for rom in top englishbreakfast.
-pub const ROM_BASE_ADDR: usize = 0x8000;
+/// Memory base address for rom memory on rom_ctrl in top englishbreakfast.
+pub const ROM_CTRL_ROM_BASE_ADDR: usize = 0x8000;
 
-/// Memory size for rom in top englishbreakfast.
-pub const ROM_SIZE_BYTES: usize = 0x8000;
+/// Memory size for rom memory on rom_ctrl in top englishbreakfast.
+pub const ROM_CTRL_ROM_SIZE_BYTES: usize = 0x8000;
 
 /// PLIC Interrupt Source Peripheral.
 ///

@@ -58,6 +58,7 @@ interface chip_if;
 `define KEYMGR_HIER         `TOP_HIER.u_keymgr
 `define LC_CTRL_HIER        `TOP_HIER.u_lc_ctrl
 `define OTP_CTRL_HIER       `TOP_HIER.u_otp_ctrl
+`define OTP_MACRO_HIER      `TOP_HIER.u_otp_macro
 `define OTBN_HIER           `TOP_HIER.u_otbn
 `define PATTGEN_HIER        `TOP_HIER.u_pattgen
 `define PINMUX_HIER         `TOP_HIER.u_pinmux_aon
@@ -81,7 +82,7 @@ interface chip_if;
   // Identifier for logs.
   string MsgId = $sformatf("%m");
 
-  // Identifier for the envorinment to which this interface is passed on via uvm_config_db.
+  // Identifier for the environment to which this interface is passed on via uvm_config_db.
   string env_name = "env";
 
   // Directly connected to chip IOs.
@@ -763,7 +764,7 @@ interface chip_if;
 `else
   assign pwrmgr_low_power_if.deep_powerdown = ~`PWRMGR_HIER.pwr_ast_i.main_pok;
 `endif
-  // clkmgr related: SW controlled clock gating contol signals reflecting the actual status
+  // clkmgr related: SW controlled clock gating control signals reflecting the actual status
   // of these clocks.
 `ifdef GATE_LEVEL
   wire aes_clk_is_enabled = 0;
@@ -925,7 +926,7 @@ interface chip_if;
   assign probed_cpu_pc.pc_id = `CPU_CORE_HIER.u_ibex_core.pc_id;
   assign probed_cpu_pc.pc_wb = `CPU_CORE_HIER.u_ibex_core.pc_wb;
 `endif
-  // Stub CPU envorinment.
+  // Stub CPU environment.
   //
   // The initial value is sought from a plusarg. It can however, be set by the sequence on the fly
   // as well. If enabled, the following things happen:
@@ -966,7 +967,7 @@ interface chip_if;
         join_none
       end else begin
         // when en_sim_sram == 1, need to make sure the access to sim_sram doesn't appear on
-        // cpu_d_tl_if, otherwise, we may have unmapped access as scb doesn't regnize addresses of
+        // cpu_d_tl_if, otherwise, we may have unmapped access as scb doesn't recognize addresses of
         // sim_sram. `CPU_HIER.tl_d_* is the right place to avoid seeing sim_sram accesses
         force cpu_d_tl_if.h2d = `CPU_HIER.cored_tl_h_o;
         force cpu_d_tl_if.d2h = `CPU_HIER.cored_tl_h_i;
@@ -1028,28 +1029,35 @@ interface chip_if;
     ext_clk_if.set_active(0, 0);
   endfunction
 
-  // Verifies an LC control signal broadcast by the LC controller.
-  function automatic void check_lc_ctrl_enable_signal(lc_ctrl_signal_e signal, bit expected_value);
-    lc_ctrl_pkg::lc_tx_t value;
+  // Get the requested LC control signal that was broadcast by the LC controller
+  function automatic lc_ctrl_pkg::lc_tx_t get_lc_ctrl_enable_signal(lc_ctrl_signal_e signal);
     case (signal)
-      LcCtrlSignalDftEn:        value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_dft_en_o);
-      LcCtrlSignalNvmDebugEn:   value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_nvm_debug_en_o);
-      LcCtrlSignalHwDebugEn:    value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_hw_debug_en_o);
-      LcCtrlSignalCpuEn:        value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_cpu_en_o);
+      LcCtrlSignalDftEn:        return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_dft_en_o);
+      LcCtrlSignalNvmDebugEn:   return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_nvm_debug_en_o);
+      LcCtrlSignalHwDebugEn:    return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_hw_debug_en_o);
+      LcCtrlSignalCpuEn:        return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_cpu_en_o);
       LcCtrlSignalCreatorSeedEn: begin
-        value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_creator_seed_sw_rw_en_o);
+        return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_creator_seed_sw_rw_en_o);
       end
       LcCtrlSignalOwnerSeedEn: begin
-        value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_owner_seed_sw_rw_en_o);
+        return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_owner_seed_sw_rw_en_o);
       end
-      LcCtrlSignalIsoRdEn:      value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_iso_part_sw_rd_en_o);
-      LcCtrlSignalIsoWrEn:      value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_iso_part_sw_wr_en_o);
-      LcCtrlSignalSeedRdEn:     value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_seed_hw_rd_en_o);
-      LcCtrlSignalKeyMgrEn:     value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_keymgr_en_o);
-      LcCtrlSignalEscEn:        value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_escalate_en_o);
-      LcCtrlSignalCheckBypEn:   value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_check_byp_en_o);
+      LcCtrlSignalIsoRdEn:      return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_iso_part_sw_rd_en_o);
+      LcCtrlSignalIsoWrEn:      return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_iso_part_sw_wr_en_o);
+      LcCtrlSignalSeedRdEn:     return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_seed_hw_rd_en_o);
+      LcCtrlSignalRmaState: begin
+        return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_rma_state_o);
+      end
+      LcCtrlSignalKeyMgrEn:     return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_keymgr_en_o);
+      LcCtrlSignalEscEn:        return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_escalate_en_o);
+      LcCtrlSignalCheckBypEn:   return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_check_byp_en_o);
       default:                  `uvm_fatal(MsgId, $sformatf("Bad choice: %0s", signal.name()))
     endcase
+  endfunction
+
+  // Verifies an LC control signal broadcast by the LC controller.
+  function automatic void check_lc_ctrl_enable_signal(lc_ctrl_signal_e signal, bit expected_value);
+    lc_ctrl_pkg::lc_tx_t value = get_lc_ctrl_enable_signal(signal);
     if (expected_value ~^ (value == lc_ctrl_pkg::On)) begin
       `uvm_info(MsgId, $sformatf("LC control signal %0s: value = %0s matched",
                                  signal.name(), value.name()), UVM_HIGH)
@@ -1146,9 +1154,9 @@ interface chip_if;
 
   // A custom signal probe function for LC program request to OTP.
   // See dv_macros.svh for a signal probe function description, but they only deal with
-  // vectors: it would be nice to extend them to deal with arbirary types, or at least
+  // vectors: it would be nice to extend them to deal with arbitrary types, or at least
   // support enums.
-  function static lc_ctrl_state_pkg::lc_state_t signal_probe_otp_ctrl_lc_program_state (
+  function static void signal_probe_otp_ctrl_lc_program_state (
       dv_utils_pkg::signal_probe_e kind, lc_ctrl_state_pkg::lc_state_e state);
 `ifndef GATE_LEVEL
     case (kind)
@@ -1158,7 +1166,6 @@ interface chip_if;
       default:
         `uvm_fatal("signal_probe_otp_ctrl_lc_program_state", $sformatf("Bad value: %0d", kind))
     endcase
-    return `OTP_CTRL_HIER.lc_otp_program_i.state;
 `endif
   endfunction
 
@@ -1166,7 +1173,7 @@ interface chip_if;
   // The otp should error if any bit changes back to 0, which will happen by a transition from
   // any non-RAW state when all the new state bits are 0, as in the RAW state.
   //
-  // The lc_ctrl will block any illegal transition, thus the need to tamper with a requst
+  // The lc_ctrl will block any illegal transition, thus the need to tamper with a request
   // in-flight.
   task static create_illegal_lc_request_for_otp();
     forever begin
@@ -1241,14 +1248,14 @@ interface chip_if;
       dummy_signal_probe_otp_vendor_test_ctrl)
 `else
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_otp_vendor_test_ctrl,
-      `OTP_CTRL_HIER.lc_otp_vendor_test_i)
+      `OTP_MACRO_HIER.test_i)
 `endif
   /*
    * Signal probe functions for sampling the FSM states of the IPs
    * during the max power epoch of the power_virus test.
    */
 
-  // Signal probe fuction for `fsm_state_q` of ADC_CTRL
+  // Signal probe function for `fsm_state_q` of ADC_CTRL
   wire [4:0] adc_ctrl_state;
 `ifdef GATE_LEVEL
 `define _ADC_FSM_STATE_Q(i) \
@@ -1409,6 +1416,7 @@ assign spi_host_1_state = {tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.stat
 `undef KEYMGR_HIER
 `undef LC_CTRL_HIER
 `undef OTP_CTRL_HIER
+`undef OTP_MACRO_HIER
 `undef OTBN_HIER
 `undef PATTGEN_HIER
 `undef PINMUX_HIER

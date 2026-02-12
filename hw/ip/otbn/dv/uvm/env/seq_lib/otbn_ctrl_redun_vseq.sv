@@ -178,6 +178,25 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
         case(choose_err)
           0: begin
             insn_dec_shared_i.ld_insn = !insn_dec_shared_i.ld_insn;
+            // The send_stall_request() is a workaround to align the model behaviour to what
+            // happens if this error is injected. When injecting the ld_insn error, OTBN will start
+            // a load in parallel to the current instruction and will enter the stall state.
+            // OTBN will then escalate due to a predecode error (LSU activated despite it should
+            // not). Modeling this would require duplicating logic in the model. We therefore
+            // simply signal to the model to stall once. In the next cycle we will send
+            // the escalation request (see below). In case a SW error occurs we do not want to
+            // enforce the stall and the model should handle the SW error.
+            // TODO: In case the instruction where we inject the error into is a branch instruction
+            // the assertion NoStallOnBranch in the controller fails. However, this assertion is
+            // not meaningful in this case and maybe could be disabled.
+            // TODO: If we force the ld_insn signal to zero during a LW or BN.LID instruction, OTBN
+            // will stall but not place a DMEM request. The predecode error will escalate in the
+            // next cycle but then the OTBN also wants to write LSU response to the register file
+            // in this cycle. But there is no valid response and thus the assertions
+            // OnlyWriteLoadDataBaseWhenDMemValid_A or OnlyWriteLoadDataBignumWhenDMemValid_A fail.
+            // Without the delayed escalation OTBN would have aborted in the first cycle. This test
+            // case can be fixed by disabling these assertions.
+            cfg.model_agent_cfg.vif.send_stall_request(0);
           end
           1: begin
             insn_dec_shared_i.st_insn = !insn_dec_shared_i.st_insn;
@@ -201,7 +220,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
           0: begin
             bit [31:0] bad_rf_ren_a;
             bit [31:0] good_rf_ren_a;
-            err_path = "tb.dut.u_otbn_core.rf_predec_bignum.rf_ren_a";
+            err_path = "tb.dut.u_otbn_core.rf_bignum_predec.rf_ren_a";
             `DV_CHECK_FATAL(uvm_hdl_read(err_path, good_rf_ren_a));
             `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bad_rf_ren_a,  $countones(bad_rf_ren_a) == 1;
                                                bad_rf_ren_a != good_rf_ren_a;)
@@ -210,7 +229,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
           1: begin
             bit [31:0] bad_rf_ren_b;
             bit [31:0] good_rf_ren_b;
-            err_path = "tb.dut.u_otbn_core.rf_predec_bignum.rf_ren_b";
+            err_path = "tb.dut.u_otbn_core.rf_bignum_predec.rf_ren_b";
             `DV_CHECK_FATAL(uvm_hdl_read(err_path, good_rf_ren_b));
             `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bad_rf_ren_b,  $countones(bad_rf_ren_b) == 1;
                                                bad_rf_ren_b != good_rf_ren_b;)
@@ -219,7 +238,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
           2: begin
             bit [8:0] bad_ispr_rd_en;
             bit [8:0] good_ispr_rd_en;
-            err_path = "tb.dut.u_otbn_core.ispr_predec_bignum.ispr_rd_en";
+            err_path = "tb.dut.u_otbn_core.ispr_bignum_predec.ispr_rd_en";
             `DV_CHECK_FATAL(uvm_hdl_read(err_path, good_ispr_rd_en));
             `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bad_ispr_rd_en,  $countones(bad_ispr_rd_en) == 1;
                                                bad_ispr_rd_en != good_ispr_rd_en;)
@@ -309,9 +328,18 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
         `uvm_fatal(`gfn, "issue with randomization")
       end
     endcase
+
+    // Due to the delayed escalation, the faulted instruction still commits but with wrong values.
+    // We must signal to the ISS that the result can be off.
+    cfg.model_agent_cfg.vif.tolerate_result_mismatch(1);
+
+    // Injecting the error can lead to SW errors which escalate immediately.
+    handle_sw_error_during_delayed_hw_escalation();
+
     `uvm_info(`gfn, "injecting bad internal state error into ISS", UVM_HIGH)
     have_injected_error = 1'b1;
     cfg.model_agent_cfg.vif.send_err_escalation(err_val);
+
     `DV_WAIT(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked)
     `DV_CHECK_FATAL(uvm_hdl_release(err_path) == 1);
     reset_if_locked();

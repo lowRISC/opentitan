@@ -9,7 +9,7 @@
 #define OPENTITAN_SW_DEVICE_TESTS_CRYPTO_KDF_TESTVECTORS_H_
 
 #include "sw/device/lib/crypto/drivers/kmac.h"
-#include "sw/device/lib/crypto/include/mac.h"
+#include "sw/device/lib/crypto/include/kmac.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,10 +40,12 @@ static kdf_kmac_test_vector_t kKdfTestVectors[${len(tests)}] = {
         .test_operation = ${t["test_operation"]},
         .key_derivation_key = {
             .config = {
+                .version = kOtcryptoLibVersion1,
                 .key_mode = ${"kOtcryptoKeyModeKdfKmac" + str(t["security_str"])},
                 .key_length = ${2 * len(t["keyblob"])},
                 .hw_backed = kHardenedBoolFalse,
                 .security_level = kOtcryptoKeySecurityLevelLow,
+                .exportable = kHardenedBoolTrue,
             },
             .keyblob_length = ${4 * len(t["keyblob"])},
             .keyblob = (uint32_t[]){

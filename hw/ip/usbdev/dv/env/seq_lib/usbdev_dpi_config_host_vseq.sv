@@ -147,7 +147,7 @@ class usbdev_dpi_config_host_vseq extends usbdev_base_vseq;
     csr_wr(.ptr(ral.ep_out_enable[0]),  .value(1));
     csr_wr(.ptr(ral.ep_in_enable[0]),   .value(1));
     csr_wr(.ptr(ral.rxenable_setup[0]), .value(1));
-    csr_wr(.ptr(ral.rxenable_out[0]),   .value(1));
+    csr_wr(.ptr(ral.rxenable_out),      .value(1));
   endtask
 
   // Wait until the DPI host has issued the normal Control Transfers to set the

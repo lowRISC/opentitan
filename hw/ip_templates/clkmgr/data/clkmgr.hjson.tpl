@@ -2,10 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 <%
-  all_srcs = src_clks.copy()
-  all_srcs.update(derived_clks)
-  rg_srcs = list(sorted({sig['src_name'] for sig
-                         in typed_clocks['rg_clks'].values()}))
+from ipgen.clkmgr_gen import config_clk_meas, get_all_srcs, get_rg_srcs
+all_srcs = get_all_srcs(src_clks, derived_clks)
+rg_srcs = get_rg_srcs(typed_clocks)
 %>
 # CLKMGR register template
 #
@@ -118,6 +117,7 @@
     { name: "CLKMGR.MEAS_CTRL.RECOV_ERR",
       desc: "Frequency and timeout measurements can flag recoverable errors."
     }
+% if ext_clk_bypass:
     { name: "CLKMGR.LC_EXTCLK.SPEED",
       desc: "Speed of LC controlled modification of external clock."
     }
@@ -130,6 +130,7 @@
     { name: "CLKMGR.SW_EXTCLK.LOW_SPEED",
       desc: "Software configuration of external clock running at 48 MHz."
     }
+% endif
     { name: "CLKMGR.JITTER.REGWEN",
       desc: "Control modification of clock jitter enable."
     }
@@ -155,6 +156,7 @@
       act:     "req",
       package: "clkmgr_pkg",
     },
+% if ext_clk_bypass:
 
     { struct:  "lc_tx",
       type:    "uni",
@@ -218,6 +220,7 @@
       act:     "req",
       package: "lc_ctrl_pkg",
     },
+  % endif
 
     { struct:  "mubi4",
       type:    "uni",
@@ -249,7 +252,7 @@
       package: "prim_mubi_pkg",
       width:   "${len(hint_names)}"
     },
-
+% if ext_clk_bypass:
     { struct:  "mubi4",
       desc:    "Indicates clocks are calibrated and frequencies accurate",
       type:    "uni",
@@ -258,6 +261,7 @@
       package: "prim_mubi_pkg",
       default: "prim_mubi_pkg::MuBi4True"
     },
+% endif
   ],
 
   countermeasures: [
@@ -276,6 +280,7 @@
     { name: "IDLE.INTERSIG.MUBI",
       desc: "Idle inputs are multibit encoded."
     }
+  % if ext_clk_bypass:
     { name: "LC_CTRL.INTERSIG.MUBI",
       desc: "The life cycle control signals are multibit encoded."
     }
@@ -288,6 +293,7 @@
     { name: "DIV.INTERSIG.MUBI",
       desc: "Divider step down request is multibit encoded."
     }
+  % endif
     { name: "JITTER.CONFIG.MUBI",
       desc: "The jitter enable configuration is multibit encoded."
     }
@@ -304,6 +310,7 @@
   ]
 
   registers: [
+  % if ext_clk_bypass:
     { name: "EXTCLK_CTRL_REGWEN",
       desc: "External clock control write enable",
       swaccess: "rw0c",
@@ -399,6 +406,10 @@
         },
       ]
     },
+    % else:
+    // Skip 3 registers for SW compatibility on the register layout if no derived clocks are in use
+    { reserved: "3" }
+    % endif
 
     { name: "JITTER_REGWEN",
       desc: "Jitter write enable",
@@ -543,7 +554,6 @@
         },
       ]
     },
-<% aon_freq = all_srcs['aon']['freq'] %>\
 % for src in rg_srcs:
     { name: "${src.upper()}_MEAS_CTRL_EN",
       desc: '''
@@ -569,10 +579,7 @@
       tags: ["excl:CsrAllTests:CsrExclWrite"]
     },
 <%
-  freq = all_srcs[src]['freq']
-  ratio = int(freq / aon_freq)
-  # Add extra bit to width for margin
-  width = ratio.bit_length() + 1
+  width, _, ratio = config_clk_meas(src, all_srcs)
   max_msb = width - 1
   min_msb = (max_msb + 1) + width - 1
 %>

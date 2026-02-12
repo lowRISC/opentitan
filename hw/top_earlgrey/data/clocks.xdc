@@ -10,7 +10,7 @@ create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports IO_
 create_generated_clock -name clk_main [get_pin clkgen/pll/CLKOUT0]
 create_generated_clock -name clk_usb_48 [get_pin clkgen/pll/CLKOUT1]
 create_generated_clock -name clk_aon [get_pin clkgen/pll/CLKOUT4]
-set clk_io_pin [get_pin u_ast/u_ast_clks_byp/u_no_scan_clk_src_io_d1ord2/gen_generic.u_impl_generic/u_clk_div_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufg.bufg_i/O]
+set clk_io_pin [get_pin u_ast/u_ast_clks_byp/u_no_scan_clk_src_io_d1ord2/u_clk_div_buf/gen_fpga_buf.gen_bufg.bufg_i/O]
 create_generated_clock -name clk_io -divide_by 1 -add \
     -master_clock [get_clocks clk_main] \
     -source [get_pins clkgen/pll/CLKOUT0] \
@@ -26,23 +26,23 @@ set clks_aon_unbuf [get_clocks -of_objects [get_pin clkgen/pll/CLKOUT4]]
 ## destination flops few enough.
 
 set u_pll clkgen/pll
-set u_div2 top_*/u_clkmgr_aon/u_no_scan_io_div2_div/gen_generic.u_impl_generic
-create_generated_clock -name clk_io_div2 -divide_by 2 -source ${clk_io_pin} [get_pin ${u_div2}/gen_div2.u_div2/gen_xilinx.u_impl_xilinx/q_o[0]]
+set u_div2 top_*/u_clkmgr_aon/u_no_scan_io_div2_div
+create_generated_clock -name clk_io_div2 -divide_by 2 -source ${clk_io_pin} [get_pin ${u_div2}/gen_div2.u_div2/q_o[0]]
 
 # TODO: Use pin names explicitly exist from the source instead of the ones
 # after synthesis.
-set u_div4 top_*/u_clkmgr_aon/u_no_scan_io_div4_div/gen_generic.u_impl_generic
+set u_div4 top_*/u_clkmgr_aon/u_no_scan_io_div4_div
 create_generated_clock -name clk_io_div4 -divide_by 4 -source [get_pins ${u_div4}/gen_div.clk_int_reg/C] [get_pins ${u_div4}/gen_div.clk_int_reg/Q]
 
 
-set ast_src_io u_ast/u_ast_clks_byp/u_no_scan_clk_src_io_d1ord2/gen_generic.u_impl_generic
+set ast_src_io u_ast/u_ast_clks_byp/u_no_scan_clk_src_io_d1ord2
 #create_generated_clock -name clk_src_io -divide_by 1 -source [get_pins ${u_pll}/CLKOUT0] \
-#  [get_pins ${ast_src_io}/gen_div2.u_div2/gen_xilinx.u_impl_xilinx/q_o[0]]
+#  [get_pins ${ast_src_io}/gen_div2.u_div2/q_o[0]]
 
 set_clock_sense -positive \
   [get_pins -filter {DIRECTION == OUT && IS_LEAF} -of_objects \
     [get_nets -segments -of_objects \
-      [get_pins ${ast_src_io}/u_clk_div_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufg.bufg_i/I] \
+      [get_pins ${ast_src_io}/u_clk_div_buf/gen_fpga_buf.gen_bufg.bufg_i/I] \
     ] \
   ]
 
@@ -53,7 +53,7 @@ set_clock_sense -positive \
 set_clock_sense -positive \
   [get_pins -filter {DIRECTION == OUT && IS_LEAF} -of_objects \
     [get_nets -segments -of_objects \
-      [get_pins top_*/u_clkmgr_aon/u_no_scan_io_div2_div/gen_generic.u_impl_generic/u_clk_div_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufg.bufg_i/I] \
+      [get_pins top_*/u_clkmgr_aon/u_no_scan_io_div2_div/u_clk_div_buf/gen_fpga_buf.gen_bufg.bufg_i/I] \
     ] \
   ]
 
@@ -67,17 +67,17 @@ set all_muxed_ports "${ioa_muxed_ports} ${iob_muxed_ports} ${ioc_muxed_ports} ${
 ## JTAG clocks and I/O delays
 # Create clocks for the various TAPs.
 create_clock -add -name jtag_tck -period 100.00 -waveform {0 50} [get_ports IOR3]
-create_generated_clock -name lc_jtag_tck -source [get_ports IOR3] -divide_by 1 [get_pins top_*/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_lc/prim_clock_buf_tck/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufg.bufg_i/O]
-create_generated_clock -name rv_jtag_tck -source [get_ports IOR3] -divide_by 1 [get_pins top_*/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufg.bufg_i/O]
+create_generated_clock -name lc_jtag_tck -source [get_ports IOR3] -divide_by 1 [get_pins top_*/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_lc/prim_clock_buf_tck/gen_fpga_buf.gen_bufg.bufg_i/O]
+create_generated_clock -name rv_jtag_tck -source [get_ports IOR3] -divide_by 1 [get_pins top_*/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/gen_fpga_buf.gen_bufg.bufg_i/O]
 
 set lc_jtag_tck_inv_pin  \
   [get_pins -filter {DIRECTION == OUT && IS_LEAF} -of_objects \
     [get_nets -segments -of_objects \
-      [get_pins top_earlgrey/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_lc/prim_clock_buf_tck/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufg.bufg_i/I]]]
+      [get_pins top_earlgrey/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_lc/prim_clock_buf_tck/gen_fpga_buf.gen_bufg.bufg_i/I]]]
 set rv_jtag_tck_inv_pin  \
   [get_pins -filter {DIRECTION == OUT && IS_LEAF} -of_objects \
     [get_nets -segments -of_objects \
-      [get_pins top_earlgrey/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufg.bufg_i/I]]]
+      [get_pins top_earlgrey/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/gen_fpga_buf.gen_bufg.bufg_i/I]]]
 
 set_clock_sense -negative ${lc_jtag_tck_inv_pin}
 set_clock_sense -negative ${rv_jtag_tck_inv_pin}
@@ -144,7 +144,7 @@ set_output_delay -clock clk_spi -clock_fall -max ${spi_dev_out_setup} ${spi_dev_
 set_clock_sense -positive \
   [get_pins -filter {DIRECTION == OUT && IS_LEAF} -of_objects \
     [get_nets -segments -of_objects \
-      [get_pins top_earlgrey/u_spi_device/u_passthrough/u_pt_sck_cg/gen_xilinx.u_impl_xilinx/gen_gate.gen_bufgce.u_bufgce/I0] \
+      [get_pins top_earlgrey/u_spi_device/u_passthrough/u_pt_sck_cg/gen_gate.gen_bufgce.u_bufgce/I0] \
     ] \
   ] \
   -clocks clk_spi
@@ -152,7 +152,7 @@ set_clock_sense -positive \
 set_clock_sense -negative \
   [get_pins -filter {DIRECTION == OUT && IS_LEAF} -of_objects \
     [get_nets -segments -of_objects \
-      [get_pins top_earlgrey/u_spi_device/u_clk_spi_out_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufr.bufr_i/I] \
+      [get_pins top_earlgrey/u_spi_device/u_clk_spi_out_buf/gen_fpga_buf.gen_bufr.bufr_i/I] \
     ] \
   ] \
   -clocks clk_spi
@@ -160,15 +160,15 @@ set_clock_sense -negative \
 set_clock_sense -positive \
   [get_pins -filter {DIRECTION == OUT && IS_LEAF} -of_objects \
     [get_nets -segments -of_objects \
-      [get_pins top_earlgrey/u_spi_device/u_clk_spi_in_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufr.bufr_i/I] \
+      [get_pins top_earlgrey/u_spi_device/u_clk_spi_in_buf/gen_fpga_buf.gen_bufr.bufr_i/I] \
     ] \
   ] \
   -clocks clk_spi
 
 create_generated_clock -name clk_spi_in  -divide_by 1 \
-    -source [get_ports SPI_DEV_CLK] [get_pins top_*/u_spi_device/u_clk_spi_in_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufr.bufr_i/O]
+    -source [get_ports SPI_DEV_CLK] [get_pins top_*/u_spi_device/u_clk_spi_in_buf/gen_fpga_buf.gen_bufr.bufr_i/O]
 create_generated_clock -name clk_spi_out -divide_by 1 \
-    -source [get_ports SPI_DEV_CLK] [get_pins top_*/u_spi_device/u_clk_spi_out_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufr.bufr_i/O] -invert
+    -source [get_ports SPI_DEV_CLK] [get_pins top_*/u_spi_device/u_clk_spi_out_buf/gen_fpga_buf.gen_bufr.bufr_i/O] -invert
 
 ## SPI TPM constraints
 set spi_tpm_period 125.00
@@ -177,7 +177,7 @@ create_clock -add -name clk_spi_tpm -period ${spi_tpm_period} [get_ports SPI_DEV
 set_clock_sense -negative \
   [get_pins -filter {DIRECTION == OUT && IS_LEAF} -of_objects \
     [get_nets -segments -of_objects \
-      [get_pins top_earlgrey/u_spi_device/u_clk_spi_out_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufr.bufr_i/I] \
+      [get_pins top_earlgrey/u_spi_device/u_clk_spi_out_buf/gen_fpga_buf.gen_bufr.bufr_i/I] \
     ] \
   ] \
   -clocks clk_spi_tpm
@@ -185,7 +185,7 @@ set_clock_sense -negative \
 set_clock_sense -positive \
   [get_pins -filter {DIRECTION == OUT && IS_LEAF} -of_objects \
     [get_nets -segments -of_objects \
-      [get_pins top_earlgrey/u_spi_device/u_clk_spi_in_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufr.bufr_i/I] \
+      [get_pins top_earlgrey/u_spi_device/u_clk_spi_in_buf/gen_fpga_buf.gen_bufr.bufr_i/I] \
     ] \
   ] \
   -clocks clk_spi_tpm
@@ -206,9 +206,9 @@ set_output_delay -clock clk_spi_tpm -min ${spi_dev_out_hold}  ${spi_dev_data} -a
 set_output_delay -clock clk_spi_tpm -max ${spi_dev_out_setup} ${spi_dev_data} -add_delay
 
 create_generated_clock -name clk_spi_tpm_in -divide_by 1 -add -master_clock clk_spi_tpm \
-    -source [get_ports SPI_DEV_CLK] [get_pins top_*/u_spi_device/u_clk_spi_in_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufr.bufr_i/O]
+    -source [get_ports SPI_DEV_CLK] [get_pins top_*/u_spi_device/u_clk_spi_in_buf/gen_fpga_buf.gen_bufr.bufr_i/O]
 create_generated_clock -name clk_spi_tpm_out -divide_by 1 -add -master_clock clk_spi_tpm \
-    -source [get_ports SPI_DEV_CLK] [get_pins top_*/u_spi_device/u_clk_spi_out_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufr.bufr_i/O] -invert
+    -source [get_ports SPI_DEV_CLK] [get_pins top_*/u_spi_device/u_clk_spi_out_buf/gen_fpga_buf.gen_bufr.bufr_i/O] -invert
 
 ## SPI Passthrough constraints
 create_generated_clock -name clk_spi_pt -divide_by 1 -source [get_ports SPI_DEV_CLK] [get_ports SPI_HOST_CLK]
@@ -234,7 +234,7 @@ set_input_delay  -clock clk_spi_pt -clock_fall -max ${spi_host_in_delay_max} \
 
 ## SPI Host constraints
 # SPI Host clock origin buffer
-set spi_host_0_peri [get_pins top_earlgrey/u_clkmgr_aon/u_clk_io_peri_cg/gen_xilinx.u_impl_xilinx/gen_gate.gen_bufgce.u_bufgce/O]
+set spi_host_0_peri [get_pins top_earlgrey/u_clkmgr_aon/u_clk_io_peri_cg/gen_gate.gen_bufgce.u_bufgce/O]
 
 create_generated_clock -name clk_spi_host0 -divide_by 2 -add \
   -source ${spi_host_0_peri} \
@@ -324,7 +324,7 @@ set_multicycle_path -hold -end -from [get_clocks clk_spi_tpm] \
 
 ## The usb calibration handling inside ast is assumed to be async to the outside world
 ## even though its interface is also a usb clock.
-set_false_path -from ${clks_48_unbuf} -to [get_pins u_ast/u_usb_clk/u_ref_pulse_sync/u_sync*/gen_generic.u_impl_generic/u_sync_1/gen_*/q_o_reg[0]/D]
+set_false_path -from ${clks_48_unbuf} -to [get_pins u_ast/u_usb_clk/u_ref_pulse_sync/u_sync*/u_sync_1/q_o_reg[0]/D]
 
 ## USB input delay to accommodate T_FST (full-speed transition time) and the
 ## PHY's sampling logic. The PHY expects to only see up to one transient / fake

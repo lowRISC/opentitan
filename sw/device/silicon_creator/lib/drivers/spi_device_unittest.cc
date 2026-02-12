@@ -14,9 +14,9 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
-#include "flash_ctrl_regs.h"
+#include "hw/top/flash_ctrl_regs.h"
+#include "hw/top/spi_device_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "spi_device_regs.h"
 
 namespace spi_device_unittest {
 namespace {
@@ -162,7 +162,7 @@ TEST_F(InitTest, Init) {
                          {SPI_DEVICE_CMD_INFO_WRDI_VALID_BIT, 1},
                      });
 
-  spi_device_init();
+  spi_device_init_bootstrap();
 }
 
 TEST_F(SpiDeviceTest, FlashStatusClear) {
@@ -197,7 +197,7 @@ TEST_F(CmdGetTest, PayloadOverflow) {
                      std::numeric_limits<uint32_t>::max());
 
   spi_device_cmd_t cmd;
-  EXPECT_EQ(spi_device_cmd_get(&cmd), kErrorSpiDevicePayloadOverflow);
+  EXPECT_EQ(spi_device_cmd_get(&cmd, true), kErrorSpiDevicePayloadOverflow);
 }
 
 TEST_P(CmdGetTest, CmdGet) {
@@ -234,7 +234,7 @@ TEST_P(CmdGetTest, CmdGet) {
   }
 
   spi_device_cmd_t cmd;
-  EXPECT_EQ(spi_device_cmd_get(&cmd), kErrorOk);
+  EXPECT_EQ(spi_device_cmd_get(&cmd, true), kErrorOk);
   EXPECT_EQ(cmd.opcode, GetParam().opcode);
   EXPECT_EQ(cmd.address, GetParam().address);
   EXPECT_EQ(cmd.payload_byte_count, GetParam().payload.size());

@@ -4,7 +4,7 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
 #include "sw/device/lib/base/hardened_asm.h"
-#include "otp_ctrl_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
 
 /**
  * ROM_EXT Interrupt Vector
@@ -43,7 +43,7 @@
   .type _rom_ext_interrupt_vector, @function
 _rom_ext_interrupt_vector:
   // Entry 0: exception handler.
-  j rom_ext_exception_handler
+  j flash_exception_handler
 
   // Entries 1-30: interrupt handlers.
   .rept 30

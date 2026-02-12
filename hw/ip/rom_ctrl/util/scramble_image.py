@@ -28,10 +28,14 @@ _UDict = Dict[object, object]
 
 
 class MemoryController:
+    PARAM_VALUE = "__value"
+
     def __init__(
-            self, mem_ctrl: _UDict, ctrl_name: str, memory_type: str, mode: str):
+            self, top_mem_ctrl: _UDict, secrets_mem_ctrl: _UDict, ctrl_name: str,
+            memory_type: str, mode: str):
         '''A memory controller constructor
-        @mem_ctrl The memory controller hjson dictionary.
+        @mem_ctrl The memory controller hjson dictionary (in the top configuration)
+        @mem_ctrl The memory controller hjson dictionary (in the secrets file)
         @ctrl_name is the memory controller IP block name (e.g. 'rom_ctrl0' for the base ROM)
         @memory_type is the memory type this memory controller run ('rom' or 'ram')
         @mode is the memory scrambling mode
@@ -47,11 +51,14 @@ class MemoryController:
         assert key_name is not None
         assert nonce_name is not None
 
-        size_words = MemoryController._get_size_words(mem_ctrl, memory_type)
-        base = MemoryController._get_base(mem_ctrl, memory_type)
-        params = MemoryController._get_params(mem_ctrl)
+        size_words = MemoryController._get_size_words(secrets_mem_ctrl, memory_type)
+        base = MemoryController._get_base(secrets_mem_ctrl, memory_type)
+        # Merge parameters of the top configuration and secrets. The secrets take precedence
+        params = MemoryController._get_params(top_mem_ctrl) | \
+            MemoryController._get_params(secrets_mem_ctrl)
         nonce, nonce_width = MemoryController._get_param_cnst(params, nonce_name)
         scr_key, scr_key_width = MemoryController._get_param_cnst(params, key_name)
+        scrambling_disabled = MemoryController._get_param_bit(params, "SecDisableScrambling")
 
         self.ctrl_name = ctrl_name
         self.memory_type = memory_type
@@ -61,17 +68,32 @@ class MemoryController:
         self.scr_key_width = scr_key_width
         self.nonce = nonce
         self.nonce_width = nonce_width
+        self.scrambling_disabled = scrambling_disabled
 
     @staticmethod
     def _get_params(module: _UDict) -> Dict[str, _UDict]:
         params = module.get('param_list')
         assert isinstance(params, list)
+        param_decl = module.get('param_decl', {})
+        assert isinstance(param_decl, dict)
 
         named_params = {}  # type: Dict[str, _UDict]
         for param in params:
             name = param.get('name')
             assert isinstance(name, str)
             assert name not in named_params
+
+            # If we find a correspond parameter declaration, we add it
+            # to returned dictionary.
+            if name in param_decl:
+                param["param_decl"] = param_decl[name]
+                value = param_decl[name]
+            else:
+                value = param.get('default')
+            # Create a new field in the dictionary holding the value (ie param_decl
+            # or default if not provided).
+            assert MemoryController.PARAM_VALUE not in param
+            param[MemoryController.PARAM_VALUE] = value
             named_params[name] = param
 
         return named_params
@@ -81,9 +103,9 @@ class MemoryController:
         param = params.get(name)
         assert isinstance(param, dict)
 
-        default = param.get("default")
-        assert isinstance(default, str)
-        val = int(default, 0)
+        val = param.get(MemoryController.PARAM_VALUE)
+        assert isinstance(val, str)
+        val = int(val, 0)
 
         width = param.get("randwidth")
         assert isinstance(width, int)
@@ -91,6 +113,23 @@ class MemoryController:
         assert 0 <= val < (1 << width)
 
         return val, width
+
+    @staticmethod
+    def _get_param_bit(params: Dict[str, _UDict], name: str) -> bool:
+        param = params.get(name)
+        assert isinstance(param, dict)
+
+        assert param.get('type') == 'bit'
+        val = param.get(MemoryController.PARAM_VALUE)
+        assert isinstance(val, str)
+        assert 'b' in val, f"invalid bit value for parameter {name}"
+        val_width, val = val.split("'b")
+        assert int(val_width) == 1, f"parameter {name} has value unexpected width {val_width}"
+
+        val = int(val, 0)
+        assert 0 <= val <= 1, f"invalid bit value for parameter {name}"
+
+        return bool(val)
 
     @staticmethod
     def _get_size_words(module: _UDict, memory_type: str) -> int:
@@ -115,33 +154,53 @@ class MemoryController:
         return int(base_addr, 16)
 
     @staticmethod
-    def from_hjson_path(path: str, mode: str) -> Optional["MemoryController"]:
-        with open(path, "r", encoding='utf-8') as handle:
+    def from_hjson_path(top_cfg_path: str, secrets_path: str, mode: str) \
+            -> Optional["MemoryController"]:
+        with open(secrets_path, "r", encoding='utf-8') as handle:
+            secrets = hjson.load(handle, use_decimal=True)
+        with open(top_cfg_path, "r", encoding='utf-8') as handle:
             top = hjson.load(handle, use_decimal=True)
 
+        assert isinstance(secrets, dict)
         assert isinstance(top, dict)
-        modules = top.get('module')
-        assert isinstance(modules, list)
+        top_modules = top.get('module')
+        secrets_modules = secrets.get('module')
+        assert isinstance(top_modules, list)
+        assert isinstance(secrets_modules, list)
 
-        for entry in modules:
+        for entry in secrets_modules:
             assert isinstance(entry, dict)
             entry_type = entry.get('type')
             assert isinstance(entry_type, str)
             entry_name = entry.get('name')
             assert isinstance(entry_name, str)
 
+            # Find the corresponding entry in the top cfg.
+            found = False
+            for top_entry in top_modules:
+                assert isinstance(top_entry, dict)
+                top_entry_type = top_entry.get('type')
+                assert isinstance(top_entry_type, str)
+                top_entry_name = top_entry.get('name')
+                assert isinstance(top_entry_name, str)
+                if top_entry_type == entry_type and top_entry_name == entry_name:
+                    found = True
+                    break
+            assert found, "secrets file contain entry for module '{entry_name}'," + \
+                " but it does not exist in the top configuration"
+
             if mode == ScramblingMode.ROM0.value:
                 # Earlgrey has only one ROM, named `rom_ctrl`, while Darjeeling's
                 # first ROM is named `rom_ctrl0`
                 if entry_name in ("rom_ctrl", "rom_ctrl0"):
                     if entry_type == "rom_ctrl":
-                        return MemoryController(entry, entry_name, entry_type, mode)
+                        return MemoryController(top_entry, entry, entry_name, entry_type, mode)
             elif mode == ScramblingMode.ROM1.value:
                 if entry_name == "rom_ctrl1" and entry_type == "rom_ctrl":
-                    return MemoryController(entry, entry_name, entry_type, mode)
+                    return MemoryController(top_entry, entry, entry_name, entry_type, mode)
             elif mode == ScramblingMode.SRAM.value:
                 if entry_name == "sram_ctrl_main" and entry_type == "sram_ctrl":
-                    return MemoryController(entry, entry_name, entry_type, mode)
+                    return MemoryController(top_entry, entry, entry_name, entry_type, mode)
 
         return None
 
@@ -235,7 +294,7 @@ class Scrambler:
     subst_perm_rounds = 2
     num_rounds_half = 3
 
-    def __init__(self, nonce: int, nonce_width: int,
+    def __init__(self, disable: bool, nonce: int, nonce_width: int,
                  key: int, key_width: int,
                  rom_base: int, rom_size_words: int,
                  hash_file: IO[str]):
@@ -245,6 +304,7 @@ class Scrambler:
         assert 0 <= key < (1 << key_width)
         assert 0 < rom_size_words < (1 << 64)
 
+        self.disable = disable
         self.nonce = nonce
         self.nonce_width = nonce_width
         self.key = key
@@ -257,12 +317,16 @@ class Scrambler:
 
         self._addr_width = (rom_size_words - 1).bit_length()
 
+    def is_disabled(self) -> bool:
+        return self.disable
+
     @staticmethod
-    def from_hjson_path(path: str, mode: str, hash_file: IO[str]) -> 'Scrambler':
-        mem_ctrl = MemoryController.from_hjson_path(path, mode)
+    def from_hjson_path(top_cfg_path: str, secrets_path: str, mode: str, hash_file: IO[str]) \
+            -> 'Scrambler':
+        mem_ctrl = MemoryController.from_hjson_path(top_cfg_path, secrets_path, mode)
         assert mem_ctrl is not None
 
-        return Scrambler(mem_ctrl.nonce, mem_ctrl.nonce_width,
+        return Scrambler(mem_ctrl.scrambling_disabled, mem_ctrl.nonce, mem_ctrl.nonce_width,
                          mem_ctrl.scr_key, mem_ctrl.scr_key_width,
                          mem_ctrl.base, mem_ctrl.size_words, hash_file)
 
@@ -438,14 +502,16 @@ class Scrambler:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument('hjson')
+    parser.add_argument('top_hjson')
+    parser.add_argument('secrets_hjson')
     parser.add_argument('mode')
     parser.add_argument('infile', type=argparse.FileType('rb'))
     parser.add_argument('outfile', type=argparse.FileType('w'))
     parser.add_argument('hashfile', type=argparse.FileType('w'))
 
     args = parser.parse_args()
-    scrambler = Scrambler.from_hjson_path(args.hjson, args.mode, args.hashfile)
+    scrambler = Scrambler.from_hjson_path(args.top_hjson, args.secrets_hjson,
+                                          args.mode, args.hashfile)
 
     # Load the input ELF file
     clr_mem = MemFile.load_elf32(args.infile, scrambler.rom_base)
@@ -453,6 +519,13 @@ def main() -> int:
     # Flatten the file, padding with pseudo-random data and ensuring it's
     # exactly scrambler.rom_size_words words long.
     clr_flat = scrambler.flatten(clr_mem)
+
+    # If scrambling is disabled then the memory width is 32 bits, ie no ECC
+    # and the data is not scrambled. There is also no hash added.
+    if scrambler.is_disabled():
+        print("scrambling disabled")
+        clr_flat.write_vmem(args.outfile)
+        return 0
 
     # Extend from 32 bits to 39 by adding Hsiao (39,32) ECC bits.
     clr_flat.add_ecc32()

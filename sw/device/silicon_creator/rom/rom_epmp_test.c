@@ -26,7 +26,7 @@
 #include "sw/device/silicon_creator/lib/epmp_test_unlock.h"
 #include "sw/device/silicon_creator/rom/rom_epmp.h"
 
-#include "flash_ctrl_regs.h"  // Generated.
+#include "hw/top/flash_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 /**
@@ -124,6 +124,12 @@ void rom_exception_handler(void) {
   // Wait forever if an unexpected exception is encountered.
   wait_for_interrupt();
 }
+
+// The ROM jumps to the flash_exception_handler first to deal with ECC errors.
+// We don't use the flash exception handler in this test, so we alias the
+// symbol to rom_exception_handler to allow the test program to link.
+OT_ALIAS("rom_exception_handler")
+void flash_exception_handler(void);
 
 /**
  * Attempt to execute the code at `pc` by calling it like a function.
@@ -249,8 +255,9 @@ static void test_noexec_rwdata(void) {
             &sram_ctrl) == kDifOk);
   CHECK(dif_sram_ctrl_exec_set_enabled(&sram_ctrl, kDifToggleEnabled) ==
         kDifOk);
-  CHECK(is_in_address_space(illegal_ins_rw, TOP_EARLGREY_RAM_MAIN_BASE_ADDR,
-                            TOP_EARLGREY_RAM_MAIN_SIZE_BYTES));
+  CHECK(is_in_address_space(illegal_ins_rw,
+                            TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR,
+                            TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES));
   CHECK(execute(illegal_ins_rw, kIbexExcInstrAccessFault));
 }
 
@@ -261,8 +268,9 @@ static void test_noexec_eflash(void) {
   // Ideally we'd check all of eFlash but that takes a very long time in
   // simulation. Instead, check the first and last words are not executable and
   // check a sample of other addresses.
-  uint32_t *eflash = (uint32_t *)TOP_EARLGREY_EFLASH_BASE_ADDR;
-  size_t eflash_len = TOP_EARLGREY_EFLASH_SIZE_BYTES / sizeof(eflash[0]);
+  uint32_t *eflash = (uint32_t *)TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
+  size_t eflash_len =
+      TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES / sizeof(eflash[0]);
   CHECK(execute(&eflash[0], kIbexExcInstrAccessFault));
   CHECK(execute(&eflash[eflash_len - 1], kIbexExcInstrAccessFault));
 
@@ -291,8 +299,9 @@ static void test_noexec_mmio(void) {
                            &ret_ram_ctrl) == kDifOk);
   CHECK(dif_sram_ctrl_exec_set_enabled(&ret_ram_ctrl, kDifToggleEnabled) ==
         kDifOk);
-  uint32_t *ret_ram = (uint32_t *)TOP_EARLGREY_RAM_RET_AON_BASE_ADDR;
-  size_t ret_ram_len = TOP_EARLGREY_RAM_RET_AON_SIZE_BYTES / sizeof(ret_ram[0]);
+  uint32_t *ret_ram = (uint32_t *)TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR;
+  size_t ret_ram_len =
+      TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES / sizeof(ret_ram[0]);
   ret_ram[0] = kUnimpInstruction;
   CHECK(execute(&ret_ram[0], kIbexExcInstrAccessFault));
   ret_ram[ret_ram_len - 1] = kUnimpInstruction;
@@ -313,8 +322,9 @@ static void test_unlock_exec_eflash(void) {
   // Define a region to unlock (this is somewhat arbitrary but must be word-
   // aligned and beyond the ROM region, since this same image is placed in the
   // flash).
-  uint32_t *eflash = (uint32_t *)TOP_EARLGREY_EFLASH_BASE_ADDR;
-  size_t eflash_len = TOP_EARLGREY_EFLASH_SIZE_BYTES / sizeof(eflash[0]);
+  uint32_t *eflash = (uint32_t *)TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
+  size_t eflash_len =
+      TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES / sizeof(eflash[0]);
   uint32_t *image = &eflash[eflash_len / 5];
   size_t image_len = eflash_len / 7;
   epmp_region_t region = {.start = (uintptr_t)&image[0],

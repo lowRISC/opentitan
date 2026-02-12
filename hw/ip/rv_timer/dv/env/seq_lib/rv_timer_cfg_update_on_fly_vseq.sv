@@ -4,7 +4,7 @@
 
 // This sequence update timer configuration while its active/running, this
 // includes updating mtime, mtimecmp. Randomly step and prescale updated
-// after disabling timer. This seq also exercise upating timer cfg multiple
+// after disabling timer. This seq also exercises updating timer cfg multiple
 // times when timer is close to expire (1 prescale before).
 
 class rv_timer_cfg_update_on_fly_vseq extends rv_timer_random_vseq;
@@ -14,7 +14,7 @@ class rv_timer_cfg_update_on_fly_vseq extends rv_timer_random_vseq;
   rand bit upd_cfg_in_end;
 
   // Defing min clocks to have room to update timer cfg
-  uint64 min_clks_until_expiry = 10_000;
+  uint64 min_clks_until_expiry = 100;
 
   constraint ticks_c {
     solve prescale before ticks;
@@ -32,7 +32,7 @@ class rv_timer_cfg_update_on_fly_vseq extends rv_timer_random_vseq;
 
   function void pre_randomize();
     super.pre_randomize();
-    max_clks_until_expiry = 1_000_000; // Redefining max clock to avoid timeout
+    max_clks_until_expiry = 10_000; // Redefining max clock to avoid timeout
   endfunction
 
   task body();
@@ -95,7 +95,7 @@ class rv_timer_cfg_update_on_fly_vseq extends rv_timer_random_vseq;
             // compare_val without overflowing with below randomization which is
             // ((1 << 64)-1) - (max_step_value*300) = 'hFFFFFFFFFFFED52B
             // min_timer_val is calculated using max random value subtracted from
-            // timer_val with below randomiztion which is (max_step_value*300) = 'h12AD4
+            // timer_val with below randomization which is (max_step_value*300) = 'h12AD4
             if ((compare_val[hart][timer] >= 64'hFFFFFFFFFFFED52B) |
                 (timer_val[hart] <= 64'h12AD4)) begin
               timer_at_min_max_val = 1'b1;

@@ -17,6 +17,11 @@ package adc_ctrl_reg_pkg;
   // Number of registers for every interface
   parameter int NumRegs = 32;
 
+  // Alert indices
+  typedef enum int {
+    AlertFatalFaultIdx = 0
+  } adc_ctrl_alert_idx_t;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -151,13 +156,9 @@ package adc_ctrl_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [1:0]  d;
-      logic        de;
-    } adc_chn_value_ext;
-    struct packed {
       logic [9:0] d;
       logic        de;
-    } adc_chn_value;
+    } adc_chn_value_intr;
     struct packed {
       logic [1:0]  d;
       logic        de;
@@ -165,33 +166,37 @@ package adc_ctrl_reg_pkg;
     struct packed {
       logic [9:0] d;
       logic        de;
-    } adc_chn_value_intr;
+    } adc_chn_value;
+    struct packed {
+      logic [1:0]  d;
+      logic        de;
+    } adc_chn_value_ext;
   } adc_ctrl_hw2reg_adc_chn_val_mreg_t;
 
   typedef struct packed {
     struct packed {
-      logic [7:0]  d;
-      logic        de;
-    } match;
-    struct packed {
       logic        d;
       logic        de;
     } trans;
+    struct packed {
+      logic [7:0]  d;
+      logic        de;
+    } match;
   } adc_ctrl_hw2reg_filter_status_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [7:0]  d;
+      logic        d;
       logic        de;
-    } match;
+    } oneshot;
     struct packed {
       logic        d;
       logic        de;
     } trans;
     struct packed {
-      logic        d;
+      logic [7:0]  d;
       logic        de;
-    } oneshot;
+    } match;
   } adc_ctrl_hw2reg_adc_intr_status_reg_t;
 
   typedef struct packed {

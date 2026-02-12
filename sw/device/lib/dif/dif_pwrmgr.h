@@ -88,21 +88,6 @@ typedef enum dif_pwrmgr_domain_option {
 typedef uint8_t dif_pwrmgr_domain_config_t;
 
 /**
- * A reset request source.
- *
- * Constants below are bitmasks that can be used to define sets of reset
- * request sources.
- *
- * See also: `dif_pwrmgr_request_sources_t`.
- *
- * Note: This needs to be updated once the HW is finalized.
- */
-typedef enum dif_pwrmgr_reset_request_source {
-  kDifPwrmgrResetRequestSourceOne = (1u << 0),
-  kDifPwrmgrResetRequestSourceTwo = (1u << 1),
-} dif_pwrmgr_reset_request_source_t;
-
-/**
  * A set of request sources.
  *
  * This type is used for specifying which request sources are enabled for a

@@ -37,40 +37,17 @@
                 },
                 {
                     name: "OWNER_SW_CFG_ROM_ALERT_ESCALATION"
-                    // Set the esclation policies to kAlertEscalateNone.
+                    // Set the escalation policies to kAlertEscalateNone.
                     // See `alert_escalate_t`
                     // in sw/device/silicon_creator/lib/drivers/alert.h
                     value: "0xd1d1d1d1",
                 },
                 {
                     name: "OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION"
-                    // Set the classifiactions to kAlertClassX.
+                    // Set the classifications to kAlertClassX.
                     // See `alert_class_t`
                     // in sw/device/silicon_creator/lib/drivers/alert.h
                     value: [
-                        "0x94949494",
-                        "0x94949494",
-                        "0x94949494",
-                        "0x94949494",
-                        "0x94949494",
-                        "0x94949494",
-                        "0x94949494",
-                        "0x94949494",
-                        "0x94949494",
-                        "0x94949494",
-                        "0x94949494",
-                        "0x94949494",
-                        "0x94949494",
-                        "0x94949494",
-                        "0x94949494",
-                        "0x94949494",
-                        "0x94949494",
-                        "0x94949494",
-                        "0x94949494",
-                        "0x94949494",
-                        "0x94949494",
-                        "0x94949494",
-                        "0x94949494",
                         "0x94949494",
                         "0x94949494",
                         "0x94949494",
@@ -152,19 +129,10 @@
                 },
                 {
                     name: "OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION"
-                    // Set the classifiactions to kAlertClassX.
+                    // Set the classifications to kAlertClassX.
                     // See `alert_class_t`
                     // in sw/device/silicon_creator/lib/drivers/alert.h
                     value: [
-                        "0x94949494",
-                        "0x94949494",
-                        "0x94949494",
-                        "0x94949494",
-                        "0x94949494",
-                        "0x94949494",
-                        "0x94949494",
-                        "0x94949494",
-                        "0x94949494",
                         "0x94949494",
                         "0x94949494",
                         "0x94949494",
@@ -225,19 +193,19 @@
                 //    and enter the new values in this file.
                 {
                     name: "OWNER_SW_CFG_ROM_ALERT_DIGEST_DEV",
-                    value: "0x8a12908b",
+                    value: "0xce4d05a",
                 },
                 {
                     name: "OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD",
-                    value: "0xe4bab764",
+                    value: "0x624cf7b5",
                 },
                 {
                     name: "OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD_END",
-                    value: "0x10f153e1",
+                    value: "0x96071330",
                 },
                 {
                     name: "OWNER_SW_CFG_ROM_ALERT_DIGEST_RMA",
-                    value: "0x4ec41fc0",
+                    value: "0xc8325f11",
                 }
             ],
         }

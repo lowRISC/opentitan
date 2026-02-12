@@ -7,6 +7,11 @@ load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files")
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
+)
+
 rust_binary(
     name = "tpm2_test_server",
     srcs = [
@@ -20,8 +25,8 @@ rust_binary(
         "@crate_index//:clap",
         "@crate_index//:env_logger",
         "@crate_index//:log",
-        "@crate_index//:mio",
         "@crate_index//:strum",
+        "@crate_index//:tokio",
     ],
 )
 

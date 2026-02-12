@@ -4,6 +4,7 @@
 
 pub mod bitbanging;
 pub mod bootstrap;
+pub mod crashdump;
 pub mod e2e_command;
 pub mod epmp;
 // The "english breakfast" variant of the chip doesn't have the same

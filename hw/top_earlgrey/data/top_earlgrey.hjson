@@ -6,12 +6,6 @@
 { name: "earlgrey",
   type: "top",
 
-  /////////////////////////////////////////////////////////////
-  // 256 bit seed for compile-time random constants          //
-  // NOTE: REPLACE THIS WITH A NEW VALUE BEFORE THE TAPEOUT  //
-  /////////////////////////////////////////////////////////////
-  rnd_cnst_seed: 1017106219537032642877583828875051302543807092889754935647094601236425074047,
-
   // 32-bit datawidth
   datawidth: "32",
 
@@ -115,7 +109,7 @@
 
   // This is the reset data structure of the design.
   // The hier path refers to the reset reference path (struct / port)
-  //   - The top/ext desgination follows the same scheme as inter-module
+  //   - The top/ext designation follows the same scheme as inter-module
   // The node key represents all the known resets in the design
   resets: {
 
@@ -203,6 +197,14 @@
   // Number of cores: used in rv_plic and timer
   num_cores: "1",
 
+  // Any module with interrupts that doesn't specify plic
+  // will have its interrupts sent here
+  default_plic: "rv_plic"
+
+  // Any module with alerts that doesn't specify alert_handler
+  // will have its alerts sent here
+  default_alert_handler: "alert_handler"
+
   // `addr_spaces` names the distinct address spaces present in the device.
   // All hosts in the same address space share the same base addresses for
   // all peripherals, though not every peripheral will be accessible to every
@@ -280,7 +282,7 @@
      //   reggen_only: Similar to reggen_top, but are not instantiated in the top level.
   module: [
     { name: "uart0",    // instance name
-      type: "uart",     // Must be matched to the ip name in `ip.hson` (_reg, _cfg permitted)
+      type: "uart",     // Must be matched to the ip name in `ip.hjson` (_reg, _cfg permitted)
                         // and `hw/ip/{type}`
 
       // clock connections defines the port to top level clock connection
@@ -297,7 +299,7 @@
       },
     },
     { name: "uart1",    // instance name
-      type: "uart",     // Must be matched to the ip name in `ip.hson` (_reg, _cfg permitted)
+      type: "uart",     // Must be matched to the ip name in `ip.hjson` (_reg, _cfg permitted)
                         // and `hw/ip/{type}`
 
       // clock connections defines the port to top level clock connection
@@ -314,7 +316,7 @@
       },
     },
     { name: "uart2",    // instance name
-      type: "uart",     // Must be matched to the ip name in `ip.hson` (_reg, _cfg permitted)
+      type: "uart",     // Must be matched to the ip name in `ip.hjson` (_reg, _cfg permitted)
                         // and `hw/ip/{type}`
 
       // clock connections defines the port to top level clock connection
@@ -331,7 +333,7 @@
       },
     },
     { name: "uart3",    // instance name
-      type: "uart",     // Must be matched to the ip name in `ip.hson` (_reg, _cfg permitted)
+      type: "uart",     // Must be matched to the ip name in `ip.hjson` (_reg, _cfg permitted)
                         // and `hw/ip/{type}`
 
       // clock connections defines the port to top level clock connection
@@ -424,9 +426,25 @@
       reset_connections: {rst_ni: "lc_io_div4", rst_edn_ni: "lc"},
       base_addrs: {
         core: {hart: "0x40130000"},
-        prim: {hart: "0x40138000"},
       }
       attr: "ipgen"
+    },
+    {
+      name: "otp_macro",
+      type: "otp_macro",
+      clock_srcs: {clk_i: "io_div4"},
+      clock_group: "secure",
+      reset_connections: {rst_ni: "lc_io_div4"},
+      base_addrs: {
+        prim: {hart: "0x40138000"},
+      },
+      param_decl: {
+        Width: "otp_ctrl_macro_pkg::OtpWidth",
+        Depth: "otp_ctrl_macro_pkg::OtpDepth",
+        SizeWidth: "otp_ctrl_macro_pkg::OtpSizeWidth",
+        VendorTestOffset: "otp_ctrl_reg_pkg::VendorTestOffset",
+        VendorTestSize: "otp_ctrl_reg_pkg::VendorTestSize",
+      },
     },
     { name: "lc_ctrl",
       type: "lc_ctrl",
@@ -832,6 +850,7 @@
         hart: "0x48000000",
       },
       attr: "ipgen",
+      targets: ["rv_core_ibex"]
     },
     { name: "aes",
       type: "aes",
@@ -924,6 +943,9 @@
       base_addr: {
         hart: "0x41170000",
       },
+      param_decl: {
+        NumEndPoints: "8",
+      },
     },
     { name: "edn1",
       type: "edn",
@@ -932,6 +954,9 @@
       reset_connections: {rst_ni: "lc"},
       base_addr: {
         hart: "0x41180000",
+      },
+      param_decl: {
+        NumEndPoints: "1",
       },
     },
     { name: "sram_ctrl_main",
@@ -989,8 +1014,8 @@
       type: "rv_core_ibex",
       template_type: "rv_core_ibex",
       attr: "ipgen",
-      ipgen_param: {
-        NumRegions: 2
+      ipgen_params: {
+        num_regions: 2
       }
       param_decl: {PMPEnable: "1",
                    PMPGranularity: "0",
@@ -1003,6 +1028,7 @@
                    RV32E: "0",
                    RV32M: "ibex_pkg::RV32MSingleCycle",
                    RV32B: "ibex_pkg::RV32BOTEarlGrey",
+                   RV32ZC: "ibex_pkg::RV32ZcaZcbZcmp",
                    RegFile: "ibex_pkg::RegFileFF",
                    BranchTargetALU: "1",
                    WritebackStage: "1",
@@ -1043,9 +1069,6 @@
       },
     },
   ],
-
-  // All memories wrapped up in relevant controllers
-  memory: [],
 
   // The port data structure is not something that should be used liberally.
   // It is used specifically to assign special attributes to specific ports.
@@ -1129,7 +1152,7 @@
   inter_module: {
     'connect': {
       'ast.obs_ctrl'            : ['flash_ctrl.obs_ctrl',
-                                   'otp_ctrl.obs_ctrl'],
+                                   'otp_macro.obs_ctrl'],
       'ast.ram_1p_cfg'          : ['otbn.ram_cfg_imem',
                                    'otbn.ram_cfg_dmem',
                                    'i2c0.ram_cfg',
@@ -1153,7 +1176,6 @@
       'aon_timer_aon.nmi_wdog_timer_bark' : ['rv_core_ibex.nmi_wdog'],
       'csrng.csrng_cmd'         : ['edn0.csrng_cmd', 'edn1.csrng_cmd'],
       'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
-      'csrng.cs_aes_halt'       : ['entropy_src.cs_aes_halt'],
       'flash_ctrl.keymgr'       : ['keymgr.flash'],
       'flash_ctrl.otp'          : ['otp_ctrl.flash_otp_key'],
       'flash_ctrl.rma_seed'     : ['lc_ctrl.lc_flash_rma_seed'],
@@ -1173,7 +1195,6 @@
       'rom_ctrl.keymgr_data'    : ['keymgr.rom_digest'],
       'flash_ctrl.keymgr'       : ['keymgr.flash'],
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
-      'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
 
       // LC RMA req/ack interface: LC --> Flash -> LC
       //                              |-> OTBN  -> LC
@@ -1225,7 +1246,10 @@
       // OTP LC interface
       'otp_ctrl.otp_lc_data'       : ['lc_ctrl.otp_lc_data'],
       'lc_ctrl.lc_otp_program'     : ['otp_ctrl.lc_otp_program'],
-      'lc_ctrl.lc_otp_vendor_test' : ['otp_ctrl.lc_otp_vendor_test'],
+
+      // PRIM_OTP LC interface
+      'lc_ctrl.lc_otp_vendor_test' : ['otp_macro.test'],
+//      'lc_ctrl.lc_otp_vendor_test' : ['otp_ctrl.lc_otp_vendor_test'],
 
       // Diversification constant coming from life cycle
       'lc_ctrl.lc_keymgr_div'  : ['keymgr.lc_keymgr_div'],
@@ -1234,13 +1258,16 @@
       'lc_ctrl.strap_en_override'  : ['pinmux_aon.strap_en_override'],
 
       // LC function control signal broadcast
-      'lc_ctrl.lc_dft_en'          : ['otp_ctrl.lc_dft_en',
+      'lc_ctrl.lc_dft_en'          : ['otp_macro.lc_dft_en',
                                       'pinmux_aon.lc_dft_en',
                                       'ast.lc_dft_en',
                                       'pwrmgr_aon.lc_dft_en',
                                       'rv_dm.lc_dft_en'
                                      ],
       'lc_ctrl.lc_nvm_debug_en'    : ['flash_ctrl.lc_nvm_debug_en'],
+      'lc_ctrl.lc_hw_debug_clr'    : ['pinmux_aon.lc_hw_debug_clr',
+                                      'rv_dm.lc_hw_debug_clr'],
+      'lc_ctrl.lc_init_done'       : ['rv_dm.lc_init_done'],
       'lc_ctrl.lc_hw_debug_en'     : ['sram_ctrl_main.lc_hw_debug_en',
                                       'pinmux_aon.lc_hw_debug_en',
                                       'csrng.lc_hw_debug_en',
@@ -1272,6 +1299,10 @@
       'lc_ctrl.lc_iso_part_sw_wr_en'       : ['flash_ctrl.lc_iso_part_sw_wr_en'],
       'lc_ctrl.lc_seed_hw_rd_en'           : ['otp_ctrl.lc_seed_hw_rd_en',
                                               'flash_ctrl.lc_seed_hw_rd_en'],
+      'lc_ctrl.lc_rma_state'               : ['otp_ctrl.lc_rma_state'],
+
+      // OTP OTP_MACRO connections
+      'otp_ctrl.otp_macro'                 : ['otp_macro.otp'],
 
       // rv_plic connections
       'rv_plic.msip' : ['rv_core_ibex.irq_software'],
@@ -1338,57 +1369,59 @@
 
     // ext is to create port in the top.
     'external': {
-        'adc_ctrl_aon.adc'                : 'adc',
-        'ast.edn'                         : '',
-        'ast.lc_dft_en'                   : '',
-        'ast.obs_ctrl'                    : 'obs_ctrl',
-        'ast.ram_1p_cfg'                  : 'ram_1p_cfg',
-        'sram_ctrl_main.cfg'              : 'sram_ctrl_main_cfg'
-        'sram_ctrl_ret_aon.cfg'           : 'sram_ctrl_ret_aon_cfg'
-        'ast.spi_ram_2p_cfg'              : 'spi_ram_2p_cfg',
-        'ast.usb_ram_1p_cfg'              : 'usb_ram_1p_cfg',
-        'ast.rom_cfg'                     : 'rom_cfg',
-        'clkmgr_aon.jitter_en'            : 'clk_main_jitter_en',
-        'clkmgr_aon.io_clk_byp_req'       : 'io_clk_byp_req',
-        'clkmgr_aon.io_clk_byp_ack'       : 'io_clk_byp_ack',
-        'clkmgr_aon.all_clk_byp_req'      : 'all_clk_byp_req',
-        'clkmgr_aon.all_clk_byp_ack'      : 'all_clk_byp_ack',
-        'clkmgr_aon.hi_speed_sel'         : 'hi_speed_sel',
-        'clkmgr_aon.div_step_down_req'    : 'div_step_down_req',
-        'clkmgr_aon.calib_rdy'            : 'calib_rdy',
-        'flash_ctrl.flash_bist_enable'    : 'flash_bist_enable',
-        'flash_ctrl.flash_power_down_h'   : 'flash_power_down_h',
-        'flash_ctrl.flash_power_ready_h'  : 'flash_power_ready_h',
-        'flash_ctrl.flash_test_mode_a'    : 'flash_test_mode_a',
-        'flash_ctrl.flash_test_voltage_h' : 'flash_test_voltage_h',
-        'flash_ctrl.fla_obs'              : 'flash_obs',
-        'entropy_src.entropy_src_rng'     : 'es_rng',
-        'entropy_src.rng_fips'            : 'es_rng_fips',
-        'peri.tl_ast'                     : 'ast_tl',
-        'pinmux_aon.dft_strap_test'       : 'dft_strap_test',
-        'pinmux_aon.dft_hold_tap_sel'     : 'dft_hold_tap_sel',
-        'pinmux_aon.usb_dppullup_en'      : 'usb_dp_pullup_en',
-        'pinmux_aon.usb_dnpullup_en'      : 'usb_dn_pullup_en',
-        'pwrmgr_aon.pwr_ast'              : 'pwrmgr_ast',
-        'otp_ctrl.otp_ast_pwr_seq'        : '',
-        'otp_ctrl.otp_ast_pwr_seq_h'      : '',
-        'otp_ctrl.otp_ext_voltage_h'      : 'otp_ext_voltage_h',
-        'otp_ctrl.otp_obs'                : 'otp_obs',
-        'rstmgr_aon.por_n'                : 'por_n',
-        'rv_core_ibex.fpga_info'          : 'fpga_info',
-        'sensor_ctrl_aon.ast_alert'       : 'sensor_ctrl_ast_alert',
-        'sensor_ctrl_aon.ast_status'      : 'sensor_ctrl_ast_status',
-        'sensor_ctrl_aon.ast2pinmux'      : 'ast2pinmux',
-        'sensor_ctrl_aon.ast_init_done'   : 'ast_init_done',
-        'sensor_ctrl_aon.manual_pad_attr' : 'sensor_ctrl_manual_pad_attr',
-        'spi_device.sck_monitor'          : 'sck_monitor',
-        'usbdev.usb_rx_d'                 : '',
-        'usbdev.usb_tx_d'                 : '',
-        'usbdev.usb_tx_se0'               : '',
-        'usbdev.usb_tx_use_d_se0'         : '',
-        'usbdev.usb_rx_enable'            : '',
-        'usbdev.usb_ref_val'              : '',
-        'usbdev.usb_ref_pulse'            : '',
+        'adc_ctrl_aon.adc'                   : 'adc',
+        'ast.edn'                            : '',
+        'ast.lc_dft_en'                      : '',
+        'ast.obs_ctrl'                       : 'obs_ctrl',
+        'ast.ram_1p_cfg'                     : 'ram_1p_cfg',
+        'sram_ctrl_main.cfg'                 : 'sram_ctrl_main_cfg'
+        'sram_ctrl_ret_aon.cfg'              : 'sram_ctrl_ret_aon_cfg'
+        'ast.spi_ram_2p_cfg'                 : 'spi_ram_2p_cfg',
+        'ast.usb_ram_1p_cfg'                 : 'usb_ram_1p_cfg',
+        'ast.rom_cfg'                        : 'rom_cfg',
+        'clkmgr_aon.jitter_en'               : 'clk_main_jitter_en',
+        'clkmgr_aon.io_clk_byp_req'          : 'io_clk_byp_req',
+        'clkmgr_aon.io_clk_byp_ack'          : 'io_clk_byp_ack',
+        'clkmgr_aon.all_clk_byp_req'         : 'all_clk_byp_req',
+        'clkmgr_aon.all_clk_byp_ack'         : 'all_clk_byp_ack',
+        'clkmgr_aon.hi_speed_sel'            : 'hi_speed_sel',
+        'clkmgr_aon.div_step_down_req'       : 'div_step_down_req',
+        'clkmgr_aon.calib_rdy'               : 'calib_rdy',
+        'flash_ctrl.flash_bist_enable'       : 'flash_bist_enable',
+        'flash_ctrl.flash_power_down_h'      : 'flash_power_down_h',
+        'flash_ctrl.flash_power_ready_h'     : 'flash_power_ready_h',
+        'flash_ctrl.flash_test_mode_a'       : 'flash_test_mode_a',
+        'flash_ctrl.flash_test_voltage_h'    : 'flash_test_voltage_h',
+        'flash_ctrl.fla_obs'                 : 'flash_obs',
+        'entropy_src.entropy_src_rng_enable' : 'es_rng_enable',
+        'entropy_src.entropy_src_rng_valid'  : 'es_rng_valid',
+        'entropy_src.entropy_src_rng_bits'   : 'es_rng_bit',
+        'entropy_src.rng_fips'               : 'es_rng_fips',
+        'peri.tl_ast'                        : 'ast_tl',
+        'pinmux_aon.dft_strap_test'          : 'dft_strap_test',
+        'pinmux_aon.dft_hold_tap_sel'        : 'dft_hold_tap_sel',
+        'pinmux_aon.usb_dppullup_en'         : 'usb_dp_pullup_en',
+        'pinmux_aon.usb_dnpullup_en'         : 'usb_dn_pullup_en',
+        'pwrmgr_aon.pwr_ast'                 : 'pwrmgr_ast',
+        'otp_macro.pwr_seq'                  : '',
+        'otp_macro.pwr_seq_h'                : '',
+        'otp_macro.ext_voltage_h'            : 'otp_ext_voltage_h',
+        'otp_macro.otp_obs'                  : 'otp_obs',
+        'rstmgr_aon.por_n'                   : 'por_n',
+        'rv_core_ibex.fpga_info'             : 'fpga_info',
+        'sensor_ctrl_aon.ast_alert'          : 'sensor_ctrl_ast_alert',
+        'sensor_ctrl_aon.ast_status'         : 'sensor_ctrl_ast_status',
+        'sensor_ctrl_aon.ast2pinmux'         : 'ast2pinmux',
+        'sensor_ctrl_aon.ast_init_done'      : 'ast_init_done',
+        'sensor_ctrl_aon.manual_pad_attr'    : 'sensor_ctrl_manual_pad_attr',
+        'spi_device.sck_monitor'             : 'sck_monitor',
+        'usbdev.usb_rx_d'                    : '',
+        'usbdev.usb_tx_d'                    : '',
+        'usbdev.usb_tx_se0'                  : '',
+        'usbdev.usb_tx_use_d_se0'            : '',
+        'usbdev.usb_rx_enable'               : '',
+        'usbdev.usb_ref_val'                 : '',
+        'usbdev.usb_ref_pulse'               : '',
     },
   },
 
@@ -1596,7 +1629,7 @@
       { instance: "flash_ctrl",      port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "sensor_ctrl_aon", port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "pwm_aon",         port: '',               connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "otp_ctrl",        port: 'test[0]',        connection: 'muxed' , pad: ''             , desc: ''},
+      { instance: "otp_macro",        port: 'test[0]',        connection: 'muxed' , pad: ''             , desc: ''},
       // Sysrst ctrl has both muxed and dedicated IOs
       { instance: "sysrst_ctrl_aon", port: 'ac_present',     connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "sysrst_ctrl_aon", port: 'key0_in',        connection: 'muxed' , pad: ''             , desc: ''},
@@ -1670,7 +1703,8 @@
         // boot time during certain life cycle states in order to determine
         // DFT modes and the TAP mux selection index (the JTAG signals can be
         // muxed to either the lifecycle TAP, DFT TAP or RISC-V processor
-        // TAP). TODO: add more documentation to https://docs.opentitan.org/hw/ip/pinmux/doc/index.html
+        // TAP). TODO: add more documentation to
+        // https://opentitan.org/book/hw/top_earlgrey/ip_autogen/pinmux/index.html
         // Each entry must have the following two keys:
         //
         // - name: Basename for the SV parameter.

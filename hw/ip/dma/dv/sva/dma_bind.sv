@@ -42,5 +42,4 @@ module dma_bind;
     .d2h  (host_tl_h_i)
   );
 
-  // TODO: bins tlul_assert to SYS interface
 endmodule

@@ -64,7 +64,7 @@ module kmac_errchk
   // the blocks even with err_modestrength.
   input        cfg_en_unsupported_modestrength_i,
 
-  // Entropy Ready Status to check if SW initiated the hahs without entropy cfg
+  // Entropy Ready Status to check if SW initiated the hash without entropy cfg
   input        entropy_ready_pulse_i,
 
   // SW commands: Only valid command is sent out to the rest of the modules
@@ -154,7 +154,7 @@ module kmac_errchk
   // `err_swsequence` occurs when SW issues wrong command
   logic err_swsequence;
 
-  // `err_modestrength` occcurs when Mode & Strength combinations are not
+  // `err_modestrength` occurs when Mode & Strength combinations are not
   // allowed. This error does not block the hashing operation.
   // UnexpectedModeStrength may stop the processing based on CFG
   // The error raises when SW issues CmdStart.
@@ -303,6 +303,12 @@ module kmac_errchk
     logic unused_cfg_entropy_ready;
     assign unused_cfg_entropy_ready = cfg_entropy_ready;
 
+    logic unused_err_processed;
+    assign unused_err_processed = err_processed_i;
+
+    logic unused_entropy_ready_puls;
+    assign unused_entropy_ready_puls = entropy_ready_pulse_i;
+
   end
 
   always_comb begin : recode_st
@@ -394,7 +400,7 @@ module kmac_errchk
   //
   // It would be better to place this condition (block_swcmd) in `always_ff`
   // block to clearly indicate the clock gating condition. However, the
-  // statemachine uses the sparse encoding scheme and macro. It prevents any
+  // state machine uses the sparse encoding scheme and macro. It prevents any
   // latch enable signals.
   assign st_gated_d = (block_swcmd) ? st : st_d ;
 

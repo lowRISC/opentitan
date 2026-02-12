@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, ensure, Context, Result};
+use anyhow::{Context, Result, bail, ensure};
 use clap::{Parser, ValueEnum};
 use std::time::Duration;
 
@@ -139,7 +139,7 @@ fn main() -> Result<()> {
     let transport = opts.init.init_target()?;
 
     let uart = transport.uart("console")?;
-    let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"Running ", opts.timeout)?;
 
     execute_test!(usbdev_aon_wake, &opts, &transport, &*uart);
 

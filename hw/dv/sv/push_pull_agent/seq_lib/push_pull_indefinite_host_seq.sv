@@ -4,7 +4,7 @@
 
 // Request sequence for Push and Pull protocols.
 //
-// Similiar push_pull_host_seq, this sequence will send an unlimited number of requests to
+// Similar push_pull_host_seq, this sequence will send an unlimited number of requests to
 // the DUT. It is the responsibility of the parent sequence to halt this sequence by setting
 // the stop field.
 //

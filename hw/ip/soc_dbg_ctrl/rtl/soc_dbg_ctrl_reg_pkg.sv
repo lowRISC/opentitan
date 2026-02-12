@@ -17,6 +17,12 @@ package soc_dbg_ctrl_reg_pkg;
   parameter int NumRegsCore = 7;
   parameter int NumRegsJtag = 6;
 
+  // Alert indices
+  typedef enum int {
+    AlertFatalFaultIdx = 0,
+    AlertRecovCtrlUpdateErrIdx = 1
+  } soc_dbg_ctrl_alert_idx_t;
+
   ///////////////////////////////////////////////
   // Typedefs for registers for core interface //
   ///////////////////////////////////////////////
@@ -77,11 +83,11 @@ package soc_dbg_ctrl_reg_pkg;
     struct packed {
       logic [3:0]  d;
       logic        de;
-    } valid;
+    } relocked;
     struct packed {
       logic [3:0]  d;
       logic        de;
-    } relocked;
+    } valid;
   } soc_dbg_ctrl_hw2reg_trace_debug_policy_valid_relocked_reg_t;
 
   // Register -> HW type for core interface
@@ -116,10 +122,10 @@ package soc_dbg_ctrl_reg_pkg;
   parameter logic [1:0] SOC_DBG_CTRL_ALERT_TEST_RESVAL = 2'h 0;
   parameter logic [0:0] SOC_DBG_CTRL_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
   parameter logic [0:0] SOC_DBG_CTRL_ALERT_TEST_RECOV_CTRL_UPDATE_ERR_RESVAL = 1'h 0;
-  parameter logic [6:0] SOC_DBG_CTRL_DEBUG_POLICY_CATEGORY_SHADOWED_RESVAL = 7'h 0;
+  parameter logic [6:0] SOC_DBG_CTRL_DEBUG_POLICY_CATEGORY_SHADOWED_RESVAL = 7'h 50;
   parameter logic [6:0]
       SOC_DBG_CTRL_DEBUG_POLICY_CATEGORY_SHADOWED_DEBUG_POLICY_CATEGORY_RESVAL =
-      7'h 0;
+      7'h 50;
 
   // Register index for core interface
   typedef enum int {
@@ -160,56 +166,56 @@ package soc_dbg_ctrl_reg_pkg;
     struct packed {
       logic [3:0]  d;
       logic        de;
-    } valid;
+    } relocked;
     struct packed {
       logic [3:0]  d;
       logic        de;
-    } relocked;
+    } valid;
   } soc_dbg_ctrl_hw2reg_jtag_trace_debug_policy_valid_relocked_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
-    } auth_debug_intent_set;
-    struct packed {
-      logic        d;
-    } auth_window_open;
-    struct packed {
-      logic        d;
-    } auth_window_closed;
+    } auth_unlock_failed;
     struct packed {
       logic        d;
     } auth_unlock_success;
     struct packed {
       logic        d;
-    } auth_unlock_failed;
+    } auth_window_closed;
+    struct packed {
+      logic        d;
+    } auth_window_open;
+    struct packed {
+      logic        d;
+    } auth_debug_intent_set;
   } soc_dbg_ctrl_hw2reg_jtag_status_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic        d;
-    } main_clk_status;
+      logic [2:0]  d;
+    } boot_greenlight_good;
+    struct packed {
+      logic [2:0]  d;
+    } boot_greenlight_done;
+    struct packed {
+      logic [5:0]  d;
+    } halt_fsm_state;
     struct packed {
       logic        d;
-    } io_clk_status;
-    struct packed {
-      logic        d;
-    } otp_done;
+    } cpu_fetch_en;
     struct packed {
       logic        d;
     } lc_done;
     struct packed {
       logic        d;
-    } cpu_fetch_en;
+    } otp_done;
     struct packed {
-      logic [5:0]  d;
-    } halt_fsm_state;
+      logic        d;
+    } io_clk_status;
     struct packed {
-      logic [2:0]  d;
-    } boot_greenlight_done;
-    struct packed {
-      logic [2:0]  d;
-    } boot_greenlight_good;
+      logic        d;
+    } main_clk_status;
   } soc_dbg_ctrl_hw2reg_jtag_boot_status_reg_t;
 
   typedef struct packed {

@@ -55,6 +55,7 @@
           width: "1"
           module: aon_timer_aon
           desc: Watchdog reset request.
+          enabled_after_reset: false
         }
       ]
     }
@@ -69,5 +70,6 @@
     ]
     topname: englishbreakfast
     uniquified_modules: {}
+    module_instance_name: pwrmgr
   }
 }

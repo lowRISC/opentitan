@@ -8,6 +8,7 @@ filesets:
   files_dv:
     depend:
       - lowrisc:dv:cip_lib
+      - lowrisc:ip:lc_ctrl_pkg
     files:
       - lc_ctrl_dv_utils_pkg.sv
     file_type: systemVerilogSource

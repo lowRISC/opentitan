@@ -10,10 +10,15 @@ filesets:
       - lowrisc:systems:top_earlgrey:0.1
       - lowrisc:systems:top_earlgrey_pkg
       - lowrisc:systems:top_earlgrey_padring
+      - lowrisc:earlgrey_ip:flash_ctrl_prim_reg_top
       - "fileset_partner ? (partner:systems:top_earlgrey_ast)"
       - "fileset_partner ? (partner:systems:top_earlgrey_scan_role_pkg)"
+      - "fileset_partner ? (partner:prim_tech:all)"
+      - "fileset_partner ? (partner:prim_tech:flash)"
       - "!fileset_partner ? (lowrisc:systems:top_earlgrey_ast)"
       - "!fileset_partner ? (lowrisc:earlgrey_systems:scan_role_pkg)"
+      - "!fileset_partner ? (lowrisc:prim_generic:all)"
+      - "!fileset_partner ? (lowrisc:prim_generic:flash)"
     files:
       - rtl/autogen/chip_earlgrey_asic.sv
     file_type: systemVerilogSource

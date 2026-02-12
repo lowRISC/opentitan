@@ -70,6 +70,13 @@
       run_opts: []
     }
     {
+      name: riviera_gui_debug
+      // TODO: Add options to setup Riviera gui debug environment and features (as in xcelium.hjson)
+      is_sim_mode: 1
+      build_opts: []
+      run_opts: []
+    }
+    {
       name: riviera_waves
       is_sim_mode: 1
     }

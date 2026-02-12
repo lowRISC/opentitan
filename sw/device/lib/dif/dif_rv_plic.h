@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/rv_plic/doc/">PLIC</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/rv_plic/">PLIC</a> Device Interface Functions
  *
  * The PLIC should be largely compatible with the (currently draft) [RISC-V PLIC
  * specification][plic], but tailored for the OpenTitan rv_plic register
@@ -20,7 +20,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "dt/dt_api.h"  // Generated
+#include "hw/top/dt/api.h"  // Generated
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"

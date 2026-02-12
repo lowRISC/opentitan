@@ -9,382 +9,184 @@
 
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_rv_plic.h"
-#include "sw/device/lib/dif/dif_spi_device.h"
-#include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/ibex.h"
-#include "sw/device/lib/runtime/irq.h"
-#include "sw/device/lib/runtime/print.h"
-#include "sw/device/lib/testing/spi_device_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/lib/testing/test_framework/ottf_isrs.h"
-#include "sw/device/lib/testing/test_framework/ottf_test_config.h"
-
-// TODO: make this toplevel agnostic.
-#include "dt/dt_rv_plic.h"
-#include "dt/dt_uart.h"
-
-#include "spi_device_regs.h"  // Generated.
 
 #define MODULE_ID MAKE_MODULE_ID('o', 't', 'c')
 
-/**
- * OTTF console configuration parameters.
- */
-enum {
-  /**
-   * SPI device console configuration parameters.
-   */
-  kSpiDeviceRxCommitWait = 63,  // clock cycles
-  /**
-   * Flow control parameters.
-   */
-  kFlowControlLowWatermark = 4,   // bytes
-  kFlowControlHighWatermark = 8,  // bytes
-  kFlowControlRxWatermark = kDifUartWatermarkByte8,
-  /**
-   * HART PLIC Target.
-   */
-  kPlicTarget = 0,
-};
+// Main console.
+static ottf_console_t main_console;
 
-// Potential DIF handles for OTTF console communication.
-static dif_spi_device_handle_t ottf_console_spi_device;
-static dif_uart_t ottf_console_uart;
-
-// Function pointer to the currently active data sink.
-static sink_func_ptr sink;
-// Function pointer to a function that retrieves a single character.
-static status_t (*getc)(void *);
-
-// The `flow_control_state` and `flow_control_irqs` variables are shared between
-// the interrupt service handler and user code.
-static volatile ottf_console_flow_control_t flow_control_state;
 static volatile uint32_t flow_control_irqs;
 
-void *ottf_console_get(void) {
-  switch (kOttfTestConfig.console.type) {
-    case kOttfConsoleSpiDevice:
-      return &ottf_console_spi_device;
-    default:
-      return &ottf_console_uart;
-  }
+ottf_console_t *ottf_console_get(void) { return &main_console; }
+
+static status_t ottf_console_null_getc(void *io) {
+  OT_DISCARD(io);
+  return UNAVAILABLE();
 }
 
-static status_t uart_getc(void *io) {
-  const dif_uart_t *uart = (const dif_uart_t *)io;
-  uint8_t byte;
-  TRY(dif_uart_byte_receive_polled(uart, &byte));
-  TRY(ottf_console_flow_control(uart, kOttfConsoleFlowControlAuto));
-  return OK_STATUS(byte);
+static size_t ottf_console_null_sink(void *io, const char *buf, size_t len) {
+  OT_DISCARD(io);
+  OT_DISCARD(buf);
+  return len;
 }
 
-/*
- * The user of this function needs to be aware of the following:
- * 1. The exact amount of data expected to be sent from the host side must be
- * known in advance.
- * 2. Characters should be retrieved from the console as soon as they become
- * available. Failure to do so may result in an SPI transaction timeout.
- */
-static status_t spi_device_getc(void *io) {
-  static size_t index = 0;
-  static upload_info_t info = {0};
-  dif_spi_device_handle_t *spi_device = (dif_spi_device_handle_t *)io;
-  if (index == info.data_len) {
-    memset(&info, 0, sizeof(upload_info_t));
-    CHECK_STATUS_OK(spi_device_testutils_wait_for_upload(spi_device, &info));
-    index = 0;
-    CHECK_DIF_OK(dif_spi_device_set_flash_status_registers(spi_device, 0x00));
-  }
-
-  return OK_STATUS(info.data[index++]);
-}
-
-static void spi_device_wait_for_sync(dif_spi_device_handle_t *spi_device) {
-  const uint8_t kBootMagicPattern[4] = {0x02, 0xb0, 0xfe, 0xca};
-  const uint8_t kEmptyPattern[4] = {0};
-
-  for (size_t i = 0; i < SPI_DEVICE_PARAM_SRAM_READ_BUFFER_DEPTH; i++) {
-    CHECK_DIF_OK(dif_spi_device_write_flash_buffer(
-        spi_device, kDifSpiDeviceFlashBufferTypeEFlash,
-        i * ARRAYSIZE(kBootMagicPattern), ARRAYSIZE(kBootMagicPattern),
-        kBootMagicPattern));
-  }
-
-  upload_info_t info = {0};
-  CHECK_STATUS_OK(spi_device_testutils_wait_for_upload(spi_device, &info));
-  // Clear the boot magic in the read buffer.
-  for (size_t i = 0; i < SPI_DEVICE_PARAM_SRAM_READ_BUFFER_DEPTH; i++) {
-    CHECK_DIF_OK(dif_spi_device_write_flash_buffer(
-        spi_device, kDifSpiDeviceFlashBufferTypeEFlash,
-        i * ARRAYSIZE(kEmptyPattern), ARRAYSIZE(kEmptyPattern), kEmptyPattern));
-  }
-  CHECK_DIF_OK(dif_spi_device_set_flash_status_registers(spi_device, 0x00));
+void ottf_console_configure_null(ottf_console_t *console) {
+  console->getc = ottf_console_null_getc;
+  console->sink = ottf_console_null_sink;
 }
 
 void ottf_console_init(void) {
   // Initialize/Configure the console device.
   uintptr_t base_addr = kOttfTestConfig.console.base_addr;
+
   switch (kOttfTestConfig.console.type) {
+#ifdef OTTF_CONSOLE_HAS_UART
     case kOttfConsoleUart:
       // Set a default for the console base address if the base address is not
       // configured. The default is to use UART0.
       if (base_addr == 0) {
-        CHECK(kOttfTestConfig.console.type == kOttfConsoleUart);
         base_addr = dt_uart_primary_reg_block(kDtUart0);
       }
 
-      ottf_console_configure_uart(base_addr);
-      sink = get_uart_sink();
-      getc = uart_getc;
+      ottf_console_configure_uart(&main_console, base_addr);
+      // Initialize/Configure console flow control (if requested).
+      if (kOttfTestConfig.enable_uart_flow_control) {
+        ottf_console_uart_flow_control_enable(&main_console);
+      }
       break;
+#endif
+#ifdef OTTF_CONSOLE_HAS_SPI_DEVICE
     case (kOttfConsoleSpiDevice):
-      ottf_console_configure_spi_device(base_addr);
-      sink = get_spi_device_sink();
-      getc = spi_device_getc;
+      ottf_console_configure_spi_device(
+          &main_console, base_addr, kOttfTestConfig.console_tx_indicator.enable,
+          kOttfTestConfig.console_tx_indicator.spi_console_tx_ready_gpio,
+          kOttfTestConfig.console_tx_indicator.spi_console_tx_ready_mio);
+      // For the SPI console, we use the global SPI buffer.
+      size_t main_spi_buf_sz;
+      void *main_spi_buf =
+          ottf_console_spi_get_main_staging_buffer(&main_spi_buf_sz);
+      ottf_console_set_buffering(&main_console,
+                                 kOttfTestConfig.console.putbuf_buffered,
+                                 main_spi_buf, main_spi_buf_sz);
       break;
+#endif
     default:
-      CHECK(false, "unsupported OTTF console interface.");
+      // Create a null console.
+      ottf_console_configure_null(&main_console);
       break;
   }
-}
 
-void ottf_console_configure_uart(uintptr_t base_addr) {
-  CHECK_DIF_OK(
-      dif_uart_init(mmio_region_from_addr(base_addr), &ottf_console_uart));
-  CHECK(kUartBaudrate <= UINT32_MAX, "kUartBaudrate must fit in uint32_t");
-  CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
-        "kClockFreqPeripheralHz must fit in uint32_t");
-  CHECK_DIF_OK(dif_uart_configure(
-      &ottf_console_uart, (dif_uart_config_t){
-                              .baudrate = (uint32_t)kUartBaudrate,
-                              .clk_freq_hz = (uint32_t)kClockFreqPeripheralHz,
-                              .parity_enable = kDifToggleDisabled,
-                              .parity = kDifUartParityEven,
-                              .tx_enable = kDifToggleEnabled,
-                              .rx_enable = kDifToggleEnabled,
-                          }));
-  base_uart_stdout(&ottf_console_uart);
-
-  // Initialize/Configure console flow control (if requested).
-  if (kOttfTestConfig.enable_uart_flow_control) {
-    ottf_console_flow_control_enable();
-  }
-}
-
-void ottf_console_configure_spi_device(uintptr_t base_addr) {
-  CHECK_DIF_OK(dif_spi_device_init_handle(mmio_region_from_addr(base_addr),
-                                          &ottf_console_spi_device));
-  CHECK_DIF_OK(dif_spi_device_configure(
-      &ottf_console_spi_device,
-      (dif_spi_device_config_t){
-          .tx_order = kDifSpiDeviceBitOrderMsbToLsb,
-          .rx_order = kDifSpiDeviceBitOrderMsbToLsb,
-          .device_mode = kDifSpiDeviceModeFlashEmulation,
-      }));
-  dif_spi_device_flash_command_t read_commands[] = {
-      {
-          // Slot 0: ReadStatus1
-          .opcode = kSpiDeviceFlashOpReadStatus1,
-          .address_type = kDifSpiDeviceFlashAddrDisabled,
-          .dummy_cycles = 0,
-          .payload_io_type = kDifSpiDevicePayloadIoSingle,
-          .payload_dir_to_host = true,
-      },
-      {
-          // Slot 1: ReadStatus2
-          .opcode = kSpiDeviceFlashOpReadStatus2,
-          .address_type = kDifSpiDeviceFlashAddrDisabled,
-          .dummy_cycles = 0,
-          .payload_io_type = kDifSpiDevicePayloadIoSingle,
-          .payload_dir_to_host = true,
-      },
-      {
-          // Slot 2: ReadStatus3
-          .opcode = kSpiDeviceFlashOpReadStatus3,
-          .address_type = kDifSpiDeviceFlashAddrDisabled,
-          .dummy_cycles = 0,
-          .payload_io_type = kDifSpiDevicePayloadIoSingle,
-          .payload_dir_to_host = true,
-      },
-      {
-          // Slot 3: ReadJedecID
-          .opcode = kSpiDeviceFlashOpReadJedec,
-          .address_type = kDifSpiDeviceFlashAddrDisabled,
-          .dummy_cycles = 0,
-          .payload_io_type = kDifSpiDevicePayloadIoSingle,
-          .payload_dir_to_host = true,
-      },
-      {
-          // Slot 4: ReadSfdp
-          .opcode = kSpiDeviceFlashOpReadSfdp,
-          .address_type = kDifSpiDeviceFlashAddr3Byte,
-          .dummy_cycles = 8,
-          .payload_io_type = kDifSpiDevicePayloadIoSingle,
-          .payload_dir_to_host = true,
-      },
-      {
-          // Slot 5: ReadNormal
-          .opcode = kSpiDeviceFlashOpReadNormal,
-          .address_type = kDifSpiDeviceFlashAddr3Byte,
-          .dummy_cycles = 0,
-          .payload_io_type = kDifSpiDevicePayloadIoSingle,
-          .payload_dir_to_host = true,
-      },
-  };
-  for (size_t i = 0; i < ARRAYSIZE(read_commands); ++i) {
-    uint8_t slot = (uint8_t)i + kSpiDeviceReadCommandSlotBase;
-    CHECK_DIF_OK(dif_spi_device_set_flash_command_slot(
-        &ottf_console_spi_device, slot, kDifToggleEnabled, read_commands[i]));
-  }
-  dif_spi_device_flash_command_t write_commands[] = {
-      {
-          // Slot 11: PageProgram
-          .opcode = kSpiDeviceFlashOpPageProgram,
-          .address_type = kDifSpiDeviceFlashAddrCfg,
-          .payload_io_type = kDifSpiDevicePayloadIoSingle,
-          .payload_dir_to_host = false,
-          .upload = true,
-          .set_busy_status = true,
-      },
-  };
-  for (size_t i = 0; i < ARRAYSIZE(write_commands); ++i) {
-    uint8_t slot = (uint8_t)i + kSpiDeviceWriteCommandSlotBase;
-    CHECK_DIF_OK(dif_spi_device_set_flash_command_slot(
-        &ottf_console_spi_device, slot, kDifToggleEnabled, write_commands[i]));
-  }
-  spi_device_wait_for_sync(&ottf_console_spi_device);
-  base_spi_device_stdout(&ottf_console_spi_device);
-}
-
-static uint32_t get_flow_control_watermark_plic_id(void) {
-  for (size_t i = 0; i < kDtUartCount; i++) {
-    dt_uart_t uart = (dt_uart_t)i;
-    if (kOttfTestConfig.console.base_addr == dt_uart_primary_reg_block(uart)) {
-      return dt_uart_irq_to_plic_id(uart, kDtUartIrqRxWatermark);
-    }
-  }
-  return dt_uart_irq_to_plic_id(kDtUart0, kDtUartIrqRxWatermark);
-}
-
-void ottf_console_flow_control_enable(void) {
-  dif_uart_t *uart = (dif_uart_t *)ottf_console_get();
-  CHECK_DIF_OK(dif_uart_watermark_rx_set(uart, kFlowControlRxWatermark));
-  CHECK_DIF_OK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxWatermark,
-                                        kDifToggleEnabled));
-
-  // Set IRQ priorities to MAX
-  CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
-      &ottf_plic, get_flow_control_watermark_plic_id(), kDifRvPlicMaxPriority));
-  // Set Ibex IRQ priority threshold level
-  CHECK_DIF_OK(dif_rv_plic_target_set_threshold(&ottf_plic, kPlicTarget,
-                                                kDifRvPlicMinPriority));
-  // Enable IRQs in PLIC
-  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(&ottf_plic,
-                                           get_flow_control_watermark_plic_id(),
-                                           kPlicTarget, kDifToggleEnabled));
-
-  flow_control_state = kOttfConsoleFlowControlAuto;
-  irq_global_ctrl(true);
-  irq_external_ctrl(true);
-  // Make sure we're in the Resume state and we emit a Resume to the UART.
-  ottf_console_flow_control((dif_uart_t *)ottf_console_get(),
-                            kOttfConsoleFlowControlResume);
-}
-
-// This version of the function is safe to call from within the ISR.
-static status_t manage_flow_control(const dif_uart_t *uart,
-                                    ottf_console_flow_control_t ctrl) {
-  if (flow_control_state == kOttfConsoleFlowControlNone) {
-    return OK_STATUS((int32_t)flow_control_state);
-  }
-  if (ctrl == kOttfConsoleFlowControlAuto) {
-    uint32_t avail;
-    TRY(dif_uart_rx_bytes_available(uart, &avail));
-    if (avail < kFlowControlLowWatermark &&
-        flow_control_state != kOttfConsoleFlowControlResume) {
-      // Enable RX watermark interrupt when RX FIFO level is below the
-      // watermark.
-      CHECK_DIF_OK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxWatermark,
-                                            kDifToggleEnabled));
-      ctrl = kOttfConsoleFlowControlResume;
-    } else if (avail >= kFlowControlHighWatermark &&
-               flow_control_state != kOttfConsoleFlowControlPause) {
-      ctrl = kOttfConsoleFlowControlPause;
-      // RX watermark interrupt is status type, so disable the interrupt whilst
-      // RX FIFO is above the watermark to avoid an inifite loop of ISRs.
-      CHECK_DIF_OK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxWatermark,
-                                            kDifToggleDisabled));
-    } else {
-      return OK_STATUS((int32_t)flow_control_state);
-    }
-  }
-  uint8_t byte = (uint8_t)ctrl;
-  CHECK_DIF_OK(dif_uart_bytes_send(uart, &byte, 1, NULL));
-  flow_control_state = ctrl;
-  return OK_STATUS((int32_t)flow_control_state);
-}
-
-bool ottf_console_flow_control_isr(uint32_t *exc_info) {
-  dif_uart_t *uart = (dif_uart_t *)ottf_console_get();
-  flow_control_irqs += 1;
-  bool rx;
-  CHECK_DIF_OK(dif_uart_irq_is_pending(uart, kDifUartIrqRxWatermark, &rx));
-  if (rx) {
-    manage_flow_control(uart, kOttfConsoleFlowControlAuto);
-    CHECK_DIF_OK(dif_uart_irq_acknowledge(uart, kDifUartIrqRxWatermark));
-    return true;
-  }
-  return false;
-}
-
-// The public API has to save and restore interrupts to avoid an
-// unexpected write to the global `flow_control_state`.
-status_t ottf_console_flow_control(const dif_uart_t *uart,
-                                   ottf_console_flow_control_t ctrl) {
-  dif_uart_irq_enable_snapshot_t snapshot;
-  CHECK_DIF_OK(dif_uart_irq_disable_all(uart, &snapshot));
-  status_t s = manage_flow_control(uart, ctrl);
-  CHECK_DIF_OK(dif_uart_irq_restore_all(uart, &snapshot));
-  return s;
+  base_set_stdout(ottf_console_get_buffer_sink(&main_console));
 }
 
 uint32_t ottf_console_get_flow_control_irqs(void) { return flow_control_irqs; }
 
-static bool spi_tx_last_data_chunk(upload_info_t *info) {
-  const static size_t kSpiTxTerminateMagicAddress = 0x100;
-  return info->address == kSpiTxTerminateMagicAddress;
+bool ottf_console_flow_control_isr(uint32_t *exc_info) {
+  flow_control_irqs += 1;
+#ifdef OTTF_CONSOLE_HAS_UART
+  return ottf_console_uart_flow_control_isr(exc_info, &main_console);
+#else
+  return false;
+#endif
 }
 
-size_t ottf_console_spi_device_read(size_t buf_size, uint8_t *const buf) {
-  size_t received_data_len = 0;
-  upload_info_t info;
-  memset(&info, 0, sizeof(upload_info_t));
-  while (!spi_tx_last_data_chunk(&info)) {
-    CHECK_STATUS_OK(
-        spi_device_testutils_wait_for_upload(&ottf_console_spi_device, &info));
-    if (received_data_len < buf_size) {
-      size_t remaining_buf_size = buf_size - received_data_len;
-      size_t bytes_to_copy = remaining_buf_size < info.data_len
-                                 ? remaining_buf_size
-                                 : info.data_len;
-      memcpy(buf + received_data_len, info.data, bytes_to_copy);
-    }
+status_t ottf_console_flow_control(ottf_console_t *console,
+                                   ottf_console_flow_control_t ctrl) {
+#ifdef OTTF_CONSOLE_HAS_UART
+  return ottf_console_uart_flow_control(console, ctrl);
+#else
+  return INVALID_ARGUMENT();
+#endif
+}
 
-    received_data_len += info.data_len;
-    CHECK_DIF_OK(dif_spi_device_set_flash_status_registers(
-        &ottf_console_spi_device, 0x00));
+void ottf_console_set_buffering(ottf_console_t *console, bool enabled,
+                                char *buffer, size_t size) {
+  console->buffered = enabled;
+  if (enabled) {
+    console->buf = buffer;
+    console->buf_size = size;
+    memset(buffer, 0, size);
+  } else {
+    console->buf = NULL;
+    console->buf_size = 0;
   }
+  console->buf_end = 0;
+}
 
-  return received_data_len;
+status_t ottf_console_flush(ottf_console_t *console) {
+  if (console->buffered && console->buf_end > 0) {
+    size_t written_len = console->sink(console, console->buf, console->buf_end);
+    size_t lost = console->buf_end - written_len;
+    console->buf_end = 0;
+    if (lost > 0) {
+      return DATA_LOSS((int32_t)lost);
+    } else {
+      return OK_STATUS((int32_t)written_len);
+    }
+  }
+  return OK_STATUS(0);
+}
+
+static status_t ottf_console_write_unbuffered(ottf_console_t *console,
+                                              const char *buf, size_t len) {
+  size_t written_len = console->sink(console, buf, len);
+  if (written_len < len) {
+    return DATA_LOSS((int32_t)(len - written_len));
+  } else {
+    return OK_STATUS((int32_t)written_len);
+  }
+}
+
+static status_t ottf_console_write_buffered(ottf_console_t *console,
+                                            const char *buf, size_t len) {
+  if (len > console->buf_size) {
+    // Flush and skip the staging buffer if the payload is already the max size.
+    TRY(ottf_console_flush(console));
+    return ottf_console_write_unbuffered(console, buf, len);
+  } else if ((console->buf_end + len) <= console->buf_size) {
+    // There is room for the data in the staging buffer, copy it over.
+    memcpy(&console->buf[console->buf_end], buf, len);
+    console->buf_end += len;
+    return OK_STATUS((int32_t)len);
+  } else {
+    // The staging buffer is almost full; flush it before staging more data.
+    TRY(ottf_console_flush(console));
+    memcpy(&console->buf[console->buf_end], buf, len);
+    console->buf_end += len;
+    return OK_STATUS((int32_t)len);
+  }
+}
+
+static status_t ottf_console_write(ottf_console_t *console, const char *buf,
+                                   size_t len) {
+  if (console->buffered) {
+    return ottf_console_write_buffered(console, buf, len);
+  } else {
+    return ottf_console_write_unbuffered(console, buf, len);
+  }
+}
+
+/**
+ * Type-erased API for use with ujson.
+ */
+
+status_t ottf_console_flushbuf(void *io) {
+  ottf_console_t *console = io;
+  return ottf_console_flush(console);
 }
 
 status_t ottf_console_putbuf(void *io, const char *buf, size_t len) {
-  size_t written_len = sink(io, buf, len);
-  if (len != written_len) {
-    return DATA_LOSS((int32_t)(len - written_len));
-  }
-  return OK_STATUS((int32_t)len);
+  ottf_console_t *console = io;
+  return ottf_console_write(console, buf, len);
 }
 
-status_t ottf_console_getc(void *io) { return getc(io); }
+status_t ottf_console_getc(void *io) {
+  ottf_console_t *console = io;
+  return console->getc(io);
+}
+
+buffer_sink_t ottf_console_get_buffer_sink(ottf_console_t *console) {
+  return (buffer_sink_t){.data = (void *)console, .sink = console->sink};
+}

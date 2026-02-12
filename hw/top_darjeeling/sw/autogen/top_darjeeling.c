@@ -5,7 +5,7 @@
 // ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
 // util/topgen.py -t hw/top_darjeeling/data/top_darjeeling.hjson
-// -o hw/top_darjeeling
+//                -o hw/top_darjeeling/
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
@@ -16,7 +16,7 @@
  * `top_darjeeling_alert_peripheral_t`.
  */
 const top_darjeeling_alert_peripheral_t
-    top_darjeeling_alert_for_peripheral[103] = {
+    top_darjeeling_alert_for_peripheral[77] = {
   [kTopDarjeelingAlertIdUart0FatalFault] = kTopDarjeelingAlertPeripheralUart0,
   [kTopDarjeelingAlertIdGpioFatalFault] = kTopDarjeelingAlertPeripheralGpio,
   [kTopDarjeelingAlertIdSpiDeviceFatalFault] = kTopDarjeelingAlertPeripheralSpiDevice,
@@ -39,34 +39,6 @@ const top_darjeeling_alert_peripheral_t
   [kTopDarjeelingAlertIdPinmuxAonFatalFault] = kTopDarjeelingAlertPeripheralPinmuxAon,
   [kTopDarjeelingAlertIdAonTimerAonFatalFault] = kTopDarjeelingAlertPeripheralAonTimerAon,
   [kTopDarjeelingAlertIdSocProxyFatalAlertIntg] = kTopDarjeelingAlertPeripheralSocProxy,
-  [kTopDarjeelingAlertIdSocProxyFatalAlertExternal0] = kTopDarjeelingAlertPeripheralSocProxy,
-  [kTopDarjeelingAlertIdSocProxyFatalAlertExternal1] = kTopDarjeelingAlertPeripheralSocProxy,
-  [kTopDarjeelingAlertIdSocProxyFatalAlertExternal2] = kTopDarjeelingAlertPeripheralSocProxy,
-  [kTopDarjeelingAlertIdSocProxyFatalAlertExternal3] = kTopDarjeelingAlertPeripheralSocProxy,
-  [kTopDarjeelingAlertIdSocProxyFatalAlertExternal4] = kTopDarjeelingAlertPeripheralSocProxy,
-  [kTopDarjeelingAlertIdSocProxyFatalAlertExternal5] = kTopDarjeelingAlertPeripheralSocProxy,
-  [kTopDarjeelingAlertIdSocProxyFatalAlertExternal6] = kTopDarjeelingAlertPeripheralSocProxy,
-  [kTopDarjeelingAlertIdSocProxyFatalAlertExternal7] = kTopDarjeelingAlertPeripheralSocProxy,
-  [kTopDarjeelingAlertIdSocProxyFatalAlertExternal8] = kTopDarjeelingAlertPeripheralSocProxy,
-  [kTopDarjeelingAlertIdSocProxyFatalAlertExternal9] = kTopDarjeelingAlertPeripheralSocProxy,
-  [kTopDarjeelingAlertIdSocProxyFatalAlertExternal10] = kTopDarjeelingAlertPeripheralSocProxy,
-  [kTopDarjeelingAlertIdSocProxyFatalAlertExternal11] = kTopDarjeelingAlertPeripheralSocProxy,
-  [kTopDarjeelingAlertIdSocProxyFatalAlertExternal12] = kTopDarjeelingAlertPeripheralSocProxy,
-  [kTopDarjeelingAlertIdSocProxyFatalAlertExternal13] = kTopDarjeelingAlertPeripheralSocProxy,
-  [kTopDarjeelingAlertIdSocProxyFatalAlertExternal14] = kTopDarjeelingAlertPeripheralSocProxy,
-  [kTopDarjeelingAlertIdSocProxyFatalAlertExternal15] = kTopDarjeelingAlertPeripheralSocProxy,
-  [kTopDarjeelingAlertIdSocProxyFatalAlertExternal16] = kTopDarjeelingAlertPeripheralSocProxy,
-  [kTopDarjeelingAlertIdSocProxyFatalAlertExternal17] = kTopDarjeelingAlertPeripheralSocProxy,
-  [kTopDarjeelingAlertIdSocProxyFatalAlertExternal18] = kTopDarjeelingAlertPeripheralSocProxy,
-  [kTopDarjeelingAlertIdSocProxyFatalAlertExternal19] = kTopDarjeelingAlertPeripheralSocProxy,
-  [kTopDarjeelingAlertIdSocProxyFatalAlertExternal20] = kTopDarjeelingAlertPeripheralSocProxy,
-  [kTopDarjeelingAlertIdSocProxyFatalAlertExternal21] = kTopDarjeelingAlertPeripheralSocProxy,
-  [kTopDarjeelingAlertIdSocProxyFatalAlertExternal22] = kTopDarjeelingAlertPeripheralSocProxy,
-  [kTopDarjeelingAlertIdSocProxyFatalAlertExternal23] = kTopDarjeelingAlertPeripheralSocProxy,
-  [kTopDarjeelingAlertIdSocProxyRecovAlertExternal0] = kTopDarjeelingAlertPeripheralSocProxy,
-  [kTopDarjeelingAlertIdSocProxyRecovAlertExternal1] = kTopDarjeelingAlertPeripheralSocProxy,
-  [kTopDarjeelingAlertIdSocProxyRecovAlertExternal2] = kTopDarjeelingAlertPeripheralSocProxy,
-  [kTopDarjeelingAlertIdSocProxyRecovAlertExternal3] = kTopDarjeelingAlertPeripheralSocProxy,
   [kTopDarjeelingAlertIdSramCtrlRetAonFatalError] = kTopDarjeelingAlertPeripheralSramCtrlRetAon,
   [kTopDarjeelingAlertIdRvDmFatalFault] = kTopDarjeelingAlertPeripheralRvDm,
   [kTopDarjeelingAlertIdRvPlicFatalFault] = kTopDarjeelingAlertPeripheralRvPlic,
@@ -81,6 +53,8 @@ const top_darjeeling_alert_peripheral_t
   [kTopDarjeelingAlertIdKeymgrDpeFatalFaultErr] = kTopDarjeelingAlertPeripheralKeymgrDpe,
   [kTopDarjeelingAlertIdCsrngRecovAlert] = kTopDarjeelingAlertPeripheralCsrng,
   [kTopDarjeelingAlertIdCsrngFatalAlert] = kTopDarjeelingAlertPeripheralCsrng,
+  [kTopDarjeelingAlertIdEntropySrcRecovAlert] = kTopDarjeelingAlertPeripheralEntropySrc,
+  [kTopDarjeelingAlertIdEntropySrcFatalAlert] = kTopDarjeelingAlertPeripheralEntropySrc,
   [kTopDarjeelingAlertIdEdn0RecovAlert] = kTopDarjeelingAlertPeripheralEdn0,
   [kTopDarjeelingAlertIdEdn0FatalAlert] = kTopDarjeelingAlertPeripheralEdn0,
   [kTopDarjeelingAlertIdEdn1RecovAlert] = kTopDarjeelingAlertPeripheralEdn1,
@@ -129,7 +103,7 @@ const top_darjeeling_alert_peripheral_t
  * `top_darjeeling_plic_peripheral_t`.
  */
 const top_darjeeling_plic_peripheral_t
-    top_darjeeling_plic_interrupt_for_peripheral[160] = {
+    top_darjeeling_plic_interrupt_for_peripheral[132] = {
   [kTopDarjeelingPlicIrqIdNone] = kTopDarjeelingPlicPeripheralUnknown,
   [kTopDarjeelingPlicIrqIdUart0TxWatermark] = kTopDarjeelingPlicPeripheralUart0,
   [kTopDarjeelingPlicIrqIdUart0RxWatermark] = kTopDarjeelingPlicPeripheralUart0,
@@ -207,38 +181,6 @@ const top_darjeeling_plic_peripheral_t
   [kTopDarjeelingPlicIrqIdPwrmgrAonWakeup] = kTopDarjeelingPlicPeripheralPwrmgrAon,
   [kTopDarjeelingPlicIrqIdAonTimerAonWkupTimerExpired] = kTopDarjeelingPlicPeripheralAonTimerAon,
   [kTopDarjeelingPlicIrqIdAonTimerAonWdogTimerBark] = kTopDarjeelingPlicPeripheralAonTimerAon,
-  [kTopDarjeelingPlicIrqIdSocProxyExternal0] = kTopDarjeelingPlicPeripheralSocProxy,
-  [kTopDarjeelingPlicIrqIdSocProxyExternal1] = kTopDarjeelingPlicPeripheralSocProxy,
-  [kTopDarjeelingPlicIrqIdSocProxyExternal2] = kTopDarjeelingPlicPeripheralSocProxy,
-  [kTopDarjeelingPlicIrqIdSocProxyExternal3] = kTopDarjeelingPlicPeripheralSocProxy,
-  [kTopDarjeelingPlicIrqIdSocProxyExternal4] = kTopDarjeelingPlicPeripheralSocProxy,
-  [kTopDarjeelingPlicIrqIdSocProxyExternal5] = kTopDarjeelingPlicPeripheralSocProxy,
-  [kTopDarjeelingPlicIrqIdSocProxyExternal6] = kTopDarjeelingPlicPeripheralSocProxy,
-  [kTopDarjeelingPlicIrqIdSocProxyExternal7] = kTopDarjeelingPlicPeripheralSocProxy,
-  [kTopDarjeelingPlicIrqIdSocProxyExternal8] = kTopDarjeelingPlicPeripheralSocProxy,
-  [kTopDarjeelingPlicIrqIdSocProxyExternal9] = kTopDarjeelingPlicPeripheralSocProxy,
-  [kTopDarjeelingPlicIrqIdSocProxyExternal10] = kTopDarjeelingPlicPeripheralSocProxy,
-  [kTopDarjeelingPlicIrqIdSocProxyExternal11] = kTopDarjeelingPlicPeripheralSocProxy,
-  [kTopDarjeelingPlicIrqIdSocProxyExternal12] = kTopDarjeelingPlicPeripheralSocProxy,
-  [kTopDarjeelingPlicIrqIdSocProxyExternal13] = kTopDarjeelingPlicPeripheralSocProxy,
-  [kTopDarjeelingPlicIrqIdSocProxyExternal14] = kTopDarjeelingPlicPeripheralSocProxy,
-  [kTopDarjeelingPlicIrqIdSocProxyExternal15] = kTopDarjeelingPlicPeripheralSocProxy,
-  [kTopDarjeelingPlicIrqIdSocProxyExternal16] = kTopDarjeelingPlicPeripheralSocProxy,
-  [kTopDarjeelingPlicIrqIdSocProxyExternal17] = kTopDarjeelingPlicPeripheralSocProxy,
-  [kTopDarjeelingPlicIrqIdSocProxyExternal18] = kTopDarjeelingPlicPeripheralSocProxy,
-  [kTopDarjeelingPlicIrqIdSocProxyExternal19] = kTopDarjeelingPlicPeripheralSocProxy,
-  [kTopDarjeelingPlicIrqIdSocProxyExternal20] = kTopDarjeelingPlicPeripheralSocProxy,
-  [kTopDarjeelingPlicIrqIdSocProxyExternal21] = kTopDarjeelingPlicPeripheralSocProxy,
-  [kTopDarjeelingPlicIrqIdSocProxyExternal22] = kTopDarjeelingPlicPeripheralSocProxy,
-  [kTopDarjeelingPlicIrqIdSocProxyExternal23] = kTopDarjeelingPlicPeripheralSocProxy,
-  [kTopDarjeelingPlicIrqIdSocProxyExternal24] = kTopDarjeelingPlicPeripheralSocProxy,
-  [kTopDarjeelingPlicIrqIdSocProxyExternal25] = kTopDarjeelingPlicPeripheralSocProxy,
-  [kTopDarjeelingPlicIrqIdSocProxyExternal26] = kTopDarjeelingPlicPeripheralSocProxy,
-  [kTopDarjeelingPlicIrqIdSocProxyExternal27] = kTopDarjeelingPlicPeripheralSocProxy,
-  [kTopDarjeelingPlicIrqIdSocProxyExternal28] = kTopDarjeelingPlicPeripheralSocProxy,
-  [kTopDarjeelingPlicIrqIdSocProxyExternal29] = kTopDarjeelingPlicPeripheralSocProxy,
-  [kTopDarjeelingPlicIrqIdSocProxyExternal30] = kTopDarjeelingPlicPeripheralSocProxy,
-  [kTopDarjeelingPlicIrqIdSocProxyExternal31] = kTopDarjeelingPlicPeripheralSocProxy,
   [kTopDarjeelingPlicIrqIdHmacHmacDone] = kTopDarjeelingPlicPeripheralHmac,
   [kTopDarjeelingPlicIrqIdHmacFifoEmpty] = kTopDarjeelingPlicPeripheralHmac,
   [kTopDarjeelingPlicIrqIdHmacHmacErr] = kTopDarjeelingPlicPeripheralHmac,
@@ -251,6 +193,10 @@ const top_darjeeling_plic_peripheral_t
   [kTopDarjeelingPlicIrqIdCsrngCsEntropyReq] = kTopDarjeelingPlicPeripheralCsrng,
   [kTopDarjeelingPlicIrqIdCsrngCsHwInstExc] = kTopDarjeelingPlicPeripheralCsrng,
   [kTopDarjeelingPlicIrqIdCsrngCsFatalErr] = kTopDarjeelingPlicPeripheralCsrng,
+  [kTopDarjeelingPlicIrqIdEntropySrcEsEntropyValid] = kTopDarjeelingPlicPeripheralEntropySrc,
+  [kTopDarjeelingPlicIrqIdEntropySrcEsHealthTestFailed] = kTopDarjeelingPlicPeripheralEntropySrc,
+  [kTopDarjeelingPlicIrqIdEntropySrcEsObserveFifoReady] = kTopDarjeelingPlicPeripheralEntropySrc,
+  [kTopDarjeelingPlicIrqIdEntropySrcEsFatalErr] = kTopDarjeelingPlicPeripheralEntropySrc,
   [kTopDarjeelingPlicIrqIdEdn0EdnCmdReqDone] = kTopDarjeelingPlicPeripheralEdn0,
   [kTopDarjeelingPlicIrqIdEdn0EdnFatalErr] = kTopDarjeelingPlicPeripheralEdn0,
   [kTopDarjeelingPlicIrqIdEdn1EdnCmdReqDone] = kTopDarjeelingPlicPeripheralEdn1,

@@ -26,8 +26,9 @@ static const epmp_region_t kMmioRegion = {
 };
 
 static const epmp_region_t kFlashRegion = {
-    .start = TOP_EARLGREY_EFLASH_BASE_ADDR,
-    .end = TOP_EARLGREY_EFLASH_BASE_ADDR + TOP_EARLGREY_EFLASH_SIZE_BYTES,
+    .start = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
+    .end = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
+           TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES,
 };
 
 static const epmp_region_t kRvDmRegion = {
@@ -55,18 +56,17 @@ rom_error_t imm_section_epmp_reconfigure(void) {
   // This stack guard was in ePMP region 14.
   epmp_set_napot(11, kStackGuard, kEpmpPermLockedNoAccess);
 
-  // ePMP region 12 allows RvDM access.
-  // This RvDM region was in ePMP region 13.
+  // ePMP region 12 gives read access to all of flash for both M and U modes.
+  // This flash region was in ePMP region 5.
+  epmp_set_napot(12, kFlashRegion, kEpmpPermLockedReadOnly);
+
+  // ePMP region 13 allows RvDM access.
   if (lifecycle_is_prod() == kHardenedBoolTrue) {
     // No RvDM access in Prod states, so we can clear the entry.
-    epmp_clear(12);
+    epmp_clear(13);
   } else {
-    epmp_set_napot(12, kRvDmRegion, kEpmpPermLockedReadWriteExecute);
+    epmp_set_napot(13, kRvDmRegion, kEpmpPermLockedReadWriteExecute);
   }
-
-  // ePMP region 13 gives read access to all of flash for both M and U modes.
-  // This flash region was in ePMP region 5.
-  epmp_set_napot(13, kFlashRegion, kEpmpPermLockedReadOnly);
 
   // Move the ROM_EXT virtual region from entry 6 to 10.
   uint32_t virtual_napot;

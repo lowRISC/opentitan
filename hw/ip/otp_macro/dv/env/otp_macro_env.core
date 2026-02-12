@@ -1,0 +1,27 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:otp_macro_env:0.1"
+description: "OTP_MACRO DV UVM environment"
+
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:ralgen
+      - lowrisc:dv:cip_lib
+
+generate:
+  ral:
+    generator: ralgen
+    parameters:
+      name: otp_macro
+      ip_hjson: ../../data/otp_macro.hjson
+    position: prepend
+
+targets:
+  default:
+    filesets:
+      - files_dv
+    generate:
+      - ral

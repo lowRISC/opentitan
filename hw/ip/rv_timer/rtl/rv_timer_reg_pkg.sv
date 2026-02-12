@@ -17,6 +17,11 @@ package rv_timer_reg_pkg;
   // Number of registers for every interface
   parameter int NumRegs = 10;
 
+  // Alert indices
+  typedef enum int {
+    AlertFatalFaultIdx = 0
+  } rv_timer_alert_idx_t;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////

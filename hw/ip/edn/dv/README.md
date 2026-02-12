@@ -37,12 +37,7 @@ The following utilities provide generic helper tasks and functions to perform ac
 * [csr_utils_pkg](../../../dv/sv/csr_utils/README.md)
 
 ### Global types & methods
-All common types and methods defined at the package level can be found in
-`edn_env_pkg`. Some of them in use are:
-```systemverilog
-parameter uint MIN_NUM_ENDPOINTS = 1;
-parameter uint MAX_NUM_ENDPOINTS = 7;
-```
+All common types and methods defined at the package level can be found in `edn_env_pkg`.
 
 ### TL_agent
 EDN testbench instantiates (already handled in CIP base env) [tl_agent](../../../dv/sv/tl_agent/README.md)
@@ -92,7 +87,7 @@ We are using our in-house developed [regression tool](../../../../util/dvsim/REA
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console
-$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/edn/dv/edn_sim_cfg.hjson -i edn_smoke
+$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/edn/dv/edn_edn0_sim_cfg.hjson -i edn_smoke
 ```
 
 ## Testplan

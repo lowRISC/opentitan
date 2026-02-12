@@ -38,7 +38,7 @@ extern "C" {
 typedef enum dif_otp_ctrl_partition {
 % for part in parts:
 <%
-  part_name = Name.from_snake_case(part["name"])
+  part_name_camel = Name.to_camel_case(part["name"])
   short_desc = part["desc"].split(".")[0].strip().replace("\n", " ")
   long_desc_lines = part["desc"].split(".", 1)[1].strip().splitlines()
   long_desc = "\n".join(["   *" + (" " if line else "") + line for
@@ -51,7 +51,7 @@ typedef enum dif_otp_ctrl_partition {
 ${long_desc}
   %endif
    */
-  kDifOtpCtrlPartition${part_name.as_camel_case()},
+  kDifOtpCtrlPartition${part_name_camel},
 % endfor
 } dif_otp_ctrl_partition_t;
 
@@ -104,8 +104,7 @@ typedef enum dif_otp_ctrl_status_code {
   // their values should not be randomized.
 % for part in parts:
 <%
-  part_name = Name.from_snake_case(part["name"])
-  part_name_camel = part_name.as_camel_case()
+  part_name_camel = Name.to_camel_case(part["name"])
 %>\
   /**
    * Indicates an error occurred in the `${part_name_camel}` partition.

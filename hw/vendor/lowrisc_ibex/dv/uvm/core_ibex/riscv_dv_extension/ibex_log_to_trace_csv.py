@@ -206,7 +206,7 @@ def check_ibex_uvm_log(uvm_log):
         # the test result so ignore any lines after the test result is seen for
         # 'UVM_ERROR' checking. If the loop terminated immediately when a test
         # result was seen it would miss issues where the test result is
-        # (erronously) repeated multiple times with different results.
+        # (erroneously) repeated multiple times with different results.
         test_result_seen = False
 
         for linenum, line in enumerate(log, 1):

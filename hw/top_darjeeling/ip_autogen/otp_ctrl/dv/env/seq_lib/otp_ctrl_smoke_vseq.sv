@@ -140,7 +140,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
       if (cfg.stop_transaction_generators()) break;
       `uvm_info(`gfn, $sformatf("starting seq %0d/%0d", i, num_trans), UVM_LOW)
 
-      // to avoid access locked OTP partions, issue reset and clear the OTP memory to all 0.
+      // to avoid access locked OTP partitions, issue reset and clear the OTP memory to all 0.
       if (access_locked_parts == 0) begin
         do_otp_ctrl_init = 1;
         if (i > 1 && do_dut_init) dut_init();
@@ -214,7 +214,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
           uvm_reg_addr_t tlul_addr = cfg.ral.get_addr_from_offset(get_sw_window_offset(dai_addr));
           // tlul error rsp is checked in scoreboard
           do_otp_rd = 1;
-          tl_access(.addr(tlul_addr), .write(0), .data(tlul_val), .blocking(1), .check_rsp(0));
+          tl_access(.addr(tlul_addr), .write(0), .data(tlul_val), .blocking(1), .check_err_rsp(0));
         end
 
         // Backdoor restore injected ECC error, but should not affect fatal alerts.
@@ -223,7 +223,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
                     UVM_HIGH)
           cfg.mem_bkdr_util_h.write32({dai_addr[TL_DW-3:2], 2'b00}, backdoor_rd_val);
           // Wait for two lock cycles to make sure the local escalation error propagates to other
-          // patitions and err_code reg.
+          // partitions and err_code reg.
           cfg.clk_rst_vif.wait_clks(2);
         end
 

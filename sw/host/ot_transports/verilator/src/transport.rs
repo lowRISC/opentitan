@@ -1,0 +1,157 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+use std::any::Any;
+use std::cell::RefCell;
+use std::rc::Rc;
+use std::sync::LazyLock;
+use std::time::{Duration, Instant};
+
+use anyhow::{Context, Result, ensure};
+use regex::Regex;
+
+use opentitanlib::io::gpio::{GpioError, GpioPin};
+use opentitanlib::io::uart::Uart;
+use opentitanlib::io::uart::flow::SoftwareFlowControl;
+use opentitanlib::io::uart::serial::SerialPortUart;
+use opentitanlib::transport::{
+    Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
+};
+use opentitanlib::util::parse_int::ParseInt;
+
+use super::gpio::{GpioInner, VerilatorGpioPin};
+use super::subprocess::{Options, Subprocess};
+
+const UART_BAUD: u32 = 40;
+
+pub(crate) struct Inner {
+    uart: Option<Rc<dyn Uart>>,
+    pub gpio: GpioInner,
+}
+
+/// Represents the verilator transport object.
+pub struct Verilator {
+    subprocess: Option<Subprocess>,
+    pub uart_tty: String,
+    pub spi_file: String,
+    pub gpio_read_file: String,
+    pub gpio_write_file: String,
+
+    inner: Rc<RefCell<Inner>>,
+}
+
+impl Verilator {
+    /// Creates a verilator subprocess-hosting transport from `options`.
+    pub fn from_options(options: Options) -> Result<Self> {
+        static UART: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new("UART: Created ([^ ]+) for uart0").unwrap());
+        static SPI: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new("SPI: Created ([^ ]+) for spi0").unwrap());
+        static GPIO_RD: LazyLock<Regex> = LazyLock::new(|| {
+            Regex::new(r"GPIO: FIFO pipes created at ([^ ]+) \(read\) and [^ ]+ \(write\) for 32-bit wide GPIO.").unwrap()
+        });
+        static GPIO_WR: LazyLock<Regex> = LazyLock::new(|| {
+            Regex::new(r"GPIO: FIFO pipes created at [^ ]+ \(read\) and ([^ ]+) \(write\) for 32-bit wide GPIO.").unwrap()
+        });
+
+        let deadline = Instant::now() + options.timeout;
+        let subprocess = Subprocess::from_options(options)?;
+        let gpio_rd = subprocess.find(&GPIO_RD, deadline)?;
+        let gpio_wr = subprocess.find(&GPIO_WR, deadline)?;
+        let uart = subprocess.find(&UART, deadline)?;
+        let spi = subprocess.find(&SPI, deadline)?;
+
+        log::info!("Verilator started with the following interfaces:");
+        log::info!("gpio_read = {}", gpio_rd);
+        log::info!("gpio_write = {}", gpio_wr);
+        let gpio = GpioInner::new(&gpio_rd, &gpio_wr)?;
+        log::info!("uart = {}", uart);
+        log::info!("spi = {}", spi);
+
+        Ok(Verilator {
+            subprocess: Some(subprocess),
+            uart_tty: uart,
+            spi_file: spi,
+            gpio_read_file: gpio_rd,
+            gpio_write_file: gpio_wr,
+            inner: Rc::new(RefCell::new(Inner { uart: None, gpio })),
+        })
+    }
+
+    /// Shuts down the verilator subprocess.
+    pub fn shutdown(&mut self) -> Result<()> {
+        if let Some(mut subprocess) = self.subprocess.take() {
+            subprocess.kill()
+        } else {
+            Ok(())
+        }
+    }
+}
+
+impl Drop for Verilator {
+    fn drop(&mut self) {
+        self.shutdown().expect("Kill verilator subprocess");
+    }
+}
+
+impl Transport for Verilator {
+    fn capabilities(&self) -> Result<Capabilities> {
+        Ok(Capabilities::new(Capability::UART | Capability::GPIO))
+    }
+
+    fn uart(&self, instance: &str) -> Result<Rc<dyn Uart>> {
+        ensure!(
+            instance == "0",
+            TransportError::InvalidInstance(TransportInterfaceType::Uart, instance.to_string())
+        );
+        let mut inner = self.inner.borrow_mut();
+        if inner.uart.is_none() {
+            inner.uart = Some(Rc::new(SoftwareFlowControl::new(
+                SerialPortUart::open_pseudo(&self.uart_tty, UART_BAUD)?,
+            )));
+        }
+        Ok(inner.uart.as_ref().unwrap().clone())
+    }
+
+    fn gpio_pin(&self, instance: &str) -> Result<Rc<dyn GpioPin>> {
+        let pin = u8::from_str(instance).with_context(|| format!("can't convert {instance:?}"))?;
+        ensure!(pin < 32 || pin == 255, GpioError::InvalidPinNumber(pin));
+        let mut inner = self.inner.borrow_mut();
+        Ok(inner
+            .gpio
+            .pins
+            .entry(pin)
+            .or_insert_with(|| VerilatorGpioPin::new(self.inner.clone(), pin))
+            .clone())
+    }
+
+    fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
+        if let Some(watch) = action.downcast_ref::<Watch>() {
+            let subprocess = self.subprocess.as_ref().unwrap();
+            let deadline = Instant::now() + watch.timeout.unwrap_or(Watch::FOREVER);
+            let result = subprocess.find(&watch.regex, deadline)?;
+            Ok(Some(Box::new(WatchResponse { result })))
+        } else {
+            Err(TransportError::UnsupportedOperation.into())
+        }
+    }
+}
+
+/// Watch verilator's stdout for a expression or timeout.
+pub struct Watch {
+    pub regex: Regex,
+    pub timeout: Option<Duration>,
+}
+
+impl Watch {
+    // Using Duration::MAX causes an overflow when calculating a deadline.
+    // We use 100 years -- although it isn't "forever", it is longer than
+    // any invocation of opentitantool.
+    pub const FOREVER: Duration = Duration::from_secs(100 * 365 * 86400);
+}
+
+#[derive(serde::Serialize, Debug)]
+pub struct WatchResponse {
+    pub result: String,
+}

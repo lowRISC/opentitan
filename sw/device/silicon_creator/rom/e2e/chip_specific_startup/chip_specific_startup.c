@@ -19,15 +19,15 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
 
-#include "csrng_regs.h"
-#include "edn_regs.h"
-#include "entropy_src_regs.h"
+#include "hw/top/csrng_regs.h"
+#include "hw/top/edn_regs.h"
+#include "hw/top/entropy_src_regs.h"
+#include "hw/top/lc_ctrl_regs.h"  // Generated.
+#include "hw/top/otp_ctrl_regs.h"
+#include "hw/top/sensor_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "lc_ctrl_regs.h"  // Generated.
-#include "otp_ctrl_regs.h"
-#include "sensor_ctrl_regs.h"
 
-OTTF_DEFINE_TEST_CONFIG();
+OTTF_DEFINE_TEST_CONFIG(.ignore_alerts = true);
 
 enum {
   kAstInitEnOffset = OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_INIT_EN_OFFSET -

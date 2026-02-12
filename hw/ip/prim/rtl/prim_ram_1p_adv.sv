@@ -82,7 +82,7 @@ module prim_ram_1p_adv import prim_ram_1p_pkg::*; #(
                              (Width <= 120) ? 8 : 8 ;
   localparam int TotalWidth = Width + ParWidth;
 
-  // If byte parity is enabled, the write enable bits are used to write memory colums
+  // If byte parity is enabled, the write enable bits are used to write memory columns
   // with 8 + 1 = 9 bit width (data plus corresponding parity bit).
   // If ECC is enabled, the DataBitsPerMask is ignored.
   localparam int LocalDataBitsPerMask = (EnableParity) ? 9          :

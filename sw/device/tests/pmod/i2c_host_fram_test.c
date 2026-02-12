@@ -16,8 +16,8 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
+#include "hw/top/i2c_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "i2c_regs.h"  // Generated.
 
 static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__,
               "This test assumes the target platform is little endian.");
@@ -201,18 +201,20 @@ static status_t test_shutdown(dif_i2c_t *i2c, dif_pinmux_t *pinmux,
 }
 
 typedef struct test_setup {
+  // The speed to configure the I2C with
   dif_i2c_speed_t speed;
+  // The minimum threshold estimated data rate we expect to see over the test
   uint32_t kbps;
 } test_setup_t;
 
-const test_setup_t kSetup[] = {
-    // kbps: We discount 85% for the start and stop bits.
-    // We also have to discount a factor to account for rounding errors.
-    // The rounding error becomes higher with higher speeds, as the i2c clock
-    // approaches the peripheral clock.
-    {.speed = kDifI2cSpeedStandard, .kbps = (uint32_t)(100 * 0.984 * 0.85)},
-    {.speed = kDifI2cSpeedFast, .kbps = (uint32_t)(400 * 0.92 * 0.85)},
-    {.speed = kDifI2cSpeedFastPlus, .kbps = (uint32_t)(1000 * 0.55 * 0.75)}};
+test_setup_t setup[] = {
+    // kbps: Discount 15% (* 0.85) to account for ~15% of transactions being
+    // start/stop bits, ACKs, etc. We then discount an additional factor to
+    // account for clock rounding errors. The rounding error becomes higher
+    // with higher speeds, as the i2c clock approaches the peripheral clock.
+    {.speed = kDifI2cSpeedStandard, .kbps = (uint32_t)(100 * 0.85 * 0.99)},
+    {.speed = kDifI2cSpeedFast, .kbps = (uint32_t)(400 * 0.85 * 0.92)},
+    {.speed = kDifI2cSpeedFastPlus, .kbps = (uint32_t)(1000 * 0.85 * 0.5)}};
 
 bool test_main(void) {
   dif_pinmux_t pinmux;
@@ -221,18 +223,28 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
 
+  if (kDeviceType == kDeviceSilicon) {
+    // On silicon, set tighter thresholds as we expect to be much closer
+    // to our target speed.
+    setup[0].kbps = (uint32_t)(100 * 0.85 * 0.99);
+    setup[1].kbps = (uint32_t)(400 * 0.85 * 0.98);
+    setup[2].kbps = (uint32_t)(1000 * 0.85 * 0.95);
+  }
+
   i2c_pinmux_platform_id_t platform = I2cPinmuxPlatformIdCw310Pmod;
   status_t test_result = OK_STATUS();
   for (uint8_t i2c_instance = 0; i2c_instance < kI2cInstances; ++i2c_instance) {
     LOG_INFO("Testing i2c%d", i2c_instance);
     CHECK_STATUS_OK(i2c_configure(&i2c, &pinmux, i2c_instance, platform));
 
-    for (size_t i = 0; i < ARRAYSIZE(kSetup); ++i) {
-      CHECK_STATUS_OK(i2c_testutils_set_speed(&i2c, kSetup[i].speed));
+    for (size_t i = 0; i < ARRAYSIZE(setup); ++i) {
+      CHECK_STATUS_OK(i2c_testutils_set_speed(&i2c, setup[i].speed,
+                                              /*sda_rise_nanos=*/100,
+                                              /*sda_fall_nanos=*/25));
       EXECUTE_TEST(test_result, read_device_id, &i2c);
       EXECUTE_TEST(test_result, write_read_byte, &i2c);
       EXECUTE_TEST(test_result, write_read_page, &i2c);
-      EXECUTE_TEST(test_result, throughput, &i2c, kSetup[i].kbps);
+      EXECUTE_TEST(test_result, throughput, &i2c, setup[i].kbps);
       CHECK_STATUS_OK(test_result);
     }
     CHECK_STATUS_OK(test_shutdown(&i2c, &pinmux, i2c_instance));

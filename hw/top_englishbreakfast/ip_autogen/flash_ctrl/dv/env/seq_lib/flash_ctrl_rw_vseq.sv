@@ -4,7 +4,7 @@
 
 // Generates random mix of reads and writes. Writes are somewhat delicate: when scrambling or ECC
 // are enabled we can only write full flash words (8 bytes), so the number of bus words needs to
-// be even and the starting address needs to be 8-byte aligned. This is ensured by the consraints.
+// be even and the starting address needs to be 8-byte aligned. This is ensured by the constraints.
 //
 // In addition, overwrites will almost surely cause ecc errors to be injected because bits cannot
 // flip from 0 to 1, so this makes sure addresses don't overlap previously written ones.

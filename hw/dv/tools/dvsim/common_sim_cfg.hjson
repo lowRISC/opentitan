@@ -13,6 +13,8 @@
                      "{dv_root}/tools/dvsim/bazel.hjson",
                      "{dv_root}/tools/dvsim/{tool}.hjson"]
 
+  sv_flist_gen_flags: ["--mapping=lowrisc:prim_generic:all:0.1"]
+
   // Default directory structure for the output
   build_dir:          "{scratch_path}/{build_mode}"
   run_dir_name:       "{index}.{test}"
@@ -75,6 +77,7 @@
   // Default list of things to export to shell
   exports: [
     { dv_root: "{dv_root}" },
+    { self_dir: "{self_dir}" },
     { SIMULATOR: "{tool}" },
     { GUI: "{gui}"},
     { GUI_DEBUG: "{gui_debug}"},

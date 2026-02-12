@@ -22,7 +22,6 @@ class dma_handshake_smoke_vseq extends dma_handshake_vseq;
   virtual function void randomize_item(ref dma_seq_item dma_config);
     // Allow only valid DMA configurations
     dma_config.valid_dma_config = 1;
-    // Limit all parameters to 4B alignment
     `DV_CHECK_RANDOMIZE_WITH_FATAL(
       dma_config,
       src_addr[1:0] == dst_addr[1:0]; // Use same alignment for source and destination address

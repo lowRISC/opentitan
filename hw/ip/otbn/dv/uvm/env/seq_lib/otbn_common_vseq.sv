@@ -26,18 +26,18 @@ class otbn_common_vseq extends otbn_base_vseq;
                          output bit                saw_err,
                          input uint             tl_access_timeout_ns = default_spinwait_timeout_ns,
                          input bit [BUS_DBW-1:0]   mask = '1,
-                         input bit                 check_rsp = 1'b1,
+                         input bit                 check_err_rsp = 1'b1,
                          input bit                 exp_err_rsp = 1'b0,
+                         input bit                 check_exp_data = 1'b0,
                          input bit [BUS_DW-1:0]    exp_data = 0,
                          input bit [BUS_DW-1:0]    compare_mask = '1,
-                         input bit                 check_exp_data = 1'b0,
                          input bit                 blocking = csr_utils_pkg::default_csr_blocking,
                          input mubi4_t             instr_type = MuBi4False,
                          tl_sequencer              tl_sequencer_h = p_sequencer.tl_sequencer_h,
                          input tl_intg_err_e       tl_intg_err_type = TlIntgErrNone,
                          input int                 req_abort_pct = 0);
     super.tl_access_w_abort(addr, write, data, completed, saw_err, tl_access_timeout_ns, mask,
-                            check_rsp, exp_err_rsp, exp_data, compare_mask, check_exp_data,
+                            check_err_rsp, exp_err_rsp, check_exp_data, exp_data, compare_mask,
                             blocking, instr_type, tl_sequencer_h, tl_intg_err_type, req_abort_pct);
 
     // If we see a write which causes an integrity error AND we've disabled the scoreboard (which
@@ -60,7 +60,7 @@ class otbn_common_vseq extends otbn_base_vseq;
     `DV_ASSERT_CTRL_REQ("otbn_status_assert_en", 1'b1)
   endtask
 
-  // Overriden from cip_base_vseq. Initialise Imem and Dmem and then call the super function.
+  // Overridden from cip_base_vseq. Initialise Imem and Dmem and then call the super function.
   task run_passthru_mem_tl_intg_err_vseq_sub(string ral_name);
     `uvm_info(`gfn, "Overriding run_passthru_mem_tl_intg_err_vseq_sub", UVM_HIGH)
     imem_init();
@@ -244,6 +244,23 @@ class otbn_common_vseq extends otbn_base_vseq;
   endfunction: sec_cm_fi_ctrl_svas
 
   virtual task sec_cm_inject_fault(sec_cm_base_if_proxy if_proxy);
+    // When testing the countermeasures for the OTBN hardware loop stack, the current_loop_valid
+    // will be high when the loop stack counter is forced to zero. This fault should be detected
+    // and assert the `hw_err_o` of the loop controller. As in this test no SW is run, the loop
+    // stack has undefined values (x). When the `current_loop_valid` is high, the integrity
+    // check of the loop address (current_loop_intg_err) is OR factored into the `hw_err_o` as well
+    // leading to undefined error bits.
+    // We prevent this x propagation by defining the loop stack data. The loop info data bits are
+    // set to random data which pass ECC checks. This ensures that always the `hw_err_o` error
+    // triggers and not the ECC check. Using random values which pass ECC checks but make no sense
+    // when interpreted as loop info is also ok. What can happen is that a loop jump (loop_jump_o)
+    // is requested which could result in a SW error due to a misaligned instruction address (from
+    // `current_loop.loop_addr_info.loop_start` via `insn_fetch_req_addr_o`). But OTBN will
+    // escalate anyway so raising a SW error does not affect the test.
+    if (!uvm_re_match("*loop_info_stack*u_stack_wr_ptr*", if_proxy.path)) begin
+      cfg.loop_vif.randomize_loop_addrs_info();
+    end
+
     fork
       begin
         if_proxy.inject_fault();
@@ -258,6 +275,12 @@ class otbn_common_vseq extends otbn_base_vseq;
         end
       end
     join
+
+    // Re-enable the current_loop_intg_err for the next tests
+    if (!uvm_re_match("*loop_info_stack*u_stack_wr_ptr*", if_proxy.path)) begin
+      cfg.loop_vif.release_loop_addrs_info();
+    end
+
   endtask : sec_cm_inject_fault
 
   virtual task pre_run_sec_cm_fi_vseq();

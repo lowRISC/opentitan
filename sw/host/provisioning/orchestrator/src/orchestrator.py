@@ -8,13 +8,15 @@ import logging
 import shlex
 import subprocess
 import sys
+from pathlib import Path
 
 import hjson
 
+import db
 from device_id import DeviceId, DeviceIdentificationNumber
 from ot_dut import OtDut
 from sku_config import SkuConfig
-from util import confirm, parse_hexstring_to_int
+from util import confirm, parse_hexstring_to_int, resolve_runfile
 
 
 def get_user_confirmation(
@@ -34,27 +36,30 @@ def get_user_confirmation(
 SKU:      {sku_config.name}
 LC State: {sku_config.target_lc_state}
 
+[OTHER]
+fpga:          {args.fpga}
+> commit hash: {commit_hash}
+
 [DICE CA]
 certificate: {sku_config.dice_ca.certificate}
 key:         {sku_config.dice_ca.key}
 key type:    {sku_config.dice_ca.key_type}
 key ID:      {sku_config.dice_ca.key_id}
+""")
+    if sku_config.ext_ca:
+        print(f"""
 
 [EXTENSION CA]
 certificate: {sku_config.ext_ca.certificate}
 key:         {sku_config.ext_ca.key}
 key type:    {sku_config.ext_ca.key_type}
 key ID:      {sku_config.ext_ca.key_id}
-
-[OTHER]
-fpga:          {args.fpga}
-> commit hash: {commit_hash}
 """)
     if not args.non_interactive:
         confirm()
 
 
-def main():
+def main(args_in):
     # Setup logging.
     logging.basicConfig(
         level=logging.DEBUG,
@@ -79,6 +84,11 @@ def main():
         help="SKU HJSON configuration file.",
     )
     parser.add_argument(
+        "--package",
+        type=str,
+        help="Override of package string that is in the SKU config.",
+    )
+    parser.add_argument(
         "--test-unlock-token",
         required=True,
         type=parse_hexstring_to_int,
@@ -91,15 +101,20 @@ def main():
         help="Raw test exit token to inject into OTP SECRET0 partition.",
     )
     parser.add_argument(
-        "--rma-unlock-token",
-        required=True,
-        type=parse_hexstring_to_int,
-        help="Raw RMA token to inject into OTP SECRET2 partition.",
+        "--fpga",
+        choices=["cw310", "cw340"],
+        help="Run flow on FPGA (instead of silicon).",
     )
     parser.add_argument(
-        "--fpga",
-        choices=["hyper310", "cw340"],
-        help="Run flow on FPGA (instead of silicon).",
+        "--fpga-dont-clear-bitstream",
+        action="store_true",
+        help="If set, the FPGA bitsream will not be cleared before CP.",
+    )
+    parser.add_argument(
+        "--log-ujson-payloads",
+        action="store_true",
+        default=False,
+        help="Log UJSON host-->device payloads to console for ATE development.",
     )
     parser.add_argument(
         "--non-interactive",
@@ -112,28 +127,49 @@ def main():
         default="logs",
         help="Root directory to store log files under.",
     )
-    args = parser.parse_args()
+    parser.add_argument(
+        "--cp-only",
+        action="store_true",
+        help="If set, only run CP stage (skips FT and database write).",
+    )
+    parser.add_argument(
+        "--use-ate-individ-bin",
+        action="store_true",
+        # The ATE individualization binary contains no UJSON communication.
+        help="If set, use the individualization binary compiled for ATE.",
+    )
+    parser.add_argument(
+        "--db-path",
+        required=False,
+        help=
+        "Path to provisioning database. The database will be created if it does not exist.",
+    )
+    args = parser.parse_args(args_in)
+
+    if not args.cp_only and args.db_path is None:
+        parser.error("--db-path is required when --cp-only is not provided")
+    if args.use_ate_individ_bin and args.package is not None:
+        parser.error("--use-ate-individ-bin may not be used with --package")
 
     # Load and validate a SKU configuration file.
+    sku_config_path = resolve_runfile(args.sku_config)
     sku_config_args = {}
-    with open(args.sku_config, "r") as fp:
+    with open(sku_config_path, "r") as fp:
         sku_config_args = hjson.load(fp)
     sku_config = SkuConfig(**sku_config_args)
 
-    # Create a (unique) device identification number and device ID.
-    # TODO: update this by extracting data from the device during CP.
-    din = DeviceIdentificationNumber(
-        year=0,
-        week=0,
-        lot=0,
-        wafer=0,
-        wafer_x_coord=0,
-        wafer_y_coord=0,
-    )
+    # Override package ID if requested.
+    if args.package:
+        sku_config.package = args.package
+        sku_config.validate()
+        sku_config.load_hw_ids()
+
+    # The device identification number is determined during CP by extracting data
+    # from the device.
+    din = DeviceIdentificationNumber.blind_asm()
     device_id = DeviceId(sku_config, din)
 
-    # TODO: Setup remote and/or local DV connections.
-    # TODO: Check if the device ID is present in the DB.
+    # TODO: Setup remote and/or local DB connections.
 
     # Generate commit hash of current provisioning run.
     commit_hash = subprocess.run(shlex.split("git rev-parse HEAD"),
@@ -147,13 +183,33 @@ def main():
                 device_id=device_id,
                 test_unlock_token=args.test_unlock_token,
                 test_exit_token=args.test_exit_token,
-                rma_unlock_token=args.rma_unlock_token,
                 fpga=args.fpga,
+                ate_mode=args.use_ate_individ_bin,
+                fpga_dont_clear_bitstream=args.fpga_dont_clear_bitstream,
+                log_ujson_payloads=args.log_ujson_payloads,
                 require_confirmation=not args.non_interactive)
     dut.run_cp()
+    if args.cp_only:
+        logging.info("FT skipped since --cp-only was provided")
+        return
     dut.run_ft()
-    # TODO: Extract provisioning data from logs and commit to DB.
+
+    # Open the local SQLite registry database.
+    db_path = Path(args.db_path)
+    db_handle = db.DB(db.DBConfig(db_path=db_path))
+    db.DeviceRecord.create_table(db_handle)
+
+    # Check device ID exists in the database.
+    if db.DeviceRecord.query(db_handle, dut.device_id.to_hexstr()) is not None:
+        logging.warning(
+            "DeviceId already exists in database. Overwrite record?")
+        confirm()
+
+    # Register the DUT in the database.
+    device_record = db.DeviceRecord.from_dut(dut)
+    device_record.upsert(db_handle)
+    logging.info(f"Added DeviceRecord to database: {device_record}")
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])

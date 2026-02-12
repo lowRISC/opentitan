@@ -45,3 +45,5 @@ alias(
     name = "qemu-img",
     actual = "@qemu_opentitan//:build/qemu-img",
 )
+
+exports_files(["build_qemu.sh"])

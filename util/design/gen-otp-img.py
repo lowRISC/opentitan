@@ -8,7 +8,6 @@ map definition file (hjson).
 import argparse
 import datetime
 import logging as log
-import random
 from pathlib import Path
 
 import hjson
@@ -21,25 +20,6 @@ LC_STATE_DEFINITION_FILE = 'hw/ip/lc_ctrl/data/lc_ctrl_state.hjson'
 # Default output path (can be overridden on the command line). Note that
 # "BITWIDTH" will be replaced with the architecture's bitness.
 MEMORY_MEM_FILE = 'otp-img.BITWIDTH.vmem'
-
-
-def _override_seed(args, seed_name, config):
-    '''Override the seed key in config with value specified in args'''
-    arg_seed = getattr(args, seed_name)
-
-    # An override seed of 0 will not trigger the override, which is intended, as
-    # the OTP-generation Bazel rule sets the default seed values to 0.
-    if arg_seed:
-        log.warning('Commandline override of {} with {}.'.format(
-            seed_name, arg_seed))
-        config['seed'] = arg_seed
-    # Otherwise, we either take it from the .hjson if present, or
-    # randomly generate a new seed if not.
-    else:
-        new_seed = random.getrandbits(256)
-        if config.setdefault('seed', new_seed) == new_seed:
-            log.warning('No {} specified, setting to {}.'.format(
-                seed_name, new_seed))
 
 
 def main():
@@ -58,48 +38,11 @@ def main():
                         '-q',
                         action='store_true',
                         help='''Don't print out progress messages.''')
-    parser.add_argument('-stamp',
+    parser.add_argument('--stamp',
                         action='store_true',
                         help='''
                         Add a comment 'Generated on [Date] with [Command]' to
                         generated output files.
-                        ''')
-    parser.add_argument('--seed',
-                        type=int,
-                        metavar='<seed>',
-                        help="Custom seed used for randomization.")
-    parser.add_argument('--img-seed',
-                        type=int,
-                        metavar='<seed>',
-                        help='''
-                        Custom seed for RNG to compute randomized items in OTP image.
-
-                        Can be used to override the seed value specified in the image
-                        config Hjson.
-                        ''')
-    parser.add_argument('--lc-seed',
-                        type=int,
-                        metavar='<seed>',
-                        help='''
-                        Custom seed for RNG to compute randomized life cycle netlist constants.
-
-                        Note that this seed must coincide with the seed used for generating
-                        the LC state encoding (gen-lc-state-enc.py).
-
-                        This value typically does not need to be specified as it is taken from
-                        the LC state encoding definition Hjson.
-                        ''')
-    parser.add_argument('--otp-seed',
-                        type=int,
-                        metavar='<seed>',
-                        help='''
-                        Custom seed for RNG to compute randomized OTP netlist constants.
-
-                        Note that this seed must coincide with the seed used for generating
-                        the OTP memory map (gen-otp-mmap.py).
-
-                        This value typically does not need to be specified as it is taken from
-                        the OTP memory map definition Hjson.
                         ''')
     parser.add_argument('-o',
                         '--out',
@@ -123,6 +66,13 @@ def main():
                         required=True,
                         help='''
                         Path to OTP memory map file in Hjson format.
+                        ''')
+    parser.add_argument('--top-secret-cfg',
+                        type=Path,
+                        metavar='<path>',
+                        required=True,
+                        help='''
+                        Path to the top secret configuration in Hjson format.
                         ''')
     parser.add_argument('--img-cfg',
                         type=Path,
@@ -194,19 +144,13 @@ def main():
     log.info('Loading main image configuration file {}'.format(args.img_cfg))
     with open(args.img_cfg, 'r') as infile:
         img_cfg = hjson.load(infile)
-
-    # Set the initial random seed so that the generated image is
-    # deterministically randomized.
-    random.seed(args.seed)
-
-    # If specified, override the seeds.
-    _override_seed(args, 'lc_seed', lc_state_cfg)
-    _override_seed(args, 'otp_seed', otp_mmap_cfg)
-    _override_seed(args, 'img_seed', img_cfg)
+    log.info('Loading top secret configuration file {}'.format(args.top_secret_cfg))
+    with open(args.top_secret_cfg, 'r') as infile:
+        top_secret_cfg = hjson.load(infile)
 
     try:
         otp_mem_img = OtpMemImg(lc_state_cfg, otp_mmap_cfg, img_cfg,
-                                args.data_perm)
+                                args.data_perm, top_secret_cfg)
 
         for f in args.add_cfg:
             log.info(

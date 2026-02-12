@@ -45,7 +45,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
   bit [NUM_MAX_INTERRUPTS-1:0] intr_enable;
   // Interrupt test state (contributes to `intr_state`).
   bit [NUM_MAX_INTERRUPTS-1:0] intr_test;
-  // Hardware  interrupt state (contributes to `intr_state`).
+  // Hardware interrupt state (contributes to `intr_state`).
   bit [NUM_MAX_INTERRUPTS-1:0] intr_state_hw;
 
   // Prediction of the state of an interrupt signal from the DUT.
@@ -236,7 +236,10 @@ class dma_scoreboard extends cip_base_scoreboard #(
     return next_addr;
   endfunction
 
-  // Process items on Addr channel
+  // Model the A channel transactions from the DMA controller to the attached devices.
+  //
+  // - the DUT sends requests on the A channel to the source/destination device and the
+  //   the device responds on the D channel (see `process_tl_data_txn` below).
   task process_tl_addr_txn(string if_name, bit [63:0] a_addr, ref tl_seq_item item);
     uint expected_txn_size = dma_config.transfer_width_to_a_size(
                                dma_config.per_transfer_width);
@@ -291,7 +294,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
 
       // Push addr item to source queue
       src_queue.push_back(item);
-      `uvm_info(`gfn, $sformatf("Addr channel checks done for source item"), UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("A channel checks done for source item"), UVM_HIGH)
 
       // Update the count of bytes read from the source.
       // Note that this is complicated by the fact that the TL-UL host adapter always fetches
@@ -315,7 +318,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
       intr_source = intr_addr_lookup(a_addr);
       // Push addr item to destination queue
       dst_queue.push_back(item);
-      `uvm_info(`gfn, $sformatf("Addr channel checks done for destination item"), UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("A channel checks done for destination item"), UVM_HIGH)
 
       // The range of memory addresses that should be touched by the DMA controller depends upon
       // whether chunks overlap.
@@ -394,6 +397,11 @@ class dma_scoreboard extends cip_base_scoreboard #(
         exp_dst_addr = predict_addr(exp_dst_addr, num_bytes_transferred, dma_config.dst_addr,
                                     dma_config.dst_addr_inc, dma_config.dst_chunk_wrap,
                                     dma_config, "Destination");
+
+        if (cfg.en_cov) begin
+          // Capture the INTR_SRC_ADDR|WR_VAL that have been issued.
+          cov.intr_src_cg.sample(a_addr, item.a_data);
+        end
       end else begin
         // Write to 'Clear Interrupt' address, so check the value written and the bus to which the
         // write has been sent.
@@ -420,9 +428,11 @@ class dma_scoreboard extends cip_base_scoreboard #(
                               num_bytes_transferred, dma_config.total_data_size), UVM_HIGH);
   endtask
 
-  // Process items on Data channel
+  // Model the D channel responses from the attached devices to the DMA controller.
+  //
+  // - the source/destination device of the DMA transfer responds to requests placed by the
+  //   DUT on the A channel (see `process_tl_addr_txn` above).
   task process_tl_data_txn(string if_name, bit [63:0] a_addr, ref tl_seq_item item);
-    bit tl_error_suppressed = 0;
     bit got_source_item = 0;
     bit got_dest_item = 0;
     uint queue_idx = 0;
@@ -455,6 +465,14 @@ class dma_scoreboard extends cip_base_scoreboard #(
     `DV_CHECK(got_source_item || got_dest_item,
               $sformatf("Data item source id doesn't match any outstanding request"))
 
+    // Handle any TL-UL errors returned by the source.
+    // - DMA controller does not send overlapping read requests, so an error should terminate
+    //   the transfer and no other source items should be seen.
+    // - Similarly, writes and reads are not overlapped.
+    // - Source TL-UL transaction returning an error shall not lead to any output.
+    `DV_CHECK_EQ(src_tl_error_detected, 1'b0, "TL-UL transaction occurred after TL-UL error")
+    `DV_CHECK_EQ(dst_tl_error_detected, 1'b0, "TL-UL transaction occurred after TL-UL error")
+
     // Source interface item checks
     if (got_source_item) begin
       src_tl_error_detected = item.d_error;
@@ -466,7 +484,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
       // Check if data item opcode is as expected
       `DV_CHECK(d_opcode inside {AccessAckData},
                 $sformatf("Invalid opcode %s for source data item", d_opcode))
-      // Delete after all checks related to data channel are done
+      // Delete after all checks related to D channel are done
       `uvm_info(`gfn, $sformatf("Deleting element at %d index in source queue", queue_idx),
                 UVM_HIGH)
       src_queue.delete(queue_idx);
@@ -477,37 +495,30 @@ class dma_scoreboard extends cip_base_scoreboard #(
         `uvm_info(`gfn,
                   $sformatf("Detected TL error on Destination Data item (addr 0x%0x)", a_addr),
                   UVM_HIGH)
-        // The SoC System bus does not support signaling of Write errors, so the TL-UL write error
-        // will not be reported by the DMA controller; modify our expectation accordingly.
-        if (if_name == "sys") begin
-          `uvm_info(`gfn, "WARN: Error suppressed because Full System bus DV waived", UVM_LOW)
-          tl_error_suppressed = 1;
-        end
       end
       // Check if data item opcode is as expected
       `DV_CHECK(d_opcode inside {AccessAck},
                 $sformatf("Invalid opcode %s for destination data item", d_opcode))
-      // Delete after all checks related to data channel are done
+      // Delete after all checks related to D channel are done
       `uvm_info(`gfn, $sformatf("Deleting element at %d index in destination queue", queue_idx),
                 UVM_HIGH)
       dst_queue.delete(queue_idx);
     end
 
     if (cfg.en_cov && (src_tl_error_detected || dst_tl_error_detected)) begin
-      cov.tlul_error_cg.sample(.dma_config(dma_config),
-                               .tl_err_asid(if_name_to_asid(if_name)));
+      cov.tlul_error_cg.sample(if_name_to_asid(if_name), src_tl_error_detected);
     end
 
     // Errors are expected to raise an interrupt if enabled, but we not must forget a configuration
     // error whilst error-free 'clear interrupt' writes are occurring.
-    if (item.d_error && !tl_error_suppressed) begin
+    if (item.d_error) begin
       `uvm_info(`gfn, "Bus error detected", UVM_MEDIUM)
       predict_interrupts(BusErrorToIntrLatency, 1 << IntrDmaError, intr_enable);
       intr_state_hw[IntrDmaError] = 1'b1;
     end else if (got_dest_item) begin
       // Is this the final destination write?
       //
-      // Note: we must perform this on the data channel (write response) because an error may occur
+      // Note: we must perform this on the D channel (write response) because an error may occur
       //       on the very final write transaction, in which case DONE should not be seen.
       if (num_bytes_transferred >= exp_bytes_transferred) begin
         // Whether an interrupt is expected also depends upon whether it is enabled.
@@ -525,7 +536,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
-  // Method to process requests on TL interfaces
+  // Process TL-UL transactions from the DMA controller to attached devices.
   task process_tl_txn(string if_name,
                       uvm_tlm_analysis_fifo#(tl_channels_e) dir_fifo,
                       uvm_tlm_analysis_fifo#(tl_seq_item) a_chan_fifo,
@@ -534,59 +545,90 @@ class dma_scoreboard extends cip_base_scoreboard #(
     tl_channels_e dir;
     tl_seq_item   item;
     fork
-      forever begin
-        bit [63:0] a_addr;
+      begin
+        bit data_phase = 0;
+        bit got_addr = 0;
+        bit got_data = 0;
 
-        dir_fifo.get(dir);
-        // Clear Interrupt writes are emitted even for invalid configurations.
-        exp_intr_clearing = dma_config.handshake & |dma_config.clear_intr_src &
-                           |dma_config.handshake_intr_en;
-        // Check if transaction is expected for a valid configuration
-        `DV_CHECK_FATAL(dma_config.is_valid_config || exp_intr_clearing,
-                           $sformatf("transaction observed on %s for invalid configuration",
-                                     if_name))
-        // Check if there is any active operation, but be aware that the Abort functionality
-        // intentionally does not wait for a bus response (this is safe because the design never
-        // blocks/stalls the TL-UL response).
-        `DV_CHECK_FATAL(operation_in_progress || abort_via_reg_write,
-                        "Transaction detected with no active operation")
-        case (dir)
-          AddrChannel: begin
-            `DV_CHECK_FATAL(a_chan_fifo.try_get(item),
-                            "dir_fifo pointed at A channel, but a_chan_fifo empty")
-            a_addr = item.a_addr;
-            if (cfg.dma_dv_waive_system_bus && if_name == "sys") begin
-              a_addr[63:32] = cfg.soc_system_hi_addr;
-            end
+        forever begin
+          bit [63:0] a_addr;
 
-            `uvm_info(`gfn, $sformatf("received %s a_chan %s item with addr: %0x and data: %0x",
-                                      if_name,
-                                      item.is_write() ? "write" : "read", a_addr,
-                                      item.a_data), UVM_HIGH)
-            process_tl_addr_txn(if_name, a_addr, item);
-            // Update num_fifo_reg_write
-            if (num_fifo_reg_write > 0) begin
-              `uvm_info(`gfn, $sformatf("Processed FIFO clear_intr_src addr: %0x0x", item.a_addr),
-                        UVM_DEBUG)
-              num_fifo_reg_write--;
+          // Collect A and D channel notifications in either order (the DUT supports combinational
+          // responses) and pair them before proceeding to the original code below.
+          if (got_addr && got_data) begin
+            if (data_phase) begin
+              dir = DataChannel;
+              got_addr = 0;
+              got_data = 0;
             end else begin
-              // Set status bit after all FIFO interrupt clear register writes are done
-              fifo_intr_cleared = 1;
+              dir = AddrChannel;
+            end
+            data_phase = !data_phase;
+          end else begin
+            data_phase = 0;
+            dir_fifo.get(dir);
+            if (dir == DataChannel) begin
+              got_data = 1;
+              continue;
+            end else begin
+              `DV_CHECK_FATAL(dir == AddrChannel);
+              got_addr = 1;
+              continue;
             end
           end
-          DataChannel: begin
-            `DV_CHECK_FATAL(d_chan_fifo.try_get(item),
-                            "dir_fifo pointed at D channel, but d_chan_fifo empty")
-            a_addr = item.a_addr;
-            if (cfg.dma_dv_waive_system_bus && if_name == "sys") begin
-              a_addr[63:32] = cfg.soc_system_hi_addr;
+
+          // Clear Interrupt writes are emitted even for invalid configurations.
+          exp_intr_clearing = dma_config.handshake & |dma_config.clear_intr_src &
+                             |dma_config.handshake_intr_en;
+          // Check if transaction is expected for a valid configuration
+          `DV_CHECK_FATAL(dma_config.is_valid_config || exp_intr_clearing,
+                             $sformatf("transaction observed on %s for invalid configuration",
+                                       if_name))
+          // Check if there is any active operation, but be aware that the Abort functionality
+          // intentionally does not wait for a bus response (this is safe because the design never
+          // blocks/stalls the TL-UL response).
+          `DV_CHECK_FATAL(operation_in_progress || abort_via_reg_write,
+                          "Transaction detected with no active operation")
+          case (dir)
+            AddrChannel: begin
+              `DV_CHECK_FATAL(a_chan_fifo.try_get(item),
+                              "dir_fifo pointed at A channel, but a_chan_fifo empty")
+              a_addr = item.a_addr;
+              if (if_name == "sys") begin
+                a_addr += (item.a_opcode == Get) ? cfg.soc_system_src_base_addr
+                                                 : cfg.soc_system_dst_base_addr;
+              end
+
+              `uvm_info(`gfn, $sformatf("received %s a_chan %s item with addr: %0x and data: %0x",
+                                        if_name,
+                                        item.is_write() ? "write" : "read", a_addr,
+                                        item.a_data), UVM_HIGH)
+              process_tl_addr_txn(if_name, a_addr, item);
+              // Update num_fifo_reg_write
+              if (num_fifo_reg_write > 0) begin
+                `uvm_info(`gfn, $sformatf("Processed FIFO clear_intr_src addr: %0x0x", item.a_addr),
+                          UVM_DEBUG)
+                num_fifo_reg_write--;
+              end else begin
+                // Set status bit after all FIFO interrupt clear register writes are done
+                fifo_intr_cleared = 1;
+              end
             end
-            `uvm_info(`gfn, $sformatf("received %s d_chan item with addr: %0x and data: %0x",
-                                      if_name, a_addr, item.d_data), UVM_HIGH)
-            process_tl_data_txn(if_name, a_addr, item);
-          end
-          default: `uvm_fatal(`gfn, "Invalid entry in dir_fifo")
-        endcase
+            DataChannel: begin
+              `DV_CHECK_FATAL(d_chan_fifo.try_get(item),
+                              "dir_fifo pointed at D channel, but d_chan_fifo empty")
+              a_addr = item.a_addr;
+              if (if_name == "sys") begin
+                a_addr += (item.a_opcode == Get) ? cfg.soc_system_src_base_addr
+                                                 : cfg.soc_system_dst_base_addr;
+              end
+              `uvm_info(`gfn, $sformatf("received %s d_chan item with addr: %0x and data: %0x",
+                                        if_name, a_addr, item.d_data), UVM_HIGH)
+              process_tl_data_txn(if_name, a_addr, item);
+            end
+            default: `uvm_fatal(`gfn, "Invalid entry in dir_fifo")
+          endcase
+        end
       end
     join_none
   endtask
@@ -729,7 +771,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
         forever begin
           uvm_reg_data_t handshake_en;
           uvm_reg_data_t handshake_intr_en;
-          // Wait for at least one LSIoO trigger to be active and it is eanbled
+          // Wait for at least one LSIO trigger to be active and it is enabled
           @(posedge cfg.dma_vif.handshake_i);
           handshake_en = `gmv(ral.control.hardware_handshake_enable);
           handshake_intr_en = `gmv(ral.handshake_intr_enable);
@@ -850,6 +892,18 @@ class dma_scoreboard extends cip_base_scoreboard #(
     `uvm_info(`gfn, $sformatf("Got reg_write to %s with addr : %0x and data : %0x ",
                               csr.get_name(), item.a_addr, item.a_data), UVM_HIGH)
 
+    // CFG_REGWEN prevents updates to most of the configuration registers when the DUT is active.
+    //
+    // Note: since we're using the mirrored value here, any sequence that attempts to change the
+    //       configuration registers whilst the DUT is operating must be sure to read CFG_REGWEN
+    //       at strategic moments.
+    if (prim_mubi_pkg::MuBi4True != `gmv(ral.cfg_regwen) &&
+        ral.cfg_regwen.locks_reg_or_fld(csr)) begin
+      `uvm_info(`gfn, $sformatf("Ignoring write to '%s' because of cfg_regwen", csr.get_name()),
+                UVM_MEDIUM)
+      return;
+    end
+
     // incoming access is a write to a valid csr, so make updates right away
     void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
 
@@ -884,6 +938,14 @@ class dma_scoreboard extends cip_base_scoreboard #(
         intr_test = item.a_data & ro_mask;
         now_set = item.a_data | intr_state_hw;
         predict_interrupts(CSRtoIntrLatency, item.a_data | ro_mask, now_set & intr_enable);
+
+        // Sample tested interrupts.
+        if (cfg.en_cov) begin
+          uvm_reg_data_t intr_state = `gmv(ral.intr_state);
+          foreach (item.a_data[i]) begin
+            cov.intr_test_cg.sample(i, item.a_data[i], intr_enable[i], intr_state[i]);
+          end
+        end
       end
       "src_addr_lo": begin
         dma_config.src_addr[31:0] = item.a_data;
@@ -901,13 +963,12 @@ class dma_scoreboard extends cip_base_scoreboard #(
         dma_config.dst_addr[63:32] = item.a_data;
         `uvm_info(`gfn, $sformatf("Got dst_addr_hi = %0x", dma_config.dst_addr[63:32]), UVM_HIGH)
       end
-      // TODO: Drop dst_control and src_control
-      "dst_config", "dst_control": begin
+      "dst_config": begin
         `uvm_info(`gfn, $sformatf("Got dst_config = %0x", item.a_data), UVM_HIGH)
         dma_config.dst_chunk_wrap = get_field_val(ral.dst_config.wrap, item.a_data);
         dma_config.dst_addr_inc = get_field_val(ral.dst_config.increment, item.a_data);
       end
-      "src_config", "src_control": begin
+      "src_config": begin
         `uvm_info(`gfn, $sformatf("Got src_config = %0x", item.a_data), UVM_HIGH)
         dma_config.src_chunk_wrap = get_field_val(ral.src_config.wrap, item.a_data);
         dma_config.src_addr_inc = get_field_val(ral.src_config.increment, item.a_data);
@@ -1053,6 +1114,10 @@ class dma_scoreboard extends cip_base_scoreboard #(
         // register write is just a nudge to proceed
         if (start_transfer) begin
           `uvm_info(`gfn, $sformatf("Got Start_Transfer = %0b", start_transfer), UVM_HIGH)
+          // Forget any TL-UL errors that occurred in the previous transfer; it's important
+          // that no more transactions occur after an error, _for that transfer_.
+          dst_tl_error_detected = 1'b0;
+          src_tl_error_detected = 1'b0;
           // Get mirrored field value and cast to associated enum in dma_config
           dma_config.opcode = opcode_e'(`gmv(ral.control.opcode));
           `uvm_info(`gfn, $sformatf("Got opcode = %s", dma_config.opcode.name()), UVM_HIGH)
@@ -1065,13 +1130,12 @@ class dma_scoreboard extends cip_base_scoreboard #(
           dma_config.src_chunk_wrap = `gmv(ral.src_config.wrap);
           dma_config.dst_addr_inc = `gmv(ral.dst_config.increment);
           dma_config.src_addr_inc = `gmv(ral.src_config.increment);
+          dma_config.soc_system_src_base_addr = cfg.soc_system_src_base_addr;
+          dma_config.soc_system_dst_base_addr = cfg.soc_system_dst_base_addr;
 
           `uvm_info(`gfn, $sformatf("dma_config\n %s",
                                     dma_config.sprint()), UVM_HIGH)
           // Check if configuration is valid;
-          // Note: this may depend upon whether full SoC System bus testing has been waived.
-          dma_config.dma_dv_waive_system_bus = cfg.dma_dv_waive_system_bus;
-          dma_config.soc_system_hi_addr = cfg.soc_system_hi_addr;
           operation_in_progress = 1'b1;
           exp_src_addr = dma_config.src_addr;
           exp_dst_addr = dma_config.dst_addr;
@@ -1102,20 +1166,13 @@ class dma_scoreboard extends cip_base_scoreboard #(
           exp_bytes_transferred += dma_config.chunk_size(exp_bytes_transferred);
         end
         if (cfg.en_cov && go) begin
-          logic [dma_reg_pkg::NumIntClearSources-1:0][2:0] intr_source_addr_offset;
-          logic [dma_reg_pkg::NumIntClearSources-1:0][31:0] intr_source_wr_val;
-          for (int unsigned i = 0; i < dma_reg_pkg::NumIntClearSources; i++) begin
-            intr_source_addr_offset[i] = dma_config.intr_src_addr[i] % 8;
-            intr_source_wr_val[i] = dma_config.intr_src_wr_val[i];
-          end
+          // Capture the interrupt-related configuration.
           cov.config_cg.sample(.dma_config(dma_config),
                                .initial_transfer(initial_transfer));
           cov.interrupt_cg.sample(
             .handshake_interrupt_enable(dma_config.handshake_intr_en),
             .clear_intr_src(dma_config.clear_intr_src),
-            .clear_intr_bus(dma_config.clear_intr_bus),
-            .intr_source_addr_offset(intr_source_addr_offset),
-            .intr_source_wr_val(intr_source_wr_val)
+            .clear_intr_bus(dma_config.clear_intr_bus)
           );
         end
       end
@@ -1144,6 +1201,13 @@ class dma_scoreboard extends cip_base_scoreboard #(
         // RAL is unaware of the combined contributions of `intr_test` and the `status` register.
         `DV_CHECK_EQ(item.d_data, intr_test | intr_state_hw, "Mismatched interrupt state")
         do_read_check = 1'b0;
+        // Sample asserted interrupt bits.
+        if (cfg.en_cov) begin
+          foreach (item.d_data[i]) begin
+            cov.intr_cg.sample(i, intr_enable[i], item.d_data[i]);
+            cov.intr_pins_cg.sample(i, cfg.intr_vif.pins[i]);
+          end
+        end
       end
       "status": begin
         bit busy, done, chunk_done, aborted, error, sha2_digest_valid;
@@ -1226,7 +1290,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
             end
 
             // TODO: we are still unable to check the final output data if in hardware-handshaking
-            // mode and the destination chunks overlap but auto-increment _is_ used, ie. it's not
+            // mode and the destination chunks overlap but auto-increment _is_ used, i.e. it's not
             // using a FIFO model.
             if (dma_config.handshake && dma_config.dst_chunk_wrap && dma_config.dst_addr_inc) begin
               `uvm_info(`gfn, "Unable to check output data because of chunks overlapping", UVM_LOW)
@@ -1249,7 +1313,10 @@ class dma_scoreboard extends cip_base_scoreboard #(
         error_code[DmaRangeValidErr] = get_field_val(ral.error_code.range_valid_error, item.d_data);
         error_code[DmaAsidErr]       = get_field_val(ral.error_code.asid_error, item.d_data);
         if (cfg.en_cov) begin
-          cov.error_code_cg.sample(.error_code (error_code));
+          // For bus-specific errors (BusErr, SrcAddrErr and DstAddrErr) let's supply the ASIDs
+          // also, so that we can check that we have seem them on _all_ buses.
+          cov.error_code_cg.sample(.error_code(error_code), dma_config.src_asid, 1);
+          cov.error_code_cg.sample(.error_code(error_code), dma_config.dst_asid, 0);
         end
       end
       // Register read check for lock register
@@ -1284,7 +1351,56 @@ class dma_scoreboard extends cip_base_scoreboard #(
                                   real_digest_val, exp_digest[digest_idx]), UVM_MEDIUM)
         `DV_CHECK_EQ(real_digest_val, exp_digest[digest_idx]);
       end
-      default: do_read_check = 1'b0;
+      "cfg_regwen": begin
+        // Ensure that we have an accurate model of the CFG_REGWEN because this is critical in
+        // knowing whether configuration writes are to be ignored.
+        void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
+        do_read_check = 1'b0;
+      end
+      // These configuration registers are updated automatically by the DUT, so they cannot be
+      // predicted easily.
+      "src_addr_lo",
+      "src_addr_hi",
+      "dst_addr_lo",
+      "dst_addr_hi" : begin
+        void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
+        do_read_check = 1'b0;
+      end
+      // These configuration registers should all be predictable.
+      "addr_space_id", "total_data_size", "chunk_data_size", "transfer_width",
+      "src_config", "dst_config",
+      "handshake_intr_enable", "clear_intr_src", "clear_intr_bus",
+      "intr_src_addr_0",
+      "intr_src_addr_1",
+      "intr_src_addr_2",
+      "intr_src_addr_3",
+      "intr_src_addr_4",
+      "intr_src_addr_5",
+      "intr_src_addr_6",
+      "intr_src_addr_7",
+      "intr_src_addr_8",
+      "intr_src_addr_9",
+      "intr_src_addr_10",
+      "intr_src_wr_val_0",
+      "intr_src_wr_val_1",
+      "intr_src_wr_val_2",
+      "intr_src_wr_val_3",
+      "intr_src_wr_val_4",
+      "intr_src_wr_val_5",
+      "intr_src_wr_val_6",
+      "intr_src_wr_val_7",
+      "intr_src_wr_val_8",
+      "intr_src_wr_val_9",
+      "intr_src_wr_val_10": begin
+        `uvm_info(`gfn, $sformatf("reg_read of config reg `%s`", csr.get_name()), UVM_HIGH)
+        do_read_check = 1'b1;
+      end
+      default: begin
+        // This message may indicate a failure to update the scoreboard to match the DUT.
+        // so that it matches the configuration programmed into the DUT
+        `uvm_info(`gfn, $sformatf("reg_read of `%s` not handled", csr.get_name()), UVM_MEDIUM)
+        do_read_check = 1'b0;
+      end
     endcase
 
     if (do_read_check) begin

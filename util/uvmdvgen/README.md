@@ -59,7 +59,7 @@ optional arguments:
                         <name>_agent is created at this location. (default set
                         to './<name>')
   -eo [hw/ip/<ip>], --env-outdir [hw/ip/<ip>]
-                        Path to place the full tetsbench code. It creates 3
+                        Path to place the full testbench code. It creates 3
                         directories - dv, data and doc. The DV document and the
                         testplan Hjson files are placed in the doc and data
                         directories respectively. These are to be merged into
@@ -198,7 +198,7 @@ provided by `-hi` and `-ha` respectively. By default, these are set to 'False'
 
 * `env/i2c_host_scoreboard`
 
-    This is the scoreboard component that already creates the analysis fifos and
+    This is the scoreboard component that already creates the analysis FIFOs and
     queues for the agents passed via `-ea` switch. It adds starter tasks for
     processing each fifo in a forever loop and invokes them in the `run_phase`
     using `fork-join` statement. If the `-c` switch is passed, it also adds a

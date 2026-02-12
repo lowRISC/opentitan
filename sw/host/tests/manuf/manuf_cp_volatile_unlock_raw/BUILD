@@ -18,8 +18,8 @@ rust_binary(
         ":lc_raw_unlock_token",
     ],
     deps = [
-        "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/opentitanlib",
+        "//sw/host/ot_hal",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
     ],

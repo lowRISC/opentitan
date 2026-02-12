@@ -15,7 +15,7 @@ class tl_reg_adapter #(type ITEM_T = tl_seq_item) extends uvm_reg_adapter;
   // the `tl_agent_cfg` instance associated with this adapter instance.
   tl_agent_cfg cfg;
 
-  function new(string name = "tl_reg_adapter");
+  function new(string name = "");
     super.new(name);
     // Force the uvm_reg_map to use this sequence to sync with the driver instead.
     parent_sequence = tl_host_base_seq#(ITEM_T)::type_id::create("m_tl_host_base_seq");
@@ -31,7 +31,7 @@ class tl_reg_adapter #(type ITEM_T = tl_seq_item) extends uvm_reg_adapter;
     // randomize CSR partial or full read
     // for partial read DUT (except memory) always return the entire 4 bytes bus data
     // if CSR full read (all bytes are enabled) & !MEM, randomly select full or partial read
-    // if CSR field read, will do a partial read if protocal allows by setting a_mask to byte_en
+    // if CSR field read, will do a partial read if protocol allows by setting a_mask to byte_en
     if (rw.kind == UVM_READ) begin
       if (rw.byte_en == '1 && item.element_kind == UVM_REG) begin // csr full read
         `DV_CHECK_RANDOMIZE_WITH_FATAL(bus_req,
@@ -75,9 +75,9 @@ class tl_reg_adapter #(type ITEM_T = tl_seq_item) extends uvm_reg_adapter;
     end
     if (cfg.csr_access_abort_pct_in_adapter > $urandom_range(0, 100)) begin
       bus_req.req_abort_after_a_valid_len = 1;
-      `uvm_info(this.get_name(), $sformatf("tl reg req item is allowed to be aborted"), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("tl reg req item is allowed to be aborted"), UVM_MEDIUM)
     end
-    `uvm_info(this.get_name(), {"tl_reg_adapter::reg2bus: ", bus_req.convert2string()}, UVM_HIGH)
+    `uvm_info(`gfn, bus_req.convert2string(), UVM_HIGH)
     return bus_req;
   endfunction : reg2bus
 
@@ -91,7 +91,7 @@ class tl_reg_adapter #(type ITEM_T = tl_seq_item) extends uvm_reg_adapter;
     `DV_CHECK_EQ(bus_rsp.d_source, bus_rsp.a_source)
     // indicate if the item is completed successfully for upper level to update predict value
     rw.status  = !bus_rsp.req_completed ? UVM_NOT_OK : UVM_IS_OK;
-    `uvm_info(this.get_name(), {"tl_reg_adapter::bus2reg: ", bus_rsp.convert2string()}, UVM_HIGH)
+    `uvm_info(`gfn, bus_rsp.convert2string(), UVM_HIGH)
   endfunction: bus2reg
 
 endclass : tl_reg_adapter

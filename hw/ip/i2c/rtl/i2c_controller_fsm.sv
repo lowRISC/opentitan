@@ -4,6 +4,8 @@
 //
 // Description: I2C finite state machine
 
+`include "prim_assert.sv"
+
 module i2c_controller_fsm import i2c_pkg::*;
 #(
   parameter int FifoDepth = 64,
@@ -325,7 +327,7 @@ module i2c_controller_fsm import i2c_pkg::*;
     SetupStop, HoldStop, ClockStop,
     // Host function transmits a bit to the external target
     ClockLow, ClockPulse, HoldBit,
-    // Host function recevies an ack from the external target
+    // Host function receives an ack from the external target
     ClockLowAck, ClockPulseAck, HoldDevAck,
     // Host function reads a bit from the external target
     ReadClockLow, ReadClockPulse, ReadHoldBit,

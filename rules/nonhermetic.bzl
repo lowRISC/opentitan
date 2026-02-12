@@ -33,9 +33,11 @@ to Bazel rules as possible, thus improves reproducibility and cacheability.
 """
 
 def _nonhermetic_repo_impl(rctx):
-    env = "\n".join(["    \"{}\": \"{}\",".format(v, rctx.os.environ.get(v, "")) for v in NONHERMETIC_ENV_VARS])
-    home = rctx.os.environ.get("HOME", "")
+    env = "\n".join(["    \"{}\": \"{}\",".format(v, rctx.getenv(v, "")) for v in NONHERMETIC_ENV_VARS])
+    home = rctx.getenv("HOME", "")
 
+    # Declare sensitivity on PATH, this is not implied by `rctx.which`
+    path = rctx.getenv("PATH")
     bins = {name: rctx.which(name) for name in NONHERMETIC_BINS}
     bin_paths = "\n".join(["    \"{}\": \"{}\",".format(name, rctx.path(path).dirname if path != None else "/no-such-path") for name, path in bins.items()])
 
@@ -45,5 +47,4 @@ def _nonhermetic_repo_impl(rctx):
 nonhermetic_repo = repository_rule(
     implementation = _nonhermetic_repo_impl,
     attrs = {},
-    environ = NONHERMETIC_ENV_VARS,
 )

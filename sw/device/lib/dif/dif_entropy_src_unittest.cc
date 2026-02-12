@@ -11,7 +11,7 @@
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_test_base.h"
 
-#include "entropy_src_regs.h"  // Generated
+#include "hw/top/entropy_src_regs.h"  // Generated
 
 namespace dif_entropy_src_unittest {
 namespace {
@@ -296,6 +296,31 @@ TEST_F(HealthTestConfigTest, SuccessTwoThresholds) {
   EXPECT_DIF_OK(dif_entropy_src_health_test_configure(&entropy_src_, config_));
 }
 
+class WatermarkConfigureTest : public EntropySrcTest {};
+
+TEST_F(WatermarkConfigureTest, NullHandle) {
+  EXPECT_DIF_BADARG(dif_entropy_src_watermark_configure(
+      nullptr, kDifEntropySrcWatermarkNumRepcntHi));
+}
+
+TEST_F(WatermarkConfigureTest, Locked) {
+  EXPECT_READ32(ENTROPY_SRC_REGWEN_REG_OFFSET, 0);
+  EXPECT_EQ(dif_entropy_src_watermark_configure(
+                &entropy_src_, kDifEntropySrcWatermarkNumRepcntHi),
+            kDifLocked);
+}
+
+TEST_F(WatermarkConfigureTest, Success) {
+  EXPECT_READ32(ENTROPY_SRC_REGWEN_REG_OFFSET, 1);
+  EXPECT_WRITE32(ENTROPY_SRC_HT_WATERMARK_NUM_REG_OFFSET,
+                 kDifEntropySrcWatermarkNumAdaptpHi);
+  EXPECT_READ32(ENTROPY_SRC_HT_WATERMARK_NUM_REG_OFFSET,
+                kDifEntropySrcWatermarkNumAdaptpHi);
+  EXPECT_EQ(dif_entropy_src_watermark_configure(
+                &entropy_src_, kDifEntropySrcWatermarkNumAdaptpHi),
+            kDifOk);
+}
+
 class SetEnabledTest : public EntropySrcTest {};
 
 TEST_F(SetEnabledTest, NullHandle) {
@@ -383,39 +408,26 @@ TEST_F(HealthTestStatsGetTest, NullArgs) {
 TEST_F(HealthTestStatsGetTest, Success) {
   dif_entropy_src_health_test_stats_t stats;
 
-  EXPECT_READ32(ENTROPY_SRC_REPCNT_HI_WATERMARKS_REG_OFFSET, 10);
+  EXPECT_READ32(ENTROPY_SRC_HT_WATERMARK_NUM_REG_OFFSET, 0);
+  EXPECT_READ32(ENTROPY_SRC_HT_WATERMARK_REG_OFFSET, 0);
+
   EXPECT_READ32(ENTROPY_SRC_REPCNT_TOTAL_FAILS_REG_OFFSET, 10);
 
-  EXPECT_READ32(ENTROPY_SRC_REPCNTS_HI_WATERMARKS_REG_OFFSET, 10);
   EXPECT_READ32(ENTROPY_SRC_REPCNTS_TOTAL_FAILS_REG_OFFSET, 10);
 
-  EXPECT_READ32(ENTROPY_SRC_ADAPTP_HI_WATERMARKS_REG_OFFSET, 10);
-  EXPECT_READ32(ENTROPY_SRC_ADAPTP_LO_WATERMARKS_REG_OFFSET, 10);
   EXPECT_READ32(ENTROPY_SRC_ADAPTP_HI_TOTAL_FAILS_REG_OFFSET, 10);
   EXPECT_READ32(ENTROPY_SRC_ADAPTP_LO_TOTAL_FAILS_REG_OFFSET, 10);
 
-  EXPECT_READ32(ENTROPY_SRC_BUCKET_HI_WATERMARKS_REG_OFFSET, 10);
   EXPECT_READ32(ENTROPY_SRC_BUCKET_TOTAL_FAILS_REG_OFFSET, 10);
 
-  EXPECT_READ32(ENTROPY_SRC_MARKOV_HI_WATERMARKS_REG_OFFSET, 10);
-  EXPECT_READ32(ENTROPY_SRC_MARKOV_LO_WATERMARKS_REG_OFFSET, 10);
   EXPECT_READ32(ENTROPY_SRC_MARKOV_HI_TOTAL_FAILS_REG_OFFSET, 10);
   EXPECT_READ32(ENTROPY_SRC_MARKOV_LO_TOTAL_FAILS_REG_OFFSET, 10);
 
-  EXPECT_READ32(ENTROPY_SRC_EXTHT_HI_WATERMARKS_REG_OFFSET, 10);
-  EXPECT_READ32(ENTROPY_SRC_EXTHT_LO_WATERMARKS_REG_OFFSET, 10);
   EXPECT_READ32(ENTROPY_SRC_EXTHT_HI_TOTAL_FAILS_REG_OFFSET, 10);
   EXPECT_READ32(ENTROPY_SRC_EXTHT_LO_TOTAL_FAILS_REG_OFFSET, 10);
 
   EXPECT_DIF_OK(dif_entropy_src_get_health_test_stats(&entropy_src_, &stats));
   for (uint32_t i = 0; i < kDifEntropySrcTestNumVariants; ++i) {
-    EXPECT_EQ(stats.high_watermark[i], 10);
-    if (i == 2 || i == 4 || i == 5) {
-      EXPECT_EQ(stats.low_watermark[i], 10);
-    } else {
-      EXPECT_EQ(stats.low_watermark[i], 0);
-    }
-
     EXPECT_EQ(stats.high_fails[i], 10);
     if (i == 2 || i == 4 || i == 5) {
       EXPECT_EQ(stats.low_fails[i], 10);

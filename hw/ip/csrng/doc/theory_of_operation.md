@@ -308,15 +308,17 @@ This initial seed is tested to ensure some minimum quality for obfuscation use- 
 
 #### Handshaking signals
 
-The application command signal `csrng_req_bus` is accompanied by a `csrng_valid_signal`, which is asserted by the requester when the command is valid.
-CSRNG may stall incoming commands by de-asserting the `csrng_req_ready` signal.
+The application interface signal `csrng_req_t` comprises a `csrng_req_valid` bit, which is asserted by the requester when the command request on `csrng_req_bus` is valid.
+CSRNG may stall incoming commands by de-asserting the `csrng_req_ready` bit of the `csrng_rsp_t` signal.
 A command is considered received whenever both `csrng_req_valid` and `csrng_req_ready` are asserted in the same clock cycle.
 
-Likewise a requester must only consider data on the `genbits` bus to be valid when the `genbits_valid` signal is asserted, and should assert `genbits_ready` whenever it is ready to accept the `genbits` data.
-The `genbits` data is considered successfully transmitted whenever `genbits_valid` and `genbits_ready` are asserted in the same clock cycle.
+Likewise a requester must only consider data on the `genbits_bus` signal to be valid when the `genbits_valid` signal is asserted, and should assert `genbits_ready` whenever it is ready to accept the data on `genbits_bus`.
+The `genbits_bus` data is considered successfully transmitted whenever `genbits_valid` and `genbits_ready` are asserted in the same clock cycle.
 
-A requester must always be ready to receive `csrng_req_sts` signals.
+A requester must always be ready to receive `csrng_rsp_ack` and `csrng_rsp_sts` signals.
 (There is no "ready" signal for command response messages sent to hardware.)
+
+**NOTE**: Between the command request handshake involving `csrng_req_valid/ready` and between signaling the command response on `csrng_rsp_ack/sts`, the application interface does not accept further commands.
 
 #### Waveforms
 
@@ -364,6 +366,11 @@ A requester must always be ready to receive `csrng_req_sts` signals.
    {name: 'genbits_ready'    , wave: '1...|...|0.1.|........'},
 ]}
 ```
+
+**NOTE**: Between the command request handshake involving `csrng_req_valid/ready` and between signaling the command response on `csrng_rsp_ack/sts`, the application interface does not accept further commands including `uninstantiate` commands.
+For `generate` commands, this means the requestor has to first consume all entropy generated from the current command.
+Depending on the configuration of the system, this may take a very long time.
+For details on how to accelerate this process, refer to [Uninstantiating CSRNG through EDN](../../edn/doc/programmers_guide.md#uninstantiating-csrng-through-edn).
 
 ##### Application Interface:  Update Request
 

@@ -12,7 +12,7 @@
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 
-#include "alert_handler_regs.h"
+#include "hw/top/alert_handler_regs.h"
 
 enum {
   kAlertHandlerTestutilsDefaultPingTimeout = 256,
@@ -108,5 +108,50 @@ status_t alert_handler_testutils_get_cycles_from_us(uint64_t microseconds,
  *           cycle_rescaling_factor();
  */
 uint32_t alert_handler_testutils_cycle_rescaling_factor(void);
+
+/**
+ * Logs the status of the alert handler.
+ *
+ * This function will log the state of each alert class, including the
+ * number of alerts that have been accumulated.
+ *
+ * Only the alert classes that have accumulated alerts will be logged.
+ *
+ * @param alert_handler An alert handler handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t alert_handler_testutils_status_log(
+    const dif_alert_handler_t *alert_handler);
+
+/**
+ * Logs the alert handler crash dump.
+ *
+ * This function will log the state of each alert class, including the
+ * number of alerts that have been accumulated.
+ *
+ * Only alerts that have been set will be logged, as well as the alert
+ * classes that are in non-idle states.
+ *
+ * @param rstmgr A RSTMGR handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t alert_handler_testutils_dump_log(const dif_rstmgr_t *rstmgr);
+
+/**
+ * Enables the alert handler crash dump.
+ *
+ * This function will enable the alert handler crash dump, which will
+ * cause the alert handler to dump its state to the RSTMGR when an
+ * alert is triggered.
+ *
+ * @param alert_handler An alert handler handle.
+ * @param rstmgr A RSTMGR handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t alert_handler_testutils_dump_enable(
+    const dif_alert_handler_t *alert_handler, const dif_rstmgr_t *rstmgr);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_ALERT_HANDLER_TESTUTILS_H_

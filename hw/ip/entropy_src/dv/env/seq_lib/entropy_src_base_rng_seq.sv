@@ -4,12 +4,12 @@
 
 // Base class for generating non-ideal RNG sequences for entropy_src
 //
-// Three major features distinguigh this class from its push_pull_indefinite_host_seq baseclass:
+// Three major features distinguish this class from its push_pull_indefinite_host_seq baseclass:
 // 1. Methods to return the expected mean and standard deviation of the various health checks
 // 2. Introduces support for both complete and soft failures of the RNG, with expected (short)
 //    lifetimes of hard_mtbf or soft_mtbf.  This base class implements hard failures by
 //    freezing the outputs at a random value at some randomly distributed time, as determined by a
-//    exponential distibution with a mean time of hard_mtbf.
+//    exponential distribution with a mean time of hard_mtbf.
 //    This base class does not generate soft failures, e.g. intolerable statistical deviations
 //    from the ideal uniform distribution.  Unless in a hard failure state, the RNG outputs
 //    are always ideal.  However, the frame work for the timing soft failures is implemented here.
@@ -27,7 +27,7 @@
 // performance mode.
 
 class entropy_src_base_rng_seq extends push_pull_indefinite_host_seq#(
-    .HostDataWidth (entropy_src_pkg::RNG_BUS_WIDTH)
+    .HostDataWidth (`RNG_BUS_WIDTH)
   );
 
   realtime hard_mtbf;
@@ -43,13 +43,13 @@ class entropy_src_base_rng_seq extends push_pull_indefinite_host_seq#(
    bit is_initialized;
 
   // Failure bit control: Controls which lines will fail in the next hard failure event
-  rand bit [RNG_BUS_WIDTH - 1:0] hard_fail_bit_ctrl;
+  rand bit [`RNG_BUS_WIDTH - 1:0] hard_fail_bit_ctrl;
 
   // In hard failure, at least one bit must be stuck
-  constraint hard_fail_bit_ctrl_c { hard_fail_bit_ctrl != {RNG_BUS_WIDTH{1'b0}};}
+  constraint hard_fail_bit_ctrl_c { hard_fail_bit_ctrl != {`RNG_BUS_WIDTH{1'b0}};}
 
   // Failure bit control: Controls the state of any failed RNG lines
-  rand bit [RNG_BUS_WIDTH - 1:0] hard_fail_state;
+  rand bit [`RNG_BUS_WIDTH - 1:0] hard_fail_state;
 
   realtime hard_fail_time, soft_fail_time;
   bit      is_hard_failed, is_soft_failed;
@@ -110,9 +110,9 @@ class entropy_src_base_rng_seq extends push_pull_indefinite_host_seq#(
     return is_hard_failed;
   endfunction
 
-  virtual task pre_body();
-    super.pre_body();
+  virtual task body();
     reset_rng();
+    super.body();
   endtask
 
   virtual function rng_val_t random_data_typical();
@@ -121,12 +121,12 @@ class entropy_src_base_rng_seq extends push_pull_indefinite_host_seq#(
     return next_rng_val;
   endfunction
 
-  virtual function bit [RNG_BUS_WIDTH - 1:0] random_data_soft_fail();
+  virtual function bit [`RNG_BUS_WIDTH - 1:0] random_data_soft_fail();
     // For this base class, soft failure is identical
     return random_data_typical();
   endfunction
 
-  virtual function void randomize_item(push_pull_item#(RNG_BUS_WIDTH) item);
+  virtual function void randomize_item(push_pull_item#(`RNG_BUS_WIDTH) item);
     super.randomize_item(item);
     if(check_soft_failure()) begin
       item.h_data = random_data_soft_fail();
@@ -150,6 +150,8 @@ class entropy_src_base_rng_seq extends push_pull_indefinite_host_seq#(
   // test_e        test: the test to consider (AdaptP, Bucket, or Markov)
   // bit       per_line: set to 1 if the test is being evaluated on a per_line basis
   //                     (if 0, the range applies if the results are summed over all RNG lines)
+  // bit rng_bit_enable: set to 1 if single-channel mode is enabled
+  //                     (if 0, all channels of the RNG noise source are used)
   // real desired_sigma: the number of standard deviations to provide within the range.  Assuming
   //                     the window size is large enough to treat the test as normally distributed,
   //                     the probability of the test within the range increases with the number of
@@ -164,18 +166,18 @@ class entropy_src_base_rng_seq extends push_pull_indefinite_host_seq#(
   // generates Idealized RNG bitstreams.
   //
   // If a child class overrides the random_data_typical method to general non-ideal noise (even
-  // during normal operation) this function can be overidden to provide new thresholds which
+  // during normal operation) this function can be overridden to provide new thresholds which
   // will still provide the desired failure rates even with typical non-idealities taken into
   // account.
 
 
   virtual function void threshold_rec(int window_size, health_test_e test, bit per_line,
-                                      real desired_sigma, output int lower_threshold,
-                                      output int upper_threshold);
-    lower_threshold = ideal_threshold_recommendation(window_size, test, per_line, low_test,
-                                                     desired_sigma);
-    upper_threshold = ideal_threshold_recommendation(window_size, test, per_line, high_test,
-                                                     desired_sigma);
+                                      bit rng_bit_enable, real desired_sigma,
+                                      output int lower_threshold, output int upper_threshold);
+    lower_threshold = ideal_threshold_recommendation(window_size, test, per_line, rng_bit_enable,
+                                                     low_test, desired_sigma);
+    upper_threshold = ideal_threshold_recommendation(window_size, test, per_line, rng_bit_enable,
+                                                     high_test, desired_sigma);
   endfunction
 
 endclass

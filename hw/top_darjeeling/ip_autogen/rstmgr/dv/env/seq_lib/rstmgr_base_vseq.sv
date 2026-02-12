@@ -16,9 +16,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   // Set clock frequencies per spec, except the aon is 200kHZ, which is
   // too slow and could slow testing down for no good reason.
   localparam int AON_FREQ_MHZ = 3;
-  localparam int IO_FREQ_MHZ = 1000;
-  localparam int IO_DIV2_FREQ_MHZ = 500;
-  localparam int IO_DIV4_FREQ_MHZ = 250;
+  localparam int IO_FREQ_MHZ = 250;
   localparam int MAIN_FREQ_MHZ = 1000;
 
   // POR needs to be stable not less than 32 clock cycles, plus some extra, before it
@@ -93,8 +91,6 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   // This is used to randomize the delays for the clocks to start and stop.
   typedef struct {
     bit [5:0] io_delay;
-    bit [5:0] io_div2_delay;
-    bit [5:0] io_div4_delay;
     bit [5:0] main_delay;
   } clock_delays_in_ns_t;
 
@@ -267,7 +263,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   virtual protected task clear_alert_and_cpu_info();
     set_alert_and_cpu_info_for_capture('0, '0);
     send_sw_reset();
-    cfg.io_div4_clk_rst_vif.wait_clks(20);  // # of lc reset cycles measured from waveform
+    cfg.io_clk_rst_vif.wait_clks(20);  // # of lc reset cycles measured from waveform
     check_alert_and_cpu_info_after_reset(.alert_dump('0), .cpu_dump('0), .enable(0));
   endtask
 
@@ -319,7 +315,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     csr_wr(.ptr(ral.sw_rst_ctrl_n[entry]), .value(sw_rst_ctrl_n[entry]));
     // And check that the reset outputs match the actual ctrl_n settings.
     // Allow for domain crossing delay.
-    cfg.io_div2_clk_rst_vif.wait_clks(3);
+    cfg.io_clk_rst_vif.wait_clks(3);
     exp_ctrl_n = ~sw_rst_regwen | sw_rst_ctrl_n;
     `uvm_info(`gfn, $sformatf(
               "regwen=%b, ctrl_n=%b, expected=%b", sw_rst_regwen, sw_rst_ctrl_n, exp_ctrl_n),
@@ -335,13 +331,9 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     `DV_CHECK_STD_RANDOMIZE_FATAL(delays)
     if (enable) fork
       #(delays.io_delay * 1ns) cfg.io_clk_rst_vif.start_clk();
-      #(delays.io_div2_delay * 1ns) cfg.io_div2_clk_rst_vif.start_clk();
-      #(delays.io_div4_delay * 1ns) cfg.io_div4_clk_rst_vif.start_clk();
       #(delays.main_delay * 1ns) cfg.main_clk_rst_vif.start_clk();
     join else fork
       #(delays.io_delay * 1ns) cfg.io_clk_rst_vif.stop_clk();
-      #(delays.io_div2_delay * 1ns) cfg.io_div2_clk_rst_vif.stop_clk();
-      #(delays.io_div4_delay * 1ns) cfg.io_div4_clk_rst_vif.stop_clk();
       #(delays.main_delay * 1ns) cfg.main_clk_rst_vif.stop_clk();
     join
   endtask
@@ -353,7 +345,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     set_reset_cause(reset_cause);
     // These lag the reset requests since they are set after the pwrmgr fast fsm has made some
     // state transitions.
-    cfg.io_div4_clk_rst_vif.wait_clks(rst_to_req_cycles);
+    cfg.io_clk_rst_vif.wait_clks(rst_to_req_cycles);
     set_pwrmgr_rst_reqs(.rst_lc_req('1), .rst_sys_req('1));
     cfg.clk_rst_vif.stop_clk();
     if (reset_cause == pwrmgr_pkg::LowPwrEntry) begin
@@ -365,7 +357,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     // And wait for the main reset to be done.
     `DV_WAIT(cfg.rstmgr_vif.rst_ni_inactive, "Time-out waiting for rst_ni becoming inactive");
     // And wait a few cycles for settling before allowing the sequences to start.
-    cfg.io_div4_clk_rst_vif.wait_clks(8);
+    cfg.io_clk_rst_vif.wait_clks(8);
   endtask
 
   protected task reset_done();
@@ -376,10 +368,10 @@ class rstmgr_base_vseq extends cip_base_vseq #(
       control_all_clocks(.enable(1));
     end
     cfg.clk_rst_vif.start_clk();
-    cfg.io_div4_clk_rst_vif.wait_clks(10);
+    cfg.io_clk_rst_vif.wait_clks(10);
     set_reset_cause(pwrmgr_pkg::ResetNone);
     set_pwrmgr_rst_reqs(.rst_lc_req('0), .rst_sys_req('1));
-    cfg.io_div4_clk_rst_vif.wait_clks(release_lc_to_release_sys_cycles);
+    cfg.io_clk_rst_vif.wait_clks(release_lc_to_release_sys_cycles);
     set_pwrmgr_rst_reqs(.rst_lc_req('0), .rst_sys_req('0));
     set_rstreqs(0);
     wait_till_active();
@@ -399,7 +391,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
               automatic int index = i;
               automatic bit [2:0] cycles;
               `DV_CHECK_STD_RANDOMIZE_FATAL(cycles)
-              cfg.io_div4_clk_rst_vif.wait_clks(cycles);
+              cfg.io_clk_rst_vif.wait_clks(cycles);
               add_rstreqs(rstreqs & (1 << index));
             join_none
           end
@@ -423,11 +415,11 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, "Sending scan reset", UVM_MEDIUM)
     fork
       begin
-        cfg.io_div4_clk_rst_vif.wait_clks(scan_rst_cycles);
+        cfg.io_clk_rst_vif.wait_clks(scan_rst_cycles);
         update_scan_rst_n(1'b0);
       end
       begin
-        cfg.io_div4_clk_rst_vif.wait_clks(scanmode_cycles);
+        cfg.io_clk_rst_vif.wait_clks(scanmode_cycles);
         update_scanmode(prim_mubi_pkg::MuBi4True);
       end
     join
@@ -460,8 +452,6 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     fork
       cfg.aon_clk_rst_vif.apply_reset(.reset_width_clks(BOGUS_RESET_CLK_CYCLES));
       cfg.io_clk_rst_vif.apply_reset(.reset_width_clks(BOGUS_RESET_CLK_CYCLES));
-      cfg.io_div2_clk_rst_vif.apply_reset(.reset_width_clks(BOGUS_RESET_CLK_CYCLES));
-      cfg.io_div4_clk_rst_vif.apply_reset(.reset_width_clks(BOGUS_RESET_CLK_CYCLES));
       cfg.main_clk_rst_vif.apply_reset(.reset_width_clks(BOGUS_RESET_CLK_CYCLES));
     join
   endtask
@@ -515,14 +505,12 @@ class rstmgr_base_vseq extends cip_base_vseq #(
 
   // setup basic rstmgr features
   virtual task rstmgr_init();
-    // Must set clk_rst_vif frequency to IO_DIV4_FREQ_MHZ since they are gated
+    // Must set clk_rst_vif frequency to IO_FREQ_MHZ since they are gated
     // versions of each other and have no clock domain crossings.
     // Notice they may still end up out of phase due to the way they get started.
-    cfg.clk_rst_vif.set_freq_mhz(IO_DIV4_FREQ_MHZ);
+    cfg.clk_rst_vif.set_freq_mhz(IO_FREQ_MHZ);
     cfg.aon_clk_rst_vif.set_freq_mhz(AON_FREQ_MHZ);
     cfg.io_clk_rst_vif.set_freq_mhz(IO_FREQ_MHZ);
-    cfg.io_div2_clk_rst_vif.set_freq_mhz(IO_DIV2_FREQ_MHZ);
-    cfg.io_div4_clk_rst_vif.set_freq_mhz(IO_DIV4_FREQ_MHZ);
     cfg.main_clk_rst_vif.set_freq_mhz(MAIN_FREQ_MHZ);
     // Initial values for some input pins.
     cfg.rstmgr_vif.scanmode_i  = prim_mubi_pkg::MuBi4False;

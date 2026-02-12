@@ -27,6 +27,13 @@ def main() -> int:
         help=('The specific subroutine to check. If not provided, the start '
               'point is _imem_start (whole program).'))
     parser.add_argument(
+        '--ignore',
+        nargs='+',
+        type=str,
+        required=False,
+        help=('The specific subroutines to ignore. Use this argument '
+              'if violations should be ignored for a subroutine.'))
+    parser.add_argument(
         '--constants',
         nargs='+',
         type=str,
@@ -57,7 +64,7 @@ def main() -> int:
         constants = parse_required_constants(args.constants)
 
     # Compute control graph and get all nodes that influence control flow.
-    program = decode_elf(args.elf)
+    program = decode_elf(args.elf, args.ignore or [])
     if args.subroutine is None:
         graph = program_control_graph(program)
         to_analyze = 'entire program'

@@ -70,7 +70,7 @@ module chip_${top["name"]}_${target["name"]} #(
   parameter BootRomInitFile = "test_rom_fpga_${target["name"]}.32.vmem",
   // Path to a VMEM file containing the contents of the emulated OTP, which will be
   // baked into the FPGA bitstream.
-  parameter OtpCtrlMemInitFile = "otp_img_fpga_${target["name"]}.vmem"
+  parameter OtpMacroMemInitFile = "otp_img_fpga_${target["name"]}.vmem"
 %   endif
 ) (
 % else:
@@ -537,8 +537,8 @@ module chip_${top["name"]}_${target["name"]} #(
   ast_pkg::ast_obs_ctrl_t obs_ctrl;
 
   // otp power sequence
-  otp_ctrl_pkg::otp_ast_req_t otp_ctrl_otp_ast_pwr_seq;
-  otp_ctrl_pkg::otp_ast_rsp_t otp_ctrl_otp_ast_pwr_seq_h;
+  otp_macro_pkg::otp_ast_req_t otp_macro_pwr_seq;
+  otp_macro_pkg::otp_ast_rsp_t otp_macro_pwr_seq_h;
 
   logic usb_ref_pulse;
   logic usb_ref_val;
@@ -548,9 +548,8 @@ module chip_${top["name"]}_${target["name"]} #(
   ast_pkg::adc_ast_rsp_t adc_rsp;
 
   // entropy source interface
-  // The entropy source pacakge definition should eventually be moved to es
-  entropy_src_pkg::entropy_src_rng_req_t es_rng_req;
-  entropy_src_pkg::entropy_src_rng_rsp_t es_rng_rsp;
+  logic es_rng_enable, es_rng_valid;
+  logic [ast_pkg::EntropyStreams-1:0] es_rng_bit;
   logic es_rng_fips;
 
   // entropy distribution network
@@ -777,7 +776,7 @@ module chip_${top["name"]}_${target["name"]} #(
     // USB IO Pull-up Calibration Setting
     .usb_io_pu_cal_o       ( ),
 
-    // clocks' oschillator bypass for FPGA
+    // clocks' oscillator bypass for FPGA
     .clk_osc_byp_i         ( clks_osc_byp ),
 
     // adc
@@ -822,8 +821,8 @@ module chip_${top["name"]}_${target["name"]} #(
     // pdm control (flash)/otp
     .flash_power_down_h_o  ( flash_power_down_h ),
     .flash_power_ready_h_o ( flash_power_ready_h ),
-    .otp_power_seq_i       ( otp_ctrl_otp_ast_pwr_seq ),
-    .otp_power_seq_h_o     ( otp_ctrl_otp_ast_pwr_seq_h ),
+    .otp_power_seq_i       ( otp_macro_pwr_seq ),
+    .otp_power_seq_h_o     ( otp_macro_pwr_seq_h ),
     // system source clock
     .clk_src_sys_en_i      ( base_ast_pwr.core_clk_en ),
     // need to add function in clkmgr
@@ -850,10 +849,10 @@ module chip_${top["name"]}_${target["name"]} #(
     .adc_d_o               ( adc_rsp.data ),
     .adc_d_val_o           ( adc_rsp.data_valid ),
     // rng
-    .rng_en_i              ( es_rng_req.rng_enable ),
+    .rng_en_i              ( es_rng_enable ),
     .rng_fips_i            ( es_rng_fips ),
-    .rng_val_o             ( es_rng_rsp.rng_valid ),
-    .rng_b_o               ( es_rng_rsp.rng_b ),
+    .rng_val_o             ( es_rng_valid ),
+    .rng_b_o               ( es_rng_bit ),
     // entropy
     .entropy_rsp_i         ( ast_edn_edn_rsp ),
     .entropy_req_o         ( ast_edn_edn_req ),
@@ -1029,15 +1028,16 @@ module chip_${top["name"]}_${target["name"]} #(
     .ast_edn_req_i                ( ast_edn_edn_req            ),
     .ast_edn_rsp_o                ( ast_edn_edn_rsp            ),
     .obs_ctrl_i                   ( obs_ctrl                   ),
-    .otp_ctrl_otp_ast_pwr_seq_o   ( otp_ctrl_otp_ast_pwr_seq   ),
-    .otp_ctrl_otp_ast_pwr_seq_h_i ( otp_ctrl_otp_ast_pwr_seq_h ),
+    .otp_macro_pwr_seq_o          ( otp_macro_pwr_seq          ),
+    .otp_macro_pwr_seq_h_i        ( otp_macro_pwr_seq_h        ),
     .otp_obs_o                    ( otp_obs                    ),
     .flash_bist_enable_i          ( flash_bist_enable          ),
     .flash_power_down_h_i         ( flash_power_down_h         ),
     .flash_power_ready_h_i        ( flash_power_ready_h        ),
     .flash_obs_o                  ( fla_obs                    ),
-    .es_rng_req_o                 ( es_rng_req                 ),
-    .es_rng_rsp_i                 ( es_rng_rsp                 ),
+    .es_rng_enable_o              ( es_rng_enable              ),
+    .es_rng_valid_i               ( es_rng_valid               ),
+    .es_rng_bit_i                 ( es_rng_bit                 ),
     .es_rng_fips_o                ( es_rng_fips                ),
     .io_clk_byp_req_o             ( io_clk_byp_req             ),
     .io_clk_byp_ack_i             ( io_clk_byp_ack             ),
@@ -1135,16 +1135,21 @@ module chip_${top["name"]}_${target["name"]} #(
 // Also need to add AST simulation and FPGA emulation models for things like entropy source -
 // otherwise Verilator / FPGA will hang.
   top_${top["name"]} #(
-% if target["name"] in ["cw310", "cw340"]:
+% if target["name"] == "cw310":
+    .SecAesMasking(1'b0), // Disable AES masking on the CW310, where we are constrained by area.
+    .SecAesSBoxImpl(aes_pkg::SBoxImplLut),
+% elif target["name"]  == "cw340":
     .SecAesMasking(1'b1),
     .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
+% endif
+% if target["name"] in ["cw310", "cw340"]:
     .SecAesStartTriggerDelay(0),
     .SecAesAllowForcingMasks(1'b1),
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .SecOtbnMuteUrnd(1'b0),
     .SecOtbnSkipUrndReseedAtStart(1'b0),
-    .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
+    .OtpMacroMemInitFile(OtpMacroMemInitFile),
     .RvCoreIbexPipeLine(1),
     .SramCtrlRetAonInstrExec(0),
     .UsbdevRcvrWakeTimeUs(10000),
@@ -1170,7 +1175,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .OtbnStub(1'b1),
-    .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
+    .OtpMacroMemInitFile(OtpMacroMemInitFile),
     .RvCoreIbexPipeLine(1),
 % endif
 % if target["name"] == "cw340":
@@ -1230,15 +1235,15 @@ module chip_${top["name"]}_${target["name"]} #(
     .ast_tl_rsp_i                 ( ast_base_bus               ),
     .adc_req_o                    ( adc_req                    ),
     .adc_rsp_i                    ( adc_rsp                    ),
-    .otp_ctrl_otp_ast_pwr_seq_o   ( otp_ctrl_otp_ast_pwr_seq   ),
-    .otp_ctrl_otp_ast_pwr_seq_h_i ( otp_ctrl_otp_ast_pwr_seq_h ),
+    .otp_macro_pwr_seq_o          ( otp_macro_pwr_seq          ),
+    .otp_macro_pwr_seq_h_i        ( otp_macro_pwr_seq_h        ),
     .otp_obs_o                    ( otp_obs                    ),
     .sensor_ctrl_ast_alert_req_i  ( ast_alert_req              ),
     .sensor_ctrl_ast_alert_rsp_o  ( ast_alert_rsp              ),
     .sensor_ctrl_ast_status_i     ( ast_pwst.io_pok            ),
-    .es_rng_req_o                 ( es_rng_req                 ),
-    .es_rng_rsp_i                 ( es_rng_rsp                 ),
-    .es_rng_fips_o                ( es_rng_fips                ),
+    .es_rng_enable_o              ( es_rng_enable              ),
+    .es_rng_valid_i               ( es_rng_valid               ),
+    .es_rng_bit_i                 ( es_rng_bit                 ),
     .ast2pinmux_i                 ( ast2pinmux                 ),
     .calib_rdy_i                  ( ast_init_done              ),
     .ast_init_done_i              ( ast_init_done              ),

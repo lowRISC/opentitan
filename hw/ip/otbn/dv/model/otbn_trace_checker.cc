@@ -20,6 +20,8 @@ OtbnTraceChecker::OtbnTraceChecker()
       iss_started_(false),
       iss_pending_(false),
       done_(true),
+      tolerate_result_mismatch_(false),
+      num_tolerating_checks_(0),
       seen_err_(false),
       last_data_vld_(false) {
   OtbnTraceSource::get().AddListener(this);
@@ -245,6 +247,14 @@ const OtbnIssTraceEntry::IssData *OtbnTraceChecker::PopIssData() {
 
 void OtbnTraceChecker::set_no_sec_wipe_chk() { no_sec_wipe_data_chk_ = true; }
 
+void OtbnTraceChecker::TolerateResultMismatch(unsigned int num_checks) {
+  tolerate_result_mismatch_ = true;
+  num_tolerating_checks_ = num_checks;
+  std::cerr << "INFO: Next " << num_tolerating_checks_
+            << " RTL/ISS trace entry checks will "
+            << "tolerate a single mismatch.\n";
+}
+
 bool OtbnTraceChecker::MatchPair() {
   if (!(rtl_pending_ && iss_pending_)) {
     return true;
@@ -256,17 +266,40 @@ bool OtbnTraceChecker::MatchPair() {
   std::string err_desc;
   if (!(rtl_entry_.compare_rtl_iss_entries(iss_entry_, no_sec_wipe_data_chk_,
                                            &err_desc))) {
-    std::cerr << "ERROR: Mismatch between RTL and ISS trace entries: "
-              << err_desc << "\n  RTL entry is:\n";
-    rtl_entry_.print("    ", std::cerr);
-    std::cerr << "  ISS entry is:\n";
-    iss_entry_.print("    ", std::cerr);
-    seen_err_ = true;
-    return false;
-    if (rtl_entry_.trace_type() == OtbnTraceEntry::WipeComplete) {
-      no_sec_wipe_data_chk_ = false;
+    if (tolerate_result_mismatch_) {
+      std::cerr << "INFO: Mismatch between RTL and ISS trace entries "
+                << "was tolerated: " << err_desc << "\n  RTL entry is:\n";
+      rtl_entry_.print("    ", std::cerr);
+      std::cerr << "  ISS entry is:\n";
+      iss_entry_.print("    ", std::cerr);
+
+      std::cerr << "INFO: No longer tolerating RTL/ISS mismatches.\n";
+      tolerate_result_mismatch_ = false;
+      num_tolerating_checks_ = 0;
+    } else {
+      std::cerr << "ERROR: Mismatch between RTL and ISS trace entries: "
+                << err_desc << "\n  RTL entry is:\n";
+      rtl_entry_.print("    ", std::cerr);
+      std::cerr << "  ISS entry is:\n";
+      iss_entry_.print("    ", std::cerr);
+      seen_err_ = true;
+      return false;
+      if (rtl_entry_.trace_type() == OtbnTraceEntry::WipeComplete) {
+        no_sec_wipe_data_chk_ = false;
+      }
     }
   }
+
+  // Handle the tolerance window
+  if (num_tolerating_checks_ > 0) {
+    num_tolerating_checks_--;
+    if (num_tolerating_checks_ == 0) {
+      tolerate_result_mismatch_ = false;
+      std::cerr << "INFO: No longer tolerating RTL/ISS mismatches "
+                << "(tolerance window expired).\n";
+    }
+  }
+
   // We've got a matching pair of entries. Move the ISS data out of the (now
   // defunct) iss_entry_ and into last_data_.
   if (rtl_entry_.trace_type() == OtbnTraceEntry::Exec) {

@@ -3,7 +3,7 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:dv:top_darjeeling_chip_env:0.1"
-description: "CHIP DV UVM environmnt"
+description: "CHIP DV UVM environment"
 filesets:
   files_dv:
     depend:
@@ -75,7 +75,6 @@ filesets:
       - seq_lib/chip_sw_sleep_pin_wake_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_sleep_pin_retention_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_soc_proxy_smoke_vseq.sv: {is_include_file: true}
-      - seq_lib/chip_sw_soc_proxy_external_alerts_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_soc_proxy_external_wakeup_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_soc_proxy_gpio_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_uart_tx_rx_vseq.sv: {is_include_file: true}
@@ -100,7 +99,6 @@ filesets:
       - seq_lib/chip_sw_sram_ctrl_execution_main_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_sram_ctrl_scrambled_access_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_keymgr_dpe_key_derivation_vseq.sv: {is_include_file: true}
-      - seq_lib/chip_sw_ast_clk_outputs_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_sensor_ctrl_status_intr_vseq.sv: {is_include_file: true}
       # - seq_lib/chip_sw_rv_dm_access_after_wakeup_vseq.sv: {is_include_file: true}
       # - seq_lib/chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq.sv: {is_include_file: true}
@@ -127,11 +125,9 @@ filesets:
       - seq_lib/chip_sw_rom_e2e_jtag_debug_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_rom_e2e_jtag_inject_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_power_virus_vseq.sv: {is_include_file: true}
-      - seq_lib/chip_sw_ast_clk_rst_inputs_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_dma_spi_hw_handshake_vseq.sv: {is_include_file: true}
       - autogen/chip_env_pkg__params.sv: {is_include_file: true}
       - alerts_if.sv
-      - ast_ext_clk_if.sv
       - ast_supply_if.sv
       - pwrmgr_low_power_if.sv
       - rstmgr_cnsty_fault_if.sv
@@ -146,6 +142,7 @@ generate:
     parameters:
       name: chip
       top_hjson: ../../data/top_darjeeling.hjson
+    position: prepend
 
 targets:
   default:

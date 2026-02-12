@@ -14,10 +14,6 @@
 //
 
 {
-    // 256 bit seed to be used for generation of partition item default values.
-    // Can be overridden on the command line with the --seed switch.
-    seed: "36021179872380457113239299468132194022238108125576166239904535336103582949069"
-
     otp: {
         width: "2", // bytes
         depth: "8192"
@@ -63,23 +59,25 @@
         ]
     }
 
-    // The enumeration order below defines the address map of the OTP controller,
-    // if the offsets are not defined explicitly via the "offset" key.
+
+    // The enumeration order below defines OTP address map,
+    // unless the offsets are assigned explicitly via the "offset" key.
     // Note that the digest items are added automatically to the address map.
     partitions: [
         {
-            name:       "VENDOR_TEST",
-            variant:    "Unbuffered",
-            absorb:     false,
-            size:       "64", // in bytes
-            secret:     false,
-            sw_digest:  true,
-            hw_digest:  false,
-            write_lock: "Digest",
-            read_lock:  "CSR",
-            key_sel:    "NoKey",
-            integrity:  false, // Do not use integrity (ECC) on this partition.
-            bkout_type: false, // Do not generate a breakout type for this partition.
+            name:           "VENDOR_TEST",
+            variant:        "Unbuffered",
+            absorb:         false,
+            secret:         false,
+            sw_digest:      true,
+            hw_digest:      false,
+            write_lock:     "Digest",
+            read_lock:      "CSR",
+            key_sel:        "NoKey",
+            integrity:      false, // Do not use integrity (ECC) on this partition.
+            bkout_type:     false, // Do not generate a breakout type for this partition.
+            zeroizable:     false,
+            skip_sw_header: true,
             items: [
                 {
                     name: "SCRATCH",
@@ -98,7 +96,6 @@
             name:       "CREATOR_SW_CFG",
             variant:    "Unbuffered",
             absorb:     false,
-            size:       "320", // in bytes
             secret:     false,
             sw_digest:  true,
             hw_digest:  false,
@@ -107,6 +104,7 @@
             key_sel:    "NoKey",
             integrity:  true,  // Use integrity (ECC) on this partition.
             bkout_type: false, // Do not generate a breakout type for this partition.
+            zeroizable: false,
             items: [
                 {
                     name: "CREATOR_SW_CFG_AST_CFG",
@@ -241,7 +239,7 @@
                     size: "4"
                 }
                 {
-                    name: "CREATOR_SW_CFG_SRAM_KEY_RENEW_EN",
+                    name: "CREATOR_SW_CFG_SRAM_KEY_RENEW_AND_INIT_EN",
                     size: "4"
                 }
             ],
@@ -254,7 +252,6 @@
             name:       "OWNER_SW_CFG",
             variant:    "Unbuffered",
             absorb:     false,
-            size:       "632", // in bytes
             secret:     false,
             sw_digest:  true,
             hw_digest:  false,
@@ -263,6 +260,7 @@
             key_sel:    "NoKey",
             integrity:  true,
             bkout_type: false,
+            zeroizable: false,
             items: [
                 {
                     name: "OWNER_SW_CFG_ROM_ERROR_REPORTING",
@@ -282,11 +280,11 @@
                 }
                 {
                     name: "OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION",
-                    size: "400"
+                    size: "420"
                 }
                 {
                     name: "OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION",
-                    size: "64"
+                    size: "28"
                 }
                 {
                     name: "OWNER_SW_CFG_ROM_ALERT_ACCUM_THRESH",
@@ -351,6 +349,7 @@
             key_sel:    "NoKey",
             integrity:  true,
             bkout_type: false,
+            zeroizable: false,
             items: [
                 {
                     name: "OWNERSHIP_SLOT_STATE_ROT_OWNER_AUTH",
@@ -425,6 +424,7 @@
             key_sel:    "NoKey",
             integrity:  true,
             bkout_type: false,
+            zeroizable: false,
             items: [
                 {
                     name: "ROT_CREATOR_AUTH_NON_RAW_MFW_CODESIGN_KEY",
@@ -496,6 +496,7 @@
             key_sel:    "NoKey",
             integrity:  true,
             bkout_type: false,
+            zeroizable: false,
             items: [
                 {
                     name: "ROT_OWNER_AUTH_SLOT0_KEYMANIFEST_KEY",
@@ -533,6 +534,7 @@
             key_sel:    "NoKey",
             integrity:  true,
             bkout_type: false,
+            zeroizable: false,
             items: [
                 {
                     name: "ROT_OWNER_AUTH_SLOT1_KEYMANIFEST_KEY",
@@ -570,6 +572,7 @@
             key_sel:    "NoKey",
             integrity:  true,
             bkout_type: false,
+            zeroizable: false,
             items: [
                 {
                     name: "PLAT_INTEG_AUTH_SLOT0_KEYMANIFEST_KEY",
@@ -607,6 +610,7 @@
             key_sel:    "NoKey",
             integrity:  true,
             bkout_type: false,
+            zeroizable: false,
             items: [
                 {
                     name: "PLAT_INTEG_AUTH_SLOT1_KEYMANIFEST_KEY",
@@ -644,6 +648,7 @@
             key_sel:    "NoKey",
             integrity:  true,
             bkout_type: false,
+            zeroizable: false,
             items: [
                 {
                     name: "PLAT_OWNER_AUTH_SLOT0_KEYMANIFEST_KEY",
@@ -681,6 +686,7 @@
             key_sel:    "NoKey",
             integrity:  true,
             bkout_type: false,
+            zeroizable: false,
             items: [
                 {
                     name: "PLAT_OWNER_AUTH_SLOT1_KEYMANIFEST_KEY",
@@ -718,6 +724,7 @@
             key_sel:    "NoKey",
             integrity:  true,
             bkout_type: false,
+            zeroizable: false,
             items: [
                 {
                     name: "PLAT_OWNER_AUTH_SLOT2_KEYMANIFEST_KEY",
@@ -755,6 +762,7 @@
             key_sel:    "NoKey",
             integrity:  true,
             bkout_type: false,
+            zeroizable: false,
             items: [
                 {
                     name: "PLAT_OWNER_AUTH_SLOT3_KEYMANIFEST_KEY",
@@ -794,11 +802,12 @@
             // Integrity is handled at a higher level by SW as described below.
             integrity:  false,
             bkout_type: false,
+            zeroizable: false,
             items: [
                 {
                     name: "EXT_NVM_ANTIREPLAY_FRESHNESS_CNT",
                     size: "1024"
-                    desc: ''' Fully SW managed patition
+                    desc: ''' Fully SW managed partition
                     1 bit (double bit allocated for redundancy - i.e. 2 physical bits for every logical bit) per day
                     assuming 10 year product lifecycle, allocating 8192 bits of freshness protection.
                     Implemented as thermometer encoding. Redundant bit programming & logical OR-ing managed by
@@ -821,11 +830,12 @@
             key_sel:    "NoKey",
             integrity:  true,
             bkout_type: false,
+            zeroizable: false,
             items: [
                 {
                     name: "ROM_PATCH_DATA",
                     size: "9192"
-                    desc: ''' Fully SW managed patition
+                    desc: ''' Fully SW managed partition
                     ROM patch section
                     signed patch(es)
                     Each patch Contains header, signature, patch match/redirect configuration and patch code
@@ -837,16 +847,18 @@
             '''
         }
         {
-            name:       "HW_CFG0",
-            variant:    "Buffered",
-            secret:     false,
-            sw_digest:  false,
-            hw_digest:  true,
-            write_lock: "Digest",
-            read_lock:  "None",
-            key_sel:    "NoKey",
-            integrity:  true,
-            bkout_type: true,
+            name:           "HW_CFG0",
+            variant:        "Buffered",
+            secret:         false,
+            sw_digest:      false,
+            hw_digest:      true,
+            write_lock:     "Digest",
+            read_lock:      "None",
+            key_sel:        "NoKey",
+            integrity:      true,
+            bkout_type:     true,
+            zeroizable:     false,
+            skip_sw_header: true,
             items: [
                 {
                     name:        "DEVICE_ID",
@@ -869,16 +881,18 @@
             '''
         }
         {
-            name:       "HW_CFG1",
-            variant:    "Buffered",
-            secret:     false,
-            sw_digest:  false,
-            hw_digest:  true,
-            write_lock: "Digest",
-            read_lock:  "None",
-            key_sel:    "NoKey",
-            integrity:  true,
-            bkout_type: true,
+            name:           "HW_CFG1",
+            variant:        "Buffered",
+            secret:         false,
+            sw_digest:      false,
+            hw_digest:      true,
+            write_lock:     "Digest",
+            read_lock:      "None",
+            key_sel:        "NoKey",
+            integrity:      true,
+            bkout_type:     true,
+            zeroizable:     false,
+            skip_sw_header: true,
             items: [
                 {
                     name:        "SOC_DBG_STATE",
@@ -931,16 +945,19 @@
             '''
         }
         {
-            name:       "SECRET0",
-            variant:    "Buffered",
-            secret:     true,
-            sw_digest:  false,
-            hw_digest:  true,
-            write_lock: "Digest",
-            read_lock:  "Digest",
-            key_sel:    "Secret0Key",
-            integrity:  true,
-            bkout_type: false,
+            name:           "SECRET0",
+            variant:        "Buffered",
+            secret:         true,
+            sw_digest:      false,
+            hw_digest:      true,
+            write_lock:     "Digest",
+            read_lock:      "Digest",
+            ignore_read_lock_in_rma: true,
+            key_sel:        "Secret0Key",
+            integrity:      true,
+            bkout_type:     false,
+            zeroizable:     true,
+            skip_sw_header: true,
             items: [
                 {
                     name: "TEST_UNLOCK_TOKEN",
@@ -961,16 +978,19 @@
             '''
         }
         {
-            name:       "SECRET1",
-            variant:    "Buffered",
-            secret:     true,
-            sw_digest:  false,
-            hw_digest:  true,
-            write_lock: "Digest",
-            read_lock:  "Digest",
-            key_sel:    "Secret1Key",
-            integrity:  true,
-            bkout_type: false,
+            name:           "SECRET1",
+            variant:        "Buffered",
+            secret:         true,
+            sw_digest:      false,
+            hw_digest:      true,
+            write_lock:     "Digest",
+            read_lock:      "Digest",
+            ignore_read_lock_in_rma: true,
+            key_sel:        "Secret1Key",
+            integrity:      true,
+            bkout_type:     false,
+            zeroizable:     true,
+            skip_sw_header: true,
             items: [
                    {
                     name: "SRAM_DATA_KEY_SEED",
@@ -983,16 +1003,19 @@
             '''
         }
         {
-            name:       "SECRET2",
-            variant:    "Buffered",
-            secret:     true,
-            sw_digest:  false,
-            hw_digest:  true,
-            write_lock: "Digest",
-            read_lock:  "Digest",
-            key_sel:    "Secret2Key",
-            integrity:  true,
-            bkout_type: false,
+            name:           "SECRET2",
+            variant:        "Buffered",
+            secret:         true,
+            sw_digest:      false,
+            hw_digest:      true,
+            write_lock:     "Digest",
+            read_lock:      "Digest",
+            ignore_read_lock_in_rma: true,
+            key_sel:        "Secret2Key",
+            integrity:      true,
+            bkout_type:     false,
+            zeroizable:     true,
+            skip_sw_header: true,
             items: [
                 {
                     name: "RMA_TOKEN",
@@ -1023,16 +1046,18 @@
             '''
         }
         {
-            name:       "SECRET3",
-            variant:    "Buffered",
-            secret:     true,
-            sw_digest:  false,
-            hw_digest:  true,
-            write_lock: "Digest",
-            read_lock:  "Digest",
-            key_sel:    "Secret3Key",
-            integrity:  true,
-            bkout_type: false,
+            name:           "SECRET3",
+            variant:        "Buffered",
+            secret:         true,
+            sw_digest:      false,
+            hw_digest:      true,
+            write_lock:     "Digest",
+            read_lock:      "Digest",
+            key_sel:        "Secret3Key",
+            integrity:      true,
+            bkout_type:     false,
+            zeroizable:     true,
+            skip_sw_header: true,
             items: [
                 {
                     name: "OWNER_SEED",
@@ -1046,16 +1071,17 @@
             '''
         }
         {
-            name:       "LIFE_CYCLE",
-            variant:    "LifeCycle",
-            secret:     false,
-            sw_digest:  false,
-            hw_digest:  false,
-            write_lock: "None",
-            read_lock:  "None",
-            key_sel:    "NoKey",
-            integrity:  true,
-            bkout_type: false,
+            name:           "LIFE_CYCLE",
+            variant:        "LifeCycle",
+            secret:         false,
+            sw_digest:      false,
+            hw_digest:      false,
+            write_lock:     "None",
+            read_lock:      "None",
+            key_sel:        "NoKey",
+            integrity:      true,
+            bkout_type:     false,
+            skip_sw_header: true,
             items: [
                 // The life cycle transition count is specified
                 // first such that any programming attempt of the life cycle
@@ -1065,7 +1091,7 @@
                 // life cycle controller to ensure that the counter is always written
                 // before any state update. I.e., the life cycle controller
                 // already splits the counter and state updates into two
-                // supsequent requests through the LCI, where the first request
+                // subsequent requests through the LCI, where the first request
                 // only contains the updated transition counter, and the second
                 // request the updated transition counter and state.
                 {

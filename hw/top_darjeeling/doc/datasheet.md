@@ -16,11 +16,11 @@ It contains a control network (CTN) crossbar for attaching shared SoC-level peri
 
 Communication with the SoC is mainly via the mailboxes, DMA and SoC proxy module.
 The SoC proxy module serves as a comportable IP frontend for incoming IRQs, reset requests, wake up requests, alerts and the TL-UL egress port into the CTN network.
-Egress TL-UL requests are filtered by address checking and binary address translation (BAT) logic that provides flexibility and isolation in the CTN space.
+Egress TL-UL requests go through base address translation and range-based access control checks, which provides flexibility and isolation in the CTN space.
 Code can be executed from both internal memories (ROM partitions 1 and 2, main SRAM) and CTN SRAM.
 
 Debug access is established via the JTAG TAP attached to a debug TL-UL crossbar.
-Through that, the debug module, life cycle controller, and a JTAG mailbox can be accessed.
+Through that, a JTAG mailbox, the RISC-V debug module, the SoC debug controller, and the life cycle controller can be accessed.
 The JTAG mailbox can be used to implement firmware-driven SoC-level debug authorization.
 Infrastructure signals such as clocks, resets and the entropy source are provided by the analog sensor top (AST) block, which is connected to the Darjeeling-internal power, clock and reset manager blocks.
 The sensor control block provides a comportable IP front-end for the AST block that the Ibex processor can interact with.
@@ -41,11 +41,12 @@ The following table provides a more detailed summary of the supported features:
           <ul>
             <li>3-stage pipeline, single-cycle multiplier</li>
             <li>Support for the full ratified bit manipulation extension and some unratified subsets</li>
-            <li>4KiB instruction cache with 2 ways</li>
+            <li>4 KiB instruction cache with 2 ways</li>
             <li>RISC-V compliant JTAG DM (debug module)</li>
             <li>PLIC (platform level interrupt controller)</li>
             <li>U/M (user/machine) execution modes </li>
-            <li>Enhanced Physical Memory Protection (ePMP)</li>
+            <li>Enhanced Physical Memory Protection (ePMP) with 16 regions</li>
+            <li>Address translation with 32 regions</li>
             <li>Security features:
               <ul>
                 <li>Low-latency memory scrambling on the icache</li>
@@ -62,7 +63,7 @@ The following table provides a more detailed summary of the supported features:
         <li>Security peripherals:
           <ul>
             <li>AES-128/192/256 with ECB/CBC/CFB/OFB/CTR modes</li>
-            <li>HMAC / SHA2-256</li>
+            <li>HMAC / SHA2-256, 384, 512</li>
             <li>KMAC / SHA3-224, 256, 384, 512, [c]SHAKE-128, 256</li>
             <li>Programmable big number accelerator for RSA and ECC (OTBN)</li>
             <li>NIST-compliant cryptographically secure random number generator (CSRNG)</li>
@@ -73,6 +74,9 @@ The following table provides a more detailed summary of the supported features:
             <li>OTP controller with access controls and memory scrambling</li>
             <li>Flash controller with access controls and memory scrambling</li>
             <li>ROM and SRAM controllers with low-latency memory scrambling</li>
+            <li>SoC Debug Controller</li>
+            <li>Register-Access Control List (RACL) Controller</li>
+            <li>Access Control Range Check</li>
           </ul>
         </li>
       </ul>
@@ -82,17 +86,18 @@ The following table provides a more detailed summary of the supported features:
         <li>Memory:
           <ul>
             <li>1 MiB shared CTN SRAM (in wrapper)</li>
-            <li>64KiB main SRAM</li>
-            <li>4KiB retention SRAM</li>
-            <li>32KiB ROM partition 1</li>
-            <li>64KiB ROM partition 2</li>
-            <li>16KiB (=128 kibit) OTP</li>
+            <li>64 KiB main SRAM</li>
+            <li>4 KiB retention SRAM</li>
+            <li>4 KiB shared mailbox SRAM</li>
+            <li>32 KiB ROM partition 1</li>
+            <li>64 KiB ROM partition 2</li>
+            <li>16 KiB (=128 Kibit) OTP</li>
           </ul>
         </li>
         <br></br>
-        <li>IO peripherals:
+        <li>I/O peripherals:
           <ul>
-            <li>32 bit GPIO</li>
+            <li>32 bit GPIO with 8 input period counters</li>
             <li>1x UART</li>
             <li>1x I2C with host and device modes</li>
             <li>1x SPI host with 1 chip select</li>
@@ -135,27 +140,12 @@ The following table provides a more detailed summary of the supported features:
 ## Discrete Earl Grey Differences
 
 The Darjeeling configuration derived from the OpenTitan's discrete "Earl Grey" has been extended to meet the requirements for an SoC-integrated RoT.
-The main processing elements and cryptographic features are significantly similar, while several unneeded IO peripherals in an integrated context have been removed. A set of new IP blocks have been developed to enable integration into a larger SoC.
-These blocks are highlighted with a blue in the block diagram, and include:
+The main processing elements and cryptographic features are significantly similar, while several unneeded IO peripherals in an integrated context have been removed. A set of new IP blocks have been developed to enable integration into a larger SoC:
 
-- An [extended key manager block](https://github.com/lowRISC/opentitan/blob/integrated_dev/hw/ip/keymgr_dpe/README.md) with support for TCG’s DICE Protection Environment (DPE)
-- A [DMA controller](https://github.com/lowRISC/opentitan/blob/integrated_dev/hw/ip/dma/doc/theory_of_operation.md) facilitating data exchange between the OpenTitan IP and the SoC
-- A [mailbox IP](https://github.com/lowRISC/opentitan/blob/integrated_dev/hw/ip/mbx/README.md) with TL-UL bus interface and configurable shared memory region
+- An [extended key manager block](../../ip/keymgr_dpe/README.md) with support for TCG’s DICE Protection Environment (DPE)
+- A [DMA controller](../../ip/dma/README.md) facilitating data exchange between the OpenTitan IP and the SoC
+- A [mailbox](../../ip/mbx/README.md) with TL-UL bus interface, configurable shared memory regions, and support for the PCIe Data Object Exchange (DOE) protocol
 - A SoC proxy module that serves as a comportable fronted for external interrupts, alerts and the like
-
-## Development Status
-
-OpenTitan Darjeeling is currently developed on a side branch named [opentitan/integrated_dev](https://github.com/lowRISC/opentitan/blob/integrated_dev), which will be consolidated with [opentitan/master](https://github.com/lowRISC/opentitan/blob/master) at a later date.
-
-Certain functions and blocks remain under active development.
-Contributions are welcome, but this design is provided as-is.
-
-- DV and SoC wrapper infrastructure is being developed to enable the debug crossbar.
-- The binary translation logic and the SoC DFx control module are under development. The former will allow for granular filtering and remapping of TL-UL requests, while the latter will provide SoC level gating functionality for DFT and debug infrastructure.
-- Crossbar generation support at the SoC-integration is not yet mature, so some TL-UL connections have not been made at this point.
-
-Since Darjeeling was derived from the discrete "Earl Grey" chip, several legacy structures are temporarily present.
-
-- The pinmux and padring will eventually be removed.
-- The always-on / non-always-on power and clock domain split from "Earl Grey" will eventually be removed. This is evident in the current clock and reset tree organization.
-- The JTAG TAP has not been fully unified yet (i.e., the life cycle controller and debug module still have two separate TAPs).
+- An [SoC debug controller](../../ip/soc_dbg_ctrl/README.md), which controls debug and test access to the SoC
+- An [access control range check module](../ip_autogen/ac_range_check/README.md) that ensures that Darjeeling can access only authorized addresses in the SoC
+- A [register-access control list controller](../ip_autogen/racl_ctrl/README.md) that defines role-based access permissions to Darjeeling's registers

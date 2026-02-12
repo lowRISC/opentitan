@@ -4,6 +4,7 @@
 {
   name: "aon_timer"
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
@@ -136,9 +137,9 @@
       name: timer_cfg_cg
       desc: '''
         Includes possible values of all registers of AON timer. For 32b registers, bins are
-        introduced in order to simplfy coverage. Maximum and minimum values are collected in
+        introduced in order to simplify coverage. Maximum and minimum values are collected in
         a separate bin to guarantee that they are checked. 32 separate bins are auto-generated
-        in order to distrubute values evenly.
+        in order to distribute values evenly.
       '''
     }
   ]

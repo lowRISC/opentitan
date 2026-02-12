@@ -4,24 +4,26 @@
 
 use anyhow::Result;
 use clap::{Args, Subcommand};
-use serde_annotate::Annotate;
 use std::any::Any;
 use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::{Read, Write};
+use std::io::Read;
 use std::rc::Rc;
 use std::str::FromStr;
 use std::time::Duration;
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::io::gpio::{
     ClockNature, Edge, GpioPin, MonitoringReadResponse, MonitoringStartResponse, PinMode, PullMode,
 };
 use opentitanlib::transport::Capability;
 use opentitanlib::util::file;
 use opentitanlib::util::raw_tty::RawTty;
+use opentitanlib::util::vcd::{
+    Header, ScalarValue, ValueChangeItem, ValueChangeSection, VcdWriter, dump_vcd_wire_vardefs,
+};
 use opentitanlib::util::voltage::Voltage;
 
 #[derive(Debug, Args)]
@@ -42,7 +44,7 @@ impl CommandDispatch for GpioRead {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::GPIO).ok()?;
         let gpio_pin = transport.gpio_pin(&self.pin)?;
         let value = gpio_pin.read()?;
@@ -68,7 +70,7 @@ impl CommandDispatch for GpioWrite {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::GPIO).ok()?;
         let gpio_pin = transport.gpio_pin(&self.pin)?;
 
@@ -92,7 +94,7 @@ impl CommandDispatch for GpioSetMode {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::GPIO).ok()?;
         let gpio_pin = transport.gpio_pin(&self.pin)?;
         gpio_pin.set_mode(self.mode)?;
@@ -115,7 +117,7 @@ impl CommandDispatch for GpioSetPullMode {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::GPIO).ok()?;
         let gpio_pin = transport.gpio_pin(&self.pin)?;
         gpio_pin.set_pull_mode(self.pull_mode)?;
@@ -147,7 +149,7 @@ impl CommandDispatch for GpioSet {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::GPIO).ok()?;
         let gpio_pin = transport.gpio_pin(&self.pin)?;
 
@@ -179,7 +181,7 @@ impl CommandDispatch for GpioAnalogRead {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::GPIO).ok()?;
         let gpio_pin = transport.gpio_pin(&self.pin)?;
         let volts = gpio_pin.analog_read()?;
@@ -204,7 +206,7 @@ impl CommandDispatch for GpioAnalogWrite {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::GPIO).ok()?;
         let gpio_pin = transport.gpio_pin(&self.pin)?;
 
@@ -225,7 +227,7 @@ impl CommandDispatch for GpioApplyStrapping {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::GPIO).ok()?;
         transport.pin_strapping(&self.name)?.apply()?;
         Ok(None)
@@ -268,7 +270,7 @@ impl CommandDispatch for GpioMonitoringStart {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport
             .capabilities()?
             .request(Capability::GPIO | Capability::GPIO_MONITORING)
@@ -342,7 +344,7 @@ impl CommandDispatch for GpioMonitoringRead {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport
             .capabilities()?
             .request(Capability::GPIO | Capability::GPIO_MONITORING)
@@ -382,64 +384,80 @@ fn write_vcd_header(
     clock_nature: ClockNature,
     start_response: &MonitoringStartResponse,
 ) -> Result<()> {
-    let mut file = File::create(file)?;
-    writeln!(&mut file, "$version")?;
+    let file = File::create(file)?;
+    let mut writer = VcdWriter::new(file);
     let version = super::version::VersionResponse::default();
-    writeln!(
-        &mut file,
-        "   opentitantool {} {}",
+    let version_str = format!(
+        "opentitantool {} {}",
         version.version.as_ref().map_or("<unknown>", String::as_str),
         match version.clean {
             Some(true) => "clean",
             Some(false) => "modified",
             None => "<unknown>",
         }
-    )?;
-    writeln!(&mut file, "$end")?;
-    match clock_nature {
+    );
+    let timescale_ps = match clock_nature {
         ClockNature::Wallclock { resolution, .. } => {
-            writeln!(
-                &mut file,
-                "$timescale {}ps $end",
-                1000000000000u64 / resolution
-            )?;
+            Some(1_000_000_000_000u128 / resolution as u128)
         }
-        ClockNature::Unspecified => (),
-    }
-    writeln!(&mut file, "$scope module logic $end")?;
-    for (n, pin) in pins.iter().enumerate() {
-        writeln!(&mut file, "$var wire 1 '{} {} $end", n, pin)?;
-    }
-    writeln!(&mut file, "$upscope $end")?;
-    writeln!(&mut file, "$enddefinitions $end")?;
-    writeln!(&mut file, "#{}", start_response.timestamp)?;
+        ClockNature::Unspecified => None,
+    };
+    writer.write_header(&Header {
+        timescale_ps,
+        date: None,
+        version: Some(version_str),
+    })?;
+    let pin_info = pins
+        .iter()
+        .enumerate()
+        .map(|(n, name)| (format!("'{}", n), Some(name.to_string())))
+        .collect::<Vec<_>>();
+    writer.write_vardefs(&dump_vcd_wire_vardefs(String::from("logic"), pin_info))?;
+    let mut changes = vec![ValueChangeItem::Timestamp {
+        step: start_response.timestamp as u128,
+    }];
     for (n, v) in start_response.initial_levels.iter().enumerate() {
-        writeln!(&mut file, "{}'{}", if *v { 1 } else { 0 }, n)?;
+        let value = if *v {
+            ScalarValue::One
+        } else {
+            ScalarValue::Zero
+        };
+        changes.push(ValueChangeItem::Scalar {
+            identifier: format!("'{}", n),
+            value,
+        });
     }
+    writer.write_value_change_section(&ValueChangeSection { changes }, 0u128)?;
+    writer.flush()?;
     Ok(())
 }
 
 /// Appends the VCD data to the end of the file specified. Note the order of the gpios should
 /// be consistent between calls and match the order from the gpio start command.
 fn append_vcd_data(file: &str, read_response: &MonitoringReadResponse, last: bool) -> Result<()> {
-    let mut file = std::fs::OpenOptions::new().append(true).open(file)?;
+    let file = std::fs::OpenOptions::new().append(true).open(file)?;
+    let mut writer = VcdWriter::new(file);
+    let mut changes = Vec::new();
     for event in &read_response.events {
-        writeln!(&mut file, "#{}", event.timestamp)?;
-        writeln!(
-            &mut file,
-            "{}'{}",
-            match event.edge {
-                Edge::Rising => 1,
-                Edge::Falling => 0,
-            },
-            event.signal_index
-        )?;
+        changes.push(ValueChangeItem::Timestamp {
+            step: event.timestamp as u128,
+        });
+        let identifier = format!("'{}", event.signal_index);
+        let value = match event.edge {
+            Edge::Rising => ScalarValue::One,
+            Edge::Falling => ScalarValue::Zero,
+        };
+        changes.push(ValueChangeItem::Scalar { identifier, value });
     }
     // Output timestamp of final reading (all signals remained stable from the last edge until
     // this time.)
     if last {
-        writeln!(&mut file, "#{}", read_response.timestamp)?;
+        writer.write_value_change_item(&ValueChangeItem::Timestamp {
+            step: read_response.timestamp as u128,
+        })?;
     }
+    writer.write_value_change_section(&ValueChangeSection { changes }, 0u128)?;
+    writer.flush()?;
     Ok(())
 }
 
@@ -467,7 +485,7 @@ impl CommandDispatch for GpioMonitoringVcd {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport
             .capabilities()?
             .request(Capability::GPIO | Capability::GPIO_MONITORING)
@@ -553,7 +571,7 @@ impl CommandDispatch for GpioRemoveStrapping {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::GPIO).ok()?;
         transport.pin_strapping(&self.name)?.remove()?;
         Ok(None)
@@ -571,7 +589,7 @@ impl CommandDispatch for GpioMonitoring {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         self.command.run(context, transport)
     }
 }
@@ -619,7 +637,7 @@ impl CommandDispatch for GpioBitbang {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport
             .capabilities()?
             .request(Capability::GPIO_BITBANGING)
@@ -680,7 +698,7 @@ impl CommandDispatch for GpioDacBang {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport
             .capabilities()?
             .request(Capability::GPIO_BITBANGING)

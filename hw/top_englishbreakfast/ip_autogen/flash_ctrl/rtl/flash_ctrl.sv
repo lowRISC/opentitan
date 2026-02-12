@@ -13,6 +13,8 @@ module flash_ctrl
   import flash_ctrl_top_specific_pkg::*;  import flash_ctrl_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn    = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned          AlertSkewCycles = 1,
   parameter flash_key_t           RndCnstAddrKey  = RndCnstAddrKeyDefault,
   parameter flash_key_t           RndCnstDataKey  = RndCnstDataKeyDefault,
   parameter all_seeds_t           RndCnstAllSeeds = RndCnstAllSeedsDefault,
@@ -983,6 +985,7 @@ module flash_ctrl
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_senders
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(IsFatal[i])
     ) u_alert_sender (
       .clk_i,
@@ -1488,14 +1491,5 @@ module flash_ctrl
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_core, alert_tx_o[1])
-
-  // Assertions for countermeasures inside prim_flash
-  `ifndef PRIM_DEFAULT_IMPL
-    `define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
-  `endif
-  if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_reg_we_assert_generic
-    `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(PrimRegWeOnehotCheck_A,
-        u_eflash.u_flash.gen_generic.u_impl_generic.u_reg_top, alert_tx_o[3])
-  end
 
 endmodule

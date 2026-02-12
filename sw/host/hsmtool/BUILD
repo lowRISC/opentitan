@@ -6,6 +6,11 @@ load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_doc", "rust_library", "r
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
+)
+
 alias(
     name = "binding_srcs",
     actual = "@crate_index//:cryptoki-sys-binding-srcs",
@@ -89,6 +94,10 @@ genrule(
 rust_library(
     name = "hsmlib",
     srcs = [
+        "src/commands/aes/export.rs",
+        "src/commands/aes/generate.rs",
+        "src/commands/aes/import.rs",
+        "src/commands/aes/mod.rs",
         "src/commands/ecdsa/export.rs",
         "src/commands/ecdsa/generate.rs",
         "src/commands/ecdsa/import.rs",
@@ -96,6 +105,10 @@ rust_library(
         "src/commands/ecdsa/sign.rs",
         "src/commands/ecdsa/verify.rs",
         "src/commands/exec.rs",
+        "src/commands/kdf/export.rs",
+        "src/commands/kdf/generate.rs",
+        "src/commands/kdf/import.rs",
+        "src/commands/kdf/mod.rs",
         "src/commands/mod.rs",
         "src/commands/object/destroy.rs",
         "src/commands/object/list.rs",
@@ -121,10 +134,12 @@ rust_library(
         "src/commands/spx/verify.rs",
         "src/commands/token.rs",
         "src/error.rs",
+        "src/extra/mod.rs",
+        "src/extra/spxef.rs",
+        "src/extra/spxkms.rs",
         "src/lib.rs",
         "src/module.rs",
         "src/profile.rs",
-        "src/spxef/mod.rs",
         "src/util/attribute/attr.rs",
         "src/util/attribute/data.rs",
         "src/util/attribute/date.rs",
@@ -137,7 +152,9 @@ rust_library(
         "src/util/key/mod.rs",
         "src/util/key/rsa.rs",
         "src/util/mod.rs",
+        "src/util/secret.rs",
         "src/util/signing.rs",
+        "src/util/wrap.rs",
     ],
     compile_data = [
         ":attribute_type",
@@ -158,20 +175,22 @@ rust_library(
         "//sw/host/hsmtool/acorn",
         "//sw/host/sphincsplus",
         "@crate_index//:anyhow",
+        "@crate_index//:base64ct",
         "@crate_index//:clap",
         "@crate_index//:cryptoki",
         "@crate_index//:cryptoki-sys",
         "@crate_index//:der",
         "@crate_index//:directories",
         "@crate_index//:ecdsa",
+        "@crate_index//:erased-serde",
         "@crate_index//:hex",
         "@crate_index//:indexmap",
         "@crate_index//:log",
-        "@crate_index//:once_cell",
         "@crate_index//:p256",
         "@crate_index//:pem-rfc7468",
         "@crate_index//:rand",
         "@crate_index//:regex",
+        "@crate_index//:reqwest",
         "@crate_index//:rsa",
         "@crate_index//:rustix",
         "@crate_index//:serde",

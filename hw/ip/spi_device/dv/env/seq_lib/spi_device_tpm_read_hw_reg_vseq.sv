@@ -61,7 +61,7 @@ class spi_device_tpm_read_hw_reg_vseq extends spi_device_tpm_base_vseq;
             csr_update(.csr(tpm_hw_regs[j]));
           end
           // if SPI has a ongoing transaction, wait until it completes
-          // no need to write the TPM HW reg mutliple times during a SPI transaction,
+          // no need to write the TPM HW reg multiple times during a SPI transaction,
           // as host should read the HW reg to ensure it updates successfully before
           // update it again.
           `DV_WAIT(cfg.spi_host_agent_cfg.vif.csb[TPM_CSB_ID] == 1)

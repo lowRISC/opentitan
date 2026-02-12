@@ -16,7 +16,7 @@ class tl_agent_cfg extends dv_base_agent_cfg;
   // Maximum number of outstanding transactions supported by the DUT.
   // 0: Unlimited from the host perspective, might be back-pressured by the device
   // 1: Only single transaction at a time
-  // n: Number of maximum oustanding requests
+  // n: Number of maximum outstanding requests
 
   // This is initialized to an arbitrary value. The DUT may actually support higher or lower than
   // this number. Calculating exactly how many outstanding transactions the DUT supports is hard to
@@ -108,7 +108,7 @@ class tl_agent_cfg extends dv_base_agent_cfg;
 
   // Sets the randomization dist weight for a new a_source value to be constrained to the last
   // a_source released. This only ATTEMPTS to set the a_source to the last_a_source_released value -
-  // it is not always guaranteed even at 100%, especially if the test does non-blocking accessses.
+  // it is not always guaranteed even at 100%, especially if the test does non-blocking accesses.
   rand int unsigned use_last_a_source_released_pct = 20;
 
   // The monitor detects reset and maintains the value below.
@@ -175,7 +175,7 @@ class tl_agent_cfg extends dv_base_agent_cfg;
   //
   // This function takes the tl_seq_item object to specifically randomize the a_source such that it
   // does not match an existing one in the a_source_q. This randomization also takes into account
-  // any existing constriants on a_source that may exist in the class definition. The new a_source
+  // any existing constraints on a_source that may exist in the class definition. The new a_source
   // value is randomized to be equal to the last a_source released from the a_source_pend_q
   // 20% of the time (weight is configurable).
   //

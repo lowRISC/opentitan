@@ -41,6 +41,18 @@
       expose:  "true"
     }
 
+    { name:      "FlopToKmac",
+      type:      "bit",
+      desc:      '''
+        Add a flop stage between the output of the ROM and the data that gets
+        sent to KMAC. This may break long paths in a target chip, at the cost of
+        adding chip area.
+      '''
+      local:     "true",
+      expose:    "true",
+      default:   "1'b0"
+    }
+
     { name:      "RndCnstScrNonce",
       type:      "bit [63:0]",
       desc:      "Fixed nonce used for address / data scrambling"
@@ -332,9 +344,8 @@
         }
       }
     ],
-
-    rom: [
-      // no CSRs defined here.
-    ]
+  }
+  memory: {
+    rom: {}
   }
 }

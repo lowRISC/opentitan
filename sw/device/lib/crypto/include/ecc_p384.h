@@ -40,7 +40,31 @@ otcrypto_status_t otcrypto_ecdsa_p384_keygen(
  * Generates an ECDSA signature with curve P-384.
 
  * The message digest must be exactly 384 bits (48 bytes) long, but may use any
- * hash mode.  The caller is responsible for ensuring that the security
+ * hash mode. The caller is responsible for ensuring that the security
+ * strength of the hash function is at least equal to the security strength of
+ * the curve, but in some cases it may be truncated. See FIPS 186-5 for
+ * details.
+ *
+ * This function should only be used for known answer testing.
+ *
+ * @param private_key Pointer to the blinded private key (d) struct.
+ * @param secret_scalar Pointer to the blinded secret scalar (k) struct.
+ * @param message_digest Message digest to be signed (pre-hashed).
+ * @param[out] signature Pointer to the signature struct with (r,s) values.
+ * @return Result of the ECDSA signature generation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ecdsa_p384_sign_config_k(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_blinded_key_t *secret_scalar,
+    const otcrypto_hash_digest_t message_digest,
+    otcrypto_word32_buf_t signature);
+
+/**
+ * Generates an ECDSA signature with curve P-384.
+
+ * The message digest must be exactly 384 bits (48 bytes) long, but may use any
+ * hash mode. The caller is responsible for ensuring that the security
  * strength of the hash function is at least equal to the security strength of
  * the curve, but in some cases it may be truncated. See FIPS 186-5 for
  * details.
@@ -57,10 +81,34 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign(
     otcrypto_word32_buf_t signature);
 
 /**
+ * Generates an ECDSA signature with curve P-384 and verifies the signature
+ * before releasing it to mitigate fault injection attacks.
+
+ * The message digest must be exactly 384 bits (48 bytes) long, but may use any
+ * hash mode. The caller is responsible for ensuring that the security
+ * strength of the hash function is at least equal to the security strength of
+ * the curve, but in some cases it may be truncated. See FIPS 186-5 for
+ * details.
+ *
+ * @param private_key Pointer to the blinded private key (d) struct.
+ * @param secret_scalar Pointer to the blinded secret scalar (k) struct.
+ * @param public_key Pointer to the unblinded public key (Q) struct.
+ * @param message_digest Message digest to be signed (pre-hashed).
+ * @param[out] signature Pointer to the signature struct with (r,s) values.
+ * @return Result of the ECDSA signature generation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ecdsa_p384_sign_verify(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_unblinded_key_t *public_key,
+    const otcrypto_hash_digest_t message_digest,
+    otcrypto_word32_buf_t signature);
+
+/**
  * Verifies an ECDSA/P-384 signature.
  *
  * The message digest must be exactly 384 bits (48 bytes) long, but may use any
- * hash mode.  The caller is responsible for ensuring that the security
+ * hash mode. The caller is responsible for ensuring that the security
  * strength of the hash function is at least equal to the security strength of
  * the curve, but in some cases it may be truncated. See FIPS 186-5 for
  * details.
@@ -143,6 +191,24 @@ otcrypto_status_t otcrypto_ecdsa_p384_keygen_async_start(
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p384_keygen_async_finalize(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key);
+
+/**
+ * Starts asynchronous signature generation for ECDSA/P-384.
+ *
+ * This function should only be used for known answer testing.
+ *
+ * See `otcrypto_ecdsa_p384_sign` for requirements on input values.
+ *
+ * @param private_key Pointer to the blinded private key (d) struct.
+ * @param secret_scalar Pointer to the blinded secret scalar (k) struct.
+ * @param message_digest Message digest to be signed (pre-hashed).
+ * @return Result of async ECDSA start operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ecdsa_p384_sign_config_k_async_start(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_blinded_key_t *secret_scalar,
+    const otcrypto_hash_digest_t message_digest);
 
 /**
  * Starts asynchronous signature generation for ECDSA/P-384.

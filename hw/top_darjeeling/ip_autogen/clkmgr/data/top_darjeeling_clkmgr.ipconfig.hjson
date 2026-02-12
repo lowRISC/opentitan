@@ -5,6 +5,7 @@
   instance_name: top_darjeeling_clkmgr
   param_values:
   {
+    ext_clk_bypass: false
     src_clks:
     {
       main:
@@ -18,7 +19,7 @@
       {
         name: io
         aon: false
-        freq: 1000000000
+        freq: 250000000
         ref: false
       }
       aon:
@@ -29,39 +30,7 @@
         ref: true
       }
     }
-    derived_clks:
-    {
-      io_div2:
-      {
-        name: io_div2
-        aon: false
-        freq: 500000000
-        ref: false
-        div: 2
-        src:
-        {
-          name: io
-          aon: no
-          freq: "1000000000"
-          ref: false
-        }
-      }
-      io_div4:
-      {
-        name: io_div4
-        aon: false
-        freq: 250000000
-        ref: false
-        div: 4
-        src:
-        {
-          name: io
-          aon: no
-          freq: "1000000000"
-          ref: false
-        }
-      }
-    }
+    derived_clks: {}
     typed_clocks:
     {
       ast_clks:
@@ -84,9 +53,9 @@
       }
       ft_clks:
       {
-        clk_io_div4_powerup:
+        clk_io_powerup:
         {
-          src_name: io_div4
+          src_name: io
           endpoint_ip: pwrmgr_aon
         }
         clk_aon_powerup:
@@ -99,25 +68,10 @@
           src_name: main
           endpoint_ip: rstmgr_aon
         }
-        clk_io_powerup:
-        {
-          src_name: io
-          endpoint_ip: rstmgr_aon
-        }
-        clk_io_div2_powerup:
-        {
-          src_name: io_div2
-          endpoint_ip: rstmgr_aon
-        }
         clk_aon_infra:
         {
           src_name: aon
           endpoint_ip: soc_proxy
-        }
-        clk_aon_peri:
-        {
-          src_name: aon
-          endpoint_ip: ast
         }
         clk_aon_timers:
         {
@@ -127,9 +81,9 @@
       }
       rg_clks:
       {
-        clk_io_div4_infra:
+        clk_io_infra:
         {
-          src_name: io_div4
+          src_name: io
           endpoint_ip: ast
         }
         clk_main_infra:
@@ -137,9 +91,9 @@
           src_name: main
           endpoint_ip: soc_proxy
         }
-        clk_io_div4_secure:
+        clk_io_secure:
         {
-          src_name: io_div4
+          src_name: io
           endpoint_ip: otp_ctrl
         }
         clk_main_secure:
@@ -147,23 +101,18 @@
           src_name: main
           endpoint_ip: otp_ctrl
         }
-        clk_io_div4_timers:
+        clk_io_timers:
         {
-          src_name: io_div4
+          src_name: io
           endpoint_ip: rv_timer
         }
       }
       sw_clks:
       {
-        clk_io_div4_peri:
+        clk_io_peri:
         {
-          src_name: io_div4
+          src_name: io
           endpoint_ip: uart0
-        }
-        clk_io_div2_peri:
-        {
-          src_name: io_div2
-          endpoint_ip: spi_device
         }
       }
       hint_clks:
@@ -206,8 +155,6 @@
       io:
       [
         io
-        io_div2
-        io_div4
       ]
     }
     exported_clks: {}
@@ -215,5 +162,6 @@
     with_alert_handler: true
     topname: darjeeling
     uniquified_modules: {}
+    module_instance_name: clkmgr
   }
 }

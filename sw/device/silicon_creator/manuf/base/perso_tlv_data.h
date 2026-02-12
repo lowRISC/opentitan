@@ -26,10 +26,43 @@
  * The following object types have been defined so far:
  */
 typedef enum perso_tlv_object_type {
+  /**
+   * An X.509 TBS certificate to be endorsed during provisioning.
+   */
   kPersoObjectTypeX509Tbs = 0,
+  /**
+   * A fully endorsed X.509 certificate to be written to flash info.
+   */
   kPersoObjectTypeX509Cert = 1,
+  /**
+   * A generic cryptographic seed generated and externall registered during
+   * provisioning. Can be used as a primitive to bootstrap cryptographic
+   * operations post-provisioning/deployment.
+   */
   kPersoObjectTypeDevSeed = 2,
+  /**
+   * A fully endorsed CWT certificate to be written to flash info.
+   */
   kPersoObjectTypeCwtCert = 3,
+  /**
+   * An HMAC-SHA256 over the TBS certificates, using the Wafer Authentication
+   * Secret provisioned during CP as the key, to authenticate the unendorsed
+   * certificates to the provisioning system performing certificate endorsements
+   * during personalization.
+   */
+  kPersoObjectTypeWasTbsHmac = 4,
+  /**
+   * Fully formed (CP + FT) device ID.
+   */
+  kPersoObjectTypeDeviceId = 5,
+  /**
+   * Generic seed.
+   */
+  kPersoObjectTypeGenericSeed = 6,
+  /**
+   * Personalization firmware SHA256 Hash.
+   */
+  kPersoObjectTypePersoSha256Hash = 7,
 } perso_tlv_object_type_t;
 
 typedef uint16_t perso_tlv_object_header_t;

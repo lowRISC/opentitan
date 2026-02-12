@@ -6,7 +6,7 @@
 # ----------------------------------
 # qsubOptions Class
 # ----------------------------------
-"""A helper class designed to handle the managment of options and
+"""A helper class designed to handle the management of options and
 positional arguments to qsub and related Grid Engine executables.
 
 Contains functions to write the requested execution string either

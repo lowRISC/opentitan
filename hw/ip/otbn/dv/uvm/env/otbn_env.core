@@ -73,6 +73,7 @@ generate:
     parameters:
       name: otbn
       ip_hjson: ../../../data/otbn.hjson
+    position: prepend
 
 targets:
   default:

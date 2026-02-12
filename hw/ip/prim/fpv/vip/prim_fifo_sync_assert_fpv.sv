@@ -30,6 +30,9 @@ module prim_fifo_sync_assert_fpv #(
   input              err_o
 );
 
+  localparam bit [DepthW+2:0] WideOne = (DepthW + 3)'(1'b1);
+  localparam int unsigned PtrW = prim_util_pkg::vbits(Depth);
+
   /////////////////
   // Assumptions //
   /////////////////
@@ -88,7 +91,7 @@ module prim_fifo_sync_assert_fpv #(
       // implements (++val) mod Depth
       function automatic logic [DepthW+2:0] modinc(logic [DepthW+2:0] val, int modval);
         if (val == Depth-1) return 0;
-        else                return val + 1;
+        else                return val + WideOne;
       endfunction
 
       // this only models the data flow, since the control logic is tested below
@@ -104,25 +107,25 @@ module prim_fifo_sync_assert_fpv #(
             ref_depth <= 0;
           end else begin
             if (wvalid_i && wready_o && rvalid_o && rready_i) begin
-              fifo[wptr] <= wdata_i;
+              fifo[wptr[PtrW-1:0]] <= wdata_i;
               wptr <= modinc(wptr, Depth);
               rptr <= modinc(rptr, Depth);
             end else if (wvalid_i && wready_o) begin
-              fifo[wptr] <= wdata_i;
+              fifo[wptr[PtrW-1:0]] <= wdata_i;
               wptr <= modinc(wptr, Depth);
-              ref_depth <= ref_depth + 1;
+              ref_depth <= ref_depth + WideOne;
             end else if (rvalid_o && rready_i) begin
               rptr <= modinc(rptr, Depth);
-              ref_depth <= ref_depth - 1;
+              ref_depth <= ref_depth - WideOne;
             end
           end
         end
       end
 
       if (Pass) begin : gen_pass
-        assign ref_rdata = (ref_depth == 0) ? wdata_i : fifo[rptr];
+        assign ref_rdata = (ref_depth == 0) ? wdata_i : fifo[rptr[PtrW-1:0]];
       end else begin : gen_no_pass
-        assign ref_rdata = fifo[rptr];
+        assign ref_rdata = fifo[rptr[PtrW-1:0]];
       end
 
     end

@@ -2,7 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-<% import math %>\
+<%
+  import math
+
+# Interrupt 0 is reserved to indicate "no interrupt" so the number of real
+# sources is src-1. This template assumes that there is at least one real interrupt,
+# otherwise it generates invalid bitfields.
+  assert src > 1, "the rv_plic template assumes that there is at least one interrupt"
+%>\
 # ${(module_instance_name).upper()} register template
 #
 # Parameter (given by Python tool)

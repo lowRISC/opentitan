@@ -40,7 +40,7 @@ that are common across the project:
 
 ${"###"} Global types & methods
 All common types and methods defined at the package level can be found in
-`pwm_env_pkg`. Some of them in use are:
+`${module_instance_name}_env_pkg`. Some of them in use are:
 ```systemverilog
 parameter uint NUM_PWM_CHANNELS = 6;
 
@@ -96,8 +96,8 @@ It can be created manually by invoking [`regtool`](../../../../../util/reggen/do
 ${"###"} Stimulus strategy
 ${"####"} Test sequences
 All test sequences reside in `hw/ip/pwm/dv/env/seq_lib`.
-The `pwm_base_vseq` virtual sequence is extended from `cip_base_vseq` and serves as a starting point.
-All test sequences are extended from `pwm_base_vseq`.
+The `${module_instance_name}_base_vseq` virtual sequence is extended from `cip_base_vseq` and serves as a starting point.
+All test sequences are extended from `${module_instance_name}_base_vseq`.
 It provides commonly-used handles, variables, functions and tasks that the test sequences can simple use / call.
 
 Some of the most commonly-used tasks / functions are as follows:
@@ -115,7 +115,7 @@ The functional coverage plan can be found here: [coverageplan](#testplan)
 
 ${"###"} Self-checking strategy
 ${"####"} Scoreboard
-The `pwm_scoreboard` is primarily used for transaction-by-transaction checking.
+The `${module_instance_name}_scoreboard` is primarily used for transaction-by-transaction checking.
 It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
 * item_fifo[NUM_PWM_CHANNELS]: the FIFO w.r.t channels receives the dut items sent by the pwm_monitor
 * exp_item                   : It is used to store the expected item constructed from tl address and data channels.
@@ -131,7 +131,7 @@ For blink and heart beat mode after an item is compared successfully the scorebo
 If an error is found the scoreboard will throw an error.
 
 ${"####"} Assertions
-* TLUL assertions: The `tb/pwm_bind.sv` binds the `tlul_assert` [assertions](../../../../ip/tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
+* TLUL assertions: The `tb/${module_instance_name}_bind.sv` binds the `tlul_assert` [assertions](../../../../ip/tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 
 

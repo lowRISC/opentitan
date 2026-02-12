@@ -54,7 +54,7 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
   protected bit m_lp_mode = 0;
   // Whether the FSM transitioned from LP to NP mode.
   protected bit m_lp_to_np_transition = 0;
-  // Debug cable index in interupt registers
+  // Debug cable index in interrupt registers
   protected int unsigned m_match_pending_index;
 
   `uvm_component_utils(adc_ctrl_scoreboard)
@@ -161,7 +161,7 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
-  // Process ADC push pull fifos
+  // Process ADC push pull FIFOs
   protected virtual task adc_push_pull_fifo_proc(adc_push_pull_fifo_t fifo, int channel);
     adc_push_pull_item_t item;
     forever begin
@@ -223,7 +223,7 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
 
     // process the csr req
     // for write, update local variable and fifo at address phase
-    // for read, update predication at address phase and compare at data phase
+    // for read, update prediction at address phase and compare at data phase
     case (csr.get_name())
       // add individual case item for each csr
       "intr_state": begin
@@ -514,7 +514,7 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
   // Because scanning continues the adc_intr_status register will reflect any debounced events
   // that are detected between the controller raising an interrupt and the status bits being
   // cleared (by having 1 written to them). However, the adc_chn_val[0].adc_chn_value_intr and
-  // adc_chn_val[1].adc_chn_value_intrregisters record the value at the time the interrupt was
+  // adc_chn_val[1].adc_chn_value_intr registers record the value at the time the interrupt was
   // first raised and thus reflect the filter state from that point.
 
   virtual function void process_debounce();

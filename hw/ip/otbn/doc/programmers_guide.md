@@ -62,9 +62,9 @@ All data passing must be done when OTBN [is idle](./theory_of_operation.md#opera
 
 ### Returning from an application
 
-The software running on OTBN signals completion by executing the [`ECALL`](isa.md#ecall)  instruction.
+The software running on OTBN signals completion by executing the {{#otbn-insn-ref ECALL}} instruction.
 
-Once OTBN has executed the [`ECALL`](isa.md#ecall) instruction, the following things happen:
+Once OTBN has executed the {{#otbn-insn-ref ECALL}} instruction, the following things happen:
 
 - No more instructions are fetched or executed.
 - A [secure wipe of internal state](./theory_of_operation.md#internal-state-secure-wipe) is performed.
@@ -76,7 +76,7 @@ Refer to the section [Passing of data between the host CPU and OTBN](#passing-of
 
 ### Using hardware loops
 
-OTBN provides two hardware loop instructions: [`LOOP`](isa.md#loop)  and [`LOOPI`](isa.md#loopi) .
+OTBN provides two hardware loop instructions: {{#otbn-insn-ref LOOP}} and {{#otbn-insn-ref LOOPI}}.
 
 #### Loop nesting
 
@@ -84,7 +84,7 @@ OTBN permits loop nesting and branches and jumps inside loops.
 However, it doesn't have support for early termination of loops: there's no way to pop an entry from the loop stack without executing the last instruction of the loop the correct number of times.
 It can also only pop one level of the loop stack per instruction.
 
-To avoid polluting the loop stack and avoid surprising behaviour, the programmer must ensure that:
+To avoid polluting the loop stack and avoid surprising behavior, the programmer must ensure that:
 * Even if there are branches and jumps within a loop body, the final instruction of the loop body gets executed exactly once per iteration.
 * Nested loops have distinct end addresses.
 * The end instruction of an outer loop is not executed before an inner loop finishes.
@@ -147,8 +147,8 @@ outer_body:
 ### Algorithic Examples: Multiplication with BN.MULQACC
 
 The big number instruction subset of OTBN generally operates on WLEN bit numbers.
-[`BN.MULQACC`](isa.md#bnmulqacc) operates with WLEN/4 bit operands (with a full WLEN accumulator).
-This section outlines two techniques to perform larger multiplies by composing multiple [`BN.MULQACC`](isa.md#bnmulqacc) instructions.
+{{#otbn-insn-ref BN.MULQACC}} operates with WLEN/4 bit operands (with a full WLEN accumulator).
+This section outlines two techniques to perform larger multiplies by composing multiple {{#otbn-insn-ref BN.MULQACC}} instructions.
 
 #### Multiplying two WLEN/2 numbers with BN.MULQACC
 
@@ -352,6 +352,68 @@ The outlined technique can be extended to arbitrary bit widths but requires unro
 </table>
 
 Code snippets giving examples of 256x256 and 384x384 multiplies can be found in `sw/otbn/code-snippets/mul256.s` and `sw/otbn/code-snippets/mul384.s`.
+
+### Packing and unpacking 24-bit element vectors
+The vectorized subset of Bignum instructions enable SIMD computation on 32-bit elements.
+However, some PQC algorithms operate on smaller values.
+To optimize the memory footprint of such programs, vectors can be compressed and then be stored in memory in a compressed 24-bit format.
+The `bn.pack` and `bn.unpk` instructions convert 32-bit vectors into a dense 24-bit representation and vice-versa as described in the [ISA manual](./isa.md).
+These packed vectors can then be stored in the memory as shown below.
+
+<img src="./packed_format.svg" width="780"/>
+
+To pack vectors one can use the following snippet:
+```
+/*
+ * Assume we have 4 vectors with 8 32-bit elements currently in WDRs w0-w3
+ * which we want to store in the packed format.
+ * The color in the image corresponds to the WDRs as follows:
+ * w0: Red vector
+ * w1: Yellow vector
+ * w2: Green vector
+ * w3: Blue vector
+ */
+
+/* Pack the vectors into temporary WDRs */
+bn.pack w10, w1, w0, 64
+bn.pack w11, w2, w1, 128
+bn.pack w12, w3, w2, 192
+
+/* Store packed vectors to memory */
+...
+```
+The inner workings of the `bn.pack` instruction are visualized in the following figure for the case of `bn.pack w11, w2, w1, <shift>`.
+The two vectors are first converted in a dense format (192 bits each), then concatenated with additional zero bits.
+Finally, the 512 bits are shifted to produce the marked 256 bits which are stored to the destination WDR.
+This allows one to construct all the required packings.
+
+<img src="./pack_instruction_shifting.svg" width="780"/>
+
+The unpacking works by concatenating two 256-bit strings loaded from memory and shifting the desired bits to the lower 192 bits.
+These 192 bits are then expanded to 8x 32 bits by inserting zero bytes every 3 bytes.
+```
+/*
+ * Load packed vectors from memory into WDRs w10-w12 such that:
+ * w10 corresponds the 1st line in the first image
+ * w11 corresponds the 2nd line in the first image
+ * w12 corresponds the 3rd line in the first image
+ */
+...
+
+/* Unpack vectors */
+bn.unpk w0, w11, w10, 0   /* unpack the red vector to w0 */
+bn.unpk w1, w11, w10, 192 /* unpack the yellow vector to w1 */
+bn.unpk w2, w12, w11, 128 /* unpack the green vector to w2 */
+bn.unpk w3, wXX, w12, 64  /* unpack the blue vector to w3, wXX represents that any WDR can be used */
+```
+
+### Transposing vector elements
+To efficiently shuffle vectors, one can use the `bn.trn1` and `bn.trn2` instructions.
+These instructions reorder the vector elements as illustrated in the image below for `bn.trn1.4d` and `bn.trn2.4d`.
+- The `bn.trn1 wrd, wrs1, wrs2` instruction places even-indexed vector elements from `wrs1` into even-indexed elements of `wrd` and even-indexed vector elements from `wrs2` are placed into odd-indexed elements of `wrd`.
+- The `bn.trn2 wrd, wrs1, wrs2` instruction places odd-indexed vector elements from `wrs1` into even-indexed elements of `wrd` and odd-indexed vector elements from `wrs2` are placed into odd-indexed elements of `wrd`.
+
+<img src="./bn_trn_illustration.svg" width="780">
 
 ## Device Interface Functions (DIFs)
 

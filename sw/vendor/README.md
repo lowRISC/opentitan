@@ -5,5 +5,5 @@ Directory names generally follow the scheme `<vendor>`_`<library>`.
 
 ## Work with software code in external repositories
 
-Please refer to [vendor_hw](https://docs.opentitan.org/doc/ug/vendor_hw/) for more details on
+Please refer to [vendor_hw](../../doc/contributing/hw/vendor.md) for more details on
 rationale of vendoring external repositories.

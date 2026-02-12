@@ -7,7 +7,7 @@
 // ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
 // util/topgen.py -t hw/top_darjeeling/data/top_darjeeling.hjson
-// -o hw/top_darjeeling
+//                -o hw/top_darjeeling/
 #include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/autogen/dif_aes_autogen.h"
@@ -17,6 +17,7 @@
 #include "sw/device/lib/dif/autogen/dif_csrng_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_dma_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_edn_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_entropy_src_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_gpio_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_hmac_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_i2c_autogen.h"
@@ -44,7 +45,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 
-#include "alert_handler_regs.h"  // Generated.
+#include "hw/top/alert_handler_regs.h"  // Generated.
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -57,6 +58,7 @@ static dif_csrng_t csrng;
 static dif_dma_t dma;
 static dif_edn_t edn0;
 static dif_edn_t edn1;
+static dif_entropy_src_t entropy_src;
 static dif_gpio_t gpio;
 static dif_hmac_t hmac;
 static dif_i2c_t i2c0;
@@ -120,6 +122,9 @@ static void init_peripherals(void) {
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_EDN1_BASE_ADDR);
   CHECK_DIF_OK(dif_edn_init(base_addr, &edn1));
+
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR);
+  CHECK_DIF_OK(dif_entropy_src_init(base_addr, &entropy_src));
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_GPIO_BASE_ADDR);
   CHECK_DIF_OK(dif_gpio_init(base_addr, &gpio));
@@ -377,6 +382,21 @@ static void trigger_alert_test(void) {
 
     // Verify that alert handler received it.
     exp_alert = kTopDarjeelingAlertIdEdn1RecovAlert + i;
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+        &alert_handler, exp_alert, &is_cause));
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
+
+    // Clear alert cause register
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, exp_alert));
+  }
+
+  // Write entropy_src's alert_test reg and check alert_cause.
+  for (dif_entropy_src_alert_t i = 0; i < 2; ++i) {
+    CHECK_DIF_OK(dif_entropy_src_alert_force(&entropy_src, kDifEntropySrcAlertRecovAlert + i));
+
+    // Verify that alert handler received it.
+    exp_alert = kTopDarjeelingAlertIdEntropySrcRecovAlert + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -795,7 +815,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write soc_proxy's alert_test reg and check alert_cause.
-  for (dif_soc_proxy_alert_t i = 0; i < 29; ++i) {
+  for (dif_soc_proxy_alert_t i = 0; i < 1; ++i) {
     CHECK_DIF_OK(dif_soc_proxy_alert_force(&soc_proxy, kDifSocProxyAlertFatalAlertIntg + i));
 
     // Verify that alert handler received it.

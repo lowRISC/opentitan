@@ -55,7 +55,7 @@ class spi_device_intercept_vseq extends spi_device_pass_cmd_filtering_vseq;
     bit                                            spi_command_finished;
     access_option_t             access_option;
     // Note: there shouldn't be two flash_status writes in a row without SPI command in between
-    // The RTL could absord a second write, but it wouldn't be correct operation in terms of SW
+    // The RTL could absorb a second write, but it wouldn't be correct operation in terms of SW
     // behaviour. In theory, one could write the upper-bits of flash_status, followed by another
     // write to clear the busy bit (the case is commented out just in case the stimulus is needed
     // to close coverage).

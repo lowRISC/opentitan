@@ -2,24 +2,29 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::env;
 use std::fs::{self, OpenOptions};
 use std::io::{Read, Write};
 use std::path::PathBuf;
 use std::process::Command;
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
+use base64ct::{Base64, Encoding};
 use elliptic_curve::SecretKey;
+use hwtrust::dice::ChainForm;
+use hwtrust::session::Session;
 use num_bigint_dig::BigUint;
 use openssl::ecdsa::EcdsaSig;
-use p256::ecdsa::SigningKey;
 use p256::NistP256;
-use serde::Deserialize;
+use p256::ecdsa::SigningKey;
+use serde::{Deserialize, Serialize, Serializer};
 
-use opentitanlib::crypto::sha256::sha256;
+use opentitanlib::crypto::sha256::Sha256Digest;
 use opentitanlib::util::tmpfilename;
+use ot_certs::CertFormat;
+use ot_certs::cbor;
 use ot_certs::template::{EcdsaSignature, Signature, Value};
 use ot_certs::x509::generate_certificate_from_tbs;
-use ot_certs::CertFormat;
 
 /// Certificate Authority key type.
 #[derive(Debug, Clone, Deserialize)]
@@ -101,9 +106,9 @@ pub fn parse_and_endorse_x509_cert(tbs: Vec<u8>, key: &CaKey) -> Result<Vec<u8>>
 
 fn parse_and_endorse_x509_cert_raw(tbs: Vec<u8>, ca_sk: &SecretKey<NistP256>) -> Result<Vec<u8>> {
     // Hash and sign the TBS.
-    let tbs_digest = sha256(&tbs);
+    let tbs_digest = Sha256Digest::hash(&tbs);
     let signing_key = SigningKey::from(ca_sk);
-    let (tbs_signature, _) = signing_key.sign_prehash_recoverable(&tbs_digest.to_be_bytes())?;
+    let (tbs_signature, _) = signing_key.sign_prehash_recoverable(tbs_digest.as_ref())?;
     let (r, s) = tbs_signature.split_bytes();
 
     // Reformat the signature.
@@ -136,7 +141,8 @@ fn parse_and_endorse_x509_cert_token(tbs: Vec<u8>, key_id: &str) -> Result<Vec<u
     file.write_all(&tbs)?;
     drop(file);
 
-    let binding_key = String::from("pkcs11:object=") + key_id;
+    let token_pin = env::var("PKCS11_TOKEN_PIN")?;
+    let key_uri = format!("pkcs11:pin-value={};object={}", token_pin, key_id);
     openssl_command(&[
         "dgst",
         "-sha256",
@@ -145,7 +151,7 @@ fn parse_and_endorse_x509_cert_token(tbs: Vec<u8>, key_id: &str) -> Result<Vec<u
         "-keyform",
         "engine",
         "-sign",
-        binding_key.as_str(),
+        key_uri.as_str(),
         "-out",
         sig_filename,
         tbs_filename,
@@ -219,17 +225,63 @@ fn write_cert_to_temp_pem_file(der_cert_bytes: &[u8], base_filename: &str) -> Re
     Ok(binding_pem)
 }
 
+fn serialize_certificate<S: Serializer>(cert: &Vec<u8>, serializer: S) -> Result<S::Ok, S::Error> {
+    let s = Base64::encode_string(cert.as_slice());
+    serializer.serialize_str(&s)
+}
+
 /// Container for an endorsed certificate.
 ///
 /// This is used to pass a collection of endorsed certificates, along with metadata,
 /// to various functions that check the certificates validate properly with third-party
 /// tools.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct EndorsedCert {
     pub format: CertFormat,
     pub name: String,
+    #[serde(serialize_with = "serialize_certificate")]
     pub bytes: Vec<u8>,
     pub ignore_critical: bool,
+}
+
+/// Validate a CWT DICE chain.
+///
+/// A CWT DICE chain is validated using 'hwtrust'.
+///
+/// Arguments:
+/// * cert_chain - A slice of EndorsedCert objects representing a chain ordered from root to leaf.
+pub fn validate_cwt_dice_chain(cert_chain: &[EndorsedCert]) -> Result<()> {
+    if !cert_chain
+        .iter()
+        .all(|c| matches!(c.format, CertFormat::Cwt))
+    {
+        bail!(
+            "A non-CWT cert found in the CWT cert chain. {:?}",
+            cert_chain
+        );
+    }
+
+    let header = cbor::array_header(
+        cert_chain
+            .len()
+            .try_into()
+            .context("Cannot convert the size of the cert chain from usize to u64.")?,
+    );
+
+    let mut bytes = header;
+
+    for cert in cert_chain {
+        bytes.append(&mut cert.bytes.clone());
+    }
+
+    let session = Session::default();
+    let chain = ChainForm::from_cbor(&session, &bytes).context("Not a valid CWT DICE chain.")?;
+
+    if matches!(chain, ChainForm::Degenerate(_)) {
+        bail!("Degenerate CWT DICE chain.");
+    }
+
+    Ok(())
 }
 
 /// Validate a chain of X.509 certificates against a provided CA certificate.

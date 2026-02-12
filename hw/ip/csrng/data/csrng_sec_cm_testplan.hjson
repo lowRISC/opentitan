@@ -67,9 +67,9 @@
       tests: ["csrng_sec_cm", "csrng_intr", "csrng_err"]
     }
     {
-      name: sec_cm_update_fsm_sparse
+      name: sec_cm_cmd_stage_fsm_sparse
       desc: '''
-            Verify the countermeasure(s) UPDATE.FSM.SPARSE.
+            Verify the countermeasure(s) CMD_STAGE.FSM.SPARSE.
             The csrng_intr and csrng_err tests verify that if the FSM state is forced to an illegal state encoding 1) this is reported with a cs_fatal_err interrupt in the INTR_STATE register and 2) the corresponding bit in the ERR_CODE register is set.
             They currently don't check whether the DUT actually triggers a fatal alert.
             Alert connection and triggering are verified through automated FPV.
@@ -78,9 +78,9 @@
       tests: ["csrng_sec_cm", "csrng_intr", "csrng_err"]
     }
     {
-      name: sec_cm_blk_enc_fsm_sparse
+      name: sec_cm_ctr_drbg_fsm_sparse
       desc: '''
-            Verify the countermeasure(s) BLK_ENC.FSM.SPARSE.
+            Verify the countermeasure(s) CTR_DRBG.FSM.SPARSE.
             The csrng_intr and csrng_err tests verify that if the FSM state is forced to an illegal state encoding 1) this is reported with a cs_fatal_err interrupt in the INTR_STATE register and 2) the corresponding bit in the ERR_CODE register is set.
             They currently don't check whether the DUT actually triggers a fatal alert.
             Alert connection and triggering are verified through automated FPV.
@@ -89,10 +89,11 @@
       tests: ["csrng_sec_cm", "csrng_intr", "csrng_err"]
     }
     {
-      name: sec_cm_outblk_fsm_sparse
+      // All counter errors are reported in ERR_CODE.CTR_ERR.
+      name: sec_cm_ctr_drbg_ctr_redun
       desc: '''
-            Verify the countermeasure(s) OUTBLK.FSM.SPARSE.
-            The csrng_intr and csrng_err tests verify that if the FSM state is forced to an illegal state encoding 1) this is reported with a cs_fatal_err interrupt in the INTR_STATE register and 2) the corresponding bit in the ERR_CODE register is set.
+            Verify the countermeasure(s) CTR_DRBG.CTR.REDUN.
+            The csrng_intr and csrng_err tests verify that if there is a mismatch in the redundant counters of the CTR_DRBG generate counter 1) this is reported with a cs_fatal_err interrupt in the INTR_STATE register and 2) the corresponding bit in the ERR_CODE register is set.
             They currently don't check whether the DUT actually triggers a fatal alert.
             Alert connection and triggering are verified through automated FPV.
             '''
@@ -100,34 +101,11 @@
       tests: ["csrng_sec_cm", "csrng_intr", "csrng_err"]
     }
     {
+      // All counter errors are reported in ERR_CODE.CTR_ERR.
       name: sec_cm_gen_cmd_ctr_redun
       desc: '''
             Verify the countermeasure(s) GEN_CMD.CTR.REDUN.
             The csrng_intr and csrng_err tests verify that if there is a mismatch in the redundant counters of the Generate command counter 1) this is reported with a cs_fatal_err interrupt in the INTR_STATE register and 2) the corresponding bit in the ERR_CODE register is set.
-            They currently don't check whether the DUT actually triggers a fatal alert.
-            Alert connection and triggering are verified through automated FPV.
-            '''
-      stage: V2S
-      tests: ["csrng_sec_cm", "csrng_intr", "csrng_err"]
-    }
-    {
-      // All counter errors are collected in ERR_CODE.CMD_GEN_CNT_ERR.
-      name: sec_cm_drbg_upd_ctr_redun
-      desc: '''
-            Verify the countermeasure(s) DRBG_UPD.CTR.REDUN.
-            The csrng_intr and csrng_err tests verify that if there is a mismatch in the redundant counters of the CTR_DRBG update counter 1) this is reported with a cs_fatal_err interrupt in the INTR_STATE register and 2) the corresponding bit in the ERR_CODE register is set.
-            They currently don't check whether the DUT actually triggers a fatal alert.
-            Alert connection and triggering are verified through automated FPV.
-            '''
-      stage: V2S
-      tests: ["csrng_sec_cm", "csrng_intr", "csrng_err"]
-    }
-    {
-      // All counter errors are collected in ERR_CODE.CMD_GEN_CNT_ERR.
-      name: sec_cm_drbg_gen_ctr_redun
-      desc: '''
-            Verify the countermeasure(s) DRBG_GEN.CTR.REDUN.
-            The csrng_intr and csrng_err tests verify that if there is a mismatch in the redundant counters of the CTR_DRBG generate counter 1) this is reported with a cs_fatal_err interrupt in the INTR_STATE register and 2) the corresponding bit in the ERR_CODE register is set.
             They currently don't check whether the DUT actually triggers a fatal alert.
             Alert connection and triggering are verified through automated FPV.
             '''

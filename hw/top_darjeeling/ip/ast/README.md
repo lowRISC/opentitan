@@ -47,8 +47,6 @@ with some augmentations.
  related functionality. Up to 96MHz (divided by 4 by the clock
  manager)
 
-- usb - USB module source clock. 48MHz
-
 - aon - Always-on domain clock. The only active clock while chip is in
  deep-sleep power state, 200KHz
 
@@ -167,22 +165,6 @@ macro.</td>
 <td>async</td>
 <td>Contains the power sequencing signals going to the OTP macro
 (<strong>VCC domain</strong>).</td>
-</tr>
-<tr class="odd">
-<td>flash_power_down_h_o</td>
-<td>O</td>
-<td>1</td>
-<td>async</td>
-<td>Connected to flash (<strong>VCC domain</strong>). Used for flash
-power management.</td>
-</tr>
-<tr class="even">
-<td>flash_power_ready_h_o</td>
-<td>O</td>
-<td>1</td>
-<td>async</td>
-<td>Connected to flash (<strong>VCC domain</strong>). Used for flash
-power management.</td>
 </tr>
 <tr class="odd">
 <td><p>vcmain_pok</p>
@@ -311,54 +293,6 @@ manager</u></a></td>
 <td>async</td>
 <td>aon clock valid</td>
 </tr>
-<tr class="even">
-<td>clk_src_usb_o</td>
-<td>O</td>
-<td>1</td>
-<td>usb</td>
-<td>48 MHz clock for USB. To comply with USB full speed clock
-specification, it supports frequency accuracy of +/-2500 ppm when
-usb_ref_pulse_i is available and +/-3% otherwise. It may take up to 50
-ms for this clock to reach the accuracy target from the time
-'usb_ref_pulse_i' is available. USB clock calibration interface is
-further detailed <a
-href="https://opentitan.org/book/hw/ip/usbdev#clocking"><u>here</u></a>.</td>
-</tr>
-<tr class="odd">
-<td>clk_src_usb_val_o</td>
-<td>O</td>
-<td>1</td>
-<td>async</td>
-<td>USB clock valid</td>
-</tr>
-<tr class="even">
-<td>clk_src_usb_en_i</td>
-<td>I</td>
-<td>1</td>
-<td>aon</td>
-<td>USB clock enable</td>
-</tr>
-<tr class="odd">
-<td>usb_ref_pulse_i</td>
-<td>I</td>
-<td>1</td>
-<td>usb</td>
-<td>USB reference pulse +/-500ppm. When valid, it is expected to pulse
-for one usb clock cycle every 1ms.</td>
-</tr>
-<tr class="even">
-<td>usb_ref_val_i</td>
-<td>I</td>
-<td>1</td>
-<td>usb</td>
-<td>USB reference valid. This bit serves as a valid signal for the
-usb_ref_pulse_i signal. It is set to 1 after the first valid
-usb_ref_pulse_i event is detected and remains high as long as
-usb_ref_pulse_i continues to behave as expected (per usb_ref_pulse
-description). Once usb_ref_pulse deviates from its expected behavior,
-usb_ref_val_i immediately negates to 0 and remains 0 until after the
-next valid usb_ref_val pulse.</td>
-</tr>
 <tr class="odd">
 <td>clk_src_io_o</td>
 <td>O</td>
@@ -383,23 +317,8 @@ manager</u></a>.</td>
 <td>aon</td>
 <td>I/O and timer clock enable</td>
 </tr>
-<tr class="even">
-<td>clk_src_io_48m_o</td>
-<td>O</td>
-<td>mubi4</td>
-<td>aon</td>
-<td>Clock frequency indicator. When set, it indicates that the
-clk_src_io_o's frequency is 48 MHz; otherwise, it is 96 MHz.</td>
-</tr>
 <tr class="odd">
 <td colspan="5"><strong>Clock &amp; Reset Inputs</strong></td>
-</tr>
-<tr class="even">
-<td>clk_ast_adc_i</td>
-<td>I</td>
-<td>1</td>
-<td>adc</td>
-<td>ADC interface clock input</td>
 </tr>
 <tr class="odd">
 <td>clk_ast_rng_i</td>
@@ -407,13 +326,6 @@ clk_src_io_o's frequency is 48 MHz; otherwise, it is 96 MHz.</td>
 <td>1</td>
 <td>rng</td>
 <td>RNG interface clock input</td>
-</tr>
-<tr class="even">
-<td>clk_ast_usb_i</td>
-<td>I</td>
-<td>1</td>
-<td>usb</td>
-<td>USB reference interface clock input</td>
 </tr>
 <tr class="odd">
 <td>clk_ast_es_i</td>
@@ -436,26 +348,12 @@ clk_src_io_o's frequency is 48 MHz; otherwise, it is 96 MHz.</td>
 <td>tlul</td>
 <td>TLUL bus interface clock input</td>
 </tr>
-<tr class="even">
-<td>rst_ast_adc_ni</td>
-<td>I</td>
-<td>1</td>
-<td>adc</td>
-<td>ADC interface reset (active low)</td>
-</tr>
 <tr class="odd">
 <td>rst_ast_rng_ni</td>
 <td>I</td>
 <td>1</td>
 <td>rng</td>
 <td>RNG interface reset (active low)</td>
-</tr>
-<tr class="even">
-<td>rst_ast_usb_ni</td>
-<td>I</td>
-<td>1</td>
-<td>usb</td>
-<td>USB reference interface reset (active low)</td>
 </tr>
 <tr class="odd">
 <td>rst_ast_es_ni</td>
@@ -640,38 +538,12 @@ enabled (Test and RMA states). Otherwise, these signals are grounded to
 <td></td>
 <td>Scan reset</td>
 </tr>
-<tr class="even">
-<td>clk_ast_ext_i</td>
-<td>I</td>
-<td>1</td>
-<td>async</td>
-<td><p>External clock. While AST generates most of its clocks on-die, it
-still needs an external clock for clock calibration and first flash/OTP
-programming.</p>
-<p>Clock calibration: AST clock sources are inaccurate by default and
-must be calibrated prior to use. The results of the calibration are
-stored in OTP and reloaded by software upon system boot.</p>
-<p>First Flash / OTP programming: AST clock sources are inaccurate by
-default and may be out of range for initial flash and OTP programming.
-In this situation, an external clock may be required for initial
-programming such that a software image can be loaded to calibrate clocks
-and advance <a
-href="https://opentitan.org/book/doc/security/specs/device_life_cycle"><u>life
-cycle</u></a>.</p></td>
-</tr>
 <tr class="odd">
 <td>dft_strap_test_i</td>
 <td>I</td>
 <td>dft_strap_test_req</td>
 <td>async</td>
 <td>Strap inputs for DFT selection</td>
-</tr>
-<tr class="even">
-<td>flash_bist_en_o</td>
-<td>O</td>
-<td>mubi4</td>
-<td></td>
-<td>Flash BIST enable</td>
 </tr>
 <tr class="odd">
 <td>vcc_supp_i</td>
@@ -763,87 +635,18 @@ only outputted when DFT features are enabled (Test and RMA states).
 Otherwise, these signals are grounded to 0.</td>
 </tr>
 <tr class="even">
-<td>usb_io_pu_cal_o</td>
-<td>O</td>
-<td>20</td>
-<td>async</td>
-<td>USB I/O calibration and trimming</td>
-</tr>
-<tr class="odd">
-<td>io_clk_byp_req_i</td>
-<td>I</td>
-<td>mubi4</td>
-<td>async</td>
-<td><p>External clock mux override request for OTP bootstrap purposes.
-AST responds to the request by setting io_clk_byp_ack_o to 'On'. When
-this bit is set and ack was received, clk_ast_ext_i serves as the io_clk
-clock root.</p>
-<p>Note: When 'On' (after ack), clk_src_io_o clock max frequency is
-limited to 50 MHz</p></td>
-</tr>
-<tr class="even">
-<td>io_clk_byp_ack_o</td>
-<td>O</td>
-<td>mubi4</td>
-<td>async</td>
-<td>AST response to io_clk_byp_req_i. The ack is set to 'On' after clock
-switching function is performed.</td>
-</tr>
-<tr class="odd">
-<td>all_clk_byp_req_i</td>
-<td>I</td>
-<td>mubi4</td>
-<td>async</td>
-<td><p>External clock mux override request for OTP bootstrap purposes.
-AST responds to the request by setting io_clk_byp_ack_o to 'On'. When
-this bit is set and ack was received, clk_ast_ext_i serves as the io_clk
-clock root.</p>
-<p>Note: When 'On' (after ack), clk_src_io_o clock max frequency is
-limited to 50 MHz</p></td>
-</tr>
-<tr class="even">
-<td>all_clk_byp_ack_o</td>
-<td>O</td>
-<td>mubi4</td>
-<td>async</td>
-<td>AST response to io_clk_byp_req_i. The ack is set to 'On' after clock
-switching function is performed.</td>
-</tr>
-<tr class="odd">
-<td>ext_freq_is_96m_i</td>
-<td>I</td>
-<td>mubi4</td>
-<td>async</td>
-<td>External clock frequency indication to AST. When set, it indicates
-that the external clock is 96MHz.</td>
-</tr>
-<tr class="even">
 <td>lc_dft_en_i</td>
 <td>I</td>
 <td>lc_tx</td>
 <td>async</td>
 <td><p>DFT enable</p></td>
 </tr>
-<tr class="odd">
-<td>fla_obs_i</td>
-<td>I</td>
-<td>8</td>
-<td>async</td>
-<td>Flash observe bus for debug</td>
-</tr>
 <tr class="even">
-<td>otp_bos_i</td>
+<td>otp_obs_i</td>
 <td>I</td>
 <td>8</td>
 <td>async</td>
 <td>OTP observe bus for debug</td>
-</tr>
-<tr class="odd">
-<td>usb_obs_i</td>
-<td>I</td>
-<td>1</td>
-<td>async</td>
-<td>USB differential receiver output observe for debug</td>
 </tr>
 <tr class="even">
 <td>otm_obs_i</td>
@@ -938,9 +741,6 @@ immediately negated. In addition, SYS clock, IO clock and USB clock are
 stopped. This means that negation of the VCC supply always triggers the
 flash brown-out (BOR) protection circuitry.
 
-When entering deep-sleep mode, 'flash_power_down_h_o' is
-asserted before negating VCMAIN until VCMAIN is back up.
-
 ## Resets
 
 The AST supports the generation of the root reset for the reset manager.
@@ -954,7 +754,7 @@ describe the AST sub-modules resets.
 | **Components**                                               | **Reset by**             | **Comments**                                                                                                                             |
 |--------------------------------------------------------------|--------------------------|------------------------------------------------------------------------------------------------------------------------------------------|
 | Regulators, 'power-OK' logic and always-on clock | self-start / vcaon_pok_o | These circuits come to life shortly after VCC crosses its detection threshold. vcaon_pok_o serves as their register configuration reset. |
-| System/USB/IO clock generators                               | vcmain_pok_o             | vcmain_pok_o is also fed by vcaon_pok_o and por_ni.                                                                                      |
+| System/IO clock generators                               | vcmain_pok_o             | vcmain_pok_o is also fed by vcaon_pok_o and por_ni.                                                                                      |
 | Interface functions                                          | Input reset              | Per the corresponding interface [<u>clock domain reset input</u>](#clock-and-reset-inputs).                                                  |
 
 # Clock Outputs
@@ -975,13 +775,6 @@ until the next boot.
 The OpenTitan power and clock managers are responsible for manipulating
 the enables and observing the valids to know when clocks can be safely
 released to the system.
-
-## USB Clock Calibration
-
-The USB clock requires an accuracy that cannot be achieved by the AST
-clocks natively. As a result, information from USB frames are used to
-[<u>calibrate the
-clock</u>](../../../ip/usbdev/README.md#clocking).
 
 # Clock and Reset Inputs
 
@@ -1051,47 +844,6 @@ It is recommended to redundantly code the OTP fields that control the
 ROM code branching and also to protect the branching code from fault
 injection.
 
-# ADC
-
-AST contains an analog to digital converter that can be used to sample
-various input signals. For OpenTitan this will primarily be used for
-[<u>debug cable detection</u>](https://www.sparkfun.com/products/14746).
-To activate the ADC, the corresponding [<u>comportable
-module</u>](../../../ip/adc_ctrl/README.md) must first
-activate the ADC through 'adc_pd_i'. Once activated, it should select
-the channel to sample. Channel transition from zero to non-zero value
-starts the ADC conversion. The ADC output is synchronous to the ADC
-controller.
-
-## ADC Usage Flow
-
-1.  Activate the ADC by negating 'adc_pd_i'
-
-2.  Wait 30 uS for the ADC to wake up.
-
-3.  Select an analog channel to measure by setting the corresponding bit
- in 'adc_chnsel_i' bus. This triggers a measurement.
-
-4.  Wait until 'adc_d_val' is set and read the result via
- 'adc_d_o'
-
-5.  Clear 'adc_chnsel_i' bus to 0. Note that adc_chnsel must
- be cleared to 0 before a new channel is selected.
-
-6.  Repeat steps 3-5 if more channels or more measurements are required
-
-7.  Deactivate the ADC by setting 'adc_pd_i' to save power.
-
-```wavejson
-{ signal: [ {node: '.a..b........', phase:0.2},
-{name: 'adc_pd_i' , wave: '10|..|.....|....|..1'}, {name:
-'clk_ast_adc_i', wave: 'p.|..|.....|....|...'}, {name:
-'adc_chnsel_i' , wave: '0.|.3|..04.|....|0..'}, {name:
-'adc_d_val_o' , wave: '0.|..|.1.0.|.1..|.0.'}, {name: 'adc_d_o' ,
-wave: 'x.|..|.3.x.|.4..|.x.', data: ['ch0', 'ch1', 'ch1']}, ],
-edge: [ 'a<->b wakeup time', ] }
-```
-
 # Random Number Generator
 
 AST contains an entropy source vendor IP block that generates random number
@@ -1107,7 +859,7 @@ AST consumes entropy for defensive purposes. However, AST does not
 consume its raw entropy directly. Instead, AST receives entropy from the
 [<u>Entropy Distribution Network
 (EDN)</u>](../../../ip/edn/README.md). Note
-that entropy_ack and entropy_i are packed into enropy_rsp_i in the
+that entropy_ack and entropy_i are packed into entropy_rsp_i in the
 interface. Also note that once entropy_req_o is set, it will remain set
 until ack or until reset.
 

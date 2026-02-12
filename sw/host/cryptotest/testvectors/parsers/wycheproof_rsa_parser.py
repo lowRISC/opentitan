@@ -71,7 +71,7 @@ def parse_test_vectors(raw_data, args):
                     encrypt_test_vec["operation"] = "encrypt"
                     test_vectors.append(encrypt_test_vec)
 
-        return test_vectors
+    return test_vectors
 
 
 def main():

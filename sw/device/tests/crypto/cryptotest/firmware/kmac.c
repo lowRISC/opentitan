@@ -2,12 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/crypto/include/kmac.h"
+
+#include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
-#include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
-#include "sw/device/lib/crypto/include/mac.h"
+#include "sw/device/lib/crypto/include/key_transport.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
@@ -50,16 +52,13 @@ status_t handle_kmac(ujson_t *uj) {
   TRY(ujson_deserialize_cryptotest_kmac_customization_string_t(
       uj, &uj_customization_string));
 
-  otcrypto_kmac_mode_t mode;
   otcrypto_key_mode_t key_mode;
   switch (uj_mode) {
     case kCryptotestKmacModeKmac128:
       key_mode = kOtcryptoKeyModeKmac128;
-      mode = kOtcryptoKmacModeKmac128;
       break;
     case kCryptotestKmacModeKmac256:
       key_mode = kOtcryptoKeyModeKmac256;
-      mode = kOtcryptoKmacModeKmac256;
       break;
     default:
       LOG_ERROR("Unsupported KMAC mode: %d", uj_mode);
@@ -73,18 +72,28 @@ status_t handle_kmac(ujson_t *uj) {
       .hw_backed = kHardenedBoolFalse,
       .security_level = kOtcryptoKeySecurityLevelLow,
   };
-  // Create buffer to store key
-  uint32_t key_buf[uj_key.key_len];
+  // Create key shares.
+  uint32_t key_buf[ceil_div(uj_key.key_len, sizeof(uint32_t))];
   memcpy(key_buf, uj_key.key, uj_key.key_len);
-  // Create keyblob
-  uint32_t keyblob[keyblob_num_words(config)];
+  for (size_t i = 0; i < ARRAYSIZE(key_buf); i++) {
+    key_buf[i] ^= kTestMask[i];
+  }
+  otcrypto_const_word32_buf_t share0 = {
+      .data = key_buf,
+      .len = ARRAYSIZE(key_buf),
+  };
+  otcrypto_const_word32_buf_t share1 = {
+      .data = kTestMask,
+      .len = ARRAYSIZE(key_buf),
+  };
   // Create blinded key
-  TRY(keyblob_from_key_and_mask(key_buf, kTestMask, config, keyblob));
+  uint32_t keyblob[2 * ARRAYSIZE(key_buf)];
   otcrypto_blinded_key_t key = {
       .config = config,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
   };
+  TRY(otcrypto_import_blinded_key(share0, share1, &key));
 
   // Create input message
   uint8_t msg_buf[uj_message.message_len];
@@ -111,7 +120,7 @@ status_t handle_kmac(ujson_t *uj) {
       .data = tag_buf,
   };
   otcrypto_status_t status =
-      otcrypto_kmac(&key, input_message, mode, customization_string,
+      otcrypto_kmac(&key, input_message, customization_string,
                     uj_required_tag_length.required_tag_length, tag);
   if (status.value != kOtcryptoStatusValueOk) {
     return INTERNAL(status.value);

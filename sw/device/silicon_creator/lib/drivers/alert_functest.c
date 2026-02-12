@@ -5,6 +5,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "hw/top/dt/api.h"
+#include "hw/top/dt/rstmgr.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/memory.h"
@@ -19,11 +21,11 @@
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "alert_handler_regs.h"
-#include "flash_ctrl_regs.h"
+#include "hw/top/alert_handler_regs.h"
+#include "hw/top/flash_ctrl_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
+#include "hw/top/rstmgr_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otp_ctrl_regs.h"
-#include "rstmgr_regs.h"
 
 enum {
   kAlertBase = TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR,
@@ -92,7 +94,8 @@ bool test_main(void) {
     EXECUTE_TEST(result, alert_escalate_test);
     LOG_ERROR("Test failure: should have reset before this line.");
     result = UNKNOWN();
-  } else if (bitfield_bit32_read(reason, kRstmgrReasonEscalation)) {
+  } else if (rstmgr_is_hw_reset_reason(kDtRstmgrAon, reason,
+                                       kDtInstanceIdAlertHandler, 0)) {
     CHECK(bitfield_popcount32(reason) == 1, "Expected exactly 1 reset reason.");
     LOG_INFO("Detected reset after escalation test");
   } else {

@@ -28,7 +28,7 @@ interface fi_ctr_fsm_if
     return intf_array.size();
   endfunction // get_if_size
 
-  // check which array we need to access and force or releae
+  // check which array we need to access and force or release
   function automatic void force_signal(int target, bit rel, bit [31:0] value);
     if (!rel) aes_ctr_fsm_cg_inst.sample(target);
     if (!rel) force_single_bit(target);
@@ -87,7 +87,7 @@ interface fi_ctr_fsm_if
 
   covergroup aes_ctr_fsm_cg (int num_bins) with function sample(int target);
     // We want to see coverage per instance,
-    // but as the code are copies of eachother
+    // but as the code are copies of each other
     // we don't need every instance to achieve 100% coverage
     // a total of 100% is enough so we set the option
     // to merge the coverage of the instances

@@ -9,7 +9,7 @@ class jtag_riscv_reg_adapter extends uvm_reg_adapter;
   // to the `jtag_riscv_agent_cfg` instance associated with this adapter instance.
   jtag_riscv_agent_cfg cfg;
 
-  function new(string name = "jtag_riscv_reg_adapter");
+  function new(string name = "");
     super.new(name);
     // We don't do byte enables
     supports_byte_enable = 0;

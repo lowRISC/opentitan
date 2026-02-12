@@ -22,3 +22,11 @@ filegroup(
     name = "cores",
     srcs = glob(["**/*.core"]),
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = glob([
+        "**/*.md",
+        "**/*.svg",
+    ]) + ["//hw/ip/dma/data:dma_testplan.hjson"],
+)

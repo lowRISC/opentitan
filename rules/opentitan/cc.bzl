@@ -2,19 +2,25 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@lowrisc_opentitan//rules:manifest.bzl", "update_manifest")
-load("@lowrisc_opentitan//rules:rv.bzl", "rv_rule")
-load("@lowrisc_opentitan//rules:signing.bzl", "sign_binary")
-load("@lowrisc_opentitan//rules/opentitan:exec_env.bzl", "ExecEnvInfo")
+load(
+    "@lowrisc_opentitan//rules:rv.bzl",
+    "rv_rule",
+    _OPENTITAN_CPU = "OPENTITAN_CPU",
+    _OPENTITAN_PLATFORM = "OPENTITAN_PLATFORM",
+    _opentitan_transition = "opentitan_transition",
+)
 load(
     "@lowrisc_opentitan//rules/opentitan:transform.bzl",
+    "convert_to_vmem",
     "obj_disassemble",
     "obj_transform",
 )
+load("@lowrisc_opentitan//rules:signing.bzl", "sign_binary")
+load("@lowrisc_opentitan//rules/opentitan:exec_env.bzl", "ExecEnvInfo")
 load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_override")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
-load("//rules/opentitan:util.bzl", "assemble_for_test")
+load("//rules/opentitan:util.bzl", "assemble_for_test", "recursive_format")
 load("//rules/opentitan:providers.bzl", "OpenTitanBinaryInfo")
 
 def _expand(ctx, name, items):
@@ -45,7 +51,7 @@ def ot_binary(ctx, **kwargs):
         includes: Include directories to pass to the compiler.
         deps: Dependencies for this binary.
         linker_script: Linker script for this binary.
-        linkopts: Linker options for this binary.
+        linkopts: Extra linker options for this binary.
     Returns:
       (elf_file, map_file) File objects.
     """
@@ -96,10 +102,16 @@ def ot_binary(ctx, **kwargs):
         linking_contexts.append(linker_script[CcInfo].linking_context)
     mapfile = kwargs.get("mapfile", "{}.map".format(name))
     mapfile = ctx.actions.declare_file(mapfile)
+
+    extra_linkopts = (ctx.attr.linkopts or []) + kwargs.get("linkopts", [])
+
     linkopts = [
         "-Wl,-Map={}".format(mapfile.path),
         "-nostdlib",
-    ] + _expand(ctx, "linkopts", get_override(ctx, "attr.linkopts", kwargs))
+    ] + _expand(ctx, "linkopts", extra_linkopts)
+
+    if ctx.var.get("ot_coverage_enabled", "false") == "true":
+        linkopts.append("-Wl,--defsym=_ot_coverage_enabled=1")
 
     lout = cc_common.link(
         name = name + ".elf",
@@ -170,15 +182,23 @@ def _build_binary(ctx, exec_env, name, deps, kind):
       (dict, dict): A dict of output artifacts and a dict of signing artifacts.
     """
     linker_script = get_fallback(ctx, "attr.linker_script", exec_env)
+
+    slot_spec = dict(exec_env.slot_spec)
+    slot_spec.update(ctx.attr.slot_spec)
+
+    linkopts = ["-Wl,--defsym=_{}={}".format(key, value) for key, value in slot_spec.items()]
+
     elf, mapfile = ot_binary(
         ctx,
         name = name,
         deps = deps,
         linker_script = linker_script,
+        linkopts = linkopts,
     )
     binary = obj_transform(
         ctx,
         name = name,
+        strip_llvm_prf_cnts = True,
         suffix = "bin",
         format = "binary",
         src = elf,
@@ -191,9 +211,6 @@ def _build_binary(ctx, exec_env, name, deps, kind):
     ecdsa_key = get_fallback(ctx, "attr.ecdsa_key", exec_env)
     rsa_key = get_fallback(ctx, "attr.rsa_key", exec_env)
     spx_key = get_fallback(ctx, "attr.spx_key", exec_env)
-    if manifest and ctx.attr.immutable_rom_ext_enabled:
-        manifest = update_manifest(ctx, manifest, elf, exec_env)
-
     if (manifest or rsa_key) and kind != "ram":
         if not (manifest and (rsa_key or ecdsa_key)):
             fail("Signing requires a manifest and an rsa_key or ecdsa_key, and optionally an spx_key")
@@ -229,10 +246,13 @@ def _build_binary(ctx, exec_env, name, deps, kind):
     return provides, signed
 
 def _opentitan_binary(ctx):
+    tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
+
     providers = []
     default_info = []
     groups = {}
     ot_bin_env_info = {}
+    validations = []
     for exec_env_target in ctx.attr.exec_env:
         exec_env = exec_env_target[ExecEnvInfo]
         name = _binary_name(ctx, exec_env)
@@ -270,6 +290,32 @@ def _opentitan_binary(ctx):
         groups.update(_as_group_info(exec_env.exec_env, signed))
         groups.update(_as_group_info(exec_env.exec_env, provides))
         ot_bin_env_info[exec_env.provider] = exec_env
+
+        # Module ID checks:
+        #
+        # We create a file that will not contain anything: this is just to create a "link"
+        # between the run action and validation group.
+        generated_file = ctx.actions.declare_file("{}.mod-id".format(name))
+
+        # Call bash script that will run opentitantool and capture the output. We want to avoid
+        # printing anything if the test is successful but by default opentitantool prints
+        # unnecessary information that pollutes the output.
+        ctx.actions.run(
+            executable = ctx.executable._modid_check,
+            arguments = [
+                tc.tools.opentitantool.executable.path,
+                generated_file.path,
+                provides["elf"].path,
+            ],
+            inputs = [provides["elf"]],
+            tools = [tc.tools.opentitantool],
+            outputs = [generated_file],
+            progress_message = "Checking module IDs for %{label}",
+        )
+        validations.append(generated_file)
+
+    # Validation group.
+    groups["_validation"] = depset(validations)
 
     providers.append(DefaultInfo(files = depset(default_info)))
     providers.append(OutputGroupInfo(**groups))
@@ -364,13 +410,19 @@ common_binary_attrs = {
         doc = "ROM scrambling mode.",
         default = "base-rom",
     ),
-    "immutable_rom_ext_enabled": attr.bool(
-        doc = "Indicates whether the binary is intended for a chip with the immutable ROM_EXT feature enabled.",
-        default = False,
-    ),
     "transitive_features": attr.string_list(
         default = [],
         doc = "List of features that will apply to this binary, and transitively to all `deps`.",
+    ),
+    "slot_spec": attr.string_dict(
+        default = {},
+        doc = "Firmware slot spec to use in this environment",
+    ),
+    "_check_initial_coverage": attr.label(
+        doc = "Tool to check the coverage counter initialization.",
+        default = "//util/coverage:check_initial_coverage",
+        executable = True,
+        cfg = "exec",
     ),
 }
 
@@ -382,9 +434,14 @@ opentitan_binary = rv_rule(
             doc = "List of execution environments for this target.",
         ),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
+        "_modid_check": attr.label(
+            default = "//rules/scripts:modid_check",
+            executable = True,
+            cfg = "exec",
+        ),
     }.items()),
     fragments = ["cpp"],
-    toolchains = ["@rules_cc//cc:toolchain_type"],
+    toolchains = ["@rules_cc//cc:toolchain_type", LOCALTOOLS_TOOLCHAIN],
 )
 
 def _testing_bitstream_impl(settings, attr):
@@ -423,9 +480,15 @@ def _opentitan_test(ctx):
         harness_runfiles = ctx.attr.test_harness[DefaultInfo].default_runfiles
     else:
         harness_runfiles = ctx.runfiles()
+
+    if ctx.var.get("ot_coverage_enabled", "false") == "true":
+        coverage_runfiles = ctx.attr._collect_cc_coverage[DefaultInfo].default_runfiles
+    else:
+        coverage_runfiles = ctx.runfiles()
+
     return DefaultInfo(
         executable = executable,
-        runfiles = ctx.runfiles(files = runfiles).merge_all([harness_runfiles]),
+        runfiles = ctx.runfiles(files = runfiles).merge_all([harness_runfiles, coverage_runfiles]),
     )
 
 opentitan_test = rv_rule(
@@ -493,18 +556,36 @@ opentitan_test = rv_rule(
             doc = "OpenOCD adapter configuration override for this test",
         ),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
+        "_modid_check": attr.label(
+            default = "//rules/scripts:modid_check",
+            executable = True,
+            cfg = "exec",
+        ),
+        "_lcov_merger": attr.label(
+            default = configuration_field(fragment = "coverage", name = "output_generator"),
+            executable = True,
+            cfg = "exec",
+        ),
+        "_collect_cc_coverage": attr.label(
+            default = "//util/coverage/collect_cc_coverage",
+            executable = True,
+            cfg = "exec",
+        ),
     }.items()),
     fragments = ["cpp"],
-    toolchains = ["@rules_cc//cc:toolchain_type"],
+    toolchains = ["@rules_cc//cc:toolchain_type", LOCALTOOLS_TOOLCHAIN],
     test = True,
 )
 
 def _opentitan_binary_assemble_impl(ctx):
     assembled_bins = []
+    result = []
+    ot_bin_env_info = {}
     tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
     for env in ctx.attr.exec_env:
-        exec_env_name = env[ExecEnvInfo].exec_env
-        exec_env_provider = env[ExecEnvInfo].provider
+        exec_env = env[ExecEnvInfo]
+        exec_env_name = exec_env.exec_env
+        exec_env_provider = exec_env.provider
         name = "{}_{}".format(ctx.attr.name, exec_env_name)
         spec = []
         input_bins = []
@@ -513,10 +594,34 @@ def _opentitan_binary_assemble_impl(ctx):
                 fail("Only flash binaries can be assembled.")
             input_bins.append(binary[exec_env_provider].default)
             spec.append("{}@{}".format(binary[exec_env_provider].default.path, offset))
-        assembled_bins.append(
-            assemble_for_test(ctx, name, spec, input_bins, tc.tools.opentitantool),
+        action_param = {}
+        action_param.update(exec_env.slot_spec)
+
+        spec = " ".join(spec)
+        spec = recursive_format(spec, action_param)
+        spec = spec.split(" ")
+
+        # Generate the multislot bin.
+        bin = assemble_for_test(ctx, name, spec, input_bins, tc.tools.opentitantool)
+
+        # Generate unscrambled VMEM files.
+        #
+        # Multi-slot binaries are currently only used for bootstrap operations,
+        # i.e., non-backdoor loaded sim environments and FPGA/silicon
+        # environments. Therefore we only need unscrambled VMEM files.
+        vmem = convert_to_vmem(
+            ctx,
+            name = name,
+            src = bin,
+            word_size = 64,
         )
-    return [DefaultInfo(files = depset(assembled_bins))]
+
+        result.append(exec_env_provider(default = bin, kind = "flash", vmem = vmem))
+        assembled_bins.append(bin)
+        assembled_bins.append(vmem)
+        ot_bin_env_info[exec_env_provider] = env
+    result.append(OpenTitanBinaryInfo(exec_env = ot_bin_env_info))
+    return result + [DefaultInfo(files = depset(assembled_bins))]
 
 opentitan_binary_assemble = rule(
     implementation = _opentitan_binary_assemble_impl,
@@ -532,4 +637,53 @@ opentitan_binary_assemble = rule(
         ),
     },
     toolchains = [LOCALTOOLS_TOOLCHAIN],
+)
+
+def _exec_env_filegroup(ctx):
+    files = {v: k for k, v in ctx.attr.files.items()}
+    exec_env = {v: k for k, v in ctx.attr.exec_env.items()}
+
+    fset = {k: 1 for k in files.keys()}
+    eset = {k: 1 for k in exec_env.keys()}
+
+    if fset != eset:
+        fail("The set of files and exec_envs must be matched: files =", fset.keys(), ", exec_env =", eset.keys())
+
+    result = []
+    default_files = []
+    ot_bin_env_info = {}
+    for k in files.keys():
+        provider = exec_env[k][ExecEnvInfo].provider
+        f = files[k].files.to_list()
+        if len(f) != 1:
+            fail("files[{}] must supply exactly one file".format(k))
+
+        # Return the exec_env's provider so this rule can be consumed by
+        # opentitan_test rules.
+        result.append(provider(default = f[0], kind = ctx.attr.kind))
+        ot_bin_env_info[provider] = exec_env[k][ExecEnvInfo]
+        default_files.append(f[0])
+
+    result.append(OpenTitanBinaryInfo(exec_env = ot_bin_env_info))
+
+    # Also return a DefaultInfo provider so this rule can be consumed by other
+    # filegroup or packaging rules.
+    result.append(DefaultInfo(files = depset(default_files)))
+    return result
+
+exec_env_filegroup = rule(
+    implementation = _exec_env_filegroup,
+    attrs = {
+        "files": attr.label_keyed_string_dict(
+            allow_files = True,
+            mandatory = True,
+            doc = "Dictionary of files to exec_envs.",
+        ),
+        "exec_env": attr.label_keyed_string_dict(
+            providers = [ExecEnvInfo],
+            mandatory = True,
+            doc = "Dictionary of execution environments for this target.",
+        ),
+        "kind": attr.string(default = "flash", doc = "The kind of binary"),
+    },
 )

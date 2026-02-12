@@ -73,7 +73,7 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, "In clkmgr_if initialize_on_start", UVM_MEDIUM)
     idle = {NUM_TRANS{MuBi4True}};
     scanmode = MuBi4False;
-    cfg.clkmgr_vif.init(.idle(idle), .scanmode(scanmode), .lc_debug_en(Off));
+    cfg.clkmgr_vif.init(.idle(idle), .scanmode(scanmode));
     io_ip_clk_en = 1'b1;
     main_ip_clk_en = 1'b1;
     start_ip_clocks();
@@ -94,20 +94,18 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   endfunction
 
   task pre_start();
-    meas_ctrl_regs[ClkMesrIoDiv4] = '{"io_div4", ral.io_div4_meas_ctrl_en,
-                                       ral.io_div4_meas_ctrl_shadowed.hi,
-                                       ral.io_div4_meas_ctrl_shadowed.lo};
+    meas_ctrl_regs[ClkMesrIo] = '{"io", ral.io_meas_ctrl_en,
+                                   ral.io_meas_ctrl_shadowed.hi,
+                                   ral.io_meas_ctrl_shadowed.lo};
     meas_ctrl_regs[ClkMesrMain] = '{"main", ral.main_meas_ctrl_en,
                                      ral.main_meas_ctrl_shadowed.hi,
                                      ral.main_meas_ctrl_shadowed.lo};
     mubi_mode = ClkmgrMubiNone;
     `DV_GET_ENUM_PLUSARG(clkmgr_mubi_e, mubi_mode, clkmgr_mubi_mode)
     `uvm_info(`gfn, $sformatf("mubi_mode = %s", mubi_mode.name), UVM_MEDIUM)
-    cfg.clkmgr_vif.init(.idle({NUM_TRANS{MuBi4True}}), .scanmode(scanmode), .lc_debug_en(Off));
+    cfg.clkmgr_vif.init(.idle({NUM_TRANS{MuBi4True}}), .scanmode(scanmode));
     cfg.clkmgr_vif.update_io_ip_clk_en(1'b1);
     cfg.clkmgr_vif.update_main_ip_clk_en(1'b1);
-    cfg.clkmgr_vif.update_div_step_down_req(MuBi4False);
-    cfg.clkmgr_vif.update_io_clk_byp_ack(MuBi4False);
 
     disable_unnecessary_exclusions();
     clkmgr_init();
@@ -214,8 +212,8 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     csr_wr(.ptr(meas_ctrl_regs[which].en), .value(MuBi4False));
   endtask
 
-  local function int get_meas_ctrl_value(int min_threshold, int max_threshold, uvm_reg_field lo,
-                                         uvm_reg_field hi);
+  protected function int get_meas_ctrl_value(int min_threshold, int max_threshold,
+                                             uvm_reg_field lo, uvm_reg_field hi);
     int lo_mask = (1 << lo.get_n_bits()) - 1;
     int hi_mask = (1 << hi.get_n_bits()) - 1;
 
@@ -256,9 +254,9 @@ class clkmgr_base_vseq extends cip_base_vseq #(
               "%sabling MaxWidth_A assertion for %s", enable ? "En" : "Dis", clk.name),
               UVM_MEDIUM)
     case (clk)
-      ClkMesrIoDiv4: begin
-        if (enable) $asserton(0, "tb.dut.u_io_div4_meas.u_meas.MaxWidth_A");
-        else $assertoff(0, "tb.dut.u_io_div4_meas.u_meas.MaxWidth_A");
+      ClkMesrIo: begin
+        if (enable) $asserton(0, "tb.dut.u_io_meas.u_meas.MaxWidth_A");
+        else $assertoff(0, "tb.dut.u_io_meas.u_meas.MaxWidth_A");
       end
       ClkMesrMain: begin
         if (enable) $asserton(0, "tb.dut.u_main_meas.u_meas.MaxWidth_A");
@@ -270,9 +268,9 @@ class clkmgr_base_vseq extends cip_base_vseq #(
 
   local function void control_sync_pulse_assert(clk_mesr_e clk, bit enable);
     case (clk)
-      ClkMesrIoDiv4: begin
-        if (enable) $asserton(0, "tb.dut.u_io_div4_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
-        else $assertoff(0, "tb.dut.u_io_div4_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
+      ClkMesrIo: begin
+        if (enable) $asserton(0, "tb.dut.u_io_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
+        else $assertoff(0, "tb.dut.u_io_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
       end
       ClkMesrMain: begin
         if (enable) $asserton(0, "tb.dut.u_main_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
@@ -283,15 +281,19 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   endfunction
 
   // This turns off/on some clocks being measured to trigger a measurement timeout.
-  // A side-effect is that some RTL assertions will fire, so they are corresponsdingly controlled.
+  // A side-effect is that some RTL assertions will fire, so they are correspondingly controlled.
   task disturb_measured_clock(clk_mesr_e clk, bit enable);
     case (clk)
-      ClkMesrIoDiv4: begin
+      ClkMesrIo: begin
+        `uvm_info(`gfn, $sformatf("%sabling %s clk", enable ? "En" : "Dis", "io"),
+                  UVM_MEDIUM)
         if (enable) cfg.io_clk_rst_vif.start_clk();
         else cfg.io_clk_rst_vif.stop_clk();
-        control_sync_pulse_assert(.clk(ClkMesrIoDiv4), .enable(enable));
+        control_sync_pulse_assert(.clk(ClkMesrIo), .enable(enable));
       end
       ClkMesrMain: begin
+        `uvm_info(`gfn, $sformatf("%sabling %s clk", enable ? "En" : "Dis", "main"),
+                  UVM_MEDIUM)
         if (enable) cfg.main_clk_rst_vif.start_clk();
         else cfg.main_clk_rst_vif.stop_clk();
         control_sync_pulse_assert(.clk(ClkMesrMain), .enable(enable));
@@ -333,8 +335,6 @@ class clkmgr_base_vseq extends cip_base_vseq #(
       reset_duration_ps,
       cfg.aon_clk_rst_vif.clk_period_ps,
       cfg.io_clk_rst_vif.clk_period_ps,
-      cfg.io_div2_clk_rst_vif.clk_period_ps,
-      cfg.io_div4_clk_rst_vif.clk_period_ps,
       cfg.main_clk_rst_vif.clk_period_ps
     };
     reset_duration_ps = max(clk_periods_q);
@@ -343,27 +343,19 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     cfg.clk_rst_vif.drive_rst_pin(0);
     cfg.root_main_clk_rst_vif.drive_rst_pin(0);
     cfg.root_io_clk_rst_vif.drive_rst_pin(0);
-    cfg.root_io_div2_clk_rst_vif.drive_rst_pin(0);
-    cfg.root_io_div4_clk_rst_vif.drive_rst_pin(0);
     cfg.aon_clk_rst_vif.drive_rst_pin(0);
     cfg.io_clk_rst_vif.drive_rst_pin(0);
-    cfg.io_div2_clk_rst_vif.drive_rst_pin(0);
-    cfg.io_div4_clk_rst_vif.drive_rst_pin(0);
     cfg.main_clk_rst_vif.drive_rst_pin(0);
 
     #(reset_duration_ps * $urandom_range(2, 10) * 1ps);
     cfg.root_main_clk_rst_vif.drive_rst_pin(1);
     cfg.root_io_clk_rst_vif.drive_rst_pin(1);
-    cfg.root_io_div2_clk_rst_vif.drive_rst_pin(1);
-    cfg.root_io_div4_clk_rst_vif.drive_rst_pin(1);
     `uvm_info(`gfn, "apply_resets_concurrently releases POR", UVM_MEDIUM)
 
     #(reset_duration_ps * $urandom_range(2, 10) * 1ps);
     cfg.clk_rst_vif.drive_rst_pin(1);
     cfg.aon_clk_rst_vif.drive_rst_pin(1);
     cfg.io_clk_rst_vif.drive_rst_pin(1);
-    cfg.io_div2_clk_rst_vif.drive_rst_pin(1);
-    cfg.io_div4_clk_rst_vif.drive_rst_pin(1);
     cfg.main_clk_rst_vif.drive_rst_pin(1);
     `uvm_info(`gfn, "apply_resets_concurrently releases other resets", UVM_MEDIUM)
   endtask
@@ -375,8 +367,6 @@ class clkmgr_base_vseq extends cip_base_vseq #(
         cfg.clk_rst_vif.apply_reset();
         cfg.aon_clk_rst_vif.apply_reset();
         cfg.io_clk_rst_vif.apply_reset();
-        cfg.io_div2_clk_rst_vif.apply_reset();
-        cfg.io_div4_clk_rst_vif.apply_reset();
         cfg.main_clk_rst_vif.apply_reset();
       join
     end
@@ -392,7 +382,7 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   virtual task clkmgr_init();
     // Initialize input clock frequencies.
     cfg.main_clk_rst_vif.set_freq_mhz((1.0 * 1_000_000_000) / 1_000_000);
-    cfg.io_clk_rst_vif.set_freq_mhz((1.0 * 1_000_000_000) / 1_000_000);
+    cfg.io_clk_rst_vif.set_freq_mhz((1.0 * 250_000_000) / 1_000_000);
     // The real clock rate for aon is 200kHz, but that can slow testing down.
     // Increasing its frequency improves DV efficiency without compromising quality.
     cfg.aon_clk_rst_vif.set_freq_mhz((1.0 * FakeAonClkHz) / 1_000_000);

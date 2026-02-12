@@ -13,7 +13,7 @@ class keymgr_dpe_smoke_vseq extends keymgr_dpe_base_vseq;
     };
   }
 
-  // retain parent is 1 becuse we want to test
+  // retain parent is 1 because we want to test
   // filling and emptying key slots
   constraint set_policy_c {
     policy.allow_child == 1;
@@ -64,8 +64,8 @@ class keymgr_dpe_smoke_vseq extends keymgr_dpe_base_vseq;
         dst_slot ++;
       end
       // Boot stages 0-3 are used for previous key slots. In the final key slot
-      // src_slot must differ from last iteration's dst slot. As all 4 boot stages
-      // as defined by DpeNumBootStages are exhausted.
+      // src_slot must differ from last iteration's dst slot.
+      // FIXME: Remove this constraint since DpeNumBootStages is removed.
       else if (iter == keymgr_dpe_pkg::DpeNumSlots) begin
         src_slot = $urandom_range(0,(keymgr_dpe_pkg::DpeNumSlots-1)-2);
         dst_slot ++;

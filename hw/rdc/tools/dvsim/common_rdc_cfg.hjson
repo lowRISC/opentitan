@@ -31,7 +31,6 @@
                        "{fusesoc_core}"]
   sv_flist_gen_dir:   "{build_dir}/syn-icarus"
   sv_flist:           "{sv_flist_gen_dir}/{fusesoc_core_}.scr"
-  sv_flist_gen_flags: ["--flag=fileset_{design_level}"]
 
   // Determines which message severities to print into report summaries.
   report_severities: ["review", "warning", "error"]

@@ -13,6 +13,8 @@ extern "C" {
 
 #define IBEXSCA_SUBCOMMAND(_, value) \
     value(_, Init) \
+    value(_, CombiOperationsBatchFvsr) \
+    value(_, CombiOperationsBatch) \
     value(_, KeySideloading) \
     value(_, RFRead) \
     value(_, RFReadBatchFvsr) \
@@ -30,7 +32,8 @@ extern "C" {
     value(_, TLWriteBatchFvsrFixAddress) \
     value(_, TLWriteBatchRandom) \
     value(_, TLWriteBatchRandomFixAddress)
-UJSON_SERDE_ENUM(IbexScaSubcommand, ibex_sca_subcommand_t, IBEXSCA_SUBCOMMAND);
+C_ONLY(UJSON_SERDE_ENUM(IbexScaSubcommand, ibex_sca_subcommand_t, IBEXSCA_SUBCOMMAND));
+RUST_ONLY(UJSON_SERDE_ENUM(IbexScaSubcommand, ibex_sca_subcommand_t, IBEXSCA_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
 #define IBEXSCA_TEST_DATA(field, string) \
     field(data, uint32_t, 8)
@@ -57,6 +60,17 @@ UJSON_SERDE_STRUCT(IbexScaResult, ibex_sca_result_t, IBEXSCA_RESULT);
 #define IBEXSCA_BATCH(field, string) \
     field(num_iterations, uint32_t)
 UJSON_SERDE_STRUCT(IbexScaBatch, ibex_sca_batch_t, IBEXSCA_BATCH);
+
+#define IBEXSCA_TEST_BATCH_OPS(field, string) \
+    field(num_iterations, uint32_t) \
+    field(trigger, uint32_t) \
+    field(fixed_data1, uint32_t) \
+    field(fixed_data2, uint32_t)
+UJSON_SERDE_STRUCT(IbexScaTestBatchOps, ibex_sca_test_batch_ops_t, IBEXSCA_TEST_BATCH_OPS);
+
+#define IBEXSCA_OPS_RESULT(field, string) \
+    field(result, uint32_t, 12)
+UJSON_SERDE_STRUCT(IbexScaOpsResult, ibex_sca_ops_result_t, IBEXSCA_OPS_RESULT);
 
 // clang-format on
 

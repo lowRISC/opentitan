@@ -4,15 +4,12 @@
 
 use anyhow::Result;
 use clap::Args;
-use serde_annotate::Annotate;
 use std::any::Any;
-use std::fs;
 use std::path::PathBuf;
 use std::time::Duration;
 
+use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
-use opentitanlib::app::{StagedProgressBar, TransportWrapper};
-use opentitanlib::transport::common::fpga::FpgaProgram;
 
 /// Load a bitstream into the FPGA.
 #[derive(Debug, Args)]
@@ -33,20 +30,15 @@ impl CommandDispatch for LoadBitstream {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
-        log::info!("Loading bitstream: {:?}", self.filename);
-        let bitstream = fs::read(&self.filename)?;
-        let progress = StagedProgressBar::new();
-        let operation = FpgaProgram {
-            bitstream,
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
+        opentitanlib::test_utils::load_bitstream::LoadBitstream {
+            clear_bitstream: false,
+            bitstream: Some(self.filename.clone()),
             rom_reset_pulse: self.rom_reset_pulse,
             rom_timeout: self.rom_timeout,
-            progress: Box::new(progress),
-        };
-
-        if operation.should_skip(transport)? {
-            return Ok(None);
         }
-        transport.dispatch(&operation)
+        .init(transport)?;
+
+        Ok(None)
     }
 }

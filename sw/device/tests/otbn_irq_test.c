@@ -2,25 +2,29 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/api.h"
+#include "hw/top/dt/otbn.h"
+#include "hw/top/dt/rv_plic.h"
 #include "sw/device/lib/dif/dif_otbn.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
-#include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/irq.h"
-#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/otbn_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTBN_DECLARE_APP_SYMBOLS(err_test);
 
 static const otbn_app_t kAppErrTest = OTBN_APP_T_INIT(err_test);
+static const uint32_t kPlicTarget = 0;
 
 OTTF_DEFINE_TEST_CONFIG();
 
 static dif_rv_plic_t plic;
+static dif_otbn_t otbn;
+static dt_otbn_t kOtbnDt = (dt_otbn_t)0;
+
 static volatile bool otbn_finished;
 
 /**
@@ -71,6 +75,12 @@ static void run_test_with_irqs(dif_otbn_t *otbn, otbn_app_t app,
   // we see the Done interrupt fire.
   otbn_finished = false;
 
+  // Expect the recoverable error alert only if errors are expected.
+  if (expected_err_bits != kDifOtbnErrBitsNoError) {
+    CHECK_STATUS_OK(ottf_alerts_expect_alert_start(
+        dt_otbn_alert_to_alert_id(kOtbnDt, kDtOtbnAlertRecov)));
+  }
+
   CHECK_STATUS_OK(otbn_testutils_load_app(otbn, app));
 
   // If the CTRL.SOFTWARE_ERRS_FATAL flag is set, a software error will be
@@ -89,6 +99,11 @@ static void run_test_with_irqs(dif_otbn_t *otbn, otbn_app_t app,
   // it's done.
   ATOMIC_WAIT_FOR_INTERRUPT(otbn_finished);
 
+  if (expected_err_bits != kDifOtbnErrBitsNoError) {
+    CHECK_STATUS_OK(ottf_alerts_expect_alert_finish(
+        dt_otbn_alert_to_alert_id(kOtbnDt, kDtOtbnAlertRecov)));
+  }
+
   check_otbn_status(otbn, expected_status);
   check_otbn_err_bits(otbn, expected_insn_cnt);
   check_otbn_insn_cnt(otbn, expected_err_bits);
@@ -98,22 +113,19 @@ static void run_test_with_irqs(dif_otbn_t *otbn, otbn_app_t app,
  * Initialize PLIC and enable OTBN interrupt.
  */
 static void plic_init_with_irqs(void) {
-  mmio_region_t base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
-  CHECK_DIF_OK(dif_rv_plic_init(base_addr, &plic));
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kDtRvPlic, &plic));
 
-  dif_rv_plic_irq_id_t irq_id = kTopEarlgreyPlicIrqIdOtbnDone;
+  dif_rv_plic_irq_id_t irq_id = dt_otbn_irq_to_plic_id(kOtbnDt, kDtOtbnIrqDone);
 
   // Set interrupt priority to be positive
   CHECK_DIF_OK(dif_rv_plic_irq_set_priority(&plic, irq_id, 0x1));
 
   // Enable the interrupt
-  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-      &plic, irq_id, kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(&plic, irq_id, kPlicTarget,
+                                           kDifToggleEnabled));
 
   // Set the threshold for Ibex to 0.
-  CHECK_DIF_OK(dif_rv_plic_target_set_threshold(
-      &plic, kTopEarlgreyPlicTargetIbex0, 0x0));
+  CHECK_DIF_OK(dif_rv_plic_target_set_threshold(&plic, kPlicTarget, 0x0));
 }
 
 /**
@@ -121,21 +133,17 @@ static void plic_init_with_irqs(void) {
  *
  * This function overrides the default OTTF external ISR.
  */
-void ottf_external_isr(uint32_t *exc_info) {
-  // Find which interrupt fired at PLIC by claiming it.
-  dif_rv_plic_irq_id_t irq_id;
-  CHECK_DIF_OK(
-      dif_rv_plic_irq_claim(&plic, kTopEarlgreyPlicTargetIbex0, &irq_id));
-
-  // Check it was from OTBN
-  top_earlgrey_plic_peripheral_t peri =
-      top_earlgrey_plic_interrupt_for_peripheral[irq_id];
-  CHECK(peri == kTopEarlgreyPlicPeripheralOtbn,
-        "Interrupt from incorrect peripheral: (exp: %d, obs: %s)",
-        kTopEarlgreyPlicPeripheralOtbn, peri);
+bool ottf_handle_irq(uint32_t *exc_info, dt_instance_id_t devid,
+                     dif_rv_plic_irq_id_t irq_id) {
+  if (devid != dt_otbn_instance_id(kOtbnDt)) {
+    return false;
+  }
 
   // Check this is the interrupt we expected
-  CHECK(irq_id == kTopEarlgreyPlicIrqIdOtbnDone);
+  dif_otbn_irq_t otbn_irq = dt_otbn_irq_from_plic_id(kOtbnDt, irq_id);
+  if (otbn_irq != kDtOtbnIrqDone) {
+    return false;
+  }
 
   // otbn_finished should currently be false (we're supposed to clear it before
   // starting OTBN)
@@ -143,20 +151,21 @@ void ottf_external_isr(uint32_t *exc_info) {
 
   // Set otbn_finished, which we'll pick up in run_test_with_irqs.
   otbn_finished = true;
+
+  CHECK_DIF_OK(dif_otbn_irq_acknowledge(&otbn, otbn_irq));
+
+  return true;
 }
 
 bool test_main(void) {
   CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
   plic_init_with_irqs();
 
+  CHECK_DIF_OK(dif_otbn_init_from_dt(kOtbnDt, &otbn));
+
   // Enable the external IRQ (so that we see the interrupt from the PLIC)
   irq_global_ctrl(true);
   irq_external_ctrl(true);
-
-  mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR);
-
-  dif_otbn_t otbn;
-  CHECK_DIF_OK(dif_otbn_init(base_addr, &otbn));
 
   run_test_with_irqs(&otbn, kAppErrTest, kDifOtbnStatusIdle,
                      kDifOtbnErrBitsBadDataAddr, 1);

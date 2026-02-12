@@ -1,6 +1,6 @@
-# Copyright lowRISC contributors (OpenTitan project).
-# Licensed under the Apache License, Version 2.0, see LICENSE for details.
-# SPDX-License-Identifier: Apache-2.0
+## Copyright lowRISC contributors (OpenTitan project).
+## Licensed under the Apache License, Version 2.0, see LICENSE for details.
+## SPDX-License-Identifier: Apache-2.0
 <% from topgen.lib import Name %>\
 # CLKMGR DV document
 
@@ -58,7 +58,7 @@ All common types and methods defined at the package level can be found in
   typedef enum int {
 % for clk in [v for v in typed_clocks['sw_clks'].values()]:
 <% sep = "" if loop.last else "," %>\
-    Peri${Name.from_snake_case(clk['src_name']).as_camel_case()}${sep}
+    Peri${Name.to_camel_case(clk['src_name'])}${sep}
 % endfor
   } peri_e;
   typedef enum int {TransAes, TransHmac, TransKmac, TransOtbn} trans_e;
@@ -108,6 +108,7 @@ They depend on the `clk_hints` CSR, which has a separate bit for each, `main_ip_
 They also depend on the `idle_i` input, which also has a separate multi-bit value for each unit.
 Units are considered busy when their corresponding `idle_i` value is not `mubi_pkg::MuBi4True`, and this prevents its clock turning off until it becomes idle.
 
+% if ext_clk_bypass:
 ${"####"} clkmgr_extclk_vseq
 
 The sequence `clkmgr_extclk_vseq` randomizes the stimuli that drive the external clock selection.
@@ -117,6 +118,7 @@ When the external clock is selected and `scanmode_i` is not set to `prim_mubi_pk
 * If `lc_ctrl_byp_req_i` is on, or
 * If `extclk_ctrl.hi_speed_sel` CSR is `prim_mubi_pkg::MuBi4True`, when the selection is enabled by software.
 
+% endif
 ${"####"} clkmgr_frequency_vseq
 
 The sequence `clkmgr_frequency_vseq` randomly programs the frequency measurement for each clock so its measurement is either okay, slow, or fast.
@@ -145,7 +147,9 @@ The following covergroups have been developed to prove that the test intent has 
   These are wrapped in class `clkmgr_trans_cg_wrap` and instantiated in `clkmgr_env_cov`.
 * Covergroups for the outcome of each clock measurement.
   These are wrapped in class `freq_measure_cg_wrap` and instantiated in `clkmgr_env_cov`.
+% if ext_clk_bypass:
 * Covergroup for the external clock selection logic: `extclk_cg` in `clkmgr_env_cov`.
+% endif
 
 See more detailed description at `hw/top_${topname}/ip_autogen/clkmgr/data/clkmgr_testplan.hjson`.
 

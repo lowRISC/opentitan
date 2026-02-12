@@ -27,10 +27,10 @@
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "alert_handler_regs.h"
-#include "aon_timer_regs.h"
+#include "hw/top/alert_handler_regs.h"
+#include "hw/top/aon_timer_regs.h"
+#include "hw/top/pwm_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "pwm_regs.h"
 
 typedef void (*isr_handler)(void);
 static volatile isr_handler expected_isr_handler;
@@ -64,7 +64,7 @@ static volatile const bool kDeepSleep = false;
 
 static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
 
-OTTF_DEFINE_TEST_CONFIG();
+OTTF_DEFINE_TEST_CONFIG(.ignore_alerts = true);
 
 void ottf_external_isr(uint32_t *exc_info) {
   LOG_INFO("got external IRQ");
@@ -292,10 +292,6 @@ bool test_main(void) {
       .blink_parameter_x = 0,
       .blink_parameter_y = 0,
   };
-  const dif_pwm_channel_t kPwmChannel[PWM_PARAM_N_OUTPUTS] = {
-      kDifPwmChannel0, kDifPwmChannel1, kDifPwmChannel2,
-      kDifPwmChannel3, kDifPwmChannel4, kDifPwmChannel5,
-  };
   // Duty cycle (arbitrary) values (in the beats).
   const uint16_t kPwmDutycycle[PWM_PARAM_N_OUTPUTS] = {
       6, 11, 27, 8, 17, 7,
@@ -318,12 +314,10 @@ bool test_main(void) {
   dif_pwm_channel_config_t channel_config_ = kDefaultChCfg_;
   for (size_t i = 0; i < PWM_PARAM_N_OUTPUTS; ++i) {
     CHECK_DIF_OK(
-        dif_pwm_channel_set_enabled(&pwm, kPwmChannel[i], kDifToggleDisabled));
+        dif_pwm_channels_set_enabled(&pwm, 1 << i, kDifToggleDisabled));
     channel_config_.duty_cycle_a = kPwmDutycycle[i];
-    CHECK_DIF_OK(
-        dif_pwm_configure_channel(&pwm, kPwmChannel[i], channel_config_));
-    CHECK_DIF_OK(
-        dif_pwm_channel_set_enabled(&pwm, kPwmChannel[i], kDifToggleEnabled));
+    CHECK_DIF_OK(dif_pwm_configure_channel(&pwm, i, channel_config_));
+    CHECK_DIF_OK(dif_pwm_channels_set_enabled(&pwm, 1 << i, kDifToggleEnabled));
   }
 
   // Enable all PWM channels.

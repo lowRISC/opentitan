@@ -22,7 +22,7 @@ module prim_alert_tb;
   // config
   //////////////////////////////////////////////////////
 
-  // this can be overriden on the command line
+  // this can be overridden on the command line
   `ifdef IS_SYNC
     localparam bit IsAsync = 0;
   `else
@@ -32,6 +32,11 @@ module prim_alert_tb;
     localparam bit IsFatal = 1;
   `else
     localparam bit IsFatal = 0;
+  `endif
+  `ifdef IS_3_CYCLE_SKEW
+    localparam int unsigned SkewCycles = 3;
+  `else
+    localparam int unsigned SkewCycles = 1;
   `endif
 
   localparam time ClkPeriod  = 10_000;
@@ -85,6 +90,7 @@ module prim_alert_tb;
   prim_mubi_pkg::mubi4_t     init_trig = prim_mubi_pkg::MuBi4False;
   prim_alert_sender #(
     .AsyncOn(IsAsync),
+    .SkewCycles(SkewCycles),
     .IsFatal(IsFatal)
   ) i_alert_sender (
     .clk_i(clk),
@@ -98,7 +104,8 @@ module prim_alert_tb;
   );
 
   prim_alert_receiver #(
-    .AsyncOn(IsAsync)
+    .AsyncOn(IsAsync),
+    .SkewCycles(SkewCycles)
   ) i_alert_receiver (
     .clk_i(clk),
     .rst_ni(rst_n),
@@ -215,7 +222,7 @@ module prim_alert_tb;
     end
 
     // Sequence 4) `Ack_p/n` integrity check sequence.
-    // Note that alert_tx signal interigy errors are verified in alert_handler testbench.
+    // Note that alert_tx signal integrity errors are verified in alert_handler testbench.
     main_clk.wait_clks($urandom_range(MinHandshakeWait, 10));
     alert_req = 1;
 

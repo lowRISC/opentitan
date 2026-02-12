@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use clap::Parser;
 use regex::Regex;
 use std::fs;
@@ -35,76 +35,66 @@ struct Opts {
     firmware_elf: PathBuf,
 }
 
-const SYNC_MSG: &str = r"SYNC:.*\r\n";
+const SYNC_MSG: &str = r"SYNC:";
 
 fn spi_device_console_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let mut console = UartConsole {
-        timeout: Some(opts.timeout),
-        exit_success: Some(Regex::new(r"PASS.*\n")?),
-        exit_failure: Some(Regex::new(r"(FAIL|FAULT).*\n")?),
-        newline: true,
-        ..Default::default()
-    };
-    let mut stdout = std::io::stdout();
+    let mut console = UartConsole::new(
+        Some(opts.timeout),
+        Some(Regex::new(r"PASS.*\n")?),
+        Some(Regex::new(r"(FAIL|FAULT).*\n")?),
+    );
     let spi = transport.spi(&opts.console_spi)?;
 
-    let spi_console_device = SpiConsoleDevice::new(&*spi)?;
-    let _ = UartConsole::wait_for(&spi_console_device, r"Running [^\r\n]*", opts.timeout)?;
+    let spi_console_device = SpiConsoleDevice::new(&*spi, None, /*ignore_frame_num=*/ false)?;
+    let _ = UartConsole::wait_for(&spi_console_device, r"Running ", opts.timeout)?;
 
     /* Load the ELF binary and get the expect data.*/
     let elf_binary = fs::read(&opts.firmware_elf)?;
     let object = object::File::parse(&*elf_binary)?;
     let mut data = test_utils::object::symbol_data(&object, "kTestStr")?;
     let mut data_str = std::str::from_utf8(&data)?.trim_matches(char::from(0));
-    _ = UartConsole::wait_for(&spi_console_device, data_str, opts.timeout)?;
+    _ = UartConsole::wait_for_bytes(&spi_console_device, data_str, opts.timeout)?;
     log::info!("Sending test string to Device...");
     _ = UartConsole::wait_for(&spi_console_device, SYNC_MSG, opts.timeout)?;
-    spi_console_device.console_write(&data)?;
+    spi_console_device.write(&data)?;
 
     data = test_utils::object::symbol_data(&object, "kTest64bDataStr")?;
     data_str = std::str::from_utf8(&data)?.trim_matches(char::from(0));
-    _ = UartConsole::wait_for(&spi_console_device, data_str, opts.timeout)?;
+    _ = UartConsole::wait_for_bytes(&spi_console_device, data_str, opts.timeout)?;
     log::info!("Sending 64B data to Device...");
     _ = UartConsole::wait_for(&spi_console_device, SYNC_MSG, opts.timeout)?;
-    spi_console_device.console_write(&data)?;
+    spi_console_device.write(&data)?;
 
     data = test_utils::object::symbol_data(&object, "kTest256bDataStr")?;
     data_str = std::str::from_utf8(&data)?.trim_matches(char::from(0));
-    _ = UartConsole::wait_for(&spi_console_device, data_str, opts.timeout)?;
+    _ = UartConsole::wait_for_bytes(&spi_console_device, data_str, opts.timeout)?;
     log::info!("Sending 256 data to Device...");
     _ = UartConsole::wait_for(&spi_console_device, SYNC_MSG, opts.timeout)?;
-    spi_console_device.console_write(&data)?;
+    spi_console_device.write(&data)?;
 
     data = test_utils::object::symbol_data(&object, "kTest1KbDataStr")?;
     data_str = std::str::from_utf8(&data)?.trim_matches(char::from(0));
     // 1KB data will be sent twice.
     for _round in 0..2 {
-        _ = UartConsole::wait_for(&spi_console_device, data_str, opts.timeout)?;
+        _ = UartConsole::wait_for_bytes(&spi_console_device, data_str, opts.timeout)?;
         log::info!("Sending 1KB data to Device...");
         _ = UartConsole::wait_for(&spi_console_device, SYNC_MSG, opts.timeout)?;
-        spi_console_device.console_write(&data)?;
+        spi_console_device.write(&data)?;
     }
 
     data = test_utils::object::symbol_data(&object, "kTest4KbDataStr")?;
     data_str = std::str::from_utf8(&data)?.trim_matches(char::from(0));
-    _ = UartConsole::wait_for(&spi_console_device, data_str, opts.timeout)?;
+    _ = UartConsole::wait_for_bytes(&spi_console_device, data_str, opts.timeout)?;
     // 4KB data will be sent twice.
     for _round in 0..2 {
         log::info!("Sending 4KB data to Device...");
         _ = UartConsole::wait_for(&spi_console_device, SYNC_MSG, opts.timeout)?;
-        spi_console_device.console_write(&data)?;
+        spi_console_device.write(&data)?;
     }
 
-    let result = console.interact(&spi_console_device, None, Some(&mut stdout))?;
+    let result = console.interact(&spi_console_device, false)?;
     match result {
-        ExitStatus::None | ExitStatus::CtrlC => Ok(()),
-        ExitStatus::Timeout => {
-            if console.exit_success.is_some() {
-                Err(anyhow!("Console timeout exceeded"))
-            } else {
-                Ok(())
-            }
-        }
+        ExitStatus::Timeout => Err(anyhow!("Console timeout exceeded")),
         ExitStatus::ExitSuccess => {
             log::info!(
                 "ExitSuccess({:?})",

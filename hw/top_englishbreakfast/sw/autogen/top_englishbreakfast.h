@@ -5,7 +5,7 @@
 // ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
 // util/topgen.py -t hw/top_englishbreakfast/data/top_englishbreakfast.hjson
-// -o hw/top_englishbreakfast
+//                -o hw/top_englishbreakfast/
 
 #ifndef OPENTITAN_HW_TOP_ENGLISHBREAKFAST_SW_AUTOGEN_TOP_ENGLISHBREAKFAST_H_
 #define OPENTITAN_HW_TOP_ENGLISHBREAKFAST_SW_AUTOGEN_TOP_ENGLISHBREAKFAST_H_
@@ -300,24 +300,6 @@ extern "C" {
 #define TOP_ENGLISHBREAKFAST_FLASH_CTRL_PRIM_SIZE_BYTES 0x80u
 
 /**
- * Peripheral base address for mem device on flash_ctrl in top englishbreakfast.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_BASE_ADDR 0x20000000u
-
-/**
- * Peripheral size for mem device on flash_ctrl in top englishbreakfast.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_BASE_ADDR and
- * `TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_BASE_ADDR + TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_SIZE_BYTES`.
- */
-#define TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_SIZE_BYTES 0x10000u
-
-/**
  * Peripheral base address for rv_plic in top englishbreakfast.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -372,24 +354,6 @@ extern "C" {
 #define TOP_ENGLISHBREAKFAST_SRAM_CTRL_MAIN_REGS_SIZE_BYTES 0x40u
 
 /**
- * Peripheral base address for ram device on sram_ctrl_main in top englishbreakfast.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_ENGLISHBREAKFAST_SRAM_CTRL_MAIN_RAM_BASE_ADDR 0x10000000u
-
-/**
- * Peripheral size for ram device on sram_ctrl_main in top englishbreakfast.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_ENGLISHBREAKFAST_SRAM_CTRL_MAIN_RAM_BASE_ADDR and
- * `TOP_ENGLISHBREAKFAST_SRAM_CTRL_MAIN_RAM_BASE_ADDR + TOP_ENGLISHBREAKFAST_SRAM_CTRL_MAIN_RAM_SIZE_BYTES`.
- */
-#define TOP_ENGLISHBREAKFAST_SRAM_CTRL_MAIN_RAM_SIZE_BYTES 0x20000u
-
-/**
  * Peripheral base address for regs device on rom_ctrl in top englishbreakfast.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -406,24 +370,6 @@ extern "C" {
  * `TOP_ENGLISHBREAKFAST_ROM_CTRL_REGS_BASE_ADDR + TOP_ENGLISHBREAKFAST_ROM_CTRL_REGS_SIZE_BYTES`.
  */
 #define TOP_ENGLISHBREAKFAST_ROM_CTRL_REGS_SIZE_BYTES 0x80u
-
-/**
- * Peripheral base address for rom device on rom_ctrl in top englishbreakfast.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_ENGLISHBREAKFAST_ROM_CTRL_ROM_BASE_ADDR 0x8000u
-
-/**
- * Peripheral size for rom device on rom_ctrl in top englishbreakfast.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_ENGLISHBREAKFAST_ROM_CTRL_ROM_BASE_ADDR and
- * `TOP_ENGLISHBREAKFAST_ROM_CTRL_ROM_BASE_ADDR + TOP_ENGLISHBREAKFAST_ROM_CTRL_ROM_SIZE_BYTES`.
- */
-#define TOP_ENGLISHBREAKFAST_ROM_CTRL_ROM_SIZE_BYTES 0x8000u
 
 /**
  * Peripheral base address for cfg device on rv_core_ibex in top englishbreakfast.
@@ -445,34 +391,34 @@ extern "C" {
 
 
 /**
- * Memory base address for eflash in top englishbreakfast.
+ * Memory base address for mem memory on flash_ctrl in top englishbreakfast.
  */
-#define TOP_ENGLISHBREAKFAST_EFLASH_BASE_ADDR 0x20000000u
+#define TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_BASE_ADDR 0x20000000u
 
 /**
- * Memory size for eflash in top englishbreakfast.
+ * Memory size for mem memory on flash_ctrl in top englishbreakfast.
  */
-#define TOP_ENGLISHBREAKFAST_EFLASH_SIZE_BYTES 0x10000u
+#define TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_SIZE_BYTES 0x10000u
 
 /**
- * Memory base address for ram_main in top englishbreakfast.
+ * Memory base address for ram memory on sram_ctrl_main in top englishbreakfast.
  */
-#define TOP_ENGLISHBREAKFAST_RAM_MAIN_BASE_ADDR 0x10000000u
+#define TOP_ENGLISHBREAKFAST_SRAM_CTRL_MAIN_RAM_BASE_ADDR 0x10000000u
 
 /**
- * Memory size for ram_main in top englishbreakfast.
+ * Memory size for ram memory on sram_ctrl_main in top englishbreakfast.
  */
-#define TOP_ENGLISHBREAKFAST_RAM_MAIN_SIZE_BYTES 0x20000u
+#define TOP_ENGLISHBREAKFAST_SRAM_CTRL_MAIN_RAM_SIZE_BYTES 0x20000u
 
 /**
- * Memory base address for rom in top englishbreakfast.
+ * Memory base address for rom memory on rom_ctrl in top englishbreakfast.
  */
-#define TOP_ENGLISHBREAKFAST_ROM_BASE_ADDR 0x8000u
+#define TOP_ENGLISHBREAKFAST_ROM_CTRL_ROM_BASE_ADDR 0x8000u
 
 /**
- * Memory size for rom in top englishbreakfast.
+ * Memory size for rom memory on rom_ctrl in top englishbreakfast.
  */
-#define TOP_ENGLISHBREAKFAST_ROM_SIZE_BYTES 0x8000u
+#define TOP_ENGLISHBREAKFAST_ROM_CTRL_ROM_SIZE_BYTES 0x8000u
 
 
 /**
@@ -612,6 +558,7 @@ typedef enum top_englishbreakfast_plic_target {
   kTopEnglishbreakfastPlicTargetIbex0 = 0, /**< Ibex Core 0 */
   kTopEnglishbreakfastPlicTargetLast = 0, /**< \internal Final PLIC target */
 } top_englishbreakfast_plic_target_t;
+
 
 #define PINMUX_MIO_PERIPH_INSEL_IDX_OFFSET 2
 

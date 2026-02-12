@@ -7,7 +7,7 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/dif/dif_base.h"
 
-#include "pattgen_regs.h"  // Generated.
+#include "hw/top/pattgen_regs.h"  // Generated.
 
 dif_result_t dif_pattgen_configure_channel(
     const dif_pattgen_t *pattgen, dif_pattgen_channel_t channel,

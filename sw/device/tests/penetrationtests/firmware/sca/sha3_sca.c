@@ -16,8 +16,8 @@
 #include "sw/device/tests/penetrationtests/json/commands.h"
 #include "sw/device/tests/penetrationtests/json/sha3_sca_commands.h"
 
+#include "hw/top/kmac_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "kmac_regs.h"
 
 enum {
   /**
@@ -593,8 +593,8 @@ status_t handle_sha3_pentest_init(ujson_t *uj) {
     fpga_mode = true;
   }
 
-  penetrationtest_cpuctrl_t uj_cpuctrl;
-  TRY(ujson_deserialize_penetrationtest_cpuctrl_t(uj, &uj_cpuctrl));
+  // Configure the device.
+  pentest_setup_device(uj, false, false);
 
   pentest_init(kPentestTriggerSourceKmac,
                kPentestPeripheralIoDiv4 | kPentestPeripheralKmac);
@@ -604,19 +604,6 @@ status_t handle_sha3_pentest_init(ujson_t *uj) {
   TRY(dif_kmac_configure(&kmac, config));
 
   kmac_block_until_idle();
-
-  // Configure the CPU for the pentest.
-  penetrationtest_device_info_t uj_output;
-  TRY(pentest_configure_cpu(
-      uj_cpuctrl.icache_disable, uj_cpuctrl.dummy_instr_disable,
-      uj_cpuctrl.enable_jittery_clock, uj_cpuctrl.enable_sram_readback,
-      &uj_output.clock_jitter_locked, &uj_output.clock_jitter_en,
-      &uj_output.sram_main_readback_locked, &uj_output.sram_ret_readback_locked,
-      &uj_output.sram_main_readback_en, &uj_output.sram_ret_readback_en));
-
-  // Read device ID and return to host.
-  TRY(pentest_read_device_id(uj_output.device_id));
-  RESP_OK(ujson_serialize_penetrationtest_device_info_t, uj, &uj_output);
 
   return OK_STATUS();
 }

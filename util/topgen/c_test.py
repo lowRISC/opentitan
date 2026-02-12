@@ -13,11 +13,12 @@ import sys
 from collections import defaultdict
 from typing import Dict
 
+from basegen.lib import Name
 from reggen.interrupt import IntrType
 from reggen.ip_block import IpBlock
 
 from .c import TopGenC
-from .lib import Name, find_module
+from .lib import find_module, find_modules
 
 
 class TestPeripheral:
@@ -81,12 +82,15 @@ class TopGenCTest(TopGenC):
         # TODO: Don't require that the handler's module_instance_name be the
         # same as the template name.
         self.alert_handler = find_module(self.top['module'], 'alert_handler')
-        self.rv_plic = find_module(self.top['module'], 'rv_plic')
+        self.rv_plics = find_modules(self.top['module'], 'rv_plic')
 
-        self.irq_peripherals = {
-            x['name']: self._get_irq_peripherals(self.rv_plic, x['name'])
-            for x in top_info['addr_spaces']
-        }
+        self.default_plic = self.top.get("default_plic", None)
+        self.irq_peripherals = {}
+        for plic in self.rv_plics:
+            self.irq_peripherals[plic["name"]] = {
+                x['name']: self._get_irq_peripherals(plic, x['name'])
+                for x in top_info['addr_spaces']
+            }
 
         # Only generate alert_handler and mappings if there is an alert_handler
         if self.alert_handler is not None:
@@ -104,13 +108,18 @@ class TopGenCTest(TopGenC):
         accessed by the host(s) to perform the tests.
         """
         irq_peripherals = []
-        # TODO: Model interrupt domains with explicit connectivity, an
-        # orthogonal concept to address spaces. There may be multiple PLICs, for
-        # example, in one address space. Or devices with core interfaces in
-        # address spaces that are different from the CPU's and PLIC's.
+        # There may be multiple PLICs, for example, in one address space.
+        # Or devices with core # interfaces in address spaces that are different
+        # from the CPU's and PLIC's.
         rv_plic_addr_spaces = rv_plic['base_addrs'][None]
         if addr_space not in rv_plic_addr_spaces:
             return irq_peripherals
+
+        # A lot of code counts on this being named "Plic" and not "RvPlic"
+        suffix = rv_plic["name"]
+        if suffix.startswith("rv_plic"):
+            suffix = rv_plic["name"][3:]
+        unsnaked_name = Name.from_snake_case(suffix)
 
         device_regions = self.all_device_regions()
         # TODO: We only know how to directly access irq test CSRs in this
@@ -122,16 +131,17 @@ class TopGenCTest(TopGenC):
             if inst_name not in self.top["interrupt_module"]:
                 continue
 
+            module_plic = entry.get("plic", self.default_plic)
+            if rv_plic["name"] != module_plic:
+                continue
+
             name = entry['type']
-            plic_name = (self._top_name + Name(["plic", "peripheral"]) +
+            plic_name = (self._top_name + unsnaked_name + Name(["peripheral"]) +
                          Name.from_snake_case(inst_name))
             plic_name = plic_name.as_c_enum()
 
             # Device regions may have multiple TL interfaces. Pick the region
             # associated with the 'core' interface.
-            # TODO: Model interrupt domains with explicit connectivity. This
-            # method of associating interrupts with a PLIC leads to inflexible
-            # architectures that do not cover all use cases.
             if_name = 'core'
             periph_addr_space = addr_space
             if inst_name in direct_device_regions:
@@ -166,13 +176,13 @@ class TopGenCTest(TopGenC):
                         "one entry keyed with 'None' or 'core'.")
                     sys.exit(1)
 
-            plic_name = (self._top_name + Name(["plic", "peripheral"]) +
+            plic_name = (self._top_name + unsnaked_name + Name(["peripheral"]) +
                          Name.from_snake_case(inst_name))
             plic_name = plic_name.as_c_enum()
 
-            start_irq = self.device_irqs[inst_name][0]
-            end_irq = self.device_irqs[inst_name][-1]
-            plic_start_irq = (self._top_name + Name(["plic", "irq", "id"]) +
+            start_irq = self.device_irqs[rv_plic["name"]][inst_name][0]
+            end_irq = self.device_irqs[rv_plic["name"]][inst_name][-1]
+            plic_start_irq = (self._top_name + unsnaked_name + Name(["irq", "id"]) +
                               Name.from_snake_case(start_irq))
             plic_start_irq = plic_start_irq.as_c_enum()
 
@@ -222,9 +232,11 @@ class TopGenCTest(TopGenC):
             return alert_peripherals
         all_device_regions = self.all_device_regions()
         all_direct_regions = all_device_regions[addr_space]
+        alerting_modules = self.top["alert_module"]
+
         for entry in self.top['module']:
             inst_name = entry['name']
-            if inst_name not in self.top["alert_module"]:
+            if inst_name not in alerting_modules:
                 continue
 
             if not entry['generate_dif']:

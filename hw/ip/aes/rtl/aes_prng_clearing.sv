@@ -27,8 +27,7 @@ module aes_prng_clearing import aes_pkg::*;
   input  logic                    rst_ni,
 
   // Connections to AES internals, PRNG consumers
-  input  logic                    data_req_i,
-  output logic                    data_ack_o,
+  input  logic                    data_update_i,
   output logic        [Width-1:0] data_o [NumSharesKey],
   input  logic                    reseed_req_i,
   output logic                    reseed_ack_o,
@@ -45,6 +44,12 @@ module aes_prng_clearing import aes_pkg::*;
   logic             lfsr_en;
   logic [Width-1:0] lfsr_state;
 
+  // The data requests are fed from an LFSR. Reseed requests take precedence internally to the
+  // LFSR. If there is an outstanding reseed request, the PRNG can keep updating and providing
+  // pseudo-random data (using the old seed). If the reseeding is taking place, the LFSR will
+  // provide fresh pseudo-random data (the new seed) in the next cycle anyway. This means the PRNG
+  // is always ready to provide new pseudo-random data.
+
   // In the current SCA setup, we don't have sufficient resources to implement the infrastructure
   // required for PRNG reseeding (CSRNG, EDN, etc.). Therefore, we skip any reseeding requests if
   // the SecSkipPRNGReseeding parameter is set. Performing the reseeding without proper entropy
@@ -55,11 +60,8 @@ module aes_prng_clearing import aes_pkg::*;
   `ASSERT_STATIC_LINT_ERROR(AesSecSkipPRNGReseedingNonDefault, SecSkipPRNGReseeding == 0)
 
   // LFSR control
-  assign lfsr_en = data_req_i & data_ack_o;
+  assign lfsr_en = data_update_i;
   assign seed_en = SecSkipPRNGReseeding ? 1'b0 : seed_valid;
-
-  // The data requests are fed from the LFSR, reseed requests have the highest priority.
-  assign data_ack_o = reseed_req_i ? 1'b0 : data_req_i;
 
   // Width adaption for reseeding interface. We get EntropyWidth bits at a time.
   if (Width/2 == EntropyWidth) begin : gen_buffer
@@ -135,7 +137,7 @@ module aes_prng_clearing import aes_pkg::*;
   );
   assign data_o[0] = lfsr_state;
 
-  // A seperate permutation is applied to obtain the pseudo-random data for clearing the second
+  // A separate permutation is applied to obtain the pseudo-random data for clearing the second
   // share of registers (e.g. key registers or state registers in case masking is enabled).
   for (genvar i = 0; i < Width; i++) begin : gen_share_perm
     assign data_o[1][i] = lfsr_state[RndCnstSharePerm[i]];

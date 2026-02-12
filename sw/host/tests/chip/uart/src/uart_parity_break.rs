@@ -10,7 +10,7 @@ use std::time::Duration;
 use anyhow::{Context, Result};
 use clap::Parser;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::uart::{Parity, Uart};
 use opentitanlib::test_utils;
@@ -69,7 +69,7 @@ fn main() -> Result<()> {
     // Test all four UARTs with both parities.
     for uart_id in 0..4 {
         for parity in [Parity::Odd, Parity::Even, Parity::None] {
-            transport.reset_target(Duration::from_millis(500), true)?;
+            transport.reset_with_delay(UartRx::Clear, Duration::from_millis(500))?;
 
             let test_data = TestData {
                 uart_id,
@@ -118,7 +118,7 @@ fn uart_parity_break(
     };
 
     // Configure the UART under test and the parity to use.
-    UartConsole::wait_for(console, r"waiting for commands\r\n", opts.timeout)?;
+    UartConsole::wait_for(console, r"waiting for commands", opts.timeout)?;
     MemWriteReq::execute(console, *parity_addr, &[dif_parity])?;
     MemWriteReq::execute(console, *uart_id_addr, &[*uart_id])?;
 
@@ -132,7 +132,7 @@ fn uart_parity_break(
     uart.clear_rx_buffer()?;
 
     // Tell the device to send us some data and check it.
-    UartConsole::wait_for(console, r"waiting for commands\r\n", opts.timeout)?;
+    UartConsole::wait_for(console, r"waiting for commands", opts.timeout)?;
     MemWriteReq::execute(console, *test_phase_addr, &[TestPhase::Send as u8])?;
 
     log::info!("Reading data...");
@@ -144,7 +144,7 @@ fn uart_parity_break(
     assert_eq!(&received_data, tx_rx_data);
 
     // Tell the device to receive some correct data.
-    UartConsole::wait_for(console, r"waiting for commands\r\n", opts.timeout)?;
+    UartConsole::wait_for(console, r"waiting for commands", opts.timeout)?;
     MemWriteReq::execute(console, *test_phase_addr, &[TestPhase::Recv as u8])?;
 
     log::info!("Sending data...");
@@ -152,7 +152,7 @@ fn uart_parity_break(
 
     if *parity != Parity::None {
         // Tell the device to receive some data with the wrong parity.
-        UartConsole::wait_for(console, r"waiting for commands\r\n", opts.timeout)?;
+        UartConsole::wait_for(console, r"waiting for commands", opts.timeout)?;
         MemWriteReq::execute(console, *test_phase_addr, &[TestPhase::RecvErr as u8])?;
 
         let other_parity = match parity {
@@ -167,7 +167,7 @@ fn uart_parity_break(
 
     for _ in 0..4 {
         // Sync with the device.
-        UartConsole::wait_for(console, r"waiting for commands\r\n", opts.timeout)?;
+        UartConsole::wait_for(console, r"waiting for commands", opts.timeout)?;
         MemWriteReq::execute(console, *test_phase_addr, &[TestPhase::BreakErr as u8])?;
 
         // At 115200 baud each character spans ~800us. A 16 character break takes
@@ -179,6 +179,6 @@ fn uart_parity_break(
 
     // The device will tell us whether or not the data with the wrong parity
     // was received okay.
-    UartConsole::wait_for(console, r"PASS![^\r\n]*", opts.timeout)?;
+    UartConsole::wait_for(console, r"PASS!", opts.timeout)?;
     Ok(())
 }

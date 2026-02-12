@@ -25,10 +25,16 @@ inputs:
     description: Path at which to install Verible
     required: true
     default: /tools/verible
+  install-verible:
+    description: Install verbile
+    default: false
   configure-bazel:
     description: Configure Bazel to use remote cache
     required: true
     default: true
+  working-directory:
+    description: Working directory
+    default: ${{ github.workspace }}
 
 runs:
   using: composite
@@ -38,57 +44,67 @@ runs:
         sudo apt update
         grep '^[^#]' apt-requirements.txt | xargs sudo apt install -y
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
 
-    - uses: astral-sh/setup-uv@v5
+    - uses: astral-sh/setup-uv@v6
       with:
-        version: '0.6.1'
+        version: '0.7.14'
         enable-cache: true
         cache-dependency-glob: |
-          pyproject.toml
-          python-requirements.txt
+          ${{ inputs.working-directory }}/pyproject.toml
+          ${{ inputs.working-directory }}/python-requirements.txt
 
     - name: Install Python
       shell: bash
       run: |
-        uv python install 3.10
+        # Install python with a retry to work around broken pipe errors
+        source ci/scripts/utils.sh
+        retry 5 2 2 uv python install 3.10
         # Create a virtual environment for UV
         uv venv ~/.local/share/venv
         echo "$HOME/.local/share/venv/bin" >> "$GITHUB_PATH"
         echo "VIRTUAL_ENV=$HOME/.local/share/venv" >> "$GITHUB_ENV"
+      working-directory: ${{ inputs.working-directory }}
 
     - name: Install Python dependencies
       shell: bash
       run: |
         uv pip install -r python-requirements.txt --require-hashes
-        # We installed uv from setup-uv action, so uninstall from venv to prevent conflict
-        uv pip uninstall uv
+      working-directory: ${{ inputs.working-directory }}
 
     - name: Install Verilator
       run: |
         VERILATOR_TAR="verilator-v${{ inputs.verilator-version }}.tar.gz"
         VERILATOR_URL="https://storage.googleapis.com/verilator-builds/${VERILATOR_TAR}"
+        source ci/scripts/utils.sh
         sudo mkdir -p "${{ inputs.verilator-path }}"
-        curl -sSfL "$VERILATOR_URL" | sudo tar -C "${{ inputs.verilator-path }}" -xvzf -
+        retry 5 2 2 curl -sSfL "$VERILATOR_URL" -o "${{ runner.temp }}/${VERILATOR_TAR}"
+        sudo tar -C "${{ inputs.verilator-path }}" -xvzf "${{ runner.temp }}/${VERILATOR_TAR}"
         echo "${{ inputs.verilator-path }}/v${{ inputs.verilator-version }}/bin" >> "$GITHUB_PATH"
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
 
     - name: Install Verible
+      if: inputs.install-verible == 'true'
       run: |
         VERIBLE_TAR="verible-${{ inputs.verible-version }}-linux-static-x86_64.tar.gz"
         VERIBLE_URL="https://github.com/chipsalliance/verible/releases/download/${{ inputs.verible-version }}/${VERIBLE_TAR}"
+        source ci/scripts/utils.sh
         sudo mkdir -p "${{ inputs.verible-path }}"
-        curl -sSfL "$VERIBLE_URL" | sudo tar -C "${{ inputs.verible-path }}" -xvzf - --strip-components=1
+        retry 5 2 2 curl -sSfL "$VERIBLE_URL" -o "${{ runner.temp }}/${VERIBLE_TAR}"
+        sudo tar -C "${{ inputs.verible-path }}" -xvzf "${{ runner.temp }}/${VERIBLE_TAR}" --strip-components=1
         # Fixup bin permission which is broken in tarball.
         sudo chmod 755 "${{ inputs.verible-path }}/bin"
         echo "${{ inputs.verible-path }}/bin" >> "$GITHUB_PATH"
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
 
     # Log into Google Cloud using service account JSON.
     # This can't be Workload Identity Federation because Bazel performance using WIF is terrible.
     # This needs access to secrets and thus doesn't work for pull request.
     - uses: google-github-actions/auth@v2
       id: google_auth
-      if: github.event_name != 'pull_request'
+      if: github.event_name != 'pull_request' && inputs.service_account_json != ''
       with:
         credentials_json: '${{ inputs.service_account_json }}'
 
@@ -96,7 +112,7 @@ runs:
     # it. This influences with a few scripts that assume clean workspace, and introduce security risk
     # that it may be exposed when uploading to buckets.
     - name: Move Google credentials out from workspace
-      if: github.event_name != 'pull_request'
+      if: github.event_name != 'pull_request' && inputs.service_account_json != ''
       run: |
         SOURCE=${{ steps.google_auth.outputs.credentials_file_path }}
         TARGET=${{ runner.temp }}/$(basename "$SOURCE")
@@ -105,9 +121,10 @@ runs:
         echo "GOOGLE_APPLICATION_CREDENTIALS=$TARGET" >> $GITHUB_ENV
         echo "GOOGLE_GHA_CREDS_PATH=$TARGET" >> $GITHUB_ENV
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
 
     - uses: google-github-actions/setup-gcloud@v2
-      if: github.event_name != 'pull_request'
+      if: github.event_name != 'pull_request' && inputs.service_account_json != ''
 
     - name: Configure ~/.bazelrc
       if: inputs.configure-bazel == 'true'
@@ -118,7 +135,7 @@ runs:
         # See #14695 for more information.
         echo "build --remote_default_exec_properties=OSVersion=\"$(lsb_release -ds)\"" >> ~/.bazelrc
 
-        if ${{ github.event_name != 'pull_request' }}; then
+        if ${{ github.event_name != 'pull_request' && inputs.service_account_json != '' }}; then
           echo "Will upload to the cache." >&2
           echo "build --google_default_credentials" >> ~/.bazelrc
         else
@@ -126,6 +143,7 @@ runs:
           echo "build --remote_upload_local_results=false" >> ~/.bazelrc
         fi
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
 
     - name: Install merge-junit
       run: |
@@ -134,8 +152,9 @@ runs:
         MERGE_JUNIT_URL="https://github.com/tobni/merge-junit/releases/download/v0.2.1/${MERGE_JUNIT_TAR}"
         MERGE_JUNIT_SHA256="5c6a63063f3a155ea4da912d5cae2ec4a89022df31d7942f2aba463ee4790152"
 
-        curl -fLSs -o "/tmp/${MERGE_JUNIT_TAR}" "$MERGE_JUNIT_URL"
-        HASH=$(sha256sum "/tmp/$MERGE_JUNIT_TAR" | awk '{print $1}')
+        source ci/scripts/utils.sh
+        retry 5 2 2 curl -fLSs -o "${{ runner.temp }}/${MERGE_JUNIT_TAR}" "$MERGE_JUNIT_URL"
+        HASH=$(sha256sum "/${{ runner.temp }}/$MERGE_JUNIT_TAR" | awk '{print $1}')
         if [[ "$HASH" != "$MERGE_JUNIT_SHA256" ]]; then
           echo "The hash of merge-junit does not match" >&2
           echo "$HASH != $MERGE_JUNIT_SHA256" >&2
@@ -144,7 +163,8 @@ runs:
 
         sudo mkdir -p $MERGE_JUNIT_PATH
         sudo chmod 777 $MERGE_JUNIT_PATH
-        tar -C $MERGE_JUNIT_PATH -xvzf "/tmp/${MERGE_JUNIT_TAR}" --strip-components=1
+        tar -C $MERGE_JUNIT_PATH -xvzf "${{ runner.temp }}/${MERGE_JUNIT_TAR}" --strip-components=1
         echo $MERGE_JUNIT_PATH >> "$GITHUB_PATH"
-        rm "/tmp/${MERGE_JUNIT_TAR}"
+        rm "${{ runner.temp }}/${MERGE_JUNIT_TAR}"
       shell: bash
+      working-directory: ${{ inputs.working-directory }}

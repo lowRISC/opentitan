@@ -2,6 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/aon_timer.h"
+#include "hw/top/dt/pwrmgr.h"
+#include "hw/top/dt/rstmgr.h"
+#include "hw/top/dt/rv_core_ibex.h"
+#include "hw/top/dt/rv_plic.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
@@ -16,6 +21,7 @@
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/sram_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 
 enum {
@@ -56,7 +62,7 @@ typedef struct {
 
 static void retention_sram_check(check_config_t config) {
   uintptr_t ret_sram_owner_addr =
-      dt_sram_ctrl_reg_block(kRetSramCtrlDt, kDtSramCtrlRegBlockRam) +
+      dt_sram_ctrl_memory_base(kRetSramCtrlDt, kDtSramCtrlMemoryRam) +
       offsetof(retention_sram_t, owner);
 
   if (config.do_write) {
@@ -148,9 +154,12 @@ void enter_deep_sleep(void) {
 void set_up_reset_request(void) {
   // Prepare rstmgr for a reset.
   CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
-  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(&pwrmgr, kDifPwrmgrReqTypeReset,
-                                              kDifPwrmgrResetRequestSourceTwo,
-                                              kDifToggleEnabled));
+  dif_pwrmgr_request_sources_t reset_sources;
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      &pwrmgr, kDifPwrmgrReqTypeReset, dt_aon_timer_instance_id(kAonTimerDt),
+      kDtAonTimerResetReqAonTimer, &reset_sources));
+  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
+      &pwrmgr, kDifPwrmgrReqTypeReset, reset_sources, kDifToggleEnabled));
 
   CHECK_DIF_OK(dif_aon_timer_wakeup_stop(&aon_timer));
 
@@ -209,6 +218,12 @@ bool execute_sram_ctrl_sleep_ret_sram_contents_test(bool scramble) {
     set_up_reset_request();
   } else if (rstmgr_reset_info & kDifRstmgrResetInfoWatchdog) {
     LOG_INFO("watchdog reset");
+    // We expect ECC errors when SRAM is scrambled, disable the alert.
+    if (scramble) {
+      CHECK_STATUS_OK(
+          ottf_alerts_ignore_alert(dt_rv_core_ibex_alert_to_alert_id(
+              kDtRvCoreIbex, kDtRvCoreIbexAlertFatalHwErr)));
+    }
     // reset due to a reset request, if scramble data is not preserved.
     retention_sram_check(
         (check_config_t){.do_write = false, .is_equal = !scramble});

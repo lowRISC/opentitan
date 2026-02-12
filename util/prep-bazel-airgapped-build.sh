@@ -13,6 +13,7 @@ set -euo pipefail
 : "${BAZEL_AIRGAPPED_DIR:=bazel-airgapped}"
 : "${BAZEL_DISTDIR:=bazel-distdir}"
 : "${BAZEL_CACHEDIR:=bazel-cache}"
+: "${BAZEL_VENDORDIR:=bazel-vendor}"
 : "${BAZEL_BITSTREAMS_CACHE:=bitstreams-cache}"
 : "${BAZEL_BITSTREAMS_CACHEDIR:=${BAZEL_BITSTREAMS_CACHE}/cache}"
 : "${BAZEL_BITSTREAMS_REPO:=bitstreams}"
@@ -137,13 +138,7 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
   mkdir -p ${BAZEL_AIRGAPPED_DIR}/${BAZEL_CACHEDIR}
   # Make bazel forget everything it knows, then download everything.
   ${BAZELISK} clean --expunge
-  ${BAZELISK} fetch \
-    --repository_cache=${BAZEL_AIRGAPPED_DIR}/${BAZEL_CACHEDIR} \
-    //... \
-    @lowrisc_rv32imcb_toolchain//... \
-    @local_config_platform//... \
-    @riscv-compliance//... \
-    @rules_foreign_cc//toolchains/... \
+  ${BAZELISK} vendor --vendor_dir="${BAZEL_AIRGAPPED_DIR}/${BAZEL_VENDORDIR}" //...
   # We don't need all bitstreams in the cache, we just need the latest one so
   # that the cache is "initialized" and "offline" mode will work correctly.
   mkdir -p ${BAZEL_AIRGAPPED_DIR}/${BAZEL_BITSTREAMS_CACHEDIR}
@@ -152,7 +147,7 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
   readonly LATEST_BISTREAM_HASH_FILE="${SYSTEM_BITSTREAM_CACHE}/latest.txt"
   # The revision named in latest.txt is not necessarily on disk. Induce the
   # cache backend to fetch the latest bitstreams.
-  BITSTREAM=latest ${BAZELISK} fetch @bitstreams//...
+  BITSTREAM="latest" ${BAZELISK} fetch @bitstreams//...
   cp "${LATEST_BISTREAM_HASH_FILE}" \
     "${BAZEL_AIRGAPPED_DIR}/${BAZEL_BITSTREAMS_CACHE}/"
   LATEST_BISTREAM_HASH=$(cat "${LATEST_BISTREAM_HASH_FILE}")
@@ -168,5 +163,5 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" ]]; then
   echo $LINE_SEP
   echo "To perform an airgapped build, ship the contents of ${BAZEL_AIRGAPPED_DIR} to your airgapped environment and then:"
   echo ""
-  echo "bazel build --distdir=${BAZEL_AIRGAPPED_DIR}/${BAZEL_DISTDIR} --repository_cache=${BAZEL_AIRGAPPED_DIR}/${BAZEL_CACHEDIR} <label>"
+  echo "bazel build --distdir=${BAZEL_AIRGAPPED_DIR}/${BAZEL_DISTDIR} --vendor_dir=${BAZEL_AIRGAPPED_DIR}/${BAZEL_VENDORDIR} <label>"
 fi

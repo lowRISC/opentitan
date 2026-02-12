@@ -12,6 +12,8 @@ module spi_host
   import spi_host_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0]           AlertAsyncOn              = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned                    AlertSkewCycles           = 1,
   parameter int unsigned                    NumCS                     = 1,
   parameter bit                             EnableRacl                = 1'b0,
   parameter bit                             RaclErrorRsp              = EnableRacl,
@@ -112,6 +114,7 @@ module spi_host
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(1'b1)
     ) u_prim_alert_sender (
       .clk_i,
@@ -422,7 +425,7 @@ module spi_host
   assign tx_valid_checked = tx_valid & ~error_overflow & ~error_access_inval;
 
   // Note on ByteOrder and ByteSwapping.
-  // ByteOrder == 1 is for Little-Endian transmission (i.e. LSB first), which is acheived by
+  // ByteOrder == 1 is for Little-Endian transmission (i.e. LSB first), which is achieved by
   // default with the prim_packer_fifo implementation.  Thus we have to swap if Big-Endian
   // transmission is required (i.e. if ByteOrder == 0).
   spi_host_data_fifos #(

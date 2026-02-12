@@ -18,9 +18,8 @@ Original Author: Shay Gal-on
 #include "coremark.h"
 #include "third_party/coremark/top_earlgrey/core_portme.h"
 
-#include "sw/device/lib/dif/dif_uart.h"
-#include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_console.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -133,7 +132,6 @@ ee_u32 default_num_contexts = 1;
 
 OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = false,
                         .console.test_may_clobber = true, );
-dif_uart_t uart;
 
 /* Function : portable_init
         Target specific initialization code
@@ -158,18 +156,7 @@ portable_init(core_portable *p, int *argc, char *argv[])
     p->portable_id = 1;
 
     test_status_set(kTestStatusInTest);
-    CHECK_DIF_OK(dif_uart_init(
-                 mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart));
-    CHECK_DIF_OK(
-                  dif_uart_configure(&uart, (dif_uart_config_t){
-                                            .baudrate = kUartBaudrate,
-                                            .clk_freq_hz = kClockFreqPeripheralHz,
-                                            .parity_enable = kDifToggleDisabled,
-                                            .parity = kDifUartParityEven,
-                                            .tx_enable = kDifToggleEnabled,
-                                            .rx_enable = kDifToggleEnabled,
-                                            }));
-    base_uart_stdout(&uart);
+    ottf_console_init();
 }
 
 /* Function : portable_fini

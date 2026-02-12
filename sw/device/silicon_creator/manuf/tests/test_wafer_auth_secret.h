@@ -9,7 +9,7 @@
 
 // Expected wafer authentication secret to write to the flash
 const uint32_t
-    kExpectedWaferAuthSecret[kFlashInfoWaferAuthSecretSizeIn32BitWords] = {
+    kExpectedWaferAuthSecret[kFlashInfoFieldWaferAuthSecretSizeIn32BitWords] = {
         0xdeadbeef, 0xdeadbeef, 0xdeadbeef, 0xdeadbeef,
         0xdeadbeef, 0xdeadbeef, 0xdeadbeef, 0xdeadbeef,
 };

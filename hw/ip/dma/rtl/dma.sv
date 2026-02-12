@@ -10,10 +10,12 @@ module dma
   import dma_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0]           AlertAsyncOn              = {NumAlerts{1'b1}},
+  // Number of cycles of differential skew to be tolerated on the alert signal
+  parameter int unsigned                    AlertSkewCycles           = 1,
   parameter bit                             EnableDataIntgGen         = 1'b1,
   parameter bit                             EnableRspDataIntgCheck    = 1'b1,
   parameter logic [RsvdWidth-1:0]           TlUserRsvd                = '0,
-  parameter logic [SYS_RACL_WIDTH-1:0]      SysRacl                   = '0,
+  parameter top_racl_pkg::racl_role_t       SysRaclRole               = '0,
   parameter int unsigned                    OtAgentId                 = 0,
   parameter bit                             EnableRacl                = 1'b0,
   parameter bit                             RaclErrorRsp              = EnableRacl,
@@ -81,6 +83,7 @@ module dma
   logic [SYS_ADDR_WIDTH-1:0]  new_src_addr, new_dst_addr;
 
   logic dma_state_error;
+  // SEC_CM: FSM.SPARSE
   dma_ctrl_state_e ctrl_state_q, ctrl_state_d;
   logic set_error_code, clear_go, clear_status, clear_sha_status, chunk_done;
 
@@ -185,6 +188,7 @@ module dma
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(1'b1)
     ) u_prim_alert_sender (
       .clk_i,
@@ -252,7 +256,7 @@ module dma
     .tl_i           ( ctn_tl_d2h_i                     )
   );
 
-  // Masking incoming handshake triggers with their enable
+  // Masking incoming handshake triggers with their enables
   lsio_trigger_t lsio_trigger;
   always_comb begin
     lsio_trigger = '0;
@@ -262,16 +266,11 @@ module dma
     end
   end
 
-  // Following cast is only temporary until FSM becomes sparesly encoded
-  // to avoid conversion errors between dma_ctrl_state_e <-> logic
-  logic [$bits(dma_ctrl_state_e)-1:0] ctrl_state_logic;
-  assign ctrl_state_q = dma_ctrl_state_e'(ctrl_state_logic);
-
   // During the active DMA operation, most of the DMA registers are locked with a hardware-
   // controlled REGWEN. However, this mechanism is not possible for all registers. For example,
-  // some registers already have a different REGWEn attached (range locking) or the CONTROL
+  // some registers already have a different REGWEN attached (range locking) or the CONTROL
   // register, which needs to be partly writable. To lock those registers, we capture their value
-  // during the start of the operation and, further on, only use the captured value in the state
+  // during the start of the operation and, later on, only use the captured value in the state
   // machine. The captured state is stored in control_q.
   control_state_t control_d, control_q;
   logic           capture_state;
@@ -296,15 +295,8 @@ module dma
     .q_o    ( control_q     )
   );
 
-  prim_flop #(
-    .Width($bits(dma_ctrl_state_e)),
-    .ResetValue({DmaIdle})
-  ) aff_ctrl_state_q (
-    .clk_i ( gated_clk        ),
-    .rst_ni( rst_ni           ),
-    .d_i   ( ctrl_state_d     ),
-    .q_o   ( ctrl_state_logic )
-  );
+  `PRIM_FLOP_SPARSE_FSM(aff_ctrl_state_q, ctrl_state_d, ctrl_state_q, dma_ctrl_state_e, DmaIdle,
+                        gated_clk, rst_ni)
 
   logic [TRANSFER_BYTES_WIDTH-1:0] transfer_byte_q, transfer_byte_d;
   logic [TRANSFER_BYTES_WIDTH-1:0] transfer_remaining_bytes;
@@ -486,7 +478,7 @@ module dma
     dma_host_read  = (ctrl_state_q == DmaSendRead)  & (src_asid == OtInternalAddr);
 
     dma_host_tlul_req_valid = dma_host_write | dma_host_read | dma_host_clear_intr;
-    // TLUL 4B aligned
+    // TL-UL 4B aligned
     dma_host_tlul_req_addr  = dma_host_write ? {dst_addr_q[top_pkg::TL_AW-1:2], 2'b0} :
                              (dma_host_read  ? {src_addr_q[top_pkg::TL_AW-1:2], 2'b0} :
                         (dma_host_clear_intr ? reg2hw.intr_src_addr[clear_index_q].q : 'b0));
@@ -504,7 +496,7 @@ module dma
     dma_ctn_read  = (ctrl_state_q == DmaSendRead)  & (src_asid == SocControlAddr);
 
     dma_ctn_tlul_req_valid = dma_ctn_write | dma_ctn_read | dma_ctn_clear_intr;
-    // TLUL 4B aligned
+    // TL-UL 4B aligned
     dma_ctn_tlul_req_addr  = dma_ctn_write ? {dst_addr_q[top_pkg::TL_AW-1:2], 2'b0} :
                             (dma_ctn_read  ? {src_addr_q[top_pkg::TL_AW-1:2], 2'b0} :
                        (dma_ctn_clear_intr ? reg2hw.intr_src_addr[clear_index_q].q : 'b0));
@@ -525,7 +517,7 @@ module dma
     sys_req_d.opcode_vec  [SysCmdWrite] = SysOpcWrite;
     sys_req_d.iova_vec    [SysCmdWrite] = dma_sys_write ?
                                          {dst_addr_q[(SYS_ADDR_WIDTH-1):2], 2'b0} : 'b0;
-    sys_req_d.racl_vec    [SysCmdWrite] = SysRacl[SysOpcWrite-1:0];
+    sys_req_d.racl_vec    [SysCmdWrite] = SysRaclRole;
 
     sys_req_d.write_data = {SYS_DATA_WIDTH{dma_sys_write}} & read_return_data_q;
     sys_req_d.write_be   = {SYS_DATA_BYTEWIDTH{dma_sys_write}} & req_dst_be_q;
@@ -535,7 +527,7 @@ module dma
     sys_req_d.opcode_vec  [SysCmdRead] = SysOpcRead;
     sys_req_d.iova_vec    [SysCmdRead] = dma_sys_read ?
                                          {src_addr_q[(SYS_ADDR_WIDTH-1):2], 2'b0} : 'b0;
-    sys_req_d.racl_vec    [SysCmdRead] = SysRacl[SYS_RACL_WIDTH-1:0];
+    sys_req_d.racl_vec    [SysCmdRead] = SysRaclRole;
     sys_req_d.read_be                  = req_src_be_q;
   end
 
@@ -620,13 +612,13 @@ module dma
     clear_go       = 1'b0;
     chunk_done     = 1'b0;
 
-    // Mux the TLUL grant and response signals depending on the selected bus interface
-    intr_clear_tlul_gnt       = reg2hw.clear_intr_bus.q[clear_index_q]? dma_host_tlul_gnt :
-                                                                       dma_ctn_tlul_gnt;
-    intr_clear_tlul_rsp_valid = reg2hw.clear_intr_bus.q[clear_index_q]? dma_host_tlul_rsp_valid :
-                                                                       dma_ctn_tlul_rsp_valid;
-    intr_clear_tlul_rsp_error = reg2hw.clear_intr_bus.q[clear_index_q]? dma_host_tlul_rsp_err :
-                                                                       dma_ctn_tlul_rsp_err;
+    // Mux the TL-UL grant and response signals depending on the selected bus interface
+    intr_clear_tlul_gnt       = reg2hw.clear_intr_bus.q[clear_index_q] ? dma_host_tlul_gnt :
+                                                                         dma_ctn_tlul_gnt;
+    intr_clear_tlul_rsp_valid = reg2hw.clear_intr_bus.q[clear_index_q] ? dma_host_tlul_rsp_valid :
+                                                                         dma_ctn_tlul_rsp_valid;
+    intr_clear_tlul_rsp_error = reg2hw.clear_intr_bus.q[clear_index_q] ? dma_host_tlul_rsp_err :
+                                                                         dma_ctn_tlul_rsp_err;
     dma_state_error = 1'b0;
 
     sha2_hash_start      = 1'b0;
@@ -634,7 +626,7 @@ module dma
     sha2_digest_set      = 1'b0;
     sha2_consumed_d      = sha2_consumed_q;
 
-    // Make SHA2 Done sticky to not miss a single-cycle done event during any outstanding writes
+    // Make `SHA2 Done` sticky to not miss a single-cycle done event during any outstanding writes
     if (ctrl_state_q == DmaIdle) begin
       sha2_hash_done_d = 1'b0;
     end else begin
@@ -646,8 +638,8 @@ module dma
 
     // Abort has the highest priority in the state machine. In all cases, if the abort is raised,
     // the DMA is reset to the idle state. This includes the error state and the default state,
-    // which should never be reached during the normal operation. The abort condition has precedence
-    // over any outstanding TLUL transaction.
+    // which should never be reached during normal operation. The abort condition has precedence
+    // over any outstanding TL-UL transaction.
     if (cfg_abort_en) begin
       ctrl_state_d = DmaIdle;
       clear_go     = 1'b1;
@@ -657,22 +649,22 @@ module dma
           chunk_byte_d       = '0;
           capture_chunk_byte = 1'b1;
 
-          // In DmaIdle we need to determine if we are really idling or, we are doing a roundtrip
+          // In DmaIdle we need to determine if we are really idling or we are doing a roundtrip
           // via idle. If we are really idling, we need to take the config from the register
-          // interface otherwise, we need to take the captured data
+          // interface; otherwise we need to take the captured data.
           if (!reg2hw.status.busy.q) begin
             // We are idling
             cfg_handshake_en = reg2hw.control.hardware_handshake_enable.q;
           end
-          // else, we are doing a roundtrip, which signaling is covered by the default assignment
+          // else, we are doing a roundtrip, and signaling is covered by the default assignment
 
-          // Wait for go bit to be set to proceed with data movement
+          // Wait for `go` bit to be set to proceed with data movement
           if (reg2hw.control.go.q || reg2hw.status.busy.q) begin
             // Clear the transferred bytes only on the very first iteration
             if (reg2hw.control.initial_transfer.q && !reg2hw.status.busy.q) begin
               transfer_byte_d       = '0;
               capture_transfer_byte = 1'b1;
-              // Capture unlocked state  when starting the transfer.
+              // Capture unlocked state when starting the transfer.
               capture_state = 1'b1;
             end
             // if not handshake start transfer
@@ -693,7 +685,7 @@ module dma
 
         DmaClearIntrSrc: begin
           // Clear the interrupt by writing
-          if(reg2hw.clear_intr_src.q[clear_index_q]) begin
+          if (reg2hw.clear_intr_src.q[clear_index_q]) begin
             // Send 'clear interrupt' write to the appropriate bus
             dma_host_clear_intr = reg2hw.clear_intr_bus.q[clear_index_q];
             dma_ctn_clear_intr = !reg2hw.clear_intr_bus.q[clear_index_q];
@@ -703,7 +695,7 @@ module dma
             end
 
             // Writes also get a resp valid, but no data.
-            // Need to wait for this to not overrun TLUL adapter
+            // Need to wait for this to not overrun TL-UL adapter
             // The response might come immediately
             if (intr_clear_tlul_rsp_valid) begin
               if (intr_clear_tlul_rsp_error) begin
@@ -711,6 +703,10 @@ module dma
                 ctrl_state_d = DmaError;
               end else if (32'(clear_index_q) >= (NumIntClearSources - 1)) begin
                 ctrl_state_d = DmaAddrSetup;  // Proceed now we've handled all
+              end else begin
+                clear_index_en = 1'b1;
+                clear_index_d  = clear_index_q + INTR_CLEAR_SOURCES_WIDTH'(1'b1);
+                ctrl_state_d   = DmaClearIntrSrc;  // Override the _gnt response above.
               end
             end
           end else begin
@@ -726,7 +722,7 @@ module dma
 
         DmaWaitIntrSrcResponse: begin
           // Writes also get a resp valid, but no data.
-          // Need to wait for this to not overrun TLUL adapter
+          // Need to wait for this to not overrun TL-UL adapter
           if (intr_clear_tlul_rsp_valid) begin
             if (intr_clear_tlul_rsp_error) begin
               next_error[DmaBusErr] = 1'b1;
@@ -758,7 +754,7 @@ module dma
 
           // Use start address on first byte of transaction
           if ((transfer_byte_q == '0) ||
-              // or when being in the fixed address mode
+              // or when in the fixed address mode
               reg2hw.src_config.increment.q == AddrNoIncrement ||
               // or when transferring the first byte of a chunk and in wrapped increment mode
               (chunk_byte_q == '0 && reg2hw.src_config.wrap.q == AddrWrapChunk)) begin
@@ -770,7 +766,7 @@ module dma
 
           // Use start address on first byte of transaction
           if ((transfer_byte_q == '0) ||
-              // or when being in the fixed address mode
+              // or when in the fixed address mode
               reg2hw.dst_config.increment.q == AddrNoIncrement ||
               // or when transferring the first byte of a chunk and in wrapped increment mode
               (chunk_byte_q == '0 && reg2hw.dst_config.wrap.q == AddrWrapChunk)) begin
@@ -848,12 +844,10 @@ module dma
           end
 
           // In 4-byte transfers, source and destination address must be 4-byte aligned
-          if (reg2hw.transfer_width.q == DmaXfer4BperTxn &&
-            (|reg2hw.src_addr_lo.q[1:0])) begin
+          if (reg2hw.transfer_width.q == DmaXfer4BperTxn && |reg2hw.src_addr_lo.q[1:0]) begin
             next_error[DmaSrcAddrErr] = 1'b1;
           end
-          if (reg2hw.transfer_width.q == DmaXfer4BperTxn &&
-            (|reg2hw.dst_addr_lo.q[1:0])) begin
+          if (reg2hw.transfer_width.q == DmaXfer4BperTxn && |reg2hw.dst_addr_lo.q[1:0]) begin
             next_error[DmaDstAddrErr] = 1'b1;
           end
 
@@ -899,8 +893,9 @@ module dma
             next_error[DmaSrcAddrErr] = 1'b1;
           end
 
-          // If the destination ASID is the SOC control por or the OT internal port we are accessing
-          // a 32-bit address space. Thus the upper bits of the destination address must be zero
+          // If the destination ASID is the SOC control port or the OT internal port we are
+          // accessing a 32-bit address space. Thus the upper bits of the destination address must
+          // be zero
           if ((dst_asid inside {SocControlAddr, OtInternalAddr}) &&
               (|reg2hw.dst_addr_hi.q)) begin
             next_error[DmaDstAddrErr] = 1'b1;
@@ -979,9 +974,10 @@ module dma
                     ctrl_state_d = DmaIdle;
                   end
                 end else if (chunk_byte_d >= reg2hw.chunk_data_size.q) begin
-                  // Conditionally clear the go bit when not being used in hardware handshake mode.
+                  // Conditionally clear the `go` bit when not being used in hardware handshake
+                  // mode.
                   // In non-hardware handshake mode, finishing one chunk should raise the
-                  // `chunk_done` IRQ and status bit, reset the go bit and await the next
+                  // `chunk_done` IRQ and status bit, reset the `go` bit and await the next
                   // FW-controlled chunk.
                   clear_go     = !control_q.cfg_handshake_en;
                   chunk_done   = !control_q.cfg_handshake_en;
@@ -1006,9 +1002,9 @@ module dma
             if (transfer_byte_q >= reg2hw.total_data_size.q) begin
               ctrl_state_d = DmaShaFinalize;
             end else if (chunk_byte_q >= reg2hw.chunk_data_size.q) begin
-              // Conditionally clear the go bit when not being in hardware handshake mode.
+              // Conditionally clear the `go` bit when not being in hardware handshake mode.
               // In non-hardware handshake mode, finishing one chunk should raise the done IRQ
-              // and done bit, and release the go bit for the next FW-controlled chunk.
+              // and done bit, and release the `go` bit for the next FW-controlled chunk.
               clear_go     = !control_q.cfg_handshake_en;
               chunk_done   = !control_q.cfg_handshake_en;
               ctrl_state_d = DmaIdle;
@@ -1027,7 +1023,7 @@ module dma
           end
         end
 
-          // wait here until error is cleared
+        // Wait here until the error is cleared
         DmaError: begin
           if (!reg2hw.status.error.q) begin
             ctrl_state_d = DmaIdle;
@@ -1157,16 +1153,17 @@ module dma
                             transfer_remaining_bytes : chunk_remaining_bytes;
 
   always_comb begin
-    // Because of using the primitves for interrupt handling, the hw2reg registers cannot get a
-    // common default value since would create a second driver to to the interrupt registers. Thus
-    // it must ensured that all registers are initialized mannually to avoid creating latches.
+    // Because of using the primitives for interrupt handling, the hw2reg registers cannot be
+    // collectively assigned a default value since that would create a second driver to the
+    // interrupt registers.
+    // Thus we must ensure that all registers are initialized manually to avoid creating latches.
 
-    // Clear the go bit if we are in a single transfer and finished the DMA operation,
+    // Clear the `go` bit if we are in a single transfer and finished the DMA operation,
     // hardware handshake mode when we finished all transfers, or when aborting the transfer.
     hw2reg.control.go.de = clear_go || cfg_abort_en;
     hw2reg.control.go.d  = 1'b0;
 
-    // Unlock the register set when not being busy. IDLE is not the right indicator,
+    // Unlock the register set when not busy. IDLE is not the right indicator,
     // since multi-chunked transfers roundtrip via IDLE.
     hw2reg.cfg_regwen.d = prim_mubi_pkg::mubi4_bool_to_mubi(~reg2hw.status.busy.q);
 
@@ -1207,7 +1204,7 @@ module dma
 
     hw2reg.control.initial_transfer.de = 1'b0;
     hw2reg.control.initial_transfer.d  = 1'b0;
-    // Clear the inline initial transfer flag starting flag when leaving the DmaIdle the first time
+    // Clear the `initial transfer` flag when leaving the DmaIdle state the first time.
     if ((ctrl_state_q == DmaIdle) && (ctrl_state_d != DmaIdle) &&
         reg2hw.control.initial_transfer.q) begin
       hw2reg.control.initial_transfer.de = 1'b1;
@@ -1215,8 +1212,8 @@ module dma
 
     // Assert busy write enable on
     // - transitions from IDLE out
-    // - clearing the go bit (going back to idle)
-    // - abort               (going back to idle)
+    // - clearing the `go` bit (going back to idle)
+    // - abort                 (going back to idle)
     hw2reg.status.busy.de = ((ctrl_state_q == DmaIdle) && (ctrl_state_d != DmaIdle)) ||
                             clear_go                                                 ||
                             cfg_abort_en;
@@ -1260,7 +1257,7 @@ module dma
     end
 
     // Only mux the digest data when sha2_digest_set is set. Setting the digest happens during the
-    // DmaFinalze state, where we need to use the stored and locked  control_q.opcode value.
+    // DmaFinalze state, where we need to use the stored and locked `control_q.opcode` value.
     // In case of clear_sha_status being asserted, the default value from hw2reg = '0; clears
     // the digest
     if (sha2_digest_set) begin
@@ -1310,7 +1307,7 @@ module dma
     hw2reg.error_code.range_valid_error.d  = clear_status? '0 : next_error[DmaRangeValidErr];
     hw2reg.error_code.asid_error.d         = clear_status? '0 : next_error[DmaAsidErr];
 
-    // Clear the control.abort bit once we have handled the abort request
+    // Clear the `control.abort` bit once we have handled the abort request
     hw2reg.control.abort.de = hw2reg.status.aborted.de;
     hw2reg.control.abort.d  = 1'b0;
 
@@ -1368,7 +1365,6 @@ module dma
     .q_o   ( sys_o.metadata_vec[SysCmdWrite]     )
   );
 
-  logic [$bits(sys_opc_e)-1:0] sys_req_opcode_write_vec_q;
   prim_flop_en #(
     .Width($bits(sys_opc_e))
   ) u_sys_opcode_write_vec (
@@ -1376,9 +1372,8 @@ module dma
     .rst_ni( rst_ni                            ),
     .en_i  ( sys_req_d.vld_vec[SysCmdWrite]    ),
     .d_i   ( sys_req_d.opcode_vec[SysCmdWrite] ),
-    .q_o   ( sys_req_opcode_write_vec_q        )
+    .q_o   ( {sys_o.opcode_vec[SysCmdWrite]}   )
   );
-  assign sys_o.opcode_vec[SysCmdWrite] = sys_opc_e'(sys_req_opcode_write_vec_q);
 
   prim_flop_en #(
     .Width(SYS_ADDR_WIDTH)
@@ -1391,7 +1386,7 @@ module dma
   );
 
   prim_flop_en #(
-    .Width(SYS_RACL_WIDTH)
+    .Width($bits(top_racl_pkg::racl_role_t))
   ) u_sys_racl_write_vec (
     .clk_i ( gated_clk                       ),
     .rst_ni( rst_ni                          ),
@@ -1410,7 +1405,6 @@ module dma
     .q_o   ( sys_o.metadata_vec[SysCmdRead]     )
   );
 
-  logic [$bits(sys_opc_e)-1:0] sys_req_opcode_read_vec_q;
   prim_flop_en #(
     .Width($bits(sys_opc_e))
   ) u_sys_opcode_read_vec (
@@ -1418,9 +1412,8 @@ module dma
     .rst_ni( rst_ni                           ),
     .en_i  ( sys_req_d.vld_vec[SysCmdRead]    ),
     .d_i   ( sys_req_d.opcode_vec[SysCmdRead] ),
-    .q_o   ( sys_req_opcode_read_vec_q        )
+    .q_o   ( {sys_o.opcode_vec[SysCmdRead]}   )
   );
-  assign sys_o.opcode_vec[SysCmdRead] = sys_opc_e'(sys_req_opcode_read_vec_q);
 
   prim_flop_en #(
     .Width(SYS_ADDR_WIDTH)
@@ -1433,7 +1426,7 @@ module dma
   );
 
   prim_flop_en #(
-    .Width(SYS_RACL_WIDTH)
+    .Width($bits(top_racl_pkg::racl_role_t))
   ) u_sys_racl_read_vec (
     .clk_i ( gated_clk                      ),
     .rst_ni( rst_ni                         ),
@@ -1535,13 +1528,13 @@ module dma
                             reg2hw.range_regwen.q,
                             sys_resp_q.error_vec,
                             sys_resp_q.read_metadata,
-                            sys_resp_q.grant_vec[0]};
+                            sys_resp_q.grant_vec[SysCmdRead]};
 
   //////////////////////////////////////////////////////////////////////////////
   // Assertions
   //////////////////////////////////////////////////////////////////////////////
 
-  // All outputs should be known value after reset
+  // All outputs should be known values after reset
   `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
   `ASSERT_KNOWN_IF(RaclErrorOKnown_A, racl_error_o, racl_error_o.valid)
   `ASSERT_KNOWN(IntrDmaDoneKnown_A, intr_dma_done_o)
@@ -1574,4 +1567,7 @@ module dma
                   prim_mubi_pkg::mubi4_t'(reg2hw.range_regwen.q)) &&
                   (reg2hw.enabled_memory_range_base.qe ||
                    reg2hw.enabled_memory_range_limit.qe))
+
+  // Alert assertion for sparse FSM.
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlStateFsmCheck_A, aff_ctrl_state_q, alert_tx_o[0])
 endmodule

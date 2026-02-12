@@ -261,7 +261,7 @@ def checkAddressSpacing(addr: Tuple[int, int],
     return len(result) != 0
 
 
-# this returns 1 if the size mask overlapps with the address base
+# this returns 1 if the size mask overlaps with the address base
 def checkBaseSizeOverlap(addr_base: int, size: int) -> int:
     return ((size - 1) & addr_base)
 
@@ -367,13 +367,6 @@ def validate(obj: Dict[Any, Any]) -> Optional[Xbar]:
                             "Check the config. Addr(0x%x - 0x%x)."
                             % (MIN_DEVICE_SPACING, addr_entry[0], addr_entry[1]))
                         raise SystemExit("Base alignment error occurred")
-
-                    if checkBaseSizeOverlap(address_from, size):
-                        log.error(
-                            "Size mask and base address are overlapping. "
-                            " Check the config. Addr(0x%x - 0x%x)"
-                            % (addr_entry[0], addr_entry[1]))
-                        raise SystemExit("Base/size overlapping error occurred")
 
                     if checkAddressOverlap(addr_entry, addr_range):
                         log.error(

@@ -2,79 +2,96 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
+use std::cmp;
 use std::collections::HashMap;
 use std::time::Duration;
 
-use crate::chip::autogen::earlgrey::{PinmuxInsel, PinmuxMioOut, PinmuxOutsel, PinmuxPeripheralIn};
+use anyhow::Result;
+
+use ot_hal::dif::pinmux::PinmuxPadAttr;
+use ot_hal::top::earlgrey::{PinmuxInsel, PinmuxMioOut, PinmuxOutsel, PinmuxPeripheralIn};
+
 use crate::io::uart::Uart;
 use crate::test_utils::e2e_command::TestCommand;
 use crate::test_utils::rpc::{ConsoleRecv, ConsoleSend};
 use crate::test_utils::status::Status;
 
+// Create aliases for the C names of these types so that the ujson
+// created structs can access these structures by their C names.
+#[allow(non_camel_case_types)]
+type pinmux_peripheral_in_t = PinmuxPeripheralIn;
+#[allow(non_camel_case_types)]
+type pinmux_insel_t = PinmuxInsel;
+#[allow(non_camel_case_types)]
+type pinmux_mio_out_t = PinmuxMioOut;
+#[allow(non_camel_case_types)]
+type pinmux_outsel_t = PinmuxOutsel;
+
 // Bring in the auto-generated sources.
-use crate::chip::autogen::earlgrey::ujson_alias::*;
 include!(env!("pinmux_config"));
 
-impl Default for PinmuxConfig {
-    fn default() -> Self {
-        Self {
-            input: PinmuxInputSelection {
-                peripheral: Default::default(),
-                selector: Default::default(),
-            },
-            output: PinmuxOutputSelection {
-                mio: Default::default(),
-                selector: Default::default(),
-            },
-        }
-    }
-}
+/// Capacity of a single configuration message.
+const CONFIG_CAP: usize = 16;
 
 impl PinmuxConfig {
     pub fn configure(
         uart: &dyn Uart,
         inputs: Option<&HashMap<PinmuxPeripheralIn, PinmuxInsel>>,
         outputs: Option<&HashMap<PinmuxMioOut, PinmuxOutsel>>,
+        attrs: Option<&HashMap<PinmuxMioOut, PinmuxPadAttr>>,
     ) -> Result<()> {
         // The PinmuxConfig struct can carry a limited number of input
         // and output configurations.  We'll take the whole config and
         // chunk it into as many PinmuxConfig commands as necessary.
 
-        let len = std::cmp::max(
-            inputs.map(|h| h.len()).unwrap_or(0),
-            outputs.map(|h| h.len()).unwrap_or(0),
-        );
+        let mut inputs: Vec<_> = inputs
+            .into_iter()
+            .flat_map(HashMap::iter)
+            .map(|(&key, &value)| (key, value))
+            .collect();
+        let mut outputs: Vec<_> = outputs
+            .into_iter()
+            .flat_map(HashMap::iter)
+            .map(|(&key, &value)| (key, value))
+            .collect();
+        let mut attrs: Vec<_> = attrs
+            .into_iter()
+            .flat_map(HashMap::iter)
+            .map(|(&key, &value)| (key, value.bits()))
+            .collect();
 
-        let df_ik = PinmuxPeripheralIn::default();
-        let df_iv = PinmuxInsel::default();
-        let df_ok = PinmuxMioOut::default();
-        let df_ov = PinmuxOutsel::default();
+        let len = cmp::max(cmp::max(inputs.len(), outputs.len()), attrs.len())
+            .next_multiple_of(CONFIG_CAP);
 
-        let mut inputs = inputs.map(|h| h.iter());
-        let mut outputs = outputs.map(|h| h.iter());
-        let mut i = 0;
-        while i < len {
-            let mut config = Self::default();
-            for _ in 0..config.input.peripheral.capacity() {
-                let (ik, iv) = inputs
-                    .as_mut()
-                    .and_then(|i| i.next())
-                    .unwrap_or((&df_ik, &df_iv));
-                let (ok, ov) = outputs
-                    .as_mut()
-                    .and_then(|i| i.next())
-                    .unwrap_or((&df_ok, &df_ov));
-                config.input.peripheral.push(*ik);
-                config.input.selector.push(*iv);
-                config.output.mio.push(*ok);
-                config.output.selector.push(*ov);
-                i += 1;
-            }
+        inputs.resize_with(len, Default::default);
+        outputs.resize_with(len, Default::default);
+        attrs.resize_with(len, Default::default);
+
+        while !inputs.is_empty() && !outputs.is_empty() && !attrs.is_empty() {
+            let (in_peripherals, in_selectors) = inputs.drain(..CONFIG_CAP).unzip();
+            let (out_mios, out_selectors) = outputs.drain(..CONFIG_CAP).unzip();
+            let (attr_mios, attr_flags) = attrs.drain(..CONFIG_CAP).unzip();
+
+            let config = PinmuxConfig {
+                input: PinmuxInputSelection {
+                    peripheral: in_peripherals,
+                    selector: in_selectors,
+                },
+                output: PinmuxOutputSelection {
+                    mio: out_mios,
+                    selector: out_selectors,
+                },
+                attrs: PinmuxAttrConfig {
+                    mio: attr_mios,
+                    flags: attr_flags,
+                },
+            };
+
             TestCommand::PinmuxConfig.send(uart)?;
             config.send(uart)?;
-            Status::recv(uart, Duration::from_secs(300), false)?;
+            Status::recv(uart, Duration::from_secs(300), false, false)?;
         }
+
         Ok(())
     }
 }

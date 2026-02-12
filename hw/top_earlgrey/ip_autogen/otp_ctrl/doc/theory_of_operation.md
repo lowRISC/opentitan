@@ -33,6 +33,9 @@ Within each logical partition, there are specific enforceable properties
 - Integrity Verification
   - Once a partition is write-locked by calculating and writing a non-zero [digest](#locking-a-partition) to it, it can undergo periodic verification (time-scale configurable by software).
 This verification takes two forms, partition integrity checks, and storage consistency checks.
+- Zeroizability
+  - This controls whether a particular partition can be subject to zeroization in line with FIPS and [OCP L.O.C.K.](https://www.opencompute.org/documents/ocp-l-o-c-k-0-8-1-pdf-1) requirements.
+  - A zeroized partition has all its fuses (including the digest field) blown. Currently, the OTP macro is configured to also zeroize the redundant ECC bits of each partition word.
 
 Since the OTP is memory-like in nature (it only outputs a certain number of bits per address location), some of the logical partitions are buffered in registers for instantaneous and parallel access by hardware.
 This is a critical point, since after power-up, these particular OTP contents are stored in flip flops and sourced to the system.
@@ -41,13 +44,13 @@ Thus the security of both volatile (OTP controller) and non-volatile (OTP IP) st
 
 ### Partition Listing and Description
 
-The OTP controller for OpenTitan contains the seven logical partitions shown below.
+The OTP controller for this OpenTitan top-level contains the logical partitions shown below.
 
 {{#include otp_ctrl_partitions.md}}
 
 Generally speaking, the production life cycle of a device is split into 5 stages "Manufacturing" -> "Calibration and Testing" -> "Provisioning" -> "Mission" -> "RMA".
 OTP values are usually programmed during "Calibration and Testing", "Provisioning" and "RMA" stages, as explained below.
-A detailed listing of all the items and the corresponding memory map can be found in the [Programmer's Guide](programmers_guide.md)) further below.
+A detailed listing of all the items and the corresponding memory map can be found in the [Programmer's Guide](programmers_guide.md).
 
 ### Calibration and Test
 
@@ -75,12 +78,14 @@ In order to support this transition, the [life cycle state](../../../../ip/lc_ct
 
 Write access to a partition can be permanently locked when software determines it will no longer make any updates to that partition.
 To lock, an integrity constant is calculated and programmed alongside the other data of that partition.
-The size of that integrity constant depends on the partition size granule, and is either 32bit or 64bit (see also [Direct Access Memory Map](#direct-access-memory-map)).
+The size of that integrity constant depends on the partition size granule, and is either 32bit or 64bit.
+The memory map detailing these can be found in the [Programmer's Guide](programmers_guide.md#direct-access-memory-map).
 
 Once the "integrity digest" is non-zero, no further updates are allowed.
-If the partition is secret, software is in addition no longer able to read its contents (see [Secret Partition description](#secret-vs-nonsecret-partitions)).
+If the partition is secret, software is in addition no longer able to read its contents (see [Secret vs Non-Secret Partitions](#secret-vs-non-secret-partitions)).
 
-Note however, in all partitions, the digest itself is **ALWAYS** readable.
+In hardware partitions, the digest itself is **ALWAYS** readable.
+In partitions where read access is controlled by a READ_LOCK CSR the digest is only readable if that CSR is set.
 This gives software an opportunity to confirm that the locking operation has proceeded correctly, and if not, scrap the part immediately.
 
 Calculation of the integrity digest depends on whether the partition requires periodic background verification.
@@ -88,7 +93,7 @@ Calculation of the integrity digest depends on whether the partition requires pe
 ### Vendor Test Partition
 
 The vendor test partition is intended to be used for OTP programming smoke checks during the manufacturing flow.
-The silicon creator may implement these checks inside the proprietary version of the `prim_otp` wrapper.
+The silicon creator may implement these checks inside the proprietary version of the `otp_macro` wrapper.
 This partition behaves like any other SW partition, with the exception that ECC uncorrectable errors will not lead to fatal errors / alerts as they do in all other partitions.
 This is due to the nature of the OTP programming smoke checks, which may leave certain OTP words in a state inconsistent with the ECC polynomial employed upon OTP readout.
 
@@ -114,6 +119,35 @@ The contents must go through periodic integrity checks and therefore the stored 
 The life cycle partition cannot be locked and will therefore not contain a stored digest.
 Note however that only the life cycle controller has access to this partition, i.e., the Direct Access Interface (DAI) cannot read nor write from/to the life cycle partition.
 
+## Zeroizing a Partition
+
+When a partition is configured as zeroizable, software can zeroize each word in a partition individually through the Direct-Access Interface (DAI).
+In order to efficiently identify already (or in the process of being) zeroized partitions, they are equipped with a dedicated 64-bit zeroization marker field that is inserted at the end of every zeroizable partition (see [Zeroization Detection](#zeroization-detection)).
+These marker fields can be inspected in the memory as part of the [Programmer's Guide](programmers_guide.md#direct-access-memory-map).
+The zeroization flow needs to be supported by the attached OTP macro with a dedicated `ZEROIZE` command.
+Zeroizing a word in a partition is semantically different from an ordinary write request due to its side-effects related to background checks and ECC handling of subsequent reads.
+Furthermore, as software needs to verify for each word that it was successfully zeroized, the OTP macro has to return the zeroized word back to the OTP controller which will further process it before releasing it to software for inspection.
+Note that every word in a zeroizable partition is always erasable, whereas writes to locked partitions or the digest field in hardware partitions are not permitted.
+
+Zeroizing a partition affects its behavior during initialization and with respect to consistency and integrity checks (see [Partition Checks](#partition-checks) and [Design Details](#design-details)) .
+
+Note that all partition types except the `LIFE_CYCLE` partition can be configured as zeroizable.
+
+### Zeroization Detection
+
+There are two distinct cases when the OTP controller performs a zeroization detection by counting the number of set bits in a word and comparing the resulting value against predefined thresholds that account for potentially stuck-at-0 bits.
+
+  1. _Initialization_: As explained in [Checks on Zeroized Partitions](#checks-on-zeroized-partitions) the periodic consistency and integrity checks need to be disabled for a zeroized partition.
+  Furthermore when reading out the content of buffered partitions, the ECC checks need to be disabled as well.
+  This means that the zeroization marker field has to be checked first before performing the remaining initialization steps.
+  A partition is said to be in a zeroized state if and only if the number of set bits in the zeroization marker is greater or equal the macro-specific value `ZeroizationValidBound`.
+  This bound should include a margin that accounts for defects where certain fuse bits are perpetually stuck at 0.
+  2. _During Zeroization_: For compliance with OCP L.O.C.K., software needs to verify whether a word has been successfully zeroized.
+  In order to avoid releasing scrambled data to software in case of an error, the DAI releases the number of set bits in a zeroized word.
+  If a zeroized word does not meet the criterion, then firmware should continue erasing the remaining parts of a partition and retry the faulty erasure at a later point.
+  Software should trigger an escalation if repeated zeroizations fall below the `ZeroizationValidBound`.
+  The `ZeroizationValidBound` should be chosen such that the probability that a scrambled word is accidentally recognized as zeroized is as small as possible while still accounting for potentially stuck-at-0 bits.
+
 ## Secret vs Non-Secret Partitions
 
 Non-secret OTP partitions hold data that can be public; or data that has no impact on security.
@@ -128,7 +162,6 @@ The usage of a block cipher however implies that the secret partitions can only 
 Further, the contents of a particular secret partition are not readable by software once locked (other than the digest which must be always readable); while non-secret partitions are always readable unless read accessibility is explicitly removed by software.
 
 Unfortunately, secret partitions must utilize a global netlist key for the scrambling operation, as there is no other non-volatile storage to store a unique key.
-
 
 ## Partition Checks
 
@@ -164,6 +197,12 @@ Since the secret partitions are stored scrambled, this also implies the integrit
 In order to balance the amount of buffer registers needed, only the decrypted form of the secret partitions is held in buffer registers.
 Hardware calculates the digest by re-scrambling the data before passing it through the digest.
 
+### Checks on Zeroized Partitions
+
+The OTP controller detects the first successful zeroization of a word in a partition and disables any further periodic or manually triggered consistency checks.
+The integrity checks can proceed as they only act on already buffered data.
+After the OTP controller is reset both integrity and consistency checks are disabled for partitions that are marked as zeroized by way of the zeroization marker field.
+This includes the initial integrity check that is performed during the initialization procedure.
 
 ## Power-up and Sense
 
@@ -228,18 +267,18 @@ The life cycle interface is used to update the life cycle state and transition c
 The commands are issued from the [life cycle controller](../../../../ip/lc_ctrl/README.md), and similarly, successful or failed indications are also sent back to the life cycle controller.
 Similar to the functional interface, the life cycle controller allows only one update per power cycle, and after a requested transition reverts to an inert state until reboot.
 
-For more details on how the software programs the OTP, please refer to the [Programmer's Guide](programmers_guide.md)) further below.
+For more details on how the software programs the OTP, please refer to the [Programmer's Guide](programmers_guide.md).
 
 
 ## Design Details
 
 ### Block Diagram
 
-The following is a high-level block diagram that illustrates everything that has been discussed.
+The following is a high-level block diagram of the Earlygrey OTP that illustrates everything that has been discussed.
 
 ![OTP Controller Block Diagram](otp_ctrl_blockdiag.svg)
 
-Each of the partitions P0-P7 has its [own controller FSM](#partition-implementations) that interacts with the OTP wrapper and the [scrambling datapath](#scrambling-datapath) to fulfill its tasks.
+Each of the partitions (e.g. P0-P7 for Earlgrey) has its [own controller FSM](#partition-implementations) that interacts with the OTP wrapper and the [scrambling datapath](#scrambling-datapath) to fulfil its tasks.
 The partitions expose the address ranges and access control information to the Direct Access Interface (DAI) in order to block accesses that go to locked address ranges.
 Further, the only two blocks that have (conditional) write access to the OTP are the DAI and the Life Cycle Interface (LCI) blocks.
 The partitions can only issue read transactions to the OTP macro.
@@ -247,7 +286,7 @@ Note that the access ranges of the DAI and the LCI are mutually exclusive.
 I.e., the DAI cannot read from nor write to the life cycle partition.
 The LCI cannot read the OTP, but is allowed to write to the life cycle partition.
 
-The CSR node on the left side of this diagram connects to the DAI, the OTP partitions (P0-P7) and the OTP wrapper through a gated TL-UL interface.
+The CSR node on the left side of this diagram connects to the DAI, the OTP partitions (e.g. P0-P7 for Earlgrey) and the OTP wrapper through a gated TL-UL interface.
 All connections from the partitions to the CSR node are read-only, and typically only carry a subset of the information available.
 E.g., the secret partitions only expose their digest value via the CSRs.
 
@@ -274,7 +313,7 @@ Since the life cycle partition is the only partition that needs live updates in-
 The life cycle state is hence encoded such that incremental updates to the state are always carried out at the granularity of a 16bit word.
 Further, the life cycle transition counter is encoded such that each stroke consumes a full 16bit word for the same reason.
 
-See [life cycle controller documentation](../../../../ip/lc_ctrl/README.md) for more details on the life cycle encoding.
+See the [life cycle controller documentation](../../../../ip/lc_ctrl/README.md) for more details on the life cycle encoding.
 
 ### Partition Controllers
 
@@ -286,13 +325,14 @@ The corresponding controller FSMs are explained in more detail below.
 
 ![Unbuffered Partition FSM](otp_ctrl_unbuf_part_fsm.svg)
 
-As shown above, the unbuffered partition module has a relatively simple controller FSM that only reads out the digest value of the partition upon initialization, and then basically waits for TL-UL read transactions to its corresponding window in the CSR space.
+As shown above, the unbuffered partition module has a relatively simple controller FSM that first, if the partition is configured as zeroizable, reads out the zeroization marker.
+It then proceeds to reading out the digest value (if available and without ECC checks if zeroized) of the partition upon initialization, and then basically waits for TL-UL read transactions to its corresponding window in the CSR space.
 
 Write access through the DAI will be locked in case the digest is set to a non-zero value.
 Also, read access through the DAI and the CSR window can be locked at runtime via a CSR.
 Read transactions through the CSR window will error out if they are out of bounds, or if read access is locked.
 
-Note that unrecoverable [OTP errors](#generalized-open-source-interface), ECC failures in the digest register or external escalation via `lc_escalate_en` will move the partition controller into a terminal error state.
+Note that unrecoverable OTP errors, ECC failures in the digest register or external escalation via `lc_escalate_en` will move the partition controller into a terminal error state.
 
 #### Buffered Partition
 
@@ -300,9 +340,10 @@ Note that unrecoverable [OTP errors](#generalized-open-source-interface), ECC fa
 
 The controller FSM of the buffered partition module is more complex than the unbuffered counterpart, since it has to account for scrambling and digest calculation.
 
-Upon initialization, the controller reads out the whole partition and descrambles it on the fly if needed.
+Upon initialization, if the partition is configured as zeroizable, it first reads out the zeroization marker.
+It then proceeds to reading out the whole partition (without ECC checks if zeroized) and descrambles it on the fly if needed.
 
-Then, right after the initial readout, the partition controller jumps into the first integrity check, which behaves somewhat differently, depending on whether the partition is digest protected (or not) and/or scrambled (or not).
+Then, right after the initial readout, the partition controller jumps into the first integrity check if the partition is not zeroized, which behaves somewhat differently, depending on whether the partition is digest protected (or not) and/or scrambled (or not).
 If the partition is not digest protected, or if the digest has not yet been computed, the check completes right away, and the buffered values are released for hardware broadcast.
 Otherwise, the partition contents in the buffer registers are re-scrambled if needed, and a digest is computed on the fly.
 If the computed digest matches with the one that has been read out before, the buffered registers are released for hardware broadcast.
@@ -318,7 +359,7 @@ In case of a mismatch, the buffered values are gated to their default, and an al
 Note that in case of unrecoverable OTP errors or ECC failures in the buffer registers, the partition controller FSM is moved into a terminal error state, which locks down all access through DAI and clamps the values that are broadcast in hardware to their defaults.
 
 External escalation via the `lc_escalate_en` signal will move the partition controller FSM into the terminal error state as well.
-See [life cycle controller documentation](../../../../ip/lc_ctrl/README.md) for more details.
+See the [life cycle controller documentation](../../../../ip/lc_ctrl/README.md) for more details.
 
 ### Direct Access Interface Control
 
@@ -326,7 +367,8 @@ See [life cycle controller documentation](../../../../ip/lc_ctrl/README.md) for 
 
 Upon reset release, the DAI controller first sends an initialization command to the OTP macro.
 Once the OTP macro becomes operational, an initialization request is sent to all partition controllers, which will read out and initialize the corresponding buffer registers.
-The DAI then becomes operational once all partitions have initialized, and supports read, write and digest calculation commands (see [here](#direct-access-interface) for more information about how to interact with the DAI through the CSRs).
+The DAI then becomes operational once all partitions have initialized, and supports read, write and digest calculation commands.
+More information about how to interact with the DAI through the CSRs can be found in the [Programmer's Guide](programmers_guide.md#direct-access-interface).
 
 Read and write commands transfer either 32bit or 64bit of data from the OTP to the corresponding CSR and vice versa. The access size is determined automatically, depending on whether the partition is scrambled or not. Also, (de)scrambling is performed transparently, depending on whether the partition is scrambled or not.
 
@@ -335,12 +377,14 @@ Digest calculation commands read out the complete contents of a particular parti
 Note that any unrecoverable OTP error will move the DAI into a terminal error state, where all access through the DAI will be locked.
 Also, the DAI consumes the read and write access information provided by the partition controller, and if a certain read or write access is not permitted, a recoverable error will be flagged in the status / error CSRs.
 
+Zeroization is a separate command and resembles a write followed by a read, where first the fuse bits are blown, then returned to the DAI for further processing.
+
 ### Life Cycle Interface Control
 
 ![Life Cycle Interface FSM](otp_ctrl_lci_fsm.svg)
 
 Upon reset release the LCI FSM waits until the OTP controller has initialized and the LCI gets enabled.
-Once it is in the idle state, life cycle state updates can be initiated via the life cycle interface as [described here](#state-transitions).
+Once it is in the idle state, life cycle state updates can be initiated via the life cycle interface (described in the [Hardware Interfaces](interfaces.md#state-transitions)).
 The LCI controller takes the life cycle state to be programmed and writes all 16bit words to OTP.
 In case of unrecoverable OTP errors, the FSM signals an error to the life cycle controller and moves into a terminal error state.
 
@@ -349,7 +393,7 @@ In case of unrecoverable OTP errors, the FSM signals an error to the life cycle 
 ![Key Derivation Interface FSM](otp_ctrl_kdi_fsm.svg)
 
 Upon reset release the KDI FSM waits until the OTP controller has initialized and the KDI gets enabled.
-Once it is in the idle state, key derivation can be requested via the [flash](#interface-to-flash-scrambler) and [sram](#interface-to-sram-and-otbn-scramblers) interfaces.
+Once it is in the idle state, key derivation can be requested via the [flash](interfaces.md#interface-to-flash-scrambler) and [sram](interfaces.md#interface-to-sram-and-otbn-scramblers) interfaces.
 Based on which interface makes the request, the KDI controller will evaluate a variant of the PRESENT digest mechanism as described in more detail below.
 
 ### Scrambling Datapath
@@ -374,7 +418,8 @@ This is illustrated in subfigure b).
 
 At the beginning of the digest calculation the 64bit state is initialized with an initialization vector (IV).
 Then, the data to be digested is split into 128bit chunks, each of which is used as a 128bit key input for updating the 64bit state with the compression function F.
-Chunks that are not aligned with 128bit are padded with zero, and the finalization operation consists of another 31-round encryption pass with a finalization constant.
+If a chunk is not an even number of 64bit blocks, its length is aligned to a multiple of 128 bits by repeating the last block.
+After the blocks have been included, there is a finalization operation that consists of another 31-round encryption pass but with a finalization constant.
 Note that both the IV as well as the finalization constant are global netlist constants chosen by the silicon creator.
 
 #### Scrambling Key Derivation
@@ -424,14 +469,14 @@ They are therefore not further described in this document.
 
 The generalized open-source interface uses a couple of parameters (defaults set for Earlgrey configuration).
 
-Parameter      | Default | Top Earlgrey  | Description
----------------|---------|---------------|---------------
-`Width`        | 16      | 16            | Native OTP word width.
-`Depth`        | 1024    | 1024          | Depth of OTP macro.
-`CmdWidth`     | 7       | 7             | Width of the OTP command.
-`ErrWidth`     | 3       | 3             | Width of error code output signal.
-`PwrSeqWidth`  | 2       | 2             | Width of power sequencing signals to/from AST.
-`SizeWidth`    | 2       | 2             | Width of the size field.
+Parameter      | Default                 | Top Earlgrey            | Description
+---------------|-------------------------|-------------------------|---------------
+`Width`        | 16                      | 16                      | Native OTP word width.
+`Depth`        | 1024                    | 1024                    | Depth of OTP macro.
+`CmdWidth`     | 7                       | 7                       | Width of the OTP command.
+`ErrWidth`     | 3                       | 3                       | Width of error code output signal.
+`PwrSeqWidth`  | 2                       | 2                       | Width of power sequencing signals to/from AST.
+`SizeWidth`    | 2                       | 2                       | Width of the size field.
 `IfWidth`      | 2^`SizeWidth` * `Width` | 2^`SizeWidth` * `Width` | Data interface width.
 
 The generalized open-source interface is a simple command interface with a ready / valid handshake that makes it possible to introduce back pressure if the OTP macro is not able to accept a command due to an ongoing operation.
@@ -466,10 +511,10 @@ Signal                  | Direction        | Type                        | Descr
 `rdata_o`               | `output`         | `logic [IfWidth-1:0]`       | Read data from read commands.
 `err_o`                 | `output`         | `logic [ErrWidth-1:0]`      | Error code.
 
-The `write raw` and `read raw` command instructs the `prim_otp` wrapper to store / read the data in raw format without generating nor checking integrity information.
+The `write raw` and `read raw` command instructs the `otp_macro` wrapper to store / read the data in raw format without generating nor checking integrity information.
 That means that the wrapper must return the raw, uncorrected data and no integrity errors.
 
-The `prim_otp` wrapper implements the `Macro*` error codes (0x0 - 0x4) defined in [OTP error handling](#error-handling).
+The `otp_macro` wrapper implements the `Macro*` error codes (0x0 - 0x4) defined in the [Programmer's Guide](programmers_guide.md#error-handling).
 
 The timing diagram below illustrates the timing of a command.
 Note that both read and write commands return a response, and each command is independent of the previously issued commands.
@@ -507,8 +552,8 @@ Note that the open source OTP controller allows up to two outstanding OTP comman
 
 #### Generic Simulation and FPGA Emulation Model
 
-For open-source simulation and FPGA emulation, a synthesizable and generic OTP wrapper module is provided (`prim_generic_otp`).
-This is automatically selected in the OpenTitan build flow via the technology primitive mechanism if no proprietary OTP IP is available for a specific technology.
-The OTP storage in `prim_generic_otp` is emulated using a standard RAM primitive `prim_generic_ram_1p`.
+For open-source simulation and FPGA emulation, a synthesizable and generic OTP wrapper module is provided (`otp_macro`).
+This is automatically selected in the OpenTitan build flow via the technology primitive mechanism if no proprietary OTP macro is available for a specific technology.
+The OTP storage in `otp_macro` is emulated using a standard RAM primitive `prim_generic_ram_1p`.
 While this storage element is volatile, the primitive is constructed such that the contents are not wiped upon a system-wide reset.
 I.e., only a power-cycle wipes the RAM primitive, thereby enabling limited emulation of the OTP function and life cycle transitions also on an FPGA device.

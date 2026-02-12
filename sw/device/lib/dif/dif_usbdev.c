@@ -9,7 +9,7 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
 
-#include "usbdev_regs.h"  // Generated.
+#include "hw/top/usbdev_regs.h"  // Generated.
 
 /**
  * Definition in the header file (and probably other places) must be updated if
@@ -309,8 +309,36 @@ dif_result_t dif_usbdev_endpoint_setup_enable(const dif_usbdev_t *usbdev,
 dif_result_t dif_usbdev_endpoint_out_enable(const dif_usbdev_t *usbdev,
                                             uint8_t endpoint,
                                             dif_toggle_t new_state) {
-  return endpoint_functionality_enable(usbdev, USBDEV_RXENABLE_OUT_REG_OFFSET,
-                                       endpoint, new_state);
+  if (usbdev == NULL || !is_valid_endpoint(endpoint) ||
+      !dif_is_valid_toggle(new_state)) {
+    return kDifBadArg;
+  }
+
+  // For compatibility with earlier hardware, we must read back the state of the
+  // other OUT enables because they will _all_ be updated by any write.
+  uint32_t reg_val =
+      mmio_region_read32(usbdev->base_addr, USBDEV_RXENABLE_OUT_REG_OFFSET);
+
+  reg_val = bitfield_bit32_write(reg_val, kEndpointHwInfos[endpoint].bit_index,
+                                 dif_toggle_to_bool(new_state));
+
+  // More recent hardware supports conditional updating of the OUT enables.
+  //
+  // Update only the specified endpoint by setting 'preserve' for all other OUT
+  // endpoints. This avoids a race between firmware and the USB device in the
+  // event of `set_nak_out` functionality being used.
+  bitfield_field32_t preserve_field = {
+      .mask = USBDEV_RXENABLE_OUT_PRESERVE_MASK,
+      .index = USBDEV_RXENABLE_OUT_PRESERVE_OFFSET};
+
+  uint32_t preserved_endpoints = USBDEV_RXENABLE_OUT_PRESERVE_MASK &
+                                 ~(1u << kEndpointHwInfos[endpoint].bit_index);
+
+  reg_val =
+      bitfield_field32_write(reg_val, preserve_field, preserved_endpoints);
+  mmio_region_write32(usbdev->base_addr, USBDEV_RXENABLE_OUT_REG_OFFSET,
+                      reg_val);
+  return kDifOk;
 }
 
 dif_result_t dif_usbdev_endpoint_set_nak_out_enable(const dif_usbdev_t *usbdev,

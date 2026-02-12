@@ -9,6 +9,7 @@ description: "Top-level specific PMP reset settings for Darjeeling"
 filesets:
   files_rtl:
     depend:
+      - lowrisc:systems:top_darjeeling_pkg
       - lowrisc:ip:rv_core_ibex_pkg
     files:
       - rtl/ibex_pmp_reset_pkg.sv

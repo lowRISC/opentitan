@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, ensure, Context, Result};
+use anyhow::{Context, Result, bail, ensure};
 use num_bigint_dig::BigUint;
 
 use foreign_types::{ForeignType, ForeignTypeRef};
@@ -26,7 +26,7 @@ pub struct X509ExtensionRef<'a> {
 }
 
 /// Return the list of extensions of an X509 cerificate.
-pub fn x509_get_extensions(x509: &X509) -> Result<Vec<X509ExtensionRef>> {
+pub fn x509_get_extensions(x509: &X509) -> Result<Vec<X509ExtensionRef<'_>>> {
     let mut exts = Vec::new();
     // SAFETY: the rust openssl binding guarantees that x509 is a valid object.
     let ext_count = unsafe { openssl_sys::X509_get_ext_count(x509.as_ptr()) };

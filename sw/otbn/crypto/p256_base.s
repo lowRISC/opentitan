@@ -15,7 +15,9 @@
 .globl p256_generate_k
 .globl p256_generate_random_key
 .globl p256_key_from_seed
+.globl p256_masked_scalar_reblind
 .globl trigger_fault_if_fg0_z
+.globl trigger_fault_if_fg0_not_z
 .globl mul_modp
 .globl setup_modp
 .globl mod_mul_256x256
@@ -41,10 +43,44 @@
  * sensitive; since aborting the program will be quicker than completing it,
  * the flag's value is likely clearly visible to an attacker through timing.
  *
- * @param[in]    w31: all-zero
- * @param[in]  FG0.Z: boolean indicating fault condition
+ * @param[in]  FG0.Z: boolean indicating fault condition when 1
  *
- * clobbered registers: x2
+ * clobbered registers: x2, w31
+ * clobbered flag groups: none
+ */
+trigger_fault_if_fg0_not_z:
+  /* Read the FG0.Z flag (position 3).
+       x2 <= FG0.Z */
+  csrrw     x2, FG0, x0
+  andi      x2, x2, 8
+  addi      x2, x2, 31
+
+  /* The `bn.lid` instruction causes an `ILLEGAL_INSN` error if the index of the
+     bignum register (stored in x2 in this case) is invalid. Therefore, if FG0.Z
+     is 1, this instruction causes an error, but if FG0.Z is 0 it simply loads
+     the word at address 0 into w31. */
+  bn.lid    x2, 0(x0)
+
+  /* If we get here, the flag must have been 0. Restore w31 to zero and return.
+       w31 <= 0 */
+  bn.xor    w31, w31, w31
+
+  ret
+
+/**
+ * Trigger a fault if the FG0.Z flag is 0.
+ *
+ * If the flag is 0, then this routine will trigger an `ILLEGAL_INSN` error and
+ * abort the OTBN program. If the flag is 1, the routine will essentially do
+ * nothing.
+ *
+ * NOTE: Be careful when calling this routine that the FG0.Z flag is not
+ * sensitive; since aborting the program will be quicker than completing it,
+ * the flag's value is likely clearly visible to an attacker through timing.
+ *
+ * @param[in]  FG0.Z: boolean indicating fault condition when 0
+ *
+ * clobbered registers: x2, w31
  * clobbered flag groups: none
  */
 trigger_fault_if_fg0_z:
@@ -52,29 +88,25 @@ trigger_fault_if_fg0_z:
        x2 <= FG0.Z */
   csrrw     x2, FG0, x0
   andi      x2, x2, 8
-  srli      x2, x2, 3
+  xori      x2, x2, 8
+  addi      x2, x2, 31
 
-  /* Subtract FG0.Z from 0.
-       x2 <= 0 - x2 = FG0.Z ? 2^32 - 1 : 0 */
-  sub       x2, x0, x2
+  /* The `bn.lid` instruction causes an `ILLEGAL_INSN` error if the index of the
+     bignum register (stored in x2 in this case) is invalid. Therefore, if FG0.Z
+     is 0, this instruction causes an error, but if FG0.Z is 1 it simply loads
+     the word at address 0 into w31. */
+  bn.lid    x2, 0(x0)
 
-  /* The `bn.lid` instruction causes an `BAD_DATA_ADDR` error if the
-     memory address is out of bounds. Therefore, if FG0.Z is 1, this
-     instruction causes an error, but if FG0.Z is 0 it simply loads the word at
-     address 0 into w31. */
-  li         x3, 31
-  bn.lid     x3, 0(x2)
-
-  /* If we get here, the flag must have been 0. Restore w31 to zero and return.
+  /* If we get here, the flag must have been 1. Restore w31 to zero and return.
        w31 <= 0 */
-  bn.xor     w31, w31, w31
+  bn.xor    w31, w31, w31
 
   ret
 
 /**
  * Reduce a 512-bit value by a 256-bit P-256 modulus (either n or p).
  *
- * Returns c = a mod m
+ * Returns c = x mod m
  *
  * Expects a 512 bit input, a 256 bit modulus and pre-computed parameter u for
  * Barrett reduction (usually greek mu in literature). u is expected without
@@ -106,8 +138,8 @@ trigger_fault_if_fg0_z:
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * @param[in]  [w19,w20]: a, input (512 bits) such that a < 2^256 * m
- * @param[in]  w22: correction factor, msb(a) * u
+ * @param[in]  [w19,w20]: x, input (512 bits) such that x < 2^256 * m
+ * @param[in]  w22: correction factor, msb(x) * u
  * @param[in]  w29: m, modulus, curve order n or finite field modulus p
  * @param[in]  w28: u, lower 256 bit of Barrett constant for m
  * @param[in]  w31: all-zero
@@ -151,59 +183,90 @@ p256_reduce:
      carried out underway. To add them in the q2 domain, they would have to be
      left shifted by 256 bit first. To directly add them we first shift q2' by
      256 bit to the right (by dropping the lower 256 bit), perform the
-     additions, and shift the result another bit to the right.
+     additions, and shift the result another bit to the right. */
 
   /* w25 = q1[256] = x[511:256] >> 255 */
   bn.rshi   w25, w31, w20 >> 255
 
   /* compensate for neglected MSB of u, by adding full q1
      this is unconditional since MSB of u is always 1
+
+     N.B. The dummy instruction below is to clear flags after subtraction,
+     as [w25, w24] contain values that may be correlated with the input to
+     p256_reduce, which in turn may be a secret share as noted above.
+
      [w25, w24] = q2'' <= q2'[511:256] + q1 = [w25, w24] <= w24 + [w25, w21] */
   bn.add    w24, w24, w21
   bn.addc   w25, w25, w31
+  bn.add    w31, w31, w31  /* dummy instruction to clear flags */
 
-  /* compensate for neglected MSB of q1, by conditionally adding u */
-  /* [w25, w24] = q2''' <= q2'' + [0 or u] = [w25, w24] + w22 */
+  /* compensate for neglected MSB of q1, by conditionally adding u
+
+     N.B. The dummy instruction below is to clear flags after subtraction,
+     as [w25, w24] contain values that may be correlated with the input to
+     p256_reduce, which in turn may be a secret share as noted above.
+
+     [w25, w24] = q2''' <= q2'' + [0 or u] = [w25, w24] + w22 */
   bn.add    w24, w24, w22
   bn.addc   w25, w25, w31
+  bn.add    w31, w31, w31  /* dummy instruction to clear flags */
 
   /* q3 = w21 = q2''' >> 1 */
   bn.rshi   w21, w25, w24 >> 1
 
-  /* [w23, w22] <= q3 * p  */
-  bn.mulqacc.z          w29.0, w21.0,  0
-  bn.mulqacc            w29.1, w21.0, 64
-  bn.mulqacc.so  w22.L, w29.0, w21.1, 64
-  bn.mulqacc            w29.2, w21.0,  0
-  bn.mulqacc            w29.1, w21.1,  0
-  bn.mulqacc            w29.0, w21.2,  0
-  bn.mulqacc            w29.3, w21.0, 64
-  bn.mulqacc            w29.2, w21.1, 64
-  bn.mulqacc            w29.1, w21.2, 64
-  bn.mulqacc.so  w22.U, w29.0, w21.3, 64
-  bn.mulqacc            w29.3, w21.1,  0
-  bn.mulqacc            w29.2, w21.2,  0
-  bn.mulqacc            w29.1, w21.3,  0
-  bn.mulqacc            w29.3, w21.2, 64
-  bn.mulqacc.so  w23.L, w29.2, w21.3, 64
-  bn.mulqacc.so  w23.U, w29.3, w21.3,  0
-  bn.add    w23, w23, w31
+  /* [w23, w22] <= q3 * p
 
-  /* We compute the final remainder r by subtracting the estimate q3 from x.
+    N.B. The bn.mulqacc.so.z instruction below is to clear the value of ACC as
+    well as the flags set by the prior mulqacc.so instructions, as p256_reduce
+    may be called on secret shares of the same value back-to-back. For instance,
+    p256_sign calls mod_mul_32x128 to multiplicatively mask a pair of additive
+    secret shares; while these are indeed indistinguishable from random values
+    once reduced mod p, the values left in ACC after the below multiplications
+    are unreduced and have the potential to leak information about their
+    multiplicands. */
+  bn.mulqacc.z            w29.0, w21.0,  0
+  bn.mulqacc              w29.1, w21.0, 64
+  bn.mulqacc.so    w22.L, w29.0, w21.1, 64
+  bn.mulqacc              w29.2, w21.0,  0
+  bn.mulqacc              w29.1, w21.1,  0
+  bn.mulqacc              w29.0, w21.2,  0
+  bn.mulqacc              w29.3, w21.0, 64
+  bn.mulqacc              w29.2, w21.1, 64
+  bn.mulqacc              w29.1, w21.2, 64
+  bn.mulqacc.so    w22.U, w29.0, w21.3, 64
+  bn.mulqacc              w29.3, w21.1,  0
+  bn.mulqacc              w29.2, w21.2,  0
+  bn.mulqacc              w29.1, w21.3,  0
+  bn.mulqacc              w29.3, w21.2, 64
+  bn.mulqacc.so    w23.L, w29.2, w21.3, 64
+  bn.mulqacc.so    w23.U, w29.3, w21.3,  0
+  bn.mulqacc.so.z  w31.U, w31.0, w31.0,  0  /* dummy instruction to clear state */
+
+  /* We compute the final remainder r by subtracting the estimate q3 from a.
      In the generic algorithm, r is already the reduced result or it is off by
      either p or 2p. For the special case of the modulus of P-256 it can be
      shown that r can only be off by max p. Therefore, only a single
      conditional correction is required.
+
+     N.B. The dummy instruction below is to clear flags after subtraction, as
+     [w20, w19] contains the input to p256_reduce, which may be a secret share
+     as noted above.
+
      [w20, w22] = r <= [w20, w19] - [w23, w22] = x - q3*p  */
   bn.sub    w22, w19, w22
   bn.subb   w20, w20, w23
 
   /* r cannot be wider than 257 bit. Therefore it is r > p if bit 256 of r is
-     set and we need to subtract the modulus */
+     set and we need to subtract the modulus
+
+     N.B. The dummy instruction below is to clear flags after subtraction, as
+     w21 contains a shifted version of the input to p256_reduce, which may be a
+     secret share as noted above. */
   bn.sel    w21, w29, w31, L
   bn.sub    w21, w22, w21
+  bn.sub    w31, w31, w31  /* dummy instruction to clear flags */
 
-  /* this performs the correction in case r is only 256 bit long but still
+  /* this performs the correction in case r is only 256 bits long but still
      greater than the modulus */
   bn.addm   w19, w21, w31
 
@@ -258,8 +321,13 @@ mod_mul_256x256:
      256x256 multiplier. For the MSb of x being set we temporary store u
      (or zero) here to be used in a later constant time correction of a
      multiplication with u. Note that this requires the MSb flag being carried
-     over from the multiplication routine. */
-  bn.sel    w22, w28, w31, M
+     over from the multiplication routine.
+
+     N.B. The dummy instruction following the selection is for clearing ACC and
+     flags set by the prior multiplications which may input secret values. See
+     the block comments in p256_reduce for more details. */
+  bn.sel         w22, w28, w31, M
+  bn.mulqacc.so.z  w31.U, w31.0, w31.0,  0  /* dummy instruction to clear state */
 
   /* Reduce product modulo m (tail-call). */
   jal       x0, p256_reduce
@@ -308,8 +376,13 @@ mod_mul_320x128:
      256x256 multiplier. For the MSb of x being set we temporary store u
      (or zero) here to be used in a later constant time correction of a
      multiplication with u. Note that this requires the MSb flag being carried
-     over from the multiplication routine. */
+     over from the multiplication routine.
+
+     N.B. The dummy instruction following the selection is for clearing ACC and
+     flags set by the prior multiplications which may input secret values. See
+     the block comments in p256_reduce for more details. */
   bn.sel    w22, w28, w31, M
+  bn.mulqacc.wo.z    w31, w31.0, w31.0, 0
 
   /* Reduce product modulo m (tail-call). */
   jal       x0, p256_reduce
@@ -1195,15 +1268,20 @@ proj_double:
  *    Q = if (k0[i] | k1[i]) then B else Q
  *
  *
- * Each share k0/k1 is 320 bits, even though it represents a 256-bit value.
- * This is a side-channel protection measure.
+ * Each share k0/k1 is 321 bits, even though it represents a 256-bit value.
+ * This allows for blinded scalars as a side-channel protection measure.
+ *
+ * 321 bit shares mean that we have 65 bits of blinding for each share. This
+ * is the minimal number of bits to protect against window attacks mentioned
+ * in Schindler.
+ * https://csrc.nist.gov/csrc/media/events/workshop-on-elliptic-curve-cryptography-standards/documents/papers/session6-schindler-werner.pdf
  *
  * @param[in]  x21: dptr_x, pointer to affine x-coordinate in dmem
  * @param[in]  x22: dptr_y, pointer to affine y-coordinate in dmem
  * @param[in]  w0: lower 256 bits of k0, first share of scalar
- * @param[in]  w1: upper 64 bits of k0, first share of scalar
+ * @param[in]  w1: upper 65 bits of k0, first share of scalar
  * @param[in]  w2: lower 256 bits of k1, second share of scalar
- * @param[in]  w3: upper 64 bits of k1, second share of scalar
+ * @param[in]  w3: upper 65 bits of k1, second share of scalar
  * @param[in]  w27: b, curve domain parameter
  * @param[in]  w31: all-zero
  * @param[in]  MOD: p, modulus, 2^256 > p > 2^255.
@@ -1241,11 +1319,23 @@ scalar_mult_int:
 
   /* Init 2P, this will be used for the addition part in the double-and-add
      loop when the bit at the current index is 1 for both shares of the scalar.
-     2P = (w4, w5, w6) <= (w11, w12, w13) <= 2*(w8, w9, w10) = 2*P */
+     2P = (w4, w5, w6) <= (w8, w8, w10) <= 2*(w8, w9, w10) = 2*P */
   jal       x1, proj_double
   bn.mov    w4, w8
   bn.mov    w5, w9
   bn.mov    w6, w10
+
+  /* Shift first share of k so its MSB is in the most significant position of
+     a word.
+
+     N.B. This has been intentionally separated from accesses to [w2,w3] below
+     to avoid potential transient side channel leakage from accessing k0 and k1
+     in sequential instructions.
+
+     w0,w1 <= [w0, w1] << 191 = k0 << 191 */
+  bn.wsrr   w20, URND
+  bn.rshi   w1, w1, w0 >> 65
+  bn.rshi   w0, w0, w20 >> 65
 
   /* init double-and-add with point in infinity
      Q = (w8, w9, w10) <= (0, 1, 0) */
@@ -1253,21 +1343,24 @@ scalar_mult_int:
   bn.addi   w9, w31, 1
   bn.mov    w10, w31
 
-  /* Shift shares of k so their MSBs are in the most significant position of a
-     word.
-       w0,w1 <= [w0, w1] << 192 = k0 << 192
-       w2,w3 <= [w2, w3] << 192 = k1 << 192 */
-  bn.rshi   w1, w1, w0 >> 64
-  bn.rshi   w0, w0, w31 >> 64
-  bn.rshi   w3, w3, w2 >> 64
-  bn.rshi   w2, w2, w31 >> 64
+  /* Shift second share of k so its MSB is in the most significant position of a
+     word as well.
+
+     w2,w3 <= [w2, w3] << 191 = k1 << 191 */
+  bn.rshi   w3, w3, w2 >> 65
+  bn.rshi   w2, w2, w20 >> 65
 
   /* double-and-add loop with decreasing index */
-  loopi     320, 34
+  loopi     321, 63
 
     /* double point Q
        Q = (w8, w9, w10) <= 2*(w8, w9, w10) = 2*Q */
     jal       x1, proj_double
+
+    /* prepare a mostly-randomized word with LSb matching the MSb of k0 for
+       performing a MSb check on k0 and k1 after the following call. */
+    bn.wsrr   w20, URND
+    bn.rshi   w7, w20, w1 >> 255
 
     /* re-fetch and randomize P again
        P = (w14, w15, w16) */
@@ -1277,26 +1370,59 @@ scalar_mult_int:
        - If only one MSb is set, select P for addition
        - If both MSbs are set, select 2P for addition
        - If neither MSB is set, also 2P will be selected but this will be
-         discarded later */
-    bn.xor    w20, w1, w3
+         discarded later
 
-    /* N.B. The M bit here is secret. For side channel protection in the
+       w26 <= MSb(k1) */
+    bn.wsrr   w20, URND
+    bn.rshi   w26, w20, w3 >> 255
+
+    /* N.B. The L bit here is secret. For side channel protection in the
        selects below, it is vital that neither option is equal to the
-       destionation register (e.g. bn.sel w0, w0, w1). In this case, the
+       destination register (e.g. bn.sel w0, w0, w1). In this case, the
        hamming distance from the destination's previous value to its new value
-       will be 0 in one of the cases and potentially reveal M.
+       will be 0 in one of the cases and potentially reveal L.
+
+       The select itself is split in two shares, i.e., if L = L0 xor L1, then
+       L ? a : b = L1 ? (L0 ? b : a) : (L0 ? a : b).
+       Thus, we calculate a select over L0 (the LSB of w7) and over L1 (the LSB of w26).
 
        P = (w11, w12, w13)
         <= (w0[255] xor w1[255])?P=(w14, w15, w16):2P=(w4, w5, w6) */
-    bn.sel    w11, w14, w4, M
-    bn.sel    w12, w15, w5, M
-    bn.sel    w13, w16, w6, M
 
-    /* save doubling result to survive follow-up subroutine call
-       Q = (w7, w26, w30) <= (w11, w12, w13) */
-    bn.mov    w7, w8
-    bn.mov    w26, w9
-    bn.mov    w30, w10
+    /* init regs with random numbers from URND */
+    bn.wsrr   w20, URND
+    bn.wsrr   w21, URND
+    bn.wsrr   w22, URND
+
+    /* (L0 ? a : b) */
+    bn.or     w7, w7, w31
+    bn.sel    w20, w14, w4, L
+    bn.sel    w21, w15, w5, L
+    bn.sel    w22, w16, w6, L
+
+    /* init regs with random numbers from URND */
+    bn.wsrr   w23, URND
+    bn.wsrr   w24, URND
+    bn.wsrr   w25, URND
+
+    /* (L0 ? b : a) */
+    bn.sel    w23, w4, w14, L
+    bn.sel    w24, w5, w15, L
+    bn.sel    w25, w6, w16, L
+
+    /* init regs with random numbers from URND */
+    bn.wsrr   w11, URND
+    bn.wsrr   w12, URND
+    bn.wsrr   w13, URND
+
+    /* wipe the L flag */
+    bn.or     w12, w12, w31
+
+    /* L1 ? (L0 ? b : a) : (L0 ? a : b) */
+    bn.or     w26, w26, w31
+    bn.sel    w11, w23, w20, L
+    bn.sel    w12, w24, w21, L
+    bn.sel    w13, w25, w22, L
 
     /* add points
        Q+P = (w11, w12, w13) <= (w11, w12, w13) + (w8, w9, w10) */
@@ -1304,32 +1430,57 @@ scalar_mult_int:
 
     /* probe if MSb of either one or both of the two
        scalars (k0 or k1) is 1.*/
-    bn.or     w20, w1, w3
 
-    /* N.B. As before, the select instructions below must use distinct
-       source/destination registers to avoid revealing M.
+    /* duplicate point P to allow distinct source/destination registers for
+       the select instructions below.
+       Q = (w20, w21, w22) <= (w8, w9, w10) */
+    bn.mov    w20, w8
+    bn.mov    w21, w9
+    bn.mov    w22, w10
+
+    /* init destination registers with random numbers from URND */
+    bn.wsrr   w23, URND
+    bn.wsrr   w24, URND
+    bn.wsrr   w25, URND
+
+    /* N.B. The select instructions below must use distinct
+       source/destination registers and source and destination must not be
+       equal for any source and destination pair to avoid revealing L.
+
+       The select is split in two shares, i.e., if L = L0 or L1, then
+       L ? a : b = L0 ? a : (L1 ? a : b). Thus, we calculate a select
+       over L0 (the LSB of w7) and over L1 (the LSB of w26).
 
        Select doubling result (Q) or addition result (Q+P)
-         Q = w0[255] or w1[255]?Q_a=(w11, w12, w13):Q=(w7, w26, w30) */
-    bn.sel    w8, w11, w7, M
-    bn.sel    w9, w12, w26, M
-    bn.sel    w10, w13, w30, M
+         Q = w0[255] or w1[255]?Q+P=(w11, w12, w13):Q=(w20, w21, w22) */
+    bn.or     w7, w7, w31
+    bn.sel    w23, w11, w20, L
+    bn.sel    w24, w12, w21, L
+    bn.sel    w25, w13, w22, L
 
-    /* Shift both scalars left 1 bit. */
-    bn.rshi   w1, w1, w0 >> 255
-    bn.rshi   w0, w0, w31 >> 255
-    bn.rshi   w3, w3, w2 >> 255
-    bn.rshi   w2, w2, w31 >> 255
+    /* init destination registers with random numbers from URND */
+    bn.wsrr   w8, URND
+    bn.wsrr   w9, URND
+    bn.wsrr   w10, URND
 
-    /* init regs with random numbers from URND */
-    bn.wsrr   w11, URND
-    bn.wsrr   w12, URND
-    bn.wsrr   w13, URND
+    /* wipe the L flag */
+    bn.or     w10, w10, w31
 
-    /* get a fresh random number from URND and scale the coordinates of
-       2P = (w3, w4, w5) (scaling each projective coordinate with same
-       factor results in same point) */
+    bn.or     w26, w26, w31
+    bn.sel    w8, w11, w23, L
+    bn.sel    w9, w12, w24, L
+    bn.sel    w10, w13, w25, L
+
+    /* Load random to pad the shift and re-randomize the coordinates of Q. */
     bn.wsrr   w7, URND
+
+    /* Shift k0 left 1 bit.
+
+     N.B. This has been intentionally separated from accesses to [w2,w3] below
+     to avoid potential transient side channel leakage from accessing k0 and k1
+     in sequential instructions. */
+    bn.rshi   w1, w1, w0 >> 255
+    bn.rshi   w0, w0, w7 >> 255
 
     /* w4 = w4 * w7 */
     bn.mov    w24, w4
@@ -1349,13 +1500,17 @@ scalar_mult_int:
     jal       x1, mul_modp
     bn.mov    w6, w19
 
+    /* Shift k1 left 1 bit. */
+    bn.rshi   w3, w3, w2 >> 255
+    bn.rshi   w2, w2, w7 >> 255
+
   /* Check if the z-coordinate of Q is 0. If so, fail; this represents the
      point at infinity and means the scalar was zero mod n, which likely
      indicates a fault attack. Tail-call.
 
      FG0.Z <= if (w10 == 0) then 1 else 0 */
   bn.cmp    w10, w31
-  jal       x0, trigger_fault_if_fg0_z
+  jal       x0, trigger_fault_if_fg0_not_z
 
 
 /**
@@ -1373,18 +1528,24 @@ scalar_mult_int:
  * where:
  *   d = (d0 + d1) mod n
  *
- * The shares d0 and d1 are up to 320 bits each to provide extra redundancy.
+ * The shares d0 and d1 are up to 321 bits each to provide extra redundancy.
+ *
+ * 321 bit shares mean that we have 65 bits of blinding for each share. This
+ * is the minimal number of bits to protect against window attacks mentioned
+ * in Schindler.
+ * https://csrc.nist.gov/csrc/media/events/workshop-on-elliptic-curve-cryptography-standards/documents/papers/session6-schindler-werner.pdf
+ *
  *
  * This routine runs in constant time.
  *
- * @param[in]   dmem[d0]:  first share of scalar d (320 bits)
- * @param[in]   dmem[d1]:  second share of scalar d (320 bits)
+ * @param[in]   dmem[d0]:  first share of scalar d (321 bits)
+ * @param[in]   dmem[d1]:  second share of scalar d (321 bits)
  * @param[out]  dmem[x]:   affine x-coordinate (256 bits)
  * @param[out]  dmem[y]:   affine y-coordinate (256 bits)
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * clobbered registers: x2, x3, x16, x17, x21, x22, w0 to w26
+ * clobbered registers: x2, x3, x16, x17, x19, x20, x21, x22, w0 to w29
  * clobbered flag groups: FG0
  */
 p256_base_mult:
@@ -1408,6 +1569,9 @@ p256_base_mult:
   li        x2, 3
   bn.lid    x2, 0(x16)
 
+  /* Hide the secret key before running the scalar multiplication. */
+  jal       x1, p256_masked_scalar_reblind
+
   /* call internal scalar multiplication routine
      R = (x_p, y_p, z_p) = (w8, w9, w10) <= d*P = (w0 + w1)*P */
   la        x21, p256_gx
@@ -1427,6 +1591,18 @@ p256_base_mult:
   la        x22, y
   bn.sid    x2, 0(x22)
 
+  /* Compute both sides of the Weierstrauss equation.
+       w18 <= (x^3 + ax + b) mod p
+       w19 <= (y^2) mod p */
+  jal      x1, p256_isoncurve
+
+  /* Compare the two sides of the equation to check if the result
+     is a valid point as an FI countermeasure.
+     The check fails if both sides are not equal.
+     FG0.Z <= (y^2) mod p == (x^2 + ax + b) mod p */
+  bn.cmp   w18, w19
+  jal      x1, trigger_fault_if_fg0_z
+
   ret
 
 
@@ -1435,10 +1611,10 @@ p256_base_mult:
  *
  * Returns t, a random value that is nonzero mod n, in shares.
  *
- * This follows a modified version of the method in FIPS 186-4 sections B.4.1
- * and B.5.1 for generation of secret scalar values d and k. The computation
- * in FIPS 186-4 is:
- *   seed = RBG(seedlen) // seedlen >= 320
+ * This follows a modified version of the method in FIPS 186-5 sections A.2.2
+ * and A.3.2 for generation of secret scalar values d and k. The computation
+ * in FIPS 186-5 is:
+ *   seed = RBG(seedlen) // seedlen >= 256
  *   return (seed mod (n-1)) + 1
  *
  * The important features here are that (a) the seed is at least 64 bits longer
@@ -1506,12 +1682,13 @@ p256_random_scalar:
      w16 <= w16[63:0] */
   bn.rshi   w18, w31, w16 >> 192
   bn.rshi   w20, w16, w31 >> 64
-  bn.rshi   w16, w20, w31 >> 192
+  bn.rshi   w16, w31, w20 >> 192
 
   /* Generate a random masking parameter.
      w14 <= URND(127) + 1 = x */
   bn.wsrr   w14, URND
   bn.addi   w14, w14, 1
+  bn.addi   w31, w31, 0  /* dummy instruction to clear flags */
 
   /* w12 <= ([w15,w16] * w14) mod n = (seed0 * x) mod n */
   bn.mov    w24, w15
@@ -1613,7 +1790,7 @@ p256_generate_k:
   bn.sid    x2, 0(x20)
 
   /* Write second share to DMEM.
-       dmem[k1] <= w15, w16 = k0 */
+       dmem[k1] <= w17, w18 = k1 */
   la        x20, k1
   li        x2, 17
   bn.sid    x2, 0(x20++)
@@ -1676,7 +1853,7 @@ boolean_to_arithmetic:
        [w11, w10] <= s1 mod 2^320 = x1 */
   bn.rshi   w21, w21, w31 >> 64
   bn.rshi   w21, w31, w21 >> 192
-  bn.rshi   w31, w31, w31 >> 192 # dummy instruction to flush ALU datapath
+  bn.rshi   w31, w31, w31 >> 192  /* dummy instruction to flush ALU datapath */
   bn.rshi   w11, w11, w31 >> 64
   bn.rshi   w11, w31, w11 >> 192
 
@@ -1695,7 +1872,7 @@ boolean_to_arithmetic:
        [w4, w3] <= [w4, w3] - [w2, w1] = ((s0 ^ gamma) - gamma) mod 2^512 */
   bn.sub    w3, w3, w1
   bn.subb   w4, w4, w2
-  bn.sub    w31, w31, w31 # dummy instruction to clear flags
+  bn.sub    w31, w31, w31  /* dummy instruction to clear flags */
 
   /* Truncate subtraction result to 321 bits.
        [w4, w3] <= [w4, w3] mod 2^321 = T */
@@ -1717,7 +1894,7 @@ boolean_to_arithmetic:
   /* [w21, w20] <= [w21, w20] - [w2, w1] = ((s0 ^ G) - G) mod 2^512 */
   bn.sub    w20, w20, w1
   bn.subb   w21, w21, w2
-  bn.sub    w31, w31, w31 # dummy instruction to clear flags
+  bn.sub    w31, w31, w31  /* dummy instruction to clear flags */
 
   /* [w21, w20] <= [w21, w20] mod 2^321 = A */
   bn.rshi   w21, w21, w31 >> 65
@@ -1736,6 +1913,7 @@ boolean_to_arithmetic:
   /* remove fresh mask */
   bn.xor    w20, w28, w20
   bn.xor    w21, w29, w21
+  bn.xor    w31, w31, w31  /* dummy instruction to clear flags */
 
   ret
 
@@ -1746,7 +1924,7 @@ boolean_to_arithmetic:
  *    d = (d0 + d1) mod n
  * ...where n is the curve order.
  *
- * This implementation follows FIPS 186-4 section B.4.1, where we
+ * This implementation follows FIPS 186-5 section A.2.2, where we
  * generate d using N+64 random bits (320 bits in this case) as a seed. But
  * while FIPS computes d = (seed mod (n-1)) + 1 to ensure a nonzero key, we
  * instead just compute d = seed mod n. The caller MUST ensure that if this
@@ -1834,9 +2012,17 @@ p256_key_from_seed:
   /* Compute d1. Because 2^320 < 2 * (n << 64), a conditional subtraction is
      sufficient to reduce. Similarly to the carry bit, the conditional bit here
      is not very sensitive because the shares are large relative to n.
+
+     N.B. Even though the conditional bit isn't sensitive here, other flags set
+     by the above subtraction (i.e. the LSB flag) may be; the dummy instruction
+     below serves both to clear these flags as well as to separate instructions
+     accessing w11 and w21 respectively, as these form the upper words of a
+     pair of secret shares.
+
        [w11,w10] <= x1 mod (n << 64) = d1 */
   bn.sel    w10, w10, w24, FG0.C
   bn.sel    w11, w11, w25, FG0.C
+  bn.sub    w23, w23, w23  /* dummy instruction to clear flags */
 
   /* Isolate the carry bit and shift it back into position.
        w25 <= x0[320] << 64 */
@@ -1863,6 +2049,11 @@ p256_key_from_seed:
 
   /* Compute d0 with a modular subtraction. First we add (n << 64) to protect
      against underflow, then conditionally subtract it again if needed.
+
+     N.B. we also insert a dummy instruction at the end of this routine, as
+     the flags set will reveal information regarding the partial share in w21
+     in the case that the final conditional subtraction is performed.
+
        [w21,w20] <= ([w21, w20] - [w25,w24]) mod (n << 64) = d0 */
   bn.add    w20, w20, w28
   bn.addc   w21, w21, w29
@@ -1872,6 +2063,116 @@ p256_key_from_seed:
   bn.subb   w27, w21, w29
   bn.sel    w20, w20, w26, FG0.C
   bn.sel    w21, w21, w27, FG0.C
+  bn.sub    w23, w23, w23  /* dummy instruction to clear flags */
+
+  ret
+
+/**
+ * Routine to hide a masked scalar.
+ *
+ * Adds a multiple of the curve order n to both shares of the
+ * secret scalar d.
+ *
+ * For each share s a 65 bit random number r is generated and added
+ * to the s as follows:
+ *
+ * s = (s + r * n) mod (n << 65)
+ *
+ * @param[in]           w31: all-zero
+ * @param[in,out]  [w1, w0]: first share of scalar d (321 bits)
+ * @param[in,out]  [w3, w2]: first share of scalar d (321 bits)
+ *
+ * clobbered registers: x10-x11, w0-w5, w19-w23
+ * clobbered flag groups: FG0
+ */
+p256_masked_scalar_reblind:
+  /* Initialize all-zero register. */
+  bn.xor    w31, w31, w31
+
+  /* Hide first share of scalar d in [w1, w0]. */
+  bn.mov w4, w0
+  bn.mov w5, w1
+  jal    x1, p256_scalar_reblind
+  bn.mov w0, w20
+  bn.mov w1, w21
+
+  /* Clear w4 and w5 which contain the first share of scalar d. */
+  bn.xor w4, w4, w4
+  bn.xor w5, w5, w5
+
+  /* Hide second share of scalar d in [w3, w2]. */
+  bn.mov w4, w2
+  bn.mov w5, w3
+  jal    x1, p256_scalar_reblind
+  bn.mov w2, w20
+  bn.mov w3, w21
+
+  /* Clear w4 and w5 which contain the second share of scalar d. */
+  bn.xor w4, w4, w4
+  bn.xor w5, w5, w5
+
+  ret
+
+/**
+ * Helper routine to hide a scalar.
+ *
+ * Adds a multiple of the curve order n to the secret scalar d.
+ *
+ * A 65 bit random number r is generated and added
+ * to d as follows:
+ *
+ * d = (d + r * n) mod (n << 65)
+ *
+ * @param[in]         w31: all-zero
+ * @param[in]    [w5, w4]: scalar d (321 bits)
+ * @param[out] [w21, w20]: hidden scalar d (321 bits)
+ *
+ * clobbered registers: x10-x11, w19-w23
+ * clobbered flag groups: FG0
+ */
+p256_scalar_reblind:
+
+  /* Zero out multiplication registers. */
+  bn.xor w22, w22, w22
+  bn.xor w23, w23, w23
+
+  /* Get a fresh 65-bit random value r from URND.
+       w20 = URND() */
+  bn.wsrr   w20, URND
+  bn.rshi   w20, w31, w20 >> 191
+
+  /* Load curve order n from DMEM.
+       w19 <= dmem[p256_n] = n */
+  la        x10, p256_n
+  li        x11, 19
+  bn.lid    x11, 0(x10)
+
+  /* [w23,w22] <= m = r * n */
+  bn.mulqacc.z          w20.0, w19.0,  0
+  bn.mulqacc            w20.1, w19.0, 64
+  bn.mulqacc.so  w22.L, w20.0, w19.1, 64
+  bn.mulqacc            w20.1, w19.1,  0
+  bn.mulqacc            w20.0, w19.2,  0
+  bn.mulqacc            w20.1, w19.2, 64
+  bn.mulqacc.so  w22.U, w20.0, w19.3, 64
+  bn.mulqacc.so  w23.L, w20.1, w19.3,  0
+
+  /* [w21,w20] <= d + m */
+  bn.add    w20, w4, w22
+  bn.addc   w21, w5, w23
+  bn.sub    w31, w31, w31  /* dummy instruction to clear flags */
+
+  /* [w22,w23] <= n << 65 */
+  bn.rshi   w22, w19, w31 >> 191
+  bn.rshi   w23, w31, w19 >> 191
+
+  /* Reduce d + m modulo (n << 65) with a conditional subtraction.
+       [w20,w21] <= d + m mod (n << 65) */
+  bn.sub    w22, w20, w22
+  bn.subb   w23, w21, w23
+  bn.sel    w20, w20, w22, FG0.C
+  bn.sel    w21, w21, w23, FG0.C
+  bn.sub    w31, w31, w31  /* dummy instruction to clear flags */
 
   ret
 

@@ -36,11 +36,9 @@ else:
     has_rstmgr = False
 
 
-plic = lib.find_module(top['module'], 'rv_plic')
-if plic is not None:
-    has_plic = addr_space in plic['base_addrs'][None]
-else:
-    has_plic = False
+plics = lib.find_modules(top['module'], 'rv_plic')
+has_plic = any(addr_space in plic['base_addrs'][None] for plic in plics)
+plics = [x["name"] for x in plics]
 %>\
 ${helper.file_header.render()}
 // This file was generated automatically.
@@ -90,7 +88,7 @@ pub const ${base_addr_name}: usize = ${hex_base_addr};
 /// `${base_addr_name} + ${size_bytes_name}`.
 pub const ${size_bytes_name}: usize = ${hex_size_bytes};
 % endfor
-% for name, region in helper.memories(addr_space):
+% for (inst_name, if_name), region in helper.memories(addr_space):
 <%
     hex_base_addr = "0x{:X}".format(region.base_addr)
     hex_size_bytes = "0x{:X}".format(region.size_bytes)
@@ -100,10 +98,10 @@ pub const ${size_bytes_name}: usize = ${hex_size_bytes};
 
 %>\
 
-/// Memory base address for ${name} in top ${top["name"]}.
+/// Memory base address for ${if_name} memory on ${inst_name} in top ${top["name"]}.
 pub const ${base_addr_name}: usize = ${hex_base_addr};
 
-/// Memory size for ${name} in top ${top["name"]}.
+/// Memory size for ${if_name} memory on ${inst_name} in top ${top["name"]}.
 pub const ${size_bytes_name}: usize = ${hex_size_bytes};
 % endfor
 % if has_plic:
@@ -112,25 +110,33 @@ pub const ${size_bytes_name}: usize = ${hex_size_bytes};
 ///
 /// Enumeration used to determine which peripheral asserted the corresponding
 /// interrupt.
-${helper.plic_sources.render(gen_cast=True)}
+%   for plic in plics:
+${helper.plic_sources[plic].render(gen_cast=True)}
+%  endfor
 
 /// PLIC Interrupt Source.
 ///
 /// Enumeration of all PLIC interrupt sources. The interrupt sources belonging to
 /// the same peripheral are guaranteed to be consecutive.
-${helper.plic_interrupts.render(gen_cast=True)}
+%   for plic in plics:
+${helper.plic_interrupts[plic].render(gen_cast=True)}
+%   endfor
 
 /// PLIC Interrupt Target.
 ///
 /// Enumeration used to determine which set of IE, CC, threshold registers to
 /// access for a given interrupt target.
-${helper.plic_targets.render()}
+%   for plic in plics:
+${helper.plic_targets[plic].render()}
+%   endfor
 
 /// PLIC Interrupt Source to Peripheral Map
 ///
-/// This array is a mapping from `${helper.plic_interrupts.short_name.as_rust_type()}` to
-/// `${helper.plic_sources.short_name.as_rust_type()}`.
-${helper.plic_mapping.render_definition()}
+/// This array is a mapping from `${helper.plic_interrupts[plic].short_name.as_rust_type()}` to
+/// `${helper.plic_sources[plic].short_name.as_rust_type()}`.
+%   for plic in plics:
+${helper.plic_mapping[plic].render_definition()}
+%   endfor
 %endif
 % if has_alert_handler:
 

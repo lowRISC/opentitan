@@ -17,6 +17,12 @@ package ac_range_check_reg_pkg;
   // Number of registers for every interface
   parameter int NumRegs = 168;
 
+  // Alert indices
+  typedef enum int {
+    AlertRecovCtrlUpdateErrIdx = 0,
+    AlertFatalFaultIdx = 1
+  } ac_range_check_alert_idx_t;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -48,6 +54,7 @@ package ac_range_check_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [7:0]  q;
+      logic        qe;
     } deny_cnt_threshold;
     struct packed {
       logic        q;
@@ -55,6 +62,7 @@ package ac_range_check_reg_pkg;
     } log_clear;
     struct packed {
       logic        q;
+      logic        qe;
     } log_enable;
   } ac_range_check_reg2hw_log_config_reg_t;
 
@@ -102,11 +110,7 @@ package ac_range_check_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } shadowed_update_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } shadowed_storage_err;
+    } counter_err;
     struct packed {
       logic        d;
       logic        de;
@@ -114,30 +118,42 @@ package ac_range_check_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } counter_err;
+    } shadowed_storage_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } shadowed_update_err;
   } ac_range_check_hw2reg_alert_status_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [7:0]  d;
+    } deny_cnt_threshold;
+    struct packed {
+      logic        d;
+    } log_clear;
+    struct packed {
+      logic        d;
+    } log_enable;
+  } ac_range_check_hw2reg_log_config_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic [4:0]  d;
       logic        de;
-    } deny_cnt;
+    } deny_range_index;
+    struct packed {
+      logic [4:0]  d;
+      logic        de;
+    } denied_ctn_uid;
+    struct packed {
+      logic [3:0]  d;
+      logic        de;
+    } denied_source_role;
     struct packed {
       logic        d;
       logic        de;
-    } denied_read_access;
-    struct packed {
-      logic        d;
-      logic        de;
-    } denied_write_access;
-    struct packed {
-      logic        d;
-      logic        de;
-    } denied_execute_access;
-    struct packed {
-      logic        d;
-      logic        de;
-    } denied_no_match;
+    } denied_racl_write;
     struct packed {
       logic        d;
       logic        de;
@@ -145,19 +161,23 @@ package ac_range_check_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } denied_racl_write;
+    } denied_no_match;
     struct packed {
-      logic [3:0]  d;
+      logic        d;
       logic        de;
-    } denied_source_role;
+    } denied_execute_access;
     struct packed {
-      logic [4:0]  d;
+      logic        d;
       logic        de;
-    } denied_ctn_uid;
+    } denied_write_access;
     struct packed {
-      logic [4:0]  d;
+      logic        d;
       logic        de;
-    } deny_range_index;
+    } denied_read_access;
+    struct packed {
+      logic [7:0]  d;
+      logic        de;
+    } deny_cnt;
   } ac_range_check_hw2reg_log_status_reg_t;
 
   typedef struct packed {
@@ -167,11 +187,11 @@ package ac_range_check_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    ac_range_check_reg2hw_intr_state_reg_t intr_state; // [3602:3602]
-    ac_range_check_reg2hw_intr_enable_reg_t intr_enable; // [3601:3601]
-    ac_range_check_reg2hw_intr_test_reg_t intr_test; // [3600:3599]
-    ac_range_check_reg2hw_alert_test_reg_t alert_test; // [3598:3595]
-    ac_range_check_reg2hw_log_config_reg_t log_config; // [3594:3584]
+    ac_range_check_reg2hw_intr_state_reg_t intr_state; // [3604:3604]
+    ac_range_check_reg2hw_intr_enable_reg_t intr_enable; // [3603:3603]
+    ac_range_check_reg2hw_intr_test_reg_t intr_test; // [3602:3601]
+    ac_range_check_reg2hw_alert_test_reg_t alert_test; // [3600:3597]
+    ac_range_check_reg2hw_log_config_reg_t log_config; // [3596:3584]
     ac_range_check_reg2hw_range_base_mreg_t [31:0] range_base; // [3583:2624]
     ac_range_check_reg2hw_range_limit_mreg_t [31:0] range_limit; // [2623:1664]
     ac_range_check_reg2hw_range_attr_mreg_t [31:0] range_attr; // [1663:1024]
@@ -181,8 +201,9 @@ package ac_range_check_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    ac_range_check_hw2reg_intr_state_reg_t intr_state; // [80:79]
-    ac_range_check_hw2reg_alert_status_reg_t alert_status; // [78:71]
+    ac_range_check_hw2reg_intr_state_reg_t intr_state; // [90:89]
+    ac_range_check_hw2reg_alert_status_reg_t alert_status; // [88:81]
+    ac_range_check_hw2reg_log_config_reg_t log_config; // [80:71]
     ac_range_check_hw2reg_log_status_reg_t log_status; // [70:33]
     ac_range_check_hw2reg_log_address_reg_t log_address; // [32:0]
   } ac_range_check_hw2reg_t;
@@ -363,6 +384,10 @@ package ac_range_check_reg_pkg;
   parameter logic [1:0] AC_RANGE_CHECK_ALERT_TEST_RESVAL = 2'h 0;
   parameter logic [0:0] AC_RANGE_CHECK_ALERT_TEST_RECOV_CTRL_UPDATE_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] AC_RANGE_CHECK_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
+  parameter logic [9:0] AC_RANGE_CHECK_LOG_CONFIG_RESVAL = 10'h 0;
+  parameter logic [0:0] AC_RANGE_CHECK_LOG_CONFIG_LOG_ENABLE_RESVAL = 1'h 0;
+  parameter logic [0:0] AC_RANGE_CHECK_LOG_CONFIG_LOG_CLEAR_RESVAL = 1'h 0;
+  parameter logic [7:0] AC_RANGE_CHECK_LOG_CONFIG_DENY_CNT_THRESHOLD_RESVAL = 8'h 0;
 
   // Register index
   typedef enum int {

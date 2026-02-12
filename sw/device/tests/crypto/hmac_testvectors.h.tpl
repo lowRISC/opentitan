@@ -8,9 +8,8 @@
 #ifndef OPENTITAN_SW_DEVICE_TESTS_CRYPTO_HMAC_ALL_TESTVECTORS_H_
 #define OPENTITAN_SW_DEVICE_TESTS_CRYPTO_HMAC_ALL_TESTVECTORS_H_
 
-#include "sw/device/lib/crypto/drivers/kmac.h"
-#include "sw/device/lib/crypto/include/mac.h"
-#include "sw/device/lib/crypto/include/hash.h"
+#include "sw/device/lib/crypto/include/hmac.h"
+#include "sw/device/lib/crypto/include/sha2.h"
 
 
 #ifdef __cplusplus
@@ -18,8 +17,8 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
- * Use the following enum to route a test vector to XOF, HASH or MAC
- * call through cryptolib API.
+ * Use the following enum to route a test vector to a HASH or MAC call through
+ * cryptolib API.
  */
 typedef enum hmac_test_operation {
   kHmacTestOperationSha256,

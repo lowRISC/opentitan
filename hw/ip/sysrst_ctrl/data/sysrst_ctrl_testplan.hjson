@@ -152,7 +152,7 @@
     {
       name: pin_input_value_accessibility
       desc: '''
-            Verify the pin input value accessibilty.
+            Verify the pin input value accessibility.
 
             * Trigger the key[0,1,2], ac_present_in, pwrb_in, ec_rst_in_l input pins with random values.
             * Read the PIN_IN_VALUE register and check if the read value is same as input value.
@@ -199,7 +199,7 @@
             * Disable the bus clock to check detection logic works in sleep mode.
             * Trigger the ac_present_i, lid_open_in and ec_rst_l_i input keys.
             * Turn on the bus clock to read the status register.
-            * Read the WKUP_STATUS register to check if the event has occured.
+            * Read the WKUP_STATUS register to check if the event has occurred.
             * Read the ULP_STATUS register and check if the ultra low power wakeup event is detected.
             '''
       stage: V2
@@ -213,7 +213,7 @@
 
             * Configure COM_DET_CTL, COM_PRE_DET_CTL, ULP_*_DEBOUNCE_CTL
             * Assert input signals to trigger debounce timer and deassert before debounce timer expires
-            * Check for output and interrupts to make sure design doesnt detected the transitions
+            * Check for output and interrupts to make sure design doesn't detected the transitions
             '''
       stage: V2
       tests: ["sysrst_ctrl_feature_disable"]

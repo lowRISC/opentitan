@@ -5,7 +5,7 @@ It runs as part of OpenTitan in addition to the main processor, Ibex.
 The OTBN hardware block could also run as part of a different system and interact with a different main processor, but this page will focus on the OpenTitan context.
 
 This page is an introduction and overview of OTBN.
-For more detailed information, see the [technical specification](../README.md) and the [ISA guide](isa.md).
+For more detailed information, see the [technical specification](theory_of_operation.md) and the [ISA guide](isa.md).
 
 ## How OTBN executes programs
 
@@ -315,7 +315,7 @@ In this case you won't need to dig around for the `.elf` file, but you will need
 
 #### Step 2: Run the simulator.
 
-Once you have the `.elf` file, either from Bazel or from the manual build process, run `hw/ip/dv/otbnsim/standalone.py --dump-stats - path/to/test.elf` to get a nice printout with the cycle counds plus other statistics.
+Once you have the `.elf` file, either from Bazel or from the manual build process, run `hw/ip/dv/otbnsim/standalone.py --dump-stats - path/to/test.elf` to get a nice printout with the cycle counts plus other statistics.
 See the [OTBN development guide](developing_otbn.md#run-the-python-simulator) for more information about using the OTBN simulator.
 
 ## SCA methodology
@@ -360,7 +360,7 @@ You can see the current OTBN simulator tests under [sw/otbn/crypto/tests](https:
 OTBN is a large part of the reason OpenTitan has a long history of successful formal-methods collaborations.
 
 For example, the OTBN program we use for RSA signature verification in secure boot is [formally verified](https://www.andrew.cmu.edu/user/bparno/papers/galapagos.pdf) in Dafny/Vale.
-The authors of the paper created a system called Galápagos, in which a proven-correct low-level impementation can be instantiated for different architectures, including OTBN.
+The authors of the paper created a system called Galápagos, in which a proven-correct low-level implementation can be instantiated for different architectures, including OTBN.
 For RSA, they proved that the low-level implementation was equivalent to modular exponentiation, i.e. that it indeed computed `(sig ^ e) mod n`, where `sig` is the signature and `(n, e)` is the RSA public key.
 We use their OTBN code in production silicon.
 There is no performance hit from the verified code, and since it is burned into hardware ROM it is essential that this code is correct.

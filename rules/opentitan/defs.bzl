@@ -28,6 +28,10 @@ load(
     _fpga_params = "fpga_params",
 )
 load(
+    "@lowrisc_opentitan//rules/opentitan:hw.bzl",
+    "get_top_attr",
+)
+load(
     "@lowrisc_opentitan//rules/opentitan:keyutils.bzl",
     _ecdsa_key_by_name = "ecdsa_key_by_name",
     _ecdsa_key_for_lc_state = "ecdsa_key_for_lc_state",
@@ -64,6 +68,10 @@ load(
     "@lowrisc_opentitan//hw/top:defs.bzl",
     "ALL_TOPS",
     "opentitan_select_top",
+)
+load(
+    "@provisioning_exts//:cfg.bzl",
+    "EXT_EXEC_ENV_SILICON_ROM_EXT",
 )
 
 # The following definition is used to clear the key set in the signing
@@ -110,7 +118,9 @@ opentitan_manual_test = _opentitan_manual_test
 # The default set of test environments for Earlgrey.
 EARLGREY_TEST_ENVS = {
     "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+    "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
     "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     "//hw/top_earlgrey:sim_dv": None,
     "//hw/top_earlgrey:sim_verilator": None,
     "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
@@ -119,7 +129,7 @@ EARLGREY_TEST_ENVS = {
 # The default set of test environments for Earlgrey.
 EARLGREY_SILICON_OWNER_ROM_EXT_ENVS = {
     "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
-}
+} | EXT_EXEC_ENV_SILICON_ROM_EXT
 
 # All CW340 test environments for Earlgrey.
 EARLGREY_CW340_TEST_ENVS = {
@@ -133,6 +143,7 @@ EARLGREY_CW340_TEST_ENVS = {
 # The default set of test environments for Darjeeling.
 DARJEELING_TEST_ENVS = {
     "//hw/top_darjeeling:sim_dv": None,
+    "//hw/top_darjeeling:sim_verilator": None,
 }
 
 # Messages we expect for possible test outcomes.
@@ -195,7 +206,7 @@ def _hacky_tags(env):
         tags.append(suffix)
     return tags
 
-def _exec_env_to_top_map(exec_env):
+def exec_env_to_top_map(exec_env):
     """
     Given a list of execution environments, return a map that indicates for
     each one which top it corresponds to.
@@ -212,9 +223,10 @@ def _exec_env_to_top_map(exec_env):
     for top in ALL_TOPS:
         # Extract the top's package from the hjson path.
         suffix = "/data/autogen:top_{}.gen.hjson".format(top.name)
-        if not top.hjson.endswith(suffix):
+        hjson = get_top_attr(top, "hjson")
+        if not hjson.endswith(suffix):
             fail("top {}'s hjson does not end with the expected suffix".format(top.name))
-        pkg = top.hjson.removesuffix(suffix)
+        pkg = hjson.removesuffix(suffix)
         top_map[pkg] = top.name
 
     ev_map = {}
@@ -234,7 +246,7 @@ def _exec_env_to_top_map(exec_env):
 
             # Check if we found one
             if env not in ev_map:
-                fail("exec env {} does not match any known top. See _exec_env_to_top_map() for details".format(env))
+                fail("exec env {} does not match any known top. See exec_env_to_top_map() for details".format(env))
     return ev_map
 
 # Note about multitop behaviour:
@@ -243,10 +255,10 @@ def _exec_env_to_top_map(exec_env):
 # This means that the targets created by opentitan_binary() will expose only the
 # binaries which can be compiled for the active top.
 #
-# See _exec_env_to_top_map() for constraints on the exec_env for this work.
+# See exec_env_to_top_map() for constraints on the exec_env for this work.
 def opentitan_binary(name, exec_env, **kwargs):
     # Filter execution environments by top.
-    ev_map = _exec_env_to_top_map(exec_env)
+    ev_map = exec_env_to_top_map(exec_env)
     select_map = {}
     for ev in exec_env:
         topname = ev_map[ev]
@@ -274,7 +286,7 @@ def opentitan_binary(name, exec_env, **kwargs):
 # This means that the targets created by opentitan_test() will expose only the
 # test which can be compiled/run for the active top.
 #
-# See _exec_env_to_top_map() for constraints on the exec_env for this work.
+# See exec_env_to_top_map() for constraints on the exec_env for this work.
 
 def opentitan_test(
         name,
@@ -424,7 +436,7 @@ def opentitan_test(
     for env in exec_env:
         (_, suffix) = env.split(":")
         suffix_map[suffix] = suffix_map.get(suffix, []) + [env]
-    ev_to_top_map = _exec_env_to_top_map(exec_env)
+    ev_to_top_map = exec_env_to_top_map(exec_env)
 
     all_tests = []
     for (suffix, env_list) in suffix_map.items():

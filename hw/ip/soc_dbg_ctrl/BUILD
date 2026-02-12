@@ -15,3 +15,11 @@ filegroup(
         ],
     ),
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = glob([
+        "**/*.md",
+        "**/*.svg",
+    ]) + ["//hw/ip/soc_dbg_ctrl/data:soc_dbg_ctrl.hjson"],
+)

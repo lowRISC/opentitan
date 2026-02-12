@@ -5,7 +5,7 @@
 # ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------#
 # PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
 # util/topgen.py -t hw/top_darjeeling/data/top_darjeeling.hjson
-# -o hw/top_darjeeling
+#                -o hw/top_darjeeling/
 
 load("//rules:linker.bzl", "ld_library")
 load("//hw/top:defs.bzl", "opentitan_require_top")

@@ -51,7 +51,7 @@ def main() -> int:
     parser.add_argument('elf', help=('The .elf file to check.'))
     parser.add_argument('-v', '--verbose', action='store_true')
     args = parser.parse_args()
-    program = decode_elf(args.elf)
+    program = decode_elf(args.elf, [])
     result = check_call_stack(program)
     if args.verbose or result.has_errors() or result.has_warnings():
         print(result.report())

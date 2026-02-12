@@ -10,7 +10,8 @@ package aes_model_dpi_pkg;
     input  bit                impl_i,    // 0 = C model, 1 = OpenSSL/BoringSSL
     input  bit                op_i,      // 0 = encrypt, 1 = decrypt
     input  bit          [5:0] mode_i,    // 6'b00_0001 = ECB, 6'00_b0010 = CBC, 6'b00_0100 = CFB,
-                                         // 6'b00_1000 = OFB, 6'b01_0000 = CTR, 6'b10_0000 = NONE
+                                         // 6'b00_1000 = OFB, 6'b01_0000 = CTR, 6'b10_0000 = GCM,
+                                         // 6'b11_1111 = NONE
     input  bit[3:0][3:0][7:0] iv_i,
     input  bit          [2:0] key_len_i, // 3'b001 = 128b, 3'b010 = 192b, 3'b100 = 256b
     input  bit    [7:0][31:0] key_i,
@@ -22,12 +23,19 @@ package aes_model_dpi_pkg;
     input  bit              impl_i,    // 0 = C model, 1 = OpenSSL/BoringSSL
     input  bit              op_i,      // 0 = encrypt, 1 = decrypt
     input  bit        [5:0] mode_i,    // 6'b00_0001 = ECB, 6'00_b0010 = CBC, 6'b00_0100 = CFB,
-                                       // 6'b00_1000 = OFB, 6'b01_0000 = CTR, 6'b10_0000 = NONE
+                                       // 6'b00_1000 = OFB, 6'b01_0000 = CTR, 6'b10_0000 = GCM,
+                                       // 6'b11_1111 = NONE
     input  bit  [3:0][31:0] iv_i,
     input  bit        [2:0] key_len_i, // 3'b001 = 128b, 3'b010 = 192b, 3'b100 = 256b
     input  bit  [7:0][31:0] key_i,
+    input  int              data_len_i,
+    input  int              aad_len_i,
     input  bit        [7:0] data_i[],
-    output bit        [7:0] data_o[]
+    input  bit        [7:0] aad_i[],
+    input  bit  [3:0][31:0] tag_i,
+    output bit        [7:0] data_o[],
+    output bit  [3:0][31:0] tag_o,
+    output int              crypto_res
   );
 
   import "DPI-C" context function void c_dpi_aes_sub_bytes(
@@ -59,12 +67,13 @@ package aes_model_dpi_pkg;
 
   // wrapper function that converts from register format (4x32bit)
   // to the 4x4x8 format of the c functions and back
-  // this ensures that RTL and refence models have same input and output format.
+  // this ensures that RTL and reference models have same input and output format.
   function automatic void sv_dpi_aes_crypt_block(
     input  bit             impl_i,    // 0 = C model, 1 = OpenSSL/BoringSSL
     input  bit             op_i,      // 0 = encrypt, 1 = decrypt
     input  bit       [5:0] mode_i,    // 6'b00_0001 = ECB, 6'00_b0010 = CBC, 6'b00_0100 = CFB,
-                                      // 6'b00_1000 = OFB, 6'b01_0000 = CTR, 6'b10_0000 = NONE
+                                      // 6'b00_1000 = OFB, 6'b01_0000 = CTR, 6'b10_0000 = GCM,
+                                      // 6'b11_1111 = NONE
     input  bit [3:0][31:0] iv_i,
     input  bit       [2:0] key_len_i, // 3'b001 = 128b, 3'b010 = 192b, 3'b100 = 256b
     input  bit [7:0][31:0] key_i,

@@ -6,18 +6,21 @@ load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("//rules:fusesoc.bzl", "fusesoc_build")
 load("//rules:bitstreams.bzl", "bitstream_manifest_fragment")
 
+_FPGA_PATH_TMPL = "lowrisc_systems_{}_0.1/synth-vivado/{}"
+
 fusesoc_build(
     name = "fpga_cw305",
     testonly = True,
     srcs = [
         "//hw:rtl_files",
+        "//hw/top_earlgrey:rtl_files",  # Add Earlgrey RTL files for alert_handler_pkg and top_pkg
         "//hw/top_englishbreakfast:rtl_files",
     ],
     cores = ["//hw:cores"],
     output_groups = {
-        "bitstream": ["synth-vivado/lowrisc_systems_chip_englishbreakfast_cw305_0.1.bit"],
-        "mmi": ["synth-vivado/memories.mmi"],
-        "logs": ["synth-vivado/lowrisc_systems_chip_englishbreakfast_cw305_0.1.runs/"],
+        "bitstream": [_FPGA_PATH_TMPL.format("chip_englishbreakfast_cw305", "lowrisc_systems_chip_englishbreakfast_cw305_0.1.bit")],
+        "mmi": [_FPGA_PATH_TMPL.format("chip_englishbreakfast_cw305", "memories.mmi")],
+        "logs": [_FPGA_PATH_TMPL.format("chip_englishbreakfast_cw305", "lowrisc_systems_chip_englishbreakfast_cw305_0.1.runs/")],
     },
     systems = ["lowrisc:systems:chip_englishbreakfast_cw305:0.1"],
     tags = ["manual"],

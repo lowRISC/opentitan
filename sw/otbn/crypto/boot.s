@@ -80,6 +80,7 @@ start:
   beq   x2, x3, attestation_key_save
 
   /* Invalid mode; fail. */
+start_failed:
   unimp
   unimp
   unimp
@@ -156,6 +157,18 @@ attestation_keygen:
   bn.sid    x2++, 0(x21)
   la        x22, y
   bn.sid    x2, 0(x22)
+
+  /* Compute both sides of the Weierstrauss equation.
+       w18 <= (x^3 + ax + b) mod p
+       w19 <= (y^2) mod p */
+  jal      x1, p256_isoncurve
+
+  /* Compare the two sides of the equation to check if the result
+     is a valid point as an FI countermeasure.
+     The check fails if both sides are not equal.
+     FG0.Z <= (y^2) mod p == (x^2 + ax + b) mod p */
+  bn.cmp   w18, w19
+  jal      x1, trigger_fault_if_fg0_z
 
   ecall
 

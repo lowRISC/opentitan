@@ -6,7 +6,7 @@
 import secrets
 import unittest
 
-import secure_prng as sp
+from secure_prng import SecurePrngFactory
 
 # CTR_DRBG test vectors.
 #
@@ -355,16 +355,21 @@ vectors = [
     },
 ]
 
+PRNG_NAME_SPACE = "secure_prng_test"
+
 
 class TestNistOfficial(unittest.TestCase):
 
     def test_compare(self):
         """Ensure that known seeds generate the expected results."""
+        SecurePrngFactory.create(PRNG_NAME_SPACE, 1)
+        prng = SecurePrngFactory.get(PRNG_NAME_SPACE)
+
         for test_point in vectors:
             # Read the entropy input from the test point
             entropy_input = int(test_point['EntropyInput'], 16)
             # Receive results from secure_prng.py
-            received = sp.test_point_gen(entropy_input)
+            received = prng.test_point_gen(entropy_input)
             self.assertEqual(test_point, received)
 
     def test_getrandbits(self):
@@ -387,11 +392,12 @@ class TestNistOfficial(unittest.TestCase):
 
         # Re-seed secure_prng with the EntropyInput from the test_point
         entropy_input = int(test_point['EntropyInput'], 16)
-        sp.reseed(entropy_input)
+        SecurePrngFactory.create(PRNG_NAME_SPACE, entropy_input)
         # Call getrandbits function
-        sp.getrandbits(512)
-        sp.getrandbits(offset)
-        received = sp.getrandbits(width)
+        prng = SecurePrngFactory.get(PRNG_NAME_SPACE)
+        prng.getrandbits(512)
+        prng.getrandbits(offset)
+        received = prng.getrandbits(width)
 
         # compare results
         self.assertEqual(expected, received)
@@ -404,8 +410,9 @@ class TestIdempotence(unittest.TestCase):
         outputs = list()
         seed = secrets.randbits(256)
         for i in range(10):
-            sp.reseed(seed)
-            outputs.append(sp.getrandbits(1024))
+            SecurePrngFactory.create(PRNG_NAME_SPACE, seed)
+            prng = SecurePrngFactory.get(PRNG_NAME_SPACE)
+            outputs.append(prng.getrandbits(1024))
         self.assertTrue(len(set(outputs)) == 1)
 
 

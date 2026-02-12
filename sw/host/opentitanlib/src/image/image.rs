@@ -2,16 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, ensure, Result};
-use memoffset::offset_of;
-use sphincsplus::{SphincsPlus, SpxDomain, SpxPublicKey};
 use std::borrow::Cow;
 use std::collections::HashSet;
 use std::convert::TryInto;
 use std::fs::File;
 use std::io::{Read, Write};
-use std::mem::{align_of, size_of};
+use std::mem::{align_of, offset_of, size_of};
 use std::path::{Path, PathBuf};
+
+use anyhow::{Result, bail, ensure};
+use sphincsplus::{SphincsPlus, SpxDomain, SpxPublicKey};
 use thiserror::Error;
 use zerocopy::FromBytes;
 
@@ -19,14 +19,14 @@ use crate::crypto::ecdsa::{EcdsaPublicKey, EcdsaRawPublicKey, EcdsaRawSignature}
 use crate::crypto::rsa::Modulus;
 use crate::crypto::rsa::RsaPublicKey;
 use crate::crypto::rsa::Signature as RsaSignature;
-use crate::crypto::sha256;
+use crate::crypto::sha256::Sha256Digest;
 use crate::image::manifest::{
-    Manifest, ManifestKind, SigverifySpxSignature, CHIP_MANIFEST_VERSION_MAJOR1,
-    CHIP_MANIFEST_VERSION_MAJOR2, CHIP_MANIFEST_VERSION_MINOR1, CHIP_ROM_EXT_IDENTIFIER,
-    CHIP_ROM_EXT_SIZE_MAX, MANIFEST_EXT_ID_SPX_KEY, MANIFEST_EXT_ID_SPX_SIGNATURE,
+    CHIP_MANIFEST_VERSION_MAJOR1, CHIP_MANIFEST_VERSION_MAJOR2, CHIP_MANIFEST_VERSION_MINOR1,
+    CHIP_ROM_EXT_IDENTIFIER, CHIP_ROM_EXT_SIZE_MAX, MANIFEST_EXT_ID_SPX_KEY,
+    MANIFEST_EXT_ID_SPX_SIGNATURE, Manifest, ManifestKind, SigverifySpxSignature,
 };
 use crate::image::manifest_def::{ManifestSigverifyBuffer, ManifestSpec};
-use crate::image::manifest_ext::{ManifestExtEntry, ManifestExtSpec};
+use crate::image::manifest_ext::{ManifestExtEntry, ManifestExtEntrySpec};
 use crate::util::file::{FromReader, ToWriter};
 use crate::util::parse_int::ParseInt;
 
@@ -65,11 +65,27 @@ pub struct SpxSignatureParams {
 pub struct SigverifyParams {
     pub main_sig_params: MainSignatureParams,
     pub spx_sig_params: Option<SpxSignatureParams>,
+    pub spx_hash_reversal_bug: bool,
 }
 
 impl SigverifyParams {
+    pub fn new(
+        main_sig_params: MainSignatureParams,
+        spx_sig_params: Option<SpxSignatureParams>,
+    ) -> Self {
+        SigverifyParams {
+            main_sig_params,
+            spx_sig_params,
+            spx_hash_reversal_bug: false,
+        }
+    }
+    pub fn with_hash_reversal_bug(mut self, bug: bool) -> Self {
+        self.spx_hash_reversal_bug = bug;
+        self
+    }
+
     // Verify the main image signature.
-    pub fn verify(&self, digest: &sha256::Sha256Digest) -> Result<()> {
+    pub fn verify(&self, digest: &Sha256Digest) -> Result<()> {
         match &self.main_sig_params {
             MainSignatureParams::Rsa(key, sig) => {
                 key.verify(digest, sig)?;
@@ -86,7 +102,11 @@ impl SigverifyParams {
     pub fn spx_verify(&self, b: &[u8], domain: SpxDomain) -> Result<()> {
         if let Some(spx) = &self.spx_sig_params {
             let msg = match domain {
-                SpxDomain::PreHashedSha256 => Cow::from(sha256::sha256(b).to_le_bytes()),
+                SpxDomain::PreHashedSha256 => Cow::from(if self.spx_hash_reversal_bug {
+                    Sha256Digest::hash(b).to_vec_rev()
+                } else {
+                    Sha256Digest::hash(b).to_vec()
+                }),
                 _ => Cow::from(b),
             };
             spx.key.verify(domain, &spx.signature, &msg)?;
@@ -246,19 +266,19 @@ impl Image {
         {
             let rsa_key = RsaPublicKey::new(Modulus::from_le_bytes(pub_key)?)?;
             let rsa_sig = RsaSignature::from_le_bytes(signature)?;
-            return Ok(SigverifyParams {
-                main_sig_params: MainSignatureParams::Rsa(rsa_key, rsa_sig),
+            return Ok(SigverifyParams::new(
+                MainSignatureParams::Rsa(rsa_key, rsa_sig),
                 spx_sig_params,
-            });
+            ));
         }
 
         let ecdsa_pub_key = EcdsaRawPublicKey::read(&mut std::io::Cursor::new(pub_key))?;
         let ecdsa_sig = EcdsaRawSignature::read(&mut std::io::Cursor::new(signature))?;
 
-        Ok(SigverifyParams {
-            main_sig_params: MainSignatureParams::Ecdsa(ecdsa_pub_key, ecdsa_sig),
+        Ok(SigverifyParams::new(
+            MainSignatureParams::Ecdsa(ecdsa_pub_key, ecdsa_sig),
             spx_sig_params,
-        })
+        ))
     }
 
     /// Overwrites all fields in the image's manifest that are defined in `other`.
@@ -272,31 +292,30 @@ impl Image {
 
     /// Adds an extension to the signed region of this `Image`.
     ///
-    /// This will take all the extensions in `spec.signed_region` and append them to the image.
+    /// This will take all the signed extensions in `spec` and append them to the image.
     /// This should be called before adding any unsigned extensions to ensure all extensions that
     /// are a part of the signature exist within the contiguous signed region of the image.
-    pub fn add_signed_manifest_extensions(&mut self, spec: &ManifestExtSpec) -> Result<()> {
-        for entry_spec in &spec.signed_region {
-            self.add_manifest_extension(ManifestExtEntry::from_spec(
-                entry_spec,
-                spec.source_path(),
-            )?)?;
-        }
-        Ok(())
+    pub fn add_signed_manifest_extensions(&mut self, spec: &[ManifestExtEntrySpec]) -> Result<()> {
+        spec.iter()
+            .filter(|entry_spec| entry_spec.is_signed())
+            .try_for_each(|entry_spec| {
+                self.add_manifest_extension(ManifestExtEntry::from_spec(entry_spec)?)
+            })
     }
 
     /// Adds an extension to the unsigned region of this `Image`.
     ///
-    /// This will take all the extensions in `spec.unsigned_region` and append them to the image.
+    /// This will take all the unsigned extensions in `spec` and append them to the image.
     /// This should only be called once all signed extensions have been added.
-    pub fn add_unsigned_manifest_extensions(&mut self, spec: &ManifestExtSpec) -> Result<()> {
-        for entry_spec in &spec.unsigned_region {
-            self.add_manifest_extension(ManifestExtEntry::from_spec(
-                entry_spec,
-                spec.source_path(),
-            )?)?;
-        }
-        Ok(())
+    pub fn add_unsigned_manifest_extensions(
+        &mut self,
+        spec: &[ManifestExtEntrySpec],
+    ) -> Result<()> {
+        spec.iter()
+            .filter(|entry_spec| !entry_spec.is_signed())
+            .try_for_each(|entry_spec| {
+                self.add_manifest_extension(ManifestExtEntry::from_spec(entry_spec)?)
+            })
     }
 
     /// Adds an extension to the end of this `Image`.
@@ -320,7 +339,7 @@ impl Image {
             ext_table_entry.offset
         } else {
             ensure!(
-                self.size % align_of::<u32>() == 0,
+                self.size.is_multiple_of(align_of::<u32>()),
                 ImageError::BadExtensionAlignment(entry_id)
             );
             self.size.try_into()?
@@ -374,9 +393,9 @@ impl Image {
     /// This allows a manifest definition with a populated extension table to be used even when
     /// extensions aren't provided.
     pub fn drop_null_extensions(&mut self) -> Result<()> {
-        let manifest = self.borrow_manifest()?;
+        let manifest = self.borrow_manifest_mut()?;
 
-        manifest.extensions.entries.map(|mut e| {
+        manifest.extensions.entries.iter_mut().for_each(|e| {
             if e.offset == 0 {
                 e.identifier = 0;
             }
@@ -581,8 +600,8 @@ impl Image {
     }
 
     /// Compute the SHA256 digest for the signed portion of the `Image`.
-    pub fn compute_digest(&self) -> Result<sha256::Sha256Digest> {
-        self.map_signed_region(|v| sha256::sha256(v))
+    pub fn compute_digest(&self) -> Result<Sha256Digest> {
+        self.map_signed_region(|v| Sha256Digest::hash(v))
     }
 }
 
@@ -597,8 +616,8 @@ impl SubImage<'_> {
     }
 
     /// Compute the SHA256 digest for the signed portion of the `Image`.
-    pub fn compute_digest(&self) -> Result<sha256::Sha256Digest> {
-        self.map_signed_region(|v| sha256::sha256(v))
+    pub fn compute_digest(&self) -> Result<Sha256Digest> {
+        self.map_signed_region(|v| Sha256Digest::hash(v))
     }
 }
 

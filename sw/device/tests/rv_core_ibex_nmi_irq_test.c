@@ -7,11 +7,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "dt/dt_alert_handler.h"  // Generated
-#include "dt/dt_aon_timer.h"      // Generated
-#include "dt/dt_pwrmgr.h"         // Generated
-#include "dt/dt_rv_core_ibex.h"   // Generated
-#include "dt/dt_rv_timer.h"       // Generated
+#include "hw/top/dt/alert_handler.h"  // Generated
+#include "hw/top/dt/aon_timer.h"      // Generated
+#include "hw/top/dt/pwrmgr.h"         // Generated
+#include "hw/top/dt/rv_core_ibex.h"   // Generated
+#include "hw/top/dt/rv_timer.h"       // Generated
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"

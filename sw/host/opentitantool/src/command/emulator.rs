@@ -4,13 +4,12 @@
 
 use anyhow::Result;
 use clap::{Args, Subcommand};
-use serde_annotate::Annotate;
 use std::any::Any;
 use std::collections::HashMap;
 use std::path::PathBuf;
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::io::emu::{EmuState, EmuValue};
 use opentitanlib::transport::Capability;
 
@@ -28,7 +27,7 @@ impl CommandDispatch for EmuGetState {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport
             .capabilities()?
             .request(Capability::EMULATOR)
@@ -77,7 +76,7 @@ impl CommandDispatch for EmuStart {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport
             .capabilities()?
             .request(Capability::EMULATOR)
@@ -103,7 +102,7 @@ impl CommandDispatch for EmuStop {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport
             .capabilities()?
             .request(Capability::EMULATOR)

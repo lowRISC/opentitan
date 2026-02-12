@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`include "prim_assert.sv"
+
 /**
  * ExtWLEN (312b) Wide Register File (WDRs)
  *
@@ -32,7 +34,7 @@ module otbn_rf_bignum_ff
   // Indicates whether a spurious WE has been seen in the last cycle.
   output logic               we_err_o,
 
-  input  rf_predec_bignum_t  rf_predec_bignum_i
+  input  rf_bignum_predec_t  rf_bignum_predec_i
 );
   logic [ExtWLEN-1:0] rf [NWdr];
   logic [1:0]         we_onehot [NWdr];
@@ -46,19 +48,19 @@ module otbn_rf_bignum_ff
     // SEC_CM: DATA_REG_SW.SCA
     prim_blanker #(.Width(ExtWLEN)) u_wdata_blanker(
       .in_i (wr_data_i),
-      .en_i (rf_predec_bignum_i.rf_we[i]),
+      .en_i (rf_bignum_predec_i.rf_we[i]),
       .out_o(wr_data_blanked)
     );
 
-    // Split registers into halves for clear seperation for the enable terms
+    // Split registers into halves for clear separation for the enable terms
     always_ff @(posedge clk_i) begin
-      if (rf_predec_bignum_i.rf_we[i] & we_onehot[i][0]) begin
+      if (rf_bignum_predec_i.rf_we[i] & we_onehot[i][0]) begin
         rf[i][0+:ExtWLEN/2] <= wr_data_blanked[0+:ExtWLEN/2];
       end
     end
 
     always_ff @(posedge clk_i) begin
-      if (rf_predec_bignum_i.rf_we[i] & we_onehot[i][1]) begin
+      if (rf_bignum_predec_i.rf_we[i] & we_onehot[i][1]) begin
         rf[i][ExtWLEN/2+:ExtWLEN/2] <= wr_data_blanked[ExtWLEN/2+:ExtWLEN/2];
       end
     end
@@ -74,7 +76,7 @@ module otbn_rf_bignum_ff
     .clk_i,
     .rst_ni,
     .in_i  (rf),
-    .sel_i (rf_predec_bignum_i.rf_ren_a),
+    .sel_i (rf_bignum_predec_i.rf_ren_a),
     .out_o (rd_data_a_o)
   );
 
@@ -85,7 +87,7 @@ module otbn_rf_bignum_ff
     .clk_i,
     .rst_ni,
     .in_i  (rf),
-    .sel_i (rf_predec_bignum_i.rf_ren_b),
+    .sel_i (rf_bignum_predec_i.rf_ren_b),
     .out_o (rd_data_b_o)
   );
 

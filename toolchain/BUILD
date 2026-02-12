@@ -6,18 +6,38 @@ load("@rules_cc//cc/toolchains:actions.bzl", "cc_action_type")
 load("@rules_cc//cc/toolchains:args.bzl", "cc_args")
 load("@rules_cc//cc/toolchains:args_list.bzl", "cc_args_list")
 load("@rules_cc//cc/toolchains:feature.bzl", "cc_feature")
-load("@rules_cc//cc/toolchains:feature_set.bzl", "cc_feature_set")
 load("@rules_cc//cc/toolchains:feature_constraint.bzl", "cc_feature_constraint")
+load("@rules_cc//cc/toolchains:feature_set.bzl", "cc_feature_set")
 load("@rules_cc//cc/toolchains:toolchain.bzl", "cc_toolchain")
 load("@rules_cc//cc/toolchains:tool_map.bzl", "cc_tool_map")
-load("//rules:actions.bzl", "OT_ACTION_OBJDUMP")
+load("//rules:actions.bzl", "OT_ACTION_LLVM_PROFDATA", "OT_ACTION_OBJDUMP")
+
+package(default_visibility = ["//visibility:public"])
 
 platform(
     name = "opentitan_platform",
     constraint_values = [
         "@platforms//cpu:riscv32",
         "@platforms//os:none",
+        ":device",
     ],
+)
+
+constraint_setting(name = "target")
+
+constraint_value(
+    name = "host",
+    constraint_setting = "target",
+)
+
+constraint_value(
+    name = "device",
+    constraint_setting = "target",
+)
+
+config_setting(
+    name = "on_device_config",
+    constraint_values = [":device"],
 )
 
 toolchain(
@@ -39,12 +59,12 @@ cc_toolchain(
         ":arch_rv32imc",
         ":arch_rv32imcb",
         ":abi",
-        ":sys_spec",
         ":warnings",
         ":reproducible",
         ":symbol_garbage_collection",
         ":constructor_destructor",
         ":nostdinc",
+        ":discard_locals",
     ],
     enabled_features = [
         "@rules_cc//cc/toolchains/args:experimental_replace_legacy_action_config_features",
@@ -59,6 +79,7 @@ cc_toolchain(
         "@rules_cc//cc/toolchains/args:experimental_replace_legacy_action_config_features",
         ":feat_warnings_as_errors",
         ":feat_guards",
+        ":feat_coverage",
         ":feat_use_lld",
         ":feat_lto",
         ":feat_minsize",
@@ -79,10 +100,17 @@ cc_tool_map(
         "@rules_cc//cc/toolchains/actions:c_compile": "@lowrisc_rv32imcb_toolchain//:clang",
         "@rules_cc//cc/toolchains/actions:cpp_compile_actions": "@lowrisc_rv32imcb_toolchain//:clang++",
         "@rules_cc//cc/toolchains/actions:link_actions": "@lowrisc_rv32imcb_toolchain//:clang",
+        "@rules_cc//cc/toolchains/actions:llvm_cov": "@lowrisc_rv32imcb_toolchain//:llvm_cov",
         "@rules_cc//cc/toolchains/actions:objcopy_embed_data": "@lowrisc_rv32imcb_toolchain//:objcopy",
         "@rules_cc//cc/toolchains/actions:strip": "@lowrisc_rv32imcb_toolchain//:strip",
+        ":action_llvm_profdata": "@lowrisc_rv32imcb_toolchain//:llvm_profdata",
         ":action_objdump": "@lowrisc_rv32imcb_toolchain//:objdump",
     },
+)
+
+cc_action_type(
+    name = "action_llvm_profdata",
+    action_name = OT_ACTION_LLVM_PROFDATA,
 )
 
 cc_action_type(
@@ -218,27 +246,15 @@ cc_args(
         "-isystem",
         "{clang-include}",
         "-isystem",
-        "{riscv32-include}",
-        "-isystem",
-        "{cxx-include}",
-        "-isystem",
-        "{cxx-backward}",
-        "-isystem",
-        "{cxx-riscv32}",
+        "{freestanding}",
     ],
     data = [
-        "@lowrisc_rv32imcb_toolchain//:cxx-backward",
-        "@lowrisc_rv32imcb_toolchain//:cxx-include",
-        "@lowrisc_rv32imcb_toolchain//:cxx-riscv32-unknown-elf",
+        "//sw/device/lib/base/freestanding",
         "@lowrisc_rv32imcb_toolchain//:lib-clang-include",
-        "@lowrisc_rv32imcb_toolchain//:riscv32-unknown-elf-include",
     ],
     format = {
         "clang-include": "@lowrisc_rv32imcb_toolchain//:lib-clang-include",
-        "riscv32-include": "@lowrisc_rv32imcb_toolchain//:riscv32-unknown-elf-include",
-        "cxx-include": "@lowrisc_rv32imcb_toolchain//:cxx-include",
-        "cxx-backward": "@lowrisc_rv32imcb_toolchain//:cxx-backward",
-        "cxx-riscv32": "@lowrisc_rv32imcb_toolchain//:cxx-riscv32-unknown-elf",
+        "freestanding": "//sw/device/lib/base/freestanding",
     },
 )
 
@@ -291,6 +307,8 @@ cc_args(
     ],
 )
 
+# NOTE: please keep this list of warnings in sync with the warnings in
+# `compile_flags.txt` so that `clangd` can see them.
 cc_args(
     name = "warnings",
     actions = ["@rules_cc//cc/toolchains/actions:compile_actions"],
@@ -303,12 +321,12 @@ cc_args(
         "-Winvalid-pch",
         "-Wno-covered-switch-default",
         "-Wno-error=unused-function",
+        "-Wno-gnu-empty-initializer",
         "-Wno-gnu-statement-expression-from-macro-expansion",
         "-Wno-gnu-zero-variadic-macro-arguments",
         "-Wno-missing-field-initializers",
         "-Wno-sign-compare",
         "-Wno-unused-parameter",
-        "-Wno-gnu-empty-initializer",
         "-Wno-zero-length-array",
         "-Wstrict-prototypes",
         "-Wswitch-default",
@@ -345,6 +363,57 @@ cc_args(
     name = "guards",
     actions = ["@rules_cc//cc/toolchains/actions:compile_actions"],
     args = ["-mguards"],
+)
+
+cc_feature(
+    name = "feat_coverage",
+    args = [
+        ":coverage_indicator_cc",
+        ":coverage_indicator_ld",
+        ":coverage_profile",
+        ":coverage_single_byte",
+        ":sha1_build_id",
+    ],
+    overrides = "@rules_cc//cc/toolchains/features/legacy:coverage",
+)
+
+cc_args(
+    name = "coverage_single_byte",
+    actions = ["@rules_cc//cc/toolchains/actions:compile_actions"],
+    args = [
+        "-mllvm",
+        "--enable-single-byte-coverage",
+    ],
+)
+
+cc_args(
+    name = "coverage_profile",
+    actions = [
+        "@rules_cc//cc/toolchains/actions:compile_actions",
+        "@rules_cc//cc/toolchains/actions:link_actions",
+    ],
+    args = [
+        "-fprofile-instr-generate",
+        "-fcoverage-mapping",
+    ],
+)
+
+cc_args(
+    name = "coverage_indicator_cc",
+    actions = ["@rules_cc//cc/toolchains/actions:compile_actions"],
+    args = ["-DOT_COVERAGE_INSTRUMENTED=1"],
+)
+
+cc_args(
+    name = "coverage_indicator_ld",
+    actions = ["@rules_cc//cc/toolchains/actions:link_actions"],
+    args = ["-Wl,--defsym=_ot_coverage_instrumented=1"],
+)
+
+cc_args(
+    name = "sha1_build_id",
+    actions = ["@rules_cc//cc/toolchains/actions:link_actions"],
+    args = ["-Wl,--build-id=sha1"],
 )
 
 cc_feature(
@@ -398,18 +467,24 @@ cc_args_list(
 )
 
 cc_args(
-    name = "sys_spec",
-    actions = ["@rules_cc//cc/toolchains/actions:link_actions"],
-    args = ["-lnosys"],
-)
-
-cc_args(
     name = "constructor_destructor",
     actions = ["@rules_cc//cc/toolchains/actions:compile_actions"],
     args = [
-        # Indicate that this program may not neccesarily be able to use standard system calls.
+        # Indicate that this program may not necessarily be able to use standard system calls.
         "-ffreestanding",
         # Instantiate global variables only once.
         "-fno-common",
     ],
+)
+
+# Strip local `.L` symbols at link time:
+cc_args(
+    name = "discard_locals",
+    actions = ["@rules_cc//cc/toolchains/actions:link_actions"],
+    args = ["-Wl,--discard-locals"],
+)
+
+filegroup(
+    name = "doc_files",
+    srcs = ["README.md"],
 )

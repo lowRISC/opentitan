@@ -18,18 +18,19 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":rsa_datatypes",
-        ":rsa_modexp",
         ":rsa_padding",
+        ":run_rsa",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:memory",
+        "//sw/device/lib/crypto/drivers:rv_core_ibex",
     ],
 )
 
 cc_library(
-    name = "rsa_keygen",
-    srcs = ["rsa_keygen.c"],
-    hdrs = ["rsa_keygen.h"],
+    name = "run_rsa_key_from_cofactor",
+    srcs = ["run_rsa_key_from_cofactor.c"],
+    hdrs = ["run_rsa_key_from_cofactor.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":rsa_datatypes",
@@ -37,19 +38,22 @@ cc_library(
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:otbn",
-        "//sw/otbn/crypto:run_rsa_keygen",
+        "//sw/device/lib/crypto/drivers:rv_core_ibex",
+        "//sw/otbn/crypto:run_rsa_key_from_cofactor",
     ],
 )
 
 cc_library(
-    name = "rsa_modexp",
-    srcs = ["rsa_modexp.c"],
-    hdrs = ["rsa_modexp.h"],
+    name = "run_rsa",
+    srcs = ["run_rsa.c"],
+    hdrs = ["run_rsa.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":rsa_datatypes",
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:otbn",
-        "//sw/otbn/crypto:run_rsa_modexp",
+        "//sw/device/lib/runtime:log",
+        "//sw/otbn/crypto:run_rsa",
     ],
 )
 
@@ -63,9 +67,11 @@ cc_library(
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:random_order",
         "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/drivers:kmac",
-        "//sw/device/lib/crypto/impl:hash",
+        "//sw/device/lib/crypto/drivers:rv_core_ibex",
         "//sw/device/lib/crypto/impl:status",
     ],
 )
@@ -77,29 +83,13 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":rsa_datatypes",
-        ":rsa_modexp",
         ":rsa_padding",
+        ":run_rsa",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:entropy",
-        "//sw/device/lib/crypto/impl:hash",
-    ],
-)
-
-cc_library(
-    name = "rsa_3072_verify",
-    srcs = ["rsa_3072_verify.c"],
-    hdrs = ["rsa_3072_verify.h"],
-    target_compatible_with = [OPENTITAN_CPU],
-    deps = [
-        ":rsa_datatypes",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/base:memory",
-        "//sw/device/lib/crypto/drivers:otbn",
-        "//sw/device/lib/crypto/impl:hash",
-        "//sw/otbn/crypto:run_rsa_verify_3072",
+        "//sw/device/lib/crypto/drivers:rv_core_ibex",
     ],
 )

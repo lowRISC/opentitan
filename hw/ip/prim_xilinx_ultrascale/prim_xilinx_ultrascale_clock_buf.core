@@ -5,10 +5,13 @@ CAPI=2:
 
 name: "lowrisc:prim_xilinx_ultrascale:clock_buf"
 description: "clock buffer"
+virtual:
+  - lowrisc:prim:clock_buf
+
 filesets:
   files_rtl:
     files:
-      - rtl/prim_xilinx_ultrascale_clock_buf.sv
+      - rtl/prim_clock_buf.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:

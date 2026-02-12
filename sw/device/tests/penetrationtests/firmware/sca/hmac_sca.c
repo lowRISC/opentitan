@@ -6,10 +6,8 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/crypto/impl/keyblob.h"
-#include "sw/device/lib/crypto/include/datatypes.h"
-#include "sw/device/lib/crypto/include/mac.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/hmac_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
@@ -42,72 +40,79 @@ enum {
   kNumBatchOpsMax = 128,
 };
 
-static status_t trigger_hmac(uint8_t key_buf[], uint8_t mask_buf[],
-                             uint8_t msg_buf[], uint32_t tag_buf[]) {
-  // Build the key configuration
-  otcrypto_key_config_t config = {
-      .version = kOtcryptoLibVersion1,
-      .key_mode = kOtcryptoKeyModeHmacSha256,
-      .key_length = kKeyLength,
-      .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelLow,
-  };
+static dif_hmac_t hmac;
 
-  // Create keyblob.
-  uint32_t keyblob[keyblob_num_words(config)];
+static const dif_hmac_transaction_t kHmacTransactionConfig = {
+    .digest_endianness = kDifHmacEndiannessBig,
+    .message_endianness = kDifHmacEndiannessLittle,
+};
 
-  // Create blinded key.
-  TRY(keyblob_from_key_and_mask((uint32_t *)key_buf, (uint32_t *)mask_buf,
-                                config, keyblob));
-  otcrypto_blinded_key_t key = {
-      .config = config,
-      .keyblob_length = sizeof(keyblob),
-      .keyblob = keyblob,
-  };
+static status_t trigger_hmac(uint8_t key_buf[], uint8_t msg_buf[],
+                             uint32_t tag_buf[],
+                             penetrationtest_hmac_sca_triggers_t uj_triggers) {
+  uint8_t inverted_key_buff[kKeyLength] = {0};
 
-  // Create input message.
-  otcrypto_const_byte_buf_t input_message = {
-      .len = kMessageLength,
-      .data = msg_buf,
-  };
+  for (int i = 0; i < kKeyLength; i++) {
+    inverted_key_buff[i] = key_buf[31 - i];
+  }
 
-  // Create tag.
-  otcrypto_word32_buf_t tag = {
-      .len = kTagLengthWord,
-      .data = tag_buf,
-  };
+  dif_hmac_digest_t digest;
 
-  pentest_set_trigger_high();
-  TRY(otcrypto_hmac(&key, input_message, tag));
-  pentest_set_trigger_low();
+  if (uj_triggers.start_trigger) {
+    pentest_set_trigger_high();
+  }
+  TRY(dif_hmac_mode_hmac_start(&hmac, inverted_key_buff,
+                               kHmacTransactionConfig));
+  if (uj_triggers.start_trigger) {
+    pentest_set_trigger_low();
+  }
+
+  if (uj_triggers.msg_trigger) {
+    pentest_set_trigger_high();
+  }
+  TRY(hmac_testutils_push_message(&hmac, (char *)msg_buf, kMessageLength));
+  if (uj_triggers.msg_trigger) {
+    pentest_set_trigger_low();
+  }
+
+  if (uj_triggers.process_trigger) {
+    pentest_set_trigger_high();
+  }
+  TRY(dif_hmac_process(&hmac));
+  if (uj_triggers.process_trigger) {
+    pentest_set_trigger_low();
+  }
+
+  if (uj_triggers.finish_trigger) {
+    pentest_set_trigger_high();
+  }
+  TRY(hmac_testutils_finish_polled(&hmac, &digest));
+  if (uj_triggers.finish_trigger) {
+    pentest_set_trigger_low();
+  }
+
+  // memcpy(tag_buf, digest.digest, kTagLength);
+  for (int i = 0; i < kTagLengthWord; i++) {
+    tag_buf[i] = digest.digest[7 - i];
+  }
+
   return OK_STATUS();
 }
 
 status_t handle_hmac_pentest_init(ujson_t *uj) {
-  penetrationtest_cpuctrl_t uj_data;
-  TRY(ujson_deserialize_penetrationtest_cpuctrl_t(uj, &uj_data));
+  // Configure the device.
+  pentest_setup_device(uj, false, false);
 
   // Setup trigger and enable peripherals needed for the test.
   pentest_select_trigger_type(kPentestTriggerTypeSw);
+
   // Enable the HMAC module and disable unused IP blocks to improve
   // SCA measurements.
   pentest_init(kPentestTriggerSourceHmac,
-               kPentestPeripheralEntropy | kPentestPeripheralIoDiv4 |
-                   kPentestPeripheralOtbn | kPentestPeripheralCsrng |
-                   kPentestPeripheralEdn | kPentestPeripheralHmac);
+               kPentestPeripheralIoDiv4 | kPentestPeripheralHmac);
 
-  // Disable the instruction cache and dummy instructions for SCA.
-  penetrationtest_device_info_t uj_output;
-  TRY(pentest_configure_cpu(
-      uj_data.icache_disable, uj_data.dummy_instr_disable,
-      uj_data.enable_jittery_clock, uj_data.enable_sram_readback,
-      &uj_output.clock_jitter_locked, &uj_output.clock_jitter_en,
-      &uj_output.sram_main_readback_locked, &uj_output.sram_ret_readback_locked,
-      &uj_output.sram_main_readback_en, &uj_output.sram_ret_readback_en));
-
-  // Read device ID and return to host.
-  TRY(pentest_read_device_id(uj_output.device_id));
-  RESP_OK(ujson_serialize_penetrationtest_device_info_t, uj, &uj_output);
+  mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR);
+  TRY(dif_hmac_init(base_addr, &hmac));
 
   return OK_STATUS();
 }
@@ -115,26 +120,25 @@ status_t handle_hmac_pentest_init(ujson_t *uj) {
 status_t handle_hmac_sca_batch_fvsr(ujson_t *uj) {
   penetrationtest_hmac_sca_key_t uj_key;
   penetrationtest_hmac_sca_num_it_t uj_it;
+  penetrationtest_hmac_sca_triggers_t uj_triggers;
 
   TRY(ujson_deserialize_penetrationtest_hmac_sca_key_t(uj, &uj_key));
   TRY(ujson_deserialize_penetrationtest_hmac_sca_num_it_t(uj, &uj_it));
+  TRY(ujson_deserialize_penetrationtest_hmac_sca_triggers_t(uj, &uj_triggers));
 
   uint8_t batch_messages[kNumBatchOpsMax][kMessageLength];
   uint8_t batch_keys[kNumBatchOpsMax][kKeyLength];
-  uint8_t batch_masks[kNumBatchOpsMax][kKeyLength];
 
   // First generate all FvsR data sets. When sample_fixed,
-  // the provided key/masks is used and the message is random. When
-  // not sample_fixed, a random key/mask and a random message is
+  // the provided key is used and the message is random. When
+  // not sample_fixed, a random key and a random message is
   // generated.
   bool sample_fixed = true;
   for (size_t it = 0; it < uj_it.num_iterations; it++) {
     if (sample_fixed) {
       memcpy(batch_keys[it], uj_key.key, kKeyLength);
-      memcpy(batch_masks[it], uj_key.mask, kKeyLength);
     } else {
       prng_rand_bytes(batch_keys[it], kKeyLength);
-      prng_rand_bytes(batch_masks[it], kKeyLength);
     }
     prng_rand_bytes(batch_messages[it], kMessageLength);
     sample_fixed = batch_messages[it][0] & 0x1;
@@ -143,8 +147,7 @@ status_t handle_hmac_sca_batch_fvsr(ujson_t *uj) {
   // Invoke HMAC for each data set.
   uint32_t tag_buf[kTagLengthWord];
   for (size_t it = 0; it < uj_it.num_iterations; it++) {
-    TRY(trigger_hmac(batch_keys[it], batch_masks[it], batch_messages[it],
-                     tag_buf));
+    TRY(trigger_hmac(batch_keys[it], batch_messages[it], tag_buf, uj_triggers));
   }
 
   // Send the last tag to host via UART.
@@ -157,25 +160,53 @@ status_t handle_hmac_sca_batch_fvsr(ujson_t *uj) {
 
 status_t handle_hmac_sca_batch_random(ujson_t *uj) {
   penetrationtest_hmac_sca_num_it_t uj_it;
+  penetrationtest_hmac_sca_triggers_t uj_triggers;
 
   TRY(ujson_deserialize_penetrationtest_hmac_sca_num_it_t(uj, &uj_it));
+  TRY(ujson_deserialize_penetrationtest_hmac_sca_triggers_t(uj, &uj_triggers));
 
   uint8_t batch_messages[kNumBatchOpsMax][kMessageLength];
   uint8_t batch_keys[kNumBatchOpsMax][kKeyLength];
-  uint8_t batch_masks[kNumBatchOpsMax][kKeyLength];
 
   // Generate random keys and messages.
   for (size_t it = 0; it < uj_it.num_iterations; it++) {
     prng_rand_bytes(batch_keys[it], kKeyLength);
-    prng_rand_bytes(batch_masks[it], kKeyLength);
     prng_rand_bytes(batch_messages[it], kMessageLength);
   }
 
   // Invoke HMAC for each data set.
   uint32_t tag_buf[kTagLengthWord];
   for (size_t it = 0; it < uj_it.num_iterations; it++) {
-    TRY(trigger_hmac(batch_keys[it], batch_masks[it], batch_messages[it],
-                     tag_buf));
+    TRY(trigger_hmac(batch_keys[it], batch_messages[it], tag_buf, uj_triggers));
+  }
+
+  // Send the last tag to host via UART.
+  penetrationtest_hmac_sca_tag_t uj_tag;
+  memcpy(uj_tag.tag, tag_buf, kTagLength);
+  RESP_OK(ujson_serialize_penetrationtest_hmac_sca_tag_t, uj, &uj_tag);
+
+  return OK_STATUS();
+}
+
+status_t handle_hmac_sca_batch_daisy_chain(ujson_t *uj) {
+  penetrationtest_hmac_sca_key_t uj_key;
+  penetrationtest_hmac_sca_message_t uj_message;
+  penetrationtest_hmac_sca_num_it_t uj_it;
+  penetrationtest_hmac_sca_triggers_t uj_triggers;
+
+  TRY(ujson_deserialize_penetrationtest_hmac_sca_key_t(uj, &uj_key));
+  TRY(ujson_deserialize_penetrationtest_hmac_sca_message_t(uj, &uj_message));
+  TRY(ujson_deserialize_penetrationtest_hmac_sca_num_it_t(uj, &uj_it));
+  TRY(ujson_deserialize_penetrationtest_hmac_sca_triggers_t(uj, &uj_triggers));
+
+  // Invoke HMAC for each data set.
+  uint32_t tag_buf[kTagLengthWord];
+  uint8_t message_buf[HMACSCA_CMD_MAX_MESSAGE_BYTES];
+  memcpy(message_buf, uj_message.message, sizeof(uj_message.message));
+  for (size_t it = 0; it < uj_it.num_iterations; it++) {
+    TRY(trigger_hmac(uj_key.key, message_buf, tag_buf, uj_triggers));
+    // Copy the output of the HMAC to the input
+    memcpy(message_buf, tag_buf, HMACSCA_CMD_MAX_MESSAGE_BYTES);
   }
 
   // Send the last tag to host via UART.
@@ -189,21 +220,21 @@ status_t handle_hmac_sca_batch_random(ujson_t *uj) {
 status_t handle_hmac_sca_single(ujson_t *uj) {
   penetrationtest_hmac_sca_key_t uj_key;
   penetrationtest_hmac_sca_message_t uj_message;
+  penetrationtest_hmac_sca_triggers_t uj_triggers;
 
   TRY(ujson_deserialize_penetrationtest_hmac_sca_key_t(uj, &uj_key));
   TRY(ujson_deserialize_penetrationtest_hmac_sca_message_t(uj, &uj_message));
+  TRY(ujson_deserialize_penetrationtest_hmac_sca_triggers_t(uj, &uj_triggers));
 
-  // Create buffer to store key, mask, message, and tag.
+  // Create buffer to store key, message, and tag.
   uint8_t key_buf[kKeyLength];
   memcpy(key_buf, uj_key.key, kKeyLength);
-  uint8_t mask_buf[kKeyLength];
-  memcpy(mask_buf, uj_key.mask, kKeyLength);
   uint8_t msg_buf[kMessageLength];
   memcpy(msg_buf, uj_message.message, kMessageLength);
   uint32_t tag_buf[kTagLengthWord];
 
   // Trigger HMAC operation.
-  TRY(trigger_hmac(key_buf, mask_buf, msg_buf, tag_buf));
+  TRY(trigger_hmac(key_buf, msg_buf, tag_buf, uj_triggers));
 
   // Copy tag to uJSON type.
   penetrationtest_hmac_sca_tag_t uj_tag;
@@ -225,6 +256,8 @@ status_t handle_hmac_sca(ujson_t *uj) {
       return handle_hmac_sca_batch_fvsr(uj);
     case kHmacScaSubcommandBatchRandom:
       return handle_hmac_sca_batch_random(uj);
+    case kHmacScaSubcommandBatchDaisy:
+      return handle_hmac_sca_batch_daisy_chain(uj);
     case kHmacScaSubcommandSingle:
       return handle_hmac_sca_single(uj);
     default:

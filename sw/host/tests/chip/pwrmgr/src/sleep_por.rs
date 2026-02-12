@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use clap::Parser;
 use std::time::Duration;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;
@@ -31,7 +31,7 @@ fn sleep_por_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         "FAIL" => return Err(anyhow!("Failure result: {:?}", vec)),
         _ => {}
     };
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
     let vec = UartConsole::wait_for(&*uart, r"PASS|FAIL|Ready for pad POR", opts.timeout)?;
     match vec[0].as_str() {
         "Ready for pad POR" => Ok(()),

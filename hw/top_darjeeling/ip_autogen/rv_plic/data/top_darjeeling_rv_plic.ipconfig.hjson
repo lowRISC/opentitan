@@ -6,10 +6,20 @@
   param_values:
   {
     module_instance_name: rv_plic
-    src: 160
+    src: 132
     target: 1
     prio: 3
     topname: darjeeling
     uniquified_modules: {}
+    racl_support: false
+  }
+  dtgen:
+  {
+    src:
+    {
+      type: uint16
+      name: num_irq_sources
+      doc: Number of interrupt sources
+    }
   }
 }

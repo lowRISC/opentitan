@@ -1,0 +1,66 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:prim_xilinx:all:0.1"
+description: "Xilinx 7-series prim library"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim_xilinx:prim_pkg
+      - lowrisc:prim_xilinx:and2
+      - lowrisc:prim_xilinx:buf
+      - lowrisc:prim_xilinx:clock_buf
+      - lowrisc:prim_generic:clock_div
+      - lowrisc:prim_xilinx:clock_gating
+      - lowrisc:prim_generic:clock_inv
+      - lowrisc:prim_xilinx:clock_mux2
+      - lowrisc:prim_xilinx:flop
+      - lowrisc:prim_generic:flop_2sync
+      - lowrisc:prim_generic:rst_sync
+      - lowrisc:prim_xilinx:flop_en
+      - lowrisc:prim_xilinx:pad_attr
+      - lowrisc:prim_xilinx:pad_wrapper
+      - lowrisc:prim_xilinx:ram_1p
+      - lowrisc:prim_generic:ram_1r1w
+      - lowrisc:prim_generic:ram_2p
+      - lowrisc:prim_xilinx:rom
+      - lowrisc:prim_generic:usb_diff_rx
+      - lowrisc:prim_xilinx:xnor2
+      - lowrisc:prim_xilinx:xor2
+# Note that flash is a macro that depends on IPs, so they are not
+# included here. They must be brought in explicitly.
+#      - lowrisc:prim_generic:flash
+
+mapping:
+  "lowrisc:prim:prim_pkg"     : lowrisc:prim_xilinx:prim_pkg
+  "lowrisc:prim:and2"         : lowrisc:prim_xilinx:and2
+  "lowrisc:prim:buf"          : lowrisc:prim_xilinx:buf
+  "lowrisc:prim:clock_buf"    : lowrisc:prim_xilinx:clock_buf
+  "lowrisc:prim:clock_div"    : lowrisc:prim_generic:clock_div
+  "lowrisc:prim:clock_gating" : lowrisc:prim_xilinx:clock_gating
+  "lowrisc:prim:clock_inv"    : lowrisc:prim_generic:clock_inv
+  "lowrisc:prim:clock_mux2"   : lowrisc:prim_xilinx:clock_mux2
+  "lowrisc:prim:flop"         : lowrisc:prim_xilinx:flop
+  "lowrisc:prim:flop_2sync"   : lowrisc:prim_generic:flop_2sync
+  "lowrisc:prim:rst_sync"     : lowrisc:prim_generic:rst_sync
+  "lowrisc:prim:flop_en"      : lowrisc:prim_xilinx:flop_en
+  "lowrisc:prim:pad_attr"     : lowrisc:prim_xilinx:pad_attr
+  "lowrisc:prim:pad_wrapper"  : lowrisc:prim_xilinx:pad_wrapper
+  "lowrisc:prim:ram_1p"       : lowrisc:prim_xilinx:ram_1p
+  "lowrisc:prim:ram_1r1w"     : lowrisc:prim_generic:ram_1r1w
+  "lowrisc:prim:ram_2p"       : lowrisc:prim_generic:ram_2p
+  "lowrisc:prim:rom"          : lowrisc:prim_xilinx:rom
+  "lowrisc:prim:usb_diff_rx"  : lowrisc:prim_generic:usb_diff_rx
+  "lowrisc:prim:xnor2"        : lowrisc:prim_xilinx:xnor2
+  "lowrisc:prim:xor2"         : lowrisc:prim_xilinx:xor2
+  # Flash is a good canditate to be removed from the prims and become a macro like OTP.
+  # When this is done, it should be removed from this mapping.
+  "lowrisc:prim:flash": "lowrisc:prim_generic:flash"
+
+targets:
+  default:
+    filesets:
+      - files_rtl

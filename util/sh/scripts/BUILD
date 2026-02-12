@@ -4,4 +4,8 @@
 
 package(default_visibility = ["//visibility:public"])
 
-exports_files(["run-shellcheck.sh"])
+exports_files([
+    "run-shellcheck.sh",
+    "bin2c.sh",
+    "c.hexdump",
+])

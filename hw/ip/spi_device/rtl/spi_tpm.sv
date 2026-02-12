@@ -6,6 +6,8 @@
 /*
 */
 
+`include "prim_assert.sv"
+
 module spi_tpm
   import spi_device_pkg::*;
   import spi_device_reg_pkg::NumLocality;
@@ -1494,10 +1496,11 @@ module spi_tpm
 
   // Shallow FIFO to hold the wide SRAM output.
   prim_fifo_sync #(
-    .Width ($bits(sram_data_t)),
-    .Pass  (1'b 1),
-    .Depth (1),
-    .OutputZeroIfEmpty (1'b 0)
+    .Width             ($bits(sram_data_t)),
+    .Pass              (1'b1),
+    .Depth             (1),
+    .OutputZeroIfEmpty (1'b 0),
+    .NeverClears       (1'b1)
   ) u_sram_fifo (
     .clk_i    (clk_in_i),
     .rst_ni,

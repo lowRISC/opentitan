@@ -3,7 +3,7 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:systems:chip_darjeeling_asic:0.1"
-description: "Earl Grey chip level"
+description: "Darjeeling chip level"
 filesets:
   files_rtl:
     depend:
@@ -12,8 +12,10 @@ filesets:
       - lowrisc:systems:top_darjeeling_padring
       - "fileset_partner ? (partner:systems:top_darjeeling_ast)"
       - "fileset_partner ? (partner:systems:top_darjeeling_scan_role_pkg)"
+      - "fileset_partner ? (partner:prim_tech:all)"
       - "!fileset_partner ? (lowrisc:systems:top_darjeeling_ast)"
       - "!fileset_partner ? (lowrisc:darjeeling_systems:scan_role_pkg)"
+      - "!fileset_partner ? (lowrisc:prim_generic:all)"
     files:
       - rtl/autogen/chip_darjeeling_asic.sv
     file_type: systemVerilogSource

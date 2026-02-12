@@ -32,7 +32,7 @@
     {
       name: disabled
       desc: '''This test to verify no activity in mTime, Interrupt Status, Interrupt signal,
-            When all timers are deactive (ctrl.active = 0).
+            When all timers are deactivated (ctrl.active = 0).
             - Program 1 in interrupt enable and 0 in control register and random value for
               rest of the registers
             - Scoreboard check for no activity and no interrupt whatever is setting'''
@@ -43,7 +43,7 @@
       name: cfg_update_on_fly
       desc: '''This test will verify update timer configuration on running timer.
             - Program timer.Active to zero
-            - Program random values in interrrupt enable, prescaler, step, mtime and mtime cmp
+            - Program random values in interrupt enable, prescaler, step, mtime and mtime cmp
             - After some clocks update timer config values
             - Check for interrupt as per new config set'''
       stage: V2
@@ -54,11 +54,31 @@
       desc: '''This test will update timer value and compare value just before timer is going to
             expire (multiple times) and verify no interrupt is asserted
             - Program timer.Active to zero
-            - Program random values in interrrupt enable, prescaler, step, mtime and mtime cmp
+            - Program random values in interrupt enable, prescaler, step, mtime and mtime cmp
             - Update timer config values just before timer is about to expire
             - Check for no interrupt set'''
       stage: V2
       tests: ["rv_timer_cfg_update_on_fly"]
+    }
+    {
+      name: min_value
+      desc: '''This test configures the prescaler and mtime to 0.
+            The step is randomised between 0 and 1 to allow the counter to increase sometimes.
+            The register timecmp is randomised to be set up to 5, so some seeds trigger an interrupt directly on configuration if timecmp=0.
+            While others force mtime to increase.
+            This test helps close functional coverage by hitting the minimum values for step, prescaler, mtime and mtimecmp'''
+      stage: V3
+      tests: ["rv_timer_min"]
+    }
+    {
+      name: max_value
+      desc: '''This test configures the prescaler, step and mtimecm to the maximum value.
+            The counter is randomised to be up to 5 units lower than the timecmp.
+            By doing this, some seeds trigger an interrupt directly on configuration if timecmp=mtime.
+            While others force mtime to increase.
+            This test helps close functional coverage by hitting the maximum values for step, prescaler, mtime and mtimecmp'''
+      stage: V3
+      tests: ["rv_timer_max"]
     }
     {
       name: stress

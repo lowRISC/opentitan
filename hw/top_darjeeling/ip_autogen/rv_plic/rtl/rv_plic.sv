@@ -17,7 +17,9 @@
 `include "prim_assert.sv"
 
 module rv_plic import rv_plic_reg_pkg::*; #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn  = {NumAlerts{1'b1}},
+  parameter logic [NumAlerts-1:0] AlertAsyncOn    = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned          AlertSkewCycles = 1,
   // OpenTitan IP standardizes on level triggered interrupts,
   // hence LevelEdgeTrig is set to all-zeroes by default.
   // Note that in case of edge-triggered interrupts, CDC handling is not
@@ -230,39 +232,11 @@ module rv_plic import rv_plic_reg_pkg::*; #(
   assign prio[129] = reg2hw.prio[129].q;
   assign prio[130] = reg2hw.prio[130].q;
   assign prio[131] = reg2hw.prio[131].q;
-  assign prio[132] = reg2hw.prio[132].q;
-  assign prio[133] = reg2hw.prio[133].q;
-  assign prio[134] = reg2hw.prio[134].q;
-  assign prio[135] = reg2hw.prio[135].q;
-  assign prio[136] = reg2hw.prio[136].q;
-  assign prio[137] = reg2hw.prio[137].q;
-  assign prio[138] = reg2hw.prio[138].q;
-  assign prio[139] = reg2hw.prio[139].q;
-  assign prio[140] = reg2hw.prio[140].q;
-  assign prio[141] = reg2hw.prio[141].q;
-  assign prio[142] = reg2hw.prio[142].q;
-  assign prio[143] = reg2hw.prio[143].q;
-  assign prio[144] = reg2hw.prio[144].q;
-  assign prio[145] = reg2hw.prio[145].q;
-  assign prio[146] = reg2hw.prio[146].q;
-  assign prio[147] = reg2hw.prio[147].q;
-  assign prio[148] = reg2hw.prio[148].q;
-  assign prio[149] = reg2hw.prio[149].q;
-  assign prio[150] = reg2hw.prio[150].q;
-  assign prio[151] = reg2hw.prio[151].q;
-  assign prio[152] = reg2hw.prio[152].q;
-  assign prio[153] = reg2hw.prio[153].q;
-  assign prio[154] = reg2hw.prio[154].q;
-  assign prio[155] = reg2hw.prio[155].q;
-  assign prio[156] = reg2hw.prio[156].q;
-  assign prio[157] = reg2hw.prio[157].q;
-  assign prio[158] = reg2hw.prio[158].q;
-  assign prio[159] = reg2hw.prio[159].q;
 
   //////////////////////
   // Interrupt Enable //
   //////////////////////
-  for (genvar s = 0; s < 160; s++) begin : gen_ie0
+  for (genvar s = 0; s < 132; s++) begin : gen_ie0
     assign ie[0][s] = reg2hw.ie0[s].q;
   end
 
@@ -288,7 +262,7 @@ module rv_plic import rv_plic_reg_pkg::*; #(
   ////////
   // IP //
   ////////
-  for (genvar s = 0; s < 160; s++) begin : gen_ip
+  for (genvar s = 0; s < 132; s++) begin : gen_ip
     assign hw2reg.ip[s].de = 1'b1; // Always write
     assign hw2reg.ip[s].d  = ip[s];
   end
@@ -360,6 +334,7 @@ module rv_plic import rv_plic_reg_pkg::*; #(
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(1'b1)
     ) u_prim_alert_sender (
       .clk_i,
@@ -430,5 +405,7 @@ module rv_plic import rv_plic_reg_pkg::*; #(
                [*`_SEC_CM_ALERT_MAX_CYC]))
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT_IN(RegWeOnehotCheck_A,
+                                                    u_reg,
+                                                    gen_alert_tx[0].u_prim_alert_sender.alert_req_i)
 endmodule

@@ -39,7 +39,13 @@ interface rom_ctrl_compare_if ();
     // that the valid states are separated by a hamming distance of at least 3, so we can just
     // invert one of the bits of the signal for a cycle and will know that we're setting an invalid
     // value.
-    force u_compare.state_d[0] = ~u_compare.state_d[0];
+    logic good_val;
+
+    // Note that we have to set this separately from the declaration because it needs to be a static
+    // variable in order to be used for the force statement below.
+    good_val = u_compare.state_d[0];
+
+    force u_compare.state_d[0] = ~good_val;
     @(negedge u_compare.clk_i);
     release u_compare.state_d[0];
   endtask

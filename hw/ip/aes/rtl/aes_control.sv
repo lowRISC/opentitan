@@ -12,6 +12,7 @@ module aes_control
   import aes_pkg::*;
   import aes_reg_pkg::*;
 #(
+  parameter bit          AESGCMEnable         = 0,
   parameter bit          SecMasking           = 0,
   parameter int unsigned SecStartTriggerDelay = 0
 ) (
@@ -30,6 +31,11 @@ module aes_control
   input  prs_rate_e                 prng_reseed_rate_i,
   input  logic                      manual_operation_i,
   input  logic                      key_touch_forces_reseed_i,
+  input  logic                      ctrl_gcm_qe_i,
+  output logic                      ctrl_gcm_we_o,
+  input  logic                      ctrl_gcm_phase_i,
+  output logic                      gcm_init_done_o,
+  input  gcm_phase_e                gcm_phase_i,
   input  logic                      start_i,
   input  logic                      key_iv_data_in_clear_i,
   input  logic                      data_out_clear_i,
@@ -47,6 +53,7 @@ module aes_control
   input  logic    [NumRegsData-1:0] data_in_qe_i,
   input  logic    [NumRegsData-1:0] data_out_re_i,
   output logic                      data_in_we_o,
+  output data_out_sel_e             data_out_sel_o,
   output sp2v_e                     data_out_we_o,
 
   // Previous input data register
@@ -59,6 +66,7 @@ module aes_control
   output add_so_sel_e               add_state_out_sel_o,
 
   // Counter
+  output sp2v_e                     ctr_inc32_o,
   output sp2v_e                     ctr_incr_o,
   input  sp2v_e                     ctr_ready_i,
   input  sp2v_e  [NumSlicesCtr-1:0] ctr_we_i,
@@ -79,6 +87,13 @@ module aes_control
   output logic                      cipher_data_out_clear_o,
   input  logic                      cipher_data_out_clear_i,
 
+  // GHASH control and sync
+  output sp2v_e                     ghash_in_valid_o,
+  input  sp2v_e                     ghash_in_ready_i,
+  input  sp2v_e                     ghash_out_valid_i,
+  output sp2v_e                     ghash_out_ready_o,
+  output sp2v_e                     ghash_load_hash_subkey_o,
+
   // Initial key registers
   output key_init_sel_e             key_init_sel_o,
   output sp2v_e    [NumRegsKey-1:0] key_init_we_o [NumSharesKey],
@@ -88,8 +103,7 @@ module aes_control
   output sp2v_e  [NumSlicesCtr-1:0] iv_we_o,
 
   // Pseudo-random number generator interface
-  output logic                      prng_data_req_o,
-  input  logic                      prng_data_ack_i,
+  output logic                      prng_update_o,
   output logic                      prng_reseed_req_o,
   input  logic                      prng_reseed_ack_i,
 
@@ -153,6 +167,8 @@ module aes_control
   sp2v_e                         cipher_out_valid;
   sp2v_e                         cipher_crypt;
   sp2v_e                         cipher_dec_key_gen;
+  sp2v_e                         ghash_in_ready;
+  sp2v_e                         ghash_out_valid;
   logic                          mux_sel_err;
   logic                          mr_err;
   logic                          sp_enc_err;
@@ -161,6 +177,7 @@ module aes_control
   // signals to the single-rail FSMs.
   logic          [Sp2VWidth-1:0] sp_data_out_we;
   logic          [Sp2VWidth-1:0] sp_data_in_prev_we;
+  logic          [Sp2VWidth-1:0] sp_ctr_inc32;
   logic          [Sp2VWidth-1:0] sp_ctr_incr;
   logic          [Sp2VWidth-1:0] sp_ctr_ready;
   logic          [Sp2VWidth-1:0] sp_cipher_in_valid;
@@ -171,11 +188,19 @@ module aes_control
   logic          [Sp2VWidth-1:0] sp_out_cipher_crypt;
   logic          [Sp2VWidth-1:0] sp_in_cipher_dec_key_gen;
   logic          [Sp2VWidth-1:0] sp_out_cipher_dec_key_gen;
+  logic          [Sp2VWidth-1:0] sp_ghash_in_valid;
+  logic          [Sp2VWidth-1:0] sp_ghash_in_ready;
+  logic          [Sp2VWidth-1:0] sp_ghash_out_valid;
+  logic          [Sp2VWidth-1:0] sp_ghash_out_ready;
+  logic          [Sp2VWidth-1:0] sp_ghash_load_hash_subkey;
 
   // Multi-rail signals. These are outputs of the single-rail FSMs and need combining.
   logic          [Sp2VWidth-1:0] mr_ctrl_we;
+  logic          [Sp2VWidth-1:0] mr_ctrl_gcm_we;
+  logic          [Sp2VWidth-1:0] mr_gcm_init_done;
   logic          [Sp2VWidth-1:0] mr_alert;
   logic          [Sp2VWidth-1:0] mr_data_in_we;
+  data_out_sel_e [Sp2VWidth-1:0] mr_data_out_sel;
   dip_sel_e      [Sp2VWidth-1:0] mr_data_in_prev_sel;
   si_sel_e       [Sp2VWidth-1:0] mr_state_in_sel;
   add_si_sel_e   [Sp2VWidth-1:0] mr_add_state_in_sel;
@@ -185,7 +210,7 @@ module aes_control
   logic          [Sp2VWidth-1:0] mr_cipher_data_out_clear;
   key_init_sel_e [Sp2VWidth-1:0] mr_key_init_sel;
   iv_sel_e       [Sp2VWidth-1:0] mr_iv_sel;
-  logic          [Sp2VWidth-1:0] mr_prng_data_req;
+  logic          [Sp2VWidth-1:0] mr_prng_update;
   logic          [Sp2VWidth-1:0] mr_prng_reseed_req;
   logic          [Sp2VWidth-1:0] mr_start_we;
   logic          [Sp2VWidth-1:0] mr_key_iv_data_in_clear_we;
@@ -240,6 +265,8 @@ module aes_control
   assign sp_cipher_out_valid      = {cipher_out_valid};
   assign sp_in_cipher_crypt       = {cipher_crypt};
   assign sp_in_cipher_dec_key_gen = {cipher_dec_key_gen};
+  assign sp_ghash_in_ready        = {ghash_in_ready};
+  assign sp_ghash_out_valid       = {ghash_out_valid};
 
   // SEC_CM: MAIN.FSM.REDUN
   // For every bit in the Sp2V signals, one separate rail is instantiated. The inputs and outputs
@@ -247,7 +274,8 @@ module aes_control
   for (genvar i = 0; i < Sp2VWidth; i++) begin : gen_fsm
     if (SP2V_LOGIC_HIGH[i] == 1'b1) begin : gen_fsm_p
       aes_control_fsm_p #(
-        .SecMasking ( SecMasking )
+        .AESGCMEnable ( AESGCMEnable ),
+        .SecMasking   ( SecMasking   )
       ) u_aes_control_fsm_i (
         .clk_i                     ( clk_i                         ),
         .rst_ni                    ( rst_ni                        ),
@@ -263,6 +291,11 @@ module aes_control
         .prng_reseed_rate_i        ( prng_reseed_rate_i            ),
         .manual_operation_i        ( manual_operation_i            ),
         .key_touch_forces_reseed_i ( key_touch_forces_reseed_i     ),
+        .ctrl_gcm_qe_i             ( ctrl_gcm_qe_i                 ),
+        .ctrl_gcm_we_o             ( mr_ctrl_gcm_we[i]             ), // AND-combine
+        .ctrl_gcm_phase_i          ( ctrl_gcm_phase_i              ),
+        .gcm_init_done_o           ( mr_gcm_init_done[i]           ), // AND-combine
+        .gcm_phase_i               ( gcm_phase_i                   ),
         .start_i                   ( start_trigger                 ),
         .key_iv_data_in_clear_i    ( key_iv_data_in_clear_i        ),
         .data_out_clear_i          ( data_out_clear_i              ),
@@ -279,6 +312,7 @@ module aes_control
         .data_in_qe_i              ( data_in_qe_i                  ),
         .data_out_re_i             ( data_out_re_i                 ),
         .data_in_we_o              ( mr_data_in_we[i]              ), // AND-combine
+        .data_out_sel_o            ( mr_data_out_sel[i]            ), // OR-combine
         .data_out_we_o             ( sp_data_out_we[i]             ), // Sparsified
 
         .data_in_prev_sel_o        ( mr_data_in_prev_sel[i]        ), // OR-combine
@@ -288,6 +322,7 @@ module aes_control
         .add_state_in_sel_o        ( mr_add_state_in_sel[i]        ), // OR-combine
         .add_state_out_sel_o       ( mr_add_state_out_sel[i]       ), // OR-combine
 
+        .ctr_inc32_o               ( sp_ctr_inc32[i]               ), // Sparsified
         .ctr_incr_o                ( sp_ctr_incr[i]                ), // Sparsified
         .ctr_ready_i               ( sp_ctr_ready[i]               ), // Sparsified
         .ctr_we_i                  ( int_ctr_we[i]                 ), // Sparsified
@@ -307,14 +342,19 @@ module aes_control
         .cipher_data_out_clear_o   ( mr_cipher_data_out_clear[i]   ), // OR-combine
         .cipher_data_out_clear_i   ( cipher_data_out_clear_i       ),
 
+        .ghash_in_valid_o          ( sp_ghash_in_valid[i]          ), // Sparsified
+        .ghash_in_ready_i          ( sp_ghash_in_ready[i]          ), // Sparsified
+        .ghash_out_valid_i         ( sp_ghash_out_valid[i]         ), // Sparsified
+        .ghash_out_ready_o         ( sp_ghash_out_ready[i]         ), // Sparsified
+        .ghash_load_hash_subkey_o  ( sp_ghash_load_hash_subkey[i]  ), // Sparsified
+
         .key_init_sel_o            ( mr_key_init_sel[i]            ), // OR-combine
         .key_init_we_o             ( int_key_init_we[i]            ), // Sparsified
 
         .iv_sel_o                  ( mr_iv_sel[i]                  ), // OR-combine
         .iv_we_o                   ( int_iv_we[i]                  ), // Sparsified
 
-        .prng_data_req_o           ( mr_prng_data_req[i]           ), // OR-combine
-        .prng_data_ack_i           ( prng_data_ack_i               ),
+        .prng_update_o             ( mr_prng_update[i]             ), // OR-combine
         .prng_reseed_req_o         ( mr_prng_reseed_req[i]         ), // OR-combine
         .prng_reseed_ack_i         ( prng_reseed_ack_i             ),
 
@@ -338,7 +378,8 @@ module aes_control
       );
     end else begin : gen_fsm_n
       aes_control_fsm_n #(
-        .SecMasking ( SecMasking )
+        .AESGCMEnable ( AESGCMEnable ),
+        .SecMasking   ( SecMasking   )
       ) u_aes_control_fsm_i (
         .clk_i                     ( clk_i                         ),
         .rst_ni                    ( rst_ni                        ),
@@ -354,6 +395,11 @@ module aes_control
         .prng_reseed_rate_i        ( prng_reseed_rate_i            ),
         .manual_operation_i        ( manual_operation_i            ),
         .key_touch_forces_reseed_i ( key_touch_forces_reseed_i     ),
+        .ctrl_gcm_qe_i             ( ctrl_gcm_qe_i                 ),
+        .ctrl_gcm_we_o             ( mr_ctrl_gcm_we[i]             ), // AND-combine
+        .ctrl_gcm_phase_i          ( ctrl_gcm_phase_i              ),
+        .gcm_init_done_o           ( mr_gcm_init_done[i]           ), // AND-combine
+        .gcm_phase_i               ( gcm_phase_i                   ),
         .start_i                   ( start_trigger                 ),
         .key_iv_data_in_clear_i    ( key_iv_data_in_clear_i        ),
         .data_out_clear_i          ( data_out_clear_i              ),
@@ -370,6 +416,7 @@ module aes_control
         .data_in_qe_i              ( data_in_qe_i                  ),
         .data_out_re_i             ( data_out_re_i                 ),
         .data_in_we_o              ( mr_data_in_we[i]              ), // AND-combine
+        .data_out_sel_o            ( mr_data_out_sel[i]            ), // OR-combine
         .data_out_we_no            ( sp_data_out_we[i]             ), // Sparsified
 
         .data_in_prev_sel_o        ( mr_data_in_prev_sel[i]        ), // OR-combine
@@ -379,6 +426,7 @@ module aes_control
         .add_state_in_sel_o        ( mr_add_state_in_sel[i]        ), // OR-combine
         .add_state_out_sel_o       ( mr_add_state_out_sel[i]       ), // OR-combine
 
+        .ctr_inc32_no              ( sp_ctr_inc32[i]               ), // Sparsified
         .ctr_incr_no               ( sp_ctr_incr[i]                ), // Sparsified
         .ctr_ready_ni              ( sp_ctr_ready[i]               ), // Sparsified
         .ctr_we_ni                 ( int_ctr_we[i]                 ), // Sparsified
@@ -398,14 +446,19 @@ module aes_control
         .cipher_data_out_clear_o   ( mr_cipher_data_out_clear[i]   ), // OR-combine
         .cipher_data_out_clear_i   ( cipher_data_out_clear_i       ),
 
+        .ghash_in_valid_no         ( sp_ghash_in_valid[i]          ), // Sparsified
+        .ghash_in_ready_ni         ( sp_ghash_in_ready[i]          ), // Sparsified
+        .ghash_out_valid_ni        ( sp_ghash_out_valid[i]         ), // Sparsified
+        .ghash_out_ready_no        ( sp_ghash_out_ready[i]         ), // Sparsified
+        .ghash_load_hash_subkey_no ( sp_ghash_load_hash_subkey[i]  ), // Sparsified
+
         .key_init_sel_o            ( mr_key_init_sel[i]            ), // OR-combine
         .key_init_we_no            ( int_key_init_we[i]            ), // Sparsified
 
         .iv_sel_o                  ( mr_iv_sel[i]                  ), // OR-combine
         .iv_we_no                  ( int_iv_we[i]                  ), // Sparsified
 
-        .prng_data_req_o           ( mr_prng_data_req[i]           ), // OR-combine
-        .prng_data_ack_i           ( prng_data_ack_i               ),
+        .prng_update_o             ( mr_prng_update[i]             ), // OR-combine
         .prng_reseed_req_o         ( mr_prng_reseed_req[i]         ), // OR-combine
         .prng_reseed_ack_i         ( prng_reseed_ack_i             ),
 
@@ -431,13 +484,17 @@ module aes_control
   end
 
   // Convert sparsified outputs to sp2v_e type.
-  assign data_out_we_o        = sp2v_e'(sp_data_out_we);
-  assign data_in_prev_we_o    = sp2v_e'(sp_data_in_prev_we);
-  assign ctr_incr_o           = sp2v_e'(sp_ctr_incr);
-  assign cipher_in_valid_o    = sp2v_e'(sp_cipher_in_valid);
-  assign cipher_out_ready_o   = sp2v_e'(sp_cipher_out_ready);
-  assign cipher_crypt_o       = sp2v_e'(sp_out_cipher_crypt);
-  assign cipher_dec_key_gen_o = sp2v_e'(sp_out_cipher_dec_key_gen);
+  assign data_out_we_o            = sp2v_e'(sp_data_out_we);
+  assign data_in_prev_we_o        = sp2v_e'(sp_data_in_prev_we);
+  assign ctr_inc32_o              = sp2v_e'(sp_ctr_inc32);
+  assign ctr_incr_o               = sp2v_e'(sp_ctr_incr);
+  assign cipher_in_valid_o        = sp2v_e'(sp_cipher_in_valid);
+  assign cipher_out_ready_o       = sp2v_e'(sp_cipher_out_ready);
+  assign cipher_crypt_o           = sp2v_e'(sp_out_cipher_crypt);
+  assign cipher_dec_key_gen_o     = sp2v_e'(sp_out_cipher_dec_key_gen);
+  assign ghash_in_valid_o         = sp2v_e'(sp_ghash_in_valid);
+  assign ghash_out_ready_o        = sp2v_e'(sp_ghash_out_ready);
+  assign ghash_load_hash_subkey_o = sp2v_e'(sp_ghash_load_hash_subkey);
 
   // Combine single-bit FSM outputs.
   // OR: One bit is sufficient to drive the corresponding output bit high.
@@ -445,7 +502,7 @@ module aes_control
   assign cipher_prng_reseed_o      = |mr_cipher_prng_reseed;
   assign cipher_key_clear_o        = |mr_cipher_key_clear;
   assign cipher_data_out_clear_o   = |mr_cipher_data_out_clear;
-  assign prng_data_req_o           = |mr_prng_data_req;
+  assign prng_update_o             = |mr_prng_update;
   assign prng_reseed_req_o         = |mr_prng_reseed_req;
   assign start_we_o                = |mr_start_we;
   assign prng_reseed_o             = |mr_prng_reseed;
@@ -453,6 +510,8 @@ module aes_control
 
   // AND: Only if all bits are high, the corresponding action should be triggered.
   assign ctrl_we_o                 = &mr_ctrl_we;
+  assign ctrl_gcm_we_o             = &mr_ctrl_gcm_we;
+  assign gcm_init_done_o           = &mr_gcm_init_done;
   assign data_in_we_o              = &mr_data_in_we;
   assign key_iv_data_in_clear_we_o = &mr_key_iv_data_in_clear_we;
   assign data_out_clear_we_o       = &mr_data_out_clear_we;
@@ -472,6 +531,7 @@ module aes_control
   // - An invalid encoding results: A downstream checker will fire, see mux_sel_err_i.
   // - A valid encoding results: The outputs are compared below to cover this case, see mr_err;
   always_comb begin : combine_sparse_signals
+    data_out_sel_o      = data_out_sel_e'({DataOutSelWidth{1'b0}});
     data_in_prev_sel_o  = dip_sel_e'({DIPSelWidth{1'b0}});
     state_in_sel_o      = si_sel_e'({SISelWidth{1'b0}});
     add_state_in_sel_o  = add_si_sel_e'({AddSISelWidth{1'b0}});
@@ -481,6 +541,7 @@ module aes_control
     mr_err              = 1'b0;
 
     for (int i = 0; i < Sp2VWidth; i++) begin
+      data_out_sel_o      = data_out_sel_e'({data_out_sel_o}    | {mr_data_out_sel[i]});
       data_in_prev_sel_o  = dip_sel_e'({data_in_prev_sel_o}     | {mr_data_in_prev_sel[i]});
       state_in_sel_o      = si_sel_e'({state_in_sel_o}          | {mr_state_in_sel[i]});
       add_state_in_sel_o  = add_si_sel_e'({add_state_in_sel_o}  | {mr_add_state_in_sel[i]});
@@ -490,7 +551,8 @@ module aes_control
     end
 
     for (int i = 0; i < Sp2VWidth; i++) begin
-      if (data_in_prev_sel_o  != mr_data_in_prev_sel[i]  ||
+      if (data_out_sel_o      != mr_data_out_sel[i]      ||
+          data_in_prev_sel_o  != mr_data_in_prev_sel[i]  ||
           state_in_sel_o      != mr_state_in_sel[i]      ||
           add_state_in_sel_o  != mr_add_state_in_sel[i]  ||
           add_state_out_sel_o != mr_add_state_out_sel[i] ||
@@ -521,7 +583,7 @@ module aes_control
   // data_out_we_o and other write-enable signals to prevent any data from being released.
 
   // We use vectors of sparsely encoded signals to reduce code duplication.
-  localparam int unsigned NumSp2VSig = 5 + NumSlicesCtr;
+  localparam int unsigned NumSp2VSig = 7 + NumSlicesCtr;
   sp2v_e [NumSp2VSig-1:0]                sp2v_sig;
   sp2v_e [NumSp2VSig-1:0]                sp2v_sig_chk;
   logic  [NumSp2VSig-1:0][Sp2VWidth-1:0] sp2v_sig_chk_raw;
@@ -531,9 +593,11 @@ module aes_control
   assign sp2v_sig[1] = cipher_out_valid_i;
   assign sp2v_sig[2] = cipher_crypt_i;
   assign sp2v_sig[3] = cipher_dec_key_gen_i;
-  assign sp2v_sig[4] = ctr_ready_i;
+  assign sp2v_sig[4] = ghash_in_ready_i;
+  assign sp2v_sig[5] = ghash_out_valid_i;
+  assign sp2v_sig[6] = ctr_ready_i;
   for (genvar i = 0; i < NumSlicesCtr; i++) begin : gen_use_ctr_we_i
-    assign sp2v_sig[5+i] = ctr_we_i[i];
+    assign sp2v_sig[7+i] = ctr_we_i[i];
   end
 
   // All signals inside sp2v_sig are driven and consumed by multi-rail FSMs.
@@ -559,9 +623,11 @@ module aes_control
   assign cipher_out_valid   = sp2v_sig_chk[1];
   assign cipher_crypt       = sp2v_sig_chk[2];
   assign cipher_dec_key_gen = sp2v_sig_chk[3];
-  assign ctr_ready          = sp2v_sig_chk[4];
+  assign ghash_in_ready     = sp2v_sig_chk[4];
+  assign ghash_out_valid    = sp2v_sig_chk[5];
+  assign ctr_ready          = sp2v_sig_chk[6];
   for (genvar i = 0; i < NumSlicesCtr; i++) begin : gen_ctr_we
-    assign ctr_we[i]        = sp2v_sig_chk[5+i];
+    assign ctr_we[i]        = sp2v_sig_chk[7+i];
   end
 
   // Collect encoding errors.

@@ -7,7 +7,7 @@
 package alert_handler_reg_pkg;
 
   // Param list
-  parameter int NAlerts = 103;
+  parameter int NAlerts = 77;
   parameter int NLpg = 18;
   parameter int NLpgWidth = 5;
   parameter logic [NAlerts-1:0][NLpgWidth-1:0] LpgMap = {
@@ -54,6 +54,8 @@ package alert_handler_reg_pkg;
   5'd13,
   5'd13,
   5'd13,
+  5'd13,
+  5'd13,
   5'd17,
   5'd17,
   5'd16,
@@ -64,34 +66,6 @@ package alert_handler_reg_pkg;
   5'd13,
   5'd12,
   5'd11,
-  5'd10,
-  5'd10,
-  5'd10,
-  5'd10,
-  5'd10,
-  5'd10,
-  5'd10,
-  5'd10,
-  5'd10,
-  5'd10,
-  5'd10,
-  5'd10,
-  5'd10,
-  5'd10,
-  5'd10,
-  5'd10,
-  5'd10,
-  5'd10,
-  5'd10,
-  5'd10,
-  5'd10,
-  5'd10,
-  5'd10,
-  5'd10,
-  5'd10,
-  5'd10,
-  5'd10,
-  5'd10,
   5'd10,
   5'd8,
   5'd7,
@@ -194,32 +168,6 @@ package alert_handler_reg_pkg;
   1'b1,
   1'b1,
   1'b1,
-  1'b1,
-  1'b1,
-  1'b1,
-  1'b1,
-  1'b1,
-  1'b1,
-  1'b1,
-  1'b1,
-  1'b1,
-  1'b1,
-  1'b1,
-  1'b1,
-  1'b1,
-  1'b1,
-  1'b1,
-  1'b1,
-  1'b1,
-  1'b1,
-  1'b1,
-  1'b1,
-  1'b1,
-  1'b1,
-  1'b1,
-  1'b1,
-  1'b1,
-  1'b1,
   1'b1
 };
   parameter int N_CLASSES = 4;
@@ -242,7 +190,7 @@ package alert_handler_reg_pkg;
   parameter int BlockAw = 11;
 
   // Number of registers for every interface
-  parameter int NumRegs = 502;
+  parameter int NumRegs = 398;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -601,11 +549,7 @@ package alert_handler_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } classa;
-    struct packed {
-      logic        d;
-      logic        de;
-    } classb;
+    } classd;
     struct packed {
       logic        d;
       logic        de;
@@ -613,7 +557,11 @@ package alert_handler_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } classd;
+    } classb;
+    struct packed {
+      logic        d;
+      logic        de;
+    } classa;
   } alert_handler_hw2reg_intr_state_reg_t;
 
   typedef struct packed {
@@ -696,15 +644,15 @@ package alert_handler_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    alert_handler_reg2hw_intr_state_reg_t intr_state; // [1351:1348]
-    alert_handler_reg2hw_intr_enable_reg_t intr_enable; // [1347:1344]
-    alert_handler_reg2hw_intr_test_reg_t intr_test; // [1343:1336]
-    alert_handler_reg2hw_ping_timeout_cyc_shadowed_reg_t ping_timeout_cyc_shadowed; // [1335:1320]
-    alert_handler_reg2hw_ping_timer_en_shadowed_reg_t ping_timer_en_shadowed; // [1319:1319]
-    alert_handler_reg2hw_alert_regwen_mreg_t [102:0] alert_regwen; // [1318:1216]
-    alert_handler_reg2hw_alert_en_shadowed_mreg_t [102:0] alert_en_shadowed; // [1215:1113]
-    alert_handler_reg2hw_alert_class_shadowed_mreg_t [102:0] alert_class_shadowed; // [1112:907]
-    alert_handler_reg2hw_alert_cause_mreg_t [102:0] alert_cause; // [906:804]
+    alert_handler_reg2hw_intr_state_reg_t intr_state; // [1221:1218]
+    alert_handler_reg2hw_intr_enable_reg_t intr_enable; // [1217:1214]
+    alert_handler_reg2hw_intr_test_reg_t intr_test; // [1213:1206]
+    alert_handler_reg2hw_ping_timeout_cyc_shadowed_reg_t ping_timeout_cyc_shadowed; // [1205:1190]
+    alert_handler_reg2hw_ping_timer_en_shadowed_reg_t ping_timer_en_shadowed; // [1189:1189]
+    alert_handler_reg2hw_alert_regwen_mreg_t [76:0] alert_regwen; // [1188:1112]
+    alert_handler_reg2hw_alert_en_shadowed_mreg_t [76:0] alert_en_shadowed; // [1111:1035]
+    alert_handler_reg2hw_alert_class_shadowed_mreg_t [76:0] alert_class_shadowed; // [1034:881]
+    alert_handler_reg2hw_alert_cause_mreg_t [76:0] alert_cause; // [880:804]
     alert_handler_reg2hw_loc_alert_en_shadowed_mreg_t [6:0] loc_alert_en_shadowed; // [803:797]
     alert_handler_reg2hw_loc_alert_class_shadowed_mreg_t [6:0]
         loc_alert_class_shadowed; // [796:783]
@@ -757,8 +705,8 @@ package alert_handler_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    alert_handler_hw2reg_intr_state_reg_t intr_state; // [439:432]
-    alert_handler_hw2reg_alert_cause_mreg_t [102:0] alert_cause; // [431:226]
+    alert_handler_hw2reg_intr_state_reg_t intr_state; // [387:380]
+    alert_handler_hw2reg_alert_cause_mreg_t [76:0] alert_cause; // [379:226]
     alert_handler_hw2reg_loc_alert_cause_mreg_t [6:0] loc_alert_cause; // [225:212]
     alert_handler_hw2reg_classa_clr_regwen_reg_t classa_clr_regwen; // [211:210]
     alert_handler_hw2reg_classa_accum_cnt_reg_t classa_accum_cnt; // [209:194]
@@ -862,425 +810,321 @@ package alert_handler_reg_pkg;
   parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_REGWEN_74_OFFSET = 11'h 140;
   parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_REGWEN_75_OFFSET = 11'h 144;
   parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_REGWEN_76_OFFSET = 11'h 148;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_REGWEN_77_OFFSET = 11'h 14c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_REGWEN_78_OFFSET = 11'h 150;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_REGWEN_79_OFFSET = 11'h 154;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_REGWEN_80_OFFSET = 11'h 158;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_REGWEN_81_OFFSET = 11'h 15c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_REGWEN_82_OFFSET = 11'h 160;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_REGWEN_83_OFFSET = 11'h 164;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_REGWEN_84_OFFSET = 11'h 168;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_REGWEN_85_OFFSET = 11'h 16c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_REGWEN_86_OFFSET = 11'h 170;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_REGWEN_87_OFFSET = 11'h 174;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_REGWEN_88_OFFSET = 11'h 178;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_REGWEN_89_OFFSET = 11'h 17c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_REGWEN_90_OFFSET = 11'h 180;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_REGWEN_91_OFFSET = 11'h 184;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_REGWEN_92_OFFSET = 11'h 188;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_REGWEN_93_OFFSET = 11'h 18c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_REGWEN_94_OFFSET = 11'h 190;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_REGWEN_95_OFFSET = 11'h 194;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_REGWEN_96_OFFSET = 11'h 198;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_REGWEN_97_OFFSET = 11'h 19c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_REGWEN_98_OFFSET = 11'h 1a0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_REGWEN_99_OFFSET = 11'h 1a4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_REGWEN_100_OFFSET = 11'h 1a8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_REGWEN_101_OFFSET = 11'h 1ac;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_REGWEN_102_OFFSET = 11'h 1b0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_0_OFFSET = 11'h 1b4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_1_OFFSET = 11'h 1b8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_2_OFFSET = 11'h 1bc;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_3_OFFSET = 11'h 1c0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_4_OFFSET = 11'h 1c4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_5_OFFSET = 11'h 1c8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_6_OFFSET = 11'h 1cc;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_7_OFFSET = 11'h 1d0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_8_OFFSET = 11'h 1d4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_9_OFFSET = 11'h 1d8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_10_OFFSET = 11'h 1dc;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_11_OFFSET = 11'h 1e0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_12_OFFSET = 11'h 1e4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_13_OFFSET = 11'h 1e8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_14_OFFSET = 11'h 1ec;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_15_OFFSET = 11'h 1f0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_16_OFFSET = 11'h 1f4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_17_OFFSET = 11'h 1f8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_18_OFFSET = 11'h 1fc;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_19_OFFSET = 11'h 200;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_20_OFFSET = 11'h 204;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_21_OFFSET = 11'h 208;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_22_OFFSET = 11'h 20c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_23_OFFSET = 11'h 210;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_24_OFFSET = 11'h 214;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_25_OFFSET = 11'h 218;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_26_OFFSET = 11'h 21c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_27_OFFSET = 11'h 220;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_28_OFFSET = 11'h 224;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_29_OFFSET = 11'h 228;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_30_OFFSET = 11'h 22c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_31_OFFSET = 11'h 230;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_32_OFFSET = 11'h 234;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_33_OFFSET = 11'h 238;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_34_OFFSET = 11'h 23c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_35_OFFSET = 11'h 240;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_36_OFFSET = 11'h 244;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_37_OFFSET = 11'h 248;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_38_OFFSET = 11'h 24c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_39_OFFSET = 11'h 250;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_40_OFFSET = 11'h 254;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_41_OFFSET = 11'h 258;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_42_OFFSET = 11'h 25c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_43_OFFSET = 11'h 260;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_44_OFFSET = 11'h 264;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_45_OFFSET = 11'h 268;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_46_OFFSET = 11'h 26c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_47_OFFSET = 11'h 270;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_48_OFFSET = 11'h 274;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_49_OFFSET = 11'h 278;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_50_OFFSET = 11'h 27c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_51_OFFSET = 11'h 280;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_52_OFFSET = 11'h 284;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_53_OFFSET = 11'h 288;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_54_OFFSET = 11'h 28c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_55_OFFSET = 11'h 290;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_56_OFFSET = 11'h 294;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_57_OFFSET = 11'h 298;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_58_OFFSET = 11'h 29c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_59_OFFSET = 11'h 2a0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_60_OFFSET = 11'h 2a4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_61_OFFSET = 11'h 2a8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_62_OFFSET = 11'h 2ac;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_63_OFFSET = 11'h 2b0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_64_OFFSET = 11'h 2b4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_65_OFFSET = 11'h 2b8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_66_OFFSET = 11'h 2bc;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_67_OFFSET = 11'h 2c0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_68_OFFSET = 11'h 2c4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_69_OFFSET = 11'h 2c8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_70_OFFSET = 11'h 2cc;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_71_OFFSET = 11'h 2d0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_72_OFFSET = 11'h 2d4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_73_OFFSET = 11'h 2d8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_74_OFFSET = 11'h 2dc;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_75_OFFSET = 11'h 2e0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_76_OFFSET = 11'h 2e4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_77_OFFSET = 11'h 2e8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_78_OFFSET = 11'h 2ec;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_79_OFFSET = 11'h 2f0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_80_OFFSET = 11'h 2f4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_81_OFFSET = 11'h 2f8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_82_OFFSET = 11'h 2fc;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_83_OFFSET = 11'h 300;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_84_OFFSET = 11'h 304;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_85_OFFSET = 11'h 308;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_86_OFFSET = 11'h 30c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_87_OFFSET = 11'h 310;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_88_OFFSET = 11'h 314;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_89_OFFSET = 11'h 318;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_90_OFFSET = 11'h 31c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_91_OFFSET = 11'h 320;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_92_OFFSET = 11'h 324;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_93_OFFSET = 11'h 328;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_94_OFFSET = 11'h 32c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_95_OFFSET = 11'h 330;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_96_OFFSET = 11'h 334;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_97_OFFSET = 11'h 338;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_98_OFFSET = 11'h 33c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_99_OFFSET = 11'h 340;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_100_OFFSET = 11'h 344;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_101_OFFSET = 11'h 348;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_102_OFFSET = 11'h 34c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_OFFSET = 11'h 350;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_1_OFFSET = 11'h 354;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_2_OFFSET = 11'h 358;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_3_OFFSET = 11'h 35c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_4_OFFSET = 11'h 360;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_5_OFFSET = 11'h 364;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_6_OFFSET = 11'h 368;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_7_OFFSET = 11'h 36c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_8_OFFSET = 11'h 370;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_9_OFFSET = 11'h 374;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_10_OFFSET = 11'h 378;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_11_OFFSET = 11'h 37c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_12_OFFSET = 11'h 380;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_13_OFFSET = 11'h 384;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_14_OFFSET = 11'h 388;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_15_OFFSET = 11'h 38c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_16_OFFSET = 11'h 390;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_17_OFFSET = 11'h 394;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_18_OFFSET = 11'h 398;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_19_OFFSET = 11'h 39c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_20_OFFSET = 11'h 3a0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_21_OFFSET = 11'h 3a4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_22_OFFSET = 11'h 3a8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_23_OFFSET = 11'h 3ac;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_24_OFFSET = 11'h 3b0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_25_OFFSET = 11'h 3b4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_26_OFFSET = 11'h 3b8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_27_OFFSET = 11'h 3bc;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_28_OFFSET = 11'h 3c0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_29_OFFSET = 11'h 3c4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_30_OFFSET = 11'h 3c8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_31_OFFSET = 11'h 3cc;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_32_OFFSET = 11'h 3d0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_33_OFFSET = 11'h 3d4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_34_OFFSET = 11'h 3d8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_35_OFFSET = 11'h 3dc;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_36_OFFSET = 11'h 3e0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_37_OFFSET = 11'h 3e4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_38_OFFSET = 11'h 3e8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_39_OFFSET = 11'h 3ec;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_40_OFFSET = 11'h 3f0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_41_OFFSET = 11'h 3f4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_42_OFFSET = 11'h 3f8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_43_OFFSET = 11'h 3fc;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_44_OFFSET = 11'h 400;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_45_OFFSET = 11'h 404;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_46_OFFSET = 11'h 408;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_47_OFFSET = 11'h 40c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_48_OFFSET = 11'h 410;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_49_OFFSET = 11'h 414;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_50_OFFSET = 11'h 418;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_51_OFFSET = 11'h 41c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_52_OFFSET = 11'h 420;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_53_OFFSET = 11'h 424;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_54_OFFSET = 11'h 428;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_55_OFFSET = 11'h 42c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_56_OFFSET = 11'h 430;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_57_OFFSET = 11'h 434;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_58_OFFSET = 11'h 438;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_59_OFFSET = 11'h 43c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_60_OFFSET = 11'h 440;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_61_OFFSET = 11'h 444;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_62_OFFSET = 11'h 448;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_63_OFFSET = 11'h 44c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_64_OFFSET = 11'h 450;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_65_OFFSET = 11'h 454;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_66_OFFSET = 11'h 458;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_67_OFFSET = 11'h 45c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_68_OFFSET = 11'h 460;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_69_OFFSET = 11'h 464;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_70_OFFSET = 11'h 468;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_71_OFFSET = 11'h 46c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_72_OFFSET = 11'h 470;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_73_OFFSET = 11'h 474;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_74_OFFSET = 11'h 478;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_75_OFFSET = 11'h 47c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_76_OFFSET = 11'h 480;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_77_OFFSET = 11'h 484;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_78_OFFSET = 11'h 488;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_79_OFFSET = 11'h 48c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_80_OFFSET = 11'h 490;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_81_OFFSET = 11'h 494;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_82_OFFSET = 11'h 498;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_83_OFFSET = 11'h 49c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_84_OFFSET = 11'h 4a0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_85_OFFSET = 11'h 4a4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_86_OFFSET = 11'h 4a8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_87_OFFSET = 11'h 4ac;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_88_OFFSET = 11'h 4b0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_89_OFFSET = 11'h 4b4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_90_OFFSET = 11'h 4b8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_91_OFFSET = 11'h 4bc;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_92_OFFSET = 11'h 4c0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_93_OFFSET = 11'h 4c4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_94_OFFSET = 11'h 4c8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_95_OFFSET = 11'h 4cc;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_96_OFFSET = 11'h 4d0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_97_OFFSET = 11'h 4d4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_98_OFFSET = 11'h 4d8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_99_OFFSET = 11'h 4dc;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_100_OFFSET = 11'h 4e0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_101_OFFSET = 11'h 4e4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_102_OFFSET = 11'h 4e8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_0_OFFSET = 11'h 4ec;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_1_OFFSET = 11'h 4f0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_2_OFFSET = 11'h 4f4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_3_OFFSET = 11'h 4f8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_4_OFFSET = 11'h 4fc;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_5_OFFSET = 11'h 500;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_6_OFFSET = 11'h 504;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_7_OFFSET = 11'h 508;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_8_OFFSET = 11'h 50c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_9_OFFSET = 11'h 510;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_10_OFFSET = 11'h 514;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_11_OFFSET = 11'h 518;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_12_OFFSET = 11'h 51c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_13_OFFSET = 11'h 520;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_14_OFFSET = 11'h 524;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_15_OFFSET = 11'h 528;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_16_OFFSET = 11'h 52c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_17_OFFSET = 11'h 530;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_18_OFFSET = 11'h 534;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_19_OFFSET = 11'h 538;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_20_OFFSET = 11'h 53c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_21_OFFSET = 11'h 540;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_22_OFFSET = 11'h 544;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_23_OFFSET = 11'h 548;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_24_OFFSET = 11'h 54c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_25_OFFSET = 11'h 550;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_26_OFFSET = 11'h 554;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_27_OFFSET = 11'h 558;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_28_OFFSET = 11'h 55c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_29_OFFSET = 11'h 560;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_30_OFFSET = 11'h 564;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_31_OFFSET = 11'h 568;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_32_OFFSET = 11'h 56c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_33_OFFSET = 11'h 570;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_34_OFFSET = 11'h 574;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_35_OFFSET = 11'h 578;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_36_OFFSET = 11'h 57c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_37_OFFSET = 11'h 580;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_38_OFFSET = 11'h 584;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_39_OFFSET = 11'h 588;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_40_OFFSET = 11'h 58c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_41_OFFSET = 11'h 590;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_42_OFFSET = 11'h 594;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_43_OFFSET = 11'h 598;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_44_OFFSET = 11'h 59c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_45_OFFSET = 11'h 5a0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_46_OFFSET = 11'h 5a4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_47_OFFSET = 11'h 5a8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_48_OFFSET = 11'h 5ac;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_49_OFFSET = 11'h 5b0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_50_OFFSET = 11'h 5b4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_51_OFFSET = 11'h 5b8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_52_OFFSET = 11'h 5bc;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_53_OFFSET = 11'h 5c0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_54_OFFSET = 11'h 5c4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_55_OFFSET = 11'h 5c8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_56_OFFSET = 11'h 5cc;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_57_OFFSET = 11'h 5d0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_58_OFFSET = 11'h 5d4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_59_OFFSET = 11'h 5d8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_60_OFFSET = 11'h 5dc;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_61_OFFSET = 11'h 5e0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_62_OFFSET = 11'h 5e4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_63_OFFSET = 11'h 5e8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_64_OFFSET = 11'h 5ec;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_65_OFFSET = 11'h 5f0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_66_OFFSET = 11'h 5f4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_67_OFFSET = 11'h 5f8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_68_OFFSET = 11'h 5fc;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_69_OFFSET = 11'h 600;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_70_OFFSET = 11'h 604;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_71_OFFSET = 11'h 608;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_72_OFFSET = 11'h 60c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_73_OFFSET = 11'h 610;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_74_OFFSET = 11'h 614;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_75_OFFSET = 11'h 618;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_76_OFFSET = 11'h 61c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_77_OFFSET = 11'h 620;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_78_OFFSET = 11'h 624;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_79_OFFSET = 11'h 628;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_80_OFFSET = 11'h 62c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_81_OFFSET = 11'h 630;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_82_OFFSET = 11'h 634;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_83_OFFSET = 11'h 638;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_84_OFFSET = 11'h 63c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_85_OFFSET = 11'h 640;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_86_OFFSET = 11'h 644;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_87_OFFSET = 11'h 648;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_88_OFFSET = 11'h 64c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_89_OFFSET = 11'h 650;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_90_OFFSET = 11'h 654;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_91_OFFSET = 11'h 658;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_92_OFFSET = 11'h 65c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_93_OFFSET = 11'h 660;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_94_OFFSET = 11'h 664;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_95_OFFSET = 11'h 668;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_96_OFFSET = 11'h 66c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_97_OFFSET = 11'h 670;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_98_OFFSET = 11'h 674;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_99_OFFSET = 11'h 678;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_100_OFFSET = 11'h 67c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_101_OFFSET = 11'h 680;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_102_OFFSET = 11'h 684;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_REGWEN_0_OFFSET = 11'h 688;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_REGWEN_1_OFFSET = 11'h 68c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_REGWEN_2_OFFSET = 11'h 690;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_REGWEN_3_OFFSET = 11'h 694;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_REGWEN_4_OFFSET = 11'h 698;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_REGWEN_5_OFFSET = 11'h 69c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_REGWEN_6_OFFSET = 11'h 6a0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_OFFSET = 11'h 6a4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_1_OFFSET = 11'h 6a8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_2_OFFSET = 11'h 6ac;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_3_OFFSET = 11'h 6b0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_4_OFFSET = 11'h 6b4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_5_OFFSET = 11'h 6b8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_6_OFFSET = 11'h 6bc;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_OFFSET = 11'h 6c0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_1_OFFSET = 11'h 6c4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_2_OFFSET = 11'h 6c8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_3_OFFSET = 11'h 6cc;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_4_OFFSET = 11'h 6d0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_5_OFFSET = 11'h 6d4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_6_OFFSET = 11'h 6d8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_CAUSE_0_OFFSET = 11'h 6dc;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_CAUSE_1_OFFSET = 11'h 6e0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_CAUSE_2_OFFSET = 11'h 6e4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_CAUSE_3_OFFSET = 11'h 6e8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_CAUSE_4_OFFSET = 11'h 6ec;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_CAUSE_5_OFFSET = 11'h 6f0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_CAUSE_6_OFFSET = 11'h 6f4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_REGWEN_OFFSET = 11'h 6f8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_CTRL_SHADOWED_OFFSET = 11'h 6fc;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_CLR_REGWEN_OFFSET = 11'h 700;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_CLR_SHADOWED_OFFSET = 11'h 704;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_ACCUM_CNT_OFFSET = 11'h 708;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_ACCUM_THRESH_SHADOWED_OFFSET = 11'h 70c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_TIMEOUT_CYC_SHADOWED_OFFSET = 11'h 710;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_CRASHDUMP_TRIGGER_SHADOWED_OFFSET = 11'h 714;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_PHASE0_CYC_SHADOWED_OFFSET = 11'h 718;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_PHASE1_CYC_SHADOWED_OFFSET = 11'h 71c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_PHASE2_CYC_SHADOWED_OFFSET = 11'h 720;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_PHASE3_CYC_SHADOWED_OFFSET = 11'h 724;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_ESC_CNT_OFFSET = 11'h 728;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_STATE_OFFSET = 11'h 72c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_REGWEN_OFFSET = 11'h 730;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_CTRL_SHADOWED_OFFSET = 11'h 734;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_CLR_REGWEN_OFFSET = 11'h 738;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_CLR_SHADOWED_OFFSET = 11'h 73c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_ACCUM_CNT_OFFSET = 11'h 740;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_ACCUM_THRESH_SHADOWED_OFFSET = 11'h 744;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_TIMEOUT_CYC_SHADOWED_OFFSET = 11'h 748;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_CRASHDUMP_TRIGGER_SHADOWED_OFFSET = 11'h 74c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_PHASE0_CYC_SHADOWED_OFFSET = 11'h 750;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_PHASE1_CYC_SHADOWED_OFFSET = 11'h 754;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_PHASE2_CYC_SHADOWED_OFFSET = 11'h 758;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_PHASE3_CYC_SHADOWED_OFFSET = 11'h 75c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_ESC_CNT_OFFSET = 11'h 760;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_STATE_OFFSET = 11'h 764;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_REGWEN_OFFSET = 11'h 768;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_CTRL_SHADOWED_OFFSET = 11'h 76c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_CLR_REGWEN_OFFSET = 11'h 770;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_CLR_SHADOWED_OFFSET = 11'h 774;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_ACCUM_CNT_OFFSET = 11'h 778;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_ACCUM_THRESH_SHADOWED_OFFSET = 11'h 77c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_TIMEOUT_CYC_SHADOWED_OFFSET = 11'h 780;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_CRASHDUMP_TRIGGER_SHADOWED_OFFSET = 11'h 784;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_PHASE0_CYC_SHADOWED_OFFSET = 11'h 788;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_PHASE1_CYC_SHADOWED_OFFSET = 11'h 78c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_PHASE2_CYC_SHADOWED_OFFSET = 11'h 790;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_PHASE3_CYC_SHADOWED_OFFSET = 11'h 794;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_ESC_CNT_OFFSET = 11'h 798;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_STATE_OFFSET = 11'h 79c;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_REGWEN_OFFSET = 11'h 7a0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_CTRL_SHADOWED_OFFSET = 11'h 7a4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_CLR_REGWEN_OFFSET = 11'h 7a8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_CLR_SHADOWED_OFFSET = 11'h 7ac;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_ACCUM_CNT_OFFSET = 11'h 7b0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_ACCUM_THRESH_SHADOWED_OFFSET = 11'h 7b4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_TIMEOUT_CYC_SHADOWED_OFFSET = 11'h 7b8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_CRASHDUMP_TRIGGER_SHADOWED_OFFSET = 11'h 7bc;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_PHASE0_CYC_SHADOWED_OFFSET = 11'h 7c0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_PHASE1_CYC_SHADOWED_OFFSET = 11'h 7c4;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_PHASE2_CYC_SHADOWED_OFFSET = 11'h 7c8;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_PHASE3_CYC_SHADOWED_OFFSET = 11'h 7cc;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_ESC_CNT_OFFSET = 11'h 7d0;
-  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_STATE_OFFSET = 11'h 7d4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_0_OFFSET = 11'h 14c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_1_OFFSET = 11'h 150;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_2_OFFSET = 11'h 154;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_3_OFFSET = 11'h 158;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_4_OFFSET = 11'h 15c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_5_OFFSET = 11'h 160;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_6_OFFSET = 11'h 164;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_7_OFFSET = 11'h 168;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_8_OFFSET = 11'h 16c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_9_OFFSET = 11'h 170;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_10_OFFSET = 11'h 174;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_11_OFFSET = 11'h 178;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_12_OFFSET = 11'h 17c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_13_OFFSET = 11'h 180;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_14_OFFSET = 11'h 184;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_15_OFFSET = 11'h 188;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_16_OFFSET = 11'h 18c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_17_OFFSET = 11'h 190;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_18_OFFSET = 11'h 194;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_19_OFFSET = 11'h 198;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_20_OFFSET = 11'h 19c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_21_OFFSET = 11'h 1a0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_22_OFFSET = 11'h 1a4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_23_OFFSET = 11'h 1a8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_24_OFFSET = 11'h 1ac;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_25_OFFSET = 11'h 1b0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_26_OFFSET = 11'h 1b4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_27_OFFSET = 11'h 1b8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_28_OFFSET = 11'h 1bc;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_29_OFFSET = 11'h 1c0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_30_OFFSET = 11'h 1c4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_31_OFFSET = 11'h 1c8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_32_OFFSET = 11'h 1cc;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_33_OFFSET = 11'h 1d0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_34_OFFSET = 11'h 1d4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_35_OFFSET = 11'h 1d8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_36_OFFSET = 11'h 1dc;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_37_OFFSET = 11'h 1e0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_38_OFFSET = 11'h 1e4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_39_OFFSET = 11'h 1e8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_40_OFFSET = 11'h 1ec;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_41_OFFSET = 11'h 1f0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_42_OFFSET = 11'h 1f4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_43_OFFSET = 11'h 1f8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_44_OFFSET = 11'h 1fc;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_45_OFFSET = 11'h 200;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_46_OFFSET = 11'h 204;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_47_OFFSET = 11'h 208;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_48_OFFSET = 11'h 20c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_49_OFFSET = 11'h 210;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_50_OFFSET = 11'h 214;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_51_OFFSET = 11'h 218;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_52_OFFSET = 11'h 21c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_53_OFFSET = 11'h 220;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_54_OFFSET = 11'h 224;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_55_OFFSET = 11'h 228;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_56_OFFSET = 11'h 22c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_57_OFFSET = 11'h 230;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_58_OFFSET = 11'h 234;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_59_OFFSET = 11'h 238;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_60_OFFSET = 11'h 23c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_61_OFFSET = 11'h 240;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_62_OFFSET = 11'h 244;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_63_OFFSET = 11'h 248;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_64_OFFSET = 11'h 24c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_65_OFFSET = 11'h 250;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_66_OFFSET = 11'h 254;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_67_OFFSET = 11'h 258;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_68_OFFSET = 11'h 25c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_69_OFFSET = 11'h 260;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_70_OFFSET = 11'h 264;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_71_OFFSET = 11'h 268;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_72_OFFSET = 11'h 26c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_73_OFFSET = 11'h 270;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_74_OFFSET = 11'h 274;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_75_OFFSET = 11'h 278;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_SHADOWED_76_OFFSET = 11'h 27c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_OFFSET = 11'h 280;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_1_OFFSET = 11'h 284;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_2_OFFSET = 11'h 288;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_3_OFFSET = 11'h 28c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_4_OFFSET = 11'h 290;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_5_OFFSET = 11'h 294;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_6_OFFSET = 11'h 298;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_7_OFFSET = 11'h 29c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_8_OFFSET = 11'h 2a0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_9_OFFSET = 11'h 2a4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_10_OFFSET = 11'h 2a8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_11_OFFSET = 11'h 2ac;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_12_OFFSET = 11'h 2b0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_13_OFFSET = 11'h 2b4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_14_OFFSET = 11'h 2b8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_15_OFFSET = 11'h 2bc;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_16_OFFSET = 11'h 2c0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_17_OFFSET = 11'h 2c4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_18_OFFSET = 11'h 2c8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_19_OFFSET = 11'h 2cc;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_20_OFFSET = 11'h 2d0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_21_OFFSET = 11'h 2d4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_22_OFFSET = 11'h 2d8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_23_OFFSET = 11'h 2dc;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_24_OFFSET = 11'h 2e0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_25_OFFSET = 11'h 2e4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_26_OFFSET = 11'h 2e8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_27_OFFSET = 11'h 2ec;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_28_OFFSET = 11'h 2f0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_29_OFFSET = 11'h 2f4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_30_OFFSET = 11'h 2f8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_31_OFFSET = 11'h 2fc;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_32_OFFSET = 11'h 300;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_33_OFFSET = 11'h 304;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_34_OFFSET = 11'h 308;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_35_OFFSET = 11'h 30c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_36_OFFSET = 11'h 310;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_37_OFFSET = 11'h 314;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_38_OFFSET = 11'h 318;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_39_OFFSET = 11'h 31c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_40_OFFSET = 11'h 320;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_41_OFFSET = 11'h 324;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_42_OFFSET = 11'h 328;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_43_OFFSET = 11'h 32c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_44_OFFSET = 11'h 330;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_45_OFFSET = 11'h 334;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_46_OFFSET = 11'h 338;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_47_OFFSET = 11'h 33c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_48_OFFSET = 11'h 340;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_49_OFFSET = 11'h 344;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_50_OFFSET = 11'h 348;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_51_OFFSET = 11'h 34c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_52_OFFSET = 11'h 350;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_53_OFFSET = 11'h 354;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_54_OFFSET = 11'h 358;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_55_OFFSET = 11'h 35c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_56_OFFSET = 11'h 360;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_57_OFFSET = 11'h 364;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_58_OFFSET = 11'h 368;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_59_OFFSET = 11'h 36c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_60_OFFSET = 11'h 370;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_61_OFFSET = 11'h 374;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_62_OFFSET = 11'h 378;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_63_OFFSET = 11'h 37c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_64_OFFSET = 11'h 380;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_65_OFFSET = 11'h 384;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_66_OFFSET = 11'h 388;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_67_OFFSET = 11'h 38c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_68_OFFSET = 11'h 390;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_69_OFFSET = 11'h 394;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_70_OFFSET = 11'h 398;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_71_OFFSET = 11'h 39c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_72_OFFSET = 11'h 3a0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_73_OFFSET = 11'h 3a4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_74_OFFSET = 11'h 3a8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_75_OFFSET = 11'h 3ac;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_SHADOWED_76_OFFSET = 11'h 3b0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_0_OFFSET = 11'h 3b4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_1_OFFSET = 11'h 3b8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_2_OFFSET = 11'h 3bc;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_3_OFFSET = 11'h 3c0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_4_OFFSET = 11'h 3c4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_5_OFFSET = 11'h 3c8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_6_OFFSET = 11'h 3cc;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_7_OFFSET = 11'h 3d0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_8_OFFSET = 11'h 3d4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_9_OFFSET = 11'h 3d8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_10_OFFSET = 11'h 3dc;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_11_OFFSET = 11'h 3e0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_12_OFFSET = 11'h 3e4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_13_OFFSET = 11'h 3e8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_14_OFFSET = 11'h 3ec;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_15_OFFSET = 11'h 3f0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_16_OFFSET = 11'h 3f4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_17_OFFSET = 11'h 3f8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_18_OFFSET = 11'h 3fc;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_19_OFFSET = 11'h 400;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_20_OFFSET = 11'h 404;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_21_OFFSET = 11'h 408;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_22_OFFSET = 11'h 40c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_23_OFFSET = 11'h 410;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_24_OFFSET = 11'h 414;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_25_OFFSET = 11'h 418;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_26_OFFSET = 11'h 41c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_27_OFFSET = 11'h 420;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_28_OFFSET = 11'h 424;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_29_OFFSET = 11'h 428;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_30_OFFSET = 11'h 42c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_31_OFFSET = 11'h 430;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_32_OFFSET = 11'h 434;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_33_OFFSET = 11'h 438;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_34_OFFSET = 11'h 43c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_35_OFFSET = 11'h 440;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_36_OFFSET = 11'h 444;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_37_OFFSET = 11'h 448;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_38_OFFSET = 11'h 44c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_39_OFFSET = 11'h 450;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_40_OFFSET = 11'h 454;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_41_OFFSET = 11'h 458;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_42_OFFSET = 11'h 45c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_43_OFFSET = 11'h 460;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_44_OFFSET = 11'h 464;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_45_OFFSET = 11'h 468;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_46_OFFSET = 11'h 46c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_47_OFFSET = 11'h 470;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_48_OFFSET = 11'h 474;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_49_OFFSET = 11'h 478;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_50_OFFSET = 11'h 47c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_51_OFFSET = 11'h 480;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_52_OFFSET = 11'h 484;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_53_OFFSET = 11'h 488;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_54_OFFSET = 11'h 48c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_55_OFFSET = 11'h 490;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_56_OFFSET = 11'h 494;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_57_OFFSET = 11'h 498;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_58_OFFSET = 11'h 49c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_59_OFFSET = 11'h 4a0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_60_OFFSET = 11'h 4a4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_61_OFFSET = 11'h 4a8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_62_OFFSET = 11'h 4ac;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_63_OFFSET = 11'h 4b0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_64_OFFSET = 11'h 4b4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_65_OFFSET = 11'h 4b8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_66_OFFSET = 11'h 4bc;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_67_OFFSET = 11'h 4c0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_68_OFFSET = 11'h 4c4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_69_OFFSET = 11'h 4c8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_70_OFFSET = 11'h 4cc;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_71_OFFSET = 11'h 4d0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_72_OFFSET = 11'h 4d4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_73_OFFSET = 11'h 4d8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_74_OFFSET = 11'h 4dc;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_75_OFFSET = 11'h 4e0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_76_OFFSET = 11'h 4e4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_REGWEN_0_OFFSET = 11'h 4e8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_REGWEN_1_OFFSET = 11'h 4ec;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_REGWEN_2_OFFSET = 11'h 4f0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_REGWEN_3_OFFSET = 11'h 4f4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_REGWEN_4_OFFSET = 11'h 4f8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_REGWEN_5_OFFSET = 11'h 4fc;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_REGWEN_6_OFFSET = 11'h 500;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_OFFSET = 11'h 504;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_1_OFFSET = 11'h 508;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_2_OFFSET = 11'h 50c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_3_OFFSET = 11'h 510;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_4_OFFSET = 11'h 514;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_5_OFFSET = 11'h 518;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_6_OFFSET = 11'h 51c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_OFFSET = 11'h 520;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_1_OFFSET = 11'h 524;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_2_OFFSET = 11'h 528;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_3_OFFSET = 11'h 52c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_4_OFFSET = 11'h 530;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_5_OFFSET = 11'h 534;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_6_OFFSET = 11'h 538;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_CAUSE_0_OFFSET = 11'h 53c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_CAUSE_1_OFFSET = 11'h 540;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_CAUSE_2_OFFSET = 11'h 544;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_CAUSE_3_OFFSET = 11'h 548;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_CAUSE_4_OFFSET = 11'h 54c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_CAUSE_5_OFFSET = 11'h 550;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_CAUSE_6_OFFSET = 11'h 554;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_REGWEN_OFFSET = 11'h 558;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_CTRL_SHADOWED_OFFSET = 11'h 55c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_CLR_REGWEN_OFFSET = 11'h 560;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_CLR_SHADOWED_OFFSET = 11'h 564;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_ACCUM_CNT_OFFSET = 11'h 568;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_ACCUM_THRESH_SHADOWED_OFFSET = 11'h 56c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_TIMEOUT_CYC_SHADOWED_OFFSET = 11'h 570;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_CRASHDUMP_TRIGGER_SHADOWED_OFFSET = 11'h 574;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_PHASE0_CYC_SHADOWED_OFFSET = 11'h 578;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_PHASE1_CYC_SHADOWED_OFFSET = 11'h 57c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_PHASE2_CYC_SHADOWED_OFFSET = 11'h 580;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_PHASE3_CYC_SHADOWED_OFFSET = 11'h 584;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_ESC_CNT_OFFSET = 11'h 588;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_STATE_OFFSET = 11'h 58c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_REGWEN_OFFSET = 11'h 590;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_CTRL_SHADOWED_OFFSET = 11'h 594;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_CLR_REGWEN_OFFSET = 11'h 598;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_CLR_SHADOWED_OFFSET = 11'h 59c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_ACCUM_CNT_OFFSET = 11'h 5a0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_ACCUM_THRESH_SHADOWED_OFFSET = 11'h 5a4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_TIMEOUT_CYC_SHADOWED_OFFSET = 11'h 5a8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_CRASHDUMP_TRIGGER_SHADOWED_OFFSET = 11'h 5ac;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_PHASE0_CYC_SHADOWED_OFFSET = 11'h 5b0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_PHASE1_CYC_SHADOWED_OFFSET = 11'h 5b4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_PHASE2_CYC_SHADOWED_OFFSET = 11'h 5b8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_PHASE3_CYC_SHADOWED_OFFSET = 11'h 5bc;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_ESC_CNT_OFFSET = 11'h 5c0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_STATE_OFFSET = 11'h 5c4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_REGWEN_OFFSET = 11'h 5c8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_CTRL_SHADOWED_OFFSET = 11'h 5cc;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_CLR_REGWEN_OFFSET = 11'h 5d0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_CLR_SHADOWED_OFFSET = 11'h 5d4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_ACCUM_CNT_OFFSET = 11'h 5d8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_ACCUM_THRESH_SHADOWED_OFFSET = 11'h 5dc;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_TIMEOUT_CYC_SHADOWED_OFFSET = 11'h 5e0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_CRASHDUMP_TRIGGER_SHADOWED_OFFSET = 11'h 5e4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_PHASE0_CYC_SHADOWED_OFFSET = 11'h 5e8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_PHASE1_CYC_SHADOWED_OFFSET = 11'h 5ec;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_PHASE2_CYC_SHADOWED_OFFSET = 11'h 5f0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_PHASE3_CYC_SHADOWED_OFFSET = 11'h 5f4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_ESC_CNT_OFFSET = 11'h 5f8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_STATE_OFFSET = 11'h 5fc;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_REGWEN_OFFSET = 11'h 600;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_CTRL_SHADOWED_OFFSET = 11'h 604;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_CLR_REGWEN_OFFSET = 11'h 608;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_CLR_SHADOWED_OFFSET = 11'h 60c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_ACCUM_CNT_OFFSET = 11'h 610;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_ACCUM_THRESH_SHADOWED_OFFSET = 11'h 614;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_TIMEOUT_CYC_SHADOWED_OFFSET = 11'h 618;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_CRASHDUMP_TRIGGER_SHADOWED_OFFSET = 11'h 61c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_PHASE0_CYC_SHADOWED_OFFSET = 11'h 620;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_PHASE1_CYC_SHADOWED_OFFSET = 11'h 624;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_PHASE2_CYC_SHADOWED_OFFSET = 11'h 628;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_PHASE3_CYC_SHADOWED_OFFSET = 11'h 62c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_ESC_CNT_OFFSET = 11'h 630;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_STATE_OFFSET = 11'h 634;
 
   // Reset values for hwext registers and their fields
   parameter logic [3:0] ALERT_HANDLER_INTR_TEST_RESVAL = 4'h 0;
@@ -1386,32 +1230,6 @@ package alert_handler_reg_pkg;
     ALERT_HANDLER_ALERT_REGWEN_74,
     ALERT_HANDLER_ALERT_REGWEN_75,
     ALERT_HANDLER_ALERT_REGWEN_76,
-    ALERT_HANDLER_ALERT_REGWEN_77,
-    ALERT_HANDLER_ALERT_REGWEN_78,
-    ALERT_HANDLER_ALERT_REGWEN_79,
-    ALERT_HANDLER_ALERT_REGWEN_80,
-    ALERT_HANDLER_ALERT_REGWEN_81,
-    ALERT_HANDLER_ALERT_REGWEN_82,
-    ALERT_HANDLER_ALERT_REGWEN_83,
-    ALERT_HANDLER_ALERT_REGWEN_84,
-    ALERT_HANDLER_ALERT_REGWEN_85,
-    ALERT_HANDLER_ALERT_REGWEN_86,
-    ALERT_HANDLER_ALERT_REGWEN_87,
-    ALERT_HANDLER_ALERT_REGWEN_88,
-    ALERT_HANDLER_ALERT_REGWEN_89,
-    ALERT_HANDLER_ALERT_REGWEN_90,
-    ALERT_HANDLER_ALERT_REGWEN_91,
-    ALERT_HANDLER_ALERT_REGWEN_92,
-    ALERT_HANDLER_ALERT_REGWEN_93,
-    ALERT_HANDLER_ALERT_REGWEN_94,
-    ALERT_HANDLER_ALERT_REGWEN_95,
-    ALERT_HANDLER_ALERT_REGWEN_96,
-    ALERT_HANDLER_ALERT_REGWEN_97,
-    ALERT_HANDLER_ALERT_REGWEN_98,
-    ALERT_HANDLER_ALERT_REGWEN_99,
-    ALERT_HANDLER_ALERT_REGWEN_100,
-    ALERT_HANDLER_ALERT_REGWEN_101,
-    ALERT_HANDLER_ALERT_REGWEN_102,
     ALERT_HANDLER_ALERT_EN_SHADOWED_0,
     ALERT_HANDLER_ALERT_EN_SHADOWED_1,
     ALERT_HANDLER_ALERT_EN_SHADOWED_2,
@@ -1489,32 +1307,6 @@ package alert_handler_reg_pkg;
     ALERT_HANDLER_ALERT_EN_SHADOWED_74,
     ALERT_HANDLER_ALERT_EN_SHADOWED_75,
     ALERT_HANDLER_ALERT_EN_SHADOWED_76,
-    ALERT_HANDLER_ALERT_EN_SHADOWED_77,
-    ALERT_HANDLER_ALERT_EN_SHADOWED_78,
-    ALERT_HANDLER_ALERT_EN_SHADOWED_79,
-    ALERT_HANDLER_ALERT_EN_SHADOWED_80,
-    ALERT_HANDLER_ALERT_EN_SHADOWED_81,
-    ALERT_HANDLER_ALERT_EN_SHADOWED_82,
-    ALERT_HANDLER_ALERT_EN_SHADOWED_83,
-    ALERT_HANDLER_ALERT_EN_SHADOWED_84,
-    ALERT_HANDLER_ALERT_EN_SHADOWED_85,
-    ALERT_HANDLER_ALERT_EN_SHADOWED_86,
-    ALERT_HANDLER_ALERT_EN_SHADOWED_87,
-    ALERT_HANDLER_ALERT_EN_SHADOWED_88,
-    ALERT_HANDLER_ALERT_EN_SHADOWED_89,
-    ALERT_HANDLER_ALERT_EN_SHADOWED_90,
-    ALERT_HANDLER_ALERT_EN_SHADOWED_91,
-    ALERT_HANDLER_ALERT_EN_SHADOWED_92,
-    ALERT_HANDLER_ALERT_EN_SHADOWED_93,
-    ALERT_HANDLER_ALERT_EN_SHADOWED_94,
-    ALERT_HANDLER_ALERT_EN_SHADOWED_95,
-    ALERT_HANDLER_ALERT_EN_SHADOWED_96,
-    ALERT_HANDLER_ALERT_EN_SHADOWED_97,
-    ALERT_HANDLER_ALERT_EN_SHADOWED_98,
-    ALERT_HANDLER_ALERT_EN_SHADOWED_99,
-    ALERT_HANDLER_ALERT_EN_SHADOWED_100,
-    ALERT_HANDLER_ALERT_EN_SHADOWED_101,
-    ALERT_HANDLER_ALERT_EN_SHADOWED_102,
     ALERT_HANDLER_ALERT_CLASS_SHADOWED_0,
     ALERT_HANDLER_ALERT_CLASS_SHADOWED_1,
     ALERT_HANDLER_ALERT_CLASS_SHADOWED_2,
@@ -1592,32 +1384,6 @@ package alert_handler_reg_pkg;
     ALERT_HANDLER_ALERT_CLASS_SHADOWED_74,
     ALERT_HANDLER_ALERT_CLASS_SHADOWED_75,
     ALERT_HANDLER_ALERT_CLASS_SHADOWED_76,
-    ALERT_HANDLER_ALERT_CLASS_SHADOWED_77,
-    ALERT_HANDLER_ALERT_CLASS_SHADOWED_78,
-    ALERT_HANDLER_ALERT_CLASS_SHADOWED_79,
-    ALERT_HANDLER_ALERT_CLASS_SHADOWED_80,
-    ALERT_HANDLER_ALERT_CLASS_SHADOWED_81,
-    ALERT_HANDLER_ALERT_CLASS_SHADOWED_82,
-    ALERT_HANDLER_ALERT_CLASS_SHADOWED_83,
-    ALERT_HANDLER_ALERT_CLASS_SHADOWED_84,
-    ALERT_HANDLER_ALERT_CLASS_SHADOWED_85,
-    ALERT_HANDLER_ALERT_CLASS_SHADOWED_86,
-    ALERT_HANDLER_ALERT_CLASS_SHADOWED_87,
-    ALERT_HANDLER_ALERT_CLASS_SHADOWED_88,
-    ALERT_HANDLER_ALERT_CLASS_SHADOWED_89,
-    ALERT_HANDLER_ALERT_CLASS_SHADOWED_90,
-    ALERT_HANDLER_ALERT_CLASS_SHADOWED_91,
-    ALERT_HANDLER_ALERT_CLASS_SHADOWED_92,
-    ALERT_HANDLER_ALERT_CLASS_SHADOWED_93,
-    ALERT_HANDLER_ALERT_CLASS_SHADOWED_94,
-    ALERT_HANDLER_ALERT_CLASS_SHADOWED_95,
-    ALERT_HANDLER_ALERT_CLASS_SHADOWED_96,
-    ALERT_HANDLER_ALERT_CLASS_SHADOWED_97,
-    ALERT_HANDLER_ALERT_CLASS_SHADOWED_98,
-    ALERT_HANDLER_ALERT_CLASS_SHADOWED_99,
-    ALERT_HANDLER_ALERT_CLASS_SHADOWED_100,
-    ALERT_HANDLER_ALERT_CLASS_SHADOWED_101,
-    ALERT_HANDLER_ALERT_CLASS_SHADOWED_102,
     ALERT_HANDLER_ALERT_CAUSE_0,
     ALERT_HANDLER_ALERT_CAUSE_1,
     ALERT_HANDLER_ALERT_CAUSE_2,
@@ -1695,32 +1461,6 @@ package alert_handler_reg_pkg;
     ALERT_HANDLER_ALERT_CAUSE_74,
     ALERT_HANDLER_ALERT_CAUSE_75,
     ALERT_HANDLER_ALERT_CAUSE_76,
-    ALERT_HANDLER_ALERT_CAUSE_77,
-    ALERT_HANDLER_ALERT_CAUSE_78,
-    ALERT_HANDLER_ALERT_CAUSE_79,
-    ALERT_HANDLER_ALERT_CAUSE_80,
-    ALERT_HANDLER_ALERT_CAUSE_81,
-    ALERT_HANDLER_ALERT_CAUSE_82,
-    ALERT_HANDLER_ALERT_CAUSE_83,
-    ALERT_HANDLER_ALERT_CAUSE_84,
-    ALERT_HANDLER_ALERT_CAUSE_85,
-    ALERT_HANDLER_ALERT_CAUSE_86,
-    ALERT_HANDLER_ALERT_CAUSE_87,
-    ALERT_HANDLER_ALERT_CAUSE_88,
-    ALERT_HANDLER_ALERT_CAUSE_89,
-    ALERT_HANDLER_ALERT_CAUSE_90,
-    ALERT_HANDLER_ALERT_CAUSE_91,
-    ALERT_HANDLER_ALERT_CAUSE_92,
-    ALERT_HANDLER_ALERT_CAUSE_93,
-    ALERT_HANDLER_ALERT_CAUSE_94,
-    ALERT_HANDLER_ALERT_CAUSE_95,
-    ALERT_HANDLER_ALERT_CAUSE_96,
-    ALERT_HANDLER_ALERT_CAUSE_97,
-    ALERT_HANDLER_ALERT_CAUSE_98,
-    ALERT_HANDLER_ALERT_CAUSE_99,
-    ALERT_HANDLER_ALERT_CAUSE_100,
-    ALERT_HANDLER_ALERT_CAUSE_101,
-    ALERT_HANDLER_ALERT_CAUSE_102,
     ALERT_HANDLER_LOC_ALERT_REGWEN_0,
     ALERT_HANDLER_LOC_ALERT_REGWEN_1,
     ALERT_HANDLER_LOC_ALERT_REGWEN_2,
@@ -1808,7 +1548,7 @@ package alert_handler_reg_pkg;
   } alert_handler_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] ALERT_HANDLER_PERMIT [502] = '{
+  parameter logic [3:0] ALERT_HANDLER_PERMIT [398] = '{
     4'b 0001, // index[  0] ALERT_HANDLER_INTR_STATE
     4'b 0001, // index[  1] ALERT_HANDLER_INTR_ENABLE
     4'b 0001, // index[  2] ALERT_HANDLER_INTR_TEST
@@ -1892,425 +1632,321 @@ package alert_handler_reg_pkg;
     4'b 0001, // index[ 80] ALERT_HANDLER_ALERT_REGWEN_74
     4'b 0001, // index[ 81] ALERT_HANDLER_ALERT_REGWEN_75
     4'b 0001, // index[ 82] ALERT_HANDLER_ALERT_REGWEN_76
-    4'b 0001, // index[ 83] ALERT_HANDLER_ALERT_REGWEN_77
-    4'b 0001, // index[ 84] ALERT_HANDLER_ALERT_REGWEN_78
-    4'b 0001, // index[ 85] ALERT_HANDLER_ALERT_REGWEN_79
-    4'b 0001, // index[ 86] ALERT_HANDLER_ALERT_REGWEN_80
-    4'b 0001, // index[ 87] ALERT_HANDLER_ALERT_REGWEN_81
-    4'b 0001, // index[ 88] ALERT_HANDLER_ALERT_REGWEN_82
-    4'b 0001, // index[ 89] ALERT_HANDLER_ALERT_REGWEN_83
-    4'b 0001, // index[ 90] ALERT_HANDLER_ALERT_REGWEN_84
-    4'b 0001, // index[ 91] ALERT_HANDLER_ALERT_REGWEN_85
-    4'b 0001, // index[ 92] ALERT_HANDLER_ALERT_REGWEN_86
-    4'b 0001, // index[ 93] ALERT_HANDLER_ALERT_REGWEN_87
-    4'b 0001, // index[ 94] ALERT_HANDLER_ALERT_REGWEN_88
-    4'b 0001, // index[ 95] ALERT_HANDLER_ALERT_REGWEN_89
-    4'b 0001, // index[ 96] ALERT_HANDLER_ALERT_REGWEN_90
-    4'b 0001, // index[ 97] ALERT_HANDLER_ALERT_REGWEN_91
-    4'b 0001, // index[ 98] ALERT_HANDLER_ALERT_REGWEN_92
-    4'b 0001, // index[ 99] ALERT_HANDLER_ALERT_REGWEN_93
-    4'b 0001, // index[100] ALERT_HANDLER_ALERT_REGWEN_94
-    4'b 0001, // index[101] ALERT_HANDLER_ALERT_REGWEN_95
-    4'b 0001, // index[102] ALERT_HANDLER_ALERT_REGWEN_96
-    4'b 0001, // index[103] ALERT_HANDLER_ALERT_REGWEN_97
-    4'b 0001, // index[104] ALERT_HANDLER_ALERT_REGWEN_98
-    4'b 0001, // index[105] ALERT_HANDLER_ALERT_REGWEN_99
-    4'b 0001, // index[106] ALERT_HANDLER_ALERT_REGWEN_100
-    4'b 0001, // index[107] ALERT_HANDLER_ALERT_REGWEN_101
-    4'b 0001, // index[108] ALERT_HANDLER_ALERT_REGWEN_102
-    4'b 0001, // index[109] ALERT_HANDLER_ALERT_EN_SHADOWED_0
-    4'b 0001, // index[110] ALERT_HANDLER_ALERT_EN_SHADOWED_1
-    4'b 0001, // index[111] ALERT_HANDLER_ALERT_EN_SHADOWED_2
-    4'b 0001, // index[112] ALERT_HANDLER_ALERT_EN_SHADOWED_3
-    4'b 0001, // index[113] ALERT_HANDLER_ALERT_EN_SHADOWED_4
-    4'b 0001, // index[114] ALERT_HANDLER_ALERT_EN_SHADOWED_5
-    4'b 0001, // index[115] ALERT_HANDLER_ALERT_EN_SHADOWED_6
-    4'b 0001, // index[116] ALERT_HANDLER_ALERT_EN_SHADOWED_7
-    4'b 0001, // index[117] ALERT_HANDLER_ALERT_EN_SHADOWED_8
-    4'b 0001, // index[118] ALERT_HANDLER_ALERT_EN_SHADOWED_9
-    4'b 0001, // index[119] ALERT_HANDLER_ALERT_EN_SHADOWED_10
-    4'b 0001, // index[120] ALERT_HANDLER_ALERT_EN_SHADOWED_11
-    4'b 0001, // index[121] ALERT_HANDLER_ALERT_EN_SHADOWED_12
-    4'b 0001, // index[122] ALERT_HANDLER_ALERT_EN_SHADOWED_13
-    4'b 0001, // index[123] ALERT_HANDLER_ALERT_EN_SHADOWED_14
-    4'b 0001, // index[124] ALERT_HANDLER_ALERT_EN_SHADOWED_15
-    4'b 0001, // index[125] ALERT_HANDLER_ALERT_EN_SHADOWED_16
-    4'b 0001, // index[126] ALERT_HANDLER_ALERT_EN_SHADOWED_17
-    4'b 0001, // index[127] ALERT_HANDLER_ALERT_EN_SHADOWED_18
-    4'b 0001, // index[128] ALERT_HANDLER_ALERT_EN_SHADOWED_19
-    4'b 0001, // index[129] ALERT_HANDLER_ALERT_EN_SHADOWED_20
-    4'b 0001, // index[130] ALERT_HANDLER_ALERT_EN_SHADOWED_21
-    4'b 0001, // index[131] ALERT_HANDLER_ALERT_EN_SHADOWED_22
-    4'b 0001, // index[132] ALERT_HANDLER_ALERT_EN_SHADOWED_23
-    4'b 0001, // index[133] ALERT_HANDLER_ALERT_EN_SHADOWED_24
-    4'b 0001, // index[134] ALERT_HANDLER_ALERT_EN_SHADOWED_25
-    4'b 0001, // index[135] ALERT_HANDLER_ALERT_EN_SHADOWED_26
-    4'b 0001, // index[136] ALERT_HANDLER_ALERT_EN_SHADOWED_27
-    4'b 0001, // index[137] ALERT_HANDLER_ALERT_EN_SHADOWED_28
-    4'b 0001, // index[138] ALERT_HANDLER_ALERT_EN_SHADOWED_29
-    4'b 0001, // index[139] ALERT_HANDLER_ALERT_EN_SHADOWED_30
-    4'b 0001, // index[140] ALERT_HANDLER_ALERT_EN_SHADOWED_31
-    4'b 0001, // index[141] ALERT_HANDLER_ALERT_EN_SHADOWED_32
-    4'b 0001, // index[142] ALERT_HANDLER_ALERT_EN_SHADOWED_33
-    4'b 0001, // index[143] ALERT_HANDLER_ALERT_EN_SHADOWED_34
-    4'b 0001, // index[144] ALERT_HANDLER_ALERT_EN_SHADOWED_35
-    4'b 0001, // index[145] ALERT_HANDLER_ALERT_EN_SHADOWED_36
-    4'b 0001, // index[146] ALERT_HANDLER_ALERT_EN_SHADOWED_37
-    4'b 0001, // index[147] ALERT_HANDLER_ALERT_EN_SHADOWED_38
-    4'b 0001, // index[148] ALERT_HANDLER_ALERT_EN_SHADOWED_39
-    4'b 0001, // index[149] ALERT_HANDLER_ALERT_EN_SHADOWED_40
-    4'b 0001, // index[150] ALERT_HANDLER_ALERT_EN_SHADOWED_41
-    4'b 0001, // index[151] ALERT_HANDLER_ALERT_EN_SHADOWED_42
-    4'b 0001, // index[152] ALERT_HANDLER_ALERT_EN_SHADOWED_43
-    4'b 0001, // index[153] ALERT_HANDLER_ALERT_EN_SHADOWED_44
-    4'b 0001, // index[154] ALERT_HANDLER_ALERT_EN_SHADOWED_45
-    4'b 0001, // index[155] ALERT_HANDLER_ALERT_EN_SHADOWED_46
-    4'b 0001, // index[156] ALERT_HANDLER_ALERT_EN_SHADOWED_47
-    4'b 0001, // index[157] ALERT_HANDLER_ALERT_EN_SHADOWED_48
-    4'b 0001, // index[158] ALERT_HANDLER_ALERT_EN_SHADOWED_49
-    4'b 0001, // index[159] ALERT_HANDLER_ALERT_EN_SHADOWED_50
-    4'b 0001, // index[160] ALERT_HANDLER_ALERT_EN_SHADOWED_51
-    4'b 0001, // index[161] ALERT_HANDLER_ALERT_EN_SHADOWED_52
-    4'b 0001, // index[162] ALERT_HANDLER_ALERT_EN_SHADOWED_53
-    4'b 0001, // index[163] ALERT_HANDLER_ALERT_EN_SHADOWED_54
-    4'b 0001, // index[164] ALERT_HANDLER_ALERT_EN_SHADOWED_55
-    4'b 0001, // index[165] ALERT_HANDLER_ALERT_EN_SHADOWED_56
-    4'b 0001, // index[166] ALERT_HANDLER_ALERT_EN_SHADOWED_57
-    4'b 0001, // index[167] ALERT_HANDLER_ALERT_EN_SHADOWED_58
-    4'b 0001, // index[168] ALERT_HANDLER_ALERT_EN_SHADOWED_59
-    4'b 0001, // index[169] ALERT_HANDLER_ALERT_EN_SHADOWED_60
-    4'b 0001, // index[170] ALERT_HANDLER_ALERT_EN_SHADOWED_61
-    4'b 0001, // index[171] ALERT_HANDLER_ALERT_EN_SHADOWED_62
-    4'b 0001, // index[172] ALERT_HANDLER_ALERT_EN_SHADOWED_63
-    4'b 0001, // index[173] ALERT_HANDLER_ALERT_EN_SHADOWED_64
-    4'b 0001, // index[174] ALERT_HANDLER_ALERT_EN_SHADOWED_65
-    4'b 0001, // index[175] ALERT_HANDLER_ALERT_EN_SHADOWED_66
-    4'b 0001, // index[176] ALERT_HANDLER_ALERT_EN_SHADOWED_67
-    4'b 0001, // index[177] ALERT_HANDLER_ALERT_EN_SHADOWED_68
-    4'b 0001, // index[178] ALERT_HANDLER_ALERT_EN_SHADOWED_69
-    4'b 0001, // index[179] ALERT_HANDLER_ALERT_EN_SHADOWED_70
-    4'b 0001, // index[180] ALERT_HANDLER_ALERT_EN_SHADOWED_71
-    4'b 0001, // index[181] ALERT_HANDLER_ALERT_EN_SHADOWED_72
-    4'b 0001, // index[182] ALERT_HANDLER_ALERT_EN_SHADOWED_73
-    4'b 0001, // index[183] ALERT_HANDLER_ALERT_EN_SHADOWED_74
-    4'b 0001, // index[184] ALERT_HANDLER_ALERT_EN_SHADOWED_75
-    4'b 0001, // index[185] ALERT_HANDLER_ALERT_EN_SHADOWED_76
-    4'b 0001, // index[186] ALERT_HANDLER_ALERT_EN_SHADOWED_77
-    4'b 0001, // index[187] ALERT_HANDLER_ALERT_EN_SHADOWED_78
-    4'b 0001, // index[188] ALERT_HANDLER_ALERT_EN_SHADOWED_79
-    4'b 0001, // index[189] ALERT_HANDLER_ALERT_EN_SHADOWED_80
-    4'b 0001, // index[190] ALERT_HANDLER_ALERT_EN_SHADOWED_81
-    4'b 0001, // index[191] ALERT_HANDLER_ALERT_EN_SHADOWED_82
-    4'b 0001, // index[192] ALERT_HANDLER_ALERT_EN_SHADOWED_83
-    4'b 0001, // index[193] ALERT_HANDLER_ALERT_EN_SHADOWED_84
-    4'b 0001, // index[194] ALERT_HANDLER_ALERT_EN_SHADOWED_85
-    4'b 0001, // index[195] ALERT_HANDLER_ALERT_EN_SHADOWED_86
-    4'b 0001, // index[196] ALERT_HANDLER_ALERT_EN_SHADOWED_87
-    4'b 0001, // index[197] ALERT_HANDLER_ALERT_EN_SHADOWED_88
-    4'b 0001, // index[198] ALERT_HANDLER_ALERT_EN_SHADOWED_89
-    4'b 0001, // index[199] ALERT_HANDLER_ALERT_EN_SHADOWED_90
-    4'b 0001, // index[200] ALERT_HANDLER_ALERT_EN_SHADOWED_91
-    4'b 0001, // index[201] ALERT_HANDLER_ALERT_EN_SHADOWED_92
-    4'b 0001, // index[202] ALERT_HANDLER_ALERT_EN_SHADOWED_93
-    4'b 0001, // index[203] ALERT_HANDLER_ALERT_EN_SHADOWED_94
-    4'b 0001, // index[204] ALERT_HANDLER_ALERT_EN_SHADOWED_95
-    4'b 0001, // index[205] ALERT_HANDLER_ALERT_EN_SHADOWED_96
-    4'b 0001, // index[206] ALERT_HANDLER_ALERT_EN_SHADOWED_97
-    4'b 0001, // index[207] ALERT_HANDLER_ALERT_EN_SHADOWED_98
-    4'b 0001, // index[208] ALERT_HANDLER_ALERT_EN_SHADOWED_99
-    4'b 0001, // index[209] ALERT_HANDLER_ALERT_EN_SHADOWED_100
-    4'b 0001, // index[210] ALERT_HANDLER_ALERT_EN_SHADOWED_101
-    4'b 0001, // index[211] ALERT_HANDLER_ALERT_EN_SHADOWED_102
-    4'b 0001, // index[212] ALERT_HANDLER_ALERT_CLASS_SHADOWED_0
-    4'b 0001, // index[213] ALERT_HANDLER_ALERT_CLASS_SHADOWED_1
-    4'b 0001, // index[214] ALERT_HANDLER_ALERT_CLASS_SHADOWED_2
-    4'b 0001, // index[215] ALERT_HANDLER_ALERT_CLASS_SHADOWED_3
-    4'b 0001, // index[216] ALERT_HANDLER_ALERT_CLASS_SHADOWED_4
-    4'b 0001, // index[217] ALERT_HANDLER_ALERT_CLASS_SHADOWED_5
-    4'b 0001, // index[218] ALERT_HANDLER_ALERT_CLASS_SHADOWED_6
-    4'b 0001, // index[219] ALERT_HANDLER_ALERT_CLASS_SHADOWED_7
-    4'b 0001, // index[220] ALERT_HANDLER_ALERT_CLASS_SHADOWED_8
-    4'b 0001, // index[221] ALERT_HANDLER_ALERT_CLASS_SHADOWED_9
-    4'b 0001, // index[222] ALERT_HANDLER_ALERT_CLASS_SHADOWED_10
-    4'b 0001, // index[223] ALERT_HANDLER_ALERT_CLASS_SHADOWED_11
-    4'b 0001, // index[224] ALERT_HANDLER_ALERT_CLASS_SHADOWED_12
-    4'b 0001, // index[225] ALERT_HANDLER_ALERT_CLASS_SHADOWED_13
-    4'b 0001, // index[226] ALERT_HANDLER_ALERT_CLASS_SHADOWED_14
-    4'b 0001, // index[227] ALERT_HANDLER_ALERT_CLASS_SHADOWED_15
-    4'b 0001, // index[228] ALERT_HANDLER_ALERT_CLASS_SHADOWED_16
-    4'b 0001, // index[229] ALERT_HANDLER_ALERT_CLASS_SHADOWED_17
-    4'b 0001, // index[230] ALERT_HANDLER_ALERT_CLASS_SHADOWED_18
-    4'b 0001, // index[231] ALERT_HANDLER_ALERT_CLASS_SHADOWED_19
-    4'b 0001, // index[232] ALERT_HANDLER_ALERT_CLASS_SHADOWED_20
-    4'b 0001, // index[233] ALERT_HANDLER_ALERT_CLASS_SHADOWED_21
-    4'b 0001, // index[234] ALERT_HANDLER_ALERT_CLASS_SHADOWED_22
-    4'b 0001, // index[235] ALERT_HANDLER_ALERT_CLASS_SHADOWED_23
-    4'b 0001, // index[236] ALERT_HANDLER_ALERT_CLASS_SHADOWED_24
-    4'b 0001, // index[237] ALERT_HANDLER_ALERT_CLASS_SHADOWED_25
-    4'b 0001, // index[238] ALERT_HANDLER_ALERT_CLASS_SHADOWED_26
-    4'b 0001, // index[239] ALERT_HANDLER_ALERT_CLASS_SHADOWED_27
-    4'b 0001, // index[240] ALERT_HANDLER_ALERT_CLASS_SHADOWED_28
-    4'b 0001, // index[241] ALERT_HANDLER_ALERT_CLASS_SHADOWED_29
-    4'b 0001, // index[242] ALERT_HANDLER_ALERT_CLASS_SHADOWED_30
-    4'b 0001, // index[243] ALERT_HANDLER_ALERT_CLASS_SHADOWED_31
-    4'b 0001, // index[244] ALERT_HANDLER_ALERT_CLASS_SHADOWED_32
-    4'b 0001, // index[245] ALERT_HANDLER_ALERT_CLASS_SHADOWED_33
-    4'b 0001, // index[246] ALERT_HANDLER_ALERT_CLASS_SHADOWED_34
-    4'b 0001, // index[247] ALERT_HANDLER_ALERT_CLASS_SHADOWED_35
-    4'b 0001, // index[248] ALERT_HANDLER_ALERT_CLASS_SHADOWED_36
-    4'b 0001, // index[249] ALERT_HANDLER_ALERT_CLASS_SHADOWED_37
-    4'b 0001, // index[250] ALERT_HANDLER_ALERT_CLASS_SHADOWED_38
-    4'b 0001, // index[251] ALERT_HANDLER_ALERT_CLASS_SHADOWED_39
-    4'b 0001, // index[252] ALERT_HANDLER_ALERT_CLASS_SHADOWED_40
-    4'b 0001, // index[253] ALERT_HANDLER_ALERT_CLASS_SHADOWED_41
-    4'b 0001, // index[254] ALERT_HANDLER_ALERT_CLASS_SHADOWED_42
-    4'b 0001, // index[255] ALERT_HANDLER_ALERT_CLASS_SHADOWED_43
-    4'b 0001, // index[256] ALERT_HANDLER_ALERT_CLASS_SHADOWED_44
-    4'b 0001, // index[257] ALERT_HANDLER_ALERT_CLASS_SHADOWED_45
-    4'b 0001, // index[258] ALERT_HANDLER_ALERT_CLASS_SHADOWED_46
-    4'b 0001, // index[259] ALERT_HANDLER_ALERT_CLASS_SHADOWED_47
-    4'b 0001, // index[260] ALERT_HANDLER_ALERT_CLASS_SHADOWED_48
-    4'b 0001, // index[261] ALERT_HANDLER_ALERT_CLASS_SHADOWED_49
-    4'b 0001, // index[262] ALERT_HANDLER_ALERT_CLASS_SHADOWED_50
-    4'b 0001, // index[263] ALERT_HANDLER_ALERT_CLASS_SHADOWED_51
-    4'b 0001, // index[264] ALERT_HANDLER_ALERT_CLASS_SHADOWED_52
-    4'b 0001, // index[265] ALERT_HANDLER_ALERT_CLASS_SHADOWED_53
-    4'b 0001, // index[266] ALERT_HANDLER_ALERT_CLASS_SHADOWED_54
-    4'b 0001, // index[267] ALERT_HANDLER_ALERT_CLASS_SHADOWED_55
-    4'b 0001, // index[268] ALERT_HANDLER_ALERT_CLASS_SHADOWED_56
-    4'b 0001, // index[269] ALERT_HANDLER_ALERT_CLASS_SHADOWED_57
-    4'b 0001, // index[270] ALERT_HANDLER_ALERT_CLASS_SHADOWED_58
-    4'b 0001, // index[271] ALERT_HANDLER_ALERT_CLASS_SHADOWED_59
-    4'b 0001, // index[272] ALERT_HANDLER_ALERT_CLASS_SHADOWED_60
-    4'b 0001, // index[273] ALERT_HANDLER_ALERT_CLASS_SHADOWED_61
-    4'b 0001, // index[274] ALERT_HANDLER_ALERT_CLASS_SHADOWED_62
-    4'b 0001, // index[275] ALERT_HANDLER_ALERT_CLASS_SHADOWED_63
-    4'b 0001, // index[276] ALERT_HANDLER_ALERT_CLASS_SHADOWED_64
-    4'b 0001, // index[277] ALERT_HANDLER_ALERT_CLASS_SHADOWED_65
-    4'b 0001, // index[278] ALERT_HANDLER_ALERT_CLASS_SHADOWED_66
-    4'b 0001, // index[279] ALERT_HANDLER_ALERT_CLASS_SHADOWED_67
-    4'b 0001, // index[280] ALERT_HANDLER_ALERT_CLASS_SHADOWED_68
-    4'b 0001, // index[281] ALERT_HANDLER_ALERT_CLASS_SHADOWED_69
-    4'b 0001, // index[282] ALERT_HANDLER_ALERT_CLASS_SHADOWED_70
-    4'b 0001, // index[283] ALERT_HANDLER_ALERT_CLASS_SHADOWED_71
-    4'b 0001, // index[284] ALERT_HANDLER_ALERT_CLASS_SHADOWED_72
-    4'b 0001, // index[285] ALERT_HANDLER_ALERT_CLASS_SHADOWED_73
-    4'b 0001, // index[286] ALERT_HANDLER_ALERT_CLASS_SHADOWED_74
-    4'b 0001, // index[287] ALERT_HANDLER_ALERT_CLASS_SHADOWED_75
-    4'b 0001, // index[288] ALERT_HANDLER_ALERT_CLASS_SHADOWED_76
-    4'b 0001, // index[289] ALERT_HANDLER_ALERT_CLASS_SHADOWED_77
-    4'b 0001, // index[290] ALERT_HANDLER_ALERT_CLASS_SHADOWED_78
-    4'b 0001, // index[291] ALERT_HANDLER_ALERT_CLASS_SHADOWED_79
-    4'b 0001, // index[292] ALERT_HANDLER_ALERT_CLASS_SHADOWED_80
-    4'b 0001, // index[293] ALERT_HANDLER_ALERT_CLASS_SHADOWED_81
-    4'b 0001, // index[294] ALERT_HANDLER_ALERT_CLASS_SHADOWED_82
-    4'b 0001, // index[295] ALERT_HANDLER_ALERT_CLASS_SHADOWED_83
-    4'b 0001, // index[296] ALERT_HANDLER_ALERT_CLASS_SHADOWED_84
-    4'b 0001, // index[297] ALERT_HANDLER_ALERT_CLASS_SHADOWED_85
-    4'b 0001, // index[298] ALERT_HANDLER_ALERT_CLASS_SHADOWED_86
-    4'b 0001, // index[299] ALERT_HANDLER_ALERT_CLASS_SHADOWED_87
-    4'b 0001, // index[300] ALERT_HANDLER_ALERT_CLASS_SHADOWED_88
-    4'b 0001, // index[301] ALERT_HANDLER_ALERT_CLASS_SHADOWED_89
-    4'b 0001, // index[302] ALERT_HANDLER_ALERT_CLASS_SHADOWED_90
-    4'b 0001, // index[303] ALERT_HANDLER_ALERT_CLASS_SHADOWED_91
-    4'b 0001, // index[304] ALERT_HANDLER_ALERT_CLASS_SHADOWED_92
-    4'b 0001, // index[305] ALERT_HANDLER_ALERT_CLASS_SHADOWED_93
-    4'b 0001, // index[306] ALERT_HANDLER_ALERT_CLASS_SHADOWED_94
-    4'b 0001, // index[307] ALERT_HANDLER_ALERT_CLASS_SHADOWED_95
-    4'b 0001, // index[308] ALERT_HANDLER_ALERT_CLASS_SHADOWED_96
-    4'b 0001, // index[309] ALERT_HANDLER_ALERT_CLASS_SHADOWED_97
-    4'b 0001, // index[310] ALERT_HANDLER_ALERT_CLASS_SHADOWED_98
-    4'b 0001, // index[311] ALERT_HANDLER_ALERT_CLASS_SHADOWED_99
-    4'b 0001, // index[312] ALERT_HANDLER_ALERT_CLASS_SHADOWED_100
-    4'b 0001, // index[313] ALERT_HANDLER_ALERT_CLASS_SHADOWED_101
-    4'b 0001, // index[314] ALERT_HANDLER_ALERT_CLASS_SHADOWED_102
-    4'b 0001, // index[315] ALERT_HANDLER_ALERT_CAUSE_0
-    4'b 0001, // index[316] ALERT_HANDLER_ALERT_CAUSE_1
-    4'b 0001, // index[317] ALERT_HANDLER_ALERT_CAUSE_2
-    4'b 0001, // index[318] ALERT_HANDLER_ALERT_CAUSE_3
-    4'b 0001, // index[319] ALERT_HANDLER_ALERT_CAUSE_4
-    4'b 0001, // index[320] ALERT_HANDLER_ALERT_CAUSE_5
-    4'b 0001, // index[321] ALERT_HANDLER_ALERT_CAUSE_6
-    4'b 0001, // index[322] ALERT_HANDLER_ALERT_CAUSE_7
-    4'b 0001, // index[323] ALERT_HANDLER_ALERT_CAUSE_8
-    4'b 0001, // index[324] ALERT_HANDLER_ALERT_CAUSE_9
-    4'b 0001, // index[325] ALERT_HANDLER_ALERT_CAUSE_10
-    4'b 0001, // index[326] ALERT_HANDLER_ALERT_CAUSE_11
-    4'b 0001, // index[327] ALERT_HANDLER_ALERT_CAUSE_12
-    4'b 0001, // index[328] ALERT_HANDLER_ALERT_CAUSE_13
-    4'b 0001, // index[329] ALERT_HANDLER_ALERT_CAUSE_14
-    4'b 0001, // index[330] ALERT_HANDLER_ALERT_CAUSE_15
-    4'b 0001, // index[331] ALERT_HANDLER_ALERT_CAUSE_16
-    4'b 0001, // index[332] ALERT_HANDLER_ALERT_CAUSE_17
-    4'b 0001, // index[333] ALERT_HANDLER_ALERT_CAUSE_18
-    4'b 0001, // index[334] ALERT_HANDLER_ALERT_CAUSE_19
-    4'b 0001, // index[335] ALERT_HANDLER_ALERT_CAUSE_20
-    4'b 0001, // index[336] ALERT_HANDLER_ALERT_CAUSE_21
-    4'b 0001, // index[337] ALERT_HANDLER_ALERT_CAUSE_22
-    4'b 0001, // index[338] ALERT_HANDLER_ALERT_CAUSE_23
-    4'b 0001, // index[339] ALERT_HANDLER_ALERT_CAUSE_24
-    4'b 0001, // index[340] ALERT_HANDLER_ALERT_CAUSE_25
-    4'b 0001, // index[341] ALERT_HANDLER_ALERT_CAUSE_26
-    4'b 0001, // index[342] ALERT_HANDLER_ALERT_CAUSE_27
-    4'b 0001, // index[343] ALERT_HANDLER_ALERT_CAUSE_28
-    4'b 0001, // index[344] ALERT_HANDLER_ALERT_CAUSE_29
-    4'b 0001, // index[345] ALERT_HANDLER_ALERT_CAUSE_30
-    4'b 0001, // index[346] ALERT_HANDLER_ALERT_CAUSE_31
-    4'b 0001, // index[347] ALERT_HANDLER_ALERT_CAUSE_32
-    4'b 0001, // index[348] ALERT_HANDLER_ALERT_CAUSE_33
-    4'b 0001, // index[349] ALERT_HANDLER_ALERT_CAUSE_34
-    4'b 0001, // index[350] ALERT_HANDLER_ALERT_CAUSE_35
-    4'b 0001, // index[351] ALERT_HANDLER_ALERT_CAUSE_36
-    4'b 0001, // index[352] ALERT_HANDLER_ALERT_CAUSE_37
-    4'b 0001, // index[353] ALERT_HANDLER_ALERT_CAUSE_38
-    4'b 0001, // index[354] ALERT_HANDLER_ALERT_CAUSE_39
-    4'b 0001, // index[355] ALERT_HANDLER_ALERT_CAUSE_40
-    4'b 0001, // index[356] ALERT_HANDLER_ALERT_CAUSE_41
-    4'b 0001, // index[357] ALERT_HANDLER_ALERT_CAUSE_42
-    4'b 0001, // index[358] ALERT_HANDLER_ALERT_CAUSE_43
-    4'b 0001, // index[359] ALERT_HANDLER_ALERT_CAUSE_44
-    4'b 0001, // index[360] ALERT_HANDLER_ALERT_CAUSE_45
-    4'b 0001, // index[361] ALERT_HANDLER_ALERT_CAUSE_46
-    4'b 0001, // index[362] ALERT_HANDLER_ALERT_CAUSE_47
-    4'b 0001, // index[363] ALERT_HANDLER_ALERT_CAUSE_48
-    4'b 0001, // index[364] ALERT_HANDLER_ALERT_CAUSE_49
-    4'b 0001, // index[365] ALERT_HANDLER_ALERT_CAUSE_50
-    4'b 0001, // index[366] ALERT_HANDLER_ALERT_CAUSE_51
-    4'b 0001, // index[367] ALERT_HANDLER_ALERT_CAUSE_52
-    4'b 0001, // index[368] ALERT_HANDLER_ALERT_CAUSE_53
-    4'b 0001, // index[369] ALERT_HANDLER_ALERT_CAUSE_54
-    4'b 0001, // index[370] ALERT_HANDLER_ALERT_CAUSE_55
-    4'b 0001, // index[371] ALERT_HANDLER_ALERT_CAUSE_56
-    4'b 0001, // index[372] ALERT_HANDLER_ALERT_CAUSE_57
-    4'b 0001, // index[373] ALERT_HANDLER_ALERT_CAUSE_58
-    4'b 0001, // index[374] ALERT_HANDLER_ALERT_CAUSE_59
-    4'b 0001, // index[375] ALERT_HANDLER_ALERT_CAUSE_60
-    4'b 0001, // index[376] ALERT_HANDLER_ALERT_CAUSE_61
-    4'b 0001, // index[377] ALERT_HANDLER_ALERT_CAUSE_62
-    4'b 0001, // index[378] ALERT_HANDLER_ALERT_CAUSE_63
-    4'b 0001, // index[379] ALERT_HANDLER_ALERT_CAUSE_64
-    4'b 0001, // index[380] ALERT_HANDLER_ALERT_CAUSE_65
-    4'b 0001, // index[381] ALERT_HANDLER_ALERT_CAUSE_66
-    4'b 0001, // index[382] ALERT_HANDLER_ALERT_CAUSE_67
-    4'b 0001, // index[383] ALERT_HANDLER_ALERT_CAUSE_68
-    4'b 0001, // index[384] ALERT_HANDLER_ALERT_CAUSE_69
-    4'b 0001, // index[385] ALERT_HANDLER_ALERT_CAUSE_70
-    4'b 0001, // index[386] ALERT_HANDLER_ALERT_CAUSE_71
-    4'b 0001, // index[387] ALERT_HANDLER_ALERT_CAUSE_72
-    4'b 0001, // index[388] ALERT_HANDLER_ALERT_CAUSE_73
-    4'b 0001, // index[389] ALERT_HANDLER_ALERT_CAUSE_74
-    4'b 0001, // index[390] ALERT_HANDLER_ALERT_CAUSE_75
-    4'b 0001, // index[391] ALERT_HANDLER_ALERT_CAUSE_76
-    4'b 0001, // index[392] ALERT_HANDLER_ALERT_CAUSE_77
-    4'b 0001, // index[393] ALERT_HANDLER_ALERT_CAUSE_78
-    4'b 0001, // index[394] ALERT_HANDLER_ALERT_CAUSE_79
-    4'b 0001, // index[395] ALERT_HANDLER_ALERT_CAUSE_80
-    4'b 0001, // index[396] ALERT_HANDLER_ALERT_CAUSE_81
-    4'b 0001, // index[397] ALERT_HANDLER_ALERT_CAUSE_82
-    4'b 0001, // index[398] ALERT_HANDLER_ALERT_CAUSE_83
-    4'b 0001, // index[399] ALERT_HANDLER_ALERT_CAUSE_84
-    4'b 0001, // index[400] ALERT_HANDLER_ALERT_CAUSE_85
-    4'b 0001, // index[401] ALERT_HANDLER_ALERT_CAUSE_86
-    4'b 0001, // index[402] ALERT_HANDLER_ALERT_CAUSE_87
-    4'b 0001, // index[403] ALERT_HANDLER_ALERT_CAUSE_88
-    4'b 0001, // index[404] ALERT_HANDLER_ALERT_CAUSE_89
-    4'b 0001, // index[405] ALERT_HANDLER_ALERT_CAUSE_90
-    4'b 0001, // index[406] ALERT_HANDLER_ALERT_CAUSE_91
-    4'b 0001, // index[407] ALERT_HANDLER_ALERT_CAUSE_92
-    4'b 0001, // index[408] ALERT_HANDLER_ALERT_CAUSE_93
-    4'b 0001, // index[409] ALERT_HANDLER_ALERT_CAUSE_94
-    4'b 0001, // index[410] ALERT_HANDLER_ALERT_CAUSE_95
-    4'b 0001, // index[411] ALERT_HANDLER_ALERT_CAUSE_96
-    4'b 0001, // index[412] ALERT_HANDLER_ALERT_CAUSE_97
-    4'b 0001, // index[413] ALERT_HANDLER_ALERT_CAUSE_98
-    4'b 0001, // index[414] ALERT_HANDLER_ALERT_CAUSE_99
-    4'b 0001, // index[415] ALERT_HANDLER_ALERT_CAUSE_100
-    4'b 0001, // index[416] ALERT_HANDLER_ALERT_CAUSE_101
-    4'b 0001, // index[417] ALERT_HANDLER_ALERT_CAUSE_102
-    4'b 0001, // index[418] ALERT_HANDLER_LOC_ALERT_REGWEN_0
-    4'b 0001, // index[419] ALERT_HANDLER_LOC_ALERT_REGWEN_1
-    4'b 0001, // index[420] ALERT_HANDLER_LOC_ALERT_REGWEN_2
-    4'b 0001, // index[421] ALERT_HANDLER_LOC_ALERT_REGWEN_3
-    4'b 0001, // index[422] ALERT_HANDLER_LOC_ALERT_REGWEN_4
-    4'b 0001, // index[423] ALERT_HANDLER_LOC_ALERT_REGWEN_5
-    4'b 0001, // index[424] ALERT_HANDLER_LOC_ALERT_REGWEN_6
-    4'b 0001, // index[425] ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0
-    4'b 0001, // index[426] ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_1
-    4'b 0001, // index[427] ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_2
-    4'b 0001, // index[428] ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_3
-    4'b 0001, // index[429] ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_4
-    4'b 0001, // index[430] ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_5
-    4'b 0001, // index[431] ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_6
-    4'b 0001, // index[432] ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0
-    4'b 0001, // index[433] ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_1
-    4'b 0001, // index[434] ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_2
-    4'b 0001, // index[435] ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_3
-    4'b 0001, // index[436] ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_4
-    4'b 0001, // index[437] ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_5
-    4'b 0001, // index[438] ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_6
-    4'b 0001, // index[439] ALERT_HANDLER_LOC_ALERT_CAUSE_0
-    4'b 0001, // index[440] ALERT_HANDLER_LOC_ALERT_CAUSE_1
-    4'b 0001, // index[441] ALERT_HANDLER_LOC_ALERT_CAUSE_2
-    4'b 0001, // index[442] ALERT_HANDLER_LOC_ALERT_CAUSE_3
-    4'b 0001, // index[443] ALERT_HANDLER_LOC_ALERT_CAUSE_4
-    4'b 0001, // index[444] ALERT_HANDLER_LOC_ALERT_CAUSE_5
-    4'b 0001, // index[445] ALERT_HANDLER_LOC_ALERT_CAUSE_6
-    4'b 0001, // index[446] ALERT_HANDLER_CLASSA_REGWEN
-    4'b 0011, // index[447] ALERT_HANDLER_CLASSA_CTRL_SHADOWED
-    4'b 0001, // index[448] ALERT_HANDLER_CLASSA_CLR_REGWEN
-    4'b 0001, // index[449] ALERT_HANDLER_CLASSA_CLR_SHADOWED
-    4'b 0011, // index[450] ALERT_HANDLER_CLASSA_ACCUM_CNT
-    4'b 0011, // index[451] ALERT_HANDLER_CLASSA_ACCUM_THRESH_SHADOWED
-    4'b 1111, // index[452] ALERT_HANDLER_CLASSA_TIMEOUT_CYC_SHADOWED
-    4'b 0001, // index[453] ALERT_HANDLER_CLASSA_CRASHDUMP_TRIGGER_SHADOWED
-    4'b 1111, // index[454] ALERT_HANDLER_CLASSA_PHASE0_CYC_SHADOWED
-    4'b 1111, // index[455] ALERT_HANDLER_CLASSA_PHASE1_CYC_SHADOWED
-    4'b 1111, // index[456] ALERT_HANDLER_CLASSA_PHASE2_CYC_SHADOWED
-    4'b 1111, // index[457] ALERT_HANDLER_CLASSA_PHASE3_CYC_SHADOWED
-    4'b 1111, // index[458] ALERT_HANDLER_CLASSA_ESC_CNT
-    4'b 0001, // index[459] ALERT_HANDLER_CLASSA_STATE
-    4'b 0001, // index[460] ALERT_HANDLER_CLASSB_REGWEN
-    4'b 0011, // index[461] ALERT_HANDLER_CLASSB_CTRL_SHADOWED
-    4'b 0001, // index[462] ALERT_HANDLER_CLASSB_CLR_REGWEN
-    4'b 0001, // index[463] ALERT_HANDLER_CLASSB_CLR_SHADOWED
-    4'b 0011, // index[464] ALERT_HANDLER_CLASSB_ACCUM_CNT
-    4'b 0011, // index[465] ALERT_HANDLER_CLASSB_ACCUM_THRESH_SHADOWED
-    4'b 1111, // index[466] ALERT_HANDLER_CLASSB_TIMEOUT_CYC_SHADOWED
-    4'b 0001, // index[467] ALERT_HANDLER_CLASSB_CRASHDUMP_TRIGGER_SHADOWED
-    4'b 1111, // index[468] ALERT_HANDLER_CLASSB_PHASE0_CYC_SHADOWED
-    4'b 1111, // index[469] ALERT_HANDLER_CLASSB_PHASE1_CYC_SHADOWED
-    4'b 1111, // index[470] ALERT_HANDLER_CLASSB_PHASE2_CYC_SHADOWED
-    4'b 1111, // index[471] ALERT_HANDLER_CLASSB_PHASE3_CYC_SHADOWED
-    4'b 1111, // index[472] ALERT_HANDLER_CLASSB_ESC_CNT
-    4'b 0001, // index[473] ALERT_HANDLER_CLASSB_STATE
-    4'b 0001, // index[474] ALERT_HANDLER_CLASSC_REGWEN
-    4'b 0011, // index[475] ALERT_HANDLER_CLASSC_CTRL_SHADOWED
-    4'b 0001, // index[476] ALERT_HANDLER_CLASSC_CLR_REGWEN
-    4'b 0001, // index[477] ALERT_HANDLER_CLASSC_CLR_SHADOWED
-    4'b 0011, // index[478] ALERT_HANDLER_CLASSC_ACCUM_CNT
-    4'b 0011, // index[479] ALERT_HANDLER_CLASSC_ACCUM_THRESH_SHADOWED
-    4'b 1111, // index[480] ALERT_HANDLER_CLASSC_TIMEOUT_CYC_SHADOWED
-    4'b 0001, // index[481] ALERT_HANDLER_CLASSC_CRASHDUMP_TRIGGER_SHADOWED
-    4'b 1111, // index[482] ALERT_HANDLER_CLASSC_PHASE0_CYC_SHADOWED
-    4'b 1111, // index[483] ALERT_HANDLER_CLASSC_PHASE1_CYC_SHADOWED
-    4'b 1111, // index[484] ALERT_HANDLER_CLASSC_PHASE2_CYC_SHADOWED
-    4'b 1111, // index[485] ALERT_HANDLER_CLASSC_PHASE3_CYC_SHADOWED
-    4'b 1111, // index[486] ALERT_HANDLER_CLASSC_ESC_CNT
-    4'b 0001, // index[487] ALERT_HANDLER_CLASSC_STATE
-    4'b 0001, // index[488] ALERT_HANDLER_CLASSD_REGWEN
-    4'b 0011, // index[489] ALERT_HANDLER_CLASSD_CTRL_SHADOWED
-    4'b 0001, // index[490] ALERT_HANDLER_CLASSD_CLR_REGWEN
-    4'b 0001, // index[491] ALERT_HANDLER_CLASSD_CLR_SHADOWED
-    4'b 0011, // index[492] ALERT_HANDLER_CLASSD_ACCUM_CNT
-    4'b 0011, // index[493] ALERT_HANDLER_CLASSD_ACCUM_THRESH_SHADOWED
-    4'b 1111, // index[494] ALERT_HANDLER_CLASSD_TIMEOUT_CYC_SHADOWED
-    4'b 0001, // index[495] ALERT_HANDLER_CLASSD_CRASHDUMP_TRIGGER_SHADOWED
-    4'b 1111, // index[496] ALERT_HANDLER_CLASSD_PHASE0_CYC_SHADOWED
-    4'b 1111, // index[497] ALERT_HANDLER_CLASSD_PHASE1_CYC_SHADOWED
-    4'b 1111, // index[498] ALERT_HANDLER_CLASSD_PHASE2_CYC_SHADOWED
-    4'b 1111, // index[499] ALERT_HANDLER_CLASSD_PHASE3_CYC_SHADOWED
-    4'b 1111, // index[500] ALERT_HANDLER_CLASSD_ESC_CNT
-    4'b 0001  // index[501] ALERT_HANDLER_CLASSD_STATE
+    4'b 0001, // index[ 83] ALERT_HANDLER_ALERT_EN_SHADOWED_0
+    4'b 0001, // index[ 84] ALERT_HANDLER_ALERT_EN_SHADOWED_1
+    4'b 0001, // index[ 85] ALERT_HANDLER_ALERT_EN_SHADOWED_2
+    4'b 0001, // index[ 86] ALERT_HANDLER_ALERT_EN_SHADOWED_3
+    4'b 0001, // index[ 87] ALERT_HANDLER_ALERT_EN_SHADOWED_4
+    4'b 0001, // index[ 88] ALERT_HANDLER_ALERT_EN_SHADOWED_5
+    4'b 0001, // index[ 89] ALERT_HANDLER_ALERT_EN_SHADOWED_6
+    4'b 0001, // index[ 90] ALERT_HANDLER_ALERT_EN_SHADOWED_7
+    4'b 0001, // index[ 91] ALERT_HANDLER_ALERT_EN_SHADOWED_8
+    4'b 0001, // index[ 92] ALERT_HANDLER_ALERT_EN_SHADOWED_9
+    4'b 0001, // index[ 93] ALERT_HANDLER_ALERT_EN_SHADOWED_10
+    4'b 0001, // index[ 94] ALERT_HANDLER_ALERT_EN_SHADOWED_11
+    4'b 0001, // index[ 95] ALERT_HANDLER_ALERT_EN_SHADOWED_12
+    4'b 0001, // index[ 96] ALERT_HANDLER_ALERT_EN_SHADOWED_13
+    4'b 0001, // index[ 97] ALERT_HANDLER_ALERT_EN_SHADOWED_14
+    4'b 0001, // index[ 98] ALERT_HANDLER_ALERT_EN_SHADOWED_15
+    4'b 0001, // index[ 99] ALERT_HANDLER_ALERT_EN_SHADOWED_16
+    4'b 0001, // index[100] ALERT_HANDLER_ALERT_EN_SHADOWED_17
+    4'b 0001, // index[101] ALERT_HANDLER_ALERT_EN_SHADOWED_18
+    4'b 0001, // index[102] ALERT_HANDLER_ALERT_EN_SHADOWED_19
+    4'b 0001, // index[103] ALERT_HANDLER_ALERT_EN_SHADOWED_20
+    4'b 0001, // index[104] ALERT_HANDLER_ALERT_EN_SHADOWED_21
+    4'b 0001, // index[105] ALERT_HANDLER_ALERT_EN_SHADOWED_22
+    4'b 0001, // index[106] ALERT_HANDLER_ALERT_EN_SHADOWED_23
+    4'b 0001, // index[107] ALERT_HANDLER_ALERT_EN_SHADOWED_24
+    4'b 0001, // index[108] ALERT_HANDLER_ALERT_EN_SHADOWED_25
+    4'b 0001, // index[109] ALERT_HANDLER_ALERT_EN_SHADOWED_26
+    4'b 0001, // index[110] ALERT_HANDLER_ALERT_EN_SHADOWED_27
+    4'b 0001, // index[111] ALERT_HANDLER_ALERT_EN_SHADOWED_28
+    4'b 0001, // index[112] ALERT_HANDLER_ALERT_EN_SHADOWED_29
+    4'b 0001, // index[113] ALERT_HANDLER_ALERT_EN_SHADOWED_30
+    4'b 0001, // index[114] ALERT_HANDLER_ALERT_EN_SHADOWED_31
+    4'b 0001, // index[115] ALERT_HANDLER_ALERT_EN_SHADOWED_32
+    4'b 0001, // index[116] ALERT_HANDLER_ALERT_EN_SHADOWED_33
+    4'b 0001, // index[117] ALERT_HANDLER_ALERT_EN_SHADOWED_34
+    4'b 0001, // index[118] ALERT_HANDLER_ALERT_EN_SHADOWED_35
+    4'b 0001, // index[119] ALERT_HANDLER_ALERT_EN_SHADOWED_36
+    4'b 0001, // index[120] ALERT_HANDLER_ALERT_EN_SHADOWED_37
+    4'b 0001, // index[121] ALERT_HANDLER_ALERT_EN_SHADOWED_38
+    4'b 0001, // index[122] ALERT_HANDLER_ALERT_EN_SHADOWED_39
+    4'b 0001, // index[123] ALERT_HANDLER_ALERT_EN_SHADOWED_40
+    4'b 0001, // index[124] ALERT_HANDLER_ALERT_EN_SHADOWED_41
+    4'b 0001, // index[125] ALERT_HANDLER_ALERT_EN_SHADOWED_42
+    4'b 0001, // index[126] ALERT_HANDLER_ALERT_EN_SHADOWED_43
+    4'b 0001, // index[127] ALERT_HANDLER_ALERT_EN_SHADOWED_44
+    4'b 0001, // index[128] ALERT_HANDLER_ALERT_EN_SHADOWED_45
+    4'b 0001, // index[129] ALERT_HANDLER_ALERT_EN_SHADOWED_46
+    4'b 0001, // index[130] ALERT_HANDLER_ALERT_EN_SHADOWED_47
+    4'b 0001, // index[131] ALERT_HANDLER_ALERT_EN_SHADOWED_48
+    4'b 0001, // index[132] ALERT_HANDLER_ALERT_EN_SHADOWED_49
+    4'b 0001, // index[133] ALERT_HANDLER_ALERT_EN_SHADOWED_50
+    4'b 0001, // index[134] ALERT_HANDLER_ALERT_EN_SHADOWED_51
+    4'b 0001, // index[135] ALERT_HANDLER_ALERT_EN_SHADOWED_52
+    4'b 0001, // index[136] ALERT_HANDLER_ALERT_EN_SHADOWED_53
+    4'b 0001, // index[137] ALERT_HANDLER_ALERT_EN_SHADOWED_54
+    4'b 0001, // index[138] ALERT_HANDLER_ALERT_EN_SHADOWED_55
+    4'b 0001, // index[139] ALERT_HANDLER_ALERT_EN_SHADOWED_56
+    4'b 0001, // index[140] ALERT_HANDLER_ALERT_EN_SHADOWED_57
+    4'b 0001, // index[141] ALERT_HANDLER_ALERT_EN_SHADOWED_58
+    4'b 0001, // index[142] ALERT_HANDLER_ALERT_EN_SHADOWED_59
+    4'b 0001, // index[143] ALERT_HANDLER_ALERT_EN_SHADOWED_60
+    4'b 0001, // index[144] ALERT_HANDLER_ALERT_EN_SHADOWED_61
+    4'b 0001, // index[145] ALERT_HANDLER_ALERT_EN_SHADOWED_62
+    4'b 0001, // index[146] ALERT_HANDLER_ALERT_EN_SHADOWED_63
+    4'b 0001, // index[147] ALERT_HANDLER_ALERT_EN_SHADOWED_64
+    4'b 0001, // index[148] ALERT_HANDLER_ALERT_EN_SHADOWED_65
+    4'b 0001, // index[149] ALERT_HANDLER_ALERT_EN_SHADOWED_66
+    4'b 0001, // index[150] ALERT_HANDLER_ALERT_EN_SHADOWED_67
+    4'b 0001, // index[151] ALERT_HANDLER_ALERT_EN_SHADOWED_68
+    4'b 0001, // index[152] ALERT_HANDLER_ALERT_EN_SHADOWED_69
+    4'b 0001, // index[153] ALERT_HANDLER_ALERT_EN_SHADOWED_70
+    4'b 0001, // index[154] ALERT_HANDLER_ALERT_EN_SHADOWED_71
+    4'b 0001, // index[155] ALERT_HANDLER_ALERT_EN_SHADOWED_72
+    4'b 0001, // index[156] ALERT_HANDLER_ALERT_EN_SHADOWED_73
+    4'b 0001, // index[157] ALERT_HANDLER_ALERT_EN_SHADOWED_74
+    4'b 0001, // index[158] ALERT_HANDLER_ALERT_EN_SHADOWED_75
+    4'b 0001, // index[159] ALERT_HANDLER_ALERT_EN_SHADOWED_76
+    4'b 0001, // index[160] ALERT_HANDLER_ALERT_CLASS_SHADOWED_0
+    4'b 0001, // index[161] ALERT_HANDLER_ALERT_CLASS_SHADOWED_1
+    4'b 0001, // index[162] ALERT_HANDLER_ALERT_CLASS_SHADOWED_2
+    4'b 0001, // index[163] ALERT_HANDLER_ALERT_CLASS_SHADOWED_3
+    4'b 0001, // index[164] ALERT_HANDLER_ALERT_CLASS_SHADOWED_4
+    4'b 0001, // index[165] ALERT_HANDLER_ALERT_CLASS_SHADOWED_5
+    4'b 0001, // index[166] ALERT_HANDLER_ALERT_CLASS_SHADOWED_6
+    4'b 0001, // index[167] ALERT_HANDLER_ALERT_CLASS_SHADOWED_7
+    4'b 0001, // index[168] ALERT_HANDLER_ALERT_CLASS_SHADOWED_8
+    4'b 0001, // index[169] ALERT_HANDLER_ALERT_CLASS_SHADOWED_9
+    4'b 0001, // index[170] ALERT_HANDLER_ALERT_CLASS_SHADOWED_10
+    4'b 0001, // index[171] ALERT_HANDLER_ALERT_CLASS_SHADOWED_11
+    4'b 0001, // index[172] ALERT_HANDLER_ALERT_CLASS_SHADOWED_12
+    4'b 0001, // index[173] ALERT_HANDLER_ALERT_CLASS_SHADOWED_13
+    4'b 0001, // index[174] ALERT_HANDLER_ALERT_CLASS_SHADOWED_14
+    4'b 0001, // index[175] ALERT_HANDLER_ALERT_CLASS_SHADOWED_15
+    4'b 0001, // index[176] ALERT_HANDLER_ALERT_CLASS_SHADOWED_16
+    4'b 0001, // index[177] ALERT_HANDLER_ALERT_CLASS_SHADOWED_17
+    4'b 0001, // index[178] ALERT_HANDLER_ALERT_CLASS_SHADOWED_18
+    4'b 0001, // index[179] ALERT_HANDLER_ALERT_CLASS_SHADOWED_19
+    4'b 0001, // index[180] ALERT_HANDLER_ALERT_CLASS_SHADOWED_20
+    4'b 0001, // index[181] ALERT_HANDLER_ALERT_CLASS_SHADOWED_21
+    4'b 0001, // index[182] ALERT_HANDLER_ALERT_CLASS_SHADOWED_22
+    4'b 0001, // index[183] ALERT_HANDLER_ALERT_CLASS_SHADOWED_23
+    4'b 0001, // index[184] ALERT_HANDLER_ALERT_CLASS_SHADOWED_24
+    4'b 0001, // index[185] ALERT_HANDLER_ALERT_CLASS_SHADOWED_25
+    4'b 0001, // index[186] ALERT_HANDLER_ALERT_CLASS_SHADOWED_26
+    4'b 0001, // index[187] ALERT_HANDLER_ALERT_CLASS_SHADOWED_27
+    4'b 0001, // index[188] ALERT_HANDLER_ALERT_CLASS_SHADOWED_28
+    4'b 0001, // index[189] ALERT_HANDLER_ALERT_CLASS_SHADOWED_29
+    4'b 0001, // index[190] ALERT_HANDLER_ALERT_CLASS_SHADOWED_30
+    4'b 0001, // index[191] ALERT_HANDLER_ALERT_CLASS_SHADOWED_31
+    4'b 0001, // index[192] ALERT_HANDLER_ALERT_CLASS_SHADOWED_32
+    4'b 0001, // index[193] ALERT_HANDLER_ALERT_CLASS_SHADOWED_33
+    4'b 0001, // index[194] ALERT_HANDLER_ALERT_CLASS_SHADOWED_34
+    4'b 0001, // index[195] ALERT_HANDLER_ALERT_CLASS_SHADOWED_35
+    4'b 0001, // index[196] ALERT_HANDLER_ALERT_CLASS_SHADOWED_36
+    4'b 0001, // index[197] ALERT_HANDLER_ALERT_CLASS_SHADOWED_37
+    4'b 0001, // index[198] ALERT_HANDLER_ALERT_CLASS_SHADOWED_38
+    4'b 0001, // index[199] ALERT_HANDLER_ALERT_CLASS_SHADOWED_39
+    4'b 0001, // index[200] ALERT_HANDLER_ALERT_CLASS_SHADOWED_40
+    4'b 0001, // index[201] ALERT_HANDLER_ALERT_CLASS_SHADOWED_41
+    4'b 0001, // index[202] ALERT_HANDLER_ALERT_CLASS_SHADOWED_42
+    4'b 0001, // index[203] ALERT_HANDLER_ALERT_CLASS_SHADOWED_43
+    4'b 0001, // index[204] ALERT_HANDLER_ALERT_CLASS_SHADOWED_44
+    4'b 0001, // index[205] ALERT_HANDLER_ALERT_CLASS_SHADOWED_45
+    4'b 0001, // index[206] ALERT_HANDLER_ALERT_CLASS_SHADOWED_46
+    4'b 0001, // index[207] ALERT_HANDLER_ALERT_CLASS_SHADOWED_47
+    4'b 0001, // index[208] ALERT_HANDLER_ALERT_CLASS_SHADOWED_48
+    4'b 0001, // index[209] ALERT_HANDLER_ALERT_CLASS_SHADOWED_49
+    4'b 0001, // index[210] ALERT_HANDLER_ALERT_CLASS_SHADOWED_50
+    4'b 0001, // index[211] ALERT_HANDLER_ALERT_CLASS_SHADOWED_51
+    4'b 0001, // index[212] ALERT_HANDLER_ALERT_CLASS_SHADOWED_52
+    4'b 0001, // index[213] ALERT_HANDLER_ALERT_CLASS_SHADOWED_53
+    4'b 0001, // index[214] ALERT_HANDLER_ALERT_CLASS_SHADOWED_54
+    4'b 0001, // index[215] ALERT_HANDLER_ALERT_CLASS_SHADOWED_55
+    4'b 0001, // index[216] ALERT_HANDLER_ALERT_CLASS_SHADOWED_56
+    4'b 0001, // index[217] ALERT_HANDLER_ALERT_CLASS_SHADOWED_57
+    4'b 0001, // index[218] ALERT_HANDLER_ALERT_CLASS_SHADOWED_58
+    4'b 0001, // index[219] ALERT_HANDLER_ALERT_CLASS_SHADOWED_59
+    4'b 0001, // index[220] ALERT_HANDLER_ALERT_CLASS_SHADOWED_60
+    4'b 0001, // index[221] ALERT_HANDLER_ALERT_CLASS_SHADOWED_61
+    4'b 0001, // index[222] ALERT_HANDLER_ALERT_CLASS_SHADOWED_62
+    4'b 0001, // index[223] ALERT_HANDLER_ALERT_CLASS_SHADOWED_63
+    4'b 0001, // index[224] ALERT_HANDLER_ALERT_CLASS_SHADOWED_64
+    4'b 0001, // index[225] ALERT_HANDLER_ALERT_CLASS_SHADOWED_65
+    4'b 0001, // index[226] ALERT_HANDLER_ALERT_CLASS_SHADOWED_66
+    4'b 0001, // index[227] ALERT_HANDLER_ALERT_CLASS_SHADOWED_67
+    4'b 0001, // index[228] ALERT_HANDLER_ALERT_CLASS_SHADOWED_68
+    4'b 0001, // index[229] ALERT_HANDLER_ALERT_CLASS_SHADOWED_69
+    4'b 0001, // index[230] ALERT_HANDLER_ALERT_CLASS_SHADOWED_70
+    4'b 0001, // index[231] ALERT_HANDLER_ALERT_CLASS_SHADOWED_71
+    4'b 0001, // index[232] ALERT_HANDLER_ALERT_CLASS_SHADOWED_72
+    4'b 0001, // index[233] ALERT_HANDLER_ALERT_CLASS_SHADOWED_73
+    4'b 0001, // index[234] ALERT_HANDLER_ALERT_CLASS_SHADOWED_74
+    4'b 0001, // index[235] ALERT_HANDLER_ALERT_CLASS_SHADOWED_75
+    4'b 0001, // index[236] ALERT_HANDLER_ALERT_CLASS_SHADOWED_76
+    4'b 0001, // index[237] ALERT_HANDLER_ALERT_CAUSE_0
+    4'b 0001, // index[238] ALERT_HANDLER_ALERT_CAUSE_1
+    4'b 0001, // index[239] ALERT_HANDLER_ALERT_CAUSE_2
+    4'b 0001, // index[240] ALERT_HANDLER_ALERT_CAUSE_3
+    4'b 0001, // index[241] ALERT_HANDLER_ALERT_CAUSE_4
+    4'b 0001, // index[242] ALERT_HANDLER_ALERT_CAUSE_5
+    4'b 0001, // index[243] ALERT_HANDLER_ALERT_CAUSE_6
+    4'b 0001, // index[244] ALERT_HANDLER_ALERT_CAUSE_7
+    4'b 0001, // index[245] ALERT_HANDLER_ALERT_CAUSE_8
+    4'b 0001, // index[246] ALERT_HANDLER_ALERT_CAUSE_9
+    4'b 0001, // index[247] ALERT_HANDLER_ALERT_CAUSE_10
+    4'b 0001, // index[248] ALERT_HANDLER_ALERT_CAUSE_11
+    4'b 0001, // index[249] ALERT_HANDLER_ALERT_CAUSE_12
+    4'b 0001, // index[250] ALERT_HANDLER_ALERT_CAUSE_13
+    4'b 0001, // index[251] ALERT_HANDLER_ALERT_CAUSE_14
+    4'b 0001, // index[252] ALERT_HANDLER_ALERT_CAUSE_15
+    4'b 0001, // index[253] ALERT_HANDLER_ALERT_CAUSE_16
+    4'b 0001, // index[254] ALERT_HANDLER_ALERT_CAUSE_17
+    4'b 0001, // index[255] ALERT_HANDLER_ALERT_CAUSE_18
+    4'b 0001, // index[256] ALERT_HANDLER_ALERT_CAUSE_19
+    4'b 0001, // index[257] ALERT_HANDLER_ALERT_CAUSE_20
+    4'b 0001, // index[258] ALERT_HANDLER_ALERT_CAUSE_21
+    4'b 0001, // index[259] ALERT_HANDLER_ALERT_CAUSE_22
+    4'b 0001, // index[260] ALERT_HANDLER_ALERT_CAUSE_23
+    4'b 0001, // index[261] ALERT_HANDLER_ALERT_CAUSE_24
+    4'b 0001, // index[262] ALERT_HANDLER_ALERT_CAUSE_25
+    4'b 0001, // index[263] ALERT_HANDLER_ALERT_CAUSE_26
+    4'b 0001, // index[264] ALERT_HANDLER_ALERT_CAUSE_27
+    4'b 0001, // index[265] ALERT_HANDLER_ALERT_CAUSE_28
+    4'b 0001, // index[266] ALERT_HANDLER_ALERT_CAUSE_29
+    4'b 0001, // index[267] ALERT_HANDLER_ALERT_CAUSE_30
+    4'b 0001, // index[268] ALERT_HANDLER_ALERT_CAUSE_31
+    4'b 0001, // index[269] ALERT_HANDLER_ALERT_CAUSE_32
+    4'b 0001, // index[270] ALERT_HANDLER_ALERT_CAUSE_33
+    4'b 0001, // index[271] ALERT_HANDLER_ALERT_CAUSE_34
+    4'b 0001, // index[272] ALERT_HANDLER_ALERT_CAUSE_35
+    4'b 0001, // index[273] ALERT_HANDLER_ALERT_CAUSE_36
+    4'b 0001, // index[274] ALERT_HANDLER_ALERT_CAUSE_37
+    4'b 0001, // index[275] ALERT_HANDLER_ALERT_CAUSE_38
+    4'b 0001, // index[276] ALERT_HANDLER_ALERT_CAUSE_39
+    4'b 0001, // index[277] ALERT_HANDLER_ALERT_CAUSE_40
+    4'b 0001, // index[278] ALERT_HANDLER_ALERT_CAUSE_41
+    4'b 0001, // index[279] ALERT_HANDLER_ALERT_CAUSE_42
+    4'b 0001, // index[280] ALERT_HANDLER_ALERT_CAUSE_43
+    4'b 0001, // index[281] ALERT_HANDLER_ALERT_CAUSE_44
+    4'b 0001, // index[282] ALERT_HANDLER_ALERT_CAUSE_45
+    4'b 0001, // index[283] ALERT_HANDLER_ALERT_CAUSE_46
+    4'b 0001, // index[284] ALERT_HANDLER_ALERT_CAUSE_47
+    4'b 0001, // index[285] ALERT_HANDLER_ALERT_CAUSE_48
+    4'b 0001, // index[286] ALERT_HANDLER_ALERT_CAUSE_49
+    4'b 0001, // index[287] ALERT_HANDLER_ALERT_CAUSE_50
+    4'b 0001, // index[288] ALERT_HANDLER_ALERT_CAUSE_51
+    4'b 0001, // index[289] ALERT_HANDLER_ALERT_CAUSE_52
+    4'b 0001, // index[290] ALERT_HANDLER_ALERT_CAUSE_53
+    4'b 0001, // index[291] ALERT_HANDLER_ALERT_CAUSE_54
+    4'b 0001, // index[292] ALERT_HANDLER_ALERT_CAUSE_55
+    4'b 0001, // index[293] ALERT_HANDLER_ALERT_CAUSE_56
+    4'b 0001, // index[294] ALERT_HANDLER_ALERT_CAUSE_57
+    4'b 0001, // index[295] ALERT_HANDLER_ALERT_CAUSE_58
+    4'b 0001, // index[296] ALERT_HANDLER_ALERT_CAUSE_59
+    4'b 0001, // index[297] ALERT_HANDLER_ALERT_CAUSE_60
+    4'b 0001, // index[298] ALERT_HANDLER_ALERT_CAUSE_61
+    4'b 0001, // index[299] ALERT_HANDLER_ALERT_CAUSE_62
+    4'b 0001, // index[300] ALERT_HANDLER_ALERT_CAUSE_63
+    4'b 0001, // index[301] ALERT_HANDLER_ALERT_CAUSE_64
+    4'b 0001, // index[302] ALERT_HANDLER_ALERT_CAUSE_65
+    4'b 0001, // index[303] ALERT_HANDLER_ALERT_CAUSE_66
+    4'b 0001, // index[304] ALERT_HANDLER_ALERT_CAUSE_67
+    4'b 0001, // index[305] ALERT_HANDLER_ALERT_CAUSE_68
+    4'b 0001, // index[306] ALERT_HANDLER_ALERT_CAUSE_69
+    4'b 0001, // index[307] ALERT_HANDLER_ALERT_CAUSE_70
+    4'b 0001, // index[308] ALERT_HANDLER_ALERT_CAUSE_71
+    4'b 0001, // index[309] ALERT_HANDLER_ALERT_CAUSE_72
+    4'b 0001, // index[310] ALERT_HANDLER_ALERT_CAUSE_73
+    4'b 0001, // index[311] ALERT_HANDLER_ALERT_CAUSE_74
+    4'b 0001, // index[312] ALERT_HANDLER_ALERT_CAUSE_75
+    4'b 0001, // index[313] ALERT_HANDLER_ALERT_CAUSE_76
+    4'b 0001, // index[314] ALERT_HANDLER_LOC_ALERT_REGWEN_0
+    4'b 0001, // index[315] ALERT_HANDLER_LOC_ALERT_REGWEN_1
+    4'b 0001, // index[316] ALERT_HANDLER_LOC_ALERT_REGWEN_2
+    4'b 0001, // index[317] ALERT_HANDLER_LOC_ALERT_REGWEN_3
+    4'b 0001, // index[318] ALERT_HANDLER_LOC_ALERT_REGWEN_4
+    4'b 0001, // index[319] ALERT_HANDLER_LOC_ALERT_REGWEN_5
+    4'b 0001, // index[320] ALERT_HANDLER_LOC_ALERT_REGWEN_6
+    4'b 0001, // index[321] ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0
+    4'b 0001, // index[322] ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_1
+    4'b 0001, // index[323] ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_2
+    4'b 0001, // index[324] ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_3
+    4'b 0001, // index[325] ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_4
+    4'b 0001, // index[326] ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_5
+    4'b 0001, // index[327] ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_6
+    4'b 0001, // index[328] ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0
+    4'b 0001, // index[329] ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_1
+    4'b 0001, // index[330] ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_2
+    4'b 0001, // index[331] ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_3
+    4'b 0001, // index[332] ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_4
+    4'b 0001, // index[333] ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_5
+    4'b 0001, // index[334] ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_6
+    4'b 0001, // index[335] ALERT_HANDLER_LOC_ALERT_CAUSE_0
+    4'b 0001, // index[336] ALERT_HANDLER_LOC_ALERT_CAUSE_1
+    4'b 0001, // index[337] ALERT_HANDLER_LOC_ALERT_CAUSE_2
+    4'b 0001, // index[338] ALERT_HANDLER_LOC_ALERT_CAUSE_3
+    4'b 0001, // index[339] ALERT_HANDLER_LOC_ALERT_CAUSE_4
+    4'b 0001, // index[340] ALERT_HANDLER_LOC_ALERT_CAUSE_5
+    4'b 0001, // index[341] ALERT_HANDLER_LOC_ALERT_CAUSE_6
+    4'b 0001, // index[342] ALERT_HANDLER_CLASSA_REGWEN
+    4'b 0011, // index[343] ALERT_HANDLER_CLASSA_CTRL_SHADOWED
+    4'b 0001, // index[344] ALERT_HANDLER_CLASSA_CLR_REGWEN
+    4'b 0001, // index[345] ALERT_HANDLER_CLASSA_CLR_SHADOWED
+    4'b 0011, // index[346] ALERT_HANDLER_CLASSA_ACCUM_CNT
+    4'b 0011, // index[347] ALERT_HANDLER_CLASSA_ACCUM_THRESH_SHADOWED
+    4'b 1111, // index[348] ALERT_HANDLER_CLASSA_TIMEOUT_CYC_SHADOWED
+    4'b 0001, // index[349] ALERT_HANDLER_CLASSA_CRASHDUMP_TRIGGER_SHADOWED
+    4'b 1111, // index[350] ALERT_HANDLER_CLASSA_PHASE0_CYC_SHADOWED
+    4'b 1111, // index[351] ALERT_HANDLER_CLASSA_PHASE1_CYC_SHADOWED
+    4'b 1111, // index[352] ALERT_HANDLER_CLASSA_PHASE2_CYC_SHADOWED
+    4'b 1111, // index[353] ALERT_HANDLER_CLASSA_PHASE3_CYC_SHADOWED
+    4'b 1111, // index[354] ALERT_HANDLER_CLASSA_ESC_CNT
+    4'b 0001, // index[355] ALERT_HANDLER_CLASSA_STATE
+    4'b 0001, // index[356] ALERT_HANDLER_CLASSB_REGWEN
+    4'b 0011, // index[357] ALERT_HANDLER_CLASSB_CTRL_SHADOWED
+    4'b 0001, // index[358] ALERT_HANDLER_CLASSB_CLR_REGWEN
+    4'b 0001, // index[359] ALERT_HANDLER_CLASSB_CLR_SHADOWED
+    4'b 0011, // index[360] ALERT_HANDLER_CLASSB_ACCUM_CNT
+    4'b 0011, // index[361] ALERT_HANDLER_CLASSB_ACCUM_THRESH_SHADOWED
+    4'b 1111, // index[362] ALERT_HANDLER_CLASSB_TIMEOUT_CYC_SHADOWED
+    4'b 0001, // index[363] ALERT_HANDLER_CLASSB_CRASHDUMP_TRIGGER_SHADOWED
+    4'b 1111, // index[364] ALERT_HANDLER_CLASSB_PHASE0_CYC_SHADOWED
+    4'b 1111, // index[365] ALERT_HANDLER_CLASSB_PHASE1_CYC_SHADOWED
+    4'b 1111, // index[366] ALERT_HANDLER_CLASSB_PHASE2_CYC_SHADOWED
+    4'b 1111, // index[367] ALERT_HANDLER_CLASSB_PHASE3_CYC_SHADOWED
+    4'b 1111, // index[368] ALERT_HANDLER_CLASSB_ESC_CNT
+    4'b 0001, // index[369] ALERT_HANDLER_CLASSB_STATE
+    4'b 0001, // index[370] ALERT_HANDLER_CLASSC_REGWEN
+    4'b 0011, // index[371] ALERT_HANDLER_CLASSC_CTRL_SHADOWED
+    4'b 0001, // index[372] ALERT_HANDLER_CLASSC_CLR_REGWEN
+    4'b 0001, // index[373] ALERT_HANDLER_CLASSC_CLR_SHADOWED
+    4'b 0011, // index[374] ALERT_HANDLER_CLASSC_ACCUM_CNT
+    4'b 0011, // index[375] ALERT_HANDLER_CLASSC_ACCUM_THRESH_SHADOWED
+    4'b 1111, // index[376] ALERT_HANDLER_CLASSC_TIMEOUT_CYC_SHADOWED
+    4'b 0001, // index[377] ALERT_HANDLER_CLASSC_CRASHDUMP_TRIGGER_SHADOWED
+    4'b 1111, // index[378] ALERT_HANDLER_CLASSC_PHASE0_CYC_SHADOWED
+    4'b 1111, // index[379] ALERT_HANDLER_CLASSC_PHASE1_CYC_SHADOWED
+    4'b 1111, // index[380] ALERT_HANDLER_CLASSC_PHASE2_CYC_SHADOWED
+    4'b 1111, // index[381] ALERT_HANDLER_CLASSC_PHASE3_CYC_SHADOWED
+    4'b 1111, // index[382] ALERT_HANDLER_CLASSC_ESC_CNT
+    4'b 0001, // index[383] ALERT_HANDLER_CLASSC_STATE
+    4'b 0001, // index[384] ALERT_HANDLER_CLASSD_REGWEN
+    4'b 0011, // index[385] ALERT_HANDLER_CLASSD_CTRL_SHADOWED
+    4'b 0001, // index[386] ALERT_HANDLER_CLASSD_CLR_REGWEN
+    4'b 0001, // index[387] ALERT_HANDLER_CLASSD_CLR_SHADOWED
+    4'b 0011, // index[388] ALERT_HANDLER_CLASSD_ACCUM_CNT
+    4'b 0011, // index[389] ALERT_HANDLER_CLASSD_ACCUM_THRESH_SHADOWED
+    4'b 1111, // index[390] ALERT_HANDLER_CLASSD_TIMEOUT_CYC_SHADOWED
+    4'b 0001, // index[391] ALERT_HANDLER_CLASSD_CRASHDUMP_TRIGGER_SHADOWED
+    4'b 1111, // index[392] ALERT_HANDLER_CLASSD_PHASE0_CYC_SHADOWED
+    4'b 1111, // index[393] ALERT_HANDLER_CLASSD_PHASE1_CYC_SHADOWED
+    4'b 1111, // index[394] ALERT_HANDLER_CLASSD_PHASE2_CYC_SHADOWED
+    4'b 1111, // index[395] ALERT_HANDLER_CLASSD_PHASE3_CYC_SHADOWED
+    4'b 1111, // index[396] ALERT_HANDLER_CLASSD_ESC_CNT
+    4'b 0001  // index[397] ALERT_HANDLER_CLASSD_STATE
   };
 
 endpackage

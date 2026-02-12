@@ -12,8 +12,8 @@ package sha3_pkg;
   // specification. But sha3pad logic assumes the value as 1600.
   parameter int StateW = 1600;
 
-  // Function Name (N) and Customzation String (S) shall be
-  // smaller than 2**256 bits and integer divisiable by 8.
+  // Function Name (N) and Customization String (S) shall be
+  // smaller than 2**256 bits and integer divisible by 8.
   parameter int FnWidth = 32;  // up to 32bit Function Name
   parameter int CsWidth = 256; // up to 256bit Customization Input
 
@@ -47,7 +47,7 @@ package sha3_pkg;
   //    divides 1600 keccak state `Width`. Choose the value accordingly.
   // 2. sha3pad module has fixed width mux for funcpad logic. If MsgWidth is
   //    changed, the logic also need to be revised.
-  // 3. kmac core logic also has fixed size mux for appeding output length.
+  // 3. kmac core logic also has fixed size mux for appending output length.
   //    Revise the case statement to fit into revised MsgWidth value.
   parameter int MsgWidth = 64;
   parameter int MsgStrbW = MsgWidth / 8;
@@ -153,7 +153,7 @@ package sha3_pkg;
     // of the state (3200bits if `EnMasking`).
     StSqueeze_sparse = 6'b001011,
 
-    // ManualRun stage initiaties the keccak round and waits the completion.
+    // ManualRun stage initiates the keccak round and waits the completion.
     // This state is moved from Squeeze state by writing 1 to manual_run CSR.
     // When keccak round is completed, it goes back to Squeeze state.
     StManualRun_sparse = 6'b010000,

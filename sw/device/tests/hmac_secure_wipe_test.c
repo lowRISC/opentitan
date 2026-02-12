@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/hmac.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/runtime/log.h"
@@ -9,11 +10,9 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 OTTF_DEFINE_TEST_CONFIG();
 
-static const char kData[142] =
+OT_NONSTRING static const char kData[142] =
     "Every one suspects himself of at least one of "
     "the cardinal virtues, and this is mine: I am "
     "one of the few honest people that I have ever "
@@ -60,8 +59,7 @@ static void hmac_process_message(const dif_hmac_t *hmac, const char *data,
 
 bool test_main(void) {
   dif_hmac_t hmac;
-  CHECK_DIF_OK(
-      dif_hmac_init(mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR), &hmac));
+  CHECK_DIF_OK(dif_hmac_init_from_dt(kDtHmac, &hmac));
 
   static const dif_hmac_transaction_t kHmacTransactionConfig = {
       .digest_endianness = kDifHmacEndiannessLittle,

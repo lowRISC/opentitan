@@ -18,14 +18,14 @@
 // and set a type override in the closed source environment
 
 class otp_ctrl_ast_inputs_cfg extends uvm_object;
-  `uvm_object_utils(otp_ctrl_ast_inputs_cfg);
+  `uvm_object_utils(otp_ctrl_ast_inputs_cfg)
   `uvm_object_new
 
   //  Group: Variables
-  rand otp_ast_rsp_t        otp_ast_pwr_seq_h;
-  rand logic [otp_ctrl_pkg::OtpTestCtrlWidth-1:0] otp_vendor_test_ctrl;
-  rand prim_mubi_pkg::mubi4_t scanmode;
-  rand logic                scan_en, scan_rst_n;
+  rand otp_macro_pkg::otp_ast_rsp_t   otp_ast_pwr_seq_h;
+  rand otp_macro_pkg::otp_test_ctrl_t otp_vendor_test_ctrl;
+  rand prim_mubi_pkg::mubi4_t         scanmode;
+  rand logic                          scan_en, scan_rst_n;
 
   //  Group: Constraints
   constraint dut_values_c {

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * Covergoups that are dependent on run-time parameters that may be available
+ * Covergroups that are dependent on run-time parameters that may be available
  * only in build_phase can be defined here
  * Covergroups may also be wrapped inside helper classes if needed.
  */
@@ -123,7 +123,7 @@ endgroup
 // We do this so that we can create an array of these covergroups for each app interface
 // present in the testbench environment.
 class app_cg_wrap;
-  // done signal is sent while kecak rounds are running
+  // done signal is sent while Keccak rounds are running
   covergroup app_cg(string name) with function sample(bit single_beat,
                                                       bit [keymgr_pkg::KmacDataIfWidth/8-1:0] strb,
                                                       bit err,

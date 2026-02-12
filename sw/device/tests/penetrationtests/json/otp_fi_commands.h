@@ -9,6 +9,11 @@
 extern "C" {
 #endif
 
+#define OTPFI_MAX_OWNER_SW_CFG_SIZE 200
+#define OTPFI_MAX_VENDOR_TEST_SIZE 16
+#define OTPFI_MAX_HW_CFG0_SIZE 20
+#define OTPFI_MAX_LC_SIZE 22
+
 // clang-format off
 
 #define OTPFI_SUBCOMMAND(_, value) \
@@ -17,41 +22,50 @@ extern "C" {
     value(_, LifeCycle) \
     value(_, OwnerSwCfg) \
     value(_, VendorTest)
-UJSON_SERDE_ENUM(OtpFiSubcommand, otp_fi_subcommand_t, OTPFI_SUBCOMMAND);
+C_ONLY(UJSON_SERDE_ENUM(OtpFiSubcommand, otp_fi_subcommand_t, OTPFI_SUBCOMMAND));
+RUST_ONLY(UJSON_SERDE_ENUM(OtpFiSubcommand, otp_fi_subcommand_t, OTPFI_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
 #define OTPFI_VENDORTEST_PARTITION(field, string) \
-    field(vendor_test_comp, uint32_t, 16) \
-    field(vendor_test_fi, uint32_t, 16) \
+    field(partition_ref, uint32_t, OTPFI_MAX_VENDOR_TEST_SIZE) \
+    field(partition_fi, uint32_t, OTPFI_MAX_VENDOR_TEST_SIZE) \
+    field(data_faulty, bool, OTPFI_MAX_VENDOR_TEST_SIZE) \
     field(otp_status_codes, uint32_t) \
     field(otp_error_causes, uint8_t, 10) \
     field(alerts, uint32_t, 3) \
+    field(loc_alerts, uint32_t) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(OtpFiVendortestPartition, otp_fi_vendortest_partition_t, OTPFI_VENDORTEST_PARTITION);
 
 #define OTPFI_OWNERSWCFG_PARTITION(field, string) \
-    field(owner_sw_cfg_comp, uint32_t, 200) \
-    field(owner_sw_cfg_fi, uint32_t, 200) \
+    field(partition_ref, uint32_t, OTPFI_MAX_OWNER_SW_CFG_SIZE) \
+    field(partition_fi, uint32_t, OTPFI_MAX_OWNER_SW_CFG_SIZE) \
+    field(data_faulty, bool, OTPFI_MAX_OWNER_SW_CFG_SIZE) \
     field(otp_status_codes, uint32_t) \
     field(otp_error_causes, uint8_t, 10) \
     field(alerts, uint32_t, 3) \
+    field(loc_alerts, uint32_t) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(OtpFiOwnerswcfgPartition, otp_fi_ownerswcfg_partition_t, OTPFI_OWNERSWCFG_PARTITION);
 
 #define OTPFI_HWCFG_PARTITION(field, string) \
-    field(hw_cfg_comp, uint32_t, 20) \
-    field(hw_cfg_fi, uint32_t, 20) \
+    field(partition_ref, uint32_t, OTPFI_MAX_HW_CFG0_SIZE) \
+    field(partition_fi, uint32_t, OTPFI_MAX_HW_CFG0_SIZE) \
+    field(data_faulty, bool, OTPFI_MAX_HW_CFG0_SIZE) \
     field(otp_status_codes, uint32_t) \
     field(otp_error_causes, uint8_t, 10) \
     field(alerts, uint32_t, 3) \
+    field(loc_alerts, uint32_t) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(OtpFiHwcfgPartition, otp_fi_hwcfg_partition_t, OTPFI_HWCFG_PARTITION);
 
 #define OTPFI_LIFECYCLE_PARTITION(field, string) \
-    field(life_cycle_comp, uint32_t, 22) \
-    field(life_cycle_fi, uint32_t, 22) \
+    field(partition_ref, uint32_t, OTPFI_MAX_LC_SIZE) \
+    field(partition_fi, uint32_t, OTPFI_MAX_LC_SIZE) \
+    field(data_faulty, bool, OTPFI_MAX_LC_SIZE) \
     field(otp_status_codes, uint32_t) \
     field(otp_error_causes, uint8_t, 10) \
     field(alerts, uint32_t, 3) \
+    field(loc_alerts, uint32_t) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(OtpFiLifecyclePartition, otp_fi_lifecycle_partition_t, OTPFI_LIFECYCLE_PARTITION);
 

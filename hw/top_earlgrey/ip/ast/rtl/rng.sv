@@ -127,7 +127,7 @@ ast_pulse_sync u_rng_val_pulse_sync (
   .dst_pulse_o ( sync_rng_val )
 );
 
-// Sanple & Hold the rng_b value until the sync completes
+// Sample & Hold the rng_b value until the sync completes
 always_ff @( posedge clk_i, negedge rst_n ) begin
   if ( !rst_n ) begin
     rng_b <= {EntropyStreams{1'b0}};

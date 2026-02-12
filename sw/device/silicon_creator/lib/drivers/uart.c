@@ -7,14 +7,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "dt/dt_uart.h"
+#include "hw/top/dt/uart.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "uart_regs.h"  // Generated.
+#include "hw/top/uart_regs.h"  // Generated.
 
 static const dt_uart_t kUartDt = kDtUart0;
 
@@ -109,7 +109,7 @@ void uart_write(const void *data, size_t len) {
 
 void uart_write_hex(uint32_t val, size_t len, uint32_t after) {
   HARDENED_CHECK_LE(len, sizeof(uint32_t));
-  static const uint8_t kHexTable[16] = "0123456789abcdef";
+  OT_NONSTRING static const uint8_t kHexTable[16] = "0123456789abcdef";
   size_t i = len * 8;
   do {
     i -= 4;

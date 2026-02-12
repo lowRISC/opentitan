@@ -29,12 +29,19 @@ package flash_ctrl_reg_pkg;
   // Address widths within the block
   parameter int CoreAw = 9;
   parameter int PrimAw = 7;
-  parameter int MemAw = 1;
 
   // Number of registers for every interface
   parameter int NumRegsCore = 108;
   parameter int NumRegsPrim = 21;
-  parameter int NumRegsMem = 0;
+
+  // Alert indices
+  typedef enum int {
+    AlertRecovErrIdx = 0,
+    AlertFatalStdErrIdx = 1,
+    AlertFatalErrIdx = 2,
+    AlertFatalPrimFlashAlertIdx = 3,
+    AlertRecovPrimFlashAlertIdx = 4
+  } flash_ctrl_alert_idx_t;
 
   ///////////////////////////////////////////////
   // Typedefs for registers for core interface //
@@ -499,19 +506,7 @@ package flash_ctrl_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } prog_empty;
-    struct packed {
-      logic        d;
-      logic        de;
-    } prog_lvl;
-    struct packed {
-      logic        d;
-      logic        de;
-    } rd_full;
-    struct packed {
-      logic        d;
-      logic        de;
-    } rd_lvl;
+    } corr_err;
     struct packed {
       logic        d;
       logic        de;
@@ -519,7 +514,19 @@ package flash_ctrl_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } corr_err;
+    } rd_lvl;
+    struct packed {
+      logic        d;
+      logic        de;
+    } rd_full;
+    struct packed {
+      logic        d;
+      logic        de;
+    } prog_lvl;
+    struct packed {
+      logic        d;
+      logic        de;
+    } prog_empty;
   } flash_ctrl_hw2reg_intr_state_reg_t;
 
   typedef struct packed {
@@ -542,30 +549,18 @@ package flash_ctrl_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } done;
+    } err;
     struct packed {
       logic        d;
       logic        de;
-    } err;
+    } done;
   } flash_ctrl_hw2reg_op_status_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
-    } rd_full;
-    struct packed {
-      logic        d;
-      logic        de;
-    } rd_empty;
-    struct packed {
-      logic        d;
-      logic        de;
-    } prog_full;
-    struct packed {
-      logic        d;
-      logic        de;
-    } prog_empty;
+    } initialized;
     struct packed {
       logic        d;
       logic        de;
@@ -573,7 +568,19 @@ package flash_ctrl_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } initialized;
+    } prog_empty;
+    struct packed {
+      logic        d;
+      logic        de;
+    } prog_full;
+    struct packed {
+      logic        d;
+      logic        de;
+    } rd_empty;
+    struct packed {
+      logic        d;
+      logic        de;
+    } rd_full;
   } flash_ctrl_hw2reg_status_reg_t;
 
   typedef struct packed {
@@ -584,27 +591,7 @@ package flash_ctrl_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } op_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } mp_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } rd_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } prog_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } prog_win_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } prog_type_err;
+    } macro_err;
     struct packed {
       logic        d;
       logic        de;
@@ -612,65 +599,7 @@ package flash_ctrl_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } macro_err;
-  } flash_ctrl_hw2reg_err_code_reg_t;
-
-  typedef struct packed {
-    struct packed {
-      logic        d;
-      logic        de;
-    } reg_intg_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } prog_intg_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } lcmgr_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } lcmgr_intg_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } arb_fsm_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } storage_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } phy_fsm_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } ctrl_cnt_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } fifo_err;
-  } flash_ctrl_hw2reg_std_fault_status_reg_t;
-
-  typedef struct packed {
-    struct packed {
-      logic        d;
-      logic        de;
-    } op_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } mp_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } rd_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } prog_err;
+    } prog_type_err;
     struct packed {
       logic        d;
       logic        de;
@@ -678,23 +607,65 @@ package flash_ctrl_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } prog_type_err;
+    } prog_err;
     struct packed {
       logic        d;
       logic        de;
-    } seed_err;
+    } rd_err;
     struct packed {
       logic        d;
       logic        de;
-    } phy_relbl_err;
+    } mp_err;
     struct packed {
       logic        d;
       logic        de;
-    } phy_storage_err;
+    } op_err;
+  } flash_ctrl_hw2reg_err_code_reg_t;
+
+  typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
-    } spurious_ack;
+    } fifo_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } ctrl_cnt_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } phy_fsm_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } storage_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } arb_fsm_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } lcmgr_intg_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } lcmgr_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } prog_intg_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } reg_intg_err;
+  } flash_ctrl_hw2reg_std_fault_status_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        d;
+      logic        de;
+    } host_gnt_err;
     struct packed {
       logic        d;
       logic        de;
@@ -702,7 +673,43 @@ package flash_ctrl_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } host_gnt_err;
+    } spurious_ack;
+    struct packed {
+      logic        d;
+      logic        de;
+    } phy_storage_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } phy_relbl_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } seed_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } prog_type_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } prog_win_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } prog_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } rd_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } mp_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } op_err;
   } flash_ctrl_hw2reg_fault_status_reg_t;
 
   typedef struct packed {
@@ -724,7 +731,7 @@ package flash_ctrl_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } init_wip;
+    } prog_repair_avail;
     struct packed {
       logic        d;
       logic        de;
@@ -732,16 +739,16 @@ package flash_ctrl_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } prog_repair_avail;
+    } init_wip;
   } flash_ctrl_hw2reg_phy_status_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [4:0]  d;
-    } prog;
+    } rd;
     struct packed {
       logic [4:0]  d;
-    } rd;
+    } prog;
   } flash_ctrl_hw2reg_curr_fifo_lvl_reg_t;
 
   // Register -> HW type for core interface
@@ -1393,27 +1400,7 @@ package flash_ctrl_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } field0;
-    struct packed {
-      logic        d;
-      logic        de;
-    } field1;
-    struct packed {
-      logic        d;
-      logic        de;
-    } field2;
-    struct packed {
-      logic        d;
-      logic        de;
-    } field3;
-    struct packed {
-      logic        d;
-      logic        de;
-    } field4;
-    struct packed {
-      logic        d;
-      logic        de;
-    } field5;
+    } field7;
     struct packed {
       logic        d;
       logic        de;
@@ -1421,14 +1408,19 @@ package flash_ctrl_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } field7;
-  } flash_ctrl_hw2reg_csr2_reg_t;
-
-  typedef struct packed {
+    } field5;
     struct packed {
       logic        d;
       logic        de;
-    } field0;
+    } field4;
+    struct packed {
+      logic        d;
+      logic        de;
+    } field3;
+    struct packed {
+      logic        d;
+      logic        de;
+    } field2;
     struct packed {
       logic        d;
       logic        de;
@@ -1436,7 +1428,22 @@ package flash_ctrl_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
+    } field0;
+  } flash_ctrl_hw2reg_csr2_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        d;
+      logic        de;
     } field2;
+    struct packed {
+      logic        d;
+      logic        de;
+    } field1;
+    struct packed {
+      logic        d;
+      logic        de;
+    } field0;
   } flash_ctrl_hw2reg_csr20_reg_t;
 
   // Register -> HW type for prim interface

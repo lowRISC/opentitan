@@ -208,7 +208,7 @@ Key manager operation controls
 When the OPERATION field is programmed to generate output, this field selects
 the appropriate crypto cipher target.
 
-This field should be programmed for both hw / sw generation, as this helps diverisifies the output.
+This field should be programmed for both hw / sw generation, as this helps diversifies the output.
 
 | Value   | Name   | Description                                                                                                                                                                                                                                                                                                                                   |
 |:--------|:-------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -479,9 +479,9 @@ Max creator key version
 {"reg": [{"name": "VAL", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                            |
-|:------:|:------:|:-------:|:-------|:---------------------------------------------------------------------------------------|
-|  31:0  |   rw   |   0x0   | VAL    | Max key version. Any key version up to the value specificed in this register is valid. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                           |
+|:------:|:------:|:-------:|:-------|:--------------------------------------------------------------------------------------|
+|  31:0  |   rw   |   0x0   | VAL    | Max key version. Any key version up to the value specified in this register is valid. |
 
 ## MAX_OWNER_INT_KEY_VER_REGWEN
 Register write enable for MAX_OWNER_INT_KEY_VERSION
@@ -513,9 +513,9 @@ Max owner intermediate key version
 {"reg": [{"name": "VAL", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                            |
-|:------:|:------:|:-------:|:-------|:---------------------------------------------------------------------------------------|
-|  31:0  |   rw   |   0x1   | VAL    | Max key version. Any key version up to the value specificed in this register is valid. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                           |
+|:------:|:------:|:-------:|:-------|:--------------------------------------------------------------------------------------|
+|  31:0  |   rw   |   0x1   | VAL    | Max key version. Any key version up to the value specified in this register is valid. |
 
 ## MAX_OWNER_KEY_VER_REGWEN
 Register write enable for MAX_OWNER_KEY_VERSION
@@ -547,9 +547,9 @@ Max owner key version
 {"reg": [{"name": "VAL", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                            |
-|:------:|:------:|:-------:|:-------|:---------------------------------------------------------------------------------------|
-|  31:0  |   rw   |   0x0   | VAL    | Max key version. Any key version up to the value specificed in this register is valid. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                           |
+|:------:|:------:|:-------:|:-------|:--------------------------------------------------------------------------------------|
+|  31:0  |   rw   |   0x0   | VAL    | Max key version. Any key version up to the value specified in this register is valid. |
 
 ## SW_SHARE0_OUTPUT
 Key manager software output.

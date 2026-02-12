@@ -19,7 +19,7 @@
               slow scan mode.
             - After some time, force the ADC output of AST to be a value within the programmed range
               for each channel. Glitch it out of range for some time before stabilizing to ensure
-              that debouce logic works.
+              that debounce logic works.
             - Service the debug cable irq. Read the intr status register to verify that the selected
               filter caused the interrupt to fire. Read the ADC channel value register to verify the
               correctness of the detected value that was forced in the AST for each channel.
@@ -59,7 +59,7 @@
     }
     {
       name: chip_sw_adc_ctrl_normal
-      desc:"Verifiy that ADC can sample from channel 0 and 1 in normal mode."
+      desc:"Verify that ADC can sample from channel 0 and 1 in normal mode."
       features:["ADC_CTRL.MODE.NORMAL"]
       stage: V3
       si_stage: SV2
@@ -69,7 +69,7 @@
     }
     {
       name: chip_sw_adc_ctrl_oneshot
-      desc:"Verifiy that ADC can sample from channel 0 and 1 in normal mode with oneshot filter config."
+      desc:"Verify that ADC can sample from channel 0 and 1 in normal mode with oneshot filter config."
       features:["ADC_CTRL.ONESHOT", "ADC_CTRL.MODE.NORMAL"]
       stage: V3
       si_stage: SV3

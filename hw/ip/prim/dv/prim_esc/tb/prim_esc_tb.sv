@@ -4,7 +4,7 @@
 //
 // Testbench module for prim_esc_sender and prim_esc_receiver_pair.
 //
-// This test has five sequnces:
+// This test has five sequences:
 // 1). Random reset during escalation handshake sequence.
 // 2). Escalation request sequence.
 // 3). Ping request interrupted by escalation request sequence.
@@ -48,7 +48,9 @@ module prim_esc_tb;
   prim_esc_pkg::esc_tx_t esc_tx;
   prim_esc_pkg::esc_rx_t esc_rx;
 
-  prim_esc_sender i_esc_sender (
+  prim_esc_sender # (
+    .SkewCycles(1)
+  ) i_esc_sender (
     .clk_i(clk),
     .rst_ni(rst_n),
     .ping_req_i(ping_req),
@@ -62,7 +64,8 @@ module prim_esc_tb;
   prim_esc_receiver #(
     .N_ESC_SEV(4),
     // Set to 1 to avoid long wait period to check ping request reverse timeout.
-    .PING_CNT_DW(PING_CNT_DW)
+    .PING_CNT_DW(PING_CNT_DW),
+    .SkewCycles(1)
   ) i_esc_receiver (
     .clk_i(clk),
     .rst_ni(rst_n),

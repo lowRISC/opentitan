@@ -13,7 +13,9 @@
     import lc_ctrl_pkg::lc_tx_t;
     import prim_mubi_pkg::mubi4_t;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned AlertSkewCycles = 1
 ) (
   // Primary module control clocks and resets
   // This drives the register interface
@@ -81,6 +83,10 @@
   input mubi4_t all_clk_byp_ack_i,
   output mubi4_t hi_speed_sel_o,
 
+  // external indication for whether dividers should be stepped down
+  // SEC_CM: DIV.INTERSIG.MUBI
+  input mubi4_t div_step_down_req_i,
+
   // clock calibration has been done.
   // If this is signal is 0, assume clock frequencies to be
   // uncalibrated.
@@ -88,10 +94,6 @@
 
   // jittery enable to ast
   output mubi4_t jitter_en_o,
-
-  // external indication for whether dividers should be stepped down
-  // SEC_CM: DIV.INTERSIG.MUBI
-  input mubi4_t div_step_down_req_i,
 
   // clock gated indications going to alert handlers
   output clkmgr_cg_en_t cg_en_o,
@@ -286,6 +288,7 @@
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(AlertFatal[i])
     ) u_prim_alert_sender (
       .clk_i,

@@ -12,8 +12,8 @@
 #include "sw/device/lib/base/mock_abs_mmio.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
+#include "hw/top/uart_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "uart_regs.h"  // Generated.
 
 namespace uart_unittest {
 namespace {

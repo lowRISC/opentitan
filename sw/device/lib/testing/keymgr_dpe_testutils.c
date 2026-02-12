@@ -4,9 +4,9 @@
 
 #include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 
-#include "dt/dt_keymgr_dpe.h"
-#include "dt/dt_otp_ctrl.h"
-#include "dt/dt_rstmgr.h"
+#include "hw/top/dt/keymgr_dpe.h"
+#include "hw/top/dt/otp_ctrl.h"
+#include "hw/top/dt/rstmgr.h"
 #include "sw/device/lib/dif/dif_keymgr_dpe.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"

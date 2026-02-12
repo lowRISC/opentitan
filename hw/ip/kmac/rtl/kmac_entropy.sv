@@ -115,7 +115,7 @@ module kmac_entropy
   // States
   typedef enum logic [StateWidth-1:0] {
     // Reset: Reset state. The entropy is not ready. The state machine should
-    // get new entropy from EDN or the seed should be feeded by the software.
+    // get new entropy from EDN or the seed should be seeded by the software.
     StRandReset = 10'b1001111000,
 
     // The seed is fed into PRNG and the entropy is ready. It means the
@@ -132,7 +132,7 @@ module kmac_entropy
     //     to initialize PRNG seed.
     //
     // Ready --> EdnReq:
-    //     1. If a mode is configured as to update entropy everytime it is
+    //     1. If a mode is configured as to update entropy every time it is
     //        consumed, then the FSM moves from Ready to EdnReq to refresh seed
     //     2. If the software enabled EDN timer and the timer is expired and
     //        also the KMAC is processing the key block, the FSM moves to
@@ -203,7 +203,7 @@ module kmac_entropy
   logic [EntropyOutputW-1:0] rand_data_q;
   logic data_update;
 
-  // Auxliliary randomness
+  // Auxiliary randomness
   logic aux_rand_d, aux_rand_q;
   logic aux_update;
 

@@ -17,7 +17,7 @@ class pattgen_error_vseq extends pattgen_base_vseq;
   virtual task pre_start();
     super.pre_start();
     // in order to inject error, the generated patterns should be long enough because
-    // completed interrupts can be triggerred before enable bit is unset in the last bit
+    // completed interrupts can be triggered before enable bit is unset in the last bit
     // which indicates a correct correct patterns
     cfg.seq_cfg.pattgen_min_prediv = 10;
     cfg.seq_cfg.pattgen_max_prediv = 20;

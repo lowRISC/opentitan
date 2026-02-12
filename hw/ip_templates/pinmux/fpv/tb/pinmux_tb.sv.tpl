@@ -10,6 +10,7 @@ module pinmux_tb
   import pinmux_reg_pkg::*;
   import prim_pad_wrapper_pkg::*;
 #(
+% if enable_strap_sampling:
   parameter int Tap0PadIdx = 0,
   parameter int Tap1PadIdx = 1,
   parameter int Dft0PadIdx = 2,
@@ -19,8 +20,11 @@ module pinmux_tb
   parameter int TrstNPadIdx = 6,
   parameter int TdiPadIdx = 7,
   parameter int TdoPadIdx = 8,
+% endif
+% if enable_usb_wakeup:
   parameter int DioUsbdevDp = 9,
   parameter int DioUsbdevDn = 10,
+% endif
   parameter int MioInUsbdevSense = 11,
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
   parameter bit SecVolatileRawUnlockEn = 1
@@ -40,6 +44,7 @@ module pinmux_tb
   input  strap_en_i,
   input  strap_en_override_i,
   input lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
+  input lc_ctrl_pkg::lc_tx_t lc_hw_debug_clr_i,
   input lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_check_byp_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
@@ -86,6 +91,7 @@ module pinmux_tb
 );
 
   localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
+  % if enable_strap_sampling:
     tck_idx:           TckPadIdx,
     tms_idx:           TmsPadIdx,
     trst_idx:          TrstNPadIdx,
@@ -95,9 +101,12 @@ module pinmux_tb
     tap_strap1_idx:    Tap1PadIdx,
     dft_strap0_idx:    Dft0PadIdx,
     dft_strap1_idx:    Dft1PadIdx,
+  % endif
+  % if enable_usb_wakeup:
     usb_dp_idx:        DioUsbdevDp,
     usb_dn_idx:        DioUsbdevDn,
     usb_sense_idx:     MioInUsbdevSense,
+  % endif
     // Pad types for attribute WARL behavior
     dio_pad_type:      {NDioPads{BidirStd}},
     mio_pad_type:      {NMioPads{BidirStd}},

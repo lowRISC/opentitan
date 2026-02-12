@@ -18,8 +18,8 @@ filesets:
       - lowrisc:prim:lfsr
       - lowrisc:earlgrey_ip:pinmux_pkg
       - lowrisc:prim:assert
-      - lowrisc:prim:prim_pkg
       - lowrisc:prim:mubi
+      - lowrisc:prim:multibit_sync
       - lowrisc:prim:multibit_sync
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:edn_pkg
@@ -27,6 +27,7 @@ filesets:
       - lowrisc:earlgrey_ip:clkmgr_pkg
       - lowrisc:earlgrey_ip:rstmgr_pkg
       - lowrisc:systems:top_earlgrey_ast_pkg
+      - lowrisc:prim:prim_pkg
     files:
       - rtl/ast_reg_pkg.sv
       - rtl/ast_bhv_pkg.sv
@@ -126,5 +127,5 @@ targets:
       - files_rtl
     tools:
       vcs:
-        vcs_options: [-sverilog -ntb_opts uvm-1.2 -CFLAGS --std=c99 -CFLAGS -fno-extended-identifiers -CFLAGS --std=c++11 -timescale=1ns/1ps -l vcs.log]
+        vcs_options: [-sverilog -ntb_opts uvm-1.2 -CFLAGS --std=c99 -CFLAGS -fno-extended-identifiers -CFLAGS --std=c++17 -timescale=1ns/1ps -l vcs.log]
     toplevel: ast

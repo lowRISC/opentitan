@@ -5,6 +5,9 @@ CAPI=2:
 
 name: "lowrisc:prim_generic:rom"
 description: "Technology-independent Read-Only Memory (ROM) implementation"
+virtual:
+  - lowrisc:prim:rom
+
 filesets:
   files_rtl:
     depend:
@@ -12,7 +15,7 @@ filesets:
       - lowrisc:prim_generic:rom_pkg
       - lowrisc:prim:util_memload
     files:
-      - rtl/prim_generic_rom.sv
+      - rtl/prim_rom.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:

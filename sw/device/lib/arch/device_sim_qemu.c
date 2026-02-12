@@ -4,14 +4,13 @@
 
 #include <stdbool.h>
 
-#include "dt/dt_rv_core_ibex.h"  // Generated
+#include "hw/top/dt/rv_core_ibex.h"  // Generated
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 
-#include "rv_core_ibex_regs.h"  // Generated
-#include "uart_regs.h"          // Generated
+#include "hw/top/rv_core_ibex_regs.h"  // Generated
 
 // Use the first dt_rv_core_ibex_t enum, i.e. the first Ibex core instance.
 static const dt_rv_core_ibex_t kRvCoreIbexDt = (dt_rv_core_ibex_t)0;
@@ -60,9 +59,6 @@ const uint32_t kUartBaud1M33 =
 const uint32_t kUartBaud1M50 =
     CALCULATE_UART_NCO(1500000, kClockFreqPeripheralHz);
 
-const uint32_t kUartTxFifoCpuCycles = CALCULATE_UART_TX_FIFO_CPU_CYCLES(
-    kUartBaudrate, kClockFreqCpuHz, UART_PARAM_TX_FIFO_DEPTH);
-
 const uint32_t kAstCheckPollCpuCycles =
     CALCULATE_AST_CHECK_POLL_CPU_CYCLES(kClockFreqCpuHz);
 
@@ -71,15 +67,3 @@ uintptr_t device_test_status_address(void) {
 }
 
 uintptr_t device_log_bypass_uart_address(void) { return 0; }
-
-// Although QEMU isn't an FPGA, there's no harm in us printing the version here.
-void device_fpga_version_print(void) {
-  uint32_t version = ibex_fpga_version();
-  //                       : M O R
-  const uint32_t kRom = 0x3a4d4f52;
-  uart_write_imm(kRom);
-  // The cast to unsigned int stops GCC from complaining about uint32_t
-  // being a `long unsigned int` while the %x specifier takes `unsigned int`.
-  const uint32_t kNewline = 0x0a0d;
-  uart_write_hex(version, sizeof(version), kNewline);
-}

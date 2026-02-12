@@ -31,7 +31,7 @@ ${autogen_banner}
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/autogen/dif_${ip.name_snake}_autogen.h"
 
-#include "${ip.name_snake}_regs.h"  // Generated.
+#include "hw/top/${ip.name_snake}_regs.h"  // Generated.
 
 % if ip.name_snake == "aon_timer":
   #include <assert.h>
@@ -68,6 +68,7 @@ dif_result_t dif_${ip.name_snake}_init(
 
   return kDifOk;
 }
+% if ip.has_registers():
 
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_${ip.name_snake}_init_from_dt(
@@ -82,6 +83,7 @@ dif_result_t dif_${ip.name_snake}_init_from_dt(
 
   return kDifOk;
 }
+% endif
 
 dif_result_t dif_${ip.name_snake}_get_dt(
   const dif_${ip.name_snake}_t *${ip.name_snake},

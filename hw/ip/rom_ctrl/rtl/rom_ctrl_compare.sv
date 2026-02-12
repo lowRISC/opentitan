@@ -127,7 +127,8 @@ module rom_ctrl_compare
   // SEC_CM: COMPARE.CTR.REDUN
   logic addr_ctr_alert;
   prim_count #(
-    .Width(AW)
+    .Width(AW),
+    .PossibleActions({prim_count_pkg::Incr})
   ) u_prim_count_addr (
     .clk_i,
     .rst_ni,

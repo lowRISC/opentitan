@@ -45,8 +45,8 @@ package otbn_env_pkg;
   import "DPI-C" function string OtbnTestHelperGetFilePath(chandle helper, int index);
 
   // parameters
-  parameter string LIST_OF_ALERTS[] = {"fatal", "recov"};
   parameter uint NUM_ALERTS = otbn_reg_pkg::NumAlerts;
+  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"fatal", "recov"};
   parameter uint NUM_EDN = 2;
 
   // Number of bits in the otp_ctrl_pkg::otbn_otp_key_rsp_t struct:

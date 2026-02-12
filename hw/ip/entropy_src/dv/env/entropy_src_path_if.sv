@@ -8,8 +8,6 @@
     tb.dut.u_entropy_src_core
 `define REPCNT \
     u_entropy_src_repcnt_ht.u_prim_max_tree_rep_cntr_max
-`define BUCKET \
-    u_entropy_src_bucket_ht.u_prim_max_tree_bin_cntr_max
 
 interface entropy_src_path_if ();
   import uvm_pkg::*;
@@ -24,7 +22,7 @@ interface entropy_src_path_if ();
     return {core_path, ".u_entropy_src_", which_sm, ".state_q"};
   endfunction // sm_err_path
 
-  function automatic string cntr_err_path(string cntr_name, int which_cntr);
+  function automatic string cntr_err_path(string cntr_name, int which_cntr, int which_ht_inst = 0);
     case (cntr_name)
       "window": return {core_path, ".u_prim_count_window_cntr.cnt_q[1]"};
       "repcnt_ht": return {core_path, ".u_entropy_src_repcnt_ht",
@@ -35,7 +33,8 @@ interface entropy_src_path_if ();
       "adaptp_ht": return {core_path, ".u_entropy_src_adaptp_ht",
                            $sformatf(".gen_cntrs[%0d]", which_cntr),
                            ".u_prim_count_test_cnt.cnt_q[1]"};
-      "bucket_ht": return {core_path, ".u_entropy_src_bucket_ht",
+      "bucket_ht": return {core_path, $sformatf(".gen_health_test[%0d]", which_ht_inst),
+                           ".u_entropy_src_bucket_ht",
                            $sformatf(".gen_symbol_match[%0d]", which_cntr),
                            ".u_prim_count_bin_cntr.cnt_q[1]"};
       "markov_ht": return {core_path, ".u_entropy_src_markov_ht",
@@ -94,7 +93,6 @@ interface entropy_src_path_if ();
     $assertoff(0, `CORE.u_entropy_src_markov_ht.u_max.ValidInImpliesValidOut_A);
     $assertoff(0, `CORE.u_sha3.u_keccak.gen_unmask_st_chk.UnmaskValidStates_A);
     $assertoff(0, `CORE.`REPCNT.ValidInImpliesValidOut_A);
-    $assertoff(0, `CORE.`BUCKET.ValidInImpliesValidOut_A);
   endtask
   function automatic void disable_entroy_drop_assertions();
     // Disable assertions which expect that no entropy is dropped between the esrng,
@@ -105,11 +103,8 @@ interface entropy_src_path_if ();
     $assertoff(0, `CORE.Final_EsbitFifoPushedIntoPosthtFifo_A);
     $assertoff(0, `CORE.AtReset_PosthtFifoPushedFromEsbitOrEsrngFifos_A);
     $assertoff(0, `CORE.Final_PosthtFifoPushedFromEsbitOrEsrngFifos_A);
-    // TODO(#24085): Remove this assertoff once the issue is solved.
-    $assertoff(0, `CORE.FifosEmptyWhenShaProcess_A);
   endfunction
 endinterface // entropy_src_path_if
 
 `undef CORE
 `undef REPCNT
-`undef BUCKET

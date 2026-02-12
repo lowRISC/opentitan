@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Description: entropy distrubution network core module
+// Description: entropy distribution network core module
 //  - this module will make requests to the CSRNG module
 //    and return the genbits back to up four requesting
 //    end points.
@@ -820,7 +820,7 @@ module edn_core import edn_pkg::*;
          cmd_fifo_cnt_q;
 
   // Consider a reseed command as sent if all values have been popped from the queue once
-  // and the handshake with CSRNG happend for the last word.
+  // and the handshake with CSRNG happened for the last word.
   assign cmd_sent = (cmd_fifo_cnt_q == RescmdFifoIdxWidth'(1)) &&
                     (gencmd_handshake || rescmd_handshake);
 

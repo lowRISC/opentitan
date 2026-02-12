@@ -44,6 +44,7 @@
           width: "1"
           module: aon_timer_aon
           desc: Watchdog reset request.
+          enabled_after_reset: false
         }
       ]
     }
@@ -453,5 +454,6 @@
     with_alert_handler: false
     topname: englishbreakfast
     uniquified_modules: {}
+    module_instance_name: rstmgr
   }
 }

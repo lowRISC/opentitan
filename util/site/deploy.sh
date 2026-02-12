@@ -112,8 +112,11 @@ deploy_staging () {
     _upload_br "${BUCKET}"
 
     # Finally, invalidate the CDN cache
-    LOAD_BALANCER_NAME="staging-dot-opentitan-dot-org"
-    gcloud compute url-maps invalidate-cdn-cache "${LOAD_BALANCER_NAME}" --path "/*" --async
+    LOAD_BALANCER_NAME="opentitan-dot-org"
+    gcloud compute url-maps invalidate-cdn-cache "${LOAD_BALANCER_NAME}" \
+        --host "staging.opentitan.org" \
+        --path "/*" \
+        --async
 }
 
 deploy_prod () {
@@ -134,7 +137,10 @@ deploy_prod () {
 
     # Finally, invalidate the CDN cache
     LOAD_BALANCER_NAME="opentitan-dot-org"
-    gcloud compute url-maps invalidate-cdn-cache "${LOAD_BALANCER_NAME}" --path "/*" --async
+    gcloud compute url-maps invalidate-cdn-cache "${LOAD_BALANCER_NAME}" \
+        --host "opentitan.org" \
+        --path "/*" \
+        --async
 }
 
 _upload_br () {
@@ -147,7 +153,7 @@ _upload_br () {
 
     for f in $search_indexes; do
         # Get directory of file, relative to the build directory.
-        # - var=${var#*//} # removes stuff from the begining up to //
+        # - var=${var#*//} # removes stuff from the beginning up to //
         dir=$(dirname "${f#*"${build_dir}"/}")
         # When serving from gcloud buckets, file should be uploaded with an identical name as the
         # original, but compressed and with the matching 'content-encoding' and 'content-type' tags applied.

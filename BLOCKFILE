@@ -23,8 +23,7 @@ ci/scripts/check-pr-changes-allowed.py
 # Earlgrey related RTL
 hw/top_earlgrey/ip/*/rtl/*
 hw/top_earlgrey/ip_autogen/*/rtl/*
-hw/top_earlgrey/rtl/autogen/top_earlgrey.sv
-hw/top_earlgrey/rtl/autogen/chip_earlgrey_asic.sv
+hw/top_earlgrey/rtl/*
 
 # Vendored IP
 hw/vendor/lowrisc_ibex/rtl/*
@@ -49,6 +48,7 @@ hw/ip/kmac/rtl/*
 hw/ip/lc_ctrl/rtl/*
 hw/ip/otbn/rtl/*
 hw/ip/otp_ctrl/rtl/*
+hw/ip/otp_macro/rtl/*
 hw/ip/pattgen/rtl/*
 hw/ip/prim/rtl/*
 hw/ip/prim_generic/rtl/*
@@ -87,6 +87,7 @@ hw/ip/rv_dm/data/rv_dm.hjson
 hw/ip/kmac/data/kmac.hjson
 hw/ip/sysrst_ctrl/data/sysrst_ctrl.hjson
 hw/ip/otbn/data/otbn.hjson
+hw/ip/otp_macro/data/otp_macro.hjson
 hw/ip/entropy_src/data/entropy_src.hjson
 hw/ip/aes/data/aes.hjson
 hw/ip/i2c/data/i2c.hjson
@@ -103,7 +104,6 @@ hw/top_earlgrey/data/otp/otp_ctrl_mmap.hjson
 hw/top_earlgrey/data/otp/otp_ctrl_img_test_unlocked1.hjson
 hw/top_earlgrey/data/otp/otp_ctrl_img_prod.hjson
 hw/top_earlgrey/data/otp/otp_ctrl_img_test_unlocked2.hjson
-hw/ip/pwm/data/pwm.hjson
 hw/ip/aon_timer/data/aon_timer.hjson
 
 # HJSON files for ipgen blocks
@@ -114,6 +114,7 @@ hw/top_earlgrey/ip_autogen/flash_ctrl/data/flash_ctrl.hjson
 hw/top_earlgrey/ip_autogen/otp_ctrl/data/otp_ctrl.hjson
 hw/top_earlgrey/ip_autogen/pinmux/data/pinmux.hjson
 hw/top_earlgrey/ip_autogen/pwrmgr/data/pwrmgr.hjson
+hw/top_earlgrey/ip_autogen/pwm/data/pwm.hjson
 hw/top_earlgrey/ip_autogen/rstmgr/data/rstmgr.hjson
 hw/top_earlgrey/ip_autogen/rv_plic/data/rv_plic.hjson
 hw/top_earlgrey/ip_autogen/gpio/rtl/gpio.hjson

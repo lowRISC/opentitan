@@ -5,10 +5,10 @@
 use regex::Regex;
 use std::time::Duration;
 
-use anyhow::{anyhow, bail, Context, Result};
+use anyhow::{Context, Result, anyhow, bail};
 use clap::Parser;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
@@ -32,7 +32,7 @@ struct Opts {
 
 fn ibex_epmp_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
 
     log::info!("Connecting to RISC-V TAP");
     let mut jtag = opts
@@ -63,25 +63,15 @@ fn ibex_epmp_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     jtag.disconnect()?;
 
     // Wait for test status pass over the UART.
-    let mut console = UartConsole {
-        timeout: Some(opts.timeout),
-        exit_success: Some(Regex::new(r"PASS.*\n")?),
-        exit_failure: Some(Regex::new(r"(FAIL|FAULT).*\n")?),
-        newline: true,
-        ..Default::default()
-    };
+    let mut console = UartConsole::new(
+        Some(opts.timeout),
+        Some(Regex::new(r"PASS.*\n")?),
+        Some(Regex::new(r"(FAIL|FAULT).*\n")?),
+    );
 
-    let mut stdout = std::io::stdout();
-    let result = console.interact(&*uart, None, Some(&mut stdout))?;
+    let result = console.interact(&*uart, false)?;
     match result {
-        ExitStatus::None | ExitStatus::CtrlC => Ok(()),
-        ExitStatus::Timeout => {
-            if console.exit_success.is_some() {
-                Err(anyhow!("Console timeout exceeded"))
-            } else {
-                Ok(())
-            }
-        }
+        ExitStatus::Timeout => Err(anyhow!("Console timeout exceeded")),
         ExitStatus::ExitSuccess => {
             log::info!(
                 "ExitSuccess({:?})",

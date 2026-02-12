@@ -5,12 +5,17 @@
 // Life cycle interface for performing life cycle transitions in OTP.
 //
 
-`include "prim_flop_macros.sv"
+`include "prim_assert.sv"
 
 module otp_ctrl_lci
   import otp_ctrl_pkg::*;
   import otp_ctrl_reg_pkg::*;
   import otp_ctrl_part_pkg::*;
+  import otp_ctrl_macro_pkg::OtpAddrShift;
+  import otp_ctrl_macro_pkg::OtpAddrWidth;
+  import otp_ctrl_macro_pkg::OtpIfWidth;
+  import otp_ctrl_macro_pkg::OtpSizeWidth;
+  import otp_ctrl_macro_pkg::OtpWidth;
   import otp_ctrl_top_specific_pkg::*;
 #(
   // Lifecycle partition information
@@ -45,14 +50,14 @@ module otp_ctrl_lci
   output logic                              lci_prog_idle_o,
   // OTP interface
   output logic                              otp_req_o,
-  output prim_otp_pkg::cmd_e                otp_cmd_o,
+  output otp_ctrl_macro_pkg::cmd_e                otp_cmd_o,
   output logic [OtpSizeWidth-1:0]           otp_size_o,
   output logic [OtpIfWidth-1:0]             otp_wdata_o,
   output logic [OtpAddrWidth-1:0]           otp_addr_o,
   input                                     otp_gnt_i,
   input                                     otp_rvalid_i,
   input  [ScrmblBlockWidth-1:0]             otp_rdata_i,
-  input  prim_otp_pkg::err_e                otp_err_i
+  input  otp_ctrl_macro_pkg::err_e                otp_err_i
 );
 
   ////////////////////////
@@ -126,7 +131,7 @@ module otp_ctrl_lci
 
     // OTP signals
     otp_req_o = 1'b0;
-    otp_cmd_o = prim_otp_pkg::Read;
+    otp_cmd_o = otp_ctrl_macro_pkg::Read;
 
     // Response to LC controller
     lc_err_o = 1'b0;
@@ -159,7 +164,7 @@ module otp_ctrl_lci
       // programmed to 1 before, the OTP errors out.
       WriteSt: begin
         otp_req_o = 1'b1;
-        otp_cmd_o = prim_otp_pkg::Write;
+        otp_cmd_o = otp_ctrl_macro_pkg::Write;
         lci_prog_idle_o = 1'b0;
         if (otp_gnt_i) begin
           state_d = WriteWaitSt;

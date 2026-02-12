@@ -113,7 +113,7 @@ module prim_alert_rxtx_assert_fpv
       prim_alert_rxtx_tb.i_prim_alert_sender.Idle) |=>
       alert_o,
       clk_i, !rst_ni || error_present || ping_req_i || init_pending)
-  // transmission of alerts in the general case which can include continous ping collisions
+  // transmission of alerts in the general case which can include continuous ping collisions
   `ASSERT(AlertCheck1_A, alert_req_i || alert_test_i |=>
       strong(##[1:$] ((prim_alert_rxtx_tb.i_prim_alert_sender.state_q ==
       prim_alert_rxtx_tb.i_prim_alert_sender.Idle) && !ping_req_i) ##1 alert_o),

@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/otbn/doc/">OTBN</a> Device Interface Functions.
+ * @brief <a href="/book/hw/ip/otbn/">OTBN</a> Device Interface Functions.
  */
 
 #include <stddef.h>

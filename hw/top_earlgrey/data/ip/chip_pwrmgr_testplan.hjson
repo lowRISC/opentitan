@@ -151,7 +151,7 @@
             Notice rstmgr sw reset cannot be triggered in sleep mode.
             Esc reset is triggered by pwrmgr ALERT_TEST.FATAL_FAULT CSR, configuring the
             alert handler so that the reset triggers after setting sleep mode.
-            This verifies ALL programable or external reset sources. This also verifies
+            This verifies ALL programmable or external reset sources. This also verifies
             that the pwrmgr sequencing is working correctly as expected. X-ref'ed with
             all individual IP tests. For each reset source, enable the source and bring
             the chip to low power, issue a reset, and verify the rstmgr's `reset_info`
@@ -338,7 +338,7 @@
             Notice rstmgr sw reset cannot be triggered in sleep mode.
             Esc reset is triggered by pwrmgr ALERT_TEST.FATAL_FAULT CSR, configuring the
             alert handler so that the reset triggers after setting sleep mode.
-            This verifies ALL programable or external reset sources. This also verifies
+            This verifies ALL programmable or external reset sources. This also verifies
             that the pwrmgr sequencing is working correctly as expected. X-ref'ed with
             all individual IP tests. For each reset source, enable the source and bring
             the chip to low power, issue a reset, and verify the rstmgr's `reset_info`

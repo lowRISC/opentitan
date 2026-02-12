@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "dt/dt_sram_ctrl.h"
+#include "hw/top/dt/sram_ctrl.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
@@ -99,7 +99,7 @@ bool test_main(void) {
       default:
         // Ret SRAM can start at the beginning of the owner section.
         sram_ctrl[sc].buf =
-            (uintptr_t)dt_sram_ctrl_reg_block(sc, kDtSramCtrlRegBlockRam);
+            (uintptr_t)dt_sram_ctrl_memory_base(sc, kDtSramCtrlMemoryRam);
         // Assume that no target device has more than 100 SRAM_CTRL instances.
         unsigned dig = (unsigned)sc / 10;
         sram_ctrl[sc].nameBuf[0] = (char)('0' + dig);

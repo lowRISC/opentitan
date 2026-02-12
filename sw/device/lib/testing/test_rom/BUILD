@@ -29,6 +29,7 @@ ld_library(
 
 opentitan_binary(
     name = "test_rom",
+    collect_code_coverage = 0,
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:fpga_cw305",
@@ -36,6 +37,7 @@ opentitan_binary(
         "//hw/top_earlgrey:sim_dv_base",
         "//hw/top_earlgrey:sim_verilator_base",
         "//hw/top_darjeeling:sim_dv_base",
+        "//hw/top_darjeeling:sim_verilator_base",
     ],
     features = ["use_lld"],
     kind = "rom",
@@ -61,11 +63,11 @@ opentitan_binary(
 # Create the legacy ROM target names so that existing splicing rules
 # can find the test_rom VMEM files.
 legacy_rom_targets(
-    suffixes = [
-        "fpga_cw310",
-        "fpga_cw305",
-        "fpga_cw340",
-    ],
+    suffixes = {
+        "fpga_cw310": ["//hw/top_earlgrey:fpga_cw310"],
+        "fpga_cw305": ["//hw/top_earlgrey:fpga_cw305"],
+        "fpga_cw340": ["//hw/top_earlgrey:fpga_cw340"],
+    },
     target = "test_rom",
 )
 
@@ -221,7 +223,7 @@ cc_library(
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/runtime:print_uart",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
@@ -244,7 +246,7 @@ cc_library(
         "flash_ctrl",
         [
             "//hw/top:flash_ctrl_c_regs",
-            "//hw/top:dt_flash_ctrl",
+            "//hw/top/dt:flash_ctrl",
             "//sw/device/lib/dif:flash_ctrl",
             "//sw/device/lib/testing:flash_ctrl_testutils",
         ],
@@ -257,7 +259,7 @@ cc_library(
         "otp_ctrl",
         [
             "//hw/top:otp_ctrl_c_regs",
-            "//hw/top:dt_otp_ctrl",
+            "//hw/top/dt:otp_ctrl",
         ],
         [],
     ),
@@ -270,6 +272,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
+        "//hw/top_darjeeling:sim_verilator": None,
     },
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",

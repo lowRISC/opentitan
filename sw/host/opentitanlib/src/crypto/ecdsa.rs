@@ -2,15 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow, ensure, Context, Result};
+use anyhow::{Context, Result, anyhow, ensure};
+use ecdsa::Signature;
 use ecdsa::elliptic_curve::pkcs8::{DecodePrivateKey, EncodePrivateKey};
 use ecdsa::elliptic_curve::pkcs8::{DecodePublicKey, EncodePublicKey};
 use ecdsa::signature::hazmat::PrehashVerifier;
-use ecdsa::Signature;
-use p256::ecdsa::{SigningKey, VerifyingKey};
 use p256::NistP256;
+use p256::ecdsa::{SigningKey, VerifyingKey};
+use pem_rfc7468::Decoder;
 use rand::rngs::OsRng;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use serde_annotate::Annotate;
 use sha2::digest::generic_array::GenericArray;
 use std::fs::File;
@@ -19,7 +20,8 @@ use std::path::Path;
 use std::str::FromStr;
 
 use super::Error;
-use crate::crypto::sha256::{sha256, Sha256Digest};
+use crate::crypto::sha256::Sha256Digest;
+use util::clean_pem_bytes_for_parsing;
 
 pub struct EcdsaPrivateKey {
     pub key: SigningKey,
@@ -59,7 +61,7 @@ impl EcdsaPrivateKey {
     }
 
     pub fn sign(&self, digest: &Sha256Digest) -> Result<EcdsaRawSignature> {
-        let (sig, _) = self.key.sign_prehash_recoverable(&digest.to_be_bytes())?;
+        let (sig, _) = self.key.sign_prehash_recoverable(digest.as_ref())?;
         let bytes = sig.to_bytes();
         let half = bytes.len() / 2;
         // The signature bytes are (R || S).  Since opentitan is a little-endian
@@ -73,12 +75,11 @@ impl EcdsaPrivateKey {
     }
 
     pub fn digest_and_sign(&self, data: &[u8]) -> Result<EcdsaRawSignature> {
-        let digest = sha256(data);
-        self.sign(&digest)
+        self.sign(&Sha256Digest::hash(data))
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Annotate)]
+#[derive(Debug, Clone, Deserialize, Annotate)]
 pub struct EcdsaRawSignature {
     #[serde(with = "serde_bytes")]
     #[annotate(format = hexstr)]
@@ -133,17 +134,20 @@ impl EcdsaRawSignature {
             // This must be a raw signature, just read it as is.
             EcdsaRawSignature::read(&mut file)
         } else {
-            // Let's try interpreting the file as ASN.1 DER.
             let mut data = Vec::<u8>::new();
 
             file.read_to_end(&mut data)
                 .with_context(|| format!("Failed to read {path:?}"))?;
 
-            EcdsaRawSignature::from_der(&data).with_context(|| format!("Failed parsing {path:?}"))
+            // Let's try interpreting the file as ASN.1 DER.
+            // If unsuccessful, attempt PEM decoding.
+            EcdsaRawSignature::from_der(&data)
+                .or_else(|_| EcdsaRawSignature::from_pem(&data))
+                .with_context(|| format!("Failed parsing {path:?}"))
         }
     }
 
-    pub fn write(&self, dest: &mut impl Write) -> Result<()> {
+    pub fn write(&self, dest: &mut impl Write) -> Result<usize> {
         ensure!(
             self.r.len() == 32,
             Error::InvalidSignature(anyhow!("bad r length: {}", self.r.len()))
@@ -154,7 +158,7 @@ impl EcdsaRawSignature {
         );
         dest.write_all(&self.r)?;
         dest.write_all(&self.s)?;
-        Ok(())
+        Ok(64)
     }
 
     pub fn to_vec(&self) -> Result<Vec<u8>> {
@@ -188,6 +192,22 @@ impl EcdsaRawSignature {
 
         Ok(EcdsaRawSignature { r, s })
     }
+
+    fn from_pem(data: &[u8]) -> Result<EcdsaRawSignature> {
+        // Ensures valid PEM markers and a recognized label are present.
+        let _ = pem_rfc7468::decode_label(data)?;
+        let mut buf = Vec::new();
+        let result = Decoder::new(data);
+        match result {
+            Ok(mut decoder) => decoder.decode_to_end(&mut buf)?,
+            _ => {
+                let cleaned_data = clean_pem_bytes_for_parsing(data)?;
+                let mut decoder = Decoder::new(&cleaned_data)?;
+                decoder.decode_to_end(&mut buf)?
+            }
+        };
+        Self::from_der(buf.as_slice())
+    }
 }
 
 impl EcdsaPublicKey {
@@ -210,7 +230,7 @@ impl EcdsaPublicKey {
         bytes[..half].reverse();
         bytes[half..].reverse();
         let signature = Signature::from_slice(&bytes)?;
-        self.key.verify_prehash(&digest.to_be_bytes(), &signature)?;
+        self.key.verify_prehash(digest.as_ref(), &signature)?;
         Ok(())
     }
 }
@@ -235,7 +255,7 @@ impl TryFrom<&EcdsaRawPublicKey> for EcdsaPublicKey {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Annotate)]
+#[derive(Debug, Deserialize, Annotate)]
 pub struct EcdsaRawPublicKey {
     #[serde(with = "serde_bytes")]
     #[annotate(format = hexstr)]

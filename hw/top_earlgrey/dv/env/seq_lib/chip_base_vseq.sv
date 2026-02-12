@@ -10,7 +10,7 @@ class chip_base_vseq #(
   .COV_T              (chip_env_cov),
   .VIRTUAL_SEQUENCER_T(chip_virtual_sequencer)
 );
-  `uvm_object_utils(chip_base_vseq)
+  `uvm_object_param_utils(chip_base_vseq#(RAL_T))
 
   jtag_dmi_reg_block jtag_dmi_ral;
 
@@ -152,7 +152,7 @@ class chip_base_vseq #(
     initialize_otp_creator_sw_cfg_ast_cfg();
     // Initialize selected memories to all 0. This is required for some chip-level tests such as
     // otbn_mem_scramble that may intentionally read memories before writing them. Reading these
-    // memories still triggeres ECC integrity errors that need to be handled by the test.
+    // memories still triggers ECC integrity errors that need to be handled by the test.
     cfg.mem_bkdr_util_h[OtbnImem].clear_mem();
     for (int ram_idx = 0; ram_idx < cfg.num_otbn_dmem_tiles; ram_idx++) begin
       cfg.mem_bkdr_util_h[chip_mem_e'(OtbnDmem0 + ram_idx)].clear_mem();
@@ -268,7 +268,7 @@ class chip_base_vseq #(
   // This is done to speed up the simulation while achieving coverage on alert pings to various
   // blocks.
   // TODO; plusargs should be sought in a singla place (we do it in the base test class).
-  // TODO: Nothing may happen after calling this function, becuase it internally fetches a plusarg
+  // TODO: Nothing may happen after calling this function, because it internally fetches a plusarg
   // which can result in a nop. Refactor this later.
   task alert_ping_en_shorten();
     bit shorten_ping_en;

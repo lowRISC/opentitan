@@ -12,6 +12,7 @@ from reggen.ip_block import IpBlock
 from reggen.validate import check_keys
 from topgen.resets import Resets, UnmanagedResets
 from topgen.typing import IpBlocksT
+from topgen.lib import find_module, find_modules
 
 # For the reference
 # val_types = {
@@ -46,10 +47,6 @@ top_required = {
     'resets': ['l', 'list of resets'],
     'addr_spaces': ['g', 'list of address spaces'],
     'module': ['l', 'list of modules to instantiate'],
-    'memory': [
-        'l',
-        'list of memories. At least one memory is needed to run the software'
-    ],
     'xbar': ['l', 'List of the xbar used in the top'],
     'pinout': ['g', 'Pinout configuration'],
     'targets': ['l', ' Target configurations'],
@@ -58,12 +55,14 @@ top_required = {
 }
 
 top_optional = {
+    'alerts': ['g', 'alert handler configuration'],
     'alert_module':
     ['l', 'list of the modules that connects to alert_handler'],
     'datawidth': ['pn', "default data width"],
     'exported_clks': ['g', 'clock signal routing rules'],
     'host': ['g', 'list of host-only components in the system'],
     'inter_module': ['g', 'define the signal connections between the modules'],
+    'interrupts': ['g', 'interrupt controller configuration'],
     'interrupt_module': ['l', 'list of the modules that connects to rv_plic'],
     'num_cores': ['pn', "number of computing units"],
     'outgoing_alert': ['g', 'the outgoing alert groups'],
@@ -72,8 +71,10 @@ top_optional = {
     'port': ['g', 'assign special attributes to specific ports'],
     'racl_config': ['s', 'Path to a RACL configuration HJSON file'],
     'reset_requests': ['g', 'define reset requests grouped by type'],
-    'rnd_cnst_seed': ['int', "Seed for random netlist constant computation"],
-    'unmanaged_resets': ['l', 'List of unmanaged external resets']
+    'seed': ['g', "Seed information for topgen and subsequent flows"],
+    'unmanaged_resets': ['l', 'List of unmanaged external resets'],
+    'default_alert_handler': ['s', 'Modules not defining alert_handler have alerts sent here'],
+    'default_plic': ['s', 'Modules not defining plic have interrupts sent here']
 }
 
 top_added = {
@@ -85,7 +86,18 @@ top_added = {
     'racl': ['g', 'the expansion of the racl_config file'],
     'wakeups':
     ['l', 'list of wakeup requests each holding name, width, and module'],
-    'cfg_path': ['s', 'Path to the folder of the toplevel HJSON file']
+    'cfg_path': ['s', 'Path to the folder of the toplevel HJSON file'],
+}
+
+# Required/optional field in top seeds hjson
+top_seed_required = {
+    'name': ['s', 'Top name'],
+    'topgen_seed': ['int', "Seed for topgen generated random netlist constants"],
+}
+
+top_seed_optional = {
+    'otp_img_seed': ['int', "Seed for OTP image generation"],
+    'lc_ctrl_seed': ['int', "Seed for lc_ctrl generated random netlist constants"],
 }
 
 pinmux_required = {
@@ -277,7 +289,7 @@ module_optional = {
         'l', 'optional list of paths to incoming alert configurations for the '
         'alert_handler'
     ],
-    'ipgen_param': ['g', 'Optional ipgen parameters for that instance'],
+    'ipgen_params': ['g', 'Optional ipgen parameters for that instance'],
     'template_type': ['s', 'Base template type of ipgen IPs'],
     'racl_group': [
         's', 'Only valid for racl_ctrl IPs. Defines the RACL group this '
@@ -290,6 +302,10 @@ module_optional = {
         'represent a dict that associates all interfaces with the given '
         'mapping. It is an error to specify both this and racl_mappings.'
     ],
+    'plic': ['s', 'Interrupt controller managing this module\'s interrupts'],
+    'targets': ['l', 'Optional list of targets for this PLIC'],
+    'alert_handler': ['s', 'Alert handler managing this module\'s alerts'],
+    "otp_map": ["g", "OTP Map information for OTP Ctrl"]
 }
 
 module_added = {
@@ -297,6 +313,7 @@ module_added = {
     'incoming_interrupt': ['g', 'Parsed incoming interrupts'],
     'inter_signal_list': ['l', 'generated signal information'],
     'param_list': ['l', 'list of parameters'],
+    "otp_mmap": ["g", "Full OTP memory map configuration with secret parameters"],
 }
 
 memory_required = {
@@ -347,11 +364,15 @@ reset_requests_added = {}
 
 reset_request_required = {
     'name': ['s', 'the reset request name'],
-    'desc': ['s', 'the reset request descrption'],
+    'desc': ['s', 'the reset request description'],
     'module': ['s', 'the reset request source'],
 }
 reset_request_optional = {
     'width': ['d', 'TODO'],
+    "enabled_after_reset": [
+        "pb",
+        "whether the reset is enabled after a reset "
+        "(put differently, whether the reset value of the reset enable is high)"],
 }
 reset_request_added = {}
 
@@ -368,6 +389,7 @@ alert_required = {
     'width': ['d', 'the number of alerts in this signal, typically 1'],
     'async': ['s', 'string interpreted as boolean'],
     'module_name': ['s', 'The module name of the source'],
+    'handler': ['s', 'alert handler managing this alert'],
 }
 alert_optional = {
     'desc': ['s', 'the description of the alert'],
@@ -384,10 +406,12 @@ interrupt_required = {
     'intr_type': ['s', 'The IntrType, either Event or Status'],
     'default_val': ['s', 'a string interpreted as boolean'],
     'incoming': ['s', 'a string interpreted as boolean'],
+    'outgoing': ['s', 'boolean (as string) whether interrupt leaves toplevel'],
 }
 interrupt_optional = {
     'desc': ['s', 'the description of the interrupt'],
     'type': ['s', 'should contain "interrupt"'],
+    'plic': ['s', 'controller for this interrupt'],
 }
 interrupt_added = {}
 
@@ -473,7 +497,7 @@ class Target:
 class Flash:
     """Flash class contains information regarding parameter defaults.
        For now, only expose banks / pages_per_bank for user configuration.
-       For now, also enforce power of 2 requiremnt.
+       For now, also enforce power of 2 requirement.
     """
     max_banks = 4
     max_pages_per_bank = 1024
@@ -584,14 +608,35 @@ def check_pad(top: ConfigT, pad: Dict, known_pad_names: Dict,
     return error
 
 
-def check_alerts(top: ConfigT, prefix: str) -> int:
-    if 'alert' not in top:
+def check_alerts(top: ConfigT, ip_name_to_block: IpBlocksT, prefix: str) -> int:
+    if "alert" not in top:
         return 0
-    error = 0
-    for alert in top['alert']:
-        error += check_keys(alert, alert_required, alert_optional, alert_added,
-                            prefix + ' Alert')
-    return error
+    errors = 0
+
+    # Check alert keys
+    for alert in top["alert"]:
+        errors += check_keys(alert, alert_required, alert_optional,
+                             alert_added, prefix + " Alert")
+
+    # Check alert_connections for all IPs
+    alert_handlers = find_modules(top["module"], "alert_handler",
+                                  use_base_template_type=True)
+    handler_names = [handler["name"] for handler in alert_handlers]
+
+    # Check that the default handler exists
+    default_handler = top.get("default_alert_handler", None)
+    if (default_handler is not None and
+       default_handler not in handler_names):
+        errors += 1
+        log.error(f"{default_handler} (named as default alert handler) "
+                  f"does not exist")
+
+    for module in top["module"]:
+        log.info(f"Checking alerts for {module['name']}")
+        block = ip_name_to_block[module["type"]]
+        errors += validate_alert(top, module, block, handler_names,
+                                 default_handler)
+    return errors
 
 
 def check_incoming_alerts(top: ConfigT, prefix: str) -> int:
@@ -1078,15 +1123,38 @@ def validate_clock(top: ConfigT,
     return error
 
 
-def check_flash(top: ConfigT):
+def validate_alert(top, module, block, handlers, default_handler=None):
+    """Checks that the alert_handler, if specified, exists.
 
-    for mem in top['memory']:
-        if mem['type'] == "eflash":
+    Note that it's possible for the module `alert_handler` to be null,
+    the toplevel `default_alert_handler` to be null, or both, and for
+    this not to be an error (in the case that a handler doesn't exist
+    at all, like in Englishbreakfast).
+    """
+    errors = 0
+    name = module.name if isinstance(module, IpBlock) else module['name']
 
-            raise ValueError(
-                'top level flash memory definition not supported. Please use '
-                'the flash embedded inside flash_ctrl instead.  If there is a '
-                'need for top level flash memory, please file an issue.')
+    # Check that the named alert handler exists
+    # (the default handler has already been checked)
+    handler = default_handler
+    if "alert_handler" in module:
+        handler = module["alert_handler"]
+        if handler is not None and handler not in handlers:
+            errors += 1
+            log.error(f"{name} specifies {handler} as alert handler but that "
+                      f"alert handler doesn't exist")
+
+    # If there are actually alerts, check that it makes sense:
+    # - if the alert handler exists, that's ok
+    # - otherwise, if the default handler exists, that's ok
+    # - otherwise, if no handlers exist, that's ok
+    if block.alerts and handler is None and handlers:
+        errors += 1
+        log.error(f"{name} doesn't define alert_handler (and "
+                  "default_alert_handler isn't defined), but handlers are "
+                  "available")
+
+    return errors
 
 
 def check_power_domains(top: ConfigT):
@@ -1099,7 +1167,7 @@ def check_power_domains(top: ConfigT):
     # Check that each module, xbar, memory has a power domain defined.
     # If not, give it a default.
     # If there is one defined, check that it is a valid definition
-    for end_point in top['module'] + top['memory'] + top['xbar']:
+    for end_point in top['module'] + top['xbar']:
         if 'domain' not in end_point:
             end_point['domain'] = [top['power']['default']]
 
@@ -1179,6 +1247,23 @@ def check_modules(top: ConfigT, prefix: str) -> int:
     return error
 
 
+def validate_seed_cfg(top: ConfigT, seed_cfg: ConfigT):
+    """
+    Validates the seed config coming from am external file
+    """
+    # Validate seed information is here. First determine the required keys depending on the
+    # top configuration
+    if find_module(top["module"], "otp_ctrl"):
+        top_seed_required["otp_img_seed"] = top_seed_optional["otp_img_seed"]
+    if find_module(top["module"], "lc_ctrl"):
+        top_seed_required["lc_ctrl_seed"] = top_seed_optional["lc_ctrl_seed"]
+
+    error = check_keys(seed_cfg, top_seed_required, top_seed_optional, [], "seed")
+    if error:
+        log.error("Seed HJSON has errors. Aborting")
+    return error
+
+
 def validate_top(top: ConfigT, ip_name_to_block: IpBlocksT,
                  xbar_name_to_block: IpBlocksT) -> int:
     # return as it is for now
@@ -1199,9 +1284,6 @@ def validate_top(top: ConfigT, ip_name_to_block: IpBlocksT,
     # XBAR check
     error += check_target(top, xbar_name_to_block, Target(TargetType.XBAR))
 
-    # MEMORY check
-    check_flash(top)
-
     # Power domain check
     check_power_domains(top)
 
@@ -1221,7 +1303,7 @@ def validate_top(top: ConfigT, ip_name_to_block: IpBlocksT,
     error += check_pinmux(top, component)
     error += check_implementation_targets(top, component)
 
-    error += check_alerts(top, component)
+    error += check_alerts(top, ip_name_to_block, component)
     error += check_incoming_alerts(top, component)
     error += check_outgoing_alerts(top, component)
     error += check_outgoing_interrupts(top, component)

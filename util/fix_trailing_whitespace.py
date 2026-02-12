@@ -55,7 +55,7 @@ def main():
         '--recursive', '-r',
         action='store_true',
         default=False,
-        help='traverse the entire tree modolo .gitignore'
+        help='traverse the entire tree modulo .gitignore'
     )
     parser.add_argument(
         '--verbose', '-v',
@@ -77,7 +77,7 @@ def main():
         path = Path(path).resolve().relative_to(REPO_TOP)
         if not path.is_file() or path.is_symlink() or is_ignored(path):
             continue
-        if 'vendor' in path.parts or path.suffix in ['.patch', '.svg', '.tpl']:
+        if 'vendor' in path.parts or path.suffix in ['.patch', '.svg', '.tpl', '.bin']:
             continue
         if args.verbose:
             print(f'Checking: "{path}"')

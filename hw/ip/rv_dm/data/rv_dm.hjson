@@ -16,10 +16,10 @@
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "",
-  version:            "1.2.0",
+  version:            "1.2.1",
   life_stage:         "L1",
   design_stage:       "D2S",
-  verification_stage: "V2S",
+  verification_stage: "V1",
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
     // Ideally, this is the processor clock and reset.
@@ -104,6 +104,27 @@
       act:     "rsp",
       package: "jtag_pkg",
       desc:    "JTAG signals for the RISC-V TAP."
+    },
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_init_done"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+      desc:    '''
+               Lifecycle initialization done signal coming from life cycle controller.
+               '''
+    }
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_hw_debug_clr"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+      desc:    '''
+               Multibit life cycle hardware debug clear signal coming from life cycle controller,
+               asserted when the hardware debug mechanism was enabled and gets disabled.
+               '''
     },
     { struct:  "lc_tx"
       type:    "uni"
@@ -354,6 +375,9 @@
   countermeasures: [
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
+    }
+    { name: "LC_HW_DEBUG_CLR.INTERSIG.MUBI",
+      desc: "The life cycle hardware debug clear signal is multibit encoded."
     }
     { name: "LC_HW_DEBUG_EN.INTERSIG.MUBI",
       desc: "The life cycle hardware debug enable signal is multibit encoded."

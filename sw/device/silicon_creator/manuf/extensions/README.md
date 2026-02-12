@@ -2,6 +2,7 @@
 
 Provisioning an Earlgrey chip requires executing code on devivce during two core
 phases:
+
 1. Chip Probe (CP): when the wafer is still intact, and
 2. Final Test (FT): when each chip has been packaged and loaded into a socket.
 For the most part, the CP process is the same across all Earlgrey chips,
@@ -33,6 +34,12 @@ To define additional OTP configurations downstream, one must add OTP targets
 to the `EXT_EARLGREY_OTP_CFGS` and `EXT_EARLGREY_SKUS` dictionaries in their
 downstream `@provisioning_exts` Bazel repo.
 
+## Execution Environments
+
+To define additional execution environments downstream, add `exec_env`
+compatible entries to the `EXT_EXEC_ENV_SILICON_ROM_EXT` dictionary in the
+downstream `@provisioning_exts` Bazel repo.
+
 ## Personalization Firmware
 
 The personalization firmware `ft_personalize.c` defines two `extern` C functions
@@ -43,7 +50,7 @@ respectively:
 
 Additionally, the FT provisioning test harness provides an hook function to call
 during the certificate endorsement operation:
-`pub fn ft_ext(endorsed_cert_concat: ArrayVec<u8, 4096>) -> Result<ArrayVec<u8, 4096>>`
+`pub fn ft_ext(_response: &PersonalizeResponse) -> Result<Option<String>>`
 
 The default functions provided in this example external Bazel repo do nothing.
 However, this provides a mechanism for SKU owners / customers to develop

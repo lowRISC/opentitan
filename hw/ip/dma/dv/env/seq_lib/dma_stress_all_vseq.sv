@@ -100,7 +100,7 @@ class dma_stress_all_vseq extends dma_generic_vseq;
           if (operating) begin
             unique case (event_rsn)
               2'b00: abort();
-              // Introduce any other stressors here, eg. dynamically varying bus responsiveness.
+              // Introduce any other stressors here, e.g. dynamically varying bus responsiveness.
               default: modify_registers();
             endcase
           end

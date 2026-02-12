@@ -27,7 +27,7 @@ class spi_device_mem_parity_vseq extends spi_device_common_vseq;
     logic [BitPerByte*BytePerWord-1:0] mem_data;
     // TODO: Add support for the gen_ram1r1w variant.
     string path_fmt =
-      "tb.dut.u_spid_dpram.gen_ram2p.u_memory_2p.u_mem.gen_generic.u_impl_generic.mem[%0d]";
+      "tb.dut.u_spid_dpram.gen_ram2p.u_memory_2p.u_mem.mem[%0d]";
     string egress_path = $sformatf(path_fmt, offset);
     string ingress_path = $sformatf(path_fmt, ingress_sram_offset + offset);
 

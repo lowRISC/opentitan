@@ -4,17 +4,93 @@
 
 `include "prim_assert.sv"
 
-/**
- * Tile-Link UL adapter for Register interface
- *
- * ICEBOX(#15822): Note that due to some modules with special needs (like
- * the vendored-in RV_DM), this module has been extended so that it
- * supports use cases outside of the generated reg_top module. This makes
- * this adapter and its parameterization options a bit heavy.
- *
- * We should in the future come back to this and refactor / align the
- * module and its parameterization needs.
- */
+// Tile-Link UL to register interface adapter
+//
+// This module acts as a device, addressed through the TL-UL bus. It receives Get, PutPartialData
+// and PutFullData messages on the A channel. These are read or write requests, which are passed to
+// the register interface on the same cycle. The response from the register interface is sent back
+// to the host as a message on the D channel on the next cycle.
+//
+// A module instance performs several checks on A-channel messages and only forwards a request to
+// the register interface if they all pass. These checks are:
+//
+//  - A_OPCODE must be Get, PutPartialData or PutFullData.
+//
+//  - A_SIZE must be 0, 1 or 2 (giving a 1-, 2- or 4-byte operation, respectively).
+//
+//  - A_ADDRESS must be naturally aligned for the operation byte width signaled in A_SIZE.
+//
+//  - A_MASK must only be true for active byte-lanes. The position of the first of these active
+//    lanes is calculated from the address, modulo the width of the TL-UL data bus.
+//
+//  - If the A_USER.INSTR_TYPE value is MuBi4True, A_OPCODE must be Get.
+//
+//  - Either the A_USER.INSTR_TYPE value must be a value other than MuBi4True or the en_ifetch_i
+//    port must be MuBi4True.
+//
+//  - If the CmdIntgCheck parameter is true then the command integrity check must pass.
+//
+//
+// ** Parameters
+//
+// CmdIntgCheck: If this parameter is true then there is a "command integrity check". This uses a
+//               tlul_cmd_intg_chk instance to compare integrity checksums from requests on the A
+//               channel. If the integrity checksums don't match, the adapter doesn't pass the
+//               request to the register interface through re_o/we_o and the response on the D
+//               channel will then have its D_ERROR flag set.
+//
+// EnableRspIntgGen: OpenTitan sends response integrity with messages on the TL-UL bus. If this
+//                   parameter is true, the module will perform calculations to send a correct
+//                   integrity value in the response's A_USER.RSP_INTG field.
+//
+// EnableDataIntgGen: This parameter is analogous to EnableRspIntgGen but controls whether the
+//                    module performs calculations to send a correct integrity value in the
+//                    response's A_USER.DATA_INTG field.
+//
+// RegAw: The number of bits used for addresses in the register interface. Higher bits of the
+//        A_ADDRESS field in an A channel message are ignored.
+//
+// RegDw: The number of bits used for data words in the register interface. This is assumed to match
+//        the data width of the TL-UL bus (see the MatchedWidth_A assertion).
+//
+// AccessLatency: This adapter always returns TileLink responses after one cycle, but this parameter
+//                allows it to handle different timings on the register interface. If AccessLatency
+//                is zero then the adapter expects a combinatorial response on the register
+//                interface and flops the result to break paths and add a cycle delay. If
+//                AccessLatency is one then the adapter expects a response on the register interface
+//                in the cycle after the re_o/we_o signal goes high, but then forwards it
+//                combinatorially to the TileLink interface. Only values 0 and 1 are allowed for
+//                this parameter.
+//
+//
+// ** Ports
+//
+// clk_i/rst_ni: Clock and reset.
+// tl_i/tl_o:    Connections to the TL-UL bus.
+// en_ifetch_i:  This mubi4_t port controls whether to allow read requests from Get messages whose
+//               A_USER.INSTR_TYPE is MuBi4True (considered to be processor "fetch" requests).
+// intg_error_o: This port is high when the adapter has detected a command integrity error. That can
+//               only happen if the CmdIntgCheck parameter is set.
+// re_o/we_o:    The read-enable and write-enable ports in the register interface.
+// addr_o:       The address to read or write through the register interface.
+// wdata_o:      The value to write through the register interface if we_o is true.
+// be_o:         A byte-enable signal, which is true for each byte-lane where the TL-UL operation's
+//               mask is true.
+// busy_i:       If this input is high then the A channel interface is stalled (by dropping
+//               A_READY), which means that the adapter will not accept any new operations.
+// rdata_i:      Read data being returned for a read request through the register interface.
+// error_i:      An error flag in the register interface. This signals that an error has been seen,
+//               which can be seen in the D channel response by D_ERROR being high. The D_DATA
+//               response is also set to '1, squashing any data that might have been returned
+//               through rdata_i.
+//
+// ICEBOX(#15822): Note that due to some modules with special needs (like the vendored-in RV_DM),
+//                 this module has been extended so that it supports use cases outside of the
+//                 generated reg_top module. This makes this adapter and its parameterization
+//                 options a bit heavy.
+//
+//                 We should in the future come back to this and refactor / align the module and its
+//                 parameterization needs.
 
 module tlul_adapter_reg
   import tlul_pkg::*;
@@ -110,31 +186,32 @@ module tlul_adapter_reg
   end
 
   if (AccessLatency == 1) begin : gen_access_latency1
-    logic wr_req_q, rd_req_q;
+    logic a_ack_q, err_internal_q, wr_req_q;
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
+        a_ack_q <= 1'b0;
+        err_internal_q <= 1'b0;
+        wr_req_q <= 1'b0;
         rdata_q  <= '0;
         error_q  <= 1'b0;
-        wr_req_q <= 1'b0;
-        rd_req_q <= 1'b0;
       end else begin
-        rd_req_q <= rd_req;
+        a_ack_q <= a_ack;
+        err_internal_q <= err_internal;
         wr_req_q <= wr_req;
-        // Addressing phase
-        if (a_ack) begin
-          error_q <= err_internal;
-        // Response phase
-        end else begin
-          error_q <= error;
-          rdata_q <= rdata;
-        end
+
+        rdata_q  <= rdata;
+        error_q  <= error;
       end
     end
-    assign rdata = (error_i || error_q || wr_req_q) ? '1      :
-                   (rd_req_q)                       ? rdata_i :
-                                                      rdata_q; // backpressure case
-    assign error = (rd_req_q || wr_req_q) ? (error_q || error_i) :
-                                            error_q; // backpressure case
+    always_comb begin
+      if (a_ack_q) begin
+        rdata = (error_i || err_internal_q || wr_req_q) ? '1 : rdata_i;
+        error = error_i || err_internal_q;
+      end else begin
+        rdata = rdata_q;
+        error = error_q;
+      end
+    end
   end else begin : gen_access_latency0
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
@@ -225,6 +302,6 @@ module tlul_adapter_reg
     .err_o (tl_err)
   );
 
-  `ASSERT_INIT(MatchedWidthAssert, RegDw == top_pkg::TL_DW)
+  `ASSERT_INIT(MatchedWidth_A, RegDw == top_pkg::TL_DW)
 
 endmodule

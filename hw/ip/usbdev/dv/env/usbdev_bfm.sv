@@ -103,9 +103,9 @@ class usbdev_bfm extends uvm_component;
 
   // Internal packet buffer memory; this is a 32-bit addressable read/write memory accessed from
   // both the CSR and USB sides. It is, however, decomposed into 'NumBuffers' packet-sized buffers
-  // of 'MaxPktSizeByte' bytes each, with each packet buffer serving only as a undirectional channel
-  // (IN packet or OUT packet), and is not required to support simultaneous reads and writes to any
-  // given packet buffer.
+  // of 'MaxPktSizeByte' bytes each, with each packet buffer serving only as a unidirectional
+  // channel (IN packet or OUT packet), and is not required to support simultaneous reads and writes
+  // to any given packet buffer.
   logic [31:0] buffer[NumBuffers * MaxPktSizeByte / 4];
 
   // The DUT and BFM packet buffer memories are 32 bits wide (TL-UL interface) and only full 32-bit
@@ -117,7 +117,7 @@ class usbdev_bfm extends uvm_component;
   // within this bank are replaced when actual bytes are received from the USB. (usbdev_usbif.sv)
   bit [31:0] wdata_q;
 
-  // The decision on whether and how to respond to an IN request cannot be actioned imediately
+  // The decision on whether and how to respond to an IN request cannot be actioned immediately
   // because the CSR state may change in the interim; we introduce a short delay before deciding
   // how to respond to an IN request.
   token_pkt in_token;
@@ -341,6 +341,11 @@ class usbdev_bfm extends uvm_component;
   // USB-side bus events.
   //------------------------------------------------------------------------------------------------
   // Bus Reset from host/hub.
+  //
+  // - some actions occur as soon as the SE0 state has been detected for long enough to be certain
+  //   that this is a Bus Reset (not a Low Speed EOP, for example); at this point `completed` is 0.
+  // - once the end of Bus Reset signaling is observed by the DUT, this function shall be called
+  //   with `completed` set to 1.
   function void bus_reset(bit completed = 1'b1);
     out_toggles = 0;
     in_toggles = 0;
@@ -363,11 +368,11 @@ class usbdev_bfm extends uvm_component;
     // Link state changes occur only when the Reset Signaling is complete.
     if (powered && sense && enable) begin
       if (completed) begin
-        link_state = LinkActiveNoSOF;
         if (link_state == LinkSuspended || link_state == LinkResuming) begin
           // Bus Reset also implies the end of Suspend/Resume Signaling.
           intr_state[IntrLinkResume] = 1'b1;
         end
+        link_state = LinkActiveNoSOF;
       end else begin
         // The DUT detects Bus Reset as 'non-Idle' too.
         if (link_state == LinkPoweredSuspended || link_state == LinkSuspended) begin
@@ -409,8 +414,12 @@ class usbdev_bfm extends uvm_component;
   // VBUS/SENSE connection event.
   function void bus_connect();
     sense = 1'b1;
-    if (powered && enable) link_state = LinkPowered;
-    intr_state[IntrPowered] = 1'b1;
+    if (powered) begin
+      // The 'powered' link state reflects VBUS assertion with pullup enabled.
+      if (enable) link_state = LinkPowered;
+      // An interrupt is raised when VBUS becomes asserted, irrespective of the pullup state.
+      intr_state[IntrPowered] = 1'b1;
+    end
   endfunction
 
   // VBUS/SENSE disconnection event.

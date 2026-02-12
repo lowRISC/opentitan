@@ -48,6 +48,7 @@ generate:
     parameters:
       name: pwrmgr
       ip_hjson: ../../data/pwrmgr.hjson
+    position: prepend
 
 targets:
   default:

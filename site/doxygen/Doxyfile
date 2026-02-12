@@ -1,0 +1,194 @@
+# This file contains several placeholders that will be expanded
+# by bazel. All placeholders use the form @@name@@.
+
+#---------------------------------------------------------------------------
+# Project related configuration options
+#---------------------------------------------------------------------------
+
+PROJECT_NAME           = "Software APIs"
+PROJECT_LOGO           = "$(SRCTREE_TOP)/doc/opentitan-logo.png"
+
+OUTPUT_DIRECTORY       = "$(DOXYGEN_OUT)"
+ALLOW_UNICODE_NAMES    = YES
+
+JAVADOC_AUTOBRIEF      = YES
+
+TAB_SIZE               = 2
+
+OPTIMIZE_OUTPUT_FOR_C  = YES
+
+# We use .c and .h for C
+EXTENSION_MAPPING      = h=C c=C
+
+INLINE_SIMPLE_STRUCTS  = YES
+
+# This doesn't work for enums
+TYPEDEF_HIDES_STRUCT   = NO
+
+#---------------------------------------------------------------------------
+# Build related configuration options
+#---------------------------------------------------------------------------
+
+EXTRACT_ANON_NSPACES   = YES
+HIDE_IN_BODY_DOCS      = YES
+INTERNAL_DOCS          = NO
+CASE_SENSE_NAMES       = NO
+
+FORCE_LOCAL_INCLUDES   = NO
+STRIP_FROM_INC_PATH    = "$(SRCTREE_TOP)"
+
+STRIP_FROM_PATH        = "$(SRCTREE_TOP)" @@strip_from_path@@
+
+GENERATE_TODOLIST      = NO
+GENERATE_TESTLIST      = NO
+GENERATE_BUGLIST       = NO
+
+SHOW_USED_FILES        = NO
+SHOW_NAMESPACES        = NO
+
+LAYOUT_FILE            = "$(SRCTREE_TOP)/site/doxygen/layout.xml"
+
+#---------------------------------------------------------------------------
+# Configuration options related to warning and progress messages
+#---------------------------------------------------------------------------
+
+QUIET                  = YES
+
+WARN_IF_UNDOCUMENTED   = NO
+
+#---------------------------------------------------------------------------
+# Configuration options related to the input files
+#---------------------------------------------------------------------------
+
+INPUT                  = "$(SRCTREE_TOP)/site/doxygen/main_page.md" @@input@@
+
+USE_MDFILE_AS_MAINPAGE = "$(SRCTREE_TOP)/site/doxygen/main_page.md"
+
+FILE_PATTERNS          = *.h \
+                         *.c \
+                         *.cc
+
+RECURSIVE              = YES
+
+EXCLUDE                = "$(SRCTREE_TOP)/external" \
+                         "$(SRCTREE_TOP)/sw/vendor" \
+                         "$(SRCTREE_TOP)/sw/device/benchmarks" \
+                         "$(SRCTREE_TOP)/sw/host/vendor"
+
+# Symlinks are necessary when running under bazel
+EXCLUDE_SYMLINKS       = NO
+
+# Absolute path using $(SRCTREE_TOP)
+IMAGE_PATH             = "$(SRCTREE_TOP)/site/doxygen"
+
+#---------------------------------------------------------------------------
+# Configuration options related to source browsing
+#---------------------------------------------------------------------------
+
+SOURCE_BROWSER         = YES
+STRIP_CODE_COMMENTS    = NO
+
+REFERENCES_LINK_SOURCE = NO
+
+SOURCE_TOOLTIPS        = NO
+
+#---------------------------------------------------------------------------
+# Configuration options related to the HTML output
+#---------------------------------------------------------------------------
+
+GENERATE_HTML          = YES
+
+# Relative to `OUTPUT_DIRECTORY`
+HTML_OUTPUT            = "doxy/"
+
+# Absolute paths using $(SRCTREE_TOP)
+HTML_HEADER            = "$(SRCTREE_TOP)/site/doxygen/header.html"
+HTML_FOOTER            = "$(SRCTREE_TOP)/site/doxygen/footer.html"
+
+HTML_COLORSTYLE_HUE    = 271
+
+TIMESTAMP         = NO
+
+# Disable Dynamic Functionality
+HTML_DYNAMIC_SECTIONS  = NO
+HTML_INDEX_NUM_ENTRIES = 0
+
+GENERATE_DOCSET        = NO
+GENERATE_HTMLHELP      = NO
+GENERATE_QHP           = NO
+GENERATE_ECLIPSEHELP   = NO
+
+ENUM_VALUES_PER_LINE   = 1
+
+SEARCHENGINE           = NO
+
+#---------------------------------------------------------------------------
+# Configuration options related to the LaTeX output
+#---------------------------------------------------------------------------
+
+GENERATE_LATEX         = NO
+
+#---------------------------------------------------------------------------
+# Configuration options related to the RTF output
+#---------------------------------------------------------------------------
+
+GENERATE_RTF           = NO
+
+#---------------------------------------------------------------------------
+# Configuration options related to the man page output
+#---------------------------------------------------------------------------
+
+GENERATE_MAN           = NO
+
+#---------------------------------------------------------------------------
+# Configuration options related to the XML output
+#---------------------------------------------------------------------------
+
+GENERATE_XML           = YES
+
+# Relative to `OUTPUT_DIRECTORY`
+XML_OUTPUT             = "api-xml"
+
+XML_PROGRAMLISTING     = NO
+
+#---------------------------------------------------------------------------
+# Configuration options related to the DOCBOOK output
+#---------------------------------------------------------------------------
+
+GENERATE_DOCBOOK       = NO
+
+#---------------------------------------------------------------------------
+# Configuration options for the AutoGen Definitions output
+#---------------------------------------------------------------------------
+
+GENERATE_AUTOGEN_DEF   = NO
+
+#---------------------------------------------------------------------------
+# Configuration options related to the Perl module output
+#---------------------------------------------------------------------------
+
+GENERATE_PERLMOD       = NO
+
+#---------------------------------------------------------------------------
+# Configuration options related to the preprocessor
+#---------------------------------------------------------------------------
+
+INCLUDE_FILE_PATTERNS  = *.h
+
+PREDEFINED             =
+EXPAND_AS_DEFINED      =
+
+SKIP_FUNCTION_MACROS   = YES
+
+#---------------------------------------------------------------------------
+# Configuration options related to the dot tool
+#---------------------------------------------------------------------------
+
+HAVE_DOT               = NO
+CLASS_GRAPH            = NO
+COLLABORATION_GRAPH    = NO
+GROUP_GRAPHS           = NO
+INCLUDE_GRAPH          = NO
+INCLUDED_BY_GRAPH      = NO
+GRAPHICAL_HIERARCHY    = NO
+DIRECTORY_GRAPH        = NO

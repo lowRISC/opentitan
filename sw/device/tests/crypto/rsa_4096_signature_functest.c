@@ -5,8 +5,8 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
-#include "sw/device/lib/crypto/include/hash.h"
 #include "sw/device/lib/crypto/include/rsa.h"
+#include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/profile.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -16,6 +16,7 @@
 #define MODULE_ID MAKE_MODULE_ID('t', 's', 't')
 
 enum {
+  kSha512DigestWords = 512 / 32,
   kRsa4096NumBytes = 4096 / 8,
   kRsa4096NumWords = kRsa4096NumBytes / sizeof(uint32_t),
 };
@@ -81,7 +82,6 @@ static uint32_t kTestPrivateExponent[kRsa4096NumWords] = {
     0x965d9408, 0x19aacb83,
 
 };
-static uint32_t kTestPublicExponent = 65537;
 
 // Message data for testing.
 static const unsigned char kTestMessage[] = "Test message.";
@@ -202,9 +202,8 @@ static status_t run_rsa_4096_sign(const uint8_t *msg, size_t msg_len,
       .data = kTestModulus,
       .len = ARRAYSIZE(kTestModulus),
   };
-  TRY(otcrypto_rsa_private_key_from_exponents(kOtcryptoRsaSize4096, modulus,
-                                              kTestPublicExponent, d_share0,
-                                              d_share1, &private_key));
+  TRY(otcrypto_rsa_private_key_from_exponents(
+      kOtcryptoRsaSize4096, modulus, d_share0, d_share1, &private_key));
 
   // Hash the message.
   otcrypto_const_byte_buf_t msg_buf = {.data = msg, .len = msg_len};
@@ -212,9 +211,8 @@ static status_t run_rsa_4096_sign(const uint8_t *msg, size_t msg_len,
   otcrypto_hash_digest_t msg_digest = {
       .data = msg_digest_data,
       .len = ARRAYSIZE(msg_digest_data),
-      .mode = kOtcryptoHashModeSha512,
   };
-  TRY(otcrypto_hash(msg_buf, msg_digest));
+  TRY(otcrypto_sha2_512(msg_buf, &msg_digest));
 
   otcrypto_word32_buf_t sig_buf = {
       .data = sig,
@@ -271,7 +269,7 @@ static status_t run_rsa_4096_verify(const uint8_t *msg, size_t msg_len,
       .key = public_key_data,
   };
   TRY(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize4096, modulus,
-                                        kTestPublicExponent, &public_key));
+                                        &public_key));
 
   // Hash the message.
   otcrypto_const_byte_buf_t msg_buf = {.data = msg, .len = msg_len};
@@ -279,9 +277,8 @@ static status_t run_rsa_4096_verify(const uint8_t *msg, size_t msg_len,
   otcrypto_hash_digest_t msg_digest = {
       .data = msg_digest_data,
       .len = ARRAYSIZE(msg_digest_data),
-      .mode = kOtcryptoHashModeSha512,
   };
-  TRY(otcrypto_hash(msg_buf, msg_digest));
+  TRY(otcrypto_sha2_512(msg_buf, &msg_digest));
 
   otcrypto_const_word32_buf_t sig_buf = {
       .data = sig,

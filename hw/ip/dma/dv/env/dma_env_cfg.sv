@@ -16,11 +16,10 @@ class dma_env_cfg extends cip_base_env_cfg #(.RAL_T(dma_reg_block));
   // Scoreboard
   dma_scoreboard        scoreboard_h;
 
-  // Waive full testing of the SoC System bus within block level DV?
-  bit dma_dv_waive_system_bus;
   // Note: Currently we have only a 32-bit TL-UL model of the SoC System bus when full testing of
   // the System bus has been explicitly waived.
-  logic [31:0] soc_system_hi_addr;
+  logic [SYS_ADDR_WIDTH-1:0] soc_system_src_base_addr;
+  logic [SYS_ADDR_WIDTH-1:0] soc_system_dst_base_addr;
 
   // Names of interfaces used in DMA block
   // These variables are used to store names of FIFO that are used
@@ -103,6 +102,12 @@ class dma_env_cfg extends cip_base_env_cfg #(.RAL_T(dma_reg_block));
 
     // TL Agent Configuration - RAL based
     m_tl_agent_cfg.max_outstanding_req = 1;
+
+    // The DMA controller must be able to handle combinational devices too, i.e. those
+    // with a combinational path from `a_valid` to `d_valid` on the TL-UL bus.
+    tl_agent_dma_host_cfg.device_can_rsp_on_same_cycle = 1'b1;
+    tl_agent_dma_ctn_cfg.device_can_rsp_on_same_cycle = 1'b1;
+    tl_agent_dma_sys_cfg.device_can_rsp_on_same_cycle = 1'b1;
 
   endfunction: initialize
 

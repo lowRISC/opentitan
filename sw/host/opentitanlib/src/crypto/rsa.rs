@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow, bail, ensure, Context, Result};
-use num_bigint_dig::{traits::ModInverse, BigInt, BigUint, Sign::Minus};
+use anyhow::{Context, Result, anyhow, bail, ensure};
+use num_bigint_dig::{BigInt, BigUint, Sign::Minus, traits::ModInverse};
 use rand::rngs::OsRng;
 use rsa::pkcs1::{DecodeRsaPublicKey, EncodeRsaPublicKey};
 use rsa::pkcs1v15::Pkcs1v15Sign;
 use rsa::pkcs8::{DecodePrivateKey, DecodePublicKey, EncodePrivateKey};
 use rsa::traits::PublicKeyParts;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use serde_annotate::Annotate;
 use sha2::Sha256;
 use std::fs::File;
@@ -140,7 +140,7 @@ impl RsaPublicKey {
         self.key
             .verify(
                 Pkcs1v15Sign::new::<Sha256>(),
-                digest.to_be_bytes().as_slice(),
+                digest.as_ref(),
                 signature.to_be_bytes().as_slice(),
             )
             .map_err(|e| anyhow!(Error::VerifyFailed(anyhow!(e))))
@@ -196,7 +196,7 @@ impl RsaPrivateKey {
     pub fn sign(&self, digest: &Sha256Digest) -> Result<Signature> {
         let signature = self
             .key
-            .sign(Pkcs1v15Sign::new::<Sha256>(), &digest.to_be_bytes())
+            .sign(Pkcs1v15Sign::new::<Sha256>(), digest.as_ref())
             .map_err(|e| Error::SignFailed(anyhow!(e)))?;
         Ok(Signature::from_be_bytes(signature)?)
     }
@@ -244,7 +244,7 @@ impl Deref for RsaPrivateKey {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Annotate)]
+#[derive(Debug, Deserialize, Annotate)]
 pub struct RsaRawPublicKey {
     #[serde(with = "serde_bytes")]
     #[annotate(format = hexstr)]

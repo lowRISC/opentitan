@@ -7,8 +7,8 @@
   human_name:         "SoC Debug Access Control Module",
   one_line_desc:      "Control module to enable or disable debug access",
   one_paragraph_desc: '''
-  Module that controls the Debug / DFT feature access for an SoC for which OpenTitan serves as an integrated HW RoT.
-  A debug policy bus driven from this module governs the unlock policy. Output from the debug policy bus is decoded by various debug / DFT logic blocks in an SoC to determine if feature debug / DFT access is allowed or not.
+  Module that controls the Debug / DFT access feature for an SoC for which OpenTitan serves as an integrated HW RoT.
+  A debug policy bus driven from this module governs the unlock policy. Output from the debug policy bus is decoded by various debug / DFT logic blocks in an SoC to determine if the debug / DFT access feature is allowed or not.
   The access policy is derived by the RoT with a challenge-response based debug authentication exchange session with a remote policy enforcer.
   '''
   // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
@@ -114,10 +114,33 @@
                This signals enables RAW, TEST and RMA mode accesses.
                '''
     }
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_cpu_en"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+      desc:    '''
+               CPU enable qualifier coming from life cycle controller.
+               Indication from life cycle controller that the CPU is running.
+               '''
+    }
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_rma_state"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+      desc:    '''
+               RMA state qualifier coming from life cycle controller.
+               Indication from life cycle controller that the RMA state is active.
+               '''
+    }
     { struct:  'logic'
       type:    'uni'
       name:    'halt_cpu_boot'
       act:     'rcv'
+      desc:    "External request to halt the CPU until a JTAG command allows the boot process to continue."
     }
     { struct:  'pwrmgr_data'
       type:    'uni'
@@ -143,13 +166,18 @@
         shadowed: "true"
         update_err_alert: "recov_ctrl_update_err",
         storage_err_alert: "fatal_fault",
+        tags: [
+          // Writting to this register will gate by the debug_policy_category_shadowed register.
+          // So excluded from CSR automation test.
+          "excl:CsrNonInitTests:CsrExclWrite"
+        ]
         fields: [
           { bits: "3:0"
             mubi: true
             resval: false
             name: "debug_policy_valid"
             desc: '''
-                  The valid state of the debug policy.
+                  Indicates the validity of the debug policy output.
                   '''
           }
         ]
@@ -166,7 +194,7 @@
         storage_err_alert: "fatal_fault",
         fields: [
           { bits: "6:0"
-            resval: "0x0"
+            resval: "0x50"
             name: "debug_policy_category"
             desc: '''
                   Debug Policy Control Setting.
@@ -192,12 +220,12 @@
         ]
       }
       { name: "TRACE_DEBUG_POLICY_CATEGORY"
-        desc: "Trace register to observe the debug category that is either determined by hardware or software."
+        desc: "Trace register to observe the debug category that is determined either by hardware or by software."
         swaccess: "ro"
         hwaccess: "hwo"
         fields: [
           { bits: "6:0"
-            resval: "0x0"
+            resval: "0x50"
             name: "category"
             desc: '''
                   The debug policy determined by hardware or software.
@@ -206,7 +234,7 @@
         ]
       }
       { name: "TRACE_DEBUG_POLICY_VALID_RELOCKED"
-        desc: "Trace register to observe the valid or relocked state that is either determined by hardware or software."
+        desc: "Trace register to observe the valid or relocked state that is determined either by hardware or by software."
         swaccess: "ro"
         hwaccess: "hwo"
         fields: [
@@ -237,7 +265,7 @@
             name: "auth_debug_intent_set"
             desc: '''
                   Status bit indicating whether the debug intent hardware strap was set.
-                  If set, SoC will be treated as under debug and authorized debug can be enabled to unlock the SoC at desired debug unlock level.
+                  If set, SoC will be treated as under debug, and authorized debug can be enabled to unlock the SoC at the desired debug unlock level.
                   '''
             resval: "0"
           }
@@ -245,26 +273,27 @@
             name: "auth_window_open"
             desc: '''
                   Status bit that tells whether debug authorization exchange can take place.
-                  This bit is set when auth_debug_intent_set is 1 and SoC reset sequence is paused to enable debug authorization exchange.
+                  This bit is set when auth_debug_intent_set is 1, and the SoC reset sequence is paused to enable debug authorization exchange.
                   '''
             resval: "0"
           }
           { bits: "5"
             name: "auth_window_closed"
             desc: '''
-                  Status bit that indicates that SoC reset sequence is unpaused SoC shall continue to boot and the debug authorization exchange cannot take place anymore until next reset.
+                  Status bit that indicates that SoC reset sequence is unpaused.
+                  SoC shall continue to boot and the debug authorization exchange cannot take place anymore until the next reset.
                   Note that the rest of the SoC reset sequence is triggered by the OT RoT.
                   '''
             resval: "0"
           }
           { bits: "6"
             name: "auth_unlock_success"
-            desc: "Status bit indicating whether the unlock protocol resulted in a successful unlock at requested level."
+            desc: "Status bit indicating whether the unlock protocol resulted in a successful unlock at the requested level."
             resval: "0"
           }
           { bits: "7"
             name: "auth_unlock_failed"
-            desc: "Status bit indicating whether the unlock protocol resulted in unlock failure at requested level."
+            desc: "Status bit indicating whether the unlock protocol resulted in unlock failure at the requested level."
             resval: "0"
           }
         ]
@@ -272,12 +301,12 @@
     ]
     jtag: [
       { name: "JTAG_TRACE_DEBUG_POLICY_CATEGORY"
-        desc: "Trace register to observe the debug category that is either determined by hardware or software."
+        desc: "Trace register to observe the debug category that is determined either by hardware or by software."
         swaccess: "ro"
         hwaccess: "hwo"
         fields: [
           { bits: "6:0"
-            resval: "0x0"
+            resval: "0x50"
             name: "category"
             desc: '''
                   The debug policy determined by hardware or software.
@@ -286,7 +315,7 @@
         ]
       }
       { name: "JTAG_TRACE_DEBUG_POLICY_VALID_RELOCKED"
-        desc: "Trace register to observe the valid or relocked state that is either determined by hardware or software."
+        desc: "Trace register to observe the valid or relocked state that is determined either by hardware or by software."
         swaccess: "ro"
         hwaccess: "hwo"
         fields: [
@@ -329,12 +358,17 @@
         swaccess: "ro"
         hwaccess: "hwo"
         hwext:    "true"
+        tags: [
+          // The status register is written by IBEX firmware and is reflected into the JTAG status register.
+          // So excluded from CSR automation test.
+          "excl:CsrNonInitTests:CsrExclWriteCheck"
+        ]
         fields: [
           { bits: "0"
             name: "auth_debug_intent_set"
             desc: '''
                   Status bit indicating whether the debug intent hardware strap was set.
-                  If set, SoC will be treated as under debug and authorized debug can be enabled to unlock the SoC at desired debug unlock level.
+                  If set, SoC will be treated as under debug, and authorized debug can be enabled to unlock the SoC at the desired debug unlock level.
                   '''
             resval: "0"
           }
@@ -342,26 +376,27 @@
             name: "auth_window_open"
             desc: '''
                   Status bit that tells whether debug authorization exchange can take place.
-                  This bit is set when auth_debug_intent_set is 1 and SoC reset sequence is paused to enable debug authorization exchange.
+                  This bit is set when auth_debug_intent_set is 1, and the SoC reset sequence is paused to enable debug authorization exchange.
                   '''
             resval: "0"
           }
           { bits: "5"
             name: "auth_window_closed"
             desc: '''
-                  Status bit that indicates that SoC reset sequence is unpaused, SoC shall continue to boot and the debug authorization exchange cannot take place anymore until next reset.
-                  Note that the rest of the SoC reset sequence is triggered by the OT RoT"
+                  Status bit that indicates that SoC reset sequence is unpaused.
+                  SoC shall continue to boot and the debug authorization exchange cannot take place anymore until the next reset.
+                  Note that the rest of the SoC reset sequence is triggered by the OT RoT.
                   '''
             resval: "0"
           }
           { bits: "6"
             name: "auth_unlock_success"
-            desc: "Status bit indicating whether the unlock protocol resulted in a successful unlock at requested level"
+            desc: "Status bit indicating whether the unlock protocol resulted in a successful unlock at the requested level"
             resval: "0"
           }
           { bits: "7"
             name: "auth_unlock_failed"
-            desc: "Status bit indicating whether the unlock protocol resulted in unlock failure at requested level"
+            desc: "Status bit indicating whether the unlock protocol resulted in unlock failure at the requested level"
             resval: "0"
           }
         ]
@@ -378,42 +413,42 @@
           { bits: "0"
             name: "main_clk_status"
             desc: '''
-                    Status of the main clock activation
+                  Status of the main clock activation.
                   '''
             resval: "0"
           }
           { bits: "1"
             name: "io_clk_status"
             desc: '''
-                    Status of the IO Clock activation
+                  Status of the IO Clock activation.
                   '''
             resval: "0"
           }
           { bits: "2"
             name: "otp_done"
             desc: '''
-                    OTP controller initialization complete
+                  OTP controller initialization complete.
                   '''
             resval: "0"
           }
           { bits: "3"
             name: "lc_done"
             desc: '''
-                    Lifecycle controller initialization done; LC policy is decoded and set
+                  Lifecycle controller initialization done; LC policy is decoded and set.
                   '''
             resval: "0"
           }
           { bits: "4"
             name: "cpu_fetch_en"
             desc: '''
-                    Indication from powermanger to IBEX to state code execution
+                  Indication from power manager to IBEX to start code execution
                   '''
             resval: "0"
           }
           { bits: "10:5"
             name: "halt_fsm_state"
             desc: '''
-                  The state of the halt state FSM.
+                  The state of the halt FSM.
                   '''
             resval: "0"
           }
@@ -443,7 +478,7 @@
       }
       { name: "JTAG_TRACE_SOC_DBG_STATE"
         desc: '''
-              Tells the current debug state coming from OTP.
+              Reports the current debug state coming from OTP.
               Note that this information is reflected only if the hw_dft_en signal is true.
               '''
         swaccess: "ro"

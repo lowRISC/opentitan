@@ -13,10 +13,6 @@
 
   // Overrides
   overrides: [
-    {
-      name: design_level
-      value: "top"
-    }
     // Since this synthesizes the design at chip level,
     // we need to instruct the parser script to explicitly
     // expand the top_earlgrey submodule.

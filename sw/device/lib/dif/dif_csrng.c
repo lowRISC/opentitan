@@ -10,7 +10,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_csrng_shared.h"
 
-#include "csrng_regs.h"  // Generated
+#include "hw/top/csrng_regs.h"  // Generated
 
 /**
  * Reads the output data register status.
@@ -98,7 +98,9 @@ dif_result_t dif_csrng_update(const dif_csrng_t *csrng,
                             });
 }
 
-dif_result_t dif_csrng_generate_start(const dif_csrng_t *csrng, size_t len) {
+dif_result_t dif_csrng_generate_start(
+    const dif_csrng_t *csrng, const dif_csrng_seed_material_t *additional_data,
+    size_t len) {
   if (csrng == NULL || len == 0) {
     return kDifBadArg;
   }
@@ -109,6 +111,7 @@ dif_result_t dif_csrng_generate_start(const dif_csrng_t *csrng, size_t len) {
   return csrng_send_app_cmd(csrng->base_addr, kCsrngAppCmdTypeCsrng,
                             (csrng_app_cmd_t){
                                 .id = kCsrngAppCmdGenerate,
+                                .seed_material = additional_data,
                                 .generate_len = num_128bit_blocks,
                             });
 }
@@ -181,45 +184,6 @@ dif_result_t dif_csrng_get_cmd_force_unhealthy_fifo(const dif_csrng_t *csrng,
     case kDifCsrngFifoGenBits:
       fifo_bit = CSRNG_ERR_CODE_SFIFO_GENBITS_ERR_BIT;
       break;
-    case kDifCsrngFifoCmdReq:
-      fifo_bit = CSRNG_ERR_CODE_SFIFO_CMDREQ_ERR_BIT;
-      break;
-    case kDifCsrngFifoRcStage:
-      fifo_bit = CSRNG_ERR_CODE_SFIFO_RCSTAGE_ERR_BIT;
-      break;
-    case kDifCsrngFifoKeyVrc:
-      fifo_bit = CSRNG_ERR_CODE_SFIFO_KEYVRC_ERR_BIT;
-      break;
-    case kDifCsrngFifoUpdateReq:
-      fifo_bit = CSRNG_ERR_CODE_SFIFO_UPDREQ_ERR_BIT;
-      break;
-    case kDifCsrngFifoBencRec:
-      fifo_bit = CSRNG_ERR_CODE_SFIFO_BENCREQ_ERR_BIT;
-      break;
-    case kDifCsrngFifoBencAck:
-      fifo_bit = CSRNG_ERR_CODE_SFIFO_BENCACK_ERR_BIT;
-      break;
-    case kDifCsrngFifoPData:
-      fifo_bit = CSRNG_ERR_CODE_SFIFO_PDATA_ERR_BIT;
-      break;
-    case kDifCsrngFifoFinal:
-      fifo_bit = CSRNG_ERR_CODE_SFIFO_FINAL_ERR_BIT;
-      break;
-    case kDifCsrngFifoGBencAck:
-      fifo_bit = CSRNG_ERR_CODE_SFIFO_GBENCACK_ERR_BIT;
-      break;
-    case kDifCsrngFifoGrcStage:
-      fifo_bit = CSRNG_ERR_CODE_SFIFO_GRCSTAGE_ERR_BIT;
-      break;
-    case kDifCsrngFifoGGenReq:
-      fifo_bit = CSRNG_ERR_CODE_SFIFO_GGENREQ_ERR_BIT;
-      break;
-    case kDifCsrngFifoGadStage:
-      fifo_bit = CSRNG_ERR_CODE_SFIFO_GADSTAGE_ERR_BIT;
-      break;
-    case kDifCsrngFifoBlockEnc:
-      fifo_bit = CSRNG_ERR_CODE_SFIFO_BLKENC_ERR_BIT;
-      break;
     default:
       return kDifBadArg;
   }
@@ -244,20 +208,14 @@ dif_result_t dif_csrng_get_cmd_force_error(const dif_csrng_t *csrng,
     case kDifCsrngErrorMainSm:
       error_bit = CSRNG_ERR_CODE_MAIN_SM_ERR_BIT;
       break;
-    case kDifCsrngErrorDrbgGenSm:
-      error_bit = CSRNG_ERR_CODE_DRBG_GEN_SM_ERR_BIT;
-      break;
-    case kDifCsrngErrorDrbgUpdateBlockEncSm:
-      error_bit = CSRNG_ERR_CODE_DRBG_UPDBE_SM_ERR_BIT;
-      break;
-    case kDifCsrngErrorDrbgUpdateOutBlockSm:
-      error_bit = CSRNG_ERR_CODE_DRBG_UPDOB_SM_ERR_BIT;
+    case kDifCsrngErrorCtrDrbgSm:
+      error_bit = CSRNG_ERR_CODE_CTR_DRBG_SM_ERR_BIT;
       break;
     case kDifCsrngErrorAesSm:
       error_bit = CSRNG_ERR_CODE_AES_CIPHER_SM_ERR_BIT;
       break;
-    case kDifCsrngErrorGenerateCmdCounter:
-      error_bit = CSRNG_ERR_CODE_CMD_GEN_CNT_ERR_BIT;
+    case kDifCsrngErrorCounters:
+      error_bit = CSRNG_ERR_CODE_CTR_ERR_BIT;
       break;
     case kDifCsrngErrorFifoWrite:
       error_bit = CSRNG_ERR_CODE_FIFO_WRITE_ERR_BIT;
@@ -353,7 +311,7 @@ dif_result_t dif_csrng_get_internal_state(
       mmio_region_read32(csrng->base_addr, CSRNG_INT_STATE_VAL_REG_OFFSET);
 
   // The following bit indexes are defined in
-  // https://docs.opentitan.org/hw/ip/csrng/doc/#working-state-values
+  // https://opentitan.org/book/hw/ip/csrng/doc/theory_of_operation.html#working-state-values
   state->instantiated = bitfield_bit32_read(flags, /*bit_index=*/0u);
   state->fips_compliance = bitfield_bit32_read(flags, /*bit_index=*/1u);
 

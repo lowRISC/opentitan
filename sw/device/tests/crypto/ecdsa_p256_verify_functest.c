@@ -5,7 +5,7 @@
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/ecc/p256.h"
-#include "sw/device/lib/crypto/include/hash.h"
+#include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -23,13 +23,12 @@ status_t ecdsa_p256_verify_test(
       .data = testvec->msg,
       .len = testvec->msg_len,
   };
-  uint32_t digest_buf[kSha256DigestWords];
+  uint32_t digest_buf[256 / 32];
   otcrypto_hash_digest_t digest = {
-      .mode = kOtcryptoHashModeSha256,
       .data = digest_buf,
-      .len = kSha256DigestWords,
+      .len = ARRAYSIZE(digest_buf),
   };
-  TRY(otcrypto_hash(msg_buf, digest));
+  TRY(otcrypto_sha2_256(msg_buf, &digest));
 
   // Attempt to verify signature.
   TRY(p256_ecdsa_verify_start(&testvec->signature, digest.data,

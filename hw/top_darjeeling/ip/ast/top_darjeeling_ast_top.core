@@ -1,0 +1,34 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:top_darjeeling_ast_top:0.1"
+description: "Pseudo top-level for Darjeeling's ast"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:darjeeling_ip:alert_handler_pkg
+      - lowrisc:darjeeling_ip:clkmgr_pkg
+      - lowrisc:darjeeling_ip:pwrmgr_pkg
+      - lowrisc:darjeeling_ip:rstmgr_pkg
+      - lowrisc:darjeeling_ip:pinmux_pkg
+      - lowrisc:systems:top_darjeeling_ast
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+targets:
+  lint:
+    toplevel: ast
+    filesets:
+      - files_rtl
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"

@@ -119,9 +119,9 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task set_flash_rma_ack(lc_ctrl_pkg::lc_tx_t val, int unsigned max_delay_cycles = 10);
-    int delay_lens[cfg.lc_ctrl_vif.NumRmaAckSigs] = '{default: 0};
-    if (cfg.lc_ctrl_vif.flash_rma_ack_i != {cfg.lc_ctrl_vif.NumRmaAckSigs{val}}) begin
-      for (int i = 0; i < cfg.lc_ctrl_vif.NumRmaAckSigs; i++) begin
+    int delay_lens[lc_ctrl_dv_utils_pkg::NUM_RMA_ACK_SIGS];
+    if (cfg.lc_ctrl_vif.flash_rma_ack_i != {lc_ctrl_dv_utils_pkg::NUM_RMA_ACK_SIGS{val}}) begin
+      for (int i = 0; i < lc_ctrl_dv_utils_pkg::NUM_RMA_ACK_SIGS; i++) begin
         delay_lens[i] = $urandom_range(0, max_delay_cycles);
       end
     end

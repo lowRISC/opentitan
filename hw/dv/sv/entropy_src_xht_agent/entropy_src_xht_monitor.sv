@@ -53,28 +53,32 @@ class entropy_src_xht_monitor extends dv_base_monitor #(
     bit  event_filter;
 
     // The entropy_src_extht_req_t encodes three types of events that the agent must monitor
-    // - entropy_bit_valid
+    // - entropy_valid
     // - clear, and
     // - window_wrap pulse.
     // All other req fields are data or parameters (unchanging except with a clear pulse)
     //
     // Meanwhile the entropy_src_rsp_t data is continuously monitored.
-    // Creating a new item at every clock however has a noticible performance impact on simulations
+    // Creating a new item at every clock however has a noticeable performance impact on simulations
     // therefore we typically assume that the xht_sequence only outputs updates in the cycle after
-    // entropy_bit_valid, and so we add entropy_bit_valid_q to our event filter.
+    // entropy_valid, and so we add entropy_valid_q to our event filter.
     //
     // To get scoreboard access to all bus samples, set cfg.unfiltered_monitor_traffic to 1. This
     // will allow for simulations in which an xht sequence takes longer than one cycle to respond.
-    event_filter = (cfg.vif.mon_cb.req.entropy_bit_valid ||
+    event_filter = (cfg.vif.mon_cb.entropy_valid ||
                     cfg.vif.mon_cb.req.clear ||
                     cfg.vif.mon_cb.req.window_wrap_pulse ||
-                    cfg.vif.mon_cb.entropy_bit_valid_q);
+                    cfg.vif.mon_cb.entropy_valid_q);
 
     if (cfg.unfiltered_monitor_traffic || event_filter) begin
       `uvm_info(`gfn, "Sending item", UVM_DEBUG)
       item = entropy_src_xht_item::type_id::create("item");
-      item.rsp = cfg.vif.mon_cb.rsp;
-      item.req = cfg.vif.mon_cb.req;
+      item.rsp                = cfg.vif.mon_cb.rsp;
+      item.req                = cfg.vif.mon_cb.req;
+      item.entropy_valid      = cfg.vif.mon_cb.entropy_valid;
+      item.entropy_bits       = cfg.vif.mon_cb.entropy_bits;
+      item.entropy_bit_sel    = cfg.vif.mon_cb.entropy_bit_sel;
+      item.health_test_window = cfg.vif.mon_cb.health_test_window;
       analysis_port.write(item);
       req_analysis_port.write(item);
     end

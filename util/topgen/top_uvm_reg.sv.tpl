@@ -105,7 +105,7 @@ ${make_ral_pkg_window_class(block_dv_base_names.mem, ral_id, window)}
 
     `uvm_object_utils(${ral_id}_reg_block)
 
-    function new(string name = "${ral_id}_reg_block",
+    function new(string name = "",
                  int    has_coverage = UVM_NO_COVERAGE);
       super.new(name, has_coverage);
     endfunction : new

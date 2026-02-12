@@ -1,6 +1,10 @@
 /* Copyright lowRISC contributors (OpenTitan project). */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
+.text
+.globl sc_init
+.globl sc_reduce
+.globl sc_mul
 
 /**
  * This library contains arithmetic for the scalar field of the Ed25519
@@ -29,7 +33,6 @@
  * clobbered registers: x2, x3, w14, w15, MOD
  * clobbered flag groups: FG0
  */
-.globl sc_init
 sc_init:
   /* Load modulus L into the MOD register. */
   li      x2, 14
@@ -125,7 +128,6 @@ sc_init:
  * clobbered registers: w10 to w13, w18
  * clobbered flag groups: FG0
  */
-.globl sc_reduce
 sc_reduce:
   /* First, compute q3 = (x * mu) >> 512.
 
@@ -256,7 +258,6 @@ sc_reduce:
  * clobbered registers: w10 to w13, w16 to w18
  * clobbered flag groups: FG0
  */
-.globl sc_mul
 sc_mul:
   /* Compute the raw 512-bit product.
      [w17:w16] <= a * b */

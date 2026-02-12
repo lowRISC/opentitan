@@ -45,7 +45,7 @@ See the [Memory Load Integrity](#memory-load-integrity) section for more details
 
 ### Instruction Prefetch
 
-OTBN employs an instruction prefetch stage to enable pre-decoding of instructions to enable the [blanking SCA hardening measure](#blanking).
+OTBN employs an instruction prefetch stage to enable pre-decoding of instructions to enable the [blanking SCA hardening measure](../README.md#blanking).
 Its operation is entirely transparent to software.
 It does not speculate and will only prefetch where the next instruction address can be known.
 This results in a stall cycle for all conditional branches and jumps as the result is neither predicted nor known ahead of time.
@@ -162,7 +162,7 @@ Recoverable errors can only occur during the execution of software on OTBN, and 
 
 The following actions are taken when OTBN detects a recoverable error:
 
-1. The currently running operation is terminated, similar to the way an {{#otbn-insn-ref ECALL}} instruction [is executed](#returning-from-an-application):
+1. The currently running operation is terminated, similar to the way an {{#otbn-insn-ref ECALL}} instruction [is executed](#software-execution):
    - No more instructions are fetched or executed.
    - A [secure wipe of internal state](#internal-state-secure-wipe) is performed.
    - The [`ERR_BITS`](registers.md#err_bits) register is set to a non-zero value that describes the error.
@@ -180,7 +180,7 @@ Fatal errors can occur at any time, even when an OTBN operation isn't in progres
 The following actions are taken when OTBN detects a fatal error:
 
 1. A [secure wipe of the data memory](#data-memory-dmem-secure-wipe) and a [secure wipe of the instruction memory](#instruction-memory-imem-secure-wipe) is initiated.
-2. If OTBN [is not idle](#operational-states), then the currently running operation is terminated, similarly to how an operation ends after an {{#otbn-insn-ref ECALL}} instruction [is executed](#returning-from-an-application):
+2. If OTBN [is not idle](#operational-states), then the currently running operation is terminated, similarly to how an operation ends after an {{#otbn-insn-ref ECALL}} instruction [is executed](#software-execution):
    - No more instructions are fetched or executed.
    - A [secure wipe of internal state](#internal-state-secure-wipe) is performed.
    - The [`ERR_BITS`](registers.md#err_bits) register is set to a non-zero value that describes the error.
@@ -239,7 +239,7 @@ This way, no alert is generated without setting an error code somewhere.
       <td><code>KEY_INVALID</code></td>
       <td>software</td>
       <td>
-        An attempt to read a `KEY_*` WSR was detected, but no key was provided by the key manager.
+        An attempt to read a <code>KEY_*</code> WSR was detected, but no key was provided by the key manager.
       </td>
     </tr>
     <tr>
@@ -295,7 +295,7 @@ This way, no alert is generated without setting an error code somewhere.
     <tr>
       <td><code>FATAL_SOFTWARE</code></td>
       <td>fatal</td>
-      <td>A software error was seen and [`CTRL.software_errs_fatal`](registers.md#ctrl) was set.</td>
+      <td>A software error was seen and <code>CTRL.software_errs_fatal</code> was set.</td>
     </tr>
   </tbody>
 </table>
@@ -319,7 +319,7 @@ Write attempts while OTBN is running are ignored.
 
 ### Reaction to Life Cycle Escalation Requests
 
-OTBN receives and reacts to escalation signals from the [life cycle controller](../../lc_ctrl/README.md#security-escalation).
+OTBN receives and reacts to escalation signals from the [life cycle controller](../../lc_ctrl/doc/theory_of_operation.md#security-escalation).
 An incoming life cycle escalation is a fatal error of type `lifecycle_escalation` and treated as described in the section [Fatal Errors](#reaction-to-fatal-errors).
 
 ### Idle
@@ -363,15 +363,14 @@ Note that data stored in other temporary memories within OTBN, including the reg
 Scrambling is used to obfuscate the memory contents and to diffuse the data.
 Obfuscation makes passive probing more difficult, while diffusion makes active fault injection attacks more difficult.
 
-The scrambling mechanism is described in detail in the [section "Scrambling Primitive" of the SRAM Controller Technical Specification](../../sram_ctrl/README.md#scrambling-primitive).
+The scrambling mechanism is described in detail in the [section "Scrambling Primitive" of the SRAM Controller Technical Specification](../../sram_ctrl/doc/theory_of_operation.md#scrambling-primitive).
 
 When OTBN comes out of reset, its memories have default scrambling keys.
 The host processor can request new keys for each memory by issuing a [secure wipe of DMEM](#data-memory-dmem-secure-wipe) and a [secure wipe of IMEM](#instruction-memory-imem-secure-wipe).
 
 #### Actions on Integrity Errors
 
-A fatal error is raised whenever a data integrity violation is detected, which results in an immediate stop of all processing and the issuing of a fatal alert.
-The section [Error Handling and Reporting](#design-details-error-handling-and-reporting) describes the error handling in more detail.
+A [fatal error](#reaction-to-fatal-errors) is raised whenever a data integrity violation is detected, which results in an immediate stop of all processing and the issuing of a fatal alert.
 
 #### Register File Integrity Protection
 
@@ -446,7 +445,7 @@ It isn't a cryptographically secure MAC, so cannot spot an attacker who can comp
 However, in this case the attacker would be equally able to control responses from OTBN, so any such check could be subverted.
 
 The CRC used is the 32-bit CRC-32-IEEE checksum.
-This standard choice of generating polynomial makes it compatible with other tooling and libraries, such as the [crc32 function](https://docs.python.org/3/library/binascii.html#binascii.crc32) in the python 'binascii' module and the crc instructions in the RISC-V bitmanip specification [[SYMBIOTIC21]](#ref-symbiotic21).
+This standard choice of generating polynomial makes it compatible with other tooling and libraries, such as the [crc32 function](https://docs.python.org/3/library/binascii.html#binascii.crc32) in the python 'binascii' module and the crc instructions in the RISC-V bitmanip specification [[SYMBIOTIC21](#ref-symbiotic21)].
 The stream over which the checksum is computed is the stream of writes that have been seen since the last write to [`LOAD_CHECKSUM`](registers.md#load_checksum).
 Each write is treated as a 48b value, `{imem, idx, wdata}`.
 Here, `imem` is a single bit flag which is one for writes to IMEM and zero for writes to DMEM.
@@ -474,7 +473,7 @@ This operation can be applied to:
 
 The three forms of secure wipe can be triggered in different ways.
 
-A secure wipe of either the instruction or the data memory can be triggered from host software by issuing a `SEC_WIPE_DMEM` or `SEC_WIPE_IMEM` [command](#design-details-command).
+A secure wipe of either the instruction or the data memory can be triggered from host software by issuing a `SEC_WIPE_DMEM` or `SEC_WIPE_IMEM` [command](#operations-and-commands).
 
 A secure wipe of instruction memory, data memory, and all internal state is performed automatically when handling a [fatal error](#reaction-to-fatal-errors).
 In addition, it can be triggered by the [Life Cycle Controller](../../lc_ctrl/README.md) before RMA entry using the `lc_rma_req/ack` interface.
@@ -516,7 +515,7 @@ OTBN provides a mechanism to securely wipe all internal state, excluding the ins
 
 The following state is wiped:
 * Register files: GPRs and WDRs
-* The accumulator register (also accessible through the ACC WSR)
+* The accumulator register (also accessible through the ACC WSR) and the intermediate result registers for the Montgomery computation (hidden registers).
 * Flags (accessible through the FG0, FG1, and FLAGS CSRs)
 * The modulus (accessible through the MOD0 to MOD7 CSRs and the MOD WSR)
 
@@ -530,3 +529,9 @@ In order to prevent mismatches between ISS and RTL, software needs to initialise
 Loop and call stack pointers are reset.
 
 Host software cannot explicitly trigger an internal secure wipe; it is performed automatically after reset and at the end of an `EXECUTE` operation.
+
+## References
+
+<a name="ref-chen08">[CHEN08]</a> L. Chen, "Hsiao-Code Check Matrices and Recursively Balanced Matrices," arXiv:0803.1217 [cs], Mar. 2008 [Online]. Available: <a href="https://arxiv.org/abs/0803.1217">https://arxiv.org/abs/0803.1217</a>
+
+<a name="ref-symbiotic21">[SYMBIOTIC21]</a> RISC-V Bitmanip Extension v0.93 Available: <a href="https://github.com/riscv/riscv-bitmanip/releases/download/v0.93/bitmanip-0.93.pdf">https://github.com/riscv/riscv-bitmanip/releases/download/v0.93/bitmanip-0.93.pdf</a>

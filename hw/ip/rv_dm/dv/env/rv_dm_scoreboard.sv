@@ -233,8 +233,9 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
       end
       sba_tl_access_q.push_back(item);
       // check tl packet integrity
-      // TODO: deal with item not being ok.
-      void'(item.is_ok(.throw_error(0)));
+      if (!item.is_ok()) begin
+        // TODO: deal with item not being ok.
+      end
       process_tl_sba_access(item, DataChannel);
     end
   endtask
@@ -314,7 +315,7 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
     bit data_phase_write  = (write && channel == DataChannel);
 
     // Scoreboard only takes csr address, so filter out memory address.
-    if (is_mem_addr(item, ral_name)) return;
+    if (is_mem_addr(item.a_addr, cfg.ral_models[ral_name])) return;
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
       csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
@@ -331,7 +332,7 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
 
     // process the csr req
     // for write, update local variable and fifo at address phase
-    // for read, update predication at address phase and compare at data phase
+    // for read, update prediction at address phase and compare at data phase
     case (ral_name)
       "rv_dm_regs_reg_block": begin
         case (csr.get_name())

@@ -8,24 +8,25 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "hw/top/dt/otbn.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otbn_regs.h"  // Generated.
+#include "hw/top/otbn_regs.h"  // Generated.
+
+static inline uint32_t otbn_base(void) {
+  return dt_otbn_primary_reg_block(kDtOtbn);
+}
 
 enum {
-  /**
-   * Base address for OTBN.
-   */
-  kBase = TOP_EARLGREY_OTBN_BASE_ADDR,
   /**
    * Highest index of OTBN error bits.
    */
   kOtbnErrBitsLast = OTBN_ERR_BITS_FATAL_SOFTWARE_BIT,
+  kIntrStateDone = (1 << OTBN_INTR_COMMON_DONE_BIT),
 };
 
 /**
@@ -55,13 +56,13 @@ rom_error_t sc_otbn_busy_wait_for_done(void) {
   uint32_t status = launder32(UINT32_MAX);
   rom_error_t res = launder32(kErrorOk ^ status);
   do {
-    status = abs_mmio_read32(kBase + OTBN_STATUS_REG_OFFSET);
+    status = abs_mmio_read32(otbn_base() + OTBN_STATUS_REG_OFFSET);
   } while (launder32(status) != kScOtbnStatusIdle &&
            launder32(status) != kScOtbnStatusLocked);
   res ^= ~status;
   if (launder32(res) == kErrorOk) {
     HARDENED_CHECK_EQ(res, kErrorOk);
-    HARDENED_CHECK_EQ(abs_mmio_read32(kBase + OTBN_STATUS_REG_OFFSET),
+    HARDENED_CHECK_EQ(abs_mmio_read32(otbn_base() + OTBN_STATUS_REG_OFFSET),
                       kScOtbnStatusIdle);
     return res;
   }
@@ -99,7 +100,7 @@ static rom_error_t sc_otbn_imem_write(size_t num_words, const uint32_t *src,
                                       sc_otbn_addr_t dest) {
   HARDENED_RETURN_IF_ERROR(
       check_offset_len(dest, num_words, OTBN_IMEM_SIZE_BYTES));
-  sc_otbn_write(kBase + OTBN_IMEM_REG_OFFSET + dest, src, num_words);
+  sc_otbn_write(otbn_base() + OTBN_IMEM_REG_OFFSET + dest, src, num_words);
   return kErrorOk;
 }
 
@@ -107,7 +108,7 @@ rom_error_t sc_otbn_dmem_write(size_t num_words, const uint32_t *src,
                                sc_otbn_addr_t dest) {
   HARDENED_RETURN_IF_ERROR(
       check_offset_len(dest, num_words, OTBN_DMEM_SIZE_BYTES));
-  sc_otbn_write(kBase + OTBN_DMEM_REG_OFFSET + dest, src, num_words);
+  sc_otbn_write(otbn_base() + OTBN_DMEM_REG_OFFSET + dest, src, num_words);
   return kErrorOk;
 }
 
@@ -117,7 +118,7 @@ rom_error_t sc_otbn_dmem_read(size_t num_words, sc_otbn_addr_t src,
       check_offset_len(src, num_words, OTBN_DMEM_SIZE_BYTES));
   uint32_t i = 0, r = num_words - 1;
   for (; launder32(i) < num_words && launder32(r) < num_words; ++i, --r) {
-    dest[i] = abs_mmio_read32(kBase + OTBN_DMEM_REG_OFFSET + src +
+    dest[i] = abs_mmio_read32(otbn_base() + OTBN_DMEM_REG_OFFSET + src +
                               i * sizeof(uint32_t));
   }
   HARDENED_CHECK_EQ(i, num_words);
@@ -134,64 +135,79 @@ rom_error_t sc_otbn_dmem_read(size_t num_words, sc_otbn_addr_t src,
  * @param error Error to return if operation fails.
  * @return Result of the operation.
  */
+static void sc_otbn_cmd_start(sc_otbn_cmd_t cmd) {
+  abs_mmio_write32(otbn_base() + OTBN_INTR_STATE_REG_OFFSET, kIntrStateDone);
+  abs_mmio_write32(otbn_base() + OTBN_CMD_REG_OFFSET, cmd);
+}
+
 OT_WARN_UNUSED_RESULT
-static rom_error_t sc_otbn_cmd_run(sc_otbn_cmd_t cmd, rom_error_t error) {
+static rom_error_t sc_otbn_cmd_finish(rom_error_t error) {
   enum {
-    kIntrStateDone = (1 << OTBN_INTR_COMMON_DONE_BIT),
     // Use a bit index that doesn't overlap with error bits.
     kResDoneBit = 31,
   };
   static_assert((UINT32_C(1) << kResDoneBit) > kOtbnErrBitsLast,
                 "kResDoneBit must not overlap with OTBN error bits");
-
-  abs_mmio_write32(kBase + OTBN_INTR_STATE_REG_OFFSET, kIntrStateDone);
-  abs_mmio_write32(kBase + OTBN_CMD_REG_OFFSET, cmd);
-
   rom_error_t res = kErrorOk ^ (UINT32_C(1) << kResDoneBit);
   uint32_t reg = 0;
   do {
-    reg = abs_mmio_read32(kBase + OTBN_INTR_STATE_REG_OFFSET);
+    reg = abs_mmio_read32(otbn_base() + OTBN_INTR_STATE_REG_OFFSET);
     res ^= (uint32_t)bitfield_bit32_read(reg, OTBN_INTR_COMMON_DONE_BIT)
            << kResDoneBit;
   } while (launder32(reg) != kIntrStateDone);
   HARDENED_CHECK_EQ(reg, kIntrStateDone);
-  abs_mmio_write32(kBase + OTBN_INTR_STATE_REG_OFFSET, kIntrStateDone);
+  abs_mmio_write32(otbn_base() + OTBN_INTR_STATE_REG_OFFSET, kIntrStateDone);
 
   // Error bits register should be 0 (no errors).
-  uint32_t err_bits = abs_mmio_read32(kBase + OTBN_ERR_BITS_REG_OFFSET);
+  uint32_t err_bits = abs_mmio_read32(otbn_base() + OTBN_ERR_BITS_REG_OFFSET);
   res ^= err_bits;
 
   // Status should be kScOtbnStatusIdle; OTBN can also issue a done interrupt
   // when transitioning to the "locked" state, so it is important to check
   // the status here.
-  uint32_t status = abs_mmio_read32(kBase + OTBN_STATUS_REG_OFFSET);
+  uint32_t status = abs_mmio_read32(otbn_base() + OTBN_STATUS_REG_OFFSET);
 
   if (launder32(res) == kErrorOk && launder32(err_bits) == 0 &&
       launder32(status) == kScOtbnStatusIdle) {
     HARDENED_CHECK_EQ(res, kErrorOk);
     HARDENED_CHECK_EQ(err_bits, 0);
-    HARDENED_CHECK_EQ(abs_mmio_read32(kBase + OTBN_STATUS_REG_OFFSET),
+    HARDENED_CHECK_EQ(abs_mmio_read32(otbn_base() + OTBN_STATUS_REG_OFFSET),
                       kScOtbnStatusIdle);
     return res;
   }
   return error;
 }
 
-rom_error_t sc_otbn_execute(void) {
+static rom_error_t sc_otbn_cmd_run(sc_otbn_cmd_t cmd, rom_error_t error) {
+  sc_otbn_cmd_start(cmd);
+  return sc_otbn_cmd_finish(error);
+}
+
+rom_error_t sc_otbn_execute_start(void) {
   // If OTBN is busy, wait for it to be done.
   HARDENED_RETURN_IF_ERROR(sc_otbn_busy_wait_for_done());
 
   // Set software errors to fatal before running the program. Note: the CTRL
   // register has only this one setting, so we have no need to read the
   // previous value.
-  sec_mmio_write32(kBase + OTBN_CTRL_REG_OFFSET,
+  sec_mmio_write32(otbn_base() + OTBN_CTRL_REG_OFFSET,
                    1 << OTBN_CTRL_SOFTWARE_ERRS_FATAL_BIT);
 
-  return sc_otbn_cmd_run(kScOtbnCmdExecute, kErrorOtbnExecutionFailed);
+  sc_otbn_cmd_start(kScOtbnCmdExecute);
+  return kErrorOk;
+}
+
+rom_error_t sc_otbn_execute_finish(void) {
+  return sc_otbn_cmd_finish(kErrorOtbnExecutionFailed);
+}
+
+rom_error_t sc_otbn_execute(void) {
+  HARDENED_RETURN_IF_ERROR(sc_otbn_execute_start());
+  return sc_otbn_execute_finish();
 }
 
 uint32_t sc_otbn_instruction_count_get(void) {
-  return abs_mmio_read32(kBase + OTBN_INSN_CNT_REG_OFFSET);
+  return abs_mmio_read32(otbn_base() + OTBN_INSN_CNT_REG_OFFSET);
 }
 
 rom_error_t sc_otbn_imem_sec_wipe(void) {

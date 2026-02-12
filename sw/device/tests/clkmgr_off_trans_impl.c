@@ -21,17 +21,34 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "aes_regs.h"
-#include "hmac_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "kmac_regs.h"
-#include "otbn_regs.h"
+#include "hw/top/aes_regs.h"
+#include "hw/top/hmac_regs.h"
+#include "hw/top/kmac_regs.h"
+#include "hw/top/otbn_regs.h"
 
-static const dt_pwrmgr_t kPwrmgrDt = 0;
-static_assert(kDtPwrmgrCount == 1, "this test expects a pwrmgr");
+static_assert(kDtAesCount >= 1, "This test requires at least one AES instance");
 static_assert(kDtAonTimerCount >= 1,
-              "this test expects at least one aon_timer");
-static const dt_aon_timer_t kAonTimerDt = 0;
+              "This test requires at least one AON Timer instance");
+static_assert(kDtClkmgrCount >= 1,
+              "This test requires at least one Clkmgr instance");
+static_assert(kDtHmacCount >= 1,
+              "This test requires at least one HMAC instance");
+static_assert(kDtKmacCount >= 1,
+              "This test requires at least one KMAC instance");
+static_assert(kDtOtbnCount >= 1,
+              "This test requires at least one OTBN instance");
+static_assert(kDtPwrmgrCount == 1, "this test expects exactly one pwrmgr");
+static_assert(kDtRstmgrCount >= 1,
+              "This test requires at least one Rstmgr instance");
+
+static const dt_aes_t kTestAes = (dt_aes_t)0;
+static const dt_aon_timer_t kAonTimerDt = (dt_aon_timer_t)0;
+static const dt_clkmgr_t kClkmgrDt = (dt_clkmgr_t)0;
+static const dt_hmac_t kTestHmac = (dt_hmac_t)0;
+static const dt_kmac_t kTestKmac = (dt_kmac_t)0;
+static const dt_otbn_t kTestOtbn = (dt_otbn_t)0;
+static const dt_pwrmgr_t kPwrmgrDt = (dt_pwrmgr_t)0;
+static const dt_rstmgr_t kRstmgrDt = (dt_rstmgr_t)0;
 
 /**
  * Test an access to a transactional unit that has been disabled causes
@@ -54,21 +71,30 @@ typedef struct clock_error_info {
   const char *name;
 
   /**
+   * Hintable clock for this unit.
+   */
+  dif_clkmgr_hintable_clock_t clock;
+
+  /**
    * The memory location that causes the error.
    * This is the expected value of crash_dump's mdaa.
    */
   uint32_t csr_offset;
 
   /**
-   * The address of the function causing the error.  The functions
-   * that cause the error are chosen so they perform a CSR read
-   * shortly after the function entry, so crash_dump's mcpc is
-   * expected to be past the possible error pc by no more than about 8
-   * instructions, meaning 8 * 4 bytes.
+   * The access function to invoke; this function shall perform a
+   * simple access to the IP block, and is thus expected to yield a
+   * timeout if its clock has been stopped.
    */
-  uint32_t crash_function;
+  void (*crash_function)(void);
 } clock_error_info_t;
 
+/**
+ * The functions that cause the errors
+ * are chosen so they perform a CSR read shortly after the function entry,
+ * so crash_dump's mcpc is expected to be past the possible error pc by
+ * no more than about 8 instructions, meaning 8 * 4 bytes.
+ */
 enum { kPcSpread = 8 * 4 };
 
 inline uint32_t addr_as_offset(mmio_region_t base, uint32_t offset) {
@@ -76,10 +102,20 @@ inline uint32_t addr_as_offset(mmio_region_t base, uint32_t offset) {
 }
 
 /**
+ * Description of each of the IP blocks to which transactions may be
+ * performed.
+ *
+ * Note: presently this code expects only a single instance of each IP,
+ * which means that we may index the array with the IP block type.
+ */
+static clock_error_info_t info[kTestTransCount];
+
+/**
  * Send CSR access to aes, expecting to timeout.
  */
 OT_NOINLINE void aes_csr_access(void) {
-  CHECK_DIF_OK(dif_aes_alert_force(&aes, kDifAesAlertRecovCtrlUpdateErr));
+  bool status;
+  CHECK_DIF_OK(dif_aes_get_status(&aes, kDifAesStatusIdle, &status));
 }
 
 OT_NOINLINE static void hmac_csr_access(void) {
@@ -97,26 +133,6 @@ OT_NOINLINE static void otbn_csr_access(void) {
   CHECK_DIF_OK(dif_otbn_get_err_bits(&otbn, &err_bits));
 }
 
-static void trans_csr_access(dif_clkmgr_hintable_clock_t trans) {
-  switch (trans) {
-    case kTopEarlgreyHintableClocksMainAes:
-      aes_csr_access();
-      break;
-    case kTopEarlgreyHintableClocksMainHmac:
-      hmac_csr_access();
-      break;
-    case kTopEarlgreyHintableClocksMainKmac:
-      kmac_csr_access();
-      break;
-    case kTopEarlgreyHintableClocksMainOtbn:
-      otbn_csr_access();
-      break;
-    default:
-      LOG_ERROR("Invalid hintable clock (%d)", trans);
-      break;
-  }
-}
-
 /**
  * Test that disabling a 'hintable' unit's clock causes the unit to become
  * unresponsive to CSR accesses. Configure a watchdog reset, and if it triggers
@@ -124,6 +140,8 @@ static void trans_csr_access(dif_clkmgr_hintable_clock_t trans) {
  */
 static void test_hintable_clocks_off(const dif_clkmgr_t *clkmgr,
                                      dif_clkmgr_hintable_clock_t clock) {
+  void (*crash_fn)(void) = NULL;
+
   // Make sure the clock for the unit is on.
   CHECK_DIF_OK(
       dif_clkmgr_hintable_clock_set_hint(clkmgr, clock, kDifToggleEnabled));
@@ -134,11 +152,15 @@ static void test_hintable_clocks_off(const dif_clkmgr_t *clkmgr,
   // Short wait to make sure clocks reacted to hints.
   busy_spin_micros(5);
 
-  // Check all units but the hinted one are alive.
-  for (dif_clkmgr_hintable_clock_t other = 0;
-       other <= kTopEarlgreyHintableClocksLast; ++other) {
-    if (other != clock) {
-      trans_csr_access(other);
+  // Check all units but any on the hinted clock are alive.
+  for (test_trans_block_t block = kTestTransFirst; block < kTestTransCount;
+       ++block) {
+    if (info[block].clock == clock) {
+      LOG_INFO("Hintable clock controls IP block '%s'", info[block].name);
+      crash_fn = info[block].crash_function;
+    } else {
+      // This CSR access should complete successfully.
+      info[block].crash_function();
     }
   }
 
@@ -152,52 +174,83 @@ static void test_hintable_clocks_off(const dif_clkmgr_t *clkmgr,
   CHECK_STATUS_OK(aon_timer_testutils_watchdog_config(&aon_timer, UINT32_MAX,
                                                       bite_cycles, false));
   // This should hang.
-  trans_csr_access(clock);
+  crash_fn();
   LOG_ERROR("Access to disabled unit should freeze and cause a reset");
 }
 
-bool execute_off_trans_test(dif_clkmgr_hintable_clock_t clock) {
+bool execute_off_trans_test(test_trans_block_t block) {
   dif_clkmgr_t clkmgr;
   dif_pwrmgr_t pwrmgr;
   dif_rstmgr_t rstmgr;
 
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
-
-  CHECK_DIF_OK(dif_clkmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
-
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
+  CHECK_DIF_OK(dif_clkmgr_init_from_dt(kClkmgrDt, &clkmgr));
   CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
 
   // Initialize aon timer.
   CHECK_DIF_OK(dif_aon_timer_init_from_dt(kAonTimerDt, &aon_timer));
 
-  // Initialize aes.
-  CHECK_DIF_OK(
-      dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
+  // Note: presently this code expects only a single instance of each IP,
+  // which means that we may index the `info` array with the IP block type.
+  CHECK(block < ARRAYSIZE(info));
 
-  // Initialize hmac.
-  CHECK_DIF_OK(
-      dif_hmac_init(mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR), &hmac));
+  // Construct descriptions of each IP block.
+  for (test_trans_block_t trans = kTestTransFirst; trans < kTestTransCount;
+       ++trans) {
+    dt_instance_id_t inst = (dt_instance_id_t)0;
+    switch (trans) {
+      case kTestTransAes:
+        // Initialize aes.
+        CHECK_DIF_OK(dif_aes_init_from_dt(kTestAes, &aes));
+        inst = dt_aes_instance_id(kTestAes);
+        info[trans].name = "aes";
+        info[trans].csr_offset =
+            addr_as_offset(aes.base_addr, AES_STATUS_REG_OFFSET);
+        info[trans].crash_function = aes_csr_access;
+        break;
 
-  // Initialize kmac.
-  CHECK_DIF_OK(
-      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+      case kTestTransHmac:
+        // Initialize hmac.
+        CHECK_DIF_OK(dif_hmac_init_from_dt(kTestHmac, &hmac));
+        inst = dt_hmac_instance_id(kTestHmac);
+        info[trans].name = "hmac";
+        info[trans].csr_offset =
+            addr_as_offset(hmac.base_addr, HMAC_INTR_STATE_REG_OFFSET);
+        info[trans].crash_function = hmac_csr_access;
+        break;
 
-  // Initialize otbn.
-  CHECK_DIF_OK(
-      dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
+      case kTestTransKmac:
+        // Initialize kmac.
+        CHECK_DIF_OK(dif_kmac_init_from_dt(kTestKmac, &kmac));
+        inst = dt_kmac_instance_id(kTestKmac);
+        info[trans].name = "kmac";
+        info[trans].csr_offset =
+            addr_as_offset(kmac.base_addr, KMAC_STATUS_REG_OFFSET);
+        info[trans].crash_function = kmac_csr_access;
+        break;
 
-  // Initialize the expected error data address and execution address.
-  clock_error_info_t clock_error_info[kTopEarlgreyHintableClocksLast + 1] = {
-      {"aes", addr_as_offset(aes.base_addr, AES_ALERT_TEST_REG_OFFSET),
-       (uint32_t)&aes_csr_access},
-      {"hmac", addr_as_offset(hmac.base_addr, HMAC_INTR_STATE_REG_OFFSET),
-       (uint32_t)&hmac_csr_access},
-      {"kmac", addr_as_offset(kmac.base_addr, KMAC_STATUS_REG_OFFSET),
-       (uint32_t)&kmac_csr_access},
-      {"otbn", addr_as_offset(otbn.base_addr, OTBN_ERR_BITS_REG_OFFSET),
-       (uint32_t)&otbn_csr_access}};
+      case kTestTransOtbn:
+        // Initialize otbn.
+        CHECK_DIF_OK(dif_otbn_init_from_dt(kTestOtbn, &otbn));
+        inst = dt_otbn_instance_id(kTestOtbn);
+        info[trans].name = "otbn";
+        info[trans].csr_offset =
+            addr_as_offset(otbn.base_addr, OTBN_ERR_BITS_REG_OFFSET);
+        info[trans].crash_function = otbn_csr_access;
+        break;
+
+      default:
+        LOG_ERROR("Invalid/unrecognised IP block type (%d)", trans);
+        break;
+    }
+    // Ascertain which of the hintable clocks is driving this IP block.
+    // Note: this code presently expects only a single IP block of each type.
+    CHECK_DIF_OK(
+        dif_clkmgr_find_hintable_clock(&clkmgr, inst, &info[trans].clock));
+  }
+
+  // This is the hintable clock that we are going to control.
+  dif_clkmgr_hintable_clock_t clock = info[block].clock;
 
   // Enable cpu dump capture.
   CHECK_DIF_OK(dif_rstmgr_cpu_info_set_enabled(&rstmgr, kDifToggleEnabled));
@@ -230,15 +283,15 @@ bool execute_off_trans_test(dif_clkmgr_hintable_clock_t clock) {
         sizeof(crash_dump) / sizeof(dif_rstmgr_cpu_info_dump_segment_t),
         &size_read));
     // crash_dump.fault_state.mdaa is the DATA ADDRESS that caused the error.
-    CHECK(crash_dump.fault_state.mdaa == clock_error_info[clock].csr_offset);
+    CHECK(crash_dump.fault_state.mdaa == info[block].csr_offset);
     // The functions that cause the error are chosen so they perform a
     // CSR read shortly after the function entry, so this expects
     // crash_dump.fault_state.mcpc to be past the crash_function by no
     // more than about 8 instructions, meaning 8 * 4 bytes.
     CHECK(crash_dump.fault_state.mcpc >=
-              clock_error_info[clock].crash_function &&
+              (uintptr_t)info[block].crash_function &&
           crash_dump.fault_state.mcpc <=
-              clock_error_info[clock].crash_function + kPcSpread);
+              (uintptr_t)info[block].crash_function + kPcSpread);
 
     return true;
   } else {

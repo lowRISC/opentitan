@@ -3,17 +3,17 @@
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/top_darjeeling/ip_autogen/racl_ctrl/data/racl_ctrl.hjson -->
 ## Summary
 
-| Name                                                                    | Offset   |   Length | Description                                              |
-|:------------------------------------------------------------------------|:---------|---------:|:---------------------------------------------------------|
-| racl_ctrl.[`POLICY_ALL_RD_WR_SHADOWED`](#policy_all_rd_wr_shadowed)     | 0x0      |        4 | Read and write policy for ALL_RD_WR                      |
-| racl_ctrl.[`POLICY_ROT_PRIVATE_SHADOWED`](#policy_rot_private_shadowed) | 0x8      |        4 | Read and write policy for ROT_PRIVATE                    |
-| racl_ctrl.[`POLICY_SOC_ROT_SHADOWED`](#policy_soc_rot_shadowed)         | 0x10     |        4 | Read and write policy for SOC_ROT                        |
-| racl_ctrl.[`INTR_STATE`](#intr_state)                                   | 0xe8     |        4 | Interrupt State Register                                 |
-| racl_ctrl.[`INTR_ENABLE`](#intr_enable)                                 | 0xec     |        4 | Interrupt Enable Register                                |
-| racl_ctrl.[`INTR_TEST`](#intr_test)                                     | 0xf0     |        4 | Interrupt Test Register                                  |
-| racl_ctrl.[`ALERT_TEST`](#alert_test)                                   | 0xf4     |        4 | Alert Test Register.                                     |
-| racl_ctrl.[`ERROR_LOG`](#error_log)                                     | 0xf8     |        4 | Error logging registers                                  |
-| racl_ctrl.[`ERROR_LOG_ADDRESS`](#error_log_address)                     | 0xfc     |        4 | Contains the address on which a RACL violation occurred. |
+| Name                                                                    | Offset   |   Length | Description                                                                               |
+|:------------------------------------------------------------------------|:---------|---------:|:------------------------------------------------------------------------------------------|
+| racl_ctrl.[`POLICY_ALL_RD_WR_SHADOWED`](#policy_all_rd_wr_shadowed)     | 0x0      |        4 | Read and write policy for ALL_RD_WR                                                       |
+| racl_ctrl.[`POLICY_ROT_PRIVATE_SHADOWED`](#policy_rot_private_shadowed) | 0x8      |        4 | Read and write policy for ROT_PRIVATE                                                     |
+| racl_ctrl.[`POLICY_SOC_ROT_SHADOWED`](#policy_soc_rot_shadowed)         | 0x10     |        4 | Read and write policy for SOC_ROT                                                         |
+| racl_ctrl.[`INTR_STATE`](#intr_state)                                   | 0xe8     |        4 | Interrupt State Register                                                                  |
+| racl_ctrl.[`INTR_ENABLE`](#intr_enable)                                 | 0xec     |        4 | Interrupt Enable Register                                                                 |
+| racl_ctrl.[`INTR_TEST`](#intr_test)                                     | 0xf0     |        4 | Interrupt Test Register                                                                   |
+| racl_ctrl.[`ALERT_TEST`](#alert_test)                                   | 0xf4     |        4 | Alert Test Register.                                                                      |
+| racl_ctrl.[`ERROR_LOG`](#error_log)                                     | 0xf8     |        4 | Error logging registers                                                                   |
+| racl_ctrl.[`ERROR_LOG_ADDRESS`](#error_log_address)                     | 0xfc     |        4 | Contains the bits [top_pkg::TL_AW-1:2] of the address on which a RACL violation occurred. |
 
 ## POLICY_ALL_RD_WR_SHADOWED
 Read and write policy for ALL_RD_WR
@@ -157,23 +157,25 @@ Error logging registers
 |   0    |  rw1c  |   0x0   | valid       | Indicates a RACL error and the log register contains valid data. Writing a one clears this register and the [`ERROR_LOG_ADDRESS`](#error_log_address) register. |
 
 ## ERROR_LOG_ADDRESS
-Contains the address on which a RACL violation occurred.
+Contains the bits [top_pkg::TL_AW-1:2] of the address on which a RACL violation occurred.
+   The address is shifted by 2 bits since TLUL access are always 4 byte aligned.
    This register is valid if and only if the `valid` field of [`ERROR_LOG`](#error_log) is true.
    Once valid, the address doesn't change (even if there are subsequent RACL violations) until the register gets cleared.
    This register gets cleared when SW writes `1` to the `valid` field of the [`ERROR_LOG`](#error_log) register.
 - Offset: `0xfc`
 - Reset default: `0x0`
-- Reset mask: `0xffffffff`
+- Reset mask: `0x3fffffff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "address", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "address", "bits": 30, "attr": ["ro"], "rotate": 0}, {"bits": 2}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name    | Description                                 |
-|:------:|:------:|:-------:|:--------|:--------------------------------------------|
-|  31:0  |   ro   |   0x0   | address | Address on which a RACL violation occurred. |
+|  Bits  |  Type  |  Reset  | Name    | Description                                                                 |
+|:------:|:------:|:-------:|:--------|:----------------------------------------------------------------------------|
+| 31:30  |        |         |         | Reserved                                                                    |
+|  29:0  |   ro   |   0x0   | address | Address on which a RACL violation occurred, shifted by 2 bits to the right. |
 
 
 <!-- END CMDGEN -->

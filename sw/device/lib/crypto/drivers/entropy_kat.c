@@ -3,20 +3,22 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "sw/device/lib/crypto/drivers/entropy_kat.h"
 
+#include "hw/top/dt/csrng.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/runtime/log.h"
 
-#include "csrng_regs.h"  // Generated
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top/csrng_regs.h"  // Generated
 
 #define MODULE_ID MAKE_MODULE_ID('e', 'n', 'k')
 
-enum {
-  kBaseCsrng = TOP_EARLGREY_CSRNG_BASE_ADDR,
-};
+static const dt_csrng_t kCsrngDt = kDtCsrng;
+
+static inline uint32_t csrng_base(void) {
+  return dt_csrng_primary_reg_block(kCsrngDt);
+}
 
 /**
  * CSRNG internal state selector ID.
@@ -67,29 +69,29 @@ typedef struct entropy_csrng_internal_state {
 static void entropy_csrng_internal_state_get(
     entropy_csrng_internal_state_id_t instance_id,
     entropy_csrng_internal_state_t *state) {
+  const uint32_t kBase = csrng_base();
   // Select the instance id to read the internal state from, request a state
   // machine halt, and wait for the internal registers to be ready to be read.
   uint32_t reg = bitfield_field32_write(
       0, CSRNG_INT_STATE_NUM_INT_STATE_NUM_FIELD, instance_id);
-  abs_mmio_write32(kBaseCsrng + CSRNG_INT_STATE_NUM_REG_OFFSET, reg);
+  abs_mmio_write32(kBase + CSRNG_INT_STATE_NUM_REG_OFFSET, reg);
 
   // Read the internal state.
   state->reseed_counter =
-      abs_mmio_read32(kBaseCsrng + CSRNG_INT_STATE_VAL_REG_OFFSET);
+      abs_mmio_read32(kBase + CSRNG_INT_STATE_VAL_REG_OFFSET);
 
   for (size_t i = 0; i < ARRAYSIZE(state->v); ++i) {
-    state->v[i] = abs_mmio_read32(kBaseCsrng + CSRNG_INT_STATE_VAL_REG_OFFSET);
+    state->v[i] = abs_mmio_read32(kBase + CSRNG_INT_STATE_VAL_REG_OFFSET);
   }
 
   for (size_t i = 0; i < ARRAYSIZE(state->key); ++i) {
-    state->key[i] =
-        abs_mmio_read32(kBaseCsrng + CSRNG_INT_STATE_VAL_REG_OFFSET);
+    state->key[i] = abs_mmio_read32(kBase + CSRNG_INT_STATE_VAL_REG_OFFSET);
   }
 
-  uint32_t flags = abs_mmio_read32(kBaseCsrng + CSRNG_INT_STATE_VAL_REG_OFFSET);
+  uint32_t flags = abs_mmio_read32(kBase + CSRNG_INT_STATE_VAL_REG_OFFSET);
 
   // The following bit indexes are defined in
-  // https://docs.opentitan.org/hw/ip/csrng/doc/#working-state-values
+  // https://opentitan.org/book/hw/ip/csrng/doc/theory_of_operation.html#working-state-values
   state->instantiated = bitfield_bit32_read(flags, /*bit_index=*/0u);
   state->fips_compliance = bitfield_bit32_read(flags, /*bit_index=*/1u);
 }

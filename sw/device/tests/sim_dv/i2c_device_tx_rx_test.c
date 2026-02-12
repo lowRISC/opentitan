@@ -22,8 +22,8 @@
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 // TODO #14111, remove it once pinout configuration is provided
-#include "i2c_regs.h"
-#include "pinmux_regs.h"
+#include "hw/top/i2c_regs.h"
+#include "hw/top/pinmux_regs.h"
 
 static dif_i2c_t i2c;
 static dif_pinmux_t pinmux;

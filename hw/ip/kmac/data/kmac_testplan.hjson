@@ -50,7 +50,7 @@
       name: long_msg_and_output
       desc: '''
             Same as the smoke test, except with a message of up to 100KB.
-            Max firmware input size for KMAX is around 392KB, but this is too large for a DV
+            Max firmware input size for KMAC is around 392KB, but this is too large for a DV
             simulation.
             Average input size from firmware would be around 60-100KB, so we use 100KB as a max
             input size for DV, but will enable easy extensibility for emulation testing where we can
@@ -114,7 +114,7 @@
     {
       name: app_with_partial_data
       desc: '''
-            Basd on the kmac_app test, this test will send partial data from application interface
+            Based on the kmac_app test, this test will send partial data from application interface
             by sending `strb` with values other than `8'hFF`.
             Because the scoreboard is cycle accurate and does not support this feature, this test
             will not check `status` and `intr_state` registers, but will check other registers and

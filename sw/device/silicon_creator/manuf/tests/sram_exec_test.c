@@ -12,11 +12,12 @@
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_console.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 
+#include "hw/top/otp_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otp_ctrl_regs.h"  // Generated.
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -30,7 +31,6 @@ enum {
   kDeviceIdSizeIn32BitWords = kDeviceIdSizeInBytes / sizeof(uint32_t),
 };
 
-static dif_uart_t uart0;
 static dif_pinmux_t pinmux;
 static dif_otp_ctrl_t otp;
 
@@ -47,8 +47,6 @@ static status_t peripheral_handles_init(void) {
                       &pinmux));
   TRY(dif_otp_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
-  TRY(dif_uart_init(mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR),
-                    &uart0));
   return OK_STATUS();
 }
 
@@ -124,21 +122,8 @@ static status_t provisioning_device_id_end(void) {
 
 bool test_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
-  // Initialize UART console.
   pinmux_testutils_init(&pinmux);
-  CHECK(kUartBaudrate <= UINT32_MAX, "kUartBaudrate must fit in uint32_t");
-  CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
-        "kClockFreqPeripheralHz must fit in uint32_t");
-  CHECK_DIF_OK(dif_uart_configure(
-      &uart0, (dif_uart_config_t){
-                  .baudrate = (uint32_t)kUartBaudrate,
-                  .clk_freq_hz = (uint32_t)kClockFreqPeripheralHz,
-                  .parity_enable = kDifToggleDisabled,
-                  .parity = kDifUartParityEven,
-                  .tx_enable = kDifToggleEnabled,
-                  .rx_enable = kDifToggleEnabled,
-              }));
-  base_uart_stdout(&uart0);
+  ottf_console_init();
 
   CHECK_STATUS_OK(provisioning_device_id_start());
   CHECK_STATUS_OK(provisioning_device_id_end());

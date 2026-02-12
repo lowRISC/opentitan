@@ -28,12 +28,13 @@ _FIELDS = {
     "data": ("attr.data", False),
     "extract_sw_logs": ("attr.extract_sw_logs", False),
     "otp_mmap": ("file.otp_mmap", False),
-    "otp_seed": ("attr.otp_seed", False),
+    "top_gen_hjson": ("file.top_gen_hjson", False),
+    "top_secret_cfg": ("file.top_secret_cfg", False),
     "otp_data_perm": ("attr.otp_data_perm", False),
     "flash_scramble_tool": ("attr.flash_scramble_tool", False),
-    "rom_scramble_config": ("file.rom_scramble_config", False),
     "openocd": ("attr.openocd", False),
     "openocd_adapter_config": ("attr.openocd_adapter_config", False),
+    "slot_spec": ("attr.slot_spec", False),
 }
 
 ExecEnvInfo = provider(
@@ -81,7 +82,6 @@ def exec_env_as_dict(ctx):
     tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
     result = {
         "_opentitantool": tc.tools.opentitantool,
-        "_update_manifest_json": tc.tools.update_manifest_json,
     }
     for field, (path, required) in _FIELDS.items():
         val = getattr_path(ctx, path)
@@ -151,6 +151,10 @@ def exec_env_common_attrs(**kwargs):
             allow_files = True,
             doc = "ROM_EXT image to use in this environment",
         ),
+        "slot_spec": attr.string_dict(
+            default = kwargs.get("slot_spec", {}),
+            doc = "Firmware slot addresses to use in this environment",
+        ),
         "otp": attr.label(
             default = kwargs.get("otp"),
             allow_single_file = True,
@@ -194,9 +198,15 @@ def exec_env_common_attrs(**kwargs):
             default = kwargs.get("otp_mmap"),
             doc = "OTP memory map configuration HJSON file.",
         ),
-        "otp_seed": attr.label(
-            default = kwargs.get("otp_seed"),
-            doc = "Configuration override seed used to randomize OTP netlist constants.",
+        "top_gen_hjson": attr.label(
+            allow_single_file = True,
+            default = "//hw/top:top_gen_hjson",
+            doc = "Generated top configuration file of the top.",
+        ),
+        "top_secret_cfg": attr.label(
+            allow_single_file = True,
+            default = "//hw/top:secrets",
+            doc = "Generated top configuration file including secrets.",
         ),
         "otp_data_perm": attr.label(
             default = kwargs.get("otp_data_perm"),
@@ -212,11 +222,6 @@ def exec_env_common_attrs(**kwargs):
             default = "//hw/ip/rom_ctrl/util:scramble_image",
             executable = True,
             cfg = "exec",
-        ),
-        "rom_scramble_config": attr.label(
-            default = kwargs.get("rom_scramble_config", None),
-            doc = "ROM scrambling config for this environment",
-            allow_single_file = True,
         ),
         "openocd": attr.label(
             doc = "OpenOCD binary for this environment",
@@ -336,7 +341,7 @@ def update_file_attr(ctx, name, attr, exec_env, data_files, param, action_param 
     elif DefaultInfo in attr:
         file = attr[DefaultInfo].files.to_list()
         if len(file) > 1:
-            fail("Expected to find exactly one file in", attr)
+            fail("Expected to find exactly one file in", attr, ", but got", file)
         _update(name, file[0], data_files, param, action_param)
     else:
         fail("No file providers in", attr)
@@ -408,5 +413,11 @@ def common_test_setup(ctx, exec_env, firmware):
         data_labels += jtag_data
         data_files += get_files(jtag_data)
         param["jtag_test_cmd"] = jtag_test_cmd
+
+    # Update the actual firmware slot spec
+    slot_spec = dict(exec_env.slot_spec)
+    slot_spec.update(ctx.attr.slot_spec)
+    action_param.update(slot_spec)
+    param.update(slot_spec)
 
     return test_harness, data_labels, data_files, param, action_param

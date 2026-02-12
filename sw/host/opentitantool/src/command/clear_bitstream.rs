@@ -4,12 +4,10 @@
 
 use anyhow::Result;
 use clap::Args;
-use serde_annotate::Annotate;
 use std::any::Any;
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::transport::common::fpga;
+use opentitanlib::app::command::CommandDispatch;
 
 /// Clear the bitstream of the FPGA
 #[derive(Debug, Args)]
@@ -20,7 +18,8 @@ impl CommandDispatch for ClearBitstream {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
-        transport.dispatch(&fpga::ClearBitstream)
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
+        transport.fpga_ops()?.clear_bitstream()?;
+        Ok(None)
     }
 }

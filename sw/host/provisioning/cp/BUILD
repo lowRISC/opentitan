@@ -11,6 +11,7 @@ rust_binary(
     srcs = ["src/main.rs"],
     deps = [
         "//sw/host/opentitanlib",
+        "//sw/host/ot_hal",
         "//sw/host/provisioning/cp_lib",
         "//sw/host/provisioning/ujson_lib",
         "//sw/host/provisioning/util_lib",
@@ -19,6 +20,7 @@ rust_binary(
         "@crate_index//:clap",
         "@crate_index//:humantime",
         "@crate_index//:log",
+        "@crate_index//:serde_json",
         "@crate_index//:zerocopy",
     ],
 )

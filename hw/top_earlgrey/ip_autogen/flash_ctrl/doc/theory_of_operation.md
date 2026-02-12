@@ -65,7 +65,7 @@ Software then configures the access privileges for that region.
 Finally, each region can be activated or de-activated from matching through [`MP_REGION_CFG_0.EN`](registers.md#mp_region_cfg).
 
 Subsequent accesses are then allowed or denied based on the defined rule set.
-Similar to RISCV pmp, if two region overlaps, the lower region index has higher priority.
+Similar to RISC-V PMP (physical memory protection), if two region overlaps, the lower region index has higher priority.
 
 For information partitions, the protection is done per individual page.
 Each page can be configured with access privileges.
@@ -522,7 +522,7 @@ The expected waveform from the perspective of the physical controller is shown b
 ### Read Data Infection Feature
 
 This feature aims to provide additional security against fault injection attacks targeting the addresses of host flash read requests.
-By default, on each host read request, the data fetched from the underyling memory is infected with the address used for the memory access.
+By default, on each host read request, the data fetched from the underlying memory is infected with the address used for the memory access.
 Before returning the data to the host over the bus, the address is removed from the infected data.
 When the address used for the infection matches the original address, the plain data is restored.
 Otherwise, faulty data is generated, which can be detected by the data integrity mechanism.

@@ -7,7 +7,6 @@
   {
     otp_mmap:
     {
-      seed: 36021179872380457113239299468132194022238108125576166239904535336103582949069
       otp:
       {
         width: 2
@@ -25,34 +24,36 @@
         [
           {
             name: Secret0Key
-            value: 79261096542507317550041524418378318810
+            value: <random>
           }
           {
             name: Secret1Key
-            value: 318985785134653313354004803705056942690
+            value: <random>
           }
           {
             name: Secret2Key
-            value: 177669530988656006400383198120896388291
+            value: <random>
           }
           {
             name: Secret3Key
-            value: 253454544458117277620971692296657999195
+            value: <random>
           }
         ]
         digests:
         [
           {
             name: CnstyDigest
-            iv_value: 5573918854495152458
-            cnst_value: 298124614738804023684088847145512094502
+            iv_value: <random>
+            cnst_value: <random>
           }
           {
             name: SramDataKey
-            iv_value: 13142649492737956675
-            cnst_value: 15226184123672563655096903138034867314
+            iv_value: <random>
+            cnst_value: <random>
           }
         ]
+        num_keys: 4
+        num_digests: 2
       }
       partitions:
       [
@@ -60,7 +61,6 @@
           name: VENDOR_TEST
           variant: Unbuffered
           absorb: false
-          size: 64
           secret: false
           sw_digest: true
           hw_digest: false
@@ -69,12 +69,15 @@
           key_sel: NoKey
           integrity: false
           bkout_type: false
+          zeroizable: false
+          skip_sw_header: true
           items:
           [
             {
               name: SCRATCH
               size: 56
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -87,7 +90,8 @@
               offset: 56
               ismubi: false
               isdigest: true
-              inv_default: 10810310715135719883
+              iszer: false
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -103,13 +107,14 @@
             '''
           iskeymgr_creator: false
           iskeymgr_owner: false
+          ignore_read_lock_in_rma: false
+          size: 64
           offset: 0
         }
         {
           name: CREATOR_SW_CFG
           variant: Unbuffered
           absorb: false
-          size: 320
           secret: false
           sw_digest: true
           hw_digest: false
@@ -118,12 +123,14 @@
           key_sel: NoKey
           integrity: true
           bkout_type: false
+          zeroizable: false
           items:
           [
             {
               name: CREATOR_SW_CFG_AST_CFG
               size: 124
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -134,6 +141,7 @@
               name: CREATOR_SW_CFG_AST_INIT_EN
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -144,6 +152,7 @@
               name: CREATOR_SW_CFG_OVERRIDES
               size: 32
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -154,6 +163,7 @@
               name: CREATOR_SW_CFG_ROM_EXT_SKU
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -164,6 +174,7 @@
               name: CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -174,6 +185,7 @@
               name: CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN
               size: 8
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -184,6 +196,7 @@
               name: CREATOR_SW_CFG_SIGVERIFY_SPX_EN
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -194,6 +207,7 @@
               name: CREATOR_SW_CFG_SIGVERIFY_SPX_KEY_EN
               size: 8
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -204,6 +218,7 @@
               name: CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -214,6 +229,7 @@
               name: CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -224,6 +240,7 @@
               name: CREATOR_SW_CFG_FLASH_HW_INFO_CFG_OVERRIDE
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -234,6 +251,7 @@
               name: CREATOR_SW_CFG_RNG_EN
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -244,6 +262,7 @@
               name: CREATOR_SW_CFG_JITTER_EN
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -254,6 +273,7 @@
               name: CREATOR_SW_CFG_RET_RAM_RESET_MASK
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -264,6 +284,7 @@
               name: CREATOR_SW_CFG_MANUF_STATE
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -274,6 +295,7 @@
               name: CREATOR_SW_CFG_ROM_EXEC_EN
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -284,6 +306,7 @@
               name: CREATOR_SW_CFG_CPUCTRL
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -294,6 +317,7 @@
               name: CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -304,6 +328,7 @@
               name: CREATOR_SW_CFG_MIN_SEC_VER_BL0
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -314,6 +339,7 @@
               name: CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -324,6 +350,7 @@
               name: CREATOR_SW_CFG_RMA_SPIN_EN
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -334,6 +361,7 @@
               name: CREATOR_SW_CFG_RMA_SPIN_CYCLES
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -344,6 +372,7 @@
               name: CREATOR_SW_CFG_RNG_REPCNT_THRESHOLDS
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -354,6 +383,7 @@
               name: CREATOR_SW_CFG_RNG_REPCNTS_THRESHOLDS
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -364,6 +394,7 @@
               name: CREATOR_SW_CFG_RNG_ADAPTP_HI_THRESHOLDS
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -374,6 +405,7 @@
               name: CREATOR_SW_CFG_RNG_ADAPTP_LO_THRESHOLDS
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -384,6 +416,7 @@
               name: CREATOR_SW_CFG_RNG_BUCKET_THRESHOLDS
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -394,6 +427,7 @@
               name: CREATOR_SW_CFG_RNG_MARKOV_HI_THRESHOLDS
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -404,6 +438,7 @@
               name: CREATOR_SW_CFG_RNG_MARKOV_LO_THRESHOLDS
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -414,6 +449,7 @@
               name: CREATOR_SW_CFG_RNG_EXTHT_HI_THRESHOLDS
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -424,6 +460,7 @@
               name: CREATOR_SW_CFG_RNG_EXTHT_LO_THRESHOLDS
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -434,6 +471,7 @@
               name: CREATOR_SW_CFG_RNG_ALERT_THRESHOLD
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -444,6 +482,7 @@
               name: CREATOR_SW_CFG_RNG_HEALTH_CONFIG_DIGEST
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -451,9 +490,10 @@
               offset: 348
             }
             {
-              name: CREATOR_SW_CFG_SRAM_KEY_RENEW_EN
+              name: CREATOR_SW_CFG_SRAM_KEY_RENEW_AND_INIT_EN
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -463,10 +503,11 @@
             {
               name: CREATOR_SW_CFG_DIGEST
               size: 8
-              offset: 376
+              offset: 360
               ismubi: false
               isdigest: true
-              inv_default: 14728343938218768996
+              iszer: false
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -479,13 +520,14 @@
             '''
           iskeymgr_creator: false
           iskeymgr_owner: false
+          ignore_read_lock_in_rma: false
+          size: 304
           offset: 64
         }
         {
           name: OWNER_SW_CFG
           variant: Unbuffered
           absorb: false
-          size: 632
           secret: false
           sw_digest: true
           hw_digest: false
@@ -494,12 +536,58 @@
           key_sel: NoKey
           integrity: true
           bkout_type: false
+          zeroizable: false
           items:
           [
             {
               name: OWNER_SW_CFG_ROM_ERROR_REPORTING
               size: 4
               isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 368
+            }
+            {
+              name: OWNER_SW_CFG_ROM_BOOTSTRAP_DIS
+              size: 4
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 372
+            }
+            {
+              name: OWNER_SW_CFG_ROM_ALERT_CLASS_EN
+              size: 4
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 376
+            }
+            {
+              name: OWNER_SW_CFG_ROM_ALERT_ESCALATION
+              size: 4
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 380
+            }
+            {
+              name: OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION
+              size: 420
+              isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -507,59 +595,43 @@
               offset: 384
             }
             {
-              name: OWNER_SW_CFG_ROM_BOOTSTRAP_DIS
-              size: 4
-              isdigest: false
-              ismubi: false
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-              inv_default: 0
-              offset: 388
-            }
-            {
-              name: OWNER_SW_CFG_ROM_ALERT_CLASS_EN
-              size: 4
-              isdigest: false
-              ismubi: false
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-              inv_default: 0
-              offset: 392
-            }
-            {
-              name: OWNER_SW_CFG_ROM_ALERT_ESCALATION
-              size: 4
-              isdigest: false
-              ismubi: false
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-              inv_default: 0
-              offset: 396
-            }
-            {
-              name: OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION
-              size: 400
-              isdigest: false
-              ismubi: false
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-              inv_default: 0
-              offset: 400
-            }
-            {
               name: OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION
-              size: 64
+              size: 28
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 800
+              offset: 804
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_ACCUM_THRESH
               size: 16
               isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 832
+            }
+            {
+              name: OWNER_SW_CFG_ROM_ALERT_TIMEOUT_CYCLES
+              size: 16
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 848
+            }
+            {
+              name: OWNER_SW_CFG_ROM_ALERT_PHASE_CYCLES
+              size: 64
+              isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -567,112 +639,101 @@
               offset: 864
             }
             {
-              name: OWNER_SW_CFG_ROM_ALERT_TIMEOUT_CYCLES
-              size: 16
-              isdigest: false
-              ismubi: false
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-              inv_default: 0
-              offset: 880
-            }
-            {
-              name: OWNER_SW_CFG_ROM_ALERT_PHASE_CYCLES
-              size: 64
-              isdigest: false
-              ismubi: false
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-              inv_default: 0
-              offset: 896
-            }
-            {
               name: OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 960
+              offset: 928
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD_END
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 964
+              offset: 932
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_DIGEST_DEV
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 968
+              offset: 936
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_DIGEST_RMA
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 972
+              offset: 940
             }
             {
               name: OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 976
+              offset: 944
             }
             {
               name: OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 980
+              offset: 948
             }
             {
               name: OWNER_SW_CFG_MANUF_STATE
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 984
+              offset: 952
             }
             {
               name: OWNER_SW_CFG_ROM_RSTMGR_INFO_EN
               size: 4
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 988
+              offset: 956
             }
             {
               name: OWNER_SW_CFG_DIGEST
               size: 8
-              offset: 1008
+              offset: 960
               ismubi: false
               isdigest: true
-              inv_default: 4499762633768516743
+              iszer: false
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -686,7 +747,9 @@
             '''
           iskeymgr_creator: false
           iskeymgr_owner: false
-          offset: 384
+          ignore_read_lock_in_rma: false
+          size: 600
+          offset: 368
         }
         {
           name: OWNERSHIP_SLOT_STATE
@@ -700,6 +763,7 @@
           key_sel: NoKey
           integrity: true
           bkout_type: false
+          zeroizable: false
           items:
           [
             {
@@ -715,11 +779,12 @@
                 OWNERSHIP_ST_SCRAPPED:  scrap state - terminal
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1016
+              offset: 968
             }
             {
               name: OWNERSHIP_SLOT_STATE_PLAT_INTEG_AUTH
@@ -734,11 +799,12 @@
                 OWNERSHIP_ST_SCRAPPED:  scrap state - terminal
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1032
+              offset: 984
             }
             {
               name: OWNERSHIP_SLOT_STATE_PLAT_OWNER_AUTH
@@ -757,11 +823,12 @@
                 OWNERSHIP_ST_SCRAPPED:  scrap state - terminal
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1048
+              offset: 1000
             }
           ]
           desc:
@@ -790,8 +857,9 @@
             '''
           iskeymgr_creator: false
           iskeymgr_owner: false
+          ignore_read_lock_in_rma: false
           size: 48
-          offset: 1016
+          offset: 968
         }
         {
           name: ROT_CREATOR_AUTH
@@ -805,6 +873,7 @@
           key_sel: NoKey
           integrity: true
           bkout_type: false
+          zeroizable: false
           items:
           [
             {
@@ -818,11 +887,12 @@
                 i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1064
+              offset: 1016
             }
             {
               name: ROT_CREATOR_AUTH_OWNERSHIP_STATE
@@ -835,11 +905,12 @@
                 RELEASED - Release ownership (assets have been cleared, ready to xfer)
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1224
+              offset: 1176
             }
             {
               name: ROT_CREATOR_AUTH_ROM2_PATCH_SIGVERIFY_KEY
@@ -853,11 +924,12 @@
                   OTP based key (instead of ROM) facilitates easy key rotation
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1228
+              offset: 1180
             }
             {
               name: ROT_CREATOR_AUTH_KEYMANIFEST_KEY
@@ -871,11 +943,12 @@
                 i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1388
+              offset: 1340
             }
             {
               name: ROT_CREATOR_AUTH_UNLOCK4XFER_KEY
@@ -889,30 +962,33 @@
                 i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1548
+              offset: 1500
             }
             {
               name: ROT_CREATOR_AUTH_IDENTITY_CERT
               size: 768
               desc: ROT Device Identity Certificate endorsed by Silicon Creator stable off device PKI
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1708
+              offset: 1660
             }
             {
               name: ROT_CREATOR_AUTH_DIGEST
               size: 8
-              offset: 2480
+              offset: 2432
               ismubi: false
               isdigest: true
-              inv_default: 11837082436279312982
+              iszer: false
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -920,8 +996,9 @@
           desc: Software managed creator partition.
           iskeymgr_creator: false
           iskeymgr_owner: false
+          ignore_read_lock_in_rma: false
           size: 1424
-          offset: 1064
+          offset: 1016
         }
         {
           name: ROT_OWNER_AUTH_SLOT0
@@ -935,6 +1012,7 @@
           key_sel: NoKey
           integrity: true
           bkout_type: false
+          zeroizable: false
           items:
           [
             {
@@ -949,11 +1027,12 @@
                 i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 2488
+              offset: 2440
             }
             {
               name: ROT_OWNER_AUTH_SLOT0_UNLOCK4XFER_KEY
@@ -967,19 +1046,21 @@
                 i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 2648
+              offset: 2600
             }
             {
               name: ROT_OWNER_AUTH_SLOT0_DIGEST
               size: 8
-              offset: 2808
+              offset: 2760
               ismubi: false
               isdigest: true
-              inv_default: 5280432312436422266
+              iszer: false
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -987,8 +1068,9 @@
           desc: Software managed owner slot 0 partition.
           iskeymgr_creator: false
           iskeymgr_owner: false
+          ignore_read_lock_in_rma: false
           size: 328
-          offset: 2488
+          offset: 2440
         }
         {
           name: ROT_OWNER_AUTH_SLOT1
@@ -1002,6 +1084,7 @@
           key_sel: NoKey
           integrity: true
           bkout_type: false
+          zeroizable: false
           items:
           [
             {
@@ -1016,11 +1099,12 @@
                 i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 2816
+              offset: 2768
             }
             {
               name: ROT_OWNER_AUTH_SLOT1_UNLOCK4XFER_KEY
@@ -1034,19 +1118,21 @@
                 i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 2976
+              offset: 2928
             }
             {
               name: ROT_OWNER_AUTH_SLOT1_DIGEST
               size: 8
-              offset: 3136
+              offset: 3088
               ismubi: false
               isdigest: true
-              inv_default: 234369395612291906
+              iszer: false
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1054,8 +1140,9 @@
           desc: Software managed owner slot 1 partition.
           iskeymgr_creator: false
           iskeymgr_owner: false
+          ignore_read_lock_in_rma: false
           size: 328
-          offset: 2816
+          offset: 2768
         }
         {
           name: PLAT_INTEG_AUTH_SLOT0
@@ -1069,6 +1156,7 @@
           key_sel: NoKey
           integrity: true
           bkout_type: false
+          zeroizable: false
           items:
           [
             {
@@ -1083,11 +1171,12 @@
                 i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 3144
+              offset: 3096
             }
             {
               name: PLAT_INTEG_AUTH_SLOT0_UNLOCK4XFER_KEY
@@ -1101,19 +1190,21 @@
                 i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 3304
+              offset: 3256
             }
             {
               name: PLAT_INTEG_AUTH_SLOT0_DIGEST
               size: 8
-              offset: 3464
+              offset: 3416
               ismubi: false
               isdigest: true
-              inv_default: 16327599381873551525
+              iszer: false
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1121,8 +1212,9 @@
           desc: Software managed platform integrator slot 0 partition.
           iskeymgr_creator: false
           iskeymgr_owner: false
+          ignore_read_lock_in_rma: false
           size: 328
-          offset: 3144
+          offset: 3096
         }
         {
           name: PLAT_INTEG_AUTH_SLOT1
@@ -1136,6 +1228,7 @@
           key_sel: NoKey
           integrity: true
           bkout_type: false
+          zeroizable: false
           items:
           [
             {
@@ -1150,11 +1243,12 @@
                 i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 3472
+              offset: 3424
             }
             {
               name: PLAT_INTEG_AUTH_SLOT1_UNLOCK4XFER_KEY
@@ -1168,19 +1262,21 @@
                 i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 3632
+              offset: 3584
             }
             {
               name: PLAT_INTEG_AUTH_SLOT1_DIGEST
               size: 8
-              offset: 3792
+              offset: 3744
               ismubi: false
               isdigest: true
-              inv_default: 1581155821231578393
+              iszer: false
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1188,8 +1284,9 @@
           desc: Software managed platform integrator slot 1 partition.
           iskeymgr_creator: false
           iskeymgr_owner: false
+          ignore_read_lock_in_rma: false
           size: 328
-          offset: 3472
+          offset: 3424
         }
         {
           name: PLAT_OWNER_AUTH_SLOT0
@@ -1203,6 +1300,7 @@
           key_sel: NoKey
           integrity: true
           bkout_type: false
+          zeroizable: false
           items:
           [
             {
@@ -1217,11 +1315,12 @@
                 i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 3800
+              offset: 3752
             }
             {
               name: PLAT_OWNER_AUTH_SLOT0_UNLOCK4XFER_KEY
@@ -1235,19 +1334,21 @@
                 i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 3960
+              offset: 3912
             }
             {
               name: PLAT_OWNER_AUTH_SLOT0_DIGEST
               size: 8
-              offset: 4120
+              offset: 4072
               ismubi: false
               isdigest: true
-              inv_default: 2324999962355908533
+              iszer: false
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1255,8 +1356,9 @@
           desc: Software managed platform owner slot 0 partition.
           iskeymgr_creator: false
           iskeymgr_owner: false
+          ignore_read_lock_in_rma: false
           size: 328
-          offset: 3800
+          offset: 3752
         }
         {
           name: PLAT_OWNER_AUTH_SLOT1
@@ -1270,6 +1372,7 @@
           key_sel: NoKey
           integrity: true
           bkout_type: false
+          zeroizable: false
           items:
           [
             {
@@ -1284,11 +1387,12 @@
                 i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 4128
+              offset: 4080
             }
             {
               name: PLAT_OWNER_AUTH_SLOT1_UNLOCK4XFER_KEY
@@ -1302,19 +1406,21 @@
                 i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 4288
+              offset: 4240
             }
             {
               name: PLAT_OWNER_AUTH_SLOT1_DIGEST
               size: 8
-              offset: 4448
+              offset: 4400
               ismubi: false
               isdigest: true
-              inv_default: 17905165971232536359
+              iszer: false
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1322,8 +1428,9 @@
           desc: Software managed platform owner slot 1 partition.
           iskeymgr_creator: false
           iskeymgr_owner: false
+          ignore_read_lock_in_rma: false
           size: 328
-          offset: 4128
+          offset: 4080
         }
         {
           name: PLAT_OWNER_AUTH_SLOT2
@@ -1337,6 +1444,7 @@
           key_sel: NoKey
           integrity: true
           bkout_type: false
+          zeroizable: false
           items:
           [
             {
@@ -1351,11 +1459,12 @@
                 i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 4456
+              offset: 4408
             }
             {
               name: PLAT_OWNER_AUTH_SLOT2_UNLOCK4XFER_KEY
@@ -1369,19 +1478,21 @@
                 i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 4616
+              offset: 4568
             }
             {
               name: PLAT_OWNER_AUTH_SLOT2_DIGEST
               size: 8
-              offset: 4776
+              offset: 4728
               ismubi: false
               isdigest: true
-              inv_default: 13543634046774891762
+              iszer: false
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1389,8 +1500,9 @@
           desc: Software managed platform owner slot 2 partition.
           iskeymgr_creator: false
           iskeymgr_owner: false
+          ignore_read_lock_in_rma: false
           size: 328
-          offset: 4456
+          offset: 4408
         }
         {
           name: PLAT_OWNER_AUTH_SLOT3
@@ -1404,6 +1516,7 @@
           key_sel: NoKey
           integrity: true
           bkout_type: false
+          zeroizable: false
           items:
           [
             {
@@ -1418,11 +1531,12 @@
                 i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 4784
+              offset: 4736
             }
             {
               name: PLAT_OWNER_AUTH_SLOT3_UNLOCK4XFER_KEY
@@ -1436,19 +1550,21 @@
                 i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 4944
+              offset: 4896
             }
             {
               name: PLAT_OWNER_AUTH_SLOT3_DIGEST
               size: 8
-              offset: 5104
+              offset: 5056
               ismubi: false
               isdigest: true
-              inv_default: 13698041678974836896
+              iszer: false
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1456,8 +1572,9 @@
           desc: Software managed platform owner slot 3 partition.
           iskeymgr_creator: false
           iskeymgr_owner: false
+          ignore_read_lock_in_rma: false
           size: 328
-          offset: 4784
+          offset: 4736
         }
         {
           name: EXT_NVM
@@ -1471,6 +1588,7 @@
           key_sel: NoKey
           integrity: false
           bkout_type: false
+          zeroizable: false
           items:
           [
             {
@@ -1478,25 +1596,27 @@
               size: 1024
               desc:
                 '''
-                Fully SW managed patition
+                Fully SW managed partition
                 1 bit (double bit allocated for redundancy - i.e. 2 physical bits for every logical bit) per day
                 assuming 10 year product lifecycle, allocating 8192 bits of freshness protection.
                 Implemented as thermometer encoding. Redundant bit programming & logical OR-ing managed by
                 software. Cannot be ECC protected since different bits in a fuse row are programmed at different times.
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 5112
+              offset: 5064
             }
           ]
           desc: Anti-replay protection Strike Counters partition.
           iskeymgr_creator: false
           iskeymgr_owner: false
+          ignore_read_lock_in_rma: false
           size: 1024
-          offset: 5112
+          offset: 5064
         }
         {
           name: ROM_PATCH
@@ -1510,6 +1630,7 @@
           key_sel: NoKey
           integrity: true
           bkout_type: false
+          zeroizable: false
           items:
           [
             {
@@ -1517,26 +1638,28 @@
               size: 9192
               desc:
                 '''
-                Fully SW managed patition
+                Fully SW managed partition
                 ROM patch section
                 signed patch(es)
                 Each patch Contains header, signature, patch match/redirect configuration and patch code
                 Please refer to the ROM boot & patching specification for Integrated OT for more details
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 6136
+              offset: 6088
             }
             {
               name: ROM_PATCH_DIGEST
               size: 8
-              offset: 15976
+              offset: 15944
               ismubi: false
               isdigest: true
-              inv_default: 14153060542995762600
+              iszer: false
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1544,8 +1667,9 @@
           desc: ROM Patch Code section. May contain multiple signed ROM2 patches.
           iskeymgr_creator: false
           iskeymgr_owner: false
-          size: 9848
-          offset: 6136
+          ignore_read_lock_in_rma: false
+          size: 9864
+          offset: 6088
         }
         {
           name: HW_CFG0
@@ -1558,35 +1682,40 @@
           key_sel: NoKey
           integrity: true
           bkout_type: true
+          zeroizable: false
+          skip_sw_header: true
           items:
           [
             {
               name: DEVICE_ID
               size: 32
-              inv_default: 65486323830591328446043131873451991034742910176203639508789261283277535351707
+              inv_default: <random>
               isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              offset: 15952
+            }
+            {
+              name: MANUF_STATE
+              size: 32
+              inv_default: <random>
+              isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               offset: 15984
             }
             {
-              name: MANUF_STATE
-              size: 32
-              inv_default: 45106338074792724304821242469256559359553488864622296623233734261107367140478
-              isdigest: false
-              ismubi: false
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-              offset: 16016
-            }
-            {
               name: HW_CFG0_DIGEST
               size: 8
-              offset: 16048
+              offset: 16016
               ismubi: false
               isdigest: true
-              inv_default: 10140889213198706984
+              iszer: false
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1601,8 +1730,9 @@
           absorb: false
           iskeymgr_creator: false
           iskeymgr_owner: false
+          ignore_read_lock_in_rma: false
           size: 72
-          offset: 15984
+          offset: 15952
         }
         {
           name: HW_CFG1
@@ -1615,6 +1745,8 @@
           key_sel: NoKey
           integrity: true
           bkout_type: true
+          zeroizable: false
+          skip_sw_header: true
           items:
           [
             {
@@ -1634,16 +1766,17 @@
                 required to unlock SOC debug features
                 '''
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 16056
+              offset: 16024
             }
             {
               name: EN_CSRNG_SW_APP_READ
               size: 1
               ismubi: true
-              inv_default: 105
+              inv_default: <random>
               desc:
                 '''
                 Enablement of CSRNG software application interface. A
@@ -1652,27 +1785,30 @@
                 CSRNG via software.
                 '''
               isdigest: false
+              iszer: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 16060
+              offset: 16028
             }
             {
               name: EN_SRAM_IFETCH
               size: 1
               ismubi: true
-              inv_default: 105
+              inv_default: <random>
               isdigest: false
+              iszer: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 16061
+              offset: 16029
             }
             {
               name: HW_CFG1_DIGEST
               size: 8
-              offset: 16064
+              offset: 16032
               ismubi: false
               isdigest: true
-              inv_default: 12267607958787918204
+              iszer: false
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1697,8 +1833,9 @@
           absorb: false
           iskeymgr_creator: false
           iskeymgr_owner: false
+          ignore_read_lock_in_rma: false
           size: 16
-          offset: 16056
+          offset: 16024
         }
         {
           name: SECRET0
@@ -1708,38 +1845,55 @@
           hw_digest: true
           write_lock: Digest
           read_lock: Digest
+          ignore_read_lock_in_rma: true
           key_sel: Secret0Key
           integrity: true
           bkout_type: false
+          zeroizable: true
+          skip_sw_header: true
           items:
           [
             {
               name: TEST_UNLOCK_TOKEN
-              inv_default: 296711380900218015171120952374769035694
+              inv_default: <random>
               size: 16
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 16072
+              offset: 16040
             }
             {
               name: TEST_EXIT_TOKEN
-              inv_default: 85161989055762428459190056485751105958
+              inv_default: <random>
               size: 16
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 16088
+              offset: 16056
             }
             {
               name: SECRET0_DIGEST
               size: 8
-              offset: 16104
+              offset: 16072
               ismubi: false
               isdigest: true
-              inv_default: 7474818370217309020
+              iszer: false
+              inv_default: <random>
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+            }
+            {
+              name: SECRET0_ZER
+              size: 8
+              offset: 16080
+              ismubi: false
+              isdigest: false
+              iszer: true
+              inv_default: 0
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1752,8 +1906,8 @@
           absorb: false
           iskeymgr_creator: false
           iskeymgr_owner: false
-          size: 40
-          offset: 16072
+          size: 48
+          offset: 16040
         }
         {
           name: SECRET1
@@ -1763,28 +1917,44 @@
           hw_digest: true
           write_lock: Digest
           read_lock: Digest
+          ignore_read_lock_in_rma: true
           key_sel: Secret1Key
           integrity: true
           bkout_type: false
+          zeroizable: true
+          skip_sw_header: true
           items:
           [
             {
               name: SRAM_DATA_KEY_SEED
-              inv_default: 241483977691757977923367841809339206658
+              inv_default: <random>
               size: 16
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 16112
+              offset: 16088
             }
             {
               name: SECRET1_DIGEST
               size: 8
-              offset: 16128
+              offset: 16104
               ismubi: false
               isdigest: true
-              inv_default: 503838644190341903
+              iszer: false
+              inv_default: <random>
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+            }
+            {
+              name: SECRET1_ZER
+              size: 8
+              offset: 16112
+              ismubi: false
+              isdigest: false
+              iszer: true
+              inv_default: 0
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1797,8 +1967,8 @@
           absorb: false
           iskeymgr_creator: false
           iskeymgr_owner: false
-          size: 24
-          offset: 16112
+          size: 32
+          offset: 16088
         }
         {
           name: SECRET2
@@ -1808,58 +1978,77 @@
           hw_digest: true
           write_lock: Digest
           read_lock: Digest
+          ignore_read_lock_in_rma: true
           key_sel: Secret2Key
           integrity: true
           bkout_type: false
+          zeroizable: true
+          skip_sw_header: true
           items:
           [
             {
               name: RMA_TOKEN
-              inv_default: 150353733052794565317978902093985221175
+              inv_default: <random>
               size: 16
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
+              iskeymgr_owner: false
+              offset: 16120
+            }
+            {
+              name: CREATOR_ROOT_KEY_SHARE0
+              inv_default: <random>
+              size: 32
+              iskeymgr_creator: true
+              isdigest: false
+              iszer: false
+              ismubi: false
               iskeymgr_owner: false
               offset: 16136
             }
             {
-              name: CREATOR_ROOT_KEY_SHARE0
-              inv_default: 99410155969389534278404680059562745406179175357375916509714598543499986721841
-              size: 32
-              iskeymgr_creator: true
-              isdigest: false
-              ismubi: false
-              iskeymgr_owner: false
-              offset: 16152
-            }
-            {
               name: CREATOR_ROOT_KEY_SHARE1
-              inv_default: 7391079586881058628634247621478375370202976073106929415694865999470879218122
+              inv_default: <random>
               size: 32
               iskeymgr_creator: true
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_owner: false
-              offset: 16184
+              offset: 16168
             }
             {
               name: CREATOR_SEED
-              inv_default: 101343852674351727018162199551656737563182757336330864139602722951993660546186
+              inv_default: <random>
               size: 32
               iskeymgr_creator: true
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_owner: false
-              offset: 16216
+              offset: 16200
             }
             {
               name: SECRET2_DIGEST
               size: 8
-              offset: 16248
+              offset: 16232
               ismubi: false
               isdigest: true
-              inv_default: 4720744928697992353
+              iszer: false
+              inv_default: <random>
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+            }
+            {
+              name: SECRET2_ZER
+              size: 8
+              offset: 16240
+              ismubi: false
+              isdigest: false
+              iszer: true
+              inv_default: 0
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1872,8 +2061,8 @@
           absorb: false
           iskeymgr_creator: true
           iskeymgr_owner: false
-          size: 120
-          offset: 16136
+          size: 128
+          offset: 16120
         }
         {
           name: SECRET3
@@ -1886,25 +2075,40 @@
           key_sel: Secret3Key
           integrity: true
           bkout_type: false
+          zeroizable: true
+          skip_sw_header: true
           items:
           [
             {
               name: OWNER_SEED
-              inv_default: 94411066183681302546622452158435937172067990320926238136744201607471434110567
+              inv_default: <random>
               size: 32
               iskeymgr_owner: true
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
-              offset: 16256
+              offset: 16248
             }
             {
               name: SECRET3_DIGEST
               size: 8
-              offset: 16288
+              offset: 16280
               ismubi: false
               isdigest: true
-              inv_default: 4321159426593998838
+              iszer: false
+              inv_default: <random>
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+            }
+            {
+              name: SECRET3_ZER
+              size: 8
+              offset: 16288
+              ismubi: false
+              isdigest: false
+              iszer: true
+              inv_default: 0
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1917,8 +2121,9 @@
           absorb: false
           iskeymgr_creator: false
           iskeymgr_owner: true
-          size: 40
-          offset: 16256
+          ignore_read_lock_in_rma: false
+          size: 48
+          offset: 16248
         }
         {
           name: LIFE_CYCLE
@@ -1931,13 +2136,15 @@
           key_sel: NoKey
           integrity: true
           bkout_type: false
+          skip_sw_header: true
           items:
           [
             {
               name: LC_TRANSITION_CNT
-              inv_default: 33022140810555236579668719714372256268318002252766629331496500220362429561986227479059320688363086585586147527154004
+              inv_default: <random>
               size: 48
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1945,9 +2152,10 @@
             }
             {
               name: LC_STATE
-              inv_default: 8976759128772494558324922685029952774256516170895712485227985363288402422095425232881151769395
+              inv_default: <random>
               size: 40
               isdigest: false
+              iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
@@ -1969,6 +2177,8 @@
           absorb: false
           iskeymgr_creator: false
           iskeymgr_owner: false
+          zeroizable: false
+          ignore_read_lock_in_rma: false
           size: 88
           offset: 16296
         }
@@ -1977,5 +2187,6 @@
     enable_flash_key: false
     topname: darjeeling
     uniquified_modules: {}
+    module_instance_name: otp_ctrl
   }
 }

@@ -76,11 +76,9 @@ class ${module_instance_name}_env_cov extends cip_base_env_cov #(.CFG_T(${module
   covergroup alert_cause_cg with function sample(int alert_index, int class_index);
     alert_cause_cp: coverpoint alert_index {
       bins alert[NUM_ALERTS] = {[0:NUM_ALERTS-1]};
-      illegal_bins il = default;
     }
     class_index_cp: coverpoint class_index {
       bins class_i[NUM_ALERT_CLASSES] = {[0:NUM_ALERT_CLASSES-1]};
-      illegal_bins il = default;
     }
     alert_cause_cross_class_index: cross alert_cause_cp, class_index_cp;
   endgroup
@@ -91,15 +89,12 @@ class ${module_instance_name}_env_cov extends cip_base_env_cov #(.CFG_T(${module
     loc_alert_cause_cp: coverpoint local_alert {
       bins alert_ping_fail = {LocalAlertPingFail};
       bins alert_integrity_fail = {LocalAlertIntFail};
-      illegal_bins il = default;
     }
     alert_index_cp: coverpoint alert_index {
       bins alert[NUM_ALERTS] = {[0:NUM_ALERTS-1]};
-      illegal_bins il = default;
     }
     class_index_cp: coverpoint class_index {
       bins class_i[NUM_ALERT_CLASSES] = {[0:NUM_ALERT_CLASSES-1]};
-      illegal_bins il = default;
     }
     loc_alert_cause_cross_alert_index: cross loc_alert_cause_cp, alert_index_cp;
     loc_alert_cause_cross_class_index: cross loc_alert_cause_cp, class_index_cp;
@@ -111,15 +106,12 @@ class ${module_instance_name}_env_cov extends cip_base_env_cov #(.CFG_T(${module
     loc_alert_cause_cp: coverpoint local_alert {
       bins esc_ping_fail = {LocalEscPingFail};
       bins esc_integrity_fail = {LocalEscIntFail};
-      illegal_bins il = default;
     }
     esc_index_cp: coverpoint esc_index {
       bins alert[NUM_ESCS] = {[0:NUM_ESCS-1]};
-      illegal_bins il = default;
     }
     class_index_cp: coverpoint class_index {
       bins class_i[NUM_ALERT_CLASSES] = {[0:NUM_ALERT_CLASSES-1]};
-      illegal_bins il = default;
     }
     loc_alert_cause_cross_alert_index: cross loc_alert_cause_cp, esc_index_cp;
     loc_alert_cause_cross_class_index: cross loc_alert_cause_cp, class_index_cp;

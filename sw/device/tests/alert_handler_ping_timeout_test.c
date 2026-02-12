@@ -7,6 +7,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "hw/top/dt/alert_handler.h"
+#include "hw/top/dt/rv_plic.h"
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
@@ -14,52 +17,57 @@
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
-#include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "alert_handler_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "sw/device/lib/testing/autogen/isr_testutils.h"
+#include "hw/top/alert_handler_regs.h"  // Generated.
 
 OTTF_DEFINE_TEST_CONFIG();
 
 static dif_rv_plic_t plic;
 static dif_alert_handler_t alert_handler;
-static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
 
-static plic_isr_ctx_t plic_ctx = {
-    .rv_plic = &plic,
-    .hart_id = kPlicTarget,
+enum {
+  /**
+   * PLIC target for the Ibex core.
+   */
+  kDtRvPlicTargetIbex0 = 0,
 };
 
 // Depends on the clock domain, sometimes alert handler will trigger a spurious
 // alert after the alert timeout. (Issue #2321)
 // So we allow class A interrupt to fire after the real timeout interrupt is
 // triggered.
-static alert_handler_isr_ctx_t alert_handler_ctx = {
-    .alert_handler = &alert_handler,
-    .plic_alert_handler_start_irq_id = kTopEarlgreyPlicIrqIdAlertHandlerClassa,
-    .expected_irq = kDifAlertHandlerIrqClassb,
-    .is_only_irq = false,
-};
+static volatile bool irq_fired = false;
 
 /**
  * Initialize the peripherals used in this test.
  */
 static void init_peripherals(void) {
-  mmio_region_t base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
-  CHECK_DIF_OK(dif_rv_plic_init(base_addr, &plic));
-
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR);
-  CHECK_DIF_OK(dif_alert_handler_init(base_addr, &alert_handler));
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kDtRvPlic, &plic));
+  CHECK_DIF_OK(dif_alert_handler_init_from_dt(kDtAlertHandler, &alert_handler));
 
   // Enable all the alert_handler interrupts used in this test.
-  rv_plic_testutils_irq_range_enable(&plic, kPlicTarget,
-                                     kTopEarlgreyPlicIrqIdAlertHandlerClassa,
-                                     kTopEarlgreyPlicIrqIdAlertHandlerClassd);
+  dt_plic_irq_id_t classa_irq = dt_alert_handler_irq_to_plic_id(
+      kDtAlertHandler, kDtAlertHandlerIrqClassa);
+  dt_plic_irq_id_t classb_irq = dt_alert_handler_irq_to_plic_id(
+      kDtAlertHandler, kDtAlertHandlerIrqClassb);
+  dt_plic_irq_id_t classc_irq = dt_alert_handler_irq_to_plic_id(
+      kDtAlertHandler, kDtAlertHandlerIrqClassc);
+  dt_plic_irq_id_t classd_irq = dt_alert_handler_irq_to_plic_id(
+      kDtAlertHandler, kDtAlertHandlerIrqClassd);
+
+  dt_plic_irq_id_t irq_ids[] = {classa_irq, classb_irq, classc_irq, classd_irq};
+  for (size_t i = 0; i < ARRAYSIZE(irq_ids); ++i) {
+    CHECK_DIF_OK(
+        dif_rv_plic_irq_set_priority(&plic, irq_ids[i], /*priority=*/1u));
+    CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
+        &plic, irq_ids[i], kDtRvPlicTargetIbex0, kDifToggleEnabled));
+  }
+
+  CHECK_DIF_OK(dif_rv_plic_target_set_threshold(&plic, kDtRvPlicTargetIbex0,
+                                                /*threshold=*/0u));
 }
 
 /**
@@ -129,37 +137,48 @@ static void alert_handler_config(void) {
  * line to the CPU, which results in a call to this OTTF ISR. This ISR
  * overrides the default OTTF implementation.
  */
-void ottf_external_isr(uint32_t *exc_info) {
-  top_earlgrey_plic_peripheral_t peripheral_serviced;
-  dif_alert_handler_irq_t irq_serviced;
-  isr_testutils_alert_handler_isr(plic_ctx, alert_handler_ctx,
-                                  &peripheral_serviced, &irq_serviced);
-  CHECK(peripheral_serviced == kTopEarlgreyPlicPeripheralAlertHandler,
-        "Interrupt from unexpected peripheral: %d", peripheral_serviced);
+bool ottf_handle_irq(uint32_t *exc_info, dt_instance_id_t inst_id,
+                     dif_rv_plic_irq_id_t plic_irq_id) {
+  // Check if this is the alert handler peripheral
+  if (inst_id != dt_alert_handler_instance_id(kDtAlertHandler)) {
+    return false;
+  }
 
-  // Only interrupts from class B alerts are expected for this test. Report the
-  // unexpected class.
-  CHECK(irq_serviced == kDifAlertHandlerIrqClassb,
-        "Interrupt from unexpected class: Class %c", 'A' + irq_serviced);
-  // Disable the interrupt after seeing a single ping timeout.
-  CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
-      &alert_handler, kDifAlertHandlerIrqClassb, kDifToggleDisabled));
+  // Convert PLIC IRQ ID to alert handler IRQ
+  dt_alert_handler_irq_t irq =
+      dt_alert_handler_irq_from_plic_id(kDtAlertHandler, plic_irq_id);
+
+  // Acknowledge the interrupt
+  CHECK_DIF_OK(dif_alert_handler_irq_acknowledge(&alert_handler, irq));
+
+  // We expect Class B interrupt primarily, but may see Class A due to timing
+  // (Issue #2321 - spurious alerts after timeout)
+  if (irq == kDtAlertHandlerIrqClassb) {
+    irq_fired = true;
+    // Disable the interrupt after seeing the ping timeout
+    CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
+        &alert_handler, kDifAlertHandlerIrqClassb, kDifToggleDisabled));
+  } else if (irq == kDtAlertHandlerIrqClassa) {
+    // Allow Class A as per Issue #2321
+    LOG_INFO("Received spurious Class A interrupt (expected per Issue #2321)");
+  } else {
+    CHECK(false, "Interrupt from unexpected class: %d", irq);
+  }
+
+  return true;
 }
 
 bool test_main(void) {
   init_peripherals();
 
-  // Stop Ibex from servicing interrupts just before WFI, which would lead to a
-  // long sleep if the test changes to only handle a single ping timeout.
-  irq_global_ctrl(false);
+  // Enable interrupts globally
+  irq_global_ctrl(true);
   irq_external_ctrl(true);
 
   alert_handler_config();
 
-  wait_for_interrupt();
-
-  // Enable the external IRQ at Ibex to jump to servicing it.
-  irq_global_ctrl(true);
+  // Wait for the ping timeout interrupt to fire
+  ATOMIC_WAIT_FOR_INTERRUPT(irq_fired);
 
   // Check local alert cause.
   bool is_cause;

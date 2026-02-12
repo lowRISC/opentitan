@@ -15,10 +15,10 @@
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_lc_ctrl",
-  version:            "2.1.0",
+  version:            "2.1.1",
   life_stage:         "L1",
   design_stage:       "D3",
-  verification_stage: "V2S",
+  verification_stage: "V1",
   dif_stage:          "S2",
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
@@ -279,12 +279,12 @@
       package: "lc_ctrl_pkg",
     },
     // Macro-specific test signals to/from LC TAP/DMI
-    { struct:  "lc_otp_vendor_test"
+    { struct:  "otp_test"
       type:    "req_rsp"
       name:    "lc_otp_vendor_test"
       act:     "req"
       default: "'0"
-      package: "otp_ctrl_pkg"
+      package: "otp_macro_pkg"
     }
     // life cycle state broadcast from OTP
     { struct:  "otp_lc_data"
@@ -302,7 +302,7 @@
       default: "'0"
       package: "otp_ctrl_pkg"
     }
-    // life cycle token hashing command to OTP
+    // life cycle token hashing command to KMAC
     { struct:  "app"
       type:    "req_rsp"
       name:    "kmac_data"
@@ -311,6 +311,17 @@
       package: "kmac_pkg"
     }
     // Life cycle broadcast signals
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_init_done"
+      act:     "req"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+      desc:    '''
+               A signal that is On after lifecycle initialization is done.
+               This signal is On when lifecycle initialization is complete and life cycle controller broadcast signals are valid.
+               '''
+    }
     { struct:  "lc_tx"
       type:    "uni"
       name:    "lc_raw_test_rma"
@@ -334,10 +345,29 @@
     }
     { struct:  "lc_tx"
       type:    "uni"
+      name:    "lc_hw_debug_clr"
+      act:     "req"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+      desc:    '''
+               Clear HW debug functionality.
+               This signal is On when `lc_hw_debug_en` turns Off outside a reset of `lc_ctrl`.
+               Flops storing the value of `lc_hw_debug_en` (see below) must be cleared when this signal is On.
+               '''
+    }
+    { struct:  "lc_tx"
+      type:    "uni"
       name:    "lc_hw_debug_en"
       act:     "req"
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"
+      desc:    '''
+               Enable HW debug functionality; see `HW_DEBUG_EN` in the Theory of Operation doc for details.
+
+               This signal is Off while lc_ctrl is in reset.
+               In order to prevent a JTAG disconnect during non-debug-module (NDM) reset, this signal should be flopped outside the NDM reset domain.
+               Such a flop must be cleared when `lc_hw_debug_clr` is On; see above.
+               '''
     }
     { struct:  "lc_tx"
       type:    "uni"
@@ -440,6 +470,13 @@
     { struct:  "lc_tx"
       type:    "uni"
       name:    "lc_seed_hw_rd_en"
+      act:     "req"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+    }
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_rma_state"
       act:     "req"
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"
@@ -631,7 +668,7 @@
             local escalation is triggered (MAIN.FSM.LOCAL_ESC).
             Note that any non-RAW manufacturing state requires the transition counter to
             be nonzero. Also, the transition counter is used to enforce a limit of maximum
-            24 state transitions in order to guard against bruteforcing.
+            24 state transitions in order to guard against brute-forcing.
             '''
     }
     { name: "STATE.CONFIG.SPARSE",
@@ -1276,7 +1313,7 @@
             desc: '''
                   This field exposes the id state in redundant enum format.
                   The 2bit id state enum is repeated 16x so that it fills the entire 32bit register.
-                  The encoding is straightforward replication: [val, val, ... val]."
+                  The encoding is straightforward replication: `[val, val, ... val]`.
                   '''
             enum: [
               { value: "0x0",

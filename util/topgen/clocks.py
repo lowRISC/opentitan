@@ -4,7 +4,7 @@
 
 from typing import Dict, List, NamedTuple, Tuple
 
-from .lib import Name
+from basegen.lib import Name
 
 
 def _yn_to_bool(yn: object) -> bool:

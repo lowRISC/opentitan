@@ -2,16 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 <%
-  from topgen.lib import Name
-  rg_srcs = list(sorted({sig['src_name'] for sig
-                         in typed_clocks['rg_clks'].values()}))
-  clk_freqs = {v['name']: v['freq'] for v in src_clks.values()}
-  clk_freqs.update({v['name']: v['freq'] for v in derived_clks.values()})
-  hint_targets = [sig['endpoint_ip'] for sig in typed_clocks['hint_clks'].values()]
-
-  def to_camel_case(s: str):
-    return Name.from_snake_case(s).as_camel_case()
-
+from ipgen.clkmgr_gen import (config_clk_meas, get_all_srcs, get_hint_targets,
+                              get_rg_srcs)
+from topgen.lib import Name
+rg_srcs = get_rg_srcs(typed_clocks)
+all_srcs = get_all_srcs(src_clks, derived_clks)
+clk_freqs = {v['name']: v['freq'] for v in all_srcs.values()}
+hint_targets = get_hint_targets(typed_clocks)
 %>
 package clkmgr_env_pkg;
   // dep packages
@@ -50,13 +47,13 @@ package clkmgr_env_pkg;
   parameter mubi_hintables_t IdleAllBusy = {NUM_TRANS{prim_mubi_pkg::MuBi4False}};
 
 % for clk, freq in clk_freqs.items():
-  parameter int ${to_camel_case(clk)}ClkHz = ${f"{freq:_}"};
+  parameter int ${Name.to_camel_case(clk)}ClkHz = ${f"{freq:_}"};
 % endfor
   parameter int FakeAonClkHz = 7_000_000;
 
   // alerts
   parameter uint NUM_ALERTS = 2;
-  parameter string LIST_OF_ALERTS[] = {"recov_fault", "fatal_fault"};
+  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"recov_fault", "fatal_fault"};
 
   // types
 
@@ -67,7 +64,7 @@ package clkmgr_env_pkg;
   typedef enum int {
 % for clk in typed_clocks['sw_clks'].values():
 <% sep = "" if loop.last else "," %>\
-    Peri${to_camel_case(clk['src_name'])}${sep}
+    Peri${Name.to_camel_case(clk['src_name'])}${sep}
 % endfor
   } peri_e;
   typedef struct packed {
@@ -97,7 +94,7 @@ package clkmgr_env_pkg;
   // These are ordered per the bits in the recov_err_code register.
   typedef enum int {
 % for src in rg_srcs:
-    ClkMesr${to_camel_case(src)},
+    ClkMesr${Name.to_camel_case(src)},
 % endfor
     ClkMesrSize
   } clk_mesr_e;
@@ -125,14 +122,22 @@ package clkmgr_env_pkg;
   parameter int ClkInHz[ClkMesrSize] = {
 % for src in rg_srcs:
 <% sep = "" if loop.last else "," %>\
-    ${to_camel_case(src)}ClkHz${sep}
+    ${Name.to_camel_case(src)}ClkHz${sep}
 % endfor
   };
 
+  // Take into account if multiple aon clock cycles are needed for a measurement.
   parameter int ExpectedCounts[ClkMesrSize] = {
 % for src in rg_srcs:
-<% sep = "" if loop.last else "," %>\
-    ClkInHz[ClkMesr${to_camel_case(src)}] / AonClkHz - 1${sep}
+<%
+reference_cycles = config_clk_meas(src, all_srcs).reference_cycles
+sep = "" if loop.last else ","
+%>\
+  % if reference_cycles == 1:
+    ClkInHz[ClkMesr${Name.to_camel_case(src)}] / AonClkHz - 1${sep}
+  % else:
+    (ClkInHz[ClkMesr${Name.to_camel_case(src)}] / AonClkHz) * ${reference_cycles} - 1${sep}
+  % endif
 % endfor
   };
 

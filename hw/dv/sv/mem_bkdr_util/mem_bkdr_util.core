@@ -18,6 +18,7 @@ filesets:
       - lowrisc:ip:kmac_pkg
     files:
       - mem_bkdr_util_pkg.sv
+      - mem_bkdr_util_row_adapter.sv: {is_include_file: true}
       - mem_bkdr_util.sv: {is_include_file: true}
     file_type: systemVerilogSource
 

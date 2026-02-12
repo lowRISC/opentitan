@@ -1,0 +1,46 @@
+[
+  {
+    "test_case_id": 1,
+    "command": "Init",
+    "input": "{\"enable_icache\": true,\"enable_dummy_instr\": true,\"dummy_instr_count\": 3,\"enable_jittery_clock\": true,\"enable_sram_readback\": true, \"enable_data_ind_timing\": true}",
+    "sensors": "{\"sensor_ctrl_enable\": true, \"sensor_ctrl_en_fatal\": [false, false, false, false, false, false, false, false, false, false, false]}",
+    "expected_output": [
+      "{\"device_id\":[0,0,0,0,0,0,0,0],\"icache_en\":true,\"dummy_instr_en\":true,\"clock_jitter_locked\":false,\"clock_jitter_en\":true,\"sram_main_readback_locked\":false,\"sram_main_readback_en\":true,\"sram_ret_readback_locked\":false,\"sram_ret_readback_en\":true, \"data_ind_timing_en\": true}",
+      "{\"config_version\":1,\"sram_exec_mode\":0,\"ownership_key_alg\":0,\"update_mode\":0,\"min_security_version_bl0\":0,\"lock_constraint\":0}",
+      "{\"digest\":[0,0,0,0,0,0,0,0],\"identifier\":0,\"scm_revision_low\":0,\"scm_revision_high\":0,\"rom_ext_slot\":0,\"rom_ext_major\":0,\"rom_ext_minor\":1,\"rom_ext_size\":0,\"bl0_slot\":0,\"ownership_state\":0,\"ownership_transfers\":0,\"rom_ext_min_sec_ver\":0,\"bl0_min_sec_ver\":0,\"primary_bl0_slot\":16000078145,\"retention_ram_initialized\":0}",
+      "{\"bl0\":[0,0,0,0,0,0,0,0],\"rom_ext\":[0,0,0,0,0,0,0,0]}",
+      "PENTEST: v0.1.0"]
+  },
+  {
+    "test_case_id": 2,
+    "command": "Single",
+    "key": "{\"key\":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]}",
+    "input": "{\"message\":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]}",
+    "triggers": "{\"start_trigger\": false,\"msg_trigger\": false,\"process_trigger\": false,\"finish_trigger\": true}",
+    "expected_output": ["{\"tag\":[73,93,70,170,57,45,81,19,46,219,147,188,73,230,14,202,174,183,128,47,58,229,41,119,157,88,131,249,51,10,245,97]}"]
+  },
+  {
+    "test_case_id": 3,
+    "command": "BatchFvsr",
+    "key": "{\"key\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}",
+    "input": "{\"num_iterations\":25}",
+    "triggers": "{\"start_trigger\": false,\"msg_trigger\": false,\"process_trigger\": false,\"finish_trigger\": true}",
+    "expected_output": ["{\"tag\":[192,77,203,43,23,176,19,12,205,113,216,119,97,208,255,142,18,200,198,77,146,44,154,252,216,123,225,138,66,249,25,64]}"]
+  },
+  {
+    "test_case_id": 4,
+    "command": "BatchRandom",
+    "input": "{\"num_iterations\":50}",
+    "triggers": "{\"start_trigger\": false,\"msg_trigger\": false,\"process_trigger\": false,\"finish_trigger\": true}",
+    "expected_output": ["{\"tag\":[123,85,194,131,222,60,217,26,56,173,239,45,80,10,109,185,213,248,123,244,64,116,98,36,78,163,186,244,73,168,5,175]}"]
+  },
+  {
+    "test_case_id": 5,
+    "command": "BatchDaisy",
+    "key": "{\"key\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}",
+    "message": "{\"message\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}",
+    "input": "{\"num_iterations\":50}",
+    "triggers": "{\"start_trigger\": false,\"msg_trigger\": false,\"process_trigger\": false,\"finish_trigger\": true}",
+    "expected_output": ["{\"tag\":[103,74,140,170,39,205,122,108,114,107,25,70,181,31,0,125,179,2,234,65,247,94,174,120,184,254,188,131,192,57,253,167]}"]
+  }
+]

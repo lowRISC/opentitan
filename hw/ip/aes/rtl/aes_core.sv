@@ -11,6 +11,7 @@ module aes_core
   import aes_reg_pkg::*;
 #(
   parameter bit          AES192Enable         = 1,
+  parameter bit          AESGCMEnable         = 1,
   parameter bit          SecMasking           = 1,
   parameter sbox_impl_e  SecSBoxImpl          = SBoxImplDom,
   parameter int unsigned SecStartTriggerDelay = 0,
@@ -70,6 +71,14 @@ module aes_core
   logic                                       manual_operation_q;
   logic                                       ctrl_reg_err_update;
   logic                                       ctrl_reg_err_storage;
+  logic                                       ctrl_gcm_qe;
+  logic                                       ctrl_gcm_we;
+  logic                                       ctrl_gcm_phase;
+  logic                                       gcm_init_done;
+  gcm_phase_e                                 gcm_phase_q;
+  logic                                 [4:0] num_valid_bytes_q;
+  logic                                       ctrl_gcm_reg_err_update;
+  logic                                       ctrl_gcm_reg_err_storage;
   logic                                       ctrl_err_update;
   logic                                       ctrl_err_storage;
   logic                                       ctrl_err_storage_d;
@@ -125,6 +134,7 @@ module aes_core
 
   logic  [NumSlicesCtr-1:0][SliceSizeCtr-1:0] ctr;
   sp2v_e [NumSlicesCtr-1:0]                   ctr_we;
+  sp2v_e                                      ctr_inc32;
   sp2v_e                                      ctr_incr;
   sp2v_e                                      ctr_ready;
   logic                                       ctr_alert;
@@ -149,12 +159,17 @@ module aes_core
   add_so_sel_e                                add_state_out_sel;
   logic                                       add_state_out_sel_err;
 
+  logic               [NumRegsData-1:0][31:0] data_out;
   logic               [NumRegsData-1:0][31:0] data_out_d;
   logic               [NumRegsData-1:0][31:0] data_out_q;
   sp2v_e                                      data_out_we_ctrl;
   sp2v_e                                      data_out_we;
   logic               [NumRegsData-1:0]       data_out_re;
   logic               [NumRegsData-1:0]       data_out_re_buf;
+  logic                 [DataOutSelWidth-1:0] data_out_sel_raw;
+  data_out_sel_e                              data_out_sel_ctrl;
+  data_out_sel_e                              data_out_sel;
+  logic                                       data_out_sel_err;
 
   sp2v_e                                      cipher_in_valid;
   sp2v_e                                      cipher_in_ready;
@@ -172,10 +187,17 @@ module aes_core
   logic                                       cipher_data_out_clear_busy;
   logic                                       cipher_alert;
 
+  sp2v_e                                      ghash_in_valid;
+  sp2v_e                                      ghash_in_ready;
+  sp2v_e                                      ghash_out_valid;
+  sp2v_e                                      ghash_out_ready;
+  sp2v_e                                      ghash_load_hash_subkey;
+  logic                                       ghash_first_block;
+  logic                                       ghash_alert;
+
   // Pseudo-random data for clearing purposes
   logic                [WidthPRDClearing-1:0] prd_clearing [NumSharesKey];
-  logic                                       prd_clearing_upd_req;
-  logic                                       prd_clearing_upd_ack;
+  logic                                       prd_clearing_update;
   logic                                       prd_clearing_rsd_req;
   logic                                       prd_clearing_rsd_ack;
   logic                               [127:0] prd_clearing_128 [NumShares];
@@ -200,8 +222,7 @@ module aes_core
     .clk_i         ( clk_i                  ),
     .rst_ni        ( rst_ni                 ),
 
-    .data_req_i    ( prd_clearing_upd_req   ),
-    .data_ack_o    ( prd_clearing_upd_ack   ),
+    .data_update_i ( prd_clearing_update    ),
     .data_o        ( prd_clearing           ),
     .reseed_req_i  ( prd_clearing_rsd_req   ),
     .reseed_ack_o  ( prd_clearing_rsd_ack   ),
@@ -231,7 +252,7 @@ module aes_core
     end
   end
   // The cipher core uses multiple packed dimensions internally but the number of bits remain the
-  // same. Since some tools fail to peform the `conversion` on input ports, we do it here.
+  // same. Since some tools fail to perform the `conversion` on input ports, we do it here.
   assign prd_clearing_state = prd_clearing_128;
   assign prd_clearing_key   = prd_clearing_256;
 
@@ -388,6 +409,7 @@ module aes_core
     .clk_i    ( clk_i     ),
     .rst_ni   ( rst_ni    ),
 
+    .inc32_i  ( ctr_inc32 ),
     .incr_i   ( ctr_incr  ),
     .ready_o  ( ctr_ready ),
     .alert_o  ( ctr_alert ),
@@ -408,7 +430,8 @@ module aes_core
                      (aes_mode_q == AES_CBC && aes_op_q == AES_DEC) ? CIPH_INV :
                      (aes_mode_q == AES_CFB)                        ? CIPH_FWD :
                      (aes_mode_q == AES_OFB)                        ? CIPH_FWD :
-                     (aes_mode_q == AES_CTR)                        ? CIPH_FWD : CIPH_FWD;
+                     (aes_mode_q == AES_CTR)                        ? CIPH_FWD :
+                     (aes_mode_q == AES_GCM)                        ? CIPH_FWD : CIPH_FWD;
 
   // This primitive is used to place a size-only constraint on the
   // buffers to act as a synthesis optimization barrier.
@@ -518,12 +541,14 @@ module aes_core
     // counter and feedback path through the IV regs.
 
     // Only unmask the final cipher core output. Unmasking intermediate output data causes
-    // additional SCA leakage and thus has to be avoided. Forward PRD instead of a determinsitic
-    // value to avoid leaking the cipher core output when it becomes valid.
+    // additional SCA leakage and thus has to be avoided. Forward PRD instead of a deterministic
+    // value to avoid leaking the cipher core output when it becomes valid. Don't unmask the hash
+    // subkey in case of GCM.
     logic [3:0][3:0][7:0] state_done_muxed [NumShares];
     for (genvar s = 0; s < NumShares; s++) begin : gen_state_done_muxed
-      assign state_done_muxed[s] =
-          (cipher_out_valid == SP2V_HIGH) ? state_done[s] : prd_clearing_state[s];
+      assign state_done_muxed[s] = ((cipher_out_valid == SP2V_HIGH) &&
+          !(aes_mode_q == AES_GCM &&
+              gcm_phase_q == GCM_INIT)) ? state_done[s] : prd_clearing_state[s];
     end
 
     // Avoid aggressive synthesis optimizations.
@@ -550,15 +575,89 @@ module aes_core
   end
 
   // Convert output state to output data format (every column corresponds to one output word).
-  assign data_out_d = aes_transpose(state_out ^ add_state_out);
+  assign data_out = aes_transpose(state_out ^ add_state_out);
 
-  //////////////////////
-  // Control Register //
-  //////////////////////
+  ///////////
+  // GHASH //
+  ///////////
 
-  // Shadowed register primitve
+  if (AESGCMEnable) begin : gen_ghash
+    logic [3:0][3:0][7:0] ghash_state_out;
+
+    logic ghash_clear;
+    assign ghash_clear = cipher_key_clear | cipher_key_clear_busy;
+
+    // The number of cycles must be a power of two and ideally matches the minimum latency of the
+    // cipher core which is 56 clock cycles (masked) or 12 clock cycles (unmasked) for AES-128.
+    localparam int unsigned GhashGFMultCycles = (SecSBoxImpl == SBoxImplDom) ? 32 : 8;
+
+    // The actual GHASH module.
+    aes_ghash #(
+      .SecMasking   ( SecMasking        ),
+      .GFMultCycles ( GhashGFMultCycles )
+    ) u_aes_ghash (
+      .clk_i               ( clk_i                  ),
+      .rst_ni              ( rst_ni                 ),
+
+      .in_valid_i          ( ghash_in_valid         ),
+      .in_ready_o          ( ghash_in_ready         ),
+
+      .out_valid_o         ( ghash_out_valid        ),
+      .out_ready_i         ( ghash_out_ready        ),
+
+      .op_i                ( aes_op_q               ),
+      .gcm_phase_i         ( gcm_phase_q            ),
+      .num_valid_bytes_i   ( num_valid_bytes_q      ),
+      .load_hash_subkey_i  ( ghash_load_hash_subkey ),
+      .clear_i             ( ghash_clear            ),
+      .first_block_o       ( ghash_first_block      ),
+      .alert_fatal_i       ( alert_fatal_o          ),
+      .alert_o             ( ghash_alert            ),
+
+      .data_in_prev_i      ( data_in_prev_q         ),
+      .data_out_i          ( data_out               ),
+      .cipher_state_done_i ( state_done             ),
+      .ghash_state_done_o  ( ghash_state_out        )
+    );
+
+    // Mux for output data registers
+    always_comb begin : data_out_mux
+      unique case (data_out_sel)
+        DATA_OUT_CIPHER: data_out_d = data_out;
+        DATA_OUT_GHASH:  data_out_d = ghash_state_out;
+        default:         data_out_d = ghash_state_out;
+      endcase
+    end
+
+  end else begin : gen_no_ghash
+    // GHASH isn't there and thus generates no back pressure / alerts / output to be muxed.
+    assign ghash_in_ready    = SP2V_HIGH;
+    assign ghash_out_valid   = SP2V_HIGH;
+    assign ghash_first_block = 1'b0;
+    assign ghash_alert       = 1'b0;
+    assign data_out_d        = data_out;
+
+    // Tie-off unused signals.
+    sp2v_e         unused_ghash_in_valid;
+    sp2v_e         unused_ghash_out_ready;
+    sp2v_e         unused_ghash_load_hash_subkey;
+    logic [4:0]    unused_num_valid_bytes;
+    data_out_sel_e unused_data_out_sel;
+    assign unused_ghash_in_valid         = ghash_in_valid;
+    assign unused_ghash_out_ready        = ghash_out_ready;
+    assign unused_ghash_load_hash_subkey = ghash_load_hash_subkey;
+    assign unused_num_valid_bytes        = num_valid_bytes_q;
+    assign unused_data_out_sel           = data_out_sel;
+  end
+
+  ///////////////////////
+  // Control Registers //
+  ///////////////////////
+
+  // Shadowed register primitive
   aes_ctrl_reg_shadowed #(
-    .AES192Enable ( AES192Enable )
+    .AES192Enable ( AES192Enable ),
+    .AESGCMEnable ( AESGCMEnable )
   ) u_ctrl_reg_shadowed (
     .clk_i              ( clk_i                ),
     .rst_ni             ( rst_ni               ),
@@ -582,12 +681,33 @@ module aes_core
   assign key_touch_forces_reseed = reg2hw.ctrl_aux_shadowed.key_touch_forces_reseed.q;
   assign force_masks             = reg2hw.ctrl_aux_shadowed.force_masks.q;
 
+  // GCM control register
+  aes_ctrl_gcm_reg_shadowed #(
+    .AESGCMEnable ( AESGCMEnable )
+  ) u_ctrl_gcm_reg_shadowed (
+    .clk_i              ( clk_i                    ),
+    .rst_ni             ( rst_ni                   ),
+    .rst_shadowed_ni    ( rst_shadowed_ni          ),
+    .qe_o               ( ctrl_gcm_qe              ),
+    .we_i               ( ctrl_gcm_we              ),
+    .phase_o            ( ctrl_gcm_phase           ),
+    .init_done_i        ( gcm_init_done            ),
+    .first_block_i      ( ghash_first_block        ),
+    .gcm_phase_o        ( gcm_phase_q              ),
+    .num_valid_bytes_o  ( num_valid_bytes_q        ),
+    .err_update_o       ( ctrl_gcm_reg_err_update  ),
+    .err_storage_o      ( ctrl_gcm_reg_err_storage ),
+    .reg2hw_ctrl_gcm_i  ( reg2hw.ctrl_gcm_shadowed ),
+    .hw2reg_ctrl_gcm_o  ( hw2reg.ctrl_gcm_shadowed )
+  );
+
   /////////////
   // Control //
   /////////////
 
   // Control
   aes_control #(
+    .AESGCMEnable         ( AESGCMEnable         ),
     .SecMasking           ( SecMasking           ),
     .SecStartTriggerDelay ( SecStartTriggerDelay )
   ) u_aes_control (
@@ -605,6 +725,11 @@ module aes_core
     .prng_reseed_rate_i        ( prng_reseed_rate_q                     ),
     .manual_operation_i        ( manual_operation_q                     ),
     .key_touch_forces_reseed_i ( key_touch_forces_reseed                ),
+    .ctrl_gcm_qe_i             ( ctrl_gcm_qe                            ),
+    .ctrl_gcm_we_o             ( ctrl_gcm_we                            ),
+    .ctrl_gcm_phase_i          ( ctrl_gcm_phase                         ),
+    .gcm_init_done_o           ( gcm_init_done                          ),
+    .gcm_phase_i               ( gcm_phase_q                            ),
     .start_i                   ( reg2hw.trigger.start.q                 ),
     .key_iv_data_in_clear_i    ( reg2hw.trigger.key_iv_data_in_clear.q  ),
     .data_out_clear_i          ( reg2hw.trigger.data_out_clear.q        ),
@@ -621,6 +746,7 @@ module aes_core
     .data_in_qe_i              ( data_in_qe_buf                         ),
     .data_out_re_i             ( data_out_re_buf                        ),
     .data_in_we_o              ( data_in_we                             ),
+    .data_out_sel_o            ( data_out_sel_ctrl                      ),
     .data_out_we_o             ( data_out_we_ctrl                       ),
 
     .data_in_prev_sel_o        ( data_in_prev_sel_ctrl                  ),
@@ -630,6 +756,7 @@ module aes_core
     .add_state_in_sel_o        ( add_state_in_sel_ctrl                  ),
     .add_state_out_sel_o       ( add_state_out_sel_ctrl                 ),
 
+    .ctr_inc32_o               ( ctr_inc32                              ),
     .ctr_incr_o                ( ctr_incr                               ),
     .ctr_ready_i               ( ctr_ready                              ),
     .ctr_we_i                  ( ctr_we                                 ),
@@ -649,13 +776,18 @@ module aes_core
     .cipher_data_out_clear_o   ( cipher_data_out_clear                  ),
     .cipher_data_out_clear_i   ( cipher_data_out_clear_busy             ),
 
+    .ghash_in_valid_o          ( ghash_in_valid                         ),
+    .ghash_in_ready_i          ( ghash_in_ready                         ),
+    .ghash_out_valid_i         ( ghash_out_valid                        ),
+    .ghash_out_ready_o         ( ghash_out_ready                        ),
+    .ghash_load_hash_subkey_o  ( ghash_load_hash_subkey                 ),
+
     .key_init_sel_o            ( key_init_sel_ctrl                      ),
     .key_init_we_o             ( key_init_we_ctrl                       ),
     .iv_sel_o                  ( iv_sel_ctrl                            ),
     .iv_we_o                   ( iv_we_ctrl                             ),
 
-    .prng_data_req_o           ( prd_clearing_upd_req                   ),
-    .prng_data_ack_i           ( prd_clearing_upd_ack                   ),
+    .prng_update_o             ( prd_clearing_update                    ),
     .prng_reseed_req_o         ( prd_clearing_rsd_req                   ),
     .prng_reseed_ack_i         ( prd_clearing_rsd_ack                   ),
 
@@ -784,9 +916,22 @@ module aes_core
   );
   assign iv_sel = iv_sel_e'(iv_sel_raw);
 
+  aes_sel_buf_chk #(
+    .Num      ( DataOutSelNum   ),
+    .Width    ( DataOutSelWidth ),
+    .EnSecBuf ( 1'b1       )
+  ) u_aes_data_out_sel_buf_chk (
+    .clk_i  ( clk_i             ),
+    .rst_ni ( rst_ni            ),
+    .sel_i  ( data_out_sel_ctrl ),
+    .sel_o  ( data_out_sel_raw  ),
+    .err_o  ( data_out_sel_err  )
+  );
+  assign data_out_sel = data_out_sel_e'(data_out_sel_raw);
+
   // Signal invalid mux selector signals to control FSM which will lock up and trigger an alert.
   assign mux_sel_err = data_in_prev_sel_err | state_in_sel_err | add_state_in_sel_err |
-      add_state_out_sel_err | key_init_sel_err | iv_sel_err;
+      add_state_out_sel_err | key_init_sel_err | iv_sel_err | data_out_sel_err;
 
   //////////////////////////////
   // Sparsely Encoded Signals //
@@ -907,7 +1052,7 @@ module aes_core
   assign clear_on_fatal = ClearStatusOnFatalAlert ? alert_fatal_o : 1'b0;
 
   // Recoverable alert conditions are signaled as a single alert event.
-  assign ctrl_err_update = ctrl_reg_err_update | shadowed_update_err_i;
+  assign ctrl_err_update = ctrl_reg_err_update | shadowed_update_err_i | ctrl_gcm_reg_err_update;
   assign alert_recov_o = ctrl_err_update;
 
   // The recoverable alert is observable via status register until the AES operation is restarted
@@ -916,7 +1061,8 @@ module aes_core
   assign hw2reg.status.alert_recov_ctrl_update_err.de = ctrl_err_update | ctrl_we | clear_on_fatal;
 
   // Fatal alert conditions need to remain asserted until reset.
-  assign ctrl_err_storage_d = ctrl_reg_err_storage | shadowed_storage_err_i;
+  assign ctrl_err_storage_d =
+      ctrl_reg_err_storage | shadowed_storage_err_i | ctrl_gcm_reg_err_storage;
   always_ff @(posedge clk_i or negedge rst_ni) begin : ctrl_err_storage_reg
     if (!rst_ni) begin
       ctrl_err_storage_q <= 1'b0;
@@ -930,6 +1076,7 @@ module aes_core
   assign alert_fatal_o = ctrl_err_storage |
                          ctr_alert        |
                          cipher_alert     |
+                         ghash_alert      |
                          ctrl_alert       |
                          intg_err_alert_i;
 
@@ -959,6 +1106,7 @@ module aes_core
       AES_CFB,
       AES_OFB,
       AES_CTR,
+      AES_GCM,
       AES_NONE
       })
   `ASSERT(AesOpValid, !ctrl_err_storage |-> aes_op_q inside {

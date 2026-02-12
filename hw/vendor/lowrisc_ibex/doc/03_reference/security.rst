@@ -11,7 +11,7 @@ Outputs
 
 Ibex has three alert outputs for signalling security issues.
 The internal major alert (**alert_major_internal_o**) indicates a critical security issue from which the core cannot recover which was detected internally in `ibex_top`.
-The bus major alert (**alert_major_internal_o**) indicates a critical security issue from which the core cannot recover which was detected on incoming bus data.
+The bus major alert (**alert_major_bus_o**) indicates a critical security issue from which the core cannot recover which was detected on incoming bus data.
 The minor alert (**alert_minor_o**) indicates potential security issues which can be monitored over time by a system.
 
 Data Independent Timing
@@ -35,6 +35,8 @@ When Ibex is configured to use an instruction cache, stalls on instruction fetch
 Software that has need of data independent timing may wish to disable the instruction cache to avoid this or to carefully analyse execution to determine if variable latency introduced by the cache causes unacceptable leakage.
 The instruction cache is controlled by the **icache_enable** bit in the **cpuctrl** register.
 Precise details of fetch timing will depend upon the memory system Ibex is connected to.
+
+If data independent timing is needed for branches, turn off the branch prediction feature as it is :ref:`experimental<branch-prediction>`.
 
 Dummy Instruction Insertion
 ---------------------------
@@ -61,7 +63,7 @@ Other values of **dummy_instr_mask** are legal, but will have a less predictable
 
 The interval between instruction insertion is randomized in the core using an LFSR.
 The initial seed and output permutation for this LFSR can be set using parameters from the top-level of Ibex.
-Sofware can periodically re-seed this LFSR with true random numbers (if available) via the **secureseed** CSR.
+Software can periodically re-seed this LFSR with true random numbers (if available) via the **secureseed** CSR.
 This will make the insertion interval of dummy instructions much harder for an attacker to predict.
 
 Note that the dummy instruction feature inserts multiply and divide instructions.

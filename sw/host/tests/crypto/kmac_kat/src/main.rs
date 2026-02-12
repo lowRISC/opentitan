@@ -121,7 +121,7 @@ fn run_kmac_testcase(
     }
     .send(spi_console)?;
 
-    let kmac_tag = CryptotestKmacTag::recv(spi_console, opts.timeout, false)?;
+    let kmac_tag = CryptotestKmacTag::recv(spi_console, opts.timeout, false, false)?;
     // Cryptolib could have chosen to return more tag bytes than we asked for. If it did, we can
     // ignore the extra ones.
     let success = test_case.tag[..] == kmac_tag.tag[..test_case.tag.len()];
@@ -141,8 +141,8 @@ fn run_kmac_testcase(
 
 fn test_kmac(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let spi = transport.spi("BOOTSTRAP")?;
-    let spi_console_device = SpiConsoleDevice::new(&*spi)?;
-    let _ = UartConsole::wait_for(&spi_console_device, r"Running [^\r\n]*", opts.timeout)?;
+    let spi_console_device = SpiConsoleDevice::new(&*spi, None, /*ignore_frame_num=*/ false)?;
+    let _ = UartConsole::wait_for(&spi_console_device, r"Running ", opts.timeout)?;
 
     let mut test_counter = 0u32;
     let mut fail_counter = 0u32;

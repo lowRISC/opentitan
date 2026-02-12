@@ -680,7 +680,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
     // process the csr req
     // for write, update local variable and fifo at address phase
-    // for read, update predication at address phase and compare at data phase
+    // for read, update prediction at address phase and compare at data phase
     case (csr_name)
       // add individual case item for each csr
       "intr_state": begin
@@ -886,8 +886,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                   unchecked_kmac_cmd = CmdManualRun;
 
                   req_manual_squeeze = 1;
-                  // Mask out status sequeeze check because it requires cycle accurate prediction.
-                  // Use sequence to backdoor check if sequeeze is reset to 0 after each squeeze
+                  // Mask out status squeeze check because it requires cycle accurate prediction.
+                  // Use sequence to backdoor check if squeeze is reset to 0 after each squeeze
                   // command.
                   status_mask[KmacStatusSha3Squeeze] = 1;
                   `uvm_info(`gfn, "raised req_manual_squeeze", UVM_HIGH)
@@ -1016,6 +1016,17 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             do_read_check = 0;
             `DV_CHECK_EQ(csr.get_mirrored_value() & err_chk_mask, item.d_data & err_chk_mask,
                          $sformatf("reg name: %0s", csr.get_full_name()))
+          end else if ((err_code.code == sha3_pkg::ErrSha3SwControl) &&
+                       cfg.expect_sha3_sw_ctrl_err) begin
+            // A fault was injected to the sha3 done singal.
+            do_read_check = 0;
+            `DV_CHECK_NE(err_code.info[6:3], prim_mubi_pkg::MuBi4False,
+                         $sformatf("reg name: %0s", csr.get_full_name()))
+            `DV_CHECK_NE(err_code.info[6:3], prim_mubi_pkg::MuBi4True,
+                         $sformatf("reg name: %0s", csr.get_full_name()))
+          end else begin
+            // If a fault was injected to the SHA3 done signal, the resulting error should be cleared now.
+            cfg.expect_sha3_sw_ctrl_err = 0;
           end
         end
       end
@@ -1244,7 +1255,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
   // Reads FIFO empty/full status from the DUT registers to know the current level of the FIFOs as
   // it has been decided to not predict this here.
-  // Then, it could be decided wether the FIFO empty interrupt could be raised. This should only be
+  // Then, it could be decided whether the FIFO empty interrupt could be raised. This should only be
   // the case when the FIFO is actually empty, but also if all of the following conditions are met:
   //   1- The KMAC block is not exercised by a hardware application interface.
   //   2- The SHA3 block is in the Absorb state.

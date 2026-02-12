@@ -172,27 +172,6 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     return super.predict_tl_err(item, channel, ral_name);
   endfunction
 
-  virtual function void check_tl_read_value_after_error(tl_seq_item item, string ral_name);
-    bit [TL_DW-1:0] exp_data;
-    tlul_pkg::tl_a_user_t a_user = tlul_pkg::tl_a_user_t'(item.a_user);
-
-    // Determine expected data.
-    // When the access target was a CSR, tlul_adapter_reg always returns a '1.
-    // When the access target was the memory, tlul_adapter_sram either returns
-    // DataWhenInstrError ('1) or DataWhenError ('0) depending whether it was a
-    // instruction type access or not.
-    uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
-    if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
-      exp_data = '1;
-    end else begin
-      // if error occurs when it's an instruction, return all 0 since it's an illegal instruction
-      if (a_user.instr_type == prim_mubi_pkg::MuBi4True) exp_data = 0;
-      else                                               exp_data = '1;
-    end
-
-    `DV_CHECK_EQ(item.d_data, exp_data, "d_data mismatch when d_error = 1")
-  endfunction
-
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     kdi_fifo = new("kdi_fifo", this);
@@ -549,7 +528,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
 
     // process the csr req
     // for write, update local variable and fifo at address phase
-    // for read, update predication at address phase and compare at data phase
+    // for read, update prediction at address phase and compare at data phase
     case (csr_name)
       // add individual case item for each csr
       "alert_test": begin

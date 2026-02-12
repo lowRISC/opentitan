@@ -10,7 +10,9 @@ module sysrst_ctrl
   import sysrst_ctrl_pkg::*;
   import sysrst_ctrl_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned AlertSkewCycles = 1
 ) (
   input  clk_i,  // Always-on 24MHz clock(config)
   input  clk_aon_i,  // Always-on 200KHz clock(logic)
@@ -70,6 +72,7 @@ module sysrst_ctrl
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(1'b1)
     ) u_prim_alert_sender (
       .clk_i,
@@ -193,9 +196,9 @@ module sysrst_ctrl
     .z3_wakeup_hw_o(aon_z3_wakeup_hw)
   );
 
-  /////////////////////////////
-  // Key triggered interrups //
-  /////////////////////////////
+  //////////////////////////////
+  // Key triggered interrupts //
+  //////////////////////////////
 
   // This module runs on the AON clock entirely.
   // Hence, its local signals are not prefixed with aon_*.
@@ -257,7 +260,7 @@ module sysrst_ctrl
   ///////////////////////////////
 
   // This module operates on both synchronized and unsynchronized signals.
-  // I.e., the passthrough signals are NOT synchronnous to the AON clock.
+  // I.e., the passthrough signals are NOT synchronous to the AON clock.
   logic pwrb_out_int, key0_out_int, key1_out_int, key2_out_int, aon_bat_disable_out_int;
   logic aon_z3_wakeup_out_int, aon_ec_rst_out_int_l, aon_flash_wp_out_int_l;
   sysrst_ctrl_pin u_sysrst_ctrl_pin (
@@ -321,7 +324,7 @@ module sysrst_ctrl
   assign cio_flash_wp_l_en_o = 1'b1;
 
   ///////////////////////////
-  // Interrupt agreggation //
+  // Interrupt aggregation //
   ///////////////////////////
 
   sysrst_ctrl_intr u_sysrst_ctrl_intr (

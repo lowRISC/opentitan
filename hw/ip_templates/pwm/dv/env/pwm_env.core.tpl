@@ -12,30 +12,31 @@ filesets:
       - ${instance_vlnv(f"lowrisc:ip:{module_instance_name}:0.1")}
       - lowrisc:dv:pwm_monitor
     files:
-      - pwm_env_pkg.sv
-      - pwm_env_cfg.sv: {is_include_file: true}
-      - pwm_env_cov.sv: {is_include_file: true}
-      - pwm_virtual_sequencer.sv: {is_include_file: true}
-      - pwm_scoreboard.sv: {is_include_file: true}
-      - pwm_env.sv: {is_include_file: true}
-      - seq_lib/pwm_vseq_list.sv: {is_include_file: true}
-      - seq_lib/pwm_base_vseq.sv: {is_include_file: true}
-      - seq_lib/pwm_common_vseq.sv: {is_include_file: true}
-      - seq_lib/pwm_phase_vseq.sv: {is_include_file: true}
-      - seq_lib/pwm_smoke_vseq.sv: {is_include_file: true}
-      - seq_lib/pwm_rand_output_vseq.sv: {is_include_file: true}
-      - seq_lib/pwm_heartbeat_wrap_vseq.sv: {is_include_file: true}
-      - seq_lib/pwm_perf_vseq.sv: {is_include_file: true}
-      - seq_lib/pwm_regwen_vseq.sv: {is_include_file: true}
-      - seq_lib/pwm_stress_all_vseq.sv: {is_include_file: true}
+      - ${module_instance_name}_env_pkg.sv
+      - ${module_instance_name}_env_cfg.sv: {is_include_file: true}
+      - ${module_instance_name}_env_cov.sv: {is_include_file: true}
+      - ${module_instance_name}_virtual_sequencer.sv: {is_include_file: true}
+      - ${module_instance_name}_scoreboard.sv: {is_include_file: true}
+      - ${module_instance_name}_env.sv: {is_include_file: true}
+      - seq_lib/${module_instance_name}_vseq_list.sv: {is_include_file: true}
+      - seq_lib/${module_instance_name}_base_vseq.sv: {is_include_file: true}
+      - seq_lib/${module_instance_name}_common_vseq.sv: {is_include_file: true}
+      - seq_lib/${module_instance_name}_phase_vseq.sv: {is_include_file: true}
+      - seq_lib/${module_instance_name}_smoke_vseq.sv: {is_include_file: true}
+      - seq_lib/${module_instance_name}_rand_output_vseq.sv: {is_include_file: true}
+      - seq_lib/${module_instance_name}_heartbeat_wrap_vseq.sv: {is_include_file: true}
+      - seq_lib/${module_instance_name}_perf_vseq.sv: {is_include_file: true}
+      - seq_lib/${module_instance_name}_regwen_vseq.sv: {is_include_file: true}
+      - seq_lib/${module_instance_name}_stress_all_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:
   ral:
     generator: ralgen
     parameters:
-      name: pwm
-      ip_hjson: ../../data/pwm.hjson
+      name: ${module_instance_name}
+      ip_hjson: ../../data/${module_instance_name}.hjson
+    position: prepend
 
 targets:
   default:

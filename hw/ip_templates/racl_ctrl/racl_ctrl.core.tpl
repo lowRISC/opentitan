@@ -12,6 +12,8 @@ filesets:
       - lowrisc:prim:mubi
       - lowrisc:prim:all
       - lowrisc:prim:racl_error_arb
+      # TODO: This is used by the register top and shouldn't be pulled explicitly here.
+      - lowrisc:prim:onehot
       - ${instance_vlnv("lowrisc:constants:top_racl_pkg")}
     files:
       - rtl/${module_instance_name}_reg_pkg.sv

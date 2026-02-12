@@ -2,27 +2,23 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#![feature(min_specialization)]
 use anyhow::Result;
 use clap::{Parser, ValueEnum};
 use directories::ProjectDirs;
 use log::LevelFilter;
-use serde_annotate::Annotate;
 use serde_annotate::ColorProfile;
-use std::env::{args_os, ArgsOs};
+use std::env::{ArgsOs, args_os};
 use std::ffi::OsString;
 use std::io::ErrorKind;
 use std::io::IsTerminal;
 use std::iter::{IntoIterator, Iterator};
 use std::path::PathBuf;
-use std::rc::Rc;
 use std::str::FromStr;
 
 mod command;
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::backend;
-use opentitanlib::transport::MaintainConnection;
 
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug, Parser, CommandDispatch)]
@@ -52,7 +48,6 @@ enum RootCommandHierarchy {
     Otp(command::otp::Otp),
     #[command(subcommand)]
     Ownership(command::ownership::OwnershipCommand),
-    #[command(subcommand)]
     Rescue(command::rescue::RescueCommand),
     #[command(subcommand)]
     Rsa(command::rsa::Rsa),
@@ -183,7 +178,10 @@ fn parse_command_line(opts: Opts, mut args: ArgsOs) -> Result<Opts> {
 
 // Print the result of a command.
 // If there is an error and `RUST_BACKTRACE=1`, print a backtrace.
-fn print_command_result(opts: &Opts, result: Result<Option<Box<dyn Annotate>>>) -> Result<()> {
+fn print_command_result(
+    opts: &Opts,
+    result: Result<Option<Box<dyn erased_serde::Serialize>>>,
+) -> Result<()> {
     match result {
         Ok(Some(value)) => {
             log::info!("Command result: success.");
@@ -218,25 +216,13 @@ fn print_command_result(opts: &Opts, result: Result<Option<Box<dyn Annotate>>>) 
 
 // Execute is a convenience function for taking a list of strings,
 // parsing them into a command, executing the command and printing the result.
-fn execute<I>(
-    args: I,
-    opts: &Opts,
-    transport: &TransportWrapper,
-    maintain_connection: &mut Option<Rc<dyn MaintainConnection>>,
-) -> Result<()>
+fn execute<I>(args: I, opts: &Opts, transport: &TransportWrapper) -> Result<()>
 where
     I: IntoIterator<Item = OsString>,
 {
     let command = RootCommandHierarchy::parse_from(
         std::iter::once(OsString::from("opentitantool")).chain(args),
     );
-    if command.exclusive_use_of_transport() {
-        if maintain_connection.is_none() {
-            *maintain_connection = Some(transport.maintain_connection()?);
-        }
-    } else {
-        *maintain_connection = None;
-    }
     print_command_result(opts, command.run(opts, transport))?;
     Ok(())
 }
@@ -246,22 +232,12 @@ fn main() -> Result<()> {
 
     let transport = backend::create(&opts.backend_opts)?;
 
-    let mut _maintain_connection = None;
-
     for command in &opts.exec {
         execute(
             shellwords::split(command)?.iter().map(OsString::from),
             &opts,
             &transport,
-            &mut _maintain_connection,
         )?;
-    }
-    if opts.command.exclusive_use_of_transport() {
-        if _maintain_connection.is_none() {
-            _maintain_connection = Some(transport.maintain_connection()?);
-        }
-    } else {
-        _maintain_connection = None;
     }
     print_command_result(&opts, opts.command.run(&opts, &transport))?;
     Ok(())

@@ -7,6 +7,6 @@ ignore =
   # them when there's a long argument (help text, for example).
   E251,
   # Don't complain about line breaks before or after operators. The
-  # recomendations on this have changed in 2016, so leave out the explicit
+  # recommendations on this have changed in 2016, so leave out the explicit
   # checks: https://www.flake8rules.com/rules/W503.html
   W503, W504

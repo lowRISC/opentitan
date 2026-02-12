@@ -6,7 +6,7 @@
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
-#include "sw/device/lib/crypto/include/mac.h"
+#include "sw/device/lib/crypto/include/hmac.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -140,6 +140,79 @@ static status_t long_key_test(void) {
   return run_test(kLongTestKey, sizeof(kLongTestKey), msg_buf, exp_tag);
 }
 
+/**
+ * Simple streaming test.
+ *
+ * HMAC-SHA256(kBasicTestKey, 'Test message.')
+ *   = 0xb4595b02be2a1638893166366656ece12b749b95a2815e52d687535309f3126f
+ */
+static status_t streaming_test(void) {
+  const char plaintext[] = "Test message.";
+  otcrypto_const_byte_buf_t msg_buf = {
+      .data = (unsigned char *)plaintext,
+      .len = sizeof(plaintext) - 1,
+  };
+  const uint32_t exp_tag[] = {
+      0x025b59b4, 0x38162abe, 0x36663189, 0xe1ec5666,
+      0x959b742b, 0x525e81a2, 0x535387d6, 0x6f12f309,
+  };
+
+  // Construct blinded key.
+  otcrypto_key_config_t config = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeHmacSha256,
+      .key_length = sizeof(kBasicTestKey),
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+
+  uint32_t keyblob[keyblob_num_words(config)];
+  TRY(keyblob_from_key_and_mask(kBasicTestKey, kTestMask, config, keyblob));
+  otcrypto_blinded_key_t blinded_key = {
+      .config = config,
+      .keyblob = keyblob,
+      .keyblob_length = sizeof(keyblob),
+      .checksum = 0,
+  };
+  blinded_key.checksum = integrity_blinded_checksum(&blinded_key);
+
+  uint32_t act_tag[kTagLenWords];
+  otcrypto_word32_buf_t tag_buf = {
+      .data = act_tag,
+      .len = ARRAYSIZE(act_tag),
+  };
+
+  // First, try using the streaming interface but passing input all at once.
+  otcrypto_hmac_context_t ctx;
+  TRY(otcrypto_hmac_init(&ctx, &blinded_key));
+  TRY(otcrypto_hmac_update(&ctx, msg_buf));
+  TRY(otcrypto_hmac_final(&ctx, tag_buf));
+  TRY_CHECK_ARRAYS_EQ(act_tag, exp_tag, kTagLenWords);
+
+  // Clear the destination buffer.
+  memset(act_tag, 0, sizeof(act_tag));
+
+  // Next, try smaller chunks.
+  size_t chunk_size = 3;
+  const unsigned char *msg_bytes = msg_buf.data;
+  size_t msg_len = msg_buf.len;
+  TRY(otcrypto_hmac_init(&ctx, &blinded_key));
+  size_t offset = 0;
+  for (; offset + chunk_size < msg_len; offset += chunk_size) {
+    TRY(otcrypto_hmac_update(&ctx, (otcrypto_const_byte_buf_t){
+                                       .data = msg_bytes, .len = chunk_size}));
+    msg_bytes += chunk_size;
+  }
+  // One final update for any remaining data (may be 0-length).
+  TRY(otcrypto_hmac_update(
+      &ctx,
+      (otcrypto_const_byte_buf_t){.data = msg_bytes, .len = msg_len - offset}));
+  TRY(otcrypto_hmac_final(&ctx, tag_buf));
+  TRY_CHECK_ARRAYS_EQ(act_tag, exp_tag, kTagLenWords);
+  return OK_STATUS();
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 // Holds the test result.
@@ -151,5 +224,6 @@ bool test_main(void) {
   EXECUTE_TEST(test_result, simple_test);
   EXECUTE_TEST(test_result, empty_test);
   EXECUTE_TEST(test_result, long_key_test);
+  EXECUTE_TEST(test_result, streaming_test);
   return status_ok(test_result);
 }

@@ -70,6 +70,9 @@
  * attacks or reliability issues, then SW in RoT can redirect the host system's
  * requests to the other half partitions in the flash device.
  */
+
+`include "prim_assert.sv"
+
 module spi_passthrough
   import spi_device_pkg::*;
 (
@@ -350,7 +353,7 @@ module spi_passthrough
     else             csb_deassert_outclk <= csb_deassert;
   end
 
-  // Look at the waveform above to see why sck_gate_en is inversion of fliter OR
+  // Look at the waveform above to see why sck_gate_en is inversion of filter OR
   // csb_deassert
   assign sck_gate_en = ~(filter | csb_deassert);
 
@@ -764,7 +767,7 @@ module spi_passthrough
     // Payload swap control
     payload_replace_set = 1'b 0;
 
-    // mbyte counter udpate
+    // mbyte counter update
     mbyte_set = 1'b 0;
 
     // Dummy

@@ -6,12 +6,6 @@
 { name: "darjeeling",
   type: "top",
 
-  /////////////////////////////////////////////////////////////
-  // 256 bit seed for compile-time random constants          //
-  // NOTE: REPLACE THIS WITH A NEW VALUE BEFORE THE TAPEOUT  //
-  /////////////////////////////////////////////////////////////
-  rnd_cnst_seed: 1017106219537032642877583828875051302543807092889754935647094601236425074047,
-
   // 32-bit datawidth
   datawidth: "32",
 
@@ -42,7 +36,7 @@
 
   // This is the clock data structure of the design.
   // The hier path refers to the clock reference path (struct / port)
-  //   - The top/ext desgination follows the same scheme as inter-module
+  //   - The top/ext designation follows the same scheme as inter-module
   // The src key indicates the raw clock sources in the design
   // The groups key indicates the various clock groupings in the design
   clocks: {
@@ -56,25 +50,23 @@
     // Clock Source attributes
     // name: Name of group.
     // aon:  Whether the clock is free running all the time.
-    //       If it is, the clock is not hanlded by clkmgr.
+    //       If it is, the clock is not handled by clkmgr.
     // freq: Absolute frequency of clk in Hz
     // ref: indicates the clock is used as a reference for measurement.
     srcs: [
       { name: "main", aon: "no",  freq: "1000000000" }
-      { name: "io",   aon: "no",  freq: "1000000000" }
+      { name: "io",   aon: "no",  freq: "250000000" }
       { name: "aon",  aon: "yes", freq: "62500000", ref: true}
     ],
 
     // Derived clock source attributes
     // name: Name of group.
     // aon:  Whether the clock is free running all the time.
-    //       If it is, the clock is not hanlded by clkmgr.
+    //       If it is, the clock is not handled by clkmgr.
     // freq: Absolute frequency of clk in Hz
     // src:  From which clock source is the clock derived
     // div:  Ratio between derived clock and source clock
     derived_srcs: [
-      { name: "io_div2", aon: "no", div: 2, src: "io", freq: "500000000" }
-      { name: "io_div4", aon: "no", div: 4, src: "io", freq: "250000000" }
     ],
 
     // Clock Group attributes
@@ -113,7 +105,7 @@
 
   // This is the reset data structure of the design.
   // The hier path refers to the reset reference path (struct / port)
-  //   - The top/ext desgination follows the same scheme as inter-module
+  //   - The top/ext designation follows the same scheme as inter-module
   // The node key represents all the known resets in the design
   resets: {
     // Discrete OpenTitan does not need to wait for external resets
@@ -152,22 +144,17 @@
     //
     nodes: [
       { name: "por_aon",        gen: false, type: "top",                    clock: "aon"     }
-      { name: "lc_src",         gen: false, type: "int",                    clock: "io_div4" }
-      { name: "sys_src",        gen: false, type: "int",                    clock: "io_div4" }
+      { name: "lc_src",         gen: false, type: "int",                    clock: "io" }
+      { name: "sys_src",        gen: false, type: "int",                    clock: "io" }
       { name: "por",            gen: true,  type: "top", parent: "por_aon", clock: "main"    }
       { name: "por_io",         gen: true,  type: "top", parent: "por_aon", clock: "io"      }
-      { name: "por_io_div2",    gen: true , type: "top", parent: "por_aon", clock: "io_div2" }
-      { name: "por_io_div4",    gen: true , type: "top", parent: "por_aon", clock: "io_div4" }
       { name: "lc",             gen: true,  type: "top", parent: "lc_src",  clock: "main"    }
       { name: "lc_aon",         gen: true,  type: "top", parent: "lc_src",  clock: "aon"     }
       { name: "lc_io",          gen: true,  type: "top", parent: "lc_src",  clock: "io"      }
-      { name: "lc_io_div2",     gen: true,  type: "top", parent: "lc_src",  clock: "io_div2" }
-      { name: "lc_io_div4",     gen: true,  type: "top", parent: "lc_src",  clock: "io_div4" }
       { name: "sys",            gen: true,  type: "top", parent: "sys_src", clock: "main"    }
-      { name: "sys_io_div4",    gen: true,  type: "top", parent: "sys_src", clock: "io_div4" }
-      { name: "spi_device",     gen: true,  type: "top", parent: "lc_src", clock: "io_div4", sw: true }
-      { name: "spi_host0",      gen: true,  type: "top", parent: "lc_src", clock: "io_div4", sw: true }
-      { name: "i2c0",           gen: true,  type: "top", parent: "lc_src", clock: "io_div4", sw: true },
+      { name: "spi_device",     gen: true,  type: "top", parent: "lc_src", clock: "io", sw: true }
+      { name: "spi_host0",      gen: true,  type: "top", parent: "lc_src", clock: "io", sw: true }
+      { name: "i2c0",           gen: true,  type: "top", parent: "lc_src", clock: "io", sw: true },
     ]
   }
   // The reset requests: peripherals are deduced, but internal and debug need
@@ -195,6 +182,14 @@
   },
   // Number of cores: used in rv_plic and timer
   num_cores: "1",
+
+  // Any module with interrupts that doesn't specify plic
+  // will have its interrupts sent here
+  default_plic: "rv_plic"
+
+  // Any module with alerts that doesn't specify alert_handler
+  // will have its alerts sent here
+  default_alert_handler: "alert_handler"
 
   // `addr_spaces` names the distinct address spaces present in the device.
   // All hosts in the same address space share the same base addresses for
@@ -235,6 +230,7 @@
             "otbn",
             "keymgr_dpe"
             "csrng",
+            "entropy_src",
             "edn0",
             "edn1",
             "sram_ctrl_main.regs",
@@ -274,18 +270,18 @@
      //   reggen_only: Similar to reggen_top, but are not instantiated in the top level.
   module: [
     { name: "uart0",    // instance name
-      type: "uart",     // Must be matched to the ip name in `ip.hson` (_reg, _cfg permitted)
+      type: "uart",     // Must be matched to the ip name in `ip.hjson` (_reg, _cfg permitted)
                         // and `hw/ip/{type}`
 
       // clock connections defines the port to top level clock connection
       // the ip.hjson will declare the clock port names
       // If none are defined at ip.hjson, clk_i is used by default
-      clock_srcs: {clk_i: "io_div4"},
+      clock_srcs: {clk_i: "io"},
       clock_group: "peri",
       // reset connections defines the port to top level reset connection
       // the ip.hjson will declare the reset port names
       // If none are defined at ip.hjson, rst_ni is used by default
-      reset_connections: {rst_ni: "lc_io_div4"},
+      reset_connections: {rst_ni: "lc_io"},
       base_addr: {
         hart: "0x30010000",
       },
@@ -293,9 +289,9 @@
     { name: "gpio",
       type: "gpio",
       template_type: "gpio",
-      clock_srcs: {clk_i: "io_div4"},
+      clock_srcs: {clk_i: "io"},
       clock_group: "peri",
-      reset_connections: {rst_ni: "lc_io_div4"},
+      reset_connections: {rst_ni: "lc_io"},
       base_addr: {
         hart: "0x30000000",
       },
@@ -303,14 +299,14 @@
         GpioAsHwStrapsEn: "1",
         GpioAsyncOn: "1"
       },
-      ipgen_param: {
+      ipgen_params: {
         num_inp_period_counters: 8
       }
       attr: "ipgen"
     },
     { name: "spi_device",
       type: "spi_device",
-      clock_srcs: {clk_i: "io_div4", scan_clk_i: "io_div2"},
+      clock_srcs: {clk_i: "io", scan_clk_i: "io"},
       clock_group: "peri",
       reset_connections: {rst_ni: "spi_device"},
       base_addr: {
@@ -322,7 +318,7 @@
     },
     { name: "i2c0",
       type: "i2c",
-      clock_srcs: {clk_i: "io_div4"},
+      clock_srcs: {clk_i: "io"},
       clock_group: "peri",
       reset_connections: {rst_ni: "i2c0"},
       base_addr: {
@@ -331,9 +327,9 @@
     },
     { name: "rv_timer",
       type: "rv_timer",
-      clock_srcs: {clk_i: "io_div4"},
+      clock_srcs: {clk_i: "io"},
       clock_group: "timers",
-      reset_connections: {rst_ni: "lc_io_div4"},
+      reset_connections: {rst_ni: "lc_io"},
       base_addr: {
         hart: "0x30100000",
       },
@@ -341,20 +337,36 @@
     { name: "otp_ctrl",
       type: "otp_ctrl",
       template_type: "otp_ctrl",
-      clock_srcs: {clk_i: "io_div4", clk_edn_i: "main"},
+      clock_srcs: {clk_i: "io", clk_edn_i: "main"},
       clock_group: "secure",
-      reset_connections: {rst_ni: "lc_io_div4", rst_edn_ni: "lc"},
+      reset_connections: {rst_ni: "lc_io", rst_edn_ni: "lc"},
       base_addrs: {
         core: {hart: "0x30130000"},
-        prim: {hart: "0x30140000"},
       }
       attr: "ipgen",
     },
+    {
+      name: "otp_macro",
+      type: "otp_macro",
+      clock_srcs: {clk_i: "io"},
+      clock_group: "secure",
+      reset_connections: {rst_ni: "lc_io"},
+      base_addrs: {
+        prim: {hart: "0x30140000"},
+      },
+      param_decl: {
+        Width: "otp_ctrl_macro_pkg::OtpWidth",
+        Depth: "otp_ctrl_macro_pkg::OtpDepth",
+        SizeWidth: "otp_ctrl_macro_pkg::OtpSizeWidth",
+        VendorTestOffset: "otp_ctrl_reg_pkg::VendorTestOffset",
+        VendorTestSize: "otp_ctrl_reg_pkg::VendorTestSize",
+      },
+    },
     { name: "lc_ctrl",
       type: "lc_ctrl",
-      clock_srcs: {clk_i: "io_div4", clk_kmac_i: "main"},
+      clock_srcs: {clk_i: "io", clk_kmac_i: "main"},
       clock_group: "secure",
-      reset_connections: {rst_ni: "lc_io_div4", rst_kmac_ni: "lc"},
+      reset_connections: {rst_ni: "lc_io", rst_kmac_ni: "lc"},
       base_addrs: {
         regs: {hart: "0x30150000"},
         dmi:  {soc_dbg: "0x3000"},
@@ -380,9 +392,9 @@
     { name: "alert_handler",
       type: "alert_handler",
       template_type: "alert_handler",
-      clock_srcs: {clk_i: "io_div4", clk_edn_i: "main"},
+      clock_srcs: {clk_i: "io", clk_edn_i: "main"},
       clock_group: "secure",
-      reset_connections: {rst_ni: "lc_io_div4", rst_edn_ni: "lc"},
+      reset_connections: {rst_ni: "lc_io", rst_edn_ni: "lc"},
       base_addr: {
         hart: "0x30160000",
       },
@@ -394,7 +406,7 @@
     },
     { name: "spi_host0",
       type: "spi_host",
-      clock_srcs: {clk_i: "io_div4"},
+      clock_srcs: {clk_i: "io"},
       clock_group: "peri",
       reset_connections: {rst_ni: "spi_host0"},
       base_addr: {
@@ -404,23 +416,19 @@
     { name: "pwrmgr_aon",
       type: "pwrmgr",
       template_type: "pwrmgr",
-      // TODO: RS, fix after pwrmgr fix is merged
-      // param_decl: {
-      //   PwrFsmWaitForExtRst: "1"
-      // }
       clock_group: "powerup",
       clock_srcs: {
-        clk_i: "io_div4",
+        clk_i: "io",
         clk_slow_i: "aon",
-        clk_lc_i: "io_div4",
+        clk_lc_i: "io",
         clk_esc_i: {
-          clock: "io_div4",
+          clock: "io",
           group: "secure"
         }
       },
       reset_connections: {
         rst_ni: {
-          name: "por_io_div4",
+          name: "por_io",
           domain: "Aon"
         },
         rst_main_ni: {
@@ -428,11 +436,11 @@
           domain: "0"
         },
         rst_lc_ni: {
-          name: "lc_io_div4",
+          name: "lc_io",
           domain: "Aon"
         },
         rst_esc_ni: {
-          name: "lc_io_div4",
+          name: "lc_io",
           domain: "Aon"
         },
         rst_slow_ni: {
@@ -456,20 +464,19 @@
       template_type: "rstmgr",
       clock_srcs: {
         clk_i: {
-          clock: "io_div4",
+          clock: "io",
           group: "powerup"
         },
-        clk_por_i: "io_div4", clk_aon_i: "aon", clk_main_i: "main", clk_io_i: "io",
-        clk_io_div2_i: "io_div2", clk_io_div4_i: "io_div4"
+        clk_por_i: "io", clk_aon_i: "aon", clk_main_i: "main", clk_io_i: "io"
       },
       clock_group: "powerup",
       reset_connections: {
         rst_ni: {
-          name: "lc_io_div4",
+          name: "lc_io",
           domain: "Aon"
         },
         rst_por_ni: {
-          name: "por_io_div4",
+          name: "por_io",
           domain: "Aon"
         },
       }
@@ -483,7 +490,7 @@
       type: "clkmgr",
       template_type: "clkmgr",
       clock_srcs: {
-        clk_i: "io_div4",
+        clk_i: "io",
         clk_main_i: {
           group: "ast",
           clock: "main"
@@ -498,32 +505,30 @@
         }
       },
       clock_group: "powerup",
-      reset_connections: {rst_ni: "lc_io_div4",
+      reset_connections: {rst_ni: "lc_io",
                           rst_aon_ni: "lc_aon"
                           rst_io_ni: "lc_io",
-                          rst_io_div2_ni: "lc_io_div2",
-                          rst_io_div4_ni: "lc_io_div4",
                           rst_main_ni: "lc",
-                          rst_root_ni: "por_io_div4",
+                          rst_root_ni: "por_io",
                           rst_root_io_ni: "por_io",
-                          rst_root_io_div2_ni: "por_io_div2",
-                          rst_root_io_div4_ni: "por_io_div4",
                           rst_root_main_ni: "por",
                          },
       domain: ["Aon"],
       base_addr: {
         hart: "0x30420000",
       },
+      ipgen_params: {
+        ext_clk_bypass: false
+      },
       attr: "ipgen",
     },
     { name: "pinmux_aon",
       type: "pinmux",
       template_type: "pinmux",
-      clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon"},
+      clock_srcs: {clk_i: "io", clk_aon_i: "aon"},
       clock_group: "powerup",
-      reset_connections: {rst_ni: "lc_io_div4",
+      reset_connections: {rst_ni: "lc_io",
                           rst_aon_ni: "lc_aon",
-                          rst_sys_ni: "sys_io_div4"
                          },
       domain: ["Aon"],
       base_addr: {
@@ -533,9 +538,9 @@
     },
     { name: "aon_timer_aon",
       type: "aon_timer",
-      clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon"},
+      clock_srcs: {clk_i: "io", clk_aon_i: "aon"},
       clock_group: "timers",
-      reset_connections: {rst_ni: "lc_io_div4", rst_aon_ni: "lc_aon"},
+      reset_connections: {rst_ni: "lc_io", rst_aon_ni: "lc_aon"},
       domain: ["Aon"],
       base_addr: {
         hart: "0x30470000",
@@ -545,19 +550,11 @@
       type: "ast",
       clock_srcs: {
         clk_ast_tlul_i: {
-          clock: "io_div4",
+          clock: "io",
           group: "infra"
         },
-        clk_ast_adc_i: {
-          clock: "aon",
-          group: "peri"
-        },
         clk_ast_alert_i: {
-          clock: "io_div4",
-          group: "secure"
-        }
-        clk_ast_es_i: {
-          clock: "main",
+          clock: "io",
           group: "secure"
         }
         clk_ast_rng_i: {
@@ -568,19 +565,11 @@
       clock_group: "secure",
       reset_connections: {
         rst_ast_tlul_ni: {
-          name: "lc_io_div4",
+          name: "lc_io",
           domain: "0",
         }
-        rst_ast_adc_ni: {
-          name: "lc_aon",
-          domain: "Aon"
-        },
         rst_ast_alert_ni: {
-          name: "lc_io_div4",
-          domain: "0",
-        },
-        rst_ast_es_ni: {
-          name: "lc",
+          name: "lc_io",
           domain: "0",
         },
         rst_ast_rng_ni: {
@@ -604,7 +593,7 @@
           domain: "0",
         },
         rst_por_ni: {
-          name: "por_io_div4",
+          name: "por_io",
           domain: "Aon",
         },
       },
@@ -621,15 +610,15 @@
           data_intg_passthru: "true",
           exec: "True",
           byte_write: "True",
-          size: "0x40000000",
+          size: "0x80000000",
         }
       }
     },
     { name: "sram_ctrl_ret_aon",
       type: "sram_ctrl",
-      clock_srcs: {clk_i: "io_div4", clk_otp_i: "io_div4"},
+      clock_srcs: {clk_i: "io", clk_otp_i: "io"},
       clock_group: "infra",
-      reset_connections: {rst_ni: "lc_io_div4", rst_otp_ni: "lc_io_div4"}
+      reset_connections: {rst_ni: "lc_io", rst_otp_ni: "lc_io"}
       domain: ["Aon"],
       param_decl: {
         InstrExec: "0",
@@ -683,6 +672,7 @@
         hart: "0x28000000",
       },
       attr: "ipgen",
+      targets: ["rv_core_ibex"]
     },
     { name: "aes",
       type: "aes",
@@ -732,12 +722,12 @@
           group: "secure"
         },
         clk_otp_i: {
-          clock: "io_div4",
+          clock: "io",
           group: "secure"
         },
       },
       clock_group: "trans",
-      reset_connections: {rst_ni: "lc", rst_edn_ni: "lc", rst_otp_ni: "lc_io_div4"},
+      reset_connections: {rst_ni: "lc", rst_edn_ni: "lc", rst_otp_ni: "lc_io"},
       base_addr: {
         hart: "0x21130000",
       },
@@ -760,6 +750,23 @@
         hart: "0x21150000",
       },
     },
+    { name: "entropy_src",
+      type: "entropy_src",
+      clock_srcs: {clk_i: "main"},
+      clock_group: "secure",
+      reset_connections: {rst_ni: "lc"},
+      base_addr: {
+        hart: "0x21160000",
+      },
+      param_decl: {
+        RngBusWidth: "16",
+        RngBusBitSelWidth: "4",
+        HealthTestWindowWidth: "20",
+        // On Darjeeling, in worst case, there is a new 16-bit entropy word from the RNG every 3
+        // cycles. Based on the back pressure formula in the entropy_src, this yields a depth of 11.
+        DistrFifoDepth: "11",
+      },
+    },
     { name: "edn0",
       type: "edn",
       clock_srcs: {clk_i: "main"},
@@ -767,6 +774,9 @@
       reset_connections: {rst_ni: "lc"},
       base_addr: {
         hart: "0x21170000",
+      },
+      param_decl: {
+        NumEndPoints: "8",
       },
     },
     { name: "edn1",
@@ -777,12 +787,15 @@
       base_addr: {
         hart: "0x21180000",
       },
+      param_decl: {
+        NumEndPoints: "1",
+      },
     },
     { name: "sram_ctrl_main",
       type: "sram_ctrl",
-      clock_srcs: {clk_i: "main", clk_otp_i: "io_div4"},
+      clock_srcs: {clk_i: "main", clk_otp_i: "io"},
       clock_group: "infra",
-      reset_connections: {rst_ni: "lc", rst_otp_ni: "lc_io_div4"},
+      reset_connections: {rst_ni: "lc", rst_otp_ni: "lc_io"},
       // Note that while it might be useful to allow execution from SRAM for early testing, it can
       // later be permanently disabled using the EN_SRAM_IFETCH switch in OTP.
       param_decl: {
@@ -808,9 +821,9 @@
     },
     { name: "sram_ctrl_mbox",
       type: "sram_ctrl",
-      clock_srcs: {clk_i: "main", clk_otp_i: "io_div4"},
+      clock_srcs: {clk_i: "main", clk_otp_i: "io"},
       clock_group: "infra",
-      reset_connections: {rst_ni: "lc", rst_otp_ni: "lc_io_div4"},
+      reset_connections: {rst_ni: "lc", rst_otp_ni: "lc_io"},
       param_decl: {
         InstrExec: "0",
         InstSize: 4096
@@ -853,7 +866,8 @@
         }
       },
       param_decl: {
-        SecDisableScrambling: "1'b0"
+        SecDisableScrambling: "1'b0",
+        FlopToKmac: "1'b1"
       }
     },
     { name: "rom_ctrl1",
@@ -879,7 +893,8 @@
         }
       },
       param_decl: {
-        SecDisableScrambling: "1'b0"
+        SecDisableScrambling: "1'b0",
+        FlopToKmac: "1'b1"
       }
     },
     { name: "dma",
@@ -1021,9 +1036,9 @@
     },
     { name: "soc_dbg_ctrl",
       type: "soc_dbg_ctrl",
-      clock_srcs: {clk_i: "io_div4"},
+      clock_srcs: {clk_i: "io"},
       clock_group: "secure",
-      reset_connections: {rst_ni: "lc_io_div4"},
+      reset_connections: {rst_ni: "lc_io"},
       base_addrs: {
         core:  {hart: "0x30170000"},
         jtag:  {soc_dbg: "0x2300"},
@@ -1049,7 +1064,7 @@
       base_addr: {
         soc_mbx: "0x01464000"
       },
-      ipgen_param: {
+      ipgen_params: {
         num_ranges: 32
       }
       attr: "ipgen",
@@ -1059,8 +1074,8 @@
       type: "rv_core_ibex",
       template_type: "rv_core_ibex",
       attr: "ipgen",
-      ipgen_param: {
-        NumRegions: 32
+      ipgen_params: {
+        num_regions: 32
       }
       param_decl: {PMPEnable: "1",
                    PMPGranularity: "0",
@@ -1073,6 +1088,7 @@
                    RV32E: "0",
                    RV32M: "ibex_pkg::RV32MSingleCycle",
                    RV32B: "ibex_pkg::RV32BOTEarlGrey",
+                   RV32ZC: "ibex_pkg::RV32ZcaZcbZcmp",
                    RegFile: "ibex_pkg::RegFileFF",
                    BranchTargetALU: "1",
                    WritebackStage: "1",
@@ -1088,6 +1104,7 @@
                    DmHaltAddr: "tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::HaltAddress[31:0]",
                    DmExceptionAddr: "tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::ExceptionAddress[31:0]",
                    PipeLine: "1",
+                   InstructionPipeline: "1",
                    NEscalationSeverities: "AlertHandlerEscNumSeverities",
                    WidthPingCounter: "AlertHandlerEscPingCountWidth",
                   },
@@ -1095,27 +1112,24 @@
         clk_i: "main",
         clk_edn_i: "main",
         clk_esc_i: {
-          clock: "io_div4",
+          clock: "io",
           group: "secure",
         }
         clk_otp_i: {
-          clock: "io_div4",
+          clock: "io",
           group: "secure",
         }
       },
       clock_group: "infra",
       reset_connections: {rst_ni: "lc",
                           rst_edn_ni: "lc",
-                          rst_esc_ni: "lc_io_div4",
-                          rst_otp_ni: "lc_io_div4"},
+                          rst_esc_ni: "lc_io",
+                          rst_otp_ni: "lc_io"},
       base_addr: {
         hart: "0x211f0000",
       },
     },
   ]
-
-  // All memories wrapped up in relevant controllers
-  memory: [],
 
   // The port data structure is not something that should be used liberally.
   // It is used specifically to assign special attributes to specific ports.
@@ -1124,15 +1138,6 @@
   port: [
     { name: "ast",
       inter_signal_list: [
-        { struct: "edn",
-          type: "req_rsp",
-          name: "edn",
-          // The activity direction for a port inter-signal is "opposite" of
-          // what the external module actually needs.
-          act:  "rsp",
-          package: "edn_pkg",
-        },
-
         { struct: "lc_tx",
           type: "uni",
           name: "lc_dft_en",
@@ -1171,7 +1176,7 @@
   //  e.g flash_ctrl0.flash: [flash_phy0.flash_ctrl]
   inter_module: {
     'connect': {
-      'ast.obs_ctrl'            : ['otp_ctrl.obs_ctrl']
+      'ast.obs_ctrl'            : ['otp_macro.obs_ctrl']
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
       'alert_handler.esc_rx'    : ['rv_core_ibex.esc_rx',
                                    'lc_ctrl.esc_scrap_state0_rx',
@@ -1183,6 +1188,7 @@
                                    'pwrmgr_aon.esc_rst_tx'],
       'aon_timer_aon.nmi_wdog_timer_bark' : ['rv_core_ibex.nmi_wdog']
       'csrng.csrng_cmd'         : ['edn0.csrng_cmd', 'edn1.csrng_cmd'],
+      'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
       'otp_ctrl.sram_otp_key'   : ['sram_ctrl_main.sram_otp_key',
                                    'sram_ctrl_ret_aon.sram_otp_key',
                                    'sram_ctrl_mbox.sram_otp_key'
@@ -1217,7 +1223,7 @@
       'otbn.lc_rma_ack'          : ['lc_ctrl.lc_flash_rma_ack'],
 
       // Edn connections
-      'edn0.edn'              : ['keymgr_dpe.edn', 'otp_ctrl.edn', 'ast.edn', 'kmac.entropy',
+      'edn0.edn'              : ['keymgr_dpe.edn', 'otp_ctrl.edn', 'kmac.entropy',
                                  'alert_handler.edn', 'aes.edn', 'otbn.edn_urnd',
                                  'rv_core_ibex.edn'],
       'edn1.edn'              : ['otbn.edn_rnd'],
@@ -1247,7 +1253,8 @@
       // OTP LC interface
       'otp_ctrl.otp_lc_data'       : ['lc_ctrl.otp_lc_data'],
       'lc_ctrl.lc_otp_program'     : ['otp_ctrl.lc_otp_program'],
-      'lc_ctrl.lc_otp_vendor_test' : ['otp_ctrl.lc_otp_vendor_test'],
+      'lc_ctrl.lc_otp_vendor_test' : ['otp_macro.test'],
+//      'lc_ctrl.lc_otp_vendor_test' : ['otp_ctrl.lc_otp_vendor_test'],
 
       // Diversification constant coming from life cycle
       'lc_ctrl.lc_keymgr_div'  : ['keymgr_dpe.lc_keymgr_div'],
@@ -1257,19 +1264,22 @@
 
       // LC function control signal broadcast
       'lc_ctrl.lc_raw_test_rma'    : ['soc_dbg_ctrl.lc_raw_test_rma']
-      'lc_ctrl.lc_dft_en'          : ['otp_ctrl.lc_dft_en',
+      'lc_ctrl.lc_dft_en'          : ['otp_macro.lc_dft_en',
                                       'ast.lc_dft_en',
                                       'pwrmgr_aon.lc_dft_en',
-                                      'soc_dbg_ctrl.lc_dft_en'
+                                      'soc_dbg_ctrl.lc_dft_en',
+                                      'rv_dm.lc_dft_en'
                                      ],
+      'lc_ctrl.lc_hw_debug_clr'    : ['rv_dm.lc_hw_debug_clr'],
+      'lc_ctrl.lc_init_done'       : ['rv_dm.lc_init_done'],
       'lc_ctrl.lc_hw_debug_en'     : ['sram_ctrl_main.lc_hw_debug_en',
                                       'ast.lc_hw_debug_en',
                                       'csrng.lc_hw_debug_en',
                                       'rv_dm.lc_hw_debug_en',
-                                      'clkmgr_aon.lc_hw_debug_en',
                                       'pwrmgr_aon.lc_hw_debug_en',
                                       'soc_dbg_ctrl.lc_hw_debug_en'],
-      'lc_ctrl.lc_cpu_en'          : ['rv_core_ibex.lc_cpu_en'],
+      'lc_ctrl.lc_cpu_en'          : ['rv_core_ibex.lc_cpu_en',
+                                      'soc_dbg_ctrl.lc_cpu_en'],
       'lc_ctrl.lc_keymgr_en'       : ['keymgr_dpe.lc_keymgr_en'],
       'lc_ctrl.lc_escalate_en'     : ['aes.lc_escalate_en',
                                       'kmac.lc_escalate_en',
@@ -1283,13 +1293,19 @@
 
       'lc_ctrl.lc_check_byp_en'    : ['otp_ctrl.lc_check_byp_en',
                                       'rv_dm.lc_check_byp_en'],
-      'lc_ctrl.lc_clk_byp_req'     : ['clkmgr_aon.lc_clk_byp_req'],
-      'lc_ctrl.lc_clk_byp_ack'     : ['clkmgr_aon.lc_clk_byp_ack'],
+
+      // Darjeeling does not have bypassable clocks. Therefore always ack are req
+      'lc_ctrl.lc_clk_byp_ack'     : ['lc_ctrl.lc_clk_byp_req'],
 
       // LC access control signal broadcast
       'lc_ctrl.lc_creator_seed_sw_rw_en'   : ['otp_ctrl.lc_creator_seed_sw_rw_en'],
       'lc_ctrl.lc_owner_seed_sw_rw_en'     : ['otp_ctrl.lc_owner_seed_sw_rw_en'],
       'lc_ctrl.lc_seed_hw_rd_en'           : ['otp_ctrl.lc_seed_hw_rd_en'],
+      'lc_ctrl.lc_rma_state'               : ['otp_ctrl.lc_rma_state',
+                                              'soc_dbg_ctrl.lc_rma_state'],
+
+      // OTP PRIM_OTP connections
+      'otp_ctrl.otp_macro'         : ['otp_macro.otp'],
 
       // rv_plic connections
       'rv_plic.msip' : ['rv_core_ibex.irq_software'],
@@ -1350,6 +1366,7 @@
         // TODO(#6713): The actual struct breakout and mapping currently needs to
         // be performed by hand in the toplevel template.
         'otp_ctrl.otp_broadcast',
+        'csrng.otp_en_csrng_sw_app_read',
         'soc_dbg_ctrl.soc_dbg_state',
         'lc_ctrl.otp_device_id',
         'lc_ctrl.otp_manuf_state',
@@ -1361,7 +1378,6 @@
 
     // ext is to create port in the top.
     'external': {
-        'ast.edn'                              : '',
         'ast.lc_dft_en'                        : '',
         'ast.lc_hw_debug_en'                   : '',
         'ast.obs_ctrl'                         : 'obs_ctrl',
@@ -1388,16 +1404,13 @@
         'spi_device.ram_cfg_rsp_spi2sys'       : 'spi_device_ram_2p_cfg_rsp_spi2sys',
         'spi_device.ram_cfg_spi2sys'           : 'spi_device_ram_2p_cfg_spi2sys',
         'pwrmgr_aon.boot_status'               : 'pwrmgr_boot_status',
+        'pwrmgr_aon.ext_rst_ack'               : 'pwrmgr_ext_rst_ack',
         'clkmgr_aon.jitter_en'                 : 'clk_main_jitter_en',
-        'clkmgr_aon.io_clk_byp_req'            : 'io_clk_byp_req',
-        'clkmgr_aon.io_clk_byp_ack'            : 'io_clk_byp_ack',
-        'clkmgr_aon.all_clk_byp_req'           : 'all_clk_byp_req',
-        'clkmgr_aon.all_clk_byp_ack'           : 'all_clk_byp_ack',
-        'clkmgr_aon.hi_speed_sel'              : 'hi_speed_sel',
-        'clkmgr_aon.div_step_down_req'         : 'div_step_down_req',
-        'clkmgr_aon.calib_rdy'                 : 'calib_rdy',
-        'csrng.entropy_src_hw_if'              : 'entropy_src_hw_if',
         'dma.sys'                              : 'dma_sys',
+        'entropy_src.entropy_src_rng_enable'   : 'es_rng_enable',
+        'entropy_src.entropy_src_rng_valid'    : 'es_rng_valid',
+        'entropy_src.entropy_src_rng_bits'     : 'es_rng_bit',
+        'entropy_src.rng_fips'                 : 'es_rng_fips',
         'mbx.tl_mbx'                           : 'mbx_tl',
         'mbx0.doe_intr'                        : 'mbx0_doe_intr',
         'mbx0.doe_intr_en'                     : 'mbx0_doe_intr_en',
@@ -1443,21 +1456,18 @@
         'rv_dm.next_dm_addr'                   : 'rv_dm_next_dm_addr',
         'peri.tl_ast'                          : 'ast_tl',
         'pwrmgr_aon.pwr_ast'                   : 'pwrmgr_ast',
-        'otp_ctrl.otp_ast_pwr_seq'             : '',
-        'otp_ctrl.otp_ast_pwr_seq_h'           : '',
-        'otp_ctrl.otp_ext_voltage_h'           : 'otp_ext_voltage_h',
-        'otp_ctrl.otp_obs'                     : 'otp_obs',
-        'otp_ctrl.cfg'                         : 'otp_cfg',
-        'otp_ctrl.cfg_rsp'                     : 'otp_cfg_rsp',
+        'otp_macro.pwr_seq'                    : '',
+        'otp_macro.pwr_seq_h'                  : '',
+        'otp_macro.ext_voltage_h'              : 'otp_ext_voltage_h',
+        'otp_macro.otp_obs'                    : 'otp_obs',
+        'otp_macro.cfg'                        : 'otp_cfg',
+        'otp_macro.cfg_rsp'                    : 'otp_cfg_rsp',
         'rstmgr_aon.por_n'                     : 'por_n'
         'rv_core_ibex.fpga_info'               : 'fpga_info'
         'soc_proxy.misc_tl_h2d'                : 'ctn_misc_tl_h2d',
         'soc_proxy.misc_tl_d2h'                : 'ctn_misc_tl_d2h',
-        'soc_proxy.soc_fatal_alert'            : 'soc_fatal_alert',
-        'soc_proxy.soc_recov_alert'            : 'soc_recov_alert',
         'soc_proxy.soc_wkup_async'             : 'soc_wkup_async',
         'soc_proxy.soc_rst_req_async'          : 'soc_rst_req_async',
-        'soc_proxy.soc_intr_async'             : 'soc_intr_async',
         'soc_proxy.soc_lsio_trigger'           : 'soc_lsio_trigger',
         'soc_proxy.soc_gpi_async'              : 'soc_gpi_async',
         'soc_proxy.soc_gpo_async'              : 'soc_gpo_async',
@@ -1479,17 +1489,17 @@
   xbar: [
     { name: "main",
       clock_srcs: {clk_main_i: "main",
-                   clk_fixed_i: "io_div4"},
+                   clk_fixed_i: "io"},
       clock_group: "infra",
       reset: "lc",
       reset_connections: {rst_main_ni: "lc",
-                          rst_fixed_ni: "lc_io_div4"}
+                          rst_fixed_ni: "lc_io"}
     },
     { name: "peri",
-      clock_srcs: {clk_peri_i: "io_div4", },
+      clock_srcs: {clk_peri_i: "io", },
       clock_group: "infra",
-      reset: "lc_io_div4",
-      reset_connections: {rst_peri_ni: "lc_io_div4"},
+      reset: "lc_io",
+      reset_connections: {rst_peri_ni: "lc_io"},
     },
     { name: "mbx",
       clock_srcs: {clk_mbx_i: "main"},
@@ -1498,10 +1508,10 @@
       reset_connections: {rst_mbx_ni: "lc"},
     },
     { name: "dbg",
-      clock_srcs: {clk_dbg_i: "main", clk_peri_i: "io_div4"},
+      clock_srcs: {clk_dbg_i: "main", clk_peri_i: "io"},
       clock_group: "infra",
       reset: "lc",
-      reset_connections: {rst_dbg_ni: "lc", rst_peri_ni: "lc_io_div4"},
+      reset_connections: {rst_dbg_ni: "lc", rst_peri_ni: "lc_io"},
     },
   ],
 
@@ -1760,7 +1770,7 @@
       { instance: "soc_proxy",       port: 'soc_gpo[14]',    connection: 'muxed' , pad: ''                 , desc: ''},
       { instance: "soc_proxy",       port: 'soc_gpo[15]',    connection: 'muxed' , pad: ''                 , desc: ''},
       // Other MIOs
-      { instance: "otp_ctrl",        port: 'test[0]',        connection: 'muxed' , pad: ''                 , desc: ''},
+      { instance: "otp_macro",        port: 'test[0]',        connection: 'muxed' , pad: ''                 , desc: ''},
     ],
 
     num_wkup_detect: 8
@@ -1810,7 +1820,7 @@
 
       pinmux: {
         // Special signal positions. Each entry in the list below creates a
-        // target-specific pad position parameter in the  chiplevel hierarchy
+        // target-specific pad position parameter in the chiplevel hierarchy
         // that can be used to parameterize certain IPs like the pinmux or
         // padring. This is mainly used to define the pad positions of special
         // test and DFT signals such as the JTAG signals and the TAP and DFT
@@ -1827,54 +1837,8 @@
         //        parameter will be assigned the corresponding pad index.
         //
         // Each entry may have an optional 'desc' key for further description.
-        special_signals: [
-          // Straps
-          { name: 'tap0',   pad: 'MIO0', desc: 'TAP strap signal.'  },
-          { name: 'tap1',   pad: 'MIO1', desc: 'TAP strap signal.'  },
-          { name: 'dft0',   pad: 'MIO2', desc: 'DFT strap signal.'  },
-          { name: 'dft1',   pad: 'MIO3', desc: 'DFT strap signal.'  },
-          // JTAG
-          { name: 'tck',    pad: 'MIO4', desc: 'JTAG tck signal.'    },
-          { name: 'tms',    pad: 'MIO5', desc: 'JTAG tms signal.'    },
-          { name: 'trst_n', pad: 'MIO6', desc: 'JTAG trst_n signal.' },
-          { name: 'tdi',    pad: 'MIO7', desc: 'JTAG tdi signal.'    },
-          { name: 'tdo',    pad: 'MIO8', desc: 'JTAG tdo signal.'    },
-        ],
+        special_signals: [],
       }
     },
-    { name: 'cw310',
-
-      pinout: {
-        remove_ports: [],
-        remove_pads: [
-          'OTP_EXT_VOLT'
-        ],
-
-        add_pads: [
-          // Additional infrastructure pads
-          { name: 'IO_CLK',           type: 'InputStd', bank: 'VIO', connection: 'manual', desc: 'Extra clock input for FPGA target'}
-          { name: 'POR_BUTTON_N',     type: 'InputStd', bank: 'VIO', connection: 'manual', desc: 'Power-on reset button input'}
-          // ChipWhisperer IO
-          { name: 'IO_CLKOUT',        type: 'BidirStd', bank: 'VIO', connection: 'manual', desc: 'Manual clock output for SCA setup'}
-          { name: 'IO_TRIGGER',       type: 'BidirStd', bank: 'VIO', connection: 'manual', desc: 'Manual trigger output for SCA setup'}
-        ],
-      },
-
-      pinmux: {
-        special_signals: [
-          // Straps
-          { name: 'tap0',   pad: 'MIO0', desc: 'TAP strap signal.'   },
-          { name: 'tap1',   pad: 'MIO1', desc: 'TAP strap signal.'   },
-          { name: 'dft0',   pad: 'MIO2', desc: 'DFT strap signal.'   },
-          { name: 'dft1',   pad: 'MIO3', desc: 'DFT strap signal.'   },
-          // JTAG
-          { name: 'tck',    pad: 'MIO4', desc: 'JTAG tck signal.'    },
-          { name: 'tms',    pad: 'MIO5', desc: 'JTAG tms signal.'    },
-          { name: 'trst_n', pad: 'MIO6', desc: 'JTAG trst_n signal.' },
-          { name: 'tdi',    pad: 'MIO7', desc: 'JTAG tdi signal.'    },
-          { name: 'tdo',    pad: 'MIO8', desc: 'JTAG tdo signal.'    },
-        ],
-      }
-    }
   ]
 }

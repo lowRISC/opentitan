@@ -28,20 +28,33 @@ class spi_host_status_stall_vseq extends spi_host_tx_rx_vseq;
     spi_host_command_t command_snd;
     bit [7:0] read_q[$];
 
-    // Generate read transactions without accesing RXFIFO until we get an rxstall
+    // Generate read transactions without accessing RXFIFO until we get an rxstall
     begin : isolation_fork
       // Start the agent sequences to provide (random) response data to our reads.
       fork start_agent_reactive_seqs(); join_none
       begin
         program_spi_host_regs();
         while (rxqd < SPI_HOST_RX_DEPTH) begin
-          wait_ready_for_command();
           generate_stall_transaction();
           rd_trans(transaction);
           if (rxqd == SPI_HOST_RX_DEPTH) break;
           else begin
+            int unsigned  current_rxqd;
             // If we have not yet filled the RXFIFO, confirm that the DUT does
             // not indicate rxfull or rxstall.
+
+            // if we're mid-spi transaction and the QUEUE is FULL minus 1 then we need to
+            // check if it fills up
+            csr_rd(.ptr(ral.status.rxqd), .value(current_rxqd), .backdoor(1));
+            if ((rxqd + 1) == SPI_HOST_RX_DEPTH &&
+                cfg.m_spi_agent_cfg.vif.csb[0] === 0 // active spi txn
+                ) begin
+              cfg.m_spi_agent_cfg.vif.wait_for_clks(1);
+              csr_rd(.ptr(ral.status.rxqd), .value(current_rxqd), .backdoor(1));
+              if (rxqd == SPI_HOST_RX_DEPTH)
+                break; // break because Q is full!
+            end
+
             check_event(ral.status.rxfull, 0, 0);
             csr_rd_check(.ptr(ral.status.rxstall), .compare_value(1'b0));
           end
@@ -89,7 +102,8 @@ class spi_host_status_stall_vseq extends spi_host_tx_rx_vseq;
     begin : clear_rxfifo
       spi_host_status_t status;
       csr_rd(.ptr(ral.status), .value(status));
-      if (status.rx_qd != 0) read_rx_fifo();
+      if (status.rx_qd != 0)
+        read_rx_fifo();
     end
     cfg.clk_rst_vif.wait_clks(1000);
 
@@ -99,9 +113,61 @@ class spi_host_status_stall_vseq extends spi_host_tx_rx_vseq;
   // segments, or the RXQD indicates we are full.
   virtual task rd_trans(spi_transaction_item trans, bit wait_ready = 1'b1);
     spi_segment_item segment;
-    while ((trans.segments.size() > 0)  && (!(rxqd == SPI_HOST_RX_DEPTH))) begin
-      if (wait_ready) wait_ready_for_command();
 
+    while ((trans.segments.size() > 0)  && (!(rxqd == SPI_HOST_RX_DEPTH))) begin
+      if (wait_ready) begin
+        bit rxfifo_full;
+        bit ready;
+        spi_host_status_t status;
+        csr_rd(.ptr(ral.status), .value(status), .backdoor(1));
+
+        fork
+          begin: iso_fork
+            fork
+              begin
+                while (!ready) begin
+                  csr_rd(.ptr(ral.status), .value(status), .backdoor(0));
+                  if (status.rxfull || status.rxstall)
+                    read_rx_fifo();
+
+                  if (status.ready)
+                    ready = 1;
+                end
+              end
+              begin
+                spi_host_status_t status;
+                string fail_printout = {"Waiting for READY to be high",
+                                        $sformatf(" (ready=0x%0x), and RXFIFO not stalled", ready)};
+
+                fork
+                  begin : timeout_blk
+                    # (cfg.csr_spinwait_timeout_ns);
+                      `uvm_fatal(`gfn, {$sformatf("%m - timeout = %0d",
+                                                  cfg.csr_spinwait_timeout_ns),
+                                        fail_printout})
+                  end
+                  begin
+                    while(status.ready==0) begin
+                      // We don't want to fail test if ready becomes available prior to the timeout
+                      cfg.clk_rst_vif.wait_clks(1);
+                      // Can't use csr_spinwait since it uses iso_fork which prevents that part
+                      // of the thread from being killed
+                      csr_rd(.ptr(ral.status), .value(status), .backdoor(1));
+                    end
+                  end
+                join_any
+                disable timeout_blk;
+                // Blocking for 'ready' to be set (handled in other parallel thread)
+                // since otherwise we may kill the above thread when it's running
+                wait(ready);
+
+              end
+            join_any
+            disable fork;
+          end // block: iso_fork
+        join
+
+      end
       // Lock fifo to this task, write any data to TXFIFO if required, write COMMAND csr starts txn.
       spi_host_atomic.get(1); begin : locked_fifo_access
         segment = trans.segments.pop_back();

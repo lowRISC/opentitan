@@ -6,11 +6,13 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "hw/top/dt/keymgr.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/otbn_testutils.h"
 #include "sw/device/lib/testing/ret_sram_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/sram_ctrl_testutils.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 
@@ -31,7 +33,7 @@ enum {
   // The retention SRAM testutils allocate some internal data as well as a
   // number of counters; both of which should not be overwritten by this
   // test. Hence, the actual base address is offset to account for this.
-  kRetSramBaseAddr = TOP_EARLGREY_RAM_RET_AON_BASE_ADDR +
+  kRetSramBaseAddr = TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR +
                      offsetof(retention_sram_t, owner) +
                      4 * kRetSramTestutilsNumberOfCounters,
 
@@ -198,7 +200,11 @@ static void derive_sw_key(const char *state_name, dif_keymgr_output_t *key) {
   // If the key version is larger than the permitted maximum version, then
   // the key generation must fail.
   params.version += 1;
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_start(
+      dt_keymgr_alert_to_alert_id(kDtKeymgr, kDtKeymgrAlertRecovOperationErr)));
   CHECK_STATUS_NOT_OK(keymgr_testutils_generate_versioned_key(&keymgr, params));
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_finish(
+      dt_keymgr_alert_to_alert_id(kDtKeymgr, kDtKeymgrAlertRecovOperationErr)));
 #endif
 }
 
@@ -244,7 +250,11 @@ static void derive_sideload_otbn_key(const char *state_name,
   // If the key version is larger than the permitted maximum version, then
   // the key generation must fail.
   params.version += 1;
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_start(
+      dt_keymgr_alert_to_alert_id(kDtKeymgr, kDtKeymgrAlertRecovOperationErr)));
   CHECK_STATUS_NOT_OK(keymgr_testutils_generate_versioned_key(&keymgr, params));
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_finish(
+      dt_keymgr_alert_to_alert_id(kDtKeymgr, kDtKeymgrAlertRecovOperationErr)));
 #endif
 }
 

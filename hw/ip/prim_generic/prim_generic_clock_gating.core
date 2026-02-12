@@ -5,10 +5,13 @@ CAPI=2:
 
 name: "lowrisc:prim_generic:clock_gating"
 description: "prim"
+virtual:
+  - lowrisc:prim:clock_gating
+
 filesets:
   files_rtl:
     files:
-      - rtl/prim_generic_clock_gating.sv
+      - rtl/prim_clock_gating.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:

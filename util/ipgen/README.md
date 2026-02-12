@@ -18,7 +18,7 @@ An IP template directory has a well-defined structure:
 
 * The IP template name (`<templatename>`) equals the directory name.
 * The directory contains a template description file `data/<templatename>.tpldesc.hjson` containing descriptions of the configurable parameters.
-  The "default" field of these descriptions are expected to be overriden via the actual configuration parameters.
+  The "default" field of these descriptions are expected to be overridden via the actual configuration parameters.
 * The directory also contains some files ending in `.tpl`.
   These files are Mako templates and are rendered into a file in the same relative location without the `.tpl` file extension.
 

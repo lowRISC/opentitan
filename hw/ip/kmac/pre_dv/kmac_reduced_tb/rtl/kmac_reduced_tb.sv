@@ -62,7 +62,7 @@ module kmac_reduced_tb #(
 
     // SHA3 control and status
     .start_i(sha3_start),      // 1 pulse after reseeding PRNG and injecting
-                               // messsage
+                               // message
     .process_i(sha3_process),  // 1 pulse after loading message into SHA3
     .run_i(1'b0),              // drive to 0
     .done_i(done),             // drive to MuBi4True after

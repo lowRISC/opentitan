@@ -64,7 +64,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   // and policy config associate with it.
   // 8 : default region
 
-  // Vseq to do some initial post-reset actions. Can be overriden by extending envs.
+  // Vseq to do some initial post-reset actions. Can be overridden by extending envs.
   flash_ctrl_callback_vseq callback_vseq;
 
   function void add_address_range(input int bank, input flash_dv_part_e part,
@@ -123,7 +123,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
      return 1'b0;
   endfunction
 
-  // This searches for any overap between the addresses in the given range and the address ranges
+  // This searches for any overlap between the addresses in the given range and the address ranges
   // for the given bank and partition. Notice if the binary search fails we still need to examine
   // the range last examined by the binary search, denoted by the index returned. A miss is the
   // most common outcome of this lookup so having this index is good for performance.
@@ -305,7 +305,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     end
 
     if (cfg.seq_cfg.disable_flash_init == 0) begin
-      reset_flash();  // Randomly Inititalise Flash After Reset
+      reset_flash();  // Randomly Initialise Flash After Reset
     end
 
     if (cfg.seq_cfg.en_init_keys_seeds == 1) begin
@@ -331,26 +331,26 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     update_mp_region_cfg_mubifalse(region_cfg);
     data = get_csr_val_with_updated_field(ral.mp_region_cfg[index].en, data,
                                           region_cfg.en);
-    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg[index].rd_en, data,
-                                                 region_cfg.read_en);
-    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg[index].prog_en, data,
-                                                 region_cfg.program_en);
-    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg[index].erase_en, data,
-                                                 region_cfg.erase_en);
-    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg[index].scramble_en,
-                                                 data, region_cfg.scramble_en);
-    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg[index].ecc_en, data,
-                                                 region_cfg.ecc_en);
-    data = data | get_csr_val_with_updated_field(ral.mp_region_cfg[index].he_en, data,
-                                                 region_cfg.he_en);
+    data = get_csr_val_with_updated_field(ral.mp_region_cfg[index].rd_en, data,
+                                          region_cfg.read_en);
+    data = get_csr_val_with_updated_field(ral.mp_region_cfg[index].prog_en, data,
+                                          region_cfg.program_en);
+    data = get_csr_val_with_updated_field(ral.mp_region_cfg[index].erase_en, data,
+                                          region_cfg.erase_en);
+    data = get_csr_val_with_updated_field(ral.mp_region_cfg[index].scramble_en,
+                                          data, region_cfg.scramble_en);
+    data = get_csr_val_with_updated_field(ral.mp_region_cfg[index].ecc_en, data,
+                                          region_cfg.ecc_en);
+    data = get_csr_val_with_updated_field(ral.mp_region_cfg[index].he_en, data,
+                                          region_cfg.he_en);
     csr_wr(.ptr(ral.mp_region_cfg[index]), .value(data));
 
     // reset for base/size register
     data = 0;
     data = get_csr_val_with_updated_field(ral.mp_region[index].base, data,
                                           region_cfg.start_page);
-    data = data | get_csr_val_with_updated_field(ral.mp_region[index].size, data,
-                                                 region_cfg.num_pages);
+    data = get_csr_val_with_updated_field(ral.mp_region[index].size, data,
+                                          region_cfg.num_pages);
     csr_wr(.ptr(ral.mp_region[index]), .value(data));
   endtask : flash_ctrl_mp_region_cfg
 
@@ -372,14 +372,11 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     cfg.default_region_cfg.he_en = he_en;
 
     data = get_csr_val_with_updated_field(ral.default_region.rd_en, data, read_en);
-    data = data |
-        get_csr_val_with_updated_field(ral.default_region.prog_en, data, program_en);
-    data = data |
-        get_csr_val_with_updated_field(ral.default_region.erase_en, data, erase_en);
-    data = data |
-        get_csr_val_with_updated_field(ral.default_region.scramble_en, data, scramble_en);
-    data = data | get_csr_val_with_updated_field(ral.default_region.ecc_en, data, ecc_en);
-    data = data | get_csr_val_with_updated_field(ral.default_region.he_en, data, he_en);
+    data = get_csr_val_with_updated_field(ral.default_region.prog_en, data, program_en);
+    data = get_csr_val_with_updated_field(ral.default_region.erase_en, data, erase_en);
+    data = get_csr_val_with_updated_field(ral.default_region.scramble_en, data, scramble_en);
+    data = get_csr_val_with_updated_field(ral.default_region.ecc_en, data, ecc_en);
+    data = get_csr_val_with_updated_field(ral.default_region.he_en, data, he_en);
     csr_wr(.ptr(ral.default_region), .value(data));
   endtask : flash_ctrl_default_region_cfg
 
@@ -401,19 +398,20 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     `uvm_info("mp_info_page_cfg", $sformatf("%s: %p", csr_name, page_cfg), UVM_DEBUG)
     csr = ral.get_reg_by_name(csr_name);
     update_mp_info_cfg_mubifalse(page_cfg);
-    data = get_csr_val_with_updated_field(csr.get_field_by_name("en"), data, page_cfg.en);
-    data = data |
-        get_csr_val_with_updated_field(csr.get_field_by_name("rd_en"), data, page_cfg.read_en);
-    data = data |
-        get_csr_val_with_updated_field(csr.get_field_by_name("prog_en"), data, page_cfg.program_en);
-    data = data |
-        get_csr_val_with_updated_field(csr.get_field_by_name("erase_en"), data, page_cfg.erase_en);
-    data = data | get_csr_val_with_updated_field(csr.get_field_by_name("scramble_en"), data,
-                                                 page_cfg.scramble_en);
-    data = data |
-        get_csr_val_with_updated_field(csr.get_field_by_name("ecc_en"), data, page_cfg.ecc_en);
-    data = data |
-        get_csr_val_with_updated_field(csr.get_field_by_name("he_en"), data, page_cfg.he_en);
+    data = get_csr_val_with_updated_field(csr.get_field_by_name("en"),
+                                          data, page_cfg.en);
+    data = get_csr_val_with_updated_field(csr.get_field_by_name("rd_en"),
+                                          data, page_cfg.read_en);
+    data = get_csr_val_with_updated_field(csr.get_field_by_name("prog_en"),
+                                          data, page_cfg.program_en);
+    data = get_csr_val_with_updated_field(csr.get_field_by_name("erase_en"),
+                                          data, page_cfg.erase_en);
+    data = get_csr_val_with_updated_field(csr.get_field_by_name("scramble_en"),
+                                          data, page_cfg.scramble_en);
+    data = get_csr_val_with_updated_field(csr.get_field_by_name("ecc_en"),
+                                          data, page_cfg.ecc_en);
+    data = get_csr_val_with_updated_field(csr.get_field_by_name("he_en"),
+                                          data, page_cfg.he_en);
     csr_wr(.ptr(csr), .value(data));
   endtask : flash_ctrl_mp_info_page_cfg
 
@@ -510,12 +508,12 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     partition_sel = flash_part_e'(|flash_op.partition);
     info_sel = flash_op.partition >> 1;
     data = get_csr_val_with_updated_field(ral.control.start, data, 1'b1);
-    data = data | get_csr_val_with_updated_field(ral.control.op, data, flash_op.op);
-    data = data | get_csr_val_with_updated_field(ral.control.prog_sel, data, flash_op.prog_sel);
-    data = data | get_csr_val_with_updated_field(ral.control.erase_sel, data, flash_op.erase_type);
-    data = data | get_csr_val_with_updated_field(ral.control.partition_sel, data, partition_sel);
-    data = data | get_csr_val_with_updated_field(ral.control.info_sel, data, info_sel);
-    data = data | get_csr_val_with_updated_field(ral.control.num, data, flash_op.num_words - 1);
+    data = get_csr_val_with_updated_field(ral.control.op, data, flash_op.op);
+    data = get_csr_val_with_updated_field(ral.control.prog_sel, data, flash_op.prog_sel);
+    data = get_csr_val_with_updated_field(ral.control.erase_sel, data, flash_op.erase_type);
+    data = get_csr_val_with_updated_field(ral.control.partition_sel, data, partition_sel);
+    data = get_csr_val_with_updated_field(ral.control.info_sel, data, info_sel);
+    data = get_csr_val_with_updated_field(ral.control.num, data, flash_op.num_words - 1);
     csr_wr(.ptr(ral.control), .value(data));
   endtask : flash_ctrl_start_op
 
@@ -667,9 +665,9 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
     tl_access_w_abort(.addr(addr), .write(1'b0), .completed(completed), .saw_err(saw_err),
                       .tl_access_timeout_ns(cfg.seq_cfg.erase_timeout_ns), .mask(mask),
-                      .data(rdata), .exp_err_rsp(exp_err_rsp), .exp_data(exp_rdata),
-                      .compare_mask(mask), .check_exp_data(check_rdata), .blocking(blocking),
-                      .instr_type(instr_type),
+                      .data(rdata), .exp_err_rsp(exp_err_rsp),
+                      .check_exp_data(check_rdata), .exp_data(exp_rdata),
+                      .compare_mask(mask), .blocking(blocking), .instr_type(instr_type),
                       .tl_sequencer_h(p_sequencer.tl_sequencer_hs[cfg.flash_ral_name]));
   endtask : do_direct_read
 
@@ -710,7 +708,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       default: `uvm_error(`gfn, "Secret Partition Unrecognised, FAIL")
     endcase
 
-    // Perform Flash Opeation via Host Interface
+    // Perform Flash Operation via Host Interface
     unique case (flash_op.op)
       flash_ctrl_top_specific_pkg::FlashOpErase: begin
         flash_ctrl_start_op(flash_op);
@@ -1169,7 +1167,6 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
     if (cfg.seq_cfg.check_mem_post_tran) begin
       flash_op_copy.otf_addr = flash_op_copy.addr;
-      flash_op_copy.otf_addr[BusAddrByteW-2:OTFHostId] = 'h0;
       cfg.flash_mem_bkdr_read_check(flash_op_copy, exp_data, check_match, scr_en, ecc_en);
     end
   endtask : flash_ctrl_write_extra
@@ -1539,7 +1536,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
                         str, cfg.scb_h.exp_alert_ff[str].size()), UVM_MEDIUM)
   endfunction // set_otf_exp_alert
 
-  // This function checks wheter input 'sig' is lc_ctrl_pkg::On or lc_ctrl_pkg::Off
+  // This function checks whether input 'sig' is lc_ctrl_pkg::On or lc_ctrl_pkg::Off
   function bit is_lc_ctrl_valid(lc_ctrl_pkg::lc_tx_t sig, bit is_true_valid = 1);
 
     return ((sig == lc_ctrl_pkg::On && is_true_valid == 1) ||
@@ -1553,7 +1550,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     cfg.flash_ctrl_vif.lc_iso_part_sw_wr_en     = lc_ctrl_pkg::On;
   endfunction // all_sw_rw_en
 
-  // Collect cover poiint by reading csr
+  // Collect cover point by reading csr
   // ral.std_fault_status
   // ral.fault_status
   // ral.err_code

@@ -18,7 +18,7 @@ module tlul_jtag_dtm #(
   input                                              rst_ni,
   input  jtag_pkg::jtag_req_t                        jtag_i,
   output jtag_pkg::jtag_rsp_t                        jtag_o,
-  // This bypasses the clock inverter inside the JTAG TAP for scanmmode.
+  // This bypasses the clock inverter inside the JTAG TAP for scanmode.
   input                                              scan_rst_ni,
   input  prim_mubi_pkg::mubi4_t                      scanmode_i,
   // TL-UL-based DMI

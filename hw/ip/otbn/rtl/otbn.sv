@@ -13,9 +13,11 @@ module otbn
   import otbn_pkg::*;
   import otbn_reg_pkg::*;
 #(
-  parameter bit                   Stub         = 1'b0,
-  parameter regfile_e             RegFile      = RegFileFF,
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  parameter bit                   Stub            = 1'b0,
+  parameter regfile_e             RegFile         = RegFileFF,
+  parameter logic [NumAlerts-1:0] AlertAsyncOn    = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned          AlertSkewCycles = 1,
 
   // Default seed for URND PRNG
   parameter urnd_prng_seed_t RndCnstUrndPrngSeed = RndCnstUrndPrngSeedDefault,
@@ -466,8 +468,8 @@ module otbn
   // through. Data bits are always left un-modified. A registered version of `locking` is used for
   // timing reasons. When a read comes in when `locking` has just been asserted, `locking_q` will be
   // set the following cycle and the rdata will be forced to 0 with appropriate ECC. When `locking`
-  // is asserted the cycle the rdata is being returned no locking was ocurring when the request came
-  // in so it is reasonable to proceed with returning the supplied integrity.
+  // is asserted the cycle the rdata is being returned no locking was occurring when the request
+  // came in so it is reasonable to proceed with returning the supplied integrity.
   assign imem_rdata_bus =
     {locking_q ? prim_secded_pkg::SecdedInv3932ZeroEcc : imem_rdata_bus_raw[38:32],
      imem_rdata_bus_raw[31:0]};
@@ -710,8 +712,8 @@ module otbn
   // timing reasons. When a read comes in when `locking` has just been asserted, `locking_q` will be
   // timing reasons. When a read comes in when `locking` has just been asserted, `locking_q` will be
   // set the following cycle and the rdata will be forced to 0 with appropriate ECC. When `locking`
-  // is asserted the cycle the rdata is being returned no locking was ocurring when the request came
-  // in so it is reasonable to proceed with returning the supplied integrity.
+  // is asserted the cycle the rdata is being returned no locking was occurring when the request
+  // came in so it is reasonable to proceed with returning the supplied integrity.
   for (genvar i_word = 0; i_word < BaseWordsPerWLEN; ++i_word) begin : g_dmem_rdata_bus
     assign dmem_rdata_bus[i_word*39+:39] =
       {locking_q ? prim_secded_pkg::SecdedInv3932ZeroEcc : dmem_rdata_bus_raw[i_word*39+32+:7],
@@ -1017,6 +1019,7 @@ module otbn
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(i == AlertFatal)
     ) u_prim_alert_sender (
       .clk_i,
@@ -1232,7 +1235,7 @@ module otbn
   // secure wiping complete.
   // 2. mubi_err_d of start_stop_control disables the internal secure wipe related assertion
   // because a fatal error affecting internal secure wiping could cause an immediate locking
-  // behaviour in which it's not guaranteed to see a succesful secure wipe.
+  // behaviour in which it's not guaranteed to see a successful secure wipe.
   for (genvar i = 2; i < NGpr; ++i) begin : gen_sec_wipe_gpr_asserts
     // Initial secure wipe needs to initialise all registers to nonzero
     `ASSERT(InitSecWipeNonZeroBaseRegs_A,
@@ -1272,7 +1275,7 @@ module otbn
     // have secure wiping complete.
     // 2. mubi_err_d of start_stop_control disables the internal secure wipe related assertion
     // because a fatal error affecting internal secure wiping could cause an immediate locking
-    // behaviour in which it's not guaranteed to see a succesful secure wipe.
+    // behaviour in which it's not guaranteed to see a successful secure wipe.
     for (genvar i = 0; i < NWdr; ++i) begin : gen_sec_wipe_wdr_asserts
       // Initial secure wipe needs to initialise all registers to nonzero
       `ASSERT(InitSecWipeNonZeroWideRegs_A,
@@ -1304,7 +1307,7 @@ module otbn
   // secure wiping complete.
   // 2. mubi_err_d of start_stop_control disables the secure wipe related assertions because a
   // fatal error affecting internal secure wiping could cause an immediate locking behaviour
-  // in which it's not guaranteed to see a succesful secure wipe.
+  // in which it's not guaranteed to see a successful secure wipe.
   `ASSERT(SecWipeInvalidCallStack_A,
           $fell(busy_secure_wipe) |-> (!u_otbn_core.u_otbn_rf_base.u_call_stack.top_valid_o),
           clk_i,

@@ -11,45 +11,85 @@
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/silicon_creator/lib/attestation.h"
 
-#include "flash_ctrl_regs.h"  // Generated.
-#include "otp_ctrl_regs.h"    // Generated.
+#include "hw/top/flash_ctrl_regs.h"  // Generated.
+#include "hw/top/otp_ctrl_regs.h"    // Generated.
 
 /**
- * Partition 0 pages and fields.
- * Refer to sw/device/silicon_creator/lib/drivers/flash_ctrl.h for what
- * information ROM and ROM_EXT expect to find on various pages.
+ * Partition 0, page 0 fields.
  */
-const flash_info_field_t kFlashInfoFieldDeviceId = {
+const flash_info_field_t kFlashInfoFieldLotName = {
     .partition = 0,
     .bank = 0,
     .page = 0,
-    .byte_offset = 0,
+    .byte_offset = kFlashInfoFieldLotNameStartOffset,
 };
 
-const flash_info_field_t kFlashInfoFieldManufState = {
+const flash_info_field_t kFlashInfoFieldWaferNumber = {
     .partition = 0,
     .bank = 0,
     .page = 0,
-    .byte_offset = OTP_CTRL_PARAM_DEVICE_ID_SIZE,
+    .byte_offset = kFlashInfoFieldWaferNumberStartOffset,
+};
+
+const flash_info_field_t kFlashInfoFieldWaferXCoord = {
+    .partition = 0,
+    .bank = 0,
+    .page = 0,
+    .byte_offset = kFlashInfoFieldWaferXCoordStartOffset,
+};
+
+const flash_info_field_t kFlashInfoFieldWaferYCoord = {
+    .partition = 0,
+    .bank = 0,
+    .page = 0,
+    .byte_offset = kFlashInfoFieldWaferYCoordStartOffset,
+};
+
+const flash_info_field_t kFlashInfoFieldProcessData = {
+    .partition = 0,
+    .bank = 0,
+    .page = 0,
+    .byte_offset = kFlashInfoFieldProcessDataStartOffset,
 };
 
 const flash_info_field_t kFlashInfoFieldAstCalibrationData = {
     .partition = 0,
     .bank = 0,
     .page = 0,
-    .byte_offset =
-        OTP_CTRL_PARAM_DEVICE_ID_SIZE + OTP_CTRL_PARAM_MANUF_STATE_SIZE,
+    .byte_offset = kFlashInfoFieldAstCalibrationDataStartOffset,
 };
 
-const flash_info_field_t kFlashInfoFieldCharacterizationData = {
+const flash_info_field_t kFlashInfoFieldAstCfgVersion = {
     .partition = 0,
     .bank = 0,
     .page = 0,
-    .byte_offset = OTP_CTRL_PARAM_DEVICE_ID_SIZE +
-                   OTP_CTRL_PARAM_MANUF_STATE_SIZE +
-                   kFlashInfoAstCalibrationDataSizeIn32BitWords,
+    .byte_offset = kFlashInfoFieldAstCfgVersionStartOffset,
 };
 
+const flash_info_field_t kFlashInfoFieldCpDeviceId = {
+    .partition = 0,
+    .bank = 0,
+    .page = 0,
+    .byte_offset = kFlashInfoFieldCpDeviceIdStartOffset,
+};
+
+const flash_info_field_t kFlashInfoFieldAstIndividPatchAddr = {
+    .partition = 0,
+    .bank = 0,
+    .page = 0,
+    .byte_offset = kFlashInfoFieldAstIndividPatchAddrStartOffset,
+};
+
+const flash_info_field_t kFlashInfoFieldAstIndividPatchVal = {
+    .partition = 0,
+    .bank = 0,
+    .page = 0,
+    .byte_offset = kFlashInfoFieldAstIndividPatchValStartOffset,
+};
+
+/**
+ * Partition 0, page 1 fields.
+ */
 const flash_info_field_t kFlashInfoFieldCreatorSeed = {
     .partition = 0,
     .bank = 0,
@@ -57,6 +97,9 @@ const flash_info_field_t kFlashInfoFieldCreatorSeed = {
     .byte_offset = 0,
 };
 
+/**
+ * Partition 0, page 2 fields.
+ */
 const flash_info_field_t kFlashInfoFieldOwnerSeed = {
     .partition = 0,
     .bank = 0,
@@ -64,6 +107,9 @@ const flash_info_field_t kFlashInfoFieldOwnerSeed = {
     .byte_offset = 0,
 };
 
+/**
+ * Partition 0, page 3 fields.
+ */
 const flash_info_field_t kFlashInfoFieldWaferAuthSecret = {
     .partition = 0,
     .bank = 0,
@@ -71,6 +117,9 @@ const flash_info_field_t kFlashInfoFieldWaferAuthSecret = {
     .byte_offset = 0,
 };
 
+/**
+ * Partition 0, page 4 fields.
+ */
 const flash_info_field_t kFlashInfoFieldUdsAttestationKeySeed = {
     .partition = 0,
     .bank = 0,

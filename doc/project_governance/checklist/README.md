@@ -641,7 +641,7 @@ All existing **non-production** code in the tree which uses the device does so v
 
 An on-device test exists (in `sw/device/tests`) that uses the DIF.
 
-This test should excercise the main datapath of the hardware module via the DIF, and should be able to be run on at least one OpenTitan platform (either on FPGA or in simulation).
+This test should exercise the main datapath of the hardware module via the DIF, and should be able to be run on at least one OpenTitan platform (either on FPGA or in simulation).
 
 ## S2
 

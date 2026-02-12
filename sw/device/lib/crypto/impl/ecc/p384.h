@@ -54,6 +54,25 @@ enum {
    * Length of masked secret scalar share in words.
    */
   kP384MaskedScalarShareWords = kP384MaskedScalarShareBytes / sizeof(uint32_t),
+  /**
+   * Number of shares for the scalar.
+   */
+  kP384MaskedScalarNumShares = 2,
+  /**
+   * Length of the full masked secret scalar share in bits.
+   */
+  kP384MaskedScalarTotalShareBits =
+      kP384MaskedScalarNumShares * kP384MaskedScalarShareBits,
+  /**
+   * Length of the full masked secret scalar share in bytes.
+   */
+  kP384MaskedScalarTotalShareBytes =
+      kP384MaskedScalarNumShares * kP384MaskedScalarShareBytes,
+  /**
+   * Length of the full masked secret scalar share in words.
+   */
+  kP384MaskedScalarTotalShareWords =
+      kP384MaskedScalarNumShares * kP384MaskedScalarShareWords,
 };
 
 /**
@@ -73,6 +92,10 @@ typedef struct p384_masked_scalar {
    * Second share of the secret scalar.
    */
   uint32_t share1[kP384MaskedScalarShareWords];
+  /**
+   * Checksum over share0.
+   */
+  uint32_t checksum;
 } p384_masked_scalar_t;
 
 /**
@@ -107,7 +130,55 @@ typedef struct p384_ecdsa_signature_t {
 typedef struct p384_ecdh_shared_key {
   uint32_t share0[kP384CoordWords];
   uint32_t share1[kP384CoordWords];
+  // Checksum over share0.
+  uint32_t checksum;
 } p384_ecdh_shared_key_t;
+
+/**
+ * Compute the checksum of an p384 masked scalar.
+ *
+ * Call this routine after creating or modifying the p384 scalar structure.
+ *
+ * @param key p384 masked scalar.
+ * @returns Checksum value.
+ */
+uint32_t p384_masked_scalar_checksum(const p384_masked_scalar_t *scalar);
+
+/**
+ * Perform an integrity check on the p384 masked scalar.
+ *
+ * Returns `kHardenedBoolTrue` if the check passed and `kHardenedBoolFalse`
+ * otherwise.
+ *
+ * @param key p384 masked scalar.
+ * @returns Whether the integrity check passed.
+ */
+OT_WARN_UNUSED_RESULT
+hardened_bool_t p384_masked_scalar_checksum_check(
+    const p384_masked_scalar_t *scalar);
+
+/**
+ * Compute the checksum of an p384 ecdh key.
+ *
+ * Call this routine after creating or modifying the p384 key structure.
+ *
+ * @param key p384 ecdh shared key.
+ * @returns Checksum value.
+ */
+uint32_t p384_ecdh_shared_key_checksum(const p384_ecdh_shared_key_t *key);
+
+/**
+ * Perform an integrity check on the p384 ecdh key.
+ *
+ * Returns `kHardenedBoolTrue` if the check passed and `kHardenedBoolFalse`
+ * otherwise.
+ *
+ * @param key p384 ecdh shared key.
+ * @returns Whether the integrity check passed.
+ */
+OT_WARN_UNUSED_RESULT
+hardened_bool_t p384_ecdh_shared_key_checksum_check(
+    const p384_ecdh_shared_key_t *key);
 
 /**
  * Start an async P-384 keypair generation operation on OTBN.
@@ -170,7 +241,33 @@ status_t p384_sideload_keygen_finalize(p384_point_t *public_key);
  */
 OT_WARN_UNUSED_RESULT
 status_t p384_ecdsa_sign_start(const uint32_t digest[kP384ScalarWords],
-                               const p384_masked_scalar_t *private_key);
+                               p384_masked_scalar_t *private_key);
+
+/**
+ * Start an async ECDSA/P-384 signature generation operation on OTBN.
+ *
+ * This function allows for configuration of the secret scalar k.
+ * KATs for FIPS CMVP compliance require ECDSA implementations to receive
+ * non-random selected ephemeral k as input (see p.82 bottom in Implementation
+ * Guidance for FIPS 140-3 and the Cryptographic Module Validation Program).
+ * https://csrc.nist.gov/csrc/media/Projects/cryptographic-module-validation-program/documents/fips%20140-3/FIPS%20140-3%20IG.pdf
+ *
+ * Note that the provided secret scalar k is not re-blinded before signature
+ * generation. This is inline with the strict recommendation that every secret
+ * scalar in ECDSA is strictly only ever used once. The scalar is provided as
+ * 448b which includes implicit blinding, and in arithmetic shares.
+ *
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * @param digest Digest of the message to sign.
+ * @param private_key Secret key to sign the message with.
+ * @param secret_scalar Secret scalar to sign the message with.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t p384_ecdsa_sign_config_k_start(const uint32_t digest[kP384ScalarWords],
+                                        p384_masked_scalar_t *private_key,
+                                        p384_masked_scalar_t *secret_scalar);
 
 /**
  * Start an async ECDSA/P-384 signature generation operation on OTBN.
@@ -249,7 +346,7 @@ status_t p384_ecdsa_verify_finalize(const p384_ecdsa_signature_t *signature,
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t p384_ecdh_start(const p384_masked_scalar_t *private_key,
+status_t p384_ecdh_start(p384_masked_scalar_t *private_key,
                          const p384_point_t *public_key);
 
 /**

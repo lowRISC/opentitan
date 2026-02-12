@@ -19,9 +19,7 @@
   dif_stage:          "",
   clocking: [
     { clock: "clk_ast_tlul_i",  reset: "rst_ast_tlul_ni", primary: true },
-    { clock: "clk_ast_adc_i",   reset: "rst_ast_adc_ni"},
     { clock: "clk_ast_alert_i", reset: "rst_ast_alert_ni"},
-    { clock: "clk_ast_es_i",    reset: "rst_ast_es_ni"},
     { clock: "clk_ast_rng_i",   reset: "rst_ast_rng_ni"},
   ],
   bus_interfaces: [
@@ -36,12 +34,6 @@
       type:    "int",
       default: "5",
       local:   "true",
-    },
-    { name: "NumUsbBeaconPulses",
-      desc: "Number of USB valid beacon pulses for clock to re-calibrate",
-      type: "int",
-      default: "8",
-      local: "true"
     },
   ],
   regwidth: "32",

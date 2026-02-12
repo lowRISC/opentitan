@@ -2,17 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use clap::{Args, Subcommand};
-use serde_annotate::Annotate;
 use std::any::Any;
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::util::parse_int::ParseInt;
-use opentitanlib::util::status::{load_elf, Status};
+use opentitanlib::util::status::{Status, load_elf};
 
 #[derive(Debug, Subcommand, CommandDispatch)]
 /// Commands for interacting with status.
@@ -46,7 +45,7 @@ impl CommandDispatch for ListCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let records = load_elf(&self.elf_file)?;
         if self.raw_records {
             return Ok(Some(Box::new(records)));
@@ -91,7 +90,7 @@ impl CommandDispatch for LintCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         // We group filenames by Module ID, coming from all ELF files at once
         let mut mod_id_map: HashMap<String, HashSet<ModuleIdProvenance>> = HashMap::new();
 
@@ -156,7 +155,7 @@ impl CommandDispatch for DecodeCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         // Decode status.
         let status = Status::from_u32(self.raw_status)?;
         // Find filenames

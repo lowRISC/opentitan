@@ -5,8 +5,8 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
-#include "sw/device/lib/crypto/include/hash.h"
 #include "sw/device/lib/crypto/include/rsa.h"
+#include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/profile.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -81,7 +81,6 @@ static uint32_t kTestPrivateExponent[kRsa4096NumWords] = {
     0x965d9408, 0x19aacb83,
 
 };
-static uint32_t kTestPublicExponent = 65537;
 
 // Message data for testing.
 static const unsigned char kTestMessage[] = "Test message.";
@@ -155,7 +154,7 @@ static status_t run_rsa_4096_encrypt(const uint8_t *msg, size_t msg_len,
       .key = public_key_data,
   };
   TRY(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize4096, modulus,
-                                        kTestPublicExponent, &public_key));
+                                        &public_key));
 
   otcrypto_const_byte_buf_t msg_buf = {.data = msg, .len = msg_len};
   otcrypto_const_byte_buf_t label_buf = {.data = label, .len = label_len};
@@ -222,9 +221,8 @@ static status_t run_rsa_4096_decrypt(const uint8_t *label, size_t label_len,
       .data = kTestModulus,
       .len = ARRAYSIZE(kTestModulus),
   };
-  TRY(otcrypto_rsa_private_key_from_exponents(kOtcryptoRsaSize4096, modulus,
-                                              kTestPublicExponent, d_share0,
-                                              d_share1, &private_key));
+  TRY(otcrypto_rsa_private_key_from_exponents(
+      kOtcryptoRsaSize4096, modulus, d_share0, d_share1, &private_key));
 
   otcrypto_byte_buf_t plaintext_buf = {.data = msg, .len = kMaxPlaintextBytes};
   otcrypto_const_byte_buf_t label_buf = {.data = label, .len = label_len};

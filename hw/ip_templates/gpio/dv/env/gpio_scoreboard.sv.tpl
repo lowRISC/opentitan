@@ -42,7 +42,7 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T ($
 
   `uvm_component_utils(${module_instance_name}_scoreboard)
 
-  function new (string name = "${module_instance_name}_scoreboard", uvm_component parent = null);
+  function new (string name, uvm_component parent = null);
     super.new (name, parent);
   endfunction
 
@@ -163,13 +163,7 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T ($
               if (cfg.en_cov) begin
                 foreach (cleared_intr_bits[each_bit]) begin
                   if (cleared_intr_bits[each_bit]) begin
-                    if (last_intr_update_except_clearing[each_bit]) begin
-                      cov.sticky_intr_cov[{"gpio_sticky_intr_pin",
-                                          $sformatf("%0d", each_bit)}].sample(1'b1);
-                    end else begin
-                      cov.sticky_intr_cov[{"gpio_sticky_intr_pin",
-                                          $sformatf("%0d", each_bit)}].sample(1'b0);
-                    end
+                    cov.sample_intr_pin(each_bit, last_intr_update_except_clearing[each_bit]);
                   end
                 end
               end
@@ -748,11 +742,7 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T ($
         // Coverage Sampling: cover a scenario wherein cleared interrupt state bit
         // is re-asserted due to still active interrupt event
         if (cleared_intr_bits[each_bit]) begin
-          if (exp_intr_status[each_bit]) begin
-            cov.sticky_intr_cov[{"gpio_sticky_intr_pin", $sformatf("%0d", each_bit)}].sample(1'b1);
-          end else begin
-            cov.sticky_intr_cov[{"gpio_sticky_intr_pin", $sformatf("%0d", each_bit)}].sample(1'b0);
-          end
+          cov.sample_intr_pin(each_bit, exp_intr_status[each_bit]);
           // Clear the flag
           cleared_intr_bits[each_bit] = 1'b0;
         end

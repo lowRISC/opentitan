@@ -8,7 +8,9 @@ description: "OTP_CTRL DV sim target"
 filesets:
   files_rtl:
     depend:
+      - ${instance_vlnv("lowrisc:ip:otp_ctrl_macro_pkg")}
       - ${instance_vlnv("lowrisc:ip:otp_ctrl")}
+      - lowrisc:ip:otp_macro
 
   files_dv:
     depend:

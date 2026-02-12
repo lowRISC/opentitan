@@ -10,7 +10,9 @@ module sensor_ctrl
   import sensor_ctrl_pkg::*;
   import sensor_ctrl_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned AlertSkewCycles = 1
 ) (
   // Primary module clocks
   input clk_i,
@@ -265,6 +267,7 @@ module sensor_ctrl
 
   prim_alert_sender #(
     .AsyncOn(AlertAsyncOn[RecovAlert]),
+    .SkewCycles(AlertSkewCycles),
     .IsFatal(0)
   ) u_prim_recov_alert_sender (
     .clk_i,

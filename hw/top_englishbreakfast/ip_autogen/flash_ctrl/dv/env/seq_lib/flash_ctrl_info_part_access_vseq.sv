@@ -87,7 +87,7 @@ class flash_ctrl_info_part_access_vseq extends flash_ctrl_hw_sec_otp_vseq;
   endtask // check_lc_ctrl
 
   // Task to access secret info partition.
-  // lc control should be set from the exernal task.
+  // lc control should be set from the external task.
   task do_flash_op_info_part(flash_sec_part_e part, flash_op_e op, bit is_valid);
     data_q_t flash_op_data;
     flash_op_t flash_op;

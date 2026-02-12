@@ -53,7 +53,7 @@ module mbx_ombx #(
   logic set_first_req, clear_first_req;
 
   // Generate the read request
-  // - Mbx reader ACK the current read data and initate the first request
+  // - Mbx reader ACK the current read data and initiate the first request
   // First is initiated by mbx owner writes object size register
   // Note that pointer comparison with hostif_limit_i is inclusive, while comparison with internal
   // limit of the object size is exclusive
@@ -69,7 +69,7 @@ module mbx_ombx #(
   assign awaiting_gnt = ombx_sram_read_req_o & ~ombx_sram_read_gnt_i &
                        ~hostif_control_abort_clear_i;
 
-  // Create a sticky TLUL read request until its granted
+  // Create a sticky TL-UL read request until its granted
   logic req_q;
   assign ombx_sram_read_req_o = read_req | req_q;
 
@@ -86,7 +86,7 @@ module mbx_ombx #(
   // Exclude last ack
   logic set_pending, clear_pending;
 
-  // Block the request from TLUL until the SRAM read is complete
+  // Block the request from TL-UL until the SRAM read is complete
   // Note that pointer comparison with hostif_limit_i is inclusive, while comparison with internal
   // limit of the object size is exclusive
   assign set_pending   = mbx_read & sysif_read_data_write_valid_i &
@@ -113,7 +113,7 @@ module mbx_ombx #(
                           sysif_read_data_write_valid_i  &
                           (sram_read_ptr_q == sram_read_ptr_limit_q);
 
-  // The abort requestet was handled by the host. This re-initialzes the read pointer
+  // The abort request was handled by the host. This re-initializes the read pointer
   logic host_clear_abort;
   assign host_clear_abort = hostif_control_abort_clear_i & mbx_sys_abort;
 
@@ -155,7 +155,7 @@ module mbx_ombx #(
   logic aborting;
   assign aborting = sysif_control_abort_set_i | mbx_sys_abort;
 
-  // Clear ombx read data register in case of all data is read, an error happens, or an Abort or
+  // Clear ombx read data register when all data is read, an error happens, or an Abort or
   // FW-initiated reset occurs.
   logic clear_read_data;
   assign clear_read_data = sys_read_all_o             |   // Normal completion of Response
@@ -163,7 +163,8 @@ module mbx_ombx #(
                            aborting                   |   // Abort requested by SoC side
                            hostif_control_abort_clear_i;  // Abort ack or FW reset from host side
 
-  // Advance the SRAM read response to read data
+  // Retain the data read from the SRAM; clear the read data when the complete response
+  // has been read or an error/abort condition has occurred.
   prim_flop_en #(
     .Width(CfgSramDataWidth)
   ) u_sram_read_data (
@@ -182,7 +183,7 @@ module mbx_ombx #(
 
   // The following flop creates an indicator that hostif.object_size has been written such that
   // in the next cycle, the read pointer limit can be updated and the first transfer from the
-  // SRAM to the internal data flop can be initiated.
+  // SRAM to the internal data flops can be initiated.
 
   prim_flop #(
     .Width(1)
@@ -198,7 +199,7 @@ module mbx_ombx #(
   // Update the hostif.object_size register on every transaction or when aborting the transaction
   assign hostif_ombx_object_size_update_o = (ombx_sram_read_req_o & ombx_sram_read_gnt_i) |
                                              hostif_control_abort_clear_i;
-  // The updated value is the decremented by 1 size or zero-ed out if the transaction is aborted
+  // The updated value is the size minus one, or zero if the transaction is aborted
   assign hostif_ob_object_size_minus_one = hostif_ombx_object_size_i - 1;
   assign hostif_ombx_object_size_o       = {CfgObjectSizeWidth{~hostif_control_abort_clear_i}} &
                                            hostif_ob_object_size_minus_one;
@@ -230,7 +231,7 @@ module mbx_ombx #(
   // Logic to initiate the first read (mbx_empty) from the SRAM to the requester
   // Only starts the transmitting if the mailbox is configured properly
   // (SRAM range is valid and the object size has been written to a non-zero)
-  // value. mbx_empty means there hasn't been read anything but range is valid.
+  // value. mbx_empty means that nothing has been read but the range is valid.
   assign set_first_req   = mbx_empty & host_write_object_size_q & (|hostif_ombx_object_size_i);
   assign clear_first_req = ombx_sram_read_gnt_i;
 
@@ -243,7 +244,7 @@ module mbx_ombx #(
     .q_o   ( first_req_q                                      )
   );
 
-  // Create a DOE interrupt request when the obmx FSM turns into the ready state
+  // Create a DOE interrupt request when the obmx FSM enters the ready state
   assign ombx_doe_intr_ready_set_o = (ombx_status_ready_o & ombx_status_ready_update_o);
 
   mbx_fsm #(
@@ -284,7 +285,7 @@ module mbx_ombx #(
   // When reading from the ombx doe_status.ready must have been asserted
   `ASSERT_NEVER(ReadyAssertedWhenRead_A, ombx_sram_read_req_o &
                 ~(first_req_q | sysif_status_ready_i))
-  // System write-to-read data is non-posted.  No subsequential read or write comes before the
+  // System write-to-read data is non-posted.  No subsequent read or write comes before the
   // write is ACKed
   `ASSERT_NEVER(NoReadBeforeWriteAcked_A, ombx_pending_o &
                 (sysif_read_data_read_valid_i | sysif_read_data_write_valid_i))
@@ -292,7 +293,7 @@ module mbx_ombx #(
   logic ombx_is_empty;
   assign ombx_is_empty = (sram_read_ptr_q == sram_read_ptr_limit_q);
   `ASSERT_NEVER(NeverReadWhenEmpty_A, ombx_sram_read_req_o & ombx_is_empty)
-  // Never let the read pointer run out of the limit, but allow the range to be redefined whilst
+  // Never let the read pointer run beyond the limit, but allow the range to be redefined whilst
   // the mailbox is not active
   `ASSERT_NEVER(NeverRunOutOfLimit_A, |{first_req_q, mbx_read} &
                 (sram_read_ptr_q > sram_read_ptr_limit_q))
@@ -309,7 +310,7 @@ module mbx_ombx #(
   );
 
   // A granted read by the host adapter must advance the read pointer
-  `ASSERT_IF(GntMustAdvanceWritePtr_A, advance_read_ptr &
+  `ASSERT_IF(GntMustAdvanceReadPtr_A, advance_read_ptr &
              (sram_read_ptr_d == sram_read_ptr_assert_q + LCFG_SRM_ADDRINC),
              ombx_sram_read_gnt_i)
 `endif

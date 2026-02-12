@@ -30,17 +30,3 @@ validate_point:
   jal       x1, p384_curve_point_valid
 
   ecall
-
-.data
-
-/* Public key x-coordinate. */
-.globl x
-.balign 32
-x:
-  .zero 64
-
-/* Public key y-coordinate. */
-.globl y
-.balign 32
-y:
-  .zero 64

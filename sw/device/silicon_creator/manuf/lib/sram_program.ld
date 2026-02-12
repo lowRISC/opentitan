@@ -113,6 +113,11 @@ SECTIONS {
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
     _bss_end = .;
+
+    ASSERT(
+      ABSOLUTE(_stack_start) >= ABSOLUTE(_bss_end),
+      "bss section overflowed to stack region");
+
   } > ram_main : sram_segment
 
   INCLUDE sw/device/info_sections.ld

@@ -322,7 +322,7 @@ class FlowCfg():
             sys.exit(1)
 
     def _purge(self):
-        '''Purge the existing scratch areas in preperation for the new run.'''
+        '''Purge the existing scratch areas in preparation for the new run.'''
         return
 
     def purge(self):

@@ -105,7 +105,7 @@ class LoopDupEnd(Loop):
                   num_insns: int,
                   model: Model,
                   program: Program) -> Optional[Tuple[Snippet, Model]]:
-        # Overriden from base class. The Loop generator derives a loop body as
+        # Overridden from base class. The Loop generator derives a loop body as
         # some (possibly empty) free-form "head" part, followed by a sled of
         # straight-line instructions. Here, we override the "sled generation"
         # and insert another loop, carefully crafted to collide with the end

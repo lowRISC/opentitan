@@ -4,4 +4,7 @@
 
 package(default_visibility = ["//visibility:public"])
 
-exports_files(["lc_raw_unlock_token.rs.tpl"])
+exports_files([
+    "lc_raw_unlock_token.rs.tpl",
+    "manuf_testplan.hjson",
+])

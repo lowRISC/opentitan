@@ -40,6 +40,7 @@ generate:
     parameters:
       name: ${module_instance_name}
       ip_hjson: ../../data/${module_instance_name}.hjson
+    position: prepend
 
 targets:
   default:

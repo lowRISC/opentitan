@@ -26,10 +26,13 @@
   // Import additional common sim cfg files.
   import_cfgs: [// Project wide common sim cfg file
                 "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
+                // Common CIP test lists
+                "{proj_root}/hw/dv/tools/dvsim/tests/alert_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/intr_test.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson"]
-
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 1
@@ -47,73 +50,71 @@
     {
       name: dma_generic_smoke
       uvm_test_seq: dma_generic_smoke_vseq
-      run_opts: ["+dma_dv_waive_system_bus=1"]
       reseed: 50
     }
     {
       name: dma_memory_smoke
       uvm_test_seq: dma_memory_smoke_vseq
-      run_opts: ["+dma_dv_waive_system_bus=1"]
       reseed: 25
     }
     {
       name: dma_handshake_smoke
       uvm_test_seq: dma_handshake_smoke_vseq
-      run_opts: ["+dma_dv_waive_system_bus=1"]
       reseed: 25
     }
     {
       name: dma_memory_region_lock
       uvm_test_seq: dma_memory_region_lock_vseq
-      run_opts: ["+dma_dv_waive_system_bus=1"]
       reseed: 5
     }
     {
       name: dma_abort
       uvm_test_seq: dma_abort_vseq
-      run_opts: ["+dma_dv_waive_system_bus=1"]
       reseed: 5
     }
     {
       name: dma_short_transfer
       uvm_test_seq: dma_short_transfer_vseq
-      run_opts: ["+dma_dv_waive_system_bus=1"]
-      reseed: 5
+      reseed: 25
     }
     {
       name: dma_longer_transfer
       uvm_test_seq: dma_longer_transfer_vseq
-      run_opts: ["+dma_dv_waive_system_bus=1", "+test_timeout_ns=300_000_000_000"]
+      run_opts: ["+test_timeout_ns=300_000_000_000"]
       reseed: 5
     }
     {
       name: dma_mem_enabled
       uvm_test_seq: dma_mem_enabled_vseq
-      run_opts: ["+dma_dv_waive_system_bus=1"]
       reseed: 5
+    }
+    {
+      name: dma_config_lock
+      uvm_test_seq: dma_config_lock_vseq
+      reseed: 15
     }
     {
       name: dma_generic_stress
       uvm_test_seq: dma_generic_stress_vseq
-      run_opts: ["+dma_dv_waive_system_bus=1", "+test_timeout_ns=300_000_000_000"]
+      run_opts: ["+test_timeout_ns=300_000_000_000"]
       reseed: 5
     }
     {
       name: dma_memory_stress
       uvm_test_seq: dma_memory_stress_vseq
-      run_opts: ["+dma_dv_waive_system_bus=1", "+test_timeout_ns=300_000_000_000"]
+      run_opts: ["+test_timeout_ns=300_000_000_000"]
       reseed: 3
     }
     {
       name: dma_handshake_stress
       uvm_test_seq: dma_handshake_stress_vseq
-      run_opts: ["+dma_dv_waive_system_bus=1", "+test_timeout_ns=300_000_000_000"]
+      run_opts: ["+test_timeout_ns=300_000_000_000"]
       reseed: 3
     }
     {
       name: dma_stress_all
       uvm_test_seq: dma_stress_all_vseq
-      run_opts: ["+dma_dv_waive_system_bus=1", "+test_timeout_ns=300_000_000_000"]
+      run_opts: ["+test_timeout_ns=300_000_000_000"]
       reseed: 3
     }
   ]

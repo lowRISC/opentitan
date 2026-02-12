@@ -6,30 +6,23 @@
 #
 # Keep it sorted.
 "Development Tools"
-autoconf
-bison
 brotli
 cmake
 curl
-doxygen
 epel-release
-flex
 gcc-c++
 git
-golang
 elfutils-libelf
 elfutils-libelf-devel
 libftdi
 libftdi-devel
 libudev-devel
 libusbx
-lld
 make
 openssl-devel
 redhat-lsb-core
 # A requirement of the prebuilt clang toolchain.
 ncurses
-ninja-build
 openssl11-libs
 openssl11-devel
 perl

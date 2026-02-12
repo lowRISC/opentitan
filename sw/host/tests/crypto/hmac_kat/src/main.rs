@@ -100,7 +100,7 @@ fn run_hmac_testcase(
     }
     .send(spi_console)?;
 
-    let hmac_tag = CryptotestHmacTag::recv(spi_console, opts.timeout, false)?;
+    let hmac_tag = CryptotestHmacTag::recv(spi_console, opts.timeout, false, false)?;
     let success = if test_case.tag.len() > hmac_tag.tag_len {
         // If we got a shorter tag back then the test asks for, we can't accept the tag, even if
         // the beginning bytes match.
@@ -126,8 +126,8 @@ fn run_hmac_testcase(
 
 fn test_hmac(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let spi = transport.spi("BOOTSTRAP")?;
-    let spi_console_device = SpiConsoleDevice::new(&*spi)?;
-    let _ = UartConsole::wait_for(&spi_console_device, r"Running [^\r\n]*", opts.timeout)?;
+    let spi_console_device = SpiConsoleDevice::new(&*spi, None, /*ignore_frame_num=*/ false)?;
+    let _ = UartConsole::wait_for(&spi_console_device, r"Running ", opts.timeout)?;
 
     let mut test_counter = 0u32;
     let mut fail_counter = 0u32;

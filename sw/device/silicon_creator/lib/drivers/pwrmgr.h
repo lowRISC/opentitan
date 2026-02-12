@@ -7,6 +7,10 @@
 
 #include <stdint.h>
 
+#include "hw/top/dt/api.h"
+#include "sw/device/lib/base/macros.h"
+#include "sw/device/silicon_creator/lib/error.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -25,6 +29,34 @@ extern "C" {
 enum {
   kPwrmgrSecMmioAllResetsEnable = 1,
 };
+
+/**
+ * A power manager request type.
+ */
+typedef enum pwrmgr_req_type {
+  kPwrmgrReqTypeWakeup,
+  kPwrmgrReqTypeReset,
+} pwr_mgr_req_type_t;
+
+/**
+ * Obtain a bit index of wakeup/reset request for a device and a signal.
+ *
+ * Given a module instance (identified by its instance ID) and a wakeup
+ * or reset request index from this module, return the source bit index
+ * that, once shifted into a bitmask, can be programmed into the pwrmgr
+ * `RESET_EN` register.
+ *
+ * @param req_type Request type (wake up or reset request).
+ * @param inst_id A DT instance ID.
+ * @param signal_idx Signal index.
+ * @param[out] source_idx The source index corresponding to the wakeup or reset
+ * requested.
+ * @return `kErrorOk` if a signal matches, or a `kErrorPwrmgr` error otherwise.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t pwrmgr_find_request_source(pwr_mgr_req_type_t req_type,
+                                       dt_instance_id_t inst_id,
+                                       size_t signal_idx, size_t *source_idx);
 
 /**
  * Synchronize across clock domain.

@@ -5,6 +5,8 @@
 r"""Top Module Documentation Generator
 """
 from tabulate import tabulate
+from mako.template import Template
+from pathlib import Path
 
 from .lib import find_module
 
@@ -198,7 +200,7 @@ def gen_pinmux_docs(top, c_helper, out_path):
         table_rows.append(row)
 
     # Now create the summary table
-    summary_table = f'# "top_{top["name"]}" Pinmux Targets\n'
+    summary_table = f'# {top["name"].capitalize()} Pinout and Pinmux Connectivity Tables\n'
     summary_table += TABLE_HEADER.format(gencmd)
     summary_table += tabulate(table_rows,
                               headers="firstrow",
@@ -209,7 +211,34 @@ def gen_pinmux_docs(top, c_helper, out_path):
     summary_table_path.write_text(summary_table)
 
 
+def gen_memory_map_docs(top, c_helper, out_path):
+    """Generate memory map documentation for all address spaces.
+
+    Creates a markdown file showing the memory layout for all address spaces
+    defined in the top configuration.
+    """
+    doc_path = out_path / 'doc'
+    doc_path.mkdir(parents=True, exist_ok=True)
+
+    gencmd = ("util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson "
+              "-o hw/top_{topname}/".format(topname=top["name"]))
+
+    template_path = Path(__file__).parent / "templates" / "memory_map.md.tpl"
+    template = Template(filename=str(template_path))
+
+    memory_map_content = template.render(
+        top=top,
+        helper=c_helper,
+        gencmd=gencmd
+    )
+
+    memory_map_path = doc_path / "memory_map.md"
+    memory_map_path.write_text(memory_map_content)
+
+
 def gen_top_docs(top, c_helper, out_path):
+    gen_memory_map_docs(top, c_helper, out_path)
+
     if find_module(top['module'], 'pinmux'):
         # create pinout / pinmux specific tables for all targets
         gen_pinmux_docs(top, c_helper, out_path)

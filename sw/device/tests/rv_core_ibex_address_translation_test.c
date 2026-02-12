@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "dt/dt_rv_core_ibex.h"  // Generated
+#include "hw/top/dt/rv_core_ibex.h"  // Generated
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
@@ -17,7 +17,7 @@
 
 #define TEST_STR "Hello there, WHaT 1S Y0Ur N@ME?"
 #define EXPECTED_RESULT_MAKE_LOWER_CASE "hello there, what 1s y0ur n@me?"
-#define EXPECTED_RESULT_GET_NAME "My name is Titan, Open Titan"
+#define EXPECTED_RESULT_GET_NAME "My name is Titan, Open Titan!"
 
 OTTF_DEFINE_TEST_CONFIG();
 

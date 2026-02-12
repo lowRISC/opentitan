@@ -215,9 +215,9 @@ module tlul_sram_byte import tlul_pkg::*; #(
 
 
     // If the readback feature is enabled, we assume that the write phase takes one extra cycle
-    // due to the underyling scrambling mechanism. If this additional cycle is not needed anymore
-    // in the future (e.g. due to the removale of the scrambling mechanism), the readback does not
-    // need to be delayed by once cylce in the FSM below.
+    // due to the underlying scrambling mechanism. If this additional cycle is not needed anymore
+    // in the future (e.g. due to the removal of the scrambling mechanism), the readback does not
+    // need to be delayed by one cycle in the FSM below.
     `ASSERT(NoPendingWriteAfterWrite_A, wr_phase & mubi4_test_true_loose(rdback_en_q)
         |=> write_pending_i)
 
@@ -518,7 +518,8 @@ module tlul_sram_byte import tlul_pkg::*; #(
       .Width(TxnDataWidth),
       .Pass(1'b0),
       .Depth(1),
-      .OutputZeroIfEmpty(1'b0)
+      .OutputZeroIfEmpty(1'b0),
+      .NeverClears(1'b1)
     ) u_sync_fifo (
       .clk_i,
       .rst_ni,
@@ -636,7 +637,8 @@ module tlul_sram_byte import tlul_pkg::*; #(
       .Width(top_pkg::TL_SZW),
       .Pass(1'b0),
       .Depth(Outstanding),
-      .OutputZeroIfEmpty(1'b1)
+      .OutputZeroIfEmpty(1'b1),
+      .NeverClears(1'b1)
     ) u_sync_fifo_a_size (
       .clk_i,
       .rst_ni,

@@ -4,7 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/bootstrap.h"
 
-#include "dt/dt_gpio.h"
+#include "hw/top/dt/gpio.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
@@ -12,9 +12,9 @@
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "flash_ctrl_regs.h"
-#include "gpio_regs.h"
-#include "otp_ctrl_regs.h"
+#include "hw/top/flash_ctrl_regs.h"
+#include "hw/top/gpio_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
 
 static const dt_gpio_t kGpioDt = kDtGpio;
 

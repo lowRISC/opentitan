@@ -4,7 +4,8 @@
 
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 
-#include "dt/dt_sram_ctrl.h"
+#include "hw/top/dt/sram_ctrl.h"
+#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
@@ -13,6 +14,10 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+
+#if OPENTITAN_HAS_ALERT_HANDLER
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
+#endif  // OPENTITAN_HAS_ALERT_HANDLER
 
 dif_rv_plic_t ottf_plic;
 
@@ -79,16 +84,10 @@ void ottf_generic_fault_print(uint32_t *exc_info, const char *reason,
     uint32_t *sp = exc_info + kExcWords;
     base_printf("\n");
     uint32_t ram_base_addr =
-        dt_sram_ctrl_reg_block(kDtSramCtrlMain, kDtSramCtrlRegBlockRam);
+        dt_sram_ctrl_memory_base(kDtSramCtrlMain, kDtSramCtrlMemoryRam);
     uint32_t *ram_start = (uint32_t *)ram_base_addr;
-    // FIXME replace this with DT when possible.
-#if defined(OPENTITAN_IS_EARLGREY)
-    uint32_t ram_size = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES;
-#elif defined(OPENTITAN_IS_DARJEELING)
-    uint32_t ram_size = TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES;
-#else
-#error unsupported top
-#endif
+    uint32_t ram_size =
+        dt_sram_ctrl_memory_size(kDtSramCtrlMain, kDtSramCtrlMemoryRam);
     uint32_t *ram_end = (uint32_t *)(ram_base_addr + ram_size);
 
     extern const char _text_start[], _text_end[];
@@ -209,11 +208,21 @@ void ottf_external_isr(uint32_t *exc_info) {
   // See if the test code wants to handle it.
   bool handled = ottf_handle_irq(exc_info, devid, plic_irq_id);
   // If not, see if that interrupt corresponds to an OTTF console IRQ.
-  if (handled || ottf_console_flow_control_isr(exc_info)) {
+  // We must skip flow control in DV-sim as the console is not initialized.
+  if (handled || (kDeviceType != kDeviceSimDV &&
+                  ottf_console_flow_control_isr(exc_info))) {
     // Complete the IRQ at PLIC.
     CHECK_DIF_OK(
         dif_rv_plic_irq_complete(&ottf_plic, kPlicTarget, plic_irq_id));
     return;
+#if OPENTITAN_HAS_ALERT_HANDLER
+  } else if (ottf_alerts_should_handle_irq(devid, plic_irq_id)) {
+    ottf_alert_isr(exc_info);
+    // Complete the IRQ at PLIC.
+    CHECK_DIF_OK(
+        dif_rv_plic_irq_complete(&ottf_plic, kPlicTarget, plic_irq_id));
+    return;
+#endif  // OPENTITAN_HAS_ALERT_HANDLER
   }
 
   LOG_ERROR("unhandled IRQ: plic_id=%d, instance ID=%d", plic_irq_id, devid);
@@ -229,6 +238,9 @@ static void generic_internal_irq_handler(uint32_t *exc_info) {
 OT_WEAK
 bool ottf_handle_irq(uint32_t *exc_info, dt_instance_id_t devid,
                      dif_rv_plic_irq_id_t plic_id) {
+  OT_DISCARD(exc_info);
+  OT_DISCARD(devid);
+  OT_DISCARD(plic_id);
   return false;
 }
 

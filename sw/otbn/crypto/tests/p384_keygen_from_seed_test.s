@@ -20,8 +20,6 @@
 .section .text.start
 
 p384_keygen_from_seed_test:
-  /* Init all-zero register. */
-  bn.xor    w31, w31, w31
 
   /* Load the curve order n.
      [w13,w12] <= dmem[p384_n] = n */
@@ -35,38 +33,10 @@ p384_keygen_from_seed_test:
      w14 <= 2^256 - n[255:0] = (2^384 - n) mod (2^256) = 2^384 - n */
   bn.sub    w14, w31, w12
 
-  /* Obtain 1024 bits of randomness from URND. */
-  bn.wsrr   w20, URND
-  bn.wsrr   w21, URND
-  bn.wsrr   w10, URND
-  bn.wsrr   w11, URND
-
-  /* Reduce to 384 bits of randomness per share.
-       [w21, w20] <= s0 mod 2^384
-       [w11, w10] <= s1 mod 2^384 */
-  bn.rshi   w21, w21, w31 >> 128
-  bn.rshi   w21, w31, w21 >> 128
-  bn.rshi   w11, w11, w31 >> 128
-  bn.rshi   w11, w31, w11 >> 128
-
-  /* Calculate seed = s0 ^ s1
-     [w9,w8] <= [w21,w20] ^ [w11,w10] */
-  bn.xor    w8, w20, w10
-  bn.xor    w9, w21, w11
-
   /* Generate key shares
      dmem[d0] <= d0
      dmem[di] <= d1 */
   jal       x1, p384_key_from_seed
-
-  /* Calculate d = seed mod n
-     [w1,w0] <= [w19,w18] mod [w13,w12] */
-  bn.mov    w18, w8
-  bn.mov    w19, w9
-  bn.mov    w20, w31
-  jal       x1, p384_reduce_n
-  bn.mov    w0, w16
-  bn.mov    w1, w17
 
   /* Load secred key shares from DMEM */
   /* [w5,w4] <= d0 */
@@ -87,22 +57,4 @@ p384_keygen_from_seed_test:
   bn.mov    w20, w31
   jal       x1, p384_reduce_n
 
-  /* Compare if d == d' */
-  bn.sub    w0, w0, w16
-  bn.subb   w1, w1, w17
-
   ecall
-
-.section .data
-
-.balign 32
-
-/* 1st private key share d0 (448-bit) */
-.globl d0
-d0:
-  .zero 64
-
-/* 2nd private key share d1 (448-bit) */
-.globl d1
-d1:
-  .zero 64

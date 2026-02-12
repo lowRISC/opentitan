@@ -29,10 +29,10 @@ tl_device_t xbar_devices[$] = '{
         '{32'h30000000, 32'h307fffff}
     }},
     '{"soc_proxy__core", '{
-        '{32'h22030000, 32'h2203000f}
+        '{32'h22030000, 32'h22030007}
     }},
     '{"soc_proxy__ctn", '{
-        '{32'h40000000, 32'h7fffffff}
+        '{32'h40000000, 32'hbfffffff}
     }},
     '{"hmac", '{
         '{32'h21110000, 32'h21111fff}
@@ -42,6 +42,9 @@ tl_device_t xbar_devices[$] = '{
     }},
     '{"aes", '{
         '{32'h21100000, 32'h211000ff}
+    }},
+    '{"entropy_src", '{
+        '{32'h21160000, 32'h211600ff}
     }},
     '{"csrng", '{
         '{32'h21150000, 32'h2115007f}
@@ -129,6 +132,7 @@ tl_host_t xbar_hosts[$] = '{
         "sram_ctrl_main__ram",
         "peri",
         "aes",
+        "entropy_src",
         "csrng",
         "edn0",
         "edn1",
@@ -165,6 +169,7 @@ tl_host_t xbar_hosts[$] = '{
         "sram_ctrl_main__ram",
         "peri",
         "aes",
+        "entropy_src",
         "csrng",
         "edn0",
         "edn1",

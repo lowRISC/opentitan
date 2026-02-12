@@ -17,6 +17,17 @@ package rv_timer_env_pkg;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
+  // Dummy objects used to derive the actual size from structs in rv_timer_reg_pkg
+  rv_timer_reg_pkg::rv_timer_reg2hw_cfg0_reg_t           cfg0_fields;
+  rv_timer_reg_pkg::rv_timer_reg2hw_timer_v_lower0_reg_t timer_v_lower0;
+  rv_timer_reg_pkg::rv_timer_reg2hw_timer_v_upper0_reg_t timer_v_upper0;
+
+  // Widths of WKUP/WDOG counters/threshold registers, respectively.
+  localparam int unsigned PRESCALER_WIDTH  = $bits(cfg0_fields.prescale.q);
+  localparam int unsigned STEP_WIDTH       = $bits(cfg0_fields.step.q);
+  localparam int unsigned MTIME_WIDTH      = $bits(timer_v_lower0.q) + $bits(timer_v_upper0.q);
+
+
   // local parameters and types
   // These are currently hardcoded to 1 - this will need to change if design is modified
   parameter uint NUM_HARTS = 1;
@@ -24,7 +35,7 @@ package rv_timer_env_pkg;
 
   // alerts
   parameter uint NUM_ALERTS = 1;
-  parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
+  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"fatal_fault"};
 
   typedef class rv_timer_env_cfg;
   typedef class rv_timer_env_cov;

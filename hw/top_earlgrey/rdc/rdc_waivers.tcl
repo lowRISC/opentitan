@@ -62,9 +62,9 @@ set_rule_status -rule {E_RST_METASTABILITY} -status {Waived} \
 # Ibex Clock Gating
 set_rule_status -rule E_RST_METASTABILITY -status Waived \
   -expression { \
-    (ResetFlop=~"*.u_rv_core_ibex.u_core.g_clock_en_secure.u_prim_core_busy_flop.gen_generic.u_impl_generic.q_o[0]") && \
-    (MetaStableFlop=~"*.u_rv_core_ibex.u_core.core_clock_gate_i.gen_generic.u_impl_generic.en_latch")} \
-  -comment {If clockgating enble is reset, it affects the gating cell when \
+    (ResetFlop=~"*.u_rv_core_ibex.u_core.g_clock_en_secure.u_prim_core_busy_flop.q_o[0]") && \
+    (MetaStableFlop=~"*.u_rv_core_ibex.u_core.core_clock_gate_i.en_latch")} \
+  -comment {If clockgating enable is reset, it affects the gating cell when \
     CLK is 0 value.}
 
 # PINMUX CSR to SPI_DEV PADs

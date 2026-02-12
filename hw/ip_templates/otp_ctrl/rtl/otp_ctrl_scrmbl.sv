@@ -48,7 +48,7 @@
 //             call of the Digest command. Also, mode_i can be used to set the digest mode. If
 //             mode_i is set to "StandardMode", the data to be digested has to be provided via
 //             data_i and LoadShadow. If mode_i is set to "ChainedMode", the digest input is formed
-//             by concatenating the results of the revious two encryption commands.
+//             by concatenating the results of the previous two encryption commands.
 //
 // Digest: In "StandardMode", this command concatenates the data input supplied via data_i with
 //         the shadow register in order to form a 128bit block ({data_i, data_shadow_q}). This block
@@ -62,20 +62,24 @@
 //
 // References:
 //  - The block diagram in ../doc/theory_of_operation.md
-//  - https://docs.opentitan.org/hw/ip/prim/doc/prim_present/
+//  - https://opentitan.org/book/hw/ip/prim/doc/prim_present.html
 //  - https://en.wikipedia.org/wiki/Merkle-Damgard_construction
 //  - https://en.wikipedia.org/wiki/One-way_compression_function#Davies%E2%80%93Meyer
 //  - https://en.wikipedia.org/wiki/PRESENT
 //  - http://www.lightweightcrypto.org/present/present_ches2007.pdf
 //
 
-`include "prim_flop_macros.sv"
+`include "prim_assert.sv"
 
 module otp_ctrl_scrmbl
   import otp_ctrl_pkg::*;
   import otp_ctrl_top_specific_pkg::*;
   import otp_ctrl_part_pkg::*;
-(
+#(
+  parameter key_array_t          RndCnstKey         = '0,
+  parameter digest_const_array_t RndCnstDigestConst = '0,
+  parameter digest_iv_array_t    RndCnstDigestIV    = '0
+) (
   input                               clk_i,
   input                               rst_ni,
   // input data and command

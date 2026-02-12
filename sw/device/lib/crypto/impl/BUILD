@@ -5,6 +5,14 @@
 package(default_visibility = ["//visibility:public"])
 
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
+load(
+    "//rules/opentitan:defs.bzl",
+    "EARLGREY_TEST_ENVS",
+    "cw310_params",
+    "fpga_params",
+    "opentitan_test",
+    "verilator_params",
+)
 
 config_setting(
     name = "crypto_status_debug",
@@ -20,9 +28,12 @@ cc_library(
     deps = [
         ":integrity",
         ":keyblob",
+        ":security_config",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:aes",
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/drivers:rv_core_ibex",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
@@ -34,9 +45,12 @@ cc_library(
     deps = [
         ":integrity",
         ":keyblob",
+        ":security_config",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:aes",
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/drivers:rv_core_ibex",
         "//sw/device/lib/crypto/impl/aes_gcm",
         "//sw/device/lib/crypto/include:datatypes",
     ],
@@ -51,6 +65,26 @@ cc_library(
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:math",
         "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/drivers:rv_core_ibex",
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
+cc_library(
+    name = "ecc_curve25519",
+    srcs = ["ecc_curve25519.c"],
+    hdrs = ["//sw/device/lib/crypto/include:ecc_curve25519.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":hmac",
+        ":integrity",
+        ":keyblob",
+        ":security_config",
+        ":sha2",
+        ":status",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl/ecc:curve25519",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
@@ -62,6 +96,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":keyblob",
+        ":security_config",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/impl/ecc:p256",
@@ -76,6 +111,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":keyblob",
+        ":security_config",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/impl/ecc:p384",
@@ -84,29 +120,15 @@ cc_library(
 )
 
 cc_library(
-    name = "ed25519",
-    srcs = ["ed25519.c"],
-    hdrs = ["//sw/device/lib/crypto/include:ed25519.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    name = "hkdf",
+    srcs = ["hkdf.c"],
+    hdrs = ["//sw/device/lib/crypto/include:hkdf.h"],
     deps = [
+        ":hmac",
+        ":integrity",
+        ":keyblob",
         ":status",
-        "//sw/device/lib/crypto/include:datatypes",
-    ],
-)
-
-cc_library(
-    name = "hash",
-    srcs = ["hash.c"],
-    hdrs = [
-        "//sw/device/lib/crypto/include:hash.h",
-    ],
-    target_compatible_with = [OPENTITAN_CPU],
-    deps = [
-        ":status",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:hardened_memory",
-        "//sw/device/lib/crypto/drivers:hmac",
-        "//sw/device/lib/crypto/drivers:kmac",
+        "//sw/device/lib/base:math",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
@@ -116,22 +138,22 @@ cc_library(
     srcs = ["integrity.c"],
     hdrs = ["integrity.h"],
     deps = [
+        "//sw/device/lib/base:crc32_device_library",  # force non-mock version in unit tests
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
 
 cc_library(
-    name = "kdf",
-    srcs = ["kdf.c"],
-    hdrs = ["//sw/device/lib/crypto/include:kdf.h"],
+    name = "kdf_ctr",
+    srcs = ["kdf_ctr.c"],
+    hdrs = ["//sw/device/lib/crypto/include:kdf_ctr.h"],
     deps = [
+        ":hmac",
         ":integrity",
         ":keyblob",
-        ":mac",
         ":status",
         "//sw/device/lib/base:math",
-        "//sw/device/lib/crypto/drivers:kmac",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
@@ -145,7 +167,9 @@ cc_library(
         ":status",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:math",
+        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:keymgr",
+        "//sw/device/lib/crypto/drivers:rv_core_ibex",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
@@ -165,6 +189,7 @@ cc_library(
     hdrs = ["//sw/device/lib/crypto/include:key_transport.h"],
     deps = [
         ":status",
+        "//sw/device/lib/crypto/drivers:rv_core_ibex",
         "//sw/device/lib/crypto/impl:drbg",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:keyblob",
@@ -183,17 +208,83 @@ cc_test(
 )
 
 cc_library(
+    name = "kmac_kdf",
+    srcs = ["kmac_kdf.c"],
+    hdrs = ["//sw/device/lib/crypto/include:kmac_kdf.h"],
+    deps = [
+        ":integrity",
+        ":keyblob",
+        ":status",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:math",
+        "//sw/device/lib/crypto/drivers:kmac",
+        "//sw/device/lib/crypto/drivers:rv_core_ibex",
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
+cc_library(
     name = "rsa",
     srcs = ["rsa.c"],
     hdrs = ["//sw/device/lib/crypto/include:rsa.h"],
     deps = [
         ":integrity",
+        ":security_config",
         ":status",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/drivers:rv_core_ibex",
         "//sw/device/lib/crypto/impl/rsa:rsa_encryption",
-        "//sw/device/lib/crypto/impl/rsa:rsa_keygen",
         "//sw/device/lib/crypto/impl/rsa:rsa_signature",
+        "//sw/device/lib/crypto/impl/rsa:run_rsa_key_from_cofactor",
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
+cc_library(
+    name = "security_config",
+    srcs = ["security_config.c"],
+    hdrs = ["//sw/device/lib/crypto/include:security_config.h"],
+    deps = [
+        ":integrity",
+        ":status",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/crypto/drivers:rv_core_ibex",
+        "//sw/device/silicon_creator/lib/drivers:clkmgr",
+    ],
+)
+
+cc_library(
+    name = "sha2",
+    srcs = ["sha2.c"],
+    hdrs = [
+        "//sw/device/lib/crypto/include:sha2.h",
+    ],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":status",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/crypto/drivers:hmac",
+        "//sw/device/lib/crypto/drivers:rv_core_ibex",
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
+cc_library(
+    name = "sha3",
+    srcs = ["sha3.c"],
+    hdrs = [
+        "//sw/device/lib/crypto/include:sha3.h",
+    ],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":status",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/crypto/drivers:kmac",
+        "//sw/device/lib/crypto/drivers:rv_core_ibex",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
@@ -212,6 +303,20 @@ cc_library(
     deps = [
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
+opentitan_test(
+    name = "status_functest",
+    srcs = ["status_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":status",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -236,19 +341,38 @@ cc_test(
 )
 
 cc_library(
-    name = "mac",
-    srcs = ["mac.c"],
+    name = "hmac",
+    srcs = ["hmac.c"],
     hdrs = [
-        "//sw/device/lib/crypto/include:mac.h",
+        "//sw/device/lib/crypto/include:hmac.h",
     ],
     deps = [
-        ":hash",
         ":integrity",
         ":keyblob",
+        ":security_config",
+        ":sha2",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:hmac",
+        "//sw/device/lib/crypto/drivers:rv_core_ibex",
+    ],
+)
+
+cc_library(
+    name = "kmac",
+    srcs = ["kmac.c"],
+    hdrs = [
+        "//sw/device/lib/crypto/include:kmac.h",
+    ],
+    deps = [
+        ":integrity",
+        ":keyblob",
+        ":security_config",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:kmac",
+        "//sw/device/lib/crypto/drivers:rv_core_ibex",
     ],
 )
 

@@ -9,7 +9,7 @@ load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_override")
 load("//rules:actions.bzl", "OT_ACTION_OBJDUMP")
 
-def obj_transform(ctx, **kwargs):
+def obj_transform(ctx, strip_llvm_prf_cnts = False, **kwargs):
     """Transform an object file via objcopy.
 
     Args:
@@ -19,6 +19,7 @@ def obj_transform(ctx, **kwargs):
                  if not specified.
         src: The src File object.
         format: The objcopy output-format.
+        strip_llvm_prf_cnts: Whether to strip the llvm coverage counter section.
     Returns:
       The transformed File.
     """
@@ -44,17 +45,51 @@ def obj_transform(ctx, **kwargs):
     src = get_override(ctx, "file.src", kwargs)
     out_format = get_override(ctx, "attr.format", kwargs)
 
+    transform_inputs = [src]
+    transform_flags = ["--output-target", out_format]
+
+    if strip_llvm_prf_cnts:
+        # Extract the initial contents of the `__llvm_prf_cnts` section.
+        prf_cnts = ctx.actions.declare_file("{}.prf_cnts".format(output))
+        ctx.actions.run(
+            outputs = [prf_cnts],
+            inputs = [src] + cc_toolchain.all_files.to_list(),
+            arguments = [
+                "--output-target",
+                out_format,
+                "--only-section",
+                "__llvm_prf_cnts",
+                "--gap-fill",
+                "0xa5",
+                src.path,
+                prf_cnts.path,
+            ],
+            executable = objcopy,
+        )
+
+        # Checks the initial contents of the `__llvm_prf_cnts` section.
+        prf_cnts_res = ctx.actions.declare_file("{}.prf_cnts_res".format(output))
+        ctx.actions.run(
+            outputs = [prf_cnts_res],
+            inputs = [prf_cnts],
+            arguments = [prf_cnts.path, prf_cnts_res.path],
+            executable = ctx.executable._check_initial_coverage,
+        )
+
+        transform_inputs.append(prf_cnts_res)
+        transform_flags.extend(["--remove-section", "__llvm_prf_cnts"])
+
+    # Transforms the firmware format.
     ctx.actions.run(
         outputs = [output],
-        inputs = [src] + cc_toolchain.all_files.to_list(),
-        arguments = [
-            "--output-target",
-            out_format,
+        inputs = transform_inputs + cc_toolchain.all_files.to_list(),
+        arguments = transform_flags + [
             src.path,
             output.path,
         ],
         executable = objcopy,
     )
+
     return output
 
 def obj_disassemble(ctx, **kwargs):
@@ -163,11 +198,12 @@ def scramble_flash(ctx, **kwargs):
       kwargs: Overrides of values normally retrived from the context object.
         output: The name of the output file.  Constructed from `name` and `suffix`
                  if not specified.
-        suffix: The suffix to give the file if the ouput isn't specified.
+        suffix: The suffix to give the file if the output isn't specified.
         src: The src File object.
         otp: The OTP settings.
         otp_mmap: The OTP memory mapping file.
-        otp_seed: The OTP seed.
+
+        top_secret_cfg: The secret configuration file.
         otp_data_perm: The OTP data permutation configuration.
         _tool: The flash scrambling script.
 
@@ -191,18 +227,18 @@ def scramble_flash(ctx, **kwargs):
         "--out-flash-vmem",
         output.path,
     ]
+
+    # Always get top_secret_cfg since the tool requires it
+    top_secret_cfg = get_override(ctx, "file.top_secret_cfg", kwargs)
+    arguments.extend(["--top-secret-cfg", top_secret_cfg.path])
+    inputs.append(top_secret_cfg)
+
     if otp:
-        otp_mmap = get_override(ctx, "file.otp_mmap", kwargs)
-        otp_seed = get_override(ctx, "attr.otp_seed", kwargs)
         arguments.extend([
             "--in-otp-vmem",
             otp.path,
-            "--in-otp-mmap",
-            otp_mmap.path,
-            "--otp-seed",
-            str(otp_seed[BuildSettingInfo].value),
         ])
-        inputs.extend([otp, otp_mmap])
+        inputs.extend([otp])
 
         otp_data_perm = get_override(ctx, "attr.otp_data_perm", kwargs)
         if otp_data_perm:
@@ -261,9 +297,9 @@ def convert_to_scrambled_rom_vmem(ctx, **kwargs):
         output: The name of the output file.  Constructed from `name` and `suffix`
                  if not specified.
         src: The src File object.
-        rom_scramble_config: The scrambling config.
         rom_scramble_tool: The scrambling tool.
         rom_scramble_mode: The scrambling mode.
+        top_secret_cfg: The secrets configuration of the top.
     Returns:
       (The transformed File, The hashfile)
     """
@@ -279,15 +315,17 @@ def convert_to_scrambled_rom_vmem(ctx, **kwargs):
 
     src = get_override(ctx, "attr.src", kwargs)
 
-    config = get_override(ctx, "file.rom_scramble_config", kwargs)
+    top_config = get_override(ctx, "file.top_gen_hjson", kwargs)
+    secrets = get_override(ctx, "file.top_secret_cfg", kwargs)
     tool = get_override(ctx, "executable.rom_scramble_tool", kwargs)
     mode = get_override(ctx, "attr.rom_scramble_mode", kwargs)
 
     ctx.actions.run(
         outputs = [output, hashfile],
-        inputs = [src, tool, config],
+        inputs = [src, tool, top_config, secrets],
         arguments = [
-            config.path,
+            top_config.path,
+            secrets.path,
             mode,
             src.path,
             output.path,

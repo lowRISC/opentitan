@@ -16,7 +16,7 @@
  * recovery of a device should it get into the Recovery state (ie:
  * a state where there is no valid owner).
  */
-extern const owner_key_t *const kNoOwnerRecoveryKey;
+extern const owner_keydata_t *const kNoOwnerRecoveryKey;
 
 typedef enum ownership_key {
   /** The owner_key in the owner page. */
@@ -46,14 +46,17 @@ typedef struct owner_secret_page {
  *
  * @param page Owner-page on which the key resides.
  * @param key Which key (or keys) to use to validate the message.
+ * @param command The bootsvc command or entity this validate is for.
+ * @param nonce The current ROM_EXT nonce.
  * @param signature The signature over the message.
  * @param message Pointer to the message.
  * @param len Size of the message.
- * @return kHardenedBoolTrue if the message is valid.
+ * @return kErrorOk if the message is valid.
  */
-hardened_bool_t ownership_key_validate(size_t page, ownership_key_t key,
-                                       const owner_signature_t *signature,
-                                       const void *message, size_t len);
+rom_error_t ownership_key_validate(size_t page, ownership_key_t key,
+                                   uint32_t command, const nonce_t *nonce,
+                                   const owner_signature_t *signature,
+                                   const void *message, size_t len);
 
 /**
  * Initialize sealing.
@@ -64,6 +67,13 @@ hardened_bool_t ownership_key_validate(size_t page, ownership_key_t key,
  * @return Success or error code.
  */
 rom_error_t ownership_seal_init(void);
+
+/**
+ * Clear the sideloaded key in the KMAC block.
+ *
+ * @return Success or error code.
+ */
+rom_error_t ownership_seal_clear(void);
 
 /**
  * Generate a seal for an ownership page.
@@ -84,9 +94,12 @@ rom_error_t ownership_seal_check(size_t page);
 /**
  * Replace the owner secret with new entropy and update the ownership history.
  *
+ * @param prior_key_alg The key algorithm of the prior owner_key.
+ * @param prior_owner_key The prior owner key.
  * @return Success or error code.
  */
-rom_error_t ownership_secret_new(void);
+rom_error_t ownership_secret_new(uint32_t prior_key_alg,
+                                 const owner_keydata_t *prior_owner_key);
 
 /**
  * Retrieve the owner history digest from the OwnerSecret page.

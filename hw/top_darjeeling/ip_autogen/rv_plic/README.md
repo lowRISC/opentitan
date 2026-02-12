@@ -11,7 +11,7 @@ See that document for integration overview within the broader top level system.
 ## Features
 
 - RISC-V Platform-Level Interrupt Controller (PLIC) compliant interrupt controller
-- Support arbitrary number of interrupt vectors (up to 255) and targets
+- Support arbitrary number of interrupt vectors (up to 1023) and targets
 - Support interrupt enable, interrupt status registers
 - Memory-mapped MSIP register per HART for software interrupt control.
 

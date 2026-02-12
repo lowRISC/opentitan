@@ -5,7 +5,7 @@
 // ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
 // util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson
-// -o hw/top_earlgrey
+//                -o hw/top_earlgrey/
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 

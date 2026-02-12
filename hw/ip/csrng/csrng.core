@@ -25,9 +25,7 @@ filesets:
       - rtl/csrng_state_db.sv
       - rtl/csrng_cmd_stage.sv
       - rtl/csrng_block_encrypt.sv
-      - rtl/csrng_ctr_drbg_cmd.sv
-      - rtl/csrng_ctr_drbg_upd.sv
-      - rtl/csrng_ctr_drbg_gen.sv
+      - rtl/csrng_ctr_drbg.sv
       - rtl/csrng_core.sv
       - rtl/csrng.sv
     file_type: systemVerilogSource

@@ -45,6 +45,12 @@
       tests: ["aes_shadow_reg_errors"]
     }
     {
+      name: sec_cm_gcm_config_shadow
+      desc: "Verify the countermeasure(s) GCM.CONFIG.SHADOW."
+      stage: V2S
+      tests: ["aes_shadow_reg_errors"]
+    }
+    {
       name: sec_cm_main_config_sparse
       desc: '''
             Verify the countermeasure(s) MAIN.CONFIG.SPARSE.
@@ -53,6 +59,15 @@
             '''
       stage: V2S
       tests: ["aes_stress", "aes_smoke", "aes_alert_reset", "aes_core_fi"]
+    }
+    {
+      name: sec_cm_gcm_config_sparse
+      desc: '''
+            Verify the countermeasure(s) GCM.CONFIG.SPARSE.
+            Illegally encoded values as well as currently disallowed but legal values are written into the GCM control register via register interface and it is ensured that the values are resolved to the correct legal values.
+            '''
+      stage: V2S
+      tests: ["aes_stress", "aes_config_error"]
     }
     {
       name: sec_cm_aux_config_shadow
@@ -202,6 +217,17 @@
             '''
       stage: V2S
       tests: ["aes_fi", "aes_control_fi", "aes_ctr_fi"]
+    }
+    {
+      name: sec_cm_ghash_fsm_sparse
+      desc: '''
+            Verify the countermeasure(s) GHASH.FSM.SPARSE.
+            It is ensured that upon forcing the state register of the GHASH FSM to an invalid value, the DUT stops processing data, locks up and triggers a fatal alert.
+
+            Note: The corresponding DV changes to enable testing this countermeasure are upstreamed in a different PR.
+            '''
+      stage: V2S
+      tests: ["TODO"]
     }
     {
       name: sec_cm_ctrl_sparse

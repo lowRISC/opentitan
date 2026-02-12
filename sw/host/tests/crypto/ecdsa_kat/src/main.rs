@@ -9,12 +9,12 @@ use ecdsa::SignatureWithOid;
 use ecdsa::{ECDSA_SHA256_OID, ECDSA_SHA384_OID, ECDSA_SHA512_OID};
 use num_bigint_dig::BigInt;
 use num_traits::Num;
+use p256::U256;
 use p256::ecdsa::signature::Verifier;
 use p256::elliptic_curve::scalar::ScalarPrimitive as ScalarPrimitiveP256;
 use p256::pkcs8::ObjectIdentifier;
-use p256::U256;
-use p384::elliptic_curve::scalar::ScalarPrimitive as ScalarPrimitiveP384;
 use p384::U384;
+use p384::elliptic_curve::scalar::ScalarPrimitive as ScalarPrimitiveP384;
 use serde::Deserialize;
 use sha2::digest::generic_array::GenericArray;
 use sha2::{Digest, Sha256, Sha384, Sha512};
@@ -450,7 +450,7 @@ fn run_ecdsa_testcase(
     let success = match operation {
         CryptotestEcdsaOperation::Sign => {
             let mut output_signature =
-                CryptotestEcdsaSignature::recv(spi_console, opts.timeout, false)?;
+                CryptotestEcdsaSignature::recv(spi_console, opts.timeout, false, false)?;
             // Truncate signature values to correct size for curve and convert to big-endian
             output_signature.r.truncate(output_signature.r_len);
             output_signature.s.truncate(output_signature.s_len);
@@ -477,7 +477,8 @@ fn run_ecdsa_testcase(
             }
         }
         CryptotestEcdsaOperation::Verify => {
-            let ecdsa_output = CryptotestEcdsaVerifyOutput::recv(spi_console, opts.timeout, false)?;
+            let ecdsa_output =
+                CryptotestEcdsaVerifyOutput::recv(spi_console, opts.timeout, false, false)?;
             match ecdsa_output {
                 CryptotestEcdsaVerifyOutput::Success => true,
                 CryptotestEcdsaVerifyOutput::Failure => false,
@@ -511,8 +512,8 @@ fn run_ecdsa_testcase(
 
 fn test_ecdsa(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let spi = transport.spi("BOOTSTRAP")?;
-    let spi_console_device = SpiConsoleDevice::new(&*spi)?;
-    let _ = UartConsole::wait_for(&spi_console_device, r"Running [^\r\n]*", opts.timeout)?;
+    let spi_console_device = SpiConsoleDevice::new(&*spi, None, /*ignore_frame_num=*/ false)?;
+    let _ = UartConsole::wait_for(&spi_console_device, r"Running ", opts.timeout)?;
 
     let mut test_counter = 0u32;
     let mut failures = vec![];

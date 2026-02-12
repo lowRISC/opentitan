@@ -105,6 +105,13 @@ p384_key_from_seed:
   bn.sel    w5, w10, w24, FG0.C
   bn.sel    w6, w11, w25, FG0.C
 
+  /* Clear w25 before over writing it with a different share. */
+  bn.xor    w25, w25, w25
+
+  /* Dummy instruction to avoid consecutive share access.
+     Clear all flags. */
+  bn.sub    w31, w31, w31
+
   /* Isolate the carry bit and shift it back into position.
        w25 <= x0[384] << 128 */
   bn.rshi   w25, w31, w21 >> 128
@@ -115,11 +122,11 @@ p384_key_from_seed:
   bn.xor    w21, w21, w25
 
   /* Conditionally subtract n to reduce.
-       [w21,w20] <= (x0 mod 2^384) mod n */
+       [w29,w28] <= (x0 mod 2^384) mod n */
   bn.sub    w26, w20, w16
   bn.subb   w27, w21, w17
-  bn.sel    w20, w20, w26, FG0.C
-  bn.sel    w21, w21, w27, FG0.C
+  bn.sel    w28, w20, w26, FG0.C
+  bn.sel    w29, w21, w27, FG0.C
 
   /* Compute the correction factor.
        [w25,w24] <= (x[384] << 384) mod n = c */
@@ -130,15 +137,15 @@ p384_key_from_seed:
 
   /* Compute d0 with a modular subtraction. First we add n to protect
      against underflow, then conditionally subtract it again if needed.
-       [w23,w22] <= ([w21, w20] - [w25,w24]) mod n = d0 */
-  bn.add    w20, w20, w16
-  bn.addc   w21, w21, w17
-  bn.sub    w20, w20, w24
-  bn.subb   w21, w21, w25
-  bn.sub    w26, w20, w16
-  bn.subb   w27, w21, w17
-  bn.sel    w22, w20, w26, FG0.C
-  bn.sel    w23, w21, w27, FG0.C
+       [w23,w22] <= ([w29, w28] - [w25,w24]) mod n = d0 */
+  bn.add    w28, w28, w16
+  bn.addc   w29, w29, w17
+  bn.sub    w28, w28, w24
+  bn.subb   w29, w29, w25
+  bn.sub    w26, w28, w16
+  bn.subb   w27, w29, w17
+  bn.sel    w22, w28, w26, FG0.C
+  bn.sel    w23, w29, w27, FG0.C
 
   /* Get 63 bits of randomness from RND, multiply it with n,
      and add it to the key share to get a 448-bit share. */
@@ -150,6 +157,12 @@ p384_key_from_seed:
   jal       x1, mul384
   bn.mov    w1, w18
   bn.mov    w2, w19
+
+  /* Clear regs. */
+  bn.xor    w10, w10, w10
+  bn.xor    w11, w11, w11
+  bn.xor    w18, w18, w18
+  bn.xor    w19, w19, w19
 
   /* [w6,w5] <= [w6,w5] + [w2,w1] = d1 + (RND >> 193) * n = d1' */
   bn.add    w5, w5, w1
@@ -167,6 +180,9 @@ p384_key_from_seed:
   bn.add    w22, w22, w3
   bn.addc   w23, w23, w4
 
+  /* Clear flags. */
+  bn.add    w31, w31, w31
+
   /* Write first 448-bit share to DMEM.
      dmem[d0] <= [w23,w22] = d0' */
   la        x20, d0
@@ -174,27 +190,16 @@ p384_key_from_seed:
   bn.sid    x2++, 0(x20)
   bn.sid    x2++, 32(x20)
 
+  /* Write zero to the most significant 256 bits of both shares. */
+  li        x2, 31
+  bn.sid    x2, 64(x20)
+  la        x20, d1
+  bn.sid    x2, 64(x20)
+
   /* Write second 448-bit share to DMEM.
      dmem[d1] <= [w6,w5] = d1' */
-  la        x20, d1
   li        x2, 5
   bn.sid    x2++, 0(x20)
   bn.sid    x2++, 32(x20)
 
   ret
-
-.section .data
-
-.balign 32
-
-/* 1st private key share d0 */
-.globl d0
-.weak d0
-d0:
-  .zero 64
-
-/* 2nd private key share d1 */
-.globl d1
-.weak d1
-d1:
-  .zero 64

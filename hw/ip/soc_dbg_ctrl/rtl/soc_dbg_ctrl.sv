@@ -10,7 +10,9 @@ module soc_dbg_ctrl
   import soc_dbg_ctrl_pkg::*;
   import soc_dbg_ctrl_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned AlertSkewCycles = 1
 ) (
   input logic                                       clk_i,
   input logic                                       rst_ni,
@@ -31,6 +33,8 @@ module soc_dbg_ctrl
   input  lc_ctrl_pkg::lc_tx_t                       lc_dft_en_i,
   input  lc_ctrl_pkg::lc_tx_t                       lc_hw_debug_en_i,
   input  lc_ctrl_pkg::lc_tx_t                       lc_raw_test_rma_i,
+  input lc_ctrl_pkg::lc_tx_t                        lc_cpu_en_i,
+  input lc_ctrl_pkg::lc_tx_t                        lc_rma_state_i,
   input  pwrmgr_pkg::pwr_boot_status_t              boot_status_i,
   // Boot information from the pwrmgr
   // Halts CPU boot in early lifecycle stages after reset based on an external signal
@@ -52,20 +56,20 @@ module soc_dbg_ctrl
   logic policy_shadowed_storage_err, policy_shadowed_update_err;
   logic [NumAlerts-1:0] alert_test, alert;
 
-  assign alert_test = {
-    core_reg2hw.alert_test.fatal_fault.q &
-    core_reg2hw.alert_test.fatal_fault.qe,
-    core_reg2hw.alert_test.recov_ctrl_update_err.q &
-    core_reg2hw.alert_test.recov_ctrl_update_err.qe
-  };
   assign alert[0] = core_tl_intg_err | jtag_tl_intg_err | shadowed_storage_err |
                     policy_shadowed_storage_err | halt_fsm_err;
   assign alert[1] = shadowed_update_err | policy_shadowed_update_err;
+
+  assign alert_test[0] = core_reg2hw.alert_test.fatal_fault.q &
+                         core_reg2hw.alert_test.fatal_fault.qe;
+  assign alert_test[1] = core_reg2hw.alert_test.recov_ctrl_update_err.q &
+                         core_reg2hw.alert_test.recov_ctrl_update_err.qe;
 
   localparam logic [NumAlerts-1:0] IsFatal = {1'b0, 1'b1};
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(IsFatal[i])
     ) u_prim_alert_sender (
       .clk_i,
@@ -200,10 +204,24 @@ module soc_dbg_ctrl
       // In Soc_DbgStProd, the debug policy is driven by the RoT according to the negotiated or
       // authorized policy
       lc_ctrl_state_pkg::SocDbgStProd: begin
-        soc_dbg_policy_d.category = dbg_category_e'(core_hw2reg.debug_policy_category_shadowed.d);
-        soc_dbg_policy_d.valid    =
-          prim_mubi_pkg::mubi4_t'(core_reg2hw.debug_policy_valid_shadowed.q);
-        soc_dbg_policy_d.relocked = prim_mubi_pkg::mubi4_t'(core_reg2hw.debug_policy_relocked.q);
+        // Only allow the SW-based debug policy to be set when not in RMA state and if the CPU is
+        // running. For RMA state, the debug policy is enabled to the highest category. In this
+        // state also the ROT DM is enabled. For other states, where the debug control is set to
+        // prod but the life cycle is not yet in a state where the CPU is running
+        // (eg., TEST_LOCKED or RAW), the debug policy is locked.
+        if (lc_tx_test_true_strict(lc_rma_state_i)) begin
+          soc_dbg_policy_d.category = DbgCategory4;
+          soc_dbg_policy_d.valid    = prim_mubi_pkg::MuBi4True;
+          soc_dbg_policy_d.relocked = prim_mubi_pkg::MuBi4False;
+        end else if (lc_tx_test_true_strict(lc_cpu_en_i)) begin
+          soc_dbg_policy_d.category = dbg_category_e'(core_hw2reg.debug_policy_category_shadowed.d);
+          soc_dbg_policy_d.valid    = prim_mubi_pkg::MuBi4True;
+          soc_dbg_policy_d.relocked = prim_mubi_pkg::mubi4_t'(core_reg2hw.debug_policy_relocked.q);
+        end else begin
+          soc_dbg_policy_d.category = DbgCategoryLocked;
+          soc_dbg_policy_d.valid    = prim_mubi_pkg::mubi4_bool_to_mubi(boot_status_i.lc_done);
+          soc_dbg_policy_d.relocked = prim_mubi_pkg::MuBi4False;
+        end
       end
 
       default: begin
@@ -249,7 +267,12 @@ module soc_dbg_ctrl
 
   // The status register is written by IBEX firmware and is reflected into the JTAG status register.
   // The JTAG user shall query this status register.
-  assign jtag_hw2reg.jtag_status = soc_dbg_ctrl_hw2reg_jtag_status_reg_t'(core_reg2hw.status);
+  assign jtag_hw2reg.jtag_status.auth_unlock_failed.d    = core_reg2hw.status.auth_unlock_failed.q;
+  assign jtag_hw2reg.jtag_status.auth_unlock_success.d   = core_reg2hw.status.auth_unlock_success.q;
+  assign jtag_hw2reg.jtag_status.auth_window_closed.d    = core_reg2hw.status.auth_window_closed.q;
+  assign jtag_hw2reg.jtag_status.auth_window_open.d      = core_reg2hw.status.auth_window_open.q;
+  assign jtag_hw2reg.jtag_status.auth_debug_intent_set.d =
+              core_reg2hw.status.auth_debug_intent_set.q;
 
   halt_state_e halt_state_d, halt_state_q;
 
@@ -385,10 +408,10 @@ module soc_dbg_ctrl
   // All outputs should be known value after reset
   `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
 
-  `ASSERT_KNOWN(CoreTlDValidKnownO_A, core_tl_o.d_valid)
-  `ASSERT_KNOWN(CoreTlAReadyKnownO_A, core_tl_o.a_ready)
-  `ASSERT_KNOWN(JtagTlDValidKnownO_A, jtag_tl_o.d_valid)
-  `ASSERT_KNOWN(JtagTlAReadyKnownO_A, jtag_tl_o.a_ready)
+  `ASSERT_KNOWN_IF(CoreTlODKnown_A, core_tl_o, core_tl_o.d_valid)
+  `ASSERT_KNOWN(CoreTlOAReadyKnown_A, core_tl_o.a_ready)
+  `ASSERT_KNOWN_IF(JtagTlODKnown_A, jtag_tl_o, jtag_tl_o.d_valid)
+  `ASSERT_KNOWN(JtagTlOAReadyKnown_A, jtag_tl_o.a_ready)
 
   `ASSERT_KNOWN(SocDbgPolicyBusKnown_A, soc_dbg_policy_bus_o)
   `ASSERT_KNOWN(ContinueBootKnown_A, continue_cpu_boot_o)

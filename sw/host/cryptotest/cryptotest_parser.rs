@@ -40,7 +40,8 @@
 //! Comments that do not begin with `// cryptotest:` are ignored; the rest are parsed
 //! as annotations.
 
-use once_cell::sync::Lazy;
+use std::sync::LazyLock;
+
 use regex::Regex;
 
 /// A test vector struct.
@@ -98,7 +99,7 @@ pub enum Int {
 
 impl Int {
     /// Parses an `Int` from its C name.
-    pub fn from_name(name: &str) -> Result<Self, Error> {
+    pub fn from_name(name: &str) -> Result<Self, Error<'_>> {
         match name {
             "bool" => Ok(Int::Bool),
             "uint8_t" => Ok(Int::U8),
@@ -150,25 +151,26 @@ pub enum LenUnit {
 
 // The "grammar" above is designed to be so simple we can parse it with a pile of
 // regular expressions.
-static STRUCT_START: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"^typedef\s+struct\s+([a-zA-Z_][0-9a-zA-Z_]*)?\s*\{").unwrap());
-static STRUCT_END: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"^}\s*([a-zA-Z_][0-9a-zA-Z_]*)\s*;").unwrap());
-static INT_FIELD: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"^([a-zA-Z_][0-9a-zA-Z_]*)\s+([a-zA-Z_][0-9a-zA-Z_]*)\s*;").unwrap());
-static STRING_FIELD: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"^const\s+char\s*\*\s*([a-zA-Z_][0-9a-zA-Z_]*)\s*;").unwrap());
-static VECTOR_FIELD: Lazy<Regex> = Lazy::new(|| {
+static STRUCT_START: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^typedef\s+struct\s+([a-zA-Z_][0-9a-zA-Z_]*)?\s*\{").unwrap());
+static STRUCT_END: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^}\s*([a-zA-Z_][0-9a-zA-Z_]*)\s*;").unwrap());
+static INT_FIELD: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"^([a-zA-Z_][0-9a-zA-Z_]*)\s+([a-zA-Z_][0-9a-zA-Z_]*)\s*;").unwrap()
+});
+static STRING_FIELD: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^const\s+char\s*\*\s*([a-zA-Z_][0-9a-zA-Z_]*)\s*;").unwrap());
+static VECTOR_FIELD: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"^([a-zA-Z_][0-9a-zA-Z_]*)\s+([a-zA-Z_][0-9a-zA-Z_]*)\s*\[\s*(\w+)\s*\]\s*;")
         .unwrap()
 });
-static INT_ARRAY_FIELD: Lazy<Regex> = Lazy::new(|| {
+static INT_ARRAY_FIELD: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"^const\s+([a-zA-Z_][0-9a-zA-Z_]*)\s*\*\s*([a-zA-Z_][0-9a-zA-Z_]*)\s*;").unwrap()
 });
-static STRING_ARRAY_FIELD: Lazy<Regex> = Lazy::new(|| {
+static STRING_ARRAY_FIELD: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"^const\s+char\s*\*\s*const\s*\*\s*([a-zA-Z_][0-9a-zA-Z_]*)\s*;").unwrap()
 });
-static VECTOR_ARRAY_FIELD: Lazy<Regex> = Lazy::new(|| {
+static VECTOR_ARRAY_FIELD: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"^const\s+([a-zA-Z_][0-9a-zA-Z_]*)\s*\(\s*\*\s*([a-zA-Z_][0-9a-zA-Z_]*)\s*\)\s*\[\s*(\w+)\s*\]\s*;").unwrap()
 });
 
@@ -198,7 +200,7 @@ pub enum Error<'c> {
 impl Struct {
     /// Parses a `Struct` from the given C file. This will only parse the first
     /// `cryptolib:struct` encountered.
-    pub fn parse(mut c_file: &str) -> Result<Struct, Error> {
+    pub fn parse(mut c_file: &str) -> Result<Struct, Error<'_>> {
         // First, find the struct.
         let struct_start = c_file.find(STRUCT_COMMENT).ok_or(Error::NoStructFound)?;
         c_file = &c_file[struct_start..];
@@ -315,7 +317,7 @@ fn munch_comments<'a>(c_file: &mut &'a str) -> Vec<&'a str> {
     }
 }
 
-fn parse_annotation(comment: &str) -> Result<Option<Annotation>, Error> {
+fn parse_annotation(comment: &str) -> Result<Option<Annotation>, Error<'_>> {
     let comment = match comment.strip_prefix("// cryptotest:") {
         Some(comment) => comment,
         None => return Ok(None),
@@ -374,13 +376,15 @@ mod tests {
 
     #[test]
     fn missing_name() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {};
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
@@ -409,42 +413,48 @@ mod tests {
 
     #[test]
     fn missing_field_name() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 uint32_t;
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
     fn char_field() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 char is_not_allowed;
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
     fn bad_annotation() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 // cryptotest:omelette
                 uint32_t something;
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
@@ -571,41 +581,47 @@ mod tests {
 
     #[test]
     fn missing_vec_field_name() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 uint32_t[4];
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
     fn transposed_vec_field_name() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 uint32_t[4] foo;
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
     fn non_literal_vec_len() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 uint32_t foo[kLen];
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
@@ -641,41 +657,47 @@ mod tests {
 
     #[test]
     fn missing_cstr_const() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 char *mut_str;
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
     fn missing_cstr_star() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 const char mut_str;
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
     fn cstr_right_const() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 char *const mut_str;
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
@@ -712,8 +734,9 @@ mod tests {
 
     #[test]
     fn missing_int_array_const() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 size_t word_count;
@@ -721,14 +744,16 @@ mod tests {
                 uint32_t *mut;
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
     fn mystery_len() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 size_t word_count;
@@ -736,8 +761,9 @@ mod tests {
                 uint32_t *mut;
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
@@ -774,8 +800,9 @@ mod tests {
 
     #[test]
     fn missing_vec_array_const() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 size_t word_count;
@@ -783,14 +810,16 @@ mod tests {
                 uint32_t (*keys)[32];
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
     fn missing_vec_array_star() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 size_t word_count;
@@ -798,14 +827,16 @@ mod tests {
                 uint32_t (keys)[32];
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
     fn missing_vec_array_parens() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 size_t word_count;
@@ -813,8 +844,9 @@ mod tests {
                 uint32_t *keys[32];
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
@@ -851,8 +883,9 @@ mod tests {
 
     #[test]
     fn missing_cstr_array_inner_const() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 size_t word_count;
@@ -860,14 +893,16 @@ mod tests {
                 char* const* sonnets;
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
     fn missing_cstr_array_outer_const() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 size_t word_count;
@@ -875,14 +910,16 @@ mod tests {
                 const char** sonnets;
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
     fn missing_cstr_array_outer_star() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 size_t word_count;
@@ -890,14 +927,16 @@ mod tests {
                 const char* const sonnets;
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 
     #[test]
     fn missing_cstr_array_inner_star() {
-        assert!(Struct::parse(
-            "
+        assert!(
+            Struct::parse(
+                "
             // cryptotest:struct
             typedef struct {
                 size_t word_count;
@@ -905,7 +944,8 @@ mod tests {
                 const char const* sonnets;
             };
             "
+            )
+            .is_err()
         )
-        .is_err())
     }
 }

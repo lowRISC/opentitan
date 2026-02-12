@@ -367,13 +367,13 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::corrupt_rom_address();
                                      (tgt_addr != addr);)
   corr_bus_rom_rom_index_val = tgt_addr[2 +: RomIndexWidth];
   tl_access_sub(.addr(addr), .write(0), .data(rdata), .completed(completed),
-                .saw_err(saw_err), .check_rsp(1), .rsp(tl_access_rsp),
+                .saw_err(saw_err), .check_err_rsp(1), .rsp(tl_access_rsp),
                 .tl_sequencer_h(p_sequencer.tl_sequencer_hs["rom_ctrl_prim_reg_block"]));
   void'(tl_access_rsp.is_d_chan_intg_ok(.en_rsp_intg_chk(1),
                                         .en_data_intg_chk(1),
                                         .throw_error(1)));
   tl_access_sub(.addr(tgt_addr), .write(0), .data(rdata_tgt), .completed(completed),
-                .saw_err(saw_err), .check_rsp(1), .rsp(tl_access_rsp),
+                .saw_err(saw_err), .check_err_rsp(1), .rsp(tl_access_rsp),
                 .tl_sequencer_h(p_sequencer.tl_sequencer_hs["rom_ctrl_prim_reg_block"]));
   void'(tl_access_rsp.is_d_chan_intg_ok(.en_rsp_intg_chk(1),
                                         .en_data_intg_chk(1),
@@ -385,7 +385,7 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::corrupt_rom_address();
       cfg.en_scb_tl_err_chk = 0;
       cfg.scoreboard.disable_rom_acc_chk = 1;
       tl_access_sub(.addr(addr), .write(0), .data(corr_data), .completed(completed),
-                    .saw_err(saw_err), .check_rsp(1), .rsp(tl_access_rsp),
+                    .saw_err(saw_err), .check_err_rsp(1), .rsp(tl_access_rsp),
                     .tl_sequencer_h(p_sequencer.tl_sequencer_hs["rom_ctrl_prim_reg_block"])
                    );
       `DV_CHECK_EQ(completed, 1)

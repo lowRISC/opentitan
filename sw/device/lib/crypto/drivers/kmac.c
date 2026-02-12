@@ -4,14 +4,16 @@
 
 #include "sw/device/lib/crypto/drivers/kmac.h"
 
+#include "hw/top/dt/kmac.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
+#include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "kmac_regs.h"  // Generated.
+#include "hw/top/kmac_regs.h"  // Generated.
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('d', 'k', 'c')
@@ -38,10 +40,10 @@ typedef enum kmac_security_str {
  * - Bit 1-2: Keccak hashing mode (e.g. SHA, SHAKE, or cSHAKE).
  */
 typedef enum kmac_operation {
-  kKmacOperationSHA3 = KMAC_CFG_SHADOWED_MODE_VALUE_SHA3 << 1 | 0,
-  kKmacOperationSHAKE = KMAC_CFG_SHADOWED_MODE_VALUE_SHAKE << 1 | 0,
-  kKmacOperationCSHAKE = KMAC_CFG_SHADOWED_MODE_VALUE_CSHAKE << 1 | 0,
-  kKmacOperationKMAC = KMAC_CFG_SHADOWED_MODE_VALUE_CSHAKE << 1 | 1,
+  kKmacOperationSha3 = KMAC_CFG_SHADOWED_MODE_VALUE_SHA3 << 1 | 0,
+  kKmacOperationShake = KMAC_CFG_SHADOWED_MODE_VALUE_SHAKE << 1 | 0,
+  kKmacOperationCshake = KMAC_CFG_SHADOWED_MODE_VALUE_CSHAKE << 1 | 0,
+  kKmacOperationKmac = KMAC_CFG_SHADOWED_MODE_VALUE_CSHAKE << 1 | 1,
 } kmac_operation_t;
 
 /**
@@ -57,15 +59,13 @@ typedef enum kmac_key_length {
 
 enum {
   kKmacPrefixRegCount = 4 * KMAC_PREFIX_MULTIREG_COUNT,
-  kKmacBaseAddr = TOP_EARLGREY_KMAC_BASE_ADDR,
-  kKmacCfgAddr = kKmacBaseAddr + KMAC_CFG_SHADOWED_REG_OFFSET,
-  kKmacKeyShare0Addr = kKmacBaseAddr + KMAC_KEY_SHARE0_0_REG_OFFSET,
-  kKmacKeyShare1Addr = kKmacBaseAddr + KMAC_KEY_SHARE1_0_REG_OFFSET,
   kKmacStateShareSize = KMAC_STATE_SIZE_BYTES / 2,
-  kKmacStateShare0Addr = kKmacBaseAddr + KMAC_STATE_REG_OFFSET,
-  kKmacStateShare1Addr =
-      kKmacBaseAddr + KMAC_STATE_REG_OFFSET + kKmacStateShareSize,
 };
+
+// Inline wrapper function for KMAC base address
+static inline uintptr_t kmac_base(void) {
+  return dt_kmac_primary_reg_block(kDtKmac);
+}
 
 // "KMAC" string in little endian
 static const uint8_t kKmacFuncNameKMAC[] = {0x4b, 0x4d, 0x41, 0x43};
@@ -168,25 +168,34 @@ static status_t kmac_get_keccak_rate_words(kmac_security_str_t security_str,
   // Since Keccak state is 1600 bits, rate is calculated with
   // rate = (1600 - 2*x) where x is the security strength (i.e. half the
   // capacity).
-  switch (security_str) {
+  kmac_security_str_t security_str_set = launder32(0);
+  switch (launder32(security_str)) {
     case kKmacSecurityStrength128:
       *keccak_rate = (1600 - 2 * 128) / 32;
+      security_str_set = launder32(security_str_set) | kKmacSecurityStrength128;
       break;
     case kKmacSecurityStrength224:
       *keccak_rate = (1600 - 2 * 224) / 32;
+      security_str_set = launder32(security_str_set) | kKmacSecurityStrength224;
       break;
     case kKmacSecurityStrength256:
       *keccak_rate = (1600 - 2 * 256) / 32;
+      security_str_set = launder32(security_str_set) | kKmacSecurityStrength256;
       break;
     case kKmacSecurityStrength384:
       *keccak_rate = (1600 - 2 * 384) / 32;
+      security_str_set = launder32(security_str_set) | kKmacSecurityStrength384;
       break;
     case kKmacSecurityStrength512:
       *keccak_rate = (1600 - 2 * 512) / 32;
+      security_str_set = launder32(security_str_set) | kKmacSecurityStrength512;
       break;
     default:
       return OTCRYPTO_BAD_ARGS;
   }
+  // Check if we landed in the correct case statement. Use ORs for this to
+  // avoid that multiple cases were executed.
+  HARDENED_CHECK_EQ(launder32(security_str_set), security_str);
   return OTCRYPTO_OK;
 }
 
@@ -202,25 +211,34 @@ static status_t kmac_get_keccak_rate_words(kmac_security_str_t security_str,
 OT_WARN_UNUSED_RESULT
 static status_t kmac_get_key_len_bytes(size_t key_len,
                                        kmac_key_len_t *key_len_enum) {
-  switch (key_len) {
+  size_t key_len_set = launder32(0);
+  switch (launder32(key_len)) {
     case 128 / 8:
       *key_len_enum = kKmacKeyLength128;
+      key_len_set = launder32(key_len_set) | (128 / 8);
       break;
     case 192 / 8:
       *key_len_enum = kKmacKeyLength192;
+      key_len_set = launder32(key_len_set) | (192 / 8);
       break;
     case 256 / 8:
       *key_len_enum = kKmacKeyLength256;
+      key_len_set = launder32(key_len_set) | (256 / 8);
       break;
     case 384 / 8:
       *key_len_enum = kKmacKeyLength384;
+      key_len_set = launder32(key_len_set) | (384 / 8);
       break;
     case 512 / 8:
       *key_len_enum = kKmacKeyLength512;
+      key_len_set = launder32(key_len_set) | (512 / 8);
       break;
     default:
       return OTCRYPTO_BAD_ARGS;
   }
+  // Check if we landed in the correct case statement. Use ORs for this to
+  // avoid that multiple cases were executed.
+  HARDENED_CHECK_EQ(launder32(key_len_set), key_len);
   return OTCRYPTO_OK;
 }
 
@@ -235,7 +253,7 @@ status_t kmac_hwip_default_configure(void) {
   // Ensure that the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
 
-  uint32_t status_reg = abs_mmio_read32(kKmacBaseAddr + KMAC_STATUS_REG_OFFSET);
+  uint32_t status_reg = abs_mmio_read32(kmac_base() + KMAC_STATUS_REG_OFFSET);
 
   // Check that core is not in fault state
   if (bitfield_bit32_read(status_reg, KMAC_STATUS_ALERT_FATAL_FAULT_BIT)) {
@@ -252,14 +270,14 @@ status_t kmac_hwip_default_configure(void) {
 
   // Check that there is no err pending in intr state
   uint32_t intr_state =
-      abs_mmio_read32(kKmacBaseAddr + KMAC_INTR_STATE_REG_OFFSET);
+      abs_mmio_read32(kmac_base() + KMAC_INTR_STATE_REG_OFFSET);
   if (bitfield_bit32_read(intr_state, KMAC_INTR_STATE_KMAC_ERR_BIT)) {
     return OTCRYPTO_RECOV_ERR;
   }
 
   // Check CFG.regwen
   uint32_t cfg_regwen =
-      abs_mmio_read32(kKmacBaseAddr + KMAC_CFG_REGWEN_REG_OFFSET);
+      abs_mmio_read32(kmac_base() + KMAC_CFG_REGWEN_REG_OFFSET);
   if (!bitfield_bit32_read(cfg_regwen, KMAC_CFG_REGWEN_EN_BIT)) {
     return OTCRYPTO_RECOV_ERR;
   }
@@ -267,7 +285,7 @@ status_t kmac_hwip_default_configure(void) {
   // Keep err interrupt disabled
   uint32_t intr_reg = KMAC_INTR_ENABLE_REG_RESVAL;
   intr_reg = bitfield_bit32_write(intr_reg, KMAC_INTR_ENABLE_KMAC_ERR_BIT, 0);
-  abs_mmio_write32(kKmacBaseAddr + KMAC_INTR_ENABLE_REG_OFFSET, intr_reg);
+  abs_mmio_write32(kmac_base() + KMAC_INTR_ENABLE_REG_OFFSET, intr_reg);
 
   // Configure max for entropy period (use UINT32_MAX and let bitfield clamp
   // them to their bitfield)
@@ -276,7 +294,7 @@ status_t kmac_hwip_default_configure(void) {
       entropy_period, KMAC_ENTROPY_PERIOD_PRESCALER_FIELD, UINT32_MAX);
   entropy_period = bitfield_field32_write(
       entropy_period, KMAC_ENTROPY_PERIOD_WAIT_TIMER_FIELD, UINT32_MAX);
-  abs_mmio_write32(kKmacBaseAddr + KMAC_ENTROPY_PERIOD_REG_OFFSET,
+  abs_mmio_write32(kmac_base() + KMAC_ENTROPY_PERIOD_REG_OFFSET,
                    entropy_period);
 
   // Configure max for hash threshold (use UINT32_MAX and let bitfield clamp
@@ -287,7 +305,7 @@ status_t kmac_hwip_default_configure(void) {
       entropy_hash_threshold,
       KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_THRESHOLD_FIELD, UINT32_MAX);
   abs_mmio_write32(
-      kKmacBaseAddr + KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_REG_OFFSET,
+      kmac_base() + KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_REG_OFFSET,
       entropy_hash_threshold);
 
   // Configure CFG
@@ -319,7 +337,7 @@ status_t kmac_hwip_default_configure(void) {
   cfg_reg = bitfield_bit32_write(
       cfg_reg, KMAC_CFG_SHADOWED_EN_UNSUPPORTED_MODESTRENGTH_BIT, 0);
 
-  abs_mmio_write32_shadowed(kKmacBaseAddr + KMAC_CFG_SHADOWED_REG_OFFSET,
+  abs_mmio_write32_shadowed(kmac_base() + KMAC_CFG_SHADOWED_REG_OFFSET,
                             cfg_reg);
 
   return OTCRYPTO_OK;
@@ -341,7 +359,7 @@ static status_t wait_status_bit(uint32_t bit_position, bool bit_value) {
   }
 
   while (true) {
-    uint32_t reg = abs_mmio_read32(kKmacBaseAddr + KMAC_STATUS_REG_OFFSET);
+    uint32_t reg = abs_mmio_read32(kmac_base() + KMAC_STATUS_REG_OFFSET);
     if (bitfield_bit32_read(reg, KMAC_STATUS_ALERT_FATAL_FAULT_BIT)) {
       return OTCRYPTO_FATAL_ERR;
     }
@@ -442,7 +460,7 @@ static status_t kmac_set_prefix_regs(const unsigned char *func_name,
 
   // Copy from `prefix_buffer` to PREFIX_REGS
   for (size_t i = 0; i < KMAC_PREFIX_MULTIREG_COUNT; i++) {
-    abs_mmio_write32(kKmacBaseAddr + prefix_offsets[i], prefix_buffer[i]);
+    abs_mmio_write32(kmac_base() + prefix_offsets[i], prefix_buffer[i]);
   }
 
   return OTCRYPTO_OK;
@@ -480,7 +498,7 @@ static status_t kmac_init(kmac_operation_t operation,
 
   // If the operation is KMAC, ensure that the entropy complex has been
   // initialized for masking.
-  if (operation == kKmacOperationKMAC) {
+  if (operation == kKmacOperationKmac) {
     HARDENED_TRY(entropy_complex_check());
   }
 
@@ -488,7 +506,7 @@ static status_t kmac_init(kmac_operation_t operation,
   // entropy_mode, entropy_ready etc. On the other hand, some bits
   // need to be reset for each invocation.
   uint32_t cfg_reg =
-      abs_mmio_read32(kKmacBaseAddr + KMAC_CFG_SHADOWED_REG_OFFSET);
+      abs_mmio_read32(kmac_base() + KMAC_CFG_SHADOWED_REG_OFFSET);
 
   // Make sure kmac_en and sideload bits of CFG are reset at each invocation
   // These bits should be set to 1 only if needed by the rest of the code
@@ -510,71 +528,57 @@ static status_t kmac_init(kmac_operation_t operation,
 
   cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_SHADOWED_KSTRENGTH_FIELD,
                                    security_str);
-  abs_mmio_write32_shadowed(kKmacBaseAddr + KMAC_CFG_SHADOWED_REG_OFFSET,
+  abs_mmio_write32_shadowed(kmac_base() + KMAC_CFG_SHADOWED_REG_OFFSET,
                             cfg_reg);
 
   return OTCRYPTO_OK;
 }
 
 /**
- * Configure the prefix registers with customization string.
- *
- * For KMAC, this function ignores `func_name` and uses "KMAC" instead.
- *
- * The caller must ensure that `func_name` and `cust_str` have properly
- * allocated `data` fields whose length matches their `len` fields.
- *
- * In total `func_name` and `cust_str` can be at most `kKmacPrefixMaxSize`
- * bytes.
- *
- * @param operation The KMAC or cSHAKE operation.
- * @param func_name The function name, used for cSHAKE.
- * @param func_name_len Length of the function name in bytes.
- * @param cust_str The customization string (both for cSHAKE and KMAC).
- * @param cust_str_len Length of the customization string in bytes.
- * @return Error code.
- */
-OT_WARN_UNUSED_RESULT
-static status_t kmac_write_prefix_block(kmac_operation_t operation,
-                                        const unsigned char *func_name,
-                                        size_t func_name_len,
-                                        const unsigned char *cust_str,
-                                        size_t cust_str_len) {
-  if (operation == kKmacOperationCSHAKE) {
-    return kmac_set_prefix_regs(func_name, func_name_len, cust_str,
-                                cust_str_len);
-  } else if (operation == kKmacOperationKMAC) {
-    return kmac_set_prefix_regs(kKmacFuncNameKMAC, sizeof(kKmacFuncNameKMAC),
-                                cust_str, cust_str_len);
-  }
-  return OTCRYPTO_BAD_ARGS;
-}
-
-/**
  * Update the key registers with given key shares.
- *
- * The caller must ensure that `key` struct is properly populated (no NULL
- * pointers and matching `len`).
  *
  * The accepted `key->len` values are {128 / 8, 192 / 8, 256 / 8, 384 / 8,
  * 512 / 8}, otherwise an error will be returned.
+ *
+ * If the key is hardware-backed, this is a no-op.
+ *
+ * Uses hardening primitives internally that consume entropy; the caller must
+ * ensure the entropy complex is up before calling.
  *
  * @param key The input key passed as a struct.
  * @return Error code.
  */
 OT_WARN_UNUSED_RESULT
 static status_t kmac_write_key_block(kmac_blinded_key_t *key) {
+  if (launder32(key->hw_backed) == kHardenedBoolTrue) {
+    // Nothing to do.
+    return OTCRYPTO_OK;
+  } else if (launder32(key->hw_backed) != kHardenedBoolFalse) {
+    // Invalid value.
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(key->hw_backed, kHardenedBoolFalse);
+
   kmac_key_len_t key_len_enum;
   HARDENED_TRY(kmac_get_key_len_bytes(key->len, &key_len_enum));
 
+  const uint32_t kBase = kmac_base();
   uint32_t key_len_reg = bitfield_field32_write(
       KMAC_KEY_LEN_REG_RESVAL, KMAC_KEY_LEN_LEN_FIELD, key_len_enum);
-  abs_mmio_write32(kKmacBaseAddr + KMAC_KEY_LEN_REG_OFFSET, key_len_reg);
+  abs_mmio_write32(kBase + KMAC_KEY_LEN_REG_OFFSET, key_len_reg);
 
-  for (size_t i = 0; i < key->len; i += 4) {
-    abs_mmio_write32(kKmacKeyShare0Addr + i, key->share0[i / 4]);
-    abs_mmio_write32(kKmacKeyShare1Addr + i, key->share1[i / 4]);
-  }
+  // Write random words to the key registers and use hardened_memcpy
+  // for SCA defense. Using the hardened_mem* functions is fine as
+  // we are always operating on multiples of 32-bit words.
+  uint32_t share0_addr = kBase + KMAC_KEY_SHARE0_0_REG_OFFSET;
+  uint32_t share1_addr = kBase + KMAC_KEY_SHARE1_0_REG_OFFSET;
+  size_t key_len_words = key->len / sizeof(uint32_t);
+  HARDENED_TRY(hardened_memshred((uint32_t *)share0_addr, key_len_words));
+  HARDENED_TRY(
+      hardened_memcpy((uint32_t *)share0_addr, key->share0, key_len_words));
+  HARDENED_TRY(hardened_memshred((uint32_t *)share1_addr, key_len_words));
+  HARDENED_TRY(
+      hardened_memcpy((uint32_t *)share1_addr, key->share1, key_len_words));
 
   return OTCRYPTO_OK;
 }
@@ -617,10 +621,11 @@ static status_t kmac_process_msg_blocks(kmac_operation_t operation,
 
   // Issue the start command, so that messages written to MSG_FIFO are forwarded
   // to Keccak
+  const uint32_t kBase = kmac_base();
   uint32_t cmd_reg = KMAC_CMD_REG_RESVAL;
   cmd_reg = bitfield_field32_write(cmd_reg, KMAC_CMD_CMD_FIELD,
                                    KMAC_CMD_CMD_VALUE_START);
-  abs_mmio_write32(kKmacBaseAddr + KMAC_CMD_REG_OFFSET, cmd_reg);
+  abs_mmio_write32(kBase + KMAC_CMD_REG_OFFSET, cmd_reg);
   HARDENED_TRY(wait_status_bit(KMAC_STATUS_SHA3_ABSORB_BIT, 1));
 
   // Begin by writing a one byte at a time until the data is aligned.
@@ -628,24 +633,28 @@ static status_t kmac_process_msg_blocks(kmac_operation_t operation,
   for (; misalignment32_of((uintptr_t)(&message[i])) > 0 && i < message_len;
        i++) {
     HARDENED_TRY(wait_status_bit(KMAC_STATUS_FIFO_FULL_BIT, 0));
-    abs_mmio_write8(kKmacBaseAddr + KMAC_MSG_FIFO_REG_OFFSET, message[i]);
+    abs_mmio_write8(kBase + KMAC_MSG_FIFO_REG_OFFSET, message[i]);
   }
 
   // Write one word at a time as long as there is a full word available.
   for (; i + sizeof(uint32_t) <= message_len; i += sizeof(uint32_t)) {
     HARDENED_TRY(wait_status_bit(KMAC_STATUS_FIFO_FULL_BIT, 0));
     uint32_t next_word = read_32(&message[i]);
-    abs_mmio_write32(kKmacBaseAddr + KMAC_MSG_FIFO_REG_OFFSET, next_word);
+    abs_mmio_write32(kBase + KMAC_MSG_FIFO_REG_OFFSET, next_word);
   }
+  // Check that the loops ran for the correct number of iterations.
+  HARDENED_CHECK_LT(message_len, i + sizeof(uint32_t));
 
   // For the last few bytes, we need to write one byte at a time again.
   for (; i < message_len; i++) {
     HARDENED_TRY(wait_status_bit(KMAC_STATUS_FIFO_FULL_BIT, 0));
-    abs_mmio_write8(kKmacBaseAddr + KMAC_MSG_FIFO_REG_OFFSET, message[i]);
+    abs_mmio_write8(kmac_base() + KMAC_MSG_FIFO_REG_OFFSET, message[i]);
   }
+  // Check that the loops ran for the correct number of iterations.
+  HARDENED_CHECK_EQ(i, message_len);
 
   // If operation=KMAC, then we need to write `right_encode(digest->len)`
-  if (operation == kKmacOperationKMAC) {
+  if (operation == kKmacOperationKmac) {
     uint32_t digest_len_bits = 8 * sizeof(uint32_t) * digest_len_words;
     if (digest_len_bits / (8 * sizeof(uint32_t)) != digest_len_words) {
       return OTCRYPTO_BAD_ARGS;
@@ -660,7 +669,7 @@ static status_t kmac_process_msg_blocks(kmac_operation_t operation,
     uint8_t bytes_written;
     HARDENED_TRY(little_endian_encode(digest_len_bits, buf, &bytes_written));
     buf[bytes_written] = bytes_written;
-    uint8_t *fifo_dst = (uint8_t *)(kKmacBaseAddr + KMAC_MSG_FIFO_REG_OFFSET);
+    uint8_t *fifo_dst = (uint8_t *)(kBase + KMAC_MSG_FIFO_REG_OFFSET);
     memcpy(fifo_dst, buf, bytes_written + 1);
   }
 
@@ -668,13 +677,12 @@ static status_t kmac_process_msg_blocks(kmac_operation_t operation,
   cmd_reg = KMAC_CMD_REG_RESVAL;
   cmd_reg = bitfield_field32_write(cmd_reg, KMAC_CMD_CMD_FIELD,
                                    KMAC_CMD_CMD_VALUE_PROCESS);
-  abs_mmio_write32(kKmacBaseAddr + KMAC_CMD_REG_OFFSET, cmd_reg);
+  abs_mmio_write32(kBase + KMAC_CMD_REG_OFFSET, cmd_reg);
 
   // Wait until squeezing is done
   HARDENED_TRY(wait_status_bit(KMAC_STATUS_SHA3_SQUEEZE_BIT, 1));
 
-  uint32_t cfg_reg =
-      abs_mmio_read32(kKmacBaseAddr + KMAC_CFG_SHADOWED_REG_OFFSET);
+  uint32_t cfg_reg = abs_mmio_read32(kBase + KMAC_CFG_SHADOWED_REG_OFFSET);
   uint32_t keccak_str =
       bitfield_field32_read(cfg_reg, KMAC_CFG_SHADOWED_KSTRENGTH_FIELD);
   size_t keccak_rate_words;
@@ -694,23 +702,22 @@ static status_t kmac_process_msg_blocks(kmac_operation_t operation,
     // Read words from the state registers (either `digest_len_words` or the
     // maximum number of words available).
     size_t offset = 0;
+    uint32_t offset_share0 = kBase + KMAC_STATE_REG_OFFSET;
+    uint32_t offset_share1 =
+        kBase + KMAC_STATE_REG_OFFSET + kKmacStateShareSize;
+    size_t read_len_words = keccak_rate_words;
+    if (idx + read_len_words >= digest_len_words) {
+      read_len_words = digest_len_words - idx;
+    }
     if (launder32(masked_digest) == kHardenedBoolTrue) {
       HARDENED_CHECK_EQ(masked_digest, kHardenedBoolTrue);
-      // Read the digest into each share in turn. Do this in separate loops so
-      // corresponding shares aren't handled close together.
-      for (offset = 0; launder32(idx + offset) < digest_len_words &&
-                       offset < keccak_rate_words;
-           offset++) {
-        digest[idx + offset] =
-            abs_mmio_read32(kKmacStateShare0Addr + offset * sizeof(uint32_t));
-      }
-      for (offset = 0; launder32(idx + offset) < digest_len_words &&
-                       offset < keccak_rate_words;
-           offset++) {
-        digest[idx + offset + digest_len_words] =
-            abs_mmio_read32(kKmacStateShare1Addr + offset * sizeof(uint32_t));
-      }
-      idx += offset;
+      // Read the digest into each share in turn. Do this by using the SCA
+      // resilient hardened_memcpy function.
+      HARDENED_TRY(hardened_memcpy(
+          &digest[idx], (const uint32_t *)offset_share0, read_len_words));
+      HARDENED_TRY(hardened_memcpy(&digest[idx + digest_len_words],
+                                   (const uint32_t *)offset_share1,
+                                   read_len_words));
     } else {
       // Skip right to the hardened check here instead of returning
       // `OTCRYPTO_BAD_ARGS` if the value is not `kHardenedBoolFalse`; this
@@ -718,15 +725,12 @@ static status_t kmac_process_msg_blocks(kmac_operation_t operation,
       // valid and should be suspicious if it's not.
       HARDENED_CHECK_EQ(masked_digest, kHardenedBoolFalse);
       // Unmask the digest as we read it.
-      for (; launder32(idx) < digest_len_words && offset < keccak_rate_words;
-           offset++) {
-        digest[idx] =
-            abs_mmio_read32(kKmacStateShare0Addr + offset * sizeof(uint32_t));
-        digest[idx] ^=
-            abs_mmio_read32(kKmacStateShare1Addr + offset * sizeof(uint32_t));
-        idx++;
-      }
+      HARDENED_TRY(hardened_xor((const uint32_t *)offset_share0,
+                                (const uint32_t *)offset_share1, read_len_words,
+                                &digest[idx]));
     }
+    offset += read_len_words;
+    idx += read_len_words;
 
     // If we read all the remaining words and still need more digest, issue
     // `CMD.RUN` to generate more state.
@@ -735,7 +739,7 @@ static status_t kmac_process_msg_blocks(kmac_operation_t operation,
       cmd_reg = KMAC_CMD_REG_RESVAL;
       cmd_reg = bitfield_field32_write(cmd_reg, KMAC_CMD_CMD_FIELD,
                                        KMAC_CMD_CMD_VALUE_RUN);
-      abs_mmio_write32(kKmacBaseAddr + KMAC_CMD_REG_OFFSET, cmd_reg);
+      abs_mmio_write32(kBase + KMAC_CMD_REG_OFFSET, cmd_reg);
     }
   }
   HARDENED_CHECK_EQ(idx, digest_len_words);
@@ -747,103 +751,98 @@ static status_t kmac_process_msg_blocks(kmac_operation_t operation,
   cmd_reg = KMAC_CMD_REG_RESVAL;
   cmd_reg = bitfield_field32_write(cmd_reg, KMAC_CMD_CMD_FIELD,
                                    KMAC_CMD_CMD_VALUE_DONE);
-  abs_mmio_write32(kKmacBaseAddr + KMAC_CMD_REG_OFFSET, cmd_reg);
+  abs_mmio_write32(kBase + KMAC_CMD_REG_OFFSET, cmd_reg);
 
   return OTCRYPTO_OK;
 }
 
-status_t kmac_sha3_224(const uint8_t *message, size_t message_len,
-                       uint32_t *digest) {
-  HARDENED_TRY(kmac_init(kKmacOperationSHA3, kKmacSecurityStrength224,
+/**
+ * Perform a one-shot SHA3, SHAKE, or cSHAKE operation.
+ *
+ * Do not use this routine for KMAC operations.
+ *
+ * @param operation Hash function to perform.
+ * @param strength Security strength parameter.
+ * @param message Message data to hash.
+ * @param message_len Length of message data in bytes.
+ * @param digest_wordlen Length of digest in words.
+ * @param[out] digest Computed digest.
+ * @return OK or error.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t hash(kmac_operation_t operation, kmac_security_str_t strength,
+                     const uint8_t *message, size_t message_len,
+                     size_t digest_wordlen, uint32_t *digest) {
+  // Note: to save code size, we check for null pointers here instead of
+  // separately for every different Keccak hash operation.
+  if (digest == NULL || (message == NULL && message_len != 0)) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  HARDENED_TRY(kmac_init(operation, strength,
                          /*hw_backed=*/kHardenedBoolFalse));
 
-  size_t digest_len_words = kSha3_224DigestWords;
-  return kmac_process_msg_blocks(kKmacOperationSHA3, message, message_len,
-                                 digest, digest_len_words,
+  return kmac_process_msg_blocks(operation, message, message_len, digest,
+                                 digest_wordlen,
                                  /*masked_digest=*/kHardenedBoolFalse);
 }
 
-status_t kmac_sha3_256(const uint8_t *message, size_t message_len,
-                       uint32_t *digest) {
-  HARDENED_TRY(kmac_init(kKmacOperationSHA3, kKmacSecurityStrength256,
-                         /*hw_backed=*/kHardenedBoolFalse));
-
-  size_t digest_len_words = kSha3_256DigestWords;
-  return kmac_process_msg_blocks(kKmacOperationSHA3, message, message_len,
-                                 digest, digest_len_words,
-                                 /*masked_digest=*/kHardenedBoolFalse);
+inline status_t kmac_sha3_224(const uint8_t *message, size_t message_len,
+                              uint32_t *digest) {
+  return hash(kKmacOperationSha3, kKmacSecurityStrength224, message,
+              message_len, kKmacSha3224DigestWords, digest);
 }
 
-status_t kmac_sha3_384(const uint8_t *message, size_t message_len,
-                       uint32_t *digest) {
-  HARDENED_TRY(kmac_init(kKmacOperationSHA3, kKmacSecurityStrength384,
-                         /*hw_backed=*/kHardenedBoolFalse));
-
-  size_t digest_len_words = kSha3_384DigestWords;
-  return kmac_process_msg_blocks(kKmacOperationSHA3, message, message_len,
-                                 digest, digest_len_words,
-                                 /*masked_digest=*/kHardenedBoolFalse);
+inline status_t kmac_sha3_256(const uint8_t *message, size_t message_len,
+                              uint32_t *digest) {
+  return hash(kKmacOperationSha3, kKmacSecurityStrength256, message,
+              message_len, kKmacSha3256DigestWords, digest);
 }
 
-status_t kmac_sha3_512(const uint8_t *message, size_t message_len,
-                       uint32_t *digest) {
-  HARDENED_TRY(kmac_init(kKmacOperationSHA3, kKmacSecurityStrength512,
-                         /*hw_backed=*/kHardenedBoolFalse));
-
-  size_t digest_len_words = kSha3_512DigestWords;
-  return kmac_process_msg_blocks(kKmacOperationSHA3, message, message_len,
-                                 digest, digest_len_words,
-                                 /*masked_digest=*/kHardenedBoolFalse);
+inline status_t kmac_sha3_384(const uint8_t *message, size_t message_len,
+                              uint32_t *digest) {
+  return hash(kKmacOperationSha3, kKmacSecurityStrength384, message,
+              message_len, kKmacSha3384DigestWords, digest);
 }
 
-status_t kmac_shake_128(const uint8_t *message, size_t message_len,
-                        uint32_t *digest, size_t digest_len) {
-  HARDENED_TRY(kmac_init(kKmacOperationSHAKE, kKmacSecurityStrength128,
-                         /*hw_backed=*/kHardenedBoolFalse));
-
-  return kmac_process_msg_blocks(kKmacOperationSHAKE, message, message_len,
-                                 digest, digest_len,
-                                 /*masked_digest=*/kHardenedBoolFalse);
+inline status_t kmac_sha3_512(const uint8_t *message, size_t message_len,
+                              uint32_t *digest) {
+  return hash(kKmacOperationSha3, kKmacSecurityStrength512, message,
+              message_len, kKmacSha3512DigestWords, digest);
 }
 
-status_t kmac_shake_256(const uint8_t *message, size_t message_len,
-                        uint32_t *digest, size_t digest_len) {
-  HARDENED_TRY(kmac_init(kKmacOperationSHAKE, kKmacSecurityStrength256,
-                         /*hw_backed=*/kHardenedBoolFalse));
+inline status_t kmac_shake_128(const uint8_t *message, size_t message_len,
+                               uint32_t *digest, size_t digest_len) {
+  return hash(kKmacOperationShake, kKmacSecurityStrength128, message,
+              message_len, digest_len, digest);
+}
 
-  return kmac_process_msg_blocks(kKmacOperationSHAKE, message, message_len,
-                                 digest, digest_len,
-                                 /*masked_digest=*/kHardenedBoolFalse);
+inline status_t kmac_shake_256(const uint8_t *message, size_t message_len,
+                               uint32_t *digest, size_t digest_len) {
+  return hash(kKmacOperationShake, kKmacSecurityStrength256, message,
+              message_len, digest_len, digest);
 }
 
 status_t kmac_cshake_128(const uint8_t *message, size_t message_len,
                          const unsigned char *func_name, size_t func_name_len,
                          const unsigned char *cust_str, size_t cust_str_len,
                          uint32_t *digest, size_t digest_len) {
-  HARDENED_TRY(kmac_init(kKmacOperationCSHAKE, kKmacSecurityStrength128,
-                         /*hw_backed=*/kHardenedBoolFalse));
-
-  HARDENED_TRY(kmac_write_prefix_block(kKmacOperationCSHAKE, func_name,
-                                       func_name_len, cust_str, cust_str_len));
-
-  return kmac_process_msg_blocks(kKmacOperationCSHAKE, message, message_len,
-                                 digest, digest_len,
-                                 /*masked_digest=*/kHardenedBoolFalse);
+  HARDENED_TRY(wait_status_bit(KMAC_STATUS_SHA3_IDLE_BIT, 1));
+  HARDENED_TRY(
+      kmac_set_prefix_regs(func_name, func_name_len, cust_str, cust_str_len));
+  return hash(kKmacOperationCshake, kKmacSecurityStrength128, message,
+              message_len, digest_len, digest);
 }
 
 status_t kmac_cshake_256(const uint8_t *message, size_t message_len,
                          const unsigned char *func_name, size_t func_name_len,
                          const unsigned char *cust_str, size_t cust_str_len,
                          uint32_t *digest, size_t digest_len) {
-  HARDENED_TRY(kmac_init(kKmacOperationCSHAKE, kKmacSecurityStrength256,
-                         /*hw_backed=*/kHardenedBoolFalse));
-
-  HARDENED_TRY(kmac_write_prefix_block(kKmacOperationCSHAKE, func_name,
-                                       func_name_len, cust_str, cust_str_len));
-
-  return kmac_process_msg_blocks(kKmacOperationCSHAKE, message, message_len,
-                                 digest, digest_len,
-                                 /*masked_digest=*/kHardenedBoolFalse);
+  HARDENED_TRY(wait_status_bit(KMAC_STATUS_SHA3_IDLE_BIT, 1));
+  HARDENED_TRY(
+      kmac_set_prefix_regs(func_name, func_name_len, cust_str, cust_str_len));
+  return hash(kKmacOperationCshake, kKmacSecurityStrength256, message,
+              message_len, digest_len, digest);
 }
 
 status_t kmac_kmac_128(kmac_blinded_key_t *key, hardened_bool_t masked_digest,
@@ -851,27 +850,13 @@ status_t kmac_kmac_128(kmac_blinded_key_t *key, hardened_bool_t masked_digest,
                        const unsigned char *cust_str, size_t cust_str_len,
                        uint32_t *digest, size_t digest_len) {
   HARDENED_TRY(
-      kmac_init(kKmacOperationKMAC, kKmacSecurityStrength128, key->hw_backed));
+      kmac_init(kKmacOperationKmac, kKmacSecurityStrength128, key->hw_backed));
 
-  if (key->hw_backed == kHardenedBoolTrue) {
-    if (key->share0 != NULL || key->share1 != NULL ||
-        key->len != kKmacSideloadKeyLength / 8) {
-      return OTCRYPTO_BAD_ARGS;
-    }
-  } else if (key->hw_backed == kHardenedBoolFalse) {
-    if (key->share0 == NULL || key->share1 == NULL) {
-      return OTCRYPTO_BAD_ARGS;
-    }
-    HARDENED_TRY(kmac_write_key_block(key));
-  } else {
-    return OTCRYPTO_BAD_ARGS;
-  }
+  HARDENED_TRY(kmac_write_key_block(key));
+  HARDENED_TRY(kmac_set_prefix_regs(
+      kKmacFuncNameKMAC, sizeof(kKmacFuncNameKMAC), cust_str, cust_str_len));
 
-  HARDENED_TRY(kmac_write_prefix_block(kKmacOperationKMAC, /*func_name=*/NULL,
-                                       /*func_name_len=*/0, cust_str,
-                                       cust_str_len));
-
-  return kmac_process_msg_blocks(kKmacOperationKMAC, message, message_len,
+  return kmac_process_msg_blocks(kKmacOperationKmac, message, message_len,
                                  digest, digest_len, masked_digest);
 }
 
@@ -880,26 +865,12 @@ status_t kmac_kmac_256(kmac_blinded_key_t *key, hardened_bool_t masked_digest,
                        const unsigned char *cust_str, size_t cust_str_len,
                        uint32_t *digest, size_t digest_len) {
   HARDENED_TRY(
-      kmac_init(kKmacOperationKMAC, kKmacSecurityStrength256, key->hw_backed));
+      kmac_init(kKmacOperationKmac, kKmacSecurityStrength256, key->hw_backed));
 
-  if (key->hw_backed == kHardenedBoolTrue) {
-    if (key->share0 != NULL || key->share1 != NULL ||
-        key->len != kKmacSideloadKeyLength / 8) {
-      return OTCRYPTO_BAD_ARGS;
-    }
-  } else if (key->hw_backed == kHardenedBoolFalse) {
-    if (key->share0 == NULL || key->share1 == NULL) {
-      return OTCRYPTO_BAD_ARGS;
-    }
-    HARDENED_TRY(kmac_write_key_block(key));
-  } else {
-    return OTCRYPTO_BAD_ARGS;
-  }
+  HARDENED_TRY(kmac_write_key_block(key));
+  HARDENED_TRY(kmac_set_prefix_regs(
+      kKmacFuncNameKMAC, sizeof(kKmacFuncNameKMAC), cust_str, cust_str_len));
 
-  HARDENED_TRY(kmac_write_prefix_block(kKmacOperationKMAC, /*func_name=*/NULL,
-                                       /*func_name_len=*/0, cust_str,
-                                       cust_str_len));
-
-  return kmac_process_msg_blocks(kKmacOperationKMAC, message, message_len,
+  return kmac_process_msg_blocks(kKmacOperationKmac, message, message_len,
                                  digest, digest_len, masked_digest);
 }

@@ -8,6 +8,9 @@
   // Top level dut name (sv module).
   dut: chip_earlgrey_asic
 
+  // The name of the top level of this chip configuration.
+  top_chip: top_earlgrey
+
   // Top level testbench name (sv module).
   tb: tb
 
@@ -104,12 +107,7 @@
       name: vcs_xprop_cfg_file
       value: "{top_dv_path}/vcs_xprop.cfg"
     }
-    // This defaults to 'ip' in `hw/data/common_project_cfg.hjson`.
-    {
-      name: design_level
-      value: "top"
-    }
-    // The jtag agent requires the data and bytenable widths to be increased.
+    // The jtag agent requires the data and byte enable widths to be increased.
     {
       name: tl_dw
       value: 64
@@ -241,21 +239,12 @@
                    "{tool}_dpi_build_opts"]
 
   // Setup for generating OTP images.
+  gen_otp_top_secret_cfg: "{proj_root}/hw/{top_chip}/data/autogen/{top_chip}.secrets.testing.gen.hjson"
   gen_otp_images_cfg_dir: "{proj_root}/hw/top_earlgrey/data/otp"
   gen_otp_images_cmd: "{proj_root}/util/design/gen-otp-img.py"
   gen_otp_images_cmd_opts: ["--quiet",
-                            "--img-seed {seed}",
-			    "--mmap-def {gen_otp_images_cfg_dir}/otp_ctrl_mmap.hjson",
-
-                            // Only provide `--otp-seed` argument if the file to store build_seed
-                            // is found. Set this option at the end of the list to avoid `eval_cmd`
-                            // take other options as eval_cmd.
-                            '''{eval_cmd} file=`echo {build_seed_file_path}`; \
-                               if [ -f $file ]; then \
-                                 while read line; do \
-                                   echo "--otp-seed $line --lc-seed $line"; \
-                                 done < $file; \
-                               fi ''']
+                            "--mmap-def {gen_otp_images_cfg_dir}/otp_ctrl_mmap.hjson",
+                            "--top-secret-cfg {gen_otp_top_secret_cfg}"]
 
   // TODO(lowrisc/opentitan#16689): Enable cdc instrumentation.
   run_opts: ["+cdc_instrumentation_enabled=1"]
@@ -337,21 +326,42 @@
                  "+accelerate_regulators_power_up_time=2"]
     }
     {
+      // Format SW image names into output file names separated by commas to feed into
+      // +sw_images plusarg. Image names are just Bazel labels concatenated with an index
+      // and/or flags.
+      // The input is a space-seperated list in the variable 'sw_images'.
+      // The result is saved to the same variable 'sw_images'.
+      //
+      // For example, for an input of:
+      // [
+      //   "//sw/device/tests:uart_tx_rx_test:1",
+      //   "//sw/device/lib/testing/test_rom:test_rom:0"
+      // ]
+      //
+      // ..then the result will be:
+      //
+      //   "uart_tx_rx_test:1,test_rom:0".
+      //
+      name: format_sw_images
+      run_opts: [
+        "+sw_build_device={sw_build_device}",
+        '''
+          +sw_images={eval_cmd} \
+            reformatted_sw_images=; \
+            for image in {sw_images}; do \
+              reformatted_sw_images="$reformatted_sw_images `echo $image | cut -d: -f2-`"; \
+            done; \
+            echo $reformatted_sw_images | sed -E 's/\s+/,/g'
+        '''
+      ]
+    }
+    {
+      name: sw_test_mode_base
+      en_run_modes: ["format_sw_images"]
+    }
+    {
       name: sw_test_mode_common
-      run_opts: ["+sw_build_device={sw_build_device}",
-                 // Format SW image names (which are Bazel labels concatenated with an index
-                 // and/or flags, see below) into output file names separated by commas to feed into
-                 // +sw_images plusarg. For example, if the input list of SW images is
-                 // ["//sw/device/tests:uart_tx_rx_test:1",
-                 //  "//sw/device/lib/testing/test_rom:test_rom:0"], then the output of this eval_cmd
-                 // will be: "uart_tx_rx_test:1,test_rom:0".
-                 '''+sw_images={eval_cmd} \
-                 reformatted_sw_images=; \
-                 for image in {sw_images}; do \
-                   reformatted_sw_images="$reformatted_sw_images `echo $image | cut -d: -f2-`"; \
-                 done; \
-                 echo $reformatted_sw_images | sed -E 's/\s+/,/g' ''']
-      en_run_modes: ["gen_otp_images_mode"]
+      en_run_modes: ["sw_test_mode_base", "gen_otp_images_mode"]
     }
     {
       name: sw_test_mode_test_rom
@@ -833,7 +843,7 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests/sim_dv:otp_ctrl_lc_signals_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"],
-      // Use the image as basis, but clear provitioning state of the SECRET2
+      // Use the image as basis, but clear provisioning state of the SECRET2
       // partition so that the test can make front-door accesses to that partition.
       run_opts: ["+use_otp_image=OtpTypeLcStTestUnlocked0", "+otp_clear_secret2=1"]
     }
@@ -842,7 +852,7 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests/sim_dv:otp_ctrl_lc_signals_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"],
-      // Use the image as basis, but clear provitioning state of the SECRET2
+      // Use the image as basis, but clear provisioning state of the SECRET2
       // partition so that the test can make front-door accesses to that partition.
       run_opts: ["+use_otp_image=OtpTypeLcStDev", "+otp_clear_secret2=1"]
     }
@@ -851,7 +861,7 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests/sim_dv:otp_ctrl_lc_signals_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"],
-      // Use the image as basis, but clear provitioning state of the SECRET2
+      // Use the image as basis, but clear provisioning state of the SECRET2
       // partition so that the test can make front-door accesses to that partition.
       run_opts: ["+use_otp_image=OtpTypeLcStProd", "+otp_clear_secret2=1"]
     }
@@ -860,7 +870,7 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests/sim_dv:otp_ctrl_lc_signals_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"],
-      // Use the image as basis, but clear provitioning state of the SECRET2
+      // Use the image as basis, but clear provisioning state of the SECRET2
       // partition so that the test can make front-door accesses to that partition.
       run_opts: ["+use_otp_image=OtpTypeLcStRma", "+otp_clear_secret2=1"]
     }
@@ -886,6 +896,22 @@
       run_opts: ["+sw_test_timeout_ns=30_000_000"]
       run_timeout_mins: 120
       reseed: 1
+    }
+    {
+      name: chip_sw_otp_ctrl_rot_auth_config
+      uvm_test_seq: chip_sw_rom_e2e_jtag_inject_vseq
+      sw_images: [
+        "//hw/top_earlgrey/data/otp/emulation:otp_img_test_unlocked0_manuf_empty:4",
+        "//sw/device/tests:otp_ctrl_rot_auth_config_test:5",
+      ]
+      en_run_modes: ["sw_test_mode_mask_rom"]
+      run_opts: [
+        "+sw_test_timeout_ns=160_000_000",
+        "+use_jtag_dmi=1",
+        "+use_otp_image=OtpTypeCustom",
+      ]
+      reseed: 1
+      run_timeout_mins: 240
     }
     {
       name: chip_sw_otp_ctrl_ecc_error_vendor_test
@@ -1298,6 +1324,13 @@
       sw_images: ["//sw/device/tests:aes_smoketest:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=26_000_000", "+en_jitter=1"]
+    }
+    {
+      name: chip_sw_aes_gcm
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:aes_gcm_test:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=22_000_000"]
     }
     {
       name: chip_sw_aes_idle

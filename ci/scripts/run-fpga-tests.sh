@@ -9,12 +9,13 @@ set -e
 . util/build_consts.sh
 
 if [ $# == 0 ]; then
-    echo >&2 "Usage: run-fpga-tests.sh <fpga> <target_pattern_file>"
-    echo >&2 "E.g. ./run-fpga-tests.sh cw310 list_of_test.txt"
+    echo >&2 "Usage: run-fpga-tests.sh <fpga> <target_pattern_file> [bazel options...]"
+    echo >&2 "E.g. ./run-fpga-tests.sh cw310 list_of_test.txt --cache_test_results=no"
     exit 1
 fi
 fpga="$1"
 target_pattern_file="$2"
+shift 2
 
 # Copy bitstreams and related files into the cache directory so Bazel will have
 # the corresponding targets in the @bitstreams workspace.
@@ -50,9 +51,8 @@ trap './bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=${fpga}
     --run_under=//ci/scripts:run_test \
     --define DISABLE_VERILATOR_BUILD=true \
     --nokeep_going \
-    --test_timeout_filters=short,moderate \
     --test_output=all \
     --build_tests_only \
     --define "$fpga"=lowrisc \
     --flaky_test_attempts=2 \
-    --target_pattern_file="${target_pattern_file}"
+    --target_pattern_file="${target_pattern_file}" "$@"

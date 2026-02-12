@@ -8,44 +8,23 @@
 set_reset_drivers prim_clock_mux2 prim_flop_2sync prim_flop
 set_clock_drivers prim_clock_buf prim_clock_mux2
 
-# TODO #25411: remove these waivers later when the USB clock was removed from the integrated system
-# in a clean way. Right now there are some dangling signals that we have to keep in order
-# to not disrupt the RTL structure and associated DV.
-waive -rules {HIER_BRANCH_NOT_READ INPUT_NOT_READ} -location {xbar_main.sv} \
-      -regexp {'(clk_usb_i|rst_usb_ni)' is not read from in module 'xbar_main'} \
-      -comment "Temporary waiver for dangling USB clocks and resets."
-
 # All leaf resets have a reset multiplex
 waive -rules RESET_MUX -location {top_darjeeling.sv} -regexp {Asynchronous reset .*rstmgr_aon_resets\.rst.* is driven by a multiplexer} \
+      -comment "This is dedicated reset infrastructure, and hence permissible"
+
+waive -rules RESET_MUX -location {rstmgr.sv} -msg {Asynchronous reset 'scan_rst_ni' reaches a multiplexer here, used as a reset 'rst_dst_ni' at} \
       -comment "This is dedicated reset infrastructure, and hence permissible"
 
 # scan reset is a legal asynchronous reset
 waive -rules RESET_USE -location {top_darjeeling.sv} -regexp {'scan_rst_ni' is connected to .* port 'scan_rst_ni', and used as an asynchronous reset or set 'rst_.*ni' at} \
       -comment "Scan reset is a legal asynchronous reset"
 
-# TODO: Remove waiver when #25410 is resolved
-waive -rules {HIER_BRANCH_NOT_READ} -location {pinmux.sv} \
-      -msg {Net 'rst_sys_ni' is not read from in module 'pinmux'} \
-      -comment "This signal is unused but cannot yet be gated in ipgen"
-
-# TODO: Remove waiver when #25410 is resolved
 waive -rules {HIER_BRANCH_NOT_READ} -location {pinmux.sv} \
       -msg {Net 'scanmode_i' is not read from in module 'pinmux'} \
-      -comment "This signal is unused but cannot yet be gated in ipgen"
+      -comment "scanmode_i is not used in the Darjeeling pad configuration"
 
-waive -rules INPUT_NOT_READ -location {pinmux.sv} -regexp {Input port '(rst_sys_ni|scanmode_i)' is not read from} \
-      -comment "This signal is unused but cannot yet be gated in ipgen."
-
-waive -rules {HIER_NET_NOT_READ NOT_READ} -location {clkmgr.sv} \
-      -regexp {(Net|Signal) 'clk_io_root' is not read from in module 'clkmgr'} \
-      -comment "This clock is unused in Darjeeling - should not be generated"
-
-waive -rules {HIER_NET_NOT_READ NOT_READ} -location {clkmgr.sv} \
-      -regexp {(Net|Signal) 'clk_io_div2_root' is not read from in module 'clkmgr'} \
-      -comment "This clock is unused in Darjeeling  - should not be generated"
-
-waive -rules CLOCK_MUX -location {clkmgr.sv top_darjeeling.sv} -regexp {.*clk_io_div.* is driven by a multiplexer here} \
-      -comment "Divided clocks go through prim_clock_div, which use muxes for scan bypass and clock step down"
+waive -rules INPUT_NOT_READ -location {pinmux.sv} -regexp {Input port 'scanmode_i' is not read from} \
+      -comment "scanmode_i is not used in the Darjeeling pad configuration"
 
 waive -rules CLOCK_MUX -location {top_darjeeling.sv} -regexp {Clock 'spi_device_passthrough_req.sck' reaches a multiplexer here, used as a clock} \
       -comment "In passthrough mode, spi_host muxes 'spi_device_passthrough_req.sck' to the `cio_sck_o` output."
@@ -69,8 +48,14 @@ waive -rules SAME_NAME_TYPE -location {spi_device.sv mbx.sv} -regexp {'mbx' is u
       -comment {This is acceptable, since these are used in different hierarchies.}
 
 # intentionally unused
-waive -rules {NOT_READ HIER_NET_NOT_READ} -location {top_darjeeling.sv} -regexp {.*cio_otp_ctrl_test_(en_)?d2p\[7:1\].* is not read} \
+waive -rules {NOT_READ HIER_NET_NOT_READ} -location {top_darjeeling.sv} -regexp {.*cio_otp_macro_test_(en_)?d2p\[7:1\].* is not read} \
       -comment "otp test bus made deliberately larger on purpose"
 
 waive -rules {LINE_LENGTH} -location {top_darjeeling.sv} -regexp {Line length of [0-9]+ exceeds 100 character limit} \
       -comment "top_darjeeling is auto-generated and adhering to the line length limit is not always feasible for auto-generated code"
+
+waive -rules LINE_LENGTH -location {top_darjeeling_rnd_cnst_pkg.sv} -regexp {Line length of [0-9]+ exceeds 100 character limit} \
+      -comment "top_darjeeling_rnd_cnst_pkg is auto-generated and adhering to the line length limit is not always feasible for auto-generated code"
+
+waive -rules {LINE_LENGTH} -location {xbar_main.sv} -regexp {Line length of [0-9]+ exceeds 100 character limit} \
+      -comment "xbar_main is auto-generated and adhering to the line length limit is not always feasible for auto-generated code"

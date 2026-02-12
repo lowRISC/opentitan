@@ -2,16 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "dt/dt_alert_handler.h"  // Generated.
-#include "dt/dt_aon_timer.h"      // Generated.
-#include "dt/dt_i2c.h"            // Generated.
-#include "dt/dt_kmac.h"           // Generated.
-#include "dt/dt_otp_ctrl.h"       // Generated.
-#include "dt/dt_pwrmgr.h"         // Generated.
-#include "dt/dt_rstmgr.h"         // Generated.
-#include "dt/dt_rv_core_ibex.h"   // Generated.
-#include "dt/dt_rv_plic.h"        // Generated.
-#include "dt/dt_spi_host.h"       // Generated.
+#include "hw/top/dt/alert_handler.h"  // Generated.
+#include "hw/top/dt/aon_timer.h"      // Generated.
+#include "hw/top/dt/i2c.h"            // Generated.
+#include "hw/top/dt/kmac.h"           // Generated.
+#include "hw/top/dt/otp_ctrl.h"       // Generated.
+#include "hw/top/dt/pwrmgr.h"         // Generated.
+#include "hw/top/dt/rstmgr.h"         // Generated.
+#include "hw/top/dt/rv_core_ibex.h"   // Generated.
+#include "hw/top/dt/rv_plic.h"        // Generated.
+#include "hw/top/dt/spi_host.h"       // Generated.
 #include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
@@ -38,13 +38,15 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #ifdef OPENTITAN_IS_EARLGREY
-#include "dt/dt_flash_ctrl.h"
+#include "hw/top/dt/flash_ctrl.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
 #endif  // OPENTITAN_IS_EARLGREY
 
-#include "alert_handler_regs.h"  // Generated.
+#include "hw/top/alert_handler_regs.h"  // Generated.
+
+#define IDENTITY_U32(a) ((uint32_t)((a) < UINT32_MAX ? (a) : UINT32_MAX))
 
 /*
   RSTMGR ALERT_INFO Test
@@ -510,7 +512,10 @@ static void prgm_alert_handler_round3(void) {
           "kClockFreqPeripheralHz must fit in uint32_t");
     uint32_t cpu_freq = (uint32_t)kClockFreqCpuHz;
     uint32_t peri_freq = (uint32_t)kClockFreqPeripheralHz;
-    uint32_t cycles = kUartTxFifoCpuCycles * (cpu_freq / peri_freq);
+    uint32_t uart_tx_fifo_cycles =
+        IDENTITY_U32(CALCULATE_UART_TX_FIFO_CPU_CYCLES(
+            kUartBaudrate, kClockFreqCpuHz, UART_PARAM_TX_FIFO_DEPTH));
+    uint32_t cycles = uart_tx_fifo_cycles * (cpu_freq / peri_freq);
     class_d_esc[0] = kEscProfiles[kDifAlertHandlerClassD][0];
     class_d_esc[1] = kEscProfiles[kDifAlertHandlerClassD][1];
     class_d_esc[2] = kEscProfiles[kDifAlertHandlerClassD][2];
@@ -602,9 +607,12 @@ static void peripheral_init(void) {
   CHECK_DIF_OK(dif_uart_init_from_dt(kDtUart0, &uart));
 
   // Set pwrmgr reset_en
-  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(&pwrmgr, kDifPwrmgrReqTypeReset,
-                                              kDifPwrmgrResetRequestSourceTwo,
-                                              kDifToggleEnabled));
+  dif_pwrmgr_request_sources_t reset_sources;
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      &pwrmgr, kDifPwrmgrReqTypeReset, dt_aon_timer_instance_id(kDtAonTimerAon),
+      kDtAonTimerResetReqAonTimer, &reset_sources));
+  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
+      &pwrmgr, kDifPwrmgrReqTypeReset, reset_sources, kDifToggleEnabled));
 }
 
 static void collect_alert_dump_and_compare(test_round_t round) {

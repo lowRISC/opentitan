@@ -1,0 +1,203 @@
+diff --git c/Cargo.toml w/Cargo.toml
+index 65b6e1b..0b6a5cc 100644
+--- c/Cargo.toml
++++ w/Cargo.toml
+@@ -126,8 +126,7 @@ optional = true
+ version = "6.0"
+ 
+ [dependencies.ignore]
+-version = "0.4.20"
+-optional = true
++version = "0.4.23"
+ 
+ [dependencies.log]
+ version = "0.4.17"
+@@ -234,7 +233,6 @@ serve = [
+ watch = [
+     "dep:notify",
+     "dep:notify-debouncer-mini",
+-    "dep:ignore",
+     "dep:pathdiff",
+     "dep:walkdir",
+ ]
+diff --git c/src/book/mod.rs w/src/book/mod.rs
+index b33ec6f..b8d7a58 100644
+--- c/src/book/mod.rs
++++ w/src/book/mod.rs
+@@ -624,7 +624,8 @@ fn preprocessor_should_run(
+ mod tests {
+     use super::*;
+     use std::str::FromStr;
+-    use toml::value::Table;
++    use tempfile::Builder as TempFileBuilder;
++    use toml::value::{Table, Value};
+ 
+     #[test]
+     fn config_defaults_to_html_renderer_if_empty() {
+@@ -893,4 +894,21 @@ mod tests {
+         let got = preprocessor_should_run(&BoolPreprocessor(should_be), &html, &cfg);
+         assert_eq!(got, should_be);
+     }
++
++    #[test]
++    fn mdbookignore_ignores_file() {
++        let temp_dir = TempFileBuilder::new().prefix("mdbook-").tempdir().unwrap();
++        let test_book_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("test_book");
++
++        utils::fs::copy_files_except_ignored(&test_book_dir, temp_dir.path(), true, None, None)
++            .expect("Error while copying test book to temp dir");
++
++        let book = MDBook::load(temp_dir.path()).expect("Unable to load book");
++        book.build().expect("Error while building book");
++
++        let book_dir = temp_dir.path().join("book");
++        assert!(book_dir.join("index.html").exists());
++        assert!(book_dir.join(".mdbookignore").exists());
++        assert!(!book_dir.join("ignored_file").exists());
++    }
+ }
+diff --git c/src/renderer/html_handlebars/hbs_renderer.rs w/src/renderer/html_handlebars/hbs_renderer.rs
+index d0149fb..1539288 100644
+--- c/src/renderer/html_handlebars/hbs_renderer.rs
++++ w/src/renderer/html_handlebars/hbs_renderer.rs
+@@ -14,6 +14,7 @@ use std::path::{Path, PathBuf};
+ 
+ use crate::utils::fs::get_404_output_file;
+ use handlebars::Handlebars;
++use ignore::gitignore::GitignoreBuilder;
+ use log::{debug, trace, warn};
+ use once_cell::sync::Lazy;
+ use regex::{Captures, Regex};
+@@ -619,7 +620,23 @@ impl Renderer for HtmlHandlebars {
+             .context("Unable to emit redirects")?;
+ 
+         // Copy all remaining files, avoid a recursive copy from/to the book build dir
+-        utils::fs::copy_files_except_ext(&src_dir, destination, true, Some(&build_dir), &["md"])?;
++        let mut builder = GitignoreBuilder::new(&src_dir);
++        let mdbook_ignore = src_dir.join(".mdbookignore");
++        if mdbook_ignore.exists() {
++            if let Some(err) = builder.add(mdbook_ignore) {
++                warn!("Unable to load '.mdbookignore' file: {}", err);
++            }
++        }
++        builder.add_line(None, "*.md")?;
++        let ignore = builder.build()?;
++
++        utils::fs::copy_files_except_ignored(
++            &src_dir,
++            destination,
++            true,
++            Some(&build_dir),
++            Some(&ignore),
++        )?;
+ 
+         Ok(())
+     }
+diff --git c/src/utils/fs.rs w/src/utils/fs.rs
+index 220bcd8..9dfe49c 100644
+--- c/src/utils/fs.rs
++++ w/src/utils/fs.rs
+@@ -1,4 +1,5 @@
+ use crate::errors::*;
++use ignore::gitignore::{Gitignore, GitignoreBuilder};
+ use log::{debug, trace};
+ use std::fs::{self, File};
+ use std::io::Write;
+@@ -91,12 +92,30 @@ pub fn copy_files_except_ext(
+     recursive: bool,
+     avoid_dir: Option<&PathBuf>,
+     ext_blacklist: &[&str],
++) -> Result<()> {
++    let mut builder = GitignoreBuilder::new(from);
++    for ext in ext_blacklist {
++        builder.add_line(None, &format!("*.{ext}"))?;
++    }
++    let ignore = builder.build()?;
++
++    copy_files_except_ignored(from, to, recursive, avoid_dir, Some(&ignore))
++}
++
++/// Copies all files of a directory to another one except the files that are
++/// ignored by the passed [`Gitignore`]
++pub fn copy_files_except_ignored(
++    from: &Path,
++    to: &Path,
++    recursive: bool,
++    avoid_dir: Option<&PathBuf>,
++    ignore: Option<&Gitignore>,
+ ) -> Result<()> {
+     debug!(
+         "Copying all files from {} to {} (blacklist: {:?}), avoiding {:?}",
+         from.display(),
+         to.display(),
+-        ext_blacklist,
++        ignore,
+         avoid_dir
+     );
+ 
+@@ -114,6 +133,14 @@ pub fn copy_files_except_ext(
+         let entry_file_name = entry.file_name().unwrap();
+         let target_file_path = to.join(entry_file_name);
+ 
++        // Check if it is in the blacklist
++        if let Some(ignore) = ignore {
++            let path = entry.as_path();
++            if ignore.matched(path, path.is_dir()).is_ignore() {
++                continue;
++            }
++        }
++
+         // If the entry is a dir and the recursive option is enabled, call itself
+         if metadata.is_dir() && recursive {
+             if entry == to.as_os_str() {
+@@ -126,19 +153,20 @@ pub fn copy_files_except_ext(
+                 }
+             }
+ 
++            if let Some(ignore) = ignore {
++                let path = entry.as_path();
++                if ignore.matched(path, path.is_dir()).is_ignore() {
++                    continue;
++                }
++            }
++
+             // check if output dir already exists
+             if !target_file_path.exists() {
+                 fs::create_dir(&target_file_path)?;
+             }
+ 
+-            copy_files_except_ext(&entry, &target_file_path, true, avoid_dir, ext_blacklist)?;
++            copy_files_except_ignored(&entry, &target_file_path, true, avoid_dir, ignore)?;
+         } else if metadata.is_file() {
+-            // Check if it is in the blacklist
+-            if let Some(ext) = entry.extension() {
+-                if ext_blacklist.contains(&ext.to_str().unwrap()) {
+-                    continue;
+-                }
+-            }
+             debug!("Copying {entry:?} to {target_file_path:?}");
+             copy(&entry, &target_file_path)?;
+         }
+@@ -268,7 +296,7 @@ mod tests {
+         if let Err(e) =
+             copy_files_except_ext(tmp.path(), &tmp.path().join("output"), true, None, &["md"])
+         {
+-            panic!("Error while executing the function:\n{e:?}");
++            panic!("Error while executing the function:\n{:?}", e);
+         }
+ 
+         // Check if the correct files where created
+diff --git c/test_book/src/.mdbookignore w/test_book/src/.mdbookignore
+new file mode 100644
+index 0000000..6a79f80
+--- /dev/null
++++ w/test_book/src/.mdbookignore
+@@ -0,0 +1 @@
++ignored_file
+diff --git c/test_book/src/ignored_file w/test_book/src/ignored_file
+new file mode 100644
+index 0000000..1ce1f71
+--- /dev/null
++++ w/test_book/src/ignored_file
+@@ -0,0 +1 @@
++This will not be copied to the book directory.

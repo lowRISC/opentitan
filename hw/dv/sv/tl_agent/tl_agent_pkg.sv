@@ -46,8 +46,8 @@ package tl_agent_pkg;
 
   function automatic void enable_logging(string file_name="tl_agent.log");
     int log_fd = $fopen(file_name,"w");
-    `uvm_info("tl_agent_pkg", $sformatf("The TL agent transaction log will be saved to %0s",
-                              file_name), UVM_LOW)
+    `uvm_info($sformatf("%m"), $sformatf("The TL agent transaction log will be saved to %0s",
+                                         file_name), UVM_LOW)
     uvm_top.set_report_id_verbosity_hier("tl_logging", UVM_HIGH);
     uvm_top.set_report_id_file_hier("tl_logging", log_fd);
     uvm_top.set_report_id_verbosity_hier("tl_logging", UVM_HIGH);

@@ -40,6 +40,11 @@
             type: "byte-array",
             exact-size: 32,
         },
+        // Hash chain of all previous owners (SHA256).
+        owner_history_hash: {
+            type: "byte-array",
+            exact-size: 32,
+        },
         // Owner security version, used to prevent rollback.
         owner_security_version: {
             type: "byte-array",
@@ -102,6 +107,7 @@
                 fw_ids: [
                     { hash_algorithm: "sha256", digest: { var: "owner_hash" } },
                     { hash_algorithm: "sha256", digest: { var: "owner_manifest_hash" } },
+                    { hash_algorithm: "sha256", digest: { var: "owner_history_hash" } },
                 ],
                 flags: {
                     not_configured: false,

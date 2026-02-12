@@ -4,4 +4,4 @@
 #
 # Verix CDC waiver file
 
-set_rule_status -rule {SYNCH_RST_CROSSING} -expression {(ResetSyncFlop =~ "top_earlgrey.*.u_sync_2.gen_generic.u_impl_generic.q_o*")} -status {Waived} -comment {REVIEW items : flops driven by reset synchronizers}
+set_rule_status -rule {SYNCH_RST_CROSSING} -expression {(ResetSyncFlop =~ "top_earlgrey.*.u_sync_2.q_o*")} -status {Waived} -comment {REVIEW items : flops driven by reset synchronizers}

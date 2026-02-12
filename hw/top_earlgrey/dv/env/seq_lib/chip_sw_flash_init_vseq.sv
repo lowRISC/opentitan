@@ -35,6 +35,7 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
   localparam uint CREATOR_SECRET_PAGE_ID = flash_ctrl_top_specific_pkg::CreatorInfoPage;
   localparam uint OWNER_SECRET_PAGE_ID = flash_ctrl_top_specific_pkg::OwnerInfoPage;
   localparam uint ISO_PART_PAGE_ID = flash_ctrl_top_specific_pkg::IsolatedInfoPage;
+  localparam uint FLASH_DATA_BYTE_WIDTH = flash_ctrl_top_specific_pkg::DataByteWidth;
 
   localparam uint NUM_TEST_WORDS = 16;
   typedef enum {
@@ -136,32 +137,32 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
     flash_ctrl_bkdr_util data0;
     flash_ctrl_bkdr_util data1;
     flash_ctrl_bkdr_util info0;
-    bit [15:0] base_addr_bytes;
+    bit [15:0] base_addr_words;
 
     `downcast(data0, cfg.mem_bkdr_util_h[FlashBank0Data])
     `downcast(data1, cfg.mem_bkdr_util_h[FlashBank1Data])
     `downcast(info0, cfg.mem_bkdr_util_h[FlashBank0Info])
 
     for (int i = 0; i < NUM_TEST_WORDS / 2; i++) begin
-      base_addr_bytes = 16'h0;
+      base_addr_words = 16'h0;
       data0.flash_write_scrambled(
-          {bank0_page0_data[(i*2)+1], bank0_page0_data[i*2]}, base_addr_bytes + (i * 8),
+          {bank0_page0_data[(i*2)+1], bank0_page0_data[i*2]}, base_addr_words + i,
           flash_addr_key, flash_data_key);
-      base_addr_bytes = FLASH_PAGE_SIZE_BYTES * FLASH_PAGES_PER_BANK;
+      base_addr_words = (FLASH_PAGE_SIZE_BYTES >> FLASH_DATA_BYTE_WIDTH) * FLASH_PAGES_PER_BANK;
       data1.flash_write_scrambled(
-          {bank1_page0_data[(i*2)+1], bank1_page0_data[i*2]}, base_addr_bytes + (i * 8),
+          {bank1_page0_data[(i*2)+1], bank1_page0_data[i*2]}, base_addr_words + i,
           flash_addr_key, flash_data_key);
-      base_addr_bytes = FLASH_PAGE_SIZE_BYTES * CREATOR_SECRET_PAGE_ID;
+      base_addr_words = (FLASH_PAGE_SIZE_BYTES >> FLASH_DATA_BYTE_WIDTH) * CREATOR_SECRET_PAGE_ID;
       info0.flash_write_scrambled(
-          {creator_secret_data[(i*2)+1], creator_secret_data[i*2]}, base_addr_bytes + (i * 8),
+          {creator_secret_data[(i*2)+1], creator_secret_data[i*2]}, base_addr_words + i,
           flash_addr_key, flash_data_key);
-      base_addr_bytes = FLASH_PAGE_SIZE_BYTES * OWNER_SECRET_PAGE_ID;
+      base_addr_words = (FLASH_PAGE_SIZE_BYTES >> FLASH_DATA_BYTE_WIDTH) * OWNER_SECRET_PAGE_ID;
       info0.flash_write_scrambled(
-          {owner_secret_data[(i*2)+1], owner_secret_data[i*2]}, base_addr_bytes + (i * 8),
+          {owner_secret_data[(i*2)+1], owner_secret_data[i*2]}, base_addr_words + i,
           flash_addr_key, flash_data_key);
-      base_addr_bytes = FLASH_PAGE_SIZE_BYTES * ISO_PART_PAGE_ID;
+      base_addr_words = (FLASH_PAGE_SIZE_BYTES >> FLASH_DATA_BYTE_WIDTH) * ISO_PART_PAGE_ID;
       info0.flash_write_scrambled(
-          {iso_part_data[(i*2)+1], iso_part_data[i*2]}, base_addr_bytes + (i * 8), flash_addr_key,
+          {iso_part_data[(i*2)+1], iso_part_data[i*2]}, base_addr_words + i, flash_addr_key,
           flash_data_key);
     end
   endtask

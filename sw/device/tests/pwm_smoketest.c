@@ -69,7 +69,7 @@ bool test_main(void) {
 
       CHECK_DIF_OK(dif_pwm_configure(&pwm, pwm_config));
       CHECK_DIF_OK(
-          dif_pwm_configure_channel(&pwm, kDifPwmChannel0, channel_config));
+          dif_pwm_configure_channel(&pwm, /* channel = */ 0, channel_config));
 
       // The IOA7 goes low when the host is sampling.
       bool not_sampling = true;
@@ -82,16 +82,16 @@ bool test_main(void) {
       } while (not_sampling);
 
       CHECK_DIF_OK(dif_pwm_phase_cntr_set_enabled(&pwm, kDifToggleEnabled));
-      CHECK_DIF_OK(dif_pwm_channel_set_enabled(&pwm, kDifPwmChannel0,
-                                               kDifToggleEnabled));
+      CHECK_DIF_OK(dif_pwm_channels_set_enabled(&pwm, /* channels = */ 1 << 0,
+                                                kDifToggleEnabled));
 
       // The goes high when the host stop sampling.
       do {
         CHECK_DIF_OK(dif_gpio_read(&gpio, 0, &not_sampling));
       } while (!not_sampling);
 
-      CHECK_DIF_OK(dif_pwm_channel_set_enabled(&pwm, kDifPwmChannel0,
-                                               kDifToggleDisabled));
+      CHECK_DIF_OK(dif_pwm_channels_set_enabled(&pwm, /* channels = */ 1 << 0,
+                                                kDifToggleDisabled));
       CHECK_DIF_OK(dif_pwm_phase_cntr_set_enabled(&pwm, kDifToggleDisabled));
     }
   }

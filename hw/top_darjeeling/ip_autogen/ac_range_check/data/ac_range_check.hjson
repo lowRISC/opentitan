@@ -102,7 +102,8 @@
   ]
   interrupt_list: [
     { name: "deny_cnt_reached"
-      desc: "Deny counter has reached threshold."
+      desc: "Deny counter has exceeded threshold."
+      type: "status"
     }
   ]
   alert_list: [
@@ -116,6 +117,18 @@
   countermeasures: [
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
+    }
+    { name: "CTRL.REGWEN_MUBI"
+      desc: "Registers are protected from writes with a multi-bit encoded signal."
+    }
+    { name: "CTRL.MUBI"
+      desc: "Registers have multi-bit encoded fields."
+    }
+    { name: "INTERSIG.MUBI"
+      desc: "Range overwrite singal to bypass the matching logic."
+    }
+    { name: "CTR.REDUN"
+     desc: "The log counter is protected by a second counter that counts in the opposite direction."
     }
   ]
   regwidth: "32"
@@ -163,17 +176,19 @@
     { name: "LOG_CONFIG"
       desc: ""
       swaccess: "rw"
-      hwaccess: "hro"
+      hwaccess: "hrw"
+      hwext: "true"
+      hwqe: "true"
       fields: [
         { bits: "9:2"
           name: "deny_cnt_threshold"
           resval: 0x0
-          desc: "An interrupt is raised (if enabled) when deny_cnt reaches the configured deny_cnt_threshold."
+          desc: "An interrupt is raised (if enabled) when deny_cnt exceeds the configured deny_cnt_threshold."
         }
         { bits: "1"
           name: "log_clear"
           resval: 0x0
-          hwqe: "true"
+          swaccess: "r0w1c"
           desc: '''Clears all log information for the first denied access including:
                     - LOG_STATUS
                     - LOG_ADDRESS.

@@ -17,6 +17,9 @@
  * through the debug module.
  */
 
+#include "hw/top/dt/alert_handler.h"  // Generated
+#include "hw/top/dt/lc_ctrl.h"        // Generated
+#include "hw/top/dt/sram_ctrl.h"      // Generated
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
@@ -29,8 +32,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_utils.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "sram_ctrl_regs.h"  // Generated.
+#include "hw/top/sram_ctrl_regs.h"  // Generated.
 
 static const uint32_t kStatusRegMask = kDifSramCtrlStatusBusIntegErr |
                                        kDifSramCtrlStatusInitErr |
@@ -69,11 +71,8 @@ static bool write_read_data(mmio_region_t sram_region, uint32_t data) {
 }
 
 status_t configure_srams(void) {
-  uint32_t base_addr;
-  base_addr = TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR;
-  TRY(dif_sram_ctrl_init(mmio_region_from_addr(base_addr), &sram_ctrl_main));
-  base_addr = TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR;
-  TRY(dif_sram_ctrl_init(mmio_region_from_addr(base_addr), &sram_ctrl_ret));
+  TRY(dif_sram_ctrl_init_from_dt(kDtSramCtrlMain, &sram_ctrl_main));
+  TRY(dif_sram_ctrl_init_from_dt(kDtSramCtrlRetAon, &sram_ctrl_ret));
 
   dif_sram_ctrl_status_bitfield_t status_main;
   dif_sram_ctrl_status_bitfield_t status_ret;
@@ -91,9 +90,7 @@ status_t configure_srams(void) {
 }
 
 status_t configure_alert_handler(void) {
-  TRY(dif_alert_handler_init(
-      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
-      &alert_handler));
+  TRY(dif_alert_handler_init_from_dt(kDtAlertHandler, &alert_handler));
 
   dif_alert_handler_escalation_phase_t esc_phases[] = {{
       .phase = kDifAlertHandlerClassStatePhase0,
@@ -111,7 +108,9 @@ status_t configure_alert_handler(void) {
   };
 
   TRY(dif_alert_handler_configure_alert(
-      &alert_handler, kTopEarlgreyAlertIdLcCtrlFatalBusIntegError,
+      &alert_handler,
+      dt_lc_ctrl_alert_to_alert_id(kDtLcCtrlFirst,
+                                   kDtLcCtrlAlertFatalBusIntegError),
       kDifAlertHandlerClassA, kDifToggleEnabled, kDifToggleEnabled));
   TRY(dif_alert_handler_configure_class(&alert_handler, kDifAlertHandlerClassA,
                                         class_config, kDifToggleEnabled,
@@ -123,8 +122,7 @@ status_t configure_alert_handler(void) {
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
 bool test_main(void) {
-  CHECK_DIF_OK(dif_lc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
+  CHECK_DIF_OK(dif_lc_ctrl_init_from_dt(kDtLcCtrlFirst, &lc_ctrl));
 
   CHECK_STATUS_OK(configure_alert_handler());
   CHECK_STATUS_OK(configure_srams());
@@ -132,8 +130,9 @@ bool test_main(void) {
   // Read and Write to/from SRAMs. Main SRAM will use the address of the
   // buffer that has been allocated. Ret SRAM can start at the owner section.
   sram_buffer_addr_main = (uintptr_t)&sram_buffer_main;
-  sram_buffer_addr_ret = TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR +
-                         offsetof(retention_sram_t, owner);
+  sram_buffer_addr_ret =
+      dt_sram_ctrl_memory_base(kDtSramCtrlRetAon, kDtSramCtrlMemoryRam) +
+      offsetof(retention_sram_t, owner);
 
   mmio_region_t sram_region_main = mmio_region_from_addr(sram_buffer_addr_main);
   mmio_region_t sram_region_ret = mmio_region_from_addr(sram_buffer_addr_ret);

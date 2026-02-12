@@ -200,7 +200,7 @@ class edn_alert_vseq extends edn_base_vseq;
       `DV_CHECK_STD_RANDOMIZE_FATAL(genbits)
       cfg.m_csrng_agent_cfg.m_genbits_push_agent_cfg.add_h_user_data({fips, genbits});
     end
-    // Disable the boot mode to trigger the uninstaniate command if needed.
+    // Disable the boot mode to trigger the uninstantiate command if needed.
     if (exp_state inside {BootLoadUni, BootUniAckWait}) begin
       ral.ctrl.boot_req_mode.set(MuBi4False);
       csr_update(.csr(ral.ctrl));
@@ -476,11 +476,6 @@ class edn_alert_vseq extends edn_base_vseq;
     uvm_reg       csr;
     uvm_reg_field fld;
 
-    if (cfg.use_invalid_mubi) begin
-      // Turn off DUT assertions so that the corresponding alert can fire
-      cfg.edn_assert_vif.assert_off_alert();
-    end
-
     // Depending on the value of cfg.which_invalid_mubi, one of the following ctrl register fields
     // will be set to an invalid MuBI value.
     // Apply the bad settings, and confirm the corresponding alert is fired.
@@ -561,10 +556,6 @@ class edn_alert_vseq extends edn_base_vseq;
     csr_wr(.ptr(ral.recov_alert_sts), .value(32'h0));
     // Check the recov_alert_sts register
     csr_rd_check(.ptr(ral.recov_alert_sts), .compare_value(0));
-
-    // Turn assertions back on
-    cfg.edn_assert_vif.assert_on_alert();
-
   endtask
 
 endclass : edn_alert_vseq

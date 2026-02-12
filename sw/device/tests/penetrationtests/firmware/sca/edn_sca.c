@@ -14,14 +14,9 @@
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/edn_sca_commands.h"
 
-#include "edn_regs.h"  // Generated
+#include "hw/top/edn_regs.h"           // Generated
+#include "hw/top/rv_core_ibex_regs.h"  // Generated
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "rv_core_ibex_regs.h"  // Generated
-
-// NOP macros.
-#define NOP1 "addi x0, x0, 0\n"
-#define NOP10 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1
-#define NOP30 NOP10 NOP10 NOP10
 
 enum {
   kEdnKatTimeout = (10 * 1000 * 1000),
@@ -121,10 +116,11 @@ status_t handle_edn_sca_bus_data(ujson_t *uj) {
 }
 
 status_t handle_edn_sca_init(ujson_t *uj) {
-  penetrationtest_cpuctrl_t uj_data;
-  TRY(ujson_deserialize_penetrationtest_cpuctrl_t(uj, &uj_data));
+  // Configure the device.
+  pentest_setup_device(uj, false, false);
 
   pentest_select_trigger_type(kPentestTriggerTypeSw);
+
   // As we are using the software defined trigger, the first argument of
   // sca_init is not needed. kPentestTriggerSourceAes is selected as a
   // placeholder.
@@ -132,27 +128,10 @@ status_t handle_edn_sca_init(ujson_t *uj) {
                kPentestPeripheralIoDiv4 | kPentestPeripheralEntropy |
                    kPentestPeripheralCsrng | kPentestPeripheralEdn);
 
-  // Disable the instruction cache and dummy instructions for SCA attacks.
-  penetrationtest_device_info_t uj_output;
-  TRY(pentest_configure_cpu(
-      uj_data.icache_disable, uj_data.dummy_instr_disable,
-      uj_data.enable_jittery_clock, uj_data.enable_sram_readback,
-      &uj_output.clock_jitter_locked, &uj_output.clock_jitter_en,
-      &uj_output.sram_main_readback_locked, &uj_output.sram_ret_readback_locked,
-      &uj_output.sram_main_readback_en, &uj_output.sram_ret_readback_en));
-
   // Configure Ibex to allow reading ERR_STATUS register.
   TRY(dif_rv_core_ibex_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
-
-  // Configure the entropy complex. Set the reseed interval to max to avoid
-  // reseed during the trigger window.
-  TRY(pentest_configure_entropy_source_max_reseed_interval());
-
-  // Read device ID and return to host.
-  TRY(pentest_read_device_id(uj_output.device_id));
-  RESP_OK(ujson_serialize_penetrationtest_device_info_t, uj, &uj_output);
 
   return OK_STATUS();
 }

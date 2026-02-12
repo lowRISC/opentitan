@@ -19,7 +19,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "aon_timer_regs.h"
+#include "hw/top/aon_timer_regs.h"
 /*
    PWRMGR BACK TO BACK DEEP SLEEP, RESET / WAKEUP TEST
 

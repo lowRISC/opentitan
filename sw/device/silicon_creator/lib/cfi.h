@@ -109,16 +109,104 @@ enum {
  * Initializes the CFI counter at `index` with its respective initialization
  * constant plus `kCfiIncrement`.
  *
+ * This function calls `barrier32()` to synchronize the counter update.
+ *
+ * @param table The counters array variable.
+ * @param index The counter index.
+ * @param init_value The counter's initial value.
+ */
+static inline void cfi_func_counter_init(uint32_t table[], size_t index,
+                                         uint32_t init_value) {
+  table[index] = (init_value + kCfiIncrement);
+  barrier32(table[index]);
+}
+
+/**
+ * Converts a CFI step value into an expected counter value.
+ *
+ * @param init_value The counter's initial value.
+ * @param step The increment step.
+ */
+static inline uint32_t cfi_step_to_count(uint32_t init_value, uint32_t step) {
+  return init_value + (step * kCfiIncrement);
+}
+
+/**
+ * Increments the CFI counter at `index` if the current count is equivalent to
+ * the provided `step`. It throws an irrecoverable exception otherwise.
+ *
+ * This function calls `barrier32()` to synchronize the counter update.
+ *
+ * @param table The counters array variable.
+ * @param index The counter index.
+ * @param step The equivalent step for the current counter value.
+ * @param init_value The counter's initial value.
+ */
+static inline void cfi_func_counter_increment(uint32_t table[], size_t index,
+                                              uint32_t step,
+                                              uint32_t init_value) {
+  HARDENED_CHECK_EQ(table[index], cfi_step_to_count(init_value, step));
+  table[index] += kCfiIncrement;
+  barrier32(table[index]);
+}
+
+/**
+ * Prepare counters for function call.
+ *
+ * The `src` and `target` counters are associated with the caller and the
+ * callee functions, respectively. The caller uses this macro to initialize
+ * the `target` counter between increments of the `src` counter.
+ *
+ * The `src` counter can be verified at a later time to get a high confidence
+ * measurement that the target counter was initialized properly by the caller
+ * before entering the callee function.
+ *
+ * This function calls the `cfi_func_counter_increment()` and
+ * `cfi_func_counter_init()` functions,  which use `barrier32()` to synchronize
+ * all counter updates. An irrecoverable exception is thrown if an unexpected
+ * `src` count value is found.
+ *
+ * @param table The counters array variable.
+ * @param src Index counter associated with the caller function.
+ * @param src_step Initial expected step of the `src` counter.
+ * @param target Index counter associated with the calee function.
+ * @param src_init_value The caller's counter's initial value.
+ * @param target_init_value The calle's counter's initial value.
+ */
+static inline void cfi_func_counter_prepcall(uint32_t table[], size_t src,
+                                             uint32_t src_step, size_t target,
+                                             uint32_t src_init_value,
+                                             uint32_t target_init_value) {
+  cfi_func_counter_increment(table, src, src_step, src_init_value);
+  cfi_func_counter_init(table, target, target_init_value);
+  cfi_func_counter_increment(table, src, src_step + 1, src_init_value);
+}
+
+/**
+ * Compares the equivalent counter value of the counter at `index` against the
+ * provided `step` value. Throws an irrecoverable exception on mismatch.
+ *
+ * @param table The counters array variable.
+ * @param index The counter index.
+ * @param step The equivalent step for the counter value.
+ * @param init_value The counter's initial value.
+ */
+static inline void cfi_func_counter_check(uint32_t table[], size_t index,
+                                          uint32_t step, uint32_t init_value) {
+  HARDENED_CHECK_EQ(table[index], cfi_step_to_count(init_value, step));
+}
+
+/**
+ * Initializes the CFI counter at `index` with its respective initialization
+ * constant plus `kCfiIncrement`.
+ *
  * This macro calls `barrier32()` to synchronize the counter update.
  *
  * @param table The counters array variable.
  * @param index The counter index.
  */
-#define CFI_FUNC_COUNTER_INIT(table, index)       \
-  do {                                            \
-    table[index] = (index##Val0 + kCfiIncrement); \
-    barrier32(table[index]);                      \
-  } while (0)
+#define CFI_FUNC_COUNTER_INIT(table, index) \
+  cfi_func_counter_init(table, index, index##Val0)
 
 /**
  * Converts a CFI step value into an expected counter value.
@@ -126,7 +214,7 @@ enum {
  * @param index The counter index.
  * @param step The increment step.
  */
-#define CFI_STEP_TO_COUNT(index, step) ((index##Val0) + (step)*kCfiIncrement)
+#define CFI_STEP_TO_COUNT(index, step) cfi_step_to_count(index##Val0, step)
 
 /**
  * Increments the CFI counter at `index` if the current count is equivalent to
@@ -138,12 +226,8 @@ enum {
  * @param index The counter index.
  * @param step The equivalent step for the current counter value.
  */
-#define CFI_FUNC_COUNTER_INCREMENT(table, index, step)               \
-  do {                                                               \
-    HARDENED_CHECK_EQ(table[index], CFI_STEP_TO_COUNT(index, step)); \
-    table[index] += kCfiIncrement;                                   \
-    barrier32(table[index]);                                         \
-  } while (0)
+#define CFI_FUNC_COUNTER_INCREMENT(table, index, step) \
+  cfi_func_counter_increment(table, index, step, index##Val0)
 
 /**
  * Prepare counters for function call.
@@ -165,12 +249,9 @@ enum {
  * @param src_step Initial expected step of the `src` counter.
  * @param target Index counter associated with the calee function.
  */
-#define CFI_FUNC_COUNTER_PREPCALL(table, src, src_step, target) \
-  do {                                                          \
-    CFI_FUNC_COUNTER_INCREMENT(table, src, src_step);           \
-    CFI_FUNC_COUNTER_INIT(table, target);                       \
-    CFI_FUNC_COUNTER_INCREMENT(table, src, (src_step + 1));     \
-  } while (0)
+#define CFI_FUNC_COUNTER_PREPCALL(table, src, src_step, target)      \
+  cfi_func_counter_prepcall(table, src, src_step, target, src##Val0, \
+                            target##Val0)
 
 /**
  * Compares the equivalent counter value of the counter at `index` against the
@@ -180,9 +261,7 @@ enum {
  * @param index The counter index.
  * @param step The equivalent step for the counter value.
  */
-#define CFI_FUNC_COUNTER_CHECK(table, index, step)                   \
-  do {                                                               \
-    HARDENED_CHECK_EQ(table[index], CFI_STEP_TO_COUNT(index, step)); \
-  } while (0)
+#define CFI_FUNC_COUNTER_CHECK(table, index, step) \
+  cfi_func_counter_check(table, index, step, index##Val0)
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CFI_H_

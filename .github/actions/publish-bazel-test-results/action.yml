@@ -7,14 +7,20 @@ description: Merge Bazel test results and publish the report
 
 inputs:
   merged-results:
-    description: Path to place merged JUnit report
+    description: Path to place merged JUnit report.
     default: test_results.xml
   artifact-name:
     description: Name of uploaded artifact. Leave empty to skip upload.
     default: ''
-  bucket-destination:
-    description: GCP bucket destination to upload report to.
-    default: ''
+  upload-to-bucket:
+    description: Whether to upload results to the Google Cloud Bucket.
+    default: "false"
+  bucket-job-folder-name:
+    description: Google Cloud Bucket folder name for uploaded test results.
+    default: "fpga"
+  branch:
+    description: Branch name.
+    default: "${{ github.ref }}"
 
 runs:
   using: composite
@@ -26,8 +32,8 @@ runs:
         if find -L bazel-out -name "test.xml" | grep -F '' >> /tmp/test-xmls; then
           cat /tmp/test-xmls | xargs merge-junit -o "${{ inputs.merged-results }}"
         else
-          # merge-junit doesn't handle 0 inputs.
-          echo '<?xml version="1.0" encoding="UTF-8"?><testsuites/>' >> "${{ inputs.merged-results }}"
+          # No test results to upload
+          exit 1
         fi
 
     - name: Add hostname to testsuites
@@ -36,7 +42,7 @@ runs:
         xmlstarlet ed --inplace -i '/testsuites/testsuite' -t attr -n hostname -v "${{ runner.name }}" "${{ inputs.merged-results }}"
 
     - name: Upload report as artifact
-      if: inputs.artifact-name != ''
+      if: ${{ success() && inputs.artifact-name != '' }}
       uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.artifact-name }}
@@ -45,10 +51,12 @@ runs:
         overwrite: true
 
     - name: Upload report to Google Cloud
-      if: inputs.bucket-destination != ''
+      if: ${{ success() && inputs.upload-to-bucket != 'false' }}
       shell: bash
       run: |
-        gcloud storage cp "${{ inputs.merged-results }}" "gs://${{ inputs.bucket-destination }}"
+        BUCKET_PATH=opentitan-test-results/job/${{ inputs.bucket-job-folder-name }}/branch/${{ inputs.branch }}/$(date +%Y-%m-%d-%H%M%S)_test_results.xml
+        printf "BUCKET_PATH=${BUCKET_PATH}\n" >> $GITHUB_OUTPUT
+        gcloud storage cp "${{ inputs.merged-results }}" "gs://${BUCKET_PATH}"
 
     - name: Publish job summary
       uses: mikepenz/action-junit-report@ec3a351c13e080dc4fa94c49ab7ad5bf778a9668 # v5

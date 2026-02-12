@@ -49,7 +49,6 @@ static uint32_t kTestPrivateExponent[kRsa2048NumWords] = {
     0xcaa6815c, 0x08ca0fd3, 0x8f996093, 0x30b7c446, 0xf69b11f7, 0xa298dd00,
     0xfd4e8120, 0x059df602, 0x25feb268, 0x0f3f749e,
 };
-static uint32_t kTestPublicExponent = 65537;
 
 // Key mode for testing.
 static otcrypto_key_mode_t kTestKeyMode = kOtcryptoKeyModeRsaSignPss;
@@ -131,9 +130,9 @@ static status_t run_key_from_cofactor(const uint32_t *cofactor) {
 
   // Construct the RSA key pair using the cofactor.
   uint64_t t_start = profile_start();
-  TRY(otcrypto_rsa_keypair_from_cofactor(
-      kOtcryptoRsaSize2048, modulus, kTestPublicExponent, cofactor_share0,
-      cofactor_share1, &public_key, &private_key));
+  TRY(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, modulus,
+                                         cofactor_share0, cofactor_share1,
+                                         &public_key, &private_key));
   profile_end_and_print(t_start, "RSA keypair from cofactor");
 
   // Interpret the private key and ensure the private exponent matches the
@@ -141,7 +140,7 @@ static status_t run_key_from_cofactor(const uint32_t *cofactor) {
   // keyblobs, and will need to be updated if the representation changes.
   TRY_CHECK(private_key.keyblob_length == sizeof(rsa_2048_private_key_t));
   rsa_2048_private_key_t *sk = (rsa_2048_private_key_t *)private_key.keyblob;
-  TRY_CHECK_ARRAYS_EQ(sk->d.data, kTestPrivateExponent,
+  TRY_CHECK_ARRAYS_EQ(sk->d0.data, kTestPrivateExponent,
                       ARRAYSIZE(kTestPrivateExponent));
 
   // Check the other values too, just to be safe.
@@ -149,7 +148,6 @@ static status_t run_key_from_cofactor(const uint32_t *cofactor) {
   TRY_CHECK(public_key.key_length == sizeof(rsa_2048_public_key_t));
   rsa_2048_public_key_t *pk = (rsa_2048_public_key_t *)public_key.key;
   TRY_CHECK_ARRAYS_EQ(pk->n.data, kTestModulus, ARRAYSIZE(kTestModulus));
-  TRY_CHECK(pk->e == kTestPublicExponent);
   return OK_STATUS();
 }
 

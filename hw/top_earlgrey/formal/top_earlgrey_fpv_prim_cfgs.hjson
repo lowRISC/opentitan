@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// This batch cfg script contains testbenchs that uses FPV to verify submodules or prim_modules.
+// This batch cfg script contains testbenches that uses FPV to verify submodules or prim_modules.
 {
   flow: formal
 
@@ -23,7 +23,7 @@
               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
               rel_path: "hw/top_earlgrey/ip_autogen/alert_handler/alert_handler_esc_timer/{sub_flow}/{tool}"
               cov: true
-              after_load: "{proj_root}/hw/top_earlgrey/ip_autogen/alert_handler/fpv/tb/esc_after_load.tcl"
+              after_load: ["{proj_root}/hw/top_earlgrey/ip_autogen/alert_handler/fpv/tb/esc_after_load.tcl"]
              }
              {
               name: alert_handler_ping_timer_fpv
@@ -32,7 +32,7 @@
               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
               rel_path: "hw/top_earlgrey/ip_autogen/alert_handler/alert_handler/ping_timer/{sub_flow}/{tool}"
               cov: true
-              after_load: "{proj_root}/hw/top_earlgrey/ip_autogen/alert_handler/fpv/tb/ping_after_load.tcl"
+              after_load: ["{proj_root}/hw/top_earlgrey/ip_autogen/alert_handler/fpv/tb/ping_after_load.tcl"]
              }
              {
                name: prim_alert_rxtx_fpv
@@ -41,6 +41,7 @@
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/ip/prim/prim_alert_rxtx/{sub_flow}/{tool}"
                cov: true
+               after_load: ["{proj_root}/hw/ip/prim/fpv/tb/rxtx_after_load.tcl"]
              }
              {
                name: prim_alert_rxtx_fatal_fpv
@@ -49,6 +50,7 @@
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/ip/prim/prim_alert_rxtx_fatal/{sub_flow}/{tool}"
                cov: true
+               after_load: ["{proj_root}/hw/ip/prim/fpv/tb/rxtx_after_load.tcl"]
              }
              {
                name: prim_alert_rxtx_async_fpv
@@ -57,6 +59,7 @@
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/ip/prim/prim_alert_rxtx_async/{sub_flow}/{tool}"
                cov: true
+               after_load: ["{proj_root}/hw/ip/prim/fpv/tb/rxtx_after_load.tcl"]
              }
              {
                name: prim_alert_rxtx_async_fatal_fpv
@@ -65,6 +68,7 @@
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/ip/prim/prim_alert_rxtx_fatal/{sub_flow}/{tool}"
                cov: true
+               after_load: ["{proj_root}/hw/ip/prim/fpv/tb/rxtx_after_load.tcl"]
              }
              {
                name: prim_arbiter_fixed_fpv

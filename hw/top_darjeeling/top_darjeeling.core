@@ -10,6 +10,8 @@ filesets:
       # Place the autogen packages first to avoid conflicts
       - lowrisc:darjeeling_constants:top_racl_pkg
       - lowrisc:darjeeling_ip:alert_handler_reg
+      - lowrisc:darjeeling_ip:otp_ctrl_macro_pkg
+      - lowrisc:darjeeling_ip:otp_ctrl_top_specific_pkg
       - lowrisc:darjeeling_ip:pwrmgr_pkg
       - lowrisc:ip:uart:0.1
       - lowrisc:ip:rv_dm
@@ -20,13 +22,14 @@ filesets:
       - lowrisc:ip:i2c
       - lowrisc:ip:pattgen
       - lowrisc:ip:aes
-      - lowrisc:ip:entropy_src_pkg
+      - lowrisc:ip:entropy_src
       - lowrisc:ip:csrng
       - lowrisc:ip:edn
       - lowrisc:ip:dma
       - lowrisc:ip:hmac
       - lowrisc:ip:kmac
       - lowrisc:ip:otbn
+      - lowrisc:ip:otp_macro
       - lowrisc:prim:ram_1p_scr
       - lowrisc:ip:sram_ctrl
       - lowrisc:ip:keymgr_dpe
@@ -51,8 +54,6 @@ filesets:
       - lowrisc:darjeeling_ip:racl_ctrl
       - lowrisc:darjeeling_ip:gpio
       - lowrisc:ip:aon_timer
-      - lowrisc:ip:adc_ctrl
-      - lowrisc:ip:sysrst_ctrl
       - lowrisc:ip:rom_ctrl
       - lowrisc:ip:soc_dbg_ctrl
       - lowrisc:systems:soc_proxy
@@ -63,10 +64,19 @@ filesets:
       - "fileset_partner  ? (partner:systems:top_darjeeling_ast_pkg)"
       - "!fileset_partner ? (lowrisc:systems:top_darjeeling_ast_pkg)"
     files:
-      - rtl/autogen/top_darjeeling_rnd_cnst_pkg.sv
       - rtl/autogen/top_darjeeling_racl_pkg.sv
       - rtl/autogen/top_darjeeling.sv
     file_type: systemVerilogSource
+
+  files_rtl_testing:
+    depend:
+      - lowrisc:darjeeling_constants:testing_rnd_cnst_pkg
+      - lowrisc:darjeeling_constants:testing_lc_ctrl_token_pkg
+
+  files_rtl_tapeout:
+    depend:
+      - lowrisc:darjeeling_constants:tapeout_rnd_cnst_pkg
+      - lowrisc:darjeeling_constants:tapeout_lc_ctrl_token_pkg
 
   files_verilator_waiver:
     depend:
@@ -95,6 +105,12 @@ filesets:
       - lint/top_darjeeling.vbl
     file_type: veribleLintWaiver
 
+mapping:
+  "lowrisc:virtual_constants:top_pkg": "lowrisc:darjeeling_constants:top_pkg"
+  "lowrisc:virtual_constants:top_racl_pkg": "lowrisc:darjeeling_constants:top_racl_pkg"
+  "lowrisc:systems:ast_pkg": "lowrisc:systems:top_darjeeling_ast_pkg"
+  "lowrisc:virtual_constants:lc_ctrl_token_pkg": "lowrisc:darjeeling_constants:testing_lc_ctrl_token_pkg"
+  "lowrisc:virtual_constants:rnd_cnst_pkg": "lowrisc:darjeeling_constants:testing_rnd_cnst_pkg"
 
 parameters:
   SYNTHESIS:
@@ -104,15 +120,19 @@ parameters:
 targets:
   default: &default_target
     filesets:
-      - tool_verilator   ? (files_verilator_waiver)
-      - tool_ascentlint  ? (files_ascentlint_waiver)
-      - tool_veriblelint ? (files_veriblelint_waiver)
+      - tool_verilator    ? (files_verilator_waiver)
+      - tool_ascentlint   ? (files_ascentlint_waiver)
+      - tool_veriblelint  ? (files_veriblelint_waiver)
+      - fileset_tapeout   ? (files_rtl_tapeout)
+      - "!fileset_tapeout ? (files_rtl_testing)"
       - files_rtl_generic
     toplevel: top_darjeeling
 
   sim:
     default_tool: icarus
     filesets:
+      - fileset_tapeout   ? (files_rtl_tapeout)
+      - "!fileset_tapeout ? (files_rtl_testing)"
       - files_rtl_generic
     toplevel: top_darjeeling
 

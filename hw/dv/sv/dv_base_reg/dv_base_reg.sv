@@ -35,11 +35,25 @@ class dv_base_reg extends uvm_reg;
   // through the 1st/2nd (or both) writes
   semaphore            atomic_en_shadow_wr;
 
+  // A semaphore that's used to control processes that wish to write to the register (using
+  // uvm_reg::write). This was originally a workaround for a rather silly UVM bug that was only
+  // fixed in version 2020-2.0. It caused multiple processes to collide in a critical section if
+  // more than two are trying to write a register at once.
+  //
+  // Note that this semaphore controls reads as well as writes, because both operations use the
+  // m_is_busy flag.
+  //
+  // However, the lock is also useful if a process wishes to use predict(), in which case the
+  // m_is_busy flag should be false. To allow sequences to do that safely, the take_lock and
+  // release_lock methods that control this lock are not local.
+  local semaphore      access_lock;
+
   function new(string       name = "",
                int unsigned n_bits,
                int          has_coverage);
     super.new(name, n_bits, has_coverage);
     atomic_en_shadow_wr = new(1);
+    access_lock = new(1);
   endfunction : new
 
   // Create this register and its fields' IP-specific functional coverage.
@@ -157,7 +171,7 @@ class dv_base_reg extends uvm_reg;
     end
   endfunction
 
-  // Wen reg/fld can lock specific groups of fields' write acces. The lockable fields are called
+  // Wen reg/fld can lock specific groups of fields' write access. The lockable fields are called
   // lockable flds.
   function void add_lockable_reg_or_fld(uvm_object lockable_obj);
     dv_base_reg_field wen_fld;
@@ -425,7 +439,9 @@ class dv_base_reg extends uvm_reg;
         backdoor_write_shadow_val = 1;
       end
     end
+    take_lock();
     super.poke(status, value, kind, parent, extension, fname, lineno);
+    release_lock();
     backdoor_write_shadow_val = 0;
   endtask
 
@@ -443,9 +459,9 @@ class dv_base_reg extends uvm_reg;
       shadow_update_err = 0;
       shadow_wr_staged  = 0;
       shadow_fatal_lock = 0;
-      // in case reset is issued during shadowed writes
-      void'(atomic_en_shadow_wr.try_get(1));
-      atomic_en_shadow_wr.put(1);
+      // Make a new copy of the shadow write semaphore, so that we don't need a shadowed write
+      // operation to complete if a reset happens in the middle of one.
+      atomic_en_shadow_wr = new(1);
     end
   endfunction
 
@@ -493,5 +509,83 @@ class dv_base_reg extends uvm_reg;
     end
     return retval;
   endfunction
+
+  // Take the register's lock (see the documentation above access_lock for more details)
+  //
+  // This is mostly used in the wrappers around read, write etc. (working around a UVM bug). But the
+  // task is not local, because another class might want to use the predict method, which musn't
+  // overlap with the m_is_busy flag in uvm_reg. Taking this lock ensures it won't.
+  task take_lock();
+    access_lock.get();
+  endtask
+
+  // Release the register's lock (see the documentation above access_lock for more details). This
+  // should only be called by a process that has already taken the lock with take_lock.
+  function void release_lock();
+    access_lock.put();
+  endfunction
+
+  // A thin wrapper around uvm_reg::write that takes access_lock. See notes above access_lock that
+  // explain why it's needed.
+  task write(output uvm_status_e      status,
+             input  uvm_reg_data_t    value,
+             input  uvm_path_e        path = UVM_DEFAULT_PATH,
+             input  uvm_reg_map       map = null,
+             input  uvm_sequence_base parent = null,
+             input  int               prior = -1,
+             input  uvm_object        extension = null,
+             input  string            fname = "",
+             input  int               lineno = 0);
+    take_lock();
+    super.write(status, value, path, map, parent, prior, extension, fname, lineno);
+    release_lock();
+  endtask
+
+  // A thin wrapper around uvm_reg::read that takes access_lock. See notes above access_lock that
+  // explain why it's needed.
+  task read(output uvm_status_e      status,
+            output uvm_reg_data_t    value,
+            input  uvm_path_e        path = UVM_DEFAULT_PATH,
+            input  uvm_reg_map       map = null,
+            input  uvm_sequence_base parent = null,
+            input  int               prior = -1,
+            input  uvm_object        extension = null,
+            input  string            fname = "",
+            input  int               lineno = 0);
+    take_lock();
+    super.read(status, value, path, map, parent, prior, extension, fname, lineno);
+    release_lock();
+  endtask
+
+  // A thin wrapper around uvm_reg::peek that takes access_lock. See notes above access_lock that
+  // explain why it's needed.
+  task peek(output uvm_status_e      status,
+            output uvm_reg_data_t    value,
+            input  string            kind = "",
+            input  uvm_sequence_base parent = null,
+            input  uvm_object        extension = null,
+            input  string            fname = "",
+            input  int               lineno = 0);
+    take_lock();
+    super.peek(status, value, kind, parent, extension, fname, lineno);
+    release_lock();
+  endtask
+
+  // A thin wrapper around uvm_reg::mirror that takes access_lock. See notes above access_lock that
+  // explain why it's needed.
+  task mirror(output uvm_status_e      status,
+              input uvm_check_e        check = UVM_NO_CHECK,
+              input uvm_path_e         path = UVM_DEFAULT_PATH,
+              input uvm_reg_map        map = null,
+              input uvm_sequence_base  parent = null,
+              input int                prior = -1,
+              input  uvm_object        extension = null,
+              input string             fname = "",
+              input int                lineno = 0);
+    take_lock();
+    super.mirror(status, check, path, map, parent, prior, extension, fname, lineno);
+    release_lock();
+  endtask
+
 
 endclass

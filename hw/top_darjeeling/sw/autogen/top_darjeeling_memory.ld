@@ -5,7 +5,7 @@
  * ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! ------------------- *
  * PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
  * util/topgen.py -t hw/top_darjeeling/data/top_darjeeling.hjson
- * -o hw/top_darjeeling
+ *                -o hw/top_darjeeling/
  */
 
 /**
@@ -14,7 +14,7 @@
  * address for whichever half of the flash contains the corresponding boot stage.
  */
 MEMORY {
-  ctn(rwx) : ORIGIN = 0x40000000, LENGTH = 0x40000000
+  ctn(rwx) : ORIGIN = 0x40000000, LENGTH = 0x80000000
   ram_ret_aon(rwx) : ORIGIN = 0x30600000, LENGTH = 0x1000
   ram_main(rwx) : ORIGIN = 0x10000000, LENGTH = 0x10000
   ram_mbox(rwx) : ORIGIN = 0x11000000, LENGTH = 0x1000

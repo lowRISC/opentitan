@@ -167,6 +167,7 @@
       name:    "lc_cpu_en",
       act:     "rcv",
       package: "lc_ctrl_pkg",
+      default: "lc_ctrl_pkg::On",
     },
 
     { struct:  "lc_tx",
@@ -336,6 +337,14 @@
       type:    "ibex_pkg::rv32b_e"
       default: "ibex_pkg::RV32BNone"
       desc:    "RV32B"
+      local:   "false"
+      expose:  "true"
+    },
+
+    { name:    "RV32ZC"
+      type:    "ibex_pkg::rv32zc_e"
+      default: "ibex_pkg::RV32ZcaZcbZcmp"
+      desc:    "RV32ZC"
       local:   "false"
       expose:  "true"
     },
@@ -515,6 +524,13 @@
       local:   "false"
       expose:  "true"
     }
+    { name:    "InstructionPipeline"
+      type:    "bit"
+      default: "1'b0"
+      desc:    "Add a pipeline stage in the instruction interface between Ibex and the address translation"
+      local:   "true"
+      expose:  "true"
+    },
   ],
   features: [
     {

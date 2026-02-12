@@ -6,28 +6,29 @@
 //
 
 module entropy_src_markov_ht #(
-  parameter int RegWidth = 16,
-  parameter int RngBusWidth = 4
+  parameter int RegWidth          = 16,
+  parameter int RngBusWidth       = 4,
+  parameter int RngBusBitSelWidth = 2
 ) (
   input logic clk_i,
   input logic rst_ni,
 
    // ins req interface
-  input logic [RngBusWidth-1:0] entropy_bit_i,
-  input logic                   entropy_bit_vld_i,
-  input logic                   rng_bit_en_i,
-  input logic [1:0]             rng_bit_sel_i,
-  input logic                   clear_i,
-  input logic                   active_i,
-  input logic [RegWidth-1:0]    thresh_hi_i,
-  input logic [RegWidth-1:0]    thresh_lo_i,
-  input logic                   window_wrap_pulse_i,
-  input logic                   threshold_scope_i,
-  output logic [RegWidth-1:0]   test_cnt_hi_o,
-  output logic [RegWidth-1:0]   test_cnt_lo_o,
-  output logic                  test_fail_hi_pulse_o,
-  output logic                  test_fail_lo_pulse_o,
-  output logic                  count_err_o
+  input logic [RngBusWidth-1:0]       entropy_bit_i,
+  input logic                         entropy_bit_vld_i,
+  input logic                         rng_bit_en_i,
+  input logic [RngBusBitSelWidth-1:0] rng_bit_sel_i,
+  input logic                         clear_i,
+  input logic                         active_i,
+  input logic [RegWidth-1:0]          thresh_hi_i,
+  input logic [RegWidth-1:0]          thresh_lo_i,
+  input logic                         window_wrap_pulse_i,
+  input logic                         threshold_scope_i,
+  output logic [RegWidth-1:0]         test_cnt_hi_o,
+  output logic [RegWidth-1:0]         test_cnt_lo_o,
+  output logic                        test_fail_hi_pulse_o,
+  output logic                        test_fail_lo_pulse_o,
+  output logic                        count_err_o
 );
 
   // signals
@@ -132,7 +133,7 @@ module entropy_src_markov_ht #(
 
   prim_sum_tree #(
     .NumSrc(RngBusWidth),
-    .Width(RegWidth)
+    .InWidth(RegWidth)
   ) u_sum (
     .clk_i       (clk_i),
     .rst_ni      (rst_ni),
@@ -142,10 +143,15 @@ module entropy_src_markov_ht #(
     .sum_valid_o ()
   );
 
-  assign rng_bit_cnt = (rng_bit_sel_i == 2'h0) ? pair_cntr[0] :
-                       (rng_bit_sel_i == 2'h1) ? pair_cntr[1] :
-                       (rng_bit_sel_i == 2'h2) ? pair_cntr[2] :
-                       pair_cntr[3];
+  always_comb begin
+    rng_bit_cnt = '0;
+
+    for (int i = 0; i < RngBusWidth; i++) begin
+      if (rng_bit_sel_i == i) begin
+        rng_bit_cnt = pair_cntr[i];
+      end
+    end
+  end
 
   assign test_cnt_hi_o = rng_bit_en_i ? rng_bit_cnt :
                          threshold_scope_i ? pair_cntr_sum :

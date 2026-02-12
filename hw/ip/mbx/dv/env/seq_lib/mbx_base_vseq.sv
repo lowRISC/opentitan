@@ -10,7 +10,7 @@
   the nominal control flow to short-circuit to the end of the txn, while confirming we see the
   effect of these stressors.
   Each 'iteration' (num_iters) consists of a number of 'transactions' (num_txns), with a DUT reset
-  seperating each iteration. This allows the regwen features to be meaningfully exercised.
+  separating each iteration. This allows the regwen features to be meaningfully exercised.
   This is a quick, minimal effort extension of the existing 'smoke' test into something that more
   thoroughly exercises the mailbox IP at block level, including exceptional traffic/conditions.
   The linear-nature of stimulus->checking means it is not the basis of a proper DV stress test.
@@ -25,7 +25,6 @@ class mbx_base_vseq extends cip_base_vseq #(
 
   `uvm_object_utils(mbx_base_vseq)
 
-  string mbx_mem_ral_name = "mbx_mem_reg_block";
   string mbx_soc_ral_name = "mbx_soc_reg_block";
 
   // Number of iterations
@@ -38,7 +37,6 @@ class mbx_base_vseq extends cip_base_vseq #(
 
   mbx_tl_device_seq seq_h;
 
-  mbx_mem_reg_block m_mbx_mem_ral;
   mbx_soc_reg_block m_mbx_soc_ral;
 
   mbx_seq_item mbx_config;
@@ -93,7 +91,6 @@ class mbx_base_vseq extends cip_base_vseq #(
   function void pre_randomize();
     super.pre_randomize();
     `downcast(m_mbx_soc_ral, cfg.ral_models[cfg.mbx_soc_ral_name])
-    `downcast(m_mbx_mem_ral, cfg.ral_models[cfg.mbx_mem_ral_name])
   endfunction: pre_randomize
 
   // Task: Simulate a clock delay
@@ -105,29 +102,29 @@ class mbx_base_vseq extends cip_base_vseq #(
   // TODO: this function was introduced to guarantee the desired values during bring up;
   // it may no longer be required.
   function void set_access_delays(int min, int max);
-    cfg.m_tl_agent_cfgs[mbx_mem_ral_name].a_ready_delay_min = min;
-    cfg.m_tl_agent_cfgs[mbx_mem_ral_name].a_ready_delay_max = max;
-
     cfg.m_tl_agent_cfgs[RAL_T::type_name].a_valid_delay_min = min;
     cfg.m_tl_agent_cfgs[RAL_T::type_name].a_valid_delay_max = max;
 
     cfg.m_tl_agent_cfgs[mbx_soc_ral_name].a_valid_delay_min = min;
     cfg.m_tl_agent_cfgs[mbx_soc_ral_name].a_valid_delay_max = max;
+
+    cfg.m_tl_agent_sram_cfg.a_valid_delay_min = min;
+    cfg.m_tl_agent_sram_cfg.a_valid_delay_max = max;
   endfunction
 
   // Set the minimum and maximum response delays of the mailbox SRAM
   // TODO: this function was introduced to guarantee the desired values during bring up;
   // it may no longer be required.
   function void set_response_delays(int min, int max);
-    cfg.m_tl_agent_cfgs[mbx_mem_ral_name].use_seq_item_d_valid_delay = 1'b0;
-    cfg.m_tl_agent_cfgs[mbx_mem_ral_name].d_valid_delay_min = min;
-    cfg.m_tl_agent_cfgs[mbx_mem_ral_name].d_valid_delay_max = max;
-
     cfg.m_tl_agent_cfgs[RAL_T::type_name].d_ready_delay_min = min;
     cfg.m_tl_agent_cfgs[RAL_T::type_name].d_ready_delay_max = max;
 
     cfg.m_tl_agent_cfgs[mbx_soc_ral_name].d_ready_delay_min = min;
     cfg.m_tl_agent_cfgs[mbx_soc_ral_name].d_ready_delay_max = max;
+
+    cfg.m_tl_agent_sram_cfg.use_seq_item_d_valid_delay = 1'b0;
+    cfg.m_tl_agent_sram_cfg.d_valid_delay_min = min;
+    cfg.m_tl_agent_sram_cfg.d_valid_delay_max = max;
 
     seq_h.min_rsp_delay = min;
     seq_h.max_rsp_delay = max;
@@ -146,16 +143,16 @@ class mbx_base_vseq extends cip_base_vseq #(
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
-  endtask: dut_init
+  endtask : dut_init
 
   // Start a sequence that creates a memory_model on the 'mem' interface.
   virtual task start_mem_seq();
     seq_h = mbx_tl_device_seq::type_id::create("seq_h");
     seq_h.mem = seq_mem_model;
     fork
-      seq_h.start(p_sequencer.tl_sequencer_hs[cfg.mbx_mem_ral_name]);
+      seq_h.start(p_sequencer.tl_sequencer_sram_h);
     join_none
-  endtask: start_mem_seq
+  endtask : start_mem_seq
 
   virtual task set_mem_range_regwen(mubi4_t regwen);
     `uvm_info(`gfn, $sformatf("Setting memory range regwen to 0x%x", regwen), UVM_MEDIUM)
@@ -183,30 +180,34 @@ class mbx_base_vseq extends cip_base_vseq #(
     seq_mem_model.init();
   endtask
 
-  virtual task write_mem(int start_addr, byte q[$]);
-    `uvm_info(get_full_name(),
-      $sformatf("write_mem(start_addr='h%0h, q=%p) -- Start", start_addr, q),
-      UVM_DEBUG);
-    foreach(q[ii]) begin
-      seq_mem_model.write_byte((start_addr + ii), q[ii]);
+  // Write the supplied DWORDs into the mailbox SRAM model, starting at the specified DWORD address.
+  virtual task write_mem(bit [top_pkg::TL_AW-1:2] start_addr, const ref mbx_dword_t q[$]);
+    bit [top_pkg::TL_AW-1:0] byte_addr = {start_addr, 2'b00};
+    `uvm_info(`gfn, $sformatf("write_mem(start_addr='h%0h, q=%p) -- Start", byte_addr, q),
+              UVM_DEBUG);
+    // Write each DWORD (4 bytes) in turn into the memory at ascending addresses.
+    foreach (q[ii]) begin
+      seq_mem_model.write(byte_addr, q[ii]);
+      byte_addr += 4;
     end
-    `uvm_info(get_full_name(),
-      $sformatf("write_mem(start_addr='h%0h, q=%p) -- End", start_addr, q),
-      UVM_DEBUG);
-  endtask: write_mem
+    `uvm_info(`gfn, $sformatf("write_mem(start_addr='h%0h, q=%p) -- End", {start_addr, 2'b00}, q),
+              UVM_DEBUG);
+  endtask : write_mem
 
-  virtual task read_mem(int start_addr, int sz, ref byte q[$]);
-    `uvm_info(get_full_name(),
-      $sformatf("read_mem(start_addr='h%0h, sz=%0d) -- Start", start_addr, sz),
-      UVM_DEBUG)
+  // Read the requested number of DWORDs from the SRAM model, starting at the given DWORD address.
+  virtual task read_mem(bit [top_pkg::TL_AW-1:2] start_addr, int unsigned sz, ref mbx_dword_t q[$]);
+    bit [top_pkg::TL_AW-1:0] byte_addr = {start_addr, 2'b00};
+    `uvm_info(`gfn, $sformatf("read_mem(start_addr='h%0h, sz=%0d) -- Start", byte_addr, sz << 2),
+              UVM_DEBUG)
     q = {};
-    for(int ii = 0; ii < sz; ii++) begin
-      q[ii] = seq_mem_model.read_byte(start_addr + ii);
+    // Read each DWORD (4 bytes) in turn from ascending addresses within the memory.
+    for (int ii = 0; ii < sz; ii++) begin
+      q[ii] = seq_mem_model.read(byte_addr);
+      byte_addr += 4;
     end
-    `uvm_info(get_full_name(),
-      $sformatf("read_mem(start_addr='h%0h', sz=%0d, q=%p) -- Start", start_addr, sz, q),
-      UVM_DEBUG)
-  endtask: read_mem
+    `uvm_info(`gfn, $sformatf("read_mem(start_addr='h%0h', sz=%0d, q=%p) -- End",
+                              {start_addr, 2'b00}, sz, q), UVM_DEBUG)
+  endtask : read_mem
 
   virtual task mbx_init();
     uvm_status_e status;
@@ -220,7 +221,7 @@ class mbx_base_vseq extends cip_base_vseq #(
     `uvm_info(get_full_name(),
       $sformatf("mbx_init -- End"),
       UVM_DEBUG)
-  endtask: mbx_init
+  endtask : mbx_init
 
   virtual task mbx_abort();
     `uvm_info(`gfn, "ABORTing operation", UVM_HIGH)
@@ -233,7 +234,7 @@ class mbx_base_vseq extends cip_base_vseq #(
                                        input int clks_timeout = 'h10000);
     bit aborted = 1'b0;
     `uvm_info(`gfn, $sformatf("wait_for_core_interrupt -- Start"), UVM_DEBUG)
-    fork begin : iso_fork
+    fork begin : isolation_fork
       fork
         begin
           `DV_WAIT(cfg.intr_vif.pins[MbxCoreReady] == 1'b1, "core ready interrupt wait timeout")
@@ -249,7 +250,7 @@ class mbx_base_vseq extends cip_base_vseq #(
         end
       join_any;
       disable fork;
-    end: iso_fork join
+    end : isolation_fork join
     if (aborted) begin
       intr_abort = 1'b1;
     end else begin
@@ -260,7 +261,7 @@ class mbx_base_vseq extends cip_base_vseq #(
 
   virtual task wait_for_soc_interrupt(int clks_timeout = 'h10000);
     `uvm_info(`gfn, $sformatf("wait_for_soc_interrupt -- Start"), UVM_DEBUG)
-    fork begin : iso_fork
+    fork begin : isolation_fork
       fork
         begin
           `DV_WAIT(cfg.intr_soc_vif.pins[0] == 1'b1, "soc interrupt wait timeout")
@@ -272,7 +273,7 @@ class mbx_base_vseq extends cip_base_vseq #(
         end
       join_any;
       disable fork;
-    end: iso_fork join
+    end : isolation_fork join
     `uvm_info(`gfn, $sformatf("wait_for_soc_interrupt -- End"), UVM_DEBUG)
   endtask : wait_for_soc_interrupt
 
@@ -293,7 +294,7 @@ class mbx_base_vseq extends cip_base_vseq #(
     bit gen_error = 1'b0;
     bit gen_panic = 1'b0;
     event e_stop;
-    fork begin: iso_fork
+    fork begin : isolation_fork
       // With two processes we monitor CSR activity and interrupt signals concurrently.
       fork
         // CSR-driving thread generates errors and aborts as well as optionally polling the
@@ -322,7 +323,7 @@ class mbx_base_vseq extends cip_base_vseq #(
       join_any
       // Ensure that the interrupt-monitoring process terminates.
       disable fork;
-    end: iso_fork join
+    end : isolation_fork join
     // Signals from DUT
     intr_ready = got_ready;
     intr_abort = got_abort;
@@ -330,6 +331,33 @@ class mbx_base_vseq extends cip_base_vseq #(
     aborted    = gen_abort;
     errored    = gen_error;
     panicked   = gen_panic;
+  endtask
+
+  // We use a dedicated task for reading from the SOC_STATUS register on the SoC interface
+  // because a number of its status indicator bits are aliased on the RoT interface and we should
+  // check those too.
+  // Also note that the RoT-side STATUS register contains no other information so using this task
+  // at least guarantees that reads from STATUS are performed, and thus coverage is collected.
+  task soc_status_rd(output uvm_reg_data_t data);
+    // Collect the SOC_STATUS contents as requested.
+    uvm_reg_data_t core_status;
+    csr_rd(m_mbx_soc_ral.soc_status, data);
+    // Also collect and check the alias on the RoT side.
+    csr_rd(ral.status, core_status);
+    // Check the consistency of the bits that alias the SOC_STATUS register...
+    // TODO: manually check here what we can at present; migrate into the scoreboard in time.
+    `DV_CHECK_EQ(get_field_val(ral.status.busy, core_status),
+                 get_field_val(m_mbx_soc_ral.soc_status.busy, data))
+
+    // TODO: checking within the scoreboard shall suffice in time, but presently the scoreboard is
+    // unable to model the interrupt status.
+    //`DV_CHECK_EQ(get_field_val(ral.status.sys_intr_state, core_status),
+    //            get_field_val(m_mbx_soc_ral.soc_status.doe_intr_status, data))
+    // ... and the SOC_CONTROL register.
+    `DV_CHECK_EQ(get_field_val(ral.status.sys_intr_enable, core_status),
+                 `gmv(m_mbx_soc_ral.soc_control.doe_intr_en))
+    `DV_CHECK_EQ(get_field_val(ral.status.sys_async_enable, core_status),
+                 `gmv(m_mbx_soc_ral.soc_control.doe_async_msg_en))
   endtask
 
   virtual task body();
@@ -342,7 +370,7 @@ class mbx_base_vseq extends cip_base_vseq #(
     // a regular memory
     cfg.en_scb_mem_chk = 1'b0;
 
-    for (int unsigned iter = 0; iter < num_iters; iter++) begin: b_num_iters
+    for (int unsigned iter = 0; iter < num_iters; iter++) begin : b_num_iters
       `uvm_info(`gfn, $sformatf("Starting iteration %0d of %0d", iter + 1, num_iters), UVM_LOW)
 
       // Since the DUT has just been reset, we should take the opportunity to choose new memory
@@ -352,7 +380,7 @@ class mbx_base_vseq extends cip_base_vseq #(
       // Initialize mailbox with randomized memory configuration.
       mbx_init();
 
-      for (int unsigned txn = 0; txn < num_txns; txn++) begin
+      for (int unsigned txn = 0; txn < num_txns; txn++) begin : b_num_txns
         bit [top_pkg::TL_DW-1:0] rd_data;
         bit [top_pkg::TL_DW-1:0] wr_data;
         int error_pct = $urandom_range(0, 200);
@@ -368,7 +396,6 @@ class mbx_base_vseq extends cip_base_vseq #(
         bit aborted = 1'b0;
         mbx_dword_t req[$];
         mbx_dword_t rsp[$];
-        mbx_dword_t qd;
         bit obs_ready;
         bit obs_error;
         bit obs_busy;
@@ -378,11 +405,7 @@ class mbx_base_vseq extends cip_base_vseq #(
         int max_acc_delay;
         // TODO: whether to perform RDATA write accesses as blocking operations.
         bit rdata_wr_blocking = 1'b0;
-
-        // TODO: perhaps we should change read_mem/write_mem to avoid issues.
-        // The mailbox operates only on DWORD quantities.
-        // mbx_dword_t q[$];
-        byte q[$];
+        mbx_dword_t q[$];
 
         // Empty the mailbox memory model of any previous contents.
         clear_mem();
@@ -434,11 +457,11 @@ class mbx_base_vseq extends cip_base_vseq #(
         `uvm_info(`gfn, $sformatf("Request size 0x%x DWORD(s), Response size 0x%x DWORD(s)",
                                   req_size, rsp_size), UVM_MEDIUM)
         `uvm_info(`gfn,
-                  $sformatf("Inbox should use address range [0x%x,0x%x]",
+                  $sformatf("Inbox should use address range [0x%x:0x%x)",
                             mbx_config.ibmbx_base_addr, mbx_config.ibmbx_base_addr + req_size * 4),
                   UVM_MEDIUM)
         `uvm_info(`gfn,
-                  $sformatf("Outbox should use address range [0x%x,0x%x]",
+                  $sformatf("Outbox should use address range [0x%x:0x%x)",
                             mbx_config.obmbx_base_addr, mbx_config.obmbx_base_addr + rsp_size * 4),
                   UVM_MEDIUM)
 
@@ -451,7 +474,7 @@ class mbx_base_vseq extends cip_base_vseq #(
               // We know that we're not permitted to write to WDATA whilst the mailbox is BUSY,
               // which should be expected if we've ABORTed the operation.
               uvm_reg_data_t data;
-              csr_rd(m_mbx_soc_ral.soc_status, data);
+              soc_status_rd(data);
               `DV_CHECK_EQ(get_field_val(m_mbx_soc_ral.soc_status.busy, data), 1'b1,
                            "SOC_STATUS.busy not set when expected in response to Abort request")
             end
@@ -467,16 +490,13 @@ class mbx_base_vseq extends cip_base_vseq #(
           end
         end
 
-        csr_rd(m_mbx_soc_ral.soc_status, rd_data);
+        soc_status_rd(rd_data);
         obs_error = get_field_val(m_mbx_soc_ral.soc_status.error, rd_data);
 
         if (!panicked & !aborted & !obs_error) begin
           // No disruption in the supply of the Request, activate the RoT
           bit intr_abort;
           bit intr_ready;
-
-          // As we supplied all of the data, it should all make it into the mailbox SRAM.
-          check_request = 1'b1;
 
           // Set the GO bit to mark complete transmission of the Request to the OT FW.
           m_mbx_soc_ral.soc_control.abort.set(1'b0);
@@ -494,19 +514,23 @@ class mbx_base_vseq extends cip_base_vseq #(
           `uvm_info(`gfn, $sformatf("intr_ready %d abort %d errored %d panicked %d",
                                     intr_ready, intr_abort, errored, panicked), UVM_HIGH);
           send_response = intr_ready & !intr_abort & !aborted & !errored & !panicked;
+
+          // If we supplied all of the data without any subsequent interruption, it should all
+          // have made it into the mailbox SRAM.
+          check_request = !aborted & !panicked;
         end
 
         if (check_request) begin
           // Collect the request message from the OT mailbox memory
-          read_mem(mbx_config.ibmbx_base_addr, req_size << 2, q);
+          read_mem(mbx_config.ibmbx_base_addr[top_pkg::TL_AW-1:2], req_size, q);
 
           for(int unsigned ii = 0; ii < req_size; ii++) begin
-            qd = {q[ii*4+3],q[ii*4+2],q[ii*4+1],q[ii*4]};
-            `uvm_info(`gfn, $sformatf("Expected Request DWORD %0h got %0h", req[ii], qd), UVM_HIGH)
-            if (qd !== req[ii]) begin
+            `uvm_info(`gfn, $sformatf("Expected Request DWORD %0h got %0h", req[ii], q[ii]),
+                      UVM_HIGH)
+            if (q[ii] !== req[ii]) begin
               `uvm_error(`gfn,
                          $sformatf("Request DWORD mismatches q[%0d]('h%0h) != req[%0d]('h%0h)",
-                                   ii, qd, ii, req[ii]))
+                                   ii, q[ii], ii, req[ii]))
             end
           end
           `uvm_info(`gfn, "Request data matched expectations", UVM_MEDIUM)
@@ -516,21 +540,17 @@ class mbx_base_vseq extends cip_base_vseq #(
           // Data from ROT to R-code
           q.delete();
           `uvm_info(`gfn, $sformatf("Constructing Response of 0x%0x DWORDs", rsp_size), UVM_MEDIUM)
-          for(int unsigned ii = 0 ; ii < rsp_size; ii++) begin
+          for(int unsigned ii = 0; ii < rsp_size; ii++) begin
             mbx_dword_t data = $urandom;
             `uvm_info(`gfn, $sformatf(" - Offset 0x%0x : 0x%0x", ii, data), UVM_HIGH)
-             // TODO: replace this byte queue with DWORDs
-            q.push_back(data[7:0]);
-            q.push_back(data[15:8]);
-            q.push_back(data[23:16]);
-            q.push_back(data[31:24]);
+            q.push_back(data);
           end
 
           // --------------------------------------------------------------------------------------
           // Response from RoT to SoC
           // --------------------------------------------------------------------------------------
 
-          write_mem(mbx_config.obmbx_base_addr, q);
+          write_mem(mbx_config.obmbx_base_addr[top_pkg::TL_AW-1:2], q);
           // Writing to 'outbound_object_size' triggers the mbx to make the response available.
           csr_wr(ral.outbound_object_size, rsp_size);
 
@@ -538,7 +558,7 @@ class mbx_base_vseq extends cip_base_vseq #(
           do begin
             stressors(aborted, errored, panicked);
 
-            csr_rd(m_mbx_soc_ral.soc_status, rd_data);
+            soc_status_rd(rd_data);
             `uvm_info(`gfn, $sformatf("rd_data for soc_status is :'h%0h", rd_data), UVM_DEBUG)
 
             // TODO: wait_soc_interrupt here
@@ -558,13 +578,16 @@ class mbx_base_vseq extends cip_base_vseq #(
             bit done = 1'b0;
             fork
               begin
+                // Get the full TL-UL address of the RDATA mem window on the SoC bus.
+                uvm_reg_addr_t rdata_addr;
+                rdata_addr = m_mbx_soc_ral.get_addr_from_offset(mbx_reg_pkg::MBX_RDATA_OFFSET);
                 // Collect the entire message before checking it.
                 // Note: this may not be the best approach unless we can time out in the event of a
                 // lock up in the provision of new RDATA values.
                 for(int unsigned ii = 0; ii < rsp_size && !done; ii++) begin
                   // Read from RDATA to collect the next message word
-                  tl_access(.addr(cfg.ral.get_addr_from_offset(mbx_reg_pkg::MBX_RDATA_OFFSET)),
-                            .write(1'b0), .data(rd_data), .mask(4'hF), .compare_mask(0),
+                  tl_access(.addr(rdata_addr), .write(1'b0), .data(rd_data), .mask(4'hF),
+                            .compare_mask(0),
                             .blocking(1'b1),
                             .tl_sequencer_h(p_sequencer.tl_sequencer_hs[cfg.mbx_soc_ral_name]));
 
@@ -574,8 +597,8 @@ class mbx_base_vseq extends cip_base_vseq #(
 
                   // Write anything to RDATA to advance to the next word.
                   wr_data = $urandom;
-                  tl_access(.addr(cfg.ral.get_addr_from_offset(mbx_reg_pkg::MBX_RDATA_OFFSET)),
-                            .write(1'b1), .data(wr_data), .mask(4'hF), .blocking(rdata_wr_blocking),
+                  tl_access(.addr(rdata_addr), .write(1'b1), .data(wr_data), .mask(4'hF),
+                            .blocking(rdata_wr_blocking),
                             .tl_sequencer_h(p_sequencer.tl_sequencer_hs[cfg.mbx_soc_ral_name]));
                 end
                 `uvm_info(`gfn, "READ all DATA from SoC side", UVM_HIGH);
@@ -598,20 +621,19 @@ class mbx_base_vseq extends cip_base_vseq #(
 
             if (check_response) begin
               for(int unsigned ii = 0; ii < rsp_size; ii++) begin
-                qd = {q[ii*4+3],q[ii*4+2],q[ii*4+1],q[ii*4]};
-                `uvm_info(`gfn,
-                          $sformatf("Expected Response DWORD %0h got %0h", qd, rsp[ii]), UVM_HIGH)
-                if (qd !== rsp[ii]) begin
+                `uvm_info(`gfn, $sformatf("Expected Response DWORD %0h got %0h", q[ii], rsp[ii]),
+                          UVM_HIGH)
+                if (q[ii] !== rsp[ii]) begin
                   `uvm_error(`gfn,
                              $sformatf("Response DWORD mismatches q[%0d]('h%0h) != rsp[%0d]('h%0h)",
-                                       ii, qd, ii, rsp[ii]))
+                                       ii, q[ii], ii, rsp[ii]))
                 end
               end
             end
           end
         end: b_send_response
 
-        csr_rd(m_mbx_soc_ral.soc_status, rd_data);
+        soc_status_rd(rd_data);
         `uvm_info(`gfn, $sformatf("Transaction complete; SOC_STATUS 0x%0x", rd_data), UVM_MEDIUM)
 
         // Collect SoC.STATUS bits
@@ -634,7 +656,7 @@ class mbx_base_vseq extends cip_base_vseq #(
           aborted = 1'b1;
 
           // Check that the BUSY bit becomes set
-          csr_rd(m_mbx_soc_ral.soc_status, rd_data);
+          soc_status_rd(rd_data);
           obs_busy  = get_field_val(m_mbx_soc_ral.soc_status.busy,  rd_data);
           obs_error = get_field_val(m_mbx_soc_ral.soc_status.error, rd_data);
           `DV_CHECK_EQ(obs_busy, 1'b1, "BUSY bit has not become set when ABORTing")
@@ -648,9 +670,10 @@ class mbx_base_vseq extends cip_base_vseq #(
           ral.control.abort.set(1'b1);
           ral.control.error.set(1'b0);  // Don't raise another ERROR!
           csr_update(ral.control);
+          panicked = 1'b1;
 
           // Check that the BUSY bit resets
-          csr_rd(m_mbx_soc_ral.soc_status, rd_data);
+          soc_status_rd(rd_data);
           obs_busy  = get_field_val(m_mbx_soc_ral.soc_status.busy,  rd_data);
           obs_error = get_field_val(m_mbx_soc_ral.soc_status.error, rd_data);
           `DV_CHECK_EQ(obs_busy, 1'b0, "BUSY bit cannot be cleared")
@@ -672,17 +695,25 @@ class mbx_base_vseq extends cip_base_vseq #(
         m_mbx_soc_ral.soc_status.doe_intr_status.set(1'b1);
         csr_update(m_mbx_soc_ral.soc_status);
 
+        if (aborted | panicked) begin
+          // TODO: We need to await the return of all squashed outstanding requests in the event
+          // that the transaction was aborted. It would be better to have a proper test of whether
+          // all outstanding TL-UL traffic has completed; in practice we know that the max response
+          // delay is 20 cycles for each of <= 4 outstanding requests (`mbx_stress_vseq`).
+          delay(100);
+        end
+
         // Can the memory range still be changed on subsequent transactions?
         if (mbx_config.address_range_regwen != MuBi4True) begin
           // Further changes are not expected to work until an IP reset, and the DV values must
           // remain in step with those used by the DUT.
           mbx_config.set_address_range_randomization(1'b0);
         end
-      end: b_num_txns
+      end : b_num_txns
 
       apply_resets_concurrently();
       delay(10);
-    end: b_num_iters
+    end : b_num_iters
 
     `uvm_info(get_full_name(), "body -- End", UVM_DEBUG)
   endtask : body

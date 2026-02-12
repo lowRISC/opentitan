@@ -22,7 +22,7 @@ In the case of NOR flash devices, read and write commands are indeterminate in l
 So, although the exact details of the operation may vary from device to device, the edges of the `CSB` signal always serve as important markers for delineating the boundaries of each transaction.
 
 Typical SPI commands are categorized as Standard, Dual, or Quad depending on the number of serial data lines (`SD[x]`) they utilize.
-This is often referred to as the 'Speed-Mode' or just 'Speed', although as the clock frequency remains constant this is a slight misnomor, so it may be better thought-of as a 'Throughput-Mode' or just a data width.
+This is often referred to as the 'Speed-Mode' or just 'Speed', although as the clock frequency remains constant this is a slight misnomer, so it may be better thought-of as a 'Throughput-Mode' or just a data width.
 A command may be composed of a number of phases or segments, where different numbers of data lines are used in different directions.
 The OpenTitan SPI_HOST IP uses the term '[segment](#command-interface)' to describe this smaller unit of traffic, and each segment can have it's own data direction and speed-mode.
 For example, in a Standard SPI command a number of instruction-, address- or data-bytes are transmitted on `SD[0]`, and response bytes are received on `SD[1]`.
@@ -215,7 +215,7 @@ The new `CSB` line is asserted low, and `SCK` begins toggling after the usual `C
 Before starting a command, some common configuration for the target device must be setup.
 Each target device attached to a chip-select can have an independent set of configuration parameters to match it's specific needs.
 When starting a command, the value of [`CSID`](registers.md#csid) is used to select the correct set of configuration parameters.
-The [`CONFIGOPTS`](registers.md#configopts) multi-register contains seperate configuration entries for each chip select.
+The [`CONFIGOPTS`](registers.md#configopts) multi-register contains separate configuration entries for each chip select.
 Each entry holds clock configuration and timing settings which are specific to each peripheral.
 Once the [`CONFIGOPTS`](registers.md#configopts) multi-register has been programmed for each SPI peripheral device, the values can be left unchanged.
 

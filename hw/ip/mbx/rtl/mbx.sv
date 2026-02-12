@@ -9,6 +9,8 @@ module mbx
   import mbx_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0]           AlertAsyncOn                    = {NumAlerts{1'b1}},
+  // Number of cycles of differential skew to be tolerated on the alert signal
+  parameter int unsigned                    AlertSkewCycles                 = 1,
   parameter int unsigned                    CfgSramAddrWidth                = 32,
   parameter int unsigned                    CfgSramDataWidth                = 32,
   parameter int unsigned                    CfgObjectSizeWidth              = 11,
@@ -23,7 +25,7 @@ module mbx
 ) (
   input  logic                                      clk_i,
   input  logic                                      rst_ni,
-  // Comportable interrupt to the OT
+  // Comportable interrupt to the RoT
   output logic                                      intr_mbx_ready_o,
   output logic                                      intr_mbx_abort_o,
   output logic                                      intr_mbx_error_o,
@@ -51,7 +53,7 @@ module mbx
 
   top_racl_pkg::racl_error_log_t racl_error[2];
   if (EnableRacl) begin : gen_racl_error_arb
-    // Arbitrate between all simultaneously valid error log requests.
+    // Arbitrate among all simultaneously valid error log requests.
     prim_racl_error_arb #(
       .N ( 2 )
     ) u_prim_err_arb (
@@ -95,7 +97,7 @@ module mbx
   logic sysif_status_busy, sysif_status_error;
   logic doe_async_msg_set, doe_async_msg_clear;
 
-  // Setter signals from the hostif to the sysif
+  // Set/clear control signals from the hostif to the sysif
   logic hostif_control_abort_clear, hostif_control_error_set;
 
   // Alias signals from the sys interface
@@ -121,6 +123,7 @@ module mbx
 
   mbx_hostif #(
     .AlertAsyncOn         ( AlertAsyncOn         ),
+    .AlertSkewCycles      ( AlertSkewCycles      ),
     .CfgSramAddrWidth     ( CfgSramAddrWidth     ),
     .CfgSramDataWidth     ( CfgSramDataWidth     ),
     .CfgObjectSizeWidth   ( CfgObjectSizeWidth   ),
@@ -275,7 +278,7 @@ module mbx
     .racl_error_o                        ( racl_error[1]                      )
   );
 
-
+  // Inbound mailbox (request from SoC to the RoT).
   mbx_imbx #(
     .CfgSramAddrWidth( CfgSramAddrWidth ),
     .CfgSramDataWidth( CfgSramDataWidth )
@@ -310,7 +313,7 @@ module mbx
     .hostif_sram_write_ptr_o     ( imbx_sram_write_ptr              )
   );
 
-
+  // Outbound mailbox (response from the RoT to the SoC).
   mbx_ombx #(
     .CfgSramAddrWidth   ( CfgSramAddrWidth   ),
     .CfgSramDataWidth   ( CfgSramDataWidth   ),
@@ -354,7 +357,7 @@ module mbx
   );
 
   // Host port connection to access the private SRAM.
-  // Arbitrates between inbound and outbound mailbox
+  // Arbitrates between inbound and outbound mailboxes.
   mbx_sramrwarb #(
     .CfgSramAddrWidth( CfgSramAddrWidth ),
     .CfgSramDataWidth( CfgSramDataWidth )
@@ -383,9 +386,9 @@ module mbx
 
   // Assertions
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A,
-                                                 u_sysif.u_soc_regs,
+                                                 u_sysif.u_regs_soc,
                                                  alert_tx_o[0])
-  // All outputs should be known all the time after reset
+  // All outputs should be known at all times after reset.
   `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
   `ASSERT_KNOWN(IntrMbxReadyKnown_A, intr_mbx_ready_o)
   `ASSERT_KNOWN(IntrMbxAbortKnown_A, intr_mbx_abort_o)

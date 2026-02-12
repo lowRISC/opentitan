@@ -18,7 +18,13 @@ package keymgr_dpe_reg_pkg;
   parameter int BlockAw = 8;
 
   // Number of registers for every interface
-  parameter int NumRegs = 53;
+  parameter int NumRegs = 54;
+
+  // Alert indices
+  typedef enum int {
+    AlertRecovOperationErrIdx = 0,
+    AlertFatalFaultErrIdx = 1
+  } keymgr_dpe_alert_idx_t;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -54,10 +60,13 @@ package keymgr_dpe_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [1:0]  q;
+      logic        q;
+    } sw_binding_only;
+    struct packed {
+      logic [2:0]  q;
     } slot_dst_sel;
     struct packed {
-      logic [1:0]  q;
+      logic [2:0]  q;
     } slot_src_sel;
     struct packed {
       logic [1:0]  q;
@@ -164,6 +173,10 @@ package keymgr_dpe_reg_pkg;
   } keymgr_dpe_reg2hw_fault_status_reg_t;
 
   typedef struct packed {
+    logic        q;
+  } keymgr_dpe_reg2hw_load_key_lock_reg_t;
+
+  typedef struct packed {
     logic        d;
     logic        de;
   } keymgr_dpe_hw2reg_intr_state_reg_t;
@@ -213,7 +226,7 @@ package keymgr_dpe_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } invalid_op;
+    } invalid_shadow_update;
     struct packed {
       logic        d;
       logic        de;
@@ -221,58 +234,14 @@ package keymgr_dpe_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } invalid_shadow_update;
+    } invalid_op;
   } keymgr_dpe_hw2reg_err_code_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
-    } cmd;
-    struct packed {
-      logic        d;
-      logic        de;
-    } kmac_fsm;
-    struct packed {
-      logic        d;
-      logic        de;
-    } kmac_done;
-    struct packed {
-      logic        d;
-      logic        de;
-    } kmac_op;
-    struct packed {
-      logic        d;
-      logic        de;
-    } kmac_out;
-    struct packed {
-      logic        d;
-      logic        de;
-    } regfile_intg;
-    struct packed {
-      logic        d;
-      logic        de;
-    } shadow;
-    struct packed {
-      logic        d;
-      logic        de;
-    } ctrl_fsm_intg;
-    struct packed {
-      logic        d;
-      logic        de;
-    } ctrl_fsm_chk;
-    struct packed {
-      logic        d;
-      logic        de;
-    } ctrl_fsm_cnt;
-    struct packed {
-      logic        d;
-      logic        de;
-    } reseed_cnt;
-    struct packed {
-      logic        d;
-      logic        de;
-    } side_ctrl_fsm;
+    } key_ecc;
     struct packed {
       logic        d;
       logic        de;
@@ -280,38 +249,58 @@ package keymgr_dpe_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } key_ecc;
+    } side_ctrl_fsm;
+    struct packed {
+      logic        d;
+      logic        de;
+    } reseed_cnt;
+    struct packed {
+      logic        d;
+      logic        de;
+    } ctrl_fsm_cnt;
+    struct packed {
+      logic        d;
+      logic        de;
+    } ctrl_fsm_chk;
+    struct packed {
+      logic        d;
+      logic        de;
+    } ctrl_fsm_intg;
+    struct packed {
+      logic        d;
+      logic        de;
+    } shadow;
+    struct packed {
+      logic        d;
+      logic        de;
+    } regfile_intg;
+    struct packed {
+      logic        d;
+      logic        de;
+    } kmac_out;
+    struct packed {
+      logic        d;
+      logic        de;
+    } kmac_op;
+    struct packed {
+      logic        d;
+      logic        de;
+    } kmac_done;
+    struct packed {
+      logic        d;
+      logic        de;
+    } kmac_fsm;
+    struct packed {
+      logic        d;
+      logic        de;
+    } cmd;
   } keymgr_dpe_hw2reg_fault_status_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
-    } invalid_creator_seed;
-    struct packed {
-      logic        d;
-      logic        de;
-    } invalid_owner_seed;
-    struct packed {
-      logic        d;
-      logic        de;
-    } invalid_dev_id;
-    struct packed {
-      logic        d;
-      logic        de;
-    } invalid_health_state;
-    struct packed {
-      logic        d;
-      logic        de;
-    } invalid_key_version;
-    struct packed {
-      logic        d;
-      logic        de;
-    } invalid_key;
-    struct packed {
-      logic        d;
-      logic        de;
-    } invalid_digest;
+    } inactive_lc_en;
     struct packed {
       logic        d;
       logic        de;
@@ -319,28 +308,53 @@ package keymgr_dpe_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } inactive_lc_en;
+    } invalid_digest;
+    struct packed {
+      logic        d;
+      logic        de;
+    } invalid_key;
+    struct packed {
+      logic        d;
+      logic        de;
+    } invalid_key_version;
+    struct packed {
+      logic        d;
+      logic        de;
+    } invalid_health_state;
+    struct packed {
+      logic        d;
+      logic        de;
+    } invalid_dev_id;
+    struct packed {
+      logic        d;
+      logic        de;
+    } invalid_owner_seed;
+    struct packed {
+      logic        d;
+      logic        de;
+    } invalid_creator_seed;
   } keymgr_dpe_hw2reg_debug_reg_t;
 
   // Register -> HW type
   typedef struct packed {
-    keymgr_dpe_reg2hw_intr_state_reg_t intr_state; // [635:635]
-    keymgr_dpe_reg2hw_intr_enable_reg_t intr_enable; // [634:634]
-    keymgr_dpe_reg2hw_intr_test_reg_t intr_test; // [633:632]
-    keymgr_dpe_reg2hw_alert_test_reg_t alert_test; // [631:628]
-    keymgr_dpe_reg2hw_start_reg_t start; // [627:627]
-    keymgr_dpe_reg2hw_control_shadowed_reg_t control_shadowed; // [626:618]
-    keymgr_dpe_reg2hw_sideload_clear_reg_t sideload_clear; // [617:615]
-    keymgr_dpe_reg2hw_reseed_interval_shadowed_reg_t reseed_interval_shadowed; // [614:599]
-    keymgr_dpe_reg2hw_slot_policy_regwen_reg_t slot_policy_regwen; // [598:597]
-    keymgr_dpe_reg2hw_slot_policy_reg_t slot_policy; // [596:594]
-    keymgr_dpe_reg2hw_sw_binding_regwen_reg_t sw_binding_regwen; // [593:592]
-    keymgr_dpe_reg2hw_sw_binding_mreg_t [7:0] sw_binding; // [591:336]
-    keymgr_dpe_reg2hw_salt_mreg_t [7:0] salt; // [335:80]
-    keymgr_dpe_reg2hw_key_version_mreg_t [0:0] key_version; // [79:48]
-    keymgr_dpe_reg2hw_max_key_ver_regwen_reg_t max_key_ver_regwen; // [47:46]
-    keymgr_dpe_reg2hw_max_key_ver_shadowed_reg_t max_key_ver_shadowed; // [45:14]
-    keymgr_dpe_reg2hw_fault_status_reg_t fault_status; // [13:0]
+    keymgr_dpe_reg2hw_intr_state_reg_t intr_state; // [639:639]
+    keymgr_dpe_reg2hw_intr_enable_reg_t intr_enable; // [638:638]
+    keymgr_dpe_reg2hw_intr_test_reg_t intr_test; // [637:636]
+    keymgr_dpe_reg2hw_alert_test_reg_t alert_test; // [635:632]
+    keymgr_dpe_reg2hw_start_reg_t start; // [631:631]
+    keymgr_dpe_reg2hw_control_shadowed_reg_t control_shadowed; // [630:619]
+    keymgr_dpe_reg2hw_sideload_clear_reg_t sideload_clear; // [618:616]
+    keymgr_dpe_reg2hw_reseed_interval_shadowed_reg_t reseed_interval_shadowed; // [615:600]
+    keymgr_dpe_reg2hw_slot_policy_regwen_reg_t slot_policy_regwen; // [599:598]
+    keymgr_dpe_reg2hw_slot_policy_reg_t slot_policy; // [597:595]
+    keymgr_dpe_reg2hw_sw_binding_regwen_reg_t sw_binding_regwen; // [594:593]
+    keymgr_dpe_reg2hw_sw_binding_mreg_t [7:0] sw_binding; // [592:337]
+    keymgr_dpe_reg2hw_salt_mreg_t [7:0] salt; // [336:81]
+    keymgr_dpe_reg2hw_key_version_mreg_t [0:0] key_version; // [80:49]
+    keymgr_dpe_reg2hw_max_key_ver_regwen_reg_t max_key_ver_regwen; // [48:47]
+    keymgr_dpe_reg2hw_max_key_ver_shadowed_reg_t max_key_ver_shadowed; // [46:15]
+    keymgr_dpe_reg2hw_fault_status_reg_t fault_status; // [14:1]
+    keymgr_dpe_reg2hw_load_key_lock_reg_t load_key_lock; // [0:0]
   } keymgr_dpe_reg2hw_t;
 
   // HW -> register type
@@ -414,6 +428,7 @@ package keymgr_dpe_reg_pkg;
   parameter logic [BlockAw-1:0] KEYMGR_DPE_ERR_CODE_OFFSET = 8'h c8;
   parameter logic [BlockAw-1:0] KEYMGR_DPE_FAULT_STATUS_OFFSET = 8'h cc;
   parameter logic [BlockAw-1:0] KEYMGR_DPE_DEBUG_OFFSET = 8'h d0;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_LOAD_KEY_LOCK_OFFSET = 8'h d4;
 
   // Reset values for hwext registers and their fields
   parameter logic [0:0] KEYMGR_DPE_INTR_TEST_RESVAL = 1'h 0;
@@ -484,11 +499,12 @@ package keymgr_dpe_reg_pkg;
     KEYMGR_DPE_OP_STATUS,
     KEYMGR_DPE_ERR_CODE,
     KEYMGR_DPE_FAULT_STATUS,
-    KEYMGR_DPE_DEBUG
+    KEYMGR_DPE_DEBUG,
+    KEYMGR_DPE_LOAD_KEY_LOCK
   } keymgr_dpe_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] KEYMGR_DPE_PERMIT [53] = '{
+  parameter logic [3:0] KEYMGR_DPE_PERMIT [54] = '{
     4'b 0001, // index[ 0] KEYMGR_DPE_INTR_STATE
     4'b 0001, // index[ 1] KEYMGR_DPE_INTR_ENABLE
     4'b 0001, // index[ 2] KEYMGR_DPE_INTR_TEST
@@ -541,7 +557,8 @@ package keymgr_dpe_reg_pkg;
     4'b 0001, // index[49] KEYMGR_DPE_OP_STATUS
     4'b 0001, // index[50] KEYMGR_DPE_ERR_CODE
     4'b 0011, // index[51] KEYMGR_DPE_FAULT_STATUS
-    4'b 0011  // index[52] KEYMGR_DPE_DEBUG
+    4'b 0011, // index[52] KEYMGR_DPE_DEBUG
+    4'b 0001  // index[53] KEYMGR_DPE_LOAD_KEY_LOCK
   };
 
 endpackage

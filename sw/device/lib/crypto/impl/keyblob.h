@@ -74,8 +74,9 @@ status_t keyblob_to_shares(const otcrypto_blinded_key_t *key, uint32_t **share0,
  * @param config Key configuration.
  * @param[out] keyblob Destination buffer.
  */
-void keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
-                         const otcrypto_key_config_t config, uint32_t *keyblob);
+status_t keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
+                             const otcrypto_key_config_t config,
+                             uint32_t *keyblob);
 
 /**
  * Construct key manager diversification data from a raw keyblob.
@@ -157,12 +158,14 @@ status_t keyblob_from_key_and_mask(const uint32_t *key, const uint32_t *mask,
  * keys are likely to be masked with arithmetic rather than boolean (XOR)
  * schemes, and this function cannot be used for them.
  *
+ * The entropy complex should be up and running when this function is called
+ * because of its internal use of hardening primitives like `random_order`.
+ *
  * @param key Blinded key to re-mask. Modified in-place.
- * @param mask Blinding parameter (fresh random mask).
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t keyblob_remask(otcrypto_blinded_key_t *key, const uint32_t *mask);
+status_t keyblob_remask(otcrypto_blinded_key_t *key);
 
 /**
  * Unmask and return the effective key from blinded key struct.

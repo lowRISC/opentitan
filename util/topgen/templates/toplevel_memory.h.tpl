@@ -28,36 +28,25 @@ header_suffix = (top["name"] + addr_space_suffix).upper()
 
 // Include guard for assembler
 #ifdef __ASSEMBLER__
-% for m in top["module"]:
-  % if "memory" in m:
-    % for key, val in m["memory"].items():
-      % if addr_space not in m["base_addrs"][key]:
-<% continue %>
-      % endif
+
+% for (inst_name, if_name), region in helper.memories(addr_space):
+<%
+    hex_base_addr = "0x{:X}".format(region.base_addr)
+    hex_size_bytes = "0x{:X}".format(region.size_bytes)
+
+    base_addr_name = region.base_addr_name().as_c_define()
+    size_bytes_name = region.size_bytes_name().as_c_define()
+
+%>\
 /**
- * Memory base for ${m["name"]}_${val["label"]} in top ${top["name"]}.
+ * Memory base for ${if_name} memory on ${inst_name} in top ${top["name"]}.
  */
-#define TOP_${top["name"].upper()}_${val["label"].upper()}_BASE_ADDR ${m["base_addrs"][key][addr_space]}
+#define ${base_addr_name} ${hex_base_addr}
 
 /**
- * Memory size for ${m["name"]}_${val["label"]} in top ${top["name"]}.
+ * Memory size for ${if_name} memory on ${inst_name} in top ${top["name"]}.
  */
-#define TOP_${top["name"].upper()}_${val["label"].upper()}_SIZE_BYTES ${val["size"]}
-
-    % endfor
-  % endif
-% endfor
-
-% for m in top["memory"]:
-/**
- * Memory base address for ${m["name"]} in top ${top["name"]}.
- */
-#define TOP_${top["name"].upper()}_${m["name"].upper()}_BASE_ADDR ${m["base_addr"][addr_space]}
-
-/**
- * Memory size for ${m["name"]} in top ${top["name"]}.
- */
-#define TOP_${top["name"].upper()}_${m["name"].upper()}_SIZE_BYTES ${m["size"]}
+#define ${size_bytes_name} ${hex_size_bytes}
 
 % endfor
 

@@ -64,13 +64,13 @@
     { name:      "RndCnstLfsrSeed",
       desc:      "Compile-time random bits for initial LFSR seed",
       type:      "sram_ctrl_pkg::lfsr_seed_t"
-      randcount: "32",
+      randcount: "64",
       randtype:  "data", // randomize randcount databits
     }
     { name:      "RndCnstLfsrPerm",
       desc:      "Compile-time random permutation for LFSR output",
       type:      "sram_ctrl_pkg::lfsr_perm_t"
-      randcount: "32",
+      randcount: "64",
       randtype:  "perm", // random permutation for randcount elements
     }
     // This parameter is overridden by topgen to set the actual RAM size.
@@ -539,9 +539,9 @@
         ]
       },
     ],
-
-    ram: [
-      // no CSRs defined here.
-    ]
+  }
+  memory: {
+    ram: {
+    }
   }
 }

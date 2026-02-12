@@ -8,6 +8,7 @@ module tb;
   import dv_utils_pkg::*;
   import i2c_env_pkg::*;
   import i2c_test_pkg::*;
+  import top_racl_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -35,6 +36,9 @@ module tb;
   wire cio_sda;
   wire cio_scl_en;
   wire cio_sda_en;
+
+  racl_policy_vec_t racl_policies;
+  assign racl_policies = 0; // Not currently used
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
@@ -82,6 +86,7 @@ module tb;
     .clk_i                   (clk        ),
     .rst_ni                  (rst_n      ),
     .ram_cfg_i               (prim_ram_1p_pkg::RAM_1P_CFG_DEFAULT),
+    .ram_cfg_rsp_o           (                                   ),
 
     .tl_i                    (tl_if.h2d  ),
     .tl_o                    (tl_if.d2h  ),
@@ -89,12 +94,16 @@ module tb;
     .alert_rx_i              (alert_rx   ),
     .alert_tx_o              (alert_tx   ),
 
+    .racl_policies_i         (racl_policies),
+    .racl_error_o            (             ),
+
     .cio_scl_i               (cio_scl               ),
     .cio_scl_o               (/*hardcoded to 0*/    ),
     .cio_scl_en_o            (cio_scl_en            ),
     .cio_sda_i               (cio_sda               ),
     .cio_sda_o               (/*hardcoded to 0*/    ),
     .cio_sda_en_o            (cio_sda_en            ),
+    .lsio_trigger_o          (                      ),
 
     .intr_fmt_threshold_o    (intr_fmt_threshold    ),
     .intr_rx_threshold_o     (intr_rx_threshold     ),

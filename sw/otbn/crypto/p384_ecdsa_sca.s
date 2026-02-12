@@ -33,80 +33,10 @@ p384_ecdsa_verify:
   /*jal      x1, p384_verify*/
   ecall
 
-.data
-
-/* Freely available DMEM space. */
-
-/* Operation mode (1 = sign; 2 = verify) */
-.globl mode
-.balign 4
-mode:
-  .zero 4
-
-/* All constants below must be 256b-aligned. */
-
-/* random scalar k0*/
-.global k0
-.balign 64
-k0:
-  .zero 64
-
-/* random scalar k1*/
-.globl k1
-.balign 64
-k1:
-  .zero 64
+.bss
 
 /* randomness for blinding */
 .globl rnd
 .balign 64
 rnd:
-  .zero 64
-
-/* message digest */
-.globl msg
-.balign 64
-msg:
-  .zero 64
-
-/* signature R */
-.globl r
-.balign 64
-r:
-  .zero 64
-
-/* signature S */
-.globl s
-.balign 64
-s:
-  .zero 64
-
-/* public key x-coordinate */
-.globl x
-.balign 64
-x:
-  .zero 64
-
-/* public key y-coordinate */
-.globl y
-.balign 64
-y:
-  .zero 64
-
-/* private key d0 */
-.globl d0
-.balign 64
-d0:
-  .zero 64
-
-/* private key d1 */
-.globl d1
-.balign 64
-d1:
-  .zero 64
-
-/* verification result x_r (aka x_1) */
-.globl x_r
-.balign 64
-x_r:
   .zero 64

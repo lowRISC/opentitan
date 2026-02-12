@@ -28,10 +28,12 @@ package flash_ctrl_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter string LIST_OF_ALERTS[] = {"recov_err", "fatal_std_err", "fatal_err",
-                                       "fatal_prim_flash_alert", "recov_prim_flash_alert"};
+  parameter uint NUM_ALERTS = 5;
+  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {
+    "recov_err", "fatal_std_err", "fatal_err", "fatal_prim_flash_alert", "recov_prim_flash_alert"
+  };
 
-  // Some paths are added multiple times to accomodate
+  // Some paths are added multiple times to accommodate
   // indexing in the loop
   parameter string LIST_OF_READ_SEED_FORCE_PATHS[] = {
     "tb.dut.u_flash_hw_if.op",
@@ -47,7 +49,6 @@ package flash_ctrl_env_pkg;
     "tb.dut.u_flash_hw_if.rma_num_words"
   };
 
-  parameter uint NUM_ALERTS = 5;
   parameter uint FlashNumPages = flash_ctrl_top_specific_pkg::NumBanks *
                                  flash_ctrl_top_specific_pkg::PagesPerBank;
   parameter uint FlashSizeBytes = FlashNumPages * flash_ctrl_top_specific_pkg::WordsPerPage *
@@ -360,11 +361,11 @@ package flash_ctrl_env_pkg;
            bit [FlashKeySize-1:0]   flash_addr_key, bit [FlashKeySize-1:0] flash_data_key,
            bit dis = 1);
     bit [FlashDataWidth-1:0] masked_data;
+    bit [FlashAddrWidth-1:0] word_addr = byte_addr >> FlashDataByteWidth;
 
-    masked_data = flash_ctrl_bkdr_util::flash_create_masked_data(data, byte_addr, flash_addr_key,
+    masked_data = flash_ctrl_bkdr_util::flash_create_masked_data(data, word_addr, flash_addr_key,
                                                                  flash_data_key);
     if (dis) begin
-      bit [FlashAddrWidth-1:0] word_addr = byte_addr >> FlashDataByteWidth;
       `uvm_info("SCR_DBG", $sformatf("addr:%x  mask:%x  din:%x dout:%x",
                                      word_addr,
                                      flash_ctrl_bkdr_util::flash_galois_multiply(flash_addr_key,
@@ -467,7 +468,7 @@ package flash_ctrl_env_pkg;
     return FlashPartData;
   endfunction // get_part_name
 
-  // Struct convertion from rtl to dv.
+  // Struct conversion from rtl to dv.
   function automatic flash_bank_mp_info_page_cfg_t conv2env_mp_info(info_page_cfg_t info);
     flash_bank_mp_info_page_cfg_t env_info;
 

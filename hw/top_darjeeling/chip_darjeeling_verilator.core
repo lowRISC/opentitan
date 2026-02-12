@@ -1,0 +1,45 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:systems:chip_darjeeling_verilator:0.1"
+description: "Darjeeling toplevel for simulation with Verilator"
+filesets:
+  files_sim_verilator:
+    depend:
+      - lowrisc:systems:top_darjeeling:0.1
+      - lowrisc:systems:top_darjeeling_pkg
+      - lowrisc:ibex:ibex_tracer
+      - lowrisc:prim:clock_div
+      - lowrisc:systems:top_darjeeling_ast
+      - lowrisc:darjeeling_systems:scan_role_pkg
+      - lowrisc:prim_generic:all
+    files:
+      - rtl/chip_darjeeling_verilator.sv: { file_type: systemVerilogSource }
+
+parameters:
+  AST_BYPASS_CLK:
+    datatype: bool
+    paramtype: vlogdefine
+
+targets:
+  default: &default_target
+    filesets:
+      - files_sim_verilator
+    parameters:
+      - AST_BYPASS_CLK=true
+    toplevel: chip_darjeeling_verilator
+    tools:
+      verilator:
+        verilator_options:
+          # required to support OTP constants
+          - "--max-num-width 131072"
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"

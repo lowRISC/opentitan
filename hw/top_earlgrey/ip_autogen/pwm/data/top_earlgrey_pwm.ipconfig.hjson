@@ -8,5 +8,15 @@
     module_instance_name: pwm
     topname: earlgrey
     uniquified_modules: {}
+    nr_output_channels: 6
+  }
+  dtgen:
+  {
+    nr_output_channels:
+    {
+      type: uint8
+      name: output_channel_count
+      doc: Number of output channels
+    }
   }
 }

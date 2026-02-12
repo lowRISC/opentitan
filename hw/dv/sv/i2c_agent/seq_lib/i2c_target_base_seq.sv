@@ -11,7 +11,7 @@ class i2c_target_base_seq extends i2c_base_seq;
     // This isn't ideal, and hopefully will be rethought in the future.
     // TODO(#14825) Randomize in the sequence, rather than the vseq. Or, compose a
     // transfer or transaction-level sequence item, randomize it, and then
-    // decompose into individual driver op's in the agent sequnce (i.e. here).
+    // decompose into individual driver op's in the agent sequence (i.e. here).
 
     // Wait until we get stimulus from the vseq.
     wait (req_q.size() > 0);

@@ -189,19 +189,19 @@ pub const OTP_CTRL_CORE_BASE_ADDR: usize = 0x40130000;
 /// `OTP_CTRL_CORE_BASE_ADDR + OTP_CTRL_CORE_SIZE_BYTES`.
 pub const OTP_CTRL_CORE_SIZE_BYTES: usize = 0x1000;
 
-/// Peripheral base address for prim device on otp_ctrl in top earlgrey.
+/// Peripheral base address for prim device on otp_macro in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const OTP_CTRL_PRIM_BASE_ADDR: usize = 0x40138000;
+pub const OTP_MACRO_PRIM_BASE_ADDR: usize = 0x40138000;
 
-/// Peripheral size for prim device on otp_ctrl in top earlgrey.
+/// Peripheral size for prim device on otp_macro in top earlgrey.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #OTP_CTRL_PRIM_BASE_ADDR and
-/// `OTP_CTRL_PRIM_BASE_ADDR + OTP_CTRL_PRIM_SIZE_BYTES`.
-pub const OTP_CTRL_PRIM_SIZE_BYTES: usize = 0x20;
+/// address between #OTP_MACRO_PRIM_BASE_ADDR and
+/// `OTP_MACRO_PRIM_BASE_ADDR + OTP_MACRO_PRIM_SIZE_BYTES`.
+pub const OTP_MACRO_PRIM_SIZE_BYTES: usize = 0x20;
 
 /// Peripheral base address for regs device on lc_ctrl in top earlgrey.
 ///
@@ -441,20 +441,6 @@ pub const SRAM_CTRL_RET_AON_REGS_BASE_ADDR: usize = 0x40500000;
 /// `SRAM_CTRL_RET_AON_REGS_BASE_ADDR + SRAM_CTRL_RET_AON_REGS_SIZE_BYTES`.
 pub const SRAM_CTRL_RET_AON_REGS_SIZE_BYTES: usize = 0x40;
 
-/// Peripheral base address for ram device on sram_ctrl_ret_aon in top earlgrey.
-///
-/// This should be used with #mmio_region_from_addr to access the memory-mapped
-/// registers associated with the peripheral (usually via a DIF).
-pub const SRAM_CTRL_RET_AON_RAM_BASE_ADDR: usize = 0x40600000;
-
-/// Peripheral size for ram device on sram_ctrl_ret_aon in top earlgrey.
-///
-/// This is the size (in bytes) of the peripheral's reserved memory area. All
-/// memory-mapped registers associated with this peripheral should have an
-/// address between #SRAM_CTRL_RET_AON_RAM_BASE_ADDR and
-/// `SRAM_CTRL_RET_AON_RAM_BASE_ADDR + SRAM_CTRL_RET_AON_RAM_SIZE_BYTES`.
-pub const SRAM_CTRL_RET_AON_RAM_SIZE_BYTES: usize = 0x1000;
-
 /// Peripheral base address for core device on flash_ctrl in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -482,20 +468,6 @@ pub const FLASH_CTRL_PRIM_BASE_ADDR: usize = 0x41008000;
 /// address between #FLASH_CTRL_PRIM_BASE_ADDR and
 /// `FLASH_CTRL_PRIM_BASE_ADDR + FLASH_CTRL_PRIM_SIZE_BYTES`.
 pub const FLASH_CTRL_PRIM_SIZE_BYTES: usize = 0x80;
-
-/// Peripheral base address for mem device on flash_ctrl in top earlgrey.
-///
-/// This should be used with #mmio_region_from_addr to access the memory-mapped
-/// registers associated with the peripheral (usually via a DIF).
-pub const FLASH_CTRL_MEM_BASE_ADDR: usize = 0x20000000;
-
-/// Peripheral size for mem device on flash_ctrl in top earlgrey.
-///
-/// This is the size (in bytes) of the peripheral's reserved memory area. All
-/// memory-mapped registers associated with this peripheral should have an
-/// address between #FLASH_CTRL_MEM_BASE_ADDR and
-/// `FLASH_CTRL_MEM_BASE_ADDR + FLASH_CTRL_MEM_SIZE_BYTES`.
-pub const FLASH_CTRL_MEM_SIZE_BYTES: usize = 0x100000;
 
 /// Peripheral base address for regs device on rv_dm in top earlgrey.
 ///
@@ -693,20 +665,6 @@ pub const SRAM_CTRL_MAIN_REGS_BASE_ADDR: usize = 0x411C0000;
 /// `SRAM_CTRL_MAIN_REGS_BASE_ADDR + SRAM_CTRL_MAIN_REGS_SIZE_BYTES`.
 pub const SRAM_CTRL_MAIN_REGS_SIZE_BYTES: usize = 0x40;
 
-/// Peripheral base address for ram device on sram_ctrl_main in top earlgrey.
-///
-/// This should be used with #mmio_region_from_addr to access the memory-mapped
-/// registers associated with the peripheral (usually via a DIF).
-pub const SRAM_CTRL_MAIN_RAM_BASE_ADDR: usize = 0x10000000;
-
-/// Peripheral size for ram device on sram_ctrl_main in top earlgrey.
-///
-/// This is the size (in bytes) of the peripheral's reserved memory area. All
-/// memory-mapped registers associated with this peripheral should have an
-/// address between #SRAM_CTRL_MAIN_RAM_BASE_ADDR and
-/// `SRAM_CTRL_MAIN_RAM_BASE_ADDR + SRAM_CTRL_MAIN_RAM_SIZE_BYTES`.
-pub const SRAM_CTRL_MAIN_RAM_SIZE_BYTES: usize = 0x20000;
-
 /// Peripheral base address for regs device on rom_ctrl in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -720,20 +678,6 @@ pub const ROM_CTRL_REGS_BASE_ADDR: usize = 0x411E0000;
 /// address between #ROM_CTRL_REGS_BASE_ADDR and
 /// `ROM_CTRL_REGS_BASE_ADDR + ROM_CTRL_REGS_SIZE_BYTES`.
 pub const ROM_CTRL_REGS_SIZE_BYTES: usize = 0x80;
-
-/// Peripheral base address for rom device on rom_ctrl in top earlgrey.
-///
-/// This should be used with #mmio_region_from_addr to access the memory-mapped
-/// registers associated with the peripheral (usually via a DIF).
-pub const ROM_CTRL_ROM_BASE_ADDR: usize = 0x8000;
-
-/// Peripheral size for rom device on rom_ctrl in top earlgrey.
-///
-/// This is the size (in bytes) of the peripheral's reserved memory area. All
-/// memory-mapped registers associated with this peripheral should have an
-/// address between #ROM_CTRL_ROM_BASE_ADDR and
-/// `ROM_CTRL_ROM_BASE_ADDR + ROM_CTRL_ROM_SIZE_BYTES`.
-pub const ROM_CTRL_ROM_SIZE_BYTES: usize = 0x8000;
 
 /// Peripheral base address for cfg device on rv_core_ibex in top earlgrey.
 ///
@@ -749,29 +693,29 @@ pub const RV_CORE_IBEX_CFG_BASE_ADDR: usize = 0x411F0000;
 /// `RV_CORE_IBEX_CFG_BASE_ADDR + RV_CORE_IBEX_CFG_SIZE_BYTES`.
 pub const RV_CORE_IBEX_CFG_SIZE_BYTES: usize = 0x100;
 
-/// Memory base address for ram_ret_aon in top earlgrey.
-pub const RAM_RET_AON_BASE_ADDR: usize = 0x40600000;
+/// Memory base address for ram memory on sram_ctrl_ret_aon in top earlgrey.
+pub const SRAM_CTRL_RET_AON_RAM_BASE_ADDR: usize = 0x40600000;
 
-/// Memory size for ram_ret_aon in top earlgrey.
-pub const RAM_RET_AON_SIZE_BYTES: usize = 0x1000;
+/// Memory size for ram memory on sram_ctrl_ret_aon in top earlgrey.
+pub const SRAM_CTRL_RET_AON_RAM_SIZE_BYTES: usize = 0x1000;
 
-/// Memory base address for eflash in top earlgrey.
-pub const EFLASH_BASE_ADDR: usize = 0x20000000;
+/// Memory base address for mem memory on flash_ctrl in top earlgrey.
+pub const FLASH_CTRL_MEM_BASE_ADDR: usize = 0x20000000;
 
-/// Memory size for eflash in top earlgrey.
-pub const EFLASH_SIZE_BYTES: usize = 0x100000;
+/// Memory size for mem memory on flash_ctrl in top earlgrey.
+pub const FLASH_CTRL_MEM_SIZE_BYTES: usize = 0x100000;
 
-/// Memory base address for ram_main in top earlgrey.
-pub const RAM_MAIN_BASE_ADDR: usize = 0x10000000;
+/// Memory base address for ram memory on sram_ctrl_main in top earlgrey.
+pub const SRAM_CTRL_MAIN_RAM_BASE_ADDR: usize = 0x10000000;
 
-/// Memory size for ram_main in top earlgrey.
-pub const RAM_MAIN_SIZE_BYTES: usize = 0x20000;
+/// Memory size for ram memory on sram_ctrl_main in top earlgrey.
+pub const SRAM_CTRL_MAIN_RAM_SIZE_BYTES: usize = 0x20000;
 
-/// Memory base address for rom in top earlgrey.
-pub const ROM_BASE_ADDR: usize = 0x8000;
+/// Memory base address for rom memory on rom_ctrl in top earlgrey.
+pub const ROM_CTRL_ROM_BASE_ADDR: usize = 0x8000;
 
-/// Memory size for rom in top earlgrey.
-pub const ROM_SIZE_BYTES: usize = 0x8000;
+/// Memory size for rom memory on rom_ctrl in top earlgrey.
+pub const ROM_CTRL_ROM_SIZE_BYTES: usize = 0x8000;
 
 /// PLIC Interrupt Source Peripheral.
 ///
@@ -2952,7 +2896,7 @@ pub enum PinmuxOutsel {
     /// Peripheral Output 67
     PwmAonPwm5 = 70,
     /// Peripheral Output 68
-    OtpCtrlTest0 = 71,
+    OtpMacroTest0 = 71,
     /// Peripheral Output 69
     SysrstCtrlAonBatDisable = 72,
     /// Peripheral Output 70
@@ -3042,7 +2986,7 @@ impl TryFrom<u32> for PinmuxOutsel {
             68 => Ok(Self::PwmAonPwm3),
             69 => Ok(Self::PwmAonPwm4),
             70 => Ok(Self::PwmAonPwm5),
-            71 => Ok(Self::OtpCtrlTest0),
+            71 => Ok(Self::OtpMacroTest0),
             72 => Ok(Self::SysrstCtrlAonBatDisable),
             73 => Ok(Self::SysrstCtrlAonKey0Out),
             74 => Ok(Self::SysrstCtrlAonKey1Out),

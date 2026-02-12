@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use clap::Parser;
 use regex::Regex;
 use std::time::Duration;
@@ -26,24 +26,14 @@ fn power_virus_systemtest(opts: &Opts, transport: &TransportWrapper) -> Result<(
     // Below is temporary until this test implements the command / response
     // ujson framework.
     let uart = transport.uart("console")?;
-    let mut console = UartConsole {
-        timeout: Some(opts.timeout),
-        exit_success: Some(Regex::new(r"PASS.*\n")?),
-        exit_failure: Some(Regex::new(r"(FAIL|FAULT).*\n")?),
-        newline: true,
-        ..Default::default()
-    };
-    let mut stdout = std::io::stdout();
-    let result = console.interact(&*uart, None, Some(&mut stdout))?;
+    let mut console = UartConsole::new(
+        Some(opts.timeout),
+        Some(Regex::new(r"PASS.*\n")?),
+        Some(Regex::new(r"(FAIL|FAULT).*\n")?),
+    );
+    let result = console.interact(&*uart, false)?;
     match result {
-        ExitStatus::None | ExitStatus::CtrlC => Ok(()),
-        ExitStatus::Timeout => {
-            if console.exit_success.is_some() {
-                Err(anyhow!("Console timeout exceeded"))
-            } else {
-                Ok(())
-            }
-        }
+        ExitStatus::Timeout => Err(anyhow!("Console timeout exceeded")),
         ExitStatus::ExitSuccess => {
             log::info!(
                 "ExitSuccess({:?})",
@@ -67,7 +57,7 @@ fn main() -> Result<()> {
     let transport = opts.init.init_target()?;
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"Running ", opts.timeout)?;
 
     execute_test!(power_virus_systemtest, &opts, &transport);
     Ok(())

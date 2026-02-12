@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`include "prim_assert.sv"
+
 module mbx_sysif
   import tlul_pkg::*;
   import mbx_reg_pkg::*;
@@ -95,7 +97,7 @@ module mbx_sysif
     .EnableRacl(EnableRacl),
     .RaclErrorRsp(RaclErrorRsp),
     .RaclPolicySelVec(RaclPolicySelVecSoc)
-  ) u_soc_regs (
+  ) u_regs_soc (
     .clk_i            ( clk_i               ),
     .rst_ni           ( rst_ni              ),
     .tl_i             ( tl_sys_i            ),
@@ -119,7 +121,7 @@ module mbx_sysif
   // request
   assign doe_intr_o = DoeIrqSupport & reg2hw.soc_status.doe_intr_status.q;
 
-  // Fiddle rising edge of writing the abort and go bit
+  // Respond to writes of '1' to the abort and go bits
   assign sysif_control_abort_set_o  = reg2hw.soc_control.abort.qe & reg2hw.soc_control.abort.q;
   assign hw2reg.soc_control.abort.d = 1'b0;
 
@@ -174,7 +176,7 @@ module mbx_sysif
     .qs     ()
   );
 
-  // Fiddle out status register bits for external write logic
+  // Extract status register bits for the RoT-side interface.
   assign sysif_status_busy_o  = reg2hw.soc_status.busy.q;
   assign sysif_status_error_o = reg2hw.soc_status.error.q;
 
@@ -187,7 +189,7 @@ module mbx_sysif
   assign async_msg_set_gated = DoeAsyncMsgSupport & doe_async_msg_en_o & doe_async_msg_set_i;
 
   // Interrupt is triggered by the outbound handler if the message has been written to
-  // the memory and can be read by the system, an error is raised, or if there is an asynchronous
+  // the memory and can be read by the system, or an error is raised, or if there is an asynchronous
   // message request coming from the host.
   // The interrupt is cleared by the SOC firmware via the RW1C behavior or when an abort is
   // acknowledged by the host
@@ -223,7 +225,7 @@ module mbx_sysif
   // Ready bit indication into hardware
   assign sysif_status_ready_o = reg2hw.soc_status.ready.q;
 
-  // Dedicated TLUL adapter for implementing the write data mailbox register via a register window.
+  // Dedicated TL-UL adapter for implementing the write data mailbox register via a register window.
   // We use the register window to access the internal bus signals, allowing the mailbox to halt
   // the bus if there are too many outstanding requests.
   logic reg_wdata_we;
@@ -255,7 +257,7 @@ module mbx_sysif
     .error_i          ( 1'b0                         )
   );
 
-  // Dedicated TLUL adapter for implementing the read data mailbox register via a register window.
+  // Dedicated TL-UL adapter for implementing the read data mailbox register via a register window.
   // We use the register window to access the internal bus signals, allowing the mailbox to halt
   // the bus if there are too many outstanding requests. The register is implemented as hwext
   // outside of this hierarchy
@@ -289,7 +291,7 @@ module mbx_sysif
 
   // Manual implementation of the write read mailbox register.
   // The manual implementation of the register via a register window is needed to expose the
-  // internal register interface of the TLUL bus to halt the bus if there too many outstanding
+  // internal register interface of the TL-UL bus to halt the bus if there too many outstanding
   // requests.
   logic mbx_wrdata_flds_we;
   prim_flop #(

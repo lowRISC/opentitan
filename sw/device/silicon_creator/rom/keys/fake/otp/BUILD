@@ -52,7 +52,7 @@ otp_json_rot_keys(
                 # //sw/device/silicon_creator/rom/keys/fake/spx:prod_key_1_spx
                 "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_TYPE3": otp_hex(CONST.SIGVERIFY.KEY_TYPE.PROD),
                 "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY3": "0x4d83c8d10356fbb033ae5f9a3ee242a21f5a1a8b8c9a5579496271faad63458a",
-                "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG3": otp_hex(CONST.SPX_CONFIG_ID.SHA2_128S),
+                "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG3": otp_hex(CONST.SPX_CONFIG_ID.SHA2_128S_PREHASH),
             },
         ),
         otp_partition(

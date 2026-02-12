@@ -2,16 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow, ensure, Context, Result};
-use serde::{Deserialize, Serialize};
-use serde_annotate::Annotate;
 use std::io::{Read, Write};
 use std::str::FromStr;
 
-use super::Error;
+use anyhow::{Context, Result, anyhow, ensure};
+use serde::Deserialize;
+use serde_annotate::Annotate;
 use sphincsplus::{DecodeKey, SpxPublicKey};
 
-#[derive(Debug, Serialize, Deserialize, Annotate)]
+use super::Error;
+
+#[derive(Debug, Deserialize, Annotate)]
 pub struct SpxRawPublicKey {
     #[serde(with = "serde_bytes")]
     #[annotate(format = hexstr)]
@@ -30,6 +31,13 @@ impl TryFrom<&sphincsplus::SpxPublicKey> for SpxRawPublicKey {
         Ok(Self {
             key: v.as_bytes().to_vec(),
         })
+    }
+}
+
+impl TryFrom<sphincsplus::SpxPublicKey> for SpxRawPublicKey {
+    type Error = Error;
+    fn try_from(v: SpxPublicKey) -> Result<Self, Self::Error> {
+        (&v).try_into()
     }
 }
 

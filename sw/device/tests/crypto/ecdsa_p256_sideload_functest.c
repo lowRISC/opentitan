@@ -6,8 +6,8 @@
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
-#include "sw/device/lib/crypto/include/hash.h"
 #include "sw/device/lib/crypto/include/key_transport.h"
+#include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -17,6 +17,8 @@
 #define MODULE_ID MAKE_MODULE_ID('t', 's', 't')
 
 enum {
+  /* Number of 32-bit words in a SHA256 digest. */
+  kSha256DigestWords = 256 / 32,
   /* Number of 32-bit words in a P-256 public key. */
   kP256PublicKeyWords = 512 / 32,
   /* Number of 32-bit words in a P-256 signature. */
@@ -76,17 +78,16 @@ status_t sign_then_verify_test(void) {
   otcrypto_hash_digest_t message_digest = {
       .data = message_digest_data,
       .len = ARRAYSIZE(message_digest_data),
-      .mode = kOtcryptoHashModeSha256,
   };
-  TRY(otcrypto_hash(message, message_digest));
+  TRY(otcrypto_sha2_256(message, &message_digest));
 
   // Allocate space for the signature.
   uint32_t sig[kP256SignatureWords] = {0};
 
   // Generate a signature for the message.
   LOG_INFO("Signing...");
-  CHECK_STATUS_OK(otcrypto_ecdsa_p256_sign(
-      &private_key, message_digest,
+  CHECK_STATUS_OK(otcrypto_ecdsa_p256_sign_verify(
+      &private_key, &public_key, message_digest,
       (otcrypto_word32_buf_t){.data = sig, .len = ARRAYSIZE(sig)}));
 
   // Verify the signature.

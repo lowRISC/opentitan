@@ -4,18 +4,18 @@
 
 use std::time::Duration;
 
-use anyhow::{ensure, Context, Result};
+use anyhow::{Context, Result, ensure};
 use clap::Parser;
 use rand::prelude::*;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::{Jtag, JtagTap};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;
 
-use bindgen::dif;
-use top_earlgrey::top_earlgrey;
+use ot_bindgen_dif as dif;
+use ot_hal::top::earlgrey as top_earlgrey;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -59,7 +59,7 @@ fn test_csr_rw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let mut rng = rand_chacha::ChaCha12Rng::seed_from_u64(seed);
 
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
     let uart = &*transport.uart("console")?;
     uart.set_flow_control(true)?;
 
@@ -68,7 +68,7 @@ fn test_csr_rw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     } else {
         // Avoid watchdog timeout by entering bootstrap mode.
         transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
-        transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+        transport.reset(UartRx::Clear)?;
     }
 
     let jtag = &mut *opts

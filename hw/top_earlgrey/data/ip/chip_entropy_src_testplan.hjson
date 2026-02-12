@@ -138,7 +138,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
-      bazel: []
+      bazel: ["//sw/device/tests:entropy_src_bypass_mode_health_test"]
     },
     {
       name: chip_sw_entropy_src_fips_mode_health_tests
@@ -175,7 +175,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
-      bazel: []
+      bazel: ["//sw/device/tests:entropy_src_fips_mode_health_test"]
     },
     {
       name: chip_sw_entropy_src_validation
@@ -268,7 +268,7 @@
               four times with the ENTROPY_SRC.RNG_BIT_ENABLE feature being enabled (once for every channel).
             - The procedure must be tested with and without the conditioner (bypass mode).
             - The procedure must be tested with a significant delay added between extracting and inserting the entropy.
-            - The procedure must be tested with a diablement and a re-enablement of ENTROPY_SRC.
+            - The procedure must be tested with a disablement and a re-enablement of ENTROPY_SRC.
               - To this end, ENTROPY_SRC must be disabled after it has produced entropy.
               - Whenever CSRNG has an outstanding entropy request ENTROPY_SRC can be enabled again.
 

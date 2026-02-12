@@ -13,7 +13,7 @@ class keymgr_sideload_protect_vseq extends keymgr_random_vseq;
   `uvm_object_utils(keymgr_sideload_protect_vseq)
   `uvm_object_new
 
-  // don'd advance any of the 3 functonal states
+  // don'd advance any of the 3 functional states
   constraint num_adv_c {
     num_adv inside {[2:4]};
   }

@@ -18,6 +18,7 @@
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/base/static_critical_version.h"
+#include "sw/device/silicon_creator/lib/base/util.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/boot_log.h"
 #include "sw/device/silicon_creator/lib/cfi.h"
@@ -47,14 +48,15 @@
 #include "sw/device/silicon_creator/rom/boot_policy_ptrs.h"
 #include "sw/device/silicon_creator/rom/bootstrap.h"
 #include "sw/device/silicon_creator/rom/rom_epmp.h"
+#include "sw/device/silicon_creator/rom/rom_state.h"
 #include "sw/device/silicon_creator/rom/sigverify_keys_ecdsa_p256.h"
 #include "sw/device/silicon_creator/rom/sigverify_keys_spx.h"
 #include "sw/device/silicon_creator/rom/sigverify_otp_keys.h"
 
-#include "hmac_regs.h"  // Generated.
+#include "hw/top/hmac_regs.h"  // Generated.
+#include "hw/top/otp_ctrl_regs.h"
+#include "hw/top/rstmgr_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otp_ctrl_regs.h"
-#include "rstmgr_regs.h"
 
 /**
  * Table of forward branch Control Flow Integrity (CFI) counters.
@@ -378,12 +380,18 @@ static rom_error_t rom_verify(const manifest_t *manifest,
   // Add remaining part of manifest / ROM_EXT image to the measurement.
   hmac_sha256_update(digest_region.start, digest_region.length);
   hmac_sha256_process();
-  hmac_digest_t act_digest;
-  hmac_sha256_final(&act_digest);
+  // The ECDSA verify function expects the digest in reverse order, which
+  // is what hmac_sha256_final produces.
+  hmac_digest_t rev_digest;
+  hmac_sha256_final(&rev_digest);
+  // The SPHINCS+ verify function expects the digest in the natural order,
+  // so we copy and reverse the bytes.
+  hmac_digest_t fwd_digest = rev_digest;
+  util_reverse_bytes(&fwd_digest, sizeof(fwd_digest));
   // Copy the ROM_EXT measurement to the .static_critical section.
-  static_assert(sizeof(boot_measurements.rom_ext) == sizeof(act_digest),
+  static_assert(sizeof(boot_measurements.rom_ext) == sizeof(rev_digest),
                 "Unexpected ROM_EXT digest size.");
-  memcpy(&boot_measurements.rom_ext, &act_digest,
+  memcpy(&boot_measurements.rom_ext, &rev_digest,
          sizeof(boot_measurements.rom_ext));
 
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomVerify, 2);
@@ -396,22 +404,22 @@ static rom_error_t rom_verify(const manifest_t *manifest,
   *flash_exec = 0;
   if (rnd_uint32() < 0x80000000) {
     HARDENED_RETURN_IF_ERROR(sigverify_ecdsa_p256_verify(
-        &manifest->ecdsa_signature, ecdsa_key, &act_digest, flash_exec));
+        &manifest->ecdsa_signature, ecdsa_key, &rev_digest, flash_exec));
 
     return sigverify_spx_verify(
         spx_signature, spx_key, spx_config, lc_state,
         &usage_constraints_from_hw, sizeof(usage_constraints_from_hw),
         anti_rollback, anti_rollback_len, digest_region.start,
-        digest_region.length, &act_digest, flash_exec);
+        digest_region.length, &fwd_digest, flash_exec);
   } else {
     HARDENED_RETURN_IF_ERROR(sigverify_spx_verify(
         spx_signature, spx_key, spx_config, lc_state,
         &usage_constraints_from_hw, sizeof(usage_constraints_from_hw),
         anti_rollback, anti_rollback_len, digest_region.start,
-        digest_region.length, &act_digest, flash_exec));
+        digest_region.length, &fwd_digest, flash_exec));
 
     return sigverify_ecdsa_p256_verify(&manifest->ecdsa_signature, ecdsa_key,
-                                       &act_digest, flash_exec);
+                                       &rev_digest, flash_exec);
   }
 }
 
@@ -515,12 +523,12 @@ static rom_error_t rom_measure_otp_partitions(
   hmac_sha256_update(
       (unsigned char *)(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
                         OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
-                        OTP_CTRL_CREATOR_SW_CFG_DIGEST_0_REG_OFFSET),
+                        OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_OFFSET),
       sizeof(uint64_t));
   hmac_sha256_update(
       (unsigned char *)(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
                         OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
-                        OTP_CTRL_OWNER_SW_CFG_DIGEST_0_REG_OFFSET),
+                        OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_OFFSET),
       sizeof(uint64_t));
   hmac_sha256_update(sigverify_ctx.keys.integrity_measurement.digest,
                      kHmacDigestNumBytes);
@@ -542,7 +550,9 @@ static rom_error_t rom_measure_otp_partitions(
  * @return rom_error_t Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
+static rom_error_t rom_boot(const manifest_t *manifest,
+                            uintptr_t imm_section_entry_point,
+                            uint32_t flash_exec) {
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomBoot, 1);
   HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(kScKeymgrStateReset));
 
@@ -579,8 +589,8 @@ static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
   switch (launder32(manifest->address_translation)) {
     case kHardenedBoolTrue:
       HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolTrue);
-      ibex_addr_remap_0_set((uintptr_t)_rom_ext_virtual_start_address,
-                            (uintptr_t)manifest, (size_t)_rom_ext_virtual_size);
+      ibex_addr_remap_set(0, (uintptr_t)_rom_ext_virtual_start_address,
+                          (uintptr_t)manifest, (size_t)_rom_ext_virtual_size);
       SEC_MMIO_WRITE_INCREMENT(kAddressTranslationSecMmioConfigure);
 
       // Unlock read-only for the whole rom_ext virtual memory.
@@ -667,7 +677,19 @@ static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
   // In a normal build, this function inlines to nothing.
   stack_utilization_print();
 
-  // (Potentially) Execute the immutable ROM_EXT section.
+  if (imm_section_entry_point != kHardenedBoolFalse) {
+    ((rom_ext_entry_point *)imm_section_entry_point)();
+  }
+  // Jump to ROM_EXT.
+  ((rom_ext_entry_point *)entry_point)();
+  return kErrorRomBootFailed;
+}
+
+static rom_error_t rom_verify_immutable_section(
+    rom_error_t verify_result, const manifest_t *manifest,
+    uintptr_t *imm_section_entry_point) {
+  *imm_section_entry_point = kHardenedBoolFalse;
+  // Verify the immutable ROM_EXT section.
   uint32_t rom_ext_immutable_section_enabled =
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN_OFFSET);
   if (launder32(rom_ext_immutable_section_enabled) == kHardenedBoolTrue) {
@@ -679,14 +701,6 @@ static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
         OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_LENGTH_OFFSET);
     uintptr_t immutable_rom_ext_entry_point =
         (uintptr_t)manifest + immutable_rom_ext_start_offset;
-    // If address translation is enabled, adjust the entry_point.
-    if (launder32(manifest->address_translation) == kHardenedBoolTrue) {
-      HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolTrue);
-      immutable_rom_ext_entry_point =
-          rom_ext_vma_get(manifest, immutable_rom_ext_entry_point);
-    } else {
-      HARDENED_CHECK_NE(manifest->address_translation, kHardenedBoolTrue);
-    }
 
     // Compute a hash of the code section.
     // Include the start offset and the length of the section in the hash.
@@ -706,17 +720,26 @@ static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
     otp_read(OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA256_HASH_OFFSET,
              immutable_rom_ext_hash.digest, kHmacDigestNumWords);
     for (size_t i = 0; i < kHmacDigestNumWords; ++i) {
-      HARDENED_CHECK_EQ(immutable_rom_ext_hash.digest[i],
-                        actual_immutable_section_digest.digest[i]);
+      if (immutable_rom_ext_hash.digest[i] !=
+          actual_immutable_section_digest.digest[i]) {
+        verify_result = kErrorRomImmSection;
+      }
     }
-    ((rom_ext_entry_point *)immutable_rom_ext_entry_point)();
+    // If address translation is enabled, adjust the entry_point.
+    if (launder32(manifest->address_translation) == kHardenedBoolTrue) {
+      HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolTrue);
+      immutable_rom_ext_entry_point =
+          rom_ext_vma_get(manifest, immutable_rom_ext_entry_point);
+    } else {
+      HARDENED_CHECK_NE(manifest->address_translation, kHardenedBoolTrue);
+    }
+    if (verify_result == kErrorOk) {
+      *imm_section_entry_point = immutable_rom_ext_entry_point;
+    }
   } else {
     HARDENED_CHECK_NE(rom_ext_immutable_section_enabled, kHardenedBoolTrue);
   }
-
-  // Jump to ROM_EXT.
-  ((rom_ext_entry_point *)entry_point)();
-  return kErrorRomBootFailed;
+  return verify_result;
 }
 
 /**
@@ -733,9 +756,12 @@ static rom_error_t rom_try_boot(void) {
 
   boot_policy_manifests_t manifests = boot_policy_manifests_get();
   uint32_t flash_exec = 0;
+  uintptr_t imm_section_entry_point = kHardenedBoolFalse;
 
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 2, kCfiRomVerify);
   rom_error_t error = rom_verify(manifests.ordered[0], &flash_exec);
+  error = rom_verify_immutable_section(error, manifests.ordered[0],
+                                       &imm_section_entry_point);
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomTryBoot, 4);
 
   if (launder32(error) == kErrorOk) {
@@ -743,40 +769,118 @@ static rom_error_t rom_try_boot(void) {
     CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomVerify, 3);
     CFI_FUNC_COUNTER_INIT(rom_counters, kCfiRomTryBoot);
     CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 1, kCfiRomBoot);
-    HARDENED_RETURN_IF_ERROR(rom_boot(manifests.ordered[0], flash_exec));
+    HARDENED_RETURN_IF_ERROR(
+        rom_boot(manifests.ordered[0], imm_section_entry_point, flash_exec));
     return kErrorRomBootFailed;
   }
 
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 5, kCfiRomVerify);
-  HARDENED_RETURN_IF_ERROR(rom_verify(manifests.ordered[1], &flash_exec));
+  error = rom_verify(manifests.ordered[1], &flash_exec);
+  HARDENED_RETURN_IF_ERROR(rom_verify_immutable_section(
+      error, manifests.ordered[1], &imm_section_entry_point));
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomTryBoot, 7);
   CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomVerify, 3);
 
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 8, kCfiRomBoot);
-  HARDENED_RETURN_IF_ERROR(rom_boot(manifests.ordered[1], flash_exec));
+  HARDENED_RETURN_IF_ERROR(
+      rom_boot(manifests.ordered[1], imm_section_entry_point, flash_exec));
   return kErrorRomBootFailed;
+}
+
+/*
+ * The bootstrap request is the `kRomStateBootstrapCheck` and
+ * `kRomStateBootstrap` ROM states argument. It must be undefined before
+ * entering the `kRomStateBootstrapCheck` state as only the
+ * `kRomStateBootstrapCheck` run callback or hooks should set it to either
+ * `kHardenedBoolFalse` or `kHardenedBoolTrue`.
+ */
+static hardened_bool_t bootstrap_request = 0;
+
+enum {
+  kRomStateCnt = 4,
+};
+
+/**
+ * Table of ROM states.
+ *
+ * Encoding generated with:
+ * $ ./util/design/sparse-fsm-encode.py -d 6 -m 4 -n 16 \
+ *     -s 519644925 --language=c
+ */
+// clang-format off
+#define ROM_STATES(X)                                                               \
+  X(kRomStateInit,           0x5616, rom_state_init, NULL)                          \
+  X(kRomStateBootstrapCheck, 0x0a92, rom_state_bootstrap_check, &bootstrap_request) \
+  X(kRomStateBootstrap,      0xd0a0, rom_state_bootstrap, &bootstrap_request)       \
+  X(kRomStateBootRomExt,     0xed14, rom_state_boot_rom_ext, NULL)
+// clang-format on
+
+ROM_STATE_INIT_TABLE(rom_states, kRomStateCnt, ROM_STATES);
+
+static OT_WARN_UNUSED_RESULT rom_error_t rom_state_init(void *arg,
+                                                        uint32_t *next_state) {
+  CFI_FUNC_COUNTER_INIT(rom_counters, kCfiRomMain);
+
+  CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomMain, 1, kCfiRomInit);
+  HARDENED_RETURN_IF_ERROR(rom_init());
+  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomMain, 3);
+
+  *next_state = kRomStateBootstrapCheck;
+
+  return kErrorOk;
+}
+
+static OT_WARN_UNUSED_RESULT rom_error_t
+rom_state_bootstrap_check(void *arg, uint32_t *next_state) {
+  if (launder32(waking_from_low_power) != kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(waking_from_low_power, kHardenedBoolFalse);
+
+    hardened_bool_t *bootstrap_req = (hardened_bool_t *)arg;
+
+    if (launder32(*bootstrap_req) == 0) {
+      // The pre_ hook has not set the bootstrap request flag, it has to be
+      // checked and set to True or False
+      HARDENED_CHECK_EQ(*bootstrap_req, 0);
+      *bootstrap_req = bootstrap_requested();
+    }
+
+    // The bootstrap request flag must now be True or False.
+    if (launder32(*bootstrap_req) == kHardenedBoolTrue) {
+      HARDENED_CHECK_EQ(*bootstrap_req, kHardenedBoolTrue);
+      *next_state = kRomStateBootstrap;
+      return kErrorOk;
+    }
+  }
+
+  // We are not bootstrapping, aiming for ROM ext.
+  *next_state = kRomStateBootRomExt;
+  return kErrorOk;
+}
+
+static OT_WARN_UNUSED_RESULT rom_error_t
+rom_state_bootstrap(void *arg, uint32_t *next_state) {
+  hardened_bool_t *bootstrap_req = (hardened_bool_t *)arg;
+
+  if (launder32(*bootstrap_req) == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(*bootstrap_req, kHardenedBoolTrue);
+    rom_bootstrap_message();
+    watchdog_disable();
+    // `bootstrap` will not return unless there is an error.
+    HARDENED_RETURN_IF_ERROR(bootstrap());
+  }
+
+  return kErrorRomBootFailed;
+}
+
+static OT_WARN_UNUSED_RESULT rom_error_t
+rom_state_boot_rom_ext(void *arg, uint32_t *next_state) {
+  // `rom_try_boot` will not return unless there is an error.
+  CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomMain, 4, kCfiRomTryBoot);
+  return rom_try_boot();
 }
 
 void rom_main(void) {
   CFI_FUNC_COUNTER_INIT(rom_counters, kCfiRomMain);
-
-  CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomMain, 1, kCfiRomInit);
-  SHUTDOWN_IF_ERROR(rom_init());
-  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomMain, 3);
-  CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomInit, 3);
-
-  if (launder32(waking_from_low_power) != kHardenedBoolTrue) {
-    HARDENED_CHECK_EQ(waking_from_low_power, kHardenedBoolFalse);
-    hardened_bool_t bootstrap_req = bootstrap_requested();
-    if (launder32(bootstrap_req) == kHardenedBoolTrue) {
-      HARDENED_CHECK_EQ(bootstrap_req, kHardenedBoolTrue);
-      rom_bootstrap_message();
-      watchdog_disable();
-      shutdown_finalize(bootstrap());
-    }
-  }
-
-  // `rom_try_boot` will not return unless there is an error.
-  CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomMain, 4, kCfiRomTryBoot);
-  shutdown_finalize(rom_try_boot());
+  shutdown_finalize(rom_state_fsm_walk(rom_states, kRomStateCnt, kRomStateInit,
+                                       rom_states_cfi));
 }

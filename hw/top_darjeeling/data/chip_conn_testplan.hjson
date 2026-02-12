@@ -36,7 +36,6 @@
               "ast_clk_io_out",
               "ast_all_byp_ack_out",
               "ast_io_byp_ack_out",
-              "ast_clk_adc_in",
               "ast_clk_alert_in",
               "ast_clk_es_in",
               "ast_clk_rng_in",
@@ -73,8 +72,7 @@
       desc: '''Verify the reset connectivity between AST and reset manager.
             '''
       stage: V2
-      tests: ["ast_rst_adc_in",
-              "ast_rst_alert_in",
+      tests: ["ast_rst_alert_in",
               "ast_rst_es_in",
               "ast_rst_rng_in",
               "ast_rst_tlul_in",
@@ -224,99 +222,82 @@
     // clkmgr_cg_en.csv     //
     //////////////////////////
     {
-      name: cg_en_io_peri
-      desc: '''Verify clkmgr's cg_en_o.io_peri is connected to alert_handler's lpg_cg_en[7].'''
-      stage: V2
-      tests: ["clkmgr_io_peri_alert_7_cg_en"]
-      tags: ["conn"]
-    }
-    {
-      name: cg_en_io_div2_peri
-      desc: '''Verify clkmgr's cg_en_o.io_div2_peri is connected to alert_handler's lpg_cg_en[8].'''
-      stage: V2
-      tests: ["clkmgr_io_div2_peri_alert_8_cg_en"]
-      tags: ["conn"]
-    }
-    {
-      name: cg_en_io_div4_infra
-      desc: '''Verify clkmgr's cg_en_o.io_div4_infra is connected to:
-            - alert_handler's lpg_cg_en_i[12]
-            - alert_handler's lpg_cg_en_i[16]
-            '''
-      stage: V2
-      tests: ["clkmgr_io_div2_infra_alert_12_cg_en",
-              "clkmgr_io_div4_infra_alert_16_cg_en"]
-      tags: ["conn"]
-    }
-    {
-      name: cg_en_io_div4_peri
-      desc: '''Verify clkmgr's cg_en_o.io_div4_peri is connected to the following:
-            - alert_handler's lpg_cg_en_i[4:0]
-            - alert_handler's lpg_cg_en_i[13]
-            '''
-      stage: V2
-      tests: ["clkmgr_io_div4_peri_alert_0_cg_en",
-              "clkmgr_io_div4_peri_alert_1_cg_en",
-              "clkmgr_io_div4_peri_alert_2_cg_en",
-              "clkmgr_io_div4_peri_alert_3_cg_en",
-              "clkmgr_io_div4_peri_alert_4_cg_en",
-              "clkmgr_io_div4_peri_alert_13_cg_en"]
-      tags: ["conn"]
-    }
-    {
-      name: cg_en_io_div4_powerup
-      desc: '''Verify clkmgr's cg_en_o.io_div4_powerup is connected to the following:
-            - alert_handler's lpg_cg_en_i[11:10]
-            - alert_handler's lpg_cg_en_i[14]
-            '''
-      stage: V2
-      tests: ["clkmgr_io_div4_powerup_alert_10_cg_en",
-              "clkmgr_io_div4_powerup_alert_11_cg_en",
-              "clkmgr_io_div4_powerup_alert_14_cg_en"]
-      tags: ["conn"]
-    }
-    {
-      name: cg_en_io_div4_secure
-      desc: '''Verify clkmgr's cg_en_o.io_div4_secure is connected to the following:
+      name: cg_en_io_infra
+      desc: '''Verify clkmgr's cg_en_o.io_infra is connected to:
             - alert_handler's lpg_cg_en_i[6]
-            - alert_handler's lpg_cg_en_i[17]
+            - alert_handler's lpg_cg_en_i[11]
             '''
       stage: V2
-      tests: ["clkmgr_io_div4_secure_alert_6_cg_en",
-              "clkmgr_io_div4_secure_alert_17_cg_en"]
+      tests: ["clkmgr_io_infra_alert_9_cg_en",
+              "clkmgr_io_infra_alert_11_cg_en"]
       tags: ["conn"]
     }
     {
-      name: cg_en_io_div4_timers
-      desc: '''Verify clkmgr's cg_en_o.io_div4_timers is connected to the following:
+      name: cg_en_io_peri
+      desc: '''Verify clkmgr's cg_en_o.io_peri is connected to the following:
+            - alert_handler's lpg_cg_en_i[2:0]
             - alert_handler's lpg_cg_en_i[5]
-            - alert_handler's lpg_cg_en_i[15]
             '''
       stage: V2
-      tests: ["clkmgr_io_div4_timers_alert_5_cg_en",
-              "clkmgr_io_div4_timers_alert_15_cg_en"]
+      tests: ["clkmgr_io_peri_alert_0_cg_en",
+              "clkmgr_io_peri_alert_1_cg_en",
+              "clkmgr_io_peri_alert_2_cg_en",
+              "clkmgr_io_peri_alert_5_cg_en"]
+      tags: ["conn"]
+    }
+    {
+      name: cg_en_io_powerup
+      desc: '''Verify clkmgr's cg_en_o.io_powerup is connected to the following:
+            - alert_handler's lpg_cg_en_i[7:6]
+            '''
+      stage: V2
+      tests: ["clkmgr_io_powerup_alert_6_cg_en",
+              "clkmgr_io_powerup_alert_7_cg_en"]
+      tags: ["conn"]
+    }
+    {
+      name: cg_en_io_secure
+      desc: '''Verify clkmgr's cg_en_o.io_secure is connected to the following:
+            - alert_handler's lpg_cg_en_i[4]
+            '''
+      stage: V2
+      tests: ["clkmgr_io_secure_alert_4_cg_en"]
+      tags: ["conn"]
+    }
+    {
+      name: cg_en_io_timers
+      desc: '''Verify clkmgr's cg_en_o.io_timers is connected to the following:
+            - alert_handler's lpg_cg_en_i[3]
+            - alert_handler's lpg_cg_en_i[8]
+            '''
+      stage: V2
+      tests: ["clkmgr_io_timers_alert_3_cg_en",
+              "clkmgr_io_timers_alert_8_cg_en"]
       tags: ["conn"]
     }
     {
       name: cg_en_main_aes
-      desc: '''Verify clkmgr's cg_en_o.main_aes is connected to alert_handler's lpg_cg_en[21].'''
+      desc: '''Verify clkmgr's cg_en_o.main_aes is connected to alert_handler's lpg_cg_en[14].'''
       stage: V2
-      tests: ["clkmgr_main_aes_alert_21_cg_en"]
+      tests: ["clkmgr_main_aes_alert_14_cg_en"]
       tags: ["conn"]
     }
     {
       name: cg_en_main_infra
-      desc: '''Verify clkmgr's cg_en_o.main_infra is connected to alert_handler's lpg_cg_en[19:18].'''
+      desc: '''Verify clkmgr's cg_en_o.main_infra isconnected to the following:
+            - alert_handler's lpg_cg_en_i[10]
+            - alert_handler's lpg_cg_en_i[12]
+            '''
       stage: V2
-      tests: ["clkmgr_main_infra_alert_18_cg_en",
-              "clkmgr_main_infra_alert_19_cg_en"]
+      tests: ["clkmgr_main_infra_alert_10_cg_en",
+              "clkmgr_main_infra_alert_12_cg_en"]
       tags: ["conn"]
     }
     {
       name: cg_en_main_secure
-      desc: '''Verify clkmgr's cg_en_o.main_secure is connected to alert_handler's lpg_cg_en[20].'''
+      desc: '''Verify clkmgr's cg_en_o.main_secure is connected to alert_handler's lpg_cg_en[13].'''
       stage: V2
-      tests: ["clkmgr_main_secure_alert_20_cg_en"]
+      tests: ["clkmgr_main_secure_alert_13_cg_en"]
       tags: ["conn"]
     }
 
@@ -340,8 +321,8 @@
     // clkmgr_infra.csv    //
     /////////////////////////
     {
-      name: clkmgr_clk_io_div4_infra
-      desc: '''Verify clkmgr's `clk_io_div4_infra` is connected to the following block's clock
+      name: clkmgr_clk_io_infra
+      desc: '''Verify clkmgr's `clk_io_infra` is connected to the following block's clock
             input:
             - flash_ctrl clk_otp_i
             - sram_ctrl main clk_otp_i
@@ -394,18 +375,16 @@
     // clkmgr_peri.csv     //
     /////////////////////////
     {
-      name: clkmgr_clk_io_div4_peri
-      desc: '''Verify clkmgr's `clk_io_div4_peri` is connected to the following blocks' clock
+      name: clkmgr_clk_io_peri
+      desc: '''Verify clkmgr's `clk_io_peri` is connected to the following blocks' clock
             input:
-            - adc_ctrl clk_i
             - gpio clk_i
             - spi_device clk_i
             - i2c0 clk_i
             - uart0 clk_i
             '''
       stage: V2
-      tests: ["clkmgr_peri_clk_adc_ctrl_aon_clk",
-              "clkmgr_peri_clk_gpio_clk",
+      tests: ["clkmgr_peri_clk_gpio_clk",
               "clkmgr_peri_clk_spi_device_clk",
               "clkmgr_peri_clk_i2c0_clk",
               "clkmgr_peri_clk_uart0_clk"]
@@ -435,14 +414,14 @@
     // clkmgr powerup      //
     /////////////////////////
     {
-      name: clkmgr_clk_io_div4_powerup
-      desc: '''Verify clkmgr's `clk_io_div4_powerup` is connected to the following blocks' clock
+      name: clkmgr_clk_io_powerup
+      desc: '''Verify clkmgr's `clk_io_powerup` is connected to the following blocks' clock
             input:
             - clkmgr clk_i
             - pinmux clk_i
             - pwrmgr clk_i
             - rstmgr clk_i
-            - rstmgr clk_io_div4_i
+            - rstmgr clk_io_i
             '''
       stage: V2
       tests: ["clkmgr_powerup_clk_clkmgr_clk",
@@ -495,8 +474,8 @@
     // clkmgr_secure.csv   //
     /////////////////////////
     {
-      name: clkmgr_clk_io_div4_secure
-      desc: '''Verify clkmgr's `clk_io_div4_secure` is connected to the following blocks' clock
+      name: clkmgr_clk_io_secure
+      desc: '''Verify clkmgr's `clk_io_secure` is connected to the following blocks' clock
             input:
             - alert_handler clk_i
             - lc_ctrl clk_i
@@ -558,8 +537,8 @@
     // clkmgr_timers.csv   //
     /////////////////////////
     {
-      name: clkmgr_clk_io_div4_timers
-      desc: '''Verify clkmgr's `clk_io_div4_timers` is connected to the following blocks' clock
+      name: clkmgr_clk_io_timers
+      desc: '''Verify clkmgr's `clk_io_timers` is connected to the following blocks' clock
             input:
             - aon_timer clk_i
             - rv_timer clk_i
@@ -611,19 +590,6 @@
       tags: ["conn"]
     }
 
-    /////////////////////////
-    // ast_flash.csv       //
-    /////////////////////////
-    {
-      name: ast_flash_ctrl
-      desc: '''Verify ast's flash signals are connected to the flash controller.'''
-      stage: V2
-      tests: ["ast_flash_obs_ctrl",
-              "ast_flash_pwr_dwn_out",
-              "ast_flash_pwr_rdy_out",
-              "ast_flash_bist_en_out"]
-      tags: ["conn"]
-    }
     /////////////////////////////
     // ast_csrng_cfg.csv //
     /////////////////////////////
@@ -761,6 +727,7 @@
       stage: V2
       tests: ["lc_creator_seed_sw_rw_en_otp",
               "lc_seed_hw_rd_en_otp",
+              "lc_rma_state_otp",
               "lc_creator_seed_sw_rw_en_flash",
               "lc_seed_hw_rd_en_flash",
               "lc_owner_seed_sw_rw_en_flash",
@@ -832,28 +799,28 @@
       tags: ["conn"]
     }
     {
-      name: rst_lc_io_div4_aon
-      desc: '''Verify rstmgr's rst_lc_io_div4_n[0] is connected to the following:
+      name: rst_lc_io_aon
+      desc: '''Verify rstmgr's rst_lc_io_n[0] is connected to the following:
             - aon_timer's rst_ni
             - clkmgr's rst_ni
-            - clkmgr's rst_io_div4_ni
+            - clkmgr's rst_io_ni
             - pinmux's rst_ni
             - sram_ctrl_ret's rst_otp_ni
             - rstmgr's rst_ni
             '''
       stage: V2
-      tests: ["rstmgr_lc_io_div4_aon_aon_timer_rst_ni",
-              "rstmgr_lc_io_div4_aon_clkmgr_rst_ni",
-              "rstmgr_lc_io_div4_aon_clkmgr_rst_io_div4_ni",
-              "rstmgr_lc_io_div4_aon_pwrmgr_rst_lc_ni",
-              "rstmgr_lc_io_div4_aon_pinmux_rst_ni",
-              "rstmgr_lc_io_div4_aon_sram_ctrl_ret_rst_otp_ni",
-              "rstmgr_lc_io_div4_aon_rstmgr_rst_ni"]
+      tests: ["rstmgr_lc_io_aon_aon_timer_rst_ni",
+              "rstmgr_lc_io_aon_clkmgr_rst_ni",
+              "rstmgr_lc_io_aon_clkmgr_rst_io_ni",
+              "rstmgr_lc_io_aon_pwrmgr_rst_lc_ni",
+              "rstmgr_lc_io_aon_pinmux_rst_ni",
+              "rstmgr_lc_io_aon_sram_ctrl_ret_rst_otp_ni",
+              "rstmgr_lc_io_aon_rstmgr_rst_ni"]
       tags: ["conn"]
     }
     {
-      name: rst_lc_io_div4_d0
-      desc: '''Verify rstmgr's rst_lc_io_div4_n[1] is connected to the following:
+      name: rst_lc_io_d0
+      desc: '''Verify rstmgr's rst_lc_io_n[1] is connected to the following:
             - alert_handler's rst_ni
             - lc_ctrl's rst_ni
             - otbn's rst_otp_ni
@@ -864,27 +831,27 @@
             - sram_ctrl_main's rst_otp_ni
             '''
       stage: V2
-      tests: ["rstmgr_lc_io_div4_d0_alert_handler_rst_ni",
-              "rstmgr_lc_io_div4_d0_lc_ctrl_rst_ni",
-              "rstmgr_lc_io_div4_d0_otbn_rst_otp_ni",
-              "rstmgr_lc_io_div4_d0_otp_ctrl_rst_ni",
-              "rstmgr_lc_io_div4_d0_rv_core_ibex_rst_esc_ni",
-              "rstmgr_lc_io_div4_d0_rv_core_ibex_rst_otp_ni",
-              "rstmgr_lc_io_div4_d0_sram_ctrl_main_rst_otp_ni"]
+      tests: ["rstmgr_lc_io_d0_alert_handler_rst_ni",
+              "rstmgr_lc_io_d0_lc_ctrl_rst_ni",
+              "rstmgr_lc_io_d0_otbn_rst_otp_ni",
+              "rstmgr_lc_io_d0_otp_ctrl_rst_ni",
+              "rstmgr_lc_io_d0_rv_core_ibex_rst_esc_ni",
+              "rstmgr_lc_io_d0_rv_core_ibex_rst_otp_ni",
+              "rstmgr_lc_io_d0_sram_ctrl_main_rst_otp_ni"]
       tags: ["conn"]
     }
     {
-      name: rst_lc_io_div4_shadowed_aon
-      desc: '''Verify rstmgr's rst_lc_io_div4_shadowed_n[0] is connected to clkmgr's rst_shadowed_ni.'''
+      name: rst_lc_io_shadowed_aon
+      desc: '''Verify rstmgr's rst_lc_io_shadowed_n[0] is connected to clkmgr's rst_shadowed_ni.'''
       stage: V2
-      tests: ["rstmgr_lc_io_div4_shadowed_aon_clkmgr_rst_shadowed_ni"]
+      tests: ["rstmgr_lc_io_shadowed_aon_clkmgr_rst_shadowed_ni"]
       tags: ["conn"]
     }
     {
-      name: rst_lc_io_div4_shadowed_d0
-      desc: '''Verify rstmgr's rst_lc_io_div4_shadowed_n[1] is connected to alert_handler's rst_shadowed_ni.'''
+      name: rst_lc_io_shadowed_d0
+      desc: '''Verify rstmgr's rst_lc_io_shadowed_n[1] is connected to alert_handler's rst_shadowed_ni.'''
       stage: V2
-      tests: ["rstmgr_lc_io_div4_shadowed_d0_alert_handler_rst_shadowed_ni"]
+      tests: ["rstmgr_lc_io_shadowed_d0_alert_handler_rst_shadowed_ni"]
       tags: ["conn"]
     }
     {
@@ -937,18 +904,18 @@
       tags: ["conn"]
     }
     {
-      name: rst_por_io_div4_aon
-      desc: '''Verify rstmgr's rst_por_io_div4_n[0] is connected to the following:
-            - clkmgr's rst_root_io_div4_ni
+      name: rst_por_io_aon
+      desc: '''Verify rstmgr's rst_por_io_n[0] is connected to the following:
+            - clkmgr's rst_root_io_ni
             - clkmgr's rst_root_ni
             - pwrmgr's rst_ni
             - rstmgr's rst_por_ni
             '''
       stage: V2
-      tests: ["rstmgr_por_io_div4_aon_clkmgr_rst_root_io_div4_ni",
-              "rstmgr_por_io_div4_aon_clkmgr_rst_root_ni",
-              "rstmgr_por_io_div4_aon_pwrmgr_rst_ni",
-              "rstmgr_por_io_div4_aon_rstmgr_rst_ni"]
+      tests: ["rstmgr_por_io_aon_clkmgr_rst_root_io_ni",
+              "rstmgr_por_io_aon_clkmgr_rst_root_ni",
+              "rstmgr_por_io_aon_pwrmgr_rst_ni",
+              "rstmgr_por_io_aon_rstmgr_rst_ni"]
       tags: ["conn"]
     }
     {
@@ -966,17 +933,6 @@
       tags: ["conn"]
     }
     {
-      name: rst_sys_aon_aon
-      desc: '''Verify rstmgr's rst_sys_aon_n[0] is connected to the following:
-            - adc_ctrl's rst_aon_ni
-            - sensor_ctrl's rst_aon_ni
-            '''
-      stage: V2
-      tests: ["rstmgr_sys_aon_aon_adc_ctrl_rst_aon_ni",
-              "rstmgr_sys_aon_aon_sensor_ctrl_rst_aon_ni"]
-      tags: ["conn"]
-    }
-    {
       name: rst_sys_io_d0
       desc: '''Verify rstmgr's rst_sys_io_n[1] is connected to xbar_main's rst_spi_host0_ni.'''
       stage: V2
@@ -984,21 +940,19 @@
       tags: ["conn"]
     }
     {
-      name: rst_sys_io_div4_aon
-      desc: '''Verify rstmgr's rst_sys_io_div4_n[0] is connected to the following:
-            - adc_ctrl's rst_ni
+      name: rst_sys_io_aon
+      desc: '''Verify rstmgr's rst_sys_io_n[0] is connected to the following:
             - sensor_ctrl's rst_ni
             - sram_ctrl_ret's rst_ni
             '''
       stage: V2
-      tests: ["rstmgr_sys_io_div4_aon_adc_ctrl_rst_ni",
-              "rstmgr_sys_io_div4_aon_sensor_ctrl_rst_ni",
-              "rstmgr_sys_io_div4_aon_sram_ctrl_ret_rst_ni"]
+      tests: ["rstmgr_sys_io_aon_sensor_ctrl_rst_ni",
+              "rstmgr_sys_io_aon_sram_ctrl_ret_rst_ni"]
       tags: ["conn"]
     }
     {
-      name: rst_sys_io_div4_d0
-      desc: '''Verify rstmgr's rst_sys_io_div4_n[1] is connected to the following:
+      name: rst_sys_io_d0
+      desc: '''Verify rstmgr's rst_sys_io_n[1] is connected to the following:
             - flash_ctrl's rst_otp_ni
             - gpio's rst_ni
             - rv_timer's rst_ni
@@ -1007,12 +961,12 @@
             - xbar_peri's rst_peri_ni
             '''
       stage: V2
-      tests: ["rstmgr_sys_io_div4_d0_flash_ctrl_rst_otp_ni",
-              "rstmgr_sys_io_div4_d0_gpio_rst_ni",
-              "rstmgr_sys_io_div4_d0_rv_timer_rst_ni",
-              "rstmgr_sys_io_div4_d0_uart0_rst_ni",
-              "rstmgr_sys_io_div4_d0_xbar_main_rst_fixed_ni",
-              "rstmgr_sys_io_div4_d0_xbar_peri_rst_peri_ni"]
+      tests: ["rstmgr_sys_io_d0_flash_ctrl_rst_otp_ni",
+              "rstmgr_sys_io_d0_gpio_rst_ni",
+              "rstmgr_sys_io_d0_rv_timer_rst_ni",
+              "rstmgr_sys_io_d0_uart0_rst_ni",
+              "rstmgr_sys_io_d0_xbar_main_rst_fixed_ni",
+              "rstmgr_sys_io_d0_xbar_peri_rst_peri_ni"]
       tags: ["conn"]
     }
     {
@@ -1097,28 +1051,28 @@
       tags: ["conn"]
     }
     {
-      name: rst_en_lc_io_div4_aon
-      desc: '''Verify rstmgr's rst_en_o.lc_io_div4[0] connects to the following:
+      name: rst_en_lc_io_aon
+      desc: '''Verify rstmgr's rst_en_o.lc_io[0] connects to the following:
             - alert_handler's lpg_rst_en[11]
             - alert_handler's lpg_rst_en[15]
             '''
       stage: V2
-      tests: ["rstmgr_lc_io_div4_aon_alert_11_rst_en",
-              "rstmgr_lc_io_div4_aon_alert_15_rst_en"]
+      tests: ["rstmgr_lc_io_aon_alert_11_rst_en",
+              "rstmgr_lc_io_aon_alert_15_rst_en"]
       tags: ["conn"]
     }
     {
-      name: rst_en_lc_io_div4_d0
-      desc: '''Verify rstmgr's rst_en_o.lc_io_div4[1] connects to alert_handler's lpg_rst_en[6].'''
+      name: rst_en_lc_io_d0
+      desc: '''Verify rstmgr's rst_en_o.lc_io[1] connects to alert_handler's lpg_rst_en[6].'''
       stage: V2
-      tests: ["rstmgr_lc_io_div4_d0_alert_6_rst_en"]
+      tests: ["rstmgr_lc_io_d0_alert_6_rst_en"]
       tags: ["conn"]
     }
     {
-      name: rst_en_por_io_div4_d0
-      desc: '''Verify rstmgr's rst_en_o.por_io_div4[1] connects to alert_handler's lpg_rst_en[10].'''
+      name: rst_en_por_io_d0
+      desc: '''Verify rstmgr's rst_en_o.por_io[1] connects to alert_handler's lpg_rst_en[10].'''
       stage: V2
-      tests: ["rstmgr_por_io_div4_d0_alert_10_rst_en"]
+      tests: ["rstmgr_por_io_d0_alert_10_rst_en"]
       tags: ["conn"]
     }
     {
@@ -1149,31 +1103,31 @@
       tags: ["conn"]
     }
     {
-      name: rst_en_sys_io_div4_aon
-      desc: '''Verify rstmgr's rst_en_o.sys_io_div4[0] connects to the following:
+      name: rst_en_sys_io_aon
+      desc: '''Verify rstmgr's rst_en_o.sys_io[0] connects to the following:
             - alert_handler's lpg_rst_en[12]
             - alert_handler's lpg_rst_en[13]
             - alert_handler's lpg_rst_en[14]
             - alert_handler's lpg_rst_en[17]
             '''
       stage: V2
-      tests: ["rstmgr_sys_io_div4_aon_alert_12_rst_en",
-              "rstmgr_sys_io_div4_aon_alert_13_rst_en",
-              "rstmgr_sys_io_div4_aon_alert_14_rst_en",
-              "rstmgr_sys_io_div4_aon_alert_17_rst_en"]
+      tests: ["rstmgr_sys_io_aon_alert_12_rst_en",
+              "rstmgr_sys_io_aon_alert_13_rst_en",
+              "rstmgr_sys_io_aon_alert_14_rst_en",
+              "rstmgr_sys_io_aon_alert_17_rst_en"]
       tags: ["conn"]
     }
     {
-      name: rst_en_sys_io_div4_d0
-      desc: '''Verify rstmgr's rst_en_o.sys_io_div4[1] connects to the following:
+      name: rst_en_sys_io_d0
+      desc: '''Verify rstmgr's rst_en_o.sys_io[1] connects to the following:
             - alert_handler's lpg_rst_en[0]
             - alert_handler's lpg_rst_en[5]
             - alert_handler's lpg_rst_en[16]
             '''
       stage: V2
-      tests: ["rstmgr_sys_io_div4_d0_alert_0_rst_en",
-              "rstmgr_sys_io_div4_d0_alert_5_rst_en",
-              "rstmgr_sys_io_div4_d0_alert_16_rst_en"]
+      tests: ["rstmgr_sys_io_d0_alert_0_rst_en",
+              "rstmgr_sys_io_d0_alert_5_rst_en",
+              "rstmgr_sys_io_d0_alert_16_rst_en"]
       tags: ["conn"]
     }
 

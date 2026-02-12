@@ -11,10 +11,10 @@ use clap::Parser;
 use rand::RngCore;
 use zerocopy::IntoBytes;
 
-use cp_lib::{reset_and_lock, run_sram_cp_provision, unlock_raw, ManufCpProvisioningDataInput};
-use opentitanlib::app::TransportWrapper;
+use cp_lib::{CpResponse, reset_and_lock, run_sram_cp_provision, unlock_raw};
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::console::spi::SpiConsoleDevice;
-use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
+use opentitanlib::io::gpio::{PinMode, PullMode};
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition;
@@ -23,7 +23,8 @@ use opentitanlib::test_utils::load_sram_program::{
 };
 use opentitanlib::test_utils::rpc::ConsoleSend;
 use opentitanlib::uart::console::UartConsole;
-use ujson_lib::provisioning_data::ManufCpProvisioningData;
+use ot_hal::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
+use ujson_lib::provisioning_data::{ManufCpProvisioningData, ManufCpTestData};
 use util_lib::hash_lc_token;
 
 #[derive(Debug, Parser)]
@@ -37,8 +38,9 @@ pub struct Opts {
     #[arg(long)]
     pub test_sram_elf: Option<PathBuf>,
 
-    #[command(flatten)]
-    pub provisioning_data: ManufCpProvisioningDataInput,
+    /// Name of the SPI interface to connect to the OTTF console.
+    #[arg(long, default_value = "IOA5")]
+    console_tx_indicator_pin: String,
 
     /// Console receive timeout.
     #[arg(long, value_parser = humantime::parse_duration, default_value = "600s")]
@@ -53,31 +55,23 @@ fn cp_provision(
     opts: &Opts,
     transport: &TransportWrapper,
     provisioning_data: &ManufCpProvisioningData,
+    response: &mut CpResponse,
     spi_console: &SpiConsoleDevice,
 ) -> Result<()> {
     let provisioning_sram_program: SramProgramParams = SramProgramParams {
         elf: opts.provisioning_sram_elf.clone(),
         ..Default::default()
     };
-    unlock_raw(
-        transport,
-        &opts.init.jtag_params,
-        opts.init.bootstrap.options.reset_delay,
-    )?;
     run_sram_cp_provision(
         transport,
         &opts.init.jtag_params,
-        opts.init.bootstrap.options.reset_delay,
         &provisioning_sram_program,
         provisioning_data,
         spi_console,
+        response,
         opts.timeout,
     )?;
-    reset_and_lock(
-        transport,
-        &opts.init.jtag_params,
-        opts.init.bootstrap.options.reset_delay,
-    )?;
+    reset_and_lock(transport, &opts.init.jtag_params)?;
     Ok(())
 }
 
@@ -88,7 +82,7 @@ fn test_unlock(
 ) -> Result<()> {
     // Connect to LC TAP.
     transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
     let mut jtag = opts
         .init
         .jtag_params
@@ -107,7 +101,6 @@ fn test_unlock(
         DifLcCtrlState::TestUnlocked1,
         test_unlock_token,
         /*use_external_clk=*/ true,
-        opts.init.bootstrap.options.reset_delay,
         /*reset_tap_straps=*/ Some(JtagTap::LcTap),
     )?;
 
@@ -127,12 +120,64 @@ fn test_unlock(
     Ok(())
 }
 
+fn prep_flash_for_cp_init(
+    opts: &Opts,
+    transport: &TransportWrapper,
+    test_data: &ManufCpTestData,
+    spi_console: &SpiConsoleDevice,
+) -> Result<()> {
+    let test_sram_program: SramProgramParams = SramProgramParams {
+        elf: opts.test_sram_elf.clone(),
+        ..Default::default()
+    };
+    // Reset the SPI console before loading the target firmware.
+    spi_console.reset_frame_counter();
+
+    // Set the TAP straps for the CPU and reset.
+    transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
+    transport.reset(UartRx::Clear)?;
+
+    // Connect to the RISCV TAP via JTAG.
+    let mut jtag = opts
+        .init
+        .jtag_params
+        .create(transport)?
+        .connect(JtagTap::RiscvTap)?;
+
+    // Reset and halt the CPU to ensure we are in a known state.
+    jtag.reset(/*run=*/ false)?;
+
+    // Load and execute the SRAM program that contains the provisioning code.
+    let result = test_sram_program.load_and_execute(&mut *jtag, ExecutionMode::Jump)?;
+    match result {
+        ExecutionResult::Executing => log::info!("SRAM program loaded and is executing."),
+        _ => panic!("SRAM program load/execution failed: {:?}.", result),
+    }
+
+    // Wait for test to start running.
+    let _ = UartConsole::wait_for(spi_console, r"Waiting for CP test data ...", opts.timeout)?;
+
+    // Inject ground truth provisioning data into the device.
+    test_data.send(spi_console)?;
+
+    // Wait for test complete.
+    let _ = UartConsole::wait_for(spi_console, r"Flash info page 0 programmed.", opts.timeout)?;
+
+    jtag.disconnect()?;
+    transport.pin_strapping("PINMUX_TAP_RISCV")?.remove()?;
+
+    Ok(())
+}
+
 fn check_cp_provisioning(
     opts: &Opts,
     transport: &TransportWrapper,
-    provisioning_data: &ManufCpProvisioningData,
+    test_data: &ManufCpTestData,
     spi_console: &SpiConsoleDevice,
 ) -> Result<()> {
+    // Reset the SPI console before loading the target firmware.
+    spi_console.reset_frame_counter();
+
     let test_sram_program: SramProgramParams = SramProgramParams {
         elf: opts.test_sram_elf.clone(),
         ..Default::default()
@@ -140,7 +185,7 @@ fn check_cp_provisioning(
 
     // Set the TAP straps for the CPU and reset.
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
 
     // Connect to the RISCV TAP via JTAG.
     let mut jtag = opts
@@ -161,14 +206,10 @@ fn check_cp_provisioning(
     }
 
     // Wait for test to start running.
-    let _ = UartConsole::wait_for(
-        spi_console,
-        r"Waiting for expected CP provisioning data ...",
-        opts.timeout,
-    )?;
+    let _ = UartConsole::wait_for(spi_console, r"Waiting for CP test data ...", opts.timeout)?;
 
     // Inject ground truth provisioning data into the device.
-    provisioning_data.send(spi_console)?;
+    test_data.send(spi_console)?;
 
     // Wait for test complete.
     let _ = UartConsole::wait_for(spi_console, r"Checks complete. Success.", opts.timeout)?;
@@ -184,11 +225,33 @@ fn main() -> Result<()> {
     opts.init.init_logging();
     let transport = opts.init.init_target()?;
     let spi = transport.spi(&opts.console_spi)?;
-    let spi_console_device = SpiConsoleDevice::new(&*spi)?;
+    let device_console_tx_ready_pin = &transport.gpio_pin(&opts.console_tx_indicator_pin)?;
+    device_console_tx_ready_pin.set_mode(PinMode::Input)?;
+    device_console_tx_ready_pin.set_pull_mode(PullMode::None)?;
+    let spi_console_device = SpiConsoleDevice::new(
+        &*spi,
+        Some(device_console_tx_ready_pin),
+        /*ignore_frame_num=*/ false,
+    )?;
 
-    // Generate random provisioning values for testing.
-    let mut device_id = ArrayVec::new();
-    let mut manuf_state = ArrayVec::new();
+    // Transition from RAW to TEST_UNLOCKED0.
+    unlock_raw(&transport, &opts.init.jtag_params)?;
+
+    // Generate random test wafer data.
+    let test_data = ManufCpTestData {
+        lot_name: rand::thread_rng().next_u32(),
+        wafer_number: rand::thread_rng().next_u32(),
+        wafer_x_coord: rand::thread_rng().next_u32(),
+        wafer_y_coord: rand::thread_rng().next_u32(),
+    };
+
+    // CP response to log to console in JSON format.
+    let mut response = CpResponse::default();
+
+    // Prep flash info page 0 with wafer data, CP device ID, and AST configs.
+    prep_flash_for_cp_init(&opts, &transport, &test_data, &spi_console_device)?;
+
+    // Generate random CP inputs for testing.
     let mut wafer_auth_secret = ArrayVec::new();
     let mut test_exit_token: ArrayVec<u32, 4> = ArrayVec::new();
     let mut test_unlock_token: ArrayVec<u32, 4> = ArrayVec::new();
@@ -197,28 +260,33 @@ fn main() -> Result<()> {
             test_exit_token.push(rand::thread_rng().next_u32());
             test_unlock_token.push(rand::thread_rng().next_u32());
         }
-        device_id.push(rand::thread_rng().next_u32());
-        manuf_state.push(rand::thread_rng().next_u32());
         wafer_auth_secret.push(rand::thread_rng().next_u32());
     }
 
-    // Provision values into the chip.
+    // Provision test tokens, WAS, and extract CP device ID.
     let provisioning_data = ManufCpProvisioningData {
-        device_id,
-        manuf_state,
         wafer_auth_secret,
         test_unlock_token_hash: hash_lc_token(test_unlock_token.as_bytes())?,
         test_exit_token_hash: hash_lc_token(test_exit_token.as_bytes())?,
     };
-    cp_provision(&opts, &transport, &provisioning_data, &spi_console_device)?;
+    cp_provision(
+        &opts,
+        &transport,
+        &provisioning_data,
+        &mut response,
+        &spi_console_device,
+    )?;
 
-    // Transition to TEST_UNLOCKED1 and check provisioning operations over JTAG.
+    // Transition to TEST_UNLOCKED1 and check provisioning operations.
     test_unlock(
         &opts,
         &transport,
         Some(test_unlock_token.into_inner().unwrap()),
     )?;
-    check_cp_provisioning(&opts, &transport, &provisioning_data, &spi_console_device)?;
+    check_cp_provisioning(&opts, &transport, &test_data, &spi_console_device)?;
+
+    let doc = serde_json::to_string(&response)?;
+    println!("CHIP_PROBE_DATA: {doc}");
 
     Ok(())
 }

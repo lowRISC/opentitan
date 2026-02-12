@@ -9,6 +9,7 @@ module tb;
   import tl_agent_pkg::*;
   import spi_device_env_pkg::*;
   import spi_device_test_pkg::*;
+  import top_racl_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -37,12 +38,25 @@ module tb;
   wire intr_tpm_rdfifo_cmd_end;
   wire intr_tpm_rdfifo_drop;
 
+  // Memory configuration signals. These signals are currently driven in:
+  // spi_device_ram_cfg_vseq. They are connected here to avoid a warning
+  prim_ram_2p_pkg::ram_2p_cfg_t  ram_cfg_sys2spi;
+  prim_ram_2p_pkg::ram_2p_cfg_t  ram_cfg_spi2sys;
+  assign ram_cfg_sys2spi = 0;
+  assign ram_cfg_spi2sys = 0;
+
+  // RACL:
+  racl_policy_vec_t racl_policies;
+  assign racl_policies = 0; // Not currently used
+
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(.pins(interrupts));
-  spi_if  spi_if(.rst_n(rst_n));
-  spi_if  spi_if_pass(.rst_n(rst_n));
+
+  wire [3:0] sio, sio_pass;
+  spi_if  spi_if(.rst_n(rst_n), .sio(sio));
+  spi_if  spi_if_pass(.rst_n(rst_n), .sio(sio_pass));
 
   `DV_ALERT_IF_CONNECT()
 
@@ -67,6 +81,9 @@ module tb;
 
     .cio_tpm_csb_i  (tpm_csb   ),
 
+    .racl_policies_i(racl_policies),
+    .racl_error_o   (),
+
     .passthrough_i  (pass_in   ),
     .passthrough_o  (pass_out  ),
 
@@ -78,7 +95,17 @@ module tb;
     .intr_tpm_header_not_empty_o  (intr_tpm_header_not_empty),
     .intr_tpm_rdfifo_cmd_end_o    (intr_tpm_rdfifo_cmd_end),
     .intr_tpm_rdfifo_drop_o       (intr_tpm_rdfifo_drop),
+
+    .sck_monitor_o(),
+
+    .ram_cfg_sys2spi_i(ram_cfg_sys2spi),
+    .ram_cfg_rsp_sys2spi_o(),
+    .ram_cfg_spi2sys_i(ram_cfg_spi2sys),
+    .ram_cfg_rsp_spi2sys_o(),
+
     .mbist_en_i     (1'b0),
+    .scan_clk_i     (1'b0),
+    .scan_rst_ni    (1'b0),
     .scanmode_i     (prim_mubi_pkg::MuBi4False)
   );
 
@@ -89,11 +116,11 @@ module tb;
   // Issue 10832 - bi-direction assignment issue in Xcelium
   `define CONNECT_SPI_IO(_INTF, _SD_IN, _SD_OUT, _SD_OUT_EN, _IDX) \
     wire sd_out_en_``_IDX`` = _SD_OUT_EN[_IDX]; \
-    assign _INTF.sio[_IDX]  = (sd_out_en_``_IDX``) ? _SD_OUT[_IDX] : 1'bz; \
+    assign sio[_IDX]  = (sd_out_en_``_IDX``) ? _SD_OUT[_IDX] : 1'bz; \
     assign _SD_IN[_IDX] = _INTF.sio[_IDX];
   `define CONNECT_SPI_IO_PASS(_INTF, _SD_IN, _SD_OUT, _SD_OUT_EN, _IDX) \
     wire sd_out_en_pass_``_IDX`` = _SD_OUT_EN[_IDX]; \
-    assign _INTF.sio[_IDX]  = (sd_out_en_pass_``_IDX``) ? _SD_OUT[_IDX] : 1'bz; \
+    assign sio_pass[_IDX]  = (sd_out_en_pass_``_IDX``) ? _SD_OUT[_IDX] : 1'bz; \
     assign _SD_IN[_IDX] = _INTF.sio[_IDX];
 
   `CONNECT_SPI_IO(spi_if, sd_in, sd_out, sd_out_en, 0)

@@ -10,8 +10,8 @@ module core_ibex_fcov_bind;
   bind ibex_core core_ibex_pmp_fcov_if
   #(.PMPGranularity(PMPGranularity),
     .PMPNumRegions(PMPNumRegions),
-    .PMPEnable(PMPEnable))
-  u_pmp_fcov_bind (
+    .PMPEnable(PMPEnable)
+  ) u_pmp_fcov_bind (
     .*
   );
 endmodule

@@ -323,13 +323,15 @@ class chip_sw_base_vseq extends chip_base_vseq;
   // Configure the provided spi_agent_cfg to use flash mode, and add the
   // specification for the following common commands:
   //   ReadSFDP, ReadStatus1, WriteEnable, ChipErase, and PageProgram.
-  virtual function void spi_agent_configure_flash_cmds(spi_agent_cfg agent_cfg);
+  virtual function void spi_agent_configure_flash_cmds(spi_agent_cfg agent_cfg,
+                                                       bit [1:0] read_pipeline_mode = 0);
     spi_flash_cmd_info info = spi_flash_cmd_info::type_id::create("info");
     info.addr_mode = SpiFlashAddrDisabled;
     info.opcode = SpiFlashReadSfdp;
     info.num_lanes = 1;
     info.dummy_cycles = 8;
     info.write_command = 0;
+    info.read_pipeline_mode = read_pipeline_mode;
     agent_cfg.add_cmd_info(info);
 
     info = spi_flash_cmd_info::type_id::create("info");
@@ -362,6 +364,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     info.num_lanes = 1;
     info.dummy_cycles = 0;
     info.write_command = 0;
+    info.read_pipeline_mode = read_pipeline_mode;
     agent_cfg.add_cmd_info(info);
 
     info = spi_flash_cmd_info::type_id::create("info");
@@ -370,6 +373,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     info.num_lanes = 1;
     info.dummy_cycles = 0;
     info.write_command = 0;
+    info.read_pipeline_mode = read_pipeline_mode;
     agent_cfg.add_cmd_info(info);
 
     info = spi_flash_cmd_info::type_id::create("info");
@@ -378,6 +382,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     info.num_lanes = 1;
     info.dummy_cycles = 8;
     info.write_command = 0;
+    info.read_pipeline_mode = read_pipeline_mode;
     agent_cfg.add_cmd_info(info);
 
     info = spi_flash_cmd_info::type_id::create("info");
@@ -386,6 +391,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     info.num_lanes = 2;
     info.dummy_cycles = 8;
     info.write_command = 0;
+    info.read_pipeline_mode = read_pipeline_mode;
     agent_cfg.add_cmd_info(info);
 
     info = spi_flash_cmd_info::type_id::create("info");
@@ -394,6 +400,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     info.num_lanes = 4;
     info.dummy_cycles = 8;
     info.write_command = 0;
+    info.read_pipeline_mode = read_pipeline_mode;
     agent_cfg.add_cmd_info(info);
 
     info = spi_flash_cmd_info::type_id::create("info");
@@ -805,7 +812,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
                                           status_val);
 
       // Ensure that none of the other status bits are set. This failure is
-      // idicative of the jtag agent trying to access the TAP interface while
+      // indicative of the jtag agent trying to access the TAP interface while
       // the dut is exiting reset. Try monitoring the reset, or inserting
       // a delay before calling this function.
       `DV_CHECK_EQ((status_val) >> dummy.num(), 0,
@@ -1170,7 +1177,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
   // End the test with status.
   //
-  // SW test code finishes the test sequence usually by returing true or false
+  // SW test code finishes the test sequence usually by returning true or false
   // in the `test_main()` function. However, some tests may need vseq to
   // finish the tests. For example, `chip_sw_sleep_pin_mio_dio_val` checks the
   // PADs output value then finishes the test without waking up the SW again.

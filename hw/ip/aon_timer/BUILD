@@ -17,3 +17,8 @@ filegroup(
         "//hw/ip/aon_timer/data:all_files",
     ],
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]) + ["//hw/ip/aon_timer/data:doc_files"],
+)

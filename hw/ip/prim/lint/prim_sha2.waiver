@@ -18,9 +18,6 @@ waive -rules {EXPLICIT_BITLEN} -location {prim_sha2.sv} -regexp {.*(0|1)} \
 waive -rules {HIER_BRANCH_NOT_READ INPUT_NOT_READ} -location {prim_sha2_pad.sv} -regexp {wipe_(secret|v)} \
       -comment "Not used but remained for future use"
 
-waive -rules {NOT_READ} -location {*_reg_top.sv} -regexp {(address|param|user)} \
-      -comment "Register module waiver"
-
 # ARITH_CONTEXT
 waive -rules {ARITH_CONTEXT} -location {prim_sha2.sv}     -regexp {Bitlength of arithmetic operation '.processed_length.63:9. \+ 1'b1.'} \
       -comment "Bitwidth overflow is intended"

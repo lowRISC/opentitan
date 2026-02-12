@@ -22,6 +22,12 @@
       default: "4"
     }
     {
+      name: "n_loc_alert"
+      desc: "Number of local alert sources"
+      type: "int"
+      default: "7"
+    }
+    {
       name: "esc_cnt_dw"
       desc: "Width of escalation counter"
       type: "int"

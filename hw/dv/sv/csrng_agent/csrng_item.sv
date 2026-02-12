@@ -15,9 +15,9 @@ class csrng_item extends uvm_sequence_item;
   rand bit [11:0]   glen;
   rand bit [31:0]   cmd_data_q[$];
 
-  bit [csrng_pkg::CSRNG_CMD_STS_WIDTH - 1:0] status;
-  bit                                        fips_q[$];
-  bit [csrng_pkg::GENBITS_BUS_WIDTH - 1:0]   genbits_q[$];
+  bit [csrng_pkg::CmdStatusWidth-1:0]    status;
+  bit                                    fips_q[$];
+  bit [csrng_pkg::GENBITS_BUS_WIDTH-1:0] genbits_q[$];
 
   constraint c_clen {
     clen inside {[0:12]};

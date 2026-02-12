@@ -9,8 +9,8 @@
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
+#include "hw/top/otp_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otp_ctrl_regs.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -50,7 +50,7 @@ size_t compare_dword(const uint64_t *actual_arr, uint32_t part_idx,
   if (actual == expected) {
     return 0;
   } else {
-    LOG_WARNING("SECRET%0d, dword %0d: 0x%08x%08x != 0x%08x%08x", part_idx,
+    LOG_WARNING("SECRET%d, dword %d: 0x%08x%08x != 0x%08x%08x", part_idx,
                 dword_idx, upper(actual), lower(actual), upper(expected),
                 lower(expected));
     return 1;
@@ -74,7 +74,7 @@ bool test_main(void) {
     const partition_data_t *partition = &kPartitions[i];
     uint64_t readout[partition->size];
 
-    LOG_INFO("Checking partition SECRET%0d.", i);
+    LOG_INFO("Checking partition SECRET%d.", i);
     CHECK_STATUS_OK(otp_ctrl_testutils_dai_read64_array(
         &otp_ctrl, partition->partition, 0, readout, ARRAYSIZE(readout)));
 

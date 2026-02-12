@@ -13,7 +13,7 @@ use std::time::Duration;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::{StagedProgressBar, TransportWrapper};
-use opentitanlib::io::eeprom::{AddressMode, Transaction, MODE_111};
+use opentitanlib::io::eeprom::{AddressMode, MODE_111, Transaction};
 use opentitanlib::io::spi::{SpiParams, Transfer};
 use opentitanlib::spiflash::{EraseMode, ReadMode, SpiFlash};
 use opentitanlib::tpm;
@@ -38,7 +38,7 @@ impl CommandDispatch for SpiSfdp {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi = context.params.create(transport, "BOOTSTRAP")?;
@@ -69,7 +69,7 @@ pub struct SpiReadId {
     length: usize,
 }
 
-#[derive(Debug, serde::Serialize, Annotate)]
+#[derive(Debug, Annotate)]
 pub struct SpiReadIdResponse {
     #[annotate(format = hex)]
     jedec_id: Vec<u8>,
@@ -80,7 +80,7 @@ impl CommandDispatch for SpiReadId {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi = context.params.create(transport, "BOOTSTRAP")?;
@@ -138,7 +138,7 @@ impl CommandDispatch for SpiRead {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi = context.params.create(transport, "BOOTSTRAP")?;
@@ -204,7 +204,7 @@ impl CommandDispatch for SpiErase {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi = context.params.create(transport, "BOOTSTRAP")?;
@@ -259,7 +259,7 @@ impl CommandDispatch for SpiProgram {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi = context.params.create(transport, "BOOTSTRAP")?;
@@ -292,7 +292,7 @@ impl CommandDispatch for SpiTpm {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi = context.params.create(transport, "TPM")?;
         if let Some(pin) = &self.gsc_ready {
@@ -322,7 +322,7 @@ impl CommandDispatch for SpiRawRead {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi_bus = context.params.create(transport, "BOOTSTRAP")?;
@@ -347,7 +347,7 @@ impl CommandDispatch for SpiRawWrite {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi_bus = context.params.create(transport, "BOOTSTRAP")?;
@@ -373,7 +373,7 @@ impl CommandDispatch for SpiRawWriteRead {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi_bus = context.params.create(transport, "BOOTSTRAP")?;
@@ -401,7 +401,7 @@ impl CommandDispatch for SpiRawTransceive {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi_bus = context.params.create(transport, "BOOTSTRAP")?;
@@ -429,7 +429,7 @@ impl CommandDispatch for SpiFlashromArgs {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi_bus = context.params.create(transport, "BOOTSTRAP")?;
@@ -469,7 +469,7 @@ impl CommandDispatch for SpiCommand {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         // None of the SPI commands care about the prior context, but they do
         // care about the `bus` parameter in the current node.
         self.command.run(self, transport)

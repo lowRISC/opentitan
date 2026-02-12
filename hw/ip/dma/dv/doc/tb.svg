@@ -8,7 +8,7 @@
    style="background-color: rgb(255, 255, 255);"
    id="svg809"
    sodipodi:docname="tb.svg"
-   inkscape:version="1.3.2 (091e20e, 2023-11-25)"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -23,15 +23,15 @@
      inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
      showgrid="false"
-     inkscape:zoom="1.4753476"
-     inkscape:cx="446.6744"
-     inkscape:cy="381.60499"
-     inkscape:window-width="3424"
-     inkscape:window-height="1385"
+     inkscape:zoom="1.4354808"
+     inkscape:cx="602.58556"
+     inkscape:cy="394.98961"
+     inkscape:window-width="2560"
+     inkscape:window-height="1403"
      inkscape:window-x="0"
-     inkscape:window-y="25"
-     inkscape:window-maximized="0"
-     inkscape:current-layer="g49242"
+     inkscape:window-y="1391"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g799"
      inkscape:showpageshadow="2"
      inkscape:deskcolor="#d1d1d1" />
   <defs
@@ -148,26 +148,29 @@
        pointer-events="all"
        id="path443" />
     <path
-       d="m 959.5,185 v 10.5 l -19,-15.5 19,-15.5 V 175 h 51 v -10.5 l 19,15.5 -19,15.5 V 185 Z"
+       d="m 960.74674,185 v 10.5 L 940.5,180 960.74674,164.5 V 175 h 54.34646 v -10.5 l 20.2468,15.5 -20.2468,15.5 V 185 Z"
        fill="#ffffff"
        stroke="#000000"
        stroke-miterlimit="10"
        pointer-events="all"
-       id="path445" />
+       id="path445"
+       style="stroke-width:1.03229" />
     <path
-       d="m 739.5,184.66 v 10.5 l -19,-15.5 19,-15.5 v 10.5 h 81 v -10.5 l 19,15.5 -19,15.5 v -10.5 z"
+       d="m 947.31725,258.77091 v 6.2851 l -5.51262,-9.278 5.51262,-9.27801 v 6.2851 h 23.5013 V 246.5 l 5.51265,9.27801 -5.51265,9.278 v -6.2851 z"
        fill="#ffffff"
        stroke="#000000"
        stroke-miterlimit="10"
        pointer-events="all"
-       id="path447" />
+       id="path449"
+       style="stroke-width:0.41674" />
     <path
-       d="m 739.5,235 v 10.5 l -19,-15.5 19,-15.5 V 225 h 81 v -10.5 l 19,15.5 -19,15.5 V 235 Z"
+       d="m 1036.0748,259.31578 v 7.7178 l -5.0395,-11.39294 5.0395,-11.39294 v 7.7178 h 21.4842 v -7.7178 l 5.0396,11.39294 -5.0396,11.39294 v -7.7178 z"
        fill="#ffffff"
        stroke="#000000"
        stroke-miterlimit="10"
        pointer-events="all"
-       id="path449" />
+       id="path449-4"
+       style="mix-blend-mode:normal;stroke-width:0.441539" />
     <rect
        x="630"
        y="120"
@@ -178,32 +181,25 @@
        pointer-events="all"
        id="rect451" />
     <rect
-       x="630"
-       y="170"
-       width="90"
-       height="20"
+       x="1036.1639"
+       y="159.38617"
+       width="89.672012"
+       height="49.384117"
        fill="#ffe6cc"
        stroke="#d79b00"
        pointer-events="all"
-       id="rect459" />
+       id="rect467"
+       style="stroke-width:1.5685" />
     <rect
-       x="1030"
-       y="170"
-       width="90"
-       height="20"
+       x="978.43304"
+       y="228.29526"
+       width="51.358223"
+       height="60.479855"
        fill="#ffe6cc"
        stroke="#d79b00"
        pointer-events="all"
-       id="rect467" />
-    <rect
-       x="620"
-       y="220"
-       width="100"
-       height="20"
-       fill="#ffe6cc"
-       stroke="#d79b00"
-       pointer-events="all"
-       id="rect475" />
+       id="rect475-4"
+       style="mix-blend-mode:normal;stroke-width:1.24622" />
     <path
        d="m 730,280 101.83,0.37"
        fill="none"
@@ -251,14 +247,15 @@
        pointer-events="all"
        id="path505" />
     <rect
-       x="590"
-       y="315"
-       width="142"
-       height="20"
+       x="590.05762"
+       y="310.04785"
+       width="141.88478"
+       height="24.894533"
        fill="#ffe6cc"
        stroke="#d79b00"
        pointer-events="all"
-       id="rect507" />
+       id="rect507"
+       style="stroke-width:1.11522" />
     <path
        d="m 840,359.31 -101.63,0.65"
        fill="none"
@@ -275,13 +272,14 @@
        id="path517" />
     <rect
        x="590"
-       y="350"
+       y="346.56198"
        width="142"
-       height="20"
+       height="23.43803"
        fill="#ffe6cc"
        stroke="#d79b00"
        pointer-events="all"
-       id="rect519" />
+       id="rect519"
+       style="stroke-width:1.08254" />
     <rect
        x="750"
        y="360"
@@ -300,23 +298,6 @@
        stroke="none"
        pointer-events="all"
        id="rect535" />
-    <path
-       d="m 959.5,230 v 10.5 l -19,-15.5 19,-15.5 V 220 h 51 v -10.5 l 19,15.5 -19,15.5 V 230 Z"
-       fill="#ffffff"
-       stroke="#000000"
-       stroke-miterlimit="10"
-       pointer-events="all"
-       id="path543" />
-    <rect
-       x="1030"
-       y="215"
-       width="90"
-       height="20"
-       fill="#ffe6cc"
-       stroke="#d79b00"
-       stroke-dasharray="3, 3"
-       pointer-events="all"
-       id="rect545" />
     <rect
        x="860"
        y="80"
@@ -358,12 +339,13 @@
       </switch>
     </g>
     <path
-       d="m 610.97015,416.93634 h 519.99995 l 1.3482,180 H 592.31827 l -1.19833,-160 z"
+       d="m 611.00679,416.97566 h 519.92401 l 1.348,209.54194 H 592.35763 l -1.19815,-186.2595 z"
        fill="#dae8fc"
        stroke="#6c8ebf"
        stroke-miterlimit="10"
        pointer-events="all"
-       id="path561" />
+       id="path561"
+       style="stroke-width:1.07887" />
     <rect
        x="620"
        y="450"
@@ -754,13 +736,73 @@
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:13.3333px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none"
-       x="1041.5068"
-       y="181.68156"
+       x="1047.5068"
+       y="179.68156"
        id="text16595"><tspan
          sodipodi:role="line"
          id="tspan16593"
-         x="1041.5068"
-         y="181.68156">tl_if</tspan></text>
+         x="1047.5068"
+         y="179.68156">tl_ctn_if</tspan><tspan
+         sodipodi:role="line"
+         x="1047.5068"
+         y="196.34819"
+         id="tspan170514">(device)</tspan></text>
+    <path
+       d="m 960.84678,122.85997 v 10.5 l -20.20738,-15.5 20.20738,-15.5 v 10.5 h 54.24082 v -10.5 l 20.2074,15.5 -20.2074,15.5 v -10.5 z"
+       fill="#ffffff"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       pointer-events="all"
+       id="path445-6"
+       style="mix-blend-mode:normal;stroke-width:1.03128" />
+    <rect
+       x="1036.2799"
+       y="95.791183"
+       width="89.71891"
+       height="48.209007"
+       fill="#ffe6cc"
+       stroke="#d79b00"
+       pointer-events="all"
+       id="rect467-3"
+       style="mix-blend-mode:normal;stroke-width:1.55014" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:13.3333px;line-height:1.25;font-family:sans-serif;mix-blend-mode:normal;fill:#000000;fill-opacity:1;stroke:none"
+       x="1045.6462"
+       y="115.54153"
+       id="text16595-1"><tspan
+         sodipodi:role="line"
+         id="tspan16593-7"
+         x="1045.6462"
+         y="115.54153">tl_host_if</tspan><tspan
+         sodipodi:role="line"
+         x="1045.6462"
+         y="132.20815"
+         id="tspan174698">(device)</tspan></text>
+    <rect
+       x="1064.3815"
+       y="229.94133"
+       width="61.459084"
+       height="49.327225"
+       fill="#ffe6cc"
+       stroke="#d79b00"
+       pointer-events="all"
+       id="rect467-3-5"
+       style="mix-blend-mode:normal;stroke-width:1.29778" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:13.3333px;line-height:1.25;font-family:sans-serif;mix-blend-mode:normal;fill:#000000;fill-opacity:1;stroke:none"
+       x="1067.7395"
+       y="251.474"
+       id="text16595-1-9"><tspan
+         sodipodi:role="line"
+         x="1067.7395"
+         y="251.474"
+         id="tspan149100">tl_sys_if</tspan><tspan
+         sodipodi:role="line"
+         x="1067.7395"
+         y="268.14062"
+         id="tspan149872">(device)</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:13.3333px;line-height:1.25;font-family:sans-serif;mix-blend-mode:normal;fill:#000000;fill-opacity:1;stroke:none"
@@ -780,27 +822,28 @@
          sodipodi:role="line"
          id="tspan27167"
          x="642.44678"
-         y="133.30725">tl_host_if</tspan></text>
+         y="133.30725">tl_if (host)</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:12px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none"
-       x="644.1427"
-       y="183.73964"
-       id="text27169-3"><tspan
+       style="font-style:normal;font-weight:normal;font-size:10.6667px;line-height:1.25;font-family:sans-serif;mix-blend-mode:normal;fill:#000000;fill-opacity:1;stroke:none"
+       x="982.02881"
+       y="248.89125"
+       id="text27169-3-7-4"><tspan
          sodipodi:role="line"
-         id="tspan27167-6"
-         x="644.1427"
-         y="183.73964">tl_ctn_if</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:12px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none"
-       x="639.85333"
-       y="231.77386"
-       id="text27169-3-7"><tspan
+         id="tspan27167-6-5-4"
+         x="982.02881"
+         y="248.89125"
+         style="font-size:10.6667px">sys_tl_</tspan><tspan
          sodipodi:role="line"
-         id="tspan27167-6-5"
-         x="639.85333"
-         y="231.77386">tl_sys_if</tspan></text>
+         x="982.02881"
+         y="262.22464"
+         id="tspan31651"
+         style="font-size:10.6667px">adapter_</tspan><tspan
+         sodipodi:role="line"
+         x="982.02881"
+         y="275.55801"
+         style="font-size:10.6667px"
+         id="tspan144135">if</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:12px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none"
@@ -813,153 +856,169 @@
          y="376.70526">intr_dma_o</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:10.6667px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none"
-       x="619.60583"
-       y="453.16983"
-       id="text78461"><tspan
+       style="font-style:normal;font-weight:normal;font-size:10.3961px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.974632"
+       x="603.88794"
+       y="464.54837"
+       id="text78461"
+       transform="scale(1.0260279,0.97463239)"><tspan
          id="tspan78459"
-         x="619.60583"
-         y="453.16983"
-         sodipodi:role="line">Initial block: set common interfaces in config_db</tspan><tspan
-         x="619.60583"
-         y="466.5032"
+         x="603.88794"
+         y="464.54837"
+         sodipodi:role="line"
+         style="stroke-width:0.974632">Initial block: set common interfaces in config_db</tspan><tspan
+         x="603.88794"
+         y="477.54349"
          id="tspan87525"
-         sodipodi:role="line">tl_host_if:    retrieved by tl_agent_dma_host</tspan><tspan
-         x="619.60583"
-         y="479.83658"
+         sodipodi:role="line"
+         style="stroke-width:0.974632">tl_host_if:    retrieved by tl_agent_dma_host</tspan><tspan
+         x="603.88794"
+         y="490.53864"
          id="tspan87527"
-         sodipodi:role="line">tl_ctn_if:    retrieved by tl_agent_dma_ctn</tspan><tspan
-         x="619.60583"
-         y="493.16995"
+         sodipodi:role="line"
+         style="stroke-width:0.974632">tl_ctn_if:    retrieved by tl_agent_dma_ctn</tspan><tspan
+         x="603.88794"
+         y="503.53375"
          id="tspan87529"
-         sodipodi:role="line">tl_if:            retrieved by m_tl_agent</tspan><tspan
-         x="619.60583"
-         y="506.50333"
+         sodipodi:role="line"
+         style="stroke-width:0.974632">tl_if:            retrieved by m_tl_agent</tspan><tspan
+         x="603.88794"
+         y="516.52887"
          id="tspan87531"
-         sodipodi:role="line">tl_sys_if:      retrieved by tl_agent_dma_sys</tspan><tspan
-         x="619.60583"
-         y="519.83673"
+         sodipodi:role="line"
+         style="stroke-width:0.974632">tl_sys_if:      retrieved by tl_agent_dma_sys</tspan><tspan
+         x="603.88794"
+         y="529.52399"
          id="tspan87533"
-         sodipodi:role="line">clk_rst_if:    retrieved by cip_base_env_cfg::clk_rst_vif</tspan><tspan
-         x="619.60583"
-         y="533.1701"
+         sodipodi:role="line"
+         style="stroke-width:0.974632">clk_rst_if:    retrieved by cip_base_env_cfg::clk_rst_vif</tspan><tspan
+         x="603.88794"
+         y="542.5191"
          id="tspan87535"
-         sodipodi:role="line">intr_if:         This is created as pins_if with NUM_MAX_INTERRUPTS(set to 64) </tspan><tspan
-         x="619.60583"
-         y="546.50348"
+         sodipodi:role="line"
+         style="stroke-width:0.974632">intr_if:         This is created as pins_if with NUM_MAX_INTERRUPTS(set to 64) </tspan><tspan
+         x="603.88794"
+         y="555.51422"
          id="tspan101571"
-         sodipodi:role="line">                   IP is expected to have much fewer interrupts</tspan><tspan
-         x="619.60583"
-         y="559.83685"
+         sodipodi:role="line"
+         style="stroke-width:0.974632">                   IP is expected to have much fewer interrupts</tspan><tspan
+         x="603.88794"
+         y="568.5094"
          id="tspan87537"
-         sodipodi:role="line">handshake_i: retrieved by dma_env using dma_if </tspan><tspan
-         x="619.60583"
-         y="573.17023"
+         sodipodi:role="line"
+         style="stroke-width:0.974632">handshake_i: retrieved by dma_env using dma_if </tspan><tspan
+         x="603.88794"
+         y="581.50452"
          id="tspan102497"
-         sodipodi:role="line">                    lsio_trigger_i is connected to this signal</tspan></text>
+         sodipodi:role="line"
+         style="stroke-width:0.974632">                    lsio_trigger_i is connected to this signal</tspan><tspan
+         x="603.88794"
+         y="594.49963"
+         sodipodi:role="line"
+         style="stroke-width:0.974632"
+         id="tspan4694" /><tspan
+         x="603.88794"
+         y="607.49475"
+         sodipodi:role="line"
+         style="stroke-width:0.974632"
+         id="tspan4698">sys_tl_adapter_if converts between the SoC System bus protocol and a TL-UL agent by</tspan><tspan
+         x="603.88794"
+         y="620.48987"
+         sodipodi:role="line"
+         style="stroke-width:0.974632"
+         id="tspan4702">mapping a 4GiB TL-UL window into the 64-bit System bus address space.</tspan></text>
     <text
        xml:space="preserve"
        transform="matrix(1.0205193,0,0,1.0441609,-18.344617,-6.8381502)"
        id="text112243"
        style="font-style:normal;font-weight:normal;font-size:12px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect112245);fill:#000000;fill-opacity:1;stroke:none"><tspan
          x="595.58789"
-         y="663.00265"
-         id="tspan1">Methodology:
+         y="662.67188"
+         id="tspan22654">Methodology:
 </tspan><tspan
          x="595.58789"
-         y="678.00265"
-         id="tspan2"> - Most components extended from cip_base with the right type parameter
+         y="677.67188"
+         id="tspan22656"> - Most components extended from cip_base with the right type parameter
 </tspan><tspan
          x="595.58789"
-         y="693.00265"
-         id="tspan3"> - Ideally, all tests use the same base test class; only the test sequence is changed
+         y="692.67188"
+         id="tspan22658"> - Ideally, all tests use the same base test class; only the test sequence is changed
 </tspan><tspan
          x="595.58789"
-         y="708.00265"
-         id="tspan4">   using the UVM_TEST_SEQ plusarg</tspan></text>
+         y="707.67188"
+         id="tspan22660">   using the UVM_TEST_SEQ plusarg</tspan></text>
     <text
        xml:space="preserve"
        transform="matrix(1.0205193,0,0,1.0441609,-0.53514023,-20.066451)"
        id="text122091"
        style="font-style:normal;font-weight:normal;font-size:12px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect122093);fill:#000000;fill-opacity:1;stroke:none"><tspan
          x="17.748047"
-         y="680.80929"
-         id="tspan5">Legend:
+         y="680.47852"
+         id="tspan22662">Legend:
 </tspan><tspan
          x="17.748047"
-         y="695.80929"
-         id="tspan6">Square boxes: SV modules / interfaces (static)
+         y="695.47852"
+         id="tspan22664">Square boxes: SV modules / interfaces (static)
 </tspan><tspan
          x="17.748047"
-         y="710.80929"
-         id="tspan7">Round boxes: SV classes (dynamic)
+         y="710.47852"
+         id="tspan22666">Round boxes: SV classes (dynamic)
 </tspan><tspan
          x="17.748047"
-         y="725.80929"
-         id="tspan8">Blue Rectange with folder corner: code blocks (initial, tasks, etc)
+         y="725.47852"
+         id="tspan22668">Blue Rectange with folder corner: code blocks (initial, tasks, etc)
 </tspan><tspan
          x="17.748047"
-         y="740.80929"
-         id="tspan9">Dotted blocks: Indicate handles inside parent entity
+         y="740.47852"
+         id="tspan22670">Dotted blocks: Indicate handles inside parent entity
 </tspan><tspan
          x="17.748047"
-         y="755.80929"
-         id="tspan10">Light dotted lines: Indicdate handle to instance passed on to components
+         y="755.47852"
+         id="tspan22672">Light dotted lines: Indicdate handle to instance passed on to components
 </tspan><tspan
          x="17.748047"
-         y="770.80929"
-         id="tspan11">
+         y="770.47852"
+         id="tspan22674">
 </tspan><tspan
          x="17.748047"
-         y="793.98703"
-         id="tspan13"><tspan
-           dx="0 6.6796875 3.2929688 7.4765625 7.59375 4.7285156 7.4765625 3.2929688 4.7285156 4.7285156 7.1484375 7.4765625 4.21875 3.2929688 3.2929688 7.59375 7.1484375 6.2519531 5.4492188 4.21875 5.0507812 7.59375 7.4765625 3.2929688 6.2519531 7.2070312 4.7285156 7.1484375 4.21875 7.59375 7.2070312 7.59375 7.4765625 3.2929688 7.1484375 4.21875 4.7285156 7.2832031 4.21875 3.2929688 7.59375 6.2519531 4.7285156 7.2070312 7.59375 6.2519531 7.1484375 4.21875 7.4765625 7.2070312 6.2519531 6.2519531 7.1484375 7.4765625 7.2832031 3.2929688 7.59375 4.21875 4.7285156 7.2832031 7.4765625 4.21875 6.2519531 7.2832031 11.671875 7.4765625 7.2832031 7.59375 7.1484375 7.59375 4.7285156"
-           id="tspan12">Lightditted lines: Indicate handle to instance passedoin top components</tspan></tspan></text>
+         y="793.65625"
+         id="tspan22678"><tspan
+           dx="0 6.6855469 3.3339844 7.6171875 7.6054688 4.7050781 7.6171875 3.3339844 4.7050781 4.7050781 7.3828125 7.6171875 3.8144531 3.3339844 3.3339844 7.6054688 7.3828125 6.2519531 4.0429688 3.8144531 3.5390625 7.6054688 7.6171875 3.3339844 6.5976562 7.3535156 4.7050781 7.3828125 3.8144531 7.6054688 7.3535156 7.6054688 7.6171875 3.3339844 7.3828125 3.8144531 4.7050781 7.3417969 3.8144531 3.3339844 7.6054688 6.2519531 4.7050781 7.3535156 7.6054688 6.5976562 7.3828125 3.8144531 7.6171875 7.3535156 6.2519531 6.2519531 7.3828125 7.6171875 7.3417969 3.3339844 7.6054688 3.8144531 4.7050781 7.3417969 7.6171875 3.8144531 6.5976562 7.3417969 11.689453 7.6171875 7.3417969 7.6054688 7.3828125 7.6054688 4.7050781"
+           id="tspan22676">Lightditted lines: Indicate handle to instance passedoin top components</tspan></tspan></text>
     <text
        xml:space="preserve"
        transform="translate(-16.426748,-92.581951)"
        id="text178519"
        style="font-style:normal;font-weight:normal;font-size:12px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect178521);fill:#000000;fill-opacity:1;stroke:none"><tspan
          x="95.875"
-         y="579.16085"
-         id="tspan14">run_phase(): calls run_seq() which creates and runs sequence      </tspan><tspan
+         y="578.83008"
+         id="tspan22680">run_phase(): calls run_seq() which creates and runs sequence      </tspan><tspan
          x="95.875"
-         y="594.16085"
-         id="tspan15">passed externally using UVM_TEST_VSEQ plusarg. 
+         y="593.83008"
+         id="tspan22682">passed externally using UVM_TEST_VSEQ plusarg. 
 </tspan><tspan
          x="95.875"
-         y="609.16085"
-         id="tspan16"> All vseqs are eventually derived from cip_base_vseq</tspan></text>
+         y="608.83008"
+         id="tspan22684"> All vseqs are eventually derived from cip_base_vseq</tspan></text>
     <text
        xml:space="preserve"
        transform="matrix(1.0647108,0,0,1.1000082,-27.745455,-44.932542)"
        id="text200162"
        style="font-style:normal;font-weight:normal;font-size:10.6667px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect200164);fill:#000000;fill-opacity:1;stroke:none"><tspan
          x="84.339844"
-         y="570.04796"
-         id="tspan17">     - Extended from cip_base_vseq
+         y="569.75394"
+         id="tspan22686">     - Extended from cip_base_vseq
 </tspan><tspan
          x="84.339844"
-         y="583.38133"
-         id="tspan18">     - Proivides most commonly used tasks among all vseqs.
+         y="583.08731"
+         id="tspan22688">     - Proivides most commonly used tasks among all vseqs.
 </tspan><tspan
          x="84.339844"
-         y="596.71471"
-         id="tspan19">     - All DMA vseqs are derived from dma_base_vseq
+         y="596.42068"
+         id="tspan22690">     - All DMA vseqs are derived from dma_base_vseq
 </tspan><tspan
          x="84.339844"
-         y="610.04808"
-         id="tspan20">     - For each interface a dma_mem_model and mem_model is instantiated</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:12px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none"
-       x="1046.1552"
-       y="227.87694"
-       id="text41520"><tspan
-         sodipodi:role="line"
-         id="tspan41518"
-         x="1046.1552"
-         y="227.87694">IP IO if</tspan></text>
+         y="609.75406"
+         id="tspan22692">     - For each interface a dma_mem_model and mem_model is instantiated</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:12px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none"
@@ -1467,15 +1526,16 @@
            style="fill:#fad7ac;fill-opacity:1;stroke:#fad74f;stroke-width:1.10481;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
         <text
            xml:space="preserve"
-           style="font-style:normal;font-weight:normal;font-size:8px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1"
-           x="312.76559"
-           y="348.81558"
-           id="text117519"><tspan
+           style="font-style:normal;font-weight:normal;font-size:7.82502px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.978128"
+           x="322.87146"
+           y="341.18622"
+           id="text117519"
+           transform="scale(0.97812774,1.0223613)"><tspan
              sodipodi:role="line"
              id="tspan117517"
-             x="312.76559"
-             y="348.81558"
-             style="font-size:8px;stroke-width:1">mem_host_fifo (dma_handshake_mode_fifo#(32,32))</tspan></text>
+             x="322.87146"
+             y="341.18622"
+             style="font-size:7.82502px;stroke-width:0.978128">fifo_src|dst_host (dma_handshake_mode_fifo#(32,32))</tspan></text>
       </g>
       <g
          id="g17029"
@@ -1494,15 +1554,16 @@
            style="fill:#fad7ac;fill-opacity:1;stroke:#fad74f;stroke-width:1.07989;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
         <text
            xml:space="preserve"
-           style="font-style:normal;font-weight:normal;font-size:8px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none"
-           x="304.4462"
-           y="378.47589"
-           id="text119641"><tspan
+           style="font-style:normal;font-weight:normal;font-size:7.92435px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.990543"
+           x="307.35629"
+           y="374.8967"
+           id="text119641"
+           transform="scale(0.9905431,1.0095472)"><tspan
              sodipodi:role="line"
              id="tspan119639"
-             x="304.4462"
-             y="378.47589"
-             style="font-size:8px">mem_ctn_fifo (dma_handshake_mode_fifo#(32,32))</tspan></text>
+             x="307.35629"
+             y="374.8967"
+             style="font-size:7.92435px;stroke-width:0.990543">fifo_src|dst_ctn (dma_handshake_mode_fifo#(32,32))</tspan></text>
       </g>
       <g
          id="g19916">
@@ -1520,15 +1581,16 @@
            style="fill:#fad7ac;fill-opacity:1;stroke:#fad74f;stroke-width:1.07852;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
         <text
            xml:space="preserve"
-           style="font-style:normal;font-weight:normal;font-size:8px;line-height:1.25;font-family:sans-serif;mix-blend-mode:normal;fill:#000000;fill-opacity:1;stroke:none"
-           x="314.55273"
-           y="411.91357"
-           id="text119641-5"><tspan
+           style="font-style:normal;font-weight:normal;font-size:7.89678px;line-height:1.25;font-family:sans-serif;mix-blend-mode:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.987098"
+           x="318.66898"
+           y="406.599"
+           id="text119641-5"
+           transform="scale(0.98709781,1.0130708)"><tspan
              sodipodi:role="line"
              id="tspan119639-0"
-             x="314.55273"
-             y="411.91357"
-             style="font-size:8px">mem_sys_fifo (dma_handshake_mode_fifo#(64,32))</tspan></text>
+             x="318.66898"
+             y="406.599"
+             style="font-size:7.89678px;stroke-width:0.987098">fifo_src|dst_sys (dma_handshake_mode_fifo#(64,32))</tspan></text>
       </g>
     </g>
     <text
@@ -1558,5 +1620,21 @@
     <g
        id="g116664"
        transform="translate(-0.31507405,99.724909)" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.6667px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none"
+       x="767.56348"
+       y="147.4949"
+       id="text97328"><tspan
+         sodipodi:role="line"
+         id="tspan97326"
+         x="767.56348"
+         y="147.4949"
+         style="font-size:10.6667px">TL-UL</tspan><tspan
+         sodipodi:role="line"
+         x="767.56348"
+         y="160.82828"
+         id="tspan97330"
+         style="font-size:10.6667px">device</tspan></text>
   </g>
 </svg>

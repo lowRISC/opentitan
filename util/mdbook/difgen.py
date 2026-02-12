@@ -138,7 +138,7 @@ def _get_html_or_empty(element: ET.Element, xpath: str) -> str:
     can be used to write CSS targeting specific Doxygen tags and recreate the
     intended formatting.
 
-    In addtion, the following semantic transformations are performed:
+    In addition, the following semantic transformations are performed:
     - `computeroutput` is transformed to `code`
 
     [1] https://github.com/doxygen/doxygen/blob/master/templates/xml/compound.xsd"""

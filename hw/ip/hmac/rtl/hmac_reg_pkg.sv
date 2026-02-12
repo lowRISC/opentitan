@@ -17,6 +17,11 @@ package hmac_reg_pkg;
   // Number of registers for every interface
   parameter int NumRegs = 59;
 
+  // Alert indices
+  typedef enum int {
+    AlertFatalFaultIdx = 0
+  } hmac_alert_idx_t;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -144,7 +149,7 @@ package hmac_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } hmac_done;
+    } hmac_err;
     struct packed {
       logic        d;
       logic        de;
@@ -152,46 +157,46 @@ package hmac_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } hmac_err;
+    } hmac_done;
   } hmac_hw2reg_intr_state_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic        d;
-    } hmac_en;
+      logic [5:0]  d;
+    } key_length;
+    struct packed {
+      logic [3:0]  d;
+    } digest_size;
     struct packed {
       logic        d;
-    } sha_en;
-    struct packed {
-      logic        d;
-    } endian_swap;
+    } key_swap;
     struct packed {
       logic        d;
     } digest_swap;
     struct packed {
       logic        d;
-    } key_swap;
+    } endian_swap;
     struct packed {
-      logic [3:0]  d;
-    } digest_size;
+      logic        d;
+    } sha_en;
     struct packed {
-      logic [5:0]  d;
-    } key_length;
+      logic        d;
+    } hmac_en;
   } hmac_hw2reg_cfg_reg_t;
 
   typedef struct packed {
     struct packed {
+      logic [5:0]  d;
+    } fifo_depth;
+    struct packed {
       logic        d;
-    } hmac_idle;
+    } fifo_full;
     struct packed {
       logic        d;
     } fifo_empty;
     struct packed {
       logic        d;
-    } fifo_full;
-    struct packed {
-      logic [5:0]  d;
-    } fifo_depth;
+    } hmac_idle;
   } hmac_hw2reg_status_reg_t;
 
   typedef struct packed {

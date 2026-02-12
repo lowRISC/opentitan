@@ -34,15 +34,4 @@ ${helper.direct_pads.render_host()}
 
 ${helper.muxed_pads.render_host()}
 }
-
-#[allow(non_camel_case_types)]
-pub mod ujson_alias {
-    use super::*;
-    // Create aliases for the C names of these types so that the ujson
-    // created structs can access these structures by their C names.
-    pub type pinmux_peripheral_in_t = ${helper.pinmux_peripheral_in.short_name.as_rust_type()};
-    pub type pinmux_insel_t = ${helper.pinmux_insel.short_name.as_rust_type()};
-    pub type pinmux_mio_out_t = ${helper.pinmux_mio_out.short_name.as_rust_type()};
-    pub type pinmux_outsel_t = ${helper.pinmux_outsel.short_name.as_rust_type()};
-}
 % endif

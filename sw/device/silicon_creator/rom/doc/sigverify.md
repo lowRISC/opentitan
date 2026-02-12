@@ -39,11 +39,11 @@ image. The following table summarizes the conditions under which each type of
 key is valid. Note that key validity during manufacturing (`TEST_UNLOCKED`) does
 not depend on the OTP value since it may not have been programmed yet.
 
-          | TEST_UNLOCKED | PROD, PROD_END | DEV | RMA
---------- | ------------- | -------------- | --- | ---
-Test keys | Yes           | No             | No  | OTP
-Dev keys  | No            | No             | OTP | No
-Prod keys | Yes           | OTP            | OTP | OTP
+|           | TEST_UNLOCKED | PROD, PROD_END | DEV | RMA |
+|-----------|---------------|----------------|-----|-----|
+| Test keys | Yes           | No             | No  | OTP |
+| Dev keys  | Yes           | No             | OTP | OTP |
+| Prod keys | Yes           | OTP            | OTP | OTP |
 
 ### Digest Computation
 

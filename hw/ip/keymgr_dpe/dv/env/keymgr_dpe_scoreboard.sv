@@ -71,12 +71,13 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
   // HW internal key, used for OP in current state
   keymgr_dpe_env_pkg::keymgr_dpe_key_slot_t current_key_slot;
-  keymgr_dpe_pkg::keymgr_dpe_slot_t current_internal_key[
-  keymgr_dpe_pkg::DpeNumSlots];
+  keymgr_dpe_pkg::keymgr_dpe_slot_t current_internal_key[keymgr_dpe_pkg::DpeNumSlots];
+  bit [keymgr_pkg::KeyWidth-1:0] old_key;
   // bit used to flag a comparison of key slot is required
   // it's set by the process_kmac_data_rsp() function, during an
   // internal key update
   bit compare_internal_key_slot;
+  bit check_key_slot_erased;
   bit post_disable_compare_key_slots;
   keymgr_dpe_cdi_type_e current_cdi;
 
@@ -149,7 +150,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   virtual function void process_kmac_data_req(kmac_app_item item);
     keymgr_dpe_pkg::keymgr_dpe_ops_e op = get_operation();
     bit is_err;
-    logic [keymgr_dpe_pkg::DpeNumBootStagesWidth-1:0] boot_stage =
+    logic [keymgr_dpe_pkg::DpeBootStagesWidth-1:0] boot_stage =
       current_internal_key[current_key_slot.src_slot].boot_stage;
 
     `uvm_info(`gfn, $sformatf("process_kmac_data_req: for op %s in state %s",
@@ -171,7 +172,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         `uvm_info(`gfn, $sformatf("What is is_err: %d", is_err), UVM_MEDIUM)
         case (current_state)
           keymgr_dpe_pkg::StWorkDpeAvailable: begin
-            if(boot_stage == 0) begin
+            if(boot_stage == keymgr_dpe_pkg::BootStageCreator) begin
               `uvm_info(`gfn,
               $sformatf({"process_kmac_data_req: boot_stage %0d is_err %0d",
                "compare_boot_stage_0_data"},
@@ -180,7 +181,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                 .exp_match(!is_err),
                 .byte_data_q(item.byte_data_q)
               );
-            end else if (boot_stage == 1) begin
+            end else if (boot_stage == keymgr_dpe_pkg::BootStageOwner) begin
               `uvm_info(`gfn,
               $sformatf({"process_kmac_data_req: boot_stage %0d is_err %0d",
                "compare_boot_stage_1_data"},
@@ -259,9 +260,22 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
           {item.rsp_digest_share1[keymgr_pkg::KeyWidth-1:0],
            item.rsp_digest_share0[keymgr_pkg::KeyWidth-1:0]};
 
-        // boot stage should increment between advance calls
-        current_internal_key[current_key_slot.dst_slot].boot_stage =
-          current_internal_key[current_key_slot.src_slot].boot_stage + 1;
+        // Boot stage should increment if we are in the creator or owner stage. If we are in the
+        // runtime stage, we do not increment the boot stage.
+        case(current_internal_key[current_key_slot.src_slot].boot_stage)
+          keymgr_dpe_pkg::BootStageCreator: begin
+            current_internal_key[current_key_slot.dst_slot].boot_stage =
+              keymgr_dpe_pkg::BootStageOwner;
+          end
+          keymgr_dpe_pkg::BootStageOwner: begin
+            current_internal_key[current_key_slot.dst_slot].boot_stage =
+              keymgr_dpe_pkg::BootStageRuntime;
+          end
+          default: begin
+            current_internal_key[current_key_slot.dst_slot].boot_stage =
+              current_internal_key[current_key_slot.src_slot].boot_stage;
+          end
+        endcase
         // valid is expected to be 1
         current_internal_key[current_key_slot.dst_slot].valid = 1;
         // key policy values should be set from the key_policy signal that was populated
@@ -272,7 +286,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
           key_policy.exportable;
         current_internal_key[current_key_slot.dst_slot].key_policy.retain_parent =
           key_policy.retain_parent;
-        // max verssion should also be set from the max_version signal that was populated
+        // max version should also be set from the max_version signal that was populated
         // from the last max_key_ver_shadowed csr write before the "start" operation was enabled
         current_internal_key[current_key_slot.dst_slot].max_key_version = max_key_version;
 
@@ -425,7 +439,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
           default: `uvm_fatal(`gfn, $sformatf("Unexpected operation: %0s", op.name))
         endcase
       end
-      // StWorkDpeReset would be an unexpected state becuase no KMAC data request should occur.
+      // StWorkDpeReset would be an unexpected state because no KMAC data request should occur.
       default: `uvm_fatal(`gfn, $sformatf("Unexpected current_state: %0s", current_state.name))
     endcase // current_state
     return update_result;
@@ -506,7 +520,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
     // process the csr req
     // for write, update local variable and fifo at address phase
-    // for read, update predication at address phase and compare at data phase
+    // for read, update prediction at address phase and compare at data phase
     case (csr.get_name())
       // add individual case item for each csr
       "intr_state": begin
@@ -520,14 +534,18 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
           `uvm_info(`gfn, $sformatf("intr_state: status is %s compare_internal_key_slot %0d",
             current_op_status.name, compare_internal_key_slot), UVM_MEDIUM)
           if (current_op_status == keymgr_pkg::OpDoneSuccess && compare_internal_key_slot) begin
-              cfg.keymgr_dpe_vif.compare_internal_key_slot(
-                current_internal_key[current_key_slot.dst_slot],
-                current_internal_key[current_key_slot.src_slot],
-                current_key_slot.dst_slot,
-                current_key_slot.src_slot,
-                current_internal_key[current_key_slot.src_slot].key_policy.retain_parent
-              );
+            cfg.keymgr_dpe_vif.compare_internal_key_slot(
+              current_internal_key[current_key_slot.dst_slot],
+              current_internal_key[current_key_slot.src_slot],
+              current_key_slot.dst_slot,
+              current_key_slot.src_slot,
+              current_internal_key[current_key_slot.src_slot].key_policy.retain_parent
+            );
             compare_internal_key_slot = 0;
+          end
+          if (current_op_status == keymgr_pkg::OpDoneSuccess && check_key_slot_erased) begin
+            `DV_CHECK_NE(current_internal_key[current_key_slot.dst_slot].key, old_key)
+            check_key_slot_erased = 0;
           end
           // compare all internal key slots valid to 0, and that key
           // values in the key slots are no longer equal to the previous
@@ -583,7 +601,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         end
       end
       "intr_enable", "sw_binding_regwen": begin
-        // no speical handle is needed
+        // no special handle is needed
       end
       "err_code": begin
         // Check in this block
@@ -753,13 +771,16 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                   end
                   keymgr_dpe_pkg::OpDpeErase: begin
                     if (!get_invalid_op()) begin
+                      old_key = current_internal_key[current_key_slot.dst_slot].key;
                       current_internal_key[current_key_slot.dst_slot] = '0;
                       current_op_status = keymgr_pkg::OpDoneSuccess;
+                      // Only check if the destination key slot has been erased instead of the full
+                      // key slot comparison
+                      check_key_slot_erased = 1;
                     end else begin
                       current_op_status = keymgr_pkg::OpDoneFail;
                       `uvm_info(`gfn, $sformatf("current_op_status set to fail 1"), UVM_MEDIUM)
                     end
-                    compare_internal_key_slot = 1;
                     void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
                   end
                   keymgr_dpe_pkg::OpDpeDisable: begin
@@ -961,7 +982,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       `uvm_info(`gfn, "otp_key valid is low", UVM_LOW)
     end
     current_internal_key[current_key_slot.dst_slot].valid = 1;
-    current_internal_key[current_key_slot.dst_slot].boot_stage = 0;
+    current_internal_key[current_key_slot.dst_slot].boot_stage = keymgr_dpe_pkg::BootStageCreator;
     current_internal_key[current_key_slot.dst_slot].max_key_version = max_key_version;
     current_internal_key[current_key_slot.dst_slot].key = otp_key;
     current_internal_key[current_key_slot.dst_slot].key_policy = '0;
@@ -1064,15 +1085,6 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       keymgr_dpe_pkg::StWorkDpeAvailable: begin
         case (op)
           keymgr_dpe_pkg::OpDpeAdvance: begin
-            // invalid op if src boot_stage is equal to current boot stage
-            if (current_internal_key[current_key_slot.src_slot].boot_stage >=
-                (keymgr_dpe_pkg::DpeNumBootStages-1)
-            ) begin
-              `uvm_info(`gfn,
-                $sformatf("get_invalid_op: op %s current_state: %s boot_stage err",
-                  op.name, current_state.name), UVM_MEDIUM)
-              return 1;
-            end
             // invalid op if dst slot == src slot and retain_parent == 1
             if ((current_internal_key[current_key_slot.src_slot].key_policy.retain_parent == 1) &&
                 current_key_slot.src_slot == current_key_slot.dst_slot
@@ -1520,7 +1532,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     foreach (current_internal_key[slot]) begin
       current_internal_key[slot].key = '0;
       current_internal_key[slot].key_policy = '0;
-      current_internal_key[slot].boot_stage = '0;
+      current_internal_key[slot].boot_stage = keymgr_dpe_pkg::BootStageCreator;
       current_internal_key[slot].max_key_version = '0;
       current_internal_key[slot].valid = '0;
     end

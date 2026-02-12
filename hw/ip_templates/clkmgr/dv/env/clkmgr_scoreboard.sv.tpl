@@ -2,13 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 <%
-  from itertools import chain
-  from topgen.lib import Name
-  rg_srcs = list(sorted({sig['src_name'] for sig
-                         in typed_clocks['rg_clks'].values()}))
-
-  def to_camel_case(s: str):
-    return Name.from_snake_case(s).as_camel_case()
+from itertools import chain
+from ipgen.clkmgr_gen import get_rg_srcs
+from topgen.lib import Name
+rg_srcs = get_rg_srcs(typed_clocks)
 %>\
 
 // The scoreboard checks the jitter_an_o output, and processes CSR checks.
@@ -21,7 +18,9 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
   `uvm_component_utils(clkmgr_scoreboard)
 
   // local variables
+% if ext_clk_bypass:
   logic extclk_ctrl_regwen;
+% endif
   logic measure_ctrl_regwen;
 
   // TLM agent fifos
@@ -42,8 +41,10 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
+    % if ext_clk_bypass:
       monitor_all_clk_byp();
       monitor_io_clk_byp();
+    % endif
       monitor_jitter_en();
       sample_peri_covs();
       sample_trans_covs();
@@ -53,6 +54,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
     join_none
   endtask
 
+% if ext_clk_bypass:
   task monitor_all_clk_byp();
     mubi4_t prev_all_clk_byp_req = MuBi4False;
     forever
@@ -98,6 +100,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       end
   endtask
 
+%  endif
   task monitor_jitter_en();
     fork
       forever
@@ -139,10 +142,10 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
 <%
   spc = " " * (len("            ") +
                len("cov.peri_cg_wrap[Peri") +
-	       len(to_camel_case(clk_name)) +
+	       len(Name.to_camel_case(clk_name)) +
 	       len("].sample("))
 %>\
-            cov.peri_cg_wrap[Peri${to_camel_case(clk_name)}].sample(cfg.clkmgr_vif.peri_${clk_name}_cb.clk_enable,
+            cov.peri_cg_wrap[Peri${Name.to_camel_case(clk_name)}].sample(cfg.clkmgr_vif.peri_${clk_name}_cb.clk_enable,
 ${spc}cfg.clkmgr_vif.peri_${clk_name}_cb.ip_clk_en,
 ${spc}cfg.clkmgr_vif.scanmode_i == MuBi4True);
           end
@@ -196,7 +199,7 @@ ${spc}cfg.clkmgr_vif.scanmode_i == MuBi4True);
       forever
         @(posedge cfg.clkmgr_vif.${src}_freq_measurement.valid or
           posedge cfg.clkmgr_vif.${src}_timeout_err) begin
-          sample_freq_measurement_cov(ClkMesr${to_camel_case(src)}, cfg.clkmgr_vif.${src}_freq_measurement,
+          sample_freq_measurement_cov(ClkMesr${Name.to_camel_case(src)}, cfg.clkmgr_vif.${src}_freq_measurement,
                                       cfg.clkmgr_vif.${src}_timeout_err);
         end
 
@@ -265,12 +268,13 @@ ${spc}cfg.clkmgr_vif.scanmode_i == MuBi4True);
 
     // Process the csr req:
     // - For write, update local variable and fifo at address phase.
-    // - For read, update predication at address phase and compare at data phase.
+    // - For read, update prediction at address phase and compare at data phase.
     case (csr.get_name())
       // add individual case item for each csr
       "alert_test": begin
         // FIXME
       end
+    % if ext_clk_bypass:
       "extclk_ctrl_regwen": begin
         if (addr_phase_write) extclk_ctrl_regwen = item.a_data;
       end
@@ -285,6 +289,7 @@ ${spc}cfg.clkmgr_vif.scanmode_i == MuBi4True);
       "extclk_status": begin
         do_read_check = 1'b0;
       end
+    % endif
       "jitter_regwen": begin
       end
       "jitter_enable": begin
@@ -344,7 +349,9 @@ ${spc}cfg.clkmgr_vif.scanmode_i == MuBi4True);
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
     // reset local fifos queues and variables
+  % if ext_clk_bypass:
     extclk_ctrl_regwen  = ral.extclk_ctrl_regwen.get_reset();
+  % endif
     measure_ctrl_regwen = ral.measure_ctrl_regwen.get_reset();
   endfunction
 

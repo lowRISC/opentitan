@@ -22,7 +22,7 @@
 // using the adapter. It does not provide any ability to perform "late randomization" of
 // request. This causes our a_source constraints to be violated. Since we need this to ensure that
 // the a_source is set taking into account the most up-to-date DUT state, we supply this sequence
-// as the adapter's parent_seqeunce instead (see tl_reg_adapter for more details). The UVM map then
+// as the adapter's parent_sequence instead (see tl_reg_adapter for more details). The UVM map then
 // uses this sequence instead of the dummy one to invoke start_item(), finish_item() and
 // get_response() instead. So, instead of doing the late randomization in randomize_req(), we do it
 // in finish_item() instead.

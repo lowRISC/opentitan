@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, ensure, Result};
+use anyhow::{Result, bail, ensure};
 use itertools::Itertools;
 use num_bigint_dig::BigUint;
 use std::cmp::max;
@@ -295,7 +295,7 @@ impl Codegen<'_> {
         } else {
             let nbytes = Self::tag_size(max_size) - 2;
             len_enc.push(0x80 | (nbytes as u8));
-            len_enc.extend(std::iter::repeat(0).take(nbytes));
+            len_enc.extend(std::iter::repeat_n(0, nbytes));
         }
 
         Ok(len_enc)
@@ -374,11 +374,13 @@ impl Builder for Codegen<'_> {
                 } = (self.variable_info)(name)?;
                 // Verify that type is correct.
                 match source_type {
-                    VariableType::Boolean =>
-                        ensure!(convert.is_none(), "using an boolean variable for an boolean field cannot specify a conversion"),
+                    VariableType::Boolean => ensure!(
+                        convert.is_none(),
+                        "using an boolean variable for an boolean field cannot specify a conversion"
+                    ),
                     _ => bail!(
                         "using a variable of type {source_type:?} for a boolean field is not supported"
-                        ),
+                    ),
                 }
                 match codegen {
                     VariableCodegenInfo::Boolean { value_expr } => {
@@ -421,18 +423,24 @@ impl Builder for Codegen<'_> {
                 // Get the maximum size and verify that types and conversion are correct.
                 match source_type {
                     VariableType::Integer { .. } => {
-                        ensure!(convert.is_none(), "using an integer variable for an integer field cannot specify a conversion");
-                    },
-                    VariableType::ByteArray { .. } => {
-                        match convert {
-                            None => bail!("using a byte array variable for an integer field must specify a conversion"),
-                            Some(Conversion::BigEndian) => (),
-                            _ => bail!("conversion {:?} from byte array to integer is not supported", convert),
-                        }
+                        ensure!(
+                            convert.is_none(),
+                            "using an integer variable for an integer field cannot specify a conversion"
+                        );
+                    }
+                    VariableType::ByteArray { .. } => match convert {
+                        None => bail!(
+                            "using a byte array variable for an integer field must specify a conversion"
+                        ),
+                        Some(Conversion::BigEndian) => (),
+                        _ => bail!(
+                            "conversion {:?} from byte array to integer is not supported",
+                            convert
+                        ),
                     },
                     _ => bail!(
                         "using a variable of type {source_type:?} for an integer field is not supported"
-                        ),
+                    ),
                 };
 
                 // ASN1 integer will add one extra byte when positive integers
@@ -509,22 +517,29 @@ impl Builder for Codegen<'_> {
                 } = (self.variable_info)(name)?;
                 match source_type {
                     VariableType::Integer { .. } => {
-                        ensure!(convert.is_none(), "using an integer variable for an integer field cannot specify a conversion");
+                        ensure!(
+                            convert.is_none(),
+                            "using an integer variable for an integer field cannot specify a conversion"
+                        );
                         let VariableCodegenInfo::Pointer {
                             ptr_expr,
                             size_expr,
                         } = codegen
                         else {
-                            bail!("the codegen backend does not support small integers for padded integer fields");
+                            bail!(
+                                "the codegen backend does not support small integers for padded integer fields"
+                            );
                         };
 
                         let (min_size, max_size) = source_type.array_size();
                         ensure!(min_size == max_size, "Padding is not supported");
 
                         // There is not tag, we are just pushing the data itself.
-                        self.push_function_call(min_size, max_size, &format!(
-                            "template_push_bytes(&state, {ptr_expr}, {size_expr});\n"
-                        ))
+                        self.push_function_call(
+                            min_size,
+                            max_size,
+                            &format!("template_push_bytes(&state, {ptr_expr}, {size_expr});\n"),
+                        )
                     }
                     _ => bail!(
                         "using a variable of type {source_type:?} for a padded integer field is not supported"
@@ -551,19 +566,26 @@ impl Builder for Codegen<'_> {
                 } = (self.variable_info)(name)?;
                 match source_type {
                     VariableType::ByteArray { .. } => {
-                        ensure!(convert.is_none(), "using a byte-array variable for a byte-array field cannot specify a conversion");
+                        ensure!(
+                            convert.is_none(),
+                            "using a byte-array variable for a byte-array field cannot specify a conversion"
+                        );
                         let (min_size, max_size) = source_type.array_size();
                         let VariableCodegenInfo::Pointer {
                             ptr_expr,
                             size_expr,
                         } = codegen
                         else {
-                            bail!("internal error: byte-array represented by a VariableCodegenInfo::Uint32");
+                            bail!(
+                                "internal error: byte-array represented by a VariableCodegenInfo::Uint32"
+                            );
                         };
                         // There is not tag, we are just pushing the data itself.
-                        self.push_function_call(min_size, max_size, &format!(
-                            "template_push_bytes(&state, {ptr_expr}, {size_expr});\n"
-                        ))
+                        self.push_function_call(
+                            min_size,
+                            max_size,
+                            &format!("template_push_bytes(&state, {ptr_expr}, {size_expr});\n"),
+                        )
                     }
                     _ => bail!(
                         "using a variable of type {source_type:?} for a byte-array field is not supported",
@@ -606,7 +628,9 @@ impl Builder for Codegen<'_> {
                             size_expr,
                         } = codegen
                         else {
-                            bail!("internal error: string not represented by a VariableCodegenInfo::Pointer");
+                            bail!(
+                                "internal error: string not represented by a VariableCodegenInfo::Pointer"
+                            );
                         };
                         self.push_tag(Some(name.into()), str_type, |builder| {
                             builder.push_function_call(
@@ -620,20 +644,34 @@ impl Builder for Codegen<'_> {
                     VariableType::ByteArray { .. } => {
                         let (min_size, max_size) = source_type.array_size();
                         match convert {
-                            None => bail!("using a byte array variable for an string field must to specify a conversion"),
+                            None => bail!(
+                                "using a byte array variable for an string field must to specify a conversion"
+                            ),
                             Some(Conversion::LowercaseHex) => {
-                                let VariableCodegenInfo::Pointer { ptr_expr, size_expr } = codegen else {
-                                    bail!("internal error: string not represented by a VariableCodegenInfo::Pointer");
+                                let VariableCodegenInfo::Pointer {
+                                    ptr_expr,
+                                    size_expr,
+                                } = codegen
+                                else {
+                                    bail!(
+                                        "internal error: string not represented by a VariableCodegenInfo::Pointer"
+                                    );
                                 };
                                 // The conversion doubles the size.
                                 self.push_tag(Some(name.into()), str_type, |builder| {
-                                    builder.push_function_call(2 * min_size, 2 * max_size, &format!(
-                                        "template_push_hex(&state, {ptr_expr}, {size_expr});\n"
-                                    ));
+                                    builder.push_function_call(
+                                        2 * min_size,
+                                        2 * max_size,
+                                        &format!(
+                                            "template_push_hex(&state, {ptr_expr}, {size_expr});\n"
+                                        ),
+                                    );
                                     Ok(())
                                 })?;
                             }
-                            _ => bail!("conversion {convert:?} from byte array to string is not supported"),
+                            _ => bail!(
+                                "conversion {convert:?} from byte array to string is not supported"
+                            ),
                         }
                     }
                     _ => bail!("conversion from to {source_type:?} to string is not supported",),
@@ -658,7 +696,7 @@ impl Builder for Codegen<'_> {
             .collect::<Vec<_>>();
         // See X.690 spec section 8.6 for encoding details.
         // Note: the encoding of an empty bitstring must be the number of unused bits to 0 and have no content.
-        let nr_bytes = (bit_consts.len() + 7) / 8;
+        let nr_bytes = bit_consts.len().div_ceil(8);
         let mut bytes = vec![0u8; nr_bytes];
         for (i, bit) in bit_consts.iter().enumerate() {
             bytes[i / 8] |= (**bit as u8) << (7 - (i % 8));
@@ -689,7 +727,9 @@ impl Builder for Codegen<'_> {
                             "cannot use a convertion from boolean to boolean"
                         );
                         let VariableCodegenInfo::Boolean { value_expr } = codegen else {
-                            bail!("internal error: boolean not represented by a VariableCodegenInfo::Boolean");
+                            bail!(
+                                "internal error: boolean not represented by a VariableCodegenInfo::Boolean"
+                            );
                         };
                         self.push_chunk(
                             CodeChunk::Code(format!(

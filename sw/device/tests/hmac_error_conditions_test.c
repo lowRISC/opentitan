@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/hmac.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
@@ -13,16 +14,18 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 OTTF_DEFINE_TEST_CONFIG();
 
-#include "hmac_regs.h"
+static uint32_t hmac_base_addr(void) {
+  return dt_hmac_primary_reg_block(kDtHmac);
+}
+
+#include "hw/top/hmac_regs.h"
 
 typedef enum hmac_err {
 
   /**
-   * No error has occured.
+   * No error has occurred.
    */
   kErrorNone = 0x0,
 
@@ -60,7 +63,7 @@ static const dif_hmac_transaction_t kHmacTransactionConfig = {
     .message_endianness = kDifHmacEndiannessLittle,
 };
 
-static const char kData[142] =
+OT_NONSTRING static const char kData[142] =
     "Every one suspects himself of at least one of "
     "the cardinal virtues, and this is mine: I am "
     "one of the few honest people that I have ever "
@@ -100,13 +103,6 @@ static const dif_hmac_digest_t kExpectedHmacDigest = {
 };
 
 /**
- * Initialize the HMAC engine. Return `true` if the configuration is valid.
- */
-static void test_setup(mmio_region_t base_addr, dif_hmac_t *hmac) {
-  CHECK_DIF_OK(dif_hmac_init(base_addr, hmac));
-}
-
-/**
  * Start HMAC in the correct mode. If `key` == NULL use SHA256 mode, otherwise
  * use the provided key in HMAC mode.
  */
@@ -133,8 +129,7 @@ static void run_hmac_enable_interrupt(void) {
   reg = bitfield_bit32_write(reg, HMAC_INTR_ENABLE_HMAC_DONE_BIT, true);
   reg = bitfield_bit32_write(reg, HMAC_INTR_ENABLE_FIFO_EMPTY_BIT, true);
   reg = bitfield_bit32_write(reg, HMAC_INTR_ENABLE_HMAC_ERR_BIT, true);
-  abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_INTR_ENABLE_REG_OFFSET,
-                   reg);
+  abs_mmio_write32(hmac_base_addr() + HMAC_INTR_ENABLE_REG_OFFSET, reg);
 }
 
 static void run_hmac_clear_interrupt(void) {
@@ -142,8 +137,7 @@ static void run_hmac_clear_interrupt(void) {
   reg = bitfield_bit32_write(reg, HMAC_INTR_STATE_HMAC_DONE_BIT, true);
   reg = bitfield_bit32_write(reg, HMAC_INTR_STATE_FIFO_EMPTY_BIT, true);
   reg = bitfield_bit32_write(reg, HMAC_INTR_STATE_HMAC_ERR_BIT, true);
-  abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_INTR_STATE_REG_OFFSET,
-                   reg);
+  abs_mmio_write32(hmac_base_addr() + HMAC_INTR_STATE_REG_OFFSET, reg);
 }
 
 // The following function reports error when attempts to write data into the
@@ -153,12 +147,10 @@ status_t run_test_pushmsg_when_shadisabled(
     const dif_hmac_digest_t *expected_digest) {
   run_hmac_enable_interrupt();
   // Read current config register
-  uint32_t cfg_reg_3 =
-      abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET);
+  uint32_t cfg_reg_3 = mmio_region_read32(hmac->base_addr, HMAC_CFG_REG_OFFSET);
   // Disable SHA_EN
   cfg_reg_3 = bitfield_bit32_write(cfg_reg_3, HMAC_CFG_SHA_EN_BIT, false);
-  abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET,
-                   cfg_reg_3);
+  mmio_region_write32(hmac->base_addr, HMAC_CFG_REG_OFFSET, cfg_reg_3);
   CHECK_STATUS_OK(hmac_testutils_push_message(hmac, data, len));
   uint32_t hmac_err_reg =
       mmio_region_read32(hmac->base_addr, HMAC_ERR_CODE_REG_OFFSET);
@@ -202,13 +194,12 @@ status_t run_test_invalidconfig_keylength(
                                HMAC_CFG_DIGEST_SIZE_VALUE_SHA2_256);
   reg = bitfield_bit32_write(reg, HMAC_CFG_SHA_EN_BIT, true);
   reg = bitfield_bit32_write(reg, HMAC_CFG_HMAC_EN_BIT, true);
-  abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET, reg);
+  mmio_region_write32(hmac->base_addr, HMAC_CFG_REG_OFFSET, reg);
   uint32_t hmac_cmd_reg =
       mmio_region_read32(hmac->base_addr, HMAC_CMD_REG_OFFSET);
   hmac_cmd_reg =
       bitfield_bit32_write(hmac_cmd_reg, HMAC_CMD_HASH_START_BIT, true);
-  abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CMD_REG_OFFSET,
-                   hmac_cmd_reg);
+  mmio_region_write32(hmac->base_addr, HMAC_CMD_REG_OFFSET, hmac_cmd_reg);
   uint32_t hmacerr_reg =
       mmio_region_read32(hmac->base_addr, HMAC_ERR_CODE_REG_OFFSET);
   TRY_CHECK(hmacerr_reg == kErrorSwInvalidConfig,
@@ -219,12 +210,10 @@ status_t run_test_invalidconfig_keylength(
   hmac_cmd_reg = mmio_region_read32(hmac->base_addr, HMAC_CMD_REG_OFFSET);
   hmac_cmd_reg =
       bitfield_bit32_write(hmac_cmd_reg, HMAC_CMD_HASH_STOP_BIT, true);
-  abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CMD_REG_OFFSET,
-                   hmac_cmd_reg);
+  mmio_region_write32(hmac->base_addr, HMAC_CMD_REG_OFFSET, hmac_cmd_reg);
   // Write default cfg reg values to clear the error
   uint32_t cfg_reg_default = HMAC_CFG_REG_RESVAL;
-  abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET,
-                   cfg_reg_default);
+  mmio_region_write32(hmac->base_addr, HMAC_CFG_REG_OFFSET, cfg_reg_default);
   run_hmac_clear_interrupt();
   return OK_STATUS();
 }
@@ -244,13 +233,12 @@ status_t run_test_invalidconfig_digest(
                                HMAC_CFG_DIGEST_SIZE_VALUE_SHA2_NONE);
   reg = bitfield_bit32_write(reg, HMAC_CFG_SHA_EN_BIT, true);
   reg = bitfield_bit32_write(reg, HMAC_CFG_HMAC_EN_BIT, true);
-  abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET, reg);
+  mmio_region_write32(hmac->base_addr, HMAC_CFG_REG_OFFSET, reg);
   uint32_t hmac_cmd_reg =
       mmio_region_read32(hmac->base_addr, HMAC_CMD_REG_OFFSET);
   hmac_cmd_reg =
       bitfield_bit32_write(hmac_cmd_reg, HMAC_CMD_HASH_START_BIT, true);
-  abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CMD_REG_OFFSET,
-                   hmac_cmd_reg);
+  mmio_region_write32(hmac->base_addr, HMAC_CMD_REG_OFFSET, hmac_cmd_reg);
   uint32_t hmacerr_reg =
       mmio_region_read32(hmac->base_addr, HMAC_ERR_CODE_REG_OFFSET);
   TRY_CHECK(hmacerr_reg == kErrorSwInvalidConfig,
@@ -261,12 +249,10 @@ status_t run_test_invalidconfig_digest(
   hmac_cmd_reg = mmio_region_read32(hmac->base_addr, HMAC_CMD_REG_OFFSET);
   hmac_cmd_reg =
       bitfield_bit32_write(hmac_cmd_reg, HMAC_CMD_HASH_STOP_BIT, true);
-  abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CMD_REG_OFFSET,
-                   hmac_cmd_reg);
+  mmio_region_write32(hmac->base_addr, HMAC_CMD_REG_OFFSET, hmac_cmd_reg);
   // Write default cfg reg values to clear the error
   uint32_t cfg_reg_default = HMAC_CFG_REG_RESVAL;
-  abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET,
-                   cfg_reg_default);
+  mmio_region_write32(hmac->base_addr, HMAC_CFG_REG_OFFSET, cfg_reg_default);
   run_hmac_clear_interrupt();
   return OK_STATUS();
 }
@@ -297,18 +283,16 @@ status_t run_test_hashstartwhendisabled(
     const dif_hmac_t *hmac, const char *data, size_t len, const uint8_t *key,
     const dif_hmac_digest_t *expected_digest) {
   run_hmac_enable_interrupt();
-  uint32_t cfg_reg =
-      abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET);
+  uint32_t cfg_reg = abs_mmio_read32(hmac_base_addr() + HMAC_CFG_REG_OFFSET);
   // Disable SHA_EN
   cfg_reg = bitfield_bit32_write(cfg_reg, HMAC_CFG_SHA_EN_BIT, false);
-  abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET, cfg_reg);
+  mmio_region_write32(hmac->base_addr, HMAC_CFG_REG_OFFSET, cfg_reg);
   // Write HASH_START_BIT
   uint32_t hmac_cmd_reg =
       mmio_region_read32(hmac->base_addr, HMAC_CMD_REG_OFFSET);
   hmac_cmd_reg =
       bitfield_bit32_write(hmac_cmd_reg, HMAC_CMD_HASH_START_BIT, true);
-  abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CMD_REG_OFFSET,
-                   hmac_cmd_reg);
+  mmio_region_write32(hmac->base_addr, HMAC_CMD_REG_OFFSET, hmac_cmd_reg);
   uint32_t hmacerr_reg =
       mmio_region_read32(hmac->base_addr, HMAC_ERR_CODE_REG_OFFSET);
   TRY_CHECK(hmacerr_reg == kErrorSwHashStartWhenShaDisabled,
@@ -327,8 +311,7 @@ status_t run_test_hashstartwhenactive(
       mmio_region_read32(hmac->base_addr, HMAC_CMD_REG_OFFSET);
   hmac_cmd_reg =
       bitfield_bit32_write(hmac_cmd_reg, HMAC_CMD_HASH_START_BIT, true);
-  abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CMD_REG_OFFSET,
-                   hmac_cmd_reg);
+  mmio_region_write32(hmac->base_addr, HMAC_CMD_REG_OFFSET, hmac_cmd_reg);
   uint32_t hmac_err_reg =
       mmio_region_read32(hmac->base_addr, HMAC_ERR_CODE_REG_OFFSET);
   TRY_CHECK(hmac_err_reg == kErrorSwHashStartWhenActive,
@@ -342,7 +325,8 @@ bool test_main(void) {
   LOG_INFO("Running HMAC Error Condition test...");
 
   dif_hmac_t hmac;
-  test_setup(mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR), &hmac);
+  CHECK_DIF_OK(dif_hmac_init_from_dt(kDtHmac, &hmac));
+
   LOG_INFO("Running test push message when sha disabled...");
   run_test_pushmsg_when_shadisabled(&hmac, kData, sizeof(kData), NULL,
                                     &kExpectedHmacDigest);

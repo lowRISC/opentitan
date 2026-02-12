@@ -5,7 +5,7 @@
 /**
  * State machine to handle actions that occur around the start and stop of OTBN.
  *
- * This recieves the start signals from the top-level and passes them on to the
+ * This receives the start signals from the top-level and passes them on to the
  * controller to begin execution when pre-start actions have finished.
  *
  * pre-start actions:

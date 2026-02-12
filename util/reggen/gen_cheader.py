@@ -259,18 +259,19 @@ def gen_multireg_field_defines(outstr: TextIO, regname: str,
 def gen_cdefine_multireg(outstr: TextIO, multireg: MultiRegister,
                          component: str, regwidth: int, rnames: Set[str],
                          existing_defines: Set[str]) -> None:
-    comment = multireg.reg.desc + " (common parameters)"
+    preg = multireg.pregs[0]
+    comment = preg.desc + " (common parameters)"
     genout(outstr, format_comment(first_line(comment)))
-    if len(multireg.reg.fields) >= 1:
-        regname = as_define(component + '_' + multireg.reg.name)
-        gen_multireg_field_defines(outstr, regname, multireg.reg.fields,
-                                   len(multireg.regs), regwidth,
+    if len(preg.fields) >= 1:
+        regname = as_define(component + '_' + preg.name)
+        gen_multireg_field_defines(outstr, regname, preg.fields,
+                                   len(multireg.cregs), regwidth,
                                    existing_defines)
     else:
-        log.warn("Fieldless multireg " + multireg.reg.name +
-                 " skip multireg specific data generation.")
+        log.warning("Fieldless multireg " + preg.name +
+                    " skip multireg specific data generation.")
 
-    for subreg in multireg.regs:
+    for subreg in multireg.cregs:
         gen_cdefine_register(outstr, subreg, component, regwidth, rnames,
                              existing_defines)
 
@@ -357,7 +358,10 @@ def gen_cdefines(block: IpBlock, outfile: TextIO, src_lic: Optional[str],
     generated = outstr.getvalue()
     outstr.close()
 
-    genout(outfile, '// Generated register defines for ' + block.name + '\n\n')
+    genout(outfile, '/**\n')
+    genout(outfile, ' * @file\n')
+    genout(outfile, ' * @brief Generated register defines for ' + block.name + '\n')
+    genout(outfile, ' */\n\n')
     if src_copy != '':
         genout(outfile, '// Copyright information found in source file:\n')
         genout(outfile, '// ' + src_copy + '\n\n')

@@ -12,6 +12,8 @@ module keymgr
   import keymgr_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned AlertSkewCycles       = 1,
   // In case this is set to true, the keymgr will ignore the creator / owner seeds
   // on the flash_i port and use the seeds provided in otp_key_i instead.
   parameter bit UseOtpSeedsInsteadOfFlash      = 1'b0,
@@ -174,7 +176,7 @@ module keymgr
   //  LFSR
   /////////////////////////////////////
 
-  // A farily large lfsr is used here as entropy in multiple places.
+  // A fairly large lfsr is used here as entropy in multiple places.
   // - populate the default working state
   // - generate random inputs when a bad input is selected
   //
@@ -737,6 +739,7 @@ module keymgr
                             reg2hw.alert_test.fatal_fault_err.qe;
   prim_alert_sender #(
     .AsyncOn(AlertAsyncOn[1]),
+    .SkewCycles(AlertSkewCycles),
     .IsFatal(1)
   ) u_fault_alert (
     .clk_i,
@@ -754,6 +757,7 @@ module keymgr
                              reg2hw.alert_test.recov_operation_err.qe;
   prim_alert_sender #(
     .AsyncOn(AlertAsyncOn[0]),
+    .SkewCycles(AlertSkewCycles),
     .IsFatal(0)
   ) u_op_err_alert (
     .clk_i,

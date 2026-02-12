@@ -8,7 +8,7 @@
 #include "sw/device/silicon_creator/lib/sigverify/spx_verify.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
-#include "flash_ctrl_regs.h"
+#include "hw/top/flash_ctrl_regs.h"
 
 namespace flash_exec_unittest {
 namespace {

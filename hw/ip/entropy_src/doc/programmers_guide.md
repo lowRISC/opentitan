@@ -20,8 +20,6 @@ Since there exists another feature to avoid power spikes between ENTROPY_SRC and
 Bit 16 in the [`DEBUG_STATUS`](registers.md#debug_status) should be polled after the ENTROPY_SRC enable bits are cleared in the [`CONF`](registers.md#conf) register.
 After the handshakes with CSRNG are finished, the above bit should be set and the ENTROPY_SRC block can be safely enabled again.
 
-ENTROPY_SRC may only be disabled if CSRNG is disabled.
-
 Disabling Entropy Source does not clear the bits in `RECOV_ALERT_STS` (see [*Handling a Recoverable Alert*](#handling-a-recoverable-alert)).
 
 
@@ -101,10 +99,10 @@ To select which specific bit should be used, the `RNG_BIT_SEL` field in the [`CO
 
 When ENTROPY_SRC is configured in RNG bit mode, only a subset of the health tests are applicable and the health test thresholds need to be set to account for this.
 For this reason, the thresholds for both the bypass and the FIPS values must be set accordingly.
-The repetition count test, Markov test and adaptive proportion test can all still be performed on a single lane.
+The Repetition Count Test, Markov test and Adaptive Proportion Test can all still be performed on a single lane.
 However, to get the same number of entropy bits, we now must collect four times as many individual symbols from the PTRNG.
 This should be considered when choosing the health test thresholds, whereas the health test window size is adjusted internally.
-In contrast, the symbol repetition count test and the bucket test are not applicable to a single lane.
+In contrast, the Repetition Count Symbol Test and the bucket test are not applicable to a single lane.
 They need to be disabled by setting the corresponding thresholds to the maximum value.
 The `THRESHOLD_SCOPE` field in the [`CONF`](registers.md#conf) register is also not applicable to the single lane mode and must be set to `kMultiBitBool4False`.
 

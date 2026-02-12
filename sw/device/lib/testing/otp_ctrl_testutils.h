@@ -129,10 +129,10 @@ status_t otp_ctrl_testutils_dai_read64_array(const dif_otp_ctrl_t *otp,
  * @param otp otp_ctrl instance.
  * @param partition OTP partition.
  * @param start_address Address relative to the start of the `partition`. Must
- * be a 32bit aligned address.
+ *                      be a 32bit aligned address.
  * @param buffer The buffer containing the data to be written into OTP.
  * @param len The number of 32bit words to write into otp. `buffer` must have at
- * least `len` 32bit words.
+ *            least `len` 32bit words.
  * @return OK_STATUS on success.
  */
 OT_WARN_UNUSED_RESULT
@@ -159,5 +159,89 @@ status_t otp_ctrl_testutils_dai_write64(const dif_otp_ctrl_t *otp,
                                         dif_otp_ctrl_partition_t partition,
                                         uint32_t start_address,
                                         const uint64_t *buffer, size_t len);
+
+/**
+ * Weak function to enable tests to define logic that is run immediately before
+ * spin looping on the DAI ready signal.
+ *
+ * @param otp otp_ctrl instance.
+ * @return OK_STATUS on success.
+ */
+OT_WARN_UNUSED_RESULT
+status_t otp_ctrl_testutils_wait_for_dai_pre_hook(
+    const dif_otp_ctrl_t *otp_ctrl);
+
+/**
+ * Weak function to enable tests to define logic that is run immediately after
+ * spin looping on the DAI ready signal.
+ *
+ * @param otp otp_ctrl instance.
+ * @return OK_STATUS on success.
+ */
+OT_WARN_UNUSED_RESULT
+status_t otp_ctrl_testutils_wait_for_dai_post_hook(
+    const dif_otp_ctrl_t *otp_ctrl);
+
+/**
+ * Weak function to enable tests to define logic that is run immediately before
+ * writing a 32 or 64 bit field.
+ *
+ * @param otp otp_ctrl instance.
+ * @return OK_STATUS on success.
+ */
+OT_WARN_UNUSED_RESULT
+status_t otp_ctrl_testutils_dai_write_pre_hook(const dif_otp_ctrl_t *otp_ctrl);
+
+/**
+ * Weak function to enable tests to define logic that is run immediately after
+ * writing a 32 or 64 bit field.
+ *
+ * @param otp otp_ctrl instance.
+ * @return OK_STATUS on success.
+ */
+OT_WARN_UNUSED_RESULT
+status_t otp_ctrl_testutils_dai_write_post_hook(const dif_otp_ctrl_t *otp_ctrl);
+
+/**
+ * Weak function to enable tests to define logic that is run immediately before
+ * reading a 32 or 64 bit field.
+ *
+ * @param otp otp_ctrl instance.
+ * @return OK_STATUS on success.
+ */
+OT_WARN_UNUSED_RESULT
+status_t otp_ctrl_testutils_dai_read_pre_hook(const dif_otp_ctrl_t *otp_ctrl);
+
+/**
+ * Weak function to enable tests to define logic that is run immediately after
+ * reading a 32 or 64 bit field.
+ *
+ * @param otp otp_ctrl instance.
+ * @return OK_STATUS on success.
+ */
+OT_WARN_UNUSED_RESULT
+status_t otp_ctrl_testutils_dai_read_post_hook(const dif_otp_ctrl_t *otp_ctrl);
+
+/**
+ * Weak function to enable tests to define logic that is run immediately before
+ * reading any DAI error state.
+ *
+ * @param otp otp_ctrl instance.
+ * @return OK_STATUS on success.
+ */
+OT_WARN_UNUSED_RESULT
+status_t otp_ctrl_testutils_dai_write_pre_error_check_hook(
+    const dif_otp_ctrl_t *otp_ctrl);
+
+/**
+ * Weak function to enable tests to define logic that is run immediately after
+ * reading any DAI error state.
+ *
+ * @param otp otp_ctrl instance.
+ * @return OK_STATUS on success.
+ */
+OT_WARN_UNUSED_RESULT
+status_t otp_ctrl_testutils_dai_write_post_error_check_hook(
+    const dif_otp_ctrl_t *otp_ctrl);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_OTP_CTRL_TESTUTILS_H_

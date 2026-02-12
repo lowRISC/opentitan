@@ -88,6 +88,9 @@ static status_t run_aes_test(void) {
       .key_len = 4,
       .key_shares = {share0, share1},
   };
+  // Create the checksum of the key and store it in the key structure.
+  key.checksum = aes_key_integrity_checksum(&key);
+
   TRY(aes_encrypt_begin(key, &kIv));
 
   aes_block_t ciphertext[ARRAYSIZE(kCiphertext)] = {0};

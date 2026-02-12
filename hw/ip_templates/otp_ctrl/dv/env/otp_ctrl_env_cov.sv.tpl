@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 /**
- * Covergoups that are dependent on run-time parameters that may be available
+ * Covergroups that are dependent on run-time parameters that may be available
  * only in build_phase can be defined here
  * Covergroups may also be wrapped inside helper classes if needed.
  */
@@ -236,8 +236,8 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
     }
     partition: coverpoint part_idx {
 % for part in otp_mmap["partitions"]:
-<% part_name = Name.from_snake_case(part["name"]) %>\
-      bins ${part["name"].lower()} = {${part_name.as_camel_case()}Idx};
+<% part_name_camel = Name.to_camel_case(part["name"]) %>\
+      bins ${part["name"].lower()} = {${part_name_camel}Idx};
 % endfor
       bins illegal_idx    = default;
     }
@@ -293,11 +293,11 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
   virtual function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     // Create instances from bit_toggle_cg_wrapper.
-    lc_prog_cg  = new("lc_prog_cg", "", 0);
-    otbn_req_cg = new("otbn_req_cg", "", 0);
+    lc_prog_cg  = new("lc_prog_cg", .toggle_cov_en(0));
+    otbn_req_cg = new("otbn_req_cg", .toggle_cov_en(0));
     foreach (status_csr_cg[i]) begin
       otp_status_e index = otp_status_e'(i);
-      status_csr_cg[i]= new(index.name, "status_csr_cg", 0);
+      status_csr_cg[i]= new({"status_csr_cg::", index.name}, .toggle_cov_en(0));
     end
 
     // Create instances from external wrapper classes.
@@ -324,22 +324,24 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
 
   // Collect coverage for err_code when it is a compact multi-reg. For DAI error it uses the given
   // access_part_idx as the target of the DAI access.
-  function void collect_compact_err_code_cov(bit [TL_DW-1:0] val, int access_part_idx = DaiIdx);
+  function void collect_compact_err_code_cov(bit [TL_DW-1:0] val,
+                                             otp_partition_e access_part_idx = otp_partition_e'(0));
     dv_base_reg_field err_code_flds[$];
     cfg.ral.err_code[0].get_dv_base_reg_fields(err_code_flds);
     foreach (err_code_flds[part]) begin
-      collect_err_code_cov(part, get_field_val(err_code_flds[part], val), access_part_idx);
+      collect_err_code_cov(part_idx_e'(part), get_field_val(err_code_flds[part], val),
+                           access_part_idx);
     end
   endfunction
 
   // Collect coverage for a given partition error_code. For DAI error it uses the given
   // access_part_idx as the target of the DAI access.
-  function void collect_err_code_cov(int part_idx, bit [TL_DW-1:0] val,
-                                     int access_part_idx = DaiIdx);
+  function void collect_err_code_cov(part_idx_e part_idx, bit [TL_DW-1:0] val,
+                                     otp_partition_e access_part_idx = otp_partition_e'(0));
     case (part_idx)
 % for part in otp_mmap["partitions"]:
-<% part_name = Name.from_snake_case(part["name"]) %>\
-      Otp${part_name.as_camel_case()}ErrIdx: begin
+<% part_name_camel = Name.to_camel_case(part["name"]) %>\
+      ${part_name_camel}Idx: begin
   % if part in unbuffered_parts:
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
   % elif part in buffered_parts:
@@ -347,10 +349,10 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
   % endif
       end
 % endfor
-      OtpDaiErrIdx: begin
+      DaiIdx: begin
         dai_err_code_cg.sample(val, access_part_idx);
       end
-      OtpLciErrIdx: begin
+      LciIdx: begin
         lci_err_code_cg.sample(val);
       end
       default: begin

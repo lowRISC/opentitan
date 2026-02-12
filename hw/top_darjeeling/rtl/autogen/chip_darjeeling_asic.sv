@@ -5,10 +5,8 @@
 // ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
 //
-// util/topgen.py -t hw/top_darjeeling/data/top_darjeeling.hjson \
-//                -o hw/top_darjeeling/ \
-//                --rnd_cnst_seed \
-//                1017106219537032642877583828875051302543807092889754935647094601236425074047
+// util/topgen.py -t hw/top_darjeeling/data/top_darjeeling.hjson
+//                -o hw/top_darjeeling/
 
 
 module chip_darjeeling_asic #(
@@ -115,38 +113,9 @@ module chip_darjeeling_asic #(
   import top_darjeeling_pkg::*;
   import prim_pad_wrapper_pkg::*;
 
-  ////////////////////////////
-  // Special Signal Indices //
-  ////////////////////////////
-
-  localparam int Tap0PadIdx = 0;
-  localparam int Tap1PadIdx = 1;
-  localparam int Dft0PadIdx = 2;
-  localparam int Dft1PadIdx = 3;
-  localparam int TckPadIdx = 4;
-  localparam int TmsPadIdx = 5;
-  localparam int TrstNPadIdx = 6;
-  localparam int TdiPadIdx = 7;
-  localparam int TdoPadIdx = 8;
 
   // DFT and Debug signal positions in the pinout.
   localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
-    tck_idx:           TckPadIdx,
-    tms_idx:           TmsPadIdx,
-    trst_idx:          TrstNPadIdx,
-    tdi_idx:           TdiPadIdx,
-    tdo_idx:           TdoPadIdx,
-    tap_strap0_idx:    Tap0PadIdx,
-    tap_strap1_idx:    Tap1PadIdx,
-    dft_strap0_idx:    Dft0PadIdx,
-    dft_strap1_idx:    Dft1PadIdx,
-    // TODO: check whether there is a better way to pass these USB-specific params
-    // The use of these indexes is gated behind a parameter, but to synthesize they
-    // need to exist even if the code-path is never used (pinmux.sv:UsbWkupModuleEn).
-    // Hence, set to zero.
-    usb_dp_idx:        0,
-    usb_dn_idx:        0,
-    usb_sense_idx:     0,
     // Pad types for attribute WARL behavior
     dio_pad_type: {
       BidirStd, // DIO soc_proxy_soc_gpo
@@ -1115,8 +1084,6 @@ module chip_darjeeling_asic #(
   );
 
 
-
-
   //////////////////////////////////
   // AST - Common for all targets //
   //////////////////////////////////
@@ -1137,9 +1104,6 @@ module chip_darjeeling_asic #(
   clkmgr_pkg::clkmgr_out_t clkmgr_aon_clocks;
   rstmgr_pkg::rstmgr_out_t rstmgr_aon_resets;
 
-  // external clock
-  logic ext_clk;
-
   // monitored clock
   logic sck_monitor;
 
@@ -1151,34 +1115,21 @@ module chip_darjeeling_asic #(
   ast_pkg::ast_obs_ctrl_t obs_ctrl;
 
   // otp power sequence
-  otp_ctrl_pkg::otp_ast_req_t otp_ctrl_otp_ast_pwr_seq;
-  otp_ctrl_pkg::otp_ast_rsp_t otp_ctrl_otp_ast_pwr_seq_h;
+  otp_macro_pkg::otp_ast_req_t otp_macro_pwr_seq;
+  otp_macro_pkg::otp_ast_rsp_t otp_macro_pwr_seq_h;
 
   // OTP DFT configuration
-  prim_otp_cfg_pkg::otp_cfg_t otp_cfg;
-  assign otp_cfg = prim_otp_cfg_pkg::OTP_CFG_DEFAULT;
+  otp_macro_pkg::otp_cfg_t otp_cfg;
+  assign otp_cfg = otp_macro_pkg::OTP_CFG_DEFAULT;
 
   // entropy source interface
-  // The entropy source pacakge definition should eventually be moved to es
-  entropy_src_pkg::entropy_src_hw_if_req_t entropy_src_hw_if_req;
-  entropy_src_pkg::entropy_src_hw_if_rsp_t entropy_src_hw_if_rsp;
-
-  // entropy distribution network
-  edn_pkg::edn_req_t ast_edn_edn_req;
-  edn_pkg::edn_rsp_t ast_edn_edn_rsp;
+  logic es_rng_enable, es_rng_valid;
+  logic [ast_pkg::EntropyStreams-1:0] es_rng_bit;
 
   // alerts interface
   ast_pkg::ast_alert_rsp_t ast_alert_rsp;
   ast_pkg::ast_alert_req_t ast_alert_req;
   assign ast_alert_rsp = '0;
-
-  // clock bypass req/ack
-  prim_mubi_pkg::mubi4_t io_clk_byp_req;
-  prim_mubi_pkg::mubi4_t io_clk_byp_ack;
-  prim_mubi_pkg::mubi4_t all_clk_byp_req;
-  prim_mubi_pkg::mubi4_t all_clk_byp_ack;
-  prim_mubi_pkg::mubi4_t hi_speed_sel;
-  prim_mubi_pkg::mubi4_t div_step_down_req;
 
   // DFT connections
   logic scan_en;
@@ -1213,14 +1164,6 @@ module chip_darjeeling_asic #(
                 cfg:    ast_rf_cfg.marg
               }
   };
-
-  logic unused_usb_ram_2p_cfg;
-  assign unused_usb_ram_2p_cfg = ^{ast_ram_2p_fcfg.marg_en_a,
-                                   ast_ram_2p_fcfg.marg_a,
-                                   ast_ram_2p_fcfg.test_a,
-                                   ast_ram_2p_fcfg.marg_en_b,
-                                   ast_ram_2p_fcfg.marg_b,
-                                   ast_ram_2p_fcfg.test_b};
 
   // this maps as follows:
   // assign spi_ram_2p_cfg = {10'h000, ram_2p_cfg_i.a_ram_lcfg, ram_2p_cfg_i.b_ram_lcfg};
@@ -1263,10 +1206,6 @@ module chip_darjeeling_asic #(
   logic [rstmgr_pkg::PowerDomains-1:0] por_n;
   assign por_n = {ast_pwst.main_pok, ast_pwst.aon_pok};
 
-
-  // external clock comes in at a fixed position
-  assign ext_clk = mio_in_raw[MioPadMio11];
-
   wire unused_t0, unused_t1;
   assign unused_t0 = 1'b0;
   assign unused_t1 = 1'b0;
@@ -1278,30 +1217,17 @@ module chip_darjeeling_asic #(
   logic unused_pwr_clamp;
   assign unused_pwr_clamp = base_ast_pwr.pwr_clamp;
 
-
-  prim_mubi_pkg::mubi4_t ast_init_done;
-
   ast #(
-    .EntropyStreams(ast_pkg::EntropyStreams),
-    .AdcChannels(ast_pkg::AdcChannels),
-    .AdcDataWidth(ast_pkg::AdcDataWidth),
-    .UsbCalibWidth(ast_pkg::UsbCalibWidth),
     .Ast2PadOutWidth(ast_pkg::Ast2PadOutWidth),
     .Pad2AstInWidth(ast_pkg::Pad2AstInWidth)
   ) u_ast (
     // external POR
     .por_ni                ( manual_in_por_n ),
 
-    // USB IO Pull-up Calibration Setting
-    .usb_io_pu_cal_o       ( ),
-
-    // adc
-    .adc_a0_ai             ( '0 ),
-    .adc_a1_ai             ( '0 ),
-
     // Direct short to PAD
     .ast2pad_t0_ao         ( unused_t0 ),
     .ast2pad_t1_ao         ( unused_t1 ),
+
     // clocks and resets supplied for detection
     .sns_clks_i            ( clkmgr_aon_clocks    ),
     .sns_rsts_i            ( rstmgr_aon_resets    ),
@@ -1310,19 +1236,14 @@ module chip_darjeeling_asic #(
     .tl_i                  ( base_ast_bus ),
     .tl_o                  ( ast_base_bus ),
     // init done indication
-    .ast_init_done_o       ( ast_init_done ),
+    .ast_init_done_o       ( ),
     // buffered clocks & resets
-    .clk_ast_tlul_i (clkmgr_aon_clocks.clk_io_div4_infra),
-    .clk_ast_adc_i (clkmgr_aon_clocks.clk_aon_peri),
-    .clk_ast_alert_i (clkmgr_aon_clocks.clk_io_div4_secure),
-    .clk_ast_es_i (clkmgr_aon_clocks.clk_main_secure),
+    .clk_ast_tlul_i (clkmgr_aon_clocks.clk_io_infra),
+    .clk_ast_alert_i (clkmgr_aon_clocks.clk_io_secure),
     .clk_ast_rng_i (clkmgr_aon_clocks.clk_main_secure),
-    .rst_ast_tlul_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
-    .rst_ast_adc_ni (rstmgr_aon_resets.rst_lc_aon_n[rstmgr_pkg::DomainAonSel]),
-    .rst_ast_alert_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
-    .rst_ast_es_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ast_tlul_ni (rstmgr_aon_resets.rst_lc_io_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ast_alert_ni (rstmgr_aon_resets.rst_lc_io_n[rstmgr_pkg::Domain0Sel]),
     .rst_ast_rng_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
-    .clk_ast_ext_i         ( ext_clk ),
 
     // pok test for FPGA
     .vcc_supp_i            ( 1'b1 ),
@@ -1336,11 +1257,9 @@ module chip_darjeeling_asic #(
     // main regulator
     .main_env_iso_en_i     ( base_ast_pwr.pwr_clamp_env ),
     .main_pd_ni            ( base_ast_pwr.main_pd_n ),
-    // pdm control (flash)/otp
-    .flash_power_down_h_o  ( ),
-    .flash_power_ready_h_o ( ),
-    .otp_power_seq_i       ( otp_ctrl_otp_ast_pwr_seq ),
-    .otp_power_seq_h_o     ( otp_ctrl_otp_ast_pwr_seq_h ),
+    // pdm control (otp)
+    .otp_power_seq_i       ( otp_macro_pwr_seq ),
+    .otp_power_seq_h_o     ( otp_macro_pwr_seq_h ),
     // system source clock
     .clk_src_sys_en_i      ( base_ast_pwr.core_clk_en ),
     // need to add function in clkmgr
@@ -1354,43 +1273,22 @@ module chip_darjeeling_asic #(
     .clk_src_io_en_i       ( base_ast_pwr.io_clk_en ),
     .clk_src_io_o          ( ast_base_clks.clk_io ),
     .clk_src_io_val_o      ( ast_base_pwr.io_clk_val ),
-    .clk_src_io_48m_o      ( div_step_down_req ),
-    // usb source clock
-    .usb_ref_pulse_i       ( '0 ),
-    .usb_ref_val_i         ( '0 ),
-    .clk_src_usb_en_i      ( '0 ),
-    .clk_src_usb_o         (    ),
-    .clk_src_usb_val_o     (    ),
-    // entropy_src
-    .es_req_i              ( entropy_src_hw_if_req ),
-    .es_rsp_o              ( entropy_src_hw_if_rsp ),
-    // adc
-    .adc_pd_i              ( '0 ),
-    .adc_chnsel_i          ( '0 ),
-    .adc_d_o               (    ),
-    .adc_d_val_o           (    ),
-    // entropy
-    .entropy_rsp_i         ( ast_edn_edn_rsp ),
-    .entropy_req_o         ( ast_edn_edn_req ),
+    // rng
+    .rng_en_i              ( es_rng_enable ),
+    .rng_fips_i            ( es_rng_fips   ),
+    .rng_val_o             ( es_rng_valid  ),
+    .rng_b_o               ( es_rng_bit    ),
     // alerts
     .alert_rsp_i           ( ast_alert_rsp  ),
     .alert_req_o           ( ast_alert_req  ),
     // dft
     .lc_dft_en_i           ( lc_dft_en        ),
-    .fla_obs_i             ( '0 ),
-    .usb_obs_i             ( '0 ),
     .otp_obs_i             ( otp_obs ),
     .otm_obs_i             ( '0 ),
     .obs_ctrl_o            ( obs_ctrl ),
     // pinmux related
     .padmux2ast_i          ( '0         ),
     .ast2padmux_o          (            ),
-    .ext_freq_is_96m_i     ( hi_speed_sel ),
-    .all_clk_byp_req_i     ( all_clk_byp_req  ),
-    .all_clk_byp_ack_o     ( all_clk_byp_ack  ),
-    .io_clk_byp_req_i      ( io_clk_byp_req   ),
-    .io_clk_byp_ack_o      ( io_clk_byp_ack   ),
-    .flash_bist_en_o       ( ),
     // Memory configuration connections
     .dpram_rmf_o           ( ast_ram_2p_fcfg ),
     .dpram_rml_o           ( ast_ram_2p_lcfg ),
@@ -1527,8 +1425,8 @@ module chip_darjeeling_asic #(
     // Default steering to generate error response if address is not within the range
     ctn_dev_sel_s1n = 1'b1;
     // Steering to CTN SRAM.
-    if ((ctn_sm1_to_s1n_tl_h2d.a_address & ~(TOP_DARJEELING_RAM_CTN_SIZE_BYTES-1)) ==
-        (TOP_DARJEELING_RAM_CTN_BASE_ADDR - TOP_DARJEELING_CTN_BASE_ADDR)) begin
+    if ((ctn_sm1_to_s1n_tl_h2d.a_address & ~(TOP_DARJEELING_SOC_PROXY_RAM_CTN_SIZE_BYTES-1)) ==
+        (TOP_DARJEELING_SOC_PROXY_RAM_CTN_BASE_ADDR - TOP_DARJEELING_SOC_PROXY_CTN_BASE_ADDR)) begin
       ctn_dev_sel_s1n = 1'd0;
     end
   end
@@ -1612,8 +1510,6 @@ module chip_darjeeling_asic #(
     .alert_o()
   );
 
-
-
   //////////////////////////////////
   // Manual Pad / Signal Tie-offs //
   //////////////////////////////////
@@ -1632,13 +1528,6 @@ module chip_darjeeling_asic #(
   assign unused_manual_sigs = ^{
     manual_in_otp_ext_volt
   };
-
-  soc_proxy_pkg::soc_alert_req_t [soc_proxy_pkg::NumFatalExternalAlerts-1:0] soc_fatal_alert_req;
-  soc_proxy_pkg::soc_alert_req_t [soc_proxy_pkg::NumRecovExternalAlerts-1:0] soc_recov_alert_req;
-  assign soc_fatal_alert_req =
-      {soc_proxy_pkg::NumFatalExternalAlerts{soc_proxy_pkg::SOC_ALERT_REQ_DEFAULT}};
-  assign soc_recov_alert_req =
-      {soc_proxy_pkg::NumRecovExternalAlerts{soc_proxy_pkg::SOC_ALERT_REQ_DEFAULT}};
 
   // The power manager waits until the external reset request is removed by the SoC before
   // proceeding to boot after an internal reset request. DV may also drive this signal briefly and
@@ -1670,13 +1559,11 @@ module chip_darjeeling_asic #(
     .sck_monitor_o                     ( sck_monitor                ),
     .pwrmgr_ast_req_o                  ( base_ast_pwr               ),
     .pwrmgr_ast_rsp_i                  ( ast_base_pwr               ),
-    .ast_edn_req_i                     ( ast_edn_edn_req            ),
-    .ast_edn_rsp_o                     ( ast_edn_edn_rsp            ),
     .ast_tl_req_o                      ( base_ast_bus               ),
     .ast_tl_rsp_i                      ( ast_base_bus               ),
     .obs_ctrl_i                        ( obs_ctrl                   ),
-    .otp_ctrl_otp_ast_pwr_seq_o        ( otp_ctrl_otp_ast_pwr_seq   ),
-    .otp_ctrl_otp_ast_pwr_seq_h_i      ( otp_ctrl_otp_ast_pwr_seq_h ),
+    .otp_macro_pwr_seq_o               ( otp_macro_pwr_seq          ),
+    .otp_macro_pwr_seq_h_i             ( otp_macro_pwr_seq_h        ),
     .otp_obs_o                         ( otp_obs                    ),
     .otp_cfg_i                         ( otp_cfg                    ),
     .otp_cfg_rsp_o                     ( otp_cfg_rsp                ),
@@ -1692,19 +1579,13 @@ module chip_darjeeling_asic #(
     .dma_sys_rsp_i                     ( '0                         ),
     .mbx_tl_req_i                      ( tlul_pkg::TL_H2D_DEFAULT   ),
     .mbx_tl_rsp_o                      (                            ),
+    .pwrmgr_ext_rst_ack_i              ( 1'b0                       ),
     .pwrmgr_boot_status_o              ( pwrmgr_boot_status         ),
     .ctn_misc_tl_h2d_i                 ( ctn_misc_tl_h2d_i          ),
     .ctn_misc_tl_d2h_o                 ( ctn_misc_tl_d2h_o          ),
-    .soc_fatal_alert_req_i             ( soc_fatal_alert_req        ),
-    .soc_fatal_alert_rsp_o             (                            ),
-    .soc_recov_alert_req_i             ( soc_recov_alert_req        ),
-    .soc_recov_alert_rsp_o             (                            ),
-    .soc_intr_async_i                  ( '0                         ),
     .soc_wkup_async_i                  ( 1'b0                       ),
     .soc_rst_req_async_i               ( soc_rst_req_async          ),
     .soc_lsio_trigger_i                ( '0                         ),
-    .entropy_src_hw_if_req_o           ( entropy_src_hw_if_req      ),
-    .entropy_src_hw_if_rsp_i           ( entropy_src_hw_if_rsp      ),
     .mbx0_doe_intr_en_o                (                            ),
     .mbx0_doe_intr_o                   (                            ),
     .mbx0_doe_intr_support_o           (                            ),
@@ -1745,13 +1626,10 @@ module chip_darjeeling_asic #(
     .mbx_pcie1_doe_intr_o              (                            ),
     .mbx_pcie1_doe_intr_support_o      (                            ),
     .mbx_pcie1_doe_async_msg_support_o (                            ),
-    .io_clk_byp_req_o                  ( io_clk_byp_req             ),
-    .io_clk_byp_ack_i                  ( io_clk_byp_ack             ),
-    .all_clk_byp_req_o                 ( all_clk_byp_req            ),
-    .all_clk_byp_ack_i                 ( all_clk_byp_ack            ),
-    .hi_speed_sel_o                    ( hi_speed_sel               ),
-    .div_step_down_req_i               ( div_step_down_req          ),
-    .calib_rdy_i                       ( ast_init_done              ),
+    .es_rng_enable_o                   ( es_rng_enable              ),
+    .es_rng_valid_i                    ( es_rng_valid               ),
+    .es_rng_bit_i                      ( es_rng_bit                 ),
+    .es_rng_fips_o                     ( es_rng_fips                ),
 
     // OTP external voltage
     .otp_ext_voltage_h_io              ( OTP_EXT_VOLT               ),
@@ -1810,14 +1688,12 @@ module chip_darjeeling_asic #(
     .fpga_info_i                       ( '0                         )
   );
 
-logic unused_signals;
-assign unused_signals = ^{pwrmgr_boot_status.clk_status,
-                          pwrmgr_boot_status.cpu_fetch_en,
-                          pwrmgr_boot_status.lc_done,
-                          pwrmgr_boot_status.otp_done,
-                          pwrmgr_boot_status.rom_ctrl_status,
-                          pwrmgr_boot_status.strap_sampled};
-
-
+  logic unused_signals;
+  assign unused_signals = ^{pwrmgr_boot_status.clk_status,
+                            pwrmgr_boot_status.cpu_fetch_en,
+                            pwrmgr_boot_status.lc_done,
+                            pwrmgr_boot_status.otp_done,
+                            pwrmgr_boot_status.rom_ctrl_status,
+                            pwrmgr_boot_status.strap_sampled};
 
 endmodule : chip_darjeeling_asic

@@ -194,10 +194,14 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
     if (cfg.en_scb_tl_err_chk) begin
       // check tl packet integrity
-      void'(item.is_ok());
+      if (!item.is_ok()) begin
+        `uvm_error(`gfn,
+                   $sformatf("a_source: 0x%0h & d_source: 0x%0h mismatch",
+                             item.a_source, item.d_source))
+      end
       if (predict_tl_err(item, DataChannel, ral_name)) return;
     end
-    if (cfg.en_scb_mem_chk && is_mem_addr(item, ral_name)) begin
+    if (cfg.en_scb_mem_chk && is_mem_addr(item.a_addr, cfg.ral_models[ral_name])) begin
       if (item.is_write()) begin
         process_mem_write(item, ral_name);
       end else begin
@@ -421,116 +425,118 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     exp_mem[ral_name].compare(addr, item.d_data, item.a_mask);
   endfunction
 
-  // check if it's mem addr
-  virtual function bit is_mem_addr(tl_seq_item item, string ral_name);
-    uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_normalized_addr(item.a_addr);
-    addr_range_t   loc_mem_ranges[$] = cfg.ral_models[ral_name].mem_ranges;
+  // Return true if the normalised version of addr is a memory address in the given reg block.
+  protected virtual function bit is_mem_addr(bit [AddrWidth-1:0] addr, dv_base_reg_block block);
+    uvm_reg_addr_t norm_addr = block.get_normalized_addr(addr);
+    addr_range_t   loc_mem_ranges[$] = block.mem_ranges;
     foreach (loc_mem_ranges[i]) begin
-      if (addr inside {[loc_mem_ranges[i].start_addr : loc_mem_ranges[i].end_addr]}) begin
+      if (norm_addr inside {[loc_mem_ranges[i].start_addr : loc_mem_ranges[i].end_addr]}) begin
         return 1;
       end
     end
     return 0;
   endfunction
 
-  // Check if the tl_mapped address is a csr
-  virtual function bit is_csr_fetch(tl_seq_item item, string ral_name);
+  // Return true if item is a fetch from a mapped address in the given register block
+  protected function bit is_csr_fetch(tl_seq_item item, dv_base_reg_block block);
     cip_tl_seq_item cip_item;
     `downcast(cip_item, item)
     return (item.a_opcode == tlul_pkg::Get &&
             cip_item.get_instr_type() == MuBi4True &&
-            is_tl_access_mapped_addr(item, ral_name) &&
-            !is_mem_addr(item, ral_name));
+            is_tl_access_mapped_addr(item.a_addr, block) &&
+            !is_mem_addr(item.a_addr, block));
   endfunction
 
-  // Checks if the TL access is valid.
+  // Return whether an A-channel access was invalid and check any D-channel response.
   //
-  // On the Addr channel, returns 1 if the item should cause a TL error.
+  // Arguments:
   //
-  // On the Data channel, this also asserts that the item's D channel integrity is correct (because
-  // the DUT should never inject errors) and that item.d_error matches the prediction (to check that
-  // the DUT correctly spots TL errors on the A channel). If TL integrity generation is enabled,
-  // this also calls update_tl_alert_field_prediction() to update the mirrored value of any "I've
-  // seen an integrity error" bit.
+  //    item:     A tl_seq_item representing the transaction. If channel points at the A channel,
+  //              this item will contain all of the "a_* fields* of the request. If channel points
+  //              at the D channel, the item will also contain the "d_* fields" of the response.
   //
-  // The following situations might cause a TL error:
+  //    channel:  The channel from which item was constructed (A or D)
   //
-  //  - unmapped address
-  //  - write address isn't word-aligned
-  //  - partial writes to a bus that does not support it
-  //  - memory write isn't a full word
-  //  - register write size is less than actual register width
-  //  - TL protocol violation
+  //    ral_name: A string naming the interface (used to get a RAL model)
   //
-  // Returns true if invalid access, else false. Caller processes the packet further if the access
-  // is valid.
-  virtual function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
-    bit invalid_access;
-    bit exp_d_error;
+  //
+  // If the channel argument points at the D channel the function checks that the item's D channel
+  // integrity is correct (because the DUT should never inject errors). If the A-channel access was
+  // invalid, the function also checks that d_error=1 and that d_data has been blanked.
+  //
+  // Looking at the A channel transaction, any of the following problems makes the access invalid:
+  //
+  //    - Unmapped address
+  //    - Write address isn't word-aligned
+  //    - Partial writes to a bus that does not support it
+  //    - Memory write isn't a full word
+  //    - Register write size is less than actual register width
+  //    - TL protocol violation
+  protected virtual function bit predict_tl_err(tl_seq_item   item,
+                                                tl_channels_e channel,
+                                                string        ral_name);
+    dv_base_reg_block block = cfg.ral_models[ral_name];
 
-    bit unmapped_err, mem_access_err, bus_intg_err, byte_wr_err, csr_size_err, tl_item_err;
-    bit mem_byte_access_err, mem_wo_err, mem_ro_err, custom_err, ecc_err;
+    bit unmapped_err   = !is_tl_access_mapped_addr(item.a_addr, block);
+    bit bus_intg_err   = !item.is_a_chan_intg_ok(.throw_error(0));
+    bit byte_wr_err    = is_tl_access_unsupported_byte_wr(item, block);
+    bit csr_size_err   = !is_tl_csr_write_size_gte_csr_width(item, block);
+    bit tl_item_err    = item.get_exp_d_error();
+    bit csr_read_err   = is_csr_fetch(item, block);
+
+    bit mem_access_err, mem_byte_access_err, mem_wo_err, mem_ro_err, custom_err;
 
     cip_tl_seq_item cip_item;
-    tl_intg_err_e tl_intg_err_type;
-    logic cmd_intg_err, data_intg_err;
+    tl_intg_err_e   tl_intg_err_type;
+    logic           cmd_intg_err, data_intg_err;
+    bit             write_w_instr_type_err, instr_type_err;
 
-    bit write_w_instr_type_err, instr_type_err, csr_read_err;
-
-    unmapped_err = !is_tl_access_mapped_addr(item, ral_name);
-    if (unmapped_err) begin
-      exp_d_error = !cfg.ral_models[ral_name].get_unmapped_access_ok();
-    end
-
-    mem_access_err = !is_tl_mem_access_allowed(item, ral_name, mem_byte_access_err, mem_wo_err,
+    mem_access_err = !is_tl_mem_access_allowed(item, block, mem_byte_access_err, mem_wo_err,
                                                mem_ro_err, custom_err);
-    if (mem_access_err) begin
-      // Some memory implementations may not return an error response on invalid accesses.
-      exp_d_error |= mem_byte_access_err | mem_wo_err | mem_ro_err | custom_err;
-    end
-
-    if (is_mem_addr(item, ral_name) && cfg.tl_mem_access_gated) begin
-      exp_d_error |= cfg.tl_mem_access_gated;
-    end
-
-    bus_intg_err = !item.is_a_chan_intg_ok(.throw_error(0));
-    if (bus_intg_err) begin
-      // On bus integrity error, update the mirrored value of bus integrity alert CSR fields.
-      update_tl_alert_field_prediction();
-    end
-
-    byte_wr_err = is_tl_access_unsupported_byte_wr(item, ral_name);
-    csr_size_err = !is_tl_csr_write_size_gte_csr_width(item, ral_name);
-    tl_item_err = item.get_exp_d_error();
-    csr_read_err = is_csr_fetch(item, ral_name);
-
-    // For flash, address has to be 8byte aligned.
-    ecc_err = ecc_error_addr.exists({item.a_addr[AddrWidth-1:3],3'b0});
 
     `downcast(cip_item, item)
     cip_item.get_a_chan_err_info(tl_intg_err_type, cmd_intg_err, data_intg_err,
                                  write_w_instr_type_err, instr_type_err);
 
-    exp_d_error |= byte_wr_err | bus_intg_err | csr_size_err | tl_item_err |
-                   write_w_instr_type_err | instr_type_err |
-                   ecc_err | csr_read_err;
-
-    invalid_access = unmapped_err | mem_access_err | bus_intg_err | csr_size_err | tl_item_err |
-                     write_w_instr_type_err | instr_type_err | cfg.tl_mem_access_gated |
-                     csr_read_err;
+    if (bus_intg_err) begin
+      // On bus integrity error, update the mirrored value of bus integrity alert CSR fields.
+      update_tl_alert_field_prediction();
+    end
 
     if (channel == DataChannel) begin
+      bit exp_d_error = 1'b0;
+
+      // For flash, address has to be 8-byte aligned.
+      bit ecc_err = ecc_error_addr.exists({item.a_addr[AddrWidth-1:3], 3'b0});
+
+      if (unmapped_err) begin
+        exp_d_error = !block.get_unmapped_access_ok();
+      end
+
+      if (mem_access_err) begin
+        // Some memory implementations may not return an error response on invalid accesses.
+        exp_d_error |= mem_byte_access_err | mem_wo_err | mem_ro_err | custom_err;
+      end
+
+      if (is_mem_addr(item.a_addr, block) && cfg.tl_mem_access_gated) begin
+        exp_d_error |= cfg.tl_mem_access_gated;
+      end
+
+      exp_d_error |= byte_wr_err | bus_intg_err | csr_size_err | tl_item_err |
+                     write_w_instr_type_err | instr_type_err |
+                     ecc_err | csr_read_err;
+
       // integrity at d_user is from DUT, which should be always correct, except data integrity for
       // passthru memory
       void'(item.is_d_chan_intg_ok(
-            .en_data_intg_chk(!is_data_intg_passthru_mem(item, ral_name) ||
+            .en_data_intg_chk(!is_data_intg_passthru_mem(item, block) ||
                               !cfg.disable_d_user_data_intg_check_for_passthru_mem),
             .throw_error(cfg.m_tl_agent_cfgs[ral_name].check_tl_errs)));
 
       // sample covergroup
       if (cfg.en_tl_intg_err_cov) begin
         tl_intg_err_cgs_wrap[ral_name].sample(tl_intg_err_type, cmd_intg_err, data_intg_err,
-                                              is_mem_addr(item, ral_name));
+                                              is_mem_addr(item.a_addr, block));
 
         if (tl_intg_err_mem_subword_cgs_wrap.exists(ral_name)) begin
           tl_intg_err_mem_subword_cgs_wrap[ral_name].sample(
@@ -539,9 +545,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
               .num_enable_bytes($countones(item.a_mask)));
         end
       end
-    end
 
-    if (channel == DataChannel) begin
       `DV_CHECK_EQ(item.d_error, exp_d_error,
           $sformatf({"On interface %0s, TL item: %0s, unmapped_err: %0d, mem_access_err: %0d, ",
                     "bus_intg_err: %0d, byte_wr_err: %0d, csr_size_err: %0d, tl_item_err: %0d, ",
@@ -553,7 +557,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
       // In data read phase, check d_data when d_error = 1.
       if (item.d_error && (item.d_opcode == tlul_pkg::AccessAckData)) begin
-        check_tl_read_value_after_error(item, ral_name);
+        check_tl_read_value_after_error(item, block);
       end
 
       // we don't have cross coverage for simultaneous errors because 1) they're not important,
@@ -561,9 +565,9 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       // out many invalid combinations.
       // these errors all have the same outcome. Only sample coverages when there is just one
       // error, so that we know the error actually triggers the outcome
-      if (cfg.en_tl_err_cov && $onehot({unmapped_err, mem_byte_access_err, mem_wo_err, mem_ro_err,
-                   bus_intg_err, byte_wr_err, csr_size_err, tl_item_err, write_w_instr_type_err,
-                   instr_type_err})) begin
+      if (cfg.en_tl_err_cov && $onehot0({unmapped_err, mem_byte_access_err, mem_wo_err, mem_ro_err,
+                                         bus_intg_err, byte_wr_err, csr_size_err, tl_item_err,
+                                         instr_type_err})) begin
         tl_errors_cgs_wrap[ral_name].sample(.unmapped_err(unmapped_err),
                                             .csr_size_err(csr_size_err),
                                             .mem_byte_access_err(mem_byte_access_err),
@@ -573,37 +577,57 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
                                             .write_w_instr_type_err(write_w_instr_type_err),
                                             .instr_type_err(instr_type_err));
       end
-
     end
-    return invalid_access;
+
+    return (unmapped_err | mem_access_err | bus_intg_err | csr_size_err | tl_item_err |
+            write_w_instr_type_err | instr_type_err | cfg.tl_mem_access_gated | csr_read_err);
   endfunction
 
-  virtual function void check_tl_read_value_after_error(tl_seq_item item, string ral_name);
-    `DV_CHECK_EQ(item.d_data, 32'hFFFF_FFFF, "d_data mismatch when d_error = 1")
+  protected function void check_tl_read_value_after_error(tl_seq_item item,
+                                                          dv_base_reg_block block);
+    bit [DataWidth-1:0] exp_data;
+    tlul_pkg::tl_a_user_t a_user = tlul_pkg::tl_a_user_t'(item.a_user);
+
+    // Determine expected data.
+    // When the access target was a CSR, tlul_adapter_reg always returns a '1.
+    // When the access target was the memory, tlul_adapter_sram either returns
+    // DataWhenInstrError ('1) or DataWhenError ('0) depending whether it was a
+    // instruction type access or not.
+    uvm_reg_addr_t csr_addr = block.get_word_aligned_addr(item.a_addr);
+    if (csr_addr inside {block.csr_addrs}) begin
+      exp_data = '1;
+    end else begin
+      // if error occurs when it's an instruction, return all 0 since it's an illegal instruction
+      if (a_user.instr_type == prim_mubi_pkg::MuBi4True) exp_data = 0;
+      else                                               exp_data = '1;
+    end
+
+    `DV_CHECK_EQ(item.d_data, exp_data, "d_data mismatch when d_error = 1")
   endfunction
 
-  // check if address is mapped
-  virtual function bit is_tl_access_mapped_addr(tl_seq_item item, string ral_name);
-    uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_normalized_addr(item.a_addr);
+  // Return true if the given address is mapped in the register block
+  local function bit is_tl_access_mapped_addr(bit [AddrWidth-1:0] addr, dv_base_reg_block block);
+    uvm_reg_addr_t norm_addr = block.get_normalized_addr(addr);
     // check if it's mem addr or reg addr
-    return is_mem_addr(item, ral_name) || addr inside {cfg.ral_models[ral_name].csr_addrs};
+    return is_mem_addr(addr, block) || norm_addr inside {block.csr_addrs};
   endfunction
 
   // check if tl mem access will trigger error or not
   // `custom_err` is not set by this base class method. It can be set by the extended class
   // scoreboard to indicate additional, implementation specific errors.
-  virtual function bit is_tl_mem_access_allowed(input tl_seq_item item, input string ral_name,
-                                                output bit mem_byte_access_err,
-                                                output bit mem_wo_err,
-                                                output bit mem_ro_err,
-                                                output bit custom_err);
-    if (is_mem_addr(item, ral_name)) begin
+  protected virtual function bit is_tl_mem_access_allowed(tl_seq_item       item,
+                                                          dv_base_reg_block block,
+                                                          output bit        mem_byte_access_err,
+                                                          output bit        mem_wo_err,
+                                                          output bit        mem_ro_err,
+                                                          output bit        custom_err);
+    if (is_mem_addr(item.a_addr, block)) begin
       dv_base_mem mem;
       bit invalid_access;
-      uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_normalized_addr(item.a_addr);
-      string mem_access = get_mem_access_by_addr(cfg.ral_models[ral_name], addr);
+      uvm_reg_addr_t addr = block.get_normalized_addr(item.a_addr);
+      string mem_access = get_mem_access_by_addr(block, addr);
 
-      `downcast(mem, get_mem_by_addr(cfg.ral_models[ral_name], addr))
+      `downcast(mem, get_mem_by_addr(block, addr))
 
       // Check if write isn't full word for mem that doesn't allow byte access.
       if (!mem.get_mem_partial_write_support() &&
@@ -646,19 +670,19 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   // file specifically for DV purposes, using an externally sourced specification as reference
   // (third party 'vendored-in' code). The end result is - the TL adapter prevents non-word writes
   // to the entire region. See issue #10765 for more details.
-  virtual function bit is_tl_access_unsupported_byte_wr(tl_seq_item item, string ral_name);
+  local function bit is_tl_access_unsupported_byte_wr(tl_seq_item item, dv_base_reg_block block);
     // TODO: We should infer byte enable support from the adapter attached to the interface (i.e.
     // the map) instead. To do that, more extensive changes may be needed, because we do not know
-    // which map to pick - we only know the ral_name of the interface. For now,
+    // which map to pick - we only know the register block. For now,
     // dv_base_reg_block::supports_byte_enable serves this need.
-    return !cfg.ral_models[ral_name].get_supports_byte_enable() &&
-        item.a_opcode inside {tlul_pkg::PutFullData, tlul_pkg::PutPartialData} &&
-        (item.a_size != 2 || item.a_mask != '1);
+    return (!block.get_supports_byte_enable() &&
+            item.a_opcode inside {tlul_pkg::PutFullData, tlul_pkg::PutPartialData} &&
+            (item.a_size != 2 || item.a_mask != '1));
   endfunction
 
-  virtual function bit is_data_intg_passthru_mem(tl_seq_item item, string ral_name);
-    uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_normalized_addr(item.a_addr);
-    uvm_mem mem = cfg.ral_models[ral_name].default_map.get_mem_by_offset(addr);
+  local function bit is_data_intg_passthru_mem(tl_seq_item item, dv_base_reg_block block);
+    uvm_reg_addr_t addr = block.get_normalized_addr(item.a_addr);
+    uvm_mem mem = block.default_map.get_mem_by_offset(addr);
 
     if (mem == null) begin
       return 0;
@@ -669,28 +693,38 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     end
   endfunction
 
-  // check if csr write size greater or equal to csr width
-  virtual function bit is_tl_csr_write_size_gte_csr_width(tl_seq_item item, string ral_name);
-    uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_normalized_addr(item.a_addr);
+  // Return true unless this is a write operation on a register block (potentially a sub-block of
+  // the block argument) where sub-word writes are not allowed but a_mask only hits part of a
+  // register.
+  local function bit is_tl_csr_write_size_gte_csr_width(tl_seq_item item, dv_base_reg_block block);
+    uvm_reg_addr_t    addr;
     dv_base_reg       csr;
-    dv_base_reg_block blk;
-    if (!is_tl_access_mapped_addr(item, ral_name) || is_mem_addr(item, ral_name)) return 1;
-    // The RAL may be composed of sub-blocks each with its own settings. Find the
-    // sub-block to which this address (CSR) belongs.
-    `downcast(csr, cfg.ral_models[ral_name].default_map.get_reg_by_offset(addr))
-    `downcast(blk, csr.get_parent())
-    if (blk.get_supports_sub_word_csr_writes()) return 1;
-    if (item.is_write()) begin
-      uint           csr_msb_pos;
-      csr_msb_pos = csr.get_msb_pos();
-      if (csr_msb_pos >= 24 && item.a_mask[3:0] != 'b1111 ||
-          csr_msb_pos >= 16 && item.a_mask[2:0] != 'b111  ||
-          csr_msb_pos >= 8  && item.a_mask[1:0] != 'b11   ||
-          item.a_mask[0] != 'b1) begin
-        return 0;
-      end
-    end
-    return 1;
+    dv_base_reg_block sub_blk;
+    int unsigned      num_byte_lanes, req_byte_lanes, missing_lanes;
+
+    if (!item.is_write()) return 1;
+
+    // If the address is not mapped, this cannot hit part of a register (it won't hit anything).
+    // Similarly, this won't be part of a register if it is actually a memory address.
+    if (!is_tl_access_mapped_addr(item.a_addr, block) || is_mem_addr(item.a_addr, block)) return 1;
+
+    // The RAL may be composed of sub-blocks each with its own settings. Find the sub-block to which
+    // this address belongs. If that sub-block supports subword writes, return 1 (even if this is a
+    // sub-word write, that's ok).
+    addr = block.get_normalized_addr(item.a_addr);
+    `downcast(csr, block.default_map.get_reg_by_offset(addr))
+    `downcast(sub_blk, csr.get_parent())
+
+    if (sub_blk.get_supports_sub_word_csr_writes()) return 1;
+
+    // We are writing to a register block that doesn't support subword writes. Check that a_mask
+    // hits all the byte lanes of the register. Do this by making a bitmask which is true for all
+    // required byte lanes. Clear the bits in a_mask. If the result is nonzero, there is a byte lane
+    // that wasn't written to.
+    num_byte_lanes = 1 + csr.get_msb_pos() / 8;
+    req_byte_lanes = (1 << num_byte_lanes) - 1;
+    missing_lanes = req_byte_lanes & ~item.a_mask;
+    return ~|missing_lanes;
   endfunction
 
   protected virtual function void reset_alert_state();

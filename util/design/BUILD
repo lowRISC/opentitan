@@ -16,7 +16,11 @@ py_library(
     name = "secded_gen",
     srcs = ["secded_gen.py"],
     data = ["//util/design/data:secded_cfg.hjson"],
-    deps = [requirement("hjson")],
+    deps = [
+        "//util/basegen",
+        requirement("hjson"),
+        requirement("mako"),
+    ],
 )
 
 py_binary(
@@ -88,16 +92,6 @@ py_binary(
 )
 
 py_binary(
-    name = "update-manifest-json",
-    srcs = ["update-manifest-json.py"],
-    imports = ["."],
-    deps = [
-        "//util/design/lib:immutable_section_processor",
-        requirement("hjson"),
-    ],
-)
-
-py_binary(
     name = "sparse-fsm-encode",
     srcs = ["sparse-fsm-encode.py"],
     imports = ["."],
@@ -108,4 +102,9 @@ py_test(
     name = "sparse-fsm-encode-test",
     srcs = ["sparse-fsm-encode-test.py"],
     deps = [":sparse-fsm-encode"],
+)
+
+filegroup(
+    name = "doc_files",
+    srcs = ["README.md"],
 )

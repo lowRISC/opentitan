@@ -14,6 +14,8 @@ module lc_ctrl
 #(
   // Enable asynchronous transitions on alerts.
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert and escalation signal
+  parameter int unsigned AlertSkewCycles = 1,
   // Hardware revision numbers exposed in the CSRs.
   parameter logic [SiliconCreatorIdWidth-1:0] SiliconCreatorId = '0,
   parameter logic [ProductIdWidth-1:0]        ProductId        = '0,
@@ -69,8 +71,8 @@ module lc_ctrl
   output logic                                       strap_en_override_o,
   // Strap override - this is only used when
   // Macro-specific test registers going to lifecycle TAP/DMI
-  output otp_ctrl_pkg::lc_otp_vendor_test_req_t      lc_otp_vendor_test_o,
-  input  otp_ctrl_pkg::lc_otp_vendor_test_rsp_t      lc_otp_vendor_test_i,
+  output otp_macro_pkg::otp_test_req_t               lc_otp_vendor_test_o,
+  input  otp_macro_pkg::otp_test_rsp_t               lc_otp_vendor_test_i,
   // Life cycle transition command interface.
   // No sync required since LC and OTP are in the same clock domain.
   output otp_ctrl_pkg::lc_otp_program_req_t          lc_otp_program_o,
@@ -86,9 +88,11 @@ module lc_ctrl
   input  otp_ctrl_pkg::otp_lc_data_t                 otp_lc_data_i,
   // Life cycle broadcast outputs (all of them are registered).
   // SEC_CM: INTERSIG.MUBI
+  output lc_tx_t                                     lc_init_done_o,
   output lc_tx_t                                     lc_dft_en_o,
   output lc_tx_t                                     lc_raw_test_rma_o,
   output lc_tx_t                                     lc_nvm_debug_en_o,
+  output lc_tx_t                                     lc_hw_debug_clr_o,
   output lc_tx_t                                     lc_hw_debug_en_o,
   output lc_tx_t                                     lc_cpu_en_o,
   output lc_tx_t                                     lc_creator_seed_sw_rw_en_o,
@@ -96,6 +100,7 @@ module lc_ctrl
   output lc_tx_t                                     lc_iso_part_sw_rd_en_o,
   output lc_tx_t                                     lc_iso_part_sw_wr_en_o,
   output lc_tx_t                                     lc_seed_hw_rd_en_o,
+  output lc_tx_t                                     lc_rma_state_o,
   output lc_tx_t                                     lc_keymgr_en_o,
   output lc_tx_t                                     lc_escalate_en_o,
   output lc_tx_t                                     lc_check_byp_en_o,
@@ -134,7 +139,7 @@ module lc_ctrl
   `ASSERT_INIT(DecLcCountWidthCheck_A, CsrLcCountWidth == DecLcCountWidth)
   `ASSERT_INIT(DecLcIdStateWidthCheck_A, CsrLcIdStateWidth == ExtDecLcIdStateWidth)
   `ASSERT_INIT(NumTokenWordsCheck_A, NumTokenWords == LcTokenWidth/32)
-  `ASSERT_INIT(OtpTestCtrlWidth_A, otp_ctrl_pkg::OtpTestCtrlWidth == CsrOtpTestCtrlWidth)
+  `ASSERT_INIT(OtpTestCtrlWidth_A, otp_macro_pkg::OtpTestCtrlWidth == CsrOtpTestCtrlWidth)
 
   /////////////
   // Regfile //
@@ -639,6 +644,7 @@ module lc_ctrl
   for (genvar k = 0; k < NumAlerts; k++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[k]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(1)
     ) u_prim_alert_sender (
       .clk_i,
@@ -671,7 +677,8 @@ module lc_ctrl
   logic esc_scrap_state0;
   prim_esc_receiver #(
     .N_ESC_SEV   (EscNumSeverities),
-    .PING_CNT_DW (EscPingCountWidth)
+    .PING_CNT_DW (EscPingCountWidth),
+    .SkewCycles  (AlertSkewCycles)
   ) u_prim_esc_receiver0 (
     .clk_i,
     .rst_ni,
@@ -685,7 +692,8 @@ module lc_ctrl
   logic esc_scrap_state1;
   prim_esc_receiver #(
     .N_ESC_SEV   (EscNumSeverities),
-    .PING_CNT_DW (EscPingCountWidth)
+    .PING_CNT_DW (EscPingCountWidth),
+    .SkewCycles  (AlertSkewCycles)
   ) u_prim_esc_receiver1 (
     .clk_i,
     .rst_ni,
@@ -751,6 +759,8 @@ module lc_ctrl
   // LC FSM //
   ////////////
 
+  // SEC_CM: MANUF.STATE.SPARSE
+  // SEC_CM: TRANSITION.CTR.SPARSE
   lc_ctrl_fsm #(
     .NumRmaAckSigs                 ( NumRmaAckSigs                  ),
     .RndCnstLcKeymgrDivInvalid     ( RndCnstLcKeymgrDivInvalid      ),
@@ -806,8 +816,10 @@ module lc_ctrl
     .otp_prog_error_o       ( otp_prog_error_d                 ),
     .state_invalid_error_o  ( state_invalid_error_d            ),
     .lc_raw_test_rma_o      ( lc_raw_test_rma                  ),
+    .lc_init_done_o,
     .lc_dft_en_o,
     .lc_nvm_debug_en_o,
+    .lc_hw_debug_clr_o,
     .lc_hw_debug_en_o,
     .lc_cpu_en_o,
     .lc_creator_seed_sw_rw_en_o,
@@ -815,6 +827,7 @@ module lc_ctrl
     .lc_iso_part_sw_rd_en_o,
     .lc_iso_part_sw_wr_en_o,
     .lc_seed_hw_rd_en_o,
+    .lc_rma_state_o,
     .lc_keymgr_en_o,
     .lc_escalate_en_o,
     .lc_check_byp_en_o,
@@ -831,12 +844,20 @@ module lc_ctrl
 
   `ASSERT_KNOWN(RegsTlOKnown,           regs_tl_o                  )
   `ASSERT_KNOWN(DmiTlOKnown,            dmi_tl_o                   )
+  `ASSERT_KNOWN(JtagTDOKnown_A,         jtag_o                     )
   `ASSERT_KNOWN(AlertTxKnown_A,         alert_tx_o                 )
+  `ASSERT_KNOWN(EscScrapState0Known_A,  esc_scrap_state0_rx_o      )
+  `ASSERT_KNOWN(EscScrapState1Known_A,  esc_scrap_state1_rx_o      )
   `ASSERT_KNOWN(PwrLcKnown_A,           pwr_lc_o                   )
+  `ASSERT_KNOWN(StrapEnOverrideKnown_A, strap_en_override_o        )
+  `ASSERT_KNOWN(VendorTestReqKnown_A,   lc_otp_vendor_test_o       )
   `ASSERT_KNOWN(LcOtpProgramKnown_A,    lc_otp_program_o           )
   `ASSERT_KNOWN(LcOtpTokenKnown_A,      kmac_data_o                )
+  `ASSERT_KNOWN(LcInitDoneKnown_A,      lc_init_done_o             )
   `ASSERT_KNOWN(LcDftEnKnown_A,         lc_dft_en_o                )
+  `ASSERT_KNOWN(LcRawTestRmaKnown_A,    lc_raw_test_rma_o          )
   `ASSERT_KNOWN(LcNvmDebugEnKnown_A,    lc_nvm_debug_en_o          )
+  `ASSERT_KNOWN(LcHwDebugClrKnown_A,    lc_hw_debug_clr_o          )
   `ASSERT_KNOWN(LcHwDebugEnKnown_A,     lc_hw_debug_en_o           )
   `ASSERT_KNOWN(LcCpuEnKnown_A,         lc_cpu_en_o                )
   `ASSERT_KNOWN(LcCreatorSwRwEn_A,      lc_creator_seed_sw_rw_en_o )
@@ -844,6 +865,7 @@ module lc_ctrl
   `ASSERT_KNOWN(LcIsoSwRwEn_A,          lc_iso_part_sw_rd_en_o     )
   `ASSERT_KNOWN(LcIsoSwWrEn_A,          lc_iso_part_sw_wr_en_o     )
   `ASSERT_KNOWN(LcSeedHwRdEn_A,         lc_seed_hw_rd_en_o         )
+  `ASSERT_KNOWN(LcRmaState_A,           lc_rma_state_o             )
   `ASSERT_KNOWN(LcKeymgrEnKnown_A,      lc_keymgr_en_o             )
   `ASSERT_KNOWN(LcEscalateEnKnown_A,    lc_escalate_en_o           )
   `ASSERT_KNOWN(LcCheckBypassEnKnown_A, lc_check_byp_en_o          )
@@ -851,6 +873,12 @@ module lc_ctrl
   `ASSERT_KNOWN(LcFlashRmaSeedKnown_A,  lc_flash_rma_seed_o        )
   `ASSERT_KNOWN(LcFlashRmaReqKnown_A,   lc_flash_rma_req_o         )
   `ASSERT_KNOWN(LcKeymgrDiv_A,          lc_keymgr_div_o            )
+  `ASSERT_KNOWN(HwRevKnown_A,           hw_rev_o                   )
+
+  `ASSERT(LcInitDoneSticky_A,
+      lc_tx_test_true_strict(lc_init_done_o)
+      |=>
+      ##1 !$fell(lc_tx_test_true_strict(lc_init_done_o)))
 
   // Alert assertions for sparse FSMs.
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlLcFsmCheck_A,

@@ -2,19 +2,19 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use clap::{Args, Subcommand};
 use regex::Regex;
-use serde_annotate::Annotate;
 use std::any::Any;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
+use std::str::FromStr;
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::crypto::rsa::{
-    Exponent, Modulus, N0Inv, RsaPrivateKey, RsaPublicKey, Signature, RR,
+    Exponent, Modulus, N0Inv, RR, RsaPrivateKey, RsaPublicKey, Signature,
 };
 use opentitanlib::crypto::sha256::Sha256Digest;
 use opentitanlib::util::parse_int::ParseInt;
@@ -44,15 +44,6 @@ pub struct RsaKeyInfo {
     pub rr: RR,
 }
 
-#[derive(serde::Serialize)]
-pub struct RsaKeyInfoInWords {
-    pub key_num_bits: usize,
-    pub modulus: Vec<String>,
-    pub public_exponent: Vec<String>,
-    pub n0_inv: Vec<String>,
-    pub rr: Vec<String>,
-}
-
 /// Show public information of a private or public RSA key
 #[derive(Debug, Args)]
 pub struct RsaKeyShowCommand {
@@ -65,7 +56,7 @@ impl CommandDispatch for RsaKeyShowCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let key = load_pub_or_priv_key(&self.der_file)?;
 
         Ok(Some(Box::new(RsaKeyInfo {
@@ -94,7 +85,7 @@ impl CommandDispatch for RsaKeyGenerateCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let private_key = RsaPrivateKey::new()?;
         let mut der_file = self.output_dir.to_owned();
         der_file.push(&self.basename);
@@ -134,7 +125,7 @@ fn write_bigint_as_u32<W: Write>(
 ) -> Result<()> {
     let chunk = std::mem::size_of::<u32>();
     assert!(
-        number.len() % chunk == 0,
+        number.len().is_multiple_of(chunk),
         "the big integer size is not a multiple of 4 bytes"
     );
     for (idx, num) in number.windows(chunk).step_by(chunk).enumerate() {
@@ -179,7 +170,7 @@ impl CommandDispatch for RsaKeyExportCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let key = load_pub_or_priv_key(&self.der_file)?;
 
         let output_path = match &self.output_file {
@@ -196,7 +187,9 @@ impl CommandDispatch for RsaKeyExportCommand {
         // which would overwrite it. This will not detect situations where there is a symlink
         // involved so this will only catch "obvious" mistakes.
         if self.der_file == output_path {
-            bail!("the output file is the same as the key file, this would overwrite the key, not allowing this")
+            bail!(
+                "the output file is the same as the key file, this would overwrite the key, not allowing this"
+            )
         }
         println!("exporting key to {}", output_path.display());
 
@@ -250,7 +243,7 @@ pub enum RsaKeySubcommands {
 
 #[derive(serde::Serialize)]
 pub struct RsaSignResult {
-    pub digest: String,
+    pub digest: Sha256Digest,
     pub signature: String,
 }
 
@@ -280,19 +273,19 @@ impl CommandDispatch for RsaSignCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let digest = if let Some(input) = &self.input {
             let bytes = std::fs::read(input)?;
-            Sha256Digest::from_le_bytes(bytes)?
+            Sha256Digest::try_from(bytes.as_slice())?
         } else {
-            self.digest.clone().unwrap()
+            self.digest.unwrap()
         };
         let signature = self.private_key.sign(&digest)?;
         if let Some(output) = &self.output {
             signature.write_to_file(output)?;
         }
         Ok(Some(Box::new(RsaSignResult {
-            digest: digest.to_string(),
+            digest,
             signature: signature.to_string(),
         })))
     }
@@ -315,7 +308,7 @@ impl CommandDispatch for RsaVerifyCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let key = RsaPublicKey::from_pkcs1_der_file(&self.der_file)?;
         let digest = Sha256Digest::from_str(&self.digest)?;
         let signature = Signature::from_str(&self.signature)?;

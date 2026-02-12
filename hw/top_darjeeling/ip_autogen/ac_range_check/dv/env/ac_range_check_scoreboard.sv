@@ -9,28 +9,32 @@ class ac_range_check_scoreboard extends cip_base_scoreboard #(
   );
   `uvm_component_utils(ac_range_check_scoreboard)
 
+  // Local objects
+  ac_range_check_dut_cfg   dut_cfg;
+  ac_range_check_predictor predict;
+
   // Local variables
-  ac_range_check_dut_cfg dut_cfg;
-  cip_tl_seq_item latest_filtered_item;
-  int a_chan_matching_cnt;            // Number of matching transactions on A channel
-  int d_chan_matching_cnt;            // Number of matching transactions on D channel
-  int all_unfilt_a_chan_cnt;          // Total number of received transactions on unfilt A channel
-  int exp_unfilt_d_chan_cnt;
+  int a_chan_matching_cnt;    // Number of matching transactions on A channel
+  int d_chan_matching_cnt;    // Number of matching transactions on D channel
   int act_unfilt_d_chan_cnt;
   int act_filt_a_chan_cnt;
-  int exp_filt_a_chan_cnt;
+  uvm_event exp_tl_filt_ev;
+  uvm_event exp_tl_unfilt_ev;
 
   // Local queues
-  access_decision_e tr_access_decision_q[$];  // Access decision for each incoming transaction
+  ac_range_check_scb_item exp_tl_filt_a_chan_q[$];    // Expected tl_filt items from the predictor
+  ac_range_check_scb_item exp_tl_unfilt_d_chan_q[$];  // Expected tl_unfilt items from the predictor
 
-  // TLM agent fifos
-  uvm_tlm_analysis_fifo #(tl_seq_item) tl_unfilt_a_chan_fifo;
+  // TLM FIFOs for incoming transactions from the monitors
   uvm_tlm_analysis_fifo #(tl_seq_item) tl_unfilt_d_chan_fifo;
   uvm_tlm_analysis_fifo #(tl_seq_item) tl_filt_a_chan_fifo;
-  uvm_tlm_analysis_fifo #(tl_seq_item) tl_filt_d_chan_fifo;
+
+  // Incoming transactions from the predictor
+  uvm_blocking_put_imp_filt   #(ac_range_check_scb_item, ac_range_check_scoreboard) tl_filt_imp;
+  uvm_blocking_put_imp_unfilt #(ac_range_check_scb_item, ac_range_check_scoreboard) tl_unfilt_imp;
 
   // Standard SV/UVM methods
-  extern function new(string name="", uvm_component parent=null);
+  extern function new(string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
   extern function void connect_phase(uvm_phase phase);
   extern task run_phase(uvm_phase phase);
@@ -38,37 +42,44 @@ class ac_range_check_scoreboard extends cip_base_scoreboard #(
   extern function void report_phase(uvm_phase phase);
 
   // Class specific methods
-  extern task process_tl_unfilt_a_chan_fifo(output ac_range_check_scb_item tl_unfilt);
   extern task get_tl_unfilt_d_chan_item(output ac_range_check_scb_item tl_unfilt);
   extern task get_tl_filt_a_chan_item(output ac_range_check_scb_item tl_filt);
-  extern task get_tl_filt_d_chan_item(output ac_range_check_scb_item tl_filt);
   extern task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
-  extern task manage_tl_fifos();
+  extern task tl_filt_wait_and_compare();
+  extern task tl_unfilt_wait_and_compare();
+  extern task put_filt(ac_range_check_scb_item tl_filt);
+  extern task put_unfilt(ac_range_check_scb_item tl_unfilt);
   extern function void reset(string kind = "HARD");
   extern function void compare_tl_item(string tl_type, ac_range_check_scb_item exp,
     ac_range_check_scb_item act);
-  extern function access_decision_e check_access(tl_seq_item item);
-  extern function cip_tl_seq_item predict_tl_unfilt_d_chan();
 endclass : ac_range_check_scoreboard
 
 
-function ac_range_check_scoreboard::new(string name="", uvm_component parent=null);
+function ac_range_check_scoreboard::new(string name, uvm_component parent);
   super.new(name, parent);
-  dut_cfg = ac_range_check_dut_cfg::type_id::create("dut_cfg");
 endfunction : new
 
 function void ac_range_check_scoreboard::build_phase(uvm_phase phase);
   super.build_phase(phase);
-  tl_unfilt_a_chan_fifo = new("tl_unfilt_a_chan_fifo", this);
+  dut_cfg               = ac_range_check_dut_cfg::type_id::create("dut_cfg");
+  predict               = ac_range_check_predictor::type_id::create("predict", this);
+  predict.dut_cfg       = dut_cfg;
+  predict.cov           = cov;
+  predict.env_cfg       = cfg;
+  exp_tl_filt_ev        = new();
+  exp_tl_unfilt_ev      = new();
   tl_unfilt_d_chan_fifo = new("tl_unfilt_d_chan_fifo", this);
   tl_filt_a_chan_fifo   = new("tl_filt_a_chan_fifo", this);
-  tl_filt_d_chan_fifo   = new("tl_filt_d_chan_fifo", this);
+  tl_filt_imp           = new("tl_filt_imp", this);
+  tl_unfilt_imp         = new("tl_unfilt_imp", this);
   // TODO: remove once support alert checking
   do_alert_check = 0;
 endfunction : build_phase
 
 function void ac_range_check_scoreboard::connect_phase(uvm_phase phase);
   super.connect_phase(phase);
+  predict.tl_filt_put.connect(this.tl_filt_imp);
+  predict.tl_unfilt_put.connect(this.tl_unfilt_imp);
 endfunction : connect_phase
 
 task ac_range_check_scoreboard::run_phase(uvm_phase phase);
@@ -82,9 +93,10 @@ task ac_range_check_scoreboard::run_phase(uvm_phase phase);
       fork
         begin : main_thread
           fork
-            manage_tl_fifos();
+            predict.manage_tl_fifos();
+            tl_filt_wait_and_compare();
+            tl_unfilt_wait_and_compare();
           join
-          wait fork;  // To ensure it will be killed only when the reset will occur
         end
         begin : reset_thread
           wait(cfg.under_reset);
@@ -95,217 +107,63 @@ task ac_range_check_scoreboard::run_phase(uvm_phase phase);
   end
 endtask : run_phase
 
-// Check whether the current TL access is granted.
-// Note: if a request matches multiple ranges with conflicting permissions enabled, the priority is
-//       given to the first enabled matching range based on the register configuration order (index
-//       0 has priority over 1 for example). Thus, directly return when an enabled matching range is
-//       granting or denying the access.
-// TODO: check if RACL policies control is OK as done below
-function access_decision_e ac_range_check_scoreboard::check_access(tl_seq_item item);
-  `uvm_info(`gfn, $sformatf("Analyzing unfiltered item #%0d", all_unfilt_a_chan_cnt), UVM_MEDIUM)
-
-  // Due to the note above, we should keep this loop starting from index 0
-  for (int i=0; i<NUM_RANGES; i++) begin
-    // Only consider the enabled ranges, continue when the range is not enabled
-    if (!dut_cfg.range_attr[i].enable) begin
-      continue;  // Jump to the next index of the for loop
-    end else begin
-      // Break and try further if the address is not matching this index range
-      if (!(item.a_addr >= dut_cfg.range_base[i] && item.a_addr < dut_cfg.range_limit[i])) begin
-        `uvm_info(`gfn, $sformatf("Address 0x%0h is not within the configured range for index #%0d",
-                  item.a_addr, i), UVM_HIGH)
-        continue;  // Jump to the next index of the for loop
-      // Range is allowed
-      end else begin
-        if (!item.is_write()) begin
-          // Access is an EXECUTE (a_user contains this information if a_opcode indicates a read)
-          if (item.a_user[InstrTypeMsbPos:InstrTypeLsbPos] == MuBi4True) begin
-            if (!dut_cfg.range_attr[i].execute_access) begin
-              `uvm_info(`gfn, $sformatf({"EXECUTE access to address 0x%0h is DENIED as ",
-                "configured in range_attr index #%0d"}, item.a_addr, i), UVM_MEDIUM)
-              return AccessDenied;
-            end else begin
-              // RACL policy READ permission should also be set
-              if (!dut_cfg.range_racl_policy[i].read_perm) begin
-                `uvm_info(`gfn, $sformatf({"EXECUTE access to address 0x%0h is DENIED as ",
-                  "configured in range_racl_policy index #%0d"}, item.a_addr, i), UVM_HIGH)
-                continue;  // Jump to the next index of the for loop
-              end else begin
-                `uvm_info(`gfn, $sformatf({"EXECUTE access to address 0x%0h is GRANTED as ",
-                  "configured in registers with index #%0d"}, item.a_addr, i), UVM_MEDIUM)
-                return AccessGranted;
-              end
-            end
-          // Access is a READ
-          end else begin
-            if (!dut_cfg.range_attr[i].read_access) begin
-              `uvm_info(`gfn, $sformatf({"READ access to address 0x%0h is DENIED as ",
-                "configured in range_attr index #%0d"}, item.a_addr, i), UVM_MEDIUM)
-              return AccessDenied;
-            end else begin
-              // RACL policy READ permission should also be set
-              if (!dut_cfg.range_racl_policy[i].read_perm) begin
-                `uvm_info(`gfn, $sformatf({"READ access to address 0x%0h is DENIED as ",
-                  "configured in range_racl_policy index #%0d"}, item.a_addr, i), UVM_HIGH)
-                continue;  // Jump to the next index of the for loop
-              end else begin
-                `uvm_info(`gfn, $sformatf({"READ access to address 0x%0h is GRANTED as ",
-                  "configured in registers with index #%0d"}, item.a_addr, i), UVM_MEDIUM)
-                return AccessGranted;
-              end
-            end
-          end
-        // Access is a WRITE
-        end else begin
-          if (!dut_cfg.range_attr[i].write_access) begin
-            `uvm_info(`gfn, $sformatf({"WRITE access to address 0x%0h is DENIED as ",
-              "configured in range_attr index #%0d"}, item.a_addr, i), UVM_MEDIUM)
-            return AccessDenied;
-          end else begin
-            // RACL policy WRITE permission should also be set
-            if (!dut_cfg.range_racl_policy[i].write_perm) begin
-              `uvm_info(`gfn, $sformatf({"WRITE access to address 0x%0h is DENIED as ",
-                "configured in range_racl_policy index #%0d"}, item.a_addr, i), UVM_HIGH)
-              continue;  // Jump to the next index of the for loop
-            end else begin
-              `uvm_info(`gfn, $sformatf({"WRITE access to address 0x%0h is GRANTED as ",
-                "configured in registers with index #%0d"}, item.a_addr, i), UVM_MEDIUM)
-              return AccessGranted;
-            end
-          end
-        end
-      end
-    end
-  end
-  `uvm_info(`gfn, $sformatf("No matching range found for access #%0d to address 0x%0h",
-            all_unfilt_a_chan_cnt, item.a_addr), UVM_MEDIUM)
-  return AccessDenied;
-endfunction : check_access
-
-function cip_tl_seq_item ac_range_check_scoreboard::predict_tl_unfilt_d_chan();
-  cip_tl_seq_item tmp_exp;
-  `DV_CHECK_FATAL(latest_filtered_item != null);
-  // Predict the exp_tl_unfilt_d_chan item based on the latest_filtered_item item.
-  // First copy over all the fields and make some adjustments afterward
-  `DV_CHECK_FATAL($cast(tmp_exp, latest_filtered_item.clone()));
-  tmp_exp.d_source = latest_filtered_item.a_source;
-  // Set TL error flag
-  tmp_exp.d_error  = 1;
-  // When READ/EXECUTE forward data to zero
-  // This check below is required as we can also get erroneous a_user type.
-  if (!latest_filtered_item.is_write() &&
-      (latest_filtered_item.a_user[InstrTypeMsbPos:InstrTypeLsbPos] == MuBi4True ||
-       latest_filtered_item.a_user[InstrTypeMsbPos:InstrTypeLsbPos] == MuBi4False)) begin
-      tmp_exp.d_data = 0;
-  end
-  // Deduce the d_opcode
-  if (latest_filtered_item.a_opcode == tlul_pkg::Get) begin
-    tmp_exp.d_opcode = tlul_pkg::AccessAckData;
-  end else if (latest_filtered_item.a_opcode == tlul_pkg::PutFullData ||
-               latest_filtered_item.a_opcode == tlul_pkg::PutPartialData) begin
-    tmp_exp.d_opcode = tlul_pkg::AccessAck;
-  end
-  // Set the d_size to fixed value 32 bits
-  tmp_exp.d_size = 2;
-  // Compute the d_user field
-  tmp_exp.d_user = tmp_exp.compute_d_user();
-  return tmp_exp;
-endfunction : predict_tl_unfilt_d_chan
-
-// For A channels:
-//   - Denied TL transactions are filtered.
-//   - Granted TL transactions are forwarded without any change.
-// This task predicts the EXPECTED item only when the check_access called from
-// process_tl_unfilt_a_chan_fifo returns AccessGranted. Gets the ACTUAL item from its dedicated
-// queue. When both items are available, calls the comparison function.
-//
-// For D channels, when the check_access called from process_tl_unfilt_a_chan_fifo returns:
-//   - AccessDenied: the D fields of the item are fed with the info from the latest_filtered_item
-//     of the A channel. Additionally, d_error is set to high and d_data is set to 0 in case of a
-//     read/execute access.
-//   - AccessGranted: the responses provided by the TL device agent (tl_filt_agt) and received
-//     on the tl_filt_d_chan_fifo are forwarded without any change, except for d_data when the
-//     access is a write. In that case the d_data will be zeroed, but it has been decided to ignore
-//     this field in that condition. Note: the reason is mentionned in the PR #1236 ("to avoid
-//     unknown assertion failure on prim_fifo_sync").
-// This task predicts the EXPECTED item based on what has been assessed by the
-// process_tl_unfilt_a_chan_fifo task (by calling the check_access function). Gets the ACTUAL item
-//  from its dedicated queue. When both items are available, calls the comparison function.
-task ac_range_check_scoreboard::manage_tl_fifos();
-  ac_range_check_scb_item exp_tl_filt_a_chan;
+task ac_range_check_scoreboard::tl_filt_wait_and_compare();
   ac_range_check_scb_item act_tl_filt_a_chan;
-  ac_range_check_scb_item exp_tl_unfilt_d_chan;
-  ac_range_check_scb_item act_tl_unfilt_d_chan;
-
-  exp_tl_filt_a_chan   = ac_range_check_scb_item::type_id::create("exp_tl_filt_a_chan");
-  act_tl_filt_a_chan   = ac_range_check_scb_item::type_id::create("act_tl_filt_a_chan");
-  exp_tl_unfilt_d_chan = ac_range_check_scb_item::type_id::create("exp_tl_unfilt_d_chan");
-  act_tl_unfilt_d_chan = ac_range_check_scb_item::type_id::create("act_tl_unfilt_d_chan");
+  ac_range_check_scb_item exp_tl_filt_a_chan;
 
   forever begin
-    // Wait until a transaction is available on the tl_unfilt_a_chan port and process it
-    process_tl_unfilt_a_chan_fifo(exp_tl_filt_a_chan);
-
-    // When the predicted access is AccessGranted
-    if (tr_access_decision_q[all_unfilt_a_chan_cnt-1] == AccessGranted) begin
-      // Get item from the tl_filt_a_chan_fifo
-      get_tl_filt_a_chan_item(act_tl_filt_a_chan);
-      // And do the comparison of the filtered A channel items
-      compare_tl_item("tl_filt_a_chan", exp_tl_filt_a_chan, act_tl_filt_a_chan);
-      // Get item from the tl_filt_d_chan_fifo (no process is required as it should just go through
-      // except for WRITE operations.
-      get_tl_filt_d_chan_item(exp_tl_unfilt_d_chan);
-      // In presence of a WRITE, the d_data should be zeroed (see PR #1236)
-      if (exp_tl_unfilt_d_chan.item.is_write()) begin
-        exp_tl_unfilt_d_chan.item.d_data = 0;
-      end
-    // When the predicted access is AccessDenied
-    end else begin
-      `uvm_create_obj(tl_seq_item, exp_tl_unfilt_d_chan.item)
-      // Predict what the DUT will build based on the latest_filtered_item on A channel
-      exp_tl_unfilt_d_chan.item = predict_tl_unfilt_d_chan();
-      // Update the expected counter as this should match the actual
-      exp_unfilt_d_chan_cnt++;
-      exp_tl_unfilt_d_chan.cnt = exp_unfilt_d_chan_cnt;
+    // Wait until a transaction has been fed from the predictor
+    if (exp_tl_filt_a_chan_q.size() == 0) begin
+      exp_tl_filt_ev.wait_trigger;
     end
+    // Get item from the exp_tl_filt_a_chan_q
+    exp_tl_filt_a_chan = exp_tl_filt_a_chan_q.pop_front();
+    // Get item from the tl_filt_a_chan_fifo
+    get_tl_filt_a_chan_item(act_tl_filt_a_chan);
+    // Finally do the comparison of the filtered A channel items
+    compare_tl_item("tl_filt_a_chan", exp_tl_filt_a_chan, act_tl_filt_a_chan);
+  end
+endtask : tl_filt_wait_and_compare
+
+task ac_range_check_scoreboard::tl_unfilt_wait_and_compare();
+  ac_range_check_scb_item act_tl_unfilt_d_chan;
+  ac_range_check_scb_item exp_tl_unfilt_d_chan;
+
+  forever begin
+    // Wait until a transaction has been fed from the predictor
+    if (exp_tl_unfilt_d_chan_q.size() == 0) begin
+      exp_tl_unfilt_ev.wait_trigger;
+    end
+    // Get item from the exp_tl_unfilt_d_chan_q
+    exp_tl_unfilt_d_chan = exp_tl_unfilt_d_chan_q.pop_front();
     // Get item from the tl_unfilt_d_chan_fifo
     get_tl_unfilt_d_chan_item(act_tl_unfilt_d_chan);
     // Finally do the comparison of the unfiltered D channel items
     compare_tl_item("tl_unfilt_d_chan", exp_tl_unfilt_d_chan, act_tl_unfilt_d_chan);
   end
-endtask : manage_tl_fifos
+endtask : tl_unfilt_wait_and_compare
 
-// Get an item from the tl_unfilt_a_chan_fifo and call the check_access function to assess whether
-// the current transaction should be granted or denied.
-task ac_range_check_scoreboard::process_tl_unfilt_a_chan_fifo(
-  output ac_range_check_scb_item tl_unfilt);
-  tl_unfilt = ac_range_check_scb_item::type_id::create("tl_unfilt");
-  tl_unfilt_a_chan_fifo.get(tl_unfilt.item);
-  all_unfilt_a_chan_cnt++;
-  `uvm_info(`gfn, $sformatf("Received tl_unfilt_a_chan unfiltered item #%0d:\n%0s",
-                            all_unfilt_a_chan_cnt, tl_unfilt.item.sprint()), UVM_HIGH)
+// As required by the macro uvm_blocking_put_imp_decl, we need to implement this task which will be
+// called from the predictor when calling the "put" method
+task ac_range_check_scoreboard::put_filt(ac_range_check_scb_item tl_filt);
+  exp_tl_filt_a_chan_q.push_back(tl_filt);
+  exp_tl_filt_ev.trigger;
+endtask : put_filt
 
-  // Store whether the access is granted or not, this info could be then retrieved by using the
-  // the queue index based on the all_unfilt_a_chan_cnt
-  tr_access_decision_q.push_back(check_access(tl_unfilt.item));
-
-  if (tr_access_decision_q[all_unfilt_a_chan_cnt-1] == AccessGranted) begin
-    exp_filt_a_chan_cnt++;
-    tl_unfilt.cnt = exp_filt_a_chan_cnt;
-    `uvm_info(`gfn, $sformatf({"EXPECTED filtered item #%0d/%0d on tl_unfilt_a_chan has been ",
-              "forwarded for comparison"}, exp_filt_a_chan_cnt, all_unfilt_a_chan_cnt), UVM_LOW)
-  end else begin
-    `uvm_info(`gfn, $sformatf("Item #%0d from tl_unfilt_a_chan has been filtered",
-              all_unfilt_a_chan_cnt), UVM_LOW)
-    `DV_CHECK_FATAL($cast(latest_filtered_item, tl_unfilt.item));
-  end
-endtask : process_tl_unfilt_a_chan_fifo
+// As required by the macro uvm_blocking_put_imp_decl, we need to implement this task which will be
+// called from the predictor when calling the "put" method
+task ac_range_check_scoreboard::put_unfilt(ac_range_check_scb_item tl_unfilt);
+  exp_tl_unfilt_d_chan_q.push_back(tl_unfilt);
+  exp_tl_unfilt_ev.trigger;
+endtask : put_unfilt
 
 task ac_range_check_scoreboard::get_tl_unfilt_d_chan_item(output ac_range_check_scb_item tl_unfilt);
   tl_unfilt = ac_range_check_scb_item::type_id::create("tl_unfilt");
   // Timeout with an error if the FIFO remains empty
   fork
-    `DV_WAIT_TIMEOUT(10_000_000, `gfn, "Unable to get any item from tl_unfilt_d_chan_fifo.", 0)
+    // Because of the increased number of transactions, the timeout must be
+    // increased
+    `DV_WAIT_TIMEOUT(100_000_000, `gfn, "Unable to get any item from tl_unfilt_d_chan_fifo.", 0)
     tl_unfilt_d_chan_fifo.get(tl_unfilt.item);
   join_any
   act_unfilt_d_chan_cnt++;
@@ -320,7 +178,9 @@ task ac_range_check_scoreboard::get_tl_filt_a_chan_item(output ac_range_check_sc
   tl_filt = ac_range_check_scb_item::type_id::create("tl_filt");
   // Timeout with an error if the FIFO remains empty
   fork
-    `DV_WAIT_TIMEOUT(10_000_000, `gfn, "Unable to get any item from tl_filt_a_chan_fifo.", 0)
+    // Because of the increased number of transactions, the timeout must be
+    // increased
+    `DV_WAIT_TIMEOUT(100_000_000, `gfn, "Unable to get any item from tl_filt_a_chan_fifo.", 0)
     tl_filt_a_chan_fifo.get(tl_filt.item);
   join_any
   act_filt_a_chan_cnt++;
@@ -330,20 +190,6 @@ task ac_range_check_scoreboard::get_tl_filt_a_chan_item(output ac_range_check_sc
   `uvm_info(`gfn, $sformatf({"ACTUAL filtered item #%0d on tl_filt_a_chan has been ",
             "forwarded for comparison"}, act_filt_a_chan_cnt), UVM_LOW)
 endtask : get_tl_filt_a_chan_item
-
-// Get the item generated from the TB and sent to the tl_filt D channel.
-task ac_range_check_scoreboard::get_tl_filt_d_chan_item(output ac_range_check_scb_item tl_filt);
-  tl_filt = ac_range_check_scb_item::type_id::create("tl_filt");
-  // Timeout with an error if the FIFO remains empty
-  fork
-    `DV_WAIT_TIMEOUT(10_000_000, `gfn, "Unable to get any item from tl_filt_d_chan_fifo.", 0)
-    tl_filt_d_chan_fifo.get(tl_filt.item);
-  join_any
-  exp_unfilt_d_chan_cnt++;
-  tl_filt.cnt = exp_unfilt_d_chan_cnt;
-  `uvm_info(`gfn, $sformatf("Received tl_filt_d_chan item #%0d:\n%0s",
-                            exp_unfilt_d_chan_cnt, tl_filt.item.sprint()), UVM_HIGH)
-endtask : get_tl_filt_d_chan_item
 
 function void ac_range_check_scoreboard::compare_tl_item(string tl_type,
                                                          ac_range_check_scb_item exp,
@@ -423,17 +269,36 @@ task ac_range_check_scoreboard::process_tl_access(tl_seq_item item,
 
   // Process the CSR req:
   //  - for write, update local variable and FIFO at AChanWrite phase
-  //  - for read, update predication at AChanRead phase and compare at DChanRead phase
+  //  - for read, update prediction at AChanRead phase and compare at DChanRead phase
   case (csr_name)
     // Add individual case item for each csr
+    // TODO: Coverage sampling for interrupts should be moved to the CIP
+    // instead of it being performed in the scoreboard / predictor. Why it is
+    // implemented in such a manner must be examined.
     "intr_state": begin
-      // FIXME TODO MVy
+      if (tl_phase == DChanRead) begin
+        if (cfg.en_cov) begin
+          cov.intr_cg.sample(.intr(0),
+                             .intr_en(`gmv(cfg.ral.intr_enable)),
+                             .intr_state(`gmv(cfg.ral.intr_state)));
+          cov.intr_pins_cg.sample(.intr_pin(0),
+                                  .intr_pin_value(cfg.intr_vif.sample()));
+        end
+      end
     end
     "intr_enable": begin
       // FIXME TODO MVy
     end
     "intr_test": begin
-      // FIXME TODO MVy
+      if (tl_phase == AChanWrite) begin
+        if (cfg.en_cov) begin
+          bit intr_state = `gmv(cfg.ral.intr_state) | item.a_data;
+          cov.intr_test_cg.sample(.intr(0),
+                                  .intr_test(item.a_data),
+                                  .intr_en(`gmv(cfg.ral.intr_enable)),
+                                  .intr_state(intr_state));
+        end
+      end
     end
     "alert_test": begin
       // FIXME TODO MVy
@@ -442,13 +307,25 @@ task ac_range_check_scoreboard::process_tl_access(tl_seq_item item,
       // FIXME TODO MVy
     end
     "log_config": begin
-      // FIXME TODO MVy
+      // log_config is hwext with mixed field types - check reads but handle log_clear specially
+      // Detect write to log_config with log_clear bit set and clear log status
+      if (tl_phase == AChanWrite &&
+          item.a_data[ral.log_config.log_clear.get_lsb_pos()] == 1'b1) begin
+        `uvm_info(`gfn, $sformatf({"Clear performed to log_status and log_address ",
+                                   "(detected in scoreboard)"}), UVM_MEDIUM)
+        void'(ral.log_status.predict(.value(32'b0), .kind(UVM_PREDICT_DIRECT)));
+        void'(ral.log_address.predict(.value(32'b0), .kind(UVM_PREDICT_DIRECT)));
+        predict.deny_cnt = 0;
+        predict.overflow_flag = 0;
+      end
     end
     "log_status": begin
-      // FIXME TODO MVy
+      // log_status is read-only for SW, so no need to update the RAL here.
+      // Read checks are done by default.
     end
     "log_address": begin
-      // FIXME TODO MVy
+      // log_address is read-only for SW, so no need to update the RAL here.
+      // Read checks are done by default.
     end
     "range_regwen": begin
       // FIXME TODO MVy
@@ -502,17 +379,13 @@ endtask : process_tl_access
 
 function void ac_range_check_scoreboard::reset(string kind = "HARD");
   super.reset(kind);
-  tl_unfilt_a_chan_fifo.flush();
+  predict.reset(kind);
   tl_unfilt_d_chan_fifo.flush();
   tl_filt_a_chan_fifo.flush();
-  tl_filt_d_chan_fifo.flush();
+  act_unfilt_d_chan_cnt = 0;
+  act_filt_a_chan_cnt   = 0;
   a_chan_matching_cnt   = 0;
   d_chan_matching_cnt   = 0;
-  all_unfilt_a_chan_cnt = 0;
-  exp_unfilt_d_chan_cnt = 0;
-  act_unfilt_d_chan_cnt = 0;
-  exp_filt_a_chan_cnt   = 0;
-  act_filt_a_chan_cnt   = 0;
 endfunction : reset
 
 function void ac_range_check_scoreboard::check_phase(uvm_phase phase);
@@ -523,19 +396,28 @@ function void ac_range_check_scoreboard::check_phase(uvm_phase phase);
   // things when the ran test is related to the CSR checks in particular.
   if (cfg.en_scb) begin
     if (a_chan_matching_cnt == 0) begin
-      `uvm_error(`gfn, {"No matching transaction found, it can be because all the TL accesses have",
-                        " been filtered. Please check your DUT configuration and your sequence."})
+      // Downgrading this to an info. If all input TL transaction for some reason get
+      // filtered, the block has legally done its job. Cannot downgrade this to a warning as all
+      // warnings are also treated as errors.
+
+      // There is a legal scenario where all range indexes are disabled and bypass is also disabled,
+      // then all TLUL transactions are DENIED and will never see a_chan_matching_cnt > 0
+      // Other scenario where no TLUL traffic will be observed are standard CSR tests
+      // The scoreboard is usually disabled for the standard CIP tests, but for intr_test
+      // scoreboard will be enabled and this specific check has to be disabled
+      if (cfg.en_scb_err_downgrade) begin
+        `uvm_info(`gfn, {"No matching transaction found, it can be because all the TL accesses ",
+          "have been filtered. Please check your DUT configuration and your sequence."}, UVM_LOW)
+      end else begin
+        `uvm_error(`gfn, {"No matching transaction found, it can be because all the TL accesses ",
+          "have been filtered. Please check your DUT configuration and your sequence."})
+      end
     end
 
-    if (d_chan_matching_cnt != all_unfilt_a_chan_cnt) begin
+    if (d_chan_matching_cnt != predict.all_unfilt_a_chan_cnt) begin
       `uvm_error(`gfn, $sformatf({"The number of matching transactions on the A and on the D ",
                  "channels must be equal: all_unfilt_a_chan_cnt=%0d vs d_chan_matching_cnt=%0d"},
-                 all_unfilt_a_chan_cnt, d_chan_matching_cnt))
-    end
-
-    if (tl_unfilt_a_chan_fifo.size() > 0) begin
-      `uvm_error(`gfn, {"FIFO tl_unfilt_a_chan_fifo is not empty: not all the received TL",
-                        " transactions have been compared."})
+                 predict.all_unfilt_a_chan_cnt, d_chan_matching_cnt))
     end
 
     if (tl_unfilt_d_chan_fifo.size() > 0) begin
@@ -545,11 +427,6 @@ function void ac_range_check_scoreboard::check_phase(uvm_phase phase);
 
     if (tl_filt_a_chan_fifo.size() > 0) begin
       `uvm_error(`gfn, {"FIFO tl_filt_a_chan_fifo is not empty: not all the received TL",
-                        " transactions have been compared."})
-    end
-
-    if (tl_filt_d_chan_fifo.size() > 0) begin
-      `uvm_error(`gfn, {"FIFO tl_filt_d_chan_fifo is not empty: not all the received TL",
                         " transactions have been compared."})
     end
   end

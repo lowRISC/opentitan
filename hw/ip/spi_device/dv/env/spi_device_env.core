@@ -3,7 +3,7 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:dv:spi_device_env:0.1"
-description: "RISC-V Timer DV UVM environmnt"
+description: "RISC-V Timer DV UVM environment"
 filesets:
   files_dv:
     depend:
@@ -51,6 +51,7 @@ generate:
     parameters:
       name: spi_device
       ip_hjson: ../../data/spi_device.hjson
+    position: prepend
 
 targets:
   default:

@@ -41,7 +41,7 @@ waive -rules RESET_USE -location {top_earlgrey.sv} -regexp {'scan_rst_ni' is con
       -comment "Scan reset is a legal asynchronous reset"
 
 # intentionally unused
-waive -rules {NOT_READ HIER_NET_NOT_READ} -location {top_earlgrey.sv} -regexp {.*cio_otp_ctrl_test_(en_)?d2p\[7:1\].* is not read} \
+waive -rules {NOT_READ HIER_NET_NOT_READ} -location {top_earlgrey.sv} -regexp {.*cio_otp_macro_test_(en_)?d2p\[7:1\].* is not read} \
       -comment "otp test bus made deliberately larger on purpose"
 
 ## xbar
@@ -73,3 +73,6 @@ waive -rules SAME_NAME_TYPE -location {prim_trivium.sv prim_xoshiro256pp.sv} -re
 
 waive -rules {LINE_LENGTH} -location {top_earlgrey.sv} -regexp {Line length of [0-9]+ exceeds 100 character limit} \
       -comment "top_earlgrey is auto-generated and adhering to the line length limit is not always feasible for auto-generated code"
+
+waive -rules LINE_LENGTH -location {top_earlgrey_rnd_cnst_pkg.sv} -regexp {Line length of [0-9]+ exceeds 100 character limit} \
+      -comment "top_earlgrey_rnd_cnst_pkg is auto-generated and adhering to the line length limit is not always feasible for auto-generated code"

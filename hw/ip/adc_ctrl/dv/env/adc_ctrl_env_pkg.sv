@@ -22,7 +22,7 @@ package adc_ctrl_env_pkg;
   // parameters
   // alerts
   parameter uint NUM_ALERTS = 1;
-  parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
+  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"fatal_fault"};
   // Number of ADC channels
   parameter int unsigned ADC_CTRL_CHANNELS = ast_pkg::AdcChannels;
   // ADC data width
@@ -80,7 +80,7 @@ package adc_ctrl_env_pkg;
     ADC_CTRL_FILTER_COND_OUT = 1
   } adc_ctrl_filter_cond_e;
 
-  // Filter configurration
+  // Filter configuration
   typedef struct packed {
     adc_ctrl_filter_cond_e cond;  // Condition
     int min_v;  // Minimum value

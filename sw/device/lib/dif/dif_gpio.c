@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/dif/dif_gpio.h"
 
-#include "gpio_regs.h"  // Generated.
+#include "hw/top/gpio_regs.h"  // Generated.
 
 static_assert(kDifGpioNumPins <= 32,
               "This implementation assumes that the number of pins is less "

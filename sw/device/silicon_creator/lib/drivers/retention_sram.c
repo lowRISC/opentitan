@@ -6,11 +6,11 @@
 
 #include <assert.h>
 
-#include "dt/dt_sram_ctrl.h"
+#include "hw/top/dt/sram_ctrl.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/memory.h"
 
-#include "sram_ctrl_regs.h"  // Generated.
+#include "hw/top/sram_ctrl_regs.h"  // Generated.
 
 static const dt_sram_ctrl_t kSramCtrlDt = kDtSramCtrlRetAon;
 

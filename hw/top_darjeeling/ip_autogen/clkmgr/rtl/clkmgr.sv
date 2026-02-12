@@ -13,7 +13,9 @@
     import lc_ctrl_pkg::lc_tx_t;
     import prim_mubi_pkg::mubi4_t;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned AlertSkewCycles = 1
 ) (
   // Primary module control clocks and resets
   // This drives the register interface
@@ -32,15 +34,11 @@
 
   // Resets for derived clocks
   // clocks are derived locally
-  input rst_io_div2_ni,
-  input rst_io_div4_ni,
 
   // Resets for derived clock generation, root clock gating and related status
   input rst_root_ni,
   input rst_root_main_ni,
   input rst_root_io_ni,
-  input rst_root_io_div2_ni,
-  input rst_root_io_div4_ni,
 
   // Bus Interface
   input tlul_pkg::tl_h2d_t tl_i,
@@ -61,34 +59,8 @@
   // SEC_CM: IDLE.INTERSIG.MUBI
   input prim_mubi_pkg::mubi4_t [3:0] idle_i,
 
-  // life cycle state output
-  // SEC_CM: LC_CTRL.INTERSIG.MUBI
-  input lc_tx_t lc_hw_debug_en_i,
-
-  // clock bypass control with lc_ctrl
-  // SEC_CM: LC_CTRL_CLK_HANDSHAKE.INTERSIG.MUBI
-  input lc_tx_t lc_clk_byp_req_i,
-  output lc_tx_t lc_clk_byp_ack_o,
-
-  // clock bypass control with ast
-  // SEC_CM: CLK_HANDSHAKE.INTERSIG.MUBI
-  output mubi4_t io_clk_byp_req_o,
-  input mubi4_t io_clk_byp_ack_i,
-  output mubi4_t all_clk_byp_req_o,
-  input mubi4_t all_clk_byp_ack_i,
-  output mubi4_t hi_speed_sel_o,
-
-  // clock calibration has been done.
-  // If this is signal is 0, assume clock frequencies to be
-  // uncalibrated.
-  input prim_mubi_pkg::mubi4_t calib_rdy_i,
-
   // jittery enable to ast
   output mubi4_t jitter_en_o,
-
-  // external indication for whether dividers should be stepped down
-  // SEC_CM: DIV.INTERSIG.MUBI
-  input mubi4_t div_step_down_req_i,
 
   // clock gated indications going to alert handlers
   output clkmgr_cg_en_t cg_en_o,
@@ -130,80 +102,7 @@
   ////////////////////////////////////////////////////
   // External step down request
   ////////////////////////////////////////////////////
-  mubi4_t io_step_down_req;
-  prim_mubi4_sync #(
-    .NumCopies(1),
-    .AsyncOn(1),
-    .StabilityCheck(1),
-    .ResetValue(MuBi4False)
-  ) u_io_step_down_req_sync (
-    .clk_i(clk_io),
-    .rst_ni(rst_io_ni),
-    .mubi_i(div_step_down_req_i),
-    .mubi_o({io_step_down_req})
-  );
 
-
-  ////////////////////////////////////////////////////
-  // Divided clocks
-  // Note divided clocks must use the por version of
-  // its related reset to ensure clock division
-  // can happen without any dependency
-  ////////////////////////////////////////////////////
-
-  logic [1:0] step_down_acks;
-
-  logic clk_io_div2;
-  logic clk_io_div4;
-
-
-  // Declared as size 1 packed array to avoid FPV warning.
-  prim_mubi_pkg::mubi4_t [0:0] io_div2_div_scanmode;
-  prim_mubi4_sync #(
-    .NumCopies(1),
-    .AsyncOn(0)
-  ) u_io_div2_div_scanmode_sync  (
-    .clk_i,
-    .rst_ni,
-    .mubi_i(scanmode_i),
-    .mubi_o({io_div2_div_scanmode})
-  );
-
-  prim_clock_div #(
-    .Divisor(2)
-  ) u_no_scan_io_div2_div (
-    // We're using the pre-occ hookup (*_i) version for clock derivation.
-    .clk_i(clk_io_i),
-    .rst_ni(rst_root_io_ni),
-    .step_down_req_i(mubi4_test_true_strict(io_step_down_req)),
-    .step_down_ack_o(step_down_acks[0]),
-    .test_en_i(mubi4_test_true_strict(io_div2_div_scanmode[0])),
-    .clk_o(clk_io_div2)
-  );
-
-  // Declared as size 1 packed array to avoid FPV warning.
-  prim_mubi_pkg::mubi4_t [0:0] io_div4_div_scanmode;
-  prim_mubi4_sync #(
-    .NumCopies(1),
-    .AsyncOn(0)
-  ) u_io_div4_div_scanmode_sync  (
-    .clk_i,
-    .rst_ni,
-    .mubi_i(scanmode_i),
-    .mubi_o({io_div4_div_scanmode})
-  );
-
-  prim_clock_div #(
-    .Divisor(4)
-  ) u_no_scan_io_div4_div (
-    // We're using the pre-occ hookup (*_i) version for clock derivation.
-    .clk_i(clk_io_i),
-    .rst_ni(rst_root_io_ni),
-    .step_down_req_i(mubi4_test_true_strict(io_step_down_req)),
-    .step_down_ack_o(step_down_acks[1]),
-    .test_en_i(mubi4_test_true_strict(io_div4_div_scanmode[0])),
-    .clk_o(clk_io_div4)
-  );
 
   ////////////////////////////////////////////////////
   // Register Interface
@@ -220,8 +119,8 @@
     .clk_i,
     .rst_ni,
     .rst_shadowed_ni,
-    .clk_io_div4_i(clk_io_div4),
-    .rst_io_div4_ni,
+    .clk_io_i(clk_io),
+    .rst_io_ni,
     .clk_main_i(clk_main),
     .rst_main_ni,
     .tl_i,
@@ -248,8 +147,8 @@
 
   logic recov_alert;
   assign recov_alert =
-    hw2reg.recov_err_code.io_div4_measure_err.de |
-    hw2reg.recov_err_code.io_div4_timeout_err.de |
+    hw2reg.recov_err_code.io_measure_err.de |
+    hw2reg.recov_err_code.io_timeout_err.de |
     hw2reg.recov_err_code.main_measure_err.de |
     hw2reg.recov_err_code.main_timeout_err.de |
     hw2reg.recov_err_code.shadow_update_err.de;
@@ -264,6 +163,7 @@
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(AlertFatal[i])
     ) u_prim_alert_sender (
       .clk_i,
@@ -278,49 +178,18 @@
   end
 
   ////////////////////////////////////////////////////
-  // Clock bypass request
-  ////////////////////////////////////////////////////
-
-  mubi4_t extclk_ctrl_sel;
-  mubi4_t extclk_ctrl_hi_speed_sel;
-
-  assign extclk_ctrl_sel = mubi4_t'(reg2hw.extclk_ctrl.sel.q);
-  assign extclk_ctrl_hi_speed_sel = mubi4_t'(reg2hw.extclk_ctrl.hi_speed_sel.q);
-
-  clkmgr_byp #(
-    .NumDivClks(2)
-  ) u_clkmgr_byp (
-    .clk_i,
-    .rst_ni,
-    .en_i(lc_hw_debug_en_i),
-    .lc_clk_byp_req_i,
-    .lc_clk_byp_ack_o,
-    .byp_req_i(extclk_ctrl_sel),
-    .byp_ack_o(hw2reg.extclk_status.d),
-    .hi_speed_sel_i(extclk_ctrl_hi_speed_sel),
-    .all_clk_byp_req_o,
-    .all_clk_byp_ack_i,
-    .io_clk_byp_req_o,
-    .io_clk_byp_ack_i,
-    .hi_speed_sel_o,
-
-    // divider step down controls
-    .step_down_acks_i(step_down_acks)
-  );
-
-  ////////////////////////////////////////////////////
   // Feed through clocks
   // Feed through clocks do not actually need to be in clkmgr, as they are
   // completely untouched. The only reason they are here is for easier
   // bundling management purposes through clocks_o
   ////////////////////////////////////////////////////
-  prim_clock_buf u_clk_io_div4_powerup_buf (
-    .clk_i(clk_io_div4),
-    .clk_o(clocks_o.clk_io_div4_powerup)
+  prim_clock_buf u_clk_io_powerup_buf (
+    .clk_i(clk_io),
+    .clk_o(clocks_o.clk_io_powerup)
   );
 
   // clock gated indication for alert handler: these clocks are never gated.
-  assign cg_en_o.io_div4_powerup = MuBi4False;
+  assign cg_en_o.io_powerup = MuBi4False;
   prim_clock_buf u_clk_aon_powerup_buf (
     .clk_i(clk_aon),
     .clk_o(clocks_o.clk_aon_powerup)
@@ -335,20 +204,6 @@
 
   // clock gated indication for alert handler: these clocks are never gated.
   assign cg_en_o.main_powerup = MuBi4False;
-  prim_clock_buf u_clk_io_powerup_buf (
-    .clk_i(clk_io),
-    .clk_o(clocks_o.clk_io_powerup)
-  );
-
-  // clock gated indication for alert handler: these clocks are never gated.
-  assign cg_en_o.io_powerup = MuBi4False;
-  prim_clock_buf u_clk_io_div2_powerup_buf (
-    .clk_i(clk_io_div2),
-    .clk_o(clocks_o.clk_io_div2_powerup)
-  );
-
-  // clock gated indication for alert handler: these clocks are never gated.
-  assign cg_en_o.io_div2_powerup = MuBi4False;
   prim_clock_buf u_clk_aon_infra_buf (
     .clk_i(clk_aon),
     .clk_o(clocks_o.clk_aon_infra)
@@ -356,13 +211,6 @@
 
   // clock gated indication for alert handler: these clocks are never gated.
   assign cg_en_o.aon_infra = MuBi4False;
-  prim_clock_buf u_clk_aon_peri_buf (
-    .clk_i(clk_aon),
-    .clk_o(clocks_o.clk_aon_peri)
-  );
-
-  // clock gated indication for alert handler: these clocks are never gated.
-  assign cg_en_o.aon_peri = MuBi4False;
   prim_clock_buf u_clk_aon_timers_buf (
     .clk_i(clk_aon),
     .clk_o(clocks_o.clk_aon_timers)
@@ -379,11 +227,7 @@
   assign pwrmgr_main_en = pwr_i.main_ip_clk_en;
   // clk_io family
   logic pwrmgr_io_en;
-  logic pwrmgr_io_div2_en;
-  logic pwrmgr_io_div4_en;
   assign pwrmgr_io_en = pwr_i.io_ip_clk_en;
-  assign pwrmgr_io_div2_en = pwr_i.io_ip_clk_en;
-  assign pwrmgr_io_div4_en = pwr_i.io_ip_clk_en;
 
   ////////////////////////////////////////////////////
   // Root gating
@@ -415,7 +259,7 @@
   );
 
   // clk_io family
-  logic [2:0] io_ens;
+  logic [0:0] io_ens;
 
   logic clk_io_en;
   logic clk_io_root;
@@ -429,33 +273,9 @@
   );
   assign io_ens[0] = clk_io_en;
 
-  logic clk_io_div2_en;
-  logic clk_io_div2_root;
-  clkmgr_root_ctrl u_io_div2_root_ctrl (
-    .clk_i(clk_io_div2),
-    .rst_ni(rst_root_io_div2_ni),
-    .scanmode_i,
-    .async_en_i(pwrmgr_io_div2_en),
-    .en_o(clk_io_div2_en),
-    .clk_o(clk_io_div2_root)
-  );
-  assign io_ens[1] = clk_io_div2_en;
-
-  logic clk_io_div4_en;
-  logic clk_io_div4_root;
-  clkmgr_root_ctrl u_io_div4_root_ctrl (
-    .clk_i(clk_io_div4),
-    .rst_ni(rst_root_io_div4_ni),
-    .scanmode_i,
-    .async_en_i(pwrmgr_io_div4_en),
-    .en_o(clk_io_div4_en),
-    .clk_o(clk_io_div4_root)
-  );
-  assign io_ens[2] = clk_io_div4_en;
-
   // create synchronized status
   clkmgr_clk_status #(
-    .NumClocks(3)
+    .NumClocks(1)
   ) u_io_status (
     .clk_i,
     .rst_ni(rst_root_ni),
@@ -470,7 +290,7 @@
 
   typedef enum logic [1:0] {
     BaseIdx,
-    ClkIoDiv4Idx,
+    ClkIoIdx,
     ClkMainIdx,
     CalibRdyLastIdx
   } clkmgr_calib_idx_e;
@@ -484,7 +304,7 @@
   ) u_calib_rdy_sync (
     .clk_i,
     .rst_ni,
-    .mubi_i(calib_rdy_i),
+    .mubi_i(MuBi4False),
     .mubi_o({calib_rdy})
   );
 
@@ -499,35 +319,35 @@
   end
 
   clkmgr_meas_chk #(
-    .Cnt(16),
-    .RefCnt(1)
-  ) u_io_div4_meas (
+    .Cnt(512),
+    .RefCnt(32)
+  ) u_io_meas (
     .clk_i,
     .rst_ni,
-    .clk_src_i(clk_io_div4),
-    .rst_src_ni(rst_io_div4_ni),
+    .clk_src_i(clk_io),
+    .rst_src_ni(rst_io_ni),
     .clk_ref_i(clk_aon),
     .rst_ref_ni(rst_aon_ni),
     // signals on source domain
-    .src_en_i(clk_io_div4_en & mubi4_test_true_loose(mubi4_t'(reg2hw.io_div4_meas_ctrl_en))),
-    .src_max_cnt_i(reg2hw.io_div4_meas_ctrl_shadowed.hi.q),
-    .src_min_cnt_i(reg2hw.io_div4_meas_ctrl_shadowed.lo.q),
-    .src_cfg_meas_en_i(mubi4_t'(reg2hw.io_div4_meas_ctrl_en.q)),
-    .src_cfg_meas_en_valid_o(hw2reg.io_div4_meas_ctrl_en.de),
-    .src_cfg_meas_en_o(hw2reg.io_div4_meas_ctrl_en.d),
+    .src_en_i(clk_io_en & mubi4_test_true_loose(mubi4_t'(reg2hw.io_meas_ctrl_en))),
+    .src_max_cnt_i(reg2hw.io_meas_ctrl_shadowed.hi.q),
+    .src_min_cnt_i(reg2hw.io_meas_ctrl_shadowed.lo.q),
+    .src_cfg_meas_en_i(mubi4_t'(reg2hw.io_meas_ctrl_en.q)),
+    .src_cfg_meas_en_valid_o(hw2reg.io_meas_ctrl_en.de),
+    .src_cfg_meas_en_o(hw2reg.io_meas_ctrl_en.d),
     // signals on local clock domain
-    .calib_rdy_i(calib_rdy[ClkIoDiv4Idx]),
-    .meas_err_o(hw2reg.recov_err_code.io_div4_measure_err.de),
-    .timeout_err_o(hw2reg.recov_err_code.io_div4_timeout_err.de)
+    .calib_rdy_i(calib_rdy[ClkIoIdx]),
+    .meas_err_o(hw2reg.recov_err_code.io_measure_err.de),
+    .timeout_err_o(hw2reg.recov_err_code.io_timeout_err.de)
   );
 
-  assign hw2reg.recov_err_code.io_div4_measure_err.d = 1'b1;
-  assign hw2reg.recov_err_code.io_div4_timeout_err.d = 1'b1;
+  assign hw2reg.recov_err_code.io_measure_err.d = 1'b1;
+  assign hw2reg.recov_err_code.io_timeout_err.d = 1'b1;
 
 
   clkmgr_meas_chk #(
-    .Cnt(64),
-    .RefCnt(1)
+    .Cnt(512),
+    .RefCnt(8)
   ) u_main_meas (
     .clk_i,
     .rst_ni,
@@ -555,16 +375,16 @@
   ////////////////////////////////////////////////////
   // Clocks with only root gate
   ////////////////////////////////////////////////////
-  assign clocks_o.clk_io_div4_infra = clk_io_div4_root;
+  assign clocks_o.clk_io_infra = clk_io_root;
 
   // clock gated indication for alert handler
   prim_mubi4_sender #(
     .ResetValue(MuBi4True)
-  ) u_prim_mubi4_sender_clk_io_div4_infra (
-    .clk_i(clk_io_div4),
-    .rst_ni(rst_io_div4_ni),
-    .mubi_i(((clk_io_div4_en) ? MuBi4False : MuBi4True)),
-    .mubi_o(cg_en_o.io_div4_infra)
+  ) u_prim_mubi4_sender_clk_io_infra (
+    .clk_i(clk_io),
+    .rst_ni(rst_io_ni),
+    .mubi_i(((clk_io_en) ? MuBi4False : MuBi4True)),
+    .mubi_o(cg_en_o.io_infra)
   );
   assign clocks_o.clk_main_infra = clk_main_root;
 
@@ -577,16 +397,16 @@
     .mubi_i(((clk_main_en) ? MuBi4False : MuBi4True)),
     .mubi_o(cg_en_o.main_infra)
   );
-  assign clocks_o.clk_io_div4_secure = clk_io_div4_root;
+  assign clocks_o.clk_io_secure = clk_io_root;
 
   // clock gated indication for alert handler
   prim_mubi4_sender #(
     .ResetValue(MuBi4True)
-  ) u_prim_mubi4_sender_clk_io_div4_secure (
-    .clk_i(clk_io_div4),
-    .rst_ni(rst_io_div4_ni),
-    .mubi_i(((clk_io_div4_en) ? MuBi4False : MuBi4True)),
-    .mubi_o(cg_en_o.io_div4_secure)
+  ) u_prim_mubi4_sender_clk_io_secure (
+    .clk_i(clk_io),
+    .rst_ni(rst_io_ni),
+    .mubi_i(((clk_io_en) ? MuBi4False : MuBi4True)),
+    .mubi_o(cg_en_o.io_secure)
   );
   assign clocks_o.clk_main_secure = clk_main_root;
 
@@ -599,107 +419,64 @@
     .mubi_i(((clk_main_en) ? MuBi4False : MuBi4True)),
     .mubi_o(cg_en_o.main_secure)
   );
-  assign clocks_o.clk_io_div4_timers = clk_io_div4_root;
+  assign clocks_o.clk_io_timers = clk_io_root;
 
   // clock gated indication for alert handler
   prim_mubi4_sender #(
     .ResetValue(MuBi4True)
-  ) u_prim_mubi4_sender_clk_io_div4_timers (
-    .clk_i(clk_io_div4),
-    .rst_ni(rst_io_div4_ni),
-    .mubi_i(((clk_io_div4_en) ? MuBi4False : MuBi4True)),
-    .mubi_o(cg_en_o.io_div4_timers)
+  ) u_prim_mubi4_sender_clk_io_timers (
+    .clk_i(clk_io),
+    .rst_ni(rst_io_ni),
+    .mubi_i(((clk_io_en) ? MuBi4False : MuBi4True)),
+    .mubi_o(cg_en_o.io_timers)
   );
 
   ////////////////////////////////////////////////////
   // Software direct control group
   ////////////////////////////////////////////////////
 
-  logic clk_io_div4_peri_sw_en;
-  logic clk_io_div2_peri_sw_en;
+  logic clk_io_peri_sw_en;
 
   prim_flop_2sync #(
     .Width(1)
-  ) u_clk_io_div4_peri_sw_en_sync (
-    .clk_i(clk_io_div4),
-    .rst_ni(rst_io_div4_ni),
-    .d_i(reg2hw.clk_enables.clk_io_div4_peri_en.q),
-    .q_o(clk_io_div4_peri_sw_en)
+  ) u_clk_io_peri_sw_en_sync (
+    .clk_i(clk_io),
+    .rst_ni(rst_io_ni),
+    .d_i(reg2hw.clk_enables.q),
+    .q_o(clk_io_peri_sw_en)
   );
 
   // Declared as size 1 packed array to avoid FPV warning.
-  prim_mubi_pkg::mubi4_t [0:0] clk_io_div4_peri_scanmode;
+  prim_mubi_pkg::mubi4_t [0:0] clk_io_peri_scanmode;
   prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
-  ) u_clk_io_div4_peri_scanmode_sync  (
+  ) u_clk_io_peri_scanmode_sync  (
     .clk_i,
     .rst_ni,
     .mubi_i(scanmode_i),
-    .mubi_o(clk_io_div4_peri_scanmode)
+    .mubi_o(clk_io_peri_scanmode)
   );
 
-  logic clk_io_div4_peri_combined_en;
-  assign clk_io_div4_peri_combined_en = clk_io_div4_peri_sw_en & clk_io_div4_en;
+  logic clk_io_peri_combined_en;
+  assign clk_io_peri_combined_en = clk_io_peri_sw_en & clk_io_en;
   prim_clock_gating #(
     .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
-  ) u_clk_io_div4_peri_cg (
-    .clk_i(clk_io_div4),
-    .en_i(clk_io_div4_peri_combined_en),
-    .test_en_i(mubi4_test_true_strict(clk_io_div4_peri_scanmode[0])),
-    .clk_o(clocks_o.clk_io_div4_peri)
+  ) u_clk_io_peri_cg (
+    .clk_i(clk_io),
+    .en_i(clk_io_peri_combined_en),
+    .test_en_i(mubi4_test_true_strict(clk_io_peri_scanmode[0])),
+    .clk_o(clocks_o.clk_io_peri)
   );
 
   // clock gated indication for alert handler
   prim_mubi4_sender #(
     .ResetValue(MuBi4True)
-  ) u_prim_mubi4_sender_clk_io_div4_peri (
-    .clk_i(clk_io_div4),
-    .rst_ni(rst_io_div4_ni),
-    .mubi_i(((clk_io_div4_peri_combined_en) ? MuBi4False : MuBi4True)),
-    .mubi_o(cg_en_o.io_div4_peri)
-  );
-
-  prim_flop_2sync #(
-    .Width(1)
-  ) u_clk_io_div2_peri_sw_en_sync (
-    .clk_i(clk_io_div2),
-    .rst_ni(rst_io_div2_ni),
-    .d_i(reg2hw.clk_enables.clk_io_div2_peri_en.q),
-    .q_o(clk_io_div2_peri_sw_en)
-  );
-
-  // Declared as size 1 packed array to avoid FPV warning.
-  prim_mubi_pkg::mubi4_t [0:0] clk_io_div2_peri_scanmode;
-  prim_mubi4_sync #(
-    .NumCopies(1),
-    .AsyncOn(0)
-  ) u_clk_io_div2_peri_scanmode_sync  (
-    .clk_i,
-    .rst_ni,
-    .mubi_i(scanmode_i),
-    .mubi_o(clk_io_div2_peri_scanmode)
-  );
-
-  logic clk_io_div2_peri_combined_en;
-  assign clk_io_div2_peri_combined_en = clk_io_div2_peri_sw_en & clk_io_div2_en;
-  prim_clock_gating #(
-    .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
-  ) u_clk_io_div2_peri_cg (
-    .clk_i(clk_io_div2),
-    .en_i(clk_io_div2_peri_combined_en),
-    .test_en_i(mubi4_test_true_strict(clk_io_div2_peri_scanmode[0])),
-    .clk_o(clocks_o.clk_io_div2_peri)
-  );
-
-  // clock gated indication for alert handler
-  prim_mubi4_sender #(
-    .ResetValue(MuBi4True)
-  ) u_prim_mubi4_sender_clk_io_div2_peri (
-    .clk_i(clk_io_div2),
-    .rst_ni(rst_io_div2_ni),
-    .mubi_i(((clk_io_div2_peri_combined_en) ? MuBi4False : MuBi4True)),
-    .mubi_o(cg_en_o.io_div2_peri)
+  ) u_prim_mubi4_sender_clk_io_peri (
+    .clk_i(clk_io),
+    .rst_ni(rst_io_ni),
+    .mubi_i(((clk_io_peri_combined_en) ? MuBi4False : MuBi4True)),
+    .mubi_o(cg_en_o.io_peri)
   );
 
 
@@ -823,9 +600,6 @@
   `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
   `ASSERT_KNOWN(AlertsKnownO_A,   alert_tx_o)
   `ASSERT_KNOWN(PwrMgrKnownO_A, pwr_o)
-  `ASSERT_KNOWN(AllClkBypReqKnownO_A, all_clk_byp_req_o)
-  `ASSERT_KNOWN(IoClkBypReqKnownO_A, io_clk_byp_req_o)
-  `ASSERT_KNOWN(LcCtrlClkBypAckKnownO_A, lc_clk_byp_ack_o)
   `ASSERT_KNOWN(JitterEnableKnownO_A, jitter_en_o)
   `ASSERT_KNOWN(ClocksKownO_A, clocks_o)
   `ASSERT_KNOWN(CgEnKnownO_A, cg_en_o)

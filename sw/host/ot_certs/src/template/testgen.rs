@@ -5,7 +5,7 @@
 //! This module provides functionality to generate substitute data for template
 //! to test corner cases of the certificate generator.
 
-use anyhow::{ensure, Result};
+use anyhow::{Result, ensure};
 use rand::distributions::{DistString, Distribution, Uniform};
 
 use openssl::bn::{BigNum, BigNumContext};
@@ -125,7 +125,7 @@ impl Template {
         let mut ctx = BigNumContext::new()?;
         let mut x = BigNum::new()?;
         let mut y = BigNum::new()?;
-        let nbytes: i32 = ((group.degree() + 7) / 8) as i32;
+        let nbytes: i32 = group.degree().div_ceil(8) as i32;
         privkey
             .public_key()
             .affine_coordinates(&group, &mut x, &mut y, &mut ctx)?;

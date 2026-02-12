@@ -17,7 +17,7 @@ class edn_base_vseq extends cip_base_vseq #(
   mubi4_t                                       flags;
   bit [3:0]                                     clen, additional_data;
   bit [11:0]                                    glen;
-  bit [csrng_pkg::CSRNG_CMD_WIDTH - 1:0]        cmd_data;
+  bit [csrng_pkg::CmdBusWidth - 1:0]            cmd_data;
 
   rand bit                                      write_reserved_err_code_test_reg;
   virtual edn_cov_if                            cov_vif;
@@ -55,11 +55,6 @@ class edn_base_vseq extends cip_base_vseq #(
   virtual task edn_init(string reset_kind = "HARD");
 
     additional_data = 0;
-
-    if (cfg.use_invalid_mubi) begin
-      // Turn off DUT assertions so that the corresponding alert can fire
-      cfg.edn_assert_vif.assert_off_alert();
-    end
 
     if (cfg.boot_req_mode == MuBi4True) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(flags)
@@ -151,7 +146,7 @@ class edn_base_vseq extends cip_base_vseq #(
 
   virtual task wr_cmd(edn_env_pkg::cmd_type_e cmd_type, csrng_pkg::acmd_e acmd = csrng_pkg::INV,
                       bit[3:0] clen = '0, bit[3:0] flags = MuBi4False, bit[17:0] glen = '0,
-                      bit [csrng_pkg::CSRNG_CMD_WIDTH - 1:0] cmd_data = '0,
+                      bit [csrng_pkg::CmdBusWidth - 1:0] cmd_data = '0,
                       edn_env_pkg::hw_req_mode_e mode, bit wait_for_ack = 1);
 
     if (!additional_data) begin

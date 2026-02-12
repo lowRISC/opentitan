@@ -9,6 +9,7 @@ The base subset (described first) is similar to RISC-V's RV32I instruction set.
 It also includes a hardware call stack and hardware loop instructions.
 The big number subset is designed to operate on 256b WDRs.
 It doesn't include any control flow instructions, and just supports load/store, logical and arithmetic operations.
+For some of the logical and arithmetic big number operations exist SIMD variants which interpret the WDRs as vectors.
 
 In the instruction documentation that follows, each instruction has a syntax example.
 For example, the `SW` instruction has syntax:
@@ -95,11 +96,98 @@ def logical_byte_shift(value: int, shift_type: int, shift_bytes: int) -> int:
     shifted = value << shift_bits if shift_type == 0 else value >> shift_bits
     return shifted & mask256
 
-def extract_quarter_word(value: int, qwsel: int) -> int:
-    '''Extract a 64-bit quarter word from a 256-bit value.'''
+def shift_vec_elem(value: int, size: int, shift_type: int, shift_bits: int) -> int:
+    '''Performs a logical bit shift on an unsigned integer confined to the given bit width.
+
+    With shift_type = 0, the value is shifted left by shift_bits; with shift_type = 1,
+    the value is shifted right by shift_bits.
+
+    The resulting shifted value is truncated to size bits.
+    '''
+    maskSize = (1 << size) - 1
+    assert 0 <= value <= maskSize
+    assert 0 <= shift_type <= 1
+    assert 0 <= shift_bits
+
+    if shift_type == 0:
+        result = (value << shift_bits) & maskSize
+    else:
+        result = (value >> shift_bits) & maskSize
+
+    return result
+
+def extract_vec_elem(value: int, elem: int, size: int) -> int:
+    '''Returns the elem-th vector element from a 256-bit vector of size-bit elements interpreted as
+    unsigned integer.
+    '''
     assert 0 <= value < (1 << 256)
+    assert 0 <= elem < (256 // size)
+    return (value >> (elem * size)) & ((1 << size) - 1)
+
+def extract_quarter_word(value: int, qwsel: int) -> int:
+    '''Extracts a 64-bit quarter word from a 256-bit value.'''
     assert 0 <= qwsel <= 3
-    return (value >> (qwsel * 64)) & ((1 << 64) - 1)
+    return extract_vec_elem(value, qwsel, 64)
+
+def lower_d_bits(value: int, d: int) -> int:
+    '''Extracts the lower d bits of the value.'''
+    assert 0 <= d
+    assert 0 <= value
+    return value & ((1 << d) - 1)
+
+def upper_d_bits(value: int, d: int) -> int:
+    '''Extracts the upper d bits of the value and shifts them down by d.'''
+    assert 0 <= d
+    assert 0 <= value
+    return lower_d_bits(value >> d, d)
+
+def element_length_in_bits(elen: int) -> int:
+    '''Returns the corresponding bit width for a given ELEN encoding.
+
+    Encoding | ELEN | Size in bits
+    0        | .8s  |  32
+    1        | .4d  |  64
+    2        | .2q  | 128
+    '''
+    assert 0 <= elen <= 2
+    return 32 * (1 << elen)
+
+def map_elems(op: Callable[[int, int], int], size: int, vec_a: int, vec_b: int) -> int:
+    '''Applies the operation op to each pair of elements for the given element size.
+
+    The vectors are expected to be 256-bit numbers where the elements are extracted from.
+    The op function takes two vector elements, performs the desired operation and is expected to
+    return a non-negative value.
+
+    The results are concatenated and returned as a 256-bit number.'''
+    result = 0
+    for elem in range(256 // size):
+        elem_a = extract_vec_elem(vec_a, elem, size)
+        elem_b = extract_vec_elem(vec_b, elem, size)
+
+        elem_c = op(elem_a, elem_b)
+        elem_c = elem_c & ((1 << size) - 1)
+        result |= elem_c << (elem * size)
+    return result
+
+def montgomery_mul_no_cond_subtraction(a: int, b: int, q: int, mu: int, size: int) -> int:
+    '''Performs a Montgomery multiplication but without the final conditional subtraction.
+
+    The inputs a and b are in Montgomery space.
+    The result is also in Montgomery space.
+
+    Algorithm (where []_d are the lower d bits, []^d are the higher d bits):
+       r = [c + [[c]_d * mu]_d * q]^d
+       # Skipped conditional subtraction step:
+       # if r >= q:
+       #     r -= q
+       return r
+    '''
+    reg_c = a * b
+    reg_tmp = lower_d_bits(reg_c, size)
+    reg_tmp = lower_d_bits(reg_tmp * mu, size)
+    r = upper_d_bits(reg_c + reg_tmp * q, size)
+    return r
 ```
 
 # Errors
@@ -127,3 +215,12 @@ In particular, how do they interact with instructions that could cause other err
 # Big Number Instruction Subset
 
 {{#otbn-isa bignum }}
+
+# Encoding overview
+The following tables show the encodings of all instructions.
+
+## Base Instruction Subset
+{{#otbn-isa base_encoding }}
+
+## Big Number Instruction Subset
+{{#otbn-isa bignum_encoding }}

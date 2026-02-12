@@ -797,7 +797,7 @@ package spid_common;
     input  spi_data_t   opcode,
     input  logic [7:0]  cc,      // Continuous Code
     output int unsigned num_cc,
-    ref    logic [23:0] jedec_id // [23:16] Manufacurer ID, [15:0] ID
+    ref    logic [23:0] jedec_id // [23:16] Manufacturer ID, [15:0] ID
   );
     // as the transaction size of Read JEDEC ID depends on the Continuous Code,
     // This task does not follow the conventional SPI transaction commands.
@@ -1097,7 +1097,7 @@ package spid_common;
 
     h2d.d_ready   = 1'b 0;
 
-    // Due to interity checker instance, `a_ready` from SW view is delayed.
+    // Due to integrity checker instance, `a_ready` from SW view is delayed.
     // Need to see the a_ready then wait posedge.
     // Previously: @(posedge clk iff d2h.a_ready);
     wait(d2h.a_ready);

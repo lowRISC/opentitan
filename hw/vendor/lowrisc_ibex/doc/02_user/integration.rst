@@ -34,7 +34,7 @@ Primitives
 ----------
 
 Ibex uses a number of primitive modules (that are held outside the :file:`rtl/` which contains the Ibex RTL).
-Full implementations of these primitives are provided in the Ibex repository but implementors may wish to provide their own implementations.
+Full implementations of these primitives are provided in the Ibex repository but implementers may wish to provide their own implementations.
 Some of the primitives are only used for specific Ibex configurations so can be ignored/removed if you're not using one of those configurations.
 
 The mandatory primitives (used by all configurations) are:
@@ -53,9 +53,7 @@ The configuration dependent primitives are:
    Required where ``ICache == 1`` and ``SecureIbex == 1``.
  * ``prim_lfsr`` - Linear feedback shift register, used for pseudo random number generation for dummy instruction insertion.
    Required where ``SecureIbex == 1``.
- * ``prim_onehot_check`` - Checks a onehot signal is correct, for detecting fault injection attacks.
-   Required where ``SecureIbex == 1``.
- * ``prim_secded_X`` - Various primitives to encode and decode SECDED (single error correct, double error detect) error detection and correction codes.
+ * ``prim_secded_X`` - Various primitives to encode and decode SECDED (Single Error Correct, Double Error Detect) error detection and correction codes.
    Required where ``SecureIbex == 1``.
 
 Primitives exclusively used by other primitives:
@@ -99,6 +97,7 @@ Instantiation Template
       .RV32E            ( 0                                ),
       .RV32M            ( ibex_pkg::RV32MFast              ),
       .RV32B            ( ibex_pkg::RV32BNone              ),
+      .RV32ZC           ( ibex_pkg::RV32ZcaZcbZcmp         ),
       .RegFile          ( ibex_pkg::RegFileFF              ),
       .ICache           ( 0                                ),
       .ICacheECC        ( 0                                ),
@@ -168,72 +167,78 @@ Instantiation Template
 Parameters
 ----------
 
-+------------------------------+---------------------+------------+-----------------------------------------------------------------------+
-| Name                         | Type/Range          | Default    | Description                                                           |
-+==============================+=====================+============+=======================================================================+
-| ``PMPEnable``                | bit                 | 0          | Enable PMP support                                                    |
-+------------------------------+---------------------+------------+-----------------------------------------------------------------------+
-| ``PMPGranularity``           | int (0..31)         | 0          | Minimum granularity of PMP address matching                           |
-+------------------------------+---------------------+------------+-----------------------------------------------------------------------+
-| ``PMPNumRegions``            | int (1..16)         | 4          | Number implemented PMP regions (ignored if PMPEnable == 0)            |
-+------------------------------+---------------------+------------+-----------------------------------------------------------------------+
-| ``MHPMCounterNum``           | int (0..10)         | 0          | Number of performance monitor event counters                          |
-+------------------------------+---------------------+------------+-----------------------------------------------------------------------+
-| ``MHPMCounterWidth``         | int (64..1)         | 40         | Bit width of performance monitor event counters                       |
-+------------------------------+---------------------+------------+-----------------------------------------------------------------------+
-| ``RV32E``                    | bit                 | 0          | RV32E mode enable (16 integer registers only)                         |
-+------------------------------+---------------------+------------+-----------------------------------------------------------------------+
-| ``RV32M``                    | ibex_pkg::rv32m_e   | RV32MFast  | M(ultiply) extension select:                                          |
-|                              |                     |            | "ibex_pkg::RV32MNone": No M-extension                                 |
-|                              |                     |            | "ibex_pkg::RV32MSlow": Slow multi-cycle multiplier, iterative divider |
-|                              |                     |            | "ibex_pkg::RV32MFast": 3-4 cycle multiplier, iterative divider        |
-|                              |                     |            | "ibex_pkg::RV32MSingleCycle": 1-2 cycle multiplier, iterative divider |
-+------------------------------+---------------------+------------+-----------------------------------------------------------------------+
-| ``RV32B``                    | ibex_pkg::rv32b_e   | RV32BNone  | B(itmanipulation) extension select:                                   |
-|                              |                     |            | "ibex_pkg::RV32BNone": No B-extension                                 |
-|                              |                     |            | "ibex_pkg::RV32BBalanced": Sub-extensions Zba, Zbb, Zbs, Zbf and Zbt  |
-|                              |                     |            | "ibex_pkg::RV32BOTEarlGrey": All sub-extensions except Zbe            |
-|                              |                     |            | "ibex_pkg::RV32BFull": All sub-extensions                             |
-+------------------------------+---------------------+------------+-----------------------------------------------------------------------+
-| ``RegFile``                  | ibex_pkg::regfile_e | RegFileFF  | Register file implementation select:                                  |
-|                              |                     |            | "ibex_pkg::RegFileFF": Generic flip-flop-based register file          |
-|                              |                     |            | "ibex_pkg::RegFileFPGA": Register file for FPGA targets               |
-|                              |                     |            | "ibex_pkg::RegFileLatch": Latch-based register file for ASIC targets  |
-+------------------------------+---------------------+------------+-----------------------------------------------------------------------+
-| ``BranchTargetALU``          | bit                 | 0          | Enables branch target ALU removing a stall cycle from taken branches  |
-+------------------------------+---------------------+------------+-----------------------------------------------------------------------+
-| ``WritebackStage``           | bit                 | 0          | Enables third pipeline stage (writeback) improving performance of     |
-|                              |                     |            | loads and stores                                                      |
-+------------------------------+---------------------+------------+-----------------------------------------------------------------------+
-| ``ICache``                   | bit                 | 0          | Enable instruction cache instead of prefetch buffer                   |
-+------------------------------+---------------------+------------+-----------------------------------------------------------------------+
-| ``ICacheECC``                | bit                 | 0          | Enable SECDED ECC protection in ICache (if  ICache == 1)              |
-+------------------------------+---------------------+------------+-----------------------------------------------------------------------+
-| ``ICacheScramble``           | bit                 | 0          | Enabling this parameter replaces tag and data RAMs of ICache with     |
-|                              |                     |            | scrambling RAM primitives.                                            |
-+------------------------------+---------------------+------------+-----------------------------------------------------------------------+
-| ``BranchPrediction``         | bit                 | 0          | *EXPERIMENTAL* Enable Static branch prediction                        |
-+------------------------------+---------------------+------------+-----------------------------------------------------------------------+
-| ``SecureIbex``               | bit                 | 0          | Enable various additional features targeting secure code execution.   |
-|                              |                     |            | Note: SecureIbex == 1'b1 and  RV32M == ibex_pkg::RV32MNone is an      |
-|                              |                     |            | illegal combination.                                                  |
-+------------------------------+---------------------+------------+-----------------------------------------------------------------------+
-| ``RndCnstLfsrSeed``          | lfsr_seed_t         | see above  | Set the starting seed of the LFSR used to generate dummy instructions |
-|                              |                     |            | (only relevant when SecureIbex == 1'b1)                               |
-+------------------------------+---------------------+------------+-----------------------------------------------------------------------+
-| ``RndCnstLfsrPerm``          | lfsr_perm_t         | see above  | Set the permutation applied to the output of the LFSR used to         |
-|                              |                     |            | generate dummy instructions (only relevant when SecureIbex == 1'b1)   |
-+------------------------------+---------------------+------------+-----------------------------------------------------------------------+
-| ``DbgTriggerEn``             | bit                 | 0          | Enable debug trigger support (one trigger only)                       |
-+------------------------------+---------------------+------------+-----------------------------------------------------------------------+
-| ``DmBaseAddr``               | int                 | 0x1A110000 | Base address of the Debug Module                                      |
-+------------------------------+---------------------+------------+-----------------------------------------------------------------------+
-| ``DmAddrMask``               | int                 | 0x1A110000 | Address mask of the Debug Module                                      |
-+------------------------------+---------------------+------------+-----------------------------------------------------------------------+
-| ``DmHaltAddr``               | int                 | 0x1A110800 | Address to jump to when entering Debug Mode                           |
-+------------------------------+---------------------+------------+-----------------------------------------------------------------------+
-| ``DmExceptionAddr``          | int                 | 0x1A110808 | Address to jump to when an exception occurs while in Debug Mode       |
-+------------------------------+---------------------+------------+-----------------------------------------------------------------------+
++------------------------------+---------------------+----------------+-----------------------------------------------------------------------+
+| Name                         | Type/Range          | Default        | Description                                                           |
++==============================+=====================+================+=======================================================================+
+| ``PMPEnable``                | bit                 | 0              | Enable PMP support                                                    |
++------------------------------+---------------------+----------------+-----------------------------------------------------------------------+
+| ``PMPGranularity``           | int (0..31)         | 0              | Minimum granularity of PMP address matching                           |
++------------------------------+---------------------+----------------+-----------------------------------------------------------------------+
+| ``PMPNumRegions``            | int (1..16)         | 4              | Number implemented PMP regions (ignored if PMPEnable == 0)            |
++------------------------------+---------------------+----------------+-----------------------------------------------------------------------+
+| ``MHPMCounterNum``           | int (0..10)         | 0              | Number of performance monitor event counters                          |
++------------------------------+---------------------+----------------+-----------------------------------------------------------------------+
+| ``MHPMCounterWidth``         | int (64..1)         | 40             | Bit width of performance monitor event counters                       |
++------------------------------+---------------------+----------------+-----------------------------------------------------------------------+
+| ``RV32E``                    | bit                 | 0              | RV32E mode enable (16 integer registers only)                         |
++------------------------------+---------------------+----------------+-----------------------------------------------------------------------+
+| ``RV32M``                    | ibex_pkg::rv32m_e   | RV32MFast      | M(ultiply) extension select:                                          |
+|                              |                     |                | "ibex_pkg::RV32MNone": No M-extension                                 |
+|                              |                     |                | "ibex_pkg::RV32MSlow": Slow multi-cycle multiplier, iterative divider |
+|                              |                     |                | "ibex_pkg::RV32MFast": 3-4 cycle multiplier, iterative divider        |
+|                              |                     |                | "ibex_pkg::RV32MSingleCycle": 1-2 cycle multiplier, iterative divider |
++------------------------------+---------------------+----------------+-----------------------------------------------------------------------+
+| ``RV32B``                    | ibex_pkg::rv32b_e   | RV32BNone      | B(itmanipulation) extension select:                                   |
+|                              |                     |                | "ibex_pkg::RV32BNone": No B-extension                                 |
+|                              |                     |                | "ibex_pkg::RV32BBalanced": Sub-extensions Zba, Zbb, Zbs, Zbf and Zbt  |
+|                              |                     |                | "ibex_pkg::RV32BOTEarlGrey": All sub-extensions except Zbe            |
+|                              |                     |                | "ibex_pkg::RV32BFull": All sub-extensions                             |
++------------------------------+---------------------+----------------+-----------------------------------------------------------------------+
+| ``RV32ZC``                   | ibex_pkg::rv32zc_e  | RV32ZcaZcbZcmp | Zc code-size saving extension select:                                 |
+|                              |                     |                | "ibex_pkg::RV32Zca": The Zca extension                                |
+|                              |                     |                | "ibex_pkg::RV32ZcaZcb": Zca and Zcb extensions                        |
+|                              |                     |                | "ibex_pkg::RV32ZcaZcmp": Zca and Zcmp extensions                      |
+|                              |                     |                | "ibex_pkg::RV32ZcaZcbZcmp": Zca, Zcb, and Zcmp extensions             |
++------------------------------+---------------------+----------------+-----------------------------------------------------------------------+
+| ``RegFile``                  | ibex_pkg::regfile_e | RegFileFF      | Register file implementation select:                                  |
+|                              |                     |                | "ibex_pkg::RegFileFF": Generic flip-flop-based register file          |
+|                              |                     |                | "ibex_pkg::RegFileFPGA": Register file for FPGA targets               |
+|                              |                     |                | "ibex_pkg::RegFileLatch": Latch-based register file for ASIC targets  |
++------------------------------+---------------------+----------------+-----------------------------------------------------------------------+
+| ``BranchTargetALU``          | bit                 | 0              | Enables branch target ALU removing a stall cycle from taken branches  |
++------------------------------+---------------------+----------------+-----------------------------------------------------------------------+
+| ``WritebackStage``           | bit                 | 0              | Enables third pipeline stage (writeback) improving performance of     |
+|                              |                     |                | loads and stores                                                      |
++------------------------------+---------------------+----------------+-----------------------------------------------------------------------+
+| ``ICache``                   | bit                 | 0              | Enable instruction cache instead of prefetch buffer                   |
++------------------------------+---------------------+----------------+-----------------------------------------------------------------------+
+| ``ICacheECC``                | bit                 | 0              | Enable SECDED ECC protection in ICache (if  ICache == 1)              |
++------------------------------+---------------------+----------------+-----------------------------------------------------------------------+
+| ``ICacheScramble``           | bit                 | 0              | Enabling this parameter replaces tag and data RAMs of ICache with     |
+|                              |                     |                | scrambling RAM primitives.                                            |
++------------------------------+---------------------+----------------+-----------------------------------------------------------------------+
+| ``BranchPrediction``         | bit                 | 0              | *EXPERIMENTAL* Enable Static branch prediction                        |
++------------------------------+---------------------+----------------+-----------------------------------------------------------------------+
+| ``SecureIbex``               | bit                 | 0              | Enable various additional features targeting secure code execution.   |
+|                              |                     |                | Note: SecureIbex == 1'b1 and  RV32M == ibex_pkg::RV32MNone is an      |
+|                              |                     |                | illegal combination.                                                  |
++------------------------------+---------------------+----------------+-----------------------------------------------------------------------+
+| ``RndCnstLfsrSeed``          | lfsr_seed_t         | see above      | Set the starting seed of the LFSR used to generate dummy instructions |
+|                              |                     |                | (only relevant when SecureIbex == 1'b1)                               |
++------------------------------+---------------------+----------------+-----------------------------------------------------------------------+
+| ``RndCnstLfsrPerm``          | lfsr_perm_t         | see above      | Set the permutation applied to the output of the LFSR used to         |
+|                              |                     |                | generate dummy instructions (only relevant when SecureIbex == 1'b1)   |
++------------------------------+---------------------+----------------+-----------------------------------------------------------------------+
+| ``DbgTriggerEn``             | bit                 | 0              | Enable debug trigger support (one trigger only)                       |
++------------------------------+---------------------+----------------+-----------------------------------------------------------------------+
+| ``DmBaseAddr``               | int                 | 0x1A110000     | Base address of the Debug Module                                      |
++------------------------------+---------------------+----------------+-----------------------------------------------------------------------+
+| ``DmAddrMask``               | int                 | 0x1A110000     | Address mask of the Debug Module                                      |
++------------------------------+---------------------+----------------+-----------------------------------------------------------------------+
+| ``DmHaltAddr``               | int                 | 0x1A110800     | Address to jump to when entering Debug Mode                           |
++------------------------------+---------------------+----------------+-----------------------------------------------------------------------+
+| ``DmExceptionAddr``          | int                 | 0x1A110808     | Address to jump to when an exception occurs while in Debug Mode       |
++------------------------------+---------------------+----------------+-----------------------------------------------------------------------+
 
 Any parameter marked *EXPERIMENTAL* when enabled is not verified to the same standard as the rest of the Ibex core.
 

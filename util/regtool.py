@@ -13,7 +13,7 @@ from pathlib import Path
 
 from reggen import (
     gen_cfg_md, gen_cheader, gen_dv, gen_fpv, gen_md, gen_html, gen_json, gen_rtl,
-    gen_rust, gen_sec_cm_testplan, gen_selfdoc, gen_tock, version,
+    gen_rust, gen_sec_cm_testplan, gen_selfdoc, systemrdl_exporter, gen_tock, version,
 )
 from reggen.ip_block import IpBlock
 
@@ -89,6 +89,9 @@ def main():
     parser.add_argument('-s',
                         action='store_true',
                         help='Output as UVM Register class')
+    parser.add_argument('--systemrdl',
+                        action='store_true',
+                        help='Output a SystemRDL description')
     parser.add_argument('-f',
                         action='store_true',
                         help='Output as FPV CSR rw assertion module')
@@ -172,6 +175,7 @@ def main():
                      ('sec_cm_testplan', ('sec_cm_testplan', 'data')),
                      ('rust', ('rs', None)), ('tock', ('trs', None)),
                      ('interfaces', ('interfaces', None)),
+                     ('systemrdl', ('systemrdl', None)),
                      ('doc_html_old', ('doc_html_old', None))]
     fmt = None
     dirspec = None
@@ -276,7 +280,9 @@ def main():
         found_spdx = None
         found_lunder = None
         copy = re.compile(r'.*(copyright.*)|(.*\(c\).*)', re.IGNORECASE)
+        # REUSE-IgnoreStart
         spdx = re.compile(r'.*(SPDX-License-Identifier:.+)')
+        # REUSE-IgnoreEnd
         lunder = re.compile(r'.*(Licensed under.+)', re.IGNORECASE)
         for line in srcfull.splitlines():
             mat = copy.match(line)
@@ -311,6 +317,8 @@ def main():
             elif fmt == 'trs':
                 return gen_tock.gen_tock(obj, outfile, infile.name, src_lic,
                                          src_copy, version_stamp)
+            elif fmt == 'systemrdl':
+                return systemrdl_exporter.SystemrdlExporter(obj).export(outfile)
             else:
                 return gen_json.gen_json(obj, outfile, fmt)
 

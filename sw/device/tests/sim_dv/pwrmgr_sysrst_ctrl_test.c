@@ -38,9 +38,13 @@ static void config_sysrst(const dif_pwrmgr_t *pwrmgr,
   LOG_INFO("sysrst enabled");
 
   // Set sysrst as a reset source.
-  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(pwrmgr, kDifPwrmgrReqTypeReset,
-                                              kDifPwrmgrResetRequestSourceOne,
-                                              kDifToggleEnabled));
+  dif_pwrmgr_request_sources_t reset_sources;
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      pwrmgr, kDifPwrmgrReqTypeReset,
+      dt_sysrst_ctrl_instance_id(kDtSysrstCtrlAon), kDtSysrstCtrlResetReqRstReq,
+      &reset_sources));
+  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
+      pwrmgr, kDifPwrmgrReqTypeReset, reset_sources, kDifToggleEnabled));
   LOG_INFO("Reset Request SourceOne is set");
 
   // Configure sysrst key combo
@@ -95,9 +99,12 @@ static void config_wdog(const dif_aon_timer_t *aon_timer,
            (uint32_t)bark_time_us, (uint32_t)bite_time_us);
 
   // Set wdog as a reset source.
-  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(pwrmgr, kDifPwrmgrReqTypeReset,
-                                              kDifPwrmgrResetRequestSourceTwo,
-                                              kDifToggleEnabled));
+  dif_pwrmgr_request_sources_t reset_sources;
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      pwrmgr, kDifPwrmgrReqTypeReset, dt_aon_timer_instance_id(kDtAonTimerAon),
+      kDtAonTimerResetReqAonTimer, &reset_sources));
+  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
+      pwrmgr, kDifPwrmgrReqTypeReset, reset_sources, kDifToggleEnabled));
 
   // Setup the wdog bark and bite timeouts.
   CHECK_STATUS_OK(aon_timer_testutils_watchdog_config(aon_timer, bark_cycles,
@@ -137,8 +144,7 @@ static void wdog_bite_test(const dif_aon_timer_t *aon_timer,
 bool test_main(void) {
   // Initialize pwrmgr.
   dif_pwrmgr_t pwrmgr;
-  CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kDtPwrmgrAon, &pwrmgr));
 
   // Initialize sysrst_ctrl.
   dif_sysrst_ctrl_t sysrst_ctrl_aon;

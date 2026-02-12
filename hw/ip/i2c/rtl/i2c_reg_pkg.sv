@@ -17,6 +17,11 @@ package i2c_reg_pkg;
   // Number of registers for every interface
   parameter int NumRegs = 32;
 
+  // Alert indices
+  typedef enum int {
+    AlertFatalFaultIdx = 0
+  } i2c_alert_idx_t;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -450,55 +455,7 @@ package i2c_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } fmt_threshold;
-    struct packed {
-      logic        d;
-      logic        de;
-    } rx_threshold;
-    struct packed {
-      logic        d;
-      logic        de;
-    } acq_threshold;
-    struct packed {
-      logic        d;
-      logic        de;
-    } rx_overflow;
-    struct packed {
-      logic        d;
-      logic        de;
-    } controller_halt;
-    struct packed {
-      logic        d;
-      logic        de;
-    } scl_interference;
-    struct packed {
-      logic        d;
-      logic        de;
-    } sda_interference;
-    struct packed {
-      logic        d;
-      logic        de;
-    } stretch_timeout;
-    struct packed {
-      logic        d;
-      logic        de;
-    } sda_unstable;
-    struct packed {
-      logic        d;
-      logic        de;
-    } cmd_complete;
-    struct packed {
-      logic        d;
-      logic        de;
-    } tx_stretch;
-    struct packed {
-      logic        d;
-      logic        de;
-    } tx_threshold;
-    struct packed {
-      logic        d;
-      logic        de;
-    } acq_stretch;
+    } host_timeout;
     struct packed {
       logic        d;
       logic        de;
@@ -506,43 +463,91 @@ package i2c_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } host_timeout;
+    } acq_stretch;
+    struct packed {
+      logic        d;
+      logic        de;
+    } tx_threshold;
+    struct packed {
+      logic        d;
+      logic        de;
+    } tx_stretch;
+    struct packed {
+      logic        d;
+      logic        de;
+    } cmd_complete;
+    struct packed {
+      logic        d;
+      logic        de;
+    } sda_unstable;
+    struct packed {
+      logic        d;
+      logic        de;
+    } stretch_timeout;
+    struct packed {
+      logic        d;
+      logic        de;
+    } sda_interference;
+    struct packed {
+      logic        d;
+      logic        de;
+    } scl_interference;
+    struct packed {
+      logic        d;
+      logic        de;
+    } controller_halt;
+    struct packed {
+      logic        d;
+      logic        de;
+    } rx_overflow;
+    struct packed {
+      logic        d;
+      logic        de;
+    } acq_threshold;
+    struct packed {
+      logic        d;
+      logic        de;
+    } rx_threshold;
+    struct packed {
+      logic        d;
+      logic        de;
+    } fmt_threshold;
   } i2c_hw2reg_intr_state_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
-    } fmtfull;
-    struct packed {
-      logic        d;
-    } rxfull;
-    struct packed {
-      logic        d;
-    } fmtempty;
-    struct packed {
-      logic        d;
-    } hostidle;
-    struct packed {
-      logic        d;
-    } targetidle;
-    struct packed {
-      logic        d;
-    } rxempty;
-    struct packed {
-      logic        d;
-    } txfull;
-    struct packed {
-      logic        d;
-    } acqfull;
-    struct packed {
-      logic        d;
-    } txempty;
+    } ack_ctrl_stretch;
     struct packed {
       logic        d;
     } acqempty;
     struct packed {
       logic        d;
-    } ack_ctrl_stretch;
+    } txempty;
+    struct packed {
+      logic        d;
+    } acqfull;
+    struct packed {
+      logic        d;
+    } txfull;
+    struct packed {
+      logic        d;
+    } rxempty;
+    struct packed {
+      logic        d;
+    } targetidle;
+    struct packed {
+      logic        d;
+    } hostidle;
+    struct packed {
+      logic        d;
+    } fmtempty;
+    struct packed {
+      logic        d;
+    } rxfull;
+    struct packed {
+      logic        d;
+    } fmtfull;
   } i2c_hw2reg_status_reg_t;
 
   typedef struct packed {
@@ -552,37 +557,37 @@ package i2c_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [11:0] d;
-    } fmtlvl;
+    } rxlvl;
     struct packed {
       logic [11:0] d;
-    } rxlvl;
+    } fmtlvl;
   } i2c_hw2reg_host_fifo_status_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [11:0] d;
-    } txlvl;
+    } acqlvl;
     struct packed {
       logic [11:0] d;
-    } acqlvl;
+    } txlvl;
   } i2c_hw2reg_target_fifo_status_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] d;
-    } scl_rx;
+    } sda_rx;
     struct packed {
       logic [15:0] d;
-    } sda_rx;
+    } scl_rx;
   } i2c_hw2reg_val_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [7:0]  d;
-    } abyte;
-    struct packed {
       logic [2:0]  d;
     } signal;
+    struct packed {
+      logic [7:0]  d;
+    } abyte;
   } i2c_hw2reg_acqdata_reg_t;
 
   typedef struct packed {
@@ -604,7 +609,11 @@ package i2c_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } nack;
+    } arbitration_lost;
+    struct packed {
+      logic        d;
+      logic        de;
+    } bus_timeout;
     struct packed {
       logic        d;
       logic        de;
@@ -612,18 +621,14 @@ package i2c_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } bus_timeout;
-    struct packed {
-      logic        d;
-      logic        de;
-    } arbitration_lost;
+    } nack;
   } i2c_hw2reg_controller_events_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
-    } tx_pending;
+    } arbitration_lost;
     struct packed {
       logic        d;
       logic        de;
@@ -631,7 +636,7 @@ package i2c_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } arbitration_lost;
+    } tx_pending;
   } i2c_hw2reg_target_events_reg_t;
 
   // Register -> HW type

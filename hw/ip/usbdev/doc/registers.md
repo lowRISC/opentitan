@@ -91,6 +91,7 @@ This interrupt is directly tied to the FIFO status, so the Available SETUP Buffe
 ### INTR_STATE . link_out_err
 Raised if a packet to an OUT endpoint started to be received but was then dropped due to an error.
 This error is raised if the data toggle, token, packet and/or CRC are invalid, or if the appropriate Available OUT Buffer FIFO is empty and/or the Received Buffer FIFO is full when a packet should have been received.
+Attempting to perform an OUT transaction to an endpoint that is stalled, i.e. its control bit in `out_stall` is set, will also cause this error to be raised.
 
 ### INTR_STATE . powered
 Raised if VBUS is applied.
@@ -139,7 +140,7 @@ Raised if the link is at SE0 longer than 3 us indicating a link reset (host asse
 Raised if link is active but SOF was not received from host for 4.096 ms. The SOF should be every 1 ms.
 
 ### INTR_STATE . disconnected
-Raised if VBUS is lost, thus the link is disconnected.
+Raised if VBUS is lost or the pullup is disabled, thus the link is disconnected.
 
 ### INTR_STATE . pkt_sent
 Raised if a packet was sent as part of an IN transaction.
@@ -367,7 +368,7 @@ These buffers are available for receiving OUT DATA packets.
 ### usbstat . sense
 Reflects the state of the sense pin.
 1 indicates that the host is providing VBUS.
-Note that this bit always shows the state of the actual pin and does not take account of the override control.
+Note that this bit always shows the state of the actual pin and is unaffected by the direct pin driving in phy_pins_drive.
 
 ### usbstat . link_state
 State of USB link, decoded from line.
@@ -388,7 +389,7 @@ Other values are reserved.
 Start of frame not received from host for 4.096 ms and the line is active.
 
 ### usbstat . frame
-Frame index received from host. On an active link, this will increment every milisecond.
+Frame index received from host. On an active link, this will increment every millisecond.
 
 ## avoutbuffer
 Available OUT Buffer FIFO
@@ -478,113 +479,32 @@ Receive SETUP transaction enable
 Receive OUT transaction enable
 - Offset: `0x30`
 - Reset default: `0x0`
-- Reset mask: `0xfff`
+- Reset mask: `0xfff0fff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "out_0", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "out_1", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "out_2", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "out_3", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "out_4", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "out_5", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "out_6", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "out_7", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "out_8", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "out_9", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "out_10", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "out_11", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 20}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "out", "bits": 12, "attr": ["rw"], "rotate": 0}, {"bits": 4}, {"name": "preserve", "bits": 12, "attr": ["wo"], "rotate": 0}, {"bits": 4}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                            |
-|:------:|:------:|:-------:|:--------------------------------|
-| 31:12  |        |         | Reserved                        |
-|   11   |   rw   |   0x0   | [out_11](#rxenable_out--out_11) |
-|   10   |   rw   |   0x0   | [out_10](#rxenable_out--out_10) |
-|   9    |   rw   |   0x0   | [out_9](#rxenable_out--out_9)   |
-|   8    |   rw   |   0x0   | [out_8](#rxenable_out--out_8)   |
-|   7    |   rw   |   0x0   | [out_7](#rxenable_out--out_7)   |
-|   6    |   rw   |   0x0   | [out_6](#rxenable_out--out_6)   |
-|   5    |   rw   |   0x0   | [out_5](#rxenable_out--out_5)   |
-|   4    |   rw   |   0x0   | [out_4](#rxenable_out--out_4)   |
-|   3    |   rw   |   0x0   | [out_3](#rxenable_out--out_3)   |
-|   2    |   rw   |   0x0   | [out_2](#rxenable_out--out_2)   |
-|   1    |   rw   |   0x0   | [out_1](#rxenable_out--out_1)   |
-|   0    |   rw   |   0x0   | [out_0](#rxenable_out--out_0)   |
+|  Bits  |  Type  |  Reset  | Name                                |
+|:------:|:------:|:-------:|:------------------------------------|
+| 31:28  |        |         | Reserved                            |
+| 27:16  |   wo   |    x    | [preserve](#rxenable_out--preserve) |
+| 15:12  |        |         | Reserved                            |
+|  11:0  |   rw   |    x    | [out](#rxenable_out--out)           |
 
-### rxenable_out . out_11
+### rxenable_out . preserve
+When writing to this register, only those 'out' bits with a corresponding 'preserve' bit of 0 are updated.
+The 'preserve' field should therefore normally be set to all '1s', except for those bits that the software wishes to modify.
+This conditional update facility avoids a race with the hardware when it is clearing the 'out' bit for another enabled endpoint.
+
+### rxenable_out . out
 This bit must be set to enable OUT transactions to be received on the endpoint.
-If the bit is clear then an OUT request will be responded to with a NAK, if the endpoint is enabled.
+If the bit is clear but the endpoint is enabled, then an OUT request will receive a NAK in response.
 If set_nak_out for this endpoint is set, hardware will clear this bit whenever an OUT transaction is received on this endpoint.
 Software must set this bit again to receive the next OUT transaction.
-Until that happens, hardware will continue to NAK any OUT transaction to this endpoint.
-
-### rxenable_out . out_10
-This bit must be set to enable OUT transactions to be received on the endpoint.
-If the bit is clear then an OUT request will be responded to with a NAK, if the endpoint is enabled.
-If set_nak_out for this endpoint is set, hardware will clear this bit whenever an OUT transaction is received on this endpoint.
-Software must set this bit again to receive the next OUT transaction.
-Until that happens, hardware will continue to NAK any OUT transaction to this endpoint.
-
-### rxenable_out . out_9
-This bit must be set to enable OUT transactions to be received on the endpoint.
-If the bit is clear then an OUT request will be responded to with a NAK, if the endpoint is enabled.
-If set_nak_out for this endpoint is set, hardware will clear this bit whenever an OUT transaction is received on this endpoint.
-Software must set this bit again to receive the next OUT transaction.
-Until that happens, hardware will continue to NAK any OUT transaction to this endpoint.
-
-### rxenable_out . out_8
-This bit must be set to enable OUT transactions to be received on the endpoint.
-If the bit is clear then an OUT request will be responded to with a NAK, if the endpoint is enabled.
-If set_nak_out for this endpoint is set, hardware will clear this bit whenever an OUT transaction is received on this endpoint.
-Software must set this bit again to receive the next OUT transaction.
-Until that happens, hardware will continue to NAK any OUT transaction to this endpoint.
-
-### rxenable_out . out_7
-This bit must be set to enable OUT transactions to be received on the endpoint.
-If the bit is clear then an OUT request will be responded to with a NAK, if the endpoint is enabled.
-If set_nak_out for this endpoint is set, hardware will clear this bit whenever an OUT transaction is received on this endpoint.
-Software must set this bit again to receive the next OUT transaction.
-Until that happens, hardware will continue to NAK any OUT transaction to this endpoint.
-
-### rxenable_out . out_6
-This bit must be set to enable OUT transactions to be received on the endpoint.
-If the bit is clear then an OUT request will be responded to with a NAK, if the endpoint is enabled.
-If set_nak_out for this endpoint is set, hardware will clear this bit whenever an OUT transaction is received on this endpoint.
-Software must set this bit again to receive the next OUT transaction.
-Until that happens, hardware will continue to NAK any OUT transaction to this endpoint.
-
-### rxenable_out . out_5
-This bit must be set to enable OUT transactions to be received on the endpoint.
-If the bit is clear then an OUT request will be responded to with a NAK, if the endpoint is enabled.
-If set_nak_out for this endpoint is set, hardware will clear this bit whenever an OUT transaction is received on this endpoint.
-Software must set this bit again to receive the next OUT transaction.
-Until that happens, hardware will continue to NAK any OUT transaction to this endpoint.
-
-### rxenable_out . out_4
-This bit must be set to enable OUT transactions to be received on the endpoint.
-If the bit is clear then an OUT request will be responded to with a NAK, if the endpoint is enabled.
-If set_nak_out for this endpoint is set, hardware will clear this bit whenever an OUT transaction is received on this endpoint.
-Software must set this bit again to receive the next OUT transaction.
-Until that happens, hardware will continue to NAK any OUT transaction to this endpoint.
-
-### rxenable_out . out_3
-This bit must be set to enable OUT transactions to be received on the endpoint.
-If the bit is clear then an OUT request will be responded to with a NAK, if the endpoint is enabled.
-If set_nak_out for this endpoint is set, hardware will clear this bit whenever an OUT transaction is received on this endpoint.
-Software must set this bit again to receive the next OUT transaction.
-Until that happens, hardware will continue to NAK any OUT transaction to this endpoint.
-
-### rxenable_out . out_2
-This bit must be set to enable OUT transactions to be received on the endpoint.
-If the bit is clear then an OUT request will be responded to with a NAK, if the endpoint is enabled.
-If set_nak_out for this endpoint is set, hardware will clear this bit whenever an OUT transaction is received on this endpoint.
-Software must set this bit again to receive the next OUT transaction.
-Until that happens, hardware will continue to NAK any OUT transaction to this endpoint.
-
-### rxenable_out . out_1
-This bit must be set to enable OUT transactions to be received on the endpoint.
-If the bit is clear then an OUT request will be responded to with a NAK, if the endpoint is enabled.
-If set_nak_out for this endpoint is set, hardware will clear this bit whenever an OUT transaction is received on this endpoint.
-Software must set this bit again to receive the next OUT transaction.
-Until that happens, hardware will continue to NAK any OUT transaction to this endpoint.
-
-### rxenable_out . out_0
-This bit must be set to enable OUT transactions to be received on the endpoint.
-If the bit is clear then an OUT request will be responded to with a NAK, if the endpoint is enabled.
-If set_nak_out for this endpoint is set, hardware will clear this bit whenever an OUT transaction is received on this endpoint.
-Software must set this bit again to receive the next OUT transaction.
-Until that happens, hardware will continue to NAK any OUT transaction to this endpoint.
+Until that happens, hardware will continue to NAK any OUT transactions to this endpoint.
 
 ## set_nak_out
 Set NAK after OUT transactions

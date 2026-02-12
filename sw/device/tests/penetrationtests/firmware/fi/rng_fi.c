@@ -20,13 +20,8 @@
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/rng_fi_commands.h"
 
-#include "edn_regs.h"  // Generated
+#include "hw/top/edn_regs.h"  // Generated
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
-// NOP macros.
-#define NOP1 "addi x0, x0, 0\n"
-#define NOP10 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1
-#define NOP30 NOP10 NOP10 NOP10
 
 enum {
   kEdnKatTimeout = (10 * 1000 * 1000),
@@ -47,9 +42,6 @@ static dif_entropy_src_t entropy_src;
 static dif_csrng_t csrng;
 static dif_edn_t edn0;
 static dif_edn_t edn1;
-static bool disable_health_check;
-
-static bool firmware_override_init;
 
 static const uint32_t kInputMsg[kCsrngBiasFWFifoBufferSize] = {
     0xa52a0da9, 0xcae141b2, 0x6d5bab9d, 0x2c3e5cc0, 0x225afc93, 0x5d31a610,
@@ -106,12 +98,6 @@ static dif_edn_auto_params_t kat_auto_params_build(void) {
   };
 }
 
-static const uint32_t kExpectedOutput[kEdnKatOutputLen] = {
-    0xe48bb8cb, 0x1012c84c, 0x5af8a7f1, 0xd1c07cd9, 0xdf82ab22, 0x771c619b,
-    0xd40fccb1, 0x87189e99, 0x510494b3, 0x64f7ac0c, 0x2581f391, 0x80b1dc2f,
-    0x793e01c5, 0x87b107ae, 0xdb17514c, 0xa43c41b7,
-};
-
 /**
  * Flushes the data entropy buffer until there is no data available to read.
  *
@@ -159,6 +145,9 @@ static void entropy_conditioner_stop(const dif_entropy_src_t *entropy_src) {
 status_t handle_rng_fi_entropy_src_bias(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear registered local alerts in alert handler.
+  pentest_registered_loc_alerts_t reg_loc_alerts =
+      pentest_get_triggered_loc_alerts();
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
@@ -196,6 +185,8 @@ status_t handle_rng_fi_entropy_src_bias(ujson_t *uj) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get registered local alerts from alert handler.
+  reg_loc_alerts = pentest_get_triggered_loc_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
   pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
@@ -209,6 +200,7 @@ status_t handle_rng_fi_entropy_src_bias(ujson_t *uj) {
   memcpy(uj_output.rand, entropy_bits, sizeof(entropy_bits));
   uj_output.err_status = err_ibx;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  uj_output.loc_alerts = reg_loc_alerts.loc_alerts;
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_rng_fi_entropy_src_bias_t, uj, &uj_output);
@@ -219,48 +211,53 @@ status_t handle_rng_fi_entropy_src_bias(ujson_t *uj) {
 status_t handle_rng_fi_firmware_override(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear registered local alerts in alert handler.
+  pentest_registered_loc_alerts_t reg_loc_alerts =
+      pentest_get_triggered_loc_alerts();
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
-  if (!firmware_override_init) {
-    // Check if we keep heal tests enabled.
-    rng_fi_fw_overwrite_health_t uj_data;
-    TRY(ujson_deserialize_rng_fi_fw_overwrite_health_t(uj, &uj_data));
-    disable_health_check = uj_data.disable_health_check;
+  rng_fi_fw_overwrite_health_t uj_data;
+  TRY(ujson_deserialize_rng_fi_fw_overwrite_health_t(uj, &uj_data));
 
-    firmware_override_init = true;
-  }
-
+  // Stop the entropy complex.
   TRY(entropy_testutils_stop_all());
 
-  if (disable_health_check) {
+  if (uj_data.disable_health_check) {
     // Disable all health tests.
     TRY(entropy_src_testutils_disable_health_tests(&entropy_src));
   }
 
+  // Enable firmware override mode
   TRY(entropy_src_testutils_fw_override_enable(&entropy_src,
                                                kEntropyFifoBufferSize,
                                                /*route_to_firmware=*/true,
                                                /*bypass_conditioner=*/true));
 
-  entropy_data_flush(&entropy_src);
+  // Flush any residual data in the observation FIFO.
+  size_t len;
+  do {
+    len = kEntropyFifoBufferSize;
+    TRY(dif_entropy_src_observe_fifo_nonblocking_read(&entropy_src, NULL,
+                                                      &len));
+  } while (len > 0);
 
   uint32_t buf[kEntropyFifoBufferSize] = {0};
 
   pentest_set_trigger_high();
   asm volatile(NOP30);
-  for (size_t it = 0; it < kEntropyFifoBufferSize; it++) {
-    while (buf[it] == 0) {
-      TRY(dif_entropy_src_observe_fifo_blocking_read(&entropy_src, &buf[it],
-                                                     kEntropyFifoBufferSize));
-    }
-  }
+  TRY(dif_entropy_src_observe_fifo_blocking_read(&entropy_src, buf,
+                                                 kEntropyFifoBufferSize));
 
   asm volatile(NOP30);
   pentest_set_trigger_low();
 
+  TRY(entropy_testutils_stop_all());
+
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get registered local alerts from alert handler.
+  reg_loc_alerts = pentest_get_triggered_loc_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
   pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
@@ -274,6 +271,7 @@ status_t handle_rng_fi_firmware_override(ujson_t *uj) {
   memcpy(uj_output.rand, buf, sizeof(buf));
   uj_output.err_status = err_ibx;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  uj_output.loc_alerts = reg_loc_alerts.loc_alerts;
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_rng_fi_fw_overwrite_t, uj, &uj_output);
@@ -284,6 +282,9 @@ status_t handle_rng_fi_firmware_override(ujson_t *uj) {
 status_t handle_rng_fi_edn_bias(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear registered local alerts in alert handler.
+  pentest_registered_loc_alerts_t reg_loc_alerts =
+      pentest_get_triggered_loc_alerts();
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
@@ -310,31 +311,22 @@ status_t handle_rng_fi_edn_bias(ujson_t *uj) {
   // Enable EDN0 in auto request mode.
   TRY(dif_edn_set_auto_mode(&edn0, kat_auto_params_build()));
 
-  uint32_t ibex_rnd_data_got[kEdnBiasMaxData];
+  rng_fi_edn_t uj_output;
+  memset(uj_output.rand, 0, sizeof(uj_output.rand));
 
   pentest_set_trigger_high();
   asm volatile(NOP30);
   for (size_t it = 0; it < kEdnBiasMaxData; it++) {
     CHECK_STATUS_OK(rv_core_ibex_testutils_get_rnd_data(
-        &rv_core_ibex, kEdnKatTimeout, &ibex_rnd_data_got[it]));
+        &rv_core_ibex, kEdnKatTimeout, &uj_output.rand[it]));
   }
   asm volatile(NOP30);
   pentest_set_trigger_low();
 
-  rng_fi_edn_t uj_output;
-  memset(uj_output.rand, 0, sizeof(uj_output.rand));
-  size_t collisions = 0;
-  for (size_t got = 0; got < kEdnBiasMaxData; got++) {
-    for (size_t ref = 0; ref < kEdnBiasMaxData; ref++) {
-      if (ibex_rnd_data_got[got] == kExpectedOutput[ref]) {
-        uj_output.rand[collisions] = ibex_rnd_data_got[got];
-        collisions++;
-      }
-    }
-  }
-
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get registered local alerts from alert handler.
+  reg_loc_alerts = pentest_get_triggered_loc_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
   pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
@@ -343,8 +335,8 @@ status_t handle_rng_fi_edn_bias(ujson_t *uj) {
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &err_ibx));
 
   // Send result & ERR_STATUS to host.
-  uj_output.collisions = collisions;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  uj_output.loc_alerts = reg_loc_alerts.loc_alerts;
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   uj_output.err_status = err_ibx;
@@ -355,6 +347,9 @@ status_t handle_rng_fi_edn_bias(ujson_t *uj) {
 status_t handle_rng_fi_edn_resp_ack(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear registered local alerts in alert handler.
+  pentest_registered_loc_alerts_t reg_loc_alerts =
+      pentest_get_triggered_loc_alerts();
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
   // Enable entropy complex, CSRNG and EDN so Ibex can get entropy.
@@ -376,7 +371,7 @@ status_t handle_rng_fi_edn_resp_ack(ujson_t *uj) {
   pentest_set_trigger_low();
 
   // Check if there are any collisions.
-  rng_fi_edn_t uj_output;
+  rng_fi_edn_collisions_t uj_output;
   memset(uj_output.rand, 0, sizeof(uj_output.rand));
   size_t collisions = 0;
   for (size_t outer = 0; outer < kEdnBusAckMaxData; outer++) {
@@ -392,6 +387,8 @@ status_t handle_rng_fi_edn_resp_ack(ujson_t *uj) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get registered local alerts from alert handler.
+  reg_loc_alerts = pentest_get_triggered_loc_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
   pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
@@ -402,16 +399,17 @@ status_t handle_rng_fi_edn_resp_ack(ujson_t *uj) {
   // Send result & ERR_STATUS to host.
   uj_output.collisions = collisions;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  uj_output.loc_alerts = reg_loc_alerts.loc_alerts;
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   uj_output.err_status = err_ibx;
-  RESP_OK(ujson_serialize_rng_fi_edn_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_rng_fi_edn_collisions_t, uj, &uj_output);
   return OK_STATUS();
 }
 
 status_t handle_rng_fi_edn_init(ujson_t *uj) {
-  penetrationtest_cpuctrl_t uj_data;
-  TRY(ujson_deserialize_penetrationtest_cpuctrl_t(uj, &uj_data));
+  // Configure the device.
+  pentest_setup_device(uj, true, false);
 
   pentest_select_trigger_type(kPentestTriggerTypeSw);
   // As we are using the software defined trigger, the first argument of
@@ -421,23 +419,10 @@ status_t handle_rng_fi_edn_init(ujson_t *uj) {
                kPentestPeripheralIoDiv4 | kPentestPeripheralEntropy |
                    kPentestPeripheralCsrng | kPentestPeripheralEdn);
 
-  // Configure the CPU for the pentest.
-  penetrationtest_device_info_t uj_output;
-  TRY(pentest_configure_cpu(
-      uj_data.icache_disable, uj_data.dummy_instr_disable,
-      uj_data.enable_jittery_clock, uj_data.enable_sram_readback,
-      &uj_output.clock_jitter_locked, &uj_output.clock_jitter_en,
-      &uj_output.sram_main_readback_locked, &uj_output.sram_ret_readback_locked,
-      &uj_output.sram_main_readback_en, &uj_output.sram_ret_readback_en));
-
   // Configure Ibex to allow reading ERR_STATUS register.
   TRY(dif_rv_core_ibex_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
-
-  // Configure the alert handler. Alerts triggered by IP blocks are captured
-  // and reported to the test.
-  pentest_configure_alert_handler();
 
   // Initialize peripherals used in this FI test.
   TRY(dif_entropy_src_init(
@@ -446,12 +431,6 @@ status_t handle_rng_fi_edn_init(ujson_t *uj) {
                      &csrng));
   TRY(dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR), &edn0));
   TRY(dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR), &edn1));
-
-  // Read device ID and return to host.
-  TRY(pentest_read_device_id(uj_output.device_id));
-  RESP_OK(ujson_serialize_penetrationtest_device_info_t, uj, &uj_output);
-
-  firmware_override_init = false;
 
   return OK_STATUS();
 }
@@ -462,6 +441,9 @@ status_t handle_rng_fi_csrng_bias(ujson_t *uj) {
   TRY(ujson_deserialize_crypto_fi_csrng_mode_t(uj, &uj_data));
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear registered local alerts in alert handler.
+  pentest_registered_loc_alerts_t reg_loc_alerts =
+      pentest_get_triggered_loc_alerts();
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
@@ -485,7 +467,7 @@ status_t handle_rng_fi_csrng_bias(ujson_t *uj) {
   if (uj_data.all_trigger || uj_data.start_trigger) {
     pentest_set_trigger_high();
   }
-  TRY(dif_csrng_generate_start(&csrng, kCsrngExpectedOutputLen));
+  TRY(dif_csrng_generate_start(&csrng, NULL, kCsrngExpectedOutputLen));
   if (uj_data.start_trigger) {
     pentest_set_trigger_low();
   }
@@ -511,6 +493,8 @@ status_t handle_rng_fi_csrng_bias(ujson_t *uj) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get registered local alerts from alert handler.
+  reg_loc_alerts = pentest_get_triggered_loc_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
   pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
@@ -536,6 +520,7 @@ status_t handle_rng_fi_csrng_bias(ujson_t *uj) {
   memcpy(uj_output.rand, rand_data_got, sizeof(rand_data_got));
   uj_output.err_status = err_ibx;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  uj_output.loc_alerts = reg_loc_alerts.loc_alerts;
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_rng_fi_csrng_output_t, uj, &uj_output);
@@ -546,6 +531,9 @@ status_t handle_rng_fi_csrng_bias(ujson_t *uj) {
 status_t handle_rng_fi_csrng_bias_fw_override(ujson_t *uj, bool static_seed) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear registered local alerts in alert handler.
+  pentest_registered_loc_alerts_t reg_loc_alerts =
+      pentest_get_triggered_loc_alerts();
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
@@ -596,7 +584,7 @@ status_t handle_rng_fi_csrng_bias_fw_override(ujson_t *uj, bool static_seed) {
   CHECK_DIF_OK(dif_csrng_instantiate(&csrng, kDifCsrngEntropySrcToggleEnable,
                                      &kEmptySeedMaterial));
 
-  CHECK_STATUS_OK(csrng_testutils_cmd_generate_run(&csrng, received_data,
+  CHECK_STATUS_OK(csrng_testutils_cmd_generate_run(&csrng, NULL, received_data,
                                                    ARRAYSIZE(received_data)));
 
   asm volatile(NOP30);
@@ -604,6 +592,8 @@ status_t handle_rng_fi_csrng_bias_fw_override(ujson_t *uj, bool static_seed) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get registered local alerts from alert handler.
+  reg_loc_alerts = pentest_get_triggered_loc_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
   pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
@@ -618,6 +608,7 @@ status_t handle_rng_fi_csrng_bias_fw_override(ujson_t *uj, bool static_seed) {
   memcpy(uj_output.rand, received_data, sizeof(received_data));
   uj_output.err_status = err_ibx;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  uj_output.loc_alerts = reg_loc_alerts.loc_alerts;
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_rng_fi_csrng_ov_output_t, uj, &uj_output);
@@ -626,8 +617,8 @@ status_t handle_rng_fi_csrng_bias_fw_override(ujson_t *uj, bool static_seed) {
 }
 
 status_t handle_rng_fi_csrng_init(ujson_t *uj) {
-  penetrationtest_cpuctrl_t uj_data;
-  TRY(ujson_deserialize_penetrationtest_cpuctrl_t(uj, &uj_data));
+  // Configure the device.
+  pentest_setup_device(uj, true, false);
 
   pentest_select_trigger_type(kPentestTriggerTypeSw);
   // As we are using the software defined trigger, the first argument of
@@ -636,32 +627,15 @@ status_t handle_rng_fi_csrng_init(ujson_t *uj) {
   pentest_init(kPentestTriggerSourceAes,
                kPentestPeripheralIoDiv4 | kPentestPeripheralCsrng);
 
-  // Configure the CPU for the pentest.
-  penetrationtest_device_info_t uj_output;
-  TRY(pentest_configure_cpu(
-      uj_data.icache_disable, uj_data.dummy_instr_disable,
-      uj_data.enable_jittery_clock, uj_data.enable_sram_readback,
-      &uj_output.clock_jitter_locked, &uj_output.clock_jitter_en,
-      &uj_output.sram_main_readback_locked, &uj_output.sram_ret_readback_locked,
-      &uj_output.sram_main_readback_en, &uj_output.sram_ret_readback_en));
-
   // Configure Ibex to allow reading ERR_STATUS register.
   TRY(dif_rv_core_ibex_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
 
-  // Configure the alert handler. Alerts triggered by IP blocks are captured
-  // and reported to the test.
-  pentest_configure_alert_handler();
-
   // Initialize CSRNG.
   mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR);
   CHECK_DIF_OK(dif_csrng_init(base_addr, &csrng));
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
-
-  // Read device ID and return to host.
-  TRY(pentest_read_device_id(uj_output.device_id));
-  RESP_OK(ujson_serialize_penetrationtest_device_info_t, uj, &uj_output);
 
   return OK_STATUS();
 }

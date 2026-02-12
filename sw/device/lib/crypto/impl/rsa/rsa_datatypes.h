@@ -69,63 +69,66 @@ typedef struct rsa_4096_int_t {
 /**
  * A type that holds an RSA-2048 public key.
  *
- * The public key consists of a 2048-bit modulus n and a public exponent e.
+ * The public key consists of a 2048-bit modulus n and an implicit constant
+ * public exponent e=2^16+1.
  */
 typedef struct rsa_2048_public_key_t {
   rsa_2048_int_t n;
-  uint32_t e;
 } rsa_2048_public_key_t;
 
 /**
  * A type that holds an RSA-3072 public key.
  *
- * The public key consists of a 3072-bit modulus n and a public exponent e.
+ * The public key consists of a 3072-bit modulus n and an implicit constant
+ * public exponent e=2^16+1.
  */
 typedef struct rsa_3072_public_key_t {
   rsa_3072_int_t n;
-  uint32_t e;
 } rsa_3072_public_key_t;
 
 /**
  * A type that holds an RSA-4096 public key.
  *
- * The public key consists of a 4096-bit modulus n and a public exponent e.
+ * The public key consists of a 4096-bit modulus n and an implicit constant
+ * public exponent e=2^16+1.
  */
 typedef struct rsa_4096_public_key_t {
   rsa_4096_int_t n;
-  uint32_t e;
 } rsa_4096_public_key_t;
 
 /**
  * A type that holds an RSA-2048 private key.
  *
- * The private key consists of a 2048-bit private exponent d and a public
- * modulus n.
+ * The private key consists of a 2048-bit private exponent d in two Boolean
+ * shares and a public modulus n.
  */
 typedef struct rsa_2048_private_key_t {
-  rsa_2048_int_t d;
+  rsa_2048_int_t d0;
+  rsa_2048_int_t d1;
   rsa_2048_int_t n;
 } rsa_2048_private_key_t;
 
 /**
  * A type that holds an RSA-3072 private key.
  *
- * The private key consists of a 3072-bit private exponent d and a public
- * modulus n.
+ * The private key consists of a 3072-bit private exponent d in two Boolean
+ * shares and a public modulus n.
  */
 typedef struct rsa_3072_private_key_t {
-  rsa_3072_int_t d;
+  rsa_3072_int_t d0;
+  rsa_3072_int_t d1;
   rsa_3072_int_t n;
 } rsa_3072_private_key_t;
 
 /**
  * A type that holds an RSA-4096 private key.
  *
- * The private key consists of a 4096-bit private exponent d and a public
- * modulus n.
+ * The private key consists of a 4096-bit private exponent d in two Boolean
+ * shares and a public modulus n.
  */
 typedef struct rsa_4096_private_key_t {
-  rsa_4096_int_t d;
+  rsa_4096_int_t d0;
+  rsa_4096_int_t d1;
   rsa_4096_int_t n;
 } rsa_4096_private_key_t;
 

@@ -5,6 +5,8 @@
 // Description: UART core module
 //
 
+`include "prim_assert.sv"
+
 module uart_core (
   input                  clk_i,
   input                  rst_ni,
@@ -376,7 +378,7 @@ module uart_core (
               (rx_fifo_depth == '0)               ? 24'd0 :
               // stop the count at timeout value (this will set the interrupt)
               //   Removed below line as when the timeout reaches the value,
-              //   event occured, and timeout value reset to 0h.
+              //   event occurred, and timeout value reset to 0h.
               //(rx_timeout_count_q == uart_rxto_val) ? rx_timeout_count_q :
               // increment if at rx baud tick
               rx_tick_baud                        ? (rx_timeout_count_q + 24'd1) :

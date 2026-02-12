@@ -5,7 +5,7 @@
 // This is base sequence for top level fault injection.
 // User can set following parameters
 // if_path : hierarchical path to inject fault
-// alert_id : alert to be triggerred. Use enum
+// alert_id : alert to be triggered. Use enum
 //            defined in hw/top_earlgrey/rtl/autogen/top_earlgrey_pkg.sv
 
 class chip_sw_fault_base_vseq extends chip_sw_base_vseq;
@@ -16,7 +16,7 @@ class chip_sw_fault_base_vseq extends chip_sw_base_vseq;
   int    alert_id;
   sec_cm_pkg::sec_cm_base_if_proxy if_proxy;
 
-  // This function should be overriden and set if_path and alert_id.
+  // This function should be overridden and set if_path and alert_id.
   virtual function void set_fault_parameters();
   endfunction : set_fault_parameters
 

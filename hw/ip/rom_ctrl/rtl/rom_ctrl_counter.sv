@@ -11,22 +11,22 @@
 // would still need a pre-image attack on SHA-3.
 //
 // RomDepth is the number of words in the ROM. RomTopCount is the number of those words (at the top
-// of the address space) that are considered part of the expected hash.
+// of the address space) that are considered part of the expected hash (rather than data that should
+// be included in the hash computation).
 //
-// When it comes out of reset, the module starts reading from address zero. Once the reading is
-// done, it will signal done_o. The surrounding (hardened) design should check that done_o never has
-// a high -> low transition.
+// The counter works through the ROM, starting at address zero. For each address, it will supply
+// that address in read_addr_o and will set read_req_o. This combination makes a request to the ROM.
 //
-// The read_addr_o signal should be connected to the stateful mux that controls access to ROM. This
-// mux gives access to the rom_ctrl_counter until done_o is asserted. The data_addr_o signal gives
-// the address of the ROM word that was just read.
+// The data_addr_o signal holds the address of the last word that was requested from ROM. Since ROM
+// responds in a single cycle, this will be the address that corresponds to the data that is
+// currently being presented to KMAC (through the chk_rdata_o port of the mux).
 //
-// The data_* signals are used to handshake with KMAC, although the surrounding FSM will step in
-// once we've got to the top of memory. The counter uses the output buffer on the ROM instance to
-// hold data and drives rom_addr_o and data_vld_o to make a rdy/vld interface with the ROM output.
-// This interface should signal things correctly until done_o goes high. data_last_nontop_o is set
-// on the last word before the top RomTopCount words.
+// The data_last_nontop_o signal is true if the most recent word read from ROM was the final word in
+// the data that should be sent to KMAC.
 //
+// Finally, the data_rdy_i port is the ready response from KMAC. Knowing this means that the counter
+// can tell whether the last ROM word it read is being passed to KMAC, which means the counter can
+// step forwards to the next word.
 
 `include "prim_assert.sv"
 
@@ -62,8 +62,8 @@ module rom_ctrl_counter
   localparam int unsigned TopAddrInt = RomDepth - 1;
   localparam int unsigned TNTAddrInt = RomNonTopCount - 2;
 
-  localparam bit [AW-1:0] TopAddr = TopAddrInt[AW-1:0];
-  localparam bit [AW-1:0] TNTAddr = TNTAddrInt[AW-1:0];
+  localparam bit [AW-1:0] TopAddr = TopAddrInt[0 +: AW];
+  localparam bit [AW-1:0] TNTAddr = TNTAddrInt[0 +: AW];
 
   logic          go;
   logic          req_q, vld_q;

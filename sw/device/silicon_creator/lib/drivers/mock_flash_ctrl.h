@@ -43,9 +43,12 @@ class MockFlashCtrl : public global_mock::GlobalMock<MockFlashCtrl> {
                flash_ctrl_cfg_t cfg, hardened_bool_t));
   MOCK_METHOD(void, InfoCfgSet,
               (const flash_ctrl_info_page_t *, flash_ctrl_cfg_t));
+  MOCK_METHOD(void, InfoCfgLock, (const flash_ctrl_info_page_t *));
   MOCK_METHOD(void, BankErasePermsSet, (hardened_bool_t));
   MOCK_METHOD(void, ExecSet, (uint32_t));
   MOCK_METHOD(void, CreatorInfoPagesLockdown, ());
+  MOCK_METHOD(rom_error_t, InfoType0ParamsBuild,
+              (uint32_t, uint32_t, flash_ctrl_info_page_t *));
 };
 
 }  // namespace internal
@@ -54,19 +57,30 @@ using MockFlashCtrl = testing::StrictMock<internal::MockFlashCtrl>;
 using NiceMockFlashCtrl = testing::NiceMock<internal::MockFlashCtrl>;
 
 MATCHER_P3(FlashPerms, read, write, erase, "") {
-  return ::testing::Value(
-      arg,
-      ::testing::AllOf(::testing::Field(&flash_ctrl_perms_t::read, read),
-                       ::testing::Field(&flash_ctrl_perms_t::write, write),
-                       ::testing::Field(&flash_ctrl_perms_t::erase, erase)));
+  // It would be nice to use `testing::Field` here, but that matcher does not
+  // work with bitfields.
+  return arg.read == static_cast<uint8_t>(read) &&
+         arg.write == static_cast<uint8_t>(write) &&
+         arg.erase == static_cast<uint8_t>(erase);
 }
 
 MATCHER_P3(FlashCfg, scrambling, ecc, he, "") {
+  // It would be nice to use `testing::Field` here, but that matcher does not
+  // work with bitfields.
+  return arg.scrambling == static_cast<uint8_t>(scrambling) &&
+         arg.ecc == static_cast<uint8_t>(ecc) &&
+         arg.he == static_cast<uint8_t>(he);
+}
+
+MATCHER_P(FlashInfoPage, page, "") {
   return ::testing::Value(
-      arg, ::testing::AllOf(
-               ::testing::Field(&flash_ctrl_cfg_t::scrambling, scrambling),
-               ::testing::Field(&flash_ctrl_cfg_t::ecc, ecc),
-               ::testing::Field(&flash_ctrl_cfg_t::he, he)));
+      arg,
+      ::testing::AllOf(
+          ::testing::Field(&flash_ctrl_info_page_t::base_addr, page.base_addr),
+          ::testing::Field(&flash_ctrl_info_page_t::cfg_wen_offset,
+                           page.cfg_wen_offset),
+          ::testing::Field(&flash_ctrl_info_page_t::cfg_offset,
+                           page.cfg_offset)));
 }
 
 }  // namespace rom_test

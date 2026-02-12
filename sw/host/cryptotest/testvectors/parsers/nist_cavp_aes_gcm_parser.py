@@ -40,7 +40,32 @@ def parse_testcases(args) -> None:
         # https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/mac/gcmvs.pdf
         # Section 6.6.2
 
-        test_cases.append(test_case)
+        # The cryptolib currently supports tag lengths of (4,8,12,16)
+        # bytes and iv lengths of (12,16) bytes. Only select those
+        # tests.
+        tag_length_valid = False
+        if len(test_case["tag"]) in (4, 8, 12, 16):
+            tag_length_valid = True
+
+        iv_length_valid = False
+        if len(test_case["iv"]) in (12, 16):
+            iv_length_valid = True
+
+        aad_length_valid = False
+        if len(test_case["aad"]) < 64:
+            aad_length_valid = True
+
+        ciphertext_length_valid = False
+        if len(test_case["ciphertext"]) < 64:
+            ciphertext_length_valid = True
+
+        plaintext_length_valid = False
+        if len(test_case["plaintext"]) < 64:
+            plaintext_length_valid = True
+
+        if (tag_length_valid & iv_length_valid & aad_length_valid &
+                ciphertext_length_valid & plaintext_length_valid):
+            test_cases.append(test_case)
 
     json_filename = args.dst
     with open(json_filename, "w") as file:

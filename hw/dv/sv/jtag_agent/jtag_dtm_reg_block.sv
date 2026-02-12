@@ -8,14 +8,14 @@
 class jtag_dtm_base_reg extends dv_base_reg;
   `uvm_object_utils(jtag_dtm_base_reg)
 
-  function new(string       name = "jtag_dtm_base_reg",
+  function new(string       name = "",
                int unsigned n_bits = 32,
                int          has_coverage = UVM_NO_COVERAGE);
     super.new(name, n_bits, has_coverage);
   endfunction : new
 
   // When reading DTM CSR, we write the previous value that we through we wrote before, to maintain
-  // consistency, since the JTAG protocol parallely writes and reads the DR at all times. This
+  // consistency, since the JTAG protocol parallelly writes and reads the DR at all times. This
   // function is used to return the data we want to write to the DTM DR on reads. For the most part,
   // it is the mirrored value. But in some cases, we may not want to rewrite some fields.
   virtual function uvm_reg_data_t get_wdata_for_read();
@@ -30,7 +30,7 @@ class jtag_dtm_reg_bypass extends jtag_dtm_base_reg;
 
   `uvm_object_utils(jtag_dtm_reg_bypass)
 
-  function new(string       name = "jtag_dtm_reg_bypass",
+  function new(string       name = "",
                int unsigned n_bits = 32,
                int          has_coverage = UVM_NO_COVERAGE);
     super.new(name, n_bits, has_coverage);
@@ -65,7 +65,7 @@ class jtag_dtm_reg_idcode extends jtag_dtm_base_reg;
 
   `uvm_object_utils(jtag_dtm_reg_idcode)
 
-  function new(string       name = "jtag_dtm_reg_idcode",
+  function new(string       name = "",
                int unsigned n_bits = 32,
                int          has_coverage = UVM_NO_COVERAGE);
     super.new(name, n_bits, has_coverage);
@@ -152,7 +152,7 @@ class jtag_dtm_reg_dtmcs extends jtag_dtm_base_reg;
 
   `uvm_object_utils(jtag_dtm_reg_dtmcs)
 
-  function new(string       name = "jtag_dtm_reg_dtmcs",
+  function new(string       name = "",
                int unsigned n_bits = 32,
                int          has_coverage = UVM_NO_COVERAGE);
     super.new(name, n_bits, has_coverage);
@@ -298,7 +298,7 @@ class jtag_dtm_reg_dmi extends jtag_dtm_base_reg;
 
   `uvm_object_utils(jtag_dtm_reg_dmi)
 
-  function new(string       name = "jtag_dtm_reg_dmi",
+  function new(string       name = "",
 `ifdef USE_DMI_INTERFACE
                int unsigned n_bits = 50,
 `else
@@ -377,7 +377,7 @@ class jtag_dtm_reg_block extends dv_base_reg_block;
 
   `uvm_object_utils(jtag_dtm_reg_block)
 
-  function new(string name = "jtag_dtm_reg_block",
+  function new(string name = "",
                int    has_coverage = UVM_NO_COVERAGE);
     super.new(name, has_coverage);
   endfunction : new

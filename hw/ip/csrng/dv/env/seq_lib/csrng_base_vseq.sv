@@ -18,9 +18,8 @@ class csrng_base_vseq extends cip_base_vseq #(
 
   push_pull_device_seq#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))
       m_entropy_src_pull_seq;
-  push_pull_host_seq#(.HostDataWidth(csrng_pkg::CSRNG_CMD_WIDTH))
+  push_pull_host_seq#(.HostDataWidth(csrng_pkg::CmdBusWidth))
       m_edn_push_seq[NUM_HW_APPS];
-  push_pull_host_seq#(.HostDataWidth(1))   m_aes_halt_pull_seq;
 
   virtual task body();
     if (!uvm_config_db#(virtual csrng_cov_if)::get(null, "*.env" , "csrng_cov_if", cov_vif)) begin
@@ -76,7 +75,7 @@ class csrng_base_vseq extends cip_base_vseq #(
   endtask
 
   function automatic bit edn_under_reset();
-    return cfg.m_edn_agent_cfg[0].vif.rst_n === 1'b0;
+    return cfg.m_edn_agent_cfg[0].under_reset;
   endfunction
 
   // Wait for a CSR to contain an expected value or EDN to be reset, whichever happens first.  This
@@ -97,7 +96,7 @@ class csrng_base_vseq extends cip_base_vseq #(
 
   task send_cmd_req(uint app, csrng_item cs_item, bit await_response=1'b1, bit edn_rst_as_ack=1'b1,
                     csrng_pkg::csrng_cmd_sts_e exp_sts=CMD_STS_SUCCESS, bit await_genbits=1'b1);
-    bit [csrng_pkg::CSRNG_CMD_WIDTH-1:0]   cmd;
+    bit [csrng_pkg::CmdBusWidth-1:0] cmd;
     // Gen cmd_req
     if ((cs_item.acmd != INS) && (cs_item.acmd != RES)) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(alt_flags)
@@ -107,6 +106,10 @@ class csrng_base_vseq extends cip_base_vseq #(
       cmd = {cs_item.glen, cs_item.flags, cs_item.clen, 1'b0, cs_item.acmd};
     end
     if (app != SW_APP) begin
+      if (edn_under_reset()) begin
+        `uvm_info(`gfn, "HW app stopped due to EDN reset", UVM_HIGH)
+        return;
+      end
       cfg.m_edn_agent_cfg[app].m_cmd_push_agent_cfg.add_h_user_data(cmd);
       m_edn_push_seq[app].num_trans = cs_item.clen + 1;
       for (int i = 0; i < cs_item.clen; i++)
@@ -224,42 +227,44 @@ class csrng_base_vseq extends cip_base_vseq #(
   task force_all_fifo_errs(string paths [6], bit values [6], string path_exts [6],
                            uvm_reg_field reg_field, bit exp_data, int case_state);
     int    index1 [$], index2 [$], index3 [$];
-    string path_push, path_full, path_data, path_pop, path_not_empty;
-    bit    val_push, val_full, val_data, val_pop, val_not_empty;
+    string path_wvld, path_wrdy, path_wdata, path_rdata, path_rrdy, path_rvld;
+    bit    val_wvld, val_wrdy, val_wdata, val_rdata, val_rrdy, val_rvld;
+
     case (case_state)
       fifo_write: begin // fifo write err
-        index1     = path_exts.find_index(x) with (x == "push");
-        index2     = path_exts.find_index(x) with (x == "full");
+        index1     = path_exts.find_index(x) with (x == "wvld");
+        index2     = path_exts.find_index(x) with (x == "wrdy");
         index3     = path_exts.find_index(x) with (x == "wdata");
-        path_push  = paths[index1[0]];
-        path_full  = paths[index2[0]];
-        path_data  = paths[index3[0]];
-        val_push   = values[index1[0]];
-        val_full   = values[index2[0]];
-        val_data   = values[index3[0]];
-        force_fifo_readwrite_err(path_push, path_full, path_data, 1'b1, 1'b1, 8'b0, reg_field,
-                                 exp_data);
+        path_wvld  = paths[index1[0]];
+        path_wrdy  = paths[index2[0]];
+        path_wdata = paths[index3[0]];
+        val_wvld   = values[index1[0]];
+        val_wrdy   = values[index2[0]];
+        val_wdata  = values[index3[0]];
+        force_fifo_readwrite_err(path_wvld, path_wrdy, path_wdata, val_wvld, val_wrdy, val_wdata,
+                                 reg_field, exp_data);
       end
       fifo_read: begin // fifo read err
-        index1         = path_exts.find_index(x) with (x == "pop");
-        index2         = path_exts.find_index(x) with (x == "not_empty");
-        index3         = path_exts.find_index(x) with (x == "rdata");
-        path_pop       = paths[index1[0]];
-        path_not_empty = paths[index2[0]];
-        path_data      = paths[index3[0]];
-        val_pop        = values[index1[0]];
-        val_not_empty  = values[index2[0]];
-        force_fifo_readwrite_err(path_pop, path_not_empty, path_data, 1'b1, 1'b0, 8'b0, reg_field,
-                                 exp_data);
+        index1     = path_exts.find_index(x) with (x == "rrdy");
+        index2     = path_exts.find_index(x) with (x == "rvld");
+        index3     = path_exts.find_index(x) with (x == "rdata");
+        path_rrdy  = paths[index1[0]];
+        path_rvld  = paths[index2[0]];
+        path_rdata = paths[index3[0]];
+        val_rrdy   = values[index1[0]];
+        val_rvld   = values[index2[0]];
+        val_rdata  = values[index3[0]];
+        force_fifo_readwrite_err(path_rrdy, path_rvld, path_rdata, val_rrdy, val_rvld, val_rdata,
+                                 reg_field, exp_data);
       end
       fifo_state: begin // fifo state err
-        index1         = path_exts.find_index(x) with (x == "full");
-        index2         = path_exts.find_index(x) with (x == "not_empty");
-        path_full      = paths[index1[0]];
-        path_not_empty = paths[index2[0]];
-        val_full       = values[index1[0]];
-        val_not_empty  = values[index2[0]];
-        force_fifo_err(path_full, path_not_empty, 1'b1, 1'b0, reg_field, exp_data);
+        index1    = path_exts.find_index(x) with (x == "wrdy");
+        index2    = path_exts.find_index(x) with (x == "rvld");
+        path_wrdy = paths[index1[0]];
+        path_rvld = paths[index2[0]];
+        val_wrdy  = values[index1[0]];
+        val_rvld  = values[index2[0]];
+        force_fifo_err(path_wrdy, path_rvld, val_wrdy, val_rvld, reg_field, exp_data);
       end
       default: begin
         `uvm_fatal(`gfn, "Invalid case! (bug in environment)")
@@ -270,36 +275,36 @@ class csrng_base_vseq extends cip_base_vseq #(
   task force_all_fifo_errs_exception(string paths [6], bit values [6],string path_exts [6],
                                      uvm_reg_field reg_field, bit exp_data, int case_state);
     int    index1 [$], index2 [$];
-    string path_push, path_full, path_pop, path_not_empty;
-    bit    val_push, val_full, val_pop, val_not_empty;
+    string path_wvld, path_wrdy, path_rrdy, path_rvld;
+    bit    val_wvld, val_wrdy, val_rrdy, val_rvld;
     case (case_state)
       fifo_write: begin // fifo write err
-        index1     = path_exts.find_index(x) with (x == "push");
-        index2     = path_exts.find_index(x) with (x == "full");
-        path_push  = paths[index1[0]];
-        path_full  = paths[index2[0]];
-        val_push   = values[index1[0]];
-        val_full   = values[index2[0]];
-        force_fifo_err(path_push, path_full, val_push, val_full, reg_field, exp_data);
+        index1    = path_exts.find_index(x) with (x == "wvld");
+        index2    = path_exts.find_index(x) with (x == "wrdy");
+        path_wvld = paths[index1[0]];
+        path_wrdy = paths[index2[0]];
+        val_wvld  = values[index1[0]];
+        val_wrdy  = values[index2[0]];
+        force_fifo_err(path_wvld, path_wrdy, val_wvld, val_wrdy, reg_field, exp_data);
       end
       fifo_read: begin // fifo read err
-        index1         = path_exts.find_index(x) with (x == "pop");
-        index2         = path_exts.find_index(x) with (x == "not_empty");
-        path_pop       = paths[index1[0]];
-        path_not_empty = paths[index2[0]];
-        val_pop        = values[index1[0]];
-        val_not_empty  = values[index2[0]];
-        force_fifo_err_exception(path_pop, path_not_empty, val_pop, val_not_empty, 1'b0,
+        index1    = path_exts.find_index(x) with (x == "rrdy");
+        index2    = path_exts.find_index(x) with (x == "rvld");
+        path_rrdy = paths[index1[0]];
+        path_rvld = paths[index2[0]];
+        val_rrdy  = values[index1[0]];
+        val_rvld  = values[index2[0]];
+        force_fifo_err_exception(path_rrdy, path_rvld, val_rrdy, val_rvld, 1'b0,
                                  reg_field, exp_data);
       end
       fifo_state: begin // fifo state err
-        index1         = path_exts.find_index(x) with (x == "full");
-        index2         = path_exts.find_index(x) with (x == "not_empty");
-        path_full      = paths[index1[0]];
-        path_not_empty = paths[index2[0]];
-        val_full       = values[index1[0]];
-        val_not_empty  = values[index2[0]];
-        force_fifo_err(path_full, path_not_empty, val_full, val_not_empty, reg_field, exp_data);
+        index1    = path_exts.find_index(x) with (x == "wrdy");
+        index2    = path_exts.find_index(x) with (x == "rvld");
+        path_wrdy = paths[index1[0]];
+        path_rvld = paths[index2[0]];
+        val_wrdy  = values[index1[0]];
+        val_rvld  = values[index2[0]];
+        force_fifo_err(path_wrdy, path_rvld, val_wrdy, val_rvld, reg_field, exp_data);
       end
       default: begin
         `uvm_fatal(`gfn, "Invalid case! (bug in environment)")
@@ -333,7 +338,7 @@ class csrng_base_vseq extends cip_base_vseq #(
       `DV_CHECK(uvm_hdl_read(path, tmp_cnt));
       // Randomize bit flip vector
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bit_flip_mask, $onehot(bit_flip_mask);)
-      // Make sure the random bit is within the ctr_width (this has a slight prefernce for lower
+      // Make sure the random bit is within the ctr_width (this has a slight preference for lower
       // bits in case 32 is not divisible by ctr_width)
       while (bit_flip_mask > (32'h1 << (ctr_width-1))) begin
         bit_flip_mask = bit_flip_mask >> ctr_width;

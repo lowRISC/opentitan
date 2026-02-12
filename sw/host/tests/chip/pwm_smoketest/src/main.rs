@@ -112,7 +112,7 @@ fn main() -> Result<()> {
 
     // Wait until test is running.
     let uart = transport.uart("console")?;
-    UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
+    UartConsole::wait_for(&*uart, r"Running ", opts.timeout)?;
 
     /* Load the ELF binary and get the expect data.*/
     let elf_binary = fs::read(&opts.firmware_elf)?;

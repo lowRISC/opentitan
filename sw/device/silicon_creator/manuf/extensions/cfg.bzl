@@ -24,3 +24,11 @@ EXT_EARLGREY_SKUS = {
     #    "device_ext_libs": [<which device hooks extension libraries to use>]
     # }
 }
+
+# This enables downstream integrators to define external Earlgrey execution
+# environments. See the upstream Silicon Owner execution environments defined
+# in the `EARLGREY_SILICON_OWNER_ROM_EXT_ENVS` dictionary in
+# `rules/opentitan/defs.bzl` for more details.
+EXT_EXEC_ENV_SILICON_ROM_EXT = {
+    # "@provisioning_ex/bazel/target/exec_env:exec_env_name": None,
+}

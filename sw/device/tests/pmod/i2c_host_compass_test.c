@@ -17,8 +17,8 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
+#include "hw/top/i2c_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "i2c_regs.h"  // Generated.
 
 static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__,
               "This test assumes the target platform is little endian.");
@@ -138,7 +138,8 @@ bool test_main(void) {
 
   test_result = OK_STATUS();
   for (size_t i = 0; i < ARRAYSIZE(speeds); ++i) {
-    CHECK_STATUS_OK(i2c_testutils_set_speed(&i2c, speeds[i]));
+    CHECK_STATUS_OK(i2c_testutils_set_speed(
+        &i2c, speeds[i], /*sda_rise_nanos=*/400, /*sda_fall_nanos=*/110));
     EXECUTE_TEST(test_result, read_product_id);
     EXECUTE_TEST(test_result, take_measurement);
   }
@@ -146,7 +147,8 @@ bool test_main(void) {
   // Reset the i2c peripheral and re-run a test
   // to check the peripheral works after reset.
   CHECK_STATUS_OK(reset_i2c_and_check());
-  CHECK_STATUS_OK(i2c_testutils_set_speed(&i2c, kDifI2cSpeedFast));
+  CHECK_STATUS_OK(i2c_testutils_set_speed(
+      &i2c, kDifI2cSpeedFast, /*sda_rise_nanos=*/400, /*sda_fall_nanos=*/110));
   EXECUTE_TEST(test_result, read_product_id);
 
   return status_ok(test_result);

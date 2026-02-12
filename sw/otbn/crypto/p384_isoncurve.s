@@ -17,6 +17,43 @@
  .section .text
 
 /**
+ * Trigger a fault if the FG0.Z flag is 0.
+ *
+ * If the flag is 0, then this routine will trigger an `ILLEGAL_INSN` error and
+ * abort the OTBN program. If the flag is 1, the routine will essentially do
+ * nothing.
+ *
+ * NOTE: Be careful when calling this routine that the FG0.Z flag is not
+ * sensitive; since aborting the program will be quicker than completing it,
+ * the flag's value is likely clearly visible to an attacker through timing.
+ *
+ * @param[in]  FG0.Z: boolean indicating fault condition when 0
+ *
+ * clobbered registers: x2, w31
+ * clobbered flag groups: none
+ */
+.globl trigger_fault_if_fg0_z
+trigger_fault_if_fg0_z:
+  /* Read the FG0.Z flag (position 3).
+       x2 <= FG0.Z */
+  csrrw     x2, FG0, x0
+  andi      x2, x2, 8
+  xori      x2, x2, 8
+  addi      x2, x2, 31
+
+  /* The `bn.lid` instruction causes an `ILLEGAL_INSN` error if the index of the
+     bignum register (stored in x2 in this case) is invalid. Therefore, if FG0.Z
+     is 1, this instruction causes an error, but if FG0.Z is 0 it simply loads
+     the word at address 0 into w31. */
+  bn.lid    x2, 0(x0)
+
+  /* If we get here, the flag must have been 1. Restore w31 to zero and return.
+       w31 <= 0 */
+  bn.xor    w31, w31, w31
+
+  ret
+
+/**
  * Checks if a point is a valid curve point on curve P-384
  *
  * Returns rhs = x^3 + ax + b  mod p
@@ -101,27 +138,86 @@ p384_isoncurve:
      x^3 + ax  mod p = [w17,w16] <= x^3 -3 x mod p
                      = [w17,w16] - [w1,w0] - [w1,w0] - [w1,w0] mod [w13,w12] */
   loopi     3, 6
-    bn.sub    w16, w16, w0
-    bn.subb   w17, w17, w1
-    bn.add    w10, w16, w12
-    bn.addc   w11, w17, w13
-    bn.sel    w16, w10, w16, C
-    bn.sel    w17, w11, w17, C
+    bn.sub    w2,  w16, w0
+    bn.subb   w3,  w17, w1
+    bn.add    w10, w2,  w12
+    bn.addc   w11, w3,  w13
+    bn.sel    w16, w10, w2, C
+    bn.sel    w17, w11, w3, C
 
   /* add domain parameter b
-     x^3 + ax + b mod p = [w17,w16] <= [w17,w16] + [w5,w4] mod [w13,w12] */
+     x^3 + ax + b mod p = [w3,w2] <= [w17,w16] + [w5,w4] mod [w13,w12] */
   bn.add    w16, w16, w4
   bn.addc   w17, w17, w5
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
+  bn.sel    w2, w16, w10, C
+  bn.sel    w3, w17, w11, C
 
   /* store result (right side)
-     dmem[dptr_rhs] <= x^3 + ax + b mod p = [w17,w16] */
-  li        x2, 16
+     dmem[dptr_rhs] <= x^3 + ax + b mod p = [w3,w2] */
+  li        x2, 2
   bn.sid    x2++, 0(x22)
   bn.sid    x2++, 32(x22)
+
+  ret
+
+/**
+ * Checks if a point is a valid curve point on curve P-384
+ *
+ * This routine checks if a point with given x- and y-coordinate is a valid
+ * curve point on P-384.
+ * The routine checks whether the coordinates are a solution of the
+ * Weierstrass equation y^2 = x^3 + ax + b  mod p.
+ * The routine makes use of the property that the domain parameter 'a' can be
+ * written as a=-3 for the P-384 curve, hence the routine is limited to P-384.
+ *
+ * This routine sets `ok` to false if the check fails and immediately exits the
+ * program. If the check succeeds, `ok` is unmodified.
+ *
+ * The routine runs in constant time.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  [w13, w12]:  domain parameter p (modulus)
+ * @param[in]  x20:         dptr_x, pointer to dmem location containing affine
+ *                                  x-coordinate of input point
+ * @param[in]  x21:         dptr_y, pointer to dmem location containing affine
+ *                                  y-coordinate of input point
+ *
+ * clobbered registers: x2, x3, w0 to w5, w10 to w17
+ * clobbered flag groups: FG0
+ */
+ .globl p384_isoncurve_check
+p384_isoncurve_check:
+  /* Fill gpp registers with pointers to variables */
+  la        x22, rhs
+  la        x23, lhs
+
+  /* Compute both sides of the Weierstrauss equation.
+       dmem[rhs] <= (x^3 + ax + b) mod p
+       dmem[lhs] <= (y^2) mod p */
+  jal       x1, p384_isoncurve
+
+  /* Load both sides of the equation.
+       [w7, w6] <= dmem[rhs]
+       [w5, w4] <= dmem[lhs] */
+  li        x2, 6
+  bn.lid    x2++, 0(x22)
+  bn.lid    x2, 32(x22)
+  li        x2, 4
+  bn.lid    x2++, 0(x23)
+  bn.lid    x2, 32(x23)
+
+  /* Compare the two sides of the equation.
+       FG0.Z <= (y^2) mod p == (x^2 + ax + b) mod p */
+  bn.cmp    w4, w6
+  /* Fail if FG0.Z is false. */
+  jal       x1, trigger_fault_if_fg0_z
+
+  bn.cmp    w5, w7
+  /* Fail if FG0.Z is false. */
+  jal       x1, trigger_fault_if_fg0_z
 
   ret
 
@@ -205,7 +301,6 @@ p384_check_public_key:
   unimp
 
   _y_valid:
-
   /* Fill gpp registers with pointers to variables */
   la        x22, rhs
   la        x23, lhs
@@ -227,16 +322,33 @@ p384_check_public_key:
 
   /* Compare the two sides of the equation.
        FG0.Z <= (y^2) mod p == (x^2 + ax + b) mod p */
-  bn.sub    w0, w4, w6
-  bn.subb   w1, w5, w7
+  bn.cmp    w4, w6
+  /* Fail if FG0.Z is false. */
+  jal       x1, trigger_input_error_if_fg0_not_z
 
-  bn.cmp    w0, w31
+  bn.cmp    w5, w7
+  /* Fail if FG0.Z is false. */
+  jal       x1, trigger_input_error_if_fg0_not_z
 
+  ret
+
+
+/**
+ * If the flag is 0, then this routine will sets `ok` to false and end the
+ * execution of the OTBN program. If the flag is 1, the routine will
+ * essentially do nothing.
+ *
+ * @param[in]  FG0.Z: boolean indicating fault condition
+ *
+ * clobbered registers: x2
+ * clobbered flag groups: none
+ */
+trigger_input_error_if_fg0_not_z:
   /* Fail if FG0.Z is false. */
   csrrs     x2, FG0, x0
   srli      x2, x2, 3
   andi      x2, x2, 1
-  bne       x2, x0, _pt_1st_reg_valid
+  bne       x2, x0, _pt_reg_valid
   jal       x0, p384_invalid_input
 
   /* Extra unimps in case an attacker tries to skip the jump, since this one is
@@ -245,25 +357,7 @@ p384_check_public_key:
   unimp
   unimp
 
-  _pt_1st_reg_valid:
-
-  bn.cmp    w1, w31
-
-  /* Fail if FG0.Z is false. */
-  csrrs     x2, FG0, x0
-  srli      x2, x2, 3
-  andi      x2, x2, 1
-  bne       x2, x0, _pt_valid
-  jal       x0, p384_invalid_input
-
-  /* Extra unimps in case an attacker tries to skip the jump, since this one is
-     especially critical. */
-  unimp
-  unimp
-  unimp
-
-  _pt_valid:
-
+  _pt_reg_valid:
   ret
 
 /**
@@ -282,40 +376,3 @@ p384_invalid_input:
 
   /* End the program. */
   ecall
-
-.data
-
-/* Success code for basic validity checks on the public key and signature.
-   Should be HARDENED_BOOL_TRUE or HARDENED_BOOL_FALSE. */
-.balign 4
-.weak ok
-ok:
-  .zero 4
-
-/* x-coordinate */
-.globl x
-.weak x
-.balign 32
-x:
-  .zero 64
-
-/* y-coordinate */
-.globl y
-.weak y
-.balign 32
-y:
-  .zero 64
-
-/* Right side of Weierstrass equation */
-.globl rhs
-.weak rhs
-.balign 32
-rhs:
-  .zero 64
-
-/* Left side of Weierstrass equation */
-.globl lhs
-.weak lhs
-.balign 32
-lhs:
-  .zero 64

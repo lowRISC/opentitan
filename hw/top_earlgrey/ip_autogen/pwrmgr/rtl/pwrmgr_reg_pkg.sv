@@ -29,6 +29,11 @@ package pwrmgr_reg_pkg;
   // Number of registers for every interface
   parameter int NumRegs = 17;
 
+  // Alert indices
+  typedef enum int {
+    AlertFatalFaultIdx = 0
+  } pwrmgr_alert_idx_t;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -82,8 +87,13 @@ package pwrmgr_reg_pkg;
   } pwrmgr_reg2hw_wakeup_en_mreg_t;
 
   typedef struct packed {
-    logic        q;
-  } pwrmgr_reg2hw_reset_en_mreg_t;
+    struct packed {
+      logic        q;
+    } en_1;
+    struct packed {
+      logic        q;
+    } en_0;
+  } pwrmgr_reg2hw_reset_en_reg_t;
 
   typedef struct packed {
     logic        q;
@@ -154,21 +164,21 @@ package pwrmgr_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [5:0]  d;
-    } reasons;
+      logic        d;
+    } abort;
     struct packed {
       logic        d;
     } fall_through;
     struct packed {
-      logic        d;
-    } abort;
+      logic [5:0]  d;
+    } reasons;
   } pwrmgr_hw2reg_wake_info_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
-    } reg_intg_err;
+    } main_pd_glitch;
     struct packed {
       logic        d;
       logic        de;
@@ -176,7 +186,7 @@ package pwrmgr_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } main_pd_glitch;
+    } reg_intg_err;
   } pwrmgr_hw2reg_fault_status_reg_t;
 
   // Register -> HW type
@@ -188,7 +198,7 @@ package pwrmgr_reg_pkg;
     pwrmgr_reg2hw_control_reg_t control; // [30:25]
     pwrmgr_reg2hw_cfg_cdc_sync_reg_t cfg_cdc_sync; // [24:23]
     pwrmgr_reg2hw_wakeup_en_mreg_t [5:0] wakeup_en; // [22:17]
-    pwrmgr_reg2hw_reset_en_mreg_t [1:0] reset_en; // [16:15]
+    pwrmgr_reg2hw_reset_en_reg_t reset_en; // [16:15]
     pwrmgr_reg2hw_wake_info_capture_dis_reg_t wake_info_capture_dis; // [14:14]
     pwrmgr_reg2hw_wake_info_reg_t wake_info; // [13:3]
     pwrmgr_reg2hw_fault_status_reg_t fault_status; // [2:0]

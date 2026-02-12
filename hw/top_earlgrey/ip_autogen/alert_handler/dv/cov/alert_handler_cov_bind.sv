@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Binds ALERT_HANDLER functional coverage interafaces to the top level ALERT_HANDLER module.
+// Binds ALERT_HANDLER functional coverage interfaces to the top level ALERT_HANDLER module.
 
 module alert_handler_cov_bind;
   import alert_handler_pkg::*;

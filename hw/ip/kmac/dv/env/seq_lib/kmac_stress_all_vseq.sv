@@ -23,6 +23,11 @@ class kmac_stress_all_vseq extends kmac_base_vseq;
 
   virtual task pre_start();
     do_kmac_init = 0;
+    // If a random reset is expected, limit the maximum message size to avoid timeouts.
+    // The reset waits until all message writes complete.
+    if (common_seq_type == "stress_all_with_rand_reset") begin
+      cfg.max_msg_size = 5_000;
+    end
     super.pre_start();
   endtask
 

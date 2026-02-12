@@ -4,7 +4,8 @@
 '''Code representing the registers, windows etc. for a block'''
 
 import re
-from typing import Callable, Dict, List, Optional, Sequence, Union
+from typing import Callable, Sequence
+from dataclasses import dataclass, field
 
 from reggen.alert import Alert
 from reggen.access import SWAccess, HWAccess
@@ -14,61 +15,64 @@ from reggen.field import Field
 from reggen.interrupt import Interrupt, IntrType
 from reggen.signal import Signal
 from reggen.lib import check_int, check_list, check_str_dict, check_str
-from reggen.multi_register import MultiRegister
+from reggen.multi_register import MultiRegister, EmptyMultiRegException
 from reggen.params import ReggenParams
 from reggen.register import Register
 from reggen.window import Window
 
 
+@dataclass
 class RegBlock:
+    _reg_width: int
+    _params: ReggenParams
 
-    def __init__(self, reg_width: int, params: ReggenParams):
+    _addrsep: int = field(init=False)
+    name: str = ""
+    clocks: dict[str, ClockingItem] = field(default_factory=dict)
+    offset: int = 0
+    multiregs: list[MultiRegister] = field(default_factory=list)
+    registers: list[Register] = field(default_factory=list)
+    windows: list[Window] = field(default_factory=list)
 
-        self._addrsep = (reg_width + 7) // 8
-        self._reg_width = reg_width
-        self._params = params
+    has_data_intg_passthru: bool = False
+    '''Boolean indication whether ANY window in regblock has data integrity
+    passthrough'''
 
-        self.name = ""  # type: str
-        self.clocks = {}  # type: Dict[str, ClockingItem]
-        self.offset = 0
-        self.multiregs = []  # type: List[MultiRegister]
-        self.registers = []  # type: List[Register]
-        self.windows = []  # type: List[Window]
+    flat_regs: list[Register] = field(default_factory=list)
+    '''A list of all registers, expanding multiregs, ordered by offset'''
 
-        # Boolean indication whether ANY window in regblock has data integrity passthrough
-        self.has_data_intg_passthru = False
+    all_regs: list[Register | MultiRegister] = field(default_factory=list)
+    '''A list of registers and multiregisters (unexpanded)'''
 
-        # A list of all registers, expanding multiregs, ordered by offset
-        self.flat_regs = []  # type: List[Register]
+    type_regs: list[Register] = field(default_factory=list)
+    '''A list of all the underlying register types used in the block. This has
+    one entry for each actual Register, plus a single entry giving the
+    underlying register for each MultiRegister.
+    '''
 
-        # A list of registers and multiregisters (unexpanded)
-        self.all_regs = []  # type: List[Union[Register, MultiRegister]]
+    entries: list[object] = field(default_factory=list)
+    '''A list with everything in order'''
 
-        # A list of all the underlying register types used in the block. This
-        # has one entry for each actual Register, plus a single entry giving
-        # the underlying register for each MultiRegister.
-        self.type_regs = []  # type: List[Register]
+    name_to_offset: dict[str, int] = field(default_factory=dict)
+    '''A dict of named entries, mapping name to offset'''
 
-        # A list with everything in order
-        self.entries = []  # type: List[object]
+    name_to_flat_reg: dict[str, Register] = field(default_factory=dict)
+    '''A dict of all registers (expanding multiregs), mapping name to the
+    register object'''
 
-        # A dict of named entries, mapping name to offset
-        self.name_to_offset = {}  # type: Dict[str, int]
+    wennames: list[str] = field(default_factory=list)
+    '''A list of all write enable names'''
 
-        # A dict of all registers (expanding multiregs), mapping name to the
-        # register object
-        self.name_to_flat_reg = {}  # type: Dict[str, Register]
+    async_if: bool = False
+    '''Boolean indication that the block is fully asynchronous'''
 
-        # A list of all write enable names
-        self.wennames = []  # type: List[str]
-
-        # Boolean indication that the block is fully asynchronous
-        self.async_if = False
+    def __post_init__(self) -> None:
+        self._addrsep = (self._reg_width + 7) // 8
 
     @staticmethod
     def build_blocks(block: 'RegBlock', raw: object, bus: BusInterfaces,
                      clocks: Clocking,
-                     is_alias: bool) -> Dict[Optional[str], 'RegBlock']:
+                     is_alias: bool) -> dict[str | None, 'RegBlock']:
         '''Build a dictionary of blocks for a 'registers' field in the hjson
 
         There are two different syntaxes we might see here. The simple syntax
@@ -77,7 +81,7 @@ class RegBlock:
         we return {None: init_block}.
 
         The more complicated syntax is a dictionary. This parses from hjson as
-        an OrderedDict which we walk in document order. Entries from the first
+        a dict which we walk in document order. Entries from the first
         key/value pair in the dictionary will be added to init_block. Later
         key/value pairs start empty RegBlocks. The return value is a dictionary
         mapping the keys we saw to their respective RegBlocks.
@@ -100,7 +104,7 @@ class RegBlock:
             raise ValueError('registers field at top-level is '
                              'neither a list or a dictionary.')
 
-        ret = {}  # type: Dict[Optional[str], RegBlock]
+        ret = {}  # type: dict[str | None, RegBlock]
         for idx, (r_key, r_val) in enumerate(raw.items()):
             if idx > 0:
                 block = RegBlock(block._reg_width, block._params)
@@ -125,7 +129,7 @@ class RegBlock:
         return ret
 
     def add_raw_registers(self, raw: object, what: str, clocks: Clocking,
-                          async_if: Optional[str], is_alias: bool) -> None:
+                          async_if: str | None, is_alias: bool) -> None:
 
         # the interface is fully asynchronous
         if async_if:
@@ -177,7 +181,7 @@ class RegBlock:
 
         handlers[entry_type](entry_where, entry_body, clocks, is_alias)
 
-    def _validate_async(self, name: Optional[str], clk: object) -> None:
+    def _validate_async(self, name_clk: tuple[str, object] | None) -> None:
         '''Check for async definition consistency
 
         If a reg block is marked fully asynchronous through its bus interface,
@@ -186,6 +190,8 @@ class RegBlock:
 
         The two asynchronous regfile schemes are mutually exclusive.
         '''
+
+        name, clk = name_clk if name_clk else (None, None)
 
         if self.name:
             block_name = self.name
@@ -209,9 +215,11 @@ class RegBlock:
             assert isinstance(clk, ClockingItem)
             self.clocks[name] = clk
 
-    def _validate_sync(self, name: Optional[str], clk: object) -> None:
+    def _validate_sync(self, name_clk: tuple[str, object] | None) -> None:
         '''Check for sync definition consistency
         '''
+        name, clk = name_clk if name_clk else (None, None)
+
         # If there is a synchronous clock defined, then the clock must be a
         # valid clocking item
         if name:
@@ -221,15 +229,15 @@ class RegBlock:
     def _handle_register(self, where: str, body: object, clocks: Clocking,
                          is_alias: bool) -> None:
         reg = Register.from_raw(self._reg_width, self.offset, self._params,
-                                body, clocks, is_alias)
+                                body, clocks, is_alias, None)
 
-        self._validate_async(reg.async_name, reg.async_clk)
-        self._validate_sync(reg.sync_name, reg.sync_clk)
+        self._validate_async(reg.async_clk)
+        self._validate_sync(reg.sync_clk)
 
         self.add_register(reg)
 
     def _handle_reserved(self, where: str, body: object,
-                         clocks: Optional[Clocking], is_alias: bool) -> None:
+                         clocks: Clocking | None, is_alias: bool) -> None:
         if is_alias:
             raise ValueError('Aliasing reserved regions is not supported yet')
         nreserved = check_int(body, 'body of ' + where)
@@ -240,7 +248,7 @@ class RegBlock:
         self.offset += self._addrsep * nreserved
 
     def _handle_skipto(self, where: str, body: object,
-                       clocks: Optional[Clocking], is_alias: bool) -> None:
+                       clocks: Clocking | None, is_alias: bool) -> None:
         if is_alias:
             raise ValueError('The skipto command is not supported in '
                              'alias register definitions')
@@ -257,7 +265,7 @@ class RegBlock:
         self.offset = skipto
 
     def _handle_window(self, where: str, body: object,
-                       clocks: Optional[Clocking], is_alias: bool) -> None:
+                       clocks: Clocking | None, is_alias: bool) -> None:
         if is_alias:
             raise ValueError('Aliasing window regions is not supported yet')
 
@@ -275,21 +283,33 @@ class RegBlock:
 
     def _handle_multireg(self, where: str, body: object, clocks: Clocking,
                          is_alias: bool) -> None:
-        mr = MultiRegister(self.offset, self._addrsep, self._reg_width,
-                           self._params, body, clocks, is_alias)
+        '''Update the register block by adding a multiregister as requested.
+
+        If the multiregister has a count that is not positive, it will be
+        ignored and the register block will not gain any element.
+
+        '''
+
+        try:
+            mr = MultiRegister.from_raw(body,
+                                        self._reg_width, self.offset,
+                                        self._addrsep, self._params,
+                                        clocks, is_alias)
+        except EmptyMultiRegException:
+            return
 
         # validate async schemes
-        self._validate_async(mr.async_name, mr.async_clk)
-        self._validate_sync(mr.sync_name, mr.sync_clk)
+        self._validate_async(mr.async_clk)
+        self._validate_sync(mr.sync_clk)
 
-        for reg in mr.regs:
+        for reg in mr.cregs:
             lname = reg.name.lower()
             if lname in self.name_to_offset:
                 raise ValueError('Multiregister {} (at offset {:#x}) expands '
                                  'to a register with name {} (at offset '
                                  '{:#x}), but this already names something at '
                                  'offset {:#x}.'.format(
-                                     mr.reg.name, mr.reg.offset, reg.name,
+                                     mr.name, mr.offset, reg.name,
                                      reg.offset, self.name_to_offset[lname]))
             self._add_flat_reg(reg)
             if mr.dv_compact is False:
@@ -298,7 +318,12 @@ class RegBlock:
         self.multiregs.append(mr)
         self.all_regs.append(mr)
         if mr.dv_compact is True:
-            self.type_regs.append(mr.reg)
+            # Because dv_compact is true, all the pseudo-registers in mr.pregs
+            # are compatible for how they are used in self.type_regs. They are
+            # used in uvm_reg_base.sv.tpl to make forward declarations (through
+            # gen_dv.rcname), so the only thing that matters is the "name"
+            # instance variable.
+            self.type_regs.append(mr.pregs[0])
         self.entries.append(mr)
         self.offset = mr.next_offset(self._addrsep)
 
@@ -382,7 +407,7 @@ class RegBlock:
 
             wen_reg.check_valid_regwen()
 
-    def get_n_bits(self, bittype: List[str] = ["q"]) -> int:
+    def get_n_bits(self, bittype: list[str] = ["q"]) -> int:
         '''Returns number of bits in registers in this block.
 
         This includes those expanded from multiregs. See Field.get_n_bits for a
@@ -391,8 +416,8 @@ class RegBlock:
         '''
         return sum(reg.get_n_bits(bittype) for reg in self.flat_regs)
 
-    def as_dicts(self) -> List[object]:
-        entries = []  # type: List[object]
+    def as_dicts(self) -> list[object]:
+        entries = []  # type: list[object]
         offset = 0
         for entry in self.entries:
             assert (isinstance(entry, Register) or
@@ -415,10 +440,9 @@ class RegBlock:
 
     def _add_intr_alert_reg(self, signals: Sequence[Signal], reg_name: str,
                             reg_desc: str,
-                            field_desc_fmt: Optional[Union[str,
-                                                           _FieldFormatter]],
+                            field_desc_fmt: str | _FieldFormatter | None,
                             swaccess: str, hwaccess: str, is_testreg: bool,
-                            reg_tags: List[str]) -> None:
+                            reg_tags: list[str]) -> None:
         swaccess_obj = SWAccess('RegBlock._make_intr_alert_reg()', swaccess)
         hwaccess_obj = HWAccess('RegBlock._make_intr_alert_reg()', hwaccess)
 
@@ -447,27 +471,16 @@ class RegBlock:
                     mubi=False,
                     auto_split=False))
 
-        reg = Register(
-            self.offset,
-            reg_name,
-            None,  # no alias target
-            reg_desc,
-            async_name="",
-            async_clk=None,
-            sync_name="",
-            sync_clk=None,
-            hwext=is_testreg,
-            hwqe=is_testreg,
-            hwre=False,
-            regwen=None,
-            tags=reg_tags,
-            resval=None,
-            shadowed=False,
-            fields=fields,
-            update_err_alert=None,
-            storage_err_alert=None,
-            writes_ignore_errors=False)
-        self.add_register(reg)
+        self.add_register(Register(reg_name,
+                                   self.offset,
+                                   async_clk=None,
+                                   sync_clk=None,
+                                   alias_target=None,
+                                   desc=reg_desc,
+                                   fields=fields,
+                                   hwext=is_testreg,
+                                   hwqe=is_testreg,
+                                   tags=reg_tags))
 
     def make_intr_regs(self, interrupts: Sequence[Interrupt]) -> None:
         """Create INTR_STATE, INTR_ENABLE, INTR_TEST CSRs.
@@ -527,18 +540,13 @@ class RegBlock:
 
         self.add_register(
             Register(
-                self.offset,
                 'INTR_STATE',
-                None,  # no alias target
-                'Interrupt State Register',
-                async_name="",
+                self.offset,
                 async_clk=None,
-                sync_name="",
                 sync_clk=None,
-                hwext=False,
-                hwqe=False,
-                hwre=False,
-                regwen=None,
+                alias_target=None,
+                desc='Interrupt State Register',
+                fields=fields,
                 # Some POR routines have the potential to unpredictably set
                 # some `intr_state` fields for various IPs, so we exclude all
                 # `intr_state` accesses from CSR checks to prevent this from
@@ -546,13 +554,7 @@ class RegBlock:
                 #
                 # An example of an `intr_state` mismatch error occurring due to
                 # a POR routine can be seen in issue #6888.
-                tags=["excl:CsrAllTests:CsrExclAll"],
-                resval=None,
-                shadowed=False,
-                fields=fields,
-                update_err_alert=None,
-                storage_err_alert=None,
-                writes_ignore_errors=False))
+                tags=["excl:CsrAllTests:CsrExclAll"]))
 
         self._add_intr_alert_reg(
             interrupts, 'INTR_ENABLE', 'Interrupt Enable Register',
@@ -573,7 +575,7 @@ class RegBlock:
             # intr_test csr is WO so reads back 0s
             ["excl:CsrNonInitTests:CsrExclWrite"])
 
-    def make_alert_regs(self, alerts: List[Alert]) -> None:
+    def make_alert_regs(self, alerts: list[Alert]) -> None:
         assert alerts
         assert len(alerts) < self._reg_width
         self._add_intr_alert_reg(alerts, 'ALERT_TEST', 'Alert Test Register',

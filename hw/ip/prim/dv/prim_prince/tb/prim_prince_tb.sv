@@ -18,7 +18,7 @@ module prim_prince_tb;
 //////////////////////////////////////////////////////
 
 // Default to {data_width:64, key_width:128} configuration.
-// Data width and key width can be overriden from command-line if desired.
+// Data width and key width can be overridden from command-line if desired.
 
 `ifdef DATA_WIDTH
   localparam int unsigned DataWidth = `DATA_WIDTH;

@@ -5,10 +5,13 @@ CAPI=2:
 
 name: "lowrisc:prim_generic:buf"
 description: "buffer"
+virtual:
+  - lowrisc:prim:buf
+
 filesets:
   files_rtl:
     files:
-      - rtl/prim_generic_buf.sv
+      - rtl/prim_buf.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:

@@ -13,6 +13,7 @@ py_library(
     data = [
         "//sw/host/provisioning/orchestrator/data:products.hjson",
         "//sw/host/provisioning/orchestrator/data/packages:earlgrey_a1.hjson",
+        "//sw/host/provisioning/orchestrator/data/packages:earlgrey_a2.hjson",
     ],
     imports = ["."],
     deps = [
@@ -22,9 +23,31 @@ py_library(
     ],
 )
 
+py_binary(
+    name = "devid_header_gen",
+    srcs = ["devid_header_gen.py"],
+    data = ["//sw/device/silicon_creator/manuf/keys:ca_data_all"],
+    imports = ["."],
+    deps = [
+        ":device_id",
+        ":sku_config",
+        requirement("hjson"),
+        requirement("mako"),
+    ],
+)
+
 py_library(
     name = "ca_config",
     srcs = ["ca_config.py"],
+)
+
+py_library(
+    name = "db",
+    srcs = ["db.py"],
+    imports = ["."],
+    deps = [
+        ":ot_dut",
+    ],
 )
 
 py_library(
@@ -33,6 +56,7 @@ py_library(
     data = [
         "//sw/host/provisioning/orchestrator/data:products.hjson",
         "//sw/host/provisioning/orchestrator/data/packages:earlgrey_a1.hjson",
+        "//sw/host/provisioning/orchestrator/data/packages:earlgrey_a2.hjson",
     ],
     deps = [
         ":ca_config",
@@ -45,7 +69,10 @@ py_library(
     name = "util",
     srcs = ["util.py"],
     imports = ["."],
-    deps = [requirement("hjson")],
+    deps = [
+        requirement("hjson"),
+        "@rules_python//python/runfiles",
+    ],
 )
 
 py_library(
@@ -59,30 +86,44 @@ py_library(
     ],
 )
 
-py_binary(
-    name = "orchestrator",
+filegroup(
+    name = "data_dependencies",
     testonly = True,
-    srcs = ["orchestrator.py"],
-    data = [
+    srcs = [
         "//hw/bitstream/universal:splice",
         "//sw/device/silicon_creator/manuf/base:ft_personalize_all",
         "//sw/device/silicon_creator/manuf/base:sram_cp_provision",
         "//sw/device/silicon_creator/manuf/base:sram_ft_individualize_all",
-        "//sw/device/silicon_creator/manuf/keys/fake:dice_ca.pem",
-        "//sw/device/silicon_creator/manuf/keys/fake:ext_ca.pem",
-        "//sw/device/silicon_creator/manuf/keys/fake:sk.pkcs8.der",
+        "//sw/device/silicon_creator/manuf/keys:ca_data_all",
         "//sw/host/provisioning/cp",
         "//sw/host/provisioning/ft:ft_all",
+        "//sw/host/provisioning/orchestrator/configs/skus:all",
         "//third_party/openocd:jtag_cmsis_dap_adapter_cfg",
         "//third_party/openocd:jtag_olimex_cfg",
         "//third_party/openocd:openocd_bin",
+        "@sc_hsm",
     ],
+)
+
+py_binary(
+    name = "orchestrator",
+    testonly = True,
+    srcs = ["orchestrator.py"],
+    data = [":data_dependencies"],
     imports = ["."],
     deps = [
+        ":db",
         ":device_id",
         ":ot_dut",
         ":sku_config",
         ":util",
         requirement("hjson"),
     ],
+)
+
+filegroup(
+    name = "orchestrator.zip",
+    testonly = True,
+    srcs = [":orchestrator"],
+    output_group = "python_zip_file",
 )

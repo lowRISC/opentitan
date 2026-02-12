@@ -16,6 +16,7 @@
 `define KEYMGR_DPE_HIER       `CHIP_HIER.u_keymgr_dpe
 `define LC_CTRL_HIER          `CHIP_HIER.u_lc_ctrl
 `define OTP_CTRL_HIER         `CHIP_HIER.u_otp_ctrl
+`define OTP_MACRO_HIER         `CHIP_HIER.u_otp_macro
 `define RAM_MAIN_HIER         `CHIP_HIER.u_sram_ctrl_main.u_prim_ram_1p_scr
 `define RAM_RET_HIER          `CHIP_HIER.u_sram_ctrl_ret_aon.u_prim_ram_1p_scr
 `define RAM_MBOX_HIER         `CHIP_HIER.u_sram_ctrl_mbox.u_prim_ram_1p_scr
@@ -39,7 +40,7 @@
 // Memory hierarchies.
 // TODO: Temporarily only reference info type0 of the info partitions in flash. In the future, this
 // needs to be upgraded to support all info types.
-`define MEM_ARRAY_SUB         gen_generic.u_impl_generic.mem
+`define MEM_ARRAY_SUB         mem
 `define ICACHE_WAY0_HIER      `CPU_CORE_HIER.gen_rams.gen_rams_inner[0].gen_scramble_rams
 `define ICACHE_WAY1_HIER      `CPU_CORE_HIER.gen_rams.gen_rams_inner[1].gen_scramble_rams
 `define ICACHE0_TAG_MEM_HIER  `ICACHE_WAY0_HIER.tag_bank.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB
@@ -54,7 +55,6 @@
 `define ROM1_MEM_HIER         `ROM_CTRL1_HIER.`ROM_CTRL_INT_PATH
 `define SPI_DEVICE_EGRESS_HIER  `SPI_DEVICE_HIER.u_spid_dpram.gen_ram1r1w.u_sys2spi_mem.u_mem.`MEM_ARRAY_SUB
 `define SPI_DEVICE_INGRESS_HIER `SPI_DEVICE_HIER.u_spid_dpram.gen_ram1r1w.u_spi2sys_mem.u_mem.`MEM_ARRAY_SUB
-`define OTP_GENERIC_HIER      `OTP_CTRL_HIER.u_otp.gen_generic.u_impl_generic
-`define OTP_MEM_HIER          `OTP_GENERIC_HIER.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB
+`define OTP_MEM_HIER          `OTP_MACRO_HIER.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB
 `define OTBN_IMEM_HIER        `OTBN_HIER.u_imem.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB
 `define OTBN_DMEM_HIER        `OTBN_HIER.u_dmem.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB

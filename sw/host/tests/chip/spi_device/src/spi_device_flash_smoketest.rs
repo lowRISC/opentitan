@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use clap::Parser;
 use regex::Regex;
 use std::fs;
@@ -35,7 +35,7 @@ struct Opts {
     firmware_elf: PathBuf,
 }
 
-const SYNC_MSG: &str = r"SYNC:.*\r\n";
+const SYNC_MSG: &str = r"SYNC:";
 
 fn device_tx_rx_test(
     opts: &Opts,
@@ -86,15 +86,14 @@ fn main() -> Result<()> {
     execute_test!(device_tx_rx_test, &opts, &transport, &tx_data, 0x00);
 
     let uart = transport.uart("console")?;
-    let mut console = UartConsole {
-        timeout: Some(opts.timeout),
-        exit_success: Some(Regex::new(r"PASS!\r\n")?),
-        exit_failure: Some(Regex::new(r"FAIL:")?),
-        ..Default::default()
-    };
+    let mut console = UartConsole::new(
+        Some(opts.timeout),
+        Some(Regex::new(r"PASS!\r\n")?),
+        Some(Regex::new(r"FAIL:")?),
+    );
 
     // Now watch the console for the exit conditions.
-    let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
+    let result = console.interact(&*uart, false)?;
     if result != ExitStatus::ExitSuccess {
         bail!("FAIL: {:?}", result);
     };

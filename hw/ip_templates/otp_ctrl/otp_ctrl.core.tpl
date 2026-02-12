@@ -9,11 +9,13 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:otp_ctrl_pkg
+      - ${instance_vlnv("lowrisc:ip:otp_ctrl_macro_pkg")}
       - ${instance_vlnv("lowrisc:ip:otp_ctrl_top_specific_pkg")}
+      - lowrisc:virtual_constants:rnd_cnst_pkg
+      - lowrisc:ip:otp_macro_pkg
       - lowrisc:ip:tlul
       - lowrisc:prim:all
       - lowrisc:prim:ram_1p
-      - lowrisc:prim:otp
       - lowrisc:prim:double_lfsr
       - lowrisc:prim:count
       - lowrisc:prim:lc_sender
@@ -23,6 +25,7 @@ filesets:
       - lowrisc:prim:secded
       - lowrisc:prim:edn_req
       - lowrisc:prim:sec_anchor
+      - lowrisc:prim:sum_tree
       - ${instance_vlnv("lowrisc:ip:pwrmgr_pkg")}
       - lowrisc:ip:edn_pkg
       - lowrisc:prim:sparse_fsm

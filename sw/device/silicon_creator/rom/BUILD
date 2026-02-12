@@ -19,6 +19,18 @@ load("//rules/opentitan:legacy.bzl", "legacy_rom_targets")
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "doc_files",
+    srcs = glob([
+        "**/*.md",
+        "**/*.svg",
+        "**/*.png",
+    ]) + [
+        "//sw/device/silicon_creator/rom/data:rom_e2e_testplan.hjson",
+        "//sw/device/silicon_creator/rom/data:rom_manual_testplan.hjson",
+    ],
+)
+
 dual_cc_library(
     name = "boot_policy_ptrs",
     srcs = dual_inputs(
@@ -79,10 +91,13 @@ ld_library(
 cc_library(
     name = "rom_isrs",
     srcs = [
-        "rom_isrs.S",
         "rom_isrs.c",
+        "//sw/device/silicon_creator/lib:flash_exc_handler",
     ],
     hdrs = ["rom_isrs.h"],
+    defines = [
+        "INTERRUPT_HANDLER=rom_interrupt_handler",
+    ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/top:flash_ctrl_c_regs",
@@ -90,6 +105,7 @@ cc_library(
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:shutdown",
     ],
 )
 
@@ -134,10 +150,12 @@ cc_library(
         ":boot_policy_ptrs",
         ":bootstrap",
         ":rom_epmp",
+        ":rom_state",
         ":sigverify_keys_ecdsa_p256",
         ":sigverify_keys_spx",
         ":sigverify_otp_keys",
         "//hw/top:aon_timer_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:csr",
@@ -159,6 +177,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:static_critical",
+        "//sw/device/silicon_creator/lib/base:util",
         "//sw/device/silicon_creator/lib/drivers:alert",
         "//sw/device/silicon_creator/lib/drivers:ast",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
@@ -176,6 +195,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:uart",
         "//sw/device/silicon_creator/lib/drivers:watchdog",
         "//sw/device/silicon_creator/lib/sigverify",
+        "@rom_hooks",
     ],
 )
 
@@ -194,6 +214,7 @@ cc_library(
 
 opentitan_binary(
     name = "mask_rom",
+    collect_code_coverage = 0,
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:fpga_cw340",
@@ -221,10 +242,10 @@ opentitan_binary(
 # Create the legacy ROM target names so that existing splicing rules can find
 # the rom VMEM files.
 legacy_rom_targets(
-    suffixes = [
-        "fpga_cw310",
-        "fpga_cw340",
-    ],
+    suffixes = {
+        "fpga_cw310": ["//hw/top_earlgrey:fpga_cw310"],
+        "fpga_cw340": ["//hw/top_earlgrey:fpga_cw340"],
+    },
     target = "mask_rom",
 )
 
@@ -258,6 +279,21 @@ cc_library(
         "//sw/device/silicon_creator/lib:epmp_state",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
     ],
+)
+
+cc_library(
+    name = "rom_state",
+    srcs = ["rom_state.c"],
+    hdrs = ["rom_state.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:cfi",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:shutdown",
+    ],
+    alwayslink = True,
 )
 
 opentitan_test(
@@ -326,6 +362,7 @@ cc_library(
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top:gpio_c_regs",
         "//hw/top:otp_ctrl_c_regs",
+        "//hw/top/dt",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
@@ -374,6 +411,7 @@ cc_library(
     deps = [
         ":sigverify_key_types",
         "//hw/top:otp_ctrl_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/drivers:hmac",
@@ -567,7 +605,7 @@ opentitan_test(
             --exec="console --non-interactive --exit-success='PASS.*\r\n' --exit-failure='{exit_failure}'"
 
             --exec="no-op --info '### Measuring stack utilization for bootstrap slot B'"
-            --exec="bootstrap --mirror=false --clear-uart=true --leave-in-bootstrap {good_b}@0x80000"
+            --exec="bootstrap --mirror=false --clear-uart=true --leave-in-bootstrap {good_b}@{rom_ext_slot_b}"
             --exec="console --non-interactive --exit-success='{stack_usage}' --exit-failure='{exit_failure}'"
 
             --exec="gpio remove ROM_BOOTSTRAP"

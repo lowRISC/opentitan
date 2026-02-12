@@ -9,6 +9,9 @@ package(default_visibility = ["//visibility:public"])
 ld_library(
     name = "info_sections",
     includes = ["info_sections.ld"],
+    deps = [
+        "//sw/device/lib/coverage:coverage_sections",
+    ],
 )
 
 # FIXME(lowRISC/opentitan#12065) This is a hack to work around currently
@@ -23,10 +26,25 @@ config_setting(
 config_setting(
     name = "measure_coverage_on_target",
     define_values = {
-        "measure_coverage_on_target": "true",
+        "ot_coverage_enabled": "true",
     },
+    deprecation = "Please use //rules/coverage:enabled instead.",
 )
 
 cc_library(
     name = "nothing",
+)
+
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]) + [
+        "//sw/device/lib:doc_files",
+        "//sw/device/lib/base:doc_files",
+        "//sw/device/lib/crypto/data:doc_files",
+        "//sw/device/lib/dif:doc_files",
+        "//sw/device/lib/testing:doc_files",
+        "//sw/device/lib/testing/test_framework:doc_files",
+        "//sw/device/silicon_creator:doc_files",
+        "//sw/device/tests:doc_files",
+    ],
 )

@@ -6,7 +6,7 @@
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
-#include "sw/device/lib/crypto/include/kdf.h"
+#include "sw/device/lib/crypto/include/kdf_ctr.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -133,8 +133,7 @@ static status_t run_test(kdf_test_vector_t *test) {
     case kOtcryptoKeyModeHmacSha256:
     case kOtcryptoKeyModeHmacSha384:
     case kOtcryptoKeyModeHmacSha512:
-      TRY(otcrypto_kdf_hmac_ctr(kdk, label, context, km.config.key_length,
-                                &km));
+      TRY(otcrypto_kdf_ctr_hmac(&kdk, label, context, &km));
       break;
     default:
       LOG_INFO("Should never end up here.");

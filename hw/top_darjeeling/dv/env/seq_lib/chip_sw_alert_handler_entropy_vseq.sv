@@ -20,7 +20,7 @@ class chip_sw_alert_handler_entropy_vseq extends chip_sw_base_vseq;
     super.body();
 
     fork begin : isolation_fork
-      int num_alerts = LIST_OF_ALERTS.size();
+      int num_alerts = NUM_ALERTS;
       foreach (LIST_OF_ALERTS[i]) begin
         automatic int index = i;
         fork begin

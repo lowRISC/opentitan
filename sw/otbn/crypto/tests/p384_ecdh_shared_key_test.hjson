@@ -1,0 +1,27 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+  "entrypoint": "p384_ecdh_shared_key_test",
+  "input": {
+    "dmem": {
+      # point 1 x-cooridante x
+      "x": "0x00000000000000000000000000000000ca230836b439d7011a9ea916cf60d89e394d8b7047e806616c30f2d8ee0e2beb5869de54b1cac6097b8294604877f3d1",
+      # point 1 y-cooridante y
+      "y": "0x00000000000000000000000000000000aaafcad203afe2c268eef2d1d65e905d82b63bf3928c3e92cea028a9ec18818cc7e55880bf3aff6ec31ef079c181f90f",
+      # 1st scalar share d0 (768-bit)
+      "d0": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000032f9e2b08677a5f2adb9ce1be14cd8df800a4c9416f5c1ee1e9d19e796d2f9e05b7d3b0f4de8344e6e0012819a0c1b763eb17c275c832a51",
+      # 2nd scalar share d1 (768-bit)
+      "d1": "0x000000000000000000000000000000000000000000000000000000000000000000000000000000009e5dc5989ec9b43013e7014aa9da1611b706d6828930f2434ad22b6e9cb814d944676e619ef51898ab8fb14d507568cdd31b18d533eae098",
+    }
+  }
+
+  "output": {
+    "regs": {
+      # [w1, w0] is the unmasked shared key
+      "w0": "0x00a94f93d1320a59c0007d74e572772c2722a257017480a1bfdea3697c461791",
+      "w1": "0x00000000000000000000000000000000f1d4b5254d1cfebc4a0deafdda8fe3c9"
+    }
+  }
+}

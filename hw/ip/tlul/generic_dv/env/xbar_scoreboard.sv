@@ -16,9 +16,9 @@ class xbar_scoreboard extends scoreboard_pkg::scoreboard #(.ITEM_T(tl_seq_item),
   `uvm_component_new
 
   // Customize the get_queue_name function
-  // port_name is {"a/d_chan_", host/devce name}
+  // port_name is {"a/d_chan_", host/device name}
   // tl_channel is "a/d_chan_"
-  // tl_port is host/devce name
+  // tl_port is host/device name
   virtual function string get_queue_name(tl_seq_item tr, string port_name);
     string queue_name;
     string tl_channel;
@@ -111,7 +111,7 @@ class xbar_scoreboard extends scoreboard_pkg::scoreboard #(.ITEM_T(tl_seq_item),
       rsp.d_error     = 1;
       if (rsp.a_opcode == tlul_pkg::Get) begin
         tlul_pkg::tl_a_user_t a_user = tlul_pkg::tl_a_user_t'(rsp.a_user);
-        // if an error occurs, when it's an instrution, return all 0
+        // if an error occurs, when it's an instruction, return all 0
         // since it's an illegal instruction, otherwise, return all 1s
         rsp.d_data = a_user.instr_type == prim_mubi_pkg::MuBi4True ? 0 : '1;
       end else begin

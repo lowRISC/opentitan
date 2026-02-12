@@ -9,7 +9,7 @@
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/verify.h"
 
-#include "otp_ctrl_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
 
 // Declared as a weak symbol so that we can override in tests. See
 // spx_verify_functest.c.
@@ -70,10 +70,11 @@ static const uint32_t kSpxVerifyShares[kSigverifySpxRootNumWords] = {
  *
  * In our case, `ctx` is always the empty string, so the length is 0.
  */
-static const uint8_t kSpxVerifyPureDomainSep[] = {
+const uint8_t kSpxVerifyPureDomainSep[] = {
     0x00,
     0x00,
 };
+const size_t kSpxVerifyPureDomainSepSize = sizeof(kSpxVerifyPureDomainSep);
 
 /**
  * Domain-separation prefix for SPHINCS+ with SHA256 prehashing.
@@ -84,9 +85,11 @@ static const uint8_t kSpxVerifyPureDomainSep[] = {
  * In our case, `ctx` is always the empty string and PH (the pre-hashing
  * function) is always SHA256.
  */
-static const uint8_t kSpxVerifyPrehashDomainSep[] = {
-    0x01, 0x00, 0x06, 0x09, 0x60, 0x86, 0x48,
-    0x01, 0x65, 0x03, 0x04, 0x02, 0x01};
+const uint8_t kSpxVerifyPrehashDomainSep[] = {0x01, 0x00, 0x06, 0x09, 0x60,
+                                              0x86, 0x48, 0x01, 0x65, 0x03,
+                                              0x04, 0x02, 0x01};
+const size_t kSpxVerifyPrehashDomainSepSize =
+    sizeof(kSpxVerifyPrehashDomainSep);
 
 rom_error_t sigverify_spx_verify(
     const sigverify_spx_signature_t *signature, const sigverify_spx_key_t *key,

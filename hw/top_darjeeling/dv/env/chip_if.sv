@@ -54,8 +54,9 @@ interface chip_if;
 `define KMAC_HIER           `TOP_HIER.u_kmac
 `define KEYMGR_DPE_HIER     `TOP_HIER.u_keymgr_dpe
 `define LC_CTRL_HIER        `TOP_HIER.u_lc_ctrl
-`define OTP_CTRL_HIER       `TOP_HIER.u_otp_ctrl
 `define OTBN_HIER           `TOP_HIER.u_otbn
+`define OTP_CTRL_HIER       `TOP_HIER.u_otp_ctrl
+`define OTP_MACRO_HIER      `TOP_HIER.u_otp_macro
 `define PINMUX_HIER         `TOP_HIER.u_pinmux_aon
 `define PWRMGR_HIER         `TOP_HIER.u_pwrmgr_aon
 `define ROM_CTRL0_HIER      `TOP_HIER.u_rom_ctrl0
@@ -77,7 +78,7 @@ interface chip_if;
   // Identifier for logs.
   string MsgId = $sformatf("%m");
 
-  // Identifier for the envorinment to which this interface is passed on via uvm_config_db.
+  // Identifier for the environment to which this interface is passed on via uvm_config_db.
   string env_name = "env";
 
   // Directly connected to chip IOs.
@@ -495,13 +496,13 @@ interface chip_if;
   clk_rst_if aon_clk_por_rst_if(.clk(aon_clk), .rst_n(aon_rst_n));
 
 `ifdef GATE_LEVEL
-  wire io_div4_clk = 1'b0;
-  wire io_div4_rst_n = 1'b1;
+  wire io_clk = 1'b0;
+  wire io_rst_n = 1'b1;
 `else
-  wire io_div4_clk = `CLKMGR_HIER.clocks_o.clk_io_div4_powerup;
-  wire io_div4_rst_n = `RSTMGR_HIER.resets_o.rst_por_io_div4_n[0];
+  wire io_clk = `CLKMGR_HIER.clocks_o.clk_io_powerup;
+  wire io_rst_n = `RSTMGR_HIER.resets_o.rst_por_io_n[0];
 `endif
-  clk_rst_if io_div4_clk_rst_if(.clk(io_div4_clk), .rst_n(io_div4_rst_n));
+  clk_rst_if io_clk_rst_if(.clk(io_clk), .rst_n(io_rst_n));
 
 `ifdef GATE_LEVEL
   wire lc_ready = 1'b0;
@@ -535,7 +536,6 @@ interface chip_if;
   wire sram_ret_init_done = `SRAM_CTRL_RET_HIER.u_reg_regs.status_init_done_qs;
   wire sram_mbox_init_done = `SRAM_CTRL_MBOX.u_reg_regs.status_init_done_qs;
 `endif
-  wire adc_data_valid = `AST_HIER.u_adc.adc_d_val_o;
 
   // alert_esc_if alert_if[NUM_ALERTS](.clk  (`ALERT_HANDLER_HIER.clk_i),
   //                                   .rst_n(`ALERT_HANDLER_HIER.rst_ni));
@@ -554,8 +554,8 @@ interface chip_if;
                                           .rst_n   (1)
 `else
                                           .clk     (`CLKMGR_HIER.clocks_o.clk_aon_powerup),
-                                          .fast_clk(`CLKMGR_HIER.clocks_o.clk_io_div4_powerup),
-                                          .rst_n   (`RSTMGR_HIER.resets_o.rst_por_io_div4_n[0])
+                                          .fast_clk(`CLKMGR_HIER.clocks_o.clk_io_powerup),
+                                          .rst_n   (`RSTMGR_HIER.resets_o.rst_por_io_n[0])
 `endif
                                           );
   assign pwrmgr_low_power_if.low_power      = `PWRMGR_HIER.low_power_o;
@@ -566,7 +566,7 @@ interface chip_if;
 `else
   assign pwrmgr_low_power_if.deep_powerdown = ~`PWRMGR_HIER.pwr_ast_i.main_pok;
 `endif
-  // clkmgr related: SW controlled clock gating contol signals reflecting the actual status
+  // clkmgr related: SW controlled clock gating control signals reflecting the actual status
   // of these clocks.
 `ifdef GATE_LEVEL
   wire aes_clk_is_enabled = 0;
@@ -575,8 +575,6 @@ interface chip_if;
   wire otbn_clk_is_enabled = 0;
 
   wire io_clk_is_enabled = 0;
-  wire io_div2_clk_is_enabled = 0;
-  wire io_div4_clk_is_enabled = 0;
 `else
   wire aes_clk_is_enabled = `CLKMGR_HIER.u_reg.hw2reg.clk_hints_status.clk_main_aes_val.d;
   wire hmac_clk_is_enabled = `CLKMGR_HIER.u_reg.hw2reg.clk_hints_status.clk_main_hmac_val.d;
@@ -585,8 +583,6 @@ interface chip_if;
 
 // TODO: Not used in DV simulation.
 // wire io_clk_is_enabled = `CLKMGR_HIER.u_reg.reg2hw.clk_enables.clk_io_peri_en.q;
-  wire io_div2_clk_is_enabled = `CLKMGR_HIER.u_reg.reg2hw.clk_enables.clk_io_div2_peri_en.q;
-  wire io_div4_clk_is_enabled = `CLKMGR_HIER.u_reg.reg2hw.clk_enables.clk_io_div4_peri_en.q;
 `endif
   // Ibex monitors.
   ibex_pkg::pmp_mseccfg_t pmp_mseccfg;
@@ -699,7 +695,7 @@ interface chip_if;
         join_none
       end else begin
         // when en_sim_sram == 1, need to make sure the access to sim_sram doesn't appear on
-        // cpu_d_tl_if, otherwise, we may have unmapped access as scb doesn't regnize addresses of
+        // cpu_d_tl_if, otherwise, we may have unmapped access as scb doesn't recognize addresses of
         // sim_sram. `CPU_HIER.tl_d_* is the right place to avoid seeing sim_sram accesses
         force cpu_d_tl_if.h2d = `CPU_HIER.cored_tl_h_o;
         force cpu_d_tl_if.d2h = `CPU_HIER.cored_tl_h_i;
@@ -755,28 +751,35 @@ interface chip_if;
     ext_clk_if.set_active(0, 0);
   endfunction
 
-  // Verifies an LC control signal broadcast by the LC controller.
-  function automatic void check_lc_ctrl_enable_signal(lc_ctrl_signal_e signal, bit expected_value);
-    lc_ctrl_pkg::lc_tx_t value;
+  // Get the requested LC control signal that was broadcast by the LC controller
+  function automatic lc_ctrl_pkg::lc_tx_t get_lc_ctrl_enable_signal(lc_ctrl_signal_e signal);
     case (signal)
-      LcCtrlSignalDftEn:        value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_dft_en_o);
-      LcCtrlSignalNvmDebugEn:   value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_nvm_debug_en_o);
-      LcCtrlSignalHwDebugEn:    value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_hw_debug_en_o);
-      LcCtrlSignalCpuEn:        value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_cpu_en_o);
+      LcCtrlSignalDftEn:        return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_dft_en_o);
+      LcCtrlSignalNvmDebugEn:   return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_nvm_debug_en_o);
+      LcCtrlSignalHwDebugEn:    return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_hw_debug_en_o);
+      LcCtrlSignalCpuEn:        return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_cpu_en_o);
       LcCtrlSignalCreatorSeedEn: begin
-        value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_creator_seed_sw_rw_en_o);
+        return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_creator_seed_sw_rw_en_o);
       end
       LcCtrlSignalOwnerSeedEn: begin
-        value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_owner_seed_sw_rw_en_o);
+        return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_owner_seed_sw_rw_en_o);
       end
-      LcCtrlSignalIsoRdEn:      value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_iso_part_sw_rd_en_o);
-      LcCtrlSignalIsoWrEn:      value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_iso_part_sw_wr_en_o);
-      LcCtrlSignalSeedRdEn:     value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_seed_hw_rd_en_o);
-      LcCtrlSignalKeyMgrEn:     value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_keymgr_en_o);
-      LcCtrlSignalEscEn:        value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_escalate_en_o);
-      LcCtrlSignalCheckBypEn:   value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_check_byp_en_o);
+      LcCtrlSignalIsoRdEn:      return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_iso_part_sw_rd_en_o);
+      LcCtrlSignalIsoWrEn:      return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_iso_part_sw_wr_en_o);
+      LcCtrlSignalSeedRdEn:     return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_seed_hw_rd_en_o);
+      LcCtrlSignalRmaState: begin
+        return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_rma_state_o);
+      end
+      LcCtrlSignalKeyMgrEn:     return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_keymgr_en_o);
+      LcCtrlSignalEscEn:        return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_escalate_en_o);
+      LcCtrlSignalCheckBypEn:   return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_check_byp_en_o);
       default:                  `uvm_fatal(MsgId, $sformatf("Bad choice: %0s", signal.name()))
     endcase
+  endfunction
+
+  // Verifies an LC control signal broadcast by the LC controller.
+  function automatic void check_lc_ctrl_enable_signal(lc_ctrl_signal_e signal, bit expected_value);
+    lc_ctrl_pkg::lc_tx_t value = get_lc_ctrl_enable_signal(signal);
     if (expected_value ~^ (value == lc_ctrl_pkg::On)) begin
       `uvm_info(MsgId, $sformatf("LC control signal %0s: value = %0s matched",
                                  signal.name(), value.name()), UVM_HIGH)
@@ -891,7 +894,7 @@ interface chip_if;
       dummy_signal_probe_otp_vendor_test_ctrl)
 `else
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_otp_vendor_test_ctrl,
-      `OTP_CTRL_HIER.lc_otp_vendor_test_i)
+      `OTP_MACRO_HIER.test_i)
 `endif
   /*
    * Signal probe functions for sampling the FSM states of the IPs
@@ -975,26 +978,6 @@ interface chip_if;
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_edn_1_fsm_state,
       edn_1_fsm_state, 9)
 
-  // Signal probe function for `wkup_internal_req_o` of SOC_PROXY_HIER
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_proxy_wkup_internal_req,
-                                   `SOC_PROXY_HIER.wkup_internal_req_o,
-                                   1)
-
-  // Signal probe function for `soc_intr_async_i` of TOP_HIER.
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_intr_async,
-                                   `TOP_HIER.soc_intr_async_i,
-                                   soc_proxy_reg_pkg::NumExternalIrqs)
-
-  // Signal probe function for `soc_fatal_alert_req` of TOP_HIER.
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_fatal_alert_req,
-                                   `TOP_HIER.soc_fatal_alert_req_i,
-                                   2 * soc_proxy_pkg::NumFatalExternalAlerts)
-
-  // Signal probe function for `soc_fatal_alert_rsp` of TOP_HIER.
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_fatal_alert_rsp,
-                                   `TOP_HIER.soc_fatal_alert_rsp_o,
-                                   2 * soc_proxy_pkg::NumFatalExternalAlerts)
-
   // Signal probe function for `soc_gpi_async_o` of TOP_HIER.
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_gpi_async,
                                    `TOP_HIER.soc_gpi_async_o,
@@ -1005,16 +988,6 @@ interface chip_if;
                                    `TOP_HIER.soc_gpo_async_i,
                                    soc_proxy_pkg::NumSocGpio)
 
-  // Signal probe function for `soc_recov_alert_req` of TOP_HIER.
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_recov_alert_req,
-                                   `TOP_HIER.soc_recov_alert_req_i,
-                                   2 * soc_proxy_pkg::NumRecovExternalAlerts)
-
-  // Signal probe function for `soc_recov_alert_rsp` of TOP_HIER.
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_recov_alert_rsp,
-                                   `TOP_HIER.soc_recov_alert_rsp_o,
-                                   2 * soc_proxy_pkg::NumRecovExternalAlerts)
-
   // Signal probe function for `boot_status.light_reset_req` of TOP_HIER.
   // This shall only be used as a probe, not a driver.
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pwrmgr_light_reset_req,
@@ -1024,6 +997,11 @@ interface chip_if;
   // Signal probe function for `soc_rst_req_async_i` of TOP_HIER.
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_rst_req_async,
                                    `TOP_HIER.soc_rst_req_async_i,
+                                   1)
+
+  // Signal probe function for `ext_rst_ack_i` of TOP_HIER.
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_ext_rst_ack,
+                                   `TOP_HIER.pwrmgr_ext_rst_ack_i,
                                    1)
 
   // Signal probe function for `soc_wkup_async_i` of TOP_HIER.
@@ -1050,8 +1028,9 @@ interface chip_if;
 `undef KMAC_HIER
 `undef KEYMGR_DPE_HIER
 `undef LC_CTRL_HIER
-`undef OTP_CTRL_HIER
 `undef OTBN_HIER
+`undef OTP_CTRL_HIER
+`undef OTP_MACRO_HIER
 `undef PINMUX_HIER
 `undef PWRMGR_HIER
 `undef ROM_CTRL0_HIER

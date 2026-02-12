@@ -7,13 +7,13 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/rom_ctrl/doc/">ROM Controller</a> Device Interface
+ * @brief <a href="/book/hw/ip/rom_ctrl/">ROM Controller</a> Device Interface
  * Functions
  */
 
 #include <stdint.h>
 
-#include "rom_ctrl_regs.h"  // Generated.
+#include "hw/top/rom_ctrl_regs.h"  // Generated.
 #include "sw/device/lib/dif/autogen/dif_rom_ctrl_autogen.h"
 
 #ifdef __cplusplus
@@ -27,7 +27,7 @@ extern "C" {
  */
 typedef enum dif_rom_ctrl_fatal_alert_cause {
   /**
-   * No error has occured.
+   * No error has occurred.
    */
   kDifRomCtrlFatalAlertCauseNoError = 0,
   /**

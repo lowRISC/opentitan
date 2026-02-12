@@ -15,11 +15,12 @@ module pinmux
   // Taget-specific pinmux configuration passed down from the
   // target-specific top-level.
   parameter target_cfg_t TargetCfg = DefaultTargetCfg,
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned AlertSkewCycles = 1
 ) (
   input                            clk_i,
   input                            rst_ni,
-  input                            rst_sys_ni,
   // Scan enable
   input  prim_mubi_pkg::mubi4_t    scanmode_i,
   // Slow always-on clock
@@ -90,6 +91,7 @@ module pinmux
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(1'b1)
     ) u_prim_alert_sender (
       .clk_i,
@@ -113,17 +115,7 @@ module pinmux
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
       dio_pad_attr_q <= '0;
-      for (int kk = 0; kk < NMioPads; kk++) begin
-        if (kk == TargetCfg.tap_strap0_idx) begin
-          // TAP strap 0 is sampled after reset (and only once for life cycle states that are not
-          // TEST_UNLOCKED* or RMA).  To ensure it gets sampled as 0 unless driven to 1 from an
-          // external source (and specifically that it gets sampled as 0 when left floating / not
-          // connected), this enables the pull-down of the pad at reset.
-          mio_pad_attr_q[kk] <= '{pull_en: 1'b1, default: '0};
-        end else begin
-          mio_pad_attr_q[kk] <= '0;
-        end
-      end
+      mio_pad_attr_q <= '0;
     end else begin
       // dedicated pads
       for (int kk = 0; kk < NDioPads; kk++) begin
@@ -508,11 +500,10 @@ module pinmux
   //   `ASSERT_KNOWN_IF(DioOutKnownO_A, dio_out_o[k], dio_oe_o[k])
   // end
 
-  // Pinmux does not have a block-level DV environment, hence we add an FPV assertion to test this.
-  `ASSERT(FpvSecCmBusIntegrity_A,
-          $rose(u_reg.intg_err)
-          |->
-          ##[0:`_SEC_CM_ALERT_MAX_CYC] (alert_tx_o[0].alert_p))
+  // Check that an integrity error in the register block will cause the alert sender to be told to
+  // send an alert. This is equivalent to ASSERT_ERROR_TRIGGER_ALERT_IN (but doesn't set
+  // unused_assert_connected, because that signal doesn't exist).
+  `ASSERT(FpvSecCmBusIntegrity_A, $rose(u_reg.intg_err) |-> ##[0:1] alerts[0])
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])

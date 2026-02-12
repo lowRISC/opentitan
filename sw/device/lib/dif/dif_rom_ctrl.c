@@ -9,7 +9,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
 
-#include "rom_ctrl_regs.h"  // Generated.
+#include "hw/top/rom_ctrl_regs.h"  // Generated.
 
 static_assert(ROM_CTRL_DIGEST_DIGEST_FIELD_WIDTH == 32,
               "ROM Controller digest register width changed.");

@@ -5,11 +5,10 @@
 use regex::Regex;
 use std::time::Duration;
 
-use anyhow::{anyhow, bail, Context, Result};
+use anyhow::{Context, Result, anyhow, bail};
 use clap::Parser;
 
-use opentitanlib::app::TransportWrapper;
-use opentitanlib::dif::otp_ctrl::DaiParam;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::{Jtag, JtagTap};
 use opentitanlib::test_utils::init::InitializeTest;
@@ -18,6 +17,7 @@ use opentitanlib::test_utils::load_sram_program::{
 };
 use opentitanlib::test_utils::otp_ctrl::OtpParam;
 use opentitanlib::uart::console::{ExitStatus, UartConsole};
+use ot_hal::dif::otp_ctrl::DaiParam;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -46,9 +46,7 @@ fn connect_riscv_jtag<'t>(
         .pin_strapping("PINMUX_TAP_RISCV")?
         .apply()
         .context("failed to apply RISCV TAP strapping")?;
-    transport
-        .reset_target(opts.init.bootstrap.options.reset_delay, true)
-        .context("failed to reset")?;
+    transport.reset(UartRx::Clear).context("failed to reset")?;
 
     log::info!("Connecting to RISC-V TAP");
     let mut jtag = opts
@@ -89,24 +87,14 @@ fn manuf_cp_ast_text_execution_write_otp(opts: &Opts, transport: &TransportWrapp
     jtag.disconnect()?;
 
     // Wait for test status pass over the UART.
-    let mut console = UartConsole {
-        timeout: Some(opts.timeout),
-        exit_success: Some(Regex::new(r"PASS.*\n")?),
-        exit_failure: Some(Regex::new(r"(FAIL|FAULT).*\n")?),
-        newline: true,
-        ..Default::default()
-    };
-    let mut stdout = std::io::stdout();
-    let result = console.interact(&*uart, None, Some(&mut stdout))?;
+    let mut console = UartConsole::new(
+        Some(opts.timeout),
+        Some(Regex::new(r"PASS.*\n")?),
+        Some(Regex::new(r"(FAIL|FAULT).*\n")?),
+    );
+    let result = console.interact(&*uart, false)?;
     match result {
-        ExitStatus::None | ExitStatus::CtrlC => Ok(()),
-        ExitStatus::Timeout => {
-            if console.exit_success.is_some() {
-                Err(anyhow!("Console timeout exceeded"))
-            } else {
-                Ok(())
-            }
-        }
+        ExitStatus::Timeout => Err(anyhow!("Console timeout exceeded")),
         ExitStatus::ExitSuccess => {
             log::info!(
                 "ExitSuccess({:?})",

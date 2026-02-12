@@ -134,7 +134,7 @@ class adc_ctrl_env_cfg extends cip_base_env_cfg #(
   // do_print, do_copy etc for types unsupported by the macros
 
   virtual function void do_print(uvm_printer printer);
-    // These shoud come first
+    // These should come first
     super.do_print(printer);
 
     // Implement filter_cfg - 2d array of structs

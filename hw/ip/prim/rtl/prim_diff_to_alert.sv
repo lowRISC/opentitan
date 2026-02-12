@@ -8,6 +8,8 @@
 module prim_diff_to_alert #(
   // AsyncOn: Enables additional synchronization logic within the alert receiver.
   parameter bit AsyncOn = 1'b1,
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned SkewCycles = 1,
   // Alert sender will latch the incoming alert event permanently and
   // keep on sending alert events until the next reset.
   parameter bit IsFatal = 1'b1
@@ -24,7 +26,7 @@ module prim_diff_to_alert #(
   logic diff_p_sync, diff_n_sync;
 
   if (AsyncOn) begin : gen_async
-    prim_generic_flop_2sync #(
+    prim_flop_2sync #(
       .Width(2),
       .ResetValue(2'b10)
     ) u_sync (
@@ -53,6 +55,7 @@ module prim_diff_to_alert #(
 
   prim_alert_sender #(
     .AsyncOn(AsyncOn),
+    .SkewCycles(SkewCycles),
     .IsFatal(IsFatal)
   ) u_prim_alert_sender (
     .clk_i,

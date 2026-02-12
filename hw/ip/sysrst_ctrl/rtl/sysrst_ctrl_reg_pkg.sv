@@ -19,6 +19,11 @@ package sysrst_ctrl_reg_pkg;
   // Number of registers for every interface
   parameter int NumRegs = 43;
 
+  // Alert indices
+  typedef enum int {
+    AlertFatalFaultIdx = 0
+  } sysrst_ctrl_alert_idx_t;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -430,27 +435,7 @@ package sysrst_ctrl_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } pwrb_in;
-    struct packed {
-      logic        d;
-      logic        de;
-    } key0_in;
-    struct packed {
-      logic        d;
-      logic        de;
-    } key1_in;
-    struct packed {
-      logic        d;
-      logic        de;
-    } key2_in;
-    struct packed {
-      logic        d;
-      logic        de;
-    } lid_open;
-    struct packed {
-      logic        d;
-      logic        de;
-    } ac_present;
+    } flash_wp_l;
     struct packed {
       logic        d;
       logic        de;
@@ -458,18 +443,34 @@ package sysrst_ctrl_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } flash_wp_l;
+    } ac_present;
+    struct packed {
+      logic        d;
+      logic        de;
+    } lid_open;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key2_in;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key1_in;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key0_in;
+    struct packed {
+      logic        d;
+      logic        de;
+    } pwrb_in;
   } sysrst_ctrl_hw2reg_pin_in_value_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
-    } combo0_h2l;
-    struct packed {
-      logic        d;
-      logic        de;
-    } combo1_h2l;
+    } combo3_h2l;
     struct packed {
       logic        d;
       logic        de;
@@ -477,58 +478,18 @@ package sysrst_ctrl_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } combo3_h2l;
+    } combo1_h2l;
+    struct packed {
+      logic        d;
+      logic        de;
+    } combo0_h2l;
   } sysrst_ctrl_hw2reg_combo_intr_status_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
-    } pwrb_h2l;
-    struct packed {
-      logic        d;
-      logic        de;
-    } key0_in_h2l;
-    struct packed {
-      logic        d;
-      logic        de;
-    } key1_in_h2l;
-    struct packed {
-      logic        d;
-      logic        de;
-    } key2_in_h2l;
-    struct packed {
-      logic        d;
-      logic        de;
-    } ac_present_h2l;
-    struct packed {
-      logic        d;
-      logic        de;
-    } ec_rst_l_h2l;
-    struct packed {
-      logic        d;
-      logic        de;
-    } flash_wp_l_h2l;
-    struct packed {
-      logic        d;
-      logic        de;
-    } pwrb_l2h;
-    struct packed {
-      logic        d;
-      logic        de;
-    } key0_in_l2h;
-    struct packed {
-      logic        d;
-      logic        de;
-    } key1_in_l2h;
-    struct packed {
-      logic        d;
-      logic        de;
-    } key2_in_l2h;
-    struct packed {
-      logic        d;
-      logic        de;
-    } ac_present_l2h;
+    } flash_wp_l_l2h;
     struct packed {
       logic        d;
       logic        de;
@@ -536,7 +497,51 @@ package sysrst_ctrl_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } flash_wp_l_l2h;
+    } ac_present_l2h;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key2_in_l2h;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key1_in_l2h;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key0_in_l2h;
+    struct packed {
+      logic        d;
+      logic        de;
+    } pwrb_l2h;
+    struct packed {
+      logic        d;
+      logic        de;
+    } flash_wp_l_h2l;
+    struct packed {
+      logic        d;
+      logic        de;
+    } ec_rst_l_h2l;
+    struct packed {
+      logic        d;
+      logic        de;
+    } ac_present_h2l;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key2_in_h2l;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key1_in_h2l;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key0_in_h2l;
+    struct packed {
+      logic        d;
+      logic        de;
+    } pwrb_h2l;
   } sysrst_ctrl_hw2reg_key_intr_status_reg_t;
 
   // Register -> HW type

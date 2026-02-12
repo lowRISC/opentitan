@@ -6,8 +6,8 @@ module tb;
   // Dep packages
   import uvm_pkg::*;
   import dv_utils_pkg::*;
-  import ac_range_check_env_pkg::*;
-  import ac_range_check_test_pkg::*;
+  import ${module_instance_name}_env_pkg::*;
+  import ${module_instance_name}_test_pkg::*;
 
   // Macro includes
   `include "uvm_macros.svh"
@@ -26,7 +26,7 @@ module tb;
   tl_if                     tl_csr_if     (.clk(clk), .rst_n(rst_n));
   tl_if                     tl_unfilt_if  (.clk(clk), .rst_n(rst_n));
   tl_if                     tl_filt_if    (.clk(clk), .rst_n(rst_n));
-  ac_range_check_misc_io_if misc_if       ();
+  ${module_instance_name}_misc_io_if misc_if       ();
 
   `DV_ALERT_IF_CONNECT()
 

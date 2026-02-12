@@ -48,12 +48,14 @@ status_t csrng_testutils_cmd_ready_wait(const dif_csrng_t *csrng);
  * Runs CSRNG generate command.
  *
  * @param csrng A CSRNG handle.
+ * @param additional_data Additional data, set to NULL if unused.
  * @param output Output buffer.
  * @param output_len Number of words of entropy to write to output buffer.
  */
 OT_WARN_UNUSED_RESULT
-status_t csrng_testutils_cmd_generate_run(const dif_csrng_t *csrng,
-                                          uint32_t *output, size_t output_len);
+status_t csrng_testutils_cmd_generate_run(
+    const dif_csrng_t *csrng, const dif_csrng_seed_material_t *additional_data,
+    uint32_t *output, size_t output_len);
 
 /**
  * Checks the CSRNG internal state against `expected` values.
@@ -86,12 +88,14 @@ status_t csrng_testutils_kat_instantiate(
  * @param num_generates Number of GENERATE commands to run.
  * @param output_len Number of output words to read from CSRNG after the last
  * command.
+ * @param additional_data Additional data, set to NULL if unused.
  * @param expected_output Expected CSRNG output after the last command.
  * @param expected_state Expected CSRNG internal state after the last command.
  */
 OT_WARN_UNUSED_RESULT
 status_t csrng_testutils_kat_generate(
-    const dif_csrng_t *csrng, uint32_t num_generates, uint32_t output_len,
+    const dif_csrng_t *csrng, size_t num_generates, size_t output_len,
+    const dif_csrng_seed_material_t *additional_data,
     const uint32_t *expected_output,
     const dif_csrng_internal_state_t *expected_state);
 
@@ -108,7 +112,8 @@ status_t csrng_testutils_kat_reseed(
     const dif_csrng_internal_state_t *expected_state);
 
 /**
- * CTR DRBG Known-Answer-Test (KAT) for INSTANTIATE command.
+ * CTR DRBG Known-Answer-Test (KAT) for INSTANTIATE command for a NIST test
+ * vector without additional data.
  *
  * @param csrng Handle.
  * @param fail_expected Expected fail.
@@ -118,12 +123,42 @@ status_t csrng_testutils_fips_instantiate_kat(const dif_csrng_t *csrng,
                                               bool fail_expected);
 
 /**
- * CTR DRBG Known-Answer-Test (KAT) for GENERATE command.
+ * CTR DRBG Known-Answer-Test (KAT) for INSTANTIATE command for a NIST test
+ * vector using additional data for the GENERATE command.
+ *
+ * @param csrng Handle.
+ * @param fail_expected Expected fail.
+ */
+OT_WARN_UNUSED_RESULT
+status_t csrng_testutils_fips_instantiate_kat_adata(const dif_csrng_t *csrng,
+                                                    bool fail_expected);
+
+/**
+ * CTR DRBG Known-Answer-Test (KAT) for GENERATE command for a NIST test
+ * vector without additional data.
  *
  * @param csrng Handle.
  */
 OT_WARN_UNUSED_RESULT
 status_t csrng_testutils_fips_generate_kat(const dif_csrng_t *csrng);
+
+/**
+ * CTR DRBG Known-Answer-Test (KAT) for GENERATE command for a NIST test
+ * vector with additional data, first call.
+ *
+ * @param csrng Handle.
+ */
+OT_WARN_UNUSED_RESULT
+status_t csrng_testutils_fips_generate_kat_adata1(const dif_csrng_t *csrng);
+
+/**
+ * CTR DRBG Known-Answer-Test (KAT) for GENERATE command for a NIST test
+ * vector with additional data, second call.
+ *
+ * @param csrng Handle.
+ */
+OT_WARN_UNUSED_RESULT
+status_t csrng_testutils_fips_generate_kat_adata2(const dif_csrng_t *csrng);
 
 /**
  * Checks CSRNG command status.

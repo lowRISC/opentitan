@@ -4,8 +4,8 @@
 
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
-#include "sw/device/lib/crypto/include/hash.h"
-#include "sw/device/lib/crypto/include/mac.h"
+#include "sw/device/lib/crypto/include/hmac.h"
+#include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -18,11 +18,11 @@
 #include "hmac_testvectors.h"
 
 // Module ID for status codes.
-#define MODULE_ID MAKE_MODULE_ID('h', 's', 't')
+#define MODULE_ID MAKE_MODULE_ID('t', 's', 't')
 
 // We need the following assertion, because we are using hash context struct
 // also for hmac contexts.
-static_assert(sizeof(otcrypto_hash_context_t) ==
+static_assert(sizeof(otcrypto_sha2_context_t) ==
                   sizeof(otcrypto_hmac_context_t),
               "Hash and Hmac contexts are expected to be of the same length");
 
@@ -75,7 +75,7 @@ typedef struct hmac_extended_test_vector {
   /* `progess` keeps track of how many message segments are streamed so far. */
   hmac_test_progress_t progress;
   /* `hash_ctx` is used to store context during streaming. */
-  otcrypto_hash_context_t hash_ctx;
+  otcrypto_sha2_context_t hash_ctx;
 } hmac_extended_test_vector_t;
 
 static hmac_extended_test_vector_t
@@ -157,15 +157,15 @@ static status_t get_hash_mode(hmac_test_vector_t *test_vec,
   switch (test_vec->test_operation) {
     case kHmacTestOperationSha256:
       *hash_mode = kOtcryptoHashModeSha256;
-      return OTCRYPTO_OK;
+      return OK_STATUS();
     case kHmacTestOperationSha384:
       *hash_mode = kOtcryptoHashModeSha384;
-      return OTCRYPTO_OK;
+      return OK_STATUS();
     case kHmacTestOperationSha512:
       *hash_mode = kOtcryptoHashModeSha512;
-      return OTCRYPTO_OK;
+      return OK_STATUS();
     default:
-      return OTCRYPTO_BAD_ARGS;
+      return INVALID_ARGUMENT();
   }
 }
 
@@ -176,7 +176,7 @@ static status_t get_hash_mode(hmac_test_vector_t *test_vec,
  * @param hash_ctx Corresponding context for given `current_test_vector`.
  * @param current_test_vector Pointer to the hardcoded test vector.
  */
-static status_t ctx_init(otcrypto_hash_context_t *hash_ctx,
+static status_t ctx_init(otcrypto_sha2_context_t *hash_ctx,
                          hmac_test_vector_t *current_test_vector) {
   // Populate `checksum` and `config.security_level` fields.
   current_test_vector->key.checksum =
@@ -191,7 +191,7 @@ static status_t ctx_init(otcrypto_hash_context_t *hash_ctx,
       OT_FALLTHROUGH_INTENDED;
     case kHmacTestOperationSha512:
       TRY(get_hash_mode(current_test_vector, &hash_mode));
-      TRY(otcrypto_hash_init(hash_ctx, hash_mode));
+      TRY(otcrypto_sha2_init(hash_mode, hash_ctx));
       break;
     case kHmacTestOperationHmacSha256:
       OT_FALLTHROUGH_INTENDED;
@@ -202,9 +202,9 @@ static status_t ctx_init(otcrypto_hash_context_t *hash_ctx,
                              &current_test_vector->key));
       break;
     default:
-      return OTCRYPTO_BAD_ARGS;
+      return INVALID_ARGUMENT();
   }
-  return OTCRYPTO_OK;
+  return OK_STATUS();
 }
 
 /**
@@ -221,39 +221,36 @@ static status_t hmac_oneshot(hmac_test_vector_t *current_test_vector) {
   // The test vectors already have the correct digest sizes hardcoded.
   size_t digest_len = current_test_vector->digest.len;
   // Allocate the buffer for the maximum digest size (which comes from SHA-512).
-  uint32_t act_tag[kSha512DigestWords];
-  otcrypto_word32_buf_t tag_buf = {
-      .data = act_tag,
-      .len = digest_len,
-  };
+  uint32_t act_tag[512 / 32];
   otcrypto_hash_digest_t hash_digest = {
-      // .mode is to be determined below in switch-case block.
       .data = act_tag,
       .len = digest_len,
   };
   switch (current_test_vector->test_operation) {
     case kHmacTestOperationSha256:
-      OT_FALLTHROUGH_INTENDED;
+      TRY(otcrypto_sha2_256(current_test_vector->message, &hash_digest));
+      break;
     case kHmacTestOperationSha384:
-      OT_FALLTHROUGH_INTENDED;
+      TRY(otcrypto_sha2_384(current_test_vector->message, &hash_digest));
+      break;
     case kHmacTestOperationSha512:
-      TRY(get_hash_mode(current_test_vector, &hash_digest.mode));
-      TRY(otcrypto_hash(current_test_vector->message, hash_digest));
+      TRY(otcrypto_sha2_512(current_test_vector->message, &hash_digest));
       break;
     case kHmacTestOperationHmacSha256:
       OT_FALLTHROUGH_INTENDED;
     case kHmacTestOperationHmacSha384:
       OT_FALLTHROUGH_INTENDED;
     case kHmacTestOperationHmacSha512:
-      TRY(otcrypto_hmac(&current_test_vector->key, current_test_vector->message,
-                        tag_buf));
+      TRY(otcrypto_hmac(
+          &current_test_vector->key, current_test_vector->message,
+          (otcrypto_word32_buf_t){.data = act_tag, .len = digest_len}));
       break;
     default:
-      return OTCRYPTO_BAD_ARGS;
+      return INVALID_ARGUMENT();
   }
   LOG_INFO("Comparing result for %s.", current_test_vector->vector_identifier);
   CHECK_ARRAYS_EQ(act_tag, current_test_vector->digest.data, digest_len);
-  return OTCRYPTO_OK;
+  return OK_STATUS();
 }
 
 /**
@@ -269,7 +266,7 @@ static status_t hmac_oneshot(hmac_test_vector_t *current_test_vector) {
  * @param segment_len The byte length of the chosen segment.
  * @return The result of the operation.
  */
-static status_t feed_msg(otcrypto_hash_context_t *hash_ctx,
+static status_t feed_msg(otcrypto_sha2_context_t *hash_ctx,
                          hmac_test_vector_t *current_test_vector,
                          size_t segment_start, size_t segment_len) {
   otcrypto_const_byte_buf_t msg = {
@@ -283,7 +280,7 @@ static status_t feed_msg(otcrypto_hash_context_t *hash_ctx,
     case kHmacTestOperationSha384:
       OT_FALLTHROUGH_INTENDED;
     case kHmacTestOperationSha512:
-      TRY(otcrypto_hash_update(hash_ctx, msg));
+      TRY(otcrypto_sha2_update(hash_ctx, msg));
       break;
     case kHmacTestOperationHmacSha256:
       OT_FALLTHROUGH_INTENDED;
@@ -293,9 +290,9 @@ static status_t feed_msg(otcrypto_hash_context_t *hash_ctx,
       TRY(otcrypto_hmac_update((otcrypto_hmac_context_t *)hash_ctx, msg));
       break;
     default:
-      return OTCRYPTO_BAD_ARGS;
+      return INVALID_ARGUMENT();
   }
-  return OTCRYPTO_OK;
+  return OK_STATUS();
 }
 
 /**
@@ -306,18 +303,17 @@ static status_t feed_msg(otcrypto_hash_context_t *hash_ctx,
  * @param current_test_vector Pointer to the hardcoded test vector.
  * @return The result of the operation.
  */
-static status_t hmac_finalize(otcrypto_hash_context_t *hash_ctx,
+static status_t hmac_finalize(otcrypto_sha2_context_t *hash_ctx,
                               hmac_test_vector_t *current_test_vector) {
   // The test vectors already have the correct digest sizes hardcoded.
   size_t digest_len = current_test_vector->digest.len;
   // Allocate the buffer for the maximum digest size (which comes from SHA-512).
-  uint32_t act_tag[kSha512DigestWords];
+  uint32_t act_tag[512 / 32];
   otcrypto_word32_buf_t tag_buf = {
       .data = act_tag,
       .len = digest_len,
   };
   otcrypto_hash_digest_t hash_digest = {
-      // .mode is to be determined below in switch-case block.
       .data = act_tag,
       .len = digest_len,
   };
@@ -327,8 +323,7 @@ static status_t hmac_finalize(otcrypto_hash_context_t *hash_ctx,
     case kHmacTestOperationSha384:
       OT_FALLTHROUGH_INTENDED;
     case kHmacTestOperationSha512:
-      TRY(get_hash_mode(current_test_vector, &hash_digest.mode));
-      TRY(otcrypto_hash_final(hash_ctx, hash_digest));
+      TRY(otcrypto_sha2_final(hash_ctx, &hash_digest));
       break;
     case kHmacTestOperationHmacSha256:
       OT_FALLTHROUGH_INTENDED;
@@ -338,11 +333,11 @@ static status_t hmac_finalize(otcrypto_hash_context_t *hash_ctx,
       TRY(otcrypto_hmac_final((otcrypto_hmac_context_t *)hash_ctx, tag_buf));
       break;
     default:
-      return OTCRYPTO_BAD_ARGS;
+      return INVALID_ARGUMENT();
   }
   LOG_INFO("Comparing result for %s.", current_test_vector->vector_identifier);
   CHECK_ARRAYS_EQ(act_tag, current_test_vector->digest.data, digest_len);
-  return OTCRYPTO_OK;
+  return OK_STATUS();
 }
 
 /**
@@ -365,7 +360,7 @@ static status_t hmac_finalize(otcrypto_hash_context_t *hash_ctx,
 static status_t process_segment(hmac_extended_test_vector_t *test_ext_vec) {
   // If `test_ext_vec` is done, simply return.
   if (test_ext_vec->progress == kHmacTestDone) {
-    return OTCRYPTO_OK;
+    return OK_STATUS();
   }
 
   // If `test_ext_vec` is one-shot, we need to call one-shot API.
@@ -376,13 +371,13 @@ static status_t process_segment(hmac_extended_test_vector_t *test_ext_vec) {
     hmac_oneshot(test_ext_vec->hmac_test_vector);
     // Mark this test as complete
     test_ext_vec->progress = kHmacTestDone;
-    return OTCRYPTO_OK;
+    return OK_STATUS();
   }
 
   // A sanity check: oneshot calls should not arrive here and `segment_count`
   // should be valid.
   if (test_ext_vec->segment_count == 0 || test_ext_vec->segment_count > 4) {
-    return OTCRYPTO_BAD_ARGS;
+    return INVALID_ARGUMENT();
   }
 
   // If `test_ext_vec` is streaming, and this is the first call, then call init.
@@ -391,7 +386,7 @@ static status_t process_segment(hmac_extended_test_vector_t *test_ext_vec) {
              test_ext_vec->original_idx);
     ctx_init(&test_ext_vec->hash_ctx, test_ext_vec->hmac_test_vector);
     test_ext_vec->progress = kHmacTestFeedSegment1;
-    return OTCRYPTO_OK;
+    return OK_STATUS();
   }
 
   if (test_ext_vec->progress == kHmacTestFinalize) {
@@ -399,7 +394,7 @@ static status_t process_segment(hmac_extended_test_vector_t *test_ext_vec) {
              test_ext_vec->original_idx);
     hmac_finalize(&test_ext_vec->hash_ctx, test_ext_vec->hmac_test_vector);
     test_ext_vec->progress = kHmacTestDone;
-    return OTCRYPTO_OK;
+    return OK_STATUS();
   }
 
   // Handle the last message specially
@@ -410,14 +405,14 @@ static status_t process_segment(hmac_extended_test_vector_t *test_ext_vec) {
         test_ext_vec->hmac_test_vector->message.len - segment_start;
     // Sanity check
     if (segment_start > test_ext_vec->hmac_test_vector->message.len) {
-      return OTCRYPTO_BAD_ARGS;
+      return INVALID_ARGUMENT();
     }
     LOG_INFO("Streaming the last segment #%d of vector #%d.",
              test_ext_vec->progress, test_ext_vec->original_idx);
     feed_msg(&test_ext_vec->hash_ctx, test_ext_vec->hmac_test_vector,
              segment_start, segment_len);
     test_ext_vec->progress = kHmacTestFinalize;
-    return OTCRYPTO_OK;
+    return OK_STATUS();
   }
 
   if (test_ext_vec->progress < test_ext_vec->segment_count) {
@@ -430,9 +425,9 @@ static status_t process_segment(hmac_extended_test_vector_t *test_ext_vec) {
     feed_msg(&test_ext_vec->hash_ctx, test_ext_vec->hmac_test_vector,
              segment_start, segment_len);
     test_ext_vec->progress++;
-    return OTCRYPTO_OK;
+    return OK_STATUS();
   }
-  return OTCRYPTO_BAD_ARGS;
+  return INVALID_ARGUMENT();
 }
 
 /**
@@ -447,7 +442,7 @@ static status_t run_test(void) {
       TRY(process_segment(&kHmacExtendedTestVectors[j]));
     }
   }
-  return OTCRYPTO_OK;
+  return OK_STATUS();
 }
 
 OTTF_DEFINE_TEST_CONFIG();

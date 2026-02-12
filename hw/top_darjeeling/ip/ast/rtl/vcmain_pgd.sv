@@ -5,11 +5,6 @@
 // *Name: vcmain_pgd
 // *Module Description:  VCMAIN Power Good
 //############################################################################
-`ifdef SYNTHESIS
-`ifndef PRIM_DEFAULT_IMPL
-`define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
-`endif
-`endif
 
 module vcmain_pgd (
   output logic vcmain_pok_o
@@ -23,7 +18,7 @@ assign gen_supp_a = 1'b1;
 // Behavioral Model
 ////////////////////////////////////////
 // The initial is needed to clear the X of the delays at the start
-// Also to force a power-up effect at the bgining.
+// Also to force a power-up effect at the beginning.
 logic init_start;
 
 initial begin
@@ -43,9 +38,8 @@ end
 `else
 // SYNTHESIS/VERILATOR/LINTER/FPGA
 ///////////////////////////////////////
-localparam prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL;
 
-if (Impl == prim_pkg::ImplXilinx) begin : gen_xilinx
+if (prim_pkg::PrimTechName == "Xilinx") begin : gen_xilinx
   // FPGA Specific (place holder)
   ///////////////////////////////////////
   assign vcmain_pok_o = gen_supp_a;

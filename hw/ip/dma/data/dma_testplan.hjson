@@ -124,16 +124,16 @@
               Stimulus:
               - Configure DMA to perform a copy operation with different source and destination parameters in 'memory-to-memory' mode
               - Start DMA operation by setting DMAC.GO bit
-              - Respond with an error on either source or destination TLUL interface reqeust
+              - Respond with an error on either source or destination TLUL interface request
               - Wait for PLIC interrupt assertion if INTR_ENABLE.int_enable is set else poll for DMAC.ABORTED bit
 
               Checking:
-              - Check if STATUS.aborted bit is set (This indicates DMA operation is aborted)
+              - Check if STATUS.error bit is set (This indicates DMA operation is aborted)
               - Check that there are no TLUL transactions on source and destination interfaces after error response
               - Check if DMA generates an alert
               '''
         stage: V2
-        tests: ["dma_memory_tl_error"]
+        tests: ["dma_memory_stress"]
       }
       {
         name: dma_handshake_tl_error
@@ -143,16 +143,16 @@
               Stimulus:
               - Configure DMA to perform a copy operation with different source and destination parameters in hardware_handshake mode
               - Start DMA operation by setting DMAC.GO bit
-              - Respond with error on destination TLUL interface
+              - Respond with an error on either source or destination TLUL interface request
               - Wait for PLIC interrupt assertion if INTR_ENABLE.int_enable is set else poll for DMAC.DONE bit
 
               Checking:
-              - Check that there are no TLUL transactions on destination interface after error in the input TLUL interface
-              - Check if STATUS.aborted bit is set (This indicates DMA operation is aborted)
+              - Check if STATUS.error bit is set (This indicates DMA operation is aborted)
+              - Check that there are no TLUL transactions on source and destination interfaces after error response
               - Check if DMA generates an alert
               '''
         stage: V2
-        tests: ["dma_handshake_tl_error"]
+        tests: ["dma_handshake_stress"]
       }
       {
         name: dma_handshake_stress
@@ -292,6 +292,26 @@
         stage: V2S
         tests: ["dma_generic_stress", "dma_handshake_stress", "dma_mem_enabled"]
       }
+      {
+        name: dma_config_lock
+        desc: '''
+              Attempt to change the configuration registers whilst the DMA controller is active.
+              The majority of the configuration registers are protected using the `CFG_REGWEN` write enable register.
+              Since the enable is controlled exclusively by the hardware itself, the standard CSR tests are unable to test that it operates correctly.
+
+              Stimulus:
+              - Configure and start the DUT performing a long transfer.
+              - Choose one or more random configuration registers that should be protected by `CFG_REGWEN`.
+              - Whilst the DUT is still operating, attempt to invert the contents of the protected registers.
+
+              Checking:
+              - Check the value of the `CFG_REGWEN` register before and after starting the DMA transfer.
+              - Check that the contents of the chosen configuration registers do not change.
+              - Check the value of the `CFG_REGWEN` register after the transfer has completed.
+              '''
+        stage: V2S
+        tests: ["dma_config_lock"]
+      }
     ]
     covergroups: [
       {
@@ -353,14 +373,21 @@
                 * handshake interrupt enable
                 * interrupt source clearing enablement
                 * interrupt source clearing bus selection
-                * interrupt source clearing destination address alignment
-                * interrupt source clearing write values; required bins:
-                  + all zeros
-                  + all ones
-                  + each of the one-hot values
               - Cross coverage:
                 * handshake interrupt enable, interrupt source clearing enablement, and interrupt source clearing bus selection
-                * handshake interrupt enable, interrupt source clearing enablement, and interrupt source clearing destination addresses
+              '''
+      }
+      {
+        name: dma_intr_src_cg
+        desc: '''
+              - Cover the interrupt-clearing address and write values, as observed on the TL-UL buses rather than in the configuration that was chosen:
+                * interrupt source clearing address alignment; required bins:
+                  + bits [3:2] - all four permutations.
+                * interrupt source clearing write values; required bins:
+                  + all zeros
+                  + not all zeros
+              - Cross coverage:
+                * handshake interrupt enable, interrupt source clearing enablement, and interrupt source clearing address alignment
                 * handshake interrupt enable, interrupt source clearing enablement, and interrupt source clearing write values
               '''
       }

@@ -8,6 +8,13 @@
 package prim_secded_pkg;
 
   typedef enum int {
+    SecdedHsiao,
+    SecdedHamming,
+    SecdedInvHsiao,
+    SecdedInvHamming
+  } prim_secded_type_e;
+
+  typedef enum int {
     SecdedNone,
     Secded_22_16,
     Secded_28_22,
@@ -28,6 +35,93 @@ package prim_secded_pkg;
     SecdedInvHamming_72_64,
     SecdedInvHamming_76_68
   } prim_secded_e;
+
+  // This returns 1 iff the width is supported for the given secded type.
+  function automatic bit is_width_valid(prim_secded_type_e sd_type, int width);
+    unique case (sd_type)
+      SecdedHsiao:
+        unique case (width)
+          16: return 1'b1;
+          22: return 1'b1;
+          32: return 1'b1;
+          57: return 1'b1;
+          64: return 1'b1;
+          default: return 1'b0;
+        endcase
+      SecdedHamming:
+        unique case (width)
+          16: return 1'b1;
+          32: return 1'b1;
+          64: return 1'b1;
+          68: return 1'b1;
+          default: return 1'b0;
+        endcase
+      SecdedInvHsiao:
+        unique case (width)
+          16: return 1'b1;
+          22: return 1'b1;
+          32: return 1'b1;
+          57: return 1'b1;
+          64: return 1'b1;
+          default: return 1'b0;
+        endcase
+      SecdedInvHamming:
+        unique case (width)
+          16: return 1'b1;
+          32: return 1'b1;
+          64: return 1'b1;
+          68: return 1'b1;
+          default: return 1'b0;
+        endcase
+      default: return 1'b0;
+    endcase
+  endfunction : is_width_valid
+
+  // This returns the syndrome width for the given width and secded type.
+  // Return 0 if the width is not supported.
+  function automatic int get_synd_width(prim_secded_type_e sd_type, int width);
+    unique case (sd_type)
+      SecdedHsiao:
+        unique case (width)
+          16: return 6;
+          22: return 6;
+          32: return 7;
+          57: return 7;
+          64: return 8;
+          default: return 0;
+        endcase
+      SecdedHamming:
+        unique case (width)
+          16: return 6;
+          32: return 7;
+          64: return 8;
+          68: return 8;
+          default: return 0;
+        endcase
+      SecdedInvHsiao:
+        unique case (width)
+          16: return 6;
+          22: return 6;
+          32: return 7;
+          57: return 7;
+          64: return 8;
+          default: return 0;
+        endcase
+      SecdedInvHamming:
+        unique case (width)
+          16: return 6;
+          32: return 7;
+          64: return 8;
+          68: return 8;
+          default: return 0;
+        endcase
+      default: return 0;
+    endcase
+  endfunction : get_synd_width
+
+  function automatic int get_full_width(prim_secded_type_e sd_type, int width);
+    return width + get_synd_width(sd_type, width);
+  endfunction : get_full_width
 
   function automatic int get_ecc_data_width(prim_secded_e ecc_type);
     case (ecc_type)

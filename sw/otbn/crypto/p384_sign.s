@@ -94,6 +94,9 @@ p384_sign:
   jal       x1, scalar_mult_int_p384
   jal       x1, proj_to_affine_p384
 
+  /* call curve point test routine in P-384 lib */
+  jal       x1, p384_isoncurve_check
+
   /* store r of signature in dmem: dmem[dptr_r] <= r = R_x = [w26,w25] */
   li        x2, 25
   bn.sid    x2++, 0(x14)
@@ -119,8 +122,15 @@ p384_sign:
   bn.rshi   w4, w31, w4 >> 129
 
   /* Add 1 to get a 128-bit nonzero scalar for masking.
-     w4 <= w4 + 1 = alpha */
+     w4 <= w4 + 1 = alpha
+
+     N.B. The dummy instruction below serves to clear flags revealing
+     information regarding the masking value in w4, as well as to separate
+     accesses of the multiplicative masking value in w4 from accesses below to
+     the value it masks. */
   bn.addi   w4, w4, 1
+  bn.mov    w16, w4      /* prepare for p384_mulmod488x128_n call below */
+  bn.addi   w31, w31, 0  /* dummy instruction to clear flags */
 
   /* load 1st share k0 from dmem
      [w11,w10] <= k0 = dmem[dptr_k0] */
@@ -128,60 +138,134 @@ p384_sign:
   bn.lid    x2++, 0(x17)
   bn.lid    x2++, 32(x17)
 
-  /* [w26,w25] <= ([w11,w10] * w4) mod n = (k0 * alpha) mod n */
-  bn.mov    w16, w4
+  /*  [w26,w25] <= ([w11,w10] * w4) mod n = (k0 * alpha) mod n */
   jal       x1, p384_mulmod448x128_n
   bn.mov    w25, w16
   bn.mov    w26, w17
 
   /* load 2nd share k1 from dmem
+
+     N.B. We intentionally separate the accesses to w4 and [w11,w10] below so as
+     to prevent transient side channel leakage.
+
+     The same pattern repeats below.
+
      [w11,w10] <= k1 = dmem[dptr_k1] */
+  bn.mov    w16, w4      /* prepare for next p384_mulmod488x128_n call below */
   li        x2, 10
   bn.lid    x2++, 0(x19)
   bn.lid    x2++, 32(x19)
 
   /* [w28,w27] <= ([w11,w10] * w4) mod n = (k1 * alpha) mod n */
-  bn.mov    w16, w4
   jal       x1, p384_mulmod448x128_n
   bn.mov    w27, w16
   bn.mov    w28, w17
 
-  /* Multiplicative masking of shares d0 and d1 */
+  /* [w3,w2] <= n << 64 */
+  bn.rshi w2, w12, w31 >> 192
+  bn.rshi w3, w13, w12 >> 192
+
+  /* Load 448 bits of randomness into [w30,w29] */
+  bn.wsrr  w29, URND
+  bn.wsrr  w30, URND
+  bn.rshi  w30, w31, w30 >> 64
+
+  /* [w9,w8] <= [w30,w29] - [w3,w2] = rand(448) - (n << 64) */
+  bn.sub    w8, w29, w2
+  bn.subb   w9, w30, w3
+
+  /* [w1,w0] <= m mod (n << 64) */
+  bn.sel    w0, w29, w8, FG0.C
+  bn.sel    w1, w30, w9, FG0.C
+
+  /* Clear flags and randomize registers. */
+  bn.sub    w31, w31, w31
+  bn.wsrr    w8, URND
+  bn.wsrr    w9, URND
+  bn.wsrr   w10, URND
+  bn.wsrr   w11, URND
+  bn.wsrr   w29, URND
+  bn.wsrr   w30, URND
 
   /* load 1st share d0 from dmem
      [w11,w10] <= d0 = dmem[dptr_d0] */
+  bn.mov    w16, w4      /* prepare for next p384_mulmod488x128_n call below */
   li        x2, 10
   bn.lid    x2++, 0(x4)
   bn.lid    x2++, 32(x4)
 
+  /* [w9,w8] <= d0 + m */
+  bn.add    w8, w10, w0
+  bn.addc   w9, w11, w1
+
+  /* [w30,w29] <= d0 + m - (n << 64) */
+  bn.sub    w29, w8, w2
+  bn.subb   w30, w9, w3
+
+  /* [w11,w10] <= d0 + m mod (n << 64) */
+  bn.sel    w10, w8, w29, FG0.C
+  bn.sel    w11, w9, w30, FG0.C
+
   /* [w7,w6] <= ([w11,w10] * w4) mod n = (d0 * alpha) mod n */
-  bn.mov    w16, w4
   jal       x1, p384_mulmod448x128_n
   bn.mov    w6, w16
   bn.mov    w7, w17
 
+  /* Clear flags and randomize registers. */
+  bn.sub    w31, w31, w31
+  bn.wsrr    w8, URND
+  bn.wsrr    w9, URND
+  bn.wsrr   w10, URND
+  bn.wsrr   w11, URND
+  bn.wsrr   w16, URND
+  bn.wsrr   w17, URND
+  bn.wsrr   w29, URND
+  bn.wsrr   w30, URND
+
   /* load 2nd share d1 from dmem
-     [w11,w10] <= d1 = dmem[dptr_d1] */
-  li        x2, 10
+     [w30,w29] <= d1 = dmem[dptr_d1] */
+  bn.mov    w16, w4      /* prepare for next p384_mulmod488x128_n call below */
+  li        x2, 29
   bn.lid    x2++, 0(x5)
   bn.lid    x2++, 32(x5)
 
+  /* [w30,w29] <= d1 - m */
+  bn.sub    w29, w29, w0, FG1
+  bn.subb   w30, w30, w1, FG1
+
+  /* [w9,w8] <= d1 - m + (n << 64) */
+  bn.add    w8, w29, w2
+  bn.addc   w9, w30, w3
+
+  /* [w11,w10] <= d1 - m mod (n << 64) */
+  bn.sel    w10, w8, w29, FG1.C
+  bn.sel    w11, w9, w30, FG1.C
+
   /* [w9,w8] <= ([w11,w10] * w4) mod n = (d1 * alpha) mod n */
-  bn.mov    w16, w4
   jal       x1, p384_mulmod448x128_n
   bn.mov    w8, w16
   bn.mov    w9, w17
+
+  /* Clear flags and randomize registers. */
+  bn.sub    w31, w31, w31
+  bn.sub    w31, w31, w31, FG1
+  bn.wsrr   w10, URND
+  bn.wsrr   w11, URND
+  bn.wsrr   w16, URND
+  bn.wsrr   w17, URND
+  bn.wsrr   w29, URND
+  bn.wsrr   w30, URND
 
   /* Multiplicative masking of message msg */
 
   /* load message from dmem
      [w11, w10] <= msg = dmem[dptr_msg] */
+  bn.mov    w16, w4      /* prepare for next p384_mulmod488x128_n call below */
   li        x2, 10
   bn.lid    x2++, 0(x6)
   bn.lid    x2++, 32(x6)
 
   /* [w1,w0] <= ([w11,w10] * w4) mod n = (msg * alpha) mod n */
-  bn.mov    w16, w4
   jal       x1, p384_mulmod448x128_n
   bn.mov    w0, w16
   bn.mov    w1, w17
@@ -235,15 +319,21 @@ p384_sign:
   bn.mov    w17, w3
   jal       x1, p384_mulmod_n
 
-  /* [w28, w27] <= s' = k^(-1)*msg + k^(-1)*r*d  = [w17, w16] + [w5, w4]*/
-  bn.add    w27, w16, w4
-  bn.addc   w28, w17, w5
+  /* [w26, w25] <= s' = k^(-1)*msg + k^(-1)*r*d  = [w17, w16] + [w5, w4]
+
+     N.B. These values are intentionally stored away from [w28,w27] in order
+     to prevent the bn.sel instructions below from sharing a source with its
+     destination, as the carry bit used in the reduction could leak information
+     about d given msg and r. */
+  bn.add    w25, w16, w4
+  bn.addc   w26, w17, w5
 
   /* reduce s: [w28, w27] <= s <= s' mod n = [w28, w27] mod [w13, w12] */
-  bn.sub    w10, w27, w12
-  bn.subb   w11, w28, w13
-  bn.sel    w27, w27, w10, C
-  bn.sel    w28, w28, w11, C
+  bn.sub    w10, w25, w12
+  bn.subb   w11, w26, w13
+  bn.sel    w27, w25, w10, C
+  bn.sel    w28, w26, w11, C
+  bn.sub    w31, w31, w31  /* dummy instruction to clear flags */
 
   /* store s of signature in dmem: dmem[dptr_s] <= s = [w28, w27] */
   li        x2, 27
@@ -251,58 +341,3 @@ p384_sign:
   bn.sid    x2++, 32(x15)
 
   ret
-
-
-/* scratchpad memory */
-.section .data
-
-.balign 32
-
-/* message to be signed */
-.globl msg
-.weak msg
-msg:
-  .zero 64
-
-/* r component of signature */
-.globl r
-.weak r
-r:
-  .zero 64
-
-/* s component of signature */
-.globl s
-.weak s
-s:
-  .zero 64
-
-/* 1st scalar share d0 */
-.globl k0
-.weak k0
-k0:
-  .zero 64
-
-/* 2nd scalar share d1 */
-.globl k1
-.weak k1
-k1:
-  .zero 64
-
-/* 1st private key share d0 */
-.globl d0
-.weak d0
-d0:
-  .zero 64
-
-/* 2nd private key share d1 */
-.globl d1
-.weak d1
-d1:
-  .zero 64
-
-/* 704 bytes of scratchpad memory */
-.balign 32
-.globl scratchpad
-.weak scratchpad
-scratchpad:
-  .zero 704

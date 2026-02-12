@@ -83,7 +83,11 @@ module tb;
     .clk_enables({
 % for clk in [c for c in reversed(typed_clocks['sw_clks'].values())]:
 <% sep = "})," if loop.last else "," %>\
+  % if len(typed_clocks['sw_clks']) == 1:
+        reg2hw.clk_enables.q${sep}
+  % else:
         reg2hw.clk_enables.clk_${clk['src_name']}_peri_en.q${sep}
+  % endif
 % endfor
     .clk_hints({
         reg2hw.clk_hints.clk_main_otbn_hint.q,
@@ -149,6 +153,7 @@ module tb;
     .scanmode_i(clkmgr_if.scanmode_i),
     .idle_i    (clkmgr_if.idle_i),
 
+% if ext_clk_bypass:
     .lc_hw_debug_en_i(clkmgr_if.lc_hw_debug_en_i),
     .all_clk_byp_req_o(clkmgr_if.all_clk_byp_req),
     .all_clk_byp_ack_i(clkmgr_if.all_clk_byp_ack),
@@ -157,14 +162,14 @@ module tb;
     .lc_clk_byp_req_i(clkmgr_if.lc_clk_byp_req),
     .lc_clk_byp_ack_o(clkmgr_if.lc_clk_byp_ack),
     .div_step_down_req_i(clkmgr_if.div_step_down_req),
+    .hi_speed_sel_o(clkmgr_if.hi_speed_sel),
+    .calib_rdy_i(clkmgr_if.calib_rdy),
 
+  % endif
     .cg_en_o(),
 
     .jitter_en_o(clkmgr_if.jitter_en_o),
-    .clocks_o   (clkmgr_if.clocks_o),
-
-    .calib_rdy_i(clkmgr_if.calib_rdy),
-    .hi_speed_sel_o(clkmgr_if.hi_speed_sel)
+    .clocks_o   (clkmgr_if.clocks_o)
   );
 
   initial begin

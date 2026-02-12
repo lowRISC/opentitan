@@ -26,7 +26,7 @@ logic clk, osc_en, sys_clk_en;
 assign osc_en = (clk_src_sys_en_i && clk_sys_pd_ni && rst_sys_clk_ni);
 assign sys_clk_en = scan_mode_i || osc_en;
 
-// Clock Oscilator
+// Clock Oscillator
 ///////////////////////////////////////
 sys_osc u_sys_osc (
   .vcore_pok_h_i ( vcore_pok_h_i ),

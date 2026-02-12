@@ -23,7 +23,7 @@ module kmac
 
   // Command delay, useful for SCA measurements only. A value of e.g. 40 allows the processor to go
   // into sleep before KMAC starts operation. If a value > 0 is chosen, the processor can provide
-  // two commands subsquently and then go to sleep. The second command is buffered internally and
+  // two commands subsequently and then go to sleep. The second command is buffered internally and
   // will be presented to the hardware SecCmdDelay number of cycles after the first one.
   parameter int SecCmdDelay = 0,
 
@@ -37,7 +37,9 @@ module kmac
   parameter buffer_lfsr_seed_t RndCnstBufferLfsrSeed = RndCnstBufferLfsrSeedDefault,
   parameter msg_perm_t  RndCnstMsgPerm  = RndCnstMsgPermDefault,
 
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned AlertSkewCycles = 1
 ) (
   input clk_i,
   input rst_ni,
@@ -286,7 +288,7 @@ module kmac
   //   Invalid command is filtered out in the module.
   // kmac_cmd is generated in KeyMgr interface.
   // If SW initiates the KMAC/SHA3, kmac_cmd represents SW command,
-  // if KeyMgr drives the data, kmac_cmd is controled in the state machine
+  // if KeyMgr drives the data, kmac_cmd is controlled in the state machine
   // in KeyMgr interface logic.
   kmac_cmd_e sw_cmd, checked_sw_cmd, kmac_cmd, cmd_q;
   logic      cmd_update;
@@ -613,7 +615,7 @@ module kmac
   // - The SHA3 core is not in the Absorb state. Only in this state, the FIFO is writeable by
   //   software anyway.
   // - Software has already written the Process command. The KMAC block will now empty the
-  //   message FIFO and load its content into the SHA3 core, add the padding and then perfom
+  //   message FIFO and load its content into the SHA3 core, add the padding and then perform
   //   the final absorption. Software cannot append the message further.
   //
   // The message FIFO empty interrupt can be **useful** for software in particular if:
@@ -920,6 +922,7 @@ module kmac
     end : g_msg_data_mask
   end else begin : g_no_msg_mask
     assign msg_data_masked[0] = msg_data[0];
+    assign msg_mask = '0;
 
     logic unused_msgmask;
     assign unused_msgmask = ^{msg_mask, cfg_msg_mask, msg_mask_en};
@@ -1332,11 +1335,11 @@ module kmac
     assign unused_sha3_rand_update = sha3_rand_update;
     assign unused_sha3_rand_consumed = sha3_rand_consumed;
 
-    logic        unused_seed_update;
-    logic [31:0] unused_seed_data;
-    logic [31:0] unused_refresh_period;
+    logic unused_seed_update;
+    logic unused_seed_data;
+    logic unused_refresh_period;
     logic unused_entropy_refresh_req;
-    assign unused_seed_data = entropy_seed_data;
+    assign unused_seed_data = ^entropy_seed_data;
     assign unused_seed_update = entropy_seed_update;
     assign unused_refresh_period = ^{wait_timer_limit, wait_timer_prescaler};
     assign unused_entropy_refresh_req = entropy_refresh_req;
@@ -1350,11 +1353,17 @@ module kmac
     assign kmac_entropy_state_error = 1'b 0;
     assign kmac_entropy_hash_counter_error  = 1'b 0;
 
-    logic [1:0] unused_entropy_status;
+    logic unused_entropy_status;
     assign unused_entropy_status = entropy_in_keyblock;
 
     // If Masking is off, always entropy configured
     assign entropy_configured = prim_mubi_pkg::MuBi4True;
+
+    logic unused_edn_clk_rst;
+    assign unused_edn_clk_rst = ^{clk_edn_i, rst_edn_ni};
+
+    logic unused_lc_escalate_en5;
+    assign unused_lc_escalate_en5 = ^lc_escalate_en[5];
   end
 
   // MUBI4 buf
@@ -1459,6 +1468,7 @@ module kmac
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(i)
     ) u_prim_alert_sender (
       .clk_i,

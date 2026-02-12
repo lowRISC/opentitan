@@ -5,6 +5,9 @@ CAPI=2:
 
 name: "lowrisc:prim_generic:ram_1r1w"
 description: "prim"
+virtual:
+  - lowrisc:prim:ram_1r1w
+
 filesets:
   files_rtl:
     depend:
@@ -12,7 +15,7 @@ filesets:
       - lowrisc:prim_generic:ram_2p_pkg
       - lowrisc:prim:util_memload
     files:
-      - rtl/prim_generic_ram_1r1w.sv
+      - rtl/prim_ram_1r1w.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:

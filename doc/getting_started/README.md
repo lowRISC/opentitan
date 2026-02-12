@@ -72,65 +72,36 @@ sed '/^#/d' ./apt-requirements.txt | xargs sudo apt install -y
 ## Step 3: Install Python libraries needed
 
 Some tools in this repository are written in Python and require their dependencies to be installed through `pip`.
-We recommend installing the latest version of `pip` and `setuptools` (especially if on older systems such as Ubuntu 18.04) using:
+To avoid conflicts between Python package versions required on the host system, a virtual environment for the Python dependencies is required.
 
 ```console
-python3 -m pip install --user -U pip "setuptools<66.0.0"
+sudo apt install python3-venv
 ```
 
-The `pip` installation instructions use the `--user` flag to install without root permissions.
-Binaries are installed to `~/.local/bin`; check that this directory is listed in your `PATH` by running `which pip3`.
-It should show `~/.local/bin/pip3`.
-If it doesn't, prepend `~/.local/bin` to your `PATH`, e.g. by adding the following line to your `~/.bashrc` file:
-
-```console {title=~/.bashrc}
-export PATH=~/.local/bin:$PATH
-```
-
-Now install additional Python dependencies:
+Then, create the virtual environment in the OpenTitan checkout:
 
 ```console
 cd $REPO_TOP
-pip3 install --user -r python-requirements.txt --require-hashes
+python3 -m venv .venv
 ```
 
-## Step 4: Install the lowRISC RISC-V toolchain
-
-*Skip this step if using the Docker container.*
-
-To build device software you need a baremetal RISC-V toolchain (including, for example, a C compiler).
-Even if you already have one installed, we recommend using the prebuilt toolchain provided by lowRISC, because it is built with the specific patches and options that OpenTitan needs.
-You can install the toolchain using the `util/get-toolchain.py` script, which will download and install the toolchain to the default path, `/tools/riscv`.
+Then, activate the virtual environment by sourcing the shell script.
+The virtual environment must be activated in every shell/terminal window that operates in the OpenTitan checkout.
+Your shell prompt will be modified by the script to indicate that the virtual environment is activated for that session.
 
 ```console
-cd $REPO_TOP
-./util/get-toolchain.py
+source .venv/bin/activate
 ```
 
-If you did not encounter errors running the script, **you're done and can go to step 5**.
-If you did, read on.
+Now install the additional Python dependencies to the virtual environment:
 
-#### Troubleshooting
-
-If you need to install to a different path than `/tools/riscv` (for instance, if you do not have permission to write to the `/tools` directory), then you can specify a different location using the `--install-dir` option.
-Run `./util/get-toolchain.py --help` for details.
-You can alternatively download the tarball starting with `lowrisc-toolchain-rv32imcb-` from [GitHub releases](https://github.com/lowRISC/lowrisc-toolchains/releases/latest) and unpack it to the desired installation directory.
-
-Assuming one of the above worked and you have installed to a non-standard location, you will need to set the `TOOLCHAIN_PATH` environment variable to match whatever path you used.
-For example, if I wanted to install to `~/ot_tools/riscv`, then I would use:
 ```console
-./util/get-toolchain.py --install-dir ~/ot_tools/riscv
-export TOOLCHAIN_PATH=~/ot_tools/riscv
-```
-Add the `export` command to your `~/.bashrc` or equivalent to ensure that the `TOOLCHAIN_PATH` variable is set for future sessions.
-Check that it worked by opening a new terminal and running:
-```console
-ls $TOOLCHAIN_PATH/bin/riscv32-unknown-elf-as
-```
-If that prints out the file path without errors, then you've successfully installed the toolchain.
-Otherwise, try to find the `riscv32-unknown-elf-as` file in your file system and make sure `$TOOLCHAIN_PATH` is correctly set.
+pip3 install "setuptools<66.0.0"
 
-## Step 5: Set up your simulation tool or FPGA
+pip3 install -r python-requirements.txt --require-hashes
+```
+
+## Step 4: Set up your simulation tool or FPGA
 
 *Note: If you are using the pre-built Docker container, Verilator is already installed.
 Unless you know you need the FPGA or DV guides, you can skip this step.*
@@ -142,24 +113,24 @@ Follow the guide(s) that applies to you:
 * Option 2 (FPGA setup): [FPGA guide](./setup_fpga.md), or
 * Option 3 (design verification setup): [DV guide](./setup_dv.md)
 
-## Step 6: Build OpenTitan software
+## Step 5: Build OpenTitan software
 
 Follow the [dedicated guide](./build_sw.md) to build OpenTitan's software and run tests.
 
-## Step 7: Optional additional steps
+## Step 6: Optional additional steps
 
 If you have made it this far, congratulations!
 Hopefully you got a "Hello World!" demo running on OpenTitan using either the Verilator or FPGA targets.
 
 Depending on the specific way you want to use or contribute to OpenTitan, there may be a few extra steps you want to do.
 In particular:
-* *If you want to contribute SystemVerilog code upstream to OpenTitan*, follow step 7a to install Verible.
-* *If you want to run supported formal verification flows for OpenTitan, using tools like JasperGold,* follow step 7b to set up formal verification.
-* *If you want to simulate OpenTitan using Siemens Questa,* follow step 7c to set it up.
+* *If you want to contribute SystemVerilog code upstream to OpenTitan*, follow step 6a to install Verible.
+* *If you want to run supported formal verification flows for OpenTitan, using tools like JasperGold,* follow step 6b to set up formal verification.
+* *If you want to simulate OpenTitan using Siemens Questa,* follow step 6c to set it up.
 
 It also may make sense to stick with the basic setup and come back to these steps if you find you need them later.
 
-### Step 7a: Install Verible (optional)
+### Step 6a: Install Verible (optional)
 
 Verible is an open source SystemVerilog style linter and formatting tool.
 The style linter is relatively mature and we use it as part of our [RTL design flow](../contributing/hw/methodology.md).
@@ -189,18 +160,18 @@ After installation you need to add `/tools/verible/$VERIBLE_VERSION/bin` to your
 
 Note that we currently use version {{#tool-version verible }}, but it is expected that this version is going to be updated frequently, since the tool is under active development.
 
-### Step 7b: Set up formal verification (optional)
+### Step 6b: Set up formal verification (optional)
 
 See the [formal verification setup guide](./setup_formal.md)
 
-### Step 7c: Set up Siemens Questa (optional)
+### Step 6c: Set up Siemens Questa (optional)
 
 Once a standard installation of Questa has been completed, add `QUESTA_HOME` as an environment variable which points to the Questa installation directory.
 
 As of Questa version 21.4 there are some code incompatibilities with the OpenTitan code-base.
 See issue [#9514](https://github.com/lowRISC/opentitan/issues/9514) for the list of issues and temporary workarounds.
 
-## Step 8: Additional resources
+## Step 7: Additional resources
 
 As you may have guessed, there are several other pieces of hardware and software, besides a "Hello World!" demo, that are being actively developed for the OpenTitan project.
 If you are interested in these, check out the additional resources below.

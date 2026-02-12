@@ -1,0 +1,194 @@
+# Copyright lowRISC contributors.
+# Copyright 2024 University of Oxford, see also CREDITS.md.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# Original author: Louis-Emile Ploix
+# SPDX-License-Identifier: Apache-2.0
+
+# This is the 'entry point' of the proofs, it invokes all the other proofs in thm/
+
+def csr_split
+  each X Priv:(priv) Mstatus:(mstatus) Mie:(mie) Mcause:(mcause) Mtval:(mtval) Mtvec:(mtvec) \
+         Mscratch:(mscratch) Mepc:(mepc) Mcounteren:(mcounteren) \
+         Pmp_cfg:(pmp_cfg) Pmp_addr:(pmp_addr) Mseccfg:(mseccfg)
+    have (wbexc_dut_cmp_post_``X == wbexc_spec_cmp_post_``X)
+
+def spec_compliant_raw_csr_split
+  Addr: have (addr_match)
+  Data: have (data_match)
+  PC: have (pc_match)
+  use csr_split
+
+def spec_compliant_raw
+  Addr: have (addr_match)
+  Data: have (data_match)
+  CSR: have (csrs_match)
+  PC: have (pc_match)
+
+def spec_compliant
+  cond (finishing_executed & ~wbexc_illegal)
+  use spec_compliant_raw
+
+def spec_compliant_no_err
+  cond (finishing_executed & ~wbexc_illegal)
+  NoErr: have (~wbexc_err)
+  /
+  use spec_compliant_raw
+
+def structure_fast
+  cond (finishing_executed & ~wbexc_illegal)
+  Fast: have ($past(instr_will_progress))
+
+def structure_fast_err
+  cond (finishing_executed & ~wbexc_illegal & wbexc_err)
+  Fast: have ($past(instr_will_progress))
+
+lemma riscv
+  Ibex: lemma ibex
+  /
+
+  Arith:
+  in I:(`IS_ADDI | `IS_SLTI | `IS_SLTIU | `IS_XORI | `IS_ORI | `IS_ANDI) \
+     R:(`IS_ADD | `IS_SUB | `IS_SLL | `IS_SLT | `IS_SLTU | `IS_XOR | `IS_SRL | `IS_SRA | `IS_OR | `IS_AND) \
+     Shift:(`IS_SHIFTIOP)
+    use structure_fast
+    /
+    use spec_compliant_no_err
+
+  # Never actually proved, just assumed to be true instead.
+  MType:
+  in Mul:(`IS_MUL) MulH:(`IS_MULH) MulHSH:(`IS_MULHSH) MulHU:(`IS_MULHU) Div:(`IS_DIV) DivU:(`IS_DIVU) Rem:(`IS_REM) RemU:(`IS_REMU)
+    use spec_compliant_no_err
+
+  CSR:
+  in (`IS_CSR & wbexc_is_checkable_csr)
+    use structure_fast
+    /
+    use spec_compliant
+      split_bool Err:(wbexc_err)
+
+  BType:
+  in (`IS_BTYPE)
+    lemma btype
+    use structure_fast
+    /
+    use spec_compliant
+
+  JType: block
+    lemma jump
+    /
+    in Jal:(`IS_JAL) Jalr:(`IS_JALR)
+      use structure_fast
+      /
+      use spec_compliant
+
+  UType:
+  in Lui:(`IS_LUI) Auipc:(`IS_AUIPC)
+    use structure_fast
+    /
+    use spec_compliant
+
+  Fence:
+  in Fence:(`IS_FENCE) FenceI:(`IS_FENCEI)
+    use structure_fast
+    /
+    use spec_compliant
+
+  Special:
+  in ECall:(`IS_ECALL) EBreak:(`IS_EBREAK) MRet:(`IS_MRET)
+    use structure_fast
+    /
+    use spec_compliant
+
+  WFI:
+  in (`IS_WFI && finishing_executed && ~wbexc_illegal)
+    use structure_fast
+    /
+    use spec_compliant_raw
+      split_bool Err:(wbexc_err)
+
+  Mem: block
+    lemma mem
+    /
+    Load: lemma load
+    Store: lemma store
+    /
+    in L:(wbexc_is_load_instr) S:(wbexc_is_store_instr)
+      use spec_compliant
+          split_bool Err:(wbexc_err)
+
+  IRQ: in (wbexc_handling_irq)
+    PC: have (pc_match)
+    CSR: have (csrs_match)
+
+  Illegal: in (wbexc_illegal & wbexc_finishing & ~wbexc_fetch_err & (`IS_CSR -> wbexc_is_checkable_csr))
+    Fast: have ($past(instr_will_progress))
+    /
+    use spec_compliant_raw
+
+  FetchErr: in (wbexc_finishing & wbexc_fetch_err)
+    Fast: have ($past(instr_will_progress))
+    /
+    use spec_compliant_raw
+
+  /
+
+  # Uncomment this for liveness proofs, see ibex.proof for a description of when this can be done.
+  # Liveness: lemma live
+
+  Top: in (wbexc_finishing & (`IS_CSR -> wbexc_is_checkable_csr))
+    use spec_compliant_raw
+
+  /
+
+  RegMatch:
+  each i 1:(1) 2:(2) 3:(3) 4:(4) 5:(5) 6:(6) 7:(7) 8:(8) 9:(9) 10:(10) 11:(11) 12:(12) 13:(13) 14:(14) \
+       15:(15) 16:(16) 17:(17) 18:(18) 19:(19) 20:(20) 21:(21) 22:(22) 23:(23) 24:(24) 25:(25) 26:(26) \
+       27:(27) 28:(28) 29:(29) 30:(30) 31:(31)
+    have ((~`CR.rf_write_wb || `CR.rf_waddr_wb != i) & spec_past_has_reg[i] |-> pre_regs[i] == spec_past_regs[i])
+
+  SpecPastNoWbexc:
+  in (has_spec_past & ~wbexc_exists)
+    each X Priv:(priv) Mstatus:(mstatus) Mie:(mie) Mcause:(mcause) Mtval:(mtval) Mtvec:(mtvec) \
+         Mscratch:(mscratch) Mepc:(mepc) Mcounteren:(mcounteren) \
+         Pmp_cfg:(pmp_cfg) Pmp_addr:(pmp_addr) Mseccfg:(mseccfg)
+      have (spec_past_``X == pre_``X)
+
+  SleepSpecPastPC: have (has_spec_past & (`IDC.ctrl_fsm_cs == WAIT_SLEEP || `IDC.ctrl_fsm_cs == SLEEP) |-> spec_past_pc == `CR.pc_if)
+
+  /
+
+  # If you find a visualize SST trace for this property of length 5, you will be told none exists.
+  # If you find an SST trace via prove -sst, one will be found, but upon visualizing it JG will report that an
+  # assumption was violated. This leads me to believe that this property is provable by 5-induction, but JG has
+  # a bug preventing it from seeing so. It proves instead via engine D.
+  SpecPastNoWbexcPC: have (has_spec_past & ~wbexc_exists |-> spec_past_pc == (`ID.instr_valid_i ? pre_pc : `CR.pc_if))
+  /
+
+  # Prove these with engine D (apart from Live which needs Oh)
+  Wrap: in (spec_en)
+    each X Priv:(priv) Mstatus:(mstatus) Mie:(mie) Mcause:(mcause) Mtval:(mtval) Mtvec:(mtvec) \
+         Mscratch:(mscratch) Mepc:(mepc) Mcounteren:(mcounteren) \
+         Pmp_cfg:(pmp_cfg) Pmp_addr:(pmp_addr) Mseccfg:(mseccfg) \
+         Pc:(pc)
+      have (has_spec_past |-> pre_``X == spec_past_``X)
+
+    RegA: have (reg_driven[`CR.rf_raddr_a] && spec_past_has_reg[`CR.rf_raddr_a] |-> spec_past_regs[`CR.rf_raddr_a] == pre_regs_cut[`CR.rf_raddr_a])
+    RegB: have (reg_driven[`CR.rf_raddr_b] && spec_past_has_reg[`CR.rf_raddr_b] |-> spec_past_regs[`CR.rf_raddr_b] == pre_regs_cut[`CR.rf_raddr_b])
+
+  # Live: have (always (##[1:157 + 2*`WFI_BOUND + 17*`TIME_LIMIT] spec_en))
+
+  Mem:
+  block
+    En: have (data_req_o |-> spec_mem_en)
+    SndEn: have (mem_req_snd_d |-> spec_mem_en_snd)
+
+    We: have (data_req_o |-> data_we_o == spec_mem_write && data_we_o == ~spec_mem_read)
+
+    FstAddr: have (mem_req_fst_d |-> spec_mem_fst_addr == data_addr_o)
+    SndAddr: have (mem_req_snd_d |-> spec_mem_snd_addr == data_addr_o)
+
+    FstWData: have (mem_req_fst_d & data_we_o |-> (spec_mem_write_fst_wdata & fst_mask) == (data_wdata_o & fst_mask))
+    SndWData: have (mem_req_snd_d & data_we_o |-> (spec_mem_write_snd_wdata & snd_mask) == (data_wdata_o & snd_mask))
+
+    FstEnd: have (spec_en & spec_mem_en |-> mem_gnt_fst_d)
+    SndEnd: have (spec_en & spec_mem_en_snd |-> mem_gnt_snd_d)

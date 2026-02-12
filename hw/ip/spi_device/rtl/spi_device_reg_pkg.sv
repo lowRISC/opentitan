@@ -38,6 +38,11 @@ package spi_device_reg_pkg;
   // Number of registers for every interface
   parameter int NumRegs = 73;
 
+  // Alert indices
+  typedef enum int {
+    AlertFatalFaultIdx = 0
+  } spi_device_alert_idx_t;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -429,27 +434,7 @@ package spi_device_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } upload_cmdfifo_not_empty;
-    struct packed {
-      logic        d;
-      logic        de;
-    } upload_payload_not_empty;
-    struct packed {
-      logic        d;
-      logic        de;
-    } upload_payload_overflow;
-    struct packed {
-      logic        d;
-      logic        de;
-    } readbuf_watermark;
-    struct packed {
-      logic        d;
-      logic        de;
-    } readbuf_flip;
-    struct packed {
-      logic        d;
-      logic        de;
-    } tpm_header_not_empty;
+    } tpm_rdfifo_drop;
     struct packed {
       logic        d;
       logic        de;
@@ -457,36 +442,56 @@ package spi_device_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } tpm_rdfifo_drop;
+    } tpm_header_not_empty;
+    struct packed {
+      logic        d;
+      logic        de;
+    } readbuf_flip;
+    struct packed {
+      logic        d;
+      logic        de;
+    } readbuf_watermark;
+    struct packed {
+      logic        d;
+      logic        de;
+    } upload_payload_overflow;
+    struct packed {
+      logic        d;
+      logic        de;
+    } upload_payload_not_empty;
+    struct packed {
+      logic        d;
+      logic        de;
+    } upload_cmdfifo_not_empty;
   } spi_device_hw2reg_intr_state_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
-    } flash_status_fifo_clr;
+    } flash_read_buffer_clr;
     struct packed {
       logic        d;
       logic        de;
-    } flash_read_buffer_clr;
+    } flash_status_fifo_clr;
   } spi_device_hw2reg_control_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
-    } csb;
+    } tpm_csb;
     struct packed {
       logic        d;
-    } tpm_csb;
+    } csb;
   } spi_device_hw2reg_status_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
-    } addr_4b_en;
+    } pending;
     struct packed {
       logic        d;
-    } pending;
+    } addr_4b_en;
   } spi_device_hw2reg_addr_mode_reg_t;
 
   typedef struct packed {
@@ -495,25 +500,21 @@ package spi_device_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic        d;
-    } busy;
+      logic [21:0] d;
+    } status;
     struct packed {
       logic        d;
     } wel;
     struct packed {
-      logic [21:0] d;
-    } status;
+      logic        d;
+    } busy;
   } spi_device_hw2reg_flash_status_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [4:0]  d;
-      logic        de;
-    } cmdfifo_depth;
-    struct packed {
       logic        d;
       logic        de;
-    } cmdfifo_notempty;
+    } addrfifo_notempty;
     struct packed {
       logic [4:0]  d;
       logic        de;
@@ -521,33 +522,37 @@ package spi_device_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } addrfifo_notempty;
+    } cmdfifo_notempty;
+    struct packed {
+      logic [4:0]  d;
+      logic        de;
+    } cmdfifo_depth;
   } spi_device_hw2reg_upload_status_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [8:0]  d;
-      logic        de;
-    } payload_depth;
-    struct packed {
       logic [7:0]  d;
       logic        de;
     } payload_start_idx;
+    struct packed {
+      logic [8:0]  d;
+      logic        de;
+    } payload_depth;
   } spi_device_hw2reg_upload_status2_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [7:0]  d;
-    } data;
-    struct packed {
       logic        d;
-    } busy;
+    } addr4b_mode;
     struct packed {
       logic        d;
     } wel;
     struct packed {
       logic        d;
-    } addr4b_mode;
+    } busy;
+    struct packed {
+      logic [7:0]  d;
+    } data;
   } spi_device_hw2reg_upload_cmdfifo_reg_t;
 
   typedef struct packed {
@@ -556,42 +561,42 @@ package spi_device_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [7:0]  d;
+      logic [2:0]  d;
       logic        de;
-    } rev;
-    struct packed {
-      logic        d;
-      logic        de;
-    } locality;
+    } max_rd_size;
     struct packed {
       logic [2:0]  d;
       logic        de;
     } max_wr_size;
     struct packed {
-      logic [2:0]  d;
+      logic        d;
       logic        de;
-    } max_rd_size;
+    } locality;
+    struct packed {
+      logic [7:0]  d;
+      logic        de;
+    } rev;
   } spi_device_hw2reg_tpm_cap_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
-    } cmdaddr_notempty;
+    } rdfifo_aborted;
     struct packed {
       logic        d;
     } wrfifo_pending;
     struct packed {
       logic        d;
-    } rdfifo_aborted;
+    } cmdaddr_notempty;
   } spi_device_hw2reg_tpm_status_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [23:0] d;
-    } addr;
-    struct packed {
       logic [7:0]  d;
     } cmd;
+    struct packed {
+      logic [23:0] d;
+    } addr;
   } spi_device_hw2reg_tpm_cmd_addr_reg_t;
 
   // Register -> HW type

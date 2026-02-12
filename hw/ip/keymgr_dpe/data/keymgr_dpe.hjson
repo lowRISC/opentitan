@@ -288,7 +288,7 @@ countermeasures: [
         An attacker would need to fault both the software valid and the software data enable.
 
         During a sideload operation, if an attacker manages to fault the valid but not the data enable,
-        the software key is populated with random data.  If an atacker manages to fault the data enable but
+        the software key is populated with random data.  If an attacker manages to fault the data enable but
         not the valid, then the software key retains its previous value.
       '''
     }
@@ -464,6 +464,13 @@ countermeasures: [
                 Moves key manager DPE to disabled state.
                 '''
             },
+            {
+              value: "5",
+              name: "Load root key",
+              desc: '''
+                Loads the root key into the key manager.
+                '''
+            }
           ],
         },
 
@@ -473,7 +480,7 @@ countermeasures: [
             When the OPERATION field is programmed to generate output, this field selects
             the target cryptograhic use of the key.
 
-            This field should be programmed for both HW / SW generation, as this helps diverisify the output.
+            This field should be programmed for both HW / SW generation, as this helps diversify the output.
           ''',
           resval: "0"
           enum: [
@@ -508,7 +515,7 @@ countermeasures: [
           ]
         },
 
-        { bits: "15:14",
+        { bits: "16:14",
           name: "SLOT_SRC_SEL",
           resval: "0x0"
           desc: '''
@@ -516,13 +523,21 @@ countermeasures: [
           '''
         },
 
-        { bits: "19:18",
+        { bits: "20:18",
           name: "SLOT_DST_SEL",
           resval: "0x0"
           desc: '''
             The destination key slot to be used for the advance and erase operations.
           '''
         },
+        {
+          bits: "22"
+          name: "SW_BINDING_ONLY"
+          resval: "0"
+          desc: '''
+            Only apply software binding as a message input to the advance operation.
+          '''
+        }
       ],
     },
 
@@ -789,7 +804,7 @@ countermeasures: [
           desc: '''
             Max key version.
 
-            Any key version up to the value specificed in this register is valid.
+            Any key version up to the value specified in this register is valid.
           '''
         },
       ]
@@ -1114,6 +1129,27 @@ countermeasures: [
           desc: "Enable signal from LC ctrl is deactivated",
         },
       ]
+    },
+
+    { name: "LOAD_KEY_LOCK",
+      desc: "Register write lock for the LOAD_KEY command",
+      swaccess: "rw1s",
+      hwaccess: "hro",
+      fields: [
+        { bits: "0",
+          name: "LOCK",
+          resval: "0"
+          desc: '''
+            Load key register write lock.
+
+            Load key lock to 0, and its value cannot be altered by software until the next reset or locked.
+            Once locked, the LOAD_KEY command is disabled.
+          '''
+        },
+      ]
+      // Don't let automated CSR tests write random values to this register, as it could lock
+      // writing to other registers, which the automated tests are not aware of.
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
     },
 
   ],

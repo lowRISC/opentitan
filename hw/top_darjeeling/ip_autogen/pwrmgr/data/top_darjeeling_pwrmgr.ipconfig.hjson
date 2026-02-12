@@ -5,7 +5,7 @@
   instance_name: top_darjeeling_pwrmgr
   param_values:
   {
-    NumWkups: 4
+    NumWkups: 3
     Wkups:
     [
       {
@@ -17,11 +17,6 @@
         name: wkup_req
         width: "1"
         module: aon_timer_aon
-      }
-      {
-        name: wkup_internal_req
-        width: "1"
-        module: soc_proxy
       }
       {
         name: wkup_external_req
@@ -60,12 +55,14 @@
           width: "1"
           module: aon_timer_aon
           desc: Watchdog reset request.
+          enabled_after_reset: false
         }
         {
           name: rst_req_external
           width: "1"
           module: soc_proxy
           desc: External reset request
+          enabled_after_reset: true
         }
       ]
     }
@@ -79,5 +76,6 @@
     ]
     topname: darjeeling
     uniquified_modules: {}
+    module_instance_name: pwrmgr
   }
 }

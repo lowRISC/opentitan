@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # shellcheck shell=bash
 
+# REUSE-IgnoreStart
 add_license_banner() {
   local outfile="$1"
   local license_banner="# Copyright lowRISC contributors (OpenTitan project).
@@ -14,6 +15,7 @@ add_license_banner() {
   cat "$TMP" > "$outfile"
   rm -f "$TMP"
 }
+# REUSE-IgnoreEnd
 
 add_autogen_banner() {
   local outfile="$1"

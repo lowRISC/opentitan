@@ -4,10 +4,10 @@
 
 use std::time::Duration;
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use clap::Parser;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::{JtagTap, RiscvGpr, RiscvReg};
 use opentitanlib::test_utils::init::InitializeTest;
@@ -30,7 +30,7 @@ struct Opts {
 
 fn ibex_isa_smoke_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
 
     log::info!("Connecting to RISC-V TAP");
     let mut jtag = opts
@@ -46,17 +46,17 @@ fn ibex_isa_smoke_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
     uart.clear_rx_buffer()?;
 
     // Load SRAM program
-    let a0 = match opts.sram_program.load_and_execute(
+    match opts.sram_program.load_and_execute(
         &mut *jtag,
         ExecutionMode::JumpAndWait(Duration::from_secs(5)),
     )? {
-        ExecutionResult::ExecutionDone(a0) => {
+        ExecutionResult::ExecutionDone(_) => {
             log::info!("program successfully ran");
-            a0
         }
         res => bail!("program execution failed: {:?}", res),
     };
 
+    let a0 = jtag.read_riscv_reg(&RiscvReg::Gpr(RiscvGpr::A0))?;
     log::info!("Return Value (a0): {a0}");
     if a0 == 0 {
         let a1 = jtag.read_riscv_reg(&RiscvReg::Gpr(RiscvGpr::A1))?;

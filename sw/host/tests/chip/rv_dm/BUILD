@@ -12,9 +12,9 @@ rust_binary(
         "src/csr_rw.rs",
     ],
     deps = [
-        "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/opentitanlib",
-        "//sw/host/opentitanlib/bindgen",
+        "//sw/host/ot_hal",
+        "//sw/host/ot_hal/bindgen:dif",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
         "@crate_index//:humantime",
@@ -30,9 +30,9 @@ rust_binary(
         "src/mem_access.rs",
     ],
     deps = [
-        "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/opentitanlib",
-        "//sw/host/opentitanlib/bindgen",
+        "//sw/host/ot_hal",
+        "//sw/host/ot_hal/bindgen:dif",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
         "@crate_index//:humantime",
@@ -61,12 +61,11 @@ rust_binary(
         "src/jtag_tap_sel.rs",
     ],
     deps = [
-        "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/opentitanlib",
+        "//sw/host/ot_hal",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
         "@crate_index//:log",
-        "@crate_index//:once_cell",
         "@crate_index//:regex",
     ],
 )

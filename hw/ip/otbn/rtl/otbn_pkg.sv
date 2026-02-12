@@ -61,7 +61,7 @@ package otbn_pkg;
   // Register file implementation selection enum.
   typedef enum integer {
     RegFileFF    = 0, // Generic flip-flop based implementation
-    RegFileFPGA  = 1  // FPGA implmentation, does infer RAM primitives.
+    RegFileFPGA  = 1  // FPGA implementation, does infer RAM primitives.
   } regfile_e;
 
   // Command to execute. See the CMD register description in otbn.hjson for details.
@@ -467,7 +467,7 @@ package otbn_pkg;
     logic [NWdr-1:0] rf_ren_a;
     logic [NWdr-1:0] rf_ren_b;
     logic [NWdr-1:0] rf_we;
-  } rf_predec_bignum_t;
+  } rf_bignum_predec_t;
 
   typedef struct packed {
     logic                    adder_x_en;
@@ -489,17 +489,17 @@ package otbn_pkg;
     logic [NFlagGroups-1:0]  flags_logic_update;
     logic [NFlagGroups-1:0]  flags_mac_update;
     logic [NFlagGroups-1:0]  flags_ispr_wr;
-  } alu_predec_bignum_t;
+  } alu_bignum_predec_t;
 
   typedef struct packed {
     logic [NIspr-1:0] ispr_rd_en;
     logic [NIspr-1:0] ispr_wr_en;
-  } ispr_predec_bignum_t;
+  } ispr_bignum_predec_t;
 
   typedef struct packed {
     logic op_en;
     logic acc_rd_en;
-  } mac_predec_bignum_t;
+  } mac_bignum_predec_t;
 
   typedef struct packed {
     logic call_stack_pop;

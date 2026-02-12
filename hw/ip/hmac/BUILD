@@ -17,3 +17,11 @@ filegroup(
         "//hw/ip/hmac/data:all_files",
     ],
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = glob([
+        "**/*.md",
+        "**/*.svg",
+    ]) + ["//hw/ip/hmac/data:doc_files"],
+)

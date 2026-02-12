@@ -5,7 +5,7 @@
 class hmac_env_cfg extends cip_base_env_cfg #(.RAL_T(hmac_reg_block));
   `uvm_object_utils(hmac_env_cfg)
 
-  // A flag to nofity scoreboard if digest is corrupted by wipe_secret command.
+  // A flag to notify scoreboard if digest is corrupted by wipe_secret command.
   bit wipe_secret_triggered;
 
   // Flag to notify stress_all_with_rand_reset task that hash_process command is triggered.

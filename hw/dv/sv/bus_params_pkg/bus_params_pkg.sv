@@ -25,7 +25,7 @@ package bus_params_pkg;
   parameter int BUS_DBW = top_pkg::TL_DBW;
 `endif
 
-  // Set the bus transfer size width (# of bits requred to select the # of bytes).
+  // Set the bus transfer size width (# of bits required to select the # of bytes).
 `ifdef BUS_SZW
   parameter int BUS_SZW = `BUS_SZW;
 `else

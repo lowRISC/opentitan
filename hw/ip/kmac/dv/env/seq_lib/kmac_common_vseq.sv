@@ -74,4 +74,45 @@ class kmac_common_vseq extends kmac_base_vseq;
     end
   endfunction: sec_cm_fi_ctrl_svas
 
+  virtual function void set_kmac_csr_assert_en(bit enable);
+    if (!enable) begin
+      $assertoff(0, "tb.dut.kmac_csr_assert.intr_enable_rd_A");
+      $assertoff(0, "tb.dut.kmac_csr_assert.entropy_period_rd_A");
+      $assertoff(0, "tb.dut.kmac_csr_assert.prefix_0_rd_A");
+      $assertoff(0, "tb.dut.kmac_csr_assert.prefix_1_rd_A");
+      $assertoff(0, "tb.dut.kmac_csr_assert.prefix_2_rd_A");
+      $assertoff(0, "tb.dut.kmac_csr_assert.prefix_3_rd_A");
+      $assertoff(0, "tb.dut.kmac_csr_assert.prefix_4_rd_A");
+      $assertoff(0, "tb.dut.kmac_csr_assert.prefix_5_rd_A");
+      $assertoff(0, "tb.dut.kmac_csr_assert.prefix_6_rd_A");
+      $assertoff(0, "tb.dut.kmac_csr_assert.prefix_7_rd_A");
+      $assertoff(0, "tb.dut.kmac_csr_assert.prefix_8_rd_A");
+      $assertoff(0, "tb.dut.kmac_csr_assert.prefix_9_rd_A");
+      $assertoff(0, "tb.dut.kmac_csr_assert.prefix_10_rd_A");
+    end else begin
+      $asserton(0, "tb.dut.kmac_csr_assert.intr_enable_rd_A");
+      $asserton(0, "tb.dut.kmac_csr_assert.entropy_period_rd_A");
+      $asserton(0, "tb.dut.kmac_csr_assert.prefix_0_rd_A");
+      $asserton(0, "tb.dut.kmac_csr_assert.prefix_1_rd_A");
+      $asserton(0, "tb.dut.kmac_csr_assert.prefix_2_rd_A");
+      $asserton(0, "tb.dut.kmac_csr_assert.prefix_3_rd_A");
+      $asserton(0, "tb.dut.kmac_csr_assert.prefix_4_rd_A");
+      $asserton(0, "tb.dut.kmac_csr_assert.prefix_5_rd_A");
+      $asserton(0, "tb.dut.kmac_csr_assert.prefix_6_rd_A");
+      $asserton(0, "tb.dut.kmac_csr_assert.prefix_7_rd_A");
+      $asserton(0, "tb.dut.kmac_csr_assert.prefix_8_rd_A");
+      $asserton(0, "tb.dut.kmac_csr_assert.prefix_9_rd_A");
+      $asserton(0, "tb.dut.kmac_csr_assert.prefix_10_rd_A");
+    end
+  endfunction : set_kmac_csr_assert_en
+
+  virtual function void shadow_reg_err_ctrl_svas(bit enable, string path = "*");
+    set_kmac_csr_assert_en(enable);
+    super.shadow_reg_err_ctrl_svas(enable, path);
+  endfunction
+
+  virtual function void set_tl_assert_en(bit enable, string path = "*");
+    set_kmac_csr_assert_en(enable);
+    super.set_tl_assert_en(enable, path);
+  endfunction
 endclass

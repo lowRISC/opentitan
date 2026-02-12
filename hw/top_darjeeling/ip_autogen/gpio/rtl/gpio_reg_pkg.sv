@@ -17,6 +17,11 @@ package gpio_reg_pkg;
   // Number of registers for every interface
   parameter int NumRegs = 34;
 
+  // Alert indices
+  typedef enum int {
+    AlertFatalFaultIdx = 0
+  } gpio_alert_idx_t;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -156,19 +161,19 @@ package gpio_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [15:0] d;
-    } data;
+    } mask;
     struct packed {
       logic [15:0] d;
-    } mask;
+    } data;
   } gpio_hw2reg_masked_out_lower_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] d;
-    } data;
+    } mask;
     struct packed {
       logic [15:0] d;
-    } mask;
+    } data;
   } gpio_hw2reg_masked_out_upper_reg_t;
 
   typedef struct packed {
@@ -178,19 +183,19 @@ package gpio_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [15:0] d;
-    } data;
+    } mask;
     struct packed {
       logic [15:0] d;
-    } mask;
+    } data;
   } gpio_hw2reg_masked_oe_lower_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] d;
-    } data;
+    } mask;
     struct packed {
       logic [15:0] d;
-    } mask;
+    } data;
   } gpio_hw2reg_masked_oe_upper_reg_t;
 
   typedef struct packed {
@@ -205,9 +210,17 @@ package gpio_reg_pkg;
 
   typedef struct packed {
     struct packed {
+      logic [7:0]  d;
+      logic        de;
+    } prescaler;
+    struct packed {
+      logic [7:0]  d;
+      logic        de;
+    } input_select;
+    struct packed {
       logic        d;
       logic        de;
-    } enable;
+    } polarity;
     struct packed {
       logic        d;
       logic        de;
@@ -215,15 +228,7 @@ package gpio_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } polarity;
-    struct packed {
-      logic [7:0]  d;
-      logic        de;
-    } input_select;
-    struct packed {
-      logic [7:0]  d;
-      logic        de;
-    } prescaler;
+    } enable;
   } gpio_hw2reg_inp_prd_cnt_ctrl_mreg_t;
 
   typedef struct packed {

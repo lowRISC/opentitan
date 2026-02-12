@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// This clas provides knobs to set the weights for various seq random variables.
+// This class provides knobs to set the weights for various seq random variables.
 class flash_ctrl_seq_cfg extends uvm_object;
   `uvm_object_utils(flash_ctrl_seq_cfg)
 
   // Randomization weights in percentages, and other related settings.
 
-  // Maximun number of times the vseq is randomized and rerun.
+  // Maximum number of times the vseq is randomized and rerun.
   uint max_num_trans;
 
   // Memory protection configuration.
@@ -111,7 +111,7 @@ class flash_ctrl_seq_cfg extends uvm_object;
   // Set by a higher level vseq that invokes this vseq.
   bit external_cfg;
 
-  // If pre-transaction back-door memory preperation isn't needed, set do_tran_prep_mem to 0.
+  // If pre-transaction back-door memory preparation isn't needed, set do_tran_prep_mem to 0.
   bit do_tran_prep_mem;
 
   // When 0, the post-transaction back-door checks will be disabled.
@@ -279,7 +279,7 @@ class flash_ctrl_seq_cfg extends uvm_object;
 
     disable_flash_init = 1'b0;  // Off
 
-    flash_path_str = "tb.dut.u_eflash.u_flash.gen_generic.u_impl_generic";
+    flash_path_str = "tb.dut.u_eflash.u_flash";
 
     // NOTE: Make sure to keep
     // cfg.flash_ctrl_vif.rst_to_pd_time_ns < reset_width_clks_lo * min clock period in ns.

@@ -52,9 +52,9 @@
       local: "false",
       expose: "true",
     },
-    { name: "SysRacl",
-      desc: "Value of `racl_vec` field in `sys` output",
-      type: "logic [dma_pkg::SYS_RACL_WIDTH-1:0]"
+    { name: "SysRaclRole",
+      desc: "RACL propagated on the Sys interface via `racl_vec`",
+      type: "top_racl_pkg::racl_role_t"
       default: "'0",
       local: "false",
       expose: "true",
@@ -81,6 +81,7 @@
       package: "dma_pkg"
       act: "req"
       width: "1"
+      desc: "SoC System Bus (requests and responses), synchronous"
     }
     { struct:  "tl_h2d"
       package: "tlul_pkg"
@@ -145,6 +146,9 @@
     }
     { name: "RANGE.CONFIG.REGWEN_MUBI",
       desc: "DMA enabled memory range is software multibit lockable."
+    }
+    { name: "FSM.SPARSE",
+      desc: "FSM is sparsely encoded. There is a single `ctrl_state` FSM."
     }
   ]
   regwidth: "32"
@@ -232,7 +236,7 @@
       ]
     }
     { name: "ADDR_SPACE_ID"
-      desc: "Address space that source and destination pointers refer to."
+      desc: "Address spaces that source and destination pointers refer to."
       swaccess: "rw"
       hwaccess: "hro"
       regwen: "CFG_REGWEN"
@@ -251,7 +255,7 @@
               desc: "SoC control register bus using 32-bit (or 64 bits if configured by an SoC) control port."
             }
             { value: "0x9"
-              name: SYS_ADDR"
+              name: "SYS_ADDR"
               desc: "SoC system address bus using 64 bit SYS port."
             }
           ]
@@ -270,7 +274,7 @@
               desc: "SoC control register bus using 32-bit (or 64 bits if configured by an SoC) control port."
             }
             { value: "0x9"
-              name: SYS_ADDR"
+              name: "SYS_ADDR"
               desc: "SoC system address bus using 64 bit SYS port."
             }
           ]
@@ -293,7 +297,7 @@
       tags: ["excl:CsrAllTests:CsrExclWrite"]
     }
     { name: "ENABLED_MEMORY_RANGE_LIMIT"
-      desc: "Limit Address to mark the end of the DMA enabled memory range within the OT internal memory space."
+      desc: "Limit Address to mark the end of the DMA enabled memory range within the OT internal memory space; address is inclusive."
       swaccess: "rw"
       hwaccess: "hro"
       hwqe: "true"
@@ -302,7 +306,7 @@
         { bits: "31:0"
           name: "limit"
           resval: 0x0
-          desc: "Limit Address to mark the end of the DMA enabled memory range within the OT internal memory space."
+          desc: "Limit Address to mark the end of the DMA enabled memory range within the OT internal memory space; inclusive."
         }
       ]
       tags: ["excl:CsrAllTests:CsrExclWrite"]
@@ -346,7 +350,7 @@
       desc: '''
             Indicates whether the configuration registers are locked because the DMA controller is operating.
             In the idle state, this register is set to kMultiBitBool4True.
-            When the DMA is performing an operation, i.e., the DMA is busy, this register is set to kMultiBitBool4False.
+            When the DMA is performing an operation, i.e. the DMA is busy, this register is set to kMultiBitBool4False.
             During the DMA operation, the CONTROL and STATUS registers remain usable.
             The comportable registers (the interrupt and alert configuration) are NOT locked during the DMA operation and can still be updated.
             When the DMA reaches an interrupt or alert condition, it will perform the action according to the current register configuration.
@@ -370,7 +374,7 @@
       tags: ["excl:CsrAllTests:CsrExclWrite"]
     }
     { name: "TOTAL_DATA_SIZE"
-      desc: "Total size of the data blob involved in DMA movement."
+      desc: "Total size (in bytes) of the data to be transferred."
       swaccess: "rw"
       hwaccess: "hro"
       regwen: "CFG_REGWEN"
@@ -379,11 +383,12 @@
           name: "data_size"
           resval: 0x0
           desc: '''
-                Total size (in bytes) of the data blob involved in DMA movement for multiple transfers.
+                Total size (in bytes) of the data to be transferred. The complete transfer operation
+                may consist of multiple chunks of data as specified by the CHUNK_DATA_SIZE register.
 
                 Minimum: 1 byte.
                 Maximum: May be restricted to a maximum pre-defined size based on OT DMA enabled memory space allocation.
-                Works in conjunction with Transfer width register.
+                Works in conjunction with the TRANSFER_WIDTH register.
                 '''
         }
       ]
@@ -404,7 +409,7 @@
 
                 Minimum: 1 byte.
                 Maximum: May be restricted to a maximum pre-defined size based on OT DMA enabled memory space allocation.
-                Works in conjunction with Transfer width register.
+                Works in conjunction with the TRANSFER_WIDTH register.
                 '''
         }
       ]
@@ -421,7 +426,7 @@
           desc: '''
                 Denotes the width of each transaction that the DMA shall issue during the data movement.
 
-                Multiple transactions of this width will be issued until total size number of bytes are reached.
+                Multiple transactions of this width will be issued until TOTAL_DATA_SIZE bytes have been transferred.
                 Note that firmware may need to set a different value if a receiving IP supports a read / write transaction width that is less than 1 DWORD.
                 This does not affect the wrap-around mechanism.
                 Note that the value 3 for this register represents an invalid configuration that leads to an error.
@@ -526,8 +531,8 @@
           hwaccess: "hrw"
           hwqe: "true"
           desc: '''
-                Trigger the DMA operation when the Go bit is set.
-                For normal operation, DMA engine clears the GO bit automatically after the configured operation is complete.
+                Setting this bit triggers the DMA operation.
+                For normal operation, the DMA engine clears the `go` bit automatically after the configured operation is complete.
                 For Hardware handshake operation, DMA engine does not auto clear the Go bit.
                 Firmware shall clear the Go bit when it intends to stop the hardware handshake operation.
                 '''
@@ -549,10 +554,11 @@
           name: "wrap"
           resval: 0x0
           desc: '''
-                When 1: Source address wrapped back to the starting address when finishing a chunk.
+                When 0: Chunks occupy contiguous ascending addresses.
+                When 1: Source address wraps back to the starting address when finishing a chunk.
                 '''
         }
-        { bits: 0
+        { bits: "0"
           name: "increment"
           resval: 0x0
           desc: '''
@@ -575,7 +581,8 @@
           name: "wrap"
           resval: 0x0
           desc: '''
-                When 1: Destination address wrapped back to the starting address when finishing a chunk.
+                When 0: Chunks occupy contiguous ascending addresses.
+                When 1: Destination address wraps back to the starting address when finishing a chunk.
                 '''
         }
         { bits: "0"

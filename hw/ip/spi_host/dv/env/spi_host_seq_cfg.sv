@@ -7,20 +7,23 @@ class spi_host_seq_cfg extends uvm_object;
   `uvm_object_utils(spi_host_seq_cfg)
 
   // knobs for number of requests sent to dut
-  uint host_spi_min_trans             = 10;
-  uint host_spi_max_trans             = 20;
+  uint host_spi_min_trans             = 2;
+  uint host_spi_max_trans             = 5;
 
   // knobs for number of retry after reset
   // for stress_all, error_intr, stress_all_with_rand_reset
-  uint host_spi_min_runs              = 5;
-  uint host_spi_max_runs              = 10;
+  uint host_spi_min_runs              = 2;
+  uint host_spi_max_runs              = 3;
 
   // knobs for dut's config registers
   uint host_spi_min_csn_latency       = 0;
   uint host_spi_max_csn_latency       = 15;
+  // Several ranges of clock ratio to allow constraints to use a closer
+  // to spi-host_core clock ratio in most tests
   uint host_spi_min_clkdiv            = 0;
   uint host_spi_lower_middle_clkdiv   = 16'hF;
-  uint host_spi_middle_clkdiv         = 16'hFF;
+  uint host_spi_middle_clkdiv         = 16'hF0;
+  uint host_spi_upper_middle_clkdiv   = 16'hFF;
   uint host_spi_max_clkdiv            = 16'hFFFF;
   uint host_spi_min_len               = 3;
   uint host_spi_max_len               = 6;
@@ -48,11 +51,11 @@ class spi_host_seq_cfg extends uvm_object;
   bit  quad_en                        = 0;
 
 
-  // the direction knobs are speciel,
-  // the setting is vs standart
+  // the direction knobs are special,
+  // the setting is vs standard
   // i.e a rx pc of 20 will result in
   // 20 of RX transactions will be RX only the
-  // remailing 80% will be standard.
+  // remaining 80% will be standard.
   // similar for tx pct
   // i.e the rx setting does not affect
   // the tx distribution

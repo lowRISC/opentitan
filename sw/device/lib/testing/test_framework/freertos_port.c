@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "dt/dt_rv_timer.h"
 #include "external/freertos/include/FreeRTOS.h"
 #include "external/freertos/include/task.h"
 #include "external/freertos/portable/GCC/RISC-V/portmacro.h"
+#include "hw/top/dt/rv_timer.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/dif/dif_rv_timer.h"
 #include "sw/device/lib/runtime/irq.h"

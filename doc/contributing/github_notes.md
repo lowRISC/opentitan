@@ -389,6 +389,16 @@ be used as expected.
 
 You may find it useful to change the default for the way git reports conflicts in a file. See [Take the pain out of git conflict resolution: use diff3](https://blog.nilbus.com/take-the-pain-out-of-git-conflict-resolution-use-diff3/)
 
+## Adding changes to commits on an existing branch
+
+Sometimes it might be necessary to modify individual commits of a branch.
+In such cases, you can use the `git commit --fixup=<commit>`.
+This creates a fixup commit which changes the content of `<commit>` but leaves its log message untouched.
+The commit created has a subject composed of `fixup!` followed by the subject line from the commit.
+The fixup commit is squashed into `<commit>` by `git rebase --autosquash <commit>~1`.
+It could also be useful to set the `rebase.autosquash` setting to `true` using `git config --global rebase.autosquash true`.
+This way, `--autosquash` does not have to be added to the command all the time.
+
 ## Downloading a pull request to our local repo
 
 With the commands below, you can checkout a pull request from the upstream repository to

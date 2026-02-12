@@ -5,10 +5,13 @@ CAPI=2:
 
 name: "lowrisc:prim_xilinx:clock_mux2"
 description: "two-input clock multiplexer primitive"
+virtual:
+  - lowrisc:prim:clock_mux2
+
 filesets:
   files_rtl:
     files:
-      - rtl/prim_xilinx_clock_mux2.sv
+      - rtl/prim_clock_mux2.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:

@@ -46,6 +46,7 @@
 `include "usbdev_pkt_sent_vseq.sv"
 `include "usbdev_random_length_out_transaction_vseq.sv"
 `include "usbdev_resume_link_active_vseq.sv"
+`include "usbdev_rxenable_out_vseq.sv"
 `include "usbdev_rx_crc_err_vseq.sv"
 `include "usbdev_rx_full_vseq.sv"
 `include "usbdev_rx_pid_err_vseq.sv"

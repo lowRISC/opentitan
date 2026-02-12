@@ -13,18 +13,23 @@ class soc_dbg_ctrl_env extends cip_base_env #(
   tl_agent tl_jtag_agt;
 
   // Standard SV/UVM methods
-  extern function new(string name="", uvm_component parent=null);
+  extern function new(string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
   extern function void connect_phase(uvm_phase phase);
 endclass : soc_dbg_ctrl_env
 
 
-function soc_dbg_ctrl_env::new(string name="", uvm_component parent=null);
+function soc_dbg_ctrl_env::new(string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
 
 function void soc_dbg_ctrl_env::build_phase(uvm_phase phase);
   super.build_phase(phase);
+
+  // Retrieve the soc_dbg_ctrl_misc_io_if virtual interface
+  if (!uvm_config_db#(misc_vif_t)::get(this, "", "misc_vif", cfg.misc_vif)) begin
+    `uvm_fatal(`gfn, "Failed to get misc_vif from uvm_config_db")
+  end
 endfunction : build_phase
 
 function void soc_dbg_ctrl_env::connect_phase(uvm_phase phase);

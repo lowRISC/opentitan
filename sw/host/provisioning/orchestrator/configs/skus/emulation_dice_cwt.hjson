@@ -1,0 +1,27 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+{
+  name: "emulation_dice_cwt",
+  product: "earlgrey_a2",
+  si_creator: "nuvoton",
+  package: "npcr10",
+  target_lc_state: "prod",
+  otp: "em00",
+  perso_bin: "sw/device/silicon_creator/manuf/base/ft_personalize_{sku}_{target}.prod_key_0.prod_key_0.signed.bin",
+  owner_fw_boot_str: "Bare metal PASS!",
+  dice_ca: {
+    certificate: "sw/device/silicon_creator/manuf/keys/fake/dice_ca.pem",
+    key: "sw/device/silicon_creator/manuf/keys/fake/sk.pkcs8.der",
+    key_type: "Raw",
+    key_id: "0xfe584ae7_53790cfd_8601a312_fb32d3c1_b822d112"
+  }
+  ext_ca: {
+    certificate: "sw/device/silicon_creator/manuf/keys/fake/ext_ca.pem",
+    key: "sw/device/silicon_creator/manuf/keys/fake/sk.pkcs8.der",
+    key_type: "Raw",
+    key_id: "0xfe584ae7_53790cfd_8601a312_fb32d3c1_b822d112"
+  }
+  token_encrypt_key: "sw/device/silicon_creator/manuf/keys/fake/rma_unlock_enc_rsa3072.pub.der"
+}

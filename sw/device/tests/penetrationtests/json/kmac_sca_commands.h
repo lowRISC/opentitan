@@ -10,8 +10,9 @@ extern "C" {
 #endif
 
 #define KMACSCA_CMD_MAX_BATCH_DIGEST_BYTES 32
+#define KMACSCA_CMD_MAX_DIGEST_BYTES 16
 #define KMACSCA_CMD_MAX_DATA_BYTES 16
-#define KMACSCA_CMD_MAX_KEY_BYTES 16
+#define KMACSCA_CMD_MAX_KEY_BYTES 32
 #define KMACSCA_CMD_MAX_LFSR_BYTES 4
 #define KMACSCA_CMD_MAX_MSG_BYTES 16
 
@@ -22,9 +23,11 @@ extern "C" {
     value(_, SetKey) \
     value(_, SingleAbsorb) \
     value(_, Batch) \
+    value(_, BatchDaisy) \
     value(_, FixedKeySet) \
     value(_, SeedLfsr)
-UJSON_SERDE_ENUM(KmacScaSubcommand, kmac_sca_subcommand_t, KMAC_SCA_SUBCOMMAND);
+C_ONLY(UJSON_SERDE_ENUM(KmacScaSubcommand, kmac_sca_subcommand_t, KMAC_SCA_SUBCOMMAND));
+RUST_ONLY(UJSON_SERDE_ENUM(KmacScaSubcommand, kmac_sca_subcommand_t, KMAC_SCA_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
 #define KMAC_SCA_KEY(field, string) \
     field(key, uint8_t, KMACSCA_CMD_MAX_KEY_BYTES) \
@@ -51,6 +54,10 @@ UJSON_SERDE_STRUCT(CryptotestKmacScaMsg, cryptotest_kmac_sca_msg_t, KMAC_SCA_MSG
 #define KMAC_SCA_BATCH_DIGEST(field, string) \
     field(batch_digest, uint8_t, KMACSCA_CMD_MAX_BATCH_DIGEST_BYTES)
 UJSON_SERDE_STRUCT(CryptotestKmacScaBatchDigest, cryptotest_kmac_sca_batch_digest_t, KMAC_SCA_BATCH_DIGEST);
+
+#define KMAC_SCA_DIGEST(field, string) \
+    field(digest, uint8_t, KMACSCA_CMD_MAX_DIGEST_BYTES)
+UJSON_SERDE_STRUCT(CryptotestKmacScaDigest, cryptotest_kmac_sca_digest_t, KMAC_SCA_DIGEST);
 
 // clang-format on
 

@@ -15,6 +15,12 @@ package otbn_reg_pkg;
   // Number of registers for every interface
   parameter int NumRegs = 11;
 
+  // Alert indices
+  typedef enum int {
+    AlertFatalIdx = 0,
+    AlertRecovIdx = 1
+  } otbn_alert_idx_t;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -147,79 +153,59 @@ package otbn_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        d;
-    } bad_data_addr;
-    struct packed {
-      logic        d;
-    } bad_insn_addr;
-    struct packed {
-      logic        d;
-    } call_stack;
-    struct packed {
-      logic        d;
-    } illegal_insn;
-    struct packed {
-      logic        d;
-    } loop;
-    struct packed {
-      logic        d;
-    } key_invalid;
-    struct packed {
-      logic        d;
-    } rnd_rep_chk_fail;
-    struct packed {
-      logic        d;
-    } rnd_fips_chk_fail;
-    struct packed {
-      logic        d;
-    } imem_intg_violation;
-    struct packed {
-      logic        d;
-    } dmem_intg_violation;
-    struct packed {
-      logic        d;
-    } reg_intg_violation;
-    struct packed {
-      logic        d;
-    } bus_intg_violation;
-    struct packed {
-      logic        d;
-    } bad_internal_state;
-    struct packed {
-      logic        d;
-    } illegal_bus_access;
+    } fatal_software;
     struct packed {
       logic        d;
     } lifecycle_escalation;
     struct packed {
       logic        d;
-    } fatal_software;
+    } illegal_bus_access;
+    struct packed {
+      logic        d;
+    } bad_internal_state;
+    struct packed {
+      logic        d;
+    } bus_intg_violation;
+    struct packed {
+      logic        d;
+    } reg_intg_violation;
+    struct packed {
+      logic        d;
+    } dmem_intg_violation;
+    struct packed {
+      logic        d;
+    } imem_intg_violation;
+    struct packed {
+      logic        d;
+    } rnd_fips_chk_fail;
+    struct packed {
+      logic        d;
+    } rnd_rep_chk_fail;
+    struct packed {
+      logic        d;
+    } key_invalid;
+    struct packed {
+      logic        d;
+    } loop;
+    struct packed {
+      logic        d;
+    } illegal_insn;
+    struct packed {
+      logic        d;
+    } call_stack;
+    struct packed {
+      logic        d;
+    } bad_insn_addr;
+    struct packed {
+      logic        d;
+    } bad_data_addr;
   } otbn_hw2reg_err_bits_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
-    } imem_intg_violation;
-    struct packed {
-      logic        d;
-      logic        de;
-    } dmem_intg_violation;
-    struct packed {
-      logic        d;
-      logic        de;
-    } reg_intg_violation;
-    struct packed {
-      logic        d;
-      logic        de;
-    } bus_intg_violation;
-    struct packed {
-      logic        d;
-      logic        de;
-    } bad_internal_state;
-    struct packed {
-      logic        d;
-      logic        de;
-    } illegal_bus_access;
+    } fatal_software;
     struct packed {
       logic        d;
       logic        de;
@@ -227,7 +213,27 @@ package otbn_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } fatal_software;
+    } illegal_bus_access;
+    struct packed {
+      logic        d;
+      logic        de;
+    } bad_internal_state;
+    struct packed {
+      logic        d;
+      logic        de;
+    } bus_intg_violation;
+    struct packed {
+      logic        d;
+      logic        de;
+    } reg_intg_violation;
+    struct packed {
+      logic        d;
+      logic        de;
+    } dmem_intg_violation;
+    struct packed {
+      logic        d;
+      logic        de;
+    } imem_intg_violation;
   } otbn_hw2reg_fatal_alert_cause_reg_t;
 
   typedef struct packed {

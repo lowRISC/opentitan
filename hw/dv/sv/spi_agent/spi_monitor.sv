@@ -58,10 +58,10 @@ class spi_monitor extends dv_base_monitor#(
     cfg.ongoing_flash_cmd = null;
 
     // Currently only used in spi_host where the SPI bus is sampled without
-    // any segement order expectation
+    // any segment order expectation
     plain_sampling_analysis_port.write(plain_item);
     if (cfg.enable_plain_sampling) begin
-      // Currently used in the spi_device scoreboard. It triggeres SV events on a per-byte basis and
+      // Currently used in the spi_device scoreboard. It triggers SV events on a per-byte basis and
       // when the transaction finishes.
       csb_active_analysis_port.write(host_item);
     end
@@ -107,6 +107,8 @@ class spi_monitor extends dv_base_monitor#(
         `uvm_info(`gfn, "Triggering 'host_item.item_finished' since CSB just became inactive",
                   UVM_DEBUG)
         if (flash_opcode_received) begin
+          if (!host_item.write_command)
+            host_item.read_size = host_item.payload_q.size;
           host_analysis_port.write(host_item);
           host_item.mon_item_complete = 1;
         end
@@ -278,7 +280,7 @@ class spi_monitor extends dv_base_monitor#(
                                      // output
                                      num_addr_bytes, item.write_command, item.num_lanes,
                                      item.dummy_cycles, item.read_pipeline_mode);
-    // Assigned right after op-code is recieved
+    // Assigned right after op-code is received
     cfg.ongoing_flash_cmd = item;
     `uvm_info(`gfn, $sformatf("sampled flash opcode: 0x%0h", item.opcode), UVM_HIGH)
     item.terminated_before_dummy_cycles = 1;
@@ -297,11 +299,7 @@ class spi_monitor extends dv_base_monitor#(
       cfg.wait_sck_edge(SamplingEdge, active_csb);
     end
     item.past_dummies = 1;
-    `uvm_info(`gfn, $sformatf("Sending {opcode=0x%0x,address=%p} on the 'req_analysis_port'",
-                              item.opcode, item.address_q), UVM_DEBUG)
     item.terminated_before_dummy_cycles = 0;
-
-    req_analysis_port.write(item);
 
     if (cfg.if_mode == dv_utils_pkg::Device) begin
       `uvm_info(`gfn, {"spi monitor is configured in Device mode -> don't need to add extra",
@@ -318,6 +316,10 @@ class spi_monitor extends dv_base_monitor#(
                     ,item.dummy_cycles, (item.read_pipeline_mode &&
                     cfg.if_mode != dv_utils_pkg::Device)  ? 2 : 0), UVM_DEBUG)
 
+    // Item sent after opcode, address, dummies and read pipeline delay
+    `uvm_info(`gfn, $sformatf("Sending {opcode=0x%0x,address=%p} on the 'req_analysis_port'",
+                              item.opcode, item.address_q), UVM_DEBUG)
+    req_analysis_port.write(item);
     `uvm_info(`gfn, "Triggering 'dummy_cycles_ev' after dummy_cycles+read_pipeline(if any)",
               UVM_DEBUG)
     -> host_item.dummy_cycles_ev;

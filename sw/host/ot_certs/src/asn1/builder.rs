@@ -6,7 +6,7 @@
 //! document. The particularity of this trait is that the base values
 //! are of type `Value<T>` which can either be literals or variables.
 
-use anyhow::{ensure, Result};
+use anyhow::{Result, ensure};
 use num_bigint_dig::BigUint;
 
 use crate::asn1::{Oid, Tag};

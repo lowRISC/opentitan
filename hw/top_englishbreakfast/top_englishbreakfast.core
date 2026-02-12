@@ -9,6 +9,8 @@ filesets:
     depend:
       - lowrisc:englishbreakfast_ip:pwrmgr_pkg
       - lowrisc:earlgrey_ip:alert_handler_pkg
+      - lowrisc:systems:top_englishbreakfast_ast_pkg
+      - lowrisc:englishbreakfast_constants:top_racl_pkg
       # Manually instantiated
       - lowrisc:ip:rv_dm
       - lowrisc:ip:tlul
@@ -43,10 +45,18 @@ filesets:
       - lowrisc:ip:aon_timer
       - lowrisc:tlul:headers
       - lowrisc:systems:top_englishbreakfast_pkg
+      - lowrisc:englishbreakfast_constants:top_pkg
     files:
-      - rtl/autogen/top_englishbreakfast_rnd_cnst_pkg.sv
       - rtl/autogen/top_englishbreakfast.sv
     file_type: systemVerilogSource
+
+  files_rtl_testing:
+    depend:
+      - lowrisc:englishbreakfast_constants:testing_rnd_cnst_pkg
+
+  files_rtl_tapeout:
+    depend:
+      - lowrisc:englishbreakfast_constants:prod_rnd_cnst_pkg
 
   files_verilator_waiver:
     depend:
@@ -80,31 +90,25 @@ parameters:
   SYNTHESIS:
     datatype: bool
     paramtype: vlogdefine
-  # For value definition, please see ip/prim/rtl/prim_pkg.sv
-  PRIM_DEFAULT_IMPL:
-    datatype: str
-    paramtype: vlogdefine
-    description: Primitives implementation to use, e.g. "prim_pkg::ImplGeneric".
-    default: prim_pkg::ImplGeneric
 
 
 targets:
   default: &default_target
     filesets:
-      - tool_verilator   ? (files_verilator_waiver)
-      - tool_ascentlint  ? (files_ascentlint_waiver)
-      - tool_veriblelint ? (files_veriblelint_waiver)
+      - tool_verilator    ? (files_verilator_waiver)
+      - tool_ascentlint   ? (files_ascentlint_waiver)
+      - tool_veriblelint  ? (files_veriblelint_waiver)
+      - fileset_tapeout   ? (files_rtl_tapeout)
+      - "!fileset_tapeout ? (files_rtl_testing)"
       - files_rtl_generic
-    parameters:
-      - PRIM_DEFAULT_IMPL=prim_pkg::ImplGeneric
     toplevel: top_englishbreakfast
 
   sim:
     default_tool: icarus
     filesets:
+      - fileset_tapeout   ? (files_rtl_tapeout)
+      - "!fileset_tapeout ? (files_rtl_testing)"
       - files_rtl_generic
-    parameters:
-      - PRIM_DEFAULT_IMPL=prim_pkg::ImplGeneric
     toplevel: top_englishbreakfast
 
   lint:

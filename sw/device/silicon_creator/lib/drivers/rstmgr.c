@@ -6,6 +6,9 @@
 
 #include <assert.h>
 
+#include "hw/top/dt/api.h"
+#include "hw/top/dt/rstmgr.h"
+#include "rstmgr.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
@@ -17,35 +20,35 @@
 #include "sw/device/lib/runtime/hart.h"
 #endif
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otp_ctrl_regs.h"
-#include "rstmgr_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
+#include "hw/top/rstmgr_regs.h"
 
-enum {
-  kBase = TOP_EARLGREY_RSTMGR_AON_BASE_ADDR,
-};
+static inline uint32_t rstmgr_base(void) {
+  return dt_rstmgr_primary_reg_block(kDtRstmgrAon);
+}
 
 void rstmgr_alert_info_collect(rstmgr_info_t *info) {
   info->length = bitfield_field32_read(
-      abs_mmio_read32(kBase + RSTMGR_ALERT_INFO_ATTR_REG_OFFSET),
+      abs_mmio_read32(rstmgr_base() + RSTMGR_ALERT_INFO_ATTR_REG_OFFSET),
       RSTMGR_ALERT_INFO_ATTR_CNT_AVAIL_FIELD);
   for (uint32_t i = 0; i < info->length; ++i) {
     abs_mmio_write32(
-        kBase + RSTMGR_ALERT_INFO_CTRL_REG_OFFSET,
+        rstmgr_base() + RSTMGR_ALERT_INFO_CTRL_REG_OFFSET,
         bitfield_field32_write(0, RSTMGR_ALERT_INFO_CTRL_INDEX_FIELD, i));
-    info->info[i] = abs_mmio_read32(kBase + RSTMGR_ALERT_INFO_REG_OFFSET);
+    info->info[i] =
+        abs_mmio_read32(rstmgr_base() + RSTMGR_ALERT_INFO_REG_OFFSET);
   }
 }
 
 void rstmgr_cpu_info_collect(rstmgr_info_t *info) {
   info->length = bitfield_field32_read(
-      abs_mmio_read32(kBase + RSTMGR_CPU_INFO_ATTR_REG_OFFSET),
+      abs_mmio_read32(rstmgr_base() + RSTMGR_CPU_INFO_ATTR_REG_OFFSET),
       RSTMGR_CPU_INFO_ATTR_CNT_AVAIL_FIELD);
   for (uint32_t i = 0; i < info->length; ++i) {
     abs_mmio_write32(
-        kBase + RSTMGR_CPU_INFO_CTRL_REG_OFFSET,
+        rstmgr_base() + RSTMGR_CPU_INFO_CTRL_REG_OFFSET,
         bitfield_field32_write(0, RSTMGR_CPU_INFO_CTRL_INDEX_FIELD, i));
-    info->info[i] = abs_mmio_read32(kBase + RSTMGR_CPU_INFO_REG_OFFSET);
+    info->info[i] = abs_mmio_read32(rstmgr_base() + RSTMGR_CPU_INFO_REG_OFFSET);
   }
 }
 
@@ -57,41 +60,23 @@ uint32_t rstmgr_reason_get(void) {
   REASON_ASSERT(kRstmgrReasonPowerOn, RSTMGR_RESET_INFO_POR_BIT);
   REASON_ASSERT(kRstmgrReasonLowPowerExit,
                 RSTMGR_RESET_INFO_LOW_POWER_EXIT_BIT);
-  REASON_ASSERT(kRstmgrReasonSysrstCtrl,
-                RSTMGR_RESET_INFO_HW_REQ_OFFSET +
-                    kTopEarlgreyPowerManagerResetRequestsSysrstCtrlAonRstReq);
-  REASON_ASSERT(
-      kRstmgrReasonWatchdog,
-      RSTMGR_RESET_INFO_HW_REQ_OFFSET +
-          kTopEarlgreyPowerManagerResetRequestsAonTimerAonAonTimerRstReq);
-
-  // Alert escalation is one bit after the reset request index for the last
-  // peripheral.
-  REASON_ASSERT(kRstmgrReasonEscalation,
-                RSTMGR_RESET_INFO_HW_REQ_OFFSET +
-                    kTopEarlgreyPowerManagerResetRequestsLast + 2)
-
-  // Check that the last index corresponds to the last bit in HW_REQ.
-  static_assert(
-      ((1 << (kRstmgrReasonLast - RSTMGR_RESET_INFO_HW_REQ_OFFSET + 1)) - 1) ==
-          RSTMGR_RESET_INFO_HW_REQ_MASK,
-      "kRstmgrReasonLast value incorrect.");
+  REASON_ASSERT(kRstmgrReasonHardwareRequest, RSTMGR_RESET_INFO_HW_REQ_OFFSET);
 
 #undef REASON_ASSERT
 
-  return abs_mmio_read32(kBase + RSTMGR_RESET_INFO_REG_OFFSET);
+  return abs_mmio_read32(rstmgr_base() + RSTMGR_RESET_INFO_REG_OFFSET);
 }
 
 void rstmgr_reason_clear(uint32_t reasons) {
-  abs_mmio_write32(kBase + RSTMGR_RESET_INFO_REG_OFFSET, reasons);
+  abs_mmio_write32(rstmgr_base() + RSTMGR_RESET_INFO_REG_OFFSET, reasons);
 }
 
 void rstmgr_alert_info_enable(void) {
-  abs_mmio_write32(kBase + RSTMGR_ALERT_INFO_CTRL_REG_OFFSET, 1);
+  abs_mmio_write32(rstmgr_base() + RSTMGR_ALERT_INFO_CTRL_REG_OFFSET, 1);
 }
 
 void rstmgr_cpu_info_enable(void) {
-  abs_mmio_write32(kBase + RSTMGR_CPU_INFO_CTRL_REG_OFFSET, 1);
+  abs_mmio_write32(rstmgr_base() + RSTMGR_CPU_INFO_CTRL_REG_OFFSET, 1);
 }
 
 rom_error_t rstmgr_info_en_check(uint32_t reset_reasons) {
@@ -117,13 +102,13 @@ rom_error_t rstmgr_info_en_check(uint32_t reset_reasons) {
   // Prepare the expected OTP value from rstmgr.
   uint32_t alert_info = launder32(kHardenedByteBoolFalse);
   if (bitfield_bit32_read(
-          abs_mmio_read32(kBase + RSTMGR_ALERT_INFO_CTRL_REG_OFFSET),
+          abs_mmio_read32(rstmgr_base() + RSTMGR_ALERT_INFO_CTRL_REG_OFFSET),
           RSTMGR_ALERT_INFO_CTRL_EN_BIT)) {
     alert_info ^= launder32(kByteTrueXorFalse);
   }
   uint32_t cpu_info = launder32(kHardenedByteBoolFalse);
   if (bitfield_bit32_read(
-          abs_mmio_read32(kBase + RSTMGR_CPU_INFO_CTRL_REG_OFFSET),
+          abs_mmio_read32(rstmgr_base() + RSTMGR_CPU_INFO_CTRL_REG_OFFSET),
           RSTMGR_CPU_INFO_CTRL_EN_BIT)) {
     cpu_info ^= launder32(kByteTrueXorFalse);
   }
@@ -152,11 +137,39 @@ rom_error_t rstmgr_info_en_check(uint32_t reset_reasons) {
 }
 
 void rstmgr_reset(void) {
-  abs_mmio_write32(kBase + RSTMGR_RESET_REQ_REG_OFFSET, kMultiBitBool4True);
+  abs_mmio_write32(rstmgr_base() + RSTMGR_RESET_REQ_REG_OFFSET,
+                   kMultiBitBool4True);
 #ifdef OT_PLATFORM_RV32
   // Wait until the chip resets.
   while (true) {
     wait_for_interrupt();
   }
 #endif
+}
+
+bool rstmgr_is_hw_reset_reason(dt_rstmgr_t dt, uint32_t reasons,
+                               dt_instance_id_t inst_id, size_t reset_req) {
+  for (size_t idx = 0; idx < dt_rstmgr_hw_reset_req_src_count(dt); idx++) {
+    if (!(reasons & (1 << (idx + RSTMGR_RESET_INFO_HW_REQ_OFFSET)))) {
+      continue;
+    }
+
+    dt_rstmgr_reset_req_src_t hw_reset_req =
+        dt_rstmgr_hw_reset_req_src(dt, idx);
+    if (hw_reset_req.inst_id == kDtInstanceIdUnknown) {
+      continue;
+    }
+
+    if ((hw_reset_req.inst_id == inst_id) &&
+        (hw_reset_req.reset_req == reset_req)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+void rstmgr_reboot(void) {
+  rstmgr_reason_clear(1 << kRstmgrReasonPowerOn);
+  rstmgr_reset();
 }

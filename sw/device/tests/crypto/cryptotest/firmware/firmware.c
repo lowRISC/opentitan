@@ -14,6 +14,7 @@
 
 // Include commands
 #include "sw/device/tests/crypto/cryptotest/json/aes_commands.h"
+#include "sw/device/tests/crypto/cryptotest/json/aes_gcm_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/drbg_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/ecdh_commands.h"
@@ -21,16 +22,19 @@
 #include "sw/device/tests/crypto/cryptotest/json/hash_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/hmac_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/kmac_commands.h"
+#include "sw/device/tests/crypto/cryptotest/json/rsa_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/sphincsplus_commands.h"
 
 // Include handlers
 #include "aes.h"
+#include "aes_gcm.h"
 #include "drbg.h"
 #include "ecdh.h"
 #include "ecdsa.h"
 #include "hash.h"
 #include "hmac.h"
 #include "kmac.h"
+#include "rsa.h"
 #include "sphincsplus.h"
 
 OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
@@ -44,6 +48,9 @@ status_t process_cmd(ujson_t *uj) {
     switch (cmd) {
       case kCryptotestCommandAes:
         RESP_ERR(uj, handle_aes(uj));
+        break;
+      case kCryptotestCommandAesGcm:
+        RESP_ERR(uj, handle_aes_gcm(uj));
         break;
       case kCryptotestCommandDrbg:
         RESP_ERR(uj, handle_drbg(uj));
@@ -62,6 +69,9 @@ status_t process_cmd(ujson_t *uj) {
         break;
       case kCryptotestCommandKmac:
         RESP_ERR(uj, handle_kmac(uj));
+        break;
+      case kCryptotestCommandRsa:
+        RESP_ERR(uj, handle_rsa(uj));
         break;
       case kCryptotestCommandSphincsPlus:
         RESP_ERR(uj, handle_sphincsplus(uj));

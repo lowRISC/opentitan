@@ -33,7 +33,7 @@ module keccak_2share
   input [RndW-1:0] rnd_i, // Current round index
 
   // Control inputs used when EnMasking = 1.
-  input mubi4_t phase_sel_i,       // Output mux contol
+  input mubi4_t phase_sel_i,       // Output mux control
   input         dom_out_low_i,     // DOM multiplier output mux
   input         dom_in_low_i,      // DOM multiplier input mux
   input         dom_in_rand_ext_i, // DOM multiplier input randomness mux

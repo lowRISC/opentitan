@@ -25,14 +25,18 @@ package aes_env_pkg;
 
   typedef virtual key_sideload_if   sideload_vif;
   // parameters
-  parameter string LIST_OF_ALERTS[] = {"recov_ctrl_update_err", "fatal_fault"};
   parameter uint NUM_ALERTS = 2;
+  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"recov_ctrl_update_err", "fatal_fault"};
   parameter uint NUM_EDN = 1;
 
   typedef enum int {
-    AES_CFG     = 0,
-    AES_DATA    = 1,
-    AES_ERR_INJ = 2
+    AES_CFG         = 0,
+    AES_DATA        = 1,
+    AES_ERR_INJ     = 2,
+    AES_GCM_AAD     = 3,
+    AES_GCM_TAG     = 4,
+    AES_GCM_SAVE    = 5,
+    AES_GCM_RESTORE = 6
   } aes_item_type_e;
 
   typedef enum int {

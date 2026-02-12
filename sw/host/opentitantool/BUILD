@@ -53,6 +53,9 @@ rust_binary(
     deps = [
         "//sw/host/opentitanlib",
         "//sw/host/ot_certs",
+        "//sw/host/ot_hal",
+        "//sw/host/ot_transports/chipwhisperer",
+        "//sw/host/ot_transports/verilator",
         "//sw/host/sphincsplus",
         "//util:bfv_decoder",
         "@crate_index//:anyhow",
@@ -63,14 +66,13 @@ rust_binary(
         "@crate_index//:hex",
         "@crate_index//:humantime",
         "@crate_index//:log",
-        "@crate_index//:mio",
-        "@crate_index//:mio-signals",
         "@crate_index//:regex",
         "@crate_index//:serde",
         "@crate_index//:serde_bytes",
         "@crate_index//:serde_json",
         "@crate_index//:shellwords",
         "@crate_index//:thiserror",
+        "@crate_index//:tokio",
         "@lowrisc_serde_annotate//serde_annotate",
     ],
 )
@@ -93,4 +95,9 @@ rust_test(
     crate = ":opentitantool",
     # stamping is necessary because opentitantool builds version.rs that needs it
     stamp = 1,
+)
+
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
 )

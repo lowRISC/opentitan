@@ -6,7 +6,7 @@
 //
 // - Uses the base-class hooks which determine that state of an inprogress transfer.
 // - Each time the I2C-Target is required to ACK/NACk during a transfer, this sequence randomly
-//   selects betwee an ACK or NACK.
+//   selects between an ACK or NACK.
 //
 class i2c_target_may_nack_seq extends i2c_base_seq;
 

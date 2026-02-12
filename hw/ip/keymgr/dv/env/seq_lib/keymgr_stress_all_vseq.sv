@@ -37,7 +37,7 @@ class keymgr_stress_all_vseq extends keymgr_base_vseq;
       seq = create_seq_by_name(seq_names[seq_idx]);
       `downcast(keymgr_vseq, seq)
 
-      // at the end of each vseq, design has enterred StDisabled, need to reset to recover
+      // at the end of each vseq, design has entered StDisabled, need to reset to recover
       // if upper seq disables do_apply_reset for this seq, then can't issue reset
       // as upper seq may drive reset
       if (do_apply_reset) keymgr_vseq.do_apply_reset = 1;

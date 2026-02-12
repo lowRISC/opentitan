@@ -26,33 +26,35 @@ package keymgr_pkg;
   parameter int MaxWidth = 256;
 
   // Default seeds
-  // These are generated using random.org byte dumper
+  // These have been generated with the following command by incrementing the --seed argument
+  // for every seed.
+  // util/design/gen-lfsr-seed.py --width 256 --seed 7535190 --prefix ""
   typedef logic [KeyWidth-1:0] seed_t;
   parameter seed_t RndCnstRevisionSeedDefault =
-    256'h3a0a6d73cd50897de4d744bd65ebdb3837ea77087d878651c517c18a5742b2f9;
+    256'h69802e51_bacf8874_e650d692_e3d8a646_2d3f158f_0bf7961d_d346f880_b4d52170;
   parameter seed_t RndCnstCreatorIdentitySeedDefault =
-    256'h6d234651d535ebb0dce4d82f503096614355fc7b84595e4f67a866177d421df6;
+    256'h344bff84_d3edf83e_aa565c5e_6c2d22f2_75283734_15cf6d83_32cd3752_731817c;
   parameter seed_t RndCnstOwnerIntIdentitySeedDefault =
-    256'hdba98db4fb1413b32fd5a4deac3ce546966a4bc2761235643358c8e76083d382;
+    256'h32a37bf9_2627382b_47180548_1fc4b847_a7eba1ce_c13e80ab_030f847e_9bd902e;
   parameter seed_t RndCnstOwnerIdentitySeedDefault =
-    256'h8c0a27ef53e0e0bf5f5f5e26a30a0d0db10761ed802c6d2fd22873209976021e;
+    256'hc1ba416c_822ad676_e4f54f36_33d8dc7e_00ccfb8b_92209f1b_d3229348_275ebda;
   parameter seed_t RndCnstSoftOutputSeedDefault =
-    256'h99cadb2c2d9b438591d943a89bc64dbb3bc2abc842eeea5faf74d27f7a7c99b6;
+    256'h23cbe85e_62e39992_4ab8d6a6_acbf12f0_0ca6f488_63eaa428_ffb11b26_c5282b14;
   parameter seed_t RndCnstHardOutputSeedDefault =
-    256'hd551b351decbb6f687c7f5c845363f12d6411fae812e16b23bc8ae59885a56b1;
+    256'h877ef0b9_aceaefc5_693b1aa7_e43a7f3d_ee7d63b6_4e73e182_b49cbf87_2872f2c;
 
   // Target based deriviation seeds
   // These are used during the generation stages for sideload
   parameter seed_t RndCnstNoneSeedDefault =
-    256'h6EECBF9FC3C64230421DA1EAEC48F871070A3582E71AD4059D5D550784E9B9DE;
+    256'h6013ba4d_8d04fe4f_80cb0472_536c9679_08b82f1d_98a4e405_cb4680ec_3a4a8d7a;
   parameter seed_t RndCnstAesSeedDefault =
-    256'hC1104CD94EBA084FA6438188038006489F3DF38771214AE0BBA65CEB9BC2366F;
+    256'he16a8fa9_5b613cd5_fb9ad23f_bd8347e1_64e45dac_5d08a41b_e83caa37_e03d9482;
   parameter seed_t RndCnstKmacSeedDefault =
-    256'h0A5CCCD9627BF6169B3A765D3D6D0CD89DBDCB7B6DF8D3C03746D60A0145D3ED;
+    256'hc57f4c0b_b308e83f_3fc4bc63_d87dd67d_9071dc1c_e19484c8_3c94fb97_dd634369;
   parameter seed_t RndCnstOtbnSeedDefault =
-    256'h17B0AF865F8ACDDFC7580C2B7BC3FB33FC9BB5A4B292216C123ACF99A7861F96;
+    256'hcbcb4d2d_0abeb81b_ca7451ae_d1e2479d_ba13530a_d046b945_646aa127_bd4f6a38;
   parameter seed_t RndCnstCdiDefault =
-    256'hC69C544D153A692AEEC4A0887BD5255F5C588C63A8BD94479BCFF7432DC55E3B;
+    256'h54180905_d14c1d2f_2dda1522_f332bc0e_fcd6b92f_f0f9db75_3a9a9544_26a42eab;
 
   // Default Lfsr configurations
   // These LFSR parameters have been generated with

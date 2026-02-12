@@ -6,6 +6,7 @@
 
 load(
     "//rules/opentitan:defs.bzl",
+    "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "fpga_params",
     "opentitan_test",
     "silicon_params",
@@ -22,17 +23,18 @@ CRYPTOTEST_EXEC_ENVS = {
     "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
     "//hw/top_earlgrey:fpga_cw340_test_rom": "fpga_cw340",
     "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "fpga_cw340",
-    "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon",
-}
+} | EARLGREY_SILICON_OWNER_ROM_EXT_ENVS
 
 FIRMWARE_DEPS = [
     "//sw/device/tests/crypto/cryptotest/firmware:aes",
+    "//sw/device/tests/crypto/cryptotest/firmware:aes_gcm",
     "//sw/device/tests/crypto/cryptotest/firmware:drbg",
     "//sw/device/tests/crypto/cryptotest/firmware:ecdh",
     "//sw/device/tests/crypto/cryptotest/firmware:ecdsa",
     "//sw/device/tests/crypto/cryptotest/firmware:hash",
     "//sw/device/tests/crypto/cryptotest/firmware:hmac",
     "//sw/device/tests/crypto/cryptotest/firmware:kmac",
+    "//sw/device/tests/crypto/cryptotest/firmware:rsa",
     "//sw/device/tests/crypto/cryptotest/firmware:sphincsplus",
     "//sw/device/lib/base:csr",
     "//sw/device/lib/base:status",

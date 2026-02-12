@@ -9,10 +9,10 @@
 
 #include "sw/device/silicon_creator/lib/base/chip.h"
 
-#include "flash_ctrl_regs.h"
-#include "gpio_regs.h"
+#include "hw/top/flash_ctrl_regs.h"
+#include "hw/top/gpio_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otp_ctrl_regs.h"
 
 bool operator==(flash_ctrl_perms_t lhs, flash_ctrl_perms_t rhs) {
   return memcmp(&lhs, &rhs, sizeof(flash_ctrl_perms_t)) == 0;
@@ -40,7 +40,7 @@ void BootstrapTest::ExpectBootstrapRequestCheck(bool requested) {
 }
 
 void BootstrapTest::ExpectSpiCmd(spi_device_cmd_t cmd) {
-  EXPECT_CALL(spi_device_, CmdGet(NotNull()))
+  EXPECT_CALL(spi_device_, CmdGet(NotNull(), true))
       .WillOnce(DoAll(SetArgPointee<0>(cmd), Return(kErrorOk)));
 }
 

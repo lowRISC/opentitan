@@ -23,7 +23,7 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_SPACE_CLKMGR_AON              = 32'h 40420000;
   localparam logic [31:0] ADDR_SPACE_PINMUX_AON              = 32'h 40460000;
   localparam logic [31:0] ADDR_SPACE_OTP_CTRL__CORE          = 32'h 40130000;
-  localparam logic [31:0] ADDR_SPACE_OTP_CTRL__PRIM          = 32'h 40138000;
+  localparam logic [31:0] ADDR_SPACE_OTP_MACRO__PRIM         = 32'h 40138000;
   localparam logic [31:0] ADDR_SPACE_LC_CTRL__REGS           = 32'h 40140000;
   localparam logic [31:0] ADDR_SPACE_SENSOR_CTRL_AON         = 32'h 40490000;
   localparam logic [31:0] ADDR_SPACE_ALERT_HANDLER           = 32'h 40150000;
@@ -51,7 +51,7 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_MASK_CLKMGR_AON              = 32'h 0000007f;
   localparam logic [31:0] ADDR_MASK_PINMUX_AON              = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_OTP_CTRL__CORE          = 32'h 00000fff;
-  localparam logic [31:0] ADDR_MASK_OTP_CTRL__PRIM          = 32'h 0000001f;
+  localparam logic [31:0] ADDR_MASK_OTP_MACRO__PRIM         = 32'h 0000001f;
   localparam logic [31:0] ADDR_MASK_LC_CTRL__REGS           = 32'h 000000ff;
   localparam logic [31:0] ADDR_MASK_SENSOR_CTRL_AON         = 32'h 0000007f;
   localparam logic [31:0] ADDR_MASK_ALERT_HANDLER           = 32'h 000007ff;
@@ -83,7 +83,7 @@ package tl_peri_pkg;
     TlClkmgrAon = 14,
     TlPinmuxAon = 15,
     TlOtpCtrlCore = 16,
-    TlOtpCtrlPrim = 17,
+    TlOtpMacroPrim = 17,
     TlLcCtrlRegs = 18,
     TlSensorCtrlAon = 19,
     TlAlertHandler = 20,

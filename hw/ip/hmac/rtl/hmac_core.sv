@@ -4,6 +4,8 @@
 //
 // HMAC Core implementation
 
+`include "prim_assert.sv"
+
 module hmac_core import prim_sha2_pkg::*; (
   input clk_i,
   input rst_ni,

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// combine all xbar seqs in one seq to run in parallel for mutiply times
+// combine all xbar seqs in one seq to run in parallel multiple times
 class xbar_stress_all_vseq extends xbar_base_vseq;
   `uvm_object_utils(xbar_stress_all_vseq)
 

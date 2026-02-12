@@ -3,20 +3,20 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #if defined(OPENTITAN_IS_EARLGREY)
-#include "dt/dt_usbdev.h"                  // Generated
+#include "hw/top/dt/usbdev.h"              // Generated
 #include "sw/device/lib/dif/dif_usbdev.h"  // Generated
 
-#include "usbdev_regs.h"  // Generated
+#include "hw/top/usbdev_regs.h"  // Generated
 #elif defined(OPENTITAN_IS_DARJEELING)
 // Darjeeling does not have a USB device
 #else
 #error "rstmgr_sw_rst_ctrl_test does not support this top"
 #endif
 
-#include "dt/dt_i2c.h"         // Generated
-#include "dt/dt_rstmgr.h"      // Generated
-#include "dt/dt_spi_device.h"  // Generated
-#include "dt/dt_spi_host.h"    // Generated
+#include "hw/top/dt/i2c.h"         // Generated
+#include "hw/top/dt/rstmgr.h"      // Generated
+#include "hw/top/dt/spi_device.h"  // Generated
+#include "hw/top/dt/spi_host.h"    // Generated
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
@@ -29,9 +29,9 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "i2c_regs.h"         // Generated
-#include "spi_device_regs.h"  // Generated
-#include "spi_host_regs.h"    // Generated
+#include "hw/top/i2c_regs.h"         // Generated
+#include "hw/top/spi_device_regs.h"  // Generated
+#include "hw/top/spi_host_regs.h"    // Generated
 
 OTTF_DEFINE_TEST_CONFIG();
 

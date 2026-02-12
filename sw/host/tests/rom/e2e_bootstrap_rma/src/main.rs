@@ -8,29 +8,32 @@
 //! 1. Checks that the ROM times out and resets under the `RMA_BOOTSTRAP` strapping.
 //! 2. Triggers a LC transition from `PROD` to `RMA` and checks for success.
 
-use std::io;
 use std::iter;
 use std::time::Duration;
 
-use anyhow::{bail, Context};
+use anyhow::{Context, bail};
 use clap::Parser;
 use regex::Regex;
 
-use opentitanlib::app::TransportWrapper;
-use opentitanlib::chip::boolean::MultiBitBool8;
-use opentitanlib::dif::lc_ctrl::{
-    DifLcCtrlState, DifLcCtrlToken, LcCtrlReg, LcCtrlStatus, LcCtrlTransitionCmd,
-    LcCtrlTransitionRegwen,
-};
-use opentitanlib::dif::rstmgr::DifRstmgrResetInfo;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition;
 use opentitanlib::uart::console::{ExitStatus, UartConsole};
+use ot_hal::dif::lc_ctrl::{
+    DifLcCtrlState, DifLcCtrlToken, LcCtrlReg, LcCtrlStatus, LcCtrlTransitionCmd,
+    LcCtrlTransitionRegwen,
+};
+use ot_hal::dif::rstmgr::DifRstmgrResetInfo;
+use ot_hal::util::multibits::MultiBitBool8;
 
-/// Timeout for waiting for data over the console.
-const CONSOLE_TIMEOUT: Duration = Duration::from_secs(5);
+/// Timeout waiting for the chip to reset and perform an RMA
+/// transition.
+const RMA_TRANSITION_CONSOLE_TIMEOUT: Duration = Duration::from_secs(5);
+/// Timeout waiting for RMA spinning (must be bigger than CREATOR_SW_CFG_RMA_SPIN_CYCLES),
+/// with an extra few seconds to avoid flakiness.
+const RMA_SPIN_TIMEOUT: Duration = Duration::from_secs(6 + 4);
 
 /// CLI args for this test.
 #[derive(Debug, Parser)]
@@ -49,7 +52,7 @@ fn main() -> anyhow::Result<()> {
         .init_target()
         .context("failed to initialise target")?;
 
-    execute_test!(test_no_rma_command, &opts, &transport);
+    execute_test!(test_no_rma_command, &transport);
     execute_test!(test_rma_command, &opts, &transport);
 
     Ok(())
@@ -60,7 +63,7 @@ fn main() -> anyhow::Result<()> {
 /// Verifies that the ROM times out on spin cycles, automatically resets the
 /// device, and logs the expected reset reasons. Does not issue the life cycle
 /// RMA command.
-fn test_no_rma_command(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result<()> {
+fn test_no_rma_command(transport: &TransportWrapper) -> anyhow::Result<()> {
     let uart = transport.uart("console").context("failed to get UART")?;
 
     let rma_bootstrap_strapping = transport.pin_strapping("RMA_BOOTSTRAP")?;
@@ -70,7 +73,7 @@ fn test_no_rma_command(opts: &Opts, transport: &TransportWrapper) -> anyhow::Res
         .context("failed to apply RMA_BOOTSTRAP strapping")?;
 
     transport
-        .reset_target(opts.init.bootstrap.options.reset_delay, true)
+        .reset(UartRx::Clear)
         .context("failed to reset target")?;
 
     // Remove the RMA_BOOTSTRAP strapping to bring the device out of the RMA spin loop.
@@ -88,16 +91,14 @@ fn test_no_rma_command(opts: &Opts, transport: &TransportWrapper) -> anyhow::Res
     let exit_failure =
         Regex::new("reset_info_bitfield: 0x[0-9a-f]+\r\n").context("failed to build regex")?;
 
-    let mut console = UartConsole {
-        timeout: Some(CONSOLE_TIMEOUT),
-        exit_success: Some(exit_success),
-        exit_failure: Some(exit_failure),
-        ..Default::default()
-    };
+    let mut console = UartConsole::new(
+        Some(RMA_SPIN_TIMEOUT),
+        Some(exit_success),
+        Some(exit_failure),
+    );
 
-    let mut stdout = io::stdout();
     let result = console
-        .interact(&*uart, None, Some(&mut stdout))
+        .interact(&*uart, false)
         .context("failed to interact with console")?;
 
     match result {
@@ -126,7 +127,7 @@ fn test_rma_command(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result
         .context("failed to apply PINMUX_TAP_LC strapping")?;
 
     transport
-        .reset_target(opts.init.bootstrap.options.reset_delay, true)
+        .reset(UartRx::Clear)
         .context("failed to reset target")?;
 
     log::info!("Connecting to JTAG interface");
@@ -252,7 +253,7 @@ fn test_rma_command(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result
     let uart = transport.uart("console").context("failed to get console")?;
 
     transport
-        .reset_target(opts.init.bootstrap.options.reset_delay, true)
+        .reset(UartRx::Clear)
         .context("failed to reset target")?;
 
     let rma_state = DifLcCtrlState::Rma.redundant_encoding();
@@ -260,16 +261,14 @@ fn test_rma_command(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result
         Regex::new(format!("LCV:{rma_state:x}\r\n").as_str()).context("failed to build regex")?;
     let exit_failure = Regex::new("LCV:[0-9a-f]+\r\n").context("failed to build regex")?;
 
-    let mut console = UartConsole {
-        timeout: Some(CONSOLE_TIMEOUT),
-        exit_success: Some(exit_success),
-        exit_failure: Some(exit_failure),
-        ..Default::default()
-    };
+    let mut console = UartConsole::new(
+        Some(RMA_TRANSITION_CONSOLE_TIMEOUT),
+        Some(exit_success),
+        Some(exit_failure),
+    );
 
-    let mut stdout = io::stdout();
     let result = console
-        .interact(&*uart, None, Some(&mut stdout))
+        .interact(&*uart, false)
         .context("failed to interact with console")?;
 
     match result {

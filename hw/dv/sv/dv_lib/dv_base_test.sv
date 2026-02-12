@@ -36,14 +36,12 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
 
     env = ENV_T::type_id::create("env", this);
     cfg = CFG_T::type_id::create("cfg", this);
-    void'($value$plusargs("use_jtag_dmi=%0b", cfg.use_jtag_dmi));
     cfg.initialize();
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
     uvm_config_db#(CFG_T)::set(this, "env", "cfg", cfg);
 
     // Enable scoreboard (and sub-scoreboard checks) via plusarg.
     void'($value$plusargs("en_scb=%0b", cfg.en_scb));
-    void'($value$plusargs("en_scb_tl_err_chk=%0b", cfg.en_scb_tl_err_chk));
     void'($value$plusargs("en_scb_mem_chk=%0b", cfg.en_scb_mem_chk));
     // Enable fastest design performance by configuring zero delays in all agents.
     void'($value$plusargs("zero_delays=%0b", cfg.zero_delays));
@@ -70,6 +68,7 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
   endfunction : end_of_elaboration_phase
 
   virtual task run_phase(uvm_phase phase);
+    super.run_phase(phase);
     void'($value$plusargs("drain_time_ns=%0d", drain_time_ns));
     phase.phase_done.set_drain_time(this, (drain_time_ns * 1ns));
     void'($value$plusargs("poll_for_stop=%0b", poll_for_stop));
@@ -88,10 +87,8 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
   virtual task run_seq(string test_seq_s, uvm_phase phase);
     uvm_sequence test_seq = create_seq_by_name(test_seq_s);
 
-    // Setting the sequencer before the sequence is randomized is mandatory. We do this so that the
-    // sequence has access to the UVM environment's cfg handle via the p_sequencer handle within the
-    // randomization constraints.
-    test_seq.set_sequencer(env.virtual_sequencer);
+    configure_sequence(test_seq);
+
     `DV_CHECK_RANDOMIZE_FATAL(test_seq)
 
     `uvm_info(`gfn, {"Starting test sequence ", test_seq_s}, UVM_MEDIUM)
@@ -100,4 +97,16 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
     phase.drop_objection(this, $sformatf("%s objection dropped", `gn));
     `uvm_info(`gfn, {"Finished test sequence ", test_seq_s}, UVM_MEDIUM)
   endtask
+
+  // A virtual function that allows the test to set up the sequence to know about the sequencer
+  // where it should run. This runs before the sequence is randomised, which allows the sequence to
+  // constrain its randomisation using the environment's cfg handle (getting it through p_sequencer).
+  //
+  // The base class version of this function registers env.virtual_sequencer. If a testbench wishes
+  // to register multiple sequencers with a virtual sequence, it can do so by overriding this
+  // function.
+  virtual function void configure_sequence(uvm_sequence seq);
+    seq.set_sequencer(env.virtual_sequencer);
+  endfunction
+
 endclass : dv_base_test

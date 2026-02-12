@@ -14,13 +14,13 @@ class ac_range_check_env extends cip_base_env #(
   tl_agent tl_filt_agt;
 
   // Standard SV/UVM methods
-  extern function new(string name="", uvm_component parent=null);
+  extern function new(string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
   extern function void connect_phase(uvm_phase phase);
 endclass : ac_range_check_env
 
 
-function ac_range_check_env::new(string name="", uvm_component parent=null);
+function ac_range_check_env::new(string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
 
@@ -46,10 +46,14 @@ endfunction : build_phase
 function void ac_range_check_env::connect_phase(uvm_phase phase);
   super.connect_phase(phase);
   if (cfg.en_scb) begin
-    tl_unfilt_agt.monitor.a_chan_port.connect(scoreboard.tl_unfilt_a_chan_fifo.analysis_export);
-    tl_unfilt_agt.monitor.d_chan_port.connect(scoreboard.tl_unfilt_d_chan_fifo.analysis_export);
-    tl_filt_agt.monitor.a_chan_port.connect(scoreboard.tl_filt_a_chan_fifo.analysis_export);
-    tl_filt_agt.monitor.d_chan_port.connect(scoreboard.tl_filt_d_chan_fifo.analysis_export);
+    tl_unfilt_agt.monitor.a_chan_port.connect(
+      scoreboard.predict.tl_unfilt_a_chan_fifo.analysis_export);
+    tl_unfilt_agt.monitor.d_chan_port.connect(
+      scoreboard.tl_unfilt_d_chan_fifo.analysis_export);
+    tl_filt_agt.monitor.a_chan_port.connect(
+      scoreboard.tl_filt_a_chan_fifo.analysis_export);
+    tl_filt_agt.monitor.d_chan_port.connect(
+      scoreboard.predict.tl_filt_d_chan_fifo.analysis_export);
   end
   if (cfg.is_active && cfg.tl_unfilt_agt_cfg.is_active) begin
     virtual_sequencer.tl_unfilt_sqr = tl_unfilt_agt.sequencer;

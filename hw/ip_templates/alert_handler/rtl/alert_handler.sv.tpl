@@ -14,12 +14,14 @@ module ${module_instance_name}
 % if racl_support:
   parameter bit          EnableRacl                                   = 1'b0,
   parameter bit          RaclErrorRsp                                 = EnableRacl,
-  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVec[${module_instance_name}_reg_pkg::NumRegs] = 
+  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVec[${module_instance_name}_reg_pkg::NumRegs] =
     '{${module_instance_name}_reg_pkg::NumRegs{0}},
 % endif
+  // Number of cycles a differential skew is tolerated on the alert and escalation signal
+  parameter int unsigned AlertSkewCycles = 1,
   parameter int EscNumSeverities = ${n_esc_sev},
   parameter int EscPingCountWidth = ${ping_cnt_dw},
-  // Compile time random constants, to be overriden by topgen.
+  // Compile time random constants, to be overridden by topgen.
   parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault
 ) (
@@ -210,7 +212,8 @@ module ${module_instance_name}
   // Target interrupt notification
   for (genvar k = 0 ; k < NAlerts ; k++) begin : gen_alerts
     prim_alert_receiver #(
-      .AsyncOn(AsyncOn[k])
+      .AsyncOn(AsyncOn[k]),
+      .SkewCycles(AlertSkewCycles)
     ) u_alert_receiver (
       .clk_i,
       .rst_ni,
@@ -315,7 +318,9 @@ module ${module_instance_name}
     // put this RTL label inside that module due to the way our countermeasure annotation check
     // script discovers the RTL files. The label is thus put here. Please refer to
     // prim_esc_receiver.sv for the actual implementation of this mechanism.
-    prim_esc_sender u_esc_sender (
+    prim_esc_sender # (
+      .SkewCycles(AlertSkewCycles)
+    ) u_esc_sender (
       .clk_i,
       .rst_ni,
       .ping_req_i   ( esc_ping_req[k]  ),

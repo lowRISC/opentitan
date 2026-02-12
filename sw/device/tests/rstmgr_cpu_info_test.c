@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "dt/dt_pwrmgr.h"        // Generated
-#include "dt/dt_rstmgr.h"        // Generated
-#include "dt/dt_rv_core_ibex.h"  // Generated
+#include "hw/top/dt/pwrmgr.h"        // Generated
+#include "hw/top/dt/rstmgr.h"        // Generated
+#include "hw/top/dt/rv_core_ibex.h"  // Generated
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
@@ -239,9 +239,13 @@ bool test_main(void) {
           aon_timer_testutils_get_aon_cycles_32_from_us(100, &bite_cycles));
 
       // Set wdog as a reset source.
+      dif_pwrmgr_request_sources_t reset_sources;
+      CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+          &pwrmgr, kDifPwrmgrReqTypeReset,
+          dt_aon_timer_instance_id(kDtAonTimerAon), kDtAonTimerResetReqAonTimer,
+          &reset_sources));
       CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
-          &pwrmgr, kDifPwrmgrReqTypeReset, kDifPwrmgrResetRequestSourceTwo,
-          kDifToggleEnabled));
+          &pwrmgr, kDifPwrmgrReqTypeReset, reset_sources, kDifToggleEnabled));
       // Setup the watchdog bark and bite timeouts.
       CHECK_STATUS_OK(aon_timer_testutils_watchdog_config(
           &aon_timer, bark_cycles, bite_cycles, false));

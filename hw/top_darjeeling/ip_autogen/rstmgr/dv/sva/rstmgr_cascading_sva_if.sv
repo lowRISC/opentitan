@@ -19,8 +19,6 @@ interface rstmgr_cascading_sva_if (
   input logic clk_i,
   input logic clk_aon_i,
   input logic clk_io_i,
-  input logic clk_io_div2_i,
-  input logic clk_io_div4_i,
   input logic clk_main_i,
   input [rstmgr_pkg::PowerDomains-1:0] por_n_i,
   input rstmgr_pkg::rstmgr_out_t resets_o,
@@ -127,10 +125,10 @@ interface rstmgr_cascading_sva_if (
 
   // The AON reset triggers the various POR reset for the different clock domains through
   // synchronizers.
-  // The current system doesn't have any consumers of domain 1 por_io_div4, and thus only domain 0
-  // cascading is checked here.
+  // Only domain 0 cascading is checked here, because the current system doesn't have any consumers
+  // of rst_por_io_n.
   `CASCADED_ASSERTS(CascadeEffAonToRstPorIoDiv4, effective_aon_rst_n[0],
-                    resets_o.rst_por_io_div4_n[0], SyncCycles, clk_io_div4_i)
+                    resets_o.rst_por_io_n[0], SyncCycles, clk_io_i)
 
   // The internal reset is triggered by one of synchronized por.
   logic [rstmgr_pkg::PowerDomains-1:0] por_rst_n;
@@ -152,21 +150,13 @@ interface rstmgr_cascading_sva_if (
     // The latter is checked independently in pwrmgr_rstmgr_sva_if.
     `CASCADED_ASSERTS(CascadeLcToSys, lc_rst_or_sys_req_n[pd], rst_sys_src_n[pd], SysCycles, clk_i)
 
-    // Controlled by rst_sys_src_n.
-    if (pd == rstmgr_pkg::DomainAonSel) begin : gen_sys_io_div4_chk
-      `CASCADED_ASSERTS(CascadeSysToSysIoDiv4, rst_sys_src_n[pd], resets_o.rst_sys_io_div4_n[pd],
-                        SysCycles, clk_io_div4_i)
-    end
   end
 
   // Aon to POR
-  `CASCADED_ASSERTS(CascadeEffAonToRstPor, effective_aon_rst_n[rstmgr_pkg::DomainAonSel],
-                    resets_o.rst_por_n[rstmgr_pkg::DomainAonSel], SyncCycles, clk_main_i)
   `CASCADED_ASSERTS(CascadeEffAonToRstPorIo, effective_aon_rst_n[rstmgr_pkg::DomainAonSel],
                     resets_o.rst_por_io_n[rstmgr_pkg::DomainAonSel], SyncCycles, clk_io_i)
-  `CASCADED_ASSERTS(CascadeEffAonToRstPorIoDiv2, effective_aon_rst_n[rstmgr_pkg::DomainAonSel],
-                    resets_o.rst_por_io_div2_n[rstmgr_pkg::DomainAonSel], SyncCycles, clk_io_div2_i)
-
+  `CASCADED_ASSERTS(CascadeEffAonToRstPorMain, effective_aon_rst_n[rstmgr_pkg::DomainAonSel],
+                    resets_o.rst_por_n[rstmgr_pkg::DomainAonSel], SyncCycles, clk_main_i)
 
   // Controlled by rst_lc_src_n.
   `CASCADED_ASSERTS(CascadeLcToLcAon, rst_lc_src_n[rstmgr_pkg::DomainAonSel],

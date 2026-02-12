@@ -24,17 +24,12 @@ package rstmgr_pkg;
     logic [PowerDomains-1:0] rst_por_aon_n;
     logic [PowerDomains-1:0] rst_por_n;
     logic [PowerDomains-1:0] rst_por_io_n;
-    logic [PowerDomains-1:0] rst_por_io_div2_n;
-    logic [PowerDomains-1:0] rst_por_io_div4_n;
     logic [PowerDomains-1:0] rst_lc_shadowed_n;
     logic [PowerDomains-1:0] rst_lc_n;
     logic [PowerDomains-1:0] rst_lc_aon_n;
+    logic [PowerDomains-1:0] rst_lc_io_shadowed_n;
     logic [PowerDomains-1:0] rst_lc_io_n;
-    logic [PowerDomains-1:0] rst_lc_io_div2_n;
-    logic [PowerDomains-1:0] rst_lc_io_div4_shadowed_n;
-    logic [PowerDomains-1:0] rst_lc_io_div4_n;
     logic [PowerDomains-1:0] rst_sys_n;
-    logic [PowerDomains-1:0] rst_sys_io_div4_n;
     logic [PowerDomains-1:0] rst_spi_device_n;
     logic [PowerDomains-1:0] rst_spi_host0_n;
     logic [PowerDomains-1:0] rst_i2c0_n;
@@ -45,23 +40,18 @@ package rstmgr_pkg;
     prim_mubi_pkg::mubi4_t [PowerDomains-1:0] por_aon;
     prim_mubi_pkg::mubi4_t [PowerDomains-1:0] por;
     prim_mubi_pkg::mubi4_t [PowerDomains-1:0] por_io;
-    prim_mubi_pkg::mubi4_t [PowerDomains-1:0] por_io_div2;
-    prim_mubi_pkg::mubi4_t [PowerDomains-1:0] por_io_div4;
     prim_mubi_pkg::mubi4_t [PowerDomains-1:0] lc_shadowed;
     prim_mubi_pkg::mubi4_t [PowerDomains-1:0] lc;
     prim_mubi_pkg::mubi4_t [PowerDomains-1:0] lc_aon;
+    prim_mubi_pkg::mubi4_t [PowerDomains-1:0] lc_io_shadowed;
     prim_mubi_pkg::mubi4_t [PowerDomains-1:0] lc_io;
-    prim_mubi_pkg::mubi4_t [PowerDomains-1:0] lc_io_div2;
-    prim_mubi_pkg::mubi4_t [PowerDomains-1:0] lc_io_div4_shadowed;
-    prim_mubi_pkg::mubi4_t [PowerDomains-1:0] lc_io_div4;
     prim_mubi_pkg::mubi4_t [PowerDomains-1:0] sys;
-    prim_mubi_pkg::mubi4_t [PowerDomains-1:0] sys_io_div4;
     prim_mubi_pkg::mubi4_t [PowerDomains-1:0] spi_device;
     prim_mubi_pkg::mubi4_t [PowerDomains-1:0] spi_host0;
     prim_mubi_pkg::mubi4_t [PowerDomains-1:0] i2c0;
   } rstmgr_rst_en_t;
 
-  parameter int NumOutputRst = 17 * PowerDomains;
+  parameter int NumOutputRst = 12 * PowerDomains;
 
   // cpu reset requests and status
   typedef struct packed {

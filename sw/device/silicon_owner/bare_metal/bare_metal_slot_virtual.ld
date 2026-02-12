@@ -17,8 +17,8 @@ INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
 /**
  * Symbols to be used in the setup of the address translation for ROM_EXT.
  */
-_slot_start_address = ORIGIN(owner_virtual) + 64K;
-_slot_size = LENGTH(owner_virtual) - 64K;
+_slot_start_address = ORIGIN(owner_virtual) + _rom_ext_size;
+_slot_size = LENGTH(owner_virtual) - _rom_ext_size;
 
 REGION_ALIAS("owner_flash", owner_virtual);
 

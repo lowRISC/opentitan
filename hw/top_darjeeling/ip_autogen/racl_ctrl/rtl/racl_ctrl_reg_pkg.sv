@@ -15,6 +15,12 @@ package racl_ctrl_reg_pkg;
   // Number of registers for every interface
   parameter int NumRegs = 9;
 
+  // Alert indices
+  typedef enum int {
+    AlertFatalFaultIdx = 0,
+    AlertRecovCtrlUpdateErrIdx = 1
+  } racl_ctrl_alert_idx_t;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -84,9 +90,17 @@ package racl_ctrl_reg_pkg;
 
   typedef struct packed {
     struct packed {
+      logic [4:0]  d;
+      logic        de;
+    } ctn_uid;
+    struct packed {
+      logic [3:0]  d;
+      logic        de;
+    } role;
+    struct packed {
       logic        d;
       logic        de;
-    } valid;
+    } read_access;
     struct packed {
       logic        d;
       logic        de;
@@ -94,19 +108,11 @@ package racl_ctrl_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } read_access;
-    struct packed {
-      logic [3:0]  d;
-      logic        de;
-    } role;
-    struct packed {
-      logic [4:0]  d;
-      logic        de;
-    } ctn_uid;
+    } valid;
   } racl_ctrl_hw2reg_error_log_reg_t;
 
   typedef struct packed {
-    logic [31:0] d;
+    logic [29:0] d;
     logic        de;
   } racl_ctrl_hw2reg_error_log_address_reg_t;
 
@@ -124,9 +130,9 @@ package racl_ctrl_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    racl_ctrl_hw2reg_intr_state_reg_t intr_state; // [51:50]
-    racl_ctrl_hw2reg_error_log_reg_t error_log; // [49:33]
-    racl_ctrl_hw2reg_error_log_address_reg_t error_log_address; // [32:0]
+    racl_ctrl_hw2reg_intr_state_reg_t intr_state; // [49:48]
+    racl_ctrl_hw2reg_error_log_reg_t error_log; // [47:31]
+    racl_ctrl_hw2reg_error_log_address_reg_t error_log_address; // [30:0]
   } racl_ctrl_hw2reg_t;
 
   // Register offsets

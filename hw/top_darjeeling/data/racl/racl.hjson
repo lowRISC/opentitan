@@ -5,10 +5,10 @@
 {
   // error_response controls whether to return TLUL error on RACL errors
   error_response: true
-  // The CTN UID is transfered via the TLUL reserved user bits: rsvd[ctn_uid_bit_msb:ctn_uid_bit_lsb]
+  // The CTN UID is transferred via the TLUL reserved user bits: rsvd[ctn_uid_bit_msb:ctn_uid_bit_lsb]
   ctn_uid_bit_lsb: 0
   ctn_uid_bit_msb: 4
-  // The RACL role is transfered via the TLUL reserved user bits: rsvd[role_bit_msb:role_bit_lsb]
+  // The RACL role is transferred via the TLUL reserved user bits: rsvd[role_bit_msb:role_bit_lsb]
   role_bit_lsb: 5
   role_bit_msb: 8
   roles: {

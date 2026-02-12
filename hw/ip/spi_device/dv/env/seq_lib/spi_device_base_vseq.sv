@@ -10,7 +10,7 @@ class spi_device_base_vseq extends cip_base_vseq #(
     );
   `uvm_object_utils(spi_device_base_vseq)
 
-  // knob to control sending dummy transaction or incompleted opcode
+  // knob to control sending dummy transaction or incomplete opcode
   int allow_dummy_trans_pct = 5;
 
   rand bit sck_polarity;
@@ -62,7 +62,7 @@ class spi_device_base_vseq extends cip_base_vseq #(
     cfg.clk_rst_vif.wait_clks(2);
   endtask
 
-  // configure the clock frequence
+  // configure the clock frequency
   virtual task spi_clk_init();
     if (cfg.do_spi_clk_configure) begin
       cfg.spi_host_agent_cfg.csb_sel_in_cfg = 0;

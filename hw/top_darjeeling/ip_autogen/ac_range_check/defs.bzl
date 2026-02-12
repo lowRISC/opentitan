@@ -5,5 +5,6 @@ load("//rules/opentitan:hw.bzl", "opentitan_ip")
 
 AC_RANGE_CHECK = opentitan_ip(
     name = "ac_range_check",
-    hjson = "//hw/top_darjeeling/ip_autogen/ac_range_check:data/ac_range_check.hjson",
+    hjson = "//hw/top_darjeeling/ip_autogen/ac_range_check/data:ac_range_check.hjson",
+    ipconfig = "//hw/top_darjeeling/ip_autogen/ac_range_check/data:top_darjeeling_ac_range_check.ipconfig.hjson",
 )

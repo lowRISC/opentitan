@@ -4,6 +4,9 @@
 
 #include "sw/device/lib/crypto/drivers/entropy.h"
 
+#include "hw/top/dt/csrng.h"
+#include "hw/top/dt/edn.h"
+#include "hw/top/dt/entropy_src.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/math.h"
@@ -11,13 +14,33 @@
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
-#include "csrng_regs.h"        // Generated
-#include "edn_regs.h"          // Generated
-#include "entropy_src_regs.h"  // Generated
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top/csrng_regs.h"        // Generated
+#include "hw/top/edn_regs.h"          // Generated
+#include "hw/top/entropy_src_regs.h"  // Generated
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('d', 'e', 'n')
+
+static const dt_csrng_t kCsrngDt = kDtCsrng;
+static const dt_entropy_src_t kEntropySrcDt = kDtEntropySrc;
+static const dt_edn_t kEdn0Dt = kDtEdn0;
+static const dt_edn_t kEdn1Dt = kDtEdn1;
+
+static inline uint32_t csrng_base(void) {
+  return dt_csrng_primary_reg_block(kCsrngDt);
+}
+
+static inline uint32_t entropy_src_base(void) {
+  return dt_entropy_src_primary_reg_block(kEntropySrcDt);
+}
+
+static inline uint32_t edn0_base(void) {
+  return dt_edn_primary_reg_block(kEdn0Dt);
+}
+
+static inline uint32_t edn1_base(void) {
+  return dt_edn_primary_reg_block(kEdn1Dt);
+}
 
 const entropy_seed_material_t kEntropyEmptySeed = {
     .len = 0,
@@ -25,10 +48,6 @@ const entropy_seed_material_t kEntropyEmptySeed = {
 };
 
 enum {
-  kBaseCsrng = TOP_EARLGREY_CSRNG_BASE_ADDR,
-  kBaseEntropySrc = TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR,
-  kBaseEdn0 = TOP_EARLGREY_EDN0_BASE_ADDR,
-  kBaseEdn1 = TOP_EARLGREY_EDN1_BASE_ADDR,
 
   /**
    * CSRNG genbits buffer size in uint32_t words.
@@ -38,8 +57,9 @@ enum {
 
 /**
  * Supported CSRNG application commands.
- * See https://docs.opentitan.org/hw/ip/csrng/doc/#command-header for
- * details.
+ * See
+ * https://opentitan.org/book/hw/ip/csrng/doc/theory_of_operation.html#command-header
+ * for details.
  */
 // TODO(#14542): Harden csrng/edn command fields.
 typedef enum entropy_csrng_op {
@@ -89,10 +109,6 @@ typedef enum entropy_complex_config_id {
  * EDN configuration settings.
  */
 typedef struct edn_config {
-  /**
-   * Base address of the EDN block.
-   */
-  uint32_t base_address;
   /**
    * Number of generate calls between reseed commands.
    */
@@ -245,7 +261,6 @@ static const entropy_complex_config_t
                     },
                 .edn0 =
                     {
-                        .base_address = kBaseEdn0,
                         .reseed_interval = 128,
                         .instantiate =
                             {
@@ -271,7 +286,6 @@ static const entropy_complex_config_t
                     },
                 .edn1 =
                     {
-                        .base_address = kBaseEdn1,
                         .reseed_interval = 4,
                         .instantiate =
                             {
@@ -324,28 +338,40 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
   uint32_t reg;
   bool ready;
 
-  switch (cmd_type) {
+  entropy_csrng_send_app_cmd_type_t cmd_type_used = launder32(0);
+  switch (launder32(cmd_type)) {
     case kEntropyCsrngSendAppCmdTypeCsrng:
       cmd_reg_addr = base_address + CSRNG_CMD_REQ_REG_OFFSET;
       sts_reg_addr = base_address + CSRNG_SW_CMD_STS_REG_OFFSET;
       rdy_bit_offset = CSRNG_SW_CMD_STS_CMD_RDY_BIT;
       reg_rdy_bit_offset = CSRNG_SW_CMD_STS_CMD_RDY_BIT;
+      cmd_type_used =
+          launder32(cmd_type_used) | kEntropyCsrngSendAppCmdTypeCsrng;
       break;
     case kEntropyCsrngSendAppCmdTypeEdnSw:
       cmd_reg_addr = base_address + EDN_SW_CMD_REQ_REG_OFFSET;
       sts_reg_addr = base_address + EDN_SW_CMD_STS_REG_OFFSET;
       rdy_bit_offset = EDN_SW_CMD_STS_CMD_RDY_BIT;
       reg_rdy_bit_offset = EDN_SW_CMD_STS_CMD_REG_RDY_BIT;
+      cmd_type_used =
+          launder32(cmd_type_used) | kEntropyCsrngSendAppCmdTypeEdnSw;
       break;
     case kEntropyCsrngSendAppCmdTypeEdnGen:
       cmd_reg_addr = base_address + EDN_GENERATE_CMD_REG_OFFSET;
+      cmd_type_used =
+          launder32(cmd_type_used) | kEntropyCsrngSendAppCmdTypeEdnGen;
       break;
     case kEntropyCsrngSendAppCmdTypeEdnRes:
       cmd_reg_addr = base_address + EDN_RESEED_CMD_REG_OFFSET;
+      cmd_type_used =
+          launder32(cmd_type_used) | kEntropyCsrngSendAppCmdTypeEdnRes;
       break;
     default:
       return OTCRYPTO_BAD_ARGS;
   }
+  // Check if we landed in the correct case statement. Use ORs for this to
+  // avoid that multiple cases were executed.
+  HARDENED_CHECK_EQ(launder32(cmd_type_used), cmd_type);
 
   if ((cmd_type == kEntropyCsrngSendAppCmdTypeCsrng) ||
       (cmd_type == kEntropyCsrngSendAppCmdTypeEdnSw)) {
@@ -387,7 +413,7 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
     // this command request is completed. EDN automatically clears the
     // acknowledgement bit upon writing the command.
     reg = bitfield_bit32_write(0, CSRNG_INTR_STATE_CS_CMD_REQ_DONE_BIT, true);
-    abs_mmio_write32(kBaseCsrng + CSRNG_INTR_STATE_REG_OFFSET, reg);
+    abs_mmio_write32(csrng_base() + CSRNG_INTR_STATE_REG_OFFSET, reg);
   }
 
   // Build and write application command header.
@@ -422,7 +448,7 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
       // consumed. Thus poll the register that indicates if entropy bits are
       // available.
       do {
-        reg = abs_mmio_read32(kBaseCsrng + CSRNG_GENBITS_VLD_REG_OFFSET);
+        reg = abs_mmio_read32(csrng_base() + CSRNG_GENBITS_VLD_REG_OFFSET);
       } while (!bitfield_bit32_read(reg, CSRNG_GENBITS_VLD_GENBITS_VLD_BIT));
 
     } else {
@@ -430,11 +456,11 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
       // request done" interrupt bit.  Once it is set, the "status" bit is
       // updated.
       do {
-        reg = abs_mmio_read32(kBaseCsrng + CSRNG_INTR_STATE_REG_OFFSET);
+        reg = abs_mmio_read32(csrng_base() + CSRNG_INTR_STATE_REG_OFFSET);
       } while (!bitfield_bit32_read(reg, CSRNG_INTR_STATE_CS_CMD_REQ_DONE_BIT));
 
       // Check the "status" bit, which will be 0 unless there was an error.
-      reg = abs_mmio_read32(kBaseCsrng + CSRNG_SW_CMD_STS_REG_OFFSET);
+      reg = abs_mmio_read32(csrng_base() + CSRNG_SW_CMD_STS_REG_OFFSET);
       if (bitfield_field32_read(reg, CSRNG_SW_CMD_STS_CMD_STS_FIELD)) {
         return OTCRYPTO_RECOV_ERR;
       }
@@ -473,7 +499,22 @@ static void csrng_configure(void) {
                                kMultiBitBool4True);
   reg = bitfield_field32_write(reg, CSRNG_CTRL_FIPS_FORCE_ENABLE_FIELD,
                                kMultiBitBool4False);
-  abs_mmio_write32(kBaseCsrng + CSRNG_CTRL_REG_OFFSET, reg);
+  abs_mmio_write32(csrng_base() + CSRNG_CTRL_REG_OFFSET, reg);
+}
+
+/**
+ * Verify the CTRL register from the CSRNG.
+ */
+static void csrng_verify(void) {
+  uint32_t reg =
+      bitfield_field32_write(0, CSRNG_CTRL_ENABLE_FIELD, kMultiBitBool4True);
+  reg = bitfield_field32_write(reg, CSRNG_CTRL_SW_APP_ENABLE_FIELD,
+                               kMultiBitBool4True);
+  reg = bitfield_field32_write(reg, CSRNG_CTRL_READ_INT_STATE_FIELD,
+                               kMultiBitBool4True);
+  reg = bitfield_field32_write(reg, CSRNG_CTRL_FIPS_FORCE_ENABLE_FIELD,
+                               kMultiBitBool4False);
+  HARDENED_CHECK_EQ(abs_mmio_read32(csrng_base() + CSRNG_CTRL_REG_OFFSET), reg);
 }
 
 /**
@@ -524,22 +565,40 @@ static status_t edn_ready_block(uint32_t edn_address) {
  */
 OT_WARN_UNUSED_RESULT
 static status_t edn_configure(const edn_config_t *config) {
-  HARDENED_TRY(csrng_send_app_cmd(config->base_address, config->reseed,
-                                  kEntropyCsrngSendAppCmdTypeEdnRes, false));
-  HARDENED_TRY(csrng_send_app_cmd(config->base_address, config->generate,
-                                  kEntropyCsrngSendAppCmdTypeEdnGen, false));
-  abs_mmio_write32(
-      config->base_address + EDN_MAX_NUM_REQS_BETWEEN_RESEEDS_REG_OFFSET,
-      config->reseed_interval);
+  // Determine which EDN instance this is based on the config pointer
+  uint32_t base_address;
+  if (config ==
+      &kEntropyComplexConfigs[kEntropyComplexConfigIdContinuous].edn0) {
+    base_address = edn0_base();
+  } else if (config ==
+             &kEntropyComplexConfigs[kEntropyComplexConfigIdContinuous].edn1) {
+    base_address = edn1_base();
+  } else {
+    return OTCRYPTO_FATAL_ERR;
+  }
 
-  uint32_t reg =
-      bitfield_field32_write(0, EDN_CTRL_EDN_ENABLE_FIELD, kMultiBitBool4True);
+  HARDENED_TRY(csrng_send_app_cmd(base_address, config->reseed,
+                                  kEntropyCsrngSendAppCmdTypeEdnRes, false));
+  HARDENED_TRY(csrng_send_app_cmd(base_address, config->generate,
+                                  kEntropyCsrngSendAppCmdTypeEdnGen, false));
+  abs_mmio_write32(base_address + EDN_MAX_NUM_REQS_BETWEEN_RESEEDS_REG_OFFSET,
+                   config->reseed_interval);
+
+  // Clear the EDN recoverable alert status register.
+  abs_mmio_write32(base_address + EDN_RECOV_ALERT_STS_REG_OFFSET, 0);
+
+  uint32_t reg = bitfield_field32_write(
+      EDN_CTRL_REG_RESVAL, EDN_CTRL_EDN_ENABLE_FIELD, kMultiBitBool4True);
   reg = bitfield_field32_write(reg, EDN_CTRL_AUTO_REQ_MODE_FIELD,
                                kMultiBitBool4True);
-  abs_mmio_write32(config->base_address + EDN_CTRL_REG_OFFSET, reg);
+  reg = bitfield_field32_write(reg, EDN_CTRL_BOOT_REQ_MODE_FIELD,
+                               kMultiBitBool4False);
+  reg = bitfield_field32_write(reg, EDN_CTRL_CMD_FIFO_RST_FIELD,
+                               kMultiBitBool4False);
+  abs_mmio_write32(base_address + EDN_CTRL_REG_OFFSET, reg);
 
-  HARDENED_TRY(edn_ready_block(config->base_address));
-  HARDENED_TRY(csrng_send_app_cmd(config->base_address, config->instantiate,
+  HARDENED_TRY(edn_ready_block(base_address));
+  HARDENED_TRY(csrng_send_app_cmd(base_address, config->instantiate,
                                   kEntropyCsrngSendAppCmdTypeEdnSw, true));
   return OTCRYPTO_OK;
 }
@@ -551,18 +610,19 @@ static status_t edn_configure(const edn_config_t *config) {
  * synchronization issues with internal FIFOs.
  */
 static void entropy_src_stop(void) {
-  abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET,
+  abs_mmio_write32(entropy_src_base() + ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET,
                    ENTROPY_SRC_MODULE_ENABLE_REG_RESVAL);
 
   // Set default values for other critical registers to avoid synchronization
   // issues.
-  abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_ENTROPY_CONTROL_REG_OFFSET,
+  abs_mmio_write32(entropy_src_base() + ENTROPY_SRC_ENTROPY_CONTROL_REG_OFFSET,
                    ENTROPY_SRC_ENTROPY_CONTROL_REG_RESVAL);
-  abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_CONF_REG_OFFSET,
+  abs_mmio_write32(entropy_src_base() + ENTROPY_SRC_CONF_REG_OFFSET,
                    ENTROPY_SRC_CONF_REG_RESVAL);
-  abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_OFFSET,
-                   ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_RESVAL);
-  abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_ALERT_THRESHOLD_REG_OFFSET,
+  abs_mmio_write32(
+      entropy_src_base() + ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_OFFSET,
+      ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_RESVAL);
+  abs_mmio_write32(entropy_src_base() + ENTROPY_SRC_ALERT_THRESHOLD_REG_OFFSET,
                    ENTROPY_SRC_ALERT_THRESHOLD_REG_RESVAL);
 }
 
@@ -582,9 +642,9 @@ static void entropy_src_stop(void) {
  * See hw/ip/csrng/doc/_index.md#module-enable-and-disable for more details.
  */
 static void entropy_complex_stop_all(void) {
-  edn_stop(kBaseEdn0);
-  edn_stop(kBaseEdn1);
-  abs_mmio_write32(kBaseCsrng + CSRNG_CTRL_REG_OFFSET, CSRNG_CTRL_REG_RESVAL);
+  edn_stop(edn0_base());
+  edn_stop(edn1_base());
+  abs_mmio_write32(csrng_base() + CSRNG_CTRL_REG_OFFSET, CSRNG_CTRL_REG_RESVAL);
   entropy_src_stop();
 }
 
@@ -598,11 +658,11 @@ static void entropy_complex_stop_all(void) {
  * @param name Name of register (e.g. REPCNT, BUCKET).
  * @param value Value to set for the FIPS_THRESH field.
  */
-#define SET_FIPS_THRESH(name, value)                                \
-  abs_mmio_write32(                                                 \
-      kBaseEntropySrc + ENTROPY_SRC_##name##_THRESHOLDS_REG_OFFSET, \
-      bitfield_field32_write(                                       \
-          ENTROPY_SRC_##name##_THRESHOLDS_REG_RESVAL,               \
+#define SET_FIPS_THRESH(name, value)                                   \
+  abs_mmio_write32(                                                    \
+      entropy_src_base() + ENTROPY_SRC_##name##_THRESHOLDS_REG_OFFSET, \
+      bitfield_field32_write(                                          \
+          ENTROPY_SRC_##name##_THRESHOLDS_REG_RESVAL,                  \
           ENTROPY_SRC_##name##_THRESHOLDS_FIPS_THRESH_FIELD, value));
 
 /**
@@ -623,7 +683,7 @@ static status_t entropy_src_configure(const entropy_src_config_t *config) {
       0, ENTROPY_SRC_ENTROPY_CONTROL_ES_ROUTE_FIELD, config->route_to_firmware);
   reg = bitfield_field32_write(reg, ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_FIELD,
                                config->bypass_conditioner);
-  abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_ENTROPY_CONTROL_REG_OFFSET,
+  abs_mmio_write32(entropy_src_base() + ENTROPY_SRC_ENTROPY_CONTROL_REG_OFFSET,
                    reg);
 
   // Config register configuration
@@ -641,11 +701,11 @@ static status_t entropy_src_configure(const entropy_src_config_t *config) {
   reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_RNG_BIT_ENABLE_FIELD,
                                config->single_bit_mode);
   reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_RNG_BIT_SEL_FIELD, 0);
-  abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_CONF_REG_OFFSET, reg);
+  abs_mmio_write32(entropy_src_base() + ENTROPY_SRC_CONF_REG_OFFSET, reg);
 
   // Configure health test window. Conditioning bypass is not supported.
   abs_mmio_write32(
-      kBaseEntropySrc + ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_OFFSET,
+      entropy_src_base() + ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_OFFSET,
       bitfield_field32_write(ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_RESVAL,
                              ENTROPY_SRC_HEALTH_TEST_WINDOWS_FIPS_WINDOW_FIELD,
                              config->fips_test_window_size));
@@ -657,7 +717,7 @@ static status_t entropy_src_configure(const entropy_src_config_t *config) {
   reg = bitfield_field32_write(
       reg, ENTROPY_SRC_ALERT_THRESHOLD_ALERT_THRESHOLD_INV_FIELD,
       ~config->alert_threshold);
-  abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_ALERT_THRESHOLD_REG_OFFSET,
+  abs_mmio_write32(entropy_src_base() + ENTROPY_SRC_ALERT_THRESHOLD_REG_OFFSET,
                    reg);
 
   // Configure health test thresholds. Conditioning bypass is not supported.
@@ -672,7 +732,7 @@ static status_t entropy_src_configure(const entropy_src_config_t *config) {
   SET_FIPS_THRESH(EXTHT_LO, config->extht_lo_threshold);
 
   // Enable entropy_src.
-  abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET,
+  abs_mmio_write32(entropy_src_base() + ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET,
                    kMultiBitBool4True);
 
   // TODO: Add FI checks.
@@ -687,15 +747,15 @@ static status_t entropy_src_configure(const entropy_src_config_t *config) {
  * @param name Name of register (e.g. REPCNT, BUCKET).
  * @param exp Expected value of the FIPS_THRESH field.
  */
-#define VERIFY_FIPS_THRESH(name, exp)                                  \
-  do {                                                                 \
-    uint32_t reg = abs_mmio_read32(                                    \
-        kBaseEntropySrc + ENTROPY_SRC_##name##_THRESHOLDS_REG_OFFSET); \
-    uint32_t act = bitfield_field32_read(                              \
-        reg, ENTROPY_SRC_##name##_THRESHOLDS_FIPS_THRESH_FIELD);       \
-    if (act != exp) {                                                  \
-      return OTCRYPTO_RECOV_ERR;                                       \
-    }                                                                  \
+#define VERIFY_FIPS_THRESH(name, exp)                                     \
+  do {                                                                    \
+    uint32_t reg = abs_mmio_read32(                                       \
+        entropy_src_base() + ENTROPY_SRC_##name##_THRESHOLDS_REG_OFFSET); \
+    uint32_t act = bitfield_field32_read(                                 \
+        reg, ENTROPY_SRC_##name##_THRESHOLDS_FIPS_THRESH_FIELD);          \
+    if (act != exp) {                                                     \
+      return OTCRYPTO_RECOV_ERR;                                          \
+    }                                                                     \
   } while (false);
 
 /**
@@ -719,8 +779,8 @@ static status_t entropy_src_check(const entropy_src_config_t *config) {
   }
 
   // Check that entropy_src is enabled.
-  uint32_t reg =
-      abs_mmio_read32(kBaseEntropySrc + ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET);
+  uint32_t reg = abs_mmio_read32(entropy_src_base() +
+                                 ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET);
   if (reg != kMultiBitBool4True) {
     return OTCRYPTO_RECOV_ERR;
   }
@@ -732,7 +792,7 @@ static status_t entropy_src_check(const entropy_src_config_t *config) {
   //   2. CONF.RNG_BIT_ENABLE = false
   //   3. CONTROL.ES_TYPE = false
   //   3. CONTROL.ES_ROUTE = false
-  reg = abs_mmio_read32(kBaseEntropySrc + ENTROPY_SRC_CONF_REG_OFFSET);
+  reg = abs_mmio_read32(entropy_src_base() + ENTROPY_SRC_CONF_REG_OFFSET);
   uint32_t conf_fips_enable =
       bitfield_field32_read(reg, ENTROPY_SRC_CONF_FIPS_ENABLE_FIELD);
   uint32_t conf_rng_bit_enable =
@@ -741,8 +801,8 @@ static status_t entropy_src_check(const entropy_src_config_t *config) {
       conf_rng_bit_enable != kMultiBitBool4False) {
     return OTCRYPTO_RECOV_ERR;
   }
-  reg =
-      abs_mmio_read32(kBaseEntropySrc + ENTROPY_SRC_ENTROPY_CONTROL_REG_OFFSET);
+  reg = abs_mmio_read32(entropy_src_base() +
+                        ENTROPY_SRC_ENTROPY_CONTROL_REG_OFFSET);
   uint32_t control_es_type =
       bitfield_field32_read(reg, ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_FIELD);
   uint32_t control_es_route =
@@ -753,7 +813,7 @@ static status_t entropy_src_check(const entropy_src_config_t *config) {
   }
 
   // Check health test window register.
-  reg = abs_mmio_read32(kBaseEntropySrc +
+  reg = abs_mmio_read32(entropy_src_base() +
                         ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_OFFSET);
   if (bitfield_field32_read(
           reg, ENTROPY_SRC_HEALTH_TEST_WINDOWS_FIPS_WINDOW_FIELD) !=
@@ -768,7 +828,7 @@ static status_t entropy_src_check(const entropy_src_config_t *config) {
   exp_reg = bitfield_field32_write(
       exp_reg, ENTROPY_SRC_ALERT_THRESHOLD_ALERT_THRESHOLD_INV_FIELD,
       ~(uint32_t)config->alert_threshold);
-  if (exp_reg != abs_mmio_read32(kBaseEntropySrc +
+  if (exp_reg != abs_mmio_read32(entropy_src_base() +
                                  ENTROPY_SRC_ALERT_THRESHOLD_REG_OFFSET)) {
     return OTCRYPTO_RECOV_ERR;
   }
@@ -798,7 +858,7 @@ static status_t entropy_src_check(const entropy_src_config_t *config) {
  */
 OT_WARN_UNUSED_RESULT
 static status_t csrng_check(void) {
-  uint32_t reg = abs_mmio_read32(kBaseCsrng + CSRNG_CTRL_REG_OFFSET);
+  uint32_t reg = abs_mmio_read32(csrng_base() + CSRNG_CTRL_REG_OFFSET);
   uint32_t enable = bitfield_field32_read(reg, CSRNG_CTRL_ENABLE_FIELD);
   if (enable == kMultiBitBool4True) {
     return OTCRYPTO_OK;
@@ -817,7 +877,19 @@ static status_t csrng_check(void) {
  */
 OT_WARN_UNUSED_RESULT
 static status_t edn_check(const edn_config_t *config) {
-  uint32_t reg = abs_mmio_read32(config->base_address + EDN_CTRL_REG_OFFSET);
+  // Determine which EDN instance this is based on the config pointer
+  uint32_t base_address;
+  if (config ==
+      &kEntropyComplexConfigs[kEntropyComplexConfigIdContinuous].edn0) {
+    base_address = edn0_base();
+  } else if (config ==
+             &kEntropyComplexConfigs[kEntropyComplexConfigIdContinuous].edn1) {
+    base_address = edn1_base();
+  } else {
+    return OTCRYPTO_FATAL_ERR;
+  }
+
+  uint32_t reg = abs_mmio_read32(base_address + EDN_CTRL_REG_OFFSET);
   uint32_t edn_enable = bitfield_field32_read(reg, EDN_CTRL_EDN_ENABLE_FIELD);
   uint32_t auto_req_mode =
       bitfield_field32_read(reg, EDN_CTRL_AUTO_REQ_MODE_FIELD);
@@ -858,7 +930,7 @@ status_t entropy_complex_check(void) {
 status_t entropy_csrng_instantiate(
     hardened_bool_t disable_trng_input,
     const entropy_seed_material_t *seed_material) {
-  return csrng_send_app_cmd(kBaseCsrng,
+  return csrng_send_app_cmd(csrng_base(),
                             (entropy_csrng_cmd_t){
                                 .id = kEntropyDrbgOpInstantiate,
                                 .disable_trng_input = disable_trng_input,
@@ -870,7 +942,7 @@ status_t entropy_csrng_instantiate(
 
 status_t entropy_csrng_reseed(hardened_bool_t disable_trng_input,
                               const entropy_seed_material_t *seed_material) {
-  return csrng_send_app_cmd(kBaseCsrng,
+  return csrng_send_app_cmd(csrng_base(),
                             (entropy_csrng_cmd_t){
                                 .id = kEntropyDrbgOpReseed,
                                 .disable_trng_input = disable_trng_input,
@@ -881,7 +953,7 @@ status_t entropy_csrng_reseed(hardened_bool_t disable_trng_input,
 }
 
 status_t entropy_csrng_update(const entropy_seed_material_t *seed_material) {
-  return csrng_send_app_cmd(kBaseCsrng,
+  return csrng_send_app_cmd(csrng_base(),
                             (entropy_csrng_cmd_t){
                                 .id = kEntropyDrbgOpUpdate,
                                 .seed_material = seed_material,
@@ -895,7 +967,7 @@ status_t entropy_csrng_generate_start(
   // Round up the number of 128bit blocks. Aligning with respect to uint32_t.
   // TODO(#6112): Consider using a canonical reference for alignment operations.
   const uint32_t num_128bit_blocks = ceil_div(len, 4);
-  return csrng_send_app_cmd(kBaseCsrng,
+  return csrng_send_app_cmd(csrng_base(),
                             (entropy_csrng_cmd_t){
                                 .id = kEntropyDrbgOpGenerate,
                                 .seed_material = seed_material,
@@ -915,7 +987,7 @@ status_t entropy_csrng_generate_data_get(uint32_t *buf, size_t len,
     // generates data in 128bit chunks (i.e. 4 words).
     uint32_t reg;
     do {
-      reg = abs_mmio_read32(kBaseCsrng + CSRNG_GENBITS_VLD_REG_OFFSET);
+      reg = abs_mmio_read32(csrng_base() + CSRNG_GENBITS_VLD_REG_OFFSET);
     } while (!bitfield_bit32_read(reg, CSRNG_GENBITS_VLD_GENBITS_VLD_BIT));
 
     if (fips_check != kHardenedBoolFalse &&
@@ -930,7 +1002,7 @@ status_t entropy_csrng_generate_data_get(uint32_t *buf, size_t len,
     // request even if we don't use them.
     for (size_t offset = 0; offset < kEntropyCsrngBitsBufferNumWords;
          ++offset) {
-      uint32_t word = abs_mmio_read32(kBaseCsrng + CSRNG_GENBITS_REG_OFFSET);
+      uint32_t word = abs_mmio_read32(csrng_base() + CSRNG_GENBITS_REG_OFFSET);
       size_t word_idx = (block_idx * kEntropyCsrngBitsBufferNumWords) +
                         kEntropyCsrngBitsBufferNumWords - 1 - offset;
       if (word_idx < len) {
@@ -938,6 +1010,9 @@ status_t entropy_csrng_generate_data_get(uint32_t *buf, size_t len,
       }
     }
   }
+
+  // Check the CTRL register from the CSRNG to protect against fault attacks.
+  csrng_verify();
 
   return res;
 }
@@ -950,7 +1025,7 @@ status_t entropy_csrng_generate(const entropy_seed_material_t *seed_material,
 }
 
 status_t entropy_csrng_uninstantiate(void) {
-  return csrng_send_app_cmd(kBaseCsrng,
+  return csrng_send_app_cmd(csrng_base(),
                             (entropy_csrng_cmd_t){
                                 .id = kEntropyDrbgOpUninstantiate,
                                 .seed_material = NULL,

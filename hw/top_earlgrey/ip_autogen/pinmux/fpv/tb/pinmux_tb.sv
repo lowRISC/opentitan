@@ -37,6 +37,7 @@ module pinmux_tb
   input  strap_en_i,
   input  strap_en_override_i,
   input lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
+  input lc_ctrl_pkg::lc_tx_t lc_hw_debug_clr_i,
   input lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_check_byp_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,

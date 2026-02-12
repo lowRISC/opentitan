@@ -278,7 +278,8 @@ static void csrng_static_generate_run(uint32_t *output, size_t output_len) {
   CHECK_DIF_OK(dif_csrng_instantiate(&csrng, kDifCsrngEntropySrcToggleEnable,
                                      &kEmptySeedMaterial));
 
-  CHECK_STATUS_OK(csrng_testutils_cmd_generate_run(&csrng, output, output_len));
+  CHECK_STATUS_OK(
+      csrng_testutils_cmd_generate_run(&csrng, NULL, output, output_len));
   uint32_t prev_word = 0;
   for (size_t i = 0; i < output_len; ++i) {
     CHECK(prev_word != output[i],

@@ -19,16 +19,24 @@ extern "C" {
     value(_, Init) \
     value(_, BatchFvsr) \
     value(_, BatchRandom) \
+    value(_, BatchDaisy) \
     value(_, Single)
-UJSON_SERDE_ENUM(HmacScaSubcommand, hmac_sca_subcommand_t, HMACSCA_SUBCOMMAND);
+C_ONLY(UJSON_SERDE_ENUM(HmacScaSubcommand, hmac_sca_subcommand_t, HMACSCA_SUBCOMMAND));
+RUST_ONLY(UJSON_SERDE_ENUM(HmacScaSubcommand, hmac_sca_subcommand_t, HMACSCA_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
+
+#define HMACSCA_TRIGGERS(field, string) \
+    field(start_trigger, bool) \
+    field(msg_trigger, bool) \
+    field(process_trigger, bool) \
+    field(finish_trigger, bool)
+UJSON_SERDE_STRUCT(PenetrationtestHmacScaTriggers, penetrationtest_hmac_sca_triggers_t, HMACSCA_TRIGGERS);
 
 #define HMACSCA_MESSAGE(field, string) \
     field(message, uint8_t, HMACSCA_CMD_MAX_MESSAGE_BYTES)
 UJSON_SERDE_STRUCT(PenetrationtestHmacScaMessage, penetrationtest_hmac_sca_message_t, HMACSCA_MESSAGE);
 
 #define HMACSCA_KEY(field, string) \
-    field(key, uint8_t, HMACSCA_CMD_MAX_KEY_BYTES) \
-    field(mask, uint8_t, HMACSCA_CMD_MAX_KEY_BYTES)
+    field(key, uint8_t, HMACSCA_CMD_MAX_KEY_BYTES)
 UJSON_SERDE_STRUCT(PenetrationtestHmacScaKey, penetrationtest_hmac_sca_key_t, HMACSCA_KEY);
 
 #define HMACSCA_TAG(field, string) \

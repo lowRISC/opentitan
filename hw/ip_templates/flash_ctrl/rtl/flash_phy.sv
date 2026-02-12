@@ -149,9 +149,10 @@ module flash_phy
 
   // This fifo holds the expected return order
   prim_fifo_sync #(
-    .Width   (BankW),
-    .Pass    (0),
-    .Depth   (SeqFifoDepth)
+    .Width       (BankW),
+    .Pass        (0),
+    .Depth       (SeqFifoDepth),
+    .NeverClears (1'b1)
   ) u_bank_sequence_fifo (
     .clk_i,
     .rst_ni,
@@ -230,10 +231,11 @@ module flash_phy
     assign host_rsp_ack[bank] = host_req_done_o & (rsp_bank_sel == bank);
 
     prim_fifo_sync #(
-      .Width   (BusFullWidth + 1),
-      .Pass    (1'b1),
-      .Depth   (FlashMacroOustanding),
-      .Secure  (1'b1) // SEC_CM: FIFO.CTR.REDUN
+      .Width       (BusFullWidth + 1),
+      .Pass        (1'b1),
+      .Depth       (FlashMacroOustanding),
+      .NeverClears (1'b1),
+      .Secure      (1'b1) // SEC_CM: FIFO.CTR.REDUN
     ) u_host_rsp_fifo (
       .clk_i,
       .rst_ni,

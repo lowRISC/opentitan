@@ -2,26 +2,24 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
-use clap::Parser;
-
-use anyhow::Context;
-use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, DifLcCtrlToken, LcCtrlReg, LcCtrlStatus};
-use opentitanlib::test_utils::lc_transition;
-
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
 use std::time::Duration;
 
+use anyhow::{Context, Result};
+use clap::Parser;
 use object::{Object, ObjectSymbol};
-use opentitanlib::app::TransportWrapper;
+
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
+use opentitanlib::test_utils::lc_transition;
 use opentitanlib::test_utils::load_sram_program::{ExecutionMode, SramProgramParams};
 use opentitanlib::test_utils::mem::{MemRead32Req, MemWrite32Req};
 use opentitanlib::uart::console::UartConsole;
+use ot_hal::dif::lc_ctrl::{DifLcCtrlState, DifLcCtrlToken, LcCtrlReg, LcCtrlStatus};
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -48,7 +46,7 @@ fn test_update_phase(
 ) -> Result<()> {
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"Starting [^\r\n]*", _opts.timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"Starting ", _opts.timeout)?;
     let _ = uart.clear_rx_buffer();
     MemWrite32Req::execute(&*uart, test_word_address, value)?;
     Ok(())
@@ -59,7 +57,7 @@ fn test_end(opts: &Opts, end_test_address: u32, transport: &TransportWrapper) ->
     let end_test_value = MemRead32Req::execute(&*uart, end_test_address)?;
     assert!(end_test_value == 0);
     MemWrite32Req::execute(&*uart, end_test_address, /*value=*/ 1)?;
-    let _ = UartConsole::wait_for(&*uart, r"test_end[^\r\n]*", opts.timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"test_end", opts.timeout)?;
     Ok(())
 }
 
@@ -74,7 +72,7 @@ fn test_sram_load(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         .context("failed to apply ROM_BOOTSTRAP strapping")?;
 
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
 
     log::info!("Connecting to RISC-V TAP");
     let mut jtag = opts
@@ -114,7 +112,7 @@ fn test_rma_command(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result
         .context("failed to apply PINMUX_TAP_LC strapping")?;
 
     transport
-        .reset_target(opts.init.bootstrap.options.reset_delay, true)
+        .reset(UartRx::Clear)
         .context("failed to reset target")?;
 
     log::info!("Connecting to JTAG interface");
@@ -149,7 +147,6 @@ fn test_rma_command(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result
         DifLcCtrlState::Rma,
         Some(rma_unlock_token.into_register_values()),
         /*use_external_clk=*/ false,
-        opts.init.bootstrap.options.reset_delay,
         Some(JtagTap::LcTap),
     )
     .expect("failed to trigger transition to rma");

@@ -11,7 +11,7 @@
 #include "sw/device/lib/base/multibits.h"
 
 // Generated.
-#include "flash_ctrl_regs.h"
+#include "hw/top/flash_ctrl_regs.h"
 
 /**
  * Helper function to get the offset of a data region's configuration register.

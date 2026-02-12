@@ -9,6 +9,8 @@
 extern "C" {
 #endif
 
+#define MODULE_ID MAKE_MODULE_ID('j', 'h', 's')
+
 #define HASH_CMD_MAX_MESSAGE_BYTES 17068
 #define HASH_CMD_MAX_CUSTOMIZATION_STRING_BYTES 16
 #define HASH_CMD_MAX_DIGEST_BYTES 256
@@ -45,6 +47,8 @@ UJSON_SERDE_STRUCT(CryptotestHashMessage, cryptotest_hash_message_t, HASH_MESSAG
     field(stepwise_digest, uint8_t, HASH_CMD_MAX_DIGEST_BYTES) \
     field(digest_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestHashOutput, cryptotest_hash_output_t, HASH_OUTPUT);
+
+#undef MODULE_ID
 
 // clang-format on
 

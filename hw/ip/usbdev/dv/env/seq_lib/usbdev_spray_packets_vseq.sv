@@ -14,8 +14,8 @@
 // That certain packets are ignored is checked simply by collecting the packets that we expect to be
 // received and comparing them exactly and in-order against those that the DUT actually collects.
 //
-// From this sequence may be derived other simple sequences that contrain the endpoint configuration
-// and/or target properties (eg. device address, endpoint number).
+// From this sequence may be derived other simple sequences that constrain the endpoint
+// configuration and/or target properties (eg. device address, endpoint number).
 
 class usbdev_spray_packets_vseq extends usbdev_base_vseq;
   `uvm_object_utils(usbdev_spray_packets_vseq)
@@ -296,7 +296,7 @@ class usbdev_spray_packets_vseq extends usbdev_base_vseq;
     csr_wr(.ptr(ral.out_stall[0]), .value(out_stall));
     csr_wr(.ptr(ral.in_stall[0]), .value(in_stall));
     csr_wr(.ptr(ral.rxenable_setup[0]), .value(rxenable_setup));
-    csr_wr(.ptr(ral.rxenable_out[0]), .value(rxenable_out));
+    csr_wr(.ptr(ral.rxenable_out), .value(rxenable_out));
     csr_wr(.ptr(ral.set_nak_out[0]), .value(set_nak_out));
     csr_wr(.ptr(ral.out_iso[0]), .value(out_iso));
     csr_wr(.ptr(ral.in_iso[0]), .value(in_iso));

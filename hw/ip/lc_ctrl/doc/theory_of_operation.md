@@ -5,7 +5,7 @@ It begins with life cycle sensing at power up, progresses through how life cycle
 
 ## Power Up Sequence
 
-Upon power up, the life cycle controller will default to "RAW" state and wait for the OTP controller to initialize and sense the contents of the life cycle partition (for example, see earlgrey's [life cycle partition doc](../../../top_earlgrey/ip_autogen/otp_ctrl/README.md#logical-partitions)).
+Upon power up, the life cycle controller will default to "RAW" state and wait for the OTP controller to initialize and sense the contents of the life cycle partition (for example, see earlgrey's [life cycle partition doc](../../../top_earlgrey/ip_autogen/otp_ctrl/doc/theory_of_operation.md#partition-listing-and-description)).
 When the OTP is ready, the life cycle controller reads the contents of the life cycle partition, decodes the life cycle state and updates its internal state to match.
 This implies that unlike the life cycle definition diagram, there is a one-time "RAW to any state" logical transition that is implicit within the implementation.
 Note during OTP sensing, the life cycle controller does not perform any redundant checks upon the value it reads; instead that responsibility is allocated to the OTP controller.
@@ -64,7 +64,7 @@ All 128bit lock and unlock tokens are passed through a cryptographic one way fun
 This mechanism is used to guard against reverse engineering and brute-forcing attempts.
 An attacker able to extract the hashed token values from the scrambled OTP partitions or from the netlist would first have to find a hash collision in order to perform a life cycle transition, since the values supplied to the life cycle controller must be valid hash pre-images.
 
-The employed one way function is a 128bit cSHAKE hash with the function name "" and customization string "LC_CTRL", see also [kmac documentation](../../kmac/README.md) and [`kmac_pkg.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/kmac/rtl/kmac_pkg.sv#L148-L155).
+The employed one way function is a 128bit cSHAKE hash with the function name "" (empty string) and customization string "LC_CTRL", see also [kmac documentation](../../kmac/README.md) and AppCfgLcCtrl in [`kmac_pkg.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/kmac/rtl/kmac_pkg.sv).
 
 ### Post Transition Handling
 
@@ -169,7 +169,7 @@ This signal is also unconditionally asserted in all INVALID and SCRAP states (in
 #### CHECK_BYP_EN
 
 The CHECK_BYP_EN signal is used to disable the background consistency checks of the life cycle OTP partition during life cycle transitions to prevent spurious consistency check failures (the OTP contents and the buffer registers can get out of sync during state transitions).
-For example, see [earlgrey's background consistency checks](../../../top_earlgrey/ip_autogen/otp_ctrl/README.md#partition-checks).
+For example, see [earlgrey's background consistency checks](../../../top_earlgrey/ip_autogen/otp_ctrl/doc/theory_of_operation.md#partition-checks).
 The CHECK_BYP_EN signal is only asserted when a transition command is issued.
 
 #### CLK_BYP_REQ
@@ -179,7 +179,7 @@ This functionality is needed in certain life cycle states where the internal clo
 Note that the [`TRANSITION_CTRL.EXT_CLOCK_EN`](registers.md#transition_ctrl) register can only be set to one if the transition interface has been claimed via the [`CLAIM_TRANSITION_IF`](registers.md#claim_transition_if) mutex.
 This function is not available in production life cycle states.
 
-For details on the clock switch, please see top_earlgrey's [clkmgr](../../../top_earlgrey/ip_autogen/clkmgr/README.md#life-cycle-requested-external-clock).
+For details on the clock switch, please see top_earlgrey's [clkmgr](../../../top_earlgrey/ip_autogen/clkmgr/doc/theory_of_operation.md#life-cycle-requested-external-clock).
 
 
 ### Life Cycle Access Control Signals
@@ -207,6 +207,11 @@ For more a list of the collateral in Flash and OTP and an explanation of how tha
 The SEED_HW_RD_EN signal controls whether the owner and creator root keys can be accessed by hardware.
 This signal is dependent on the personalization state of the device and will only be enabled if the device has been personalized (i.e., when the OTP partition holding the root key has been locked down).
 
+#### RMA_STATE
+
+The RMA_STATE signal states whether the current life cycle state is RMA or not.
+The signal is set to `On` when in the RMA state and otherwise to `Off`.
+
 #### ISO_PART_SW_RD_EN and ISO_PART_SW_WR_EN
 
 These signals control whether the isolated flash partition holding additional manufacturing details can be accessed.
@@ -228,7 +233,7 @@ Before use, the secrets are unwrapped.
 
 The SECRET0_DIGEST and SECRET2_DIGEST are the digest values computed over the secret partitions in OTP holding the tokens and root keys.
 As described in more detail in the OTP controller specification, these digests have a non-zero value once the partition has been provisioned and write/read access has been locked.
-For example, see earlgey's [OTP controller specification](../../../top_earlgrey/ip_autogen/otp_ctrl/README.md#direct-access-memory-map).
+For example, see earlgey's [OTP controller specification](../../../top_earlgrey/ip_autogen/otp_ctrl/doc/programmers_guide.md#direct-access-memory-map).
 
 ### ID State of the Device
 
@@ -241,7 +246,7 @@ If SECRET2_DIGEST has a nonzero value, the CREATOR_SEED_SW_RW_EN signal will be 
 
 ### Secret Collateral
 
-Among the OTP life cycle collateral, the following are considered secrets (note there may be other secrets unrelated to life cycle, for example please see earlgrey's [OTP controller specification](../../../top_earlgrey/ip_autogen/otp_ctrl/README.md#partition-listing-and-description) for more details):
+Among the OTP life cycle collateral, the following are considered secrets (note there may be other secrets unrelated to life cycle, for example please see earlgrey's [OTP controller specification](../../../top_earlgrey/ip_autogen/otp_ctrl/doc/theory_of_operation.md#partition-listing-and-description) for more details):
 
 - *_TOKEN
 - CREATOR_ROOT_KEY*
@@ -255,7 +260,7 @@ Thus the system cannot be abused to generate a large number of traces for inform
 
 Note also, a global key is used here because there is no other non-volatile location to store a secret key.
 If PUFs were available (either in memory form or fused form), it could become an appealing alternative to hold a device unique fuse key.
-For example, see earlgrey's [OTP controller](../../../top_earlgrey/ip_autogen/otp_ctrl/README.md#secret-vs-non-secret-partitions) for more details.
+For example, see earlgrey's [OTP controller](../../../top_earlgrey/ip_autogen/otp_ctrl/doc/theory_of_operation.md#secret-vs-non-secret-partitions) for more details.
 
 ### OTP Accessibility Summary and Impact of Life Cycle Signals
 
@@ -314,7 +319,7 @@ Conceptually speaking, the life cycle controller consists of a large  FSM that i
 ![LC Controller Block Diagram](../doc/lc_ctrl_blockdiag.svg)
 
 The main FSM implements a linear state sequence that always moves in one direction for increased glitch resistance.
-I.e., it never returns to the initialization and broadcast states as described in the [life cycle state controller section](#main-fsm).
+I.e., it never returns to the initialization and broadcast states as described in the [life cycle state controller section](#life-cycle-state-controller).
 
 The main FSM state is redundantly encoded, and augmented with the life cycle state.
 That augmented state vector is consumed by three combinational submodules:
@@ -325,7 +330,7 @@ That augmented state vector is consumed by three combinational submodules:
 Note that the two additional life cycle control signals `lc_flash_rma_req_o` and `lc_clk_byp_req_o` are output by the main FSM, since they cannot be derived from the life cycle state alone and are reactive in nature in the sense that there is a corresponding acknowledgement signal.
 
 The life cycle controller contains a JTAG TAP that can be used to access the same CSR space that is accessible via TL-UL.
-In order to write to the CSRs, a [hardware mutex](#hardware-mutex) has to be claimed.
+In order to write to the CSRs, a [hardware mutex](#life-cycle-request-interface) has to be claimed.
 
 The life cycle controller also contains two escalation receivers that are connected to escalation severity 1 and 2 of the alert handler module.
 The actions that are triggered by these escalation receivers are explained in the [escalation handling section](#escalation-handling) below.
@@ -337,7 +342,7 @@ The figure below provides more context about how the life cycle controller is in
 ![LC Controller Block Diagram](../doc/lc_ctrl_system_view.svg)
 
 Although technically a life cycle feature, the sampling of the strap pins and JTAG / TAP isolation is performed in the pinmux after the life cycle controller has initialized.
-See the [pinmux documentation](../../../ip_templates/pinmux/README.md#strap-sampling-and-tap-isolation) and the detailed selection listed in [Life Cycle Definition Table](../../../../doc/security/specs/device_life_cycle/README.md#manufacturing-states).
+See the [pinmux documentation](../../../top_earlgrey/ip_autogen/pinmux/doc/theory_of_operation.md#strap-sampling-and-tap-isolation) and the detailed selection listed in [Life Cycle Definition Table](../../../../doc/security/specs/device_life_cycle/README.md#manufacturing-states).
 
 ### Life Cycle Manufacturing State Encodings
 
@@ -372,7 +377,7 @@ In order to guard against glitch attacks during OTP sense and readout, the OTP c
 I.e., the OTP controller senses and buffers the life cycle in registers in a first readout pass.
 Then, as part of the consistency check mechanism, the OTP controller performs a second and third readout pass to verify whether the buffered life cycle state indeed corresponds to the values stored in OTP.
 The second readout pass uses a linearly increasing address sequence, whereas the third readout pass uses a linearly decreasing address sequence (i.e., reads in reverse order).
-For example, see earlgrey's [consistency check mechanism](../../../top_earlgrey/ip_autogen/otp_ctrl/README.md#storage-consistency).
+For example, see earlgrey's [consistency check mechanism](../../../top_earlgrey/ip_autogen/otp_ctrl/doc/theory_of_operation.md#storage-consistency).
 
 ### Transition Counter Encoding
 
@@ -485,4 +490,4 @@ Then, the debugger can issue a CSR read or write operation via the 0x11 register
 
 As currently defined, the life cycle controller TAP is a separate entity from the main SOC DFT TAP and the processor TAP.
 This physical separation aids in logical isolation, as the SOC DFT tap can be disabled by DFT_EN, while the processor TAP can be disabled by DEBUG_EN.
-The TAP isolation and multiplexing is implemented in the pinmux IP as [described here](../../../ip_templates/pinmux/README.md#strap-sampling-and-tap-isolation).
+The TAP isolation and multiplexing is implemented in the pinmux IP as [described here](../../../top_earlgrey/ip_autogen/pinmux/doc/theory_of_operation.md#strap-sampling-and-tap-isolation).

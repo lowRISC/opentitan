@@ -26,17 +26,19 @@
   // Import additional common sim cfg files.
   import_cfgs: [// Project wide common sim cfg file
                 "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
-                "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
+                // Common CIP test lists
                 "{proj_root}/hw/dv/tools/dvsim/tests/alert_test.hjson",
-                "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/intr_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
                 // Disable stress_all and stress_all_with_rand_reset tests as they are not
                 // implemented yet #21298
                 // "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"
                 ]
 
   // Add additional tops for simulation.
-//  sim_tops: ["mbx_bind", "mbx_cov_bind"]
+  sim_tops: ["mbx_bind"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 2
@@ -49,7 +51,7 @@
 //      name: default_vcs_cov_cfg_file
 //      value: "-cm_hier {dv_root}/tools/vcs/cover.cfg+{dv_root}/tools/vcs/common_cov_excl.cfg+{proj_root}/hw/ip/mbx/dv/cov/mbx_cover.cfg"
 //    }
-//    // The jtag agent requires the data and bytenable widths to be increased.
+//    // The jtag agent requires the data and byte-enable widths to be increased.
 //    {
 //      name: tl_dw
 //      value: 64
@@ -89,6 +91,11 @@
       name: mbx_imbx_oob
       uvm_test_seq: mbx_imbx_oob_vseq
     }
+    {
+      name: mbx_doe_intr_msg
+      uvm_test_seq: mbx_doe_intr_msg_vseq
+      reseed: 5
+    }
   ]
 
   // List of regressions.
@@ -101,9 +108,6 @@
       name: stress
       tests : ["mbx_stress",
                "mbx_stress_zero_delays"
-//              "mbx_sw_access",
-//              "mbx_sw_smoke",
-//              "mbx_sw_alert_test"
       ]
     }
   ]

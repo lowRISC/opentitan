@@ -14,6 +14,11 @@
       desc: "Number of translatable regions per ibex bus"
       type: "int"
       default: "2"
+      dtgen:
+      {
+        type: "uint8"
+        name: "num_regions"
+      }
     }
     {
       name: "uniquified_modules"

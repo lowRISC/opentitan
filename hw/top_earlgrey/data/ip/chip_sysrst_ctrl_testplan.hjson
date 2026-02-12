@@ -81,7 +81,7 @@
             - Glitch the inputs at the chip IOs before stabilizing on the programmed transitions.
             - SW services the interrupt when triggered, verifies the pin input value and
               key_intr_status for correctness and clears the interrupt status.
-            - Verify separately, each key combination sufccessfully generates an interrupt.
+            - Verify separately, each key combination successfully generates an interrupt.
             '''
       features: ["SYSRST_CTRL.INPUT_TRIGGERED_INTERRUPT"]
       stage: V2

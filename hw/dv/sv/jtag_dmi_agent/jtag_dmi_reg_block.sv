@@ -43,7 +43,7 @@ class jtag_dmi_reg_abstractdata extends dv_base_reg;
 
   `uvm_object_utils(jtag_dmi_reg_abstractdata)
 
-  function new(string       name = "jtag_dmi_reg_abstractdata",
+  function new(string       name = "",
                int unsigned n_bits = 32,
                int          has_coverage = UVM_NO_COVERAGE);
     super.new(name, n_bits, has_coverage);
@@ -86,7 +86,7 @@ class jtag_dmi_reg_dmcontrol extends dv_base_reg;
 
   `uvm_object_utils(jtag_dmi_reg_dmcontrol)
 
-  function new(string       name = "jtag_dmi_reg_dmcontrol",
+  function new(string       name = "",
                int unsigned n_bits = 32,
                int          has_coverage = UVM_NO_COVERAGE);
     super.new(name, n_bits, has_coverage);
@@ -296,7 +296,7 @@ class jtag_dmi_reg_dmstatus extends dv_base_reg;
 
   `uvm_object_utils(jtag_dmi_reg_dmstatus)
 
-  function new(string       name = "jtag_dmi_reg_dmstatus",
+  function new(string       name = "",
                int unsigned n_bits = 32,
                int          has_coverage = UVM_NO_COVERAGE);
     super.new(name, n_bits, has_coverage);
@@ -604,7 +604,7 @@ class jtag_dmi_reg_hartinfo extends dv_base_reg;
 
   `uvm_object_utils(jtag_dmi_reg_hartinfo)
 
-  function new(string       name = "jtag_dmi_reg_hartinfo",
+  function new(string       name = "",
                int unsigned n_bits = 32,
                int          has_coverage = UVM_NO_COVERAGE);
     super.new(name, n_bits, has_coverage);
@@ -685,7 +685,7 @@ class jtag_dmi_reg_haltsum1 extends dv_base_reg;
 
   `uvm_object_utils(jtag_dmi_reg_haltsum1)
 
-  function new(string       name = "jtag_dmi_reg_haltsum1",
+  function new(string       name = "",
                int unsigned n_bits = 32,
                int          has_coverage = UVM_NO_COVERAGE);
     super.new(name, n_bits, has_coverage);
@@ -721,7 +721,7 @@ class jtag_dmi_reg_abstractcs extends dv_base_reg;
 
   `uvm_object_utils(jtag_dmi_reg_abstractcs)
 
-  function new(string       name = "jtag_dmi_reg_abstractcs",
+  function new(string       name = "",
                int unsigned n_bits = 32,
                int          has_coverage = UVM_NO_COVERAGE);
     super.new(name, n_bits, has_coverage);
@@ -803,7 +803,7 @@ class jtag_dmi_reg_command extends dv_base_reg;
 
   `uvm_object_utils(jtag_dmi_reg_command)
 
-  function new(string       name = "jtag_dmi_reg_command",
+  function new(string       name = "",
                int unsigned n_bits = 32,
                int          has_coverage = UVM_NO_COVERAGE);
     super.new(name, n_bits, has_coverage);
@@ -853,7 +853,7 @@ class jtag_dmi_reg_abstractauto extends dv_base_reg;
 
   `uvm_object_utils(jtag_dmi_reg_abstractauto)
 
-  function new(string       name = "jtag_dmi_reg_abstractauto",
+  function new(string       name = "",
                int unsigned n_bits = 32,
                int          has_coverage = UVM_NO_COVERAGE);
     super.new(name, n_bits, has_coverage);
@@ -902,7 +902,7 @@ class jtag_dmi_reg_progbuf extends dv_base_reg;
 
   `uvm_object_utils(jtag_dmi_reg_progbuf)
 
-  function new(string       name = "jtag_dmi_reg_progbuf",
+  function new(string       name = "",
                int unsigned n_bits = 32,
                int          has_coverage = UVM_NO_COVERAGE);
     super.new(name, n_bits, has_coverage);
@@ -935,7 +935,7 @@ class jtag_dmi_reg_haltsum2 extends dv_base_reg;
 
   `uvm_object_utils(jtag_dmi_reg_haltsum2)
 
-  function new(string       name = "jtag_dmi_reg_haltsum2",
+  function new(string       name = "",
                int unsigned n_bits = 32,
                int          has_coverage = UVM_NO_COVERAGE);
     super.new(name, n_bits, has_coverage);
@@ -968,7 +968,7 @@ class jtag_dmi_reg_haltsum3 extends dv_base_reg;
 
   `uvm_object_utils(jtag_dmi_reg_haltsum3)
 
-  function new(string       name = "jtag_dmi_reg_haltsum3",
+  function new(string       name = "",
                int unsigned n_bits = 32,
                int          has_coverage = UVM_NO_COVERAGE);
     super.new(name, n_bits, has_coverage);
@@ -998,7 +998,7 @@ endclass : jtag_dmi_reg_haltsum3
 class jtag_dmi_reg_field_sbcs_sberror extends dv_base_reg_field;
   `uvm_object_utils(jtag_dmi_reg_field_sbcs_sberror)
 
-  function new(string name = "jtag_dmi_reg_field_sbcs_sberror");
+  function new(string name = "");
     super.new(name);
   endfunction: new
 
@@ -1032,7 +1032,7 @@ class jtag_dmi_reg_sbcs extends dv_base_reg;
 
   `uvm_object_utils(jtag_dmi_reg_sbcs)
 
-  function new(string       name = "jtag_dmi_reg_sbcs",
+  function new(string       name = "",
                int unsigned n_bits = 32,
                int          has_coverage = UVM_NO_COVERAGE);
     super.new(name, n_bits, has_coverage);
@@ -1289,7 +1289,7 @@ class jtag_dmi_reg_sbaddress0 extends dv_base_reg;
 
   `uvm_object_utils(jtag_dmi_reg_sbaddress0)
 
-  function new(string       name = "jtag_dmi_reg_sbaddress0",
+  function new(string       name = "",
                int unsigned n_bits = 32,
                int          has_coverage = UVM_NO_COVERAGE);
     super.new(name, n_bits, has_coverage);
@@ -1322,7 +1322,7 @@ class jtag_dmi_reg_sbaddress1 extends dv_base_reg;
 
   `uvm_object_utils(jtag_dmi_reg_sbaddress1)
 
-  function new(string       name = "jtag_dmi_reg_sbaddress1",
+  function new(string       name = "",
                int unsigned n_bits = 32,
                int          has_coverage = UVM_NO_COVERAGE);
     super.new(name, n_bits, has_coverage);
@@ -1355,7 +1355,7 @@ class jtag_dmi_reg_sbaddress2 extends dv_base_reg;
 
   `uvm_object_utils(jtag_dmi_reg_sbaddress2)
 
-  function new(string       name = "jtag_dmi_reg_sbaddress2",
+  function new(string       name = "",
                int unsigned n_bits = 32,
                int          has_coverage = UVM_NO_COVERAGE);
     super.new(name, n_bits, has_coverage);
@@ -1388,7 +1388,7 @@ class jtag_dmi_reg_sbaddress3 extends dv_base_reg;
 
   `uvm_object_utils(jtag_dmi_reg_sbaddress3)
 
-  function new(string       name = "jtag_dmi_reg_sbaddress3",
+  function new(string       name = "",
                int unsigned n_bits = 32,
                int          has_coverage = UVM_NO_COVERAGE);
     super.new(name, n_bits, has_coverage);
@@ -1421,7 +1421,7 @@ class jtag_dmi_reg_sbdata0 extends dv_base_reg;
 
   `uvm_object_utils(jtag_dmi_reg_sbdata0)
 
-  function new(string       name = "jtag_dmi_reg_sbdata0",
+  function new(string       name = "",
                int unsigned n_bits = 32,
                int          has_coverage = UVM_NO_COVERAGE);
     super.new(name, n_bits, has_coverage);
@@ -1454,7 +1454,7 @@ class jtag_dmi_reg_sbdata1 extends dv_base_reg;
 
   `uvm_object_utils(jtag_dmi_reg_sbdata1)
 
-  function new(string       name = "jtag_dmi_reg_sbdata1",
+  function new(string       name = "",
                int unsigned n_bits = 32,
                int          has_coverage = UVM_NO_COVERAGE);
     super.new(name, n_bits, has_coverage);
@@ -1487,7 +1487,7 @@ class jtag_dmi_reg_sbdata2 extends dv_base_reg;
 
   `uvm_object_utils(jtag_dmi_reg_sbdata2)
 
-  function new(string       name = "jtag_dmi_reg_sbdata2",
+  function new(string       name = "",
                int unsigned n_bits = 32,
                int          has_coverage = UVM_NO_COVERAGE);
     super.new(name, n_bits, has_coverage);
@@ -1520,7 +1520,7 @@ class jtag_dmi_reg_sbdata3 extends dv_base_reg;
 
   `uvm_object_utils(jtag_dmi_reg_sbdata3)
 
-  function new(string       name = "jtag_dmi_reg_sbdata3",
+  function new(string       name = "",
                int unsigned n_bits = 32,
                int          has_coverage = UVM_NO_COVERAGE);
     super.new(name, n_bits, has_coverage);
@@ -1553,7 +1553,7 @@ class jtag_dmi_reg_haltsum0 extends dv_base_reg;
 
   `uvm_object_utils(jtag_dmi_reg_haltsum0)
 
-  function new(string       name = "jtag_dmi_reg_haltsum0",
+  function new(string       name = "",
                int unsigned n_bits = 32,
                int          has_coverage = UVM_NO_COVERAGE);
     super.new(name, n_bits, has_coverage);
@@ -1606,7 +1606,7 @@ class jtag_dmi_reg_block extends dv_base_reg_block;
 
   `uvm_object_utils(jtag_dmi_reg_block)
 
-  function new(string name = "jtag_dmi_reg_block",
+  function new(string name = "",
                int    has_coverage = UVM_NO_COVERAGE);
     super.new(name, has_coverage);
   endfunction : new

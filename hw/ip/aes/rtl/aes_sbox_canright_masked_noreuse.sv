@@ -12,7 +12,7 @@
 // For details, see Section 2.2 of the paper. In addition, a formal analysis using REBECCA (stable
 // mode) shows that the intermediate masks cannot be created by re-using bits from the input and
 // output masks. Instead, fresh random bits need to be used for these intermediate masks. Still,
-// the implmentation cannot be made to pass formal analysis in transient mode. It's usage is thus
+// the implementation cannot be made to pass formal analysis in transient mode. It's usage is thus
 // discouraged. It's included here mainly for reference.
 //
 // For details on the REBECCA tool, see the following paper:

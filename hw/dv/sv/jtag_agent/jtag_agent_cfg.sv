@@ -20,7 +20,7 @@ class jtag_agent_cfg extends dv_base_agent_cfg;
   // JTAG debug transport module (DTM) RAL model based off of RISCV spec 0.13.2 (section 6.1.2).
   jtag_dtm_reg_block jtag_dtm_ral;
 
-  // Option to minize Run-Test/Idle duration
+  // Option to minimize Run-Test/Idle duration
   // Current RVDM has hardcoded dtmcs.idle = 1, which requires a single cycle of Run-Test/Idle duration.
   // This knob can bypass default 1 cycle initial delay of 'driver.drive_jtag_req()' task.
   // Use this knob only for the necessary tests.
@@ -47,8 +47,7 @@ class jtag_agent_cfg extends dv_base_agent_cfg;
     jtag_dtm_ral.build(.base_addr(0), .csr_excl(null));
     jtag_dtm_ral.set_supports_byte_enable(1'b0);
     jtag_dtm_ral.lock_model();
-    jtag_dtm_ral.compute_mapped_addr_ranges();
-    jtag_dtm_ral.compute_unmapped_addr_ranges();
+    jtag_dtm_ral.set_base_addr(0);
     // TODO: fix the computation of mapped and unmapped ranges.
   endfunction : new
 

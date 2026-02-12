@@ -68,18 +68,18 @@ fn run_aes_testcase(
         "ecb" => CryptotestAesMode::Ecb.send(spi_console)?,
         "ofb" => CryptotestAesMode::Ofb.send(spi_console)?,
         _ => panic!("Invalid AES mode"),
-    }
+    };
     match test_case.operation.as_str() {
         "encrypt" => CryptotestAesOperation::Encrypt.send(spi_console)?,
         "decrypt" => CryptotestAesOperation::Decrypt.send(spi_console)?,
         _ => panic!("Invalid AES operation"),
-    }
+    };
     match test_case.padding.as_str() {
         "null" => CryptotestAesPadding::Null.send(spi_console)?,
         "pkcs7" => CryptotestAesPadding::Pkcs7.send(spi_console)?,
         "iso9797m2" => CryptotestAesPadding::Iso9797M2.send(spi_console)?,
         _ => panic!("Invalid AES padding scheme"),
-    }
+    };
 
     let mut iv: ArrayVec<u8, AES_BLOCK_BYTES>;
     match &test_case.iv {
@@ -120,7 +120,7 @@ fn run_aes_testcase(
     }
     .send(spi_console)?;
 
-    let aes_output = CryptotestAesOutput::recv(spi_console, opts.timeout, false)?;
+    let aes_output = CryptotestAesOutput::recv(spi_console, opts.timeout, false, false)?;
     assert_eq!(
         aes_output.output[0..input_len],
         expected_output[0..input_len]
@@ -130,8 +130,8 @@ fn run_aes_testcase(
 
 fn test_aes(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let spi = transport.spi("BOOTSTRAP")?;
-    let spi_console_device = SpiConsoleDevice::new(&*spi)?;
-    let _ = UartConsole::wait_for(&spi_console_device, r"Running [^\r\n]*", opts.timeout)?;
+    let spi_console_device = SpiConsoleDevice::new(&*spi, None, /*ignore_frame_num=*/ false)?;
+    let _ = UartConsole::wait_for(&spi_console_device, r"Running ", opts.timeout)?;
 
     let mut test_counter = 0u32;
     let test_vector_files = &opts.aes_json;

@@ -25,19 +25,19 @@ package csrng_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter uint     NUM_HW_APPS             = 2;
-  parameter uint     HW_APP0                 = 0;
-  parameter uint     HW_APP1                 = 1;
-  parameter uint     SW_APP                  = 2;
-  parameter string   LIST_OF_ALERTS[]        = {"recov_alert","fatal_alert"};
-  parameter uint     NUM_ALERTS              = 2;
-  parameter uint     KEY_LEN                 = 256;
-  parameter uint     BLOCK_LEN               = 128;
-  parameter uint     CTR_LEN                 = 32;
-  parameter uint     RSD_CTR_LEN             = 32;
-  parameter uint     LC_HW_DEBUG_EN_ON_DATA  = 123456789;
-  parameter uint     LC_HW_DEBUG_EN_OFF_DATA = 987654321;
-  parameter uint     CSRNG_CMD_STS_WIDTH     = 3;
+  parameter uint     NUM_HW_APPS                = 2;
+  parameter uint     HW_APP0                    = 0;
+  parameter uint     HW_APP1                    = 1;
+  parameter uint     SW_APP                     = 2;
+  parameter uint     NUM_ALERTS                 = 2;
+  parameter string   LIST_OF_ALERTS[NUM_ALERTS] = {"recov_alert","fatal_alert"};
+  parameter uint     KEY_LEN                    = 256;
+  parameter uint     BLOCK_LEN                  = 128;
+  parameter uint     CTR_LEN                    = 32;
+  parameter uint     RSD_CTR_LEN                = 32;
+  parameter uint     LC_HW_DEBUG_EN_ON_DATA     = 123456789;
+  parameter uint     LC_HW_DEBUG_EN_OFF_DATA    = 987654321;
+  parameter uint     CSRNG_CMD_STS_WIDTH        = 3;
 
   // types
   typedef enum int {
@@ -53,116 +53,56 @@ package csrng_env_pkg;
     invalid_read_int_state = 2
   } invalid_mubi_e;
 
+  // Keep these in groups and with ascending encodings as csrng_env_cfg refers to
+  // ranges of certain errors to define the distribution of error codes to test.
   typedef enum int {
     sfifo_cmd_error      = 0,
     sfifo_genbits_error  = 1,
-    sfifo_cmdreq_error   = 2,
-    sfifo_rcstage_error  = 3,
-    sfifo_keyvrc_error   = 4,
-    sfifo_updreq_error   = 5,
-    sfifo_bencreq_error  = 6,
-    sfifo_bencack_error  = 7,
-    sfifo_pdata_error    = 8,
-    sfifo_final_error    = 9,
-    sfifo_gbencack_error = 10,
-    sfifo_grcstage_error = 11,
-    sfifo_ggenreq_error  = 12,
-    sfifo_gadstage_error = 13,
-    sfifo_ggenbits_error = 14,
-    sfifo_blkenc_error   = 15,
-    cmd_stage_sm_error   = 16,
-    main_sm_error        = 17,
-    drbg_gen_sm_error    = 18,
-    drbg_updbe_sm_error  = 19,
-    drbg_updob_sm_error  = 20,
-    aes_cipher_sm_error  = 21,
-    cmd_gen_cnt_error    = 22,
-    fifo_write_error     = 23,
-    fifo_read_error      = 24,
-    fifo_state_error     = 25
+    cmd_stage_sm_error   = 2,
+    main_sm_error        = 3,
+    ctr_drbg_sm_error    = 4,
+    aes_cipher_sm_error  = 5,
+    ctr_error            = 6,
+    fifo_write_error     = 7,
+    fifo_read_error      = 8,
+    fifo_state_error     = 9
   } fatal_err_e;
 
   typedef enum int {
     // ERR_CODE
     sfifo_cmd_err           = 0,
     sfifo_genbits_err       = 1,
-    sfifo_cmdreq_err        = 2,
-    sfifo_rcstage_err       = 3,
-    sfifo_keyvrc_err        = 4,
-    sfifo_updreq_err        = 5,
-    sfifo_bencreq_err       = 6,
-    sfifo_bencack_err       = 7,
-    sfifo_pdata_err         = 8,
-    sfifo_final_err         = 9,
-    sfifo_gbencack_err      = 10,
-    sfifo_grcstage_err      = 11,
-    sfifo_ggenreq_err       = 12,
-    sfifo_gadstage_err      = 13,
-    sfifo_ggenbits_err      = 14,
-    sfifo_blkenc_err        = 15,
-    cmd_stage_sm_err        = 16,
-    main_sm_err             = 17,
-    drbg_gen_sm_err         = 18,
-    drbg_updbe_sm_err       = 19,
-    drbg_updob_sm_err       = 20,
-    aes_cipher_sm_err       = 21,
-    cmd_gen_cnt_err         = 22,
-    fifo_write_err          = 23,
-    fifo_read_err           = 24,
-    fifo_state_err          = 25,
+    cmd_stage_sm_err        = 2,
+    main_sm_err             = 3,
+    ctr_drbg_sm_err         = 4,
+    aes_cipher_sm_err       = 5,
+    ctr_err                 = 6,
+    fifo_write_err          = 7,
+    fifo_read_err           = 8,
+    fifo_state_err          = 9,
     // ERR_CODE_TEST
-    sfifo_cmd_err_test      = 26,
-    sfifo_genbits_err_test  = 27,
-    sfifo_cmdreq_err_test   = 28,
-    sfifo_rcstage_err_test  = 29,
-    sfifo_keyvrc_err_test   = 30,
-    sfifo_updreq_err_test   = 31,
-    sfifo_bencreq_err_test  = 32,
-    sfifo_bencack_err_test  = 33,
-    sfifo_pdata_err_test    = 34,
-    sfifo_final_err_test    = 35,
-    sfifo_gbencack_err_test = 36,
-    sfifo_grcstage_err_test = 37,
-    sfifo_ggenreq_err_test  = 38,
-    sfifo_gadstage_err_test = 39,
-    sfifo_ggenbits_err_test = 40,
-    sfifo_blkenc_err_test   = 41,
-    cmd_stage_sm_err_test   = 42,
-    main_sm_err_test        = 43,
-    drbg_gen_sm_err_test    = 44,
-    drbg_updbe_sm_err_test  = 45,
-    drbg_updob_sm_err_test  = 46,
-    aes_cipher_sm_err_test  = 47,
-    cmd_gen_cnt_err_test    = 48,
-    fifo_write_err_test     = 49,
-    fifo_read_err_test      = 50,
-    fifo_state_err_test     = 51
+    sfifo_cmd_err_test      = 10,
+    sfifo_genbits_err_test  = 11,
+    cmd_stage_sm_err_test   = 12,
+    main_sm_err_test        = 13,
+    ctr_drbg_sm_err_test    = 14,
+    aes_cipher_sm_err_test  = 15,
+    ctr_err_test            = 16,
+    fifo_write_err_test     = 17,
+    fifo_read_err_test      = 18,
+    fifo_state_err_test     = 19
   } err_code_e;
 
+  // These encodings must match the respective bit position of each
+  // field in the regfile/IP hjson.
   typedef enum int {
     SFIFO_CMD_ERR      = 0,
     SFIFO_GENBITS_ERR  = 1,
-    SFIFO_CMDREQ_ERR   = 2,
-    SFIFO_RCSTAGE_ERR  = 3,
-    SFIFO_KEYVRC_ERR   = 4,
-    SFIFO_UPDREQ_ERR   = 5,
-    SFIFO_BENCREQ_ERR  = 6,
-    SFIFO_BENCACK_ERR  = 7,
-    SFIFO_PDATA_ERR    = 8,
-    SFIFO_FINAL_ERR    = 9,
-    SFIFO_GBENCACK_ERR = 10,
-    SFIFO_GRCSTAGE_ERR = 11,
-    SFIFO_GGENREQ_ERR  = 12,
-    SFIFO_GADSTAGE_ERR = 13,
-    SFIFO_GGENBITS_ERR = 14,
-    SFIFO_BLKENC_ERR   = 15,
     CMD_STAGE_SM_ERR   = 20,
     MAIN_SM_ERR        = 21,
-    DRBG_GEN_SM_ERR    = 22,
-    DRBG_UPDBE_SM_ERR  = 23,
-    DRBG_UPDOB_SM_ERR  = 24,
+    CTR_DRBG_SM_ERR    = 22,
     AES_CIPHER_SM_ERR  = 25,
-    CMD_GEN_CNT_ERR    = 26,
+    CTR_ERR            = 26,
     FIFO_WRITE_ERR     = 28,
     FIFO_READ_ERR      = 29,
     FIFO_STATE_ERR     = 30
@@ -180,22 +120,8 @@ package csrng_env_pkg;
   } recov_alert_bit_e;
 
   typedef enum int {
-    sfifo_blkenc   = 0,
-    sfifo_ggenbits = 1,
-    sfifo_gadstage = 2,
-    sfifo_ggenreq  = 3,
-    sfifo_grcstage = 4,
-    sfifo_gbencack = 5,
-    sfifo_final    = 6,
-    sfifo_pdata    = 7,
-    sfifo_bencack  = 8,
-    sfifo_bencreq  = 9,
-    sfifo_updreq   = 10,
-    sfifo_keyvrc   = 11,
-    sfifo_rcstage  = 12,
-    sfifo_cmdreq   = 13,
-    sfifo_genbits  = 14,
-    sfifo_cmd      = 15
+    sfifo_cmd     = 0,
+    sfifo_genbits = 1
   } which_fifo_e;
 
   typedef enum int {
@@ -206,8 +132,7 @@ package csrng_env_pkg;
 
   typedef enum int {
     cmd_gen_cnt_sel  = 0,
-    drbg_upd_cnt_sel = 1,
-    drbg_gen_cnt_sel = 2
+    ctr_drbg_cnt_sel = 1
   } which_cnt_e;
 
   typedef enum int {

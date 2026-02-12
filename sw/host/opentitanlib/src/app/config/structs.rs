@@ -4,11 +4,13 @@
 
 //! Schema for configuration files, exact encoding json/xml to be worked out.
 
+use std::collections::HashMap;
+use std::time::Duration;
+
 use crate::io::gpio::{PinMode, PullMode};
 use crate::io::spi::TransferMode;
 
 use serde::Deserialize;
-use std::collections::HashMap;
 
 /// Configuration of a particular GPIO pin.
 #[derive(Deserialize, Clone, Debug)]
@@ -75,7 +77,7 @@ pub struct StrappingConfiguration {
 }
 
 /// Parity configuration for UART communication.
-#[derive(Deserialize, Clone, Debug)]
+#[derive(Deserialize, Clone, Copy, Debug, PartialEq)]
 pub enum UartParity {
     None,
     Even,
@@ -85,7 +87,7 @@ pub enum UartParity {
 }
 
 /// Stop bits configuration for UART communication.
-#[derive(Deserialize, Clone, Debug)]
+#[derive(Deserialize, Clone, Copy, Debug, PartialEq)]
 pub enum UartStopBits {
     Stop1,
     Stop1_5,
@@ -93,7 +95,7 @@ pub enum UartStopBits {
 }
 
 /// Configuration of a particular UART port.
-#[derive(Deserialize, Clone, Debug)]
+#[derive(Default, Deserialize, Clone, Debug)]
 pub struct UartConfiguration {
     /// The user-visible name of the UART.
     pub name: String,
@@ -162,6 +164,10 @@ pub struct ConfigurationFile {
     /// configuration files), in order for it to make sense to use this file.
     #[serde(default)]
     pub requires: HashMap<String, String>,
+    /// Duration of time to assert reset and wait after de-asserting reset.
+    #[serde(default)]
+    #[serde(with = "humantime_serde")]
+    pub reset_delay: Option<Duration>,
     /// List of GPIO pin configurations.
     #[serde(default)]
     pub pins: Vec<PinConfiguration>,
@@ -180,4 +186,7 @@ pub struct ConfigurationFile {
     /// List of IO expander chips.
     #[serde(default)]
     pub io_expanders: Vec<IoExpander>,
+    /// List of GPIO pins.
+    #[serde(default)]
+    pub gpios: Vec<String>,
 }

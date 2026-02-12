@@ -52,9 +52,9 @@ enum {
    * to change. This is the length that the caller should set as `key_length`
    * and allocate for the `key` buffer in unblinded keys.
    */
-  kOtcryptoRsa2048PublicKeyBytes = 260,
-  kOtcryptoRsa3072PublicKeyBytes = 388,
-  kOtcryptoRsa4096PublicKeyBytes = 516,
+  kOtcryptoRsa2048PublicKeyBytes = 256,
+  kOtcryptoRsa3072PublicKeyBytes = 384,
+  kOtcryptoRsa4096PublicKeyBytes = 512,
   /**
    * Number of bytes needed for RSA private keys.
    *
@@ -72,16 +72,15 @@ enum {
    * to change. This is the length that the caller should set in
    * `keyblob_length` and allocate for the `keyblob` buffer in blinded keys.
    */
-  kOtcryptoRsa2048PrivateKeyblobBytes = 512,
-  kOtcryptoRsa3072PrivateKeyblobBytes = 768,
-  kOtcryptoRsa4096PrivateKeyblobBytes = 1024,
+  kOtcryptoRsa2048PrivateKeyblobBytes = 768,
+  kOtcryptoRsa3072PrivateKeyblobBytes = 1152,
+  kOtcryptoRsa4096PrivateKeyblobBytes = 1536,
 };
 
 /**
  * Performs the RSA key generation.
  *
- * Computes RSA private key (d) and RSA public key exponent (e) and
- * modulus (n).
+ * Computes RSA private key (d) and the public key modulus (n).
  *
  * The caller should allocate space for the public key and set the `key` and
  * `key_length` fields accordingly.
@@ -106,7 +105,8 @@ otcrypto_status_t otcrypto_rsa_keygen(otcrypto_rsa_size_t size,
  * Constructs an RSA public key from the modulus and public exponent.
  *
  * The caller should allocate space for the public key and set the `key` and
- * `key_length` fields accordingly.
+ * `key_length` fields accordingly. The public exponent is implicitly fixed
+ * to e=2^16+1.
  *
  * @param size RSA size parameter.
  * @param modulus RSA modulus (n).
@@ -116,7 +116,7 @@ otcrypto_status_t otcrypto_rsa_keygen(otcrypto_rsa_size_t size,
  */
 otcrypto_status_t otcrypto_rsa_public_key_construct(
     otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t modulus,
-    uint32_t exponent, otcrypto_unblinded_key_t *public_key);
+    otcrypto_unblinded_key_t *public_key);
 
 /**
  * Constructs an RSA private key from the modulus and public/private exponents.
@@ -126,14 +126,13 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
  *
  * @param size RSA size parameter.
  * @param modulus RSA modulus (n).
- * @param exponent RSA public exponent (e).
  * @param d_share0 First share of the RSA private exponent d.
  * @param d_share1 Second share of the RSA private exponent d.
  * @param[out] public_key Destination public key struct.
  * @return Result of the RSA key construction.
  */
 otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
-    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t modulus, uint32_t e,
+    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t modulus,
     otcrypto_const_word32_buf_t d_share0, otcrypto_const_word32_buf_t d_share1,
     otcrypto_blinded_key_t *private_key);
 
@@ -147,7 +146,6 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
  *
  * @param size RSA size parameter.
  * @param modulus RSA modulus (n).
- * @param exponent RSA public exponent (e).
  * @param cofactor_share0 First share of the prime cofactor (p or q).
  * @param cofactor_share1 Second share of the prime cofactor (p or q).
  * @param[out] public_key Destination public key struct.
@@ -155,7 +153,7 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
  * @return Result of the RSA key construction.
  */
 otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
-    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t modulus, uint32_t e,
+    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t modulus,
     otcrypto_const_word32_buf_t cofactor_share0,
     otcrypto_const_word32_buf_t cofactor_share1,
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *private_key);
@@ -302,13 +300,12 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
  *
  * @param size RSA size parameter.
  * @param modulus RSA modulus (n).
- * @param exponent RSA public exponent (e).
  * @param cofactor_share0 First share of the prime cofactor (p or q).
  * @param cofactor_share1 Second share of the prime cofactor (p or q).
  * @return Result of the RSA key construction.
  */
 otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
-    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t modulus, uint32_t e,
+    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t modulus,
     otcrypto_const_word32_buf_t cofactor_share0,
     otcrypto_const_word32_buf_t cofactor_share1);
 

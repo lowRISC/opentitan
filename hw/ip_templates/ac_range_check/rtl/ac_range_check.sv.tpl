@@ -2,11 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`include "prim_assert.sv"
+
 module ${module_instance_name}
   import tlul_pkg::*;
   import ${module_instance_name}_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0]           AlertAsyncOn              = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned                    AlertSkewCycles           = 1,
   parameter bit                             RangeCheckErrorRsp        = 1'b1,
   parameter bit                             EnableRacl                = 1'b0,
   parameter bit                             RaclErrorRsp              = EnableRacl,
@@ -27,6 +31,7 @@ module ${module_instance_name}
   input  tlul_pkg::tl_h2d_t                         tl_i,
   output tlul_pkg::tl_d2h_t                         tl_o,
   // Inter module signals
+  // SEC_CM: INTERSIG.MUBI
   input prim_mubi_pkg::mubi8_t                      range_check_overwrite_i,
   // Incoming TLUL interface
   input  tlul_pkg::tl_h2d_t                         ctn_tl_h2d_i,
@@ -43,6 +48,8 @@ module ${module_instance_name}
   //////////////////////////////////////////////////////////////////////////////
   logic reg_intg_error, shadowed_storage_err, shadowed_update_err;
   // SEC_CM: BUS.INTEGRITY
+  // SEC_CM: CTRL.MUBI
+  // SEC_CM: CTRL.REGWEN_MUBI
   ${module_instance_name}_reg_top #(
     .EnableRacl(EnableRacl),
     .RaclErrorRsp(RaclErrorRsp),
@@ -68,21 +75,20 @@ module ${module_instance_name}
   logic [NumAlerts-1:0] alert_test, alert;
   logic deny_cnt_error;
 
-  assign alert[0]  = shadowed_update_err;
-  assign alert[1]  = reg_intg_error | shadowed_storage_err | deny_cnt_error;
+  assign alert[AlertRecovCtrlUpdateErrIdx]  = shadowed_update_err;
+  assign alert[AlertFatalFaultIdx]          = reg_intg_error | shadowed_storage_err |
+                                              deny_cnt_error;
 
-  assign alert_test = {
-    reg2hw.alert_test.fatal_fault.q &
-    reg2hw.alert_test.fatal_fault.qe,
-    reg2hw.alert_test.recov_ctrl_update_err.q &
-    reg2hw.alert_test.recov_ctrl_update_err.qe
-  };
+  assign alert_test[AlertFatalFaultIdx] = reg2hw.alert_test.fatal_fault.q &
+                                          reg2hw.alert_test.fatal_fault.qe;
+  assign alert_test[AlertRecovCtrlUpdateErrIdx] = reg2hw.alert_test.recov_ctrl_update_err.q &
+                                                  reg2hw.alert_test.recov_ctrl_update_err.qe;
 
-  localparam logic [NumAlerts-1:0] IsFatal = {1'b1, 1'b0};
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
-      .IsFatal(IsFatal[i])
+      .SkewCycles(AlertSkewCycles),
+      .IsFatal(i == AlertFatalFaultIdx)
     ) u_prim_alert_sender (
       .clk_i         ( clk_i         ),
       .rst_ni        ( rst_ni        ),
@@ -254,39 +260,69 @@ module ${module_instance_name}
   // Range Check Deny Counting Logic
   //////////////////////////////////////////////////////////////////////////////
 
-  logic [DenyCountWidth-1:0] deny_cnt;
+  logic [DenyCountWidth-1:0] deny_cnt, deny_cnt_threshold_q;
   logic deny_cnt_incr;
+  logic log_enable_q;
 
-  // Only increment the deny counter if logging is globally enabled and for the particular range
-  assign deny_cnt_incr = reg2hw.log_config.log_enable.q &
-                         log_enable_mask[deny_index]    &
+  // Manual implementation of the SW-RW fields of log_status. The register is implemented as hwext
+  // to allow the rising edge of log_clear to clear the log_status register without setting it.
+  prim_flop_en #(
+    .Width(DenyCountWidth)
+  ) u_deny_cnt_threshold (
+    .clk_i  ( clk_i                                   ),
+    .rst_ni ( rst_ni                                  ),
+    .en_i   ( reg2hw.log_config.deny_cnt_threshold.qe ),
+    .d_i    ( reg2hw.log_config.deny_cnt_threshold.q  ),
+    .q_o    ( deny_cnt_threshold_q                    )
+  );
+
+  assign hw2reg.log_config.deny_cnt_threshold.d = deny_cnt_threshold_q;
+
+  prim_flop_en u_log_enable (
+    .clk_i  ( clk_i                           ),
+    .rst_ni ( rst_ni                          ),
+    .en_i   ( reg2hw.log_config.log_enable.qe ),
+    .d_i    ( reg2hw.log_config.log_enable.q  ),
+    .q_o    ( log_enable_q                    )
+  );
+
+  assign hw2reg.log_config.log_enable.d = log_enable_q;
+
+  // Clear log information when clearing the log manually via the writing of a 1 to the
+  // log_clear bit.
+  logic clear_log;
+  assign clear_log = (reg2hw.log_config.log_clear.qe & reg2hw.log_config.log_clear.q);
+
+  // Always clear the log_clear bit from hardware
+  assign hw2reg.log_config.log_clear.d  = 1'b0;
+
+  // Only increment the deny counter if logging is globally enabled and for the particular range,
+  // we are not clearing the counter in this cycle, and see a failing range check
+  assign deny_cnt_incr = log_enable_q                &
+                         log_enable_mask[deny_index] &
+                         ~clear_log                  &
                          range_check_fail;
   // Determine if we are doing the first log. This one is special, since it also needs to log
   // diagnostics data
   logic log_first_deny;
   assign log_first_deny = deny_cnt_incr & (deny_cnt == 0);
 
-  // Clear log information when clearing the interrupt or when clearing the log manually via the
-  // writing of a 1 to the log_clear bit.
-  logic intr_state_cleared, clear_log;
-  assign clear_log = intr_state_cleared |
-                     (reg2hw.log_config.log_clear.qe & reg2hw.log_config.log_clear.q);
-
+  // SEC_CM: CTR.REDUN
   prim_count #(
     .Width(DenyCountWidth)
   ) u_deny_count (
-    .clk_i              ( clk_i              ),
-    .rst_ni             ( rst_ni             ),
-    .clr_i              ( clear_log          ),
-    .set_i              ( 1'b0               ),
-    .set_cnt_i          ( '0                 ),
-    .incr_en_i          ( deny_cnt_incr      ),
-    .decr_en_i          ( 1'b0               ),
-    .step_i             ( DenyCountWidth'(1) ),
-    .commit_i           ( 1'b1               ),
-    .cnt_o              ( deny_cnt           ),
-    .cnt_after_commit_o (                    ),
-    .err_o              ( deny_cnt_error     )
+    .clk_i              ( clk_i                          ),
+    .rst_ni             ( rst_ni                         ),
+    .clr_i              ( 1'b0                           ),
+    .set_i              ( clear_log                      ),
+    .set_cnt_i          ( DenyCountWidth'(deny_cnt_incr) ),
+    .incr_en_i          ( deny_cnt_incr                  ),
+    .decr_en_i          ( 1'b0                           ),
+    .step_i             ( DenyCountWidth'(1)             ),
+    .commit_i           ( 1'b1                           ),
+    .cnt_o              ( deny_cnt                       ),
+    .cnt_after_commit_o (                                ),
+    .err_o              ( deny_cnt_error                 )
   );
 
   // Log count is transparently mirrored. Clearing happens on the counter.
@@ -334,41 +370,24 @@ module ${module_instance_name}
   // Interrupt Notification Logic
   //////////////////////////////////////////////////////////////////////////////
 
-  logic deny_cnt_threshold_reached_d, deny_cnt_threshold_reached_event;
-
-  // Create a threshold event when the deny counter reaches the configured threshold
-  assign deny_cnt_threshold_reached_d = deny_cnt > reg2hw.log_config.deny_cnt_threshold.q;
-  prim_edge_detector u_edge_threshold_reached (
-    .clk_i             ( clk_i                            ),
-    .rst_ni            ( rst_ni                           ),
-    .d_i               ( deny_cnt_threshold_reached_d     ),
-    .q_sync_o          (                                  ),
-    .q_posedge_pulse_o ( deny_cnt_threshold_reached_event ),
-    .q_negedge_pulse_o (                                  )
-  );
-
-  prim_edge_detector u_edge_intr_state (
-    .clk_i             ( clk_i               ),
-    .rst_ni            ( rst_ni              ),
-    .d_i               ( reg2hw.intr_state.q ),
-    .q_sync_o          (                     ),
-    .q_posedge_pulse_o (                     ),
-    .q_negedge_pulse_o ( intr_state_cleared  )
-  );
+  // Create the IRQ condition when the deny counter is above the configured threshold.
+  logic deny_cnt_threshold_reached;
+  assign deny_cnt_threshold_reached = deny_cnt > deny_cnt_threshold_q;
 
   prim_intr_hw #(
-    .Width(1)
+    .Width ( 1        ),
+    .IntrT ( "Status" )
   ) u_intr_range_check_deny (
-    .clk_i                  ( clk_i                            ),
-    .rst_ni                 ( rst_ni                           ),
-    .event_intr_i           ( deny_cnt_threshold_reached_event ),
-    .reg2hw_intr_enable_q_i ( reg2hw.intr_enable.q             ),
-    .reg2hw_intr_test_q_i   ( reg2hw.intr_test.q               ),
-    .reg2hw_intr_test_qe_i  ( reg2hw.intr_test.qe              ),
-    .reg2hw_intr_state_q_i  ( reg2hw.intr_state.q              ),
-    .hw2reg_intr_state_de_o ( hw2reg.intr_state.de             ),
-    .hw2reg_intr_state_d_o  ( hw2reg.intr_state.d              ),
-    .intr_o                 ( intr_deny_cnt_reached_o          )
+    .clk_i                  ( clk_i                      ),
+    .rst_ni                 ( rst_ni                     ),
+    .event_intr_i           ( deny_cnt_threshold_reached ),
+    .reg2hw_intr_enable_q_i ( reg2hw.intr_enable.q       ),
+    .reg2hw_intr_test_q_i   ( reg2hw.intr_test.q         ),
+    .reg2hw_intr_test_qe_i  ( reg2hw.intr_test.qe        ),
+    .reg2hw_intr_state_q_i  ( reg2hw.intr_state.q        ),
+    .hw2reg_intr_state_de_o ( hw2reg.intr_state.de       ),
+    .hw2reg_intr_state_d_o  ( hw2reg.intr_state.d        ),
+    .intr_o                 ( intr_deny_cnt_reached_o    )
   );
 
   //////////////////////////////////////////////////////////////////////////////

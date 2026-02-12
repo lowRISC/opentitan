@@ -13,13 +13,13 @@ filesets:
       - lowrisc:prim:util
       - lowrisc:prim:diff_decode # for prim_alert_sender/receiver
       - lowrisc:prim:pad_wrapper
-      - lowrisc:prim:prim_pkg
       - lowrisc:prim:clock_mux2
       - lowrisc:prim:clock_inv
       - lowrisc:prim:buf
       - lowrisc:prim:flop
       - lowrisc:prim:flop_en
       - lowrisc:prim:flop_2sync
+      - lowrisc:prim:flop_no_rst
       - lowrisc:prim:rst_sync
       - lowrisc:prim:arbiter
       - lowrisc:prim:fifo

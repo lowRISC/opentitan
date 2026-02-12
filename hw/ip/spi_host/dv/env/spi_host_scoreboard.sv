@@ -110,6 +110,9 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
 
       wait (spi_ctrl_reg.sw_rst === 0);
       @(posedge cfg.m_spi_agent_cfg.vif.csb[0]);
+
+      if (cfg.force_spi_fsm_vif.fast_mode == 1)
+        continue;
       // Using quarter period for greater granularity
       num_quarter_cycles = (curr_spi_configopts.csnidle + 1) * 2;
       quarter_period = spi_clk_half_period / 2;
@@ -141,6 +144,8 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
     forever begin
       @(negedge cfg.m_spi_agent_cfg.vif.csb[0]);
       `uvm_info(`gfn, "CSB went low", UVM_DEBUG)
+      if (cfg.force_spi_fsm_vif.fast_mode == 1)
+        continue;
       fork : iso_fork
         begin
           fork
@@ -345,12 +350,15 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
 
       // store CSAAT so we now if we are starting a new transaction
       csaat = exp_segment.command_reg.csaat;
-      fork
-        begin
-          check_csaat(.csaat(csaat));
-        end
-      join_none
 
+      // Disable checks due to the internal counter being increased more quickly
+      if (cfg.force_spi_fsm_vif.fast_mode == 0) begin
+        fork
+          begin
+            check_csaat(.csaat(csaat));
+          end
+        join_none
+      end
       // update number of ok segments
       checked_tx_seg_cnt += 1;
       `uvm_info(`gfn, $sformatf("\n successfully compared write transaction of %d ",
@@ -402,7 +410,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
               stall_flag = 1;
               `uvm_info(`gfn, { "SPI processing is stalled: ",
                         $sformatf("status.txstall=%0d, status.rxstall=%0d",
-                                  status.txstall || status.rxstall)}, UVM_DEBUG)
+                                  status.txstall, status.rxstall)}, UVM_DEBUG)
             end
 
             if (cfg.m_spi_agent_cfg.vif.csb[0] !== csaat) begin
@@ -572,8 +580,13 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
 
     end else `uvm_fatal(`gfn, $sformatf("\n  scb: access unexpected addr 0x%0h", csr_addr))
 
+    `uvm_info(`gfn, $sformatf("%m - csr_name = %s, write = %0d, channel = %s",
+                              csr_name, write, channel.name), UVM_DEBUG)
+
+
     if (cmd_phase_write) begin
-      `uvm_info(`gfn, $sformatf("Accessing CSR: %s",csr_name), UVM_DEBUG)
+      `uvm_info(`gfn, $sformatf("Accessing CSR: %s - data = 0x%0x / mask = 0x%0x",
+                                csr_name, item.a_data, item.a_mask), UVM_DEBUG)
       case (csr_name)
         default:; // Do nothing
         "control": begin
@@ -631,7 +644,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
           spi_cmd_reg.csaat     = get_field_val(ral.command.csaat, item.a_data);
           spi_cmd_reg.len       = get_field_val(ral.command.len, item.a_data);
 
-          // add global spi seetings to individual transaction
+          // add global spi settings to individual transaction
           host_wr_segment.command_reg.len       = spi_cmd_reg.len;
           host_wr_segment.command_reg.direction = spi_cmd_reg.direction;
           host_wr_segment.command_reg.mode      = spi_cmd_reg.mode;

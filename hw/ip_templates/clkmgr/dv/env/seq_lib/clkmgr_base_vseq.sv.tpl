@@ -2,21 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 <%
+from ipgen.clkmgr_gen import get_all_srcs, get_rg_srcs
 from topgen.lib import Name
-src_names = sorted(s['name'] for s in src_clks.values())
+all_srcs = get_all_srcs(src_clks, derived_clks)
 non_aon_src_names = sorted(
     s['name'] for s in src_clks.values() if not s['aon'])
-derived_names = sorted(s['name'] for s in derived_clks.values())
-all_src_names = sorted(src_names + derived_names)
+all_src_names = sorted(s['name'] for s in all_srcs.values())
 meas_clks = sorted(
-    [(src['name'], src['freq']) for src in src_clks.values()] +
-    [(src['name'], src['freq']) for src in derived_clks.values()],
-    key=lambda x: x[0])
-rg_srcs = list(sorted({sig['src_name'] for sig
-                       in typed_clocks['rg_clks'].values()}))
-
-def to_camel_case(s: str):
-    return Name.from_snake_case(s).as_camel_case()
+    ((s['name'], s['freq']) for s in all_srcs.values()), key=lambda x: x[0])
+rg_srcs = get_rg_srcs(typed_clocks)
 %>\
 class clkmgr_base_vseq extends cip_base_vseq #(
   .RAL_T              (clkmgr_reg_block),
@@ -91,7 +85,11 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, "In clkmgr_if initialize_on_start", UVM_MEDIUM)
     idle = {NUM_TRANS{MuBi4True}};
     scanmode = MuBi4False;
+  % if ext_clk_bypass:
     cfg.clkmgr_vif.init(.idle(idle), .scanmode(scanmode), .lc_debug_en(Off));
+  % else:
+    cfg.clkmgr_vif.init(.idle(idle), .scanmode(scanmode));
+  % endif
 % for clk_name in non_aon_src_names:
     ${clk_name}_ip_clk_en = 1'b1;
 % endfor
@@ -116,24 +114,30 @@ class clkmgr_base_vseq extends cip_base_vseq #(
 % for src in rg_srcs:
 <% spc = " " * (len("    ") +
                 len("meas_ctrl_regs[ClkMesr") +
-                len(to_camel_case(src)) +
+                len(Name.to_camel_case(src)) +
                 len("}] = '{"))
 %>\
-    meas_ctrl_regs[ClkMesr${to_camel_case(src)}] = '{"${src}", ral.${src}_meas_ctrl_en,
+    meas_ctrl_regs[ClkMesr${Name.to_camel_case(src)}] = '{"${src}", ral.${src}_meas_ctrl_en,
 ${spc}ral.${src}_meas_ctrl_shadowed.hi,
 ${spc}ral.${src}_meas_ctrl_shadowed.lo};
 % endfor
     mubi_mode = ClkmgrMubiNone;
     `DV_GET_ENUM_PLUSARG(clkmgr_mubi_e, mubi_mode, clkmgr_mubi_mode)
     `uvm_info(`gfn, $sformatf("mubi_mode = %s", mubi_mode.name), UVM_MEDIUM)
+  % if ext_clk_bypass:
     cfg.clkmgr_vif.init(.idle({NUM_TRANS{MuBi4True}}), .scanmode(scanmode), .lc_debug_en(Off));
+  % else:
+    cfg.clkmgr_vif.init(.idle({NUM_TRANS{MuBi4True}}), .scanmode(scanmode));
+  % endif
 % for src in sorted(src_clks.values(), key=lambda v: v['name']):
   % if not src['aon']:
     cfg.clkmgr_vif.update_${src['name']}_ip_clk_en(1'b1);
   % endif
 % endfor
+  % if ext_clk_bypass:
     cfg.clkmgr_vif.update_div_step_down_req(MuBi4False);
     cfg.clkmgr_vif.update_io_clk_byp_ack(MuBi4False);
+  % endif
 
     disable_unnecessary_exclusions();
     clkmgr_init();
@@ -212,8 +216,8 @@ ${spc}ral.${src}_meas_ctrl_shadowed.lo};
     csr_wr(.ptr(meas_ctrl_regs[which].en), .value(MuBi4False));
   endtask
 
-  local function int get_meas_ctrl_value(int min_threshold, int max_threshold, uvm_reg_field lo,
-                                         uvm_reg_field hi);
+  protected function int get_meas_ctrl_value(int min_threshold, int max_threshold,
+                                             uvm_reg_field lo, uvm_reg_field hi);
     int lo_mask = (1 << lo.get_n_bits()) - 1;
     int hi_mask = (1 << hi.get_n_bits()) - 1;
 
@@ -255,7 +259,7 @@ ${spc}ral.${src}_meas_ctrl_shadowed.lo};
               UVM_MEDIUM)
     case (clk)
 % for src in rg_srcs:
-      ClkMesr${to_camel_case(src)}: begin
+      ClkMesr${Name.to_camel_case(src)}: begin
         if (enable) $asserton(0, "tb.dut.u_${src}_meas.u_meas.MaxWidth_A");
         else $assertoff(0, "tb.dut.u_${src}_meas.u_meas.MaxWidth_A");
       end
@@ -267,7 +271,7 @@ ${spc}ral.${src}_meas_ctrl_shadowed.lo};
   local function void control_sync_pulse_assert(clk_mesr_e clk, bit enable);
     case (clk)
 % for src in rg_srcs:
-      ClkMesr${to_camel_case(src)}: begin
+      ClkMesr${Name.to_camel_case(src)}: begin
         if (enable) $asserton(0, "tb.dut.u_${src}_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
         else $assertoff(0, "tb.dut.u_${src}_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
       end
@@ -277,7 +281,7 @@ ${spc}ral.${src}_meas_ctrl_shadowed.lo};
   endfunction
 
   // This turns off/on some clocks being measured to trigger a measurement timeout.
-  // A side-effect is that some RTL assertions will fire, so they are corresponsdingly controlled.
+  // A side-effect is that some RTL assertions will fire, so they are correspondingly controlled.
   task disturb_measured_clock(clk_mesr_e clk, bit enable);
     case (clk)
 % for src in rg_srcs:
@@ -287,10 +291,12 @@ ${spc}ral.${src}_meas_ctrl_shadowed.lo};
   else:
     root_name = src
 %>\
-      ClkMesr${to_camel_case(src)}: begin
+      ClkMesr${Name.to_camel_case(src)}: begin
+        `uvm_info(`gfn, $sformatf("%sabling %s clk", enable ? "En" : "Dis", "${root_name}"),
+                  UVM_MEDIUM)
         if (enable) cfg.${root_name}_clk_rst_vif.start_clk();
         else cfg.${root_name}_clk_rst_vif.stop_clk();
-        control_sync_pulse_assert(.clk(ClkMesr${to_camel_case(src)}), .enable(enable));
+        control_sync_pulse_assert(.clk(ClkMesr${Name.to_camel_case(src)}), .enable(enable));
       end
 % endfor
       default: `uvm_fatal(`gfn, $sformatf("Unexpected clk '%0d'", clk))

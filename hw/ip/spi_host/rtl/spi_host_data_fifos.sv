@@ -5,6 +5,8 @@
 // Module for SPI_HOST RX and TX queues
 //
 
+`include "prim_assert.sv"
+
 module spi_host_data_fifos #(
   parameter int         TxDepth   = 72,
   parameter int         RxDepth   = 64,

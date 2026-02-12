@@ -40,38 +40,7 @@ typedef uint32_t dif_clkmgr_gateable_clock_t;
  */
 typedef uint32_t dif_clkmgr_hintable_clock_t;
 
-typedef enum dif_clkmgr_measure_clock {
-#if defined(OPENTITAN_IS_EARLGREY)
-  /**
-   * The Io clock.
-   */
-  kDifClkmgrMeasureClockIo,
-  /**
-   * The Io_div2 clock.
-   */
-  kDifClkmgrMeasureClockIoDiv2,
-#elif defined(OPENTITAN_IS_DARJEELING)
-// Darjeeling doesn't have Io / Io_div2 clock measurements.
-#else
-#error "dif_clkmgr does not support this top"
-#endif
-  /**
-   * The Io div4 clock.
-   */
-  kDifClkmgrMeasureClockIoDiv4,
-  /**
-   * The Main clock.
-   */
-  kDifClkmgrMeasureClockMain,
-  /**
-   * The Usb clock.
-   */
-  kDifClkmgrMeasureClockUsb,
-  /**
-   * Total number of clock measurements.
-   */
-  kDifClkmgrMeasureClockCount,
-} dif_clkmgr_measure_clock_t;
+typedef uint32_t dif_clkmgr_measure_clock_t;
 
 typedef enum dif_clkmgr_recov_err_type {
 #if defined(OPENTITAN_IS_EARLGREY)
@@ -125,29 +94,21 @@ typedef enum dif_clkmgr_recov_err_type {
    */
   kDifClkmgrRecovErrTypeShadowUpdate = 1u << 0,
   /**
-   * A recoverable measurement error for IO_DIV4 clock.
+   * A recoverable measurement error for IO clock.
    */
-  kDifClkmgrRecovErrTypeIoDiv4Meas = 1u << 1,
+  kDifClkmgrRecovErrTypeIoMeas = 1u << 1,
   /**
    * A recoverable measurement error for MAIN clock.
    */
   kDifClkmgrRecovErrTypeMainMeas = 1u << 2,
   /**
-   * A recoverable measurement error for USB clock.
+   * A recoverable timeout error for IO clock.
    */
-  kDifClkmgrRecovErrTypeUsbMeas = 1u << 3,
-  /**
-   * A recoverable timeout error for IO_DIV4 clock.
-   */
-  kDifClkmgrRecovErrTypeIoDiv4Timeout = 1u << 4,
+  kDifClkmgrRecovErrTypeIoTimeout = 1u << 3,
   /**
    * A recoverable timeout error for MAIN clock.
    */
-  kDifClkmgrRecovErrTypeMainTimeout = 1u << 5,
-  /**
-   * A recoverable timeout error for USB clock.
-   */
-  kDifClkmgrRecovErrTypeUsbTimeout = 1u << 6,
+  kDifClkmgrRecovErrTypeMainTimeout = 1u << 4,
 #else
 #error "dif_clkmgr does not support this top"
 #endif
@@ -358,6 +319,7 @@ dif_result_t dif_clkmgr_hintable_clock_get_hint(
     const dif_clkmgr_t *clkmgr, dif_clkmgr_hintable_clock_t clock,
     dif_toggle_t *state);
 
+#if defined(OPENTITAN_IS_EARLGREY)
 /**
  * Check if external clock control is locked.
  * @param clkmgr Clock Manager Handle.
@@ -411,6 +373,7 @@ dif_result_t dif_clkmgr_external_clock_set_disabled(const dif_clkmgr_t *clkmgr);
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_clkmgr_external_clock_is_settled(const dif_clkmgr_t *clkmgr,
                                                   bool *status);
+#endif
 
 /**
  * Disable measurement control updates.
@@ -433,6 +396,31 @@ dif_result_t dif_clkmgr_measure_ctrl_disable(const dif_clkmgr_t *clkmgr);
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_clkmgr_measure_ctrl_get_enable(const dif_clkmgr_t *clkmgr,
                                                 dif_toggle_t *state);
+
+/**
+ * Obtain the index of a measureable clock for a DT clock.
+ *
+ * Given a clock (identified by its DT index), return the index of the
+ * measurable clock which controls this clock and can be used with the clkmgr
+ * DIF.
+ *
+ * Example (find main measurable clock):
+ * ```c
+ * dif_clkmgr_measure_clock_t clock;
+ * CHECK_DIF_OK(dif_clkmgr_find_measure_clock(
+ *     clkmgr, kDtClockMain, &clock));
+ * ```
+ *
+ * @param clkmgr A clock manager handle.
+ * @param dt_clk A DT clock.
+ * @param[out] clock The index of the clock.
+ * @return `kDifError` if this clock is not measurable,
+ * `kDifOk` otherwise.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_clkmgr_find_measure_clock(const dif_clkmgr_t *clkmgr,
+                                           dt_clock_t dt_clk,
+                                           dif_clkmgr_measure_clock_t *clock);
 
 /**
  * Configure count measurements.
@@ -522,6 +510,7 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_clkmgr_fatal_err_code_get_codes(
     const dif_clkmgr_t *clkmgr, dif_clkmgr_fatal_err_codes_t *codes);
 
+#if defined(OPENTITAN_IS_EARLGREY)
 /**
  * Wait for external clock switch to finish.
  *
@@ -530,6 +519,9 @@ dif_result_t dif_clkmgr_fatal_err_code_get_codes(
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_clkmgr_wait_for_ext_clk_switch(const dif_clkmgr_t *clkmgr);
+
+#endif
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

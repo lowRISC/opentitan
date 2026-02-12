@@ -52,7 +52,7 @@ class i2c_target_smoke_vseq extends i2c_base_vseq;
       t_sda_interference inside {[0 : t_r + thigh + t_f - 1]};
       t_scl_interference inside {[0 : t_r + thigh + t_f - 1]};
       // tHoldStop must be at least 2 cycles which implies, t_r + t_buf - tsu_sta >= 2
-      // in order for stop condition to propogate to internal FSM via prim flop
+      // in order for stop condition to propagate to internal FSM via prim flop
       t_buf >= tsu_sta - t_r + 2;
     }
   }
@@ -78,7 +78,7 @@ class i2c_target_smoke_vseq extends i2c_base_vseq;
     i2c_target_base_seq m_i2c_host_seq;
 
     `uvm_info(`gfn, $sformatf("num_trans:%0d", num_trans), UVM_MEDIUM)
-    // Intialize dut in device mode and agent in host mode
+    // Initialize dut in device mode and agent in host mode
     initialization();
     `uvm_info("cfg_summary",
               $sformatf("target_addr0:0x%x target_addr1:0x%x illegal_addr:0x%x num_trans:%0d",

@@ -6,8 +6,8 @@
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_datatypes.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
-#include "sw/device/lib/crypto/include/hash.h"
 #include "sw/device/lib/crypto/include/rsa.h"
+#include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -66,9 +66,6 @@ status_t keygen_then_sign_test(void) {
   TRY_CHECK(private_key.keyblob_length == sizeof(rsa_4096_private_key_t));
   rsa_4096_private_key_t *sk = (rsa_4096_private_key_t *)private_key.keyblob;
 
-  // Check that the key uses the F4 exponent.
-  TRY_CHECK(pk->e == 65537);
-
   // Check that the moduli match.
   TRY_CHECK(ARRAYSIZE(pk->n.data) == ARRAYSIZE(sk->n.data));
   TRY_CHECK_ARRAYS_EQ(pk->n.data, sk->n.data, ARRAYSIZE(pk->n.data));
@@ -77,7 +74,7 @@ status_t keygen_then_sign_test(void) {
   // ensuring that the most significant half is nonzero.
   bool d_large_enough = false;
   for (size_t i = kRsa4096NumWords / 2; i < kRsa4096NumWords; i++) {
-    if (sk->d.data[i] != 0) {
+    if ((sk->d0.data[i] ^ sk->d1.data[i]) != 0) {
       d_large_enough = true;
     }
   }
@@ -88,13 +85,12 @@ status_t keygen_then_sign_test(void) {
       .len = kTestMessageLen,
       .data = kTestMessage,
   };
-  uint32_t msg_digest_data[kSha512DigestWords];
+  uint32_t msg_digest_data[512 / 32];
   otcrypto_hash_digest_t msg_digest = {
       .data = msg_digest_data,
       .len = ARRAYSIZE(msg_digest_data),
-      .mode = kOtcryptoHashModeSha512,
   };
-  TRY(otcrypto_hash(msg_buf, msg_digest));
+  TRY(otcrypto_sha2_512(msg_buf, &msg_digest));
 
   uint32_t sig[kRsa4096NumWords];
   otcrypto_word32_buf_t sig_buf = {

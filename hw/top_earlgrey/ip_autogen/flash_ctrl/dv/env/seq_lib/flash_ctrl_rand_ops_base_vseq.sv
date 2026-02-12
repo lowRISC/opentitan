@@ -80,7 +80,7 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
 
   }
 
-  // Flash ctrl operation data queue - used for programing or reading the flash.
+  // Flash ctrl operation data queue - used for programming or reading the flash.
   rand data_q_t             flash_op_data;
   constraint flash_op_data_c {
     solve flash_op before flash_op_data;
@@ -269,7 +269,7 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
     read_fifo_intr_level < ReadFifoDepth;
   }
 
-  // Indicates whether to poll before writing to prog_fifo or reading from rd_fifo. If interupts are
+  // Indicates whether to poll before writing to prog_fifo or reading from rd_fifo. If interrupts are
   // enabled, the interrupt signals will be used instead. When set to 0, it will continuously write
   // to prog_fifo / read from rd_fifo, relying on their natural backpressure mechanism.
   rand bit poll_fifo_status;
@@ -349,7 +349,7 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
                   UVM_LOW)
 
         // Bkdr initialize the flash mem based on op.
-        // If you wish to do the transaction without the backdoor preperation
+        // If you wish to do the transaction without the backdoor preparation
         //  (when you want transaction to affect each other), set do_tran_prep_mem to 0.
         if (cfg.seq_cfg.do_tran_prep_mem) flash_ctrl_prep_mem(flash_op);
 

@@ -51,15 +51,22 @@ design (i.e. mix-and-match).
 def _bitstreams_repo_impl(rctx):
     # First, check if an existing pre-built bitstream cache repo exists, and if
     # so, use it instead of building one.
-    cache_path = rctx.os.environ.get(
+    cache_path = rctx.getenv(
         "BAZEL_BITSTREAMS_CACHE",
         rctx.attr.cache,
     )
+
+    # Used by the cache manager
+    rctx.getenv("BITSTREAM")
+    rctx.watch(rctx.attr.python_interpreter)
+    rctx.watch(rctx.attr._cache_manager)
+
     result = rctx.execute(
         [
             rctx.path(rctx.attr.python_interpreter),
             rctx.attr._cache_manager,
             "--build-file=BUILD.bazel",
+            "--watch-file=watch.txt",
             "--bucket-url={}".format(rctx.attr.bucket_url),
             "--cache={}".format(cache_path),
             "--refresh-time={}".format(rctx.attr.refresh_time),
@@ -68,6 +75,10 @@ def _bitstreams_repo_impl(rctx):
     )
     if result.return_code != 0:
         fail("Bitstream cache not initialized properly.")
+
+    # Watch all files that the cache manager asks for.
+    for f in rctx.read("watch.txt").splitlines():
+        rctx.watch(f)
 
 # The bitstream repo should be evaluated with `bazel fetch --configure` after
 # every Git checkout. Once the cache is initialized, a typical invocation will
@@ -119,7 +130,6 @@ bitstreams_repo = repository_rule(
             allow_files = True,
         ),
     },
-    environ = ["BAZEL_BITSTREAMS_CACHE", "BITSTREAM"],
     # This rule depends on the Git repository, but there's no ergonomic way to
     # encode the dependency in Bazel. Instead, indicate that the rule depends on
     # something outside of Bazel's dependency graph and rely on the user calling

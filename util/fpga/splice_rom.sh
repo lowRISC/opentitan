@@ -97,8 +97,11 @@ TARGET_FILE_EXT=".scr.39.vmem"
 TARGET="${BIN_DIR}/${TARGET_PREFIX}_fpga_${TARGET_BOARD}"
 TARGET_PATH="${TARGET}${TARGET_FILE_EXT}"
 
-FPGA_BIN_DIR="${BIN_DIR}/hw/top_${TARGET_TOP}"
-FPGA_BIT_NAME="lowrisc_systems_chip_${TARGET_TOP}_${TARGET_BOARD}_0.1"
+
+VLNV_PATH="lowrisc_systems_chip_${TARGET_TOP}_${TARGET_BOARD}_0.1"
+
+FPGA_BIN_DIR="${BIN_DIR}/hw/${VLNV_PATH}/synth-vivado"
+FPGA_BIT_NAME="$VLNV_PATH"
 
 # Make sure all inputs are available.
 if [[ ! -f "${TARGET_PATH}" ]]; then
@@ -124,7 +127,7 @@ hw/ip/rom_ctrl/util/gen_vivado_mem_image.py \
 
 # Splice the ROM.
 # The --debug flag is undocumented and causes updatemem to print out the INIT_XX
-# values of the four BRAM cells. These values are also oberservable when opening
+# values of the four BRAM cells. These values are also observable when opening
 # the implemented design in Vivado and then inspecting the cell properties of
 # the corresponding BRAM cells. This information is very useful when debugging
 # the splicing flow.

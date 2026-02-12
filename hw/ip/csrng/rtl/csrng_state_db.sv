@@ -9,221 +9,148 @@
 
 `include "prim_assert.sv"
 
-module csrng_state_db import csrng_pkg::*; #(
-  parameter int NApps = 4,
-  parameter int StateId = 4,
-  parameter int BlkLen = 128,
-  parameter int KeyLen = 256,
-  parameter int CtrLen  = 32,
-  parameter int Cmd     = 3
+module csrng_state_db
+  import csrng_pkg::*;
+  import csrng_reg_pkg::NumApps;
+#(
+  localparam int unsigned RegWidth = top_pkg::TL_DW
 ) (
-  input logic                clk_i,
-  input logic                rst_ni,
+  input  logic                   clk_i,
+  input  logic                   rst_ni,
 
-   // read interface
-  input logic                state_db_enable_i,
-  input logic [StateId-1:0]  state_db_rd_inst_id_i,
-  output logic [KeyLen-1:0]  state_db_rd_key_o,
-  output logic [BlkLen-1:0]  state_db_rd_v_o,
-  output logic [CtrLen-1:0]  state_db_rd_res_ctr_o,
-  output logic               state_db_rd_inst_st_o,
-  output logic               state_db_rd_fips_o,
-  // write interface
-  input logic                state_db_wr_req_i,
-  output logic               state_db_wr_req_rdy_o,
-  input logic [StateId-1:0]  state_db_wr_inst_id_i,
-  input logic                state_db_wr_fips_i,
-  input logic [Cmd-1:0]      state_db_wr_ccmd_i,
-  input logic [KeyLen-1:0]   state_db_wr_key_i,
-  input logic [BlkLen-1:0]   state_db_wr_v_i,
-  input logic [CtrLen-1:0]   state_db_wr_res_ctr_i,
-  input csrng_cmd_sts_e      state_db_wr_sts_i,
-  // status interface
-  input logic                state_db_is_dump_en_i,
-  input logic                state_db_reg_rd_sel_i,
-  input logic                state_db_reg_rd_id_pulse_i,
-  input logic [StateId-1:0]  state_db_reg_rd_id_i,
-  output logic [31:0]        state_db_reg_rd_val_o,
-  output logic               state_db_sts_ack_o,
-  output csrng_cmd_sts_e     state_db_sts_sts_o,
-  output logic [StateId-1:0] state_db_sts_id_o,
-  input logic [NApps-1:0]    int_state_read_enable_i,
+  // Global enable
+  input  logic                   enable_i,
 
-  // The reseed counters are always readable via register interface.
-  output logic [NApps-1:0][31:0] reseed_counter_o
+  // Read interface for the core data path
+  input  logic   [NumAppsLg-1:0] rd_inst_id_i,
+  output csrng_state_t           rd_state_o,
+
+  // Write interface
+  input  logic                   wr_vld_i,
+  input  csrng_core_data_t       wr_data_i,
+
+  // State dump interface via register access
+  input  logic                   reg_rd_otp_en_i,
+  input  logic     [NumApps-1:0] reg_rd_regfile_en_i,
+
+  input  logic                   reg_rd_id_vld_i,
+  input  logic [InstIdWidth-1:0] reg_rd_id_i,
+  input  logic                   reg_rd_strb_i,
+  output logic    [RegWidth-1:0] reg_rd_val_o,
+
+  output logic [NumApps-1:0][RsCtrWidth-1:0] reseed_counter_o
 );
 
-  localparam int InternalStateWidth = 2+KeyLen+BlkLen+CtrLen;
-  localparam int RegInternalStateWidth = 30+InternalStateWidth;
-  localparam int RegW = 32;
-  localparam int StateWidth = 1+1+KeyLen+BlkLen+CtrLen+StateId+CSRNG_CMD_STS_WIDTH;
+  // Number of registers per state with synthesis-friendly $ceil(StateWidth / RegWidth)
+  localparam int unsigned NumRegState   = (StateWidth + RegWidth - 1) / RegWidth;
+  localparam int unsigned NumRegStateLg = $clog2(NumRegState);
+  localparam int unsigned NumRegTotBits = NumRegState * RegWidth;
+  localparam int unsigned NumRegPadBits = NumRegTotBits - StateWidth;
 
-  logic [StateId-1:0]              state_db_id;
-  logic [KeyLen-1:0]               state_db_key;
-  logic [BlkLen-1:0]               state_db_v;
-  logic [CtrLen-1:0]               state_db_rc;
-  logic                            state_db_fips;
-  logic                            state_db_inst_st;
-  csrng_cmd_sts_e                  state_db_sts;
-  logic                            state_db_write;
-  logic                            instance_status;
-  logic [NApps-1:0]                int_st_out_sel;
-  logic [NApps-1:0]                int_st_dump_sel;
-  logic [InternalStateWidth-1:0]   internal_states_out[NApps];
-  logic [InternalStateWidth-1:0]   internal_states_dump[NApps];
-  logic [InternalStateWidth-1:0]   internal_state_pl;
-  logic [InternalStateWidth-1:0]   internal_state_pl_dump;
-  logic [RegInternalStateWidth-1:0] internal_state_diag;
-  logic                             reg_rd_ptr_inc;
+  // Internal signals
+  logic                     write_en;
+  logic                     instance_state;
+  logic [NumRegTotBits-1:0] state_reg_readout;
 
-  // flops
-  logic                            state_db_sts_ack_q, state_db_sts_ack_d;
-  csrng_cmd_sts_e                  state_db_sts_sts_q, state_db_sts_sts_d;
-  logic [StateId-1:0]              state_db_sts_id_q, state_db_sts_id_d;
-  logic [StateId-1:0]              reg_rd_ptr_q, reg_rd_ptr_d;
-  logic [StateId-1:0]              int_st_dump_id_q, int_st_dump_id_d;
+  // Registers
+  logic [NumRegStateLg-1:0] reg_rd_ptr_q, reg_rd_ptr_d;
+  logic     [NumAppsLg-1:0] reg_rd_id_q, reg_rd_id_d;
 
-  always_ff @(posedge clk_i or negedge rst_ni)
+  always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      state_db_sts_ack_q   <= '0;
-      state_db_sts_sts_q   <= CMD_STS_SUCCESS;
-      state_db_sts_id_q    <= '0;
-      reg_rd_ptr_q         <= '0;
-      int_st_dump_id_q     <= '0;
+      reg_rd_ptr_q <= '0;
+      reg_rd_id_q  <= '0;
     end else begin
-      state_db_sts_ack_q   <= state_db_sts_ack_d;
-      state_db_sts_sts_q   <= state_db_sts_sts_d;
-      state_db_sts_id_q    <= state_db_sts_id_d;
-      reg_rd_ptr_q         <= reg_rd_ptr_d;
-      int_st_dump_id_q     <= int_st_dump_id_d;
+      reg_rd_ptr_q <= reg_rd_ptr_d;
+      reg_rd_id_q  <= reg_rd_id_d;
     end
-
-  // flops - no reset
-  logic [InternalStateWidth-1:0]  internal_states_q[NApps], internal_states_d[NApps];
-
-  // no reset on state
-  always_ff @(posedge clk_i)
-    begin
-      internal_states_q <= internal_states_d;
-    end
-
-
-  //--------------------------------------------
-  // internal state read logic
-  //--------------------------------------------
-  for (genvar rd = 0; rd < NApps; rd = rd+1) begin : gen_state_rd
-    assign int_st_out_sel[rd] = (state_db_rd_inst_id_i == rd);
-    assign int_st_dump_sel[rd] = (int_st_dump_id_q == rd);
-    assign internal_states_out[rd] = int_st_out_sel[rd] ? internal_states_q[rd] : '0;
-    assign internal_states_dump[rd] =
-        int_st_dump_sel[rd] && int_state_read_enable_i[rd] ? internal_states_q[rd] : '0;
   end
 
-  // since only one of the internal states is active at a time, a
-  // logical "or" is made of all of the buses into one
+  // State storage, no reset required
+  csrng_state_t [NumApps-1:0] state_q, state_d;
+
+  always_ff @(posedge clk_i) begin
+    state_q <= state_d;
+  end
+
+  // State readout for core data path
+  assign rd_state_o = (rd_inst_id_i < NumApps) ? state_q[rd_inst_id_i] : '0;
+
+  //--------------------------------------------
+  // Regfile readout logic
+  //--------------------------------------------
+
   always_comb begin
-    internal_state_pl = '0;
-    internal_state_pl_dump = '0;
-    for (int i = 0; i < NApps; i = i+1) begin
-      internal_state_pl |= internal_states_out[i];
-      internal_state_pl_dump |= internal_states_dump[i];
+    reg_rd_id_d = reg_rd_id_q;
+    if (!enable_i) begin
+      reg_rd_id_d = '0;
+    end else if (reg_rd_id_vld_i) begin
+      reg_rd_id_d = reg_rd_id_i[NumAppsLg-1:0];
     end
   end
 
-  assign {state_db_rd_fips_o,state_db_rd_inst_st_o,
-          state_db_rd_key_o,state_db_rd_v_o,
-          state_db_rd_res_ctr_o} = internal_state_pl;
+  // Reset the regfile read pointer when a new instance is selected for readout
+  always_comb begin
+    reg_rd_ptr_d = reg_rd_ptr_q;
+    if (!enable_i || !reg_rd_otp_en_i) begin
+      reg_rd_ptr_d = '1;
+    end else if (reg_rd_id_vld_i || (reg_rd_ptr_q == NumRegState)) begin
+      reg_rd_ptr_d = '0;
+    end else if (reg_rd_strb_i) begin
+      reg_rd_ptr_d = reg_rd_ptr_q + 1;
+    end
+  end
 
+  // Pad the logic representation of the selected state with zeros to the next multiple of 32
+  assign state_reg_readout = {{NumRegPadBits{1'b0}}, state_q[reg_rd_id_q]};
 
-  assign internal_state_diag = {30'b0,internal_state_pl_dump};
-
-
-  // Register access of internal state
-  assign state_db_reg_rd_val_o =
-         (reg_rd_ptr_q == 4'h0) ? internal_state_diag[RegW-1:0] :
-         (reg_rd_ptr_q == 4'h1) ? internal_state_diag[2*RegW-1:RegW] :
-         (reg_rd_ptr_q == 4'h2) ? internal_state_diag[3*RegW-1:2*RegW] :
-         (reg_rd_ptr_q == 4'h3) ? internal_state_diag[4*RegW-1:3*RegW] :
-         (reg_rd_ptr_q == 4'h4) ? internal_state_diag[5*RegW-1:4*RegW] :
-         (reg_rd_ptr_q == 4'h5) ? internal_state_diag[6*RegW-1:5*RegW] :
-         (reg_rd_ptr_q == 4'h6) ? internal_state_diag[7*RegW-1:6*RegW] :
-         (reg_rd_ptr_q == 4'h7) ? internal_state_diag[8*RegW-1:7*RegW] :
-         (reg_rd_ptr_q == 4'h8) ? internal_state_diag[9*RegW-1:8*RegW] :
-         (reg_rd_ptr_q == 4'h9) ? internal_state_diag[10*RegW-1:9*RegW] :
-         (reg_rd_ptr_q == 4'ha) ? internal_state_diag[11*RegW-1:10*RegW] :
-         (reg_rd_ptr_q == 4'hb) ? internal_state_diag[12*RegW-1:11*RegW] :
-         (reg_rd_ptr_q == 4'hc) ? internal_state_diag[13*RegW-1:12*RegW] :
-         (reg_rd_ptr_q == 4'hd) ? internal_state_diag[14*RegW-1:13*RegW] :
-         '0;
-
-  // selects 32b fields from the internal state to be read out for diagnostics
-  assign reg_rd_ptr_inc = state_db_reg_rd_sel_i;
-
-  assign reg_rd_ptr_d =
-         (!state_db_enable_i) ? 4'hf :
-         (!state_db_is_dump_en_i) ? 4'hf :
-         (reg_rd_ptr_q == 4'he) ? '0 :
-         state_db_reg_rd_id_pulse_i ? '0 :
-         reg_rd_ptr_inc ? (reg_rd_ptr_q+1) :
-         reg_rd_ptr_q;
-
-
-  assign int_st_dump_id_d =
-         (!state_db_enable_i) ? '0 :
-         state_db_reg_rd_id_pulse_i ? state_db_reg_rd_id_i :
-         int_st_dump_id_q;
+  always_comb begin
+    reg_rd_val_o = '0;
+    if (reg_rd_otp_en_i && reg_rd_regfile_en_i[reg_rd_id_q] &&
+        (reg_rd_ptr_q < NumRegState)) begin
+      reg_rd_val_o = state_reg_readout[reg_rd_ptr_q * RegWidth +: RegWidth];
+    end
+  end
 
   // The reseed counters are always readable via register interface.
-  for (genvar i = 0; i < NApps; i++) begin : gen_reseed_counter
-    assign reseed_counter_o[i] = internal_states_q[i][31:0];
+  for (genvar i = 0; i < NumApps; i++) begin : gen_reseed_counter
+    assign reseed_counter_o[i] = state_q[i].rs_ctr;
   end
 
   //--------------------------------------------
-  // write state logic
+  // Write logic
   //--------------------------------------------
 
-  for (genvar wr = 0; wr < NApps; wr = wr+1) begin : gen_state_wr
+  // All valid commands except UNInstatiate set the instance state as 'instantiated'.
+  assign instance_state = (wr_data_i.cmd == INS) || (wr_data_i.cmd == RES) ||
+                          (wr_data_i.cmd == GEN) || (wr_data_i.cmd == UPD);
 
-    assign internal_states_d[wr] = !state_db_enable_i ? '0 : // better timing
-                                   (state_db_write && (state_db_id == wr)) ?
-                                   {state_db_fips,state_db_inst_st,state_db_key,
-                                    state_db_v,state_db_rc} : internal_states_q[wr];
-  end : gen_state_wr
+  assign write_en = enable_i && wr_vld_i;
 
+  always_comb begin
+    state_d = state_q;
 
-  assign {state_db_fips,state_db_inst_st,
-          state_db_key,
-          state_db_v,state_db_rc,
-          state_db_id,state_db_sts} = {StateWidth{state_db_enable_i}} &
-                                      {state_db_wr_fips_i,instance_status,
-                                       state_db_wr_key_i,
-                                       state_db_wr_v_i,state_db_wr_res_ctr_i,
-                                       state_db_wr_inst_id_i,state_db_wr_sts_i};
+    if (!enable_i) begin
+      state_d = '0;
+    end else if (write_en && (wr_data_i.inst_id < NumApps)) begin
+      state_d[wr_data_i.inst_id] = '{
+        fips:       wr_data_i.fips,
+        key:        wr_data_i.key,
+        v:          wr_data_i.v,
+        rs_ctr:     wr_data_i.rs_ctr,
+        inst_state: instance_state
+      };
+    end
+  end
 
-  assign instance_status =
-         (state_db_wr_ccmd_i == INS) ||
-         (state_db_wr_ccmd_i == RES) ||
-         (state_db_wr_ccmd_i == GENU) ||
-         (state_db_wr_ccmd_i == UPD);
-
-
-  assign state_db_write = state_db_enable_i && state_db_wr_req_i;
-
-  assign state_db_sts_ack_d =
-         state_db_write;
-
-  assign state_db_sts_sts_d =
-         state_db_sts;
-
-  assign state_db_sts_id_d =
-         state_db_id;
-
-  assign state_db_sts_ack_o = state_db_sts_ack_q;
-  assign state_db_sts_sts_o = state_db_sts_sts_q;
-  assign state_db_sts_id_o = state_db_sts_id_q;
-  assign state_db_wr_req_rdy_o = 1'b1;
+  // Unused signals
+  logic [SeedLen-1:0] unused_wdata_pdata;
+  logic [InstIdWidth-NumAppsLg-1:0] unused_reg_rd_id;
+  assign unused_wdata_pdata = wr_data_i.pdata;
+  assign unused_reg_rd_id = reg_rd_id_i[InstIdWidth-1:NumAppsLg];
 
   // Assertions
-  `ASSERT_KNOWN(IntStOutSelOneHot_A, $onehot(int_st_out_sel))
+  // The current architecture assumes the reseed counter fits into a single register
+  `ASSERT_INIT(CsrngRsCtrRegFit, RegWidth >= RsCtrWidth)
 
 endmodule

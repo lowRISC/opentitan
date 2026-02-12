@@ -47,6 +47,18 @@ otbn_library(
     ],
 )
 
+otbn_binary(
+    name = "run_curve25519",
+    srcs = [
+        "run_curve25519.s",
+    ],
+    deps = [
+        ":ed25519",
+        ":ed25519_scalar",
+        ":field25519",
+    ],
+)
+
 otbn_library(
     name = "gcd",
     srcs = [
@@ -104,6 +116,13 @@ otbn_library(
 )
 
 otbn_library(
+    name = "p256_isoncurve_proj",
+    srcs = [
+        "p256_isoncurve_proj.s",
+    ],
+)
+
+otbn_library(
     name = "p256_sign",
     srcs = [
         "p256_sign.s",
@@ -125,6 +144,7 @@ otbn_binary(
     deps = [
         ":p256_base",
         ":p256_isoncurve",
+        ":p256_isoncurve_proj",
         ":p256_shared_key",
         ":p256_sign",
         ":p256_verify",
@@ -156,6 +176,20 @@ otbn_library(
     name = "p384_isoncurve",
     srcs = [
         "p384_isoncurve.s",
+    ],
+)
+
+otbn_library(
+    name = "p384_isoncurve_proj",
+    srcs = [
+        "p384_isoncurve_proj.s",
+    ],
+)
+
+otbn_library(
+    name = "p384_mem",
+    srcs = [
+        "p384_mem.s",
     ],
 )
 
@@ -216,31 +250,16 @@ otbn_library(
 )
 
 otbn_library(
-    name = "primality",
+    name = "rsa_primality",
     srcs = [
-        "primality.s",
+        "rsa_primality.s",
     ],
 )
 
-otbn_binary(
-    name = "rsa",
+otbn_library(
+    name = "run_rsa_mem",
     srcs = [
-        "rsa.s",
-    ],
-    deps = [
-        ":modexp",
-        ":montmul",
-    ],
-)
-
-otbn_binary(
-    name = "run_rsa_modexp",
-    srcs = [
-        "run_rsa_modexp.s",
-    ],
-    deps = [
-        ":modexp",
-        ":montmul",
+        "run_rsa_mem.s",
     ],
 )
 
@@ -251,10 +270,46 @@ otbn_library(
     ],
 )
 
-otbn_binary(
-    name = "run_rsa_keygen",
+otbn_library(
+    name = "rsa_modinv_f4",
     srcs = [
-        "run_rsa_keygen.s",
+        "rsa_modinv_f4.s",
+    ],
+)
+
+otbn_binary(
+    name = "run_rsa",
+    srcs = [
+        "gcd.s",
+        "modexp.s",
+        "montmul.s",
+        "mul.s",
+        "rsa_keygen.s",
+        "rsa_modinv_f4.s",
+        "rsa_primality.s",
+        "run_rsa.s",
+        "run_rsa_mem.s",
+    ],
+)
+
+otbn_library(
+    name = "run_rsa_key_from_cofactor_mem",
+    srcs = [
+        "run_rsa_key_from_cofactor_mem.s",
+    ],
+)
+
+otbn_library(
+    name = "rsa_key_from_cofactor",
+    srcs = [
+        "rsa_key_from_cofactor.s",
+    ],
+)
+
+otbn_binary(
+    name = "run_rsa_key_from_cofactor",
+    srcs = [
+        "run_rsa_key_from_cofactor.s",
     ],
     deps = [
         ":div",
@@ -262,59 +317,9 @@ otbn_binary(
         ":lcm",
         ":montmul",
         ":mul",
-        ":primality",
-        ":rsa_keygen",
-    ],
-)
-
-otbn_library(
-    name = "rsa_verify",
-    srcs = [
-        "rsa_verify.s",
-    ],
-)
-
-otbn_library(
-    name = "rsa_verify_3072",
-    srcs = [
-        "//sw/vendor:veri-titan/gen/otbn_modexp.s",
-    ],
-)
-
-otbn_library(
-    name = "rsa_verify_3072_m0inv",
-    srcs = [
-        "rsa_verify_3072_m0inv.s",
-    ],
-)
-
-otbn_library(
-    name = "rsa_verify_3072_rr",
-    srcs = [
-        "rsa_verify_3072_rr.s",
-    ],
-)
-
-otbn_binary(
-    name = "run_rsa_verify_3072",
-    srcs = [
-        "run_rsa_verify_3072.s",
-    ],
-    deps = [
-        ":rsa_verify_3072",
-        ":rsa_verify_3072_m0inv",
-        ":rsa_verify_3072_rr",
-    ],
-)
-
-otbn_binary(
-    name = "run_rsa_verify_3072_rr_modexp",
-    srcs = [
-        "run_rsa_verify_3072_rr_modexp.s",
-    ],
-    deps = [
-        ":rsa_verify_3072",
-        ":rsa_verify_3072_rr",
+        ":rsa_key_from_cofactor",
+        ":rsa_modinv_f4",
+        ":run_rsa_key_from_cofactor_mem",
     ],
 )
 
@@ -338,6 +343,7 @@ otbn_binary(
     ],
     deps = [
         ":p256_base",
+        ":p256_isoncurve",
     ],
 )
 
@@ -348,6 +354,7 @@ otbn_binary(
     ],
     deps = [
         ":p256_base",
+        ":p256_isoncurve",
     ],
 )
 
@@ -359,6 +366,8 @@ otbn_binary(
     deps = [
         ":p384_base",
         ":p384_internal_mult",
+        ":p384_isoncurve",
+        ":p384_mem",
         ":p384_modinv",
         ":p384_sign",
     ],
@@ -376,8 +385,10 @@ otbn_binary(
         ":p384_base_mult",
         ":p384_internal_mult",
         ":p384_isoncurve",
+        ":p384_isoncurve_proj",
         ":p384_keygen",
         ":p384_keygen_from_seed",
+        ":p384_mem",
         ":p384_modinv",
         ":p384_scalar_mult",
         ":p384_sign",

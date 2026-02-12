@@ -102,7 +102,7 @@ module tlul_socket_1n #(
   // We need to keep track of how many requests are outstanding,
   // and to which device. New requests are compared to this and
   // stall until that number is zero.
-  localparam int MaxOutstanding = 2**top_pkg::TL_AIW; // Up to 256 ounstanding
+  localparam int MaxOutstanding = 2**top_pkg::TL_AIW; // Up to 256 outstanding
   localparam int OutstandingW = $clog2(MaxOutstanding+1);
   logic [OutstandingW-1:0] num_req_outstanding;
   logic [NWD-1:0]          dev_select_outstanding;

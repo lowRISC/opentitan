@@ -1,6 +1,3 @@
-# Copyright lowRISC contributors (OpenTitan project).
-# Licensed under the Apache License, Version 2.0, see LICENSE for details.
-# SPDX-License-Identifier: Apache-2.0
 # CLKMGR DV document
 
 ## Goals
@@ -45,7 +42,7 @@ All common types and methods defined at the package level can be found in
 `clkmgr_env_pkg`. Some of them in use are:
 
 ```systemverilog
-  localparam int NUM_PERI = 2;
+  localparam int NUM_PERI = 1;
   localparam int NUM_TRANS = 4;
   localparam int NUM_ALERTS = 2;
 
@@ -55,8 +52,7 @@ All common types and methods defined at the package level can be found in
   typedef virtual clkmgr_if clkmgr_vif;
   typedef virtual clk_rst_if clk_rst_vif;
   typedef enum int {
-    PeriIoDiv4,
-    PeriIoDiv2
+    PeriIo
   } peri_e;
   typedef enum int {TransAes, TransHmac, TransKmac, TransOtbn} trans_e;
 ```
@@ -105,15 +101,6 @@ They depend on the `clk_hints` CSR, which has a separate bit for each, `main_ip_
 They also depend on the `idle_i` input, which also has a separate multi-bit value for each unit.
 Units are considered busy when their corresponding `idle_i` value is not `mubi_pkg::MuBi4True`, and this prevents its clock turning off until it becomes idle.
 
-#### clkmgr_extclk_vseq
-
-The sequence `clkmgr_extclk_vseq` randomizes the stimuli that drive the external clock selection.
-The selection is controlled by software if the `extclk_ctrl.sel` CSR is `prim_mubi_pkg::MuBi4True`, provided the `lc_hw_debug_en_i` input is also set to `lc_ctrl_pkg::On`.
-Alternatively, the external clock is selected by the life cycle controller if the `lc_ctrl_byp_req_i` input is `lc_ctrl_pkg::On`.
-When the external clock is selected and `scanmode_i` is not set to `prim_mubi_pkg::MuBi4True`, the clock dividers for the clk_io_div2 and clk_io_div4 output clocks are stepped down:
-* If `lc_ctrl_byp_req_i` is on, or
-* If `extclk_ctrl.hi_speed_sel` CSR is `prim_mubi_pkg::MuBi4True`, when the selection is enabled by software.
-
 #### clkmgr_frequency_vseq
 
 The sequence `clkmgr_frequency_vseq` randomly programs the frequency measurement for each clock so its measurement is either okay, slow, or fast.
@@ -142,7 +129,6 @@ The following covergroups have been developed to prove that the test intent has 
   These are wrapped in class `clkmgr_trans_cg_wrap` and instantiated in `clkmgr_env_cov`.
 * Covergroups for the outcome of each clock measurement.
   These are wrapped in class `freq_measure_cg_wrap` and instantiated in `clkmgr_env_cov`.
-* Covergroup for the external clock selection logic: `extclk_cg` in `clkmgr_env_cov`.
 
 See more detailed description at `hw/top_darjeeling/ip_autogen/clkmgr/data/clkmgr_testplan.hjson`.
 

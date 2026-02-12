@@ -28,6 +28,7 @@ module pinmux_strap_sampling
   // Used for TAP qualification
   input  logic                     strap_en_i,
   input  lc_tx_t                   lc_dft_en_i,
+  input  lc_tx_t                   lc_hw_debug_clr_i,
   input  lc_tx_t                   lc_hw_debug_en_i,
   input  lc_tx_t                   lc_check_byp_en_i,
   input  lc_tx_t                   lc_escalate_en_i,
@@ -76,6 +77,15 @@ module pinmux_strap_sampling
     .rst_ni,
     .lc_en_i(lc_dft_en_i),
     .lc_en_o(lc_dft_en)
+  );
+  lc_tx_t [0:0] lc_hw_debug_clr;
+  prim_lc_sync #(
+    .NumCopies(1)
+  ) u_prim_lc_sync_lc_hw_debug_clr (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_hw_debug_clr_i),
+    .lc_en_o(lc_hw_debug_clr)
   );
   lc_tx_t [0:0] lc_hw_debug_en;
   prim_lc_sync #(
@@ -149,8 +159,15 @@ module pinmux_strap_sampling
   );
 
   // Output ON if both lc_check_byp_en and lc_escalate_en are set to OFF.
+  lc_tx_t neither_check_byp_nor_escalate;
+  assign neither_check_byp_nor_escalate = lc_tx_inv(lc_tx_and_lo(lc_check_byp_en[0],
+                                                                 lc_escalate_en[0]));
+
+  // Output ON if the signal above is strictly ON and lc_hw_debug_clr is strictly OFF; otherwise
+  // output a non-ON value (which may be different from OFF).
   lc_tx_t hw_debug_en_gating;
-  assign hw_debug_en_gating = lc_tx_inv(lc_tx_and_lo(lc_check_byp_en[0], lc_escalate_en[0]));
+  assign hw_debug_en_gating = lc_tx_and_hi(neither_check_byp_nor_escalate,
+                                           lc_tx_inv(lc_hw_debug_clr[0]));
 
   // Gate the hw_debug_en_set signal and feed it into the latching flop.
   lc_tx_t pinmux_hw_debug_en_d;
@@ -190,6 +207,7 @@ module pinmux_strap_sampling
   `ASSERT(LcHwDebugEnSet_A,
       (lc_tx_test_true_strict(lc_hw_debug_en[0]) ||
        lc_tx_test_true_strict(pinmux_hw_debug_en_q)) &&
+      lc_tx_test_false_strict(lc_hw_debug_clr[0]) &&
       lc_tx_test_false_strict(lc_check_byp_en[0]) &&
       lc_tx_test_false_strict(lc_escalate_en[0]) &&
       strap_en_i
@@ -200,18 +218,19 @@ module pinmux_strap_sampling
       lc_tx_test_false_loose(pinmux_hw_debug_en_q) ##1
       lc_tx_test_true_strict(pinmux_hw_debug_en_q)
       |->
-      $past(lc_tx_test_true_strict(lc_hw_debug_en[0])))
+      lc_tx_test_true_strict($past(lc_hw_debug_en[0])))
   // Check that latching ON can only occur if strap_en_i is set.
   `ASSERT(LcHwDebugEnSetRev1_A,
       lc_tx_test_false_loose(pinmux_hw_debug_en_q) ##1
       lc_tx_test_true_strict(pinmux_hw_debug_en_q)
       |->
       $past(strap_en_i))
-  // Check that any non-OFF value on lc_check_byp_en_i and
-  // lc_escalate_en_i clears the latched value.
+  // Check that any non-OFF value on lc_check_byp_en_i or lc_escalate_en_i or lc_hw_debug_clr_i
+  // clears the latched value.
   `ASSERT(LcHwDebugEnClear_A,
       lc_tx_test_true_loose(lc_check_byp_en[0]) ||
-      lc_tx_test_true_loose(lc_escalate_en[0])
+      lc_tx_test_true_loose(lc_escalate_en[0]) ||
+      lc_tx_test_true_loose(lc_hw_debug_clr[0])
       |=>
       lc_tx_test_false_loose(pinmux_hw_debug_en_q))
 

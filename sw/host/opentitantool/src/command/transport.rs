@@ -5,7 +5,6 @@
 use anyhow::Result;
 use clap::{Args, Subcommand};
 use regex::Regex;
-use serde_annotate::Annotate;
 use std::any::Any;
 use std::collections::HashMap;
 use std::fs;
@@ -15,7 +14,6 @@ use std::time::Duration;
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::{StagedProgressBar, TransportWrapper};
 use opentitanlib::io::jtag::JtagParams;
-use opentitanlib::transport::verilator::transport::Watch;
 use opentitanlib::transport::Capability;
 use opentitanlib::transport::SetJtagPins;
 use opentitanlib::transport::UpdateFirmware;
@@ -35,7 +33,7 @@ impl CommandDispatch for TransportInit {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         // Configure all GPIO pins to default direction and level, according to
         // configuration files provided, and configures SPI port mode/speed, etc.
         // Also apply an optional, named gpio strap while performing pin initialization.
@@ -61,7 +59,7 @@ impl CommandDispatch for TransportSetJtagPins {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport
             .capabilities()?
             .request(Capability::GPIO | Capability::JTAG)
@@ -97,7 +95,7 @@ impl CommandDispatch for TransportUpdateFirmware {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let firmware = match self.filename.as_ref() {
             Some(name) => Some(fs::read(name)?),
             None => None,
@@ -127,8 +125,8 @@ impl CommandDispatch for VerilatorWatch {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
-        let watch = Watch {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
+        let watch = ot_transport_verilator::transport::Watch {
             regex: Regex::new(&self.regex)?,
             timeout: self.timeout,
         };
@@ -153,7 +151,7 @@ impl CommandDispatch for TransportQuery {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let value = transport.query_provides(&self.key)?;
         Ok(Some(Box::new(TransportQueryResult {
             key: self.key.clone(),
@@ -170,7 +168,7 @@ impl CommandDispatch for TransportQueryAll {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let value: HashMap<String, String> = transport.provides_map()?.clone();
         Ok(Some(Box::new(value)))
     }

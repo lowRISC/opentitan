@@ -11,6 +11,7 @@ rust_binary(
     srcs = ["src/main.rs"],
     deps = [
         "//sw/host/opentitanlib",
+        "//sw/host/ot_proxy/server",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
         "@crate_index//:directories",
@@ -26,4 +27,9 @@ rust_binary(
         "@crate_index//:shellwords",
         "@crate_index//:thiserror",
     ],
+)
+
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
 )

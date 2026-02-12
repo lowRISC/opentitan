@@ -9,7 +9,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
 
-#include "i2c_regs.h"  // Generated
+#include "hw/top/i2c_regs.h"  // Generated
 
 /**
  * Performs a 32-bit integer unsigned division, rounding up. The bottom
@@ -204,7 +204,7 @@ dif_result_t dif_i2c_compute_timing(dif_i2c_timing_config_t timing_config,
   }
 
   // This code follows the algorithm given in
-  // https://docs.opentitan.org/hw/ip/i2c/doc/index.html#initialization
+  // https://opentitan.org/book/hw/ip/i2c/doc/programmers_guide.html#initialization
 
   *config = default_timing_for_speed(timing_config.lowest_target_device_speed,
                                      timing_config.clock_period_nanos);

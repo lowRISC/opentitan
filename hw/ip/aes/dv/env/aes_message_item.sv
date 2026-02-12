@@ -15,6 +15,10 @@ class aes_message_item extends uvm_sequence_item;
   int               message_len_max       = 16;
   // Max number of data bytes
   int               message_len_min       = 1;
+  // min number of aad bytes
+  int               aad_len_max           = 16;
+  // Max number of aad bytes
+  int               aad_len_min           = 1;
   // percentage of configuration errors
   int               config_error_pct      = 20;
   cfg_error_type_t  config_error_type_en  = '0;
@@ -35,6 +39,8 @@ class aes_message_item extends uvm_sequence_item;
   bit               fixed_operation_en    = 0;
   // fixed IV
   bit               fixed_iv_en           = 0;
+  // fixed IV
+  bit               fixed_aad_en          = 0;
   // sideload
   int               sideload_pct          = 0;
   rand bit          sideload_en           = 0;
@@ -51,16 +57,18 @@ class aes_message_item extends uvm_sequence_item;
   bit [2:0]           fixed_keylen     = 3'b001;
   bit [1:0]           fixed_operation  = AES_ENC;
   bit [3:0] [31:0]    fixed_iv         = 128'h00000000000000000000000000000000;
+  bit [3:0] [31:0]    fixed_aad        = 128'h00000000000000000000000000000000;
 
   // Mode distribution //
   // chance of selection ecb_mode
-  // ecb_mode /(ecb_mode + cbc_mode + cfb_mode + ofb_mode + ctr_mode)
-  // with the defaults 10/50 = 1/5 (20%)
-  int    ecb_weight           = 10;
-  int    cbc_weight           = 10;
-  int    cfb_weight           = 10;
-  int    ofb_weight           = 10;
-  int    ctr_weight           = 10;
+  // ecb_mode /(ecb_mode + cbc_mode + cfb_mode + ofb_mode + ctr_mode + gcm_mode)
+  // with the defaults 10/60 = 1/6 (16.66%)
+  int    ecb_weight           = 16;
+  int    cbc_weight           = 16;
+  int    cfb_weight           = 16;
+  int    ofb_weight           = 16;
+  int    ctr_weight           = 16;
+  int    gcm_weight           = 16;
 
   // KEYLEN weights
   int    key_128b_weight      = 10;
@@ -75,7 +83,7 @@ class aes_message_item extends uvm_sequence_item;
   // set if this message should not be
   // validated
   // due to a premature trigger
-  // i.e unkown key and IV settings used
+  // i.e unknown key and IV settings used
   bit    skip_msg             = 0;
 
   ///////////////////////////////////////
@@ -84,6 +92,8 @@ class aes_message_item extends uvm_sequence_item;
 
   // length of the message                                     //
   rand int               message_length;
+  // length of the aad                                         //
+  rand int               aad_length;
   // mode - which type of ecnryption is used                   //
   rand aes_mode_e        aes_mode = AES_NONE;
   // operation - encruption or decryption                      //
@@ -113,14 +123,20 @@ class aes_message_item extends uvm_sequence_item;
 
   bit [7:0]            input_msg[];
   bit [7:0]            output_msg[];
+  bit [7:0]            input_aad[];
   bit [7:0]            predicted_msg[];
   bit                  output_cleared[];
+
+  bit [3:0][31:0]      output_tag;
+  bit                  output_tag_vld = 0;
 
   ///////////////////////////////////////
   // Constraints                       //
   ///////////////////////////////////////
 
   constraint data_c { message_length inside { [message_len_min:message_len_max] };}
+
+  constraint aad_c { aad_length inside { [aad_len_min:aad_len_max] };}
 
   constraint has_config_error_c {
     if (error_types.cfg) {
@@ -170,7 +186,8 @@ class aes_message_item extends uvm_sequence_item;
                         AES_CBC := cbc_weight,
                         AES_CFB := cfb_weight,
                         AES_OFB := ofb_weight,
-                        AES_CTR := ctr_weight};
+                        AES_CTR := ctr_weight,
+                        AES_GCM := gcm_weight};
     } else {
       // the mode will be randomized to a random
       // non legal value later.
@@ -236,7 +253,19 @@ class aes_message_item extends uvm_sequence_item;
     }
   }
 
+  function void post_randomize();
+    if (aes_mode == AES_GCM) begin
+      // When in AES-GCM mode, only a 96-bit IV is used. Hence, mask out the
+      // other bits.
+      for (int i = 12; i < 16; i++) begin
+        aes_iv[i[3:2]][i[1:0]*8+7 -:8] = 8'd0;
+      end
+    end
+  endfunction // post_randomize
+
   function void add_data_item(aes_seq_item item);
+    int data_len = item.data_len == 0 ? 16 : item.data_len;
+    message_length = message_length + data_len;
     for (int i=0; i < 4 ; i++) begin
       input_msg  = { input_msg , item.data_in[i][7:0], item.data_in[i][15:8], item.data_in[i][23:16]
                     ,item.data_in[i][31:24]};
@@ -250,6 +279,22 @@ class aes_message_item extends uvm_sequence_item;
     end
   endfunction // add_data_item
 
+  function void add_aad_item(aes_seq_item item);
+    int aad_len = item.data_len == 0 ? 16 : item.data_len;
+    aad_length = aad_length + aad_len;
+    for (int i=0; i < 4 ; i++) begin
+      input_aad  = { input_aad , item.data_in[i][7:0], item.data_in[i][15:8], item.data_in[i][23:16]
+                    ,item.data_in[i][31:24]};
+      `uvm_info(`gfn, $sformatf("\n\t ---| adding to 0x%0h to aad, length is now: %0d",
+               {item.data_in[i][7:0], item.data_in[i][15:8],item.data_in[i][23:16],
+               item.data_in[i][31:24]}, input_aad.size()), UVM_LOW)
+    end
+  endfunction // add_aad_item
+
+  function void add_tag_item(aes_seq_item item);
+    output_tag = item.data_out;
+    output_tag_vld = 1;
+  endfunction // add_aad_item
 
   function void add_start_msg_item(aes_seq_item item);
     this.aes_mode      = item.mode;
@@ -285,7 +330,16 @@ class aes_message_item extends uvm_sequence_item;
           $sformatf("\n\t ---| Illegal reseed rate value detected. Resolving to default PER_1"),
           UVM_MEDIUM)
     end
-    add_data_item(item);
+    if (item.mode == AES_GCM) begin
+      if (item.item_type == AES_GCM_AAD) begin
+        add_aad_item(item);
+      end else if (item.item_type == AES_DATA) begin
+        `uvm_info(`gfn, $sformatf("ADDING DATA ITEM TYPE IS %s", item.item_type.name()), UVM_LOW)
+        add_data_item(item);
+      end
+    end else begin
+      add_data_item(item);
+    end
   endfunction // add_start_msg_item
 
 
@@ -301,6 +355,7 @@ class aes_message_item extends uvm_sequence_item;
     str = {str,  $sformatf("\n\t ----| AES MESSAGE ITEM")};
     str = {str, "\n\t ----| "};
     str = {str,  $sformatf("\n\t ----| Message Length:       %0d", message_length)};
+    str = {str,  $sformatf("\n\t ----| AAD Length:           %0d", aad_length)};
     str = {str,  $sformatf("\n\t ----| Operation:            %s",
                            aes_operation == AES_ENC ? "AES_ENC" :
                            aes_operation == AES_DEC ? "AES_DEC" : "INVALID")};
@@ -315,7 +370,7 @@ class aes_message_item extends uvm_sequence_item;
       str = {str, $sformatf("%h ", aes_key[1][i])};
     end
     str = {str,  $sformatf("\n\t ----| Key Mask:             %0b", keymask)};
-    str = {str,  $sformatf("\n\t ----| Initializaion vector: ")};
+    str = {str,  $sformatf("\n\t ----| Initialization vector: ")};
     for (int i=0; i <4; i++) begin
       str = {str, $sformatf("%h ", aes_iv[i])};
     end
@@ -348,6 +403,7 @@ class aes_message_item extends uvm_sequence_item;
     str = {str,  $sformatf("\n\t ----| ECB Weight: %0d", ecb_weight)};
     str = {str,  $sformatf("\n\t ----| CBC Weight: %0d", cbc_weight)};
     str = {str,  $sformatf("\n\t ----| CTR Weight: %0d", ctr_weight)};
+    str = {str,  $sformatf("\n\t ----| GCM Weight: %0d", gcm_weight)};
     str = {str,  $sformatf("\n\t ----| Key Length Distribution:")};
     str = {str,  $sformatf("\n\t ----| AES-128 Weight: %0d", key_128b_weight)};
     str = {str,  $sformatf("\n\t ----| AES-192 Weight: %0d", key_192b_weight)};
@@ -367,8 +423,27 @@ class aes_message_item extends uvm_sequence_item;
        txt = {txt, $sformatf("\n\t ----| [%0d] 0x%0h \t 0x%0h",i, input_msg[i], output_msg[i])};
      end
      return txt;
-   endfunction // get_data_length
+   endfunction // print_data
 
+   virtual function string print_aad();
+     string txt="";
+
+     txt = $sformatf("\n\t ---| Printing message aad \n\t ---| aad length: %d", input_aad.size());
+     foreach (input_aad[i]) begin
+       txt = {txt, $sformatf("\n\t ----| [%0d] 0x%0h",i, input_aad[i])};
+     end
+     return txt;
+   endfunction // print_aad
+
+   virtual function string print_tag();
+     string txt="";
+
+     txt = $sformatf("\n\t ---| Printing message tag \n\t ---|");
+     foreach (output_tag[i]) begin
+       txt = {txt, $sformatf("\n\t ----| [%0d] 0x%0h",i, output_tag[i])};
+     end
+     return txt;
+   endfunction // print_aad
 
   virtual function void do_copy(uvm_object rhs);
     aes_message_item rhs_;
@@ -381,6 +456,7 @@ class aes_message_item extends uvm_sequence_item;
     aes_mode         = rhs_.aes_mode;
     aes_iv           = rhs_.aes_iv;
     message_length   = rhs_.message_length;
+    aad_length       = rhs_.aad_length;
     has_config_error = rhs_.has_config_error;
     cfg_error_type   = rhs_.cfg_error_type;
     error_types      = rhs_.error_types;
@@ -389,10 +465,14 @@ class aes_message_item extends uvm_sequence_item;
     cfb_weight       = rhs_.cfb_weight;
     ofb_weight       = rhs_.ofb_weight;
     ctr_weight       = rhs_.ctr_weight;
+    gcm_weight       = rhs_.gcm_weight;
     key_128b_weight  = rhs_.key_128b_weight;
     key_192b_weight  = rhs_.key_192b_weight;
     key_256b_weight  = rhs_.key_256b_weight;
     input_msg        = rhs_.input_msg;
+    input_aad        = rhs_.input_aad;
+    output_tag       = rhs_.output_tag;
+    output_tag_vld   = rhs_.output_tag_vld;
     output_msg       = rhs_.output_msg;
     output_cleared   = rhs_.output_cleared;
     predicted_msg    = rhs_.predicted_msg;
@@ -401,6 +481,9 @@ class aes_message_item extends uvm_sequence_item;
     fixed_data_en    = rhs_.fixed_data_en;
     fixed_data       = rhs_.fixed_data;
     fixed_iv_en      = rhs_.fixed_iv_en;
+    fixed_aad_en     = rhs_.fixed_aad_en;
+    fixed_aad        = rhs_.fixed_aad;
+    fixed_key_en     = rhs_.fixed_key_en;
     skip_msg         = rhs_.skip_msg;
     sideload_en      = rhs_.sideload_en;
     reseed_rate      = rhs_.reseed_rate;

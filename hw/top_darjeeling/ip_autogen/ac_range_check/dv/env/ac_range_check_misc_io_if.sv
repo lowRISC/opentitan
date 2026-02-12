@@ -20,19 +20,25 @@ interface ac_range_check_misc_io_if();
   import prim_mubi_pkg::MuBi8False;
   import prim_mubi_pkg::MuBi8True;
   import prim_mubi_pkg::mubi8_bool_to_mubi;
+  import prim_mubi_pkg::mubi8_test_true_strict;
   import top_racl_pkg::NrRaclPolicies;
   import top_racl_pkg::RACL_POLICY_VEC_DEFAULT;
   import top_racl_pkg::racl_policy_vec_t;
+  import top_racl_pkg::racl_error_log_t;
 
   // Variables corresponding to some of the DUT signals
   mubi8_t           range_check_overwrite;
   racl_policy_vec_t racl_policies;
-  logic             racl_error;
+  racl_error_log_t  racl_error;
 
   // Methods to manage range_check_overwrite
   function automatic void set_range_check_overwrite(bit val);
     range_check_overwrite = mubi8_bool_to_mubi(val);
   endfunction : set_range_check_overwrite
+
+  function automatic bit get_range_check_overwrite();
+    return mubi8_test_true_strict(range_check_overwrite);
+  endfunction : get_range_check_overwrite
 
   // Methods to manage racl_policies
   function automatic void init_racl_policies();

@@ -329,10 +329,10 @@ interface otbn_trace_if
 
   for (genvar i_fg = 0; i_fg < NFlagGroups; i_fg++) begin : g_flag_group_acceses
     assign flags_write[i_fg] = (sec_wipe_zero |
-        ((u_otbn_alu_bignum.alu_predec_bignum_i.flags_adder_update[i_fg] |
-          u_otbn_alu_bignum.alu_predec_bignum_i.flags_logic_update[i_fg] |
-          u_otbn_alu_bignum.alu_predec_bignum_i.flags_mac_update[i_fg] |
-          (|u_otbn_alu_bignum.alu_predec_bignum_i.flags_ispr_wr)) &
+        ((u_otbn_alu_bignum.alu_bignum_predec_i.flags_adder_update[i_fg] |
+          u_otbn_alu_bignum.alu_bignum_predec_i.flags_logic_update[i_fg] |
+          u_otbn_alu_bignum.alu_bignum_predec_i.flags_mac_update[i_fg] |
+          (|u_otbn_alu_bignum.alu_bignum_predec_i.flags_ispr_wr)) &
           u_otbn_alu_bignum.operation_commit_i)) & ~ispr_init;
     assign flags_write_data[i_fg] = u_otbn_alu_bignum.flags_d[i_fg];
 
@@ -368,10 +368,30 @@ interface otbn_trace_if
     end
   end
 
-  assign internal_intg_err_i.rf_base_intg_err = rf_base_intg_err;
-  assign internal_intg_err_i.rf_bignum_intg_err = rf_bignum_intg_err;
-  assign internal_intg_err_i.mod_ispr_intg_err = alu_bignum_reg_intg_violation_err;
-  assign internal_intg_err_i.acc_ispr_intg_err = mac_bignum_reg_intg_violation_err;
+  // Register integrity check signals to model the registering of the escalation signal.
+  logic rf_base_intg_err_q;
+  logic rf_bignum_intg_err_q;
+  logic alu_bignum_reg_intg_violation_err_q;
+  logic mac_bignum_reg_intg_violation_err_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      rf_base_intg_err_q                  <= '0;
+      rf_bignum_intg_err_q                <= '0;
+      alu_bignum_reg_intg_violation_err_q <= '0;
+      mac_bignum_reg_intg_violation_err_q <= '0;
+    end else begin
+      rf_base_intg_err_q                  <= rf_base_intg_err;
+      rf_bignum_intg_err_q                <= rf_bignum_intg_err;
+      alu_bignum_reg_intg_violation_err_q <= alu_bignum_reg_intg_violation_err;
+      mac_bignum_reg_intg_violation_err_q <= mac_bignum_reg_intg_violation_err;
+    end
+  end
+
+  assign internal_intg_err_i.rf_base_intg_err = rf_base_intg_err_q;
+  assign internal_intg_err_i.rf_bignum_intg_err = rf_bignum_intg_err_q;
+  assign internal_intg_err_i.mod_ispr_intg_err = alu_bignum_reg_intg_violation_err_q;
+  assign internal_intg_err_i.acc_ispr_intg_err = mac_bignum_reg_intg_violation_err_q;
   assign internal_intg_err_i.loop_stack_addr_intg_err = controller_bad_int_i.loop_hw_intg_err;
   assign internal_intg_err_i.insn_fetch_intg_err = insn_fetch_err;
 

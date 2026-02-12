@@ -12,7 +12,7 @@
 #include "sw/device/lib/base/mock_mmio.h"
 #include "sw/device/lib/dif/dif_test_base.h"
 
-#include "otp_ctrl_regs.h"  // Generated.
+#include "hw/top/otp_ctrl_regs.h"  // Generated.
 
 namespace dif_otp_ctrl_unittest {
 namespace {
@@ -380,8 +380,12 @@ TEST_F(StatusTest, Errors) {
   EXPECT_READ32(OTP_CTRL_STATUS_REG_OFFSET,
                 {
                     {OTP_CTRL_STATUS_DAI_IDLE_BIT, true},
-                    {OTP_CTRL_STATUS_HW_CFG0_ERROR_BIT, true},
+                    {OTP_CTRL_STATUS_PARTITION_ERROR_BIT, true},
                     {OTP_CTRL_STATUS_LCI_ERROR_BIT, true},
+                });
+  EXPECT_READ32(OTP_CTRL_PARTITION_STATUS_0_REG_OFFSET,
+                {
+                    {OTP_CTRL_PARTITION_STATUS_0_HW_CFG0_ERROR_BIT, true},
                 });
 
   EXPECT_READ32(OTP_CTRL_ERR_CODE_5_REG_OFFSET,
@@ -393,11 +397,11 @@ TEST_F(StatusTest, Errors) {
 
   EXPECT_DIF_OK(dif_otp_ctrl_get_status(&otp_, &status));
   EXPECT_EQ(status.codes, (1 << kDifOtpCtrlStatusCodeDaiIdle) |
-                              (1 << kDifOtpCtrlStatusCodeHwCfg0Error) |
+                              (1 << kDifOtpCtrlStatusCodePartitionError) |
                               (1 << kDifOtpCtrlStatusCodeLciError));
-  EXPECT_EQ(status.causes[kDifOtpCtrlStatusCodeHwCfg0Error],
+  EXPECT_EQ(status.causes[kDifOtpCtrlPartitionHwCfg0],
             kDifOtpCtrlErrorMacroRecoverableRead);
-  EXPECT_EQ(status.causes[kDifOtpCtrlStatusCodeLciError],
+  EXPECT_EQ(status.causes[kDifOtpCtrlPartitionLciError],
             kDifOtpCtrlErrorMacroUnspecified);
 }
 

@@ -23,9 +23,10 @@ pub mod template;
 pub mod x509;
 
 use clap::ValueEnum;
+use serde::{Deserialize, Serialize};
 
 /// Supported OpenTitan certificate formats.
-#[derive(Clone, Debug, ValueEnum)]
+#[derive(Clone, Debug, ValueEnum, Serialize, Deserialize)]
 pub enum CertFormat {
     X509,
     Cwt,

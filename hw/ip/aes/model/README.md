@@ -20,7 +20,7 @@ In addition, this directory also contains two example applications.
 2. `aes_modes`:
 - Shows how to interface the OpenSSL/BoringSSL interface functions.
 - Checks the output of BoringSSL/OpenSSL versus expected results.
-- Supports ECB, CBC, CTR modes.
+- Supports ECB, CBC, CTR, CFB, OFB, GCM modes.
 
 How to build and run the examples
 ---------------------------------
@@ -54,4 +54,4 @@ Details of the model
 - `aes_example.c/h`: Contains the first example application including test input
   and expected output for ECB mode.
 - `aes_modes.c/h`: Contains the second example application including test input
-  and expected output for ECB, CBC, CTR modes.
+  and expected output for ECB, CBC, CTR, CFB, OFB, GCM modes.

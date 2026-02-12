@@ -13,8 +13,8 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
+#include "hw/top/otp_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otp_ctrl_regs.h"
 
 /**
  * Bitfields for `CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG` and
@@ -60,7 +60,7 @@ static uint32_t flash_bank_1_page_index_last;
  */
 static void read_and_check_host_if(uint32_t addr, const uint32_t *check_data) {
   mmio_region_t flash_addr =
-      mmio_region_from_addr(TOP_EARLGREY_EFLASH_BASE_ADDR + addr);
+      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + addr);
   uint32_t host_data[kDataSize];
   for (int i = 0; i < kDataSize; ++i) {
     host_data[i] =
@@ -137,7 +137,7 @@ static void do_data_partition_test(uint32_t bank_number) {
       uint32_t page_index =
           (i == 0) ? flash_bank_1_page_index : flash_bank_1_page_index_last;
       for (int j = 0; j < kDataSize; ++j) {
-        test_data[i] = rand_testutils_gen32();
+        test_data[j] = rand_testutils_gen32();
       }
       uint32_t address = 0;
       CHECK_STATUS_OK(flash_ctrl_testutils_data_region_setup(

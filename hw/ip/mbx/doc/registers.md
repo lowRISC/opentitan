@@ -15,10 +15,10 @@
 | mbx.[`ADDRESS_RANGE_VALID`](#address_range_valid)       | 0x1c     |        4 | Used to mark the inbound/outbound base/limit configuration registers to have a valid configuration.                       |
 | mbx.[`INBOUND_BASE_ADDRESS`](#inbound_base_address)     | 0x20     |        4 | Base address of SRAM region, which is used to back up the inbound mailbox data.                                           |
 | mbx.[`INBOUND_LIMIT_ADDRESS`](#inbound_limit_address)   | 0x24     |        4 | Inclusive end address of the inbound mailbox memory range in the private SRAM.                                            |
-| mbx.[`INBOUND_WRITE_PTR`](#inbound_write_ptr)           | 0x28     |        4 | Write pointer for the next inbound data write.                                                                            |
+| mbx.[`INBOUND_WRITE_PTR`](#inbound_write_ptr)           | 0x28     |        4 | Write pointer for the next inbound DWORD write (32 bits).                                                                 |
 | mbx.[`OUTBOUND_BASE_ADDRESS`](#outbound_base_address)   | 0x2c     |        4 | Base address of SRAM region, which is used to buffer the outbound mailbox data.                                           |
 | mbx.[`OUTBOUND_LIMIT_ADDRESS`](#outbound_limit_address) | 0x30     |        4 | Inclusive end address of the outbound mailbox memory range in the private SRAM.                                           |
-| mbx.[`OUTBOUND_READ_PTR`](#outbound_read_ptr)           | 0x34     |        4 | Read pointer for the next outbound data read.                                                                             |
+| mbx.[`OUTBOUND_READ_PTR`](#outbound_read_ptr)           | 0x34     |        4 | Read pointer for the next outbound DWORD read.                                                                            |
 | mbx.[`OUTBOUND_OBJECT_SIZE`](#outbound_object_size)     | 0x38     |        4 | Indicates the size of the data object to be transferred out.                                                              |
 | mbx.[`DOE_INTR_MSG_ADDR`](#doe_intr_msg_addr)           | 0x3c     |        4 | Software read-only alias of the DOE_INTR_MSG_ADDR register of the SoC interface for convenient access of the OT firmware. |
 | mbx.[`DOE_INTR_MSG_DATA`](#doe_intr_msg_data)           | 0x40     |        4 | Software read-only alias of the DOE_INTR_MSG_DATA register of the SoC interface for convenient access of the OT firmware. |
@@ -212,8 +212,10 @@ DWORD location. The lower 2 bits are ignored.
 |  1:0   |        |         |        | Reserved                                                                               |
 
 ## INBOUND_WRITE_PTR
-Write pointer for the next inbound data write.
-This pointer is 4-byte aligned, the lower 2 bits are always zero.
+Write pointer for the next inbound DWORD write (32 bits).
+Pointer is initialized to the Inbox memory base address before the start of a transfer.
+Inbox handler maintains the updated pointer as data DWORDs are received by the DOE inbox.
+This pointer is 4-byte aligned; the lower 2 bits are always zero.
 - Offset: `0x28`
 - Reset default: `0x0`
 - Reset mask: `0xfffffffc`
@@ -221,13 +223,13 @@ This pointer is 4-byte aligned, the lower 2 bits are always zero.
 ### Fields
 
 ```wavejson
-{"reg": [{"bits": 2}, {"name": "inbound_read_ptr", "bits": 30, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"bits": 2}, {"name": "inbound_write_ptr", "bits": 30, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name             | Description                                    |
-|:------:|:------:|:-------:|:-----------------|:-----------------------------------------------|
-|  31:2  |   ro   |   0x0   | inbound_read_ptr | Write pointer for the next inbound data write. |
-|  1:0   |        |         |                  | Reserved                                       |
+|  Bits  |  Type  |  Reset  | Name              | Description                                    |
+|:------:|:------:|:-------:|:------------------|:-----------------------------------------------|
+|  31:2  |   ro   |   0x0   | inbound_write_ptr | Write pointer for the next inbound data write. |
+|  1:0   |        |         |                   | Reserved                                       |
 
 ## OUTBOUND_BASE_ADDRESS
 Base address of SRAM region, which is used to buffer the outbound mailbox data.
@@ -269,8 +271,11 @@ DWORD location. The lower 2 bits are ignored.
 |  1:0   |        |         |        | Reserved                                                                                |
 
 ## OUTBOUND_READ_PTR
-Read pointer for the next outbound data read.
-This pointer is 4-byte aligned, the lower 2 bits are always zero.
+Read pointer for the next outbound DWORD read.
+Pointer is initialized to the Outbox memory base address before the start of an outgoing
+object transfer. Outbox handler maintains the updated pointer as data DWORDs are read
+from the DOE instance by the requester.
+This pointer is 4-byte aligned; the lower 2 bits are always zero.
 - Offset: `0x34`
 - Reset default: `0x0`
 - Reset mask: `0xfffffffc`
@@ -278,18 +283,18 @@ This pointer is 4-byte aligned, the lower 2 bits are always zero.
 ### Fields
 
 ```wavejson
-{"reg": [{"bits": 2}, {"name": "outbound_write_ptr", "bits": 30, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"bits": 2}, {"name": "outbound_read_ptr", "bits": 30, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name               | Description                                   |
-|:------:|:------:|:-------:|:-------------------|:----------------------------------------------|
-|  31:2  |   ro   |   0x0   | outbound_write_ptr | Read pointer for the next outbound data read. |
-|  1:0   |        |         |                    | Reserved                                      |
+|  Bits  |  Type  |  Reset  | Name              | Description                                   |
+|:------:|:------:|:-------:|:------------------|:----------------------------------------------|
+|  31:2  |   ro   |   0x0   | outbound_read_ptr | Read pointer for the next outbound data read. |
+|  1:0   |        |         |                   | Reserved                                      |
 
 ## OUTBOUND_OBJECT_SIZE
 Indicates the size of the data object to be transferred out.
-Note that this size specifies the number of 4-byte words (DWORD).
-Maximum size supported by any OT DOE instance is 1K DWORDS.
+Note that this size specifies the number of DWORDs (32 bits).
+Maximum size supported by any OT DOE instance is 1024 DWORDs.
 - Offset: `0x38`
 - Reset default: `0x0`
 - Reset mask: `0x7ff`
@@ -362,14 +367,14 @@ DOE mailbox control register.
 {"reg": [{"name": "abort", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "doe_intr_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 1}, {"name": "doe_async_msg_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 27}, {"name": "go", "bits": 1, "attr": ["wo"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 180}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name             | Description                                                                                                                                                                                                                                            |
-|:------:|:------:|:-------:|:-----------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|   31   |   wo   |   0x0   | go               | A write of 1 to this bit indicates to the DOE instance that it can start consuming the data object transferred through the DOE Write Data Mailbox register.                                                                                            |
-|  30:4  |        |         |                  | Reserved                                                                                                                                                                                                                                               |
-|   3    |   rw   |   0x0   | doe_async_msg_en | If DOE Async Message Support is Set, this bit, when Set, enables the use of the DOE Async Message mechanism. When this bit is set, it allows the DOE instance to raise the SOC_STATUS.doe_async_msg_status, indicating an asnchronous message request. |
-|   2    |        |         |                  | Reserved                                                                                                                                                                                                                                               |
-|   1    |   rw   |   0x0   | doe_intr_en      | If DOE interrupt support is set, when this bit is set and MSI/MSI-X is enabled in MSI capability registers, the DOE instance must issue an MSI/MSI-X interrupt.                                                                                        |
-|   0    |   wo   |   0x0   | abort            | A write of 1 to this bit causes all data object transfer operations associated with this DOE instance to be aborted.                                                                                                                                   |
+|  Bits  |  Type  |  Reset  | Name             | Description                                                                                                                                                                                                                                             |
+|:------:|:------:|:-------:|:-----------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|   31   |   wo   |   0x0   | go               | A write of 1 to this bit indicates to the DOE instance that it can start consuming the data object transferred through the DOE Write Data Mailbox register.                                                                                             |
+|  30:4  |        |         |                  | Reserved                                                                                                                                                                                                                                                |
+|   3    |   rw   |   0x0   | doe_async_msg_en | If DOE Async Message Support is Set, this bit, when Set, enables the use of the DOE Async Message mechanism. When this bit is set, it allows the DOE instance to raise the SOC_STATUS.doe_async_msg_status, indicating an asynchronous message request. |
+|   2    |        |         |                  | Reserved                                                                                                                                                                                                                                                |
+|   1    |   rw   |   0x0   | doe_intr_en      | If DOE interrupt support is set, when this bit is set and MSI/MSI-X is enabled in MSI capability registers, the DOE instance must issue an MSI/MSI-X interrupt.                                                                                         |
+|   0    |   wo   |   0x0   | abort            | A write of 1 to this bit causes all data object transfer operations associated with this DOE instance to be aborted.                                                                                                                                    |
 
 ## SOC_STATUS
 DOE mailbox status register
@@ -394,21 +399,23 @@ DOE mailbox status register
 
 ### SOC_STATUS . ready
 When Set, this bit indicates the DOE instance has a data object available to be read by SoC firmware/software.
-The transition of this bit from Clear to Set is an interrupt triggering event.
+The transition of this bit from Clear to Set is an interrupt-triggering event.
 
 ### SOC_STATUS . doe_async_msg_status
 This bit, when Set, indicates the DOE instance has one or more asynchronous messages to transfer.
-The transition of this bit from Clear to Set is an interrupt triggering event.This bit is set when an interrupt event occurs.
+The transition of this bit from Clear to Set is an interrupt-triggering event.
+This bit is set when an interrupt event occurs.
 
 ### SOC_STATUS . error
 When Set, this bit indicates that there has been an internal error associated with data object received, or that a data object has been received for which the DOE instance is unable to provide a response.
-The transition of this bit from Clear to Set is an interrupt triggering event.
+The transition of this bit from Clear to Set is an interrupt-triggering event.
 
 ### SOC_STATUS . doe_intr_status
-This bit is set when an interrupt event occurs.
+This bit is set when an interrupt event occurs. Writing a value of 1 to this bit clears the status bit.
 
 ### SOC_STATUS . busy
 When Set, this bit indicates the DOE instance is temporarily unable to receive a new data object through the DOE Write Data Mailbox register.
+This bit is also set by the DOE instance when processing an abort command and remains set until abort handling is complete.
 
 ## WDATA
 DOE mailbox write data register.
@@ -418,14 +425,15 @@ A write of 1 to the DOE Go bit in the DOE Control Register marks the completion 
 
 - Word Aligned Offset Range: `0x10`to`0x10`
 - Size (words): `1`
-- Access: `wo`
+- Access: `rw`
 - Byte writes are *not* supported.
 
 ## RDATA
 DOE mailbox read data register
-If the Data Object Ready bit is Set, a read of this register returns the current DW of the data object.
+If the Data Object Ready bit is Set, a read of this register returns the current DWORD of the data object.
 A write of any value to this register indicates a successful read of the current DWORD.
-The next read to this register shall return to the next DW from the data object being read
+The next read to this register shall return the next DWORD from the data object being read.
+If Data Object Ready bit is clear, writes of any value to this register must have no effect and reads from this register return zero.
 
 - Word Aligned Offset Range: `0x14`to`0x14`
 - Size (words): `1`

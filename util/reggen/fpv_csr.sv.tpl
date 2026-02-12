@@ -21,6 +21,9 @@
 <%def name="construct_classes(block)">\
 
 `include "prim_assert.sv"
+`ifdef UVM
+  `include "uvm_macros.svh"
+`endif
 
 `ifndef FPV_ON
   `define REGWEN_PATH tb.dut.${reg_block_path}
@@ -119,10 +122,10 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
   always_comb begin: decode_hro_addr_to_idx
     unique case (pend_trans[d_source_idx].addr)
 % for idx, r in hro_map.values():
-      ${r.offset}: hro_idx <= ${idx};
+      ${r.offset}: hro_idx = ${idx};
 % endfor
       // If the register is not a HRO register, the write data will all update to this default idx.
-      default: hro_idx <= ${num_hro_regs};
+      default: hro_idx = ${num_hro_regs};
     endcase
   end
 
@@ -146,7 +149,7 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
      mubi_regwen = False
      mubi_width = 4
      # Locate the REGWEN register and determine its type.
-     for reg in hro_regs_list:
+     for reg in rb.flat_regs:
        if reg.name == regwen:
          hidden_regwen = False
          if reg.fields[0].mubi:
@@ -160,7 +163,7 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
   assign regwen[${hro_map.get(hro_reg.offset)[0]}] = 1;
     % elif mubi_regwen:
   assign regwen[${hro_map.get(hro_reg.offset)[0]}] =
-                  prim_mubi_pkg::mubi${mubi_width}_test_true_strict(prim_mubi_pkg::mubi${mubi_width}_t'(`REGWEN_PATH.${regwen.lower()}_qs));
+                  mubi${mubi_width}_test_true_strict(mubi${mubi_width}_t'(`REGWEN_PATH.${regwen.lower()}_qs));
     % elif hidden_regwen:
   // Register is controlled by a REGWEN that is not 'hwo' and not supported in fpv_csr
   assign regwen[${hro_map.get(hro_reg.offset)[0]}] = 1;
@@ -242,21 +245,24 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
               // Assume FpvWr0c policy only has one field that is wr0c.
               unique case (regwen_types[hro_idx])
                 MuBi4Regwen:
-                  exp_vals[hro_idx] <= mubi4_and_hi(mubi4_t'(exp_vals[hro_idx][3:0]),
-                                                    mubi4_t'(pend_trans[d2h.d_source].wr_data[3:0]));
+                  exp_vals[hro_idx] <=
+                    mubi4_and_hi(mubi4_t'(exp_vals[hro_idx][3:0]),
+                                 mubi4_t'(pend_trans[d2h.d_source].wr_data[3:0]));
                 MuBi8Regwen:
-                  exp_vals[hro_idx] <= mubi8_and_hi(mubi8_t'(exp_vals[hro_idx][7:0]),
-                                                    mubi8_t'(pend_trans[d2h.d_source].wr_data[7:0]));
+                  exp_vals[hro_idx] <=
+                    mubi8_and_hi(mubi8_t'(exp_vals[hro_idx][7:0]),
+                                 mubi8_t'(pend_trans[d2h.d_source].wr_data[7:0]));
                 MuBi12Regwen:
-                  exp_vals[hro_idx] <= mubi12_and_hi(
-                                          mubi12_t'(exp_vals[hro_idx][11:0]),
-                                          mubi12_t'(pend_trans[d2h.d_source].wr_data[11:0]));
+                  exp_vals[hro_idx] <=
+                    mubi12_and_hi(mubi12_t'(exp_vals[hro_idx][11:0]),
+                                  mubi12_t'(pend_trans[d2h.d_source].wr_data[11:0]));
                 MuBi16Regwen:
-                  exp_vals[hro_idx] <= mubi16_and_hi(
-                                          mubi16_t'(exp_vals[hro_idx][15:0]),
-                                          mubi16_t'(pend_trans[d2h.d_source].wr_data[15:0]));
+                  exp_vals[hro_idx] <=
+                    mubi16_and_hi(mubi16_t'(exp_vals[hro_idx][15:0]),
+                                  mubi16_t'(pend_trans[d2h.d_source].wr_data[15:0]));
                 default:
-                  exp_vals[hro_idx] <= exp_vals[hro_idx][0] ? pend_trans[d2h.d_source].wr_data : 0;
+                  exp_vals[hro_idx] <=
+                    exp_vals[hro_idx][0] ? pend_trans[d2h.d_source].wr_data : 0;
               endcase
             end else begin
               exp_vals[hro_idx] <= pend_trans[d_source_idx].wr_data;
@@ -287,11 +293,12 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
 %>\
     % if reg_mask != 0:
 <%  reg_mask_hex = format(reg_mask, 'x') %>\
-  `ASSERT(${r_name}_rd_A, d2h.d_valid && pend_trans[d_source_idx].rd_pending &&
-         pend_trans[d_source_idx].addr == ${addr_width}'h${reg_addr_hex} |->
-         d2h.d_error ||
-         (d2h.d_data & 'h${reg_mask_hex}) == (exp_vals[${hro_map.get(reg_addr)[0]}] & 'h${reg_mask_hex}))
-
+  `ASSERT(${r_name}_rd_A,
+          (d2h.d_valid && pend_trans[d_source_idx].rd_pending &&
+           pend_trans[d_source_idx].addr == ${addr_width}'h${reg_addr_hex}) |->
+          (d2h.d_error ||
+           (d2h.d_data & 'h${reg_mask_hex}) ==
+            (exp_vals[${hro_map.get(reg_addr)[0]}] & 'h${reg_mask_hex})))
     % endif
   % endfor
 % endif

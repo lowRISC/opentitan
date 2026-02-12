@@ -83,7 +83,7 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
 
     super.build_phase(phase);
     // Bus Functional Model of USBDEV.
-    bfm = new();
+    bfm = usbdev_bfm::type_id::create("bfm", this);
     // Prediction and checking of loosely-timed registers.
     timed_regs = new("timed_regs");
     timed_regs.clk_rst_vif = cfg.clk_rst_vif;
@@ -411,7 +411,7 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
         string field_name = fields[f].get_name();
         // Maximum delay (in DUT clock cycles) for a prediction to be met; most delays should take
         // only a few cycles for internal changes to propagate, but some are substantially longer
-        // oweing to the immediate operation of the functional model.
+        // owing to the immediate operation of the functional model.
         int unsigned max_delay = 16;
         bit include_field = 1'b1;
         // There are a few fields that we cannot predict because the BFM does not have an
@@ -488,7 +488,7 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
                 max_delay = 4364;
               else begin
                 // `usbdev_rand_bus_disconnects` induces a transitional link state that may or may
-                // not be observed, so the model cannot reliably predice the `link_state` field yet.
+                // not be observed, so the model cannot reliably predict the `link_state` field yet.
                 include_field = 1'b0;
               end
             end
@@ -641,7 +641,7 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
       csr_name = csr.get_name();
       index = get_index_from_reg_name(csr_name);
       return csr_name;
-    end else if (is_mem_addr(item, ral_name)) begin
+    end else if (is_mem_addr(item.a_addr, cfg.ral_models[ral_name])) begin
       // There is only a single memory window; it provides access to the packet buffer memory.
       uvm_mem mem = ral.default_map.get_mem_by_offset(item.a_addr);
       uvm_reg_addr_t masked_addr = item.a_addr & ral.get_addr_mask();
@@ -714,12 +714,18 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
       "ep_out_enable":  bfm.ep_out_enable  = NEndpoints'(wdata);
       "ep_in_enable":   bfm.ep_in_enable   = NEndpoints'(wdata);
       "rxenable_setup": bfm.rxenable_setup = NEndpoints'(wdata);
-      "rxenable_out":   bfm.rxenable_out   = NEndpoints'(wdata);
       "set_nak_out":    bfm.set_nak_out    = NEndpoints'(wdata);
       "out_stall":      bfm.out_stall      = NEndpoints'(wdata);
       "in_stall":       bfm.in_stall       = NEndpoints'(wdata);
       "out_iso":        bfm.out_iso        = NEndpoints'(wdata);
       "in_iso":         bfm.in_iso         = NEndpoints'(wdata);
+      // This one is a little more involved; it offers a conditional update facility to avoid a
+      // software-hardware race when the `set_nak_out` feature is in use.
+      "rxenable_out": begin
+        uvm_reg_data_t preserve = get_field_val(ral.rxenable_out.preserve, wdata);
+        bfm.rxenable_out = (NEndpoints'(bfm.rxenable_out) & preserve) |
+                           (NEndpoints'(wdata) & ~preserve);
+      end
 
       // configin_ registers (of which are there many), specifying IN packets for collection, are
       // more involved.
@@ -987,7 +993,7 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
 
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
-    // Reset local fifos queues and variables
+    // reset local fifos queues and variables
     req_usb20_fifo.flush();
     rsp_usb20_fifo.flush();
     expected_rsp_q.delete();

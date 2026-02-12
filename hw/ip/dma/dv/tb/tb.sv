@@ -22,7 +22,7 @@ module tb;
 
   // Common wire - Handshake/Interrupt Inputs
   wire [dma_reg_pkg::NumIntClearSources - 1 : 0] handshake_i;
-  dma_if dma_intf(.clk_i(clk), .rst_ni(rst_n));
+  dma_if dma_intf();
   assign handshake_i = dma_intf.handshake_i;
 
   // Common Interface - Interrupt Outputs
@@ -40,6 +40,16 @@ module tb;
   assign tl_sys_if.h2d = sys_tl_adapter_if.tl_h2d;
   assign sys_tl_adapter_if.tl_d2h = tl_sys_if.d2h;
 
+  // Connect assertion module to SYS interface
+  tlul_assert #(
+    .EndpointType("Device")
+  ) tlul_assert_sys (
+    .clk_i  (clk),
+    .rst_ni (rst_n),
+    .h2d    (tl_sys_if.h2d),
+    .d2h    (tl_sys_if.d2h)
+  );
+
   `DV_ALERT_IF_CONNECT()
 
   // Instantiate DUT
@@ -55,6 +65,7 @@ module tb;
     .intr_dma_error_o (interrupts[IntrDmaError]),
     .alert_rx_i (alert_rx),
     .alert_tx_o (alert_tx),
+    .racl_policies_i (top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
     // TL Interface to OT Internal address space
     .host_tl_h_o (tl_host_if.h2d),
     .host_tl_h_i (tl_host_if.d2h),
@@ -68,20 +79,6 @@ module tb;
     .sys_o (sys_tl_adapter_if.sys_h2d),
     .sys_i (sys_tl_adapter_if.sys_d2h)
   );
-
-  assign dma_intf.remaining     = dut.remaining_bytes;
-  assign dma_intf.read_cmpl_host = tl_host_if.d2h.d_valid;
-  assign dma_intf.read_cmpl_ctn = tl_ctn_if.d2h.d_valid;
-
-  assign dma_intf.read_opc_host = tl_host_if.d2h.d_opcode;
-  assign dma_intf.read_opc_ctn = tl_ctn_if.d2h.d_opcode;
-
-
-  // Clocking related
-  bit clk_100mhz;
-  initial begin
-    forever #5ns clk_100mhz <= ~clk_100mhz;
-  end
 
   // Main Block for Initialization
   initial begin

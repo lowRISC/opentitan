@@ -18,7 +18,6 @@ CONNECTION, PAD_AST,                  ,                      "{AST_MISC, IOC3, I
 #################################
 # Other clocks
 #################################
-CONNECTION, AST_CLK_EXT_IN,           ,                      IOC6,                      u_ast,                   clk_ast_ext_i
 CONNECTION, AST_CLK_SPI_SNS_IN,       ,                      SPI_DEV_CLK,               u_ast,                   sns_spi_ext_clk_i
 
 #################################

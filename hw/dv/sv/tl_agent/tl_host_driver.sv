@@ -14,7 +14,7 @@ class tl_host_driver extends tl_base_driver;
   // reset_signals task.
   protected bit reset_asserted;
 
-  extern function new (string name="", uvm_component parent=null);
+  extern function new (string name, uvm_component parent);
 
   // Drive items received from the sequencer. This implements a task declared in dv_base_driver.
   extern task get_and_drive();
@@ -50,7 +50,7 @@ class tl_host_driver extends tl_base_driver;
   //
   // req_done [out]  This is set to 1'b1 if a_ready has gone high on the host clock.
   //
-  // req_abort [out] This is set to 1'b1 if the host decides to drop a_valid because the receiever
+  // req_abort [out] This is set to 1'b1 if the host decides to drop a_valid because the receiver
   //                 hasn't responded with a_ready.
   extern protected task send_a_request_body(tl_seq_item req, int a_valid_len,
                                             output bit req_done, output bit req_abort);
@@ -87,7 +87,7 @@ class tl_host_driver extends tl_base_driver;
   extern protected function void invalidate_a_channel();
 endclass : tl_host_driver
 
-function tl_host_driver::new (string name="", uvm_component parent=null);
+function tl_host_driver::new (string name, uvm_component parent);
   super.new(name, parent);
 endfunction
 

@@ -20,10 +20,10 @@
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_csrng",
-  version:            "2.0.0",
+  version:            "3.0.0",
   life_stage:         "L1",
-  design_stage:       "D2S",
-  verification_stage: "V2S",
+  design_stage:       "D1",
+  verification_stage: "V1",
   dif_stage:          "S2",
   clocking: [{clock: "clk_i", reset: "rst_ni"}],
   bus_interfaces: [
@@ -96,16 +96,6 @@
       act:     "req"
       package: "entropy_src_pkg"
     }
-    { struct:  "cs_aes_halt"
-      type:    "req_rsp",
-      name:    "cs_aes_halt"
-      act:     "rsp"
-      package: "entropy_src_pkg"
-      desc:    '''
-               Coordinate activity between CSRNG's AES and Entropy Source's SHA3.
-               When CSRNG gets a request and its AES is not active, it acknowledges and until the request has dropped neither runs its AES nor drops the acknowledge.
-               '''
-    }
     { struct:  "mubi8"
       type:    "uni"
       name:    "otp_en_csrng_sw_app_read"
@@ -175,26 +165,20 @@
     { name: "INTERSIG.MUBI"
       desc: "OTP signal used to enable software access to registers."
     }
+    { name: "CMD_STAGE.FSM.SPARSE"
+      desc: "The CSRNG command stage state machines use a sparse state encoding."
+    }
     { name: "MAIN_SM.FSM.SPARSE"
       desc: "The CSRNG main state machine uses a sparse state encoding."
     }
-    { name: "UPDATE.FSM.SPARSE"
-      desc: "The CSRNG update state machine uses a sparse state encoding."
-    }
-    { name: "BLK_ENC.FSM.SPARSE"
-      desc: "The CSRNG block encrypt state machine uses a sparse state encoding."
-    }
-    { name: "OUTBLK.FSM.SPARSE"
-      desc: "The CSRNG block output state machine uses a sparse state encoding."
+    { name: "CTR_DRBG.FSM.SPARSE"
+      desc: "The CTR DRBG state machine uses a sparse state encoding."
     }
     { name: "GEN_CMD.CTR.REDUN"
-     desc: "The generate command uses a counter that is protected by a second counter that counts in the opposite direction."
+      desc: "The generate command uses a counter that is protected by a second counter that counts in the opposite direction."
     }
-    { name: "DRBG_UPD.CTR.REDUN"
-     desc: "The ctr_drbg update algorthm uses a counter that is protected by a second counter that counts in the opposite direction."
-    }
-    { name: "DRBG_GEN.CTR.REDUN"
-     desc: "The ctr_drbg generate algorthm uses a counter that is protected by a second counter that counts in the opposite direction."
+    { name: "CTR_DRBG.CTR.REDUN"
+      desc: "The ctr_drbg algorithm uses a counter that is protected by a second counter that counts in the opposite direction."
     }
     { name: "CTRL.MUBI"
       desc: "Multi-bit field used for selection control."
@@ -546,8 +530,8 @@
                   Setting this field will set the number for which internal state can be
                   selected for a read access. Up to 16 internal state values can be chosen
                   from this register. The actual number of valid internal state fields
-                  is set by parameter NHwApps plus 1 software app. For those selections that point
-                  to reserved locations (greater than NHwApps plus 1), the returned value
+                  is set by parameter NumHwApps plus 1 software app. For those selections that point
+                  to reserved locations (greater than NumHwApps plus 1), the returned value
                   will be zero. Writing this register will also reset the internal read
                   pointer for the !!INT_STATE_VAL register.
                   Note: This register should be read back after being written to ensure
@@ -728,132 +712,6 @@
                 This bit will stay set until the next reset.
                 '''
         }
-        { bits: "2",
-          name: "SFIFO_CMDREQ_ERR",
-          desc: '''
-                This bit will be set to one when an error has been detected for the
-                cmdreq FIFO. The type of error is reflected in the type status
-                bits (bits 28 through 30 of this register).
-                This bit will stay set until the next reset.
-                '''
-        }
-        { bits: "3",
-          name: "SFIFO_RCSTAGE_ERR",
-          desc: '''
-                This bit will be set to one when an error has been detected for the
-                rcstage FIFO. The type of error is reflected in the type status
-                bits (bits 28 through 30 of this register).
-                This bit will stay set until the next reset.
-                '''
-        }
-        { bits: "4",
-          name: "SFIFO_KEYVRC_ERR",
-          desc: '''
-                This bit will be set to one when an error has been detected for the
-                keyvrc FIFO. The type of error is reflected in the type status
-                bits (bits 28 through 30 of this register).
-                This bit will stay set until the next reset.
-                '''
-        }
-        { bits: "5",
-          name: "SFIFO_UPDREQ_ERR",
-          desc: '''
-                This bit will be set to one when an error has been detected for the
-                updreq FIFO. The type of error is reflected in the type status
-                bits (bits 28 through 30 of this register).
-                This bit will stay set until the next reset.
-                '''
-        }
-        { bits: "6",
-          name: "SFIFO_BENCREQ_ERR",
-          desc: '''
-                This bit will be set to one when an error has been detected for the
-                bencreq FIFO. The type of error is reflected in the type status
-                bits (bits 28 through 30 of this register).
-                This bit will stay set until the next reset.
-                '''
-        }
-        { bits: "7",
-          name: "SFIFO_BENCACK_ERR",
-          desc: '''
-                This bit will be set to one when an error has been detected for the
-                bencack FIFO. The type of error is reflected in the type status
-                bits (bits 28 through 30 of this register).
-                This bit will stay set until the next reset.
-                '''
-        }
-        { bits: "8",
-          name: "SFIFO_PDATA_ERR",
-          desc: '''
-                This bit will be set to one when an error has been detected for the
-                pdata FIFO. The type of error is reflected in the type status
-                bits (bits 28 through 30 of this register).
-                This bit will stay set until the next reset.
-                '''
-        }
-        { bits: "9",
-          name: "SFIFO_FINAL_ERR",
-          desc: '''
-                This bit will be set to one when an error has been detected for the
-                final FIFO. The type of error is reflected in the type status
-                bits (bits 28 through 30 of this register).
-                This bit will stay set until the next reset.
-                '''
-        }
-        { bits: "10",
-          name: "SFIFO_GBENCACK_ERR",
-          desc: '''
-                This bit will be set to one when an error has been detected for the
-                gbencack FIFO. The type of error is reflected in the type status
-                bits (bits 28 through 30 of this register).
-                This bit will stay set until the next reset.
-                '''
-        }
-        { bits: "11",
-          name: "SFIFO_GRCSTAGE_ERR",
-          desc: '''
-                This bit will be set to one when an error has been detected for the
-                grcstage FIFO. The type of error is reflected in the type status
-                bits (bits 28 through 30 of this register).
-                This bit will stay set until the next reset.
-                '''
-        }
-        { bits: "12",
-          name: "SFIFO_GGENREQ_ERR",
-          desc: '''
-                This bit will be set to one when an error has been detected for the
-                ggenreq FIFO. The type of error is reflected in the type status
-                bits (bits 28 through 30 of this register).
-                This bit will stay set until the next reset.
-                '''
-        }
-        { bits: "13",
-          name: "SFIFO_GADSTAGE_ERR",
-          desc: '''
-                This bit will be set to one when an error has been detected for the
-                gadstage FIFO. The type of error is reflected in the type status
-                bits (bits 28 through 30 of this register).
-                This bit will stay set until the next reset.
-                '''
-        }
-        { bits: "14",
-          name: "SFIFO_GGENBITS_ERR",
-          desc: '''
-                This bit will be set to one when an error has been detected for the
-                ggenbits FIFO. The type of error is reflected in the type status
-                bits (bits 28 through 30 of this register).
-                This bit will stay set until the next reset.
-                '''
-        }
-        { bits: "15",
-          name: "SFIFO_BLKENC_ERR",
-          desc: '''
-                This bit will be set to one when an error has been detected for the
-                blkenc FIFO. The type of error is reflected in the type status
-                bits (bits 28 through 30 of this register).
-                This bit will stay set until the next reset.
-                '''
-        }
         { bits: "20",
           name: "CMD_STAGE_SM_ERR",
           desc: '''
@@ -873,28 +731,10 @@
                 '''
         }
         { bits: "22",
-          name: "DRBG_GEN_SM_ERR",
+          name: "CTR_DRBG_SM_ERR",
           desc: '''
                 This bit will be set to one when an illegal state has been detected for the
-                ctr_drbg gen state machine. This error will signal a fatal alert, and also
-                an interrupt if enabled.
-                This bit will stay set until the next reset.
-                '''
-        }
-        { bits: "23",
-          name: "DRBG_UPDBE_SM_ERR",
-          desc: '''
-                This bit will be set to one when an illegal state has been detected for the
-                ctr_drbg update block encode state machine. This error will signal a fatal alert, and also
-                an interrupt if enabled.
-                This bit will stay set until the next reset.
-                '''
-        }
-        { bits: "24",
-          name: "DRBG_UPDOB_SM_ERR",
-          desc: '''
-                This bit will be set to one when an illegal state has been detected for the
-                ctr_drbg update out block state machine. This error will signal a fatal alert, and also
+                ctr_drbg state machine. This error will signal a fatal alert, and also
                 an interrupt if enabled.
                 This bit will stay set until the next reset.
                 '''
@@ -903,18 +743,16 @@
           name: "AES_CIPHER_SM_ERR",
           desc: '''
                 This bit will be set to one when an AES fatal error has been detected.
-                This error will signal a fatal alert, and also
-                an interrupt if enabled.
+                This error will signal a fatal alert, and also an interrupt if enabled.
                 This bit will stay set until the next reset.
                 '''
         }
         { bits: "26",
-          name: "CMD_GEN_CNT_ERR",
+          name: "CTR_ERR",
           desc: '''
                 This bit will be set to one when a mismatch in any of the hardened counters
                 has been detected.
-                This error will signal a fatal alert, and also
-                an interrupt if enabled.
+                This error will signal a fatal alert, and also an interrupt if enabled.
                 This bit will stay set until the next reset.
                 '''
         }
@@ -923,7 +761,7 @@
           desc: '''
                 This bit will be set to one when any of the source bits (bits 0 through 15 of this
                 this register) are asserted as a result of an error pulse generated from
-                any full FIFO that has been recieved a write pulse.
+                any full FIFO that has been received a write pulse.
                 This bit will stay set until the next reset.
                 '''
         }
@@ -932,7 +770,7 @@
           desc: '''
                 This bit will be set to one when any of the source bits (bits 0 through 15 of this
                 this register) are asserted as a result of an error pulse generated from
-                any empty FIFO that has recieved a read pulse.
+                any empty FIFO that has received a read pulse.
                 This bit will stay set until the next reset.
                 '''
         }
@@ -975,12 +813,12 @@
       swaccess: "ro",
       hwaccess: "hwo",
       fields: [
-        { bits: "7:0",
+        { bits: "5:0",
           name: "MAIN_SM_STATE",
           desc: '''This is the state of the CSRNG main state machine.
                 See the RTL file `csrng_main_sm` for the meaning of the values.
                 '''
-          resval: 0x4e
+          resval: 0x37
         }
       ]
     },

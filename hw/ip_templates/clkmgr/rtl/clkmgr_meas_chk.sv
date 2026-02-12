@@ -85,7 +85,7 @@ module clkmgr_meas_chk
     end
   end
 
-  // A reqack module is used here instead of a pulse_saync
+  // A reqack module is used here instead of a pulse_sync
   // because the source pulses may toggle too fast for the
   // the destination to receive.
   logic src_err_req, src_err_ack;

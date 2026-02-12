@@ -2,16 +2,21 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@//rules:const.bzl", "CONST")
-load("@//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
+load("@lowrisc_opentitan//rules:const.bzl", "CONST")
+load("@lowrisc_opentitan//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
 load(
-    "@//rules/opentitan:defs.bzl",
+    "@lowrisc_opentitan//rules/opentitan:defs.bzl",
     "dv_params",
     "ecdsa_key_for_lc_state",
     "opentitan_test",
 )
 
 package(default_visibility = ["//visibility:public"])
+
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
+)
 
 # Note, this file contains step-by-step instructions on how to both:
 # 1. add custom test hook libraries (that override the default), labeled

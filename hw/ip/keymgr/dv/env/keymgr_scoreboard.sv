@@ -325,7 +325,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
         case (op)
           keymgr_pkg::OpAdvance: begin
-            // if it's StOwnerKey, it advacens to OpDisable. Key is just random value
+            // if it's StOwnerKey, it advances to OpDisable. Key is just random value
             if (current_state == keymgr_pkg::StOwnerKey || get_op_err()) begin
               update_result = NotUpdate;
             end else begin
@@ -465,7 +465,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
     // process the csr req
     // for write, update local variable and fifo at address phase
-    // for read, update predication at address phase and compare at data phase
+    // for read, update prediction at address phase and compare at data phase
     case (csr.get_name())
       // add individual case item for each csr
       "intr_state": begin
@@ -487,7 +487,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         end
       end
       "intr_enable", "sw_binding_regwen": begin
-        // no speical handle is needed
+        // no special handle is needed
       end
       "err_code": begin
         // Check in this block

@@ -4,6 +4,11 @@
 
 class ac_range_check_env_cfg extends cip_base_env_cfg #(.RAL_T(ac_range_check_reg_block));
 
+  // Enabling Scoreboard checks downgrading in ac_range_check_scoreboard
+  // Addresses issue #27380 that identified in very specific scenarios no valid TLUL transactions
+  // will be ever generated
+  bit en_scb_err_downgrade;
+
   // External interfaces
   misc_vif_t misc_vif;
 
@@ -53,4 +58,13 @@ function void ac_range_check_env_cfg::initialize(bit [31:0] csr_base_addr = '1);
       num_interrupts = ral.intr_state.get_n_used_bits();
     end
   end
+
+  // Used to allow reset operations without waiting for CSR accesses to complete
+  // At the moment resets will only be used in stress_all_with_rand_reset.
+  // Reset strategy in general will need a rethink (Check PR #25463)
+  can_reset_with_csr_accesses = 1;
+
+  // By default no error downgrade is allowed.
+  // Only in specific testcases this should be allowed
+  en_scb_err_downgrade = 0;
 endfunction : initialize

@@ -11,7 +11,7 @@
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/runtime/hart.h"
 
-#include "adc_ctrl_regs.h"  // Generated.
+#include "hw/top/adc_ctrl_regs.h"  // Generated.
 
 static_assert(ADC_CTRL_PARAM_NUM_ADC_CHANNEL == 2,
               "Expected two ADC Controller channels.");

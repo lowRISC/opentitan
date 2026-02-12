@@ -105,7 +105,7 @@ class BadDeepLoop(SnippetGen):
         # Pick an instruction (LOOP vs. LOOPI) and number of iterations
         # together. This means that if we've only got GPRs equal to zero (an
         # invalid loop count), we can still guarantee to pick something
-        # sucessfully.
+        # successfully.
         insn = self.loop_gen.pick_loop_insn()
         iters_op_type = insn.operands[0].op_type
         enc_iters = None

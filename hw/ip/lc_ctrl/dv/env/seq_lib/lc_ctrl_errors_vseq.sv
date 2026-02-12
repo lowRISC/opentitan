@@ -372,7 +372,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
         // Check count and state before escalate is generated
         // Skip this if we are injecting clock bypass error responses as the KMAC
         // may or may not respond leaving the FSM stuck in TokenHashSt
-        // Also Token Mux select error injection leads to unpredicable results
+        // Also Token Mux select error injection leads to unpredictable results
         if (!err_inj.clk_byp_error_rsp && !err_inj.token_mux_ctrl_redun_err) begin
           rd_lc_state_and_cnt_csrs();
         end else begin
@@ -518,8 +518,8 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     lc_ctrl_state_pkg::lc_token_t token_err_inj;
     kmac_pkg::rsp_digest_t kmac_digest;
 
-    tokens_a[ZeroTokenIdx]       = lc_ctrl_state_pkg::AllZeroTokenHashed;
-    tokens_a[RawUnlockTokenIdx]  = lc_ctrl_state_pkg::RndCnstRawUnlockTokenHashed;
+    tokens_a[ZeroTokenIdx]       = lc_ctrl_token_pkg::AllZeroTokenHashed;
+    tokens_a[RawUnlockTokenIdx]  = lc_ctrl_token_pkg::RndCnstRawUnlockTokenHashed;
     tokens_a[TestUnlockTokenIdx] = cfg.lc_ctrl_vif.otp_i.test_unlock_token;
     tokens_a[TestExitTokenIdx]   = cfg.lc_ctrl_vif.otp_i.test_exit_token;
     tokens_a[RmaTokenIdx]        = cfg.lc_ctrl_vif.otp_i.rma_token;
@@ -607,7 +607,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       if (!err_inj.count_err && !err_inj.count_illegal_err) begin
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(lc_cnt,
                                            (lc_state != LcStRaw) -> (lc_cnt != LcCnt0);
-        // Count must be less than LcCnt24 unless we want to inject a tranisition count error
+        // Count must be less than LcCnt24 unless we want to inject a transition count error
         if (!err_inj.transition_count_err) {lc_cnt != LcCnt24;}
         else {lc_cnt == LcCnt24;})
       end else begin
@@ -961,7 +961,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
   virtual task run_flash_rma_rsp(bit has_err = 0);
     // Number of lc_flash_rma_ack_i synchronisation FFs
-    // This value can take 2 or 3 cycles after adding cdc instrumentatino
+    // This value can take 2 or 3 cycles after adding cdc instrumentation
     // and we take maximum to be conservative.
     const int FLASH_RMA_ACK_SYNC_FFS = 3;
     // Values to be driven for On and Off

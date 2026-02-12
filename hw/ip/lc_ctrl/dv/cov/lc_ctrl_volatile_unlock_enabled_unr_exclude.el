@@ -9,7 +9,7 @@
 // ExclMode: default
 //==================================================
 CHECKSUM: "1599929061 1913160869"
-INSTANCE: tb.dut.u_dmi_jtag.i_dmi_cdc.u_combined_rstn_sync.gen_generic.u_impl_generic.u_prim_cdc_rand_delay
+INSTANCE: tb.dut.u_dmi_jtag.i_dmi_cdc.u_combined_rstn_sync.u_prim_cdc_rand_delay
 ANNOTATION: "VC_COV_UNR"
 Toggle 0to1 dst_data_o [0] "logic dst_data_o[0:0]"
 ANNOTATION: "VC_COV_UNR"
@@ -1246,7 +1246,7 @@ Condition 4 "3444895930" "((lc_state_q == LcStRaw) && (trans_target_i == {lc_ctr
 ANNOTATION: "VC_COV_UNR"
 Condition 4 "3444895930" "((lc_state_q == LcStRaw) && (trans_target_i == {lc_ctrl_state_pkg::DecLcStateNumRep {DecLcStTestUnlocked0}}) && ((!trans_invalid_error_o))) 1 -1" (3 "110")
 ANNOTATION: "VC_COV_UNR"
-Condition 7 "2326366313" "(unhashed_token_i == lc_ctrl_state_pkg::RndCnstRawUnlockTokenHashed) 1 -1" (1 "0")
+Condition 7 "2326366313" "(unhashed_token_i == lc_ctrl_token_pkg::RndCnstRawUnlockTokenHashed) 1 -1" (1 "0")
 ANNOTATION: "VC_COV_UNR"
 Condition 8 "1288749660" "((lc_cnt_q == LcCnt0) ? LcCnt1 : lc_cnt_q) 1 -1" (2 "1")
 ANNOTATION: "VC_COV_UNR"

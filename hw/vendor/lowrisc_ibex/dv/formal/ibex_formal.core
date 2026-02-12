@@ -1,0 +1,21 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ibex:ibex_formal:0.1"
+description: "Ibex formal module used to prove equivalence with Sail"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:ibex:ibex_pkg
+      - lowrisc:ibex:ibex_core
+      - lowrisc:ibex:ibex_top
+      - "fileset_partner ? (partner:prim_generic:all)"
+      - "!fileset_partner ? (lowrisc:prim_generic:all)"
+
+targets:
+  default:
+    filesets:
+      - files_rtl
+    toplevel: ibex_top

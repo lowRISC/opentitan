@@ -70,10 +70,12 @@
       name: clkmgr_smoke
       uvm_test_seq: clkmgr_smoke_vseq
     }
+  % if ext_clk_bypass:
     {
       name: clkmgr_extclk
       uvm_test_seq: clkmgr_extclk_vseq
     }
+  % endif
     {
       name: clkmgr_frequency
       uvm_test_seq: clkmgr_frequency_vseq
@@ -99,6 +101,7 @@
       uvm_test_seq: clkmgr_trans_vseq
       run_opts: ["+clkmgr_mubi_mode=ClkmgrMubiIdle"]
     }
+  % if ext_clk_bypass:
     {
       name: clkmgr_lc_ctrl_intersig_mubi
       uvm_test_seq: clkmgr_extclk_vseq
@@ -119,6 +122,7 @@
       uvm_test_seq: clkmgr_extclk_vseq
       run_opts: ["+clkmgr_mubi_mode=ClkmgrMubiDiv"]
     }
+  % endif
     {
       name: clkmgr_regwen
       uvm_test_seq: clkmgr_regwen_vseq

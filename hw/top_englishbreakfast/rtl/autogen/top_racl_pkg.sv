@@ -5,10 +5,8 @@
 // ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
 //
-// util/topgen.py -t hw/top_englishbreakfast/data/top_englishbreakfast.hjson \
-//                -o hw/top_englishbreakfast/ \
-//                --rnd_cnst_seed \
-//                47496257290787239787852990649372780135330843464066774986444696694703339830170
+// util/topgen.py -t hw/top_englishbreakfast/data/top_englishbreakfast.hjson
+//                -o hw/top_englishbreakfast/
 
 
 package top_racl_pkg;

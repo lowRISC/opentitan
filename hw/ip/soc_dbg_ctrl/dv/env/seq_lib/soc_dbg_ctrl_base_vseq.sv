@@ -35,7 +35,18 @@ function void soc_dbg_ctrl_base_vseq::set_handles();
 endfunction : set_handles
 
 task soc_dbg_ctrl_base_vseq::dut_init(string reset_kind = "HARD");
+  // Initialize some of DUT inputs
+  cfg.misc_vif.set_soc_dbg_state_blank();
+  cfg.misc_vif.set_lc_dft_en_off();
+  cfg.misc_vif.set_lc_hw_debug_en_off();
+  cfg.misc_vif.set_lc_raw_test_rma_off();
+  cfg.misc_vif.set_lc_cpu_en_off();
+  cfg.misc_vif.set_lc_rma_state_off();
+  cfg.misc_vif.init_boot_status();
+  cfg.misc_vif.enable_halt_cpu_boot();
+
   super.dut_init();
+
   if (do_soc_dbg_ctrl_init) begin
     soc_dbg_ctrl_init();
   end

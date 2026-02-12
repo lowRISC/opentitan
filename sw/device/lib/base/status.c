@@ -11,14 +11,17 @@
 
 const uint32_t MODULE_ID = 0;
 
-static const char *basename(const char *file) {
+static const char *basename(const char *file, size_t *basename_len) {
   const char *f = file;
   // Go to the end of the string.
   while (*f)
     ++f;
   // Back up to the start of the last filename path component.
-  while (f > file && f[-1] != '/' && f[-1] != '\\')
+  *basename_len = 0;
+  while (f > file && f[-1] != '/' && f[-1] != '\\') {
+    ++(*basename_len);
     --f;
+  }
   return f;
 }
 
@@ -47,8 +50,10 @@ status_t status_create(absl_status_t code, uint32_t module_id, const char *file,
    */
   if (module_id == 0) {
     // First three characters of the filename.
-    const char *f = basename(file);
-    module_id = MAKE_MODULE_ID(f[0], f[1], f[2]);
+    size_t basename_len = 0;
+    const char *f = basename(file, &basename_len);
+    module_id = basename_len >= 3 ? MAKE_MODULE_ID(f[0], f[1], f[2])
+                                  : MAKE_MODULE_ID('u', 'n', 'd');
   }
   // At this point, the module_id is already packed into the correct bitfield.
   return (status_t){

@@ -1,0 +1,1229 @@
+{
+  "char_addi_single_beq": {
+    "data_faulty": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "data": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_addi_single_beq_neg": {
+    "data_faulty": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "data": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_addi_single_bne": {
+    "data_faulty": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "data": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_addi_single_bne_neg": {
+    "data_faulty": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "data": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_combi": {
+    "data_faulty_test_1": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "data_test_1": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "result_test_2": 13,
+    "result_test_3": 15,
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_conditional_branch_beq": {
+    "result1": 175,
+    "result2": 239,
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_conditional_branch_bge": {
+    "result1": 175,
+    "result2": 239,
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_conditional_branch_bgeu": {
+    "result1": 175,
+    "result2": 239,
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_conditional_branch_blt": {
+    "result1": 239,
+    "result2": 175,
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_conditional_branch_bltu": {
+    "result1": 239,
+    "result2": 175,
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_conditional_branch_bne": {
+    "result1": 175,
+    "result2": 175,
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_csr_read": {
+    "data_faulty": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "data": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_csr_write": {
+    "result": 0,
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_flash_read": {
+    "data_faulty": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "data": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_flash_read_static": {
+    "data_faulty": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "data": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_flash_write": {
+    "result": 0,
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_mem_op_loop": {
+    "result": [
+      10000,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_register_file": {
+    "data_faulty": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "data": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_register_file_read": {
+    "data_faulty": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "data": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_reg_op_loop": {
+    "data_faulty": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "data": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_single_beq": {
+    "data_faulty": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "data": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_single_bne": {
+    "data_faulty": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "data": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_sram_read": {
+    "data_faulty": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "data": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_sram_read_ret": {
+    "sram_err_status": 56,
+    "data_faulty": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "data": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_sram_static": {
+    "addresses": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "data": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_sram_write": {
+    "memory": [
+      464367618,
+      2343432205,
+      2779096485,
+      2880154539,
+      2881141438,
+      2880293630,
+      3131746989,
+      3134333474,
+      3148725999,
+      3200171710,
+      3203386062,
+      3221229823,
+      3405697037,
+      3405709037,
+      3435973836,
+      3452816845,
+      219540062,
+      3735883980,
+      3735928559,
+      3735931646,
+      3735929054,
+      3735943697,
+      3735941133,
+      3741239533,
+      3735936685,
+      3490524077,
+      3958107115,
+      4208909997,
+      4261281277,
+      4276215469,
+      4277009102,
+      4277075694,
+      464367618,
+      2343432205,
+      2779096485,
+      2880154539,
+      2881141438,
+      2880293630,
+      3131746989,
+      3134333474,
+      3148725999,
+      3200171710,
+      3203386062,
+      3221229823,
+      3405697037,
+      3405709037,
+      3435973836,
+      3452816845,
+      219540062,
+      3735883980,
+      3735928559,
+      3735931646,
+      3735929054,
+      3735943697,
+      3735941133,
+      3741239533,
+      3735936685,
+      3490524077,
+      3958107115,
+      4208909997,
+      4261281277,
+      4276215469,
+      4277009102,
+      4277075694
+    ],
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_sram_write_read": {
+    "data_faulty": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "data": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_sram_write_read_alt": {
+    "memory": [
+      2880293630,
+      3131746989,
+      3134333474,
+      2880293630,
+      3131746989,
+      3134333474,
+      2880293630,
+      3131746989,
+      3134333474,
+      2880293630,
+      3131746989,
+      3134333474,
+      2880293630,
+      3131746989,
+      3134333474,
+      2880293630,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_sram_write_static_unrolled": {
+    "memory": [
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618,
+      464367618
+    ],
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_unconditional_branch": {
+    "result": 30,
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_unconditional_branch_nop": {
+    "result": 0,
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_unrolled_mem_op_loop": {
+    "result": 10000,
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_unrolled_reg_op_loop": {
+    "result": 10000,
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_unrolled_reg_op_loop_chain": {
+    "result": [
+      60,
+      55,
+      56,
+      57,
+      58,
+      59,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_otp_data_read": {
+    "result": 0,
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  },
+  "char_otp_read_lock": {
+    "result": 5,
+    "err_status": 0,
+    "alerts": [
+      0,
+      0,
+      0
+    ],
+    "loc_alerts": 0,
+    "ast_alerts": [
+      0,
+      0
+    ]
+  }
+}

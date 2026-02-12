@@ -9,6 +9,8 @@
 extern "C" {
 #endif
 
+#define MODULE_ID MAKE_MODULE_ID('j', 's', 'c')
+
 #define SPHINCSPLUS_CMD_MAX_MESSAGE_BYTES 3300
 #define SPHINCSPLUS_CMD_MAX_SIGNATURE_BYTES 7856
 #define SPHINCSPLUS_CMD_MAX_PUBLIC_KEY_BYTES 32
@@ -43,6 +45,8 @@ UJSON_SERDE_STRUCT(CryptotestSphincsPlusPublicKey, cryptotest_sphincsplus_public
     value(_, Success) \
     value(_, Failure)
 UJSON_SERDE_ENUM(CryptotestSphincsPlusVerifyOutput, cryptotest_sphincsplus_verify_output_t, SPHINCSPLUS_VERIFY_OUTPUT);
+
+#undef MODULE_ID
 
 // clang-format on
 

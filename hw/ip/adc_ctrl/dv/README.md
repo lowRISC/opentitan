@@ -67,7 +67,7 @@ It provides commonly used handles, variables, functions and tasks that the test 
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
 The following covergroups have been developed to prove that the test intent has been adequately met:
 * adc_ctrl_filter_cg: filter configurations, one instance per filter
-These are sampled by the scoreboard when the ADC_CRTL is enabled by register and also on interrupt
+These are sampled by the scoreboard when the ADC_CTRL is enabled by register and also on interrupt
 and  wakeup line assertion. To distinguish between these situations and the fast clock gating
 status additional flags are also sampled enabling cross coverage.
 * adc_ctrl_testmode_cg: The mode of operation of the ADC_CTRL with transition bins to show modes can be selected

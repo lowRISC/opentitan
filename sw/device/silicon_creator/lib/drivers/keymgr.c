@@ -6,13 +6,13 @@
 
 #include <assert.h>
 
+#include "hw/top/dt/keymgr.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "keymgr_regs.h"  // Generated.
+#include "hw/top/keymgr_regs.h"  // Generated.
 
 #define KEYMGR_ASSERT(a, b) static_assert(a == b, "Bad value for " #a)
 KEYMGR_ASSERT(kScKeymgrStateReset, KEYMGR_WORKING_STATE_STATE_VALUE_RESET);
@@ -27,9 +27,12 @@ KEYMGR_ASSERT(kScKeymgrStateDisabled,
               KEYMGR_WORKING_STATE_STATE_VALUE_DISABLED);
 KEYMGR_ASSERT(kScKeymgrStateInvalid, KEYMGR_WORKING_STATE_STATE_VALUE_INVALID);
 
-enum {
-  kBase = TOP_EARLGREY_KEYMGR_BASE_ADDR,
-};
+/**
+ * Base address of the keymgr registers.
+ */
+static inline uint32_t sc_keymgr_base(void) {
+  return dt_keymgr_reg_block(kDtKeymgr, kDtKeymgrRegBlockCore);
+}
 
 /**
  * Checks the key manager `expected_state`.
@@ -46,20 +49,22 @@ static rom_error_t expected_state_check(uint32_t expected_state) {
   uint32_t op_status;
   uint32_t op_status_field;
   do {
-    op_status = abs_mmio_read32(kBase + KEYMGR_OP_STATUS_REG_OFFSET);
-    abs_mmio_write32(kBase + KEYMGR_OP_STATUS_REG_OFFSET, op_status);
+    op_status = abs_mmio_read32(sc_keymgr_base() + KEYMGR_OP_STATUS_REG_OFFSET);
+    abs_mmio_write32(sc_keymgr_base() + KEYMGR_OP_STATUS_REG_OFFSET, op_status);
     op_status_field =
         bitfield_field32_read(op_status, KEYMGR_OP_STATUS_STATUS_FIELD);
   } while (op_status_field == KEYMGR_OP_STATUS_STATUS_VALUE_WIP ||
            op_status_field == KEYMGR_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
 
   // Read and clear the error register by writing back the read value.
-  uint32_t error_code = abs_mmio_read32(kBase + KEYMGR_ERR_CODE_REG_OFFSET);
-  abs_mmio_write32(kBase + KEYMGR_ERR_CODE_REG_OFFSET, error_code);
+  uint32_t error_code =
+      abs_mmio_read32(sc_keymgr_base() + KEYMGR_ERR_CODE_REG_OFFSET);
+  abs_mmio_write32(sc_keymgr_base() + KEYMGR_ERR_CODE_REG_OFFSET, error_code);
 
   // Read the working state with sec_mmio so that we can check the expected
   // value periodically.
-  uint32_t got_state = sec_mmio_read32(kBase + KEYMGR_WORKING_STATE_REG_OFFSET);
+  uint32_t got_state =
+      sec_mmio_read32(sc_keymgr_base() + KEYMGR_WORKING_STATE_REG_OFFSET);
   if (op_status_field == KEYMGR_OP_STATUS_STATUS_VALUE_IDLE &&
       error_code == 0u && got_state == expected_state) {
     return kErrorOk;
@@ -71,8 +76,8 @@ void sc_keymgr_entropy_reseed_interval_set(uint16_t entropy_reseed_interval) {
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kScKeymgrSecMmioEntropyReseedIntervalSet, 1);
   uint32_t reg = bitfield_field32_write(
       0, KEYMGR_RESEED_INTERVAL_SHADOWED_VAL_FIELD, entropy_reseed_interval);
-  sec_mmio_write32_shadowed(kBase + KEYMGR_RESEED_INTERVAL_SHADOWED_REG_OFFSET,
-                            reg);
+  sec_mmio_write32_shadowed(
+      sc_keymgr_base() + KEYMGR_RESEED_INTERVAL_SHADOWED_REG_OFFSET, reg);
 }
 
 void sc_keymgr_sw_binding_set(
@@ -83,48 +88,56 @@ void sc_keymgr_sw_binding_set(
   // Write and lock (rw0c) the software binding value. This register is unlocked
   // by hardware upon a successful state transition.
   for (size_t i = 0; i < ARRAYSIZE(binding_value_sealing->data); ++i) {
-    sec_mmio_write32(
-        kBase + KEYMGR_SEALING_SW_BINDING_0_REG_OFFSET + i * sizeof(uint32_t),
-        binding_value_sealing->data[i]);
+    sec_mmio_write32(sc_keymgr_base() + KEYMGR_SEALING_SW_BINDING_0_REG_OFFSET +
+                         i * sizeof(uint32_t),
+                     binding_value_sealing->data[i]);
   }
   for (size_t i = 0; i < ARRAYSIZE(binding_value_attestation->data); ++i) {
-    sec_mmio_write32(
-        kBase + KEYMGR_ATTEST_SW_BINDING_0_REG_OFFSET + i * sizeof(uint32_t),
-        binding_value_attestation->data[i]);
+    sec_mmio_write32(sc_keymgr_base() + KEYMGR_ATTEST_SW_BINDING_0_REG_OFFSET +
+                         i * sizeof(uint32_t),
+                     binding_value_attestation->data[i]);
   }
-  sec_mmio_write32(kBase + KEYMGR_SW_BINDING_REGWEN_REG_OFFSET, 0);
+  sec_mmio_write32(sc_keymgr_base() + KEYMGR_SW_BINDING_REGWEN_REG_OFFSET, 0);
 }
 
 void sc_keymgr_sw_binding_unlock_wait(void) {
-  while (!abs_mmio_read32(kBase + KEYMGR_SW_BINDING_REGWEN_REG_OFFSET)) {
+  while (!abs_mmio_read32(sc_keymgr_base() +
+                          KEYMGR_SW_BINDING_REGWEN_REG_OFFSET)) {
   }
   // Ignore the return value since this read is performed to check and update
   // the expected value.
-  OT_DISCARD(sec_mmio_read32(kBase + KEYMGR_SW_BINDING_REGWEN_REG_OFFSET));
+  OT_DISCARD(
+      sec_mmio_read32(sc_keymgr_base() + KEYMGR_SW_BINDING_REGWEN_REG_OFFSET));
 }
 
 void sc_keymgr_creator_max_ver_set(uint32_t max_key_ver) {
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kScKeymgrSecMmioCreatorMaxVerSet, 2);
   // Write and lock (rw0c) the max key version.
   sec_mmio_write32_shadowed(
-      kBase + KEYMGR_MAX_CREATOR_KEY_VER_SHADOWED_REG_OFFSET, max_key_ver);
-  sec_mmio_write32(kBase + KEYMGR_MAX_CREATOR_KEY_VER_REGWEN_REG_OFFSET, 0);
+      sc_keymgr_base() + KEYMGR_MAX_CREATOR_KEY_VER_SHADOWED_REG_OFFSET,
+      max_key_ver);
+  sec_mmio_write32(
+      sc_keymgr_base() + KEYMGR_MAX_CREATOR_KEY_VER_REGWEN_REG_OFFSET, 0);
 }
 
 void sc_keymgr_owner_int_max_ver_set(uint32_t max_key_ver) {
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kScKeymgrSecMmioOwnerIntMaxVerSet, 2);
   // Write and lock (rw0c) the max key version.
   sec_mmio_write32_shadowed(
-      kBase + KEYMGR_MAX_OWNER_INT_KEY_VER_SHADOWED_REG_OFFSET, max_key_ver);
-  sec_mmio_write32(kBase + KEYMGR_MAX_OWNER_INT_KEY_VER_REGWEN_REG_OFFSET, 0);
+      sc_keymgr_base() + KEYMGR_MAX_OWNER_INT_KEY_VER_SHADOWED_REG_OFFSET,
+      max_key_ver);
+  sec_mmio_write32(
+      sc_keymgr_base() + KEYMGR_MAX_OWNER_INT_KEY_VER_REGWEN_REG_OFFSET, 0);
 }
 
 void sc_keymgr_owner_max_ver_set(uint32_t max_key_ver) {
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kScKeymgrSecMmioOwnerMaxVerSet, 2);
   // Write and lock (rw0c) the max key version.
   sec_mmio_write32_shadowed(
-      kBase + KEYMGR_MAX_OWNER_KEY_VER_SHADOWED_REG_OFFSET, max_key_ver);
-  sec_mmio_write32(kBase + KEYMGR_MAX_OWNER_KEY_VER_REGWEN_REG_OFFSET, 0);
+      sc_keymgr_base() + KEYMGR_MAX_OWNER_KEY_VER_SHADOWED_REG_OFFSET,
+      max_key_ver);
+  sec_mmio_write32(
+      sc_keymgr_base() + KEYMGR_MAX_OWNER_KEY_VER_REGWEN_REG_OFFSET, 0);
 }
 
 void sc_keymgr_advance_state(void) {
@@ -133,9 +146,10 @@ void sc_keymgr_advance_state(void) {
                              KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE);
   reg = bitfield_field32_write(reg, KEYMGR_CONTROL_SHADOWED_OPERATION_FIELD,
                                KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_ADVANCE);
-  abs_mmio_write32_shadowed(kBase + KEYMGR_CONTROL_SHADOWED_REG_OFFSET, reg);
+  abs_mmio_write32_shadowed(
+      sc_keymgr_base() + KEYMGR_CONTROL_SHADOWED_REG_OFFSET, reg);
 
-  abs_mmio_write32(kBase + KEYMGR_START_REG_OFFSET, 1);
+  abs_mmio_write32(sc_keymgr_base() + KEYMGR_START_REG_OFFSET, 1);
 }
 
 rom_error_t sc_keymgr_state_check(sc_keymgr_state_t expected_state) {
@@ -149,7 +163,8 @@ rom_error_t sc_keymgr_state_check(sc_keymgr_state_t expected_state) {
  */
 OT_WARN_UNUSED_RESULT
 static rom_error_t keymgr_is_idle(void) {
-  uint32_t reg = abs_mmio_read32(kBase + KEYMGR_OP_STATUS_REG_OFFSET);
+  uint32_t reg =
+      abs_mmio_read32(sc_keymgr_base() + KEYMGR_OP_STATUS_REG_OFFSET);
   uint32_t status = bitfield_field32_read(reg, KEYMGR_OP_STATUS_STATUS_FIELD);
   if (launder32(status) == KEYMGR_OP_STATUS_STATUS_VALUE_IDLE) {
     HARDENED_CHECK_EQ(status, KEYMGR_OP_STATUS_STATUS_VALUE_IDLE);
@@ -162,9 +177,11 @@ static rom_error_t keymgr_is_idle(void) {
  * Wait for the key manager to finish an operation.
  *
  * Polls the key manager until it is no longer busy. If the operation completed
- * successfully or the key manager was already idle, returns kErrorOk. If
- * there was an error during the operation, reads and clears the error code
- * and returns kErrorKeymgrInternal.
+ * successfully, returns kErrorOk. If there was an error during the operation,
+ * reads and clears the error code and returns kErrorKeymgrInternal.
+ *
+ * This function assumes an operation has already been started by the caller,
+ * and traps if the keymgr is already idle.
  *
  * @return OK or error.
  */
@@ -175,32 +192,32 @@ static rom_error_t keymgr_wait_until_done(void) {
   uint32_t status;
   do {
     // Read OP_STATUS and then clear by writing back the value we read.
-    reg = abs_mmio_read32(kBase + KEYMGR_OP_STATUS_REG_OFFSET);
-    abs_mmio_write32(kBase + KEYMGR_OP_STATUS_REG_OFFSET, reg);
+    reg = abs_mmio_read32(sc_keymgr_base() + KEYMGR_OP_STATUS_REG_OFFSET);
+    abs_mmio_write32(sc_keymgr_base() + KEYMGR_OP_STATUS_REG_OFFSET, reg);
     status = bitfield_field32_read(reg, KEYMGR_OP_STATUS_STATUS_FIELD);
   } while (status == KEYMGR_OP_STATUS_STATUS_VALUE_WIP);
 
-  // Check if the key manager reported errors. If it is already idle or
-  // completed an operation successfully, return an OK status. A `WIP` status
-  // should not be possible because of the check above.
+  // Check if the key manager reported errors. If it completed an operation
+  // successfully, return an OK status. A `WIP` status should not be possible
+  // because of the check above.
+  // The `IDLE` status is left unhandled because the keymgr should never be
+  // idle after an operation has been started by the caller.
   switch (launder32(status)) {
-    case KEYMGR_OP_STATUS_STATUS_VALUE_IDLE:
-      HARDENED_CHECK_EQ(status, KEYMGR_OP_STATUS_STATUS_VALUE_IDLE);
-      return kErrorOk;
     case KEYMGR_OP_STATUS_STATUS_VALUE_DONE_SUCCESS:
       HARDENED_CHECK_EQ(status, KEYMGR_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
       return kErrorOk;
     case KEYMGR_OP_STATUS_STATUS_VALUE_DONE_ERROR: {
       // Clear the ERR_CODE register before returning.
-      uint32_t err_code = abs_mmio_read32(kBase + KEYMGR_ERR_CODE_REG_OFFSET);
-      abs_mmio_write32(kBase + KEYMGR_ERR_CODE_REG_OFFSET, err_code);
+      uint32_t err_code =
+          abs_mmio_read32(sc_keymgr_base() + KEYMGR_ERR_CODE_REG_OFFSET);
+      abs_mmio_write32(sc_keymgr_base() + KEYMGR_ERR_CODE_REG_OFFSET, err_code);
       return kErrorKeymgrInternal;
     }
+    default:
+      // Should be unreachable.
+      HARDENED_TRAP();
+      return kErrorKeymgrInternal;
   }
-
-  // Should be unreachable.
-  HARDENED_TRAP();
-  return kErrorKeymgrInternal;
 }
 
 rom_error_t sc_keymgr_generate_key(
@@ -226,19 +243,22 @@ rom_error_t sc_keymgr_generate_key(
       KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_HW_OUTPUT);
 
   // Write the control register.
-  abs_mmio_write32_shadowed(kBase + KEYMGR_CONTROL_SHADOWED_REG_OFFSET, ctrl);
+  abs_mmio_write32_shadowed(
+      sc_keymgr_base() + KEYMGR_CONTROL_SHADOWED_REG_OFFSET, ctrl);
 
   // Set the version.
-  abs_mmio_write32(kBase + KEYMGR_KEY_VERSION_REG_OFFSET,
+  abs_mmio_write32(sc_keymgr_base() + KEYMGR_KEY_VERSION_REG_OFFSET,
                    diversification.version);
   // Set the salt.
   for (size_t i = 0; i < kScKeymgrSaltNumWords; i++) {
-    abs_mmio_write32(kBase + KEYMGR_SALT_0_REG_OFFSET + (i * sizeof(uint32_t)),
-                     diversification.salt[i]);
+    abs_mmio_write32(
+        sc_keymgr_base() + KEYMGR_SALT_0_REG_OFFSET + (i * sizeof(uint32_t)),
+        diversification.salt[i]);
   }
 
   // Issue the start command.
-  abs_mmio_write32(kBase + KEYMGR_START_REG_OFFSET, 1 << KEYMGR_START_EN_BIT);
+  abs_mmio_write32(sc_keymgr_base() + KEYMGR_START_REG_OFFSET,
+                   1 << KEYMGR_START_EN_BIT);
 
   // Block until keymgr is done.
   return keymgr_wait_until_done();
@@ -249,12 +269,12 @@ rom_error_t sc_keymgr_sideload_clear(sc_keymgr_dest_t destination) {
 
   // Set SIDELOAD_CLEAR to begin continuously clearing the requested slot.
   abs_mmio_write32(
-      kBase + KEYMGR_SIDELOAD_CLEAR_REG_OFFSET,
+      sc_keymgr_base() + KEYMGR_SIDELOAD_CLEAR_REG_OFFSET,
       bitfield_field32_write(0, KEYMGR_SIDELOAD_CLEAR_VAL_FIELD, destination));
 
   // Read back the value (hardening measure).
   uint32_t sideload_clear =
-      abs_mmio_read32(kBase + KEYMGR_SIDELOAD_CLEAR_REG_OFFSET);
+      abs_mmio_read32(sc_keymgr_base() + KEYMGR_SIDELOAD_CLEAR_REG_OFFSET);
   if (bitfield_field32_read(sideload_clear, KEYMGR_SIDELOAD_CLEAR_VAL_FIELD) !=
       destination) {
     return kErrorKeymgrInternal;
@@ -267,7 +287,7 @@ rom_error_t sc_keymgr_sideload_clear(sc_keymgr_dest_t destination) {
 
   // Stop continuous clearing.
   abs_mmio_write32(
-      kBase + KEYMGR_SIDELOAD_CLEAR_REG_OFFSET,
+      sc_keymgr_base() + KEYMGR_SIDELOAD_CLEAR_REG_OFFSET,
       bitfield_field32_write(0, KEYMGR_SIDELOAD_CLEAR_VAL_FIELD,
                              KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_NONE));
 
@@ -296,6 +316,22 @@ rom_error_t sc_keymgr_owner_advance(keymgr_binding_value_t *sealing_binding,
   sc_keymgr_advance_state();
   HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(kScKeymgrStateOwnerKey));
   return kErrorOk;
+}
+
+void sc_keymgr_disable(void) {
+  uint32_t reg =
+      bitfield_field32_write(0, KEYMGR_CONTROL_SHADOWED_DEST_SEL_FIELD,
+                             KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE);
+  reg = bitfield_field32_write(reg, KEYMGR_CONTROL_SHADOWED_OPERATION_FIELD,
+                               KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_DISABLE);
+  abs_mmio_write32_shadowed(
+      sc_keymgr_base() + KEYMGR_CONTROL_SHADOWED_REG_OFFSET, reg);
+
+  abs_mmio_write32(sc_keymgr_base() + KEYMGR_START_REG_OFFSET, 1);
+  // According to the documentation for the SIDELOAD_CLEAR register, an invalid
+  // destination will enable continuous clearing of all destinations.
+  abs_mmio_write32(sc_keymgr_base() + KEYMGR_SIDELOAD_CLEAR_REG_OFFSET,
+                   UINT32_MAX);
 }
 
 extern rom_error_t sc_keymgr_generate_key_otbn(

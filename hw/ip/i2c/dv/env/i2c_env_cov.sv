@@ -276,7 +276,7 @@ covergroup i2c_acq_fifo_cg
                                     // Read request start   // request termination
     bins read_req_ack_before_stop    = ({2'b01, 1'b1} => {2'b10, 1'b0});
     bins read_req_nack_before_rstart = ({2'b01, 1'b1} => {2'b11, 1'b0});
-    // This scenario is not possible to achieve since in target mode, DUT will recieve NACK/ACK
+    // This scenario is not possible to achieve since in target mode, DUT will receive NACK/ACK
     // from external host.
     // With ACK, SDA will be driven low, but RStart requires SDA transition from high to low
     ignore_bins read_req_ack_before_rstart = ({2'b01, 1'b1} => {2'b11, 1'b0});

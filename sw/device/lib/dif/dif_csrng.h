@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/csrng/doc/">CSRNG</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/csrng/">CSRNG</a> Device Interface Functions
  */
 
 #include <stdint.h>
@@ -16,7 +16,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
 
-#include "csrng_regs.h"  // Generated
+#include "hw/top/csrng_regs.h"  // Generated
 #include "sw/device/lib/dif/autogen/dif_csrng_autogen.h"
 
 #ifdef __cplusplus
@@ -60,7 +60,7 @@ extern "C" {
  * - `dif_csrng_get_output_status()`
  *
  * Please see the following documentation for more information:
- * https://docs.opentitan.org/hw/ip/csrng/doc/
+ * https://opentitan.org/book/hw/ip/csrng/
  *
  * Remaining work:
  *
@@ -93,19 +93,6 @@ typedef enum dif_csrng_cmd_status_kind {
 typedef enum dif_csrng_fifo {
   kDifCsrngFifoCmd,
   kDifCsrngFifoGenBits,
-  kDifCsrngFifoCmdReq,
-  kDifCsrngFifoRcStage,
-  kDifCsrngFifoKeyVrc,
-  kDifCsrngFifoUpdateReq,
-  kDifCsrngFifoBencRec,
-  kDifCsrngFifoBencAck,
-  kDifCsrngFifoPData,
-  kDifCsrngFifoFinal,
-  kDifCsrngFifoGBencAck,
-  kDifCsrngFifoGrcStage,
-  kDifCsrngFifoGGenReq,
-  kDifCsrngFifoGadStage,
-  kDifCsrngFifoBlockEnc,
 } dif_csrng_fifo_t;
 
 /**
@@ -121,31 +108,23 @@ typedef enum dif_csrng_error {
    */
   kDifCsrngErrorMainSm,
   /**
-   * Indicates an error in the DRBG's generator state machine.
+   * Indicates an error in the CTR_DRBG data path state machine.
    */
-  kDifCsrngErrorDrbgGenSm,
-  /**
-   * Indicates an error in the DRBG's block encoding state machine.
-   */
-  kDifCsrngErrorDrbgUpdateBlockEncSm,
-  /**
-   * Indicates an error in the DRBG's block output state machine.
-   */
-  kDifCsrngErrorDrbgUpdateOutBlockSm,
+  kDifCsrngErrorCtrDrbgSm,
   /**
    * Indicates an error in the AES state machine.
    */
   kDifCsrngErrorAesSm,
   /**
-   * Indicates an error in the generate command's counter.
+   * Indicates an error in one of the counters.
    */
-  kDifCsrngErrorGenerateCmdCounter,
+  kDifCsrngErrorCounters,
   /**
-   * Indicates a write to a full FIFO occured.
+   * Indicates a write to a full FIFO occurred.
    */
   kDifCsrngErrorFifoWrite,
   /**
-   * Indicates a read from an empty FIFO occured.
+   * Indicates a read from an empty FIFO occurred.
    */
   kDifCsrngErrorFifoRead,
   /**
@@ -431,12 +410,16 @@ dif_result_t dif_csrng_update(const dif_csrng_t *csrng,
  * of the request to align it to the nearest 128-bit boundary.
  *
  * @param csrng A CSRNG handle.
+ * @param additional_data Additional data for the generate command. Set to NULL
+ * if unused.
  * @param len Number of uint32_t words to generate.
  * @return The result of the operation. KDifOutOfRange if the `len` parameter
  * results in a 128bit block level size greater than 0x800.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_csrng_generate_start(const dif_csrng_t *csrng, size_t len);
+dif_result_t dif_csrng_generate_start(
+    const dif_csrng_t *csrng, const dif_csrng_seed_material_t *additional_data,
+    size_t len);
 
 /**
  * Reads the output of the last CSRNG generate call.

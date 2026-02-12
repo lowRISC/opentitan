@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "dt/dt_sram_ctrl.h"
+#include "hw/top/dt/sram_ctrl.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/boot_log.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
@@ -156,8 +156,8 @@ OT_WARN_UNUSED_RESULT
 inline retention_sram_t *retention_sram_get(void) {
   // NOTE: this assumes that the retention SRAM is always using the name
   // "ret_aon"
-  return (retention_sram_t *)dt_sram_ctrl_reg_block(kDtSramCtrlRetAon,
-                                                    kDtSramCtrlRegBlockRam);
+  return (retention_sram_t *)dt_sram_ctrl_memory_base(kDtSramCtrlRetAon,
+                                                      kDtSramCtrlMemoryRam);
 }
 
 /**

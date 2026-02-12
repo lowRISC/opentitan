@@ -3,17 +3,28 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Environment varibles:
-# CHECK: flag to turn on or off conflict and deadloop checks.
-# COMMON_MSG_TCL_PATH: string to indicate the path to `jaspergold_common_message_process.tcl` file,
+#
+# CHECK:               Flag to turn on or off conflict and deadloop checks.
+#
+# COMMON_MSG_TCL_PATH: String to indicate the path to `jaspergold_common_message_process.tcl` file,
 #                      which sets common message configurations.
-# COV: flag to turn on or off coverage collection.
-# DUT_TOP: string to indicate the top-level module name.
-# STOPATS: string to indicate the name of the signal to insert `stopat`.
-# TASK: string to collect and prove a subset of assertions that contains these string.
-# FPV_DEFINES: string to add additional macro defines during anaylze phase.
-# AFTER_LOAD: string with the path to a TCL file that should be sourced after the design and test
-#             bench have been loaded. If there is no such file, the variable should be undefined or
-#             the string should be empty.
+#
+# COV:                 Flag to turn on or off coverage collection.
+#
+# DUT_TOP:             String to indicate the top-level module name.
+#
+# STOPATS:             String to indicate the name of the signal to insert `stopat`.
+#
+# TASK:                String to collect and prove a subset of assertions that contains these string.
+#
+# FPV_DEFINES:         String to add additional macro defines during anaylze phase.
+#
+# AFTER_LOAD:          String with the path to a TCL file that should be sourced after the design
+#                      and test bench have been loaded. If there is no such file, the variable
+#                      should be undefined or the string should be empty.
+#
+# PARAMS:              A string that parses as a TCL list of k,v pairs that give parameters that
+#                      should be applied to DUT_TOP on elaboration.
 
 # clear previous settings
 clear -all
@@ -52,19 +63,55 @@ if {$env(TASK) == "FpvSecCm"} {
     -f [glob *.scr]
 }
 
-if {$env(DUT_TOP) == "prim_count_tb"} {
-  elaborate -top $env(DUT_TOP) \
-            -enable_sva_isunknown \
-            -disable_auto_bbox \
-            -param ResetValue $ResetValue
-} else {
-  elaborate -top $env(DUT_TOP) -enable_sva_isunknown -disable_auto_bbox
+# Convert the list of parameter pairs to a string that can be appended to the elaborate command to
+# set each of the parameters.
+set elab_args ""
+if {[info exists ::env(PARAMS)]} {
+    foreach pair $env(PARAMS) {
+        if {[llength $pair] != 2} {
+            error "PARAMS environment contained ${pair}, which is not a length 2 list"
+        }
+        set k [lindex $pair 0]
+        set v [lindex $pair 1]
+        append elab_args " -parameter ${k} ${v}"
+    }
 }
+
+# Chains of successive A ##1 B ##1 C ... in sequences can take a long time to elaborate. There is a
+# new flag to elaborate called -optimize_implication_assert which improves this, but it only appears
+# from Jasper 2023.06. Call the get_version function to figure out whether we've got the right
+# version: it should be 2023.06, 2023.09, 2023.12 or something that starts with a later year
+# (202[4-9] or 20[3-9].)
+if {[regexp "^\(20\[3-9\]\[0-9\]\)\|\(202\[4-9\]\)\|\(2023\.\(0\[69\]\)\|12\)" [get_version]]} {
+  set oia_arg "-optimize_implication_assert"
+} else {
+  set oia_arg ""
+}
+
+if {$env(DUT_TOP) == "prim_count_tb"} {
+    append elab_args " -param ResetValue $ResetValue"
+}
+
+# Running this under eval means that ${elab_args} can expand into several different arguments
+# to the elaborate command.
+eval elaborate -top $env(DUT_TOP) \
+               -enable_sva_isunknown -disable_auto_bbox \
+               ${oia_arg} ${elab_args}
 
 set stopat [regexp -all -inline {[^\s\']+} $env(STOPATS)]
 if {$stopat ne ""} {
   stopat -env $stopat
 }
+
+# Before loading any TCL scripts in AFTER_LOAD, we initialize the pre_phases variable to zero. The
+# idea is that the AFTER_LOAD scripts can set it to something else if necessary (but there will be
+# no initial phases if the scripts do not).
+set pre_phases 0
+
+# Also set the cov_tasks variable to just <embedded> (which says to include properties that were
+# read from SystemVerilog when calculating coverage). AFTER_LOAD scripts may add extra tasks
+# (because they needed e.g. a stopat).
+set cov_tasks "<embedded>"
 
 if {[info exists ::env(AFTER_LOAD)]} {
     set flist $env(AFTER_LOAD)
@@ -210,6 +257,21 @@ set_proofgrid_per_engine_max_local_jobs 2
 # prove all assertions & report
 #-------------------------------------------------------------------------
 
+# If there are any AFTER_LOAD scripts, they may have defined some "initial phases". These are
+# counted with a $pre_phases variable (which defaults to zero). If it is positive, we iterate
+# through that many phases from zero, proving them in turn.
+#
+# Properties that should go in phase N have names that start with "preN_", and these properties are
+# selected with a regexp.
+puts "Proving the initial ${pre_phases} pre* tasks"
+for {set phase 0} {$phase < $pre_phases} {incr phase} {
+    if {[info exists "engine_modes(${phase})"]} {
+        prove -task "pre${phase}" -orchestration off -engine_mode "$engine_modes(${phase})"
+    } else {
+        prove -task "pre${phase}"
+    }
+}
+
 get_reset_info -x_value -with_reset_pin
 
 # time limit set to 2 hours
@@ -226,8 +288,14 @@ report
 #-------------------------------------------------------------------------
 
 if {$env(COV) == 1} {
-  check_cov -measure -time_limit 2h
-  check_cov -report -force -exclude { reset waived }
-  check_cov -report -no_return -report_file cover.html \
-      -html -force -exclude { reset waived }
+    check_cov -measure -tasks ${cov_tasks} -time_limit 2h
+
+    # Waive the synthesis_optimized cover items
+    set file $env(JG_TCL_DIR)/synthesis_optimized.tcl
+    puts "Waiving items optimized in synthesis from $file"
+    source $file
+
+    check_cov -report -task ${cov_tasks} -force -exclude { reset waived }
+    check_cov -report -no_return -report_file cover.html -task ${cov_tasks} \
+                      -html -force -exclude { reset waived }
 }

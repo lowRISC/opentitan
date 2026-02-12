@@ -6,8 +6,6 @@
 
 package rom_ctrl_pkg;
 
-  parameter int AlertFatal = 0;
-
   typedef struct packed {
     prim_mubi_pkg::mubi4_t done;
     prim_mubi_pkg::mubi4_t good;

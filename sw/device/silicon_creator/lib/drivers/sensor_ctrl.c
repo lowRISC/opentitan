@@ -9,9 +9,9 @@
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 
+#include "hw/top/otp_ctrl_regs.h"
+#include "hw/top/sensor_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otp_ctrl_regs.h"
-#include "sensor_ctrl_regs.h"
 
 enum {
   kBase = TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR,

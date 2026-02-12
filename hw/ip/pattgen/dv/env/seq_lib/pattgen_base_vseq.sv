@@ -138,7 +138,7 @@ task pattgen_base_vseq::body();
          channel_start) begin             // at least one channel is running
     wait(cfg.clk_rst_vif.rst_n); // wait until reset is de-asserted
     fork
-      // all channels are completely independent (programm, start w/ or wo/ sync, and stop)
+      // all channels are completely independent (program, start w/ or wo/ sync, and stop)
       setup_pattgen_channel(0);
       setup_pattgen_channel(1);
       start_pattgen_channels();
@@ -457,7 +457,7 @@ endfunction
 function void pattgen_base_vseq::update_pattgen_agent_cfg(int channel);
   cfg.m_pattgen_agent_cfg.polarity[channel] = channel_cfg[channel].polarity;
   // see the specification document, the effective values of prediv, len, and reps
-  // are incremented from the coresponding register values
+  // are incremented from the corresponding register values
   cfg.m_pattgen_agent_cfg.length[channel]   = (channel_cfg[channel].len + 1) *
                                               (channel_cfg[channel].reps + 1);
   `uvm_info(`gfn, $sformatf("\n--> pattgen_agent_cfg: channel %0d, polarity %0b, length %0d",

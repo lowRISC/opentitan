@@ -2,13 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/rstmgr.h"  // Generated
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_utils.h"
-
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 /*
   - Wait for host to perform debugger tests
@@ -37,8 +36,7 @@ static void chip_sw_reset(void) {
 }
 
 bool test_main(void) {
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgrAon, &rstmgr));
 
   // Check if there was a HW reset caused by the software.
   dif_rstmgr_reset_info_bitfield_t rst_info;

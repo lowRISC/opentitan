@@ -38,7 +38,7 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
     super.dut_init(reset_kind);
     // drive dft_en pins to access the test_access memory
     cfg.otp_ctrl_vif.drive_lc_dft_en(lc_ctrl_pkg::On);
-    // once turn on lc_dft_en regiser, will need some time to update the state register
+    // once turn on lc_dft_en register, will need some time to update the state register
     // two clock cycles for lc_async mode, one clock cycle for driving dft_en, one more clock cycle
     // so there is no racing condition.
     if (cfg.en_dv_cdc) cfg.clk_rst_vif.wait_clks(5);
@@ -73,7 +73,7 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
     clear_seq_flags();
   endtask
 
-  virtual task wait_to_issue_reset(uint reset_delay_bound = 10_000_000);
+  protected virtual task wait_to_issue_reset(uint reset_delay_bound);
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(reset_drive_cond)
     case (reset_drive_cond)
       DriveRandomly: begin
@@ -130,8 +130,8 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
 
   // In tl_intg_err test, override this task to set is_prim_otp flag.
   virtual task run_tl_intg_err_vseq_sub(string ral_name);
-    if (ral_name == "otp_ctrl_prim_reg_block") is_prim_otp = 1;
-    else                                       is_prim_otp = 0;
+    if (ral_name == "otp_ctrl_core_reg_block") is_prim_otp = 0;
+    else                                       is_prim_otp = 1;
     super.run_tl_intg_err_vseq_sub(ral_name);
   endtask
 
@@ -140,19 +140,21 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
     string prim_otp_alert_name = "fatal_prim_otp_alert";
     string integ_err_alert_name = "fatal_bus_integ_error";
 
-    // Alerts coming from the `prim_otp` module will only bypass OTP_CTRL, it won't affect the
-    // OTP_CTRL and will fire its own alerts.
-    if (is_prim_otp) begin
-      check_sec_cm_alert(if_proxy.sec_cm_type.name, prim_otp_alert_name);
-
     // Alerts coming from the `u_tlul_lc_gate` module will only trigger bus_integrity alerts, and
     // bus_integrity related status.
     // This error won't local escalate to OTP partitions.
-    end else if (!uvm_re_match("*.u_tlul_lc_gate*", if_proxy.path)) begin
+    if (!uvm_re_match("*.u_tlul_lc_gate*", if_proxy.path)) begin
       check_sec_cm_alert(if_proxy.sec_cm_type.name, integ_err_alert_name);
 
       exp_status_val[OtpBusIntegErrorIdx] = 1;
       exp_status_val[OtpDaiIdleIdx] = 1;
+
+    // Alerts coming from the `otp_macro` module will only bypass OTP_CTRL, it won't affect the
+    // OTP_CTRL and will fire its own alerts.
+    end else if (is_prim_otp) begin
+      `uvm_info(`gfn, $sformatf("check otp_macro alert %s", if_proxy.sec_cm_type.name),
+                UVM_MEDIUM)
+      check_sec_cm_alert(if_proxy.sec_cm_type.name, prim_otp_alert_name);
 
     // All other errors triggers normal fatal alerts, and will locally escalate to other
     // partitions.
@@ -183,7 +185,7 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
       `DV_CHECK_EQ(rdata1, 0)
       if (is_sw_part(dai_addr)) begin
         uvm_reg_addr_t tlul_addr = cfg.ral.get_addr_from_offset(get_sw_window_offset(dai_addr));
-        tl_access(.addr(tlul_addr), .write(0), .data(rdata0), .blocking(1), .check_rsp(1),
+        tl_access(.addr(tlul_addr), .write(0), .data(rdata0), .blocking(1), .check_err_rsp(1),
                   .exp_err_rsp(1), .exp_data('1));
       end
       cal_hw_digests();
@@ -205,17 +207,17 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
     case (if_proxy.sec_cm_type)
       SecCmPrimCount: begin
         if (!enable) begin
-          $assertoff(0, "tb.dut.gen_partitions[3].gen_buffered.u_part_buf.ScrmblDataKnown_A");
-          $assertoff(0, "tb.dut.gen_partitions[4].gen_buffered.u_part_buf.ScrmblDataKnown_A");
           $assertoff(0, "tb.dut.gen_partitions[5].gen_buffered.u_part_buf.ScrmblDataKnown_A");
           $assertoff(0, "tb.dut.gen_partitions[6].gen_buffered.u_part_buf.ScrmblDataKnown_A");
-          $assertoff(0, "tb.dut.gen_partitions[7].gen_lifecycle.u_part_buf.ScrmblDataKnown_A");
+          $assertoff(0, "tb.dut.gen_partitions[7].gen_buffered.u_part_buf.ScrmblDataKnown_A");
+          $assertoff(0, "tb.dut.gen_partitions[8].gen_buffered.u_part_buf.ScrmblDataKnown_A");
+          $assertoff(0, "tb.dut.gen_partitions[9].gen_buffered.u_part_buf.ScrmblDataKnown_A");
         end else begin
-          $asserton(0, "tb.dut.gen_partitions[3].gen_buffered.u_part_buf.ScrmblDataKnown_A");
-          $asserton(0, "tb.dut.gen_partitions[4].gen_buffered.u_part_buf.ScrmblDataKnown_A");
           $asserton(0, "tb.dut.gen_partitions[5].gen_buffered.u_part_buf.ScrmblDataKnown_A");
           $asserton(0, "tb.dut.gen_partitions[6].gen_buffered.u_part_buf.ScrmblDataKnown_A");
-          $asserton(0, "tb.dut.gen_partitions[7].gen_lifecycle.u_part_buf.ScrmblDataKnown_A");
+          $asserton(0, "tb.dut.gen_partitions[7].gen_buffered.u_part_buf.ScrmblDataKnown_A");
+          $asserton(0, "tb.dut.gen_partitions[8].gen_buffered.u_part_buf.ScrmblDataKnown_A");
+          $asserton(0, "tb.dut.gen_partitions[9].gen_buffered.u_part_buf.ScrmblDataKnown_A");
        end
       end
       SecCmPrimSparseFsmFlop, SecCmPrimDoubleLfsr, SecCmPrimOnehot: begin
@@ -224,9 +226,10 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
       default: `uvm_fatal(`gfn, $sformatf("unexpected sec_cm_type %s", if_proxy.sec_cm_type.name))
     endcase
 
-    // Set the flag to store if the error injection is on prim_tlul_if or core_tlul_if.
-    if (!uvm_re_match("*.u_otp.*", if_proxy.path)) is_prim_otp = 1;
-    else                                           is_prim_otp = 0;
+    // Set the flag to store if the error injection is on prim_tlul_if or core_tlul_if and to
+    // discriminate between ctrl vs. macro fsm error.
+    if (!uvm_re_match("*.otp_macro.*", if_proxy.path)) is_prim_otp = 1;
+    else                                               is_prim_otp = 0;
   endfunction: sec_cm_fi_ctrl_svas
 
 endclass

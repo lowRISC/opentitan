@@ -21,16 +21,21 @@ module tb;
   // This will invoke the UVM registry and link this test type to
   // the name 'otp_ctrl_base_test' as a test name passed by UVM_TESTNAME
   //
-  // This is done explicitly only for the prim_pkg::ImplGeneric implementation
+  // This is done explicitly only for the generic technology implementation
   // since partner base tests inherit from otp_ctrl_base_test#(CFG_T, ENV_T) and
   // specify directly (CFG_T, ENV_T) via the class extension and use a different
   // UVM_TESTNAME
-  if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_spec_base_test_params
+  if (prim_pkg::PrimTechName == "Generic") begin : gen_spec_base_test_params
     typedef otp_ctrl_base_test #(.CFG_T(otp_ctrl_env_cfg),
                                  .ENV_T(otp_ctrl_env)) otp_ctrl_base_test_t;
   end
 
   wire clk, rst_n;
+
+  // These connect the controller to the macro.
+  wire otp_ctrl_macro_pkg::otp_ctrl_macro_req_t otp_ctrl_macro_req;
+  wire otp_ctrl_macro_pkg::otp_ctrl_macro_rsp_t otp_ctrl_macro_rsp;
+
 % if enable_flash_key:
   wire otp_ctrl_pkg::flash_otp_key_req_t flash_req;
   wire otp_ctrl_pkg::flash_otp_key_rsp_t flash_rsp;
@@ -44,7 +49,7 @@ module tb;
   wire intr_otp_operation_done, intr_otp_error;
 
   // Output from close-source OTP, not checked in open-source env.
-  wire otp_ctrl_pkg::otp_ast_req_t ast_req;
+  wire otp_macro_pkg::otp_ast_req_t ast_req;
   wire [7:0] otp_obs_o;
 
   tlul_pkg::tl_d2h_t prim_tl_o;
@@ -86,7 +91,7 @@ module tb;
 
   // This signal probes design's alert request to avoid additional logic for triggering alert and
   // disable assertions.
-  // Alert checkings are done independently in otp_ctrl's scb.
+  // Alert checks are done independently in otp_ctrl's scb.
   // The correctness of this probed signal is checked in otp_ctrl's scb as well.
   assign otp_ctrl_if.alert_reqs = dut.alerts[0] | dut.alerts[1];
 
@@ -94,7 +99,18 @@ module tb;
   wire otp_ext_voltage_h = otp_ctrl_if.ext_voltage_h_io;
 
   // dut
-  otp_ctrl dut (
+  otp_ctrl #(
+  % for i in range(otp_mmap["scrambling"]["num_keys"]): 
+    .RndCnstScrmblKey${i}(top_${topname}_rnd_cnst_pkg::RndCnstOtpCtrlScrmblKey${i}),
+  % endfor
+  % for i in range(otp_mmap["scrambling"]["num_digests"]):
+    .RndCnstDigestConst${i}(top_${topname}_rnd_cnst_pkg::RndCnstOtpCtrlDigestConst${i}),
+  % endfor
+  % for i in range(otp_mmap["scrambling"]["num_digests"]):
+    .RndCnstDigestIV${i}(top_${topname}_rnd_cnst_pkg::RndCnstOtpCtrlDigestIV${i}),
+  % endfor
+    .RndCnstPartInvDefault(top_${topname}_rnd_cnst_pkg::RndCnstOtpCtrlPartInvDefault)
+  ) dut (
     .clk_i                      (clk        ),
     .rst_ni                     (rst_n      ),
     // edn
@@ -105,31 +121,22 @@ module tb;
     // bus interfaces
     .core_tl_i                  (tl_if.h2d  ),
     .core_tl_o                  (tl_if.d2h  ),
-    .prim_tl_i                  (prim_tl_if.h2d),
-    .prim_tl_o                  (prim_tl_if.d2h),
     // interrupt
     .intr_otp_operation_done_o  (intr_otp_operation_done),
     .intr_otp_error_o           (intr_otp_error),
     // alert
     .alert_rx_i                 (alert_rx   ),
     .alert_tx_o                 (alert_tx   ),
-    // ast
-    .obs_ctrl_i                 (otp_ctrl_if.obs_ctrl_i),
-    .otp_obs_o                  (otp_obs_o),
-    .otp_ast_pwr_seq_o          (ast_req),
-    .otp_ast_pwr_seq_h_i        (otp_ctrl_if.otp_ast_pwr_seq_h_i),
     // pwrmgr
     .pwr_otp_i                  (otp_ctrl_if.pwr_otp_init_i),
     .pwr_otp_o                  ({otp_ctrl_if.pwr_otp_done_o, otp_ctrl_if.pwr_otp_idle_o}),
     // lc
-    .lc_otp_vendor_test_i       (otp_ctrl_if.otp_vendor_test_ctrl_i),
-    .lc_otp_vendor_test_o       (otp_ctrl_if.otp_vendor_test_status_o),
     .lc_otp_program_i           ({lc_prog_if.req, lc_prog_if.h_data}),
     .lc_otp_program_o           ({lc_prog_if.d_data, lc_prog_if.ack}),
     .lc_creator_seed_sw_rw_en_i (otp_ctrl_if.lc_creator_seed_sw_rw_en_i),
     .lc_owner_seed_sw_rw_en_i   (otp_ctrl_if.lc_owner_seed_sw_rw_en_i),
     .lc_seed_hw_rd_en_i         (otp_ctrl_if.lc_seed_hw_rd_en_i),
-    .lc_dft_en_i                (otp_ctrl_if.lc_dft_en_i),
+    .lc_rma_state_i             (otp_ctrl_if.lc_rma_state_i),
     .lc_escalate_en_i           (otp_ctrl_if.lc_escalate_en_i),
     .lc_check_byp_en_i          (otp_ctrl_if.lc_check_byp_en_i),
     .otp_lc_data_o              (otp_ctrl_if.lc_data_o),
@@ -148,16 +155,46 @@ module tb;
     .otbn_otp_key_o             (otbn_rsp),
 
     .otp_broadcast_o            (otp_ctrl_if.otp_broadcast_o),
-    .otp_ext_voltage_h_io       (otp_ext_voltage_h),
 
-    //scan
-    .scan_en_i                  (otp_ctrl_if.scan_en_i),
-    .scan_rst_ni                (otp_ctrl_if.scan_rst_ni),
-    .scanmode_i                 (otp_ctrl_if.scanmode_i),
+    .otp_macro_o                (otp_ctrl_macro_req),
+    .otp_macro_i                (otp_ctrl_macro_rsp)
+  );
 
-    // Test-related GPIO output
-    .cio_test_o                 (otp_ctrl_if.cio_test_o),
-    .cio_test_en_o              (otp_ctrl_if.cio_test_en_o)
+  otp_macro #(
+    .Width(otp_ctrl_macro_pkg::OtpWidth),
+    .Depth(otp_ctrl_macro_pkg::OtpDepth),
+    .SizeWidth(otp_ctrl_macro_pkg::OtpSizeWidth),
+//    .MemInitFile(),
+    .VendorTestOffset(otp_ctrl_reg_pkg::VendorTestOffset),
+    .VendorTestSize(otp_ctrl_reg_pkg::VendorTestSize)
+  ) otp_macro (
+
+      // Output
+      .cio_test_o    (otp_ctrl_if.cio_test_o),
+      .cio_test_en_o (otp_ctrl_if.cio_test_en_o),
+
+      // Inter-module signals
+      .obs_ctrl_i('0),
+      .otp_obs_o (  ),
+      .pwr_seq_o(ast_req),
+      .pwr_seq_h_i(otp_ctrl_if.otp_ast_pwr_seq_h_i),
+      .ext_voltage_h_io(otp_ext_voltage_h),
+      .lc_dft_en_i(otp_ctrl_if.lc_dft_en_i),
+      .test_i       (otp_ctrl_if.otp_vendor_test_ctrl_i),
+      .test_o       (otp_ctrl_if.otp_vendor_test_status_o),
+      .otp_i(otp_ctrl_macro_req),
+      .otp_o(otp_ctrl_macro_rsp),
+      .cfg_i('0),
+      .cfg_rsp_o(),
+      .prim_tl_i(prim_tl_if.h2d),
+      .prim_tl_o(prim_tl_if.d2h),
+      .scanmode_i (otp_ctrl_if.scanmode_i),
+      .scan_rst_ni (otp_ctrl_if.scan_rst_ni),
+      .scan_en_i (otp_ctrl_if.scan_en_i),
+
+      // Clock and reset connections
+      .clk_i (clk),
+      .rst_ni (rst_n)
   );
 
   for (genvar i = 0; i < NumSramKeyReqSlots; i++) begin : gen_sram_pull_if
@@ -185,15 +222,15 @@ module tb;
   assign interrupts[OtpOperationDone] = intr_otp_operation_done;
   assign interrupts[OtpErr]           = intr_otp_error;
 
-  // Instantitate the memory backdoor util instance only for OS implementation
+  // Instantiate the memory backdoor util instance only for OS implementation
   // Proprietary IP will instantiate their own backdoor util
 
-  if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_impl_generic
+  if (prim_pkg::PrimTechName == "Generic") begin : gen_impl_generic
     `define MEM_MODULE_PATH ${"\\"}
-        tb.dut.u_otp.gen_generic.u_impl_generic.u_prim_ram_1p_adv.gen_ram_inst[0]
+        tb.otp_macro.u_prim_ram_1p_adv.gen_ram_inst[0]
 
     `define MEM_ARRAY_PATH ${"\\"}
-        `MEM_MODULE_PATH.u_mem.gen_generic.u_impl_generic.mem
+        `MEM_MODULE_PATH.u_mem.mem
 
     initial begin : mem_bkdr_util_gen
       mem_bkdr_util m_mem_bkdr_util;
@@ -224,10 +261,10 @@ module tb;
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env",
-                                            "clk_rst_vif_otp_ctrl_prim_reg_block", clk_rst_if);
+                                            "clk_rst_vif_otp_macro_prim_reg_block", clk_rst_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_otp_ctrl_core_reg_block*",
                                        "vif", tl_if);
-    uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_otp_ctrl_prim_reg_block",
+    uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_otp_macro_prim_reg_block",
                                        "vif", prim_tl_if);
     uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(OTBN_DATA_SIZE)))::set(null,
                    "*env.m_otbn_pull_agent*", "vif", otbn_if);

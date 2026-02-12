@@ -24,19 +24,6 @@ class clkmgr_regwen_vseq extends clkmgr_base_vseq;
     `uvm_info(`gfn, "Check jitter_regwen done", UVM_MEDIUM)
   endtask : check_jitter_regwen
 
-  task check_extclk_regwen();
-    bit enable;
-    int prev_value;
-    int new_value = {extclk_ctrl_high_speed_sel, extclk_ctrl_sel};
-    `DV_CHECK_STD_RANDOMIZE_FATAL(enable)
-    `uvm_info(`gfn, $sformatf("Check extclk_ctrl regwen = %b", enable), UVM_MEDIUM)
-    csr_wr(.ptr(ral.extclk_ctrl_regwen), .value(enable));
-    csr_rd(.ptr(ral.extclk_ctrl), .value(prev_value));
-    csr_wr(.ptr(ral.extclk_ctrl), .value(new_value));
-    csr_rd_check(.ptr(ral.extclk_ctrl), .compare_value(enable ? new_value : prev_value));
-    `uvm_info(`gfn, "Check extclk_ctrl regwen done", UVM_MEDIUM)
-  endtask : check_extclk_regwen
-
   // This must be careful to turn measurements off right after checking the updates
   // to avoid measurement errors. We could set the thresholds correctly, but we
   // might as well set them randomly for good measure. Carefully masks only the
@@ -51,7 +38,10 @@ class clkmgr_regwen_vseq extends clkmgr_base_vseq;
       uvm_reg_data_t prev_en;
       mubi4_t new_en = get_rand_mubi4_val(1, 1, 2);
       int prev_ctrl;
-      int new_ctrl = $urandom();
+      int max_threshold = ExpectedCounts[clk] + 2;
+      int min_threshold = ExpectedCounts[clk] - 2;
+      int new_ctrl = get_meas_ctrl_value(min_threshold, max_threshold,
+          meas_ctrl_regs[clk_mesr].ctrl_lo, meas_ctrl_regs[clk_mesr].ctrl_hi);
       int actual_ctrl;
       int lo_mask = ((1 << meas_ctrl_regs[clk_mesr].ctrl_lo.get_n_bits()) - 1) <<
                      meas_ctrl_regs[clk_mesr].ctrl_lo.get_lsb_pos();
@@ -66,11 +56,11 @@ class clkmgr_regwen_vseq extends clkmgr_base_vseq;
       csr_wr(.ptr(meas_ctrl_regs[clk_mesr].en), .value(new_en));
       csr_rd_check(.ptr(meas_ctrl_regs[clk_mesr].en),
                    .compare_value(mubi4_t'(regwen_enable ? new_en : prev_en)));
+      csr_wr(.ptr(meas_ctrl_regs[clk_mesr].en), .value(MuBi4False));
       csr_rd_check(.ptr(ctrl_shadowed), .compare_value(regwen_enable ? new_ctrl : prev_ctrl),
                    .compare_mask(lo_mask | hi_mask));
       `uvm_info(`gfn, $sformatf("Check %0s regwen done", meas_ctrl_regs[clk_mesr].name),
                 UVM_MEDIUM)
-      csr_wr(.ptr(meas_ctrl_regs[clk_mesr].en), .value(MuBi4False));
     end
   endtask : check_meas_ctrl_regwen
 
@@ -83,14 +73,12 @@ class clkmgr_regwen_vseq extends clkmgr_base_vseq;
     `uvm_info(`gfn, $sformatf("Will run %0d rounds", num_trans), UVM_MEDIUM)
     for (int i = 0; i < num_trans; ++i) begin
       check_jitter_regwen();
-      check_extclk_regwen();
       check_meas_ctrl_regwen();
       apply_reset("HARD");
       // This is to make sure we don't start writes immediately after reset,
       // otherwise the tl_agent could mistakenly consider the following read
       // happens during reset.
       cfg.clk_rst_vif.wait_clks(4);
-      csr_rd_check(.ptr(ral.extclk_ctrl_regwen), .compare_value(1));
       csr_rd_check(.ptr(ral.measure_ctrl_regwen), .compare_value(1));
     end
   endtask : body

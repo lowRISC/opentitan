@@ -93,64 +93,12 @@
       tests: ["clkmgr_trans"]
     }
     {
-      name: extclk
-      desc: '''
-            Tests the functionality of enabling external clocks.
-
-            - External clock is enabled if the `lc_clk_byp_req_i` input from
-              `lc_ctrl` is `lc_ctrl_pkg::On`.
-            - External clock is also be enabled when CSR `extclk_ctrl.sel` is
-              set to
-              `lc_ctrl_pkg::On` and the `lc_dtl_en_i` input from `lc_ctrl` is
-              `lc_ctrl_pkg::On`.
-            - Notice writes to the `extclk_ctrl.sel` register are ignored unless
-              the CSR `extclk_ctrl_regwen` is 1.
-            - A successful switch to external clocks due to `lc_clk_byl_req_i`
-              will cause the clkmgr to undo a divide by 2 for io_div4 and
-              io_div2 clocks except when `(scanmode_i == prim_mubi_pkg::MuBi4True)`.
-            - A software triggered switch to external clock will undo divides
-              by 2 if `extclk_ctrl.hi_speed_sel` is set to `prim_mubi_pkg::MuBi4True`.
-
-            **Stimulus**:
-            - CSR writes to `extclk_ctrl` and `extclk_ctrl_regwen`.
-            - Setting `lc_hw_debug_en_i`, `lc_clk_byp_req_i`, and the handshake to
-              ast via `ast_clk_byp_req_o` and `ast_clk_byp_ack_i`.
-            - Setting `scanmode_i`.
-
-            **Checks**:
-            Clock divider checks are done with SVA assertions.
-            - When the external clock is selected (and not defeated by
-              `scanmode_i` for scoreboard checks):
-              - The `clk_io_div2_powerup` output matches the `clk_io_powerup`
-                 output.
-              - The `clk_io_div4_powerup` output matches the `clk_io_powerup`
-                 output at half its frequency.
-            - When the external clock is not selected or division is defeated:
-              - The `clk_io_div2_powerup` output matches the `clk_io_powerup`
-                output at half its frequency.
-              - The `clk_io_div4_powerup` output matches the `clk_io_powerup`
-                 output at a quarter of its frequency.
-            LC / AST handshake:
-            - When the external clock functionality is triggered the
-              `ast_clk_byp_req_o` output pin is set to `lc_ctrl_pkg::On`.
-            - When `ast_clk_byp_ack_i` is set to `lc_ctrl_pkg::On` in response
-              to a corresponding request:
-              - The clock dividers are stepped down, unless defeated by
-                 `scanmode_i` being `lc_ctrl_pkg::On`.
-             - If the initial request was due to the assertion of the
-               `lc_clk_byp_req_i`, the `lc_clk_byp_ack_o` output is set to
-               `lc_ctrl_pkg::On`.
-            '''
-      stage: V2
-      tests: ["clkmgr_extclk"]
-    }
-    {
       name: clk_status
       desc: '''
             This tests the three `pwr_o.*_status` output ports, for the
             `io`, `main`, and `usb` clocks.
 
-            The `pwr_o.*_status` output must track the correspponding
+            The `pwr_o.*_status` output must track the corresponding
             `pwr_i.*_ip_clk_en` input.
 
             **Stimulus**:
@@ -217,7 +165,7 @@
             These counters compute the number of cycles of some clock relative
             to the aon timer. It should trigger a recoverable alert when there
             is no valid measurement when enabled, leading to a timeout. This is
-            separate from the `frequenty` testpoint to simplify the test checks.
+            separate from the `frequently` testpoint to simplify the test checks.
 
             **Stimulus**:
             - Randomly stop measured clocks to trigger a timeout.
@@ -270,7 +218,6 @@
       desc: '''This runs random sequences in succession.
 
             Randomly chooses from the following sequences:
-            - clkmgr_extclk_vseq,
             - clkmgr_frequency_timeout_vseq,
             - clkmgr_frequency_vseq,
             - clkmgr_peri_vseq,
@@ -308,17 +255,6 @@
 
             FIXME This is collected in an array, one instance for each clock,
             but the dvsim coverage flow doesn't yet support arrays.
-            '''
-    }
-    {
-      name: extclk_cg
-      desc: '''
-            Collects coverage for the external clock selection.
-
-            The external clock selection depends on the `extclk_ctrl` CSR
-            fields `sel` and `hi_speed_sel`, and the `lc_hw_debug_en_i`,
-            `lc_clk_byp_req_i`, and `scanmode_i` input pins. This covergroup
-            collects their cross.
             '''
     }
     {

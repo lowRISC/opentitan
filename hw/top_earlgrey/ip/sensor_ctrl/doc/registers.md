@@ -3,37 +3,37 @@
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/top_earlgrey/ip/sensor_ctrl/data/sensor_ctrl.hjson -->
 ## Summary
 
-| Name                                                              | Offset   |   Length | Description                                                             |
-|:------------------------------------------------------------------|:---------|---------:|:------------------------------------------------------------------------|
-| sensor_ctrl.[`INTR_STATE`](#intr_state)                           | 0x0      |        4 | Interrupt State Register                                                |
-| sensor_ctrl.[`INTR_ENABLE`](#intr_enable)                         | 0x4      |        4 | Interrupt Enable Register                                               |
-| sensor_ctrl.[`INTR_TEST`](#intr_test)                             | 0x8      |        4 | Interrupt Test Register                                                 |
-| sensor_ctrl.[`ALERT_TEST`](#alert_test)                           | 0xc      |        4 | Alert Test Register                                                     |
-| sensor_ctrl.[`CFG_REGWEN`](#cfg_regwen)                           | 0x10     |        4 | Controls the configurability of !!FATAL_ALERT_EN register.              |
-| sensor_ctrl.[`ALERT_TRIG`](#alert_trig)                           | 0x14     |        4 | Alert trigger test                                                      |
-| sensor_ctrl.[`ALERT_EN_0`](#alert_en)                             | 0x18     |        4 | Each multibit value enables a corresponding alert.                      |
-| sensor_ctrl.[`ALERT_EN_1`](#alert_en)                             | 0x1c     |        4 | Each multibit value enables a corresponding alert.                      |
-| sensor_ctrl.[`ALERT_EN_2`](#alert_en)                             | 0x20     |        4 | Each multibit value enables a corresponding alert.                      |
-| sensor_ctrl.[`ALERT_EN_3`](#alert_en)                             | 0x24     |        4 | Each multibit value enables a corresponding alert.                      |
-| sensor_ctrl.[`ALERT_EN_4`](#alert_en)                             | 0x28     |        4 | Each multibit value enables a corresponding alert.                      |
-| sensor_ctrl.[`ALERT_EN_5`](#alert_en)                             | 0x2c     |        4 | Each multibit value enables a corresponding alert.                      |
-| sensor_ctrl.[`ALERT_EN_6`](#alert_en)                             | 0x30     |        4 | Each multibit value enables a corresponding alert.                      |
-| sensor_ctrl.[`ALERT_EN_7`](#alert_en)                             | 0x34     |        4 | Each multibit value enables a corresponding alert.                      |
-| sensor_ctrl.[`ALERT_EN_8`](#alert_en)                             | 0x38     |        4 | Each multibit value enables a corresponding alert.                      |
-| sensor_ctrl.[`ALERT_EN_9`](#alert_en)                             | 0x3c     |        4 | Each multibit value enables a corresponding alert.                      |
-| sensor_ctrl.[`ALERT_EN_10`](#alert_en)                            | 0x40     |        4 | Each multibit value enables a corresponding alert.                      |
-| sensor_ctrl.[`FATAL_ALERT_EN`](#fatal_alert_en)                   | 0x44     |        4 | Each bit marks a corresponding alert as fatal or recoverable.           |
-| sensor_ctrl.[`RECOV_ALERT`](#recov_alert)                         | 0x48     |        4 | Each bit represents a recoverable alert that has been triggered by AST. |
-| sensor_ctrl.[`FATAL_ALERT`](#fatal_alert)                         | 0x4c     |        4 | Each bit represents a fatal alert that has been triggered by AST.       |
-| sensor_ctrl.[`STATUS`](#status)                                   | 0x50     |        4 | Status readback for ast                                                 |
-| sensor_ctrl.[`MANUAL_PAD_ATTR_REGWEN_0`](#manual_pad_attr_regwen) | 0x54     |        4 | Register write enable for attributes of manual pads                     |
-| sensor_ctrl.[`MANUAL_PAD_ATTR_REGWEN_1`](#manual_pad_attr_regwen) | 0x58     |        4 | Register write enable for attributes of manual pads                     |
-| sensor_ctrl.[`MANUAL_PAD_ATTR_REGWEN_2`](#manual_pad_attr_regwen) | 0x5c     |        4 | Register write enable for attributes of manual pads                     |
-| sensor_ctrl.[`MANUAL_PAD_ATTR_REGWEN_3`](#manual_pad_attr_regwen) | 0x60     |        4 | Register write enable for attributes of manual pads                     |
-| sensor_ctrl.[`MANUAL_PAD_ATTR_0`](#manual_pad_attr)               | 0x64     |        4 | Attributes of manual pads.                                              |
-| sensor_ctrl.[`MANUAL_PAD_ATTR_1`](#manual_pad_attr)               | 0x68     |        4 | Attributes of manual pads.                                              |
-| sensor_ctrl.[`MANUAL_PAD_ATTR_2`](#manual_pad_attr)               | 0x6c     |        4 | Attributes of manual pads.                                              |
-| sensor_ctrl.[`MANUAL_PAD_ATTR_3`](#manual_pad_attr)               | 0x70     |        4 | Attributes of manual pads.                                              |
+| Name                                                              | Offset   |   Length | Description                                                                   |
+|:------------------------------------------------------------------|:---------|---------:|:------------------------------------------------------------------------------|
+| sensor_ctrl.[`INTR_STATE`](#intr_state)                           | 0x0      |        4 | Interrupt State Register                                                      |
+| sensor_ctrl.[`INTR_ENABLE`](#intr_enable)                         | 0x4      |        4 | Interrupt Enable Register                                                     |
+| sensor_ctrl.[`INTR_TEST`](#intr_test)                             | 0x8      |        4 | Interrupt Test Register                                                       |
+| sensor_ctrl.[`ALERT_TEST`](#alert_test)                           | 0xc      |        4 | Alert Test Register                                                           |
+| sensor_ctrl.[`CFG_REGWEN`](#cfg_regwen)                           | 0x10     |        4 | Controls the configurability of [`FATAL_ALERT_EN`](#fatal_alert_en) register. |
+| sensor_ctrl.[`ALERT_TRIG`](#alert_trig)                           | 0x14     |        4 | Alert trigger test                                                            |
+| sensor_ctrl.[`ALERT_EN_0`](#alert_en)                             | 0x18     |        4 | Each multibit value enables a corresponding alert.                            |
+| sensor_ctrl.[`ALERT_EN_1`](#alert_en)                             | 0x1c     |        4 | Each multibit value enables a corresponding alert.                            |
+| sensor_ctrl.[`ALERT_EN_2`](#alert_en)                             | 0x20     |        4 | Each multibit value enables a corresponding alert.                            |
+| sensor_ctrl.[`ALERT_EN_3`](#alert_en)                             | 0x24     |        4 | Each multibit value enables a corresponding alert.                            |
+| sensor_ctrl.[`ALERT_EN_4`](#alert_en)                             | 0x28     |        4 | Each multibit value enables a corresponding alert.                            |
+| sensor_ctrl.[`ALERT_EN_5`](#alert_en)                             | 0x2c     |        4 | Each multibit value enables a corresponding alert.                            |
+| sensor_ctrl.[`ALERT_EN_6`](#alert_en)                             | 0x30     |        4 | Each multibit value enables a corresponding alert.                            |
+| sensor_ctrl.[`ALERT_EN_7`](#alert_en)                             | 0x34     |        4 | Each multibit value enables a corresponding alert.                            |
+| sensor_ctrl.[`ALERT_EN_8`](#alert_en)                             | 0x38     |        4 | Each multibit value enables a corresponding alert.                            |
+| sensor_ctrl.[`ALERT_EN_9`](#alert_en)                             | 0x3c     |        4 | Each multibit value enables a corresponding alert.                            |
+| sensor_ctrl.[`ALERT_EN_10`](#alert_en)                            | 0x40     |        4 | Each multibit value enables a corresponding alert.                            |
+| sensor_ctrl.[`FATAL_ALERT_EN`](#fatal_alert_en)                   | 0x44     |        4 | Each bit marks a corresponding alert as fatal or recoverable.                 |
+| sensor_ctrl.[`RECOV_ALERT`](#recov_alert)                         | 0x48     |        4 | Each bit represents a recoverable alert that has been triggered by AST.       |
+| sensor_ctrl.[`FATAL_ALERT`](#fatal_alert)                         | 0x4c     |        4 | Each bit represents a fatal alert that has been triggered by AST.             |
+| sensor_ctrl.[`STATUS`](#status)                                   | 0x50     |        4 | Status readback for ast                                                       |
+| sensor_ctrl.[`MANUAL_PAD_ATTR_REGWEN_0`](#manual_pad_attr_regwen) | 0x54     |        4 | Register write enable for attributes of manual pads                           |
+| sensor_ctrl.[`MANUAL_PAD_ATTR_REGWEN_1`](#manual_pad_attr_regwen) | 0x58     |        4 | Register write enable for attributes of manual pads                           |
+| sensor_ctrl.[`MANUAL_PAD_ATTR_REGWEN_2`](#manual_pad_attr_regwen) | 0x5c     |        4 | Register write enable for attributes of manual pads                           |
+| sensor_ctrl.[`MANUAL_PAD_ATTR_REGWEN_3`](#manual_pad_attr_regwen) | 0x60     |        4 | Register write enable for attributes of manual pads                           |
+| sensor_ctrl.[`MANUAL_PAD_ATTR_0`](#manual_pad_attr)               | 0x64     |        4 | Attributes of manual pads.                                                    |
+| sensor_ctrl.[`MANUAL_PAD_ATTR_1`](#manual_pad_attr)               | 0x68     |        4 | Attributes of manual pads.                                                    |
+| sensor_ctrl.[`MANUAL_PAD_ATTR_2`](#manual_pad_attr)               | 0x6c     |        4 | Attributes of manual pads.                                                    |
+| sensor_ctrl.[`MANUAL_PAD_ATTR_3`](#manual_pad_attr)               | 0x70     |        4 | Attributes of manual pads.                                                    |
 
 ## INTR_STATE
 Interrupt State Register

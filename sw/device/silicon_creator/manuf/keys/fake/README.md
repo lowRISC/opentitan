@@ -33,15 +33,35 @@ $ openssl ec -in sk.pem -text -noout
 
 To generate a Root CA certificate using the earlier generated private EC key,
 you can use the CSR (Certificate Signing Request) configuration file checked in
-to this directory (`ca.conf`) as in input to the following OpenSSL commands:
+to this repo (`dice_ca.conf` or `ext_ca.conf`) as in input to the following
+OpenSSL commands:
 ```sh
 # Generate the CSR:
-$ openssl req -new -key sk.pem -out ca.csr -config ca.conf
+$ openssl req -new -key sk.pem -out dice_ca.csr -config ../dice_ca.conf
 
 # Generate the X.509 certificate in PEM format:
-$ openssl x509 -req -in ca.csr -signkey sk.pem -out ca.pem -days 3650 \
-    -extfile ca.conf -extensions v3_ca
+$ openssl x509 -req -in dice_ca.csr -signkey sk.pem -out dice_ca.pem \
+    -days 3650 -extfile ../dice_ca.conf -extensions v3_ca
 
 # Examine the generated certificate:
-$ openssl x509 -in ca.pem -text
+$ openssl x509 -in dice_ca.pem -text
+```
+
+# Generating the RMA unlock token encryption keypair with OpenSSL
+
+The RMA unlock token encryption keypair is an RSA-3072 key used to encrypt the
+RMA unlock token generated during provisioning.
+
+The fake keys (used for testing) in this subdirectory were generated with `openssl`.
+
+```
+### Generate the RSA keypair:
+$ openssl genrsa -out rma_unlock_enc_rsa3072.pem 3072
+
+### Extract the public key to a separate file:
+$ openssl rsa -in rma_unlock_enc_rsa3072.pem -pubout -out rma_unlock_enc_rsa3072.pub.pem
+
+### Convert the PEM files to DER files:
+$ openssl rsa -in rma_unlock_enc_rsa3072.pem -outform der -out rma_unlock_enc_rsa3072..der
+$ openssl rsa -pubin -in rma_unlock_enc_rsa3072.pub.pem -outform der -out rma_unlock_enc_rsa3072.pub.der
 ```

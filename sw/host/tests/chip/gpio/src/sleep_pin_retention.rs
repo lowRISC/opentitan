@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{ensure, Result};
+use anyhow::{Result, ensure};
 use clap::Parser;
 use std::time::Duration;
 
@@ -50,7 +50,7 @@ fn sleep_pin_retention_test(opts: &Opts, transport: &TransportWrapper) -> Result
         transport.gpio_pin(pin)?.set_mode(PinMode::Input)?;
     }
 
-    let vec = UartConsole::wait_for(&*uart, r"Num Rounds: +([0-9]+)\r\n", opts.timeout)?;
+    let vec = UartConsole::wait_for(&*uart, r"Num Rounds: +([0-9]+)", opts.timeout)?;
     let num_rounds: i32 = vec[1].parse()?;
     log::info!("Doing {:?} rounds of testing", num_rounds);
 

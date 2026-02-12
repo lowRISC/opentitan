@@ -5,6 +5,42 @@
 //
 // The ROM checker FSM module
 //
+// This is an FSM that controls the interaction with KMAC to calculate a digest from the ROM
+// contents.
+//
+// The digest_i and exp_digest_i ports are wide signals for the computed digest from KMAC and the
+// expected digest (which has been read from the top of ROM). Both digests are stored in CSR
+// registers.
+//
+// The digest_o port gives the computed digest from KMAC and the value is valid if digest_vld_o is
+// true. This value will be written into the DIGEST register.
+//
+// Similarly, the exp_digest_o port gives a 32-bit word of the expected digest with index
+// exp_digest_idx_o. The values are valid if exp_digest_vld_o is true.
+//
+// The pwrmgr_data_o port gives the data that should be sent to pwrmgr. This consists of a "done"
+// field (showing that the digest has been computed and checked against the expected value) and a
+// "good" field (which shows that the two digests matched).
+//
+// The keymgr_data_o port gives the data that should be sent to keymgr. This is the computed hash
+// (from digest_i) with a valid signal to show the data field is valid.
+//
+// The kmac_rom_* ports are sending ROM data to KMAC. The kmac_rom_rdy_i / kmac_rom_vld_o signals
+// give a ready/valid interface to control the handshake that passes ROM data to KMAC to be hashed.
+// The kmac_rom_last_o signal is high when the word being offered is the last word of the input.
+//
+// The other kmac_* ports are for the digest coming back from KMAC. The kmac_digest_i signal is the
+// computed digest, which is valid if kmac_done_i is true unless kmac_err_i is true, in which case
+// the KMAC block encountered an error when computing a digest.
+//
+// Immediately after reset, the FSM is in control of ROM requests. The rom_select_bus_o signal
+// becomes MuBi4True when we have read the entire contents and the mux should instead give access to
+// the bus. Until that happens, the FSM makes requests by sending an address in rom_addr_o and
+// requesting the read with rom_req_o.
+//
+// Raw words from ROM appear in rom_data_i (to be incorporated into the expected digest).
+//
+// The alert_o signal goes high if an error has been seen, which should cause a fatal alert.
 
 `include "prim_assert.sv"
 
@@ -33,15 +69,15 @@ module rom_ctrl_fsm
   output logic [vbits(TopCount)-1:0] exp_digest_idx_o,
 
   // To power manager and key manager
-  output pwrmgr_data_t pwrmgr_data_o,
-  output keymgr_data_t keymgr_data_o,
+  output pwrmgr_data_t               pwrmgr_data_o,
+  output keymgr_data_t               keymgr_data_o,
 
   // To KMAC (ROM data)
   input logic                        kmac_rom_rdy_i,
   output logic                       kmac_rom_vld_o,
   output logic                       kmac_rom_last_o,
 
-  // To KMAC (digest data)
+  // From KMAC (digest data)
   input logic                        kmac_done_i,
   input logic [TopCount*32-1:0]      kmac_digest_i,
   input logic                        kmac_err_i,
@@ -65,7 +101,7 @@ module rom_ctrl_fsm
   localparam int TAW = vbits(TopCount);
 
   localparam int unsigned TopStartAddrInt = RomDepth - TopCount;
-  localparam bit [AW-1:0] TopStartAddr    = TopStartAddrInt[AW-1:0];
+  localparam bit [AW-1:0] TopStartAddr    = TopStartAddrInt[0 +: AW];
 
   // The counter / address generator
   logic          counter_done;
@@ -237,16 +273,18 @@ module rom_ctrl_fsm
 
   // The top bits of rel_addr_wide should always be zero if we're reading the top bits (because TAW
   // bits should be enough to encode the difference between counter_data_addr and TopStartAddr)
-  `ASSERT(RelAddrWide_A, exp_digest_vld_o |-> ~|rel_addr_wide[AW-1:TAW])
+  //
+  // Consider them unused and add an assertion to check that the are indeed zero.
   logic unused_top_rel_addr_wide;
   assign unused_top_rel_addr_wide = |rel_addr_wide[AW-1:TAW];
+  `ASSERT(RelAddrWide_A, exp_digest_vld_o |-> !unused_top_rel_addr_wide)
 
   assign exp_digest_o = rom_data_i;
   assign exp_digest_vld_o = reading_top;
   assign exp_digest_idx_o = rel_addr;
 
   // The 'done' signal for pwrmgr is asserted once we get into the Done state. The 'good' signal
-  // compes directly from the checker.
+  // comes directly from the checker.
   assign pwrmgr_data_o = '{done: in_state_done, good: checker_good};
 
   // Pass the digest all-at-once to the keymgr. The loose check means that glitches will add
@@ -314,6 +352,7 @@ module rom_ctrl_fsm
 
   assign alert_o = fsm_alert | checker_alert | unexpected_counter_change;
 
-  `ASSERT(CounterLntImpliesKmacRomVldO_A, counter_lnt -> kmac_rom_vld_o)
+  `ASSERT(CounterLntImpliesKmacRomVldO_A,
+          state_q == ReadingLow && counter_lnt -> kmac_rom_vld_o)
 
 endmodule

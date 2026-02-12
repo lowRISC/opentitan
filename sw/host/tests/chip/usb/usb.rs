@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, ensure, Context, Result};
+use anyhow::{Context, Result, bail, ensure};
 use clap::Parser;
 use rusb::UsbContext;
 
@@ -108,10 +108,12 @@ impl UsbOpts {
                     Err(e) => {
                         // Only warned if we haven't done so before.
                         if last_seen.is_none() {
-                            log::warn!("Could not read device descriptor for device at bus={} address={}: {}",
+                            log::warn!(
+                                "Could not read device descriptor for device at bus={} address={}: {}",
                                 device.bus_number(),
                                 device.address(),
-                                e);
+                                e
+                            );
                         }
                         failed_dev.insert(dev_loc, Instant::now());
                         continue;

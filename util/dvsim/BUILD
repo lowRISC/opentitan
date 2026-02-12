@@ -7,6 +7,14 @@ load("@ot_python_deps//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "doc_files",
+    srcs = glob([
+        "**/*.md",
+        "**/*.png",
+    ]),
+)
+
 py_library(
     name = "utils",
     srcs = ["utils.py"],

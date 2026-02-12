@@ -18,8 +18,10 @@ filesets:
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:tlul
       - lowrisc:ip:otp_ctrl_pkg
+      - lowrisc:ip:otp_macro_pkg
       - lowrisc:ip:kmac_pkg
       - lowrisc:ip:rv_dm
+      - lowrisc:virtual_constants:lc_ctrl_token_pkg
     files:
       - rtl/lc_ctrl_regs_reg_top.sv
       - rtl/lc_ctrl_dmi_reg_top.sv

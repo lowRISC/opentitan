@@ -8,10 +8,8 @@
     clk_freqs:
     {
       aon: 62500000
-      io_div4: 250000000
+      io: 250000000
       main: 1000000000
-      io: 1000000000
-      io_div2: 500000000
     }
     reqs:
     {
@@ -43,12 +41,14 @@
           width: "1"
           module: aon_timer_aon
           desc: Watchdog reset request.
+          enabled_after_reset: false
         }
         {
           name: rst_req_external
           width: "1"
           module: soc_proxy
           desc: External reset request
+          enabled_after_reset: true
         }
       ]
     }
@@ -60,9 +60,9 @@
     num_rstreqs: 2
     sw_rsts:
     {
-      spi_device: io_div4
-      spi_host0: io_div4
-      i2c0: io_div4
+      spi_device: io
+      spi_host0: io
+      i2c0: io
     }
     output_rsts:
     [
@@ -109,34 +109,6 @@
         clock: io
       }
       {
-        name: por_io_div2
-        gen: true
-        type: top
-        domains:
-        [
-          Aon
-        ]
-        shadowed: false
-        sw: false
-        path: rstmgr_aon_resets.rst_por_io_div2_n
-        parent: por_aon
-        clock: io_div2
-      }
-      {
-        name: por_io_div4
-        gen: true
-        type: top
-        domains:
-        [
-          Aon
-        ]
-        shadowed: false
-        sw: false
-        path: rstmgr_aon_resets.rst_por_io_div4_n
-        parent: por_aon
-        clock: io_div4
-      }
-      {
         name: lc
         gen: true
         type: top
@@ -171,42 +143,14 @@
         type: top
         domains:
         [
-          Aon
-        ]
-        shadowed: false
-        sw: false
-        path: rstmgr_aon_resets.rst_lc_io_n
-        parent: lc_src
-        clock: io
-      }
-      {
-        name: lc_io_div2
-        gen: true
-        type: top
-        domains:
-        [
-          Aon
-        ]
-        shadowed: false
-        sw: false
-        path: rstmgr_aon_resets.rst_lc_io_div2_n
-        parent: lc_src
-        clock: io_div2
-      }
-      {
-        name: lc_io_div4
-        gen: true
-        type: top
-        domains:
-        [
           "0"
           Aon
         ]
         shadowed: true
         sw: false
-        path: rstmgr_aon_resets.rst_lc_io_div4_n
+        path: rstmgr_aon_resets.rst_lc_io_n
         parent: lc_src
-        clock: io_div4
+        clock: io
       }
       {
         name: sys
@@ -223,20 +167,6 @@
         clock: main
       }
       {
-        name: sys_io_div4
-        gen: true
-        type: top
-        domains:
-        [
-          Aon
-        ]
-        shadowed: false
-        sw: false
-        path: rstmgr_aon_resets.rst_sys_io_div4_n
-        parent: sys_src
-        clock: io_div4
-      }
-      {
         name: spi_device
         gen: true
         type: top
@@ -248,7 +178,7 @@
         sw: true
         path: rstmgr_aon_resets.rst_spi_device_n
         parent: lc_src
-        clock: io_div4
+        clock: io
       }
       {
         name: spi_host0
@@ -262,7 +192,7 @@
         sw: true
         path: rstmgr_aon_resets.rst_spi_host0_n
         parent: lc_src
-        clock: io_div4
+        clock: io
       }
       {
         name: i2c0
@@ -276,7 +206,7 @@
         sw: true
         path: rstmgr_aon_resets.rst_i2c0_n
         parent: lc_src
-        clock: io_div4
+        clock: io
       }
     ]
     leaf_rsts:
@@ -310,34 +240,6 @@
         clock: io
       }
       {
-        name: por_io_div2
-        gen: true
-        type: top
-        domains:
-        [
-          Aon
-        ]
-        shadowed: false
-        sw: false
-        path: rstmgr_aon_resets.rst_por_io_div2_n
-        parent: por_aon
-        clock: io_div2
-      }
-      {
-        name: por_io_div4
-        gen: true
-        type: top
-        domains:
-        [
-          Aon
-        ]
-        shadowed: false
-        sw: false
-        path: rstmgr_aon_resets.rst_por_io_div4_n
-        parent: por_aon
-        clock: io_div4
-      }
-      {
         name: lc
         gen: true
         type: top
@@ -372,42 +274,14 @@
         type: top
         domains:
         [
-          Aon
-        ]
-        shadowed: false
-        sw: false
-        path: rstmgr_aon_resets.rst_lc_io_n
-        parent: lc_src
-        clock: io
-      }
-      {
-        name: lc_io_div2
-        gen: true
-        type: top
-        domains:
-        [
-          Aon
-        ]
-        shadowed: false
-        sw: false
-        path: rstmgr_aon_resets.rst_lc_io_div2_n
-        parent: lc_src
-        clock: io_div2
-      }
-      {
-        name: lc_io_div4
-        gen: true
-        type: top
-        domains:
-        [
           "0"
           Aon
         ]
         shadowed: true
         sw: false
-        path: rstmgr_aon_resets.rst_lc_io_div4_n
+        path: rstmgr_aon_resets.rst_lc_io_n
         parent: lc_src
-        clock: io_div4
+        clock: io
       }
       {
         name: sys
@@ -424,20 +298,6 @@
         clock: main
       }
       {
-        name: sys_io_div4
-        gen: true
-        type: top
-        domains:
-        [
-          Aon
-        ]
-        shadowed: false
-        sw: false
-        path: rstmgr_aon_resets.rst_sys_io_div4_n
-        parent: sys_src
-        clock: io_div4
-      }
-      {
         name: spi_device
         gen: true
         type: top
@@ -449,7 +309,7 @@
         sw: true
         path: rstmgr_aon_resets.rst_spi_device_n
         parent: lc_src
-        clock: io_div4
+        clock: io
       }
       {
         name: spi_host0
@@ -463,7 +323,7 @@
         sw: true
         path: rstmgr_aon_resets.rst_spi_host0_n
         parent: lc_src
-        clock: io_div4
+        clock: io
       }
       {
         name: i2c0
@@ -477,13 +337,14 @@
         sw: true
         path: rstmgr_aon_resets.rst_i2c0_n
         parent: lc_src
-        clock: io_div4
+        clock: io
       }
     ]
-    rst_ni: lc_io_div4
+    rst_ni: lc_io
     export_rsts: {}
     with_alert_handler: true
     topname: darjeeling
     uniquified_modules: {}
+    module_instance_name: rstmgr
   }
 }

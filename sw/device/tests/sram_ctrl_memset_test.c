@@ -8,6 +8,7 @@
 //! The test currently only checks the retention SRAM so that it can be run out
 //! of executable main SRAM on silicon.
 
+#include "hw/top/dt/sram_ctrl.h"  // Generated
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
@@ -17,8 +18,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "sram_ctrl_regs.h"  // Generated.
+#include "hw/top/sram_ctrl_regs.h"  // Generated.
 
 // Define some amount of data we should leave in SRAM to check it gets wiped.
 enum {
@@ -85,14 +85,12 @@ static void init_sram(dif_sram_ctrl_t sram_ctrl) {
 bool test_main(void) {
   // Initialize SRAM_CTRL hardware.
   dif_sram_ctrl_t sram_ctrl_ret;
-  CHECK_DIF_OK(dif_sram_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR),
-      &sram_ctrl_ret));
+  CHECK_DIF_OK(dif_sram_ctrl_init_from_dt(kDtSramCtrlRetAon, &sram_ctrl_ret));
 
   init_sram(sram_ctrl_ret);
 
   uintptr_t sram_ret_buffer_addr =
-      TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR +
+      dt_sram_ctrl_memory_base(kDtSramCtrlRetAon, kDtSramCtrlMemoryRam) +
       offsetof(retention_sram_t, owner);
 
   mmio_region_t sram_region_ret_addr =

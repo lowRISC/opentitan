@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::app::NoProgressBar;
-use crate::io::eeprom::{AddressMode, Mode, Transaction, MODE_111, MODE_112, MODE_114};
+use crate::io::eeprom::{AddressMode, MODE_111, MODE_112, MODE_114, Mode, Transaction};
 use crate::io::spi::Target;
 use crate::spiflash::sfdp::{
     BlockEraseSize, FastReadParam, SectorErase, Sfdp, SupportedAddressModes,
 };
 use crate::transport::ProgressIndicator;
-use anyhow::{ensure, Result};
+use anyhow::{Result, ensure};
 use clap::ValueEnum;
 use std::convert::TryFrom;
 use thiserror::Error;
@@ -434,7 +434,7 @@ impl SpiFlash {
             return Ok(self.erase.last().unwrap());
         }
         for e in self.erase.iter() {
-            if address % e.size == 0 && length >= e.size {
+            if address.is_multiple_of(e.size) && length >= e.size {
                 return Ok(e);
             }
         }
@@ -452,10 +452,10 @@ impl SpiFlash {
         progress: &dyn ProgressIndicator,
     ) -> Result<&Self> {
         let min_erase_size = self.erase.last().unwrap().size;
-        if address % min_erase_size != 0 {
+        if !address.is_multiple_of(min_erase_size) {
             return Err(Error::BadEraseAddress(address, min_erase_size).into());
         }
-        if length % min_erase_size != 0 {
+        if !length.is_multiple_of(min_erase_size) {
             return Err(Error::BadEraseLength(length, min_erase_size).into());
         }
         progress.new_stage("", length as usize);

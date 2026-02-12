@@ -37,8 +37,10 @@ static int crypto_compare(const unsigned char *cipher_text,
                           const unsigned char *iv,
                           const unsigned char *plain_text, int len,
                           const unsigned char *key, int key_len,
-                          crypto_mode_t mode) {
+                          crypto_mode_t mode, const unsigned char *aad,
+                          int aad_len, const unsigned char *tag, int tag_len) {
   const unsigned char *data_in;
+  const unsigned char *aad_in;
   int ret_len;
   int ret_len_exp = len;
 
@@ -50,8 +52,17 @@ static int crypto_compare(const unsigned char *cipher_text,
     return 1;
   }
   data_in = plain_text;
+  aad_in = aad;
 
-  ret_len = crypto_encrypt(data_out, iv, data_in, len, key, key_len, mode);
+  unsigned char *tag_out =
+      (unsigned char *)malloc(tag_len * sizeof(unsigned char));
+  if (tag_out == NULL) {
+    printf("ERROR: malloc() failed\n");
+    return 1;
+  }
+
+  ret_len = crypto_encrypt(data_out, iv, data_in, len, key, key_len, mode,
+                           aad_in, aad_len, tag_out, tag_len);
   if (ret_len != ret_len_exp) {
     printf("ERROR: ret_len = %i, expected %i. Aborting now\n", ret_len,
            ret_len_exp);
@@ -76,6 +87,22 @@ static int crypto_compare(const unsigned char *cipher_text,
     }
   }
 
+  if (mode == kCryptoAesGcm) {
+    for (int j = 0; j < tag_len / 16; ++j) {
+      if (!check_block(&tag_out[j * 16], &tag[j * 16], 1)) {
+        printf("SUCCESS: %s tag output matches NIST example tag\n", crypto_lib);
+      } else {
+        printf("ERROR: %s tag output does not match NIST example tag\n",
+               crypto_lib);
+        printf("Tag output: \t");
+        aes_print_block(&tag_out[j * 16], 16);
+        printf("Expected tag: \t");
+        aes_print_block(&tag[j * 16], 16);
+        return 1;
+      }
+    }
+  }
+
   // Dec
   unsigned char *data_in_dec =
       (unsigned char *)malloc(ret_len_exp * sizeof(unsigned char));
@@ -86,9 +113,11 @@ static int crypto_compare(const unsigned char *cipher_text,
   for (int j = 0; j < ret_len; ++j) {
     data_in_dec[j] = data_out[j];
   }
+  unsigned char *tag_in;
+  tag_in = tag_out;
 
-  ret_len =
-      crypto_decrypt(data_out, iv, data_in_dec, ret_len, key, key_len, mode);
+  ret_len = crypto_decrypt(data_out, iv, data_in_dec, ret_len, key, key_len,
+                           mode, aad_in, aad_len, tag_in, tag_len);
   if (ret_len != len) {
     printf("ERROR: ret_len = %i, expected %i. Aborting now\n", ret_len, len);
     return 1;
@@ -119,12 +148,16 @@ static int crypto_compare(const unsigned char *cipher_text,
 }
 
 int main(int argc, char *argv[]) {
-  const int len = 64;
+  int len = 64;
   int key_len;
+  int tag_len = 0;
+  int aad_len = 0;
   crypto_mode_t mode;
   const unsigned char *iv;
   const unsigned char *key;
   const unsigned char *cipher_text;
+  const unsigned char *aad = NULL;
+  const unsigned char *tag = NULL;
 
   /////////
   // ECB //
@@ -151,7 +184,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (crypto_compare(cipher_text, iv, kAesModesPlainText, len, key, key_len,
-                       mode)) {
+                       mode, aad, aad_len, tag, tag_len)) {
       return 1;
     }
   }
@@ -181,7 +214,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (crypto_compare(cipher_text, iv, kAesModesPlainText, len, key, key_len,
-                       mode)) {
+                       mode, aad, aad_len, tag, tag_len)) {
       return 1;
     }
   }
@@ -212,7 +245,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (crypto_compare(cipher_text, iv, kAesModesPlainText, len, key, key_len,
-                       mode)) {
+                       mode, aad, aad_len, tag, tag_len)) {
       return 1;
     }
   }
@@ -242,7 +275,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (crypto_compare(cipher_text, iv, kAesModesPlainText, len, key, key_len,
-                       mode)) {
+                       mode, aad, aad_len, tag, tag_len)) {
       return 1;
     }
   }
@@ -272,7 +305,44 @@ int main(int argc, char *argv[]) {
     }
 
     if (crypto_compare(cipher_text, iv, kAesModesPlainText, len, key, key_len,
-                       mode)) {
+                       mode, aad, aad_len, tag, tag_len)) {
+      return 1;
+    }
+  }
+
+  /////////
+  // GCM //
+  /////////
+  iv = kAesModesIvGcm;
+  mode = kCryptoAesGcm;
+  len = 60;
+  tag_len = 16;
+  aad_len = 20;
+  aad = kAesModesAadGcm;
+
+  for (int i = 0; i < 3; ++i) {
+    if (i == 0) {
+      printf("GCM AES-128\n");
+      key_len = 16;
+      key = kAesModesGcmKey128;
+      cipher_text = kAesModesCipherTextGcm128;
+      tag = kAesModesTagGcm128;
+    } else if (i == 1) {
+      printf("GCM AES-192\n");
+      key_len = 24;
+      key = kAesModesGcmKey192;
+      cipher_text = kAesModesCipherTextGcm192;
+      tag = kAesModesTagGcm192;
+    } else {  // i==2
+      printf("GCM AES-256\n");
+      key_len = 32;
+      key = kAesModesGcmKey256;
+      cipher_text = kAesModesCipherTextGcm256;
+      tag = kAesModesTagGcm256;
+    }
+
+    if (crypto_compare(cipher_text, iv, kAesModesPlainTextGcm, len, key,
+                       key_len, mode, aad, aad_len, tag, tag_len)) {
       return 1;
     }
   }

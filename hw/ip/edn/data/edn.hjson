@@ -51,27 +51,30 @@
       width:   "1",
       package: "csrng_pkg",
       desc:    '''
-               EDN supports a signal CSRNG application interface.
+               EDN supports a single CSRNG application interface.
                ''',
     }
     { struct:  "edn",  // edn_req_t, edn_rsp_t
       type:    "req_rsp",
       name:    "edn",
       act:     "rsp",
-      width:   "8",
+      width:   "NumEndPoints",
       default: "'0",
       desc:    '''
-               The collection of peripheral ports supported by edn. The width (4)
-               indicates the number of peripheral ports on a single instance.
-               Due to limitations in the parametrization of top-level interconnects
-               this value is not currently parameterizable.  However, the number
-               of peripheral ports may change in a future revision.
+               Every endpoint has its own peripheral port.
                ''',
       package: "edn_pkg",
     }
   ],
   // Keep the following parameters in line with the literal values defined in the corresponding registers below
   param_list: [
+    { name:    "NumEndPoints",
+      type:    "int unsigned",
+      default: "8",
+      desc:    "Number of endpoints",
+      local:   "true",
+      expose:  "true"
+    },
     { name:    "EdnBootInsCmdResval",
       type:    "logic [31:0]",
       default: "32'h901",
@@ -206,10 +209,12 @@
           name: "BOOT_REQ_MODE",
           mubi: true,
           desc: '''
-                Setting this field to kMultiBitBool4True will enable the feature where the EDN block
-                will automatically send a boot-time request to the CSRNG application interface.
-                The purpose of this feature is to request entropy as fast as possible after reset,
-                and during chip boot-time.
+                Setting this field to kMultiBitBool4True enables the boot-time request mode.
+                In this mode, EDN automatically sends a boot-time request to the CSRNG application interface.
+                The purpose of this mode is to request entropy as fast as possible after reset, and during chip boot time.
+
+                Note that this takes precedence over the AUTO_REQ_MODE field: If both fields are set, EDN enters boot-time request mode.
+                If none of the fields are set, EDN enters Software Port Mode upon enabling.
                 '''
           // keep this in line with the resval parameters above
           resval: false
@@ -218,16 +223,15 @@
           name: "AUTO_REQ_MODE",
           mubi: true,
           desc: '''
-                Setting this field to kMultiBitBool4True will enable the EDN block to automatically
-                send another request to CSRNG application interface. It is assumed that a CSRNG
-                instantiate command will be issued using the !!SW_CMD_REQ register interface.
-                When this command has an command ack returned from CSRNG, a
-                new generate command will be send out again without software intervention. It is
-                expected that the generate command will be sent repeatedly so that a continuous
-                supply of entropy can be delivered to the endpoints. Reseed commands will be sent
-                on a programmable basic between generate commands.
-                The !!GENERATE_CMD, !!RESEED_CMD, and !!MAX_NUM_REQS_BETWEEN_RESEEDS registers must
-                set up before the !!SW_CMD_REQ register command is issued.
+                Setting this field to kMultiBitBool4True enables auto request mode.
+                In this mode, EDN automatically sends `generate` and `reseed` command requests to the CSRNG application interface.
+                The purpose of this mode is to continuously deliver entropy to endpoints without firmware intervention.
+
+                For this to work, firmware has to 1) configure the !!GENERATE_CMD, !!RESEED_CMD, and !!MAX_NUM_REQS_BETWEEN_RESEEDS registers, and 2) to issue the first `instantiate` command via the !!SW_CMD_REQ register.
+                Once this command has been acknowledged by CSRNG, the first `generate` command is sent out automatically, and a `reseed` command is sent after every MAX_NUM_REQS_BETWEEN_RESEEDS number of `generate` commands.
+
+                Note that the BOOT_REQ_MODE field takes precedence over this field: If both fields are set, EDN enters boot-time request mode.
+                If none of the fields are set, EDN enters Software Port Mode upon enabling.
                 '''
           // keep this in line with the resval parameters above
           resval: false
@@ -256,7 +260,12 @@
         { bits: "31:0",
           name: "BOOT_INS_CMD",
           desc: '''
-                This field is used as the value for Instantiate command at boot time.
+                This field is used as the value for the `instantiate` command at boot time.
+
+                See [Command Header](../../csrng/doc/theory_of_operation.md#command-header) for the meaning of the individual bits.
+                Note that the hardware only supports a value of 0 for the `clen` field.
+                If `clen` has a different value, EDN will hang.
+                Fixing this requires disabling and restarting both EDN and CSRNG.
                 '''
          // keep this in line with the resval parameters above
          resval: 0x0000_0901
@@ -273,7 +282,12 @@
         { bits: "31:0",
           name: "BOOT_GEN_CMD",
           desc: '''
-                This field is used as the value for generate command at boot time.
+                This field is used as the value for the `generate` command at boot time.
+
+                See [Command Header](../../csrng/doc/theory_of_operation.md#command-header) for the meaning of the individual bits.
+                Note that the hardware only supports a value of 0 for the `clen` field.
+                If `clen` has a different value, EDN will hang.
+                Fixing this requires disabling and restarting both EDN and CSRNG.
                 '''
          // keep this in line with the resval parameters above
          resval: 0x00ff_f003
@@ -290,16 +304,13 @@
         { bits: "31:0",
           name: "SW_CMD_REQ",
           desc: '''
-                Any CSRNG action can be initiated by writing a CSRNG command to this
-                register. The application interface must wait for the "ack" to
-                return before issuing new commands. This interface is intended
-                to be controlled solely by software.
+                Any CSRNG action can be initiated by writing a CSRNG command to this register.
+                Before any write operation to this register, firmware must read !!SW_CMD_STS to check whether EDN is ready to receive a new command or the next word of a previously started command.
 
-                If !!CTRL.AUTO_REQ_MODE is set, only the first instantiate command has any
-                effect.  After that command has been processed, writes to this register
-                register will have no effect on operation.
-                Note that CSRNG command format details can be found
-                in the CSRNG documentation.
+                While !!CTRL.AUTO_REQ_MODE is set, only the first instantiate command has any effect.
+                After that command has been processed, writes to this register will have no effect on operation, until !!CTRL.AUTO_REQ_MODE is de-asserted and the state machine of EDN enters the `SwPortMode` state.
+
+                Refer to the [CSRNG documentation](../../csrng/doc/theory_of_operation.md#general-command-format) for details on the command format.
                 '''
         }
       ]
@@ -423,15 +434,13 @@
           name: "RESEED_CMD",
           desc: '''
                 Writing this register will fill a FIFO with up to 13 command words (32b words).
-                This FIFO will be used to automatically send out a reseed command to the CSRNG
-                application interface when in !!CTRL.AUTO_REQ_MODE. This command will be sent only after
-                the MAX_NUM_REQS_BETWEEN_RESEEDS counter value has reached zero.
+                When running in auto request mode, this FIFO is used to automatically send out a `reseed` command to the CSRNG application interface after every MAX_NUM_REQS_BETWEEN_RESEEDS number of `generate` commands.
 
-                If more than 13 entires are written to the FIFO, the design will automatically generate
-                a fatal alert.
+                See [General Command Format](../../csrng/doc/theory_of_operation.md#general-command-format) for details about the command format.
 
-                Note that CSRNG command format details can be found
-                in the CSRNG documentation.
+                Note that the number of additional data words provided must match the value of the `clen` field of the first word.
+                Otherwise, undefined behavior may result.
+                If more than 13 entries are written to the FIFO, they are ignored and EDN signals an `edn_fatal_err` interrupt as well as a fatal alert.
                 '''
         }
       ]
@@ -447,15 +456,14 @@
           name: "GENERATE_CMD",
           desc: '''
                 Writing this register will fill a FIFO with up to 13 command words (32b words).
-                This FIFO will be used to automatically send out a generate command to the CSRNG
-                appl interface when in !!CTRL.AUTO_REQ_MODE. This command will be sent only after
-                receiving a command ack from the previous command.
+                When running auto request mode, this FIFO is used to automatically send out `generate` commands to the CSRNG
+                application interface.
 
-                If more than 13 entires are written to the FIFO, the design will automatically generate
-                a fatal alert.
+                See [General Command Format](../../csrng/doc/theory_of_operation.md#general-command-format) for details about the command format.
 
-                Note that CSRNG command format details can be found
-                in the CSRNG documentation.
+                Note that the number of additional data words provided must match the value of the `clen` field of the first word.
+                Otherwise, undefined behavior may result.
+                If more than 13 entries are written to the FIFO, they are ignored and EDN signals an `edn_fatal_err` interrupt as well as a fatal alert.
                 '''
         }
       ]
@@ -469,11 +477,13 @@
         { bits: "31:0",
           name: "MAX_NUM_REQS_BETWEEN_RESEEDS",
           desc: '''
-                Setting this field will set the number of generate requests that can be made
-                to CSRNG before a reseed request is made. This value only has meaning when in
-                !!CTRL.AUTO_REQ_MODE. This register supports a maximum of 2^32 requests between reseeds.
-                This register will be used by a counter that counts down, triggering an
-                automatic reseed when it reaches zero.
+                Setting this field will set the number of `generate` command requests that are made
+                to CSRNG before a reseed request is made.
+                This value only has meaning when running in auto request mode.
+                This register supports a maximum of 2^32 `generate` requests between reseeds.
+                This register will be used by a counter that counts down, triggering an automatic `reseed` request when it reaches zero.
+
+                Note that this value must be chosen smaller than or equal to the value configured in the [`RESEED_INTERVAL` register of CSRNG](../../csrng/doc/registers.md#reseed-interval).
                 '''
         }
       ]
@@ -529,8 +539,7 @@
         { bits: "13",
           name: "CSRNG_ACK_ERR",
           desc: '''
-                This bit is set when the CSRNG returns an acknowledgement where the status
-                signal is high.
+                This bit is set when the CSRNG returns an acknowledgement where the status signal is non-zero.
                 Writing a zero resets this status bit.
                 '''
         }

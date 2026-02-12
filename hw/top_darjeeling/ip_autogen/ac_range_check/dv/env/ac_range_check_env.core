@@ -11,6 +11,7 @@ filesets:
       - lowrisc:dv:cip_lib
       - lowrisc:dv:dv_base_reg
       - lowrisc:dv:dv_lib
+      - lowrisc:darjeeling_ip:ac_range_check:0.1
     files:
       - ac_range_check_env_pkg.sv
       - ac_range_check_dut_cfg.sv: {is_include_file: true}
@@ -18,12 +19,18 @@ filesets:
       - ac_range_check_env_cfg.sv: {is_include_file: true}
       - ac_range_check_env_cov.sv: {is_include_file: true}
       - ac_range_check_virtual_sequencer.sv: {is_include_file: true}
+      - ac_range_check_predictor.sv: {is_include_file: true}
       - ac_range_check_scoreboard.sv: {is_include_file: true}
       - ac_range_check_env.sv: {is_include_file: true}
       - seq_lib/ac_range_check_vseq_list.sv: {is_include_file: true}
       - seq_lib/ac_range_check_base_vseq.sv: {is_include_file: true}
       - seq_lib/ac_range_check_common_vseq.sv: {is_include_file: true}
       - seq_lib/ac_range_check_smoke_vseq.sv: {is_include_file: true}
+      - seq_lib/ac_range_check_smoke_racl_vseq.sv: {is_include_file: true}
+      - seq_lib/ac_range_check_smoke_high_threshold_vseq.sv: {is_include_file: true}
+      - seq_lib/ac_range_check_bypass_vseq.sv: {is_include_file: true}
+      - seq_lib/ac_range_check_lock_range_vseq.sv: {is_include_file: true}
+      - seq_lib/ac_range_check_stress_all_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:
@@ -32,6 +39,7 @@ generate:
     parameters:
       name: ac_range_check
       ip_hjson: ../../data/ac_range_check.hjson
+    position: prepend
 
 targets:
   default:

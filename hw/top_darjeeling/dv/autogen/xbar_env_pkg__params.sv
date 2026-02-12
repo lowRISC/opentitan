@@ -26,10 +26,10 @@ tl_device_t xbar_devices[$] = '{
         '{32'h211e1000, 32'h211e107f}
     }},
     '{"soc_proxy__core", '{
-        '{32'h22030000, 32'h2203000f}
+        '{32'h22030000, 32'h22030007}
     }},
     '{"soc_proxy__ctn", '{
-        '{32'h40000000, 32'h7fffffff}
+        '{32'h40000000, 32'hbfffffff}
     }},
     '{"hmac", '{
         '{32'h21110000, 32'h21111fff}
@@ -39,6 +39,9 @@ tl_device_t xbar_devices[$] = '{
     }},
     '{"aes", '{
         '{32'h21100000, 32'h211000ff}
+    }},
+    '{"entropy_src", '{
+        '{32'h21160000, 32'h211600ff}
     }},
     '{"csrng", '{
         '{32'h21150000, 32'h2115007f}
@@ -139,7 +142,7 @@ tl_device_t xbar_devices[$] = '{
     '{"otp_ctrl__core", '{
         '{32'h30130000, 32'h30137fff}
     }},
-    '{"otp_ctrl__prim", '{
+    '{"otp_macro__prim", '{
         '{32'h30140000, 32'h3014001f}
     }},
     '{"lc_ctrl__regs", '{
@@ -237,7 +240,7 @@ tl_host_t xbar_hosts[$] = '{
         "clkmgr_aon",
         "pinmux_aon",
         "otp_ctrl__core",
-        "otp_ctrl__prim",
+        "otp_macro__prim",
         "lc_ctrl__regs",
         "alert_handler",
         "ast",
@@ -246,6 +249,7 @@ tl_host_t xbar_hosts[$] = '{
         "aon_timer_aon",
         "soc_dbg_ctrl__core",
         "aes",
+        "entropy_src",
         "csrng",
         "edn0",
         "edn1",
@@ -291,7 +295,7 @@ tl_host_t xbar_hosts[$] = '{
         "clkmgr_aon",
         "pinmux_aon",
         "otp_ctrl__core",
-        "otp_ctrl__prim",
+        "otp_macro__prim",
         "lc_ctrl__regs",
         "alert_handler",
         "ast",
@@ -300,6 +304,7 @@ tl_host_t xbar_hosts[$] = '{
         "aon_timer_aon",
         "soc_dbg_ctrl__core",
         "aes",
+        "entropy_src",
         "csrng",
         "edn0",
         "edn1",
@@ -346,7 +351,7 @@ tl_host_t xbar_hosts[$] = '{
         "clkmgr_aon",
         "pinmux_aon",
         "otp_ctrl__core",
-        "otp_ctrl__prim",
+        "otp_macro__prim",
         "lc_ctrl__regs",
         "alert_handler",
         "ast",

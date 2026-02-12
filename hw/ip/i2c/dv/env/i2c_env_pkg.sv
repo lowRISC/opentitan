@@ -82,7 +82,7 @@ package i2c_env_pkg;
 
   // alerts
   parameter uint NUM_ALERTS = i2c_reg_pkg::NumAlerts;
-  parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
+  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"fatal_fault"};
 
   function automatic i2c_acqdata_item acq2item(bit [bus_params_pkg::BUS_DW-1:0] data);
     i2c_acqdata_item item;

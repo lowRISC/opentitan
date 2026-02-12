@@ -45,6 +45,10 @@ typedef struct owner_config {
   const owner_flash_info_config_t *info;
   /** The requested rescue configuration. */
   const owner_rescue_config_t *rescue;
+  /**
+   * The requested Integrator Specific Firmware Binding (ISFB) configuration.
+   */
+  const owner_isfb_config_t *isfb;
 } owner_config_t;
 
 /**
@@ -57,6 +61,13 @@ typedef struct owner_application_keyring {
   /** Pointers to the application keys. */
   const owner_application_key_t *key[16];
 } owner_application_keyring_t;
+
+/**
+ * Determine if the owner keys are equal between owner page 0 and 1.
+ *
+ * @return kHardenedBoolTrue if the owner key are the same between both pages.
+ */
+hardened_bool_t owner_block_owner_key_equal(void);
 
 /**
  * Determine if the ownership update mode is one of the "newversion" modes.
@@ -87,12 +98,15 @@ void owner_config_default(owner_config_t *config);
  * Parse an owner block, extracting pointers to keys and configuration items.
  *
  * @param block The owner block to parse.
+ * @param check_only Check the owner_block for validity, but do not parse into
+ *                   config and keyring structs.
  * @param config A pointer to a config struct holding pointers to config items.
  * @param keyring A pointer to a keyring struct holding application key
  * pointers.
  * @return error code.
  */
 rom_error_t owner_block_parse(const owner_block_t *block,
+                              hardened_bool_t check_only,
                               owner_config_t *config,
                               owner_application_keyring_t *keyring);
 
@@ -108,17 +122,32 @@ rom_error_t owner_block_parse(const owner_block_t *block,
 rom_error_t owner_block_flash_check(const owner_flash_config_t *flash);
 
 /**
+ * Check the ISFB configuration for errors.
+ *
+ * Currently, this checks that the ISFB configuration is on an owner page,
+ * and that the product_words field is within bounds.
+ *
+ * @param isfb A pointer to an ISFB configuration struct.
+ * @return error code.
+ */
+rom_error_t owner_isfb_config_check(const owner_isfb_config_t *isfb);
+
+/**
  * Apply the flash configuration parameters from the owner block.
  *
  * @param flash A pointer to a flash configuration struct.
  * @param config_side Which side of the flash to configure.
- * @param lockdown Apply any special lockdown configuration to the specified
- *                 side of the flash.  May use kHardenedBoolFalse to skip
- *                 lockdown.
+ * @param owner_lockdown Apply any special lockdown configuration to
+ *                       silicon_owner regions on the specified side of the
+ *                       flash.  May use kHardenedBoolFalse to skip lockdown.
+ * @param mp_index The destination configuration index.  The value should be
+ *                 initialized to zero before the first call to this function.
  * @return error code.
  */
 rom_error_t owner_block_flash_apply(const owner_flash_config_t *flash,
-                                    uint32_t config_side, uint32_t lockdown);
+                                    uint32_t config_side,
+                                    uint32_t owner_lockdown,
+                                    uint32_t *mp_index);
 
 /**
  * Apply the flash info configuration parameters from the owner block.
@@ -128,9 +157,45 @@ rom_error_t owner_block_flash_apply(const owner_flash_config_t *flash,
  */
 rom_error_t owner_block_info_apply(const owner_flash_info_config_t *info);
 
+/**
+ * Lock the flash info configuration parameters as requested by the owner block.
+ *
+ * @param info A pointer to a flash_info configuration.
+ * @return error code.
+ */
+rom_error_t owner_block_info_lockdown(const owner_flash_info_config_t *info);
+
+/**
+ * Enable erase on the ISFB info page.
+ *
+ * Unconditionally enables erase on the ISFB info page. This function is used
+ * to enable the erase policy for the ISFB info page.
+ *
+ * The function does not enable erase on the ISFB info page if the owner config
+ * does not contain the ISFB or info page owner blocks. The settings are also
+ * ignored if the device is not in the `kOwnershipStateLockedOwner` state.
+ *
+ * @param bootdata The current boot data.
+ * @param owner_config The owner configuration.
+ *
+ * @return The result of the operation.
+ */
+rom_error_t owner_block_info_isfb_erase_enable(
+    boot_data_t *bootdata, const owner_config_t *owner_config);
+
 rom_error_t owner_keyring_find_key(const owner_application_keyring_t *keyring,
-                                   uint32_t key_alg, uint32_t key_id,
-                                   size_t *index);
+                                   uint32_t key_id, size_t *index);
+
+/**
+ * Apply the rescue configuration parameters in the owner block.
+ *
+ * This function sets up the trigger detection when a GPIO trigger specified in
+ * the configuration.
+ *
+ * @param rescue A pointer to the rescue configuration.
+ * @return error code.
+ */
+rom_error_t owner_block_rescue_apply(const owner_rescue_config_t *rescue);
 
 /**
  * Determine whether the given key is on owner page 0 or page 1.

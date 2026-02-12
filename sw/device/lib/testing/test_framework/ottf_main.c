@@ -7,24 +7,23 @@
 #include <assert.h>
 #include <stddef.h>
 
-#include "dt/dt_rstmgr.h"
-#include "dt/dt_rv_core_ibex.h"
 #include "external/freertos/include/FreeRTOS.h"
 #include "external/freertos/include/queue.h"
 #include "external/freertos/include/task.h"
+#include "hw/top/dt/rstmgr.h"
+#include "hw/top/dt/rv_core_ibex.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/coverage/api.h"
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
-#include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/lib/testing/test_framework/coverage.h"
 #include "sw/device/lib/testing/test_framework/ottf_console.h"
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
@@ -32,6 +31,10 @@
 #include "sw/device/silicon_creator/lib/manifest_def.h"
 
 #define MODULE_ID MAKE_MODULE_ID('o', 't', 'm')
+
+#if OPENTITAN_HAS_ALERT_HANDLER
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
+#endif  // OPENTITAN_HAS_ALERT_HANDLER
 
 // Check layout of test configuration struct since OTTF ISR asm code requires a
 // specific layout.
@@ -114,26 +117,29 @@ static void report_test_status(bool result) {
   // Print the reported status in case of error. Beware that
   // status_report_list_cnt might be greater than kStatusReportListSize which
   // means we had to overwrite values.
-  if (!result) {
-    LOG_INFO("Status reported by the test:");
-    // Handle overflow.
-    size_t print_cnt = status_report_list_cnt;
-    if (status_report_list_cnt > kStatusReportListSize) {
-      print_cnt = kStatusReportListSize;
-    }
-    // We print the list backwards like a stack (last report event first).
-    for (size_t i = 1; i <= print_cnt; i++) {
-      size_t idx = (status_report_list_cnt - i) % kStatusReportListSize;
-      LOG_INFO("- %r", status_report_list[idx]);
-    }
-    // Warn about overflow.
-    if (status_report_list_cnt > kStatusReportListSize) {
-      LOG_INFO(
-          "Some statuses have been lost due to the limited size of the list.");
+  if (!kOttfTestConfig.silence_console_prints) {
+    if (!result) {
+      LOG_INFO("Status reported by the test:");
+      // Handle overflow.
+      size_t print_cnt = status_report_list_cnt;
+      if (status_report_list_cnt > kStatusReportListSize) {
+        print_cnt = kStatusReportListSize;
+      }
+      // We print the list backwards like a stack (last report event first).
+      for (size_t i = 1; i <= print_cnt; i++) {
+        size_t idx = (status_report_list_cnt - i) % kStatusReportListSize;
+        LOG_INFO("- %r", status_report_list[idx]);
+      }
+      // Warn about overflow.
+      if (status_report_list_cnt > kStatusReportListSize) {
+        LOG_INFO(
+            "Some statuses have been lost due to the limited size of the "
+            "list.");
+      }
     }
   }
 
-  coverage_send_buffer();
+  coverage_report();
   test_status_set(result ? kTestStatusPassed : kTestStatusFailed);
 }
 
@@ -169,6 +175,15 @@ void _ottf_main(void) {
       LOG_INFO("Running %s", kOttfTestConfig.file);
     }
   }
+
+#if OPENTITAN_HAS_ALERT_HANDLER
+  if (!kOttfTestConfig.ignore_alerts) {
+    if (!kOttfTestConfig.silence_console_prints) {
+      LOG_INFO("Enabling OTTF alert catcher");
+    }
+    CHECK_STATUS_OK(ottf_alerts_enable_all());
+  }
+#endif  // OPENTITAN_HAS_ALERT_HANDLER
 
   // Initialize a global random number generator testutil context to provide
   // tests with a source of entropy for randomizing test behaviors.

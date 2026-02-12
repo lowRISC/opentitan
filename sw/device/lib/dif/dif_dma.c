@@ -16,7 +16,7 @@ static_assert(kDifDmaOpentitanInternalBus ==
 static_assert(kDifDmaSoCControlRegisterBus ==
                   DMA_ADDR_SPACE_ID_DST_ASID_VALUE_SOC_ADDR,
               "Address Space ID mismatches with value defined in HW");
-static_assert(kDifDmaSoCSystemBus == DMA_ADDR_SPACE_ID_DST_ASID_VALUE_SYS_ADDR_,
+static_assert(kDifDmaSoCSystemBus == DMA_ADDR_SPACE_ID_DST_ASID_VALUE_SYS_ADDR,
               "Address Space ID mismatches with value defined in HW");
 
 dif_result_t dif_dma_configure(const dif_dma_t *dma,

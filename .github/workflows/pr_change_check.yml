@@ -15,8 +15,18 @@ jobs:
   check-changes:
     runs-on: "ubuntu-latest"
     steps:
-      - name: Checkout
+      - name: Checkout the default branch
         uses: actions/checkout@v4
+
+      - name: Checkout the target branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+          path: "target-branch"
+          fetch-depth: 1
+
+      - name: Show target branch BLOCKFILE
+        run: cat target-branch/BLOCKFILE
 
       - name: Determine changed files
         run: |
@@ -32,6 +42,7 @@ jobs:
       - name: Check for blocked changes
         run: |
           ./ci/scripts/check-pr-changes-allowed.py $HOME/changed_files \
+            --block-file target-branch/BLOCKFILE \
             --gh-repo ${{ github.repository }} \
             --gh-token ${{ secrets.GITHUB_TOKEN }} \
             --pr-number ${{ github.event.number }}

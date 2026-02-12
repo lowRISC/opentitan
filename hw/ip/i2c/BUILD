@@ -17,3 +17,11 @@ filegroup(
         "//hw/ip/i2c/data:all_files",
     ],
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = glob([
+        "**/*.md",
+        "**/*.svg",
+    ]) + ["//hw/ip/i2c/data:doc_files"],
+)

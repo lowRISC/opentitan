@@ -74,6 +74,7 @@ licence_test(
         "sw/device/tests/crypto/testvectors/sphincsplus_kat/*.hjson",
         # Alma testbench files
         "hw/ip/aes/pre_sca/alma/cpp/testbench.h",
+        "hw/ip/aes/pre_sca/alma/cpp/verilator_tb_aes_ghash_wrap.cpp",
         "hw/ip/aes/pre_sca/alma/cpp/verilator_tb_aes_sbox.cpp",
         "hw/ip/aes/pre_sca/alma/cpp/verilator_tb_aes_sub_bytes.cpp",
         "hw/ip/kmac/pre_sca/alma/cpp/verilator_tb_keccak_2share.cpp",

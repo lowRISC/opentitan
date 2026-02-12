@@ -19,7 +19,7 @@ This section also contains a brief overview of some of the features of the final
 
 ### Clocking and Reset
 
-Clocks and resets are supplied from the Analog Sensor Top, referred to as [ast](../../ip/ast/README.md)) from this point onwards in the document.
+Clocks and resets are supplied from the Analog Sensor Top, referred to as [ast](../../ip/ast/README.md) from this point onwards in the document.
 
 `ast` supplies a number of clocks into `top_earlgrey`.
 - sys: main jittery system clock used for higher performance blocks and security (processor, memory and crypto blocks).
@@ -28,14 +28,14 @@ Clocks and resets are supplied from the Analog Sensor Top, referred to as [ast](
 - aon: an always on, low frequency clock used for power management and low speed timers.
 
 These clocks are then divided down and distributed to the rest of the system.
-See [clock manager](../../ip_autogen/clkmgr/README.md)) for more details.
+See [clock manager](../../ip_autogen/clkmgr/README.md) for more details.
 
 `ast` also supplies a number of power-okay signals to `top_earlgrey`, and these are used as asynchronous root resets.
 - vcaon_pok: The always on domain of the system is ready.
 - vcmain_pok: The main operating domain of the system is ready.
 
 When one of these power-okay signals drop, the corresponding domain in `top_earlgrey` is reset.
-Please refer to [reset manager](../../ip_autogen/rstmgr/README.md)) for more details.
+Please refer to [reset manager](../../ip_autogen/rstmgr/README.md) for more details.
 Resets throughout the design are asynchronous active low as per the Comportability specification.
 
 Once reset, the reset vector begins in ROM, whose job is to validate code in the embedded flash before jumping to it.
@@ -98,7 +98,7 @@ It is assumed that the flash device, when powered, will be able to correctly han
 
 #### Reset due to Low Power Entry
 
-When the device receives a low power entry request while flash activity is ongoing, the [pwrmgr](../../ip_autogen/pwrmgr/README.md#abort-handling)) is responsible for ensuring the entry request is aborted.
+When the device receives a low power entry request while flash activity is ongoing, the [pwrmgr](../../ip_autogen/pwrmgr/README.md#abort-handling) is responsible for ensuring the entry request is aborted.
 
 
 ### Main processor (`core_ibex`)
@@ -379,72 +379,13 @@ Note that these values assume there is no bus contention.
 
 ## Memory Map
 
-The base addresses of the memory and peripherals are given in the table below.
+The base addresses of the memory and peripherals are defined in this [table](../memory_map.md).
 
 The choice of memory, or lack thereof at location 0x0 confers two exclusive benefits:
 - If there are no memories at location 0x0, then null pointers will immediately error and be noticed by software (the xbar will fail to decode and route)
 - If SRAM is placed at 0, accesses to data located within 2KB of 0x0 can be accomplished with a single instruction and thus reduce code size.
 
-For the purpose of `top_earlgrey`, the first option has been chosen to benefit software development and testing
-
-<!-- BEGIN CMDGEN util/design/gen-top-docs.py -t hw/top_earlgrey/data/autogen/top_earlgrey.gen.hjson -g mmap -->
-| Name              | Type          | Byte Address      |
-|:------------------|:--------------|:------------------|
-| uart0             | uart          | 0x40000000 (regs) |
-| uart1             | uart          | 0x40010000 (regs) |
-| uart2             | uart          | 0x40020000 (regs) |
-| uart3             | uart          | 0x40030000 (regs) |
-| gpio              | gpio          | 0x40040000 (regs) |
-| spi_device        | spi_device    | 0x40050000 (regs) |
-| i2c0              | i2c           | 0x40080000 (regs) |
-| i2c1              | i2c           | 0x40090000 (regs) |
-| i2c2              | i2c           | 0x400A0000 (regs) |
-| pattgen           | pattgen       | 0x400E0000 (regs) |
-| rv_timer          | rv_timer      | 0x40100000 (regs) |
-| otp_ctrl          | otp_ctrl      | 0x40130000 (core) |
-|                   |               | 0x40138000 (prim) |
-| lc_ctrl           | lc_ctrl       | 0x40140000 (regs) |
-|                   |               | 0x0 (dmi)         |
-| alert_handler     | alert_handler | 0x40150000 (regs) |
-| spi_host0         | spi_host      | 0x40300000 (regs) |
-| spi_host1         | spi_host      | 0x40310000 (regs) |
-| usbdev            | usbdev        | 0x40320000 (regs) |
-| pwrmgr_aon        | pwrmgr        | 0x40400000 (regs) |
-| rstmgr_aon        | rstmgr        | 0x40410000 (regs) |
-| clkmgr_aon        | clkmgr        | 0x40420000 (regs) |
-| sysrst_ctrl_aon   | sysrst_ctrl   | 0x40430000 (regs) |
-| adc_ctrl_aon      | adc_ctrl      | 0x40440000 (regs) |
-| pwm_aon           | pwm           | 0x40450000 (regs) |
-| pinmux_aon        | pinmux        | 0x40460000 (regs) |
-| aon_timer_aon     | aon_timer     | 0x40470000 (regs) |
-| ast               | ast           | 0x40480000 (regs) |
-| sensor_ctrl_aon   | sensor_ctrl   | 0x40490000 (regs) |
-| sram_ctrl_ret_aon | sram_ctrl     | 0x40500000 (regs) |
-|                   |               | 0x40600000 (ram)  |
-| flash_ctrl        | flash_ctrl    | 0x41000000 (core) |
-|                   |               | 0x41008000 (prim) |
-|                   |               | 0x20000000 (mem)  |
-| rv_dm             | rv_dm         | 0x00010000 (mem)  |
-|                   |               | 0x41200000 (regs) |
-|                   |               | 0x00001000 (dbg)  |
-| rv_plic           | rv_plic       | 0x48000000 (regs) |
-| aes               | aes           | 0x41100000 (regs) |
-| hmac              | hmac          | 0x41110000 (regs) |
-| kmac              | kmac          | 0x41120000 (regs) |
-| otbn              | otbn          | 0x41130000 (regs) |
-| keymgr            | keymgr        | 0x41140000 (regs) |
-| csrng             | csrng         | 0x41150000 (regs) |
-| entropy_src       | entropy_src   | 0x41160000 (regs) |
-| edn0              | edn           | 0x41170000 (regs) |
-| edn1              | edn           | 0x41180000 (regs) |
-| sram_ctrl_main    | sram_ctrl     | 0x411C0000 (regs) |
-|                   |               | 0x10000000 (ram)  |
-| rom_ctrl          | rom_ctrl      | 0x00008000 (rom)  |
-|                   |               | 0x411e0000 (regs) |
-| rv_core_ibex      | rv_core_ibex  | 0x411F0000 (cfg)  |
-
-<!-- END CMDGEN -->
-
+For the purpose of `top_earlgrey`, the first option has been chosen to benefit software development and testing.
 
 ## Entropy Distribution Network
 

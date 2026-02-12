@@ -4,8 +4,8 @@
 
 #include "sw/device/lib/testing/dma_testutils.h"
 
+#include "hw/top/spi_host_regs.h"  // Generated.
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
-#include "spi_host_regs.h"  // Generated.
 
 static const top_darjeeling_direct_pads_t spi_host0_direct_pads[6] = {
     kTopDarjeelingDirectPadsSpiHost0Sck,   // sck
@@ -80,8 +80,9 @@ void setup_spi_dma_transaction(dif_spi_host_t *spi_host, dif_dma_t *dma,
       .chunk_size = chunk_size,
       .width = kDifDmaTransWidth4Bytes};
 
-  CHECK_DIF_OK(dif_dma_memory_range_set(dma, TOP_DARJEELING_RAM_MAIN_BASE_ADDR,
-                                        TOP_DARJEELING_RAM_MAIN_SIZE_BYTES));
+  CHECK_DIF_OK(
+      dif_dma_memory_range_set(dma, TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_BASE_ADDR,
+                               TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES));
   // Enable LSIO trigger for SPI host at bit 1
   CHECK_DIF_OK(dif_dma_handshake_irq_enable(dma, 0x2));
   CHECK_DIF_OK(dif_dma_configure(dma, transaction));

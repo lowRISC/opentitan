@@ -2,6 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/csrng.h"
+#include "hw/top/dt/edn.h"
+#include "hw/top/dt/otbn.h"
+#include "hw/top/dt/rv_plic.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_csrng.h"
@@ -18,7 +22,6 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/tests/otbn_randomness_impl.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 static dif_csrng_t csrng;
@@ -40,6 +43,10 @@ enum {
    */
   kTestParamNumIterationsSim = 1,
   kTestParamNumIterationsOther = 20,
+  /**
+   * PLIC target for the Ibex core.
+   */
+  kDtRvPlicTargetIbex0 = 0,
 };
 
 /**
@@ -62,16 +69,11 @@ static volatile bool irq_flags[kTestIrqFlagCount];
  * Initializes the peripherals used in this test.
  */
 static void init_peripherals(void) {
-  CHECK_DIF_OK(dif_csrng_init(
-      mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR), &csrng));
-  CHECK_DIF_OK(
-      dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR), &edn0));
-  CHECK_DIF_OK(
-      dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR), &edn1));
-  CHECK_DIF_OK(
-      dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
-  CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
+  CHECK_DIF_OK(dif_csrng_init_from_dt(kDtCsrng, &csrng));
+  CHECK_DIF_OK(dif_edn_init_from_dt(kDtEdn0, &edn0));
+  CHECK_DIF_OK(dif_edn_init_from_dt(kDtEdn1, &edn1));
+  CHECK_DIF_OK(dif_otbn_init_from_dt(kDtOtbn, &otbn));
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kDtRvPlic, &plic));
 }
 
 /**
@@ -85,18 +87,24 @@ static void plic_interrupts_enable(void) {
     irq_flags[i] = false;
   }
 
-  dif_rv_plic_irq_id_t irq_ids[] = {kTopEarlgreyPlicIrqIdCsrngCsEntropyReq,
-                                    kTopEarlgreyPlicIrqIdEdn0EdnCmdReqDone,
-                                    kTopEarlgreyPlicIrqIdEdn1EdnCmdReqDone};
+  // Get PLIC IRQ IDs using DT API
+  dt_plic_irq_id_t csrng_irq_id =
+      dt_csrng_irq_to_plic_id(kDtCsrng, kDtCsrngIrqCsEntropyReq);
+  dt_plic_irq_id_t edn0_irq_id =
+      dt_edn_irq_to_plic_id(kDtEdn0, kDtEdnIrqEdnCmdReqDone);
+  dt_plic_irq_id_t edn1_irq_id =
+      dt_edn_irq_to_plic_id(kDtEdn1, kDtEdnIrqEdnCmdReqDone);
+
+  dt_plic_irq_id_t irq_ids[] = {csrng_irq_id, edn0_irq_id, edn1_irq_id};
   for (size_t i = 0; i < ARRAYSIZE(irq_ids); ++i) {
     CHECK_DIF_OK(
         dif_rv_plic_irq_set_priority(&plic, irq_ids[i], /*priority=*/1u));
     CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-        &plic, irq_ids[i], kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
+        &plic, irq_ids[i], kDtRvPlicTargetIbex0, kDifToggleEnabled));
   }
 
-  CHECK_DIF_OK(dif_rv_plic_target_set_threshold(
-      &plic, kTopEarlgreyPlicTargetIbex0, /*threshold=*/0u));
+  CHECK_DIF_OK(dif_rv_plic_target_set_threshold(&plic, kDtRvPlicTargetIbex0,
+                                                /*threshold=*/0u));
 
   CHECK_DIF_OK(dif_csrng_irq_set_enabled(&csrng, kDifCsrngIrqCsEntropyReq,
                                          kDifToggleEnabled));
@@ -141,8 +149,8 @@ static void irq_block_wait(irq_flag_id_t isr_id) {
  */
 static void csrng_generate_output_check(void) {
   uint32_t output[kTestParamFifoBufferSize] = {0};
-  CHECK_STATUS_OK(
-      csrng_testutils_cmd_generate_run(&csrng, output, ARRAYSIZE(output)));
+  CHECK_STATUS_OK(csrng_testutils_cmd_generate_run(&csrng, NULL, output,
+                                                   ARRAYSIZE(output)));
 
   uint32_t prev_data = 0;
   for (size_t i = 0; i < ARRAYSIZE(output); ++i) {
@@ -313,41 +321,30 @@ static void test_edn_cmd_done(const dif_edn_seed_material_t *seed_material) {
   CHECK_STATUS_OK(entropy_testutils_error_check(&csrng, &edn0, &edn1));
 }
 
-void ottf_external_isr(uint32_t *exc_info) {
-  // Claim the IRQ at the PLIC.
-  dif_rv_plic_irq_id_t plic_irq_id;
-  CHECK_DIF_OK(
-      dif_rv_plic_irq_claim(&plic, kTopEarlgreyPlicTargetIbex0, &plic_irq_id));
-
-  // Get the peripheral the IRQ belongs to.
-  top_earlgrey_plic_peripheral_t peripheral_serviced =
-      (top_earlgrey_plic_peripheral_t)
-          top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
-
-  // Get the IRQ that was fired from the PLIC IRQ ID and set the corresponding
-  // `irq_flags`.
-  if (peripheral_serviced == kTopEarlgreyPlicPeripheralCsrng) {
-    dif_csrng_irq_t irq =
-        (dif_csrng_irq_t)(plic_irq_id - kTopEarlgreyPlicIrqIdCsrngCsCmdReqDone);
-    CHECK(irq == kDifCsrngIrqCsEntropyReq, "Unexpected irq: 0x%x", irq);
+bool ottf_handle_irq(uint32_t *exc_info, dt_instance_id_t inst_id,
+                     dif_rv_plic_irq_id_t plic_irq_id) {
+  // Handle interrupts based on the peripheral instance
+  if (inst_id == dt_csrng_instance_id(kDtCsrng)) {
+    dt_csrng_irq_t irq = dt_csrng_irq_from_plic_id(kDtCsrng, plic_irq_id);
+    CHECK(irq == kDtCsrngIrqCsEntropyReq, "Unexpected irq: 0x%x", irq);
     CHECK_DIF_OK(dif_csrng_irq_acknowledge(&csrng, irq));
     irq_flags[kTestIrqFlagIdCsrngEntropyReq] = true;
-  } else if (peripheral_serviced == kTopEarlgreyPlicPeripheralEdn0) {
-    dif_edn_irq_t irq =
-        (dif_edn_irq_t)(plic_irq_id - kTopEarlgreyPlicIrqIdEdn0EdnCmdReqDone);
-    CHECK(irq == kDifEdnIrqEdnCmdReqDone, "Unexpected irq: 0x%x", irq);
+    return true;
+  } else if (inst_id == dt_edn_instance_id(kDtEdn0)) {
+    dt_edn_irq_t irq = dt_edn_irq_from_plic_id(kDtEdn0, plic_irq_id);
+    CHECK(irq == kDtEdnIrqEdnCmdReqDone, "Unexpected irq: 0x%x", irq);
     CHECK_DIF_OK(dif_edn_irq_acknowledge(&edn0, irq));
     irq_flags[kTestIrqFlagIdEdn0CmdDone] = true;
-  } else if (peripheral_serviced == kTopEarlgreyPlicPeripheralEdn1) {
-    dif_edn_irq_t irq =
-        (dif_edn_irq_t)(plic_irq_id - kTopEarlgreyPlicIrqIdEdn1EdnCmdReqDone);
-    CHECK(irq == kDifEdnIrqEdnCmdReqDone, "Unexpected irq: 0x%x", irq);
+    return true;
+  } else if (inst_id == dt_edn_instance_id(kDtEdn1)) {
+    dt_edn_irq_t irq = dt_edn_irq_from_plic_id(kDtEdn1, plic_irq_id);
+    CHECK(irq == kDtEdnIrqEdnCmdReqDone, "Unexpected irq: 0x%x", irq);
     CHECK_DIF_OK(dif_edn_irq_acknowledge(&edn1, irq));
     irq_flags[kTestIrqFlagIdEdn1CmdDone] = true;
+    return true;
   }
 
-  CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kTopEarlgreyPlicTargetIbex0,
-                                        plic_irq_id));
+  return false;
 }
 
 bool test_main(void) {

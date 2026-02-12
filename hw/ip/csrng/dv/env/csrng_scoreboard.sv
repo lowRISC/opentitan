@@ -153,7 +153,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
 
     // process the csr req
     // for write, update local variable and fifo at address phase
-    // for read, update predication at address phase and compare at data phase
+    // for read, update prediction at address phase and compare at data phase
     case (csr.get_name())
       // add individual case item for each csr
       "intr_state": begin
@@ -212,7 +212,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
           cov_vif.cg_cmds_sample(SW_APP, cs_item[SW_APP], cmd_flag0_previous[SW_APP]);
           if (!more_cmd_data) begin
             for (int i = 0; i < cs_item[SW_APP].cmd_data_q.size(); i++) begin
-              cs_data[SW_APP] = (cs_item[SW_APP].cmd_data_q[i] << i * CSRNG_CMD_WIDTH) +
+              cs_data[SW_APP] = (cs_item[SW_APP].cmd_data_q[i] << i * CmdBusWidth) +
                   cs_data[SW_APP];
             end
             case (cs_item[SW_APP].acmd)
@@ -343,7 +343,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
           end
           if (cs_item[SW_APP].genbits_q.size() == cs_item[SW_APP].glen) begin
             for (int i = 0; i < cs_item[SW_APP].cmd_data_q.size(); i++) begin
-              cs_data[SW_APP] = (cs_item[SW_APP].cmd_data_q[i] << i * CSRNG_CMD_WIDTH) +
+              cs_data[SW_APP] = (cs_item[SW_APP].cmd_data_q[i] << i * CmdBusWidth) +
                   cs_data[SW_APP];
             end
             ctr_drbg_generate(SW_APP, cs_item[SW_APP].glen, cs_data[SW_APP]);
@@ -628,7 +628,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       // Check if the command status response is equal to the expected status.
       `DV_CHECK_EQ_FATAL(cs_item[app].status, cmd_sts[app])
       for (int i = 0; i < cs_item[app].cmd_data_q.size(); i++) begin
-        cs_data[app] = (cs_item[app].cmd_data_q[i] << i * CSRNG_CMD_WIDTH) +
+        cs_data[app] = (cs_item[app].cmd_data_q[i] << i * CmdBusWidth) +
                        cs_data[app];
       end
       cov_vif.cg_cmds_sample(app, cs_item[app], cmd_flag0_previous[app]);

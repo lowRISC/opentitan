@@ -8,7 +8,7 @@ data width is less than the output data width. Unpacking mode is where the input
 data width is greater than the output data width. Single depth FIFO is where
 the input and output data widths are the same. Because masking options are not
 supported, the larger data size must be an even multiple of the smaller size.
-The controls for this module are modeled after the `prim_fifo_sync` module,
+The controls for this module are modelled after the `prim_fifo_sync` module,
 both in name and functional behavior.
 It is one of a set of shared primitive modules
 available for use within OpenTitan as referred to in the Comportability

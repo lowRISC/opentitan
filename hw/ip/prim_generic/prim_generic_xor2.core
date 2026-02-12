@@ -5,10 +5,13 @@ CAPI=2:
 
 name: "lowrisc:prim_generic:xor2"
 description: "Generic 2-input xor"
+virtual:
+  - lowrisc:prim:xor2
+
 filesets:
   files_rtl:
     files:
-      - rtl/prim_generic_xor2.sv
+      - rtl/prim_xor2.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:

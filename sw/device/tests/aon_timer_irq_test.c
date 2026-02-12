@@ -7,10 +7,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "dt/dt_aon_timer.h"     // Generated
-#include "dt/dt_rv_core_ibex.h"  // Generated
-#include "dt/dt_rv_plic.h"       // Generated
-#include "dt/dt_rv_timer.h"      // Generated
+#include "hw/top/dt/aon_timer.h"     // Generated
+#include "hw/top/dt/rv_core_ibex.h"  // Generated
+#include "hw/top/dt/rv_plic.h"       // Generated
+#include "hw/top/dt/rv_timer.h"      // Generated
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
@@ -51,7 +51,7 @@ static volatile uint64_t irq_tick;
  * the `wfi` instruction the best approach then to measure the time elapsed is
  * to use the mtime register, which is basically attached to rv_timer in the
  * opentitan.
- * https://docs.opentitan.org/hw/ip/rv_timer/doc/
+ * https://opentitan.org/book/hw/ip/rv_timer/
  *
  * This is fine due to the test running in a single thread of execution,
  * however, care should be taken in case it changes. OTTF configures the

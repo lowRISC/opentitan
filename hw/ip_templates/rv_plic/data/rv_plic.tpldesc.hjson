@@ -20,6 +20,11 @@
       desc: "Number of interrupt sources"
       type: "int"
       default: "32"
+      dtgen:
+      {
+        type: "uint16"
+        name: "num_irq_sources"
+      }
     }
     {
       name: "target"

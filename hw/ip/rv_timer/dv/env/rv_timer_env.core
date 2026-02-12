@@ -3,12 +3,13 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:dv:rv_timer_env:0.1"
-description: "RISC-V Timer DV UVM environmnt"
+description: "RISC-V Timer DV UVM environment"
 filesets:
   files_dv:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
+      - lowrisc:ip:rv_timer_reg_pkg
     files:
       - rv_timer_env_pkg.sv
       - rv_timer_env_cfg.sv: {is_include_file: true}
@@ -19,6 +20,8 @@ filesets:
       - seq_lib/rv_timer_base_vseq.sv: {is_include_file: true}
       - seq_lib/rv_timer_common_vseq.sv: {is_include_file: true}
       - seq_lib/rv_timer_random_vseq.sv: {is_include_file: true}
+      - seq_lib/rv_timer_min_vseq.sv: {is_include_file: true}
+      - seq_lib/rv_timer_max_vseq.sv: {is_include_file: true}
       - seq_lib/rv_timer_disabled_vseq.sv: {is_include_file: true}
       - seq_lib/rv_timer_cfg_update_on_fly_vseq.sv: {is_include_file: true}
       - seq_lib/rv_timer_random_reset_vseq.sv: {is_include_file: true}
@@ -31,6 +34,7 @@ generate:
     parameters:
       name: rv_timer
       ip_hjson: ../../data/rv_timer.hjson
+    position: prepend
 
 targets:
   default:

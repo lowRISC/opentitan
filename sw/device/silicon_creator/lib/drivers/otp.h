@@ -8,10 +8,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "hw/top/dt/otp_ctrl.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "otp_ctrl_regs.h"  // Generated.
+#include "hw/top/otp_ctrl_regs.h"  // Generated.
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,49 +35,6 @@ enum {
    */
   kOtpSecMmioCreatorSwCfgLockDown = 1,
 };
-
-/**
- * OTP partition information.
- */
-typedef struct otp_partition_info {
-  /**
-   * The absolute OTP address at which this partition starts.
-   */
-  uint32_t start_addr;
-  /**
-   * Size (in bytes) of the partition, excluding the digest field.
-   */
-  size_t size;
-  /**
-   * The absolute OTP address at which this partition's digest starts.
-   */
-  uint32_t digest_addr;
-  /**
-   * The alignment mask for this partition.
-   *
-   * A valid address for this partition must be such that
-   * `addr & align_mask == 0`.
-   */
-  uint32_t align_mask;
-} otp_partition_info_t;
-
-/**
- * OTP partitions whose fields are readable after being locked.
- */
-typedef enum otp_partition {
-  kOtpPartitionCreatorSwCfg = 0,
-  kOtpPartitionOwnerSwCfg = 1,
-  kOtpPartitionRotCreatorAuthCodesign = 2,
-  kOtpPartitionRotCreatorAuthState = 3,
-  kOtpPartitionHwCfg0 = 4,
-  kOtpPartitionHwCfg1 = 5,
-  kOtpPartitionNumPartitions = 6,
-} otp_partition_t;
-
-/**
- * Table of OTP partition information.
- */
-extern const otp_partition_info_t kOtpPartitions[];
 
 /**
  * Perform a blocking 32-bit read from the memory mapped software config
@@ -107,6 +65,15 @@ uint64_t otp_read64(uint32_t address);
  * @param num_words The number of 32-bit words to read from OTP.
  */
 void otp_read(uint32_t address, uint32_t *data, size_t num_words);
+
+/**
+ * Return information for OTP partitions whose fields are readable by SW
+ * after being locked.
+ *
+ * @param partition The OTP partition identifier.
+ * @return The OTP partition information
+ */
+dt_otp_partition_info_t otp_readable_partition_info(otp_partition_t partition);
 
 /**
  * Read a partition's 64-bit digest from the corresponding CSRs.

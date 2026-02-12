@@ -6,13 +6,12 @@
 
 <%
 from collections import OrderedDict
+from ipgen.clkmgr_gen import config_clk_meas, get_all_srcs, get_rg_srcs
 from topgen.lib import Name
 all_derived_srcs = list(sorted(set([dc['src']['name']
                                     for dc in derived_clks.values()])))
-all_srcs = src_clks.copy()
-all_srcs.update(derived_clks)
-rg_srcs = list(sorted({sig['src_name'] for sig
-                       in typed_clocks['rg_clks'].values()}))
+all_srcs = get_all_srcs(src_clks, derived_clks)
+rg_srcs = get_rg_srcs(typed_clocks)
 %>\
 
 `include "prim_assert.sv"
@@ -23,7 +22,9 @@ rg_srcs = list(sorted({sig['src_name'] for sig
     import lc_ctrl_pkg::lc_tx_t;
     import prim_mubi_pkg::mubi4_t;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned AlertSkewCycles = 1
 ) (
   // Primary module control clocks and resets
   // This drives the register interface
@@ -70,6 +71,7 @@ rg_srcs = list(sorted({sig['src_name'] for sig
   // idle hints
   // SEC_CM: IDLE.INTERSIG.MUBI
   input prim_mubi_pkg::mubi4_t [${len(hint_names)-1}:0] idle_i,
+% if ext_clk_bypass:
 
   // life cycle state output
   // SEC_CM: LC_CTRL.INTERSIG.MUBI
@@ -88,17 +90,18 @@ rg_srcs = list(sorted({sig['src_name'] for sig
   input mubi4_t all_clk_byp_ack_i,
   output mubi4_t hi_speed_sel_o,
 
+  // external indication for whether dividers should be stepped down
+  // SEC_CM: DIV.INTERSIG.MUBI
+  input mubi4_t div_step_down_req_i,
+
   // clock calibration has been done.
   // If this is signal is 0, assume clock frequencies to be
   // uncalibrated.
   input prim_mubi_pkg::mubi4_t calib_rdy_i,
+% endif
 
   // jittery enable to ast
   output mubi4_t jitter_en_o,
-
-  // external indication for whether dividers should be stepped down
-  // SEC_CM: DIV.INTERSIG.MUBI
-  input mubi4_t div_step_down_req_i,
 
   // clock gated indications going to alert handlers
   output clkmgr_cg_en_t cg_en_o,
@@ -147,6 +150,7 @@ rg_srcs = list(sorted({sig['src_name'] for sig
   );
 
 % endfor
+% if len(derived_clks) > 0:
 
   ////////////////////////////////////////////////////
   // Divided clocks
@@ -154,12 +158,15 @@ rg_srcs = list(sorted({sig['src_name'] for sig
   // its related reset to ensure clock division
   // can happen without any dependency
   ////////////////////////////////////////////////////
+% if ext_clk_bypass:
 
   logic [${len(derived_clks)-1}:0] step_down_acks;
+% endif
 
 % for src_name in derived_clks:
   logic clk_${src_name};
 % endfor
+% endif
 
 % for src in derived_clks.values():
 
@@ -181,8 +188,13 @@ rg_srcs = list(sorted({sig['src_name'] for sig
     // We're using the pre-occ hookup (*_i) version for clock derivation.
     .clk_i(clk_${src['src']['name']}_i),
     .rst_ni(rst_root_${src['src']['name']}_ni),
+  % if ext_clk_bypass:
     .step_down_req_i(mubi4_test_true_strict(${src['src']['name']}_step_down_req)),
     .step_down_ack_o(step_down_acks[${loop.index}]),
+  % else:
+    .step_down_req_i(1'b0),
+    .step_down_ack_o(),
+  % endif
     .test_en_i(mubi4_test_true_strict(${src['name']}_div_scanmode[0])),
     .clk_o(clk_${src['name']})
   );
@@ -247,6 +259,7 @@ rg_srcs = list(sorted({sig['src_name'] for sig
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(AlertFatal[i])
     ) u_prim_alert_sender (
       .clk_i,
@@ -259,6 +272,7 @@ rg_srcs = list(sorted({sig['src_name'] for sig
       .alert_tx_o    ( alert_tx_o[i] )
     );
   end
+% if ext_clk_bypass:
 
   ////////////////////////////////////////////////////
   // Clock bypass request
@@ -290,6 +304,7 @@ rg_srcs = list(sorted({sig['src_name'] for sig
     // divider step down controls
     .step_down_acks_i(step_down_acks)
   );
+  % endif
 
   ////////////////////////////////////////////////////
   // Feed through clocks
@@ -361,7 +376,7 @@ rg_srcs = list(sorted({sig['src_name'] for sig
   typedef enum logic [${(len(rg_srcs) + 1).bit_length() - 1}:0] {
     BaseIdx,
 % for src in rg_srcs:
-    Clk${Name.from_snake_case(src).as_camel_case()}Idx,
+    Clk${Name.to_camel_case(src)}Idx,
 % endfor
     CalibRdyLastIdx
   } clkmgr_calib_idx_e;
@@ -375,7 +390,11 @@ rg_srcs = list(sorted({sig['src_name'] for sig
   ) u_calib_rdy_sync (
     .clk_i,
     .rst_ni,
+  % if ext_clk_bypass:
     .mubi_i(calib_rdy_i),
+  % else:
+    .mubi_i(MuBi4False),
+  % endif
     .mubi_o({calib_rdy})
   );
 
@@ -388,18 +407,14 @@ rg_srcs = list(sorted({sig['src_name'] for sig
       hw2reg.measure_ctrl_regwen.d = 1'b1;
     end
   end
-<% aon_freq = src_clks['aon']['freq'] %>\
 % for i, src in enumerate(rg_srcs):
 <%
- freq = all_srcs[src]['freq']
- # One bit margin, same bit width as in the reg top
- bit_width = int(freq / aon_freq).bit_length() + 1
- cnt = 2**bit_width
- sel_idx = f"Clk{Name.from_snake_case(src).as_camel_case()}Idx"
+ width, ref_cnt, _ = config_clk_meas(src, all_srcs)
+ sel_idx = f"Clk{Name.to_camel_case(src)}Idx"
 %>
   clkmgr_meas_chk #(
-    .Cnt(${cnt}),
-    .RefCnt(1)
+    .Cnt(${2**width}),
+    .RefCnt(${ref_cnt})
   ) u_${src}_meas (
     .clk_i,
     .rst_ni,
@@ -456,7 +471,11 @@ rg_srcs = list(sorted({sig['src_name'] for sig
   ) u_${k}_sw_en_sync (
     .clk_i(clk_${v['src_name']}),
     .rst_ni(rst_${v['src_name']}_ni),
+  % if len(typed_clocks['sw_clks']) > 1:
     .d_i(reg2hw.clk_enables.${k}_en.q),
+  % else:
+    .d_i(reg2hw.clk_enables.q),
+  % endif
     .q_o(${k}_sw_en)
   );
 
@@ -503,8 +522,7 @@ rg_srcs = list(sorted({sig['src_name'] for sig
 
   logic [${len(typed_clocks['hint_clks'])-1}:0] idle_cnt_err;
 % for clk, sig in typed_clocks['hint_clks'].items():
-<%assert_name = Name.from_snake_case(clk)
-%>
+
   clkmgr_trans #(
 % if clk == "clk_main_kmac":
     .FpgaBufGlobal(1'b1) // KMAC is getting too big for a single clock region.
@@ -535,7 +553,7 @@ rg_srcs = list(sorted({sig['src_name'] for sig
     .reg_cnt_err_o(idle_cnt_err[${hint_names[clk]}])
   );
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
-    ${assert_name.as_camel_case()}CountCheck_A,
+    ${Name.to_camel_case(clk)}CountCheck_A,
     u_${clk}_trans.u_idle_cnt,
     alert_tx_o[1])
 % endfor
@@ -574,9 +592,11 @@ rg_srcs = list(sorted({sig['src_name'] for sig
   `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
   `ASSERT_KNOWN(AlertsKnownO_A,   alert_tx_o)
   `ASSERT_KNOWN(PwrMgrKnownO_A, pwr_o)
+% if ext_clk_bypass:
   `ASSERT_KNOWN(AllClkBypReqKnownO_A, all_clk_byp_req_o)
   `ASSERT_KNOWN(IoClkBypReqKnownO_A, io_clk_byp_req_o)
   `ASSERT_KNOWN(LcCtrlClkBypAckKnownO_A, lc_clk_byp_ack_o)
+% endif
   `ASSERT_KNOWN(JitterEnableKnownO_A, jitter_en_o)
 % for intf in exported_clks:
   `ASSERT_KNOWN(ExportClocksKownO_A, clocks_${intf}_o)

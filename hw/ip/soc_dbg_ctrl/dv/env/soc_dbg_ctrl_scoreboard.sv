@@ -12,7 +12,7 @@ class soc_dbg_ctrl_scoreboard extends cip_base_scoreboard #(
   // Local variables
 
   // Standard SV/UVM methods
-  extern function new(string name="", uvm_component parent=null);
+  extern function new(string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
   extern function void connect_phase(uvm_phase phase);
   extern task run_phase(uvm_phase phase);
@@ -28,7 +28,7 @@ class soc_dbg_ctrl_scoreboard extends cip_base_scoreboard #(
 endclass : soc_dbg_ctrl_scoreboard
 
 
-function soc_dbg_ctrl_scoreboard::new(string name="", uvm_component parent=null);
+function soc_dbg_ctrl_scoreboard::new(string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
 
@@ -112,7 +112,7 @@ task soc_dbg_ctrl_scoreboard::process_tl_core_access(
 
   // Process the CRS req:
   //  - for write, update local variable and fifo at address phase
-  //  - for read, update predication at address phase and compare at data phase
+  //  - for read, update prediction at address phase and compare at data phase
   case (csr.get_name())
     // Add individual case item for each csr
     "intr_state": begin
@@ -124,6 +124,9 @@ task soc_dbg_ctrl_scoreboard::process_tl_core_access(
     end
     "intr_test": begin
       // FIXME TODO MVy
+    end
+    "debug_policy_relocked": begin
+      // FIXME TODO
     end
     default: begin
       `uvm_fatal(`gfn, $sformatf("invalid CSR: %0s", csr.get_full_name()))

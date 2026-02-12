@@ -12,7 +12,6 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   // ext component cfgs
   rand push_pull_agent_cfg#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))
                                                  m_entropy_src_agent_cfg;
-  rand push_pull_agent_cfg#(.HostDataWidth(1))   m_aes_halt_agent_cfg;
   rand csrng_agent_cfg                           m_edn_agent_cfg[NUM_HW_APPS];
 
   virtual pins_if#(MuBi8Width)   otp_en_cs_sw_app_read_vif;
@@ -28,8 +27,8 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   uint otp_en_cs_sw_app_read_pct, otp_en_cs_sw_app_read_inval_pct, lc_hw_debug_en_pct, regwen_pct,
        int_state_read_enable_pct, int_state_read_enable_regwen_pct,
        enable_pct, sw_app_enable_pct, read_int_state_pct, fips_force_enable_pct, force_state_pct,
-       check_int_state_pct, num_cmds_min, num_cmds_max, aes_halt_pct, min_aes_halt_clks,
-       max_aes_halt_clks, min_num_disable_enable, max_num_disable_enable,
+       check_int_state_pct, num_cmds_min, num_cmds_max,
+       min_num_disable_enable, max_num_disable_enable,
        min_enable_clks, max_enable_clks,
        min_disable_edn_before_csrng_clks, max_disable_edn_before_csrng_clks,
        min_disable_csrng_before_entropy_src_clks, max_disable_csrng_before_entropy_src_clks,
@@ -39,8 +38,7 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
 
   bit    use_invalid_mubi;
 
-  rand bit       check_int_state, regwen, hw_app[NUM_HW_APPS],
-                 sw_app, aes_halt;
+  rand bit       check_int_state, regwen, hw_app[NUM_HW_APPS], sw_app;
   rand mubi4_t   enable, sw_app_enable, read_int_state, fips_force_enable;
   rand bit [2:0] fips_force;
   rand bit [3:0] lc_hw_debug_en;
@@ -70,7 +68,7 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   constraint  which_cmd_inv_seq_c { which_cmd_inv_seq inside {INS, RES, GEN, UPD};}
 
   rand csrng_pkg::acmd_e which_invalid_acmd;
-  constraint  which_invalid_acmd_c { which_invalid_acmd inside {INV, GENB, GENU};}
+  constraint  which_invalid_acmd_c { which_invalid_acmd inside {INV};}
 
   rand bit [31:0] reseed_interval;
   constraint  reseed_interval_c { reseed_interval inside {[1:10]};}
@@ -120,10 +118,6 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
                                  1 :/ check_int_state_pct,
                                  0 :/ (100 - check_int_state_pct) };}
 
-  constraint aes_halt_c { aes_halt dist {
-                          1 :/ aes_halt_pct,
-                          0 :/ (100 - aes_halt_pct) };}
-
   constraint fips_force_enable_c { fips_force_enable dist {
                                    MuBi4True  :/ fips_force_enable_pct,
                                    MuBi4False :/ (100 - fips_force_enable_pct) };}
@@ -142,17 +136,17 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   // distributions towards aes_cipher_sm_err to get away with a reasonable number of seeds.
   int num_bins_aes_cipher_sm_err = which_aes_cm.num() * Sp2VWidth;
   constraint which_fatal_err_c { which_fatal_err dist {
-      [sfifo_cmd_error : sfifo_blkenc_error]     := 3, // 3 error types per sfifo
-      [cmd_stage_sm_error : drbg_updob_sm_error] := 1, // 1 error type per FSM
-      aes_cipher_sm_error                        := num_bins_aes_cipher_sm_err,
-      cmd_gen_cnt_error                          := 3, // 3 counters feed into this bit
-      [fifo_write_error : fifo_state_error]      := 1
+      [sfifo_cmd_error : sfifo_genbits_error]  := 3, // 3 error types per sfifo
+      [cmd_stage_sm_error : ctr_drbg_sm_error] := 1, // 1 error type per FSM
+      aes_cipher_sm_error                      := num_bins_aes_cipher_sm_err,
+      ctr_error                                := 2, // 2 counters feed into this bit
+      [fifo_write_error : fifo_state_error]    := 1
   };}
   constraint which_err_code_c { which_err_code dist {
-      [sfifo_cmd_err : sfifo_blkenc_err]     := 3, // 3 error types per sfifo
-      [cmd_stage_sm_err : drbg_updob_sm_err] := 1, // 1 error type per FSM
+      [sfifo_cmd_err : sfifo_genbits_err]    := 3, // 3 error types per sfifo
+      [cmd_stage_sm_err : ctr_drbg_sm_err]   := 1, // 1 error type per FSM
       aes_cipher_sm_err                      := num_bins_aes_cipher_sm_err,
-      cmd_gen_cnt_err                        := 3, // 3 counters feed into this bit
+      ctr_err                                := 2, // 2 counters feed into this bit
       [fifo_write_err : fifo_state_err_test] := 1
   };}
 
@@ -244,10 +238,6 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
     // create agent configs
     m_entropy_src_agent_cfg = push_pull_agent_cfg#(.HostDataWidth(entropy_src_pkg::
                               FIPS_CSRNG_BUS_WIDTH))::type_id::create("m_entropy_src_agent_cfg");
-
-    m_aes_halt_agent_cfg    = push_pull_agent_cfg#(.HostDataWidth(1))::type_id::create
-                              ("m_aes_halt_agent_cfg");
-
     for (int i = 0; i < NUM_HW_APPS; i++) begin
       m_edn_agent_cfg[i] = csrng_agent_cfg::type_id::create($sformatf("m_edn_agent_cfg[%0d]", i));
     end
@@ -263,6 +253,9 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
 
     // only support 1 outstanding TL item
     m_tl_agent_cfg.max_outstanding_req = 1;
+
+    // Used to allow reset operations without waiting for CSR accesses to complete
+    can_reset_with_csr_accesses = 1;
   endfunction
 
   // Check internal state w/ optional compare
@@ -380,10 +373,6 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
            num_cmds_min)};
     str = {str,  $sformatf("\n\t |***** num_cmds_max                    : %10d *****| \t",
            num_cmds_max)};
-    str = {str,  $sformatf("\n\t |***** min_aes_halt_clks               : %10d *****| \t",
-           min_aes_halt_clks)};
-    str = {str,  $sformatf("\n\t |***** max_aes_halt_clks               : %10d *****| \t",
-           max_aes_halt_clks)};
     str = {str,  $sformatf("\n\t |********************************************************| \t")};
     str = {str, "\n"};
     return str;

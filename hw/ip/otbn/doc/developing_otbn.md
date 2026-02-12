@@ -15,15 +15,15 @@ through the [GitHub issue tracker](https://github.com/lowRISC/opentitan/issues).
 
 ### Build OTBN software
 
-An assembler, linker and disassembler for OTBN can be found in
-`hw/ip/otbn/util`. These are wrappers around a RISC-V GCC and binutils toolchain
-so one must be available (see the OpenTitan documentation on [obtaining a
-toolchain](../../../../doc/getting_started/README.md#step-3-install-the-lowrisc-risc-v-toolchain).
-For more details about the toolchain, see the [user
-guide](../../../../doc/contributing/sw/otbn_sw.md)).
+An assembler, linker and disassembler for OTBN can be found in `hw/ip/otbn/util`
+(For more details about these tools see the [user guide](../../../../doc/contributing/sw/otbn_sw.md)).
 
-`otbn_as.py` and `otbn_ld.py` can be used to build .elf files for use with
-simulations. They work similarly to binutils programs they wrap.
+These tools are wrappers around a RISC-V and binutils toolchain so one must be available.
+The toolchain can be installed with the [`util/get-toolchain.py`](../../../../util/get-toolchain.py) script.
+Simply call the script from `$REPO_TOP` and make sure to select the correct architecture.
+
+When the toolchain is installed, the `otbn_as.py` and `otbn_ld.py` can be used to build .elf files for use with simulations.
+They work similarly to binutils programs they wrap.
 
 ```
 hw/ip/otbn/util/otbn_as.py -o prog_bin/prog.o prog.s
@@ -52,7 +52,7 @@ The quickest way to run an OTBN-only program is to use the Python simulator.
 First, generate a `.elf.` file either using the usual build process or by
 manually running `otbn_as.py` and `otbn_ld.py` as shown above. Then, from `$REPO_TOP`:
 ```console
-$ hw/ip/otbn/dv/otbnsim/standalone.py -t path/to/prog.elf
+$ hw/ip/otbn/dv/otbnsim/standalone.py path/to/prog.elf
 ```
 
 ### Run the standalone RTL simulation
@@ -60,7 +60,9 @@ A standalone environment to run OTBN alone in Verilator is included. Build it
 with `fusesoc` as follows:
 
 ```sh
-fusesoc --cores-root=. run --target=sim --setup --build lowrisc:ip:otbn_top_sim
+fusesoc --cores-root=. run --target=sim --setup --build \
+  --mapping=lowrisc:prim_generic:all:0.1 lowrisc:ip:otbn_top_sim \
+  --make_options="-j$(nproc)"
 ```
 
 It includes functionality to set the initial Dmem and Imem contents from a .elf
@@ -125,5 +127,5 @@ command-line use otherwise.
 ## Test the ISS
 
 The ISS has a simple test suite, which runs various instructions and
-makes sure they behave as expected. You can find the tests in
-`dv/otbnsim/test` and can run them with `make -C dv/otbnsim test`.
+makes sure they behave as expected.
+See the [simulator page](../dv/otbnsim/README.md) for more details.

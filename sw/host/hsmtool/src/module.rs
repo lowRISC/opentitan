@@ -14,18 +14,18 @@ use std::rc::Rc;
 use std::str::FromStr;
 
 use crate::error::HsmError;
-use crate::spxef::SpxEf;
+use crate::extra::{SpxEf, SpxKms};
 use acorn::{Acorn, SpxInterface};
 
 #[derive(Debug, Clone)]
 pub enum SpxModule {
     Acorn(String),
     Pkcs11Ef,
+    CloudKms(String),
 }
 
 impl SpxModule {
-    pub const HELP: &'static str =
-        "Type of sphincs+ module [allowed values: acorn:<libpath>, pkcs11-ef]";
+    pub const HELP: &'static str = "Type of sphincs+ module [allowed values: acorn:<libpath>, cloud-kms:<keyring-params>, pkcs11-ef]";
 }
 
 impl FromStr for SpxModule {
@@ -35,6 +35,8 @@ impl FromStr for SpxModule {
             Ok(SpxModule::Acorn(s[6..].into()))
         } else if s.eq_ignore_ascii_case("pkcs11-ef") {
             Ok(SpxModule::Pkcs11Ef)
+        } else if s[..10].eq_ignore_ascii_case("cloud-kms:") {
+            Ok(SpxModule::CloudKms(s[10..].into()))
         } else {
             Err(HsmError::ParseError(format!("unknown SpxModule {s:?}")))
         }
@@ -63,12 +65,9 @@ impl Module {
     pub fn initialize_spx(&mut self, module: &SpxModule) -> Result<()> {
         let module = match module {
             SpxModule::Acorn(libpath) => Acorn::new(libpath)? as Box<dyn SpxInterface>,
+            SpxModule::CloudKms(keyring) => SpxKms::new(keyring)? as Box<dyn SpxInterface>,
             SpxModule::Pkcs11Ef => {
-                let session = self
-                    .session
-                    .as_ref()
-                    .map(Rc::clone)
-                    .ok_or(HsmError::SessionRequired)?;
+                let session = self.session.clone().ok_or(HsmError::SessionRequired)?;
                 SpxEf::new(session) as Box<dyn SpxInterface>
             }
         };

@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`include "uvm_macros.svh"
+`include "dv_macros.svh"
 `include "prim_assert.sv"
 
 module core_ibex_tb_top;
@@ -50,6 +52,7 @@ module core_ibex_tb_top;
     `define IBEX_CFG_RegFile ibex_pkg::RegFileFF
   `endif
 
+  // Ibex Parameters
   parameter bit          PMPEnable        = 1'b0;
   parameter int unsigned PMPGranularity   = 0;
   parameter int unsigned PMPNumRegions    = 4;
@@ -65,8 +68,15 @@ module core_ibex_tb_top;
   parameter bit ICacheECC                 = 1'b0;
   parameter bit BranchPredictor           = 1'b0;
   parameter bit SecureIbex                = 1'b0;
+  parameter int unsigned LockstepOffset   = 1;
   parameter bit ICacheScramble            = 1'b0;
   parameter bit DbgTriggerEn              = 1'b0;
+  parameter int unsigned DmBaseAddr       = 32'h`DM_ADDR;
+  parameter int unsigned DmAddrMask       = 32'h`DM_ADDR_MASK;
+  parameter int unsigned DmHaltAddr       = 32'h`DEBUG_MODE_HALT_ADDR;
+  parameter int unsigned DmExceptionAddr  = 32'h`DEBUG_MODE_EXCEPTION_ADDR;
+  // Ibex Inputs
+  parameter int unsigned BootAddr         = 32'h`BOOT_ADDR; // ResetVec = BootAddr/256b + 0x80
 
   // Scrambling interface instantiation
   logic [ibex_pkg::SCRAMBLE_KEY_W-1:0]   scramble_key;
@@ -84,10 +94,6 @@ module core_ibex_tb_top;
   assign {scramble_key, scramble_nonce} = scrambling_key_if.d_data;
 
   ibex_top_tracing #(
-    .DmBaseAddr       (32'h`BOOT_ADDR       ),
-    .DmAddrMask       (32'h0000_0007        ),
-    .DmHaltAddr       (32'h`BOOT_ADDR + 'h0 ),
-    .DmExceptionAddr  (32'h`BOOT_ADDR + 'h4 ),
     .PMPEnable        (PMPEnable        ),
     .PMPGranularity   (PMPGranularity   ),
     .PMPNumRegions    (PMPNumRegions    ),
@@ -102,61 +108,69 @@ module core_ibex_tb_top;
     .ICache           (ICache           ),
     .ICacheECC        (ICacheECC        ),
     .SecureIbex       (SecureIbex       ),
+    .LockstepOffset   (LockstepOffset   ),
     .ICacheScramble   (ICacheScramble   ),
     .BranchPredictor  (BranchPredictor  ),
-    .DbgTriggerEn     (DbgTriggerEn     )
+    .DbgTriggerEn     (DbgTriggerEn     ),
+    .DmBaseAddr       (DmBaseAddr       ),
+    .DmAddrMask       (DmAddrMask       ),
+    .DmHaltAddr       (DmHaltAddr       ),
+    .DmExceptionAddr  (DmExceptionAddr  )
 
   ) dut (
-    .clk_i                  (clk                        ),
-    .rst_ni                 (rst_n                      ),
+    .clk_i                     (clk                        ),
+    .rst_ni                    (rst_n                      ),
 
-    .test_en_i              (1'b0                       ),
-    .scan_rst_ni            (1'b1                       ),
-    .ram_cfg_i              ('b0                        ),
+    .test_en_i                 (1'b0                       ),
+    .scan_rst_ni               (1'b1                       ),
+    .ram_cfg_icache_tag_i      ('b0                        ),
+    .ram_cfg_rsp_icache_tag_o  (                           ),
+    .ram_cfg_icache_data_i     ('b0                        ),
+    .ram_cfg_rsp_icache_data_o (                           ),
 
-    .hart_id_i              (32'b0                      ),
-    .boot_addr_i            (32'h`BOOT_ADDR             ), // align with spike boot address
+    .hart_id_i                 (32'b0                      ),
+    .boot_addr_i               (BootAddr                   ),
 
-    .instr_req_o            (instr_mem_vif.request      ),
-    .instr_gnt_i            (instr_mem_vif.grant        ),
-    .instr_rvalid_i         (instr_mem_vif.rvalid       ),
-    .instr_addr_o           (instr_mem_vif.addr         ),
-    .instr_rdata_i          (instr_mem_vif.rdata        ),
-    .instr_rdata_intg_i     (instr_mem_vif.rintg        ),
-    .instr_err_i            (instr_mem_vif.error        ),
+    .instr_req_o               (instr_mem_vif.request      ),
+    .instr_gnt_i               (instr_mem_vif.grant        ),
+    .instr_rvalid_i            (instr_mem_vif.rvalid       ),
+    .instr_addr_o              (instr_mem_vif.addr         ),
+    .instr_rdata_i             (instr_mem_vif.rdata        ),
+    .instr_rdata_intg_i        (instr_mem_vif.rintg        ),
+    .instr_err_i               (instr_mem_vif.error        ),
 
-    .data_req_o             (data_mem_vif.request       ),
-    .data_gnt_i             (data_mem_vif.grant         ),
-    .data_rvalid_i          (data_mem_vif.rvalid        ),
-    .data_addr_o            (data_mem_vif.addr          ),
-    .data_we_o              (data_mem_vif.we            ),
-    .data_be_o              (data_mem_vif.be            ),
-    .data_rdata_i           (data_mem_vif.rdata         ),
-    .data_rdata_intg_i      (data_mem_vif.rintg         ),
-    .data_wdata_o           (data_mem_vif.wdata         ),
-    .data_wdata_intg_o      (data_mem_vif.wintg         ),
-    .data_err_i             (data_mem_vif.error         ),
+    .data_req_o                (data_mem_vif.request       ),
+    .data_gnt_i                (data_mem_vif.grant         ),
+    .data_rvalid_i             (data_mem_vif.rvalid        ),
+    .data_addr_o               (data_mem_vif.addr          ),
+    .data_we_o                 (data_mem_vif.we            ),
+    .data_be_o                 (data_mem_vif.be            ),
+    .data_rdata_i              (data_mem_vif.rdata         ),
+    .data_rdata_intg_i         (data_mem_vif.rintg         ),
+    .data_wdata_o              (data_mem_vif.wdata         ),
+    .data_wdata_intg_o         (data_mem_vif.wintg         ),
+    .data_err_i                (data_mem_vif.error         ),
 
-    .irq_software_i         (irq_vif.irq_software       ),
-    .irq_timer_i            (irq_vif.irq_timer          ),
-    .irq_external_i         (irq_vif.irq_external       ),
-    .irq_fast_i             (irq_vif.irq_fast           ),
-    .irq_nm_i               (irq_vif.irq_nm             ),
+    .irq_software_i            (irq_vif.irq_software       ),
+    .irq_timer_i               (irq_vif.irq_timer          ),
+    .irq_external_i            (irq_vif.irq_external       ),
+    .irq_fast_i                (irq_vif.irq_fast           ),
+    .irq_nm_i                  (irq_vif.irq_nm             ),
 
-    .scramble_key_valid_i   (scrambling_key_if.ack      ),
-    .scramble_key_i         (scramble_key               ),
-    .scramble_nonce_i       (scramble_nonce             ),
-    .scramble_req_o         (scrambling_key_if.req      ),
+    .scramble_key_valid_i      (scrambling_key_if.ack      ),
+    .scramble_key_i            (scramble_key               ),
+    .scramble_nonce_i          (scramble_nonce             ),
+    .scramble_req_o            (scrambling_key_if.req      ),
 
-    .debug_req_i            (dut_if.debug_req           ),
-    .crash_dump_o           (                           ),
-    .double_fault_seen_o    (dut_if.double_fault_seen   ),
+    .debug_req_i               (dut_if.debug_req           ),
+    .crash_dump_o              (                           ),
+    .double_fault_seen_o       (dut_if.double_fault_seen   ),
 
-    .fetch_enable_i         (dut_if.fetch_enable        ),
-    .alert_minor_o          (dut_if.alert_minor         ),
-    .alert_major_internal_o (dut_if.alert_major_internal),
-    .alert_major_bus_o      (dut_if.alert_major_bus     ),
-    .core_sleep_o           (dut_if.core_sleep          )
+    .fetch_enable_i            (dut_if.fetch_enable        ),
+    .alert_minor_o             (dut_if.alert_minor         ),
+    .alert_major_internal_o    (dut_if.alert_major_internal),
+    .alert_major_bus_o         (dut_if.alert_major_bus     ),
+    .core_sleep_o              (dut_if.core_sleep          )
   );
 
   `define IBEX_RF_PATH core_ibex_tb_top.dut.u_ibex_top.gen_regfile_ff.register_file_i
@@ -183,15 +197,16 @@ module core_ibex_tb_top;
       `IBEX_LOCKSTEP_PATH.u_shadow_core.NoMemResponseWithoutPendingAccess)
   end
 
-  assign dut.u_ibex_top.u_ibex_core.u_fcov_bind.rf_we_glitch_err =
-    dut.u_ibex_top.rf_alert_major_internal;
-
+`ifndef DV_FCOV_DISABLE
+  assign dut.u_ibex_top.u_ibex_core.u_fcov_bind.rf_glitch_err =
+    dut.u_ibex_top.alert_major_internal_o;
   assign dut.u_ibex_top.u_ibex_core.u_fcov_bind.lockstep_glitch_err =
     dut.u_ibex_top.lockstep_alert_major_internal;
+`endif
 
   // Data load/store vif connection
   assign data_mem_vif.reset = ~rst_n;
-  // Instruction fetch vif connnection
+  // Instruction fetch vif connection
   assign instr_mem_vif.reset = ~rst_n;
   assign instr_mem_vif.we    = 0;
   assign instr_mem_vif.be    = 0;
@@ -319,6 +334,7 @@ module core_ibex_tb_top;
   initial begin
     // Drive the clock and reset lines. Reset everything and start the clock at the beginning of
     // time
+    #0; // needed for dsim
     ibex_clk_if.set_active();
     fork
       ibex_clk_if.apply_reset(.reset_width_clks (100));
@@ -362,24 +378,11 @@ module core_ibex_tb_top;
   end
 
   // Manually set unused_assert_connected = 1 to disable the AssertConnected_A assertion for
-  // prim_count in case lockstep (set by SecureIbex) is enabled. If not disabled, DV fails.
-  if (SecureIbex) begin : gen_disable_count_check
-    assign dut.u_ibex_top.gen_lockstep.u_ibex_lockstep.u_rst_shadow_cnt.
+  // prim_count in case lockstep (set by SecureIbex) is enabled and the lockstep offset is
+  // larger than 1. If not disabled, DV fails.
+  if (SecureIbex && LockstepOffset > 1) begin : gen_disable_count_check
+    assign dut.u_ibex_top.gen_lockstep.u_ibex_lockstep.gen_reset_counter.u_rst_shadow_cnt.
           unused_assert_connected = 1;
-  end
-
-  // Disable the assertion for onhot check in case WrenCheck (set by SecureIbex) is enabled.
-  if (SecureIbex) begin : gen_disable_onehot_check
-    assign dut.u_ibex_top.gen_regfile_ff.register_file_i.gen_wren_check.u_prim_onehot_check.
-          unused_assert_connected = 1;
-  end
-
-  // Disable the assertion for onhot check in case RdataMuxCheck (set by SecureIbex) is enabled.
-  if (SecureIbex) begin : gen_disable_rdata_mux_check
-    assign dut.u_ibex_top.gen_regfile_ff.register_file_i.gen_rdata_mux_check.
-          u_prim_onehot_check_raddr_a.unused_assert_connected = 1;
-    assign dut.u_ibex_top.gen_regfile_ff.register_file_i.gen_rdata_mux_check.
-          u_prim_onehot_check_raddr_b.unused_assert_connected = 1;
   end
 
   ibex_pkg::ctrl_fsm_e controller_state;

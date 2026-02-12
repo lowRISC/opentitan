@@ -4,16 +4,16 @@
 
 use anyhow::Result;
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use serde_annotate::Annotate;
 use std::io::{Read, Write};
 
+use super::GlobalFlags;
 use super::flash::FlashFlags;
 use super::misc::{TlvHeader, TlvTag};
-use super::GlobalFlags;
 
 /// Describes an INFO page to which a set of flags apply.
-#[derive(Debug, Default, Deserialize, Serialize, Annotate)]
+#[derive(Debug, Default, Deserialize, Annotate)]
 pub struct OwnerInfoPage {
     /// The bank in which the info page resides.
     pub bank: u8,
@@ -57,7 +57,7 @@ impl OwnerInfoPage {
 }
 
 /// Describes the overall flash configuration for owner-accesssable INFO pages.
-#[derive(Debug, Serialize, Deserialize, Annotate)]
+#[derive(Debug, Deserialize, Annotate)]
 pub struct OwnerFlashInfoConfig {
     /// Header identifying this struct.
     #[serde(

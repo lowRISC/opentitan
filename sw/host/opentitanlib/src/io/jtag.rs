@@ -10,9 +10,10 @@ use thiserror::Error;
 use std::path::PathBuf;
 use std::time::Duration;
 
+use ot_hal::dif::lc_ctrl::LcCtrlReg;
+
 use crate::app::TransportWrapper;
 use crate::debug::openocd::OpenOcd;
-use crate::dif::lc_ctrl::LcCtrlReg;
 use crate::impl_serializable_error;
 
 #[derive(Debug, Args, Clone)]

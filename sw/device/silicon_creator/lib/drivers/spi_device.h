@@ -34,20 +34,7 @@ enum {
   kSpiDeviceJedecContCode = 0x7f,
   kSpiDeviceJedecContCodeCount = 12,
   kSpiDeviceJedecManufId = 0xef,
-  /**
-   * LSB of the 2-byte device ID.
-   *
-   * Density is expressed as log2(flash size in bytes).
-   */
-  kSpiDeviceJedecDensity = 20,
-  /**
-   * Size of the JEDEC Basic Flash Parameter Table (BFPT) in words.
-   */
-  kSpiDeviceBfptNumWords = 23,
-  /**
-   * Size of the SFDP table in words.
-   */
-  kSpiDeviceSfdpTableNumWords = 27,
+
   /**
    * Address value used when a command does not have an address.
    *
@@ -59,6 +46,14 @@ enum {
 
 // TODO(#11740): Auto-generated macros for HW constants.
 enum {
+  /**
+   * Size of the JEDEC Basic Flash Parameter Table (BFPT) in words.
+   *
+   * Note: This is the size of the BFPT table in spi_device.c used for ROM
+   * bootstrap. Other users may define their own SFDP tables with a different
+   * BFPT.
+   */
+  kSpiDeviceBfptNumWords = 23,
   /**
    * Size of the SFDP area in spi_device egress buffer in bytes.
    *
@@ -100,6 +95,13 @@ enum {
  * received, spi_device overwrites the contents of the payload buffer.
  */
 typedef enum spi_device_opcode {
+  /**
+   * READ command.
+   *
+   * This command is handled by the spi_device. Upon receiving this command,
+   * spi_device sends the data from either the SPI mailbox or egress buffer.
+   */
+  kSpiDeviceOpcodeRead = 0x03,
   /**
    * READ_STATUS command.
    *
@@ -273,7 +275,10 @@ typedef struct spi_device_sfdp_table {
    */
   spi_device_param_header_t bfpt_header;
   /**
-   * Basic Flash Parameters Table (BFPT).
+   * Basic Flash Parameter Table (BFPT) (JESD216F 6.4).
+   *
+   * This is a mandatory table defined by JEDEC that identifies some of the
+   * basic features of a SPI protocol flash memory device.
    */
   spi_device_bfpt_t bfpt;
 } spi_device_sfdp_table_t;
@@ -283,9 +288,6 @@ OT_ASSERT_MEMBER_OFFSET(spi_device_sfdp_table_t, bfpt, 16);
 OT_ASSERT_SIZE(spi_device_sfdp_table_t, 108);
 static_assert(sizeof(spi_device_sfdp_table_t) <= kSpiDeviceSfdpAreaNumBytes,
               "SFDP table must fit in the space provided by spi_device");
-static_assert(sizeof(spi_device_sfdp_table_t) ==
-                  kSpiDeviceSfdpTableNumWords * sizeof(uint32_t),
-              "`kSpiDeviceSfdpTableNumWords` is incorrect");
 
 // Note: Declared here to be able to use in tests.
 extern const spi_device_sfdp_table_t kSpiDeviceSfdpTable;
@@ -302,7 +304,29 @@ extern const spi_device_sfdp_table_t kSpiDeviceSfdpTable;
  *   - READ_JEDEC_ID
  *   - READ_SFDP
  */
-void spi_device_init(void);
+void spi_device_init_bootstrap(void);
+
+/**
+ * Initializes the spi_device in flash mode.
+ *
+ * This function initializes the spi_device in the following configuration:
+ * - CPOL = 0, CPHA = 0 (clock low in idle, data sampled on rising clock edge).
+ * - MSb-first bit order for RX and TX.
+ * - Flash mode with 3-byte addressing.
+ * - The given `sfdp_table` is written to the SFDP area in the buffer.
+ * - Commands:
+ *   - READ_JEDEC_ID
+ *   - READ_SFDP
+ *
+ * @param log2_density The density to be reported by READ_JEDEC_ID (the log2
+ *                     flash size in bytes).
+ * @param sfdp_table The SFDP table to program into the SFDP area. The table
+ *                 must be word aligned.
+ * @param sfdp_len The length of the SFDP table in bytes. The length must be
+ *                 a multiple of 4 bytes.
+ */
+void spi_device_init(uint8_t log2_density, const void *sfdp_table,
+                     size_t sfdp_len);
 
 /**
  * A SPI flash command.
@@ -341,9 +365,10 @@ typedef struct spi_device_cmd {
  * next word boundary.
  *
  * @param[out] cmd SPI flash command.
+ * @param blocking Whether or not to block until a command is received.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t spi_device_cmd_get(spi_device_cmd_t *cmd);
+rom_error_t spi_device_cmd_get(spi_device_cmd_t *cmd, bool blocking);
 
 /**
  * Clears the SPI flash status register.
@@ -358,6 +383,24 @@ void spi_device_flash_status_clear(void);
  */
 OT_WARN_UNUSED_RESULT
 uint32_t spi_device_flash_status_get(void);
+
+/**
+ * Enables the SPI mailbox at the given SPI address.
+ *
+ * @param address The SPI address of the mailbox.
+ */
+void spi_device_enable_mailbox(uint32_t address);
+
+/**
+ * Copies data to the SPI egress buffer.
+ *
+ * @param egress_offset Destination offset in the egress buffer.
+ * @param data Pointer to data to copy into the egress buffer.  The data must
+ *             be word aligned.
+ * @param len Length of data to copy into the egress buffer.
+ */
+void spi_device_copy_to_egress(uint32_t egress_offset, const void *data,
+                               size_t len);
 
 #ifdef __cplusplus
 }

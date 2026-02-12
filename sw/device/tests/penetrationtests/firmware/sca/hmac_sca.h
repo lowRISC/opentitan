@@ -38,6 +38,8 @@ status_t handle_hmac_sca_batch_fvsr(ujson_t *uj);
  * using a random dataset. This dataset is generated on the device using the
  * PRNG from the SCA library.
  *
+ * Note that the key is presumed to be correctly padded or hashed already.
+ *
  * SCA traces are captured during trigger_high & trigger_low.
  *
  * @param uj An initialized uJSON context.
@@ -46,10 +48,28 @@ status_t handle_hmac_sca_batch_fvsr(ujson_t *uj);
 status_t handle_hmac_sca_batch_random(ujson_t *uj);
 
 /**
+ * hmac.sca.batch_daisy_chain test
+ *
+ * This SCA penetration test triggers num_iterations HMAC-SHA256 operations
+ * by re-using the output of the HMAC by its input. This dataset is generated on
+ * the device using the PRNG from the SCA library.
+ *
+ * Note that the key is presumed to be correctly padded or hashed already.
+ *
+ * SCA traces are captured during trigger_high & trigger_low.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_hmac_sca_batch_daisy_chain(ujson_t *uj);
+
+/**
  * hmac.sca.single test
  *
  * This SCA penetration test triggers a single HMAC-SHA256 operation using the
  * provided key, mask, and message. The tag is returend to the host.
+ *
+ * Note that the key is presumed to be correctly padded or hashed already.
  *
  * SCA traces are captured during trigger_high & trigger_low.
  *

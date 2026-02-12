@@ -12,7 +12,7 @@
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_test_base.h"
 
-#include "pwrmgr_regs.h"  // Generated
+#include "hw/top/pwrmgr_regs.h"  // Generated
 
 namespace dif_pwrmgr_unittest {
 namespace {
@@ -28,6 +28,11 @@ typedef enum dif_pwrmgr_wakeup_request_source {
   kDifPwrmgrWakeupRequestSourceFive = (1u << 4),
   kDifPwrmgrWakeupRequestSourceSix = (1u << 5),
 } dif_pwrmgr_wakeup_request_source_t;
+
+typedef enum dif_pwrmgr_reset_request_source {
+  kDifPwrmgrResetRequestSourceOne = (1u << 0),
+  kDifPwrmgrResetRequestSourceTwo = (1u << 1),
+} dif_pwrmgr_reset_request_source_t;
 
 /**
  * Returns a `uint32_t` with a single zero bit.

@@ -96,7 +96,7 @@ interface pwrmgr_rstreqs_sva_if
 
   // Software initiated resets do not affect rstreqs since rstmgr generates them.
   `ASSERT(SwResetSetCause_A,
-          $rose(sw_rst_req_i) |-> MAIN_RST_CYCLES (reset_cause == HwReq), clk_i,
+          $rose(sw_rst_req_i) |-> `MAIN_RST_CYCLES (reset_cause == HwReq), clk_i,
           reset_or_disable)
 
 endinterface

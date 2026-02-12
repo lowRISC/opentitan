@@ -28,7 +28,7 @@ In order to address the relationships among keymgr_dpe slots and their stored DP
 
 ## Key Manager Slots
 
-Keymgr_dpe consists of `DpeNumBootStages` slots, which is a generic parameter.
+Keymgr_dpe consists of `DpeNumSlots` slots, which is a generic parameter.
 Each of these key manager slots can store a DPE context, i.e. all DICE-related information for a particular boot stage. That includes a secret key along with additional context information described below.
 The secret key size is fixed to 256-bit.
 
@@ -36,7 +36,7 @@ Each slot data consists of the following fields:
 * `valid` bit that tells whether the slot is occupied.
 * `boot_stage` is a monotonic counter that refers to which boot stage this slot belongs to.
 * `max_key_version` stores the maximum allowed key version that is used for comparison during versioned key generation.
-* `key_policy` contains policy bits that restrict advance calls that specificy this slot as the source slot.
+* `key_policy` contains policy bits that restrict advance calls that specify this slot as the source slot.
 
 A slot is a dynamic storage unit and the DPE context it stores is controlled by SW, even though their secret keys never leave HW.
 A slot becomes active (i.e. `valid` is set to 1) after a successful advance call that specified this slot as its destination.
@@ -154,7 +154,7 @@ When there is no fault and the enable signal is active by life cycle controller,
 
 * If keymgr_dpe is in `Reset` state (i.e. the first advance call that latches UDS), then an advance operation is valid if:
   * The OTP creator root key is valid during the clock cycle keymgr_DPE tries to latch it.
-* If keymgr_dpe is in `Available` state, then an advance operation is valid if all of the following conditions are satisifed (AND clause):
+* If keymgr_dpe is in `Available` state, then an advance operation is valid if all of the following conditions are satisfied (AND clause):
   * Keymgr_DPE is in `Available` state.
   * `valid = true` for the source slot.
   * `allow_child = true` for the source slot.
@@ -217,7 +217,7 @@ During advance operations, KDF inputs are 0 padded to `AdvDataWidth` bits. Depen
 * `owner_seed` is 256-bit owner secret received from the `SECRET3` OTP partition.
 
 During key generation operations, KDF inputs are 0 padded to `GenDataWidth` bits. Some diversification constants are:
-* `dest_seed` is a 256-bit diversification value for each cryptograhic key type {AES, KMAC, OTBN}.
+* `dest_seed` is a 256-bit diversification value for each cryptographic key type {AES, KMAC, OTBN}.
 * `output_key` is a 256-bit diversification value for distinguishing software and sideload keys.
 
 ### Life Cycle Connection

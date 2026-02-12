@@ -32,7 +32,7 @@ interface entropy_subsys_fifo_exception_if#(
    assign error_pulses[FIFO_WRITE_ERR] = write_err_pulse;
    assign error_pulses[FIFO_STATE_ERR] = state_err_pulse;
 
-   // Error conidtions map to the types of events that cause errors in the
+   // Error conditions map to the types of events that cause errors in the
    // entropy subsystem IPs
    assign write_forbidden = IsPackerFifo ? !wready_o : full_o;
 

@@ -12,8 +12,6 @@
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
-
 enum {
   /**
    * The size of the buffer used in firmware to process the entropy bits in

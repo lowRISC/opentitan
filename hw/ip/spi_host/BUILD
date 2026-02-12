@@ -17,3 +17,11 @@ filegroup(
         "//hw/ip/spi_host/data:all_files",
     ],
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = glob([
+        "**/*.md",
+        "**/*.svg",
+    ]) + ["//hw/ip/spi_host/data:doc_files"],
+)

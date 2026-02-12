@@ -20,11 +20,11 @@ The `ac_range_check` UVM DV testbench has been constructed based on the [CIP tes
 
 ${"###"} Block diagram
 ![Block diagram](./doc/tb.svg)
-Note: this diagram is editable from [this address](https://docs.google.com/drawings/d/1mZR9z-vssPHhJmbmX_ZZXELSP20vFc28m5TPbK4eVvE/edit?usp=sharing).
+Note: this diagram is editable from [this address](https://docs.google.com/drawings/d/1-0r4V6H8RwLeiAa3ng73vcDZdCbeeuFDYPZcX-QXRYo/edit?usp=sharing).
 
 ${"###"} Top level testbench
-Top level testbench is located at `hw/top_${topname}/ip_autogen/ac_range_check/dv/tb/tb.sv`.
-It instantiates the `ac_range_check` DUT module `hw/ip/ac_range_check/rtl/ac_range_check.sv`.
+Top level testbench is located at `hw/top_${topname}/ip_autogen/${module_instance_name}/dv/tb/tb.sv`.
+It instantiates the `${module_instance_name}` DUT module `hw/top_${topname}/ip_autogen/${module_instance_name}/rtl/${module_instance_name}.sv`.
 In addition, the testbench instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface](../../../../dv/sv/common_ifs/README.md)
 * [Reset shadowed interface](../../../../dv/sv/common_ifs/README.md)  // TODO add something in this doc about this interface.
@@ -33,6 +33,7 @@ In addition, the testbench instantiates the following interfaces, connects them 
 * [TileLink device interface for the Filtered CTN accesses](../../../../dv/sv/tl_agent/README.md)
 * Interrupts ([`pins_if`](../../../../dv/sv/common_ifs/README.md))
 * Alerts ([`alert_esc_if`](../../../../dv/sv/alert_esc_agent/README.md))
+* Miscellaneaous IP specific signals without an attached UVM agent `misc_if`
 
 
 ${"###"} Common DV utility components
@@ -40,14 +41,19 @@ The following utilities provide generic helper tasks and functions to perform ac
 * [dv_utils_pkg](../../../../dv/sv/dv_utils/README.md)
 * [csr_utils_pkg](../../../../dv/sv/csr_utils/README.md)
 
-${"###"} Compile-time configurations
-[list compile time configurations, if any and what are they used for]
-
 ${"###"} Global types & methods
-All common types and methods defined at the package level can be found in `ac_range_check_env_pkg`.
+All common types and methods defined at the package level can be found in `${module_instance_name}_env_pkg`.
 Some of them in use are:
 ```systemverilog
-[list a few parameters, types & methods; no need to mention all]
+  // Parameters
+  parameter uint   NUM_ALERTS                 = 2;
+  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"recov_ctrl_update_err", "fatal_fault"};
+  parameter uint   NUM_RANGES                 = ${num_ranges};
+  parameter uint   NUM_ROLES                  = ${2**nr_role_bits};
+  parameter uint   ROLE_WIDTH                 = ${nr_role_bits};
+
+  // Retrieve the index of the CSR based on its name
+  function automatic int get_csr_idx(string csr_ral_name, string csr_name);
 ```
 
 ${"###"} TL_agent
@@ -78,7 +84,7 @@ This helps increase the likelihood of hitting the design corners that would othe
 This object aims to provide such run-time controls.
 
 ${"####"} Env cfg
-The `ac_range_check_env_cfg`, environment configuration object provides access to the following elements:
+The `${module_instance_name}_env_cfg`, environment configuration object provides access to the following elements:
 * Build-time controls to configure the UVM environment composition during the `build_phase`
 * Downstream agent configuration objects for ease of lookup from any environment component
   * This includes the `tl_agent_cfg` objects for both TL interfaces
@@ -91,31 +97,40 @@ By housing all of the above, all pertinent information is more easily shared wit
 ${"###"} Stimulus strategy
 ${"####"} Test sequences
 All test sequences reside in `hw/top_${topname}/ip_autogen/ac_range_check/dv/env/seq_lib`.
-The `ac_range_check_base_vseq` virtual sequence is extended from `cip_base_vseq` and serves as a starting point.
-All test sequences are extended from `ac_range_check_base_vseq`.
+The `${module_instance_name}_base_vseq` virtual sequence is extended from `cip_base_vseq` and serves as a starting point.
+All test sequences are extended from `${module_instance_name}_base_vseq`.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
-Some of the most commonly used tasks / functions are as follows: From `hw/top_${topname}/ip_autogen/ac_range_check/dv/env/seq/ac_range_check_base_vseq.sv`,
-* task 1:
-* task 2:
+Some of the most commonly used tasks / functions are as follows: From `hw/top_${topname}/ip_autogen/${module_instance_name}/dv/env/seq/${module_instance_name}_base_vseq.sv`,
+* `ac_range_check_init`       : initialize ac_range_check settings including configurations and interrupt
+* `cfg_range_base`            : configure the range_base registers according to what is defined dut_cfg
+* `cfg_range_limit`           : configure the range_limit registers according to what is defined dut_cfg
+* `cfg_range_attr`            : configure the range_attr registers according to what is defined dut_cfg
+* `range_racl_policy`         : configure the range_racl_policy_shadowed registers according to what is defined dut_cfg
+* `send_single_tl_unfilt_tr`  : send one random transaction on the TL Unfiltered interface
+* `tl_filt_device_auto_resp`  : auto-respond to incoming TL accesses on the Filtered host interface
 
 ${"####"} Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
 The following covergroups have been developed to prove that the test intent has been adequately met:
-* cg1:
-* cg2:
+* `attr_perm_cg`      : evaluates attribute permissions coverage for all the indexes, access types and access permit (minus a bunch of illegal_bins)
+* `racl_cg`           : evaluates RACL checks coverage for all the indexes, roles and access types
+* `range_cg`          : observes that each index is enabled or disabled
+* `addr_match_cg`     : ensures that address matches are observed on all range indexes
+* `all_index_miss_cg` : it can occur when a TLUL transaction being checked by ac_range will miss all configured indexes and be denied
+* `bypass_cg`         : ensures that IP bypass has been exercised
+* `range_lock_cg`     : evaluates range lock coverage for all the indexes and for all ranges (enabled or not)
 
 ${"###"} Self-checking strategy
 ${"####"} Scoreboard
 It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
-* analysis port1:
-* analysis port2:
-<!-- explain inputs monitored, flow of data and outputs checked -->
+* tl_a_chan_fifo        : TileLink A channel for CSR accesses
+* tl_d_chan_fifo        : TileLink D channel for CSR accesses
+* tl_unfilt_d_chan_fifo : TileLink D channel for the Unfiltered interface
+* tl_filt_a_chan_fifo   : TileLink A channel for the Filtered interface
 
 ${"####"} Assertions
-* TLUL assertions: The `hw/top_${topname}/ip_autogen/ac_range_check/dv/sva/ac_range_check_bind.sv` binds the `tlul_assert` [assertions](../../../../ip/tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
+* TLUL assertions: The `hw/top_${topname}/ip_autogen/${module_instance_name}/dv/sva/${module_instance_name}_bind.sv` binds the `tlul_assert` [assertions](../../../../ip/tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
-* assert prop 1:
-* assert prop 2:
 
 ${"##"} Building and running tests
 We are using our in-house developed [regression tool](../../../../../util/dvsim/README.md) for building and running our tests and regressions.
@@ -123,7 +138,7 @@ Please take a look at the link for detailed information on the usage, capabiliti
 Here's how to run a smoke test:
 ```console
 $ cd $REPO_TOP
-$ ./util/dvsim/dvsim.py hw/top_${topname}/ip_autogen/ac_range_check/dv/ac_range_check_sim_cfg.hjson -i ac_range_check_smoke
+$ ./util/dvsim/dvsim.py hw/top_${topname}/ip_autogen/${module_instance_name}/dv/ac_range_check_sim_cfg.hjson -i ac_range_check_smoke
 ```
 
 ${"##"} Testplan

@@ -6,7 +6,6 @@
 import argparse
 import json
 import logging
-import os
 import os.path
 import re
 import subprocess
@@ -24,7 +23,10 @@ parser.add_argument('--html',
 parser.add_argument('--regions',
                     default='rom,ram_main,eflash',
                     help='Which memory regions to analyze')
-parser.add_argument('mapfile',
+parser.add_argument('--target',
+                    default='',
+                    help='Bazel target to generate map file')
+parser.add_argument('--mapfile',
                     metavar='MAPFILE',
                     type=str,
                     help='Mapfile to process')
@@ -425,9 +427,35 @@ class Mapfile(object):
         return csz
 
 
+def generate_map(target):
+    # Define the Bazel command as a list of arguments
+    # bazel_cmd = ["bazel", "build", "//sw/device/tests/crypto:otcrypto_export_size"]
+    map_file = None
+    bazel_cmd = ["bazel", "build", target]
+    try:
+        result = subprocess.run(bazel_cmd, check=True, capture_output=True, text=True)
+        print(result)
+        # Search output for the .map file line
+        for line in result.stderr.splitlines():
+            print(line)
+            if line.strip().endswith('.map'):
+                # The file path is the whole line or first token
+                map_file = line.strip().split()[0]
+        print("Generate map file from target succeeded:\n", result.stdout)
+    except subprocess.CalledProcessError as e:
+        print("Generate map file from target failed:\n", e.stderr)
+
+    return map_file
+
+
 def main(args):
     m = Mapfile(regions=args.regions.split(','),
                 ignore_debug=args.ignore_debug)
+
+    if args.mapfile is None:
+        # If no mapfile is provided generate the map file from a bazel target.
+        args.mapfile = generate_map(args.target)
+
     m.parse(args.mapfile)
     if args.arrangement == 'region':
         regions = m.by_memory_region()

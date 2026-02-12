@@ -11,15 +11,16 @@ use std::path::Path;
 use std::process::{Child, Command, Stdio};
 use std::time::{Duration, Instant};
 
-use anyhow::{bail, ensure, Context, Result};
-use once_cell::sync::Lazy;
+use anyhow::{Context, Result, bail, ensure};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use crate::dif::lc_ctrl::LcCtrlReg;
+use ot_hal::dif::lc_ctrl::LcCtrlReg;
+
 use crate::impl_serializable_error;
 use crate::io::jtag::{Jtag, JtagChain, JtagError, JtagParams, JtagTap, RiscvReg};
+use crate::regex;
 use crate::util::parse_int::ParseInt;
 use crate::util::printer;
 
@@ -87,7 +88,6 @@ impl OpenOcd {
         cmd.arg("-c")
             .arg("tcl_port 0; telnet_port disabled; gdb_port disabled; noinit;");
 
-        log::info!("CWD: {:?}", std::env::current_dir());
         log::info!("Spawning OpenOCD: {cmd:?}");
 
         cmd.stdin(Stdio::null())
@@ -116,13 +116,10 @@ impl OpenOcd {
         if log_stdio {
             log::info!("Waiting for OpenOCD to be ready to accept a TCL connection...");
         }
-        static READY_REGEX: Lazy<Regex> = Lazy::new(|| {
-            Regex::new("Info : Listening on port ([0-9]+) for tcl connections").unwrap()
-        });
         let mut buf = String::new();
         let regex_captures = Self::wait_until_regex_match(
             &mut stderr,
-            &READY_REGEX,
+            regex!("Info : Listening on port ([0-9]+) for tcl connections"),
             Self::OPENOCD_TCL_READY_TMO,
             log_stdio,
             &mut buf,
@@ -155,6 +152,13 @@ impl OpenOcd {
 
         let stream = TcpStream::connect(("localhost", openocd_port))
             .context("failed to connect to OpenOCD socket")?;
+
+        // Disable TCP Nagle delay to ensure minimal latency to OpenOCD.
+        // Without this, roundtrip communications can take 50ms which adds
+        // up to be longer than certain timeouts, e.g. the RMA loop in ROM.
+        stream
+            .set_nodelay(true)
+            .context("failed to disable TCP socket delay")?;
 
         let mut connection = Self {
             server_process: scopeguard::ScopeGuard::into_inner(kill_guard),
@@ -246,7 +250,7 @@ pub struct OpenOcdJtagChain {
 pub enum OpenOcdError {
     #[error("OpenOCD initialization failed: {0}")]
     InitializeFailure(String),
-    #[error("OpenOCD server exists prematurely")]
+    #[error("OpenOCD server exited prematurely")]
     PrematureExit,
     #[error("Generic error {0}")]
     Generic(String),
@@ -276,7 +280,7 @@ impl JtagChain for OpenOcdJtagChain {
         };
         self.openocd.execute(target)?;
 
-        // Capture outputs during initialization to see if error has occured during the process.
+        // Capture outputs during initialization to see if error has occurred during the process.
         let resp = self.openocd.execute("capture init")?;
         if resp.contains("JTAG scan chain interrogation failed") {
             bail!(OpenOcdError::InitializeFailure(resp));

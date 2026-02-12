@@ -48,12 +48,12 @@ class Node:
     # when False, no storage element
     # when True, FIFO present with default depth, the "fifo_pass"
     # variables control whether a particular direction in the fifo
-    # has the passthrough behvaior
+    # has the passthrough behavior
     pipeline = True
 
-    # FIFO passtru option. default True
+    # FIFO passthru option. default True
     # If pipeline is false, these fields have no meaning
-    # passthrough behavior refers to a FIFO passing the trasnaction
+    # passthrough behavior refers to a FIFO passing the transaction
     # through if the FIFO is currently empty
     req_fifo_pass = True
     rsp_fifo_pass = True

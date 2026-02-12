@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "sw/device/lib/crypto/drivers/entropy.h"
 
+#include "hw/top/dt/otbn.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/drivers/entropy_kat.h"
@@ -11,8 +12,6 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/tests/otbn_randomness_impl.h"
-
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 #define MODULE_ID MAKE_MODULE_ID('e', 'n', 't')
 
@@ -26,8 +25,8 @@ static status_t entropy_complex_init_test(void) {
 
   // The following test requests entropy from both EDN0 and EDN1.
   dif_otbn_t otbn;
-  TRY_CHECK(dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR),
-                          &otbn) == kDifOk);
+  TRY(dif_otbn_init_from_dt(kDtOtbn, &otbn));
+
   otbn_randomness_test_start(&otbn, /*iters=*/0);
   TRY_CHECK(otbn_randomness_test_end(&otbn, /*skip_otbn_don_check=*/false));
   return OK_STATUS();

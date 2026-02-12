@@ -57,7 +57,7 @@ def main():
 
     if args.doc:
         top = _read_hjson(args.doc)
-        if 'racl_ctrl' not in (module['name'] for module in top['module']):
+        if not topgen_lib.find_module(top["module"], "racl_ctrl"):
             raise SystemExit(f'No racl_ctrl module found in {args.doc}')
         if 'racl' not in top:
             raise SystemExit(f'Missing key "racl" in {args.doc}')

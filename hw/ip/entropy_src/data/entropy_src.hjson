@@ -19,7 +19,7 @@
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_entropy_src",
-  version:            "2.0.0",
+  version:            "3.0.0",
   life_stage:         "L1",
   design_stage:       "D2S",
   verification_stage: "V2S",
@@ -45,27 +45,89 @@
       act:     "rsp",
       package: "entropy_src_pkg",
     }
-    { struct:  "cs_aes_halt"
-      type:    "req_rsp",
-      name:    "cs_aes_halt"
+    { struct:  "logic"
+      type:    "uni"
+      name:    "entropy_src_rng_enable"
       act:     "req"
-      package: "entropy_src_pkg"
+      width:   1
+      package: ""
       desc:    '''
-               Coordinate activity between CSRNG's AES and Entropy Source's SHA3.
-               The idea is that Entropy Source requests CSRNG's AES to halt and waits for CSRNG to acknowledge before it starts its SHA3.
-               While SHA3 runs, Entropy Source keeps the request high.
-               CSRNG may not drop the acknowledge before Entropy Source drops the request.
+               Signal through which entropy_src enables the noise source.
+               entropy_src will keep this signal high as long as it expects the noise source to operate.
+               This is *not* a flow control signal through which entropy_src would exert backpressure on the noise source; rather this signal stays high while entropy_src is enabled.
                '''
     }
-    { struct:  "entropy_src_rng",
-      type:    "req_rsp",
-      name:    "entropy_src_rng",
-      act:     "req",
-      package: "entropy_src_pkg",
+    { struct:  "logic"
+      type:    "uni"
+      name:    "entropy_src_rng_valid"
+      act:     "rcv"
+      width:   1
+      package: ""
+      desc:    '''
+               Acknowledgement signal from the noise source.
+               When '1', it indicates that the `entropy_src_rng_bit` data is valid and ready to be consumed.
+               '''
     }
-    { struct:  "entropy_src_xht",
+    { struct:  "logic"
+      type:    "uni"
+      name:    "entropy_src_rng_bits"
+      act:     "rcv"
+      width:   RngBusWidth
+      package: ""
+      desc:    '''
+               Output data bus carrying the raw entropy bits from the noise source.
+               These bits are valid when `entropy_src_rng_valid` is asserted.
+               The width is determined by `RngBusWidth` parametrization.
+               '''
+    }
+    { struct:  "logic"
+      type:    "uni"
+      name:    "entropy_src_xht_valid"
+      act:     "req"
+      width:   1
+      package: ""
+      desc:    '''
+               Valid signal for the external health test interface.
+               When asserted, it indicates that `entropy_src_xht_bits`, `entropy_src_xht_bit_sel`, and `entropy_src_xht_meta` are valid for consumption by the external health test.
+               '''
+    }
+    { struct:  "logic"
+      type:    "uni"
+      name:    "entropy_src_xht_bits"
+      act:     "req"
+      width:   RngBusWidth
+      package: ""
+      desc:    '''
+               Carries the raw entropy data from the entropy source to be consumed by the external health test module.
+               The data on this bus is valid when `entropy_src_xht_valid` is asserted.
+               The width is determined by `RngBusWidth` parametrization.
+               '''
+    }
+    { struct:  "logic"
+      type:    "uni"
+      name:    "entropy_src_xht_bit_sel"
+      act:     "req"
+      width:   RngBusBitSelWidth
+      package: ""
+      desc:    '''
+               Provides bit selection information for the raw entropy data.
+               It specifies which specific bit or subset of bits from `entropy_src_xht_bit` should be used.
+               The width is determined by `RngBusBitSelWidth` parametrization.
+               '''
+    }
+    { struct:  "logic"
+      type:    "uni"
+      name:    "entropy_src_xht_health_test_window"
+      act:     "req"
+      width:   HealthTestWindowWidth
+      package: ""
+      desc:    '''
+               Provides the window size of the health in bits.
+               '''
+    }
+    { struct:  "entropy_src_xht_meta",
       type:    "req_rsp",
-      name:    "entropy_src_xht",
+      name:    "entropy_src_xht_meta",
       act:     "req",
       package: "entropy_src_pkg",
     }
@@ -93,18 +155,43 @@
   ],
   param_list: [
     # Regular parameters
+    { name:    "RngBusWidth",
+      type:    "int",
+      default: "4",
+      desc:    '''
+               Defines the bit-width of the noise source data.
+               Must be between 4 and 256 (inclusive) and divisible by 4.
+               The divisibility by 4 is a prerequisite for the bucket health test.
+               '''
+      local:   "false",
+      expose:  "true"
+    },
+    { name:    "RngBusBitSelWidth",
+      type:    "int",
+      default: "2",
+      desc:    "Explicit parameter defining the width of the RNG bit selection vector (log2(RngBusWidth))"
+      local:   "false",
+      expose:  "true"
+    },
+    { name:    "HealthTestWindowWidth",
+      type:    "int",
+      default: "18",
+      desc:    "Explicit parameter defining the width of the health test window (16 + log2(RngBusWidth))"
+      local:   "false",
+      expose:  "true"
+    },
     { name:    "EsFifoDepth",
       type:    "int",
       default: "3",
       desc:    "Number of 384-bit entries in the esfinal FIFO"
-      local:   "false",
+      local:   "true",
       expose:  "true"
     },
     { name:    "DistrFifoDepth",
       type:    "int unsigned",
-      default: "2",
+      default: "3",
       desc:    "Number of 32-bit entries in the distr FIFO",
-      local:   "false",
+      local:   "true",
       expose:  "true"
     },
     { name:    "Stub",
@@ -327,28 +414,6 @@
         }
       ]
     },
-    { name: "REV",
-      desc: "Revision register",
-      swaccess: "ro",
-      hwaccess: "none",
-      fields: [
-        { bits: "23:16",
-          name: "CHIP_TYPE",
-          desc: "Read of this register shows the type of chip using this block.",
-          resval: "0x1"
-        }
-        { bits: "15:8",
-          name: "HW_REVISION",
-          desc: "Read of this register shows the revision of this block.",
-          resval: "0x3"
-        }
-        { bits: "7:0",
-          name: "ABI_REVISION",
-          desc: "Read of this register shows the ABI of this block.",
-          resval: "0x3"
-        }
-      ]
-    },
     { name: "MODULE_ENABLE",
       desc: "Module enable register",
       swaccess: "rw",
@@ -381,7 +446,7 @@
           mubi: true,
           desc: '''
                 Setting this field to `kMultiBitBool4True` selects the mode targeting FIPS/CC compliance (in short FIPS mode) with hardware conditioning enabled.
-                The ENTROPY_SRC block will use the FIPS_WINDOW, FIPS_THRESH and FIPS_WATERMARK values of the !!HEALTH_TEST_WINDOWS, health test thresholds and watermark register, respectively.
+                The ENTROPY_SRC block will use the FIPS_WINDOW and FIPS_THRESH values of the !!HEALTH_TEST_WINDOWS and health test thresholds register, respectively.
                 Whether the ENTROPY_SRC block is indeed running with the configuration used for FIPS/CC validation is under the control of firmware.
                 Thus, firmware must explicitly mark the produced entropy as FIPS qualified using the !!CONF.FIPS_FLAG field.
                 Note that the hardware conditioning can still be disabled in FIPS mode by setting both !!ENTROPY_CONTROL.ES_ROUTE and !!ENTROPY_CONTROL.ES_TYPE fields to `kMultiBitBool4True`.
@@ -417,29 +482,23 @@
                 '''
           resval: false
         },
-        { bits: "17:16",
-          name: "RNG_BIT_SEL",
-          desc: '''
-                When !!CONF.RNG_BIT_ENABLE is set, this field selects which bit from the RNG bus will be processed.
-                This two bit field selects the RNG bit stream:
-                0b00: RNG bit 0
-                0b01: RNG bit 1
-                0b10: RNG bit 2
-                0b11: RNG bit 3
-                '''
-        },
-        { bits: "21:18",
+        { bits: "19:16",
           name: "THRESHOLD_SCOPE",
           mubi: true,
           desc: '''
-                This field controls the scope (either by-line or by-sum) of the health checks.
-                If set to `kMultiBitBool4True`, the Adaptive Proportion and Markov Tests will accumulate all RNG input lines into a single score, and thresholds will be applied to the sum all the entropy input lines.
-                If set to `kMultiBitBool4False`, the RNG input lines are all scored individually.
-                A statistical deviation in any one input line, be it due to coincidence or failure, will force rejection of the sample, and count toward the total alert count.
+                This field controls the scope (either by-line or by-sum) of the Adaptive Proportion and the Markov health tests.
+                It has no effect if !!CONF.RNG_BIT_ENABLE is set to `kMultiBitBool4True`, i.e., if the ENTROPY_SRC is operating in single-channel mode.
+
+                If set to `kMultiBitBool4False`, the minimum/maximum results of the individual, line-based tests are taken and compared against the configured thresholds.
+                This allows detecting failures of individual noise source channels in multi-channel mode.
+                If set to `kMultiBitBool4True`, the individual, line-based test results are summed up and then compared against the configured thresholds.
+                This allows lowering the likelihood for coincidental test failures (higher alpha).
+
+                Note that the value of THRESHOLD_SCOPE needs to be considered when defining the health test thresholds.
                 '''
           resval: false
         },
-        { bits: "25:22",
+        { bits: "23:20",
           name: "ENTROPY_DATA_REG_ENABLE",
           mubi: true,
           desc: '''
@@ -448,6 +507,13 @@
                 '''
           resval: false
         }
+        { bits: "31:24",
+          name: "RNG_BIT_SEL",
+          desc: '''
+                When !!CONF.RNG_BIT_ENABLE is set, this field selects which bit from the RNG bus will be processed.
+                If the IP is parameterized for a bus width less than 256 bits, the upper, unused bits of this register are ignored.
+                '''
+        },
       ]
     },
     { name: "ENTROPY_CONTROL",
@@ -508,36 +574,35 @@
         { bits: "15:0",
           name: "FIPS_WINDOW",
           desc: '''
-                This is the window size for all health tests.
+                This is the window size in samples for all health tests.
                 This value is used when entropy is being tested in FIPS/CC compliance mode (for simplicity referred to as FIPS mode).
-                The default value is (2048 bits * 1 clock/4 bits);
+                Note that the value defined in this register applies both to single-channel and multi-channel mode (see !!ENTROPY_SRC.RNG_BIT_ENABLE).
 
-                Note that the number of tested bits taken by the conditioner to produce a seed is equal to the window size x 4.
-                The only exception is the startup seed which is produced using the bits of two subsequent windows, i.e., 2 x window size x 4 tested bits.
-                The factor of 4 relates to the number of noise source channels (i.e. symbol size) and applies both in single-channel and multi-channel mode (see !!ENTROPY_SRC.RNG_BIT_ENABLE).
+                Note that the number of tested bits taken by the conditioner to produce a seed is equal to the window size x symbol size, where the symbol size is 1 in single-channel mode.
+                The only exception is the startup seed which is produced using the bits of two subsequent windows, i.e., 2 x window size x symbol tested bits.
 
-                Note that NIST SP 800-90B (Table 2) requires the adaptive proportion test to be run on 1024 or 512 samples in single-channel or multi-channel mode, respectively (see !!ENTROPY_SRC.RNG_BIT_ENABLE).
+                Note that NIST SP 800-90B (Table 2) requires the Adaptive Proportion Test to be run on 1024 or 512 samples in single-channel or multi-channel mode, respectively (see !!ENTROPY_SRC.RNG_BIT_ENABLE).
                 The startup tests must be run on at least 1024 consecutive samples (see Section 4.3 Requirements for Health Tests of NIST SP 800-90B) and this block always uses two subsequent windows for startup health testing.
                 The use of window sizes below 512 samples is thus not recommended as this may not comply with NIST SP 800-90B.
                 '''
-          resval: "0x0200"
+          resval: "512"
         }
         { bits: "31:16",
           name: "BYPASS_WINDOW",
           desc: '''
-                This is the window size for all health tests when running in bypass mode.
+                This is the window size in bits for all health tests when running in bypass mode.
                 This mode is active after reset for the first and only test run, or when this mode is programmed by firmware by setting !!CONF.FIPS_ENABLE to `kMultiBitBool4False`.
-                The default value is (384 bits * 1 clock/4 bits);
+                The default value is 384 bits;
 
-                Note that currently only a window size of 384 is supported and tested (this corresponds to the register default value 0x60).
+                Note that currently only a window size of 384 is supported and tested (this corresponds to the register default value 384).
                 Do not use any other values, unless you know what you are doing.
                 '''
-          resval: "0x0060"
+          resval: "384"
         }
       ]
     },
     { name: "REPCNT_THRESHOLDS",
-      desc: "Repetition count test thresholds register",
+      desc: "Repetition Count Test thresholds register",
       swaccess: "rw",
       hwaccess: "hrw",
       hwext: "true",
@@ -548,7 +613,7 @@
       fields: [
         { bits: "15:0",
           name: "FIPS_THRESH",
-          desc: '''This is the threshold size for the repetition count health test.
+          desc: '''This is the threshold for the Repetition Count Test.
                    This value is used in FIPS mode.
                    This register must be written before the module is enabled.
                    Writing to this register will only update the register if the
@@ -559,7 +624,7 @@
         }
         { bits: "31:16",
           name: "BYPASS_THRESH",
-          desc: '''This is the threshold size for the repetition count health test
+          desc: '''This is the threshold for the Repetition Count Test
                    running in bypass mode. This mode is active after reset for the
                    first and only test run, or when this mode is programmed by firmware.
                    This register must be written before the module is enabled.
@@ -572,7 +637,7 @@
       ]
     },
     { name: "REPCNTS_THRESHOLDS",
-      desc: "Repetition count symbol test thresholds register",
+      desc: "Repetition Count Symbol Test thresholds register",
       swaccess: "rw",
       hwaccess: "hrw",
       hwext: "true",
@@ -583,7 +648,7 @@
       fields: [
         { bits: "15:0",
           name: "FIPS_THRESH",
-          desc: '''This is the threshold size for the repetition count symbol health test.
+          desc: '''This is the threshold for the Repetition Count Symbol Test.
                    This value is used in FIPS mode.
                    This register must be written before the module is enabled.
                    Writing to this register will only update the register if the
@@ -594,7 +659,7 @@
         }
         { bits: "31:16",
           name: "BYPASS_THRESH",
-          desc: '''This is the threshold size for the repetition count symbol health test
+          desc: '''This is the threshold for the Repetition Count Symbol Test
                    running in bypass mode. This mode is active after reset for the
                    first and only test run, or when this mode is programmed by firmware.
                    This register must be written before the module is enabled.
@@ -618,7 +683,7 @@
       fields: [
         { bits: "15:0",
           name: "FIPS_THRESH",
-          desc: '''This is the threshold size for the adaptive proportion health test.
+          desc: '''This is the threshold for the Adaptive Proportion Test.
                    This value is used in FIPS mode.
                    This register must be written before the module is enabled.
                    Writing to this register will only update the register if the
@@ -629,7 +694,7 @@
         }
         { bits: "31:16",
           name: "BYPASS_THRESH",
-          desc: '''This is the threshold size for the adaptive proportion health test
+          desc: '''This is the threshold for the Adaptive Proportion Test
                    running in bypass mode. This mode is active after reset for the
                    first and only test run, or when this mode is programmed by firmware.
                    This register must be written before the module is enabled.
@@ -653,7 +718,7 @@
       fields: [
         { bits: "15:0",
           name: "FIPS_THRESH",
-          desc: '''This is the threshold size for the adaptive proportion health test.
+          desc: '''This is the threshold for the Adaptive Proportion Test.
                    This value is used in FIPS mode.
                    This register must be written before the module is enabled.
                    Writing to this register will only update the register if the
@@ -664,7 +729,7 @@
         }
         { bits: "31:16",
           name: "BYPASS_THRESH",
-          desc: '''This is the threshold size for the adaptive proportion health test
+          desc: '''This is the threshold for the Adaptive Proportion Test
                    running in bypass mode. This mode is active after reset for the
                    first and only test run, or when this mode is programmed by firmware.
                    This register must be written before the module is enabled.
@@ -851,176 +916,105 @@
         }
       ]
     },
-    { name:     "REPCNT_HI_WATERMARKS",
-      desc:     "Repetition count test high watermarks register",
+    { name:     "HT_WATERMARK_NUM",
+      desc:     "Health test watermark number register",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext:    "true",
+      hwqe:     "true",
+      regwen:   "REGWEN",
+      tags: [ // Internal HW can modify status register
+             "excl:CsrAllTests:CsrExclCheck"]
+      fields: [
+        { bits: "3:0",
+          name: "HT_WATERMARK_NUM",
+          resval: "0",
+          desc: '''
+                The value of this field defines the health test for which the HT_WATERMARK register records the watermark.
+                Invalid input values, i.e., values greater than 8 are mapped to 0.
+
+                This register must be written before the module is enabled.
+                '''
+          enum: [
+            { value: "0",
+              name: "REPCNT_HI",
+              desc: '''
+                    Repetition Count Test high watermark.
+                    '''
+            },
+            { value: "1",
+              name: "REPCNTS_HI",
+              desc: '''
+                    Repetition Count Symbol Test high watermark.
+                    '''
+            },
+            { value: "2",
+              name: "ADAPTP_HI",
+              desc: '''
+                    Adaptive proportion test high watermark.
+                    '''
+            },
+            { value: "3",
+              name: "ADAPTP_LO",
+              desc: '''
+                    Adaptive proportion test low watermark.
+                    '''
+            },
+            { value: "4",
+              name: "BUCKET_HI",
+              desc: '''
+                    Bucket test high watermark.
+                    '''
+            },
+            { value: "5",
+              name: "MARKOV_HI",
+              desc: '''
+                    Markov test high watermark.
+                    '''
+            },
+            { value: "6",
+              name: "MARKOV_LO",
+              desc: '''
+                    Markov test low watermark.
+              '''
+            },
+            { value: "7",
+              name: "EXTHT_HI",
+              desc: '''
+                    External health test high watermark.
+                    '''
+            },
+            { value: "8",
+              name: "EXTHT_LO",
+              desc: '''
+                    External health test low watermark.
+                    '''
+            }
+          ]
+        }
+      ]
+    },
+    { name:     "HT_WATERMARK",
+      desc:     "Health test watermark register",
       swaccess: "ro",
       hwaccess: "hwo",
-      hwext: "true",
-      tags: [// Internal HW can modify status register
+      hwext:    "true",
+      tags: [ // Internal HW drives this register.
              "excl:CsrAllTests:CsrExclCheck"]
       fields: [
         { bits: "15:0",
-          name: "FIPS_WATERMARK",
-          desc: "High watermark value of the REPCNT test in FIPS mode."
-        }
-        { bits: "31:16",
-          name: "BYPASS_WATERMARK",
-          desc: "High watermark value of the REPCNT test in bypass mode."
-        }
-      ]
-    },
-    { name:     "REPCNTS_HI_WATERMARKS",
-      desc:     "Repetition count symbol test high watermarks register",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext: "true",
-      tags: [// Internal HW can modify status register
-             "excl:CsrAllTests:CsrExclCheck"]
-      fields: [
-        { bits: "15:0",
-          name: "FIPS_WATERMARK",
-          desc: "High watermark value of the REPCNTS test in FIPS mode."
-        }
-        { bits: "31:16",
-          name: "BYPASS_WATERMARK",
-          desc: "High watermark value of the REPCNTS test in bypass mode."
-        }
-      ]
-    },
-    { name:     "ADAPTP_HI_WATERMARKS",
-      desc:     "Adaptive proportion test high watermarks register",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext: "true",
-      tags: [// Internal HW can modify status register
-             "excl:CsrNonInitTests:CsrExclCheck"]
-      fields: [
-        { bits: "15:0",
-          name: "FIPS_WATERMARK",
-          desc: "High watermark value of the adaptive proportion test in FIPS mode."
-        }
-        { bits: "31:16",
-          name: "BYPASS_WATERMARK",
-          desc: "High watermark value of the adaptive proportion test in bypass mode."
-        }
-      ]
-    },
-    { name:     "ADAPTP_LO_WATERMARKS",
-      desc:     "Adaptive proportion test low watermarks register",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext: "true",
-      tags: [// Internal HW can modify status register
-             "excl:CsrNonInitTests:CsrExclCheck"]
-      fields: [
-        { bits: "15:0",
-          name: "FIPS_WATERMARK",
-          desc: "Low watermark value of the adaptive proportion test in FIPS mode."
-          resval: "0xFFFF"
-        }
-        { bits: "31:16",
-          name: "BYPASS_WATERMARK",
-          desc: "Low watermark value of the adaptive proportion test in bypass mode."
-          resval: "0xFFFF"
-        }
-      ]
-    },
-    { name:     "EXTHT_HI_WATERMARKS",
-      desc:     "External health test high watermarks register",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext: "true",
-      tags: [// Internal HW can modify status register
-             "excl:CsrNonInitTests:CsrExclCheck"]
-      fields: [
-        { bits: "15:0",
-          name: "FIPS_WATERMARK",
-          desc: "High watermark value of the external health test in FIPS mode."
-        }
-        { bits: "31:16",
-          name: "BYPASS_WATERMARK",
-          desc: "High watermark value of the external health test in bypass mode."
-        }
-      ]
-    },
-    { name:     "EXTHT_LO_WATERMARKS",
-      desc:     "External health test low watermarks register",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext: "true",
-      tags: [// Internal HW can modify status register
-             "excl:CsrNonInitTests:CsrExclCheck"]
-      fields: [
-        { bits: "15:0",
-          name: "FIPS_WATERMARK",
-          desc: "Low watermark value of the external health test in FIPS mode."
-          resval: "0xFFFF"
-        }
-        { bits: "31:16",
-          name: "BYPASS_WATERMARK",
-          desc: "Low watermark value of the external health test in bypass mode."
-          resval: "0xFFFF"
-        }
-      ]
-    },
-    { name:     "BUCKET_HI_WATERMARKS",
-      desc:     "Bucket test high watermarks register",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext: "true",
-      tags: [// Internal HW can modify status register
-             "excl:CsrNonInitTests:CsrExclCheck"]
-      fields: [
-        { bits: "15:0",
-          name: "FIPS_WATERMARK",
-          desc: "High watermark value of the bucket test in FIPS mode."
-        }
-        { bits: "31:16",
-          name: "BYPASS_WATERMARK",
-          desc: "High watermark value of the bucket test in bypass mode."
-        }
-      ]
-    },
-    { name:     "MARKOV_HI_WATERMARKS",
-      desc:     "Markov test high watermarks register",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext: "true",
-      tags: [// Internal HW can modify status register
-             "excl:CsrNonInitTests:CsrExclCheck"]
-      fields: [
-        { bits: "15:0",
-          name: "FIPS_WATERMARK",
-          desc: "High watermark value of the Markov test in FIPS mode."
-        }
-        { bits: "31:16",
-          name: "BYPASS_WATERMARK",
-          desc: "High watermark value of the Markov test in bypass mode."
-        }
-      ]
-    },
-    { name:     "MARKOV_LO_WATERMARKS",
-      desc:     "Markov test low watermarks register",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext: "true",
-      tags: [// Internal HW can modify status register
-             "excl:CsrNonInitTests:CsrExclCheck"]
-      fields: [
-        { bits: "15:0",
-          name: "FIPS_WATERMARK",
-          desc: "Low watermark value of the Markov test in FIPS mode."
-          resval: "0xFFFF"
-        }
-        { bits: "31:16",
-          name: "BYPASS_WATERMARK",
-          desc: "Low watermark value of the Markov test in bypass mode."
-          resval: "0xFFFF"
+          name: "HT_WATERMARK",
+          resval: "0",
+          desc: '''
+                Watermark value for health test selected by HT_WATERMARK_NUM.
+                After a reset, this register always reads as 0.
+                If a low watermark is configured in HT_WATERMARK_NUM, this register is cleared to all-1s after enabling ENTROPY_SRC.
+                '''
         }
       ]
     },
     { name:     "REPCNT_TOTAL_FAILS",
-      desc:     "Repetition count test failure counter register",
+      desc:     "Repetition Count Test failure counter register",
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
@@ -1034,7 +1028,7 @@
       ]
     },
     { name:     "REPCNTS_TOTAL_FAILS",
-      desc:     "Repetition count symbol test failure counter register",
+      desc:     "Repetition Count Symbol Test failure counter register",
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
@@ -1150,6 +1144,8 @@
             Alert threshold register
 
             This register determines during how many subsequent health test windows one or more health test failures can occur before a recoverable alert is raised and the ENTROPY_SRC block stops operating.
+            Note that continuous health tests such as the Repetition Count Test or the Repetition Count Symbol Test can trigger multiple test failures within a single window.
+            Each symbol for which at least one continuous health test fails counts separately towards the threshold.
             In case the configured threshold is reached, firmware needs to disable/re-enable the block to restart operation including the startup health testing.
 
             Note that when reaching the threshold while running in Firmware Override: Extract & Insert mode, the recoverable alert is not raised nor does the block stop operating.
@@ -1184,6 +1180,8 @@
 
             This register holds the total number of subsequent health test windows during which one or more health test failures occurred.
             For information on which health tests failed specifically, refer to !!ALERT_FAIL_COUNTS and !!EXTHT_FAIL_COUNTS.
+            Note that continuous health tests such as the Repetition Count Test or the Repetition Count Symbol Test can trigger multiple test failures within a single window.
+            Each symbol for which at least one continuous health test fails is counted separately.
 
             If the value of this register reaches the value configured in the !!ALERT_THRESHOLD register, a recoverable alert is raised and the ENTROPY_SRC block stops operating.
             If an alert is signaled, the value persists until it is cleared by firmware.
@@ -1209,7 +1207,7 @@
 
             This register holds the number of health test failures since the last passing health test window.
             The values are reported on a per-test basis.
-            Note that if multiple health tests fail for a certain window, the value in !!ALERT_SUMMARY_FAIL_COUNTS is incremented by just one whereas multiple fields in this register may get incremented.
+            Note that if multiple health tests fail for a certain symbol or window, the value in !!ALERT_SUMMARY_FAIL_COUNTS is incremented by just one whereas multiple fields in this register may get incremented.
 
             All fields of this register are automatically cleared after every passing health test window unless the ENTROPY_SRC is configured in Firmware Override: Extract & Insert mode.
             The fields are also cleared after re-enabling the block.
@@ -1221,7 +1219,7 @@
         { bits: "7:4",
           name: "REPCNT_FAIL_COUNT",
           desc: '''
-                The number of health test windows during which this test failed since the last passing health test window.
+                The number of symbols during which this test failed since the last passing health test window.
                 '''
         }
         { bits: "11:8",
@@ -1257,7 +1255,7 @@
         { bits: "31:28",
           name: "REPCNTS_FAIL_COUNT",
           desc: '''
-                The number of health test windows during which this test failed since the last passing health test window.
+                The number of symbols during which this test failed since the last passing health test window.
                 '''
         }
       ]
@@ -1268,7 +1266,7 @@
 
             This register holds the number of external health test failures since the last passing health test window.
             The values are reported on a per-test basis.
-            Note that if multiple health tests fail for a certain window, the value in !!ALERT_SUMMARY_FAIL_COUNTS is incremented by just one whereas multiple fields in this register may get incremented.
+            Note that if multiple health tests fail for a certain symbol or window, the value in !!ALERT_SUMMARY_FAIL_COUNTS is incremented by just one whereas multiple fields in this register may get incremented.
 
             All fields of this register are automatically cleared after every passing health test window unless the ENTROPY_SRC is configured in Firmware Override: Extract & Insert mode.
             The fields are also cleared after re-enabling the block.
@@ -1280,13 +1278,13 @@
         { bits: "3:0",
           name: "EXTHT_HI_FAIL_COUNT",
           desc: '''
-                The number of health test windows during which this test failed since the last passing health test window.
+                The number of symbols for continuous tests or health test windows for window-based tests during which this test failed since the last passing health test window.
                 '''
         }
         { bits: "7:4",
           name: "EXTHT_LO_FAIL_COUNT",
           desc: '''
-                The number of health test windows during which this test failed since the last passing health test window.
+                The number of symbols for continuous tests or health test windows for window-based tests during which this test failed since the last passing health test window.
                 '''
         }
       ]
@@ -1573,14 +1571,14 @@
         { bits: "12",
           name: "ES_MAIN_SM_ALERT",
           desc: '''
-                This bit is set when the main state machine detects a threshhold failure state.
+                This bit is set when the main state machine detects a threshold failure state.
                 Writing a zero resets this status bit.
                 '''
         }
         { bits: "13",
           name: "ES_BUS_CMP_ALERT",
           desc: '''
-                This bit is set when the interal entropy bus value is equal to the prior
+                This bit is set when the internal entropy bus value is equal to the prior
                 valid value on the bus, indicating a possible attack.
                 Writing a zero resets this status bit.
                 '''

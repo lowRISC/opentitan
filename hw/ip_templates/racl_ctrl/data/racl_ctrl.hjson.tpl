@@ -250,24 +250,36 @@
                 '''
         }
       ]
+      tags: [
+        // Don't check this register in the CSR tests. It gets written by hardware in response to
+        // error reports (which are sent by the base sequence) and the CSR tests can't model its
+        // value.
+        "excl:CsrAllTests:CsrExclAll"
+      ]
     }
     { name: "ERROR_LOG_ADDRESS"
-      desc: '''Contains the address on which a RACL violation occurred.
+      desc: '''Contains the bits [top_pkg::TL_AW-1:2] of the address on which a RACL violation occurred.
+               The address is shifted by 2 bits since TLUL access are always 4 byte aligned.
                This register is valid if and only if the `valid` field of !!ERROR_LOG is true.
                Once valid, the address doesn't change (even if there are subsequent RACL violations) until the register gets cleared.
                This register gets cleared when SW writes `1` to the `valid` field of the !!ERROR_LOG register.
             '''
       swaccess: "ro"
       hwaccess: "hwo"
-      hwqe: "true"
       fields: [
-        { bits: "31:0"
+        { bits: "29:0"
           name: "address"
           resval: 0x0
           desc: '''
-                Address on which a RACL violation occurred.
+                Address on which a RACL violation occurred, shifted by 2 bits to the right.
                 '''
         }
+      ]
+      tags: [
+        // Don't check this register in the CSR tests. It gets written by hardware in response to
+        // error reports (which are sent by the base sequence) and the CSR tests can't model its
+        // value.
+        "excl:CsrAllTests:CsrExclAll"
       ]
     }
   ]

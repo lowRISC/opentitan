@@ -16,6 +16,27 @@ extern "C" {
 #endif
 
 /**
+ * Hardened version of the `TRY` macro that wipes DMEM() on an error.
+ *
+ * Returns an error if either expr_ represents an error, or if the OK code does
+ * not match the expected hardened value.
+ *
+ * @param expr_ An expression that evaluates to a `status_t`.
+ * @return The enclosed OK value.
+ */
+#define HARDENED_TRY_WIPE_DMEM(expr_)                                   \
+  do {                                                                  \
+    status_t status_ = expr_;                                           \
+    if (launder32(OT_UNSIGNED(status_.value)) != kHardenedBoolTrue) {   \
+      otbn_dmem_sec_wipe();                                             \
+      return (status_t){                                                \
+          .value = (int32_t)(OT_UNSIGNED(status_.value) | 0x80000000)}; \
+    }                                                                   \
+    HARDENED_CHECK_EQ(status_.value, kHardenedBoolTrue);                \
+    status_.value;                                                      \
+  } while (false)
+
+/**
  * Constants related to OTBN wide words
  */
 enum {
@@ -191,6 +212,8 @@ typedef struct otbn_app {
 /**
  * Write to OTBN's data memory (DMEM)
  *
+ * To mitigate SCA, write in random order to the DMEM.
+ *
  * Only 32b-aligned 32b word accesses are allowed. If `dest` is not
  * word-aligned or if the length and offset exceed the DMEM size, this function
  * will return an error.
@@ -242,6 +265,11 @@ status_t otbn_dmem_read(size_t num_words, otbn_addr_t src, uint32_t *dest);
  *
  * This function returns an error if called when OTBN is not idle.
  *
+ * The caller is responsible for initializing the entropy complex before
+ * calling this function, even if the RND register is not being used. OTBN
+ * still consumes randomness for the secure wipe of its internal state before
+ * exiting the program, and will lock if entropy is unavailable.
+ *
  * @return Result of the operation.
  */
 status_t otbn_execute(void);
@@ -284,6 +312,10 @@ uint32_t otbn_instruction_count_get(void);
  * This function returns an error if called when OTBN is not idle, and blocks
  * until the secure wipe is complete.
  *
+ * The caller is responsible for initializing the entropy complex before
+ * calling this function, since it consumes randomness. If entropy is not
+ * available, OTBN will lock itself.
+ *
  * @return Result of the operation.
  */
 status_t otbn_imem_sec_wipe(void);
@@ -293,6 +325,10 @@ status_t otbn_imem_sec_wipe(void);
  *
  * This function returns an error if called when OTBN is not idle, and blocks
  * until the secure wipe is complete.
+ *
+ * The caller is responsible for initializing the entropy complex before
+ * calling this function, since it consumes randomness. If entropy is not
+ * available, OTBN will lock itself.
  *
  * @return Result of the operation.
  */
@@ -318,6 +354,9 @@ status_t otbn_set_ctrl_software_errs_fatal(bool enable);
  * OTBN.
  *
  * This function will return an error if called when OTBN is not idle.
+ *
+ * Because this function uses the OTBN secure wipe functionality before
+ * loading, it will lock OTBN if the entropy complex is not initialized.
  *
  * @param ctx The context object.
  * @param app The application to load into OTBN.

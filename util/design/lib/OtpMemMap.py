@@ -14,16 +14,15 @@ from basegen.typing import ConfigT
 from design.mubi.prim_mubi import is_width_valid, mubi_value_as_int
 import hjson
 from tabulate import tabulate
-from topgen import secure_prng as sp
+from topgen.secure_prng import SecurePrngFactory
 
 from design.lib.common import check_bool, check_int, random_or_hexvalue
 
 DIGEST_SUFFIX = "_DIGEST"
 DIGEST_SIZE = 8
 
-# Seed diversification constant for OtpMemMap (this enables to use
-# the same seed for different classes)
-OTP_SEED_DIVERSIFIER = 177149201092001677687
+ZER_SUFFIX = "_ZER"
+ZER_SIZE = 8
 
 # This must match the rtl parameter ScrmblBlockWidth / 8
 SCRAMBLE_BLOCK_WIDTH = 8
@@ -40,7 +39,7 @@ def _validate_otp(otp: Dict):
     otp["byte_addr_width"] = ceil(log2(otp["size"]))
 
 
-def _validate_scrambling(scr: Dict):
+def _validate_scrambling(scr: Dict, generate_fresh_keys: bool):
     '''Validate SCrambling entry'''
     scr.setdefault("key_size", "16")
     scr.setdefault("iv_size", "8")
@@ -57,14 +56,20 @@ def _validate_scrambling(scr: Dict):
     for key in scr["keys"]:
         key.setdefault("name", "unknown_key_name")
         key.setdefault("value", "<random>")
-        random_or_hexvalue(key, "value", scr["key_size"] * 8)
+        if generate_fresh_keys:
+            prng = SecurePrngFactory.get("topgen")
+            random_or_hexvalue(prng, key, "value", scr["key_size"] * 8)
 
     for dig in scr["digests"]:
         dig.setdefault("name", "unknown_key_name")
         dig.setdefault("iv_value", "<random>")
         dig.setdefault("cnst_value", "<random>")
-        random_or_hexvalue(dig, "iv_value", scr["iv_size"] * 8)
-        random_or_hexvalue(dig, "cnst_value", scr["cnst_size"] * 8)
+        if generate_fresh_keys:
+            random_or_hexvalue(prng, dig, "iv_value", scr["iv_size"] * 8)
+            random_or_hexvalue(prng, dig, "cnst_value", scr["cnst_size"] * 8)
+
+    scr["num_keys"] = len(scr["keys"])
+    scr["num_digests"] = len(scr["digests"])
 
 
 # if remaining number of bytes are not perfectly aligned, truncate
@@ -107,10 +112,13 @@ def _calc_size(part: Dict, size: int) -> int:
     if part["sw_digest"] or part["hw_digest"]:
         size += DIGEST_SIZE
 
+    if part["zeroizable"]:
+        size += ZER_SIZE
+
     return size
 
 
-def _validate_part(part: Dict, key_names: List[str], is_last: bool):
+def _validate_part(part: Dict, key_names: List[str], is_last: bool, generate_fresh_keys: bool):
     '''Validates a partition within the OTP memory map'''
     part.setdefault("name", "unknown_name")
     part.setdefault("variant", "Unbuffered")
@@ -123,6 +131,8 @@ def _validate_part(part: Dict, key_names: List[str], is_last: bool):
     part.setdefault("absorb", False)
     part.setdefault("iskeymgr_creator", False)
     part.setdefault("iskeymgr_owner", False)
+    part.setdefault("zeroizable", False)
+    part.setdefault("ignore_read_lock_in_rma", False)
     log.info("Validating partition {}".format(part["name"]))
 
     # Make sure these are boolean types (simplifies the mako templates)
@@ -131,6 +141,8 @@ def _validate_part(part: Dict, key_names: List[str], is_last: bool):
     part["hw_digest"] = check_bool(part["hw_digest"])
     part["bkout_type"] = check_bool(part["bkout_type"])
     part["integrity"] = check_bool(part["integrity"])
+    part["zeroizable"] = check_bool(part["zeroizable"])
+    part["ignore_read_lock_in_rma"] = check_bool(part["ignore_read_lock_in_rma"])
 
     # basic checks
     if part["variant"] not in ["Unbuffered", "Buffered", "LifeCycle"]:
@@ -185,7 +197,7 @@ def _validate_part(part: Dict, key_names: List[str], is_last: bool):
     # validate items and calculate partition size if necessary
     size = 0
     for item in part["items"]:
-        _validate_item(item, part["variant"] == "Buffered", part["secret"])
+        _validate_item(item, part["variant"] == "Buffered", part["secret"], generate_fresh_keys)
         # if any item has key material, we need mark the partition as such
         if item["iskeymgr_creator"]:
             part["iskeymgr_creator"] = True
@@ -202,9 +214,21 @@ def _validate_part(part: Dict, key_names: List[str], is_last: bool):
             "Partition {} with key material for the key manager cannot be "
             "associated with the creator AND the owner.".format(part["name"]))
 
-    # if size not previously defined, set it
+    # set size if not previously defined, otherwise check it against the
+    # calculated size
+    calc_size = _calc_size(part, size)
     if "size" not in part:
-        part["size"] = _calc_size(part, size)
+        part["size"] = calc_size
+    elif int(part["size"]) < calc_size:
+        raise RuntimeError(
+            f"{part['name']} declared partition size {part['size']}B can't "
+            f"fit all items, needs at least {calc_size}B")
+    elif int(part["size"]) > calc_size:
+        log.warning(
+            f"{part['name']} declared partition size {part['size']}B exceeds "
+            f"minimum required size {calc_size}B")
+        log.warning(
+            "Suggestion: avoid declaring the size since it will be computed")
 
     # Make sure this has integer type.
     part["size"] = check_int(part["size"])
@@ -215,11 +239,12 @@ def _validate_part(part: Dict, key_names: List[str], is_last: bool):
             f"Partition size must be {SCRAMBLE_BLOCK_WIDTH * 8}-bit aligned")
 
 
-def _validate_item(item: Dict, buffered: bool, secret: bool):
+def _validate_item(item: Dict, buffered: bool, secret: bool, generate_fresh_keys: bool):
     '''Validates an item within a partition'''
     item.setdefault("name", "unknown_name")
     item.setdefault("size", "0")
     item.setdefault("isdigest", "false")
+    item.setdefault("iszer", "false")
     item.setdefault("ismubi", "false")
     item.setdefault("iskeymgr_creator", "false")
     item.setdefault("iskeymgr_owner", "false")
@@ -228,6 +253,7 @@ def _validate_item(item: Dict, buffered: bool, secret: bool):
     item["iskeymgr_creator"] = check_bool(item["iskeymgr_creator"])
     item["iskeymgr_owner"] = check_bool(item["iskeymgr_owner"])
     item["isdigest"] = check_bool(item["isdigest"])
+    item["iszer"] = check_bool(item["iszer"])
     item["ismubi"] = check_bool(item["ismubi"])
     item["size"] = check_int(item["size"])
     item_width = item["size"] * 8
@@ -265,10 +291,12 @@ def _validate_item(item: Dict, buffered: bool, secret: bool):
     else:
         # Generate random constant to be used when partition has
         # not been initialized yet or when it is in error state.
-        random_or_hexvalue(item, "inv_default", item_width)
+        if generate_fresh_keys:
+            prng = SecurePrngFactory.get("topgen")
+            random_or_hexvalue(prng, item, "inv_default", item_width)
 
 
-def _validate_mmap(config: Dict) -> Dict:
+def _validate_mmap(config: Dict, generate_fresh_keys: bool) -> Dict:
     '''Validate the memory map configuration'''
 
     # Get valid key names.
@@ -282,7 +310,7 @@ def _validate_mmap(config: Dict) -> Dict:
     # validate inputs before use
     allocated = 0
     for k, part in enumerate(config["partitions"]):
-        _validate_part(part, key_names, k == (len(config["partitions"]) - 1))
+        _validate_part(part, key_names, k == (len(config["partitions"]) - 1), generate_fresh_keys)
         allocated += part['size']
 
     # distribute unallocated bits
@@ -317,9 +345,10 @@ def _validate_mmap(config: Dict) -> Dict:
             offset += check_int(item["size"])
             item_dict[item['name']] = k
 
-        # Place digest at the end of a partition.
+        # Place digest at the end of a partition unless it is zeroizable
         if part["sw_digest"] or part["hw_digest"]:
             digest_name = part["name"] + DIGEST_SUFFIX
+            zer_size = ZER_SIZE if part["zeroizable"] else 0
             if digest_name in item_dict:
                 raise RuntimeError(
                     'Digest name {} is not unique'.format(digest_name))
@@ -331,11 +360,13 @@ def _validate_mmap(config: Dict) -> Dict:
                 DIGEST_SIZE,
                 "offset":
                 check_int(part["offset"]) + check_int(part["size"]) -
-                DIGEST_SIZE,
+                DIGEST_SIZE - zer_size,
                 "ismubi":
                 False,
                 "isdigest":
                 True,
+                "iszer":
+                False,
                 "inv_default":
                 "<random>",
                 "iskeymgr_creator":
@@ -344,13 +375,16 @@ def _validate_mmap(config: Dict) -> Dict:
                 False
             })
             # Randomize the digest default.
-            random_or_hexvalue(part["items"][-1], "inv_default",
-                               DIGEST_SIZE * 8)
+            if generate_fresh_keys:
+                prng = SecurePrngFactory.get("topgen")
+                random_or_hexvalue(prng, part["items"][-1], "inv_default",
+                                   DIGEST_SIZE * 8)
 
             # We always place the digest into the last 64bit word
             # of a partition.
             canonical_offset = (check_int(part["offset"]) +
-                                check_int(part["size"]) - DIGEST_SIZE)
+                                check_int(part["size"]) -
+                                DIGEST_SIZE - zer_size)
             if offset > canonical_offset:
                 raise RuntimeError(
                     "Not enough space in partition "
@@ -362,6 +396,50 @@ def _validate_mmap(config: Dict) -> Dict:
             log.info("> Adding digest {} at offset {} with size {}".format(
                 digest_name, offset, DIGEST_SIZE))
             offset += DIGEST_SIZE
+
+        # Place zeroization field after the digest.
+        if part["zeroizable"]:
+            zer_name = part["name"] + ZER_SUFFIX
+            if zer_name in item_dict:
+                raise RuntimeError(
+                    'Digest name {} is not unique'.format(zer_name))
+            item_dict[zer_name] = len(part["items"])
+            part["items"].append({
+                "name":
+                zer_name,
+                "size":
+                ZER_SIZE,
+                "offset":
+                check_int(part["offset"]) + check_int(part["size"]) -
+                ZER_SIZE,
+                "ismubi":
+                False,
+                "isdigest":
+                False,
+                "iszer":
+                True,
+                "inv_default":
+                0,
+                "iskeymgr_creator":
+                False,
+                "iskeymgr_owner":
+                False
+            })
+
+            # We always place the zeroization field into a 64-bit word after the data.
+            canonical_offset = (check_int(part["offset"]) +
+                                check_int(part["size"]) - ZER_SIZE)
+            if offset > canonical_offset:
+                raise RuntimeError(
+                    "Not enough space in partition "
+                    "{} to accommodate a zeroization field. Bytes available "
+                    "= {}, bytes allocated to items = {}".format(
+                        part["name"], part["size"], offset - part["offset"]))
+
+            offset = canonical_offset
+            log.info("> Adding digest {} at offset {} with size {}".format(
+                zer_name, offset, ZER_SIZE))
+            offset += ZER_SIZE
 
         # check offsets and size
         if offset > check_int(part["offset"]) + check_int(part["size"]):
@@ -397,20 +475,10 @@ class OtpMemMap():
     # This holds the partition/item index dict for fast access.
     part_dict = {}
 
-    def __init__(self, config):
+    def __init__(self, config, generate_fresh_keys: bool = False):
 
         log.info('')
         log.info('Parse and translate OTP memory map.')
-        log.info('')
-
-        if "seed" not in config:
-            raise RuntimeError("Missing seed in configuration.")
-
-        config["seed"] = check_int(config["seed"])
-
-        # Initialize RNG.
-        sp.reseed(OTP_SEED_DIVERSIFIER + int(config['seed']))
-        log.info('Seed: {0:x}'.format(config['seed']))
         log.info('')
 
         if "otp" not in config:
@@ -423,9 +491,9 @@ class OtpMemMap():
         # Validate OTP info.
         _validate_otp(config["otp"])
         # Validate scrambling info.
-        _validate_scrambling(config["scrambling"])
+        _validate_scrambling(config["scrambling"], generate_fresh_keys)
         # Validate memory map.
-        self.part_dict = _validate_mmap(config)
+        self.part_dict = _validate_mmap(config, generate_fresh_keys)
 
         self.config = config
 
@@ -434,7 +502,7 @@ class OtpMemMap():
         log.info('')
 
     @classmethod
-    def from_mmap_path(cls, mmap_path: Path, seed: int = None) -> 'OtpMemMap':
+    def from_mmap_path(cls, mmap_path: Path, generate_fresh_keys: bool = False) -> 'OtpMemMap':
         try:
             with open(mmap_path, 'r') as infile:
                 config = hjson.load(infile)
@@ -445,18 +513,8 @@ class OtpMemMap():
             log.error(f"Some error loading {mmap_path} into hjson: {e}")
             exit(1)
 
-        # If specified, override the seed for random netlist constant
-        # computation.
-        if seed:
-            log.warning('Commandline override of seed with {}.'.format(seed))
-            config['seed'] = seed
-        # Otherwise we make sure a seed exists in the HJSON config file.
-        elif 'seed' not in config:
-            log.error('Seed not found in configuration HJSON.')
-            exit(1)
-
         try:
-            otp_mmap = cls(config)
+            otp_mmap = cls(config, generate_fresh_keys)
         except RuntimeError as err:
             log.error(err)
             exit(1)
@@ -465,8 +523,8 @@ class OtpMemMap():
     @classmethod
     def create_partitions_table(cls, partitions: ConfigT) -> str:
         header = [
-            "Partition", "Secret", "Buffered", "Integrity", "WR Lockable",
-            "RD Lockable", "Description"
+            "Partition", "Secret", "Buffered", "Zeroizable",
+            "Integrity", "WR Lockable", "RD Lockable", "Description"
         ]
         table = [header]
         colalign = ("center", ) * len(header[:-1]) + ("left", )
@@ -475,6 +533,7 @@ class OtpMemMap():
             is_buffered = "yes" if part["variant"] in [
                 "Buffered", "LifeCycle"
             ] else "no"
+            is_zeroizable = "yes" if check_bool(part["zeroizable"]) else "no"
             wr_lockable = "no"
             if part["write_lock"].lower() in ["csr", "digest"]:
                 wr_lockable = "yes (" + part["write_lock"] + ")"
@@ -484,10 +543,10 @@ class OtpMemMap():
             integrity = "no"
             if part["integrity"]:
                 integrity = "yes"
-            desc = part["desc"]
+            desc = " ".join(part.get("desc", "").split("\n"))
             row = [
-                part["name"], is_secret, is_buffered, integrity, wr_lockable,
-                rd_lockable, desc
+                part["name"], is_secret, is_buffered, is_zeroizable, integrity,
+                wr_lockable, rd_lockable, desc
             ]
             table.append(row)
 
@@ -499,8 +558,8 @@ class OtpMemMap():
     @classmethod
     def create_mmap_table(cls, partitions: ConfigT) -> str:
         header = [
-            "Index", "Partition", "Size [B]", "Access Granule", "Item",
-            "Byte Address", "Size [B]"
+            "Index", "Partition", "Size [B]", "Zeroizable",
+            "Access Granule", "Item", "Byte Address", "Size [B]"
         ]
         table = [header]
         colalign = ("center", ) * len(header)
@@ -513,13 +572,21 @@ class OtpMemMap():
                     granule = "64bit"
                     name = "[{}](#Reg_{}_0)".format(item["name"],
                                                     item["name"].lower())
+                elif check_bool(item["iszer"]):
+                    granule = "64bit"
+                    name = item["name"]
                 else:
                     name = item["name"]
 
+                zeroizable = "yes" if check_bool(part["zeroizable"]) else "no"
+
                 if j == 0:
-                    row = [str(k), part["name"], str(part["size"]), granule]
+                    row = [
+                        str(k), part["name"], str(part["size"]), zeroizable,
+                        granule
+                    ]
                 else:
-                    row = ["", "", "", granule]
+                    row = ["", "", "", "", granule]
 
                 row.extend([
                     name, "0x{:03X}".format(check_int(item["offset"])),

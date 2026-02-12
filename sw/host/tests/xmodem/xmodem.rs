@@ -9,9 +9,9 @@
 use std::io::Write;
 use std::os::raw::c_void;
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 
-use opentitanlib::io::uart::Uart;
+use opentitanlib::io::console::{ConsoleDevice, ConsoleExt};
 use opentitanlib::with_unknown;
 
 use xmodem_testlib::*;
@@ -44,12 +44,12 @@ impl XmodemFirmware {
         Default::default()
     }
 
-    pub fn send(&self, uart: &dyn Uart, data: &[u8]) -> Result<()> {
+    pub fn send(&self, console: &dyn ConsoleDevice, data: &[u8]) -> Result<()> {
         // SAFETY:
         // `iohandle` is a valid reference to a `dyn Uart` trait object.
         // `buf` is a valid pointer to a buffer here with the correct `len`.
         let result = unsafe {
-            let io = (&uart as *const &dyn Uart) as *mut c_void;
+            let io = (&console as *const &dyn ConsoleDevice) as *mut c_void;
             let buf = data.as_ptr() as *const c_void;
             let len = data.len();
             XmodemResult(xmodem_send(io, buf, len))
@@ -60,11 +60,11 @@ impl XmodemFirmware {
         }
     }
 
-    pub fn receive(&self, uart: &dyn Uart, data: &mut impl Write) -> Result<()> {
+    pub fn receive(&self, console: &dyn ConsoleDevice, data: &mut impl Write) -> Result<()> {
         // SAFETY:
         // `iohandle` is a valid reference to a `dyn Uart` trait object.
         let io = unsafe {
-            let io = (&uart as *const &dyn Uart) as *mut c_void;
+            let io = (&console as *const &dyn ConsoleDevice) as *mut c_void;
             xmodem_recv_start(io);
             io
         };
@@ -86,6 +86,7 @@ impl XmodemFirmware {
                     io,
                     frame,
                     buf.as_mut_ptr(),
+                    buf.len(),
                     &mut rxlen as *mut usize,
                     &mut unknown_rx as *mut u8,
                 ))
@@ -135,14 +136,14 @@ unsafe extern "C" fn xmodem_read(
     // SAFETY:
     // We know that the `iohandle` pointer is a valid reference to a `Uart`
     // trait object within this test only.
-    let uart: &dyn Uart = unsafe {
-        let iohandle = iohandle as *const &dyn Uart;
+    let console: &dyn ConsoleDevice = unsafe {
+        let iohandle = iohandle as *const &dyn ConsoleDevice;
         *iohandle
     };
 
     // SAFETY: It's a precondition of this function that `data` is valid for `len`.
     let data = unsafe { std::slice::from_raw_parts_mut(data, len) };
-    match uart.read(data) {
+    match console.read(data) {
         Ok(n) => n,
         Err(e) => {
             eprintln!("xmodem_read: {e:?}");
@@ -160,14 +161,14 @@ unsafe extern "C" fn xmodem_write(iohandle: *mut c_void, data: *const u8, len: u
     // SAFETY:
     // We know that the `iohandle` pointer is a valid reference to a `Uart`
     // trait object within this test only.
-    let uart: &dyn Uart = unsafe {
-        let iohandle = iohandle as *const &dyn Uart;
+    let console: &dyn ConsoleDevice = unsafe {
+        let iohandle = iohandle as *const &dyn ConsoleDevice;
         *iohandle
     };
 
     // SAFETY: It's a precondition of this function that `data` is valid for `len`.
     let data = unsafe { std::slice::from_raw_parts(data, len) };
-    match uart.write(data) {
+    match console.write(data) {
         Ok(_) => {}
         Err(e) => {
             eprintln!("xmodem_write: {e:?}");

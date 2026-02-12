@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #![allow(clippy::bool_assert_comparison)]
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use clap::Parser;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
@@ -104,7 +104,7 @@ fn test_sw_strap_values(opts: &Opts, transport: &TransportWrapper) -> Result<()>
     // BootstrapOptions first.
     //let uart = opts.init.uart_params.create(&transport)?;
     let uart = transport.uart("console")?;
-    let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"Running ", opts.timeout)?;
 
     for value in 0..64 {
         log::info!(
@@ -122,7 +122,7 @@ fn test_sw_strap_values(opts: &Opts, transport: &TransportWrapper) -> Result<()>
             sw_strap_set_verilator(transport, value)?;
         }
         TestCommand::SwStrapRead.send(&*uart)?;
-        let response = Status::recv(&*uart, opts.timeout, false)?;
+        let response = Status::recv(&*uart, opts.timeout, false, false)?;
         assert_eq!(value, u8::try_from(response)?);
     }
     Ok(())

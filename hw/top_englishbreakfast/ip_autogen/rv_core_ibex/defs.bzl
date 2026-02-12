@@ -5,5 +5,6 @@ load("//rules/opentitan:hw.bzl", "opentitan_ip")
 
 RV_CORE_IBEX = opentitan_ip(
     name = "rv_core_ibex",
-    hjson = "//hw/top_englishbreakfast/ip_autogen/rv_core_ibex:data/rv_core_ibex.hjson",
+    hjson = "//hw/top_englishbreakfast/ip_autogen/rv_core_ibex/data:rv_core_ibex.hjson",
+    ipconfig = "//hw/top_englishbreakfast/ip_autogen/rv_core_ibex/data:top_englishbreakfast_rv_core_ibex.ipconfig.hjson",
 )

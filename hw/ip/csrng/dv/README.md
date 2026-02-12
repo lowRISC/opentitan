@@ -77,7 +77,7 @@ The following covergroups have been developed to prove that the test intent has 
 #### Scoreboard
 The `csrng_scoreboard` is primarily used for end to end checking.
 It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
-* tl_a_chan_fifo, tl_d_chan_fifo:  These 2 fifos provide transaction items at the end of Tilelink address channel and data channel respectively
+* tl_a_chan_fifo, tl_d_chan_fifo:  These 2 FIFOs provide transaction items at the end of Tilelink address channel and data channel respectively
 * entropy_src_fifo, genbits_fifo:  The entropy_src_fifo provides transaction items from the predictor and the genbits_fifo provide actual post-entropy_src transaction items to compare
 
 

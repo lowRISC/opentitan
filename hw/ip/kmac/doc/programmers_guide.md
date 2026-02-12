@@ -63,6 +63,134 @@ The software writes `0x4d4b2001` into [`PREFIX0`](registers.md#prefix) and `0x??
 Upper 2 bytes can vary depending on the customization input string `S`.
 
 
+## EDN Entropy Mode
+
+For regular operation, [`CFG_SHADOWED.entropy_mode`](registers.md#cfg_shadowed--entropy_mode) should be set to EDN mode.
+In this mode, the module automatically reseeds the internal PRNG with fresh entropy from EDN after every [`ENTROPY_REFRESH_THRESHOLD_SHADOWED`](registers.md#entropy_refresh_threshold_shadowed) key absorption phases in KMAC mode.
+Alternatively, software can manually initiate reseeding operations using the [`CMD.entropy_req`](registers.md#cmd--entropy_req) bit while the module is idle.
+
+
+### Preventing potential deadlocks in EDN mode
+
+Under normal operating conditions, the SHA3 engine will process data a lot faster than software can push it to the Message FIFO.
+However, the Message FIFO may run full while the SHA3 engine is busy.
+In particular, this might happen because KMAC is waiting for fresh entropy from EDN.
+If software then tries to push further data to the Message FIFO, the processor will get stalled and if the entropy is not delivered (on time), the system may deadlock (see [Empty and Full status](theory_of_operation.md#empty-and-full-status) for details).
+
+To avoid this deadlock scenario, software should either:
+- Manually trigger PRNG reseed operations after ensuring the entropy complex is up and running (recommended), or
+- Check the Message FIFO depth before pushing data.
+
+Since the latter option can be inconvenient for software, especially when processing long messages, manually triggering PRNG reseed operations is the recommended approach.
+In the following, both approaches are outlined in more detail.
+
+
+#### Manually triggering PRNG reseeds
+
+Since automatic reseeds of the internal PRNG are always triggered after the key absorption phase in KMAC mode ([`CFG_SHADOWED.kmac_en`](registers.md#cfg_shadowed--kmac_en) set to 1), and since every message in KMAC mode has only one such phase, it is sufficient for software to check the [`ENTROPY_REFRESH_HASH_CNT`](registers.md#entropy_refresh_hash_cnt) register after finishing a KMAC message.
+
+If the value of [`ENTROPY_REFRESH_HASH_CNT`](registers.md#entropy_refresh_hash_cnt) gets sufficiently close to the value of [`ENTROPY_REFRESH_THRESHOLD_SHADOWED`](registers.md#entropy_refresh_threshold_shadowed), software should:
+
+1. Ensure that the entropy complex is running.
+2. Check that the KMAC module is idle by reading the [`STATUS.sha3_idle`](registers.md#status--sha3_idle) bit.
+3. Trigger a manual reseed operation by setting the [`CMD.entropy_req`](registers.md#cmd--entropy_req) bit.
+4. Configure the module to process a message in cSHAKE mode (but not in KMAC mode).
+   More precisely, set [`CFG_SHADOWED.mode`](registers.md#cfg_shadowed--mode) to `0x3` and [`CFG_SHADOWED.kmac_en`](registers.md#cfg_shadowed--kmac_en) to 0.
+5. Configure the module to use the PRNG and block any hashing operation if the PRNG is not ready by setting [`CFG_SHADOWED.entropy_fast_process`](registers.md#cfg_shadowed--entropy_fast_process) to 0.
+6. Send the `start` command to the [`CMD`](registers.md#cmd) register.
+   The SHA3 engine will start loading and hashing the function name `N` and the customization string `S` first.
+7. Send the `process` command to the [`CMD`](registers.md#cmd) register.
+8. Wait for the [`STATUS.sha3_squeeze`](registers.md#status--sha3_squeeze) bit to get set.
+   Due to the ongoing reseed operation, the [`STATUS.sha3_squeeze`](registers.md#status--sha3_squeeze) bit should remain 0 for an extended period of time.
+9. Send the `done` command to the [`CMD`](registers.md#cmd) register to finish processing.
+
+The [`ENTROPY_REFRESH_HASH_CNT`](registers.md#entropy_refresh_hash_cnt) register should now read as 0.
+Note however that if the manual reseed operation is triggered while the KMAC module is busy, the reseed operation may get skipped despite the hash counter being cleared back to 0.
+
+
+#### Checking Message FIFO depth before pushing data
+
+Alternatively, software can avoid ever pushing data into the Message FIFO while the FIFO is full by regularly checking the FIFO depth.
+In particular, software can then:
+
+1. Check the FIFO depth [`STATUS.fifo_depth`](registers.md#status--fifo_depth).
+   This represents the number of entry slots currently occupied in the FIFO.
+2. Calculate the remaining size as (`<max number of FIFO entries> - <STATUS.fifo_depth>) * <entry size>`.
+3. Write data to fill at most the calculated remaining size.
+4. Repeat until all data is written.
+   In case the FIFO runs full (check [`STATUS.fifo_full`](registers.md#status--fifo_full)), software should check the entropy complex is running and can then optionally wait for the `fifo_empty` status interrupt before continuing.
+
+In code, this looks something like:
+```c
+/**
+ * Absorb input data into the Keccak computation.
+ *
+ * Assumes that the KMAC block is in the "absorb" state; it is the caller's
+ * responsibility to check before calling.
+ *
+ * @param in Input buffer.
+ * @param in_len Length of input buffer (bytes).
+ * @return Number of bytes written.
+ */
+size_t kmac_absorb(const uint8_t *in, size_t in_len) {
+    // Read FIFO depth from the status register.
+    uint32_t status = abs_mmio_read32(kBase + KMAC_STATUS_REG_OFFSET);
+    uint32_t fifo_depth =
+        bitfield_field32_read(status, KMAC_STATUS_FIFO_DEPTH_FIELD);
+
+    // Calculate the remaining space in the FIFO using auto-generated KMAC
+    // parameters and take the minimum of that space and the input length.
+    size_t free_entries = (KMAC_PARAM_NUM_ENTRIES_MSG_FIFO - fifo_depth);
+    size_t max_len = free_entries * KMAC_PARAM_NUM_BYTES_MSG_FIFO_ENTRY;
+    size_t write_len = (in_len < max_len) ? in_len : max_len;
+
+    // Note: this example uses byte-writes for simplicity, but in practice it
+    // would be more efficient to use word-writes for aligned full words and
+    // byte-writes only as needed at the beginning and end of the input.
+    for (size_t i = 0; i < write_len; i++) {
+      abs_mmio_write8(kBase + KMAC_MSG_FIFO_REG_OFFSET, in[i]);
+    }
+
+    return write_len;
+}
+```
+
+Note that for modes other than KMAC, i.e., if [`CFG_SHADOWED.kmac_en`](registers.md#cfg_shadowed--kmac_en) is 0, the KMAC module will not increment the [`ENTROPY_REFRESH_HASH_CNT`](registers.md#entropy_refresh_hash_cnt) register and thus not trigger automatic reseeds.
+It is safe to push to the Message FIFO without checking the [`STATUS.fifo_depth`](registers.md#status--fifo_depth) register.
+
+
+### Configuring ENTROPY_PERIOD
+
+The [`ENTROPY_PERIOD`](registers.md#entropy_period) register defines how long the module should wait for entropy during a PRNG reseed before triggering an error.
+The configuration value should be carefully chosen based on how the entropy complex is operated.
+
+If CSRNG is running in [fully deterministic mode](../../csrng/doc/programmers_guide.md#fully-deterministic-mode), any EDN request will be answered fairly quickly.
+An [`ENTROPY_PERIOD.wait_timer`](registers.md#entropy_period--wait_timer) value of 5000 in combination with an [`ENTROPY_PERIOD.prescaler`](registers.md#entropy_period--prescaler) value of 0 is adequate.
+
+If CSRNG is running in [regular, non-deterministic mode](../../csrng/doc/programmers_guide.md#regular-non-deterministic-mode), it can happen that the PRNG reseed request of the KMAC module triggers a reseed request from EDN0 to CSRNG.
+For [Top Earlgrey](../../../top_earlgrey/README.md), producing a single CSRNG seed value is expected to take roughly 5ms.
+In the worst case, ENTROPY_SRC must first generate two more seeds to reseed all the other two CSRNG instances.
+In this case, the PRNG reseed request of KMAC should get served after roughly 15ms.
+If the ENTROPY_SRC is disabled, the interrupt latency and the delay for the startup health testing of the ENTROPY_SRC also need to be factored in to define the [`ENTROPY_PERIOD`](registers.md#entropy_period) configuration value.
+
+
+### Leaving EDN mode
+
+If the entropy complex becomes unavailable, software can cause the module to leave EDN mode as follows.
+Note that for this to work reliably, it is recommended to configure the [`ENTROPY_PERIOD`](registers.md#entropy_period) register to a non-zero value (see [`Configuring ENTROPY_PERIOD`](#configuring-entropy_period)).
+Otherwise, an already ongoing reseed operation may prevent the following procedure from working.
+
+1. Configure the [`ENTROPY_PERIOD`](registers.md#entropy_period) to a sufficiently small value such as `wait_timer` equals 1 and `prescaler` equals 0, or disable EDN0 which interfaces KMAC.
+2. Check that the KMAC module is idle by reading the [`STATUS.sha3_idle`](registers.md#status--sha3_idle) bit.
+3. Trigger a PRNG reseed operation via the [`CMD.entropy_req`](registers.md#cmd--entropy_req) bit.
+4. Wait for the entropy request to timeout and the `kmac_err` interrupt to fire.
+   The [`ERR_CODE`](registers.md#err_code) should now read `ErrWaitTimerExpired`.
+5. De-assert the [`CFG_SHADOWED.entropy_ready`](registers.md#cfg_shadowed--entropy_ready) bit.
+6. Set the [`CMD.err_processed`](registers.md#cmd--err_processed) bit to signal the processing of the error condition (see also [Error Handling](#error-handling)).
+
+The FSM controlling the PRNG then goes back into its reset state and software can re-configure the desired mode in the [`CFG_SHADOWED.entropy_mode`](registers.md#cfg_shadowed--entropy_mode) field and set the [`CFG_SHADOWED.entropy_ready`](registers.md#cfg_shadowed--entropy_ready) bit afterwards to latch the configuration.
+
+
 ## Error Handling
 
 When the KMAC HW IP encounters an error, it raises the `kmac_err` IRQ.
@@ -76,7 +204,7 @@ If the error occurred while the KMAC HW IP was being used from SW (i.e., not via
 
 ## KMAC/SHA3 context switching
 
-This version of KMAC/SHA3 HWIP _does not_ support the software context switching.
+This version of KMAC/SHA3 HWIP _does not_ support context switching.
 A context switching scheme would allow software to save the current hashing engine state and initiate a new high priority hashing operation.
 It could restore the previous hashing state later and continue the operation.
 

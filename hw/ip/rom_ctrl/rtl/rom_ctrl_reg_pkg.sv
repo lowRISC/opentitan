@@ -11,11 +11,14 @@ package rom_ctrl_reg_pkg;
 
   // Address widths within the block
   parameter int RegsAw = 7;
-  parameter int RomAw = 1;
 
   // Number of registers for every interface
   parameter int NumRegsRegs = 18;
-  parameter int NumRegsRom = 0;
+
+  // Alert indices
+  typedef enum int {
+    AlertFatalIdx = 0
+  } rom_ctrl_alert_idx_t;
 
   ///////////////////////////////////////////////
   // Typedefs for registers for regs interface //
@@ -38,11 +41,11 @@ package rom_ctrl_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } checker_error;
+    } integrity_error;
     struct packed {
       logic        d;
       logic        de;
-    } integrity_error;
+    } checker_error;
   } rom_ctrl_hw2reg_fatal_alert_cause_reg_t;
 
   typedef struct packed {

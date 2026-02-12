@@ -8,15 +8,14 @@ use anyhow::Result;
 use clap::Parser;
 use regex::Regex;
 
-use opentitanlib::app::TransportWrapper;
-use opentitanlib::chip::boolean::MultiBitBool8;
-use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::{JtagTap, RiscvCsr, RiscvGpr, RiscvReg};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;
-
-use top_earlgrey::top_earlgrey;
+use ot_hal::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
+use ot_hal::top::earlgrey as top_earlgrey;
+use ot_hal::util::multibits::MultiBitBool8;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -24,12 +23,12 @@ struct Opts {
     init: InitializeTest,
 }
 
-fn reset(transport: &TransportWrapper, strappings: &[&str], reset_delay: Duration) -> Result<()> {
+fn reset(transport: &TransportWrapper, strappings: &[&str]) -> Result<()> {
     log::info!("Resetting target...");
     for strapping in strappings.iter() {
         transport.pin_strapping(strapping)?.apply()?;
     }
-    transport.reset_target(reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
     // we want to hold the strapping configuration here because in some life cycle states,
     // the tap multiplexing is dynamic so remove the tap strap would actually change the tap
     Ok(())
@@ -39,25 +38,17 @@ fn test_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // Reset the device
     let uart = transport.uart("console")?;
 
-    reset(transport, &[], opts.init.bootstrap.options.reset_delay)?;
+    reset(transport, &[])?;
     const CONSOLE_TIMEOUT: Duration = Duration::from_secs(5);
 
-    let mut console = UartConsole {
-        timeout: Some(CONSOLE_TIMEOUT),
-        exit_success: Some(Regex::new(r"PASS!")?),
-        ..Default::default()
-    };
-    let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
+    let mut console = UartConsole::new(Some(CONSOLE_TIMEOUT), Some(Regex::new(r"PASS!")?), None);
+    let result = console.interact(&*uart, false)?;
     log::info!("result: {:?}", result);
 
     //
     // Test the RISC-V TAP
     //
-    reset(
-        transport,
-        &["PINMUX_TAP_RISCV"],
-        opts.init.bootstrap.options.reset_delay,
-    )?;
+    reset(transport, &["PINMUX_TAP_RISCV"])?;
 
     let mut jtag = opts
         .init
@@ -125,7 +116,7 @@ fn test_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     // Test bulk read/writes by reading the content of the RAM, then overwrite it with
     // known values and try to read-back, we restore the content afterwards
-    let test_ram_addr = top_earlgrey::RAM_RET_AON_BASE_ADDR as u32;
+    let test_ram_addr = top_earlgrey::SRAM_CTRL_RET_AON_RAM_BASE_ADDR as u32;
     const SIZE: usize = 20;
     let mut ram = [0u8; SIZE];
     assert_eq!(jtag.read_memory(test_ram_addr, &mut ram)?, SIZE);
@@ -181,11 +172,7 @@ fn test_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     //
     // Test the LC TAP
     //
-    reset(
-        transport,
-        &["PINMUX_TAP_LC"],
-        opts.init.bootstrap.options.reset_delay,
-    )?;
+    reset(transport, &["PINMUX_TAP_LC"])?;
 
     let mut jtag = opts
         .init

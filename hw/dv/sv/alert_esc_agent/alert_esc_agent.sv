@@ -15,7 +15,7 @@ class alert_esc_agent extends dv_base_agent#(
 
   `uvm_component_utils(alert_esc_agent)
 
-  extern function new (string name="", uvm_component parent=null);
+  extern function new (string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
   // Create automatic response (from monitor) to ping and alert requests.
   extern function void connect_phase(uvm_phase phase);
@@ -23,7 +23,7 @@ class alert_esc_agent extends dv_base_agent#(
 
 endclass : alert_esc_agent
 
-function alert_esc_agent::new (string name="", uvm_component parent=null);
+function alert_esc_agent::new (string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
 
@@ -104,6 +104,7 @@ function void alert_esc_agent::connect_phase(uvm_phase phase);
 endfunction : connect_phase
 
 task alert_esc_agent::run_phase(uvm_phase phase);
+  super.run_phase(phase);
   if (cfg.is_alert && cfg.is_active && cfg.start_default_rsp_seq) begin
     // For host mode, run alert ping auto-response sequence.
     if (cfg.if_mode == dv_utils_pkg::Host) begin

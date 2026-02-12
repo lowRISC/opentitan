@@ -158,7 +158,20 @@ package spi_host_env_pkg;
 
   // alerts
   parameter uint NUM_ALERTS = 1;
-  parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
+  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"fatal_fault"};
+
+  // Object shared through UVM events using the UVM pool for finer timeout control.
+  // It's used so an UVM event is triggered and depending whether the object has the
+  // field `stop` set the timeout continues or stall.
+  // This is used in SPI host in situations where there `spien` or `sw_rst` are set, so the timeout
+  // shouldn't be counting until the module is re-enabled
+  class csr_spinwait_ctrl_object extends uvm_object;
+    `uvm_object_utils(csr_spinwait_ctrl_object)
+    bit            stop;
+    function new(string name = "");
+      super.new(name);
+    endfunction
+  endclass
 
   // functions
 

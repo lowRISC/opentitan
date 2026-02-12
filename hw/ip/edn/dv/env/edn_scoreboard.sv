@@ -12,14 +12,14 @@ class edn_scoreboard extends cip_base_scoreboard #(
   virtual edn_cov_if   cov_vif;
 
   // Specialized `push_pull_item`s
-  typedef push_pull_item#(.HostDataWidth(csrng_pkg::CSRNG_CMD_WIDTH)) cs_cmd_item_t;
+  typedef push_pull_item#(.HostDataWidth(csrng_pkg::CmdBusWidth)) cs_cmd_item_t;
   typedef push_pull_item#(.HostDataWidth(csrng_pkg::FIPS_GENBITS_BUS_WIDTH)) genbits_item_t;
   typedef push_pull_item#(.HostDataWidth(FIPS_ENDPOINT_BUS_WIDTH)) endpoint_item_t;
 
   // TLM agent fifos
   uvm_tlm_analysis_fifo#(cs_cmd_item_t) cs_cmd_fifo;
   uvm_tlm_analysis_fifo#(genbits_item_t) genbits_fifo;
-  uvm_tlm_analysis_fifo#(endpoint_item_t) endpoint_fifo[MAX_NUM_ENDPOINTS];
+  uvm_tlm_analysis_fifo#(endpoint_item_t) endpoint_fifo[`NUM_END_POINTS];
   uvm_tlm_analysis_fifo#(csrng_pkg::csrng_rsp_t) rsp_sts_fifo;
 
   // local queues to hold incoming packets pending comparison
@@ -78,7 +78,7 @@ class edn_scoreboard extends cip_base_scoreboard #(
     cs_cmd_fifo  = new("cs_cmd_fifo", this);
     rsp_sts_fifo = new("cs_rsp_sts_fifo", this);
 
-    for (int i = 0; i < MAX_NUM_ENDPOINTS; i++) begin
+    for (int i = 0; i < `NUM_END_POINTS; i++) begin
       endpoint_fifo[i] = new($sformatf("endpoint_fifo[%0d]", i), this);
     end
 
@@ -109,7 +109,7 @@ class edn_scoreboard extends cip_base_scoreboard #(
       process_rsp_sts_fifo();
     join_none
 
-    for (int i = 0; i < MAX_NUM_ENDPOINTS; i++) begin
+    for (int i = 0; i < `NUM_END_POINTS; i++) begin
       automatic int j = i;
       fork
         begin
@@ -155,7 +155,7 @@ class edn_scoreboard extends cip_base_scoreboard #(
 
     // process the csr req
     // for write, update local variable and fifo at address phase
-    // for read, update predication at address phase and compare at data phase
+    // for read, update prediction at address phase and compare at data phase
     case (csr.get_name())
       // add individual case item for each csr
       "intr_state": begin
@@ -390,7 +390,7 @@ class edn_scoreboard extends cip_base_scoreboard #(
 
     forever begin
       cs_cmd_fifo.get(cs_cmd_item);
-      cs_cmd = cs_cmd_item.h_data[csrng_pkg::CSRNG_CMD_WIDTH-1:0];
+      cs_cmd = cs_cmd_item.h_data[csrng_pkg::CmdBusWidth-1:0];
       predict_sts = 1'b1;
 
       // Check if EDN is disabled

@@ -5,7 +5,6 @@
 use anyhow::Result;
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
-use serde_annotate::Annotate;
 use sphincsplus::SpxDomain;
 use std::any::Any;
 use std::path::PathBuf;
@@ -23,9 +22,6 @@ pub struct Verify {
     label: Option<String>,
     #[arg(short, long, default_value = "plain-text", help=SignData::HELP)]
     format: SignData,
-    /// Reverse the input data (for little-endian targets).
-    #[arg(short = 'r', long)]
-    little_endian: bool,
     /// The SPHINCS+ signing domain.
     #[arg(short = 'd', long, default_value = "pure")]
     domain: SpxDomain,
@@ -40,16 +36,20 @@ impl Dispatch for Verify {
         _context: &dyn Any,
         hsm: &Module,
         _session: Option<&Session>,
-    ) -> Result<Box<dyn Annotate>> {
+    ) -> Result<Box<dyn erased_serde::Serialize>> {
         let spx = hsm.spx.as_ref().ok_or(HsmError::SpxUnavailable)?;
         let _token = hsm.token.as_deref().ok_or(HsmError::SessionRequired)?;
 
         let data = std::fs::read(&self.input)?;
-        let data = self
-            .format
-            .spx_prepare(self.domain, &data, self.little_endian)?;
+        let data = self.format.spx_prepare(self.domain, &data)?;
         let signature = std::fs::read(&self.signature)?;
-        let result = spx.verify(self.label.as_deref(), self.id.as_deref(), &data, &signature)?;
+        let result = spx.verify(
+            self.label.as_deref(),
+            self.id.as_deref(),
+            self.domain,
+            &data,
+            &signature,
+        )?;
         Ok(Box::new(BasicResult {
             success: result,
             error: if result {

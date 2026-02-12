@@ -8,8 +8,7 @@ filesets:
   files_dv:
     depend:
       - lowrisc:tlul:headers
-      # TODO: Revisit this
-      # - lowrisc:fpv:csr_assert_gen
+      - lowrisc:fpv:csr_assert_gen
     files:
       - mbx_bind.sv
     file_type: systemVerilogSource
@@ -28,9 +27,9 @@ targets:
   default: &default_target
     filesets:
       - files_dv
-    # TODO: Revisit this
-    # generate:
-    #  - csr_assert_gen
+    generate:
+      - csr_assert_gen
+
   formal:
     <<: *default_target
     filesets:

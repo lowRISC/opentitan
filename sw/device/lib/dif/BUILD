@@ -2,9 +2,18 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//hw/top:defs.bzl", "opentitan_require_top")
+load("//rules/opentitan:util.bzl", "flatten")
+load("//hw/top:defs.bzl", "opentitan_if_ip", "opentitan_require_top")
 
 package(default_visibility = ["//visibility:public"])
+
+filegroup(
+    name = "doc_files",
+    srcs = glob([
+        "**/*.md",
+        "**/*.h",
+    ]),
+)
 
 cc_library(
     name = "base",
@@ -30,9 +39,13 @@ cc_library(
 DIFS = {
     "adc_ctrl": {},
     "aes": {},
-    "alert_handler": {},
+    "alert_handler": {
+        "ut_target_compatible_with": opentitan_require_top("earlgrey"),
+    },
     "aon_timer": {},
-    "clkmgr": {},
+    "clkmgr": {
+        "ut_target_compatible_with": opentitan_require_top("earlgrey"),
+    },
     "csrng": {
         "deps": [":csrng_shared"],
     },
@@ -46,16 +59,22 @@ DIFS = {
     "hmac": {},
     "i2c": {},
     "keymgr": {},
-    "keymgr_dpe": {},
+    "keymgr_dpe": {
+        "no_ut": True,
+    },
     "kmac": {},
     "lc_ctrl": {},
     "mbx": {
         "deps": ["//sw/device/lib/base:abs_mmio"],
     },
     "otbn": {},
-    "otp_ctrl": {},
+    "otp_ctrl": {
+        "ut_target_compatible_with": opentitan_require_top("earlgrey"),
+    },
     "pattgen": {},
-    "pinmux": {},
+    "pinmux": {
+        "ut_target_compatible_with": opentitan_require_top("earlgrey"),
+    },
     "pwm": {},
     "pwrmgr": {
         "ut_target_compatible_with": opentitan_require_top("earlgrey"),
@@ -64,9 +83,16 @@ DIFS = {
     "rstmgr": {},
     "rv_core_ibex": {},
     "rv_dm": {},
-    "rv_plic": {},
+    "rv_plic": {
+        "ut_target_compatible_with": opentitan_require_top("earlgrey"),
+    },
     "rv_timer": {},
-    "soc_proxy": {},
+    "soc_dbg_ctrl": {
+        "no_ut": True,
+    },
+    "soc_proxy": {
+        "no_ut": True,
+    },
     "spi_device": {},
     "spi_host": {
         "ut_deps": ["//sw/device/lib/base:global_mock"],
@@ -115,6 +141,7 @@ DIFS = {
         ] + cfg.get("ut_deps", []),
     )
     for (ip, cfg) in DIFS.items()
+    if not cfg.get("no_ut", False)
 ]
 
 cc_library(
@@ -129,8 +156,8 @@ cc_library(
     deps = [
         ":base",
         "//hw/top:csrng_c_regs",
-        "//hw/top:dt_csrng",
         "//hw/top:edn_c_regs",
+        "//hw/top/dt:csrng",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -146,6 +173,24 @@ cc_library(
     hdrs = ["dif_rstmgr.h"],
     deps = [
         ":base",
-        "//hw/top:dt_rstmgr",
+        "//hw/top/dt:rstmgr",
     ],
+)
+
+cc_library(
+    name = "all_difs",
+    deps = flatten([
+        # Add all compatible register headers
+        opentitan_if_ip(
+            ip,
+            [":{}".format(ip)],
+            [],
+        )
+        for ip in DIFS.keys()
+    ]),
+)
+
+alias(
+    name = "doxy_target",
+    actual = ":all_difs",
 )

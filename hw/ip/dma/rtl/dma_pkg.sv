@@ -4,7 +4,7 @@
 
 package dma_pkg;
   // Create a type to be exposed for the inter_signal_list in the HJSON definition
-  // This type is needed since regtool cannot evaluate paramters defined in the HJSON
+  // This type is needed since regtool cannot evaluate parameters defined in the HJSON
   typedef logic [dma_reg_pkg::NumIntClearSources-1:0] lsio_trigger_t;
 
   // Possible error bits the DMA can raise
@@ -63,18 +63,40 @@ package dma_pkg;
     logic [31:0] enabled_memory_range_limit;
   } control_state_t;
 
-  typedef enum logic [3:0] {
-    DmaIdle                  = 4'b0000,
-    DmaClearIntrSrc          = 4'b0001,
-    DmaWaitIntrSrcResponse   = 4'b0010,
-    DmaAddrSetup             = 4'b0011,
-    DmaSendRead              = 4'b0100,
-    DmaWaitReadResponse      = 4'b0101,
-    DmaSendWrite             = 4'b0110,
-    DmaWaitWriteResponse     = 4'b0111,
-    DmaError                 = 4'b1000,
-    DmaShaFinalize           = 4'b1001,
-    DmaShaWait               = 4'b1010
+
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 11 -n 8 \
+  //     -s 8273645 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: ||||||||||||| (27.27%)
+  //  4: |||||||||||||||||||| (40.00%)
+  //  5: ||||||||| (18.18%)
+  //  6: |||| (9.09%)
+  //  7: || (5.45%)
+  //  8: --
+  //
+  // Minimum Hamming distance: 3
+  // Maximum Hamming distance: 7
+  // Minimum Hamming weight: 3
+  // Maximum Hamming weight: 7
+
+  typedef enum logic [7:0] {
+    DmaIdle                 = 8'b11110111,
+    DmaClearIntrSrc         = 8'b10101100,
+    DmaWaitIntrSrcResponse  = 8'b00101011,
+    DmaAddrSetup            = 8'b11110000,
+    DmaSendRead             = 8'b01000011,
+    DmaWaitReadResponse     = 8'b00011111,
+    DmaSendWrite            = 8'b10010100,
+    DmaWaitWriteResponse    = 8'b11011001,
+    DmaError                = 8'b01010110,
+    DmaShaFinalize          = 8'b00110001,
+    DmaShaWait              = 8'b01111010
   } dma_ctrl_state_e;
 
   // Maximum number of outstanding TL-UL requests per host post
@@ -87,7 +109,6 @@ package dma_pkg;
   parameter int unsigned SYS_NUM_REQ_CH      = 2;
   parameter int unsigned SYS_ADDR_WIDTH      = 64;
   parameter int unsigned SYS_METADATA_WIDTH  = 3;
-  parameter int unsigned SYS_RACL_WIDTH      = 4;
   parameter int unsigned SYS_DATA_BYTEWIDTH  = 4;
   parameter int unsigned SYS_DATA_WIDTH      = SYS_DATA_BYTEWIDTH * 8;
   parameter int unsigned SYS_NUM_ERROR_TYPES = 1;
@@ -112,14 +133,14 @@ package dma_pkg;
 
   // System port request interface
   typedef struct packed {
-    logic     [SYS_NUM_REQ_CH-1:0]                         vld_vec;
-    logic     [SYS_NUM_REQ_CH-1:0][SYS_METADATA_WIDTH-1:0] metadata_vec;
-    sys_opc_e [SYS_NUM_REQ_CH-1:0]                         opcode_vec;
-    logic     [SYS_NUM_REQ_CH-1:0][SYS_ADDR_WIDTH-1:0]     iova_vec;
-    logic     [SYS_NUM_REQ_CH-1:0][SYS_RACL_WIDTH-1:0]     racl_vec;
-    logic     [SYS_DATA_WIDTH-1:0]                         write_data;
-    logic     [SYS_DATA_BYTEWIDTH-1:0]                     write_be;
-    logic     [SYS_DATA_BYTEWIDTH-1:0]                     read_be;
+    logic                     [SYS_NUM_REQ_CH-1:0]                         vld_vec;
+    logic                     [SYS_NUM_REQ_CH-1:0][SYS_METADATA_WIDTH-1:0] metadata_vec;
+    sys_opc_e                 [SYS_NUM_REQ_CH-1:0]                         opcode_vec;
+    logic                     [SYS_NUM_REQ_CH-1:0][SYS_ADDR_WIDTH-1:0]     iova_vec;
+    top_racl_pkg::racl_role_t [SYS_NUM_REQ_CH-1:0]                         racl_vec;
+    logic                     [SYS_DATA_WIDTH-1:0]                         write_data;
+    logic                     [SYS_DATA_BYTEWIDTH-1:0]                     write_be;
+    logic                     [SYS_DATA_BYTEWIDTH-1:0]                     read_be;
   } sys_req_t;
 
   // System port response interface

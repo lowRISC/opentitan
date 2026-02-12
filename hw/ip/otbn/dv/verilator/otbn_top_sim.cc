@@ -195,8 +195,8 @@ void set_up_down_prim_count(PrimCountT *prim_count, uint32_t new_cnt) {
   auto up_cnt_flop = prim_count->gen_cnts__BRA__0__KET____DOT__u_cnt_flop;
   auto down_cnt_flop = prim_count->gen_cnts__BRA__1__KET____DOT__u_cnt_flop;
 
-  up_cnt_flop->gen_generic__DOT__u_impl_generic->d_i = new_cnt;
-  down_cnt_flop->gen_generic__DOT__u_impl_generic->d_i = 0xFFFFFFFF - new_cnt;
+  up_cnt_flop->d_i = new_cnt;
+  down_cnt_flop->d_i = 0xFFFFFFFF - new_cnt;
 }
 
 template <typename LoopControllerT>

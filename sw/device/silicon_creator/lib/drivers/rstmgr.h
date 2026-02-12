@@ -10,6 +10,8 @@
 #include <stdint.h>
 #include <stdnoreturn.h>
 
+#include "hw/top/dt/api.h"
+#include "hw/top/dt/rstmgr.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
@@ -56,19 +58,7 @@ typedef enum rstmgr_reason {
   /**
    * Hardware requests (HW_REQ).
    */
-  kRstmgrReasonSysrstCtrl = 3,
-  kRstmgrReasonWatchdog = 4,
-  kRstmgrReasonPowerUnstable = 5,
-  kRstmgrReasonEscalation = 6,
-  /**
-   * Non-debug module (NDM).
-   */
-  kRstmgrReasonNonDebugModule = 7,
-
-  /**
-   * Last used bit index (inclusive).
-   */
-  kRstmgrReasonLast = 7,
+  kRstmgrReasonHardwareRequest = 3,
 } rstmgr_reason_t;
 
 /**
@@ -126,6 +116,18 @@ noreturn
     rstmgr_reset(void);
 
 /**
+ * Reboot the chip.
+ *
+ * This function clears the power-on-reset reason and then resets the chip.
+ */
+#ifdef OT_PLATFORM_RV32
+// Omit `noreturn` to be able to test this function in off-target tests.
+noreturn
+#endif
+    void
+    rstmgr_reboot(void);
+
+/**
  * Verifies that info collection is initialized properly.
  *
  * In order not to interfere with the operation of other software on the chip,
@@ -135,6 +137,23 @@ noreturn
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t rstmgr_info_en_check(uint32_t reset_reasons);
+
+/**
+ * Check if a DT instance is a HW reset request source.
+ *
+ * Given a reset reasons bit field, a DT instance ID and reset request index,
+ * checks if the module corresponding to the instance ID triggered a HW reset
+ * request.
+ *
+ * @param dt Instance of rstmgr.
+ * @param reasons Reset reasons bit field.
+ * @param inst_id DT instance id to check.
+ * @param reset_req Reset request id.
+ * @return `true` if the module which DT instance ID is `inst_id` generated the
+ * HW reset request `reset_req`, `false` otherwise.
+ */
+bool rstmgr_is_hw_reset_reason(dt_rstmgr_t dt, uint32_t reasons,
+                               dt_instance_id_t inst_id, size_t reset_req);
 
 /**
  * Bitfields for `OWNER_SW_CFG_ROM_RSTMGR_INFO_EN" OTP item.

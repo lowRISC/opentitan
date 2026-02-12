@@ -29,7 +29,7 @@ In addition, it tracks whether a bus transaction is currently active and informs
 Finally, it detects when bus arbitration is lost and informs the modules when they must release the bus and allow other devices to communicate.
 
 For signaling when the bus is free, the behavior depends on whether [`CTRL.MULTI_CONTROLLER_MONITOR_EN`](registers.md#ctrl) is enabled.
-If it's not enabled, the monitor merely observes the bus free time betwen transactions.
+If it's not enabled, the monitor merely observes the bus free time between transactions.
 
 If multi-controller monitor mode is enabled, then the monitor also tracks transactions from other controllers, and it will report that the bus is busy until the free time expires after an external controller issues a STOP condition.
 The bus can also become free after the [`HOST_TIMEOUT_CTRL`](registers.md#host_timeout_ctrl) duration expires, if the bus was left in the idle state, or it can become free in the case of a bus timeout (if enabled in [`TIMEOUT_CTRL`](registers.md#timeout_ctrl)).

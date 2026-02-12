@@ -2,11 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::convert::TryFrom;
+use std::sync::LazyLock;
+
 use cryptoki::types::Ulong;
-use once_cell::sync::OnceCell;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use std::convert::TryFrom;
 
 use crate::util::attribute::{
     AttributeError, CertificateType, KeyType, MechanismType, ObjectClass,
@@ -101,12 +102,11 @@ pub fn unhex(ch: u8) -> u8 {
 impl TryFrom<&AttrData> for Vec<u8> {
     type Error = AttributeError;
     fn try_from(a: &AttrData) -> Result<Self, Self::Error> {
-        static HEX: OnceCell<Regex> = OnceCell::new();
+        static HEX: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new("^[0-9A-Fa-f]{2}(:[0-9A-Fa-f]{2})*$").unwrap());
         match a {
             AttrData::Str(v) => {
-                let hex =
-                    HEX.get_or_init(|| Regex::new("^[0-9A-Fa-f]{2}(:[0-9A-Fa-f]{2})*$").unwrap());
-                if hex.is_match(v) {
+                if HEX.is_match(v) {
                     // The format of a hex string is "01:23:45:67[:...]".
                     // Take chunks of 3.  The regex guarantees that the
                     // hex string is composed only of ASCII characters and we

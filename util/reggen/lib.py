@@ -84,6 +84,8 @@ def check_keys(obj: object, what: str, required_keys: List[str],
             unexpected.append(key)
 
     if missing or unexpected:
+        if isinstance(obj, dict) and 'name' in obj:
+            what += f" '{obj['name']}'"
         mstr = ('The following required fields were missing: '
                 f'{", ".join(missing)}.') if missing else ''
         ustr = ('The following unexpected fields were found: '

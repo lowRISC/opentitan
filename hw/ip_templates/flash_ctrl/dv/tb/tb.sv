@@ -22,11 +22,11 @@ module tb;
   // This will invoke the UVM registry and link this test type to
   // the name 'flash_ctrl_base_test' as a test name passed by UVM_TESTNAME
   //
-  // This is done explicitly only for the prim_pkg::ImplGeneric implementation
+  // This is done explicitly only for the generic prim technology implementation
   // since partner base tests inherit from flash_ctrl_base_test#(CFG_T, ENV_T) and
   // specify directly (CFG_T, ENV_T) via the class extension and use a different
   // UVM_TESTNAME
-  if (`PRIM_DEFAULT_IMPL==prim_pkg::ImplGeneric) begin : gen_spec_base_test_params
+  if (prim_pkg::PrimTechName == "Generic") begin : gen_spec_base_test_params
     typedef flash_ctrl_base_test #(.CFG_T(flash_ctrl_env_cfg),
                                    .ENV_T(flash_ctrl_env)) flash_ctrl_base_test_t;
   end
@@ -39,6 +39,8 @@ module tb;
   wire intr_op_done;
   wire intr_err;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
+
+  ast_pkg::ast_obs_ctrl_t obs_ctrl;
 
   // interfaces
   clk_rst_if clk_rst_if (
@@ -197,7 +199,12 @@ module tb;
     .intr_op_done_o   (intr_op_done),
     .intr_corr_err_o  (intr_err),
     .alert_rx_i       (alert_rx),
-    .alert_tx_o       (alert_tx)
+    .alert_tx_o       (alert_tx),
+
+    // Observability
+    .obs_ctrl_i(obs_ctrl),
+    .fla_obs_o (        )
+
   );
 
   // Create edge in flash_power_down_h_i, whenever reset is asserted
@@ -229,7 +236,7 @@ module tb;
     end
   end
 
-  // Instantitate the memory backdoor util instances.
+  // Instantiate the memory backdoor util instances.
   //
   // This only applies to the generic eflash. A unique memory backdoor util instance is created for
   // each type of flash partition in each bank.
@@ -237,27 +244,26 @@ module tb;
   // For eflash of a specific vendor implementation, set the hierarchy to the memory element
   // correctly when creating these instances in the extended testbench.
   `define FLASH_BANK_HIER(i)                                                            \
-      tb.dut.u_eflash.u_flash.gen_generic.u_impl_generic.gen_prim_flash_banks[i].       \
+      tb.dut.u_eflash.u_flash.gen_prim_flash_banks[i].       \
       u_prim_flash_bank
 
   `define FLASH_DATA_MEM_HIER(i)                                                        \
-      `FLASH_BANK_HIER(i).u_mem.gen_generic.u_impl_generic.mem
+      `FLASH_BANK_HIER(i).u_mem.mem
 
   `define FLASH_DATA_MEM_HIER_STR(i)                                                    \
-      $sformatf({"tb.dut.u_eflash.u_flash.gen_generic.u_impl_generic.",                 \
-                 "gen_prim_flash_banks[%0d].u_prim_flash_bank.u_mem.gen_generic.",      \
-                 "u_impl_generic.mem"}, i)
+      $sformatf({"tb.dut.u_eflash.u_flash.",                 \
+                 "gen_prim_flash_banks[%0d].u_prim_flash_bank.u_mem.mem"}, i)
 
   `define FLASH_INFO_MEM_HIER(i, j)                                                     \
-      tb.dut.u_eflash.u_flash.gen_generic.u_impl_generic.gen_prim_flash_banks[i].       \
-      u_prim_flash_bank.gen_info_types[j].u_info_mem.gen_generic.u_impl_generic.mem
+      tb.dut.u_eflash.u_flash.gen_prim_flash_banks[i].       \
+      u_prim_flash_bank.gen_info_types[j].u_info_mem.mem
 
   `define FLASH_INFO_MEM_HIER_STR(i, j)                                                 \
-      $sformatf({"tb.dut.u_eflash.u_flash.gen_generic.u_impl_generic.",                 \
+      $sformatf({"tb.dut.u_eflash.u_flash.",                 \
                  "gen_prim_flash_banks[%0d].u_prim_flash_bank.gen_info_types[%0d].",    \
-                 "u_info_mem.gen_generic.u_impl_generic.mem"}, i, j)
+                 "u_info_mem.mem"}, i, j)
 
-  if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_generic
+  if (prim_pkg::PrimTechName == "Generic") begin : gen_generic
     for (genvar i = 0; i < flash_ctrl_top_specific_pkg::NumBanks; i++) begin : gen_each_bank
       flash_dv_part_e part = part.first();
 

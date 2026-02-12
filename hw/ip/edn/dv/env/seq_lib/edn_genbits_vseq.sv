@@ -7,7 +7,7 @@ class edn_genbits_vseq extends edn_base_vseq;
   `uvm_object_new
 
   push_pull_host_seq#(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH)
-      m_endpoint_pull_seq[MAX_NUM_ENDPOINTS];
+      m_endpoint_pull_seq[`NUM_END_POINTS];
 
   uint   num_requesters, extra_requester, num_boot_reqs, num_auto_reqs,
          num_ep_reqs, num_reqs_between_reseeds, endpoint_q[$];

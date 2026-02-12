@@ -128,7 +128,7 @@
             - Verify the following digest sizes: 224, 256, 384, 512
             - Verify input message size of 0 bytes.
             - Verify multiple input message sizes as defined in NIST test vectors.
-            - Use endianess configuration used in the crypto library.
+            - Use endianness configuration used in the crypto library.
             '''
       features: ["KMAC.MODE.SHA3"]
       stage: V3
@@ -148,7 +148,7 @@
             - Verify the following security configurations: 128, 256
             - Verify input message size of 0 bytes.
             - Verify multiple input message sizes as defined in NIST test vectors.
-            - Use endianess configuration used in the crypto library.
+            - Use endianness configuration used in the crypto library.
             - Verify multiple XOF configurations.
             '''
       features: [
@@ -171,7 +171,7 @@
             - Verify the following security configurations: 128, 256
             - Verify input message size of 0 bytes.
             - Verify multiple input message sizes as defined in NIST test vectors.
-            - Use endianess configuration used in the crypto library.
+            - Use endianness configuration used in the crypto library.
             - Verify multiple XOF configurations.
             '''
       features: [
@@ -194,7 +194,7 @@
             - Verify the following security configurations: 128, 256
             - Verify input message size of 0 bytes.
             - Verify multiple input message sizes as defined in NIST test vectors.
-            - Use endianess configuration used in the crypto library.
+            - Use endianness configuration used in the crypto library.
             '''
       features: [
         "KMAC.MODE.KMAC",
@@ -226,7 +226,7 @@
             Additional test configurations:
 
             - Verify the following security configurations: 128, 256
-            - Use endianess configuration used in the crypto library.
+            - Use endianness configuration used in the crypto library.
             '''
       features: ["KMAC.KEY.SIDELOAD"]
       stage: V3
@@ -238,12 +238,12 @@
       ]
     }
     {
-      name: chip_sw_kmac_endianess
-      desc: '''Verify all KMAC endinaness options
+      name: chip_sw_kmac_endianness
+      desc: '''Verify all KMAC endianness options
 
             This is a low priority test P3.
 
-            Test the permutation of all endinaness configuration options for message and digest
+            Test the permutation of all endianness configuration options for message and digest
             registers.
             '''
       features: [
@@ -255,7 +255,7 @@
       lc_states: ["PROD"]
       tests: []
       bazel: [
-        "//sw/device/tests:kmac_endianess_test",
+        "//sw/device/tests:kmac_endianness_test",
       ]
     }
     {

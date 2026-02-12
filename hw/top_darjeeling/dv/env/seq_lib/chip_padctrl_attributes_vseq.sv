@@ -192,7 +192,7 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
 
   // For DIO pinmux testing.
   //
-  // Pads are either analog, input only or bidirectional. For bdirectional, only drive either the
+  // Pads are either analog, input only or bidirectional. For bidirectional, only drive either the
   // pad or the periph input. If none are driven, then on the pull. For input only, drive the periph
   // randomly - it should have no effect.
   rand logic [DioCount-1:0]  dio_to_periph;
@@ -236,11 +236,11 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     fork
       begin : mio_test
         pinmux_mio_outsel_test();
-        cfg.chip_vif.io_div4_clk_rst_if.wait_clks($urandom_range(1, 20));
+        cfg.chip_vif.io_clk_rst_if.wait_clks($urandom_range(1, 20));
         pinmux_mio_outsel_reset();
 
         pinmux_mio_insel_test();
-        cfg.chip_vif.io_div4_clk_rst_if.wait_clks($urandom_range(1, 20));
+        cfg.chip_vif.io_clk_rst_if.wait_clks($urandom_range(1, 20));
         pinmux_mio_insel_reset();
       end : mio_test
       // Note: this tests the USB DIOs as well, even though they are marked as "manual" in the
@@ -265,7 +265,7 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
       begin : manual_dio_test
         // Make sure nothing drives these pins before testing the pull values.
         cfg.chip_vif.otp_ext_volt_if.disconnect();
-        cfg.chip_vif.io_div4_clk_rst_if.wait_clks(1);
+        cfg.chip_vif.io_clk_rst_if.wait_clks(1);
         check_manual_dios_pull();
       end : manual_dio_test
     join
@@ -295,7 +295,7 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
                                                                 periph_to_mio_oe));
       void'(cfg.chip_vif.signal_probe_pinmux_periph_to_mio_i(SignalProbeForce, periph_to_mio));
       repeat ($urandom_range(4, 20)) begin
-        cfg.chip_vif.io_div4_clk_rst_if.wait_clks($urandom_range(1, 20));
+        cfg.chip_vif.io_clk_rst_if.wait_clks($urandom_range(1, 20));
         randcase
           1: begin
             `DV_CHECK_MEMBER_RANDOMIZE_FATAL(periph_to_mio_oe)
@@ -307,7 +307,7 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
             void'(cfg.chip_vif.signal_probe_pinmux_periph_to_mio_i(SignalProbeForce, periph_to_mio));
           end
         endcase
-        cfg.chip_vif.io_div4_clk_rst_if.wait_clks(1);
+        cfg.chip_vif.io_clk_rst_if.wait_clks(1);
         #(cfg.pad_pull_delay * 1ns);
         pinmux_mio_outsel_checks();
       end
@@ -447,7 +447,7 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
       cfg.chip_vif.mios_if.pins_oe = mio_to_periph_oe;
       cfg.chip_vif.mios_if.pins_o = mio_to_periph;
       repeat ($urandom_range(4, 20)) begin
-        cfg.chip_vif.io_div4_clk_rst_if.wait_clks($urandom_range(1, 20));
+        cfg.chip_vif.io_clk_rst_if.wait_clks($urandom_range(1, 20));
         randcase
           1: begin
             `DV_CHECK_MEMBER_RANDOMIZE_FATAL(mio_to_periph)
@@ -458,7 +458,7 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
             cfg.chip_vif.mios_if.pins_oe = mio_to_periph_oe;
           end
         endcase
-        cfg.chip_vif.io_div4_clk_rst_if.wait_clks(1);
+        cfg.chip_vif.io_clk_rst_if.wait_clks(1);
         pinmux_mio_insel_checks();
       end
     end
@@ -530,7 +530,7 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(periph_to_dio)
       pinmux_dio_drive_inputs();
       repeat ($urandom_range(4, 20)) begin
-        cfg.chip_vif.io_div4_clk_rst_if.wait_clks($urandom_range(1, 20));
+        cfg.chip_vif.io_clk_rst_if.wait_clks($urandom_range(1, 20));
         randcase
           1: `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dio_to_periph)
           1: `DV_CHECK_MEMBER_RANDOMIZE_FATAL(periph_to_dio)
@@ -538,7 +538,7 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
           1: `DV_CHECK_MEMBER_RANDOMIZE_FATAL(periph_to_dio_oe)
         endcase
         pinmux_dio_drive_inputs();
-        cfg.chip_vif.io_div4_clk_rst_if.wait_clks(1);
+        cfg.chip_vif.io_clk_rst_if.wait_clks(1);
         #(cfg.pad_pull_delay * 1ns);
         pinmux_dio_insel_checks();
       end

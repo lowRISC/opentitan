@@ -34,7 +34,7 @@ class i2c_target_nack_acqfull_addr_vseq extends i2c_target_nack_acqfull_vseq;
 
   rand int stim_cnt_limit_local;
 
-  // Limit the stimulus count to <=255, as the short stetch-into-NACK on the first byte of
+  // Limit the stimulus count to <=255, as the short stretch-into-NACK on the first byte of
   // each transaction can cause us to overflow the NACK counter (8-bit) in a short order, and
   // the directed nature of this testcase does not properly model the saturation of this counter.
   // It would be preferable to model this properly in the model/scoreboard in the future.
@@ -61,7 +61,7 @@ class i2c_target_nack_acqfull_addr_vseq extends i2c_target_nack_acqfull_vseq;
   endtask: pre_start
 
   // This hook implements the same function as the parent class, except without clearing out
-  // the ACQFIFO between stimulus runs. This is necessary to trigger the intented behaviour, which
+  // the ACQFIFO between stimulus runs. This is necessary to trigger the intended behaviour, which
   // occurs when starting a new transfer while the fifo is full. Each subsequent run will trigger
   // the automated NACK behaviour so long as the acqfifo remains full.
   //

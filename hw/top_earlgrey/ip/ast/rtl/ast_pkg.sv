@@ -134,7 +134,7 @@ typedef enum logic {
   SwAck  = 1
 } ast_ack_mode_e;
 
-// Clocks Oschillator Bypass
+// Clocks Oscillator Bypass
 typedef struct packed {
   logic     usb;
   logic     sys;

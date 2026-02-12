@@ -17,7 +17,7 @@ sof_pkt        m_sof_pkt;
 // Selected device address
 rand bit [6:0] dev_addr;
 
-// Bitmap of available buffers that are not presently assigned to the DUT; software is requied to
+// Bitmap of available buffers that are not presently assigned to the DUT; software is required to
 // keep track of the allocated buffers in order to prevent contention/corruption, and as such a
 // number of sequences require this functionality.
 bit [NumBuffers-1:0] buf_avail;
@@ -497,7 +497,7 @@ endtask
     check_tx_packet(in_data, pid_type, data);
   endtask
 
-  // Send handshake to DUT after an appropriate turn-around delay; the delay may be overriden for
+  // Send handshake to DUT after an appropriate turn-around delay; the delay may be overridden for
   // the small number of sequences that must precisely control the handshake timing.
   virtual task send_handshake(input pid_type_e pid_type, bit delay_first = 1);
     if (delay_first) begin
@@ -621,7 +621,7 @@ endtask
   //
   // - 'sent' means that the packet was successfully sent to the USB host.
   // - 'pend' means that an event caused it to be aborted and it remains 'pending'.
-  // - 'retracted' means that it was neither collected nor aborted, but has been succesfully
+  // - 'retracted' means that it was neither collected nor aborted, but has been successfully
   //   retracted and is no longer available for collection.
   //
   // The returned buffer number indicates the location of the packet, so that the buffer may be
@@ -773,7 +773,7 @@ endtask
   // track which buffers remain available for use as IN transactions or to be supplied to the
   // 'Available Buffer' FIFOs for receiving OUT transactions.
 
-  // Initiailize buffer management.
+  // Initialize buffer management.
   task buf_init();
     buf_avail = {NumBuffers{1'b1}}; // All buffers are initially available.
     // Reset the FIFOs, to ensure that the DUT and our buffer allocation are in step.
@@ -996,16 +996,17 @@ endtask
     // Enable OUT endpoints
     csr_wr(.ptr(ral.ep_out_enable[0]), .value({NEndpoints{1'b1}}));
     // Enable rx out
-    csr_wr(.ptr(ral.rxenable_out[0]), .value({NEndpoints{1'b1}}));
+    csr_wr(.ptr(ral.rxenable_out), .value({NEndpoints{1'b1}}));
   endtask
 
   virtual task configure_out_trans(bit [3:0] ep);
+    uvm_reg_data_t out = 1 << ep;
+    uvm_reg_data_t preserve = ~out;
     // Enable endpoint for OUT packet reception.
     csr_wr(.ptr(ral.ep_out_enable[0].enable[ep]), .value(1'b1));
     csr_update(ral.ep_out_enable[0]);
-    // Enable rx out
-    ral.rxenable_out[0].out[ep].set(1'b1);
-    csr_update(ral.rxenable_out[0]);
+    // Enable rx out, leaving all other endpoints unaltered.
+    csr_wr(.ptr(ral.rxenable_out), .value((preserve << 16) | out));
     // Put buffer in Available OUT Buffer _FIFO_, so use csr_wr _not_ csr_update
     csr_wr(.ptr(ral.avoutbuffer.buffer), .value(out_buffer_id));
   endtask

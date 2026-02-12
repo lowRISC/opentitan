@@ -87,6 +87,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     cfg.otp_ctrl_vif.drive_lc_creator_seed_sw_rw_en(lc_ctrl_pkg::On);
     cfg.otp_ctrl_vif.drive_lc_owner_seed_sw_rw_en(lc_ctrl_pkg::On);
     cfg.otp_ctrl_vif.drive_lc_seed_hw_rd_en(get_rand_lc_tx_val());
+    cfg.otp_ctrl_vif.drive_lc_rma_state(lc_ctrl_pkg::Off);
     cfg.otp_ctrl_vif.drive_lc_dft_en(get_rand_lc_tx_val(.t_weight(0)));
     cfg.otp_ctrl_vif.drive_lc_escalate_en(lc_ctrl_pkg::Off);
     cfg.otp_ctrl_vif.drive_pwr_otp_init(0);
@@ -133,9 +134,9 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     used_dai_addrs.delete();
   endfunction
 
-  // Overide this task for otp_ctrl_common_vseq and otp_ctrl_stress_all_with_rand_reset_vseq
+  // Override this task for otp_ctrl_common_vseq and otp_ctrl_stress_all_with_rand_reset_vseq
   // because some registers won't set to default value until otp_init is done.
-  virtual task read_and_check_all_csrs_after_reset();
+  protected virtual task read_and_check_all_csrs_after_reset();
     cfg.otp_ctrl_vif.drive_lc_escalate_en(lc_ctrl_pkg::Off);
     otp_pwr_init();
     super.read_and_check_all_csrs_after_reset();
@@ -550,8 +551,8 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   endtask
 
   // This function backdoor inject error according to ecc_err:
-  // - for OtpEccUncorrErr it injects a 2 bit eror
-  // - for OtpEccCorrErr it injects a 1 bit eror
+  // - for OtpEccUncorrErr it injects a 2 bit error
+  // - for OtpEccCorrErr it injects a 1 bit error
   // This function will output original backdoor read data for the given address
   // so the error can be cleared.
   virtual function bit [TL_DW-1:0] backdoor_inject_ecc_err(bit [TL_DW-1:0] addr,
@@ -769,21 +770,21 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   // This test access OTP_CTRL's test_access memory. The open-sourced code only test if the access
   // is valid. Please override this task in proprietary OTP.
   virtual task otp_test_access();
-    if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin
+    if (prim_pkg::PrimTechName == "Generic") begin
       repeat (10) begin
         bit [TL_DW-1:0] data;
         bit test_access_en;
         bit [TL_AW-1:0] rand_addr = $urandom_range(0, NUM_PRIM_REG - 1) * 4;
         bit [TL_AW-1:0] tlul_addr =
-            cfg.ral_models["otp_ctrl_prim_reg_block"].get_addr_from_offset(rand_addr);
+            cfg.ral_models["otp_macro_prim_reg_block"].get_addr_from_offset(rand_addr);
         if (cfg.stop_transaction_generators()) break;
         rand_drive_dft_en();
         `DV_CHECK_STD_RANDOMIZE_FATAL(data)
         test_access_en = cfg.otp_ctrl_vif.lc_dft_en_i == lc_ctrl_pkg::On;
         tl_access(.addr(tlul_addr), .write(1), .data(data), .exp_err_rsp(~test_access_en),
-                  .tl_sequencer_h(p_sequencer.tl_sequencer_hs["otp_ctrl_prim_reg_block"]));
+                  .tl_sequencer_h(p_sequencer.tl_sequencer_hs["otp_macro_prim_reg_block"]));
         tl_access(.addr(tlul_addr), .write(0), .data(data), .exp_err_rsp(~test_access_en),
-                  .tl_sequencer_h(p_sequencer.tl_sequencer_hs["otp_ctrl_prim_reg_block"]));
+                  .tl_sequencer_h(p_sequencer.tl_sequencer_hs["otp_macro_prim_reg_block"]));
        end
      end
   endtask

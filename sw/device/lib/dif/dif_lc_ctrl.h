@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/lc_ctrl/doc/">Lifecycle Controller</a> Device
+ * @brief <a href="/book/hw/ip/lc_ctrl/">Lifecycle Controller</a> Device
  * Interface Functions
  */
 

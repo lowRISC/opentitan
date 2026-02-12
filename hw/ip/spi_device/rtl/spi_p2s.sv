@@ -4,6 +4,8 @@
 //
 // SPI byte to SPI (Single/ Dual/ Quad)
 
+`include "prim_assert.sv"
+
 module spi_p2s
   import spi_device_pkg::*;
 (
@@ -81,7 +83,7 @@ module spi_p2s
   // `data_sent`
   // Popping signal is a little bit tricky if p2s supports Quad IO
   // The sent signal cannot be sent at the end of the beat, as it does not have
-  // enought time to affect the FIFO.
+  // enough time to affect the FIFO.
   //
   // If the sent signal asserted at the first beat, at the very first byte of
   // SPI has no time to assert valid signal. So the sent signal does not affect
@@ -160,7 +162,7 @@ module spi_p2s
   // Previously, logic updated io_mode at every byte. It was to make io_mode
   // safer. However, as `io_mode_i` is updated at @iSCK (from spi_device top),
   // and also spi_p2s logic runs only when `data_valid_i` is high, the need of
-  // latching logic disapears.
+  // latching logic disappears.
   //
   // Now, the logic uses `io_mode_i` directly.
   assign io_mode = io_mode_i;

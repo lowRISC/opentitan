@@ -176,8 +176,8 @@ class chip_rv_dm_lc_disabled_vseq extends chip_stub_cpu_base_vseq;
     if (flds[0].get_access() inside {"RW", "RO"}) begin
       `uvm_info(`gfn, $sformatf("Read addr %0h, exp error %0d",
                 addr, gated), UVM_HIGH);
-      tl_access(.addr(addr), .write(0), .data(data), .exp_err_rsp(gated), .exp_data('1),
-                .check_exp_data(gated));
+      tl_access(.addr(addr), .write(0), .data(data), .exp_err_rsp(gated),
+                .check_exp_data(gated), .exp_data('1));
     end
   endtask
 

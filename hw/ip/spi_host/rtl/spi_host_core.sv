@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Core Implemenation module for Serial Peripheral Interface (SPI) Host IP.
+// Core Implementation module for Serial Peripheral Interface (SPI) Host IP.
 //
 
 module spi_host_core #(

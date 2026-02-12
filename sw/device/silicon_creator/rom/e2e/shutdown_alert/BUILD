@@ -6,10 +6,10 @@ load("//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
 load(
     "//rules:const.bzl",
     "CONST",
-    "EARLGREY_ALERTS",
     "EARLGREY_LOC_ALERTS",
     "get_lc_items",
 )
+load("//hw/top_earlgrey/data/autogen:defs.bzl", "EARLGREY_ALERTS")
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_params",
@@ -67,6 +67,7 @@ ALERT_LC_STATES = get_lc_items(
         ],
         deps = [
             "//hw/top:otp_ctrl_c_regs",
+            "//hw/top/dt",
             "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib/drivers:alert",

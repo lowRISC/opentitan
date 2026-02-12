@@ -21,9 +21,6 @@
 
 p384_keygen_test:
 
-  /* Init all-zero register. */
-  bn.xor    w31, w31, w31
-
   /* generate 4 random 448-bit values and write them to d0, d1 */
   jal       x1, p384_generate_random_key
 
@@ -98,9 +95,9 @@ p384_keygen_test:
   or        x2, x2, x3
 
   /* If x2 != 0: w0 <= w0 + 1, else: w0 <= w0 + 0 */
-  beq       x2, x0, keep_w0_1
+  bne       x2, x0, fail_w0_1
   bn.addi   w0, w0, 1
-  keep_w0_1:
+  fail_w0_1:
 
   /* [w17,w16] <= k = [w9,w8] + [w11,w10] mod n = k0 + k1 mod n */
   bn.add    w18, w8, w10
@@ -129,9 +126,9 @@ p384_keygen_test:
   or        x2, x2, x3
 
   /* If x2 != 0: w0 <= w0 + 1, else: w0 <= w0 + 0 */
-  beq       x2, x0, keep_w0_2
+  bne       x2, x0, fail_w0_2
   bn.addi   w0, w0, 1
-  keep_w0_2:
+  fail_w0_2:
 
   /* Compare the values and check if they are distinct to each other.
      If one value pair is equal, then the zero flag will be set.
@@ -163,9 +160,9 @@ p384_keygen_test:
   and       x2, x2, x3
 
   /* If x2 != 0: w1 <= w1 + 1, else: w1 <= w1 + 0 */
-  beq       x2, x0, keep_w1_1
+  bne       x2, x0, fail_w1_1
   bn.addi   w1, w1, 1
-  keep_w1_1:
+  fail_w1_1:
 
   /* [w21,w20] <= [w5,w4] - [w9,w8] = d0 - k0
      if d0 - k0 == 0: w1 <= w1 + w3 = w1 + 1, else: w1 <= w1 + w31 = w1 + 0 */
@@ -193,9 +190,9 @@ p384_keygen_test:
   and       x2, x2, x3
 
   /* If x2 != 0: w1 <= w1 + 1, else: w1 <= w1 + 0 */
-  beq       x2, x0, keep_w1_2
+  bne       x2, x0, fail_w1_2
   bn.addi   w1, w1, 1
-  keep_w1_2:
+  fail_w1_2:
 
   /* [w21,w20] <= [w5,w4] - [w11,w10] = d0 - k1
      if d0 - k1 == 0: w1 <= w1 + w3 = w1 + 1, else: w1 <= w1 + w31 = w1 + 0 */
@@ -223,9 +220,9 @@ p384_keygen_test:
   and       x2, x2, x3
 
   /* If x2 != 0: w1 <= w1 + 1, else: w1 <= w1 + 0 */
-  beq       x2, x0, keep_w1_3
+  bne       x2, x0, fail_w1_3
   bn.addi   w1, w1, 1
-  keep_w1_3:
+  fail_w1_3:
 
   /* [w21,w20] <= [w7,w6] - [w9,w8] = d1 - k0
      if d1 - k0 == 0: w1 <= w1 + w3 = w1 + 1, else: w1 <= w1 + w31 = w1 + 0 */
@@ -253,9 +250,9 @@ p384_keygen_test:
   and       x2, x2, x3
 
   /* If x2 != 0: w1 <= w1 + 1, else: w1 <= w1 + 0 */
-  beq       x2, x0, keep_w1_4
+  bne       x2, x0, fail_w1_4
   bn.addi   w1, w1, 1
-  keep_w1_4:
+  fail_w1_4:
 
   /* [w21,w20] <= [w7,w6] - [w11,w10] = d1 - k1
      if d1 - k1 == 0: w1 <= w1 + w3 = w1 + 1, else: w1 <= w1 + w31 = w1 + 0 */
@@ -283,9 +280,9 @@ p384_keygen_test:
   and       x2, x2, x3
 
   /* If x2 != 0: w1 <= w1 + 1, else: w1 <= w1 + 0 */
-  beq       x2, x0, keep_w1_5
+  bne       x2, x0, fail_w1_5
   bn.addi   w1, w1, 1
-  keep_w1_5:
+  fail_w1_5:
 
   /* [w21,w20] <= [w9,w8] - [w11,w10] = k0 - k1
      if k0 - k1 == 0: w1 <= w1 + w3 = w1 + 1, else: w1 <= w1 + w31 = w1 + 0 */
@@ -313,32 +310,8 @@ p384_keygen_test:
   and       x2, x2, x3
 
   /* If x2 != 0: w1 <= w1 + 1, else: w1 <= w1 + 0 */
-  beq       x2, x0, keep_w1_6
+  bne       x2, x0, fail_w1_6
   bn.addi   w1, w1, 1
-  keep_w1_6:
+  fail_w1_6:
 
   ecall
-
-.section .data
-
-.balign 32
-
-/* 1st private key share d0 (448-bit) */
-.globl d0
-d0:
-  .zero 64
-
-/* 2nd private key share d1 (448-bit) */
-.globl d1
-d1:
-  .zero 64
-
-/* 1st scalar share k0 (448-bit) */
-.globl k0
-k0:
-  .zero 64
-
-/* 2nd scalar share k1 (448-bit) */
-.globl k1
-k1:
-  .zero 64

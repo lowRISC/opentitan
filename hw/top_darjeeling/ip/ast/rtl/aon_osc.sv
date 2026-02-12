@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //############################################################################
 // *Name: aon_osc
-// *Module Description: AON Clock Oscilator
+// *Module Description: AON Clock Oscillator
 //############################################################################
 
 module aon_osc (
@@ -20,7 +20,7 @@ module aon_osc (
 `ifndef SYNTHESIS
 // Behavioral Model
 ////////////////////////////////////////
-timeunit 1ns / 10ps;
+timeunit  1ns / 1ps;
 
 real CLK_PERIOD, ckmul;
 
@@ -28,12 +28,11 @@ reg init_start;
 initial init_start = 1'b0;
 
 initial begin
-  if ( !$value$plusargs("osc200k_freq_multiplier=%f", ckmul) ) ckmul = 1.0;
   #1;
   init_start = 1'b1;
   #1;
-  $display("\n%m: AON Base Clock Power-up Frequency: %0d Hz", $rtoi(10**9/(CLK_PERIOD*ckmul)));
-  $display("%m: AON %0.1fxBase Clock Power-up Frequency: %0d Hz", ckmul, $rtoi(10**9/CLK_PERIOD));
+  $display("\n%m: AON Base Clock Power-up Frequency: %0d Hz", $rtoi(10**9/(CLK_PERIOD)));
+  $display("%m: AON Base Clock Power-up Frequency: %0d Hz", $rtoi(10**9/CLK_PERIOD));
 end
 
 // Enable 5us RC Delay on rise
@@ -45,11 +44,10 @@ assign en_osc_re = en_osc_re_buf && init_start;
 ////////////////////////////////////////
 real CalAonClkPeriod, UncAonClkPeriod, AonClkPeriod;
 
-initial CalAonClkPeriod = $itor( 5000 );                         // 5000ns (200KHz)
-initial UncAonClkPeriod = $itor( $urandom_range(10000, 5555) );  // 10000-5555ps (100-180KHz)
+initial CalAonClkPeriod = $itor( 16000 );  // 16000ps (62.5MHz)
 
-assign AonClkPeriod = (aon_osc_cal_i && init_start) ? CalAonClkPeriod : UncAonClkPeriod;
-assign CLK_PERIOD = AonClkPeriod/ckmul;
+assign AonClkPeriod = CalAonClkPeriod;
+assign CLK_PERIOD = AonClkPeriod / 1000;
 
 // Free running oscillator
 reg clk_osc;
@@ -100,7 +98,7 @@ prim_clock_gating #(
 
 logic en_osc_fe;
 
-// Syncronize en_osc to clk FE for glitch free disable
+// Synchronize en_osc to clk FE for glitch free disable
 always_ff @( negedge clk, negedge vcore_pok_h_i ) begin
   if ( !vcore_pok_h_i ) begin
     en_osc_fe <= 1'b0;

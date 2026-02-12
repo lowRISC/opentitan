@@ -26,10 +26,14 @@ class aes_deinit_test extends aes_base_test;
     cfg.ctr_weight               = 10;
     cfg.ofb_weight               = 10;
     cfg.cfb_weight               = 10;
+    cfg.gcm_weight               = 10;
 
-    cfg.message_len_min          = 16;    // one block (16bytes=128bits)
+    cfg.message_len_min          = 16;   // one block (16bytes=128bits)
     cfg.message_len_max          = 128;  //
     cfg.manual_operation_pct     = 0;
+
+    cfg.aad_len_min              = 0;
+    cfg.aad_len_max              = 128;
 
     cfg.fixed_data_en            = 0;
     cfg.fixed_key_en             = 0;

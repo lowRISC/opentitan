@@ -15,20 +15,11 @@ use crate::io::emu::Emulator;
 use crate::io::gpio::{GpioBitbanging, GpioMonitoring, GpioPin};
 use crate::io::i2c::Bus;
 use crate::io::jtag::{JtagChain, JtagParams};
-use crate::io::nonblocking_help::{NoNonblockingHelp, NonblockingHelp};
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
 
-pub mod chip_whisperer;
 pub mod common;
-pub mod dediprog;
-pub mod ftdi;
-pub mod hyperdebug;
 pub mod ioexpander;
-pub mod proxy;
-pub mod ti50emulator;
-pub mod ultradebug;
-pub mod verilator;
 
 // Export custom error types
 mod errors;
@@ -64,7 +55,7 @@ pub struct Capabilities {
 impl Capabilities {
     /// Create a new Capabilities object representing a provider of
     /// capabilities specified by `cap`.
-    fn new(cap: Capability) -> Self {
+    pub fn new(cap: Capability) -> Self {
         Self { capabilities: cap }
     }
 
@@ -143,44 +134,45 @@ pub trait Transport {
         Err(TransportError::InvalidInterface(TransportInterfaceType::GpioBitbanging).into())
     }
     /// Returns a [`Emulator`] implementation.
-    fn emulator(&self) -> Result<Rc<dyn Emulator>> {
+    fn emulator(&self) -> Result<&dyn Emulator> {
         Err(TransportError::InvalidInterface(TransportInterfaceType::Emulator).into())
     }
 
+    /// Methods available only on FPGA implementations.
+    fn fpga_ops(&self) -> Result<&dyn FpgaOps> {
+        Err(TransportError::InvalidInterface(TransportInterfaceType::FpgaOps).into())
+    }
+
     /// Methods available only on Proxy implementation.
-    fn proxy_ops(&self) -> Result<Rc<dyn ProxyOps>> {
+    fn proxy_ops(&self) -> Result<&dyn ProxyOps> {
         Err(TransportError::InvalidInterface(TransportInterfaceType::ProxyOps).into())
     }
 
     /// Invoke non-standard functionality of some Transport implementations.
-    fn dispatch(&self, _action: &dyn Any) -> Result<Option<Box<dyn serde_annotate::Annotate>>> {
+    fn dispatch(&self, _action: &dyn Any) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         Err(TransportError::UnsupportedOperation.into())
     }
 
-    /// As long as the returned `MaintainConnection` object is kept by the caller, this driver may
-    /// assume that no other `opentitantool` processes attempt to access the same debugger device.
-    /// This allows for optimzations such as keeping USB handles open across function invocations.
-    fn maintain_connection(&self) -> Result<Rc<dyn MaintainConnection>> {
-        // For implementations that have not implemented any optimizations, return a no-op object.
-        Ok(Rc::new(()))
-    }
-
-    /// Before nonblocking operations can be used on `Uart` or other traits, this
-    /// `NonblockingHelp` object must be invoked, in order to get the `Transport` implementation a
-    /// chance to register its internal event sources with the main event loop.
-    fn nonblocking_help(&self) -> Result<Rc<dyn NonblockingHelp>> {
-        Ok(Rc::new(NoNonblockingHelp))
+    /// Invoke the provided callback (preferably) without exclusive access.
+    ///
+    /// By default, ownership of `Transport` would imply exclusive access to the underlying device,
+    /// and optimisation can be made assuming no other process would be simultaneously accessing.
+    /// However for long running commands, such as `opentitantool console`, it may be desirable to
+    /// relinquish exclusive access during such comamnd and only re-take exclusive access later.
+    ///
+    /// Transport that does not support such scenario may ignore such request and perform a no-op.
+    fn relinquish_exclusive_access(&self, callback: Box<dyn FnOnce() + '_>) -> Result<()> {
+        callback();
+        Ok(())
     }
 }
 
-/// As long as this object is kept alive, the `Transport` driver may assume that no other
-/// `opentitantool` processes attempt to access the same debugger device.  This allows for
-/// optimzations such as keeping USB handles open across function invocations.
-pub trait MaintainConnection {}
+/// Methods available only on FPGA transports.
+pub trait FpgaOps {
+    fn load_bitstream(&self, bitstream: &[u8], progress: &dyn ProgressIndicator) -> Result<()>;
 
-/// No-op implmentation of the trait, for use by `Transport` implementations that do not do
-/// any optimizations to maintain connection between method calls.
-impl MaintainConnection for () {}
+    fn clear_bitstream(&self) -> Result<()>;
+}
 
 /// Methods available only on the Proxy implementation of the Transport trait.
 pub trait ProxyOps {

@@ -16,18 +16,14 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/epmp_state.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 OTTF_DEFINE_TEST_CONFIG();
 
 static dif_sram_ctrl_t sram_ctrl;
 
-enum {
-  kSramStart = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR,
-  kSramEnd = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR +
-             TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES,
-  kSramRetStart = TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
-};
+// SRAM addresses from device table
+static uintptr_t kSramStart;
+static uintptr_t kSramEnd;
+static uintptr_t kSramRetStart;
 
 OT_SECTION(".data.sram_function_test")
 OT_NOINLINE
@@ -69,9 +65,15 @@ static void sram_ret_neg_test(void) {
 }
 
 bool test_main(void) {
-  CHECK_DIF_OK(dif_sram_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR),
-      &sram_ctrl));
+  // Initialize SRAM controller using device table
+  CHECK_DIF_OK(dif_sram_ctrl_init_from_dt(kDtSramCtrlMain, &sram_ctrl));
+
+  // Get SRAM addresses from device table
+  kSramStart = dt_sram_ctrl_memory_base(kDtSramCtrlMain, kDtSramCtrlMemoryRam);
+  kSramEnd = kSramStart +
+             dt_sram_ctrl_memory_size(kDtSramCtrlMain, kDtSramCtrlMemoryRam);
+  kSramRetStart =
+      dt_sram_ctrl_memory_base(kDtSramCtrlRetAon, kDtSramCtrlMemoryRam);
 
   // Unlock the entire address space for RWX so that we can run this test with
   // both rom and test_rom.
@@ -83,7 +85,8 @@ bool test_main(void) {
         "expected PMPCFG1 to be unconfigured before changing it");
 
   CSR_SET_BITS(CSR_REG_PMPCFG1,
-               (kEpmpModeNapot | kEpmpPermLockedReadWriteExecute) << 24);
+               ((uint32_t)(kEpmpModeNapot | kEpmpPermLockedReadWriteExecute))
+                   << 24);
 
   // Note: We can test the negative case only using the retention SRAM since
   // execution is unconditionally enabled for the main SRAM in the RMA life

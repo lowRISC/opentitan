@@ -8,11 +8,13 @@ use serde_annotate::Annotate;
 use std::any::Any;
 use std::path::PathBuf;
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
-use sphincsplus::{DecodeKey, EncodeKey, SphincsPlus, SpxDomain, SpxPublicKey, SpxSecretKey};
+use opentitanlib::app::command::CommandDispatch;
+use sphincsplus::{
+    DecodeKey, EncodeKey, SphincsPlus, SpxDomain, SpxPublicKey, SpxRawSignature, SpxSecretKey,
+};
 
-#[derive(Annotate, serde::Serialize)]
+#[derive(Annotate)]
 pub struct SpxPublicKeyInfo {
     pub algorithm: String,
     pub public_key_num_bits: usize,
@@ -34,7 +36,7 @@ impl CommandDispatch for SpxKeyShowCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let key = SpxPublicKey::read_pem_file(&self.key_file)?;
         let bytes = key.as_bytes();
 
@@ -82,7 +84,7 @@ impl CommandDispatch for SpxKeyGenerateCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let (private_key, public_key) = SpxSecretKey::new_keypair(self.algorithm)?;
         let mut file = self.output_dir.to_owned();
         file.push(&self.basename);
@@ -102,7 +104,7 @@ pub enum SpxKeySubcommands {
     Generate(SpxKeyGenerateCommand),
 }
 
-#[derive(serde::Serialize, Annotate)]
+#[derive(Annotate)]
 pub struct SpxSignResult {
     #[serde(with = "serde_bytes")]
     #[annotate(format = hexstr)]
@@ -111,6 +113,9 @@ pub struct SpxSignResult {
 
 #[derive(Debug, Args)]
 pub struct SpxSignCommand {
+    /// Set to true if signing for a target that uses a byte-reversed representation of the hash.
+    #[arg(short='r', long, action = clap::ArgAction::Set, default_value = "false")]
+    spx_hash_reversal_bug: bool,
     /// The signature domain (Raw, Pure, PreHashedSha256)
     #[arg(long, default_value_t = SpxDomain::default())]
     domain: SpxDomain,
@@ -129,8 +134,11 @@ impl CommandDispatch for SpxSignCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
-        let message = std::fs::read(&self.message)?;
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
+        let mut message = std::fs::read(&self.message)?;
+        if self.spx_hash_reversal_bug {
+            message.reverse();
+        }
         let private_key = SpxSecretKey::read_pem_file(&self.private_key)?;
         let signature = private_key.sign(self.domain, &message)?;
         if let Some(output) = &self.output {
@@ -143,9 +151,15 @@ impl CommandDispatch for SpxSignCommand {
 
 #[derive(Debug, Args)]
 pub struct SpxVerifyCommand {
+    /// Set to true if verifying for a target that uses a byte-reversed representation of the hash.
+    #[arg(short='r', long, action = clap::ArgAction::Set, default_value = "false")]
+    spx_hash_reversal_bug: bool,
     /// The signature domain (Raw, Pure, PreHashedSha256)
     #[arg(long, default_value_t = SpxDomain::default())]
     domain: SpxDomain,
+    /// The signature algorithm (Shake128sSimple, Sha2128sSimple)
+    #[arg(long, default_value_t = SphincsPlus::Sha2128sSimple)]
+    spx_algorithm: SphincsPlus,
     /// The file containing the SPHINCS+ raw public key in PEM format.
     #[arg(value_name = "KEY")]
     public_key: PathBuf,
@@ -160,11 +174,14 @@ impl CommandDispatch for SpxVerifyCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
-        let message = std::fs::read(&self.message)?;
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
+        let mut message = std::fs::read(&self.message)?;
+        if self.spx_hash_reversal_bug {
+            message.reverse();
+        }
         let public_key = SpxPublicKey::read_pem_file(&self.public_key)?;
-        let signature = std::fs::read(&self.signature)?;
-        public_key.verify(self.domain, &signature, &message)?;
+        let signature = SpxRawSignature::read_from_file(&self.signature, self.spx_algorithm)?;
+        public_key.verify(self.domain, signature.as_bytes(), &message)?;
         Ok(None)
     }
 }

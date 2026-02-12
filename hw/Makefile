@@ -4,6 +4,7 @@
 
 CUR_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 PRJ_DIR := $(realpath ${CUR_DIR}/../)
+SEED_MODE := testing
 
 REG_OUTPUT_AUTOGEN_DIR ?= ${PRJ_DIR}/build/autogen
 
@@ -33,6 +34,7 @@ IPS ?= aes           \
        lc_ctrl       \
        mbx           \
        otbn          \
+       otp_macro     \
        pattgen       \
        pwm           \
        rom_ctrl      \
@@ -44,7 +46,6 @@ IPS ?= aes           \
        spi_host      \
        sram_ctrl     \
        sysrst_ctrl   \
-       trial1        \
        uart          \
        usbdev
 
@@ -100,19 +101,8 @@ $(ips_reg): %_reg:
 	${PRJ_DIR}/util/regtool.py ${toolflags} -r $(blk-hjson)
 	${PRJ_DIR}/util/regtool.py --sec-cm-testplan $(blk-hjson)
 
-# Register generation for otp_ctrl also depends on running gen-otp-mmap.py
-.PHONY: otp-mmap
-$(filter otp_ctrl_reg,$(ips_reg)): otp-mmap
-otp-mmap:
-	cd ${PRJ_DIR} && ./util/design/gen-otp-mmap.py ${OTP_MMAP_BUFER}
-
-# Register generation for lc_ctrl also depends on running gen-lc-state-enc.py
-.PHONY: lc-state-enc
-$(filter lc_ctrl_reg,$(ips_reg)): lc-state-enc
-lc-state-enc:
-	cd ${PRJ_DIR} && ./util/design/gen-lc-state-enc.py ${LC_BUFFER}
-
 top_hjson = $(PRJ_DIR)/hw/$*/$(dir_hjson)/$*.hjson
+top_seed_hjson = $(PRJ_DIR)/hw/$*/$(dir_hjson)/$*_seed.$(SEED_MODE).hjson
 version_out_dir = $(PRJ_DIR)/build
 version_path = $(version_out_dir)/workspace_status.txt
 top_chip_hjson = $(PRJ_DIR)/hw/$(TOPS)/$(dir_hjson)/$(TOPS).hjson
@@ -125,14 +115,14 @@ workspace_status: $(version_out_dir)
 
 topgen_rust: workspace_status
 	mkdir -p ${REG_OUTPUT_AUTOGEN_DIR}
-	${PRJ_DIR}/util/topgen.py -t $(top_chip_hjson) --rust-only -o ${REG_OUTPUT_AUTOGEN_DIR}/ --version-stamp ${version_path} ${toolflags}
+	${PRJ_DIR}/util/topgen.py -t $(top_chip_hjson) -s $(top_seed_hjson) --rust-only -o ${REG_OUTPUT_AUTOGEN_DIR}/ --version-stamp ${version_path} ${toolflags}
 
 topgen_rust_pkg: topgen_rust
 	tar -C ${REG_OUTPUT_AUTOGEN_DIR}/sw/autogen/ -cvf ${REG_OUTPUT_AUTOGEN_DIR}/chip_${TOPS}.tar chip
 
 top: $(tops_gen)
 $(tops_gen): %_gen:
-	${PRJ_DIR}/util/topgen.py -t $(top_hjson) -o ${PRJ_DIR}/hw/$*/ ${toolflags}
+	${PRJ_DIR}/util/topgen.py -t $(top_hjson) -s $(top_seed_hjson) -o ${PRJ_DIR}/hw/$*/ ${toolflags}
 
 # This runs cmdgen on all md files of the repo using xargs for parallelism
 cmdgen:

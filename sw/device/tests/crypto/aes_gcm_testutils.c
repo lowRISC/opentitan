@@ -14,6 +14,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/profile.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/tests/crypto/lib/crypto_test_lib.h"
 
 #define MODULE_ID MAKE_MODULE_ID('a', 'g', 't')
 
@@ -123,13 +124,17 @@ static status_t stream_gcm(otcrypto_aes_gcm_context_t *ctx,
 
 status_t aes_gcm_testutils_encrypt(const aes_gcm_test_t *test, bool streaming,
                                    uint32_t *cycles) {
+  // Determine the security level.
+  otcrypto_key_security_level_t sec_level;
+  TRY(determine_security_level(&sec_level));
+
   // Construct the blinded key configuration.
   otcrypto_key_config_t config = {
       .version = kOtcryptoLibVersion1,
       .key_mode = kOtcryptoKeyModeAesGcm,
       .key_length = test->key_len * sizeof(uint32_t),
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelLow,
+      .security_level = sec_level,
   };
 
   // Construct blinded key from the key and testing mask.
@@ -220,13 +225,17 @@ status_t aes_gcm_testutils_encrypt(const aes_gcm_test_t *test, bool streaming,
 status_t aes_gcm_testutils_decrypt(const aes_gcm_test_t *test,
                                    hardened_bool_t *tag_valid, bool streaming,
                                    uint32_t *cycles) {
+  // Determine the security level.
+  otcrypto_key_security_level_t sec_level;
+  TRY(determine_security_level(&sec_level));
+
   // Construct the blinded key configuration.
   otcrypto_key_config_t config = {
       .version = kOtcryptoLibVersion1,
       .key_mode = kOtcryptoKeyModeAesGcm,
       .key_length = test->key_len * sizeof(uint32_t),
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelLow,
+      .security_level = sec_level,
   };
 
   // Construct blinded key from the key and testing mask.

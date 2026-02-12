@@ -7,6 +7,11 @@ load("@rules_rust//rust:defs.bzl", "rust_doc", "rust_library", "rust_test", "rus
 package(default_visibility = ["//visibility:public"])
 
 filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
+)
+
+filegroup(
     name = "generic_cert",
     srcs = ["tests/generic.hjson"],
 )
@@ -53,7 +58,6 @@ rust_library(
         "@crate_index//:indexmap",
         "@crate_index//:itertools",
         "@crate_index//:log",
-        "@crate_index//:memchr",
         "@crate_index//:num-bigint-dig",
         "@crate_index//:num-traits",
         "@crate_index//:openssl",

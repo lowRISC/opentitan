@@ -17,7 +17,7 @@
 
 /**
  * Mode magic values, generated with
- * $ ./util/design/sparse-fsm-encode.py -d 6 -m 6 -n 11 \
+ * $ ./util/design/sparse-fsm-encode.py -d 6 -m 8 -n 11 \
  *     --avoid-zero -s 380925547
  *
  * Call the same utility with the same arguments and a higher -m to generate
@@ -28,19 +28,21 @@
  * as `li`. If support is added, we could use 32-bit values here instead of
  * 11-bit.
  */
-.equ MODE_KEYGEN, 0x5c5
-.equ MODE_SIGN, 0x31b
-.equ MODE_VERIFY, 0x1f8
-.equ MODE_ECDH, 0x6eb
-.equ MODE_SIDELOAD_KEYGEN, 0x275
-.equ MODE_SIDELOAD_SIGN, 0x45e
-.equ MODE_SIDELOAD_ECDH, 0x72c
+.equ MODE_KEYGEN, 0x1f8
+.equ MODE_SIGN, 0x669
+.equ MODE_SIGN_CONFIG_K, 0x23E
+.equ MODE_VERIFY, 0x54E
+.equ MODE_ECDH, 0x695
+.equ MODE_SIDELOAD_KEYGEN, 0x7A2
+.equ MODE_SIDELOAD_SIGN, 0xE7
+.equ MODE_SIDELOAD_ECDH, 0x353
 
 /**
  * Make the mode constants visible to Ibex.
  */
 .globl MODE_KEYGEN
 .globl MODE_SIGN
+.globl MODE_SIGN_CONFIG_K
 .globl MODE_VERIFY
 .globl MODE_ECDH
 .globl MODE_SIDELOAD_KEYGEN
@@ -65,14 +67,8 @@ start:
   addi  x3, x0, MODE_KEYGEN
   beq   x2, x3, random_keygen
 
-  addi  x3, x0, MODE_SIGN
-  beq   x2, x3, ecdsa_sign
-
   addi  x3, x0, MODE_VERIFY
   beq   x2, x3, ecdsa_verify
-
-  addi  x3, x0, MODE_ECDH
-  beq   x2, x3, shared_key
 
   addi  x3, x0, MODE_SIDELOAD_KEYGEN
   beq   x2, x3, sideload_keygen
@@ -83,10 +79,66 @@ start:
   addi  x3, x0, MODE_SIDELOAD_ECDH
   beq   x2, x3, shared_key_from_seed
 
+  /* Copy the caller-provided secret key shares into scratchpad memory.
+       dmem[d0] <= dmem[d0_io]
+       dmem[d1] <= dmem[d1_io] */
+  la       x13, d0_io
+  la       x14, d0
+  jal      x1, copy_share
+  la       x13, d1_io
+  la       x14, d1
+  jal      x1, copy_share
+
+  addi  x3, x0, MODE_SIGN
+  beq   x2, x3, ecdsa_sign
+
+  addi  x3, x0, MODE_ECDH
+  beq   x2, x3, shared_key
+
+  /* Copy the caller-provided secret scalar shares into scratchpad memory.
+       dmem[k0] <= dmem[k0_io]
+       dmem[k1] <= dmem[k1_io] */
+  la       x13, k0_io
+  la       x14, k0
+  jal      x1, copy_share
+  la       x13, k1_io
+  la       x14, k1
+  jal      x1, copy_share
+
+  addi  x3, x0, MODE_SIGN_CONFIG_K
+  beq   x2, x3, ecdsa_sign_config_k
+
   /* Invalid mode; fail. */
   unimp
   unimp
   unimp
+
+/**
+ * Helper routine to copy secret key shares.
+ *
+ * Copies 64 bytes from the source to destination location in DMEM. The source
+ * and destination may be the same but should not otherwise overlap.
+ *
+ * @param x13: dptr_src, pointer to source DMEM location
+ * @param x14: dptr_dst, pointer to destination DMEM location
+ * @param      dmem[dptr_src..dptr_src+64]: source data
+ * @param[out] dmem[dptr_dst..dptr_dst+64]: copied data
+ *
+ * clobbered registers: x10, w10
+ * clobbered flag groups: none
+ */
+copy_share:
+  /* Randomize the content of w10 to prevent leakage. */
+  bn.wsrr  w10, URND
+
+  /* Copy the secret key shares into Ibex-visible memory. */
+  li       x10, 10
+  bn.lid   x10, 0(x13)
+  bn.sid   x10, 0(x14)
+  bn.lid   x10, 32(x13)
+  bn.sid   x10, 32(x14)
+  ret
+
 
 /**
  * Generate a fresh, random keypair.
@@ -106,6 +158,33 @@ random_keygen:
        dmem[x] <= (d*G).x
        dmem[y] <= (d*G).y */
   jal      x1, p256_base_mult
+
+  /* Copy the secret key shares into Ibex-visible memory.
+       dmem[d0_io] <= dmem[d0]
+       dmem[d1_io] <= dmem[d1] */
+  la       x13, d0
+  la       x14, d0_io
+  jal      x1, copy_share
+  la       x13, d1
+  la       x14, d1_io
+  jal      x1, copy_share
+
+  ecall
+
+/**
+ * Generate a signature.
+ *
+ * @param[in]  dmem[msg]: message to be signed (256 bits)
+ * @param[in]  dmem[r]:   dmem buffer for r component of signature (256 bits)
+ * @param[in]  dmem[s]:   dmem buffer for s component of signature (256 bits)
+ * @param[in]  dmem[d0]:  first share of private key d (320 bits)
+ * @param[in]  dmem[d1]:  second share of private key d (320 bits)
+ * @param[in]  dmem[k0]:  first share of secret scalar k (320 bits)
+ * @param[in]  dmem[k1]:  second share of secret scalar k (320 bits)
+ */
+ecdsa_sign_config_k:
+  /* Generate the signature. */
+  jal      x1, p256_sign
 
   ecall
 
@@ -285,7 +364,6 @@ secret_key_from_seed:
        w10, w11 <= d1 */
   jal      x1, p256_key_from_seed
 
-  /* TODO(##19875): do not store keymgr-derived values in DMEM! */
   /* Store secret key shares.
        dmem[d0] <= d0
        dmem[d1] <= d1 */
@@ -344,14 +422,30 @@ x:
 y:
   .zero 32
 
-/* Private key (d) in two shares: d = (d0 + d1) mod n. */
-.globl d0
+/* Public key z-coordinate. */
+.globl z
 .balign 32
-d0:
+z:
+  .zero 32
+
+/* Private key input/output buffer. */
+.globl d0_io
+.balign 32
+d0_io:
   .zero 64
-.globl d1
+.globl d1_io
 .balign 32
-d1:
+d1_io:
+  .zero 64
+
+/* Secret scalar (k) input buffer. */
+.globl k0_io
+.balign 32
+k0_io:
+  .zero 64
+.globl k1_io
+.balign 32
+k1_io:
   .zero 64
 
 /* Verification result x_r (aka x_1). */
@@ -371,4 +465,14 @@ k0:
 .globl k1
 .balign 32
 k1:
+  .zero 64
+
+/* Private key (d) in two shares: d = (d0 + d1) mod n. */
+.globl d0
+.balign 32
+d0:
+  .zero 64
+.globl d1
+.balign 32
+d1:
   .zero 64

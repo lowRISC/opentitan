@@ -133,6 +133,7 @@ class aes_base_vseq extends cip_base_vseq #(
     if (ral.ctrl_shadowed.operation.get_mirrored_value() != operation) begin
       ral.ctrl_shadowed.operation.set(operation);
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+      void'(ral.ctrl_shadowed.operation.predict(operation));
     end
   endtask // set_operation
 
@@ -141,6 +142,7 @@ class aes_base_vseq extends cip_base_vseq #(
     if (ral.ctrl_shadowed.mode.get_mirrored_value() != mode) begin
       ral.ctrl_shadowed.mode.set(mode);
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+      void'(ral.ctrl_shadowed.mode.predict(mode));
     end
   endtask
 
@@ -149,6 +151,7 @@ class aes_base_vseq extends cip_base_vseq #(
     if (ral.ctrl_shadowed.key_len.get_mirrored_value() != key_len) begin
       ral.ctrl_shadowed.key_len.set(key_len);
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+      void'(ral.ctrl_shadowed.key_len.predict(key_len));
     end
   endtask // set_key_len
 
@@ -157,6 +160,7 @@ class aes_base_vseq extends cip_base_vseq #(
     if (ral.ctrl_shadowed.sideload.get_mirrored_value() != sideload) begin
       ral.ctrl_shadowed.sideload.set(sideload);
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+      void'(ral.ctrl_shadowed.sideload.predict(sideload));
     end
   endtask
 
@@ -165,6 +169,7 @@ class aes_base_vseq extends cip_base_vseq #(
     if (ral.ctrl_shadowed.prng_reseed_rate.get_mirrored_value() != reseed_rate) begin
       ral.ctrl_shadowed.prng_reseed_rate.set(reseed_rate);
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+      void'(ral.ctrl_shadowed.prng_reseed_rate.predict(reseed_rate));
     end
   endtask
 
@@ -173,6 +178,7 @@ class aes_base_vseq extends cip_base_vseq #(
     if (ral.ctrl_shadowed.manual_operation.get_mirrored_value() != manual_operation) begin
       ral.ctrl_shadowed.manual_operation.set(manual_operation);
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+      void'(ral.ctrl_shadowed.manual_operation.predict(manual_operation));
     end
   endtask
 
@@ -202,6 +208,16 @@ class aes_base_vseq extends cip_base_vseq #(
     end
   endtask
 
+  virtual task set_gcm_phase(gcm_phase_e phase, int num_bytes, bit wait_idle);
+    if (wait_idle) begin
+      csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
+    end
+    ral.ctrl_gcm_shadowed.phase.set(phase);
+    ral.ctrl_gcm_shadowed.num_valid_bytes.set(num_bytes);
+    csr_update(.csr(ral.ctrl_gcm_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+    void'(ral.ctrl_gcm_shadowed.phase.predict(phase));
+    void'(ral.ctrl_gcm_shadowed.num_valid_bytes.set(num_bytes));
+  endtask
 
   virtual task add_data(ref bit [3:0] [31:0] data, bit do_b2b);
     int write_order[4] = {0,1,2,3};
@@ -252,7 +268,7 @@ class aes_base_vseq extends cip_base_vseq #(
     // Any successful update to the shadowed control register marks the start of a new message. If
     // sideload is enabled and a valid sideload key is available, it may be latched upon the second
     // write and - depending on KEY_TOUCH_FORCES_RESEED - trigger a reseed operation which prevents
-    // further updates to the control register untile AES becomes idle again. For simplicity, we
+    // further updates to the control register until AES becomes idle again. For simplicity, we
     // just disable sideload here and then update the sideload bit last.
     ral.ctrl_shadowed.sideload.set(0);
     if (!setup_mode) begin
@@ -310,7 +326,7 @@ class aes_base_vseq extends cip_base_vseq #(
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
       // Make sure the update went through and there wasn't an update error. It's possible that DV
       // inserted a fatal error condition before the second write could go through. In this case,
-      // the recoverable alert condition may still be visilbe together with the fatal alert. The
+      // the recoverable alert condition may still be visible together with the fatal alert. The
       // fatal alert is handled separately.
       csr_rd(.ptr(ral.status), .value(status), .blocking(1));
       `DV_CHECK_FATAL(status.alert_recov_ctrl_update_err == 1'b0 ||
@@ -324,24 +340,56 @@ class aes_base_vseq extends cip_base_vseq #(
     aes_item_init(msg_item);
     // generate DUT cfg
     generate_ctrl_item();
-    generate_data_stream(msg_item);
+    if (msg_item.aes_mode == AES_GCM) begin
+      // Generate AAD message items if in AES-GCM mode.
+      generate_data_stream(msg_item, 1, 0);
+    end
+    generate_data_stream(msg_item, 0, 0);
+    if (msg_item.aes_mode == AES_GCM) begin
+      // Generate TAG message item if in AES-GCM mode.
+      generate_data_stream(msg_item, 0, 1);
+    end
     aes_print_item_queue(aes_item_queue);
   endtask
 
   // Generate the data for a single message based
   // on the configuration in the message Item
-  virtual task generate_data_stream(aes_message_item msg_item);
+  virtual task generate_data_stream(aes_message_item msg_item, bit aad, bit tag);
     aes_seq_item item_clone;
+    bit [3:0][31:0] len_aad_data_conc;
+    bit [3:0][31:0] len_aad_data;
+    aes_item_type_e  item_type = AES_DATA;
+    int msg_length = msg_item.message_length;
+    bit fixed_data_en = msg_item.fixed_data_en;
     aes_item.item_type = AES_DATA;
+    if (aad) begin
+      item_type = AES_GCM_AAD;
+      aes_item.item_type = AES_GCM_AAD;
+      msg_length = msg_item.aad_length;
+      fixed_data_en = msg_item.fixed_aad_en;
+    end else if (tag) begin
+      item_type = AES_GCM_TAG;
+      aes_item.item_type = AES_GCM_TAG;
+      // len(aad) || len(data)
+      len_aad_data_conc = ((msg_item.aad_length * 8 << 64) | msg_item.message_length * 8);
+      len_aad_data = {<<8{len_aad_data_conc}};
+      msg_length = 16;
+    end
 
     // generate an item for each 128b message block
     `uvm_info(`gfn, $sformatf("\n\t ----| FIXED DATA ENABLED? : %0b", msg_item.fixed_data_en),
               UVM_MEDIUM)
-    for (int n = 0; n < msg_item.message_length - 15; n += 16) begin
-      if (msg_item.fixed_data_en) begin
-        `DV_CHECK_RANDOMIZE_WITH_FATAL(aes_item, data_in == msg_item.fixed_data;)
+    for (int n = 0; n < msg_length - 15; n += 16) begin
+      aes_item.data_len = 0;
+      if (fixed_data_en) begin
+        `DV_CHECK_RANDOMIZE_WITH_FATAL(aes_item, data_in == (aad ? msg_item.fixed_aad :
+                                                             msg_item.fixed_data);)
       end else begin
         `DV_CHECK_RANDOMIZE_FATAL(aes_item)
+      end
+      if (tag) begin
+        // set // len(aad) || len(data).
+        aes_item.data_in = len_aad_data;
       end
 
       `uvm_info(`gfn, $sformatf("\n ----| DATA AES ITEM %s", aes_item.convert2string()), UVM_HIGH)
@@ -350,15 +398,15 @@ class aes_base_vseq extends cip_base_vseq #(
     end
 
     // check if message length is not divisible by 16bytes
-    if (msg_item.message_length[3:0] != 4'd0) begin
+    if (msg_length[3:0] != 4'd0) begin
       `uvm_info(`gfn, $sformatf("\n ----| generating runt "), UVM_MEDIUM)
-      aes_item.data_len = msg_item.message_length[3:0];
-      if (msg_item.fixed_data_en) begin
-        `DV_CHECK_RANDOMIZE_WITH_FATAL(aes_item, data_in == msg_item.fixed_data;)
+      aes_item.data_len = msg_length[3:0];
+      if (fixed_data_en) begin
+        `DV_CHECK_RANDOMIZE_WITH_FATAL(aes_item, data_in == fixed_data;)
       end else begin
         `DV_CHECK_RANDOMIZE_FATAL(aes_item)
       end
-      aes_item.item_type = AES_DATA;
+      aes_item.item_type = item_type;
       `downcast(item_clone, aes_item.clone());
       aes_item_queue.push_front(item_clone);
     end
@@ -366,7 +414,7 @@ class aes_base_vseq extends cip_base_vseq #(
 
 
   virtual task write_data_key_iv(
-    aes_seq_item item,         // sequence item with configuraton
+    aes_seq_item item,         // sequence item with configuration
     aes_seq_item data_item,        // sequence item with data to process
     bit          new_msg,          // is this a new msg -> do dut config
     bit          manual_operation, // use manual operation
@@ -390,6 +438,19 @@ class aes_base_vseq extends cip_base_vseq #(
     // if non ECB mode add IV to queue
     if (item.mode != AES_ECB) begin
       interleave_queue = {"iv_0", "iv_1", "iv_2", "iv_3", interleave_queue};
+    end
+
+
+    if (item.mode == AES_GCM) begin
+      // if GCM mode, only write key and IV as we need to trigger the IP before
+      // sending the first block.
+      interleave_queue = '{ "key_share0_0", "key_share0_1", "key_share0_2", "key_share0_3",
+                            "key_share0_4", "key_share0_5", "key_share0_6", "key_share0_7",
+                            "key_share1_0", "key_share1_1", "key_share1_2", "key_share1_3",
+                            "key_share1_4", "key_share1_5", "key_share1_6", "key_share1_7",
+                            "iv_0", "iv_1", "iv_2", "iv_3"};
+      // if GCM mode, put AES into GCM_INIT before configuring the IP.
+      set_gcm_phase(GCM_INIT, 16, 0);
     end
 
     if (|item.clear_reg) begin
@@ -432,7 +493,7 @@ class aes_base_vseq extends cip_base_vseq #(
         (csr_name == "clear_reg"): begin
           clear_regs(item.clear_reg);
           csr_spinwait(.ptr(ral.status.idle) , .exp_data(1'b1));
-          // manual mode requries all to be written again
+          // manual mode requires all to be written again
           if (manual_operation) begin
             //remove clear from queue
             interleave_queue.delete(i);
@@ -503,15 +564,15 @@ class aes_base_vseq extends cip_base_vseq #(
 
   // the index of multi-reg is at the last char of the name
   virtual function int get_multireg_idx(string name);
-    string s = name.getc(name.len - 1);
+    string s = string'(name.getc(name.len - 1));
     return s.atoi();
   endfunction
 
   virtual task send_msg (
      bit manual_operation,                   // use manual operation
-     bit sideload_en,                        // use sideoad key
+     bit sideload_en,                        // use sideload key
      bit unbalanced,                         // randomize if we read or write
-     int read_prob,                          // chance of reading an availabout output
+     int read_prob,                          // chance of reading an available output
      int write_prob,                         // chance of writing input data to a ready DUT
      ref bit rst_set                         // reset was forced - restart message
      );
@@ -527,11 +588,13 @@ class aes_base_vseq extends cip_base_vseq #(
     bit read;
     bit write;
     bit return_on_idle = 1;
+    bit first_aad_block = 1;
+    bit first_data_block = 1;
     rst_set = 0;
     cfg_item = aes_item_queue.pop_back();
 
     // Make sure the DUT is idle before setting it up. Writes to the main control register are only
-    // accpeted when idle.
+    // accepted when idle.
     status_fsm(cfg_item, data_item, new_msg, manual_operation, sideload_en, 1, 0, status, rst_set);
     // Configure the main control register.
     setup_dut(cfg_item);
@@ -551,23 +614,84 @@ class aes_base_vseq extends cip_base_vseq #(
           // The DUT is ready to accept new input data, as well as updates to IV and initial key
           // registers (only allowed when idle). The first config_and_transmit() call configures
           // key and IV.
+          bit read_output = 1;
           data_item = aes_item_queue.pop_back();
-          config_and_transmit(cfg_item, data_item, new_msg,
-                              manual_operation, sideload_en, 1, rst_set);
+          if (data_item.mode == AES_GCM) begin
+            // In AES-GCM mode, we only want to read when we are either processing
+            // the AES_DATA or the AES_TAG.
+            // When processing AES_AAD, no output is generated that we want to
+            // read, so skip it. Also the the first message AES_CFG (i.e., new_msg
+            // == true), does not contain any data input as we first need to configure
+            // the GCM, so do not read.
+            read_output = data_item.item_type == AES_GCM_AAD ? 0 : ~new_msg;
+          end
+          config_and_transmit(cfg_item, data_item, new_msg, first_data_block,
+                              first_aad_block, manual_operation, sideload_en,
+                              read_output, rst_set);
+          if (data_item.mode == AES_GCM && new_msg == 1) begin
+            // In comparison to other modes, in AES-GCM, the config_and_transmit()
+            // function only configures key and IV as we need to first put the
+            // AES into the AES_GCM_AAD or AES_TEXT phase before writing to the data_in
+            // registers.
+            aes_item_queue.push_back(data_item);
+          end
+
+          if (data_item.item_type == AES_GCM_AAD && new_msg == 0) begin
+            first_aad_block = 0;
+          end
+
+          if (data_item.item_type == AES_DATA && new_msg == 0) begin
+            first_data_block = 0;
+          end
+
           new_msg = 0;
+
         end else if (cfg_item.mode == AES_NONE) begin
           // The DUT won't produce any output when this mode is configured. Just write the new
           // input data.
           data_item = aes_item_queue.pop_back();
-          config_and_transmit(cfg_item, data_item, new_msg,
+          config_and_transmit(cfg_item, data_item, new_msg, 0, 0,
                               manual_operation, sideload_en, 0, rst_set);
         end
       end
 
     end else begin
       while (((aes_item_queue.size() > 0) || (read_queue.size() > 0)) && !rst_set) begin
-        // get the status to make sure we can provide data - but don't wait for output //
+        bit wait_for_idle = 0;
         if (aes_item_queue.size() > 0 ) data_item = new();
+        // When processing an AES-GCM message, setting the GCM phase requires us
+        // waiting for the IDLE.
+        if (cfg_item.mode == AES_GCM && aes_item_queue.size() > 0) begin
+          if (new_msg) begin
+            // When starting a new message, we need to put GCM into the GCM_INIT
+            // phase. Hence, wait for the IDLE status.
+            wait_for_idle = 1;
+          end else begin
+            // Pop the data item such that we can get the item type and the item
+            // length.
+            data_item = aes_item_queue.pop_back();
+            if (data_item.data_len != 0) begin
+              // If we have a partial block (i.e., data length is not 0 (=16 bytes))
+              // we neet to put the GCM into the GCM_TEXT or GCM_AAD phase.
+              wait_for_idle = 1;
+            end else if (data_item.item_type == AES_DATA && first_data_block) begin
+              // When processing the first block, we need to put the GCM first
+              // into the GCM_TEXT phase.
+              wait_for_idle = 1;
+            end else if (data_item.item_type == AES_GCM_AAD && first_aad_block) begin
+              // When processing the first block, we need to put the GCM first
+              // into the GCM_AAD phase.
+              wait_for_idle = 1;
+            end else if (data_item.item_type == AES_GCM_TAG) begin
+              // As we only have a single tag block, always wait to configure
+              // the GCM_TAG phase.
+              wait_for_idle = 1;
+            end
+            // Push the item back to the queue as we haven't processed it yet.
+            aes_item_queue.push_back(data_item);
+          end
+        end
+        // get the status to make sure we can provide data - but don't wait for output //
         status_fsm(cfg_item, data_item, new_msg,
                    manual_operation, sideload_en, return_on_idle, 0, status, rst_set);
         return_on_idle = 0;
@@ -578,14 +702,42 @@ class aes_base_vseq extends cip_base_vseq #(
             && (aes_item_queue.size() > 0)) begin
           // just write the data - don't expect and output
           data_item = aes_item_queue.pop_back();
-          config_and_transmit(cfg_item, data_item, new_msg,
+          config_and_transmit(cfg_item, data_item, new_msg, 0, 0,
                                manual_operation, sideload_en, 0, rst_set);
-        end else if (status.input_ready && (aes_item_queue.size() > 0) && write) begin
+        end else if (status.input_ready && (aes_item_queue.size() > 0) && write &&
+                     (~wait_for_idle || status.idle)) begin
           data_item = aes_item_queue.pop_back();
-          config_and_transmit(cfg_item, data_item, new_msg,
-                              manual_operation, sideload_en, 0, rst_set);
+          config_and_transmit(cfg_item, data_item, new_msg, first_data_block,
+                              first_aad_block, manual_operation, sideload_en, 0, rst_set);
+          if (data_item.mode == AES_GCM && new_msg == 1) begin
+            // In comparison to other modes, in AES-GCM, the config_and_transmit()
+            // function only configures key and IV when processing the AES_CFG
+            // item. However, as we already popped the next aes_item_queue once,
+            // push it again to the queue such that it gets processed in the next
+            // iteration.
+            aes_item_queue.push_back(data_item);
+          end
           `downcast(clone_item, data_item.clone());
-          read_queue.push_back(clone_item);
+          if (data_item.mode == AES_GCM) begin
+            if (new_msg == 0 && (data_item.item_type == AES_DATA ||
+                                 data_item.item_type == AES_GCM_TAG)) begin
+              // Only read the output for AES_DATA (ptx or ctx) and AES_GCM_TAG
+              // items. AES_AAD and AES_CFG items do not produce an output.
+              read_queue.push_back(clone_item);
+            end
+          end else begin
+            read_queue.push_back(clone_item);
+          end
+
+          if (write) begin
+            if (data_item.item_type == AES_GCM_AAD && new_msg == 0) begin
+              first_aad_block = 0;
+            end
+
+            if (data_item.item_type == AES_DATA && new_msg == 0) begin
+              first_data_block = 0;
+            end
+          end
         end
         if (write) new_msg = 0;
         if (status.output_valid && read) begin
@@ -602,7 +754,7 @@ class aes_base_vseq extends cip_base_vseq #(
 
 
   ////////////////////////////////////////////////////////////////////////////////////////////
-  // this task will handle setup and transmition
+  // this task will handle setup and transmission
   // of a message on a block level.
   // it will send one block then return to the caller for the next item.
   // if read output is enabled it will call the status fsm for get the
@@ -614,9 +766,11 @@ class aes_base_vseq extends cip_base_vseq #(
   ////////////////////////////////////////////////////////////////////////////////////////////
 
   virtual task config_and_transmit (
-      aes_seq_item cfg_item,         // sequence item with configuraton
+      aes_seq_item cfg_item,         // sequence item with configuration
       aes_seq_item data_item,        // sequence item with data to process
       bit          new_msg,          // is this a new msg -> do dut config
+      bit          new_data,         // first data block -> set GCM_TEXT phase in GCM mode
+      bit          new_aad,          // first aad block -> set GCM_AAD phase in GCM mode
       bit          manual_operation, // use manual operation
       bit          sideload_en,      // we are currently using sideload key
       bit          read_output,      // read output or leave untouched
@@ -630,6 +784,27 @@ class aes_base_vseq extends cip_base_vseq #(
       write_data_key_iv(cfg_item, data_item, new_msg,
                    manual_operation, sideload_en, 0, rst_set);
     end else begin
+      if (data_item.mode == AES_GCM) begin
+        int valid_bytes;
+        if (data_item.item_type == AES_GCM_AAD) begin
+          read_output = 0;
+          if (new_aad || data_item.data_len[3:0] != 4'd0) begin
+            // Configure AAD phase as this is either the first AAD block or a
+            // partial block.
+            valid_bytes = data_item.data_len == 0 ? 16 : data_item.data_len;
+            set_gcm_phase(GCM_AAD, valid_bytes, 0);
+          end
+        end else if (data_item.item_type == AES_DATA) begin
+          if (new_data || data_item.data_len[3:0] != 4'd0) begin
+            // Configure TEXT phase as this is either the first plaintext block or a
+            // partial block.
+            valid_bytes = data_item.data_len == 0 ? 16 : data_item.data_len;
+            set_gcm_phase(GCM_TEXT, valid_bytes, 0);
+          end
+        end else if (data_item.item_type == AES_GCM_TAG) begin
+          set_gcm_phase(GCM_TAG, 16, 0);
+        end
+      end
       add_data(data_item.data_in, cfg_item.do_b2b);
       // sometimes randomly write a reg while busy
       if (!manual_operation && cfg.error_types.mal_inject && ($urandom(3) == 1)) begin
@@ -643,6 +818,9 @@ class aes_base_vseq extends cip_base_vseq #(
       end
     end
     if (manual_operation && !rst_set) trigger();
+    // When in AES-GCM mode, trigger twice to encrypt the all-zero block and afterwards the
+    // initial counter block and load them into the GHASH block.
+    if (cfg_item.mode == AES_GCM && manual_operation && new_msg && !rst_set) trigger();
     if (read_output && !rst_set) begin
        status_fsm(cfg_item, data_item, new_msg,
                    manual_operation, sideload_en, 0, read_output, status, rst_set);
@@ -681,7 +859,7 @@ class aes_base_vseq extends cip_base_vseq #(
   ////////////////////////////////////////////////////////////////////////////////////////////
 
   virtual task status_fsm (
-      aes_seq_item        cfg_item,         // sequence item with configuraton
+      aes_seq_item        cfg_item,         // sequence item with configuration
       aes_seq_item        data_item,        // sequence item with data to process
       bit                 new_msg,          // is this a new msg -> do dut config
       bit                 manual_operation, // use manual operation
@@ -719,7 +897,7 @@ class aes_base_vseq extends cip_base_vseq #(
           `uvm_info(`gfn,
                   $sformatf("\n\t ----| Saw expected Fatal alert - trying to recover \n\t ----| %s",
                               status2string(status)), UVM_MEDIUM)
-          try_recover(cfg_item, data_item, manual_operation, sideload_en);
+          try_recover(cfg_item, data_item, manual_operation, sideload_en, new_msg);
           csr_rd(.ptr(ral.status), .value(status), .blocking(1));
           if ( !status.alert_fatal_fault) begin
             `uvm_fatal(`gfn, $sformatf("\n\t Was able to clear FATAL ALERT without reset \n\t %s",
@@ -750,7 +928,7 @@ class aes_base_vseq extends cip_base_vseq #(
           end else if (!read_output) begin
             done = 1; // get more data
           end else begin
-            try_recover(cfg_item, data_item, manual_operation, sideload_en);
+            try_recover(cfg_item, data_item, manual_operation, sideload_en, new_msg);
           end
         end else if (status.idle && !status.input_ready) begin
           // state 1 //
@@ -764,7 +942,7 @@ class aes_base_vseq extends cip_base_vseq #(
           end else begin
             // if data is not ready the DUT is missing
             // KEY and IV - or the configuration
-            try_recover(cfg_item, data_item, manual_operation, sideload_en);
+            try_recover(cfg_item, data_item, manual_operation, sideload_en, new_msg);
             txt = {txt, $sformatf("\n\t ----| status state 1 ")};
           end
         end else if (status.output_valid) begin
@@ -819,17 +997,17 @@ class aes_base_vseq extends cip_base_vseq #(
 
 
   virtual task try_recover(
-    aes_seq_item        cfg_item,         // sequence item with configuraton
+    aes_seq_item        cfg_item,         // sequence item with configuration
     aes_seq_item        data_item,        // sequence item with data to process
     bit                 manual_operation,
-    bit                 sideload_en
+    bit                 sideload_en,
+    bit                 new_msg
     );
     // if data is not ready the DUT is missing
     // KEY and IV - or the configuration
     ctrl_reg_t            ctrl;
     status_t              status;         // the current AES status
     bit                   is_blocking = ~cfg_item.do_b2b;
-
     csr_rd(.ptr(ral.ctrl_shadowed), .value(ctrl), .blocking(1));
     ral.ctrl_shadowed.operation.set(cfg_item.operation);
     ral.ctrl_shadowed.mode.set(cfg_item.mode);
@@ -847,7 +1025,6 @@ class aes_base_vseq extends cip_base_vseq #(
       wait(key_rdy);
     end
 
-
     // check for fatal
     csr_rd(.ptr(ral.status), .value(status), .blocking(1));
     if (!status.alert_fatal_fault) begin
@@ -860,6 +1037,63 @@ class aes_base_vseq extends cip_base_vseq #(
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(is_blocking));
     end
 
+    // Read the main control register. This will update the mirrored values thereby getting them
+    // back in sync with the DUT (updated via csr_update() above) and the predicted values (updated
+    // via set() above).
+    csr_rd(.ptr(ral.ctrl_shadowed), .value(ctrl), .backdoor(1));
+
+    if (cfg_item.mode == AES_GCM && !status.alert_fatal_fault) begin
+      // As we are splitting the message, we also need to recalculate the length
+      // of the AAD and PTX -> len(aad) || len(data) that is stored in a AES_GCM_TAG
+      // block. Image we split the message after the first AAD block:
+      // |AAD|AAD|PTX|PTX|TAG|
+      // we will land up having:
+      // |AAD|PTX|PTX|TAG
+      // Hence, recalculate here the new len(aad) || len(data).
+      aes_seq_item    aes_item_queue_clone[$];
+      aes_seq_item    data_item_tmp;
+      bit [3:0][31:0] len_aad_data_conc;
+      bit [3:0][31:0] len_aad_data;
+      int aad_len = 0;
+      int ptx_len = 0;
+      // Get AAD or PTX length of the current data_item.
+      if (data_item.item_type == AES_DATA) begin
+        ptx_len = data_item.data_len == 0 ? 16 : data_item.data_len;
+      end else if (data_item.item_type == AES_GCM_AAD) begin
+        aad_len = data_item.data_len == 0 ? 16 : data_item.data_len;
+      end
+      // Fetch all remaining data items and accumulate the AAD/PTX length.
+      while (aes_item_queue.size() > 0) begin
+        int data_len;
+        data_item_tmp = aes_item_queue.pop_back();
+        aes_item_queue_clone.push_front(data_item_tmp);
+        data_len = data_item_tmp.data_len == 0 ? 16 : data_item_tmp.data_len;
+        if (data_item_tmp.item_type == AES_GCM_AAD) begin
+          aad_len += data_len;
+        end else if (data_item_tmp.item_type == AES_DATA) begin
+          ptx_len += data_len;
+        end
+      end
+      // Resemble len(aad) || len(data).
+      len_aad_data_conc = ((aad_len * 8 << 64) | ptx_len * 8);
+      len_aad_data = {<<8{len_aad_data_conc}};
+      // Put all items back to the aes_item_queue in the correct order.
+      while (aes_item_queue_clone.size() > 0) begin
+        data_item_tmp = aes_item_queue_clone.pop_back();
+        if (data_item_tmp.item_type == AES_GCM_TAG) begin
+          // Once we reached the AES_GCM_TAG block, put in the new
+          // len(aad) || len(data)
+          data_item_tmp.data_in = len_aad_data;
+        end
+        aes_item_queue.push_front(data_item_tmp);
+      end
+      aes_item_queue_clone.delete();
+
+      // After re-calculating len(aad) || len(data) start the AES-GCM operation
+      // by putting the block into the GCM_INIT phase.
+      set_gcm_phase(GCM_INIT, 16, 1);
+    end
+
     write_key(cfg_item.key, is_blocking);
     // wait for reseed but check for fatal
     // if fatal idle will never come
@@ -868,14 +1102,40 @@ class aes_base_vseq extends cip_base_vseq #(
       if (cfg.reseed_en) csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
     end
     write_iv(cfg_item.iv, is_blocking);
-    add_data(data_item.data_in, cfg_item.do_b2b);
-    if (manual_operation) trigger();
+
+    // When in AES-GCM mode & manual operation is enabled, we need to trigger
+    // twice to process IV/key and calculate the hash subkey.
+    if (cfg_item.mode == AES_GCM && manual_operation && !status.alert_fatal_fault) trigger();
+    if (cfg_item.mode == AES_GCM && manual_operation && !status.alert_fatal_fault) trigger();
+
+    if (cfg_item.mode == AES_GCM) begin
+      int valid_bytes = data_item.data_len == 0 ? 16 : data_item.data_len;
+      if (new_msg == 0 && !status.alert_fatal_fault) begin
+        if (data_item.item_type == AES_GCM_AAD) begin
+          set_gcm_phase(GCM_AAD, valid_bytes, 1);
+          add_data(data_item.data_in, cfg_item.do_b2b);
+          if (manual_operation) trigger();
+        end else if (data_item.item_type == AES_DATA) begin
+          set_gcm_phase(GCM_TEXT, valid_bytes, 1);
+          add_data(data_item.data_in, cfg_item.do_b2b);
+          if (manual_operation) trigger();
+        end else if (data_item.item_type == AES_GCM_TAG) begin
+          set_gcm_phase(GCM_TAG, 16, 1);
+          add_data(data_item.data_in, cfg_item.do_b2b);
+          if (manual_operation) trigger();
+        end
+      end
+    end else begin
+      add_data(data_item.data_in, cfg_item.do_b2b);
+      if (manual_operation) trigger();
+    end
+
   endtask // try_recover
 
 
   virtual task send_msg_queue (
-     bit unbalanced, // uses the probablilites to randomize if we read or write
-     int read_prob,  // chance of reading an availabout output
+     bit unbalanced, // uses the probabilities to randomize if we read or write
+     int read_prob,  // chance of reading an available output
      int write_prob  // chance of writing input data to a ready DUT
      );
     // variables
@@ -941,7 +1201,7 @@ class aes_base_vseq extends cip_base_vseq #(
       // AES indicates when it's done with processing individual blocks but not when it's done
       // with processing an entire message. To detect the end of a message, the DV environment
       // does the following:
-      // - It tracks writes to the main control register. If two successfull writes to this
+      // - It tracks writes to the main control register. If two successful writes to this
       //   shadowed register are observed, this marks the start of a new message.
       // - DV then knows that the last output data retrieved marks the end of the previous
       //   message.
@@ -1006,11 +1266,14 @@ class aes_base_vseq extends cip_base_vseq #(
     aes_message.ofb_weight           = cfg.ofb_weight;
     aes_message.cfb_weight           = cfg.cfb_weight;
     aes_message.ctr_weight           = cfg.ctr_weight;
+    aes_message.gcm_weight           = cfg.gcm_weight;
     aes_message.key_128b_weight      = cfg.key_128b_weight;
     aes_message.key_192b_weight      = cfg.key_192b_weight;
     aes_message.key_256b_weight      = cfg.key_256b_weight;
     aes_message.message_len_max      = cfg.message_len_max;
     aes_message.message_len_min      = cfg.message_len_min;
+    aes_message.aad_len_max          = cfg.aad_len_max;
+    aes_message.aad_len_min          = cfg.aad_len_min;
     aes_message.config_error_pct     = cfg.config_error_pct;
     aes_message.error_types          = cfg.error_types;
     aes_message.config_error_type_en = cfg.config_error_type_en;
@@ -1023,6 +1286,7 @@ class aes_base_vseq extends cip_base_vseq #(
     aes_message.fixed_keylen_en      = cfg.fixed_keylen_en;
     aes_message.fixed_keylen         = cfg.fixed_keylen;
     aes_message.fixed_iv_en          = cfg.fixed_iv_en;
+    aes_message.fixed_aad_en         = cfg.fixed_aad_en;
     aes_message.sideload_pct         = cfg.sideload_pct;
     aes_message.per1_weight          = cfg.per1_weight;
     aes_message.per64_weight         = cfg.per64_weight;

@@ -8,7 +8,7 @@ use std::path::PathBuf;
 
 use crate::cbor;
 use crate::codegen::Codegen;
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use heck::{ToShoutySnakeCase, ToUpperCamelCase};
 use indexmap::IndexMap;
 use itertools::Itertools;
@@ -398,7 +398,9 @@ impl SizeExpression<'_> {
         if let SizeDependency::SubItemSize(deps) = &mut self.dependencies {
             deps.push(index);
         } else {
-            panic!("add_dependency should be only called on SizeExpression with SubItemSize dependency.")
+            panic!(
+                "add_dependency should be only called on SizeExpression with SubItemSize dependency."
+            )
         }
     }
 

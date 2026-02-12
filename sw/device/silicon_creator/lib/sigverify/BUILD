@@ -168,6 +168,7 @@ cc_library(
         ":mod_exp_ibex",
         ":rsa_key",
         "//hw/top:otp_ctrl_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
@@ -203,6 +204,7 @@ cc_library(
     deps = [
         ":spx_key",
         "//hw/top:otp_ctrl_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
@@ -233,6 +235,7 @@ cc_library(
     hdrs = ["usage_constraints.h"],
     deps = [
         "//hw/top:otp_ctrl_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/lib:manifest",

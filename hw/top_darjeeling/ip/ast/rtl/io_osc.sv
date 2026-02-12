@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //############################################################################
 // *Name: io_osc
-// *Module Description: IO Clock Oscilator
+// *Module Description: IO Clock Oscillator
 //############################################################################
 
 module io_osc (
@@ -34,9 +34,8 @@ initial begin
   $display("\n%m: IO Clock Power-up Frequency: %0d Hz", $rtoi(10**9/CLK_PERIOD));
 end
 
-// Enable 5us RC Delay on rise
 wire en_osc_re_buf, en_osc_re;
-buf #(ast_bhv_pkg::IO_EN_RDLY, 0) b0 (en_osc_re_buf, (vcore_pok_h_i && io_en_i));
+assign en_osc_re_buf = vcore_pok_h_i && io_en_i;
 assign en_osc_re = en_osc_re_buf && init_start;
 
 
@@ -44,10 +43,9 @@ assign en_osc_re = en_osc_re_buf && init_start;
 ////////////////////////////////////////
 real CalIoClkPeriod, UncIoClkPeriod, IoClkPeriod;
 
-initial CalIoClkPeriod = $itor( 1000000/96 );                    // ~10416.666667ps (96MHz)
-initial UncIoClkPeriod = $itor( $urandom_range(40000, 16667) );  // 40000-16667ps (25-60MHz)
+initial CalIoClkPeriod = $itor( 4000 );   // 4000ps (250MHz)
 
-assign IoClkPeriod = (io_osc_cal_i && init_start) ? CalIoClkPeriod : UncIoClkPeriod;
+assign IoClkPeriod = CalIoClkPeriod;
 assign CLK_PERIOD = IoClkPeriod/1000;
 
 // Free running oscillator
@@ -99,7 +97,7 @@ prim_clock_gating #(
 
 logic en_osc_fe;
 
-// Syncronize en_osc to clk FE for glitch free disable
+// Synchronize en_osc to clk FE for glitch free disable
 always_ff @( negedge clk, negedge vcore_pok_h_i ) begin
   if ( !vcore_pok_h_i ) begin
     en_osc_fe <= 1'b0;

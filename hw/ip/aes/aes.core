@@ -8,8 +8,10 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:all
+      - lowrisc:prim:gf_mult
       - lowrisc:prim:lc_sync
       - lowrisc:prim:lfsr
+      - lowrisc:prim:onehot
       - lowrisc:prim:sparse_fsm
       - lowrisc:prim:trivium
       - lowrisc:prim:util
@@ -22,6 +24,7 @@ filesets:
       - rtl/aes_pkg.sv
       - rtl/aes_reg_top.sv
       - rtl/aes_ctrl_reg_shadowed.sv
+      - rtl/aes_ctrl_gcm_reg_shadowed.sv
       - rtl/aes_core.sv
       - rtl/aes_ctr.sv
       - rtl/aes_ctr_fsm.sv
@@ -52,6 +55,7 @@ filesets:
       - rtl/aes_key_expand.sv
       - rtl/aes_prng_clearing.sv
       - rtl/aes_prng_masking.sv
+      - rtl/aes_ghash.sv
       - rtl/aes.sv
     file_type: systemVerilogSource
 

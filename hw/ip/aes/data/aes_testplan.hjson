@@ -97,6 +97,13 @@
       tests: ["aes_nist_vectors"]
     }
     {
+      name: nist_test_vectors_gcm
+      desc: '''
+            Verify that the DUT handles the NIST GCM test vectors correctly.'''
+      stage: V2
+      tests: ["aes_nist_vectors_gcm"]
+    }
+    {
       name: reset_recovery
       desc: '''
             Pull reset at random times, make sure DUT recover/resets correctly and there is no residual data left in the registers.'''
@@ -132,6 +139,15 @@
             '''
       stage: V2
       tests: ["aes_stress_all"]
+    }
+    {
+      name: gcm_save_and_restore
+      desc: '''
+            Verify that saving and restoring contexts in GCM works correctly.
+            When triggered, save the current context, clear the entire state, restore the context, and proceed with the operation.
+            '''
+      stage: V2
+      tests: ["aes_gcm_save_restore"]
     }
     {
       name: reseeding
@@ -179,6 +195,28 @@ covergroups: [
            - manual operation
 
            All valid combinations of these will be crossed.
+           '''
+    }
+    {
+     name: ctrl_gcm_reg_cg
+     desc: '''
+           Covers that all valid settings have been tested.
+           Further more it covers that also illegal values have been tested.
+           Individual control settings that are covered include:
+           - phase (all phases including illegal values)
+           - restore after init
+           - save after aad/text
+           '''
+    }
+    {
+     name: gcm_len_cg
+     desc: '''
+           Covers that, when in AES-GCM mode, different sized AAD and TEXT blocks have
+           been tested. This includes:
+           - enc / dec
+           - zero sized AAD block
+           - Full and partial AAD / TEXT blocks
+           - Single and multiple AAD / TEXT blocks
            '''
     }
     {

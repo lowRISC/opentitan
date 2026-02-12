@@ -52,6 +52,27 @@ cc_library(
 )
 
 cc_library(
+    name = "boot_svc_enter_rescue",
+    srcs = ["boot_svc_enter_rescue.c"],
+    hdrs = ["boot_svc_enter_rescue.h"],
+    deps = [
+        ":boot_svc_header",
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:error",
+    ],
+)
+
+cc_test(
+    name = "boot_svc_enter_rescue_unittest",
+    srcs = ["boot_svc_enter_rescue_unittest.cc"],
+    deps = [
+        ":boot_svc_enter_rescue",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "boot_svc_min_bl0_sec_ver",
     srcs = ["boot_svc_min_bl0_sec_ver.c"],
     hdrs = ["boot_svc_min_bl0_sec_ver.h"],
@@ -91,10 +112,12 @@ cc_library(
     hdrs = ["boot_svc_msg.h"],
     deps = [
         ":boot_svc_empty",
+        ":boot_svc_enter_rescue",
         ":boot_svc_header",
         ":boot_svc_min_bl0_sec_ver",
         ":boot_svc_next_boot_bl0_slot",
         ":boot_svc_ownership_activate",
+        ":boot_svc_ownership_history",
         ":boot_svc_ownership_unlock",
         "//sw/device/lib/base:macros",
     ],
@@ -168,6 +191,28 @@ cc_test(
     srcs = ["boot_svc_ownership_activate_unittest.cc"],
     deps = [
         ":boot_svc_ownership_activate",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "boot_svc_ownership_history",
+    srcs = ["boot_svc_ownership_history.c"],
+    hdrs = ["boot_svc_ownership_history.h"],
+    deps = [
+        ":boot_svc_header",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/silicon_creator/lib:error",
+    ],
+)
+
+cc_test(
+    name = "boot_svc_ownership_history_unittest",
+    srcs = ["boot_svc_ownership_history_unittest.cc"],
+    deps = [
+        ":boot_svc_ownership_history",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],

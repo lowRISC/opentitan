@@ -198,4 +198,4 @@ class ${module_instance_name}_filter_stress_vseq extends ${module_instance_name}
     csr_rd_check(.ptr(ral.intr_state), .compare_value(predicted_intr_state));
   endtask : read_and_check
 
-endclass : gpio_filter_stress_vseq
+endclass : ${module_instance_name}_filter_stress_vseq

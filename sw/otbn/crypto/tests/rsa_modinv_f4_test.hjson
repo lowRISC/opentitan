@@ -1,0 +1,32 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+  "entrypoint": "main",
+  "input": {
+    "dmem": {
+      # Modulus: randomly-generated even number in the range [2^1023,2^1024) such that
+      # GCD(65537, modulus) = 1.
+
+      # Python script to generate modulus:
+      # import random
+      # import math
+      # while True:
+      #   m = random.randrange(1 << 1022, 1 << 1023)
+      #   m <<= 1
+      #   if math.gcd(m, 65537) == 1:
+      #     break
+      "rsa_n": "0x90800d989b5e0aae64b49cd617492911368b9ea8b791fcfe486c1313f039c66d0d6269927d1d7fe8454a24e8c9485587e7034021b6eebc5baced24ecef2a7e1d2bddada7ca3f234df00d25f25f281cbe2e5d51f0fe27f0c79b8823851f8011d89ebbcb1c2c3b3026830818fcd810c058fd74af138b61326b4775b51e0f4d68ea"
+    }
+  }
+
+  "output": {
+    "regs": {
+      "w0": "0xacb7e2aba2a1d898cb7f35532aa814fa2b37029c36ea0c0902bdb004472177b3",
+      "w1": "0x81cb4893b65ee446fbd5e4a916e8a404f80cd1cb7e83dea7de9bce7a3ae2cb28",
+      "w2": "0xfa7692f31884c1b0be93e735dc6cefc647376f3c1250af54ba333bb9605c5f80",
+      "w3": "0x85f60124ca5cdbc0236281c7c4dcb172e0c37d7a627cb833b146684562bedd22"
+    }
+  }
+}

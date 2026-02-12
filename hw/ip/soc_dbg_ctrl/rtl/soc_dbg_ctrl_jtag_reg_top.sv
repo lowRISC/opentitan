@@ -150,7 +150,7 @@ module soc_dbg_ctrl_jtag_reg_top (
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (7'h0),
+    .RESVAL  (7'h50),
     .Mubi    (1'b0)
   ) u_jtag_trace_debug_policy_category (
     .clk_i   (clk_i),

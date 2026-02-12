@@ -15,7 +15,7 @@ environment variables:
   sensible default values are provided (tools are generally expected to be in
   the $PATH).
 
-  OTBN_TOOLS         path to the OTBN linker and assemler tools
+  OTBN_TOOLS         path to the OTBN linker and assembler tools
   RV32_TOOL_LD       path to RV32 ld
   RV32_TOOL_AS       path to RV32 as
   RV32_TOOL_AR       path to RV32 ar
@@ -310,6 +310,7 @@ def main() -> int:
             '-O', 'elf32-littleriscv',
             '--set-section-flags=*=alloc,load,readonly',
             '--remove-section=.scratchpad', '--remove-section=.bss',
+            '--remove-section=.debug*',
             '--prefix-sections=.rodata.otbn', '--prefix-symbols', host_side_pfx
         ]
         for name, addr in get_otbn_syms(out_elf):

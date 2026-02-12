@@ -10,7 +10,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   );
   `uvm_object_utils(entropy_src_base_vseq)
 
-  rand bit [3:0]                     rng_val;
+  rand bit [`RNG_BUS_WIDTH-1:0]      rng_val;
   rand bit [NumEntropySrcIntr - 1:0] en_intr;
   rand bit  do_check_ht_diag;
 
@@ -70,9 +70,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   task check_ht_diagnostics();
     int val;
     string stat_regs [] = '{
-        "repcnt_hi_watermarks", "repcnts_hi_watermarks", "adaptp_hi_watermarks",
-        "adaptp_lo_watermarks", "extht_hi_watermarks", "extht_lo_watermarks",
-        "bucket_hi_watermarks", "markov_hi_watermarks", "markov_lo_watermarks",
+        "ht_watermark",
         "repcnt_total_fails", "repcnts_total_fails", "adaptp_hi_total_fails",
         "adaptp_lo_total_fails", "bucket_total_fails", "markov_hi_total_fails",
         "markov_lo_total_fails", "extht_hi_total_fails", "extht_lo_total_fails",
@@ -128,7 +126,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
     // Disabling the module will clear the error state,
     // as well as the observe and entropy_data FIFOs
-    // Clear all interupts here
+    // Clear all interrupts here
     csr_wr(.ptr(ral.intr_state), .value(32'hf));
 
     // Check, but do not clear alert_sts, as the handlers for those conditions may need to see them.
@@ -156,8 +154,8 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.entropy_control));
     #(pause);
 
-    ral.health_test_windows.fips_window.set(newcfg.fips_window_size/RNG_BUS_WIDTH);
-    ral.health_test_windows.bypass_window.set(newcfg.bypass_window_size/RNG_BUS_WIDTH);
+    ral.health_test_windows.fips_window.set(newcfg.fips_window_size);
+    ral.health_test_windows.bypass_window.set(newcfg.bypass_window_size);
     csr_update(.csr(ral.health_test_windows));
     #(pause);
 
@@ -176,6 +174,10 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     #(pause);
 
     // Windowed health test thresholds managed in derived vseq classes
+
+    ral.ht_watermark_num.set(newcfg.ht_watermark_num);
+    csr_update(.csr(ral.ht_watermark_num));
+    #(pause);
 
     // FW_OV registers
     ral.fw_ov_control.fw_ov_mode.set(newcfg.fw_read_enable);
@@ -205,6 +207,18 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     ral.conf.threshold_scope.set(newcfg.ht_threshold_scope);
     csr_update(.csr(ral.conf));
     #(pause);
+
+    // The CSR write accesses above may trigger recoverable alerts (e.g. in case invalid MuBis are
+    // written to the CSRs). To handle such cases, the calling entropy_src_init() task listens for
+    // recoverable alerts and if necessary aborts this task here. Because all this can take some
+    // time, we must wait a couple of clock cycles before potentially locking configuration CSRs.
+    // Otherwise, we may lock invalid configurations which would require resetting the DUT.
+    wait_no_outstanding_access();
+    cfg.clk_rst_vif.wait_clks(
+        cfg.m_alert_agent_cfgs["recov_alert"].ping_delay_max +
+        cfg.m_alert_agent_cfgs["recov_alert"].ack_delay_max +
+        cfg.m_alert_agent_cfgs["recov_alert"].ack_stable_max +
+        2); // Pause between back-to-back handshakes at sender end.
 
     // Register write enable lock is on be default
     // Setting this to zero will lock future writes
@@ -245,7 +259,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   // If disable==1, explicitly clear module_enable before configuring
   // to remove the write_lock
   //
-  // Outputs REGWEN = 0, if the device coniguration was attempted when most registers
+  // Outputs REGWEN = 0, if the device configuration was attempted when most registers
   // were locked. (Likely intentionally)
   virtual task entropy_src_init(entropy_src_dut_cfg newcfg=cfg.dut_cfg,
                                 realtime pause=cfg.configuration_pause_time,
@@ -361,7 +375,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   endtask
 
 
-  // Read all data in ENTROPY_DATA or FW_OV_RD_DATA up to a certain ammount
+  // Read all data in ENTROPY_DATA or FW_OV_RD_DATA up to a certain amount
   //
   // Data is read in bundles, where the size of a bundle depends on the data
   // source.
@@ -369,25 +383,23 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   // For the entropy_data register a bundle consists of CSRNG_BUS_WIDTH (=384) bits
   // and this it takes CSRNG_BUS_WIDTH/TL_DW (=12) reads to fetch a whole bundle.
   //
-  // When accessing the observe_fifo via the FW_OV_RD_DATA register the bundle size is
-  // programmable and set to be equal to the value set in the OBSERVE_FIFO_DEPTH register
-  // TODO(#18837): What happens if the depth is zero?
-  //
-  // a. max_bundles bundles have been read
-  // b. The intr_state register indicates no more data in entropy_data
+  // When accessing the observe FIFO via the FW_OV_RD_DATA register, the bundle size is TL_DW (=32)
+  // bits.
   //
   // If max_bundles < 0, simply reads all available bundles.
   //
   // If source is TlSrcObserveFIFO and check_overflow is set to 1, this task checks whether
-  // overflows occured or not. This is done to make sure that the data read from the observe
+  // overflows occurred or not. This is done to make sure that the data read from the observe
   // FIFO is contiguous.
   task do_entropy_data_read(tl_data_source_e source = TlSrcEntropyDataReg,
                             int max_bundles = -1,
+                            int timeout_ns = 250us / 1ns,
                             bit check_overflow = 0,
                             output int bundles_found);
     bit intr_status;
     bit done;
-    int cnt_per_interrupt;
+    bit read_max = 0;
+    int num_words_to_read = 1;
     uvm_reg_field intr_field;
     uvm_reg       data_reg;
 
@@ -397,74 +409,120 @@ class entropy_src_base_vseq extends cip_base_vseq #(
       TlSrcEntropyDataReg: begin
         intr_field        = ral.intr_state.es_entropy_valid;
         data_reg          = ral.entropy_data;
-        cnt_per_interrupt = entropy_src_pkg::CSRNG_BUS_WIDTH / TL_DW;
       end
       TlSrcObserveFIFO: begin
         intr_field        = ral.intr_state.es_observe_fifo_ready;
         data_reg          = ral.fw_ov_rd_data;
-        csr_rd(.ptr(ral.observe_fifo_thresh), .value(cnt_per_interrupt));
       end
       default: begin
         `uvm_fatal(`gfn, "Invalid source for accessing TL entropy (environment error)")
       end
     endcase
+
     `DV_SPINWAIT(
       do begin
         `uvm_info(`gfn, "READING INTERRUPT STS", UVM_DEBUG)
         csr_rd(.ptr(intr_field), .value(intr_status));
         if (intr_status) begin
-          // Check that the Observe FIFO hasn't overflown yet.
-          // By checking for overflows before and after reading the observe FIFO we can make sure,
-          // that the data we are reading is contiguous.
-          if (check_overflow && (source == TlSrcObserveFIFO)) begin
-            csr_rd_check(.ptr(ral.fw_ov_rd_fifo_overflow.fw_ov_rd_fifo_overflow),
-                        .compare_value('0));
+
+          // How many words shall we read in one go?
+          if (source == TlSrcEntropyDataReg) begin
+            // The seed length (CSRNG_BUS_WIDTH) is an integer multiple of the bus width.
+            num_words_to_read = entropy_src_pkg::CSRNG_BUS_WIDTH / TL_DW;
+          end else begin
+            // Check that the Observe FIFO hasn't overflown yet.
+            // By checking for overflows before and after reading the observe FIFO we can make sure
+            // that the data we are reading is contiguous.
+            if (check_overflow) begin
+              csr_rd_check(.ptr(ral.fw_ov_rd_fifo_overflow.fw_ov_rd_fifo_overflow),
+                           .compare_value('0));
+            end
+            // Define how many words we're going to read from the Observe FIFO. For efficiency,
+            // firmware will always read the maximum number of available words. But to reach
+            // coverage and to have the FIFO overflow from time to time, we sometimes just read few
+            // elements only.
+            read_max = $urandom_range(0, 9) > 0;
+            if (read_max) begin
+              cfg.clk_rst_vif.wait_n_clks(2);
+              num_words_to_read = `gmv(ral.observe_fifo_depth);
+            end else begin
+              csr_rd(.ptr(ral.observe_fifo_thresh), .value(num_words_to_read));
+            end
+            if ((max_bundles >= 0) && (num_words_to_read >= max_bundles)) begin
+              num_words_to_read = max_bundles;
+            end
           end
-          // Read and check entropy
-          `uvm_info(`gfn, $sformatf("Reading %d words", cnt_per_interrupt), UVM_HIGH)
-          for (int i = 0; i < cnt_per_interrupt; i++) begin
-            bit [TL_DW-1:0] entropy_tlul;
-            csr_rd(.ptr(data_reg), .value(entropy_tlul), .blocking(1'b1));
-          end
-          if (check_overflow && (source == TlSrcObserveFIFO)) begin
-            // Check whether no overflow occured while reading the observe FIFO and we are
+
+          do begin
+            // Read and check the entropy.
+            for (int i = 0; i < num_words_to_read; i++) begin
+              bit [TL_DW-1:0] entropy_tlul;
+              csr_rd(.ptr(data_reg), .value(entropy_tlul), .blocking(1'b1));
+            end
+            bundles_found += (source == TlSrcObserveFIFO ? num_words_to_read : 1);
+            num_words_to_read = 0;
+
+            // Check whether no overflow occurred while reading the observe FIFO and we are
             // still reading out contiguous data.
-            csr_rd_check(.ptr(ral.fw_ov_rd_fifo_overflow.fw_ov_rd_fifo_overflow),
-                        .compare_value('0));
-          end
+            if ((source == TlSrcObserveFIFO) && check_overflow) begin
+              csr_rd_check(.ptr(ral.fw_ov_rd_fifo_overflow.fw_ov_rd_fifo_overflow),
+                           .compare_value('0));
+            end
+
+            // Shall we continue reading more data?
+            if (read_max) begin
+              cfg.clk_rst_vif.wait_n_clks(2);
+              num_words_to_read = `gmv(ral.observe_fifo_depth);
+              if ((max_bundles >= 0) && (num_words_to_read >= max_bundles)) begin
+                num_words_to_read = max_bundles;
+              end
+            end
+            done = (max_bundles >= 0) && (bundles_found >= max_bundles);
+          end while (num_words_to_read > 0 && !done);
+
           // Clear the appropriate interrupt bit
           `uvm_info(`gfn, "CLEARING FIFO INTERRUPT", UVM_DEBUG)
           csr_wr(.ptr(intr_field), .value(1'b1), .blocking(1'b1));
-          bundles_found++;
         end
-        done = (max_bundles >= 0) && (bundles_found >= max_bundles);
       end while (intr_status && !done);, // do begin
-    $sformatf("Timeout encountered while reading %s", source.name()), 250us/1ns)
+    $sformatf("Timeout encountered while reading %s", source.name()), timeout_ns)
   endtask
 
-  task run_rng_host_seq(push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH) m_rng_push_seq);
+  task run_rng_host_seq(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq);
     for (int i = 0; i < m_rng_push_seq.num_trans; i++) begin
-      rng_val =  i % 16;
+      rng_val = i % (2**`RNG_BUS_WIDTH);
       cfg.m_rng_agent_cfg.add_h_user_data(rng_val);
     end
     m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
   endtask // run_rng_host_seq
 
-  task repcnt_ht_fail_seq(push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH) m_rng_push_seq,
+  task repcnt_ht_fail_seq(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq,
                           int num_trans = m_rng_push_seq.num_trans);
+    bit fail_symbol;
+    int unsigned lane_idx;
+    rng_val_t fixed_rng_val;
+    // Shall we fail a single lane or the full symbol?
+    fail_symbol = $urandom_range(0, 1);
+    // Randomly select a lane to fail.
+    lane_idx = $urandom_range(0, `RNG_BUS_WIDTH-1);
     // Set rng_val
-    // Use randomly generated but fixed rng_val through the test to cause the repcnt health test
-    // to fail
-    `DV_CHECK_STD_RANDOMIZE_FATAL(rng_val)
+    fixed_rng_val = rng_val_t'($urandom_range(0, 2**`RNG_BUS_WIDTH-1));
     for (int i = 0; i < num_trans; i++) begin
-      cfg.m_rng_agent_cfg.add_h_user_data(rng_val);
+      if (fail_symbol) begin
+        cfg.m_rng_agent_cfg.add_h_user_data(fixed_rng_val);
+      end else begin
+        rng_val = rng_val_t'($urandom_range(0, 2**`RNG_BUS_WIDTH-1));
+        rng_val[lane_idx] = fixed_rng_val[lane_idx];
+        cfg.m_rng_agent_cfg.add_h_user_data(fixed_rng_val);
+      end
     end
   endtask // repcnt_ht_fail_seq
 
-  task adaptp_ht_fail_seq(push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH) m_rng_push_seq,
+  task adaptp_ht_fail_seq(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq,
                           bit[15:0] fips_lo_thresh, bit[15:0] fips_hi_thresh,
                           bit[15:0] bypass_lo_thresh, bit[15:0] bypass_hi_thresh,
                           int num_trans = m_rng_push_seq.num_trans);
+    int unsigned lane_idx;
     ral.adaptp_hi_thresholds.fips_thresh.set(fips_hi_thresh);
     ral.adaptp_hi_thresholds.bypass_thresh.set(bypass_hi_thresh);
     csr_update(.csr(ral.adaptp_hi_thresholds));
@@ -473,33 +531,43 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.adaptp_lo_thresholds));
     // Turn on module_enable
     enable_dut();
+    // Randomly select a lane to fail.
+    lane_idx = $urandom_range(0, `RNG_BUS_WIDTH-1);
     // Set rng_val
     for (int i = 0; i < num_trans; i++) begin
-      rng_val = (i % 16 == 0 ? (cfg.which_ht == high_test ? 0 : 1) :
-                               (cfg.which_ht == high_test ? 1 : 0));
+      rng_val = rng_val_t'($urandom_range(0, 2**`RNG_BUS_WIDTH-1));
+      rng_val[lane_idx] = (i % 16 == 0 ? (cfg.which_ht == high_test ? 0 : 1) :
+                                         (cfg.which_ht == high_test ? 1 : 0));
       cfg.m_rng_agent_cfg.add_h_user_data(rng_val);
     end
   endtask // adaptp_ht_fail_seq
 
-  task bucket_ht_fail_seq(push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH) m_rng_push_seq,
+  task bucket_ht_fail_seq(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq,
                           bit[15:0] fips_thresh, bit[15:0] bypass_thresh,
                           int num_trans = m_rng_push_seq.num_trans);
+    parameter int BucketHtDataWidth = entropy_src_pkg::bucket_ht_data_width(`RNG_BUS_WIDTH);
+    parameter int unsigned NumBucketHtInst = entropy_src_pkg::num_bucket_ht_inst(`RNG_BUS_WIDTH);
+    int unsigned group_idx;
     ral.bucket_thresholds.fips_thresh.set(fips_thresh);
     ral.bucket_thresholds.bypass_thresh.set(bypass_thresh);
     csr_update(.csr(ral.bucket_thresholds));
     // Turn on module_enable
     enable_dut();
+    // Randomly select a group to fail.
+    group_idx = $urandom_range(0, NumBucketHtInst-1);
     // Set rng_val
     for (int i = 0; i < num_trans; i++) begin
-      rng_val = (i % 2 == 0 ? 5 : 10);
+      rng_val = rng_val_t'($urandom_range(0, 2**`RNG_BUS_WIDTH-1));
+      rng_val[group_idx * BucketHtDataWidth +: BucketHtDataWidth - 1] = (i % 2 == 0 ? 5 : 10);
       cfg.m_rng_agent_cfg.add_h_user_data(rng_val);
     end
   endtask // bucket_ht_fail_seq
 
-  task markov_ht_fail_seq(push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH) m_rng_push_seq,
+  task markov_ht_fail_seq(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq,
                           bit[15:0] fips_lo_thresh, bit[15:0] fips_hi_thresh,
                           bit[15:0] bypass_lo_thresh, bit[15:0] bypass_hi_thresh,
                           int num_trans = m_rng_push_seq.num_trans);
+    int unsigned lane_idx;
     ral.markov_hi_thresholds.fips_thresh.set(fips_hi_thresh);
     ral.markov_hi_thresholds.bypass_thresh.set(bypass_hi_thresh);
     csr_update(.csr(ral.markov_hi_thresholds));
@@ -508,10 +576,13 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.markov_lo_thresholds));
     // Turn on module_enable
     enable_dut();
+    // Randomly select a lane to fail.
+    lane_idx = $urandom_range(0, `RNG_BUS_WIDTH-1);
     // Set rng_val
     for (int i = 0; i < num_trans; i++) begin
-      rng_val = (i % 2 == 0 ? (cfg.which_ht == high_test ? 0 : 1) :
-                              (cfg.which_ht == high_test ? 1 : 0));
+      rng_val = rng_val_t'($urandom_range(0, 2**`RNG_BUS_WIDTH-1));
+      rng_val[lane_idx] = (i % 2 == 0 ? (cfg.which_ht == high_test ? 0 : 1) :
+                                        (cfg.which_ht == high_test ? 1 : 0));
       cfg.m_rng_agent_cfg.add_h_user_data(rng_val);
     end
   endtask // markov_ht_fail_seq
@@ -579,7 +650,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     force_path_err(path, path_err_val, reg_field, 1'b1);
   endtask // window_cntr_err_test
 
-  task repcnt_ht_cntr_test(push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH) m_rng_push_seq,
+  task repcnt_ht_cntr_test(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq,
                            uvm_reg_field reg_field);
     string path;
     `DV_CHECK_STD_RANDOMIZE_FATAL(path_err_val)
@@ -601,7 +672,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.repcnt_thresholds));
   endtask // repcnt_ht_cntr_test
 
-  task repcnts_ht_cntr_test(push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH) m_rng_push_seq,
+  task repcnts_ht_cntr_test(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq,
                             uvm_reg_field reg_field);
     string path;
     `DV_CHECK_STD_RANDOMIZE_FATAL(path_err_val)
@@ -623,7 +694,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.repcnts_thresholds));
   endtask // repcnts_ht_cntr_test
 
-  task adaptp_ht_cntr_test(push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH) m_rng_push_seq,
+  task adaptp_ht_cntr_test(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq,
                            uvm_reg_field reg_field);
     string path;
     bit [15:0] fips_thresh = 16'h0008;
@@ -647,7 +718,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.adaptp_lo_thresholds));
   endtask // adaptp_ht_cntr_test
 
-  task bucket_ht_cntr_test(push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH) m_rng_push_seq,
+  task bucket_ht_cntr_test(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq,
                            uvm_reg_field reg_field);
     string path;
     bit [15:0] fips_thresh = 16'h0008;
@@ -659,7 +730,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
     cfg.clk_rst_vif.wait_clks(100);
     // Force bucket ht counter err
-    path = cfg.entropy_src_path_vif.cntr_err_path("bucket_ht", cfg.which_bin);
+    path = cfg.entropy_src_path_vif.cntr_err_path("bucket_ht", cfg.which_bin, cfg.which_ht_inst);
     // Force the path (cnt_q[1]) to stuck at a different value from cnt_q[0] to trigger
     // the counter error
     force_path_err(path, path_err_val, reg_field, 1'b1);
@@ -669,7 +740,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.bucket_thresholds));
   endtask // bucket_ht_cntr_test
 
-  task markov_ht_cntr_test(push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH) m_rng_push_seq,
+  task markov_ht_cntr_test(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq,
                            uvm_reg_field reg_field);
     string path;
     bit [15:0] fips_thresh = 16'h0008;

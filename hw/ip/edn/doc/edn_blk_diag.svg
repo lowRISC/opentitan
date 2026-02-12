@@ -8,7 +8,7 @@
    version="1.1"
    id="svg5"
    inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
-   sodipodi:docname="drawing.svg"
+   sodipodi:docname="edn_blk_diag.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -30,10 +30,10 @@
      fit-margin-right="0"
      fit-margin-bottom="0"
      inkscape:zoom="1.3932941"
-     inkscape:cx="169.38277"
-     inkscape:cy="341.27756"
-     inkscape:window-width="3770"
-     inkscape:window-height="2096"
+     inkscape:cx="270.22292"
+     inkscape:cy="341.27755"
+     inkscape:window-width="3370"
+     inkscape:window-height="1376"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
@@ -1814,80 +1814,6 @@
            id="path614" />
       </g>
       <g
-         id="shape1209-353"
-         v:mID="1209"
-         v:groupContext="shape"
-         transform="translate(672.504,-501.983)">
-        <title
-           id="title632">Sheet.1209</title>
-        <desc
-           id="desc634">CSRNG Application Interface: Cmd Req</desc>
-        <v:textBlock
-           v:margins="rect(4,4,4,4)"
-           v:verticalAlign="0" />
-        <v:textRect
-           cx="49.6229"
-           cy="599.18"
-           width="99.25"
-           height="25.6401" />
-        <rect
-           x="0"
-           y="586.35999"
-           width="99.245903"
-           height="25.6401"
-           class="st7"
-           id="rect636" />
-        <text
-           x="4"
-           y="599.35999"
-           class="st2"
-           v:langID="1033"
-           id="text640"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000"><v:paragraph /><v:tabList />CSRNG Application<v:newlineChar /><tspan
-   x="4"
-   dy="1.2em"
-   class="st3"
-   id="tspan638"
-   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal">Interface: Cmd Req</tspan></text>
-      </g>
-      <g
-         id="shape1210-357"
-         v:mID="1210"
-         v:groupContext="shape"
-         transform="translate(672.504,-196.43)">
-        <title
-           id="title643">Sheet.1210</title>
-        <desc
-           id="desc645">CSRNG Application Interface: Genbits Bus</desc>
-        <v:textBlock
-           v:margins="rect(4,4,4,4)"
-           v:verticalAlign="0" />
-        <v:textRect
-           cx="58.4452"
-           cy="599.18"
-           width="116.9"
-           height="25.6401" />
-        <rect
-           x="0"
-           y="586.35999"
-           width="116.89"
-           height="25.6401"
-           class="st7"
-           id="rect647" />
-        <text
-           x="4"
-           y="599.35999"
-           class="st2"
-           v:langID="1033"
-           id="text651"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000"><v:paragraph /><v:tabList />CSRNG Application<v:newlineChar /><tspan
-   x="4"
-   dy="1.2em"
-   class="st3"
-   id="tspan649"
-   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal">Interface: Genbits Bus</tspan></text>
-      </g>
-      <g
          id="shape1217-361"
          v:mID="1217"
          v:groupContext="shape"
@@ -2055,6 +1981,38 @@
          transform="matrix(0.75,0,0,0.75,112.14001,-93.046444)"
          id="text44144"
          style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect44146);fill:#000000;fill-opacity:1;stroke:none" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:10px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.75"
+         x="680.85693"
+         y="96.442863"
+         id="text10274"><tspan
+           sodipodi:role="line"
+           id="tspan10272"
+           style="font-size:10px;stroke-width:0.75"
+           x="680.85693"
+           y="96.442863">CSRNG App IF:</tspan><tspan
+           sodipodi:role="line"
+           style="font-size:10px;stroke-width:0.75"
+           x="680.85693"
+           y="108.94286"
+           id="tspan10276">csrng_req/rsp</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:10px;line-height:1.25;font-family:sans-serif;color-interpolation-filters:sRGB;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.75"
+         x="669.36389"
+         y="401.67725"
+         id="text10274-3"><tspan
+           sodipodi:role="line"
+           id="tspan10272-6"
+           style="font-size:10px;stroke-width:0.75"
+           x="669.36389"
+           y="401.67725">CSRNG App IF:</tspan><tspan
+           sodipodi:role="line"
+           style="font-size:10px;stroke-width:0.75"
+           x="669.36389"
+           y="414.17725"
+           id="tspan10276-7">genbits</tspan></text>
     </g>
   </g>
   <style

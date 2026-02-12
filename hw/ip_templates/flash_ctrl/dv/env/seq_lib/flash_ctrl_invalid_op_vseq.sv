@@ -181,7 +181,7 @@ class flash_ctrl_invalid_op_vseq extends flash_ctrl_base_vseq;
       flash_ctrl_start_op(flash_op_inv);
       wait_flash_op_done();
 
-      ral.err_code.op_err.predict(expect_alert);
+      `DV_CHECK(ral.err_code.op_err.predict(expect_alert))
       check_exp_alert_status(expect_alert, "op_err", flash_op_inv, flash_op_data);
       cfg.scb_h.expected_alert["recov_err"].expected = 0;
 
@@ -205,7 +205,7 @@ class flash_ctrl_invalid_op_vseq extends flash_ctrl_base_vseq;
       flash_ctrl_start_op(flash_op_inv);
       wait_flash_op_done();
 
-      ral.err_code.op_err.predict(expect_alert);
+      `DV_CHECK(ral.err_code.op_err.predict(expect_alert))
       check_exp_alert_status(expect_alert, "op_err", flash_op_inv, flash_op_data);
       cfg.scb_h.expected_alert["recov_err"].expected = 0;
 
@@ -223,7 +223,7 @@ class flash_ctrl_invalid_op_vseq extends flash_ctrl_base_vseq;
     cfg.scb_h.expected_alert["recov_err"].expected = 1;
     flash_ctrl_start_op(flash_op_inv);
     wait_flash_op_done();
-    ral.err_code.op_err.predict(expect_alert);
+    `DV_CHECK(ral.err_code.op_err.predict(expect_alert))
     check_exp_alert_status(expect_alert, "op_err", flash_op_inv, flash_op_data);
     cfg.scb_h.expected_alert["recov_err"].expected = 0;
 

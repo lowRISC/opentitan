@@ -38,6 +38,15 @@
                // and final value of the selection input at the end of a simulation timestep.
                // See https://github.com/lowRISC/ibex/issues/845.
                "-xlrm uniq_prior_final",
+               // Newer compiler versions have escalated these warnings into an error by default, and
+               // VCS generates code to build the simulation executable which fails these checks.
+               // De-escalate the error (only when building the simv itself.)
+               // > rmapats.c:20:9: error: implicit declaration of function 'vcs_simpSetEBlkEvtID'
+               // >  [-Wimplicit-function-declaration]
+               // > rmapats.c:466:36: error: passing argument 1 of 'setChildClockWriteFuncAndPcode' makes
+               // > integer from pointer without a cast
+               // >  [-Wint-conversion]
+               "-Xcflags='-Wno-error=implicit-function-declaration -Wno-error=int-conversion'",
                // Force DPI-C compilation in C99 mode. The -fno-extended-identifiers flag tells g++
                // not to worry about unicode. For some bizarre reason, the VCS DPI code contains
                // preprocessor macros with smart quotes, which causes GCC 10.2 and later to choke
@@ -45,10 +54,10 @@
                // that gets passed to Make (stripping one level of quotes), and then needs to
                // result in an argument with an embedded space (the other one).
                "-CFLAGS --std=c99 -CFLAGS -fno-extended-identifiers",
-               // C++11 standard is enforced for all sources, including the DPI-C constructs.
-               // TODO, may need to update to c++14 to meet our requirements
-               // Refer to https://docs.opentitan.org/doc/ug/install_instructions
-               "-CFLAGS --std=c++11",
+               // C++17 standard is enforced for all sources, including the DPI-C constructs.
+               // Refer to
+               // https://opentitan.org/book/doc/contributing/style_guides/c_cpp_coding_style.html#c-style-guide
+               "-CFLAGS --std=c++17",
                // Without this magic LDFLAGS argument below, we get compile time errors with
                // VCS on Google Linux machines that look like this:
                // .../libvcsnew.so: undefined reference to `snpsReallocFunc'
@@ -114,6 +123,12 @@
   run_opts:   ["-licqueue",
                "-ucli -do {run_script}",
                "+ntb_random_seed={svseed}",
+               // In VCS, all random generation starts with an initial seed and that remains same
+               // for each instance of the module. Hence, for each instance of the same module
+               // $urandom() generates same random value.
+               // Below switch generates different randomization values per instance of a module.
+               // Refer to https://github.com/lowRISC/opentitan/issues/27659 for more details.
+               "-xlrm hier_inst_seed",
                // Disable the display of the SystemVerilog assert and cover statement summary
                // at the end of simulation. This summary is list of assertions that started but
                // did not finish because the simulation terminated, or assertions that did not

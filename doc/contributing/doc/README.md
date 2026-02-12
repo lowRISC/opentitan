@@ -7,7 +7,13 @@ It is viewable on the [OpenTitan website](https://opentitan.org/) or in [GitHub]
 Unlike the GitHub and plain text view, the website supplements the markdown documentation with auto-generated documentation from tools such as [rustdoc][].
 
 The Markdown is rendered into a book for the website using [mdBook][] with the structure being determined by the `SUMMARY.md` in the root of the repository.
-The `util/site/build-docs.sh` script is used to build this book as well as the landing page and auto-generated documentation.
+The `util/site/build-docs.sh` script is used to build this book as well as the generated API documentation for C and Rust code.
+
+To build and preview the documentation locally, use:
+
+```sh
+./util/site/build-docs.sh serve
+```
 
 *Before contributing to documentation, please read **[the markdown style guide](../style_guides/markdown_usage_style.md)***.
 

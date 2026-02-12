@@ -6,8 +6,8 @@
 #include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
-#include "sw/device/lib/crypto/include/hash.h"
-#include "sw/device/lib/crypto/include/mac.h"
+#include "sw/device/lib/crypto/include/kmac.h"
+#include "sw/device/lib/crypto/include/sha3.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -95,24 +95,93 @@ status_t get_sha3_mode(size_t security_strength, otcrypto_hash_mode_t *mode) {
 }
 
 /**
- * Get the mode for KMAC based on the security strength.
+ * Call SHA3 to compute the digest.
  *
- * @param security_str Security strength (in bits).
- * @param[out] mode KMAC mode enum value.
+ * Should only be called when `current_test_vector` is a SHA3 operation.
+ *
+ * @param[out] digest Computed digest.
+ * @return OK or error.
  */
-status_t get_kmac_mode(size_t security_strength, otcrypto_kmac_mode_t *mode) {
-  switch (security_strength) {
-    case 128:
-      *mode = kOtcryptoKmacModeKmac128;
-      break;
+static status_t run_sha3(otcrypto_hash_digest_t *digest) {
+  switch (current_test_vector->security_strength) {
+    case 224:
+      return otcrypto_sha3_224(current_test_vector->input_msg, digest);
     case 256:
-      *mode = kOtcryptoKmacModeKmac256;
-      break;
+      return otcrypto_sha3_256(current_test_vector->input_msg, digest);
+    case 384:
+      return otcrypto_sha3_384(current_test_vector->input_msg, digest);
+    case 512:
+      return otcrypto_sha3_512(current_test_vector->input_msg, digest);
     default:
-      LOG_INFO("Invalid size for KMAC: %d bits", security_strength);
-      return INVALID_ARGUMENT();
+      break;
   }
-  return OK_STATUS();
+  LOG_ERROR("Invalid strength for SHA3: %d bits",
+            current_test_vector->security_strength);
+  return INVALID_ARGUMENT();
+}
+
+/**
+ * Call SHAKE to compute the digest.
+ *
+ * Should only be called when `current_test_vector` is a SHAKE operation.
+ *
+ * @param[out] digest Computed digest.
+ * @return OK or error.
+ */
+static status_t run_shake(otcrypto_hash_digest_t *digest) {
+  switch (current_test_vector->security_strength) {
+    case 128:
+      return otcrypto_shake128(current_test_vector->input_msg, digest);
+    case 256:
+      return otcrypto_shake256(current_test_vector->input_msg, digest);
+    default:
+      break;
+  }
+  LOG_ERROR("Invalid strength for SHAKE: %d bits",
+            current_test_vector->security_strength);
+  return INVALID_ARGUMENT();
+}
+
+/**
+ * Call cSHAKE to compute the digest.
+ *
+ * Should only be called when `current_test_vector` is a cSHAKE operation.
+ *
+ * @param[out] digest Computed digest.
+ * @return OK or error.
+ */
+static status_t run_cshake(otcrypto_hash_digest_t *digest) {
+  switch (current_test_vector->security_strength) {
+    case 128:
+      return otcrypto_cshake128(current_test_vector->input_msg,
+                                current_test_vector->func_name,
+                                current_test_vector->cust_str, digest);
+    case 256:
+      return otcrypto_cshake256(current_test_vector->input_msg,
+                                current_test_vector->func_name,
+                                current_test_vector->cust_str, digest);
+    default:
+      break;
+  }
+  LOG_ERROR("Invalid strength for cSHAKE: %d bits",
+            current_test_vector->security_strength);
+  return INVALID_ARGUMENT();
+}
+
+/**
+ * Call KMAC to compute the authentication tag.
+ *
+ * Should only be called when `current_test_vector` is a KMAC operation.
+ *
+ * @param[out] tag Computed tag (digest).
+ * @return OK or error.
+ */
+static status_t run_kmac(otcrypto_word32_buf_t tag) {
+  current_test_vector->key.checksum =
+      integrity_blinded_checksum(&current_test_vector->key);
+  return otcrypto_kmac(
+      &current_test_vector->key, current_test_vector->input_msg,
+      current_test_vector->cust_str, current_test_vector->digest.len, tag);
 }
 
 /**
@@ -123,46 +192,31 @@ static status_t run_test_vector(void) {
   if (current_test_vector->digest.len % sizeof(uint32_t) != 0) {
     digest_num_words++;
   }
-  uint32_t digest[digest_num_words];
-  otcrypto_hash_digest_t digest_buf = {
-      .data = digest,
+  uint32_t digest_data[digest_num_words];
+  otcrypto_hash_digest_t digest = {
+      .data = digest_data,
       .len = digest_num_words,
   };
 
   switch (current_test_vector->test_operation) {
     case kKmacTestOperationShake: {
-      TRY(get_shake_mode(current_test_vector->security_strength,
-                         &digest_buf.mode));
-      TRY(otcrypto_xof_shake(current_test_vector->input_msg, digest_buf));
+      run_shake(&digest);
       break;
     }
     case kKmacTestOperationCshake: {
-      TRY(get_cshake_mode(current_test_vector->security_strength,
-                          &digest_buf.mode));
-      TRY(otcrypto_xof_cshake(current_test_vector->input_msg,
-                              current_test_vector->func_name,
-                              current_test_vector->cust_str, digest_buf));
+      run_cshake(&digest);
       break;
     }
     case kKmacTestOperationSha3: {
-      TRY(get_sha3_mode(current_test_vector->security_strength,
-                        &digest_buf.mode));
-      TRY(otcrypto_hash(current_test_vector->input_msg, digest_buf));
+      run_sha3(&digest);
       break;
     }
     case kKmacTestOperationKmac: {
-      current_test_vector->key.checksum =
-          integrity_blinded_checksum(&current_test_vector->key);
-      otcrypto_kmac_mode_t mode;
-      TRY(get_kmac_mode(current_test_vector->security_strength, &mode));
       otcrypto_word32_buf_t tag_buf = {
-          .data = digest_buf.data,
-          .len = digest_buf.len,
+          .data = digest.data,
+          .len = digest.len,
       };
-      TRY(otcrypto_kmac(&current_test_vector->key,
-                        current_test_vector->input_msg, mode,
-                        current_test_vector->cust_str,
-                        current_test_vector->digest.len, tag_buf));
+      run_kmac(tag_buf);
       break;
     }
     default: {
@@ -172,7 +226,7 @@ static status_t run_test_vector(void) {
     }
   }
 
-  TRY_CHECK_ARRAYS_EQ((unsigned char *)digest_buf.data,
+  TRY_CHECK_ARRAYS_EQ((unsigned char *)digest.data,
                       current_test_vector->digest.data,
                       current_test_vector->digest.len);
   return OTCRYPTO_OK;

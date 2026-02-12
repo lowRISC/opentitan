@@ -40,12 +40,6 @@
       name: sv_flist_gen_dir
       value: "{build_dir}"
     }
-    // This defaults to 'ip' in `hw/data/common_project_cfg.hjson`. Override
-    // since we are building the top level.
-    {
-      name: design_level
-      value: top
-    }
   ]
 
   // Common run parameters. Each test entry can override any of these as needed.

@@ -4,14 +4,14 @@
 
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 
-#include "dt/dt_hmac.h"
+#include "hw/top/dt/hmac.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "hmac_regs.h"  // Generated.
+#include "hw/top/hmac_regs.h"  // Generated.
 
 static const dt_hmac_t kHmacDt = kDtHmac;
 
@@ -19,7 +19,7 @@ static inline uint32_t hmac_base(void) {
   return dt_hmac_primary_reg_block(kHmacDt);
 }
 
-void hmac_sha256_configure(bool big_endian_digest) {
+static void hmac_configure(bool big_endian_digest, bool hmac_mode) {
   // Clear the config, stopping the SHA engine.
   abs_mmio_write32(hmac_base() + HMAC_CFG_REG_OFFSET, 0u);
 
@@ -31,13 +31,25 @@ void hmac_sha256_configure(bool big_endian_digest) {
   reg = bitfield_bit32_write(reg, HMAC_CFG_DIGEST_SWAP_BIT, big_endian_digest);
   reg = bitfield_bit32_write(reg, HMAC_CFG_ENDIAN_SWAP_BIT, false);
   reg = bitfield_bit32_write(reg, HMAC_CFG_SHA_EN_BIT, true);
-  reg = bitfield_bit32_write(reg, HMAC_CFG_HMAC_EN_BIT, false);
+  reg = bitfield_bit32_write(reg, HMAC_CFG_HMAC_EN_BIT, hmac_mode);
   // configure to run SHA-2 256 with 256-bit key
   reg = bitfield_field32_write(reg, HMAC_CFG_DIGEST_SIZE_FIELD,
                                HMAC_CFG_DIGEST_SIZE_VALUE_SHA2_256);
   reg = bitfield_field32_write(reg, HMAC_CFG_KEY_LENGTH_FIELD,
                                HMAC_CFG_KEY_LENGTH_VALUE_KEY_256);
   abs_mmio_write32(hmac_base() + HMAC_CFG_REG_OFFSET, reg);
+}
+
+void sc_hmac_hmac_sha256_configure(bool big_endian_digest, hmac_key_t key) {
+  hmac_configure(big_endian_digest, /*hmac_mode=*/true);
+  for (size_t i = 0; i < kHmacKeyNumWords; ++i) {
+    abs_mmio_write32(hmac_base() + HMAC_KEY_0_REG_OFFSET + i * sizeof(uint32_t),
+                     key.key[i]);
+  }
+}
+
+void hmac_sha256_configure(bool big_endian_digest) {
+  hmac_configure(big_endian_digest, /*hmac_mode=*/false);
 }
 
 inline void hmac_sha256_start(void) {
@@ -122,6 +134,14 @@ void hmac_sha256(const void *data, size_t len, hmac_digest_t *digest) {
   hmac_sha256_final(digest);
 }
 
+void sc_hmac_hmac_sha256(const void *data, size_t len, hmac_key_t key,
+                         bool big_endian_digest, hmac_digest_t *digest) {
+  sc_hmac_hmac_sha256_init(key, big_endian_digest);
+  hmac_sha256_update(data, len);
+  hmac_sha256_process();
+  hmac_sha256_final(digest);
+}
+
 void hmac_sha256_save(hmac_context_t *ctx) {
   // Issue the STOP command to halt the operation and compute the intermediate
   // digest.
@@ -183,5 +203,6 @@ void hmac_sha256_restore(const hmac_context_t *ctx) {
   abs_mmio_write32(hmac_base() + HMAC_CMD_REG_OFFSET, cmd);
 }
 
+extern void sc_hmac_hmac_sha256_init(hmac_key_t key, bool big_endian_digest);
 extern void hmac_sha256_init(void);
 extern void hmac_sha256_final(hmac_digest_t *digest);

@@ -5,10 +5,19 @@
   instance_name: top_earlgrey_rv_core_ibex
   param_values:
   {
-    racl_support: false
     num_regions: 2
     module_instance_name: rv_core_ibex
     topname: earlgrey
     uniquified_modules: {}
+    racl_support: false
+  }
+  dtgen:
+  {
+    num_regions:
+    {
+      type: uint8
+      name: num_regions
+      doc: Number of translatable regions per ibex bus
+    }
   }
 }

@@ -142,7 +142,7 @@
             Checking:
               - Ensure the fmt_fifo and rx_fifo watermark interrupts are asserted (fmt_threshold and rx_threshold)
               - Ensure the fmt_fifo and rx_fifo watermark interrupts stay asserted until cleared
-              - Ensure receving correct number of fmt_fifo and rx_fifo watermark interrupts
+              - Ensure receiving correct number of fmt_fifo and rx_fifo watermark interrupts
             '''
       stage: V2
       tests: ["i2c_host_fifo_watermark"]
@@ -312,7 +312,7 @@
 
             Stimulus:
               - Configure DUT/Agent to Target/Host mode respectively
-              - Combine above sequences in one test to run sequentiall except CSR sequence
+              - Combine above sequences in one test to run sequential except CSR sequence
               - Randomly add reset between each sequence
 
             Checking:
@@ -385,7 +385,7 @@
               - Assert reset any period between stop and the next start
 
             Checking:
-              - Ensure the remaining entries are not show up after each fifio is reset
+              - Ensure the remaining entries are not show up after each FIFO is reset
             '''
       stage: V2
       tests: ["i2c_target_fifo_reset_acq", "i2c_target_fifo_reset_tx"]
@@ -619,7 +619,7 @@
                 FMTFIFO entry had the NAKOK bit set).
               - Upon halting in response to observing a NACK, the CONTROLLER_EVENTS.NACK bit is set,
                 and the 'controller_halt' interrupt is asserted.
-              - Sofware clearing (W1C) the CONTROLLER_EVENTS CSR also deasserts the 'controller_halt'
+              - Software clearing (W1C) the CONTROLLER_EVENTS CSR also deasserts the 'controller_halt'
                 interrupt, and allows the FSM to continue the transfer.
               - Upon continuation, the next entry from the FMTFIFO is popped.
               - If the HOST_NACK_HANDLER_TIMEOUT is enabled and expires while awaiting 'controller_halt' to
@@ -975,7 +975,7 @@
     {
       name: i2c_fifo_level_cg
       desc: '''
-             Cover the watermark levels for all FIFO interupts
+             Cover the watermark levels for all FIFO interrupts
              * Cross fmt_threshold interrupt with FMT_FIFO trigger level
              * Cross rx_threshold interrupt with RX_FIFO trigger level
              * Cross acq_threshold interrupt with ACQ_FIFO trigger level

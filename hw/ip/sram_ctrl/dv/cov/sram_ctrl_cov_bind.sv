@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Binds functional coverage interaface to the top level sram_ctrl module.
+// Binds functional coverage interface to the top level sram_ctrl module.
 module sram_ctrl_cov_bind;
 
   bind sram_ctrl cip_mubi_cov_if #(.Width(4)) u_hw_debug_en_mubi_cov_if (

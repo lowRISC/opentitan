@@ -25,6 +25,7 @@ rust_library(
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:arrayvec",
+        "@crate_index//:indexmap",
         "@crate_index//:serde",
     ],
 )

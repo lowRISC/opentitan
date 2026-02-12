@@ -18,7 +18,6 @@ rust_binary(
         "@crate_index//:humantime",
         "@crate_index//:log",
         "@crate_index//:object",
-        "@crate_index//:once_cell",
         "@crate_index//:serde_json",
     ],
 )

@@ -17,3 +17,11 @@ filegroup(
         "//hw/ip/sram_ctrl/data:all_files",
     ],
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = glob([
+        "**/*.md",
+        "**/*.svg",
+    ]) + ["//hw/ip/sram_ctrl/data:doc_files"],
+)

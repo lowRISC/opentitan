@@ -35,6 +35,12 @@ parameters:
     paramtype: vlogdefine
     description: "Bitmanip implementation parameter enum. See the ibex_pkg::rv32b_e enum in ibex_pkg.sv for permitted values."
 
+  RV32ZC:
+    datatype: str
+    default: ibex_pkg::RV32ZcaZcbZcmp
+    paramtype: vlogdefine
+    description: "Compressed instructions parameter enum. See the ibex_pkg::rv32zc_e enum in ibex_pkg.sv for permitted values."
+
   RegFile:
     datatype: str
     default: ibex_pkg::RegFileFF
@@ -133,6 +139,7 @@ targets:
       - RV32E
       - RV32M
       - RV32B
+      - RV32ZC
       - RegFile
       - ICache
       - ICacheECC
@@ -179,7 +186,7 @@ targets:
           - '--trace-structs'
           - '--trace-params'
           - '--trace-max-array 1024'
-          - '-CFLAGS "-std=c++14 -Wall -DVL_USER_STOP -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=ibex_simple_system -g `pkg-config --cflags riscv-riscv riscv-disasm riscv-fdt`"'
+          - '-CFLAGS "-std=c++17 -Wall -DVL_USER_STOP -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=ibex_simple_system -g `pkg-config --cflags riscv-riscv riscv-disasm riscv-fdt`"'
           - '-LDFLAGS "-pthread -lutil -lelf `pkg-config --libs riscv-riscv riscv-disasm riscv-fdt`"'
           - "-Wall"
           # RAM primitives wider than 64bit (required for ECC) fail to build in

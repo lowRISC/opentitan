@@ -710,7 +710,7 @@ module spid_upload_tb;
       $display("Sending SRAM request");
       read_sram(l2m, m2l, current_addr, request_bytes, sram_data);
 
-      // push to result (based on current_offset, currnt_size)
+      // push to result (based on current_offset, current_size)
       $display("Pushing the return data(from SRAM) into the result queue");
       data = {data, sram_data[current_offset:$]}; // push back the sram read
 
@@ -731,7 +731,7 @@ module spid_upload_tb;
     end while (remained_bytes != 0);
 
 
-    // Check the # entires per transaction
+    // Check the # entries per transaction
     // first entry, addr
     // last entry,  ceil({addr,offset} + size)/(SramDw/8)
 

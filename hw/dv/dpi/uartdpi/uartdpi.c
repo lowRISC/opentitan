@@ -2,6 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+// The code below uses cfmakeraw, which comes from unistd.h. With glibc, it is
+// only provided if the _DEFAULT_SOURCE feature test macro is defined (because
+// it came from BSD in the first place, so needs pulling in explicitly).
+#define _DEFAULT_SOURCE
+
 #include "uartdpi.h"
 
 #ifdef __linux__
@@ -19,16 +24,21 @@
 #include <string.h>
 #include <unistd.h>
 
+#define EXIT_STRING_MAX_LENGTH (64)
+
 // This keeps the necessary uart state.
 struct uartdpi_ctx {
   char ptyname[64];
+  char exitstring[EXIT_STRING_MAX_LENGTH];
+  int exittracker;
   int host;
   int device;
   char tmp_read;
   FILE *log_file;
 };
 
-void *uartdpi_create(const char *name, const char *log_file_path) {
+void *uartdpi_create(const char *name, const char *log_file_path,
+                     const char *exit_string) {
   struct uartdpi_ctx *ctx =
       (struct uartdpi_ctx *)malloc(sizeof(struct uartdpi_ctx));
   assert(ctx);
@@ -36,11 +46,17 @@ void *uartdpi_create(const char *name, const char *log_file_path) {
   int rv;
 
   // Initialize UART pseudo-terminal
-  struct termios tty;
-  cfmakeraw(&tty);
+  rv = openpty(&ctx->host, &ctx->device, 0, 0, 0);
+  assert(rv == 0 && "failed to open pty for uart");
 
-  rv = openpty(&ctx->host, &ctx->device, 0, &tty, 0);
-  assert(rv != -1);
+  // Customise the slave side of the uart pseudo-terminal to be in "raw mode",
+  // using the BSD cfmakeraw function.
+  struct termios tty;
+  rv = tcgetattr(ctx->device, &tty);
+  assert(rv == 0 && "failed to get device terminal attrs");
+  cfmakeraw(&tty);
+  rv = tcsetattr(ctx->device, TCSANOW, &tty);
+  assert(rv == 0 && "failed to set new device terminal attrs");
 
   rv = ttyname_r(ctx->device, ctx->ptyname, 64);
   assert(rv == 0 && "ttyname_r failed");
@@ -84,6 +100,20 @@ void *uartdpi_create(const char *name, const char *log_file_path) {
     }
   }
 
+  ctx->exittracker = 0;
+  if (strnlen(exit_string, EXIT_STRING_MAX_LENGTH) < EXIT_STRING_MAX_LENGTH) {
+    strncpy(ctx->exitstring, exit_string, EXIT_STRING_MAX_LENGTH);
+  } else {
+    fprintf(stderr,
+            "UART: Unable to copy exit string since its length is larger "
+            "than the maximum %d.\n",
+            EXIT_STRING_MAX_LENGTH);
+    // Initialise as a null string.
+    ctx->exitstring[0] = '\0';
+  }
+  // Guarantee that at least one character in the exit string is null.
+  ctx->exitstring[EXIT_STRING_MAX_LENGTH - 1] = '\0';
+
   return (void *)ctx;
 }
 
@@ -123,11 +153,11 @@ char uartdpi_read(void *ctx_void) {
   return ctx->tmp_read;
 }
 
-void uartdpi_write(void *ctx_void, char c) {
+int uartdpi_write(void *ctx_void, char c) {
   int rv;
   struct uartdpi_ctx *ctx = (struct uartdpi_ctx *)ctx_void;
   if (ctx == NULL) {
-    return;
+    return 0;
   }
 
   rv = write(ctx->host, &c, 1);
@@ -137,4 +167,36 @@ void uartdpi_write(void *ctx_void, char c) {
     rv = fwrite(&c, sizeof(char), 1, ctx->log_file);
     assert(rv == 1 && "Write to log file failed.");
   }
+
+  if (c == '\0') {
+    // If a null character is received the tracker is reset.
+    ctx->exittracker = 0;
+  } else {
+    // If it is not null compare with the exit string.
+    if (c == ctx->exitstring[ctx->exittracker]) {
+      // Track which character should match next.
+      ctx->exittracker++;
+    } else {
+      // If the failing character matches the first character of the exit string
+      // the tracker should be one.
+      if (c == ctx->exitstring[0]) {
+        ctx->exittracker = 1;
+      } else {
+        // Otherwise keep looking for the first character.
+        ctx->exittracker = 0;
+      }
+    }
+  }
+
+  // If we hit the max length or the next character in the exit string is null.
+  if (ctx->exittracker == EXIT_STRING_MAX_LENGTH ||
+      ctx->exitstring[ctx->exittracker] == '\0') {
+    // If exittracker is zero, exitstring is empty so we should not exit the
+    // simulator.
+    rv = ctx->exittracker;
+    ctx->exittracker = 0;
+    return rv;
+  }
+
+  return 0;
 }

@@ -64,9 +64,9 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
     csr_update(.csr(ral.cfg));
 
     // tpm_cfg needs to be included in cfg.spi_cfg_sema, because tpm and flash may be enabled
-    // in 2 separate threads, but when tpm is on, sck polariy/phase needs to be 'b00, while flash
+    // in 2 separate threads, but when tpm is on, sck polarity/phase needs to be 'b00, while flash
     // can support 'b11. Hence, when enable flash mode, need to check tpm_cfg.en before setting
-    // sck polariy/phase.
+    // sck polarity/phase.
     ral.tpm_cfg.en.set(1'b1);
     ral.tpm_cfg.tpm_mode.set(mode);
     if (is_hw_return) begin

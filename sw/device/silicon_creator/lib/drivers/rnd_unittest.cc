@@ -15,10 +15,10 @@
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
-#include "entropy_src_regs.h"
+#include "hw/top/entropy_src_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
+#include "hw/top/rv_core_ibex_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otp_ctrl_regs.h"
-#include "rv_core_ibex_regs.h"
 
 namespace rnd_unittest {
 namespace {

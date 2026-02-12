@@ -11,7 +11,7 @@
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_test_base.h"
 
-#include "aon_timer_regs.h"  // Generated.
+#include "hw/top/aon_timer_regs.h"  // Generated.
 
 namespace dif_aon_timer_unittest {
 namespace {

@@ -12,8 +12,14 @@ load(
     "verilator_params",
 )
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
+load("//rules:doxygen.bzl", "doxygen_gather_all_package_cc")
 
 package(default_visibility = ["//visibility:public"])
+
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]) + ["//sw/device/lib/base/freestanding:doc_files"],
+)
 
 dual_cc_library(
     name = "crc32",
@@ -37,6 +43,12 @@ dual_cc_library(
             ":macros",
         ],
     ),
+)
+
+# Make the non-mock version of CRC32 visible outside of this package.
+alias(
+    name = "crc32_device_library",
+    actual = dual_cc_device_library_of(":crc32"),
 )
 
 cc_test(
@@ -113,42 +125,6 @@ cc_test(
 )
 
 cc_library(
-    name = "ibex",
-    srcs = ["ibex.c"],
-    hdrs = ["ibex.h"],
-    deps = [
-        ":abs_mmio",
-        ":csr",
-        ":status",
-        "//hw/top:rv_core_ibex_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
-    ],
-)
-
-opentitan_test(
-    name = "ibex_test",
-    srcs = ["ibex_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
-    verilator = verilator_params(
-        timeout = "long",
-    ),
-    deps = [
-        ":bitfield",
-        ":csr",
-        ":ibex",
-        ":status",
-        "//hw/top:rv_core_ibex_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/runtime:ibex",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
-    ],
-)
-
-cc_library(
     name = "stdasm",
     hdrs = ["stdasm.h"],
 )
@@ -185,7 +161,7 @@ cc_test(
 alias(
     name = "math_builtins",
     actual = select({
-        "//sw/device:measure_coverage_on_target": "//sw/device:nothing",
+        "//rules/coverage:enabled": "//sw/device:nothing",
         "//conditions:default": ":math_polyfills",
     }),
     visibility = ["//visibility:private"],
@@ -297,7 +273,19 @@ cc_library(
     name = "random_order",
     srcs = ["random_order.c"],
     hdrs = ["random_order.h"],
-    deps = [":bitfield"],
+    deps = [
+        ":bitfield",
+        ":hardened",
+    ],
+)
+
+cc_test(
+    name = "random_order_unittest",
+    srcs = ["random_order_unittest.cc"],
+    deps = [
+        ":random_order",
+        "@googletest//:gtest_main",
+    ],
 )
 
 cc_library(
@@ -309,6 +297,7 @@ cc_library(
         ":macros",
         ":memory",
         ":random_order",
+        "//sw/device/lib/crypto/impl:status",
     ],
 )
 
@@ -465,4 +454,8 @@ cc_test(
         ":status_report_unittest_c",
         "@googletest//:gtest_main",
     ],
+)
+
+doxygen_gather_all_package_cc(
+    name = "doxy_target",
 )

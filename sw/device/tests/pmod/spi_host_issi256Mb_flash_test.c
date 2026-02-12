@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 #include <assert.h>
 
-#include "dt/dt_api.h"  // Generated
+#include "hw/top/dt/api.h"  // Generated
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"

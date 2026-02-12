@@ -60,7 +60,7 @@ waive -rules {CLOCK_USE} -location {chip_earlgrey_asic.sv} \
       -comment "This is due to the external clock input pin."
 
 waive -rules {CLOCK_USE} -location {chip_earlgrey_asic.sv} \
-      -msg {'mio_in_raw[28]' is used for some other purpose, and as clock 'clk_i' at prim_generic_flop} \
+      -msg {'mio_in_raw[28]' is used for some other purpose, and as clock 'clk_i' at prim_flop} \
       -comment "This is due to the external clock input pin."
 
 waive -rules {CLOCK_USE} -location {chip_earlgrey_asic.sv} \
@@ -72,7 +72,7 @@ waive -rules {CLOCK_USE} -location {chip_earlgrey_asic.sv} \
       -comment "This is a valid clock signal."
 
 waive -rules {CLOCK_USE} -location {ast.sv} \
-      -msg {'clk_ast_usb_i' is used for some other purpose, and as clock 'clk_i' at prim_generic_flop.sv} \
+      -msg {'clk_ast_usb_i' is used for some other purpose, and as clock 'clk_i' at prim_flop.sv} \
       -comment "This is a valid clock signal."
 
 waive -rules {RESET_DRIVER} -location {chip_earlgrey_asic.sv} \
@@ -84,15 +84,15 @@ waive -rules {RESET_DRIVER} -location {chip_earlgrey_asic.sv} \
       -comment "This is a valid reset signal."
 
 waive -rules {RESET_DRIVER} -location {ast.sv} \
-      -msg {'rst_sys_clk_n' is driven here, and used as an asynchronous reset 'rst_ni' at prim_generic_flop.sv} \
+      -msg {'rst_sys_clk_n' is driven here, and used as an asynchronous reset 'rst_ni' at prim_flop.sv} \
       -comment "This is a valid reset signal."
 
 waive -rules {RESET_DRIVER} -location {ast.sv} \
-      -msg {'rst_usb_clk_n' is driven here, and used as an asynchronous reset 'rst_ni' at prim_generic_flop.sv} \
+      -msg {'rst_usb_clk_n' is driven here, and used as an asynchronous reset 'rst_ni' at prim_flop.sv} \
       -comment "This is a valid reset signal."
 
 waive -rules {RESET_DRIVER} -location {ast.sv} \
-      -msg {'rst_io_clk_n' is driven here, and used as an asynchronous reset 'rst_ni' at prim_generic_flop.sv} \
+      -msg {'rst_io_clk_n' is driven here, and used as an asynchronous reset 'rst_ni' at prim_flop.sv} \
       -comment "This is a valid reset signal."
 
 # Combo loops through uart loopback can be ignored
@@ -131,18 +131,18 @@ waive -rules {RESET_USE} -location {chip_earlgrey_asic.sv} -regexp {'rstmgr_aon_
       -comment "This is a reset struct that is fed back into AST."
 
 waive -rules {RESET_USE} -location {ast.sv} \
-      -regexp {'rst_ast_usb_ni' is used for some other purpose, and as asynchronous reset 'rst_ni' at prim_generic_flop.sv} \
+      -regexp {'rst_ast_usb_ni' is used for some other purpose, and as asynchronous reset 'rst_ni' at prim_flop.sv} \
       -comment "This is a reset struct that is fed back into AST."
 
 waive -rules {RESET_USE} -location {usb_clk.sv} \
-      -regexp {'rst_usb_clk_ni' is used for some other purpose, and as asynchronous reset 'rst_ni' at prim_generic_flop.sv} \
+      -regexp {'rst_usb_clk_ni' is used for some other purpose, and as asynchronous reset 'rst_ni' at prim_flop.sv} \
       -comment "This is a reset struct that is fed back into AST."
 
 waive -rules {RESET_MUX} -location {chip_earlgrey_asic.sv} -regexp {Asynchronous reset 'rstmgr_aon_resets..*' is driven by a multiplexer here, used as a reset} \
       -comment "This is a reset struct that is fed back into AST."
 
 waive -rules {RESET_MUX} -location {usb_clk.sv} \
-      -regexp {Asynchronous reset 'rst_n' is driven by a multiplexer here, used as a reset 'rst_ni' at prim_generic_flop.sv} \
+      -regexp {Asynchronous reset 'rst_n' is driven by a multiplexer here, used as a reset 'rst_ni' at prim_flop.sv} \
       -comment "This is reset generation logic, hence reset muxes are allowed."
 
 # See https://github.com/lowRISC/opentitan/issues/15674

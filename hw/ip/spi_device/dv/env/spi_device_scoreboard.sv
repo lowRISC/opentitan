@@ -816,9 +816,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       else begin
         int unsigned dn_item_payload_size = dn_item.payload_q.size;
         // We expect the payload for up_item to be one byte shorter than the payload for dn_item,
-        // unless dn_item had an empty payload or we're in read_pipeline mode.
-        if (dn_item.payload_q.size>0 &&  !(!up_item.read_pipeline_mode ||
-            up_item.payload_q.size == 0))  //Read terminated before any data was returned
+        // in some cases with the read pipeline mode enabled
+        if (up_item.read_pipeline_mode>0 && (dn_item.payload_q.size > up_item.payload_q.size))
           dn_item_payload_size--;
 
         `DV_CHECK_EQ(up_item.payload_q.size, dn_item_payload_size)
@@ -1213,7 +1212,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                 // Note: depending on the clocks relationship, it may happen the RTL may commit a
                 // value before the TB notices. The TB isn't trying to accurately predict when a
                 // given value will be committed. Instead, the TB just checks from the set of
-                // written values one of those has been comitted
+                // written values one of those has been committed
                 //
                 // It can happen busy/wel bits may get set as the SPI txn goes through. In this
                 // case we don't compare WEL/busy, as the value might've changed since the
@@ -1280,7 +1279,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                     end
                     else begin
                       // Note: we don't pop out tl_ul_fuzzy_flash_status_q since it's a 1-2 item
-                      // queue which gets overriden on the next flash_status write
+                      // queue which gets overridden on the next flash_status write
                       flash_status_q.push_back(tl_ul_fuzzy_flash_status_q[tl_ul_fuzzy_idx]);
                       `uvm_info(`gfn, {"The RTL committed value is found in ",
                                        $sformatf("tl_ul_fuzzy_flash_status_q[i=%0d]=0x%0x",
@@ -1304,14 +1303,14 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                     flash_rtl_committed = f_status_rtl_committed_value;
 
                     // We check if the current committed value is the newest write, if there was a
-                    // previous write which clared WEL/BUSY, clear them (upon checking on actual RTL
+                    // previous write which cleared WEL/BUSY, clear them (upon checking on actual RTL
                     // value)!
 
                     if (tl_ul_side_idx != -1 && tl_ul_fuzzy_idx > 0) begin
                       flash_status_t predicted_flash = flash_status_q[0];
                       // Item found in 'tl_ul_fuzzy_flash_status_q'
 
-                      // Check value RTL has comitted at this point, because it can happen
+                      // Check value RTL has committed at this point, because it can happen
                       // there have been 1+ writes and the 2nd write gets picked-up for
                       // 'other_status' bits, but maybe WEL/BUSY are different
                       if ( (flash_rtl_committed.wel != predicted_flash.wel) ||
@@ -1335,7 +1334,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
                     // Ammend BUSY/WEL depending on the written flash_status:
                     if (tweak_wel_busy) begin
-                      // We check the value the RTL has comitted at this point, because it can happen
+                      // We check the value the RTL has committed at this point, because it can happen
                       // there have been 1+ writes and the 2nd write gets picked-up
                       if (flash_rtl_committed.wel != spi_side_flash_status.wel &&
                           // Wel was cleared in the previous write - just the value hadn't update
@@ -1417,7 +1416,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       `uvm_info(`gfn, $sformatf("spi_side_flash_status = 0x%0x",spi_side_flash_status), UVM_DEBUG)
 
       // Adding a 25%clk_cycle delay to make sure if the command is passthrough the correct "busy"
-      // value will be read. This delay is neccessary since the thread that handles passthrough
+      // value will be read. This delay is necessary since the thread that handles passthrough
       // already has a 1ps delay
       #(cfg.spi_host_agent_cfg.sck_period_ps/4 * 1ps);
 
@@ -1471,7 +1470,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   endfunction
 
 
-  // Receives a flash_status_t queue and returns '1' if the value has yet been comitted
+  // Receives a flash_status_t queue and returns '1' if the value has yet been committed
   // This function is used to update spi_side_flash_status value
   // Returns 1 if the item is in the queue
   function bit flash_sts_committed_in_q(flash_status_t flash_status_q[$],
@@ -1511,7 +1510,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   function flash_status_t fetch_flash_status_rtl_committed_value();
     uvm_hdl_data_t 	rtl_sck_status_committed_value;
     flash_status_t  fs_committed_value;
-    uvm_hdl_read("tb.dut.u_spid_status.sck_status_committed", rtl_sck_status_committed_value);
+    `DV_CHECK(uvm_hdl_read(sck_committed_status_path, rtl_sck_status_committed_value))
+
     fs_committed_value = flash_status_t'(rtl_sck_status_committed_value);
     `uvm_info(`gfn, $sformatf("RTL's flash_status committed value: 0x%0x", fs_committed_value),
               UVM_DEBUG)
@@ -1796,12 +1796,12 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     bit [31:0] start_addr, offset, read_buffer_addr;
     event      interrupt_update_ev;
     bit        reading_readbuffer=1;
-
+    bit        predict_interrupts=0;
     item = spi_txn;
 
     if (cfg.spi_host_agent_cfg.spi_func_mode == SpiModeTpm) begin
       bit [TPM_ADDR_WIDTH-1:0] addr = convert_addr_from_byte_queue(item.address_q);
-      // comparison is done when the item is transfered completedly
+      // comparison is done when the item is transferred completely
       bit [TL_DW-1:0]          ignored_returned_q[$];
       // Write commands trigger interrupts when the item is transferred
       // completely. Return-by-hw reads don't trigger interrupts.
@@ -1841,7 +1841,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       fork begin
         `uvm_info(`gfn, "Blocking on SV event 'interrupt_update_ev'", UVM_DEBUG)
         wait (interrupt_update_ev.triggered);
-        while (reading_readbuffer) begin
+
+        while (reading_readbuffer || (item.payload_q.size == 0 && predict_interrupts)) begin
           `uvm_info(`gfn,
                     $sformatf("'interrupt_update_ev' event is triggered (buffer_addr=0x%0x)",
                               read_buffer_addr + 1 ), UVM_DEBUG)
@@ -1851,7 +1852,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                            $sformatf("last_read_buffer_addr=0x%0x\n ",last_read_buffer_addr)},
                     UVM_DEBUG)
           if (start_addr == read_buffer_addr /*&& start_addr % READ_BUFFER_HALF_SIZE == 0*/) begin
-            // Also predicting the first address, in case the starting addrcauses any flip/watermark
+            // Also predicting the first address, in case the starting addr causes any flip/watermark
             // interrupt
             predict_read_buffer_intr(read_buffer_addr, item.opcode, item.read_pipeline_mode>0);
           end
@@ -1861,6 +1862,12 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           // Adding some "SPI-side" clk_delay to ensure the triggering events are noticed
           #(cfg.spi_host_agent_cfg.sck_period_ps/2 * 1ps);
 
+          if(item.payload_q.size == 0 && predict_interrupts) begin
+            // Transaction finished exiting:
+            predict_interrupts = 0;
+            `uvm_info(`gfn, "Exiting the readbuf/watermark interrupt prediction loop", UVM_DEBUG)
+            break;
+          end
           `uvm_info(`gfn, "Blocking on SV event 'interrupt_update_ev'", UVM_DEBUG)
           wait (interrupt_update_ev.triggered);
         end
@@ -1915,27 +1922,31 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       read_pipeline_read_buffer_cmd_last = read_pipeline_ongoing_read_buffer_cmd;
       read_pipeline_ongoing_read_buffer_cmd = 0;
       ongoing_read_buffer_cmd = 0;
+      if (item.payload_q.size == 0 && start_addr == read_buffer_addr)
+        predict_interrupts = 1;
       reading_readbuffer = 0;
       -> interrupt_update_ev;
 
       if(item.payload_q.size == 0) begin
         last_read_cmd_no_payload = 1;
-        if (item.read_pipeline_mode > 0) begin
-          //setting here, in case the CMd doesn't have any payload , the RTL will have already
-          //fetched from memory In some cases, depending on the start_addr that may trigger a
-          // readbufflip/readwatermark interrupt
+        // No payload, hence the start address was never read. Setting to old last_read_addr
+        read_buffer_addr = `gmv(ral.last_read_addr);
+        if (item.read_pipeline_mode > 0 && item.opcode inside {READ_QUAD,READ_QUADIO }) begin
+          // setting here, in case the CMd doesn't have any payload , the RTL will have already
+          // fetched from memory In some cases, depending on the start_addr that may trigger a
+          // readbufflip/readwatermark interrupt when the read pipeline is enabled
           last_read_buffer_addr = start_addr;
         end
       end
 
-      // only update when it has payload
-      if ( (payload_idx > 0) ||
-           //Incomplete read command, but RTL has already fetched data and some of it it's in the read pipeline
-           ((item.read_pipeline_mode > 0) && payload_idx==0 && item.read_size==0)
-          ) begin
+      // Only update when it has payload OR
+      // When Incomplete read command, but RTL has already fetched data and some of it it's in
+      // the read pipeline. In addition, start_addr must be different to prior recorded address
+      // otherwise the update won't happen
+      if ((payload_idx > 0) || (start_addr != `gmv(ral.last_read_addr) &&
+         (item.read_pipeline_mode > 0) && payload_idx==0 && item.read_size==0)) begin
         bit updating_last_read_addr=1;
-        if(payload_idx>0 && item.read_pipeline_mode > 0 /*&&
-           item.opcode inside {READ_QUAD,READ_QUADIO }*/) begin
+        if(item.read_pipeline_mode > 0 && item.opcode inside {READ_QUAD, READ_QUADIO }) begin
           string print_str =
                            "Opcode is inside {READ_QUAD, READ_QUADIO} and read_pipeline is enabled";
           print_str = {print_str, ".\n", "The RTL believes the read_addr is 1 unit above because",
@@ -1945,12 +1956,13 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                     UVM_DEBUG)
           read_buffer_addr++;
         end // if (payload_idx>0 && item.read_pipeline_mode > 0...
-        else if(item.terminated_before_read_pipeline) begin
-          // SPI Txn was terminated before the dummy cycles started, hence the RTL didn't even fetch the first address
+        else if (item.terminated_before_read_pipeline) begin
+          // SPI Txn was terminated before the dummy cycles/read_pipeline started, hence the RTL
+          // didn't even fetch the first address
           updating_last_read_addr = 0;
         end
 
-        if(updating_last_read_addr) begin
+        if (updating_last_read_addr) begin
           // Update read_buffer_addr predicted value
           `DV_CHECK_EQ_FATAL( ral.last_read_addr.predict(.value(read_buffer_addr),
                                                          .kind(UVM_PREDICT_READ)), 1,
@@ -2211,7 +2223,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
           `uvm_info(`gfn, $sformatf("TB predicts flash_status (0x%0x)", flash_status), UVM_DEBUG)
 
-          //'tl_ul_side_flash_status_q' is picked inmediatly on every SPI byte beat.
+          //'tl_ul_side_flash_status_q' is picked immediately on every SPI byte beat.
           // Hence, we need to only push the items to the queue at the "right time"
           // in function 'populate_tl_ul_side_flash_status_q'
           populate_tl_ul_side_flash_status_q(flash_status);
@@ -2522,7 +2534,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       begin
         fork
           begin
-            // If there is a READ_STATUS command on flight whils flash_status is being written, We
+            // If there is a READ_STATUS command on flight while flash_status is being written, We
             // need to wait for 2 spi byte beats.
             // For the first beat, the RTL moves the TL-UL flash_status towards the spi-side,but the
             // returned value may have been already committed to the upstream spi host and after the
@@ -2530,7 +2542,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
             `uvm_info(`gfn,$sformatf("Populating fuzzy Qs with flash_status = 0x%0x",flash_status),
                       UVM_DEBUG)
 
-            // Keep written value in Fuzzy Qs since the TB won't accuretly model the CDC crossing
+            // Keep written value in Fuzzy Qs since the TB won't accurately model the CDC crossing
             if (tl_ul_fuzzy_flash_status_q.size > 0) begin
               `uvm_info(`gfn, $sformatf(
                             "tl_ul_fuzzy_flash_status_q[$] old_value= 0x%0x, and new_value = 0x%0x",
@@ -2576,7 +2588,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                         "Updating 'spi_side_flash_status' in different task due to CMD too short",
                         UVM_DEBUG)
 
-              // Look into the RTL, and see if the value has yeet been committed. It'll depend on
+              // Look into the RTL, and see if the value has yet been committed. It'll depend on
               // the exact moment in which the TL-UL flash_status value was written. If it's been
               // committed, then update spi_side .
               rtl_sck_status_committed_value = fetch_flash_status_rtl_committed_value();
@@ -2722,7 +2734,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   // Check if opcode is enabled and returns index of enabled opcode
   // Checks if there are duplicate enabled opcodes - not proper config
   // HW parses commands this way
-  virtual function check_opcode_enable(bit [7:0] q_opcode, ref bit enable, ref bit [4:0] en_idx);
+  virtual function void check_opcode_enable(bit [7:0] q_opcode, ref bit enable, ref bit [4:0] en_idx);
     enable = 0;
     en_idx = 24; // Larger than num of cmd_info if not enabled
     for (int i = 0; i<24; i++)  begin
@@ -2799,7 +2811,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     `DV_CHECK_EQ(upload_addr_q.size, 0)
     `DV_CHECK_EQ(tpm_read_sw_q.size, 0)
     //Checking only event type interrupts
-    interrupt_mask[5] = 0; //TPM header non emtpy is a status interrupt
+    interrupt_mask[5] = 0; //TPM header non empty is a status interrupt
     `DV_CHECK_EQ(|(intr_trigger_pending & interrupt_mask) , 0)
   endfunction
 endclass

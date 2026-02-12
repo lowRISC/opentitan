@@ -3,7 +3,7 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:dv:hmac_env:0.1"
-description: "HMAC DV UVM environmnt"
+description: "HMAC DV UVM environment"
 filesets:
   files_rtl:
     depend:
@@ -44,6 +44,7 @@ generate:
     parameters:
       name: hmac
       ip_hjson: ../../data/hmac.hjson
+    position: prepend
 
 targets:
   default:

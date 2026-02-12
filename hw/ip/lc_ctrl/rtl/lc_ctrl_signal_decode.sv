@@ -4,6 +4,8 @@
 //
 // Life cycle signal decoder and sender module.
 
+`include "prim_assert.sv"
+
 module lc_ctrl_signal_decode
   import lc_ctrl_pkg::*;
   import lc_ctrl_state_pkg::*;
@@ -30,8 +32,10 @@ module lc_ctrl_signal_decode
   // Local life cycle signal
   output lc_tx_t         lc_raw_test_rma_o,
   // Life cycle broadcast outputs.
+  output lc_tx_t         lc_init_done_o,
   output lc_tx_t         lc_dft_en_o,
   output lc_tx_t         lc_nvm_debug_en_o,
+  output lc_tx_t         lc_hw_debug_clr_o,
   output lc_tx_t         lc_hw_debug_en_o,
   output lc_tx_t         lc_cpu_en_o,
   output lc_tx_t         lc_creator_seed_sw_rw_en_o,
@@ -39,6 +43,7 @@ module lc_ctrl_signal_decode
   output lc_tx_t         lc_iso_part_sw_rd_en_o,
   output lc_tx_t         lc_iso_part_sw_wr_en_o,
   output lc_tx_t         lc_seed_hw_rd_en_o,
+  output lc_tx_t         lc_rma_state_o,
   output lc_tx_t         lc_keymgr_en_o,
   output lc_tx_t         lc_escalate_en_o,
   // State group diversification value for keymgr
@@ -49,17 +54,21 @@ module lc_ctrl_signal_decode
   // Signal Decoder Logic //
   //////////////////////////
 
-  lc_tx_t lc_raw_test_rma;
-  lc_tx_t lc_dft_en, lc_nvm_debug_en, lc_hw_debug_en, lc_cpu_en, lc_keymgr_en, lc_escalate_en;
+  lc_tx_t lc_init_done, lc_raw_test_rma;
+  lc_tx_t lc_dft_en, lc_nvm_debug_en, lc_hw_debug_clr, lc_hw_debug_en, lc_cpu_en, lc_keymgr_en,
+          lc_escalate_en;
   lc_tx_t lc_creator_seed_sw_rw_en, lc_owner_seed_sw_rw_en, lc_iso_part_sw_rd_en;
   lc_tx_t lc_iso_part_sw_wr_en, lc_seed_hw_rd_en;
+  lc_tx_t lc_rma_state;
   lc_keymgr_div_t lc_keymgr_div_d, lc_keymgr_div_q;
 
   always_comb begin : p_lc_signal_decode
     // Life cycle control signal defaults
+    lc_init_done             = Off;
     lc_raw_test_rma          = Off;
     lc_dft_en                = Off;
     lc_nvm_debug_en          = Off;
+    lc_hw_debug_clr          = Off;
     lc_hw_debug_en           = Off;
     lc_cpu_en                = Off;
     lc_creator_seed_sw_rw_en = Off;
@@ -67,6 +76,7 @@ module lc_ctrl_signal_decode
     lc_iso_part_sw_rd_en     = Off;
     lc_iso_part_sw_wr_en     = Off;
     lc_seed_hw_rd_en         = Off;
+    lc_rma_state             = Off;
     lc_keymgr_en             = Off;
     // This ensures that once escalation has been triggered, it cannot go back to Off.
     lc_escalate_en           = lc_tx_or_hi(Off, lc_escalate_en_o);
@@ -90,6 +100,9 @@ module lc_ctrl_signal_decode
       TokenCheck1St,
       TransProgSt: begin
         if (lc_state_valid_i) begin
+          // After this, all life cycle controller broadcast signals are valid and based on the
+          // OTP LC state.
+          lc_init_done = On;
           unique case (lc_state_i)
             ///////////////////////////////////////////////////////////////////
             // Only enable life cycle TAP register for OTP test mechanisms.
@@ -184,6 +197,7 @@ module lc_ctrl_signal_decode
               lc_iso_part_sw_wr_en     = On;
               lc_iso_part_sw_rd_en     = On;
               lc_seed_hw_rd_en         = On;
+              lc_rma_state             = On;
               lc_keymgr_div_d          = RndCnstLcKeymgrDivRma;
             end
             ///////////////////////////////////////////////////////////////////
@@ -191,27 +205,42 @@ module lc_ctrl_signal_decode
             // signal is also asserted in this case.
             default: begin
               lc_escalate_en = On;
+              lc_hw_debug_clr = On;
             end
           endcase // lc_state_i
         end else begin
           lc_escalate_en = On;
+          lc_hw_debug_clr = On;
         end
       end
       ///////////////////////////////////////////////////////////////////
       // Post-transition state. Behaves similarly to the virtual scrap
       // states below, with the exception that escalate_en is NOT asserted,
       // since that could trigger unwanted alerts / escalations and system resets.
-      PostTransSt: ;
+      PostTransSt: begin
+        // At this point, all life cycle controller broadcast signals are valid and based on the
+        // OTP LC state
+        lc_init_done = On;
+        // Explicitly clear any flops holding the lc_hw_debug_en signal. Those flops would retain
+        // their state if just the lc_hw_debug_en signal is switched off, in order to let debug
+        // connections survive a reset of lc_ctrl.
+        lc_hw_debug_clr = On;
+      end
       ///////////////////////////////////////////////////////////////////
       // Virtual scrap states, make sure the escalation signal is
       // also asserted in this case.
       ScrapSt,
       EscalateSt,
       InvalidSt: begin
-        lc_escalate_en = On;
+        // At this point, all life cycle controller broadcast signals are valid and based on the
+        // OTP LC state.
+        lc_init_done    = On;
+        lc_escalate_en  = On;
+        lc_hw_debug_clr = On;
       end
       default: begin
         lc_escalate_en = On;
+        lc_hw_debug_clr = On;
       end
     endcase // fsm_state_i
   end
@@ -220,6 +249,12 @@ module lc_ctrl_signal_decode
   // Control signal output flops //
   /////////////////////////////////
 
+  prim_lc_sender u_prim_lc_sender_init_done (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_init_done),
+    .lc_en_o(lc_init_done_o)
+  );
   prim_lc_sender u_prim_lc_sender_raw_test_rma (
     .clk_i,
     .rst_ni,
@@ -237,6 +272,12 @@ module lc_ctrl_signal_decode
     .rst_ni,
     .lc_en_i(lc_nvm_debug_en),
     .lc_en_o(lc_nvm_debug_en_o)
+  );
+  prim_lc_sender u_prim_lc_sender_hw_debug_clr (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_hw_debug_clr),
+    .lc_en_o(lc_hw_debug_clr_o)
   );
   prim_lc_sender u_prim_lc_sender_hw_debug_en (
     .clk_i,
@@ -279,6 +320,12 @@ module lc_ctrl_signal_decode
     .rst_ni,
     .lc_en_i(lc_seed_hw_rd_en),
     .lc_en_o(lc_seed_hw_rd_en_o)
+  );
+  prim_lc_sender u_prim_lc_sender_rma_state (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_rma_state),
+    .lc_en_o(lc_rma_state_o)
   );
   prim_lc_sender u_prim_lc_sender_keymgr_en (
     .clk_i,
@@ -344,6 +391,7 @@ module lc_ctrl_signal_decode
       lc_tx_test_false_strict(lc_iso_part_sw_rd_en_o) &&
       lc_tx_test_false_strict(lc_iso_part_sw_wr_en_o) &&
       lc_tx_test_false_strict(lc_seed_hw_rd_en_o) &&
+      lc_tx_test_false_strict(lc_rma_state_o) &&
       lc_tx_test_false_strict(lc_keymgr_en_o) &&
       lc_tx_test_false_strict(lc_dft_en_o) &&
       lc_keymgr_div_o == RndCnstLcKeymgrDivInvalid)

@@ -2,14 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#![feature(min_specialization)]
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result, anyhow};
 use clap::Parser;
 use cryptoki::session::UserType;
 use log::LevelFilter;
 use std::path::PathBuf;
 
-use hsmtool::commands::{print_command, print_result, Commands, Dispatch, Format};
+use hsmtool::commands::{Commands, Dispatch, Format, print_command, print_result};
 use hsmtool::module::{self, Module, SpxModule};
 use hsmtool::profile::Profile;
 use hsmtool::util::attribute::AttributeMap;

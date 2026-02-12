@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`include "prim_assert.sv"
+
 /**
  * 32b General Purpose Register File (GPRs) with integrity code detecting triple bit errors.
  *
@@ -16,7 +18,7 @@
  *
  * Integrity protection uses an inverted (39, 32) Hsaio code providing a Hamming distance of 4.
  *
- * `wr_data_no_intg_i` supplies data that requires integrity calulation and `wr_data_intg_i`
+ * `wr_data_no_intg_i` supplies data that requires integrity calculation and `wr_data_intg_i`
  * supplies data that comes with integrity. `wr_data_intg_sel_i` is asserted to select the data with
  * integrity for the write, otherwise integrity is calculated separately from `wr_data_i`.
  *

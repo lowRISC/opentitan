@@ -231,7 +231,7 @@ dict set memInfo rom [apply $gen_mem_info $rom_brams $mem_type_regex 40 1 "Proce
 # and <AddressRange> tags need to account for this or else updatemem will think
 # that its data input overruns the address space. The workaround is to pretend
 # the address space is 16 times larger than we would normally compute.
-set otp_brams [split [get_cells -hierarchical -filter " PRIMITIVE_TYPE =~ ${bram_regex} && NAME =~ *u_otp_ctrl*"] " "]
+set otp_brams [split [get_cells -hierarchical -filter " PRIMITIVE_TYPE =~ ${bram_regex} && NAME =~ *u_otp_macro*"] " "]
 dict set memInfo otp [apply $gen_mem_info $otp_brams $mem_type_regex 0 16 "Processor"]
 
 # The flash banks have 76-bit wide words. 64 bits are data, and 12 bits are metadata / integrity.

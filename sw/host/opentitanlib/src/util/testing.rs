@@ -2,12 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::io::uart::Uart;
-use anyhow::{anyhow, Result};
 use std::cell::RefCell;
 use std::ffi::OsStr;
-use std::io::{Read, Write};
-use std::time::Duration;
+use std::io::Write;
+use std::pin::Pin;
+use std::task::{Poll, ready};
+
+use anyhow::{Context, Result, anyhow};
+use tokio::io::AsyncRead;
+
+use crate::io::console::ConsoleDevice;
+use crate::util::runtime::MultiWaker;
 
 // The transfer state allows us to intentionally inject errors into
 // the data stream to test error handling.
@@ -39,13 +44,15 @@ impl TransferState {
 }
 // A convenience wrapper for spawning a child process and
 // interacting with its stdin/stdout.
-pub struct ChildUart {
+pub struct ChildConsole {
     child: RefCell<std::process::Child>,
+    stdout: Option<RefCell<tokio::process::ChildStdout>>,
     rd: RefCell<TransferState>,
     wr: RefCell<TransferState>,
+    multi_waker: MultiWaker,
 }
 
-impl ChildUart {
+impl ChildConsole {
     pub fn spawn_corrupt<S: AsRef<OsStr>>(
         argv: &[S],
         rd: TransferState,
@@ -55,15 +62,22 @@ impl ChildUart {
         for arg in &argv[1..] {
             command.arg(arg.as_ref());
         }
-        let child = command
+        let mut child = command
             .stdin(std::process::Stdio::piped())
             .stdout(std::process::Stdio::piped())
             .stderr(std::process::Stdio::inherit())
             .spawn()?;
-        Ok(ChildUart {
+        let _runtime_guard = crate::util::runtime().enter();
+        let stdout = match child.stdout.take() {
+            Some(v) => Some(RefCell::new(tokio::process::ChildStdout::from_std(v)?)),
+            None => None,
+        };
+        Ok(ChildConsole {
             child: RefCell::new(child),
+            stdout,
             rd: RefCell::new(rd),
             wr: RefCell::new(wr),
+            multi_waker: MultiWaker::new(),
         })
     }
 
@@ -77,26 +91,22 @@ impl ChildUart {
     }
 }
 
-impl Uart for ChildUart {
-    fn get_baudrate(&self) -> Result<u32> {
-        Err(anyhow!("Not implemented"))
-    }
-    fn set_baudrate(&self, _baudrate: u32) -> Result<()> {
-        Err(anyhow!("Not implemented"))
-    }
-    fn read_timeout(&self, _buf: &mut [u8], _timeout: Duration) -> Result<usize> {
-        Err(anyhow!("Not implemented"))
-    }
-    fn read(&self, buf: &mut [u8]) -> Result<usize> {
-        let mut child = self.child.borrow_mut();
-        if let Some(stdout) = &mut child.stdout {
-            let n = stdout.read(buf)?;
-            let mut rd = self.rd.borrow_mut();
-            rd.maybe_corrupt(buf);
-            Ok(n)
-        } else {
-            Err(anyhow!("child has no stdout"))
-        }
+impl ConsoleDevice for ChildConsole {
+    fn poll_read(&self, cx: &mut std::task::Context<'_>, buf: &mut [u8]) -> Poll<Result<usize>> {
+        let mut stdout = self
+            .stdout
+            .as_ref()
+            .context("child has no stdout")?
+            .borrow_mut();
+        let mut read_buf = tokio::io::ReadBuf::new(buf);
+        ready!(
+            self.multi_waker
+                .poll_with(cx, |cx| Pin::new(&mut *stdout).poll_read(cx, &mut read_buf))
+        )?;
+        let n = read_buf.filled().len();
+        let mut rd = self.rd.borrow_mut();
+        rd.maybe_corrupt(read_buf.filled_mut());
+        Poll::Ready(Ok(n))
     }
 
     fn write(&self, buf: &[u8]) -> Result<()> {

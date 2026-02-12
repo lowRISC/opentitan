@@ -41,16 +41,19 @@ class TemplateParameter(BaseParam):
     )
 
     def __init__(self, name: str, desc: Optional[str], param_type: str,
-                 default: str):
+                 default: str, dtgen: object):
         assert param_type in self.VALID_PARAM_TYPES
 
         super().__init__(name, desc, param_type, None)
         self.default = default
         self.value = None
+        self.dtgen = dtgen
 
     def as_dict(self) -> Dict[str, object]:
         rd = super().as_dict()
         rd['default'] = self.default
+        if self.dtgen:
+            rd['dtgen'] = self.dtgen
         return rd
 
 
@@ -62,7 +65,7 @@ def _parse_template_parameter(where: str, raw: object) -> TemplateParameter:
     the required type. For 'object' types we just check the value can be
     de-serialized by hjson. Perhaps this could perform a type-check instead.
     """
-    rd = check_keys(raw, where, ['name', 'desc', 'type'], ['default'])
+    rd = check_keys(raw, where, ['name', 'desc', 'type'], ['default', 'dtgen'])
 
     name = check_str(rd['name'], 'name field of ' + where)
 
@@ -95,7 +98,16 @@ def _parse_template_parameter(where: str, raw: object) -> TemplateParameter:
     else:
         assert False, f"Unknown parameter type found: {param_type!r}"
 
-    return TemplateParameter(name, desc, param_type, default)
+    # DT generator dictionary is not checked here, it is only forwarded to dtgen
+    # but we at least check that it is a dictionary!
+    dtgen = rd.get('dtgen', None)
+    assert dtgen is None or isinstance(dtgen, dict), \
+        f"At {where}, the 'dtgen' field must be a dictionary."
+    # We add a 'doc' field if not present.
+    if dtgen is not None and 'doc' not in dtgen:
+        dtgen['doc'] = raw['desc']
+
+    return TemplateParameter(name, desc, param_type, default, dtgen)
 
 
 class TemplateParams(Params):
@@ -200,6 +212,7 @@ class IpConfig:
         self.instance_name = instance_name
         self.param_values = IpConfig._check_param_values(
             template_params, param_values)
+        self.dtgen_params = IpConfig._extract_dtgen(template_params)
 
     @staticmethod
     def _check_object(obj: object, what: str) -> object:
@@ -222,6 +235,15 @@ class IpConfig:
             raise ValueError(
                 f'{what} cannot be serialized as Hjson: {e!s}') from None
         return obj_checked
+
+    @staticmethod
+    def _extract_dtgen(template_params: TemplateParams) -> Dict[str, object]:
+        dtgen_params = {}
+        for param_name in template_params:
+            param = template_params[param_name]
+            if param.dtgen:
+                dtgen_params[param_name] = param.dtgen
+        return dtgen_params
 
     @staticmethod
     def _check_param_values(template_params: TemplateParams,
@@ -267,6 +289,12 @@ class IpConfig:
 
             param_values_typed[key] = param_value_typed
 
+        # Ensure that params dict is fully populated. Defaults are passed for params that
+        # are not explicitly specified.
+        for key, value in template_params.items():
+            if key not in param_values_typed:
+                param_values_typed[key] = value.default
+
         return param_values_typed
 
     @classmethod
@@ -275,7 +303,7 @@ class IpConfig:
         """ Load an IpConfig from a raw object """
 
         rd = check_keys(raw, 'configuration file ' + where, ['instance_name'],
-                        ['param_values'])
+                        ['param_values', 'dtgen'])
         instance_name = check_name(rd.get('instance_name'),
                                    "the key 'instance_name' of " + where)
 
@@ -286,6 +314,9 @@ class IpConfig:
 
         param_values = IpConfig._check_param_values(template_params,
                                                     rd['param_values'])
+        # The dtgen part of the configuration only depends on the template
+        # and not on the values, so it is re-derived in the constructor anyway.
+        # Therefore we just ignore it.
 
         return cls(template_params, instance_name, param_values)
 
@@ -300,6 +331,8 @@ class IpConfig:
         obj = {}
         obj['instance_name'] = self.instance_name
         obj['param_values'] = self.param_values
+        if self.dtgen_params:
+            obj['dtgen'] = self.dtgen_params
 
         try:
             with open(file_path, 'w') as fp:

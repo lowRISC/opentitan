@@ -7,10 +7,8 @@ package keymgr_dpe_pkg;
   // Most of the parameters are directly reused from keymgr_pkg
   import keymgr_pkg::*;
 
-  parameter int DpeNumBootStages = 4;  // Number of key manager stages
-  parameter int DpeNumSlots = 4;
+  parameter int DpeNumSlots = 8;
   parameter int DpeNumSlotsWidth = prim_util_pkg::vbits(DpeNumSlots);
-  parameter int DpeNumBootStagesWidth = $clog2(DpeNumBootStages);
 
   // keymgr and keymgr_dpe have different maximum KMAC input widths. The below widths correspond to
   // the following inputs to advance to the creator root key state:
@@ -31,7 +29,8 @@ package keymgr_dpe_pkg;
     OpDpeErase = 1,
     OpDpeGenSwOut = 2,
     OpDpeGenHwOut = 3,
-    OpDpeDisable = 4
+    OpDpeDisable = 4,
+    OpDpeLoadRootKey = 5
   } keymgr_dpe_ops_e;
 
   // Encoding generated with:
@@ -85,10 +84,19 @@ package keymgr_dpe_pkg;
     logic allow_child;
   } keymgr_dpe_policy_t;
 
+  // Enumeration for boot stage. In the BootStageRuntime stage, there is no limit on the number of
+  // advance calls.
+  parameter int DpeBootStagesWidth = 2;
+  typedef enum logic [DpeBootStagesWidth-1:0] {
+    BootStageCreator = 0,
+    BootStageOwner   = 1,
+    BootStageRuntime = 2
+  } keymgr_dpe_boot_stage_e;
+
   // An internal secret key slot
   typedef struct packed {
     logic valid;
-    logic [DpeNumBootStagesWidth-1:0] boot_stage;
+    keymgr_dpe_boot_stage_e boot_stage;
     logic [Shares-1:0][KeyWidth-1:0] key;
     logic [KeyVersionWidth-1:0] max_key_version;
     keymgr_dpe_policy_t key_policy;

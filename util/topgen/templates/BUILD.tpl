@@ -12,7 +12,8 @@ import topgen.lib as lib
 ## ALERT_TEST registers). While this issue remains, we specifically hard-code
 ## for excluding these IRQs/Alerts from the tests.
 IGNORE_PERIPHERALS = [("ac_range_check", "darjeeling"), ("racl_ctrl", "darjeeling")]
-irq_peripheral_names = sorted({p.name for p in helper.irq_peripherals[addr_space]
+plics = lib.find_modules(top["module"], "rv_plic")
+irq_peripheral_names = sorted({p.name for plic in plics for p in helper.irq_peripherals[plic["name"]][addr_space]
                                if (p.inst_name, top["name"]) not in IGNORE_PERIPHERALS})
 has_alert_handler = lib.find_module(top['module'], 'alert_handler')
 alert_peripheral_names = sorted({p.name for p in helper.alert_peripherals[addr_space]
@@ -75,7 +76,7 @@ load("@bazel_skylib//lib:dicts.bzl", "dicts")
 
 package(default_visibility = ["//visibility:public"])
 
-# Number of periphals per test
+# Number of peripherals per test
 NR_IRQ_PERIPH_PER_TEST = ${irq_per_test}
 
 # Total numbers of tests (the last will contain only remaining IRQs)

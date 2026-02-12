@@ -180,6 +180,46 @@ ECDSA_RANDOM_COUNT = 128
     ]
 ]
 
+# Number of tests per configuration (e.g. HMAC SHA-256)
+HMAC_RANDOM_COUNT = 64
+
+[
+    run_binary(
+        name = cryptotest_name,
+        srcs = [
+            "//sw/host/cryptotest/testvectors/data/schemas:hmac_schema.json",
+        ],
+        outs = [":{}.json".format(cryptotest_name)],
+        args = [
+            "--dst",
+            "$(location :{}.json)".format(cryptotest_name),
+            "--schema",
+            "$(location //sw/host/cryptotest/testvectors/data/schemas:hmac_schema.json)",
+            "--count",
+            str(HMAC_RANDOM_COUNT),
+            "--key_length",
+            key_length,
+            "--hash_alg",
+            hash_alg,
+        ],
+        # Do not cache these results in CI, so every run generates a new set of
+        # random test vectors.
+        tags = ["no-cache"],
+        tool = "//sw/host/cryptotest/testvectors/parsers:random_hmac_generator",
+    )
+    for cryptotest_name, key_length, hash_alg in [
+        ("random_hmac_64_sha256", "64", "sha-256"),
+        ("random_hmac_512_sha256", "512", "sha-256"),
+        ("random_hmac_520_sha256", "520", "sha-256"),
+        ("random_hmac_64_sha384", "64", "sha-384"),
+        ("random_hmac_1024_sha384", "1024", "sha-384"),
+        ("random_hmac_1032_sha384", "1032", "sha-384"),
+        ("random_hmac_64_sha512", "64", "sha-512"),
+        ("random_hmac_1024_sha512", "1024", "sha-512"),
+        ("random_hmac_1032_sha512", "1032", "sha-512"),
+    ]
+]
+
 ################################################################################
 # SHA2, SHA3 - NIST CAVP KAT
 ################################################################################
@@ -609,7 +649,6 @@ WYCHEPROOF_RSA_PKCS1_15_SUFFIXES = {
 
 WYCHEPROOF_RSA_PSS_SUFFIXES = {
     2048: [
-        "sha256_mgf1_0",
         "sha256_mgf1_32",
         "sha384_mgf1_48",
     ],

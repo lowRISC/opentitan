@@ -37,10 +37,23 @@ class dv_base_reg_block extends uvm_reg_block;
   // This is set by compute_addr_mask(), which must run after locking the model.
   protected uvm_reg_addr_t addr_mask[uvm_reg_map];
 
+  // A list of all CSR addresses
+  //
+  // This is populated by compute_csr_addrs, which iterates over the registers in the block and adds
+  // each register's address in turn.
   uvm_reg_addr_t csr_addrs[$];
 
+  // A list of all ranges associated with memories
+  //
+  // This is populated by compute_mem_addr_ranges, which iterates over the memories and adds each
+  // memory's range in turn.
   addr_range_t mem_ranges[$];
 
+  // A list of all ranges that are associated with either a memory or a register
+  //
+  // This is populated by compute_mapped_addr_ranges, which first updates mem_ranges and then
+  // appends that to the ranges formed by iterating over the registers and the range of each. This
+  // is sorted in ascending order based on start_addr.
   addr_range_t mapped_addr_ranges[$];
 
   // Indicates whether accesses to unmapped regions of this block returns an error response (0).
@@ -61,6 +74,14 @@ class dv_base_reg_block extends uvm_reg_block;
   protected bit en_dv_reg_cov = 1;
 
   bit has_unmapped_addrs;
+
+  // A queue of all the unmapped address ranges. All mapped addresses for this block are between the
+  // base address (using the default map) and that plus the maximum address representable with the
+  // address mask.
+  //
+  // Unmapped addresses are the addresses in that range that don't point at a register of part of a
+  // memory. This variable holds those addresses, grouped into ranges and sorted in ascending order
+  // of start_addr.
   addr_range_t unmapped_addr_ranges[$];
 
   // Lookup table for alias registers and fields.
@@ -76,9 +97,9 @@ class dv_base_reg_block extends uvm_reg_block;
   endfunction
 
   function string get_ip_name();
-    // `DV_CHECK_NE_FATAL can't take "" as an input
+    // `DV_CHECK_FATAL can't take "" as an input
     string empty_str = "";
-    `DV_CHECK_NE_FATAL(ip_name, empty_str, "ip_name hasn't been set yet")
+    `DV_CHECK_FATAL(ip_name != empty_str, "ip_name hasn't been set yet")
     return ip_name;
   endfunction
 
@@ -210,9 +231,12 @@ class dv_base_reg_block extends uvm_reg_block;
   endfunction
 
   // Internal function, used to get a list of all valid CSR addresses.
-  protected function void compute_csr_addrs();
+  //
+  // This is idempotent and will re-calculate the same list if called a second time.
+  local function void compute_csr_addrs();
     uvm_reg csrs[$];
     get_registers(csrs);
+    csr_addrs.delete();
     foreach (csrs[i]) begin
       csr_addrs.push_back(csrs[i].get_address());
     end
@@ -220,9 +244,12 @@ class dv_base_reg_block extends uvm_reg_block;
   endfunction
 
   // Internal function, used to get a list of all valid memory ranges
-  protected function void compute_mem_addr_ranges();
+  //
+  // This is idempotent and will re-calculate the same list if called a second time.
+  local function void compute_mem_addr_ranges();
     uvm_mem mems[$];
     get_memories(mems);
+    mem_ranges.delete();
     foreach (mems[i]) begin
       addr_range_t mem_range;
       mem_range.start_addr = mems[i].get_address();
@@ -233,8 +260,11 @@ class dv_base_reg_block extends uvm_reg_block;
     `uvm_info(`gfn, $sformatf("mem_ranges: %0p", mem_ranges), UVM_HIGH)
   endfunction
 
-  // Used to get a list of all valid address ranges covered by this reg block
-  function void compute_mapped_addr_ranges();
+  // Compute CSR addresses, memory address ranges, and the list of all address ranges used by either
+  // memories or registers.
+  //
+  // This is idempotent and will re-calculate the same lists if called a second time.
+  local function void compute_mapped_addr_ranges();
     uvm_reg csrs[$];
     get_registers(csrs);
 
@@ -243,27 +273,33 @@ class dv_base_reg_block extends uvm_reg_block;
     compute_mem_addr_ranges();
 
     // Convert each CSR into an address range
+    mapped_addr_ranges.delete();
     foreach (csrs[i]) begin
       addr_range_t csr_addr_range;
       csr_addr_range.start_addr = csrs[i].get_address();
       csr_addr_range.end_addr   = csr_addr_range.start_addr + csrs[i].get_n_bytes() - 1;
       mapped_addr_ranges.push_back(csr_addr_range);
     end
-
+    // Now append the ranges from memories
     mapped_addr_ranges = {mapped_addr_ranges, mem_ranges};
 
     // Sort the mapped address ranges in ascending order based on the start_addr of each range
     mapped_addr_ranges.sort(m) with (m.start_addr);
+
     `uvm_info(`gfn, $sformatf("mapped_addr_ranges: %0p", mapped_addr_ranges), UVM_HIGH)
   endfunction
 
-  // Used to get a list of all invalid address ranges in this reg block
-  function void compute_unmapped_addr_ranges();
+  // Get a list of all invalid address ranges in this reg block
+  //
+  // This is idempotent and will re-calculate the same list if called a second time.
+  local function void compute_unmapped_addr_ranges();
     addr_range_t range;
 
     // convert the address mask into a relative address,
     // this is the highest addressable location in the register block
     uvm_reg_addr_t highest_addr = default_map.get_base_addr() + get_addr_mask();
+
+    unmapped_addr_ranges.delete();
 
     // unmapped address ranges consist of:
     // - the address space between all mapped address ranges (if exists)
@@ -347,6 +383,9 @@ class dv_base_reg_block extends uvm_reg_block;
   // Checks if the provided base_addr is aligned as required by the register block. If
   // randomize_base_addr arg is set, then the base_addr arg is ignored - the function randomizes and
   // sets the base_addr itself.
+  //
+  // After setting the base address, this function updates csr_addrs, mem_ranges, mapped_addr_ranges
+  // and unmapped_addr_ranges.
   function void set_base_addr(uvm_reg_addr_t base_addr, uvm_reg_map map = null,
                               bit randomize_base_addr = 0);
     uvm_reg_addr_t mask;
@@ -366,6 +405,9 @@ class dv_base_reg_block extends uvm_reg_block;
 
     `uvm_info(`gfn, $sformatf("Setting register base address to 0x%0h", base_addr), UVM_HIGH)
     map.set_base_addr(base_addr);
+
+    compute_mapped_addr_ranges();
+    compute_unmapped_addr_ranges();
   endfunction
 
   // Round the given address down to the start of the containing word. For example, if the address

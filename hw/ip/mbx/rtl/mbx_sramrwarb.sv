@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`include "prim_assert.sv"
+
 module mbx_sramrwarb
   import  tlul_pkg::*;
 #(
@@ -25,7 +27,7 @@ module mbx_sramrwarb
   input  logic [CfgSramAddrWidth-1:0] imbx_sram_write_ptr_i,
   input  logic [CfgSramDataWidth-1:0] imbx_write_data_i,
   output logic                        imbx_sram_all_vld_rcvd_o,
-  // Interface to the outpbound mailbox
+  // Interface to the outbound mailbox
   input  logic                        ombx_sram_read_req_i,
   output logic                        ombx_sram_read_gnt_o,
   input  logic [CfgSramAddrWidth-1:0] ombx_sram_read_ptr_i,

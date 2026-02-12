@@ -9,6 +9,22 @@ package(default_visibility = ["//visibility:public"])
 
 exports_files(glob(["**"]))
 
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]) + [
+        "//util/design:doc_files",
+        "//util/dtgen:doc_files",
+        "//util/dvsim:doc_files",
+        "//util/fpvgen:doc_files",
+        "//util/i2csvg:doc_files",
+        "//util/ipgen:doc_files",
+        "//util/reggen:doc_files",
+        "//util/tlgen:doc_files",
+        "//util/topgen:doc_files",
+        "//util/uvmdvgen:doc_files",
+    ],
+)
+
 py_binary(
     name = "otbn_build",
     srcs = ["otbn_build.py"],
@@ -49,6 +65,7 @@ py_binary(
         "//util/reggen:gen_selfdoc",
         "//util/reggen:gen_tock",
         "//util/reggen:ip_block",
+        "//util/reggen:systemrdl_exporter",
         "//util/reggen:version",
         requirement("tabulate"),
     ],
@@ -76,6 +93,7 @@ py_binary(
     ],
     deps = [
         "//util/dtgen:helper",
+        "//util/dtgen:ipgen_ext",
         "//util/ipgen",
         "//util/reggen:ip_block",
         "//util/reggen:version",
@@ -92,14 +110,6 @@ py_binary(
         "//util/topgen",
         requirement("mako"),
         requirement("hjson"),
-    ],
-)
-
-py_test(
-    name = "generate_compilation_db_test",
-    srcs = [
-        "generate_compilation_db.py",
-        "generate_compilation_db_test.py",
     ],
 )
 
@@ -138,4 +148,31 @@ cc_library(
     deps = [
         "//sw/device/silicon_creator/lib:error",
     ],
+)
+
+[
+    py_binary(
+        name = "mdbook_{}".format(preprocessor),
+        srcs = ["mdbook_{}.py".format(preprocessor)],
+    )
+    for preprocessor in [
+        "code_snippet",
+        "dashboard",
+        "doxygen",
+        "otbn",
+        "readme2index",
+        "reggen",
+        "testplan",
+    ]
+]
+
+py_binary(
+    name = "mdbook_toolversion",
+    srcs = ["mdbook_toolversion.py"],
+    deps = ["//hw:check_tool_requirements"],
+)
+
+py_binary(
+    name = "gen_stamped_tarball",
+    srcs = ["gen_stamped_tarball.py"],
 )

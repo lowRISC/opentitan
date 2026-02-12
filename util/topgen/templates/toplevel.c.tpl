@@ -11,11 +11,9 @@ if alert_handler is not None:
 else:
     has_alert_handler = False
 
-plic = lib.find_module(top['module'], 'rv_plic')
-if plic is not None:
-    has_plic = addr_space in plic['base_addrs'][None]
-else:
-    has_plic = False
+plics = lib.find_modules(top['module'], 'rv_plic')
+has_plic = any(addr_space in plic['base_addrs'][None] for plic in plics)
+plics = [x["name"] for x in plics]
 %>\
 
 #include "${helper.header_path}"
@@ -30,12 +28,14 @@ else:
 ${helper.alert_mapping.render_definition()}
 % endif
 % if has_plic:
+%   for plic in plics:
 
 /**
  * PLIC Interrupt Source to Peripheral Map
  *
- * This array is a mapping from `${helper.plic_interrupts.name.as_c_type()}` to
- * `${helper.plic_sources.name.as_c_type()}`.
+ * This array is a mapping from `${helper.plic_interrupts[plic].name.as_c_type()}` to
+ * `${helper.plic_sources[plic].name.as_c_type()}`.
  */
-${helper.plic_mapping.render_definition()}
+${helper.plic_mapping[plic].render_definition()}
+% endfor
 %endif

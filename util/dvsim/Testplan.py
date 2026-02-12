@@ -203,7 +203,7 @@ class Testpoint(Element):
         """Map test results to tests against this testpoint.
 
         Given a list of test results find the ones that match the tests listed
-        in this testpoint and buiild a structure. If no match is found, or if
+        in this testpoint and build a structure. If no match is found, or if
         self.tests is an empty list, indicate 0/1 passing so that it is
         factored into the final total.
         """
@@ -719,7 +719,7 @@ class Testplan:
         """Returns the final total as a summary."""
         assert self.test_results_mapped, "Have you invoked map_test_results()?"
 
-        # The last item in tespoints is the final sum total. We use that to
+        # The last item in testpoints is the final sum total. We use that to
         # return the results summary as a dict.
         total = self.testpoints[-1]
         assert total.name == "N.A."

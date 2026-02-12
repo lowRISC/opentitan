@@ -24,6 +24,7 @@ rust_binary(
     },
     deps = [
         "//sw/host/opentitanlib",
+        "//sw/host/ot_hal",
         "//sw/host/provisioning/util_lib",
         "@crate_index//:aes",
         "@crate_index//:anyhow",

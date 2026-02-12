@@ -16,9 +16,9 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
-#include "flash_ctrl_regs.h"
+#include "hw/top/flash_ctrl_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otp_ctrl_regs.h"
 
 namespace flash_ctrl_unittest {
 namespace {
@@ -682,10 +682,11 @@ INSTANTIATE_TEST_SUITE_P(AllCases, FlashCtrlCfgSetTest,
                              }));
 
 TEST_F(FlashCtrlTest, CreatorInfoLockdown) {
-  std::array<const flash_ctrl_info_page_t *, 6> no_owner_access = {
-      &kFlashCtrlInfoPageFactoryId,   &kFlashCtrlInfoPageCreatorSecret,
-      &kFlashCtrlInfoPageOwnerSecret, &kFlashCtrlInfoPageWaferAuthSecret,
-      &kFlashCtrlInfoPageBootData0,   &kFlashCtrlInfoPageBootData1,
+  std::array<const flash_ctrl_info_page_t *, 7> no_owner_access = {
+      &kFlashCtrlInfoPageFactoryId,        &kFlashCtrlInfoPageCreatorSecret,
+      &kFlashCtrlInfoPageOwnerSecret,      &kFlashCtrlInfoPageWaferAuthSecret,
+      &kFlashCtrlInfoPageBootData0,        &kFlashCtrlInfoPageBootData1,
+      &kFlashCtrlInfoPageCreatorReserved0,
   };
   for (auto page : no_owner_access) {
     auto info_page = InfoPages().at(page);
@@ -737,6 +738,7 @@ TEST_F(FlashCtrlTest, CertInfoOwnerRestrict) {
     auto info_page = InfoPages().at(page);
     EXPECT_SEC_READ32(base_ + info_page.cfg_offset, 0x9666666);
     EXPECT_SEC_WRITE32(base_ + info_page.cfg_offset, 0x9669966);
+    EXPECT_SEC_WRITE32(base_ + info_page.cfg_wen_offset, 0);
   }
 
   flash_ctrl_cert_info_page_owner_restrict(
@@ -930,7 +932,7 @@ TEST_P(DataRegionProtectTestSuite, ProtectRegionReadWriteEraseEnabled) {
 
   // Expect that flash_ctrl_data_region_protect() will reset the
   // MP_REGION_CFG_${i} register.
-  EXPECT_CALL(sec_mmio_,
+  EXPECT_CALL(mmio_,
               Write32(kBase + kFlashCtrlMpRegionCfgRegOffset[GetParamRegion()],
                       kFlashCtrlMpRegionCfgRegResval[GetParamRegion()]));
 
@@ -969,6 +971,52 @@ TEST_P(DataRegionProtectTestSuite, ProtectRegionReadWriteEraseEnabled) {
           .he = BoolToMultiBitBool4(kFlashHe),
       },
       kHardenedBoolFalse);
+}
+
+TEST(FlashCtrl, FlashPermissionBits) {
+  union Permissions {
+    flash_ctrl_perms_t perms;
+    uint32_t raw;
+  };
+
+  Permissions word = {
+      .perms =
+          {
+              .read = 1,
+              .write = 2,
+              .erase = 3,
+          },
+  };
+
+  EXPECT_EQ(1, bitfield_field32_read(word.raw,
+                                     FLASH_CTRL_MP_REGION_CFG_0_RD_EN_0_FIELD));
+  EXPECT_EQ(2, bitfield_field32_read(
+                   word.raw, FLASH_CTRL_MP_REGION_CFG_0_PROG_EN_0_FIELD));
+  EXPECT_EQ(3, bitfield_field32_read(
+                   word.raw, FLASH_CTRL_MP_REGION_CFG_0_ERASE_EN_0_FIELD));
+}
+
+TEST(FlashCtrl, FlashConfigurationBits) {
+  union Permissions {
+    flash_ctrl_cfg_t cfg;
+    uint32_t raw;
+  };
+
+  Permissions word = {
+      .cfg =
+          {
+              .scrambling = 1,
+              .ecc = 2,
+              .he = 3,
+          },
+  };
+
+  EXPECT_EQ(1, bitfield_field32_read(
+                   word.raw, FLASH_CTRL_MP_REGION_CFG_0_SCRAMBLE_EN_0_FIELD));
+  EXPECT_EQ(2, bitfield_field32_read(
+                   word.raw, FLASH_CTRL_MP_REGION_CFG_0_ECC_EN_0_FIELD));
+  EXPECT_EQ(3, bitfield_field32_read(word.raw,
+                                     FLASH_CTRL_MP_REGION_CFG_0_HE_EN_0_FIELD));
 }
 
 }  // namespace

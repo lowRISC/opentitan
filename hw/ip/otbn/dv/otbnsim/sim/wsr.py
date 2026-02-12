@@ -2,116 +2,14 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import List, Optional, Sequence, Tuple
-
+from typing import List, Optional, Tuple
+from .ext_regs import OTBNExtRegs
+from .ispr import ISPR, DumbISPR, ISPRChange
+from .kmac_ispr import KmacDataWSRs
 from .trace import Trace
 
-from .ext_regs import OTBNExtRegs
 
-
-class TraceWSR(Trace):
-    def __init__(self, wsr_name: str, new_value: Optional[int]):
-        self.wsr_name = wsr_name
-        self.new_value = new_value
-
-    def trace(self) -> str:
-        s = '{} = '.format(self.wsr_name)
-        if self.new_value is None:
-            s += '0x' + 'x' * 8
-        else:
-            s += '{:#x}'.format(self.new_value)
-        return s
-
-    def rtl_trace(self) -> str:
-        return '> {}: {}'.format(self.wsr_name,
-                                 Trace.hex_value(self.new_value, 256))
-
-
-class WSR:
-    '''Models a Wide Status Register'''
-    def __init__(self, name: str):
-        self.name = name
-        self._pending_write = False
-
-    def has_value(self) -> bool:
-        '''Return whether the WSR has a valid value'''
-        return True
-
-    def on_start(self) -> None:
-        '''Reset the WSR if necessary for the start of an operation'''
-        return
-
-    def read_unsigned(self) -> int:
-        '''Get the stored value as a 256-bit unsigned value'''
-        raise NotImplementedError()
-
-    def write_unsigned(self, value: int) -> None:
-        '''Set the stored value as a 256-bit unsigned value'''
-        raise NotImplementedError()
-
-    def read_signed(self) -> int:
-        '''Get the stored value as a 256-bit signed value'''
-        uval = self.read_unsigned()
-        return uval - (1 << 256 if uval >> 255 else 0)
-
-    def write_signed(self, value: int) -> None:
-        '''Set the stored value as a 256-bit signed value'''
-        assert -(1 << 255) <= value < (1 << 255)
-        uval = (1 << 256) + value if value < 0 else value
-        self.write_unsigned(uval)
-
-    def commit(self) -> None:
-        '''Commit pending changes'''
-        self._pending_write = False
-
-    def abort(self) -> None:
-        '''Abort pending changes'''
-        self._pending_write = False
-
-    def changes(self) -> Sequence[Trace]:
-        '''Return list of pending architectural changes'''
-        return []
-
-
-class DumbWSR(WSR):
-    '''Models a WSR without special behaviour'''
-    def __init__(self, name: str):
-        super().__init__(name)
-        self._value = 0
-        self._next_value: Optional[int] = None
-
-    def on_start(self) -> None:
-        self._value = 0
-        self._next_value = None
-
-    def read_unsigned(self) -> int:
-        return self._value
-
-    def write_unsigned(self, value: int) -> None:
-        assert 0 <= value < (1 << 256)
-        self._next_value = value
-        self._pending_write = True
-
-    def write_invalid(self) -> None:
-        self._next_value = None
-        self._pending_write = True
-
-    def commit(self) -> None:
-        if self._next_value is not None:
-            self._value = self._next_value
-        self._next_value = None
-        self._pending_write = False
-
-    def abort(self) -> None:
-        self._next_value = None
-        self._pending_write = False
-
-    def changes(self) -> List[TraceWSR]:
-        return ([TraceWSR(self.name, self._next_value)]
-                if self._pending_write else [])
-
-
-class RandWSR(WSR):
+class RandWSR(ISPR):
     '''The magic RND WSR
 
     RND is special as OTBN can stall on reads to it. A read from RND either
@@ -122,7 +20,7 @@ class RandWSR(WSR):
 
     '''
     def __init__(self, name: str, ext_regs: OTBNExtRegs):
-        super().__init__(name)
+        super().__init__(name, 256)
 
         self._random_value: Optional[int] = None
         self._next_random_value: Optional[int] = None
@@ -202,10 +100,10 @@ class RandWSR(WSR):
         self._next_pending_request = False
 
 
-class URNDWSR(WSR):
+class URNDWSR(ISPR):
     '''Models URND PRNG Structure'''
     def __init__(self, name: str):
-        super().__init__(name)
+        super().__init__(name, 256)
         seed = [0x84ddfadaf7e1134d, 0x70aa1c59de6197ff,
                 0x25a4fe335d095f1e, 0x2cba89acbe4a07e9]
         self._state = [seed, 4 * [0], 4 * [0], 4 * [0], 4 * [0]]
@@ -269,7 +167,7 @@ class URNDWSR(WSR):
     def commit(self) -> None:
         self._value = self._next_value
 
-    def changes(self) -> List[TraceWSR]:
+    def changes(self) -> List[ISPRChange]:
         # Our URND model doesn't track (or report) changes to its internal
         # state.
         raise NotImplementedError
@@ -325,10 +223,10 @@ class SideloadKey:
         self._new_value = None
 
 
-class KeyWSR(WSR):
+class KeyWSR(ISPR):
     def __init__(self, name: str, shift: int, key_reg: SideloadKey):
         assert 0 <= shift < 384
-        super().__init__(name)
+        super().__init__(name, 256)
         self._shift = shift
         self._key_reg = key_reg
 
@@ -348,14 +246,15 @@ class WSRFile:
         self.KeyS0 = SideloadKey('KeyS0')
         self.KeyS1 = SideloadKey('KeyS1')
 
-        self.MOD = DumbWSR('MOD')
+        self.MOD = DumbISPR('MOD', 256)
         self.RND = RandWSR('RND', ext_regs)
         self.URND = URNDWSR('URND')
-        self.ACC = DumbWSR('ACC')
+        self.ACC = DumbISPR('ACC', 256)
         self.KeyS0L = KeyWSR('KeyS0L', 0, self.KeyS0)
         self.KeyS0H = KeyWSR('KeyS0H', 256, self.KeyS0)
         self.KeyS1L = KeyWSR('KeyS1L', 0, self.KeyS1)
         self.KeyS1H = KeyWSR('KeyS1H', 256, self.KeyS1)
+        self.KMAC_DATA = KmacDataWSRs(['KMAC_DATA_S0', 'KMAC_DATA_S1'])
 
         self._by_idx = {
             0: self.MOD,
@@ -366,6 +265,8 @@ class WSRFile:
             5: self.KeyS0H,
             6: self.KeyS1L,
             7: self.KeyS1H,
+            8: self.KMAC_DATA.shares[0],
+            9: self.KMAC_DATA.shares[1],
         }
 
     def on_start(self) -> None:
@@ -395,6 +296,13 @@ class WSRFile:
         Assumes that idx is a valid index (call check_idx to ensure this).
 
         '''
+        # KMAC_DATA_S0/1 should only be accessed through the wrapper class.
+        if idx == 0x8:
+            return self.KMAC_DATA.read_unsigned(share_idx=0)
+
+        elif idx == 0x9:
+            return self.KMAC_DATA.read_unsigned(share_idx=1)
+
         return self._by_idx[idx].read_unsigned()
 
     def write_at_idx(self, idx: int, value: int) -> None:
@@ -403,7 +311,15 @@ class WSRFile:
         Assumes that idx is a valid index (call check_idx to ensure this).
 
         '''
-        return self._by_idx[idx].write_unsigned(value)
+        if idx == 0x8:
+            self.KMAC_DATA.write_unsigned(share_idx=0, value=value)
+            return
+
+        elif idx == 0x9:
+            self.KMAC_DATA.write_unsigned(share_idx=1, value=value)
+            return
+
+        self._by_idx[idx].write_unsigned(value)
 
     def commit(self) -> None:
         self.MOD.commit()
@@ -412,12 +328,14 @@ class WSRFile:
         self.ACC.commit()
         self.KeyS0.commit()
         self.KeyS1.commit()
+        self.KMAC_DATA.commit()
 
     def abort(self) -> None:
         self.MOD.abort()
         self.RND.abort()
         self.URND.abort()
         self.ACC.abort()
+        self.KMAC_DATA.abort()
         # We commit changes to the sideloaded keys from outside, even if the
         # instruction itself gets aborted.
         self.KeyS0.commit()
@@ -430,6 +348,7 @@ class WSRFile:
         ret += self.ACC.changes()
         ret += self.KeyS0.changes()
         ret += self.KeyS1.changes()
+        ret += self.KMAC_DATA.changes()
         return ret
 
     def set_sideload_keys(self,

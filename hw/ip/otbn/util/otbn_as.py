@@ -614,11 +614,12 @@ class Transformer:
 
     '''
 
-    def __init__(self, out_handle: TextIO, in_path: str, insns_file: InsnsFile,
-                 glued_insns_dec_len: List[Insn],
+    def __init__(self, out_handle: TextIO, in_path: str, in_idx: int,
+                 insns_file: InsnsFile, glued_insns_dec_len: List[Insn],
                  mnem_to_rve: Dict[str, RVEncoding]) -> None:
         self.out_handle = out_handle
         self.in_path = in_path
+        self.in_idx = in_idx
         self.insns_file = insns_file
         self.glued_insns_dec_len = glued_insns_dec_len
         self.mnem_to_rve = mnem_to_rve
@@ -642,7 +643,10 @@ class Transformer:
 
         # Write .file and .line directives to tell the assembler where the code
         # came from.
-        out_handle.write('.file "{}"\n.line 1\n'.format(in_path))
+        out_handle.write(f'.file {in_idx + 1} "{in_path}"\n')
+        out_handle.write(f'.loc {in_idx + 1} 0\n')
+        out_handle.write(f'.file "{in_path}"\n')
+        out_handle.write('.line 1\n')
 
     def mk_raw_line(self, insn: Insn, op_to_expr: Dict[str,
                                                        Optional[str]]) -> str:
@@ -791,8 +795,9 @@ class Transformer:
             self.out_handle.write(
                 '# pseudo-expansion for: {}\n'.format(reconstructed))
             for entry in expansion:
-                self.out_handle.write('.line {}\n{}\n'.format(
-                    self.line_number - 1, entry))
+                self.out_handle.write(f'.line {self.line_number - 1}\n')
+                self.out_handle.write(f'.loc {self.in_idx + 1} {self.line_number}\n')
+                self.out_handle.write(f'{entry}\n')
             return
 
         # If this instruction comes from the rv32i instruction set, we can just
@@ -801,8 +806,9 @@ class Transformer:
         # part of the rv32i instruction set, but we want to do some work to
         # resolve CSR names.
         if insn.rv32i and not insn.uses_isr:
-            self.out_handle.write('.line {}\n{}\n'.format(
-                self.line_number - 1, reconstructed))
+            self.out_handle.write(f'.line {self.line_number - 1}\n')
+            self.out_handle.write(f'.loc {self.in_idx + 1} {self.line_number}\n')
+            self.out_handle.write(f'{reconstructed}\n')
             return
 
         # If we don't know an encoding for this instruction, we're not going to
@@ -834,8 +840,10 @@ class Transformer:
         else:
             line = self.mk_raw_line(insn, op_to_expr)
 
-        self.out_handle.write('# {}\n.line {}\n{}\n'.format(
-            reconstructed, self.line_number - 1, line))
+        self.out_handle.write(f'# {reconstructed}\n')
+        self.out_handle.write(f'.line {self.line_number - 1}\n')
+        self.out_handle.write(f'.loc {self.in_idx + 1} {self.line_number}\n')
+        self.out_handle.write(f'{line}\n')
 
     def _continue_block_comment(self, line: str, pos: int) -> int:
         '''Continue whitespace matching in a block comment
@@ -1120,10 +1128,11 @@ class Transformer:
 
 
 def transform_input(out_handle: TextIO, in_path: str, in_handle: TextIO,
-                    insns_file: InsnsFile, glued_insns_dec_len: List[Insn],
+                    in_idx: int, insns_file: InsnsFile,
+                    glued_insns_dec_len: List[Insn],
                     mnem_to_rve: Dict[str, RVEncoding]) -> None:
     '''Transform an input file to make it suitable for riscv as'''
-    transformer = Transformer(out_handle, in_path, insns_file,
+    transformer = Transformer(out_handle, in_path, in_idx, insns_file,
                               glued_insns_dec_len, mnem_to_rve)
     for line in in_handle:
         transformer.take_line(line)
@@ -1151,7 +1160,7 @@ def transform_inputs(out_dir: str, inputs: List[str], insns_file: InsnsFile,
             if not just_translate:
                 out_handle = open(out_path, 'w')
 
-            transform_input(out_handle, pretty_in_path, in_handle, insns_file,
+            transform_input(out_handle, pretty_in_path, in_handle, idx, insns_file,
                             glued_insns_dec_len, mnem_to_rve)
 
         finally:
@@ -1180,6 +1189,8 @@ def run_binutils_as(other_args: List[str], inputs: List[str]) -> int:
         '-mno-arch-attr',
         # OTBN is based on RV32I without any hard float support.
         '-mabi=ilp32',
+        # Produce debug info for source line mapping.
+        '-g',
     ]
 
     cmd = [as_name] + default_args + other_args + inputs

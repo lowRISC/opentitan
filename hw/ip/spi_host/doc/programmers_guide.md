@@ -84,7 +84,7 @@ The value of the `ByteOrder` parameter can be confirmed by firmware by reading t
 
 Not all data to the SPI device will come from memory however.
 In many cases the transaction command codes or headers will be constructed or packed on the fly in CPU registers.
-The order these register bytes are transmitted on the bus will depend on the value of the `ByteOrder` parameter, as discussed in the Theory of Operation section, and for multi-bit values, such as flash addresses), some byte-swapping may be required to ensure that data is transmitted in the proper order expected by the target device.
+The order these register bytes are transmitted on the bus will depend on the value of the `ByteOrder` parameter, as discussed in the Theory of Operation section, and for multi-bit values, such as flash addresses, some byte-swapping may be required to ensure that data is transmitted in the proper order expected by the target device.
 
 For example, SPI flash devices generally expect flash addresses (or any other multi-byte values) to be transmitted MSB-first.
 This is illustrated in the following figure, which depicts a Fast Quad Read I/O command.

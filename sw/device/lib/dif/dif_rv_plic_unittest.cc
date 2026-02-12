@@ -11,7 +11,7 @@
 #include "sw/device/lib/base/mock_mmio.h"
 #include "sw/device/lib/dif/dif_test_base.h"
 
-#include "rv_plic_regs.h"  // Generated.
+#include "hw/top/rv_plic_regs.h"  // Generated.
 
 namespace dif_rv_plic_unittest {
 namespace {

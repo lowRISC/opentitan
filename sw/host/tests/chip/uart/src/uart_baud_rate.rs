@@ -10,7 +10,7 @@ use std::time::Duration;
 use anyhow::{Context, Result};
 use clap::Parser;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::uart::Uart;
 use opentitanlib::test_utils;
@@ -66,7 +66,7 @@ fn main() -> Result<()> {
     let uart_console = transport.uart("console")?;
 
     for uart_idx in 0..4 {
-        transport.reset_target(Duration::from_millis(500), true)?;
+        transport.reset_with_delay(UartRx::Clear, Duration::from_millis(500))?;
 
         let test_data = TestData {
             expected_data: expected_data.clone(),
@@ -117,11 +117,7 @@ fn uart_baud_rate(
     // Keep repeating the test for various Bauds until the device tells us it's
     // `PASS`ed.
     loop {
-        let msg = UartConsole::wait_for(
-            console,
-            r"PASS![^\r\n]*|Starting test[^\n]*\n",
-            opts.timeout,
-        )?;
+        let msg = UartConsole::wait_for(console, r"PASS!|Starting test", opts.timeout)?;
 
         if msg[0].as_str().contains("PASS") {
             break;
@@ -135,7 +131,7 @@ fn uart_baud_rate(
 
         // Ask the device to send us some data.
         MemWriteReq::execute(console, *test_phase_addr, &[TestPhase::Send as u8])?;
-        UartConsole::wait_for(console, r"Data sent[^\n]*\n", opts.timeout)?;
+        UartConsole::wait_for(console, r"Data sent", opts.timeout)?;
 
         log::info!("Reading data...");
 

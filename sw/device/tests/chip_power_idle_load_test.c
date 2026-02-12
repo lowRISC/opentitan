@@ -24,9 +24,9 @@
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "alert_handler_regs.h"
-#include "aon_timer_regs.h"
-#include "pwm_regs.h"
+#include "hw/top/alert_handler_regs.h"
+#include "hw/top/aon_timer_regs.h"
+#include "hw/top/pwm_regs.h"
 
 typedef void (*isr_handler)(void);
 static volatile isr_handler expected_isr_handler;
@@ -237,8 +237,7 @@ bool test_main(void) {
       .blink_parameter_y = 0,
   };
   static const dif_pwm_channel_t kPwmChannel[PWM_PARAM_N_OUTPUTS] = {
-      kDifPwmChannel0, kDifPwmChannel1, kDifPwmChannel2,
-      kDifPwmChannel3, kDifPwmChannel4, kDifPwmChannel5,
+      0, 1, 2, 3, 4, 5,
   };
   // Duty cycle (arbitrary) values (in the beats)
   static volatile const uint16_t kPwmDutycycle[PWM_PARAM_N_OUTPUTS] = {
@@ -261,13 +260,13 @@ bool test_main(void) {
   // Confugure each of the PWM channels:
   dif_pwm_channel_config_t channel_config_ = default_ch_cfg_;
   for (int i = 0; i < PWM_PARAM_N_OUTPUTS; ++i) {
-    CHECK_DIF_OK(
-        dif_pwm_channel_set_enabled(&pwm, kPwmChannel[i], kDifToggleDisabled));
+    CHECK_DIF_OK(dif_pwm_channels_set_enabled(&pwm, 1 << kPwmChannel[i],
+                                              kDifToggleDisabled));
     channel_config_.duty_cycle_a = kPwmDutycycle[i];
     CHECK_DIF_OK(
         dif_pwm_configure_channel(&pwm, kPwmChannel[i], channel_config_));
-    CHECK_DIF_OK(
-        dif_pwm_channel_set_enabled(&pwm, kPwmChannel[i], kDifToggleEnabled));
+    CHECK_DIF_OK(dif_pwm_channels_set_enabled(&pwm, 1 << kPwmChannel[i],
+                                              kDifToggleEnabled));
   }
 
   // Enable all PWM channels

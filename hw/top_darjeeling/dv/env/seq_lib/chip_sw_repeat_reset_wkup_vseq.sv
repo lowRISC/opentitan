@@ -55,7 +55,7 @@ class chip_sw_repeat_reset_wkup_vseq extends chip_sw_base_vseq;
         join
       end
 
-      // after reset / wakep, waitfor reboot
+      // after reset / wakeup, wait for reboot
       // before test goes to the next round
       `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRom)
       `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)

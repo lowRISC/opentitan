@@ -15,13 +15,6 @@ extern "C" {
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_uart.h"
-
-// NOTE: This is only present so that print.c can link without pulling in
-// dif_uart.c.
-extern "C" dif_result_t dif_uart_byte_send_polled(const dif_uart *, uint8_t) {
-  return kDifOk;
-}
 
 namespace base {
 namespace {
@@ -300,6 +293,16 @@ TEST_F(PrintfTest, StatusErrorAsJson) {
   int line = __LINE__ - 1;
   EXPECT_EQ(base_printf("Hello, %!r\n", value), 31);
   EXPECT_EQ(buf_, absl::StrFormat("Hello, {\"Unknown\":[\"PRI\",%d]}\n", line));
+}
+
+TEST_F(PrintfTest, StatusErrorWithModuleId) {
+#define MODULE_ID MAKE_MODULE_ID('\\', '\\', '\\')
+  status_t value = UNKNOWN();
+  int line = __LINE__ - 1;
+  EXPECT_EQ(base_printf("Hello, %!r\n", value), 34);
+  EXPECT_EQ(buf_, absl::StrFormat(
+                      "Hello, {\"Unknown\":[\"\\\\\\\\\\\\\",%d]}\n", line));
+#undef MODULE_ID
 }
 
 TEST_F(PrintfTest, StatusErrorWithArg) {

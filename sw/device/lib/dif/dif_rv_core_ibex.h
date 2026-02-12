@@ -18,6 +18,11 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
+ * @file
+ * Access to Ibex state (e.g. addresses, crashdumps, alerts)
+ */
+
+/**
  * Address translation slot selection.
  */
 typedef enum dif_rv_core_ibex_addr_translation_slot {

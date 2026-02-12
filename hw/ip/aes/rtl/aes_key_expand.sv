@@ -212,7 +212,7 @@ module aes_key_expand import aes_pkg::*;
   // - For AES-256, the initial round is short (no round key computation). But the data/mask inputs
   //   are updated either way. Thus, we need to force a PRD update as well.
   // - For AES-192 in FWD mode, the data/mask inputs aren't updated in Round 1, 4, 7 and 10. Thus,
-  //   we need to inhibit PRD updates triggred at the end of Round 0, 3, 6 and 9.
+  //   we need to inhibit PRD updates triggered at the end of Round 0, 3, 6 and 9.
   assign prd_we_force = (key_len_i == AES_256) & (rnd == 0);
   assign prd_we_inhibit = (key_len_i == AES_192) & (op_i == CIPH_FWD) &
       (rnd == 0 || rnd == 3 || rnd == 6 || rnd == 9);

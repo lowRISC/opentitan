@@ -5,19 +5,19 @@
 use std::path::PathBuf;
 use std::time::Duration;
 
-use anyhow::{ensure, Result};
+use anyhow::{Result, ensure};
 use clap::Parser;
 use rand::prelude::*;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;
 use opentitanlib::util::parse_int::ParseInt;
 
-use bindgen::dif;
-use top_earlgrey::top_earlgrey;
+use ot_bindgen_dif as dif;
+use ot_hal::top::earlgrey as top_earlgrey;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -43,7 +43,7 @@ struct Opts {
 const NUM_ACCESSES_PER_REGION: usize = 32;
 
 // The last 32 bytes of ROM (ROM digest) are not accessible.
-const ROM_ACCESSIBLE_BYTES: usize = top_earlgrey::ROM_SIZE_BYTES - 32;
+const ROM_ACCESSIBLE_BYTES: usize = top_earlgrey::ROM_CTRL_ROM_SIZE_BYTES - 32;
 
 fn test_mem_access(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let seed = opts.seed.unwrap_or_else(|| thread_rng().r#gen());
@@ -51,7 +51,7 @@ fn test_mem_access(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let mut rng = rand_chacha::ChaCha12Rng::seed_from_u64(seed);
 
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
     let uart = &*transport.uart("console")?;
     uart.set_flow_control(true)?;
 
@@ -61,7 +61,7 @@ fn test_mem_access(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     } else {
         // Avoid watchdog timeout by entering bootstrap mode.
         transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
-        transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+        transport.reset(UartRx::Clear)?;
     }
 
     let jtag = &mut *opts
@@ -76,13 +76,13 @@ fn test_mem_access(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let rw_regions = [
         (
             "ram_ret",
-            top_earlgrey::RAM_RET_AON_BASE_ADDR as u32,
-            top_earlgrey::RAM_RET_AON_SIZE_BYTES as u32,
+            top_earlgrey::SRAM_CTRL_RET_AON_RAM_BASE_ADDR as u32,
+            top_earlgrey::SRAM_CTRL_RET_AON_RAM_SIZE_BYTES as u32,
         ),
         (
             "ram_main",
-            top_earlgrey::RAM_MAIN_BASE_ADDR as u32,
-            top_earlgrey::RAM_MAIN_SIZE_BYTES as u32,
+            top_earlgrey::SRAM_CTRL_MAIN_RAM_BASE_ADDR as u32,
+            top_earlgrey::SRAM_CTRL_MAIN_RAM_SIZE_BYTES as u32,
         ),
         (
             "otbn_imem",
@@ -123,7 +123,7 @@ fn test_mem_access(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     {
         accesses.push((
             "rom",
-            top_earlgrey::ROM_BASE_ADDR as u32,
+            top_earlgrey::ROM_CTRL_ROM_BASE_ADDR as u32,
             offset,
             if offset as usize <= rom_data.len() {
                 u32::from_le_bytes(rom_data[offset as usize..][..4].try_into().unwrap())
@@ -139,7 +139,9 @@ fn test_mem_access(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         let addr = base + offset;
         let mut readback = 0;
         jtag.read_memory32(addr, std::slice::from_mut(&mut readback))?;
-        log::info!("Reading from {name} (base {base:#x}) offset {offset:#x} with value {readback:#x} (expecting {value:#x})");
+        log::info!(
+            "Reading from {name} (base {base:#x}) offset {offset:#x} with value {readback:#x} (expecting {value:#x})"
+        );
         ensure!(value == readback);
     }
 

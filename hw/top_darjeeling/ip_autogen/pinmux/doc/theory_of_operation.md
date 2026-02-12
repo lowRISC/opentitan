@@ -41,17 +41,6 @@ However, only the wakeup detector logic will be actively clocked during sleep in
 
 See the [retention logic](#retention-logic) and [wakeup detectors](#wakeup-detectors) sections for more details about the mux implementation.
 
-### USB Wakeup Detection Module
-
-The USB device in the Earlgrey top-level is not in the AON power domain and hence the associated wakeup detection module is placed inside the pinmux IP in that top-level.
-The USB wakeup module is not connected to any pinmux infrastructure or CSRs except for the `usb_wkup_req` signal going to the power manager.
-See [USB device documentation](../../../../ip/usbdev/README.md) for more information on the USB wakeup mechanism.
-
-### Test and Debug Access
-
-The hardware strap sampling and TAP isolation logic provides test and debug access to the chip during specific life cycle states.
-This mechanism is explained in more detail in the [strap sampling and TAP isolation](#strap-sampling-and-tap-isolation) section.
-
 ### Pad Attributes
 
 Additional pad-specific features such as inversion, pull-up, pull-down, virtual open-drain, drive-strength and input/output inversion etc. can be exercise via the pad attribute CSRs.
@@ -145,22 +134,6 @@ Also, it should be noted that the pad attributes of all JTAG IOs will be gated t
 This is to ensure that any functional attributes like inversion or pull-ups / pull-downs do not interfere with the JTAG while it is in use.
 
 For more information about the life cycle states, see [Life Cycle Controller Specification](../../../../ip/lc_ctrl/README.md) and the [Life Cycle Definition Table](../../../../../doc/security/specs/device_life_cycle/README.md#manufacturing-states).
-
-### Non-debug Module Reset
-
-The only parts of the system that are not reset as part of a non-debug module (NDM) reset are in this strap sampling and TAP selection module, and in the `rv_dm`, power, reset and clock managers.
-Hence, in order to keep a `rv_dm` JTAG debug session alive during an NDM reset, the `lc_hw_debug_en` state needs to be memorized.
-
-To that end, the TAP isolation logic in the pinmux samples the `lc_hw_debug_en` state when the strap sampling pulse is asserted by the power manager.
-This pulse is asserted once during boot (and not after an NDM reset).
-
-Note that DFT TAP selection is not affected by this since the TAP selection logic always consumes the live value for `lc_dft_en`.
-The TAP selection logic also invalidates the sampled `lc_hw_debug_en` whenever a life cycle transition is initiated or an escalation is triggered via `lc_escalate_en`.
-This ensures that the sampled `lc_hw_debug_en` value does not survive a life cycle transition.
-
-Finally, note that there is secondary gating on the `rv_dm` and DFT TAPs that is always consuming live `lc_hw_debug_en` and `lc_dft_en` signals for added protection.
-
-See also [rv_dm documentation](../../../../ip/rv_dm/doc/theory_of_operation.md#non-debug-module-reset-support).
 
 ## Generic Pad Wrapper
 

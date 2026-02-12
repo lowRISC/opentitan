@@ -7,11 +7,11 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/adc_ctrl/doc/">ADC Controller</a> Device Interface
+ * @brief <a href="/book/hw/ip/adc_ctrl/">ADC Controller</a> Device Interface
  * Functions
  */
 
-#include "adc_ctrl_regs.h"  // Generated.
+#include "hw/top/adc_ctrl_regs.h"  // Generated.
 #include "sw/device/lib/dif/autogen/dif_adc_ctrl_autogen.h"
 
 #ifdef __cplusplus

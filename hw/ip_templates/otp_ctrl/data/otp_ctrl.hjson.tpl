@@ -5,6 +5,7 @@
 // HJSON with partition metadata.
 //
 <%
+import math
 from topgen.lib import Name
 
 num_part = len(otp_mmap["partitions"])
@@ -50,10 +51,10 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
       notes:              "",
     }
     {
-      version:            "2.0.0",
+      version:            "3.0.0",
       life_stage:         "L1",
-      design_stage:       "D3",
-      verification_stage: "V2S",
+      design_stage:       "D1",
+      verification_stage: "V1",
       dif_stage:          "S2",
       notes:              "",
     }
@@ -62,19 +63,8 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
     {clock: "clk_i", reset: "rst_ni", primary: true},
     {clock: "clk_edn_i", reset: "rst_edn_ni"}
   ]
-  scan: "true",       // Enable `scanmode_i` port
-  scan_reset: "true", // Enable `scan_rst_ni` port
-  scan_en: "true",    // Enable `scan_en_i` port
   bus_interfaces: [
     { protocol: "tlul", direction: "device", name: "core" }
-    { protocol: "tlul", direction: "device", name: "prim", hier_path: "u_otp.gen_generic.u_impl_generic.u_reg_top" }
-  ],
-
-  available_output_list: [
-    { name: "test",
-      width: 8,
-      desc: "Test-related GPIOs. Only active in DFT-enabled life cycle states."
-    }
   ],
 
   ///////////////////////////
@@ -112,14 +102,6 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
   // Parameters //
   ////////////////
   param_list: [
-    // Init file
-    { name:      "MemInitFile",
-      desc:      "VMEM file to initialize the OTP macro.",
-      type:      "",
-      default:   '""',
-      expose:    "true",
-      local:     "false"
-    }
     // Random netlist constants
     { name:      "RndCnstLfsrSeed",
       desc:      "Compile-time random bits for initial LFSR seed",
@@ -139,11 +121,62 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
       randcount: "256",
       randtype:  "data", // random permutation for randcount elements
     }
+    // Scrambling Keys
+  % for i in range(otp_mmap["scrambling"]["num_keys"]):
+    { name:      "RndCnstScrmblKey${i}",
+      desc:      "Compile-time scrambling key",
+      type:      "otp_ctrl_top_specific_pkg::key_t"
+      randcount: "${otp_mmap['scrambling']['key_size'] * 8}",
+      randtype:  "extdata",
+    }
+  % endfor
+  % for i in range(otp_mmap["scrambling"]["num_digests"]):
+    { name:      "RndCnstDigestConst${i}",
+      desc:      "Compile-time digest const",
+      type:      "otp_ctrl_top_specific_pkg::digest_const_t"
+      randcount: "${otp_mmap['scrambling']['cnst_size'] * 8}",
+      randtype:  "extdata",
+    }
+  % endfor
+  % for i in range(otp_mmap["scrambling"]["num_digests"]):
+    { name:      "RndCnstDigestIV${i}",
+      desc:      "Compile-time digest initial vector",
+      type:      "otp_ctrl_top_specific_pkg::digest_iv_t"
+      randcount: "${otp_mmap['scrambling']['iv_size'] * 8}",
+      randtype:  "extdata",
+    }
+  % endfor
+<% offset = int(otp_mmap["partitions"][-1]["offset"]) + int(otp_mmap["partitions"][-1]["size"]) %>
+    { name:      "RndCnstPartInvDefault",
+      desc:      "OTP invalid partition default for buffered partitions",
+      type:      "logic [${offset * 8 - 1}:0]"
+      randcount: "${offset * 8}",
+      randtype:  "extdata",
+    }
     // Normal parameters
     { name: "NumSramKeyReqSlots",
       desc: "Number of key slots",
       type: "int",
       default: "4",
+      local: "true"
+    },
+    // Macro parameters
+    {
+      name: "OtpDepth",
+      desc: "Number of native words.",
+      default: "${otp_mmap["otp"]["depth"]}",
+      local: "true"
+    },
+    {
+      name: "OtpWidth",
+      desc: "Number of bytes in native words.",
+      default: "${otp_mmap["otp"]["width"]}",
+      local: "true"
+    },
+    {
+      name: "OtpSizeWidth",
+      desc: "Number of bits to represent the native words per transaction.",
+      default: "2",
       local: "true"
     },
     { name: "OtpByteAddrWidth",
@@ -198,8 +231,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
     },
 % for part in otp_mmap["partitions"]:
 <%
-  part_name = Name.from_snake_case(part["name"])
-  part_name_camel = part_name.as_camel_case()
+  part_name_camel = Name.to_camel_case(part["name"])
 %>\
     { name: "${part_name_camel}Offset",
       desc: "Offset of the ${part["name"]} partition",
@@ -215,8 +247,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
     },
   % for item in part["items"]:
 <%
-  item_name = Name.from_snake_case(item["name"])
-  item_name_camel = item_name.as_camel_case()
+  item_name_camel = Name.to_camel_case(item["name"])
 %>\
     { name: "${item_name_camel}Offset",
       desc: "Offset of ${item["name"]}",
@@ -239,32 +270,6 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
   /////////////////////////////
 
   inter_signal_list: [
-    // OTP dedicated power connection from AST
-    { struct:  ""
-      type:    "io"
-      name:    "otp_ext_voltage_h"
-      act:     "none"
-      default: "'0"
-      package: "",
-    }
-    // Power sequencing signals to AST
-    { struct:  "otp_ast_req"
-      type:    "uni"
-      name:    "otp_ast_pwr_seq"
-      act:     "req"
-      default: "'0"
-      package: "otp_ctrl_pkg"
-      desc:    "Power sequencing signals to AST (VDD domain)."
-    }
-    // Power sequencing signals from AST
-    { struct:  "otp_ast_rsp"
-      type:    "uni"
-      name:    "otp_ast_pwr_seq_h"
-      act:     "rcv"
-      default: "'0"
-      package: "otp_ctrl_pkg"
-      desc:    "Power sequencing signals coming from AST (VCC domain)."
-    }
     // EDN interface
     { struct:  "edn"
       type:    "req_rsp"
@@ -281,15 +286,6 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
       default: "'0"
       package: "pwrmgr_pkg"
       desc:    "Initialization request/acknowledge from/to power manager."
-    }
-    // Macro-specific test signals to/from LC TAP
-    { struct:  "lc_otp_vendor_test"
-      type:    "req_rsp"
-      name:    "lc_otp_vendor_test"
-      act:     "rsp"
-      default: "'0"
-      package: "otp_ctrl_pkg"
-      desc:    "Vendor test control signals from/to the life cycle TAP."
     }
     // LC transition command
     { struct:  "lc_otp_program"
@@ -359,13 +355,13 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
     }
     { struct:  "lc_tx"
       type:    "uni"
-      name:    "lc_dft_en"
+      name:    "lc_rma_state"
       act:     "rcv"
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"
       desc:    '''
-               Test enable qualifier coming from life cycle controller.
-               This signals enables the TL-UL access port to the proprietary OTP IP.
+               This signal states whether the current life cycle is RMA.
+               It is used to enable SW read access to (read-locked) partitions in the RMA state.
                '''
     }
     { struct:  "lc_tx"
@@ -429,38 +425,15 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
       package: "otp_ctrl_part_pkg"
       desc:    "Output of the HW partitions with breakout data types."
     }
-    // AST observability control
-    { struct: "ast_obs_ctrl",
-      type: "uni",
-      name: "obs_ctrl",
-      act: "rcv",
-      package: "ast_pkg"
-      desc:    "AST observability control signals."
-    }
-    // prim otp observe bus
-    { struct: "logic",
-      type: "uni",
-      name: "otp_obs",
-      act: "req",
-      width: "8",
-      package: ""
-      desc:    "AST observability bus."
-    }
-    // DFT CFG and RSP signals
-    { struct:  "otp_cfg"
-      type:    "uni"
-      name:    "cfg"
-      act:     "rcv"
-      default: "'0"
-      package: "prim_otp_cfg_pkg"
-    },
-    { struct:  "otp_cfg_rsp"
-      type:    "uni"
-      name:    "cfg_rsp"
+    // OTP_MACRO Interface
+    { struct:  "otp_ctrl_macro"
+      type:    "req_rsp"
+      name:    "otp_macro"
       act:     "req"
       default: "'0"
-      package: "prim_otp_cfg_pkg"
-    },
+      package: "otp_ctrl_macro_pkg"
+      desc:    "Data interface for the OTP macro."
+    }
   ] // inter_signal_list
 
   /////////////////////
@@ -585,12 +558,6 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
     { name: "LC_CTRL.INTERSIG.MUBI",
       desc: "The life cycle control signals are multibit encoded."
     }
-    { name: "TEST.BUS.LC_GATED",
-      desc: "Prevent access to test signals and the OTP backdoor interface in non-test lifecycle states."
-    }
-    { name: "TEST_TL_LC_GATE.FSM.SPARSE",
-      desc: "The control FSM inside the TL-UL gating primitive is sparsely encoded."
-    }
     { name: "DIRECT_ACCESS.CONFIG.REGWEN",
       desc: "The direct access CSRs are REGWEN protected."
     }
@@ -599,15 +566,6 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
     }
     { name: "CHECK.CONFIG.REGWEN",
       desc: "The check CSR is REGWEN protected."
-    }
-    { name: "MACRO.MEM.INTEGRITY",
-      desc: '''
-            The OTP macro employs a vendor-specific integrity scheme at the granularity of the native 16bit OTP words.
-            The scheme is able to at least detect single bit errors.
-            '''
-    }
-    { name: "MACRO.MEM.CM",
-      desc: "The OTP macro may contain additional vendor-specific countermeasures."
     }
   ]
 
@@ -626,7 +584,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
     }
     {
       name: "OTP_CTRL.PARTITION.OWNER_SW_CFG"
-      desc: "Define attriutes for rom code execution"
+      desc: "Define attributes for rom code execution"
     }
     {
       name: "OTP_CTRL.INIT"
@@ -689,7 +647,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
     }
     {
       name: "OTP_CTRL.ERROR_HANDLING.RECOVERABLE"
-      desc: "Recoverable error is created when unauthorized access atempt are detected via dai interface."
+      desc: "Recoverable error is created when unauthorized access attempt are detected via dai interface."
     }
     {
       name: "OTP_CTRL.ERROR_HANDLING.FATAL"
@@ -729,7 +687,83 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
         tags: [ // OTP internal HW can modify status register
                 "excl:CsrAllTests:CsrExclCheck"],
         fields: [
-  % for k, part in enumerate(otp_mmap["partitions"]):
+          { bits: "0"
+            name: "PARTITION_ERROR"
+            desc: '''
+                  Set to 1 if an error occurred in any partition.
+                  If set to 1, SW should check the !!PARTITION_STATUS register to determine the failing partition.
+                  '''
+          }
+          { bits: "1"
+            name: "DAI_ERROR"
+            desc: '''
+                  Set to 1 if an error occurred in the DAI.
+                  If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
+                  '''
+          }
+          { bits: "2"
+            name: "LCI_ERROR"
+            desc: '''
+                  Set to 1 if an error occurred in the LCI.
+                  If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
+                  '''
+          }
+          { bits: "3"
+            name: "TIMEOUT_ERROR"
+            desc: '''
+                  Set to 1 if an integrity or consistency check times out.
+                  This raises an fatal_check_error alert and is an unrecoverable error condition.
+                  '''
+          }
+          { bits: "4"
+            name: "LFSR_FSM_ERROR"
+            desc: '''
+                  Set to 1 if the LFSR timer FSM has reached an invalid state.
+                  This raises an fatal_check_error alert and is an unrecoverable error condition.
+                  '''
+          }
+          { bits: "5"
+            name: "SCRAMBLING_FSM_ERROR"
+            desc: '''
+                  Set to 1 if the scrambling datapath FSM has reached an invalid state.
+                  This raises an fatal_check_error alert and is an unrecoverable error condition.
+                  '''
+          }
+          { bits: "6"
+            name: "KEY_DERIV_FSM_ERROR"
+            desc: '''
+                  Set to 1 if the key derivation FSM has reached an invalid state.
+                  This raises an fatal_check_error alert and is an unrecoverable error condition.
+                  '''
+          }
+          { bits: "7"
+            name: "BUS_INTEG_ERROR"
+            desc: '''
+                  This bit is set to 1 if a fatal bus integrity fault is detected.
+                  This error triggers a fatal_bus_integ_error alert.
+                  '''
+          }
+          { bits: "8"
+            name: "DAI_IDLE"
+            desc: "Set to 1 if the DAI is idle and ready to accept commands."
+          }
+          { bits: "9"
+            name: "CHECK_PENDING"
+            desc: "Set to 1 if an integrity or consistency check triggered by the LFSR timer or via !!CHECK_TRIGGER is pending."
+          }
+        ]
+      }
+    % for r in range(int(math.ceil(len(otp_mmap["partitions"]) / 32))):
+      { name: "PARTITION_STATUS_${r}",
+        desc: "OTP partition status register ${r}.",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        hwext:    "true",
+        resval:   0,
+        tags: [ // OTP internal HW can modify status register
+                "excl:CsrAllTests:CsrExclCheck"],
+        fields: [
+        % for k, part in enumerate(otp_mmap["partitions"][r*32 : (r+1)*32]):
           { bits: "${k}"
             name: "${part["name"]}_ERROR"
             desc: '''
@@ -737,66 +771,10 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
                   If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
                   '''
           }
-  % endfor
-          { bits: "${num_part}"
-            name: "DAI_ERROR"
-            desc: '''
-                  Set to 1 if an error occurred in the DAI.
-                  If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
-                  '''
-          }
-          { bits: "${num_part+1}"
-            name: "LCI_ERROR"
-            desc: '''
-                  Set to 1 if an error occurred in the LCI.
-                  If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
-                  '''
-          }
-          { bits: "${num_part+2}"
-            name: "TIMEOUT_ERROR"
-            desc: '''
-                  Set to 1 if an integrity or consistency check times out.
-                  This raises an fatal_check_error alert and is an unrecoverable error condition.
-                  '''
-          }
-          { bits: "${num_part+3}"
-            name: "LFSR_FSM_ERROR"
-            desc: '''
-                  Set to 1 if the LFSR timer FSM has reached an invalid state.
-                  This raises an fatal_check_error alert and is an unrecoverable error condition.
-                  '''
-          }
-          { bits: "${num_part+4}"
-            name: "SCRAMBLING_FSM_ERROR"
-            desc: '''
-                  Set to 1 if the scrambling datapath FSM has reached an invalid state.
-                  This raises an fatal_check_error alert and is an unrecoverable error condition.
-                  '''
-          }
-          { bits: "${num_part+5}"
-            name: "KEY_DERIV_FSM_ERROR"
-            desc: '''
-                  Set to 1 if the key derivation FSM has reached an invalid state.
-                  This raises an fatal_check_error alert and is an unrecoverable error condition.
-                  '''
-          }
-          { bits: "${num_part+6}"
-            name: "BUS_INTEG_ERROR"
-            desc: '''
-                  This bit is set to 1 if a fatal bus integrity fault is detected.
-                  This error triggers a fatal_bus_integ_error alert.
-                  '''
-          }
-          { bits: "${num_part+7}"
-            name: "DAI_IDLE"
-            desc: "Set to 1 if the DAI is idle and ready to accept commands."
-          }
-          { bits: "${num_part+8}"
-            name: "CHECK_PENDING"
-            desc: "Set to 1 if an integrity or consistency check triggered by the LFSR timer or via !!CHECK_TRIGGER is pending."
-          }
+        % endfor
         ]
       }
+    % endfor
       { multireg: {
           name:     "ERR_CODE",
           desc:     '''
@@ -838,7 +816,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
                 { value: "2",
                   name: "MACRO_ECC_CORR_ERROR",
                   desc: '''
-                  A correctable ECC error has occured during an OTP read operation.
+                  A correctable ECC error has occurred during an OTP read operation.
                   The corresponding controller automatically recovers from this error when
                   issuing a new command.
                   '''
@@ -953,6 +931,14 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
             desc: '''
                   Initiates the digest calculation and locking sequence for the partition specified by
                   !!DIRECT_ACCESS_ADDRESS.
+                  '''
+          }
+          { bits: "3",
+            name: "ZEROIZE",
+            desc: '''
+                  Initiates the zeroization sequence of location specified by !!DIRECT_ACCESS_ADDRESS.
+                  The command places the zeroized data into !!DIRECT_ACCESS_RDATA_0 and
+                  !!DIRECT_ACCESS_RDATA_1 (for 64bit partitions) if the execution is successful.
                   '''
           }
         ]
@@ -1191,7 +1177,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
           name:     "${part["name"]}_DIGEST",
           desc:     '''
                     Integrity digest for the ${part["name"]} partition.
-                    The integrity digest is 0 by default. Software must write this
+                    The integrity digest is 0 by default. Software must write a non-zero
                     digest value via the direct access interface in order to lock the partition.
                     After a reset, write access to the ${part["name"]} partition is locked and
                     the digest becomes visible in this CSR.
@@ -1252,298 +1238,5 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
         }
       }
     ],
-
-    // OTP wrapper-specific registers
-    prim: [
-      { name: "CSR0",
-        desc: ""
-        swaccess: "rw",
-        hwaccess: "hro",
-        hwext:    "false",
-        hwqe:     "false",
-        fields: [
-          { bits: "0",
-            name: "field0",
-            desc: "",
-            resval: "0x0",
-          }
-          { bits: "1",
-            name: "field1",
-            desc: "",
-            resval: "0x0",
-          }
-          { bits: "2",
-            name: "field2",
-            desc: "",
-            resval: "0x0",
-          }
-          { bits: "13:4",
-            name: "field3",
-            desc: ""
-            resval: "0x0",
-          }
-          { bits: "26:16",
-            name: "field4",
-            desc: ""
-            resval: "0x0",
-          }
-        ]
-      },
-      { name: "CSR1",
-        desc: ""
-        swaccess: "rw",
-        hwaccess: "hro",
-        hwext:    "false",
-        hwqe:     "false",
-        fields: [
-          { bits: "6:0",
-            name: "field0",
-            desc: ""
-            resval: "0x0",
-          }
-          { bits: "7:7",
-            name: "field1",
-            desc: "",
-            resval: "0x0",
-          }
-          { bits: "14:8",
-            name: "field2",
-            desc: ""
-            resval: "0x0",
-          }
-          { bits: "15:15",
-            name: "field3",
-            desc: "",
-            resval: "0x0",
-          }
-          { bits: "31:16",
-            name: "field4",
-            desc: "",
-            resval: "0x0",
-          }
-        ]
-      },
-      { name: "CSR2",
-        desc: ""
-        swaccess: "rw",
-        hwaccess: "hro",
-        hwext:    "false",
-        hwqe:     "false",
-        fields: [
-          { bits: "0",
-            name: "field0",
-            desc: "",
-            resval: "0x0",
-          }
-        ]
-      },
-      { name: "CSR3",
-        desc: ""
-        swaccess: "rw",
-        hwaccess: "hrw",
-        hwext:    "false",
-        hwqe:     "false",
-        fields: [
-         { bits: "2:0",
-            name: "field0",
-            desc: ""
-            swaccess: "rw1c",
-            resval: "0x0",
-         }
-         { bits: "13:4",
-            name: "field1",
-            desc: "",
-            swaccess: "rw1c",
-            resval: "0x0",
-         }
-         { bits: "16",
-            name: "field2",
-            desc: "",
-            swaccess: "rw1c",
-            resval: "0x0",
-         }
-         { bits: "17",
-            name: "field3",
-            desc: "",
-            swaccess: "ro",
-            resval: "0x0",
-         }
-         { bits: "18",
-            name: "field4",
-            desc: "",
-            swaccess: "ro",
-            resval: "0x0",
-         }
-         { bits: "19",
-            name: "field5",
-            desc: "",
-            swaccess: "ro",
-            resval: "0x0",
-         }
-         { bits: "20",
-            name: "field6",
-            desc: "",
-            swaccess: "ro",
-            resval: "0x0",
-         }
-         { bits: "21",
-            name: "field7",
-            desc: "",
-            swaccess: "ro",
-            resval: "0x0",
-         }
-         { bits: "22",
-            name: "field8",
-            desc: "",
-            swaccess: "ro",
-            resval: "0x0",
-         }
-        ]
-      },
-      { name: "CSR4",
-        desc: ""
-        swaccess: "rw",
-        hwaccess: "hro",
-        hwext:    "false",
-        hwqe:     "false",
-        fields: [
-          { bits: "9:0",
-            name: "field0",
-            desc: ""
-            resval: "0x0",
-          }
-          { bits: "12",
-            name: "field1",
-            desc: ""
-            resval: "0x0",
-          }
-          { bits: "13",
-            name: "field2",
-            desc: ""
-            resval: "0x0",
-          }
-          { bits: "14",
-            name: "field3",
-            desc: ""
-            resval: "0x0",
-          }
-        ]
-      },
-      { name: "CSR5",
-        desc: ""
-        swaccess: "rw",
-        hwaccess: "hrw",
-        hwext:    "false",
-        hwqe:     "false",
-        fields: [
-         { bits: "5:0",
-            name: "field0",
-            desc: ""
-            swaccess: "rw",
-            resval: "0x0",
-         }
-         { bits: "7:6",
-            name: "field1",
-            desc: ""
-            swaccess: "rw",
-            resval: "0x0",
-         }
-         { bits: "8",
-            name: "field2",
-            desc: "",
-            swaccess: "ro",
-            resval: "0x0",
-         }
-         { bits: "11:9",
-           name: "field3",
-           desc: ""
-           swaccess: "ro",
-           resval: "0x0",
-         }
-         { bits: "12",
-           name: "field4",
-           desc: ""
-           swaccess: "ro",
-           resval: "0x0",
-         }
-         { bits: "13",
-           name: "field5",
-           desc: ""
-           swaccess: "ro",
-           resval: "0x0",
-         }
-         { bits: "31:16",
-            name: "field6",
-            desc: ""
-            swaccess: "rw",
-            resval: "0x0",
-         }
-        ]
-      },
-      { name: "CSR6",
-        desc: ""
-        swaccess: "rw",
-        hwaccess: "hro",
-        hwext:    "false",
-        hwqe:     "false",
-        fields: [
-          { bits: "9:0",
-            name: "field0",
-            desc: ""
-            resval: "0x0",
-          }
-          { bits: "11",
-            name: "field1",
-            desc: "",
-            swaccess: "rw",
-            resval: "0x0",
-          }
-          { bits: "12",
-            name: "field2",
-            desc: "",
-            swaccess: "rw",
-            resval: "0x0",
-          }
-          { bits: "31:16",
-            name: "field3",
-            desc: ""
-            resval: "0x0",
-          }
-        ]
-      },
-      { name: "CSR7",
-        desc: "",
-        swaccess: "ro",
-        hwaccess: "hrw",
-        hwext:    "false",
-        hwqe:     "false",
-        fields: [
-         { bits: "5:0",
-           name: "field0",
-           desc: ""
-           swaccess: "ro",
-           resval: "0x0",
-         }
-         { bits: "10:8",
-           name: "field1",
-           desc: "",
-           swaccess: "ro",
-           resval: "0x0",
-         }
-         { bits: "14",
-           name: "field2",
-           desc: "",
-           swaccess: "ro",
-           resval: "0x0",
-         }
-         { bits: "15",
-           name: "field3",
-           desc: "",
-           swaccess: "ro",
-           resval: "0x0",
-         }
-        ]
-      },
-    ]
   }
 }

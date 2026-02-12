@@ -6,12 +6,9 @@
 name = "opentitan"
 version = "0.0.0"
 description = "Open-source hardware root-of-trust"
-requires-python = ">=3.10"
+requires-python = ">=3.10, <3.14"
 
 dependencies = [
-  # Dependency management
-  "uv ~= 0.6",
-
   # Keep sorted
   "beautifulsoup4 ~= 4.12",
   "hjson==3.1.0",
@@ -30,6 +27,9 @@ dependencies = [
   "semantic_version==2.10.0",
   "tabulate==0.8.10",
   "typer==0.6.1",
+
+  # Dependencies: util/get-toolchain.py
+  "urllib3==2.6.3",
 
   # Dependencies: bitstreams cache
   "jsonschema ~= 4.17",
@@ -67,16 +67,10 @@ dependencies = [
   # Dependency of third_party/tock
   "tockloader==1.13",
 
-  # Development version with OT-specific changes
-  "fusesoc@https://github.com/lowRISC/fusesoc/archive/refs/tags/ot-0.5.dev0.zip",
+  # The hardware package manager and build system.
+  "fusesoc==2.4.3",
 
-  # Development version with OT-specific changes
-  "edalize@https://github.com/lowRISC/edalize/archive/refs/tags/v0.4.0.zip",
-
-  # Development version of minimal ChipWhisperer toolchain with latest features
-  # and bug fixes. We fix the version for improved stability and manually update
-  # if necessary.
-  "chipwhisperer@https://github.com/newaetech/chipwhisperer-minimal/archive/2643131b71e528791446ee1bab7359120288f4ab.zip",
+  "peakrdl-systemrdl >= 1.0",
 ]
 
 [tool.setuptools]
@@ -93,3 +87,6 @@ extend-exclude = [ "*vendor*" ]
 preview = true
 explicit-preview-rules = true
 extend-select = ["E", "E303", "W391"]
+
+[tool.uv.workspace]
+members = ["util/testplantool", "util/testplantool/testplanlib"]

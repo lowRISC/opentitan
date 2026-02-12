@@ -34,12 +34,11 @@ pub mod xmodem;
 
 use anyhow::Result;
 use clap::Args;
-use serde_annotate::Annotate;
 use std::any::Any;
 use std::time::Duration;
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 
 #[derive(Debug, Args)]
 /// No Operation.
@@ -60,7 +59,7 @@ impl CommandDispatch for NoOp {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         if let Some(d) = self.delay {
             std::thread::sleep(d);
         }

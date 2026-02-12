@@ -117,8 +117,7 @@ class i2c_monitor extends dv_base_monitor #(
   endtask : run_phase
 
   // Monitor SCL to measure the actual frequency of an I2C transaction.
-  virtual task automatic perf_monitor(virtual i2c_if vif, ref uvm_event start, ref uvm_event stop);
-
+  virtual task automatic perf_monitor(virtual i2c_if vif, uvm_event start, uvm_event stop);
     `uvm_info(`gfn, "perf_monitor(): Waiting for start event.", UVM_DEBUG)
     start.wait_trigger();
     `uvm_info(`gfn, "perf_monitor(): Got start event.", UVM_DEBUG)
@@ -129,7 +128,7 @@ class i2c_monitor extends dv_base_monitor #(
 
     fork begin : iso_fork
       fork
-        // Measure the elapsed simulation time between sucessive posedges of SCL. Push each
+        // Measure the elapsed simulation time between successive posedges of SCL. Push each
         // value into the 'period_q[$]' to be consumed elsewhere for checking.
         begin
           realtime last_posedge, current_posedge;
@@ -594,7 +593,7 @@ class i2c_monitor extends dv_base_monitor #(
           // TODO. Move to reference_model/predictor.
           // In ack_stop test mode, the agent may generate stimulus that sends a STOP condition
           // immediately after ack'ing a read byte. In this case, we predict the DUT will raise the
-          // 'unexp_stop' interrupt. Set 'cfg.ack_stop_det' to indicate this stimulus has occured.
+          // 'unexp_stop' interrupt. Set 'cfg.ack_stop_det' to indicate this stimulus has occurred.
           if (cfg.allow_ack_stop) begin
             if (mon_dut_item.stop && (mon_dut_item.data_ack_q[$] == i2c_pkg::ACK)) begin
               cfg.ack_stop_det = 1;

@@ -9,6 +9,7 @@
 <%
   import tlgen.lib as lib
   from tlgen.item import Host, Device, AsyncFifo, Socket1N, SocketM1
+  from tlgen.validate import checkBaseSizeOverlap
 %>\
 % for host in xbar.hosts:
 ${xbar.repr_tree(host, 0)}
@@ -172,15 +173,18 @@ module xbar_${xbar.name} (
   # name_space = "ADDR_SPACE_" + asid_name + "__" + leaf_name;
   name_space = "ADDR_SPACE_" + leaf_name;
   name_mask  = "ADDR_MASK_" + leaf_name;
+  name_size  = "ADDR_SIZE_" + leaf_name;
   prefix = "if (" if loop.first else "end else if ("
+  start_addr = leaf.addr_ranges[asid][0][0]
+  size_bytes = (leaf.addr_ranges[asid][0][1] - leaf.addr_ranges[asid][0][0]) + 1
 %>\
   % if len(leaf.addr_ranges[asid]) == 1:
-      % if lib.is_pow2((leaf.addr_ranges[asid][0][1]-leaf.addr_ranges[asid][0][0])+1):
+      % if checkBaseSizeOverlap(start_addr, size_bytes) or not lib.is_pow2(size_bytes):
+    ${prefix}((${addr_sig} < (${name_space} + ${name_size})) &&
+       (${addr_sig} >= ${name_space}))) begin
+      % else:
     ${prefix}(${addr_sig} &
     ${" " * len(prefix)} ~(${name_mask})) == ${name_space}) begin
-      % else:
-    ${prefix}((${addr_sig} <= (${name_mask} + ${name_space})) &&
-       (${addr_sig} >= ${name_space}))) begin
       % endif
       dev_sel_${block.name} = ${"%d'd%d" % (sel_len, loop.index)};
 ${"end" if loop.last else ""}
@@ -191,11 +195,11 @@ ${"end" if loop.last else ""}
 %>\
     ${prefix}
     % for i in range(num_range):
-      % if lib.is_pow2(leaf.addr_ranges[asid][i][1]-leaf.addr_ranges[asid][i][0]+1):
-      ((${addr_sig} & ~(${name_mask}[${i}])) == ${name_space}[${i}])${" ||" if not loop.last else ""}
-      % else:
-      ((${addr_sig} <= (${name_mask}[${i}] + ${name_space}[${i}])) &&
+      % if checkBaseSizeOverlap(start_addr, size_bytes) or not lib.is_pow2(size_bytes):
+      ((${addr_sig} < (${name_space}[${i}] + ${name_size}[${i}])) &&
        (${addr_sig} >= ${name_space}[${i}]))${" ||" if not loop.last else ""}
+      % else:
+      ((${addr_sig} & ~(${name_mask}[${i}])) == ${name_space}[${i}])${" ||" if not loop.last else ""}
       % endif
     % endfor
     ) begin

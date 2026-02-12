@@ -17,10 +17,5 @@ updates:
       prefix: "[dependabot]"
       reviewers:
         - "lowRISC/ot-python-reviewers"
-    # Ignore packages fetched from GitHub URLs.
-    ignore:
-      - dependency-name: "*fusesoc*"
-      - dependency-name: "*edalize*"
-      - dependency-name: "*chipwhisperer*"
     reviewers:
       - "timothytrippel"

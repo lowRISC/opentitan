@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * Covergoups that are dependent on run-time parameters that may be available
+ * Covergroups that are dependent on run-time parameters that may be available
  * only in build_phase can be defined here
  * Covergroups may also be wrapped inside helper classes if needed.
  */
@@ -77,6 +77,10 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   // A macro used for coverpoints for mnemonics. This expands to entries like
   //
   //    bins mnem_add = {mnem_add};
+  //
+  // The right hand side here is a some string variable defined with DEF_MNEM in the previous block
+  // of code. This is sort of equivalent to something like bins mnem_add = {"add"}, but it wraps the
+  // string literal in a variable, which turns out to be needed for coverage with VCS.
 `define DEF_MNEM_BIN(NAME) bins NAME = {NAME}
 
   // Generate a bin for each mnemonic except ECALL
@@ -109,18 +113,20 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `DEF_MNEM_BIN(mnem_bn_mov); `DEF_MNEM_BIN(mnem_bn_movr);           \
     `DEF_MNEM_BIN(mnem_bn_wsrr); `DEF_MNEM_BIN(mnem_bn_wsrw);
 
-  // Equivalents of DEF_MNEM and DEF_MNEM_BINp, but for external CSRs. Again, we want to use the CSR
+  // Equivalents of DEF_MNEM and DEF_MNEM_BIN, but for external CSRs. Again, we want to use the CSR
   // names as bins in coverpoints and need sized literals.
 `define DEF_CSR(CSR_NAME, STR) \
   csr_str_t CSR_NAME = csr_str_t'(STR)
   `DEF_CSR(csr_load_checksum, "load_checksum");
   `DEF_CSR(csr_ctrl, "ctrl");
 `undef DEF_CSR
+  // Define a bin for a CSR. This is analogous to DEF_MNEM_BIN (which has a detailed explanation of
+  // how it works).
 `define DEF_CSR_BIN(NAME) bins NAME = {NAME}
 
   // Cross one, two or three coverpoints with mnemonic_cp.
   //
-  // This is intentended to be used inside covergroups that support multiple instructions. In each
+  // This is intended to be used inside covergroups that support multiple instructions. In each
   // of these, we define a coverpoint called mnemonic_cp to track which instruction is being
   // sampled.
 `define DEF_MNEM_CROSS(BASENAME)                                         \

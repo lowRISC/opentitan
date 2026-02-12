@@ -8,6 +8,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "hw/top/dt/i2c.h"
+#include "hw/top/dt/pinmux.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_i2c.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
@@ -17,8 +19,7 @@
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "i2c_regs.h"  // Generated.
+#include "hw/top/i2c_regs.h"  // Generated.
 
 #define MODULE_ID MAKE_MODULE_ID('i', 'i', 't')
 
@@ -35,126 +36,78 @@ static const dif_i2c_fmt_flags_t kDefaultFlags = {.start = false,
                                                   .suppress_nak_irq = false};
 
 /**
- * Define an i2c pinmux configuration.
+ * Get the I2C instance from index.
+ *
+ * @param i2c_idx I2C index (0-based).
+ * @return I2C DT instance, or kDtI2cCount if invalid.
  */
-typedef struct i2c_pinmux_pins {
-  pinmux_testutils_peripheral_pin_t sda;
-  pinmux_testutils_peripheral_pin_t scl;
-} i2c_pinmux_pins_t;
+static dt_i2c_t get_i2c_instance(uint8_t i2c_idx) {
+  if (i2c_idx >= kDtI2cCount) {
+    return kDtI2cCount;
+  }
+  return (dt_i2c_t)i2c_idx;
+}
 
 /**
- * Define an i2c pinmux configuration.
+ * Get the appropriate pads for an I2C instance and platform based on the
+ * platform. This replicates the original behavior with different mappings for
+ * different platforms.
+ *
+ * @param i2c_dt I2C DT instance.
+ * @param platform The platform to connect the I2C to.
+ * @param sda_pad Output parameter for SDA pad.
+ * @param scl_pad Output parameter for SCL pad.
+ * @return OK_STATUS if successful, error status otherwise.
  */
-typedef struct i2c_platform_pins {
-  pinmux_testutils_mio_pin_t sda;
-  pinmux_testutils_mio_pin_t scl;
-} i2c_platform_pins_t;
-
-/**
- * This table store the pins of all i2c instances of Earlgrey.
- * This is used to connect i2c instances to mio pins based on the platform.
- */
-static const i2c_pinmux_pins_t kI2cPinmuxPins[] = {
-    // I2C0.
-    {.sda =
-         {
-             .peripheral_in = kTopEarlgreyPinmuxPeripheralInI2c0Sda,
-             .outsel = kTopEarlgreyPinmuxOutselI2c0Sda,
-         },
-     .scl =
-         {
-             .peripheral_in = kTopEarlgreyPinmuxPeripheralInI2c0Scl,
-             .outsel = kTopEarlgreyPinmuxOutselI2c0Scl,
-         }},
-    // I2C1.
-    {.sda =
-         {
-             .peripheral_in = kTopEarlgreyPinmuxPeripheralInI2c1Sda,
-             .outsel = kTopEarlgreyPinmuxOutselI2c1Sda,
-         },
-     .scl =
-         {
-             .peripheral_in = kTopEarlgreyPinmuxPeripheralInI2c1Scl,
-             .outsel = kTopEarlgreyPinmuxOutselI2c1Scl,
-         }},
-    // I2C2.
-    {.sda =
-         {
-             .peripheral_in = kTopEarlgreyPinmuxPeripheralInI2c2Sda,
-             .outsel = kTopEarlgreyPinmuxOutselI2c2Sda,
-         },
-     .scl =
-         {
-             .peripheral_in = kTopEarlgreyPinmuxPeripheralInI2c2Scl,
-             .outsel = kTopEarlgreyPinmuxOutselI2c2Scl,
-         }},
-};
-
-/**
- * Map the combination of platform and I2C ID to pins for SCL and SDA.
- */
-static status_t map_platform_to_pins(i2c_pinmux_platform_id_t platform,
-                                     uint8_t i2c_id,
-                                     i2c_platform_pins_t *pins) {
-  TRY_CHECK(pins != NULL);
+static status_t get_i2c_pads_for_platform(dt_i2c_t i2c_dt,
+                                          i2c_pinmux_platform_id_t platform,
+                                          dt_pad_t *sda_pad,
+                                          dt_pad_t *scl_pad) {
+#if defined(OPENTITAN_IS_DARJEELING)
+  // Darjeeling only has I2C0 and uses dedicated pads
+  if (i2c_dt != kDtI2c0) {
+    return INVALID_ARGUMENT();
+  }
+  *sda_pad = kDtPadI2c0Sda;
+  *scl_pad = kDtPadI2c0Scl;
+#elif defined(OPENTITAN_IS_EARLGREY) || defined(OPENTITAN_IS_ENGLISHBREAKFAST)
+  // For Earlgrey and EnglishBreakfast platforms
   switch (platform) {
     case I2cPinmuxPlatformIdHyper310:  // CW310 HyperDebug
-      *pins =
-          (i2c_platform_pins_t){.sda =
-                                    {
-                                        .mio_out = kTopEarlgreyPinmuxMioOutIoa7,
-                                        .insel = kTopEarlgreyPinmuxInselIoa7,
-                                    },
-                                .scl = {
-                                    .mio_out = kTopEarlgreyPinmuxMioOutIoa8,
-                                    .insel = kTopEarlgreyPinmuxInselIoa8,
-                                }};
+      *sda_pad = kDtPadIoa7;
+      *scl_pad = kDtPadIoa8;
       break;
     case I2cPinmuxPlatformIdDvsim:  // DV
       // In DV, there's one agent for each I2C instance, with a fixed set of
       // muxed pins.
-      switch (i2c_id) {
-        case 0:  // I2C0 uses the same pins as CW310 HyperDebug
-          TRY(map_platform_to_pins(I2cPinmuxPlatformIdHyper310, i2c_id, pins));
+      switch (i2c_dt) {
+        case kDtI2c0:  // I2C0 uses the same pins as CW310 HyperDebug
+          *sda_pad = kDtPadIoa7;
+          *scl_pad = kDtPadIoa8;
           break;
-        case 1:
-          *pins = (i2c_platform_pins_t){
-              .sda =
-                  {
-                      .mio_out = kTopEarlgreyPinmuxMioOutIob10,
-                      .insel = kTopEarlgreyPinmuxInselIob10,
-                  },
-              .scl =
-                  {
-                      .mio_out = kTopEarlgreyPinmuxMioOutIob9,
-                      .insel = kTopEarlgreyPinmuxInselIob9,
-                  },
-          };
+        case kDtI2c1:
+          *sda_pad = kDtPadIob10;
+          *scl_pad = kDtPadIob9;
           break;
-        case 2:  // I2C2 uses the same pins as CW310 PMOD
-          TRY(map_platform_to_pins(I2cPinmuxPlatformIdCw310Pmod, i2c_id, pins));
+        case kDtI2c2:  // I2C2 uses the same pins as CW310 PMOD
+          *sda_pad = kDtPadIob12;
+          *scl_pad = kDtPadIob11;
           break;
         default:
-          TRY_CHECK(false, "invalid i2c_id: %0d", i2c_id);
-          break;
+          return INVALID_ARGUMENT();
       }
       break;
     case I2cPinmuxPlatformIdCw310Pmod:  // CW310 PMOD
-      *pins = (i2c_platform_pins_t){
-          .sda =
-              {
-                  .mio_out = kTopEarlgreyPinmuxMioOutIob12,
-                  .insel = kTopEarlgreyPinmuxInselIob12,
-              },
-          .scl = {
-              .mio_out = kTopEarlgreyPinmuxMioOutIob11,
-              .insel = kTopEarlgreyPinmuxInselIob11,
-          }};
+      *sda_pad = kDtPadIob12;
+      *scl_pad = kDtPadIob11;
       break;
     default:
-      TRY_CHECK(false, "invalid platform: %0d", platform);
-      break;
+      return INVALID_ARGUMENT();
   }
+#else
+  return UNIMPLEMENTED();
+#endif
+
   return OK_STATUS();
 }
 
@@ -344,38 +297,49 @@ status_t i2c_testutils_target_check_write(const dif_i2c_t *i2c,
 
 status_t i2c_testutils_select_pinmux(const dif_pinmux_t *pinmux, uint8_t i2c_id,
                                      i2c_pinmux_platform_id_t platform) {
-  TRY_CHECK(
-      platform < I2cPinmuxPlatformIdCount && i2c_id < ARRAYSIZE(kI2cPinmuxPins),
-      "Index out of bounds");
-  i2c_platform_pins_t platform_pins;
-  TRY(map_platform_to_pins(platform, i2c_id, &platform_pins));
-  // Configure sda pin.
-  TRY(dif_pinmux_input_select(pinmux, kI2cPinmuxPins[i2c_id].sda.peripheral_in,
-                              platform_pins.sda.insel));
-  TRY(dif_pinmux_output_select(pinmux, platform_pins.sda.mio_out,
-                               kI2cPinmuxPins[i2c_id].sda.outsel));
+  TRY_CHECK(platform < I2cPinmuxPlatformIdCount, "Platform out of bounds");
 
-  // Configure scl pin.
-  TRY(dif_pinmux_input_select(pinmux, kI2cPinmuxPins[i2c_id].scl.peripheral_in,
-                              platform_pins.scl.insel));
-  TRY(dif_pinmux_output_select(pinmux, platform_pins.scl.mio_out,
-                               kI2cPinmuxPins[i2c_id].scl.outsel));
+  dt_i2c_t i2c_dt = get_i2c_instance(i2c_id);
+  TRY_CHECK(i2c_dt < kDtI2cCount, "I2C index out of bounds");
+
+  // Get peripheral I/O descriptions for SDA and SCL
+  dt_periph_io_t sda_periph_io = dt_i2c_periph_io(i2c_dt, kDtI2cPeriphIoSda);
+  dt_periph_io_t scl_periph_io = dt_i2c_periph_io(i2c_dt, kDtI2cPeriphIoScl);
+
+  // Get the appropriate pads for this I2C instance and platform
+  dt_pad_t sda_pad, scl_pad;
+  TRY(get_i2c_pads_for_platform(i2c_dt, platform, &sda_pad, &scl_pad));
+
+  // Connect SDA and SCL using pinmux testutils
+  TRY(pinmux_testutils_connect(pinmux, sda_periph_io, kDtPeriphIoDirInout,
+                               sda_pad));
+  TRY(pinmux_testutils_connect(pinmux, scl_periph_io, kDtPeriphIoDirInout,
+                               scl_pad));
+
   return OK_STATUS();
 }
 
 status_t i2c_testutils_detach_pinmux(const dif_pinmux_t *pinmux,
                                      uint8_t i2c_id) {
-  // Configure sda pin.
-  TRY(dif_pinmux_input_select(pinmux, kI2cPinmuxPins[i2c_id].sda.peripheral_in,
-                              kTopEarlgreyPinmuxInselConstantZero));
+  dt_i2c_t i2c_dt = get_i2c_instance(i2c_id);
+  TRY_CHECK(i2c_dt < kDtI2cCount, "I2C index out of bounds");
 
-  // Configure scl pin.
-  TRY(dif_pinmux_input_select(pinmux, kI2cPinmuxPins[i2c_id].scl.peripheral_in,
-                              kTopEarlgreyPinmuxInselConstantZero));
+  // Get peripheral I/O descriptions for SDA and SCL
+  dt_periph_io_t sda_periph_io = dt_i2c_periph_io(i2c_dt, kDtI2cPeriphIoSda);
+  dt_periph_io_t scl_periph_io = dt_i2c_periph_io(i2c_dt, kDtI2cPeriphIoScl);
+
+  // Disconnect SDA and SCL inputs by connecting to constant zero
+  TRY(pinmux_testutils_connect(pinmux, sda_periph_io, kDtPeriphIoDirIn,
+                               kDtPadConstantZero));
+  TRY(pinmux_testutils_connect(pinmux, scl_periph_io, kDtPeriphIoDirIn,
+                               kDtPadConstantZero));
+
   return OK_STATUS();
 }
 
-status_t i2c_testutils_set_speed(const dif_i2c_t *i2c, dif_i2c_speed_t speed) {
+status_t i2c_testutils_set_speed(const dif_i2c_t *i2c, dif_i2c_speed_t speed,
+                                 uint32_t sda_rise_nanos,
+                                 uint32_t sda_fall_nanos) {
   uint32_t speed_khz = 0;
   switch (speed) {
     case kDifI2cSpeedStandard:
@@ -390,14 +354,16 @@ status_t i2c_testutils_set_speed(const dif_i2c_t *i2c, dif_i2c_speed_t speed) {
       LOG_INFO("Setting i2c to %s mode.", "FastPlus (1000kHz)");
       speed_khz = 1000;
       break;
+    default:
+      break;
   }
   // I2C speed parameters.
   dif_i2c_timing_config_t timing_config = {
       .lowest_target_device_speed = speed,
       .clock_period_nanos =
           (uint32_t)udiv64_slow(1000000000, kClockFreqPeripheralHz, NULL),
-      .sda_rise_nanos = 400,
-      .sda_fall_nanos = 110,
+      .sda_rise_nanos = sda_rise_nanos,
+      .sda_fall_nanos = sda_fall_nanos,
       .scl_period_nanos = 1000000 / speed_khz};
 
   dif_i2c_status_t status;

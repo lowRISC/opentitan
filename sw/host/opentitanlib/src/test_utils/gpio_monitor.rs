@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, ensure, Result};
+use anyhow::{Result, bail, ensure};
 use std::borrow::Borrow;
-//use std::time::Duration;
 use std::rc::Rc;
 
 use crate::app::TransportWrapper;
-use crate::io::gpio::{ClockNature, Edge, GpioMonitoring, MonitoringEvent};
+use crate::io::gpio::{ClockNature, GpioMonitoring, MonitoringEvent};
+use crate::util::vcd::{dump_vcd, vcd_from_edges};
 
 // This structure makes it easier to monitor GPIOs and supports dumping a trace
 // in the VCD format for further examination. In addition, for easier debugging
@@ -122,7 +122,7 @@ impl<'a> GpioMon<'a> {
         self.dump_on_drop = dump_on_drop
     }
 
-    pub fn dump_vcd(&self) -> String {
+    pub fn dump_vcd(&self) -> Result<String> {
         self.waves.dump_vcd()
     }
 }
@@ -207,37 +207,20 @@ impl Waves {
     }
 
     // This function assumes that the events are sorted.
-    pub fn dump_vcd(&self) -> String {
-        const SYMBOLS: &[char] = &['!', '#', '$', '%', '&', '(', ')'];
-        assert!(self.pin_names.len() < SYMBOLS.len());
-        let mut vcd = String::new();
-        vcd.push_str("$timescale 1ns $end\n");
-        vcd.push_str("$scope module opentitanlib $end\n");
-        for (i, name) in self.pin_names.iter().enumerate() {
-            vcd.push_str(&format!("$var wire 1 {} {name} $end\n", SYMBOLS[i]));
-        }
-        vcd.push_str("$upscope $end\n");
-        vcd.push_str("$enddefinitions $end\n");
-
-        vcd.push_str("#0");
-        for (i, lvl) in self.initial_levels.iter().enumerate() {
-            vcd.push_str(&format!(" {}{}", if *lvl { 1 } else { 0 }, SYMBOLS[i]));
-        }
-        vcd.push('\n');
-
-        for event in &self.events {
-            let ns = self.timestamp_to_ns(event.timestamp);
-            let val = event.edge == Edge::Rising;
-            vcd.push_str(&format!(
-                "#{ns} {}{}\n",
-                val as u8, SYMBOLS[event.signal_index as usize]
-            ));
-        }
-        // Make sure that the final timestamp is after the last event.
-        let final_ts = std::cmp::max(self.events.last().unwrap().timestamp, self.final_timestamp);
-        vcd.push_str(&format!("#{}", self.timestamp_to_ns(final_ts),));
-
-        vcd
+    pub fn dump_vcd(&self) -> Result<String> {
+        let pin_names = self
+            .pin_names
+            .iter()
+            .map(|n| Some(n.to_string()))
+            .collect::<Vec<_>>();
+        dump_vcd(&vcd_from_edges(
+            pin_names,
+            self.resolution,
+            self.initial_timestamp,
+            &self.initial_levels,
+            &self.events,
+            self.final_timestamp,
+        )?)
     }
 }
 
@@ -251,11 +234,13 @@ impl Drop for GpioMon<'_> {
         };
         if self.dump_on_drop {
             if error {
-                log::error!("an error occured when reading the monitoring events, some events have been lost");
+                log::error!(
+                    "an error occured when reading the monitoring events, some events have been lost"
+                );
             }
             log::info!(
                 "====[ VCD dump ]====\n{}\n====[ end dump ]====",
-                self.dump_vcd()
+                self.dump_vcd().unwrap()
             );
         }
     }

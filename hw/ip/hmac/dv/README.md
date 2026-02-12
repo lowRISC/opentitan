@@ -76,7 +76,7 @@ Some of the most commonly used tasks / functions are as follows:
 * `wr_msg`          : write messages into the hmac_msg_fifo
 * `burst_wr_msg`    : burst write messages into the hmac_msg_fifo
 * `compare_digest`  : compare the read digest result with the expected values
-* `save_and_restore`: execute Save and Restore as described in the [SW Guide](https://opentitan.org/book/hw/ip/hmac/doc/programmers_guide.html#saving-and-restoring-the-context)
+* `save_and_restore`: execute Save and Restore as described in the [SW Guide](../doc/programmers_guide.md#saving-and-restoring-the-context)
 
 ##### Standard test vectors
 Besides constrained random test sequences, HMAC test sequences also include standard SHA-2 256 and HMAC test vectors from [NIST](https://csrc.nist.gov/Projects/Cryptographic-Algorithm-Validation-Program/Secure-Hashing#shavs) and [IETF](https://tools.ietf.org/html/rfc4868) to test SHA-2 256/384/512 and HMAC using SHA-2 256/384/512 with 256-bit keys.

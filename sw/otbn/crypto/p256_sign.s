@@ -64,7 +64,7 @@
  * Flags: When leaving this subroutine, the M, L and Z flags of FG0 depend on
  *        the computed affine y-coordinate.
  *
- * clobbered registers: x2, x3, x16 to x23, w0 to w26
+ * clobbered registers: x2, x3, x16 to x23, w0 to w29
  * clobbered flag groups: FG0
  */
 p256_sign:
@@ -97,7 +97,8 @@ p256_sign:
   bn.lid    x2, 0(x3)
 
   /* scalar multiplication with base point (projective)
-     (x_1, y_1, z_1) = (w8, w9, w10) <= k*G = w0*(dmem[p256_gx], dmem[p256_gy]) */
+     (x_1, y_1, z_1) = (w8, w9, w10) <= k*G
+         = ([w0,w1] + [w2,w3])*(dmem[p256_gx], dmem[p256_gy]) */
   la        x21, p256_gx
   la        x22, p256_gy
   jal       x1, scalar_mult_int
@@ -105,6 +106,27 @@ p256_sign:
   /* Convert masked result back to affine coordinates.
      R = (x_a, y_a) = (w11, w12) */
   jal       x1, proj_to_affine
+
+  /* store result (affine coordinates) in dmem
+     dmem[x] <= x_a = w11
+     dmem[y] <= y_a = w12 */
+  li        x2, 11
+  la        x21, x
+  bn.sid    x2++, 0(x21)
+  la        x22, y
+  bn.sid    x2, 0(x22)
+
+  /* Compute both sides of the Weierstrauss equation.
+       w18 <= (x^3 + ax + b) mod p
+       w19 <= (y^2) mod p */
+  jal      x1, p256_isoncurve
+
+  /* Compare the two sides of the equation to check if the result
+     is a valid point as an FI countermeasure.
+     The check fails if both sides are not equal.
+     FG0.Z <= (y^2) mod p == (x^2 + ax + b) mod p */
+  bn.cmp   w18, w19
+  jal      x1, trigger_fault_if_fg0_z
 
   /* setup modulus n (curve order) and Barrett constant
      MOD <= w29 <= n = dmem[p256_n]; w28 <= u_n = dmem[p256_u_n]  */
@@ -157,21 +179,88 @@ p256_sign:
   /* w1 <= w0^-1 mod n = (k * alpha)^-1 mod n */
   jal       x1, mod_inv
 
+  /* [w7,w0] <= n << 64 */
+  bn.rshi w0, w29, w31 >> 192
+  bn.rshi w7, w31, w29 >> 192
+
+  /* Load 320 bits of randomness into [w15,w14] */
+  bn.wsrr  w14, URND
+  bn.wsrr  w15, URND
+  bn.rshi  w15, w31, w15 >> 192
+
+  /* [w27,w26] <= [w15,w14] - [w7,w0] = rand(320) - (n << 64) */
+  bn.sub    w26, w14, w0
+  bn.subb   w27, w15, w7
+
+  /* [w25,w24] <= m mod (n << 64) */
+  bn.sel    w24, w14, w26, FG0.C
+  bn.sel    w25, w15, w27, FG0.C
+
+  /* Clear flags and randomize registers. */
+  bn.sub    w31, w31, w31
+  bn.wsrr    w2, URND
+  bn.wsrr    w3, URND
+  bn.wsrr   w14, URND
+  bn.wsrr   w15, URND
+  bn.wsrr   w26, URND
+  bn.wsrr   w27, URND
+
   /* Load first share of secret key d from dmem.
-       w2,w3 = dmem[d0] */
+       w14,w15 = dmem[d0] */
   la        x16, d0
-  li        x2, 2
+  li        x2, 14
   bn.lid    x2, 0(x16++)
-  li        x2, 3
+  li        x2, 15
   bn.lid    x2, 0(x16)
 
+  /* [w15,w14] <= d0 + m */
+  bn.add    w14, w14, w24
+  bn.addc   w15, w15, w25
+
+  /* [w27,w26] <= d0 + m - (n << 64) */
+  bn.sub    w26, w14, w0
+  bn.subb   w27, w15, w7
+
+  /* [w3,w2] <= d0 + m mod (n << 64) */
+  bn.sel    w2, w14, w26, FG0.C
+  bn.sel    w3, w15, w27, FG0.C
+
+  /* Clear flags and randomize registers. */
+  bn.sub    w31, w31, w31
+  bn.wsrr    w5, URND
+  bn.wsrr    w6, URND
+  bn.wsrr   w14, URND
+  bn.wsrr   w15, URND
+  bn.wsrr   w26, URND
+  bn.wsrr   w27, URND
+
   /* Load second share of secret key d from dmem.
-       w5,w6 = dmem[d1] */
+       w14,w15 = dmem[d1] */
   la        x16, d1
-  li        x2, 5
+  li        x2, 14
   bn.lid    x2, 0(x16++)
-  li        x2, 6
+  li        x2, 15
   bn.lid    x2, 0(x16)
+
+  /* [w15,w14] <= d1 - m */
+  bn.sub    w14, w14, w24, FG1
+  bn.subb   w15, w15, w25, FG1
+
+  /* [w27,w26] <= d1 - m + (n << 64) */
+  bn.add    w26, w14, w0
+  bn.addc   w27, w15, w7
+
+  /* [w6,w5] <= d1 - m mod (n << 64) */
+  bn.sel    w5, w26, w14, FG1.C
+  bn.sel    w6, w27, w15, FG1.C
+
+  /* Clear flags and randomize registers. */
+  bn.sub    w31, w31, w31
+  bn.sub    w31, w31, w31, FG1
+  bn.wsrr   w14, URND
+  bn.wsrr   w15, URND
+  bn.wsrr   w26, URND
+  bn.wsrr   w27, URND
 
   /* w0 <= ([w2,w3] * w4) mod n = (d0 * alpha) mod n */
   bn.mov    w24, w2
@@ -199,7 +288,7 @@ p256_sign:
      which violates ECDSA private key requirements. This could technically be
      triggered by an unlucky key manager seed, but the probability is so low (~1/n)
      that it more likely indicates a fault attack. */
-  jal       x1, trigger_fault_if_fg0_z
+  jal       x1, trigger_fault_if_fg0_not_z
 
   /* w24 = r <= w11  mod n */
   bn.addm   w24, w11, w31

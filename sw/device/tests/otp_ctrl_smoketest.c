@@ -5,7 +5,7 @@
 #include <assert.h>
 #include <stdbool.h>
 
-#include "dt/dt_otp_ctrl.h"
+#include "hw/top/dt/otp_ctrl.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"

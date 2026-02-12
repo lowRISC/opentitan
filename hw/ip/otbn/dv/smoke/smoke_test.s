@@ -95,7 +95,7 @@ add x21, x21, 0x123
 
 test_label_3:
 
-# use mod WSR to load bignum registers with base li psuedo-instruction
+# use mod WSR to load bignum registers with base li pseudo-instruction
 # mod = 0x78fccc06_2228e9d6_89c9b54f_887cf14e_c79af825_69be586e_9866bb3b_53769ada
 li x23, 0x78fccc06
 csrrw x0, mod7, x23
@@ -118,7 +118,7 @@ csrrw x0, mod0, x23
 csrrs x23, mod5, x0
 
 # Note that some instructions used the fixed inputs (from w1 and w2) others use
-# results from previous instructions. When debugging an failure it is recommened
+# results from previous instructions. When debugging an failure it is recommended
 # you first look at the failure from the lowest numbered register as failures
 # can cascade into later instructions.
 

@@ -14,7 +14,7 @@ class hmac_wipe_secret_vseq extends hmac_smoke_vseq;
   // Standard SV/UVM methods
   extern function new(string name="");
   extern function void pre_randomize();
-  extern task pre_body();
+  extern task body();
 endclass : hmac_wipe_secret_vseq
 
 
@@ -35,8 +35,9 @@ function void hmac_wipe_secret_vseq::pre_randomize();
   this.wipe_secret_c.constraint_mode(0);
 endfunction : pre_randomize
 
-task hmac_wipe_secret_vseq::pre_body();
+task hmac_wipe_secret_vseq::body();
   // No need to trigger Save and Restore for this test
   cfg.save_and_restore_pct = 0;
-  super.pre_body();
-endtask : pre_body
+
+  super.body();
+endtask : body

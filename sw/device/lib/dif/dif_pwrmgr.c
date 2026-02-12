@@ -10,7 +10,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
 
-#include "pwrmgr_regs.h"  // Generated.
+#include "hw/top/pwrmgr_regs.h"  // Generated.
 
 /**
  * Following static assertions make sure that generated values match the

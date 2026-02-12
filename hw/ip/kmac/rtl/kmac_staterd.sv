@@ -121,6 +121,10 @@ module kmac_staterd
   logic [SelAddrW-1:0] addr_sel;
   assign addr_sel = tlram_addr[StateAddrW+:SelAddrW];
 
-  assign tlram_rdata_endian = int'(addr_sel) < Share ? muxed_state[addr_sel] : 0;
+  if (EnMasking) begin : gen_state_sel_masked
+    assign tlram_rdata_endian = int'(addr_sel) < Share ? muxed_state[addr_sel] : 0;
+  end else begin : gen_state_sel_unmasked
+    assign tlram_rdata_endian = int'(addr_sel) < Share ? muxed_state[0] : 0;
+  end
 
 endmodule

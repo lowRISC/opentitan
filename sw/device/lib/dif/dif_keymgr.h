@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/keymgr/doc/">Key Manager</a> Device Interface
+ * @brief <a href="/book/hw/ip/keymgr/">Key Manager</a> Device Interface
  * Functions
  */
 
@@ -17,7 +17,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
 
-#include "keymgr_regs.h"
+#include "hw/top/keymgr_regs.h"
 #include "sw/device/lib/dif/autogen/dif_keymgr_autogen.h"
 
 #ifdef __cplusplus

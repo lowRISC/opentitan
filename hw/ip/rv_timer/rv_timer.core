@@ -9,8 +9,8 @@ filesets:
     depend:
       - lowrisc:prim:all
       - lowrisc:ip:tlul
+      - lowrisc:ip:rv_timer_reg_pkg
     files:
-      - rtl/rv_timer_reg_pkg.sv
       - rtl/rv_timer_reg_top.sv
       - rtl/timer_core.sv
       - rtl/rv_timer.sv

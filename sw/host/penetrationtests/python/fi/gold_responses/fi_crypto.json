@@ -1,0 +1,16 @@
+{
+    "char_shadow_reg_access": {
+      "result": [68162304, 0, 0],
+      "err_status": 0,
+      "alerts": [0, 0, 0],
+      "loc_alerts": 0,
+      "ast_alerts": [0, 0]
+    },
+    "char_shadow_reg_read": {
+      "result": [0, 0, 0],
+      "err_status": 0,
+      "alerts": [0, 0, 0],
+      "loc_alerts": 0,
+      "ast_alerts": [0, 0]
+    }
+}

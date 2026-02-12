@@ -12,9 +12,10 @@ module aes_ctr_fsm_p import aes_pkg::*;
   input  logic                     clk_i,
   input  logic                     rst_ni,
 
+  input  logic                     inc32_i,         // Sparsify
   input  logic                     incr_i,          // Sparsify
   output logic                     ready_o,         // Sparsify
-  input  logic                     incr_err_i,
+  input  logic                     sp_enc_err_i,
   input  logic                     mr_err_i,
   output logic                     alert_o,
 
@@ -29,8 +30,9 @@ module aes_ctr_fsm_p import aes_pkg::*;
   /////////////////////
 
   localparam int NumInBufBits = $bits({
+    inc32_i,
     incr_i,
-    incr_err_i,
+    sp_enc_err_i,
     mr_err_i,
     ctr_slice_i
   });
@@ -38,8 +40,9 @@ module aes_ctr_fsm_p import aes_pkg::*;
   logic [NumInBufBits-1:0] in, in_buf;
 
   assign in = {
+    inc32_i,
     incr_i,
-    incr_err_i,
+    sp_enc_err_i,
     mr_err_i,
     ctr_slice_i
   };
@@ -53,13 +56,15 @@ module aes_ctr_fsm_p import aes_pkg::*;
     .out_o(in_buf)
   );
 
+  logic                    inc32;
   logic                    incr;
-  logic                    incr_err;
+  logic                    sp_enc_err;
   logic                    mr_err;
   logic [SliceSizeCtr-1:0] ctr_i_slice;
 
-  assign {incr,
-          incr_err,
+  assign {inc32,
+          incr,
+          sp_enc_err,
           mr_err,
           ctr_i_slice} = in_buf;
 
@@ -78,9 +83,10 @@ module aes_ctr_fsm_p import aes_pkg::*;
     .clk_i           ( clk_i         ),
     .rst_ni          ( rst_ni        ),
 
+    .inc32_i         ( inc32         ),
     .incr_i          ( incr          ),
     .ready_o         ( ready         ),
-    .incr_err_i      ( incr_err      ),
+    .sp_enc_err_i    ( sp_enc_err    ),
     .mr_err_i        ( mr_err        ),
     .alert_o         ( alert         ),
 

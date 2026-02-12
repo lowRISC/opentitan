@@ -21,7 +21,7 @@ package aon_timer_env_pkg;
   // parameters
   // alerts
   parameter uint NUM_ALERTS = 1;
-  parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
+  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"fatal_fault"};
 
   // Dummy objects used to derive the actual size from structs in aon_timer_reg_pkg
   aon_timer_reg_pkg::aon_timer_reg2hw_wkup_ctrl_reg_t     wkup_ctrl_fields;

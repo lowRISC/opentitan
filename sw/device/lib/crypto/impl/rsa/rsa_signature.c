@@ -8,9 +8,8 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/crypto/impl/rsa/rsa_modexp.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_padding.h"
-#include "sw/device/lib/crypto/include/hash.h"
+#include "sw/device/lib/crypto/impl/rsa/run_rsa.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('r', 's', 'v')
@@ -28,29 +27,41 @@
 OT_WARN_UNUSED_RESULT
 static status_t digest_check(const otcrypto_hash_digest_t digest) {
   size_t num_words = 0;
+  otcrypto_hash_mode_t used_mode = launder32(0);
   switch (digest.mode) {
     case kOtcryptoHashModeSha3_224:
+      used_mode = launder32(used_mode) | kOtcryptoHashModeSha3_224;
       num_words = 224 / 32;
       break;
     case kOtcryptoHashModeSha256:
-      OT_FALLTHROUGH_INTENDED;
+      used_mode = launder32(used_mode) | kOtcryptoHashModeSha256;
+      num_words = 256 / 32;
+      break;
     case kOtcryptoHashModeSha3_256:
+      used_mode = launder32(used_mode) | kOtcryptoHashModeSha3_256;
       num_words = 256 / 32;
       break;
     case kOtcryptoHashModeSha384:
-      OT_FALLTHROUGH_INTENDED;
+      used_mode = launder32(used_mode) | kOtcryptoHashModeSha384;
+      num_words = 384 / 32;
+      break;
     case kOtcryptoHashModeSha3_384:
+      used_mode = launder32(used_mode) | kOtcryptoHashModeSha3_384;
       num_words = 384 / 32;
       break;
     case kOtcryptoHashModeSha512:
-      OT_FALLTHROUGH_INTENDED;
+      used_mode = launder32(used_mode) | kOtcryptoHashModeSha512;
+      num_words = 512 / 32;
+      break;
     case kOtcryptoHashModeSha3_512:
+      used_mode = launder32(used_mode) | kOtcryptoHashModeSha3_512;
       num_words = 512 / 32;
       break;
     default:
       return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_GT(num_words, 0);
+  HARDENED_CHECK_EQ(launder32(used_mode), digest.mode);
 
   if (num_words != digest.len) {
     return OTCRYPTO_BAD_ARGS;
@@ -75,11 +86,13 @@ static status_t message_encode(const otcrypto_hash_digest_t message_digest,
   // Check that the digest length is OK.
   HARDENED_TRY(digest_check(message_digest));
 
-  switch (padding_mode) {
+  switch (launder32(padding_mode)) {
     case kRsaSignaturePaddingPkcs1v15:
+      HARDENED_CHECK_EQ(padding_mode, kRsaSignaturePaddingPkcs1v15);
       return rsa_padding_pkcs1v15_encode(message_digest, encoded_message_len,
                                          encoded_message);
     case kRsaSignaturePaddingPss: {
+      HARDENED_CHECK_EQ(padding_mode, kRsaSignaturePaddingPss);
       // Generate a random salt value whose length matches the digest length.
       uint32_t salt[message_digest.len];
       HARDENED_TRY(entropy_complex_check());
@@ -127,11 +140,13 @@ static status_t encoded_message_verify(
   // Check that the digest length is OK.
   HARDENED_TRY(digest_check(message_digest));
 
-  switch (padding_mode) {
+  switch (launder32(padding_mode)) {
     case kRsaSignaturePaddingPkcs1v15:
+      HARDENED_CHECK_EQ(padding_mode, kRsaSignaturePaddingPkcs1v15);
       return rsa_padding_pkcs1v15_verify(message_digest, encoded_message,
                                          encoded_message_len, result);
     case kRsaSignaturePaddingPss:
+      HARDENED_CHECK_EQ(padding_mode, kRsaSignaturePaddingPss);
       return rsa_padding_pss_verify(message_digest, encoded_message,
                                     encoded_message_len, result);
     default:
@@ -155,8 +170,8 @@ status_t rsa_signature_generate_2048_start(
                               encoded_message.data));
 
   // Start computing (encoded_message ^ d) mod n.
-  return rsa_modexp_consttime_2048_start(&encoded_message, &private_key->d,
-                                         &private_key->n);
+  return rsa_modexp_consttime_2048_start(&encoded_message, &private_key->d0,
+                                         &private_key->d1, &private_key->n);
 }
 
 status_t rsa_signature_generate_2048_finalize(rsa_2048_int_t *signature) {
@@ -166,8 +181,7 @@ status_t rsa_signature_generate_2048_finalize(rsa_2048_int_t *signature) {
 status_t rsa_signature_verify_2048_start(
     const rsa_2048_public_key_t *public_key, const rsa_2048_int_t *signature) {
   // Start computing (sig ^ e) mod n with a variable-time exponentiation.
-  return rsa_modexp_vartime_2048_start(signature, public_key->e,
-                                       &public_key->n);
+  return rsa_modexp_vartime_2048_start(signature, &public_key->n);
 }
 
 status_t rsa_signature_verify_finalize(
@@ -180,8 +194,9 @@ status_t rsa_signature_verify_finalize(
 
   // Call the appropriate `finalize()` operation to get the recovered encoded
   // message.
-  switch (num_words) {
+  switch (launder32(num_words)) {
     case kRsa2048NumWords: {
+      HARDENED_CHECK_EQ(num_words, kRsa2048NumWords);
       rsa_2048_int_t recovered_message;
       HARDENED_TRY(rsa_modexp_2048_finalize(&recovered_message));
       return encoded_message_verify(
@@ -189,6 +204,7 @@ status_t rsa_signature_verify_finalize(
           ARRAYSIZE(recovered_message.data), verification_result);
     }
     case kRsa3072NumWords: {
+      HARDENED_CHECK_EQ(num_words, kRsa3072NumWords);
       rsa_3072_int_t recovered_message;
       HARDENED_TRY(rsa_modexp_3072_finalize(&recovered_message));
       return encoded_message_verify(
@@ -196,6 +212,7 @@ status_t rsa_signature_verify_finalize(
           ARRAYSIZE(recovered_message.data), verification_result);
     }
     case kRsa4096NumWords: {
+      HARDENED_CHECK_EQ(num_words, kRsa4096NumWords);
       rsa_4096_int_t recovered_message;
       HARDENED_TRY(rsa_modexp_4096_finalize(&recovered_message));
       return encoded_message_verify(
@@ -223,8 +240,8 @@ status_t rsa_signature_generate_3072_start(
                               encoded_message.data));
 
   // Start computing (encoded_message ^ d) mod n.
-  return rsa_modexp_consttime_3072_start(&encoded_message, &private_key->d,
-                                         &private_key->n);
+  return rsa_modexp_consttime_3072_start(&encoded_message, &private_key->d0,
+                                         &private_key->d1, &private_key->n);
 }
 
 status_t rsa_signature_generate_3072_finalize(rsa_3072_int_t *signature) {
@@ -234,8 +251,7 @@ status_t rsa_signature_generate_3072_finalize(rsa_3072_int_t *signature) {
 status_t rsa_signature_verify_3072_start(
     const rsa_3072_public_key_t *public_key, const rsa_3072_int_t *signature) {
   // Start computing (sig ^ e) mod n with a variable-time exponentiation.
-  return rsa_modexp_vartime_3072_start(signature, public_key->e,
-                                       &public_key->n);
+  return rsa_modexp_vartime_3072_start(signature, &public_key->n);
 }
 
 status_t rsa_signature_generate_4096_start(
@@ -249,8 +265,8 @@ status_t rsa_signature_generate_4096_start(
                               encoded_message.data));
 
   // Start computing (encoded_message ^ d) mod n.
-  return rsa_modexp_consttime_4096_start(&encoded_message, &private_key->d,
-                                         &private_key->n);
+  return rsa_modexp_consttime_4096_start(&encoded_message, &private_key->d0,
+                                         &private_key->d1, &private_key->n);
 }
 
 status_t rsa_signature_generate_4096_finalize(rsa_4096_int_t *signature) {
@@ -260,6 +276,5 @@ status_t rsa_signature_generate_4096_finalize(rsa_4096_int_t *signature) {
 status_t rsa_signature_verify_4096_start(
     const rsa_4096_public_key_t *public_key, const rsa_4096_int_t *signature) {
   // Start computing (sig ^ e) mod n with a variable-time exponentiation.
-  return rsa_modexp_vartime_4096_start(signature, public_key->e,
-                                       &public_key->n);
+  return rsa_modexp_vartime_4096_start(signature, &public_key->n);
 }

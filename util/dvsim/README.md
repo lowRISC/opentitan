@@ -1,4 +1,4 @@
-## DVSim
+# DVSim
 
 DVSim is a build and run system written in Python that runs a variety of EDA tool flows.
 There are multiple steps involved in running EDA tool flows.
@@ -16,7 +16,7 @@ The following flows are currently supported:
 * CDC
 * RDC
 
-# Installation
+## Installation
 
 Clone the OpenTitan repository by following the [Getting Started](../../doc/getting_started/README.md) steps.
 The rest of the documentation will assume `$REPO_TOP` as the root of the local OpenTitan repository.
@@ -37,12 +37,12 @@ python3 -m pip install --user -r $REPO_TOP/python-requirements.txt
 
 Note that you may have already done this if you followed the getting started steps.
 
-# Other related documents
+## Other related documents
 
 * [Testplanner tool](./doc/testplanner.md)
 * [Design document](./doc/design_doc.md)
 * [Glossary](./doc/glossary.md)
 
-# Bugs
+## Bugs
 
 Please see [link](https://github.com/lowRISC/opentitan/issues?q=is%3Aopen+is%3Aissue+label%3ATool%3Advsim) for a list of open bugs and feature requests.

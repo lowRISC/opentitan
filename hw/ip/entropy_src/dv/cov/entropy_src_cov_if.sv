@@ -588,7 +588,7 @@ interface entropy_src_cov_if
                                                   bit esbit_fifo_not_empty_i,
                                                   bit postht_fifo_not_empty_i,
                                                   bit distr_fifo_not_empty_i,
-                                                  bit cs_aes_halt_req_i,
+                                                  bit sha3_block_busy_i,
                                                   bit sha3_block_processed_i,
                                                   bit bypass_mode_i,
                                                   bit enable_o);
@@ -643,11 +643,13 @@ interface entropy_src_cov_if
                                          binsof(cp_distr_fifo.not_empty));
     }
 
-    cp_sha3_state: coverpoint {cs_aes_halt_req_i, sha3_block_processed_i} {
+    cp_sha3_state: coverpoint {sha3_block_busy_i, sha3_block_processed_i} {
       bins idle = {2'b00};
       bins sha3_block_processed = {2'b01};
-      bins aes_halt_req = {2'b10};
-      bins aes_halt_req_and_sha3_block_processed = {2'b11};
+      bins sha3_block_busy = {2'b10};
+      // In the current implementation, sha3_block_busy is de-asserted based on
+      // sha3_block_processsed.
+      illegal_bins sha3_block_busy_and_sha3_block_processed = {2'b11};
     }
 
     cr_enable_i_sha3_state: cross cp_enable, cp_sha3_state {
@@ -701,11 +703,11 @@ interface entropy_src_cov_if
   // test_type: Can be repcnt_ht, or repcnts_ht
   // "Score": This is an abstraction of the number of repeated bits that allows us to
   //          compare coverage of the REPCNTS & REPCNT health tests with the same CG.
-  //          REPCNTS test values are scaled up by a factor of RNG_BUS_WIDTH to
+  //          REPCNTS test values are scaled up by a factor of `RNG_BUS_WIDTH to
   //          allow for meaningful comparison in the same set of bins.
   //
   //          Since each _symbol_ repetition is about as coincidentally likely as
-  //          RNG_BUS_WIDTH individual line repetitions, the range thresholds for the
+  //          `RNG_BUS_WIDTH individual line repetitions, the range thresholds for the
   //          symbols the _symbol_ test are lower by the same fraction.  This means
   //          that counting pass/fail-cross-count events is hard to compare between
   //          the two tests unless the repcnts test scores is scaled to use the same
@@ -746,7 +748,7 @@ interface entropy_src_cov_if
     // bits, though they do permit false positive rates in the range of 2^(-20) - 2^(-40)
     // are acceptable.
     //
-    // For ideal RNG inputs and this range corrensponds to events in the
+    // For ideal RNG inputs and this range corresponds to events in the
     // "medhigh" bin below for the single-line repcnt test, or the "low"
     // bin for the repcnts (4-bit symbol) test.
     //
@@ -808,7 +810,7 @@ interface entropy_src_cov_if
   // "Deep" covergroup definition to confirm that the threshold performance has been
   // properly tested for a practical range of thresholds for all windowed tests.
   //
-  // Covering a range of thesholds for the windowed tests is challenging as the
+  // Covering a range of thresholds for the windowed tests is challenging as the
   // results of the test values are generally expected to be centered around the average
   // value.  Many threshold values will require directed tests to obtain a pass or fail value,
   // if they are even testable at all.
@@ -821,7 +823,7 @@ interface entropy_src_cov_if
   // an ideal stream of RNG inputs.
   //
   // The least aggressive threshold bin (> 6 sigma) more accurately corresponds to the functional
-  // mode of operation, with a low rate of false postives, which will require some directed
+  // mode of operation, with a low rate of false positives, which will require some directed
   // tests to trigger a HT failure.
   //
   // The definition of these practical ranges depends on the size of the windows
@@ -957,6 +959,31 @@ interface entropy_src_cov_if
 
   endgroup : one_way_ht_threshold_reg_cg
 
+  // Covergroup to confirm the ht_watermark_num register works correctly.
+  // Do we write all possible (including unsupported values)?
+  covergroup ht_watermark_num_cg with function sample(logic [3:0] num);
+    option.name         = "ht_watermark_num_cg";
+    option.per_instance = 1;
+
+    cp_ht_watermark_num : coverpoint num;
+  endgroup : ht_watermark_num_cg
+
+  // Covergroup to confirm the ht_watermark register works correctly.
+  // Do we read the ht_watermark register for all supported ht_watermark_num values?
+  covergroup ht_watermark_cg with function sample(ht_watermark_num_e num, logic [15:0] value);
+    option.name         = "ht_watermark_cg";
+    option.per_instance = 1;
+
+    cp_ht_watermark_num : coverpoint num;
+    cp_ht_watermark : coverpoint value {
+      bins min = {0};
+      bins med = {[1:16'hfffe]};
+      bins max = {16'hffff};
+    }
+
+    cr_cross : cross cp_ht_watermark_num, cp_ht_watermark;
+  endgroup : ht_watermark_cg
+
   covergroup recov_alert_cg with function sample(int alert_bit);
     option.name         = "recov_alert_cg";
     option.per_instance = 1;
@@ -965,7 +992,6 @@ interface entropy_src_cov_if
       bins alert_bits[] = {0, 1, 2, 3, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
     }
   endgroup : recov_alert_cg
-
 
   `DV_FCOV_INSTANTIATE_CG(err_test_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(mubi_err_cg, en_full_cov)
@@ -984,6 +1010,8 @@ interface entropy_src_cov_if
   `DV_FCOV_INSTANTIATE_CG(alert_cnt_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(observe_fifo_threshold_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(one_way_ht_threshold_reg_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(ht_watermark_num_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(ht_watermark_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(recov_alert_cg, en_full_cov)
 
   // Sample functions needed for xcelium
@@ -1094,8 +1122,8 @@ interface entropy_src_cov_if
     bit [15:0] score;
     bit [31:0] symbol_score;
 
-    symbol_score = (32'(raw_score) * RNG_BUS_WIDTH > 32'hffff) ?
-                   32'hffff : 32'(raw_score) * RNG_BUS_WIDTH;
+    symbol_score = (32'(raw_score) * `RNG_BUS_WIDTH > 32'hffff) ?
+                   32'hffff : 32'(raw_score) * `RNG_BUS_WIDTH;
     score = (test_type == repcnts_ht) ? symbol_score[15:0] : raw_score;
 
     cont_ht_cg_inst.sample(test_type, fips_mode, rng_bit_enable, rng_bit_select, score, fail);
@@ -1142,6 +1170,14 @@ interface entropy_src_cov_if
     recov_alert_cg_inst.sample(which_bit);
   endfunction
 
+  function automatic void cg_ht_watermark_num_sample(logic [3:0] num);
+    ht_watermark_num_cg_inst.sample(num);
+  endfunction
+
+  function automatic void cg_ht_watermark_sample(ht_watermark_num_e num, logic [15:0] value);
+    ht_watermark_cg_inst.sample(num, value);
+  endfunction
+
 
   // Sample the csrng_hw_cg whenever data is output on the csrng pins
   logic csrng_if_req, csrng_if_ack;
@@ -1186,7 +1222,7 @@ interface entropy_src_cov_if
             tb.dut.u_entropy_src_core.u_enable_delay.esbit_fifo_not_empty_i,
             tb.dut.u_entropy_src_core.u_enable_delay.postht_fifo_not_empty_i,
             tb.dut.u_entropy_src_core.u_enable_delay.distr_fifo_not_empty_i,
-            tb.dut.u_entropy_src_core.u_enable_delay.cs_aes_halt_req_i,
+            tb.dut.u_entropy_src_core.u_enable_delay.sha3_block_busy_i,
             tb.dut.u_entropy_src_core.u_enable_delay.sha3_block_processed_i,
             tb.dut.u_entropy_src_core.u_enable_delay.bypass_mode_i,
             tb.dut.u_entropy_src_core.u_enable_delay.enable_o);

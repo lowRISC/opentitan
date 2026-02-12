@@ -13,7 +13,7 @@ from pathlib import Path
 import hjson
 from mako.template import Template
 
-from lib.common import wrapped_docstring
+from lib.common import check_int, wrapped_docstring
 from lib.LcStEnc import LcStEnc
 
 # State encoding definition
@@ -22,19 +22,21 @@ LC_STATE_DEFINITION_FILE = "hw/ip/lc_ctrl/data/lc_ctrl_state.hjson"
 TEMPLATES = ["hw/ip/lc_ctrl/rtl/lc_ctrl_state_pkg.sv.tpl"]
 
 
-def _render_template(template: str, output_file: str, lc_st_enc: LcStEnc):
+def _render_template(template: str, output_file: str, lc_st_enc: LcStEnc, top_secret_path: Path):
     with open(template, 'r') as tplfile:
         tpl = Template(tplfile.read())
         # Writing in binary mode with a large buffer size to improve performance
         # in cloud environments (i.e., CI). See #17574.
         if output_file:
             with open(output_file, 'wb', buffering=2097152) as outfile:
-                outfile.write(tpl.render(lc_st_enc=lc_st_enc).encode('utf-8'))
+                outfile.write(tpl.render(lc_st_enc=lc_st_enc,
+                                         top_secret_path=top_secret_path).encode('utf-8'))
         else:
             with open(Path(template).parent.joinpath(Path(template).stem),
                       'wb',
                       buffering=2097152) as outfile:
-                outfile.write(tpl.render(lc_st_enc=lc_st_enc).encode('utf-8'))
+                outfile.write(tpl.render(lc_st_enc=lc_st_enc,
+                                         top_secret_path=top_secret_path).encode('utf-8'))
 
 
 def main():
@@ -48,11 +50,13 @@ def main():
                         type=str,
                         default=LC_STATE_DEFINITION_FILE,
                         help='State encoding definition file in HJSON format.')
-    parser.add_argument('-s',
-                        '--seed',
-                        type=int,
-                        metavar='<seed>',
-                        help='Custom seed for RNG.')
+    parser.add_argument('--top-secret-cfg',
+                        type=Path,
+                        metavar='<path>',
+                        required=True,
+                        help='''
+                        Path to the top secret configuration in Hjson format.
+                        ''')
     parser.add_argument(
         '--raw-unlock-rs-template',
         type=str,
@@ -66,22 +70,16 @@ def main():
         help='Rust output file that contains the raw unlock token constants.')
     args = parser.parse_args()
 
+    with open(args.top_secret_cfg, 'r') as infile:
+        top_secret_cfg = hjson.load(infile)
+
     with open(args.lc_state_def_file, 'r') as infile:
         config = hjson.load(infile)
 
-        # If specified, override the seed for random netlist constant computation.
-        if args.seed:
-            log.warning('Commandline override of seed with {}.'.format(
-                args.seed))
-            config['seed'] = args.seed
-        # Otherwise we make sure a seed exists in the HJSON config file.
-        elif 'seed' not in config:
-            log.error('Seed not found in configuration HJSON.')
-            exit(1)
-
         # validate config and generate encoding
         try:
-            lc_st_enc = LcStEnc(config)
+            lc_ctrl_seed = check_int(top_secret_cfg["seed"]["lc_ctrl_seed"]["value"])
+            lc_st_enc = LcStEnc(config, lc_ctrl_seed)
         except RuntimeError as err:
             log.error(err)
             exit(1)
@@ -89,11 +87,11 @@ def main():
         # only generate the rust constants file if the template is provided
         if args.raw_unlock_rs_template:
             _render_template(args.raw_unlock_rs_template,
-                             args.raw_unlock_rs_output, lc_st_enc)
+                             args.raw_unlock_rs_output, lc_st_enc, args.top_secret_cfg,)
         else:
             # otherwise, render all templates
             for template in TEMPLATES:
-                _render_template(template, None, lc_st_enc)
+                _render_template(template, None, lc_st_enc, args.top_secret_cfg,)
 
 
 if __name__ == "__main__":

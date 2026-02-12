@@ -53,6 +53,22 @@ status_t handle_crypto_fi_kmac(ujson_t *uj);
 status_t handle_crypto_fi_kmac_state(ujson_t *uj);
 
 /**
+ * HMAC FI test.
+ *
+ * Receive message & trigger configuration from host. Perform SHA2 or HMAC
+ * operation and return the digest back to the host.
+ *
+ * There are triggers over each interface function.
+ * The HMAC has the option to swap the endianness of its message, key, or
+ * digest, and it accepts its mode to be in SHA256, SHA384, or SHA512. Enable
+ * hmac means that HMAC is used, otherwise SHA2 is used.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_crypto_fi_hmac(ujson_t *uj);
+
+/**
  * Shadow Register Access FI test.
  *
  * In this test, faults are injected when accessing KMAC shadow registers.

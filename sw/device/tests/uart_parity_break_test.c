@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/uart.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
@@ -13,16 +14,17 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_console.h"
+#include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_utils.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/lib/testing/uart_testutils.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 static dif_pinmux_t pinmux;
 static dif_rv_plic_t rv_plic;
 static dif_uart_t uart;
+
+static_assert(kDtUartCount >= 2, "This test needs at least 2 UART instance");
 
 // Parameters of the test to be set at the beginning.
 // Parity settings are:
@@ -33,7 +35,9 @@ static volatile uint8_t parity = UINT8_MAX;
 static volatile uint8_t uart_idx = UINT8_MAX;
 
 // Parameters for the particular UART instance under test.
-static volatile uart_cfg_params_t uart_cfg;
+static dt_uart_t uart_dt;
+
+static const uint32_t kPlicTarget = 0;
 
 // Whether we expect and have received the RX parity error interrupt.
 static volatile bool uart_irq_rx_parity_err_expected = false;
@@ -68,9 +72,11 @@ static const uint8_t kUartData[32] = {
 
 // Configure the UART under test selected by `uart_idx` with `parity`.
 static status_t configure_uart(void) {
-  TRY(uart_testutils_cfg_params(uart_idx, (uart_cfg_params_t *)&uart_cfg));
+  // Convert UART index to DT instance
+  CHECK(uart_idx < kDtUartCount, "UART index out of bounds");
+  uart_dt = (dt_uart_t)uart_idx;
 
-  TRY(dif_uart_init(mmio_region_from_addr(uart_cfg.base_addr), &uart));
+  TRY(dif_uart_init_from_dt(uart_dt, &uart));
 
   dif_toggle_t parity_enable =
       parity < 2 ? kDifToggleEnabled : kDifToggleDisabled;
@@ -102,20 +108,19 @@ static status_t configure_interrupts(void) {
   TRY(dif_uart_irq_set_enabled(&uart, kDifUartIrqRxBreakErr,
                                kDifToggleEnabled));
 
-  TRY(dif_rv_plic_irq_set_priority(&rv_plic, uart_cfg.irq_rx_parity_err_id,
-                                   0x1));
-  TRY(dif_rv_plic_irq_set_priority(&rv_plic, uart_cfg.irq_rx_break_err_id,
-                                   0x1));
+  TRY(dif_rv_plic_irq_set_priority(
+      &rv_plic, dt_uart_irq_to_plic_id(uart_dt, kDtUartIrqRxParityErr), 0x1));
+  TRY(dif_rv_plic_irq_set_priority(
+      &rv_plic, dt_uart_irq_to_plic_id(uart_dt, kDtUartIrqRxBreakErr), 0x1));
 
-  TRY(dif_rv_plic_irq_set_enabled(&rv_plic, uart_cfg.irq_rx_parity_err_id,
-                                  kTopEarlgreyPlicTargetIbex0,
-                                  kDifToggleEnabled));
-  TRY(dif_rv_plic_irq_set_enabled(&rv_plic, uart_cfg.irq_rx_break_err_id,
-                                  kTopEarlgreyPlicTargetIbex0,
-                                  kDifToggleEnabled));
+  TRY(dif_rv_plic_irq_set_enabled(
+      &rv_plic, dt_uart_irq_to_plic_id(uart_dt, kDtUartIrqRxParityErr),
+      kPlicTarget, kDifToggleEnabled));
+  TRY(dif_rv_plic_irq_set_enabled(
+      &rv_plic, dt_uart_irq_to_plic_id(uart_dt, kDtUartIrqRxBreakErr),
+      kPlicTarget, kDifToggleEnabled));
 
-  TRY(dif_rv_plic_target_set_threshold(&rv_plic, kTopEarlgreyPlicTargetIbex0,
-                                       0x0));
+  TRY(dif_rv_plic_target_set_threshold(&rv_plic, kPlicTarget, 0x0));
 
   // Enable the external IRQ at Ibex.
   irq_global_ctrl(true);
@@ -124,49 +129,48 @@ static status_t configure_interrupts(void) {
   return OK_STATUS();
 }
 
-// This function overrides the default OTTF external ISR.
+// This function overrides the default OTTF IRQ handler.
 //
 // It handles the `rx_parity_err` and `rx_break_err` interrupts and checks they
 // came from the correct UART. If the interrupts were expected, we let the main
 // thread know that they were triggered.
-void ottf_external_isr(uint32_t *exc_info) {
-  // Claim the interrupt.
-  dif_rv_plic_irq_id_t plic_irq_id;
-  CHECK_DIF_OK(dif_rv_plic_irq_claim(&rv_plic, kTopEarlgreyPlicTargetIbex0,
-                                     &plic_irq_id));
-
-  // Check the interrupt fired on the correct UART.
-  top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
-
-  // Handle interrupts for the console UART separately.
-  if (peripheral != uart_cfg.peripheral_id) {
-    ottf_console_flow_control_isr(exc_info);
+bool ottf_handle_irq(uint32_t *exc_info, dt_instance_id_t devid,
+                     dif_rv_plic_irq_id_t plic_irq_id) {
+  // Check if it is the right peripheral.
+  if (devid != dt_uart_instance_id(uart_dt)) {
+    return false;
   }
 
-  // Check it was the parity error that fired and that we expected it.
-  uint32_t uart_irq_id = 0;
-  if (plic_irq_id == uart_cfg.irq_rx_parity_err_id) {
-    CHECK(uart_irq_rx_parity_err_expected, "Unexpected parity error interrupt");
-    uart_irq_rx_parity_err_fired = true;
-    uart_irq_id = kDifUartIrqRxParityErr;
-  } else if (plic_irq_id == uart_cfg.irq_rx_break_err_id) {
-    CHECK(uart_irq_rx_break_err_expected, "Unexpected break error interrupt");
-    uart_irq_rx_break_err_fired = true;
-    uart_irq_id = kDifUartIrqRxBreakErr;
-  } else {
-    CHECK(false, "Unexpected interrupt from UART: %d", plic_irq_id);
+  // Correlate the interrupt fired at PLIC with UART.
+  dt_uart_irq_t uart_irq = dt_uart_irq_from_plic_id(uart_dt, plic_irq_id);
+  dif_uart_irq_t dif_uart_irq;
+
+  switch (uart_irq) {
+    case kDtUartIrqRxParityErr:
+      CHECK(uart_irq_rx_parity_err_expected,
+            "Unexpected parity error interrupt");
+      uart_irq_rx_parity_err_fired = true;
+      dif_uart_irq = kDifUartIrqRxParityErr;
+      break;
+    case kDtUartIrqRxBreakErr:
+      CHECK(uart_irq_rx_break_err_expected, "Unexpected break error interrupt");
+      uart_irq_rx_break_err_fired = true;
+      dif_uart_irq = kDifUartIrqRxBreakErr;
+      break;
+    default:
+      // Not our interrupt, let OTTF handle it (e.g., console UART)
+      return false;
   }
 
   // Check that the same interrupt fired at the UART as well.
   bool is_pending;
-  CHECK_DIF_OK(dif_uart_irq_is_pending(&uart, uart_irq_id, &is_pending));
+  CHECK_DIF_OK(dif_uart_irq_is_pending(&uart, dif_uart_irq, &is_pending));
   CHECK(is_pending, "UART interrupt fired at PLIC did not fire at UART");
 
   // Acknowledge interrupt.
-  CHECK_DIF_OK(dif_uart_irq_acknowledge(&uart, uart_irq_id));
-  CHECK_DIF_OK(dif_rv_plic_irq_complete(&rv_plic, kTopEarlgreyPlicTargetIbex0,
-                                        plic_irq_id));
+  CHECK_DIF_OK(dif_uart_irq_acknowledge(&uart, dif_uart_irq));
+
+  return true;
 }
 
 // Body of the test:
@@ -244,11 +248,8 @@ static status_t execute_test(void) {
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
 bool test_main(void) {
-  mmio_region_t base_addr;
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_pinmux_init(base_addr, &pinmux));
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
-  CHECK_DIF_OK(dif_rv_plic_init(base_addr, &rv_plic));
+  CHECK_DIF_OK(dif_pinmux_init_from_dt(kDtPinmuxAon, &pinmux));
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kDtRvPlic, &rv_plic));
 
   // Wait for host to tell us which parity and UART to test.
   OTTF_WAIT_FOR(uart_idx != UINT8_MAX && parity != UINT8_MAX,
@@ -258,7 +259,8 @@ bool test_main(void) {
   if (uart_idx == 0) {
     CHECK_STATUS_OK(
         uart_testutils_select_pinmux(&pinmux, 1, kUartPinmuxChannelConsole));
-    ottf_console_configure_uart(TOP_EARLGREY_UART1_BASE_ADDR);
+    ottf_console_configure_uart(ottf_console_get(),
+                                dt_uart_primary_reg_block(kDtUart1));
   }
 
   // Configure the UART under test.

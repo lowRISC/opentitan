@@ -13,6 +13,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | Port Name      | Package::Struct              | Type    | Act   |   Width | Description   |
 |:---------------|:-----------------------------|:--------|:------|--------:|:--------------|
 | boot_status    | pwrmgr_pkg::pwr_boot_status  | uni     | req   |       1 |               |
+| ext_rst_ack    | logic                        | uni     | rcv   |       1 |               |
 | pwr_ast        | pwrmgr_pkg::pwr_ast          | req_rsp | req   |       1 |               |
 | pwr_rst        | pwrmgr_pkg::pwr_rst          | req_rsp | req   |       1 |               |
 | pwr_clk        | pwrmgr_pkg::pwr_clk          | req_rsp | req   |       1 |               |
@@ -22,7 +23,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | esc_rst_tx     | prim_esc_pkg::esc_tx         | uni     | rcv   |       1 |               |
 | esc_rst_rx     | prim_esc_pkg::esc_rx         | uni     | req   |       1 |               |
 | pwr_cpu        | rv_core_ibex_pkg::cpu_pwrmgr | uni     | rcv   |       1 |               |
-| wakeups        | logic                        | uni     | rcv   |       4 |               |
+| wakeups        | logic                        | uni     | rcv   |       3 |               |
 | rstreqs        | logic                        | uni     | rcv   |       2 |               |
 | ndmreset_req   | logic                        | uni     | rcv   |       1 |               |
 | strap          | logic                        | uni     | req   |       1 |               |

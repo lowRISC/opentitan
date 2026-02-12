@@ -17,3 +17,11 @@ filegroup(
         "//hw/ip/rv_timer/data:all_files",
     ],
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = glob([
+        "**/*.md",
+        "**/*.svg",
+    ]) + ["//hw/ip/rv_timer/data:doc_files"],
+)

@@ -19,6 +19,23 @@ package otp_scrambler_pkg;
   parameter int NUM_ROUND          = 31;
   string path = "otp_scrambler_pkg";
 
+  parameter key_array_t RndCnstKey = {
+    top_darjeeling_rnd_cnst_pkg::RndCnstOtpCtrlScrmblKey3,
+    top_darjeeling_rnd_cnst_pkg::RndCnstOtpCtrlScrmblKey2,
+    top_darjeeling_rnd_cnst_pkg::RndCnstOtpCtrlScrmblKey1,
+    top_darjeeling_rnd_cnst_pkg::RndCnstOtpCtrlScrmblKey0
+  };
+
+  parameter digest_const_array_t RndCnstDigestConst = {
+    top_darjeeling_rnd_cnst_pkg::RndCnstOtpCtrlDigestConst1,
+    top_darjeeling_rnd_cnst_pkg::RndCnstOtpCtrlDigestConst0
+  };
+
+  parameter digest_iv_array_t RndCnstDigestIV = {
+    top_darjeeling_rnd_cnst_pkg::RndCnstOtpCtrlDigestIV1,
+    top_darjeeling_rnd_cnst_pkg::RndCnstOtpCtrlDigestIV0
+  };
+
   // When secret data write into otp_array, it will be scrambled.
   function automatic bit [SCRAMBLE_DATA_SIZE-1:0] scramble_data(
     bit [SCRAMBLE_DATA_SIZE-1:0] input_data,

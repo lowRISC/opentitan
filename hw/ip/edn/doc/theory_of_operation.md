@@ -15,8 +15,10 @@ Whenever commands are directly forwarded from firmware to the CSRNG through the 
 `CMD_RDY` indicates whether the EDN is ready to receive a new command, whereas `CMD_REG_RDY` indicates whether the EDN is ready to accept the next word of the command.
 Each command consists of a command header, which is represented by a single word.
 Furthermore, a command can have up to 12 words of additional data.
+(In case firmware erroneously configures a `clen` value greater than 12, the EDN hardware expects it to indeed provide the specified number words of additional data.
+CSRNG itself will only consider the first 12 words of additional data and will silently discard the rest.)
 To check whether a command has been acknowledged by the CSRNG, the `CMD_ACK` bit of the [`SW_CMD_STS`](registers.md#sw_cmd_sts) register can be polled.
-Whenever `CMD_ACK` is high, the `CMD_STS` bit can be checked to find out if an error occured.
+Whenever `CMD_ACK` is high, the `CMD_STS` bit can be checked to find out if an error occurred.
 
 Note that CSRNG commands are to be written into the [`SW_CMD_REQ`](registers.md#sw_cmd_req), [`RESEED_CMD`](registers.md#reseed_cmd), and [`GENERATE_CMD`](registers.md#generate_cmd) registers.
 CSRNG command format details can be found in [CSRNG](../../csrng/README.md).
@@ -30,17 +32,23 @@ Random values are needed by peripherals almost immediately after reset, so to si
 In boot-time request mode, the command sequence is fully hardware-controlled and no command customization is possible.
 In this mode, the EDN automatically issues a special reduced-latency `instantiate` command followed by the default `generate` commands.
 This means, for instance, that no personalization strings or additional data may be passed to the CSRNG application interface port in this mode.
-On exiting, the EDN issues an `uninstantiate` command to destroy the associated CSRNG instance.
 
 Once firmware initialization is complete, it is important to exit this mode if the endpoints ever need FIPS-approved random values.
-Should another generate command be needed, it can only be issued after exiting boot mode.
-This is done by either *clearing* the `EDN_ENABLE` field or *clearing* the `BOOT_REQ_MODE` field in [`CTRL`](registers.md#ctrl) to halt the boot-time request state machine.
-Firmware must then wait for the transition of the state machine by polling the `CMD_RDY` field of the [`SW_CMD_STS`](registers.md#sw_cmd_sts) register or wait for the state machine to enter the SW mode by polling the [`MAIN_SM_STATE`](registers.md#main_sm_state) register.
+Should another `generate` command be needed, it can only be issued after exiting boot-time request mode.
+
+There are two ways that firmware can exit boot-time request mode:
+1. Clear the `EDN_ENABLE` field in [`CTRL`](registers.md#ctrl) to disable the EDN immediately.
+   This likely causes the EDN and the associated CSRNG instance to go out of sync.
+   Before re-enabling EDN, CSRNG has to first be disabled and then re-enabled.
+2. Clear the `BOOT_REQ_MODE` field in [`CTRL`](registers.md#ctrl).
+   Firmware must then wait for the state machine to leave the boot-time request mode by polling the `CMD_RDY` field of the [`SW_CMD_STS`](registers.md#sw_cmd_sts) register or by polling the [`MAIN_SM_STATE`](registers.md#main_sm_state) register.
+   Upon exiting boot-time request mode this way, the EDN issues an `uninstantiate` command to destroy the associated CSRNG instance.
+   Once the state machine arrives at the `SWPortMode` state, new firmware-driven commands can be passed to the CSRNG via the [`SW_CMD_REQ`](registers.md#sw_cmd_req) register.
 
 It should be noted that when in boot-time request mode, no status will be updated that is used for the software port operation.
 If some hang condition were to occur when in this mode, the main state machine debug register should be read to determine if a hang condition is present.
 There is a limit to how much entropy can be requested in the boot-time request mode BOOT_GEN_CMD command (GLEN = 4K).
-It is the responsibility of software to switch to the software mode of operation before the command has completed.
+It is the responsibility of firmware to switch to the software port operation.
 If the BOOT_GEN_CMD command ends while an endpoint is requesting, EDN will never ack and the endpoint bus will hang.
 
 #### Note on Security Considerations when Using Boot-time Request Mode
@@ -62,28 +70,32 @@ To ensure that the most recently enabled EDN will get next priority for physical
 Once that has happened, the next EDN can be enabled.
 
 If using boot-time request mode, the CSRNG seed material used for the first-activated EDN is the special pre-FIPS seed, which is specifically tested quickly to improve latency.
-The first random values distributed from this EDN will therefore be available roughly 2ms after reset.
+For [Top Earlgrey](../../../top_earlgrey/README.md), the first random values distributed from this EDN are therefore expected to be available roughly 2ms after reset.
+
 The `entropy_src` only creates one pre-FIPS seed, so any other EDNs must wait for their seeds to pass the full FIPS-recommended health checks.
-This means that each subsequent EDN must wait an additional 5ms before it can start distributing data.
+This means that for [Top Earlgrey](../../../top_earlgrey/README.md), each subsequent EDN must wait an additional 5ms before it can start distributing data.
 For instance, if there are three boot-time request mode EDN's in the system, the first will start distributing data 2ms after reset, the second will start distributing data 7ms after reset, and the third will start distributing data 12ms after reset.
 
 ### Auto Request Mode
 
-Before entering auto request mode, it is the responsibility of firmware to first generate an `instantiate` command for the EDN-associated instance via the [`SW_CMD_REQ`](registers.md#sw_cmd_req) register.
-The required `generate` and `reseed` commands must also be custom generated by firmware and loaded into the respective command replay FIFOs via the [`GENERATE_CMD`](registers.md#generate_cmd) and [`RESEED_CMD`](registers.md#reseed_cmd) registers.
+Before enabling auto request mode, firmware must configure the EDN's `generate` and `reseed` commands.
+These can be loaded into their respective command replay FIFOs through the [`GENERATE_CMD`](registers.md#generate_cmd) and [`RESEED_CMD`](registers.md#reseed_cmd) registers.
 These `generate` commands will be issued as necessary to meet the bandwidth requirements of the endpoints.
-The `reseed` commands will be issued once every `MAX_NUM_REQS_BETWEEN_RESEEDS` generate requests.
-The reset value is `0`.
-This implies that no generate commands will be issued unless this value is changed by firmware.
+The `reseed` commands will be issued once every `MAX_NUM_REQS_BETWEEN_RESEEDS` `generate` requests.
+Before enabling auto request mode, firmware must configure a non-zero value in the [`MAX_NUM_REQS_BETWEEN_RESEEDS`](registers.md#max-num-reqs-between-reseeds) register.
+The reset value is `0`, which means no `generate` commands are issued.
 For details on the options for application interface commands please see the [CSRNG IP Documentation](../../csrng/README.md).
-Once the CSRNG instance has been instantiated, and the `generate` and `reseed` commands have been loaded, auto request mode can be entered by programming the [`CTRL`](registers.md#ctrl) register with `EDN_ENABLE` and `AUTO_REQ_MODE` fields are enabled.
-Note that if BOOT_REQ_MODE is asserted the state machine will enter boot-time request mode, even if AUTO_REQ_MODE is asserted.
+Auto request mode can then be entered by programming the [`CTRL`](registers.md#ctrl) register with the `EDN_ENABLE` and the `AUTO_REQ_MODE` fields asserted.
+Note that if `BOOT_REQ_MODE` is asserted, the state machine will enter boot-time request mode, even if `AUTO_REQ_MODE` is asserted.
+Upon enabling auto request mode, firmware must first generate an `instantiate` command for the EDN-associated instance via the [`SW_CMD_REQ`](registers.md#sw_cmd_req) register.
 
-To issue any new commands other than those stored in the generate or reseed FIFOs, it is important to disable auto request mode, by deasserting the `AUTO_REQ_MODE` field in the [`CTRL`](registers.md#ctrl) register.
+To issue any new commands other than those stored in the generate or reseed FIFOs, it is important to disable auto request mode, by de-asserting the `AUTO_REQ_MODE` field in the [`CTRL`](registers.md#ctrl) register.
 Firmware must then wait until the current command is completed by polling the [`MAIN_SM_STATE`](registers.md#main_sm_state) register.
-Once the state machine returns to the `Idle` or `SWPortMode` states, new firmware-driven commands can be passed to the CSRNG via the [`SW_CMD_REQ`](registers.md#sw_cmd_req) register.
+Once the state machine returns to the `SWPortMode` state, new firmware-driven commands can be passed to the CSRNG via the [`SW_CMD_REQ`](registers.md#sw_cmd_req) register.
+Unlike when exiting from boot-time request mode, the EDN does not automatically trigger an `uninstantiate` command when leaving auto request mode.
+
 The generate and reseed FIFOs are reset under four circumstances.
-These circumstances are (a) when the EDN is disabled, (b) when the `SWPortMode` state is entered, (c) when the boot sequence has completed, or (d) when the EDN enters the `Idle` state after it finishes operation in auto mode.
+These circumstances are (a) when the EDN is disabled, (b) when the `SWPortMode` state is entered, (c) when the boot sequence has completed, or (d) when the EDN enters the `Idle` state after it finishes operation in auto request mode.
 
 It should be noted that when in auto request mode, no status will be updated that is used for the software port operation once the `instantiate` command has completed.
 If some hang condition were to occur when in this mode, the main state machine debug register should be read to determine if a hang condition is present.
@@ -91,9 +103,9 @@ If some hang condition were to occur when in this mode, the main state machine d
 ### Note on State Machine Shutdown Delays
 
 When leaving boot-time request mode or auto request mode, the EDN state machine waits for completion of the last command, before sending a shutdown acknowledgement to firmware.
-The longest possible commands are the `instantiate` or `reseed` requests, which typically take about 5ms, due to the time required to gather the necessary physical entropy.
+The longest possible commands are the `instantiate` or `reseed` requests, which typically take about 5ms in [Top Earlgrey](../../../top_earlgrey/README.md), due to the time required to gather the necessary physical entropy.
 By contrast, the largest possible `generate` command allowed by [NIST SP 800-90A](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-90Ar1.pdf) is for 2<sup>19</sup> bits (or 4096 AES codewords).
-Assuming an AES encryption delay of 16 clocks, and a 100 MHz clock frequency, the longest allowable `generate` command would take only 0.7 ms to complete.
+Assuming an AES encryption delay of 16 clocks, a 100 MHz clock frequency, and that entropy consumers are able to immediately consume the distributed entropy, the longest allowable `generate` command would take only 0.7 ms to complete.
 
 ### Note on Sharing of CSRNG Instance State Variables
 
@@ -129,15 +141,6 @@ Once these commands have completed, a status bit will be set.
 At this point, firmware can later come and reconfigure the EDN block for a different mode of operation.
 
 The recommended write sequence for the entire entropy system is one configuration write to ENTROPY_SRC, then CSRNG, and finally to EDN (also see [Module enable and disable](./programmers_guide.md#module-enable-and-disable)).
-
-### Interrupts
-
-The EDN module has two interrupts: `edn_cmd_req_done` and `edn_fatal_err`.
-
-The `edn_cmd_req_done` interrupt should be used when a CSRNG command is issued and firmware is waiting for completion.
-
-The `edn_fatal_err` interrupt will fire when a fatal error has been detected.
-The conditions that cause this to happen are FIFO error, a state machine error state transition, or a prim_count error.
 
 #### Waveforms
 

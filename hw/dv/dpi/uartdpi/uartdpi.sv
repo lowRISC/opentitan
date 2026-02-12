@@ -3,10 +3,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module uartdpi #(
-  parameter integer BAUD = 'x,
-  parameter integer FREQ = 'x,
-  parameter string NAME = "uart0"
-)(
+  parameter integer BAUD        = 'x,
+  parameter integer FREQ        = 'x,
+  parameter string  NAME        = "uart0",
+  parameter string  EXIT_STRING = ""
+) (
   input  logic clk_i,
   input  logic rst_ni,
   input  bit   active,
@@ -21,7 +22,7 @@ module uartdpi #(
   localparam int CYCLES_PER_SYMBOL = FREQ / BAUD;
 
   import "DPI-C" function
-    chandle uartdpi_create(input string name, input string log_file_path);
+    chandle uartdpi_create(input string name, input string log_file_path, input string exit_string);
 
   import "DPI-C" function
     void uartdpi_close(input chandle ctx);
@@ -33,14 +34,17 @@ module uartdpi #(
     int uartdpi_can_read(input chandle ctx);
 
   import "DPI-C" function
-    void uartdpi_write(input chandle ctx, int data);
+    int uartdpi_write(input chandle ctx, int data);
 
   chandle ctx;
   string log_file_path = DEFAULT_LOG_FILE;
 
   function automatic void initialize();
-    $value$plusargs({"UARTDPI_LOG_", NAME, "=%s"}, log_file_path);
-    ctx = uartdpi_create(NAME, log_file_path);
+    string plusarg_name = {"UARTDPI_LOG_", NAME};
+    if (!$value$plusargs({plusarg_name, "=%s"}, log_file_path)) begin
+      $display($sformatf("No %s plusarg found.", plusarg_name));
+    end
+    ctx = uartdpi_create(NAME, log_file_path, EXIT_STRING);
   endfunction
 
   initial begin
@@ -58,8 +62,8 @@ module uartdpi #(
 
   // TX
   reg txactive;
-  int  txcount;
-  int  txcyccount;
+  int txcount;
+  int txcyccount;
   reg [9:0] txsymbol;
   bit seen_reset;
 
@@ -133,7 +137,13 @@ module uartdpi #(
           if (rxcyccount == CYCLES_PER_SYMBOL - 1) begin
             rxactive <= 0;
             if (rx_i) begin
-              uartdpi_write(ctx, rxsymbol);
+              // Write a message through the uart (using the uartdpi DPI library). By default, this
+              // always returns 0 but it can be configured to return 1 if it sees a particular
+              // string (the "EXIT_STRING"). If that happens, stop the simulation.
+              if(uartdpi_write(ctx, rxsymbol) != 0) begin
+                $display("Exiting the simulator because the magic UART string was seen.");
+                $finish(0);
+              end
             end
           end
         end

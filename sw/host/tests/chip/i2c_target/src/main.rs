@@ -138,7 +138,7 @@ fn test_wakeup_normal_sleep(opts: &Opts, transport: &TransportWrapper, address: 
     log::info!("Issuing read transaction to sleeping chip. Expecting transaction error.");
     let result = i2c.run_transaction(Some(address), &mut [Transfer::Read(&mut buf)]);
     log::info!("Transaction error: {}", result.is_err());
-    Status::recv(&*uart, Duration::from_secs(5), false)?;
+    Status::recv(&*uart, Duration::from_secs(5), false, false)?;
     log::info!("Chip is awake.  Reissuing read transaction.");
     test_read_transaction(opts, transport, address)
 }
@@ -157,7 +157,7 @@ fn test_wakeup_deep_sleep(
     log::info!("Issuing read transaction to sleeping chip. Expecting transaction error.");
     let result = i2c.run_transaction(Some(address), &mut [Transfer::Read(&mut buf)]);
     log::info!("Transaction error: {}", result.is_err());
-    Status::recv(&*uart, Duration::from_secs(5), false)?;
+    Status::recv(&*uart, Duration::from_secs(5), false, false)?;
     log::info!("Chip is awake.  Reissuing read transaction.");
     test_set_target_address(opts, transport, instance)?;
     test_read_transaction(opts, transport, address)
@@ -306,7 +306,7 @@ fn main() -> Result<()> {
 
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
-    UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
+    UartConsole::wait_for(&*uart, r"Running ", opts.timeout)?;
     uart.clear_rx_buffer()?;
 
     for i2c_instance in 0..3 {
@@ -325,7 +325,7 @@ fn main() -> Result<()> {
 
     transport.pin_strapping("RESET")?.apply()?;
     transport.pin_strapping("RESET")?.remove()?;
-    UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
+    UartConsole::wait_for(&*uart, r"Running ", opts.timeout)?;
 
     // The hyperdebug board does not like that pins mode are constantly changed,
     // so this commit separate the sub-tests that use the hyperdebug i2c from

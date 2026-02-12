@@ -98,6 +98,12 @@ interface otbn_model_if
     release u_model.wakeup_iss;
   endtask: send_err_escalation
 
+  function automatic send_stall_request(bit enforced);
+    `uvm_info("otbn_model_if", "Stalling next cycle", UVM_HIGH)
+    `DV_CHECK_FATAL(u_model.otbn_model_send_stall_request(handle, enforced) == 0,
+                    "Failed to send stall request", "otbn_model_if")
+  endfunction
+
   task automatic lock_immediately(bit [31:0] err_val);
     string lock_path = "tb.u_model.lock_immediately_q";
     `uvm_info("otbn_model_if", "Locking immediately after error", UVM_HIGH)
@@ -114,6 +120,17 @@ interface otbn_model_if
     release u_model.wakeup_iss;
   endtask: lock_immediately
 
+  function automatic void tolerate_result_mismatch(int unsigned num_checks);
+    if (num_checks < 0) begin
+      `uvm_info("otbn_model_if",
+                $sformatf("Enabling tolerate result mismatch for %d checks", num_checks),
+                UVM_HIGH);
+    end else begin
+      `uvm_info("otbn_model_if", "Enabling tolerate result mismatch", UVM_HIGH);
+    end
+    u_model.otbn_model_tolerate_result_mismatch(handle, num_checks);
+  endfunction
+
   function automatic void set_software_errs_fatal(bit new_val);
     `uvm_info("otbn_model_if", "writing to software_errs_fatal", UVM_HIGH);
     `DV_CHECK_FATAL(u_model.otbn_model_set_software_errs_fatal(handle, new_val) == 0,
@@ -122,14 +139,12 @@ interface otbn_model_if
 
   function automatic void otbn_set_no_sec_wipe_chk();
     `uvm_info("otbn_model_if", "writing to no_sec_wipe_data_chk", UVM_HIGH);
-    `DV_CHECK_FATAL(u_model.otbn_set_no_sec_wipe_chk(handle) == 0,
-                    "Failed to set no_sec_wipe_data_chk", "otbn_model_if")
+    u_model.otbn_set_no_sec_wipe_chk(handle);
   endfunction
 
   function automatic void otbn_disable_stack_check();
     `uvm_info("otbn_model_if", "Disabling stack integrity checks", UVM_HIGH);
-    `DV_CHECK_FATAL(u_model.otbn_disable_stack_check(handle) == 0,
-                    "Failed to disable stack integrity checks", "otbn_model_if")
+    u_model.otbn_disable_stack_check(handle);
   endfunction
 
   // The err signal is asserted by the model if it fails to find the DUT or if it finds a mismatch

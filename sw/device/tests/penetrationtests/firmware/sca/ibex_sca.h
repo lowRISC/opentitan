@@ -18,6 +18,56 @@
 status_t handle_ibex_pentest_init(ujson_t *uj);
 
 /**
+ * ibex.sca.combi_operations_batch
+ *
+ * This SCA penetration test executes the following instructions depending on
+ * the trigger:
+ * - Loop num_iterations:
+ *  - XOR values
+ *  - ADD values
+ *  - SUB values
+ *  - SHIFT values
+ *  - MUL values
+ *  - DIV values
+ *  - Load values
+ *  - Store values
+ *  - Copy values from SRAM to another address
+ *  - Send data to the AES
+ *  - Send data to the HMAC
+ *  - Send data to the OTBN
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_ibex_sca_combi_operations_batch(ujson_t *uj);
+
+/**
+ * ibex.sca.combi_operations_batch_fvsr
+ *
+ * This SCA penetration test executes the following tests depending on the
+ * trigger:
+ * - Generate num_iteration random values using the software LFSR.Add
+ * commentMore actions
+ * - Loop num_iterations:
+ *  - XOR values
+ *  - ADD values
+ *  - SUB values
+ *  - SHIFT values
+ *  - MUL values
+ *  - DIV values
+ *  - Load values
+ *  - Store values
+ *  - Copy values from SRAM to another address
+ *  - Send data to the AES
+ *  - Send data to the HMAC
+ *  - Send data to the OTBN
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_ibex_sca_combi_operations_batch_fvsr(ujson_t *uj);
+
+/**
  * ibex.sca.key_sideloading
  *
  * This SCA penetration test executes the following instructions:

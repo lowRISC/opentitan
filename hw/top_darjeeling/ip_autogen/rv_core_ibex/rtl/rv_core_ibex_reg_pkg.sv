@@ -18,6 +18,14 @@ package rv_core_ibex_reg_pkg;
   // Number of registers for every interface
   parameter int NumRegsCfg = 265;
 
+  // Alert indices
+  typedef enum int {
+    AlertFatalSwErrIdx = 0,
+    AlertRecovSwErrIdx = 1,
+    AlertFatalHwErrIdx = 2,
+    AlertRecovHwErrIdx = 3
+  } rv_core_ibex_alert_idx_t;
+
   //////////////////////////////////////////////
   // Typedefs for registers for cfg interface //
   //////////////////////////////////////////////
@@ -105,22 +113,18 @@ package rv_core_ibex_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } alert;
+    } wdog;
     struct packed {
       logic        d;
       logic        de;
-    } wdog;
+    } alert;
   } rv_core_ibex_hw2reg_nmi_state_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
-    } reg_intg_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } fatal_intg_err;
+    } recov_core_err;
     struct packed {
       logic        d;
       logic        de;
@@ -128,7 +132,11 @@ package rv_core_ibex_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } recov_core_err;
+    } fatal_intg_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } reg_intg_err;
   } rv_core_ibex_hw2reg_err_status_reg_t;
 
   typedef struct packed {
@@ -138,10 +146,10 @@ package rv_core_ibex_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        d;
-    } rnd_data_valid;
+    } rnd_data_fips;
     struct packed {
       logic        d;
-    } rnd_data_fips;
+    } rnd_data_valid;
   } rv_core_ibex_hw2reg_rnd_status_reg_t;
 
   typedef struct packed {

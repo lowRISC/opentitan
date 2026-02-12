@@ -17,7 +17,7 @@ class cip_tl_seq_item extends tl_seq_item;
   `uvm_object_utils_end
 
   function void post_randomize();
-    set_instr_type(MuBi4False);
+    set_instr_type(MuBi4False, 0);
   endfunction
 
   virtual function mubi4_t get_instr_type();
@@ -25,9 +25,9 @@ class cip_tl_seq_item extends tl_seq_item;
     return l_a_user.instr_type;
   endfunction
 
-  virtual function void set_instr_type(mubi4_t instr_type);
+  virtual function void set_instr_type(mubi4_t instr_type, int racl_role);
     // updating instr_type and re-calculate a_user
-    a_user = compute_a_user(instr_type);
+    a_user = compute_a_user(instr_type, racl_role);
 
     // update intg to based on settings - tl_intg_err_type and max_ecc_errors
     inject_a_chan_intg_err();
@@ -36,7 +36,8 @@ class cip_tl_seq_item extends tl_seq_item;
   // calculate data and cmd integrity value based on TLUL fields (such as addr, data etc) for a_user
   // and return a_user
   // class member a_user isn't updated in this function
-  virtual function tl_a_user_t compute_a_user(mubi4_t instr_type = get_instr_type());
+  virtual function tl_a_user_t compute_a_user(mubi4_t instr_type = get_instr_type(),
+                   int racl_role = 0);
     tl_a_user_t user;
     tl_h2d_cmd_intg_t cmd_intg_payload;
     logic [H2DCmdFullWidth - 1 : 0] cmd_with_intg;
@@ -52,7 +53,17 @@ class cip_tl_seq_item extends tl_seq_item;
     // construct data integrity
     data_with_intg = prim_secded_pkg::prim_secded_inv_39_32_enc(DataMaxWidth'(a_data));
 
-    user.rsvd = '0;
+    // TODO: double check the logic
+    // Build the rsvd field so as to have the racl_role bits in the correct
+    // location. ctn_uid is forced to '0' for now
+    // user.rsvd = top_racl_pkg::tlul_build_user_rsvd_vec(racl_role, 0);
+
+    // TODO: CI fails for earlgray and english as top_racl_pkg is not implemented in both
+    // for now forcing user.rsvd bits until we can cleanly implement a generic solution to
+    // set this field
+    user.rsvd = 0;
+    user.rsvd[8:5] = racl_role;
+
     user.instr_type = instr_type;
     user.cmd_intg  = cmd_with_intg[H2DCmdFullWidth - 1 -: H2DCmdIntgWidth];
     user.data_intg = data_with_intg[DataFullWidth - 1 -: DataIntgWidth];

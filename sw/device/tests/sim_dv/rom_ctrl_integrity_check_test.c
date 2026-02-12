@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "dt/dt_lc_ctrl.h"   // Generated
-#include "dt/dt_rom_ctrl.h"  // Generated
+#include "hw/top/dt/lc_ctrl.h"   // Generated
+#include "hw/top/dt/rom_ctrl.h"  // Generated
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"

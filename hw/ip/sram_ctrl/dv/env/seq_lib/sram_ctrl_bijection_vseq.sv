@@ -6,7 +6,7 @@
 // To this, we iterate over every address in SRAM memory and write a unique value to it
 // (in this case we write the address to memory, e.g. write 0x0 to address 0x0,
 //  write 0x4 to address 0x4, etc...).
-// We then read out each addres in memory and check that the read data is equal to the address
+// We then read out each address in memory and check that the read data is equal to the address
 // we read it from (this is done using the built-in checking capabilities of `tl_acess()` task.
 //
 // This helps us verify that the SRAM address scrambling does not lead to any address collisions,

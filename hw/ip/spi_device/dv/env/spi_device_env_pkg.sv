@@ -70,7 +70,7 @@ package spi_device_env_pkg;
 
   // alerts
   parameter uint NUM_ALERTS = 1;
-  parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
+  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"fatal_fault"};
 
   // SPI SRAM is 4kB
   parameter uint SRAM_OFFSET                     = 'h1000;
@@ -158,6 +158,8 @@ package spi_device_env_pkg;
   parameter bit[7:0] INTERNAL_PROCESS_CMD_LIST[] = {`ALL_INTERNAL_PROCESS_CMDS};
 
   string msg_id = "spi_device_env_pkg";
+
+  string sck_committed_status_path =  "tb.dut.u_spid_status.sck_status_committed";
 
   // functions
   // get size of empty space in mem

@@ -20,14 +20,14 @@ class chip_sw_alert_handler_entropy_vseq extends chip_sw_base_vseq;
     super.body();
 
     fork begin : isolation_fork
-      int num_alerts = LIST_OF_ALERTS.size();
+      int alerts_remaining = NUM_ALERTS;
       foreach (LIST_OF_ALERTS[i]) begin
         automatic int index = i;
         fork begin
           cfg.m_alert_agent_cfgs[LIST_OF_ALERTS[index]].vif.wait_alert_ping();
-          num_alerts--;
+          alerts_remaining--;
           `uvm_info(`gfn, $sformatf("alert %0s received ping request.\n %0d alerts remaining.",
-                    LIST_OF_ALERTS[index], num_alerts), UVM_LOW)
+                    LIST_OF_ALERTS[index], alerts_remaining), UVM_LOW)
         end join_none
       end
       wait fork;

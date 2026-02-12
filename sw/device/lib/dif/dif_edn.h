@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/edn/doc/">Entropy Distribution Network</a> Device
+ * @brief <a href="/book/hw/ip/edn/">Entropy Distribution Network</a> Device
  * Interface Functions
  *
  * This API implements the interface for the Entropy Distribution Network (EDN)
@@ -137,7 +137,7 @@ typedef enum dif_edn_status {
    */
   kDifEdnStatusCsrngStatus,
   /**
-   * Device has recieved an ACK from the CSRNG block.
+   * Device has received an ACK from the CSRNG block.
    */
   kDifEdnStatusCsrngAck,
 } dif_edn_status_t;
@@ -254,11 +254,11 @@ typedef enum dif_edn_error {
    */
   kDifEdnErrorCounterFault,
   /**
-   * Indicates a write to a full FIFO occured.
+   * Indicates a write to a full FIFO occurred.
    */
   kDifEdnErrorFifoWrite,
   /**
-   * Indicates a read from an empty FIFO occured.
+   * Indicates a read from an empty FIFO occurred.
    */
   kDifEdnErrorFifoRead,
   /**

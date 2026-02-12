@@ -6,118 +6,118 @@ It is implemented this way because the access window supports transaction back-p
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/top_earlgrey/ip_autogen/flash_ctrl/data/flash_ctrl.hjson -->
 ## Summary of the **`core`** interface's registers
 
-| Name                                                         | Offset   |   Length | Description                                                   |
-|:-------------------------------------------------------------|:---------|---------:|:--------------------------------------------------------------|
-| flash_ctrl.[`INTR_STATE`](#intr_state)                       | 0x0      |        4 | Interrupt State Register                                      |
-| flash_ctrl.[`INTR_ENABLE`](#intr_enable)                     | 0x4      |        4 | Interrupt Enable Register                                     |
-| flash_ctrl.[`INTR_TEST`](#intr_test)                         | 0x8      |        4 | Interrupt Test Register                                       |
-| flash_ctrl.[`ALERT_TEST`](#alert_test)                       | 0xc      |        4 | Alert Test Register                                           |
-| flash_ctrl.[`DIS`](#dis)                                     | 0x10     |        4 | Disable flash functionality                                   |
-| flash_ctrl.[`EXEC`](#exec)                                   | 0x14     |        4 | Controls whether flash can be used for code execution fetches |
-| flash_ctrl.[`INIT`](#init)                                   | 0x18     |        4 | Controller init register                                      |
-| flash_ctrl.[`CTRL_REGWEN`](#ctrl_regwen)                     | 0x1c     |        4 | Controls the configurability of the !!CONTROL register.       |
-| flash_ctrl.[`CONTROL`](#control)                             | 0x20     |        4 | Control register                                              |
-| flash_ctrl.[`ADDR`](#addr)                                   | 0x24     |        4 | Address for flash operation                                   |
-| flash_ctrl.[`PROG_TYPE_EN`](#prog_type_en)                   | 0x28     |        4 | Enable different program types                                |
-| flash_ctrl.[`ERASE_SUSPEND`](#erase_suspend)                 | 0x2c     |        4 | Suspend erase                                                 |
-| flash_ctrl.[`REGION_CFG_REGWEN_0`](#region_cfg_regwen)       | 0x30     |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`REGION_CFG_REGWEN_1`](#region_cfg_regwen)       | 0x34     |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`REGION_CFG_REGWEN_2`](#region_cfg_regwen)       | 0x38     |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`REGION_CFG_REGWEN_3`](#region_cfg_regwen)       | 0x3c     |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`REGION_CFG_REGWEN_4`](#region_cfg_regwen)       | 0x40     |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`REGION_CFG_REGWEN_5`](#region_cfg_regwen)       | 0x44     |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`REGION_CFG_REGWEN_6`](#region_cfg_regwen)       | 0x48     |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`REGION_CFG_REGWEN_7`](#region_cfg_regwen)       | 0x4c     |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`MP_REGION_CFG_0`](#mp_region_cfg)               | 0x50     |        4 | Memory property configuration for data partition              |
-| flash_ctrl.[`MP_REGION_CFG_1`](#mp_region_cfg)               | 0x54     |        4 | Memory property configuration for data partition              |
-| flash_ctrl.[`MP_REGION_CFG_2`](#mp_region_cfg)               | 0x58     |        4 | Memory property configuration for data partition              |
-| flash_ctrl.[`MP_REGION_CFG_3`](#mp_region_cfg)               | 0x5c     |        4 | Memory property configuration for data partition              |
-| flash_ctrl.[`MP_REGION_CFG_4`](#mp_region_cfg)               | 0x60     |        4 | Memory property configuration for data partition              |
-| flash_ctrl.[`MP_REGION_CFG_5`](#mp_region_cfg)               | 0x64     |        4 | Memory property configuration for data partition              |
-| flash_ctrl.[`MP_REGION_CFG_6`](#mp_region_cfg)               | 0x68     |        4 | Memory property configuration for data partition              |
-| flash_ctrl.[`MP_REGION_CFG_7`](#mp_region_cfg)               | 0x6c     |        4 | Memory property configuration for data partition              |
-| flash_ctrl.[`MP_REGION_0`](#mp_region)                       | 0x70     |        4 | Memory base and size configuration for data partition         |
-| flash_ctrl.[`MP_REGION_1`](#mp_region)                       | 0x74     |        4 | Memory base and size configuration for data partition         |
-| flash_ctrl.[`MP_REGION_2`](#mp_region)                       | 0x78     |        4 | Memory base and size configuration for data partition         |
-| flash_ctrl.[`MP_REGION_3`](#mp_region)                       | 0x7c     |        4 | Memory base and size configuration for data partition         |
-| flash_ctrl.[`MP_REGION_4`](#mp_region)                       | 0x80     |        4 | Memory base and size configuration for data partition         |
-| flash_ctrl.[`MP_REGION_5`](#mp_region)                       | 0x84     |        4 | Memory base and size configuration for data partition         |
-| flash_ctrl.[`MP_REGION_6`](#mp_region)                       | 0x88     |        4 | Memory base and size configuration for data partition         |
-| flash_ctrl.[`MP_REGION_7`](#mp_region)                       | 0x8c     |        4 | Memory base and size configuration for data partition         |
-| flash_ctrl.[`DEFAULT_REGION`](#default_region)               | 0x90     |        4 | Default region properties                                     |
-| flash_ctrl.[`BANK0_INFO0_REGWEN_0`](#bank0_info0_regwen)     | 0x94     |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`BANK0_INFO0_REGWEN_1`](#bank0_info0_regwen)     | 0x98     |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`BANK0_INFO0_REGWEN_2`](#bank0_info0_regwen)     | 0x9c     |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`BANK0_INFO0_REGWEN_3`](#bank0_info0_regwen)     | 0xa0     |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`BANK0_INFO0_REGWEN_4`](#bank0_info0_regwen)     | 0xa4     |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`BANK0_INFO0_REGWEN_5`](#bank0_info0_regwen)     | 0xa8     |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`BANK0_INFO0_REGWEN_6`](#bank0_info0_regwen)     | 0xac     |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`BANK0_INFO0_REGWEN_7`](#bank0_info0_regwen)     | 0xb0     |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`BANK0_INFO0_REGWEN_8`](#bank0_info0_regwen)     | 0xb4     |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`BANK0_INFO0_REGWEN_9`](#bank0_info0_regwen)     | 0xb8     |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`BANK0_INFO0_PAGE_CFG_0`](#bank0_info0_page_cfg) | 0xbc     |        4 | Memory property configuration for info partition in bank0,    |
-| flash_ctrl.[`BANK0_INFO0_PAGE_CFG_1`](#bank0_info0_page_cfg) | 0xc0     |        4 | Memory property configuration for info partition in bank0,    |
-| flash_ctrl.[`BANK0_INFO0_PAGE_CFG_2`](#bank0_info0_page_cfg) | 0xc4     |        4 | Memory property configuration for info partition in bank0,    |
-| flash_ctrl.[`BANK0_INFO0_PAGE_CFG_3`](#bank0_info0_page_cfg) | 0xc8     |        4 | Memory property configuration for info partition in bank0,    |
-| flash_ctrl.[`BANK0_INFO0_PAGE_CFG_4`](#bank0_info0_page_cfg) | 0xcc     |        4 | Memory property configuration for info partition in bank0,    |
-| flash_ctrl.[`BANK0_INFO0_PAGE_CFG_5`](#bank0_info0_page_cfg) | 0xd0     |        4 | Memory property configuration for info partition in bank0,    |
-| flash_ctrl.[`BANK0_INFO0_PAGE_CFG_6`](#bank0_info0_page_cfg) | 0xd4     |        4 | Memory property configuration for info partition in bank0,    |
-| flash_ctrl.[`BANK0_INFO0_PAGE_CFG_7`](#bank0_info0_page_cfg) | 0xd8     |        4 | Memory property configuration for info partition in bank0,    |
-| flash_ctrl.[`BANK0_INFO0_PAGE_CFG_8`](#bank0_info0_page_cfg) | 0xdc     |        4 | Memory property configuration for info partition in bank0,    |
-| flash_ctrl.[`BANK0_INFO0_PAGE_CFG_9`](#bank0_info0_page_cfg) | 0xe0     |        4 | Memory property configuration for info partition in bank0,    |
-| flash_ctrl.[`BANK0_INFO1_REGWEN`](#bank0_info1_regwen)       | 0xe4     |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`BANK0_INFO1_PAGE_CFG`](#bank0_info1_page_cfg)   | 0xe8     |        4 | Memory property configuration for info partition in bank0,    |
-| flash_ctrl.[`BANK0_INFO2_REGWEN_0`](#bank0_info2_regwen)     | 0xec     |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`BANK0_INFO2_REGWEN_1`](#bank0_info2_regwen)     | 0xf0     |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`BANK0_INFO2_PAGE_CFG_0`](#bank0_info2_page_cfg) | 0xf4     |        4 | Memory property configuration for info partition in bank0,    |
-| flash_ctrl.[`BANK0_INFO2_PAGE_CFG_1`](#bank0_info2_page_cfg) | 0xf8     |        4 | Memory property configuration for info partition in bank0,    |
-| flash_ctrl.[`BANK1_INFO0_REGWEN_0`](#bank1_info0_regwen)     | 0xfc     |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`BANK1_INFO0_REGWEN_1`](#bank1_info0_regwen)     | 0x100    |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`BANK1_INFO0_REGWEN_2`](#bank1_info0_regwen)     | 0x104    |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`BANK1_INFO0_REGWEN_3`](#bank1_info0_regwen)     | 0x108    |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`BANK1_INFO0_REGWEN_4`](#bank1_info0_regwen)     | 0x10c    |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`BANK1_INFO0_REGWEN_5`](#bank1_info0_regwen)     | 0x110    |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`BANK1_INFO0_REGWEN_6`](#bank1_info0_regwen)     | 0x114    |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`BANK1_INFO0_REGWEN_7`](#bank1_info0_regwen)     | 0x118    |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`BANK1_INFO0_REGWEN_8`](#bank1_info0_regwen)     | 0x11c    |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`BANK1_INFO0_REGWEN_9`](#bank1_info0_regwen)     | 0x120    |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`BANK1_INFO0_PAGE_CFG_0`](#bank1_info0_page_cfg) | 0x124    |        4 | Memory property configuration for info partition in bank1,    |
-| flash_ctrl.[`BANK1_INFO0_PAGE_CFG_1`](#bank1_info0_page_cfg) | 0x128    |        4 | Memory property configuration for info partition in bank1,    |
-| flash_ctrl.[`BANK1_INFO0_PAGE_CFG_2`](#bank1_info0_page_cfg) | 0x12c    |        4 | Memory property configuration for info partition in bank1,    |
-| flash_ctrl.[`BANK1_INFO0_PAGE_CFG_3`](#bank1_info0_page_cfg) | 0x130    |        4 | Memory property configuration for info partition in bank1,    |
-| flash_ctrl.[`BANK1_INFO0_PAGE_CFG_4`](#bank1_info0_page_cfg) | 0x134    |        4 | Memory property configuration for info partition in bank1,    |
-| flash_ctrl.[`BANK1_INFO0_PAGE_CFG_5`](#bank1_info0_page_cfg) | 0x138    |        4 | Memory property configuration for info partition in bank1,    |
-| flash_ctrl.[`BANK1_INFO0_PAGE_CFG_6`](#bank1_info0_page_cfg) | 0x13c    |        4 | Memory property configuration for info partition in bank1,    |
-| flash_ctrl.[`BANK1_INFO0_PAGE_CFG_7`](#bank1_info0_page_cfg) | 0x140    |        4 | Memory property configuration for info partition in bank1,    |
-| flash_ctrl.[`BANK1_INFO0_PAGE_CFG_8`](#bank1_info0_page_cfg) | 0x144    |        4 | Memory property configuration for info partition in bank1,    |
-| flash_ctrl.[`BANK1_INFO0_PAGE_CFG_9`](#bank1_info0_page_cfg) | 0x148    |        4 | Memory property configuration for info partition in bank1,    |
-| flash_ctrl.[`BANK1_INFO1_REGWEN`](#bank1_info1_regwen)       | 0x14c    |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`BANK1_INFO1_PAGE_CFG`](#bank1_info1_page_cfg)   | 0x150    |        4 | Memory property configuration for info partition in bank1,    |
-| flash_ctrl.[`BANK1_INFO2_REGWEN_0`](#bank1_info2_regwen)     | 0x154    |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`BANK1_INFO2_REGWEN_1`](#bank1_info2_regwen)     | 0x158    |        4 | Memory region registers configuration enable.                 |
-| flash_ctrl.[`BANK1_INFO2_PAGE_CFG_0`](#bank1_info2_page_cfg) | 0x15c    |        4 | Memory property configuration for info partition in bank1,    |
-| flash_ctrl.[`BANK1_INFO2_PAGE_CFG_1`](#bank1_info2_page_cfg) | 0x160    |        4 | Memory property configuration for info partition in bank1,    |
-| flash_ctrl.[`HW_INFO_CFG_OVERRIDE`](#hw_info_cfg_override)   | 0x164    |        4 | HW interface info configuration rule overrides                |
-| flash_ctrl.[`BANK_CFG_REGWEN`](#bank_cfg_regwen)             | 0x168    |        4 | Bank configuration registers configuration enable.            |
-| flash_ctrl.[`MP_BANK_CFG_SHADOWED`](#mp_bank_cfg_shadowed)   | 0x16c    |        4 | Memory properties bank configuration                          |
-| flash_ctrl.[`OP_STATUS`](#op_status)                         | 0x170    |        4 | Flash Operation Status                                        |
-| flash_ctrl.[`STATUS`](#status)                               | 0x174    |        4 | Flash Controller Status                                       |
-| flash_ctrl.[`DEBUG_STATE`](#debug_state)                     | 0x178    |        4 | Current flash fsm state                                       |
-| flash_ctrl.[`ERR_CODE`](#err_code)                           | 0x17c    |        4 | Flash error code register.                                    |
-| flash_ctrl.[`STD_FAULT_STATUS`](#std_fault_status)           | 0x180    |        4 | This register tabulates standard fault status of the flash.   |
-| flash_ctrl.[`FAULT_STATUS`](#fault_status)                   | 0x184    |        4 | This register tabulates customized fault status of the flash. |
-| flash_ctrl.[`ERR_ADDR`](#err_addr)                           | 0x188    |        4 | Synchronous error address                                     |
-| flash_ctrl.[`ECC_SINGLE_ERR_CNT`](#ecc_single_err_cnt)       | 0x18c    |        4 | Count of single bit ECC errors                                |
-| flash_ctrl.[`ECC_SINGLE_ERR_ADDR_0`](#ecc_single_err_addr)   | 0x190    |        4 | Latest address of ECC single err                              |
-| flash_ctrl.[`ECC_SINGLE_ERR_ADDR_1`](#ecc_single_err_addr)   | 0x194    |        4 | Latest address of ECC single err                              |
-| flash_ctrl.[`PHY_ALERT_CFG`](#phy_alert_cfg)                 | 0x198    |        4 | Phy alert configuration                                       |
-| flash_ctrl.[`PHY_STATUS`](#phy_status)                       | 0x19c    |        4 | Flash Phy Status                                              |
-| flash_ctrl.[`Scratch`](#scratch)                             | 0x1a0    |        4 | Flash Controller Scratch                                      |
-| flash_ctrl.[`FIFO_LVL`](#fifo_lvl)                           | 0x1a4    |        4 | Programmable depth where FIFOs should generate interrupts     |
-| flash_ctrl.[`FIFO_RST`](#fifo_rst)                           | 0x1a8    |        4 | Reset for flash controller FIFOs                              |
-| flash_ctrl.[`CURR_FIFO_LVL`](#curr_fifo_lvl)                 | 0x1ac    |        4 | Current program and read fifo depth                           |
-| flash_ctrl.[`prog_fifo`](#prog_fifo)                         | 0x1b0    |        4 | Flash program FIFO.                                           |
-| flash_ctrl.[`rd_fifo`](#rd_fifo)                             | 0x1b4    |        4 | Flash read FIFO.                                              |
+| Name                                                         | Offset   |   Length | Description                                                         |
+|:-------------------------------------------------------------|:---------|---------:|:--------------------------------------------------------------------|
+| flash_ctrl.[`INTR_STATE`](#intr_state)                       | 0x0      |        4 | Interrupt State Register                                            |
+| flash_ctrl.[`INTR_ENABLE`](#intr_enable)                     | 0x4      |        4 | Interrupt Enable Register                                           |
+| flash_ctrl.[`INTR_TEST`](#intr_test)                         | 0x8      |        4 | Interrupt Test Register                                             |
+| flash_ctrl.[`ALERT_TEST`](#alert_test)                       | 0xc      |        4 | Alert Test Register                                                 |
+| flash_ctrl.[`DIS`](#dis)                                     | 0x10     |        4 | Disable flash functionality                                         |
+| flash_ctrl.[`EXEC`](#exec)                                   | 0x14     |        4 | Controls whether flash can be used for code execution fetches       |
+| flash_ctrl.[`INIT`](#init)                                   | 0x18     |        4 | Controller init register                                            |
+| flash_ctrl.[`CTRL_REGWEN`](#ctrl_regwen)                     | 0x1c     |        4 | Controls the configurability of the [`CONTROL`](#control) register. |
+| flash_ctrl.[`CONTROL`](#control)                             | 0x20     |        4 | Control register                                                    |
+| flash_ctrl.[`ADDR`](#addr)                                   | 0x24     |        4 | Address for flash operation                                         |
+| flash_ctrl.[`PROG_TYPE_EN`](#prog_type_en)                   | 0x28     |        4 | Enable different program types                                      |
+| flash_ctrl.[`ERASE_SUSPEND`](#erase_suspend)                 | 0x2c     |        4 | Suspend erase                                                       |
+| flash_ctrl.[`REGION_CFG_REGWEN_0`](#region_cfg_regwen)       | 0x30     |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`REGION_CFG_REGWEN_1`](#region_cfg_regwen)       | 0x34     |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`REGION_CFG_REGWEN_2`](#region_cfg_regwen)       | 0x38     |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`REGION_CFG_REGWEN_3`](#region_cfg_regwen)       | 0x3c     |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`REGION_CFG_REGWEN_4`](#region_cfg_regwen)       | 0x40     |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`REGION_CFG_REGWEN_5`](#region_cfg_regwen)       | 0x44     |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`REGION_CFG_REGWEN_6`](#region_cfg_regwen)       | 0x48     |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`REGION_CFG_REGWEN_7`](#region_cfg_regwen)       | 0x4c     |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`MP_REGION_CFG_0`](#mp_region_cfg)               | 0x50     |        4 | Memory property configuration for data partition                    |
+| flash_ctrl.[`MP_REGION_CFG_1`](#mp_region_cfg)               | 0x54     |        4 | Memory property configuration for data partition                    |
+| flash_ctrl.[`MP_REGION_CFG_2`](#mp_region_cfg)               | 0x58     |        4 | Memory property configuration for data partition                    |
+| flash_ctrl.[`MP_REGION_CFG_3`](#mp_region_cfg)               | 0x5c     |        4 | Memory property configuration for data partition                    |
+| flash_ctrl.[`MP_REGION_CFG_4`](#mp_region_cfg)               | 0x60     |        4 | Memory property configuration for data partition                    |
+| flash_ctrl.[`MP_REGION_CFG_5`](#mp_region_cfg)               | 0x64     |        4 | Memory property configuration for data partition                    |
+| flash_ctrl.[`MP_REGION_CFG_6`](#mp_region_cfg)               | 0x68     |        4 | Memory property configuration for data partition                    |
+| flash_ctrl.[`MP_REGION_CFG_7`](#mp_region_cfg)               | 0x6c     |        4 | Memory property configuration for data partition                    |
+| flash_ctrl.[`MP_REGION_0`](#mp_region)                       | 0x70     |        4 | Memory base and size configuration for data partition               |
+| flash_ctrl.[`MP_REGION_1`](#mp_region)                       | 0x74     |        4 | Memory base and size configuration for data partition               |
+| flash_ctrl.[`MP_REGION_2`](#mp_region)                       | 0x78     |        4 | Memory base and size configuration for data partition               |
+| flash_ctrl.[`MP_REGION_3`](#mp_region)                       | 0x7c     |        4 | Memory base and size configuration for data partition               |
+| flash_ctrl.[`MP_REGION_4`](#mp_region)                       | 0x80     |        4 | Memory base and size configuration for data partition               |
+| flash_ctrl.[`MP_REGION_5`](#mp_region)                       | 0x84     |        4 | Memory base and size configuration for data partition               |
+| flash_ctrl.[`MP_REGION_6`](#mp_region)                       | 0x88     |        4 | Memory base and size configuration for data partition               |
+| flash_ctrl.[`MP_REGION_7`](#mp_region)                       | 0x8c     |        4 | Memory base and size configuration for data partition               |
+| flash_ctrl.[`DEFAULT_REGION`](#default_region)               | 0x90     |        4 | Default region properties                                           |
+| flash_ctrl.[`BANK0_INFO0_REGWEN_0`](#bank0_info0_regwen)     | 0x94     |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`BANK0_INFO0_REGWEN_1`](#bank0_info0_regwen)     | 0x98     |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`BANK0_INFO0_REGWEN_2`](#bank0_info0_regwen)     | 0x9c     |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`BANK0_INFO0_REGWEN_3`](#bank0_info0_regwen)     | 0xa0     |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`BANK0_INFO0_REGWEN_4`](#bank0_info0_regwen)     | 0xa4     |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`BANK0_INFO0_REGWEN_5`](#bank0_info0_regwen)     | 0xa8     |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`BANK0_INFO0_REGWEN_6`](#bank0_info0_regwen)     | 0xac     |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`BANK0_INFO0_REGWEN_7`](#bank0_info0_regwen)     | 0xb0     |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`BANK0_INFO0_REGWEN_8`](#bank0_info0_regwen)     | 0xb4     |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`BANK0_INFO0_REGWEN_9`](#bank0_info0_regwen)     | 0xb8     |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`BANK0_INFO0_PAGE_CFG_0`](#bank0_info0_page_cfg) | 0xbc     |        4 | Memory property configuration for info partition in bank0,          |
+| flash_ctrl.[`BANK0_INFO0_PAGE_CFG_1`](#bank0_info0_page_cfg) | 0xc0     |        4 | Memory property configuration for info partition in bank0,          |
+| flash_ctrl.[`BANK0_INFO0_PAGE_CFG_2`](#bank0_info0_page_cfg) | 0xc4     |        4 | Memory property configuration for info partition in bank0,          |
+| flash_ctrl.[`BANK0_INFO0_PAGE_CFG_3`](#bank0_info0_page_cfg) | 0xc8     |        4 | Memory property configuration for info partition in bank0,          |
+| flash_ctrl.[`BANK0_INFO0_PAGE_CFG_4`](#bank0_info0_page_cfg) | 0xcc     |        4 | Memory property configuration for info partition in bank0,          |
+| flash_ctrl.[`BANK0_INFO0_PAGE_CFG_5`](#bank0_info0_page_cfg) | 0xd0     |        4 | Memory property configuration for info partition in bank0,          |
+| flash_ctrl.[`BANK0_INFO0_PAGE_CFG_6`](#bank0_info0_page_cfg) | 0xd4     |        4 | Memory property configuration for info partition in bank0,          |
+| flash_ctrl.[`BANK0_INFO0_PAGE_CFG_7`](#bank0_info0_page_cfg) | 0xd8     |        4 | Memory property configuration for info partition in bank0,          |
+| flash_ctrl.[`BANK0_INFO0_PAGE_CFG_8`](#bank0_info0_page_cfg) | 0xdc     |        4 | Memory property configuration for info partition in bank0,          |
+| flash_ctrl.[`BANK0_INFO0_PAGE_CFG_9`](#bank0_info0_page_cfg) | 0xe0     |        4 | Memory property configuration for info partition in bank0,          |
+| flash_ctrl.[`BANK0_INFO1_REGWEN`](#bank0_info1_regwen)       | 0xe4     |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`BANK0_INFO1_PAGE_CFG`](#bank0_info1_page_cfg)   | 0xe8     |        4 | Memory property configuration for info partition in bank0,          |
+| flash_ctrl.[`BANK0_INFO2_REGWEN_0`](#bank0_info2_regwen)     | 0xec     |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`BANK0_INFO2_REGWEN_1`](#bank0_info2_regwen)     | 0xf0     |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`BANK0_INFO2_PAGE_CFG_0`](#bank0_info2_page_cfg) | 0xf4     |        4 | Memory property configuration for info partition in bank0,          |
+| flash_ctrl.[`BANK0_INFO2_PAGE_CFG_1`](#bank0_info2_page_cfg) | 0xf8     |        4 | Memory property configuration for info partition in bank0,          |
+| flash_ctrl.[`BANK1_INFO0_REGWEN_0`](#bank1_info0_regwen)     | 0xfc     |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`BANK1_INFO0_REGWEN_1`](#bank1_info0_regwen)     | 0x100    |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`BANK1_INFO0_REGWEN_2`](#bank1_info0_regwen)     | 0x104    |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`BANK1_INFO0_REGWEN_3`](#bank1_info0_regwen)     | 0x108    |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`BANK1_INFO0_REGWEN_4`](#bank1_info0_regwen)     | 0x10c    |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`BANK1_INFO0_REGWEN_5`](#bank1_info0_regwen)     | 0x110    |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`BANK1_INFO0_REGWEN_6`](#bank1_info0_regwen)     | 0x114    |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`BANK1_INFO0_REGWEN_7`](#bank1_info0_regwen)     | 0x118    |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`BANK1_INFO0_REGWEN_8`](#bank1_info0_regwen)     | 0x11c    |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`BANK1_INFO0_REGWEN_9`](#bank1_info0_regwen)     | 0x120    |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`BANK1_INFO0_PAGE_CFG_0`](#bank1_info0_page_cfg) | 0x124    |        4 | Memory property configuration for info partition in bank1,          |
+| flash_ctrl.[`BANK1_INFO0_PAGE_CFG_1`](#bank1_info0_page_cfg) | 0x128    |        4 | Memory property configuration for info partition in bank1,          |
+| flash_ctrl.[`BANK1_INFO0_PAGE_CFG_2`](#bank1_info0_page_cfg) | 0x12c    |        4 | Memory property configuration for info partition in bank1,          |
+| flash_ctrl.[`BANK1_INFO0_PAGE_CFG_3`](#bank1_info0_page_cfg) | 0x130    |        4 | Memory property configuration for info partition in bank1,          |
+| flash_ctrl.[`BANK1_INFO0_PAGE_CFG_4`](#bank1_info0_page_cfg) | 0x134    |        4 | Memory property configuration for info partition in bank1,          |
+| flash_ctrl.[`BANK1_INFO0_PAGE_CFG_5`](#bank1_info0_page_cfg) | 0x138    |        4 | Memory property configuration for info partition in bank1,          |
+| flash_ctrl.[`BANK1_INFO0_PAGE_CFG_6`](#bank1_info0_page_cfg) | 0x13c    |        4 | Memory property configuration for info partition in bank1,          |
+| flash_ctrl.[`BANK1_INFO0_PAGE_CFG_7`](#bank1_info0_page_cfg) | 0x140    |        4 | Memory property configuration for info partition in bank1,          |
+| flash_ctrl.[`BANK1_INFO0_PAGE_CFG_8`](#bank1_info0_page_cfg) | 0x144    |        4 | Memory property configuration for info partition in bank1,          |
+| flash_ctrl.[`BANK1_INFO0_PAGE_CFG_9`](#bank1_info0_page_cfg) | 0x148    |        4 | Memory property configuration for info partition in bank1,          |
+| flash_ctrl.[`BANK1_INFO1_REGWEN`](#bank1_info1_regwen)       | 0x14c    |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`BANK1_INFO1_PAGE_CFG`](#bank1_info1_page_cfg)   | 0x150    |        4 | Memory property configuration for info partition in bank1,          |
+| flash_ctrl.[`BANK1_INFO2_REGWEN_0`](#bank1_info2_regwen)     | 0x154    |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`BANK1_INFO2_REGWEN_1`](#bank1_info2_regwen)     | 0x158    |        4 | Memory region registers configuration enable.                       |
+| flash_ctrl.[`BANK1_INFO2_PAGE_CFG_0`](#bank1_info2_page_cfg) | 0x15c    |        4 | Memory property configuration for info partition in bank1,          |
+| flash_ctrl.[`BANK1_INFO2_PAGE_CFG_1`](#bank1_info2_page_cfg) | 0x160    |        4 | Memory property configuration for info partition in bank1,          |
+| flash_ctrl.[`HW_INFO_CFG_OVERRIDE`](#hw_info_cfg_override)   | 0x164    |        4 | HW interface info configuration rule overrides                      |
+| flash_ctrl.[`BANK_CFG_REGWEN`](#bank_cfg_regwen)             | 0x168    |        4 | Bank configuration registers configuration enable.                  |
+| flash_ctrl.[`MP_BANK_CFG_SHADOWED`](#mp_bank_cfg_shadowed)   | 0x16c    |        4 | Memory properties bank configuration                                |
+| flash_ctrl.[`OP_STATUS`](#op_status)                         | 0x170    |        4 | Flash Operation Status                                              |
+| flash_ctrl.[`STATUS`](#status)                               | 0x174    |        4 | Flash Controller Status                                             |
+| flash_ctrl.[`DEBUG_STATE`](#debug_state)                     | 0x178    |        4 | Current flash fsm state                                             |
+| flash_ctrl.[`ERR_CODE`](#err_code)                           | 0x17c    |        4 | Flash error code register.                                          |
+| flash_ctrl.[`STD_FAULT_STATUS`](#std_fault_status)           | 0x180    |        4 | This register tabulates standard fault status of the flash.         |
+| flash_ctrl.[`FAULT_STATUS`](#fault_status)                   | 0x184    |        4 | This register tabulates customized fault status of the flash.       |
+| flash_ctrl.[`ERR_ADDR`](#err_addr)                           | 0x188    |        4 | Synchronous error address                                           |
+| flash_ctrl.[`ECC_SINGLE_ERR_CNT`](#ecc_single_err_cnt)       | 0x18c    |        4 | Count of single bit ECC errors                                      |
+| flash_ctrl.[`ECC_SINGLE_ERR_ADDR_0`](#ecc_single_err_addr)   | 0x190    |        4 | Latest address of ECC single err                                    |
+| flash_ctrl.[`ECC_SINGLE_ERR_ADDR_1`](#ecc_single_err_addr)   | 0x194    |        4 | Latest address of ECC single err                                    |
+| flash_ctrl.[`PHY_ALERT_CFG`](#phy_alert_cfg)                 | 0x198    |        4 | Phy alert configuration                                             |
+| flash_ctrl.[`PHY_STATUS`](#phy_status)                       | 0x19c    |        4 | Flash Phy Status                                                    |
+| flash_ctrl.[`Scratch`](#scratch)                             | 0x1a0    |        4 | Flash Controller Scratch                                            |
+| flash_ctrl.[`FIFO_LVL`](#fifo_lvl)                           | 0x1a4    |        4 | Programmable depth where FIFOs should generate interrupts           |
+| flash_ctrl.[`FIFO_RST`](#fifo_rst)                           | 0x1a8    |        4 | Reset for flash controller FIFOs                                    |
+| flash_ctrl.[`CURR_FIFO_LVL`](#curr_fifo_lvl)                 | 0x1ac    |        4 | Current program and read fifo depth                                 |
+| flash_ctrl.[`prog_fifo`](#prog_fifo)                         | 0x1b0    |        4 | Flash program FIFO.                                                 |
+| flash_ctrl.[`rd_fifo`](#rd_fifo)                             | 0x1b4    |        4 | Flash read FIFO.                                                    |
 
 ## INTR_STATE
 Interrupt State Register
@@ -1234,7 +1234,7 @@ The flash life cycle management interface encountered a program resolution error
 
 ### FAULT_STATUS . prog_err
 The flash life cycle management interface encountered a program error.
-This could be a program integrity eror, see [`STD_FAULT_STATUS`](#std_fault_status) for more details.
+This could be a program integrity error, see [`STD_FAULT_STATUS`](#std_fault_status) for more details.
 
 ### FAULT_STATUS . rd_err
 The flash life cycle management interface encountered a read error.
@@ -1419,7 +1419,7 @@ Current program and read fifo depth
 Flash program FIFO.
 
 The FIFO is 16 entries of 4B flash words. This FIFO can only be programmed
-by software after a program operation has been initiated via the !!CONTROL register.
+by software after a program operation has been initiated via the [`CONTROL`](#control) register.
 This ensures accidental programming of the program FIFO cannot lock up the system.
 
 - Word Aligned Offset Range: `0x1b0`to`0x1b0`
@@ -2118,5 +2118,5 @@ All values are reserved.
 
 All values are reserved.
 
-This interface does not expose any registers.
+
 <!-- END CMDGEN -->

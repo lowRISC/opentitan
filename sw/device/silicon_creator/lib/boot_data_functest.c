@@ -11,9 +11,9 @@
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 
-#include "flash_ctrl_regs.h"  // Generated.
+#include "hw/top/flash_ctrl_regs.h"  // Generated.
+#include "hw/top/otp_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otp_ctrl_regs.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -58,7 +58,7 @@ boot_data_t kTestBootData = (boot_data_t){
  * @param enable New read, write, and erase permissions.
  */
 static void boot_data_pages_mp_set(hardened_bool_t perm) {
-  multi_bit_bool_t mubi_perm =
+  uint8_t mubi_perm =
       perm == kHardenedBoolTrue ? kMultiBitBool4True : kMultiBitBool4False;
   for (size_t i = 0; i < ARRAYSIZE(kPages); ++i) {
     flash_ctrl_info_perms_set(kPages[i], (flash_ctrl_perms_t){

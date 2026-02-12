@@ -18,7 +18,7 @@ class rv_timer_random_vseq extends rv_timer_base_vseq;
   rand uint ticks[NUM_HARTS];
   rand bit  assert_reset;
 
-  uint64 max_clks_until_expiry = 5_000_000;
+  uint64 max_clks_until_expiry = 5_000;
 
   constraint assert_reset_c {
     (assert_reset == 1'b0);
@@ -101,6 +101,11 @@ class rv_timer_random_vseq extends rv_timer_base_vseq;
   endtask
 
   task body();
+    // This task will run timers and wait until they raise an interrupt. This timeout gives an upper
+    // bound on how long to wait.
+    int unsigned intr_timeout_ns = delay * 2 + (max_clks_until_expiry *
+                                                (cfg.clk_rst_vif.clk_period_ps / 1000.0));
+
     for (int trans = 1; trans <= num_trans; trans++) begin
       `uvm_info(`gfn, $sformatf("Running test iteration %0d/%0d", trans, num_trans), UVM_LOW)
 
@@ -125,35 +130,34 @@ class rv_timer_random_vseq extends rv_timer_base_vseq;
         dut_init("HARD");
       end
 
-      fork
-        begin : isolation_fork
-          fork
-            wait (cfg.under_reset);
-            fork
-              for (int i = 0; i < NUM_HARTS; i++) begin
-                automatic int a_i = i;
-                fork
-                  // Poll intr_status continuously until it reads the expected value.
-                  // The delay value set for the `timeout_ns` arg is mulitplied by two due to
-                  // `intr_state_spinwait` task: if the interrupt is set right after csr_rd, then in the
-                  // worst case, the code will wait for two `spinwait_delay_ns` before hitting the break
-                  // statement.
-                  if (en_harts[a_i]) begin
-                    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay)
+      fork begin : isolation_fork
+        fork
+          wait (cfg.under_reset);
+          begin
+            for (int i = 0; i < NUM_HARTS; i++) begin
+              automatic int a_i = i;
+              fork
+                if (en_harts[a_i]) begin
+                  // Poll intr_status continuously until it reads the expected value. If the
+                  // interrupt will happen in intr_timeout nanoseconds and we happen to read the
+                  // state just beforehand, we'll see the high value on the next read (delay
+                  // nanoseconds later). As such, we set the spinwait timeout to the sum of the two
+                  // numbers plus an extra 100ns for a few extra clock ticks.
+                  int unsigned actual_timeout_ns;
 
-                    intr_state_spinwait(.hart(a_i), .exp_data(en_timers), .spinwait_delay_ns(delay),
-                                        .timeout_ns(delay * 2 + (max_clks_until_expiry *
-                                                     (cfg.clk_rst_vif.clk_period_ps / 1000.0))));
-                  end
-                join_none
-              end
-              // wait fork wrapped around fork...join to ensure only waiting on items within
-              wait fork;
-            join
-          join_any
-          disable fork;
-        end : isolation_fork
-      join
+                  `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay)
+
+                  actual_timeout_ns = 100 + delay + intr_timeout_ns;
+                  intr_state_spinwait(.hart(a_i), .exp_data(en_timers),
+                                      .spinwait_delay_ns(delay), .timeout_ns(actual_timeout_ns));
+                end
+              join_none
+            end
+            wait fork;
+          end
+        join_any
+        disable fork;
+      end join
 
       // Disable timers.
       csr_wr(.ptr(ral.ctrl[0]), .value(ral.ctrl[0].get_reset()));
@@ -170,7 +174,7 @@ class rv_timer_random_vseq extends rv_timer_base_vseq;
     end
   endtask : body
 
-  // Function to calculate number of clks to interrup for given hart and timer
+  // Function to calculate number of clks to interrupt for given hart and timer
   function automatic uint calculate_num_clks(int hart = 0, int timer = 0);
     uint64 mtime_dif = compare_val[hart][timer] - timer_val[hart];
     calculate_num_clks = ((mtime_dif / step[hart]) +

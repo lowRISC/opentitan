@@ -23,9 +23,9 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## Interrupts
 
-| Interrupt Name   | Type   | Description                         |
-|:-----------------|:-------|:------------------------------------|
-| deny_cnt_reached | Event  | Deny counter has reached threshold. |
+| Interrupt Name   | Type   | Description                          |
+|:-----------------|:-------|:-------------------------------------|
+| deny_cnt_reached | Status | Deny counter has exceeded threshold. |
 
 ## Security Alerts
 
@@ -36,9 +36,13 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## Security Countermeasures
 
-| Countermeasure ID            | Description                      |
-|:-----------------------------|:---------------------------------|
-| AC_RANGE_CHECK.BUS.INTEGRITY | End-to-end bus integrity scheme. |
+| Countermeasure ID               | Description                                                                             |
+|:--------------------------------|:----------------------------------------------------------------------------------------|
+| AC_RANGE_CHECK.BUS.INTEGRITY    | End-to-end bus integrity scheme.                                                        |
+| AC_RANGE_CHECK.CTRL.REGWEN_MUBI | Registers are protected from writes with a multi-bit encoded signal.                    |
+| AC_RANGE_CHECK.CTRL.MUBI        | Registers have multi-bit encoded fields.                                                |
+| AC_RANGE_CHECK.INTERSIG.MUBI    | Range overwrite singal to bypass the matching logic.                                    |
+| AC_RANGE_CHECK.CTR.REDUN        | The log counter is protected by a second counter that counts in the opposite direction. |
 
 
 <!-- END CMDGEN -->

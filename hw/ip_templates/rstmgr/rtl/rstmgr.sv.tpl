@@ -17,6 +17,8 @@ module rstmgr
   import prim_mubi_pkg::mubi4_t;
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned AlertSkewCycles = 1,
   parameter bit SecCheck = 1,
   parameter int SecMaxSyncDelay = 2
 ) (
@@ -221,6 +223,7 @@ module rstmgr
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(1'b1)
     ) u_prim_alert_sender (
       .clk_i,
@@ -302,7 +305,7 @@ module rstmgr
   // Power Domains: ${rst['domains']}
   // Shadowed: ${rst['shadowed']}
   % for j, name in enumerate(names):
-<%rst_name = Name.from_snake_case(name)
+<% rst_name_camel = Name.to_camel_case(name)
 %>\
     % for domain in power_domains:
        % if domain in rst['domains']:
@@ -339,7 +342,7 @@ module rstmgr
   % if names[0]!=rst_ni:
   if (SecCheck) begin : gen_d${domain.lower()}_${name}_assert
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
-    D${domain.capitalize()}${rst_name.as_camel_case()}FsmCheck_A,
+    D${domain.capitalize()}${rst_name_camel}FsmCheck_A,
     u_d${domain.lower()}_${name}.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
   end

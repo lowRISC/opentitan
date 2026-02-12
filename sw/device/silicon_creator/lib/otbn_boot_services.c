@@ -9,12 +9,11 @@
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/base/util.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/otbn.h"
 
-#include "otbn_regs.h"  // Generated.
+#include "hw/top/otbn_regs.h"  // Generated.
 
 static_assert(kAttestationSeedWords <= 16,
               "Additional attestation seed needs must be <= 516 bits.");
@@ -80,32 +79,6 @@ enum {
       kScOtbnWideWordNumWords,
 };
 
-OT_WARN_UNUSED_RESULT
-static rom_error_t load_attestation_keygen_seed(uint32_t additional_seed_idx,
-                                                uint32_t *seed) {
-  // Read seed from flash info page.
-  uint32_t seed_flash_offset =
-      0 + (additional_seed_idx * kAttestationSeedBytes);
-  rom_error_t err =
-      flash_ctrl_info_read(&kFlashCtrlInfoPageAttestationKeySeeds,
-                           seed_flash_offset, kAttestationSeedWords, seed);
-
-  if (err != kErrorOk) {
-    flash_ctrl_error_code_t flash_ctrl_err_code;
-    flash_ctrl_error_code_get(&flash_ctrl_err_code);
-    if (flash_ctrl_err_code.rd_err) {
-      // If we encountered a read error, this means the attestation seed page
-      // has not been provisioned yet. In this case, we clear the seed and
-      // continue, which will simply result in generating an invalid identity.
-      memset(seed, 0, kAttestationSeedBytes);
-      return kErrorOk;
-    }
-    return err;
-  }
-
-  return kErrorOk;
-}
-
 rom_error_t otbn_boot_app_load(void) { return sc_otbn_load_app(kOtbnAppBoot); }
 
 rom_error_t otbn_boot_attestation_keygen(
@@ -124,7 +97,7 @@ rom_error_t otbn_boot_attestation_keygen(
   // Load the additional seed from flash info.
   uint32_t seed[kAttestationSeedWords];
   HARDENED_RETURN_IF_ERROR(
-      load_attestation_keygen_seed(additional_seed_idx, seed));
+      otbn_boot_attestation_keygen_seed(additional_seed_idx, seed));
 
   // Write the additional seed to OTBN DMEM.
   HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_write(
@@ -201,7 +174,7 @@ rom_error_t otbn_boot_attestation_key_save(
   // Load the additional seed from flash info.
   uint32_t seed[kAttestationSeedWords];
   HARDENED_RETURN_IF_ERROR(
-      load_attestation_keygen_seed(additional_seed_idx, seed));
+      otbn_boot_attestation_keygen_seed(additional_seed_idx, seed));
   // Pad remaining DMEM field with zeros to prevent a DMEM integrity error
   // (since data is aligned to 256-bit words).
   uint32_t zero_buf[kOtbnAttestationSeedBufferWords - kAttestationSeedWords] = {
@@ -270,10 +243,9 @@ rom_error_t otbn_boot_attestation_endorse(const hmac_digest_t *digest,
   return kErrorOk;
 }
 
-rom_error_t otbn_boot_sigverify(const ecdsa_p256_public_key_t *key,
-                                const ecdsa_p256_signature_t *sig,
-                                const hmac_digest_t *digest,
-                                uint32_t *recovered_r) {
+rom_error_t otbn_boot_sigverify_start(const ecdsa_p256_public_key_t *key,
+                                      const ecdsa_p256_signature_t *sig,
+                                      const hmac_digest_t *digest) {
   // Write the mode.
   uint32_t mode = kOtbnBootModeSigverify;
   HARDENED_RETURN_IF_ERROR(
@@ -296,9 +268,12 @@ rom_error_t otbn_boot_sigverify(const ecdsa_p256_public_key_t *key,
                                               sig->s, kOtbnVarBootS));
 
   // Start the OTBN routine.
-  HARDENED_RETURN_IF_ERROR(sc_otbn_execute());
   SEC_MMIO_WRITE_INCREMENT(kScOtbnSecMmioExecute);
+  return sc_otbn_execute_start();
+}
 
+rom_error_t otbn_boot_sigverify_finish(uint32_t *recovered_r) {
+  HARDENED_RETURN_IF_ERROR(sc_otbn_execute_finish());
   // Check if the signature passed basic checks.
   uint32_t ok;
   HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_read(1, kOtbnVarBootOk, &ok));
@@ -315,4 +290,12 @@ rom_error_t otbn_boot_sigverify(const ecdsa_p256_public_key_t *key,
   // Read the recovered `r` value from DMEM.
   return sc_otbn_dmem_read(kEcdsaP256SignatureComponentWords, kOtbnVarBootXr,
                            recovered_r);
+}
+
+rom_error_t otbn_boot_sigverify(const ecdsa_p256_public_key_t *key,
+                                const ecdsa_p256_signature_t *sig,
+                                const hmac_digest_t *digest,
+                                uint32_t *recovered_r) {
+  HARDENED_RETURN_IF_ERROR(otbn_boot_sigverify_start(key, sig, digest));
+  return otbn_boot_sigverify_finish(recovered_r);
 }

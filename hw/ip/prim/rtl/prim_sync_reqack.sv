@@ -23,7 +23,7 @@
 //   That one has lower throughput, but it is safe to reset either domain in isolation, since the
 //   two FSMs cannot get out of sync due to persistent EVEN/ODD states. The handshake latencies
 //   are the same as for the NRZ protocol, but the throughput is half that of the NRZ protocol
-//   since the signals neet to return to zero first, causing two round-trips through the
+//   since the signals need to return to zero first, causing two round-trips through the
 //   synchronizers instead of just one.
 //
 // For further information, see Section 8.2.4 in H. Kaeslin, "Top-Down Digital VLSI Design: From

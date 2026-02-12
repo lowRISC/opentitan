@@ -49,7 +49,7 @@ TL host interface into LC_CTRL device.
 
 ### JTAG RISCV Agent
 [jtag_riscv_agent](../../../dv/sv/jtag_riscv_agent/README.md) is used to read and write LC_CTRL registers via
-the JTAG interface. It contains an embedded instance of [jtag_agent] ../../../dv/sv/jtag_agent/README.md which
+the JTAG interface. It contains an embedded instance of [jtag_agent](../../../dv/sv/jtag_agent/README.md) which
 uses the jtag_if interface in the testbench.
 
 ### PUSH/PULL Agent

@@ -4,23 +4,30 @@
 
 pub mod bigint;
 pub mod bitbang;
-pub mod bitfield;
 pub mod file;
+pub mod fs;
 pub mod hexdump;
 pub mod num_de;
 pub mod parse_int;
 pub mod present;
 pub mod printer;
 pub mod raw_tty;
+mod regex;
 pub mod rom_detect;
+pub mod runtime;
 pub mod serde;
+pub mod serializable_error;
 pub mod status;
 pub mod testing;
-pub mod unknown;
 pub mod usb;
 pub mod usr_access;
+pub mod vcd;
 pub mod vmem;
 pub mod voltage;
+
+pub use ot_hal::util::bitfield;
+
+pub use runtime::runtime;
 
 /// The `collection` macro provides syntax for hash and set literals.
 #[macro_export]

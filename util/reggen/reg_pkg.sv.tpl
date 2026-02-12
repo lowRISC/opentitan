@@ -118,7 +118,7 @@ ${hdr}
       ## We are inhomogeneous, which means there is more than one different
       ## field. Generate a hw2reg typedef that packs together all the fields of
       ## the register.
-      % for f in r0.fields:
+      % for f in reversed(r0.fields):
 <%
           field_d_width = f.get_n_bits(r0.hwext, r0.hwre, ["d"])
 %>\
@@ -188,8 +188,8 @@ reg_if_width = 2 + addr_width + data_width + data_byte_width
     struct_width = r0.get_n_bits(['q', 'qe', 're'])
 
     if isinstance(r, MultiRegister):
-      struct_type += " [{}:0]".format(r.count - 1)
-      struct_width *= r.count
+      struct_type += " [{}:0]".format(len(r.pregs) - 1)
+      struct_width *= len(r.pregs)
 
     msb = nbits - packbit - 1
     lsb = msb - struct_width + 1
@@ -224,8 +224,8 @@ packbit = 0
     struct_width = r0.get_n_bits(['d', 'de'])
 
     if isinstance(r, MultiRegister):
-      struct_type += " [{}:0]".format(r.count - 1)
-      struct_width *= r.count
+      struct_type += " [{}:0]".format(len(r.pregs) - 1)
+      struct_width *= len(r.pregs)
 
     msb = nbits - packbit - 1
     lsb = msb - struct_width + 1
@@ -385,6 +385,15 @@ package ${lblock}${"_" + block.alias_impl if block.alias_impl else ""}_reg_pkg;
 % for iface_name, rb in block.reg_blocks.items():
   parameter int NumRegs${iface_name.title() if iface_name else ""} = ${len(rb.flat_regs)};
 % endfor
+% if len(block.alerts):
+
+  // Alert indices
+  typedef enum int {
+% for idx, alert in enumerate(block.alerts):
+    Alert${lib.Name.to_camel_case(alert.name)}Idx = ${idx}${"" if idx == len(block.alerts) - 1 else ","}
+% endfor
+  } ${block.name.lower()}_alert_idx_t;
+% endif
 <%
   just_default = len(block.reg_blocks) == 1 and None in block.reg_blocks
 %>\

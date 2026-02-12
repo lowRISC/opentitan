@@ -61,7 +61,7 @@
 
 `ifndef uvm_component_new
   `define uvm_component_new \
-    function new (string name="", uvm_component parent=null); \
+    function new (string name, uvm_component parent); \
       super.new(name, parent); \
     endfunction : new
 `endif
@@ -293,7 +293,7 @@
   end
 `endif
 
-// print non-empty tlm fifos that were uncompared at end of test
+// print non-empty tlm FIFOs that were uncompared at end of test
 `ifndef DV_EOT_PRINT_TLM_FIFO_CONTENTS
 `define DV_EOT_PRINT_TLM_FIFO_CONTENTS(TYP_, FIFO_, SEV_=error, ID_=`gfn)                          \
   forever begin                                                                                    \
@@ -305,7 +305,7 @@
   end
 `endif
 
-// print non-empty tlm fifos that were uncompared at end of test
+// print non-empty tlm FIFOs that were uncompared at end of test
 `ifndef DV_EOT_PRINT_TLM_FIFO_ARR_CONTENTS
 `define DV_EOT_PRINT_TLM_FIFO_ARR_CONTENTS(TYP_, FIFO_, SEV_=error, ID_=`gfn) \
   begin \
@@ -319,7 +319,7 @@
   end
 `endif
 
-// print non-empty tlm fifos that were uncompared at end of test
+// print non-empty tlm FIFOs that were uncompared at end of test
 `ifndef DV_EOT_PRINT_Q_CONTENTS
 `define DV_EOT_PRINT_Q_CONTENTS(TYP_, Q_, SEV_=error, ID_=`gfn) \
   begin \
@@ -330,7 +330,7 @@
   end
 `endif
 
-// print non-empty tlm fifos that were uncompared at end of test
+// print non-empty tlm FIFOs that were uncompared at end of test
 `ifndef DV_EOT_PRINT_Q_ARR_CONTENTS
 `define DV_EOT_PRINT_Q_ARR_CONTENTS(TYP_, Q_, SEV_=error, ID_=`gfn) \
   begin \
@@ -521,7 +521,7 @@
 // This goes in conjunction with `DV_ASSERT_CTRL() macro above, but is invoked in the entity that is
 // sending the req to turn on / off the assertions. Note that piece of code invoking this macro
 // does not have the information on the actual hierarchical path to the module or the levels - this
-// is 'wrapped' into the LABEL_ instead. DV user needs to uniquify the label sufficienly enough to
+// is 'wrapped' into the LABEL_ instead. DV user needs to uniquify the label sufficiently enough to
 // reflect it.
 //
 // LABEL_ : Name of the assertion control resource bit (string).
@@ -665,7 +665,7 @@
 `endif
 
 // Usage:`OTDBG(( string ))
-// This macro has unque keyword 'OTDBG'and timestemp only.
+// This macro has unique keyword 'OTDBG' and timestamp only.
 // Use for the temporary print to distinguish from `uvm_info.
 // Do not leave this macro in other source files in the remote repo.
 `ifndef OTDBG

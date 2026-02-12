@@ -19,3 +19,8 @@ toolchain(
     toolchain = ":localtools_impl",
     toolchain_type = LOCALTOOLS_TOOLCHAIN,
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
+)

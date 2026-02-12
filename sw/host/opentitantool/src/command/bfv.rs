@@ -4,11 +4,10 @@
 
 use anyhow::{Context, Result};
 use clap::Args;
-use serde_annotate::Annotate;
 use std::any::Any;
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 
 #[derive(Debug, Args)]
 /// Decode a raw status. Optionally accepts an ELF file to recover the filename.
@@ -26,7 +25,7 @@ impl CommandDispatch for BfvCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         for value in &self.bfv {
             // Decode status.
             let string_bfv = if value.starts_with("0x") {

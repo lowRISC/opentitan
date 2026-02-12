@@ -4,6 +4,8 @@
 //
 // SHA-256/384/512 configurable mode engine (64-bit word datapath)
 
+`include "prim_assert.sv"
+
 module prim_sha2 import prim_sha2_pkg::*;
 #(
   parameter bit MultimodeEn = 0, // assert to enable multi-mode digest feature
@@ -179,7 +181,7 @@ module prim_sha2 import prim_sha2_pkg::*;
     assign digest_o = digest_q;
 
     // When wipe_secret is high, sensitive internal variables are cleared by extending the wipe
-    // value specifed in the register
+    // value specified in the register
     `ASSERT(WipeHashAssert,
             wipe_secret_i |=> (hash_q == {($bits(hash_q)/$bits(wipe_v_i)){$past(wipe_v_i)}}))
     `ASSERT(WipeMsgSchArrAssert,

@@ -146,6 +146,7 @@ py_library(
         ":clocking",
         ":field",
         ":lib",
+        ":memory",
         ":multi_register",
         ":params",
         ":register",
@@ -187,6 +188,16 @@ py_library(
     deps = [
         ":bits",
         ":lib",
+    ],
+)
+
+py_library(
+    name = "memory",
+    srcs = ["memory.py"],
+    deps = [
+        ":access",
+        ":lib",
+        ":params",
     ],
 )
 
@@ -324,6 +335,30 @@ py_library(
 )
 
 py_library(
+    name = "exporter",
+    srcs = ["exporter.py"],
+    deps = [
+        ":ip_block",
+    ],
+)
+
+py_library(
+    name = "systemrdl_exporter",
+    srcs = ["systemrdl_exporter.py"],
+    deps = [
+        ":access",
+        ":exporter",
+        ":field",
+        ":ip_block",
+        ":multi_register",
+        ":reg_block",
+        ":register",
+        ":window",
+        requirement("peakrdl_systemrdl"),
+    ],
+)
+
+py_library(
     name = "md_helpers",
     srcs = ["md_helpers.py"],
     deps = [
@@ -344,4 +379,12 @@ py_library(
 filegroup(
     name = "tpl_files",
     srcs = glob(["**/*.tpl"]),
+)
+
+filegroup(
+    name = "doc_files",
+    srcs = glob([
+        "**/*.md",
+        "**/*.svg",
+    ]),
 )

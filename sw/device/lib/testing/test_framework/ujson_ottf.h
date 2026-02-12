@@ -61,6 +61,22 @@ ujson_t ujson_ottf_console(void);
   })
 
 /**
+ * Adds an empty CRC field to the response.
+ *
+ * Should not be used directly.
+ * It is used by other macros such as `RESP_OK_NO_CRC`.
+ *
+ * @param uj_ctx_ A `ujson_t` representing the IO context.
+ */
+#define RESP_NO_CRC(uj_ctx_)                \
+  ({                                        \
+    TRY(ujson_putbuf(uj_ctx_, " CRC:", 5)); \
+    TRY(ujson_putbuf(uj_ctx_, "0\n", 2));   \
+    TRY(ujson_flushbuf(uj));                \
+    OK_STATUS();                            \
+  })
+
+/**
  * Add a CRC to the response.
  * Should not be used directly.
  * It is used by other macros such as `RESP_ERR`.
@@ -73,11 +89,27 @@ ujson_t ujson_ottf_console(void);
     TRY(ujson_putbuf(uj_ctx_, " CRC:", 5));       \
     TRY(ujson_serialize_uint32_t(uj_ctx_, &crc)); \
     TRY(ujson_putbuf(uj_ctx_, "\n", 1));          \
+    TRY(ujson_flushbuf(uj));                      \
     OK_STATUS();                                  \
   })
 
 /**
- * Respond with an OK result and JSON encoded data.
+ * Respond with an OK result, JSON encoded data, and empty CRC.
+ *
+ * @param responder_ A ujson serializer function for `data_`.
+ * @param uj_ctx_ A `ujson_t` representing the IO context.
+ * @param data_ A pointer to the data to send.
+ */
+#define RESP_OK_NO_CRC(responder_, uj_ctx_, data_) \
+  ({                                               \
+    TRY(ujson_putbuf(uj_ctx_, "RESP_OK:", 8));     \
+    TRY(responder_(uj_ctx_, data_));               \
+    RESP_NO_CRC(uj_ctx_);                          \
+    OK_STATUS();                                   \
+  })
+
+/**
+ * Respond with an OK result, JSON encoded data, and valid CRC.
  *
  * @param responder_ A ujson serializer function for `data_`.
  * @param uj_ctx_ A `ujson_t` representing the IO context.

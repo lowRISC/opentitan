@@ -14,6 +14,9 @@ if alert_handler is not None:
 else:
     has_alert_handler = False
 
+plics = lib.find_modules(top['module'], 'rv_plic')
+has_plic = any(addr_space_name in plic['base_addrs'][None] for plic in plics)
+
 pinmux = lib.find_module(top['module'], 'pinmux')
 if pinmux is not None:
     has_pinmux = addr_space_name in pinmux['base_addrs'][None]
@@ -38,23 +41,23 @@ package top_${top["name"]}${addr_space_suffix}_pkg;
   parameter int unsigned ${region.size_bytes_name().as_c_define()} = ${hex_size_bytes};
 
 % endfor
-% for name, region in helper.memories(addr_space_name):
+% for (inst_name, if_name), region in helper.memories(addr_space_name):
 <%
     hex_base_addr = "32'h{:x}".format(region.base_addr)
     hex_size_bytes = "32'h{:x}".format(region.size_bytes)
 %>\
   /**
-   * Memory base address for ${name} in top ${top["name"]}.
+   * Memory base address for ${if_name} memory on ${inst_name} in top ${top["name"]}.
    */
   parameter int unsigned ${region.base_addr_name().as_c_define()} = ${hex_base_addr};
 
   /**
-   * Memory size for ${name} in top ${top["name"]}.
+   * Memory size for ${if_name} memory on ${inst_name} in top ${top["name"]}.
    */
   parameter int unsigned ${region.size_bytes_name().as_c_define()} = ${hex_size_bytes};
   ## TODO: we need a more holistic approach to declare memories and IPs sitting in the
   ## CTN address space. For now, we create the base and offset for the CTN SRAM with this workaround.
-  % if name == "ctn":
+  % if inst_name == "soc_proxy" and if_name == "ctn":
 <%
     hex_base_addr = "32'h{:x}".format(region.base_addr + 0x01000000)
     hex_size_bytes = "32'h{:x}".format(0x00100000)
@@ -74,15 +77,14 @@ package top_${top["name"]}${addr_space_suffix}_pkg;
 % endif
 
 % endfor
-% if has_alert_handler:
 %   for alert_group, alert_modules in top["outgoing_alert_module"].items():
-  
+
   // Number of ${alert_group} outgoing alerts
   parameter int unsigned NOutgoingAlerts${alert_group.capitalize()} = ${len(top['outgoing_alert'][alert_group])};
 
   // Number of LPGs for outgoing alert group ${alert_group}
   parameter int unsigned NOutgoingLpgs${alert_group.capitalize()} = ${len(top["outgoing_alert_lpgs"][alert_group])};
-  
+
   // Enumeration of ${alert_group} outgoing alert modules
   typedef enum int unsigned {
 %       for mod in alert_modules:
@@ -106,14 +108,7 @@ package top_${top["name"]}${addr_space_suffix}_pkg;
 %       endfor
   };
 %   endfor
-%   for alert_group, alerts in top["incoming_alert"].items():
-
-  // Number of ${alert_group} incoming alerts
-  parameter int unsigned NIncomingAlerts${alert_group.capitalize()} = ${len(alerts)};
-
-  // Number of LPGs for incoming alert group ${alert_group}
-  parameter int unsigned NIncomingLpgs${alert_group.capitalize()} = ${max(alert['lpg_idx'] for alert in alerts) + 1};
-%   endfor
+% if has_alert_handler:
 
   // Enumeration of alert modules
   typedef enum int unsigned {
@@ -130,18 +125,71 @@ package top_${top["name"]}${addr_space_suffix}_pkg;
 %   endfor
     ${lib.Name.from_snake_case("top_" + top["name"] + "_alert_id_count").as_camel_case()}
   } alert_id_e;
-% endif # has_alert_handler
-% if len(top["outgoing_interrupt"]) > 0:
+%   for alert_group, alerts in top["incoming_alert"].items():
 
-%   for interrupt_group, interrupts in top["outgoing_interrupt"].items():
-<%
-  num_interrupts = sum(interrupt["width"] for interrupt in interrupts)
-%>\
-  // Number of ${interrupt_group} outgoing interrupts
-  parameter int unsigned NOutgoingInterrupts${interrupt_group.capitalize()} = ${num_interrupts};
+  // Enumeration of ${alert_group} incoming alerts
+  typedef enum int unsigned {
+%       for alert in alerts:
+    ${lib.Name.from_snake_case(f"top_{top['name']}_incoming_alert_{alert_group}_id_{alert['name']}").as_camel_case()} = ${loop.index},
+%       endfor
+    ${lib.Name.from_snake_case(f"top_{top['name']}_incoming_alert_{alert_group}_id_count").as_camel_case()}
+  } ${f"incoming_alert_{alert_group}_id_e"};
+
+  // Number of ${alert_group} incoming alerts
+  parameter int unsigned NIncomingAlerts${alert_group.capitalize()} = ${len(alerts)};
+
+  // Number of LPGs for incoming alert group ${alert_group}
+  parameter int unsigned NIncomingLpgs${alert_group.capitalize()} = ${max(alert['lpg_idx'] for alert in alerts) + 1};
 %   endfor
+% endif # has_alert_handler
+% if has_plic:
 
-% endif
+  // Enumeration of interrupts
+  % for plic, interrupts in helper.plic_interrupts.items():
+  typedef enum int unsigned {
+    % for name, value, _ in interrupts.constants:
+    ${name.as_sv_enum()} = ${value},
+    % endfor
+    ${(interrupts.name + lib.Name(["count"])).as_sv_enum()}
+  } interrupt_${plic}_id_e;
+
+  % endfor
+% for irq_group, irqs in top["incoming_interrupt"].items():
+
+  // Number of ${irq_group} incoming interrupts
+  parameter int unsigned NIncomingInterrupts${lib.Name.from_snake_case(irq_group).as_camel_case()} = ${len(irqs)};
+
+  // Enumeration of interrupts for incoming group ${irq_group}
+  typedef enum int unsigned {
+<% irq_id = 0 %>\
+    % for irq in irqs:
+      % if irq.get("width") and irq["width"] > 1:
+        % for w in range(irq["width"]):
+    ${lib.Name.from_snake_case(f"top_{top['name']}_incoming_irq_{irq_group}_id_{irq['module_name']}_{irq['name']}{w}").as_camel_case()} = ${loop.index},
+<% irq_id += 1 %>\
+        % endfor
+      % else:
+    ${lib.Name.from_snake_case(f"top_{top['name']}_incoming_irq_{irq_group}_id_{irq['module_name']}_{irq['name']}").as_camel_case()} = ${loop.index},
+<% irq_id += 1 %>\
+      % endif
+    % endfor
+    ${lib.Name.from_snake_case(f"top_{top['name']}_incoming_irq_{irq_group}_id_count").as_camel_case()}
+  } incoming_interrupt_${irq_group}_id_e;
+% endfor
+% for irq_group, irqs in top["outgoing_interrupt"].items():
+
+  // Number of ${irq_group} outgoing interrupts
+  parameter int unsigned NOutgoingInterrupts${lib.Name.from_snake_case(irq_group).as_camel_case()} = ${sum(irq["width"] for irq in irqs)};
+
+  // Enumeration of interrupts for outgoing group ${irq_group}
+  typedef enum int unsigned {
+    % for irq in irqs:
+    ${lib.Name.from_snake_case(f"top_{top['name']}_outgoing_irq_{irq_group}_id_{irq['name']}").as_camel_case()} = ${loop.index},
+    % endfor
+    ${lib.Name.from_snake_case(f"top_{top['name']}_outgoing_irq_{irq_group}_id_count").as_camel_case()}
+  } outgoing_interrupt_${irq_group}_id_e;
+% endfor
+% endif # has_plic
 % if has_pinmux:
 
   // Enumeration of IO power domains.
@@ -215,7 +263,10 @@ package top_${top["name"]}${addr_space_suffix}_pkg;
 % endfor
     ${lib.Name.from_snake_case("dio_pad_count").as_camel_case()}
   } dio_pad_e;
+% endif # has_pinmux
+% if addr_space_suffix == "":
 
+## TODO this is a hack such that peripheral_e and AST macros are only generated once
 <%
     instances = sorted(set(inst for (inst, _), __ in helper.devices(addr_space_name)))
 %>\
@@ -227,8 +278,14 @@ package top_${top["name"]}${addr_space_suffix}_pkg;
     ${lib.Name.from_snake_case("peripheral_count").as_camel_case()}
   } peripheral_e;
 
+% for (subspace_name, description, subspace_range) in helper.subranges[addr_space_name]:
+  // ${subspace_name.upper()} Region
+  //
+  parameter int unsigned ${subspace_range.base_addr_name().as_c_define()} = ${"32'h{:X}".format(subspace_range.base_addr)};
+  parameter int unsigned ${subspace_range.size_bytes_name().as_c_define()} = ${"32'h{:X}".format(subspace_range.size_bytes)};
+% endfor
+
   // TODO: Enumeration for PLIC Interrupt source peripheral.
-  // TODO: Enumeration for PLIC Interrupt Ids.
 
 // MACROs for AST analog simulation support
 `ifdef ANALOGSIM
@@ -238,6 +295,6 @@ package top_${top["name"]}${addr_space_suffix}_pkg;
   `define INOUT_AI inout
   `define INOUT_AO inout
 `endif
-% endif
+% endif # addr_space_suffix
 
 endpackage

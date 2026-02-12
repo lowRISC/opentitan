@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 <%
+from ipgen.clkmgr_gen import get_rg_srcs
 all_src_names = sorted(s['name'] for s in src_clks.values())
-rg_srcs = list(sorted({sig['src_name'] for sig
-                       in typed_clocks['rg_clks'].values()}))
+rg_srcs = get_rg_srcs(typed_clocks)
 %>\
 
 class clkmgr_env extends cip_base_env #(

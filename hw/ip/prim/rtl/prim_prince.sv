@@ -69,7 +69,7 @@ module prim_prince #(
     // In this case we constantly use k1.
     assign k0_new_d = k1_d;
   end else begin : gen_new_keyschedule
-    // Imroved keyschedule proposed by https://eprint.iacr.org/2014/656.pdf
+    // Improved keyschedule proposed by https://eprint.iacr.org/2014/656.pdf
     // In this case we alternate between k1 and k0.
     always_comb begin : p_new_keyschedule_k0_alpha
       k0_new_d = key_i[2*DataWidth-1 : DataWidth];

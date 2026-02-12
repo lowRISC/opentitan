@@ -301,7 +301,7 @@ class usbdev_max_usb_traffic_vseq extends usbdev_base_vseq;
     // Configure the endpoints; this should strictly be done on the device side really.
     csr_wr(.ptr(ral.ep_out_enable[0]),  .value(ep_out_enabled));
     csr_wr(.ptr(ral.ep_in_enable[0]),   .value(ep_in_enabled));
-    csr_wr(.ptr(ral.rxenable_out[0]),   .value(ep_out_enabled));
+    csr_wr(.ptr(ral.rxenable_out),      .value(ep_out_enabled));
     csr_wr(.ptr(ral.rxenable_setup[0]), .value(rxenable_setup));
     csr_wr(.ptr(ral.out_iso[0]),        .value(out_iso));
     csr_wr(.ptr(ral.in_iso[0]),         .value(in_iso));

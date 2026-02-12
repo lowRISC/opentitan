@@ -41,6 +41,7 @@ load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 load("//rules:stamp.bzl", "stamp_attr", "stamping_enabled")
+load("//hw/top:defs.bzl", "opentitan_select_top_attr")
 
 def get_otp_images():
     """Returns a list of (otp_name, img_target) tuples.
@@ -93,10 +94,8 @@ def otp_partition(name, **kwargs):
     partition.update(kwargs)
     return json.encode(partition)
 
-def _otp_json_builder(ctx, seed = None):
+def _otp_json_builder(ctx):
     otp = {}
-    if seed:
-        otp["seed"] = seed
     otp["partitions"] = [json.decode(p) for p in ctx.attr.partitions]
 
     # For every partition with an "items" dictionary, expand the dictionary of
@@ -116,20 +115,17 @@ def _otp_json_builder(ctx, seed = None):
     return file
 
 def _otp_json_impl(ctx):
-    return [DefaultInfo(files = depset([_otp_json_builder(ctx, ctx.attr.seed)]))]
+    return [DefaultInfo(files = depset([_otp_json_builder(ctx)]))]
 
 otp_json = rule(
     implementation = _otp_json_impl,
     attrs = {
-        "seed": attr.string(
-            doc = "Seed to be used for generation of partition randomized values. Can be overridden by the OTP image generation tool.",
-        ),
         "partitions": attr.string_list(doc = "A list of serialized partitions from otp_partition."),
     },
 )
 
 def _otp_json_rot_keys_impl(ctx):
-    intput_file = _otp_json_builder(ctx, seed = None)
+    intput_file = _otp_json_builder(ctx)
     output_file = ctx.actions.declare_file("{}.with_digest.json".format(ctx.attr.name))
     args = ctx.actions.args()
     args.add("--input", intput_file)
@@ -164,7 +160,7 @@ def _otp_json_immutable_rom_ext_impl(ctx):
             break
     if rom_ext_elf_file == None:
         fail("No ELF dependency for ROM_EXT target.")
-    intput_file = _otp_json_builder(ctx, seed = None)
+    intput_file = _otp_json_builder(ctx)
     output_file = ctx.actions.declare_file("{}.with_immutable_re_params.json".format(ctx.attr.name))
     args = ctx.actions.args()
     args.add("--input", intput_file)
@@ -236,15 +232,10 @@ def _otp_image(ctx):
         args.add("--stamp")
     args.add("--lc-state-def", ctx.file.lc_state_def)
     args.add("--mmap-def", ctx.file.mmap_def)
-    if ctx.attr.img_seed:
-        args.add("--img-seed", ctx.attr.img_seed[BuildSettingInfo].value)
-    if ctx.attr.lc_seed:
-        args.add("--lc-seed", ctx.attr.lc_seed[BuildSettingInfo].value)
-    if ctx.attr.otp_seed:
-        args.add("--otp-seed", ctx.attr.otp_seed[BuildSettingInfo].value)
     if ctx.attr.data_perm:
         args.add("--data-perm", ctx.attr.data_perm[BuildSettingInfo].value)
     args.add("--img-cfg", ctx.file.src)
+    args.add("--top-secret-cfg", ctx.file.top_secret_cfg)
     args.add_all(ctx.files.overlays, before_each = "--add-cfg")
     args.add("--out", "{}/{}.BITWIDTH.vmem".format(output.dirname, ctx.attr.name))
     ctx.actions.run(
@@ -253,6 +244,7 @@ def _otp_image(ctx):
             ctx.file.src,
             ctx.file.lc_state_def,
             ctx.file.mmap_def,
+            ctx.file.top_secret_cfg,
         ] + ctx.files.overlays,
         arguments = [args],
         executable = ctx.executable._tool,
@@ -277,20 +269,13 @@ otp_image = rule(
         ),
         "mmap_def": attr.label(
             allow_single_file = True,
-            default = "//hw/top_earlgrey/data/otp:otp_ctrl_mmap.hjson",
+            default = "//hw/top:top_otp_map",
             doc = "OTP Controller memory map file in Hjson format.",
         ),
-        "img_seed": attr.label(
-            default = "//util/design/data:img_seed",
-            doc = "Configuration override seed used to randomize field values in an OTP image.",
-        ),
-        "lc_seed": attr.label(
-            default = "//util/design/data:lc_seed",
-            doc = "Configuration override seed used to randomize LC netlist constants.",
-        ),
-        "otp_seed": attr.label(
-            default = "//util/design/data:otp_seed",
-            doc = "Configuration override seed used to randomize OTP netlist constants.",
+        "top_secret_cfg": attr.label(
+            allow_single_file = True,
+            default = "//hw/top:secrets",
+            doc = "Generated top configuration file including secrets.",
         ),
         "data_perm": attr.label(
             default = "//util/design/data:data_perm",
@@ -317,10 +302,8 @@ def _otp_image_consts_impl(ctx):
         args.add("--stamp")
     args.add("--lc-state-def", ctx.file.lc_state_def)
     args.add("--mmap-def", ctx.file.mmap_def)
-    args.add("--img-seed", ctx.attr.img_seed[BuildSettingInfo].value)
-    args.add("--lc-seed", ctx.attr.lc_seed[BuildSettingInfo].value)
-    args.add("--otp-seed", ctx.attr.otp_seed[BuildSettingInfo].value)
     args.add("--img-cfg", ctx.file.src)
+    args.add("--top-secret-cfg", ctx.file.top_secret_cfg)
     args.add("--c-template", ctx.file.c_template)
     args.add("--c-out", "{}/{}.c".format(output.dirname, ctx.attr.name))
     args.add_all(ctx.files.overlays, before_each = "--add-cfg")
@@ -331,6 +314,7 @@ def _otp_image_consts_impl(ctx):
             ctx.file.c_template,
             ctx.file.lc_state_def,
             ctx.file.mmap_def,
+            ctx.file.top_secret_cfg,
         ] + ctx.files.overlays,
         arguments = [args],
         executable = ctx.executable._tool,
@@ -357,20 +341,13 @@ otp_image_consts = rule(
         ),
         "mmap_def": attr.label(
             allow_single_file = True,
-            default = "//hw/top_earlgrey/data/otp:otp_ctrl_mmap.hjson",
+            default = "//hw/top:top_otp_map",
             doc = "OTP Controller memory map file in Hjson format.",
         ),
-        "img_seed": attr.label(
-            default = "//util/design/data:img_seed",
-            doc = "Configuration override seed used to randomize field values in an OTP image.",
-        ),
-        "lc_seed": attr.label(
-            default = "//util/design/data:lc_seed",
-            doc = "Configuration override seed used to randomize LC netlist constants.",
-        ),
-        "otp_seed": attr.label(
-            default = "//util/design/data:otp_seed",
-            doc = "Configuration override seed used to randomize OTP netlist constants.",
+        "top_secret_cfg": attr.label(
+            allow_single_file = True,
+            default = "//hw/top:secrets",
+            doc = "Generated top configuration file including secrets.",
         ),
         "c_template": attr.label(
             allow_single_file = True,
@@ -392,28 +369,9 @@ otp_image_consts = rule(
 # The following overlays are used to generate a generic OTP image with fake
 # keys. This is useful for testing in dv_sim, fpga and verilator
 # environments.
-OTP_SIGVERIFY_FAKE_KEYS = [
-    "@//sw/device/silicon_creator/rom/keys/fake/otp:json_rot_keys",
-]
+OTP_SIGVERIFY_FAKE_KEYS = opentitan_select_top_attr("otp_sigverify_fake_keys")
 
-# This is a set of overlays to generate a generic, standard OTP image.
-# Additional overlays can be applied on top to further customize the OTP.
-# This set overlays does not include any of the SECRET[0-2] partitions.
-STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS = OTP_SIGVERIFY_FAKE_KEYS + [
-    "//hw/top_earlgrey/data/otp:otp_json_creator_sw_cfg",
-    "//hw/top_earlgrey/data/otp:otp_json_owner_sw_cfg",
-    "//hw/top_earlgrey/data/otp:otp_json_alert_digest_cfg",
-    "//hw/top_earlgrey/data/otp:otp_json_hw_cfg0",
-    "//hw/top_earlgrey/data/otp:otp_json_hw_cfg1",
-]
-
-# This is a set of overlays to generate a generic, standard OTP image.
-# Additional overlays can be applied on top to further customize the OTP.
-STD_OTP_OVERLAYS = STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS + [
-    "//hw/top_earlgrey/data/otp:otp_json_secret0",
-    "//hw/top_earlgrey/data/otp:otp_json_secret1",
-    "//hw/top_earlgrey/data/otp:otp_json_secret2_unlocked",
-]
+STD_OTP_OVERLAYS = opentitan_select_top_attr("std_otp_overlay")
 
 def otp_hex(v):
     return hex(v)
@@ -440,7 +398,7 @@ def _parse_str_list(s):
     """
     return s.replace(" ", "").split(",")
 
-def otp_alert_classification(alert_list, default = None, **kwargs):
+def otp_alert_classification(alert_list, default = None, ordered_params = {}, **kwargs):
     """Create an array specifying the alert classifications.
 
     This function creates an array of bytestrings that specifies the alert
@@ -452,6 +410,14 @@ def otp_alert_classification(alert_list, default = None, **kwargs):
         default: default classification for all alerts that are not specified
             in kwargs. If kwargs does not include all alerts, a value must be
             specified for default.
+        ordered_params: a mapping of the format '{"alert_name": alert_class_string}'.
+            alert_name is an alert in the alert_list argument.
+            alert_class_string is a comma-delimited string that can contain
+            spaces and is intended to be parsed by the _parse_str_list macro.
+            This string must indicate exactly 4 alert classes for the prod,
+            prod_end, dev, and rma LC states in that order.
+            Use this argument instead of kwargs to ensure the order of the
+            alert classes is maintained in the bazel build file.
         kwargs: a mapping of the format 'alert_name = alert_class_string'.
             alert_name is an alert in the alert_list argument.
             alert_class_string is a comma-delimited string that can contain
@@ -482,6 +448,9 @@ def otp_alert_classification(alert_list, default = None, **kwargs):
 
     provided_alerts = dict()
     for alert, class_str in kwargs.items():
+        provided_alerts[alert] = _parse_alert_class_string(class_str)
+
+    for alert, class_str in ordered_params.items():
         provided_alerts[alert] = _parse_alert_class_string(class_str)
 
     alert_set = sets.make(alert_list)

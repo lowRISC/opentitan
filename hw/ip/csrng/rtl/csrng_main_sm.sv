@@ -6,31 +6,35 @@
 //
 //  - handles all app cmd requests from all requesting interfaces
 
-module csrng_main_sm import csrng_pkg::*; (
-  input logic                         clk_i,
-  input logic                         rst_ni,
+`include "prim_assert.sv"
 
-  input logic                         enable_i,
-  input logic                         acmd_avail_i,
+module csrng_main_sm import csrng_pkg::*; (
+  input  logic                        clk_i,
+  input  logic                        rst_ni,
+  input  logic                        enable_i,
+
+  input  logic                        acmd_avail_i,
   output logic                        acmd_accept_o,
-  input logic [2:0]                   acmd_i,
-  input logic                         acmd_eop_i,
-  input logic                         ctr_drbg_cmd_req_rdy_i,
-  input logic                         flag0_i,
+  input  acmd_e                       acmd_i,
+  input  logic                        acmd_eop_i,
+
+  input  logic                        flag0_i,
+
   output logic                        cmd_entropy_req_o,
-  input logic                         cmd_entropy_avail_i,
-  output logic                        instant_req_o,
-  output logic                        reseed_req_o,
-  output logic                        generate_req_o,
-  output logic                        update_req_o,
-  output logic                        uninstant_req_o,
+  input  logic                        cmd_entropy_avail_i,
+
+  output logic                        cmd_vld_o,
+  input  logic                        cmd_rdy_i,
   output logic                        clr_adata_packer_o,
-  input logic                         cmd_complete_i,
-  input logic                         local_escalate_i,
+  input  logic                        cmd_complete_i,
+
+  input  logic                        local_escalate_i,
+
   output logic [MainSmStateWidth-1:0] main_sm_state_o,
   output logic                        main_sm_err_o
 );
 
+  // SEC_CM: MAIN_SM.FSM.SPARSE
   main_sm_state_e state_d, state_q;
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, main_sm_state_e, MainSmIdle)
 
@@ -40,11 +44,7 @@ module csrng_main_sm import csrng_pkg::*; (
     state_d            = state_q;
     acmd_accept_o      = 1'b0;
     cmd_entropy_req_o  = 1'b0;
-    instant_req_o      = 1'b0;
-    reseed_req_o       = 1'b0;
-    generate_req_o     = 1'b0;
-    update_req_o       = 1'b0;
-    uninstant_req_o    = 1'b0;
+    cmd_vld_o          = 1'b0;
     clr_adata_packer_o = 1'b0;
     main_sm_err_o      = 1'b0;
 
@@ -54,11 +54,8 @@ module csrng_main_sm import csrng_pkg::*; (
     end else if (local_escalate_i) begin
       // In case local escalate is high we must transition to the error state.
       state_d = MainSmError;
-    end else if (!enable_i && state_q inside {MainSmIdle, MainSmParseCmd, MainSmInstantPrep,
-                                              MainSmInstantReq, MainSmReseedPrep, MainSmReseedReq,
-                                              MainSmGeneratePrep, MainSmGenerateReq,
-                                              MainSmUpdatePrep, MainSmUpdateReq,
-                                              MainSmUninstantPrep, MainSmUninstantReq,
+    end else if (!enable_i && state_q inside {MainSmIdle, MainSmParseCmd, MainSmEntropyReq,
+                                              MainSmCmdPrep, MainSmCmdVld,
                                               MainSmClrAData, MainSmCmdCompWait}) begin
       // In case the module is disabled and we are in a legal state we must go into idle state.
       state_d = MainSmIdle;
@@ -66,92 +63,55 @@ module csrng_main_sm import csrng_pkg::*; (
       // Otherwise do the state machine as normal.
       unique case (state_q)
         MainSmIdle: begin
-          // Because of the if statement above we won't leave idle if enable is low.
-          if (ctr_drbg_cmd_req_rdy_i) begin
-            // Signal the arbiter to grant this request.
-            if (acmd_avail_i) begin
-              acmd_accept_o = 1'b1;
-              state_d = MainSmParseCmd;
-            end
+          // Signal the arbiter to grant this request.
+          if (acmd_avail_i) begin
+            acmd_accept_o = 1'b1;
+            state_d = MainSmParseCmd;
           end
         end
         MainSmParseCmd: begin
-          if (ctr_drbg_cmd_req_rdy_i && acmd_eop_i) begin
-            if (acmd_i == INS) begin
-              state_d = MainSmInstantPrep;
-            end else if (acmd_i == RES) begin
-              state_d = MainSmReseedPrep;
-            end else if (acmd_i == GEN) begin
-              state_d = MainSmGeneratePrep;
-            end else if (acmd_i == UPD) begin
-              state_d = MainSmUpdatePrep;
-            end else if (acmd_i == UNI) begin
-              state_d = MainSmUninstantPrep;
-            end else begin
-              // Command was not supported.
+          if (acmd_eop_i) begin
+            unique case (acmd_i)
+              INS, RES:      state_d = MainSmEntropyReq; // Command may require entropy
+              GEN, UPD, UNI: state_d = MainSmCmdPrep;    // Command does not require entropy
+              default:       state_d = MainSmIdle;       // Command was not supported
+            endcase
+          end
+        end
+        MainSmEntropyReq: begin
+          if (flag0_i) begin
+            // With flag0 set, no entropy is required.
+            state_d = MainSmCmdVld;
+          end else begin
+            // Delay one clock to fix timing issue.
+            cmd_entropy_req_o = 1'b1;
+            if (cmd_entropy_avail_i) begin
+              state_d = MainSmCmdVld;
+            end
+          end
+        end
+        MainSmCmdPrep: begin
+          // Assumes all adata is present now.
+          state_d = MainSmCmdVld;
+        end
+        MainSmCmdVld: begin
+          cmd_vld_o = 1'b1;
+          if (cmd_rdy_i) begin
+            if (cmd_complete_i) begin
+              clr_adata_packer_o = 1'b1;
               state_d = MainSmIdle;
+            end else begin
+              state_d = MainSmClrAData;
             end
           end
-        end
-        MainSmInstantPrep: begin
-          if (flag0_i) begin
-            // Assumes all adata is present now.
-            state_d = MainSmInstantReq;
-          end else begin
-            // Delay one clock to fix timing issue.
-            cmd_entropy_req_o = 1'b1;
-            if (cmd_entropy_avail_i) begin
-              state_d = MainSmInstantReq;
-            end
-          end
-        end
-        MainSmInstantReq: begin
-          instant_req_o = 1'b1;
-          state_d = MainSmClrAData;
-        end
-        MainSmReseedPrep: begin
-          if (flag0_i) begin
-            // Assumes all adata is present now.
-            state_d = MainSmReseedReq;
-          end else begin
-            // Delay one clock to fix timing issue.
-            cmd_entropy_req_o = 1'b1;
-            if (cmd_entropy_avail_i) begin
-              state_d = MainSmReseedReq;
-            end
-          end
-        end
-        MainSmReseedReq: begin
-          reseed_req_o = 1'b1;
-          state_d = MainSmClrAData;
-        end
-        MainSmGeneratePrep: begin
-          // Assumes all adata is present now.
-          state_d = MainSmGenerateReq;
-        end
-        MainSmGenerateReq: begin
-          generate_req_o = 1'b1;
-          state_d = MainSmClrAData;
-        end
-        MainSmUpdatePrep: begin
-          // Assumes all adata is present now.
-          state_d = MainSmUpdateReq;
-        end
-        MainSmUpdateReq: begin
-          update_req_o = 1'b1;
-          state_d = MainSmClrAData;
-        end
-        MainSmUninstantPrep: begin
-          // Assumes all adata is present now.
-          state_d = MainSmUninstantReq;
-        end
-        MainSmUninstantReq: begin
-          uninstant_req_o = 1'b1;
-          state_d = MainSmClrAData;
         end
         MainSmClrAData: begin
           clr_adata_packer_o = 1'b1;
-          state_d = MainSmCmdCompWait;
+          if (cmd_complete_i) begin
+            state_d = MainSmIdle;
+          end else begin
+            state_d = MainSmCmdCompWait;
+          end
         end
         MainSmCmdCompWait: begin
           if (cmd_complete_i) begin
@@ -172,4 +132,5 @@ module csrng_main_sm import csrng_pkg::*; (
   `ASSERT(CsrngMainErrorStStable_A, state_q == MainSmError |=> $stable(state_q))
   // If in error state, the error output must be high.
   `ASSERT(CsrngMainErrorOutput_A,   state_q == MainSmError |-> main_sm_err_o)
+
 endmodule

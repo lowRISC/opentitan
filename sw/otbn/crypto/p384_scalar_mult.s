@@ -74,9 +74,26 @@ p384_scalar_mult:
   bn.lid    x2++, 0(x3)
   bn.lid    x2++, 32(x3)
 
-  /* scalar multiplication inprojective space
+  /* scalar multiplication in projective space
      [w30:w25] <= (x, y, z) = k * P */
-  jal       x1, scalar_mult_int_p384
+  jal       x1, scalar_mult_int_p384_reblind
+
+  /* load the result of the scalar multiplication into memory for
+     the projective is on curve check. */
+  li        x2, 25
+  la        x3, x
+  bn.sid    x2++, 0(x3)
+  bn.sid    x2++, 32(x3)
+  la        x3, y
+  bn.sid    x2++, 0(x3)
+  bn.sid    x2++, 32(x3)
+
+  /* store the z coordinate to scratchpad */
+  bn.sid    x2++, 0(x30)
+  bn.sid    x2++, 32(x30)
+
+  /* check if the result is on the p384 curve */
+  jal       x1, p384_isoncurve_proj_check
 
   /* Arithmetic masking:
    1. Generate a random mask r
@@ -124,6 +141,7 @@ p384_scalar_mult:
   bn.subb   w1, w26, w19
   bn.sel    w25, w6, w8, FG0.C
   bn.sel    w26, w7, w9, FG0.C
+  bn.sub    w31, w31, w31  /* dummy instruction to clear flags */
 
   /* Store mask to dmem for later use.
      y coordinate is not required afterwards and therefore can be used
@@ -171,37 +189,3 @@ p384_scalar_mult:
   bn.sid    x2, 32(x21)
 
   ret
-
-/* scratchpad memory */
-.section .data
-
-.balign 32
-
-/* 1st scalar share d0 */
-.globl d0
-.weak d0
-d0:
-  .zero 64
-
-/* 2nd scalar share d1 */
-.globl d1
-.weak d1
-d1:
-  .zero 64
-
-/* x-coordinate */
-.globl x
-.weak x
-x:
-  .zero 64
-
-/* y-coordinate */
-.globl y
-.weak y
-y:
-  .zero 64
-
-/* 704 bytes of scratchpad memory */
-.balign 32
-scratchpad:
-  .zero 704

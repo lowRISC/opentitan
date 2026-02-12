@@ -10,12 +10,18 @@ source util/sh/lib/strict.sh
 PYTHON_REQS_IN_FILE="$REPO_TOP/pyproject.toml"
 PYTHON_REQS_OUT_FILE="$REPO_TOP/python-requirements.txt"
 
+if ! command -v uv > /dev/null; then
+    echo >&2 "UV is required to generate python-requirements.txt. Please install it."
+    exit 1
+fi
+
 # The below shellcode autogenerates the `python-requirements.txt`, with hashes,
 # and prepends the license and auto-generated banners at the top of the file.
 uv pip compile \
   --generate-hashes \
   --no-annotate \
   --no-header \
+  --python 3.10 \
   "$PYTHON_REQS_IN_FILE" \
   -o "$PYTHON_REQS_OUT_FILE"
 echo -e "\n$(cat "$PYTHON_REQS_OUT_FILE")" > "$PYTHON_REQS_OUT_FILE"

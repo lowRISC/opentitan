@@ -270,7 +270,7 @@ module prim_clock_meas #(
   `ASSERT_INIT(RefCntVal_A, RefCnt >= 1)
 
   // if we've reached the max count, enable must be 0 next.
-  // Otherwise the width of the counter is too small to accommodate the usecase
+  // Otherwise the width of the counter is too small to accommodate the use case
   `ASSERT(MaxWidth_A, (cnt == Cnt-1) |=> !cnt_en )
 
 

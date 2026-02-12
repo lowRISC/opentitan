@@ -12,7 +12,7 @@ class pwm_monitor extends dv_base_monitor #(
   // output signal.
   //
   // (This relies upon the internal details of the DUT because we're checking the phase
-  //  delay exactly; alernatively we could just check the relative phases of the PWM
+  //  delay exactly; alternatively we could just check the relative phases of the PWM
   //  output transitions, or allow a margin of error.)
   uint output_delay = 2;
 
@@ -30,7 +30,7 @@ class pwm_monitor extends dv_base_monitor #(
   // Have we received valid configuration and are we monitoring the PWM output?
   bit monitoring = 1'b0;
 
-  extern function new(string name = "", uvm_component parent = null);
+  extern function new(string name, uvm_component parent = null);
   extern function void build_phase(uvm_phase phase);
 
   // One or more of the phase counter configuration parameters has been changed; ensure that our
@@ -46,7 +46,7 @@ class pwm_monitor extends dv_base_monitor #(
   extern task monitor_ready_to_end();
 endclass
 
-function pwm_monitor::new(string name = "", uvm_component parent = null);
+function pwm_monitor::new(string name, uvm_component parent = null);
   super.new(name, parent);
 endfunction
 

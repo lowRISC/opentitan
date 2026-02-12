@@ -15,6 +15,7 @@ rust_library(
         "//sw/host/ot_certs",
         "@crate_index//:anyhow",
         "@crate_index//:arrayvec",
+        "@crate_index//:base64ct",
         "@crate_index//:elliptic-curve",
         "@crate_index//:hex",
         "@crate_index//:log",
@@ -22,6 +23,7 @@ rust_library(
         "@crate_index//:openssl",
         "@crate_index//:p256",
         "@crate_index//:serde",
+        "@hwtrust",
     ],
 )
 

@@ -4,6 +4,8 @@
 //
 // adc_ctrl core module
 
+`include "prim_assert.sv"
+
 module adc_ctrl_core import adc_ctrl_reg_pkg::* ; (
   input  clk_aon_i,//Always-on 200KHz clock(logic)
   input  rst_aon_ni,//power-on reset for the 200KHz clock(logic)
@@ -176,7 +178,7 @@ module adc_ctrl_core import adc_ctrl_reg_pkg::* ; (
     .aon_fsm_trans_o(aon_fsm_trans)
   );
 
-  // synchronzie from clk_aon into cfg domain
+  // synchronize from clk_aon into cfg domain
   logic cfg_oneshot_done;
   prim_pulse_sync u_oneshot_done_sync (
     .clk_src_i(clk_aon_i),

@@ -7,8 +7,10 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use std::time::Duration;
 
-use anyhow::{ensure, Context, Result};
-use bindgen::sram_program::{SRAM_MAGIC_SP_CRC_ERROR, SRAM_MAGIC_SP_EXECUTION_DONE};
+use anyhow::{Context, Result, ensure};
+use bindgen::sram_program::{
+    SRAM_MAGIC_SP_CRC_ERROR, SRAM_MAGIC_SP_CRC_SKIPPED, SRAM_MAGIC_SP_EXECUTION_DONE,
+};
 use byteorder::{ByteOrder, LittleEndian, WriteBytesExt};
 use clap::Args;
 use crc::Crc;
@@ -16,12 +18,13 @@ use object::{Object, ObjectSection, ObjectSegment, SectionKind};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+use ot_hal::top::earlgrey as top_earlgrey;
+use ot_hal::util::multibits::MultiBitBool4;
+
 use crate::impl_serializable_error;
 use crate::io::jtag::{Jtag, RiscvCsr, RiscvGpr, RiscvReg};
 use crate::util::parse_int::ParseInt;
 use crate::util::vmem::Vmem;
-
-use top_earlgrey::top_earlgrey;
 
 /// Command-line parameters.
 #[derive(Debug, Args, Clone, Default)]
@@ -37,6 +40,10 @@ pub struct SramProgramParams {
     /// Address where to load the VMEM file.
     #[arg(long, value_parser = <u32 as ParseInt>::from_str, conflicts_with="elf", default_value = None)]
     pub load_addr: Option<u32>,
+
+    /// load the VMEM file.
+    #[arg(long)]
+    pub skip_crc: bool,
 }
 
 /// Describe a file to load to SRAM.
@@ -75,7 +82,7 @@ impl SramProgramParams {
         jtag: &mut dyn Jtag,
         exec_mode: ExecutionMode,
     ) -> Result<ExecutionResult> {
-        load_and_execute_sram_program(jtag, &self.get_file(), exec_mode)
+        load_and_execute_sram_program(jtag, &self.get_file(), exec_mode, self.skip_crc)
     }
 }
 
@@ -282,6 +289,7 @@ pub fn load_elf_sram_program(
                 .chunks(4)
                 .map(LittleEndian::read_u32)
                 .collect();
+            println!("{:?}", data32);
             let mut read_data32 = vec![0u32; data32.len()];
             log::info!("Read back data to verify");
             jtag.read_memory32(section.address() as u32, &mut read_data32)?;
@@ -385,21 +393,50 @@ pub fn prepare_epmp(jtag: &mut dyn Jtag) -> Result<()> {
     Ok(())
 }
 
+/// Set up the sram_ctrl to execute code.
+pub fn prepare_sram_ctrl(jtag: &mut dyn Jtag) -> Result<()> {
+    const SRAM_CTRL_EXEC_REG_OFFSET: u32 = (top_earlgrey::SRAM_CTRL_MAIN_REGS_BASE_ADDR as u32)
+        + ot_bindgen_dif::SRAM_CTRL_EXEC_REG_OFFSET;
+    log::info!("Enabling execution from SRAM.");
+    let mut sram_ctrl_exec = [0];
+    jtag.read_memory32(SRAM_CTRL_EXEC_REG_OFFSET, &mut sram_ctrl_exec)?;
+    log::info!("Old value of sram_exec_en: {:x}", sram_ctrl_exec[0]);
+    sram_ctrl_exec[0] = u8::from(MultiBitBool4::True) as u32;
+    jtag.write_memory32(SRAM_CTRL_EXEC_REG_OFFSET, &sram_ctrl_exec)?;
+    log::info!("New value of sram_exec_en: {:x}", sram_ctrl_exec[0]);
+    Ok(())
+}
+
 /// Execute an already loaded SRAM program. It takes care of setting up the ePMP.
 pub fn execute_sram_program(
     jtag: &mut dyn Jtag,
     prog_info: &SramProgramInfo,
     exec_mode: ExecutionMode,
+    skip_crc: bool,
 ) -> Result<ExecutionResult> {
     prepare_epmp(jtag)?;
+    prepare_sram_ctrl(jtag)?;
+
     // To avoid unexpected behaviors, we always make sure that the return address
     // points to an invalid address.
     let ret_addr = 0xdeadbeefu32;
     log::info!("set RA to {:x}", ret_addr);
     jtag.write_riscv_reg(&RiscvReg::Gpr(RiscvGpr::RA), ret_addr)?;
-    // The SRAM program loader expects the CRC32 value in a0
-    log::info!("set A0 to {:x} (crc32)", prog_info.crc32);
-    jtag.write_riscv_reg(&RiscvReg::Gpr(RiscvGpr::A0), prog_info.crc32)?;
+
+    // Potentially skip CRC check.
+    if skip_crc {
+        // The SRAM program loader will skip the CRC32 check if a0 is a magic value.
+        log::info!(
+            "skip CRC by setting A0 to {:x} (crc32)",
+            SRAM_MAGIC_SP_CRC_SKIPPED
+        );
+        jtag.write_riscv_reg(&RiscvReg::Gpr(RiscvGpr::A0), SRAM_MAGIC_SP_CRC_SKIPPED)?;
+    } else {
+        // The SRAM program loader expects the CRC32 value in a0
+        log::info!("set A0 to {:x} (crc32)", prog_info.crc32);
+        jtag.write_riscv_reg(&RiscvReg::Gpr(RiscvGpr::A0), prog_info.crc32)?;
+    }
+
     // OpenOCD takes care of invalidating the cache when resuming execution
     match exec_mode {
         ExecutionMode::Jump => {
@@ -421,11 +458,10 @@ pub fn execute_sram_program(
             // The SRAM's crt has a protocol to notify us that execution returned: it sets
             // the stack pointer to a certain value.
             let sp = jtag.read_riscv_reg(&RiscvReg::Gpr(RiscvGpr::SP))?;
+            log::info!("after timeout, sp = {:x}", sp);
             match sp {
-                SRAM_MAGIC_SP_EXECUTION_DONE => {
-                    let a0 = jtag.read_riscv_reg(&RiscvReg::Gpr(RiscvGpr::A0))?;
-                    Ok(ExecutionResult::ExecutionDone(a0))
-                }
+                SRAM_MAGIC_SP_EXECUTION_DONE => Ok(ExecutionResult::ExecutionDone(sp)),
+                SRAM_MAGIC_SP_CRC_SKIPPED => Ok(ExecutionResult::ExecutionDone(sp)),
                 SRAM_MAGIC_SP_CRC_ERROR => {
                     Ok(ExecutionResult::ExecutionError(ExecutionError::CrcMismatch))
                 }
@@ -440,7 +476,9 @@ pub fn load_and_execute_sram_program(
     jtag: &mut dyn Jtag,
     file: &SramProgramFile,
     exec_mode: ExecutionMode,
+    skip_crc: bool,
 ) -> Result<ExecutionResult> {
     let prog_info = load_sram_program(jtag, file)?;
-    execute_sram_program(jtag, &prog_info, exec_mode)
+    // Never skip CRC check outside of a test.
+    execute_sram_program(jtag, &prog_info, exec_mode, skip_crc)
 }

@@ -1,0 +1,57 @@
+[
+  {
+    "test_case_id": 1,
+    "command": "Init",
+    "mode": "{\"fpga_mode\": 0}",
+    "input": "{\"enable_icache\": true,\"enable_dummy_instr\": true,\"dummy_instr_count\": 3,\"enable_jittery_clock\": true,\"enable_sram_readback\": true, \"enable_data_ind_timing\": true}",
+    "sensors": "{\"sensor_ctrl_enable\": true, \"sensor_ctrl_en_fatal\": [false, false, false, false, false, false, false, false, false, false, false]}",
+    "expected_output": [
+      "{\"device_id\":[0,0,0,0,0,0,0,0],\"icache_en\":true,\"dummy_instr_en\":true,\"clock_jitter_locked\":false,\"clock_jitter_en\":true,\"sram_main_readback_locked\":false,\"sram_main_readback_en\":true,\"sram_ret_readback_locked\":false,\"sram_ret_readback_en\":true, \"data_ind_timing_en\": true}",
+      "{\"config_version\":1,\"sram_exec_mode\":0,\"ownership_key_alg\":0,\"update_mode\":0,\"min_security_version_bl0\":0,\"lock_constraint\":0}",
+      "{\"digest\":[0,0,0,0,0,0,0,0],\"identifier\":0,\"scm_revision_low\":0,\"scm_revision_high\":0,\"rom_ext_slot\":0,\"rom_ext_major\":0,\"rom_ext_minor\":1,\"rom_ext_size\":0,\"bl0_slot\":0,\"ownership_state\":0,\"ownership_transfers\":0,\"rom_ext_min_sec_ver\":0,\"bl0_min_sec_ver\":0,\"primary_bl0_slot\":16000078145,\"retention_ram_initialized\":0}",
+      "{\"bl0\":[0,0,0,0,0,0,0,0],\"rom_ext\":[0,0,0,0,0,0,0,0]}",
+      "PENTEST: v0.1.0"]
+  },
+  {
+    "test_case_id": 2,
+    "command": "SeedLfsr",
+    "input": "{\"seed\": [0,1,2,3]}"
+  },
+  {
+    "test_case_id": 3,
+    "command": "Single",
+    "key": "{\"key\":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],\"key_length\":16}",
+    "input": "{\"text\":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],\"text_length\":16}",
+    "expected_output": ["{\"ciphertext\": [10,148,11,181,65,110,240,69,241,195,148,88,198,83,234,90],\"ciphertext_length\":16}"]
+  },
+  {
+    "test_case_id": 4,
+    "command": "BatchDaisy",
+    "key": "{\"key\":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],\"key_length\":16}",
+    "message": "{\"text\":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],\"text_length\":16}",
+    "input": "{\"num_enc\":1}",
+    "expected_output": ["{\"ciphertext\": [10,148,11,181,65,110,240,69,241,195,148,88,198,83,234,90],\"ciphertext_length\":16}"]
+  },
+  {
+    "test_case_id": 5,
+    "command": "BatchRandom",
+    "key": "{\"key\":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],\"key_length\":16}",
+    "input": "{\"num_enc\":5}",
+    "expected_output": ["{\"ciphertext\": [43,124,136,98,79,239,79,213,254,243,234,57,24,36,150,230],\"ciphertext_length\":16}"]
+  },
+  {
+    "test_case_id": 6,
+    "command": "BatchFvsrData",
+    "key": "{\"key\":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],\"key_length\":16}",
+    "message": "{\"text\":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],\"text_length\":16}",
+    "input": "{\"num_enc\":10}",
+    "expected_output": ["{\"ciphertext\": [11,220,94,112,90,30,79,78,132,107,225,207,60,76,164,92],\"ciphertext_length\":16}"]
+  },
+  {
+    "test_case_id": 7,
+    "command": "BatchFvsrKey",
+    "key": "{\"key\":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],\"key_length\":16}",
+    "input": "{\"num_enc\":10}",
+    "expected_output": ["{\"ciphertext\": [16,100,21,248,236,192,48,45,173,59,69,111,175,194,18,52],\"ciphertext_length\":16}"]
+  }
+]

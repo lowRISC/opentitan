@@ -3,12 +3,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
-#include "sw/device/lib/crypto/include/hash.h"
+#include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+
+enum {
+  kSha256DigestWords = 256 / 32,
+};
 
 /**
  * Two-block test data.
@@ -49,21 +52,21 @@ static const uint8_t kExactBlockExpDigest[] = {
 };
 
 /**
- * Call the `otcrypto_hash` API and check the resulting digest.
+ * Call the `otcrypto_sha2` API and check the resulting digest.
  *
  * @param msg Input message.
  * @param exp_digest Expected digest (256 bits).
  */
 static status_t run_test(otcrypto_const_byte_buf_t msg,
                          const uint32_t *exp_digest) {
-  uint32_t act_digest[kHmacSha256DigestWords];
+  uint32_t act_digest[kSha256DigestWords];
   otcrypto_hash_digest_t digest_buf = {
       .data = act_digest,
-      .len = kHmacSha256DigestWords,
-      .mode = kOtcryptoHashModeSha256,
+      .len = kSha256DigestWords,
   };
-  TRY(otcrypto_hash(msg, digest_buf));
-  TRY_CHECK_ARRAYS_EQ(act_digest, exp_digest, kHmacSha256DigestWords);
+  TRY(otcrypto_sha2_256(msg, &digest_buf));
+  TRY_CHECK_ARRAYS_EQ(act_digest, exp_digest, kSha256DigestWords);
+  TRY_CHECK(digest_buf.mode == kOtcryptoHashModeSha256);
   return OK_STATUS();
 }
 
@@ -105,29 +108,40 @@ static status_t empty_test(void) {
 }
 
 /**
+ * Test with a two-block message.
+ */
+static status_t two_block_test(void) {
+  otcrypto_const_byte_buf_t msg_buf = {
+      .data = kTwoBlockMessage,
+      .len = kTwoBlockMessageLen,
+  };
+  uint32_t exp_digest[kSha256DigestWords];
+  memcpy(exp_digest, kTwoBlockExpDigest, sizeof(exp_digest));
+  return run_test(msg_buf, exp_digest);
+}
+
+/**
  * Test streaming API with a one-block message in one update.
  */
 static status_t one_update_streaming_test(void) {
-  otcrypto_hash_context_t ctx;
-  TRY(otcrypto_hash_init(&ctx, kOtcryptoHashModeSha256));
+  otcrypto_sha2_context_t ctx;
+  TRY(otcrypto_sha2_init(kOtcryptoHashModeSha256, &ctx));
 
   otcrypto_const_byte_buf_t msg_buf = {
       .data = kExactBlockMessage,
       .len = kExactBlockMessageLen,
   };
-  TRY(otcrypto_hash_update(&ctx, msg_buf));
+  TRY(otcrypto_sha2_update(&ctx, msg_buf));
 
-  size_t digest_num_words =
-      (sizeof(kExactBlockExpDigest) + sizeof(uint32_t) - 1) / sizeof(uint32_t);
-  uint32_t act_digest[digest_num_words];
+  uint32_t act_digest[kSha256DigestWords];
   otcrypto_hash_digest_t digest_buf = {
       .data = act_digest,
-      .len = digest_num_words,
-      .mode = kOtcryptoHashModeSha256,
+      .len = ARRAYSIZE(act_digest),
   };
-  TRY(otcrypto_hash_final(&ctx, digest_buf));
+  TRY(otcrypto_sha2_final(&ctx, &digest_buf));
   TRY_CHECK_ARRAYS_EQ((unsigned char *)act_digest, kExactBlockExpDigest,
                       sizeof(kExactBlockExpDigest));
+  TRY_CHECK(digest_buf.mode == kOtcryptoHashModeSha256);
   return OK_STATUS();
 }
 
@@ -135,8 +149,8 @@ static status_t one_update_streaming_test(void) {
  * Test streaming API with a two-block message in multiple updates.
  */
 static status_t multiple_update_streaming_test(void) {
-  otcrypto_hash_context_t ctx;
-  TRY(otcrypto_hash_init(&ctx, kOtcryptoHashModeSha256));
+  otcrypto_sha2_context_t ctx;
+  TRY(otcrypto_sha2_init(kOtcryptoHashModeSha256, &ctx));
 
   // Send 0 bytes, then 1, then 2, etc. until message is done.
   const unsigned char *next = kTwoBlockMessage;
@@ -148,22 +162,20 @@ static status_t multiple_update_streaming_test(void) {
         .data = next,
         .len = update_size,
     };
+    TRY(otcrypto_sha2_update(&ctx, msg_buf));
     next += update_size;
     len -= update_size;
     update_size++;
-    TRY(otcrypto_hash_update(&ctx, msg_buf));
   }
-  size_t digest_num_words =
-      (sizeof(kTwoBlockExpDigest) + sizeof(uint32_t) - 1) / sizeof(uint32_t);
-  uint32_t act_digest[digest_num_words];
+  uint32_t act_digest[kSha256DigestWords];
   otcrypto_hash_digest_t digest_buf = {
       .data = act_digest,
-      .len = digest_num_words,
-      .mode = kOtcryptoHashModeSha256,
+      .len = ARRAYSIZE(act_digest),
   };
-  TRY(otcrypto_hash_final(&ctx, digest_buf));
+  TRY(otcrypto_sha2_final(&ctx, &digest_buf));
   TRY_CHECK_ARRAYS_EQ((unsigned char *)act_digest, kTwoBlockExpDigest,
                       sizeof(kTwoBlockExpDigest));
+  TRY_CHECK(digest_buf.mode == kOtcryptoHashModeSha256);
   return OK_STATUS();
 }
 
@@ -171,9 +183,12 @@ OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   status_t test_result = OK_STATUS();
+  // Even though the HMAC IP itself does not need entropy, we need to initialize
+  // the entropy complex to be able to clear HMAC with randomness.
   CHECK_STATUS_OK(entropy_complex_init());
   EXECUTE_TEST(test_result, simple_test);
   EXECUTE_TEST(test_result, empty_test);
+  EXECUTE_TEST(test_result, two_block_test);
   EXECUTE_TEST(test_result, one_update_streaming_test);
   EXECUTE_TEST(test_result, multiple_update_streaming_test);
   return status_ok(test_result);

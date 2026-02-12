@@ -19,7 +19,7 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
   bit do_wait_for_init_done = 1'b1;
   bit seq_check_en = 1'b1;
 
-  // avoid multiple thread accessign this CSR at the same time, which causes UVM_WARNING
+  // avoid multiple thread accessing this CSR at the same time, which causes UVM_WARNING
   semaphore sema_update_control_csr;
 
   // do operations at StWorkDpeReset
@@ -244,8 +244,6 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
         });
         if (current_state == keymgr_dpe_pkg::StWorkDpeAvailable) begin
           is_good_op &= cfg.keymgr_dpe_vif.internal_key_slots[src_slot].valid == 1;
-          is_good_op &= cfg.keymgr_dpe_vif.internal_key_slots[src_slot].boot_stage <
-            (keymgr_dpe_pkg::DpeNumBootStages-1);
           is_good_op &= cfg.keymgr_dpe_vif.internal_key_slots[src_slot].key_policy.allow_child == 1;
           if (cfg.keymgr_dpe_vif.internal_key_slots[src_slot].key_policy.retain_parent == 0) begin
             is_good_op &= (src_slot == dst_slot);

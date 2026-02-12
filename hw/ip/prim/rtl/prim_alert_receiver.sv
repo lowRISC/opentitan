@@ -34,7 +34,9 @@ module prim_alert_receiver
   import prim_mubi_pkg::mubi4_t;
 #(
   // enables additional synchronization logic
-  parameter bit AsyncOn = 1'b0
+  parameter bit AsyncOn = 1'b0,
+  // Number of cycles a differential skew is tolerated on the differential alert signal.
+  parameter int unsigned SkewCycles = 1
 ) (
   input             clk_i,
   input             rst_ni,
@@ -74,7 +76,8 @@ module prim_alert_receiver
   );
 
   prim_diff_decode #(
-    .AsyncOn(AsyncOn)
+    .AsyncOn(AsyncOn),
+    .SkewCycles(SkewCycles)
   ) u_decode_alert (
     .clk_i,
     .rst_ni,
@@ -162,7 +165,7 @@ module prim_alert_receiver
     integ_fail_o = 1'b0;
     alert_o      = 1'b0;
     send_init    = 1'b0;
-    // by default, a ping request leads to a toogle on the differential ping pair
+    // by default, a ping request leads to a toggle on the differential ping pair
     send_ping    = ping_rise;
 
     unique case (state_q)
@@ -305,13 +308,13 @@ module prim_alert_receiver
         !(state_q inside {InitReq, InitAckWait}) &&
         mubi4_test_false_loose(init_trig_i)
         |->
-        ##[0:1] integ_fail_o)
+        ##[0:SkewCycles] integ_fail_o)
     `ASSERT(PingResponse1_A,
         ##1 $rose(alert_tx_i.alert_p) &&
         (alert_tx_i.alert_p ^ alert_tx_i.alert_n) ##2
         state_q == Idle && ping_pending_q
         |->
-        ##[0:1] ping_ok_o,
+        ##[0:SkewCycles] ping_ok_o,
         clk_i, !rst_ni || integ_fail_o || mubi4_test_true_strict(init_trig_i))
     // alert
     `ASSERT(Alert_A,
@@ -320,7 +323,7 @@ module prim_alert_receiver
         state_q == Idle &&
         !ping_pending_q
         |->
-        ##[0:1] alert_o,
+        ##[0:SkewCycles] alert_o,
         clk_i, !rst_ni || integ_fail_o || mubi4_test_true_strict(init_trig_i))
   end else begin : gen_sync_assert
     // signal integrity check propagation

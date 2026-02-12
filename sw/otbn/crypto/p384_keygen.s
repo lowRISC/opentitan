@@ -13,10 +13,10 @@
  *
  * Returns t, a random value that is nonzero mod n, in shares.
  *
- * This follows a modified version of the method in FIPS 186-4 sections B.4.1
- * and B.5.1 for generation of secret scalar values d and k. The computation
- * in FIPS 186-4 is:
- *   seed = RBG(seedlen) // seedlen >= 448
+ * This follows a modified version of the method in FIPS 186-5 sections A.2.2
+ * and A.3.2 for generation of secret scalar values d and k. The computation
+ * in FIPS 186-5 is:
+ *   seed = RBG(seedlen) // seedlen >= 384
  *   return (seed mod (n-1)) + 1
  *
  * The important features here are that (a) the seed is at least 64 bits longer
@@ -61,6 +61,8 @@ p384_random_scalar:
   /* Obtain 1024 bits of randomness from RND. */
   bn.wsrr   w6, RND
   bn.wsrr   w7, RND
+  /* Dummy instruction to avoid consecutive share access. */
+  bn.xor    w31, w31, w31
   bn.wsrr   w8, RND
   bn.wsrr   w9, RND
 
@@ -70,6 +72,8 @@ p384_random_scalar:
   bn.xor    w6, w6, w5
   bn.wsrr   w5, URND
   bn.xor    w7, w7, w5
+  /* Dummy instruction to avoid consecutive share access. */
+  bn.xor    w31, w31, w31
   bn.wsrr   w5, URND
   bn.xor    w8, w8, w5
   bn.wsrr   w5, URND
@@ -77,9 +81,11 @@ p384_random_scalar:
 
   /* Shift bits to get 448-bit seeds.
      seed0 = [w7,w6], seed1 = [w9,w8]
-     w7 <= w7[192:0]
-     w9 <= w9[192:0] */
+     w7 <= w7[255:64]
+     w9 <= w9[255:64] */
   bn.rshi   w7, w31, w7 >> 64
+  /* Dummy instruction to avoid consecutive share access. */
+  bn.xor    w31, w31, w31
   bn.rshi   w9, w31, w9 >> 64
 
   /* Compute Solinas constant k for modulus n (we know it is only 191 bits, so
@@ -118,6 +124,9 @@ p384_random_scalar:
   bn.addc   w19, w28, w26
   bn.mov    w20, w31
   jal       x1, p384_reduce_n
+
+  /* Clear flags. */
+  bn.add    w31, w31, w31
 
   /* Compare w16 to 0. */
   bn.cmp    w16, w31
@@ -179,10 +188,18 @@ p384_generate_random_key:
   bn.sid    x2++, 0(x20)
   bn.sid    x2++, 32(x20)
 
+  /* Dummy instruction to avoid consecutive share access. */
+  bn.xor    w31, w31, w31
+
   /* Write second share to DMEM.
      dmem[d1] <= [w9,w8] = d1 */
   bn.sid    x2++, 0(x21)
   bn.sid    x2++, 32(x21)
+
+  /* Write zero to the most significant 256 bits of both shares. */
+  li        x2, 31
+  bn.sid    x2, 64(x20)
+  bn.sid    x2, 64(x21)
 
   ret
 
@@ -219,37 +236,12 @@ p384_generate_k:
   bn.sid    x2++, 0(x20)
   bn.sid    x2++, 32(x20)
 
+  /* Dummy instruction to avoid consecutive share access. */
+  bn.xor    w31, w31, w31
+
   /* Write second share to DMEM.
      dmem[k1] <= [w9,w8] = k1 */
   bn.sid    x2++, 0(x21)
   bn.sid    x2++, 32(x21)
 
   ret
-
-.section .data
-
-.balign 32
-
-/* 1st scalar share d0 */
-.globl k0
-.weak k0
-k0:
-  .zero 64
-
-/* 2nd scalar share d1 */
-.globl k1
-.weak k1
-k1:
-  .zero 64
-
-/* 1st private key share d0 */
-.globl d0
-.weak d0
-d0:
-  .zero 64
-
-/* 2nd private key share d1 */
-.globl d1
-.weak d1
-d1:
-  .zero 64

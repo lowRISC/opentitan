@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // This module accumulates incoming alert triggers. Once the current accumulator
-// value is greater or equal the accumulator threshold, the next occurence of
+// value is greater or equal the accumulator threshold, the next occurrence of
 // class_trig_i will trigger escalation.
 //
 // Note that the accumulator is implemented using a saturation counter which

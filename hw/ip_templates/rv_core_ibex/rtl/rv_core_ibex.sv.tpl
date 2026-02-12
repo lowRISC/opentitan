@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`include "prim_assert.sv"
+
 /**
  * Ibex RISC-V core
  *
@@ -12,36 +14,41 @@ module ${module_instance_name}
   import rv_core_ibex_pkg::*;
   import ${module_instance_name}_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0]   AlertAsyncOn     = {NumAlerts{1'b1}},
-  parameter bit                     PMPEnable        = 1'b1,
-  parameter int unsigned            PMPGranularity   = 0,
-  parameter int unsigned            PMPNumRegions    = 16,
-  parameter int unsigned            MHPMCounterNum   = 10,
-  parameter int unsigned            MHPMCounterWidth = 32,
-  parameter ibex_pkg::pmp_cfg_t     PMPRstCfg[16]    = ibex_pkg::PmpCfgRst,
-  parameter logic [33:0]            PMPRstAddr[16]   = ibex_pkg::PmpAddrRst,
-  parameter ibex_pkg::pmp_mseccfg_t PMPRstMsecCfg    = ibex_pkg::PmpMseccfgRst,
-  parameter bit                     RV32E            = 0,
-  parameter ibex_pkg::rv32m_e       RV32M            = ibex_pkg::RV32MSingleCycle,
-  parameter ibex_pkg::rv32b_e       RV32B            = ibex_pkg::RV32BOTEarlGrey,
-  parameter ibex_pkg::regfile_e     RegFile          = ibex_pkg::RegFileFF,
-  parameter bit                     BranchTargetALU  = 1'b1,
-  parameter bit                     WritebackStage   = 1'b1,
-  parameter bit                     ICache           = 1'b1,
-  parameter bit                     ICacheECC        = 1'b1,
-  parameter bit                     ICacheScramble   = 1'b1,
-  parameter int unsigned            ICacheNWays      = 2,
-  parameter bit                     BranchPredictor  = 1'b0,
-  parameter bit                     DbgTriggerEn     = 1'b1,
-  parameter int unsigned            DbgHwBreakNum    = 4,
-  parameter bit                     SecureIbex       = 1'b1,
-  parameter ibex_pkg::lfsr_seed_t   RndCnstLfsrSeed  = ibex_pkg::RndCnstLfsrSeedDefault,
-  parameter ibex_pkg::lfsr_perm_t   RndCnstLfsrPerm  = ibex_pkg::RndCnstLfsrPermDefault,
-  parameter int unsigned            DmBaseAddr       = 32'h1A110000,
-  parameter int unsigned            DmAddrMask       = 32'h00000FFF,
-  parameter int unsigned            DmHaltAddr       = 32'h1A110800,
-  parameter int unsigned            DmExceptionAddr  = 32'h1A110808,
-  parameter bit                     PipeLine         = 1'b0,
+  parameter logic [NumAlerts-1:0]   AlertAsyncOn        = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert and escalation signal
+  parameter int unsigned            AlertSkewCycles     = 1,
+  parameter bit                     PMPEnable           = 1'b1,
+  parameter int unsigned            PMPGranularity      = 0,
+  parameter int unsigned            PMPNumRegions       = 16,
+  parameter int unsigned            MHPMCounterNum      = 10,
+  parameter int unsigned            MHPMCounterWidth    = 32,
+  parameter ibex_pkg::pmp_cfg_t     PMPRstCfg[16]       = ibex_pkg::PmpCfgRst,
+  parameter logic [33:0]            PMPRstAddr[16]      = ibex_pkg::PmpAddrRst,
+  parameter ibex_pkg::pmp_mseccfg_t PMPRstMsecCfg       = ibex_pkg::PmpMseccfgRst,
+  parameter bit                     RV32E               = 0,
+  parameter ibex_pkg::rv32m_e       RV32M               = ibex_pkg::RV32MSingleCycle,
+  parameter ibex_pkg::rv32b_e       RV32B               = ibex_pkg::RV32BOTEarlGrey,
+  parameter ibex_pkg::rv32zc_e      RV32ZC              = ibex_pkg::RV32ZcaZcbZcmp,
+  parameter ibex_pkg::regfile_e     RegFile             = ibex_pkg::RegFileFF,
+  parameter bit                     BranchTargetALU     = 1'b1,
+  parameter bit                     WritebackStage      = 1'b1,
+  parameter bit                     ICache              = 1'b1,
+  parameter bit                     ICacheECC           = 1'b1,
+  parameter bit                     ICacheScramble      = 1'b1,
+  parameter int unsigned            ICacheNWays         = 2,
+  parameter bit                     BranchPredictor     = 1'b0,
+  parameter bit                     DbgTriggerEn        = 1'b1,
+  parameter int unsigned            DbgHwBreakNum       = 4,
+  parameter bit                     SecureIbex          = 1'b1,
+  parameter int unsigned            LockstepOffset      = 1,
+  parameter ibex_pkg::lfsr_seed_t   RndCnstLfsrSeed     = ibex_pkg::RndCnstLfsrSeedDefault,
+  parameter ibex_pkg::lfsr_perm_t   RndCnstLfsrPerm     = ibex_pkg::RndCnstLfsrPermDefault,
+  parameter int unsigned            DmBaseAddr          = 32'h1A110000,
+  parameter int unsigned            DmAddrMask          = 32'h00000FFF,
+  parameter int unsigned            DmHaltAddr          = 32'h1A110800,
+  parameter int unsigned            DmExceptionAddr     = 32'h1A110808,
+  parameter bit                     PipeLine            = 1'b0,
+  parameter bit                     InstructionPipeline = 1'b0,
   parameter logic [ibex_pkg::SCRAMBLE_KEY_W-1:0] RndCnstIbexKeyDefault =
       ibex_pkg::RndCnstIbexKeyDefault,
   parameter logic [ibex_pkg::SCRAMBLE_NONCE_W-1:0] RndCnstIbexNonceDefault =
@@ -158,10 +165,10 @@ module ${module_instance_name}
   localparam int NumOutstandingReqs = ICache ? 8 : 2;
 
   // Instruction interface (internal)
-  logic        instr_req;
-  logic        instr_gnt;
+  logic        instr_req, instr_req_q;
+  logic        instr_gnt, instr_gnt_ibex;
   logic        instr_rvalid;
-  logic [31:0] instr_addr;
+  logic [31:0] instr_addr, instr_addr_q;
   logic [31:0] instr_rdata;
   logic [6:0]  instr_rdata_intg;
   logic        instr_err;
@@ -184,6 +191,12 @@ module ${module_instance_name}
   tl_d2h_t tl_i_fifo2ibex;
   tl_h2d_t tl_d_ibex2fifo;
   tl_d2h_t tl_d_fifo2ibex;
+
+  // TLUL LC Gate interfaces
+  tl_h2d_t tl_d_fifo2gate;
+  tl_d2h_t tl_d_gate2fifo;
+
+  logic tlul_lc_gate_core_d_error;
 
 `ifdef RVFI
   logic        rvfi_valid;
@@ -241,7 +254,7 @@ module ${module_instance_name}
   logic recov_core_event;
   // SEC_CM: BUS.INTEGRITY
   assign fatal_intg_event = ibus_intg_err | dbus_intg_err | alert_major_bus;
-  assign fatal_core_event = alert_major_internal | double_fault;
+  assign fatal_core_event = alert_major_internal | double_fault | tlul_lc_gate_core_d_error;
   assign recov_core_event = alert_minor;
 
   // configurations for address translation
@@ -256,7 +269,8 @@ module ${module_instance_name}
   logic esc_irq_nm;
   prim_esc_receiver #(
     .N_ESC_SEV   (NEscalationSeverities),
-    .PING_CNT_DW (WidthPingCounter)
+    .PING_CNT_DW (WidthPingCounter),
+    .SkewCycles  (AlertSkewCycles)
   ) u_prim_esc_receiver (
     .clk_i     ( clk_esc_i  ),
     .rst_ni    ( rst_esc_ni ),
@@ -294,8 +308,10 @@ module ${module_instance_name}
   logic irq_nm;
   assign irq_nm = |(reg2hw.nmi_state & reg2hw.nmi_enable);
 
-  lc_ctrl_pkg::lc_tx_t [0:0] lc_cpu_en;
-  prim_lc_sync u_lc_sync (
+  lc_ctrl_pkg::lc_tx_t [1:0] lc_cpu_en;
+  prim_lc_sync #(
+    .NumCopies(2)
+  ) u_lc_sync (
     .clk_i,
     .rst_ni,
     .lc_en_i(lc_cpu_en_i),
@@ -404,6 +420,7 @@ module ${module_instance_name}
     .RV32E                       ( RV32E                    ),
     .RV32M                       ( RV32M                    ),
     .RV32B                       ( RV32B                    ),
+    .RV32ZC                      ( RV32ZC                   ),
     .RegFile                     ( RegFile                  ),
     .BranchTargetALU             ( BranchTargetALU          ),
     .WritebackStage              ( WritebackStage           ),
@@ -427,6 +444,7 @@ module ${module_instance_name}
     // SEC_CM: EXCEPTION.CTRL_FLOW.GLOBAL_ESC, EXCEPTION.CTRL_FLOW.LOCAL_ESC
     // SEC_CM: DATA_REG_SW.INTEGRITY, DATA_REG_SW.GLITCH_DETECT
     .SecureIbex                  ( SecureIbex               ),
+    .LockstepOffset              ( LockstepOffset           ),
     .RndCnstLfsrSeed             ( RndCnstLfsrSeed          ),
     .RndCnstLfsrPerm             ( RndCnstLfsrPerm          ),
     .RndCnstIbexKey              ( RndCnstIbexKeyDefault    ),
@@ -454,7 +472,7 @@ module ${module_instance_name}
     .boot_addr_i,
 
     .instr_req_o        ( instr_req        ),
-    .instr_gnt_i        ( instr_gnt        ),
+    .instr_gnt_i        ( instr_gnt_ibex   ),
     .instr_rvalid_i     ( instr_rvalid     ),
     .instr_addr_o       ( instr_addr       ),
     .instr_rdata_i      ( instr_rdata      ),
@@ -576,6 +594,28 @@ module ${module_instance_name}
     end
   end
 
+  // Add an optional pipeline stage between Ibex and the address translation
+  if (InstructionPipeline) begin : gen_instr_req_pipe
+    // Request is granted for Ibex if the pipeline's request is granted or if the pipeline is empty
+    assign instr_gnt_ibex = instr_gnt || !instr_req_q;
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        instr_req_q  <= 1'b0;
+        instr_addr_q <= 32'h0;
+      end else if (instr_gnt_ibex) begin
+        // The request is captured if the pipeline's request is granted or if the pipeline is empty
+        instr_req_q  <= instr_req;
+        // Only capture the address if the request is valid
+        if (instr_req) begin
+          instr_addr_q <= instr_addr;
+        end
+      end
+    end
+  end else begin : gen_no_instr_req_pipe
+    assign instr_req_q = instr_req;
+    assign instr_addr_q = instr_addr;
+    assign instr_gnt_ibex = instr_gnt;
+  end
 
   //
   // Convert ibex data/instruction bus to TL-UL
@@ -588,7 +628,7 @@ module ${module_instance_name}
     .clk_i,
     .rst_ni(addr_trans_rst_ni),
     .region_cfg_i(ibus_region_cfg),
-    .addr_i(instr_addr),
+    .addr_i(instr_addr_q),
     .addr_o(instr_addr_trans)
   );
 
@@ -605,7 +645,7 @@ module ${module_instance_name}
   ) tl_adapter_host_i_ibex (
     .clk_i,
     .rst_ni,
-    .req_i        (instr_req),
+    .req_i        (instr_req_q),
     .instr_type_i (prim_mubi_pkg::MuBi4True),
     .gnt_o        (instr_gnt),
     .addr_i       (instr_addr_trans),
@@ -687,12 +727,32 @@ module ${module_instance_name}
     .rst_ni,
     .tl_h_i      (tl_d_ibex2fifo),
     .tl_h_o      (tl_d_fifo2ibex),
-    .tl_d_o      (cored_tl_h_o),
-    .tl_d_i      (cored_tl_h_i),
+    .tl_d_o      (tl_d_fifo2gate),
+    .tl_d_i      (tl_d_gate2fifo),
     .spare_req_i (1'b0),
     .spare_req_o (),
     .spare_rsp_i (1'b0),
     .spare_rsp_o ());
+
+  // Gate any pending requests on escalation
+  tlul_lc_gate #(
+    .Outstanding(NumOutstandingReqs),
+    .NumGatesPerDirection(1),
+    // Don't return an error. Only interested in blocking a request at this stage
+    .ReturnBlankResp(1)
+  ) u_tlul_lc_gate_cored (
+    .clk_i,
+    .rst_ni,
+    .tl_h2d_i       (tl_d_fifo2gate),
+    .tl_d2h_o       (tl_d_gate2fifo),
+    .tl_h2d_o       (cored_tl_h_o),
+    .tl_d2h_i       (cored_tl_h_i),
+    .flush_req_i    (1'b0),
+    .flush_ack_o    (),
+    .resp_pending_o (),
+    .lc_en_i        (lc_cpu_en[1]),
+    .err_o          (tlul_lc_gate_core_d_error)
+  );
 
 `ifdef RVFI
   ibex_tracer ibex_tracer_i (
@@ -827,6 +887,7 @@ module ${module_instance_name}
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_senders
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[0]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(AlertFatal[i])
     ) u_alert_sender (
       .clk_i,
@@ -994,14 +1055,6 @@ module ${module_instance_name}
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_cfg, alert_tx_o[2])
-  `ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT(RvCoreRegWeOnehotCheck_A,
-      u_core.gen_regfile_ff.register_file_i.gen_wren_check.u_prim_onehot_check, alert_tx_o[2])
-  `ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT(RvCoreRegWeOnehotCheckRAddrA_A,
-        u_core.gen_regfile_ff.register_file_i.gen_rdata_mux_check.u_prim_onehot_check_raddr_a,
-        alert_tx_o[2])
-  `ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT(RvCoreRegWeOnehotCheckRAddrB_A,
-        u_core.gen_regfile_ff.register_file_i.gen_rdata_mux_check.u_prim_onehot_check_raddr_b,
-        alert_tx_o[2])
 
 `ifdef INC_ASSERT
   if (ICache && ICacheScramble) begin : gen_icache_scramble_asserts
@@ -1034,7 +1087,7 @@ module ${module_instance_name}
         u_core.u_ibex_core.id_stage_i.instr_valid_i
         && u_core.u_ibex_core.id_stage_i.decoder_i.opcode == ibex_pkg::OPCODE_MISC_MEM
         && u_core.u_ibex_core.id_stage_i.decoder_i.instr[14:12] == 3'b001 // FENCE.I
-        |-> ${"##"}[0:14] // upper bound is not exact, but it should not take more than a few cycles
+        |-> ${"##"}[0:20] // upper bound is not exact, but it should not take more than a few cycles
         icache_otp_key_o.req
     )
 
@@ -1062,8 +1115,12 @@ module ${module_instance_name}
       lsu_store_resp_intg_err)
   `ASSERT_IBEX_CORE_ERROR_TRIGGER_ALERT(IbexInstrIntgErrCheck_A, alert_tx_o[2], u_ibex_core,
       instr_intg_err)
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(IbexLockstepResetCountAlertCheck_A,
-      u_core.gen_lockstep.u_ibex_lockstep.u_rst_shadow_cnt, alert_tx_o[2])
+  if (LockstepOffset > 1) begin: gen_lockstep_rst_cnt_assert
+    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(IbexLockstepResetCountAlertCheck_A,
+      u_core.gen_lockstep.u_ibex_lockstep.gen_reset_counter.u_rst_shadow_cnt, alert_tx_o[2])
+  end
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CoredTlLcGateFsm_A,
+      u_tlul_lc_gate_cored.u_state_regs, alert_tx_o[2])
 
 `endif // ifdef INC_ASSERT
 endmodule

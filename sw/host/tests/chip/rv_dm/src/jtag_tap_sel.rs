@@ -2,19 +2,20 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::sync::LazyLock;
+
 use anyhow::{Context, Result};
 use clap::Parser;
-use once_cell::sync::Lazy;
 use regex::Regex;
 
-use opentitanlib::app::TransportWrapper;
-use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::util::parse_int::ParseInt;
+use ot_hal::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 
-use top_earlgrey::top_earlgrey;
+use ot_hal::top::earlgrey as top_earlgrey;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -32,7 +33,7 @@ fn test_jtag_tap_sel(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     // Test the LC TAP
     transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
 
     let mut jtag = opts
         .init
@@ -63,7 +64,7 @@ fn test_jtag_tap_sel(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // Test RISC-V TAP
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
     if needs_reset {
-        transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+        transport.reset(UartRx::Clear)?;
     }
 
     let jtag = opts
@@ -90,7 +91,7 @@ fn test_jtag_tap_sel(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // Test DFT TAP
     transport.pin_strapping("PINMUX_TAP_DFT")?.apply()?;
     if needs_reset {
-        transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+        transport.reset(UartRx::Clear)?;
     }
 
     // If RV-DM is disabled, strapping DFT tap will result in LC TAP being selected.
@@ -106,8 +107,8 @@ fn test_jtag_tap_sel(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         // Perform JTAG initialisation and capture the result.
         let init_result = openocd.execute("capture \"jtag init\"")?;
 
-        static ID_REGEX: Lazy<Regex> =
-            Lazy::new(|| Regex::new(r"tap/device found: 0x([0-9A-Fa-f]+) \(").unwrap());
+        static ID_REGEX: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new(r"tap/device found: 0x([0-9A-Fa-f]+) \(").unwrap());
         let idcode = if init_result.contains("JTAG scan chain interrogation failed") {
             None
         } else {
@@ -130,7 +131,7 @@ fn test_jtag_tap_sel(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     transport.pin_strapping("PINMUX_TAP_DFT")?.remove()?;
     if needs_reset {
-        transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+        transport.reset(UartRx::Clear)?;
     }
 
     // Now check that there's no JTAG TAP present.

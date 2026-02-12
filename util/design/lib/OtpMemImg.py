@@ -13,30 +13,12 @@ from typing import List, Tuple
 
 from mako.template import Template
 from mubi.prim_mubi import mubi_value_as_int
-from topgen import secure_prng as sp
+from topgen.secure_prng import SecurePrngFactory
 
 from lib import common
 from lib.LcStEnc import LcStEnc
 from lib.OtpMemMap import OtpMemMap
 from lib.Present import Present
-
-# Seed diversification constant for OtpMemImg (this enables to use
-# the same seed for different classes)
-OTP_IMG_SEED_DIVERSIFIER = 1941661965323525198146
-
-_OTP_SW_SKIP_FROM_HEADER = ('VENDOR_TEST', 'HW_CFG0', 'HW_CFG1', 'SECRET0',
-                            'SECRET1', 'SECRET2', 'LIFE_CYCLE')
-_OTP_SW_WRITE_BYTE_ALIGNMENT = {
-    'CREATOR_SW_CFG': 4,
-    'OWNER_SW_CFG': 4,
-    'HW_CFG0': 4,
-    'HW_CFG1': 4,
-    'ROT_CREATOR_AUTH_CODESIGN': 4,
-    'ROT_CREATOR_AUTH_STATE': 4,
-    'SECRET0': 8,
-    'SECRET1': 8,
-    'SECRET2': 8,
-}
 
 
 def _present_64bit_encrypt(plain, key):
@@ -195,13 +177,26 @@ def _int_to_hex_array(val: int, size: int, alignment: int) -> List[str]:
 class OtpMemImg(OtpMemMap):
 
     def __init__(self, lc_state_config, otp_mmap_config, img_config,
-                 data_perm):
+                 data_perm, top_secret_cfg: dict):
         # Initialize memory map
         super().__init__(otp_mmap_config)
 
+        # Determine the OTP memory map configuration from the top secret configuration
+        for module in top_secret_cfg["module"]:
+            if module.get("template_type") == "otp_ctrl":
+                otp_mmap_cfg = module["otp_mmap"]
+                break
+        else:
+            log.error("OTP memory map configuration not found in top secret configuration")
+            exit(1)
+
+        # Splice the secret config into the memory map config
+        self.config["scrambling"] = otp_mmap_cfg["scrambling"]
+
         # Initialize the LC state and OTP memory map objects first, since
         # validation and image generation depends on them
-        self.lc_state = LcStEnc(lc_state_config)
+        lc_ctrl_seed = common.check_int(top_secret_cfg["seed"]["lc_ctrl_seed"]["value"])
+        self.lc_state = LcStEnc(lc_state_config, lc_ctrl_seed)
 
         # Validate memory image configuration
         log.info('')
@@ -219,15 +214,12 @@ class OtpMemImg(OtpMemMap):
         if otp_width != secded_width:
             raise RuntimeError('OTP width and SECDED data width must be equal')
 
-        if 'seed' not in img_config:
-            raise RuntimeError('Missing seed in configuration.')
-
-        img_config['seed'] = common.check_int(img_config['seed'])
-        log.info('Seed: {0:x}'.format(img_config['seed']))
-        log.info('')
+        img_config["seed"] = common.check_int(top_secret_cfg["seed"]["otp_img_seed"]["value"])
+        log.info(f'Seed: {img_config["seed"]:x}')
+        log.info("")
 
         # Re-initialize with seed to make results reproducible.
-        sp.reseed(OTP_IMG_SEED_DIVERSIFIER + int(img_config['seed']))
+        SecurePrngFactory.create("otpmemimg", img_config["seed"])
 
         if 'partitions' not in img_config:
             raise RuntimeError('Missing partitions key in configuration.')
@@ -328,6 +320,8 @@ class OtpMemImg(OtpMemMap):
 
         item_size = mmap_item['size']
         item_width = item_size * 8
+        mubi_str = ""
+        mubi_val_str = ""
 
         # if needed, resolve the mubi value first
         if mmap_item['ismubi']:
@@ -337,11 +331,13 @@ class OtpMemImg(OtpMemMap):
             item["value"] = common.check_bool(item["value"])
             mubi_val_str += "True" if item["value"] else "False"
             item["value"] = mubi_value_as_int(item["value"], item_width)
+        elif item["name"] == "SOC_DBG_STATE":
+            item.setdefault("value", "0x0")
+            item["value"] = self.lc_state.encode("soc_dbg_state", item["value"])
         else:
-            mubi_str = ""
-            mubi_val_str = ""
             item.setdefault('value', '0x0')
-            common.random_or_hexvalue(item, 'value', item_width)
+            prng = SecurePrngFactory.get("otpmemimg")
+            common.random_or_hexvalue(prng, item, 'value', item_width)
 
         mmap_item['value'] = item['value']
 
@@ -448,16 +444,19 @@ class OtpMemImg(OtpMemMap):
                     data_blocks[k] = _present_64bit_encrypt(
                         data_blocks[k], key['value'])
 
-        # Check if digest calculation is needed
+        # Check if digest calculation is needed.
+        # The digest is stored after the data. It is the last block of a
+        # partition when the partition is not zeroizable and the penultimate
+        # if it is.
+        digest_idx = len(data_blocks) - 2 if part['zeroizable'] else len(data_blocks) - 1
         if part['hw_digest']:
             # Make sure that this HW-governed digest has not been
             # overridden manually
-            if data_blocks[-1] != 0:
+            if data_blocks[digest_idx] != 0:
                 raise RuntimeError(
                     'Digest of partition {} cannot be overridden manually'.
                     format(part_name))
 
-            # Digest is stored in last block of a partition
             if part.setdefault('lock', False):
                 log.info('> Lock partition by computing digest')
                 # Digest constants at index 0 are used to compute the
@@ -465,8 +464,8 @@ class OtpMemImg(OtpMemMap):
                 iv = self.config['scrambling']['digests'][0]['iv_value']
                 const = self.config['scrambling']['digests'][0]['cnst_value']
 
-                data_blocks[-1] = _present_64bit_digest(
-                    data_blocks[0:-1], iv, const)
+                data_blocks[digest_idx] = _present_64bit_digest(
+                    data_blocks[0:digest_idx], iv, const)
             else:
                 log.info(
                     '> Partition is not locked, hence no digest is computed')
@@ -541,14 +540,16 @@ class OtpMemImg(OtpMemMap):
         '''
         data = {}
         for part in self.config['partitions']:
-            if part['name'] in _OTP_SW_SKIP_FROM_HEADER:
+            if part.get('skip_sw_header'):
                 continue
             items = []
             for item in part["items"]:
                 if 'value' not in item.keys():
                     continue
 
-                alignment = _OTP_SW_WRITE_BYTE_ALIGNMENT[part['name']]
+                # Secret partitions connected to the keymgr haven 8-byte alignment, other partitions
+                # have a 4-byte alignment
+                alignment = 8 if common.check_bool(part["secret"]) else 4
 
                 # TODO: Handle aggregation of fields to match write boundary.
                 if item['size'] < alignment:

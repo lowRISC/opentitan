@@ -112,6 +112,9 @@ module tb;
   assign interrupts[SpiHostError] = intr_error;
   assign interrupts[SpiHostEvent] = intr_event;
 
+  // Bind
+  bind dut.u_spi_core spi_host_fsm_if fast_prescaler_bound_if();
+
   initial begin
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
@@ -121,6 +124,9 @@ module tb;
                                                  spi_passthrough_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual spi_if)::set(null, "*.env.m_spi_agent*", "vif", spi_if);
+
+    uvm_config_db#(virtual spi_host_fsm_if)::set(null, "*.env", "fast_prescaler_bound_if",
+                                                 dut.u_spi_core.fast_prescaler_bound_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

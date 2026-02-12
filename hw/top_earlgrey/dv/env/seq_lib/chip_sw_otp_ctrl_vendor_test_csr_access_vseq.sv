@@ -43,7 +43,7 @@ class chip_sw_otp_ctrl_vendor_test_csr_access_vseq extends chip_sw_base_vseq;
     super.body();
 
     // Before issuing jtag access (from wait_lc_ready),
-    // make sure lc_ctrl readya by polling csr.
+    // make sure lc_ctrl ready by polling csr.
     wait_rom_check_done();
     wait_lc_ready(.allow_err(1));
 
@@ -74,8 +74,8 @@ class chip_sw_otp_ctrl_vendor_test_csr_access_vseq extends chip_sw_base_vseq;
     logic [TL_DW-1:0] vendor_test_ctrl =
                       cfg.chip_vif.signal_probe_otp_vendor_test_ctrl(SignalProbeSample);
 
-    // In open source prim_otp module, the vendor_test_status output is tied to 0.
-    // For closed source module, cfg.otp_test_stastatus needs to be updated
+    // In open source otp_macro module, the vendor_test_status output is tied to 0.
+    // For closed source module, cfg.otp_test_status needs to be updated
     // by cfg::update_otp_test_status() before checking.
     cfg.update_otp_test_status();
     `DV_CHECK_EQ(otp_vendor_test_status, cfg.otp_test_status)

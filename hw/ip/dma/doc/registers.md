@@ -13,13 +13,13 @@
 | dma.[`SRC_ADDR_HI`](#src_addr_hi)                               | 0x14     |        4 | Upper 32 bits of the source address.                                                                                                                     |
 | dma.[`DST_ADDR_LO`](#dst_addr_lo)                               | 0x18     |        4 | Lower 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space. |
 | dma.[`DST_ADDR_HI`](#dst_addr_hi)                               | 0x1c     |        4 | Upper 32 bits of the destination address.                                                                                                                |
-| dma.[`ADDR_SPACE_ID`](#addr_space_id)                           | 0x20     |        4 | Address space that source and destination pointers refer to.                                                                                             |
+| dma.[`ADDR_SPACE_ID`](#addr_space_id)                           | 0x20     |        4 | Address spaces that source and destination pointers refer to.                                                                                            |
 | dma.[`ENABLED_MEMORY_RANGE_BASE`](#enabled_memory_range_base)   | 0x24     |        4 | Base Address to mark the start of the DMA enabled memory range within the OT internal memory space.                                                      |
-| dma.[`ENABLED_MEMORY_RANGE_LIMIT`](#enabled_memory_range_limit) | 0x28     |        4 | Limit Address to mark the end of the DMA enabled memory range within the OT internal memory space.                                                       |
+| dma.[`ENABLED_MEMORY_RANGE_LIMIT`](#enabled_memory_range_limit) | 0x28     |        4 | Limit Address to mark the end of the DMA enabled memory range within the OT internal memory space; address is inclusive.                                 |
 | dma.[`RANGE_VALID`](#range_valid)                               | 0x2c     |        4 | Indicates that the ENABLED_MEMORY_RANGE_BASE and _LIMIT registers have been programmed to restrict DMA accesses within the OT internal address space.    |
 | dma.[`RANGE_REGWEN`](#range_regwen)                             | 0x30     |        4 | Used to lock the DMA enabled memory range configuration registers.                                                                                       |
 | dma.[`CFG_REGWEN`](#cfg_regwen)                                 | 0x34     |        4 | Indicates whether the configuration registers are locked because the DMA controller is operating.                                                        |
-| dma.[`TOTAL_DATA_SIZE`](#total_data_size)                       | 0x38     |        4 | Total size of the data blob involved in DMA movement.                                                                                                    |
+| dma.[`TOTAL_DATA_SIZE`](#total_data_size)                       | 0x38     |        4 | Total size (in bytes) of the data to be transferred.                                                                                                     |
 | dma.[`CHUNK_DATA_SIZE`](#chunk_data_size)                       | 0x3c     |        4 | Number of bytes to be transferred in response to each interrupt/firmware request.                                                                        |
 | dma.[`TRANSFER_WIDTH`](#transfer_width)                         | 0x40     |        4 | Denotes the width of each transaction that the DMA shall issue.                                                                                          |
 | dma.[`CONTROL`](#control)                                       | 0x44     |        4 | Control register for DMA data movement.                                                                                                                  |
@@ -233,7 +233,7 @@ Must be aligned to the transfer width.
 Source and destination address must have the same alignment.
 
 ## ADDR_SPACE_ID
-Address space that source and destination pointers refer to.
+Address spaces that source and destination pointers refer to.
 - Offset: `0x20`
 - Reset default: `0x77`
 - Reset mask: `0xff`
@@ -254,22 +254,22 @@ Address space that source and destination pointers refer to.
 ### ADDR_SPACE_ID . dst_asid
 Target address space that the destination address pointer refers to.
 
-| Value   | Name      | Description                                                                              |
-|:--------|:----------|:-----------------------------------------------------------------------------------------|
-| 0x7     | OT_ADDR   | OpenTitan 32-bit internal bus.                                                           |
-| 0xa     | SOC_ADDR  | SoC control register bus using 32-bit (or 64 bits if configured by an SoC) control port. |
-| 0x9     | SYS_ADDR" | SoC system address bus using 64 bit SYS port.                                            |
+| Value   | Name     | Description                                                                              |
+|:--------|:---------|:-----------------------------------------------------------------------------------------|
+| 0x7     | OT_ADDR  | OpenTitan 32-bit internal bus.                                                           |
+| 0xa     | SOC_ADDR | SoC control register bus using 32-bit (or 64 bits if configured by an SoC) control port. |
+| 0x9     | SYS_ADDR | SoC system address bus using 64 bit SYS port.                                            |
 
 Other values are reserved.
 
 ### ADDR_SPACE_ID . src_asid
 Target address space that the source address pointer refers to.
 
-| Value   | Name      | Description                                                                              |
-|:--------|:----------|:-----------------------------------------------------------------------------------------|
-| 0x7     | OT_ADDR   | OpenTitan 32-bit internal bus.                                                           |
-| 0xa     | SOC_ADDR  | SoC control register bus using 32-bit (or 64 bits if configured by an SoC) control port. |
-| 0x9     | SYS_ADDR" | SoC system address bus using 64 bit SYS port.                                            |
+| Value   | Name     | Description                                                                              |
+|:--------|:---------|:-----------------------------------------------------------------------------------------|
+| 0x7     | OT_ADDR  | OpenTitan 32-bit internal bus.                                                           |
+| 0xa     | SOC_ADDR | SoC control register bus using 32-bit (or 64 bits if configured by an SoC) control port. |
+| 0x9     | SYS_ADDR | SoC system address bus using 64 bit SYS port.                                            |
 
 Other values are reserved.
 
@@ -291,7 +291,7 @@ Base Address to mark the start of the DMA enabled memory range within the OT int
 |  31:0  |   rw   |   0x0   | base   | Base Address to mark the start of the DMA enabled memory range within the OT internal memory space. |
 
 ## ENABLED_MEMORY_RANGE_LIMIT
-Limit Address to mark the end of the DMA enabled memory range within the OT internal memory space.
+Limit Address to mark the end of the DMA enabled memory range within the OT internal memory space; address is inclusive.
 - Offset: `0x28`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
@@ -303,9 +303,9 @@ Limit Address to mark the end of the DMA enabled memory range within the OT inte
 {"reg": [{"name": "limit", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                        |
-|:------:|:------:|:-------:|:-------|:---------------------------------------------------------------------------------------------------|
-|  31:0  |   rw   |   0x0   | limit  | Limit Address to mark the end of the DMA enabled memory range within the OT internal memory space. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                   |
+|:------:|:------:|:-------:|:-------|:--------------------------------------------------------------------------------------------------------------|
+|  31:0  |   rw   |   0x0   | limit  | Limit Address to mark the end of the DMA enabled memory range within the OT internal memory space; inclusive. |
 
 ## RANGE_VALID
 Indicates that the ENABLED_MEMORY_RANGE_BASE and _LIMIT registers have been programmed to restrict DMA accesses within the OT internal address space.
@@ -351,7 +351,7 @@ Default Value = kMultiBitBool4True -> Unlocked at reset.
 ## CFG_REGWEN
 Indicates whether the configuration registers are locked because the DMA controller is operating.
 In the idle state, this register is set to kMultiBitBool4True.
-When the DMA is performing an operation, i.e., the DMA is busy, this register is set to kMultiBitBool4False.
+When the DMA is performing an operation, i.e. the DMA is busy, this register is set to kMultiBitBool4False.
 During the DMA operation, the CONTROL and STATUS registers remain usable.
 The comportable registers (the interrupt and alert configuration) are NOT locked during the DMA operation and can still be updated.
 When the DMA reaches an interrupt or alert condition, it will perform the action according to the current register configuration.
@@ -371,7 +371,7 @@ When the DMA reaches an interrupt or alert condition, it will perform the action
 |  3:0   |   ro   |   0x6   | regwen | Used by hardware to lock the DMA configuration registers. This register is purely managed by hardware and only software readable. |
 
 ## TOTAL_DATA_SIZE
-Total size of the data blob involved in DMA movement.
+Total size (in bytes) of the data to be transferred.
 - Offset: `0x38`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
@@ -388,11 +388,12 @@ Total size of the data blob involved in DMA movement.
 |  31:0  |   rw   |   0x0   | [data_size](#total_data_size--data_size) |
 
 ### TOTAL_DATA_SIZE . data_size
-Total size (in bytes) of the data blob involved in DMA movement for multiple transfers.
+Total size (in bytes) of the data to be transferred. The complete transfer operation
+may consist of multiple chunks of data as specified by the CHUNK_DATA_SIZE register.
 
 Minimum: 1 byte.
 Maximum: May be restricted to a maximum pre-defined size based on OT DMA enabled memory space allocation.
-Works in conjunction with Transfer width register.
+Works in conjunction with the TRANSFER_WIDTH register.
 
 ## CHUNK_DATA_SIZE
 Number of bytes to be transferred in response to each interrupt/firmware request.
@@ -418,7 +419,7 @@ For a single memory transfer CHUNK_DATA_SIZE and TOTAL_DATA_SIZE are set to the 
 
 Minimum: 1 byte.
 Maximum: May be restricted to a maximum pre-defined size based on OT DMA enabled memory space allocation.
-Works in conjunction with Transfer width register.
+Works in conjunction with the TRANSFER_WIDTH register.
 
 ## TRANSFER_WIDTH
 Denotes the width of each transaction that the DMA shall issue.
@@ -441,7 +442,7 @@ Denotes the width of each transaction that the DMA shall issue.
 ### TRANSFER_WIDTH . transaction_width
 Denotes the width of each transaction that the DMA shall issue during the data movement.
 
-Multiple transactions of this width will be issued until total size number of bytes are reached.
+Multiple transactions of this width will be issued until TOTAL_DATA_SIZE bytes have been transferred.
 Note that firmware may need to set a different value if a receiving IP supports a read / write transaction width that is less than 1 DWORD.
 This does not affect the wrap-around mechanism.
 Note that the value 3 for this register represents an invalid configuration that leads to an error.
@@ -479,8 +480,8 @@ Control register for DMA data movement.
 |  3:0   |   rw   |   0x0   | [opcode](#control--opcode)                                       |
 
 ### CONTROL . go
-Trigger the DMA operation when the Go bit is set.
-For normal operation, DMA engine clears the GO bit automatically after the configured operation is complete.
+Setting this bit triggers the DMA operation.
+For normal operation, the DMA engine clears the `go` bit automatically after the configured operation is complete.
 For Hardware handshake operation, DMA engine does not auto clear the Go bit.
 Firmware shall clear the Go bit when it intends to stop the hardware handshake operation.
 
@@ -538,7 +539,7 @@ Defines the addressing behavior of the DMA for the source address.
 |  Bits  |  Type  |  Reset  | Name      | Description                                                                                                                                                                                                    |
 |:------:|:------:|:-------:|:----------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 |  31:2  |        |         |           | Reserved                                                                                                                                                                                                       |
-|   1    |   rw   |   0x0   | wrap      | When 1: Source address wrapped back to the starting address when finishing a chunk.                                                                                                                            |
+|   1    |   rw   |   0x0   | wrap      | When 0: Chunks occupy contiguous ascending addresses. When 1: Source address wraps back to the starting address when finishing a chunk.                                                                        |
 |   0    |   rw   |   0x0   | increment | Defines the increment behavior after every DMA read. When 0: Source address is not changed. All reads are done from the same address. When 1: Source address is incremented by transfer_width after each read. |
 
 ## DST_CONFIG
@@ -557,7 +558,7 @@ Defines the addressing behavior of the DMA for the destination address.
 |  Bits  |  Type  |  Reset  | Name      | Description                                                                                                                                                                                                               |
 |:------:|:------:|:-------:|:----------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 |  31:2  |        |         |           | Reserved                                                                                                                                                                                                                  |
-|   1    |   rw   |   0x0   | wrap      | When 1: Destination address wrapped back to the starting address when finishing a chunk.                                                                                                                                  |
+|   1    |   rw   |   0x0   | wrap      | When 0: Chunks occupy contiguous ascending addresses. When 1: Destination address wraps back to the starting address when finishing a chunk.                                                                              |
 |   0    |   rw   |   0x0   | increment | Defines the increment behavior after every DMA write. When 0: Destination address is not changed. All writes are done to the same address. When 1: Destination address is incremented by transfer_width after each write. |
 
 ## STATUS

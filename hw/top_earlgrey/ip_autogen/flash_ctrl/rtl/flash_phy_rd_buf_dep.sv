@@ -33,7 +33,7 @@ module flash_phy_rd_buf_dep import flash_phy_pkg::*;(
 
   // The logic below can be more simplified in an always_comb loop,
   // but the `i` assignment causes some lint tools to be mildly unhappy.
-  // This separarate creation seems to be more tool friendly.
+  // This separate creation seems to be more tool friendly.
   logic [NumBuf-1:0][NumBufWidth-1:0] buf_mux_cnt;
   for(genvar i = 0; i < NumBuf; i++) begin : gen_cnt_assign
      assign buf_mux_cnt[i] = i;

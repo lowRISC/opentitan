@@ -16,6 +16,7 @@ module prim_fifo_sync #(
   parameter bit Pass                 = 1'b1, // if == 1 allow requests to pass through empty FIFO
   parameter int unsigned Depth       = 4,
   parameter bit OutputZeroIfEmpty    = 1'b1, // if == 1 always output 0 when FIFO is empty
+  parameter bit NeverClears          = 1'b0, // if set, the clr_i port is never high
   parameter bit Secure               = 1'b0, // use prim count for pointers
   // derived parameter
   localparam int          DepthW     = prim_util_pkg::vbits(Depth+1)
@@ -162,7 +163,8 @@ module prim_fifo_sync #(
 
     prim_fifo_sync_cnt #(
       .Depth(Depth),
-      .Secure(Secure)
+      .Secure(Secure),
+      .NeverClears(NeverClears)
     ) u_fifo_cnt (
       .clk_i,
       .rst_ni,
@@ -210,6 +212,10 @@ module prim_fifo_sync #(
     `ASSERT(OnlyRvalidWhenNotUnderRst_A, rvalid_o -> ~under_rst)
   end // block: gen_normal_fifo
 
+
+  if (NeverClears) begin : gen_never_clears
+    `ASSERT(NeverClears_A, !clr_i)
+  end
 
   //////////////////////
   // Known Assertions //

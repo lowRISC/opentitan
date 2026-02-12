@@ -2,7 +2,21 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-<% sorted_clks = sorted(list(clk_freqs.keys())) %>\
+<%
+sorted_clks = sorted(list(clk_freqs.keys()))
+has_sys_io = any("sys_io" in d.get('name') for d in output_rsts) if output_rsts else False
+
+if "io_div4" in sorted_clks:
+    preferred_domain = "io_div4"
+elif "io" in sorted_clks:
+    preferred_domain = "io"
+else:
+    assert 0, "No preferred clock available"
+
+preferred_por_n = f"rst_por_{preferred_domain}_n"
+preferred_rst_n = f"rst_sys_{preferred_domain}_n"
+preferred_clk_i = f"clk_{preferred_domain}_i"
+%>\
 // This has assertions that check the reset outputs of rstmgr cascade properly.
 // This means higher level resets always cause the lower level ones to assert.
 // The hierarchy is
@@ -126,10 +140,10 @@ interface rstmgr_cascading_sva_if (
 
   // The AON reset triggers the various POR reset for the different clock domains through
   // synchronizers.
-  // The current system doesn't have any consumers of domain 1 por_io_div4, and thus only domain 0
-  // cascading is checked here.
+  // Only domain 0 cascading is checked here, because the current system doesn't have any consumers
+  // of ${preferred_por_n}.
   `CASCADED_ASSERTS(CascadeEffAonToRstPorIoDiv4, effective_aon_rst_n[0],
-                    resets_o.rst_por_io_div4_n[0], SyncCycles, clk_io_div4_i)
+                    resets_o.${preferred_por_n}[0], SyncCycles, ${preferred_clk_i})
 
   // The internal reset is triggered by one of synchronized por.
   logic [rstmgr_pkg::PowerDomains-1:0] por_rst_n;
@@ -151,25 +165,23 @@ interface rstmgr_cascading_sva_if (
     // The latter is checked independently in pwrmgr_rstmgr_sva_if.
     `CASCADED_ASSERTS(CascadeLcToSys, lc_rst_or_sys_req_n[pd], rst_sys_src_n[pd], SysCycles, clk_i)
 
+% if has_sys_io:
     // Controlled by rst_sys_src_n.
-    if (pd == rstmgr_pkg::DomainAonSel) begin : gen_sys_io_div4_chk
-      `CASCADED_ASSERTS(CascadeSysToSysIoDiv4, rst_sys_src_n[pd], resets_o.rst_sys_io_div4_n[pd],
-                        SysCycles, clk_io_div4_i)
+    if (pd == rstmgr_pkg::DomainAonSel) begin : gen_sys_${preferred_domain}_chk
+      `CASCADED_ASSERTS(CascadeSysToSysIoDiv4, rst_sys_src_n[pd], resets_o.${preferred_rst_n}[pd],
+                        SysCycles, ${preferred_clk_i})
     end
+% endif
   end
 
   // Aon to POR
-  `CASCADED_ASSERTS(CascadeEffAonToRstPor, effective_aon_rst_n[rstmgr_pkg::DomainAonSel],
-                    resets_o.rst_por_n[rstmgr_pkg::DomainAonSel], SyncCycles, clk_main_i)
-  `CASCADED_ASSERTS(CascadeEffAonToRstPorIo, effective_aon_rst_n[rstmgr_pkg::DomainAonSel],
-                    resets_o.rst_por_io_n[rstmgr_pkg::DomainAonSel], SyncCycles, clk_io_i)
-  `CASCADED_ASSERTS(CascadeEffAonToRstPorIoDiv2, effective_aon_rst_n[rstmgr_pkg::DomainAonSel],
-                    resets_o.rst_por_io_div2_n[rstmgr_pkg::DomainAonSel], SyncCycles, clk_io_div2_i)
-
-% if 'usb' in clk_freqs:
-  `CASCADED_ASSERTS(CascadeEffAonToRstPorUsb, effective_aon_rst_n[rstmgr_pkg::DomainAonSel],
-                    resets_o.rst_por_usb_n[rstmgr_pkg::DomainAonSel], SyncCycles, clk_usb_i)
-% endif
+% for clk in sorted_clks:
+  % if "aon" in clk or "io_div4" in clk:
+<% continue %>
+  % endif
+  `CASCADED_ASSERTS(CascadeEffAonToRstPor${clk.capitalize()}, effective_aon_rst_n[rstmgr_pkg::DomainAonSel],
+                    resets_o.rst_por_${clk + "_" if clk != "main" else ""}n[rstmgr_pkg::DomainAonSel], SyncCycles, clk_${clk}_i)
+% endfor
 
   // Controlled by rst_lc_src_n.
   `CASCADED_ASSERTS(CascadeLcToLcAon, rst_lc_src_n[rstmgr_pkg::DomainAonSel],

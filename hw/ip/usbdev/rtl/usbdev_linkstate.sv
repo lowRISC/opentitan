@@ -178,7 +178,7 @@ module usbdev_linkstate (
         // Park here before starting to count towards not seeing SOF. Wait for
         // the end of resume signaling before expecting SOF. The host will
         // return the link to idle after a low-speed EOP. Instead of trying to
-        // capture the termination of resume signaling direclty, wait for
+        // capture the termination of resume signaling directly, wait for
         // any J / idle symbol (or a bus reset).
         LinkResuming: begin
           if (rx_j_det_i | ev_reset) begin
@@ -190,7 +190,7 @@ module usbdev_linkstate (
         // Active but not yet seen a frame
         // One reason for getting stuck here is the host thinks it is a LS link
         // which could happen if the flipped bit does not match the actual pins
-        // Annother is the SI is bad so good data is not recovered from the link
+        // Another is the SI is bad so good data is not recovered from the link
         LinkActiveNoSOF: begin
           if (ev_bus_inactive) begin
             link_state_d = LinkSuspended;

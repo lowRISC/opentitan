@@ -57,7 +57,7 @@ class flash_ctrl_error_prog_type_vseq extends flash_ctrl_base_vseq;
     flash_op.prog_sel inside {FlashProgSelNormal, FlashProgSelRepair};
   }
 
-  // Flash ctrl operation data queue - used for programing in this test
+  // Flash ctrl operation data queue - used for programming in this test
   constraint flash_op_data_c {
     flash_op_data.size() == flash_op.num_words;
   }
@@ -208,7 +208,7 @@ class flash_ctrl_error_prog_type_vseq extends flash_ctrl_base_vseq;
         `uvm_info(`gfn, $sformatf("Program Data : %0p", flash_op_data), UVM_LOW)
 
         // Predict Status (for RAL)
-        ral.err_code.prog_type_err.predict(exp_alert);
+        `DV_CHECK(ral.err_code.prog_type_err.predict(exp_alert))
 
         // Check Status
         check_exp_alert_status(exp_alert, "prog_type_err", flash_op, flash_op_data);

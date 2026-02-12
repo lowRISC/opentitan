@@ -28,13 +28,12 @@ filesets:
       - lowrisc:darjeeling_ip:clkmgr_pkg
       - lowrisc:darjeeling_ip:rstmgr_pkg
       - lowrisc:systems:top_darjeeling_ast_pkg
+      - lowrisc:prim:prim_pkg
     files:
       - rtl/ast_reg_pkg.sv
       - rtl/ast_bhv_pkg.sv
       - rtl/ast.sv
       - rtl/ast_reg_top.sv
-      - rtl/adc.sv
-      - rtl/adc_ana.sv
       - rtl/vcc_pgd.sv
       - rtl/vio_pgd.sv
       - rtl/vcaon_pgd.sv
@@ -46,10 +45,7 @@ filesets:
       - rtl/io_osc.sv
       - rtl/sys_clk.sv
       - rtl/sys_osc.sv
-      - rtl/usb_clk.sv
-      - rtl/usb_osc.sv
       - rtl/gfr_clk_mux2.sv
-      - rtl/ast_clks_byp.sv
       - rtl/rglts_pdm_3p3v.sv
       - rtl/ast_pulse_sync.sv
       - rtl/ast_entropy.sv
@@ -78,6 +74,9 @@ filesets:
     depend:
       # common waivers
       - lowrisc:lint:common
+    files:
+      - lint/ast.vbl
+    file_type: veribleLintWaiver
 
 parameters:
   SYNTHESIS:
@@ -101,7 +100,6 @@ targets:
     toplevel: ast
     parameters:
      - SYNTHESIS
-     - AST_BYPASS_CLK
      - ANALOGSIM
 
 
@@ -123,5 +121,5 @@ targets:
       - files_rtl
     tools:
       vcs:
-        vcs_options: [-sverilog -ntb_opts uvm-1.2 -CFLAGS --std=c99 -CFLAGS -fno-extended-identifiers -CFLAGS --std=c++11 -timescale=1ns/1ps -l vcs.log]
+        vcs_options: [-sverilog -ntb_opts uvm-1.2 -CFLAGS --std=c99 -CFLAGS -fno-extended-identifiers -CFLAGS --std=c++17 -timescale=1ns/1ps -l vcs.log]
     toplevel: ast

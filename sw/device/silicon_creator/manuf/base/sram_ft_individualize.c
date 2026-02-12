@@ -5,37 +5,59 @@
 #include <stdint.h>
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/abs_mmio.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
-#include "sw/device/lib/runtime/hart.h"
-#include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
-#include "sw/device/lib/testing/otp_ctrl_testutils.h"
+#include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_console.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
+#include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/silicon_creator/manuf/base/flash_info_permissions.h"
+#include "sw/device/silicon_creator/manuf/base/ft_device_id.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize_sw_cfg.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
 
+#include "hw/top/ast_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
-                        .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
-                        .console.test_may_clobber = false, );
-
 static dif_flash_ctrl_state_t flash_ctrl_state;
+static dif_gpio_t gpio;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_pinmux_t pinmux;
 
+#ifndef ATE
 static manuf_ft_individualize_data_t in_data;
-static uint32_t device_id[kHwCfgDeviceIdSizeIn32BitWords];
-static uint32_t ast_cfg_data[kFlashInfoAstCalibrationDataSizeIn32BitWords];
+#endif
+
+// ATE Indicator GPIOs.
+static const dif_gpio_pin_t kGpioPinTestStart = 0;
+static const dif_gpio_pin_t kGpioPinTestDone = 1;
+static const dif_gpio_pin_t kGpioPinTestError = 2;
+static const dif_gpio_pin_t kGpioPinSpiConsoleTxReady = 3;
+static const dif_gpio_pin_t kGpioPinSpiConsoleRxReady = 4;
+
+#ifndef ATE
+OTTF_DEFINE_TEST_CONFIG(
+        .console.type = kOttfConsoleSpiDevice,
+        .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
+        .console.test_may_clobber = false, .silence_console_prints = true,
+        .console_tx_indicator.enable = true,
+        .console_tx_indicator.spi_console_tx_ready_mio = kDtPadIoa5,
+        .console_tx_indicator.spi_console_tx_ready_gpio =
+            kGpioPinSpiConsoleTxReady);
+#else
+OTTF_DEFINE_TEST_CONFIG();
+#endif
 
 /**
  * Initializes all DIF handles used in this SRAM program.
@@ -44,6 +66,7 @@ static status_t peripheral_handles_init(void) {
   TRY(dif_flash_ctrl_init_state(
       &flash_ctrl_state,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+  TRY(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
   TRY(dif_otp_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
   TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR),
@@ -52,29 +75,67 @@ static status_t peripheral_handles_init(void) {
 }
 
 /**
- * Print data stored in flash info page 0 to console for manual verification
- * purposes during silicon bring-up.
+ * Configure the ATE GPIO indicator pins.
  */
-static status_t print_flash_info_0_data_to_console(void) {
+static status_t configure_ate_gpio_indicators(void) {
+  // IOA6 / GPIO4 is for SPI console RX ready signal.
+  TRY(dif_pinmux_output_select(
+      &pinmux, kTopEarlgreyPinmuxMioOutIoa6,
+      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinSpiConsoleRxReady));
+  // IOA5 / GPIO3 is for SPI console TX ready signal.
+  TRY(dif_pinmux_output_select(
+      &pinmux, kTopEarlgreyPinmuxMioOutIoa5,
+      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinSpiConsoleTxReady));
+  // IOA0 / GPIO2 is for error reporting.
+  TRY(dif_pinmux_output_select(
+      &pinmux, kTopEarlgreyPinmuxMioOutIoa0,
+      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinTestError));
+  // IOA1 / GPIO1 is for test done reporting.
+  TRY(dif_pinmux_output_select(
+      &pinmux, kTopEarlgreyPinmuxMioOutIoa1,
+      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinTestDone));
+  // IOA4 / GPIO0 is for test start reporting.
+  TRY(dif_pinmux_output_select(
+      &pinmux, kTopEarlgreyPinmuxMioOutIoa4,
+      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinTestStart));
+  TRY(dif_gpio_output_set_enabled_all(&gpio,
+                                      0x1f));       // Enable first 5 GPIOs.
+  TRY(dif_gpio_write_all(&gpio, /*write_val=*/0));  // Intialize all to 0.
+  return OK_STATUS();
+}
+
+/**
+ * Patch AST config if patch exists in flash info page 0.
+ */
+static status_t patch_ast_config_value(void) {
   uint32_t byte_address = 0;
   TRY(flash_ctrl_testutils_info_region_setup_properties(
-      &flash_ctrl_state, kFlashInfoFieldDeviceId.page,
-      kFlashInfoFieldDeviceId.bank, kFlashInfoFieldDeviceId.partition,
-      kFlashInfoPage0Permissions, &byte_address));
+      &flash_ctrl_state, kFlashInfoFieldAstIndividPatchAddr.page,
+      kFlashInfoFieldAstIndividPatchAddr.bank,
+      kFlashInfoFieldAstIndividPatchAddr.partition, kFlashInfoPage0Permissions,
+      &byte_address));
 
-  LOG_INFO("Device ID:");
-  TRY(manuf_flash_info_field_read(&flash_ctrl_state, kFlashInfoFieldDeviceId,
-                                  device_id, kHwCfgDeviceIdSizeIn32BitWords));
-  for (size_t i = 0; i < kHwCfgDeviceIdSizeIn32BitWords; ++i) {
-    LOG_INFO("0x%08x", device_id[i]);
-  }
-
-  LOG_INFO("AST Calibration Values:");
+  // Read patch address and value from flash info 0.
+  uint32_t ast_patch_addr_offset;
+  uint32_t ast_patch_value;
   TRY(manuf_flash_info_field_read(
-      &flash_ctrl_state, kFlashInfoFieldAstCalibrationData, ast_cfg_data,
-      kFlashInfoAstCalibrationDataSizeIn32BitWords));
-  for (size_t i = 0; i < kFlashInfoAstCalibrationDataSizeIn32BitWords; ++i) {
-    LOG_INFO("0x%08x", ast_cfg_data[i]);
+      &flash_ctrl_state, kFlashInfoFieldAstIndividPatchAddr,
+      &ast_patch_addr_offset,
+      kFlashInfoFieldAstIndividPatchAddrSizeIn32BitWords));
+  TRY(manuf_flash_info_field_read(
+      &flash_ctrl_state, kFlashInfoFieldAstIndividPatchVal, &ast_patch_value,
+      kFlashInfoFieldAstIndividPatchValSizeIn32BitWords));
+
+  // Only patch AST if the patch value is present.
+  if (ast_patch_value != 0 && ast_patch_value != UINT32_MAX) {
+    // Check the address is within range before programming.
+    if (kDeviceType == kDeviceSilicon || kDeviceType == kDeviceSimDV) {
+      TRY_CHECK(ast_patch_addr_offset <= AST_REGAL_REG_OFFSET);
+    }
+    // Write patch value.
+    abs_mmio_write32(
+        TOP_EARLGREY_AST_BASE_ADDR + ast_patch_addr_offset * sizeof(uint32_t),
+        ast_patch_value);
   }
 
   return OK_STATUS();
@@ -88,33 +149,48 @@ static status_t print_flash_info_0_data_to_console(void) {
  * all fields can be programmed until the personalization stage.
  */
 static status_t provision(ujson_t *uj) {
-  LOG_INFO("Waiting for FT SRAM provisioning data ...");
+  // Patch AST config if requested.
+  TRY(patch_ast_config_value());
+
+  // Perform OTP writes.
+#ifndef ATE
+  // Get host data.
+  base_printf("Waiting for FT SRAM provisioning data ...\r\n");
+  TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, true));
   TRY(ujson_deserialize_manuf_ft_individualize_data_t(uj, &in_data));
+  TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, false));
   TRY(manuf_individualize_device_hw_cfg(&flash_ctrl_state, &otp_ctrl,
                                         kFlashInfoPage0Permissions,
-                                        in_data.device_id));
-  TRY(manuf_individualize_device_creator_sw_cfg(&otp_ctrl, &flash_ctrl_state));
-  TRY(manuf_individualize_device_owner_sw_cfg(&otp_ctrl));
+                                        in_data.ft_device_id));
+#else
+  TRY(manuf_individualize_device_hw_cfg(
+      &flash_ctrl_state, &otp_ctrl, kFlashInfoPage0Permissions, kFtDeviceId));
+#endif
   TRY(manuf_individualize_device_rot_creator_auth_codesign(&otp_ctrl));
   TRY(manuf_individualize_device_rot_creator_auth_state(&otp_ctrl));
-  LOG_INFO("FT SRAM provisioning done.");
+  TRY(manuf_individualize_device_owner_sw_cfg(&otp_ctrl));
+  TRY(manuf_individualize_device_creator_sw_cfg(&otp_ctrl, &flash_ctrl_state));
+
   return OK_STATUS();
 }
 
 bool test_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
-  pinmux_testutils_init(&pinmux);
+  CHECK_STATUS_OK(entropy_complex_init());
+  CHECK_STATUS_OK(configure_ate_gpio_indicators());
+  ujson_t uj;
+#ifndef ATE
   ottf_console_init();
-  ujson_t uj = ujson_ottf_console();
+  uj = ujson_ottf_console();
+#endif
 
-  // Print flash data to console (for manual verification purposes) and perform
-  // provisioning operations.
-  CHECK_STATUS_OK(print_flash_info_0_data_to_console());
-  CHECK_STATUS_OK(provision(&uj));
-
-  // Halt the CPU here to enable JTAG to perform an LC transition to mission
-  // mode, as ROM execution should be active now.
-  abort();
-
+  // Perform provisioning operations.
+  CHECK_DIF_OK(dif_gpio_write(&gpio, kGpioPinTestStart, true));
+  status_t result = provision(&uj);
+  if (!status_ok(result)) {
+    CHECK_DIF_OK(dif_gpio_write(&gpio, kGpioPinTestError, true));
+  } else {
+    CHECK_DIF_OK(dif_gpio_write(&gpio, kGpioPinTestDone, true));
+  }
   return true;
 }

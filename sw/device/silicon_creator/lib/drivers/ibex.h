@@ -24,6 +24,14 @@ extern "C" {
 OT_WARN_UNUSED_RESULT
 uint32_t ibex_fpga_version(void);
 
+/**
+ * Get the number of address remapper slots.
+ *
+ * @return Number of remapper slots.
+ */
+OT_WARN_UNUSED_RESULT
+size_t ibex_addr_remap_slots(void);
+
 #ifdef OT_PLATFORM_RV32
 /**
  * Set the MCYCLE counter register to zero.
@@ -97,8 +105,9 @@ enum {
 };
 
 /**
- * Configure the instruction and data bus in the address translation slot 0.
+ * Configure the instruction and data bus in an address translation slot.
  *
+ * @param slot Index of the address translation slot to configure.
  * @param matching_addr When an incoming transaction matches the matching
  * region, it is redirected to the new address. If a transaction does not match,
  * then it is directly passed through.
@@ -106,39 +115,90 @@ enum {
  * redirected to.
  * @param size The size of the regions mapped.
  */
-void ibex_addr_remap_0_set(uint32_t matching_addr, uint32_t remap_addr,
-                           size_t size);
-
-/**
- * Configure the instruction and data bus in the address translation slot 1.
- *
- * @param matching_addr When an incoming transaction matches the matching
- * region, it is redirected to the new address. If a transaction does not match,
- * then it is directly passed through.
- * @param remap_addr  The region where the matched transtaction will be
- * redirected to.
- * @param size The size of the regions mapped.
- */
-void ibex_addr_remap_1_set(uint32_t matching_addr, uint32_t remap_addr,
-                           size_t size);
+void ibex_addr_remap_set(size_t slot, uint32_t matching_addr,
+                         uint32_t remap_addr, size_t size);
 
 /**
  * Get the remap target address.
  *
- * Returns zero if the remap window is not in use.
+ * Returns zero if the address translation slot is not in use.
  *
- * @param index Which window to lock (0 or 1).
+ * @param slot Index of the addresss translation slot.
  * @return The remap target address.
  */
-uint32_t ibex_addr_remap_get(uint32_t index);
+uint32_t ibex_addr_remap_get(size_t slot);
 
 /**
- * Lock the remap windows so they cannot be reprogrammed.
- * This function locks the given the IBUS and DBUS windows simultaneously.
+ * Lock a addresss translation so that it cannot be reprogrammed.
+ * This function locks the given IBUS and DBUS addresss translations
+ * simultaneously.
  *
- * @param index Which window to lock (0 or 1).
+ * @param slot Index of the addresss translation slot to lock.
  */
-void ibex_addr_remap_lockdown(uint32_t index);
+void ibex_addr_remap_lockdown(size_t slot);
+
+/**
+ * Verify that an address translation slot is enabled.
+ * The slot is considered enabled if both IBUS and DBUS are remapped for this
+ * slot index.
+ *
+ * @param slot Index of the address translation slot to check.
+ * @return True if the slot is enabled, false otherwise.
+ */
+OT_WARN_UNUSED_RESULT
+bool ibex_addr_remap_is_enabled(size_t slot);
+
+/**
+ * Verify that an address translation slot remaps an address region to another
+ * one.
+ *
+ * This function checks that the region defined by (matching_addr, size) is
+ * redirected to remap_addr by the current address translation slot
+ * configuration.
+ *
+ * Both IBUS and DBUS address translations are checked but this function does
+ * not check if the slot is enabled.
+ *
+ * @param slot Index of the address translation slot to check.
+ * @param matching_addr Start address for the region to match for incoming
+ * transactions.
+ * @param remap_addr Start address for the region where the matched transaction
+ * will be redirected to.
+ * @param size The size of the regions mapped.
+ * @return True if the slot is matching expectations, false otherwise.
+ */
+OT_WARN_UNUSED_RESULT
+bool ibex_addr_remap_verify(size_t slot, uint32_t matching_addr,
+                            uint32_t remap_addr, size_t size);
+
+typedef enum ibex_nmi_source {
+  /**
+   * NMI alert handler.
+   */
+  kIbexNmiSourceAlert = 1 << 0,
+  /**
+   * NMI watchdog bark.
+   */
+  kIbexNmiSourceWdog = 1 << 1,
+  /**
+   * All NMIs.
+   */
+  kIbexNmiSourceAll = 0x3,
+} ibex_nmi_source_t;
+
+/**
+ * Enables the specified NMI sources.
+ *
+ * @param nmi_src The NMI source(s) to enable.
+ */
+void ibex_enable_nmi(ibex_nmi_source_t nmi_src);
+
+/**
+ * Clears the specified NMI sources.
+ *
+ * @param nmi_src The NMI source(s) to clear.
+ */
+void ibex_clear_nmi(ibex_nmi_source_t nmi_src);
 
 #ifdef __cplusplus
 }

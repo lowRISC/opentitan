@@ -1,0 +1,37 @@
+{
+  "char_csrng_bias": {
+    "res": 0,
+    "rand": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "err_status": 0,
+    "alerts": [0, 0, 0],
+    "loc_alerts": 0,
+    "ast_alerts": [0, 0]
+  },
+  "char_edn_resp_ack": {
+    "collisions": 0,
+    "rand": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "err_status": 0,
+    "alerts": [0, 0, 0],
+    "loc_alerts": 0,
+    "ast_alerts": [0, 0]
+  },
+  "char_edn_bias": {
+    "rand": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "err_status": 0,
+    "alerts": [0, 0, 0],
+    "loc_alerts": 0,
+    "ast_alerts": [0, 0]
+  },
+  "char_entropy_bias": {
+    "err_status": 0,
+    "alerts": [0, 0, 0],
+    "loc_alerts": 0,
+    "ast_alerts": [0, 0]
+  },
+  "char_fw_overwrite": {
+    "err_status": 0,
+    "alerts": [0, 0, 0],
+    "loc_alerts": 0,
+    "ast_alerts": [0, 0]
+  }
+}

@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "hw/top/dt/pinmux.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_uart.h"
@@ -17,167 +18,125 @@
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "uart_regs.h"  // Generated.
+#include "hw/top/uart_regs.h"  // Generated.
 
 #define MODULE_ID MAKE_MODULE_ID('u', 't', 'u')
 
 /**
- * This table stores the pins for all UART instances of Earlgrey.
+ * Get the UART instance from index.
+ *
+ * @param uart_idx UART index (0-based).
+ * @return UART DT instance, or kDtUartCount if invalid.
  */
-static const pinmux_testutils_peripheral_pin_t kUartPinmuxPins[] = {
-    // UART0.
-    {
-        .peripheral_in = kTopEarlgreyPinmuxPeripheralInUart0Rx,
-        .outsel = kTopEarlgreyPinmuxOutselUart0Tx,
-    },
-    // UART1.
-    {
-        .peripheral_in = kTopEarlgreyPinmuxPeripheralInUart1Rx,
-        .outsel = kTopEarlgreyPinmuxOutselUart1Tx,
-    },
-    // UART2.
-    {
-        .peripheral_in = kTopEarlgreyPinmuxPeripheralInUart2Rx,
-        .outsel = kTopEarlgreyPinmuxOutselUart2Tx,
-    },
-    // UART3.
-    {
-        .peripheral_in = kTopEarlgreyPinmuxPeripheralInUart3Rx,
-        .outsel = kTopEarlgreyPinmuxOutselUart3Tx,
-    },
-};
+static dt_uart_t get_uart_instance(uint8_t uart_idx) {
+  if (uart_idx >= kDtUartCount) {
+    return kDtUartCount;
+  }
+  return (dt_uart_t)uart_idx;
+}
 
 /**
- * This table stores UART pin mappings for synthesized platforms.
+ * Get the appropriate pads for a UART instance and channel based on the
+ * platform. This replicates the original behavior with different mappings for
+ * DV vs synthesized platforms.
+ *
+ * @param uart_dt UART DT instance.
+ * @param channel The channel to connect the UART to.
+ * @param rx_pad Output parameter for RX pad.
+ * @param tx_pad Output parameter for TX pad.
+ * @return OK_STATUS if successful, error status otherwise.
  */
-static const pinmux_testutils_mio_pin_t
-    kUartSynthPins[kUartPinmuxChannelCount] = {
-        [kUartPinmuxChannelConsole] =
-            {
-                .mio_out = kTopEarlgreyPinmuxMioOutIoc4,
-                .insel = kTopEarlgreyPinmuxInselIoc3,
-            },
-        [kUartPinmuxChannelDut] = {
-            .mio_out = kTopEarlgreyPinmuxMioOutIob5,
-            .insel = kTopEarlgreyPinmuxInselIob4,
-        }};
+static status_t get_uart_pads_for_channel(dt_uart_t uart_dt,
+                                          uart_pinmux_channel_t channel,
+                                          dt_pad_t *rx_pad, dt_pad_t *tx_pad) {
+#if defined(OPENTITAN_IS_DARJEELING)
+  // Darjeeling only has UART0 and uses dedicated pads
+  if (uart_dt != kDtUart0) {
+    return INVALID_ARGUMENT();
+  }
+  *rx_pad = kDtPadUart0Rx;
+  *tx_pad = kDtPadUart0Tx;
+#elif defined(OPENTITAN_IS_EARLGREY) || defined(OPENTITAN_IS_ENGLISHBREAKFAST)
+  // For Earlgrey and EnglishBreakfast platforms
+  // For DV platform, each UART has its own specific mapping
+  if (kDeviceType == kDeviceSimDV) {
+    switch (uart_dt) {
+      case kDtUart0:
+        *rx_pad = kDtPadIoc3;
+        *tx_pad = kDtPadIoc4;
+        break;
+      case kDtUart1:
+        *rx_pad = kDtPadIob4;
+        *tx_pad = kDtPadIob5;
+        break;
+      case kDtUart2:
+        *rx_pad = kDtPadIoa4;
+        *tx_pad = kDtPadIoa5;
+        break;
+      case kDtUart3:
+        *rx_pad = kDtPadIoa0;
+        *tx_pad = kDtPadIoa1;
+        break;
+      default:
+        return INVALID_ARGUMENT();
+    }
+  } else {
+    // For synthesized platforms, use channel-based mapping
+    switch (channel) {
+      case kUartPinmuxChannelConsole:
+        *rx_pad = kDtPadIoc3;
+        *tx_pad = kDtPadIoc4;
+        break;
+      case kUartPinmuxChannelDut:
+        *rx_pad = kDtPadIob4;
+        *tx_pad = kDtPadIob5;
+        break;
+      default:
+        return INVALID_ARGUMENT();
+    }
+  }
+#else
+  return UNIMPLEMENTED();
+#endif
 
-/**
- * The DV platform is handled separately at the moment: all four UARTs have
- * their own channels that they map to rather than using one channel for the
- * console and second for the DUT.
- */
-static const pinmux_testutils_mio_pin_t kUartDvPins[4] = {
-    // UART0.
-    {
-        .mio_out = kTopEarlgreyPinmuxMioOutIoc4,
-        .insel = kTopEarlgreyPinmuxInselIoc3,
-    },
-    // UART1.
-    {
-        .mio_out = kTopEarlgreyPinmuxMioOutIob5,
-        .insel = kTopEarlgreyPinmuxInselIob4,
-    },
-    // UART2.
-    {
-        .mio_out = kTopEarlgreyPinmuxMioOutIoa5,
-        .insel = kTopEarlgreyPinmuxInselIoa4,
-    },
-    // UART3.
-    {
-        .mio_out = kTopEarlgreyPinmuxMioOutIoa1,
-        .insel = kTopEarlgreyPinmuxInselIoa0,
-    }};
-
-static const uart_cfg_params_t kUartCfgParams[4] = {
-    (uart_cfg_params_t){
-        .base_addr = TOP_EARLGREY_UART0_BASE_ADDR,
-        .peripheral_id = kTopEarlgreyPlicPeripheralUart0,
-        .irq_tx_watermark_id = kTopEarlgreyPlicIrqIdUart0TxWatermark,
-        .irq_tx_empty_id = kTopEarlgreyPlicIrqIdUart0TxEmpty,
-        .irq_rx_watermark_id = kTopEarlgreyPlicIrqIdUart0RxWatermark,
-        .irq_tx_done_id = kTopEarlgreyPlicIrqIdUart0TxDone,
-        .irq_rx_overflow_id = kTopEarlgreyPlicIrqIdUart0RxOverflow,
-        .irq_rx_frame_err_id = kTopEarlgreyPlicIrqIdUart0RxFrameErr,
-        .irq_rx_break_err_id = kTopEarlgreyPlicIrqIdUart0RxBreakErr,
-        .irq_rx_timeout_id = kTopEarlgreyPlicIrqIdUart0RxTimeout,
-        .irq_rx_parity_err_id = kTopEarlgreyPlicIrqIdUart0RxParityErr,
-    },
-    (uart_cfg_params_t){
-        .base_addr = TOP_EARLGREY_UART1_BASE_ADDR,
-        .peripheral_id = kTopEarlgreyPlicPeripheralUart1,
-        .irq_tx_watermark_id = kTopEarlgreyPlicIrqIdUart1TxWatermark,
-        .irq_tx_empty_id = kTopEarlgreyPlicIrqIdUart1TxEmpty,
-        .irq_rx_watermark_id = kTopEarlgreyPlicIrqIdUart1RxWatermark,
-        .irq_tx_done_id = kTopEarlgreyPlicIrqIdUart1TxDone,
-        .irq_rx_overflow_id = kTopEarlgreyPlicIrqIdUart1RxOverflow,
-        .irq_rx_frame_err_id = kTopEarlgreyPlicIrqIdUart1RxFrameErr,
-        .irq_rx_break_err_id = kTopEarlgreyPlicIrqIdUart1RxBreakErr,
-        .irq_rx_timeout_id = kTopEarlgreyPlicIrqIdUart1RxTimeout,
-        .irq_rx_parity_err_id = kTopEarlgreyPlicIrqIdUart1RxParityErr,
-    },
-    (uart_cfg_params_t){
-        .base_addr = TOP_EARLGREY_UART2_BASE_ADDR,
-        .peripheral_id = kTopEarlgreyPlicPeripheralUart2,
-        .irq_tx_watermark_id = kTopEarlgreyPlicIrqIdUart2TxWatermark,
-        .irq_tx_empty_id = kTopEarlgreyPlicIrqIdUart2TxEmpty,
-        .irq_rx_watermark_id = kTopEarlgreyPlicIrqIdUart2RxWatermark,
-        .irq_tx_done_id = kTopEarlgreyPlicIrqIdUart2TxDone,
-        .irq_rx_overflow_id = kTopEarlgreyPlicIrqIdUart2RxOverflow,
-        .irq_rx_frame_err_id = kTopEarlgreyPlicIrqIdUart2RxFrameErr,
-        .irq_rx_break_err_id = kTopEarlgreyPlicIrqIdUart2RxBreakErr,
-        .irq_rx_timeout_id = kTopEarlgreyPlicIrqIdUart2RxTimeout,
-        .irq_rx_parity_err_id = kTopEarlgreyPlicIrqIdUart2RxParityErr,
-    },
-    (uart_cfg_params_t){
-        .base_addr = TOP_EARLGREY_UART3_BASE_ADDR,
-        .peripheral_id = kTopEarlgreyPlicPeripheralUart3,
-        .irq_tx_watermark_id = kTopEarlgreyPlicIrqIdUart3TxWatermark,
-        .irq_tx_empty_id = kTopEarlgreyPlicIrqIdUart3TxEmpty,
-        .irq_rx_watermark_id = kTopEarlgreyPlicIrqIdUart3RxWatermark,
-        .irq_tx_done_id = kTopEarlgreyPlicIrqIdUart3TxDone,
-        .irq_rx_overflow_id = kTopEarlgreyPlicIrqIdUart3RxOverflow,
-        .irq_rx_frame_err_id = kTopEarlgreyPlicIrqIdUart3RxFrameErr,
-        .irq_rx_break_err_id = kTopEarlgreyPlicIrqIdUart3RxBreakErr,
-        .irq_rx_timeout_id = kTopEarlgreyPlicIrqIdUart3RxTimeout,
-        .irq_rx_parity_err_id = kTopEarlgreyPlicIrqIdUart3RxParityErr,
-    }};
+  return OK_STATUS();
+}
 
 status_t uart_testutils_select_pinmux(const dif_pinmux_t *pinmux,
                                       uint8_t uart_idx,
                                       uart_pinmux_channel_t channel) {
-  TRY_CHECK(channel < kUartPinmuxChannelCount &&
-                uart_idx < ARRAYSIZE(kUartPinmuxPins),
-            "Index out of bounds");
+  TRY_CHECK(channel < kUartPinmuxChannelCount, "Channel out of bounds");
 
-  pinmux_testutils_mio_pin_t mio_pin = kDeviceType == kDeviceSimDV
-                                           ? kUartDvPins[uart_idx]
-                                           : kUartSynthPins[channel];
+  dt_uart_t uart_dt = get_uart_instance(uart_idx);
+  TRY_CHECK(uart_dt < kDtUartCount, "UART index out of bounds");
 
-  TRY(dif_pinmux_input_select(pinmux, kUartPinmuxPins[uart_idx].peripheral_in,
-                              mio_pin.insel));
-  TRY(dif_pinmux_output_select(pinmux, mio_pin.mio_out,
-                               kUartPinmuxPins[uart_idx].outsel));
+  // Get peripheral I/O descriptions for RX and TX
+  dt_periph_io_t rx_periph_io = dt_uart_periph_io(uart_dt, kDtUartPeriphIoRx);
+  dt_periph_io_t tx_periph_io = dt_uart_periph_io(uart_dt, kDtUartPeriphIoTx);
+
+  // Get the appropriate pads for this UART instance and channel
+  dt_pad_t rx_pad, tx_pad;
+  TRY(get_uart_pads_for_channel(uart_dt, channel, &rx_pad, &tx_pad));
+
+  // Connect RX input using low-level pinmux functions
+  TRY(dif_pinmux_mio_select_input(pinmux, rx_periph_io, rx_pad));
+
+  // Connect TX output using low-level pinmux functions
+  TRY(dif_pinmux_mio_select_output(pinmux, tx_pad, tx_periph_io));
 
   return OK_STATUS();
 }
 
 status_t uart_testutils_detach_pinmux(const dif_pinmux_t *pinmux,
                                       uint8_t uart_idx) {
-  TRY_CHECK(uart_idx < ARRAYSIZE(kUartPinmuxPins), "Index out of bounds");
+  dt_uart_t uart_dt = get_uart_instance(uart_idx);
+  TRY_CHECK(uart_dt < kDtUartCount, "UART index out of bounds");
 
-  TRY(dif_pinmux_input_select(pinmux, kUartPinmuxPins[uart_idx].peripheral_in,
-                              kTopEarlgreyPinmuxInselConstantZero));
+  // Get peripheral I/O description for RX
+  dt_periph_io_t rx_periph_io = dt_uart_periph_io(uart_dt, kDtUartPeriphIoRx);
 
-  return OK_STATUS();
-}
-
-status_t uart_testutils_cfg_params(uint8_t uart_idx,
-                                   uart_cfg_params_t *params) {
-  TRY_CHECK(uart_idx < ARRAYSIZE(kUartCfgParams), "Index out of bounds");
-
-  *params = kUartCfgParams[uart_idx];
+  // Disconnect RX input by connecting to constant zero using low-level function
+  TRY(dif_pinmux_mio_select_input(pinmux, rx_periph_io, kDtPadConstantZero));
 
   return OK_STATUS();
 }

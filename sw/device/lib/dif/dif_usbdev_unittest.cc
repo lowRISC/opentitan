@@ -11,7 +11,7 @@
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_test_base.h"
 
-#include "usbdev_regs.h"  // Generated.
+#include "hw/top/usbdev_regs.h"  // Generated.
 
 namespace dif_usbdev_unittest {
 namespace {
@@ -363,30 +363,28 @@ TEST_F(UsbdevTest, OutEndpointConfig) {
 
   EXPECT_READ32(USBDEV_RXENABLE_OUT_REG_OFFSET,
                 {
-                    {USBDEV_RXENABLE_OUT_OUT_0_BIT, 1},
-                    {USBDEV_RXENABLE_OUT_OUT_2_BIT, 1},
-                    {USBDEV_RXENABLE_OUT_OUT_9_BIT, 1},
+                    {USBDEV_RXENABLE_OUT_OUT_OFFSET, 0x205},
                 });
   EXPECT_WRITE32(USBDEV_RXENABLE_OUT_REG_OFFSET,
                  {
-                     {USBDEV_RXENABLE_OUT_OUT_0_BIT, 1},
-                     {USBDEV_RXENABLE_OUT_OUT_2_BIT, 1},
-                     {USBDEV_RXENABLE_OUT_OUT_5_BIT, 1},
-                     {USBDEV_RXENABLE_OUT_OUT_9_BIT, 1},
+                     {USBDEV_RXENABLE_OUT_OUT_OFFSET, 0x225},
+                     // Register writes specify '1' in PRESERVE to leave an
+                     // endpoint unchanged.
+                     {USBDEV_RXENABLE_OUT_PRESERVE_OFFSET, 0xfdf},
                  });
   EXPECT_DIF_OK(dif_usbdev_endpoint_out_enable(&usbdev_, /*endpoint=*/5,
                                                kDifToggleEnabled));
 
   EXPECT_READ32(USBDEV_RXENABLE_OUT_REG_OFFSET,
                 {
-                    {USBDEV_RXENABLE_OUT_OUT_1_BIT, 1},
-                    {USBDEV_RXENABLE_OUT_OUT_3_BIT, 1},
-                    {USBDEV_RXENABLE_OUT_OUT_7_BIT, 1},
+                    {USBDEV_RXENABLE_OUT_OUT_OFFSET, 0x8a},
                 });
   EXPECT_WRITE32(USBDEV_RXENABLE_OUT_REG_OFFSET,
                  {
-                     {USBDEV_RXENABLE_OUT_OUT_1_BIT, 1},
-                     {USBDEV_RXENABLE_OUT_OUT_7_BIT, 1},
+                     {USBDEV_RXENABLE_OUT_OUT_OFFSET, 0x82},
+                     // Register writes specify '1' in PRESERVE to leave an
+                     // endpoint unchanged.
+                     {USBDEV_RXENABLE_OUT_PRESERVE_OFFSET, 0xff7},
                  });
   EXPECT_DIF_OK(dif_usbdev_endpoint_out_enable(&usbdev_, /*endpoint=*/3,
                                                kDifToggleDisabled));

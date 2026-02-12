@@ -6,11 +6,9 @@
   `dv_fatal("Did not expect DMA_ENV_COV_32B_ADDR_BINS to be defined already!")
 `else
   `define DMA_ENV_COV_32B_ADDR_BINS \
-    bins zero = {'0}; \
-    bins less_than_4_KiB = {[1:4095]}; \
-    bins between_4_and_64_KiB = {[4096:64*1024-1]}; \
-    bins between_64_KiB_and_1_GiB = {[64*1024:'h3fff_ffff]}; \
-    bins between_1_and_4_GiB = {['h4000_0000:'hffff_ffff]};
+    bins less_than_1MiB = {[0:'hf_ffff]}; \
+    bins between_1MiB_and_2_GiB = {['h10_0000:'h7fff_ffff]}; \
+    bins between_2_and_4_GiB = {['h8000_0000:'hffff_ffff]};
 `endif
 
 `ifdef DMA_ENV_COV_64B_ADDR_BINS
@@ -18,7 +16,8 @@
 `else
   `define DMA_ENV_COV_64B_ADDR_BINS \
     `DMA_ENV_COV_32B_ADDR_BINS \
-    bins above_4_GiB = {['h1_0000_0000:$]};
+    bins above_4_GiB = {['h1_0000_0000:'h7fff_ffff_ffff_ffff]}; \
+    bins msb_set = {['h8000_0000_0000_0000:$]};
 `endif
 
 `ifdef DMA_ENV_COV_SIZE_BINS \
@@ -86,8 +85,6 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
 
   cp_transfer_width: coverpoint dma_config.per_transfer_width;
 
-  cp_opcode: coverpoint dma_config.opcode;
-
   cp_mem_range_base: coverpoint dma_config.mem_range_base {
     `DMA_ENV_COV_32B_ADDR_BINS
   }
@@ -110,6 +107,8 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
 
   cp_initial_transfer: coverpoint initial_transfer;
 
+  cp_opcode: coverpoint dma_config.opcode;
+
   cr_src_addr_X_src_asid: cross
       cp_src_addr,
       cp_src_asid;
@@ -118,43 +117,34 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
       cp_dst_addr,
       cp_dst_asid;
 
-  cr_opcode_X_src_asid_X_dst_asid_X_handshake: cross
-      cp_opcode,
+  cr_src_asid_X_dst_asid_X_handshake: cross
       cp_src_asid,
       cp_dst_asid,
       cp_handshake;
 
-  cr_opcode_X_chunk_data_size_X_src_asid_X_dst_asid: cross
-      cp_opcode,
+  cr_chunk_data_size_X_src_asid_X_dst_asid: cross
       cp_chunk_data_size,
       cp_src_asid,
       cp_dst_asid;
 
-  cr_opcode_X_total_data_size_X_transfer_width_X_src_asid_X_dst_asid: cross
-      cp_opcode,
+  cr_total_data_size_X_transfer_width: cross
       cp_total_data_size,
-      cp_transfer_width,
-      cp_src_asid,
-      cp_dst_asid;
+      cp_transfer_width;
 
-  cr_opcode_X_handshake_X_chunk_data_size_X_transfer_width_X_src_asid_X_dst_asid: cross
-      cp_opcode,
+  cr_handshake_X_transfer_width_X_src_asid_X_dst_asid: cross
       cp_handshake,
-      cp_chunk_data_size,
       cp_transfer_width,
       cp_src_asid,
       cp_dst_asid;
 
-  cr_opcode_X_handshake_X_dst_addr_inc_X_dst_chunk_wrap_X_src_addr_inc_X_src_chunk_wrap: cross
-      cp_opcode,
+  cr_handshake_X_dst_addr_inc_X_dst_chunk_wrap_X_src_addr_inc_X_src_chunk_wrap: cross
       cp_handshake,
       cp_dst_chunk_wrap,
       cp_dst_addr_inc,
       cp_src_chunk_wrap,
       cp_src_addr_inc;
 
-  cr_opcode_X_handshake_X_initial_transfer: cross
-      cp_opcode,
+  cr_handshake_X_initial_transfer: cross
       cp_handshake,
       cp_initial_transfer;
 
@@ -172,17 +162,19 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
 
 endgroup
 
-covergroup dma_tlul_error_cg with function sample(dma_seq_item dma_config,
-                                                  asid_encoding_e tl_err_asid);
+// Ensure that we've seen a TL-UL error response from each address space (ASID) as both source
+// (Reads) and destination (Writes).
+covergroup dma_tlul_error_cg with function sample(asid_encoding_e tl_err_asid, bit is_source);
   option.per_instance = 1;
   option.name = "dma_tlul_error_cg";
 
   cp_tl_err_asid: coverpoint tl_err_asid;
 
-  cr_tl_err_asid_X_src_asid_X_dst_asid: cross
+  cp_tl_err_src: coverpoint is_source;
+
+  cr_tl_err_asid_X_is_source: cross
       cp_tl_err_asid,
-      dma_config.src_asid,
-      dma_config.dst_asid;
+      cp_tl_err_src;
 
 endgroup
 
@@ -205,22 +197,61 @@ covergroup dma_status_cg with function sample(
 endgroup
 
 covergroup dma_error_code_cg with function sample(
-  bit[7:0] error_code
+  bit[7:0] error_code,
+  asid_encoding_e asid,
+  bit src
 );
   option.per_instance = 1;
   option.name = "dma_error_code_cg";
 
-  cp_status_errcode: coverpoint error_code {
-    bins error_code[] = {[0:$]};
+  // Each configuration error is tested independently; there is no
+  // benefit in trying to induce all permutations.
+  cp_src_error: coverpoint error_code[DmaSrcAddrErr];
+  cp_dst_error: coverpoint error_code[DmaDstAddrErr];
+  cp_opc_error: coverpoint error_code[DmaOpcodeErr];
+  cp_size_error: coverpoint error_code[DmaSizeErr];
+  cp_asid_error: coverpoint error_code[DmaAsidErr];
+  cp_baselim_error: coverpoint error_code[DmaBaseLimitErr];
+  cp_rangeval_error: coverpoint error_code[DmaRangeValidErr];
+
+  // For a bus error to be detected, the configuration must have been
+  // accepted; i.e. the other errors shall not have been seen.
+  cp_bus_error: coverpoint error_code[DmaBusErr];
+
+  cp_src_dst: coverpoint src {
+    bins src = {1};
+    bins dst = {0};
   }
+
+  cp_asid: coverpoint asid {
+    bins OtInt = {OtInternalAddr};
+    bins SocCnt = {SocControlAddr};
+    bins SocSys = {SocSystemAddr};
+  }
+
+  // We want to observe both error and non-error responses on all ports.
+  cr_asid_X_src_dst_X_bus_err: cross
+    cp_asid,
+    cp_src_dst,
+    cp_bus_error;
+
+  // We want to observe source address checking on all ports.
+  cr_asid_X_src_error: cross
+    cp_asid,
+    cp_src_error;
+
+  // We want to observe destination address checking on all ports.
+  cr_asid_X_dst_error: cross
+    cp_asid,
+    cp_dst_error;
+
 endgroup
 
+// Interrupt-related configuration used in hardware-handshaking mode.
 covergroup dma_interrupt_cg with function sample(
   bit [dma_reg_pkg::NumIntClearSources-1:0] handshake_interrupt_enable,
   bit [dma_reg_pkg::NumIntClearSources-1:0] clear_intr_src,
-  bit [dma_reg_pkg::NumIntClearSources-1:0] clear_intr_bus,
-  bit [dma_reg_pkg::NumIntClearSources-1:0][2:0] intr_source_addr_offset,
-  bit [dma_reg_pkg::NumIntClearSources-1:0][31:0] intr_source_wr_val
+  bit [dma_reg_pkg::NumIntClearSources-1:0] clear_intr_bus
 );
   option.per_instance = 1;
   option.name = "dma_interrupt_cg";
@@ -237,41 +268,30 @@ covergroup dma_interrupt_cg with function sample(
     `DMA_ENV_COV_INTERRUPT_BINS
   }
 
-  cp_int_source_addr_offset: coverpoint intr_source_addr_offset {
-    bins all_zero = {0};
-    bins first_1_others_0 = {3'b001};
-    bins first_2_others_0 = {3'b010};
-    bins first_3_others_0 = {3'b011};
-    bins first_4_others_0 = {3'b100};
-    bins first_5_others_0 = {3'b101};
-    bins first_6_others_0 = {3'b110};
-    bins first_7_others_0 = {3'b111};
-    bins second_1_others_0 = {6'b001000};
-    bins second_2_others_0 = {6'b010000};
-    bins second_3_others_0 = {6'b011000};
-    bins second_4_others_0 = {6'b100000};
-    bins second_5_others_0 = {6'b101000};
-    bins second_6_others_0 = {6'b110000};
-    bins second_7_others_0 = {6'b111000};
-    bins first_1_second_1_others_0 = {6'b001001};
-    bins first_2_second_1_others_0 = {6'b001010};
-    bins first_3_second_1_others_0 = {6'b001011};
-    bins first_1_second_2_others_0 = {6'b010001};
-    bins first_1_second_3_others_0 = {6'b011001};
-    // TODO: There are other bins that would be relevant (but the autogenerated ones aren't).
-    // Is there a way to programatically generate more enumerations like the above?
+endgroup
+
+// Interrupt-clearing address and data.
+// - addresses are always word-aligned; there are no write strobes programmed.
+covergroup dma_intr_src_cg with function sample(
+  bit [top_pkg::TL_AW-1:0] intr_src_addr,
+  bit [top_pkg::TL_DW-1:0] intr_src_data
+);
+
+  option.per_instance = 1;
+  option.name = "dma_intr_src_cg";
+
+  cp_intr_src_addr_alignment: coverpoint shortint'(intr_src_addr[3:2]) {
+    bins offset[] = {[0:3]};
   }
 
-  cp_int_source_wr_val: coverpoint intr_source_wr_val {
+  cp_intr_src_msb: coverpoint intr_src_addr[31] {
+    bins clear = {0};
+    bins set   = {1};
+  }
+
+  cp_int_source_wr_val: coverpoint |intr_src_data {
     bins all_zero = {0};
-    bins first_all_ones_others_zero = {32'hffff_ffff};
-    bins second_all_ones_others_zero = {64'hffff_ffff_0000_0000};
-    // TODO: There are other bins that bins that would be relevant but enumerating them is
-    // infeasible, and `with` bins expressions such as the following
-    //     bins first_non_zero = {[0:$]} with (item & 32'hffff_ffff != 0);
-    //     bins second_non_zero = {[0:$]} with ((item >> 32) & 32'hffff_ffff != 0);
-    // increase the runtime so significantly that even simple tests take a prohibitively long time
-    // to complete.  What is another way to specify more of the interesting bins?
+    bins non_zero = {1};
   }
 
 endgroup
@@ -284,6 +304,7 @@ class dma_env_cov extends cip_base_env_cov #(.CFG_T(dma_env_cfg));
   dma_status_cg status_cg;
   dma_error_code_cg error_code_cg;
   dma_interrupt_cg interrupt_cg;
+  dma_intr_src_cg intr_src_cg;
 
   function new(string name, uvm_component parent);
     super.new(name, parent);
@@ -292,6 +313,7 @@ class dma_env_cov extends cip_base_env_cov #(.CFG_T(dma_env_cfg));
     status_cg = new();
     error_code_cg = new();
     interrupt_cg = new();
+    intr_src_cg = new();
   endfunction: new
 
 endclass

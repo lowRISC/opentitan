@@ -33,7 +33,7 @@ module prim_arbiter_ppc #(
   parameter bit EnDataPort = 1,
 
   // Derived parameters
-  localparam int IdxW = $clog2(N)
+  localparam int IdxW = prim_util_pkg::vbits(N)
 ) (
   input clk_i,
   input rst_ni,
@@ -130,7 +130,7 @@ module prim_arbiter_ppc #(
       ##1 valid_o && ready_i && $past(ready_i) && $past(valid_o) &&
       |(req_i & ~((N'(1) << $past(idx_o)+1) - 1)) |->
       idx_o > $past(idx_o))
-  // we can only grant one requestor at a time
+  // we can only grant one requester at a time
   `ASSERT(CheckHotOne_A, $onehot0(gnt_o))
   // A grant implies that the sink is ready
   `ASSERT(GntImpliesReady_A, |gnt_o |-> ready_i)
@@ -170,7 +170,7 @@ end
   `ASSUME(KStable_M, ##1 $stable(k))
   `ASSUME(KRange_M, k < N)
   // this is used enable checking for stable and unstable ready_i and req_i signals in the same run.
-  // the symbolic variables act like a switch that the solver can trun on and off.
+  // the symbolic variables act like a switch that the solver can turn on and off.
   `ASSUME(ReadyIsStable_M, ##1 $stable(ReadyIsStable))
   `ASSUME(ReqsAreStable_M, ##1 $stable(ReqsAreStable))
   `ASSUME(ReadyStable_M, ##1 !ReadyIsStable || $stable(ready_i))

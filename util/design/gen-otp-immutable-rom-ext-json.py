@@ -17,7 +17,6 @@ _ENABLE_FIELD_NAME = "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN"
 _START_OFFSET_FIELD_NAME = "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_START_OFFSET"
 _SIZE_FIELD_NAME = "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_LENGTH"
 _HASH_FIELD_NAME = "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA256_HASH"
-_CREATOR_MANUF_STATE_FIELD_NAME = "CREATOR_SW_CFG_MANUF_STATE"
 
 # This must match the definitions in hardened.h.
 _HARDENED_TRUE = 0x739
@@ -69,21 +68,6 @@ class RomExtImmutableSectionOtpFields(ImmutableSectionProcessor):
         self.insert_key_value(_SIZE_FIELD_NAME, f"{hex(self.size_in_bytes)}")
         self.insert_key_value(_HASH_FIELD_NAME, f"0x{self.hash.hex()}")
 
-    def update_json_with_creator_manuf_state_data(self) -> None:
-        """Update the JSON with the CREATOR_SW_CFG_MANUF_STATE data.
-        Args:
-            None
-        Returns:
-            None
-        """
-
-        new_creator_manuf_state = self.update_creator_manuf_state_data(
-            f"0x{self.hash.hex()}"
-        )
-        self.insert_key_value(
-            _CREATOR_MANUF_STATE_FIELD_NAME, new_creator_manuf_state
-        )
-
     def immutable_rom_ext_enable(self) -> bool:
         """Checks if immutable ROM extension is enabled.
 
@@ -133,7 +117,6 @@ def main() -> None:
 
     if imm_section_otp.immutable_rom_ext_enable():
         imm_section_otp.update_json_with_immutable_rom_ext_section_data()
-        imm_section_otp.update_json_with_creator_manuf_state_data()
 
     # Write out the OTP fields to a JSON file.
     with open(args.output, 'w') as f:

@@ -6,9 +6,9 @@
 common --enable_bzlmod
 common --enable_workspace=no
 
-# https://docs.opentitan.org/doc/rm/c_cpp_coding_style/#cxx-version specifies
-build --action_env=BAZEL_CXXOPTS="-std=gnu++14"
-build --cxxopt='-std=gnu++14'
+# https://opentitan.org/book/doc/contributing/style_guides/c_cpp_coding_style.html#c-version specifies
+build --action_env=BAZEL_CXXOPTS="-std=gnu++17"
+build --cxxopt='-std=gnu++17'
 build --conlyopt='-std=gnu11'
 
 # Never strip debugging information so that we can produce annotated
@@ -38,37 +38,27 @@ build:asan-libfuzzer --@rules_fuzzing//fuzzing:cc_engine=@rules_fuzzing//fuzzing
 build:asan-libfuzzer --@rules_fuzzing//fuzzing:cc_engine_instrumentation=libfuzzer
 build:asan-libfuzzer --@rules_fuzzing//fuzzing:cc_engine_sanitizer=asan
 
-# Shared configuration for clang's source-based coverage instrumentation.
-# Bazel seems to support this only partially, thus we have to perform some
-# additional processing. See
-# https://github.com/bazelbuild/bazel/commit/21b5eb627d78c09d47c4de957e9e6b56a9ae6fad
-# and `util/coverage/coverage_off_target.py`.
-build:ot_coverage --repo_env='CC=clang'
-build:ot_coverage --repo_env='BAZEL_USE_LLVM_NATIVE_COVERAGE=1'
-build:ot_coverage --java_runtime_version='remotejdk_11'
-# Docs state that bazel will fail to create coverage information if tests have
-# been cached previously. See
-# https://bazel.build/configure/coverage?hl=en#remote-execution
-coverage:ot_coverage --nocache_test_results
+# Configuration for clang's source-based coverage instrumentation.
+coverage:ot_coverage --java_runtime_version='remotejdk_11'
+coverage:ot_coverage --instrumentation_filter="^//sw/device"
+coverage:ot_coverage --repo_env='BAZEL_USE_LLVM_NATIVE_COVERAGE=1'
+coverage:ot_coverage --experimental_use_llvm_covmap
+coverage:ot_coverage --experimental_generate_llvm_lcov
+coverage:ot_coverage --combined_report=lcov
 
-# Configuration for measuring off-target coverage. Enable with
-# `--config=ot_coverage_off_target`.
-build:ot_coverage_off_target --config='ot_coverage'
-build:ot_coverage_off_target --collect_code_coverage
-coverage:ot_coverage_off_target --repo_env='GCOV=/usr/bin/llvm-profdata'
-coverage:ot_coverage_off_target --repo_env='BAZEL_LLVM_COV=/usr/bin/llvm-cov'
+# Set coverage mode indicators
+coverage:ot_coverage --define='ot_coverage_enabled=true'
+coverage:ot_coverage --@rules_rust//:extra_rustc_flag='--cfg=feature="ot_coverage_enabled"'
+coverage:ot_coverage --@rules_rust//:extra_exec_rustc_flag='--cfg=feature="ot_coverage_enabled"'
+coverage:ot_coverage --//rules/coverage:enabled_flag
+coverage:ot_coverage --copt='-DOT_COVERAGE_ENABLED=1'
 
-# Configuration for measuring on-target coverage. Enable with
-# `--config=ot_coverage_on_target`.
-build:ot_coverage_on_target --config='ot_coverage'
-build:ot_coverage_on_target --platforms="@//toolchain:opentitan_platform"
-build:ot_coverage_on_target --define='measure_coverage_on_target=true'
-# Instrument selectively to limit size overhead when measuring on-target coverage.
-# Note: We have to disable optimizations until the corresponding item in #16761 is
-# resolved.
-build:ot_coverage_on_target --per_file_copt='//sw/device/silicon_creator[/:].*,//sw/device/lib/base:.*@-fprofile-instr-generate,-fcoverage-mapping,-O0'
-# Needed to be able to build host binaries while collecting coverage.
-coverage:ot_coverage_on_target --platforms=""
+# Host-side toolchain flags for unit tests
+# https://github.com/bazelbuild/bazel/blob/release-8.0.1/src/test/shell/bazel/bazel_coverage_cc_test_llvm.sh#L59-L64
+coverage:ot_coverage --repo_env='BAZEL_LLVM_COV=llvm-cov'
+coverage:ot_coverage --repo_env='BAZEL_LLVM_PROFDATA=llvm-profdata'
+coverage:ot_coverage --repo_env='CC=clang'
+coverage:ot_coverage --repo_env='GCOV=llvm-profdata'
 
 # Disable ccache if it happens to be installed
 build --define=CCACHE_DISABLE=true
@@ -130,11 +120,7 @@ build --@rules_rust//rust/toolchain/channel=nightly
 # Configure the rust 'clippy' linter.
 build --aspects=@rules_rust//rust:defs.bzl%rust_clippy_aspect
 build --output_groups=+clippy_checks
-build --@rules_rust//:clippy_flags="-Aclippy::bool_assert_comparison,-Aclippy::uninlined_format_args,-Aclippy::needless_lifetimes,-Aclippy::precedence,-Wclippy::undocumented_unsafe_blocks,-Dwarnings"
-
-# Configure the module ID check.
-build --aspects=rules/quality.bzl%modid_check_aspect
-build --output_groups=+modid_checks
+build --@rules_rust//:clippy_flags="-Wclippy::undocumented_unsafe_blocks,-Dwarnings"
 
 # Import site-specific configuration.
 try-import .bazelrc-site

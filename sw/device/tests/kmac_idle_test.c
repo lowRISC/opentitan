@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "dt/dt_clkmgr.h"  // Generated
-#include "dt/dt_kmac.h"    // Generated
+#include "hw/top/dt/clkmgr.h"  // Generated
+#include "hw/top/dt/kmac.h"    // Generated
 #include "sw/device/lib/dif/dif_clkmgr.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/runtime/ibex.h"

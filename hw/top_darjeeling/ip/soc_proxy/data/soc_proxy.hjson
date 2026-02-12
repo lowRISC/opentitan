@@ -12,15 +12,6 @@
   hw_checklist:       "../doc/checklist"
   sw_checklist:       "/sw/ip/soc_proxy/dif/dif_soc_proxy"
 
-  param_list: [
-    { name:     "NumExternalIrqs"
-      type:     "int unsigned"
-      default:  "32"
-      desc:     "Number of external interrupt requests"
-      local:    "true"
-    }
-  ]
-
   revisions: [
     {
       version:            "1.0.0"
@@ -52,111 +43,18 @@
     { name: "fatal_alert_intg"
       desc: "Fatal bus integrity alert"
     }
-    { name: "fatal_alert_external_0"
-      desc: "Fatal external alert channel 0"
-    }
-    { name: "fatal_alert_external_1"
-      desc: "Fatal external alert channel 1"
-    }
-    { name: "fatal_alert_external_2"
-      desc: "Fatal external alert channel 2"
-    }
-    { name: "fatal_alert_external_3"
-      desc: "Fatal external alert channel 3"
-    }
-    { name: "fatal_alert_external_4"
-      desc: "Fatal external alert channel 4"
-    }
-    { name: "fatal_alert_external_5"
-      desc: "Fatal external alert channel 5"
-    }
-    { name: "fatal_alert_external_6"
-      desc: "Fatal external alert channel 6"
-    }
-    { name: "fatal_alert_external_7"
-      desc: "Fatal external alert channel 7"
-    }
-    { name: "fatal_alert_external_8"
-      desc: "Fatal external alert channel 8"
-    }
-    { name: "fatal_alert_external_9"
-      desc: "Fatal external alert channel 9"
-    }
-    { name: "fatal_alert_external_10"
-      desc: "Fatal external alert channel 10"
-    }
-    { name: "fatal_alert_external_11"
-      desc: "Fatal external alert channel 11"
-    }
-    { name: "fatal_alert_external_12"
-      desc: "Fatal external alert channel 12"
-    }
-    { name: "fatal_alert_external_13"
-      desc: "Fatal external alert channel 13"
-    }
-    { name: "fatal_alert_external_14"
-      desc: "Fatal external alert channel 14"
-    }
-    { name: "fatal_alert_external_15"
-      desc: "Fatal external alert channel 15"
-    }
-    { name: "fatal_alert_external_16"
-      desc: "Fatal external alert channel 16"
-    }
-    { name: "fatal_alert_external_17"
-      desc: "Fatal external alert channel 17"
-    }
-    { name: "fatal_alert_external_18"
-      desc: "Fatal external alert channel 18"
-    }
-    { name: "fatal_alert_external_19"
-      desc: "Fatal external alert channel 19"
-    }
-    { name: "fatal_alert_external_20"
-      desc: "Fatal external alert channel 20"
-    }
-    { name: "fatal_alert_external_21"
-      desc: "Fatal external alert channel 21"
-    }
-    { name: "fatal_alert_external_22"
-      desc: "Fatal external alert channel 22"
-    }
-    { name: "fatal_alert_external_23"
-      desc: "Fatal external alert channel 23"
-    }
-    { name: "recov_alert_external_0"
-      desc: "Recoverable external alert channel 0"
-    }
-    { name: "recov_alert_external_1"
-      desc: "Recoverable external alert channel 1"
-    }
-    { name: "recov_alert_external_2"
-      desc: "Recoverable external alert channel 2"
-    }
-    { name: "recov_alert_external_3"
-      desc: "Recoverable external alert channel 3"
-    }
   ]
 
   wakeup_list: [
-    { name: "wkup_internal_req"
-      desc: "Internal wakeup request, should be asserted whenever an external alert or IRQ is seen"
-    }
     { name: "wkup_external_req"
       desc: "External wakeup request"
-    }
-  ]
-
-  interrupt_list: [
-    { name: "external"
-      desc: "External interrupt request"
-      width: 32 // keep equal to `NumExternalIrqs`
     }
   ]
 
   reset_request_list: [
     { name: "rst_req_external"
       desc: "External reset request"
+      enabled_after_reset: true
     }
   ]
 
@@ -188,12 +86,6 @@
       name:    "misc_tl_d2h"
       act:     "req"
       desc:    "TL-UL host port for the MISC to egress into CTN (response part), synchronous"
-    }
-
-    { struct:  "logic"
-      type:    "uni"
-      name:    "wkup_internal_req"
-      act:     "req"
     }
     { struct:  "logic"
       type:    "uni"
@@ -251,22 +143,6 @@
       act:     "req"
       desc:    "Collated synchronous LSIO trigger signals for DMA"
     }
-    { struct:  "soc_alert"
-      package: "soc_proxy_pkg"
-      type:    "req_rsp"
-      name:    "soc_fatal_alert"
-      act:     "rsp"
-      desc:    "Differential fatal alert from SoC, synchronous"
-      width:   24
-    }
-    { struct:  "soc_alert"
-      package: "soc_proxy_pkg"
-      type:    "req_rsp"
-      name:    "soc_recov_alert"
-      act:     "rsp"
-      desc:    "Differential recoverable alert from SoC, synchronous"
-      width:   4
-    }
     { struct:  "logic"
       type:    "uni"
       name:    "soc_wkup_async"
@@ -278,13 +154,6 @@
       name:    "soc_rst_req_async"
       act:     "rcv"
       desc:    "Reset request from SoC, asynchronous, level-encoded"
-    }
-    { struct:  "logic"
-      type:    "uni"
-      name:    "soc_intr_async"
-      act:     "rcv"
-      width:   32 // keep equal to `NumExternalIrqs`
-      desc:    "Interrupt request from SoC, asynchronous, level-encoded"
     }
     { struct:  "logic"
       type:    "uni"
@@ -313,10 +182,27 @@
 
   registers: {
     core: [
-      // no CSRs defined yet
+      {
+        name: "DUMMY"
+        desc: '''
+              Dummy register to keep the device port.
+              Always returns 0.
+              '''
+        swaccess: "ro"
+        hwaccess: "none"
+        fields: [
+          {
+            name: "dummy"
+            desc: "Dummy field"
+            bits: "0"
+            resval: 0
+          }
+        ]
+      }
     ]
-    ctn: [
-      // no CSRs defined here
-    ]
+  }
+
+  memory: {
+    ctn: {}
   }
 }

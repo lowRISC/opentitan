@@ -8,6 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/crypto/include/datatypes.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
@@ -32,14 +35,72 @@ typedef struct ghash_block {
 
 typedef struct ghash_context {
   /**
-   * Precomputed product table for the hash subkey.
+   * Precomputed product table for the hash subkey share 0.
    */
-  ghash_block_t tbl[16];
+  ghash_block_t tbl0[16];
   /**
-   * Cipher block representing the current GHASH state.
+   * Precomputed product table for the hash subkey share 1.
    */
-  ghash_block_t state;
+  ghash_block_t tbl1[16];
+  /**
+   * Cipher block representing the current GHASH state for share 0.
+   */
+  ghash_block_t state0;
+  /**
+   * Cipher block representing the current GHASH state for share 1.
+   */
+  ghash_block_t state1;
+  /**
+   * Precomputed correction term (S0 * (H0+1)) for state share 0.
+   */
+  ghash_block_t correction_term0;
+  /**
+   * Precomputed correction term (S0 * H1) for state share 1.
+   */
+  ghash_block_t correction_term1;
+  /**
+   * Precomputed initial correction term (S1 * H1) for state share 1.
+   */
+  ghash_block_t correction_term1_init;
+  /**
+   * Encrypted initial counter block share 0.
+   */
+  ghash_block_t enc_initial_counter_block0;
+  /**
+   * Encrypted initial counter block share 1.
+   */
+  ghash_block_t enc_initial_counter_block1;
+  /**
+   * Number of processed ghash blocks.
+   */
+  size_t ghash_block_cnt;
+  /**
+   * Checksum of the structure.
+   */
+  uint32_t checksum;
 } ghash_context_t;
+
+/**
+ * Compute the checksum of a ghash context.
+ *
+ * Call this routine after creating or modifying the structure.
+ *
+ * @param ghash_ctx ghash context.
+ * @returns Checksum value.
+ */
+uint32_t ghash_context_integrity_checksum(const ghash_context_t *ghash_ctx);
+
+/**
+ * Perform an integrity check on the ghash context.
+ *
+ * Returns `kHardenedBoolTrue` if the check passed and `kHardenedBoolFalse`
+ * otherwise.
+ *
+ * @param ghash_ctx ghash context.
+ * @returns Whether the integrity check passed.
+ */
+hardened_bool_t ghash_context_integrity_checksum_check(
+    const ghash_context_t *ghash_ctx);
 
 /**
  * Precompute hash subkey information for GHASH.
@@ -55,9 +116,9 @@ typedef struct ghash_context {
  *
  * @param hash_subkey Subkey for the GHASH operation (`kGhashBlockNumWords`
  * words).
- * @param[out] ctx Context object with product table populated.
+ * @param[out] tbl The populated product table.
  */
-void ghash_init_subkey(const uint32_t *hash_subkey, ghash_context_t *ctx);
+status_t ghash_init_subkey(const uint32_t *hash_subkey, ghash_block_t *tbl);
 
 /**
  * Start a GHASH operation.
@@ -68,7 +129,7 @@ void ghash_init_subkey(const uint32_t *hash_subkey, ghash_context_t *ctx);
  *
  * @param[out] ctx Context object with GHASH state reset to zero.
  */
-void ghash_init(ghash_context_t *ctx);
+status_t ghash_init(ghash_context_t *ctx);
 
 /**
  * Given a partial GHASH block and some new input, process full blocks.
@@ -86,9 +147,9 @@ void ghash_init(ghash_context_t *ctx);
  * @param input_len Length of the input data in bytes.
  * @param input Input data.
  */
-void ghash_process_full_blocks(ghash_context_t *ctx, size_t partial_len,
-                               ghash_block_t *partial, size_t input_len,
-                               const uint8_t *input);
+status_t ghash_process_full_blocks(ghash_context_t *ctx, size_t partial_len,
+                                   ghash_block_t *partial, size_t input_len,
+                                   const uint8_t *input);
 /**
  * Update the state of a GHASH operation.
  *
@@ -104,7 +165,38 @@ void ghash_process_full_blocks(ghash_context_t *ctx, size_t partial_len,
  * @param input_len Number of bytes in the input.
  * @param input Pointer to input buffer.
  */
-void ghash_update(ghash_context_t *ctx, size_t input_len, const uint8_t *input);
+status_t ghash_update(ghash_context_t *ctx, size_t input_len,
+                      const uint8_t *input);
+
+/**
+ * Redundant version of ghash_update().
+ *
+ * Creates a copy of ctx and executes ghash_update() twice.
+ * Compares the GHASH state stored in ctx after the redundant comparison.
+ * The comparison is done on share s0 to avoid introducing SCA leakage.
+ * If the comparison fails, trap.
+ *
+ * @param ctx Context object.
+ * @param input_len Number of bytes in the input.
+ * @param input Pointer to input buffer.
+ */
+status_t ghash_update_redundant(ghash_context_t *ctx, size_t input_len,
+                                const uint8_t *input);
+
+/**
+ * Computes the correction terms needed for the masking scheme.
+ *
+ * correction_term0 = S0 * (H0 + 1).
+ * correction_term1 = S0 * H1.
+ * correction_term1_init = S1 * H1.
+ *
+ * @param enc_initial_counter_block0 Pointer to S0.
+ * @param enc_initial_counter_block1 Pointer to S1.
+ * @param ctx Context object.
+ */
+status_t ghash_handle_enc_initial_counter_block(
+    const uint32_t *enc_initial_counter_block0,
+    const uint32_t *enc_initial_counter_block1, ghash_context_t *ctx);
 
 /**
  * Update the state of a GHASH operation.
@@ -123,7 +215,7 @@ void ghash_update(ghash_context_t *ctx, size_t input_len, const uint8_t *input);
  * @param ctx Context object.
  * @param[out] result Buffer in which to write the GHASH result block
  */
-void ghash_final(ghash_context_t *ctx, uint32_t *result);
+status_t ghash_final(ghash_context_t *ctx, uint32_t *result);
 
 #ifdef __cplusplus
 }  // extern "C"

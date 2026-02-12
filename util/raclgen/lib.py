@@ -283,13 +283,12 @@ def gen_md(block: IpBlock,
            module: Dict[str, object],
            output: TextIO = sys.stdout):
 
-    if_name = racl_mapping['if_name']
-    if not if_name or if_name == '':
-        if_name = 'null'
+    if_name = racl_mapping.get('if_name') or 'null'
 
-    assert block.reg_blocks
-    if len(block.reg_blocks) == 1:
-        assert not if_name or if_name == '' or if_name == 'null'
+    # Look up the requested interface. If there is none (so if_name is 'null'),
+    # this requires there to be exactly one register block.
+    if if_name == 'null':
+        assert len(block.reg_blocks) == 1
         rb = next(iter(block.reg_blocks.values()))
     else:
         rb = block.reg_blocks[if_name]
@@ -337,7 +336,7 @@ def gen_md(block: IpBlock,
     for entry in rb.entries:
         if isinstance(entry, MultiRegister):
             length = bytew
-            for reg in entry.regs:
+            for reg in entry.cregs:
                 policy_sel = racl_mapping['register_mapping'][reg.name]
                 add_row(reg.name, policy_sel, reg.offset, base_addr, length)
         elif isinstance(entry, Window):

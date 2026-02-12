@@ -5,22 +5,25 @@
   name: "crypto"
   testpoints: [
     {
-      name: crypto_lib_hash_stress
-      desc: '''Check that the hash algorithms are correct.
+      name: crypto_lib_aes_stress
+      desc: '''Check that the aes implementation is correct.
 
-            Run the hash algorithms Sha256, Sha384 and Sha512 and compare the digist against
-            the NIST test vector.
+            Run the following operations and compare the result against the NIST test vector:
+             - AES-CBC/CFB/ECB/OFB encryption.
+             - AES-CBC/CFB/ECB/OFB decryption.
+             - AES-GCM encryption.
+             - AES-GCM decryption.
       '''
       stage: N.A.
       si_stage: SV3
       tests: []
       bazel: [
-        "//sw/device/tests/crypto:sha256_functest",
-        "//sw/device/tests/crypto:sha384_functest",
-        "//sw/device/tests/crypto:sha512_functest",
-        "//sw/device/tests/crypto:hkdf_functest",
-        "//sw/device/tests/crypto:otcrypto_hash_test",
-        "//sw/device/tests/crypto:otcrypto_export_test"
+        "//sw/device/tests/crypto:aes_functest",
+        "//sw/device/tests/crypto:aes_kwp_kat_functest",
+        "//sw/device/tests/crypto:aes_kwp_functest",
+        "//sw/device/tests/crypto:aes_gcm_functest",
+        "//sw/device/tests/crypto/cryptotest:aes_kat"
+        "//sw/device/tests/crypto/cryptotest:aes_gcm_kat"
       ]
       lc_states: ["PROD"]
     }
@@ -45,6 +48,98 @@
       ]
     }
     {
+      name: crypto_lib_hash_stress
+      desc: '''Check that the hash algorithms are correct.
+
+            Run the hash algorithms Sha256, Sha384, Sha512, SHA3-224, SHA3-256,
+            SHA3-384 and SHA3-512 and compare the digest against the NIST test
+            vector.
+      '''
+      stage: N.A.
+      si_stage: SV3
+      tests: []
+      bazel: [
+        "//sw/device/tests/crypto:sha256_functest",
+        "//sw/device/tests/crypto:sha384_functest",
+        "//sw/device/tests/crypto:sha512_functest",
+        "//sw/device/tests/crypto:hkdf_functest",
+        "//sw/device/tests/crypto:otcrypto_hash_test",
+        "//sw/device/tests/crypto:otcrypto_export_test"
+        "//sw/device/tests/crypto/cryptotest:sha256_kat",
+        "//sw/device/tests/crypto/cryptotest:sha384_kat",
+        "//sw/device/tests/crypto/cryptotest:sha3_224_kat",
+        "//sw/device/tests/crypto/cryptotest:sha3_256_kat",
+        "//sw/device/tests/crypto/cryptotest:sha3_384_kat",
+        "//sw/device/tests/crypto/cryptotest:sha3_512_kat",
+        "//sw/device/tests/crypto/cryptotest:sha512_kat",
+      ]
+      lc_states: ["PROD"]
+    }
+    {
+      name: crypto_lib_hmac_stress
+      desc: '''Check that HMAC works correctly.
+
+            Run HMAC Sha256, Sha384 and Sha512 and compare the output against
+            the NIST test vector.
+      '''
+      stage: N.A.
+      si_stage: SV3
+      tests: []
+      bazel: [
+        "//sw/device/tests/crypto:hmac_sha256_functest",
+        "//sw/device/tests/crypto:hmac_sha384_functest",
+        "//sw/device/tests/crypto:hmac_sha512_functest",
+        "//sw/device/tests/crypto:hmac_functest",
+        "//sw/device/tests/crypto:hmac_multistream_functest",
+        "//sw/device/tests/crypto/cryptotest:hmac_sha256_acvp",
+        "//sw/device/tests/crypto/cryptotest:hmac_sha256_kat",
+        "//sw/device/tests/crypto/cryptotest:hmac_sha384_kat",
+        "//sw/device/tests/crypto/cryptotest:hmac_sha512_kat",
+      ]
+      lc_states: ["PROD"]
+    }
+    {
+      name: crypto_lib_kmac_stress
+      desc: '''Check that KMAC works correctly.
+
+            Run KMAC and compare the output against
+            the wycheproof test vector.
+      '''
+      stage: N.A.
+      si_stage: SV3
+      tests: []
+      bazel: [
+        "//sw/device/tests/crypto:kmac_functest_hardcoded",
+        "//sw/device/tests/crypto/cryptotest:kmac_kat",
+      ]
+      lc_states: ["PROD"]
+    }
+    {
+      name: crypto_lib_rsa_stress
+      desc: '''Check that the RSA implementation is correct.
+
+            Run the follow operations and compare the result against the NIST test vector:
+             - RSA signature.
+             - RSA signature verification.
+             - RSA encryption and decryption.
+            With the keys sizes 2048, 3072 and 4096 bits.
+      '''
+      stage: N.A.
+      si_stage: SV3
+      tests: []
+      bazel: [
+        "//sw/device/tests/crypto:rsa_2048_encryption_functest",
+        "//sw/device/tests/crypto:rsa_2048_key_from_cofactor_functest",
+        "//sw/device/tests/crypto:rsa_2048_signature_functest",
+        "//sw/device/tests/crypto:rsa_3072_encryption_functest",
+        "//sw/device/tests/crypto:rsa_3072_signature_functest",
+        "//sw/device/tests/crypto:rsa_4096_encryption_functest",
+        "//sw/device/tests/crypto:rsa_4096_signature_functest",
+        "//sw/device/tests/crypto/cryptotest:rsa_kat",
+      ]
+      lc_states: ["PROD"]
+    }
+    {
       name: crypto_lib_rsa_key_gen_stress
       desc: '''Check that the implementation of RSA key generation is correct.
 
@@ -66,48 +161,33 @@
       lc_states: ["PROD"]
     }
     {
-      name: crypto_lib_rsa_stress
-      desc: '''Check that the RSA implementation is correct.
+      name: crypto_lib_shake_stress
+      desc: '''Check that the implementation of SHAKE is correct.
 
-            Run the follow operations and compare the result against the NIST test vector:
-             - RSA signature.
-             - RSA signature verification.
-            With the keys sizes 2048, 3072 and 4096 bits.
+            Run CShake128 and CShake256 and compare the output against
+            the NIST test vector.
       '''
       stage: N.A.
       si_stage: SV3
       tests: []
       bazel: [
-        "//sw/device/tests/crypto:rsa_2048_encryption_functest",
-        "//sw/device/tests/crypto:rsa_2048_key_from_cofactor_functest",
-        "//sw/device/tests/crypto:rsa_2048_signature_functest",
-        "//sw/device/tests/crypto:rsa_3072_encryption_functest",
-        "//sw/device/tests/crypto:rsa_3072_signature_functest",
-        "//sw/device/tests/crypto:rsa_3072_verify_functest_hardcoded",
-        "//sw/device/tests/crypto:rsa_3072_verify_functest_wycheproof",
-        "//sw/device/tests/crypto:rsa_4096_encryption_functest",
-        "//sw/device/tests/crypto:rsa_4096_signature_functest",
+        "//sw/device/tests/crypto:cshake_kat",
+        "//sw/device/tests/crypto:shake128_kat",
+        "//sw/device/tests/crypto:shake256_kat",
       ]
       lc_states: ["PROD"]
     }
     {
-      name: crypto_lib_aes_stress
-      desc: '''Check that the aes implementation is correct.
+      name: crypto_lib_sphincsplus_stress
+      desc: '''Check that the implementation of SPHINCS+ is correct.
 
-            Run the following operations and compare the result against the NIST test vector:
-             - AES-CBC encryption.
-             - AES-CBC decryption.
-             - AES-GCM encryption.
-             - AES-GCM decryption.
+            Run SPHINCS+ and compare the output against the test vector.
       '''
       stage: N.A.
       si_stage: SV3
       tests: []
       bazel: [
-        "//sw/device/tests/crypto:aes_kwp_kat_functest",
-        "//sw/device/tests/crypto:aes_kwp_functest",
-        "//sw/device/tests/crypto:aes_gcm_functest",
-        "//sw/device/tests/crypto/cryptotest:aes_kat"
+        "//sw/device/tests/crypto:sphincsplus_kat",
       ]
       lc_states: ["PROD"]
     }

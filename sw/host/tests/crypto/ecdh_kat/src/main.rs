@@ -22,10 +22,10 @@ use opentitanlib::execute_test;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::rpc::{ConsoleRecv, ConsoleSend};
 use opentitanlib::uart::console::UartConsole;
-use p256::elliptic_curve::scalar::ScalarPrimitive as ScalarPrimitiveP256;
 use p256::U256;
-use p384::elliptic_curve::scalar::ScalarPrimitive as ScalarPrimitiveP384;
+use p256::elliptic_curve::scalar::ScalarPrimitive as ScalarPrimitiveP256;
 use p384::U384;
+use p384::elliptic_curve::scalar::ScalarPrimitive as ScalarPrimitiveP384;
 
 const ECDH_CMD_MAX_COORDINATE_BYTES_P256: usize = 32;
 const ECDH_CMD_MAX_PRIVATE_KEY_BYTES_P256: usize = 32;
@@ -196,7 +196,7 @@ fn run_ecdh_testcase(
     }
     .send(spi_console)?;
 
-    let ecdh_output = CryptotestEcdhDeriveOutput::recv(spi_console, opts.timeout, false)?;
+    let ecdh_output = CryptotestEcdhDeriveOutput::recv(spi_console, opts.timeout, false, false)?;
     let out_len = ecdh_output.shared_secret_len;
     if out_len > ecdh_output.shared_secret.len() {
         panic!("ECDH returned shared secret was too long for device firmware configuration.");
@@ -220,8 +220,8 @@ fn run_ecdh_testcase(
 
 fn test_ecdh(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let spi = transport.spi("BOOTSTRAP")?;
-    let spi_console_device = SpiConsoleDevice::new(&*spi)?;
-    let _ = UartConsole::wait_for(&spi_console_device, r"Running [^\r\n]*", opts.timeout)?;
+    let spi_console_device = SpiConsoleDevice::new(&*spi, None, /*ignore_frame_num=*/ false)?;
+    let _ = UartConsole::wait_for(&spi_console_device, r"Running ", opts.timeout)?;
 
     let mut test_counter = 0u32;
     let mut fail_counter = 0usize;

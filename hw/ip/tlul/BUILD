@@ -17,3 +17,11 @@ filegroup(
         "//hw/ip/tlul/data:all_files",
     ],
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = glob([
+        "**/*.md",
+        "**/*.svg",
+    ]) + ["//hw/ip/tlul/data:tlul_testplan.hjson"],
+)

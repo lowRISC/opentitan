@@ -225,14 +225,8 @@ module tlul_adapter_sram
     logic [SramBusBankAW-1:0] addr; // Address of the request going to the memory.
   } sram_req_addr_t ;
 
-  typedef enum logic [1:0] {
-    OpWrite,
-    OpRead,
-    OpUnknown
-  } req_op_e ;
-
   typedef struct packed {
-    req_op_e                    op ;
+    logic                       is_read ;
     logic                       error ;
     prim_mubi_pkg::mubi4_t      instr_type;
     logic [top_pkg::TL_SZW-1:0] size ;
@@ -295,7 +289,7 @@ module tlul_adapter_sram
       if (reqfifo_rdata.error) begin
         // Return error response. Assume no request went out to SRAM
         d_valid = 1'b1;
-      end else if (reqfifo_rdata.op == OpRead) begin
+      end else if (reqfifo_rdata.is_read) begin
         d_valid = rspfifo_rvalid;
       end else begin
         // Write without error
@@ -312,7 +306,7 @@ module tlul_adapter_sram
     d_error = 1'b0;
 
     if (reqfifo_rvalid) begin
-      if (reqfifo_rdata.op == OpRead) begin
+      if (reqfifo_rdata.is_read) begin
         d_error = rspfifo_rdata.error | reqfifo_rdata.error;
       end else begin
         d_error = reqfifo_rdata.error;
@@ -323,7 +317,7 @@ module tlul_adapter_sram
   end
 
   logic vld_rd_rsp;
-  assign vld_rd_rsp = d_valid & rspfifo_rvalid & (reqfifo_rdata.op == OpRead);
+  assign vld_rd_rsp = d_valid & rspfifo_rvalid & reqfifo_rdata.is_read;
   // If the response data is not valid, we set it to an illegal blanking value which is determined
   // by whether the current transaction is an instruction fetch or a regular read operation.
   logic [top_pkg::TL_DW-1:0] error_blanking_data;
@@ -381,7 +375,7 @@ module tlul_adapter_sram
 
   assign tl_o_int = '{
       d_valid  : d_valid ,
-      d_opcode : (d_valid && reqfifo_rdata.op != OpRead) ? AccessAck : AccessAckData,
+      d_opcode : (d_valid && !reqfifo_rdata.is_read) ? AccessAck : AccessAckData,
       d_param  : '0,
       d_size   : (d_valid) ? reqfifo_rdata.size : '0,
       d_source : (d_valid) ? reqfifo_rdata.source : '0,
@@ -471,7 +465,7 @@ module tlul_adapter_sram
 
   assign reqfifo_wvalid = a_ack ; // Push to FIFO only when granted
   assign reqfifo_wdata  = '{
-    op:     (tl_i_int.a_opcode != Get) ? OpWrite : OpRead, // To return AccessAck for opcode error
+    is_read: tl_i_int.a_opcode == Get,
     error:  error_internal,
     instr_type: tl_i_int.a_user.instr_type,
     size:   tl_i_int.a_size,
@@ -541,8 +535,7 @@ module tlul_adapter_sram
     data_intg : EnableDataIntgPt ? rdata_tlword[DataWidth-1 -: DataIntgWidth] : '0,
     error     : rerror_i[1] // Only care for Uncorrectable error
   };
-  assign rspfifo_rready = (reqfifo_rdata.op == OpRead & ~reqfifo_rdata.error)
-                        ? reqfifo_rready : 1'b0 ;
+  assign rspfifo_rready = reqfifo_rdata.is_read & ~reqfifo_rdata.error & reqfifo_rready;
 
   // This module only cares about uncorrectable errors.
   logic unused_rerror;
@@ -559,10 +552,11 @@ module tlul_adapter_sram
   //    is write op, it is safe to return the response right away. If it is
   //    read request, then D response is waiting until read data arrives.
   prim_fifo_sync #(
-    .Width   (ReqFifoWidth),
-    .Pass    (1'b0),
-    .Depth   (Outstanding),
-    .Secure  (SecFifoPtr)
+    .Width       (ReqFifoWidth),
+    .Pass        (1'b0),
+    .Depth       (Outstanding),
+    .NeverClears (1'b1),
+    .Secure      (SecFifoPtr)
   ) u_reqfifo (
     .clk_i,
     .rst_ni,
@@ -586,6 +580,7 @@ module tlul_adapter_sram
     .Width             (SramReqFifoWidth),
     .Pass              (1'b0),
     .Depth             (Outstanding),
+    .NeverClears       (1'b1),
     .Secure            (SecFifoPtr),
     .OutputZeroIfEmpty (1)
   ) u_sramreqfifo (
@@ -617,10 +612,11 @@ module tlul_adapter_sram
   //    lose the data from the SRAM interface. Remember, SRAM interface doesn't
   //    have back-pressure signal such as read_ready.
   prim_fifo_sync #(
-    .Width   (RspFifoWidth),
-    .Pass    (1'b1),
-    .Depth   (Outstanding),
-    .Secure  (SecFifoPtr)
+    .Width       (RspFifoWidth),
+    .Pass        (1'b1),
+    .Depth       (Outstanding),
+    .NeverClears (1'b1),
+    .Secure      (SecFifoPtr)
   ) u_rspfifo (
     .clk_i,
     .rst_ni,

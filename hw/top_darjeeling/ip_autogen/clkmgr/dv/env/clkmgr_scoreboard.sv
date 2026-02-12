@@ -12,7 +12,6 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
   `uvm_component_utils(clkmgr_scoreboard)
 
   // local variables
-  logic extclk_ctrl_regwen;
   logic measure_ctrl_regwen;
 
   // TLM agent fifos
@@ -33,8 +32,6 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
-      monitor_all_clk_byp();
-      monitor_io_clk_byp();
       monitor_jitter_en();
       sample_peri_covs();
       sample_trans_covs();
@@ -42,51 +39,6 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       sample_fatal_err_cov();
       sample_recov_err_cov();
     join_none
-  endtask
-
-  task monitor_all_clk_byp();
-    mubi4_t prev_all_clk_byp_req = MuBi4False;
-    forever
-      @cfg.clkmgr_vif.clk_cb begin
-        if (cfg.clkmgr_vif.all_clk_byp_req != prev_all_clk_byp_req) begin
-          `uvm_info(`gfn, $sformatf(
-                    "Got all_clk_byp_req %s",
-                    cfg.clkmgr_vif.all_clk_byp_req == MuBi4True ? "True" : "False"
-                    ), UVM_MEDIUM)
-          prev_all_clk_byp_req = cfg.clkmgr_vif.all_clk_byp_req;
-        end
-        if (cfg.clk_rst_vif.rst_n) begin
-          if (cfg.en_cov) begin
-            cov.extclk_cg.sample(cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_sel == MuBi4True,
-                                 cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_step_down == MuBi4True,
-                                 cfg.clkmgr_vif.clk_cb.lc_hw_debug_en_i == On,
-                                 cfg.clkmgr_vif.clk_cb.lc_clk_byp_req == On,
-                                 cfg.clkmgr_vif.scanmode_i == MuBi4True);
-          end
-        end
-      end
-  endtask
-
-  task monitor_io_clk_byp();
-    lc_tx_t prev_lc_clk_byp_req = Off;
-    forever
-      @cfg.clkmgr_vif.clk_cb begin
-        if (cfg.clkmgr_vif.lc_clk_byp_req != prev_lc_clk_byp_req) begin
-          `uvm_info(`gfn, $sformatf(
-                    "Got lc_clk_byp_req %s", cfg.clkmgr_vif.lc_clk_byp_req == On ? "On" : "Off"),
-                    UVM_MEDIUM)
-          prev_lc_clk_byp_req = cfg.clkmgr_vif.lc_clk_byp_req;
-        end
-        if (cfg.clk_rst_vif.rst_n) begin
-          if (cfg.en_cov) begin
-            cov.extclk_cg.sample(cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_sel == MuBi4True,
-                                 cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_step_down == MuBi4True,
-                                 cfg.clkmgr_vif.clk_cb.lc_hw_debug_en_i == On,
-                                 cfg.clkmgr_vif.clk_cb.lc_clk_byp_req == On,
-                                 cfg.clkmgr_vif.scanmode_i == MuBi4True);
-          end
-        end
-      end
   endtask
 
   task monitor_jitter_en();
@@ -117,19 +69,11 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
   task sample_peri_covs();
     fork
       forever
-        @cfg.clkmgr_vif.peri_io_div4_cb begin
+        @cfg.clkmgr_vif.peri_io_cb begin
           if (cfg.io_clk_rst_vif.rst_n && cfg.en_cov) begin
-            cov.peri_cg_wrap[PeriIoDiv4].sample(cfg.clkmgr_vif.peri_io_div4_cb.clk_enable,
-                                                cfg.clkmgr_vif.peri_io_div4_cb.ip_clk_en,
-                                                cfg.clkmgr_vif.scanmode_i == MuBi4True);
-          end
-        end
-      forever
-        @cfg.clkmgr_vif.peri_io_div2_cb begin
-          if (cfg.io_clk_rst_vif.rst_n && cfg.en_cov) begin
-            cov.peri_cg_wrap[PeriIoDiv2].sample(cfg.clkmgr_vif.peri_io_div2_cb.clk_enable,
-                                                cfg.clkmgr_vif.peri_io_div2_cb.ip_clk_en,
-                                                cfg.clkmgr_vif.scanmode_i == MuBi4True);
+            cov.peri_cg_wrap[PeriIo].sample(cfg.clkmgr_vif.peri_io_cb.clk_enable,
+                                            cfg.clkmgr_vif.peri_io_cb.ip_clk_en,
+                                            cfg.clkmgr_vif.scanmode_i == MuBi4True);
           end
         end
     join
@@ -177,10 +121,10 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
   task sample_freq_measurement_covs();
     fork
       forever
-        @(posedge cfg.clkmgr_vif.io_div4_freq_measurement.valid or
-          posedge cfg.clkmgr_vif.io_div4_timeout_err) begin
-          sample_freq_measurement_cov(ClkMesrIoDiv4, cfg.clkmgr_vif.io_div4_freq_measurement,
-                                      cfg.clkmgr_vif.io_div4_timeout_err);
+        @(posedge cfg.clkmgr_vif.io_freq_measurement.valid or
+          posedge cfg.clkmgr_vif.io_timeout_err) begin
+          sample_freq_measurement_cov(ClkMesrIo, cfg.clkmgr_vif.io_freq_measurement,
+                                      cfg.clkmgr_vif.io_timeout_err);
         end
 
       forever
@@ -255,25 +199,11 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
 
     // Process the csr req:
     // - For write, update local variable and fifo at address phase.
-    // - For read, update predication at address phase and compare at data phase.
+    // - For read, update prediction at address phase and compare at data phase.
     case (csr.get_name())
       // add individual case item for each csr
       "alert_test": begin
         // FIXME
-      end
-      "extclk_ctrl_regwen": begin
-        if (addr_phase_write) extclk_ctrl_regwen = item.a_data;
-      end
-      "extclk_ctrl": begin
-        typedef logic [2*$bits(prim_mubi_pkg::mubi4_t) - 1:0] extclk_ctrl_t;
-        if (addr_phase_write && extclk_ctrl_regwen) begin
-          `DV_CHECK_EQ(extclk_ctrl_t'(item.a_data), {
-                       cfg.clkmgr_vif.extclk_ctrl_csr_step_down, cfg.clkmgr_vif.extclk_ctrl_csr_sel
-                       })
-        end
-      end
-      "extclk_status": begin
-        do_read_check = 1'b0;
       end
       "jitter_regwen": begin
       end
@@ -303,17 +233,9 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       end
       "io_meas_ctrl_en": begin
       end
-      "io_div2_meas_ctrl_en": begin
-      end
-      "io_div4_meas_ctrl_en": begin
-      end
       "main_meas_ctrl_en": begin
       end
       "io_meas_ctrl_shadowed": begin
-      end
-      "io_div2_meas_ctrl_shadowed": begin
-      end
-      "io_div4_meas_ctrl_shadowed": begin
       end
       "main_meas_ctrl_shadowed": begin
       end
@@ -342,7 +264,6 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
     // reset local fifos queues and variables
-    extclk_ctrl_regwen  = ral.extclk_ctrl_regwen.get_reset();
     measure_ctrl_regwen = ral.measure_ctrl_regwen.get_reset();
   endfunction
 

@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 #
-# waiver file for prim_generic_flop_2sync
+# waiver file for prim_flop_2sync
 
-waive -rules {IFDEF_CODE} -location {prim_generic_flop_2sync.sv} -regexp {.*contained within \`else block.*} \
-      -comment "Ifdefs are required for prim_generic_flop_2sync since it is turned on only for simulation."
+waive -rules {IFDEF_CODE} -location {prim_flop_2sync.sv} -regexp {.*contained within \`else block.*} \
+      -comment "Ifdefs are required for prim_flop_2sync since it is turned on only for simulation."

@@ -16,19 +16,20 @@ class alert_esc_base_monitor extends dv_base_monitor #(
   `uvm_component_utils(alert_esc_base_monitor)
   uvm_analysis_port #(alert_esc_seq_item) alert_esc_port;
 
-  bit under_reset;
+  // A flag maintained by reset_thread. This is high when rst_n is low.
+  protected bit under_reset;
 
-  extern function new (string name="", uvm_component parent=null);
+  extern function new (string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
   extern virtual task run_phase(uvm_phase phase);
   extern virtual task wait_for_reset_done();
-  extern virtual task reset_thread();
+  extern local task reset_thread();
   // this function can be used in derived classes to reset local signals/variables if needed
   extern virtual function void reset_signals();
 
 endclass : alert_esc_base_monitor
 
-function alert_esc_base_monitor::new (string name="", uvm_component parent=null);
+function alert_esc_base_monitor::new (string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
 
@@ -38,7 +39,7 @@ function void alert_esc_base_monitor::build_phase(uvm_phase phase);
 endfunction : build_phase
 
 task alert_esc_base_monitor::run_phase(uvm_phase phase);
-  wait_for_reset_done();
+  reset_thread();
 endtask : run_phase
 
 task alert_esc_base_monitor::wait_for_reset_done();
@@ -47,9 +48,9 @@ endtask : wait_for_reset_done
 
 task alert_esc_base_monitor::reset_thread();
   forever begin
-    @(negedge cfg.vif.rst_n);
+    wait(!cfg.vif.rst_n);
     under_reset = 1;
-    @(posedge cfg.vif.rst_n);
+    wait(cfg.vif.rst_n);
     // reset signals at posedge rst_n to avoid race condition at negedge rst_n
     reset_signals();
     under_reset = 0;

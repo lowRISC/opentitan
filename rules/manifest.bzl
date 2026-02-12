@@ -2,13 +2,63 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@bazel_skylib//lib:paths.bzl", "paths")
 load("//rules:const.bzl", "CONST", "hex")
 
 _SEL_DEVICE_ID = 1
 _SEL_MANUF_STATE_CREATOR = (1 << 8)
 _SEL_MANUF_STATE_OWNER = (1 << 9)
 _SEL_LIFE_CYCLE_STATE = (1 << 10)
+
+def product_expr(name, mask, value):
+    """Create a Product Expression JSON object.
+
+    Args:
+        name: The name of the product expression (unused).
+        mask: The mask for the product expression.
+        value: The value for the product expression.
+    Returns:
+        A dictionary representing the product expression.
+    """
+    return {
+        "mask": mask,
+        "value": value,
+    }
+
+def integrator_specific_firmware_binding(name, strike_mask, product_exprs):
+    """Create an Integrator Specific Firmware Block (ISFB) JSON object.
+
+    Args:
+        name: The name of the ISFB (unused).
+        strike_mask: The strike mask for the ISFB.
+        product_exprs: A list of product expressions for the ISFB.
+
+    Returns:
+        A JSON string representing the ISFB.
+    """
+    isfb = {}
+
+    if strike_mask:
+        isfb["strike_mask"] = strike_mask
+
+    if product_exprs:
+        if len(product_exprs) > 16:
+            fail("Too many product expressions ({}), maximum is 16.".format(len(product_exprs)))
+
+        isfb["product_expr"] = product_exprs
+
+    return json.encode(isfb)
+
+def isfb_erase_allowed_policy(name, erase_allowed):
+    """Create an ISFB Erase Allowed Policy JSON object.
+
+    Args:
+        name: The name of the policy (unused).
+        erase_allowed: A boolean indicating if erasing is allowed.
+
+    Returns:
+        A JSON string representing the policy.
+    """
+    return json.encode({"erase_allowed": erase_allowed})
 
 def _manifest_impl(ctx):
     mf = {}
@@ -113,9 +163,9 @@ def _manifest_impl(ctx):
         mf["extensions"] = [
             "spx_key",
             "spx_signature",
-            None,
-            None,
-            None,
+            "secver_write",
+            "isfb",
+            "isfb_erase",
             None,
             None,
             None,
@@ -127,6 +177,21 @@ def _manifest_impl(ctx):
             None,
             None,
         ]
+
+    mf["extension_params"] = []
+    if ctx.attr.integrator_specific_firmware_binding:
+        mf["extension_params"].append(
+            {
+                "integrator_specific_firmware_binding": json.decode(ctx.attr.integrator_specific_firmware_binding),
+            },
+        )
+
+    if ctx.attr.isfb_erase_allowed_policy:
+        mf["extension_params"].append(
+            {
+                "isfb_erase_policy": json.decode(ctx.attr.isfb_erase_allowed_policy),
+            },
+        )
 
     file = ctx.actions.declare_file("{}.json".format(ctx.attr.name))
     ctx.actions.write(file, json.encode_indent(mf))
@@ -162,40 +227,11 @@ _manifest = rule(
         "code_end": attr.string(doc = "End offset of the executable region in the image as a 0x-prefixed hex-encoded string"),
         "entry_point": attr.string(doc = "Offset of the first instruction in the image as a 0x-prefixed hex-encoded string"),
         "extensions": attr.string_list(doc = "Names of the manifest extensions as an array of strings"),
+        "integrator_specific_firmware_binding": attr.string(doc = "Create an Integrator Specific Firmware Block (ISFB) JSON object"),
+        "isfb_erase_allowed_policy": attr.string(doc = "Create an ISFB Erase Allowed Policy JSON object"),
     },
 )
 
 def manifest(d):
     _manifest(**d)
     return d["name"]
-
-def update_manifest(ctx, manifest, elf, exec_env):
-    """Update the `manuf_state_creator` field in a ROM_EXT manifest.
-
-    Args:
-        ctx: The rule context.
-        manifest: The input JSON manifest file.
-        elf: The input ROM_EXT ELF file.
-        exec_env: An ExecEnvInfo provider.
-
-    Returns:
-        The updated JSON manifest file.
-    """
-    output_file = ctx.actions.declare_file(
-        "{}_{}.{}.with_manuf_state_creator_updated.json".format(
-            ctx.attr.name,
-            exec_env.exec_env,
-            paths.split_extension(manifest.basename)[0],
-        ),
-    )
-    args = ctx.actions.args()
-    args.add("--input", manifest)
-    args.add("--elf", elf)
-    args.add("--output", output_file)
-    ctx.actions.run(
-        outputs = [output_file],
-        inputs = [manifest, elf],
-        arguments = [args],
-        executable = exec_env._update_manifest_json,
-    )
-    return output_file

@@ -17,8 +17,12 @@ site-url = "book/"
 fold = { enable = true}
 git-repository-url = "https://github.com/lowrisc/opentitan"
 edit-url-template = "https://github.com/lowrisc/opentitan/edit/master/{path}"
-curly-quotes = true
+smart-punctuation = true
 mathjax-support = true
+
+theme = "site/book-theme"
+default_theme = "unicorn-vomit-light"
+preferred_dark_theme = "unicorn-vomit-light"
 
 additional-js = [
     "./site/book-theme/codeblock-conversions.js",

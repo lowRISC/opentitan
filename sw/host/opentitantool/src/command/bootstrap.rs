@@ -2,9 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{ensure, Context, Result};
+use anyhow::{Context, Result, ensure};
 use clap::Args;
-use serde_annotate::Annotate;
 use std::any::Any;
 use std::path::PathBuf;
 
@@ -35,7 +34,7 @@ impl BootstrapCommand {
     fn bootstrap_using_direct_emulator_integration(
         &self,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         ensure!(
             !(self.filename.len() > 1 || self.filename[0].contains('@')),
             "The `emulator` protocol does not support image assembly"
@@ -62,7 +61,7 @@ impl CommandDispatch for BootstrapCommand {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         if self.bootstrap_options.protocol == BootstrapProtocol::Emulator {
             return self.bootstrap_using_direct_emulator_integration(transport);
         }

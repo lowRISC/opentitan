@@ -226,8 +226,8 @@ module prim_lfsr_tb;
       repeat ($urandom_range(5000, 10000)) begin
         // Do random reset sometimes
         if ($urandom_range(0, 10) == 0) main_clk.apply_reset();
-        randomize(rand_seed);
-        randomize(rand_entropy);
+        `DV_CHECK_STD_RANDOMIZE_FATAL(rand_seed,, "prim_lfsr_tb")
+        `DV_CHECK_STD_RANDOMIZE_FATAL(rand_entropy,, "prim_lfsr_tb")
         seed[k] = rand_seed;
         entropy[k] = rand_entropy;
         lfsr_en[k] = $urandom_range(0, 1);

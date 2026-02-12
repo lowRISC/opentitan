@@ -45,6 +45,7 @@ generate:
     parameters:
       name: keymgr
       ip_hjson: ../../data/keymgr.hjson
+    position: prepend
 
 targets:
   default:

@@ -7,7 +7,7 @@ class entropy_src_fw_ov_contiguous_vseq extends entropy_src_base_vseq;
 
   `uvm_object_new
 
-  push_pull_indefinite_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH) m_rng_push_seq;
+  push_pull_indefinite_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq;
 
   int bundle_cnt;
 
@@ -16,7 +16,7 @@ class entropy_src_fw_ov_contiguous_vseq extends entropy_src_base_vseq;
     bundle_cnt = cfg.fw_ov_rd_cnt/cfg.dut_cfg.observe_fifo_thresh + 1;
 
     // Create rng host sequence
-    m_rng_push_seq = push_pull_indefinite_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH)::type_id::
+    m_rng_push_seq = push_pull_indefinite_host_seq#(`RNG_BUS_WIDTH)::type_id::
                      create("m_rng_push_seq");
 
     fork

@@ -14,13 +14,15 @@ extern "C" {
 #define LCCTRLFI_SUBCOMMAND(_, value) \
     value(_, Init) \
     value(_, RuntimeCorruption)
-UJSON_SERDE_ENUM(LcCtrlFiSubcommand, lc_ctrl_fi_subcommand_t, LCCTRLFI_SUBCOMMAND);
+C_ONLY(UJSON_SERDE_ENUM(LcCtrlFiSubcommand, lc_ctrl_fi_subcommand_t, LCCTRLFI_SUBCOMMAND));
+RUST_ONLY(UJSON_SERDE_ENUM(LcCtrlFiSubcommand, lc_ctrl_fi_subcommand_t, LCCTRLFI_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
 #define LCCTRLFI_CORRUPTION(field, string) \
     field(res, uint32_t) \
     field(state, uint32_t) \
     field(counter, uint32_t) \
     field(alerts, uint32_t, 3) \
+    field(loc_alerts, uint32_t) \
     field(err_status, uint32_t) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(LcCtrlFiCorruption, lc_ctrl_fi_corruption_t, LCCTRLFI_CORRUPTION);

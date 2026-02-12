@@ -11,22 +11,24 @@
 #include "sw/device/lib/ujson/ujson.h"
 
 // Include commands
+#include "sw/device/tests/penetrationtests/json/alert_fi_commands.h"
 #include "sw/device/tests/penetrationtests/json/commands.h"
 #include "sw/device/tests/penetrationtests/json/crypto_fi_commands.h"
-#include "sw/device/tests/penetrationtests/json/ibex_fi_commands.h"
 #include "sw/device/tests/penetrationtests/json/lc_ctrl_fi_commands.h"
 #include "sw/device/tests/penetrationtests/json/otp_fi_commands.h"
+#include "sw/device/tests/penetrationtests/json/pentest_lib_commands.h"
 #include "sw/device/tests/penetrationtests/json/rng_fi_commands.h"
 #include "sw/device/tests/penetrationtests/json/rom_fi_commands.h"
 
 // Include handlers
-#include "fi/crypto_fi.h"
-#include "fi/ibex_fi.h"
-#include "fi/lc_ctrl_fi.h"
-#include "fi/otp_fi.h"
-#include "fi/rng_fi.h"
-#include "fi/rom_fi.h"
-#include "lib/extclk_sca_fi.h"
+#include "sw/device/tests/penetrationtests/firmware/fi/alert_fi.h"
+#include "sw/device/tests/penetrationtests/firmware/fi/crypto_fi.h"
+#include "sw/device/tests/penetrationtests/firmware/fi/lc_ctrl_fi.h"
+#include "sw/device/tests/penetrationtests/firmware/fi/otp_fi.h"
+#include "sw/device/tests/penetrationtests/firmware/fi/rng_fi.h"
+#include "sw/device/tests/penetrationtests/firmware/fi/rom_fi.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/extclk_sca_fi.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
@@ -35,14 +37,14 @@ status_t process_cmd(ujson_t *uj) {
     penetrationtest_cmd_t cmd;
     TRY(ujson_deserialize_penetrationtest_cmd_t(uj, &cmd));
     switch (cmd) {
+      case kPenetrationtestCommandAlertInfo:
+        RESP_ERR(uj, pentest_read_rstmgr_alert_info(uj));
+        break;
       case kPenetrationtestCommandCryptoFi:
         RESP_ERR(uj, handle_crypto_fi(uj));
         break;
       case kPenetrationtestCommandExtClkScaFi:
         RESP_ERR(uj, handle_extclk_sca_fi(uj));
-        break;
-      case kPenetrationtestCommandIbexFi:
-        RESP_ERR(uj, handle_ibex_fi(uj));
         break;
       case kPenetrationtestCommandLCCtrlFi:
         RESP_ERR(uj, handle_lc_ctrl_fi(uj));
@@ -55,6 +57,9 @@ status_t process_cmd(ujson_t *uj) {
         break;
       case kPenetrationtestCommandRomFi:
         RESP_ERR(uj, handle_rom_fi(uj));
+        break;
+      case kPenetrationtestCommandAlertFi:
+        RESP_ERR(uj, handle_alert_fi(uj));
         break;
       default:
         LOG_ERROR("Unrecognized command: %d", cmd);

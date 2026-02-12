@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/flash_ctrl.h"
+#include "hw/top/dt/lc_ctrl.h"
+#include "hw/top/dt/rv_plic.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
@@ -12,29 +15,19 @@
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "lc_ctrl_regs.h"
-#include "sw/device/lib/testing/autogen/isr_testutils.h"
+#include "hw/top/lc_ctrl_regs.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
 static dif_lc_ctrl_t lc_ctrl;
 static dif_rv_plic_t plic0;
 static dif_flash_ctrl_state_t flash_state;
-static dif_flash_ctrl_t flash_ctrl;
 
-static plic_isr_ctx_t plic_ctx = {
-    .rv_plic = &plic0,
-    .hart_id = kTopEarlgreyPlicTargetIbex0,
-};
-
-static flash_ctrl_isr_ctx_t flash_ctx = {
-    .flash_ctrl = &flash_ctrl,
-    .plic_flash_ctrl_start_irq_id = kTopEarlgreyPlicIrqIdFlashCtrlProgEmpty,
-    .is_only_irq = false,
-};
+static const dt_flash_ctrl_t kFlashCtrlDt = (dt_flash_ctrl_t)0;
+static const uint32_t kPlicTarget = 0;
 
 enum {
   kFlashInfoBank = 0,
@@ -69,18 +62,28 @@ static volatile bool fired_irqs[kNumIRQs];
 
 /**
  * Provides external IRQ handling for this test.
- *
- * This function overrides the default OTTF external ISR.
  */
-void ottf_external_isr(uint32_t *exc_info) {
-  top_earlgrey_plic_peripheral_t peripheral_serviced;
-  dif_flash_ctrl_irq_t irq_serviced;
-  // Instruct the ISR to mute any status interrupt that is firing.
-  isr_testutils_flash_ctrl_isr(plic_ctx, flash_ctx, true, &peripheral_serviced,
-                               &irq_serviced);
-  CHECK(peripheral_serviced == kTopEarlgreyPlicPeripheralFlashCtrl,
-        "Interurpt from unexpected peripheral: %d", peripheral_serviced);
-  fired_irqs[irq_serviced] = true;
+bool ottf_handle_irq(uint32_t *exc_info, dt_instance_id_t devid,
+                     dif_rv_plic_irq_id_t plic_id) {
+  if (devid != dt_flash_ctrl_instance_id(kFlashCtrlDt)) {
+    return false;
+  }
+
+  dif_flash_ctrl_irq_t irq =
+      dt_flash_ctrl_irq_from_plic_id(kFlashCtrlDt, plic_id);
+  fired_irqs[irq] = true;
+
+  // Either acknowledge or mute IRQ.
+  dif_irq_type_t type;
+  CHECK_DIF_OK(dif_flash_ctrl_irq_get_type(&flash_state.dev, irq, &type));
+  if (type == kDifIrqTypeStatus) {
+    CHECK_DIF_OK(dif_flash_ctrl_irq_set_enabled(&flash_state.dev, irq,
+                                                kDifToggleDisabled));
+  } else {
+    CHECK_DIF_OK(dif_flash_ctrl_irq_acknowledge(&flash_state.dev, irq));
+  }
+
+  return true;
 }
 
 /**
@@ -96,19 +99,17 @@ static void clear_irq_variables(void) {
 /**
  * Initializes FLASH_CTRL and enables the relevant interrupts.
  */
-static void flash_ctrl_init_with_event_irqs(mmio_region_t base_addr,
-                                            dif_flash_ctrl_state_t *flash_state,
-                                            dif_flash_ctrl_t *flash_ctrl) {
-  CHECK_DIF_OK(dif_flash_ctrl_init(base_addr, flash_ctrl));
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(flash_state, base_addr));
+static void flash_ctrl_init_with_event_irqs(
+    dt_flash_ctrl_t flash_ctrl_dt, dif_flash_ctrl_state_t *flash_state) {
+  CHECK_DIF_OK(dif_flash_ctrl_init_state_from_dt(flash_state, flash_ctrl_dt));
 
   for (dif_flash_ctrl_irq_t i = 0; i < kNumIRQs; ++i) {
     dif_irq_type_t type;
     CHECK_DIF_OK(dif_flash_ctrl_irq_get_type(
-        flash_ctrl, kDifFlashCtrlIrqProgEmpty + i, &type));
+        &flash_state->dev, kDifFlashCtrlIrqProgEmpty + i, &type));
     if (type == kDifIrqTypeEvent) {
       CHECK_DIF_OK(dif_flash_ctrl_irq_set_enabled(
-          flash_ctrl, kDifFlashCtrlIrqProgEmpty + i, kDifToggleEnabled));
+          &flash_state->dev, kDifFlashCtrlIrqProgEmpty + i, kDifToggleEnabled));
     }
   }
   clear_irq_variables();
@@ -119,7 +120,8 @@ static void flash_ctrl_init_with_event_irqs(mmio_region_t base_addr,
  */
 static void compare_and_clear_irq_variables(void) {
   for (int i = 0; i < kNumIRQs; ++i) {
-    CHECK(expected_irqs[i] == fired_irqs[i], "expected IRQ mismatch = %d", i);
+    CHECK(expected_irqs[i] == fired_irqs[i], "IRQ %d was %sexpected", i,
+          expected_irqs[i] ? "" : "not ");
   }
   clear_irq_variables();
 }
@@ -156,18 +158,24 @@ static void test_info_part(uint32_t partition_number, const uint32_t *test_data,
     // order to test them more thoroughly, in this test, we would have to rework
     // the write operation test utility.
     CHECK_DIF_OK(dif_flash_ctrl_irq_set_enabled(
-        &flash_ctrl, kDifFlashCtrlIrqProgEmpty, kDifToggleEnabled));
+        &flash_state.dev, kDifFlashCtrlIrqProgEmpty, kDifToggleEnabled));
     CHECK_DIF_OK(dif_flash_ctrl_irq_set_enabled(
-        &flash_ctrl, kDifFlashCtrlIrqProgLvl, kDifToggleEnabled));
+        &flash_state.dev, kDifFlashCtrlIrqProgLvl, kDifToggleEnabled));
     CHECK_STATUS_OK(flash_ctrl_testutils_write(
         &flash_state, address, kPartitionId, test_data,
         kDifFlashCtrlPartitionTypeInfo, kInfoSize));
     compare_and_clear_irq_variables();
     LOG_INFO("partition:%1d write done", partition_number);
   } else {
+    CHECK_STATUS_OK(
+        ottf_alerts_expect_alert_start(dt_flash_ctrl_alert_to_alert_id(
+            kFlashCtrlDt, kDtFlashCtrlAlertRecovErr)));
     CHECK_STATUS_NOT_OK(flash_ctrl_testutils_write(
         &flash_state, address, kPartitionId, test_data,
         kDifFlashCtrlPartitionTypeInfo, kInfoSize));
+    CHECK_STATUS_OK(
+        ottf_alerts_expect_alert_finish(dt_flash_ctrl_alert_to_alert_id(
+            kFlashCtrlDt, kDtFlashCtrlAlertRecovErr)));
     LOG_INFO("partition:%1d write not allowed", partition_number);
   }
 
@@ -182,9 +190,9 @@ static void test_info_part(uint32_t partition_number, const uint32_t *test_data,
     // ProgEmpty and ProgLvl above, they will be tested correctly, since they
     // only assert once the FIFO reaches the respective fill levels.
     CHECK_DIF_OK(dif_flash_ctrl_irq_set_enabled(
-        &flash_ctrl, kDifFlashCtrlIrqRdLvl, kDifToggleEnabled));
+        &flash_state.dev, kDifFlashCtrlIrqRdLvl, kDifToggleEnabled));
     CHECK_DIF_OK(dif_flash_ctrl_irq_set_enabled(
-        &flash_ctrl, kDifFlashCtrlIrqRdFull, kDifToggleEnabled));
+        &flash_state.dev, kDifFlashCtrlIrqRdFull, kDifToggleEnabled));
     CHECK_STATUS_OK(flash_ctrl_testutils_read(
         &flash_state, address, kPartitionId, readback_data,
         kDifFlashCtrlPartitionTypeInfo, kInfoSize, 1));
@@ -192,25 +200,31 @@ static void test_info_part(uint32_t partition_number, const uint32_t *test_data,
     CHECK_ARRAYS_EQ(readback_data, test_data, kInfoSize);
     LOG_INFO("partition:%1d read done", partition_number);
   } else {
+    CHECK_STATUS_OK(
+        ottf_alerts_expect_alert_start(dt_flash_ctrl_alert_to_alert_id(
+            kFlashCtrlDt, kDtFlashCtrlAlertRecovErr)));
     CHECK_STATUS_NOT_OK(flash_ctrl_testutils_read(
         &flash_state, address, kPartitionId, readback_data,
         kDifFlashCtrlPartitionTypeInfo, kInfoSize, 1));
+    CHECK_STATUS_OK(
+        ottf_alerts_expect_alert_finish(dt_flash_ctrl_alert_to_alert_id(
+            kFlashCtrlDt, kDtFlashCtrlAlertRecovErr)));
     LOG_INFO("partition:%1d read not allowed", partition_number);
   }
 }
 
 bool test_main(void) {
-  CHECK_DIF_OK(dif_lc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
-  CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic0));
+  CHECK_DIF_OK(dif_lc_ctrl_init_from_dt(kDtLcCtrl, &lc_ctrl));
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kDtRvPlic, &plic0));
 
-  flash_ctrl_init_with_event_irqs(
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR),
-      &flash_state, &flash_ctrl);
-  rv_plic_testutils_irq_range_enable(&plic0, plic_ctx.hart_id,
-                                     kTopEarlgreyPlicIrqIdFlashCtrlProgEmpty,
-                                     kTopEarlgreyPlicIrqIdFlashCtrlOpDone);
+  flash_ctrl_init_with_event_irqs(kFlashCtrlDt, &flash_state);
+
+  if (kDtFlashCtrlIrqCount > 0) {
+    dif_rv_plic_irq_id_t first = dt_flash_ctrl_irq_to_plic_id(kFlashCtrlDt, 0);
+    dif_rv_plic_irq_id_t last =
+        dt_flash_ctrl_irq_to_plic_id(kFlashCtrlDt, kDtFlashCtrlIrqCount - 1);
+    rv_plic_testutils_irq_range_enable(&plic0, kPlicTarget, first, last);
+  }
 
   // Enable the external IRQ at Ibex.
   irq_global_ctrl(true);

@@ -88,7 +88,7 @@ class rv_dm_scanmode_vseq extends rv_dm_base_vseq;
     logic [JTAG_DRW-1:0] data, dout;
     int unsigned         len;
 
-    data = $urandom_range(0, 16'hffff);
+    data = $urandom_range(0, 'hffff);
     len = 16;
 
     // Wait for trst_n to go high, which should ensure that the JTAG connection has been made

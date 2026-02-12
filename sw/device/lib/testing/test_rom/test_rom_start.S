@@ -4,15 +4,15 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/multibits_asm.h"
-#include "ast_regs.h"
-#include "clkmgr_regs.h"
-#include "csrng_regs.h"
-#include "edn_regs.h"
-#include "sram_ctrl_regs.h"
+#include "hw/top/ast_regs.h"
+#include "hw/top/clkmgr_regs.h"
+#include "hw/top/csrng_regs.h"
+#include "hw/top/edn_regs.h"
+#include "hw/top/sram_ctrl_regs.h"
 
 #if defined(OPENTITAN_IS_ENGLISHBREAKFAST)
-#include "otp_ctrl_regs.h"
-#include "sensor_ctrl_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
+#include "hw/top/sensor_ctrl_regs.h"
 #include "hw/top_englishbreakfast/sw/autogen/top_englishbreakfast_memory.h"
 #define OTP_CTRL_CORE_BASE_ADDR             TOP_ENGLISHBREAKFAST_OTP_CTRL_CORE_BASE_ADDR
 #define AST_BASE_ADDR                       TOP_ENGLISHBREAKFAST_AST_BASE_ADDR
@@ -24,8 +24,8 @@
 #define SENSOR_CTRL_BASE_ADDR               TOP_ENGLISHBREAKFAST_SENSOR_CTRL_AON_BASE_ADDR
 
 #elif defined(OPENTITAN_IS_EARLGREY)
-#include "otp_ctrl_regs.h"
-#include "sensor_ctrl_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
+#include "hw/top/sensor_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
 #define OTP_CTRL_CORE_BASE_ADDR             TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR
 #define AST_BASE_ADDR                       TOP_EARLGREY_AST_BASE_ADDR
@@ -37,23 +37,23 @@
 #define SENSOR_CTRL_BASE_ADDR               TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR
 
 #elif defined(OPENTITAN_IS_DARJEELING)
-#include "otp_ctrl_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling_memory.h"
 #define OTP_CTRL_CORE_BASE_ADDR             TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR
 #define AST_BASE_ADDR                       TOP_DARJEELING_AST_BASE_ADDR
 #define CLKMGR_AON_BASE_ADDR                TOP_DARJEELING_CLKMGR_AON_BASE_ADDR
 #define SRAM_CTRL_MAIN_REGS_BASE_ADDR       TOP_DARJEELING_SRAM_CTRL_MAIN_REGS_BASE_ADDR
+#define ENTROPY_SRC_BASE_ADDR               TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR
 #define CSRNG_BASE_ADDR                     TOP_DARJEELING_CSRNG_BASE_ADDR
 #define EDN0_BASE_ADDR                      TOP_DARJEELING_EDN0_BASE_ADDR
 #undef SENSOR_CTRL_BASE_ADDR                /* No sensor control */
-#undef ENTROPY_SRC_BASE_ADDR                /* No entropy source */
 
 #else
 #error unsupported top
 #endif
 
 #ifdef ENTROPY_SRC_BASE_ADDR
-#include "entropy_src_regs.h"
+#include "hw/top/entropy_src_regs.h"
 #endif
 
 /**
@@ -228,12 +228,17 @@ _start:
   andi t0, t0, 0x1
   beqz t0, .L_ast_done_loop
 
-  // Enable jittery clock if enabled in OTP.
+  // Enable jittery clock if not strictly disabled in OTP.
+  // Use hardcoded MULTIBIT_ASM_BOOL4_TRUE as the enable word to reduce all
+  // other possible OTP values to true.
   li   a0, (OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_JITTER_EN_OFFSET(a0)
+  li   t1, MULTIBIT_ASM_BOOL4_FALSE
+  beq  t0, t1, .L_ast_init_skip
   li   a0, CLKMGR_AON_BASE_ADDR
-  sw   t0, CLKMGR_JITTER_ENABLE_REG_OFFSET(a0)
+  li   t1, MULTIBIT_ASM_BOOL4_TRUE
+  sw   t1, CLKMGR_JITTER_ENABLE_REG_OFFSET(a0)
 #endif
 
 .L_ast_init_skip:

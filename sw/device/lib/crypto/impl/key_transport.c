@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/aes_kwp/aes_kwp.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
@@ -26,6 +27,9 @@ otcrypto_status_t otcrypto_symmetric_keygen(
   // hardware-backed or non-symmetric keys.
   HARDENED_TRY(keyblob_ensure_xor_masked(key->config));
 
+  // Ensure that the entropy complex is initialized.
+  HARDENED_TRY(entropy_complex_check());
+
   // Get pointers to the shares within the keyblob. Fails if the key length
   // doesn't match the mode.
   uint32_t *share0;
@@ -41,6 +45,10 @@ otcrypto_status_t otcrypto_symmetric_keygen(
       .data = share1,
       .len = keyblob_share_num_words(key->config),
   };
+
+  // Randomize the memory before writing the shares.
+  HARDENED_TRY(hardened_memshred(share0_buf.data, share0_buf.len));
+  HARDENED_TRY(hardened_memshred(share1_buf.data, share1_buf.len));
 
   // Construct an empty buffer for the "additional input" to the DRBG generate
   // function.
@@ -158,6 +166,9 @@ static status_t aes_kwp_key_construct(const otcrypto_blinded_key_t *key_kek,
   aes_key->key_shares[0] = share0;
   aes_key->key_shares[1] = share1;
 
+  // Create the checksum of the key and store it in the key structure.
+  aes_key->checksum = aes_key_integrity_checksum(aes_key);
+
   return OTCRYPTO_OK;
 }
 
@@ -168,6 +179,9 @@ otcrypto_status_t otcrypto_key_wrap(const otcrypto_blinded_key_t *key_to_wrap,
       key_kek->keyblob == NULL || wrapped_key.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+
+  // Ensure the entropy complex is initialized.
+  HARDENED_TRY(entropy_complex_check());
 
   // Check the integrity of the key material we are wrapping.
   if (launder32(integrity_blinded_key_check(key_to_wrap)) !=
@@ -205,11 +219,13 @@ otcrypto_status_t otcrypto_key_wrap(const otcrypto_blinded_key_t *key_to_wrap,
   uint32_t config_words = sizeof(otcrypto_key_config_t) / sizeof(uint32_t);
   size_t plaintext_num_words = config_words + 2 + keyblob_words;
   uint32_t plaintext[plaintext_num_words];
-  hardened_memcpy(plaintext, (uint32_t *)&key_to_wrap->config, config_words);
+  HARDENED_TRY(hardened_memshred(plaintext, ARRAYSIZE(plaintext)));
+  HARDENED_TRY(hardened_memcpy(plaintext, (uint32_t *)&key_to_wrap->config,
+                               config_words));
   plaintext[config_words] = key_to_wrap->checksum;
   plaintext[config_words + 1] = keyblob_words;
-  hardened_memcpy(plaintext + config_words + 2, key_to_wrap->keyblob,
-                  keyblob_words);
+  HARDENED_TRY(hardened_memcpy(plaintext + config_words + 2,
+                               key_to_wrap->keyblob, keyblob_words));
 
   // Wrap the key.
   return aes_kwp_wrap(kek, plaintext, sizeof(plaintext), wrapped_key.data);
@@ -227,6 +243,9 @@ otcrypto_status_t otcrypto_key_unwrap(otcrypto_const_word32_buf_t wrapped_key,
     return OTCRYPTO_BAD_ARGS;
   }
 
+  // Ensure the entropy complex is initialized.
+  HARDENED_TRY(entropy_complex_check());
+
   // Check the integrity/lengths/mode of the key encryption key, and construct
   // an internal AES key.
   aes_key_t kek;
@@ -239,6 +258,7 @@ otcrypto_status_t otcrypto_key_unwrap(otcrypto_const_word32_buf_t wrapped_key,
 
   // Unwrap the key.
   uint32_t plaintext[wrapped_key.len];
+  HARDENED_TRY(hardened_memshred(plaintext, ARRAYSIZE(plaintext)));
   HARDENED_TRY(aes_kwp_unwrap(kek, wrapped_key.data,
                               wrapped_key.len * sizeof(uint32_t), success,
                               plaintext));
@@ -254,7 +274,8 @@ otcrypto_status_t otcrypto_key_unwrap(otcrypto_const_word32_buf_t wrapped_key,
 
   // Extract the key configuration.
   uint32_t config_words = sizeof(otcrypto_key_config_t) / sizeof(uint32_t);
-  hardened_memcpy((uint32_t *)&unwrapped_key->config, plaintext, config_words);
+  HARDENED_TRY(hardened_memcpy((uint32_t *)&unwrapped_key->config, plaintext,
+                               config_words));
 
   // Extract the checksum and keyblob length.
   unwrapped_key->checksum = plaintext[config_words];
@@ -268,8 +289,8 @@ otcrypto_status_t otcrypto_key_unwrap(otcrypto_const_word32_buf_t wrapped_key,
   if (unwrapped_key->keyblob_length != keyblob_words * sizeof(uint32_t)) {
     return OTCRYPTO_BAD_ARGS;
   }
-  hardened_memcpy(unwrapped_key->keyblob, plaintext + config_words + 2,
-                  keyblob_words);
+  HARDENED_TRY(hardened_memcpy(unwrapped_key->keyblob,
+                               plaintext + config_words + 2, keyblob_words));
 
   // Finally, check the integrity of the key material we unwrapped.
   *success = integrity_blinded_key_check(unwrapped_key);
@@ -309,63 +330,72 @@ otcrypto_status_t otcrypto_import_blinded_key(
                     keyblob_words * sizeof(uint32_t));
 
   // Construct the blinded key.
-  keyblob_from_shares(key_share0.data, key_share1.data, blinded_key->config,
-                      blinded_key->keyblob);
+  HARDENED_TRY(keyblob_from_shares(key_share0.data, key_share1.data,
+                                   blinded_key->config, blinded_key->keyblob));
   blinded_key->checksum = integrity_blinded_checksum(blinded_key);
   return OTCRYPTO_OK;
 }
 
 otcrypto_status_t otcrypto_export_blinded_key(
-    const otcrypto_blinded_key_t blinded_key, otcrypto_word32_buf_t key_share0,
+    const otcrypto_blinded_key_t *blinded_key, otcrypto_word32_buf_t key_share0,
     otcrypto_word32_buf_t key_share1) {
-  if (blinded_key.keyblob == NULL || key_share0.data == NULL ||
+  if (blinded_key->keyblob == NULL || key_share0.data == NULL ||
       key_share1.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
+  // Ensure the entropy complex is initialized.
+  HARDENED_TRY(entropy_complex_check());
+
   // Check key integrity.
-  if (launder32(integrity_blinded_key_check(&blinded_key)) !=
+  if (launder32(integrity_blinded_key_check(blinded_key)) !=
       kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(integrity_blinded_key_check(&blinded_key),
+  HARDENED_CHECK_EQ(integrity_blinded_key_check(blinded_key),
                     kHardenedBoolTrue);
 
   // Ensure the key is symmetric and not hardware-backed.
-  HARDENED_TRY(keyblob_ensure_xor_masked(blinded_key.config));
+  HARDENED_TRY(keyblob_ensure_xor_masked(blinded_key->config));
 
   // Check that key is exportable.
-  if (launder32(blinded_key.config.exportable) != kHardenedBoolTrue) {
+  if (launder32(blinded_key->config.exportable) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(blinded_key.config.exportable, kHardenedBoolTrue);
+  HARDENED_CHECK_EQ(blinded_key->config.exportable, kHardenedBoolTrue);
 
   // Check the lengths of the shares.
-  size_t share_words = launder32(keyblob_share_num_words(blinded_key.config));
+  size_t share_words = launder32(keyblob_share_num_words(blinded_key->config));
   if (launder32(key_share0.len) != share_words ||
       launder32(key_share1.len) != share_words) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(key_share0.len,
-                    keyblob_share_num_words(blinded_key.config));
+                    keyblob_share_num_words(blinded_key->config));
   HARDENED_CHECK_EQ(key_share1.len,
-                    keyblob_share_num_words(blinded_key.config));
+                    keyblob_share_num_words(blinded_key->config));
+
+  // Randomize the destination buffers.
+  HARDENED_TRY(hardened_memshred(key_share0.data, key_share0.len));
+  HARDENED_TRY(hardened_memshred(key_share1.data, key_share1.len));
 
   // Check the length of the keyblob.
-  size_t keyblob_words = launder32(keyblob_num_words(blinded_key.config));
-  if ((blinded_key.keyblob_length % sizeof(uint32_t) != 0) ||
-      (blinded_key.keyblob_length / sizeof(uint32_t) != keyblob_words)) {
+  size_t keyblob_words = launder32(keyblob_num_words(blinded_key->config));
+  if ((blinded_key->keyblob_length % sizeof(uint32_t) != 0) ||
+      (blinded_key->keyblob_length / sizeof(uint32_t) != keyblob_words)) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(blinded_key.keyblob_length,
+  HARDENED_CHECK_EQ(blinded_key->keyblob_length,
                     keyblob_words * sizeof(uint32_t));
 
   // Get pointers to the internal shares and copy them into output buffers.
   uint32_t *keyblob_share0;
   uint32_t *keyblob_share1;
   HARDENED_TRY(
-      keyblob_to_shares(&blinded_key, &keyblob_share0, &keyblob_share1));
-  hardened_memcpy(key_share0.data, keyblob_share0, key_share0.len);
-  hardened_memcpy(key_share1.data, keyblob_share1, key_share1.len);
+      keyblob_to_shares(blinded_key, &keyblob_share0, &keyblob_share1));
+  HARDENED_TRY(
+      hardened_memcpy(key_share0.data, keyblob_share0, key_share0.len));
+  HARDENED_TRY(
+      hardened_memcpy(key_share1.data, keyblob_share1, key_share1.len));
   return OTCRYPTO_OK;
 }

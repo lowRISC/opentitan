@@ -30,7 +30,7 @@ class chip_sw_spi_device_tpm_vseq extends chip_sw_base_vseq;
     `uvm_send(m_host_tpm_seq)
     `uvm_info(`gfn, $sformatf("TPM transaction sent"), UVM_MEDIUM)
 
-    // This is a read trasnaction
+    // This is a read transaction
     if (!wr) begin
       rdata_q = m_host_tpm_seq.rsp.data;
     end

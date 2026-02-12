@@ -8,7 +8,9 @@
 module prim_alert_rxtx_fatal_tb
   import prim_alert_pkg::*;
   import prim_mubi_pkg::mubi4_t;
-(
+#(
+  parameter int unsigned SkewCycles = 1
+) (
   input        clk_i,
   input        rst_ni,
   // for sigint error injection only
@@ -46,8 +48,9 @@ module prim_alert_rxtx_fatal_tb
   assign alert_tx_in.alert_n = alert_tx_out.alert_n ^ alert_err_ni;
 
   prim_alert_sender #(
-    .AsyncOn ( AsyncOn ),
-    .IsFatal ( IsFatal )
+    .AsyncOn    ( AsyncOn    ),
+    .SkewCycles ( SkewCycles ),
+    .IsFatal    ( IsFatal    )
   ) i_prim_alert_sender (
     .clk_i,
     .rst_ni,
@@ -60,7 +63,8 @@ module prim_alert_rxtx_fatal_tb
   );
 
   prim_alert_receiver #(
-    .AsyncOn ( AsyncOn )
+    .AsyncOn    ( AsyncOn    ),
+    .SkewCycles ( SkewCycles )
   ) i_prim_alert_receiver (
     .clk_i,
     .rst_ni,

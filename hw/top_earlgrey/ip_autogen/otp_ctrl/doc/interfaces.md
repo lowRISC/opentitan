@@ -13,50 +13,37 @@ Parameter                   | Default (Max) | Top Earlgrey | Description
 `RndCnstKey`                | (see RTL)     | (see RTL)    | Random scrambling keys for secret partitions, to be used in the [scrambling datapath](#scrambling-datapath).
 `RndCnstDigestConst`        | (see RTL)     | (see RTL)    | Random digest finalization constants, to be used in the [scrambling datapath](#scrambling-datapath).
 `RndCnstDigestIV`           | (see RTL)     | (see RTL)    | Random digest initialization vectors, to be used in the [scrambling datapath](#scrambling-datapath).
-`RndCnstRawUnlockToken`     | (see RTL)     | (see RTL)    | Global RAW unlock token to be used for the first life cycle transition. See also [conditional life cycle transitions](../../../../ip/lc_ctrl/README.md#conditional-transitions).
+`RndCnstRawUnlockToken`     | (see RTL)     | (see RTL)    | Global RAW unlock token to be used for the first life cycle transition. See also [conditional life cycle transitions](../../../../ip/lc_ctrl/doc/theory_of_operation.md#conditional-transitions).
 
 <!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/top_earlgrey/ip_autogen/otp_ctrl/data/otp_ctrl.hjson -->
 Referring to the [Comportable guideline for peripheral device functionality](https://opentitan.org/book/doc/contributing/hw/comportability), the module **`otp_ctrl`** has the following hardware interfaces defined
 - Primary Clock: **`clk_i`**
 - Other Clocks: **`clk_edn_i`**
-- Bus Device Interfaces (TL-UL): **`core_tl`**, **`prim_tl`**
+- Bus Device Interfaces (TL-UL): **`core_tl`**
 - Bus Host Interfaces (TL-UL): *none*
-
-## Peripheral Pins for Chip IO
-
-| Pin name   | Direction   | Description                                                       |
-|:-----------|:------------|:------------------------------------------------------------------|
-| test[7:0]  | output      | Test-related GPIOs. Only active in DFT-enabled life cycle states. |
+- Peripheral Pins for Chip IO: *none*
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name                | Package::Struct                  | Type    | Act   |   Width | Description                                                                                                                                                                                                     |
-|:-------------------------|:---------------------------------|:--------|:------|--------:|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| otp_ext_voltage_h        |                                  | io      | none  |       1 |                                                                                                                                                                                                                 |
-| otp_ast_pwr_seq          | otp_ctrl_pkg::otp_ast_req        | uni     | req   |       1 | Power sequencing signals to AST (VDD domain).                                                                                                                                                                   |
-| otp_ast_pwr_seq_h        | otp_ctrl_pkg::otp_ast_rsp        | uni     | rcv   |       1 | Power sequencing signals coming from AST (VCC domain).                                                                                                                                                          |
-| edn                      | edn_pkg::edn                     | req_rsp | req   |       1 | Entropy request to the entropy distribution network for LFSR reseeding and ephemeral key derivation.                                                                                                            |
-| pwr_otp                  | pwrmgr_pkg::pwr_otp              | req_rsp | rsp   |       1 | Initialization request/acknowledge from/to power manager.                                                                                                                                                       |
-| lc_otp_vendor_test       | otp_ctrl_pkg::lc_otp_vendor_test | req_rsp | rsp   |       1 | Vendor test control signals from/to the life cycle TAP.                                                                                                                                                         |
-| lc_otp_program           | otp_ctrl_pkg::lc_otp_program     | req_rsp | rsp   |       1 | Life cycle state transition interface.                                                                                                                                                                          |
-| otp_lc_data              | otp_ctrl_pkg::otp_lc_data        | uni     | req   |       1 | Life cycle state output holding the current life cycle state, the value of the transition counter and the tokens needed for life cycle transitions.                                                             |
-| lc_escalate_en           | lc_ctrl_pkg::lc_tx               | uni     | rcv   |       1 | Life cycle escalation enable coming from life cycle controller. This signal moves all FSMs within OTP into the error state.                                                                                     |
-| lc_creator_seed_sw_rw_en | lc_ctrl_pkg::lc_tx               | uni     | rcv   |       1 | Provision enable qualifier coming from life cycle controller. This signal enables SW read / write access to the RMA_TOKEN and CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.                              |
-| lc_owner_seed_sw_rw_en   | lc_ctrl_pkg::lc_tx               | uni     | rcv   |       1 | Provision enable qualifier coming from life cycle controller. This signal enables SW read / write access to the OWNER_SEED.                                                                                     |
-| lc_seed_hw_rd_en         | lc_ctrl_pkg::lc_tx               | uni     | rcv   |       1 | Seed read enable coming from life cycle controller. This signal enables HW read access to the CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.                                                              |
-| lc_dft_en                | lc_ctrl_pkg::lc_tx               | uni     | rcv   |       1 | Test enable qualifier coming from life cycle controller. This signals enables the TL-UL access port to the proprietary OTP IP.                                                                                  |
-| lc_check_byp_en          | lc_ctrl_pkg::lc_tx               | uni     | rcv   |       1 | Life cycle partition check bypass signal. This signal causes the life cycle partition to bypass consistency checks during life cycle state transitions in order to prevent spurious consistency check failures. |
-| otp_keymgr_key           | otp_ctrl_pkg::otp_keymgr_key     | uni     | req   |       1 | Key output to the key manager holding CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.                                                                                                                      |
-| flash_otp_key            | otp_ctrl_pkg::flash_otp_key      | req_rsp | rsp   |       1 | Key derivation interface for FLASH scrambling.                                                                                                                                                                  |
-| sram_otp_key             | otp_ctrl_pkg::sram_otp_key       | req_rsp | rsp   |       4 | Array with key derivation interfaces for SRAM scrambling devices.                                                                                                                                               |
-| otbn_otp_key             | otp_ctrl_pkg::otbn_otp_key       | req_rsp | rsp   |       1 | Key derivation interface for OTBN scrambling devices.                                                                                                                                                           |
-| otp_broadcast            | otp_ctrl_part_pkg::otp_broadcast | uni     | req   |       1 | Output of the HW partitions with breakout data types.                                                                                                                                                           |
-| obs_ctrl                 | ast_pkg::ast_obs_ctrl            | uni     | rcv   |       1 | AST observability control signals.                                                                                                                                                                              |
-| otp_obs                  | logic                            | uni     | req   |       8 | AST observability bus.                                                                                                                                                                                          |
-| cfg                      | prim_otp_cfg_pkg::otp_cfg        | uni     | rcv   |       1 |                                                                                                                                                                                                                 |
-| cfg_rsp                  | prim_otp_cfg_pkg::otp_cfg_rsp    | uni     | req   |       1 |                                                                                                                                                                                                                 |
-| core_tl                  | tlul_pkg::tl                     | req_rsp | rsp   |       1 |                                                                                                                                                                                                                 |
-| prim_tl                  | tlul_pkg::tl                     | req_rsp | rsp   |       1 |                                                                                                                                                                                                                 |
+| Port Name                | Package::Struct                    | Type    | Act   |   Width | Description                                                                                                                                                                                                     |
+|:-------------------------|:-----------------------------------|:--------|:------|--------:|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| edn                      | edn_pkg::edn                       | req_rsp | req   |       1 | Entropy request to the entropy distribution network for LFSR reseeding and ephemeral key derivation.                                                                                                            |
+| pwr_otp                  | pwrmgr_pkg::pwr_otp                | req_rsp | rsp   |       1 | Initialization request/acknowledge from/to power manager.                                                                                                                                                       |
+| lc_otp_program           | otp_ctrl_pkg::lc_otp_program       | req_rsp | rsp   |       1 | Life cycle state transition interface.                                                                                                                                                                          |
+| otp_lc_data              | otp_ctrl_pkg::otp_lc_data          | uni     | req   |       1 | Life cycle state output holding the current life cycle state, the value of the transition counter and the tokens needed for life cycle transitions.                                                             |
+| lc_escalate_en           | lc_ctrl_pkg::lc_tx                 | uni     | rcv   |       1 | Life cycle escalation enable coming from life cycle controller. This signal moves all FSMs within OTP into the error state.                                                                                     |
+| lc_creator_seed_sw_rw_en | lc_ctrl_pkg::lc_tx                 | uni     | rcv   |       1 | Provision enable qualifier coming from life cycle controller. This signal enables SW read / write access to the RMA_TOKEN and CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.                              |
+| lc_owner_seed_sw_rw_en   | lc_ctrl_pkg::lc_tx                 | uni     | rcv   |       1 | Provision enable qualifier coming from life cycle controller. This signal enables SW read / write access to the OWNER_SEED.                                                                                     |
+| lc_seed_hw_rd_en         | lc_ctrl_pkg::lc_tx                 | uni     | rcv   |       1 | Seed read enable coming from life cycle controller. This signal enables HW read access to the CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.                                                              |
+| lc_rma_state             | lc_ctrl_pkg::lc_tx                 | uni     | rcv   |       1 | This signal states whether the current life cycle is RMA. It is used to enable SW read access to (read-locked) partitions in the RMA state.                                                                     |
+| lc_check_byp_en          | lc_ctrl_pkg::lc_tx                 | uni     | rcv   |       1 | Life cycle partition check bypass signal. This signal causes the life cycle partition to bypass consistency checks during life cycle state transitions in order to prevent spurious consistency check failures. |
+| otp_keymgr_key           | otp_ctrl_pkg::otp_keymgr_key       | uni     | req   |       1 | Key output to the key manager holding CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.                                                                                                                      |
+| flash_otp_key            | otp_ctrl_pkg::flash_otp_key        | req_rsp | rsp   |       1 | Key derivation interface for FLASH scrambling.                                                                                                                                                                  |
+| sram_otp_key             | otp_ctrl_pkg::sram_otp_key         | req_rsp | rsp   |       4 | Array with key derivation interfaces for SRAM scrambling devices.                                                                                                                                               |
+| otbn_otp_key             | otp_ctrl_pkg::otbn_otp_key         | req_rsp | rsp   |       1 | Key derivation interface for OTBN scrambling devices.                                                                                                                                                           |
+| otp_broadcast            | otp_ctrl_part_pkg::otp_broadcast   | uni     | req   |       1 | Output of the HW partitions with breakout data types.                                                                                                                                                           |
+| otp_macro                | otp_ctrl_macro_pkg::otp_ctrl_macro | req_rsp | req   |       1 | Data interface for the OTP macro.                                                                                                                                                                               |
+| core_tl                  | tlul_pkg::tl                       | req_rsp | rsp   |       1 |                                                                                                                                                                                                                 |
 
 ## Interrupts
 
@@ -77,54 +64,50 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## Security Countermeasures
 
-| Countermeasure ID                    | Description                                                                                                                                                         |
-|:-------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| OTP_CTRL.BUS.INTEGRITY               | End-to-end bus integrity scheme.                                                                                                                                    |
-| OTP_CTRL.SECRET.MEM.SCRAMBLE         | Secret partitions are scrambled with a full-round PRESENT cipher.                                                                                                   |
-| OTP_CTRL.PART.MEM.DIGEST             | Integrity of buffered partitions is ensured via a 64bit digest.                                                                                                     |
-| OTP_CTRL.DAI.FSM.SPARSE              | The direct access interface FSM is sparsely encoded.                                                                                                                |
-| OTP_CTRL.KDI.FSM.SPARSE              | The key derivation interface FSM is sparsely encoded.                                                                                                               |
-| OTP_CTRL.LCI.FSM.SPARSE              | The life cycle interface FSM is sparsely encoded.                                                                                                                   |
-| OTP_CTRL.PART.FSM.SPARSE             | The partition FSMs are sparsely encoded.                                                                                                                            |
-| OTP_CTRL.SCRMBL.FSM.SPARSE           | The scramble datapath FSM is sparsely encoded.                                                                                                                      |
-| OTP_CTRL.TIMER.FSM.SPARSE            | The background check timer FSM is sparsely encoded.                                                                                                                 |
-| OTP_CTRL.DAI.CTR.REDUN               | The direct access interface address counter employs a cross-counter implementation.                                                                                 |
-| OTP_CTRL.KDI_SEED.CTR.REDUN          | The key derivation interface counter employs a cross-counter implementation.                                                                                        |
-| OTP_CTRL.KDI_ENTROPY.CTR.REDUN       | The key derivation entropy counter employs a cross-counter implementation.                                                                                          |
-| OTP_CTRL.LCI.CTR.REDUN               | The life cycle interface address counter employs a cross-counter implementation.                                                                                    |
-| OTP_CTRL.PART.CTR.REDUN              | The address counter of buffered partitions employs a cross-counter implementation.                                                                                  |
-| OTP_CTRL.SCRMBL.CTR.REDUN            | The srambling datapath counter employs a cross-counter implementation.                                                                                              |
-| OTP_CTRL.TIMER_INTEG.CTR.REDUN       | The background integrity check timer employs a duplicated counter implementation.                                                                                   |
-| OTP_CTRL.TIMER_CNSTY.CTR.REDUN       | The background consistency check timer employs a duplicated counter implementation.                                                                                 |
-| OTP_CTRL.TIMER.LFSR.REDUN            | The background check LFSR is duplicated.                                                                                                                            |
-| OTP_CTRL.DAI.FSM.LOCAL_ESC           | The direct access interface FSM is moved into an invalid state upon local escalation.                                                                               |
-| OTP_CTRL.LCI.FSM.LOCAL_ESC           | The life cycle interface FSM is moved into an invalid state upon local escalation.                                                                                  |
-| OTP_CTRL.KDI.FSM.LOCAL_ESC           | The key derivation interface FSM is moved into an invalid state upon local escalation.                                                                              |
-| OTP_CTRL.PART.FSM.LOCAL_ESC          | The partition FSMs are moved into an invalid state upon local escalation.                                                                                           |
-| OTP_CTRL.SCRMBL.FSM.LOCAL_ESC        | The scramble datapath FSM is moved into an invalid state upon local escalation.                                                                                     |
-| OTP_CTRL.TIMER.FSM.LOCAL_ESC         | The background check timer FSM is moved into an invalid state upon local escalation.                                                                                |
-| OTP_CTRL.DAI.FSM.GLOBAL_ESC          | The direct access interface FSM is moved into an invalid state upon global escalation via life cycle.                                                               |
-| OTP_CTRL.LCI.FSM.GLOBAL_ESC          | The life cycle interface FSM is moved into an invalid state upon global escalation via life cycle.                                                                  |
-| OTP_CTRL.KDI.FSM.GLOBAL_ESC          | The key derivation interface FSM is moved into an invalid state upon global escalation via life cycle.                                                              |
-| OTP_CTRL.PART.FSM.GLOBAL_ESC         | The partition FSMs are moved into an invalid state upon global escalation via life cycle.                                                                           |
-| OTP_CTRL.SCRMBL.FSM.GLOBAL_ESC       | The scramble datapath FSM is moved into an invalid state upon global escalation via life cycle.                                                                     |
-| OTP_CTRL.TIMER.FSM.GLOBAL_ESC        | The background check timer FSM is moved into an invalid state upon global escalation via life cycle.                                                                |
-| OTP_CTRL.PART.DATA_REG.INTEGRITY     | All partition buffer registers are protected with ECC on 64bit blocks.                                                                                              |
-| OTP_CTRL.PART.DATA_REG.BKGN_CHK      | The digest of buffered partitions is recomputed and checked at pseudorandom intervals in the background.                                                            |
-| OTP_CTRL.PART.MEM.REGREN             | Unbuffered ('software') partitions can be read-locked via a CSR until the next system reset.                                                                        |
-| OTP_CTRL.PART.MEM.SW_UNREADABLE      | Secret buffered partitions become unreadable to software once they are locked via the digest.                                                                       |
-| OTP_CTRL.PART.MEM.SW_UNWRITABLE      | All partitions become unwritable by software once they are locked via the digest.                                                                                   |
-| OTP_CTRL.LC_PART.MEM.SW_NOACCESS     | The life cycle partition is not directly readable nor writable via software.                                                                                        |
-| OTP_CTRL.ACCESS.CTRL.MUBI            | The access control signals going from the partitions to the DAI are MUBI encoded.                                                                                   |
-| OTP_CTRL.TOKEN_VALID.CTRL.MUBI       | The token valid signals going to the life cycle controller are MUBI encoded.                                                                                        |
-| OTP_CTRL.LC_CTRL.INTERSIG.MUBI       | The life cycle control signals are multibit encoded.                                                                                                                |
-| OTP_CTRL.TEST.BUS.LC_GATED           | Prevent access to test signals and the OTP backdoor interface in non-test lifecycle states.                                                                         |
-| OTP_CTRL.TEST_TL_LC_GATE.FSM.SPARSE  | The control FSM inside the TL-UL gating primitive is sparsely encoded.                                                                                              |
-| OTP_CTRL.DIRECT_ACCESS.CONFIG.REGWEN | The direct access CSRs are REGWEN protected.                                                                                                                        |
-| OTP_CTRL.CHECK_TRIGGER.CONFIG.REGWEN | The check trigger CSR is REGWEN protected.                                                                                                                          |
-| OTP_CTRL.CHECK.CONFIG.REGWEN         | The check CSR is REGWEN protected.                                                                                                                                  |
-| OTP_CTRL.MACRO.MEM.INTEGRITY         | The OTP macro employs a vendor-specific integrity scheme at the granularity of the native 16bit OTP words. The scheme is able to at least detect single bit errors. |
-| OTP_CTRL.MACRO.MEM.CM                | The OTP macro may contain additional vendor-specific countermeasures.                                                                                               |
+| Countermeasure ID                    | Description                                                                                              |
+|:-------------------------------------|:---------------------------------------------------------------------------------------------------------|
+| OTP_CTRL.BUS.INTEGRITY               | End-to-end bus integrity scheme.                                                                         |
+| OTP_CTRL.SECRET.MEM.SCRAMBLE         | Secret partitions are scrambled with a full-round PRESENT cipher.                                        |
+| OTP_CTRL.PART.MEM.DIGEST             | Integrity of buffered partitions is ensured via a 64bit digest.                                          |
+| OTP_CTRL.DAI.FSM.SPARSE              | The direct access interface FSM is sparsely encoded.                                                     |
+| OTP_CTRL.KDI.FSM.SPARSE              | The key derivation interface FSM is sparsely encoded.                                                    |
+| OTP_CTRL.LCI.FSM.SPARSE              | The life cycle interface FSM is sparsely encoded.                                                        |
+| OTP_CTRL.PART.FSM.SPARSE             | The partition FSMs are sparsely encoded.                                                                 |
+| OTP_CTRL.SCRMBL.FSM.SPARSE           | The scramble datapath FSM is sparsely encoded.                                                           |
+| OTP_CTRL.TIMER.FSM.SPARSE            | The background check timer FSM is sparsely encoded.                                                      |
+| OTP_CTRL.DAI.CTR.REDUN               | The direct access interface address counter employs a cross-counter implementation.                      |
+| OTP_CTRL.KDI_SEED.CTR.REDUN          | The key derivation interface counter employs a cross-counter implementation.                             |
+| OTP_CTRL.KDI_ENTROPY.CTR.REDUN       | The key derivation entropy counter employs a cross-counter implementation.                               |
+| OTP_CTRL.LCI.CTR.REDUN               | The life cycle interface address counter employs a cross-counter implementation.                         |
+| OTP_CTRL.PART.CTR.REDUN              | The address counter of buffered partitions employs a cross-counter implementation.                       |
+| OTP_CTRL.SCRMBL.CTR.REDUN            | The srambling datapath counter employs a cross-counter implementation.                                   |
+| OTP_CTRL.TIMER_INTEG.CTR.REDUN       | The background integrity check timer employs a duplicated counter implementation.                        |
+| OTP_CTRL.TIMER_CNSTY.CTR.REDUN       | The background consistency check timer employs a duplicated counter implementation.                      |
+| OTP_CTRL.TIMER.LFSR.REDUN            | The background check LFSR is duplicated.                                                                 |
+| OTP_CTRL.DAI.FSM.LOCAL_ESC           | The direct access interface FSM is moved into an invalid state upon local escalation.                    |
+| OTP_CTRL.LCI.FSM.LOCAL_ESC           | The life cycle interface FSM is moved into an invalid state upon local escalation.                       |
+| OTP_CTRL.KDI.FSM.LOCAL_ESC           | The key derivation interface FSM is moved into an invalid state upon local escalation.                   |
+| OTP_CTRL.PART.FSM.LOCAL_ESC          | The partition FSMs are moved into an invalid state upon local escalation.                                |
+| OTP_CTRL.SCRMBL.FSM.LOCAL_ESC        | The scramble datapath FSM is moved into an invalid state upon local escalation.                          |
+| OTP_CTRL.TIMER.FSM.LOCAL_ESC         | The background check timer FSM is moved into an invalid state upon local escalation.                     |
+| OTP_CTRL.DAI.FSM.GLOBAL_ESC          | The direct access interface FSM is moved into an invalid state upon global escalation via life cycle.    |
+| OTP_CTRL.LCI.FSM.GLOBAL_ESC          | The life cycle interface FSM is moved into an invalid state upon global escalation via life cycle.       |
+| OTP_CTRL.KDI.FSM.GLOBAL_ESC          | The key derivation interface FSM is moved into an invalid state upon global escalation via life cycle.   |
+| OTP_CTRL.PART.FSM.GLOBAL_ESC         | The partition FSMs are moved into an invalid state upon global escalation via life cycle.                |
+| OTP_CTRL.SCRMBL.FSM.GLOBAL_ESC       | The scramble datapath FSM is moved into an invalid state upon global escalation via life cycle.          |
+| OTP_CTRL.TIMER.FSM.GLOBAL_ESC        | The background check timer FSM is moved into an invalid state upon global escalation via life cycle.     |
+| OTP_CTRL.PART.DATA_REG.INTEGRITY     | All partition buffer registers are protected with ECC on 64bit blocks.                                   |
+| OTP_CTRL.PART.DATA_REG.BKGN_CHK      | The digest of buffered partitions is recomputed and checked at pseudorandom intervals in the background. |
+| OTP_CTRL.PART.MEM.REGREN             | Unbuffered ('software') partitions can be read-locked via a CSR until the next system reset.             |
+| OTP_CTRL.PART.MEM.SW_UNREADABLE      | Secret buffered partitions become unreadable to software once they are locked via the digest.            |
+| OTP_CTRL.PART.MEM.SW_UNWRITABLE      | All partitions become unwritable by software once they are locked via the digest.                        |
+| OTP_CTRL.LC_PART.MEM.SW_NOACCESS     | The life cycle partition is not directly readable nor writable via software.                             |
+| OTP_CTRL.ACCESS.CTRL.MUBI            | The access control signals going from the partitions to the DAI are MUBI encoded.                        |
+| OTP_CTRL.TOKEN_VALID.CTRL.MUBI       | The token valid signals going to the life cycle controller are MUBI encoded.                             |
+| OTP_CTRL.LC_CTRL.INTERSIG.MUBI       | The life cycle control signals are multibit encoded.                                                     |
+| OTP_CTRL.DIRECT_ACCESS.CONFIG.REGWEN | The direct access CSRs are REGWEN protected.                                                             |
+| OTP_CTRL.CHECK_TRIGGER.CONFIG.REGWEN | The check trigger CSR is REGWEN protected.                                                               |
+| OTP_CTRL.CHECK.CONFIG.REGWEN         | The check CSR is REGWEN protected.                                                                       |
 
 
 <!-- END CMDGEN -->
@@ -218,7 +201,7 @@ The request must remain asserted until the life cycle controller has responded.
 An error is fatal and indicates that the OTP programming operation has failed.
 
 Note that the new state must not clear any bits that have already been programmed to OTP - i.e., the new state must be incrementally programmable on top of the previous state.
-There are hence some implications on the life cycle encoding due to the ECC employed, see [life cycle state encoding](../../../../ip/lc_ctrl/README.md#life-cycle-manufacturing-state-encodings) for details.
+There are hence some implications on the life cycle encoding due to the ECC employed, see [life cycle state encoding](../../../../ip/lc_ctrl/doc/theory_of_operation.md#life-cycle-manufacturing-state-encodings) for details.
 
 Note that the behavior of the `lc_otp_program_i.otp_test_ctrl` signal is vendor-specific, and hence the signal is set to `x` in the timing diagram above.
 The purpose of this signal is to control vendor-specific test mechanisms, and its value will only be forwarded to the OTP macro in RAW, TEST_* and RMA states.

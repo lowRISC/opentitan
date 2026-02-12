@@ -28,7 +28,7 @@
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_pinmux",
-  version:            "1.1.0",
+  version:            "1.1.1",
   life_stage:         "L1",
   design_stage:       "D3",
   verification_stage: "V2S",
@@ -37,7 +37,9 @@
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
     {clock: "clk_aon_i", reset: "rst_aon_ni"},
+  % if enable_strap_sampling:
     {reset: "rst_sys_ni"}
+  % endif
   ]
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
@@ -67,6 +69,16 @@
   inter_signal_list: [
   % if enable_strap_sampling:
     // Life cycle inputs
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_hw_debug_clr"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg",
+      desc:    '''
+               Debug clear signal coming from life cycle controller, used for HW strap qualification.
+               '''
+    }
     { struct:  "lc_tx"
       type:    "uni"
       name:    "lc_hw_debug_en"
@@ -412,6 +424,9 @@
   % if enable_strap_sampling:
     { name: "LC_DFT_EN.INTERSIG.MUBI",
       desc: "The life cycle DFT enable signal is multibit encoded."
+    }
+    { name: "LC_HW_DEBUG_CLR.INTERSIG.MUBI",
+      desc: "The life cycle hardware debug clear signal is multibit encoded."
     }
     { name: "LC_HW_DEBUG_EN.INTERSIG.MUBI",
       desc: "The life cycle hardware debug enable signal is multibit encoded."

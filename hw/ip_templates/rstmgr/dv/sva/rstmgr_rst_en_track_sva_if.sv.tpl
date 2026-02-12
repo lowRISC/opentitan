@@ -21,8 +21,7 @@ interface rstmgr_rst_en_track_sva_if (
 
 % for rst in output_rsts:
 <%
-  rst_name = Name.from_snake_case(rst['name'])
-  rst_camel_name = rst_name.as_camel_case()
+  rst_camel_name = Name.to_camel_case(rst['name'])
 %>\
   % for domain in rst['domains']:
     % if rst['shadowed']:

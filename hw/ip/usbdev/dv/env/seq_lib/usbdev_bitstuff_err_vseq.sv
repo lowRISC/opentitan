@@ -18,7 +18,7 @@ class usbdev_bitstuff_err_vseq extends usbdev_base_vseq;
       // Avoid the generation of randomized DATA packets because even if we control the content
       // after the bit stuffing violation we still cannot control the CRC16.
       //
-      // Additionally, the DUT presently does not detect a bit suffing violation that occurs
+      // Additionally, the DUT presently does not detect a bit stuffing violation that occurs
       // immediately before the EOP (6 '1's should be followed by a stuffed '0' before EOP),
       // so ensure that the endpoint has its MSB clear.
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(ep_default, ep_default < 8;)

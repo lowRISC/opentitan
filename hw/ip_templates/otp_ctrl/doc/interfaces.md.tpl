@@ -13,7 +13,7 @@ Parameter                   | Default (Max) | Top Earlgrey | Description
 `RndCnstKey`                | (see RTL)     | (see RTL)    | Random scrambling keys for secret partitions, to be used in the [scrambling datapath](#scrambling-datapath).
 `RndCnstDigestConst`        | (see RTL)     | (see RTL)    | Random digest finalization constants, to be used in the [scrambling datapath](#scrambling-datapath).
 `RndCnstDigestIV`           | (see RTL)     | (see RTL)    | Random digest initialization vectors, to be used in the [scrambling datapath](#scrambling-datapath).
-`RndCnstRawUnlockToken`     | (see RTL)     | (see RTL)    | Global RAW unlock token to be used for the first life cycle transition. See also [conditional life cycle transitions](../../../../ip/lc_ctrl/README.md#conditional-transitions).
+`RndCnstRawUnlockToken`     | (see RTL)     | (see RTL)    | Global RAW unlock token to be used for the first life cycle transition. See also [conditional life cycle transitions](../../../../ip/lc_ctrl/doc/theory_of_operation.md#conditional-transitions).
 
 <!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/top_${topname}/ip_autogen/otp_ctrl/data/otp_ctrl.hjson -->
 <!-- END CMDGEN -->
@@ -107,7 +107,7 @@ The request must remain asserted until the life cycle controller has responded.
 An error is fatal and indicates that the OTP programming operation has failed.
 
 Note that the new state must not clear any bits that have already been programmed to OTP - i.e., the new state must be incrementally programmable on top of the previous state.
-There are hence some implications on the life cycle encoding due to the ECC employed, see [life cycle state encoding](../../../../ip/lc_ctrl/README.md#life-cycle-manufacturing-state-encodings) for details.
+There are hence some implications on the life cycle encoding due to the ECC employed, see [life cycle state encoding](../../../../ip/lc_ctrl/doc/theory_of_operation.md#life-cycle-manufacturing-state-encodings) for details.
 
 Note that the behavior of the `lc_otp_program_i.otp_test_ctrl` signal is vendor-specific, and hence the signal is set to `x` in the timing diagram above.
 The purpose of this signal is to control vendor-specific test mechanisms, and its value will only be forwarded to the OTP macro in RAW, TEST_* and RMA states.

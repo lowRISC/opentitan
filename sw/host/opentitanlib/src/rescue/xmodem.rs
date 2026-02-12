@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::io::uart::Uart;
-use anyhow::Result;
 use std::io::{Read, Write};
+
+use anyhow::Result;
 use thiserror::Error;
+
+use crate::io::console::{ConsoleDevice, ConsoleExt};
 
 #[derive(Debug, Error)]
 pub enum XmodemError {
@@ -70,19 +72,19 @@ impl Xmodem {
         crc
     }
 
-    pub fn send(&self, uart: &dyn Uart, data: impl Read) -> Result<()> {
-        self.send_start(uart)?;
-        self.send_data(uart, data)?;
-        self.send_finish(uart)?;
+    pub fn send(&self, console: &dyn ConsoleDevice, data: impl Read) -> Result<()> {
+        self.send_start(console)?;
+        self.send_data(console, data)?;
+        self.send_finish(console)?;
         Ok(())
     }
 
-    fn send_start(&self, uart: &dyn Uart) -> Result<()> {
+    fn send_start(&self, console: &dyn ConsoleDevice) -> Result<()> {
         let mut ch = 0u8;
         let mut cancels = 0usize;
         // Wait for the XMODEM CRC start sequence.
         loop {
-            uart.read(std::slice::from_mut(&mut ch))?;
+            console.read(std::slice::from_mut(&mut ch))?;
             match ch {
                 Self::CRC => {
                     return Ok(());
@@ -106,7 +108,7 @@ impl Xmodem {
         }
     }
 
-    fn send_data(&self, uart: &dyn Uart, mut data: impl Read) -> Result<()> {
+    fn send_data(&self, console: &dyn ConsoleDevice, mut data: impl Read) -> Result<()> {
         let mut block = 0usize;
         let mut errors = 0usize;
         loop {
@@ -130,9 +132,9 @@ impl Xmodem {
 
             let mut cancels = 0usize;
             loop {
-                uart.write(&buf)?;
+                console.write(&buf)?;
                 let mut ch = 0u8;
-                uart.read(std::slice::from_mut(&mut ch))?;
+                console.read(std::slice::from_mut(&mut ch))?;
                 match ch {
                     Self::ACK => break,
                     Self::NAK => {
@@ -158,37 +160,38 @@ impl Xmodem {
         Ok(())
     }
 
-    fn send_finish(&self, uart: &dyn Uart) -> Result<()> {
-        uart.write(&[Self::EOF])?;
+    fn send_finish(&self, console: &dyn ConsoleDevice) -> Result<()> {
+        console.write(&[Self::EOF])?;
         let mut ch = 0u8;
-        uart.read(std::slice::from_mut(&mut ch))?;
+        console.read(std::slice::from_mut(&mut ch))?;
         if ch != Self::ACK {
             log::info!("Expected ACK. Got {ch:#x}.");
         }
         Ok(())
     }
 
-    pub fn receive(&self, uart: &dyn Uart, data: &mut impl Write) -> Result<()> {
+    pub fn receive(&self, console: &dyn ConsoleDevice, data: &mut impl Write) -> Result<()> {
         // Send the byte indicating the protocol we want (Xmodem-CRC).
-        uart.write(&[Self::CRC])?;
+        console.write(&[Self::CRC])?;
 
         let mut block = 1u8;
         let mut errors = 0usize;
         loop {
             // The first byte of the packet is the packet type which indicates the block size.
             let mut byte = 0u8;
-            uart.read(std::slice::from_mut(&mut byte))?;
+            console.read(std::slice::from_mut(&mut byte))?;
             let block_len = match byte {
                 Self::SOH => 128,
                 Self::STX => 1024,
                 Self::EOF => {
                     // End of file.  Send an ACK.
-                    uart.write(&[Self::ACK])?;
+                    console.write(&[Self::ACK])?;
                     break;
                 }
                 _ => {
                     return Err(XmodemError::UnsupportedMode(format!(
-                        "bad start of packet: {byte:?}"
+                        "bad start of packet: {byte:02x} ({})",
+                        byte as char
                     ))
                     .into());
                 }
@@ -197,37 +200,37 @@ impl Xmodem {
             // The next two bytes are the block number and its complement.
             let mut bnum = 0u8;
             let mut bcom = 0u8;
-            uart.read(std::slice::from_mut(&mut bnum))?;
-            uart.read(std::slice::from_mut(&mut bcom))?;
+            console.read(std::slice::from_mut(&mut bnum))?;
+            console.read(std::slice::from_mut(&mut bcom))?;
             let cancel = block != bnum || bnum != 255 - bcom;
 
             // The next `block_len` bytes are the packet itself.
             let mut buffer = vec![0; block_len];
             let mut total = 0;
             while total < block_len {
-                let n = uart.read(&mut buffer[total..])?;
+                let n = console.read(&mut buffer[total..])?;
                 total += n;
             }
 
             // The final two bytes are the CRC16.
             let mut crc1 = 0u8;
             let mut crc2 = 0u8;
-            uart.read(std::slice::from_mut(&mut crc1))?;
-            uart.read(std::slice::from_mut(&mut crc2))?;
+            console.read(std::slice::from_mut(&mut crc1))?;
+            console.read(std::slice::from_mut(&mut crc2))?;
             let crc = u16::from_be_bytes([crc1, crc2]);
 
             // If we should cancel, do it now.
             if cancel {
-                uart.write(&[Self::CAN, Self::CAN])?;
+                console.write(&[Self::CAN, Self::CAN])?;
                 return Err(XmodemError::Cancelled.into());
             }
             if Self::crc16(&buffer) == crc {
                 // CRC was good; send an ACK and keep the data.
-                uart.write(&[Self::ACK])?;
+                console.write(&[Self::ACK])?;
                 data.write_all(&buffer)?;
                 block = block.wrapping_add(1);
             } else {
-                uart.write(&[Self::NAK])?;
+                console.write(&[Self::NAK])?;
                 errors += 1;
             }
             if errors >= self.max_errors {
@@ -244,7 +247,7 @@ impl Xmodem {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::util::testing::{ChildUart, TransferState};
+    use crate::util::testing::{ChildConsole, TransferState};
     use crate::util::tmpfilename;
 
     #[rustfmt::skip]
@@ -278,7 +281,7 @@ November 19, 1863
     #[test]
     fn test_xmodem_send() -> Result<()> {
         let filename = tmpfilename("test_xmodem_send");
-        let child = ChildUart::spawn(&["rx", "--with-crc", &filename])?;
+        let child = ChildConsole::spawn(&["rx", "--with-crc", &filename])?;
         let xmodem = Xmodem::new();
         let gettysburg = GETTYSBURG.as_bytes();
         xmodem.send(&child, gettysburg)?;
@@ -294,7 +297,7 @@ November 19, 1863
     #[test]
     fn test_xmodem_send_with_errors() -> Result<()> {
         let filename = tmpfilename("test_xmodem_send_with_errors");
-        let child = ChildUart::spawn_corrupt(
+        let child = ChildConsole::spawn_corrupt(
             &["rx", "--with-crc", &filename],
             TransferState::default(),
             TransferState::new(&[3, 136]),
@@ -314,11 +317,11 @@ November 19, 1863
     #[test]
     fn test_xmodem_checksum_mode() -> Result<()> {
         let filename = tmpfilename("test_xmodem_checksum_mode");
-        let child = ChildUart::spawn(&["rx", &filename])?;
+        let child = ChildConsole::spawn(&["rx", &filename])?;
         let xmodem = Xmodem::new();
         let gettysburg = GETTYSBURG.as_bytes();
         let result = xmodem.send(&child, gettysburg);
-        assert_eq!(child.wait()?.success(), false);
+        assert!(!child.wait()?.success());
         assert!(result.is_err());
         let err = result.unwrap_err().downcast::<XmodemError>().unwrap();
         assert_eq!(err.to_string(), "Unsupported mode: standard checksums");
@@ -330,7 +333,7 @@ November 19, 1863
         let filename = tmpfilename("test_xmodem_recv");
         let gettysburg = GETTYSBURG.as_bytes();
         std::fs::write(&filename, gettysburg)?;
-        let child = ChildUart::spawn(&["sx", &filename])?;
+        let child = ChildConsole::spawn(&["sx", &filename])?;
         let xmodem = Xmodem::new();
         let mut result = Vec::new();
         xmodem.receive(&child, &mut result)?;
@@ -347,7 +350,7 @@ November 19, 1863
         let filename = tmpfilename("test_xmodem1k_recv");
         let gettysburg = GETTYSBURG.as_bytes();
         std::fs::write(&filename, gettysburg)?;
-        let child = ChildUart::spawn(&["sx", "--1k", &filename])?;
+        let child = ChildConsole::spawn(&["sx", "--1k", &filename])?;
         let xmodem = Xmodem::new();
         let mut result = Vec::new();
         xmodem.receive(&child, &mut result)?;
@@ -366,7 +369,7 @@ November 19, 1863
         let filename = tmpfilename("test_xmodem_recv_with_errors");
         let gettysburg = GETTYSBURG.as_bytes();
         std::fs::write(&filename, gettysburg)?;
-        let child = ChildUart::spawn_corrupt(
+        let child = ChildConsole::spawn_corrupt(
             &["sx", &filename],
             TransferState::new(&[3, 136]),
             TransferState::default(),
@@ -388,7 +391,7 @@ November 19, 1863
         let filename = tmpfilename("test_xmodem_recv_with_cancel");
         let gettysburg = GETTYSBURG.as_bytes();
         std::fs::write(&filename, gettysburg)?;
-        let child = ChildUart::spawn_corrupt(
+        let child = ChildConsole::spawn_corrupt(
             &["sx", &filename],
             TransferState::new(&[1, 134]),
             TransferState::default(),

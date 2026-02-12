@@ -20,10 +20,10 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
+#include "hw/top/spi_host_regs.h"
+#include "hw/top/uart_regs.h"
+#include "hw/top/usbdev_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "spi_host_regs.h"
-#include "uart_regs.h"
-#include "usbdev_regs.h"
 
 static const dt_pwrmgr_t kPwrmgrDt = 0;
 static_assert(kDtPwrmgrCount == 1, "this test expects a pwrmgr");
@@ -97,9 +97,12 @@ static void test_gateable_clocks_off(const dif_clkmgr_t *clkmgr,
   CHECK_DIF_OK(
       dif_clkmgr_gateable_clock_set_enabled(clkmgr, clock, kDifToggleEnabled));
   // Enable watchdog bite reset.
-  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(pwrmgr, kDifPwrmgrReqTypeReset,
-                                              kDifPwrmgrResetRequestSourceTwo,
-                                              kDifToggleEnabled));
+  dif_pwrmgr_request_sources_t reset_sources;
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      pwrmgr, kDifPwrmgrReqTypeReset, dt_aon_timer_instance_id(kDtAonTimerAon),
+      kDtAonTimerResetReqAonTimer, &reset_sources));
+  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
+      pwrmgr, kDifPwrmgrReqTypeReset, reset_sources, kDifToggleEnabled));
   LOG_INFO("Testing peripheral clock %d, with unit %s", clock,
            peri_context[clock].peripheral_name);
 

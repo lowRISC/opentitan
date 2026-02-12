@@ -266,7 +266,7 @@ To check whether a command was successful, wait for [`INTR_STATE.CS_CMD_REQ_DONE
 | 0x1     | INVALID_ACMD        | Request completed with an invalid application command error. This error indicates that the issued application command doesn't represent a valid operation.                                                                                                                 |
 | 0x2     | INVALID_GEN_CMD     | Request completed with an invalid counter DRBG generation command error. This error indicates that CSRNG entropy was generated for a command that is not a Generate command. In this case the entropy should not be considered as valid.                                   |
 | 0x3     | INVALID_CMD_SEQ     | This error indicates that the last command was issued out of sequence. This happens when a command other than Instantiate was issued without sending an Instantiate command first. This can also happen when an Uninstantiate command is sent without instantiating first. |
-| 0x4     | RESEED_CNT_EXCEEDED | This error indicates that the number of generate requests between reseeds exceeded the maximum number allowed (see !!RESEED_INTERVAL). This happens only for Generate commands.                                                                                            |
+| 0x4     | RESEED_CNT_EXCEEDED | This error indicates that the number of generate requests between reseeds exceeded the maximum number allowed (see [`RESEED_INTERVAL`](#reseed_interval)). This happens only for Generate commands.                                                                        |
 
 Other values are reserved.
 
@@ -390,8 +390,8 @@ Internal state number register
 Setting this field will set the number for which internal state can be
 selected for a read access. Up to 16 internal state values can be chosen
 from this register. The actual number of valid internal state fields
-is set by parameter NHwApps plus 1 software app. For those selections that point
-to reserved locations (greater than NHwApps plus 1), the returned value
+is set by parameter NumHwApps plus 1 software app. For those selections that point
+to reserved locations (greater than NumHwApps plus 1), the returned value
 will be zero. Writing this register will also reset the internal read
 pointer for the [`INT_STATE_VAL`](#int_state_val) register.
 Note: This register should be read back after being written to ensure
@@ -555,45 +555,30 @@ Writing a zero resets this status bit.
 Hardware detection of error conditions status register
 - Offset: `0x54`
 - Reset default: `0x0`
-- Reset mask: `0x77f0ffff`
+- Reset mask: `0x76700003`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "SFIFO_CMD_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_GENBITS_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_CMDREQ_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_RCSTAGE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_KEYVRC_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_UPDREQ_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_BENCREQ_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_BENCACK_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_PDATA_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_FINAL_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_GBENCACK_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_GRCSTAGE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_GGENREQ_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_GADSTAGE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_GGENBITS_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_BLKENC_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 4}, {"name": "CMD_STAGE_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "MAIN_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "DRBG_GEN_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "DRBG_UPDBE_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "DRBG_UPDOB_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "AES_CIPHER_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_GEN_CNT_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 1}, {"name": "FIFO_WRITE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "FIFO_READ_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "FIFO_STATE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 1}], "config": {"lanes": 1, "fontsize": 10, "vspace": 200}}
+{"reg": [{"name": "SFIFO_CMD_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_GENBITS_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 18}, {"name": "CMD_STAGE_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "MAIN_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CTR_DRBG_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 2}, {"name": "AES_CIPHER_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CTR_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 1}, {"name": "FIFO_WRITE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "FIFO_READ_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "FIFO_STATE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 1}], "config": {"lanes": 1, "fontsize": 10, "vspace": 190}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                                |
-|:------:|:------:|:-------:|:----------------------------------------------------|
-|   31   |        |         | Reserved                                            |
-|   30   |   ro   |   0x0   | [FIFO_STATE_ERR](#err_code--fifo_state_err)         |
-|   29   |   ro   |   0x0   | [FIFO_READ_ERR](#err_code--fifo_read_err)           |
-|   28   |   ro   |   0x0   | [FIFO_WRITE_ERR](#err_code--fifo_write_err)         |
-|   27   |        |         | Reserved                                            |
-|   26   |   ro   |   0x0   | [CMD_GEN_CNT_ERR](#err_code--cmd_gen_cnt_err)       |
-|   25   |   ro   |   0x0   | [AES_CIPHER_SM_ERR](#err_code--aes_cipher_sm_err)   |
-|   24   |   ro   |   0x0   | [DRBG_UPDOB_SM_ERR](#err_code--drbg_updob_sm_err)   |
-|   23   |   ro   |   0x0   | [DRBG_UPDBE_SM_ERR](#err_code--drbg_updbe_sm_err)   |
-|   22   |   ro   |   0x0   | [DRBG_GEN_SM_ERR](#err_code--drbg_gen_sm_err)       |
-|   21   |   ro   |   0x0   | [MAIN_SM_ERR](#err_code--main_sm_err)               |
-|   20   |   ro   |   0x0   | [CMD_STAGE_SM_ERR](#err_code--cmd_stage_sm_err)     |
-| 19:16  |        |         | Reserved                                            |
-|   15   |   ro   |   0x0   | [SFIFO_BLKENC_ERR](#err_code--sfifo_blkenc_err)     |
-|   14   |   ro   |   0x0   | [SFIFO_GGENBITS_ERR](#err_code--sfifo_ggenbits_err) |
-|   13   |   ro   |   0x0   | [SFIFO_GADSTAGE_ERR](#err_code--sfifo_gadstage_err) |
-|   12   |   ro   |   0x0   | [SFIFO_GGENREQ_ERR](#err_code--sfifo_ggenreq_err)   |
-|   11   |   ro   |   0x0   | [SFIFO_GRCSTAGE_ERR](#err_code--sfifo_grcstage_err) |
-|   10   |   ro   |   0x0   | [SFIFO_GBENCACK_ERR](#err_code--sfifo_gbencack_err) |
-|   9    |   ro   |   0x0   | [SFIFO_FINAL_ERR](#err_code--sfifo_final_err)       |
-|   8    |   ro   |   0x0   | [SFIFO_PDATA_ERR](#err_code--sfifo_pdata_err)       |
-|   7    |   ro   |   0x0   | [SFIFO_BENCACK_ERR](#err_code--sfifo_bencack_err)   |
-|   6    |   ro   |   0x0   | [SFIFO_BENCREQ_ERR](#err_code--sfifo_bencreq_err)   |
-|   5    |   ro   |   0x0   | [SFIFO_UPDREQ_ERR](#err_code--sfifo_updreq_err)     |
-|   4    |   ro   |   0x0   | [SFIFO_KEYVRC_ERR](#err_code--sfifo_keyvrc_err)     |
-|   3    |   ro   |   0x0   | [SFIFO_RCSTAGE_ERR](#err_code--sfifo_rcstage_err)   |
-|   2    |   ro   |   0x0   | [SFIFO_CMDREQ_ERR](#err_code--sfifo_cmdreq_err)     |
-|   1    |   ro   |   0x0   | [SFIFO_GENBITS_ERR](#err_code--sfifo_genbits_err)   |
-|   0    |   ro   |   0x0   | [SFIFO_CMD_ERR](#err_code--sfifo_cmd_err)           |
+|  Bits  |  Type  |  Reset  | Name                                              |
+|:------:|:------:|:-------:|:--------------------------------------------------|
+|   31   |        |         | Reserved                                          |
+|   30   |   ro   |   0x0   | [FIFO_STATE_ERR](#err_code--fifo_state_err)       |
+|   29   |   ro   |   0x0   | [FIFO_READ_ERR](#err_code--fifo_read_err)         |
+|   28   |   ro   |   0x0   | [FIFO_WRITE_ERR](#err_code--fifo_write_err)       |
+|   27   |        |         | Reserved                                          |
+|   26   |   ro   |   0x0   | [CTR_ERR](#err_code--ctr_err)                     |
+|   25   |   ro   |   0x0   | [AES_CIPHER_SM_ERR](#err_code--aes_cipher_sm_err) |
+| 24:23  |        |         | Reserved                                          |
+|   22   |   ro   |   0x0   | [CTR_DRBG_SM_ERR](#err_code--ctr_drbg_sm_err)     |
+|   21   |   ro   |   0x0   | [MAIN_SM_ERR](#err_code--main_sm_err)             |
+|   20   |   ro   |   0x0   | [CMD_STAGE_SM_ERR](#err_code--cmd_stage_sm_err)   |
+|  19:2  |        |         | Reserved                                          |
+|   1    |   ro   |   0x0   | [SFIFO_GENBITS_ERR](#err_code--sfifo_genbits_err) |
+|   0    |   ro   |   0x0   | [SFIFO_CMD_ERR](#err_code--sfifo_cmd_err)         |
 
 ### ERR_CODE . FIFO_STATE_ERR
 This bit will be set to one when any of the source bits (bits 0 through 15 of this
@@ -604,43 +589,29 @@ This bit will stay set until the next reset.
 ### ERR_CODE . FIFO_READ_ERR
 This bit will be set to one when any of the source bits (bits 0 through 15 of this
 this register) are asserted as a result of an error pulse generated from
-any empty FIFO that has recieved a read pulse.
+any empty FIFO that has received a read pulse.
 This bit will stay set until the next reset.
 
 ### ERR_CODE . FIFO_WRITE_ERR
 This bit will be set to one when any of the source bits (bits 0 through 15 of this
 this register) are asserted as a result of an error pulse generated from
-any full FIFO that has been recieved a write pulse.
+any full FIFO that has been received a write pulse.
 This bit will stay set until the next reset.
 
-### ERR_CODE . CMD_GEN_CNT_ERR
+### ERR_CODE . CTR_ERR
 This bit will be set to one when a mismatch in any of the hardened counters
 has been detected.
-This error will signal a fatal alert, and also
-an interrupt if enabled.
+This error will signal a fatal alert, and also an interrupt if enabled.
 This bit will stay set until the next reset.
 
 ### ERR_CODE . AES_CIPHER_SM_ERR
 This bit will be set to one when an AES fatal error has been detected.
-This error will signal a fatal alert, and also
-an interrupt if enabled.
+This error will signal a fatal alert, and also an interrupt if enabled.
 This bit will stay set until the next reset.
 
-### ERR_CODE . DRBG_UPDOB_SM_ERR
+### ERR_CODE . CTR_DRBG_SM_ERR
 This bit will be set to one when an illegal state has been detected for the
-ctr_drbg update out block state machine. This error will signal a fatal alert, and also
-an interrupt if enabled.
-This bit will stay set until the next reset.
-
-### ERR_CODE . DRBG_UPDBE_SM_ERR
-This bit will be set to one when an illegal state has been detected for the
-ctr_drbg update block encode state machine. This error will signal a fatal alert, and also
-an interrupt if enabled.
-This bit will stay set until the next reset.
-
-### ERR_CODE . DRBG_GEN_SM_ERR
-This bit will be set to one when an illegal state has been detected for the
-ctr_drbg gen state machine. This error will signal a fatal alert, and also
+ctr_drbg state machine. This error will signal a fatal alert, and also
 an interrupt if enabled.
 This bit will stay set until the next reset.
 
@@ -654,90 +625,6 @@ This bit will stay set until the next reset.
 This bit will be set to one when an illegal state has been detected for the
 command stage state machine. This error will signal a fatal alert, and also
 an interrupt if enabled.
-This bit will stay set until the next reset.
-
-### ERR_CODE . SFIFO_BLKENC_ERR
-This bit will be set to one when an error has been detected for the
-blkenc FIFO. The type of error is reflected in the type status
-bits (bits 28 through 30 of this register).
-This bit will stay set until the next reset.
-
-### ERR_CODE . SFIFO_GGENBITS_ERR
-This bit will be set to one when an error has been detected for the
-ggenbits FIFO. The type of error is reflected in the type status
-bits (bits 28 through 30 of this register).
-This bit will stay set until the next reset.
-
-### ERR_CODE . SFIFO_GADSTAGE_ERR
-This bit will be set to one when an error has been detected for the
-gadstage FIFO. The type of error is reflected in the type status
-bits (bits 28 through 30 of this register).
-This bit will stay set until the next reset.
-
-### ERR_CODE . SFIFO_GGENREQ_ERR
-This bit will be set to one when an error has been detected for the
-ggenreq FIFO. The type of error is reflected in the type status
-bits (bits 28 through 30 of this register).
-This bit will stay set until the next reset.
-
-### ERR_CODE . SFIFO_GRCSTAGE_ERR
-This bit will be set to one when an error has been detected for the
-grcstage FIFO. The type of error is reflected in the type status
-bits (bits 28 through 30 of this register).
-This bit will stay set until the next reset.
-
-### ERR_CODE . SFIFO_GBENCACK_ERR
-This bit will be set to one when an error has been detected for the
-gbencack FIFO. The type of error is reflected in the type status
-bits (bits 28 through 30 of this register).
-This bit will stay set until the next reset.
-
-### ERR_CODE . SFIFO_FINAL_ERR
-This bit will be set to one when an error has been detected for the
-final FIFO. The type of error is reflected in the type status
-bits (bits 28 through 30 of this register).
-This bit will stay set until the next reset.
-
-### ERR_CODE . SFIFO_PDATA_ERR
-This bit will be set to one when an error has been detected for the
-pdata FIFO. The type of error is reflected in the type status
-bits (bits 28 through 30 of this register).
-This bit will stay set until the next reset.
-
-### ERR_CODE . SFIFO_BENCACK_ERR
-This bit will be set to one when an error has been detected for the
-bencack FIFO. The type of error is reflected in the type status
-bits (bits 28 through 30 of this register).
-This bit will stay set until the next reset.
-
-### ERR_CODE . SFIFO_BENCREQ_ERR
-This bit will be set to one when an error has been detected for the
-bencreq FIFO. The type of error is reflected in the type status
-bits (bits 28 through 30 of this register).
-This bit will stay set until the next reset.
-
-### ERR_CODE . SFIFO_UPDREQ_ERR
-This bit will be set to one when an error has been detected for the
-updreq FIFO. The type of error is reflected in the type status
-bits (bits 28 through 30 of this register).
-This bit will stay set until the next reset.
-
-### ERR_CODE . SFIFO_KEYVRC_ERR
-This bit will be set to one when an error has been detected for the
-keyvrc FIFO. The type of error is reflected in the type status
-bits (bits 28 through 30 of this register).
-This bit will stay set until the next reset.
-
-### ERR_CODE . SFIFO_RCSTAGE_ERR
-This bit will be set to one when an error has been detected for the
-rcstage FIFO. The type of error is reflected in the type status
-bits (bits 28 through 30 of this register).
-This bit will stay set until the next reset.
-
-### ERR_CODE . SFIFO_CMDREQ_ERR
-This bit will be set to one when an error has been detected for the
-cmdreq FIFO. The type of error is reflected in the type status
-bits (bits 28 through 30 of this register).
 This bit will stay set until the next reset.
 
 ### ERR_CODE . SFIFO_GENBITS_ERR
@@ -781,19 +668,19 @@ an interrupt or an alert.
 ## MAIN_SM_STATE
 Main state machine state debug register
 - Offset: `0x5c`
-- Reset default: `0x4e`
-- Reset mask: `0xff`
+- Reset default: `0x37`
+- Reset mask: `0x3f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "MAIN_SM_STATE", "bits": 8, "attr": ["ro"], "rotate": 0}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "MAIN_SM_STATE", "bits": 6, "attr": ["ro"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name          | Description                                                                                                        |
 |:------:|:------:|:-------:|:--------------|:-------------------------------------------------------------------------------------------------------------------|
-|  31:8  |        |         |               | Reserved                                                                                                           |
-|  7:0   |   ro   |  0x4e   | MAIN_SM_STATE | This is the state of the CSRNG main state machine. See the RTL file `csrng_main_sm` for the meaning of the values. |
+|  31:6  |        |         |               | Reserved                                                                                                           |
+|  5:0   |   ro   |  0x37   | MAIN_SM_STATE | This is the state of the CSRNG main state machine. See the RTL file `csrng_main_sm` for the meaning of the values. |
 
 
 <!-- END CMDGEN -->

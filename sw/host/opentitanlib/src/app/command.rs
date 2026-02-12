@@ -5,7 +5,6 @@
 use crate::app::TransportWrapper;
 use anyhow::Result;
 pub use opentitantool_derive::*;
-use serde_annotate::Annotate;
 use std::any::Any;
 
 /// The `CommandDispatch` trait should be implemented for all leaf structures
@@ -21,15 +20,5 @@ pub trait CommandDispatch {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>>;
-
-    /// For optimization.  Indicates whether this command expects to not run concurrently with
-    /// other manipulations of the backend debugger.  Only long-running commands such as `console`
-    /// will return `false` to indicate that to the contrary they expect other invocations of
-    /// `opentitantool` to run during their lifespan.  Returning `true` here will allow
-    /// opentitanlib the optimization of keeping USB handles open for the duration of the `run()`
-    /// call, and even across `run()` of multiple commands if `--exec` is used.
-    fn exclusive_use_of_transport(&self) -> bool {
-        true
-    }
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>>;
 }

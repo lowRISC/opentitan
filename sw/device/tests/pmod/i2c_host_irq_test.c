@@ -19,8 +19,8 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
+#include "hw/top/i2c_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "i2c_regs.h"  // Generated.
 
 static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__,
               "This test assumes the target platform is little endian.");
@@ -326,7 +326,9 @@ bool test_main(void) {
   CHECK_STATUS_OK(test_init());
 
   test_result = OK_STATUS();
-  CHECK_STATUS_OK(i2c_testutils_set_speed(&i2c, kDifI2cSpeedStandard));
+  CHECK_STATUS_OK(i2c_testutils_set_speed(&i2c, kDifI2cSpeedStandard,
+                                          /*sda_rise_nanos=*/400,
+                                          /*sda_fall_nanos=*/110));
   EXECUTE_TEST(test_result, nak_irq);
   EXECUTE_TEST(test_result, nak_irq_disabled);
   EXECUTE_TEST(test_result, cmd_complete_irq);

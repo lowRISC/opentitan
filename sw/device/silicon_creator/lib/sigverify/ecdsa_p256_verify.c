@@ -8,7 +8,7 @@
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 
-#include "otp_ctrl_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
 
 /*
  * Shares for producing the `kSigverifyEcdsaSuccess` value in
@@ -118,19 +118,34 @@ static rom_error_t sigverify_encoded_message_check(
   return kErrorSigverifyBadEcdsaSignature;
 }
 
-rom_error_t sigverify_ecdsa_p256_verify(const ecdsa_p256_signature_t *signature,
-                                        const ecdsa_p256_public_key_t *key,
-                                        const hmac_digest_t *act_digest,
+rom_error_t sigverify_ecdsa_p256_start(const ecdsa_p256_signature_t *signature,
+                                       const ecdsa_p256_public_key_t *key,
+                                       const hmac_digest_t *act_digest) {
+  return otbn_boot_sigverify_start(key, signature, act_digest);
+}
+
+rom_error_t sigverify_ecdsa_p256_finish(const ecdsa_p256_signature_t *signature,
                                         uint32_t *flash_exec) {
+  if (signature == NULL) {
+    return kErrorSigverifyEcdsaNotFound;
+  }
   ecdsa_p256_signature_t recovered_r;
-  rom_error_t error =
-      otbn_boot_sigverify(key, signature, act_digest, (uint32_t *)&recovered_r);
+  rom_error_t error = otbn_boot_sigverify_finish((uint32_t *)&recovered_r);
   if (launder32(error) != kErrorOk) {
     *flash_exec ^= UINT32_MAX;
     return error;
   }
   HARDENED_CHECK_EQ(error, kErrorOk);
   return sigverify_encoded_message_check(&recovered_r, signature, flash_exec);
+}
+
+rom_error_t sigverify_ecdsa_p256_verify(const ecdsa_p256_signature_t *signature,
+                                        const ecdsa_p256_public_key_t *key,
+                                        const hmac_digest_t *act_digest,
+                                        uint32_t *flash_exec) {
+  HARDENED_RETURN_IF_ERROR(
+      sigverify_ecdsa_p256_start(signature, key, act_digest));
+  return sigverify_ecdsa_p256_finish(signature, flash_exec);
 }
 
 // Extern declarations for the inline functions in the header.

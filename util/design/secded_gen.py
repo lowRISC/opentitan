@@ -12,15 +12,24 @@ Hsiao SECDED codes, refer to https://ieeexplore.ieee.org/document/8110065.g
 """
 
 import argparse
+from collections import defaultdict
 import functools
 import itertools
 import logging as log
 import math
 import random
+import sys
 import hjson
 import subprocess
 from typing import Any, Dict, List, Tuple
 from pathlib import Path
+
+from mako.template import Template
+
+# To enable importing util modules
+sys.path.append(str(Path(__file__).parents[1]))
+
+from basegen.lib import Name  # noqa : E402
 
 COPYRIGHT = """// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
@@ -140,6 +149,197 @@ def calc_bitmasks(k, m, codes, dec):
     return tuple(fanin_masks)
 
 
+type_enum_template = Template("""\
+  typedef enum int {
+% for type_name in type_names.values():
+<% sep = "" if loop.last else "," %>\
+    ${type_name}${sep}
+% endfor
+  } prim_secded_type_e;""")
+
+# The following two templates create SV constant functions to help
+# parameterization.
+
+synd_width_template = Template("""\
+  // This returns the syndrome width for the given width and secded type.
+  // Return 0 if the width is not supported.
+  function automatic int get_synd_width(prim_secded_type_e sd_type, int width);
+    unique case (sd_type)
+% for sy_type in synd_widths:
+      ${type_names[sy_type]}:
+        unique case (width)
+  % for width, synd in synd_widths[sy_type].items():
+          ${width}: return ${synd};
+  % endfor
+          default: return 0;
+        endcase
+% endfor
+      default: return 0;
+    endcase
+  endfunction : get_synd_width""")
+
+valid_width_template = Template("""\
+  // This returns 1 iff the width is supported for the given secded type.
+  function automatic bit is_width_valid(prim_secded_type_e sd_type, int width);
+    unique case (sd_type)
+% for sy_type in synd_widths:
+      ${type_names[sy_type]}:
+        unique case (width)
+  % for w in synd_widths[sy_type].keys():
+          ${w}: return 1'b1;
+  % endfor
+          default: return 1'b0;
+        endcase
+% endfor
+      default: return 1'b0;
+    endcase
+  endfunction : is_width_valid""")
+
+# These templates create a macro, and the style guide asks all lines to have
+# the same length and finish with a back-slash. They are generated with lines
+# of the same length, but the closing back-slash causes template trouble so
+# it is inserted once the macro is done.
+
+dec_instance_comment = """\
+// This macro instantiates a secded decoder for the given _TYPE and _WIDTH.
+// The instance will be named _INST, the data input connected to _ENC_DATA,
+// and the data output, syndrome, and error connected to _DATA, _SYND, and
+// _ERR respectively.
+"""
+
+dec_instance_template = Template("""\
+<%
+def_str = (
+"`define SECDED_INST_DEC(_TYPE, _WIDTH, _INST, _ENC_DATA, _DATA, _SYND, _ERR)"
+)
+target_len = len(def_str)
+%>\
+${def_str}
+  case (_TYPE)${" " * (target_len - len("  case (_TYPE)"))}
+% for sy_type in synd_widths:
+<%
+type_name = type_names[sy_type]
+type_block = f"prim_secded_pkg::{type_name}: begin : gen_dec_{sy_type}"
+%>\
+    ${type_block}${" " * (target_len - len(type_block) - 4)}
+      case (_WIDTH)${" "*(target_len - len("case (_WIDTH)") - 6)}
+  % for width in synd_widths[sy_type]:
+<%
+full_width = width + synd_widths[sy_type][width]
+mod_stem  = f"prim_secded{CODE_OPTIONS[sy_type]}_{full_width}_{width}"
+case_item = f"{width}: begin : gen_dec_{sy_type}_{width}"
+instance  = f"{mod_stem}_dec _INST("
+data_i    =  ".data_i(_ENC_DATA),"
+data_o    =  ".data_o(_DATA),"
+synd_o    =  ".syndrome_o(_SYND),"
+err_o     =  ".err_o(_ERR));"
+%>\
+        ${case_item}${" " * (target_len - len(case_item) - 8)}
+          ${instance}${" " * (target_len - len(instance) - 10)}
+            ${data_i}${" " * (target_len - len(data_i) - 12)}
+            ${data_o}${" " * (target_len - len(data_o) - 12)}
+            ${synd_o}${" " * (target_len - len(synd_o) - 12)}
+            ${err_o}${" " * (target_len - len(err_o) - 12)}
+        end${" " * (target_len - len("end") - 8)}
+  % endfor
+<% default_item = f"default: begin : gen_dec_{sy_type}_default" %>\
+        ${default_item}${" " * (target_len - len(default_item) - 8)}
+        end${" " * (target_len - len("end") - 8)}
+      endcase${" " * (target_len - len("endcase") - 6)}
+    end${" " * (target_len - len("end") - 4)}
+% endfor
+  endcase""")
+
+enc_instance_comment = """\
+// This macro instantiates a secded encoder for the given _TYPE and _WIDTH.
+// The instance is named _INST, the data input connects to _DATA, and the
+// data output connects to _ENC_DATA.
+"""
+
+enc_instance_template = Template("""\
+<%
+def_str = (
+"`define SECDED_INST_ENC(_TYPE, _WIDTH, _INST, _DATA, _ENC_DATA)"
+)
+target_len = len(def_str)
+%>\
+${def_str}
+  case (_TYPE)${" " * (target_len - len("  case (_TYPE)"))}
+% for sy_type in synd_widths:
+<%
+type_name = type_names[sy_type]
+type_block = f"prim_secded_pkg::{type_name}: begin : gen_enc_{sy_type}"
+%>\
+    ${type_block}${" " * (target_len - len(type_block) - 4)}
+      case (_WIDTH)${" "*(target_len - len("case (_WIDTH)") - 6)}
+  % for width in synd_widths[sy_type]:
+<%
+full_width = width + synd_widths[sy_type][width]
+mod_stem  = f"prim_secded{CODE_OPTIONS[sy_type]}_{full_width}_{width}"
+case_item = f"{width}: begin : gen_enc_{sy_type}_{width}"
+instance  = f"{mod_stem}_enc _INST("
+data_i    =  ".data_i(_DATA),"
+data_o    =  ".data_o(_ENC_DATA));"
+%>\
+        ${case_item}${" " * (target_len - len(case_item) - 8)}
+          ${instance}${" " * (target_len - len(instance) - 10)}
+            ${data_i}${" " * (target_len - len(data_i) - 12)}
+            ${data_o}${" " * (target_len - len(data_o) - 12)}
+        end${" " * (target_len - len("end") - 8)}
+  % endfor
+<% default_item = f"default: begin : gen_enc_{sy_type}_default" %>\
+        ${default_item}${" " * (target_len - len(default_item) - 8)}
+        end${" " * (target_len - len("end") - 8)}
+      endcase${" " * (target_len - len("endcase") - 6)}
+    end${" " * (target_len - len("end") - 4)}
+% endfor
+  endcase""")
+
+
+def get_secded_typed_enums_and_util_fns(cfgs):
+    """Create typed enum and utilities to handle parameterized widths
+
+    Handling secded in parameterized IPs requires creating types
+    with the correct width for data in and out of the secded primitives.
+    Moreover, the secded prims need to be instantiated depending on
+    the width and the desired type of secded (as in hsiao or inverted
+    hamming). This creates macros that choose the module based on
+    case generates.
+    """
+    synd_widths = defaultdict(dict)
+    type_names = {}
+    for cfg in cfgs:
+        code_type = cfg['code_type']
+        name = Name(["Secded"] + code_type.split("_"))
+        type_names[code_type] = name.as_camel_case()
+        synd_widths[code_type][cfg['k']] = cfg['m']
+
+    type_enum = type_enum_template.render(type_names=type_names)
+    valid_width_fn = valid_width_template.render(synd_widths=synd_widths,
+                                                 type_names=type_names)
+    synd_width_fn = synd_width_template.render(synd_widths=synd_widths,
+                                               type_names=type_names)
+    dec_instance_gen = dec_instance_template.render(synd_widths=synd_widths,
+                                                    type_names=type_names,
+                                                    CODE_OPTIONS=CODE_OPTIONS)
+    dec_instance_gen = dec_instance_gen.replace("\n", " \\\n")
+    dec_instance_gen = dec_instance_comment + dec_instance_gen
+
+    enc_instance_gen = enc_instance_template.render(synd_widths=synd_widths,
+                                                    type_names=type_names,
+                                                    CODE_OPTIONS=CODE_OPTIONS)
+    enc_instance_gen = enc_instance_gen.replace("\n", " \\\n")
+    enc_instance_gen = enc_instance_comment + enc_instance_gen
+
+    return (
+        type_enum,
+        valid_width_fn,
+        synd_width_fn,
+        dec_instance_gen,
+        enc_instance_gen
+    )
+
+
 def print_secded_enum_and_util_fns(cfgs):
     enum_vals = ["    SecdedNone"]
     parity_width_vals = []
@@ -162,18 +362,30 @@ def print_secded_enum_and_util_fns(cfgs):
         data_width = "  %s: return %s;" % (enum_name, k)
         data_width_vals.append(data_width)
 
+    (type_enum, valid_width_fn, synd_width_fn, dec_instance_gen,
+     enc_instance_gen) = get_secded_typed_enums_and_util_fns(cfgs)
     enum_str = ",\n".join(enum_vals)
     parity_width_fn_str = "\n".join(parity_width_vals)
     data_width_fn_str = "\n".join(data_width_vals)
 
-    enum_str = '''
+    pkg_str = f'''
+{type_enum}
+
   typedef enum int {{
-{}
+{enum_str}
   }} prim_secded_e;
+
+{valid_width_fn}
+
+{synd_width_fn}
+
+  function automatic int get_full_width(prim_secded_type_e sd_type, int width);
+    return width + get_synd_width(sd_type, width);
+  endfunction : get_full_width
 
   function automatic int get_ecc_data_width(prim_secded_e ecc_type);
     case (ecc_type)
-{}
+{data_width_fn_str}
       // Return a non-zero width to avoid VCS compile issues
       default: return 32;
     endcase
@@ -181,13 +393,18 @@ def print_secded_enum_and_util_fns(cfgs):
 
   function automatic int get_ecc_parity_width(prim_secded_e ecc_type);
     case (ecc_type)
-{}
+{parity_width_fn_str}
       default: return 0;
     endcase
   endfunction
-'''.format(enum_str, data_width_fn_str, parity_width_fn_str)
+'''
 
-    return enum_str
+    inc_str = f'''
+{dec_instance_gen}
+
+{enc_instance_gen}'''
+
+    return pkg_str, inc_str
 
 
 def print_pkg_allzero(n, k, m, codes, suffix, codetype):
@@ -480,10 +697,11 @@ def generate(cfgs, args):
     format_c_files(c_src_filename, c_h_filename)
 
     # create enum of various ECC types - useful for DV purposes in mem_bkdr_if
-    enum_str = print_secded_enum_and_util_fns(cfgs['cfgs'])
+    enum_str, inc_str = print_secded_enum_and_util_fns(cfgs['cfgs'])
     # write out package file
     full_pkg_str = enum_str + pkg_type_str + pkg_out_str
     write_pkg_file(args.outdir, full_pkg_str)
+    write_inc_file(args.outdir, inc_str)
 
 
 def _inv_hsiao_code(k, m):
@@ -517,7 +735,7 @@ def _hsiao_code(k, m):
     # Then message _k_ X matrix_code ==> original message with parity
     #
     # Make a row to have even number of 1 including the I matrix.
-    # This helps to calculate the syndrom at the decoding stage.
+    # This helps to calculate the syndrome at the decoding stage.
     # To reduce the max fan-in, Starting with smallest number 3.
     # the number means the number of one in a row.
     # Small number of ones means smaller fan-in overall.
@@ -607,14 +825,23 @@ def _hamming_code(data_cnt, parity_cnt):
 
 def write_pkg_file(outdir, pkg_str):
     with open(outdir + "/" + "prim_secded_pkg.sv", "w") as f:
-        outstr = '''{}// SECDED package generated by
-// util/design/secded_gen.py from {}
+        outstr = f'''{COPYRIGHT}// SECDED package generated by
+// util/design/secded_gen.py from {SECDED_CFG_FILE}
 
 package prim_secded_pkg;
-{}
+{pkg_str}
 
 endpackage
-'''.format(COPYRIGHT, SECDED_CFG_FILE, pkg_str)
+'''
+        f.write(outstr)
+
+
+def write_inc_file(outdir, inc_str):
+    with open(outdir + "/" + "prim_secded_inc.svh", "w") as f:
+        outstr = f'''{COPYRIGHT}// SECDED macros generated by
+// util/design/secded_gen.py from {SECDED_CFG_FILE}
+{inc_str}
+'''
         f.write(outstr)
 
 
@@ -868,7 +1095,6 @@ targets:
 
   lint:
     <<: *default_target
-
 '''.format(module_name, module_name, module_name, module_name, module_name)
         f.write(outstr)
 

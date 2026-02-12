@@ -108,16 +108,24 @@ int otbn_model_invalidate_imem(OtbnModel *model);
 int otbn_model_invalidate_dmem(OtbnModel *model);
 
 // Tell the model to set software_errs_fatal bit in ctrl register. Once this bit
-// is set, any software error will be ellevated to fatal error from recoverable
-// error.
+// is set, any software error will be elevated to fatal error from recoverable
+// error. Returns 0 on success or -1 on failure.
 int otbn_model_set_software_errs_fatal(OtbnModel *model, unsigned char new_val);
 
-// Tell the model to not execute checks to see if secure wiping has written
-// random data to all registers before wiping them with zeroes.
-int otbn_set_no_sec_wipe_chk(OtbnModel *model);
+// Tell the trace checker to tolerate one mismatch between RTL and ISS trace
+// entries during the next num_checks checks. A value of 0 means indefinitely
+// many checks will tolerate a mismatch. In both cases the checker no longer
+// tolerates mismatches after the first detected mismatch. Required for tests
+// covering FI countermeasures with delayed escalation.
+void otbn_model_tolerate_result_mismatch(OtbnModel *model,
+                                         unsigned int num_checks);
+
+// Tell the trace checker to not execute checks to see if secure wiping has
+// written random data to all registers before wiping them with zeroes.
+void otbn_set_no_sec_wipe_chk(OtbnModel *model);
 
 // Disable stack integrity checks
-int otbn_disable_stack_check(OtbnModel *model);
+void otbn_disable_stack_check(OtbnModel *model);
 
 // Step the CRC calculation for item
 //
@@ -138,6 +146,11 @@ int otbn_model_reset(OtbnModel *model, svBitVecVal *status /* bit [7:0] */,
 int otbn_model_send_err_escalation(OtbnModel *model,
                                    svBitVecVal *err_val /* bit [31:0] */,
                                    svBit lock_immediately);
+
+// Stall for one cycle instead of retiring the next instruction.
+// In case there is a pending halt, the stall request is ignored except if
+// enforced is True.
+int otbn_model_send_stall_request(OtbnModel *model, svBit enforced);
 
 // Send an RMA request value to the model
 int otbn_model_set_rma_req(OtbnModel *model,

@@ -5,13 +5,16 @@ CAPI=2:
 
 name: "lowrisc:prim_generic:pad_wrapper"
 description: "Technology-independent pad wrapper implementation (for sim only!)"
+virtual:
+  - lowrisc:prim:pad_wrapper
+
 filesets:
   files_rtl:
     depend:
       - lowrisc:prim:assert
       - lowrisc:prim:pad_wrapper_pkg
     files:
-      - rtl/prim_generic_pad_wrapper.sv
+      - rtl/prim_pad_wrapper.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:

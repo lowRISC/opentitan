@@ -14,6 +14,7 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
     int unsigned width; // >0: take this as width; 0: use width from parameter
     string       width_parameter_name;
     int unsigned unpacked_dim_width;
+    int unsigned offset;
   } port_t;
 
   typedef logic [255:0] val_t;
@@ -205,69 +206,84 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
                                             "Could not read LockstepOffset parameter.");
 
     // List of all ports and their bit widths (or the name of the parameter that defines the width
-    // and/or the unpacked dimension).
+    // and/or the unpacked dimension). The fourth field allows enabling an offset from where the
+    // fault will be injected.
     ports = new[45];
     ports = '{
       // `hart_id_i` and `boot_addr_i` are not glitch-protected by the lockstep core.
-      // '{"hart_id_i",               1, "", 0},
-      // '{"boot_addr_i",             1, "", 0},
-      '{"instr_req_o",             1, "", 0},
-      '{"instr_gnt_i",             1, "", 0},
-      '{"instr_rvalid_i",          1, "", 0},
-      '{"instr_addr_o",           32, "", 0},
-      '{"instr_rdata_i",           0, "MemDataWidth", 0},
-      '{"instr_err_i",             1, "", 0},
-      '{"data_req_o",              1, "", 0},
-      '{"data_gnt_i",              1, "", 0},
-      '{"data_rvalid_i",           1, "", 0},
-      '{"data_we_o",               1, "", 0},
-      '{"data_be_o",               1, "", 0},
-      '{"data_addr_o",            32, "", 0},
-      '{"data_wdata_o",            0, "MemDataWidth", 0},
-      '{"data_rdata_i",            0, "MemDataWidth", 0},
-      '{"data_err_i",              1, "", 0},
-      '{"dummy_instr_id_o",        1, "", 0},
-      '{"rf_raddr_a_o",            5, "", 0},
-      '{"rf_raddr_b_o",            5, "", 0},
-      '{"rf_waddr_wb_o",           5, "", 0},
-      '{"rf_we_wb_o",              1, "", 0},
-      '{"rf_wdata_wb_ecc_o",       0, "RegFileDataWidth", 0},
-      '{"rf_rdata_a_ecc_i",        0, "RegFileDataWidth", 0},
-      '{"rf_rdata_b_ecc_i",        0, "RegFileDataWidth", 0},
-      '{"ic_tag_req_o",            ibex_pkg::IC_NUM_WAYS, "", 0},
-      '{"ic_tag_write_o",          1, "", 0},
-      '{"ic_tag_addr_o",           ibex_pkg::IC_INDEX_W, "", 0},
-      '{"ic_tag_wdata_o",          0, "TagSizeECC", 0},
-      '{"ic_tag_rdata_i",          0, "TagSizeECC", ibex_pkg::IC_NUM_WAYS},
-      '{"ic_data_req_o",           ibex_pkg::IC_NUM_WAYS, "", 0},
-      '{"ic_data_write_o",         1, "", 0},
-      '{"ic_data_addr_o",          ibex_pkg::IC_INDEX_W, "", 0},
-      '{"ic_data_wdata_o",         0, "LineSizeECC", 0},
-      '{"ic_data_rdata_i",         0, "LineSizeECC", ibex_pkg::IC_NUM_WAYS},
-      '{"ic_scr_key_valid_i",      1, "", 0},
-      '{"ic_scr_key_req_o",        1, "", 0},
-      '{"irq_software_i",          1, "", 0},
-      '{"irq_timer_i",             1, "", 0},
-      '{"irq_external_i",          1, "", 0},
-      '{"irq_fast_i",             15, "", 0},
-      '{"irq_nm_i",                1, "", 0},
-      '{"irq_pending_o",           1, "", 0},
-      '{"debug_req_i",             1, "", 0},
-      '{"crash_dump_o",            $bits(ibex_pkg::crash_dump_t), "", 0},
-      '{"double_fault_seen_o",     1, "", 0},
+      // '{"hart_id_i",               1, "", 0, 0},
+      // '{"boot_addr_i",             1, "", 0, 0},
+      '{"instr_req_o",             1, "", 0, 0},
+      '{"instr_gnt_i",             1, "", 0, 0},
+      '{"instr_rvalid_i",          1, "", 0, 0},
+      '{"instr_addr_o",           32, "", 0, 0},
+      '{"instr_rdata_i",           0, "MemDataWidth", 0, 0},
+      '{"instr_err_i",             1, "", 0, 0},
+      '{"data_req_o",              1, "", 0, 0},
+      '{"data_gnt_i",              1, "", 0, 0},
+      '{"data_rvalid_i",           1, "", 0, 0},
+      '{"data_we_o",               1, "", 0, 0},
+      '{"data_be_o",               1, "", 0, 0},
+      '{"data_addr_o",            32, "", 0, 0},
+      '{"data_wdata_o",            0, "MemDataWidth", 0, 0},
+      '{"data_rdata_i",            0, "MemDataWidth", 0, 0},
+      '{"data_err_i",              1, "", 0, 0},
+      '{"dummy_instr_id_o",        1, "", 0, 0},
+      '{"rf_raddr_a_o",            5, "", 0, 0},
+      '{"rf_raddr_b_o",            5, "", 0, 0},
+      '{"rf_waddr_wb_o",           5, "", 0, 0},
+      '{"rf_we_wb_o",              1, "", 0, 0},
+      '{"ic_tag_req_o",            ibex_pkg::IC_NUM_WAYS, "", 0, 0},
+      '{"ic_tag_write_o",          1, "", 0, 0},
+      '{"ic_tag_addr_o",           ibex_pkg::IC_INDEX_W, "", 0, 0},
+      '{"ic_tag_wdata_o",          0, "TagSizeECC", 0, 0},
+      '{"ic_tag_rdata_i",          0, "TagSizeECC", ibex_pkg::IC_NUM_WAYS, 0},
+      '{"ic_data_req_o",           ibex_pkg::IC_NUM_WAYS, "", 0, 0},
+      '{"ic_data_write_o",         1, "", 0, 0},
+      '{"ic_data_addr_o",          ibex_pkg::IC_INDEX_W, "", 0, 0},
+      '{"ic_data_wdata_o",         0, "LineSizeECC", 0, 0},
+      '{"ic_data_rdata_i",         0, "LineSizeECC", ibex_pkg::IC_NUM_WAYS, 0},
+      '{"ic_scr_key_valid_i",      1, "", 0, 0},
+      '{"ic_scr_key_req_o",        1, "", 0, 0},
+      '{"irq_software_i",          1, "", 0, 0},
+      '{"irq_timer_i",             1, "", 0, 0},
+      '{"irq_external_i",          1, "", 0, 0},
+      '{"irq_fast_i",             15, "", 0, 0},
+      '{"irq_nm_i",                1, "", 0, 0},
+      '{"irq_pending_o",           1, "", 0, 0},
+      '{"debug_req_i",             1, "", 0, 0},
+      '{"crash_dump_o",            $bits(ibex_pkg::crash_dump_t), "", 0, 0},
+      '{"double_fault_seen_o",     1, "", 0, 0},
       // `fetch_enable_i` is a multi-bit signal, and multi-bit FI is outside the threat model.
-      // '{"fetch_enable_i",          1, "", 0},
+      // '{"fetch_enable_i",          1, "", 0, 0},
       // The `alert_*` output signals are not compared between the regular core and the lockstep
       // core. Thus, those outputs are not protected against glitches.  This is intentional because
       // an alert is raised in reaction to a glitch (potentially an injected fault) inside the core.
       // To then also glitch the `alert_*` outputs, the attacker would need to be able to glitch two
       // signals at the same time, which is outside the threat model.  Thus, these signals are
       // excluded from the list of outputs in order to prevent false negative test results.
-      // '{"alert_minor_o",           1, "", 0},
-      // '{"alert_major_internal_o",  1, "", 0},
-      // '{"alert_major_bus_o",       1, "", 0},
-      '{"core_busy_o",             1, "", 0}
+      // '{"alert_minor_o",           1, "", 0, 0},
+      // '{"alert_major_internal_o",  1, "", 0, 0},
+      // '{"alert_major_bus_o",       1, "", 0, 0},
+      '{"core_busy_o",             1, "", 0, 0}
     };
+
+    glitch_lockstep_core = $urandom_range(1);
+    // The main core uses a register file data width of RegFileDataWidth and the
+    // shadow core uses RegFileDataEccWidth. Assemble the ports array
+    // accordingly.
+    if (glitch_lockstep_core) begin
+      // Although the shadow core drives all RegFileDataEccWidth bits of rf_wdata_wb_ecc_o, only
+      // bits RegFileDataEccWidth-1:RegFileDataWidth are forwarded to the shadow register file.
+      // As a fault in the lower bits have no effect, use an offset of RegFileDataWidth.
+      ports[42] = '{"rf_wdata_wb_ecc_o",       0, "RegFileDataEccWidth", 0, "RegFileDataWidth"};
+      ports[43] = '{"rf_rdata_a_ecc_i",        0, "RegFileDataEccWidth", 0, 0};
+      ports[44] = '{"rf_rdata_b_ecc_i",        0, "RegFileDataEccWidth", 0, 0};
+    end else begin
+      ports[42] = '{"rf_wdata_wb_ecc_o",       0, "RegFileDataWidth", 0, 0};
+      ports[43] = '{"rf_rdata_a_ecc_i",        0, "RegFileDataWidth", 0, 0};
+      ports[44] = '{"rf_rdata_b_ecc_i",        0, "RegFileDataWidth", 0, 0};
+    end
 
     // Randomly pick a port (of either the lockstep core or the regular core) to glitch.
     port_idx = $urandom_range(ports.size() - 1);
@@ -280,7 +296,6 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
                                          "Could not obtain port width from parameter value.");
       `DV_CHECK_FATAL(port_width > 0, "Read zero port width from parameter value.")
     end
-    glitch_lockstep_core = $urandom_range(1);
     glitch_core_path = glitch_lockstep_core ? lockstep_core_path : core_path;
     port_name = ports[port_idx].name;
     glitch_path = $sformatf("%s.%s", glitch_core_path, port_name);
@@ -296,7 +311,7 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
     end
 
     // Pick one bit to glitch in the port.
-    bit_idx = $urandom_range(port_width - 1);
+    bit_idx = $urandom_range(port_width - 1 - ports[port_idx].offset) + ports[port_idx].offset;
 
     // Wait until the CPU is executing code, except if glitching the I$ scramble key valid port.
     // The reason is that the scramble key is provided shortly after reset and then not again until
@@ -341,7 +356,7 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
             // delay later, we know `instr_rvalid_i` is being used in the next clock cycle.
             `DV_SPINWAIT(
               forever begin
-                #1step;
+                #1ps;
                 if (instr_open_cnt[glitch_lockstep_core] > 0) break;
                 @(cfg.chip_vif.cpu_clk_rst_if.cbn);
               end
@@ -360,7 +375,7 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
             // delay later, we know `data_rvalid_i` is being used in the next clock cycle.
             `DV_SPINWAIT(
               forever begin
-                #1step;
+                #1ps;
                 if (data_open_cnt[glitch_lockstep_core] > 0) break;
                 @(cfg.chip_vif.cpu_clk_rst_if.cbn);
               end
@@ -426,7 +441,7 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
           "instr_rvalid_i": begin
             // `instr_open_cnt` is updated on the negative edge. If it's greater than zero one delta
             // delay later, we know `instr_rvalid_i` is being used in the next clock cycle.
-            #1step;
+            #1ps;
             glitched_inp_used = (instr_open_cnt[glitch_lockstep_core] > 0);
             @(cfg.chip_vif.cpu_clk_rst_if.cbn);
           end
@@ -441,7 +456,7 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
           "data_rvalid_i": begin
             // `data_open_cnt` is updated on the negative edge. If it's greater than zero one delta
             // delay later, we know `data_rvalid_i` is being used in the next clock cycle.
-            #1step;
+            #1ps;
             glitched_inp_used = (data_open_cnt[glitch_lockstep_core] > 0);
             @(cfg.chip_vif.cpu_clk_rst_if.cbn);
             // Data integrity errors are always reported, even if the core isn't currently doing
@@ -583,6 +598,15 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
       endcase
     end
 
+    // Path to the alert_major_internal signal inside the lockstep.
+    alert_major_internal_path = $sformatf("%s.alert_major_internal_o", lockstep_path);
+    alert_major_internal = 1'b0;
+
+    // An alert should be triggered, so we check for that. Depending on the glitched signal and
+    // core it may take several clock cycles for a potential alert to fire. We wait for at most
+    // max_delay_clks cycles.
+    max_delay_clks = 10 + lockstep_offset;
+
     // The MuBi encoded enable_cmp_q signal is responsible for enabling/disabling the
     // lockstep comparison. Due to the encoding and the implemented enabling/disabling
     // logic, we tolerate a fault into this signal. Even when faulting this signal,
@@ -602,113 +626,113 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
     // Force the glitched value onto the port for one cycle, then release it again.
     `DV_CHECK_FATAL(uvm_hdl_force(glitch_path, glitched_val));
     `uvm_info(`gfn, $sformatf("Forcing %s to value 'h%0x.", glitch_path, glitched_val), UVM_LOW)
-    if (!glitch_lockstep_core && glitched_port_is_inp) begin
-      // The input ports of the ibex_core module are defined as `logic` without an explicit net
-      // type. According to the standard, simulation tools are thus supposed to model these inputs
-      // using a `var` type. However, it turns out that some tools collapse input ports into a
-      // single object to reduce the number of assignments to improve simulation performance.
-      // As a result, glitches inserted to inputs of the non-lockstep core may propagate back and
-      // also change the input of the lockstep core. If this happens, both cores are glitched
-      // simultaneously without any alerts firing.
-      //
-      // To avoid this, we also glitch the corresponding input of the ibex_lockstep instance to
-      // the opposite value. The ibex_lockstep instance is embedded inside prim_buf cells across
-      // which glitches don't progagate back. Also, the delay lines are embedded inside the
-      // ibex_lockstep instance. It's thus fine to apply the glitch simultaneously.
-      //
-      // It's further worth noting that:
-      //
-      // 1. For some top-level inputs there may exist single points of failure, e.g. some inputs
-      //    without integrity protection, some control signals without spurious enable detection.
-      //    There are always such single points of failures. Where and how many there are depends
-      //    on the surrounding modules, backend etc. and is out of scope for the lockstep
-      //    countermeasure.
-      // 2. To verify the lockstep countermeasure, we should actually be glitching internal core
-      //    signals instead of inputs to the ibex_core module. However, the problem with this is
-      //    that it's infeasible to always correctly model how the glitching of any internal signal
-      //    impacts core behavior and ultimately whether this should be detected. Forcing inputs
-      //    of ibex_core is a way to make the test feasible in the first place.
-      //
-      // For more details refer to https://github.com/lowRISC/ibex/pull/1967 .
-      `DV_CHECK_FATAL(uvm_hdl_force(glitch_path_lockstep, orig_val));
-      `uvm_info(`gfn, $sformatf("Forcing %s to value 'h%0x.", glitch_path_lockstep, orig_val),
-          UVM_LOW)
-    end
-    cfg.chip_vif.cpu_clk_rst_if.wait_n_clks(1);
-    if ((uvm_re_match("irq_*_i", port_name) != 0) && (port_name != "debug_req_i")) begin
-      // If the port is not an interrupt or debug request, which are level-sensitive signals,
-      // release the forcing at this point.
-      `DV_CHECK_FATAL(uvm_hdl_release(glitch_path));
-      `uvm_info(`gfn, $sformatf("Releasing force of %s.", glitch_path), UVM_LOW)
-      if (!glitch_lockstep_core && glitched_port_is_inp) begin
-        // In case we glitched an input port of the non-lockstep core, we must now also release
-        // the force applied to the corresponding port of the ibex_lockstep instance.
-        `DV_CHECK_FATAL(uvm_hdl_release(glitch_path_lockstep));
-        `uvm_info(`gfn, $sformatf("Releasing force of %s.", glitch_path_lockstep), UVM_LOW)
-      end
-    end
 
-    // An alert should be triggered, so we check for that. Depending on the glitched signal and
-    // core it may take several clock cycles for a potential alert to fire. We wait for at most
-    // max_delay_clks cycles.
-    max_delay_clks = 10 + lockstep_offset;
-
-    // Assert that `enable_cmp_q` in `ibex_lockstep` is 1.  When coming out of reset and
-    // starting execution, it takes `LockstepOffset` clock cycles for this to happen.
-    for (int i = 0; i < lockstep_offset; i++) begin
-      `DV_CHECK_FATAL(uvm_hdl_read(enable_cmp_path, enable_cmp))
-      if (enable_cmp == ibex_pkg::IbexMuBiOn) begin
-        break;
-      end else begin
+    fork
+      begin : monitor_alert_major_internal
+        // Check that `alert_major_internal_o` of `ibex_lockstep` matches our expectation. Depending
+        // on the glitched signal and core it may take several clock cycles for a potential alert to
+        // fire. We wait for at most max_delay_clks cycles.
+        for (int i = 0; i <= max_delay_clks; i++) begin
+          `uvm_info(`gfn, $sformatf("Checking for potential alert in cycle %0d.", i), UVM_LOW)
+          `DV_CHECK_FATAL(uvm_hdl_read(alert_major_internal_path, alert_major_internal))
+          if (alert_major_internal) begin
+            break;
+          end
+          cfg.chip_vif.cpu_clk_rst_if.wait_n_clks(1);
+        end
+      end : monitor_alert_major_internal
+      begin : determine_response
+        if (!glitch_lockstep_core && glitched_port_is_inp) begin
+          // The input ports of the ibex_core module are defined as `logic` without an explicit net
+          // type. According to the standard, simulation tools are thus supposed to model these inputs
+          // using a `var` type. However, it turns out that some tools collapse input ports into a
+          // single object to reduce the number of assignments to improve simulation performance.
+          // As a result, glitches inserted to inputs of the non-lockstep core may propagate back and
+          // also change the input of the lockstep core. If this happens, both cores are glitched
+          // simultaneously without any alerts firing.
+          //
+          // To avoid this, we also glitch the corresponding input of the ibex_lockstep instance to
+          // the opposite value. The ibex_lockstep instance is embedded inside prim_buf cells across
+          // which glitches don't propagate back. Also, the delay lines are embedded inside the
+          // ibex_lockstep instance. It's thus fine to apply the glitch simultaneously.
+          //
+          // It's further worth noting that:
+          //
+          // 1. For some top-level inputs there may exist single points of failure, e.g. some inputs
+          //    without integrity protection, some control signals without spurious enable detection.
+          //    There are always such single points of failures. Where and how many there are depends
+          //    on the surrounding modules, backend etc. and is out of scope for the lockstep
+          //    countermeasure.
+          // 2. To verify the lockstep countermeasure, we should actually be glitching internal core
+          //    signals instead of inputs to the ibex_core module. However, the problem with this is
+          //    that it's infeasible to always correctly model how the glitching of any internal signal
+          //    impacts core behavior and ultimately whether this should be detected. Forcing inputs
+          //    of ibex_core is a way to make the test feasible in the first place.
+          //
+          // For more details refer to https://github.com/lowRISC/ibex/pull/1967 .
+          `DV_CHECK_FATAL(uvm_hdl_force(glitch_path_lockstep, orig_val));
+          `uvm_info(`gfn, $sformatf("Forcing %s to value 'h%0x.", glitch_path_lockstep, orig_val),
+              UVM_LOW)
+        end
         cfg.chip_vif.cpu_clk_rst_if.wait_n_clks(1);
-      end
-    end
-    `DV_CHECK_NE_FATAL(enable_cmp, ibex_pkg::IbexMuBiOff,
-                       "Lockstep comparison disabled, which is illegal.")
+        if ((uvm_re_match("irq_*_i", port_name) != 0) && (port_name != "debug_req_i")) begin
+          // If the port is not an interrupt or debug request, which are level-sensitive signals,
+          // release the forcing at this point.
+          `DV_CHECK_FATAL(uvm_hdl_release(glitch_path));
+          `uvm_info(`gfn, $sformatf("Releasing force of %s.", glitch_path), UVM_LOW)
+          if (!glitch_lockstep_core && glitched_port_is_inp) begin
+            // In case we glitched an input port of the non-lockstep core, we must now also release
+            // the force applied to the corresponding port of the ibex_lockstep instance.
+            `DV_CHECK_FATAL(uvm_hdl_release(glitch_path_lockstep));
+            `uvm_info(`gfn, $sformatf("Releasing force of %s.", glitch_path_lockstep), UVM_LOW)
+          end
+        end
 
-    // Calculate whether we expect a major alert.
-    exp_alert_major_internal = 1'b0;
-    if (glitched_port_is_inp) begin
-      // Expect a major alert for a *used* glitched input.
-      if (glitched_inp_used) begin
-        exp_alert_major_internal = 1'b1;
-        `uvm_info(`gfn, "Expecting an internal major alert because glitched input is used.",
-                  UVM_LOW)
-      end else begin
+        // An alert should be triggered, so we check for that. Depending on the glitched signal and
+        // core it may take several clock cycles for a potential alert to fire. We wait for at most
+        // max_delay_clks cycles.
+        max_delay_clks = 10 + lockstep_offset;
+
+        // Assert that `enable_cmp_q` in `ibex_lockstep` is 1.  When coming out of reset and
+        // starting execution, it takes `LockstepOffset` clock cycles for this to happen.
+        for (int i = 0; i < lockstep_offset; i++) begin
+          `DV_CHECK_FATAL(uvm_hdl_read(enable_cmp_path, enable_cmp))
+          if (enable_cmp == ibex_pkg::IbexMuBiOn) begin
+            break;
+          end else begin
+            cfg.chip_vif.cpu_clk_rst_if.wait_n_clks(1);
+          end
+        end
+        `DV_CHECK_NE_FATAL(enable_cmp, ibex_pkg::IbexMuBiOff,
+                          "Lockstep comparison disabled, which is illegal.")
+
+        // Calculate whether we expect a major alert.
         exp_alert_major_internal = 1'b0;
-        `uvm_info(`gfn, "Expecting no internal major alert because glitched input is not used.",
-                  UVM_LOW)
-      end
-    end else begin
-      // Always expect a major alert for a glitched output.
-      exp_alert_major_internal = 1'b1;
-      `uvm_info(`gfn, "Expecting an internal major alert due to glitched output.", UVM_LOW)
-    end
+        if (glitched_port_is_inp) begin
+          // Expect a major alert for a *used* glitched input.
+          if (glitched_inp_used) begin
+            exp_alert_major_internal = 1'b1;
+            `uvm_info(`gfn, "Expecting an internal major alert because glitched input is used.",
+                      UVM_LOW)
+          end else begin
+            exp_alert_major_internal = 1'b0;
+            `uvm_info(`gfn, "Expecting no internal major alert because glitched input is not used.",
+                      UVM_LOW)
+          end
+        end else begin
+          // Always expect a major alert for a glitched output.
+          exp_alert_major_internal = 1'b1;
+          `uvm_info(`gfn, "Expecting an internal major alert due to glitched output.", UVM_LOW)
+        end
+      end : determine_response
+    join
 
+    // If we expect a major internal alert, check if we have seen it.
     if (exp_alert_major_internal) begin
       seen_top_level_alert = 1'b0;
       // Give the rv_core_ibex_fatal_hw_err alert a few more cycles to propagate out compared to the
       // alert signal at the ibex top level.
       check_alert_occurs("rv_core_ibex_fatal_hw_err", max_delay_clks + 5);
-    end
-
-    // Check that `alert_major_internal_o` of `ibex_lockstep` matches our expectation. Depending on
-    // the glitched signal and core it may take several clock cycles for a potential alert to fire.
-    // We wait for at most max_delay_clks cycles.
-    alert_major_internal_path = $sformatf("%s.alert_major_internal_o", lockstep_path);
-    for (int i = 0; i <= max_delay_clks; i++) begin
-      `uvm_info(`gfn, $sformatf("Checking for potential alert in cycle %0d.", i), UVM_MEDIUM)
-      `DV_CHECK_FATAL(uvm_hdl_read(alert_major_internal_path, alert_major_internal))
-      if (exp_alert_major_internal) begin
-        if (alert_major_internal) begin
-          `uvm_info(`gfn, $sformatf("Major alert expectedly fired in cycle %0d.", i), UVM_LOW)
-          break;
-        end
-      end else begin
-        `DV_CHECK_EQ_FATAL(alert_major_internal, exp_alert_major_internal,
-                           $sformatf("Major alert unexpectedly fired in cycle %0d.", i))
-      end
-      cfg.chip_vif.cpu_clk_rst_if.wait_n_clks(1);
     end
 
     `DV_CHECK_EQ_FATAL(alert_major_internal, exp_alert_major_internal,

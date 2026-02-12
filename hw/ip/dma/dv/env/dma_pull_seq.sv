@@ -6,7 +6,7 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
 
   `uvm_object_param_utils(dma_pull_seq#(AddrWidth))
 
-  logic [AddrWidth-1:0] base_addr;
+  logic [AddrWidth-1:0] base_addr[SYS_NUM_REQ_CH];
 
   // FIFO enable bits
   bit read_fifo_en;
@@ -37,10 +37,11 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
   endfunction: new
 
   // Set the base address of the TL-UL address space within a larger address space, where required.
+  // There is a separate base address for each command type (Read/Write), for a bit more testing.
   // (This permits a 32-bit TL-UL agent to be employed within a restricted window of a 64-bit SoC
   //  System bus address space).
-  virtual function void set_base_addr(logic [AddrWidth-1:0] addr);
-    base_addr = addr;
+  virtual function void set_base_addr(sys_cmd_type_e cmd, logic [AddrWidth-1:0] addr);
+    base_addr[cmd] = addr;
   endfunction
 
   // Specify the number of bytes/transaction on the bus, so that the number of bytes read may be
@@ -73,7 +74,8 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
     // Do we need to reinstate the upper address bits because of the narrower address space of the
     // TL-UL agent?
     if (AddrWidth > $bits(rsp.a_addr)) begin
-      a_addr += base_addr;
+      sys_cmd_type_e cmd = (rsp.a_opcode == Get) ? SysCmdRead : SysCmdWrite;
+      a_addr += base_addr[cmd];
     end
 
     if (mem != null) begin
@@ -118,7 +120,7 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
       end
     end
     // Recompute data integrity bits because the code above changed `d_data`.
-    rsp.d_user[6:0] = prim_secded_pkg::prim_secded_inv_39_32_enc(rsp.d_data)[38:32];
+    rsp.d_user[6:0] = prim_secded_pkg::prim_secded_inv_39_32_enc(rsp.d_data) >> 32;
   endfunction: update_mem
 
   virtual function void randomize_rsp(REQ rsp);
@@ -141,8 +143,8 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
     rsp.d_user[13:7] = prim_secded_pkg::prim_secded_inv_64_57_enc({51'b0,
                                                                    rsp.d_opcode,
                                                                    rsp.d_size,
-                                                                   rsp.d_error})[63:57];
-    rsp.d_user[6:0] = prim_secded_pkg::prim_secded_inv_39_32_enc(rsp.d_data)[38:32];
+                                                                   rsp.d_error}) >> 57;
+    rsp.d_user[6:0] = prim_secded_pkg::prim_secded_inv_39_32_enc(rsp.d_data) >> 32;
     `uvm_info("dma_pull_seq",
               $sformatf("[check][d_chan] : a_address=0x%08h d_valid_delay=%0d",
                         rsp.a_addr, rsp.d_valid_delay),

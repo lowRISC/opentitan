@@ -21,9 +21,10 @@ class flash_ctrl_bkdr_util extends mem_bkdr_util;
   // secded package.
   function new(string name = "", string path, int unsigned depth,
                longint unsigned n_bits, err_detection_e err_detection_scheme,
+               mem_bkdr_util_row_adapter row_adapter = null,
                int num_prince_rounds_half = 3,
                int extra_bits_per_subword = 0, int unsigned system_base_addr = 0);
-    super.new(name, path, depth, n_bits, err_detection_scheme, num_prince_rounds_half,
+    super.new(name, path, depth, n_bits, err_detection_scheme, row_adapter, num_prince_rounds_half,
               extra_bits_per_subword, system_base_addr);
     // Error detection scheme is assumed to be 76_68, otherwise, the overrides below won't work.
     `DV_CHECK_EQ_FATAL(err_detection_scheme, mem_bkdr_util_pkg::EccHamming_76_68)
@@ -94,13 +95,13 @@ class flash_ctrl_bkdr_util extends mem_bkdr_util;
   // TODO; consider changing these functions to member functions and retaining the flash_addr_
   // and flash_data_ keys as members.
   static function bit [FlashDataWidth-1:0] flash_create_masked_data(
-      bit [FlashDataWidth-1:0] data, bit [FlashAddrWidth-1:0] byte_addr,
+      bit [FlashDataWidth-1:0] data, bit [FlashAddrWidth-1:0] word_addr,
       bit [FlashKeySize-1:0] flash_addr_key, bit [FlashKeySize-1:0] flash_data_key);
     bit [FlashNumRoundsHalf-1:0][FlashDataWidth-1:0] scrambled_data;
     bit [FlashDataWidth-1:0] masked_data;
     bit [FlashDataWidth-1:0] mask;
 
-    mask = flash_galois_multiply(flash_addr_key, byte_addr >> FlashDataByteWidth);
+    mask = flash_galois_multiply(flash_addr_key, word_addr);
     masked_data = data ^ mask;
 
     crypto_dpi_prince_pkg::sv_dpi_prince_encrypt(.plaintext(masked_data), .key(flash_data_key),
@@ -109,17 +110,19 @@ class flash_ctrl_bkdr_util extends mem_bkdr_util;
   endfunction
 
   virtual function void flash_write_scrambled(
-      bit [FlashDataWidth-1:0] data, bit [FlashAddrWidth-1:0] byte_addr,
+      bit [FlashDataWidth-1:0] data, bit [FlashAddrWidth-1:0] word_addr,
       bit [FlashKeySize-1:0] flash_addr_key, bit [FlashKeySize-1:0] flash_data_key);
     bit [FlashDataWidth-1:0] masked_data;
     bit [71:0] ecc_72;
     bit [75:0] ecc_76;
+    bit [flash_ctrl_top_specific_pkg::BusAddrByteW-1:0] byte_addr;
 
-    masked_data = flash_create_masked_data(data, byte_addr, flash_addr_key, flash_data_key);
+    masked_data = flash_create_masked_data(data, word_addr, flash_addr_key, flash_data_key);
 
     // ecc functions used are hardcoded to a fixed sized.
     ecc_72 = prim_secded_pkg::prim_secded_hamming_72_64_enc(data[63:0]);
     ecc_76 = prim_secded_pkg::prim_secded_hamming_76_68_enc({ecc_72[67:64], masked_data[63:0]});
+    byte_addr = word_addr << FlashDataByteWidth;
     write(byte_addr, ecc_76);
   endfunction
 endclass

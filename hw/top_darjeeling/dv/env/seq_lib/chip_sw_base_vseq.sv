@@ -56,11 +56,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
         cfg.chip_vif.aon_clk_por_rst_if.wait_clks(1);
         if (cfg.chip_vif.signal_probe_pwrmgr_light_reset_req(
               .kind(dv_utils_pkg::SignalProbeSample))) begin
-          int unsigned clks = $urandom_range(24, 5);
-          `uvm_info(`gfn, $sformatf("Supplying external reset request of %0d cycle(s)", clks),
-                    UVM_MEDIUM)
-          // Apply an extended reset signal of sufficient duration to pass through the filter.
-          apply_soc_reset_request(clks);
+          apply_soc_reset_ack();
         end
       end else begin
         @(posedge cfg.chip_vif.aon_clk_por_rst_if.rst_n);
@@ -94,6 +90,19 @@ class chip_sw_base_vseq extends chip_base_vseq;
     cfg.chip_vif.aon_clk_por_rst_if.wait_clks(clks);
     // Deactivate external reset request.
     void'(cfg.chip_vif.signal_probe_soc_rst_req_async(.kind(dv_utils_pkg::SignalProbeRelease)));
+    // Wait for at least 5 AON clock cycles to ensure the reset request is deasserted.
+    cfg.chip_vif.aon_clk_por_rst_if.wait_clks(clks);
+  endtask
+
+  // Acknowledge the external reset request.
+  //
+  virtual task apply_soc_reset_ack();
+    void'(cfg.chip_vif.signal_probe_ext_rst_ack(.kind(dv_utils_pkg::SignalProbeForce),
+                                                      .value(1'b1)));
+    // Acknowledge the external SoC reset request.
+    cfg.chip_vif.aon_clk_por_rst_if.wait_clks(1);
+    // Deactivate the reset acknowledgment.
+    void'(cfg.chip_vif.signal_probe_ext_rst_ack(.kind(dv_utils_pkg::SignalProbeRelease)));
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");
@@ -903,7 +912,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
         status_val);
 
       // Ensure that none of the other status bits are set. This failure is
-      // idicative of the jtag agent trying to access the TAP interface while
+      // indicative of the jtag agent trying to access the TAP interface while
       // the dut is exiting reset. Try monitoring the reset, or inserting
       // a delay before calling this function.
       `DV_CHECK_EQ((status_val) >> dummy.num(), 0,
@@ -1252,7 +1261,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
   // End the test with status.
   //
-  // SW test code finishes the test sequence usually by returing true or false
+  // SW test code finishes the test sequence usually by returning true or false
   // in the `test_main()` function. However, some tests may need vseq to
   // finish the tests. For example, `chip_sw_sleep_pin_mio_dio_val` checks the
   // PADs output value then finishes the test without waking up the SW again.

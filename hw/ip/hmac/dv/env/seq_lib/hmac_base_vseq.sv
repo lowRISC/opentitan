@@ -114,14 +114,14 @@ constraint hmac_base_vseq::wr_mask_c {
 constraint hmac_base_vseq::key_length_c {
   $countones(key_length) == 1 dist {
     1 :/ 4,  // Key_128/Key_256/Key_384/Key_512/Key_1024/Key_None
-    0 :/ 1   // Illegal -> should get casted to Key_None in HW
+    0 :/ 1   // Illegal -> should get cast to Key_None in HW
   };
 }
 
 constraint hmac_base_vseq::digest_size_c {
   $countones(digest_size) == 1 dist {
     1 :/ 4,  // SHA2_256/SHA2_384/SHA2_512/SHA2_None
-    0 :/ 1   // Illegal -> should get casted to SHA2_None in HW
+    0 :/ 1   // Illegal -> should get cast to SHA2_None in HW
   };
 }
 
@@ -589,7 +589,7 @@ task hmac_base_vseq::sar_stop_and_continue();
   trigger_hash_continue();
   sar_stop_continue_ev.trigger();
   sar_ongoing = 0;
-endtask : sar_stop_and_continue;
+endtask : sar_stop_and_continue
 
 task hmac_base_vseq::sar_same_context();
   bit [TL_DW-1:0]     digest_a[16];
@@ -627,7 +627,7 @@ task hmac_base_vseq::sar_same_context();
   trigger_hash_continue();
   sar_same_ctxt_ev.trigger();
   sar_ongoing = 0;
-endtask : sar_same_context;
+endtask : sar_same_context
 
 //   Different context:
 //   All those parameters could be changed: key length, digest size, digest swap, endian swap
@@ -745,9 +745,9 @@ task hmac_base_vseq::sar_different_context();
   trigger_hash_continue();
   sar_different_ctxt_ev.trigger();
   sar_ongoing = 0;
-endtask : sar_different_context;
+endtask : sar_different_context
 
-// Save the current config for some registers, and restore the previous saved config or genrate
+// Save the current config for some registers, and restore the previous saved config or generate
 // a new random one
 task hmac_base_vseq::save_and_restore_cfg(bit save_current_cfg, bit restore_previous_cfg);
   hmac_base_vseq  rand_cfg;     // Only here to randomize variables

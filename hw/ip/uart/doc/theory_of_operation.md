@@ -70,7 +70,7 @@ detected as high and the optional parity bit is correct the data byte
 is pushed into a 32 byte deep RX FIFO. The data can be read out by
 reading [`RDATA`](registers.md#rdata) register.
 
-This behaviour of the receiver can be used to compute the approximate
+This behavior of the receiver can be used to compute the approximate
 baud clock frequency error that can be tolerated between the
 transmitter at the other end of the cable and the receiver. The
 initial sample point is aligned with the center of the START bit. The
@@ -166,9 +166,9 @@ UART module has a few interrupts including general data flow interrupts
 and unexpected event interrupts.
 
 #### tx_watermark / tx_empty / rx_watermark
-If the TX FIFO level becomes smaller than the TX water mark level (configurable via [`FIFO_CTRL.RXILVL`](registers.md#fifo_ctrl) and [`FIFO_CTRL.TXILVL`](registers.md#fifo_ctrl)), the `tx_watermark` interrupt is raised to inform SW.
+If the TX FIFO level becomes smaller than the TX water mark level (configurable via [`FIFO_CTRL.TXILVL`](registers.md#fifo_ctrl--txilvl)), the `tx_watermark` interrupt is raised to inform SW.
 If the TX FIFO is empty, the `tx_empty` interrupt is raised to inform SW.
-If the RX FIFO level becomes greater than or equal to RX water mark level (configurable via [`FIFO_CTRL.RXILVL`](registers.md#fifo_ctrl) and [`FIFO_CTRL.TXILVL`](registers.md#fifo_ctrl)), the `rx_watermark` interrupt is raised to inform SW.
+If the RX FIFO level becomes greater than or equal to RX water mark level (configurable via [`FIFO_CTRL.RXILVL`](registers.md#fifo_ctrl--rxilvl)), the `rx_watermark` interrupt is raised to inform SW.
 
 Note that the watermark interrupts and the empty interrupt are level-based status interrupts.
 They will stay asserted for as long as the FIFO levels are in violation of the configured level and cannot be cleared by writing to the status register.

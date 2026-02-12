@@ -30,7 +30,7 @@ package clkmgr_env_pkg;
   typedef virtual clk_rst_if clk_rst_vif;
 
   // parameters
-  parameter int NUM_PERI = 2;
+  parameter int NUM_PERI = 1;
   parameter int NUM_TRANS = 4;
 
   typedef logic [NUM_PERI-1:0] peri_enables_t;
@@ -39,15 +39,13 @@ package clkmgr_env_pkg;
   parameter mubi_hintables_t IdleAllBusy = {NUM_TRANS{prim_mubi_pkg::MuBi4False}};
 
   parameter int MainClkHz = 1_000_000_000;
-  parameter int IoClkHz = 1_000_000_000;
+  parameter int IoClkHz = 250_000_000;
   parameter int AonClkHz = 62_500_000;
-  parameter int IoDiv2ClkHz = 500_000_000;
-  parameter int IoDiv4ClkHz = 250_000_000;
   parameter int FakeAonClkHz = 7_000_000;
 
   // alerts
   parameter uint NUM_ALERTS = 2;
-  parameter string LIST_OF_ALERTS[] = {"recov_fault", "fatal_fault"};
+  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"recov_fault", "fatal_fault"};
 
   // types
 
@@ -56,12 +54,10 @@ package clkmgr_env_pkg;
 
   // The enum values for these match the bit order in the CSRs.
   typedef enum int {
-    PeriIoDiv4,
-    PeriIoDiv2
+    PeriIo
   } peri_e;
   typedef struct packed {
-    logic io_div2_peri_en;
-    logic io_div4_peri_en;
+    logic io_peri_en;
   } clk_enables_t;
 
   typedef enum int {
@@ -85,7 +81,7 @@ package clkmgr_env_pkg;
 
   // These are ordered per the bits in the recov_err_code register.
   typedef enum int {
-    ClkMesrIoDiv4,
+    ClkMesrIo,
     ClkMesrMain,
     ClkMesrSize
   } clk_mesr_e;
@@ -111,13 +107,14 @@ package clkmgr_env_pkg;
 
   // These must be after the declaration of clk_mesr_e for sizing.
   parameter int ClkInHz[ClkMesrSize] = {
-    IoDiv4ClkHz,
+    IoClkHz,
     MainClkHz
   };
 
+  // Take into account if multiple aon clock cycles are needed for a measurement.
   parameter int ExpectedCounts[ClkMesrSize] = {
-    ClkInHz[ClkMesrIoDiv4] / AonClkHz - 1,
-    ClkInHz[ClkMesrMain] / AonClkHz - 1
+    (ClkInHz[ClkMesrIo] / AonClkHz) * 32 - 1,
+    (ClkInHz[ClkMesrMain] / AonClkHz) * 8 - 1
   };
 
   // functions

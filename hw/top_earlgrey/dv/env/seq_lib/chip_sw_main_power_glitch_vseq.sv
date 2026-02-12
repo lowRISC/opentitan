@@ -14,8 +14,8 @@ class chip_sw_main_power_glitch_vseq extends chip_sw_base_vseq;
   virtual task pre_start();
     super.pre_start();
     // disable expected assertion error for power glitch test
-    $assertoff(1,"tb.dut.top_earlgrey.pwrmgr_rstmgr_sva_if.MainPwrRstOff_A");
-    $assertoff(1,"tb.dut.top_earlgrey.pwrmgr_rstmgr_sva_if.MainPwrRstOn_A");
+    $assertoff(1,"tb.dut.top_earlgrey.pwrmgr_rstreqs_sva_if.MainPwrRstOff_A");
+    $assertoff(1,"tb.dut.top_earlgrey.pwrmgr_rstreqs_sva_if.MainPwrRstOn_A");
   endtask
 
   virtual task body();

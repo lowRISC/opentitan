@@ -91,63 +91,6 @@
       tests: ["clkmgr_idle_intersig_mubi"]
     }
     {
-      name: sec_cm_lc_ctrl_intersig_mubi
-      desc: '''Verify the countermeasure(s) LC_CTRL.INTERSIG.MUBI.
-            It compares to lc_ctrl_pkg::On only.
-            Use clkmgr_extclk test as in testplan.extclk but randomize
-            dut.lc_hw_debug_en_i s.t. all 16 values can be generated with equal priority.
-
-            **Checks**:
-            When dut sees invalid values of lc_hw_debug_en_i,
-            all_clk_byp_req should not be asserted. Covered by assertion checker.
-            '''
-      stage: V2S
-      tests: ["clkmgr_lc_ctrl_intersig_mubi"]
-    }
-    {
-      name: sec_cm_lc_ctrl_clk_handshake_intersig_mubi
-      desc: '''Verify the countermeasure(s) LC_CTRL_CLK_HANDSHAKE.INTERSIG.MUBI.
-            It compared to lc_ctrl_pkg::On only.
-            Use clkmgr_extclk test but randomize lc_clk_byp_req s.t.
-            all 16 values can be generated with equal priority.
-            lc_clk_byp_req drives dut.lc_clk_byp_req_i in the test.
-            **Checks**:
-            When dut sees invalid values of lc_clk_byp_req_i,
-            io_clk_byp_req_o should not be asserted. Covered by assertion checker.
-            '''
-      stage: V2S
-      tests: ["clkmgr_lc_clk_byp_req_intersig_mubi"]
-    }
-    {
-      name: sec_cm_clk_handshake_intersig_mubi
-      desc: '''Verify the countermeasure(s) CLK_HANDSHAKE.INTERSIG.MUBI.
-            It uses true_strict.
-            Use clkmgr_extclk test. Upon receiving [io|all]_clk_byp_req_o from dut,
-            assert invalid [io|all]_clk_byp_ack values to dut.
-
-            **Check**:
-            all_clk_byp_ack is copied to CLKGMR.EXTCLK_STATUS as is. So read extclk
-            status and compare.
-            io_clk_byp_ack is evaluated with step_down_acks_syn.
-            When both are true, lc_clk_byp_req is assigned to lc_clk_byp_ack.
-            Covered by assertion checker.
-            '''
-      stage: V2S
-      tests: ["clkmgr_clk_handshake_intersig_mubi"]
-    }
-    {
-      name: sec_cm_div_intersig_mubi
-      desc: '''Verify the countermeasure(s) DIV.INTERSIG.MUBI.
-            use true_strict.
-            Use clkmgr_extclk test. Before, test drive dut.div_step_down_req_i
-            with 'true', sends invalid values.
-            **Check**:
-            dut should ignore invalid req values. Covered by assertion checker.
-            '''
-      stage: V2S
-      tests: ["clkmgr_div_intersig_mubi"]
-    }
-    {
       name: sec_cm_jitter_config_mubi
       desc: '''Verify the countermeasure(s) JITTER.CONFIG.MUBI.
             use false_strict.

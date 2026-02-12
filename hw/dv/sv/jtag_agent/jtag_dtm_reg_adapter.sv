@@ -10,7 +10,7 @@ class jtag_dtm_reg_adapter extends uvm_reg_adapter;
   // to the `jtag_agent_cfg` instance associated with this adapter instance.
   jtag_agent_cfg cfg;
 
-  function new(string name = "jtag_dtm_reg_adapter");
+  function new(string name = "");
     super.new(name);
     supports_byte_enable = 0;
     provides_responses = 1;
@@ -24,7 +24,7 @@ class jtag_dtm_reg_adapter extends uvm_reg_adapter;
     logic [JTAG_DRW-1:0] data;
     // Per JTAG protocol, the DR is simultaneously written and read at the same time. That means, if
     // we want to read a register, we need to write its DR with the same value we wrote before, to
-    // read it back. Otherwise, we will end up inadvertantly writing 0s to it when reading it. To do
+    // read it back. Otherwise, we will end up inadvertently writing 0s to it when reading it. To do
     // so, we find the mirrored value of the register and set that to DR. Unfortunately, we do not
     // know which map is associated with this adapter, so this does not support a multi-map system
     // at this point.

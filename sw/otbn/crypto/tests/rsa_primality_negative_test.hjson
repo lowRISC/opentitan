@@ -1,0 +1,29 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// An 1024-bit value that passes other checks but isn't prime.
+//
+// Python script for generating the test data (using PyCryptoDome's
+// Crypto.Util.number package for the primality check):
+// while True:
+//   not_prime = random.randrange(lower_bound, (1 << 1024))
+//   not_prime |= 3
+//   if math.gcd(not_prime, 65537) != 1:
+//     continue
+//  if not number.isPrime(not_prime):
+//    break
+
+{
+  "entrypoint": "main",
+  "input": {
+    "dmem": {
+      "rsa_n": "0xecbbd72477e406de8ff72a93afbe19ed4258d3dd8cfa5b2a8b5c76d22053504710a8460c30c5141fc581df484e58a2bd019c03a1acab6c7fd70f9865ac6dcdcce4cca95266e4d2dea9a408b8ded6591daa4416bb7ca78357cad5c7d527d46a06807337d6845484589c8010eb6b674194608e1b9732db4e8cee053d2572158cf7"
+    }
+  }
+  "output": {
+    "regs": {
+      "x2": "0x0000000"
+    }
+  }
+}

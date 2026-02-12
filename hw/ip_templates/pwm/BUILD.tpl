@@ -15,3 +15,11 @@ filegroup(
         ],
     ),
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = glob([
+        "**/*.md",
+        "**/*.svg",
+    ]) + ["//hw/top_${topname}/ip_autogen/${module_instance_name}/data:doc_files"],
+)

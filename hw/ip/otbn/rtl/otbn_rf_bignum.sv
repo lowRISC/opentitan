@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`include "prim_assert.sv"
+
 /**
  * 256b General Purpose Register File (GPRs) with integrity code detecting triple bit errors on a
  * 32-bit granule (312 bits total).
@@ -11,7 +13,7 @@
  *
  * Integrity protection uses an inverted (39, 32) Hsaio code providing a Hamming distance of 4.
  *
- * `wr_data_no_intg_i` supplies data that requires integrity calulation and `wr_data_intg_i`
+ * `wr_data_no_intg_i` supplies data that requires integrity calculation and `wr_data_intg_i`
  * supplies data that comes with integrity. `wr_data_intg_sel_i` is asserted to select the data with
  * integrity for the write, otherwise integrity is calculated separately from `wr_data_i`.
  *
@@ -47,7 +49,7 @@ module otbn_rf_bignum
 
   output logic                   intg_err_o,
 
-  input  rf_predec_bignum_t      rf_predec_bignum_i,
+  input  rf_bignum_predec_t      rf_bignum_predec_i,
   output logic                   predec_error_o,
 
   output logic                   spurious_we_err_o
@@ -77,7 +79,7 @@ module otbn_rf_bignum
       .rd_addr_b_i,
       .rd_data_b_o(rd_data_b_intg_o),
 
-      .rf_predec_bignum_i,
+      .rf_bignum_predec_i,
 
       .we_err_o(spurious_we_err_o)
     );
@@ -127,9 +129,9 @@ module otbn_rf_bignum
   );
 
   // SEC_CM: CTRL.REDUN
-  assign rd_en_a_mismatch = expected_rd_en_a_onehot != rf_predec_bignum_i.rf_ren_a;
-  assign rd_en_b_mismatch = expected_rd_en_b_onehot != rf_predec_bignum_i.rf_ren_b;
-  assign wr_en_mismatch   = expected_wr_en_onehot   != rf_predec_bignum_i.rf_we;
+  assign rd_en_a_mismatch = expected_rd_en_a_onehot != rf_bignum_predec_i.rf_ren_a;
+  assign rd_en_b_mismatch = expected_rd_en_b_onehot != rf_bignum_predec_i.rf_ren_b;
+  assign wr_en_mismatch   = expected_wr_en_onehot   != rf_bignum_predec_i.rf_we;
 
   assign predec_error_o = rd_en_a_mismatch | rd_en_b_mismatch | wr_en_mismatch;
 

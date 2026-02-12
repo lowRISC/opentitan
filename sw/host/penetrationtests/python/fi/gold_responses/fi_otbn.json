@@ -1,0 +1,163 @@
+{
+  "char_beq": {
+    "result": 0,
+    "insn_cnt": 509,
+    "err_otbn": 0,
+    "err_ibx": 0,
+    "alerts": [0, 0, 0],
+    "loc_alerts": 0,
+    "ast_alerts": [0, 0]
+  },
+  "char_bn_rshi": {
+    "big_num": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "insn_cnt": 109,
+    "err_otbn": 0,
+    "err_ibx": 0,
+    "alerts": [0, 0, 0],
+    "loc_alerts": 0,
+    "ast_alerts": [0, 0]
+  },
+  "char_bn_sel": {
+    "big_num": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "insn_cnt": 1014,
+    "err_otbn": 0,
+    "err_ibx": 0,
+    "alerts": [0, 0, 0],
+    "loc_alerts": 0,
+    "ast_alerts": [0, 0]
+  },
+  "char_bn_wsrr": {
+    "res": 0,
+    "insn_cnt": 1089,
+    "err_otbn": 0,
+    "err_ibx": 0,
+    "alerts": [0, 0, 0],
+    "loc_alerts": 0,
+    "ast_alerts": [0, 0]
+  },
+  "char_bne": {
+    "result": 0,
+    "insn_cnt": 509,
+    "err_otbn": 0,
+    "err_ibx": 0,
+    "alerts": [0, 0, 0],
+    "loc_alerts": 0,
+    "ast_alerts": [0, 0]
+  },
+  "char_dmem_access": {
+    "res": 0,
+    "insn_cnt": 271,
+    "err_otbn": 0,
+    "err_ibx": 0,
+    "alerts": [0, 0, 0],
+    "loc_alerts": 0,
+    "ast_alerts": [0, 0]
+  },
+  "char_dmem_write": {
+    "result": [
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    ],
+    "insn_cnt": 1,
+    "err_otbn": 0,
+    "err_ibx": 0,
+    "alerts": [0, 0, 0],
+    "loc_alerts": 0,
+    "ast_alerts": [0, 0]
+  },
+  "char_dmem_op_loop": {
+    "loop_counter": 10000,
+    "err_otbn": 0,
+    "err_ibx": 0,
+    "alerts": [0, 0, 0],
+    "loc_alerts": 0,
+    "ast_alerts": [0, 0]
+  },
+  "char_reg_op_loop": {
+    "loop_counter": 10000,
+    "err_otbn": 0,
+    "err_ibx": 0,
+    "alerts": [0, 0, 0],
+    "loc_alerts": 0,
+    "ast_alerts": [0, 0]
+  },
+  "char_jal": {
+    "result": 0,
+    "insn_cnt": 505,
+    "err_otbn": 0,
+    "err_ibx": 0,
+    "alerts": [0, 0, 0],
+    "loc_alerts": 0,
+    "ast_alerts": [0, 0]
+  },
+  "char_lw": {
+    "result": [
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    ],
+    "insn_cnt": 1084,
+    "err_otbn": 0,
+    "err_ibx": 0,
+    "alerts": [0, 0, 0],
+    "loc_alerts": 0,
+    "ast_alerts": [0, 0]
+  },
+  "char_mem": {
+    "res": 0,
+    "imem_data": [0, 0, 0, 0, 0, 0, 0, 0],
+    "imem_addr": [0, 0, 0, 0, 0, 0, 0, 0],
+    "dmem_data": [0, 0, 0, 0, 0, 0, 0, 0],
+    "dmem_addr": [0, 0, 0, 0, 0, 0, 0, 0],
+    "err_otbn": 0,
+    "err_ibx": 0,
+    "alerts": [0, 0, 0],
+    "loc_alerts": 0,
+    "ast_alerts": [0, 0]
+  },
+  "char_rf": {
+    "res": 0,
+    "faulty_gpr": [
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    ],
+    "faulty_wdr": [
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    ],
+    "err_otbn": 0,
+    "err_ibx": 0,
+    "alerts": [0, 0, 0],
+    "loc_alerts": 0,
+    "ast_alerts": [0, 0]
+  },
+  "char_unrolled_dmem_op_loop": {
+    "loop_counter": 100,
+    "err_otbn": 0,
+    "err_ibx": 0,
+    "alerts": [0, 0, 0],
+    "loc_alerts": 0,
+    "ast_alerts": [0, 0]
+  },
+  "char_unrolled_reg_op_loop": {
+    "loop_counter": 100,
+    "err_otbn": 0,
+    "err_ibx": 0,
+    "alerts": [0, 0, 0],
+    "loc_alerts": 0,
+    "ast_alerts": [0, 0]
+  },
+  "char_load_integrity": {
+    "result": 0,
+    "err_otbn": 0,
+    "err_ibx": 0,
+    "alerts": [0, 0, 0],
+    "loc_alerts": 0,
+    "ast_alerts": [0, 0]
+  },
+  "char_pc": {
+    "pc_dmem": 2224,
+    "pc_otbn": 2224,
+    "insn_cnt": 472,
+    "err_otbn": 0,
+    "err_ibx": 0,
+    "alerts": [0, 0, 0],
+    "loc_alerts": 0,
+    "ast_alerts": [0, 0]
+  }
+}

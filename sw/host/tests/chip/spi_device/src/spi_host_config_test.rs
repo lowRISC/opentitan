@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use clap::Parser;
 use regex::Regex;
 use std::time::Duration;
@@ -65,25 +65,13 @@ fn spi_host_config_test(
     output[output.len() - 2] = 0x0f; // A rising edge on the D1 to indicate when the sampling finished, which is helpfull when debugging.
     let waveform = Box::new([BitbangEntry::Both(output, &mut samples)]);
 
-    UartConsole::wait_for(
-        &*uart,
-        r".*SiVal: waiting for commands.*?[^\r\n]*",
-        opts.timeout,
-    )?;
+    UartConsole::wait_for(&*uart, r"SiVal: waiting for commands", opts.timeout)?;
     MemWriteReq::execute(&*uart, ctx.backdoor_cpha, &[ctx.cpha])?;
 
-    UartConsole::wait_for(
-        &*uart,
-        r".*SiVal: waiting for commands.*?[^\r\n]*",
-        opts.timeout,
-    )?;
+    UartConsole::wait_for(&*uart, r"SiVal: waiting for commands", opts.timeout)?;
     MemWriteReq::execute(&*uart, ctx.backdoor_cpol, &[ctx.cpol])?;
 
-    UartConsole::wait_for(
-        &*uart,
-        r".*SiVal: waiting for commands.*?[^\r\n]*",
-        opts.timeout,
-    )?;
+    UartConsole::wait_for(&*uart, r"SiVal: waiting for commands", opts.timeout)?;
     MemWriteReq::execute(&*uart, ctx.backdoor_data, &[0xAB, 0xCD, 0xEF, 0xAB])?;
     gpio_bitbanging.run(
         &ctx.gpio_pins
@@ -94,22 +82,28 @@ fn spi_host_config_test(
         waveform,
     )?;
 
-    let mut decoder = test_utils::bitbanging::spi::decoder::Decoder::<
+    let decoder = test_utils::bitbanging::spi::SpiBitbangDecoder::<
         SPI_PIN_D0,
         SPI_PIN_D1,
         0, // D2, not in use.
         0, // D3, not in use.
         SPI_PIN_SCL,
         SPI_PIN_CS,
-    > {
-        cpol: ctx.cpol == 1,
-        cpha: ctx.cpha == 1,
-        data_mode: test_utils::bitbanging::spi::SpiDataMode::Single,
-    };
+    >::new(
+        test_utils::bitbanging::spi::SpiBitbangConfig {
+            cpol: ctx.cpol == 1,
+            cpha: ctx.cpha == 1,
+            data_mode: test_utils::bitbanging::spi::SpiDataMode::Single,
+            bits_per_word: 8,
+        },
+        test_utils::bitbanging::spi::SpiEndpoint::Device,
+    );
     let decoded = decoder.run(samples.to_owned())?;
     assert_eq!(
         decoded,
-        vec![0x06, 0x02, 0x00, 0x00, 0x00, 0xab, 0xcd, 0xef, 0xab, 0x05, 0x80,]
+        vec![
+            0x06, 0x02, 0x00, 0x00, 0x00, 0xab, 0xcd, 0xef, 0xab, 0x05, 0x80,
+        ]
     );
     println!("decoded: {:?}", decoded);
 
@@ -152,15 +146,14 @@ fn main() -> Result<()> {
     execute_test!(spi_host_config_test, &opts, &transport, &ctx);
 
     let uart = transport.uart("console")?;
-    let mut console = UartConsole {
-        timeout: Some(opts.timeout),
-        exit_success: Some(Regex::new(r"PASS!\r\n")?),
-        exit_failure: Some(Regex::new(r"FAIL:")?),
-        ..Default::default()
-    };
+    let mut console = UartConsole::new(
+        Some(opts.timeout),
+        Some(Regex::new(r"PASS!\r\n")?),
+        Some(Regex::new(r"FAIL:")?),
+    );
 
     // Now watch the console for the exit conditions.
-    let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
+    let result = console.interact(&*uart, false)?;
     if result != ExitStatus::ExitSuccess {
         bail!("FAIL: {:?}", result);
     };

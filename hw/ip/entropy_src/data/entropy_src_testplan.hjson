@@ -177,7 +177,7 @@
        desc: '''
              Covers that both the MAIN_SM and ACK_SM have been forced into an invalid state,
              and this state error has been successfully detected, the appropriate alerts have
-             been signalled, and the error has been sucessfully reported in the error CSRs.
+             been signalled, and the error has been successfully reported in the error CSRs.
              '''
     }
     {
@@ -185,7 +185,7 @@
        desc: '''
              Covers that all three fifos (the esrng fifo, the observe fifo, and the esfinal fifo)
              have all been forced into the three error states (write overflow, read underflow,
-             and invalid state), and the error has sucessfully generated an alert and that
+             and invalid state), and the error has successfully generated an alert and that
              the alert is successfully reported in the ERR_CODE register.
              '''
     }
@@ -315,9 +315,9 @@
             - Hi or Low: Was the current sample a pass or a fail for the high threshold or the
               low threshold?
             - By-line: Was the test applied on a by-line basis or across all lines?
-            - Threshold Significance Buckets.  There is some sublety in choosing the range of
+            - Threshold Significance Buckets.  There is some subtlety in choosing the range of
               thresholds bins as the choice of thresholds depends heavily choice of window size.
-              The output of each health test will be tighly clustered near some average
+              The output of each health test will be tightly clustered near some average
               value, and the health test threshold serves to tag outliers from this average.
                 - For instance, when averaging over all lines, the output of the ADAPTP test should
                   on average be close to WINSIZE/2, and the high and low thresholds will be placed
@@ -350,7 +350,7 @@
       name: cont_ht_cg
       desc: '''
             Covers a range of thresholds and configurations for the continuous health tests: REPCNT
-            (the repetition count test), and REPCNTS (the symbol based repetition count test).
+            (the Repetition Count Test), and REPCNTS (the Repetition Count Symbol Test).
             The primary cover points are the test_type (REPCNT vs. REPCNTS), the pass or fail value
             of the test, and the "score". The score is a generalization of the numerical value of
             the test output, which accounts for the fact it is far more likely to see high values
@@ -358,7 +358,7 @@
             values of the REPCNTS test by RNG_BUS_WIDTH.  Much like the windowed health tests which
             generalize the test thresholds in terms of "sigma" values, the "score" places the REPCNT
             and REPCNTS values on equal footing when generating cross bins. For an ideal noise
-            distribution on each RNG bus line, the probablity of a given "score" should be the same
+            distribution on each RNG bus line, the probability of a given "score" should be the same
             for the two tests, under the observation that a coincidental repetition of all bus lines
             is as likely as RNG_BUS_WIDTH repetitions of a single line.
 

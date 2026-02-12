@@ -346,7 +346,7 @@
     {
       name: sec_cm_key_sideload
       desc: '''Verify the countermeasure(s) KEY.SIDELOAD.
-            DV environment cannot verify the architectural chioce of having sideloaded keys. OTBN
+            DV environment cannot verify the architectural choice of having sideloaded keys. OTBN
             on top using this architecture, also raises an error in the case of invalid sideload keys.
 
             Invalid sideload keys are allowed in the sideload key sequence fifty percent of the

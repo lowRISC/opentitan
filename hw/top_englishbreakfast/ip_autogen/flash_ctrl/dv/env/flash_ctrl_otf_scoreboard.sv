@@ -67,7 +67,8 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
 
   virtual function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
-    uvm_config_db#(flash_ctrl_env_cfg)::get(this, "", "cfg", cfg);
+    if (!uvm_config_db#(flash_ctrl_env_cfg)::get(this, "", "cfg", cfg))
+      `uvm_fatal(`gfn, "Failed to get 'flash_ctrl_env_cfg from config_db")
     cfg.otf_scb_h = this;
   endfunction // connect_phase
 
@@ -265,7 +266,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
     send.mem_addr = exp.start_addr >> FlashDataByteWidth;
     send.ctrl_rd_region_q = exp.ctrl_rd_region_q;
 
-    // Mask descramble error chk whem comp_off is set.
+    // Mask descramble error chk when comp_off is set.
     if (comp_off) send.skip_err_chk = 1;
     send.descramble(exp.addr_key, exp.data_key);
     send.print("exp_read: raw_data");

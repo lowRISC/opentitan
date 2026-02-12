@@ -17,6 +17,9 @@ py_library(
     srcs = ["csr.py"],
     deps = [
         ":flags",
+        ":ispr",
+        ":kmac_ispr",
+        ":trace",
         ":wsr",
     ],
 )
@@ -97,6 +100,31 @@ py_library(
 )
 
 py_library(
+    name = "ispr",
+    srcs = ["ispr.py"],
+    deps = [
+        ":trace",
+    ],
+)
+
+py_library(
+    name = "kmac",
+    srcs = ["kmac.py"],
+    deps = [
+        requirement("pycryptodome"),
+        ":kmac_ispr",
+    ],
+)
+
+py_library(
+    name = "kmac_ispr",
+    srcs = ["kmac_ispr.py"],
+    deps = [
+        ":ispr",
+    ],
+)
+
+py_library(
     name = "load_elf",
     srcs = ["load_elf.py"],
     deps = [
@@ -155,6 +183,7 @@ py_library(
         ":ext_regs",
         ":flags",
         ":gpr",
+        ":kmac",
         ":loop",
         ":reg",
         ":trace",
@@ -185,6 +214,8 @@ py_library(
     srcs = ["wsr.py"],
     deps = [
         ":ext_regs",
+        ":ispr",
+        ":kmac_ispr",
         ":trace",
     ],
 )

@@ -117,7 +117,9 @@ def main():
 
     parser.add_argument('--topname',
                         required=True,
-                        help='The topname, as in earlgrey of darjeeling.')
+                        type=str,
+                        metavar='<topname>',
+                        help='The topname, as in earlgrey or darjeeling.')
     args = parser.parse_args()
 
     # The placement of sw difs requires this be run from repo_top.

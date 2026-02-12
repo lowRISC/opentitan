@@ -1,0 +1,31 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+load("@rules_rust//rust:defs.bzl", "rust_library")
+
+package(default_visibility = ["//visibility:public"])
+
+rust_library(
+    name = "hwtrust",
+    srcs = glob(["src/**/*.rs"]),
+    # compile hwtrust with Rust 2021, as it doesn't adhere to 2024 match ergonomics
+    edition = "2021",
+    tags = [
+        "noclippy",
+        "norustfmt",
+    ],
+    deps = [
+        "@crate_index//:anyhow",
+        "@crate_index//:base64",
+        "@crate_index//:chrono",
+        "@crate_index//:ciborium",
+        "@crate_index//:clap",
+        "@crate_index//:coset",
+        "@crate_index//:hex",
+        "@crate_index//:itertools",
+        "@crate_index//:openssl",
+        "@crate_index//:serde_json",
+        "@crate_index//:thiserror",
+    ],
+)

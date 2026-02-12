@@ -11,13 +11,41 @@
 #include "sw/device/lib/dif/dif_test_base.h"
 
 // Generated.
-#include "clkmgr_regs.h"
+#include "hw/top/clkmgr_regs.h"
 
 namespace dif_clkmgr_unittest {
 namespace {
 using mock_mmio::MmioTest;
 using mock_mmio::MockDevice;
 using testing::Test;
+
+// Matches the Earlgrey layout.
+enum {
+  /**
+   * The Io clock.
+   */
+  kDifClkmgrMeasureClockIo,
+  /**
+   * The Io_div2 clock.
+   */
+  kDifClkmgrMeasureClockIoDiv2,
+  /**
+   * The Io div4 clock.
+   */
+  kDifClkmgrMeasureClockIoDiv4,
+  /**
+   * The Main clock.
+   */
+  kDifClkmgrMeasureClockMain,
+  /**
+   * The Usb clock.
+   */
+  kDifClkmgrMeasureClockUsb,
+  /**
+   * Total number of clock measurements.
+   */
+  kDifClkmgrMeasureClockCount,
+};
 
 const dif_clkmgr_measure_clock_t kBadMeasClock =
     static_cast<dif_clkmgr_measure_clock_t>(27);

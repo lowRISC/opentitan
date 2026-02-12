@@ -7,6 +7,8 @@ interface rv_dm_if(input logic clk, input logic rst_n);
   import rv_dm_env_pkg::*;
 
   // "Enable" inputs
+  lc_ctrl_pkg::lc_tx_t    lc_init_done;
+  lc_ctrl_pkg::lc_tx_t    lc_hw_debug_clr;
   lc_ctrl_pkg::lc_tx_t    lc_hw_debug_en;
   lc_ctrl_pkg::lc_tx_t    lc_check_byp_en;
   lc_ctrl_pkg::lc_tx_t    lc_escalate_en;
@@ -30,6 +32,8 @@ interface rv_dm_if(input logic clk, input logic rst_n);
   bit disable_tlul_assert_host_sba_resp_svas;
 
   clocking cb @(posedge clk);
+    output lc_init_done;
+    output lc_hw_debug_clr;
     output lc_hw_debug_en;
     output pinmux_hw_debug_en;
     output lc_dft_en;

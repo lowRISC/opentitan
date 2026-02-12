@@ -71,7 +71,7 @@ class core_ibex_scoreboard extends uvm_scoreboard;
         end
       end
       // Latch the 'double_fault_seen_o' signal to catch the fault.
-      // The single pulse may be receieved sometime before the rvfi_seq_item
+      // The single pulse may be received sometime before the rvfi_seq_item
       // corresponding to the faulting instruction is generated. Hence we
       // latch that pulse when it is seen, and then reset above when the
       // seq_item arrives.

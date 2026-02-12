@@ -1,0 +1,70 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:prim_asap7:all"
+description: "OpenSource ASAP7 prim standard cell library: prim_asap7:* modules directly
+              instantiate standard cells. Memories and pad cells are not available and map to
+              generic implementations"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim_asap7:prim_pkg
+      - lowrisc:prim_asap7:and2
+      - lowrisc:prim_asap7:buf
+      - lowrisc:prim_asap7:clock_buf
+      - lowrisc:prim_generic:clock_div
+      - lowrisc:prim_asap7:clock_gating
+      - lowrisc:prim_asap7:clock_inv
+      - lowrisc:prim_asap7:clock_mux2
+      - lowrisc:prim_asap7:flop
+      - lowrisc:prim_generic:flop_2sync
+      - lowrisc:prim_generic:rst_sync
+      - lowrisc:prim_asap7:flop_en
+      - lowrisc:prim_generic:pad_attr
+      - lowrisc:prim_generic:pad_wrapper
+      - lowrisc:prim_generic:ram_1p
+      - lowrisc:prim_generic:ram_1r1w
+      - lowrisc:prim_generic:ram_2p
+      - lowrisc:prim_generic:rom
+      - lowrisc:prim_generic:usb_diff_rx
+      - lowrisc:prim_asap7:xnor2
+      - lowrisc:prim_asap7:xor2
+      - lowrisc:prim_asap7:flop_no_rst
+# Note that flash is a macro that depends on IPs, so they are not
+# included here. They must be brought in explicitly.
+#      - lowrisc:prim_generic:flash
+
+mapping:
+  "lowrisc:prim:prim_pkg"     : "lowrisc:prim_asap7:prim_pkg"
+  "lowrisc:prim:and2"         : "lowrisc:prim_asap7:and2"
+  "lowrisc:prim:buf"          : "lowrisc:prim_asap7:buf"
+  "lowrisc:prim:clock_buf"    : "lowrisc:prim_asap7:clock_buf"
+  "lowrisc:prim:clock_div"    : "lowrisc:prim_generic:clock_div"
+  "lowrisc:prim:clock_gating" : "lowrisc:prim_asap7:clock_gating"
+  "lowrisc:prim:clock_inv"    : "lowrisc:prim_asap7:clock_inv"
+  "lowrisc:prim:clock_mux2"   : "lowrisc:prim_asap7:clock_mux2"
+  "lowrisc:prim:flop"         : "lowrisc:prim_asap7:flop"
+  "lowrisc:prim:flop_2sync"   : "lowrisc:prim_generic:flop_2sync"
+  "lowrisc:prim:rst_sync"     : "lowrisc:prim_generic:rst_sync"
+  "lowrisc:prim:flop_en"      : "lowrisc:prim_asap7:flop_en"
+  "lowrisc:prim:pad_attr"     : "lowrisc:prim_generic:pad_attr"
+  "lowrisc:prim:pad_wrapper"  : "lowrisc:prim_generic:pad_wrapper"
+  "lowrisc:prim:ram_1p"       : "lowrisc:prim_generic:ram_1p"
+  "lowrisc:prim:ram_1r1w"     : "lowrisc:prim_generic:ram_1r1w"
+  "lowrisc:prim:ram_2p"       : "lowrisc:prim_generic:ram_2p"
+  "lowrisc:prim:rom"          : "lowrisc:prim_generic:rom"
+  "lowrisc:prim:usb_diff_rx"  : "lowrisc:prim_generic:usb_diff_rx"
+  "lowrisc:prim:xnor2"        : "lowrisc:prim_asap7:xnor2"
+  "lowrisc:prim:xor2"         : "lowrisc:prim_asap7:xor2"
+  "lowrisc:prim:flop_no_rst"  : "lowrisc:prim_asap7:flop_no_rst"
+  # Flash is a good canditate to be removed from the prims and become a macro like OTP.
+  # TODO(#27042): When this is done, it should be removed from this mapping.
+  "lowrisc:prim:flash": "lowrisc:prim_generic:flash"
+
+targets:
+  default:
+    filesets:
+      - files_rtl

@@ -238,5 +238,7 @@
     with_alert_handler: false
     topname: englishbreakfast
     uniquified_modules: {}
+    ext_clk_bypass: true
+    module_instance_name: clkmgr
   }
 }

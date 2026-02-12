@@ -20,7 +20,7 @@ RTL           | [FUNC_IMPLEMENTED][]           | Done        |
 RTL           | [ASSERT_KNOWN_ADDED][]         | Done        |
 Code Quality  | [LINT_SETUP][]                 | Done        |
 
-[RV_TIMER Spec]:      ../../../../doc/introduction.md
+[RV_TIMER Spec]:      ../README.md
 
 [SPEC_COMPLETE]:              ../../../../doc/project_governance/checklist/README.md#spec_complete
 [CSR_DEFINED]:                ../../../../doc/project_governance/checklist/README.md#csr_defined
@@ -111,8 +111,8 @@ Review        | [REVIEW_SW_CHANGE][]    | N/A         |
 Review        | [REVIEW_SW_ERRATA][]    | N/A         |
 Security      | [SEC_NON_RESET_FLOPS][] | N/A         |
 Security      | [SEC_SHADOW_REGS][]     | N/A         |
-Review        | Reviewer(s)             | Done        | @jeoongp @timothytrippel @sriyerg
-Review        | Signoff date            | Done        | 2022-07-28
+Review        | Reviewer(s)             | Done        | @alees24 @rswarbrick
+Review        | Signoff date            | Done        | 2025-05-09
 
 [NEW_FEATURES_D3]:      ../../../../doc/project_governance/checklist/README.md#new_features_d3
 [TODO_COMPLETE]:        ../../../../doc/project_governance/checklist/README.md#todo_complete
@@ -245,23 +245,22 @@ Review        | [SEC_CM_DV_REVIEWED][]                  | Done        | Waived t
  Type         | Item                              | Resolution  | Note/Collaterals
 --------------|-----------------------------------|-------------|------------------
 Documentation | [DESIGN_DELTAS_CAPTURED_V3][]     | N/A         |
-Tests         | [X_PROP_ANALYSIS_COMPLETED][]     | Waived      | Revisit later. Tool setup in progress.
+Tests         | [X_PROP_ANALYSIS_COMPLETED][]     | Done        |
 Tests         | [FPV_ASSERTIONS_PROVEN_AT_V3][]   | N/A         |
-Regression    | [SIM_NIGHTLY_REGRESSION_AT_V3][]  | Done        | Exception (implemented in local)
-Coverage      | [SIM_CODE_COVERAGE_AT_100][]      | Done        | Merge common exclusions then add rv_timer specifics.
-Coverage      | [SIM_FUNCTIONAL_COVERAGE_AT_100][]| Done        | Resolved: [sticky reset][#844]
+Regression    | [SIM_NIGHTLY_REGRESSION_AT_V3][]  | Done        |
+Coverage      | [SIM_CODE_COVERAGE_AT_100][]      | Done        |
+Coverage      | [SIM_FUNCTIONAL_COVERAGE_AT_100][]| Done        |
 Coverage      | [FPV_CODE_COVERAGE_AT_100][]      | N/A         |
 Coverage      | [FPV_COI_COVERAGE_AT_100][]       | N/A         |
-Code Quality  | [ALL_TODOS_RESOLVED][]            | Done        | Resolved: [#671][]
+Code Quality  | [ALL_TODOS_RESOLVED][]            | Done        |
 Code Quality  | [NO_TOOL_WARNINGS_THROWN][]       | Done        |
-Code Quality  | [TB_LINT_COMPLETE][]              | Not Started |
+Code Quality  | [TB_LINT_COMPLETE][]              | Done        |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V3][]   | N/A         |
-Issues        | [NO_ISSUES_PENDING][]             | Done        | [#68][], [#69][]
-Review        | Reviewer(s)                       | Done        | @eunchan @sjgitty @sriyerg
-Review        | Signoff date                      | Done        | 2019-11-04
+Issues        | [NO_ISSUES_PENDING][]             | Done        | [#18918] Part of a future release
+Review        | Reviewer(s)                       | Done        | @rswarbrick
+Review        | Signoff date                      | Done        | 2025-05-09
 
-[#671]: https://github.com/lowRISC/opentitan/pull/671
-[#844]: https://github.com/lowRISC/opentitan/pull/844
+[#18918]: https://github.com/lowRISC/opentitan/issues/18918
 
 [DESIGN_DELTAS_CAPTURED_V3]:     ../../../../doc/project_governance/checklist/README.md#design_deltas_captured_v3
 [X_PROP_ANALYSIS_COMPLETED]:     ../../../../doc/project_governance/checklist/README.md#x_prop_analysis_completed

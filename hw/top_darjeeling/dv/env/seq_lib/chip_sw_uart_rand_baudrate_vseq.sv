@@ -28,8 +28,8 @@ class chip_sw_uart_rand_baudrate_vseq extends chip_sw_uart_tx_rx_vseq;
     super.pre_randomize();
 
     if (cfg.chip_clock_source != ChipClockSourceInternal) begin
-      // Uart bus clock is in div4 domain
-      uart_clk_freq_khz = cfg.chip_clock_source * 1000 / 4;  // div4
+      // Uart bus clock is in IO domain
+      uart_clk_freq_khz = cfg.chip_clock_source * 1000 / 4;  // IO
       if (cfg.chip_clock_source == ChipClockSourceExternal48Mhz) begin
         uart_clk_freq_khz = uart_clk_freq_khz * 2;  // div2
       end
@@ -69,10 +69,6 @@ class chip_sw_uart_rand_baudrate_vseq extends chip_sw_uart_tx_rx_vseq;
 
   // When uart starts to send RX data, check if AST is using extclk if extclk is selected.
   virtual task send_uart_rx_data(int instance_num, int size = -1, bit random = 0);
-    if (cfg.chip_clock_source != ChipClockSourceInternal) begin
-      `DV_CHECK(cfg.ast_ext_clk_vif.is_ext_clk_in_use(),
-                "expected the external clock to be used for io");
-    end
     super.send_uart_rx_data(instance_num, size, random);
   endtask
 

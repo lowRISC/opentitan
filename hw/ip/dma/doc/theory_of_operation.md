@@ -1,5 +1,9 @@
 # Theory of Operation
 
+## Block Diagram
+
+![DMA Block Diagram](block_diagram.svg)
+
 ## Defining Relevant Memory Regions
 
 |                       |     |
@@ -36,8 +40,9 @@ the OT Trusted Compute Boundary
     digital signing etc. Such an operation is requested using the
     Mailbox interface and may involve bulk data movement.
 
-    -   Please refer to the [*mailbox specification*]()
-        for further details on the mailbox structure.
+    -   Please refer to the
+        [*mailbox specification*](../../mbx/doc/theory_of_operation.md) for
+        further details on the mailbox structure.
 
 -   Through the mailbox interface following information may be passed:
 
@@ -51,8 +56,6 @@ the OT Trusted Compute Boundary
 
     -   Opcode - Type of any optionally supported operation e.g.
         Cryptographic hash.
-
-    -   \<anything else TBD\>.
 
 -   OT firmware parses the command object passed through the mailbox.
 -   OT firmware sanitizes mailbox objects as required.
@@ -117,11 +120,11 @@ hardware handshake DMA operation.
 
 **Receiving data from LSIO**
 
--   [*Source address*](../data/dma.hjson#src_addr_lo): address of the low speed IO
+-   [*Source address*](registers.md#src_addr_lo): address of the low speed IO
     receive FIFO read out register.
--   [*Destination address*](../data/dma.hjson#dst_addr_lo): address to the memory
+-   [*Destination address*](registers.md#dst_addr_lo): address to the memory
     buffer where received data is placed.
--   [*Address space ID*](../data/dma.hjson#addr_space_id) (ASID): (OT Internal, CTN or System)
+-   [*Address space ID*](registers.md#addr_space_id) (ASID): (OT Internal, CTN or System)
 
     -   Source ASID: Specify the address space in which the LSIO FIFO is
         visible.
@@ -129,59 +132,61 @@ hardware handshake DMA operation.
     -   Destination ASID: Specify the address space in which the
         destination buffer resides.
 
--   [*Total Size*](../data/dma.hjson#total-data-size): Size of the data object to be popped
+-   [*Chunk Size*](registers.md#chunk_data_size): Size of each of the non-final chunks
+    of data making up the total transfer. Chunked transfers allowing the DMA controller
+    to perform a transfer in a piecemeal fashion, incrementally moving chunks of data
+    from the Low Speed IO peripheral FIFO as they become available.
+-   [*Total Size*](registers.md#total_data_size): Total size of the data object to be popped
     from the FIFO (equivalent to the number of reads from the FIFO per
     interrupt times the FIFO read data width).
--   [*Transfer Width*](../data/dma.hjson#transfer_width): Width of each transaction
+-   [*Transfer Width*](registers.md#transfer_width): Width of each transaction
     (equivalent to FIFO read data width).
--   [*DMAC Control register*](../data/dma.hjson#control):
+-   [*Source Configuration*](registers.md#src_config): Source configuration specifying
+    the addressing mode to be used for the source of the data.
+
+    -   Wrap: When set, the source address will wrap back to the programmed start address at
+        the end of each data chunk such that all chunks overlap. When clear, chunks are
+        retrieved from contiguously-ascending addresses.
+
+    -   Increment: If set, consecutive 'transfer width' bytes of data are transferred to/from
+        the source using consecutive addresses. If not set, all data reads within a single
+        chunk are performed to/from a single address.
+
+-   [*Destination Configuration*](registers.md#dst_config): Destination configuration
+    specifying the addressing mode to be used for the data destination. Addressing modes are as
+    per the Source Configuration description above.
+-   [*DMAC Control register*](registers.md#control):
 
     -   Opcode: Type of operation requested. Typically set to copy
         operation in case of hardware handshake mode of operation.
 
     -   Hardware handshake enable = 1
 
-    -   Data Direction = 0 (receive)
-
-    -   FIFO address auto-increment enable: If set, consecutive
-        'transfer width' bytes of data are transferred to/from the FIFO using consecutive
-        register addresses, resetting to the initial address at the start of each new chunk within
-        the transfer. If not enabled, all accesses are performed to/from a single address.
-
-    -   Data buffer Auto-increment Enable: If set to 1, data shall be
-        loaded into consecutive buffer segments in memory, where each
-        segment is equivalent to 'total size' worth of data. To
-        prepare for the next data buffer segment, [*Destination
-        address*](../data/dma.hjson#dst_addr_lo) register is incremented by '[*Total
-        Size*](../data/dma.hjson#total-data-size)' once an equivalent amount of data is
-        emptied from the FIFO & written to the buffer segment. If auto
-        increment feature is not set, then the memory buffer gets
-        overwritten each time the low speed device triggers the DMA
-        based hardware handshake operation.
+    -   Initial Transfer: This bit shall be set for the first chunk of any DMA transfer,
+        which ensures that the DMA transfer and any inline hashing operation are properly
+        initialized. It shall be cleared for all non-initial chunks of the transfer.
 
     -   Go = 1 to start the operation.
 
 -   DMA engines start listening to input interrupt.
 -   Low speed IO peripheral FIFO asserts interrupt once FIFO reaches a
     certain threshold.
--   The DMA engine reads the 'total size' number of bytes from the
-    pointer in source address register (receive FIFO) and places them in
-    the destination buffer. Note that width of each read is per the
-    'transfer width' setting.
--   **Note**: *assumption is the peripheral lowers input once FIFO is
-    cleared. No explicit clearing necessary.*
--   The DMA engine increments the source and destination address
-    register if respective auto-increment enable is set.
--   DMA engine waits for the interrupt to get asserted again (i.e. waits
-    for FIFO to be filled).
+-   The DMA engine reads 'chunk size' bytes from the pointer in the source address
+    register and transfers them to the destination.
+    Note that the width of each read is as per the 'transfer width' setting.
+-   **Note**: *the assumption is that the peripheral lowers its interrupt signal once
+    the FIFO is cleared. No explicit clearing is necessary.*
+-   The DMA engine advances the source and/or destination addresses to the start of the next
+    chunk if the source/destination configuration does not specify 'wrap' addressing mode.
+-   DMA engine waits for the interrupt to get asserted again (i.e. waits for FIFO to be filled).
 
 **Sending data to LSIO**
 
--   [*Source address*](../data/dma.hjson#src_addr_lo): Pointer to the head of the
+-   [*Source address*](registers.md#src_addr_lo): Pointer to the head of the
     memory buffer.
--   [*Destination address*](../data/dma.hjson#dst_addr_lo): pointer to the FIFO
+-   [*Destination address*](registers.md#dst_addr_lo): pointer to the FIFO
     register.
--   [*Address space ID*](../data/dma.hjson#addr_space_id) (ASID): (OT Internal, CTN or System)
+-   [*Address space ID*](registers.md#addr_space_id) (ASID): (OT Internal, CTN or System)
 
     -   Source ASID: Specify the address space in which the source
         buffer resides.
@@ -189,47 +194,54 @@ hardware handshake DMA operation.
     -   Destination ASID: Specify the address space in which the LSIO
         FIFO is visible.
 
--   [*Total Size*](../data/dma.hjson#total-data-size): Size of the data object to be pushed
+-   [*Chunk Size*](registers.md#chunk_data_size): Size of each of the non-final chunks
+    of data making up the total transfers. Chunked transfers allowing the DMA controller
+    to perform a transfer in a piecemeal fashion, incrementally sending chunks of data
+    to the Low Speed IO peripheral FIFO as space becomes available.
+-   [*Total Size*](registers.md#total_data_size): Size of the data object to be pushed
     into the FIFO.
--   [*Transfer Width*](../data/dma.hjson#transfer_width): Write Data width of the LSIO FIFO
+-   [*Transfer Width*](registers.md#transfer_width): Write Data width of the LSIO FIFO
     register. Each write transaction is equal to this size.
--   [*DMAC Control register*](../data/dma.hjson#control)
+-   [*Source Configuration*](registers.md#src_config): Source configuration specifying
+    the addressing mode to be used for the source of the data. Addressing modes are as
+    per the Destination Configuration description below.
+-   [*Destination Configuration*](registers.md#dst_config): Destination configuration
+    specifying the addressing mode to be used for the data destination.
+
+    - Wrap: When set the destination address will return to its programmed start
+      address at the end of data chunk such that all chunks overlap. This is normally
+      the desired behavior when writing to a destination FIFO.
+
+    - Increment: If clear, all of the data words within a chunk will be written to the
+      same address. For a memory-mapped peripheral FIFO this will normally be the
+      desired behavior. If this bit is set then the data words within a chunk will be
+      sent to contiguously-ascending addresses which may be useful with some peripherals
+      that do not present a typical FIFO interface but rather, for example, a set of
+      registers.
+
+-   [*DMAC Control register*](registers.md#control)
 
     -   Opcode: Type of operation requested. Typically set to copy
         operation in case of hardware handshake mode of operation.
 
     -   Hardware handshake enable = 1
 
-    -   Data Direction = 1 (send)
-
-    -   FIFO address auto-increment enabled if consecutive 'transfer
-        size' worth of data chunks are pushed to the FIFO using
-        consecutive register addresses. If not enabled, consecutive
-        data chunks are pushed by repeatedly writing the same register
-        address.
-
-    -   Data buffer Auto-increment Enable: If set to 1, data shall be
-        read from consecutive buffer spaces, each equivalent to 'total
-        size' worth of data. To prepare for the next data buffer
-        segment [*Source address*](../data/dma.hjson#src_addr_lo) register is
-        incremented by '[*Total Size*](../data/dma.hjson#total-data-size)' once the
-        equivalent amount of data is written to the FIFO. If auto
-        increment feature is not set, then the same memory buffer
-        segment gets read each time an interrupt triggers the DMA
-        based hardware handshake operation.
+    -   Initial Transfer: This bit shall be set for the first chunk of any DMA transfer,
+        which ensures that the DMA transfer and any inline hashing operation are properly
+        initialized. It shall be cleared for all non-initial chunks of the transfer.
 
     -   Go = 1 to start the operation.
 
 -   DMA engines start listening to input interrupt.
 -   Low speed IO peripheral FIFO asserts interrupt once FIFO reaches a
     certain 'almost empty' threshold.
--   The DMA engine reads the total size number of bytes from the source
-    address register (memory) and writes them into the FIFO register.
-    Width of each write is equal to the transfer width setting.
--   ***Note**: assumption is the peripheral lowers 'almost empty'
-    interrupt once FIFO is filled. No explicit clearing necessary.
--   The DMA engine increments the source and destination address
-    register if respective auto-increment enable is set.
+-   The DMA engine reads 'total size' bytes from the source address (memory) and
+    sends them to the peripheral.
+    Note that the width of each write is as per the 'transfer width' setting.
+-   **Note**: *the assumption is that the peripheral lowers its 'almost empty'
+    interrupt once the FIFO is filled. No explicit clearing is necessary.*
+-   The DMA engine advances the source and/or destination addresses to the start of the next
+    chunk if the source/destination configuration does not specify 'wrap' addressing mode.
 -   DMA engine waits for the interrupt to get asserted again (i.e. waits
     for FIFO to be almost empty).
 
@@ -257,19 +269,19 @@ The DMA controller provides the following security value:
     perimeter.
 -   A read to an SoC address may have side effects causing the operation
     to hang. Using the Ibex core directly to perform such a read
-    operation may end up hanging the core. Using the DMA controller to
+    operation could risk hanging the core. Using the DMA controller to
     perform such reads shields the Ibex core from such availability
     issues. The DMA controller must ensure that problems such as hanging
     transactions on the SoC interface do not lead to problems on any
     OpenTitan-internal interfaces.
 
-Note that to ensure secure movement of data, following assumption hold
-true:
+Note that to ensure secure movement of data, the following assumptions must
+hold:
 
--   DMA Controller configuration shall be under OpenTitan firmware (Ibex
-    core) control only.
+-   The DMA Controller configuration shall be under OpenTitan firmware
+    (Ibex core) control only.
 -   External agents to the OpenTitan secure boundary *shall not* have
-    access the DMA registers.
+    access to the DMA registers.
 -   Following restrictions to data movement are observed and enforced by
     the DMA controller.
 
@@ -307,6 +319,20 @@ DMA requests are initiated by the system software (or SoC firmware
 agent) through the appropriately defined [*DOE mailbox
 objects*](). Completion status of the DMA operation to
 the original requested is done via the DOE response object mechanism.
+
+## Inline Hashing
+
+The DMA controller offers support for on-the-fly calculation of hash digests on
+the data being transferred, using any of the following algorithms:
+
+- SHA-256 - SHA-2 hash with a 256-bit digest.
+- SHA-384 - SHA-2 hash with a 384-bit digest.
+- SHA-512 - SHA-2 hash with a 512-bit digest.
+
+This is achived simply by modifying the [*opcode*](registers.md#control--opcode)
+field of the [*CONTROL*](registers.md#control) and collecting the
+[digest](registers.md#sha2_digest) from the registers interface when the
+transfer has completed.
 
 ## Extension: Inline Operations
 
@@ -352,123 +378,87 @@ Shared modules are thus preferable if they can meet throughput and
 latency requirements. To make this design decision, those requirements
 have to be known.
 
-## Future Considerations
+## Clocking and reset
 
-### SoC-Defined Attributes
+The DMA controller uses a single clock and the entire IP block operates synchronously on that clock. An important design consideration is the implementation of clock gating throughout the module to save power.
+A single reset input provides an asynchronous reset of the entire IP block. Any clock domain crossings and reset domain crossings required to interface to devices and/or the System On Chip infrastructure are outside of the scope of this IP.
 
-The DMA controller may at some point need to be able to support
-SoC-defined attributes on the transactions it generates. This is
-particularly relevant for systems that define their memory into realms.
-However, many of these attributes will likely be managed by an IOMMU and
-other SoC components.
+### Clock gating
 
-## Glossary
+As a power-saving measure - since it is anticipated that the DMA controller will only be used sporadically - the design includes a clock gate that is used to stop the clock to most of the IP block when it is not in active use.
+The `prim_clock_gating` clock gate is enabled by writes to the  `CONTROL` register - used to start a transfer - and remains enabled whilst the DMA controller is operating.
+The gating is handled automatically by the hardware and should not be software-visible.
 
-| Term                                 | Description                                                     |
-|--------------------------------------|-----------------------------------------------------------------|
-| CXL                                  | Compute Express Link                                            |
-| MCTP                                 | Management Component Transport Protocol                         |
-| SPDM                                 | Security Protocol and Data Model                                |
-| CMA                                  | Component Measurement and Attestation                           |
-| [*DMTF*](https://www.dmtf.org/about) | formerly known as the Distributed Management Task Force         |
-| OT                                   | OpenTitan                                                       |
-| RoT                                  | Root Of Trust                                                   |
-| CTN                                  | ConTrol Network                                                 |
-| SoC                                  | System On Chip                                                  |
-| IOMMU                                | Input Output Memory Management Unit |
-| ECR                                  | Engineering Change Request                                      |
-| ECN                                  | Engineering Change Notification                                 |
+## Integration into Systems On Chips (SoCs)
 
-## References
+In accordance with the [comportability specification](../../../../doc/contributing/hw/comportability) the DMA controller offers the following interfaces:
 
-| Reference title         | Link and description |
-|-------------------------|----------------------|
-| OpenTitan Documentation | [docs.opentitan.org](https://docs.opentitan.org/) |
-| CXL Specification       | [Compute Express Link](https://www.computeexpresslink.org/download-the-specification) |
-| SPDM                    | [CMA requires SPDM Version 1.0 or above](https://www.dmtf.org/dsp/DSP0274) |
-| SPDM-MCTP               | [dmtf.org/dsp/DSP0275](https://www.dmtf.org/dsp/DSP0275) |
-| Secured SPDM            | [dmtf.org/dsp/DSP0277](https://www.dmtf.org/dsp/DSP0277) |
+- TileLink-UL interface to registers
+- Interrupts
+- Alerts
+- [RACL](../../../../doc/contributing/hw/racl)
 
-## Appendix
+The DMA controller also has up to three host interfaces, permitting it to transfer data to/from a number of devices.
+Two of these interfaces are TL-UL (TileLink Uncached Light) as per the register interface:
 
-FIFO address auto-increment enable: If set, consecutive 'transfer width'
-worth of data chunks are popped from the FIFO using consecutive register
-addresses. If not enabled, consecutive data chunks are popped by
-repeatedly reading the same register address.
+- host_tl_h_i|o: TL-UL host connection to the RoT-private memory.
+- ctn_tl_d2h_i|h2d_o: Host connection to the ConTrol Network of the SoC.
 
-Data buffer Auto-increment Enable: If set to 1, data shall be loaded
-into consecutive buffer segments in memory, where each segment is
-equivalent to 'total size' worth of data. To prepare for the next data
-buffer segment, *Destination address*
-register is incremented by '[*Total Size*](../data/dma.hjson#total-data-size)'
-once an equivalent amount of data is emptied from the FIFO & written to
-the buffer segment. If auto increment feature is not set, then the
-memory buffer gets overwritten each time the low speed device triggers
-the DMA based hardware handshake operation.
+The third host interface of the DMA controller uses a different bus specification which is described below.
 
-\<---
+### SoC System Bus
 
-In case of the FIFO address auto-increment enable mode is set, then the
-FIFO is read / written at the same address i.e. from your example above:
+Unlike the TL-UL ports, the SoC System Bus requires a 64-bit address space.
+The signaling is similar to that of the TL-UL bus except that read and write channels are separated.
+The DMA controller, however, presently issues only a single read or a single write request at a time.
 
-transfer 0 FIFO addr: 0x0 ; transfer 0 SRAM buffer addr: 0x0
+#### SoC System Bus Request
 
-transfer 1 FIFO addr: 0x0 ; transfer 0 SRAM buffer addr: 0x4
+| Signal            | Description                     |
+|-------------------|---------------------------------|
+| vld_vec[cmd]      | Valid request                   |
+| metadata_vec[cmd] | Constant, indicating the source |
+| opcode_vec[cmd]   | Opcode indicating request type  |
+| iova_vec[cmd]     | Requested address (64 bits)     |
+| racl_vec[cmd]     | RACL role of DMA controller     |
+| write_data[cmd]   | Data for write commands         |
+| write_be[cmd]     | Byte enables for write commands |
+| read_be[cmd]      | Byte enables for read commands  |
 
-transfer 2 FIFO addr: 0x0 ; transfer 0 SRAM buffer addr: 0x8
+#### SoC System Bus Response
 
-If FIFO address auto-increment enable bit is zero, then
+| Signal            | Description                      |
+|-------------------|----------------------------------|
+| grant_vec[cmd]    | Indicates request accepted       |
+| read_data_vld     | Read data is valid               |
+| read_data         | Data returned for read request   |
+| read_metadata     | Constant from request            |
+| error_vld         | Indicates a read/write error     |
+| error_vec         | Error condition(s) that occurred |
 
-transfer 0 FIFO addr: 0x0 ; transfer 0 SRAM buffer addr: 0x0
+## Sub-word extraction and replication
 
-transfer 1 FIFO addr: 0x4 ; transfer 0 SRAM buffer addr: 0x4
+The DMA controller supports sub-word transfers on the bus, e.g. for a 32-bit TL-UL implementation it is also capable of transferring 1-byte and 2-byte quantities.
+This may be useful for lower-speed peripherals with narrower FIFOs/registers.
+Since the `tlul_adapter_host` only issues reads of full bus words the device should normally ignore the least significant bit(s) of the address, which will be zero.
+Such a device is normally expected to replicate the sub-word across the width of the returned bus word, making its behavior compatible with that of a regular memory responding to word read requests.
+To operate seamlessly with either a memory or a peripheral, the DMA controller will extract the sub-word from the appropriate lane of the returned data word, based upon the least significant bit(s) of the source address.
 
-transfer 2 FIFO addr: 0x8 ; transfer 0 SRAM buffer addr: 0x8
+When writing less than a full bus word, the DMA controller will replicate the selected 8- or 16-bit sub-word across the width of the bus word before writing.
+It will also assert the appropriate bits of the `mask` field on the TL-UL A channel (or correspondingly the `write_be` strobes of the SoC System Bus), and a narrower peripheral may thus ascertain which part of the word is to be used.
 
-Assuming that there are only 3 transfers in this transaction buffer
-(i.e. FIFO depth is 3)
+The example below shows this behavior when performing 1-byte transfers from a source to a destination, with the two least significant address bits being 2'b01 (i.e. the source address is of the form '4n + 1').
 
-However you are setting up a load of 6 bytes
+![Sub-word extraction and replication](sub_words.svg)
 
-In this case if you want to preserver all the data in the SRAM buffer
-(i.e. avoid overwrite of the data during the transfer 3,4,5) then need
-to leverage the Data buffer Auto-increment Enable bit as well
+The second byte within the 32-bit word ('b') is extracted from the 32-bit word read from the source, and then replicated at every byte position within the 32-bit data word that is written to the destination.
 
-FIFO address auto-increment enable=0 and Data buffer Auto-increment
-Enable=0 then ==\> Note that *here the SRAM buffer data gets
-overwritten*
+## Low Speed I/O peripheral interrupt lines
 
-transfer 0 FIFO addr: 0x0 ; transfer 0 SRAM buffer addr: 0x0
+The DMA controller also offers hardware-mediated transfers using direct interrupt lines from a peripheral block involved in the transfer.
+These lines, instead of signaling to a CPU in the conventional fashion, may be steered to the DMA controller to inform it of the availability of source data (e.g. receive FIFO level in excess of a programmed threshold), or that there is sufficient space at the destination (e.g. transmit FIFO level is below a programmed threshold).
 
-transfer 1 FIFO addr: 0x0 ; transfer 0 SRAM buffer addr: 0x4
-
-transfer 2 FIFO addr: 0x0 ; transfer 0 SRAM buffer addr: 0x8
-
-transfer 3 FIFO addr: 0x0 ; transfer 0 SRAM buffer addr: 0x0
-
-transfer 4 FIFO addr: 0x0 ; transfer 0 SRAM buffer addr: 0x4
-
-transfer 5 FIFO addr: 0x0 ; transfer 0 SRAM buffer addr: 0x8
-
-FIFO address auto-increment enable=1 and Data buffer Auto-increment
-Enable=0 then ==\> Note that *here all the SRAM buffer data gets
-preserved*
-
-transfer 0 FIFO addr: 0x0 ; transfer 0 SRAM buffer addr: 0x0
-
-transfer 1 FIFO addr: 0x4 ; transfer 0 SRAM buffer addr: 0x4
-
-transfer 2 FIFO addr: 0x8 ; transfer 0 SRAM buffer addr: 0x8
-
-transfer 3 FIFO addr: 0x0 ; transfer 0 SRAM buffer addr: 0xc
-
-transfer 4 FIFO addr: 0x4 ; transfer 0 SRAM buffer addr: 0x10
-
-transfer 5 FIFO addr: 0x8 ; transfer 0 SRAM buffer addr: 0x14
-
-(note that the FIFO address will increment only upto the FIFO depth -
-here we are assuming a depth of 3, so it increments 0, 4, 8 and then
-again 0, 4, 8 in the next transfer.)
-
-Also note that all combinations of the two increment enable bits (FIFO
-and SRAM buffer) are possible.
+In response to the assertion of an enabled bit of the `lsio_trigger_i` input, the DMA controller will proceed to transfer an entire chunk of data from the source to the destination.
+The action of reading/writing this data must cause the interrupt input to become deasserted before the DMA controller has completed the reading/writing of this chunk, unless sufficient additional input/output causes another interrupt-generating condition to occur.
+Whilst the `lsio_trigger_i` input is not asserted, the DMA controller will remain in its Idle state awaiting instruction to proceed with the next chunk of the transfer.
+Data is thus transferred from source to destination at a rate appropriate for each device involved in the transfer.

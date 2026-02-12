@@ -17,8 +17,6 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 // The KMAC dif expects a secret key, even though if the configuration is set
 // to use the sideloaded key then it will be ignored. We will write a software
 // key and then ensure that the output does NOT match the expected value for
@@ -40,17 +38,6 @@ static const size_t kCustomStringLen = 0;
 static const char kKmacMessage[] = "\x00\x01\x02\x03";
 static const size_t kKmacMessageLen = 4;
 
-enum {
-  /**
-   * Retention SRAM start address (inclusive).
-   */
-  kRetSramBaseAddr = TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
-
-  kRetSramOwnerAddr = kRetSramBaseAddr + offsetof(retention_sram_t, owner),
-  kRetRamLastAddr =
-      kRetSramBaseAddr + TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES - 1,
-};
-
 static dif_keymgr_t keymgr;
 static dif_kmac_t kmac;
 static dif_sram_ctrl_t ret_sram;
@@ -62,15 +49,10 @@ OTTF_DEFINE_TEST_CONFIG();
  * Initializes all DIF handles for each peripheral used in this test.
  */
 static void init_peripheral_handles(void) {
-  CHECK_DIF_OK(
-      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
-  CHECK_DIF_OK(dif_keymgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), &keymgr));
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
-  CHECK_DIF_OK(dif_sram_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR),
-      &ret_sram));
+  CHECK_DIF_OK(dif_kmac_init_from_dt(kDtKmac, &kmac));
+  CHECK_DIF_OK(dif_keymgr_init_from_dt(kDtKeymgr, &keymgr));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgrAon, &rstmgr));
+  CHECK_DIF_OK(dif_sram_ctrl_init_from_dt(kDtSramCtrlRetAon, &ret_sram));
 }
 
 /**
@@ -130,11 +112,15 @@ static void test_kmac_key_sideload(dif_keymgr_t *keymgr, dif_kmac_t *kmac,
   LOG_INFO("Computed KMAC output for sideloaded key.");
 
   if (!test_phase) {
+    uint32_t sram_start =
+        dt_sram_ctrl_memory_base(kDtSramCtrlRetAon, kDtSramCtrlMemoryRam);
     // In test phase 0, store the KMAC digest into the retention SRAM.
     for (size_t it = 0; it < ARRAYSIZE(kKmacModes); it++) {
-      // Use kRetSramOwnerAddr + 4 to avoid overwriting test_phase_cnt.
+      // Use offsetof(retention_sram_t, owner) + 4 to avoid overwriting
+      // test_phase_cnt.
       sram_ctrl_testutils_write(
-          kRetSramOwnerAddr + 4 + 4 * it * kKmacOutputLen,
+          sram_start + offsetof(retention_sram_t, owner) + 4 +
+              4 * it * kKmacOutputLen,
           (sram_ctrl_testutils_data_t){.words = output_sideload[it],
                                        .len = kKmacOutputLen});
     }
@@ -174,10 +160,13 @@ static void test_kmac_key_sideload(dif_keymgr_t *keymgr, dif_kmac_t *kmac,
   } else {
     // In test phase 1, read the previous KMAC digests from the retention SRAM
     // and compare them with the calculated ones.
+    uint32_t sram_start =
+        dt_sram_ctrl_memory_base(kDtSramCtrlRetAon, kDtSramCtrlMemoryRam);
     for (size_t it = 0; it < ARRAYSIZE(kKmacModes); it++) {
       uint32_t prev_digest[kKmacOutputLen];
       memcpy(prev_digest,
-             (uint8_t *)(kRetSramOwnerAddr + 4 + 4 * it * kKmacOutputLen),
+             (uint8_t *)(sram_start + offsetof(retention_sram_t, owner) + 4 +
+                         4 * it * kKmacOutputLen),
              sizeof(prev_digest));
       CHECK_ARRAYS_EQ(output_sideload[it], prev_digest, kKmacOutputLen);
     }

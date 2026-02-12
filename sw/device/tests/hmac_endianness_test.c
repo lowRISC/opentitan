@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/hmac.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
@@ -13,9 +14,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hmac_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "sw/device/lib/dif/autogen/dif_hmac_autogen.h"
+#include "hw/top/hmac_regs.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -39,14 +38,14 @@ static const dif_hmac_transaction_t kHmacconfig_bigd_bigm = {
     .message_endianness = kDifHmacEndiannessBig,
 };
 
-static const char kData[142] =
+OT_NONSTRING static const char kData[142] =
     "Every one suspects himself of at least one of "
     "the cardinal virtues, and this is mine: I am "
     "one of the few honest people that I have ever "
     "known";
 
-static const char kData2[8] = "Help Us ";
-static const char kData2_endian[8] = "pleH sU ";
+OT_NONSTRING static const char kData2[8] = "Help Us ";
+OT_NONSTRING static const char kData2_endian[8] = "pleH sU ";
 
 static const dif_hmac_digest_t kExpectedShaDigest = {
     .digest =
@@ -104,13 +103,6 @@ static const dif_hmac_digest_t kExpectedShaDigest_shortmessage_bigendian = {
         },
 };
 
-/**
- * Initialize the HMAC engine. Return `true` if the configuration is valid.
- */
-static void test_setup(mmio_region_t base_addr, dif_hmac_t *hmac) {
-  CHECK_DIF_OK(dif_hmac_init(base_addr, hmac));
-}
-
 static void run_test_endianness(const dif_hmac_t *hmac, const char *data,
                                 size_t len, const dif_hmac_transaction_t config,
                                 const dif_hmac_digest_t *expected_digest) {
@@ -126,7 +118,7 @@ static void run_test_endianness(const dif_hmac_t *hmac, const char *data,
 bool test_main(void) {
   LOG_INFO("Running HMAC DIF test...");
   dif_hmac_t hmac;
-  test_setup(mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR), &hmac);
+  CHECK_DIF_OK(dif_hmac_init_from_dt(kDtHmac, &hmac));
 
   LOG_INFO(
       "Running test SHA256 pass little-endian digest and little-endian "

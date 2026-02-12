@@ -17,3 +17,11 @@ filegroup(
         "//hw/ip/entropy_src/data:all_files",
     ],
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = glob([
+        "**/*.md",
+        "**/*.svg",
+    ]) + ["//hw/ip/entropy_src/data:doc_files"],
+)

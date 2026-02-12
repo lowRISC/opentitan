@@ -51,6 +51,9 @@ filesets:
     depend:
       # common waivers
       - lowrisc:lint:common
+    files:
+      - lint/${module_instance_name}.vbl
+    file_type: waiver
 
 parameters:
   SYNTHESIS:

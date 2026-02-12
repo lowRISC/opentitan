@@ -9,7 +9,7 @@ class dv_base_virtual_sequencer #(type CFG_T = dv_base_env_cfg,
   CFG_T         cfg;
   COV_T         cov;
 
-  function new(string name = "dv_base_virtual_sequencer", uvm_component parent);
+  function new(string name, uvm_component parent);
     super.new(name, parent);
   endfunction
 

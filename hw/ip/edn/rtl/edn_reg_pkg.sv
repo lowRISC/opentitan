@@ -19,6 +19,12 @@ package edn_reg_pkg;
   // Number of registers for every interface
   parameter int NumRegs = 18;
 
+  // Alert indices
+  typedef enum int {
+    AlertRecovAlertIdx = 0,
+    AlertFatalAlertIdx = 1
+  } edn_alert_idx_t;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -115,18 +121,22 @@ package edn_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } edn_cmd_req_done;
+    } edn_fatal_err;
     struct packed {
       logic        d;
       logic        de;
-    } edn_fatal_err;
+    } edn_cmd_req_done;
   } edn_hw2reg_intr_state_reg_t;
 
   typedef struct packed {
     struct packed {
+      logic [2:0]  d;
+      logic        de;
+    } cmd_sts;
+    struct packed {
       logic        d;
       logic        de;
-    } cmd_reg_rdy;
+    } cmd_ack;
     struct packed {
       logic        d;
       logic        de;
@@ -134,22 +144,18 @@ package edn_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } cmd_ack;
-    struct packed {
-      logic [2:0]  d;
-      logic        de;
-    } cmd_sts;
+    } cmd_reg_rdy;
   } edn_hw2reg_sw_cmd_sts_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic        d;
+      logic [2:0]  d;
       logic        de;
-    } boot_mode;
+    } cmd_sts;
     struct packed {
       logic        d;
       logic        de;
-    } auto_mode;
+    } cmd_ack;
     struct packed {
       logic [3:0]  d;
       logic        de;
@@ -157,30 +163,18 @@ package edn_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } cmd_ack;
+    } auto_mode;
     struct packed {
-      logic [2:0]  d;
+      logic        d;
       logic        de;
-    } cmd_sts;
+    } boot_mode;
   } edn_hw2reg_hw_cmd_sts_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
-    } edn_enable_field_alert;
-    struct packed {
-      logic        d;
-      logic        de;
-    } boot_req_mode_field_alert;
-    struct packed {
-      logic        d;
-      logic        de;
-    } auto_req_mode_field_alert;
-    struct packed {
-      logic        d;
-      logic        de;
-    } cmd_fifo_rst_field_alert;
+    } csrng_ack_err;
     struct packed {
       logic        d;
       logic        de;
@@ -188,34 +182,26 @@ package edn_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } csrng_ack_err;
+    } cmd_fifo_rst_field_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } auto_req_mode_field_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } boot_req_mode_field_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } edn_enable_field_alert;
   } edn_hw2reg_recov_alert_sts_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
-    } sfifo_rescmd_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } sfifo_gencmd_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } edn_ack_sm_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } edn_main_sm_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } edn_cntr_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } fifo_write_err;
+    } fifo_state_err;
     struct packed {
       logic        d;
       logic        de;
@@ -223,7 +209,27 @@ package edn_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } fifo_state_err;
+    } fifo_write_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } edn_cntr_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } edn_main_sm_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } edn_ack_sm_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } sfifo_gencmd_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } sfifo_rescmd_err;
   } edn_hw2reg_err_code_reg_t;
 
   typedef struct packed {

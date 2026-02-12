@@ -8,7 +8,7 @@
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/runtime/print.h"
+#include "sw/device/lib/runtime/print_uart.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 
@@ -76,7 +76,7 @@ status_t ast_program_init(bool verbose) {
       kFlashInfoFieldAstCalibrationData.bank,
       kFlashInfoFieldAstCalibrationData.partition,
       (dif_flash_ctrl_region_properties_t){
-          .ecc_en = kMultiBitBool4True,
+          .ecc_en = kMultiBitBool4False,
           .high_endurance_en = kMultiBitBool4False,
           .erase_en = kMultiBitBool4True,
           .prog_en = kMultiBitBool4True,
@@ -92,22 +92,19 @@ status_t ast_program_config(bool verbose) {
 
   // Read AST calibration values from flash.
   LOG_INFO("Reading AST data");
-  dif_flash_ctrl_device_info_t device_info = dif_flash_ctrl_get_device_info();
-  uint32_t byte_address =
-      (kFlashInfoFieldAstCalibrationData.page * device_info.bytes_per_page) +
-      kFlashInfoFieldAstCalibrationData.byte_offset;
-  uint32_t ast_data[kFlashInfoAstCalibrationDataSizeIn32BitWords];
   TRY(flash_ctrl_testutils_wait_for_init(&flash_state));
-  TRY(flash_ctrl_testutils_read(&flash_state, byte_address,
-                                kFlashInfoFieldAstCalibrationData.partition,
-                                ast_data, kDifFlashCtrlPartitionTypeInfo,
-                                kFlashInfoAstCalibrationDataSizeIn32BitWords,
-                                /*delay=*/0));
+  uint32_t ast_data[kFlashInfoAstCalibrationDataSizeIn32BitWords];
+  TRY(manuf_flash_info_field_read(
+      &flash_state, kFlashInfoFieldAstCalibrationData, ast_data,
+      kFlashInfoAstCalibrationDataSizeIn32BitWords));
 
   // Program AST CSRs.
   LOG_INFO("Programming %u AST words",
            kFlashInfoAstCalibrationDataSizeIn32BitWords);
-  for (size_t i = 0; i < kFlashInfoAstCalibrationDataSizeIn32BitWords; ++i) {
+  // Don't write the last 3 words of AST config to CSRs on SRAM program boot;
+  // they will get copied to OTP later and written by the ROM on boot.
+  for (size_t i = 0; i < kFlashInfoAstCalibrationDataSizeIn32BitWords - 3;
+       ++i) {
     uint32_t addr = TOP_EARLGREY_AST_BASE_ADDR + i * sizeof(uint32_t);
     uint32_t data = ast_data[i];
     LOG_INFO("\tAddress = 0x%08x, Data = 0x%08x", addr, data);

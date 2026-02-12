@@ -30,7 +30,7 @@ class flash_ctrl_erase_suspend_vseq extends flash_ctrl_base_vseq;
     cfg.seq_cfg.flash_init_set_pc             = 0;
   endfunction
 
-  // Flash ctrl operation data queue - used for programing or reading the flash.
+  // Flash ctrl operation data queue - used for programming or reading the flash.
   data_q_t    flash_op_data;
 
   // Randomized flash ctrl operation.
@@ -230,11 +230,11 @@ class flash_ctrl_erase_suspend_vseq extends flash_ctrl_base_vseq;
     csr_wr(.ptr(ral.erase_suspend), .value(1));
     `uvm_info(`gfn, $sformatf("ERASE SUSPEND DATA AFTER WR: %0p", data), UVM_HIGH)
 
-    // value of error suspend request should be imediatelly cleared when
+    // value of error suspend request should be immediately cleared when
     // erase is not in progress
     csr_rd_check(.ptr(ral.erase_suspend.req), .compare_value(0));
 
-    // 2. Scneario - Erase is in progress
+    // 2. Scenario - Erase is in progress
     `uvm_info(`gfn, $sformatf("Scenario 2: Erase is in progress"), UVM_HIGH)
 
     `uvm_info(`gfn, $sformatf("FLASH OP ERASE START OP: %0p", flash_op), UVM_HIGH)

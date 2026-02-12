@@ -105,7 +105,8 @@ cc_library(
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/impl:hash",
+        "//sw/device/lib/crypto/impl:sha2",
+        "//sw/device/lib/crypto/impl:sha3",
         "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/testing:otp_ctrl_testutils",
@@ -124,7 +125,6 @@ cc_library(
         "//sw/device/lib/base:multibits",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/drivers:entropy",
-        "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:lc_ctrl",
@@ -141,7 +141,7 @@ opentitan_test(
     name = "individualize_functest",
     srcs = ["individualize_functest.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw340_sival": None,
     },
     fpga = fpga_params(
@@ -150,6 +150,7 @@ opentitan_test(
         tags = ["manuf"],
     ),
     deps = [
+        ":flash_info_fields",
         ":individualize",
         ":otp_fields",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -158,7 +159,9 @@ opentitan_test(
         "//sw/device/lib/dif:lc_ctrl",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:lc_ctrl_testutils",
+        "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/json:provisioning_data",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -180,7 +183,7 @@ cc_library(
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/impl:hash",
+        "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/testing:flash_ctrl_testutils",
@@ -205,7 +208,7 @@ opentitan_test(
     name = "individualize_sw_cfg_functest",
     srcs = ["individualize_sw_cfg_functest.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
@@ -220,10 +223,11 @@ opentitan_test(
     deps = [
         ":flash_info_fields",
         # Testing sival SKU only should be sufficient.
-        ":individualize_sw_cfg_sival",
+        ":individualize_sw_cfg_em00",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:rstmgr",
@@ -233,6 +237,7 @@ opentitan_test(
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
     ],
 )
 
@@ -247,10 +252,6 @@ cc_library(
         "//sw/device/lib/base:multibits",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/drivers:entropy",
-        "//sw/device/lib/crypto/impl:aes",
-        "//sw/device/lib/crypto/impl:hash",
-        "//sw/device/lib/crypto/impl:keyblob",
-        "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:lc_ctrl",
         "//sw/device/lib/dif:otp_ctrl",
@@ -268,12 +269,12 @@ opentitan_test(
     srcs = ["personalize_functest.c"],
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:dev_key_0_ecdsa_p256": "dev_key_0"},
     exec_env = {
-        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         changes_otp = True,
         needs_jtag = True,
-        otp = "//hw/top_earlgrey/data/otp/sival_skus:otp_img_dev_manuf_individualized",
+        otp = "//hw/top_earlgrey/data/otp/emulation:otp_img_dev_manuf_individualized",
         tags = [
             "lc_dev",
             "manuf",
@@ -317,7 +318,7 @@ cc_library(
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/runtime:print_uart",
     ],
 )
 
@@ -331,7 +332,7 @@ opentitan_test(
         "AST_PROGRAM_UNITTEST=1",
     ],
     exec_env = {
-        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         tags = ["manuf"],
@@ -345,7 +346,7 @@ opentitan_test(
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/runtime:print_uart",
         "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],

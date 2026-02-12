@@ -134,7 +134,7 @@
       name: sec_cm_esfinal_rdata_bus_consistency
       desc: '''
             Verify the countermeasure(s) ESFINAL_RDATA.BUS.CONSISTENCY.
-            Verify that if two subsequents read requests to the esfinal FIFO obtain the same data, the DUT signals a recoverable alert and sets the correct bit in the RECOV_ALERT_STS register.
+            Verify that if two subsequent read requests to the esfinal FIFO obtain the same data, the DUT signals a recoverable alert and sets the correct bit in the RECOV_ALERT_STS register.
             '''
       stage: V2S
       tests: ["entropy_src_functional_alerts"]

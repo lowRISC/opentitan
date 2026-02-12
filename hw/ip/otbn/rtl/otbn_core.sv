@@ -113,14 +113,14 @@ module otbn_core
   logic [31:0]              insn_fetch_resp_data;
   logic                     insn_fetch_resp_clear;
   logic                     insn_fetch_err;
-  logic                     insn_addr_err;
+  logic                     insn_addr_err_d, insn_addr_err;
 
-  rf_predec_bignum_t        rf_predec_bignum;
-  alu_predec_bignum_t       alu_predec_bignum;
+  rf_bignum_predec_t        rf_bignum_predec;
+  alu_bignum_predec_t       alu_bignum_predec;
   ctrl_flow_predec_t        ctrl_flow_predec;
   logic [ImemAddrWidth-1:0] ctrl_flow_target_predec;
-  ispr_predec_bignum_t      ispr_predec_bignum;
-  mac_predec_bignum_t       mac_predec_bignum;
+  ispr_bignum_predec_t      ispr_bignum_predec;
+  mac_bignum_predec_t       mac_bignum_predec;
   logic                     lsu_addr_en_predec;
 
   logic [NWdr-1:0] rf_bignum_rd_a_indirect_onehot;
@@ -156,7 +156,7 @@ module otbn_core
   logic                     rf_base_rd_commit;
   logic                     rf_base_call_stack_sw_err;
   logic                     rf_base_call_stack_hw_err;
-  logic                     rf_base_intg_err;
+  logic                     rf_base_intg_err_d, rf_base_intg_err;
   logic                     rf_base_spurious_we_err;
   logic                     rf_base_sec_wipe_err;
 
@@ -175,7 +175,7 @@ module otbn_core
 
   logic [BaseIntgWidth-1:0] lsu_base_rdata;
   logic [ExtWLEN-1:0]       lsu_bignum_rdata;
-  logic                     lsu_rdata_err;
+  logic                     lsu_rdata_err_d, lsu_rdata_err_raw, lsu_rdata_err;
 
   logic [WdrAw-1:0]   rf_bignum_wr_addr;
   logic [WdrAw-1:0]   rf_bignum_wr_addr_ctrl;
@@ -241,7 +241,7 @@ module otbn_core
   logic            urnd_advance;
   logic            urnd_advance_start_stop_control;
   logic [WLEN-1:0] urnd_data;
-  logic            urnd_all_zero;
+  logic            urnd_all_zero_d, urnd_all_zero;
 
   logic        controller_start;
 
@@ -281,7 +281,7 @@ module otbn_core
   logic start_stop_fatal_error;
   logic rf_bignum_predec_error, alu_bignum_predec_error, ispr_predec_error, mac_bignum_predec_error;
   logic controller_predec_error;
-  logic rd_predec_error, predec_error;
+  logic rd_predec_error, predec_error_d, predec_error;
 
   logic req_sec_wipe_urnd_keys_q;
 
@@ -361,14 +361,14 @@ module otbn_core
     .insn_fetch_resp_data_o (insn_fetch_resp_data),
     .insn_fetch_resp_clear_i(insn_fetch_resp_clear),
     .insn_fetch_err_o       (insn_fetch_err),
-    .insn_addr_err_o        (insn_addr_err),
+    .insn_addr_err_o        (insn_addr_err_d),
 
-    .rf_predec_bignum_o       (rf_predec_bignum),
-    .alu_predec_bignum_o      (alu_predec_bignum),
+    .rf_bignum_predec_o       (rf_bignum_predec),
+    .alu_bignum_predec_o      (alu_bignum_predec),
     .ctrl_flow_predec_o       (ctrl_flow_predec),
     .ctrl_flow_target_predec_o(ctrl_flow_target_predec),
-    .ispr_predec_bignum_o     (ispr_predec_bignum),
-    .mac_predec_bignum_o      (mac_predec_bignum),
+    .ispr_bignum_predec_o     (ispr_bignum_predec),
+    .mac_bignum_predec_o      (mac_bignum_predec),
     .lsu_addr_en_predec_o     (lsu_addr_en_predec),
 
     .rf_bignum_rd_a_indirect_onehot_i(rf_bignum_rd_a_indirect_onehot),
@@ -412,11 +412,11 @@ module otbn_core
   // guaranteed there are no register reads (hence no sensitive data bits being fed into the blanked
   // data paths). RF and ISPR predecode must always be checked to ensure read and write data paths
   // are always correctly blanked.
-  assign rd_predec_error = |{rf_predec_bignum.rf_ren_a,
-                             rf_predec_bignum.rf_ren_b,
-                             ispr_predec_bignum.ispr_rd_en} & ~insn_valid;
+  assign rd_predec_error = |{rf_bignum_predec.rf_ren_a,
+                             rf_bignum_predec.rf_ren_b,
+                             ispr_bignum_predec.ispr_rd_en} & ~insn_valid;
 
-  assign predec_error =
+  assign predec_error_d =
     ((alu_bignum_predec_error | mac_bignum_predec_error | controller_predec_error) & insn_valid) |
      rf_bignum_predec_error                                                                      |
      ispr_predec_error                                                                           |
@@ -589,10 +589,55 @@ module otbn_core
                                   controller_err_bits.bad_internal_state,
                                   controller_err_bits.reg_intg_violation};
 
-  logic non_controller_reg_intg_violation;
-  assign non_controller_reg_intg_violation =
-      |{alu_bignum_reg_intg_violation_err, mac_bignum_reg_intg_violation_err, rf_base_intg_err};
+  logic non_controller_reg_intg_violation_d, non_controller_reg_intg_violation;
+  assign non_controller_reg_intg_violation_d =
+      |{alu_bignum_reg_intg_violation_err, mac_bignum_reg_intg_violation_err, rf_base_intg_err_d};
 
+  ////////////////////////////////////////////////////////////////
+  // Register local escalation signals for timinig optimization //
+  ////////////////////////////////////////////////////////////////
+  // Signals contributing to the local controller escalation signal directly factor into the
+  // insn_executing signal inside the otbn_controller.sv. This then drives various commit signals
+  // as well as the DMEM request signal (lsu_load_req_o). By registering these escalation signals,
+  // these paths are shortened which results in better timing/area results. Signals contributing to
+  // the start/stop escalation are also flopped to synchronize the escalation such that
+  // transitioning into LOCKED and the start of wiping activities happen at the same time.
+  //
+  // Security considerations:
+  // With the registering, the reaction to escalation sources is delayed by one cycle. Any faulty
+  // instruction therefore still commits and updates registers or the memory. This does not affect
+  // security because:
+  // - While executing a program, the IMEM and DMEM are locked and cannot be read by Ibex.
+  // - They become readable once the execution finishes without a fatal error. In addition, only a
+  //   part of the DMEM is readable by Ibex.
+
+  // Do not propagate lsu rdata error if there has been a error which results in a delayed
+  // escalation in the previous cycle. Reason is that a faulty LSU instruction still starts but the
+  // memory interface can return an undefined error signal (x). We ignore the error as it is not
+  // relevant and to avoid spreading the undefined value into the error bits.
+  assign lsu_rdata_err_d = (|{urnd_all_zero, predec_error, rf_base_intg_err, lsu_rdata_err,
+                             non_controller_reg_intg_violation, insn_addr_err})
+                             ? '0 : lsu_rdata_err_raw;
+
+  // We drop the _q suffix for the registered signals such that DV and tracing can stay the same
+  // whether the escalation is delayed or not.
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      urnd_all_zero                     <= '0;
+      predec_error                      <= '0;
+      rf_base_intg_err                  <= '0;
+      lsu_rdata_err                     <= '0;
+      non_controller_reg_intg_violation <= '0;
+      insn_addr_err                     <= '0;
+    end else begin
+      urnd_all_zero                     <= urnd_all_zero_d;
+      predec_error                      <= predec_error_d;
+      rf_base_intg_err                  <= rf_base_intg_err_d;
+      lsu_rdata_err                     <= lsu_rdata_err_d;
+      non_controller_reg_intg_violation <= non_controller_reg_intg_violation_d;
+      insn_addr_err                     <= insn_addr_err_d;
+    end
+  end
 
   // Generate an err_bits output by combining errors from all the blocks in otbn_core
   assign err_bits_d = '{
@@ -633,11 +678,12 @@ module otbn_core
 
   // Pass an "escalation" signal down to the controller by ORing in error signals from the other
   // modules in otbn_core. Note that each error signal except escalate_en_i that appears here also
-  // appears somewhere in err_bits_o above (checked in ErrBitsIfControllerEscalate_A)
+  // appears somewhere in err_bits_o above (checked in ErrBitsIfControllerEscalate_A).
+  // The error rf_base_intg_err is already factored into non_controller_reg_intg_violation.
   assign controller_fatal_escalate_en =
       mubi4_or_hi(escalate_en_i,
                   mubi4_bool_to_mubi(|{start_stop_fatal_error, urnd_all_zero, predec_error,
-                                       rf_base_intg_err, rf_base_spurious_we_err, lsu_rdata_err,
+                                       rf_base_spurious_we_err, lsu_rdata_err,
                                        insn_fetch_err, non_controller_reg_intg_violation,
                                        insn_addr_err}));
 
@@ -684,7 +730,7 @@ module otbn_core
 
     .lsu_base_rdata_o  (lsu_base_rdata),
     .lsu_bignum_rdata_o(lsu_bignum_rdata),
-    .lsu_rdata_err_o   (lsu_rdata_err)
+    .lsu_rdata_err_o   (lsu_rdata_err_raw)
   );
 
   // Base Instruction Subset =======================================================================
@@ -716,7 +762,7 @@ module otbn_core
 
     .call_stack_sw_err_o(rf_base_call_stack_sw_err),
     .call_stack_hw_err_o(rf_base_call_stack_hw_err),
-    .intg_err_o         (rf_base_intg_err),
+    .intg_err_o         (rf_base_intg_err_d),
     .spurious_we_err_o  (rf_base_spurious_we_err),
     .sec_wipe_err_o     (rf_base_sec_wipe_err)
   );
@@ -775,7 +821,7 @@ module otbn_core
 
     .intg_err_o(rf_bignum_intg_err),
 
-    .rf_predec_bignum_i(rf_predec_bignum),
+    .rf_bignum_predec_i(rf_bignum_predec),
     .predec_error_o    (rf_bignum_predec_error),
 
     .spurious_we_err_o(rf_bignum_spurious_we_err)
@@ -828,8 +874,8 @@ module otbn_core
     .operation_result_o(alu_bignum_operation_result),
     .selection_flag_o  (alu_bignum_selection_flag),
 
-    .alu_predec_bignum_i (alu_predec_bignum),
-    .ispr_predec_bignum_i(ispr_predec_bignum),
+    .alu_bignum_predec_i (alu_bignum_predec),
+    .ispr_bignum_predec_i(ispr_bignum_predec),
 
     .ispr_addr_i             (ispr_addr),
     .ispr_base_wdata_i       (ispr_base_wdata),
@@ -874,8 +920,8 @@ module otbn_core
     .operation_flags_en_o           (mac_bignum_operation_flags_en),
     .operation_intg_violation_err_o (mac_bignum_reg_intg_violation_err),
 
-    .mac_predec_bignum_i(mac_predec_bignum),
-    .predec_error_o     (mac_bignum_predec_error),
+    .predec_i      (mac_bignum_predec),
+    .predec_error_o(mac_bignum_predec_error),
 
     .urnd_data_i        (urnd_data),
     .sec_wipe_acc_urnd_i(sec_wipe_acc_urnd),
@@ -910,7 +956,7 @@ module otbn_core
     .urnd_reseed_ack_o (urnd_reseed_ack),
     .urnd_advance_i    (urnd_advance),
     .urnd_data_o       (urnd_data),
-    .urnd_all_zero_o   (urnd_all_zero),
+    .urnd_all_zero_o   (urnd_all_zero_d),
 
     .edn_rnd_req_o,
     .edn_rnd_ack_i,
@@ -926,10 +972,10 @@ module otbn_core
   // Advance URND either when the start_stop_control commands it or when temporary secure wipe keys
   // are requested.
   // When SecMuteUrnd is enabled, signal urnd_advance_start_stop_control is muted. Therefore, it is
-  // necessary to enable urnd_advance using ispr_predec_bignum.ispr_rd_en[IsprUrnd] whenever URND
+  // necessary to enable urnd_advance using ispr_bignum_predec.ispr_rd_en[IsprUrnd] whenever URND
   // data are consumed by the ALU.
   assign urnd_advance = urnd_advance_start_stop_control | req_sec_wipe_urnd_keys_q |
-                        (SecMuteUrnd & ispr_predec_bignum.ispr_rd_en[IsprUrnd]);
+                        (SecMuteUrnd & ispr_bignum_predec.ispr_rd_en[IsprUrnd]);
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -963,9 +1009,9 @@ module otbn_core
   `ASSERT(EdnRndReqStable_A, edn_rnd_req_o & ~edn_rnd_ack_i |=> edn_rnd_req_o)
   `ASSERT(EdnUrndReqStable_A, edn_urnd_req_o & ~edn_urnd_ack_i |=> edn_urnd_req_o)
 
-  `ASSERT(OnlyWriteLoadDataBaseWhenDMemValid_A,
-          rf_bignum_wr_en_ctrl & insn_dec_bignum.rf_wdata_sel == RfWdSelLsu |-> dmem_rvalid_i)
   `ASSERT(OnlyWriteLoadDataBignumWhenDMemValid_A,
+          rf_bignum_wr_en_ctrl & insn_dec_bignum.rf_wdata_sel == RfWdSelLsu |-> dmem_rvalid_i)
+  `ASSERT(OnlyWriteLoadDataBaseWhenDMemValid_A,
           rf_base_wr_en_ctrl & insn_dec_base.rf_wdata_sel == RfWdSelLsu |-> dmem_rvalid_i)
 
   // Error handling: if we pass an error signal down to the controller then we should also be

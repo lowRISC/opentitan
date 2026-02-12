@@ -147,6 +147,11 @@ custom3:
   parents:
     - rv(opcode=b11110)
 
+# A partial scheme for custom instructions with opcode b10110
+custom4:
+  parents:
+    - rv(opcode=b10110)
+
 # A partial scheme for instructions that produce a dest WDR.
 wrd:
   fields:
@@ -366,3 +371,93 @@ wcsr:
     fixed:
       bits: 30-28
       value: bxxx
+
+# Bignum vectorized instructions
+#
+# The following encodings describe the vectorized instructions. The encoding foresees possible
+# future extensions regarding the vector element width as well as new instructions.
+
+# A partial scheme for the datatype used by vectorized instructions. Specifies the
+# width/length of a vector element. Defines the element lengths: 32, 64 and 128 bits.
+bnelen:
+  fields:
+    elen: 26-25
+
+# Big number vectorized arithmetic scheme
+# Used by bn.addv, bn.addvm, bn.subv and, bn.subvm
+bnva:
+  parents:
+    - custom4
+    - wdr3
+    - funct3
+    - bnelen
+  fields:
+    sub: 30 # bit to indicate whether operation is subtraction
+    mod: 28 # bit to indicate whether operation is pseudo modulo
+    fixed:
+      # Bit 27 is foreseen to indicate whether operation should consider the carry flag
+      # Bit 29 is unused
+      # Bit 31 is foreseen to select the flag group (use partial scheme `fg` as parent)
+      bits: 31,29,27
+      value: bxxx
+
+# Used by bn.mulv(l) and bn.mulvm(l)
+bnvm:
+  parents:
+    - custom4
+    - wdr3
+    - funct3
+    - bnelen
+  fields:
+    lane: 30-28
+    use_lane: 27
+    unused_lane_bit:
+      # Bit 31 is foreseen to select lane for 16 bit vectors.
+      bits: 31
+      value: bx
+
+# Used by bn.trn1 and bn.trn2
+bnvtrn:
+  parents:
+    - custom4
+    - wdr3
+    - funct3
+    - bnelen
+  fields:
+    odd: 30
+    fixed:
+      bits: 31,29-27
+      value: bxxxx
+
+# Used by bn.shv
+bnvsh:
+  parents:
+    - custom4
+    - wrd
+    - funct3
+    - bnelen
+  fields:
+    shift_type: 30
+    # Bits 28-27,19-15 are foreseen to encode a 7 bit shift immediate to support 128-bit elements.
+    # Currently only 32-bit is supported. Thus, the shift amount is restricted to 5 bits.
+    shift_bits: 19-15
+    wrs: 24-20
+    fixed:
+      # Bit 31 is foreseen to select the flag group (use partial scheme `fg` as parent)
+      # Bit 29 is unused
+      # Bit 28-27 are foreseen for larger shift immediates
+      bits: 31,29-27
+      value: bxxxx
+
+# Used by bn.pack and bn.unpk
+bnpk:
+  parents:
+  - custom4
+  - wdr3
+  - funct3
+  fields:
+    is_pack: 30
+    shift: 28-27
+    fixed:
+      bits: 31,29,26-25
+      value: bxxxx

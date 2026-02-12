@@ -2,16 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{ensure, Context, Result};
-use rusb;
-use std::time::Duration;
+use anyhow::{Context, Result, ensure};
+use rusb::{self, UsbContext};
+use std::time::{Duration, Instant};
 
 use crate::transport::TransportError;
 
 /// The `UsbBackend` provides low-level USB access to debugging devices.
 pub struct UsbBackend {
-    device: rusb::Device<rusb::GlobalContext>,
-    handle: rusb::DeviceHandle<rusb::GlobalContext>,
+    device: rusb::Device<rusb::Context>,
+    handle: rusb::DeviceHandle<rusb::Context>,
     serial_number: String,
     timeout: Duration,
 }
@@ -20,13 +20,13 @@ impl UsbBackend {
     /// Scan the USB bus for a device matching VID/PID, and optionally also matching a serial
     /// number.
     pub fn scan(
-        usb_vid: u16,
-        usb_pid: u16,
+        usb_vid_pid: Option<(u16, u16)>,
+        usb_protocol: Option<(u8, u8, u8)>,
         usb_serial: Option<&str>,
-    ) -> Result<Vec<(rusb::Device<rusb::GlobalContext>, String)>> {
+    ) -> Result<Vec<(rusb::Device<rusb::Context>, String)>> {
         let mut devices = Vec::new();
         let mut deferred_log_messages = Vec::new();
-        for device in rusb::devices().context("USB error")?.iter() {
+        for device in rusb::Context::new()?.devices().context("USB error")?.iter() {
             let descriptor = match device.device_descriptor() {
                 Ok(desc) => desc,
                 Err(e) => {
@@ -39,11 +39,42 @@ impl UsbBackend {
                     continue;
                 }
             };
-            if descriptor.vendor_id() != usb_vid {
-                continue;
+
+            if let Some((vid, pid)) = usb_vid_pid {
+                if descriptor.vendor_id() != vid {
+                    continue;
+                }
+                if descriptor.product_id() != pid {
+                    continue;
+                }
             }
-            if descriptor.product_id() != usb_pid {
-                continue;
+            if let Some((class, subclass, protocol)) = usb_protocol {
+                let config = match device.active_config_descriptor() {
+                    Ok(desc) => desc,
+                    Err(e) => {
+                        deferred_log_messages.push(format!(
+                            "Could not read config descriptor for device at bus={} address={}: {}",
+                            device.bus_number(),
+                            device.address(),
+                            e,
+                        ));
+                        continue;
+                    }
+                };
+                let mut found = false;
+                for intf in config.interfaces() {
+                    for desc in intf.descriptors() {
+                        if desc.class_code() == class
+                            && desc.sub_class_code() == subclass
+                            && desc.protocol_code() == protocol
+                        {
+                            found = true;
+                        }
+                    }
+                }
+                if !found {
+                    continue;
+                }
             }
             let handle = match device.open() {
                 Ok(handle) => handle,
@@ -57,6 +88,7 @@ impl UsbBackend {
                     continue;
                 }
             };
+
             let serial_number = match handle.read_serial_number_string_ascii(&descriptor) {
                 Ok(sn) => sn,
                 Err(e) => {
@@ -69,10 +101,10 @@ impl UsbBackend {
                     continue;
                 }
             };
-            if let Some(sn) = &usb_serial {
-                if &serial_number != sn {
-                    continue;
-                }
+            if let Some(sn) = &usb_serial
+                && &serial_number != sn
+            {
+                continue;
             }
             devices.push((device, serial_number));
         }
@@ -88,13 +120,12 @@ impl UsbBackend {
         for s in deferred_log_messages {
             log::log!(severity, "{}", s);
         }
-
         Ok(devices)
     }
 
     /// Create a new UsbBackend.
     pub fn new(usb_vid: u16, usb_pid: u16, usb_serial: Option<&str>) -> Result<Self> {
-        let mut devices = UsbBackend::scan(usb_vid, usb_pid, usb_serial)?;
+        let mut devices = UsbBackend::scan(Some((usb_vid, usb_pid)), None, usb_serial)?;
         ensure!(!devices.is_empty(), TransportError::NoDevice);
         ensure!(devices.len() == 1, TransportError::MultipleDevices);
 
@@ -105,6 +136,50 @@ impl UsbBackend {
             serial_number,
             timeout: Duration::from_millis(500),
         })
+    }
+
+    pub fn from_interface(
+        class: u8,
+        subclass: u8,
+        protocol: u8,
+        usb_serial: Option<&str>,
+    ) -> Result<Self> {
+        Self::from_interface_with_timeout(class, subclass, protocol, usb_serial, Duration::ZERO)
+    }
+
+    pub fn from_interface_with_timeout(
+        class: u8,
+        subclass: u8,
+        protocol: u8,
+        usb_serial: Option<&str>,
+        timeout: Duration,
+    ) -> Result<Self> {
+        let deadline = Instant::now() + timeout;
+        loop {
+            let mut devices =
+                UsbBackend::scan(None, Some((class, subclass, protocol)), usb_serial)?;
+            if devices.is_empty() {
+                if Instant::now() < deadline {
+                    std::thread::sleep(Duration::from_millis(100));
+                    continue;
+                } else {
+                    return Err(TransportError::NoDevice.into());
+                }
+            }
+            ensure!(devices.len() == 1, TransportError::MultipleDevices);
+
+            let (device, serial_number) = devices.remove(0);
+            return Ok(UsbBackend {
+                handle: device.open().context("USB open error")?,
+                device,
+                serial_number,
+                timeout: Duration::from_millis(500),
+            });
+        }
+    }
+
+    pub fn handle(&self) -> &rusb::DeviceHandle<rusb::Context> {
+        &self.handle
     }
 
     pub fn get_vendor_id(&self) -> u16 {
@@ -120,29 +195,35 @@ impl UsbBackend {
         self.serial_number.as_str()
     }
 
-    pub fn set_active_configuration(&mut self, config: u8) -> Result<()> {
+    pub fn set_active_configuration(&self, config: u8) -> Result<()> {
         self.handle
             .set_active_configuration(config)
             .context("USB error")
     }
 
-    pub fn claim_interface(&mut self, iface: u8) -> Result<()> {
+    pub fn claim_interface(&self, iface: u8) -> Result<()> {
         self.handle.claim_interface(iface).context("USB error")
     }
 
-    pub fn release_interface(&mut self, iface: u8) -> Result<()> {
+    pub fn release_interface(&self, iface: u8) -> Result<()> {
         self.handle.release_interface(iface).context("USB error")
+    }
+
+    pub fn set_alternate_setting(&self, iface: u8, setting: u8) -> Result<()> {
+        self.handle
+            .set_alternate_setting(iface, setting)
+            .context("USB error")
     }
 
     pub fn kernel_driver_active(&self, iface: u8) -> Result<bool> {
         self.handle.kernel_driver_active(iface).context("USB error")
     }
 
-    pub fn detach_kernel_driver(&mut self, iface: u8) -> Result<()> {
+    pub fn detach_kernel_driver(&self, iface: u8) -> Result<()> {
         self.handle.detach_kernel_driver(iface).context("USB error")
     }
 
-    pub fn attach_kernel_driver(&mut self, iface: u8) -> Result<()> {
+    pub fn attach_kernel_driver(&self, iface: u8) -> Result<()> {
         self.handle.attach_kernel_driver(iface).context("USB error")
     }
 
@@ -168,6 +249,10 @@ impl UsbBackend {
         self.handle
             .read_string_descriptor_ascii(idx)
             .context("USB error")
+    }
+
+    pub fn reset(&self) -> Result<()> {
+        self.handle.reset().context("USB Error")
     }
 
     //

@@ -164,6 +164,12 @@ module xbar_main_bind;
     .h2d    (tl_aes_o),
     .d2h    (tl_aes_i)
   );
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_entropy_src (
+    .clk_i  (clk_main_i),
+    .rst_ni (rst_main_ni),
+    .h2d    (tl_entropy_src_o),
+    .d2h    (tl_entropy_src_i)
+  );
   bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_csrng (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),

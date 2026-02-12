@@ -110,7 +110,7 @@ All other parameters in registers `TIMING2`, `TIMING3`, `TIMING4` are unchanged 
 | TIMING0.TLOW    | 500              | 167        | 501            | Spec. t<sub>LOW</sub> Minimum                 |
 | TIMING1.T_F     | 20ns * (VDD/5.5V)| 7          | 21             | Signal slew-rate should be controlled         |
 | TIMING1.T_R     | 0                | 134        | 402            | Atypically high line capacitance             |
-| SCL Period      | 1000             | N/A        | 395            | Forced longer than minimum by long T_R        |
+| SCL Period      | 1000             | N/A        | 1185           | Forced longer than minimum by long T_R        |
 
 ## Controller Module Operations
 ### Writing `n` bytes to a device:

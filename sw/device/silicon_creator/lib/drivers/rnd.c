@@ -4,6 +4,8 @@
 
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
 
+#include "hw/top/dt/entropy_src.h"
+#include "hw/top/dt/rv_core_ibex.h"
 #include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/crc32.h"
@@ -12,20 +14,23 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 
-#include "entropy_src_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otp_ctrl_regs.h"
-#include "rv_core_ibex_regs.h"
+#include "hw/top/entropy_src_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
+#include "hw/top/rv_core_ibex_regs.h"
 
 enum {
-  kBaseEntropySrc = TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR,
-  kBaseIbex = TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR,
-  kIbexRndStatusReg = kBaseIbex + RV_CORE_IBEX_RND_STATUS_REG_OFFSET,
-
   // This covers the health threshold registers which are contiguous. The alert
   // threshold register is not included here.
   kNumHealthRegisters = 9,
 };
+
+static inline uint32_t entropy_src_base(void) {
+  return dt_entropy_src_primary_reg_block(kDtEntropySrc);
+}
+
+static inline uint32_t ibex_base(void) {
+  return dt_rv_core_ibex_primary_reg_block(kDtRvCoreIbex);
+}
 
 // Check the number of health registers covered by this driver.
 static_assert(kNumHealthRegisters ==
@@ -74,9 +79,9 @@ static uint32_t health_config_crc32(void) {
   // Health test thresholds, whose offsets are statically checked.
   uint32_t offset = ENTROPY_SRC_REPCNT_THRESHOLDS_REG_OFFSET;
   for (size_t i = 0; i < kNumHealthRegisters; ++i, offset += sizeof(uint32_t)) {
-    crc32_add32(&ctx, abs_mmio_read32(kBaseEntropySrc + offset));
+    crc32_add32(&ctx, abs_mmio_read32(entropy_src_base() + offset));
   }
-  crc32_add32(&ctx, abs_mmio_read32(kBaseEntropySrc +
+  crc32_add32(&ctx, abs_mmio_read32(entropy_src_base() +
                                     ENTROPY_SRC_ALERT_THRESHOLD_REG_OFFSET));
   return crc32_finish(&ctx);
 }
@@ -113,10 +118,23 @@ uint32_t rnd_uint32(void) {
           kHardenedBoolTrue) {
     // When bit-0 is clear an EDN request for new data for RND_DATA is
     // pending.
-    while (!(abs_mmio_read32(kIbexRndStatusReg) & 1)) {
+    while (!(abs_mmio_read32(ibex_base() + RV_CORE_IBEX_RND_STATUS_REG_OFFSET) &
+             1)) {
     }
   }
   uint32_t mcycle;
   CSR_READ(CSR_REG_MCYCLE, &mcycle);
-  return mcycle + abs_mmio_read32(kBaseIbex + RV_CORE_IBEX_RND_DATA_REG_OFFSET);
+  return mcycle +
+         abs_mmio_read32(ibex_base() + RV_CORE_IBEX_RND_DATA_REG_OFFSET);
 }
+
+// Provides the source of randomness for `hardened_memshred` (see
+// `hardened_memory.h`). Declare as weak in case the cryptolib driver is also
+// included.
+OT_WEAK
+uint32_t hardened_memshred_random_word(void) { return rnd_uint32(); }
+
+// Provides the source of randomness for `random_order` (see `random_order.h`).
+// Declare as weak in case the cryptolib driver is also included.
+OT_WEAK
+uint32_t random_order_random_word(void) { return rnd_uint32(); }

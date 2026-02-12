@@ -14,10 +14,6 @@
 //
 
 {
-    // 256 bit seed to be used for generation of partition item default values.
-    // Can be overridden on the command line with the --seed switch.
-    seed: "36021179872380457113239299468132194022238108125576166239904535336103582949069"
-
     otp: {
         width: "2", // bytes
         depth: "1024"
@@ -69,22 +65,22 @@
         ]
     }
 
-    // The enumeration order below defines the address map of the OTP controller,
-    // if the offsets are not defined explicitly via the "offset" key.
+    // The enumeration order below defines OTP address map,
+    // unless the offsets are assigned explicitly via the "offset" key.
     // Note that the digest items are added automatically to the address map.
     partitions: [
         {
-            name:       "VENDOR_TEST",
-            variant:    "Unbuffered",
-            size:       "64", // in bytes
-            secret:     false,
-            sw_digest:  true,
-            hw_digest:  false,
-            write_lock: "Digest",
-            read_lock:  "CSR",
-            key_sel:    "NoKey",
-            integrity:  false, // Do not use integrity (ECC) on this partition.
-            bkout_type: false, // Do not generate a breakout type for this partition.
+            name:           "VENDOR_TEST",
+            variant:        "Unbuffered",
+            secret:         false,
+            sw_digest:      true,
+            hw_digest:      false,
+            write_lock:     "Digest",
+            read_lock:      "CSR",
+            key_sel:        "NoKey",
+            integrity:      false, // Do not use integrity (ECC) on this partition.
+            bkout_type:     false, // Do not generate a breakout type for this partition.
+            skip_sw_header: true,
             items: [
                 {
                     name: "SCRATCH",
@@ -93,8 +89,8 @@
             ],
             desc: '''Vendor test partition.
             This is reserved for manufacturing smoke checks. The OTP wrapper
-            control logic inside prim_otp is allowed to read/write to this
-            region. ECC uncorrectable errors seen on the functional prim_otp
+            control logic inside otp_macro is allowed to read/write to this
+            region. ECC uncorrectable errors seen on the functional otp_macro
             interface will not lead to an alert for this partition.
             Instead, such errors will be reported as correctable ECC errors.
             '''
@@ -264,7 +260,8 @@
                     PROD_END life cycle states. A value of kHardenedBoolTrue
                     enables, all other values disable. If left disabled,
                     provisioning flows are required to setup boot data pages
-                    prior to enabling ROM execution.
+                    prior to enabling ROM execution. The default personalization
+                    flow in `ft_personalize.c` configures these pages.
                     '''
                 }
                 {
@@ -398,12 +395,14 @@
                     '''
                 }
                 {
-                    name: "CREATOR_SW_CFG_SRAM_KEY_RENEW_EN",
+                    name: "CREATOR_SW_CFG_SRAM_KEY_RENEW_AND_INIT_EN",
                     size: "4",
                     desc: '''
                     Whether or not the ROM should request SRAM to be rescrambled
-                    with a new key on every boot. kHardenedBoolFalse disables,
-                    while all other values enable.
+                    with a new key on every boot. This includes renewing the
+                    scrambling key and then initializing SRAM with pseudo-random
+                    data. kHardenedBoolFalse disables, while all other values
+                    enable.
                     '''
                 }
                 {
@@ -569,7 +568,7 @@
                     fields. Each 128-bit subfield encodes four 32-bit words that
                     contain the alert phase cycle count configurations for alert
                     escalation phases 0 to 3, from LSW to MSW. Each 128-bit
-                    subfield is contains all cofigurations for a single alert
+                    subfield is contains all configurations for a single alert
                     class, arranged from class A to D, from LS to MS. For
                     example, the cycle durations of each escalation phase in
                     this field should be configured as such, from LSB to MSB:
@@ -753,7 +752,7 @@
                     '''
                 }
                 {
-                    // Datatype: hardended_bool_t
+                    // Datatype: hardened_bool_t
                     // True enables, all other values default behavior.
                     name: "OWNER_SW_CFG_ROM_FLASH_ECC_EXC_HANDLER_EN",
                     size: "4",
@@ -954,16 +953,17 @@
                          '''
         }
         {
-            name:       "HW_CFG0",
-            variant:    "Buffered",
-            secret:     false,
-            sw_digest:  false,
-            hw_digest:  true,
-            write_lock: "Digest",
-            read_lock:  "None",
-            key_sel:    "NoKey",
-            integrity:  true,
-            bkout_type: true,
+            name:           "HW_CFG0",
+            variant:        "Buffered",
+            secret:         false,
+            sw_digest:      false,
+            hw_digest:      true,
+            write_lock:     "Digest",
+            read_lock:      "None",
+            key_sel:        "NoKey",
+            integrity:      true,
+            bkout_type:     true,
+            skip_sw_header: true,
             items: [
                 {
                     name:        "DEVICE_ID",
@@ -993,16 +993,17 @@
             '''
         }
         {
-            name:       "HW_CFG1",
-            variant:    "Buffered",
-            secret:     false,
-            sw_digest:  false,
-            hw_digest:  true,
-            write_lock: "Digest",
-            read_lock:  "None",
-            key_sel:    "NoKey",
-            integrity:  true,
-            bkout_type: true,
+            name:           "HW_CFG1",
+            variant:        "Buffered",
+            secret:         false,
+            sw_digest:      false,
+            hw_digest:      true,
+            write_lock:     "Digest",
+            read_lock:      "None",
+            key_sel:        "NoKey",
+            integrity:      true,
+            bkout_type:     true,
+            skip_sw_header: true,
             items: [
                 {
                     name:        "EN_SRAM_IFETCH",
@@ -1046,16 +1047,18 @@
             '''
         }
         {
-            name:       "SECRET0",
-            variant:    "Buffered",
-            secret:     true,
-            sw_digest:  false,
-            hw_digest:  true,
-            write_lock: "Digest",
-            read_lock:  "Digest",
-            key_sel:    "Secret0Key",
-            integrity:  true,
-            bkout_type: false,
+            name:           "SECRET0",
+            variant:        "Buffered",
+            secret:         true,
+            sw_digest:      false,
+            hw_digest:      true,
+            write_lock:     "Digest",
+            read_lock:      "Digest",
+            ignore_read_lock_in_rma: true,
+            key_sel:        "Secret0Key",
+            integrity:      true,
+            bkout_type:     false,
+            skip_sw_header: true,
             items: [
                 {
                     name: "TEST_UNLOCK_TOKEN",
@@ -1076,16 +1079,18 @@
             '''
         }
         {
-            name:       "SECRET1",
-            variant:    "Buffered",
-            secret:     true,
-            sw_digest:  false,
-            hw_digest:  true,
-            write_lock: "Digest",
-            read_lock:  "Digest",
-            key_sel:    "Secret1Key",
-            integrity:  true,
-            bkout_type: false,
+            name:           "SECRET1",
+            variant:        "Buffered",
+            secret:         true,
+            sw_digest:      false,
+            hw_digest:      true,
+            write_lock:     "Digest",
+            read_lock:      "Digest",
+            ignore_read_lock_in_rma: true,
+            key_sel:        "Secret1Key",
+            integrity:      true,
+            bkout_type:     false,
+            skip_sw_header: true,
             items: [
                 {
                     name: "FLASH_ADDR_KEY_SEED",
@@ -1108,16 +1113,18 @@
             '''
         }
         {
-            name:       "SECRET2",
-            variant:    "Buffered",
-            secret:     true,
-            sw_digest:  false,
-            hw_digest:  true,
-            write_lock: "Digest",
-            read_lock:  "Digest",
-            key_sel:    "Secret2Key",
-            integrity:  true,
-            bkout_type: false,
+            name:           "SECRET2",
+            variant:        "Buffered",
+            secret:         true,
+            sw_digest:      false,
+            hw_digest:      true,
+            write_lock:     "Digest",
+            read_lock:      "Digest",
+            ignore_read_lock_in_rma: true,
+            key_sel:        "Secret2Key",
+            integrity:      true,
+            bkout_type:     false,
+            skip_sw_header: true,
             items: [
                 {
                     name: "RMA_TOKEN",
@@ -1142,16 +1149,17 @@
             '''
         }
         {
-            name:       "LIFE_CYCLE",
-            variant:    "LifeCycle",
-            secret:     false,
-            sw_digest:  false,
-            hw_digest:  false,
-            write_lock: "None",
-            read_lock:  "None",
-            key_sel:    "NoKey",
-            integrity:  true,
-            bkout_type: false,
+            name:           "LIFE_CYCLE",
+            variant:        "LifeCycle",
+            secret:         false,
+            sw_digest:      false,
+            hw_digest:      false,
+            write_lock:     "None",
+            read_lock:      "None",
+            key_sel:        "NoKey",
+            integrity:      true,
+            bkout_type:     false,
+            skip_sw_header: true,
             items: [
                 // The life cycle transition count is specified
                 // first such that any programming attempt of the life cycle
@@ -1161,7 +1169,7 @@
                 // life cycle controller to ensure that the counter is always written
                 // before any state update. I.e., the life cycle controller
                 // already splits the counter and state updates into two
-                // supsequent requests through the LCI, where the first request
+                // subsequent requests through the LCI, where the first request
                 // only contains the updated transition counter, and the second
                 // request the updated transition counter and state.
                 {

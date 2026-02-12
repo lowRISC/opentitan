@@ -78,7 +78,13 @@ get_name_end:
   ret
 
 name:
-  .string "My name is Titan, Open Titan"
+  // ensure the following string has an even length (including the null), while
+  // the bug https://github.com/llvm/llvm-project/issues/147771 remains unfixed
+  // or the fix has not been included in the OpenTitan toolchain. LLD uses `nop`
+  // and `c.nop` instructions to realign code sections, so it's unable to
+  // realign back to two bytes. If the code is not aligned to a half word, debug
+  // builds of LLD will trip on an assertion.
+  .string "My name is Titan, Open Titan!"
 
 /**
  * Reserve some area to map functions to.

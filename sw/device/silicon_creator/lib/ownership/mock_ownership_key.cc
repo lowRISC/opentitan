@@ -7,14 +7,15 @@
 namespace rom_test {
 extern "C" {
 
-hardened_bool_t ownership_key_validate(size_t page, ownership_key_t key,
-                                       const owner_signature_t *signature,
-                                       const void *message, size_t len) {
-  return MockOwnershipKey::Instance().validate(page, key, signature, message,
-                                               len);
+rom_error_t ownership_key_validate(size_t page, ownership_key_t key,
+                                   uint32_t command, const nonce_t *nonce,
+                                   const owner_signature_t *signature,
+                                   const void *message, size_t len) {
+  return MockOwnershipKey::Instance().validate(page, key, command, nonce,
+                                               signature, message, len);
 }
 
-rom_error_t ownership_seal_init() {
+rom_error_t ownership_seal_init(void) {
   return MockOwnershipKey::Instance().seal_init();
 }
 
@@ -26,8 +27,10 @@ rom_error_t ownership_seal_check(size_t page) {
   return MockOwnershipKey::Instance().seal_check(page);
 }
 
-rom_error_t ownership_secret_new() {
-  return MockOwnershipKey::Instance().secret_new();
+rom_error_t ownership_secret_new(uint32_t prior_key_alg,
+                                 const owner_keydata_t *prior_owner_key) {
+  return MockOwnershipKey::Instance().secret_new(prior_key_alg,
+                                                 prior_owner_key);
 }
 
 }  // extern "C"

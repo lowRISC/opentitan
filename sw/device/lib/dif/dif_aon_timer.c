@@ -11,7 +11,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
 
-#include "aon_timer_regs.h"  // Generated.
+#include "hw/top/aon_timer_regs.h"  // Generated.
 
 static_assert(AON_TIMER_INTR_STATE_WKUP_TIMER_EXPIRED_BIT ==
                   AON_TIMER_INTR_TEST_WKUP_TIMER_EXPIRED_BIT,

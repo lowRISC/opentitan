@@ -16,6 +16,8 @@ module rv_dm
   import rv_dm_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0]           AlertAsyncOn                      = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned                    AlertSkewCycles                   = 1,
   parameter logic [31:0]                    IdcodeValue                       = 32'h 0000_0001,
   parameter bit                             UseDmiInterface                   = 1'b0,
   parameter bit                             SecVolatileRawUnlockEn            = 0,
@@ -32,6 +34,8 @@ module rv_dm
   input  logic                rst_lc_ni,  // asynchronous reset active low, connect the lc
                                            // reset here. this is only used for NDM reset tracking.
   input  logic [31:0]         next_dm_addr_i, // static word address of the next debug module.
+  // SEC_CM: LC_HW_DEBUG_CLR.INTERSIG.MUBI
+  input  lc_ctrl_pkg::lc_tx_t lc_hw_debug_clr_i,
   // SEC_CM: LC_HW_DEBUG_EN.INTERSIG.MUBI
   // HW Debug lifecycle enable signal (live version from the life cycle controller)
   input  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
@@ -42,6 +46,8 @@ module rv_dm
   input  lc_ctrl_pkg::lc_tx_t pinmux_hw_debug_en_i,
   input  lc_ctrl_pkg::lc_tx_t lc_check_byp_en_i,
   input  lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
+  // Lifecycle init done indicator used to clear NDM latch after LC re-initialization
+  input  lc_ctrl_pkg::lc_tx_t lc_init_done_i,
   input                       strap_en_i,
   input                       strap_en_override_i,
   // SEC_CM: OTP_DIS_RV_DM_LATE_DEBUG.INTERSIG.MUBI
@@ -87,7 +93,6 @@ module rv_dm
   // Parameter Definitions //
   ///////////////////////////
 
-  import prim_mubi_pkg::mubi4_bool_to_mubi;
   import prim_mubi_pkg::mubi4_test_true_strict;
   import prim_mubi_pkg::mubi8_test_true_strict;
   import prim_mubi_pkg::mubi32_test_true_strict;
@@ -160,6 +165,7 @@ module rv_dm
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(1'b1)
     ) u_prim_alert_sender (
       .clk_i,
@@ -273,6 +279,23 @@ module rv_dm
     .lc_en_o(lc_hw_debug_en_gated)
   );
 
+  // Keep debug gating asserted during an active NDM reset by latching the
+  // current LC debug enable and ORing it into the gating while the reset is
+  // pending. Clear the latch once LC initialization has completed again.
+  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_latched_q;
+  lc_ctrl_pkg::lc_tx_t lc_init_done_sync;
+  prim_lc_sync #(
+    .NumCopies(1)
+  ) u_lc_init_done_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_init_done_i),
+    .lc_en_o({lc_init_done_sync})
+  );
+
+  // Version of lc_hw_debug_en_gated with NDM latch applied (defined below)
+  lc_ctrl_pkg::lc_tx_t [LcEnLastPos-1:0] lc_hw_debug_en_gated_ndm;
+
   dm::dmi_req_t  dmi_req;
   dm::dmi_resp_t dmi_rsp;
   logic dmi_req_valid, dmi_req_ready;
@@ -287,7 +310,7 @@ module rv_dm
   logic ndmreset_req, ndmreset_ack;
   logic ndmreset_req_qual;
   // SEC_CM: DM_EN.CTRL.LC_GATED
-  assign reset_req_en = lc_tx_test_true_strict(lc_hw_debug_en_gated[LcEnResetReq]);
+  assign reset_req_en = lc_tx_test_true_strict(lc_hw_debug_en_gated_ndm[LcEnResetReq]);
   assign ndmreset_req_o = ndmreset_req_qual & reset_req_en;
 
   // Sample the processor reset to detect lc reset assertion.
@@ -320,12 +343,15 @@ module rv_dm
   logic lc_rst_pending_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_ndm_reset
     if (!rst_ni) begin
-      ndmreset_pending_q <= 1'b0;
-      lc_rst_pending_q <= 1'b0;
+      ndmreset_pending_q       <= 1'b0;
+      lc_rst_pending_q         <= 1'b0;
+      lc_hw_debug_en_latched_q <= lc_ctrl_pkg::Off;
     end else begin
       // Only set this if there was no previous pending NDM request.
       if (ndmreset_req && !ndmreset_pending_q) begin
         ndmreset_pending_q <= 1'b1;
+        // Latch current LC debug enable value at the start of NDM reset
+        lc_hw_debug_en_latched_q <= lc_hw_debug_en;
       end else if (ndmreset_ack && ndmreset_pending_q) begin
         ndmreset_pending_q <= 1'b0;
       end
@@ -334,6 +360,10 @@ module rv_dm
         lc_rst_pending_q <= 1'b1;
       end else if (ndmreset_ack && lc_rst_pending_q) begin
         lc_rst_pending_q <= 1'b0;
+      end
+      // Clear the latch after lifecycle initialization completes
+      if (lc_ctrl_pkg::lc_tx_test_true_strict(lc_init_done_sync)) begin
+        lc_hw_debug_en_latched_q <= lc_ctrl_pkg::Off;
       end
     end
   end
@@ -349,6 +379,13 @@ module rv_dm
                         !ndmreset_req &&
                         !lc_rst_asserted &&
                         reset_req_en;
+
+  // Apply the latched LC value only while an NDM reset is pending.
+  for (genvar k = 0; k < int'(LcEnLastPos); k++) begin : gen_ndm_gated
+    assign lc_hw_debug_en_gated_ndm[k] = (ndmreset_pending_q) ?
+        lc_ctrl_pkg::lc_tx_or_hi(lc_hw_debug_en_gated[k], lc_hw_debug_en_latched_q) :
+        lc_hw_debug_en_gated[k];
+  end
 
   /////////////////////////////////////////
   // System Bus Access Port (TL-UL Host) //
@@ -378,7 +415,7 @@ module rv_dm
     .tl_d2h_o(sba_tl_h_i_int),
     .tl_h2d_o(sba_tl_h_o),
     .tl_d2h_i(sba_tl_h_i),
-    .lc_en_i (lc_hw_debug_en_gated[LcEnSba]),
+    .lc_en_i (lc_hw_debug_en_gated_ndm[LcEnSba]),
     .err_o   (sba_gate_intg_error),
     .flush_req_i('0),
     .flush_ack_o(),
@@ -438,7 +475,7 @@ module rv_dm
   logic [NrHarts-1:0] debug_req;
   for (genvar i = 0; i < NrHarts; i++) begin : gen_debug_req_hart
     // SEC_CM: DM_EN.CTRL.LC_GATED
-    assign debug_req_en[i] = lc_tx_test_true_strict(lc_hw_debug_en_gated[LcEnDebugReq + i]);
+    assign debug_req_en[i] = lc_tx_test_true_strict(lc_hw_debug_en_gated_ndm[LcEnDebugReq + i]);
   end
   assign debug_req_o = debug_req & debug_req_en;
 
@@ -470,6 +507,7 @@ module rv_dm
       .rst_ni,
       .strap_en_override_i,
       .strap_en_i,
+      .lc_hw_debug_clr_i,
       .lc_hw_debug_en_i,
       .lc_check_byp_en_i,
       .lc_escalate_en_i,
@@ -594,6 +632,7 @@ module rv_dm
     logic unused_signals;
     assign unused_signals = ^{dbg_tl_d_i,
                               lc_check_byp_en_i,
+                              lc_hw_debug_clr_i,
                               lc_escalate_en_i,
                               strap_en_i,
                               strap_en_override_i};
@@ -615,13 +654,13 @@ module rv_dm
     .flush_req_i(ndmreset_req),
     .flush_ack_o(ndmreset_req_qual),
     .resp_pending_o(),
-    .lc_en_i (lc_hw_debug_en_gated[LcEnRom]),
+    .lc_en_i (lc_hw_debug_en_gated_ndm[LcEnRom]),
     .err_o   (rom_gate_intg_error)
   );
 
   prim_mubi_pkg::mubi4_t en_ifetch;
   // SEC_CM: DM_EN.CTRL.LC_GATED, EXEC.CTRL.MUBI
-  assign en_ifetch = mubi4_bool_to_mubi(lc_tx_test_true_strict(lc_hw_debug_en_gated[LcEnFetch]));
+  assign en_ifetch = lc_ctrl_pkg::lc_to_mubi4(lc_hw_debug_en_gated_ndm[LcEnFetch]);
 
   tlul_adapter_reg #(
     .CmdIntgCheck     (1),

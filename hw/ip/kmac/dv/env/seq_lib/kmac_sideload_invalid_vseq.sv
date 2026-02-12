@@ -237,7 +237,7 @@ class kmac_sideload_invalid_vseq extends kmac_long_msg_and_output_vseq;
       csr_spinwait(.ptr(ral.status.sha3_idle), .exp_data(1'b1), .backdoor(1));
       csr_rd_check(.ptr(ral.status), .compare_value(ral.status.get_reset()));
 
-      // Disable the sideloade key.
+      // Disable the sideload key.
       cfg.clk_rst_vif.wait_clks($urandom_range(5, 10));
       `DV_CHECK_RANDOMIZE_WITH_FATAL(sideload_seq,
                                      sideload_key.valid == 0;)

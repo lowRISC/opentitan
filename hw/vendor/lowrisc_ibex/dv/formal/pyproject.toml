@@ -1,0 +1,24 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+[project]
+name = "ibex"
+version = "0.0.0"
+description = "Ibex"
+requires-python = ">= 3.10"
+
+dependencies = [
+  "packaging == 24.2",
+  "anytree == 2.8.0",
+  "hjson == 3.1.0",
+  "mako == 1.1.6",
+  "pyyaml == 6.0.2",
+  "edalize == 0.6.1",
+  "fusesoc == 2.4.3",
+  "psutil>=7.0.0",
+]
+
+[tool.setuptools]
+# This is actually not a python project, we just use pyproject.toml to manage dependencies.
+py-modules = []

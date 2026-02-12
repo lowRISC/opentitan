@@ -4,8 +4,8 @@
 
 #include "sw/device/lib/testing/pinmux_testutils.h"
 
-#include "dt/dt_pinmux.h"
-#include "dt/dt_uart.h"
+#include "hw/top/dt/pinmux.h"
+#include "hw/top/dt/uart.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/status.h"
@@ -199,6 +199,7 @@ uint32_t pinmux_testutils_get_testable_gpios_mask(void) {
       // All GPIOs are testable in DV.
       return 0xffffffff;
     case kDeviceFpgaCw310:
+    case kDeviceFpgaCw340:
       // Only IOR6, IOR7, and IOR10 to IOR13 are available for use as GPIOs.
       return 0xfc000000;
     case kDeviceSilicon:

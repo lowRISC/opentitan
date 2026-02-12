@@ -49,12 +49,14 @@ def qemu_params(
         defines = [],
         icount = 6,
         globals = {},
+        qemu_args = [],
         **kwargs):
     extra_params = {
         "icount": str(icount),
         # We have to stringify this dictionary here because `_opentitan_test` only accepts
         # a dict with string values, not more dicts.
         "globals": json.encode(globals),
+        "qemu_args": json.encode(qemu_args),
     }
 
     return struct(
@@ -289,7 +291,7 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
     otp = gen_otp(
         ctx,
         otptool = exec_env.otptool,
-        vmem = exec_env.otp,
+        vmem = get_fallback(ctx, "file.otp", exec_env),
     )
 
     qemu_cfg = gen_cfg(
@@ -380,27 +382,19 @@ def _test_dispatch(ctx, exec_env, firmware):
         for key, val in globals.items():
             qemu_args += ["-global", "{}={}".format(key, val)]
 
+    if param["qemu_args"]:
+        qemu_args += json.decode(param["qemu_args"])
+
     args += " " + " ".join(qemu_args)
 
     # Construct the test script
     script = ctx.actions.declare_file(ctx.attr.name + ".bash")
-
-    post_test_harness_path = ctx.executable.post_test_harness
-    post_test_cmd = ctx.attr.post_test_cmd.format(**param)
-
-    if post_test_harness_path != None:
-        data_files.append(post_test_harness_path)
-        post_test_harness_path = post_test_harness_path.short_path
-    else:
-        post_test_harness_path = ""
 
     ctx.actions.write(
         script,
         _TEST_SCRIPT.format(
             test_harness = test_harness.executable.short_path,
             args = args,
-            post_test_harness = post_test_harness_path,
-            post_test_cmd = post_test_cmd,
             **test_script_fmt
         ),
     )

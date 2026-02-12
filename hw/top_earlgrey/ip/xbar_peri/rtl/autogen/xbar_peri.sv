@@ -24,7 +24,7 @@
 //     -> clkmgr_aon
 //     -> pinmux_aon
 //     -> otp_ctrl.core
-//     -> otp_ctrl.prim
+//     -> otp_macro.prim
 //     -> lc_ctrl.regs
 //     -> sensor_ctrl_aon
 //     -> alert_handler
@@ -79,8 +79,8 @@ module xbar_peri (
   input  tlul_pkg::tl_d2h_t tl_pinmux_aon_i,
   output tlul_pkg::tl_h2d_t tl_otp_ctrl__core_o,
   input  tlul_pkg::tl_d2h_t tl_otp_ctrl__core_i,
-  output tlul_pkg::tl_h2d_t tl_otp_ctrl__prim_o,
-  input  tlul_pkg::tl_d2h_t tl_otp_ctrl__prim_i,
+  output tlul_pkg::tl_h2d_t tl_otp_macro__prim_o,
+  input  tlul_pkg::tl_d2h_t tl_otp_macro__prim_i,
   output tlul_pkg::tl_h2d_t tl_lc_ctrl__regs_o,
   input  tlul_pkg::tl_d2h_t tl_lc_ctrl__regs_i,
   output tlul_pkg::tl_h2d_t tl_sensor_ctrl_aon_o,
@@ -171,8 +171,8 @@ module xbar_peri (
   assign tl_otp_ctrl__core_o = tl_s1n_28_ds_h2d[15];
   assign tl_s1n_28_ds_d2h[15] = tl_otp_ctrl__core_i;
 
-  assign tl_otp_ctrl__prim_o = tl_s1n_28_ds_h2d[16];
-  assign tl_s1n_28_ds_d2h[16] = tl_otp_ctrl__prim_i;
+  assign tl_otp_macro__prim_o = tl_s1n_28_ds_h2d[16];
+  assign tl_s1n_28_ds_d2h[16] = tl_otp_macro__prim_i;
 
   assign tl_lc_ctrl__regs_o = tl_s1n_28_ds_h2d[17];
   assign tl_s1n_28_ds_d2h[17] = tl_lc_ctrl__regs_i;
@@ -275,7 +275,7 @@ module xbar_peri (
       dev_sel_s1n_28 = 5'd15;
 
     end else if ((tl_s1n_28_us_h2d.a_address &
-                  ~(ADDR_MASK_OTP_CTRL__PRIM)) == ADDR_SPACE_OTP_CTRL__PRIM) begin
+                  ~(ADDR_MASK_OTP_MACRO__PRIM)) == ADDR_SPACE_OTP_MACRO__PRIM) begin
       dev_sel_s1n_28 = 5'd16;
 
     end else if ((tl_s1n_28_us_h2d.a_address &

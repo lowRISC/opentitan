@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/pwm/doc/">PWM</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/pwm/">PWM</a> Device Interface Functions
  *
  * The PWM block contains a 16-bit "phase counter" that controls each channel's
  * output signal. The "phase counter" acts as a point of reference for a single
@@ -39,33 +39,11 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
- * Helper X macro for defining enums and case statements related to PWM
- * channels. If an additional channel is ever added to the hardware, this list
- * can be updated.
- */
-#define DIF_PWM_CHANNEL_LIST(X) \
-  X(0)                          \
-  X(1)                          \
-  X(2)                          \
-  X(3)                          \
-  X(4)                          \
-  X(5)
-
-/**
- * Helper macro for defining a `dif_pwm_channel_t` enumeration constant.
- * @channel_ PWM channel of the enumeration constant.
- */
-#define PWM_CHANNEL_ENUM_INIT_(channel_) \
-  kDifPwmChannel##channel_ = 1U << channel_,
-
-/**
  * A PWM channel.
+ *
+ * Channels are numbered 0 to N-1, where N is the number of channels.
  */
-typedef enum dif_pwm_channel {
-  DIF_PWM_CHANNEL_LIST(PWM_CHANNEL_ENUM_INIT_)
-} dif_pwm_channel_t;
-
-#undef PWM_CHANNEL_ENUM_INIT_
+typedef size_t dif_pwm_channel_t;
 
 /**
  * Runtime configuration for PWM.
@@ -273,15 +251,15 @@ dif_result_t dif_pwm_phase_cntr_get_enabled(const dif_pwm_t *pwm,
  * Sets the enablement states of one or more PWM channels.
  *
  * @param pwm A PWM handle.
- * @param channels The channels to enable (one or more `dif_pmw_channel_t`s
- *                 ORed together.)
+ * @param channels The channels to enable (bitmask, the i-th bit corresponds to
+ * the i-th channel).
  * @param enabled The enablement state to set.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_pwm_channel_set_enabled(const dif_pwm_t *pwm,
-                                         uint32_t channels,
-                                         dif_toggle_t enabled);
+dif_result_t dif_pwm_channels_set_enabled(const dif_pwm_t *pwm,
+                                          uint32_t channels,
+                                          dif_toggle_t enabled);
 
 /**
  * Gets the enablement state of one PWM channel.

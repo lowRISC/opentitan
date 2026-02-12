@@ -16,6 +16,8 @@ This module conforms to the [Comportable guideline for peripheral functionality.
 - This revision provides an interface to an external physical random noise generator (also referred to as a physical true random number generator or PTRNG).
 The PTRNG external source is a physical true random noise source.
 A noise source and its relation to an entropy source are defined by [SP 800-90B.](https://csrc.nist.gov/publications/detail/sp/800-90b/final)
+- Configurable noise source bus width, supporting 4-256 bits.
+- Variable noise source rate with a maximum rate of one symbol every second clock cycle.
 - A set of registers is provided for firmware to obtain entropy bits.
 - Interrupts are supported:
   - Entropy bits are available for firmware consumption.
@@ -50,7 +52,7 @@ These tests include:
 The Repetition Count and Adaptive Proportion test are specifically recommended by SP 800-90B, and are implemented in accordance with those recommendations.
 In FIPS/CC compliant mode, all checks except the Repetition Count test are performed on a fixed window of data of configurable size, by default consisting of 2048 bits each.
 Per the definition in SP 800-90B, the Repetition Count test does not operate on a fixed window.
-The repetition count test fails if any sequence of bits continuously asserts the same value for too many samples, as determined by the programmable threshold, regardless of whether that sequence crosses any window boundaries.
+The Repetition Count Test fails if any sequence of bits continuously asserts the same value for too many samples, as determined by the programmable threshold, regardless of whether that sequence crosses any window boundaries.
 The thresholds for these tests should be chosen to achieve a low false-positive rate (&alpha;) given a conservative estimate of the manufacturing tolerances of the PTRNG noise source.
 The combined choice of threshold and window size then determine the false-negative rate (&beta;), or the probability of missing statistical defects at any particular magnitude.
 

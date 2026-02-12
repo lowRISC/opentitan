@@ -44,15 +44,15 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
   // OTP
   rand otp_device_id_t otp_device_id;
   rand otp_device_id_t otp_manuf_state;
-  rand logic [OtpTestCtrlWidth-1:0] otp_vendor_test_ctrl;
-  rand logic [OtpTestStatusWidth-1:0] otp_vendor_test_status;
+  rand logic [lc_ctrl_reg_pkg::CsrOtpTestCtrlWidth-1:0] otp_vendor_test_ctrl;
+  rand logic [lc_ctrl_reg_pkg::CsrOtpTestStatusWidth-1:0] otp_vendor_test_status;
   lc_tx_t otp_secrets_valid;
 
   // Token mux error inject FSM state
   fsm_state_e token_mux_ctrl_redun_err_inj_state;
   // Security escalation error injection state
   fsm_state_e security_escalation_err_inj_state;
-  // ecscalate has been injected
+  // escalate has been injected
   bit escalate_injected = 0;
   event transition_cmd_wr_ev;
 

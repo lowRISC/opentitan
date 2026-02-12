@@ -5,13 +5,12 @@
 r"""Takes a compiled VMEM image and processes it for loading into flash.
 
     Specifically, this takes a raw flash image and adds both layers of ECC
-    (integrity and reliablity), and optionally, scrambles the data using the
+    (integrity and reliability), and optionally, scrambles the data using the
     same XEX scrambling scheme used in the flash controller. This enables
     backdoor loading the flash on simulation platforms (e.g., DV and Verilator).
 """
 
 import argparse
-import logging as log
 import re
 import sys
 from dataclasses import dataclass
@@ -21,8 +20,8 @@ from typing import List
 
 import hjson
 from pyfinite import ffield
-from lib.OtpMemMap import OtpMemMap
-from lib.common import (inverse_permute_bits,
+from lib.common import (check_int,
+                        inverse_permute_bits,
                         validate_data_perm_option,
                         vmem_permutation_string)
 from lib.Present import Present
@@ -141,39 +140,28 @@ def _convert_array_2_int(data_array: List[int],
     return reformatted_data
 
 
-def _get_otp_ctrl_netlist_consts(otp_mmap_file: str, otp_seed: int,
-                                 scrambling_configs: FlashScramblingConfigs):
-    # Read in the OTP memory map file to a dictionary.
-    with open(otp_mmap_file, 'r') as infile:
-        otp_mmap_config = hjson.load(infile)
-        # If a OTP memory map seed is provided, we use it.
-        if otp_seed is not None:
-            otp_mmap_config["seed"] = otp_seed
-        # Otherwise, we either take it from the .hjson if present, else we
-        # error out. If we did not provide a seed via a cmd line arg, and there
-        # is not one present in the .hjson, then it won't be in sync with what
-        # `gen-otp-mmap.py` generated on the RTL side.
-        elif "seed" not in otp_mmap_config:
-            log.error("No OTP seed provided.")
-        try:
-            otp_mmap = OtpMemMap(otp_mmap_config)
-        except RuntimeError as err:
-            log.error(err)
-            exit(1)
+def _get_otp_ctrl_netlist_consts(top_secret_cfg: dict, scrambling_configs: FlashScramblingConfigs):
+
+    for module in top_secret_cfg["module"]:
+        if module.get("template_type") == "otp_ctrl":
+            otp_map = module["otp_mmap"]
+            break
+    else:
+        raise RuntimeError("OTP memory map configuration not found in top secret configuration")
 
     # Extract OTP secret1 partition scrambling key.
-    for key in otp_mmap.config["scrambling"]["keys"]:
+    for key in otp_map["scrambling"]["keys"]:
         if key["name"] == "Secret1Key":
-            scrambling_configs.otp_secret1_key = int(key["value"])
+            scrambling_configs.otp_secret1_key = check_int(key["value"])
 
     # Extract OTP flash scrambling key IVs.
-    for digest in otp_mmap.config["scrambling"]["digests"]:
+    for digest in otp_map["scrambling"]["digests"]:
         if digest["name"] == "FlashAddrKey":
-            scrambling_configs.addr_key_iv = digest["iv_value"]
-            scrambling_configs.addr_key_final_const = digest["cnst_value"]
+            scrambling_configs.addr_key_iv = check_int(digest["iv_value"])
+            scrambling_configs.addr_key_final_const = check_int(digest["cnst_value"])
         if digest["name"] == "FlashDataKey":
-            scrambling_configs.data_key_iv = digest["iv_value"]
-            scrambling_configs.data_key_final_const = digest["cnst_value"]
+            scrambling_configs.data_key_iv = check_int(digest["iv_value"])
+            scrambling_configs.data_key_final_const = check_int(digest["cnst_value"])
 
 
 def _get_flash_scrambling_configs(otp_vmem_file: str, otp_data_perm: list,
@@ -325,7 +313,7 @@ def _reformat_flash_vmem(
                                          scrambling_configs.addr_key,
                                          scrambling_configs.data_key)
                     data_w_intg_ecc = intg_ecc | data
-                # `data_w_full_ecc` will be in format {reliablity ECC bits,
+                # `data_w_full_ecc` will be in format {reliability ECC bits,
                 # integrity ECC bits, data bits}.
                 data_w_full_ecc, _ = secded_gen.ecc_encode(
                     ecc_configs, "hamming",
@@ -347,17 +335,17 @@ def main(argv: List[str]):
     parser.add_argument("--in-flash-vmem",
                         type=str,
                         help="Input VMEM file to reformat.")
-    parser.add_argument("--in-otp-mmap",
-                        type=str,
-                        help="OTP memory map HJSON file.")
+
     parser.add_argument("--in-otp-vmem",
                         type=str,
                         help="Input OTP (VMEM) file to retrieve data from.")
-    parser.add_argument(
-        "--otp-seed",
-        type=int,
-        help=
-        "Configuration override seed used to randomize OTP netlist constants.")
+    parser.add_argument('--top-secret-cfg',
+                        type=Path,
+                        metavar='<path>',
+                        required=True,
+                        help='''
+                        Path to the top secret configuration in Hjson format.
+                        ''')
     parser.add_argument("--out-flash-vmem", type=str, help="Output VMEM file.")
     parser.add_argument("--otp-data-perm",
                         type=vmem_permutation_string,
@@ -386,8 +374,10 @@ def main(argv: List[str]):
     # Read flash scrambling configurations (including: enablement, otp_ctrl
     # netlist consts, address and data key seeds) directly from OTP VMEM file.
     if args.in_otp_vmem:
-        _get_otp_ctrl_netlist_consts(args.in_otp_mmap, args.otp_seed,
-                                     scrambling_configs)
+        with open(args.top_secret_cfg, 'r') as infile:
+            top_secret_cfg = hjson.load(infile)
+
+        _get_otp_ctrl_netlist_consts(top_secret_cfg, scrambling_configs)
         _get_flash_scrambling_configs(args.in_otp_vmem, args.otp_data_perm,
                                       scrambling_configs)
 
@@ -395,7 +385,7 @@ def main(argv: List[str]):
     if scrambling_configs.scrambling_enabled:
         _compute_flash_scrambling_keys(scrambling_configs)
 
-    # Reformat flash VMEM file to add integrity/reliablity ECC and scrambling.
+    # Reformat flash VMEM file to add integrity/reliability ECC and scrambling.
     reformatted_vmem_lines = _reformat_flash_vmem(args.in_flash_vmem,
                                                   scrambling_configs)
 

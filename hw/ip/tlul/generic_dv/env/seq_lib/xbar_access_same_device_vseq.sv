@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // test all hosts to access same device
-// randomly pick one device, if host can acess this device, change it to only access this device
+// randomly pick one device, if host can access this device, change it to only access this device
 // repeat above for a few times
 class xbar_access_same_device_vseq extends xbar_random_vseq;
 

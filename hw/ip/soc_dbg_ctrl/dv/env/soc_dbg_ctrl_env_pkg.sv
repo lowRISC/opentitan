@@ -22,9 +22,11 @@ package soc_dbg_ctrl_env_pkg;
 
   // Parameters
   parameter uint   NUM_ALERTS = 2;
-  parameter string LIST_OF_ALERTS[] = {"fatal_fault", "recov_ctrl_update_err"};
+  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"fatal_fault", "recov_ctrl_update_err"};
 
   // Types
+  typedef virtual soc_dbg_ctrl_misc_io_if misc_vif_t;
+
   typedef enum bit [1:0] {
     AddrRead  = 0,
     AddrWrite = 1,

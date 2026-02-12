@@ -22,7 +22,7 @@ from elftools.elf import elffile
 
 # A printf statement in C code is converted into a single write to a reserved
 # address in the RAM. The value written is the address of the log_fields_t
-# struct constucted from the log. It has the following fields:
+# struct constructed from the log. It has the following fields:
 # severity (int), 4 bytes:        0 (I), 1 (W), 2 (E), 3 (F)
 # file_name (int, ptr), 4 bytes:  Pointer to file_name string.
 # Line no (int), 4 bytes:         Line number of the log message.
@@ -68,7 +68,7 @@ def cleanup_format(_format):
     - Change %![N]?b        --> %[N]?d.
 
     Status values are printed as hexadecimal values which can be manually decoded
-    by users as necessary, to prevent errors occuring in tests due to lacking
+    by users as necessary, to prevent errors occurring in tests due to lacking
     support for this formatting specifier. JSON support for status printing is
     likewise just replaced by displaying the hex.
     - Change %!?[N]?r        --> %8h'''
@@ -130,7 +130,7 @@ def get_addr_strings(ro_contents):
     This function processes the read-only sections of the elf supplied as
     a list of ro_content tuples comprising of base addr, size and data in bytes
     and converts it into an {addr: (string, length} dict which is returned.
-    We preserve the original length of the string becuase the string may
+    We preserve the original length of the string because the string may
     go through cleanup methods which will alter it.'''
     result = {}
     for ro_content in ro_contents:
@@ -194,6 +194,8 @@ def extract_sw_logs(elf_file, logs_fields_section):
 
             # Ignore the debug sections.
             if section.name.startswith(".debug"):
+                continue
+            if section.name.startswith("__llvm"):
                 continue
 
             base_addr = int(section.header['sh_addr'])

@@ -11,7 +11,9 @@ module rv_core_ibex_peri
   import rv_core_ibex_peri_pkg::*;
   import rv_core_ibex_peri_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned AlertSkewCycles = 1
 ) (
   input clk_i,
   input rst_ni,
@@ -109,6 +111,7 @@ module rv_core_ibex_peri
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_senders
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[0]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(AlertFatal[i])
     ) u_alert_sender (
       .clk_i,

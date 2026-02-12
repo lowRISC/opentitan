@@ -54,7 +54,7 @@ module aes_reg_status #(
 
   // We have a clean value, if either:
   // - all registers have been written at least once, or
-  // - no registers have been written but the value was clean previsously.
+  // - no registers have been written but the value was clean previously.
   // A value is NOT clean, if either:
   // - we get a clear or reset, or
   // - some but not all registers have been written.

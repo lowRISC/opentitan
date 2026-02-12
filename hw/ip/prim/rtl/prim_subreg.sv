@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Register slice conforming to Comportibility guide.
+// Register slice conforming to Comportability guide.
 
 module prim_subreg
   import prim_subreg_pkg::*;
@@ -62,7 +62,7 @@ module prim_subreg
 
   // feed back out for consolidation
   assign ds = wr_en ? wr_data : qs;
-  assign qe = wr_en;
+  assign qe = we;
 
   if (SwAccess == SwAccessRC) begin : gen_rc
     // In case of a SW RC colliding with a HW write, SW gets the value written by HW

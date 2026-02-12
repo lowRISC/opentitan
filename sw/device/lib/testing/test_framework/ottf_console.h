@@ -8,32 +8,53 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_uart.h"
+#include "sw/device/lib/dif/dif_gpio.h"
+#ifdef OTTF_CONSOLE_HAS_SPI_DEVICE
+#include "sw/device/lib/testing/test_framework/ottf_console_spi.h"
+#endif
+#ifdef OTTF_CONSOLE_HAS_UART
+#include "sw/device/lib/testing/test_framework/ottf_console_uart.h"
+#endif
+#include "sw/device/lib/runtime/print.h"
+#include "sw/device/lib/testing/test_framework/ottf_console_types.h"
 
 /**
- * Flow control state.
+ * OTTF console state.
+ *
+ * Typedef in ottf_console_types.h
  */
-typedef enum ottf_console_flow_control {
-  /** No flow control enabled. */
-  kOttfConsoleFlowControlNone = 0,
-  /** Automatically determine the next flow control state. */
-  kOttfConsoleFlowControlAuto = 1,
-  /**
-   * Flow control is in the `Resume` state (safe to receive).
-   * This is also the ASCII code for `XON`.
-   */
-  kOttfConsoleFlowControlResume = 17,
-  /**
-   * Flow control is in the `Pause` state (risk of overrun).
-   * This is also the ASCII code for `XOFF`.
-   */
-  kOttfConsoleFlowControlPause = 19,
-} ottf_console_flow_control_t;
+struct ottf_console {
+  /** Console type. */
+  ottf_console_type_t type;
+  /* Function pointer to the currently active data sink. */
+  sink_func_ptr sink;
+  /* Function pointer to a function that retrieves a single character. */
+  status_t (*getc)(void *);
+  /* Enable SW buffering. */
+  bool buffered;
+  /** Staging buffer. */
+  char *buf;
+  /** Staging buffer size. */
+  size_t buf_size;
+  /** Where to write next to the staging buffer. */
+  size_t buf_end;
+  /** Auxiliary data, per console type */
+  union {
+#ifdef OTTF_CONSOLE_HAS_UART
+    /** UART data. */
+    ottf_console_uart_t uart;
+#endif  // OTTF_CONSOLE_HAS_UART
+#ifdef OTTF_CONSOLE_HAS_SPI_DEVICE
+    /** SPI device data. */
+    ottf_console_spi_t spi;
+#endif  // OTTF_CONSOLE_HAS_SPI_DEVICE
+  } data;
+};
 
 /**
- * Returns a pointer to the OTTF console device DIF handle.
+ * Returns a pointer to the OTTF main console.
  */
-void *ottf_console_get(void);
+ottf_console_t *ottf_console_get(void);
 
 /**
  * Initializes the OTTF console device and connects to the printf buffer.
@@ -41,44 +62,32 @@ void *ottf_console_get(void);
 void ottf_console_init(void);
 
 /**
- * Configures the given UART to be used by the OTTF console.
+ * Configures software buffering of the console.
  *
- * @param base_addr The base address of the UART to use.
- */
-void ottf_console_configure_uart(uintptr_t base_addr);
-
-/**
- * Configures the given SPI device to be used by the OTTF console.
+ * If the console previously had buffering enabled, disabling buffering will
+ * simply drop the content of the staging buffer. Therefore the content should
+ * be flushed before disabling buffering.
  *
- * @param base_addr The base address of the SPI device to use.
+ * @param console Pointer to the console to configure
+ * @param enabled Enable/disable buffering.
+ * @param buffer Staging buffer used for buffering.
+ * @param size Length of the staging buffer.
  */
-void ottf_console_configure_spi_device(uintptr_t base_addr);
+void ottf_console_set_buffering(ottf_console_t *console, bool enabled,
+                                char *buffer, size_t size);
 
 /**
  * Manage flow control by inspecting the OTTF console device's receive FIFO.
  *
- * @param uart A UART handle.
+ * @param console A pointer to the console.
  * @param ctrl Set the next desired flow-control state.
  * @return The new state.
  */
-status_t ottf_console_flow_control(const dif_uart_t *uart,
+status_t ottf_console_flow_control(ottf_console_t *console,
                                    ottf_console_flow_control_t ctrl);
 
 /**
- * Enable flow control for the OTTF console.
- *
- * Enables flow control on the UART associated with the OTTF console. Flow
- * control is managed by enabling the RX watermark IRQ and sending a `Pause`
- * (aka XOFF) when the RX FIFO depth reaches 16 bytes.  A `Resume` (aka XON) is
- * sent when the RX FIFO has been drained to 4 bytes.
- *
- * This function configures UART interrupts at the PLIC and enables interrupts
- * at the CPU.
- */
-void ottf_console_flow_control_enable(void);
-
-/**
- * Manage console flow control from interrupt context.
+ * Manage console flow control *for the main console* from interrupt context.
  *
  * Call this when a console UART interrupt triggers.
  *
@@ -95,24 +104,9 @@ bool ottf_console_flow_control_isr(uint32_t *exc_info);
 uint32_t ottf_console_get_flow_control_irqs(void);
 
 /**
- * Read data from the host via the OTTF SPI device console into a provided
- * buffer.
- *
- * The function waits for spi upload commands, then transfers data in chunks
- * until a transmission complete signal is received. If the size of data sent
- * from the host is greater than the provided buffer, then the excess data will
- * be discarded.
- *
- * @param buf_size The size, in bytes, of the `buf`.
- * @param[out] buf A pointer to the location where the data should be stored.
- * @return The number of bytes actually received from the host.
- */
-size_t ottf_console_spi_device_read(size_t buf_size, uint8_t *const buf);
-
-/**
  * Write a buffer to the OTTF console.
  *
- * @param context An IO context
+ * @param io An IO context: pointer to an `ottf_console_t`.
  * @param buf The buffer to write to the OTTF console.
  * @param len The length of the buffer.
  * @return OK or an error.
@@ -120,10 +114,32 @@ size_t ottf_console_spi_device_read(size_t buf_size, uint8_t *const buf);
 status_t ottf_console_putbuf(void *io, const char *buf, size_t len);
 
 /**
+ * Flush remaining buffered data to the OTTF console.
+ *
+ * On success, an OK_STATUS is returned with the number of flushed bytes.
+ * On error, the unflushed data will be lost.
+ *
+ * @param io An IO context: pointer to an `ottf_console_t`.
+ * @return OK or an error.
+ */
+status_t ottf_console_flushbuf(void *io);
+
+/**
  * Get a single character from the OTTF console.
  *
+ * @param io An IO context: pointer to an `ottf_console_t`.
  * @return The next character or an error.
  */
 status_t ottf_console_getc(void *io);
+
+/**
+ * Get a buffer sink object for a console.
+ *
+ * This buffer sink can be used with `base_fprintf`.
+ *
+ * @param console Pointer to the console object.
+ * @return A buffer sink.
+ */
+buffer_sink_t ottf_console_get_buffer_sink(ottf_console_t *console);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_CONSOLE_H_

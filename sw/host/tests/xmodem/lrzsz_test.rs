@@ -17,7 +17,7 @@ mod test {
     //use opentitanlib::io::uart::Uart;
     use anyhow::Result;
     //use std::io::{Read, Write};
-    use opentitanlib::util::testing::{ChildUart, TransferState};
+    use opentitanlib::util::testing::{ChildConsole, TransferState};
     use opentitanlib::util::tmpfilename;
     use xmodem::XmodemFirmware;
 
@@ -53,7 +53,7 @@ November 19, 1863
     fn test_xmodem_send() -> Result<()> {
         let _ = TransferState::default();
         let filename = tmpfilename("test_xmodem_send");
-        let child = ChildUart::spawn(&["rx", "--with-crc", &filename])?;
+        let child = ChildConsole::spawn(&["rx", "--with-crc", &filename])?;
         let xmodem = XmodemFirmware::new();
         let gettysburg = GETTYSBURG.as_bytes();
         xmodem.send(&child, gettysburg)?;
@@ -69,7 +69,7 @@ November 19, 1863
     #[test]
     fn test_xmodem_send_with_errors() -> Result<()> {
         let filename = tmpfilename("test_xmodem_send_with_errors");
-        let child = ChildUart::spawn_corrupt(
+        let child = ChildConsole::spawn_corrupt(
             &["rx", "--with-crc", &filename],
             TransferState::default(),
             TransferState::new(&[3, 1032]),
@@ -85,11 +85,11 @@ November 19, 1863
     #[test]
     fn test_xmodem_checksum_mode() -> Result<()> {
         let filename = tmpfilename("test_xmodem_checksum_mode");
-        let child = ChildUart::spawn(&["rx", &filename])?;
+        let child = ChildConsole::spawn(&["rx", &filename])?;
         let xmodem = XmodemFirmware::new();
         let gettysburg = GETTYSBURG.as_bytes();
         let result = xmodem.send(&child, gettysburg);
-        assert_eq!(child.wait()?.success(), false);
+        assert!(!child.wait()?.success());
         assert!(result.is_err());
         assert_eq!(result.unwrap_err().to_string(), "Protocol");
         Ok(())
@@ -100,7 +100,7 @@ November 19, 1863
         let filename = tmpfilename("test_xmodem_recv");
         let gettysburg = GETTYSBURG.as_bytes();
         std::fs::write(&filename, gettysburg)?;
-        let child = ChildUart::spawn(&["sx", &filename])?;
+        let child = ChildConsole::spawn(&["sx", &filename])?;
         let xmodem = XmodemFirmware::new();
         let mut result = Vec::new();
         xmodem.receive(&child, &mut result)?;
@@ -117,7 +117,7 @@ November 19, 1863
         let filename = tmpfilename("test_xmodem1k_recv");
         let gettysburg = GETTYSBURG.as_bytes();
         std::fs::write(&filename, gettysburg)?;
-        let child = ChildUart::spawn(&["sx", "--1k", &filename])?;
+        let child = ChildConsole::spawn(&["sx", "--1k", &filename])?;
         let xmodem = XmodemFirmware::new();
         let mut result = Vec::new();
         xmodem.receive(&child, &mut result)?;
@@ -136,7 +136,7 @@ November 19, 1863
         let filename = tmpfilename("test_xmodem_recv_with_errors");
         let gettysburg = GETTYSBURG.as_bytes();
         std::fs::write(&filename, gettysburg)?;
-        let child = ChildUart::spawn_corrupt(
+        let child = ChildConsole::spawn_corrupt(
             &["sx", &filename],
             TransferState::new(&[3, 1032]),
             TransferState::default(),
@@ -154,7 +154,7 @@ November 19, 1863
         let filename = tmpfilename("test_xmodem_recv_with_cancel");
         let gettysburg = GETTYSBURG.as_bytes();
         std::fs::write(&filename, gettysburg)?;
-        let child = ChildUart::spawn_corrupt(
+        let child = ChildConsole::spawn_corrupt(
             &["sx", &filename],
             TransferState::new(&[1, 1030]),
             TransferState::default(),

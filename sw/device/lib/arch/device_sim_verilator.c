@@ -5,11 +5,10 @@
 #include <assert.h>
 #include <stdbool.h>
 
-#include "dt/dt_rv_core_ibex.h"
+#include "hw/top/dt/rv_core_ibex.h"
 #include "sw/device/lib/arch/device.h"
 
-#include "rv_core_ibex_regs.h"
-#include "uart_regs.h"
+#include "hw/top/rv_core_ibex_regs.h"
 
 // Use the first dt_rv_core_ibex_t enum, i.e. the first Ibex core instance.
 static const dt_rv_core_ibex_t kRvCoreIbexDt = (dt_rv_core_ibex_t)0;
@@ -66,9 +65,6 @@ const uint32_t kUartBaud1M33 =
 const uint32_t kUartBaud1M50 =
     CALCULATE_UART_NCO(1500000, kClockFreqPeripheralHz);
 
-const uint32_t kUartTxFifoCpuCycles = CALCULATE_UART_TX_FIFO_CPU_CYCLES(
-    kUartBaudrate, kClockFreqCpuHz, UART_PARAM_TX_FIFO_DEPTH);
-
 const uint32_t kAstCheckPollCpuCycles =
     CALCULATE_AST_CHECK_POLL_CPU_CYCLES(kClockFreqCpuHz);
 
@@ -77,5 +73,3 @@ uintptr_t device_test_status_address(void) {
 }
 
 uintptr_t device_log_bypass_uart_address(void) { return 0; }
-
-void device_fpga_version_print(void) {}

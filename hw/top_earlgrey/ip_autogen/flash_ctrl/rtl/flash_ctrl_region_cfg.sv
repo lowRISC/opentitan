@@ -83,7 +83,7 @@ module flash_ctrl_region_cfg
   );
 
   //////////////////////////////////////
-  // Bank speicfic configuration
+  // Bank specific configuration
   //////////////////////////////////////
   for (genvar i = 0; i < NumBanks; i++) begin : gen_bank_cfg
     assign bank_cfg_o[i].q = bank_cfg_i[i].q;

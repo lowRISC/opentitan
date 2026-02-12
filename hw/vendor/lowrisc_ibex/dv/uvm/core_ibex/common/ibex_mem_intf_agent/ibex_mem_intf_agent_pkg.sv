@@ -10,6 +10,7 @@ package ibex_mem_intf_agent_pkg;
   import ibex_cosim_agent_pkg::*;
 
   `include "uvm_macros.svh"
+  `include "dv_macros.svh"
 
   typedef uvm_sequencer#(ibex_mem_intf_seq_item) ibex_mem_intf_request_sequencer;
 

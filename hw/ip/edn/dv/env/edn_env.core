@@ -38,6 +38,7 @@ generate:
     parameters:
       name: edn
       ip_hjson: ../../data/edn.hjson
+    position: prepend
 
 targets:
   default:

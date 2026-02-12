@@ -27,7 +27,7 @@ module otbn_top_sim (
   err_bits_t otbn_err_bits, otbn_err_bits_r, otbn_err_bits_rr;
   logic      otbn_start, otbn_start_r;
 
-  // Intialise otbn_start_done to 1 so that we only signal otbn_start after we have seen a reset. If
+  // Initialise otbn_start_done to 1 so that we only signal otbn_start after we have seen a reset. If
   // you don't do this, we start OTBN before the reset, which can generate confusing trace messages.
   logic      otbn_start_done = 1'b1;
 

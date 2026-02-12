@@ -8,6 +8,9 @@
 #include "sw/device/lib/dif/dif_edn.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
+// The HAS_ENTROPY_SRC define is created by the Bazel rule to indicate
+// the presence of the entropy_src IP.
+
 #ifdef HAS_ENTROPY_SRC
 #include "sw/device/lib/dif/dif_entropy_src.h"
 #endif

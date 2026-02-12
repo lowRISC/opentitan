@@ -4,19 +4,20 @@
 
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
 
+#include "hw/top/dt/api.h"
+#include "hw/top/dt/kmac.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "kmac_regs.h"  // Generated.
+#include "hw/top/kmac_regs.h"  // Generated.
+
+static inline uint32_t kmac_base(void) {
+  return dt_kmac_primary_reg_block(kDtKmac);
+}
 
 enum {
-  /**
-   * Base address of the KMAC hardware MMIO interface.
-   */
-  kBase = TOP_EARLGREY_KMAC_BASE_ADDR,
   /**
    * Keccak capacity for SHAKE256.
    *
@@ -41,14 +42,6 @@ enum {
    * Size of one share of the Keccak state.
    */
   kStateShareSize = KMAC_STATE_SIZE_BYTES / 2,
-  /**
-   * Address of first share of Keccak state.
-   */
-  kAddrStateShare0 = kBase + KMAC_STATE_REG_OFFSET,
-  /**
-   * Address of second share of Keccak state.
-   */
-  kAddrStateShare1 = kBase + KMAC_STATE_REG_OFFSET + kStateShareSize,
 };
 
 // Double-check that calculated rate is smaller than one share of the state.
@@ -114,7 +107,8 @@ static rom_error_t poll_state(bitfield_bit32_index_t bit_index) {
   uint32_t is_error = (uint32_t)kHardenedBoolFalse;
   do {
     // Read the error bit.
-    uint32_t intr_state = abs_mmio_read32(kBase + KMAC_INTR_STATE_REG_OFFSET);
+    uint32_t intr_state =
+        abs_mmio_read32(kmac_base() + KMAC_INTR_STATE_REG_OFFSET);
     uint32_t err_bit = launder32((uint32_t)bitfield_bit32_read(
         intr_state, KMAC_INTR_STATE_KMAC_ERR_BIT));
     // If there is no error, (~err_bit) + 1 will be zero and `is_error` will
@@ -123,7 +117,7 @@ static rom_error_t poll_state(bitfield_bit32_index_t bit_index) {
     is_error ^= (~err_bit) + 1;
 
     // Read the status register.
-    status = abs_mmio_read32(kBase + KMAC_STATUS_REG_OFFSET);
+    status = abs_mmio_read32(kmac_base() + KMAC_STATUS_REG_OFFSET);
     uint32_t flag = launder32((uint32_t)bitfield_bit32_read(status, bit_index));
     // If `flag` is 0, then `res` will be unchanged (and remain `kErrorOk ^
     // UINT32_MAX`).  If it is 1, then all bits except the LSB will flip,
@@ -164,7 +158,8 @@ static rom_error_t kmac_configure(kmac_config_t config) {
   entropy_period_reg = bitfield_field32_write(
       entropy_period_reg, KMAC_ENTROPY_PERIOD_PRESCALER_FIELD,
       KMAC_ENTROPY_PERIOD_PRESCALER_MASK);
-  abs_mmio_write32(kBase + KMAC_ENTROPY_PERIOD_REG_OFFSET, entropy_period_reg);
+  abs_mmio_write32(kmac_base() + KMAC_ENTROPY_PERIOD_REG_OFFSET,
+                   entropy_period_reg);
 
   uint32_t cfg_reg = KMAC_CFG_SHADOWED_REG_RESVAL;
   // Set `CFG.KMAC_EN` bit to 0.
@@ -211,20 +206,21 @@ static rom_error_t kmac_configure(kmac_config_t config) {
   // Set `CFG.EN_UNSUPPORTED_MODESTRENGTH` bit to 0.
   cfg_reg = bitfield_bit32_write(
       cfg_reg, KMAC_CFG_SHADOWED_EN_UNSUPPORTED_MODESTRENGTH_BIT, 0);
-  abs_mmio_write32_shadowed(kBase + KMAC_CFG_SHADOWED_REG_OFFSET, cfg_reg);
+  abs_mmio_write32_shadowed(kmac_base() + KMAC_CFG_SHADOWED_REG_OFFSET,
+                            cfg_reg);
 
   // Write entropy seed register. Even though the values are
   // irrelevant, these registers must be written for the KMAC block to consider
   // its entropy "ready" and to begin operation.
-  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[0]);
-  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[1]);
-  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[2]);
-  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[3]);
-  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[4]);
-  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[5]);
-  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[6]);
-  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[7]);
-  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[8]);
+  abs_mmio_write32(kmac_base() + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[0]);
+  abs_mmio_write32(kmac_base() + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[1]);
+  abs_mmio_write32(kmac_base() + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[2]);
+  abs_mmio_write32(kmac_base() + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[3]);
+  abs_mmio_write32(kmac_base() + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[4]);
+  abs_mmio_write32(kmac_base() + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[5]);
+  abs_mmio_write32(kmac_base() + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[6]);
+  abs_mmio_write32(kmac_base() + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[7]);
+  abs_mmio_write32(kmac_base() + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[8]);
 
   return kErrorOk;
 }
@@ -236,7 +232,7 @@ static rom_error_t kmac_configure(kmac_config_t config) {
  */
 static void issue_command(uint32_t cmd_value) {
   uint32_t cmd_reg = bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, cmd_value);
-  abs_mmio_write32(kBase + KMAC_CMD_REG_OFFSET, cmd_reg);
+  abs_mmio_write32(kmac_base() + KMAC_CMD_REG_OFFSET, cmd_reg);
 }
 
 rom_error_t kmac_keymgr_configure(void) {
@@ -306,23 +302,23 @@ void kmac_shake256_absorb(const uint8_t *in, size_t inlen) {
   // produce entropy requests anyway). Since KMAC will therefore not block on
   // EDN, it is guaranteed to keep processing message blocks. For more details,
   // see the KMAC documentation:
-  //   https://docs.opentitan.org/hw/ip/kmac/doc/#fifo-depth-and-empty-status
+  // https://opentitan.org/book/hw/ip/kmac/doc/theory_of_operation.html#fifo-depth-and-empty-status
 
   // Use byte-wide writes until the input pointer is aligned.
   // Note: writes to the KMAC message FIFO are not required to be aligned.
   for (; inlen > 0 && misalignment32_of((uintptr_t)in); --inlen, ++in) {
-    abs_mmio_write8(kBase + KMAC_MSG_FIFO_REG_OFFSET, *in);
+    abs_mmio_write8(kmac_base() + KMAC_MSG_FIFO_REG_OFFSET, *in);
   }
 
   // Use word writes for all full words.
   for (; inlen >= sizeof(uint32_t);
        inlen -= sizeof(uint32_t), in += sizeof(uint32_t)) {
-    abs_mmio_write32(kBase + KMAC_MSG_FIFO_REG_OFFSET, read_32(in));
+    abs_mmio_write32(kmac_base() + KMAC_MSG_FIFO_REG_OFFSET, read_32(in));
   }
 
   // Use byte-wide writes for anything left over.
   for (; inlen > 0; --inlen, ++in) {
-    abs_mmio_write8(kBase + KMAC_MSG_FIFO_REG_OFFSET, *in);
+    abs_mmio_write8(kmac_base() + KMAC_MSG_FIFO_REG_OFFSET, *in);
   }
   HARDENED_CHECK_EQ(inlen, 0);
 }
@@ -336,10 +332,10 @@ void kmac_shake256_absorb_words(const uint32_t *in, size_t inlen) {
   // produce entropy requests anyway). Since KMAC will therefore not block on
   // EDN, it is guaranteed to keep processing message blocks. For more details,
   // see the KMAC documentation:
-  //   https://docs.opentitan.org/hw/ip/kmac/doc/#fifo-depth-and-empty-status
+  // https://opentitan.org/book/hw/ip/kmac/doc/theory_of_operation.html#fifo-depth-and-empty-status
 
   for (; inlen > 0; --inlen, ++in) {
-    abs_mmio_write32(kBase + KMAC_MSG_FIFO_REG_OFFSET, *in);
+    abs_mmio_write32(kmac_base() + KMAC_MSG_FIFO_REG_OFFSET, *in);
   }
   HARDENED_CHECK_EQ(inlen, 0);
 }
@@ -362,12 +358,16 @@ rom_error_t kmac_shake256_squeeze_end(uint32_t *out, size_t outlen) {
     // Read words from the state registers (either `outlen` or the maximum
     // number of words available).
     size_t offset = 0;
+    uint32_t state_share0_addr = kmac_base() + KMAC_STATE_REG_OFFSET;
+    uint32_t state_share1_addr =
+        kmac_base() + KMAC_STATE_REG_OFFSET + kStateShareSize;
+
     for (; launder32(idx) < outlen && offset < kShake256KeccakRateWords;
          ++offset) {
       uint32_t share0 =
-          abs_mmio_read32(kAddrStateShare0 + offset * sizeof(uint32_t));
+          abs_mmio_read32(state_share0_addr + offset * sizeof(uint32_t));
       uint32_t share1 =
-          abs_mmio_read32(kAddrStateShare1 + offset * sizeof(uint32_t));
+          abs_mmio_read32(state_share1_addr + offset * sizeof(uint32_t));
       out[idx] = share0 ^ share1;
       ++idx;
     }
@@ -406,13 +406,14 @@ rom_error_t kmac_kmac256_sw_key(const uint32_t *key, size_t len) {
     default:
       return kErrorKmacInvalidKeySize;
   }
-  abs_mmio_write32(kBase + KMAC_KEY_LEN_REG_OFFSET, klen);
+  abs_mmio_write32(kmac_base() + KMAC_KEY_LEN_REG_OFFSET, klen);
   for (size_t i = 0; i < KMAC_KEY_SHARE0_MULTIREG_COUNT; ++i) {
     uint32_t value = i < len ? key[i] : 0;
     abs_mmio_write32(
-        kBase + KMAC_KEY_SHARE0_0_REG_OFFSET + i * sizeof(uint32_t), value);
+        kmac_base() + KMAC_KEY_SHARE0_0_REG_OFFSET + i * sizeof(uint32_t),
+        value);
     abs_mmio_write32(
-        kBase + KMAC_KEY_SHARE1_0_REG_OFFSET + i * sizeof(uint32_t), 0);
+        kmac_base() + KMAC_KEY_SHARE1_0_REG_OFFSET + i * sizeof(uint32_t), 0);
   }
   return kErrorOk;
 }
@@ -434,8 +435,8 @@ void kmac_kmac256_set_prefix(const void *prefix, size_t len) {
   memcpy(r, prefix, len);
 
   for (size_t i = 0; i < KMAC_PREFIX_MULTIREG_COUNT; ++i) {
-    abs_mmio_write32(kBase + KMAC_PREFIX_0_REG_OFFSET + i * sizeof(uint32_t),
-                     regs[i]);
+    abs_mmio_write32(
+        kmac_base() + KMAC_PREFIX_0_REG_OFFSET + i * sizeof(uint32_t), regs[i]);
   }
 }
 

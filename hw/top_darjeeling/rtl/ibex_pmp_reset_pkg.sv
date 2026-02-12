@@ -4,6 +4,8 @@
 
 package ibex_pmp_reset_pkg;
   import ibex_pkg::*;
+  import top_darjeeling_pkg::TOP_DARJEELING_MMIO_BASE_ADDR;
+  import top_darjeeling_pkg::TOP_DARJEELING_MMIO_SIZE_BYTES;
 
   // Default reset values for PMP CSRs. Where the number of regions
   // (PMPNumRegions) is less than 16 the reset values for the higher numbered
@@ -24,12 +26,12 @@ package ibex_pmp_reset_pkg;
     '{lock: 1'b0, mode: PMP_MODE_OFF,   exec: 1'b0, write: 1'b0, read: 1'b0}, // 10
     '{lock: 1'b1, mode: PMP_MODE_TOR,   exec: 1'b0, write: 1'b1, read: 1'b1}, // 11 [MMIO: LRW]
     '{lock: 1'b0, mode: PMP_MODE_OFF,   exec: 1'b0, write: 1'b0, read: 1'b0}, // 12
-    '{lock: 1'b1, mode: PMP_MODE_NAPOT, exec: 1'b1, write: 1'b1, read: 1'b1}, // 13 [DV_ROM: LRWX]
+    '{lock: 1'b1, mode: PMP_MODE_OFF,   exec: 1'b0, write: 1'b0, read: 1'b0}, // 13
     '{lock: 1'b0, mode: PMP_MODE_OFF,   exec: 1'b0, write: 1'b0, read: 1'b0}, // 14
     '{lock: 1'b0, mode: PMP_MODE_OFF,   exec: 1'b0, write: 1'b0, read: 1'b0}  // 15
   };
 
-  // Addresses are given in byte granularity for readibility. A minimum of two
+  // Addresses are given in byte granularity for readability. A minimum of two
   // bits will be stripped off the bottom (PMPGranularity == 0) with more stripped
   // off at coarser granularities.
   //
@@ -46,10 +48,10 @@ package ibex_pmp_reset_pkg;
     34'h00000000, // rgn 7
     34'h00000000, // rgn 8
     34'h00000000, // rgn 9
-    34'h40000000, // rgn 10 [MMIO: lo=0x4000_0000]
-    34'h42010000, // rgn 11 [MMIO: hi=0x4201_0000]
+    TOP_DARJEELING_MMIO_BASE_ADDR,                                   // rgn: 10
+    TOP_DARJEELING_MMIO_BASE_ADDR + TOP_DARJEELING_MMIO_SIZE_BYTES,  // rgn: 11
     34'h00000000, // rgn 12
-    34'h000107fc, // rgn 13 [DV_ROM: base=0x0001_0000 size=0x1000 (4KiB)]
+    34'h00000000, // rgn 13
     34'h00000000, // rgn 14
     34'h00000000  // rgn 15
   };

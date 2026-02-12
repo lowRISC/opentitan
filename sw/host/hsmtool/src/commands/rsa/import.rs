@@ -2,11 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, Context, Result};
-use cryptoki::object::Attribute;
+use anyhow::{Result, anyhow};
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
-use serde_annotate::Annotate;
 use std::any::Any;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -14,9 +12,10 @@ use std::str::FromStr;
 use crate::commands::{BasicResult, Dispatch};
 use crate::error::HsmError;
 use crate::module::Module;
-use crate::util::attribute::{AttrData, AttributeMap, AttributeType, ObjectClass};
+use crate::util::attribute::{AttrData, AttributeMap, AttributeType};
 use crate::util::helper;
 use crate::util::key::rsa::{load_private_key, load_public_key};
+use crate::util::wrap::{Wrap, WrapPrivateKey};
 
 #[derive(clap::Args, Debug, Serialize, Deserialize)]
 pub struct Import {
@@ -36,6 +35,9 @@ pub struct Import {
     /// Unwrap the imported key with a wrapping key.
     #[arg(long)]
     unwrap: Option<String>,
+    /// Unwrapping key mechanism. Required when unwrap is specified.
+    #[arg(long, default_value = "aes-key-wrap-pad")]
+    unwrap_mechanism: Option<WrapPrivateKey>,
     filename: PathBuf,
 }
 
@@ -58,16 +60,16 @@ impl Import {
         "CKA_SIGN": true
     }"#;
 
-    fn unwrap_key(&self, session: &Session, _template: &AttributeMap) -> Result<()> {
-        let mut attrs = helper::search_spec(None, self.unwrap.as_deref())?;
-        attrs.push(Attribute::Class(ObjectClass::SecretKey.try_into()?));
-        let _wkey = helper::find_one_object(session, &attrs).context("Find unwrapping key")?;
-
-        bail!("RSA import by unwrapping is not supported yet!");
-        // FIXME(cfrantz): Turn this back on when cryptoki includes the correct mechanisms.
-        //let key = std::fs::read(&self.filename)?;
-        //let k = session.unwrap_key(&Mechanism::RsaPkcs, wkey, &key, &template.to_vec()?)?;
-        //Ok(())
+    fn unwrap_key(&self, session: &Session, template: &AttributeMap) -> Result<()> {
+        let key = std::fs::read(&self.filename)?;
+        let wrapper: Wrap = self
+            .unwrap_mechanism
+            .ok_or(anyhow!(
+                "unwrap_mechanism is required when wrap is specified"
+            ))?
+            .into();
+        let _key = wrapper.unwrap(session, key.as_slice(), self.unwrap.as_deref(), template)?;
+        Ok(())
     }
 }
 
@@ -78,7 +80,7 @@ impl Dispatch for Import {
         _context: &dyn Any,
         _hsm: &Module,
         session: Option<&Session>,
-    ) -> Result<Box<dyn Annotate>> {
+    ) -> Result<Box<dyn erased_serde::Serialize>> {
         let session = session.ok_or(HsmError::SessionRequired)?;
         helper::no_object_exists(session, self.id.as_deref(), self.label.as_deref())?;
         let mut public_attrs =

@@ -15,8 +15,10 @@ module pinmux
   // Taget-specific pinmux configuration passed down from the
   // target-specific top-level.
   parameter target_cfg_t TargetCfg = DefaultTargetCfg,
+  parameter bit SecVolatileRawUnlockEn = 0,
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
-  parameter bit SecVolatileRawUnlockEn = 0
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned AlertSkewCycles = 1
 ) (
   input                            clk_i,
   input                            rst_ni,
@@ -48,6 +50,8 @@ module pinmux
   // LC signals for TAP qualification
   // SEC_CM: LC_DFT_EN.INTERSIG.MUBI
   input  lc_ctrl_pkg::lc_tx_t      lc_dft_en_i,
+  // SEC_CM: LC_HW_DEBUG_CLR.INTERSIG.MUBI
+  input  lc_ctrl_pkg::lc_tx_t      lc_hw_debug_clr_i,
   // SEC_CM: LC_HW_DEBUG_EN.INTERSIG.MUBI
   input  lc_ctrl_pkg::lc_tx_t      lc_hw_debug_en_i,
   // SEC_CM: LC_CHECK_BYP_EN.INTERSIG.MUBI
@@ -138,6 +142,7 @@ module pinmux
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(1'b1)
     ) u_prim_alert_sender (
       .clk_i,
@@ -364,6 +369,7 @@ module pinmux
     // Strap and JTAG signals
     .strap_en_i     ( strap_en ),
     .lc_dft_en_i,
+    .lc_hw_debug_clr_i,
     .lc_hw_debug_en_i,
     .lc_escalate_en_i,
     .lc_check_byp_en_i,
@@ -676,11 +682,10 @@ module pinmux
   //   `ASSERT_KNOWN_IF(DioOutKnownO_A, dio_out_o[k], dio_oe_o[k])
   // end
 
-  // Pinmux does not have a block-level DV environment, hence we add an FPV assertion to test this.
-  `ASSERT(FpvSecCmBusIntegrity_A,
-          $rose(u_reg.intg_err)
-          |->
-          ##[0:`_SEC_CM_ALERT_MAX_CYC] (alert_tx_o[0].alert_p))
+  // Check that an integrity error in the register block will cause the alert sender to be told to
+  // send an alert. This is equivalent to ASSERT_ERROR_TRIGGER_ALERT_IN (but doesn't set
+  // unused_assert_connected, because that signal doesn't exist).
+  `ASSERT(FpvSecCmBusIntegrity_A, $rose(u_reg.intg_err) |-> ##[0:1] alerts[0])
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])

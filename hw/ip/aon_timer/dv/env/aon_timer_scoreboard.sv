@@ -77,7 +77,7 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
   int unsigned aon_clk_cycle = 0;
   int unsigned last_wkup_cause_write_aon_clk_cycle = 0;
 
-  extern function new (string name="", uvm_component parent=null);
+  extern function new (string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
   extern task run_phase(uvm_phase phase);
   extern function void check_phase(uvm_phase phase);
@@ -116,7 +116,7 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
   // the timer being disabled.
   extern task model_and_check_wdog_bite(ref bit predicting_interrupt);
   extern task model_and_check_wdog_bark(ref bit predicting_interrupt);
-  // Models the wkup timer and checks interrupt propagates, it takes the argument 'predictin_interrupt'
+  // Models the wkup timer and checks interrupt propagates, it takes the argument 'predicting_interrupt'
   // by reference for moments in which an interrupt propagates even when the timer has just been disabled.
   extern task model_and_check_wkup(ref bit predicting_interrupt);
 
@@ -201,7 +201,7 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
 
 endclass : aon_timer_scoreboard
 
-function aon_timer_scoreboard::new (string name="", uvm_component parent=null);
+function aon_timer_scoreboard::new (string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
 
@@ -264,7 +264,7 @@ function void aon_timer_scoreboard::init_timed_regs();
   aon_timer_intr_timed_regs::timed_reg_e r;
   // Maximum delay (in DUT clock cycles) for a prediction to be met; most delays should take
   // only a few cycles for internal changes to propagate, but some are substantially longer
-  // oweing to the immediate operation of the functional model.
+  // owing to the immediate operation of the functional model.
   int unsigned max_delay = 5;
   // Capture the initial state of the loosely-timed registers.
   capture_timed_regs(init_regs);
@@ -710,7 +710,7 @@ task aon_timer_scoreboard::process_tl_access(tl_seq_item item, tl_channels_e cha
 
   // process the csr req
   // for write, update local variable and fifo at address phase
-  // for read, update predication at address phase and compare at data phase
+  // for read, update prediction at address phase and compare at data phase
   case (csr.get_name())
     // add individual case item for each csr
     "intr_state": begin
@@ -1178,7 +1178,7 @@ function void aon_timer_scoreboard::check_intr_state_bit(timers_e timer_type, bi
 
   return_pred_intr_q(timer_type, pred_q);
   `uvm_info(`gfn, $sformatf("Comparing 'intr_state.%0s'", timer_type.name), UVM_DEBUG)
-  `DV_CHECK_CASE_EQ(pred_q[0], // Comparing against the oldes predicted value
+  `DV_CHECK_CASE_EQ(pred_q[0], // Comparing against the oldest predicted value
                     actual_value)
 
   `uvm_info(`gfn, $sformatf("'intr_state.%0s=0x%0x' comparison matched",
@@ -1279,7 +1279,7 @@ task aon_timer_scoreboard::model_and_check_wdog_bark(ref bit predicting_interrup
   // Check `intr_wdog_timer_bark_o`
   check_aon_domain_interrupt(.timer_type(WDOG));
 
-  // It could happen intr_state reg was written betwen the time intr_status_exp[WDOG] was
+  // It could happen intr_state reg was written between the time intr_status_exp[WDOG] was
   // set until the output 'intr_wdog_timer_bark' was compared and set, if that's the case
   // we set the variable to the value it should be
   csr_rd(.ptr(ral.intr_state), .value(backdoor_intr_state), .backdoor(1));
@@ -1294,7 +1294,7 @@ task aon_timer_scoreboard::model_and_check_wdog_bark(ref bit predicting_interrup
   // Check reset_req pins:
   if (is_enabled) begin
     bit predicted_wkup_req = `gmv(ral.wkup_cause);
-    // If the write to wkup_cause wasn't absorved in this same cycle, we compare against the
+    // If the write to wkup_cause wasn't observed in this same cycle, we compare against the
     // prediction
     if (last_wkup_cause_write_aon_clk_cycle != aon_clk_cycle) begin
       `DV_CHECK_CASE_EQ(predicted_wkup_req, cfg.aon_intr_vif.sample_pin(.idx(1)))
@@ -1323,7 +1323,7 @@ task aon_timer_scoreboard::run_wdog_bark_timer();
     wait_for_wdog_enable_matching(.enable(1));
     `uvm_info(`gfn, "wdog_ctrol.WDOG_EN = 1, allow watchdog to count", UVM_DEBUG)
     fork
-      // Reset kills the thread inmediately
+      // Reset kills the thread immediately
       wait (under_reset);
       model_and_check_wdog_bark(predicting_interrupt);
       begin
@@ -1421,7 +1421,7 @@ task aon_timer_scoreboard::run_wdog_bite_timer();
     `uvm_info(`gfn, "WDOG ctrl.enable signal is set", UVM_DEBUG)
     predicting_interrupt = 0;
     fork
-      // Reset kills the thread inmediately
+      // Reset kills the thread immediately
       wait (under_reset);
       model_and_check_wdog_bite(predicting_interrupt);
       begin

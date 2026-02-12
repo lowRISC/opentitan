@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// CSR suite of sequences that do writes and reads to csrs
-// includes hw_reset, rw, bit_bash and aliasing tests for csrs, and mem_walk for uvm_mems
+// CSR suite of sequences that do writes and reads to CSRs
+// includes hw_reset, rw, bit_bash and aliasing tests for CSRs, and mem_walk for uvm_mems
 // The sequences perform csr writes and reads and follow the standard csr test suite. If external
 // checker is enabled, then the external entity is required to update the mirrored value on
 // writes. If not enabled, the sequences themselves call predict function to update the mirrored
@@ -12,10 +12,10 @@
 // register and field access policies. Also, we use csr_rd_check task instead of csr_mirror to take
 // field exclusions into account.
 //
-// Csrs to be tested is accumulated and shuffled from the supplied reg models.
-// What / how many csrs to test can be further controlled in 3 ways -
-// 1. Externally add specific csrs to test_csrs queue (highest prio)
-// 2. Set num_test_csrs test a randomly picked set of csrs from the supplied models
+// CSRs to be tested is accumulated and shuffled from the supplied reg models.
+// What / how many CSRs to test can be further controlled in 3 ways -
+// 1. Externally add specific CSRs to test_csrs queue (highest prio)
+// 2. Set num_test_csrs test a randomly picked set of CSRs from the supplied models
 // 3. Set / pass via plusarg, num_csr_chunks / test_csr_chunk
 //
 // Exclusions are to be provided using the csr_excl_item item (see class for more details).
@@ -33,7 +33,7 @@ class csr_base_seq extends uvm_reg_sequence #(uvm_sequence #(uvm_reg_item));
   // In either case, we should be able to do completely non-blocking writes and reads.
   bit external_checker = 1'b0;
 
-  // either use num_test_csrs or {test_csr_chunk, num_csr_chunks} to test slice of all csrs
+  // either use num_test_csrs or {test_csr_chunk, num_csr_chunks} to test slice of all CSRs
   int num_test_csrs = 0;
   int test_csr_chunk = 1;
   int num_csr_chunks = 1;

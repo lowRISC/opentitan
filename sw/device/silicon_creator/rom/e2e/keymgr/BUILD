@@ -16,10 +16,10 @@ load(
 )
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
     "dv_params",
     "fpga_params",
     "opentitan_test",
+    "qemu_params",
     "verilator_params",
 )
 
@@ -76,13 +76,21 @@ rom_e2e_keymgr_init_configs = [
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
             "//hw/top_earlgrey:sim_dv": None,
             "//hw/top_earlgrey:sim_verilator": None,
+            "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             otp = ":otp_img_keymgr_{}".format(config["name"]),
         ),
         manifest = "//sw/device/silicon_creator/rom_ext:manifest",
+        qemu = qemu_params(
+            globals = {
+                # Test uses rstmgr, keep running on fatal resets:
+                "ot-rstmgr.fatal_reset": 0,
+            },
+        ),
         verilator = verilator_params(
             timeout = "eternal",
             otp = ":otp_img_keymgr_{}".format(config["name"]),
@@ -90,7 +98,11 @@ rom_e2e_keymgr_init_configs = [
         ),
         deps = [
             "//sw/device/lib/dif:keymgr",
+            "//sw/device/lib/dif:otp_ctrl",
+            "//sw/device/lib/dif:rstmgr",
             "//sw/device/lib/testing:keymgr_testutils",
+            "//sw/device/lib/testing:otp_ctrl_testutils",
+            "//sw/device/lib/testing:rstmgr_testutils",
             "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib/drivers:hmac",

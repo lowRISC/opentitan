@@ -6,11 +6,18 @@ package(default_visibility = ["//visibility:public"])
 
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
 load(
+    "//rules:cross_platform.bzl",
+    "dual_cc_device_library_of",
+    "dual_cc_library",
+    "dual_inputs",
+)
+load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
     "cw310_params",
     "fpga_params",
     "opentitan_test",
+    "qemu_params",
     "verilator_params",
 )
 load(
@@ -24,11 +31,14 @@ cc_library(
     hdrs = ["aes.h"],
     deps = [
         ":entropy",
+        ":rv_core_ibex",
         "//hw/top:aes_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top/dt:aes",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:crc32",
         "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/crypto/impl:status",
     ],
@@ -59,10 +69,12 @@ cc_library(
     ],
     deps = [
         ":entropy",
+        ":rv_core_ibex",
         "//hw/top:keymgr_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top/dt:keymgr",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/crypto/impl:status",
         "//sw/device/lib/runtime:hart",
@@ -76,8 +88,15 @@ opentitan_test(
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
-            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            # FIXME broken in sival ROM_EXT, remove these lines when fixed. See #21706.
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
+        },
+    ),
+    qemu = qemu_params(
+        globals = {
+            # Test uses rstmgr, keep running on fatal resets:
+            "ot-rstmgr.fatal_reset": 0,
         },
     ),
     verilator = verilator_params(
@@ -103,33 +122,44 @@ cc_library(
     ],
     deps = [
         ":entropy",
+        ":rv_core_ibex",
         "//hw/top:kmac_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top/dt:kmac",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/crypto/impl:status",
     ],
 )
 
-cc_library(
+dual_cc_library(
     name = "entropy",
-    srcs = ["entropy.c"],
+    srcs = dual_inputs(
+        device = ["entropy.c"],
+        host = ["mock_entropy.cc"],
+    ),
     hdrs = ["entropy.h"],
-    deps = [
-        "//hw/top:csrng_c_regs",
-        "//hw/top:edn_c_regs",
-        "//hw/top:entropy_src_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:abs_mmio",
-        "//sw/device/lib/base:bitfield",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/base:math",
-        "//sw/device/lib/base:memory",
-        "//sw/device/lib/crypto/impl:status",
-    ],
+    deps = dual_inputs(
+        device = [
+            "//hw/top:csrng_c_regs",
+            "//hw/top:edn_c_regs",
+            "//hw/top:entropy_src_c_regs",
+            "//hw/top/dt:csrng",
+            "//hw/top/dt:entropy_src",
+            "//hw/top/dt:edn",
+            "//sw/device/lib/base:abs_mmio",
+            "//sw/device/lib/base:bitfield",
+            "//sw/device/lib/base:hardened",
+            "//sw/device/lib/base:macros",
+            "//sw/device/lib/base:math",
+            "//sw/device/lib/base:memory",
+        ],
+        shared = [
+            "//sw/device/lib/crypto/impl:status",
+        ],
+    ),
 )
 
 cc_library(
@@ -139,7 +169,7 @@ cc_library(
     deps = [
         ":entropy",
         "//hw/top:csrng_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top/dt:csrng",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
@@ -160,7 +190,7 @@ opentitan_test(
     deps = [
         ":entropy",
         ":entropy_kat",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top/dt:otbn",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/dif:otbn",
@@ -176,13 +206,60 @@ cc_library(
     hdrs = ["hmac.h"],
     deps = [
         "//hw/top:hmac_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top/dt:hmac",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:crc32",
         "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/drivers:rv_core_ibex",
         "//sw/device/lib/crypto/impl:status",
+    ],
+)
+
+dual_cc_library(
+    name = "rv_core_ibex",
+    srcs = dual_inputs(
+        device = ["rv_core_ibex.c"],
+        host = ["mock_rv_core_ibex.cc"],
+    ),
+    hdrs = dual_inputs(
+        shared = ["rv_core_ibex.h"],
+    ),
+    deps = dual_inputs(
+        device = [
+            "//hw/top/dt:rv_core_ibex",
+            "//hw/top:rv_core_ibex_c_regs",
+            "//sw/device/lib/base:abs_mmio",
+            "//sw/device/lib/base:csr",
+            "//sw/device/lib/base:macros",
+        ],
+        shared = [
+            "//sw/device/lib/base:hardened",
+            "//sw/device/lib/crypto/impl:status",
+        ],
+    ),
+)
+
+opentitan_test(
+    name = "rv_core_ibex_test",
+    srcs = ["rv_core_ibex_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":rv_core_ibex",
+        "//hw/top:rv_core_ibex_c_regs",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -193,10 +270,12 @@ cc_library(
     deps = [
         ":entropy",
         "//hw/top:otbn_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top/dt:otbn",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:crc32",
         "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:random_order",
         "//sw/device/lib/crypto/impl:status",
     ],
 )

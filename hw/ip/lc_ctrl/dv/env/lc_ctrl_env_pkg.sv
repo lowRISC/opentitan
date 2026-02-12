@@ -29,10 +29,10 @@ package lc_ctrl_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter string LIST_OF_ALERTS[] = {
+  parameter uint NUM_ALERTS = 3;
+  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {
     "fatal_prog_error", "fatal_state_error", "fatal_bus_integ_error"
   };
-  parameter uint NUM_ALERTS = 3;
   parameter uint CLAIM_TRANS_VAL = MuBi8True;
   parameter uint NUM_STATES = 24;
 
@@ -62,6 +62,7 @@ package lc_ctrl_env_pkg;
     lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_wr_en_o;
     lc_ctrl_pkg::lc_tx_t lc_keymgr_en_o;
     lc_ctrl_pkg::lc_tx_t lc_escalate_en_o;
+    lc_ctrl_pkg::lc_tx_t lc_rma_state_o;
   } lc_outputs_t;
 
   // error injection
@@ -145,56 +146,56 @@ package lc_ctrl_env_pkg;
   // verilog_format: off
   const lc_outputs_t EXP_LC_OUTPUTS[NUM_STATES] = {
     // Raw (fixed size array index 0)
-    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
+    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
     // TestUnlock0
-    {On,  On,  On,  On,  Off, Off, Off, Off, On,  Off, Off},
+    {On,  On,  On,  On,  Off, Off, Off, Off, On,  Off, Off, Off},
     // TestLock0
-    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
+    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
     // TestUnlock1
-    {On,  On,  On,  On,  Off, Off, Off, Off, On,  Off, Off},
+    {On,  On,  On,  On,  Off, Off, Off, Off, On,  Off, Off, Off},
     // TestLock1
-    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
+    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
     // TestUnlock2
-    {On,  On,  On,  On,  Off, Off, Off, Off, On,  Off, Off},
+    {On,  On,  On,  On,  Off, Off, Off, Off, On,  Off, Off, Off},
     // TestLock2
-    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
+    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
     // TestUnlock3
-    {On,  On,  On,  On,  Off, Off, Off, Off, On,  Off, Off},
+    {On,  On,  On,  On,  Off, Off, Off, Off, On,  Off, Off, Off},
     // TestLock3
-    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
+    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
     // TestUnlock4
-    {On,  On,  On,  On,  Off, Off, Off, Off, On,  Off, Off},
+    {On,  On,  On,  On,  Off, Off, Off, Off, On,  Off, Off, Off},
     // TestLock4
-    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
+    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
     // TestUnlock5
-    {On,  On,  On,  On,  Off, Off, Off, Off, On,  Off, Off},
+    {On,  On,  On,  On,  Off, Off, Off, Off, On,  Off, Off, Off},
     // TestLock5
-    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
+    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
     // TestUnlock6
-    {On,  On,  On,  On,  Off, Off, Off, Off, On,  Off, Off},
+    {On,  On,  On,  On,  Off, Off, Off, Off, On,  Off, Off, Off},
     // TestLock6
-    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
+    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
     // TestUnlock7
-    {On,  Off, On,  On,  Off, Off, Off, Off, On,  Off, Off},
+    {On,  Off, On,  On,  Off, Off, Off, Off, On,  Off, Off, Off},
     // Dev: lc_creator_seed_sw_rw_en_o (On if device is not personalized),
     // lc_seed_hw_rd_en_o (On if device is personalized)
-    {Off, Off, On,  On,  On,  On,  On,  Off, On,  On,  Off},
+    {Off, Off, On,  On,  On,  On,  On,  Off, On,  On,  Off, Off},
     // Prod: lc_creator_seed_sw_rw_en_o (On if device is not personalized),
     // lc_seed_hw_rd_en_o (On if device is personalized)
-    {Off, Off, Off, On,  On,  On,  On,  On,  On,  On,  Off},
+    {Off, Off, Off, On,  On,  On,  On,  On,  On,  On,  Off, Off},
     // ProdEnd: lc_creator_seed_sw_rw_en_o (On if device is not personalized),
     // lc_seed_hw_rd_en_o (On if device is personalized)
-    {Off, Off, Off, On,  On,  On,  On,  On,  On,  On,  Off},
+    {Off, Off, Off, On,  On,  On,  On,  On,  On,  On,  Off, Off},
     // Rma
-    {On,  On,  On,  On,  On,  On,  On,  On,  On,  On,  Off},
+    {On,  On,  On,  On,  On,  On,  On,  On,  On,  On,  Off, On},
     // Scrap
-    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, On},
+    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, On, Off},
     // PostTrans
-    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
+    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
     // Escalate
-    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, On},
+    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, On, Off},
     // Invalid
-    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, On}
+    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, On, Off}
   };
   // verilog_format: on
 

@@ -9,7 +9,7 @@
 | pwrmgr.[`INTR_ENABLE`](#intr_enable)                     | 0x4      |        4 | Interrupt Enable Register                                                       |
 | pwrmgr.[`INTR_TEST`](#intr_test)                         | 0x8      |        4 | Interrupt Test Register                                                         |
 | pwrmgr.[`ALERT_TEST`](#alert_test)                       | 0xc      |        4 | Alert Test Register                                                             |
-| pwrmgr.[`CTRL_CFG_REGWEN`](#ctrl_cfg_regwen)             | 0x10     |        4 | Controls the configurability of the !!CONTROL register.                         |
+| pwrmgr.[`CTRL_CFG_REGWEN`](#ctrl_cfg_regwen)             | 0x10     |        4 | Controls the configurability of the [`CONTROL`](#control) register.             |
 | pwrmgr.[`CONTROL`](#control)                             | 0x14     |        4 | Control register                                                                |
 | pwrmgr.[`CFG_CDC_SYNC`](#cfg_cdc_sync)                   | 0x18     |        4 | The configuration registers CONTROL, WAKEUP_EN, RESET_EN are all written in the |
 | pwrmgr.[`WAKEUP_EN_REGWEN`](#wakeup_en_regwen)           | 0x1c     |        4 | Configuration enable for wakeup_en register                                     |
@@ -159,10 +159,10 @@ USB clock enable during active power state
 ### CONTROL . USB_CLK_EN_LP
 USB clock enable during low power state
 
-| Value   | Name     | Description                                                                                                                   |
-|:--------|:---------|:------------------------------------------------------------------------------------------------------------------------------|
-| 0x0     | Disabled | USB clock disabled during low power state                                                                                     |
-| 0x1     | Enabled  | USB clock enabled during low power state. However, if !!CONTROL.MAIN_PD_N is 0, USB clock is disabled during low power state. |
+| Value   | Name     | Description                                                                                                                               |
+|:--------|:---------|:------------------------------------------------------------------------------------------------------------------------------------------|
+| 0x0     | Disabled | USB clock disabled during low power state                                                                                                 |
+| 0x1     | Enabled  | USB clock enabled during low power state. However, if [`CONTROL.MAIN_PD_N`](#control) is 0, USB clock is disabled during low power state. |
 
 
 ### CONTROL . IO_CLK_EN
@@ -304,6 +304,9 @@ Configuration enable for reset_en register
 
 ## RESET_EN
 Bit mask for enabled reset requests
+
+Whenever a particular bit is set to 1, that reset request is enabled.
+Whenever a particular bit is set to 0, that reset request cannot reset the device.
 - Offset: `0x2c`
 - Reset default: `0x0`
 - Reset mask: `0x3`
@@ -315,11 +318,11 @@ Bit mask for enabled reset requests
 {"reg": [{"name": "EN_0", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "EN_1", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                              |
-|:------:|:------:|:-------:|:-------|:---------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:2  |        |         |        | Reserved                                                                                                                                                 |
-|   1    |   rw   |   0x0   | EN_1   | Whenever a particular bit is set to 1, that reset request is enabled. Whenever a particular bit is set to 0, that reset request cannot reset the device. |
-|   0    |   rw   |   0x0   | EN_0   | Whenever a particular bit is set to 1, that reset request is enabled. Whenever a particular bit is set to 0, that reset request cannot reset the device. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                        |
+|:------:|:------:|:-------:|:-------|:---------------------------------------------------|
+|  31:2  |        |         |        | Reserved                                           |
+|   1    |   rw   |   0x0   | EN_1   | Reset enable for aon_timer_aon: aon_timer_rst_req. |
+|   0    |   rw   |   0x0   | EN_0   | Reset enable for sysrst_ctrl_aon: rst_req.         |
 
 ## RESET_STATUS
 A read only register of all current reset requests post enable mask

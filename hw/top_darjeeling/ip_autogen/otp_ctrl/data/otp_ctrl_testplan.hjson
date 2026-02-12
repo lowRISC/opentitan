@@ -63,7 +63,7 @@
       name: dai_access_partition_walk
       desc: '''
             Similar to UVM's memory walk test, this test ensures every address in each partition
-            can be accessed successfully via DAI and TLUL interfacs according to its access policy.
+            can be accessed successfully via DAI and TLUL interfaces according to its access policy.
             '''
       stage: V2
       tests: ["otp_ctrl_partition_walk"]
@@ -118,7 +118,7 @@
       name: regwen_during_otp_init
       desc: '''
             The `direct_access_regwen` is a RO register which controls the write-enable of other
-            reigsters. It is not verified by the common CSR tests. HW sets it to 0 when the DAI
+            registers. It is not verified by the common CSR tests. HW sets it to 0 when the DAI
             interface is busy.
 
             Stimulus and checks:
@@ -153,7 +153,7 @@
     {
       name: lc_interactions
       desc: '''
-            Verify the procotols between OTP_CTRL and LC_CTRL. Based on the DAI access sequence,
+            Verify the protocols between OTP_CTRL and LC_CTRL. Based on the DAI access sequence,
             run the following sequences in parallel:
 
             - request a LC state transition via the programming interface
@@ -343,7 +343,7 @@
       name: lc_esc_en_condition_cg
       desc: '''Covers the following conditions when `lc_escalation_en` is On:
             - whether any key requests is in progress
-            - whether LC program reqeust is in progress
+            - whether LC program request is in progress
             - whether DAI interface is busy
             '''
     }

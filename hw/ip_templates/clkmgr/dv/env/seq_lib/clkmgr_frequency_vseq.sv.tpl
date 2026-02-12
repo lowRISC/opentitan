@@ -2,6 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+<%
+from ipgen.clkmgr_gen import config_clk_meas, get_all_srcs, get_rg_srcs
+## Compute the maximum number of slow clock cycles to get clock measurements.
+all_srcs = get_all_srcs(src_clks, derived_clks)
+ref_cnts = []
+for src in get_rg_srcs(typed_clocks):
+    config = config_clk_meas(src, all_srcs)
+    ref_cnts.append(config.reference_cycles)
+max_cycles = max(ref_cnts)
+%>\
 // The frequency vseq exercises the frequency measurement counters. More details
 // in the clkmgr_testplan.hjson file.
 class clkmgr_frequency_vseq extends clkmgr_base_vseq;
@@ -10,10 +20,12 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
   `uvm_object_new
 
   // This is measured in aon clocks. This is cannot be too precise because of a synchronizer.
-  localparam int CyclesToGetMeasurements = 6;
+  // It takes into account cases where some clocks need multiple aon clock cycles to get
+  // a measurement.
+  localparam int CyclesToGetMeasurements = ${max_cycles + 5};
 
   // The aon cycles between measurements, to make sure the previous measurement settles.
-  localparam int CyclesBetweenMeasurements = 6;
+  localparam int CyclesBetweenMeasurements = ${max_cycles + 5};
 
   // This is measured in clkmgr clk_i clocks. It is set to cover worst case delays.
   // The clk_i frequency is randomized for IPs, but the clkmgr is hooked to io_div4, which would
@@ -97,6 +109,7 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
     // Wait for the result to propagate to the recov_err_code CSR.
     cfg.clk_rst_vif.wait_clks(CyclesForErrUpdate);
   endtask
+% if ext_clk_bypass:
 
   // If clocks become uncalibrated measure_ctrl_regwen is re-enabled.
   task check_measure_ctrl_regwen_for_calib_rdy();
@@ -106,6 +119,7 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
     cfg.clk_rst_vif.wait_clks(20);
     calibration_lost_checks();
   endtask
+% endif
 
   task body();
     logic [TL_DW-1:0] value;
@@ -147,6 +161,7 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
       logic [ClkMesrSize-1:0] expected_recov_meas_err = '0;
       bit expect_alert = 0;
       `DV_CHECK_RANDOMIZE_FATAL(this)
+% if ext_clk_bypass:
       // Update calib_rdy input: if calibration is not ready the measurements
       // don't happen, so we should not get faults.
       cfg.clkmgr_vif.update_calib_rdy(calib_rdy);
@@ -159,6 +174,7 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
       // Allow calib_rdy to generate side-effects.
       cfg.clk_rst_vif.wait_clks(3);
       if (calib_rdy == MuBi4False) calibration_lost_checks();
+% endif
       prior_alert_count = cfg.scoreboard.get_alert_count("recov_fault");
       if (cause_saturation) begin
         `uvm_info(`gfn, $sformatf(
@@ -242,8 +258,10 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
       csr_wr(.ptr(ral.recov_err_code), .value('1));
       cfg.aon_clk_rst_vif.wait_clks(12);
     end
-    // And finally, check that unsetting calib_rdy causes meaesure_ctrl_regwen to be set to 1.
+% if ext_clk_bypass:
+    // And finally, check that unsetting calib_rdy causes measure_ctrl_regwen to be set to 1.
     check_measure_ctrl_regwen_for_calib_rdy();
+% endif
   endtask
 
 endclass

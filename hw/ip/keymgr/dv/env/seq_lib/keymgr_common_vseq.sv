@@ -50,8 +50,8 @@ class keymgr_common_vseq extends keymgr_base_vseq;
                             dv_base_reg_block models[$] = {},
                             string ral_name = "");
     csr_vseq_done = 0;
-    // in these 2 test, we have a separate thread to invoke csr_rw
-    // but `working_state` needs couple cylces to be updated after fault injection, it's hard to
+    // In these two tests, we have a separate thread to invoke csr_rw but
+    // `working_state` needs a couple of cycles to be updated after fault injection, it's hard to
     // predict its value cycle accurately. Exclude it and read it out after FI for check.
     if (common_seq_type inside {"shadow_reg_errors_with_csr_rw", "tl_intg_err"}) begin
       ral.get_excl_item().add_excl(ral.working_state.`gfn, CsrExclWriteCheck, CsrRwTest);
@@ -71,7 +71,7 @@ class keymgr_common_vseq extends keymgr_base_vseq;
     super.read_check_shadow_reg_status(msg_id);
 
     // Don't do additional operation in shadow_reg_errors_with_csr_rw, as the csr_rw_seq runs in
-    // parallel and issueing an operation affects CSR access.
+    // parallel and issuing an operation affects CSR access.
     // If control_shadowed has a storage error, this reg is locked. We can't update its value to do
     // an advance operation.
     if (`gmv(ral.fault_status.shadow) && common_seq_type != "shadow_reg_errors_with_csr_rw" &&

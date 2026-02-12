@@ -17,8 +17,6 @@ interface prim_double_lfsr_if #(
   `include "uvm_macros.svh"
   import uvm_pkg::*;
 
-  string msg_id = $sformatf("%m");
-
   string path = dv_utils_pkg::get_parent_hier($sformatf("%m"));
   string signal_forced = $sformatf("%s.lfsr_state[0]", path);
   string signal_for_restore = $sformatf("%s.lfsr_state[1]", path);
@@ -36,8 +34,9 @@ interface prim_double_lfsr_if #(
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(force_value, force_value != orig_value;)
 
       `DV_CHECK(uvm_hdl_force(signal_forced, force_value))
-      `uvm_info(msg_id, $sformatf(
-                "Forcing %s from %0d to %0d", signal_forced, orig_value, force_value), UVM_LOW)
+      `uvm_info($sformatf("%m"),
+                $sformatf("Forcing %s from %0d to %0d", signal_forced, orig_value, force_value),
+                UVM_LOW)
 
       @(negedge clk_i);
       `DV_CHECK(uvm_hdl_release(signal_forced))
@@ -47,7 +46,8 @@ interface prim_double_lfsr_if #(
       logic [Width-1:0] restore_value;
       `DV_CHECK(uvm_hdl_read(signal_for_restore, restore_value))
       `DV_CHECK(uvm_hdl_deposit(signal_forced, restore_value))
-      `uvm_info(msg_id, $sformatf("Forcing %s to matching value %0d", signal_forced, restore_value),
+      `uvm_info($sformatf("%m"),
+                $sformatf("Forcing %s to matching value %0d", signal_forced, restore_value),
                 UVM_LOW)
     endtask
   endclass
@@ -55,8 +55,8 @@ interface prim_double_lfsr_if #(
   prim_double_lfsr_if_proxy if_proxy;
 
   initial begin
-    `DV_CHECK_FATAL(uvm_hdl_check_path(signal_forced),, msg_id)
-    `DV_CHECK_FATAL(uvm_hdl_check_path(signal_for_restore),, msg_id)
+    `DV_CHECK_FATAL(uvm_hdl_check_path(signal_forced),, $sformatf("%m"))
+    `DV_CHECK_FATAL(uvm_hdl_check_path(signal_for_restore),, $sformatf("%m"))
 
     // Store the proxy object for TB to use
     if_proxy = new("if_proxy");
@@ -64,6 +64,6 @@ interface prim_double_lfsr_if #(
     if_proxy.path = path;
     sec_cm_pkg::sec_cm_if_proxy_q.push_back(if_proxy);
 
-    `uvm_info(msg_id, $sformatf("Interface proxy class is added for %s", path), UVM_HIGH)
+    `uvm_info($sformatf("%m"), $sformatf("Interface proxy class is added for %s", path), UVM_HIGH)
   end
 endinterface

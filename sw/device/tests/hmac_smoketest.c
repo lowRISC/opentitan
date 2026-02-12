@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "dt/dt_hmac.h"
+#include "hw/top/dt/hmac.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_hmac.h"
@@ -23,7 +23,7 @@ static const dif_hmac_transaction_t kHmacTransactionConfig = {
     .message_endianness = kDifHmacEndiannessLittle,
 };
 
-static const char kData[142] =
+OT_NONSTRING static const char kData[142] =
     "Every one suspects himself of at least one of "
     "the cardinal virtues, and this is mine: I am "
     "one of the few honest people that I have ever "
@@ -61,13 +61,6 @@ static const dif_hmac_digest_t kExpectedHmacDigest = {
             0x397b98e4,
         },
 };
-
-/**
- * Initialize the HMAC engine. Return `true` if the configuration is valid.
- */
-static void test_setup(mmio_region_t base_addr, dif_hmac_t *hmac) {
-  CHECK_DIF_OK(dif_hmac_init(base_addr, hmac));
-}
 
 /**
  * Start HMAC in the correct mode. If `key` == NULL use SHA256 mode, otherwise

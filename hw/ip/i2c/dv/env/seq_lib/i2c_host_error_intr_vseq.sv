@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // basic error_intr test vseq
-// - start sending transaction and concurrently check the occurance of error irqs
+// - start sending transaction and concurrently check the occurrence of error irqs
 //   such as sda_interference, scl_interference, sda_unstable irqs
 // - do on-the-fly reset dut and dv if error irqs are asserted
 // - continue sending transactions and verify dut works as normal
@@ -34,7 +34,7 @@ class i2c_host_error_intr_vseq extends i2c_rx_tx_vseq;
       `uvm_info(`gfn, $sformatf("\n  run simulation %0d/%0d", i, num_runs), UVM_DEBUG)
       fork
         begin
-          // issue trans. and check the occourances of error irqs
+          // issue trans. and check the occurrences of error irqs
           fork
             begin
               process_error_interrupts();

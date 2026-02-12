@@ -2,12 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{ensure, Result};
-use clap::Parser;
-use once_cell::sync::Lazy;
 use std::fs;
 use std::path::PathBuf;
+use std::sync::LazyLock;
 use std::time::Duration;
+
+use anyhow::{Result, ensure};
+use clap::Parser;
 
 use object::{Object, ObjectSymbol};
 use opentitanlib::app::TransportWrapper;
@@ -18,7 +19,7 @@ use opentitanlib::test_utils::mem::MemWriteReq;
 use opentitanlib::test_utils::test_status::TestStatus;
 use opentitanlib::uart::console::UartConsole;
 
-use sysrst_ctrl::{read_pins, set_pins, setup_pins, Config};
+use sysrst_ctrl::{Config, read_pins, set_pins, setup_pins};
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -55,7 +56,7 @@ enum TestPhase {
     Done = 7,
 }
 
-static CONFIG: Lazy<Config> = Lazy::new(|| {
+static CONFIG: LazyLock<Config> = LazyLock::new(|| {
     Config {
         // key0_in, key1_in, key2_in, pwrb_in
         output_pins: vec!["IOR10", "IOR11", "IOR12", "IOR5"],
@@ -217,7 +218,7 @@ fn main() -> Result<()> {
 
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"Running ", opts.timeout)?;
 
     execute_test!(
         chip_sw_sysrst_ctrl_input,

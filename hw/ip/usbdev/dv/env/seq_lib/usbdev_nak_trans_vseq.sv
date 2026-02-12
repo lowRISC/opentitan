@@ -11,7 +11,7 @@ class usbdev_nak_trans_vseq extends usbdev_base_vseq;
   task body();
     uvm_reg_data_t rx_enable;
     uvm_reg_data_t read_rxfifo;
-    bit            rx_enable_out;
+    uvm_reg_data_t rx_enable_out;
 
     // Configure transaction
     configure_out_trans(ep_default);
@@ -25,12 +25,13 @@ class usbdev_nak_trans_vseq extends usbdev_base_vseq;
     // Check first transaction accuracy
     check_response_matches(PidTypeAck);
 
-    // Read rxenable_out
-    csr_rd(.ptr(ral.rxenable_out[0]), .value(rx_enable));
-    csr_update(ral.rxenable_out[0]);
-    // Get rxenable_out.out[0] status
-    rx_enable_out = bit'(get_field_val(ral.rxenable_out[0].out[0], rx_enable));
-    `DV_CHECK_EQ(rx_enable_out, 0);
+    // Read the `rxenable_out` register.
+    csr_rd(.ptr(ral.rxenable_out), .value(rx_enable));
+    // The rxenable_out.out status for the selected endpoint should have been cleared automatically
+    // by the hardware after accepting the OUT transaction.
+    // Check all OUT reception is disabled on all endpoints, and the `preserve` bits read back
+    // as zero.
+    `DV_CHECK_EQ(rx_enable, 0);
 
     // Read rxfifo reg
     csr_rd(.ptr(ral.rxfifo), .value(read_rxfifo));

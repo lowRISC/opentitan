@@ -16,7 +16,7 @@ import sys
 log.basicConfig(level=log.INFO, format="%(levelname)s: %(message)s")
 
 try:
-    from importlib.metadata import version
+    import importlib
 except ModuleNotFoundError:
     log.error("importlib cannot be found. "
               "This likely means that you're using a very old version of Python. "
@@ -298,13 +298,18 @@ class NinjaToolReq(ToolReq):
         return '.'.join(m.group(1, 2, 3))
 
 
-class PyModuleToolReq(ToolReq):
-    '''A tool in a Python module (its version can be found by reading its metadata)'''
+class EdalizeToolReq(ToolReq):
+    '''A specialised version extractor for Edalize'''
 
-    # For Python modules, use metadata directly instead of call into pip3, which
-    # may not always be available for some systems.
+    # The upstream versions of edalize and fusesoc don't use the standard
+    # versioning mechanism that can be discovered through importlib.metadata.
+    # Instead of using that, try to import the package. Note that an error will
+    # be propagated to top-level, which is what we want.
     def get_version(self):
-        return version(self.tool)
+        try:
+            return importlib.import_module(self.tool + '.version').version
+        except ModuleNotFoundError:
+            raise RuntimeError(f'Unable to import {self.tool} to check version')
 
 
 def dict_to_tool_req(path, tool, raw):
@@ -344,7 +349,7 @@ def dict_to_tool_req(path, tool, raw):
                      .format(where, ', '.join(raw.keys())))
 
     classes = {
-        'edalize': PyModuleToolReq,
+        'edalize': EdalizeToolReq,
         'vcs': VcsToolReq,
         'verible': VeribleToolReq,
         'verilator': VerilatorToolReq,

@@ -105,7 +105,7 @@ status_t sha256(const uint8_t *msg, const size_t msg_len, uint32_t *digest);
  * @param[out] state Hash context object to initialize.
  * @return Result of the operation (OK or error).
  */
-void sha256_init(sha256_state_t *state);
+status_t sha256_init(sha256_state_t *state);
 
 /**
  * Process new message data for a SHA-256 hash computation.

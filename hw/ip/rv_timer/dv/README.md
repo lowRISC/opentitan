@@ -27,6 +27,8 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 * [Clock and reset interface](../../../dv/sv/common_ifs/README.md)
 * [TileLink host interface](../../../dv/sv/tl_agent/README.md)
 * Interrupts ([`pins_if`](../../../dv/sv/common_ifs/README.md))
+* [`Alerts_if`](../../../dv/sv/alert_esc_agent/README.md))
+* RACL interface - Currently not used
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
@@ -60,6 +62,10 @@ It provides commonly used handles, variables, functions and tasks that the test 
 Some of the most commonly used tasks / functions are as follows:
 * `cfg_timer`            : set a particular timer active or inactive
 * `cfg_hart`             : set timer step and prescale values
+* `set_timer_val`        : set timer value
+* `set_compare_val`      : set timecmp value
+* `cfg_interrupt`        : Configures interrupt enable register
+* `clear_intr_state`     : Clears intr_state register
 * `intr_state_spinwait`  : poll a intr_status randomly until it reads the expected value
 * `status_read_for_clks` : read intr_status register randomly for num clks
 

@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       branch:
-        description: 'Branch to run the nightly (for SiVal job only)'
+        description: "Branch to run the nightly on"
         required: true
         type: string
 
@@ -22,221 +22,219 @@ env:
   VIVADO_VERSION: "2021.1"
 
 jobs:
-  fpga_cw310_sival_nightly:
-    name: FPGA CW310 SiVal tests
-    runs-on: [ubuntu-22.04-fpga, cw310]
+  chip_earlgrey_cw310:
+    name: Earl Grey for CW310
+    uses: ./.github/workflows/bitstream.yml
+    secrets: inherit
+    with:
+      top_name: earlgrey
+      design_suffix: cw310
 
-    env:
-      GS_PATH: opentitan-test-results
+  chip_earlgrey_cw310_hyperdebug:
+    name: Earl Grey for CW310 Hyperdebug
+    uses: ./.github/workflows/bitstream.yml
+    secrets: inherit
+    with:
+      top_name: earlgrey
+      design_suffix: cw310_hyperdebug
 
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Required for the bitstream cache to work.
-          ref: ${{ inputs.branch || 'earlgrey_1.0.0' }} # Schedule only work on the default branch, but we want to run on a different branch.
+  chip_earlgrey_cw340:
+    name: Earl Grey for CW340
+    uses: ./.github/workflows/bitstream.yml
+    secrets: inherit
+    with:
+      top_name: earlgrey
+      design_suffix: cw340
 
-      - name: Prepare environment
-        uses: ./.github/actions/prepare-env
-        with:
-          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
+  execute_fpga_cw310_test_rom_tests:
+    name: CW310 Test ROM Tests
+    needs: chip_earlgrey_cw310_hyperdebug
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_fpga_cw310_test_rom_tests
+      bitstream: chip_earlgrey_cw310_hyperdebug
+      board: cw310
+      interface: hyper310
+      tag_filters: cw310_test_rom,-broken,-manual
+      add_default_filters: false
+      cache_test_results: false
+      upload_to_bucket: true
+      bucket_job_folder_name: "cw310_test_rom"
+      branch: "${{ inputs.branch || 'earlgrey_1.0.0' }}"
 
-      - name: Update hyperdebug
-        run: |
-          ./bazelisk.sh run //sw/host/opentitantool -- --interface=hyperdebug_dfu transport update-firmware
+  execute_fpga_cw310_rom_tests:
+    name: CW310 ROM Tests
+    needs: chip_earlgrey_cw310_hyperdebug
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_fpga_cw310_rom_tests
+      bitstream: chip_earlgrey_cw310_hyperdebug
+      board: cw310
+      interface: hyper310
+      tag_filters: cw310_rom_with_fake_keys,-broken,-manual
+      add_default_filters: false
+      cache_test_results: false
+      timeout: 240
+      upload_to_bucket: true
+      bucket_job_folder_name: "cw310_rom"
+      branch: "${{ inputs.branch || 'earlgrey_1.0.0' }}"
 
-      - name: Run tests after ROM boot stage
-        if: success() || failure()
-        run: |
-          module load xilinx/vivado
-          bazel_tests="$(mktemp)"
-          ./bazelisk.sh query 'attr("tags", "[\[ ]cw310_sival[,\]]", tests(//sw/device/...))' \
-                                                    | grep -v examples \
-                                                    | grep -v penetrationtests \
-                                                    > "$bazel_tests"
-          ./bazelisk.sh test \
-            --build_tests_only \
-            --cache_test_results=no \
-            --test_tag_filters=-slow_test \
-            --target_pattern_file="$bazel_tests"
+  execute_fpga_cw310_rom_ext_tests:
+    name: CW310 ROM_EXT Tests
+    needs: chip_earlgrey_cw310_hyperdebug
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_fpga_cw310_rom_ext_tests
+      bitstream: chip_earlgrey_cw310_hyperdebug
+      board: cw310
+      interface: hyper310
+      tag_filters: cw310_rom_ext,-broken,-manual
+      add_default_filters: false
+      cache_test_results: false
+      upload_to_bucket: true
+      bucket_job_folder_name: "cw310_rom_ext"
+      branch: "${{ inputs.branch || 'earlgrey_1.0.0' }}"
 
-      - name: Run tests after ROM_EXT boot stage
-        if: success() || failure()
-        run: |
-          module load xilinx/vivado
-          bazel_tests="$(mktemp)"
-          ./bazelisk.sh query 'attr("tags", "[\[ ]cw310_sival_rom_ext[,\]]", tests(//sw/device/...))' \
-                                                    | grep -v examples \
-                                                    | grep -v penetrationtests \
-                                                    > "$bazel_tests"
-          ./bazelisk.sh test \
-            --build_tests_only \
-            --cache_test_results=no \
-            --test_tag_filters=-slow_test \
-            --target_pattern_file="$bazel_tests"
+  execute_fpga_cw310_sival_tests:
+    name: CW310 SiVal Tests
+    needs: chip_earlgrey_cw310_hyperdebug
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_fpga_cw310_sival_tests
+      bitstream: chip_earlgrey_cw310_hyperdebug
+      board: cw310
+      interface: hyper310
+      tag_filters: cw310_sival,-broken,-manual
+      add_default_filters: false
+      cache_test_results: false
+      upload_to_bucket: true
+      bucket_job_folder_name: "cw310_sival"
+      branch: "${{ inputs.branch || 'earlgrey_1.0.0' }}"
 
-      - name: Compute bucket destination
-        id: bucket_destination
-        if: ${{ !cancelled() }}
-        run: |
-          BUCKET_PATH=$GS_PATH/job/${{ github.job }}/branch/${{ inputs.branch || 'earlgrey_1.0.0'}}/$(date +%Y-%m-%d-%H%M%S)_test_results.xml
-          echo "BUCKET_PATH=$BUCKET_PATH" >> $GITHUB_OUTPUT
+  execute_fpga_cw310_sival_rom_ext_tests:
+    name: CW310 SiVal ROM_EXT Tests
+    needs: chip_earlgrey_cw310_hyperdebug
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_fpga_cw310_sival_rom_ext_tests
+      bitstream: chip_earlgrey_cw310_hyperdebug
+      board: cw310
+      interface: hyper310
+      tag_filters: cw310_sival_rom_ext,-broken,-manual
+      add_default_filters: false
+      cache_test_results: false
+      upload_to_bucket: true
+      bucket_job_folder_name: "cw310_sival_rom_ext"
+      branch: "${{ inputs.branch || 'earlgrey_1.0.0' }}"
 
-      - name: Publish Bazel test results
-        uses: ./.github/actions/publish-bazel-test-results
-        if: ${{ !cancelled() }}
-        with:
-          artifact-name: fpga_cw310_sival_nightly-test-results
-          bucket-destination: ${{ steps.bucket_destination.outputs.BUCKET_PATH }}
+  execute_fpga_cw310_bob_tests:
+    name: CW310 BoB (SPI and I2C) Tests
+    needs: chip_earlgrey_cw310
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_bob_fpga_tests_cw310
+      bitstream: chip_earlgrey_cw310
+      board: cw310
+      interface: cw310
+      targets: "//sw/device/tests/pmod/..."
+      tag_filters: cw310_sival_rom_ext_no_hyper,-broken,-manual
+      add_default_filters: false
+      cache_test_results: false
+      upload_to_bucket: true
+      bucket_job_folder_name: "cw310_bob"
+      branch: "${{ inputs.branch || 'earlgrey_1.0.0' }}"
 
-  fpga_cw340_sival_nightly:
-    name: FPGA CW340 SiVal tests
-    runs-on: [ubuntu-22.04-fpga, cw340]
+  execute_fpga_cw340_test_rom_tests:
+    name: CW340 Test ROM Tests
+    needs: chip_earlgrey_cw340
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_fpga_cw340_test_rom_tests
+      bitstream: chip_earlgrey_cw340
+      board: cw340
+      interface: cw340
+      tag_filters: cw340_test_rom,-broken,-manual
+      add_default_filters: false
+      cache_test_results: false
+      upload_to_bucket: true
+      bucket_job_folder_name: "cw340_test_rom"
+      branch: "${{ inputs.branch || 'earlgrey_1.0.0' }}"
 
-    env:
-      GS_PATH: opentitan-test-results
-      BAZEL_TEST_RESULTS: test_results.xml
+  execute_fpga_cw340_rom_tests:
+    name: CW340 ROM Tests
+    needs: chip_earlgrey_cw340
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_fpga_cw340_rom_tests
+      bitstream: chip_earlgrey_cw340
+      board: cw340
+      interface: cw340
+      tag_filters: cw340_rom_with_fake_keys,-broken,-manual
+      add_default_filters: false
+      cache_test_results: false
+      upload_to_bucket: true
+      bucket_job_folder_name: "cw340_rom"
+      branch: "${{ inputs.branch || 'earlgrey_1.0.0' }}"
 
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Required for the bitstream cache to work.
-          ref: ${{ inputs.branch || 'earlgrey_1.0.0' }} # Schedule only work on the default branch, but we want to run on a different branch.
+  execute_fpga_cw340_rom_ext_tests:
+    name: CW340 ROM_EXT Tests
+    needs: chip_earlgrey_cw340
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_fpga_cw340_rom_ext_tests
+      bitstream: chip_earlgrey_cw340
+      board: cw340
+      interface: cw340
+      tag_filters: cw340_rom_ext,-broken,-manual
+      add_default_filters: false
+      cache_test_results: false
+      upload_to_bucket: true
+      bucket_job_folder_name: "cw340_rom_ext"
+      branch: "${{ inputs.branch || 'earlgrey_1.0.0' }}"
 
-      - name: Prepare environment
-        uses: ./.github/actions/prepare-env
-        with:
-          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
+  execute_fpga_cw340_sival_tests:
+    name: CW340 SiVal Tests
+    needs: chip_earlgrey_cw340
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_fpga_cw340_sival_tests
+      bitstream: chip_earlgrey_cw340
+      board: cw340
+      interface: cw340
+      tag_filters: cw340_sival,-broken,-manual
+      add_default_filters: false
+      cache_test_results: false
+      upload_to_bucket: true
+      bucket_job_folder_name: "cw340_sival"
+      branch: "${{ inputs.branch || 'earlgrey_1.0.0' }}"
 
-      - name: Update hyperdebug
-        run: |
-          ./bazelisk.sh run //sw/host/opentitantool -- --interface=hyperdebug_dfu transport update-firmware
-
-      - name: Run tests after ROM boot stage
-        if: success() || failure()
-        run: |
-          module load xilinx/vivado
-          bazel_tests="$(mktemp)"
-          ./bazelisk.sh query 'attr("tags", "[\[ ]cw340_sival[,\]]", tests(//sw/device/...))' \
-                                                    | grep -v examples \
-                                                    | grep -v penetrationtests \
-                                                    > "$bazel_tests"
-          ./bazelisk.sh test \
-            --build_tests_only \
-            --cache_test_results=no \
-            --test_tag_filters=-slow_test \
-            --target_pattern_file="$bazel_tests"
-
-      - name: Run tests after ROM_EXT boot stage
-        if: success() || failure()
-        run: |
-          module load xilinx/vivado
-          bazel_tests="$(mktemp)"
-          ./bazelisk.sh query 'attr("tags", "[\[ ]cw340_sival_rom_ext[,\]]", tests(//sw/device/...))' \
-                                                    | grep -v examples \
-                                                    | grep -v penetrationtests \
-                                                    > "$bazel_tests"
-          ./bazelisk.sh test \
-            --build_tests_only \
-            --cache_test_results=no \
-            --test_tag_filters=-slow_test \
-            --target_pattern_file="$bazel_tests"
-
-      - name: Compute bucket destination
-        id: bucket_destination
-        if: ${{ !cancelled() }}
-        run: |
-          BUCKET_PATH=$GS_PATH/job/${{ github.job }}/branch/${{ inputs.branch || 'earlgrey_1.0.0'}}/$(date +%Y-%m-%d-%H%M%S)_test_results.xml
-          echo "BUCKET_PATH=$BUCKET_PATH" >> $GITHUB_OUTPUT
-
-      - name: Publish Bazel test results
-        uses: ./.github/actions/publish-bazel-test-results
-        if: ${{ !cancelled() }}
-        with:
-          artifact-name: fpga_cw340_sival_nightly-test-results
-          bucket-destination: ${{ steps.bucket_destination.outputs.BUCKET_PATH }}
-
-  fpga_cw340_slow_sival_nightly:
-    name: FPGA CW340 slow SiVal tests
-    runs-on: [ubuntu-22.04-fpga, cw340]
-
-    env:
-      GS_PATH: opentitan-test-results
-      BAZEL_TEST_RESULTS: test_results.xml
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Required for the bitstream cache to work.
-          ref: ${{ inputs.branch || 'earlgrey_1.0.0' }} # Schedule only work on the default branch, but we want to run on a different branch.
-
-      - name: Prepare environment
-        uses: ./.github/actions/prepare-env
-        with:
-          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
-
-      - name: Update hyperdebug
-        run: |
-          ./bazelisk.sh run //sw/host/opentitantool -- --interface=hyperdebug_dfu transport update-firmware
-
-      - name: Run tests
-        if: success() || failure()
-        run: |
-          module load xilinx/vivado
-          bazel_tests="$(mktemp)"
-
-          ./bazelisk.sh query 'attr("tags", "[\[ ]cw340_sival_rom_ext[,\]]", tests(//sw/device/...))' \
-                      'intersect attr("tags", "slow_test", tests(//sw/device/...))' \
-                                                                  | grep -v examples \
-                                                                  | grep -v penetrationtests \
-                                                                  > "$bazel_tests"
-
-          ./bazelisk.sh test \
-            --build_tests_only \
-            --cache_test_results=no \
-            --target_pattern_file="$bazel_tests"
-
-      - name: Compute bucket destination
-        id: bucket_destination
-        if: ${{ !cancelled() }}
-        run: |
-          BUCKET_PATH=$GS_PATH/job/${{ github.job }}/branch/${{ inputs.branch || 'earlgrey_1.0.0'}}/$(date +%Y-%m-%d-%H%M%S)_test_results.xml
-          echo "BUCKET_PATH=$BUCKET_PATH" >> $GITHUB_OUTPUT
-
-      - name: Publish Bazel test results
-        uses: ./.github/actions/publish-bazel-test-results
-        if: ${{ !cancelled() }}
-        with:
-          artifact-name: fpga_cw340_slow_sival_nightly-test-results
-          bucket-destination: ${{ steps.bucket_destination.outputs.BUCKET_PATH }}
-
-  rom_e2e:
-    name: ROM E2E Tests
-    runs-on: [ubuntu-22.04-fpga, cw310]
-    timeout-minutes: 180
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Required for the bitstream cache to work.
-      - name: Prepare environment
-        uses: ./.github/actions/prepare-env
-        with:
-          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
-      - name: Run all ROM E2E tests
-        run: |
-          module load "xilinx/vivado/${VIVADO_VERSION}"
-          ./bazelisk.sh test \
-            --define DISABLE_VERILATOR_BUILD=true \
-            --define bitstream=gcp_splice \
-            --test_tag_filters=-verilator,-dv,-broken \
-            --build_tests_only \
-            --cache_test_results=no \
-            --test_output=errors \
-            //sw/device/silicon_creator/rom/e2e/...
-      - name: Publish Bazel test results
-        uses: ./.github/actions/publish-bazel-test-results
-        if: ${{ !cancelled() }}
-        with:
-          artifact-name: rom_e2e-test-results
+  execute_fpga_cw340_sival_rom_ext_tests:
+    name: CW340 SiVal ROM_EXT Tests
+    needs: chip_earlgrey_cw340
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_fpga_cw340_sival_rom_ext_tests
+      bitstream: chip_earlgrey_cw340
+      board: cw340
+      interface: cw340
+      tag_filters: cw340_sival_rom_ext,-broken,-manual
+      add_default_filters: false
+      cache_test_results: false
+      timeout: 90
+      upload_to_bucket: true
+      bucket_job_folder_name: "cw340_sival_rom_ext"
+      branch: "${{ inputs.branch || 'earlgrey_1.0.0' }}"
 
   slow_otbn_crypto_tests:
     name: Slow OTBN Crypto Tests
@@ -249,7 +247,7 @@ jobs:
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
         with:
-          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
+          service_account_json: "${{ secrets.BAZEL_CACHE_CREDS }}"
       - name: Run the tests
         run: |
           ./bazelisk.sh test \
@@ -261,43 +259,3 @@ jobs:
         if: ${{ !cancelled() }}
         with:
           artifact-name: slow_otbn_crypto_tests-test-results
-
-  bob_spi_i2c:
-    name: "BoB: SPI and I2C Tests"
-    runs-on: [ubuntu-22.04-fpga, cw310]
-    timeout-minutes: 180
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Required for the bitstream cache to work.
-      - name: Prepare environment
-        uses: ./.github/actions/prepare-env
-        with:
-          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
-      - name: Run the PMOD tests with Test ROM
-        run: |
-          module load "xilinx/vivado/${VIVADO_VERSION}"
-          ./bazelisk.sh test \
-            --define DISABLE_VERILATOR_BUILD=true \
-            --define bitstream=gcp_splice \
-            --build_tests_only \
-            --cache_test_results=no \
-            --test_output=errors \
-            --test_tag_filters="cw310_test_rom" \
-            $(./bazelisk.sh query 'attr("tags", "[\[ ]pmod[,\]]", tests(//...))')
-      - name: Run the PMOD tests for SiVal
-        run: |
-          module load "xilinx/vivado/${VIVADO_VERSION}"
-          ./bazelisk.sh test \
-            --define DISABLE_VERILATOR_BUILD=true \
-            --define bitstream=gcp_splice \
-            --build_tests_only \
-            --cache_test_results=no \
-            --test_output=errors \
-            --test_tag_filters=cw310_sival,-broken \
-            $(./bazelisk.sh query 'attr("tags", "[\[ ]pmod[,\]]", tests(//...))')
-      - name: Publish Bazel test results
-        uses: ./.github/actions/publish-bazel-test-results
-        if: ${{ !cancelled() }}
-        with:
-          artifact-name: bob_spi_i2c-test-results

@@ -11,7 +11,7 @@ use anyhow::{Context, Result};
 use clap::Parser;
 use object::{Object, ObjectSymbol};
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::uart::{Parity, Uart};
 use opentitanlib::test_utils;
@@ -66,7 +66,7 @@ fn main() -> Result<()> {
     let uart_console = transport.uart("console")?;
 
     for uart_id in 0..4 {
-        transport.reset_target(Duration::from_millis(500), true)?;
+        transport.reset_with_delay(UartRx::Clear, Duration::from_millis(500))?;
 
         let test_data = TestData {
             tx_rx_data: &tx_rx_data,
@@ -99,9 +99,8 @@ fn uart_tx_rx(
     let uart = transport.uart("dut")?;
     uart.set_parity(Parity::None)
         .context("failed to set parity")?;
-    uart.clear_rx_buffer()?;
 
-    UartConsole::wait_for(console, r"Executing the test[^\n]*\n", opts.timeout)?;
+    UartConsole::wait_for(console, r"Executing the test", opts.timeout)?;
 
     log::info!("Sending data...");
     uart.write(&tx_rx_data.rx_data)
@@ -127,7 +126,7 @@ fn uart_tx_rx(
     uart.write(&too_much_data)
         .context("failed to write too much data")?;
 
-    UartConsole::wait_for(console, r"PASS![^\r\n]*", opts.timeout)?;
+    UartConsole::wait_for(console, r"PASS!", opts.timeout)?;
 
     Ok(())
 }

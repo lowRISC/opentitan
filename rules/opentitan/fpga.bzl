@@ -12,6 +12,7 @@ load(
     "@lowrisc_opentitan//rules/opentitan:util.bzl",
     "assemble_for_test",
     "get_fallback",
+    "recursive_format",
 )
 load(
     "//rules/opentitan:exec_env.bzl",
@@ -68,8 +69,9 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
             name = name,
             src = elf,
             suffix = "39.scr.vmem",
-            rom_scramble_config = exec_env.rom_scramble_config,
             rom_scramble_tool = ctx.executable.rom_scramble_tool,
+            top_gen_hjson = exec_env.top_gen_hjson,
+            top_secret_cfg = exec_env.top_secret_cfg,
         )
 
         # The englishbreakfast verilator model does not understand ROM
@@ -123,12 +125,13 @@ def _test_dispatch(ctx, exec_env, firmware):
     # assemble the image.  Replace the firmware param with the newly assembled
     # image.
     if "assemble" in param:
-        assemble = param["assemble"].format(**action_param)
+        assemble = param.get("assemble")
+        assemble = recursive_format(assemble, action_param)
         assemble = ctx.expand_location(assemble, data_labels)
         image = assemble_for_test(
             ctx,
             name = ctx.attr.name,
-            spec = assemble.split(" "),
+            spec = assemble.strip().split(" "),
             data_files = data_files,
             opentitantool = exec_env._opentitantool,
         )

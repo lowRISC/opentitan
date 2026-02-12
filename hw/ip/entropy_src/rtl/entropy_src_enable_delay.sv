@@ -13,7 +13,7 @@
 // tests. The SHA3 conditioner is also assumed to successfully absorb every 64-bits that enters the
 // module.
 //
-// To acheive this consistency goal the entropy_src delays the clearing of internal data buffers
+// To achieve this consistency goal the entropy_src delays the clearing of internal data buffers
 // and the state machine until:
 // 1. Any unprocessed data has been counted at the health checks (regardless of the mode)
 // 2. Any RNG data bound for the SHA conditioner has been received at the conditioner.
@@ -43,7 +43,7 @@ module entropy_src_enable_delay import prim_mubi_pkg::*; (
   input logic distr_fifo_not_empty_i,
 
   // SHA3 conditioner inputs
-  input logic cs_aes_halt_req_i,
+  input logic sha3_block_busy_i,
   input logic sha3_block_processed_i,
 
   input logic bypass_mode_i,
@@ -100,7 +100,7 @@ module entropy_src_enable_delay import prim_mubi_pkg::*; (
 
   // Pulse to extend from the falling edge of the incoming enable pulse until one cycle after the
   // SHA engine has finished processing the current block.
-  assign sha3_active_post_en_d = cs_aes_halt_req_i && !enable_i ? 1'b1 :
+  assign sha3_active_post_en_d = sha3_block_busy_i && !enable_i ? 1'b1 :
                                  sha3_block_processed_q ? 1'b0 :
                                  sha3_active_post_en_q;
 

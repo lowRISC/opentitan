@@ -177,7 +177,7 @@
     { name:    "Stub",
       type:    "bit",
       default: "0",
-      desc:    "Stub out the core of entropy_src logic"
+      desc:    "Stub out the USB device logic, leaving only the register interface"
       local:   "false",
       expose:  "true"
     },
@@ -213,7 +213,7 @@
     }
     { name: "disconnected",
       desc: '''
-            Raised if VBUS is lost, thus the link is disconnected.
+            Raised if VBUS is lost or the pullup is disabled, thus the link is disconnected.
             '''
     }
     { name: "host_lost",
@@ -292,6 +292,7 @@
       desc: '''
             Raised if a packet to an OUT endpoint started to be received but was then dropped due to an error.
             This error is raised if the data toggle, token, packet and/or CRC are invalid, or if the appropriate Available OUT Buffer FIFO is empty and/or the Received Buffer FIFO is full when a packet should have been received.
+            Attempting to perform an OUT transaction to an endpoint that is stalled, i.e. its control bit in `out_stall` is set, will also cause this error to be raised.
             '''
     }
     {
@@ -511,7 +512,7 @@
           bits: "10:0",
           name: "frame",
           desc: '''
-                Frame index received from host. On an active link, this will increment every milisecond.
+                Frame index received from host. On an active link, this will increment every millisecond.
                 '''
         }
         {
@@ -564,7 +565,7 @@
           desc: '''
                 Reflects the state of the sense pin.
                 1 indicates that the host is providing VBUS.
-                Note that this bit always shows the state of the actual pin and does not take account of the override control.
+                Note that this bit always shows the state of the actual pin and is unaffected by the direct pin driving in phy_pins_drive.
                 '''
         }
         {
@@ -722,27 +723,38 @@
         ]
       }
     }
-    { multireg: {
-        name: "rxenable_out",
-        count: "NEndpoints"
-        cname: "Endpoint"
-        desc: "Receive OUT transaction enable",
-        swaccess: "rw",
-        hwaccess: "hrw",
-        fields: [
-          {
-            bits: "0",
-            name: "out",
-            desc: '''
-                  This bit must be set to enable OUT transactions to be received on the endpoint.
-                  If the bit is clear then an OUT request will be responded to with a NAK, if the endpoint is enabled.
-                  If set_nak_out for this endpoint is set, hardware will clear this bit whenever an OUT transaction is received on this endpoint.
-                  Software must set this bit again to receive the next OUT transaction.
-                  Until that happens, hardware will continue to NAK any OUT transaction to this endpoint.
-                  '''
-          }
-        ]
-      }
+    { name: "rxenable_out",
+      desc: "Receive OUT transaction enable",
+      hwext: "true",
+      hwqe: "true",
+      fields: [
+        {
+          bits: "NEndpoints-1:0",
+          name: "out",
+          desc: '''
+                This bit must be set to enable OUT transactions to be received on the endpoint.
+                If the bit is clear but the endpoint is enabled, then an OUT request will receive a NAK in response.
+                If set_nak_out for this endpoint is set, hardware will clear this bit whenever an OUT transaction is received on this endpoint.
+                Software must set this bit again to receive the next OUT transaction.
+                Until that happens, hardware will continue to NAK any OUT transactions to this endpoint.
+                '''
+          swaccess: "rw",
+          hwaccess: "hrw"
+        }
+        {
+          bits: "NEndpoints+15:16",
+          name: "preserve",
+          desc: '''
+                When writing to this register, only those 'out' bits with a corresponding 'preserve' bit of 0 are updated.
+                The 'preserve' field should therefore normally be set to all '1s', except for those bits that the software wishes to modify.
+                This conditional update facility avoids a race with the hardware when it is clearing the 'out' bit for another enabled endpoint.
+                '''
+          swaccess: "wo",
+          hwaccess: "hro"
+        }
+      ]
+      tags: [// This CSR has mask bits that gate writes.
+             "excl:CsrNonInitTests:CsrExclWrite"]
     }
     { multireg: {
         name: "set_nak_out",

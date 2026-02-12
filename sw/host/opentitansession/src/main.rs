@@ -2,24 +2,24 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow, bail, Context, Result};
+use anyhow::{Context, Result, anyhow, bail};
 use clap::Parser;
 use directories::{BaseDirs, ProjectDirs};
 use erased_serde::Serialize;
 use log::LevelFilter;
 use rustix::process::{Pid, Signal};
-use std::env::{self, args_os, ArgsOs};
+use std::env::{self, ArgsOs, args_os};
 use std::ffi::OsString;
-use std::fs::{self, read_to_string, File};
-use std::io::{self, ErrorKind, Write};
+use std::fs::{self, File, read_to_string};
+use std::io::{self, ErrorKind, Read, Write};
 use std::iter::Iterator;
 use std::path::PathBuf;
-use std::process::{self, ChildStdout, Command, Stdio};
+use std::process::{self, Command, Stdio};
 use std::str::FromStr;
 use std::time::Duration;
 
 use opentitanlib::backend;
-use opentitanlib::proxy::SessionHandler;
+use ot_proxy::SessionHandler;
 
 #[derive(Debug, Parser)]
 #[command(
@@ -38,7 +38,7 @@ struct Opts {
     backend_opts: backend::BackendOpts,
 
     /// Stop a running session, optionally combine with --listen_port for disambiguation.
-    #[arg(long)]
+    #[arg(long, conflicts_with = "foreground")]
     stop: bool,
 
     /// Optional, defaults to 9900 or nearest higher available port.
@@ -127,76 +127,23 @@ fn start_session(run_file_fn: impl FnOnce(u16) -> PathBuf) -> Result<Box<dyn Ser
         .stderr(Stdio::inherit()) // May be used for error messages during daemon startup
         .spawn()?;
 
-    match serde_json::from_reader::<&mut ChildStdout, Result<SessionStartResult, String>>(
-        child.stdout.as_mut().unwrap(),
-    ) {
-        Ok(Ok(result)) => {
-            // Create a pid file corresponding to the requested TCP port.
-            let path = run_file_fn(result.port);
-            File::create(path)?.write_all(format!("{}\n", child.id()).as_bytes())?;
-            Ok(Box::new(result))
-        }
-        Ok(Err(e)) => bail!(e),
-        Err(e) => bail!("Child process failed to start: {}", e),
+    let mut buf = Vec::new();
+    child.stdout.as_mut().unwrap().read_to_end(&mut buf)?;
+
+    // Child process exited. In this case the child process has reported the error, so
+    // we should just exit with the same error code.
+    if buf.is_empty() {
+        let exit_code = child.wait()?.code().unwrap_or(1);
+        anyhow::ensure!(exit_code != 0);
+        process::exit(exit_code);
     }
-}
 
-// This method runs in the daemon child.  It will instantiate SessionHandler to bind to a
-// socket, then report the chosen port number to the parent process by means of a serialized
-// `SessionStartResult` sent through the stdout anonymous pipe, and finally enter an infnite
-// loop, processing connections on that socket
-fn session_child(listen_port: Option<u16>, backend_opts: &backend::BackendOpts) -> Result<()> {
-    // Open connection to transport backend (HyperDebug or other debugger device) based on
-    // command line arguments.
-    let transport = backend::create(backend_opts)?;
+    let result: SessionStartResult = serde_json::from_slice(&buf)?;
 
-    // We do not need other invocations of `opentitantool` to directly access the debugger device
-    // while this session process runs (as any such invocations ought to instead establish TCP/IP
-    // connection and go through this session.)  Hence, we can inform the driver that it is free
-    // to e.g. hold on to open USB handles between function calls, or perform other similar
-    // optimizations.
-    let _maintain_connection = transport.maintain_connection()?;
-
-    // Bind to TCP socket, in preparation for servicing requests from network.
-    let mut session = SessionHandler::init(&transport, listen_port)?;
-
-    // Instantiation of Transport backend, and binding to a socket was successful, now go
-    // through the process of making this process a daemon, disconnected from the
-    // terminal that was used to start it.
-
-    // All configuration files have been processed (relative to current direction), we can now
-    // drop the reference to the file system, (in case the admin wants to unmount while this
-    // daemon is still running.)
-    env::set_current_dir("/")?;
-
-    // Close stderr, which remained open in order to allow any errors from the above code to
-    // surface, but needs to be severed in order for the daemon to avoid being killed by SIGHUP
-    // if the user closes the terminal window.
-    rustix::stdio::dup2_stderr(File::open("/dev/null")?)?;
-
-    // After severing the only connection to the controlling terminal inherited from the parent,
-    // we can now establish a new Unix "session" for this process, which will not be
-    // "controlled" by any terminal.  This means that this daemon will not be killed by SIGHUP,
-    // in case the terminal that was used for running `session start` is later closed.
-    rustix::process::setsid()?;
-
-    // Report startup success to parent process.
-    serde_json::to_writer::<io::Stdout, Result<SessionStartResult, String>>(
-        io::stdout(),
-        &Ok(SessionStartResult {
-            port: session.get_port(),
-        }),
-    )?;
-    io::stdout().flush()?;
-
-    // Closing the standard output pipe is the signal to the parent process that this child has
-    // started up successfully.  We close the pipe indirectly, by replacing stdout file descriptor
-    // with one pointing to /dev/null.  This will ensure that any subsequent accidentally
-    // executed println!() will be a no-op, rather than trigger termination via SIGPIPE.
-    rustix::stdio::dup2_stdout(io::stderr())?;
-
-    // Indefinitely run command processing loop in this daemon process.
-    session.run_loop()
+    // Create a pid file corresponding to the requested TCP port.
+    let path = run_file_fn(result.port);
+    File::create(path)?.write_all(format!("{}\n", child.id()).as_bytes())?;
+    Ok(Box::new(result))
 }
 
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -231,53 +178,78 @@ fn stop_session(run_file_fn: impl FnOnce(u16) -> PathBuf, port: u16) -> Result<B
 fn main() -> Result<()> {
     let opts = parse_command_line(Opts::parse(), args_os())?;
 
-    if opts.foreground {
-        // Start session process in foreground (do not daemonize).  The session process will
-        // terminate if its parent dies.  This might be useful for use in scripts.
+    if !opts.foreground && !opts.child {
+        // Locate directory to use for .pid files
+        let base_dirs = BaseDirs::new().unwrap();
+        let run_user_dir = base_dirs
+            .runtime_dir()
+            .ok_or_else(|| anyhow!("No /run/user directory"))?;
+        let run_file_fn = |port: u16| {
+            let mut p = PathBuf::from(run_user_dir);
+            p.push(format!("opentitansession.{}.pid", port));
+            p
+        };
 
-        // Request a SIGTERM if our parent dies.
-        rustix::process::set_parent_process_death_signal(Some(Signal::TERM))?;
-
-        let transport = backend::create(&opts.backend_opts)?;
-        let mut session = SessionHandler::init(&transport, opts.listen_port)?;
-        println!("Listening on port {}", session.get_port());
-        session.run_loop()?;
+        let value = if opts.stop {
+            // Send signal to daemon process to stop
+            stop_session(run_file_fn, opts.listen_port.unwrap_or(9900))?
+        } else {
+            // Fork a daemon process
+            start_session(run_file_fn)?
+        };
+        println!("{}", serde_json::to_string_pretty(&value)?);
         return Ok(());
     }
 
-    if opts.child {
-        // This process is a child, which is supposed to stay running as a daemon.
-        match session_child(opts.listen_port, &opts.backend_opts) {
-            Ok(()) => process::exit(0),
-            Err(e) => {
-                // Report any error to parent process though stdout pipe.
-                serde_json::to_writer::<io::Stdout, Result<SessionStartResult, String>>(
-                    io::stdout(),
-                    &Err(format!("{}", e)),
-                )?;
-                process::exit(1)
-            }
-        }
+    // Open connection to transport backend (HyperDebug or other debugger device) based on
+    // command line arguments.
+    let transport = backend::create(&opts.backend_opts)?;
+
+    // Bind to TCP socket, in preparation for servicing requests from network.
+    let mut session = SessionHandler::init(transport, opts.listen_port)?;
+
+    if opts.foreground {
+        // Request a SIGTERM if our parent dies.
+        rustix::process::set_parent_process_death_signal(Some(Signal::TERM))?;
+
+        println!("Listening on port {}", session.get_port());
+    } else {
+        // Instantiation of Transport backend, and binding to a socket was successful, now go
+        // through the process of making this process a daemon, disconnected from the
+        // terminal that was used to start it.
+
+        // All configuration files have been processed (relative to current direction), we can now
+        // drop the reference to the file system, (in case the admin wants to unmount while this
+        // daemon is still running.)
+        env::set_current_dir("/")?;
+
+        // Close stderr, which remained open in order to allow any errors from the above code to
+        // surface, but needs to be severed in order for the daemon to avoid being killed by SIGHUP
+        // if the user closes the terminal window.
+        rustix::stdio::dup2_stderr(File::open("/dev/null")?)?;
+
+        // After severing the only connection to the controlling terminal inherited from the parent,
+        // we can now establish a new Unix "session" for this process, which will not be
+        // "controlled" by any terminal.  This means that this daemon will not be killed by SIGHUP,
+        // in case the terminal that was used for running `session start` is later closed.
+        rustix::process::setsid()?;
+
+        // Report startup success to parent process.
+        serde_json::to_writer::<io::Stdout, SessionStartResult>(
+            io::stdout(),
+            &SessionStartResult {
+                port: session.get_port(),
+            },
+        )?;
+        io::stdout().flush()?;
+
+        // Closing the standard output pipe is the signal to the parent process that this child has
+        // started up successfully.  We close the pipe indirectly, by replacing stdout file descriptor
+        // with one pointing to /dev/null.  This will ensure that any subsequent accidentally
+        // executed println!() will be a no-op, rather than trigger termination via SIGPIPE.
+        rustix::stdio::dup2_stdout(io::stderr())?;
     }
 
-    // Locate directory to use for .pid files
-    let base_dirs = BaseDirs::new().unwrap();
-    let run_user_dir = base_dirs
-        .runtime_dir()
-        .ok_or_else(|| anyhow!("No /run/user directory"))?;
-    let run_file_fn = |port: u16| {
-        let mut p = PathBuf::from(run_user_dir);
-        p.push(format!("opentitansession.{}.pid", port));
-        p
-    };
-
-    let value = if opts.stop {
-        // Send signal to daemon process to stop
-        stop_session(run_file_fn, opts.listen_port.unwrap_or(9900))?
-    } else {
-        // Fork a daemon process
-        start_session(run_file_fn)?
-    };
-    println!("{}", serde_json::to_string_pretty(&value)?);
-    Ok(())
+    // Indefinitely run command processing loop in this daemon process.
+    session.run_loop()
 }

@@ -33,7 +33,9 @@ impl fmt::Debug for SpxSecretKey {
     }
 }
 
-#[derive(Default, Debug, Clone, Copy, EnumString, Display, Serialize, Deserialize)]
+#[derive(
+    Default, Debug, Clone, Copy, PartialEq, Eq, EnumString, Display, Serialize, Deserialize,
+)]
 #[strum(ascii_case_insensitive)]
 pub enum SpxDomain {
     None,
@@ -54,7 +56,10 @@ impl SpxDomain {
         match self {
             Self::None => message.into(),
             Self::Pure => [&[0u8, 0u8], message].concat().into(),
-            Self::PreHashedSha256 => [&Self::SHA256_DOMAIN, message].concat().into(),
+            Self::PreHashedSha256 => {
+                assert_eq!(message.len(), 32);
+                [&Self::SHA256_DOMAIN, message].concat().into()
+            }
         }
     }
 }

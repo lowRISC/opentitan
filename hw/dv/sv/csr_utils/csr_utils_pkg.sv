@@ -17,7 +17,6 @@ package csr_utils_pkg;
   uint              outstanding_accesses        = 0;
   uint              default_timeout_ns          = 2_000_000; // 2ms
   uint              default_spinwait_timeout_ns = 10_000_000; // 10ms
-  string            msg_id                      = "csr_utils";
   bit               default_csr_blocking        = 1;
   uvm_check_e       default_csr_check           = UVM_CHECK;
   bit               under_reset                 = 0;
@@ -26,14 +25,12 @@ package csr_utils_pkg;
 
   function automatic void increment_outstanding_access();
     outstanding_accesses++;
-    `uvm_info("csr_utils_pkg", $sformatf("increment_outstanding_access %0d", outstanding_accesses),
-              UVM_HIGH)
+    `uvm_info($sformatf("%m"), $sformatf("%0d", outstanding_accesses), UVM_HIGH)
   endfunction
 
   function automatic void decrement_outstanding_access();
     outstanding_accesses--;
-    `uvm_info("csr_utils_pkg", $sformatf("decrement_outstanding_access %0d", outstanding_accesses),
-              UVM_HIGH)
+    `uvm_info($sformatf("%m"), $sformatf("%0d", outstanding_accesses), UVM_HIGH)
   endfunction
 
   task automatic wait_no_outstanding_access();
@@ -67,7 +64,8 @@ package csr_utils_pkg;
     uvm_mem mem;
     addr[1:0] = 0;
     mem = ral.default_map.get_mem_by_offset(addr);
-    `DV_CHECK_NE_FATAL(mem, null, $sformatf("Can't find any mem with addr 0x%0h", addr), msg_id)
+    `DV_CHECK_NE_FATAL(mem, null,
+                       $sformatf("Can't find any mem with addr 0x%0h", addr), $sformatf("%m"))
     return mem;
   endfunction
 
@@ -84,13 +82,12 @@ package csr_utils_pkg;
     uvm_reg         csr;
     uvm_reg_field   fld;
     uvm_reg_data_t  result;
-    string          msg_id = {csr_utils_pkg::msg_id, "::get_reg_fld_mirror_value"};
     csr = ral.get_reg_by_name(reg_name);
-    `DV_CHECK_NE_FATAL(csr, null, "", msg_id)
+    `DV_CHECK_NE_FATAL(csr, null, "", $sformatf("%m"))
     // return field mirror value if field_name is passed, else return reg mirror value
     if (field_name != "") begin
       fld = csr.get_field_by_name(field_name);
-      `DV_CHECK_NE_FATAL(fld, null, "", msg_id)
+      `DV_CHECK_NE_FATAL(fld, null, "", $sformatf("%m"))
       result = fld.get_mirrored_value();
     end
     else begin
@@ -111,11 +108,11 @@ package csr_utils_pkg;
 
   // wait until current csr op is complete
   task automatic csr_wait(input uvm_reg csr);
-    `uvm_info(msg_id, $sformatf("%0s: wait_busy: %0b",
-                                csr.get_full_name(), csr.m_is_busy), UVM_HIGH)
+    `uvm_info($sformatf("%m"), $sformatf("%0s: wait_busy: %0b",
+                                         csr.get_full_name(), csr.m_is_busy), UVM_HIGH)
     wait(csr.m_is_busy == 1'b0);
-    `uvm_info(msg_id, $sformatf("%0s: done wait_busy: %0b",
-                                csr.get_full_name(), csr.m_is_busy), UVM_HIGH)
+    `uvm_info($sformatf("%m"), $sformatf("%0s: done wait_busy: %0b",
+                                         csr.get_full_name(), csr.m_is_busy), UVM_HIGH)
   endtask
 
   // Use `csr_wr` to construct `csr_update` to avoid replicated codes to handle nonblocking,
@@ -196,12 +193,10 @@ package csr_utils_pkg;
                             input bit                 en_shadow_wr = 1);
     fork
       begin : isolation_fork
-        string msg_id = {csr_utils_pkg::msg_id, "::csr_wr"};
-
         fork
           begin
             dv_base_reg dv_reg;
-            `downcast(dv_reg, csr, "", fatal, msg_id)
+            `downcast(dv_reg, csr, "", fatal, $sformatf("%m"))
 
             increment_outstanding_access();
             csr_pre_write_sub(csr, en_shadow_wr);
@@ -217,7 +212,7 @@ package csr_utils_pkg;
             decrement_outstanding_access();
           end
           begin
-            `DV_WAIT_TIMEOUT(timeout_ns, msg_id,
+            `DV_WAIT_TIMEOUT(timeout_ns, $sformatf("%m"),
                              $sformatf("Timeout waiting to csr_wr %0s (addr=0x%0h)",
                                        csr.get_full_name(), csr.get_address()))
           end
@@ -246,7 +241,7 @@ package csr_utils_pkg;
     if (check == UVM_CHECK) begin
       `DV_CHECK_EQ(status, UVM_IS_OK,
                    $sformatf("trying to write csr %0s", csr.get_full_name()),
-                   error, msg_id)
+                   error, $sformatf("%m"))
     end
     // Only update the predicted value if status is ok (otherwise the write isn't completed
     // successfully and the design shouldn't have accepted the written value)
@@ -257,7 +252,7 @@ package csr_utils_pkg;
 
   task automatic csr_pre_write_sub(uvm_reg csr, bit en_shadow_wr);
     dv_base_reg dv_reg;
-    `downcast(dv_reg, csr, "", fatal, msg_id)
+    `downcast(dv_reg, csr, "", fatal, $sformatf("%m"))
     if (dv_reg.get_is_shadowed() && en_shadow_wr) begin
       dv_reg.atomic_en_shadow_wr.get(1);
     end
@@ -265,7 +260,7 @@ package csr_utils_pkg;
 
   task automatic csr_post_write_sub(uvm_reg csr, bit en_shadow_wr);
     dv_base_reg dv_reg;
-    `downcast(dv_reg, csr, "", fatal, msg_id)
+    `downcast(dv_reg, csr, "", fatal, $sformatf("%m"))
     if (dv_reg.get_is_shadowed() && en_shadow_wr) begin
       dv_reg.atomic_en_shadow_wr.put(1);
     end
@@ -279,7 +274,6 @@ package csr_utils_pkg;
                           input bkdr_reg_path_e kind = BkdrRegPathRtl);
     csr_field_t   csr_or_fld = decode_csr_or_field(ptr);
     uvm_status_e  status;
-    string        msg_id = {csr_utils_pkg::msg_id, "::csr_poke"};
     uvm_reg_data_t old_mirrored_val;
 
     if (csr_or_fld.field != null) begin
@@ -294,8 +288,8 @@ package csr_utils_pkg;
       uvm_hdl_path_concat paths[$];
       csr_or_fld.csr.get_full_hdl_path(paths, kind.name);
       foreach (paths[0].slices[i]) str = $sformatf("%0s\n%0s", str, paths[0].slices[i].path);
-      `uvm_fatal(msg_id, $sformatf("poke failed for %0s, check below paths %0s",
-                                   ptr.get_full_name(), str))
+      `uvm_fatal($sformatf("%m"), $sformatf("poke failed for %0s, check below paths %0s",
+                                            ptr.get_full_name(), str))
     end
     // poke always updates predict value, if predict == 0, revert back to old mirrored value
     if (!predict || kind == BkdrRegPathRtlShadow) begin
@@ -323,7 +317,7 @@ package csr_utils_pkg;
       csr_rd_sub(.ptr(ptr), .value(value), .status(status), .check(check), .path(path),
                  .backdoor(backdoor), .timeout_ns(timeout_ns), .map(map), .user_ftdr(user_ftdr));
     end else begin
-      `DV_CHECK_EQ(backdoor, 0, "Don't enable backdoor with blocking = 0", error, msg_id)
+      `DV_CHECK_EQ(backdoor, 0, "Don't enable backdoor with blocking = 0", error, $sformatf("%m"))
       fork
         csr_rd_sub(.ptr(ptr), .value(value), .status(status), .check(check), .path(path),
                    .backdoor(backdoor), .timeout_ns(timeout_ns), .map(map), .user_ftdr(user_ftdr));
@@ -351,8 +345,6 @@ package csr_utils_pkg;
     fork
       begin : isolation_fork
         csr_field_t   csr_or_fld;
-        string        msg_id = {csr_utils_pkg::msg_id, "::csr_rd"};
-
         fork
           begin
             increment_outstanding_access();
@@ -370,12 +362,12 @@ package csr_utils_pkg;
             if (check == UVM_CHECK && !under_reset) begin
               `DV_CHECK_EQ(status, UVM_IS_OK,
                            $sformatf("trying to read csr/field %0s", ptr.get_full_name()),
-                           error, msg_id)
+                           error, $sformatf("%m"))
             end
             decrement_outstanding_access();
           end
           begin
-            `DV_WAIT_TIMEOUT(timeout_ns, msg_id,
+            `DV_WAIT_TIMEOUT(timeout_ns, $sformatf("%m"),
                              $sformatf("Timeout waiting to csr_rd %0s (addr=0x%0h)",
                                        ptr.get_full_name(), csr_or_fld.csr.get_address()))
           end
@@ -390,7 +382,6 @@ package csr_utils_pkg;
   function automatic uvm_reg_data_t csr_peek(uvm_object      ptr,
                                              uvm_check_e     check = default_csr_check,
                                              bkdr_reg_path_e kind = BkdrRegPathRtl);
-    string         msg_id = {csr_utils_pkg::msg_id, "::csr_peek"};
     csr_field_t    csr_or_fld = decode_csr_or_field(ptr);
     uvm_reg        csr = csr_or_fld.csr;
     uvm_reg_data_t value = 0;
@@ -401,15 +392,15 @@ package csr_utils_pkg;
     `DV_CHECK_FATAL(paths.size() > 0,
                     $sformatf("No backdoor defined for %0s path's %0s",
                               csr.get_full_name(), kind.name),
-                    msg_id)
+                    $sformatf("%m"))
 
     foreach (paths[0].slices[i]) begin
       uvm_reg_data_t field_val;
       `DV_CHECK_FATAL(uvm_hdl_read(paths[0].slices[i].path, field_val),
                       $sformatf("Failed to read %s, slice %d, at path %s",
                                 csr.get_full_name(), i, paths[0].slices[i].path),
-                      msg_id)
-      if (check == UVM_CHECK) `DV_CHECK_EQ($isunknown(field_val), 0, "", error, msg_id)
+                      $sformatf("%m"))
+      if (check == UVM_CHECK) `DV_CHECK_EQ($isunknown(field_val), 0, "", error, $sformatf("%m"))
 
       value |= field_val << paths[0].slices[i].offset;
     end
@@ -444,7 +435,6 @@ package csr_utils_pkg;
             uvm_reg_data_t  obs;
             uvm_reg_data_t  exp;
             uvm_reg_data_t  reset_val;
-            string          msg_id = {csr_utils_pkg::msg_id, "::csr_rd_check"};
 
             csr_or_fld = decode_csr_or_field(ptr);
 
@@ -465,7 +455,7 @@ package csr_utils_pkg;
               exp = (compare_vs_ral ? exp : compare_value) & compare_mask;
               `DV_CHECK_EQ(obs, exp, $sformatf("Regname: %0s reset value: 0x%0h %0s",
                                                ptr.get_full_name(), reset_val, err_msg),
-                           error, msg_id)
+                           error, $sformatf("%m"))
             end
           end
         join_none
@@ -500,8 +490,9 @@ package csr_utils_pkg;
 
     // Check if parent block or register is excluded from read-check
     if (csr_excl_item != null && csr_excl_item.is_excl(csr, csr_excl_type, csr_test_type)) begin
-      `uvm_info(msg_id, $sformatf("Skipping register %0s due to CsrExclWriteCheck exclusion",
-                                  csr.get_full_name()), UVM_MEDIUM)
+      `uvm_info($sformatf("%m"),
+                $sformatf("Skipping register %0s due to CsrExclWriteCheck exclusion",
+                          csr.get_full_name()), UVM_MEDIUM)
       return;
     end
 
@@ -565,14 +556,13 @@ package csr_utils_pkg;
     // had when this task started, giving the index of *this* call.
     lcount = count;
 
-    `uvm_info($sformatf("%m()"), $sformatf(
+    `uvm_info($sformatf("%m"), $sformatf(
                 "- (call_count=%0d, backdoor=%0d, exp_data=%0d, ptr=%s)",
                 lcount, backdoor, exp_data, ptr.get_name()), verbosity)
     fork
       begin : isolation_fork
         csr_field_t     csr_or_fld;
         uvm_reg_data_t  read_data;
-        string          msg_id = {csr_utils_pkg::msg_id, "::csr_spinwait"};
 
         csr_or_fld = decode_csr_or_field(ptr);
         if (backdoor && spinwait_delay_ns == 0) spinwait_delay_ns = 1;
@@ -581,7 +571,7 @@ package csr_utils_pkg;
           // comparison. If it is positive, wait spinwait_delay_ns nanoseconds between reads. If we
           // enter reset, stop immediately (once the current csr_rd call has finished).
           forever begin
-            `uvm_info("csr_utils_pkg", $sformatf("In csr_spinwait - call_count = %0d", lcount),
+            `uvm_info($sformatf("%m"), $sformatf("In csr_spinwait - call_count = %0d", lcount),
                       verbosity)
 
             // Wait spinwait_delay_ns nanoseconds between each read (and before the first one), but
@@ -603,8 +593,8 @@ package csr_utils_pkg;
 
             csr_rd(.ptr(ptr), .value(read_data), .check(check), .path(path),
                    .blocking(1), .map(map), .user_ftdr(user_ftdr), .backdoor(backdoor));
-            `uvm_info(msg_id, $sformatf("ptr %0s == 0x%0h",
-                                        ptr.get_full_name(), read_data), verbosity)
+            `uvm_info($sformatf("%m"),
+                      $sformatf("ptr %0s == 0x%0h", ptr.get_full_name(), read_data), verbosity)
             case (compare_op)
               CompareOpEq:     if (read_data ==  exp_data) break;
               CompareOpCaseEq: if (read_data === exp_data) break;
@@ -621,10 +611,11 @@ package csr_utils_pkg;
           end
           // Wait for timeout_ns nanoseconds and then fail with an error (because this process
           // should have been killed before then)
-          `DV_WAIT_TIMEOUT(timeout_ns, msg_id,{"timeout ", $sformatf(
-                           "%0s (addr=0x%0h, Comparison=%s, exp_data=0x%0h, call_count=%0d)",
-                           ptr.get_full_name(), csr_or_fld.csr.get_address(), compare_op.name,
-                           exp_data, lcount)})
+          `DV_WAIT_TIMEOUT(timeout_ns, $sformatf("%m"),
+                           $sformatf({"timeout %0s (addr=0x%0h, Comparison=%s, ",
+                                      "exp_data=0x%0h, call_count=%0d)"},
+                                     ptr.get_full_name(), csr_or_fld.csr.get_address(),
+                                     compare_op.name, exp_data, lcount))
         join_any
         disable fork;
       end : isolation_fork
@@ -660,7 +651,6 @@ package csr_utils_pkg;
     fork
       begin : isolating_fork
         uvm_status_e status;
-        string       msg_id = {csr_utils_pkg::msg_id, "::mem_rd"};
 
         fork
           begin
@@ -671,12 +661,13 @@ package csr_utils_pkg;
             // but this doesn't work: if (user_ftdr != null) ptr.set_frontdoor(null);
             if (check == UVM_CHECK && !under_reset) begin
               `DV_CHECK_EQ(status, UVM_IS_OK,
-                           $sformatf("trying to read mem %0s", ptr.get_full_name()), error, msg_id)
+                           $sformatf("trying to read mem %0s", ptr.get_full_name()),
+                           error, $sformatf("%m"))
             end
             decrement_outstanding_access();
           end
           begin : mem_rd_timeout
-            `DV_WAIT_TIMEOUT(timeout_ns, msg_id,
+            `DV_WAIT_TIMEOUT(timeout_ns, $sformatf("%m"),
                              $sformatf("Timeout waiting to mem_rd %0s (addr=0x%0h)",
                                        ptr.get_full_name(), offset))
           end
@@ -715,7 +706,6 @@ package csr_utils_pkg;
      fork
       begin : isolation_fork
         uvm_status_e status;
-        string       msg_id = {csr_utils_pkg::msg_id, "::mem_wr"};
 
         fork
           begin
@@ -727,12 +717,12 @@ package csr_utils_pkg;
             if (check == UVM_CHECK && !under_reset) begin
               `DV_CHECK_EQ(status, UVM_IS_OK,
                            $sformatf("trying to write mem %0s", ptr.get_full_name()),
-                           error, msg_id)
+                           error, $sformatf("%m"))
             end
             decrement_outstanding_access();
           end
           begin
-            `DV_WAIT_TIMEOUT(timeout_ns, msg_id,
+            `DV_WAIT_TIMEOUT(timeout_ns, $sformatf("%m"),
                              $sformatf("Timeout waiting to mem_wr %0s (addr=0x%0h)",
                                        ptr.get_full_name(), offset))
           end
@@ -756,7 +746,7 @@ package csr_utils_pkg;
       foreach (flds[i]) begin
         if (m_csr_excl_item.is_excl(flds[i], csr_excl_type, csr_test_type)) begin
           csr_field_t fld_params = decode_csr_or_field(flds[i]);
-          `uvm_info(msg_id, $sformatf("Skipping field %0s due to %0s exclusion",
+          `uvm_info($sformatf("%m"), $sformatf("Skipping field %0s due to %0s exclusion",
                                     flds[i].get_full_name(), csr_excl_type.name()), UVM_HIGH)
           get_mask_excl_fields &= ~(fld_params.mask << fld_params.shift);
         end
@@ -779,9 +769,9 @@ package csr_utils_pkg;
 
     foreach (flds[i]) begin
       if (m_csr_excl_item.is_excl(flds[i], CsrExclWrite, csr_test_type)) begin
-        `uvm_info(msg_id, $sformatf(
-                  "Retain mirrored value 0x%0h for field %0s due to CsrExclWrite exclusion",
-                  `gmv(flds[i]), flds[i].get_full_name()), UVM_MEDIUM)
+        `uvm_info($sformatf("%m"),
+                  $sformatf("Retain mirrored 0x%0h for field %0s due to CsrExclWrite exclusion",
+                            `gmv(flds[i]), flds[i].get_full_name()), UVM_MEDIUM)
         wdata = get_csr_val_with_updated_field(flds[i], wdata, `gmv(flds[i]));
       end
     end
@@ -792,21 +782,21 @@ package csr_utils_pkg;
   //
   // If an exclusion item for the immediate block (parent of the CSR if ptr is a CSR or a field) is
   // not found, it recurses through the block's ancestors to find an available exclusion item.
-  // arg ptr: An extention of one of dv_base_reg{, _block or _field} classes.
+  // arg ptr: An extension of one of dv_base_reg{, _block or _field} classes.
   function automatic csr_excl_item get_excl_item(uvm_object ptr);
     dv_base_reg_block blk;
 
     // Attempt cast to blk. If it fails, then attempt to cast to CSR or field.
     if (!$cast(blk, ptr)) begin
       csr_field_t csr_or_fld = decode_csr_or_field(ptr);
-      `downcast(blk, csr_or_fld.csr.get_parent(), , , msg_id)
+      `downcast(blk, csr_or_fld.csr.get_parent(), , , $sformatf("%m"))
     end
 
     // Recurse through block's ancestors.
     do begin
       csr_excl_item csr_excl = blk.get_excl_item();
       if (csr_excl != null) return csr_excl;
-      `downcast(blk, blk.get_parent(), , , msg_id)
+      `downcast(blk, blk.get_parent(), , , $sformatf("%m"))
     end while (blk != null);
     return null;
   endfunction

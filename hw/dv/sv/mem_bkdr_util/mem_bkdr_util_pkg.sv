@@ -40,5 +40,6 @@ package mem_bkdr_util_pkg;
   `include "dv_macros.svh"
 
   // sources
+  `include "mem_bkdr_util_row_adapter.sv"
   `include "mem_bkdr_util.sv"
 endpackage

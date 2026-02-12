@@ -10,7 +10,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/dif/dif_base.h"
 
-#include "sysrst_ctrl_regs.h"  // Generated.
+#include "hw/top/sysrst_ctrl_regs.h"  // Generated.
 
 static_assert(SYSRST_CTRL_PARAM_NUM_COMBO == 4,
               "Number of key combinations has changed. Update the "

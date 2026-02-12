@@ -101,8 +101,7 @@ interface pattgen_cov_if (
       bins others = default;
     }
 
-    cp_cross_reps_len_prediv: cross cp_reps_reset_trans_ch0, cp_len_reset_trans_ch0,
-                                    cp_len_reset_trans_ch0;
+    cp_cross_reps_len_prediv: cross cp_reps_reset_trans_ch0, cp_len_reset_trans_ch0;
 
     cp_match_reps_tr_ch0: coverpoint {ch0_cnt_match_reps}{
       bins zero2one = (1'b0 => 1'b1);
@@ -148,8 +147,7 @@ interface pattgen_cov_if (
       bins others = default;
     }
 
-    cp_cross_reps_len_prediv_ch1: cross cp_reps_reset_trans_ch1, cp_len_reset_trans_ch1,
-                                    cp_len_reset_trans_ch1;
+    cp_cross_reps_len_prediv_ch1: cross cp_reps_reset_trans_ch1, cp_len_reset_trans_ch1;
 
     cp_match_reps_tr_ch1: coverpoint {ch1_cnt_match_reps}{
       bins zero2one = (1'b0 => 1'b1);

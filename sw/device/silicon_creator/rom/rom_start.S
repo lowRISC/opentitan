@@ -7,21 +7,21 @@
 #include "sw/device/lib/base/multibits_asm.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/stack_utilization_asm.h"
-#include "aon_timer_regs.h"
-#include "ast_regs.h"
-#include "clkmgr_regs.h"
-#include "csrng_regs.h"
-#include "edn_regs.h"
-#include "entropy_src_regs.h"
-#include "gpio_regs.h"
-#include "lc_ctrl_regs.h"
-#include "otp_ctrl_regs.h"
-#include "pinmux_regs.h"
-#include "pwrmgr_regs.h"
-#include "rstmgr_regs.h"
-#include "rv_core_ibex_regs.h"
-#include "sensor_ctrl_regs.h"
-#include "sram_ctrl_regs.h"
+#include "hw/top/aon_timer_regs.h"
+#include "hw/top/ast_regs.h"
+#include "hw/top/clkmgr_regs.h"
+#include "hw/top/csrng_regs.h"
+#include "hw/top/edn_regs.h"
+#include "hw/top/entropy_src_regs.h"
+#include "hw/top/gpio_regs.h"
+#include "hw/top/lc_ctrl_regs.h"
+#include "hw/top/otp_ctrl_regs.h"
+#include "hw/top/pinmux_regs.h"
+#include "hw/top/pwrmgr_regs.h"
+#include "hw/top/rstmgr_regs.h"
+#include "hw/top/rv_core_ibex_regs.h"
+#include "hw/top/sensor_ctrl_regs.h"
+#include "hw/top/sram_ctrl_regs.h"
 
 // This macro defines convenience labels for tests that use a debugger.
 #define LABEL_FOR_TEST(kName_) .local kName_ ; kName_: ;
@@ -93,7 +93,7 @@ _rom_interrupt_vector_asm:
   .type _rom_interrupt_vector_c, @function
 _rom_interrupt_vector_c:
   // Entry 0: exception handler.
-  j rom_exception_handler
+  j flash_exception_handler
 
   // Entries 1-30: interrupt handlers.
   .rept 30
@@ -212,7 +212,7 @@ LABEL_FOR_TEST(kRomStartStoreT1ToBiteThold)
   andi t2, t0, 0xff
   bne  t2, t1, .L_skip_rstmgr_cpu_info_en
   li   t2, (1 << RSTMGR_CPU_INFO_CTRL_EN_BIT)
-  sw   t2,  RSTMGR_ALERT_INFO_CTRL_REG_OFFSET(a0)
+  sw   t2,  RSTMGR_CPU_INFO_CTRL_REG_OFFSET(a0)
 .L_skip_rstmgr_cpu_info_en:
 
 LABEL_FOR_TEST(kRomStartWatchdogEnabled)
@@ -236,12 +236,17 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
             OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET)
   call crt_section_copy
 
-  // Enable jittery clock if enabled in OTP.
+  // Enable jittery clock if not strictly disabled in OTP.
+  // Use hardcoded MULTIBIT_ASM_BOOL4_TRUE as the enable word to reduce all
+  // other possible OTP values to true.
   li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_JITTER_EN_OFFSET(a0)
+  li   t1, MULTIBIT_ASM_BOOL4_FALSE
+  beq  t0, t1, .L_ast_init_end
   li   a0, TOP_EARLGREY_CLKMGR_AON_BASE_ADDR
-  sw   t0, CLKMGR_JITTER_ENABLE_REG_OFFSET(a0)
+  li   t1, MULTIBIT_ASM_BOOL4_TRUE
+  sw   t1, CLKMGR_JITTER_ENABLE_REG_OFFSET(a0)
 
 .L_ast_init_end:
   // Check if we are trying to transition to RMA. If so, busy loop for
@@ -344,6 +349,8 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   unimp
 
 .L_rma_spin_skip:
+  // Label to jump to after the spin cycles
+  LABEL_FOR_TEST(kRomStartRmaSpinSkip)
   // Skip the `entropy_src` health checks configuration if the
   // `RNG_HEALTH_CONFIG_DIGEST` is not programmed. The default digest value is
   // 0 given that it is stored in a software OTP partition.
@@ -403,12 +410,12 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
 
   // Scramble and initialize main memory (main SRAM).
   // Memory accesses will stall until initialization is complete.
-  // Set `SRAM_KEY_RENEW_EN` OTP item to `HARDENED_BOOL_FALSE` to disable and
+  // Set `SRAM_KEY_RENEW_AND_INIT_EN` OTP item to `HARDENED_BOOL_FALSE` to disable and
   // any other value to enable.
   li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw   t2, OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_SRAM_READBACK_EN_OFFSET(a0)
-  lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_SRAM_KEY_RENEW_EN_OFFSET(a0)
+  lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_SRAM_KEY_RENEW_AND_INIT_EN_OFFSET(a0)
   li   t1, HARDENED_BOOL_FALSE
   beq t0, t1, .L_sram_key_renew_skip
   li a0, TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR

@@ -24,13 +24,21 @@ struct LoadArg {
 };
 }  // namespace
 
-// Parse a meminit command-line argument. This should be of the form
-// mem_area,file[,type]. Throw a std::runtime_error if something looks wrong.
-static LoadArg ParseMemArg(std::string mem_argument) {
+// Parse a meminit command-line argument and write the result to the
+// mem_arg output pointer. The command-line argument should be of the
+// form mem_area,file[,type].
+//
+// Return true on success. On failure, return false and write an error
+// message to err_msg.
+static bool ParseMemArg(const std::string mem_argument, LoadArg *load_arg,
+                        std::string *err_msg) {
   std::array<std::string, 3> args;
   size_t pos = 0;
   size_t end_pos = 0;
   size_t i;
+
+  assert(load_arg);
+  assert(err_msg);
 
   for (i = 0; i < 3; ++i) {
     end_pos = mem_argument.find(",", pos);
@@ -38,7 +46,8 @@ static LoadArg ParseMemArg(std::string mem_argument) {
     if (pos == end_pos) {
       std::ostringstream oss;
       oss << "empty field in: `" << mem_argument << "'.";
-      throw std::runtime_error(oss.str());
+      *err_msg = oss.str();
+      return false;
     }
     if (end_pos == std::string::npos) {
       args[i] = mem_argument.substr(pos);
@@ -53,13 +62,16 @@ static LoadArg ParseMemArg(std::string mem_argument) {
     std::ostringstream oss;
     oss << "meminit must be in the format `name,file[,type]'. Got: `"
         << mem_argument << "'.";
-    throw std::runtime_error(oss.str());
+    *err_msg = oss.str();
+    return false;
   }
 
   const char *str_type = (2 <= i) ? args[2].c_str() : nullptr;
-  MemImageType type = DpiMemUtil::GetMemImageType(args[1], str_type);
 
-  return {.name = args[0], .filepath = args[1], .type = type};
+  load_arg->name = args[0];
+  load_arg->filepath = args[1];
+  load_arg->type = DpiMemUtil::GetMemImageType(args[1], str_type);
+  return true;
 }
 
 // Print a usage message to stdout
@@ -140,21 +152,24 @@ bool VerilatorMemUtil::ParseCLIArguments(int argc, char **argv,
         load_args.push_back(
             {.name = "otp", .filepath = optarg, .type = kMemImageUnknown});
         break;
-      case 'l':
+      case 'l': {
+        LoadArg load_arg;
+        std::string load_err_msg;
+
         if (strcasecmp(optarg, "list") == 0) {
           mem_util_->PrintMemRegions();
           exit_app = true;
           return true;
         }
 
-        // --meminit / -l
-        try {
-          load_args.emplace_back(ParseMemArg(optarg));
-        } catch (const std::runtime_error &err) {
-          std::cerr << "ERROR: " << err.what() << std::endl;
+        if (!ParseMemArg(optarg, &load_arg, &load_err_msg)) {
+          std::cerr << "ERROR: " << load_err_msg << std::endl;
           return false;
+        } else {
+          load_args.emplace_back(load_arg);
         }
         break;
+      }
       case 'V':
         verbose = true;
         break;

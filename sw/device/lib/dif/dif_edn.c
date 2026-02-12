@@ -8,7 +8,7 @@
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/dif/dif_csrng_shared.h"
 
-#include "edn_regs.h"  // Generated
+#include "hw/top/edn_regs.h"  // Generated
 
 static dif_result_t check_locked(const dif_edn_t *edn) {
   if (mmio_region_read32(edn->base_addr, EDN_REGWEN_REG_OFFSET) == 0) {

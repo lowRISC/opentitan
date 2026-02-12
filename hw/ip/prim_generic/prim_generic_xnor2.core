@@ -5,10 +5,13 @@ CAPI=2:
 
 name: "lowrisc:prim_generic:xnor2"
 description: "Generic 2-input xnor"
+virtual:
+  - lowrisc:prim:xnor2
+
 filesets:
   files_rtl:
     files:
-      - rtl/prim_generic_xnor2.sv
+      - rtl/prim_xnor2.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:

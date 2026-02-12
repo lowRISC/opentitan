@@ -5,7 +5,7 @@
 # ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------#
 # PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
 # util/topgen.py -t hw/top_englishbreakfast/data/top_englishbreakfast.hjson
-# -o hw/top_englishbreakfast
+#                -o hw/top_englishbreakfast/
 
 load(
     "//rules/opentitan:defs.bzl",
@@ -19,7 +19,7 @@ load("@bazel_skylib//lib:dicts.bzl", "dicts")
 
 package(default_visibility = ["//visibility:public"])
 
-# Number of periphals per test
+# Number of peripherals per test
 NR_IRQ_PERIPH_PER_TEST = 10
 
 # Total numbers of tests (the last will contain only remaining IRQs)

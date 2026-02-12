@@ -2,21 +2,20 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/base/mmio.h"
+#include "hw/top/dt/csrng.h"
+#include "hw/top/dt/edn.h"
+#include "hw/top/dt/rv_core_ibex.h"
 #include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/dif/dif_csrng_shared.h"
 #include "sw/device/lib/dif/dif_edn.h"
-#include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/edn_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/rv_core_ibex_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-
-#include "edn_regs.h"  // Generated
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 enum {
   kEdnKatTimeout = (10 * 1000 * 1000),
@@ -116,15 +115,10 @@ OTTF_DEFINE_TEST_CONFIG();
 
 // Initializes the peripherals used in this test.
 static void init_peripherals(void) {
-  CHECK_DIF_OK(dif_csrng_init(
-      mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR), &csrng));
-  CHECK_DIF_OK(
-      dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR), &edn0));
-  CHECK_DIF_OK(
-      dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR), &edn1));
-  CHECK_DIF_OK(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
+  CHECK_DIF_OK(dif_csrng_init_from_dt(kDtCsrng, &csrng));
+  CHECK_DIF_OK(dif_edn_init_from_dt(kDtEdn0, &edn0));
+  CHECK_DIF_OK(dif_edn_init_from_dt(kDtEdn1, &edn1));
+  CHECK_DIF_OK(dif_rv_core_ibex_init_from_dt(kDtRvCoreIbex, &rv_core_ibex));
 }
 
 dif_edn_auto_params_t kat_auto_params_build(bool alert_test) {
@@ -224,12 +218,16 @@ static bool execute_kat(void) {
 }
 
 static void execute_alert_test(void) {
+  dt_alert_id_t edn0_recov_alert =
+      dt_edn_alert_to_alert_id(kDtEdn0, kDtEdnAlertRecovAlert);
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_start(edn0_recov_alert));
   uint32_t alerts;
   for (int i = 0; i <= 2 * kEdnKatWordsPerBlock; ++i) {
     ibex_get_rnd_data();
   }
   CHECK_DIF_OK(dif_edn_get_recoverable_alerts(&edn0, &alerts));
   CHECK((alerts >> kDifEdnRecoverableAlertRepeatedGenBits) & 0x1);
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_finish(edn0_recov_alert));
 }
 
 bool test_main(void) {

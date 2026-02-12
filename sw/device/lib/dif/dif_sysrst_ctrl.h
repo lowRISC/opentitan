@@ -7,12 +7,12 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/sysrst_ctrl/doc/">System Reset Controller</a> Device
+ * @brief <a href="/book/hw/ip/sysrst_ctrl/">System Reset Controller</a> Device
  * Interface Functions
  */
 
+#include "hw/top/sysrst_ctrl_regs.h"  // Generated.
 #include "sw/device/lib/dif/autogen/dif_sysrst_ctrl_autogen.h"
-#include "sysrst_ctrl_regs.h"  // Generated.
 
 #ifdef __cplusplus
 extern "C" {

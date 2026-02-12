@@ -103,10 +103,9 @@ module tb;
     .wakeups_i (pwrmgr_if.wakeups_i),
 % if wait_for_external_reset:
     // TODO(#22710): properly cooperate with `pwrmgr_if.rstreqs_i[1]`
-    .rstreqs_i ({int_reset_req, pwrmgr_if.rstreqs_i[0]}),
-% else:
-    .rstreqs_i (pwrmgr_if.rstreqs_i),
+    .ext_rst_ack_i(int_reset_req),
 % endif
+    .rstreqs_i (pwrmgr_if.rstreqs_i),
     .ndmreset_req_i(pwrmgr_if.cpu_i.ndmreset_req),
 
     .lc_dft_en_i     (pwrmgr_if.lc_dft_en),

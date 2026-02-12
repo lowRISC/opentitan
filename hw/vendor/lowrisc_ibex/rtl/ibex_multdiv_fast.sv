@@ -254,7 +254,7 @@ module ibex_multdiv_fast #(
 
     assign unused_mult1_res_uns = mult1_res_uns[33:32];
 
-    // States must be knwon/valid.
+    // States must be known/valid.
     `ASSERT_KNOWN(IbexMultStateKnown, mult_state_q)
 
     assign sva_mul_fsm_idle = mult_state_q == MULL;
@@ -374,7 +374,7 @@ module ibex_multdiv_fast #(
       end
     end
 
-    // States must be knwon/valid.
+    // States must be known/valid.
     `ASSERT_KNOWN(IbexMultStateKnown, mult_state_q)
 
     assign sva_mul_fsm_idle = mult_state_q == ALBL;
@@ -528,7 +528,7 @@ module ibex_multdiv_fast #(
 
   assign valid_o = mult_valid | div_valid;
 
-  // States must be knwon/valid.
+  // States must be known/valid.
   `ASSERT(IbexMultDivStateValid, md_state_q inside {
       MD_IDLE, MD_ABS_A, MD_ABS_B, MD_COMP, MD_LAST, MD_CHANGE_SIGN, MD_FINISH})
 
@@ -536,8 +536,8 @@ module ibex_multdiv_fast #(
   logic sva_fsm_idle;
   logic unused_sva_fsm_idle;
 
-  // This is intended to be accessed via hierarchal references so isn't output from this module nor
-  // used in any logic in this module
+  // This is intended to be accessed via hierarchical references, so it is neither output from this
+  // module nor used in any logic in this module
   assign sva_fsm_idle = (md_state_q == MD_IDLE) && sva_mul_fsm_idle;
   // Mark the sva_fsm_idle as unused to avoid lint issues
   assign unused_sva_fsm_idle = sva_fsm_idle;

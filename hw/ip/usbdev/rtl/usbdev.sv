@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// USB Full-Speed Device Interface (usbdev).
-//
-//
+// USB Full Speed Device Interface (usbdev).
 
 `include "prim_assert.sv"
 
@@ -15,6 +13,8 @@ module usbdev
 #(
   parameter bit Stub = 1'b0,
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  // Number of cycles of differential skew tolerated on the alert signal.
+  parameter int unsigned AlertSkewCycles = 1,
   // Max time (in microseconds) from rx_enable_o high to the
   // external differential receiver outputting valid data (when
   // configured to use one).
@@ -203,7 +203,7 @@ module usbdev
   logic usb_tx_dn;
   logic usb_tx_oe;
   /////////////////////////////////
-  // USB contol pins after CDC   //
+  // USB control pins after CDC  //
   /////////////////////////////////
   logic usb_pwr_sense;
   logic usb_pullup_en;
@@ -388,10 +388,11 @@ module usbdev
   end
 
   // RX enables
+  logic [NEndpoints-1:0] rxenable_out;
   always_comb begin : proc_map_rxenable
     for (int i = 0; i < NEndpoints; i++) begin
       enable_setup[i] = reg2hw.rxenable_setup[i].q;
-      enable_out[i]   = reg2hw.rxenable_out[i].q;
+      enable_out[i]   = rxenable_out[i];
       ep_set_nak_on_out[i] = reg2hw.set_nak_out[i].q;
     end
   end
@@ -484,6 +485,30 @@ module usbdev
     end
   end
 
+  // rxenable_out register must be implemented as 'hwext' so that we can treat each endpoint
+  // individually and prevent sw/hw races from inadvertently re-enabling an endpoint that was
+  // recently disabled by the hardware.
+  logic [NEndpoints-1:0] rxenable_out_we;
+  assign rxenable_out_we = {NEndpoints{reg2hw.rxenable_out.out.qe &
+                                       reg2hw.rxenable_out.preserve.qe}} &
+                           ~reg2hw.rxenable_out.preserve.q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      rxenable_out <= 'b0;
+    end else begin
+      for (int unsigned i = 0; i < NEndpoints; i++) begin
+        if (rxenable_out_we[i]) begin
+          // Software wins for backwards compatibility; an earlier implementation employed the
+          // module `prim_subreg_arb` which exhibits this behavior.
+          rxenable_out[i] <= reg2hw.rxenable_out.out.q[i];
+        end else if (clear_rxenable_out[i]) begin
+          rxenable_out[i] <= 1'b0;
+        end
+      end
+    end
+  end
+  assign hw2reg.rxenable_out.out.d = rxenable_out;
+
   // Clear of rxenable_out bit
   // If so configured, for every received transaction on a given endpoint, clear
   // the rxenable_out bit. In this configuration, hardware defaults to NAKing
@@ -493,13 +518,6 @@ module usbdev
     clear_rxenable_out = '0;
     if (rx_wvalid && out_endpoint_val) begin
       clear_rxenable_out[out_endpoint] = ep_set_nak_on_out[out_endpoint];
-    end
-  end
-
-  always_comb begin
-    for (int i = 0; i < NEndpoints; i++) begin
-      hw2reg.rxenable_out[i].d = 1'b0;
-      hw2reg.rxenable_out[i].de = clear_rxenable_out[i];
     end
   end
 
@@ -913,6 +931,7 @@ module usbdev
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(AlertIsFatal[i])
     ) u_prim_alert_sender (
       .clk_i,

@@ -19,6 +19,12 @@ package keymgr_reg_pkg;
   // Number of registers for every interface
   parameter int NumRegs = 63;
 
+  // Alert indices
+  typedef enum int {
+    AlertRecovOperationErrIdx = 0,
+    AlertFatalFaultErrIdx = 1
+  } keymgr_alert_idx_t;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -191,7 +197,7 @@ package keymgr_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } invalid_op;
+    } invalid_shadow_update;
     struct packed {
       logic        d;
       logic        de;
@@ -199,58 +205,14 @@ package keymgr_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } invalid_shadow_update;
+    } invalid_op;
   } keymgr_hw2reg_err_code_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
-    } cmd;
-    struct packed {
-      logic        d;
-      logic        de;
-    } kmac_fsm;
-    struct packed {
-      logic        d;
-      logic        de;
-    } kmac_done;
-    struct packed {
-      logic        d;
-      logic        de;
-    } kmac_op;
-    struct packed {
-      logic        d;
-      logic        de;
-    } kmac_out;
-    struct packed {
-      logic        d;
-      logic        de;
-    } regfile_intg;
-    struct packed {
-      logic        d;
-      logic        de;
-    } shadow;
-    struct packed {
-      logic        d;
-      logic        de;
-    } ctrl_fsm_intg;
-    struct packed {
-      logic        d;
-      logic        de;
-    } ctrl_fsm_chk;
-    struct packed {
-      logic        d;
-      logic        de;
-    } ctrl_fsm_cnt;
-    struct packed {
-      logic        d;
-      logic        de;
-    } reseed_cnt;
-    struct packed {
-      logic        d;
-      logic        de;
-    } side_ctrl_fsm;
+    } key_ecc;
     struct packed {
       logic        d;
       logic        de;
@@ -258,30 +220,58 @@ package keymgr_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } key_ecc;
+    } side_ctrl_fsm;
+    struct packed {
+      logic        d;
+      logic        de;
+    } reseed_cnt;
+    struct packed {
+      logic        d;
+      logic        de;
+    } ctrl_fsm_cnt;
+    struct packed {
+      logic        d;
+      logic        de;
+    } ctrl_fsm_chk;
+    struct packed {
+      logic        d;
+      logic        de;
+    } ctrl_fsm_intg;
+    struct packed {
+      logic        d;
+      logic        de;
+    } shadow;
+    struct packed {
+      logic        d;
+      logic        de;
+    } regfile_intg;
+    struct packed {
+      logic        d;
+      logic        de;
+    } kmac_out;
+    struct packed {
+      logic        d;
+      logic        de;
+    } kmac_op;
+    struct packed {
+      logic        d;
+      logic        de;
+    } kmac_done;
+    struct packed {
+      logic        d;
+      logic        de;
+    } kmac_fsm;
+    struct packed {
+      logic        d;
+      logic        de;
+    } cmd;
   } keymgr_hw2reg_fault_status_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
-    } invalid_creator_seed;
-    struct packed {
-      logic        d;
-      logic        de;
-    } invalid_owner_seed;
-    struct packed {
-      logic        d;
-      logic        de;
-    } invalid_dev_id;
-    struct packed {
-      logic        d;
-      logic        de;
-    } invalid_health_state;
-    struct packed {
-      logic        d;
-      logic        de;
-    } invalid_key_version;
+    } invalid_digest;
     struct packed {
       logic        d;
       logic        de;
@@ -289,7 +279,23 @@ package keymgr_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } invalid_digest;
+    } invalid_key_version;
+    struct packed {
+      logic        d;
+      logic        de;
+    } invalid_health_state;
+    struct packed {
+      logic        d;
+      logic        de;
+    } invalid_dev_id;
+    struct packed {
+      logic        d;
+      logic        de;
+    } invalid_owner_seed;
+    struct packed {
+      logic        d;
+      logic        de;
+    } invalid_creator_seed;
   } keymgr_hw2reg_debug_reg_t;
 
   // Register -> HW type

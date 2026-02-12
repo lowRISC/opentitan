@@ -11,7 +11,6 @@ for m in sorted(top["module"], key=lambda x: x["type"]):
     all_ips[m["type"]] = m.get("attr", "")
 
 %>\
-load("//rules/opentitan:hw.bzl", "opentitan_top")
 % for (ip, type) in all_ips.items():
 %   if type == "ipgen":
 load("//hw/top_${top_name}/ip_autogen/${ip}:defs.bzl", "${ip.upper()}")
@@ -22,14 +21,14 @@ load("//hw/ip/${ip}:defs.bzl", "${ip.upper()}")
 %   endif:
 % endfor
 
-${top_name.upper()} = opentitan_top(
-    name = "${top_name}",
-    hjson = "//hw/top_${top_name}/data/autogen:top_${top_name}.gen.hjson",
-    top_lib = "//hw/top_${top_name}/sw/autogen:top_${top_name}",
-    top_ld = "//hw/top_${top_name}/sw/autogen:top_${top_name}_memory",
-    ips = [
+${top_name.upper()}_IPS = [
 % for ip in all_ips.keys():
-        ${ip.upper()},
+    ${ip.upper()},
 % endfor
-    ],
-)
+]
+
+${top_name.upper()}_ALERTS = [
+% for alert in top["alert"]:
+    "${alert["name"]}",
+% endfor
+]

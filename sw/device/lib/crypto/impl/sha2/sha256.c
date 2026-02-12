@@ -9,6 +9,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
 // Module ID for status codes.
@@ -64,13 +65,16 @@ static const otbn_addr_t kOtbnVarSha256Msg = OTBN_ADDR_T_INIT(run_sha256, msg);
 static const otbn_addr_t kOtbnVarSha256NumMsgChunks =
     OTBN_ADDR_T_INIT(run_sha256, num_msg_chunks);
 
-void sha256_init(sha256_state_t *state) {
+status_t sha256_init(sha256_state_t *state) {
   // Set the initial state.
-  hardened_memcpy(state->H, kSha256InitialState, kSha256StateWords);
+  HARDENED_TRY(
+      hardened_memcpy(state->H, kSha256InitialState, kSha256StateWords));
   // Set the partial block to 0 (the value is ignored).
   memset(state->partial_block, 0, kSha256MessageBlockBytes);
   // Set the message length so far to 0.
   state->total_len = 0ull;
+
+  return OTCRYPTO_OK;
 }
 
 /**
@@ -86,7 +90,7 @@ static status_t process_message_buffer(sha256_otbn_ctx_t *ctx) {
 
   // Run the OTBN program.
   HARDENED_TRY(otbn_execute());
-  HARDENED_TRY(otbn_busy_wait_for_done());
+  HARDENED_TRY_WIPE_DMEM(otbn_busy_wait_for_done());
 
   // Reset the message buffer counter.
   ctx->num_blocks = 0;
@@ -244,7 +248,7 @@ static status_t process_message(sha256_state_t *state, const uint8_t *msg,
   }
 
   // Read the final state from OTBN dmem.
-  HARDENED_TRY(
+  HARDENED_TRY_WIPE_DMEM(
       otbn_dmem_read(kSha256StateWords, kOtbnVarSha256State, new_state.H));
 
   // Clear OTBN's memory.
@@ -252,8 +256,9 @@ static status_t process_message(sha256_state_t *state, const uint8_t *msg,
 
   // At this point, no more errors are possible; it is safe to update the
   // context object.
-  hardened_memcpy(state->H, new_state.H, kSha256StateWords);
-  hardened_memcpy(state->partial_block, block.data, kSha256MessageBlockWords);
+  HARDENED_TRY(hardened_memcpy(state->H, new_state.H, kSha256StateWords));
+  HARDENED_TRY(hardened_memcpy(state->partial_block, block.data,
+                               kSha256MessageBlockWords));
   state->total_len = new_state.total_len;
   return OTCRYPTO_OK;
 }
@@ -267,12 +272,18 @@ status_t sha256_update(sha256_state_t *state, const uint8_t *msg,
 /**
  * Replace sensitive data in a SHA-256 context with non-sensitive values.
  *
+ * The entropy complex must be initialized before calling this function.
+ *
  * @param state The context object to shred.
+ * @return OK or error.
  */
-static void state_shred(sha256_state_t *state) {
-  hardened_memshred(state->H, kSha256StateWords);
-  hardened_memshred(state->partial_block, kSha256MessageBlockWords);
+static status_t state_shred(sha256_state_t *state) {
+  HARDENED_TRY(hardened_memshred(state->H, kSha256StateWords));
+  HARDENED_TRY(
+      hardened_memshred(state->partial_block, kSha256MessageBlockWords));
   state->total_len = 0;
+
+  return OTCRYPTO_OK;
 }
 
 /**
@@ -287,35 +298,44 @@ static void state_shred(sha256_state_t *state) {
  *
  * @param state Context object.
  * @param[out] digest Destination buffer for digest.
+ * @return OK or error.
  */
-static void digest_get(sha256_state_t *state, uint32_t *digest) {
+static status_t digest_get(sha256_state_t *state, uint32_t *digest) {
   for (size_t i = 0; i < kSha256StateWords / 2; i++) {
     uint32_t tmp = __builtin_bswap32(state->H[i]);
     state->H[i] = __builtin_bswap32(state->H[kSha256StateWords - 1 - i]);
     state->H[kSha256StateWords - 1 - i] = tmp;
   }
-  hardened_memcpy(digest, state->H, kSha256StateWords);
+  HARDENED_TRY(hardened_memcpy(digest, state->H, kSha256StateWords));
+
+  return OTCRYPTO_OK;
 }
 
 status_t sha256_final(sha256_state_t *state, uint32_t *digest) {
+  // Entropy complex needs to be initialized for `state_shred`.
+  HARDENED_TRY(entropy_complex_check());
+
   // Construct padding.
   HARDENED_TRY(process_message(state, NULL, 0, kHardenedBoolTrue));
 
   // Retrieve the final digest and destroy the state.
-  digest_get(state, digest);
-  state_shred(state);
+  HARDENED_TRY(digest_get(state, digest));
+  HARDENED_TRY(state_shred(state));
   return OTCRYPTO_OK;
 }
 
 status_t sha256(const uint8_t *msg, const size_t msg_len, uint32_t *digest) {
+  // Entropy complex needs to be initialized for `state_shred`.
+  HARDENED_TRY(entropy_complex_check());
+
   sha256_state_t state;
-  sha256_init(&state);
+  HARDENED_TRY(sha256_init(&state));
 
   // Process data with padding enabled.
   HARDENED_TRY(process_message(&state, msg, msg_len, kHardenedBoolTrue));
 
   // Retrieve the final digest and destroy the state.
-  digest_get(&state, digest);
-  state_shred(&state);
+  HARDENED_TRY(digest_get(&state, digest));
+  HARDENED_TRY(state_shred(&state));
   return OTCRYPTO_OK;
 }

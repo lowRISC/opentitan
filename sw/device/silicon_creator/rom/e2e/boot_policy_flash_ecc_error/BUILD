@@ -30,86 +30,24 @@ load(
     "//sw/device/silicon_creator/rom/e2e:defs.bzl",
     "SLOTS",
 )
+load(
+    "//sw/device/silicon_creator/rom/e2e/boot_policy_flash_ecc_error:defs.bzl",
+    "BOOT_POLICY_FLASH_ECC_ERROR_TESTS",
+    "FLASH_ECC_ERROR_CAUSES",
+    "SEC_VERS",
+)
 
 package(default_visibility = ["//visibility:public"])
 
-FLASH_ECC_ERROR_CAUSES = [
-    {
-        "cause": "manifest_security_version",
-        "id": 0,
-    },
-    {
-        "cause": "manifest_identifier",
-        "id": 1,
-    },
-    {
-        "cause": "manifest_length",
-        "id": 2,
-    },
-    {
-        "cause": "manifest_manifest_version",
-        "id": 3,
-    },
-    {
-        "cause": "manifest_signed_region_end",
-        "id": 4,
-    },
-    {
-        "cause": "manifest_code_start",
-        "id": 5,
-    },
-    {
-        "cause": "manifest_code_end",
-        "id": 6,
-    },
-    {
-        "cause": "manifest_entry_point",
-        "id": 7,
-    },
-    {
-        "cause": "manifest_ecdsa_public_key",
-        "id": 8,
-    },
-    {
-        "cause": "manifest_usage_constraints_selector_bits",
-        "id": 9,
-    },
-    {
-        "cause": "manifest_ecdsa_signature",
-        "id": 10,
-    },
-    {
-        "cause": "manifest_extension_spx_public_key",
-        "id": 11,
-    },
-    {
-        "cause": "manifest_extension_spx_signature",
-        "id": 12,
-    },
-    # We only test corrupting the first flash word since this is likely not in
-    # the range of test code that needs to execute successfully to drive the
-    # test, but still exercising the scenario of a flash corruption happening
-    # in the code region.
-    {
-        "cause": "code_first_word",
-        "id": 13,
-    },
-]
+filegroup(
+    name = "uncorrupted_test_src",
+    srcs = ["uncorrupted_test.c"],
+)
 
-BOOT_POLICY_FLASH_ECC_ERROR_TESTS = [
-    {
-        "name": "a_corrupt_b_valid_{}",
-        "a": ":flash_ecc_self_corruption_slot_a_{}",
-        "b": ":uncorrupted_test_slot_b",
-        "exit_success": "Booted slot=0x20080000; Cause={}",
-    },
-    {
-        "name": "a_valid_b_corrupt_{}",
-        "a": ":uncorrupted_test_slot_a",
-        "b": ":flash_ecc_self_corruption_slot_b_{}",
-        "exit_success": "Booted slot=0x20000000; Cause={}",
-    },
-]
+filegroup(
+    name = "flash_ecc_error_test_src",
+    srcs = ["flash_ecc_error_test.c"],
+)
 
 otp_json(
     name = "otp_json_flash_data_cfg_default_scr_and_ecc_enabled",
@@ -155,11 +93,6 @@ otp_image(
     visibility = ["//visibility:private"],
 )
 
-SEC_VERS = [
-    0,
-    1,
-]
-
 [
     manifest({
         "name": "manifest_sec_ver_{}".format(sec_ver),
@@ -174,7 +107,7 @@ SEC_VERS = [
     opentitan_binary(
         name = "uncorrupted_test_slot_{}".format(slot),
         testonly = True,
-        srcs = ["uncorrupted_test.c"],
+        srcs = [":uncorrupted_test_src"],
         # Use the prod key because it is valid in every LC state.
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
         exec_env = [
@@ -202,7 +135,7 @@ SEC_VERS = [
             c["cause"],
         ),
         testonly = True,
-        srcs = ["flash_ecc_error_test.c"],
+        srcs = ["flash_ecc_error_test_src"],
         # Use the prod key because it is valid in every LC state.
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
         exec_env = [
@@ -219,6 +152,7 @@ SEC_VERS = [
             "//hw/top:flash_ctrl_c_regs",
             "//hw/top:otp_ctrl_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/lib/arch:boot_stage",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:macros",
             "//sw/device/lib/base:status",

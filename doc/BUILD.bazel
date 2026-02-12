@@ -1,0 +1,92 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+load(
+    "//rules:doxygen.bzl",
+    "doxygen",
+    "doxygen_gather_cc",
+    "doxygen_multitop",
+)
+load("@rules_rust_mdbook//:defs.bzl", "mdbook", "mdbook_server")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(glob(["**"]))
+
+filegroup(
+    name = "doc_files",
+    srcs = glob([
+        "**/*.md",
+        "**/*.svg",
+        "**/*.png",
+    ]),
+)
+
+doxygen_gather_cc(
+    name = "doxygen_srcs",
+    deps = [
+        "//hw/top:doxy_target",
+        "//sw/device/lib/arch:doxy_target",
+        "//sw/device/lib/base:doxy_target",
+        "//sw/device/lib/dif:doxy_target",
+        "//sw/device/lib/testing:doxy_target",
+    ],
+)
+
+doxygen_multitop(
+    name = "doxygen_srcs_multitop",
+    src = ":doxygen_srcs",
+)
+
+doxygen(
+    name = "doxygen",
+    srcs = [":doxygen_srcs_multitop"],
+    data = [
+        "//:BUILD.bazel",
+        "//doc:opentitan-logo.png",
+        "//site/doxygen:footer.html",
+        "//site/doxygen:header.html",
+        "//site/doxygen:layout.xml",
+        "//site/doxygen:main_page.md",
+    ],
+    doxyfile = "//site/doxygen:Doxyfile",
+    env = {
+        "SRCTREE_TOP": ".",
+    },
+    output_groups = {
+        "html": ["doxy/"],
+        "xml": ["api-xml/"],
+    },
+)
+
+filegroup(
+    name = "doxygen_xml",
+    srcs = [":doxygen"],
+    output_group = "xml",
+)
+
+mdbook(
+    name = "mdbook",
+    srcs = [
+        ":doxygen_xml",
+        "//:SUMMARY.md",
+        "//:doc_files",
+    ],
+    book = "//:book.toml",
+    plugins = [
+        "//util:mdbook_code_snippet",
+        "//util:mdbook_dashboard",
+        "//util:mdbook_doxygen",
+        "//util:mdbook_otbn",
+        "//util:mdbook_readme2index",
+        "//util:mdbook_reggen",
+        "//util:mdbook_testplan",
+        "//util:mdbook_toolversion",
+    ],
+)
+
+mdbook_server(
+    name = "mdbook_serve",
+    book = ":mdbook",
+)

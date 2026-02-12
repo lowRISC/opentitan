@@ -18,6 +18,7 @@ filesets:
       - lowrisc:prim:ram_1p_scr
       - lowrisc:prim:onehot_check
       - lowrisc:prim:onehot
+      - lowrisc:prim:util
     files:
       - rtl/ibex_register_file_ff.sv # generic FF-based
       - rtl/ibex_register_file_fpga.sv # FPGA
@@ -65,6 +66,12 @@ parameters:
     default: ibex_pkg::RV32BNone
     paramtype: vlogdefine
     description: "Bitmanip implementation parameter enum. See the ibex_pkg::rv32b_e enum in ibex_pkg.sv for permitted values."
+
+  RV32ZC:
+    datatype: str
+    default: ibex_pkg::RV32ZcaZcbZcmp
+    paramtype: vlogdefine
+    description: "Compressed instructions parameter enum. See the ibex_pkg::rv32zc_e enum in ibex_pkg.sv for permitted values."
 
   RegFile:
     datatype: str

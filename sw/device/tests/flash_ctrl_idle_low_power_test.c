@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "dt/dt_adc_ctrl.h"
+#include "hw/top/dt/adc_ctrl.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
@@ -49,8 +49,9 @@ static_assert(kDtFlashCtrlCount >= 1,
 static volatile bool irq_serviced = false;
 
 enum {
-  kFlashDataRegion = 0,
-  kRegionBasePageIndex = 256,  // First page in bank 1 (avoids program code.)
+  kFlashDataRegion = 2,  // The ROM_EXT protects itself using regions 0-1.
+  kRegionBasePageIndex =
+      256 + 32,  // First non-ROM_EXT page in bank 1 (avoids program code.)
   kPartitionId = 0,
   kRegionSize = 1,
   kNumWords = 128,

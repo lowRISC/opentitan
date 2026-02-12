@@ -13,7 +13,7 @@ class aes_reseed_vseq extends aes_base_vseq;
   rand bit [7:0][31:0] init_key[2];
   // Regular wait time - in the order of a block.
   int wait_timeout_cycles = 100;
-  // Max wait time to accomodate long entropy delays and DUT stalls.
+  // Max wait time to accommodate long entropy delays and DUT stalls.
   int wait_timeout_cycles_max = 100000;
 
   task check_clearing_prng_reseed();

@@ -310,7 +310,7 @@ module prim_fifo_async_sram_adapter #(
   // read clock domain rdata storage
   logic store_en;
 
-  // Karnough Map (r_sram_rvalid_i):
+  // Karnaugh Map (r_sram_rvalid_i):
   // rfifo_ack   | 0 | 1 |
   // ---------------------
   // stored    0 | 1 | 0 |

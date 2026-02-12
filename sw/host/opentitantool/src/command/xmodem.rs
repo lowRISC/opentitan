@@ -5,11 +5,10 @@
 use anyhow::Result;
 use clap::{Args, Subcommand};
 use opentitanlib::io::uart::UartParams;
-use serde_annotate::Annotate;
 use std::any::Any;
 
-use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::rescue::xmodem::Xmodem;
 
 #[derive(Debug, Args)]
@@ -25,7 +24,7 @@ impl CommandDispatch for XmodemSend {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let payload = std::fs::read(&self.filename)?;
         let xmodem = Xmodem::new();
         let uart = self.params.create(transport)?;
@@ -48,7 +47,7 @@ impl CommandDispatch for XmodemRecv {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let uart = self.params.create(transport)?;
         uart.clear_rx_buffer()?;
         let xmodem = Xmodem::new();

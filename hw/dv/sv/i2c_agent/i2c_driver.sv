@@ -40,11 +40,13 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
 
   virtual task get_and_drive();
     i2c_item req;
+    bit      sent_item;
     @(posedge cfg.vif.rst_ni);
     forever begin
       if (cfg.if_mode == Device) release_bus();
       // driver drives bus per mode
       seq_item_port.get_next_item(req);
+      sent_item = 1'b0;
       fork
         begin: iso_fork
           fork
@@ -54,6 +56,7 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
                 Device: drive_device_item(req);
                 default: `uvm_fatal(`gfn, "Shouldn't reach this state!")
               endcase
+              sent_item = 1'b1;
             end
             // handle on-the-fly reset
             begin
@@ -62,7 +65,7 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
             end
             begin
               // Agent hot reset. It only resets I2C agent.
-              // The DUT funtions normally without reset.
+              // The DUT functions normally without reset.
               // This event only happens in directed test case so cannot set the timeout.
               // It will be killed by disable fork when 'drive_*_item' is finished.
               wait(cfg.driver_rst);
@@ -73,7 +76,7 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
           disable fork;
         end: iso_fork
       join
-      seq_item_port.item_done();
+      if (sent_item) seq_item_port.item_done();
       // When agent reset happens, flush all sequence items from sequencer request queue,
       // before it starts a new sequence.
       if (cfg.driver_rst) begin
@@ -206,7 +209,7 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
     // in which TIMEOUT_CTRL.EN is always set.
 
     // If Stretch value is greater than 2*tTimeOut, it will create 2 interrupt events.
-    // Which can cause faluse error in 'host_stretch_testmode'.
+    // Which can cause false error in 'host_stretch_testmode'.
     // So, this value should be associated with tTimeout in host stretch testmode
     int random_stretch = $urandom_range(tc.tClockPulse,
                                         tc.tClockPulse + 2*tc.tTimeOut);
@@ -228,7 +231,7 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
   endtask : release_bus
 
   task drive_scl();
-    // This timeout is extremely long since read trasnactions will stretch
+    // This timeout is extremely long since read transactions will stretch
     // whenever there are unhanded write commands or format bytes.
     int scl_spinwait_timeout_ns = 100_000_000; // 100ms
     forever begin

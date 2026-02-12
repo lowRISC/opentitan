@@ -1,0 +1,54 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// An acceptable value for p.
+//
+// To make sure the checks on q are being tested, this value is specifically
+// chosen to be far enough away from the "bad" values of q that they wouldn't
+// be rejected on that basis.
+//
+// Python script for generating p (using PyCryptoDome's Crypto.Util.number
+// package for the primality check):
+// while True:
+//   p = random.randrange(lower_bound, 1 << 1024)
+//   p |= 3
+//   if abs(p - too_small) < (1 << 924):
+//     continue
+//   if abs(p - not_relprime) < (1 << 924):
+//     continue
+//   if abs(p - not_prime) < (1 << 924):
+//     continue
+//   if math.gcd(p-1, 65537) != 1:
+//     continue
+//   if number.isPrime(p):
+//     break
+
+// A value for q that is too close to p, but meets other requirements.
+//
+// Python script for generating test data (using PyCryptoDome's
+// Crypto.Util.number package for the primality check):
+// while True:
+//   too_close = random.randrange(p - (1 << 924), p + (1 << 924))
+//   too_close |= 3
+//   if too_close < lower_bound:
+//     continue
+//   if math.gcd(too_close - 1, 65537) != 1:
+//     continue
+//   if number.isPrime(too_close):
+//     break
+
+{
+  "entrypoint": "main",
+  "input": {
+    "dmem": {
+      "rsa_p": "0xd10b3338d7d2cca85be7b76c5497f2fe89a9f9b73e613262565636dbc5901c386b1df3c7b8eb3ac8548a9062a5958b33c84dfe0fa9e2c61250d75683be1585008f926d5cfc4d3a3f003746a3beefcc71d287133768fc0268e1f84cb791be8e6dfc48b706ee0515089ff618c0a648854d6a93e9a0452552e93720ffa2021fd53b",
+      "rsa_n": "0xd10b3338d7d2cca85be7b76c479a213a2646058cc86df4e6fb59ec553c4e93bcf9eab3ddcf6caf42e690294667a03e9bc11a94f9b78df5311f5ea7890eb161e7067d759143ff20425120197025aac542ca2cfd1dcfe3ebddeae1f19ece50583c83597856830a0827333d1b67d6d887a16c3f8fe156d119ee6a0b2ca6ba4f62fb"
+    }
+  }
+  "output": {
+    "regs": {
+      "x2": "0x00000000"
+    }
+  }
+}

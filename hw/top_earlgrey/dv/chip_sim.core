@@ -4,8 +4,6 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:dv:top_earlgrey_chip_sim:0.1"
 description: "Earlgrey chip DV sim target"
-virtual:
-  - lowrisc:dv:chip_sim
 
 filesets:
   files_rtl:

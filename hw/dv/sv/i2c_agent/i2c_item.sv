@@ -114,7 +114,7 @@ class i2c_item extends uvm_sequence_item;
   endfunction
 
   // Clear all data fields in the item (without clearing any control conditions, which is
-  // handled seperately in clear_flags()).
+  // handled separately in clear_flags()).
   //
   function void clear_data();
     num_data = 0;

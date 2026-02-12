@@ -10,7 +10,9 @@ module hmac
   import prim_sha2_pkg::*;
   import hmac_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned AlertSkewCycles = 1
 ) (
   input clk_i,
   input rst_ni,
@@ -434,7 +436,7 @@ module hmac
   //   The FIFO is then managed entirely by the hardware.
   // - The FIFO is currently not writeable by software.
   // - Software has already written the Process command. The HMAC block will now empty the
-  //   FIFO and load its content into the SHA2 core, add the padding and then perfom
+  //   FIFO and load its content into the SHA2 core, add the padding and then perform
   //   the final hashing operation. Software cannot append the message further.
   // - Software has written the Stop command. The HMAC block will not wait for further input from
   //   software after finishing the current block.
@@ -554,9 +556,10 @@ module hmac
   // Extended for 1024-bit block
   localparam int MsgFifoDepth = 32;
   prim_fifo_sync #(
-    .Width   ($bits(sha_fifo32_t)),
-    .Pass    (1'b1),
-    .Depth   (MsgFifoDepth)
+    .Width       ($bits(sha_fifo32_t)),
+    .Pass        (1'b1),
+    .Depth       (MsgFifoDepth),
+    .NeverClears (1'b1)
   ) u_msg_fifo (
     .clk_i,
     .rst_ni,
@@ -774,6 +777,7 @@ module hmac
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(AlertIsFatal[i])
     ) u_prim_alert_sender (
       .clk_i,

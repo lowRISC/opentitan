@@ -104,7 +104,7 @@ assign complete_block =  (ascon_variant == ASCON_128  && data_in_valid_bytes_i =
 //    a) empty AD: No padding, AD-processing phase is skipped!
 //    b) incomplete last block: A 10* padding is added to the input data.
 //       The padded associated data is XORed to the state.
-//    c) complete last block: No padding to the input, but an addtional state in the FSM
+//    c) complete last block: No padding to the input, but an additional state in the FSM
 //       is used to perform the padding. A 10+ block is XORed to the state.
 // 2) Encryption:
 //    a) empty or incomplete last block: A 10* padding is added to the input data.
@@ -114,10 +114,10 @@ assign complete_block =  (ascon_variant == ASCON_128  && data_in_valid_bytes_i =
 // 3) Decryption:
 //    a) empty or incomplete last block: The padded (output) PLAINTEXT is XORed to the state.
 //       This is equivalent to:
-//       The unpadded part of the Ciphertext replaces the coresponding part of S_r
+//       The unpadded part of the Ciphertext replaces the corresponding part of S_r
 //       The remaining part of S_r is Xored with 10*.
 //    b) complete last block: No padding to the input, but an additional state in the FSM
-//       is used to perfom the padding. A 10+ block is XORed to the state,
+//       is used to perform the padding. A 10+ block is XORed to the state,
 
 // Padding logic
 logic [127:0] empty_padding;
@@ -137,7 +137,7 @@ logic  [127:0] data_out;
 assign data_out = (data_in_i ^ {ascon_state_q[0], ascon_state_q[1]}) & valid_bytes_bit_mask;
 
 logic [127:0] data_in_padded;
-logic [127:0] data_out_padded; // is only used intenrally for decryption.
+logic [127:0] data_out_padded; // is only used internally for decryption.
 
 // For BOTH encryption AND decryption the PLAINTEXT is XORed to the state!
 // For encryption this is straight forward: S_r = S_r XOR P
@@ -264,7 +264,7 @@ always_comb begin : state_word1
   endcase
 end
 
-// Slect key high or low for XOR
+// Select key high or low for XOR
 always_comb begin : key_word2
   unique case (sel_mux_key_word2)
     KEY_LOW: xor_with_state[2] = key_i[63:0];

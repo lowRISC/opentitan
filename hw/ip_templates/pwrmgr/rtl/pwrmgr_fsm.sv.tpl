@@ -38,7 +38,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
 % if wait_for_external_reset:
   input  logic int_reset_req_i, // internally generated reset request.
                                 // Send to platform to assert reset
-  input  logic ext_reset_req_i, // Internal Req held until ext reset deasserts
+  input  logic ext_rst_ack_i,   // External reset acknowledged
 % endif
 
   // rstmgr
@@ -80,7 +80,6 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   import prim_mubi_pkg::mubi4_t;
   import prim_mubi_pkg::mubi4_test_true_strict;
   import prim_mubi_pkg::mubi4_or_hi;
-  import prim_mubi_pkg::mubi4_and_hi;
   import lc_ctrl_pkg::lc_tx_and_hi;
   import lc_ctrl_pkg::lc_tx_test_true_strict;
 
@@ -170,7 +169,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   logic ext_rst_pending_d, ext_rst_pending_q;
 
   always_comb begin
-    ext_rst_req_d     = ext_reset_req_i;
+    ext_rst_req_d     = ext_rst_ack_i;
     ext_rst_pending_d = ext_rst_pending_q;
 
     if (ext_rst_pending_q && !ext_rst_req_d && ext_rst_req_q) begin
@@ -291,8 +290,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
 
   mubi4_t rom_intg_chk_done;
   mubi4_t rom_intg_chk_good;
-  assign rom_intg_chk_done = mubi4_or_hi(mubi4_and_hi(rom_intg_chk_dis, rom_ctrl_done_i),
-                                         rom_ctrl_done_i);
+  assign rom_intg_chk_done = rom_ctrl_done_i;
   assign rom_intg_chk_good = mubi4_or_hi(rom_intg_chk_dis, rom_ctrl_good_i);
 
   always_comb begin

@@ -30,15 +30,13 @@
     u_sha3.u_keccak.u_round_count
 `define REPCNT \
     u_entropy_src_repcnt_ht.u_prim_max_tree_rep_cntr_max
-`define BUCKET \
-    u_entropy_src_bucket_ht.u_prim_max_tree_bin_cntr_max
 
 class entropy_src_err_vseq extends entropy_src_base_vseq;
   `uvm_object_utils(entropy_src_err_vseq)
 
   `uvm_object_new
 
-   push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH)          m_rng_push_seq;
+   push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq;
 
   task body();
     bit [5:0]        err_code_test_bit;
@@ -67,9 +65,9 @@ class entropy_src_err_vseq extends entropy_src_base_vseq;
     csr_wr(.ptr(ral.module_enable), .value(prim_mubi_pkg::MuBi4True));
 
     // Create and start rng host sequence
-    m_rng_push_seq = push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH)::type_id::
+    m_rng_push_seq = push_pull_host_seq#(`RNG_BUS_WIDTH)::type_id::
          create("m_rng_push_seq");
-    m_rng_push_seq.num_trans = entropy_src_pkg::CSRNG_BUS_WIDTH/entropy_src_pkg::RNG_BUS_WIDTH;
+    m_rng_push_seq.num_trans = entropy_src_pkg::CSRNG_BUS_WIDTH/`RNG_BUS_WIDTH;
     run_rng_host_seq(m_rng_push_seq);
 
     cfg.clk_rst_vif.wait_clks(100);
@@ -136,7 +134,7 @@ class entropy_src_err_vseq extends entropy_src_base_vseq;
           repcnts_ht_cntr: begin // repcnts ht test counter
             repcnts_ht_cntr_test(m_rng_push_seq, fld);
           end
-          adaptp_ht_cntr: begin // adaptive proportion test counter
+          adaptp_ht_cntr: begin // Adaptive Proportion Test counter
             adaptp_ht_cntr_test(m_rng_push_seq, fld);
           end
           bucket_ht_cntr: begin // Bucket test counter
@@ -167,7 +165,7 @@ class entropy_src_err_vseq extends entropy_src_base_vseq;
         fld = csr.get_field_by_name(fld_name);
 
         foreach (path_exts[i]) begin
-          fifo_forced_paths[i] = cfg.entropy_src_path_vif.fifo_err_path("sfifo_esrng",
+          fifo_forced_paths[i] = cfg.entropy_src_path_vif.fifo_err_path(fifo_name,
                                                                         path_exts[i]);
         end
         force_fifo_err(path1, path2, value1, value2, fld, 1'b1);
@@ -182,10 +180,9 @@ class entropy_src_err_vseq extends entropy_src_base_vseq;
 
         fld = csr.get_field_by_name({cfg.which_fifo.name(), "_err"});
         force_path_err(path, value, fld, 1'b1);
-        // TODO(#23988): uncomment the following lines.
-        // // Additionally check if FIFO_STATE_ERR is set.
-        // fld = csr.get_field_by_name("fifo_state_err");
-        // csr_rd_check(.ptr(fld), .compare_value(1'b1));
+        // Additionally check if FIFO_STATE_ERR is set.
+        fld = csr.get_field_by_name("fifo_state_err");
+        csr_rd_check(.ptr(fld), .compare_value(1'b1));
         cov_vif.cg_fifo_err_sample(cfg.which_fifo_err, cfg.which_fifo);
       end
       sfifo_esrng_err_test, sfifo_distr_err_test, sfifo_observe_err_test, sfifo_esfinal_err_test,

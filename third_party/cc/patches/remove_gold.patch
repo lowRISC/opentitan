@@ -1,0 +1,22 @@
+commit d82ba8dc51acd229e9f32c65f635b350ba47d15c
+Author: Gary Guo <gary.guo@lowrisc.org>
+Date:   Wed Sep 10 13:52:39 2025 +0100
+
+    Remove gold support
+
+diff --git a/cc/private/toolchain/unix_cc_configure.bzl b/cc/private/toolchain/unix_cc_configure.bzl
+index 6a6f38a..73839a9 100644
+--- a/cc/private/toolchain/unix_cc_configure.bzl
++++ b/cc/private/toolchain/unix_cc_configure.bzl
+@@ -473,10 +473,7 @@ def configure_unix_toolchain(repository_ctx, cpu_value, overridden_tools):
+         False,
+     ), ":")
+ 
+-    gold_or_lld_linker_path = (
+-        _find_linker_path(repository_ctx, cc, "lld", is_clang) or
+-        _find_linker_path(repository_ctx, cc, "gold", is_clang)
+-    )
++    gold_or_lld_linker_path = _find_linker_path(repository_ctx, cc, "lld", is_clang)
+     cc_path = repository_ctx.path(cc)
+     if not str(cc_path).startswith(str(repository_ctx.path(".")) + "/"):
+         # cc is outside the repository, set -B

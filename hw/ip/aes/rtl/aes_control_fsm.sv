@@ -13,7 +13,8 @@ module aes_control_fsm
   import aes_pkg::*;
   import aes_reg_pkg::*;
 #(
-  parameter bit SecMasking = 0
+  parameter bit AESGCMEnable = 0,
+  parameter bit SecMasking   = 0
 ) (
   input  logic                                    clk_i,
   input  logic                                    rst_ni,
@@ -30,6 +31,11 @@ module aes_control_fsm
   input  prs_rate_e                               prng_reseed_rate_i,
   input  logic                                    manual_operation_i,
   input  logic                                    key_touch_forces_reseed_i,
+  input  logic                                    ctrl_gcm_qe_i,
+  output logic                                    ctrl_gcm_we_o,
+  input  logic                                    ctrl_gcm_phase_i,
+  output logic                                    gcm_init_done_o,
+  input  gcm_phase_e                              gcm_phase_i,
   input  logic                                    start_i,
   input  logic                                    key_iv_data_in_clear_i,
   input  logic                                    data_out_clear_i,
@@ -47,11 +53,12 @@ module aes_control_fsm
   input  logic                  [NumRegsData-1:0] data_in_qe_i,
   input  logic                  [NumRegsData-1:0] data_out_re_i,
   output logic                                    data_in_we_o,
-  output logic                                    data_out_we_o,           // Sparsify
+  output data_out_sel_e                           data_out_sel_o,
+  output logic                                    data_out_we_o,            // Sparsify
 
   // Previous input data register
   output dip_sel_e                                data_in_prev_sel_o,
-  output logic                                    data_in_prev_we_o,       // Sparsify
+  output logic                                    data_in_prev_we_o,        // Sparsify
 
   // Cipher I/O muxes
   output si_sel_e                                 state_in_sel_o,
@@ -59,19 +66,20 @@ module aes_control_fsm
   output add_so_sel_e                             add_state_out_sel_o,
 
   // Counter
-  output logic                                    ctr_incr_o,              // Sparsify
-  input  logic                                    ctr_ready_i,             // Sparsify
-  input  logic                 [NumSlicesCtr-1:0] ctr_we_i,                // Sparsify
+  output logic                                    ctr_inc32_o,              // Sparsify
+  output logic                                    ctr_incr_o,               // Sparsify
+  input  logic                                    ctr_ready_i,              // Sparsify
+  input  logic                 [NumSlicesCtr-1:0] ctr_we_i,                 // Sparsify
 
   // Cipher core control and sync
-  output logic                                    cipher_in_valid_o,       // Sparsify
-  input  logic                                    cipher_in_ready_i,       // Sparsify
-  input  logic                                    cipher_out_valid_i,      // Sparsify
-  output logic                                    cipher_out_ready_o,      // Sparsify
-  output logic                                    cipher_crypt_o,          // Sparsify
-  input  logic                                    cipher_crypt_i,          // Sparsify
-  output logic                                    cipher_dec_key_gen_o,    // Sparsify
-  input  logic                                    cipher_dec_key_gen_i,    // Sparsify
+  output logic                                    cipher_in_valid_o,        // Sparsify
+  input  logic                                    cipher_in_ready_i,        // Sparsify
+  input  logic                                    cipher_out_valid_i,       // Sparsify
+  output logic                                    cipher_out_ready_o,       // Sparsify
+  output logic                                    cipher_crypt_o,           // Sparsify
+  input  logic                                    cipher_crypt_i,           // Sparsify
+  output logic                                    cipher_dec_key_gen_o,     // Sparsify
+  input  logic                                    cipher_dec_key_gen_i,     // Sparsify
   output logic                                    cipher_prng_reseed_o,
   input  logic                                    cipher_prng_reseed_i,
   output logic                                    cipher_key_clear_o,
@@ -79,17 +87,23 @@ module aes_control_fsm
   output logic                                    cipher_data_out_clear_o,
   input  logic                                    cipher_data_out_clear_i,
 
+  // GHASH control and sync
+  output logic                                    ghash_in_valid_o,         // Sparsify
+  input  logic                                    ghash_in_ready_i,         // Sparsify
+  input  logic                                    ghash_out_valid_i,        // Sparsify
+  output logic                                    ghash_out_ready_o,        // Sparsify
+  output logic                                    ghash_load_hash_subkey_o, // Sparsify
+
   // Initial key registers
   output key_init_sel_e                           key_init_sel_o,
-  output logic [NumSharesKey-1:0][NumRegsKey-1:0] key_init_we_o,           // Sparsify
+  output logic [NumSharesKey-1:0][NumRegsKey-1:0] key_init_we_o,            // Sparsify
 
   // IV registers
   output iv_sel_e                                 iv_sel_o,
-  output logic                 [NumSlicesCtr-1:0] iv_we_o,                 // Sparsify
+  output logic                 [NumSlicesCtr-1:0] iv_we_o,                  // Sparsify
 
   // Pseudo-random number generator interface
-  output logic                                    prng_data_req_o,
-  input  logic                                    prng_data_ack_i,
+  output logic                                    prng_update_o,
   output logic                                    prng_reseed_req_o,
   input  logic                                    prng_reseed_ack_i,
 
@@ -173,6 +187,23 @@ module aes_control_fsm
   logic                     input_ready;
   logic                     input_ready_we;
 
+  logic                     ctrl_gcm_we_q;
+  logic                     gcm_clear;
+  logic                     gcm_init, gcm_restore, gcm_aad, gcm_txt, gcm_save, gcm_tag;
+  logic                     start_common_gcm, start_ghash;
+  logic                     start_gcm_init, start_gcm_hsk, start_gcm_s;
+  logic                     start_gcm_restore, start_gcm_aad, start_gcm_txt, start_gcm_save;
+  logic                     start_gcm_tag;
+  logic                     doing_gcm_hsk, doing_gcm_s, doing_gcm_txt;
+  logic                     hash_subkey_ready_d, hash_subkey_ready_q;
+  logic                     s_ready_d, s_ready_q;
+  logic                     doing_gcm_restore_d, doing_gcm_restore_q;
+  logic                     doing_gcm_aad_d, doing_gcm_aad_q;
+  logic                     doing_gcm_tag_d, doing_gcm_tag_q;
+  logic                     doing_gcm_save_d, doing_gcm_save_q;
+  logic                     ghash_out_done;
+  logic                     ghash_idle;
+
   logic                     block_ctr_expr;
   logic                     block_ctr_decr;
 
@@ -182,7 +213,7 @@ module aes_control_fsm
                   iv_qe_i[1], iv_qe_i[1], iv_qe_i[0], iv_qe_i[0]};
 
   // The cipher core is only ever allowed to start or finish if the control register holds a valid
-  // configuration and if no fatal alert condition occured.
+  // configuration and if no fatal alert condition occurred.
   assign cfg_valid = ~((mode_i == AES_NONE) | ctrl_err_storage_i);
   assign no_alert  = ~alert_fatal_i;
 
@@ -213,7 +244,11 @@ module aes_control_fsm
             start_cbc |
             start_cfb |
             start_ofb |
-            start_ctr) & start_common));
+            start_ctr) & start_common) |
+          // Only the initial as well as the ciphertext/plaintext phases of GCM require operating
+          // the AES cipher core. Common start conditions are already factored into these signals.
+           (start_gcm_init |
+            start_gcm_txt));
 
   // If not set to overwrite data, we wait for any previous output data to be read. data_out_read
   // synchronously clears output_valid_q, unless new output data is written in the exact same
@@ -224,6 +259,72 @@ module aes_control_fsm
           // Make sure previous output data has been read.
           (~output_valid_q | data_out_read));
 
+  //////////////////////////
+  // GCM Start Conditions //
+  //////////////////////////
+  // Note that only the initial as well as the ciphertext/plaintext phases of GCM require operating
+  // the AES cipher core. The start conditions for these phases are factored into the regular start
+  // signal above. In contrast, the restore, AAD, save and tag phases use the GHASH block only. The
+  // corresponding start conditions are handled separately by the FSM and we need to explicilty
+  // factor in manual operation below.
+
+  assign gcm_init    = (mode_i == AES_GCM) & (gcm_phase_i == GCM_INIT);
+  assign gcm_restore = (mode_i == AES_GCM) & (gcm_phase_i == GCM_RESTORE);
+  assign gcm_aad     = (mode_i == AES_GCM) & (gcm_phase_i == GCM_AAD);
+  assign gcm_txt     = (mode_i == AES_GCM) & (gcm_phase_i == GCM_TEXT);
+  assign gcm_save    = (mode_i == AES_GCM) & (gcm_phase_i == GCM_SAVE);
+  assign gcm_tag     = (mode_i == AES_GCM) & (gcm_phase_i == GCM_TAG);
+
+  // The common start conditions for GCM don't include the input data.
+  assign start_common_gcm = key_init_ready &
+      // If key sideload is enabled, we only start if the key is valid.
+      (sideload_i ? key_sideload_valid_i : 1'b1);
+
+  // For the initial GCM phase, we need key and IV but then encrypt two blocks. The input data
+  // is not required. Requires operating the AES cipher core and thus factors into the regular
+  // start signal. Delay GCM initialization while clearing GCM-related status tracking.
+  assign start_gcm_hsk  = gcm_init & ~gcm_clear & ~hash_subkey_ready_q & iv_ready & ctr_ready_i;
+  assign start_gcm_s    = gcm_init & ~gcm_clear & ~s_ready_q           & iv_ready & ctr_ready_i;
+  assign start_gcm_init = (start_gcm_hsk | start_gcm_s) & start_common_gcm;
+
+  // For the restore phase of GCM, we need key, IV and input data. If set to start manually, we
+  // just wait for the trigger.
+  assign start_gcm_restore = gcm_restore & cfg_valid & no_alert &
+      // Manual operation has priority.
+      (manual_operation_i ? start_i : iv_ready & ctr_ready_i & data_in_new & start_common_gcm);
+
+  // For the AAD and ciphertext/plaintext phases of GCM, we need key, IV and input data. But for
+  // the AAD phase, only the input data is really used and marked as used. The start condition for
+  // the AAD phase is handled separately by the FSM and we need to factor in the manual operation
+  // mode here.
+  assign start_gcm_aad = gcm_aad & cfg_valid & no_alert &
+      // Manual operation has priority.
+      (manual_operation_i ? start_i : iv_ready & ctr_ready_i & start_common);
+  // The ciphertext/plaintext phase requires operating AES cipher core and thus factors into the
+  // regular start signal.
+  assign start_gcm_txt = gcm_txt & iv_ready & ctr_ready_i & start_common;
+
+  // For the save phase of GCM, we need no inputs. But the hash subkey and S must not yet have been
+  // cleared (happens upon saving the GHASH state).
+  assign start_gcm_save = gcm_save & cfg_valid & no_alert &
+      // Manual operation has priority.
+      (manual_operation_i ? start_i : hash_subkey_ready_q & s_ready_q);
+
+  // For the tag phase of GCM, we also need the input data.
+  assign start_gcm_tag = gcm_tag & cfg_valid & no_alert &
+      // Manual operation has priority.
+      (manual_operation_i ? start_i : hash_subkey_ready_q & s_ready_q & data_in_new);
+
+  // The restore, AAD, save and tag phases use the GHASH block only.
+  assign start_ghash = start_gcm_restore | start_gcm_aad | start_gcm_save | start_gcm_tag;
+
+  // The GHASH block is idle whenever it's ready to receive inputs and we're not about to start
+  // a GCM related operation.
+  assign ghash_idle = ghash_in_ready_i & ~start_ghash;
+
+  // In GCM, the counter performs inc32() instead of inc128(), i.e., the counter wraps at 32 bits.
+  assign ctr_inc32_o = (mode_i == AES_GCM);
+
   // Helper signals for FSM
   assign crypt = cipher_crypt_o | cipher_crypt_i;
 
@@ -233,6 +334,9 @@ module aes_control_fsm
   assign doing_cfb_dec = (mode_i == AES_CFB && op_i == AES_DEC) & crypt;
   assign doing_ofb     = (mode_i == AES_OFB)                    & crypt;
   assign doing_ctr     = (mode_i == AES_CTR)                    & crypt;
+  assign doing_gcm_hsk = gcm_init & ~hash_subkey_ready_q        & crypt;
+  assign doing_gcm_s   = gcm_init &  hash_subkey_ready_q        & crypt;
+  assign doing_gcm_txt = gcm_txt                                & crypt;
 
   // FSM
   always_comb begin : aes_ctrl_fsm
@@ -259,6 +363,12 @@ module aes_control_fsm
     cipher_key_clear_o      = 1'b0;
     cipher_data_out_clear_o = 1'b0;
 
+    // GHASH control
+    ghash_in_valid_o         = 1'b0;
+    ghash_out_ready_o        = 1'b0;
+    ghash_out_done           = 1'b0;
+    ghash_load_hash_subkey_o = ~hash_subkey_ready_q;
+
     // Initial key registers
     key_init_sel_o = sideload_i ? KEY_INIT_KEYMGR : KEY_INIT_INPUT;
     key_init_we_o = {NumSharesKey * NumRegsKey{1'b0}};
@@ -267,14 +377,15 @@ module aes_control_fsm
     iv_sel_o = IV_INPUT;
     iv_we_o  = {NumSlicesCtr{1'b0}};
 
-    // Control register
-    ctrl_we_o = 1'b0;
+    // Control registers
+    ctrl_we_o     = 1'b0;
+    ctrl_gcm_we_o = 1'b0;
 
     // Alert
     alert_o = 1'b0;
 
     // Pseudo-random number generator control
-    prng_data_req_o   = 1'b0;
+    prng_update_o     = 1'b0;
     prng_reseed_req_o = 1'b0;
 
     // Trigger register control
@@ -290,9 +401,10 @@ module aes_control_fsm
     stall_we = 1'b0;
 
     // Key, data I/O register control
-    data_in_load  = 1'b0;
-    data_in_we_o  = 1'b0;
-    data_out_we_o = 1'b0;
+    data_in_load   = 1'b0;
+    data_in_we_o   = 1'b0;
+    data_out_sel_o = DATA_OUT_CIPHER;
+    data_out_we_o  = 1'b0;
 
     // Register status tracker control
     key_init_clear = 1'b0;
@@ -306,9 +418,15 @@ module aes_control_fsm
     block_ctr_decr = 1'b0;
 
     // FSM
-    aes_ctrl_ns        = aes_ctrl_cs;
-    start_core         = 1'b0;
-    prng_reseed_done_d = prng_reseed_done_q | prng_reseed_ack_i;
+    aes_ctrl_ns         = aes_ctrl_cs;
+    start_core          = 1'b0;
+    prng_reseed_done_d  = prng_reseed_done_q | prng_reseed_ack_i;
+    hash_subkey_ready_d = hash_subkey_ready_q;
+    s_ready_d           = s_ready_q;
+    doing_gcm_restore_d = doing_gcm_restore_q;
+    doing_gcm_aad_d     = doing_gcm_aad_q;
+    doing_gcm_tag_d     = doing_gcm_tag_q;
+    doing_gcm_save_d    = doing_gcm_save_q;
 
     unique case (aes_ctrl_cs)
 
@@ -319,8 +437,9 @@ module aes_control_fsm
         // Update status register. A write to the main control register (if sideload is enabled)
         // or writing the last key register can initiate a PRNG reseed operation via trigger
         // register. To avoid that subsequent writes to the main control, key or IV registers
-        // collide with the start of the reseed operation, de-assert the idle bit.
-        idle    = ~(start_core | (prng_reseed_o & prng_reseed_we_o));
+        // collide with the start of the reseed operation, de-assert the idle bit. The GHASH block
+        // may still be busy while the cipher core is actually idle.
+        idle    = ~(start_core | (prng_reseed_o & prng_reseed_we_o)) & ghash_idle;
         idle_we = 1'b1;
 
         // Clear the start trigger when seeing invalid configurations or performing automatic
@@ -332,14 +451,25 @@ module aes_control_fsm
           // is enabled, software writes to the initial key registers are ignored.
           key_init_we_o = sideload_i ? {NumSharesKey * NumRegsKey{key_sideload}} : key_init_qe_i;
           iv_we_o       = iv_qe;
+        end
 
-          // Updates to the control register are only allowed if the core is not about to start and
-          // there isn't a storage error. A storage error is unrecoverable and requires a reset.
-          ctrl_we_o      = !ctrl_err_storage_i ? ctrl_qe_i : 1'b0;
+        if (!start_core && !start_ghash) begin
+          // Updates to the main and GCM control registers are only allowed if the cipher core and
+          // the GHASH block are not about to start and there isn't a storage error. A storage
+          // error is unrecoverable and requires a reset.
+          ctrl_we_o      = !ctrl_err_storage_i ? ctrl_qe_i     : 1'b0;
+          ctrl_gcm_we_o  = !ctrl_err_storage_i ? ctrl_gcm_qe_i : 1'b0;
 
-          // Control register updates clear all register status trackers.
+          // Control register updates clear all register status trackers. As GCM initialization
+          // advances the IV, we have to clear the IV status tracking when re-initializing GCM.
           key_init_clear = ctrl_we_o;
-          iv_clear       = ctrl_we_o;
+          iv_clear       = ctrl_we_o | (gcm_init & gcm_clear);
+
+          // Also clear GCM-specific status tracking.
+          if (ctrl_we_o | gcm_clear) begin
+            hash_subkey_ready_d = 1'b0;
+            s_ready_d           = 1'b0;
+          end
         end
 
         if (prng_reseed_i) begin
@@ -361,8 +491,42 @@ module aes_control_fsm
           end
 
         end else if (key_iv_data_in_clear_i || data_out_clear_i) begin
-          // To clear registers, we must first request fresh pseudo-random data.
-          aes_ctrl_ns = CTRL_PRNG_UPDATE;
+          // To clear registers, we update the PRNG and then wait for the GHASH block.
+          prng_update_o = 1'b1;
+
+          // To clear the output data registers, we re-use the muxing resources of the cipher
+          // core. To clear all key material, some key registers inside the cipher core need to
+          // be cleared.
+          cipher_key_clear_o      = key_iv_data_in_clear_i;
+          cipher_data_out_clear_o = data_out_clear_i;
+
+          // We have work for the cipher core, perform handshake.
+          cipher_in_valid_o = 1'b1;
+          if (cipher_in_ready_i) begin
+            aes_ctrl_ns = CTRL_GHASH_READY;
+          end
+
+        end else if (start_gcm_restore || start_gcm_aad || start_gcm_tag) begin
+          // We don't have work for the AES cipher core but for the GHASH block only. Load the
+          // input data into the previous input data register such that it can be loaded into
+          // the GHASH block in unmasked form.
+          data_in_prev_sel_o = DIP_DATA_IN;
+          data_in_prev_we_o  = 1'b1;
+
+          // Advance to the loading state where the input data is marked as used.
+          doing_gcm_restore_d = start_gcm_restore;
+          doing_gcm_aad_d     = start_gcm_aad;
+          doing_gcm_tag_d     = start_gcm_tag;
+          start_we            = 1'b1;
+          aes_ctrl_ns         = CTRL_LOAD;
+
+        end else if (start_gcm_save) begin
+          // We don't have work for the AES cipher core but for the GHASH block only. Update the
+          // PRNG (to clear the internal state after saving it) and advance.
+          prng_update_o    = 1'b1;
+          doing_gcm_save_d = 1'b1;
+          start_we         = 1'b1;
+          aes_ctrl_ns      = CTRL_GHASH_READY;
 
         end else if (start) begin
           // Signal that we want to start encryption/decryption.
@@ -380,25 +544,32 @@ module aes_control_fsm
                                doing_cfb_enc ? DIP_DATA_IN :
                                doing_cfb_dec ? DIP_DATA_IN :
                                doing_ofb     ? DIP_DATA_IN :
-                               doing_ctr     ? DIP_DATA_IN : DIP_CLEAR;
+                               doing_ctr     ? DIP_DATA_IN :
+                               doing_gcm_txt ? DIP_DATA_IN : DIP_CLEAR;
           data_in_prev_we_o  = doing_cbc_dec |
                                doing_cfb_enc |
                                doing_cfb_dec |
                                doing_ofb     |
-                               doing_ctr;
+                               doing_ctr     |
+                               doing_gcm_txt;
 
           // State input mux control
           state_in_sel_o     = doing_cfb_enc ? SI_ZERO :
                                doing_cfb_dec ? SI_ZERO :
                                doing_ofb     ? SI_ZERO :
-                               doing_ctr     ? SI_ZERO : SI_DATA;
+                               doing_ctr     ? SI_ZERO :
+                               doing_gcm_hsk ? SI_ZERO :
+                               doing_gcm_s   ? SI_ZERO :
+                               doing_gcm_txt ? SI_ZERO : SI_DATA;
 
-          // State input additon mux control
+          // State input addition mux control
           add_state_in_sel_o = doing_cbc_enc ? ADD_SI_IV :
                                doing_cfb_enc ? ADD_SI_IV :
                                doing_cfb_dec ? ADD_SI_IV :
                                doing_ofb     ? ADD_SI_IV :
-                               doing_ctr     ? ADD_SI_IV : ADD_SI_ZERO;
+                               doing_ctr     ? ADD_SI_IV :
+                               doing_gcm_s   ? ADD_SI_IV :
+                               doing_gcm_txt ? ADD_SI_IV : ADD_SI_ZERO;
 
           // We have work for the cipher core, perform handshake.
           cipher_in_valid_o = 1'b1;
@@ -420,53 +591,99 @@ module aes_control_fsm
                                                  doing_cfb_enc |
                                                  doing_cfb_dec |
                                                  doing_ofb     |
-                                                 doing_ctr);
+                                                 doing_ctr     |
+                                                 doing_gcm_hsk |
+                                                 doing_gcm_s   |
+                                                 doing_gcm_txt);
         data_in_load  = ~cipher_dec_key_gen_i;
 
         // Trigger counter increment.
-        ctr_incr_o   = doing_ctr;
+        ctr_incr_o   = doing_ctr | doing_gcm_hsk | doing_gcm_s | doing_gcm_txt;
 
         // Unless we are just generating the start key for decryption, we must update the PRNG.
-        aes_ctrl_ns  = !cipher_dec_key_gen_i ? CTRL_PRNG_UPDATE : CTRL_FINISH;
-      end
-
-      CTRL_PRNG_UPDATE: begin
         // Fresh pseudo-random data is used to:
         // - clear the state in the final cipher round,
         // - clear any other registers in the CLEAR_I/CO states.
+        prng_update_o = !cipher_dec_key_gen_i;
 
+        // Unless we are just generating the start key for decryption, we may need to interface
+        // the GHASH block as well
+        aes_ctrl_ns   = !cipher_dec_key_gen_i ? CTRL_GHASH_READY : CTRL_FINISH;
+      end
+
+      CTRL_GHASH_READY: begin
         // IV control in case of ongoing encryption/decryption
         // - CTR: IV registers are updated by counter during cipher operation
-        iv_sel_o = doing_ctr ? IV_CTR   : IV_INPUT;
-        iv_we_o  = doing_ctr ? ctr_we_i : {NumSlicesCtr{1'b0}};
+        iv_sel_o = doing_ctr     ||
+                   doing_gcm_hsk ||
+                   doing_gcm_s   ||
+                   doing_gcm_txt ? IV_CTR   : IV_INPUT;
+        iv_we_o  = doing_ctr     ||
+                   doing_gcm_hsk ||
+                   doing_gcm_s   ||
+                   doing_gcm_txt ? ctr_we_i : {NumSlicesCtr{1'b0}};
 
-        // Request fresh pseudo-random data, perform handshake.
-        prng_data_req_o = 1'b1;
-        if (prng_data_ack_i) begin
-
-          // Ongoing encryption/decryption operations have the highest priority. The clear triggers
-          // might have become asserted after the handshake with the cipher core.
-          if (cipher_crypt_i) begin
-            aes_ctrl_ns = CTRL_FINISH;
-
-          end else if (key_iv_data_in_clear_i || data_out_clear_i) begin
-            // To clear the output data registers, we re-use the muxing resources of the cipher
-            // core. To clear all key material, some key registers inside the cipher core need to
-            // be cleared.
-            cipher_key_clear_o      = key_iv_data_in_clear_i;
-            cipher_data_out_clear_o = data_out_clear_i;
-
-            // We have work for the cipher core, perform handshake.
-            cipher_in_valid_o = 1'b1;
-            if (cipher_in_ready_i) begin
-              aes_ctrl_ns = CTRL_CLEAR_I;
+        // Ongoing encryption/decryption operations have the highest priority. The clear triggers
+        // might for example have become asserted after the handshake with the cipher core.
+        if (cipher_crypt_i) begin
+          if (doing_gcm_hsk || doing_gcm_s || doing_gcm_txt) begin
+            // We actually have some work for the GHASH block. Make sure it's ready before we move.
+            // We send the valid in a following clock cycle. Doing this check here, allows to
+            // decouple the valid from the ready.
+            if (ghash_in_ready_i) begin
+              aes_ctrl_ns = CTRL_FINISH;
             end
           end else begin
-            // Another write to the trigger register must have overwritten the trigger bits that
-            // actually caused us to enter this state. Just return.
-            aes_ctrl_ns = CTRL_IDLE;
-          end // cipher_crypt_i
-        end // prng_data_ack_i
+            // We're not actually using the GHASH block and don't need to check it's status.
+            aes_ctrl_ns = CTRL_FINISH;
+          end
+
+        end else if (doing_gcm_restore_q) begin
+          // Pass the previously saved GHASH state to the GHASH block. We're done after the input
+          // handshake.
+          ghash_in_valid_o = 1'b1;
+          if (ghash_in_ready_i) begin
+            doing_gcm_restore_d = 1'b0;
+            aes_ctrl_ns         = CTRL_IDLE;
+          end
+
+        end else if (doing_gcm_aad_q) begin
+          // Pass the AAD to the GHASH block. We're done after the input handshake.
+          ghash_in_valid_o = 1'b1;
+          if (ghash_in_ready_i) begin
+            doing_gcm_aad_d = 1'b0;
+            aes_ctrl_ns     = CTRL_IDLE;
+          end
+
+        end else if (doing_gcm_save_q) begin
+          // Perform the handshake with the GHASH block and then wait for the GHASH block to output
+          // the state.
+          ghash_in_valid_o = 1'b1;
+          if (ghash_in_ready_i) begin
+            aes_ctrl_ns = CTRL_FINISH;
+          end
+
+        end else if (doing_gcm_tag_q) begin
+          // Pass the AAD and text length to the GHASH block and wait for the final authentication
+          // tag afterwards.
+          ghash_in_valid_o = 1'b1;
+          if (ghash_in_ready_i) begin
+            aes_ctrl_ns = CTRL_FINISH;
+          end
+
+        end else if (key_iv_data_in_clear_i || data_out_clear_i ||
+                     cipher_key_clear_i     || cipher_data_out_clear_i) begin
+          // We actually have some work for the GHASH block. Make sure it's ready before we move.
+          // We send the valid in a following clock cycle. Doing this check here, allows to
+          // decouple the valid from the ready.
+          if (ghash_in_ready_i) begin
+            aes_ctrl_ns = CTRL_CLEAR_I;
+          end
+        end else begin
+          // Another write to the trigger register must have overwritten the trigger bits that
+          // actually caused us to enter this state. Just return.
+          aes_ctrl_ns = CTRL_IDLE;
+        end
       end
 
       CTRL_PRNG_RESEED: begin
@@ -504,6 +721,32 @@ module aes_control_fsm
             block_ctr_decr = 1'b1;
             aes_ctrl_ns    = CTRL_IDLE;
           end
+        end else if (doing_gcm_save_q || doing_gcm_tag_q) begin
+          // Handshake signals: We are ready once the output data registers can be written. Don't
+          // let data propagate in case of mux selector or sparsely encoded signals taking on
+          // invalid values.
+          ghash_out_ready_o = finish;
+          ghash_out_done    = finish & ghash_out_valid_i &
+              ~mux_sel_err_i & ~sp_enc_err_i & ~cipher_op_err;
+
+          // Signal if the GHASH block is stalled (because previous output has not yet been read).
+          stall    = ~finish & ghash_out_valid_i;
+          stall_we = 1'b1;
+
+          // Forward the GHASH output instead of the cipher core output.
+          data_out_sel_o = DATA_OUT_GHASH;
+
+          // Proceed upon successful handshake. Mark hash subkey and s as not ready, the GHASH
+          // block clears those registers after the handshake.
+          if (ghash_out_done) begin
+            doing_gcm_save_d    = 1'b0;
+            doing_gcm_tag_d     = 1'b0;
+            hash_subkey_ready_d = 1'b0;
+            s_ready_d           = 1'b0;
+            data_out_we_o       = 1'b1;
+            aes_ctrl_ns         = CTRL_IDLE;
+          end
+
         end else begin
           // Handshake signals: We are ready once the output data registers can be written. Don't
           // let data propagate in case of mux selector or sparsely encoded signals taking on
@@ -521,23 +764,31 @@ module aes_control_fsm
                                 doing_cfb_enc ? ADD_SO_DIP :
                                 doing_cfb_dec ? ADD_SO_DIP :
                                 doing_ofb     ? ADD_SO_DIP :
-                                doing_ctr     ? ADD_SO_DIP : ADD_SO_ZERO;
+                                doing_ctr     ? ADD_SO_DIP :
+                                doing_gcm_txt ? ADD_SO_DIP : ADD_SO_ZERO;
 
           // IV control
           // - CBC/CFB/OFB: IV registers are only updated when cipher finishes.
-          // - CTR: IV registers are updated by counter during cipher operation.
+          // - CTR/GCM: IV registers are updated by counter during cipher operation.
+          //   The same holds when we're computing the hash subkey for GCM.
           iv_sel_o = doing_cbc_enc ? IV_DATA_OUT     :
                      doing_cbc_dec ? IV_DATA_IN_PREV :
                      doing_cfb_enc ? IV_DATA_OUT     :
                      doing_cfb_dec ? IV_DATA_IN_PREV :
                      doing_ofb     ? IV_DATA_OUT_RAW :
-                     doing_ctr     ? IV_CTR          : IV_INPUT;
+                     doing_ctr     ? IV_CTR          :
+                     doing_gcm_hsk ? IV_CTR          :
+                     doing_gcm_s   ? IV_CTR          :
+                     doing_gcm_txt ? IV_CTR          : IV_INPUT;
           iv_we_o  = doing_cbc_enc ||
                      doing_cbc_dec ||
                      doing_cfb_enc ||
                      doing_cfb_dec ||
                      doing_ofb     ? {NumSlicesCtr{cipher_out_done}} :
-                     doing_ctr     ? ctr_we_i                        : {NumSlicesCtr{1'b0}};
+                     doing_ctr     ? ctr_we_i                        :
+                     doing_gcm_hsk ? ctr_we_i                        :
+                     doing_gcm_s   ? ctr_we_i                        :
+                     doing_gcm_txt ? ctr_we_i                        : {NumSlicesCtr{1'b0}};
 
           // Arm the IV status tracker: After finishing, the IV registers can be written again
           // by software. We need to make sure software does not partially update the IV.
@@ -546,13 +797,24 @@ module aes_control_fsm
                     doing_cfb_enc |
                     doing_cfb_dec |
                     doing_ofb     |
-                    doing_ctr) & cipher_out_done;
+                    doing_ctr     |
+                    doing_gcm_hsk |
+                    doing_gcm_s   |
+                    doing_gcm_txt) & cipher_out_done;
 
-          // Proceed upon successful handshake.
+          // Proceed upon successful handshake. When initializing GHASH for GCM, don't write to the
+          // cipher output to the output data registers but forward it to the GHASH block and
+          // mark the hash subkey or S as ready.
           if (cipher_out_done) begin
-            block_ctr_decr = 1'b1;
-            data_out_we_o  = 1'b1;
-            aes_ctrl_ns    = CTRL_IDLE;
+            block_ctr_decr      = 1'b1;
+            data_out_we_o       = doing_gcm_hsk |
+                                  doing_gcm_s   ? 1'b0 : 1'b1;
+            ghash_in_valid_o    = doing_gcm_hsk |
+                                  doing_gcm_s   |
+                                  doing_gcm_txt ? 1'b1 : 1'b0;
+            hash_subkey_ready_d = doing_gcm_hsk ? 1'b1 : hash_subkey_ready_q;
+            s_ready_d           = doing_gcm_s   ? 1'b1 : s_ready_q;
+            aes_ctrl_ns         = CTRL_IDLE;
           end
         end
       end
@@ -591,6 +853,9 @@ module aes_control_fsm
           if (cipher_key_clear_i) begin
             // Clear the trigger bit.
             key_iv_data_in_clear_we = 1'b1;
+
+            // The GHASH block can now clear it's internal registers.
+            ghash_in_valid_o = 1'b1;
           end
 
           // To clear the output data registers, we re-use the muxing resources of the cipher core.
@@ -639,6 +904,43 @@ module aes_control_fsm
     end
   end
 
+  if (AESGCMEnable) begin : gen_reg_fsm_gcm
+    always_ff @(posedge clk_i or negedge rst_ni) begin : reg_fsm_gcm
+      if (!rst_ni) begin
+        hash_subkey_ready_q <= 1'b0;
+        s_ready_q           <= 1'b0;
+        doing_gcm_restore_q <= 1'b0;
+        doing_gcm_aad_q     <= 1'b0;
+        doing_gcm_save_q    <= 1'b0;
+        doing_gcm_tag_q     <= 1'b0;
+      end else begin
+        hash_subkey_ready_q <= hash_subkey_ready_d;
+        s_ready_q           <= s_ready_d;
+        doing_gcm_restore_q <= doing_gcm_restore_d;
+        doing_gcm_aad_q     <= doing_gcm_aad_d;
+        doing_gcm_save_q    <= doing_gcm_save_d;
+        doing_gcm_tag_q     <= doing_gcm_tag_d;
+      end
+    end
+  end else begin : gen_no_reg_fsm_gcm
+    // GCM is simply not supported.
+    assign hash_subkey_ready_q = 1'b0;
+    assign s_ready_q           = 1'b0;
+    assign doing_gcm_restore_q = 1'b0;
+    assign doing_gcm_aad_q     = 1'b0;
+    assign doing_gcm_save_q    = 1'b0;
+    assign doing_gcm_tag_q     = 1'b0;
+
+    // Tie-off unused signals.
+    logic unused_gcm_d;
+    assign unused_gcm_d = ^{hash_subkey_ready_d,
+                            s_ready_d,
+                            doing_gcm_restore_d,
+                            doing_gcm_aad_d,
+                            doing_gcm_save_d,
+                            doing_gcm_tag_d};
+  end
+
   /////////////////////
   // Status Tracking //
   /////////////////////
@@ -648,7 +950,7 @@ module aes_control_fsm
   // point we don't update the key anymore, as we don't have a notion of when it actually changes.
   // This would be required to trigger decryption key generation for ECB/CBC decryption.
   // To update the sideload key, software has to:
-  // 1) wait unitl AES is idle,
+  // 1) wait until AES is idle,
   // 2) wait for the key manager to provide the new key,
   // 3) start a new message by writing the control register and providing the IV (if needed).
   assign key_sideload = sideload_i & key_sideload_valid_i & ctrl_we_q & ~ctrl_phase_i;
@@ -714,7 +1016,7 @@ module aes_control_fsm
 
   // Collect reads of data output registers. data_out_read is high for one clock cycle only and
   // clears output_valid_q unless new output is written in the exact same cycle. Cleared if:
-  // - clearing data ouput registers with random data,
+  // - clearing data output registers with random data,
   // - clearing the status tracking.
   assign data_out_read_d = &data_out_read_q || clear_in_out_status ? '0 :
       data_out_read_q | data_out_re_i;
@@ -740,7 +1042,7 @@ module aes_control_fsm
 
   // Cleared if:
   // - all data output registers have been read (unless new output is written in the same cycle),
-  // - clearing data ouput registers with random data,
+  // - clearing data output registers with random data,
   // - clearing the status tracking.
   assign output_valid    = data_out_we_o & ~data_out_clear_we;
   assign output_valid_we = data_out_we_o | data_out_read | data_out_clear_we |
@@ -760,6 +1062,29 @@ module aes_control_fsm
   assign output_lost    = ctrl_we_o     ? 1'b0 :
                           output_lost_i ? 1'b1 : output_valid_q & ~data_out_read;
   assign output_lost_we = ctrl_we_o | data_out_we_o;
+
+  /////////////////////////
+  // GCM Status Tracking //
+  /////////////////////////
+
+  // Clear GCM-specific status tracking if the GCM phase is set to GCM_INIT after a second write to
+  // the shadowed GCM control register
+  assign gcm_clear = (gcm_phase_i == GCM_INIT) & ctrl_gcm_we_q & ~ctrl_gcm_phase_i;
+
+  if (AESGCMEnable) begin : gen_reg_ctrl_gcm_we
+    always_ff @(posedge clk_i or negedge rst_ni) begin : reg_ctrl_gcm_we
+      if (!rst_ni) begin
+        ctrl_gcm_we_q <= 1'b0;
+      end else begin
+        ctrl_gcm_we_q <= ctrl_gcm_we_o;
+      end
+    end
+  end else begin : gen_no_reg_ctrl_gcm_we
+    assign ctrl_gcm_we_q = 1'b1;
+  end
+
+  // Signal when the GCM initialization is done.
+  assign gcm_init_done_o = hash_subkey_ready_q & s_ready_q;
 
   // Should fatal alerts clear the status and trigger register?
   assign clear_on_fatal = ClearStatusOnFatalAlert ? alert_fatal_i : 1'b0;
@@ -850,6 +1175,7 @@ module aes_control_fsm
       AES_CFB,
       AES_OFB,
       AES_CTR,
+      AES_GCM,
       AES_NONE
       })
   `ASSERT(AesOpValid, !ctrl_err_storage_i |-> op_i inside {
@@ -863,7 +1189,7 @@ module aes_control_fsm
   `ASSERT(AesControlStateValid, !alert_o |-> aes_ctrl_cs inside {
       CTRL_IDLE,
       CTRL_LOAD,
-      CTRL_PRNG_UPDATE,
+      CTRL_GHASH_READY,
       CTRL_PRNG_RESEED,
       CTRL_FINISH,
       CTRL_CLEAR_I,

@@ -6,7 +6,7 @@
 // phases. There are two mechanisms that can trigger the escalation protocol:
 //
 // 1) via accum_trigger_i, which will be asserted once the accumulator value
-//    exceeds a programmable amount of alert occurences.
+//    exceeds a programmable amount of alert occurrences.
 //
 // 2) via an interrupt timeout, if this is enabled. If this functionality is
 //    enabled, the internal escalation counter is reused to check whether the

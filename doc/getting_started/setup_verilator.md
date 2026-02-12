@@ -14,9 +14,10 @@ We recommend compiling Verilator from source, as outlined here.
 
 Fetch, build and install Verilator itself (this should be done outside the `$REPO_TOP` directory).
 Note that Verilator 4.210 will not build with GCC 12.0 or later, so it will need to be built with an older toolchain.
-The example below assumes gcc-11 and g++-11 are installed on the system.
 
 ```console
+sudo apt install gcc-11 g++-11
+
 export VERILATOR_VERSION={{#tool-version verilator }}
 
 git clone https://github.com/verilator/verilator.git
@@ -172,22 +173,23 @@ For more guidance on using OpenOCD, see [Using OpenOCD](./using_openocd.md).
 Run the simulation with Bazel, making sure to build the device software with debug symbols using
 ```console
 cd $REPO_TOP
-bazel test --copt=-g --test_output=streamed //sw/device/tests:uart_smoketest_sim_verilator
+bazel run --copt=-g --test_output=streamed //sw/device/tests:uart_smoketest_sim_verilator
 ```
 
 Then, connect with OpenOCD using the following command.
 
 ```console
 cd $REPO_TOP
-/tools/openocd/bin/openocd -s util/openocd -f board/lowrisc-earlgrey-verilator.cfg
+bazel run //third_party/openocd -- -s util/openocd -f board/lowrisc-earlgrey-verilator.cfg
 ```
 
 Lastly, connect GDB using the following command (noting it needs to be altered to point to the sw binary in use).
 
 ```console
 cd $REPO_TOP
-riscv32-unknown-elf-gdb -ex "target extended-remote :3333" -ex "info reg" \
-  "$(./bazelisk.sh outquery --config=riscv32 //sw/device/tests:uart_smoketest_prog_sim_verilator.elf)"
+bazel run @lowrisc_rv32imcb_toolchain//:/bin/riscv32-unknown-elf-gdb -- \
+  -ex "target extended-remote :3333" -ex "info reg" \
+  "$(bazel outquery --config=riscv32 //sw/device/tests:uart_smoketest_prog_sim_verilator.elf)"
 ```
 
 ## SPI device test interface (optional)
@@ -226,7 +228,7 @@ The output consists of a textual "waveform" representing the SPI signals.
 
 ## Generating waveforms (optional)
 
-With the `--trace` argument the simulation generates a FST signal trace which can be viewed with Gtkwave (only).
+With the `--trace` argument the simulation generates a FST signal trace which can be viewed with GTKWave (only).
 An argument may be provided to `--trace` to specify where the trace file will be saved.
 Note that for automated tests, `opentitantool` interfaces with the simulator, and verilator arguments must be passed via `--verilator-args=<arg>`.
 

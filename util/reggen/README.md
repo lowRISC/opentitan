@@ -96,7 +96,6 @@ name | required | string | name of the component
 cip_id | required | int | unique comportable IP identifier
 clocking | required | list | clocking for the device
 bus_interfaces | required | list | bus interfaces for the device
-registers | required | list | list of register definition groups and offset control groups
 human_name | optional | string | human-readable name of the component
 one_line_desc | optional | string | one-line description of the component
 one_paragraph_desc | optional | string | one-paragraph description of the component
@@ -122,15 +121,17 @@ inter_signal_list | optional | list | list of inter-module signals
 no_auto_alert_regs | optional | string | Set to true to suppress automatic generation of alert test registers. Defaults to true if no alert_list is present. Otherwise this defaults to false.
 no_auto_intr_regs | optional | string | Set to true to suppress automatic generation of interrupt registers. Defaults to true if no interrupt_list is present. Otherwise this defaults to false.
 param_list | optional | parameter list | list of parameters of the IP
+registers | optional | list | list of register definition groups and offset control groups
 regwidth | optional | int | width of registers in bits (default 32)
 reset_request_list | optional | list | list of signals requesting reset
 scan | optional | python Bool | Indicates the module have `scanmode_i`
 scan_reset | optional | python Bool | Indicates the module have `scan_rst_ni`
 scan_en | optional | python Bool | Indicates the module has `scan_en_i`
-SPDX-License-Identifier | optional | string | License ientifier (if using pure json) Only use this if unable to put this information in a comment at the top of the file.
+SPDX-License-Identifier | optional | string | License identifier (if using pure json) Only use this if unable to put this information in a comment at the top of the file.
 wakeup_list | optional | name list+ | list of peripheral wakeups
 countermeasures | optional | name list | list of countermeasures in this block
 features | optional | name list | list of functional features in this block
+memory | optional | list | list of memory definitions
 
 The basic structure of a register definition file is thus:
 
@@ -254,7 +255,7 @@ In all of these the swaccess parameter is inherited from the register
 level, and will be added so this key is always available to the
 backend. The RXS and ENRXS will default to zero reset value (unless
 something different is provided for the register) and will have the
-key added, but TXILVL expicitly sets its reset value as 2.
+key added, but TXILVL explicitly sets its reset value as 2.
 
 The missing bits 17 and 18 will be treated as reserved by the tool, as
 will any bits between 21 and the maximum in the register.
@@ -589,7 +590,7 @@ module name_reg_top (
   input clk_i,
   input rst_ni,
 
-  // Below Regster interface can be changed
+  // Below Register interface can be changed
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
 

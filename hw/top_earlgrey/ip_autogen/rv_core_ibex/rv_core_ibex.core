@@ -48,6 +48,9 @@ filesets:
     depend:
       # common waivers
       - lowrisc:lint:common
+    files:
+      - lint/rv_core_ibex.vbl
+    file_type: waiver
 
 parameters:
   SYNTHESIS:

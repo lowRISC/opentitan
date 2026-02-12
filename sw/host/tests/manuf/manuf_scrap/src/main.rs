@@ -5,12 +5,12 @@
 use anyhow::Result;
 use clap::Parser;
 
-use opentitanlib::app::TransportWrapper;
-use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition::trigger_lc_transition;
+use ot_hal::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -29,7 +29,7 @@ struct Opts {
 fn manuf_scrap(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // Reset the chip, select the LC TAP, and connect to it.
     transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
     let mut jtag = opts
         .init
         .jtag_params
@@ -51,7 +51,6 @@ fn manuf_scrap(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         DifLcCtrlState::Scrap,
         None,
         /*use_external_clk=*/ false,
-        opts.init.bootstrap.options.reset_delay,
         Some(JtagTap::LcTap),
     )?;
 

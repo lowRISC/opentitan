@@ -116,11 +116,11 @@ module xbar_peri_bind;
     .h2d    (tl_otp_ctrl__core_o),
     .d2h    (tl_otp_ctrl__core_i)
   );
-  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_otp_ctrl__prim (
+  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_otp_macro__prim (
     .clk_i  (clk_peri_i),
     .rst_ni (rst_peri_ni),
-    .h2d    (tl_otp_ctrl__prim_o),
-    .d2h    (tl_otp_ctrl__prim_i)
+    .h2d    (tl_otp_macro__prim_o),
+    .d2h    (tl_otp_macro__prim_i)
   );
   bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_lc_ctrl__regs (
     .clk_i  (clk_peri_i),

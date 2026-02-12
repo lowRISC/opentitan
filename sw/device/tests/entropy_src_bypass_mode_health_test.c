@@ -3,6 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "hw/ip/aes/model/aes_modes.h"
+#include "hw/top/dt/aes.h"
+#include "hw/top/dt/alert_handler.h"
+#include "hw/top/dt/csrng.h"
+#include "hw/top/dt/edn.h"
+#include "hw/top/dt/entropy_src.h"
+#include "hw/top/dt/otbn.h"
 #include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
@@ -22,10 +28,10 @@
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/otbn_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/tests/otbn_randomness_impl.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "sw/device/lib/dif/autogen/dif_entropy_src_autogen.h"
 
 #define TIMEOUT (1000 * 1000)
@@ -45,17 +51,19 @@ status_t init_test_environment(void) {
   LOG_INFO(
       "Initializing modules sntropy_src, csrng, edn0, edn1, aes, otbn and "
       "alert_handler...");
-  TRY(dif_entropy_src_init(
-      mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));
-  TRY(dif_csrng_init(mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR),
-                     &csrng));
-  TRY(dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR), &edn0));
-  TRY(dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR), &edn1));
-  TRY(dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
-  TRY(dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
-  TRY(dif_alert_handler_init(
-      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
-      &alert_handler));
+  TRY(dif_entropy_src_init_from_dt(kDtEntropySrc, &entropy_src));
+  TRY(dif_csrng_init_from_dt(kDtCsrng, &csrng));
+  TRY(dif_edn_init_from_dt(kDtEdn0, &edn0));
+  TRY(dif_edn_init_from_dt(kDtEdn1, &edn1));
+  TRY(dif_aes_init_from_dt(kDtAes, &aes));
+  TRY(dif_otbn_init_from_dt(kDtOtbn, &otbn));
+  TRY(dif_alert_handler_init_from_dt(kDtAlertHandler, &alert_handler));
+
+  // Entropy testutils handle this recoverable alert separately, disable OTTF
+  // handling.
+  TRY(ottf_alerts_ignore_alert(dt_entropy_src_alert_to_alert_id(
+      kDtEntropySrc, kDtEntropySrcAlertRecovAlert)));
+
   return OK_STATUS();
 }
 

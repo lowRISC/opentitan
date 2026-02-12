@@ -16,6 +16,43 @@
  *               G is the base point of curve P-384, and
  *               d is a 384-bit scalar.
  *
+ * This routine calls the base point multiplication routine.
+ * Furthermore, this routine does an is on curve check on the result.
+ *
+ * @param[in]  dmem[d0]: 1st private key share d0 in dmem
+ * @param[in]  dmem[d1]: 2nd private key share d1 in dmem
+ * @param[out]  dmem[x]: x-coordinate in dmem
+ * @param[out]  dmem[y]: y-coordinate in dmem
+ *
+ * 384-bit quantities have to be provided in dmem in little-endian format,
+ * 512 bit aligned, with the highest 128 bit set to zero.
+ *
+ * Flags: When leaving this subroutine, the M, L and Z flags of FG0 correspond
+ *        to the computed affine y-coordinate.
+ *
+ * clobbered registers: x2, x3, x9 to x13, x17 to x23, x26 to x30
+ *                      w0 to w30
+ * clobbered flag groups: FG0
+ */
+.globl p384_base_mult_checked
+p384_base_mult_checked:
+  jal       x1, p384_base_mult
+
+  /* check if the result is on the p384 curve */
+  jal       x1, p384_isoncurve_check
+
+  ret
+
+
+/**
+ * Externally callable routine for P-384 base point multiplication
+ *
+ * returns Q = d (*) G
+ *         where Q is a resulting valid P-384 curve point in affine
+ *                   coordinates,
+ *               G is the base point of curve P-384, and
+ *               d is a 384-bit scalar.
+ *
  * Sets up context and calls the internal scalar multiplication routine.
  * This routine runs in constant time.
  *
@@ -73,7 +110,7 @@ p384_base_mult:
 
   /* scalar multiplication in projective space
      [w30:w25] <= (x, y, z) = d * G */
-  jal       x1, scalar_mult_int_p384
+  jal       x1, scalar_mult_int_p384_reblind
 
   /* conversion into affine space
      [w28:w25] <= (x, y) */
@@ -93,39 +130,3 @@ p384_base_mult:
   bn.sid    x2++, 32(x21)
 
   ret
-
-/* variables and scratchpad memory */
-.section .data
-
-.balign 32
-
-/* 1st private key share d0 */
-.globl d0
-.weak d0
-d0:
-  .zero 64
-
-/* 2nd private key share d1 */
-.globl d1
-.weak d1
-d1:
-  .zero 64
-
-/* buffer for x-coordinate */
-.globl x
-.weak x
-x:
-  .zero 64
-
-/* buffer for y-coordinate */
-.globl y
-.weak y
-y:
-  .zero 64
-
-/* 704 bytes of scratchpad memory */
-.balign 32
-.globl scratchpad
-.weak scratchpad
-scratchpad:
-  .zero 704

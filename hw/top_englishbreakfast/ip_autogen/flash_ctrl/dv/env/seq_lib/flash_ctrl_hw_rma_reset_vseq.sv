@@ -79,7 +79,7 @@ class flash_ctrl_hw_rma_reset_vseq extends flash_ctrl_hw_rma_vseq;
       disable fork;
       // Since the 2nd begin/end wait for substate of RMA,
       // the 2nd begin/end always finish first.
-      // So diable fork only terminate send_rma_req.
+      // So disable fork only terminate send_rma_req.
     end join // fork begin
 
     `uvm_info("Test", "RMA END", UVM_LOW)

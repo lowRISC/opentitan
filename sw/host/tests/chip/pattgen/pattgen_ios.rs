@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{ensure, Context, Result};
+use anyhow::{Context, Result, ensure};
 use clap::Parser;
 use object::{Object, ObjectSymbol};
 use rand::rngs::StdRng;
@@ -416,7 +416,7 @@ fn pattgen_ios(
                 if res.is_err() || opts.dump_waves {
                     log::info!(
                         "====[ VCD dump ]====\n{}\n====[ end dump ]====",
-                        waves.dump_vcd()
+                        waves.dump_vcd()?
                     );
                 }
                 res.with_context(|| format!("channel {i} did not meet expectations"))?;
@@ -573,9 +573,9 @@ fn main() -> Result<()> {
 
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"Running ", opts.timeout)?;
 
-    let res = UartConsole::wait_for(&*uart, r"peripheral frequency: ([0-9]+)\r\n", opts.timeout)?;
+    let res = UartConsole::wait_for(&*uart, r"peripheral frequency: ([0-9]+)", opts.timeout)?;
     let clk_io_freq_hz: u64 = res[1]
         .parse()
         .context("could not parse peripheral frequency")?;

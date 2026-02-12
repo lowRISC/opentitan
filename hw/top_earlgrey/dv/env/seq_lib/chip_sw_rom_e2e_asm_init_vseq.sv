@@ -132,13 +132,13 @@ class chip_sw_rom_e2e_asm_init_vseq extends chip_sw_base_vseq;
 
     // ePMP address entries
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[0],
-                 epmp_addr_tor(top_earlgrey_pkg::TOP_EARLGREY_ROM_BASE_ADDR))
+                 epmp_addr_tor(top_earlgrey_pkg::TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR))
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[2],
-                 epmp_addr_napot(top_earlgrey_pkg::TOP_EARLGREY_ROM_BASE_ADDR,
-                                 top_earlgrey_pkg::TOP_EARLGREY_ROM_SIZE_BYTES))
+                 epmp_addr_napot(top_earlgrey_pkg::TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR,
+                                 top_earlgrey_pkg::TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES))
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[5],
-                 epmp_addr_napot(top_earlgrey_pkg::TOP_EARLGREY_EFLASH_BASE_ADDR,
-                                 top_earlgrey_pkg::TOP_EARLGREY_EFLASH_SIZE_BYTES))
+                 epmp_addr_napot(top_earlgrey_pkg::TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
+                                 top_earlgrey_pkg::TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES))
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[10], epmp_addr_tor(MMIO_START_ADDRESS))
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[11], epmp_addr_tor(MMIO_END_ADDRESS))
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[13],
@@ -147,8 +147,8 @@ class chip_sw_rom_e2e_asm_init_vseq extends chip_sw_base_vseq;
     // PMP NA4 address calculation is the same as the TOR calculation.
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[14], epmp_addr_tor(RAM_STACK_GUARD_ADDRESS))
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[15],
-                 epmp_addr_napot(top_earlgrey_pkg::TOP_EARLGREY_RAM_MAIN_BASE_ADDR,
-                                 top_earlgrey_pkg::TOP_EARLGREY_RAM_MAIN_SIZE_BYTES))
+                 epmp_addr_napot(top_earlgrey_pkg::TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR,
+                                 top_earlgrey_pkg::TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES))
 
     // Check interrupts.
     `DV_CHECK_EQ(cfg.chip_vif.mstatus_mie, 0)

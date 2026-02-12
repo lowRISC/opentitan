@@ -27,9 +27,9 @@ Health testing will still be performed on boot-time mode entropy, but the window
 Once the initial boot-time mode phase has completed, the ENTROPY_SRC block can be switched to FIPS/CC compliant mode (for simplicity referred to as FIPS mode) by setting the `FIPS_ENABLE` field in the [`CONF`](registers.md#conf) register to `kMultiBitBool4True`.
 In this mode, once the raw entropy has been health checked, it will be passed into a conditioner block.
 This block will compress the bits such that the entropy bits/physical bits, or min-entropy value, should be improved over the raw data source min-entropy value.
-The compression operation will compress every [`HEALTH_TEST_WINDOWS.FIPS_WINDOW`](registers.md#health_test_windows--fips_window) x 4 tested bits into 384 full-entropy bits.
-By default, 2048 tested bits are used.
-Note that a seed is only produced if the last [`HEALTH_TEST_WINDOWS.FIPS_WINDOW`](registers.md#health_test_windows--fips_window) x 4 tested bits have passed the health tests.
+The compression operation will compress every [`HEALTH_TEST_WINDOWS.FIPS_WINDOW`](registers.md#health_test_windows--fips_window) tested symbols into 384 full-entropy bits.
+By default, 512 tested symbols are used.
+Note that a seed is only produced if the last [`HEALTH_TEST_WINDOWS.FIPS_WINDOW`](registers.md#health_test_windows--fips_window) tested symbols have passed the health tests.
 If a health test fails, the conditioner block continues absorbing the next window unless [`ALERT_SUMMARY_FAIL_COUNTS`](registers.md#alert_summary_fail_counts) reaches the configured [`ALERT_THRESHOLD`](registers.md#alert_threshold).
 Once the threshold is reached, the ENTROPY_SRC block stops serving entropy and signals a recoverable alert.
 Firmware then needs to disable/re-enable the block to restart operation.
@@ -40,8 +40,8 @@ When `RNG_FIPS` field in the [`CONF`](registers.md#conf) register is set to `kMu
 
 ### Startup Health Testing
 
-Note that after enabling the ENTROPY_SRC block, the health tests need to pass for two subsequent windows of [`HEALTH_TEST_WINDOWS.FIPS_WINDOW`](registers.md#health_test_windows--fips_window) x 4 tested bits (startup health testing).
-By default, 1024 samples of 4 bits (4096 1-bit samples when running in single-channel mode), i.e., 4096 tested bits, are used for producing the startup seed.
+Note that after enabling the ENTROPY_SRC block, the health tests need to pass for two subsequent windows of [`HEALTH_TEST_WINDOWS.FIPS_WINDOW`](registers.md#health_test_windows--fips_window) tested symbols (startup health testing).
+By default, 1024 tested symbols of RngBusWidth bits (1024 1-bit symbols when running in single-channel mode) are used for producing the startup seed.
 If a health test fails, the startup health testing starts over and the conditioner block continues absorbing the next window.
 If the health tests don't pass for two subsequent windows, the ENTROPY_SRC block stops operating and signals a recoverable alert.
 Firmware then needs to disable/re-enable the block to restart operation including the startup health testing.
@@ -76,16 +76,16 @@ For more details, refer to the [programmer's guide](programmers_guide.md/#firmwa
 ### Health Tests
 
 Health checks are performed on the input raw data from the PTRNG noise source when in that mode.
-There are four health tests that will be performed: repetitive count, adaptive proportion, bucket, and Markov tests.
+There are four health tests that will be performed: Repetition Count Test, Adaptive Proportion Test, bucket test, and Markov test.
 Each test has a pair of threshold values that determine that pass/fail of the test, one threshold for boot-time / bypass mode, and one for FIPS mode.
 By default, all tests are enabled, but can be turned off by setting the thresholds to the maximum value.
 Because of the variability of the PTRNG noise source, there are several registers that log statistics associated with the health tests.
-For example, the adaptive proportion test has a high watermark register that logs the highest measured number of ones.
-The [`ADAPTP_HI_WATERMARKS`](registers.md#adaptp_hi_watermarks) register has an entry for both FIPS and boot-time modes.
-This register allows for determining how close the threshold value should be set to the fail over value.
-Specific to the adaptive proportion test, there is also the [`ADAPTP_LO_WATERMARKS`](registers.md#adaptp_lo_watermarks) register, which will hold the lowest number of ones measured.
+In particular, the [`HT_WATERMARK`](registers.md#ht_watermark) can be used to log the highest or lowest results of specific health tests.
+This allows to determine how close the threshold values for specific tests should be set to the fail over values.
+For example, to log the highest measured number of ones in the Adaptive Proportion Test, firmware can configure the [`HT_WATERMARK_NUM`](registers.md#ht_watermark_num) register with the value 2 (`ADAPTP_HI`).
+To log the lowest measured number of ones in the same test, firmware can configure [`HT_WATERMARK_NUM`](registers.md#ht_watermark_num) register with the value 3 (`ADAPTP_LO`).
 To help understand how well the thresholds work through time, a running count of test fails is kept in the [`ADAPTP_HI_TOTAL_FAILS`](registers.md#adaptp_hi_total_fails) register.
-The above example for the adaptive proportion test also applies to the other health tests, with the exception of the low watermark registers.
+The above example for the Adaptive Proportion Test also applies to the other health tests, with the exception of the low watermark registers.
 See the timing diagrams below for more details on how the health tests work.
 It should be noted that for all error counter registers, they are sized for 16 bits, which prevents any case where counters might wrap.
 
@@ -145,16 +145,16 @@ However, if the ENTROPY_SRC block experiences internal back pressure, health tes
   Note that this may also happen in [Firmware Override: Observe mode](programmers_guide.md#firmware_override_-_observe).
   Firmware should thus explicitly check the [`RECOV_ALERT_STS.POSTHT_ENTROPY_DROP_ALERT`](registers.md#recov_alert_sts--postht_entropy_drop_alert) bit to ensure the bits retrieved from the Observe FIFO are indeed contiguous.
 
-The reduce the probability of dropping post-health test entropy bits, the **Distribution FIFO** can be used.
-This FIFO has pass-through mode enabled meaning it doesn't add latency to hardware pipeline.
+To reduce the probability of dropping post-health test entropy bits, the **Distribution FIFO** can be used.
+This FIFO has pass-through mode enabled meaning it doesn't add latency to the hardware pipeline.
 It has a width of 32 bits.
 Its depth is configurable via compile-time Verilog parameter and should match the expected level of conditioner back pressure.
 The level of conditioner back pressure depends on the following factors:
-- The maximum latency for the conditioner to add the padding bits \\(n_{pad}\\) (25 clock cycles) and to run the internal SHA3 primitive \\(n_{sha3}\\) (24 clock cycles).
-- The maximum latency of the [CS AES halt request interface](interfaces.md/#inter-module-signals) \\(n_{halt}\\) (48 clock cycles corresponding to CSRNG performing the Update function).
+- The maximum latency for the conditioner to add the padding bits \\(n_{pad}\\) (25 clock cycles) and,
+- The maximum latency for the conditioner to run the internal SHA3 primitive \\(n_{sha3}\\) (24 clock cycles).
 
 The required depth \\(d_{distr}\\) of the Distribution FIFO can be computed as
-$$ d_{distr} = { (r_{ptrng} * s_{symbol}) * (2 * (n_{halt} + n_{sha3}) + n_{pad} + n_{uarch}) - 32 - 64 \over 32} $$
+$$ d_{distr} = { (r_{ptrng} * s_{symbol}) * (2 * n_{sha3} + n_{pad} + n_{uarch}) - 32 - 64 \over 32} $$
 
 where
 - \\(r_{ptrng}\\) is the rate at which the PTRNG noise source generates entropy samples,
@@ -166,8 +166,10 @@ For [Top Earlgrey](../../../top_earlgrey/README.md), the assumption is that the 
 With the ENTROPY_SRC block running at 100 MHz, this leads to noise source rate \\(r_{ptrng}\\) = 1/8000.
 
 The noise source model inside the DV environment generates symbols with an average rate of 1 4-bit symbol every 6.5 clock cycles.
-To reach functional coverage metrics, the `entropy_src_rng_max_rate` configures the noise source to generate a 4-bit symbol every other clock cycle (\\(r_{ptrng}\\) = 1/2) an the CS AES halt request interface to always respond immediately (\\(n_{halt}\\) = 0).
+To reach functional coverage metrics, the `entropy_src_rng_max_rate` configures the noise source to generate a 4-bit symbol every other clock cycle (\\(r_{ptrng}\\) = 1/2).
 With these settings, the ENTROPY_SRC block should never drop samples due to conditioner back pressure if a depth of two is chosen for the Distribution FIFO (\\(d_{distr}\\) = 2).
+Note that the pipeline depth tracking logic responsible for guaranteeing that the full health test window is always absorbed into the conditioner before triggering the final processing requires an odd depth of the Distribution FIFO.
+As a result, a depth of three is chosen for the Distribution FIFO by default (\\(d_{distr}\\) = 3).
 
 
 ### Security
@@ -223,13 +225,17 @@ The following waveform shows an example of what the PTRNG timing looks like.
 ]}
 ```
 
+Whenever the `rng_enable` signal is asserted, the ENTROPY_SRC accepts every `rng_b` value marked by an asserted `rng_valid` bit.
+`rng_b` values get ignored whenever the `rng_valid` bit is de-asserted.
+The maximum rate at which the ENTROPY_SRC can operate is one `rng_b` value (i.e. a symbol) every two clock cycles.
+
 ### Repetition Count Test
 The following waveform shows how a sampling of a data pattern will be tested by the Repetition Count test.
 Operating on each bit stream, this test will count when a signal is at a stuck level.
 This NIST test is intended to signal a catastrophic failure with the PTRNG noise source.
 
 Note that as per definition in SP 800-90B, the Repetition Count test does not operate on a fixed window.
-The repetition count test fails if any sequence of bits continuously asserts the same value for too many samples, as determined by the programmable threshold, regardless of whether that sequence crosses any window boundaries.
+The Repetition Count Test fails if any sequence of bits continuously asserts the same value for too many samples, as determined by the programmable threshold, regardless of whether that sequence crosses any window boundaries.
 
 
 ```wavejson
@@ -285,7 +291,7 @@ In this example, the sum is taken over all RNG lines (i.e., [`CONF.THRESHOLD_SCO
 ```
 
 ### Bucket Test
-The following waveform shows how a sampling of a data pattern will be tested by the Bucket test.
+The following waveform shows how a sampling of a data pattern will be tested by the bucket test.
 Operating on all four bit streams, this test will identify the symbol and sort it into bin counters, or "buckets".
 This test is intended to find bias with a symbol or symbols.
 
@@ -327,7 +333,7 @@ For instance the string: "010101010101010101" has almost zero entropy, even thou
 The test counts the number of changes in the a fixed number of RNG samples, and comparing the number of "01"/"10" pairs to the number of "00"/"11" pairs.
 On average, the number of switching (e.g., "01") vs. non-switching (e.g., "00") pairs should be 50% of the total, with a variance proportional to the sample size.
 
-Like the Adaptive Proportion test, the Markov Test can be computed either cumulatively (summing the results over all RNG lines) or on a per-line basis.
+Like the Adaptive Proportion test, the Markov test can be computed either cumulatively (summing the results over all RNG lines) or on a per-line basis.
 In this example, the RNG lines are scored individually (i.e., [`CONF.THRESHOLD_SCOPE`](registers.md#conf) is False).
 
 ```wavejson
@@ -355,15 +361,15 @@ In this example, the RNG lines are scored individually (i.e., [`CONF.THRESHOLD_S
 Vendor-specific tests are supported through an external health test interface (xht).
 This is the same interface that is used for the internal health tests.
 Below is a description of this interface:
-- entropy_bit: 4-bit wide bus of entropy to be tested.
-- entropy_bit_valid: indication of when the entropy is valid.
+- entropy_bit: the 4- to 256-bit wide bus of entropy to be tested.
+- entropy_valid: indication of when the entropy is valid.
 - rng_bit_en: indication whether running in single-channel or multi-channel mode.
-- rng_bit_sel: 2-bit signal to indicate the selected channel when running in single-channel mode.
+- rng_bit_sel: ceil(log2(entropy_bit)) wide signal to indicate the selected channel when running in single-channel mode.
 - clear: signal to clear counters, and is register driven.
 - active: signal to indicate when the test should run, and is register driven.
 - thresh_hi: field to indicate what high threshold the test should use, and is register driven.
 - thresh_lo: field to indicate what low threshold the test should use, and is register driven.
-- health_test_window: 18-bit signal indicating the length of the health test window in symbols.
+- health_test_window: 16 + ceil(log2(entropy_bit)) -bit signal indicating the length of the health test window in symbols.
 - window_wrap_pulse: field to indicate the end of the current window.
 - threshold_scope: field to indicate whether the thresholds are intended to be applied to all entropy lines collectively or on a line-by-line basis, to be read from a register.
 - test_cnt_hi: 16-bit generic test count high result, to be read from a register.

@@ -10,11 +10,27 @@ class esc_receiver_driver extends alert_esc_base_driver;
   `uvm_component_utils(esc_receiver_driver)
 
 
+  // Set by esc_ping_detector if it sees a single-cycle pulse on esc_p/esc_n. If set, the receiver
+  // will drive a 1010 pattern on resp_p/resp_n for a while in drive_esc_resp (stopping if it
+  // receives a genuine escalation).
   bit is_ping;
-  extern function new (string name="", uvm_component parent=null);
+
+  extern function new (string name, uvm_component parent);
+
+  // This task runs forever and maintains dv_base_driver::under_reset.
+  //
+  // Overridden from dv_base_driver.
   extern virtual task reset_signals();
+
+  // Run rsp_escalator and esc_ping_detector. Does not terminate.
+  //
+  // Overridden from alert_esc_base_driver.
   extern virtual task drive_req();
+
+  // Run forever, detect single-cycle escalation requests. These are ping requests. When one
+  // happens, set is_ping, which tells drive_esc_resp to send the 1010... pattern.
   extern virtual task esc_ping_detector();
+
   // This task will response to escalator sender's esc_p and esc_n signal,
   // depending on the signal length and req setting, it will response to
   // ping and real esc signals.
@@ -40,11 +56,12 @@ class esc_receiver_driver extends alert_esc_base_driver;
   extern virtual function bit get_esc();
   extern virtual task wait_esc_complete();
   extern virtual task wait_esc();
+  // Set the values driven through resp_p / resp_n to 0/1 and clear the is_ping flag
   extern virtual task do_reset();
 
 endclass : esc_receiver_driver
 
-function esc_receiver_driver::new (string name="", uvm_component parent=null);
+function esc_receiver_driver::new (string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
 
@@ -54,7 +71,6 @@ task esc_receiver_driver::reset_signals();
     @(negedge cfg.vif.rst_n);
     under_reset = 1;
     do_reset();
-    is_ping = 0;
     @(posedge cfg.vif.rst_n);
     under_reset = 0;
   end
@@ -64,28 +80,36 @@ task esc_receiver_driver::drive_req();
   fork
     rsp_escalator();
     esc_ping_detector();
-  join_none
+  join
 endtask : drive_req
 
 task esc_receiver_driver::esc_ping_detector();
   forever begin
-    int cnt ;
-    wait(under_reset == 0);
-    fork
-      begin
-        wait_esc();
-        @(cfg.vif.receiver_cb);
-        while (get_esc() == 1) begin
-          cnt++;
-          @(cfg.vif.receiver_cb);
-        end
-        if (cnt == 1) is_ping = 1;
-      end
-      begin
+    wait(!under_reset);
+    fork begin : isolation_fork
+      fork
         wait(under_reset);
-      end
-    join_any
-    disable fork;
+        begin
+          int cnt;
+
+          // Wait until the esc_p/esc_n lines are not 0/1, which shows the start of an escalation.
+          wait_esc();
+          @(cfg.vif.receiver_cb);
+
+          // Now count the number of cycles where esc_p/esc_n is 1/0
+          while (get_esc() == 1) begin
+            cnt++;
+            @(cfg.vif.receiver_cb);
+          end
+
+          // If there was exactly one cycle, this is a ping from the escalation sender module. Set
+          // the is_ping flag and drive_esc_resp will pick this up and start driving a 1010...
+          // sequence
+          if (cnt == 1) is_ping = 1;
+        end
+      join_any
+      disable fork;
+    end join
   end
 endtask : esc_ping_detector
 
@@ -117,18 +141,13 @@ task esc_receiver_driver::drive_esc_resp(alert_esc_seq_item req);
   if (req.standalone_int_err) begin
     wait_esc_complete();
     @(cfg.vif.receiver_cb); // wait one clock cycle to ensure is_ping is set
-    if (!is_ping) begin
-      repeat (req.int_err_cyc) begin
-        if (cfg.vif.esc_tx.esc_p === 1'b0 && !is_ping) begin
-          random_drive_resp_signal();
-          @(cfg.vif.receiver_cb);
-        end else begin
-          break;
-        end
-      end
-      // TODO: missed int_err case at first cycle of the esc_p = 1
-      if (!is_ping) reset_resp();
+    repeat (req.int_err_cyc) begin
+      if (is_ping || cfg.vif.esc_tx.esc_p !== 1'b0) break;
+      random_drive_resp_signal();
+      @(cfg.vif.receiver_cb);
     end
+    // TODO: missed int_err case at first cycle of the esc_p = 1
+    if (!is_ping) reset_resp();
   end else begin
     wait_esc();
     @(cfg.vif.receiver_cb);
@@ -137,20 +156,18 @@ task esc_receiver_driver::drive_esc_resp(alert_esc_seq_item req);
     // drives escalation ping request response according to the above scenarios:
     // if no sig_int_err: the driver will toggle resp_p/n as design required
     // if there is sig_int_err: the driver will randomly toggle resp_p/n until ping timeout
-    // if ping is interrupted by real esclation signal: the ping response is aborted
+    // if ping is interrupted by real escalation signal: the ping response is aborted
     // immediately and response to the real escalation signal without sig_int_err
     if (is_ping) begin
       // `ping_timeout_cycle` is divided by 2 because `toggle_resp_signal` task contains two cycles
       int toggle_cycle = req.int_err ? cfg.ping_timeout_cycle / 2 : 1;
-      fork
-        begin : isolation_fork
-          fork
-            repeat (toggle_cycle) toggle_resp_signal(req.ping_timeout);
-            cfg.probe_vif.wait_esc_en();
-          join_any
-          disable fork;
-        end
-      join
+      fork begin : isolation_fork
+        fork
+          repeat (toggle_cycle) toggle_resp_signal(req.ping_timeout);
+          cfg.probe_vif.wait_esc_en();
+        join_any
+        disable fork;
+      end join
       is_ping = 0;
       if (cfg.probe_vif.get_esc_en()) begin
         while (get_esc() === 1'b1) toggle_resp_signal(0);
@@ -217,4 +234,5 @@ endtask : wait_esc
 task esc_receiver_driver::do_reset();
   cfg.vif.esc_rx_int.resp_p <= 1'b0;
   cfg.vif.esc_rx_int.resp_n <= 1'b1;
+  is_ping = 0;
 endtask : do_reset

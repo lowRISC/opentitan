@@ -11,5 +11,15 @@
     prio: 3
     topname: earlgrey
     uniquified_modules: {}
+    racl_support: false
+  }
+  dtgen:
+  {
+    src:
+    {
+      type: uint16
+      name: num_irq_sources
+      doc: Number of interrupt sources
+    }
   }
 }

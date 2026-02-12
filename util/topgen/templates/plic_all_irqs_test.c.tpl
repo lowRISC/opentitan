@@ -4,6 +4,7 @@
 // clang-format off
 ${gencmd}
 <%
+import topgen.lib as lib
 
 ## TODO: Darjeeling contains peripherals which expose IRQs/Alerts to the RV
 ## PLIC and Alert Handler respectively, but are not accessible from the hart
@@ -11,8 +12,10 @@ ${gencmd}
 ## ALERT_TEST registers). While this issue remains, we specifically hard-code
 ## for excluding these IRQs from the test.
 IGNORE_PERIPHERALS = [("ac_range_check", "darjeeling"), ("racl_ctrl", "darjeeling")]
-irq_peripherals = [p for p in helper.irq_peripherals[addr_space]
+plics = lib.find_modules(top["module"], "rv_plic")
+irq_peripherals = [p for plic in plics for p in helper.irq_peripherals[plic["name"]][addr_space]
                    if (p.inst_name, top["name"]) not in IGNORE_PERIPHERALS]
+plic_names = [x["name"] for x in plics]
 
 ## Get unique module names (not instance names) and the associated masks
 ## determining interrupt type and default behavior. The helper list is
@@ -54,7 +57,7 @@ def args(p):
 #include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/mmio.h"
-% for n in sorted(irq_peripheral_names + ["rv_plic"]):
+% for n in sorted(irq_peripheral_names + plic_names):
 #include "sw/device/lib/dif/autogen/dif_${n}_autogen.h"
 % endfor
 #include "sw/device/lib/runtime/ibex.h"
