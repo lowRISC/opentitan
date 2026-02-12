@@ -3,9 +3,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Docker container containing various hardware and software development tools
-# for OpenTitan.
+# for OpenTitan, based on the Claude Code sandbox image.
+#
+# Build from $REPO_TOP:
+#   docker build -t opentitan-claude -f util/container/Dockerfile .
 
-# Global configuration options.
+# =============================================================================
+# Global configuration options
+# =============================================================================
 ARG VERILATOR_VERSION=4.210
 ARG VERIBLE_VERSION=v0.0-3622-g07b310a3
 # The RISCV toolchain version should match the release tag used in GitHub.
@@ -22,8 +27,13 @@ ARG SV2V_VERSION=v0.0.13
 ARG NEXTPNR_XILINX_VERSION=0.8.2
 ARG OPENFPGALOADER_VERSION=v0.12.2
 
-# Main container image.
-FROM ubuntu:22.04 AS opentitan
+# =============================================================================
+# Base image: Claude Code sandbox
+# =============================================================================
+# Provides: Ubuntu base, agent user with sudo, Docker CLI, Node.js, Go,
+# Python 3, Git, ripgrep, jq, GitHub CLI.
+FROM docker/sandbox-templates:claude-code
+
 ARG VERILATOR_VERSION
 ARG VERIBLE_VERSION
 ARG RISCV_TOOLCHAIN_TAR_VERSION
@@ -35,28 +45,32 @@ ARG NEXTPNR_XILINX_VERSION
 ARG OPENFPGALOADER_VERSION
 
 LABEL version="1.0"
-LABEL description="OpenTitan development container."
+LABEL description="OpenTitan development container with Claude Code and open-source FPGA toolchain."
 LABEL maintainer="opentitan-dev@opentitan.org"
+
+USER root
 
 # Use bash as default shell.
 RUN ln -sf /bin/bash /bin/sh
 
-# Install system packages
+# =============================================================================
+# System packages
+# =============================================================================
+# Necessary to avoid user interaction with tzdata during install
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
+
+# Install OpenTitan apt requirements + sandbox development extras.
 #
-# Install (and cleanup) required packages (from apt-requirements.txt).
-# Also add some additional packages for the use within this container and for
-# developer convenience:
+# Packages from apt-requirements.txt provide the OpenTitan base dependencies.
+# Additional packages provide developer convenience tools for the container:
 # - gosu and sudo are used by the scripting to make the image more convenient
 #   to use.
 # - locales and locales-all are required to set the locale.
 # - minicom and screen are useful to see UART communication.
 # - dc and time are requirements of Synopsys VCS.
 # - software-properties-common is required to be able to install newer gcc versions.
-
-# Necessary to avoid user interaction with tzdata during install
-ARG DEBIAN_FRONTEND=noninteractive
-ENV TZ=UTC
-
+# - Sandbox extras: tmux, htop, vim, nano, strace, net-tools, xvfb, etc.
 COPY apt-requirements.txt /tmp/apt-requirements.txt
 RUN sed -i -e '/^$/d' -e '/^#/d' -e 's/#.*//' /tmp/apt-requirements.txt \
     && apt-get update \
@@ -71,9 +85,29 @@ RUN sed -i -e '/^$/d' -e '/^#/d' -e 's/#.*//' /tmp/apt-requirements.txt \
         dc \
         time \
         software-properties-common \
+        wget \
+        vim \
+        nano \
+        tmux \
+        htop \
+        less \
+        strace \
+        gzip \
+        net-tools \
+        iputils-ping \
+        openssh-client \
+        coreutils \
+        xvfb \
+        libfontconfig1 \
+        libsdl2-2.0-0 \
+        python3-numpy \
+        python3-opencv \
     && apt-get clean; \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
 
+# =============================================================================
+# Clang / LLVM toolchain (version-pinned for OpenTitan)
+# =============================================================================
 # Install and configure clang and llvm tools for coverage measurements.
 # Note: Some commands listed below are missing in 13.0.1 and cause warnings during
 # build. These are kept intentionally since we plan to use them in the future, e.g.
@@ -121,6 +155,10 @@ RUN curl https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add \
         done; \
         ${cmd} ; \
     )
+
+# =============================================================================
+# HDL development tools (Verilator, Verible)
+# =============================================================================
 
 # Install verilator prebuild binary
 RUN mkdir -p /tools/verilator \
@@ -172,7 +210,7 @@ RUN git clone --depth 1 --branch ${YOSYS_VERSION} \
     && make -j$(nproc) PREFIX=/tools/yosys \
     && make install PREFIX=/tools/yosys \
     && rm -rf /tmp/yosys
-ENV PATH "/tools/yosys/bin:${PATH}"
+ENV PATH="/tools/yosys/bin:${PATH}"
 
 # Install sv2v (SystemVerilog to Verilog converter)
 # Used to preprocess OpenTitan's SystemVerilog into Verilog that Yosys can
@@ -182,7 +220,7 @@ RUN curl -sSfL -o /tmp/sv2v.tgz \
     && mkdir -p /tools/sv2v/bin \
     && tar -C /tools/sv2v -xzf /tmp/sv2v.tgz --strip-components=1 \
     && rm /tmp/sv2v.tgz
-ENV PATH "/tools/sv2v/bin:${PATH}"
+ENV PATH="/tools/sv2v/bin:${PATH}"
 
 # Install Project X-Ray: bitstream tools + database for Xilinx 7-series.
 # prjxray provides fasm2frames and xc7frames2bit for bitstream generation.
@@ -200,7 +238,7 @@ ENV XRAY_DIR="/tools/prjxray"
 ENV XRAY_DATABASE_DIR="/tools/prjxray-db"
 ENV XRAY_TOOLS_DIR="/tools/prjxray/build/tools"
 ENV XRAY_UTILS_DIR="/tools/prjxray/utils"
-ENV PATH "/tools/prjxray/build/tools:${PATH}"
+ENV PATH="/tools/prjxray/build/tools:${PATH}"
 
 # Install nextpnr-xilinx (open-source place & route for Xilinx 7-series)
 # From the openXC7 fork which adds MMCME2_ADV, BRAM, and other 7-series support.
@@ -226,7 +264,7 @@ RUN git clone --depth 1 --branch ${NEXTPNR_XILINX_VERSION} \
     && mkdir -p /tools/nextpnr-xilinx/share/python \
     && cp -r xilinx/python/* /tools/nextpnr-xilinx/share/python/ \
     && rm -rf /tmp/nextpnr-xilinx
-ENV PATH "/tools/nextpnr-xilinx/bin:${PATH}"
+ENV PATH="/tools/nextpnr-xilinx/bin:${PATH}"
 
 # Install openFPGALoader (open-source FPGA programming via JTAG/SPI)
 # Replaces Vivado Hardware Manager for loading bitstreams onto the CW310.
@@ -238,59 +276,94 @@ RUN git clone --depth 1 --branch ${OPENFPGALOADER_VERSION} \
     && make -j$(nproc) \
     && make install \
     && rm -rf /tmp/openFPGALoader
-ENV PATH "/tools/openFPGALoader/bin:${PATH}"
+ENV PATH="/tools/openFPGALoader/bin:${PATH}"
 
-# Set Locale to utf-8 everywhere
+# =============================================================================
+# Locale and directory setup
+# =============================================================================
 ENV LC_ALL=en_US.UTF-8
 ENV LANG=en_US.UTF-8
 ENV LANGUAGE=en_US:en
 
-# Scripting for use within this container.
-COPY util/container/start.sh /start.sh
-COPY util/container/sudoconf /etc/sudoers.d/dev
-
-# Add the development user (UID/GID to be replaced).
-RUN groupadd dev \
-    && useradd --create-home -g dev dev \
-    && usermod -p '*' dev \
-    && passwd -u dev
-
-# Give the dev user access to `/tools` so they can install the toolchain later.
+# Give the agent user access to /tools so they can install toolchains later.
 RUN mkdir -p /tools \
-    && chown dev:dev /tools \
+    && chown agent:agent /tools \
     && chmod 775 /tools
 
-# All subsequent steps are performed as user.
-USER dev:dev
+# Create additional directories for projects and data.
+RUN mkdir -p /workspace/projects /workspace/data
 
-# Install Python plus packages.
+# =============================================================================
+# User-space setup (agent user from sandbox base image)
+# =============================================================================
+USER agent
+
+# Install Python packages required by OpenTitan.
 #
 # Explicitly updating pip and setuptools is required to have these tools
 # properly parse Python-version metadata, which some packages uses to
 # specify that an older version of a package must be used for a certain
 # Python version. If that information is not read, pip installs the latest
 # version, which then fails to run.
-ENV PATH="/home/dev/.local/bin:${PATH}"
-COPY --chown=dev:dev python-requirements.txt /tmp/python-requirements.txt
+ENV PATH="/home/agent/.local/bin:${PATH}"
+COPY --chown=agent:agent python-requirements.txt /tmp/python-requirements.txt
 RUN python3 -m pip install --user -U pip "setuptools<66.0.0" \
     && python3 -m pip install --user -r /tmp/python-requirements.txt \
         --no-warn-script-location \
     && rm -f /tmp/python-requirements.txt
 
-# Get the RISC-V device toolchain
-COPY --chown=dev:dev util/get-toolchain.py /tmp/get-toolchain.py
+# Get the RISC-V device toolchain (installs to /tools/riscv).
+COPY --chown=agent:agent util/get-toolchain.py /tmp/get-toolchain.py
 RUN /tmp/get-toolchain.py -r ${RISCV_TOOLCHAIN_TAR_VERSION} \
     && rm -f /tmp/get-toolchain.py
 
-USER root:root
+# Claude Code configuration.
+RUN echo '{"hasCompletedOnboarding": true}' > ~/.claude.json \
+    && mkdir -p /home/agent/.claude \
+    && echo '{"env":{"CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS":"1"},"teammateMode":"tmux"}' > /home/agent/.claude/settings.json \
+    && echo 'set -g default-terminal "screen-256color"' > /home/agent/.tmux.conf
 
-# Install bazel using bazelisk.
+# Install .NET 8.0 runtime.
+RUN curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin \
+    --channel 8.0 \
+    --runtime dotnet \
+    --install-dir /home/agent/.dotnet
+
+# =============================================================================
+# Bazelisk (installed as root)
+# =============================================================================
+USER root
+
 RUN BAZELISK_PATH="/usr/local/bin/bazelisk"; \
     BAZELISK_URL="https://github.com/bazelbuild/bazelisk/releases/download/${BAZELISK_VERSION}/bazelisk-linux-amd64"; \
     curl -L -o ${BAZELISK_PATH} ${BAZELISK_URL} && \
     chmod +x ${BAZELISK_PATH} && \
     ln -s ${BAZELISK_PATH} /usr/local/bin/bazel
 
-RUN runuser dev -c "bazel > /dev/null"
+RUN runuser agent -c "bazel > /dev/null"
 
-ENTRYPOINT [ "/start.sh" ]
+# =============================================================================
+# Final environment
+# =============================================================================
+ENV PATH="/home/agent/.dotnet:${PATH}"
+ENV DOTNET_ROOT="/home/agent/.dotnet"
+ENV PYTHONPATH="/workspace:${PYTHONPATH}"
+ENV NODE_ENV=development
+ENV PYTHONUNBUFFERED=1
+ENV COLORTERM=truecolor
+ENV ANTHROPIC_MODEL=claude-opus-4-6
+
+WORKDIR /workspace
+
+# The container includes:
+# - Ubuntu-based environment with Claude Code
+# - Docker CLI for running additional containers
+# - GitHub CLI, Node.js, Go, Python 3
+# - Git, ripgrep, jq
+# - Non-root 'agent' user with sudo access
+# - Private Docker daemon
+# - OpenTitan: RISC-V toolchain, Verilator, Verible, Clang 16, Bazelisk
+# - Open-source FPGA: Yosys, sv2v, nextpnr-xilinx, Project X-Ray, openFPGALoader
+
+USER agent
+CMD ["tmux", "new-session", "-s", "claude", "claude", "--dangerously-skip-permissions"]

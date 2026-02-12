@@ -1,44 +1,59 @@
 # Docker Container
 
-Docker container based on Ubuntu 22.04 LTS containing various hardware and
-software development tools for OpenTitan, as listed in the
+Docker container based on the Claude Code sandbox image, containing various
+hardware and software development tools for OpenTitan, as listed in the
 [OpenTitan documentation](../../doc/getting_started/README.md).
+
+The container integrates Claude Code with the full OpenTitan development
+toolchain and an open-source FPGA bitstream flow.
 
 ## Local Build Instructions
 
-For now, no pre-built containers are available; you'll need to build the Docker container locally.
-First, you'll need to install Docker either through your package manager or their [download page](https://www.docker.com/get-started/).
-You'll also need to clone the [OpenTitan repository](https://github.com/lowRISC/opentitan) if you haven't done that yet.
-Then, from `$REPO_TOP` (the top-level directory in the repository, called `opentitan` by default), you can build the container with:
+First, you'll need to install Docker either through your package manager or
+their [download page](https://www.docker.com/get-started/). You'll also need
+to clone the [OpenTitan repository](https://github.com/lowRISC/opentitan) if
+you haven't done that yet.
+
+Then, from `$REPO_TOP` (the top-level directory in the repository, called
+`opentitan` by default), you can build the container with:
 
 ```shell
-$ sudo docker build -t opentitan -f util/container/Dockerfile .
+$ sudo docker build -t opentitan-claude -f util/container/Dockerfile .
 ```
 
 ## Using the Container
 
-Run the container with `docker run`, mapping the current working directory to
-`/home/dev/src`. The user `dev` will have the same user ID as the current user
-on the host (you!), causing all files created by the `dev` user in the container
-to be owned by the current user on the host.
+### With Claude Code (default)
 
-If you'd like to initialize your shell environment in a specific way, you can
-pass an environment variable `USER_CONFIG=/path/to/a/script.sh`. Otherwise,
-remove the `--env USER_CONFIG` argument from the invocation shown below.
+The default `CMD` starts a tmux session running Claude Code:
 
-The script passed through this mechanism will be sourced. The path of the script
-must be within the container, e.g. in the OpenTitan repository directory.
-
-```
+```shell
 docker run -t -i \
-  -v $(pwd):/home/dev/src \
-  --env DEV_UID=$(id -u) --env DEV_GID=$(id -g) \
-  --env USER_CONFIG=/home/dev/src/docker-user-config.sh \
-  opentitan:latest \
+  -v $(pwd):/workspace/opentitan \
+  opentitan-claude:latest
+```
+
+### Interactive shell
+
+To get a regular shell instead:
+
+```shell
+docker run -t -i \
+  -v $(pwd):/workspace/opentitan \
+  opentitan-claude:latest \
   bash
 ```
 
-You can use `sudo` within the container to gain root permissions.
+The container runs as the `agent` user (from the Claude Code sandbox base
+image). You can use `sudo` within the container to gain root permissions.
+
+## Included Tools
+
+The container bundles:
+
+- **Claude Code**: AI-assisted development (runs as default CMD)
+- **OpenTitan toolchain**: RISC-V toolchain, Verilator, Verible, Clang 16, Bazelisk
+- **Sandbox extras**: Docker CLI, GitHub CLI, Node.js, Go, Python 3, Git, ripgrep, jq, .NET 8.0
 
 ## Open-Source FPGA Toolchain
 
