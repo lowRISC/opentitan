@@ -113,18 +113,9 @@ RUN sed -i -e '/^$/d' -e '/^#/d' -e 's/#.*//' /tmp/apt-requirements.txt \
 # build. These are kept intentionally since we plan to use them in the future, e.g.
 # `llvm-remark-size-diff` and `llvm-tli-checker`.
 #
-# Uses the modern signed-by keyring approach (apt-key was removed in Ubuntu 24.04+).
-# apt.llvm.org only hosts packages for LTS releases (jammy, noble), so non-LTS
-# codenames (e.g. questing/25.04) fall back to the nearest supported LTS (noble).
-RUN apt-get update && apt-get install -y gnupg \
-    && mkdir -p /etc/apt/keyrings \
-    && curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key \
-        | gpg --dearmor -o /etc/apt/keyrings/llvm-archive-keyring.gpg \
-    && CODENAME="$(. /etc/os-release && echo $UBUNTU_CODENAME)" \
-    && case "$CODENAME" in jammy|noble) ;; *) CODENAME="noble" ;; esac \
-    && echo "deb [signed-by=/etc/apt/keyrings/llvm-archive-keyring.gpg] https://apt.llvm.org/${CODENAME}/ llvm-toolchain-${CODENAME}-${CLANG_VERSION} main" \
-        > /etc/apt/sources.list.d/llvm-${CLANG_VERSION}.list \
-    && apt-get update \
+# apt.llvm.org has dropped LLVM 16, so install from Ubuntu's own repos which
+# carry multiple clang/llvm versions (clang-16 is available in Ubuntu >= 23.04).
+RUN apt-get update \
     && apt-get install -y clang-${CLANG_VERSION} lldb-${CLANG_VERSION} lld-${CLANG_VERSION} \
         clangd-${CLANG_VERSION} clang-tidy-${CLANG_VERSION} clang-format-${CLANG_VERSION} \
         clang-tools-${CLANG_VERSION} llvm-${CLANG_VERSION} lld-${CLANG_VERSION} \
