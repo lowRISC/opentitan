@@ -82,8 +82,6 @@ class CSRFile:
         }
 
         self._idx_to_csr: Dict[int, Any] = {
-            0x7c0: self.flags.groups[0],
-            0x7c1: self.flags.groups[1],
             0x7c8: self.flags,
             0x7d8: self.RND_PREFETCH,
             0x7d9: self.KMAC_IF_STATUS,
@@ -116,6 +114,13 @@ class CSRFile:
         return idx in self._known_indices
 
     def read_unsigned(self, wsrs: WSRFile, idx: int) -> int:
+        # The flag groups are implemented as one physical register. Reading one flag group is
+        # therefore actually a read from both groups.
+        if 0x7c0 <= idx <= 0x7c1:
+            # FG0/FG1
+            fg = idx - 0x7c0
+            return self._get_field(fg, 4, self.flags.read_unsigned())
+
         if 0x7d0 <= idx <= 0x7d7:
             # MOD0 .. MOD7. MODi is bits [32*(i+1)-1..32*i]
             mod_n = idx - 0x7d0
@@ -129,6 +134,15 @@ class CSRFile:
 
     def write_unsigned(self, wsrs: WSRFile, idx: int, value: int) -> None:
         assert 0 <= value < (1 << 32)
+
+        # The flag groups are implemented as one physical register. Writing to one flag group is
+        # therefore actually a write to both groups.
+        if 0x7c0 <= idx <= 0x7c1:
+            # FG0/FG1
+            fg = idx - 0x7c0
+            old = self.flags.read_unsigned()
+            self.flags.write_unsigned(self._set_field(fg, 4, value & 0xf, old))
+            return
 
         if 0x7d0 <= idx <= 0x7d7:
             # MOD0 .. MOD7. MODi is bits [32*(i+1)-1..32*i]. read,modify,write.
