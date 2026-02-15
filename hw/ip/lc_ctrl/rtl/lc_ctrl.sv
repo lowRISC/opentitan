@@ -876,9 +876,7 @@ module lc_ctrl
   `ASSERT_KNOWN(HwRevKnown_A,           hw_rev_o                   )
 
   `ASSERT(LcInitDoneSticky_A,
-      lc_tx_test_true_strict(lc_init_done_o)
-      |=>
-      ##1 !$fell(lc_tx_test_true_strict(lc_init_done_o)))
+          ##1 !$fell(lc_tx_test_true_strict(lc_init_done_o)))
 
   // Alert assertions for sparse FSMs.
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlLcFsmCheck_A,
