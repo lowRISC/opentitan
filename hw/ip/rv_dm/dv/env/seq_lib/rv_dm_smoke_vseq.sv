@@ -42,7 +42,15 @@ class rv_dm_smoke_vseq extends rv_dm_base_vseq;
   task check_ndmreset();
     uvm_reg_data_t data = $urandom_range(0, 1);
     csr_wr(.ptr(jtag_dmi_ral.dmcontrol.ndmreset), .value(data));
-    if (cfg.clk_rst_vif.rst_n) `DV_CHECK_EQ(cfg.rv_dm_vif.cb.ndmreset_req, data)
+    if (!cfg.clk_rst_vif.rst_n) return;
+    `DV_CHECK_EQ(cfg.rv_dm_vif.cb.ndmreset_req, data)
+
+    if (cfg.rv_dm_vif.cb.ndmreset_req) begin
+      // At this point, we are asserting a non-debug-module reset. Success! We'd better clear it again
+      // now though. It gates access to the debug ROM, so attempting an access to that would hang.
+      csr_wr(.ptr(jtag_dmi_ral.dmcontrol.ndmreset), .value(0));
+      clear_pending_ndmreset();
+    end
   endtask
 
   // Verify that the dmstatus[*unavail] field tracks the unavailable_i input.
