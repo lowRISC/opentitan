@@ -325,6 +325,7 @@ module tb;
   `DV_ASSERT_CTRL("StateRegs_A", tb.dut.FpvSecCmCtrlLcStateCheck_A)
   `DV_ASSERT_CTRL("FsmStateRegs_A", tb.dut.u_lc_ctrl_fsm.u_fsm_state_regs_A)
   `DV_ASSERT_CTRL("FsmStateRegs_A", tb.dut.FpvSecCmCtrlLcFsmCheck_A)
+  `DV_ASSERT_CTRL("FsmStateRegs_A", tb.dut.LcInitDoneSticky_A)
   `DV_ASSERT_CTRL("CountRegs_A", tb.dut.u_lc_ctrl_fsm.u_cnt_regs_A)
   `DV_ASSERT_CTRL("CountRegs_A", tb.dut.FpvSecCmCtrlLcCntCheck_A)
   `DV_ASSERT_CTRL("KmacFsmStateRegs_A", tb.dut.u_lc_ctrl_kmac_if.u_state_regs_A)
