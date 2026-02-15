@@ -47,10 +47,13 @@ counter_full = counter_hi << 32 | counter_lo;
 
 ### Writing the counter
 
-Between the two count register ([`WKUP_COUNT_HI`](registers.md#wkup_count_hi) and [`WKUP_COUNT_LO`](registers.md#wkup_count_lo)) writes the counter may increment.
-If the [`WKUP_COUNT_LO`](registers.md#wkup_count_lo) value overflows between a [`WKUP_COUNT_HI`](registers.md#wkup_count_hi) and [`WKUP_COUNT_LO`](registers.md#wkup_count_lo) write the intended counter value may be incorrect.
-For example an attempt to clear the counter to 0 could result in a counter value of `0x1_0000_0000`.
-It is recommended the wakeup timer is disabled with [`WKUP_CTRL`](registers.md#wkup_ctrl) before writing to the [`WKUP_COUNT_HI`](registers.md#wkup_count_hi) and [`WKUP_COUNT_LO`](registers.md#wkup_count_lo) registers to avoid this problem.
+The counter might increment between writes to the two count registers ([`WKUP_COUNT_HI`](registers.md#wkup_count_hi) and [`WKUP_COUNT_LO`](registers.md#wkup_count_lo)).
+To avoid this corrupting the value, software should set the lower word first:
+- Write [`WKUP_COUNT_LO`](registers.md#wkup_count_lo).
+- Write [`WKUP_COUNT_HI`](registers.md#wkup_count_hi).
+
+This may not work for a target value that is close to overflow (where e.g. bits `[31:8]` are set).
+For such values, disable the timer with [`WKUP_CTRL`](registers.md#wkup_ctrl) while writing the counter.
 
 ### Reading the threshold
 
