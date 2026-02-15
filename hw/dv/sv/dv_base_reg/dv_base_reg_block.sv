@@ -66,6 +66,11 @@ class dv_base_reg_block extends uvm_reg_block;
   // This is added for ease of rv_dm testbench development.
   protected bit supports_byte_enable = 1'b1;
 
+  // Indicates whether an instruction fetch is allowed from a CSR. This isn't something you'd
+  // normally expect, but it allows us to model a block that contains both registers and memory and
+  // doesn't make a distinction between read and fetch.
+  local bit     allows_csr_fetch = 1'b0;
+
   // Custom RAL models may support sub-word CSR writes smaller than CSR width.
   protected bit supports_sub_word_csr_writes = 1'b0;
 
@@ -130,6 +135,14 @@ class dv_base_reg_block extends uvm_reg_block;
 
   function bit get_supports_sub_word_csr_writes();
     return supports_sub_word_csr_writes;
+  endfunction
+
+  function void set_allows_csr_fetch(bit allowed);
+    allows_csr_fetch = allowed;
+  endfunction
+
+  function bit get_allows_csr_fetch();
+    return allows_csr_fetch;
   endfunction
 
   // provide build function to supply base addr

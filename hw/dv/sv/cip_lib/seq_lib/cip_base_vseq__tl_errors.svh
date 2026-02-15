@@ -246,7 +246,9 @@ endfunction
 // reset), stop generating transactions and return.
 virtual task tl_instr_type_err(string ral_name);
   dv_base_reg_block ral_model = cfg.ral_models[ral_name];
-  bit has_csrs = (ral_model.csr_addrs.size() > 0);
+  bit has_nofetch_csrs = ((ral_model.csr_addrs.size() > 0) &&
+                          !ral_model.get_allows_csr_fetch());
+
   repeat ($urandom_range(10, 100)) begin
     bit [BUS_AW-1:0] addr;
     bit              write;
@@ -271,7 +273,7 @@ virtual task tl_instr_type_err(string ral_name);
         write = 1'b1;
         instr_type = MuBi4True;
       end
-      has_csrs: begin
+      has_nofetch_csrs: begin
         write = 1'b0;
         instr_type = MuBi4True;
         addr = pick_rand_csr_addr(ral_name, ral_model);
