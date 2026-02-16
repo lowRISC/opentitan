@@ -147,72 +147,159 @@ class OTFICrypto:
         }
         self.target.write(json.dumps(mode).encode("ascii"))
 
-    def crypto_kmac_key(self) -> None:
-        """Starts the crypto.fi.kmac_key test."""
+    def crypto_kmac_start(self, plaintext, key) -> None:
+        """Starts the crypto.fi.kmac_start test."""
         # CryptoFi command.
         self._ujson_crypto_cmd()
         # Kmac command.
         self.target.write(json.dumps("Kmac").encode("ascii"))
+        # Plaintext and key
+        input_data = {"plaintext": plaintext, "key": key}
+        self.target.write(json.dumps(input_data).encode("ascii"))
         # Mode payload.
         mode = {
-            "key_trigger": True,
+            "start_trigger": True,
             "absorb_trigger": False,
             "static_trigger": False,
             "squeeze_trigger": False,
         }
         self.target.write(json.dumps(mode).encode("ascii"))
 
-    def crypto_kmac_absorb(self) -> None:
+    def crypto_kmac_absorb(self, plaintext, key) -> None:
         """Starts the crypto.fi.kmac_absorb test."""
         # CryptoFi command.
         self._ujson_crypto_cmd()
         # Kmac command.
         self.target.write(json.dumps("Kmac").encode("ascii"))
+        # Plaintext and key
+        input_data = {"plaintext": plaintext, "key": key}
+        self.target.write(json.dumps(input_data).encode("ascii"))
         # Mode payload.
         mode = {
-            "key_trigger": False,
+            "start_trigger": False,
             "absorb_trigger": True,
             "static_trigger": False,
             "squeeze_trigger": False,
         }
         self.target.write(json.dumps(mode).encode("ascii"))
 
-    def crypto_kmac_squeeze(self) -> None:
+    def crypto_kmac_squeeze(self, plaintext, key) -> None:
         """Starts the crypto.fi.kmac_squeeze test."""
         # CryptoFi command.
         self._ujson_crypto_cmd()
         # Kmac command.
         self.target.write(json.dumps("Kmac").encode("ascii"))
+        # Plaintext and key
+        input_data = {"plaintext": plaintext, "key": key}
+        self.target.write(json.dumps(input_data).encode("ascii"))
         # Mode payload.
         mode = {
-            "key_trigger": False,
+            "start_trigger": False,
             "absorb_trigger": False,
             "static_trigger": False,
             "squeeze_trigger": True,
         }
         self.target.write(json.dumps(mode).encode("ascii"))
 
-    def crypto_kmac_static(self) -> None:
+    def crypto_kmac_static(self, plaintext, key) -> None:
         """Starts the crypto.fi.kmac_static test."""
         # CryptoFi command.
         self._ujson_crypto_cmd()
         # Kmac command.
         self.target.write(json.dumps("Kmac").encode("ascii"))
+        # Plaintext and key
+        input_data = {"plaintext": plaintext, "key": key}
+        self.target.write(json.dumps(input_data).encode("ascii"))
         # Mode payload.
         mode = {
-            "key_trigger": False,
+            "start_trigger": False,
             "absorb_trigger": False,
             "static_trigger": True,
             "squeeze_trigger": False,
         }
         self.target.write(json.dumps(mode).encode("ascii"))
 
-    def crypto_kmac_state(self) -> None:
+    def crypto_kmac_state(self, plaintext, key) -> None:
         """Starts the crypto.fi.kmac_state test."""
         # CryptoFi command.
         self._ujson_crypto_cmd()
         # KmacState command.
         self.target.write(json.dumps("KmacState").encode("ascii"))
+        # Plaintext and key
+        input_data = {"plaintext": plaintext, "key": key}
+        self.target.write(json.dumps(input_data).encode("ascii"))
+
+    def crypto_sha3_start(self, plaintext) -> None:
+        """Starts the crypto.fi.sha3_start test."""
+        # CryptoFi command.
+        self._ujson_crypto_cmd()
+        # Sha3 command.
+        self.target.write(json.dumps("Sha3").encode("ascii"))
+        # Plaintext and key
+        input_data = {"plaintext": plaintext}
+        self.target.write(json.dumps(input_data).encode("ascii"))
+        # Mode payload.
+        mode = {
+            "start_trigger": True,
+            "absorb_trigger": False,
+            "static_trigger": False,
+            "squeeze_trigger": False,
+        }
+        self.target.write(json.dumps(mode).encode("ascii"))
+
+    def crypto_sha3_absorb(self, plaintext) -> None:
+        """Starts the crypto.fi.sha3_absorb test."""
+        # CryptoFi command.
+        self._ujson_crypto_cmd()
+        # Sha3 command.
+        self.target.write(json.dumps("Sha3").encode("ascii"))
+        # Plaintext and key
+        input_data = {"plaintext": plaintext}
+        self.target.write(json.dumps(input_data).encode("ascii"))
+        # Mode payload.
+        mode = {
+            "start_trigger": False,
+            "absorb_trigger": True,
+            "static_trigger": False,
+            "squeeze_trigger": False,
+        }
+        self.target.write(json.dumps(mode).encode("ascii"))
+
+    def crypto_sha3_static(self, plaintext) -> None:
+        """Starts the crypto.fi.sha3_static test."""
+        # CryptoFi command.
+        self._ujson_crypto_cmd()
+        # Sha3 command.
+        self.target.write(json.dumps("Sha3").encode("ascii"))
+        # Plaintext and key
+        input_data = {"plaintext": plaintext}
+        self.target.write(json.dumps(input_data).encode("ascii"))
+        # Mode payload.
+        mode = {
+            "start_trigger": False,
+            "absorb_trigger": False,
+            "static_trigger": True,
+            "squeeze_trigger": False,
+        }
+        self.target.write(json.dumps(mode).encode("ascii"))
+
+    def crypto_sha3_squeeze(self, plaintext) -> None:
+        """Starts the crypto.fi.sha3_squeeze test."""
+        # CryptoFi command.
+        self._ujson_crypto_cmd()
+        # Sha3 command.
+        self.target.write(json.dumps("Sha3").encode("ascii"))
+        # Plaintext and key
+        input_data = {"plaintext": plaintext}
+        self.target.write(json.dumps(input_data).encode("ascii"))
+        # Mode payload.
+        mode = {
+            "start_trigger": False,
+            "absorb_trigger": False,
+            "static_trigger": False,
+            "squeeze_trigger": True,
+        }
+        self.target.write(json.dumps(mode).encode("ascii"))
 
     def crypto_hmac(
         self,
