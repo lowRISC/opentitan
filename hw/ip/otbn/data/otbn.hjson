@@ -739,8 +739,6 @@
       ]
     }
 
-    // Give IMEM and DMEM 16 KiB address space, each, to allow for easy expansion
-    // of the actual IMEM and DMEM sizes without changing the address map.
     { skipto: "0x4000" }
 
     // Imem size (given as `items` below) must be a power of two.
@@ -766,11 +764,11 @@
 
     { skipto: "0x8000" }
 
-    // Dmem size (given as `items` below) must be a power of two.
+    // The total Dmem size (from `items` below plus the scratchpad size) must be a power of two.
+    // Splits that are not a power of two are possible but require to set the attribute 'unusual: "true"' below.
     { window: {
         name: "DMEM",
-        items: "768", // 3 kB visible over the bus (1 kB scratch)
-        unusual: "true", // Needed to avoid an error because of the non-power-of-two size
+        items: "4096", // 16KiB visible over the bus (16KiB scratch)
         swaccess: "rw",
         data-intg-passthru: "true",
         byte-write: "false",
@@ -785,7 +783,7 @@
           If OTBN is busy, any access additionally triggers an
           ILLEGAL_BUS_ACCESS fatal error.
 
-          Note that DMEM is actually 4kiB in size, but only the first 3kiB of
+          Note that DMEM is actually 32kiB in size, but only the first 16kiB of
           the memory is visible through this register interface.
         '''
       }
