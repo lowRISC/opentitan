@@ -73,44 +73,6 @@ typedef struct kmac_test {
   bool digest_len_is_fixed;
 } kmac_test_t;
 
-/**
- * A single KMAC example:
- * https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Standards-and-Guidelines/documents/examples/KMAC_samples.pdf
- */
-static const kmac_test_t kKmacTestVector = {
-    .mode = kDifKmacModeKmacLen256,
-    .key =
-        (dif_kmac_key_t){
-            .share0 = {0x43424140, 0x47464544, 0x4b4a4948, 0x4f4e4f4c,
-                       0x53525150, 0x57565554, 0x5b5a5958, 0x5f5e5d5c},
-            .share1 = {0},
-            .length = kDifKmacKeyLen256,
-        },
-    .message =
-        "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f"
-        "\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f"
-        "\x20\x21\x22\x23\x24\x25\x26\x27\x28\x29\x2a\x2b\x2c\x2d\x2e\x2f"
-        "\x30\x31\x32\x33\x34\x35\x36\x37\x38\x39\x3a\x3b\x3c\x3d\x3e\x3f"
-        "\x40\x41\x42\x43\x44\x45\x46\x47\x48\x49\x4a\x4b\x4c\x4d\x4e\x4f"
-        "\x50\x51\x52\x53\x54\x55\x56\x57\x58\x59\x5a\x5b\x5c\x5d\x5e\x5f"
-        "\x60\x61\x62\x63\x64\x65\x66\x67\x68\x69\x6a\x6b\x6c\x6d\x6e\x6f"
-        "\x70\x71\x72\x73\x74\x75\x76\x77\x78\x79\x7a\x7b\x7c\x7d\x7e\x7f"
-        "\x80\x81\x82\x83\x84\x85\x86\x87\x88\x89\x8a\x8b\x8c\x8d\x8e\x8f"
-        "\x90\x91\x92\x93\x94\x95\x96\x97\x98\x99\x9a\x9b\x9c\x9d\x9e\x9f"
-        "\xa0\xa1\xa2\xa3\xa4\xa5\xa6\xa7\xa8\xa9\xaa\xab\xac\xad\xae\xaf"
-        "\xb0\xb1\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xba\xbb\xbc\xbd\xbe\xbf"
-        "\xc0\xc1\xc2\xc3\xc4\xc5\xc6\xc7",
-    .message_len = 200,
-    .customization_string = "My Tagged Application",
-    .customization_string_len = 21,
-    .digest = {0x1c73bed5, 0x73d74e95, 0x59bb4628, 0xe3a8e3db, 0x7ae7830f,
-               0x5944ff4b, 0xb4c2f1f2, 0xceb8ebec, 0xc601ba67, 0x57b88a2e,
-               0x9b492d8d, 0x6727bbd1, 0x90117868, 0x6a300a02, 0x1d28de97,
-               0x5d3030cc},
-    .digest_len = 16,
-    .digest_len_is_fixed = false,
-};
-
 static dif_aes_transaction_t transaction = {
     .operation = kDifAesOperationEncrypt,
     .mode = kDifAesModeEcb,
@@ -299,9 +261,12 @@ status_t handle_crypto_fi_init(ujson_t *uj) {
 }
 
 status_t handle_crypto_fi_kmac(ujson_t *uj) {
+  // Get the plaintext and key.
+  crypto_fi_kmac_input_t uj_input;
+  TRY(ujson_deserialize_crypto_fi_kmac_input_t(uj, &uj_input));
   // Get the test mode.
-  crypto_fi_kmac_mode_t uj_data;
-  TRY(ujson_deserialize_crypto_fi_kmac_mode_t(uj, &uj_data));
+  crypto_fi_kmac_mode_t uj_mode;
+  TRY(ujson_deserialize_crypto_fi_kmac_mode_t(uj, &uj_mode));
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear registered local alerts in alert handler.
@@ -310,60 +275,60 @@ status_t handle_crypto_fi_kmac(ujson_t *uj) {
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
+  // Create the KMAC key
+  dif_kmac_key_t kmac_key = {
+      .share0 = {0}, .share1 = {0}, .length = kDifKmacKeyLen128};
+  for (int i = 0; i < 4; ++i) {
+    kmac_key.share1[i] = pentest_non_linear_layer(
+        pentest_linear_layer(pentest_next_lfsr(1, kPentestLfsrMasking)));
+    kmac_key.share0[i] = *((uint32_t *)uj_input.key + i) ^ kmac_key.share1[i];
+  }
+
   // Configure and write key to the KMAC block. Set and unset the trigger when
-  // key_trigger is true.
+  // start_trigger is true.
   dif_kmac_operation_state_t kmac_operation_state;
-  if (uj_data.key_trigger) {
+  if (uj_mode.start_trigger) {
     pentest_set_trigger_high();
   }
 
   TRY(dif_kmac_mode_kmac_start(&kmac, &kmac_operation_state,
-                               kKmacTestVector.mode, 0, &kKmacTestVector.key,
-                               NULL));
-  if (uj_data.key_trigger) {
+                               kDifKmacModeKmacLen128, 0, &kmac_key, NULL));
+  if (uj_mode.start_trigger) {
     pentest_set_trigger_low();
   }
 
   // Absorb. Set and unset the trigger when absorb_trigger is true.
-  if (uj_data.absorb_trigger) {
+  if (uj_mode.absorb_trigger) {
     pentest_set_trigger_high();
   }
-  TRY(dif_kmac_absorb(&kmac, &kmac_operation_state, kKmacTestVector.message,
-                      kKmacTestVector.message_len, NULL));
-  if (uj_data.absorb_trigger) {
+  TRY(dif_kmac_absorb(&kmac, &kmac_operation_state, uj_input.plaintext,
+                      CRYPTOFI_KMAC_MAX_MSG_BYTES, NULL));
+  if (uj_mode.absorb_trigger) {
     pentest_set_trigger_low();
   }
 
   // Static. Set and unset the trigger when static_trigger is true.
-  if (uj_data.static_trigger) {
+  if (uj_mode.static_trigger) {
     pentest_set_trigger_high();
   }
   asm volatile(NOP30);
   asm volatile(NOP30);
   asm volatile(NOP30);
-  if (uj_data.static_trigger) {
+  if (uj_mode.static_trigger) {
     pentest_set_trigger_low();
   }
 
   // Squeeze. Set and unset the trigger when squeeze_trigger is true.
-  uint32_t digest[kKmacTestVector.digest_len];
-  if (uj_data.squeeze_trigger) {
+  uint32_t digest[CRYPTOFI_KMAC_MAX_DIGEST_WORDS];
+  if (uj_mode.squeeze_trigger) {
     pentest_set_trigger_high();
   }
   TRY(dif_kmac_squeeze(&kmac, &kmac_operation_state, digest,
-                       kKmacTestVector.digest_len, /*processed=*/NULL,
+                       CRYPTOFI_KMAC_MAX_DIGEST_WORDS, /*processed=*/NULL,
                        /*capacity=*/NULL));
-  if (uj_data.squeeze_trigger) {
+  if (uj_mode.squeeze_trigger) {
     pentest_set_trigger_low();
   }
-
-  // 2nd Squeeze. This shall enforce a permutation. Any injected fault will
-  // result in a completely different digest. Hence, allows for easy detection
-  // of an injected fault.
-  uint32_t digest_2nd[kKmacTestVector.digest_len];
-  TRY(dif_kmac_squeeze(&kmac, &kmac_operation_state, digest_2nd,
-                       kKmacTestVector.digest_len, /*processed=*/NULL,
-                       /*capacity=*/NULL));
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -378,11 +343,98 @@ status_t handle_crypto_fi_kmac(ujson_t *uj) {
   dif_rv_core_ibex_error_status_t codes;
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
-  // Send the first 8 bytes of the digest and the alerts back to the host.
+  // Send the digest and the alerts back to the host.
   crypto_fi_kmac_digest_t uj_output;
   uj_output.err_status = codes;
-  memcpy(uj_output.digest, (uint8_t *)digest, 8);
-  memcpy(uj_output.digest_2nd, (uint8_t *)digest_2nd, 8);
+  memcpy(uj_output.digest, digest,
+         CRYPTOFI_KMAC_MAX_DIGEST_WORDS * sizeof(uint32_t));
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  uj_output.loc_alerts = reg_loc_alerts.loc_alerts;
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
+  RESP_OK(ujson_serialize_crypto_fi_kmac_digest_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
+status_t handle_crypto_fi_sha3(ujson_t *uj) {
+  // Get the plaintext.
+  crypto_fi_sha3_input_t uj_input;
+  TRY(ujson_deserialize_crypto_fi_sha3_input_t(uj, &uj_input));
+  // Get the test mode.
+  crypto_fi_kmac_mode_t uj_mode;
+  TRY(ujson_deserialize_crypto_fi_kmac_mode_t(uj, &uj_mode));
+  // Clear registered alerts in alert handler.
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear registered local alerts in alert handler.
+  pentest_registered_loc_alerts_t reg_loc_alerts =
+      pentest_get_triggered_loc_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
+
+  // Configure and write key to the KMAC block. Set and unset the trigger when
+  // start_trigger is true.
+  dif_kmac_operation_state_t kmac_operation_state;
+  if (uj_mode.start_trigger) {
+    pentest_set_trigger_high();
+  }
+
+  TRY(dif_kmac_mode_sha3_start(&kmac, &kmac_operation_state,
+                               kDifKmacModeSha3Len256));
+  if (uj_mode.start_trigger) {
+    pentest_set_trigger_low();
+  }
+
+  // Absorb. Set and unset the trigger when absorb_trigger is true.
+  if (uj_mode.absorb_trigger) {
+    pentest_set_trigger_high();
+  }
+  TRY(dif_kmac_absorb(&kmac, &kmac_operation_state, uj_input.plaintext,
+                      CRYPTOFI_KMAC_MAX_MSG_BYTES, NULL));
+  if (uj_mode.absorb_trigger) {
+    pentest_set_trigger_low();
+  }
+
+  // Static. Set and unset the trigger when static_trigger is true.
+  if (uj_mode.static_trigger) {
+    pentest_set_trigger_high();
+  }
+  asm volatile(NOP30);
+  asm volatile(NOP30);
+  asm volatile(NOP30);
+  if (uj_mode.static_trigger) {
+    pentest_set_trigger_low();
+  }
+
+  // Squeeze. Set and unset the trigger when squeeze_trigger is true.
+  uint32_t digest[CRYPTOFI_SHA3_MAX_DIGEST_WORDS];
+  if (uj_mode.squeeze_trigger) {
+    pentest_set_trigger_high();
+  }
+  TRY(dif_kmac_squeeze(&kmac, &kmac_operation_state, digest,
+                       CRYPTOFI_SHA3_MAX_DIGEST_WORDS, /*processed=*/NULL,
+                       /*capacity=*/NULL));
+  if (uj_mode.squeeze_trigger) {
+    pentest_set_trigger_low();
+  }
+
+  // Get registered alerts from alert handler.
+  reg_alerts = pentest_get_triggered_alerts();
+  // Get registered local alerts from alert handler.
+  reg_loc_alerts = pentest_get_triggered_loc_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
+
+  TRY(dif_kmac_end(&kmac, &kmac_operation_state));
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send the digest and the alerts back to the host.
+  crypto_fi_kmac_digest_t uj_output;
+  uj_output.err_status = codes;
+  memcpy(uj_output.digest, digest,
+         CRYPTOFI_SHA3_MAX_DIGEST_WORDS * sizeof(uint32_t));
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   uj_output.loc_alerts = reg_loc_alerts.loc_alerts;
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
@@ -392,6 +444,9 @@ status_t handle_crypto_fi_kmac(ujson_t *uj) {
 }
 
 status_t handle_crypto_fi_kmac_state(ujson_t *uj) {
+  // Get the plaintext and key.
+  crypto_fi_kmac_input_t uj_input;
+  TRY(ujson_deserialize_crypto_fi_kmac_input_t(uj, &uj_input));
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear registered local alerts in alert handler.
@@ -400,19 +455,27 @@ status_t handle_crypto_fi_kmac_state(ujson_t *uj) {
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
+  // Create the KMAC key
+  dif_kmac_key_t kmac_key = {
+      .share0 = {0}, .share1 = {0}, .length = kDifKmacKeyLen128};
+  for (int i = 0; i < 4; ++i) {
+    kmac_key.share1[i] = pentest_non_linear_layer(
+        pentest_linear_layer(pentest_next_lfsr(1, kPentestLfsrMasking)));
+    kmac_key.share0[i] = *((uint32_t *)uj_input.key + i) ^ kmac_key.share1[i];
+  }
+
   // Configure and write key to the KMAC block.
   dif_kmac_operation_state_t kmac_operation_state;
   TRY(dif_kmac_mode_kmac_start(&kmac, &kmac_operation_state,
-                               kKmacTestVector.mode, 0, &kKmacTestVector.key,
-                               NULL));
+                               kDifKmacModeKmacLen128, 0, &kmac_key, NULL));
   // Absorb.
-  TRY(dif_kmac_absorb(&kmac, &kmac_operation_state, kKmacTestVector.message,
-                      kKmacTestVector.message_len, NULL));
+  TRY(dif_kmac_absorb(&kmac, &kmac_operation_state, uj_input.plaintext,
+                      CRYPTOFI_KMAC_MAX_MSG_BYTES, NULL));
 
   // Squeeze. Set and unset the trigger when squeeze_trigger is true.
-  uint32_t digest[kKmacTestVector.digest_len];
+  uint32_t digest[CRYPTOFI_KMAC_MAX_DIGEST_WORDS];
   TRY(dif_kmac_squeeze(&kmac, &kmac_operation_state, digest,
-                       kKmacTestVector.digest_len, /*processed=*/NULL,
+                       CRYPTOFI_KMAC_MAX_DIGEST_WORDS, /*processed=*/NULL,
                        /*capacity=*/NULL));
 
   // Static.
@@ -446,15 +509,16 @@ status_t handle_crypto_fi_kmac_state(ujson_t *uj) {
   }
   // Read error, digest, and alerts
   uj_output.err_status = codes;
-  memcpy(uj_output.digest, (uint8_t *)digest, 8);
+  memcpy(uj_output.digest, digest,
+         CRYPTOFI_KMAC_MAX_DIGEST_WORDS * sizeof(uint32_t));
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   uj_output.loc_alerts = reg_loc_alerts.loc_alerts;
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
 
-  RESP_OK(ujson_serialize_crypto_fi_kmac_state_t, uj, &uj_output);
-
   TRY(dif_kmac_end(&kmac, &kmac_operation_state));
+
+  RESP_OK(ujson_serialize_crypto_fi_kmac_state_t, uj, &uj_output);
   return OK_STATUS();
 }
 
@@ -803,6 +867,8 @@ status_t handle_crypto_fi(ujson_t *uj) {
       return handle_crypto_fi_kmac(uj);
     case kCryptoFiSubcommandKmacState:
       return handle_crypto_fi_kmac_state(uj);
+    case kCryptoFiSubcommandSha3:
+      return handle_crypto_fi_sha3(uj);
     case kCryptoFiSubcommandHmac:
       return handle_crypto_fi_hmac(uj);
     case kCryptoFiSubcommandShadowRegAccess:
