@@ -16,6 +16,11 @@ extern "C" {
 #define CRYPTOFI_AES_MAX_MSG_BYTES 16
 #define CRYPTOFI_AES_MAX_KEY_BYTES 16
 
+#define CRYPTOFI_KMAC_MAX_MSG_BYTES 16
+#define CRYPTOFI_KMAC_MAX_KEY_BYTES 16
+#define CRYPTOFI_KMAC_MAX_DIGEST_WORDS 4
+#define CRYPTOFI_SHA3_MAX_DIGEST_WORDS 4
+
 // clang-format off
 
 #define CRYPTOFI_SUBCOMMAND(_, value) \
@@ -23,6 +28,7 @@ extern "C" {
     value(_, Init) \
     value(_, Kmac) \
     value(_, KmacState) \
+    value(_, Sha3) \
     value(_, Hmac) \
     value(_, ShadowRegAccess) \
     value(_, ShadowRegRead)
@@ -42,7 +48,7 @@ UJSON_SERDE_STRUCT(CryptoFiAesMode, crypto_fi_aes_mode_t, CRYPTOFI_AES_MODE);
 UJSON_SERDE_STRUCT(CryptoFiAesInput, crypto_fi_aes_input_t, CRYPTOFI_AES_INPUT);
 
 #define CRYPTOFI_KMAC_MODE(field, string) \
-    field(key_trigger, bool) \
+    field(start_trigger, bool) \
     field(absorb_trigger, bool) \
     field(static_trigger, bool) \
     field(squeeze_trigger, bool)
@@ -56,10 +62,19 @@ UJSON_SERDE_STRUCT(CryptoFiKmacMode, crypto_fi_kmac_mode_t, CRYPTOFI_KMAC_MODE);
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(FiAesCiphertext, crypto_fi_aes_ciphertext_t, CRYPTOFI_AES_CIPHERTEXT);
 
+#define CRYPTOFI_KMAC_INPUT(field, string) \
+    field(plaintext, uint8_t, CRYPTOFI_KMAC_MAX_MSG_BYTES) \
+    field(key, uint8_t, CRYPTOFI_KMAC_MAX_KEY_BYTES)
+UJSON_SERDE_STRUCT(CryptoFiKmacInput, crypto_fi_kmac_input_t, CRYPTOFI_KMAC_INPUT);
+
+#define CRYPTOFI_SHA3_INPUT(field, string) \
+    field(plaintext, uint8_t, CRYPTOFI_KMAC_MAX_MSG_BYTES)
+UJSON_SERDE_STRUCT(CryptoFiSha3Input, crypto_fi_sha3_input_t, CRYPTOFI_SHA3_INPUT);
+
 #define CRYPTOFI_KMAC_STATE(field, string) \
     field(share0, uint8_t, 200) \
     field(share1, uint8_t, 200) \
-    field(digest, uint8_t, 8) \
+    field(digest, uint32_t, CRYPTOFI_KMAC_MAX_DIGEST_WORDS) \
     field(alerts, uint32_t, 3) \
     field(loc_alerts, uint32_t) \
     field(err_status, uint32_t) \
@@ -67,8 +82,7 @@ UJSON_SERDE_STRUCT(FiAesCiphertext, crypto_fi_aes_ciphertext_t, CRYPTOFI_AES_CIP
 UJSON_SERDE_STRUCT(FiKmacState, crypto_fi_kmac_state_t, CRYPTOFI_KMAC_STATE);
 
 #define CRYPTOFI_KMAC_DIGEST(field, string) \
-    field(digest, uint8_t, 8) \
-    field(digest_2nd, uint8_t, 8) \
+    field(digest, uint32_t, CRYPTOFI_KMAC_MAX_DIGEST_WORDS) \
     field(alerts, uint32_t, 3) \
     field(loc_alerts, uint32_t) \
     field(err_status, uint32_t) \
