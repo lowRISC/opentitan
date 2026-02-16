@@ -705,7 +705,9 @@ module otbn_core
   assign insn_cnt_o = insn_cnt;
 
   // Load store unit: read and write data from data memory
-  otbn_lsu u_otbn_lsu (
+  otbn_lsu #(
+    .DmemSizeByte(DmemSizeByte)
+  ) u_otbn_lsu (
     .clk_i,
     .rst_ni,
 
