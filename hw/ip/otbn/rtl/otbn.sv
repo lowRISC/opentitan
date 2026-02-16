@@ -672,7 +672,8 @@ module otbn
   assign dmem_write = dmem_access_core ? dmem_write_core : dmem_write_bus;
   assign dmem_wmask = dmem_access_core ? dmem_wmask_core : dmem_wmask_bus;
   // SEC_CM: DATA.MEM.SW_NOACCESS
-  assign dmem_index = dmem_access_core ? dmem_index_core : dmem_index_bus;
+  assign dmem_index = dmem_access_core ? dmem_index_core :
+    {{(DmemIndexWidth-DmemBusIndexWidth){1'b0}}, {dmem_index_bus}};
   assign dmem_wdata = dmem_access_core ? dmem_wdata_core : dmem_wdata_bus;
 
   assign dmem_illegal_bus_access = dmem_req_bus & dmem_access_core;
@@ -758,8 +759,7 @@ module otbn
   assign mem_crc_data_in.imem    = imem_req_bus;
 
   // Only the bits that factor into the dmem index and dmem word enables are required
-  assign unused_dmem_addr_bus = ^{dmem_addr_bus[DmemAddrWidth-1:DmemIndexWidth],
-                                  dmem_addr_bus[1:0]};
+  assign unused_dmem_addr_bus = ^dmem_addr_bus[1:0];
 
   // SEC_CM: WRITE.MEM.INTEGRITY
   prim_crc32 #(
