@@ -62,8 +62,8 @@ def _get_elf_mem_data(elf_file: ELFFile,
     imem_lma, imem_len = imem_desc
     dmem_lma, dmem_len = dmem_desc
 
-    imem_top = imem_lma + imem_len
-    dmem_top = dmem_lma + dmem_len
+    imem_top = imem_lma + imem_len - 1
+    dmem_top = dmem_lma + dmem_len - 1
 
     assert imem_lma <= imem_top
     assert dmem_lma <= dmem_top
