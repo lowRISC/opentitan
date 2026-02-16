@@ -16,7 +16,7 @@
 | otbn.[`FATAL_ALERT_CAUSE`](#fatal_alert_cause) | 0x20     |        4 | Fatal Alert Cause Register                      |
 | otbn.[`INSN_CNT`](#insn_cnt)                   | 0x24     |        4 | Instruction Count Register                      |
 | otbn.[`LOAD_CHECKSUM`](#load_checksum)         | 0x28     |        4 | A 32-bit CRC checksum of data written to memory |
-| otbn.[`IMEM`](#imem)                           | 0x4000   |     8192 | Instruction Memory Access                       |
+| otbn.[`IMEM`](#imem)                           | 0x4000   |    16384 | Instruction Memory Access                       |
 | otbn.[`DMEM`](#dmem)                           | 0x8000   |     3072 | Data Memory Access                              |
 
 ## INTR_STATE
@@ -303,8 +303,8 @@ are ignored.
 If OTBN is busy, any access additionally triggers an
 ILLEGAL_BUS_ACCESS fatal error.
 
-- Word Aligned Offset Range: `0x4000`to`0x5ffc`
-- Size (words): `2048`
+- Word Aligned Offset Range: `0x4000`to`0x7ffc`
+- Size (words): `4096`
 - Access: `rw`
 - Byte writes are *not* supported.
 
