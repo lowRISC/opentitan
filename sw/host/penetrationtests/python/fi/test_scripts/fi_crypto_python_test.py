@@ -164,21 +164,35 @@ class CryptoFiTest(unittest.TestCase):
 
     def test_char_kmac(self):
         trigger = 0
-        actual_result = fi_crypto_functions.char_kmac(target, iterations, trigger)
+        plaintext = [i for i in range(16)]
+        key = [i for i in range(16)]
+        actual_result = fi_crypto_functions.char_kmac(target, iterations, plaintext, key, trigger)
         actual_result_json = json.loads(actual_result)
         expected_result_json = json.loads(
-            '{"digest":[184,34,91,108,231,47,251,27], \
-                "digest_2nd":[142,188,186,201,216,47,203,192], \
-                    "err_status":0,"alerts":[0,0,0],"loc_alerts":0,"ast_alerts":[0,0]}'
+            '{"digest":[1249211222, 2317242261, 3038518889, 366042454],\
+                "alerts":[0,0,0],"loc_alerts":0,"err_status":0,"ast_alerts":[0,0]}'
         )
         utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_kmac_state(self):
-        actual_result = fi_crypto_functions.char_kmac_state(target, iterations)
+        plaintext = [i for i in range(16)]
+        key = [i for i in range(16)]
+        actual_result = fi_crypto_functions.char_kmac_state(target, iterations, plaintext, key)
         actual_result_json = json.loads(actual_result)
         expected_result_json = json.loads(
-            '{"digest":[184,34,91,108,231,47,251,27],"err_status":0, \
-                "alerts":[0,0,0],"loc_alerts":0,"ast_alerts":[0,0]}'
+            '{"digest":[1249211222,2317242261,3038518889,366042454],\
+                "alerts":[0,0,0],"loc_alerts":0,"err_status":0,"ast_alerts":[0,0]}'
+        )
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
+
+    def test_char_sha3(self):
+        trigger = 0
+        plaintext = [i for i in range(16)]
+        actual_result = fi_crypto_functions.char_sha3(target, iterations, plaintext, trigger)
+        actual_result_json = json.loads(actual_result)
+        expected_result_json = json.loads(
+            '{"digest":[707610169, 3673694243, 2962696791, 3564344499],\
+                "alerts":[0,0,0],"loc_alerts":0,"err_status":0,"ast_alerts":[0,0]}'
         )
         utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
