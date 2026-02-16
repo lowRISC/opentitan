@@ -193,7 +193,8 @@ class BadLoadStore(SnippetGen):
 
             op_val = [op_val_grs2, offset_val, op_val_grs1]
 
-        return ProgInsn(insn, op_val, ('dmem', 4096))
+        # Emulate OOB by setting the memory address to the memory size
+        return ProgInsn(insn, op_val, ('dmem', model.dmem_size))
 
     def _fill_bn_xid(self, insn: Insn, model: Model) -> Optional[ProgInsn]:
         '''Fill out a BN.LID or BN.SID instruction'''
@@ -210,24 +211,36 @@ class BadLoadStore(SnippetGen):
         # Get known registers
         known_regs = model.regs_with_known_vals('gpr')
 
-        idx, u_val = random.choice(known_regs)
-        val = u_val - (1 << 32) if u_val >> 31 else u_val
-        tgt_addr = random.randrange(val + min_offset, val + max_offset, 32)
+        # Try to find a target address which is OOB and that can be reached with an offset fitting
+        # in the available immediate bits. We help ourself by picking the GPR (supplying the
+        # address) at random and test whether the required offset can be encoded. There cannot be
+        # made a success estimate but there is at least the save solution of picking x0 and a
+        # negative offset. We try for 50 picks and give up if we do not find a solution.
+        idx = None
+        bn_offset_val = None
+        for _ in range(50):
+            idx, u_val = random.choice(known_regs)
+            val = u_val - (1 << 32) if u_val >> 31 else u_val
+            tgt_addr = random.randrange(val + min_offset, val + max_offset, 32)
 
-        # Check if randomized tgt_addr is in OOB region.
-        if tgt_addr >> 12:
+            # Check if randomized tgt_addr is in OOB region. If not, try another one.
+            if 0 <= tgt_addr and tgt_addr < model.dmem_size:
+                continue
+
+            # Compute the required offset immediate
             bn_imm_val = tgt_addr - val
-        # If randomized tgt_addr is not in OOB region, make sure bn_imm_val is
-        # big enough. So that the new resulting tgt_addr will definitely
-        # be in OOB region.
-        else:
-            bn_imm_val = tgt_addr + model.dmem_size - val
 
-        # Check if the final target address is in OOB region
-        assert bn_imm_val + val < 0 or bn_imm_val + val >= model.dmem_size
+            # Try to encode the required offset
+            bn_offset_val = bn_imm_op_type.op_val_to_enc_val(bn_imm_val, model.pc)
 
-        bn_offset_val = bn_imm_op_type.op_val_to_enc_val(bn_imm_val, model.pc)
-        assert bn_offset_val is not None
+            # If we have found a possible offset ensure that immediate will lead to OOB address
+            if bn_offset_val is not None:
+                assert bn_imm_val + val < 0 or bn_imm_val + val >= model.dmem_size
+                break
+
+        # Give up if we haven't found a solution
+        if bn_offset_val is None:
+            return None
 
         # Get the chosen base register index as grs1 operand.
         op_val_grs1 = idx
@@ -250,4 +263,5 @@ class BadLoadStore(SnippetGen):
 
             op_val = [op_val_grs1, op_val_grs2, bn_offset_val, 0, 0]
 
-        return ProgInsn(insn, op_val, ('dmem', 4096))
+        # Emulate OOB by setting the memory address to the memory size
+        return ProgInsn(insn, op_val, ('dmem', model.dmem_size))
