@@ -341,7 +341,19 @@ task alert_monitor::monitor_ping_handshake();
   fork begin : isolation_fork
     fork
       begin : wait_ping_timeout
-        wait_slow_clocks(cfg.ping_timeout_cycle - 1);
+        // If there is an alert handler in the design, the ping timeout is configured through a
+        // PING_TIMEOUT_CYC register, which the sequence configures to match cfg.ping_timeout_cycle.
+        // This monitor configures itself to match, waiting that long before concluding that a ping
+        // request has timed out.
+        //
+        // To get the timing to exactly match the alert handler, we have to be a little careful
+        // about flops and clocking blocks. The change to the ping output from the alert handler
+        // takes 3 cycles to be reflected in alert_rx_final, then one final cycle to appear through
+        // monitor_cb (which just triggered us). The change to the crashdump state only takes 2
+        // cycles to propagate to an output. To match the timing, subtract two from the timeout.
+        if (cfg.ping_timeout_cycle > 2) begin
+          wait_slow_clocks(cfg.ping_timeout_cycle - 2);
+        end
         req.ping_timeout = 1'b1;
       end
       begin : wait_ping_handshake
