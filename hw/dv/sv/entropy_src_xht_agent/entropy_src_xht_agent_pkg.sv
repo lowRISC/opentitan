@@ -6,6 +6,7 @@ package entropy_src_xht_agent_pkg;
   // dep packages
   import uvm_pkg::*;
   import dv_utils_pkg::*;
+  import dv_base_agent_pkg::*;
   import dv_lib_pkg::*;
   import entropy_src_pkg::*;
 

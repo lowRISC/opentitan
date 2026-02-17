@@ -5,6 +5,7 @@
 package otbn_model_agent_pkg;
   // dep packages
   import uvm_pkg::*;
+  import dv_base_agent_pkg::*;
   import dv_utils_pkg::*;
   import dv_lib_pkg::*;
 
