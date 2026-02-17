@@ -591,11 +591,27 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
              end
           end
 
+          // Check that the value that came from the crashdump reflects the alert_cause and
+          // loc_alert_cause registers that we have predicted in the register model.
           for (int i = 0; i < NUM_ALERTS; i++) begin
-            `DV_CHECK_EQ(crashdump_val.alert_cause[i], `gmv(ral.alert_cause[i]))
+            if (crashdump_val.alert_cause[i] != `gmv(ral.alert_cause[i])) begin
+              `uvm_error(get_full_name(),
+                         $sformatf({"Register/crashdump mismatch. alert_cause[%0d] is ",
+                                    "0x%0h in the crashdump and 0x%0h in the register model."},
+                                   i,
+                                   crashdump_val.alert_cause[i],
+                                   `gmv(ral.alert_cause[i])))
+            end
           end
           for (int i = 0; i < NUM_LOCAL_ALERTS; i++) begin
-            `DV_CHECK_EQ(crashdump_val.loc_alert_cause[i], `gmv(ral.loc_alert_cause[i]))
+            if (crashdump_val.loc_alert_cause[i] != `gmv(ral.loc_alert_cause[i])) begin
+              `uvm_error(get_full_name(),
+                         $sformatf({"Register/crashdump mismatch. loc_alert_cause[%0d] is ",
+                                    "0x%0h in the crashdump and 0x%0h in the register model."},
+                                   i,
+                                   crashdump_val.loc_alert_cause[i],
+                                   `gmv(ral.loc_alert_cause[i])))
+            end
           end
         end
       end
