@@ -10,6 +10,7 @@ package ${name}_env_pkg;
 % for agent in env_agents:
   import ${agent}_agent_pkg::*;
 % endfor
+  import dv_base_agent_pkg::*;
   import dv_lib_pkg::*;
 % if is_cip:
   import tl_agent_pkg::*;

@@ -22,6 +22,7 @@ package jtag_rv_debugger_pkg;
   import bus_params_pkg::*;
   import dv_base_reg_pkg::*;
   import csr_utils_pkg::*;
+  import dv_base_agent_pkg::*;
   import dv_lib_pkg::*;
   import jtag_agent_pkg::*;
   import jtag_dmi_agent_pkg::*;
