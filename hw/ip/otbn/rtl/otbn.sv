@@ -94,11 +94,13 @@ module otbn
   //
   // DMEM is actually a bit bigger than OTBN_DMEM_SIZE: there are an extra DmemScratchSizeByte bytes
   // that aren't accessible over the bus.
-  localparam int ImemSizeByte = int'(otbn_reg_pkg::OTBN_IMEM_SIZE);
-  localparam int DmemSizeByte = int'(otbn_reg_pkg::OTBN_DMEM_SIZE + DmemScratchSizeByte);
+  localparam int ImemSizeByte    = int'(otbn_reg_pkg::OTBN_IMEM_SIZE);
+  localparam int DmemBusSizeByte = int'(otbn_reg_pkg::OTBN_DMEM_SIZE);
+  localparam int DmemSizeByte    = DmemBusSizeByte + DmemScratchSizeByte;
 
-  localparam int ImemAddrWidth = vbits(ImemSizeByte);
-  localparam int DmemAddrWidth = vbits(DmemSizeByte);
+  localparam int ImemAddrWidth    = vbits(ImemSizeByte);
+  localparam int DmemBusAddrWidth = vbits(DmemBusSizeByte);
+  localparam int DmemAddrWidth    = vbits(DmemSizeByte);
 
   `ASSERT_INIT(ImemSizePowerOfTwo, 2 ** ImemAddrWidth == ImemSizeByte)
   `ASSERT_INIT(DmemSizePowerOfTwo, 2 ** DmemAddrWidth == DmemSizeByte)
@@ -497,7 +499,7 @@ module otbn
   localparam int DmemSizeWords = DmemSizeByte / (WLEN / 8);
   localparam int DmemIndexWidth = vbits(DmemSizeWords);
 
-  localparam int DmemBusSizeWords = int'(otbn_reg_pkg::OTBN_DMEM_SIZE) / (WLEN / 8);
+  localparam int DmemBusSizeWords = DmemBusSizeByte / (WLEN / 8);
   localparam int DmemBusIndexWidth = vbits(DmemBusSizeWords);
 
   // Access select to DMEM: core (1), or bus (0)
@@ -534,7 +536,7 @@ module otbn
   logic [ExtWLEN-1:0] dmem_wmask_bus;
   logic [ExtWLEN-1:0] dmem_rdata_bus, dmem_rdata_bus_raw;
   logic dmem_rdata_bus_en_q, dmem_rdata_bus_en_d;
-  logic [DmemAddrWidth-1:0] dmem_addr_bus;
+  logic [DmemBusAddrWidth-1:0] dmem_addr_bus;
   logic unused_dmem_addr_bus;
   logic [31:0] dmem_wdata_narrow_bus;
   logic [top_pkg::TL_DBW-1:0] dmem_byte_mask_bus;
@@ -738,13 +740,16 @@ module otbn
   assign dmem_rerror_bus  = 2'b00;
   assign dmem_rerror_core = dmem_rerror;
 
-  assign dmem_addr_bus = tl_win_h2d[TlWinDmem].a_address[DmemAddrWidth-1:0];
+  assign dmem_addr_bus         = tl_win_h2d[TlWinDmem].a_address[DmemBusAddrWidth-1:0];
   assign dmem_wdata_narrow_bus = tl_win_h2d[TlWinDmem].a_data[31:0];
-  assign dmem_byte_mask_bus = tl_win_h2d[TlWinDmem].a_mask;
+  assign dmem_byte_mask_bus    = tl_win_h2d[TlWinDmem].a_mask;
 
   // Memory Load Integrity =====================================================
-  // CRC logic below assumes a incoming data bus width of 32 bits
+  // CRC logic below assumes an incoming data bus width of 32 bits and considers
+  // 15 bits of the 32-bit word based addresses.
   `ASSERT_INIT(TLDWIs32Bit_A, top_pkg::TL_DW == 32)
+  `ASSERT_INIT(ImemAddrTooWideForLoadCrc_A, ImemIndexWidth <= 15)
+  `ASSERT_INIT(DmemBusAddrTooWideForLoadCrc_A, (DmemBusAddrWidth - 2) <= 15)
 
   // Only advance CRC calculation on full 32-bit writes;
   assign mem_crc_data_in_valid   = ~(dmem_access_core | imem_access_core) &
@@ -753,9 +758,11 @@ module otbn
 
   assign mem_crc_data_in.wr_data = imem_req_bus ? imem_wdata_bus[31:0] :
                                                   dmem_wdata_narrow_bus[31:0];
+  // The CRC operates on the 32 bits from the bus. For IMEM we can take the index. But for DMEM
+  // we must take the relevant part of dmem_addr_bus because dmem_index_bus indexes 256-bit words.
   assign mem_crc_data_in.index   = imem_req_bus ? {{15 - ImemIndexWidth{1'b0}}, imem_index_bus} :
-                                                   {{15 - (DmemAddrWidth - 2){1'b0}},
-                                                    dmem_addr_bus[DmemAddrWidth-1:2]};
+                                                   {{15 - (DmemBusAddrWidth - 2){1'b0}},
+                                                    dmem_addr_bus[DmemBusAddrWidth-1:2]};
   assign mem_crc_data_in.imem    = imem_req_bus;
 
   // Only the bits that factor into the dmem index and dmem word enables are required
