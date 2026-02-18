@@ -7,11 +7,13 @@ load("//rules:otbn.bzl", "otbn_library", "otbn_sim_test", "otbn_sim_test_suite")
 package(default_visibility = ["//visibility:public"])
 
 mldsa87_srcs = [
+    "//sw/otbn/crypto/mldsa87:mldsa87_ntt.s",
 ]
 
 # Naming convention for the unit tests: Test, *.s and *.hjson files
 # have the same name.
 mldsa87_unit_tests = [
+    "mldsa87_ntt_test",
 ]
 
 [
