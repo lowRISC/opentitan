@@ -39,8 +39,7 @@ enum {
   // partition in bank 1, otherwise known as owner partition B.
   kBank1StartPageNum = 256 + kRomExtPageCount,
 
-  // The ROM_EXT protects itself using regions 0-1.
-  kFlashRegionNum = 2,
+  kDataRegions = FLASH_CTRL_PARAM_NUM_REGIONS,
 
 };
 
@@ -97,7 +96,6 @@ static void flash_ctrl_write_clear_test(
   const uint64_t kExpectedValues[] = {
       UINT64_MAX, UINT64_MAX - 1, 0, 0xa5a5a5a594949494, 0xaaaaaaaaaaaaaaaa,
   };
-
   for (size_t i = 0; i < ARRAYSIZE(kExpectedValues); ++i) {
     flash_word_write_verify(start_addr + sizeof(uint64_t) * i,
                             kExpectedValues[i]);
@@ -106,8 +104,15 @@ static void flash_ctrl_write_clear_test(
 }
 
 bool test_main(void) {
+  uint32_t flash_region_index;
+
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+
+  // Find the first unlocked flash region and use that for testing
+
+  CHECK_STATUS_OK(flash_ctrl_testutils_find_unlocked_region(
+      &flash, 0, kDataRegions - 1, &flash_region_index));
 
   // The ROM_EXT configures the default region access. We can't modify the
   // values after configured.
@@ -118,7 +123,7 @@ bool test_main(void) {
   }
 
   LOG_INFO("ECC enabled with high endurance disabled.");
-  flash_ctrl_write_clear_test(/*mp_region_index=*/kFlashRegionNum,
+  flash_ctrl_write_clear_test(/*mp_region_index=*/flash_region_index,
                               (dif_flash_ctrl_data_region_properties_t){
                                   .base = kBank1StartPageNum,
                                   .size = 1,
@@ -132,7 +137,7 @@ bool test_main(void) {
                                   }});
 
   LOG_INFO("ECC enabled with high endurance enabled.");
-  flash_ctrl_write_clear_test(/*mp_region_index=*/kFlashRegionNum,
+  flash_ctrl_write_clear_test(/*mp_region_index=*/flash_region_index,
                               (dif_flash_ctrl_data_region_properties_t){
                                   .base = kBank1StartPageNum + 1,
                                   .size = 1,
