@@ -6,6 +6,7 @@ load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:manifest.bzl", "manifest")
 load("//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
+load("//rules/coverage:view.bzl", "coverage_view_test")
 load("//rules/opentitan:defs.bzl", "opentitan_binary")
 load(
     "//sw/device/silicon_creator/rom_ext:defs.bzl",
@@ -103,6 +104,56 @@ manifest(d = {
     )
     for variation in ROM_EXT_VARIATIONS.keys()
     for slot in SLOTS
+]
+
+ROM_EXT_CONFIGS = {
+    "dice_x509_xmodem": {
+        "dice": "dice_x509",
+        "deps": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
+    },
+    "dice_cwt_spidfu": {
+        "dice": "dice_cwt",
+        "deps": ["//sw/device/silicon_creator/lib/rescue:rescue_spidfu"],
+    },
+    "dice_x509_usbdfu": {
+        "dice": "dice_x509",
+        "deps": ["//sw/device/silicon_creator/lib/rescue:rescue_usbdfu"],
+    },
+}
+
+[
+    opentitan_binary(
+        name = "rom_ext_prod_{}".format(name),
+        exec_env = [
+            "//hw/top_earlgrey:silicon_creator",
+        ],
+        extra_bazel_features = [
+            "minsize",
+            "use_lld",
+        ],
+        linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_virtual",
+        linkopts = [
+            "$(location //sw/device/silicon_creator/rom_ext:rom_ext_{})".format(config["dice"]),
+            "$(location //sw/device/lib/crt)",
+        ],
+        deps = [
+            # The sival_owner C library is excluded from the real ROM_EXT,
+            # as chips maintain their ownership configuration in flash.
+            "//sw/device/lib/crt",
+            "//sw/device/silicon_creator/lib:manifest_def",
+            "//sw/device/silicon_creator/rom_ext:rom_ext_{}".format(config["dice"]),
+            "//sw/device/silicon_creator/rom_ext/imm_section:main_section_{}_slot_virtual".format(config["dice"]),
+        ] + config["deps"],
+    )
+    for name, config in ROM_EXT_CONFIGS.items()
+]
+
+[
+    coverage_view_test(
+        name = "rom_ext_prod_{}_coverage_view".format(name),
+        elf = "rom_ext_prod_{}".format(name),
+    )
+    for name in ROM_EXT_CONFIGS.keys()
 ]
 
 offline_presigning_artifacts(
