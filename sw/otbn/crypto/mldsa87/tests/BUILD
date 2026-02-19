@@ -8,6 +8,7 @@ package(default_visibility = ["//visibility:public"])
 
 mldsa87_srcs = [
     "//sw/otbn/crypto/mldsa87:mldsa87_ntt.s",
+    "//sw/otbn/crypto/mldsa87:mldsa87_arith.s",
 ]
 
 # Naming convention for the unit tests: Test, *.s and *.hjson files
@@ -16,6 +17,9 @@ mldsa87_unit_tests = [
     "mldsa87_ntt_test",
     "mldsa87_intt_test",
     "mldsa87_ntt_intt_test",
+    "mldsa87_poly_mul_test",
+    "mldsa87_poly_add_test",
+    "mldsa87_poly_sub_test",
 ]
 
 [

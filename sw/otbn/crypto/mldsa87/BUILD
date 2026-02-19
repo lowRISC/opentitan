@@ -12,3 +12,10 @@ otbn_library(
         "mldsa87_ntt.s",
     ],
 )
+
+otbn_library(
+    name = "mldsa87_arith",
+    srcs = [
+        "mldsa87_arith.s",
+    ],
+)
