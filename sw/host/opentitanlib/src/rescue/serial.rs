@@ -154,7 +154,7 @@ impl Rescue for RescueSerial {
             .logged()
             .wait_for_line(PassFail("ok:", regex!("error:.*")), Self::ONE_SECOND)?
         {
-            return Err(RescueError::BadMode(result[0].clone()).into());
+            return Err(RescueError::BadMode(format!("mode: {mode}\n{}", result[0])).into());
         }
         Ok(())
     }
