@@ -15,6 +15,7 @@ mldsa87_srcs = [
 mldsa87_unit_tests = [
     "mldsa87_ntt_test",
     "mldsa87_intt_test",
+    "mldsa87_ntt_intt_test",
 ]
 
 [
