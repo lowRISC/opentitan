@@ -1,0 +1,13 @@
+diff --git a/extensions/bindgen/private/llvm_utils.bzl b/extensions/bindgen/private/llvm_utils.bzl
+--- a/extensions/bindgen/private/llvm_utils.bzl
++++ b/extensions/bindgen/private/llvm_utils.bzl
+@@ -42,6 +42,9 @@ _COMMON_ATTRS = {
+         doc = "The target to transition.",
+         mandatory = True,
+     ),
++    "_allowlist_function_transition": attr.label(
++        default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
++    ),
+ }
+ 
+ def _cc_stdcc17_transitioned_target_impl(ctx):
