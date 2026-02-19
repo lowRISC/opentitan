@@ -5,6 +5,7 @@
 /* Number-theoretic transform for ML-DSA. */
 
 .global ntt
+.global intt
 
 .text
 
@@ -271,8 +272,8 @@ coefficients.
  *
  * This routine can be in-place if x2 = x4.
  *
- * @param[in] x2: DMEM address of input polynomial (256 24-bit coefficients).
- * @param[out] x3: DMEM address of output polynomial (256 24-bit coefficients).
+ * @param[in] x2: DMEM address of input polynomial (256 coefficients).
+ * @param[out] x3: DMEM address of output polynomial (256 coefficients).
  */
 ntt:
   /* Push clobbered general-purpose registers onto the stack. */
@@ -732,6 +733,506 @@ ntt:
 
   ret
 
+/**
+ * Compute the backward number-theoretic transform (NTT) for a polynomial f(x)
+ * in Z_q / (X^256+1) where q < 2^24 in constant time. The resulting
+ * coefficients are in bit-reversed ordering. The modulus q needs to be provided
+ * in the MOD[31:0] register alongside the Montgomery constant
+ * mu = -q^1 mod 2^32 in MOD[63:32].
+ *
+ * This routine can be in-place if x2 = x4.
+ *
+ * @param[in] x2: DMEM address of input polynomial (256 coefficients).
+ * @param[out] x3: DMEM address of output polynomial (256 coefficients).
+ */
+intt:
+  /* Push clobbered general-purpose registers onto the stack. */
+  .irp reg, x4, x5, x6, x7, x8
+    sw \reg, 0(x31)
+    addi x31, x31, 4
+  .endr
+
+  /* In this routine, we will use w0-15 as the intermediate state holding the
+     coefficients while w16 is used to hold an array of 8 twiddle factors. */
+  li x5, 16
+
+  /*
+   * Layer 1
+   */
+
+  /* Set up DMEM address pointers. */
+  la x4, _zeta_inv
+  addi x6, x2, 0
+  addi x7, x3, 0
+  addi x8, x4, 0
+
+  /* Iteration 1: Coefficients 0-127.
+     Iteration 2: Coefficients 128-255. */
+  loopi 2, 252
+
+    addi x20, x6, 0
+    addi x21, x0, 0
+    jal  x1, _load_64x32
+    jal  x1, _load_64x32
+
+    jal x1, _transpose_8x8_w0w16
+
+    bn.lid x5, 0(x8++)
+
+    /* Iteration 1: zeta[127-134]
+       Iteration 2: zeta[192-199] */
+    bn.subvm.8S w30,  w0,  w1
+    bn.addvm.8S  w0,  w0,  w1
+    bn.mulvm.8S  w1, w30, w16
+    bn.addvm.8S  w1,  w1, w31 /* cond sub */
+
+    bn.lid x5, 0(x8++)
+
+    /* Iteration 1: zeta[135-142]
+       Iteration 2: zeta[200-207] */
+    bn.subvm.8S w30,  w2,  w3
+    bn.addvm.8S  w2,  w2,  w3
+    bn.mulvm.8S  w3, w30, w16
+    bn.addvm.8S  w3,  w3, w31 /* cond sub */
+
+    bn.lid x5, 0(x8++)
+
+    /* Iteration 1: zeta[143-150]
+       Iteration 2: zeta[208-215] */
+    bn.subvm.8S w30,  w4,  w5
+    bn.addvm.8S  w4,  w4,  w5
+    bn.mulvm.8S  w5, w30, w16
+    bn.addvm.8S  w5,  w5, w31 /* cond sub */
+
+    bn.lid x5, 0(x8++)
+
+    /* Iteration 1: zeta[151-158]
+       Iteration 2: zeta[216-223] */
+    bn.subvm.8S w30,  w6,  w7
+    bn.addvm.8S  w6,  w6,  w7
+    bn.mulvm.8S  w7, w30, w16
+    bn.addvm.8S  w7,  w7, w31 /* cond sub */
+
+    bn.lid x5, 0(x8++)
+
+    /* Iteration 1: zeta[159-166]
+       Iteration 2: zeta[224-231] */
+    bn.subvm.8S w30,  w8,  w9
+    bn.addvm.8S  w8,  w8,  w9
+    bn.mulvm.8S  w9, w30, w16
+    bn.addvm.8S  w9,  w9, w31 /* cond sub */
+
+    bn.lid x5, 0(x8++)
+
+    /* Iteration 1: zeta[167-174]
+       Iteration 2: zeta[232-239] */
+    bn.subvm.8S w30, w10, w11
+    bn.addvm.8S w10, w10, w11
+    bn.mulvm.8S w11, w30, w16
+    bn.addvm.8S w11, w11, w31 /* cond sub */
+
+    bn.lid x5, 0(x8++)
+
+    /* Iteration 1: zeta[175-183]
+       Iteration 2: zeta[240-247] */
+    bn.subvm.8S w30, w12, w13
+    bn.addvm.8S w12, w12, w13
+    bn.mulvm.8S w13, w30, w16
+    bn.addvm.8S w13, w13, w31 /* cond sub */
+
+    bn.lid x5, 0(x8++)
+
+    /* Iteration 1: zeta[184-191]
+       Iteration 2: zeta[248-255] */
+    bn.subvm.8S w30, w14, w15
+    bn.addvm.8S w14, w14, w15
+    bn.mulvm.8S w15, w30, w16
+    bn.addvm.8S w15, w15, w31 /* cond sub */
+
+    /*
+     * Layer 2
+     */
+
+    bn.lid x5, 0(x8++)
+
+    /* Iteration 1: zeta[63-70]
+       Iteration 2: zeta[95-102] */
+    bn.subvm.8S w30,  w0,  w2
+    bn.addvm.8S  w0,  w0,  w2
+    bn.mulvm.8S  w2, w30, w16
+    bn.addvm.8S  w2,  w2, w31 /* cond sub */
+    bn.subvm.8S w30,  w1,  w3
+    bn.addvm.8S  w1,  w1,  w3
+    bn.mulvm.8S  w3, w30, w16
+    bn.addvm.8S  w3,  w3, w31 /* cond sub */
+
+    bn.lid x5, 0(x8++)
+
+    /* Iteration 1: zeta[71-78]
+       Iteration 2: zeta[103-110] */
+    bn.subvm.8S w30,  w4,  w6
+    bn.addvm.8S  w4,  w4,  w6
+    bn.mulvm.8S  w6, w30, w16
+    bn.addvm.8S  w6,  w6, w31 /* cond sub */
+    bn.subvm.8S w30,  w5,  w7
+    bn.addvm.8S  w5,  w5,  w7
+    bn.mulvm.8S  w7, w30, w16
+    bn.addvm.8S  w7,  w7, w31 /* cond sub */
+
+    bn.lid x5, 0(x8++)
+
+    /* Iteration 1: zeta[79-86]
+       Iteration 2: zeta[111-118] */
+    bn.subvm.8S w30,  w8, w10
+    bn.addvm.8S  w8,  w8, w10
+    bn.mulvm.8S w10, w30, w16
+    bn.addvm.8S w10, w10, w31 /* cond sub */
+    bn.subvm.8S w30,  w9, w11
+    bn.addvm.8S  w9,  w9, w11
+    bn.mulvm.8S w11, w30, w16
+    bn.addvm.8S w11, w11, w31 /* cond sub */
+
+    bn.lid x5, 0(x8++)
+
+    /* Iteration 1: zeta[87-94]
+       Iteration 2: zeta[119-126] */
+    bn.subvm.8S w30, w12, w14
+    bn.addvm.8S w12, w12, w14
+    bn.mulvm.8S w14, w30, w16
+    bn.addvm.8S w14, w14, w31 /* cond sub */
+    bn.subvm.8S w30, w13, w15
+    bn.addvm.8S w13, w13, w15
+    bn.mulvm.8S w15, w30, w16
+    bn.addvm.8S w15, w15, w31 /* cond sub */
+
+    /*
+     * Layer 3
+     */
+
+    bn.lid x5, 0(x8++)
+
+    /* Iteration 1: zeta[31-38]
+       Iteration 2: zeta[47-54] */
+    bn.subvm.8S w30,  w0,  w4
+    bn.addvm.8S  w0,  w0,  w4
+    bn.mulvm.8S  w4, w30, w16
+    bn.addvm.8S  w4,  w4, w31 /* cond sub */
+    bn.subvm.8S w30,  w1,  w5
+    bn.addvm.8S  w1,  w1,  w5
+    bn.mulvm.8S  w5, w30, w16
+    bn.addvm.8S  w5,  w5, w31 /* cond sub */
+    bn.subvm.8S w30,  w2,  w6
+    bn.addvm.8S  w2,  w2,  w6
+    bn.mulvm.8S  w6, w30, w16
+    bn.addvm.8S  w6,  w6, w31 /* cond sub */
+    bn.subvm.8S w30,  w3,  w7
+    bn.addvm.8S  w3,  w3,  w7
+    bn.mulvm.8S  w7, w30, w16
+    bn.addvm.8S  w7,  w7, w31 /* cond sub */
+
+    bn.lid x5, 0(x8++)
+
+    /* Iteration 1: zeta[39-46]
+       Iteration 2: zeta[55-62] */
+    bn.subvm.8S w30,  w8, w12
+    bn.addvm.8S  w8,  w8, w12
+    bn.mulvm.8S w12, w30, w16
+    bn.addvm.8S w12, w12, w31 /* cond sub */
+    bn.subvm.8S w30,  w9, w13
+    bn.addvm.8S  w9,  w9, w13
+    bn.mulvm.8S w13, w30, w16
+    bn.addvm.8S w13, w13, w31 /* cond sub */
+    bn.subvm.8S w30, w10, w14
+    bn.addvm.8S w10, w10, w14
+    bn.mulvm.8S w14, w30, w16
+    bn.addvm.8S w14, w14, w31 /* cond sub */
+    bn.subvm.8S w30, w11, w15
+    bn.addvm.8S w11, w11, w15
+    bn.mulvm.8S w15, w30, w16
+    bn.addvm.8S w15, w15, w31 /* cond sub */
+
+    /* Transpose w0-w15 back before storing it in the output buffer. */
+    jal x1, _transpose_8x8_w0w16
+
+    /*
+     * Layer 4
+     */
+
+    bn.lid x5, 0(x8++)
+
+    /* Iteration 1: zeta[15-22]
+       Iteration 2: zeta[23-30] */
+    bn.subvm.8S  w30,  w0,  w1
+    bn.addvm.8S   w0,  w0,  w1
+    bn.mulvml.8S  w1, w30, w16, 0
+    bn.addvm.8S   w1,  w1, w31 /* cond sub */
+    bn.subvm.8S  w30,  w2,  w3
+    bn.addvm.8S   w2,  w2,  w3
+    bn.mulvml.8S  w3, w30, w16, 1
+    bn.addvm.8S   w3,  w3, w31 /* cond sub */
+    bn.subvm.8S  w30,  w4,  w5
+    bn.addvm.8S   w4,  w4,  w5
+    bn.mulvml.8S  w5, w30, w16, 2
+    bn.addvm.8S   w5,  w5, w31 /* cond sub */
+    bn.subvm.8S  w30,  w6,  w7
+    bn.addvm.8S   w6,  w6,  w7
+    bn.mulvml.8S  w7, w30, w16, 3
+    bn.addvm.8S   w7,  w7, w31 /* cond sub */
+    bn.subvm.8S  w30,  w8,  w9
+    bn.addvm.8S   w8,  w8,  w9
+    bn.mulvml.8S  w9, w30, w16, 4
+    bn.addvm.8S   w9,  w9, w31 /* cond sub */
+    bn.subvm.8S  w30, w10, w11
+    bn.addvm.8S  w10, w10, w11
+    bn.mulvml.8S w11, w30, w16, 5
+    bn.addvm.8S  w11, w11, w31 /* cond sub */
+    bn.subvm.8S  w30, w12, w13
+    bn.addvm.8S  w12, w12, w13
+    bn.mulvml.8S w13, w30, w16, 6
+    bn.addvm.8S  w13, w13, w31 /* cond sub */
+    bn.subvm.8S  w30, w14, w15
+    bn.addvm.8S  w14, w14, w15
+    bn.mulvml.8S w15, w30, w16, 7
+    bn.addvm.8S  w15, w15, w31 /* cond sub */
+
+    /*
+     * Layer 5
+     */
+
+    bn.lid x5, 0(x8++)
+
+    /* Iteration 1: zeta[7-10]
+       Iteration 2: zeta[11-14] */
+    bn.subvm.8S  w30,  w0,  w2
+    bn.addvm.8S   w0,  w0,  w2
+    bn.mulvml.8S  w2, w30, w16, 0
+    bn.addvm.8S   w2,  w2, w31 /* cond sub */
+    bn.subvm.8S  w30,  w1,  w3
+    bn.addvm.8S   w1,  w1,  w3
+    bn.mulvml.8S  w3, w30, w16, 0
+    bn.addvm.8S   w3,  w3, w31 /* cond sub */
+    bn.subvm.8S  w30,  w4,  w6
+    bn.addvm.8S   w4,  w4,  w6
+    bn.mulvml.8S  w6, w30, w16, 1
+    bn.addvm.8S   w6,  w6, w31 /* cond sub */
+    bn.subvm.8S  w30,  w5,  w7
+    bn.addvm.8S   w5,  w5,  w7
+    bn.mulvml.8S  w7, w30, w16, 1
+    bn.addvm.8S   w7,  w7, w31 /* cond sub */
+    bn.subvm.8S  w30,  w8, w10
+    bn.addvm.8S   w8,  w8, w10
+    bn.mulvml.8S w10, w30, w16, 2
+    bn.addvm.8S  w10, w10, w31 /* cond sub */
+    bn.subvm.8S  w30,  w9, w11
+    bn.addvm.8S   w9,  w9, w11
+    bn.mulvml.8S w11, w30, w16, 2
+    bn.addvm.8S  w11, w11, w31 /* cond sub */
+    bn.subvm.8S  w30, w12, w14
+    bn.addvm.8S  w12, w12, w14
+    bn.mulvml.8S w14, w30, w16, 3
+    bn.addvm.8S  w14, w14, w31 /* cond sub */
+    bn.subvm.8S  w30, w13, w15
+    bn.addvm.8S  w13, w13, w15
+    bn.mulvml.8S w15, w30, w16, 3
+    bn.addvm.8S  w15, w15, w31 /* cond sub */
+
+    /*
+     * Layer 6
+     */
+
+    /* Iteration 1: zeta[3-4]
+       Iteration 2: zeta[5-6] */
+    bn.subvm.8S  w30,  w0,  w4
+    bn.addvm.8S   w0,  w0,  w4
+    bn.mulvml.8S  w4, w30, w16, 4
+    bn.addvm.8S   w4,  w4, w31 /* cond sub */
+    bn.subvm.8S  w30,  w1,  w5
+    bn.addvm.8S   w1,  w1,  w5
+    bn.mulvml.8S  w5, w30, w16, 4
+    bn.addvm.8S   w5,  w5, w31 /* cond sub */
+    bn.subvm.8S  w30,  w2,  w6
+    bn.addvm.8S   w2,  w2,  w6
+    bn.mulvml.8S  w6, w30, w16, 4
+    bn.addvm.8S   w6,  w6, w31 /* cond sub */
+    bn.subvm.8S  w30,  w3,  w7
+    bn.addvm.8S   w3,  w3,  w7
+    bn.mulvml.8S  w7, w30, w16, 4
+    bn.addvm.8S   w7,  w7, w31 /* cond sub */
+    bn.subvm.8S  w30,  w8, w12
+    bn.addvm.8S   w8,  w8, w12
+    bn.mulvml.8S w12, w30, w16, 5
+    bn.addvm.8S  w12, w12, w31 /* cond sub */
+    bn.subvm.8S  w30,  w9, w13
+    bn.addvm.8S   w9,  w9, w13
+    bn.mulvml.8S w13, w30, w16, 5
+    bn.addvm.8S  w13, w13, w31 /* cond sub */
+    bn.subvm.8S  w30, w10, w14
+    bn.addvm.8S  w10, w10, w14
+    bn.mulvml.8S w14, w30, w16, 5
+    bn.addvm.8S  w14, w14, w31 /* cond sub */
+    bn.subvm.8S  w30, w11, w15
+    bn.addvm.8S  w11, w11, w15
+    bn.mulvml.8S w15, w30, w16, 5
+    bn.addvm.8S  w15, w15, w31 /* cond sub */
+
+    /*
+     * Layer 7
+     */
+
+    /* Iteration 1: zeta[1]
+       Iteration 2: zeta[2] */
+    bn.subvm.8S  w30,  w0,  w8
+    bn.addvm.8S   w0,  w0,  w8
+    bn.mulvml.8S  w8, w30, w16, 6
+    bn.addvm.8S   w8,  w8, w31 /* cond sub */
+    bn.subvm.8S  w30,  w1,  w9
+    bn.addvm.8S   w1,  w1,  w9
+    bn.mulvml.8S  w9, w30, w16, 6
+    bn.addvm.8S   w9,  w9, w31 /* cond sub */
+    bn.subvm.8S  w30,  w2, w10
+    bn.addvm.8S   w2,  w2, w10
+    bn.mulvml.8S w10, w30, w16, 6
+    bn.addvm.8S  w10, w10, w31 /* cond sub */
+    bn.subvm.8S  w30,  w3, w11
+    bn.addvm.8S   w3,  w3, w11
+    bn.mulvml.8S w11, w30, w16, 6
+    bn.addvm.8S  w11, w11, w31 /* cond sub */
+    bn.subvm.8S  w30,  w4, w12
+    bn.addvm.8S   w4,  w4, w12
+    bn.mulvml.8S w12, w30, w16, 6
+    bn.addvm.8S  w12, w12, w31 /* cond sub */
+    bn.subvm.8S  w30,  w5, w13
+    bn.addvm.8S   w5,  w5, w13
+    bn.mulvml.8S w13, w30, w16, 6
+    bn.addvm.8S  w13, w13, w31 /* cond sub */
+    bn.subvm.8S  w30,  w6, w14
+    bn.addvm.8S   w6,  w6, w14
+    bn.mulvml.8S w14, w30, w16, 6
+    bn.addvm.8S  w14, w14, w31 /* cond sub */
+    bn.subvm.8S  w30,  w7, w15
+    bn.addvm.8S   w7,  w7, w15
+    bn.mulvml.8S w15, w30, w16, 6
+    bn.addvm.8S  w15, w15, w31 /* cond sub */
+
+    /* Store back the transformed 128 coefficients. */
+    addi x20, x7, 0
+    addi x21, x0, 0
+    jal  x1, _store_64x32
+    jal  x1, _store_64x32
+
+    /* Move the DMEM pointers to the second halves of the arrays. */
+    addi x6, x6, 512
+    addi x7, x7, 512
+    /* End of loop */
+
+  /*
+   * Layer 8
+   */
+
+  addi x6, x3, 0
+
+  /* Load 256^-1 mod q into w17 */
+  bn.wsrr w17, MOD
+  bn.rshi w17, w31, w17 >> 64
+
+  /* Iteration 1: Coefficients 0-63 and 128-191.
+     Iteration 2: Coefficients 64-127 and 192-255. */
+  loopi 2, 75
+
+    /* Load a batch of 128 coefficients. */
+    addi x20, x6, 0
+    addi x21, x0, 0
+    jal  x1, _load_64x32
+    addi x20, x20, 256
+    jal  x1, _load_64x32
+
+    bn.subvm.8S  w30,  w0,  w8
+    bn.addvm.8S   w0,  w0,  w8
+    bn.mulvml.8S  w8, w30, w16, 7
+    bn.addvm.8S   w8,  w8, w31  /* cond sub */
+    bn.subvm.8S  w30,  w1,  w9
+    bn.addvm.8S   w1,  w1,  w9
+    bn.mulvml.8S  w9, w30, w16, 7
+    bn.addvm.8S   w9,  w9, w31 /* cond sub */
+    bn.subvm.8S  w30,  w2, w10
+    bn.addvm.8S   w2,  w2, w10
+    bn.mulvml.8S w10, w30, w16, 7
+    bn.addvm.8S  w10, w10, w31 /* cond sub */
+    bn.subvm.8S  w30,  w3, w11
+    bn.addvm.8S   w3,  w3, w11
+    bn.mulvml.8S w11, w30, w16, 7
+    bn.addvm.8S  w11, w11, w31 /* cond sub */
+    bn.subvm.8S  w30,  w4, w12
+    bn.addvm.8S   w4,  w4, w12
+    bn.mulvml.8S w12, w30, w16, 7
+    bn.addvm.8S  w12, w12, w31 /* cond sub */
+    bn.subvm.8S  w30,  w5, w13
+    bn.addvm.8S   w5,  w5, w13
+    bn.mulvml.8S w13, w30, w16, 7
+    bn.addvm.8S  w13, w13, w31 /* cond sub */
+    bn.subvm.8S  w30,  w6, w14
+    bn.addvm.8S   w6,  w6, w14
+    bn.mulvml.8S w14, w30, w16, 7
+    bn.addvm.8S  w14, w14, w31 /* cond sub */
+    bn.subvm.8S  w30,  w7, w15
+    bn.addvm.8S   w7,  w7, w15
+    bn.mulvml.8S w15, w30, w16, 7
+    bn.addvm.8S  w15, w15, w31 /* cond sub */
+
+    /* Multiply the coefficients by 256^-1 mod q. */
+    bn.mulvml.8S  w0,  w0, w17, 0
+    bn.mulvml.8S  w1,  w1, w17, 0
+    bn.mulvml.8S  w2,  w2, w17, 0
+    bn.mulvml.8S  w3,  w3, w17, 0
+    bn.mulvml.8S  w4,  w4, w17, 0
+    bn.mulvml.8S  w5,  w5, w17, 0
+    bn.mulvml.8S  w6,  w6, w17, 0
+    bn.mulvml.8S  w7,  w7, w17, 0
+    bn.mulvml.8S  w8,  w8, w17, 0
+    bn.mulvml.8S  w9,  w9, w17, 0
+    bn.mulvml.8S w10, w10, w17, 0
+    bn.mulvml.8S w11, w11, w17, 0
+    bn.mulvml.8S w12, w12, w17, 0
+    bn.mulvml.8S w13, w13, w17, 0
+    bn.mulvml.8S w14, w14, w17, 0
+    bn.mulvml.8S w15, w15, w17, 0
+
+    bn.addvm.8S  w0,  w0, w31
+    bn.addvm.8S  w1,  w1, w31
+    bn.addvm.8S  w2,  w2, w31
+    bn.addvm.8S  w3,  w3, w31
+    bn.addvm.8S  w4,  w4, w31
+    bn.addvm.8S  w5,  w5, w31
+    bn.addvm.8S  w6,  w6, w31
+    bn.addvm.8S  w7,  w7, w31
+    bn.addvm.8S  w8,  w8, w31
+    bn.addvm.8S  w9,  w9, w31
+    bn.addvm.8S w10, w10, w31
+    bn.addvm.8S w11, w11, w31
+    bn.addvm.8S w12, w12, w31
+    bn.addvm.8S w13, w13, w31
+    bn.addvm.8S w14, w14, w31
+    bn.addvm.8S w15, w15, w31
+
+    /* Store back the transformed 128 coefficients. */
+    addi x20, x6, 0
+    addi x21, x0, 0
+    jal  x1, _store_64x32
+    addi x20, x20, 256
+    jal  x1, _store_64x32
+
+    /* Increment output DMEM address. */
+    addi x6, x6, 256
+    /* End of loop. */
+
+  /* Restore clobbered general-purpose registers. */
+  .irp reg, x8, x7, x6, x5, x4
+    addi x31, x31, -4
+    lw \reg, 0(x31)
+  .endr
+
+  ret
+
 /* The reduce the clutter in *_mem and test files declare the twiddle factors
    here. Make sure that these are not placed at the end of the .data section in
    the ELF file to guarantee that correct placement of the stack. */
@@ -1028,3 +1529,296 @@ _zeta:
 .word 0x0049c5aa /* 0x00155e68 */
 .word 0x006b16e0 /* 0x0072f6b7 */
 .word 0x001e29ce /* 0x001e29ce */
+
+/* ML-DSA inverse twiddle factors (zeta) in bit-reversed ordering and in the
+   Montgomery domain partitioned into two halves (lower and upper 128
+   coefficients). The factors are stored in unpacked form (256 32-bit elements).
+   Stored here instead of a testcase file for better inspection.
+
+   tmp[i] = w^(bit_rev(i)) * R^2 mod q. for i in [0, 256)
+   for i in [128, 64, 32, 16, 8, 4, 2, 1]:
+     for j in [i+i/2, 2*i]: zeta[2*i-j]     = -tmp[j] % q # Half 1
+     for j in [i, i+i/2]:   zeta[(i+i/2)-j] = -tmp[j] % q # Half 2 */
+_zeta_inv:
+
+/*
+ * Half 1
+ */
+
+/* Layer 8 (4x1 transposed) */
+.word 0x0061b633 /* 0x0061b633 (untransposed) */
+.word 0x0014c921 /* 0x000ce94a */
+.word 0x00361a57 /* 0x006a8199 */
+.word 0x0022e2f7 /* 0x0043ca37 */
+.word 0x003a8025 /* 0x0014c921 */
+.word 0x0062b999 /* 0x0000bcb2 */
+.word 0x0078abf3 /* 0x004410d5 */
+.word 0x007bc241 /* 0x000875b0 */
+.word 0x000ce94a /* 0x00361a57 */
+.word 0x0000bcb2 /* 0x006743d7 */
+.word 0x006743d7 /* 0x000ee7fb */
+.word 0x00066c23 /* 0x007d136e */
+.word 0x0003fa26 /* 0x0022e2f7 */
+.word 0x001b8352 /* 0x00066c23 */
+.word 0x0065aa1a /* 0x00221e51 */
+.word 0x0044deec /* 0x002cd89c */
+.word 0x006a8199 /* 0x003a8025 */
+.word 0x004410d5 /* 0x0003fa26 */
+.word 0x000ee7fb /* 0x0010d9cd */
+.word 0x00221e51 /* 0x00197168 */
+.word 0x0010d9cd /* 0x0062b999 */
+.word 0x00659331 /* 0x001b8352 */
+.word 0x000ee40c /* 0x00659331 */
+.word 0x004a1ac8 /* 0x000682bb */
+.word 0x0043ca37 /* 0x0078abf3 */
+.word 0x000875b0 /* 0x0065aa1a */
+.word 0x007d136e /* 0x000ee40c */
+.word 0x002cd89c /* 0x005e1b0a */
+.word 0x00197168 /* 0x007bc241 */
+.word 0x000682bb /* 0x0044deec */
+.word 0x005e1b0a /* 0x004a1ac8 */
+.word 0x002e5ec4 /* 0x002e5ec4 */
+.word 0x001b73c3 /* 0x001b73c3 */
+.word 0x0051e290 /* 0x00385e99 */
+.word 0x00126c59 /* 0x0066a867 */
+.word 0x00028371 /* 0x0073835c */
+.word 0x0039a1e1 /* 0x0051e290 */
+.word 0x001c2ea9 /* 0x006735f9 */
+.word 0x004be732 /* 0x007d63e5 */
+.word 0x0014fa53 /* 0x00309342 */
+.word 0x00385e99 /* 0x00126c59 */
+.word 0x006735f9 /* 0x007d0b46 */
+.word 0x007d0b46 /* 0x004c7769 */
+.word 0x005a6c4a /* 0x00620269 */
+.word 0x0076cf29 /* 0x00028371 */
+.word 0x00198008 /* 0x005a6c4a */
+.word 0x005dc219 /* 0x005ac276 */
+.word 0x0026da88 /* 0x001eb9a8 */
+.word 0x0066a867 /* 0x0039a1e1 */
+.word 0x007d63e5 /* 0x0076cf29 */
+.word 0x004c7769 /* 0x0038d3ee */
+.word 0x005ac276 /* 0x00276ee5 */
+.word 0x0038d3ee /* 0x001c2ea9 */
+.word 0x002b35f4 /* 0x00198008 */
+.word 0x0074041a /* 0x002b35f4 */
+.word 0x00629f68 /* 0x000846cc */
+.word 0x0073835c /* 0x004be732 */
+.word 0x00309342 /* 0x005dc219 */
+.word 0x00620269 /* 0x0074041a */
+.word 0x001eb9a8 /* 0x0068fbfc */
+.word 0x00276ee5 /* 0x0014fa53 */
+.word 0x000846cc /* 0x0026da88 */
+.word 0x0068fbfc /* 0x00629f68 */
+.word 0x001386ad /* 0x001386ad */
+/* Layer 7 (8x1 transposed) */
+.word 0x00454828 /* 0x00454828 (untransposed) */
+.word 0x003b3864 /* 0x00375fa9 */
+.word 0x0015f7fe /* 0x003b3864 */
+.word 0x00182f20 /* 0x002e115e */
+.word 0x006b686f /* 0x0015f7fe */
+.word 0x0002b520 /* 0x000c66bc */
+.word 0x001c400a /* 0x00182f20 */
+.word 0x003637f8 /* 0x006c41dc */
+.word 0x00375fa9 /* 0x006b686f */
+.word 0x002e115e /* 0x006bccfc */
+.word 0x000c66bc /* 0x0002b520 */
+.word 0x006c41dc /* 0x0024c36d */
+.word 0x006bccfc /* 0x001c400a */
+.word 0x0024c36d /* 0x004fa93f */
+.word 0x004fa93f /* 0x003637f8 */
+.word 0x007cfb95 /* 0x007cfb95 */
+.word 0x001417f8 /* 0x001417f8 */
+.word 0x00033821 /* 0x00744760 */
+.word 0x00319640 /* 0x00033821 */
+.word 0x00002182 /* 0x005b6a95 */
+.word 0x004378a7 /* 0x00319640 */
+.word 0x0010c942 /* 0x0066a6b9 */
+.word 0x00509a79 /* 0x00002182 */
+.word 0x007bd511 /* 0x0038d436 */
+.word 0x00744760 /* 0x004378a7 */
+.word 0x005b6a95 /* 0x007212bd */
+.word 0x0066a6b9 /* 0x0010c942 */
+.word 0x0038d436 /* 0x007f3301 */
+.word 0x007212bd /* 0x00509a79 */
+.word 0x007f3301 /* 0x00781bea */
+.word 0x00781bea /* 0x007bd511 */
+.word 0x00330417 /* 0x00330417 */
+/* Layer 6 */
+.word 0x002ab0d3
+.word 0x006042ad
+.word 0x002703d0
+.word 0x00445acd
+.word 0x0044a7ae
+.word 0x0071508b
+.word 0x0077c467
+.word 0x00737c59
+.word 0x00476c75
+.word 0x00186ba4
+.word 0x0020a9e9
+.word 0x004a5bc2
+.word 0x003a50a7
+.word 0x004a61e3
+.word 0x0019152a
+.word 0x0019edc3
+/* Layer 5 */
+.word 0x007b9a3c
+.word 0x0042ae00
+.word 0x00004bde
+.word 0x00650fcc
+.word 0x00320368
+.word 0x00155b09
+.word 0x003ae519
+.word 0x0020522a
+/* Layer 4 */
+.word 0x0056fada
+.word 0x005065b8
+.word 0x002c04f7
+.word 0x0050458c
+/* Layer 3 */
+.word 0x0078c1dd
+.word 0x000d5ed8
+/* Layer 2 */
+.word 0x0007eafd
+/* Layer 1 */
+.word 0x00000000
+
+/*
+ * Half 2
+ */
+
+/* Layer 8 (4x1 transposed) */
+.word 0x001df292 /* 0x001df292 (untransposed) */
+.word 0x0015d2d1 /* 0x004d6d7e */
+.word 0x0010095a /* 0x006bd93a */
+.word 0x00362470 /* 0x0006e21c */
+.word 0x006785bb /* 0x0015d2d1 */
+.word 0x006c9290 /* 0x0032a1c2 */
+.word 0x007cc6dd /* 0x006cfee6 */
+.word 0x00412fe6 /* 0x00145742 */
+.word 0x004d6d7e /* 0x0010095a */
+.word 0x0032a1c2 /* 0x0062d4b6 */
+.word 0x0062d4b6 /* 0x00635ac2 */
+.word 0x0057a770 /* 0x002daf77 */
+.word 0x0059efb0 /* 0x00362470 */
+.word 0x002785c6 /* 0x0057a770 */
+.word 0x0065633a /* 0x006ccb43 */
+.word 0x002532bf /* 0x00397ae8 */
+.word 0x006bd93a /* 0x006785bb */
+.word 0x006cfee6 /* 0x0059efb0 */
+.word 0x00635ac2 /* 0x006cd67d */
+.word 0x006ccb43 /* 0x0041fee5 */
+.word 0x006cd67d /* 0x006c9290 */
+.word 0x0056ce68 /* 0x002785c6 */
+.word 0x0032ffc5 /* 0x0056ce68 */
+.word 0x007b7ef5 /* 0x0054811c */
+.word 0x0006e21c /* 0x007cc6dd */
+.word 0x00145742 /* 0x0065633a */
+.word 0x002daf77 /* 0x0032ffc5 */
+.word 0x00397ae8 /* 0x004b6d1a */
+.word 0x0041fee5 /* 0x00412fe6 */
+.word 0x0054811c /* 0x002532bf */
+.word 0x004b6d1a /* 0x007b7ef5 */
+.word 0x007aa6e8 /* 0x007aa6e8 */
+.word 0x0036de3e /* 0x0036de3e */
+.word 0x004ef07b /* 0x000bba6e */
+.word 0x0007f904 /* 0x0008032a */
+.word 0x007360a7 /* 0x00364683 */
+.word 0x0030ba22 /* 0x004ef07b */
+.word 0x004a44a4 /* 0x0060df7d */
+.word 0x00365bde /* 0x002fa50a */
+.word 0x00459e09 /* 0x0009ffdf */
+.word 0x000bba6e /* 0x0007f904 */
+.word 0x0060df7d /* 0x0000a8fc */
+.word 0x0000a8fc /* 0x00189d76 */
+.word 0x0071ff1b /* 0x0078507e */
+.word 0x001244aa /* 0x007360a7 */
+.word 0x0012db10 /* 0x0071ff1b */
+.word 0x00255461 /* 0x006381e7 */
+.word 0x005c872d /* 0x007221a3 */
+.word 0x0008032a /* 0x0030ba22 */
+.word 0x002fa50a /* 0x001244aa */
+.word 0x00189d76 /* 0x00395d04 */
+.word 0x006381e7 /* 0x0035b760 */
+.word 0x00395d04 /* 0x004a44a4 */
+.word 0x005aba7a /* 0x0012db10 */
+.word 0x005da206 /* 0x005aba7a */
+.word 0x004be0a7 /* 0x007bcd0c */
+.word 0x00364683 /* 0x00365bde */
+.word 0x0009ffdf /* 0x00255461 */
+.word 0x0078507e /* 0x005da206 */
+.word 0x007221a3 /* 0x0033008e */
+.word 0x0035b760 /* 0x00459e09 */
+.word 0x007bcd0c /* 0x005c872d */
+.word 0x0033008e /* 0x004be0a7 */
+.word 0x005ff56e /* 0x005ff56e */
+/* Layer 7 (8x1 transposed) */
+.word 0x0015d39e /* 0x0015d39e (untransposed) */
+.word 0x006b4a2d /* 0x00639a9e */
+.word 0x0013f609 /* 0x006b4a2d */
+.word 0x0012beed /* 0x0005d423 */
+.word 0x0025cbf7 /* 0x0013f609 */
+.word 0x00385bb5 /* 0x000059c5 */
+.word 0x00567162 /* 0x0012beed */
+.word 0x000f017b /* 0x000a3d7e */
+.word 0x00639a9e /* 0x0025cbf7 */
+.word 0x0005d423 /* 0x00064593 */
+.word 0x000059c5 /* 0x00385bb5 */
+.word 0x000a3d7e /* 0x002d485d */
+.word 0x00064593 /* 0x00567162 */
+.word 0x002d485d /* 0x005f19c9 */
+.word 0x005f19c9 /* 0x000f017b */
+.word 0x004bcf0f /* 0x004bcf0f */
+.word 0x007df037 /* 0x007df037 */
+.word 0x00302d52 /* 0x00376f20 */
+.word 0x000f430a /* 0x00302d52 */
+.word 0x0062488f /* 0x0030ad80 */
+.word 0x00183045 /* 0x000f430a */
+.word 0x004ad613 /* 0x003e4f8e */
+.word 0x002e67e7 /* 0x0062488f */
+.word 0x0017537f /* 0x0013308b */
+.word 0x00376f20 /* 0x00183045 */
+.word 0x0030ad80 /* 0x005eaa3a */
+.word 0x003e4f8e /* 0x004ad613 */
+.word 0x0013308b /* 0x001629a3 */
+.word 0x005eaa3a /* 0x002e67e7 */
+.word 0x001629a3 /* 0x00381e31 */
+.word 0x00381e31 /* 0x0017537f */
+.word 0x003bf91b /* 0x003bf91b */
+/* Layer 6 */
+.word 0x00083aa3
+.word 0x005c0965
+.word 0x000495b3
+.word 0x0049dc01
+.word 0x002bc1bf
+.word 0x0049556b
+.word 0x002e7184
+.word 0x003aea7b
+.word 0x00442152
+.word 0x0026b82c
+.word 0x0036cfd4
+.word 0x00195afd
+.word 0x004a013c
+.word 0x0050eb34
+.word 0x007e69e1
+.word 0x0056959a
+/* Layer 5 */
+.word 0x00202c85
+.word 0x0057e699
+.word 0x00111560
+.word 0x00086270
+.word 0x00492879
+.word 0x00107a5c
+.word 0x00703f91
+.word 0x005649a9
+/* Layer 4 */
+.word 0x001feb81
+.word 0x00057b53
+.word 0x005bf6d6
+.word 0x006401d6
+/* Layer 3 */
+.word 0x000bdee8
+.word 0x007c41bd
+/* Layer 2 */
+.word 0x0027cefe
+/* Layer 1 */
+.word 0x007f7b0a
