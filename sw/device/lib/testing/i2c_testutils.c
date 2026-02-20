@@ -392,6 +392,8 @@ status_t i2c_testutils_set_speed(const dif_i2c_t *i2c, dif_i2c_speed_t speed,
       LOG_INFO("Setting i2c to %s mode.", "FastPlus (1000kHz)");
       speed_khz = 1000;
       break;
+    default:
+      break;
   }
   // I2C speed parameters.
   dif_i2c_timing_config_t timing_config = {
