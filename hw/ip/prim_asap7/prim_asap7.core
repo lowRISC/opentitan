@@ -20,6 +20,8 @@ filesets:
       - lowrisc:prim_asap7:clock_inv
       - lowrisc:prim_asap7:clock_mux2
       - lowrisc:prim_asap7:flop
+      - lowrisc:prim_asap7:const
+      - lowrisc:prim_asap7:const_sec
       - lowrisc:prim_generic:flop_2sync
       - lowrisc:prim_generic:rst_sync
       - lowrisc:prim_asap7:flop_en
@@ -46,6 +48,8 @@ mapping:
   "lowrisc:prim:clock_gating" : "lowrisc:prim_asap7:clock_gating"
   "lowrisc:prim:clock_inv"    : "lowrisc:prim_asap7:clock_inv"
   "lowrisc:prim:clock_mux2"   : "lowrisc:prim_asap7:clock_mux2"
+  "lowrisc:prim:const"        : "lowrisc:prim_asap7:const"
+  "lowrisc:prim:const_sec"    : "lowrisc:prim_asap7:const_sec"
   "lowrisc:prim:flop"         : "lowrisc:prim_asap7:flop"
   "lowrisc:prim:flop_2sync"   : "lowrisc:prim_generic:flop_2sync"
   "lowrisc:prim:rst_sync"     : "lowrisc:prim_generic:rst_sync"
