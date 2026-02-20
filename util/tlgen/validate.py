@@ -72,6 +72,7 @@ Crossbar node description. It can be host, device, or internal nodes.
                           'If true, pipeline fifo has passthrough behavior on req'],
         'rsp_fifo_pass': ['pb',
                           'If true, pipeline fifo has passthrough behavior on rsp'],
+        'fifo_depth': ['d', 'depth of req/rsp fifo if pipeline is true and fifo_pass is false'],
         'inst_type': ['s', 'Instance type'],
         'xbar': ['pb', 'If true, the node is connected to another Xbar'],
         'addr_range': ['lg', addrs],
@@ -389,11 +390,14 @@ def validate(obj: Dict[Any, Any]) -> Optional[Xbar]:
         node.pipeline = False
         node.req_fifo_pass = False
         node.rsp_fifo_pass = False
+        node.fifo_depth = 1
 
         if isinstance(node, Device) or isinstance(node, Host):
             node.pipeline = nodeobj.get("pipeline", False)
             node.req_fifo_pass = nodeobj.get("req_fifo_pass", False)
             node.rsp_fifo_pass = nodeobj.get("rsp_fifo_pass", False)
+        if isinstance(node, Device):
+            node.fifo_depth = nodeobj.get("fifo_depth", 1)
 
         xbar.nodes.append(node)
 

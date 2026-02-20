@@ -11016,6 +11016,7 @@
           reset: rst_main_ni
           req_fifo_pass: false
           rsp_fifo_pass: false
+          fifo_depth: 2
           inst_type: flash_ctrl
           addr_range:
           [

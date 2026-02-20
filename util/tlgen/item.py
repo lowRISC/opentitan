@@ -58,6 +58,12 @@ class Node:
     req_fifo_pass = True
     rsp_fifo_pass = True
 
+    # FIFO depth option. default is 1
+    # If pipeline is false or req/rsp_fifo_pass are true, this field has no meaning
+    # A fifo with depth > 1 can support multiple outstanding transactions without blocking the
+    # host
+    fifo_depth = 1
+
     def __init__(self,
                  name: str,
                  clock: str,

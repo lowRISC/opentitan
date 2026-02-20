@@ -116,14 +116,15 @@
       req_fifo_pass: false,
       rsp_fifo_pass: false,
     },
-    // Return and examine whether this path
-    // latency can be improved.
+    // fifo depth is set to 2 to be able to support 2 outstanding transactions from the ibex
+    // instruction cache (2x32b=1x64b cacheline)
     { name:      "flash_ctrl.mem",
       type:      "device",
       clock:     "clk_main_i",
       reset:     "rst_main_ni",
       req_fifo_pass: false,
       rsp_fifo_pass: false,
+      fifo_depth: 2,
     },
     { name:      "hmac",
       type:      "device",
