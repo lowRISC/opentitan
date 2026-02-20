@@ -25,7 +25,7 @@ interface flash_ctrl_if (
   lc_tx_t                           lc_nvm_debug_en = lc_ctrl_pkg::Off;
   lc_tx_t                           lc_escalate_en = lc_ctrl_pkg::Off;
 
-  pwr_flash_t                       pwrmgr;
+  pwr_nvm_t                         pwrmgr;
 
   keymgr_flash_t                    keymgr;
 

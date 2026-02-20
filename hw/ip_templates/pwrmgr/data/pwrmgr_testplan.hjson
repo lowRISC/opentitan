@@ -106,14 +106,14 @@
             Low power transitions can be aborted in two cases:
             - The processor gets an interrupt soon after a low power entry is
               triggered.
-            - OTP, LC, or FLASH are not idle.
+            - OTP, LC, or NVM are not idle.
             This test aborts low power transitions, and disables any wakeups,
             so the test would timeout if low power was entered.
 
             **Stimulus**:
             - Bring pwrmgr to low power.
             - Either disable `pwr_cpu.core_sleeping` or keep some of `lc_idle`,
-              `otp_idle`, or `flash_idle` inputs off.
+              `otp_idle`, or `nvm_idle` inputs off.
             - Disable all wakeup enables.
             - Randomly set `wakeup_info_capture_dis` CSR.
 

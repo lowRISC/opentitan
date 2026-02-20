@@ -2753,8 +2753,8 @@
           index: -1
         }
         {
-          name: pwr_flash
-          struct: pwr_flash
+          name: pwr_nvm
+          struct: pwr_nvm
           package: pwrmgr_pkg
           type: uni
           act: rcv
@@ -22053,8 +22053,8 @@
         index: -1
       }
       {
-        name: pwr_flash
-        struct: pwr_flash
+        name: pwr_nvm
+        struct: pwr_nvm
         package: pwrmgr_pkg
         type: uni
         act: rcv

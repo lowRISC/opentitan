@@ -36,7 +36,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | rma_req                  | lc_ctrl_pkg::lc_tx             | uni     | rcv   |       1 |               |
 | rma_ack                  | lc_ctrl_pkg::lc_tx             | uni     | req   |       1 |               |
 | rma_seed                 | lc_ctrl_pkg::lc_flash_rma_seed | uni     | rcv   |       1 |               |
-| pwrmgr                   | pwrmgr_pkg::pwr_flash          | uni     | req   |       1 |               |
+| pwrmgr                   | pwrmgr_pkg::pwr_nvm            | uni     | req   |       1 |               |
 | keymgr                   | flash_ctrl_pkg::keymgr_flash   | uni     | req   |       1 |               |
 | obs_ctrl                 | ast_pkg::ast_obs_ctrl          | uni     | rcv   |       1 |               |
 | fla_obs                  | logic                          | uni     | req   |       8 |               |

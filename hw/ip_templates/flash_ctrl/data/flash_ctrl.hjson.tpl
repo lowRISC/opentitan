@@ -214,7 +214,7 @@
       package: "lc_ctrl_pkg"
     },
 
-    { struct: "pwr_flash",
+    { struct: "pwr_nvm",
       type: "uni",
       name: "pwrmgr",
       act:  "req",

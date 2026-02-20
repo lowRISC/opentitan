@@ -1430,7 +1430,7 @@ module top_darjeeling #(
       .pwr_otp_i(pwrmgr_aon_pwr_otp_rsp),
       .pwr_lc_o(pwrmgr_aon_pwr_lc_req),
       .pwr_lc_i(pwrmgr_aon_pwr_lc_rsp),
-      .pwr_flash_i(pwrmgr_pkg::PWR_FLASH_DEFAULT),
+      .pwr_nvm_i(pwrmgr_pkg::PWR_NVM_DEFAULT),
       .esc_rst_tx_i(alert_handler_esc_tx[3]),
       .esc_rst_rx_o(alert_handler_esc_rx[3]),
       .pwr_cpu_i(rv_core_ibex_pwrmgr),
