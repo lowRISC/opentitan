@@ -13,7 +13,7 @@
                "{eval_cmd} echo {sim_tops} | sed -E 's/(\\S+)/-top \\1/g'",
               ]
 
-  run_opts:   ["-sv_seed={seed}",
+  run_opts:   ["-sv_seed={short_seed}",
                "-c",
                "{tb}",
                "-lib {sv_flist_gen_dir}/work",
