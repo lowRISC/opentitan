@@ -147,6 +147,8 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         DARJEELING_TEST_ENVS,
         {
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -1368,6 +1370,8 @@ opentitan_test(
         ),
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
         DARJEELING_TEST_ENVS,
