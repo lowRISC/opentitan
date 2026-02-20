@@ -57,7 +57,7 @@ class lc_ctrl_env_cov extends cip_base_env_cov #(
     }
 
     clk_byp_error_rsp_cp: coverpoint cfg.err_inj.clk_byp_error_rsp;
-    flash_rma_error_rsp_cp: coverpoint cfg.err_inj.flash_rma_error_rsp;
+    nvm_rma_error_rsp_cp: coverpoint cfg.err_inj.nvm_rma_error_rsp;
     otp_prog_err_cp: coverpoint cfg.err_inj.otp_prog_err;
     otp_partition_err_cp: coverpoint cfg.err_inj.otp_partition_err;
     token_mismatch_err_cp: coverpoint cfg.err_inj.token_mismatch_err;
@@ -77,7 +77,7 @@ class lc_ctrl_env_cov extends cip_base_env_cov #(
     post_trans_err_cp: coverpoint cfg.err_inj.post_trans_err;
     security_escalation_err_cp: coverpoint cfg.err_inj.security_escalation_err;
     clk_byp_rsp_mubi_err_cp: coverpoint cfg.err_inj.clk_byp_rsp_mubi_err;
-    flash_rma_rsp_mubi_err_cp: coverpoint cfg.err_inj.flash_rma_rsp_mubi_err;
+    nvm_rma_rsp_mubi_err_cp: coverpoint cfg.err_inj.nvm_rma_rsp_mubi_err;
     otp_secrets_valid_mubi_err_cp: coverpoint cfg.err_inj.otp_secrets_valid_mubi_err;
     otp_test_tokens_valid_mubi_err_cp: coverpoint cfg.err_inj.otp_test_tokens_valid_mubi_err;
     otp_rma_token_valid_mubi_err_cp: coverpoint cfg.err_inj.otp_rma_token_valid_mubi_err;
@@ -98,7 +98,7 @@ class lc_ctrl_env_cov extends cip_base_env_cov #(
     // Crosses for error injection vs CSR access type  (JTAG/TL)- make sure we can detect
     // the error by reading the status reg via both interfaces
     `LC_CTRL_JTAG_ERROR_CROSS(clk_byp_error_rsp)
-    `LC_CTRL_JTAG_ERROR_CROSS(flash_rma_error_rsp)
+    `LC_CTRL_JTAG_ERROR_CROSS(nvm_rma_error_rsp)
     `LC_CTRL_JTAG_ERROR_CROSS(otp_prog_err)
     `LC_CTRL_JTAG_ERROR_CROSS(otp_partition_err)
     `LC_CTRL_JTAG_ERROR_CROSS(token_mismatch_err)

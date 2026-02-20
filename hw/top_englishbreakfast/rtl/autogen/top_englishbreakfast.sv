@@ -1128,7 +1128,7 @@ module top_englishbreakfast #(
       .lc_escalate_en_i(lc_ctrl_pkg::LC_TX_DEFAULT),
       .rma_req_i(lc_ctrl_pkg::LC_TX_DEFAULT),
       .rma_ack_o(),
-      .rma_seed_i(lc_ctrl_pkg::LC_FLASH_RMA_SEED_DEFAULT),
+      .rma_seed_i(lc_ctrl_pkg::LC_NVM_RMA_SEED_DEFAULT),
       .pwrmgr_o(pwrmgr_aon_pwr_nvm),
       .keymgr_o(),
       .obs_ctrl_i(obs_ctrl_i),

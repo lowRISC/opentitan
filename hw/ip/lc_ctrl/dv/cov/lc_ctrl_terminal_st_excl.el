@@ -43,7 +43,7 @@ ANNOTATION: "[LOW_RISK] The transition from any state to error_terminal state is
 Transition EscalateSt->InvalidSt "48539->12620"
 Fsm fsm_state_q "1774514253"
 ANNOTATION: "[LOW_RISK] The transition from any state to error_terminal state is fully verified in FPV."
-Transition FlashRmaSt->InvalidSt "59535->12620"
+Transition NvmRmaSt->InvalidSt "59535->12620"
 Fsm fsm_state_q "1774514253"
 ANNOTATION: "[LOW_RISK] The transition from any state to error_terminal state is fully verified in FPV."
 Transition CntProgSt->InvalidSt "3156->12620"

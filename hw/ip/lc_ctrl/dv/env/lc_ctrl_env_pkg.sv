@@ -69,8 +69,8 @@ package lc_ctrl_env_pkg;
   typedef struct packed {
     // Bad protocol on clk_byp_ack_i
     bit clk_byp_error_rsp;
-    // Bad protocol on flash_rma_ack_i
-    bit flash_rma_error_rsp;
+    // Bad protocol on nvm_rma_ack_i
+    bit nvm_rma_error_rsp;
     // OTP responds with error
     bit otp_prog_err;
     // OTP data to lc_ctrl has error bit set
@@ -110,8 +110,8 @@ package lc_ctrl_env_pkg;
     // Use other than "Off" enum for MUBI input off values
     // clk_byp_rsp
     bit clk_byp_rsp_mubi_err;
-    // flash_rma_rsp
-    bit flash_rma_rsp_mubi_err;
+    // nvm_rma_rsp
+    bit nvm_rma_rsp_mubi_err;
     // OTP secrets valid
     bit otp_secrets_valid_mubi_err;
     // OTP test tokens valid

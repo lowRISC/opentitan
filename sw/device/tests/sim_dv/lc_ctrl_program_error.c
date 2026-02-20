@@ -369,7 +369,7 @@ bool test_main(void) {
     CHECK((lc_status & ((1 << kDifLcCtrlStatusCodeTooManyTransitions) |
                         (1 << kDifLcCtrlStatusCodeInvalidTransition) |
                         (1 << kDifLcCtrlStatusCodeBadToken) |
-                        (1 << kDifLcCtrlStatusCodeFlashRmaError))) == 0,
+                        (1 << kDifLcCtrlStatusCodeNvmRmaError))) == 0,
           "Got unexpected lc-side error");
     LOG_INFO("lc STATUS:0x%x", lc_status);
 
