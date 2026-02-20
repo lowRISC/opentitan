@@ -658,6 +658,10 @@ impl ImageAssembler {
     fn read(path: &Path, buf: &mut [u8]) -> Result<usize> {
         let mut file = File::open(path)?;
         let len = file.metadata()?.len() as usize;
+        ensure!(len <= buf.len(), ImageError::IncompleteRead(len, buf.len()));
+        if buf[..len].iter().any(|&c| c != 0xff) {
+            bail!("{path:?} Overlapped during image assembly");
+        }
         let n = file.read(buf)?;
         ensure!(len == n, ImageError::IncompleteRead(len, n));
         Ok(n)
