@@ -604,8 +604,8 @@ module top_earlgrey #(
   entropy_src_pkg::entropy_src_hw_if_req_t       csrng_entropy_src_hw_if_req;
   entropy_src_pkg::entropy_src_hw_if_rsp_t       csrng_entropy_src_hw_if_rsp;
   flash_ctrl_pkg::keymgr_flash_t       flash_ctrl_keymgr;
-  otp_ctrl_pkg::flash_otp_key_req_t       flash_ctrl_otp_req;
-  otp_ctrl_pkg::flash_otp_key_rsp_t       flash_ctrl_otp_rsp;
+  otp_ctrl_pkg::nvm_otp_key_req_t       flash_ctrl_otp_req;
+  otp_ctrl_pkg::nvm_otp_key_rsp_t       flash_ctrl_otp_rsp;
   lc_ctrl_pkg::lc_nvm_rma_seed_t       flash_ctrl_rma_seed;
   otp_ctrl_pkg::sram_otp_key_req_t [3:0] otp_ctrl_sram_otp_key_req;
   otp_ctrl_pkg::sram_otp_key_rsp_t [3:0] otp_ctrl_sram_otp_key_rsp;
@@ -1537,8 +1537,8 @@ module top_earlgrey #(
       .lc_rma_state_i(lc_ctrl_lc_rma_state),
       .lc_check_byp_en_i(lc_ctrl_lc_check_byp_en),
       .otp_keymgr_key_o(otp_ctrl_otp_keymgr_key),
-      .flash_otp_key_i(flash_ctrl_otp_req),
-      .flash_otp_key_o(flash_ctrl_otp_rsp),
+      .nvm_otp_key_i(flash_ctrl_otp_req),
+      .nvm_otp_key_o(flash_ctrl_otp_rsp),
       .sram_otp_key_i(otp_ctrl_sram_otp_key_req),
       .sram_otp_key_o(otp_ctrl_sram_otp_key_rsp),
       .otbn_otp_key_i(otp_ctrl_otbn_otp_key_req),

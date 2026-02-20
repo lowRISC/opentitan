@@ -2468,8 +2468,8 @@ otp_json(
         otp_partition(
             name = "SECRET1",
             items = {
-                "FLASH_ADDR_KEY_SEED": "434677540fdc9956038c1b4e7bd7394c8251c8921ed1a7fc8ed040844dde2dca",
-                "FLASH_DATA_KEY_SEED": "7cdb1a9d39c20016dcc70e44beeff5f4871b3d2726a673365cc32c34646c9a9f",
+                "NVM_ADDR_KEY_SEED": "434677540fdc9956038c1b4e7bd7394c8251c8921ed1a7fc8ed040844dde2dca",
+                "NVM_DATA_KEY_SEED": "7cdb1a9d39c20016dcc70e44beeff5f4871b3d2726a673365cc32c34646c9a9f",
                 "SRAM_DATA_KEY_SEED": "57f20b5b2e200c010e83fabc03c68203",
             },
             lock = False,

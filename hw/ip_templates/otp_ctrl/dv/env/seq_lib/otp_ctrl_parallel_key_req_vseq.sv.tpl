@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// This sequence will randomly issue key otbn, sram, flash key requests during or after partition
+// This sequence will randomly issue key otbn, sram, nvm key requests during or after partition
 // is locked.
 // This sequence will check if nonce, seed_valid, and output keys are correct via scb.
 
@@ -28,19 +28,19 @@ class otp_ctrl_parallel_key_req_vseq extends otp_ctrl_parallel_base_vseq;
               if (!base_vseq_done && !cfg.under_reset) req_otbn_key();
             end
           end
-        % if enable_flash_key:
+        % if enable_nvm_key:
           begin
-            // get flash addr key
+            // get nvm addr key
             if ($urandom_range(0, 1)) begin
               wait_clk_or_reset($urandom_range(0, 500));
-              if (!base_vseq_done && !cfg.under_reset) req_flash_addr_key();
+              if (!base_vseq_done && !cfg.under_reset) req_nvm_addr_key();
             end
           end
           begin
-            // get flash data key
+            // get nvm data key
             if ($urandom_range(0, 1)) begin
               wait_clk_or_reset($urandom_range(0, 500));
-              if (!base_vseq_done && !cfg.under_reset) req_flash_data_key();
+              if (!base_vseq_done && !cfg.under_reset) req_nvm_data_key();
             end
           end
         % endif

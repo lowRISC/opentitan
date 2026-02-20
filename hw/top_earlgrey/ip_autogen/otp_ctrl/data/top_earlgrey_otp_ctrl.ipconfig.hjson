@@ -43,12 +43,12 @@
             cnst_value: <random>
           }
           {
-            name: FlashDataKey
+            name: NvmDataKey
             iv_value: <random>
             cnst_value: <random>
           }
           {
-            name: FlashAddrKey
+            name: NvmAddrKey
             iv_value: <random>
             cnst_value: <random>
           }
@@ -2133,7 +2133,7 @@
         }
       ]
     }
-    enable_flash_key: true
+    enable_nvm_key: true
     topname: earlgrey
     uniquified_modules: {}
     module_instance_name: otp_ctrl

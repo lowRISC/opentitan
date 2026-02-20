@@ -193,8 +193,8 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
 
       // Access OTP via app interface.
       if ($urandom_range(0, 1)) req_otbn_key(0);
-      if ($urandom_range(0, 1)) req_flash_addr_key(0);
-      if ($urandom_range(0, 1)) req_flash_data_key(0);
+      if ($urandom_range(0, 1)) req_nvm_addr_key(0);
+      if ($urandom_range(0, 1)) req_nvm_data_key(0);
       if ($urandom_range(0, 1)) req_all_sram_keys(0);
       cfg.clk_rst_vif.wait_clks($urandom_range(10, 20));
 

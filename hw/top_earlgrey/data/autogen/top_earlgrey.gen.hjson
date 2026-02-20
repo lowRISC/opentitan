@@ -2030,9 +2030,9 @@
           index: -1
         }
         {
-          name: flash_otp_key
-          desc: Key derivation interface for FLASH scrambling.
-          struct: flash_otp_key
+          name: nvm_otp_key
+          desc: Key derivation interface for NVM scrambling.
+          struct: nvm_otp_key
           package: otp_ctrl_pkg
           type: req_rsp
           act: rsp
@@ -6172,7 +6172,7 @@
       [
         {
           name: otp
-          struct: flash_otp_key
+          struct: nvm_otp_key
           package: otp_ctrl_pkg
           type: req_rsp
           act: req
@@ -10017,7 +10017,7 @@
       ]
       flash_ctrl.otp:
       [
-        otp_ctrl.flash_otp_key
+        otp_ctrl.nvm_otp_key
       ]
       flash_ctrl.rma_seed:
       [
@@ -19861,9 +19861,9 @@
         index: -1
       }
       {
-        name: flash_otp_key
-        desc: Key derivation interface for FLASH scrambling.
-        struct: flash_otp_key
+        name: nvm_otp_key
+        desc: Key derivation interface for NVM scrambling.
+        struct: nvm_otp_key
         package: otp_ctrl_pkg
         type: req_rsp
         act: rsp
@@ -22544,7 +22544,7 @@
       }
       {
         name: otp
-        struct: flash_otp_key
+        struct: nvm_otp_key
         package: otp_ctrl_pkg
         type: req_rsp
         act: req
@@ -26317,7 +26317,7 @@
       }
       {
         package: otp_ctrl_pkg
-        struct: flash_otp_key_req
+        struct: nvm_otp_key_req
         signame: flash_ctrl_otp_req
         width: 1
         type: req_rsp
@@ -26328,14 +26328,14 @@
       }
       {
         package: otp_ctrl_pkg
-        struct: flash_otp_key_rsp
+        struct: nvm_otp_key_rsp
         signame: flash_ctrl_otp_rsp
         width: 1
         type: req_rsp
         end_idx: -1
         act: req
         suffix: rsp
-        default: otp_ctrl_pkg::FLASH_OTP_KEY_RSP_DEFAULT
+        default: otp_ctrl_pkg::NVM_OTP_KEY_RSP_DEFAULT
       }
       {
         package: lc_ctrl_pkg

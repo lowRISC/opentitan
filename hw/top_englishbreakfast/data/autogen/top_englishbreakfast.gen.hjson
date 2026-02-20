@@ -3127,7 +3127,7 @@
       [
         {
           name: otp
-          struct: flash_otp_key
+          struct: nvm_otp_key
           package: otp_ctrl_pkg
           type: req_rsp
           act: req
@@ -10990,7 +10990,7 @@
       }
       {
         name: otp
-        struct: flash_otp_key
+        struct: nvm_otp_key
         package: otp_ctrl_pkg
         type: req_rsp
         act: req
