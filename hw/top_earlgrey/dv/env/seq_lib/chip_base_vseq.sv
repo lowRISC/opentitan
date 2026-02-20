@@ -37,6 +37,7 @@ class chip_base_vseq #(
 
   virtual task apply_reset(string kind = "HARD");
     callback_vseq.pre_apply_reset();
+
     // Note: The JTAG reset does not have a dedicated pad and is muxed with other chip IOs.
     // These IOs have pad attributes that are driven from registers, and as long as
     // the reset line of those registers is X, the registers and hence the pad outputs
@@ -58,6 +59,7 @@ class chip_base_vseq #(
     cfg.m_jtag_riscv_agent_cfg.m_jtag_agent_cfg.vif.do_trst_n();
     super.apply_reset(kind);
     if (jtag_dmi_ral != null) jtag_dmi_ral.reset(kind);
+
     callback_vseq.post_apply_reset();
   endtask
 
@@ -101,75 +103,77 @@ class chip_base_vseq #(
         top_earlgrey_rnd_cnst_pkg::RndCnstRomCtrlScrNonce);
   endfunction
 
-  // Iniitializes the DUT.
+  // Initialize the DUT.
   //
-  // Initializes DUT inputs, internal memories, etc., brings the DUT out of reset (performs a reset
-  // cycle) and  performs immediate post-reset steps to prime the design for stimulus. The
-  // base class method invoked by super.dut_init() applies the reset.
+  // - Initializes DUT inputs, internal memories, etc.
+  // - Brings the DUT out of reset (performs a reset cycle)
+  // - Performs immediate post-reset steps to prime the design for stimulus
+  //
+  // The base class method invoked by super.dut_init() applies the reset.
   virtual task dut_init(string reset_kind = "HARD");
     bit otp_clear_hw_cfg0, otp_clear_secret0, otp_clear_secret1, otp_clear_secret2;
-    // Connect the external clock source if the test needs it.
-    //
-    // TODO: This is a functional interface which should ideally be connected only in the extended
-    // test sequences. Revisit this later.
+
+    `uvm_info(`gfn, "dut_init() START.", UVM_MEDIUM)
     callback_vseq.pre_dut_init();
+
+    // (If required by the test) Connect the external clock source.
     if (cfg.chip_clock_source != ChipClockSourceInternal) begin
+      // TODO: This is a functional interface which should ideally be connected only in extended
+      // test sequences. Revisit this later.
       `uvm_info(`gfn, {"Connecting and driving external clock source with frequency ",
                        $sformatf("%0dMhz", cfg.chip_clock_source)}, UVM_LOW)
       cfg.chip_vif.ext_clk_if.set_active(.drive_clk_val(1), .drive_rst_n_val(0));
       cfg.chip_vif.ext_clk_if.set_freq_mhz(cfg.chip_clock_source);
     end
 
-    // Connect DIOs
+    // Connect any DIO blocks to Agents
     cfg.chip_vif.enable_spi_host = 1;
 
-    // Initialize all memories via backdoor.
+    // Initialize Flash memories (to '1) via backdoor.
     cfg.mem_bkdr_util_h[FlashBank0Info].set_mem();
     cfg.mem_bkdr_util_h[FlashBank1Info].set_mem();
+    // Initialize OTBN memories (to '0).
+    cfg.mem_bkdr_util_h[OtbnImem].clear_mem();
+    for (int ram_idx = 0; ram_idx < cfg.num_otbn_dmem_tiles; ram_idx++) begin
+      cfg.mem_bkdr_util_h[chip_mem_e'(OtbnDmem0 + ram_idx)].clear_mem();
+    end
+
     // Backdoor load the OTP image.
-    cfg.mem_bkdr_util_h[Otp].load_mem_from_file(cfg.otp_images[cfg.use_otp_image]);
+    if (cfg.use_otp_image != OtpNone) begin
+      `uvm_info(`gfn, "Initializing OTP.", UVM_MEDIUM)
+      cfg.mem_bkdr_util_h[Otp].load_mem_from_file(cfg.otp_images[cfg.use_otp_image]);
+    end
+
     // Plusargs to selectively clear the provisioning state of some of the OTP partitions.
     // This is useful in tests that make front-door accesses for provisioning purposes.
     void'($value$plusargs("otp_clear_hw_cfg0=%0d", otp_clear_hw_cfg0));
     void'($value$plusargs("otp_clear_secret0=%0d", otp_clear_secret0));
     void'($value$plusargs("otp_clear_secret1=%0d", otp_clear_secret1));
     void'($value$plusargs("otp_clear_secret2=%0d", otp_clear_secret2));
-    if (otp_clear_hw_cfg0) begin
-        cfg.mem_bkdr_util_h[Otp].otp_clear_hw_cfg0_partition();
-    end
-    if (otp_clear_secret0) begin
-        cfg.mem_bkdr_util_h[Otp].otp_clear_secret0_partition();
-    end
-    if (otp_clear_secret1) begin
-        cfg.mem_bkdr_util_h[Otp].otp_clear_secret1_partition();
-    end
-    if (otp_clear_secret2) begin
-        cfg.mem_bkdr_util_h[Otp].otp_clear_secret2_partition();
-    end
-
+    if (otp_clear_hw_cfg0) cfg.mem_bkdr_util_h[Otp].otp_clear_hw_cfg0_partition();
+    if (otp_clear_secret0) cfg.mem_bkdr_util_h[Otp].otp_clear_secret0_partition();
+    if (otp_clear_secret1) cfg.mem_bkdr_util_h[Otp].otp_clear_secret1_partition();
+    if (otp_clear_secret2) cfg.mem_bkdr_util_h[Otp].otp_clear_secret2_partition();
+    // Overrideable hook to modify the OTP LC State
     initialize_otp_lc_state();
+    // Overrideable hook to modify the OTP SW_CREATOR AST CF
     initialize_otp_creator_sw_cfg_ast_cfg();
-    // Initialize selected memories to all 0. This is required for some chip-level tests such as
-    // otbn_mem_scramble that may intentionally read memories before writing them. Reading these
-    // memories still triggeres ECC integrity errors that need to be handled by the test.
-    cfg.mem_bkdr_util_h[OtbnImem].clear_mem();
-    for (int ram_idx = 0; ram_idx < cfg.num_otbn_dmem_tiles; ram_idx++) begin
-      cfg.mem_bkdr_util_h[chip_mem_e'(OtbnDmem0 + ram_idx)].clear_mem();
-    end
+
     // Early cpu init
     if (cfg.early_cpu_init) cpu_init();
+
     // Bring the chip out of reset.
     super.dut_init(reset_kind);
-    alert_ping_en_shorten();
-    callback_vseq.post_dut_init();
 
     // Clear once upon the chip exiting the first reset.
     is_first_pwrup = 0;
+    alert_ping_en_shorten();
+
+    callback_vseq.post_dut_init();
+    `uvm_info(`gfn, "dut_init() END.", UVM_MEDIUM)
   endtask
 
-  // Place holder for cpu_init task
-  // initial implementation is in chip_sw_base_vseq.sv
-  virtual task cpu_init();endtask
+  virtual task cpu_init(); endtask
 
   virtual task dut_shutdown();
     // check for pending chip operations and wait for them to complete
@@ -199,22 +203,26 @@ class chip_base_vseq #(
   endtask
 
   virtual task pre_start();
-    // Do DUT init after some additional settings.
-    bit do_dut_init_save = do_dut_init;
+    // If configured to call dut_init(), postpone until after some additional configuration.
+    bit saved_do_dut_init = do_dut_init;
     do_dut_init = 1'b0;
+
     `uvm_create_on(callback_vseq, p_sequencer);
     `DV_CHECK_RANDOMIZE_FATAL(callback_vseq)
+
     super.pre_start();
+
     // Randomize the ROM image with valid ECC and digest. Subclasses that have an actual ROM image
     // will load a "real" ROM image later. If the ROM integrity check is disabled, no digest needs
     // to be calculated and we can just randomize the memory.
-    `ifdef DISABLE_ROM_INTEGRITY_CHECK
-      cfg.mem_bkdr_util_h[Rom].randomize_mem();
-    `else
-      random_rom_init_with_digest();
-    `endif
-    do_dut_init = do_dut_init_save;
-    // Now safe to do DUT init.
+`ifdef DISABLE_ROM_INTEGRITY_CHECK
+    cfg.mem_bkdr_util_h[Rom].randomize_mem();
+`else
+    random_rom_init_with_digest();
+`endif
+
+    // It's now safe to call dut_init() (if desired).
+    do_dut_init = saved_do_dut_init;
     if (do_dut_init) dut_init();
   endtask
 
@@ -257,8 +265,39 @@ class chip_base_vseq #(
     uart_item item;
     forever begin
       p_sequencer.uart_tx_fifos[uart_idx].get(item);
-      `uvm_info(`gfn, $sformatf("Received UART data over TX:\n%0h", item.data), UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("Agent received UART[%0d] data over TX: 8'h%0h / %0s",
+        uart_idx, item.data, item.data), UVM_HIGH)
       uart_tx_data_q.push_back(item.data);
+    end
+  endtask
+
+  // Monitor items received from the UART console, whenever a EOL-sequence is received (CR)LF, print
+  // all received bytes as a string and clear the item queue.
+  task print_uart_console_items(int uart_idx = 0);
+    byte byte_q[$];
+    bit [7:0] CR = 8'hd;
+    bit [7:0] LF = 8'ha;
+    `uvm_info(`gfn, $sformatf("Monitoring console messages on UART%0d...", uart_idx), UVM_LOW)
+    forever begin
+      uart_item item;
+      p_sequencer.uart_tx_fifos[uart_idx].get(item);
+      `uvm_info(`gfn, $sformatf("Agent received UART%0d byte: 8'h%0h / %0s",
+        uart_idx, item.data, item.data), UVM_FULL)
+      byte_q.push_back(item.data);
+      // If we're at the EOL, print
+      if (byte_q[$] == LF) begin
+        // Drop LF (and CR if present) before printing
+        byte_q.pop_back();
+        if (byte_q[$] == CR) byte_q.pop_back();
+        // Print the console message
+        begin
+          string str = "";
+          for (int i = 0; i < byte_q.size(); i++) $sformat(str, "%s%0s", str, byte_q[i]);
+          `uvm_info(`gfn, $sformatf("UART%0d sent console msg: %0s", uart_idx, str), UVM_MEDIUM);
+        end
+        // Clear the queue, ready for the next message
+        byte_q.delete();
+      end
     end
   endtask
 
@@ -303,7 +342,7 @@ class chip_base_vseq #(
                 "OTP: Preloading creator_sw_cfg_ast_cfg_data[%0d] with 0x%0h via backdoor",
                 i,
                 cfg.creator_sw_cfg_ast_cfg_data[i]
-                ), UVM_MEDIUM)
+                ), UVM_HIGH)
       cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgAstCfgOffset + i * 4,
                                        cfg.creator_sw_cfg_ast_cfg_data[i]);
     end

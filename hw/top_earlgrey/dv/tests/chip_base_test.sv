@@ -53,6 +53,7 @@ class chip_base_test extends cip_base_test #(
     // Knob to set custom sw image names for rom and sw.
     if ($value$plusargs("sw_images=%0s", sw_images_plusarg)) begin
       cfg.parse_sw_images_string(sw_images_plusarg);
+      cfg.resolve_sw_image_paths();
     end
 
     // Knob to perform the AST configuration.
