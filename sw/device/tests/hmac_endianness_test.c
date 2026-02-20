@@ -39,14 +39,14 @@ static const dif_hmac_transaction_t kHmacconfig_bigd_bigm = {
     .message_endianness = kDifHmacEndiannessBig,
 };
 
-static const char kData[142] =
+OT_NONSTRING static const char kData[142] =
     "Every one suspects himself of at least one of "
     "the cardinal virtues, and this is mine: I am "
     "one of the few honest people that I have ever "
     "known";
 
-static const char kData2[8] = "Help Us ";
-static const char kData2_endian[8] = "pleH sU ";
+OT_NONSTRING static const char kData2[8] = "Help Us ";
+OT_NONSTRING static const char kData2_endian[8] = "pleH sU ";
 
 static const dif_hmac_digest_t kExpectedShaDigest = {
     .digest =

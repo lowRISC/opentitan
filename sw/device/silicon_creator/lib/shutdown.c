@@ -371,7 +371,7 @@ static void shutdown_print(shutdown_log_prefix_t prefix, uint32_t val) {
   abs_mmio_write32(kUartBase + UART_WDATA_REG_OFFSET, prefix >> 24);
 
   // Print the hex representation of `val`.
-  const char kHexTable[16] = "0123456789abcdef";
+  OT_NONSTRING const char kHexTable[16] = "0123456789abcdef";
   // `kHexStrLen` is laundered so that it is loaded to a register at every
   // iteration.
   for (size_t i = 0; i < launder32(kHexStrLen); ++i) {
