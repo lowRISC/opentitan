@@ -186,9 +186,12 @@ opentitan_test(
 opentitan_test(
     name = "otp_ctrl_vendor_test_csr_access_test",
     srcs = ["otp_ctrl_vendor_test_csr_access_test.c"],
-    exec_env = {"//hw/top_earlgrey:sim_dv": None},
+    exec_env = {
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_darjeeling:sim_dv": None,
+    },
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -203,9 +206,12 @@ opentitan_test(
 opentitan_test(
     name = "otp_ctrl_vendor_test_ecc_error_test",
     srcs = ["otp_ctrl_vendor_test_ecc_error_test.c"],
-    exec_env = {"//hw/top_earlgrey:sim_dv": None},
+    exec_env = {
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_darjeeling:sim_dv": None,
+    },
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -223,7 +229,7 @@ cc_library(
     hdrs = ["lc_ctrl_transition_impl.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -237,7 +243,10 @@ cc_library(
 opentitan_test(
     name = "lc_ctrl_transition_test",
     srcs = ["lc_ctrl_transition_test.c"],
-    exec_env = {"//hw/top_earlgrey:sim_dv": None},
+    exec_env = {
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_darjeeling:sim_dv": None,
+    },
     deps = [
         ":lc_ctrl_transition_impl",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -267,9 +276,12 @@ opentitan_test(
 opentitan_test(
     name = "lc_walkthrough_test",
     srcs = ["lc_walkthrough_test.c"],
-    exec_env = {"//hw/top_earlgrey:sim_dv": None},
+    exec_env = {
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_darjeeling:sim_dv": None,
+    },
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:lc_ctrl",
@@ -287,9 +299,12 @@ opentitan_test(
 opentitan_test(
     name = "lc_walkthrough_testunlocks_test",
     srcs = ["lc_walkthrough_testunlocks_test.c"],
-    exec_env = {"//hw/top_earlgrey:sim_dv": None},
+    exec_env = {
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_darjeeling:sim_dv": None,
+    },
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:lc_ctrl",
@@ -350,10 +365,9 @@ opentitan_test(
     srcs = ["data_integrity_escalation_reset_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/dif:alert_handler",
         "//sw/device/lib/dif:aon_timer",
-        "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/dif:rv_plic",
@@ -368,7 +382,12 @@ opentitan_test(
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
+    ] + opentitan_select_top(
+        {
+            "earlgrey": ["//sw/device/lib/dif:flash_ctrl"],
+        },
+        [],
+    ),
 )
 
 opentitan_test(
@@ -384,8 +403,12 @@ opentitan_test(
 opentitan_test(
     name = "pwrmgr_main_power_glitch_test",
     srcs = ["pwrmgr_main_power_glitch_test.c"],
-    exec_env = {"//hw/top_earlgrey:sim_dv": None},
+    exec_env = {
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_darjeeling:sim_dv": None,
+    },
     deps = [
+        "//hw/top:dt",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:log",
@@ -397,8 +420,12 @@ opentitan_test(
 opentitan_test(
     name = "pwrmgr_sleep_power_glitch_test",
     srcs = ["pwrmgr_sleep_power_glitch_test.c"],
-    exec_env = {"//hw/top_earlgrey:sim_dv": None},
+    exec_env = {
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_darjeeling:sim_dv": None,
+    },
     deps = [
+        "//hw/top:dt",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rstmgr",
@@ -413,8 +440,12 @@ opentitan_test(
 opentitan_test(
     name = "pwrmgr_deep_sleep_power_glitch_test",
     srcs = ["pwrmgr_deep_sleep_power_glitch_test.c"],
-    exec_env = {"//hw/top_earlgrey:sim_dv": None},
+    exec_env = {
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_darjeeling:sim_dv": None,
+    },
     deps = [
+        "//hw/top:dt",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rstmgr",
@@ -551,10 +582,13 @@ opentitan_test(
 opentitan_test(
     name = "sram_ctrl_execution_main_test",
     srcs = ["sram_ctrl_execution_main_test.c"],
-    exec_env = {"//hw/top_earlgrey:sim_dv": None},
+    exec_env = {
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_darjeeling:sim_dv": None,
+    },
     deps = [
         "//hw/top:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:multibits",
@@ -638,10 +672,12 @@ opentitan_test(
 opentitan_test(
     name = "alert_handler_entropy_test",
     srcs = ["alert_handler_entropy_test.c"],
-    exec_env = {"//hw/top_earlgrey:sim_dv": None},
+    exec_env = {"//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_darjeeling:sim_dv": None,
+    },
     deps = [
         "//hw/top:alert_handler_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -657,10 +693,13 @@ opentitan_test(
     name = "alert_handler_lpg_sleep_mode_alerts_test",
     srcs = ["alert_handler_lpg_sleep_mode_alerts.c"],
     # The test requires to drive fatal alerts which is possible only in DV sim.
-    exec_env = {"//hw/top_earlgrey:sim_dv": None},
+    exec_env = {
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_darjeeling:sim_dv": None,
+    },
     deps = [
         "//hw/top:alert_handler_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:alert_handler",
@@ -684,9 +723,12 @@ opentitan_test(
 opentitan_test(
     name = "lc_ctrl_program_error",
     srcs = ["lc_ctrl_program_error.c"],
-    exec_env = {"//hw/top_earlgrey:sim_dv": None},
+    exec_env = {
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_darjeeling:sim_dv": None,
+    },
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
@@ -733,9 +775,12 @@ opentitan_test(
 opentitan_test(
     name = "csrng_fuse_en_sw_app_read",
     srcs = ["csrng_fuse_en_sw_app_read.c"],
-    exec_env = {"//hw/top_earlgrey:sim_dv": None},
+    exec_env = {
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_darjeeling:sim_dv": None,
+    },
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:base",
@@ -754,6 +799,7 @@ opentitan_test(
     srcs = ["csrng_lc_hw_debug_en_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
+        "//hw/top:dt",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:csrng",
@@ -778,11 +824,14 @@ opentitan_test(
 opentitan_test(
     name = "inject_scramble_seed",
     srcs = ["inject_scramble_seed.c"],
-    exec_env = {"//hw/top_earlgrey:sim_dv": None},
+    exec_env = {
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_darjeeling:sim_dv": None,
+    },
     deps = [
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:flash_ctrl",
@@ -802,10 +851,13 @@ opentitan_test(
 opentitan_test(
     name = "exit_test_unlocked_bootstrap",
     srcs = ["exit_test_unlocked_bootstrap.c"],
-    exec_env = {"//hw/top_earlgrey:sim_dv": None},
+    exec_env = {
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_darjeeling:sim_dv": None,
+    },
     deps = [
         "//hw/top:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:lc_ctrl",
@@ -818,9 +870,12 @@ opentitan_test(
 opentitan_test(
     name = "otp_ctrl_lc_signals_test",
     srcs = ["otp_ctrl_lc_signals_test.c"],
-    exec_env = {"//hw/top_earlgrey:sim_dv": None},
+    exec_env = {
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_darjeeling:sim_dv": None,
+    },
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:flash_ctrl",

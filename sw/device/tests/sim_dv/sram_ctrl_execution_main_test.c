@@ -5,6 +5,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "hw/top/dt/dt_lc_ctrl.h"    // Generated
+#include "hw/top/dt/dt_otp_ctrl.h"   // Generated
+#include "hw/top/dt/dt_sram_ctrl.h"  // Generated
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/multibits.h"
@@ -21,11 +24,17 @@
 #include "sw/device/lib/testing/test_framework/status.h"
 
 #include "hw/top/otp_ctrl_regs.h"  // Generated
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
 static dif_sram_ctrl_t sram_ctrl;
+
+static const dt_sram_ctrl_t kSramCtrlMainDt = kDtSramCtrlMain;
+static const dt_otp_ctrl_t kOtpCtrlDt = (dt_otp_ctrl_t)0;
+static const dt_lc_ctrl_t kLcCtrlDt = (dt_lc_ctrl_t)0;
+static_assert(kDtSramCtrlCount >= 1, "This test needs a SRAM Controller");
+static_assert(kDtOtpCtrlCount >= 1, "This test needs an OTP CTRL");
+static_assert(kDtLcCtrlCount >= 1, "This test needs a LC CTRL");
 
 /**
  * This flag is used to verify that the execution from SRAM was successful.
@@ -36,11 +45,10 @@ static volatile bool exception_observed;
 
 /**
  * Main SRAM start and end addresses (inclusive).
+ * These will be initialized in test_main.
  */
-static const uint32_t kRamStartAddr = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR;
-static const uint32_t kRamEndAddr = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR +
-                                    TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES -
-                                    1;
+static uint32_t kRamStartAddr;
+static uint32_t kRamEndAddr;
 
 /**
  * OTP HW partition relative IFETCH offset in bytes.
@@ -60,8 +68,7 @@ void execute_code_in_sram(void) { asm volatile("jalr zero, 0(ra)"); }
 
 static bool otp_ifetch_enabled(void) {
   dif_otp_ctrl_t otp;
-  CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
+  CHECK_DIF_OK(dif_otp_ctrl_init_from_dt(kOtpCtrlDt, &otp));
 
   dif_otp_ctrl_config_t config = {
       .check_timeout = 100000,
@@ -190,14 +197,19 @@ void do_execute_test(bool debug_func, bool ifetch_en) {
  * determines whether the execution from SRAM is enabled.
  */
 bool test_main(void) {
+  // Initialize SRAM addresses from device table
+  kRamStartAddr =
+      dt_sram_ctrl_memory_base(kSramCtrlMainDt, kDtSramCtrlMemoryRam);
+  kRamEndAddr =
+      kRamStartAddr +
+      dt_sram_ctrl_memory_size(kSramCtrlMainDt, kDtSramCtrlMemoryRam) - 1;
+
   uintptr_t func_address = (uintptr_t)execute_code_in_sram;
   CHECK(func_address >= kRamStartAddr && func_address <= kRamEndAddr,
         "Test code resides outside of the Main SRAM: function address = %x",
         func_address);
 
-  CHECK_DIF_OK(dif_sram_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR),
-      &sram_ctrl));
+  CHECK_DIF_OK(dif_sram_ctrl_init_from_dt(kSramCtrlMainDt, &sram_ctrl));
 
   bool locked;
   CHECK_DIF_OK(
@@ -205,8 +217,7 @@ bool test_main(void) {
   CHECK(!locked, "Execution is disabled and locked, cannot perform the test");
 
   dif_lc_ctrl_t lc;
-  CHECK_DIF_OK(dif_lc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc));
+  CHECK_DIF_OK(dif_lc_ctrl_init_from_dt(kLcCtrlDt, &lc));
 
   bool debug_func = false;
   CHECK_STATUS_OK(lc_ctrl_testutils_debug_func_enabled(&lc, &debug_func));
