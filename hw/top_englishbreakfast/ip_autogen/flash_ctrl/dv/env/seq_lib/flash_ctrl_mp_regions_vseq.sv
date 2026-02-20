@@ -39,9 +39,6 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
   flash_bank_mp_info_page_cfg_t
   mp_info_pages[NumBanks][flash_ctrl_top_specific_pkg::InfoTypes][$];
 
-  constraint solv_order_c {
-    solve mp_regions, mp_info_pages before flash_op;
-  }
   // Constraint address to be in relevant range for the selected partition.
   constraint addr_c {
     if (flash_op.partition != FlashPartData) {

@@ -87,8 +87,8 @@ class adc_ctrl_base_vseq extends cip_base_vseq #(
         // Set values from config object
         min_v_fld.set(cfg.filter_cfg[channel][filter].min_v);
         max_v_fld.set(cfg.filter_cfg[channel][filter].max_v);
-        cond_fld.set(cfg.filter_cfg[channel][filter].cond);
-        en_fld.set(cfg.filter_cfg[channel][filter].en);
+        cond_fld.set(cfg.filter_cfg[channel][filter].match_outside);
+        en_fld.set(cfg.filter_cfg[channel][filter].enabled);
         // Write register
         csr_wr(r, r.get());
       end

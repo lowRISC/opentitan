@@ -31,7 +31,7 @@ class flash_ctrl_rd_buff_evict_vseq extends flash_ctrl_base_vseq;
 
   // Constraint address to be in relevant range for the selected partition.
   constraint addr_c {
-    solve bank before flash_op;
+    solve bank before flash_op.addr;
     bank inside {[0 : flash_ctrl_top_specific_pkg::NumBanks - 1]};
     flash_op.addr inside {[BytesPerBank * bank : BytesPerBank * (bank + 1) - BytesPerBank / 2]};
   }
@@ -56,7 +56,7 @@ class flash_ctrl_rd_buff_evict_vseq extends flash_ctrl_base_vseq;
   data_t flash_rd_one_data;
 
   constraint flash_op_data_c {
-    solve flash_op before flash_op_data;
+    solve flash_op.num_words before flash_op_data;
     flash_op_data.size() == flash_op.num_words;
   }
 
@@ -69,8 +69,6 @@ class flash_ctrl_rd_buff_evict_vseq extends flash_ctrl_base_vseq;
   rand flash_mp_region_cfg_t mp_regions[flash_ctrl_top_specific_pkg::MpRegions];
 
   constraint mp_regions_c {
-    solve en_mp_regions before mp_regions;
-
     foreach (mp_regions[i]) {
       mp_regions[i].en == mubi4_bool_to_mubi(en_mp_regions[i]);
 

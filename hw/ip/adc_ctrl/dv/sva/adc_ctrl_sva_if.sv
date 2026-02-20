@@ -118,6 +118,6 @@ interface adc_ctrl_sva_if
   `DV_ASSERT_CTRL("PwrupTime_A_CTRL", PwrupTime_A)
   `DV_ASSERT_CTRL("WakeupTime_A_CTRL", WakeupTime_A)
   `DV_ASSERT_CTRL("EnterLowPower_A_CTRL", EnterLowPower_A)
-  `DV_ASSERT_CTRL("ADC_CTRL_FSM_A_CTRL", dut.u_adc_ctrl_core.u_adc_ctrl_fsm)
+  `DV_ASSERT_CTRL("ADC_CTRL_FSM_A_CTRL", tb.dut.u_adc_ctrl_core.u_adc_ctrl_fsm)
 
 endinterface : adc_ctrl_sva_if
