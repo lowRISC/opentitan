@@ -5,7 +5,6 @@
 // *Name: vio_pgd
 // *Module Description:  VIO Power Good
 //############################################################################
-
 module vio_pgd (
   output logic vio_pok_o
 );
@@ -26,7 +25,7 @@ initial begin
   init_start = 1'b0;
 end
 
-always (* xprop_off *) @( * ) begin
+always_ff (* xprop_off *) @( * ) begin
   if ( init_start ) begin
     vio_pok_o <= 1'b0;
   end
