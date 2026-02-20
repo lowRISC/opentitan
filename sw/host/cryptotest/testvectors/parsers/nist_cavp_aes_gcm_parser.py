@@ -15,10 +15,29 @@ import jsonschema
 from cryptotest_util import parse_rsp, str_to_byte_array
 
 
+def is_iv_len_invalid(iv_len) -> bool:
+    """IV length checker for AES-GCM testvectors.
+
+    According to cryptolib API implementation, the only supported
+    IV lengths are either 3 or 4 words (hex length between [24, 32]).
+    Reference: sw/device/lib/crypto/impl/aes_gcm/aes_gcm.c
+
+    """
+    return iv_len < 24 or iv_len > 32
+
+
 def parse_testcases(args) -> None:
     raw_testcases = parse_rsp(args.src)
     test_cases = list()
-    for test_case_id, test_vec in enumerate(raw_testcases):
+    count = 0
+    for test_vec in raw_testcases:
+        if "Count" in test_vec:
+            test_case_id = int(test_vec["Count"])
+        else:
+            test_case_id = count
+        count += 1
+        if is_iv_len_invalid(len(test_vec["IV"])):
+            continue
         test_case = {
             "test_case_id": test_case_id,
             "vendor": "nist",
