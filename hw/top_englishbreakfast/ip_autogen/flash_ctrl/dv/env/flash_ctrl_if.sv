@@ -30,7 +30,7 @@ interface flash_ctrl_if (
   keymgr_flash_t                    keymgr;
 
   lc_tx_t                           rma_req;
-  lc_flash_rma_seed_t               rma_seed;
+  lc_nvm_rma_seed_t                 rma_seed;
   lc_tx_t                           rma_ack;
 
   otp_ctrl_pkg::flash_otp_key_req_t otp_req;

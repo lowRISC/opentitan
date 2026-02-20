@@ -109,12 +109,12 @@ module lc_ctrl
   // SEC_CM: INTERSIG.MUBI
   output lc_tx_t                                     lc_clk_byp_req_o,
   input  lc_tx_t                                     lc_clk_byp_ack_i,
-  // Request and feedback to/from flash controller.
+  // Request and feedback to/from nvm controller.
   // The ack is synced to the lc clock domain using prim_lc_sync.
-  output lc_flash_rma_seed_t                         lc_flash_rma_seed_o,
+  output lc_nvm_rma_seed_t                           lc_nvm_rma_seed_o,
   // SEC_CM: INTERSIG.MUBI
-  output lc_tx_t                                     lc_flash_rma_req_o,
-  input  lc_tx_t [NumRmaAckSigs-1:0]                 lc_flash_rma_ack_i,
+  output lc_tx_t                                     lc_nvm_rma_req_o,
+  input  lc_tx_t [NumRmaAckSigs-1:0]                 lc_nvm_rma_ack_i,
   // State group diversification value for keymgr.
   output lc_keymgr_div_t                             lc_keymgr_div_o,
   // Hardware config input, needed for the DEVICE_ID field.
@@ -326,7 +326,7 @@ module lc_ctrl
   logic          trans_cnt_oflw_error_d, trans_cnt_oflw_error_q;
   logic          trans_invalid_error_d, trans_invalid_error_q;
   logic          token_invalid_error_d, token_invalid_error_q;
-  logic          flash_rma_error_d, flash_rma_error_q;
+  logic          nvm_rma_error_d, nvm_rma_error_q;
   logic          otp_prog_error_d, fatal_prog_error_q;
   logic          state_invalid_error_d, fatal_state_error_q;
   logic          otp_part_error_q;
@@ -373,7 +373,7 @@ module lc_ctrl
     hw2reg.status.transition_count_error = trans_cnt_oflw_error_q;
     hw2reg.status.transition_error       = trans_invalid_error_q;
     hw2reg.status.token_error            = token_invalid_error_q;
-    hw2reg.status.flash_rma_error        = flash_rma_error_q;
+    hw2reg.status.nvm_rma_error          = nvm_rma_error_q;
     hw2reg.status.otp_error              = fatal_prog_error_q;
     hw2reg.status.state_error            = fatal_state_error_q;
     hw2reg.status.otp_partition_error    = otp_part_error_q;
@@ -519,7 +519,7 @@ module lc_ctrl
       trans_cnt_oflw_error_q        <= 1'b0;
       trans_invalid_error_q         <= 1'b0;
       token_invalid_error_q         <= 1'b0;
-      flash_rma_error_q             <= 1'b0;
+      nvm_rma_error_q               <= 1'b0;
       fatal_prog_error_q            <= 1'b0;
       fatal_state_error_q           <= 1'b0;
       sw_claim_transition_if_q      <= MuBi8False;
@@ -548,7 +548,7 @@ module lc_ctrl
       trans_cnt_oflw_error_q    <= trans_cnt_oflw_error_d  | trans_cnt_oflw_error_q;
       trans_invalid_error_q     <= trans_invalid_error_d   | trans_invalid_error_q;
       token_invalid_error_q     <= token_invalid_error_d   | token_invalid_error_q;
-      flash_rma_error_q         <= flash_rma_error_d       | flash_rma_error_q;
+      nvm_rma_error_q           <= nvm_rma_error_d         | nvm_rma_error_q;
       fatal_prog_error_q        <= otp_prog_error_d        | fatal_prog_error_q;
       fatal_state_error_q       <= state_invalid_error_d   | fatal_state_error_q;
       otp_part_error_q          <= otp_lc_data_i.error     | otp_part_error_q;
@@ -586,7 +586,7 @@ module lc_ctrl
   end
   // ----------- VOLATILE_TEST_UNLOCKED CODE SECTION END -----------
 
-  assign lc_flash_rma_seed_o = transition_token_q[RmaSeedWidth-1:0];
+  assign lc_nvm_rma_seed_o = transition_token_q[RmaSeedWidth-1:0];
 
   // Gate the vendor specific test ctrl/status bits to zero in production states.
   // Buffer the enable signal to prevent optimization of the multibit signal.
@@ -812,7 +812,7 @@ module lc_ctrl
     .trans_cnt_oflw_error_o ( trans_cnt_oflw_error_d           ),
     .trans_invalid_error_o  ( trans_invalid_error_d            ),
     .token_invalid_error_o  ( token_invalid_error_d            ),
-    .flash_rma_error_o      ( flash_rma_error_d                ),
+    .nvm_rma_error_o        ( nvm_rma_error_d                  ),
     .otp_prog_error_o       ( otp_prog_error_d                 ),
     .state_invalid_error_o  ( state_invalid_error_d            ),
     .lc_raw_test_rma_o      ( lc_raw_test_rma                  ),
@@ -833,8 +833,8 @@ module lc_ctrl
     .lc_check_byp_en_o,
     .lc_clk_byp_req_o,
     .lc_clk_byp_ack_i,
-    .lc_flash_rma_req_o,
-    .lc_flash_rma_ack_i,
+    .lc_nvm_rma_req_o,
+    .lc_nvm_rma_ack_i,
     .lc_keymgr_div_o
   );
 
@@ -870,8 +870,8 @@ module lc_ctrl
   `ASSERT_KNOWN(LcEscalateEnKnown_A,    lc_escalate_en_o           )
   `ASSERT_KNOWN(LcCheckBypassEnKnown_A, lc_check_byp_en_o          )
   `ASSERT_KNOWN(LcClkBypReqKnown_A,     lc_clk_byp_req_o           )
-  `ASSERT_KNOWN(LcFlashRmaSeedKnown_A,  lc_flash_rma_seed_o        )
-  `ASSERT_KNOWN(LcFlashRmaReqKnown_A,   lc_flash_rma_req_o         )
+  `ASSERT_KNOWN(LcNvmRmaSeedKnown_A,    lc_nvm_rma_seed_o          )
+  `ASSERT_KNOWN(LcNvmRmaReqKnown_A,     lc_nvm_rma_req_o           )
   `ASSERT_KNOWN(LcKeymgrDiv_A,          lc_keymgr_div_o            )
   `ASSERT_KNOWN(HwRevKnown_A,           hw_rev_o                   )
 

@@ -178,16 +178,16 @@
       `lc_clk_byp_ack_i` to any value other than 'ON' after the main FSM has
       progressed through the `ClkMuxSt` state should trigger this error.
 
-      2) `lc_flash_rma_ack_i`: Verify that an inconsistent input value
-      (`lc_flash_rma_ack_i` != `lc_flash_rma_ack_o`) causes a FLASH_RMA_ERROR
+      2) `lc_nvm_rma_ack_i`: Verify that an inconsistent input value
+      (`lc_nvm_rma_ack_i` != `lc_nvm_rma_ack_o`) causes a NVM_RMA_ERROR
       when a life cycle transition is initiated.
 
       There are two ways this condition can be triggered: either no RMA
-      transition is requested, and then setting `lc_flash_rma_ack_i` to any
+      transition is requested, and then setting `lc_nvm_rma_ack_i` to any
       value other than 'OFF' when initiating the life cycle transition should
       trigger this error. If an RMA transition is requested, setting
-      `lc_flash_rma_ack_i` to any value other than 'ON' after the main FSM
-      has progressed through the `FlashRmaSt` state should trigger this
+      `lc_nvm_rma_ack_i` to any value other than 'ON' after the main FSM
+      has progressed through the `NvmRmaSt` state should trigger this
       error.
 
       The main life cycle FSM should not progress through the `TransProgSt` if

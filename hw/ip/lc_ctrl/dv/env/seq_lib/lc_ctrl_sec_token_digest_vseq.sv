@@ -15,7 +15,7 @@ class lc_ctrl_sec_token_digest_vseq extends lc_ctrl_errors_vseq;
     err_inj.transition_err == 0;
     err_inj.transition_count_err == 0;
     err_inj.clk_byp_error_rsp == 0;
-    err_inj.flash_rma_error_rsp == 0;
+    err_inj.nvm_rma_error_rsp == 0;
     err_inj.token_response_err == 0;
     err_inj.token_invalid_err == 0;
     err_inj.otp_partition_err == 0;

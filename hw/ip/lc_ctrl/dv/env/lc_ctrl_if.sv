@@ -47,11 +47,11 @@ interface lc_ctrl_if #(
 
   lc_tx_t clk_byp_req_o;
   lc_tx_t clk_byp_ack_i;
-  lc_tx_t flash_rma_req_o;
-  lc_tx_t [NumRmaAckSigs-1:0] flash_rma_ack_i;
+  lc_tx_t nvm_rma_req_o;
+  lc_tx_t [NumRmaAckSigs-1:0] nvm_rma_ack_i;
 
   lc_keymgr_div_t keymgr_div_o;
-  lc_flash_rma_seed_t flash_rma_seed_o;
+  lc_nvm_rma_seed_t nvm_rma_seed_o;
 
   // OTP test signals
   logic [CsrOtpTestCtrlWidth-1:0] otp_vendor_test_ctrl_o;
@@ -96,7 +96,7 @@ interface lc_ctrl_if #(
   task automatic init(lc_state_e                        lc_state = LcStRaw,
                       lc_cnt_e                          lc_cnt = LcCnt0,
                       lc_tx_t                           clk_byp_ack = Off,
-                      lc_tx_t [NumRmaAckSigs-1:0]       flash_rma_ack = {NumRmaAckSigs{Off}},
+                      lc_tx_t [NumRmaAckSigs-1:0]       nvm_rma_ack = {NumRmaAckSigs{Off}},
                       logic                             otp_partition_err = 0,
                       otp_device_id_t                   otp_device_id = 0,
                       logic                             otp_lc_data_i_valid = 1,
@@ -118,7 +118,7 @@ interface lc_ctrl_if #(
 
 
     clk_byp_ack_i           = clk_byp_ack;
-    flash_rma_ack_i         = flash_rma_ack;
+    nvm_rma_ack_i           = nvm_rma_ack;
 
     // Make sure we get a transition
     fork
@@ -136,18 +136,18 @@ interface lc_ctrl_if #(
     clk_byp_ack_i = val;
   endtask
 
-  // Set the channels of flash_rma_ack_i to val.
+  // Set the channels of nvm_rma_ack_i to val.
   //
   // To allow a bit more staggering between the different channels than we already get from CDC, the
   // caller may pass nonzero values in wait_lens (which defaults to all zero). The task will then
   // wait the given number of clock cycles before updating the respective channel.
-  task automatic set_flash_rma_ack(lc_tx_t val, int delay_lens[NumRmaAckSigs] = '{default: 0});
+  task automatic set_nvm_rma_ack(lc_tx_t val, int delay_lens[NumRmaAckSigs] = '{default: 0});
     fork begin : isolation_fork
       for (int i = 0; i < NumRmaAckSigs; i++) begin
         automatic int ii = i;
         fork begin
           repeat (delay_lens[ii]) @(posedge clk);
-          flash_rma_ack_i[ii] = val;
+          nvm_rma_ack_i[ii] = val;
         end
         join_none
       end
@@ -156,7 +156,7 @@ interface lc_ctrl_if #(
     end join
 
     // Check that we have correctly waited for all the channels to update
-    `DV_CHECK_FATAL(flash_rma_ack_i == {NumRmaAckSigs{val}}, , "lc_ctrl_if")
+    `DV_CHECK_FATAL(nvm_rma_ack_i == {NumRmaAckSigs{val}}, , "lc_ctrl_if")
   endtask
 
   function automatic void clear_static_signals();

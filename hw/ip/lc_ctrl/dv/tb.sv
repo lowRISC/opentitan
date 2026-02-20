@@ -203,9 +203,9 @@ module tb;
     .lc_clk_byp_req_o(lc_ctrl_if.clk_byp_req_o),
     .lc_clk_byp_ack_i(lc_ctrl_if.clk_byp_ack_i),
 
-    .lc_flash_rma_seed_o(lc_ctrl_if.flash_rma_seed_o),
-    .lc_flash_rma_req_o (lc_ctrl_if.flash_rma_req_o),
-    .lc_flash_rma_ack_i (lc_ctrl_if.flash_rma_ack_i),
+    .lc_nvm_rma_seed_o(lc_ctrl_if.nvm_rma_seed_o),
+    .lc_nvm_rma_req_o (lc_ctrl_if.nvm_rma_req_o),
+    .lc_nvm_rma_ack_i (lc_ctrl_if.nvm_rma_ack_i),
 
     .lc_keymgr_div_o(lc_ctrl_if.keymgr_div_o),
 
@@ -315,10 +315,10 @@ module tb;
   `DV_ASSERT_CTRL("KmacIfSyncReqAckAckNeedsReq", kmac_app_if.req_data_if.ValidHighUntilReady_A)
   `DV_ASSERT_CTRL("FsmClkBypAckSync", dut.u_lc_ctrl_fsm.u_prim_lc_sync_clk_byp_ack)
   for (genvar k = 0; k < NUM_RMA_ACK_SIGS; k++) begin : gen_sync_asserts
-    `DV_ASSERT_CTRL("FsmClkFlashRmaAckSync",
-                    dut.u_lc_ctrl_fsm.gen_syncs[k].u_prim_lc_sync_flash_rma_ack)
+    `DV_ASSERT_CTRL("FsmClkNvmRmaAckSync",
+                    dut.u_lc_ctrl_fsm.gen_syncs[k].u_prim_lc_sync_nvm_rma_ack)
   end
-  `DV_ASSERT_CTRL("FsmClkFlashRmaAckBuf", dut.u_lc_ctrl_fsm.u_prim_lc_sync_flash_rma_ack_buf)
+  `DV_ASSERT_CTRL("FsmClkNvmRmaAckBuf", dut.u_lc_ctrl_fsm.u_prim_lc_sync_nvm_rma_ack_buf)
   `DV_ASSERT_CTRL("FsmOtpTestTokensValidSync", dut.u_lc_ctrl_fsm.u_prim_lc_sync_test_token_valid)
   `DV_ASSERT_CTRL("FsmOtpRmaTokenValidSync", dut.u_lc_ctrl_fsm.u_prim_lc_sync_rma_token_valid)
   `DV_ASSERT_CTRL("StateRegs_A", tb.dut.u_lc_ctrl_fsm.u_state_regs_A)
