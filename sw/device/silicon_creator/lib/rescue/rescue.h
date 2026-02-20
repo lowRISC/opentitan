@@ -97,6 +97,8 @@ typedef struct RescueState {
   // Range to erase and write for firmware rescue (inclusive).
   uint32_t flash_start;
   uint32_t flash_limit;
+  // Erase rescuable regions in both slots when true.
+  bool erase_both_slots;
   // Pointer to the current bootdata record.
   boot_data_t *bootdata;
   // Pointer to the boot log.

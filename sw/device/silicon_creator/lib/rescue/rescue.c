@@ -61,9 +61,27 @@ static inline bool is_rom_ext_update_allowed(rescue_state_t *state) {
           state->boot_log->rom_ext_slot == kBootSlotA);
 }
 
+/**
+ * Erase a range of flash pages in the data partition.
+ *
+ * @param offset Bank offset.
+ * @param begin Start address within the bank.
+ * @param limit End address within the bank.
+ * @return The result of the operation.
+ */
+static rom_error_t erase_firmware_range(uint32_t offset, uint32_t begin,
+                                        uint32_t limit) {
+  for (uint32_t addr = begin; addr < limit; addr += kFlashPageSize) {
+    RETURN_IF_ERROR(
+        flash_ctrl_data_erase(offset + addr, kFlashCtrlEraseTypePage));
+  }
+  return kErrorOk;
+}
+
 rom_error_t flash_firmware_block(rescue_state_t *state) {
   uint32_t bank_offset =
       state->mode == kRescueModeFirmwareSlotB ? kFlashBankSize : 0;
+  uint32_t other_bank_offset = kFlashBankSize - bank_offset;
   if (state->flash_offset == 0) {
     // TODO(#24428): Make sure we interact correctly with owner flash region
     // configuration.
@@ -81,10 +99,11 @@ rom_error_t flash_firmware_block(rescue_state_t *state) {
             : state->flash_start;
 
     // Erase the allowed range in the requested partition.
-    for (uint32_t addr = state->flash_begin; addr < state->flash_limit;
-         addr += kFlashPageSize) {
-      HARDENED_RETURN_IF_ERROR(
-          flash_ctrl_data_erase(bank_offset + addr, kFlashCtrlEraseTypePage));
+    RETURN_IF_ERROR(erase_firmware_range(bank_offset, state->flash_begin,
+                                         state->flash_limit));
+    if (state->erase_both_slots) {
+      RETURN_IF_ERROR(erase_firmware_range(
+          other_bank_offset, state->flash_start, state->flash_limit));
     }
     // Regardless of whether we're allowed to flash the ROM_EXT, set the flash
     // offset to zero if the data stream contains a ROM_EXT, otherwise, set to
@@ -342,6 +361,7 @@ void rescue_state_init(rescue_state_t *state, boot_data_t *bootdata,
   state->config = config;
   state->default_mode = kRescueModeFirmware;
   state->next_mode = 0;
+  state->erase_both_slots = false;
 
   if (launder32((hardened_bool_t)config) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ((hardened_bool_t)config, kHardenedBoolFalse);
@@ -354,6 +374,8 @@ void rescue_state_init(rescue_state_t *state, boot_data_t *bootdata,
     state->flash_start = (uint32_t)config->start * kFlashPageSize;
     state->flash_limit =
         (uint32_t)(config->start + config->size) * kFlashPageSize;
+    state->erase_both_slots =
+        bitfield_bit32_read(config->gpio, RESCUE_ERASE_BOTH_SLOTS_BIT);
     uint32_t timeout =
         bitfield_field32_read(config->timeout, RESCUE_TIMEOUT_SECONDS);
     state->inactivity_deadline =

@@ -376,7 +376,7 @@ ROM_EXT_LABELS.extend([
             "minsize",
             "use_lld",
         ],
-        linker_script = ":ld_slot_a",
+        linker_script = ":ld_slot_virtual",
         manifest = ":manifest",
         deps = [
             ":rom_ext_dice_x509",
@@ -384,7 +384,7 @@ ROM_EXT_LABELS.extend([
             "//sw/device/silicon_creator/lib:manifest_def",
             "//sw/device/silicon_creator/lib/ownership:test_owner_{}".format(name),
             "//sw/device/silicon_creator/lib/ownership/keys/fake",
-            "//sw/device/silicon_creator/rom_ext/imm_section:main_section_dice_x509_slot_a",
+            "//sw/device/silicon_creator/rom_ext/imm_section:main_section_dice_x509_slot_virtual",
         ] + param["rescue_module"],
     )
     for name, param in TEST_OWNER_CONFIGS.items()

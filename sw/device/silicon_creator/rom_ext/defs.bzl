@@ -191,6 +191,15 @@ TEST_OWNER_CONFIGS = {
         ],
         "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
     },
+    "xmodem_erase_both": {
+        # Enable Xmodem rescue with erase both slots enabled.
+        "owner_defines": [
+            # 0x58 is 'X'modem.
+            "WITH_RESCUE_PROTOCOL=0x58",
+            "WITH_RESCUE_MISC_GPIO_PARAM=(1<<RESCUE_ERASE_BOTH_SLOTS_BIT)",
+        ],
+        "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
+    },
     "spidfu_rescue_disability": {
         "owner_defines": [
             # 0x53 is 'S'pi.
