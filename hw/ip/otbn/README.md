@@ -109,8 +109,8 @@ CSRs can be accessed through dedicated instructions, {{#otbn-insn-ref CSRRS}} an
 Writes to read-only (RO) registers are ignored; they do not signal an error.
 All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is written to [`CMD.start`](doc/registers.md#cmd)).
 
-<!-- This list of CSRs is replicated in otbn_env_cov.sv, wsr.py, the
-     RTL and in rig/model.py. If editing one, edit the other four as well. -->
+<!-- This list of CSRs is replicated in otbn_env_cov.sv, csr.py, wsr.py, the
+     RTL and in rig/model.py. If editing one, edit the other five as well. -->
 <!-- BEGIN CMDGEN ./hw/ip/otbn/util/docs/md_isrs.py hw/ip/otbn/data/csr.yml -->
 <table>
   <thead>
@@ -566,6 +566,44 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
       </td>
     </tr>
     <tr>
+      <td>0x7F0</td>
+      <td>RW</td>
+      <td>MAI_CTRL</td>
+      <td>
+        The MAI control register. This is used to start MAI operations as well as configuring the accelerators.
+        <table>
+          <thead>
+            <tr><th>Bit</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>0</td>
+              <td>
+                MAI_START: Writing 1 to this bit starts the MAI operation. Writing it when MAI is busy will cause a MAI_ERROR software error.
+              </td>
+            </tr>
+            <tr>
+              <td>2:1</td>
+              <td>
+                The MAI_OPERATION field defines which accelerator is used for the next operation. Invalid values and writing to these bits when MAI is busy will cause a MAI_ERROR software error.
+                <p>Values:</p><ul>
+                  <li>0: A2B</li>
+                  <li>1: B2A</li>
+                  <li>2: secAdd</li>
+                </ul>
+              </td>
+            </tr>
+            <tr>
+              <td>31:3</td>
+              <td>
+                Reserved. Any write is ignored. Always reads as 0.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
       <td>0xFC0</td>
       <td>RO</td>
       <td>RND</td>
@@ -653,6 +691,39 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
               <td>31:8</td>
               <td>
                 Reserved. Always reads as 0. Any write is ignored.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td>0xFE0</td>
+      <td>RO</td>
+      <td>MAI_STATUS</td>
+      <td>
+        The MAI status register.
+        <table>
+          <thead>
+            <tr><th>Bit</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>0</td>
+              <td>
+                MAI_BUSY: This bit is set to 1 when an MAI operation is in progress. If reset, the MAI accepts new configuration values and a new execution can be started by writing to the MAI_START bit in the MAI_CTRL CSR.
+              </td>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>
+                MAI_READY: This bit is set to 1 when the MAI_INx_Sx WSRs are ready to accept new values for the next execution.
+              </td>
+            </tr>
+            <tr>
+              <td>31:2</td>
+              <td>
+                Reserved. Always reads as 0.
               </td>
             </tr>
           </tbody>
@@ -856,6 +927,68 @@ All read-write (RW) WSRs are set to 0 when OTBN starts an operation (when 1 is w
             </tr>
           </tbody>
         </table>
+      </td>
+    </tr>
+    <tr>
+      <td>0xA</td>
+      <td>RO</td>
+      <td><a name="mai-res-s0">MAI_RES_S0</a></td>
+      <td>
+        This WSR holds share 0 of the masked results produced by the MAI.
+        The results are organized as eight 32-bit values.
+        Results are valid when MAI is not busy anymore.
+        These values are overwritten when the first results of the next execution are available (this depends on the selected accelerator's latency).
+      </td>
+    </tr>
+    <tr>
+      <td>0xB</td>
+      <td>RO</td>
+      <td><a name="mai-res-s1">MAI_RES_S1</a></td>
+      <td>
+        This WSR holds share 1 of the masked results produced by the MAI.
+        The results are organized as eight 32-bit values.
+        Results are valid when MAI is not busy anymore.
+        These values are overwritten when the first results of the next execution are available (this depends on the selected accelerator's latency).
+      </td>
+    </tr>
+    <tr>
+      <td>0xC</td>
+      <td>RW</td>
+      <td><a name="mai-in0-s0">MAI_IN0_S0</a></td>
+      <td>
+        This WSR transfers share 0 of the first input secrets towards the MAI.
+        The inputs are considered as eight 32-bit values.
+        Writing to this WSR while MAI is not ready will cause a MAI_ERROR software error.
+      </td>
+    </tr>
+    <tr>
+      <td>0xD</td>
+      <td>RW</td>
+      <td><a name="mai-in0-s1">MAI_IN0_S1</a></td>
+      <td>
+        This WSR transfers share 1 of the first input secrets towards the MAI.
+        The inputs are considered as eight 32-bit values.
+        Writing to this WSR while MAI is not ready will cause a MAI_ERROR software error.
+      </td>
+    </tr>
+    <tr>
+      <td>0xE</td>
+      <td>RW</td>
+      <td><a name="mai-in1-s0">MAI_IN1_S0</a></td>
+      <td>
+        This WSR transfers share 0 of the second input secrets towards the MAI.
+        The inputs are considered as eight 32-bit values.
+        Writing to this WSR while MAI is not ready will cause a MAI_ERROR software error.
+      </td>
+    </tr>
+    <tr>
+      <td>0xF</td>
+      <td>RW</td>
+      <td><a name="mai-in1-s1">MAI_IN1_S1</a></td>
+      <td>
+        This WSR transfers share 1 of the second input secrets towards the MAI.
+        The inputs are considered as eight 32-bit values.
+        Writing to this WSR while MAI is not ready will cause a MAI_ERROR software error.
       </td>
     </tr>
   </tbody>

@@ -16,6 +16,7 @@ from .flags import FlagReg
 from .gpr import GPRs
 from .kmac import Kmac
 from .loop import LoopStack
+from .mai import MaskingAcceleratorInterface
 from .reg import RegFile
 from .trace import Trace, TracePC
 from .wsr import WSRFile
@@ -202,6 +203,9 @@ class OTBNState:
         # random data).
         self.edn_seen_running = False
 
+        # The masking accelerator interface (MAI) handles the accelerators
+        self.mai = MaskingAcceleratorInterface(self.csrs, self.wsrs)
+
     def get_next_pc(self) -> int:
         if self._pc_next_override is not None:
             return self._pc_next_override
@@ -311,6 +315,7 @@ class OTBNState:
         self.ext_regs.step()
         self._urnd_client.step()
         self.kmac.step()
+        self.mai.step()
 
     def commit(self, sim_stalled: bool) -> None:
         if self._time_to_imem_invalidation is not None:
