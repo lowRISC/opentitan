@@ -634,6 +634,8 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
 `ifdef VCS
     // TODO(#18988): Drive strength seems to be reported incorrectly by VCS.
     `DV_CHECK_STREQ(obs_strength, "St0", "on CC1")
+`elsif QUESTA
+    `DV_CHECK_STREQ(obs_strength, "St0", "on CC1")
 `else
     `DV_CHECK_STREQ(obs_strength, "We0", "on CC1")
 `endif
@@ -644,6 +646,8 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     obs_strength = $sformatf("%v", cfg.chip_vif.cc_if.pins[0]);
 `ifdef VCS
     // TODO(#18988): Drive strength seems to be reported incorrectly by VCS.
+    `DV_CHECK_STREQ(obs_strength, "St1", "on CC1")
+`elsif QUESTA
     `DV_CHECK_STREQ(obs_strength, "St1", "on CC1")
 `else
     `DV_CHECK_STREQ(obs_strength, "We1", "on CC1")
@@ -670,6 +674,8 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
 `ifdef VCS
     // TODO(#18988): Drive strength seems to be reported incorrectly by VCS.
     `DV_CHECK_STREQ(obs_strength, "St0", "on CC2")
+`elsif QUESTA
+    `DV_CHECK_STREQ(obs_strength, "St0", "on CC2")
 `else
     `DV_CHECK_STREQ(obs_strength, "We0", "on CC2")
 `endif
@@ -680,6 +686,8 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     obs_strength = $sformatf("%v", cfg.chip_vif.cc_if.pins[1]);
 `ifdef VCS
     // TODO(#18988): Drive strength seems to be reported incorrectly by VCS.
+    `DV_CHECK_STREQ(obs_strength, "St1", "on CC2")
+`elsif QUESTA
     `DV_CHECK_STREQ(obs_strength, "St1", "on CC2")
 `else
     `DV_CHECK_STREQ(obs_strength, "We1", "on CC2")
@@ -706,6 +714,8 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
 `ifdef VCS
     // TODO(#18988): Drive strength seems to be reported incorrectly by VCS.
     `DV_CHECK_STREQ(obs_strength, "St0", "on FLASH_TEST_MODE0")
+`elsif QUESTA
+    `DV_CHECK_STREQ(obs_strength, "St0", "on FLASH_TEST_MODE0")
 `else
     `DV_CHECK_STREQ(obs_strength, "We0", "on FLASH_TEST_MODE0")
 `endif
@@ -716,6 +726,8 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     obs_strength = $sformatf("%v", cfg.chip_vif.flash_test_mode_if.pins[0]);
 `ifdef VCS
     // TODO(#18988): Drive strength seems to be reported incorrectly by VCS.
+    `DV_CHECK_STREQ(obs_strength, "St1", "on FLASH_TEST_MODE0")
+`elsif QUESTA
     `DV_CHECK_STREQ(obs_strength, "St1", "on FLASH_TEST_MODE0")
 `else
     `DV_CHECK_STREQ(obs_strength, "We1", "on FLASH_TEST_MODE0")
@@ -742,6 +754,8 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
 `ifdef VCS
     // TODO(#18988): Drive strength seems to be reported incorrectly by VCS.
     `DV_CHECK_STREQ(obs_strength, "St0", "on FLASH_TEST_MODE1")
+`elsif QUESTA
+    `DV_CHECK_STREQ(obs_strength, "St0", "on FLASH_TEST_MODE1")
 `else
     `DV_CHECK_STREQ(obs_strength, "We0", "on FLASH_TEST_MODE1")
 `endif
@@ -752,6 +766,8 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     obs_strength = $sformatf("%v", cfg.chip_vif.flash_test_mode_if.pins[1]);
 `ifdef VCS
     // TODO(#18988): Drive strength seems to be reported incorrectly by VCS.
+    `DV_CHECK_STREQ(obs_strength, "St1", "on FLASH_TEST_MODE1")
+`elsif QUESTA
     `DV_CHECK_STREQ(obs_strength, "St1", "on FLASH_TEST_MODE1")
 `else
     `DV_CHECK_STREQ(obs_strength, "We1", "on FLASH_TEST_MODE1")
