@@ -261,10 +261,10 @@
             - whether any partition (except life cycle partition) is locked
             '''
     }
-  % if enable_flash_key:
+  % if enable_nvm_key:
     {
-      name: flash_req_cg
-      desc: '''Covers whether secret1 partition is locked during `flash` data or address
+      name: nvm_req_cg
+      desc: '''Covers whether secret1 partition is locked during `nvm` data or address
             request.'''
     }
   % endif
@@ -354,9 +354,9 @@
             - whether DAI interface is busy
             '''
     }
-  % if enable_flash_key:
+  % if enable_nvm_key:
     {
-      name: flash_data_req_condition_cg
+      name: nvm_data_req_condition_cg
       desc: '''Covers the following conditions when `lc_escalation_en` is On:
             - whether any key requests is in progress
             - whether DAI interface is busy
@@ -364,7 +364,7 @@
             '''
     }
     {
-      name: flash_addr_req_condition_cg
+      name: nvm_addr_req_condition_cg
       desc: '''Covers the following conditions when `lc_escalation_en` is On:
             - whether any key requests is in progress
             - whether DAI interface is busy

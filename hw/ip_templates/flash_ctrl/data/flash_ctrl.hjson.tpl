@@ -104,7 +104,7 @@
 
   // Define flash_ctrl <-> flash_phy struct package
   inter_signal_list: [
-    { struct: "flash_otp_key",
+    { struct: "nvm_otp_key",
       type: "req_rsp",
       name: "otp",
       act:  "req",

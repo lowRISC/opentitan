@@ -7,9 +7,9 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
 
   `uvm_object_new
 
-  localparam string FLASH_DATA_KEY_PATH =
+  localparam string NVM_DATA_KEY_PATH =
     "tb.dut.top_earlgrey.u_flash_ctrl.u_flash_hw_if.data_key_o";
-  localparam string FLASH_ADDR_KEY_PATH =
+  localparam string NVM_ADDR_KEY_PATH =
     "tb.dut.top_earlgrey.u_flash_ctrl.u_flash_hw_if.addr_key_o";
   localparam string FLASH_INIT_BUSY_PATH =
     "tb.dut.top_earlgrey.u_flash_ctrl.u_flash_hw_if.init_busy_o";
@@ -22,9 +22,9 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
   localparam string SRAM_CTRL_RET_NONCE_PATH = {SRAM_CTRL_RET_HDL_PATH, ".nonce_i"};
   localparam string SRAM_CTRL_RET_KEY_PATH = {SRAM_CTRL_RET_HDL_PATH, ".key_i"};
 
-  localparam uint KeyWidthAddrBits = otp_ctrl_reg_pkg::FlashAddrKeySeedSize * 8;
+  localparam uint KeyWidthAddrBits = otp_ctrl_reg_pkg::NvmAddrKeySeedSize * 8;
   localparam uint KeyWidthAddrBytes = KeyWidthAddrBits / 8;
-  localparam uint KeyWidthDataBits = otp_ctrl_reg_pkg::FlashDataKeySeedSize * 8;
+  localparam uint KeyWidthDataBits = otp_ctrl_reg_pkg::NvmDataKeySeedSize * 8;
   localparam uint KeyWidthDataBytes = KeyWidthDataBits / 8;
   localparam uint KeyWidthSramBits = otp_ctrl_reg_pkg::SramDataKeySeedSize * 8;
   localparam uint KeyWidthSramBytes = KeyWidthSramBits / 8;
@@ -50,8 +50,8 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
   bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] sram_ret_nonce;
   bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0] sram_ret_key;
 
-  rand bit [7:0] secret_flash_addr_key[KeyWidthAddrBytes];
-  rand bit [7:0] secret_flash_data_key[KeyWidthDataBytes];
+  rand bit [7:0] secret_nvm_addr_key[KeyWidthAddrBytes];
+  rand bit [7:0] secret_nvm_data_key[KeyWidthDataBytes];
   rand bit [7:0] secret_sram_key[KeyWidthSramBytes];
 
   rand bit [31:0] creator_secret_data[NUM_TEST_WORDS];
@@ -61,8 +61,8 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
   rand bit [31:0] bank1_page0_data[NUM_TEST_WORDS];
   rand bit [otp_ctrl_reg_pkg::CreatorRootKeyShare0Size*8-1:0] root_key0;
   rand bit [otp_ctrl_reg_pkg::CreatorRootKeyShare0Size*8-1:0] root_key1;
-  bit [FlashKeyWidth-1:0] flash_data_key;
-  bit [FlashKeyWidth-1:0] flash_addr_key;
+  bit [NvmKeyWidth-1:0] nvm_data_key;
+  bit [NvmKeyWidth-1:0] nvm_addr_key;
 
   bit write_scrambled;
   bit do_keymgr_check;
@@ -124,12 +124,12 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
   endfunction
 
   virtual task randomize_keys();
-    `DV_CHECK_STD_RANDOMIZE_FATAL(secret_flash_addr_key)
-    `DV_CHECK_STD_RANDOMIZE_FATAL(secret_flash_data_key)
+    `DV_CHECK_STD_RANDOMIZE_FATAL(secret_nvm_addr_key)
+    `DV_CHECK_STD_RANDOMIZE_FATAL(secret_nvm_data_key)
     otp_write_secret1_partition(
         .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
-        .flash_addr_key_seed(get_flash_otp_key(secret_flash_addr_key)),
-        .flash_data_key_seed(get_flash_otp_key(secret_flash_data_key)),
+        .nvm_addr_key_seed(get_flash_otp_key(secret_nvm_addr_key)),
+        .nvm_data_key_seed(get_flash_otp_key(secret_nvm_data_key)),
         .sram_data_key_seed(get_sram_otp_key(secret_sram_key)));
   endtask
 
@@ -147,34 +147,34 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
       base_addr_words = 16'h0;
       data0.flash_write_scrambled(
           {bank0_page0_data[(i*2)+1], bank0_page0_data[i*2]}, base_addr_words + i,
-          flash_addr_key, flash_data_key);
+          nvm_addr_key, nvm_data_key);
       base_addr_words = (FLASH_PAGE_SIZE_BYTES >> FLASH_DATA_BYTE_WIDTH) * FLASH_PAGES_PER_BANK;
       data1.flash_write_scrambled(
           {bank1_page0_data[(i*2)+1], bank1_page0_data[i*2]}, base_addr_words + i,
-          flash_addr_key, flash_data_key);
+          nvm_addr_key, nvm_data_key);
       base_addr_words = (FLASH_PAGE_SIZE_BYTES >> FLASH_DATA_BYTE_WIDTH) * CREATOR_SECRET_PAGE_ID;
       info0.flash_write_scrambled(
           {creator_secret_data[(i*2)+1], creator_secret_data[i*2]}, base_addr_words + i,
-          flash_addr_key, flash_data_key);
+          nvm_addr_key, nvm_data_key);
       base_addr_words = (FLASH_PAGE_SIZE_BYTES >> FLASH_DATA_BYTE_WIDTH) * OWNER_SECRET_PAGE_ID;
       info0.flash_write_scrambled(
           {owner_secret_data[(i*2)+1], owner_secret_data[i*2]}, base_addr_words + i,
-          flash_addr_key, flash_data_key);
+          nvm_addr_key, nvm_data_key);
       base_addr_words = (FLASH_PAGE_SIZE_BYTES >> FLASH_DATA_BYTE_WIDTH) * ISO_PART_PAGE_ID;
       info0.flash_write_scrambled(
-          {iso_part_data[(i*2)+1], iso_part_data[i*2]}, base_addr_words + i, flash_addr_key,
-          flash_data_key);
+          {iso_part_data[(i*2)+1], iso_part_data[i*2]}, base_addr_words + i, nvm_addr_key,
+          nvm_data_key);
     end
   endtask
 
   virtual task check_hdl_paths();
     int retval;
-    retval = uvm_hdl_check_path(FLASH_DATA_KEY_PATH);
+    retval = uvm_hdl_check_path(NVM_DATA_KEY_PATH);
     `DV_CHECK_EQ_FATAL(retval, 1, $sformatf(
-                       "Hierarchical path %0s appears to be invalid.", FLASH_DATA_KEY_PATH))
-    retval = uvm_hdl_check_path(FLASH_ADDR_KEY_PATH);
+                       "Hierarchical path %0s appears to be invalid.", NVM_DATA_KEY_PATH))
+    retval = uvm_hdl_check_path(NVM_ADDR_KEY_PATH);
     `DV_CHECK_EQ_FATAL(retval, 1, $sformatf(
-                       "Hierarchical path %0s appears to be invalid.", FLASH_ADDR_KEY_PATH))
+                       "Hierarchical path %0s appears to be invalid.", NVM_ADDR_KEY_PATH))
     retval = uvm_hdl_check_path(FLASH_INIT_BUSY_PATH);
     `DV_CHECK_EQ_FATAL(retval, 1, $sformatf(
                        "Hierarchical path %0s appears to be invalid.", FLASH_INIT_BUSY_PATH))
@@ -213,10 +213,10 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
     forever begin
       @(init_done_event);
       if (write_scrambled == 1) begin
-        retval = uvm_hdl_read(FLASH_DATA_KEY_PATH, flash_data_key);
-        `DV_CHECK_EQ(retval, 1, $sformatf("uvm_hdl_read failed for %0s", FLASH_DATA_KEY_PATH))
-        retval = uvm_hdl_read(FLASH_ADDR_KEY_PATH, flash_addr_key);
-        `DV_CHECK_EQ(retval, 1, $sformatf("uvm_hdl_read failed for %0s", FLASH_ADDR_KEY_PATH))
+        retval = uvm_hdl_read(NVM_DATA_KEY_PATH, nvm_data_key);
+        `DV_CHECK_EQ(retval, 1, $sformatf("uvm_hdl_read failed for %0s", NVM_DATA_KEY_PATH))
+        retval = uvm_hdl_read(NVM_ADDR_KEY_PATH, nvm_addr_key);
+        `DV_CHECK_EQ(retval, 1, $sformatf("uvm_hdl_read failed for %0s", NVM_ADDR_KEY_PATH))
         calculate_and_write_scrambled();
       end
     end

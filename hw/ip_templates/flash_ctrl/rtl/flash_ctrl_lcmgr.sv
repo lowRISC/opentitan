@@ -69,8 +69,8 @@ module flash_ctrl_lcmgr
   output logic rd_buf_en_o,
 
   // request otp keys
-  output otp_ctrl_pkg::flash_otp_key_req_t otp_key_req_o,
-  input otp_ctrl_pkg::flash_otp_key_rsp_t otp_key_rsp_i,
+  output otp_ctrl_pkg::nvm_otp_key_req_t otp_key_req_o,
+  input otp_ctrl_pkg::nvm_otp_key_rsp_t otp_key_rsp_i,
   output flash_key_t addr_key_o,
   output flash_key_t data_key_o,
   output flash_key_t rand_addr_key_o,

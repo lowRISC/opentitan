@@ -110,8 +110,8 @@ It has been generated with ./util/topgen.py -t hw/top_earlgrey/data/top_earlgrey
 |    7    |          SECRET0          |     40     |      no      |      64bit       |                              TEST_UNLOCK_TOKEN                              |     0x6D0      |     16     |
 |         |                           |            |              |      64bit       |                               TEST_EXIT_TOKEN                               |     0x6E0      |     16     |
 |         |                           |            |              |      64bit       |                   [SECRET0_DIGEST](#Reg_secret0_digest_0)                   |     0x6F0      |     8      |
-|    8    |          SECRET1          |     88     |      no      |      64bit       |                             FLASH_ADDR_KEY_SEED                             |     0x6F8      |     32     |
-|         |                           |            |              |      64bit       |                             FLASH_DATA_KEY_SEED                             |     0x718      |     32     |
+|    8    |          SECRET1          |     88     |      no      |      64bit       |                              NVM_ADDR_KEY_SEED                              |     0x6F8      |     32     |
+|         |                           |            |              |      64bit       |                              NVM_DATA_KEY_SEED                              |     0x718      |     32     |
 |         |                           |            |              |      64bit       |                             SRAM_DATA_KEY_SEED                              |     0x738      |     16     |
 |         |                           |            |              |      64bit       |                   [SECRET1_DIGEST](#Reg_secret1_digest_0)                   |     0x748      |     8      |
 |    9    |          SECRET2          |     88     |      no      |      64bit       |                                  RMA_TOKEN                                  |     0x750      |     16     |

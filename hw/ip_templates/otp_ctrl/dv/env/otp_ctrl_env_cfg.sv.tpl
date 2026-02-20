@@ -20,9 +20,9 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_core_reg_block
   rand push_pull_agent_cfg#(.DeviceDataWidth(SRAM_DATA_SIZE))
       m_sram_pull_agent_cfg[NumSramKeyReqSlots];
   rand push_pull_agent_cfg#(.DeviceDataWidth(OTBN_DATA_SIZE))  m_otbn_pull_agent_cfg;
-% if enable_flash_key:
-  rand push_pull_agent_cfg#(.DeviceDataWidth(FLASH_DATA_SIZE)) m_flash_data_pull_agent_cfg;
-  rand push_pull_agent_cfg#(.DeviceDataWidth(FLASH_DATA_SIZE)) m_flash_addr_pull_agent_cfg;
+% if enable_nvm_key:
+  rand push_pull_agent_cfg#(.DeviceDataWidth(NVM_DATA_SIZE)) m_nvm_data_pull_agent_cfg;
+  rand push_pull_agent_cfg#(.DeviceDataWidth(NVM_DATA_SIZE)) m_nvm_addr_pull_agent_cfg;
 % endif
   rand push_pull_agent_cfg#(.DeviceDataWidth(1), .HostDataWidth(LC_PROG_DATA_SIZE))
       m_lc_prog_pull_agent_cfg;
@@ -81,13 +81,13 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_core_reg_block
                             ::create("m_otbn_pull_agent_cfg");
     m_otbn_pull_agent_cfg.agent_type = PullAgent;
 
-% if enable_flash_key:
-    m_flash_data_pull_agent_cfg = push_pull_agent_cfg#(.DeviceDataWidth(FLASH_DATA_SIZE))::type_id
-                                  ::create("m_flash_data_pull_agent_cfg");
-    m_flash_data_pull_agent_cfg.agent_type = PullAgent;
-    m_flash_addr_pull_agent_cfg = push_pull_agent_cfg#(.DeviceDataWidth(FLASH_DATA_SIZE))::type_id
-                                  ::create("m_flash_addr_pull_agent_cfg");
-    m_flash_addr_pull_agent_cfg.agent_type = PullAgent;
+% if enable_nvm_key:
+    m_nvm_data_pull_agent_cfg = push_pull_agent_cfg#(.DeviceDataWidth(NVM_DATA_SIZE))::type_id
+                                  ::create("m_nvm_data_pull_agent_cfg");
+    m_nvm_data_pull_agent_cfg.agent_type = PullAgent;
+    m_nvm_addr_pull_agent_cfg = push_pull_agent_cfg#(.DeviceDataWidth(NVM_DATA_SIZE))::type_id
+                                  ::create("m_nvm_addr_pull_agent_cfg");
+    m_nvm_addr_pull_agent_cfg.agent_type = PullAgent;
 % endif
 
     m_lc_prog_pull_agent_cfg = push_pull_agent_cfg#(.HostDataWidth(LC_PROG_DATA_SIZE),
