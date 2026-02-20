@@ -56,7 +56,7 @@ module flash_ctrl
   input        lc_ctrl_pkg::lc_tx_t rma_req_i,
   input        lc_ctrl_pkg::lc_flash_rma_seed_t rma_seed_i,
   output       lc_ctrl_pkg::lc_tx_t rma_ack_o,
-  output       pwrmgr_pkg::pwr_flash_t pwrmgr_o,
+  output       pwrmgr_pkg::pwr_nvm_t pwrmgr_o,
   output       keymgr_flash_t keymgr_o,
 
   // IOs
@@ -924,7 +924,7 @@ module flash_ctrl
     .clk_i,
     .rst_ni,
     .d_i(flash_idle_d),
-    .q_o(pwrmgr_o.flash_idle)
+    .q_o(pwrmgr_o.nvm_idle)
   );
 
   //////////////////////////////////////

@@ -61,8 +61,8 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   input lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
 
-  // flash
-  input flash_idle_i,
+  // NVM
+  input nvm_idle_i,
 
   // rom_ctrl
   input prim_mubi_pkg::mubi4_t rom_ctrl_done_i,
@@ -438,7 +438,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
 
       FastPwrStateNvmIdleChk: begin
 
-        if (otp_idle_i && lc_idle_i && flash_idle_i) begin
+        if (otp_idle_i && lc_idle_i && nvm_idle_i) begin
           state_d = FastPwrStateLowPowerPrep;
         end else begin
           ip_clk_en_d = 1'b1;
