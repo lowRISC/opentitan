@@ -94,7 +94,7 @@ module lc_ctrl_signal_decode
       CntIncrSt,
       CntProgSt,
       TransCheckSt,
-      FlashRmaSt,
+      NvmRmaSt,
       TokenHashSt,
       TokenCheck0St,
       TokenCheck1St,
@@ -167,7 +167,7 @@ module lc_ctrl_signal_decode
             ///////////////////////////////////////////////////////////////////
             // Similar functions as PROD, with the following differences:
             // - hardware debug functionality (CPU TAP) is enabled,
-            // - access to the isolated flash partition is disabled.
+            // - access to the isolated NVM partition is disabled.
             LcStDev: begin
               lc_hw_debug_en         = On;
               lc_cpu_en              = On;
@@ -405,7 +405,7 @@ module lc_ctrl_signal_decode
                             CntIncrSt,
                             CntProgSt,
                             TransCheckSt,
-                            FlashRmaSt,
+                            NvmRmaSt,
                             TokenHashSt,
                             TokenCheck0St,
                             TokenCheck1St,
@@ -420,7 +420,7 @@ module lc_ctrl_signal_decode
                           CntIncrSt,
                           CntProgSt,
                           TransCheckSt,
-                          FlashRmaSt,
+                          NvmRmaSt,
                           TokenHashSt,
                           TokenCheck0St,
                           TokenCheck1St} &&

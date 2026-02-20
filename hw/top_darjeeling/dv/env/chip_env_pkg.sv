@@ -142,7 +142,7 @@ package chip_env_pkg;
     LcTransitionCntError,
     LcTransitionError,
     LcTokenError,
-    LcFlashRmaError,
+    LcNvmRmaError,
     LcOtpError,
     LcStateError,
     LcBusIntegError,
