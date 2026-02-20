@@ -35,6 +35,8 @@ module ibex_top import ibex_pkg::*; #(
   parameter int unsigned            DbgHwBreakNum                = 1,
   parameter bit                     SecureIbex                   = 1'b0,
   parameter int unsigned            LockstepOffset               = 1,
+  parameter bit                     MemECC                       = SecureIbex,
+  parameter int unsigned            MemDataWidth                 = MemECC ? 32 + 7 : 32,
   parameter bit                     ICacheScramble               = 1'b0,
   parameter int unsigned            ICacheScrNumPrinceRoundsHalf = 2,
   parameter lfsr_seed_t             RndCnstLfsrSeed              = RndCnstLfsrSeedDefault,
@@ -163,7 +165,22 @@ module ibex_top import ibex_pkg::*; #(
   output logic                                                        core_sleep_o,
 
   // DFT bypass controls
-  input logic                                                         scan_rst_ni
+  input logic                                                         scan_rst_ni,
+
+  // Lockstep signals
+  output ibex_mubi_t                                                  lockstep_cmp_en_o,
+
+  // Shadow core data interface outputs
+  output logic                                                        data_req_shadow_o,
+  output logic                                                        data_we_shadow_o,
+  output logic [3:0]                                                  data_be_shadow_o,
+  output logic [31:0]                                                 data_addr_shadow_o,
+  output logic [31:0]                                                 data_wdata_shadow_o,
+  output logic [6:0]                                                  data_wdata_intg_shadow_o,
+
+  // Shadow core instruction interface outputs
+  output logic                                                        instr_req_shadow_o,
+  output logic [31:0]                                                 instr_addr_shadow_o
 );
 
   localparam bit          Lockstep              = SecureIbex;
@@ -173,8 +190,6 @@ module ibex_top import ibex_pkg::*; #(
   localparam bit          RegFileLockstepECC    = Lockstep;
   localparam int unsigned RegFileDataWidth      = 32;
   localparam int unsigned RegFileDataEccWidth   = 32 + 7;
-  localparam bit          MemECC                = SecureIbex;
-  localparam int unsigned MemDataWidth          = MemECC ? 32 + 7 : 32;
   // Icache parameters
   localparam int unsigned BusSizeECC        = ICacheECC ? (BUS_SIZE + 7) : BUS_SIZE;
   localparam int unsigned LineSizeECC       = BusSizeECC * IC_LINE_BEATS;
@@ -785,7 +800,7 @@ module ibex_top import ibex_pkg::*; #(
       data_we_o,
       data_be_o,
       data_addr_o,
-      data_wdata_core,
+      data_wdata_o,
       data_rdata_core,
       data_err_i,
       rf_rdata_a,
@@ -831,7 +846,7 @@ module ibex_top import ibex_pkg::*; #(
     logic                         data_we_local;
     logic [3:0]                   data_be_local;
     logic [31:0]                  data_addr_local;
-    logic [MemDataWidth-1:0]      data_wdata_local;
+    logic [31:0]                  data_wdata_local;
     logic [MemDataWidth-1:0]      data_rdata_local;
     logic                         data_err_local;
 
@@ -878,7 +893,7 @@ module ibex_top import ibex_pkg::*; #(
       data_we_o,
       data_be_o,
       data_addr_o,
-      data_wdata_core,
+      data_wdata_o,
       data_rdata_core,
       data_err_i,
       rf_rdata_a,
@@ -1012,63 +1027,73 @@ module ibex_top import ibex_pkg::*; #(
       .CsrMvendorId        (CsrMvendorId),
       .CsrMimpId           (CsrMimpId)
     ) u_ibex_lockstep (
-      .clk_i                  (clk),
-      .rst_ni                 (rst_ni),
+      .clk_i                    (clk),
+      .rst_ni                   (rst_ni),
 
-      .hart_id_i              (hart_id_local),
-      .boot_addr_i            (boot_addr_local),
+      .hart_id_i                (hart_id_local),
+      .boot_addr_i              (boot_addr_local),
 
-      .instr_req_i            (instr_req_local),
-      .instr_gnt_i            (instr_gnt_local),
-      .instr_rvalid_i         (instr_rvalid_local),
-      .instr_addr_i           (instr_addr_local),
-      .instr_rdata_i          (instr_rdata_local),
-      .instr_err_i            (instr_err_local),
+      .instr_req_i              (instr_req_local),
+      .instr_gnt_i              (instr_gnt_local),
+      .instr_rvalid_i           (instr_rvalid_local),
+      .instr_addr_i             (instr_addr_local),
+      .instr_rdata_i            (instr_rdata_local),
+      .instr_err_i              (instr_err_local),
 
-      .data_req_i             (data_req_local),
-      .data_gnt_i             (data_gnt_local),
-      .data_rvalid_i          (data_rvalid_local),
-      .data_we_i              (data_we_local),
-      .data_be_i              (data_be_local),
-      .data_addr_i            (data_addr_local),
-      .data_wdata_i           (data_wdata_local),
-      .data_rdata_i           (data_rdata_local),
-      .data_err_i             (data_err_local),
+      .data_req_i               (data_req_local),
+      .data_gnt_i               (data_gnt_local),
+      .data_rvalid_i            (data_rvalid_local),
+      .data_we_i                (data_we_local),
+      .data_be_i                (data_be_local),
+      .data_addr_i              (data_addr_local),
+      .data_wdata_i             (data_wdata_local),
+      .data_rdata_i             (data_rdata_local),
+      .data_err_i               (data_err_local),
 
-      .rf_rdata_a_i           (rf_rdata_a_local),
-      .rf_rdata_b_i           (rf_rdata_b_local),
+      .rf_rdata_a_i             (rf_rdata_a_local),
+      .rf_rdata_b_i             (rf_rdata_b_local),
 
-      .ic_tag_req_i           (ic_tag_req_local),
-      .ic_tag_write_i         (ic_tag_write_local),
-      .ic_tag_addr_i          (ic_tag_addr_local),
-      .ic_tag_wdata_i         (ic_tag_wdata_local),
-      .ic_tag_rdata_i         (ic_tag_rdata_local),
-      .ic_data_req_i          (ic_data_req_local),
-      .ic_data_write_i        (ic_data_write_local),
-      .ic_data_addr_i         (ic_data_addr_local),
-      .ic_data_wdata_i        (ic_data_wdata_local),
-      .ic_data_rdata_i        (ic_data_rdata_local),
-      .ic_scr_key_valid_i     (scramble_key_valid_local),
-      .ic_scr_key_req_i       (ic_scr_key_req_local),
+      .ic_tag_req_i             (ic_tag_req_local),
+      .ic_tag_write_i           (ic_tag_write_local),
+      .ic_tag_addr_i            (ic_tag_addr_local),
+      .ic_tag_wdata_i           (ic_tag_wdata_local),
+      .ic_tag_rdata_i           (ic_tag_rdata_local),
+      .ic_data_req_i            (ic_data_req_local),
+      .ic_data_write_i          (ic_data_write_local),
+      .ic_data_addr_i           (ic_data_addr_local),
+      .ic_data_wdata_i          (ic_data_wdata_local),
+      .ic_data_rdata_i          (ic_data_rdata_local),
+      .ic_scr_key_valid_i       (scramble_key_valid_local),
+      .ic_scr_key_req_i         (ic_scr_key_req_local),
 
-      .irq_software_i         (irq_software_local),
-      .irq_timer_i            (irq_timer_local),
-      .irq_external_i         (irq_external_local),
-      .irq_fast_i             (irq_fast_local),
-      .irq_nm_i               (irq_nm_local),
-      .irq_pending_i          (irq_pending_local),
+      .irq_software_i           (irq_software_local),
+      .irq_timer_i              (irq_timer_local),
+      .irq_external_i           (irq_external_local),
+      .irq_fast_i               (irq_fast_local),
+      .irq_nm_i                 (irq_nm_local),
+      .irq_pending_i            (irq_pending_local),
 
-      .debug_req_i            (debug_req_local),
-      .crash_dump_i           (crash_dump_local),
-      .double_fault_seen_i    (double_fault_seen_local),
+      .debug_req_i              (debug_req_local),
+      .crash_dump_i             (crash_dump_local),
+      .double_fault_seen_i      (double_fault_seen_local),
 
-      .fetch_enable_i         (fetch_enable_local),
-      .alert_minor_o          (lockstep_alert_minor_local),
-      .alert_major_internal_o (lockstep_alert_major_internal_local),
-      .alert_major_bus_o      (lockstep_alert_major_bus_local),
-      .core_busy_i            (core_busy_local),
-      .test_en_i              (test_en_i),
-      .scan_rst_ni            (scan_rst_ni)
+      .fetch_enable_i           (fetch_enable_local),
+      .alert_minor_o            (lockstep_alert_minor_local),
+      .alert_major_internal_o   (lockstep_alert_major_internal_local),
+      .alert_major_bus_o        (lockstep_alert_major_bus_local),
+      .core_busy_i              (core_busy_local),
+      .test_en_i                (test_en_i),
+      .scan_rst_ni              (scan_rst_ni),
+
+      .lockstep_cmp_en_o        (lockstep_cmp_en_o),
+      .data_req_shadow_o        (data_req_shadow_o),
+      .data_we_shadow_o         (data_we_shadow_o),
+      .data_be_shadow_o         (data_be_shadow_o),
+      .data_addr_shadow_o       (data_addr_shadow_o),
+      .data_wdata_shadow_o      (data_wdata_shadow_o),
+      .data_wdata_intg_shadow_o (data_wdata_intg_shadow_o),
+      .instr_req_shadow_o       (instr_req_shadow_o),
+      .instr_addr_shadow_o      (instr_addr_shadow_o)
     );
 
     prim_buf u_prim_buf_alert_minor (
@@ -1090,6 +1115,17 @@ module ibex_top import ibex_pkg::*; #(
     assign lockstep_alert_major_internal = 1'b0;
     assign lockstep_alert_major_bus      = 1'b0;
     assign lockstep_alert_minor          = 1'b0;
+
+    assign lockstep_cmp_en_o             = IbexMuBiOff;
+    assign data_req_shadow_o             = 1'b0;
+    assign data_we_shadow_o              = 1'b0;
+    assign data_be_shadow_o              = '0;
+    assign data_addr_shadow_o            = '0;
+    assign data_wdata_shadow_o           = '0;
+    assign data_wdata_intg_shadow_o      = '0;
+    assign instr_req_shadow_o            = 1'b0;
+    assign instr_addr_shadow_o           = '0;
+
     logic unused_scan;
     assign unused_scan = scan_rst_ni;
   end

@@ -772,6 +772,7 @@
           compact: false,
           swaccess: "rw",
           hwaccess: "hro",
+          hwqe:     "true",
           fields: [
             { bits: "0",
               name: "EN",
@@ -810,6 +811,7 @@
           compact: false,
           swaccess: "rw",
           hwaccess: "hro",
+          hwqe:     "true",
           fields: [
             { bits: "31:0",
               name: "VAL",
@@ -838,6 +840,7 @@
           compact: false,
           swaccess: "rw",
           hwaccess: "hro",
+          hwqe:     "true",
           fields: [
             { bits: "31:0",
               name: "VAL",
@@ -894,6 +897,7 @@
           compact: false,
           swaccess: "rw",
           hwaccess: "hro",
+          hwqe:     "true",
           fields: [
             { bits: "0",
               name: "EN",
@@ -918,6 +922,7 @@
           compact: false,
           swaccess: "rw",
           hwaccess: "hro",
+          hwqe:     "true",
           fields: [
             { bits: "31:0",
               name: "VAL",
@@ -942,6 +947,7 @@
           compact: false,
           swaccess: "rw",
           hwaccess: "hro",
+          hwqe:     "true",
           fields: [
             { bits: "31:0",
               name: "VAL",

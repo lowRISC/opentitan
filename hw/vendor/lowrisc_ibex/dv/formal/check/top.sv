@@ -110,7 +110,22 @@ module top import ibex_pkg::*; #(
 
 
   // DFT bypass controls
-  input logic                                                          scan_rst_ni
+  input logic                                                          scan_rst_ni,
+
+  // Lockstep signals
+  output ibex_mubi_t                                                  lockstep_cmp_en_o,
+
+  // Shadow core data interface outputs
+  output logic                                                        data_req_shadow_o,
+  output logic                                                        data_we_shadow_o,
+  output logic [3:0]                                                  data_be_shadow_o,
+  output logic [31:0]                                                 data_addr_shadow_o,
+  output logic [31:0]                                                 data_wdata_shadow_o,
+  output logic [6:0]                                                  data_wdata_intg_shadow_o,
+
+  // Shadow core instruction interface outputs
+  output logic                                                        instr_req_shadow_o,
+  output logic [31:0]                                                 instr_addr_shadow_o
 );
 
 // Yosys based tools have no inherent understanding of a reset signal (unlike jasper, which has the
