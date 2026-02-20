@@ -305,6 +305,7 @@ rust_library(
         "//sw/host/ot_transports/proxy",
         "//sw/host/ot_transports/ti50emulator",
         "//sw/host/ot_transports/verilator",
+        "//sw/host/ot_transports/qemu",
     ],
 )
 
