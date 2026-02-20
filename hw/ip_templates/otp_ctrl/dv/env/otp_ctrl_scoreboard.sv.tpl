@@ -64,9 +64,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(SRAM_DATA_SIZE)))
                         sram_fifos[NumSramKeyReqSlots];
   uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(OTBN_DATA_SIZE)))  otbn_fifo;
-% if enable_flash_key:
-  uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(FLASH_DATA_SIZE))) flash_addr_fifo;
-  uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(FLASH_DATA_SIZE))) flash_data_fifo;
+% if enable_nvm_key:
+  uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(NVM_DATA_SIZE))) nvm_addr_fifo;
+  uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(NVM_DATA_SIZE))) nvm_data_fifo;
 % endif
   uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(1), .HostDataWidth(LC_PROG_DATA_SIZE)))
                         lc_prog_fifo;
@@ -81,9 +81,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       sram_fifos[i] = new($sformatf("sram_fifos[%0d]", i), this);
     end
     otbn_fifo       = new("otbn_fifo", this);
-  % if enable_flash_key:
-    flash_addr_fifo = new("flash_addr_fifo", this);
-    flash_data_fifo = new("flash_data_fifo", this);
+  % if enable_nvm_key:
+    nvm_addr_fifo = new("nvm_addr_fifo", this);
+    nvm_data_fifo = new("nvm_data_fifo", this);
   % endif
     lc_prog_fifo    = new("lc_prog_fifo", this);
   endfunction
@@ -101,8 +101,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       process_lc_prog_req();
       process_edn_req();
       check_otbn_rsp();
-    % if enable_flash_key:
-      check_flash_rsps();
+    % if enable_nvm_key:
+      check_nvm_rsps();
     % endif
       check_sram_rsps();
       recover_lc_prog_req();
@@ -448,48 +448,48 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     end
   endtask
 
-% if enable_flash_key:
-  virtual task check_flash_rsps();
-    for (int i = FlashDataKey; i <= FlashAddrKey; i++) begin
-      automatic digest_sel_e sel_flash = digest_sel_e'(i);
+% if enable_nvm_key:
+  virtual task check_nvm_rsps();
+    for (int i = NvmDataKey; i <= NvmAddrKey; i++) begin
+      automatic digest_sel_e sel_nvm = digest_sel_e'(i);
       fork
         forever begin
-          push_pull_item#(.DeviceDataWidth(FLASH_DATA_SIZE)) rcv_item;
-          bit [SCRAMBLE_KEY_SIZE-1:0]  flash_key;
+          push_pull_item#(.DeviceDataWidth(NVM_DATA_SIZE)) rcv_item;
+          bit [SCRAMBLE_KEY_SIZE-1:0]  nvm_key;
           bit [SCRAMBLE_DATA_SIZE-1:0] exp_key_lower, exp_key_higher;
-          bit [FlashKeyWidth-1:0]      key, exp_key;
+          bit [NvmKeyWidth-1:0]        key, exp_key;
           bit                          seed_valid, part_locked;
-          int                          flash_key_index;
+          int                          nvm_key_index;
 
-          if (sel_flash == FlashAddrKey) begin
-            flash_addr_fifo.get(rcv_item);
-            flash_key_index = FlashAddrKeySeedOffset / 4;
+          if (sel_nvm == NvmAddrKey) begin
+            nvm_addr_fifo.get(rcv_item);
+            nvm_key_index = NvmAddrKeySeedOffset / 4;
           end else begin
-            flash_data_fifo.get(rcv_item);
-            flash_key_index = FlashDataKeySeedOffset / 4;
+            nvm_data_fifo.get(rcv_item);
+            nvm_key_index = NvmDataKeySeedOffset / 4;
           end
           seed_valid  = rcv_item.d_data[0];
-          key         = rcv_item.d_data[1+:FlashKeyWidth];
+          key         = rcv_item.d_data[1+:NvmKeyWidth];
           part_locked = {`gmv(ral.secret1_digest[0]), `gmv(ral.secret1_digest[1])} != '0;
           `DV_CHECK_EQ(seed_valid, part_locked,
-                      $sformatf("flash %0s seed_valid mismatch", sel_flash.name()))
+                      $sformatf("nvm %0s seed_valid mismatch", sel_nvm.name()))
 
           // calculate key
-          flash_key = get_key_from_otp(part_locked, flash_key_index);
+          nvm_key = get_key_from_otp(part_locked, nvm_key_index);
           exp_key_lower = present_encode_with_final_const(
-                          .data(RndCnstDigestIV[sel_flash]),
-                          .key(flash_key),
-                          .final_const(RndCnstDigestConst[sel_flash]));
+                          .data(RndCnstDigestIV[sel_nvm]),
+                          .key(nvm_key),
+                          .final_const(RndCnstDigestConst[sel_nvm]));
 
-          flash_key = get_key_from_otp(part_locked, flash_key_index + 4);
+          nvm_key = get_key_from_otp(part_locked, nvm_key_index + 4);
           exp_key_higher = present_encode_with_final_const(
-                           .data(RndCnstDigestIV[sel_flash]),
-                           .key(flash_key),
-                           .final_const(RndCnstDigestConst[sel_flash]));
+                           .data(RndCnstDigestIV[sel_nvm]),
+                           .key(nvm_key),
+                           .final_const(RndCnstDigestConst[sel_nvm]));
           exp_key = {exp_key_higher, exp_key_lower};
-          `DV_CHECK_EQ(key, exp_key, $sformatf("flash %s key mismatch", sel_flash.name()))
+          `DV_CHECK_EQ(key, exp_key, $sformatf("nvm %s key mismatch", sel_nvm.name()))
 
-          if (cfg.en_cov) cov.flash_req_cg.sample(sel_flash, part_locked);
+          if (cfg.en_cov) cov.nvm_req_cg.sample(sel_nvm, part_locked);
         end
       join_none;
     end
@@ -1181,9 +1181,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     super.reset(kind);
     // flush fifos
     otbn_fifo.flush();
-  % if enable_flash_key:
-    flash_addr_fifo.flush();
-    flash_data_fifo.flush();
+  % if enable_nvm_key:
+    nvm_addr_fifo.flush();
+    nvm_data_fifo.flush();
   % endif
     lc_prog_fifo.flush();
     for (int i = 0; i < NumSramKeyReqSlots; i++) begin
@@ -1224,9 +1224,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                  // vary depends on the push-pull-agent, we are going to ignore the checking if
                  // this scenario happens.
                  cfg.m_otbn_pull_agent_cfg.vif.req ||
-                % if enable_flash_key:
-                 cfg.m_flash_data_pull_agent_cfg.vif.req ||
-                 cfg.m_flash_addr_pull_agent_cfg.vif.req ||
+                % if enable_nvm_key:
+                 cfg.m_nvm_data_pull_agent_cfg.vif.req ||
+                 cfg.m_nvm_addr_pull_agent_cfg.vif.req ||
                 % endif
                  cfg.m_sram_pull_agent_cfg[0].vif.req ||
                  cfg.m_sram_pull_agent_cfg[1].vif.req ||

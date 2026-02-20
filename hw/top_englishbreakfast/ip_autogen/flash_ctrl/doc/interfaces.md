@@ -20,7 +20,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 | Port Name                | Package::Struct              | Type    | Act   |   Width | Description   |
 |:-------------------------|:-----------------------------|:--------|:------|--------:|:--------------|
-| otp                      | otp_ctrl_pkg::flash_otp_key  | req_rsp | req   |       1 |               |
+| otp                      | otp_ctrl_pkg::nvm_otp_key    | req_rsp | req   |       1 |               |
 | lc_nvm_debug_en          | lc_ctrl_pkg::lc_tx           | uni     | rcv   |       1 |               |
 | flash_bist_enable        | prim_mubi_pkg::mubi4         | uni     | rcv   |       1 |               |
 | flash_power_down_h       | logic                        | uni     | rcv   |       1 |               |

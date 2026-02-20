@@ -286,8 +286,8 @@
             - Initialize entropy_src in FIPS mode. Check health status after setting appropriate
               health test parameters. Configure SW csrng instance to generate enough data to
               configure the following OTP fields:
-              - FLASH_ADDR_KEY_SEED
-              - FLASH_DATA_KEY_SEED
+              - NVM_ADDR_KEY_SEED
+              - NVM_DATA_KEY_SEED
               - SRAM_DATA_KEY_SEED
             - Lock SECRET1 partition.
             - Perform reset triggered by software.

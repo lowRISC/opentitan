@@ -1433,7 +1433,7 @@ end
 
   // Note regarding these breakouts: named_keymgr_key_assign will tie off unused key material /
   // valid signals to '0. This is the case for instance in system configurations that keep the seed
-  // material in the flash instead of OTP.
+  // material in the nvm instead of OTP.
   logic creator_root_key_share0_valid_d, creator_root_key_share0_valid_q;
   logic creator_root_key_share1_valid_d, creator_root_key_share1_valid_q;
   logic creator_seed_valid_d, creator_seed_valid_q;

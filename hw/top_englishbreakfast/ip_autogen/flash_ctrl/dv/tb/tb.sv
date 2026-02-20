@@ -98,8 +98,8 @@ module tb;
 
   // SIMPLE OTP KEY INTERFACE (Access via VIF)
 
-  otp_ctrl_pkg::flash_otp_key_req_t otp_req;
-  otp_ctrl_pkg::flash_otp_key_rsp_t otp_rsp;
+  otp_ctrl_pkg::nvm_otp_key_req_t otp_req;
+  otp_ctrl_pkg::nvm_otp_key_rsp_t otp_rsp;
 
   assign flash_ctrl_if.otp_req.addr_req = otp_req.addr_req;
   assign flash_ctrl_if.otp_req.data_req = otp_req.data_req;
