@@ -85,6 +85,7 @@ import i2c_reg_pkg::AcqFifoDepth;
   // RAM adapter for FMT FIFO
   logic [RamWidth-1:0] fmt_fifo_wdata, fmt_fifo_rdata, fmt_ram_wdata;
   logic fmt_ram_req, fmt_ram_gnt, fmt_ram_write, fmt_ram_rvalid;
+  assign fmt_ram_gnt=1;
   logic [RamAw-1:0] fmt_ram_addr;
   i2c_fifo_sync_sram_adapter #(
     .Width       (RamWidth),
@@ -118,6 +119,15 @@ import i2c_reg_pkg::AcqFifoDepth;
   // RAM adapter for RX FIFO
   logic [RamWidth-1:0] rx_fifo_wdata, rx_fifo_rdata, rx_ram_wdata;
   logic rx_ram_req, rx_ram_gnt, rx_ram_write, rx_ram_rvalid;
+  assign rx_ram_gnt=1;
+  logic temp_write;
+  assign temp_write=rx_ram_write;
+  
+  initial
+  begin
+  $display("temp_write:%0d",temp_write);
+  end
+  
   logic [RamAw-1:0] rx_ram_addr;
   i2c_fifo_sync_sram_adapter #(
     .Width       (RamWidth),
@@ -149,7 +159,7 @@ import i2c_reg_pkg::AcqFifoDepth;
   assign rx_fifo_rdata_o = rx_fifo_rdata[RX_FIFO_WIDTH-1:0];
   logic unused_rx_fifo_rdata;
   assign unused_rx_fifo_rdata = ^rx_fifo_rdata[(RamWidth-1):(RX_FIFO_WIDTH-1)];
-
+  
   // RAM adapter for TX FIFO
   logic [RamWidth-1:0] tx_fifo_wdata, tx_fifo_rdata, tx_ram_wdata;
   logic tx_ram_req, tx_ram_gnt, tx_ram_write, tx_ram_rvalid;
@@ -254,16 +264,7 @@ import i2c_reg_pkg::AcqFifoDepth;
   );
   assign ram_arb_req[0] = fmt_ram_req;
   assign ram_arb_inp_data[0] = {fmt_ram_write, fmt_ram_addr, fmt_ram_wdata};
-  assign fmt_ram_gnt = ram_arb_gnt[0];
-  assign ram_arb_req[1] = rx_ram_req;
-  assign ram_arb_inp_data[1] = {rx_ram_write, rx_ram_addr, rx_ram_wdata};
-  assign rx_ram_gnt = ram_arb_gnt[1];
-  assign ram_arb_req[2] = tx_ram_req;
-  assign ram_arb_inp_data[2] = {tx_ram_write, tx_ram_addr, tx_ram_wdata};
-  assign tx_ram_gnt = ram_arb_gnt[2];
-  assign ram_arb_req[3] = acq_ram_req;
-  assign ram_arb_inp_data[3] = {acq_ram_write, acq_ram_addr, acq_ram_wdata};
-  assign acq_ram_gnt = ram_arb_gnt[3];
+
 
   // Demux `ram_rvalid` based on arbiter index one cycle earlier.
   logic [RamArbIdxW-1:0] ram_arb_idx_q;

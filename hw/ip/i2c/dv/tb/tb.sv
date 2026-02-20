@@ -55,10 +55,6 @@ module tb;
   );
 
   // TODO: Remove this unused interface.
-  i2c_dv_if i2c_dv_if(
-    .clk(clk),
-    .rst_n(rst_n)
-  );
 
   `ifndef I2C_HIER
     `define I2C_HIER tb.dut.i2c_core

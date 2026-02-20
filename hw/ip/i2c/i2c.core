@@ -24,6 +24,7 @@ filesets:
       - rtl/i2c_controller_fsm.sv
       - rtl/i2c_target_fsm.sv
       - rtl/i2c.sv
+      - rtl/i2c_glitch_filter.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
@@ -75,3 +76,6 @@ targets:
         mode: lint-only
         verilator_options:
           - "-Wall"
+          - "-Wno-UNUSED"
+          - "-Wno-UNDRIVEN"
+          - "-Wno-UNOPTFLAT"

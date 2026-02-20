@@ -77,8 +77,10 @@ module i2c_core import i2c_pkg::*;
   logic [30:0] host_nack_handler_timeout;
   logic        host_nack_handler_timeout_en;
 
-  logic scl_sync;
-  logic sda_sync;
+  logic scl_sync;  //scl input to glitch filter
+  logic sda_sync;  //sda input to sda filter
+  logic scl_gf_out;  //scl output of glitch filter
+  logic sda_gf_out;  //sda output of glitch filter
   logic scl_out_controller_fsm, sda_out_controller_fsm;
   logic scl_out_target_fsm, sda_out_target_fsm;
   logic scl_out_fsm;
@@ -456,6 +458,18 @@ module i2c_core import i2c_pkg::*;
     .q_o (sda_sync)
   );
 
+
+
+  //after syncing the signals (scl and sda), send them to glitch filter to remove noise
+  i2c_glitch_filter gf(
+      .clk(clk_i),
+      .rst(rst_ni),
+      .in1(scl_sync),
+      .in2(sda_sync),
+      .out1(scl_gf_out),
+      .out2(sda_gf_out)
+    );
+
   // Various bus collision events are detected while SCL is high.
   logic sda_fsm, sda_fsm_q;
   logic scl_fsm, scl_fsm_q;
@@ -490,7 +504,7 @@ module i2c_core import i2c_pkg::*;
     end
   end
   assign bus_event_detect = (bus_event_detect_cnt == '0);
-  assign sda_released_but_low = bus_event_detect && scl_sync && (sda_fsm_q != sda_sync);
+  assign sda_released_but_low = bus_event_detect && scl_gf_out && (sda_fsm_q != sda_gf_out);
   // What about unexpected start / stop on the bits that are read?
   assign controller_sda_interference = controller_transmitting && sda_released_but_low;
   assign target_arbitration_lost = target_transmitting && sda_released_but_low;
@@ -503,8 +517,8 @@ module i2c_core import i2c_pkg::*;
     .clk_i,
     .rst_ni,
 
-    .scl_i                          (scl_sync),
-    .sda_i                          (sda_sync),
+    .scl_i                          (scl_gf_out),
+    .sda_i                          (sda_gf_out),
 
     .controller_enable_i            (host_enable),
     .multi_controller_enable_i      (reg2hw.ctrl.multi_controller_monitor_en.q),
@@ -530,9 +544,9 @@ module i2c_core import i2c_pkg::*;
     .clk_i,
     .rst_ni,
 
-    .scl_i                          (scl_sync),
+    .scl_i                          (scl_gf_out),
     .scl_o                          (scl_out_controller_fsm),
-    .sda_i                          (sda_sync),
+    .sda_i                          (sda_gf_out),
     .sda_o                          (sda_out_controller_fsm),
     .bus_free_i                     (bus_free),
     .transmitting_o                 (controller_transmitting),
@@ -586,9 +600,9 @@ module i2c_core import i2c_pkg::*;
     .clk_i,
     .rst_ni,
 
-    .scl_i                          (scl_sync),
+    .scl_i                          (scl_gf_out),
     .scl_o                          (scl_out_target_fsm),
-    .sda_i                          (sda_sync),
+    .sda_i                          (sda_gf_out),
     .sda_o                          (sda_out_target_fsm),
     .start_detect_i                 (start_detect),
     .stop_detect_i                  (stop_detect),
@@ -604,12 +618,12 @@ module i2c_core import i2c_pkg::*;
     .acq_fifo_wdata_o               (acq_fifo_wdata),
     .acq_fifo_rdata_i               (acq_fifo_rdata),
     .acq_fifo_full_o                (acq_fifo_full),
-    .acq_fifo_depth_i               (acq_fifo_depth),
+    .acq_fifo_depth_i               ({27'b0,acq_fifo_depth}),
 
     .target_idle_o                  (target_idle),
 
-    .t_r_i                          (t_r),
-    .tsu_dat_i                      (tsu_dat),
+    .t_r_i                          ({7'b0,t_r}),
+    .tsu_dat_i                      ({7'b0,tsu_dat}),
     .thd_dat_i                      (thd_dat),
     .nack_timeout_i                 (nack_timeout),
     .nack_timeout_en_i              (nack_timeout_en),
