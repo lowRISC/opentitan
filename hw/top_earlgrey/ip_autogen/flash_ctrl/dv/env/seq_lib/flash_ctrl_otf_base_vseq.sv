@@ -46,7 +46,6 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
   flash_mem_init_e otf_flash_init = FlashMemInitEccMode;
 
   constraint all_ent_c {
-    solve all_entry_en before rand_regions, rand_info;
     if (cfg.en_always_any) all_entry_en == 1;
     else all_entry_en dist { 1 := 1, 0 := 4};
   }
@@ -88,19 +87,18 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     cfg.seq_cfg.addr_flash_word_aligned -> fractions[0] == 1'b0;
   }
   constraint ctrl_info_num_c {
-    solve rand_op before ctrl_info_num;
+    solve rand_op.partition before ctrl_info_num;
     ctrl_info_num inside {[1 : InfoTypeSize[rand_op.partition >> 1]]};
     if (cfg.ecc_mode > FlashEccEnabled) ctrl_info_num * fractions <= 128;
   }
   constraint ctrl_num_c {
-    solve ctrl_data_num, ctrl_info_num, rand_op before ctrl_num;
+    solve ctrl_data_num, ctrl_info_num, rand_op.partition before ctrl_num;
     if (rand_op.partition == FlashPartData) ctrl_num == ctrl_data_num;
     else ctrl_num == ctrl_info_num;
   }
 
   constraint rand_op_c {
     solve fractions before rand_op.addr;
-    solve flash_program_data before rand_op;
     solve rand_op.partition before rand_op.prog_sel, rand_op.addr;
     solve rand_op.addr before rand_op.otf_addr;
     solve rand_op.addr before rand_op.num_words;
@@ -706,7 +704,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       if (cfg.ecc_mode > FlashEccEnabled) begin
         if (drop == 0) begin
           if (cfg.ecc_mode == FlashSerrTestMode || flash_op.addr[2] == 0) begin
-            cfg.add_bit_err(flash_op.addr, ReadTaskCtrl, exp_item);
+            cfg.add_bit_err(flash_op, ReadTaskCtrl, exp_item);
             derr_is_set = cfg.address_has_derr(flash_op.addr, flash_op.partition);
             `uvm_info(`gfn, $sformatf("derr_is_set:%b, addr:0x%x", derr_is_set, flash_op.addr),
                       UVM_MEDIUM)

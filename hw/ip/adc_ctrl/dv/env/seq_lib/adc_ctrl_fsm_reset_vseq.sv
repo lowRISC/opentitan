@@ -102,11 +102,11 @@ class adc_ctrl_fsm_reset_vseq extends adc_ctrl_base_vseq;
     // Make sure filters will always match
     ral.adc_chn0_filter_ctl[0].min_v.set(0);
     ral.adc_chn0_filter_ctl[0].max_v.set(1023);
-    ral.adc_chn0_filter_ctl[0].cond.set(ADC_CTRL_FILTER_COND_IN);
+    ral.adc_chn0_filter_ctl[0].cond.set(1);
     ral.adc_chn0_filter_ctl[0].en.set(1);
     ral.adc_chn1_filter_ctl[0].min_v.set(0);
     ral.adc_chn1_filter_ctl[0].max_v.set(1023);
-    ral.adc_chn1_filter_ctl[0].cond.set(ADC_CTRL_FILTER_COND_IN);
+    ral.adc_chn1_filter_ctl[0].cond.set(1);
     ral.adc_chn1_filter_ctl[0].en.set(1);
     csr_wr(ral.adc_chn0_filter_ctl[0], ral.adc_chn0_filter_ctl[0].get());
     csr_wr(ral.adc_chn1_filter_ctl[0], ral.adc_chn1_filter_ctl[0].get());

@@ -409,20 +409,49 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
+  function adc_ctrl_filter_cfg get_filter_cfg(int unsigned channel, int unsigned filter);
+    string reg_name;
+    uvm_reg csr;
+    uvm_reg_field fld;
+    bit en, cond, min_v, max_v;
+
+    reg_name = $sformatf("adc_chn%0d_filter_ctl_%0d", channel, filter);
+    csr = ral.get_reg_by_name(reg_name);
+    if (!csr) begin
+      `uvm_fatal(`gfn, $sformatf("Cannot find register with name %s", reg_name))
+    end
+
+    fld = csr.get_field_by_name("en");
+    if (!fld) `uvm_fatal(`gfn, $sformatf("The %s register has no 'en' field.", reg_name))
+    en = fld.get_mirrored_value();
+
+    fld = csr.get_field_by_name("cond");
+    if (!fld) `uvm_fatal(`gfn, $sformatf("The %s register has no 'cond' field.", reg_name))
+    cond = fld.get_mirrored_value();
+
+    fld = csr.get_field_by_name("min_v");
+    if (!fld) `uvm_fatal(`gfn, $sformatf("The %s register has no 'min_v' field.", reg_name))
+    min_v = fld.get_mirrored_value();
+
+    fld = csr.get_field_by_name("max_v");
+    if (!fld) `uvm_fatal(`gfn, $sformatf("The %s register has no 'max_v' field.", reg_name))
+    max_v = fld.get_mirrored_value();
+
+    return adc_ctrl_filter_cfg::make($sformatf("filter_cfg[%0d][%0d]", channel, filter),
+                                     min_v, max_v, cond, en);
+  endfunction
+
   // Sample the filter coverage using values from the register model
   // Set is_interrupt to notify an interrupt and is_wakeup a wakeup event
   virtual function void sample_filter_cov(bit is_interrupt = 0, bit is_wakeup = 0,
                                           bit clk_gate = 0);
     for (int channel = 0; channel < ADC_CTRL_CHANNELS; channel++) begin
       for (int filter = 0; filter < ADC_CTRL_NUM_FILTERS; filter++) begin
-        string reg_name = $sformatf("adc_chn%0d_filter_ctl_%0d", channel, filter);
-        adc_ctrl_filter_cfg_t cfg;
-        cfg.en = get_reg_fld_mirror_value(ral, reg_name, "en");
-        cfg.cond = adc_ctrl_filter_cond_e'(get_reg_fld_mirror_value(ral, reg_name, "cond"));
-        cfg.min_v = get_reg_fld_mirror_value(ral, reg_name, "min_v");
-        cfg.max_v = get_reg_fld_mirror_value(ral, reg_name, "max_v");
-        cov.sample_filter_cov(.channel(channel), .filter(filter), .cfg(cfg),
-                              .is_interrupt(is_interrupt), .is_wakeup(is_wakeup),
+        cov.sample_filter_cov(.channel(channel),
+                              .filter(filter),
+                              .cfg(get_filter_cfg(channel, filter)),
+                              .is_interrupt(is_interrupt),
+                              .is_wakeup(is_wakeup),
                               .clk_gate(clk_gate));
       end
     end
@@ -453,23 +482,22 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
     // Perform the basic match against filter config
     for (int filter_idx = 0; filter_idx < ADC_CTRL_NUM_FILTERS; filter_idx++) begin
       // Extract appropriate configuration for this channel/filter
-      adc_ctrl_filter_cfg_t filter_cfg = cfg.filter_cfg[channel][filter_idx];
+      adc_ctrl_filter_cfg filter_cfg = cfg.filter_cfg[channel][filter_idx];
       // Check value against configured range of values
       bit inside_range = val inside {[filter_cfg.min_v : filter_cfg.max_v]};
       // Set match flag for this channel/filter considering inside/outside config
-      m_chn_match[channel][filter_idx] = (filter_cfg.cond == ADC_CTRL_FILTER_COND_IN) ?
-          inside_range : ~inside_range;
+      m_chn_match[channel][filter_idx] = filter_cfg.match_outside ^ inside_range;
 
       // Combine channel matches for this filter
       filter_match = 0;
       for (int channel_idx = 0; channel_idx < ADC_CTRL_CHANNELS; channel_idx++) begin
-        filter_match |= cfg.filter_cfg[channel_idx][filter_idx].en;
+        filter_match |= cfg.filter_cfg[channel_idx][filter_idx].enabled;
       end
 
       for (int channel_idx = 0; channel_idx < ADC_CTRL_CHANNELS; channel_idx++) begin
-        filter_match &= !cfg.filter_cfg[channel_idx][filter_idx].en |
+        filter_match &= !cfg.filter_cfg[channel_idx][filter_idx].enabled |
                          (m_chn_match[channel_idx][filter_idx] &
-                          cfg.filter_cfg[channel_idx][filter_idx].en);
+                          cfg.filter_cfg[channel_idx][filter_idx].enabled);
       end
       m_match[filter_idx] = filter_match;
     end
