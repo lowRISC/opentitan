@@ -105,7 +105,7 @@ package lc_ctrl_reg_pkg;
     } otp_error;
     struct packed {
       logic        d;
-    } flash_rma_error;
+    } nvm_rma_error;
     struct packed {
       logic        d;
     } token_error;

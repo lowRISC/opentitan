@@ -211,8 +211,8 @@ pub enum DaiParam {
     TestUnlockToken,
     TestExitToken,
     // SECRET1
-    FlashAddrKeySeed,
-    FlashDataKeySeed,
+    NvmAddrKeySeed,
+    NvmDataKeySeed,
     SramDataKeySeed,
     // SECRET2
     RmaToken,
@@ -254,13 +254,13 @@ impl DaiParam {
         byte_addr: dif::OTP_CTRL_PARAM_TEST_EXIT_TOKEN_OFFSET,
         size: dif::OTP_CTRL_PARAM_TEST_EXIT_TOKEN_SIZE,
     };
-    pub const FLASH_ADDR_KEY_SEED: OtpParamMmap = OtpParamMmap {
-        byte_addr: dif::OTP_CTRL_PARAM_FLASH_ADDR_KEY_SEED_OFFSET,
-        size: dif::OTP_CTRL_PARAM_FLASH_ADDR_KEY_SEED_SIZE,
+    pub const NVM_ADDR_KEY_SEED: OtpParamMmap = OtpParamMmap {
+        byte_addr: dif::OTP_CTRL_PARAM_NVM_ADDR_KEY_SEED_OFFSET,
+        size: dif::OTP_CTRL_PARAM_NVM_ADDR_KEY_SEED_SIZE,
     };
-    pub const FLASH_DATA_KEY_SEED: OtpParamMmap = OtpParamMmap {
-        byte_addr: dif::OTP_CTRL_PARAM_FLASH_DATA_KEY_SEED_OFFSET,
-        size: dif::OTP_CTRL_PARAM_FLASH_DATA_KEY_SEED_SIZE,
+    pub const NVM_DATA_KEY_SEED: OtpParamMmap = OtpParamMmap {
+        byte_addr: dif::OTP_CTRL_PARAM_NVM_DATA_KEY_SEED_OFFSET,
+        size: dif::OTP_CTRL_PARAM_NVM_DATA_KEY_SEED_SIZE,
     };
     pub const SRAM_DATA_KEY_SEED: OtpParamMmap = OtpParamMmap {
         byte_addr: dif::OTP_CTRL_PARAM_SRAM_DATA_KEY_SEED_OFFSET,
@@ -290,8 +290,8 @@ impl DaiParam {
             Self::EnCsrngSwAppRead => Self::EN_CSRNG_SW_APP_READ,
             Self::TestUnlockToken => Self::TEST_UNLOCK_TOKEN,
             Self::TestExitToken => Self::TEST_EXIT_TOKEN,
-            Self::FlashAddrKeySeed => Self::FLASH_ADDR_KEY_SEED,
-            Self::FlashDataKeySeed => Self::FLASH_DATA_KEY_SEED,
+            Self::NvmAddrKeySeed => Self::NVM_ADDR_KEY_SEED,
+            Self::NvmDataKeySeed => Self::NVM_DATA_KEY_SEED,
             Self::SramDataKeySeed => Self::SRAM_DATA_KEY_SEED,
             Self::RmaToken => Self::RMA_TOKEN,
             Self::CreatorRootKeyShare0 => Self::CREATOR_ROOT_KEY_SHARE0,
@@ -310,8 +310,8 @@ impl DaiParam {
             Self::EnCsrngSwAppRead => Partition::HW_CFG0,
             Self::TestUnlockToken => Partition::SECRET0,
             Self::TestExitToken => Partition::SECRET0,
-            Self::FlashAddrKeySeed => Partition::SECRET1,
-            Self::FlashDataKeySeed => Partition::SECRET1,
+            Self::NvmAddrKeySeed => Partition::SECRET1,
+            Self::NvmDataKeySeed => Partition::SECRET1,
             Self::SramDataKeySeed => Partition::SECRET1,
             Self::RmaToken => Partition::SECRET2,
             Self::CreatorRootKeyShare0 => Partition::SECRET2,

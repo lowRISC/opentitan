@@ -110,9 +110,9 @@ It creates the following analysis ports to retrieve the data monitored by corres
 * otbn_fifo: otbn request
 * lc_prog_fifo: life cycle programming request
 * lc_token_fifo: life cycle token request
-% if enable_flash_key:
-* flash_addr_fifo: flash address request
-* flash_data_fifo: flash data request
+% if enable_nvm_key:
+* nvm_addr_fifo: nvm address request
+* nvm_data_fifo: nvm data request
 % endif
 * edn_fifo: edn response to OTP_CTRL
 

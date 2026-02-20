@@ -401,7 +401,7 @@ This means it is possible to capture multiple wakeup reasons.
 
 ### WAKE_INFO . ABORT
 The abort wakeup reason indicates that despite setting a WFI and providing a low power
-hint, an active flash / lifecycle / otp transaction was ongoing when the power controller
+hint, an active NVM / lifecycle / otp transaction was ongoing when the power controller
 attempted to initiate low power entry.
 
 The power manager detects this condition, halts low power entry and reports as a wakeup reason

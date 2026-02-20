@@ -70,11 +70,11 @@
             lock:  "True",
             items: [
                 {
-                    name:  "FLASH_ADDR_KEY_SEED",
+                    name:  "NVM_ADDR_KEY_SEED",
                     value: "<random>",
                 }
                 {
-                    name:  "FLASH_DATA_KEY_SEED",
+                    name:  "NVM_DATA_KEY_SEED",
                     value: "<random>",
                 }
                 {

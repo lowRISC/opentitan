@@ -22,9 +22,9 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
   localparam string SRAM_CTRL_RET_NONCE_PATH = {SRAM_CTRL_RET_HDL_PATH, ".nonce_i"};
   localparam string SRAM_CTRL_RET_KEY_PATH = {SRAM_CTRL_RET_HDL_PATH, ".key_i"};
 
-  localparam uint KeyWidthAddrBits = otp_ctrl_reg_pkg::FlashAddrKeySeedSize * 8;
+  localparam uint KeyWidthAddrBits = otp_ctrl_reg_pkg::NvmAddrKeySeedSize * 8;
   localparam uint KeyWidthAddrBytes = KeyWidthAddrBits / 8;
-  localparam uint KeyWidthDataBits = otp_ctrl_reg_pkg::FlashDataKeySeedSize * 8;
+  localparam uint KeyWidthDataBits = otp_ctrl_reg_pkg::NvmDataKeySeedSize * 8;
   localparam uint KeyWidthDataBytes = KeyWidthDataBits / 8;
   localparam uint KeyWidthSramBits = otp_ctrl_reg_pkg::SramDataKeySeedSize * 8;
   localparam uint KeyWidthSramBytes = KeyWidthSramBits / 8;
@@ -61,8 +61,8 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
   rand bit [31:0] bank1_page0_data[NUM_TEST_WORDS];
   rand bit [otp_ctrl_reg_pkg::CreatorRootKeyShare0Size*8-1:0] root_key0;
   rand bit [otp_ctrl_reg_pkg::CreatorRootKeyShare0Size*8-1:0] root_key1;
-  bit [FlashKeyWidth-1:0] flash_data_key;
-  bit [FlashKeyWidth-1:0] flash_addr_key;
+  bit [NvmKeyWidth-1:0] flash_data_key;
+  bit [NvmKeyWidth-1:0] flash_addr_key;
 
   bit write_scrambled;
   bit do_keymgr_check;

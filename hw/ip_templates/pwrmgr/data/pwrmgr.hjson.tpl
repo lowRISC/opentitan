@@ -193,9 +193,9 @@
       package: "lc_ctrl_pkg",
     },
 
-    { struct:  "pwr_flash",
+    { struct:  "pwr_nvm",
       type:    "uni",
-      name:    "pwr_flash",
+      name:    "pwr_nvm",
       act:     "rcv",
       package: "pwrmgr_pkg",
     },
@@ -770,7 +770,7 @@ desc = (usb_enabled_text if src == 'usb' else
           name: "ABORT",
           desc: '''
             The abort wakeup reason indicates that despite setting a WFI and providing a low power
-            hint, an active flash / lifecycle / otp transaction was ongoing when the power controller
+            hint, an active NVM / lifecycle / otp transaction was ongoing when the power controller
             attempted to initiate low power entry.
 
             The power manager detects this condition, halts low power entry and reports as a wakeup reason

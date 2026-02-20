@@ -30,7 +30,7 @@ interface lc_ctrl_fsm_cov_if
       bins CntProgSt = {CntProgSt};
       bins TransCheckSt = {TransCheckSt};
       bins TokenHashSt = {TokenHashSt};
-      bins FlashRmaSt = {FlashRmaSt};
+      bins NvmRmaSt = {NvmRmaSt};
       bins TokenCheck0St = {TokenCheck0St};
       bins TokenCheck1St = {TokenCheck1St};
       bins TransProgSt = {TransProgSt};
@@ -47,12 +47,12 @@ interface lc_ctrl_fsm_cov_if
         (CntIncrSt => PostTransSt, CntProgSt),
         (CntProgSt => PostTransSt, TransCheckSt),
         (TransCheckSt => PostTransSt, TokenHashSt),
-        (TokenHashSt => PostTransSt, FlashRmaSt),
-        (FlashRmaSt => TokenCheck0St),
+        (TokenHashSt => PostTransSt, NvmRmaSt),
+        (NvmRmaSt => TokenCheck0St),
         (TokenCheck0St, TokenCheck1St => PostTransSt, TokenCheck1St),
         (TransProgSt => PostTransSt),
         (IdleSt, ClkMuxSt, CntIncrSt, CntProgSt, TransCheckSt,
-          TokenHashSt, FlashRmaSt, TokenCheck0St, TokenCheck1St,
+          TokenHashSt, NvmRmaSt, TokenCheck0St, TokenCheck1St,
           TransProgSt, PostTransSt, InvalidSt => EscalateSt);
 
     }
@@ -95,7 +95,7 @@ interface lc_ctrl_fsm_cov_if
   covergroup sec_token_mux_idx_error_cg @(token_mux_idx_error_cov_ev);
     coverpoint fsm_state_q {
       bins fsm_states [] = {ClkMuxSt, CntIncrSt, CntProgSt, TransCheckSt,
-          FlashRmaSt, TokenHashSt, TokenCheck0St, TokenCheck1St};
+          NvmRmaSt, TokenHashSt, TokenCheck0St, TokenCheck1St};
     }
   endgroup
 
