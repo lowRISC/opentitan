@@ -99,7 +99,7 @@ _static_critical_size = 8168;
 /**
  * `.chip_info` at the top of each ROM.
  */
-_chip_info_size = 128;
+_chip_info_size = 64;
 % for m in top["module"]:
   % if "memory" in m:
     % for key, mem in m["memory"].items():

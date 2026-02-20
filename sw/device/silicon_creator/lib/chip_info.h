@@ -31,11 +31,6 @@ typedef struct chip_info {
   chip_info_scm_revision_t scm_revision;
   /**
    * Chip info format version.
-   *
-   * The chip info struct is placed at the end of the ROM. Placing this field at
-   * the end of the struct places the version word at the last addressable ROM
-   * address, which gives later boot stages a fixed address to look for this
-   * field. See `sw/device/silicon_creator/rom/rom.ld` for details.
    */
   uint32_t version;
 } chip_info_t;
@@ -51,7 +46,9 @@ enum {
 };
 
 /**
- * Extern declaration for the `kChipInfo` instance placed at the end of ROM.
+ * Extern declaration for the `kChipInfo` instance placed at the end of ROM,
+ * which gives later boot stages a fixed address to look for this field. See
+ * `sw/device/silicon_creator/rom/rom.ld` for details.
  *
  * The actual definition is in an auto-generated file.
  */
