@@ -5,6 +5,11 @@
 class chip_sw_base_vseq extends chip_base_vseq;
   `uvm_object_utils(chip_sw_base_vseq)
 
+  // Track if the spi_agent has been configured to drive the ROM bootstrap procedure in
+  // spi_agent_drive_bootstrap(). Once configured, we should not attempt to re-apply the
+  // config options as the routine is not idempotent.
+  bit spi_agent_is_configured = 1'b0;
+
   // Default only iterate through SW code once.
   constraint num_trans_c {
     num_trans == 1;
@@ -522,8 +527,13 @@ class chip_sw_base_vseq extends chip_base_vseq;
     cfg.m_spi_host_agent_cfg.max_idle_ns_after_csb_drop = 200;
 
     `uvm_info(`gfn, "Configuring SPI flash commands.", UVM_LOW)
-    // Configure the spi_agent for flash mode and add command info.
-    spi_agent_configure_flash_cmds(cfg.m_spi_host_agent_cfg);
+
+    // Configuring the agent flash_cmds is not idempotent, so just do it once if bootstrapping
+    // multiple times.
+    if (!spi_agent_is_configured) begin
+      spi_agent_configure_flash_cmds(cfg.m_spi_host_agent_cfg);
+      spi_agent_is_configured = 1'b1;
+    end
 
     `uvm_info(`gfn, "Wait for SPI flash commands to be ready.", UVM_LOW)
     // Wait for the commands to be ready
@@ -587,6 +597,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
     int mem_fd = $fopen(sw_image, "r");
     bit [63:0] word_data[4];
     string addr;
+
+    if (!mem_fd) `uvm_fatal(`gfn, $sformatf("Could not open sw_image: %0s", sw_image))
 
     while (!$feof(mem_fd)) begin
       num_returns = $fscanf(mem_fd, "%s %h %h %h %h", addr, word_data[0], word_data[1],
