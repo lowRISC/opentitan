@@ -19,11 +19,11 @@ void coverage_transport_init(void) {
 
 void coverage_report(void) {
   if (coverage_is_valid()) {
-    dbg_puts("== COVERAGE PROFILE START ==\r\n");
+    dbg_puts("\x10== COVERAGE PROFILE START ==\r\n");
     coverage_printer_run();
-    dbg_puts("== COVERAGE PROFILE END ==\r\n");
+    dbg_puts("\x10== COVERAGE PROFILE END ==\r\n");
   } else {
-    dbg_puts("== COVERAGE PROFILE INVALID ==\r\n");
+    dbg_puts("\x10== COVERAGE PROFILE INVALID ==\r\n");
   }
 
   // Wait until the report is sent.
