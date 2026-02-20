@@ -20,6 +20,7 @@ mldsa87_unit_tests = [
     "mldsa87_poly_mul_test",
     "mldsa87_poly_add_test",
     "mldsa87_poly_sub_test",
+    "mldsa87_poly_mul_add_test",
 ]
 
 [
