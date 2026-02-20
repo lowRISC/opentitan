@@ -88,7 +88,9 @@ proc generate_mmi {filename mem_infos designtask_count} {
                 puts $fileout "    <MemoryLayout Name=\"$id\" CoreMemory_Width=\"$width\" MemoryType=\"RAM_SP\">"
             }
 
-            foreach inst [lsort -dictionary $brams] {
+	    # updatemem fills memory in the order of the bit slices, instead of
+	    # respecting indices. List the MSB slices first.
+            foreach inst [lsort -decreasing -dictionary $brams] {
                 set loc [get_property LOC [get_cells $inst]]
                 set loc_matches [regexp $mem_type_regex $loc loc_match loc_prefix loc_suffix]
                 if {$loc_matches == 0} {
@@ -163,7 +165,7 @@ proc dump_init_strings {filename brams designtask_count} {
     set filepath "${workroot}/${filename}"
     set fileout [open $filepath "w"]
 
-    foreach inst [lsort -dictionary $brams] {
+    foreach inst [lsort -decreasing -dictionary $brams] {
         set bram [get_cells $inst]
 
         set loc [get_property LOC $bram]
@@ -209,30 +211,11 @@ set gen_mem_info {{brams mem_type_regex fake_word_width addr_end_multiplier sche
   return [dict set mem_info schema $schema]
 }}
 
-# The scrambled Boot ROM is actually 39 bits wide, but we need to pretend that
-# it's 40 bits, or else we will be unable to encode our ROM data in a MEM file
-# that updatemem will understand.
-#
-# Suppose we did not pad the width, leaving it at 39 bits. Now, if we encode a
-# word as a 10-digit hex string, updatemem would splice an additional zero bit
-# into the bitstream because each hex digit is strictly 4 bits. If we wrote four
-# words at a time, as a 39-digit hex string (39*4 is nicely divisible by 4),
-# updatemem would fail to parse the hex string, saying something like "Data
-# segment starting at 0x00000000, has exceeded data limits." The longest hex
-# string it will accept is 16 digits, or 64 bits.
-#
-# A hack that works is to pretend the data width is actually 40 bits. Updatemem
-# seems to write that extra zero bit into the ether without complaint.
 set rom_brams [split [get_cells -hierarchical -filter " PRIMITIVE_TYPE =~ ${bram_regex} && NAME =~ *u_rom_ctrl*"] " "]
-dict set memInfo rom [apply $gen_mem_info $rom_brams $mem_type_regex 40 1 "Processor"]
+dict set memInfo rom [apply $gen_mem_info $rom_brams $mem_type_regex 0 1 "MemoryArray"]
 
-# OTP does not require faking the word width, but it has its own quirk. It seems
-# each 22-bit OTP word is followed by 15 zero words. The MMI's <AddressSpace>
-# and <AddressRange> tags need to account for this or else updatemem will think
-# that its data input overruns the address space. The workaround is to pretend
-# the address space is 16 times larger than we would normally compute.
 set otp_brams [split [get_cells -hierarchical -filter " PRIMITIVE_TYPE =~ ${bram_regex} && NAME =~ *u_otp_macro*"] " "]
-dict set memInfo otp [apply $gen_mem_info $otp_brams $mem_type_regex 0 16 "Processor"]
+dict set memInfo otp [apply $gen_mem_info $otp_brams $mem_type_regex 0 1 "MemoryArray"]
 
 # The flash banks have 76-bit wide words. 64 bits are data, and 12 bits are metadata / integrity.
 for {set bank 0} {$bank < 2} {incr bank} {

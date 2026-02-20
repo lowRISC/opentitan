@@ -88,7 +88,9 @@ proc generate_mmi {filename mem_infos designtask_count} {
                 puts $fileout "    <MemoryLayout Name=\"$id\" CoreMemory_Width=\"$width\" MemoryType=\"RAM_SP\">"
             }
 
-            foreach inst [lsort -dictionary $brams] {
+	    # updatemem fills memory in the order of the bit slices, instead of
+	    # respecting indices. List the MSB slices first.
+            foreach inst [lsort -decreasing -dictionary $brams] {
                 set loc [get_property LOC [get_cells $inst]]
                 set loc_matches [regexp $mem_type_regex $loc loc_match loc_prefix loc_suffix]
                 if {$loc_matches == 0} {
@@ -163,7 +165,7 @@ proc dump_init_strings {filename brams designtask_count} {
     set filepath "${workroot}/${filename}"
     set fileout [open $filepath "w"]
 
-    foreach inst [lsort -dictionary $brams] {
+    foreach inst [lsort -decreasing -dictionary $brams] {
         set bram [get_cells $inst]
 
         set loc [get_property LOC $bram]
