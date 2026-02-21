@@ -15,22 +15,32 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 typedef struct rescue_mode_properties {
+  // The FourCC of the mode we want to set.
+  // When pairing modes, the UpLoad mode must be the `mode` and the DnLoad mode
+  // must be the `paired` mode.  This is because the validate_mode function
+  // only examines the `mode` for staging the upload data.
   uint32_t mode;
-  bool dnload;
-  bool upload;
+  // Non-zero if there is a paired mode.
+  uint32_t paired;
+  // Whether the mode support DFU DnLoad or UpLoad or both.
+  // Element 0 describes the Up- or Dn-Load status of the mode.
+  // Element 1 describes whether the "paired" mode supports Up- or Dn-Load.
+  //           E.g. OwnerPage0 is paired with OwnerBlock.
+  uint8_t allow[2];
 } rescue_mode_properties_t;
 
+// clang-format off
 static const rescue_mode_properties_t mode_by_altsetting[] = {
-    {kRescueModeFirmware, true, false},
-    {kRescueModeFirmwareSlotB, true, false},
-    {kRescueModeOpenTitanID, false, true},
-    {kRescueModeBootLog, false, true},
-    {kRescueModeBootSvcRsp, true, true},
-    {kRescueModeOwnerPage0, true, true},
-    //{ kRescueModeOwnerPage1, false, true },
+    {kRescueModeFirmware,      0,                     { kDfuAllowDnLoad, 0 }},
+    {kRescueModeFirmwareSlotB, 0,                     { kDfuAllowDnLoad, 0 }},
+    {kRescueModeOpenTitanID,   0,                     { kDfuAllowUpLoad, 0 }},
+    {kRescueModeBootLog,       0,                     { kDfuAllowUpLoad, 0 }},
+    {kRescueModeBootSvcRsp,    kRescueModeBootSvcReq, { kDfuAllowUpLoad, kDfuAllowDnLoad }},
+    {kRescueModeOwnerPage0,    kRescueModeOwnerBlock, { kDfuAllowUpLoad, kDfuAllowDnLoad }},
 };
+// clang-format on
 
-static rom_error_t validate_mode(uint32_t setting, rescue_state_t *state) {
+static rom_error_t validate_mode(uint32_t setting, dfu_ctx_t *ctx) {
   // Allow the `setting` to be either an index or a FourCC code.
   // The the integer value is less than the arraysize, then its clearly an
   // index.
@@ -56,38 +66,37 @@ static rom_error_t validate_mode(uint32_t setting, rescue_state_t *state) {
   // same target, we handle the "send" services first to stage data into the
   // rescue buffer.
   const rescue_mode_properties_t *mode = &mode_by_altsetting[setting];
-  rom_error_t error2 = kErrorOk;
-  rom_error_t error = rescue_validate_mode(mode->mode, state);
+  rom_error_t error = rescue_validate_mode(mode->mode, &ctx->state);
 
-  // If the service exclusively supports either upload or download operation,
-  // report bad mode immediately if a prior error occurred.
-  if (!(mode->upload && mode->dnload)) {
-    if (error != kErrorOk) {
-      return kErrorRescueBadMode;
+  uint8_t allow = 0;
+  if (error == kErrorOk) {
+    allow = mode->allow[0];
+    if (allow & kDfuAllowUpLoad) {
+      // DFU upload means send to the host.  We stage the data that would
+      // be sent to the rescue buffer.
+      rescue_send_handler(&ctx->state);
     }
   }
 
-  if (error == kErrorOk && mode->upload) {
-    // DFU upload means send to the host.  We stage the data that would
-    // be sent to the rescue buffer.
-    rescue_send_handler(state);
-  }
   // BootSvc and OwnerPage are also recv (from the host) services.  Make sure
   // we're set up to process a DFU download for those services.
-  if (mode->mode == kRescueModeBootSvcRsp) {
-    error2 = rescue_validate_mode(kRescueModeBootSvcReq, state);
-  } else if (mode->mode == kRescueModeOwnerPage0) {
-    error2 = rescue_validate_mode(kRescueModeOwnerBlock, state);
+  if (mode->paired) {
+    rom_error_t error2 = rescue_validate_mode(mode->paired, &ctx->state);
+    if (error2 == kErrorOk) {
+      allow |= mode->allow[1];
+    }
   }
 
-  if (error == kErrorOk || error2 == kErrorOk) {
-    // If either the send or recv mode is ok, then setting the mode is ok.
-    // If only one is Ok, the send or recv handler will report the error when we
-    // try an unauthorized operation.
-    return kErrorOk;
-  }
+  // If either the send or recv mode is ok, then setting the mode is ok.
+  // If only one is Ok, the send or recv handler will report the error when we
+  // try an unauthorized operation.
   // If neither is Ok, the report bad mode.
-  return kErrorRescueBadMode;
+  if (allow) {
+    ctx->allow = allow;
+    return kErrorOk;
+  } else {
+    return kErrorRescueBadMode;
+  }
 }
 
 static rom_error_t dfu_control(dfu_ctx_t *ctx, usb_setup_data_t *setup) {
@@ -125,8 +134,8 @@ static rom_error_t dfu_control(dfu_ctx_t *ctx, usb_setup_data_t *setup) {
       ctx->dfu_state = tr->next[setup->length == 0 ? 0 : 1];
       // Length is good and the request is either upload/download.
       if (setup->length <= sizeof(ctx->state.data) &&
-          (setup->request == kDfuReqDnLoad ||
-           setup->request == kDfuReqUpLoad)) {
+          ((setup->request == kDfuReqDnLoad && ctx->allow & kDfuAllowDnLoad) ||
+           (setup->request == kDfuReqUpLoad && ctx->allow & kDfuAllowUpLoad))) {
         if (setup->request == kDfuReqDnLoad) {
           if (setup->length == 0 ||
               ctx->state.offset < ctx->state.flash_limit) {
@@ -193,7 +202,7 @@ static rom_error_t vendor_request(dfu_ctx_t *ctx, usb_setup_data_t *setup) {
     // FourCC from the value and index fields.
     case kDfuVendorSetMode: {
       uint32_t mode = ((uint32_t)setup->value << 16) | setup->index;
-      if (validate_mode(mode, &ctx->state) == kErrorOk) {
+      if (validate_mode(mode, ctx) == kErrorOk) {
         dfu_transport_data(ctx, kUsbDirIn, NULL, 0, 0);
       } else {
         return kErrorUsbBadSetup;
@@ -208,7 +217,7 @@ static rom_error_t vendor_request(dfu_ctx_t *ctx, usb_setup_data_t *setup) {
 static rom_error_t interface_request(dfu_ctx_t *ctx, usb_setup_data_t *setup) {
   switch (setup->request) {
     case kUsbSetupReqSetInterface:
-      if (validate_mode(setup->value, &ctx->state) == kErrorOk) {
+      if (validate_mode(setup->value, ctx) == kErrorOk) {
         // A typical OS USB stack will issue SET_INTERFACE to activate
         // AltSetting 0.  Since this probably is not real user activity,
         // we won't cancel the inactivity deadline for this action when it
@@ -237,7 +246,7 @@ static rom_error_t set_configuration(dfu_ctx_t *ctx) {
   ctx->dfu_error = kDfuErrOk;
   ctx->dfu_state = kDfuStateIdle;
   ctx->interface = 0;
-  validate_mode(ctx->interface, &ctx->state);
+  validate_mode(ctx->interface, ctx);
   ctx->ep0.configuration = ctx->ep0.next.configuration;
   return kErrorOk;
 }

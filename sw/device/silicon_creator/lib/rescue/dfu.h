@@ -81,6 +81,11 @@ typedef enum dfu_action_t {
   kDfuActionReset,
 } dfu_action_t;
 
+typedef enum dfu_allow {
+  kDfuAllowDnLoad = 1,
+  kDfuAllowUpLoad = 2,
+} dfu_allow_t;
+
 /**
  * A DFU state transition.
  *
@@ -141,6 +146,8 @@ typedef struct dfu_ctx {
   uint8_t dfu_error;
   /** Currenty selected usb interface setting. */
   uint8_t interface;
+  /** A `dfu_allow_t` describing whether dnload or upload are allowed. */
+  uint8_t allow;
 } dfu_ctx_t;
 
 /**
