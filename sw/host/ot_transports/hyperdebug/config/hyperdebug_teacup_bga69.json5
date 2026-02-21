@@ -1,0 +1,271 @@
+{
+  "includes": [
+      "/__builtin__/opentitan.json"
+  ],
+  "interface": "teacup-bga69",
+  "pins": [
+  // BGA69 Starts here.
+  {
+      "name": "RESET",
+      "mode": "OpenDrain",
+      "level": true,
+      "pull_mode": "PullUp",
+      "alias_of": "CN10_29"
+    },
+    {
+      "name": "DFT_STRAP0",
+      "mode": "Alternate",
+      "alias_of": "IOR5"
+    },
+    {
+      "name": "DFT_STRAP1",
+      "mode": "Alternate",
+      "alias_of": "IOR7"
+    },
+    {
+      "name": "SPI2_CS",
+      "alias_of": "CN9_25"
+    },
+    {
+      "name": "SPI2_SCK",
+      "alias_of": "CN9_27"
+    },
+    {
+      "name": "SPI2_MOSI",
+      "alias_of": "CN9_8"
+    },
+    {
+      "name": "SPI2_MISO",
+      "alias_of": "CN9_10"
+    },
+    {
+      "name": "PMOD1_2",
+      "alias_of": "IOA4"
+    },
+    {
+      "name": "IOR3",
+      "alias_of": "CN7_1"
+    },
+    {
+      "name": "IOR4",
+      "alias_of": "CN9_1"
+    },
+    {
+      "name": "IOR14",
+      "alias_of": "CN10_1"
+    },
+    {
+      "name": "IOR15",
+      "alias_of": "CN10_3"
+    },
+    {
+      "name": "IOR2",
+      "alias_of": "CN10_4"
+    },
+    {
+      "name": "IOC1",
+      "alias_of": "CN7_5"
+    },
+    {
+      "name": "IOC2",
+      "alias_of": "CN8_16"
+    },
+    {
+      "name": "IOR0",
+      "alias_of": "CN7_7"
+    },
+    {
+      "name": "IOC10",
+      "alias_of": "CN10_34"
+    },
+    {
+      "name": "IOA8",
+      "alias_of": "CN7_2"
+    },
+    {
+      "name": "IOA7",
+      "alias_of": "CN7_4"
+    },
+    {
+      "name": "IOR1",
+      "alias_of": "CN7_16"
+    },
+    {
+      "name": "IOB2",
+      "alias_of": "CN7_18"
+    },
+    {
+      "name": "IOB0",
+      "alias_of": "CN7_20"
+    },
+    {
+      "name": "IOB7",
+      "alias_of": "CN8_4"
+    },
+    {
+      "name": "IOA0",
+      "alias_of": "CN8_6"
+    },
+    {
+      "name": "IOA1",
+      "alias_of": "CN8_8"
+    },
+    {
+      "name": "IOA5",
+      "alias_of": "CN8_10"
+    },
+    {
+      "name": "IOA4",
+      "alias_of": "CN8_12"
+    },
+    {
+      "name": "IOC5",
+      "alias_of": "CN8_14"
+    },
+    {
+      "name": "IOB6",
+      "alias_of": "CN9_2"
+    },
+    {
+      "name": "IOB9",
+      "alias_of": "CN9_9"
+    },
+    {
+      "name": "IOB10",
+      "alias_of": "CN9_11"
+    },
+    {
+      "name": "IOC6",
+      "alias_of": "CN9_13"
+    },
+    {
+      "name": "IOA2",
+      "alias_of": "CN9_15"
+    },
+    {
+      "name": "IOC0",
+      "alias_of": "CN9_17"
+    },
+    {
+      "name": "IOB12",
+      "alias_of": "CN9_19"
+    },
+    {
+      "name": "IOB11",
+      "alias_of": "CN9_21"
+    },
+    {
+      "name": "IOC4",
+      "alias_of": "CN9_4"
+    },
+    {
+      "name": "IOC3",
+      "alias_of": "CN9_6"
+    },
+    {
+      "name": "IOR5",
+      "alias_of": "CN9_14"
+    },
+    {
+      "name": "IOR6",
+      "alias_of": "CN9_16"
+    },
+    {
+      "name": "IOR7",
+      "alias_of": "CN9_18"
+    },
+    {
+      "name": "IOR8",
+      "alias_of": "CN9_20"
+    },
+    {
+      "name": "IOR9",
+      "alias_of": "CN9_22"
+    },
+    {
+      "name": "IOR10",
+      "alias_of": "CN9_24"
+    },
+    {
+      "name": "IOR11",
+      "alias_of": "CN9_26"
+    },
+    {
+      "name": "IOR12",
+      "alias_of": "CN10_15"
+    },
+    {
+      "name": "IOR13",
+      "alias_of": "CN9_30"
+    },
+    {
+      "name": "IOC8",
+      "alias_of": "CN10_7"
+    },
+    {
+      "name": "IOB1",
+      "alias_of": "CN10_31"
+    },
+    {
+      "name": "IOA3",
+      "alias_of": "CN10_33"
+    },
+    {
+      "name": "IOA6",
+      "alias_of": "CN10_2"
+    },
+    {
+      "name": "IOC12",
+      "alias_of": "CN7_3"
+    },
+    {
+      "name": "IOB4",
+      "alias_of": "CN10_14"
+    },
+    {
+      "name": "IOB5",
+      "alias_of": "CN10_16"
+    },
+    {
+      "name": "IOB8",
+      "alias_of": "CN10_18"
+    },
+    {
+      "name": "CC2",
+      "alias_of": "CN7_9"
+    },
+    {
+      "name": "CC1",
+      "alias_of": "CN7_10"
+    }
+  ],
+  "spi": [
+    {
+      "name": "BOOTSTRAP",
+      "alias_of": "SPI2"
+    }
+  ],
+  "i2c": [
+    {
+      "name": "DEBUG",
+      "alias_of": "I2C2"
+    },
+    {
+      "name": "SMBUS",
+      "alias_of": "I2C3"
+    }
+  ],
+  "uarts": [
+    {
+      "name": "console",
+      "baudrate": 115200,
+      "parity": "None",
+      "stopbits": "Stop1",
+      "alias_of": "UART2"
+    }
+  ],
+  "provides": {
+    "chip": "opentitan",
+    "testbed_type": "gsc_nt_shield_v2"
+  }
+}
