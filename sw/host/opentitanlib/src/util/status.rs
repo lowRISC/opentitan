@@ -124,12 +124,10 @@ mod test {
         const ARG: i32 = 42;
         let mod_id_bytes = MOD_ID.as_bytes();
         assert_eq!(mod_id_bytes.len(), 3);
-        // Unfortunately the input to status_create assumes that the module ID value
-        // is already shifted and we cannot extract the MAKE_MODULE_ID macro from the
-        // headers using bindgen.
+        // The following reimplement the MAKE_MODULE_ID macro in rust.
         let mod_id_val = ((mod_id_bytes[0].to_ascii_uppercase() as u32) << 16)
-            | ((mod_id_bytes[1].to_ascii_uppercase() as u32) << 21)
-            | ((mod_id_bytes[2].to_ascii_uppercase() as u32) << 26);
+            | ((mod_id_bytes[1].to_ascii_uppercase() as u32) << 8)
+            | (mod_id_bytes[2].to_ascii_uppercase() as u32);
         let raw_status = status_create_safe(CODE, mod_id_val, "".to_string(), ARG);
 
         // Now decode status.

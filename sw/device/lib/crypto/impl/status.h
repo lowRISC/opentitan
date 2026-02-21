@@ -28,22 +28,27 @@ extern "C" {
 #define OTCRYPTO_OK ((status_t){.value = kHardenedBoolTrue})
 #ifdef OTCRYPTO_STATUS_DEBUG
 
-#define OTCRYPTO_RECOV_ERR                                \
-  ((status_t){.value = (int32_t)(0x80000000 | MODULE_ID | \
+#define OTCRYPTO_RECOV_ERR                                                  \
+  ((status_t){.value = (int32_t)(0x80000000 |                               \
+                                 status_encode_module_id(MODULE_ID) << 16 | \
                                  ((__LINE__ & 0x7ff) << 5) | kAborted)})
-#define OTCRYPTO_FATAL_ERR                           \
-  ((status_t){.value =                               \
-                  (int32_t)(0x80000000 | MODULE_ID | \
+#define OTCRYPTO_FATAL_ERR                                             \
+  ((status_t){.value =                                                 \
+                  (int32_t)(0x80000000 |                               \
+                            status_encode_module_id(MODULE_ID) << 16 | \
                             ((__LINE__ & 0x7ff) << 5) | kFailedPrecondition)})
-#define OTCRYPTO_BAD_ARGS                            \
-  ((status_t){.value =                               \
-                  (int32_t)(0x80000000 | MODULE_ID | \
+#define OTCRYPTO_BAD_ARGS                                              \
+  ((status_t){.value =                                                 \
+                  (int32_t)(0x80000000 |                               \
+                            status_encode_module_id(MODULE_ID) << 16 | \
                             ((__LINE__ & 0x7ff) << 5) | kInvalidArgument)})
-#define OTCRYPTO_ASYNC_INCOMPLETE                         \
-  ((status_t){.value = (int32_t)(0x80000000 | MODULE_ID | \
+#define OTCRYPTO_ASYNC_INCOMPLETE                                           \
+  ((status_t){.value = (int32_t)(0x80000000 |                               \
+                                 status_encode_module_id(MODULE_ID) << 16 | \
                                  ((__LINE__ & 0x7ff) << 5) | kUnavailable)})
-#define OTCRYPTO_NOT_IMPLEMENTED                          \
-  ((status_t){.value = (int32_t)(0x80000000 | MODULE_ID | \
+#define OTCRYPTO_NOT_IMPLEMENTED                                            \
+  ((status_t){.value = (int32_t)(0x80000000 |                               \
+                                 status_encode_module_id(MODULE_ID) << 16 | \
                                  ((__LINE__ & 0x7ff) << 5) | kUnimplemented)})
 #else
 
