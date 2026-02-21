@@ -537,6 +537,33 @@ opentitan_test(
     for protocol, config in _CONFIGS.items()
 ]
 
+[
+    opentitan_test(
+        name = "rescue_get_owner_page_{}".format(protocol),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        },
+        fpga = fpga_params(
+            assemble = "{romext}@{romext_offset} {firmware}@{owner_offset}",
+            binaries = {
+                config["rom_ext"]: "romext",
+                "//sw/device/silicon_creator/rom_ext/e2e/attestation:print_certs": "firmware",
+            },
+            owner_offset = "0x10000",
+            params = config["params"],
+            romext_offset = "0",
+            test_cmd = """
+            --clear-bitstream
+            --bootstrap={firmware}
+            rescue {params} --action=get-owner-page
+            """,
+            test_harness = "//sw/host/tests/rescue:rescue_test",
+        ),
+    )
+    for protocol, config in _CONFIGS.items()
+]
+
 opentitan_test(
     name = "rescue_disability_xmodem",
     exec_env = {

@@ -12,7 +12,7 @@ use sphincsplus::{DecodeKey, SpxPublicKey};
 
 use super::Error;
 
-#[derive(Debug, Deserialize, Annotate)]
+#[derive(Debug, Deserialize, Annotate, PartialEq)]
 pub struct SpxRawPublicKey {
     #[serde(with = "serde_bytes")]
     #[annotate(format = hexstr)]
