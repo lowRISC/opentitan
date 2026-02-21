@@ -16,6 +16,7 @@ dual_cc_library(
         host = ["mock_boot_svc_header.h"],
         shared = ["boot_svc_header.h"],
     ),
+    visibility = ["//visibility:public"],
     deps = dual_inputs(
         host = [
             "//sw/device/lib/base:global_mock",

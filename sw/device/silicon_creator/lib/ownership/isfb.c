@@ -185,3 +185,5 @@ rom_error_t isfb_info_flash_erase_policy_get(
 
   return kErrorOk;
 }
+
+extern uint32_t isfb_expected_count_get(const manifest_ext_isfb_t *ext);
