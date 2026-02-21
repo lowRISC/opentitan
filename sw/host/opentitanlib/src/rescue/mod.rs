@@ -4,6 +4,7 @@
 
 use anyhow::{Result, ensure};
 use clap::{Args, ValueEnum};
+use std::time::Duration;
 use thiserror::Error;
 
 use crate::app::TransportWrapper;
@@ -69,6 +70,8 @@ pub struct RescueParams {
     pub uart: UartParams,
     #[arg(long)]
     pub usb_serial: Option<String>,
+    #[arg(long, value_parser = humantime::parse_duration, default_value = "5s")]
+    pub enter_delay: Duration,
 }
 
 impl RescueParams {

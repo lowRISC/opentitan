@@ -33,6 +33,9 @@ SLOTS = [
     "virtual",
 ]
 
+# Rescue timeout delay in seconds for USBDFU.
+USBDFU_RESCUE_TIMEOUT_SECS = 20
+
 TEST_OWNER_CONFIGS = {
     "boot_svc_after_wakeup": {
         "owner_defines": ["TEST_OWNER_BOOT_SVC_AFTER_WAKEUP=kHardenedBoolTrue"],
@@ -109,8 +112,8 @@ TEST_OWNER_CONFIGS = {
             "WITH_RESCUE_TRIGGER=2",
             # Strapping value of 3.
             "WITH_RESCUE_INDEX=3",
-            # Timeout: 0x80=enter_on_fail, 0x05 = 5 seconds.
-            "WITH_RESCUE_TIMEOUT=0x85",
+            # Timeout: 0x80=enter_on_fail, 0x7f=timeout mask in seconds.
+            "WITH_RESCUE_TIMEOUT={}".format(0x80 + USBDFU_RESCUE_TIMEOUT_SECS),
         ],
         "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_usbdfu"],
     },

@@ -16,7 +16,6 @@ pub struct UsbDfu {
     interface: Cell<u8>,
     params: RescueParams,
     reset_delay: Duration,
-    enter_delay: Duration,
 }
 
 impl UsbDfu {
@@ -29,7 +28,6 @@ impl UsbDfu {
             interface: Cell::default(),
             params,
             reset_delay: Duration::from_millis(50),
-            enter_delay: Duration::from_secs(5),
         }
     }
 
@@ -59,7 +57,7 @@ impl Rescue for UsbDfu {
             Self::SUBCLASS,
             Self::PROTOCOL,
             self.params.usb_serial.as_deref(),
-            self.enter_delay,
+            self.params.enter_delay,
         );
         log::info!("Rescue triggered; clearing trigger condition.");
         self.params.set_trigger(transport, false)?;
