@@ -19,6 +19,8 @@ package(default_visibility = ["//visibility:public"])
             "//sw/device/silicon_creator/rom_ext/imm_section:main_binaries_{}_slot_{}".format(variation, slot),
         ],
         main = "env_independent_test.py",
+        # The imm_section varies in coverage mode because of the build ID.
+        tags = ["coverage_broken"],
     )
     for slot in SLOTS
     for variation in ROM_EXT_VARIATIONS.keys()

@@ -56,3 +56,16 @@ runs:
         report_paths: ${{ inputs.merged-results }}
         annotate_only: true
         detailed_summary: true
+
+    - name: Collect coverage reports
+      id: collect_coverage
+      shell: bash
+      run: ci/scripts/collect-coverage-report.sh /tmp/coverage_report
+
+    - name: Upload coverage report
+      if: steps.collect_coverage.outputs.coverageReport == 'ok'
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}-coverage
+        path: /tmp/coverage_report
+        overwrite: true

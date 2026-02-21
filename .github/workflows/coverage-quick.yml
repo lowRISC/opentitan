@@ -1,0 +1,94 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: Coverage (quick)
+on:
+  workflow_call:
+
+jobs:
+  otbn_crypto_tests:
+    name: OTBN Crypto Tests
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Bitstream cache requires all commits.
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+        with:
+          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
+      - name: Execute tests
+        run: |
+          ./bazelisk.sh coverage --config=ot_coverage --test_tag_filters=-nightly \
+            //sw/otbn/crypto/...
+      - name: Publish Bazel test results
+        uses: ./.github/actions/publish-bazel-test-results
+        if: ${{ !cancelled() }}
+        with:
+          artifact-name: otbn-test-results
+
+  sw_build_test:
+    name: Unit Tests
+    runs-on: ubuntu-22.04-vivado
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required for bitstream cache to work.
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+        with:
+          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
+      - name: Check Bazel build graph
+        run: |
+          # Test the graph with both an empty and filled bitstream cache.
+          ./ci/scripts/test-empty-bitstream-cache.sh
+          ./bazelisk.sh build --nobuild //...
+      - name: Select software targets
+        run: |
+          target_pattern_file="$(mktemp)"
+          echo "target_pattern_file=${target_pattern_file}" >> "$GITHUB_ENV"
+
+          # Start with building the whole graph.
+          echo '//sw/...' > "$target_pattern_file"
+          # Exclude some targets:
+          #
+          # 1. `//hw/...` is out of scope.
+          # 2. `//quality/...` is tested by the lint jobs.
+          # 3. `//sw/otbn/crypto/...` is tested by the OTBN job.
+          # 4. `//third_party/...` which is not our code.
+          # 5. `//sw/host/...` FIXME: rust coverage are broken on CI.
+          printf "%s\n"             \
+            "-//hw/..."             \
+            "-//quality/..."        \
+            "-//sw/otbn/crypto/..." \
+            "-//third_party/..."    \
+            "-//sw/host/..."    \
+            >> "$target_pattern_file"
+          # Exclude anything that requires a bitstream splice.
+          ./bazelisk.sh cquery                               \
+            --noinclude_aspects                              \
+            --output=starlark                                \
+            --starlark:expr='"-{}".format(target.label)'     \
+            --define DISABLE_VERILATOR_BUILD=true            \
+            -- "rdeps(//..., kind(bitstream_splice, //...))" \
+            >> "$target_pattern_file"
+      - name: Run software unit tests coverage
+        run: |
+          ./bazelisk.sh coverage                             \
+            --build_tests_only                               \
+            --keep_going                                     \
+            --config=ot_coverage                             \
+            --test_output=errors                             \
+            --define DISABLE_VERILATOR_BUILD=true            \
+            --target_pattern_file="$target_pattern_file"     \
+            --test_tag_filters=-broken,-coverage_broken,-cw310,-verilator,-dv,-silicon,-qemu
+      - name: Publish Bazel test results
+        uses: ./.github/actions/publish-bazel-test-results
+        if: ${{ !cancelled() }}
+        with:
+          artifact-name: sw_build_test-test-results
+      - name: Check for unrunnable tests
+        run: ./ci/scripts/check-unrunnable-tests.sh
+        continue-on-error: true

@@ -1,0 +1,64 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: Publish Coverage Report
+on:
+  workflow_call:
+    inputs:
+      branch:
+        required: false
+        type: string
+        default: 'earlgrey_1.0.0'
+      bucket:
+        description: 'GCS bucket to upload the report'
+        required: false
+        type: string
+        default: 'sw-coverage'
+      report-artifact-name:
+        description: 'Name of the artifact containing the coverage report'
+        required: false
+        type: string
+        default: 'coverage-report'
+
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish_coverage_report:
+    name: Publish Coverage Report
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+        with:
+          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
+      - name: Download coverage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "*-coverage"
+          path: /tmp/job_reports
+      - name: Merge Coverage Report
+        shell: bash
+        run: |
+          ci/scripts/merge-coverage-report.sh /tmp/job_reports /tmp/report
+      - name: Upload report as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.report-artifact-name }}
+          path: /tmp/report
+          overwrite: true
+      - name: Upload report to Google Cloud
+        if: ${{ github.event_name != 'pull_request' && inputs.bucket != '' }}
+        shell: bash
+        run: |
+          BUCKET="${{ inputs.bucket }}"
+          JOB="${{ github.job }}"
+          BRANCH="${{ inputs.branch }}"
+          OUTPUT="job/$JOB/branch/$BRANCH/$(date +%Y-%m-%d-%H%M%S)_coverage_report"
+          URL="https://storage.googleapis.com/$BUCKET/$OUTPUT/html_report/index-sort-l.html"
+          gcloud storage cp -r /tmp/report "gs://$BUCKET/$OUTPUT"
+          echo "Coverage report at $URL" > "$GITHUB_STEP_SUMMARY"

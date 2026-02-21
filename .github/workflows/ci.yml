@@ -765,3 +765,19 @@ jobs:
         with:
           name: qemu-override-build-logs
           path: qemu/build/*.log
+
+  coverage_quick:
+    name: Coverage (quick)
+    needs: quick_lint
+    uses: ./.github/workflows/coverage-quick.yml
+    secrets: inherit
+
+  publish_coverage_report:
+    name: Publish Coverage Report
+    needs:
+      - coverage_quick
+    if: success() || failure()
+    uses: ./.github/workflows/publish-coverage-report.yml
+    secrets: inherit
+    with:
+      branch: ${{ inputs.branch || 'earlgrey_1.0.0' }}
