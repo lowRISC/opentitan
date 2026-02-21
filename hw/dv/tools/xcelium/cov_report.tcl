@@ -56,5 +56,8 @@ report_metrics \
   -allAssertionCounters \
   -all
 
+# Generate the CSV report for functional coverage.
+csv_export -bins -overwrite -out $cov_report_dir/cov_report_bins.csv
+
 # rank the test runs
-rank -runfile $cov_merge_db_dir/runs.txt -html -out $cov_report_dir/grading
+rank -runfile $cov_merge_db_dir/runs.txt -html -overwrite -out $cov_report_dir/grading
