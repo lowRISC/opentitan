@@ -274,10 +274,18 @@ cc_library(
 
 cc_test(
     name = "dbg_print_unittest",
-    srcs = ["dbg_print_unittest.cc"],
+    srcs = [
+        "dbg_print.c",
+        "dbg_print.h",
+        "dbg_print_unittest.cc",
+    ],
+    local_defines = ["DBG_PRINT_UNIT_TEST_"],
     deps = [
-        ":dbg_print",
+        ":epmp_defs",
         ":error",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib/drivers:uart",
         "@googletest//:gtest_main",
     ],

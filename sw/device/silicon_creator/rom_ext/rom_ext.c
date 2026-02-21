@@ -52,7 +52,9 @@
 #include "sw/device/silicon_creator/rom_ext/imm_section/imm_section_version.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy_ptrs.h"
+#include "sw/device/silicon_creator/rom_ext/rom_ext_boot_services.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_manifest.h"
+#include "sw/device/silicon_creator/rom_ext/rom_ext_verify.h"
 
 #include "hw/top/flash_ctrl_regs.h"                   // Generated.
 #include "hw/top/otp_ctrl_regs.h"                     // Generated.
@@ -202,92 +204,6 @@ void rom_ext_sram_exec(owner_sram_exec_mode_t mode) {
                        0);
       break;
   }
-}
-
-OT_WARN_UNUSED_RESULT
-static rom_error_t rom_ext_verify(const manifest_t *manifest,
-                                  const boot_data_t *boot_data,
-                                  uint32_t *flash_exec) {
-  RETURN_IF_ERROR(rom_ext_boot_policy_manifest_check(manifest, boot_data));
-
-  uint32_t key_id =
-      sigverify_ecdsa_p256_key_id_get(&manifest->ecdsa_public_key);
-  // Check if there is an SPX+ key.
-  const manifest_ext_spx_key_t *ext_spx_key;
-  const manifest_ext_spx_signature_t *ext_spx_signature;
-  rom_error_t spx_err = manifest_ext_get_spx_key(manifest, &ext_spx_key);
-  spx_err += manifest_ext_get_spx_signature(manifest, &ext_spx_signature);
-  switch ((uint32_t)spx_err) {
-    case kErrorOk * 2:
-      // Both extensions present: valid SPX+ signature.
-      key_id ^= sigverify_spx_key_id_get(&ext_spx_key->key);
-      break;
-    case kErrorManifestBadExtension * 2:
-      // Both extensions absent: ECDSA only.
-      break;
-    default:
-      // One present, one absent: bad configuration.
-      return kErrorManifestBadExtension;
-  }
-
-  RETURN_IF_ERROR(owner_keyring_find_key(&keyring, key_id, &verify_key));
-  uint32_t key_alg = keyring.key[verify_key]->key_alg;
-
-  dbg_printf("verify: key=%u;%C;%C\r\n", verify_key, key_alg,
-             keyring.key[verify_key]->key_domain);
-
-  memset(boot_measurements.bl0.data, (int)rnd_uint32(),
-         sizeof(boot_measurements.bl0.data));
-
-  hmac_sha256_init();
-  // Hash usage constraints.
-  manifest_usage_constraints_t usage_constraints_from_hw;
-  sigverify_usage_constraints_get(manifest->usage_constraints.selector_bits |
-                                      keyring.key[verify_key]->usage_constraint,
-                                  &usage_constraints_from_hw);
-  hmac_sha256_update(&usage_constraints_from_hw,
-                     sizeof(usage_constraints_from_hw));
-  // Hash the remaining part of the image.
-  manifest_digest_region_t digest_region = manifest_digest_region_get(manifest);
-  hmac_sha256_update(digest_region.start, digest_region.length);
-  // TODO(#19596): add owner configuration block to measurement.
-  // Verify signature
-  hmac_sha256_process();
-  hmac_digest_t act_digest;
-  hmac_sha256_final(&act_digest);
-
-  static_assert(sizeof(boot_measurements.bl0) == sizeof(act_digest),
-                "Unexpected BL0 digest size.");
-  memcpy(&boot_measurements.bl0, &act_digest, sizeof(boot_measurements.bl0));
-
-  RETURN_IF_ERROR(owner_verify(
-      key_alg, &keyring.key[verify_key]->data, &manifest->ecdsa_signature,
-      &ext_spx_signature->signature, &usage_constraints_from_hw,
-      sizeof(usage_constraints_from_hw), NULL, 0, digest_region.start,
-      digest_region.length, &act_digest, flash_exec));
-
-  // Perform ISFB checks if the extension is present.
-  if ((hardened_bool_t)owner_config.isfb != kHardenedBoolFalse) {
-    const manifest_ext_isfb_t *ext_isfb;
-    rom_error_t error = manifest_ext_get_isfb(manifest, &ext_isfb);
-    if (error == kErrorOk) {
-      isfb_check_count = kHardenedBoolFalse;
-      RETURN_IF_ERROR(isfb_boot_request_process(ext_isfb, &owner_config,
-                                                &isfb_check_count));
-      // The previous function returns `kErrorOwnershipISFBFailed` if the strike
-      // check or product expression check fails. The following check is to
-      // detect any faults.
-      HARDENED_CHECK_EQ(isfb_check_count, isfb_expected_count_get(ext_isfb));
-    } else {
-      HARDENED_CHECK_NE(error, kErrorOk);
-    }
-  }
-
-  // This is given that we are expected to perform redundant checks on
-  // `flash_exec` and `isfb_check_count`. This is also the reason why don't use
-  // `HARDENED_RETURN_IF_ERROR` in the `owner_verify` and `isfb_boot_request`
-  // calls.
-  return kErrorOk;
 }
 
 /**
@@ -476,159 +392,6 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
 }
 
 OT_WARN_UNUSED_RESULT
-static rom_error_t boot_svc_next_boot_bl0_slot_handler(
-    boot_svc_msg_t *boot_svc_msg, boot_data_t *boot_data,
-    boot_log_t *boot_log) {
-  uint32_t active_slot = boot_data->primary_bl0_slot;
-  uint32_t primary_slot = boot_svc_msg->next_boot_bl0_slot_req.primary_bl0_slot;
-  rom_error_t error = kErrorOk;
-
-  // If the requested primary slot is the same as the active slot, this request
-  // is a no-op.
-  if (active_slot != primary_slot) {
-    switch (primary_slot) {
-      case kBootSlotA:
-      case kBootSlotB:
-        boot_data->primary_bl0_slot = primary_slot;
-        // Write boot data, updating relevant fields and recomputing the digest.
-        HARDENED_RETURN_IF_ERROR(boot_data_write(boot_data));
-        // Read the boot data back to ensure the correct slot is booted this
-        // time.
-        HARDENED_RETURN_IF_ERROR(boot_data_read(lc_state, boot_data));
-        // Update the boot log.
-        boot_log->primary_bl0_slot = boot_data->primary_bl0_slot;
-        break;
-      case kBootSlotUnspecified:
-        // Do nothing.
-        break;
-      default:
-        error = kErrorBootSvcBadSlot;
-    }
-  }
-
-  // Record the new primary slot for use in the response message.
-  active_slot = boot_data->primary_bl0_slot;
-
-  uint32_t next_slot = boot_svc_msg->next_boot_bl0_slot_req.next_bl0_slot;
-  switch (launder32(next_slot)) {
-    case kBootSlotA:
-    case kBootSlotB:
-      // We overwrite the RAM copy of the primary slot to the requested next
-      // slot. This will cause a one-time boot of the requested side.
-      boot_data->primary_bl0_slot = next_slot;
-      break;
-    case kBootSlotUnspecified:
-      // Do nothing.
-      break;
-    default:
-      error = kErrorBootSvcBadSlot;
-  }
-
-  boot_svc_next_boot_bl0_slot_res_init(error, active_slot,
-                                       &boot_svc_msg->next_boot_bl0_slot_res);
-  // We always return OK here because we've logged any error status in the boot
-  // services response message and we want the boot flow to continue.
-  return kErrorOk;
-}
-
-OT_WARN_UNUSED_RESULT
-static rom_error_t boot_svc_min_sec_ver_handler(boot_svc_msg_t *boot_svc_msg,
-                                                boot_data_t *boot_data) {
-  const uint32_t current_min_sec_ver = boot_data->min_security_version_bl0;
-  const uint32_t requested_min_sec_ver =
-      boot_svc_msg->next_boot_bl0_slot_req.next_bl0_slot;
-
-  // Ensure the requested minimum security version isn't lower than the current
-  // minimum security version.
-  if (launder32(requested_min_sec_ver) > current_min_sec_ver) {
-    HARDENED_CHECK_GT(requested_min_sec_ver, current_min_sec_ver);
-    uint32_t max_sec_ver = current_min_sec_ver;
-
-    // Check the two flash slots for valid manifests and determine the maximum
-    // value of the new minimum_security_version.  This prevents a malicious
-    // MinBl0SecVer request from making the chip un-bootable.
-    const manifest_t *manifest = rom_ext_boot_policy_manifest_a_get();
-    uint32_t flash_exec = 0;
-    rom_error_t error = rom_ext_verify(manifest, boot_data, &flash_exec);
-    if (error == kErrorOk && manifest->security_version > max_sec_ver) {
-      max_sec_ver = manifest->security_version;
-    }
-    manifest = rom_ext_boot_policy_manifest_b_get();
-    error = rom_ext_verify(manifest, boot_data, &flash_exec);
-    if (error == kErrorOk && manifest->security_version > max_sec_ver) {
-      max_sec_ver = manifest->security_version;
-    }
-
-    if (requested_min_sec_ver <= max_sec_ver) {
-      HARDENED_CHECK_LE(requested_min_sec_ver, max_sec_ver);
-      // Update boot data to the requested minimum BL0 security version.
-      boot_data->min_security_version_bl0 = requested_min_sec_ver;
-
-      // Write boot data, updating relevant fields and recomputing the digest.
-      HARDENED_RETURN_IF_ERROR(boot_data_write(boot_data));
-      // Read the boot data back to ensure the correct policy is used this boot.
-      HARDENED_RETURN_IF_ERROR(boot_data_read(lc_state, boot_data));
-
-      boot_svc_min_bl0_sec_ver_res_init(boot_data->min_security_version_bl0,
-                                        kErrorOk,
-                                        &boot_svc_msg->min_bl0_sec_ver_res);
-
-      HARDENED_CHECK_EQ(requested_min_sec_ver,
-                        boot_data->min_security_version_bl0);
-      return kErrorOk;
-    }
-  }
-  boot_svc_min_bl0_sec_ver_res_init(current_min_sec_ver, kErrorBootSvcBadSecVer,
-                                    &boot_svc_msg->min_bl0_sec_ver_res);
-  return kErrorOk;
-}
-
-OT_WARN_UNUSED_RESULT
-static rom_error_t handle_boot_svc(boot_data_t *boot_data,
-                                   boot_log_t *boot_log) {
-  boot_svc_msg_t *boot_svc_msg = &retention_sram_get()->creator.boot_svc_msg;
-  // TODO(lowRISC#22387): Examine the boot_svc code paths for boot loops.
-  if (boot_svc_msg->header.identifier == kBootSvcIdentifier) {
-    HARDENED_RETURN_IF_ERROR(boot_svc_header_check(&boot_svc_msg->header));
-    uint32_t msg_type = boot_svc_msg->header.type;
-    switch (launder32(msg_type)) {
-      case kBootSvcEmptyReqType:
-        HARDENED_CHECK_EQ(msg_type, kBootSvcEmptyReqType);
-        boot_svc_empty_res_init(&boot_svc_msg->empty);
-        break;
-      case kBootSvcEnterRescueReqType:
-        HARDENED_CHECK_EQ(msg_type, kBootSvcEnterRescueReqType);
-        return rescue_enter_handler(boot_svc_msg);
-      case kBootSvcNextBl0SlotReqType:
-        HARDENED_CHECK_EQ(msg_type, kBootSvcNextBl0SlotReqType);
-        return boot_svc_next_boot_bl0_slot_handler(boot_svc_msg, boot_data,
-                                                   boot_log);
-      case kBootSvcMinBl0SecVerReqType:
-        HARDENED_CHECK_EQ(msg_type, kBootSvcMinBl0SecVerReqType);
-        return boot_svc_min_sec_ver_handler(boot_svc_msg, boot_data);
-      case kBootSvcOwnershipUnlockReqType:
-        HARDENED_CHECK_EQ(msg_type, kBootSvcOwnershipUnlockReqType);
-        return ownership_unlock_handler(boot_svc_msg, boot_data);
-      case kBootSvcOwnershipActivateReqType:
-        HARDENED_CHECK_EQ(msg_type, kBootSvcOwnershipActivateReqType);
-        return ownership_activate_handler(boot_svc_msg, boot_data);
-      case kBootSvcEmptyResType:
-      case kBootSvcEnterRescueResType:
-      case kBootSvcNextBl0SlotResType:
-      case kBootSvcMinBl0SecVerResType:
-      case kBootSvcOwnershipUnlockResType:
-      case kBootSvcOwnershipActivateResType:
-        // For response messages left in ret-ram we do nothing.
-        break;
-      default:
-          // For messages with an unknown msg_type, we do nothing.
-          ;
-    }
-  }
-  return kErrorOk;
-}
-
-OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
                                           boot_log_t *boot_log) {
   rom_ext_boot_policy_manifests_t manifests =
@@ -637,7 +400,9 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
   rom_error_t slot[2] = {0, 0};
   for (size_t i = 0; i < ARRAYSIZE(manifests.ordered); ++i) {
     uint32_t flash_exec = 0;
-    error = rom_ext_verify(manifests.ordered[i], boot_data, &flash_exec);
+    error =
+        rom_ext_verify(manifests.ordered[i], boot_data, &flash_exec, &keyring,
+                       &verify_key, &owner_config, &isfb_check_count);
     slot[i] = error;
     if (error != kErrorOk) {
       continue;
@@ -804,7 +569,10 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
 
   // We don't want to execute boot_svc requests if this is a low-power wakeup.
   if (waking_from_low_power != kHardenedBoolTrue) {
-    error = handle_boot_svc(boot_data, boot_log);
+    boot_svc_msg_t *boot_svc_msg = &retention_sram_get()->creator.boot_svc_msg;
+    error =
+        boot_svc_handler(boot_svc_msg, boot_data, boot_log, lc_state, &keyring,
+                         &verify_key, &owner_config, &isfb_check_count);
     if (error == kErrorWriteBootdataThenReboot) {
       // Boot services reports errors by writing a status code into the reply
       // messages.  Regardless of whether a boot service request produced an
