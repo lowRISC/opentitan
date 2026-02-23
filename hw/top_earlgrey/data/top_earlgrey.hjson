@@ -858,6 +858,7 @@
       clock_group: "trans",
       reset_connections: {rst_ni: "lc", rst_edn_ni: "lc"},
       param_decl: {
+        AESGCMEnable: "0",
         SecMasking: "1",
         SecSBoxImpl: "aes_pkg::SBoxImplDom"
       }

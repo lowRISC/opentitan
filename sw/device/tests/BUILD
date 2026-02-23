@@ -112,10 +112,6 @@ opentitan_test(
     srcs = ["aes_gcm_test.c"],
     exec_env = dicts.add(
         DARJEELING_TEST_ENVS,
-        {
-            "//hw/top_earlgrey:sim_verilator": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-        },
     ),
     verilator = verilator_params(
         timeout = "long",
