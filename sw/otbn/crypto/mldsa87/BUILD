@@ -19,3 +19,10 @@ otbn_library(
         "mldsa87_arith.s",
     ],
 )
+
+otbn_library(
+    name = "mldsa87_xof",
+    srcs = [
+        "mldsa87_xof.s",
+    ],
+)
