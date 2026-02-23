@@ -273,6 +273,10 @@ pub struct Transition {
     #[arg(long, default_value = "0x00000000000000000000000000000000")]
     pub token: String,
 
+    /// Whether to assert ROM RMA bootstrap strapping during the transition.
+    #[arg(long, default_value = "false")]
+    pub use_rma_bootstrap: bool,
+
     #[command(flatten)]
     pub jtag_params: JtagParams,
 }
@@ -293,14 +297,20 @@ impl CommandDispatch for Transition {
             .create(transport)?
             .connect(JtagTap::LcTap)?;
 
+        let strap_name = if self.use_rma_bootstrap {
+            "RMA_BOOTSTRAP"
+        } else {
+            "ROM_BOOTSTRAP"
+        };
+
         // In order to be on the safe side, we're asserting ROM bootstrap and
         // reset the chip to prevent ROM from going into a reset loop.
-        let rom_bootstrap = transport.pin_strapping("ROM_BOOTSTRAP")?;
+        let rom_bootstrap = transport.pin_strapping(strap_name)?;
+        log::info!("Asserting {} strapping during transition.", strap_name);
         rom_bootstrap.apply()?;
 
         // Reset the chip so that LC_CTRL is in a clean state.
         let _ = transport.reset_with_delay(UartRx::Keep, Duration::from_millis(50));
-        std::thread::sleep(Duration::from_millis(50));
 
         // Check whether this is a valid transition.
         let token = parse_token_str(self.token.as_str())?;
