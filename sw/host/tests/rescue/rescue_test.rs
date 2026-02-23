@@ -236,7 +236,11 @@ where
                 // The rescue operation result is checked for an error message containing "Vendor".
                 expect_err_from_rescue_result(result, "Vendor")
             } else {
-                let _ = UartConsole::wait_for(console, error, Duration::from_secs(1))?;
+                // The pattern may have multiple lines, so we need to wait for them one at a time.
+                for line in error.split("\r\n") {
+                    log::info!("wait for {line:?}");
+                    let _ = UartConsole::wait_for(console, line, Duration::from_secs(1))?;
+                }
                 Ok(())
             }
         }
@@ -257,7 +261,7 @@ fn get_expected_err_msg(command: CommandTag, params: &RescueParams) -> String {
     let command_string = String::from_utf8(command.0.to_be_bytes().to_vec()).unwrap_or_default();
     match params.protocol {
         RescueProtocol::Xmodem => format!(r"bad mode: mode: {}", &command_string),
-        _ => format!(r"mode: {}\r\nerror: mode not allowed", &command_string),
+        _ => format!("mode: {}\r\nerror: mode not allowed", &command_string),
     }
 }
 
