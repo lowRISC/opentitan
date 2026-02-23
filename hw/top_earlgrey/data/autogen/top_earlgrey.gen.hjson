@@ -7014,6 +7014,7 @@
       }
       param_decl:
       {
+        AESGCMEnable: "0"
         SecMasking: "1"
         SecSBoxImpl: aes_pkg::SBoxImplDom
       }
@@ -7038,9 +7039,9 @@
           name: AESGCMEnable
           desc: Disable (0) or enable (1) support for Galois/Counter Mode (GCM) in hardware.
           type: bit
-          default: 1'b1
+          default: "0"
           local: "false"
-          expose: "false"
+          expose: "true"
           name_top: AesAESGCMEnable
         }
         {

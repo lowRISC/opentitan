@@ -57,7 +57,7 @@
         Disable (0) or enable (1) support for Galois/Counter Mode (GCM) in hardware.
       '''
       local:   "false",
-      expose:  "false"
+      expose:  "true"
     },
     { name:    "SecMasking",
       type:    "bit",

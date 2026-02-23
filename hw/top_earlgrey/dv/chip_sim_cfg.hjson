@@ -1326,13 +1326,6 @@
       run_opts: ["+sw_test_timeout_ns=26_000_000", "+en_jitter=1"]
     }
     {
-      name: chip_sw_aes_gcm
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:aes_gcm_test:1:new_rules"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=22_000_000"]
-    }
-    {
       name: chip_sw_aes_idle
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:aes_idle_test:1:new_rules"]
