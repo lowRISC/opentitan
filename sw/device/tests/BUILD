@@ -122,7 +122,7 @@ opentitan_test(
     deps = [
         "//hw/ip/aes:model",
         "//hw/top:aes_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top/dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",
