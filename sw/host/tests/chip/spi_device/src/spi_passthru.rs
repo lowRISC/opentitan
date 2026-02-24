@@ -15,7 +15,7 @@ use opentitanlib::execute_test;
 use opentitanlib::io::eeprom::AddressMode;
 use opentitanlib::io::spi::{Target, Transfer};
 use opentitanlib::spiflash::sfdp::SectorErase;
-use opentitanlib::spiflash::{EraseMode, ReadMode, Sfdp, SpiFlash};
+use opentitanlib::spiflash::{EraseMode, FlashMode, Sfdp, SpiFlash};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::mem::MemWrite32Req;
 use opentitanlib::test_utils::spi_passthru::{
@@ -346,7 +346,7 @@ fn test_write_status(opts: &Opts, transport: &TransportWrapper, opcode: u8) -> R
 fn test_read_flash(
     opts: &Opts,
     transport: &TransportWrapper,
-    mode: ReadMode,
+    mode: FlashMode,
     read_pipeline_mode: ReadPipelineMode,
     pipeline_mode_addr: u32,
 ) -> Result<()> {
@@ -356,10 +356,10 @@ fn test_read_flash(
         read_pipeline_mode
     );
     let capability = match mode {
-        ReadMode::Standard => Ok(()),
-        ReadMode::Fast => Ok(()),
-        ReadMode::Dual => transport.capabilities()?.request(Capability::SPI_DUAL).ok(),
-        ReadMode::Quad => transport.capabilities()?.request(Capability::SPI_QUAD).ok(),
+        FlashMode::Standard => Ok(()),
+        FlashMode::Fast => Ok(()),
+        FlashMode::Dual => transport.capabilities()?.request(Capability::SPI_DUAL).ok(),
+        FlashMode::Quad => transport.capabilities()?.request(Capability::SPI_QUAD).ok(),
     };
     if capability.is_err() {
         log::warn!(
@@ -390,7 +390,7 @@ fn test_read_flash(
 
     let spi_flash = {
         let mut flash = SpiFlash::from_sfdp(sfdp);
-        flash.read_mode = mode;
+        flash.flash_mode = mode;
         flash
     };
 
@@ -511,7 +511,7 @@ fn main() -> Result<()> {
         test_read_flash,
         &opts,
         &transport,
-        ReadMode::Standard,
+        FlashMode::Standard,
         ReadPipelineMode::ZeroStages,
         *pipeline_mode_address
     );
@@ -519,7 +519,7 @@ fn main() -> Result<()> {
         test_read_flash,
         &opts,
         &transport,
-        ReadMode::Fast,
+        FlashMode::Fast,
         ReadPipelineMode::ZeroStages,
         *pipeline_mode_address
     );
@@ -527,7 +527,7 @@ fn main() -> Result<()> {
         test_read_flash,
         &opts,
         &transport,
-        ReadMode::Dual,
+        FlashMode::Dual,
         ReadPipelineMode::ZeroStages,
         *pipeline_mode_address
     );
@@ -535,7 +535,7 @@ fn main() -> Result<()> {
         test_read_flash,
         &opts,
         &transport,
-        ReadMode::Dual,
+        FlashMode::Dual,
         ReadPipelineMode::TwoStagesHalfCycle,
         *pipeline_mode_address
     );
@@ -543,7 +543,7 @@ fn main() -> Result<()> {
         test_read_flash,
         &opts,
         &transport,
-        ReadMode::Dual,
+        FlashMode::Dual,
         ReadPipelineMode::TwoStagesFullCycle,
         *pipeline_mode_address
     );
@@ -551,7 +551,7 @@ fn main() -> Result<()> {
         test_read_flash,
         &opts,
         &transport,
-        ReadMode::Quad,
+        FlashMode::Quad,
         ReadPipelineMode::ZeroStages,
         *pipeline_mode_address
     );
@@ -559,7 +559,7 @@ fn main() -> Result<()> {
         test_read_flash,
         &opts,
         &transport,
-        ReadMode::Quad,
+        FlashMode::Quad,
         ReadPipelineMode::TwoStagesHalfCycle,
         *pipeline_mode_address
     );
@@ -567,7 +567,7 @@ fn main() -> Result<()> {
         test_read_flash,
         &opts,
         &transport,
-        ReadMode::Quad,
+        FlashMode::Quad,
         ReadPipelineMode::TwoStagesFullCycle,
         *pipeline_mode_address
     );
