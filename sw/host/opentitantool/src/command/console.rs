@@ -14,7 +14,7 @@ use tokio::io::{AsyncRead, AsyncReadExt};
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
-use opentitanlib::io::console::Broadcaster;
+use opentitanlib::io::console::{Broadcaster, ConsoleExt};
 use opentitanlib::io::uart::{Uart, UartParams};
 use opentitanlib::transport::Capability;
 use opentitanlib::uart::console::{ExitStatus, UartConsole};
@@ -150,7 +150,7 @@ impl CommandDispatch for Console {
 
         let status = transport.relinquish_exclusive_access(|| {
             opentitanlib::util::runtime::block_on(async {
-                let uart_rx = Broadcaster::new(uart.clone());
+                let uart_rx = Broadcaster::new(uart.clone().coverage());
 
                 let tx = async {
                     if let Some(stdin) = stdin.as_mut() {
