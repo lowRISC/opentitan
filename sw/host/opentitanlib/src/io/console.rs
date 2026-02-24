@@ -39,25 +39,3 @@ pub trait ConsoleDevice {
     /// Writes data from `buf` to the UART.
     fn write(&self, buf: &[u8]) -> Result<()>;
 }
-
-impl<T: ConsoleDevice + ?Sized> ConsoleDevice for &T {
-    fn poll_read(&self, cx: &mut Context<'_>, buf: &mut [u8]) -> Poll<Result<usize>> {
-        T::poll_read(self, cx, buf)
-    }
-
-    /// Writes data from `buf` to the UART.
-    fn write(&self, buf: &[u8]) -> Result<()> {
-        T::write(self, buf)
-    }
-}
-
-impl<T: ConsoleDevice + ?Sized> ConsoleDevice for std::rc::Rc<T> {
-    fn poll_read(&self, cx: &mut Context<'_>, buf: &mut [u8]) -> Poll<Result<usize>> {
-        T::poll_read(self, cx, buf)
-    }
-
-    /// Writes data from `buf` to the UART.
-    fn write(&self, buf: &[u8]) -> Result<()> {
-        T::write(self, buf)
-    }
-}
