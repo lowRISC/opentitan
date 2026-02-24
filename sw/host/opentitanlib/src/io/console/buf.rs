@@ -8,7 +8,8 @@ use std::task::{Context, Poll, ready};
 use anyhow::Result;
 
 use super::ConsoleDevice;
-use crate::io::uart::{FlowControl, Parity, Uart};
+use crate::io::middleware::{ConsoleMiddleware, Middleware, UartMiddleware};
+use crate::io::uart::Uart;
 
 /// Console wrapper with receive buffer.
 pub struct Buffered<T> {
@@ -35,8 +36,15 @@ impl<T> Buffered<T> {
     }
 }
 
-impl<T: ConsoleDevice> ConsoleDevice for Buffered<T> {
-    fn poll_read(&self, cx: &mut Context<'_>, buf: &mut [u8]) -> Poll<Result<usize>> {
+impl<T: ConsoleDevice> Middleware for Buffered<T> {
+    type Inner = T;
+    fn inner(&self) -> &T {
+        &self.inner
+    }
+}
+
+impl<T: ConsoleDevice> ConsoleMiddleware for Buffered<T> {
+    fn poll_read_impl(&self, cx: &mut Context<'_>, buf: &mut [u8]) -> Poll<Result<usize>> {
         let mut buffer = self.buffer.lock().unwrap();
 
         loop {
@@ -56,51 +64,15 @@ impl<T: ConsoleDevice> ConsoleDevice for Buffered<T> {
             buffer.offset = 0;
         }
     }
-
-    fn write(&self, buf: &[u8]) -> Result<()> {
-        self.inner.write(buf)
-    }
 }
 
-impl<T: Uart> Uart for Buffered<T> {
-    fn get_baudrate(&self) -> Result<u32> {
-        self.inner.get_baudrate()
-    }
-
-    fn set_baudrate(&self, baudrate: u32) -> Result<()> {
-        self.inner.set_baudrate(baudrate)
-    }
-
-    fn get_flow_control(&self) -> Result<FlowControl> {
-        self.inner.get_flow_control()
-    }
-
-    fn set_flow_control(&self, flow_control: bool) -> Result<()> {
-        self.inner.set_flow_control(flow_control)
-    }
-
-    fn get_device_path(&self) -> Result<String> {
-        self.inner.get_device_path()
-    }
-
-    fn clear_rx_buffer(&self) -> Result<()> {
+impl<T: Uart> UartMiddleware for Buffered<T> {
+    fn clear_rx_buffer_impl(&self) -> Result<()> {
         let mut buffer = self.buffer.lock().unwrap();
         buffer.offset = 0;
         buffer.len = 0;
 
         self.inner.clear_rx_buffer()?;
         Ok(())
-    }
-
-    fn set_parity(&self, parity: Parity) -> Result<()> {
-        self.inner.set_parity(parity)
-    }
-
-    fn get_parity(&self) -> Result<Parity> {
-        self.inner.get_parity()
-    }
-
-    fn set_break(&self, enable: bool) -> Result<()> {
-        self.inner.set_break(enable)
     }
 }
