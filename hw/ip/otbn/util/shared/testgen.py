@@ -2,10 +2,40 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Dict, TextIO
+import argparse
+import json
+import random
+from typing import Callable, Dict, Optional, TextIO
 
 _GPR_NAMES = [f'x{i}' for i in range(32)]
 _WDR_NAMES = [f'w{i}' for i in range(32)]
+
+
+def itoa_dmem(value: bytes) -> str:
+    ''' Convert an integer (in the form of a bytearray) to a DMEM hexstring for
+        usage in HJSON testcase files. '''
+    s = ''
+    for b in value:
+        s = f'{int(b):02x}' + s
+    return '0x' + s
+
+
+def itoa_gpr(value: bytes) -> str:
+    ''' Convert an integer (in the form of a bytearray) to a GPR hexstring for
+        usage in Exp or HJSON testcase files.. '''
+    if len(value) > 8:
+        raise ValueError(f'Expected value is too large: {value}')
+    v = int.from_bytes(value, byteorder='little')
+    return f'{v:#010x}'
+
+
+def itoa_wdr(value: bytes) -> str:
+    ''' Convert an integer (in the form of a bytearray) to a WDR hexstring for
+        usage in Exp or HJSON testcase files.. '''
+    if len(value) > 32:
+        raise ValueError(f'Expected value is too large: {value}')
+    v = int.from_bytes(value, byteorder='little')
+    return f'{v:#066x}'
 
 
 def write_test_data(inputs: Dict[str, bytes], data_file: TextIO) -> None:
@@ -32,14 +62,33 @@ def write_test_data(inputs: Dict[str, bytes], data_file: TextIO) -> None:
 def write_test_exp(exp: Dict[str, bytes], exp_file: TextIO) -> None:
     '''Write the expected-values file for the test.'''
     for name in exp:
-        value = int.from_bytes(exp[name], byteorder='little')
         if name in _GPR_NAMES or name == 'ERR_BITS':
-            if len(exp[name]) > 8:
-                raise ValueError(f'Expected value for {name} is too large: {value}')
-            exp_file.write(f'{name} = {value:#010x}\n')
+            exp_file.write(f'{name} = {itoa_gpr(exp[name])}\n')
         elif name in _WDR_NAMES:
-            if len(exp[name]) > 32:
-                raise ValueError(f'Expected value for {name} is too large: {value}')
-            exp_file.write(f'{name} = {value:#066x}\n')
+            exp_file.write(f'{name} = {itoa_wdr(exp[name])}\n')
         else:
             raise ValueError(f'Register name {name} not recognized.')
+
+
+def testcase(gen: Callable[[Optional[int]], Dict]) -> None:
+    '''Generic entry point for the creation of arbitrary autogen testcases.
+       Parses the command line arguments and invokes the provided callback
+       function that generates the HJSON dictionary.'''
+    def generate():
+        parser = argparse.ArgumentParser()
+        parser.add_argument('-s', '--seed',
+                            type=int,
+                            required=False,
+                            help=('Seed value for pseudorandomness.'))
+        parser.add_argument('hjson',
+                            metavar='FILE',
+                            type=argparse.FileType('w'),
+                            help=('Testcase HJSON file.'))
+        args = parser.parse_args()
+
+        if args.seed is not None:
+            random.seed(args.seed)
+
+        json.dump(gen(), args.hjson)
+
+    return generate
