@@ -264,6 +264,7 @@ cc_library(
     ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":integrity",
         ":status",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",

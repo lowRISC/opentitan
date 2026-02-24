@@ -4,7 +4,6 @@
 
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/include/drbg.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/runtime/log.h"
