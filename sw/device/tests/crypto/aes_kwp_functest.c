@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
+#include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/include/key_transport.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -87,7 +88,8 @@ static status_t wrap_unwrap_random_test(void) {
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
   };
-  otcrypto_const_byte_buf_t personalization = {.data = NULL, .len = 0};
+  otcrypto_const_byte_buf_t personalization =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
   TRY(otcrypto_symmetric_keygen(personalization, &kmac_key));
 
   // Generate a random AES-KWP key.

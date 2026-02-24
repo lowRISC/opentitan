@@ -61,6 +61,7 @@ cc_library(
     srcs = ["drbg.c"],
     hdrs = ["//sw/device/lib/crypto/include:drbg.h"],
     deps = [
+        ":integrity",
         ":status",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:math",

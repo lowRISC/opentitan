@@ -157,17 +157,13 @@ status_t cryptolib_sca_drbg_generate_impl(
   uint8_t nonce_buf[nonce_len];
   memcpy(nonce_buf, nonce, nonce_len);
 
-  otcrypto_const_byte_buf_t nonce_in = {
-      .len = nonce_len,
-      .data = nonce_buf,
-  };
+  otcrypto_const_byte_buf_t nonce_in =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, nonce_buf, nonce_len);
 
   // Buffer for the output entropy data.
   uint32_t output_data[data_out_len];
-  otcrypto_word32_buf_t output = {
-      .data = output_data,
-      .len = ARRAYSIZE(output_data),
-  };
+  otcrypto_word32_buf_t output = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, output_data, ARRAYSIZE(output_data));
 
   // Trigger window 0.
   if (trigger & kPentestTrigger2) {
@@ -195,10 +191,8 @@ status_t cryptolib_sca_drbg_reseed_impl(
   uint8_t entropy_buf[entropy_len];
   memcpy(entropy_buf, entropy, entropy_len);
 
-  otcrypto_const_byte_buf_t entropy_in = {
-      .len = entropy_len,
-      .data = entropy_buf,
-  };
+  otcrypto_const_byte_buf_t entropy_in =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, entropy_buf, entropy_len);
 
   // Trigger window 0.
   if (trigger & kPentestTrigger1) {

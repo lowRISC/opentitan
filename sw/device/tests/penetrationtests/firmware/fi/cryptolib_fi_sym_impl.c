@@ -154,17 +154,13 @@ status_t cryptolib_fi_drbg_generate_impl(
   uint8_t nonce_buf[uj_input.nonce_len];
   memcpy(nonce_buf, uj_input.nonce, uj_input.nonce_len);
 
-  otcrypto_const_byte_buf_t nonce = {
-      .len = uj_input.nonce_len,
-      .data = nonce_buf,
-  };
+  otcrypto_const_byte_buf_t nonce = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, nonce_buf, uj_input.nonce_len);
 
   // Buffer for the output entropy data.
   uint32_t output_data[uj_input.data_len];
-  otcrypto_word32_buf_t output = {
-      .data = output_data,
-      .len = ARRAYSIZE(output_data),
-  };
+  otcrypto_word32_buf_t output = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, output_data, ARRAYSIZE(output_data));
 
   // Trigger window 0.
   if (uj_input.trigger & kPentestTrigger2) {
@@ -192,10 +188,8 @@ status_t cryptolib_fi_drbg_reseed_impl(
   uint8_t entropy_buf[uj_input.entropy_len];
   memcpy(entropy_buf, uj_input.entropy, uj_input.entropy_len);
 
-  otcrypto_const_byte_buf_t entropy = {
-      .len = uj_input.entropy_len,
-      .data = entropy_buf,
-  };
+  otcrypto_const_byte_buf_t entropy = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, entropy_buf, uj_input.entropy_len);
 
   // Trigger window 0.
   if (uj_input.trigger & kPentestTrigger1) {
