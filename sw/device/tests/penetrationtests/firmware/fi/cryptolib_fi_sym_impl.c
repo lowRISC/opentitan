@@ -374,17 +374,13 @@ status_t cryptolib_fi_hmac_impl(cryptolib_fi_sym_hmac_in_t uj_input,
   // Create input message.
   uint8_t msg_buf[uj_input.data_len];
   memcpy(msg_buf, uj_input.data, uj_input.data_len);
-  otcrypto_const_byte_buf_t input_message = {
-      .len = uj_input.data_len,
-      .data = msg_buf,
-  };
+  otcrypto_const_byte_buf_t input_message =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg_buf, uj_input.data_len);
 
   // Create tag.
   uint32_t tag_buf[kPentestHmacMaxTagWords];
-  otcrypto_word32_buf_t tag = {
-      .len = tag_bytes / sizeof(uint32_t),
-      .data = tag_buf,
-  };
+  otcrypto_word32_buf_t tag = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, tag_buf, sizeof(tag_buf) / sizeof(uint32_t));
 
   // Trigger window.
   PENTEST_MARKER_LABEL(PENTEST_MARKER_HMAC_START);

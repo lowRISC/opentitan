@@ -82,10 +82,8 @@ static status_t run_test(const uint32_t *key, size_t key_len,
   blinded_key.checksum = integrity_blinded_checksum(&blinded_key);
 
   uint32_t act_tag[kTagLenWords];
-  otcrypto_word32_buf_t tag_buf = {
-      .data = act_tag,
-      .len = ARRAYSIZE(act_tag),
-  };
+  otcrypto_word32_buf_t tag_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, act_tag, ARRAYSIZE(act_tag));
 
   TRY(otcrypto_hmac(&blinded_key, msg, tag_buf));
   TRY_CHECK_ARRAYS_EQ(act_tag, exp_tag, kTagLenWords);
@@ -101,10 +99,9 @@ static status_t run_test(const uint32_t *key, size_t key_len,
  */
 static status_t simple_test(void) {
   const char plaintext[] = "Test message.";
-  otcrypto_const_byte_buf_t msg_buf = {
-      .data = (unsigned char *)plaintext,
-      .len = sizeof(plaintext) - 1,
-  };
+  otcrypto_const_byte_buf_t msg_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (unsigned char *)plaintext,
+                        sizeof(plaintext) - 1);
   const uint32_t exp_tag[] = {
       0x7b3674a5, 0x0c12844c, 0x2e3aef0b, 0xb875560c, 0x1ff2e06f, 0x2cc80c98,
       0x34b621fe, 0x2ad1d342, 0x7a37332d, 0x16d97164, 0x15b3b97e, 0x3b274355,
@@ -128,10 +125,8 @@ static status_t empty_test(void) {
       0x928b591a, 0x7037a726, 0xdf196d4a, 0x2d589cf7,
 
   };
-  otcrypto_const_byte_buf_t msg_buf = {
-      .data = NULL,
-      .len = 0,
-  };
+  otcrypto_const_byte_buf_t msg_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
   return run_test(kBasicTestKey, sizeof(kBasicTestKey), msg_buf, exp_tag);
 }
 
@@ -144,10 +139,9 @@ static status_t empty_test(void) {
  */
 static status_t long_key_test(void) {
   const char plaintext[] = "Test message.";
-  otcrypto_const_byte_buf_t msg_buf = {
-      .data = (unsigned char *)plaintext,
-      .len = sizeof(plaintext) - 1,
-  };
+  otcrypto_const_byte_buf_t msg_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (unsigned char *)plaintext,
+                        sizeof(plaintext) - 1);
   const uint32_t exp_tag[] = {
       0xe5c6186f, 0xdf98244d, 0xe0d63bd7, 0x5da8384b, 0xfcfc942c, 0x4ee5c72a,
       0x8458eba2, 0xb0ebe4a8, 0x4f95e0a5, 0xc2fdc57e, 0xae153c6b, 0x206670d8,
