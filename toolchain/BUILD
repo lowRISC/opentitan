@@ -332,6 +332,7 @@ cc_args(
         "-Wswitch-default",
         "-Wtype-limits",
         "-Wno-gnu-auto-type",
+        "-Wsign-conversion",
     ],
 )
 

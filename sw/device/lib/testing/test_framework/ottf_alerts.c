@@ -233,7 +233,7 @@ status_t ottf_alerts_expect_alert_finish(dif_alert_handler_alert_t alert) {
   }
 
   // Forget that the alert was caught.
-  alert_caught[alert_word_idx] &= ~(1 << alert_bit_idx);
+  alert_caught[alert_word_idx] &= ~(1u << alert_bit_idx);
 
   return OK_STATUS();
 }

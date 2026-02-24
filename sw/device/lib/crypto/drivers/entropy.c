@@ -716,7 +716,7 @@ static status_t entropy_src_configure(const entropy_src_config_t *config) {
       config->alert_threshold);
   reg = bitfield_field32_write(
       reg, ENTROPY_SRC_ALERT_THRESHOLD_ALERT_THRESHOLD_INV_FIELD,
-      ~config->alert_threshold);
+      ~(uint32_t)(config->alert_threshold));
   abs_mmio_write32(entropy_src_base() + ENTROPY_SRC_ALERT_THRESHOLD_REG_OFFSET,
                    reg);
 
