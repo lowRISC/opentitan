@@ -91,6 +91,7 @@ opentitan_test(
         exit_failure = MSG_STARTING_ROM_EXT,
         exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.STORE_ACCESS)),
         offset = SLOTS["b"],
+        tags = ["coverage_broken"],  # Different BFV due to instrumented code.
     ),
     qemu = qemu_params(
         assemble = "{firmware}@{offset}",
@@ -118,6 +119,7 @@ opentitan_test(
         exit_failure = MSG_STARTING_ROM_EXT,
         exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.STORE_ACCESS)),
         offset = SLOTS["a"],
+        tags = ["coverage_broken"],  # Different BFV due to instrumented code.
     ),
     qemu = qemu_params(
         assemble = "{firmware}@{offset}",

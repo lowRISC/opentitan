@@ -149,6 +149,7 @@ jobs:
       board: cw310
       interface: hyper310
       tag_filters: "hyper310_rom_ext,-coverage_broken"
+      timeout: 90
       mode: coverage
 
   # CW340 FPGA jobs
