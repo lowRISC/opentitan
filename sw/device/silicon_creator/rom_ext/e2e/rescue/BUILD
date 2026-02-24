@@ -382,6 +382,7 @@ opentitan_test(
             ":boot_test_slot_a": "payload",
         },
         rom_ext = "//sw/device/silicon_creator/rom_ext/e2e/rescue/testdata:rom_ext_rescue_protocol_0",
+        tags = ["coverage_broken"],  # FIXME: precompile unsupported.
         test_cmd = """
             --exec="bootstrap --clear-uart=true {rom_ext}"
             # First make sure the ROM_EXT is faulting because there is no firmware
