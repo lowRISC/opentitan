@@ -7,7 +7,7 @@ use std::task::{Context, Poll};
 
 use anyhow::Result;
 
-use crate::io::console::ConsoleDevice;
+use crate::io::console::{ConsoleDevice, CoverageConsole};
 use crate::io::uart::Uart;
 
 /// Base trait for middlewares that wrap an inner object.
@@ -28,6 +28,10 @@ where
     fn write_impl(&self, buf: &[u8]) -> Result<()> {
         self.inner().write(buf)
     }
+
+    fn as_coverage_console_impl(&self) -> Option<&dyn CoverageConsole> {
+        self.inner().as_coverage_console()
+    }
 }
 
 impl<T: ConsoleMiddleware> ConsoleDevice for T
@@ -40,6 +44,19 @@ where
 
     fn write(&self, buf: &[u8]) -> Result<()> {
         self.write_impl(buf)
+    }
+
+    fn as_coverage_console(&self) -> Option<&dyn CoverageConsole> {
+        self.as_coverage_console_impl()
+    }
+}
+
+impl<T: ConsoleMiddleware> CoverageConsole for T
+where
+    T::Inner: CoverageConsole + ConsoleDevice,
+{
+    fn coverage_blocks_processed(&self) -> usize {
+        self.inner().coverage_blocks_processed()
     }
 }
 

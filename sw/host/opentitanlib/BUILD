@@ -94,6 +94,8 @@ rust_library(
         "src/io/console.rs",
         "src/io/console/broadcast.rs",
         "src/io/console/buf.rs",
+        "src/io/console/coverage.rs",
+        "src/io/console/coverage_test.rs",
         "src/io/console/ext.rs",
         "src/io/console/logged.rs",
         "src/io/eeprom.rs",
