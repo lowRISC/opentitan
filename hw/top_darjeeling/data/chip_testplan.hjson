@@ -1543,6 +1543,38 @@
               "chip_sw_aes_enc_jitter_en"]
     }
     {
+      name: chip_sw_aes_gcm
+      desc: '''Verify the AES-GCM operation.
+
+            - Put the AES hardware IP block into the initialization phase of GCM.
+            - Write the initial key shares and the IV into CSRs (known combinations).
+            - Put the AES hardware IP block into the additional authenticated data (AAD) phase of
+              GCM.
+            - Write the first known AAD block into the input data CSRs.
+            - Write the second known AAD block into the input data CSRs.
+            - Put the AES hardware IP block into the encryption/decryption phase of GCM.
+            - Write the first known plaintext block into the input data CSRs.
+            - Retrieve the first ciphertext block from the output data CSRs.
+              - Repeat this procedure for three additional blocks.
+            - Check the retrieved ciphertext blocks against the expected ciphertext values.
+            - Put the AES hardware IP block into the tag phase of GCM.
+            - Write the AAD and plaintext lengths into the input data CSRs.
+            - Retrieve the generated authentication tag from the output data CSRs and compare it
+              against the expected tag.
+            - Repeat this whole procedure 3 more times but interrupt the processing at different
+              points in time by saving GHASH state, clearing state of the AES hardware IP block,
+              restoring the GHASH state and then resuming the processing.
+              - During the first repetition, the GHASH state is saved after the first AAD block.
+              - During the second repetition, the GASH state is saved after the first plaintext
+                block.
+              - During the last repetition, the GHASH state is saved after the first AAD block
+                and then again after the first plaintext block.
+            '''
+      stage: V2
+      tests: ["chip_sw_aes_enc",
+              "chip_sw_aes_enc_jitter_en"]
+    }
+    {
       name: chip_sw_aes_entropy
       desc: '''Verify the AES entropy input used by the internal PRNGs.
 
