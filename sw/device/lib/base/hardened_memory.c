@@ -153,7 +153,7 @@ hardened_bool_t consttime_memeq_byte(const void *lhs, const void *rhs,
 
     // Same as above. The compiler can cache the value of `a[offset]`, but it
     // has no chance to strength-reduce this operation.
-    ones = launder32(ones) & (launder32((uint32_t)*a) ^ ~*b);
+    ones = launder32(ones) & (launder32((uint32_t)*a) ^ ~(uint32_t)*b);
   }
 
   HARDENED_CHECK_EQ(count, len);
