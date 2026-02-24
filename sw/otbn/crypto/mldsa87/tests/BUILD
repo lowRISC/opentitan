@@ -2,7 +2,9 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:otbn.bzl", "otbn_library", "otbn_sim_test", "otbn_sim_test_suite")
+load("//rules:otbn.bzl", "otbn_autogen_sim_test", "otbn_library", "otbn_sim_test", "otbn_sim_test_suite", "otbn_sim_testgen")
+load("@rules_python//python:defs.bzl", "py_binary")
+load("@ot_python_deps//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -33,3 +35,29 @@ mldsa87_unit_tests = [
     )
     for test in mldsa87_unit_tests
 ]
+
+####################
+# Randomized tests #
+####################
+
+py_binary(
+    name = "mldsa87_ntt_testgen",
+    srcs = ["mldsa87_ntt_testgen.py"],
+    imports = [
+        "../../../../../hw/ip/otbn/util",
+    ],
+    deps = [
+        "//hw/ip/otbn/util/shared:testgen",
+    ],
+)
+
+otbn_sim_testgen(
+    name = "mldsa87_ntt_rand_test",
+    srcs = [
+        "mldsa87_ntt_test.s",
+        "//sw/otbn/crypto/mldsa87:mldsa87_ntt.s",
+    ],
+    number = 10,
+    testgen = ":mldsa87_ntt_testgen",
+    type = "testcase",
+)
