@@ -86,6 +86,7 @@ status_t handle_hmac(ujson_t *uj) {
   }
   otcrypto_const_word32_buf_t share0 = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, key_buf, ARRAYSIZE(key_buf));
+
   otcrypto_const_word32_buf_t share1 = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, kTestMask, ARRAYSIZE(key_buf));
   // Create blinded key

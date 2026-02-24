@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -29,7 +30,10 @@ static status_t run_hmac_test(void) {
                                        0x2322ae5d, 0xa36103b0, 0x9c7a1796,
                                        0x61ff10b4, 0xad1500f2};
 
-  TRY(hmac_hash_sha256(kMsg, sizeof(kMsg) - 1, digest));
+  otcrypto_const_byte_buf_t msg_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, kMsg, sizeof(kMsg) - 1);
+
+  TRY(hmac_hash_sha256(&msg_buf, digest));
 
   CHECK_ARRAYS_EQ(digest, kExpectedDigest, ARRAYSIZE(kExpectedDigest));
 
@@ -54,7 +58,11 @@ static status_t run_negative_test(void) {
   uint32_t cmd = bitfield_bit32_write(0, HMAC_CMD_HASH_START_BIT, 1);
   abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CMD_REG_OFFSET, cmd);
   uint32_t dummy_digest[8];
-  CHECK(hmac_hash_sha256(NULL, 0, dummy_digest).value ==
+  otcrypto_word32_buf_t digest_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, dummy_digest, ARRAYSIZE(dummy_digest));
+  otcrypto_const_byte_buf_t null_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
+  CHECK(hmac_hash_sha256(&null_buf, dummy_digest).value ==
         OTCRYPTO_RECOV_ERR.value);
   cmd = bitfield_bit32_write(0, HMAC_CMD_HASH_PROCESS_BIT, 1);
   abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CMD_REG_OFFSET, cmd);
@@ -72,11 +80,13 @@ static status_t run_negative_test(void) {
   hmac_ctx_t ctx;
   hmac_hash_sha256_init(&ctx);
   uint8_t dummy_msg[] = "A";
-  TRY(hmac_update(&ctx, dummy_msg, 1));
+  otcrypto_const_byte_buf_t dummy_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, dummy_msg, 1);
+  TRY(hmac_update(&ctx, &dummy_buf));
   // Corrupt the context to specify an absurdly large message length
   ctx.lower = 0xFFFFFFFF;
   ctx.upper = 0xFFFFFFFF;
-  CHECK(hmac_final(&ctx, dummy_digest).value == OTCRYPTO_FATAL_ERR.value);
+  CHECK(hmac_final(&ctx, &digest_buf).value == OTCRYPTO_FATAL_ERR.value);
   abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET, 0);
 
   return OTCRYPTO_OK;
