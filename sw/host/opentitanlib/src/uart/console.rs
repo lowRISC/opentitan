@@ -53,6 +53,7 @@ impl UartConsole {
     where
         T: ConsoleDevice + ?Sized,
     {
+        let device = device.coverage();
         let device: &dyn ConsoleDevice = if quiet { &device } else { &device.logged() };
 
         let timeout = self.timeout;
@@ -176,6 +177,17 @@ impl UartConsole {
     where
         T: ConsoleDevice + ?Sized,
     {
-        device.logged().wait_for_line(Regex::new(rx)?, timeout)
+        device
+            .coverage()
+            .logged()
+            .wait_for_line(Regex::new(rx)?, timeout)
+    }
+
+    /// Wait on the console until the coverage profile end or skip anchor is received.
+    pub fn wait_for_coverage<T>(device: &T, timeout: Duration) -> Result<()>
+    where
+        T: ConsoleDevice + ?Sized,
+    {
+        device.coverage().logged().wait_for_coverage(timeout)
     }
 }

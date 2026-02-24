@@ -67,7 +67,7 @@ impl Rescue for RescueSerial {
                 self.uart.set_break(true)?;
             }
         }
-        let version = (&self.uart).logged().wait_for_line(
+        let version = (&self.uart).coverage().logged().wait_for_line(
             Regex::new(r"rescue:(?:(\d+)\.(\d+))?.*\r\n")?,
             self.enter_delay,
         )?;
@@ -85,6 +85,7 @@ impl Rescue for RescueSerial {
         // Upon entry, rescue is going to tell us what mode it is.
         // Consume and discard.
         let _ = (&self.uart)
+            .coverage()
             .logged()
             .wait_for_line(PassFail("ok:", "error:"), Self::ONE_SECOND);
 
@@ -121,6 +122,7 @@ impl Rescue for RescueSerial {
         self.uart.write(&Self::BAUD.0.to_be_bytes())?;
         self.uart.write(b"\r")?;
         if let PassFailResult::Fail(result) = (&self.uart)
+            .coverage()
             .logged()
             .wait_for_line(PassFail("ok:", regex!("error:.*")), Self::ONE_SECOND)?
         {
@@ -130,6 +132,7 @@ impl Rescue for RescueSerial {
         // Send the new rate and check for success.
         self.uart.write(&symbol)?;
         if let PassFailResult::Fail(result) = (&self.uart)
+            .coverage()
             .logged()
             .wait_for_line(PassFail("ok:", regex!("error:.*")), Self::ONE_SECOND)?
         {
@@ -148,9 +151,11 @@ impl Rescue for RescueSerial {
         self.uart.write(std::slice::from_ref(&enter))?;
         let mode = std::str::from_utf8(&mode)?;
         (&self.uart)
+            .coverage()
             .logged()
             .wait_for_line(format!("mode: {mode}").as_str(), Self::ONE_SECOND)?;
         if let PassFailResult::Fail(result) = (&self.uart)
+            .coverage()
             .logged()
             .wait_for_line(PassFail("ok:", regex!("error:.*")), Self::ONE_SECOND)?
         {
