@@ -83,16 +83,12 @@ status_t cryptolib_fi_aes_impl(cryptolib_fi_sym_aes_in_t uj_input,
 
   // Convert the data struct into cryptolib types.
   uint32_t iv_buf[kPentestAesIvSize];
+  otcrypto_word32_buf_t iv =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, iv_buf, kPentestAesBlockWords);
   memcpy(iv_buf, uj_input.iv, sizeof(uj_input.iv));
-  otcrypto_word32_buf_t iv = {
-      .data = iv_buf,
-      .len = kPentestAesBlockWords,
-  };
 
-  otcrypto_const_byte_buf_t input = {
-      .data = uj_input.data,
-      .len = uj_input.data_len,
-  };
+  otcrypto_const_byte_buf_t input = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, uj_input.data, uj_input.data_len);
 
   // Build the key configuration.
   otcrypto_key_config_t config = {
@@ -132,10 +128,8 @@ status_t cryptolib_fi_aes_impl(cryptolib_fi_sym_aes_in_t uj_input,
     return OUT_OF_RANGE();
   }
   uint32_t output_buf[padded_len_bytes / sizeof(uint32_t)];
-  otcrypto_byte_buf_t output = {
-      .data = (unsigned char *)output_buf,
-      .len = sizeof(output_buf),
-  };
+  otcrypto_byte_buf_t output = OTCRYPTO_MAKE_BUF(
+      otcrypto_byte_buf_t, (unsigned char *)output_buf, sizeof(output_buf));
 
   // Trigger window.
   PENTEST_MARKER_LABEL(PENTEST_MARKER_AES_START);

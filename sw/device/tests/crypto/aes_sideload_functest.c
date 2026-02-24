@@ -78,22 +78,17 @@ static status_t run_aes(otcrypto_aes_operation_t operation,
   // Construct the IV.
   uint32_t iv_data[ARRAYSIZE(kAesIv)];
   memcpy(iv_data, kAesIv, sizeof(kAesIv));
-  otcrypto_word32_buf_t iv = {
-      .data = iv_data,
-      .len = ARRAYSIZE(iv_data),
-  };
+  otcrypto_word32_buf_t iv =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, iv_data, ARRAYSIZE(iv_data));
 
   // Construct the input buffer.
-  otcrypto_const_byte_buf_t input_buf = {
-      .data = (const unsigned char *)input,
-      .len = sizeof(kAesPlaintextBlock),
-  };
+  otcrypto_const_byte_buf_t input_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (const unsigned char *)input,
+                        sizeof(kAesPlaintextBlock));
 
   // Construct the output buffer.
-  otcrypto_byte_buf_t output_buf = {
-      .data = (unsigned char *)output,
-      .len = sizeof(kAesPlaintextBlock),
-  };
+  otcrypto_byte_buf_t output_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_byte_buf_t, (unsigned char *)output, sizeof(kAesPlaintextBlock));
 
   return otcrypto_aes(&key, iv, kOtcryptoAesModeCtr, operation, input_buf,
                       kOtcryptoAesPaddingNull, output_buf);
