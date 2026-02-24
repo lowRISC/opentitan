@@ -14,7 +14,7 @@ on:
         description: 'GCS bucket to upload the report'
         required: false
         type: string
-        default: 'sw-coverage'
+        default: 'opentitan-test-results'
       report-artifact-name:
         description: 'Name of the artifact containing the coverage report'
         required: false
@@ -56,9 +56,9 @@ jobs:
         shell: bash
         run: |
           BUCKET="${{ inputs.bucket }}"
-          JOB="${{ github.job }}"
+          SHA="${{ github.sha }}"
           BRANCH="${{ inputs.branch }}"
-          OUTPUT="job/$JOB/branch/$BRANCH/$(date +%Y-%m-%d-%H%M%S)_coverage_report"
+          OUTPUT="coverage/$SHA/branch/$BRANCH/$(date +%Y-%m-%d-%H%M%S)_coverage_report"
           URL="https://storage.googleapis.com/$BUCKET/$OUTPUT/html_report/index-sort-l.html"
           gcloud storage cp -r /tmp/report "gs://$BUCKET/$OUTPUT"
           echo "Coverage report at $URL" > "$GITHUB_STEP_SUMMARY"
