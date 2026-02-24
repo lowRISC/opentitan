@@ -168,10 +168,9 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
         sizeof(counter_be));
     HARDENED_TRY(otcrypto_hmac_update(&ctx, counter_be_buf));
     HARDENED_TRY(otcrypto_hmac_update(&ctx, label));
-    HARDENED_TRY(otcrypto_hmac_update(
-        &ctx,
-        (otcrypto_const_byte_buf_t){.data = (const unsigned char *const)&zero,
-                                    .len = sizeof(zero)}));
+    otcrypto_const_byte_buf_t zero_buf = OTCRYPTO_MAKE_BUF(
+        otcrypto_const_byte_buf_t, (unsigned char *const)&zero, sizeof(zero));
+    HARDENED_TRY(otcrypto_hmac_update(&ctx, zero_buf));
     HARDENED_TRY(otcrypto_hmac_update(&ctx, context));
     otcrypto_const_byte_buf_t required_bit_len_buf =
         OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t,
@@ -179,9 +178,9 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
                           sizeof(required_bit_len));
     HARDENED_TRY(otcrypto_hmac_update(&ctx, required_bit_len_buf));
     uint32_t *tag_dest = output_key_material_data + i * digest_word_len;
-    otcrypto_word32_buf_t tag_dest_buf =
+    otcrypto_word32_buf_t tag_buf =
         OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_dest, digest_word_len);
-    HARDENED_TRY(otcrypto_hmac_final(&ctx, tag_dest_buf));
+    HARDENED_TRY(otcrypto_hmac_final(&ctx, tag_buf));
   }
 
   // Generate a mask (all-zero for now, since HMAC is unhardened anyway).

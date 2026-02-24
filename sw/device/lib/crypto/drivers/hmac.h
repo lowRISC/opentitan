@@ -93,35 +93,35 @@ typedef struct hmac_ctx {
 /**
  * One-shot SHA256 hash computation.
  *
- * @param msg Input message.
- * @param msg_len Message length in bytes.
+ * @param msg Input message buffer.
  * @param[out] digest Resulting digest (`kHmacSha256DigestWords` words).
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-status_t hmac_hash_sha256(const uint8_t *msg, size_t msg_len, uint32_t *digest);
+status_t hmac_hash_sha256(const otcrypto_const_byte_buf_t *msg,
+                          uint32_t *digest);
 
 /**
  * One-shot SHA384 hash computation.
  *
- * @param msg Input message.
- * @param msg_len Message length in bytes.
+ * @param msg Input message buffer.
  * @param[out] digest Resulting digest (`kHmacSha384DigestWords` words).
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-status_t hmac_hash_sha384(const uint8_t *msg, size_t msg_len, uint32_t *digest);
+status_t hmac_hash_sha384(const otcrypto_const_byte_buf_t *msg,
+                          uint32_t *digest);
 
 /**
  * One-shot SHA512 hash computation.
  *
- * @param msg Input message.
- * @param msg_len Message length in bytes.
+ * @param msg Input message buffer.
  * @param[out] digest Resulting digest (`kHmacSha512DigestWords` words).
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-status_t hmac_hash_sha512(const uint8_t *msg, size_t msg_len, uint32_t *digest);
+status_t hmac_hash_sha512(const otcrypto_const_byte_buf_t *msg,
+                          uint32_t *digest);
 
 /**
  * One-shot HMAC-SHA256 hash computation.
@@ -130,14 +130,14 @@ status_t hmac_hash_sha512(const uint8_t *msg, size_t msg_len, uint32_t *digest);
  * block, according to FIPS 198-1, section 4.
  *
  * @param key HMAC key.
- * @param msg Input message.
- * @param msg_len Message length in bytes.
+ * @param msg Input message buffer.
  * @param[out] tag Authentication tag (`kHmacSha256DigestWords` bytes).
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-status_t hmac_hmac_sha256(const hmac_key_t *key, const uint8_t *msg,
-                          size_t msg_len, uint32_t *tag);
+status_t hmac_hmac_sha256(const hmac_key_t *key,
+                          const otcrypto_const_byte_buf_t *msg,
+                          otcrypto_word32_buf_t *tag);
 
 /**
  * Redundant implementation for a one-shot HMAC-SHA256 hash computation.
@@ -152,14 +152,14 @@ status_t hmac_hmac_sha256(const hmac_key_t *key, const uint8_t *msg,
  * the HMAC compuation, which can be detected.
  *
  * @param key HMAC key.
- * @param msg Input message.
- * @param msg_len Message length in bytes.
+ * @param msg Input message buffer.
  * @param[out] tag Authentication tag (`kHmacSha256DigestWords` bytes).
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-status_t hmac_hmac_sha256_redundant(const hmac_key_t *key, const uint8_t *msg,
-                                    size_t msg_len, uint32_t *tag);
+status_t hmac_hmac_sha256_redundant(const hmac_key_t *key,
+                                    const otcrypto_const_byte_buf_t *msg,
+                                    otcrypto_word32_buf_t *tag);
 
 /**
  * One-shot HMAC-SHA384 hash computation.
@@ -168,14 +168,14 @@ status_t hmac_hmac_sha256_redundant(const hmac_key_t *key, const uint8_t *msg,
  * block, according to FIPS 198-1, section 4.
  *
  * @param key HMAC key.
- * @param msg Input message.
- * @param msg_len Message length in bytes.
+ * @param msg Input message buffer.
  * @param[out] tag Authentication tag (`kHmacSha384DigestWords` bytes).
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-status_t hmac_hmac_sha384(const hmac_key_t *key, const uint8_t *msg,
-                          size_t msg_len, uint32_t *tag);
+status_t hmac_hmac_sha384(const hmac_key_t *key,
+                          const otcrypto_const_byte_buf_t *msg,
+                          otcrypto_word32_buf_t *tag);
 
 /**
  * Redundant implementation for a one-shot HMAC-SHA384 hash computation.
@@ -190,14 +190,14 @@ status_t hmac_hmac_sha384(const hmac_key_t *key, const uint8_t *msg,
  * the HMAC compuation, which can be detected.
  *
  * @param key HMAC key.
- * @param msg Input message.
- * @param msg_len Message length in bytes.
+ * @param msg Input message buffer.
  * @param[out] tag Authentication tag (`kHmacSha384DigestWords` bytes).
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-status_t hmac_hmac_sha384_redundant(const hmac_key_t *key, const uint8_t *msg,
-                                    size_t msg_len, uint32_t *tag);
+status_t hmac_hmac_sha384_redundant(const hmac_key_t *key,
+                                    const otcrypto_const_byte_buf_t *msg,
+                                    otcrypto_word32_buf_t *tag);
 
 /**
  * One-shot HMAC-SHA512 hash computation.
@@ -206,14 +206,14 @@ status_t hmac_hmac_sha384_redundant(const hmac_key_t *key, const uint8_t *msg,
  * block, according to FIPS 198-1, section 4.
  *
  * @param key HMAC key.
- * @param msg Input message.
- * @param msg_len Message length in bytes.
+ * @param msg Input message buffer.
  * @param[out] tag Authentication tag (`kHmacSha512DigestWords` bytes).
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-status_t hmac_hmac_sha512(const hmac_key_t *key, const uint8_t *msg,
-                          size_t msg_len, uint32_t *tag);
+status_t hmac_hmac_sha512(const hmac_key_t *key,
+                          const otcrypto_const_byte_buf_t *msg,
+                          otcrypto_word32_buf_t *tag);
 
 /**
  * Redundant implementation for a one-shot HMAC-SHA512 hash computation.
@@ -228,14 +228,14 @@ status_t hmac_hmac_sha512(const hmac_key_t *key, const uint8_t *msg,
  * the HMAC compuation, which can be detected.
  *
  * @param key HMAC key.
- * @param msg Input message.
- * @param msg_len Message length in bytes.
+ * @param msg Input message buffer.
  * @param[out] tag Authentication tag (`kHmacSha512DigestWords` bytes).
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-status_t hmac_hmac_sha512_redundant(const hmac_key_t *key, const uint8_t *msg,
-                                    size_t msg_len, uint32_t *tag);
+status_t hmac_hmac_sha512_redundant(const hmac_key_t *key,
+                                    const otcrypto_const_byte_buf_t *msg,
+                                    otcrypto_word32_buf_t *tag);
 
 /**
  * Initializes the context for a streaming SHA256 hash computation.
@@ -319,12 +319,11 @@ hardened_bool_t hmac_key_integrity_checksum_check(const hmac_key_t *key);
  * called multiple times between init() and final().
  *
  * @param ctx Context object referring to a particular SHA-2/HMAC stream.
- * @param data Incoming message bytes to be processed into the stream.
- * @param len Size of the `data` buffer in bytes.
+ * @param data Incoming message bytes buffer to be processed into the stream.
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-status_t hmac_update(hmac_ctx_t *ctx, const uint8_t *data, size_t len);
+status_t hmac_update(hmac_ctx_t *ctx, const otcrypto_const_byte_buf_t *data);
 
 /**
  * Finalize the SHA-2/HMAC stream and return the digest/tag.
@@ -337,7 +336,7 @@ status_t hmac_update(hmac_ctx_t *ctx, const uint8_t *data, size_t len);
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-status_t hmac_final(hmac_ctx_t *ctx, uint32_t *digest);
+status_t hmac_final(hmac_ctx_t *ctx, otcrypto_word32_buf_t *digest);
 
 #ifdef __cplusplus
 }

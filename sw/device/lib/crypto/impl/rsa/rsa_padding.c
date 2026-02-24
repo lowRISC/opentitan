@@ -12,6 +12,7 @@
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('r', 'p', 'a')
@@ -300,16 +301,18 @@ static status_t digest_wordlen_get(otcrypto_hash_mode_t hash_mode,
 OT_WARN_UNUSED_RESULT
 static status_t hash(otcrypto_hash_mode_t hash_mode, const uint8_t *message,
                      size_t message_len, uint32_t *digest) {
+  otcrypto_const_byte_buf_t message_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, message, message_len);
   switch (launder32(hash_mode)) {
     case kOtcryptoHashModeSha256:
       HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha256);
-      return hmac_hash_sha256(message, message_len, digest);
+      return hmac_hash_sha256(&message_buf, digest);
     case kOtcryptoHashModeSha384:
       HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha384);
-      return hmac_hash_sha384(message, message_len, digest);
+      return hmac_hash_sha384(&message_buf, digest);
     case kOtcryptoHashModeSha512:
       HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha512);
-      return hmac_hash_sha512(message, message_len, digest);
+      return hmac_hash_sha512(&message_buf, digest);
     case kOtcryptoHashModeSha3_224:
       HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha3_224);
       return kmac_sha3_224(message, message_len, digest);

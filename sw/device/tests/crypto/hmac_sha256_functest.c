@@ -191,15 +191,15 @@ static status_t streaming_test(void) {
   TRY(otcrypto_hmac_init(&ctx, &blinded_key));
   size_t offset = 0;
   for (; offset + chunk_size < msg_len; offset += chunk_size) {
-    otcrypto_const_byte_buf_t msg_bytes_buf =
+    otcrypto_const_byte_buf_t msg_buf =
         OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg_bytes, chunk_size);
-    TRY(otcrypto_hmac_update(&ctx, msg_bytes_buf));
+    TRY(otcrypto_hmac_update(&ctx, msg_buf));
     msg_bytes += chunk_size;
   }
   // One final update for any remaining data (may be 0-length).
-  otcrypto_const_byte_buf_t msg_bytes_buf_remaining =
-      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg_bytes, msg_len - offset);
-  TRY(otcrypto_hmac_update(&ctx, msg_bytes_buf_remaining));
+  otcrypto_const_byte_buf_t msg_final_buffer = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, (unsigned char *)msg_bytes, msg_len - offset);
+  TRY(otcrypto_hmac_update(&ctx, msg_final_buffer));
   TRY(otcrypto_hmac_final(&ctx, tag_buf));
   TRY_CHECK_ARRAYS_EQ(act_tag, exp_tag, kTagLenWords);
   return OK_STATUS();
