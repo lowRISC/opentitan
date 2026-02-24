@@ -4,7 +4,6 @@
 
 #include "sw/device/lib/crypto/impl/integrity.h"
 
-#include "sw/device/lib/base/crc32.h"
 #include "sw/device/lib/base/hardened.h"
 
 uint32_t integrity_unblinded_checksum(const otcrypto_unblinded_key_t *key) {
