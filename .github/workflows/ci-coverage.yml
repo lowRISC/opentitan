@@ -4,6 +4,8 @@
 
 name: Coverage
 on:
+  pull_request:
+
   push:
     branches-ignore:
       - "backport-*"
