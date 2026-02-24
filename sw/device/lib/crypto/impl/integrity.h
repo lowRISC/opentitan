@@ -8,13 +8,25 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/device/lib/base/hardened.h"
-#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
+
+/**
+ * Random value to start the CRC with for the ptr_checksum of buffers.
+ * This is to prevent the all zero data with a zero checksum to be considered as
+ * valid.
+ * Pick a value that is loaded in a single cycle.
+ */
+#define kOtcryptoInitIntegrityChecksum 0x5A3
+
+typedef struct otcrypto_generic_buf {
+  const void *data;
+  size_t len;
+  uint32_t ptr_checksum;
+} otcrypto_generic_buf_t;
 
 /**
  * Compute the checksum of an unblinded key.
@@ -62,6 +74,56 @@ hardened_bool_t integrity_unblinded_key_check(
  */
 OT_WARN_UNUSED_RESULT
 hardened_bool_t integrity_blinded_key_check(const otcrypto_blinded_key_t *key);
+
+/**
+ * Helper function to calculate the checksum for a buffer.
+ *
+ * The integrity is calculated only on the buffer address and length, but not
+ * the content. This allows the creation of a secure buffer before the content
+ * is available, and the content can be filled later.
+ */
+OT_WARN_UNUSED_RESULT
+static inline uint32_t calculate_buf_checksum(const void *data, size_t len) {
+  return kOtcryptoInitIntegrityChecksum + (uint32_t)(uintptr_t)data +
+         (uint32_t)len;
+}
+
+/**
+ * Macro to create a buffer such otcrypto_const_word32_buf, otcrypto_word32_buf,
+ * otcrypto_const_byte_buf, otcrypto_byte_buf.
+ *
+ * A secure manner of creating a buffer is to create a buffer with its length,
+ * then set its checksum using the macro. After the checksum is set, the buffer
+ * can be filled with the data such as a plaintext.
+ *
+ * The checksum can be verified via the OTCRYPTO_CHECK_BUF macro and should be
+ * called after the buffer is consumed.
+ *
+ */
+#define OTCRYPTO_MAKE_BUF(type, data_ptr, length)                \
+  (type) {                                                       \
+    .data = (data_ptr), .len = (length),                         \
+    .ptr_checksum = calculate_buf_checksum((data_ptr), (length)) \
+  }
+
+/**
+ * Helper function to verify the checksum of secure buffers.
+ */
+OT_WARN_UNUSED_RESULT
+hardened_bool_t verify_buf_integrity(const otcrypto_generic_buf_t *buf);
+
+/**
+ * Macro to verify the checksum of a buffer such otcrypto_const_word32_buf,
+ * otcrypto_word32_buf, otcrypto_const_byte_buf, otcrypto_byte_buf.
+ *
+ * This should be used after a buffer is consumed (for example after it was fed
+ * to an accelerator) but before making security critical decisions on the data.
+ */
+// #define OTCRYPTO_CHECK_BUF(buf_ptr) \
+//   verify_buf_integrity((buf_ptr)->data, (buf_ptr)->len, (buf_ptr)->ptr_checksum)
+
+#define OTCRYPTO_CHECK_BUF(buf_ptr) \
+  verify_buf_integrity((const otcrypto_generic_buf_t *)(buf_ptr))
 
 #ifdef __cplusplus
 }  // extern "C"
