@@ -17,7 +17,6 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top/aes_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 enum {
   kTestTimeout = (1000 * 1000),
@@ -45,7 +44,7 @@ status_t execute_test(bool save_and_restore_aad, bool save_and_restore_ptx) {
   dif_aes_t aes;
   dif_aes_data_t saved_gcm_state;
   dif_aes_iv_t saved_iv;
-  TRY(dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
+  TRY(dif_aes_init_from_dt(kDtAes, &aes));
   TRY(dif_aes_reset(&aes));
 
   // Prepare and load AES IV.
