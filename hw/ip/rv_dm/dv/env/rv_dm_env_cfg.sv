@@ -57,6 +57,12 @@ class rv_dm_env_cfg extends cip_base_env_cfg #(.RAL_T(rv_dm_regs_reg_block));
     super.initialize(csr_base_addr);
     `uvm_info(`gfn, $sformatf("ral_model_names: %0p", ral_model_names), UVM_LOW)
 
+    // Configure the RAL model for the mem register block (rv_dm_mem_reg_block) so that it doesn't
+    // disallow fetches from CSRs. In the design, accesses to both CSRs and the debug ROM are passed
+    // straight to dm_top (without information about whether this is a read or a fetch), so there is
+    // nothing to stop fetches from CSRs.
+    ral_models[mem_ral_name].set_allows_csr_fetch(1'b1);
+
     // Both, the regs and the debug mem TL device (in the DUT) only support 1 outstanding.
     m_tl_agent_cfgs[RAL_T::type_name].max_outstanding_req = 1;
     m_tl_agent_cfgs[mem_ral_name].max_outstanding_req = 1;
