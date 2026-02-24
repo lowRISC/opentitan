@@ -228,15 +228,18 @@ static status_t hmac_oneshot(hmac_test_vector_t *current_test_vector) {
   };
   otcrypto_word32_buf_t act_tag_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, act_tag, digest_len);
+  otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, current_test_vector->message.data,
+      current_test_vector->message.len);
   switch (current_test_vector->test_operation) {
     case kHmacTestOperationSha256:
-      TRY(otcrypto_sha2_256(current_test_vector->message, &hash_digest));
+      TRY(otcrypto_sha2_256(msg_buf, &hash_digest));
       break;
     case kHmacTestOperationSha384:
-      TRY(otcrypto_sha2_384(current_test_vector->message, &hash_digest));
+      TRY(otcrypto_sha2_384(msg_buf, &hash_digest));
       break;
     case kHmacTestOperationSha512:
-      TRY(otcrypto_sha2_512(current_test_vector->message, &hash_digest));
+      TRY(otcrypto_sha2_512(msg_buf, &hash_digest));
       break;
     case kHmacTestOperationHmacSha256:
       OT_FALLTHROUGH_INTENDED;
