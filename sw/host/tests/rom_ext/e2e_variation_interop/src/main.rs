@@ -63,7 +63,6 @@ fn main() -> anyhow::Result<()> {
         timeout: Some(opts.timeout),
         exit_success: Some(Regex::new(r"PASS.*\n")?),
         exit_failure: Some(Regex::new(r"BFV.*\n")?),
-        newline: true,
         ..Default::default()
     };
     let mut stdout = std::io::stdout();

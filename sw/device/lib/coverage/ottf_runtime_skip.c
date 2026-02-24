@@ -12,6 +12,8 @@ void coverage_transport_init(void) {
 
 void coverage_init(void) {}
 
-void coverage_report(void) { base_printf("== COVERAGE PROFILE SKIP ==\r\n"); }
+void coverage_report(void) {
+  base_printf("\x10== COVERAGE PROFILE SKIP ==\r\n");
+}
 
 void coverage_invalidate(void) {}
