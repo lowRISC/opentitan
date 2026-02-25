@@ -197,6 +197,10 @@ bool ottf_handle_irq(uint32_t *exc_info, dt_instance_id_t devid,
       uart_irq_rx_overflow_fired = true;
       dif_uart_irq = kDifUartIrqRxOverflow;
       break;
+    case kDtUartIrqRxFrameErr:
+    case kDtUartIrqRxBreakErr:
+    case kDtUartIrqRxTimeout:
+    case kDtUartIrqRxParityErr:
     default:
       LOG_ERROR("Unexpected interrupt (at PLIC): %d", plic_irq_id);
       test_status_set(kTestStatusFailed);

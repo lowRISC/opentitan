@@ -315,6 +315,7 @@ void dfu_protocol_handler(void *_ctx, uint8_t ep, usb_transfer_flags_t flags,
       }
       // Pass the rescue buffer to the rescue receive handler.
       rom_error_t error = rescue_recv_handler(&ctx->state);
+      OT_NO_SWITCH_ENUM_COVERAGE_START
       switch (error) {
         case kErrorOk:
           ctx->dfu_error = kDfuErrOk;
@@ -322,6 +323,7 @@ void dfu_protocol_handler(void *_ctx, uint8_t ep, usb_transfer_flags_t flags,
         default:
           ctx->dfu_error = kDfuErrVendor;
       }
+      OT_NO_SWITCH_ENUM_COVERAGE_END
       // Back to DnLoadIdle state.
       ctx->dfu_state = kDfuStateDnLoadIdle;
     } else if (ctx->dfu_state == kDfuStateUpLoadIdle) {

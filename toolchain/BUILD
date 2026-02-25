@@ -330,6 +330,7 @@ cc_args(
         "-Wno-zero-length-array",
         "-Wstrict-prototypes",
         "-Wswitch-default",
+        "-Wswitch-enum",
         "-Wtype-limits",
         "-Wno-gnu-auto-type",
         "-Wsign-conversion",

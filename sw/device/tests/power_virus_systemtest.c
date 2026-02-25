@@ -334,6 +334,7 @@ void ottf_external_isr(uint32_t *exc_info) {
 
   top_earlgrey_plic_peripheral_t periph =
       top_earlgrey_plic_interrupt_for_peripheral[irq_id];
+  OT_NO_SWITCH_ENUM_COVERAGE_START
   switch (periph) {
     case kTopEarlgreyPlicPeripheralEntropySrc:
       log_entropy_src_alert_failures();
@@ -343,6 +344,7 @@ void ottf_external_isr(uint32_t *exc_info) {
       CHECK(false, "Unexpected IRQ fired with ID: %d", irq_id);
       break;
   }
+  OT_NO_SWITCH_ENUM_COVERAGE_END
 }
 
 /**

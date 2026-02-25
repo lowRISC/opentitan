@@ -824,6 +824,7 @@ static status_t extract_next_cert(uint8_t **dest, size_t *free_room) {
     rom_error_t err = perso_tlv_get_cert_obj(
         perso_blob_from_host.body + perso_blob_from_host.next_free,
         max_available(), &block);
+    OT_NO_SWITCH_ENUM_COVERAGE_START
     switch (err) {
       case kErrorOk:
         break;
@@ -836,6 +837,7 @@ static status_t extract_next_cert(uint8_t **dest, size_t *free_room) {
       default:
         return INTERNAL();
     }
+    OT_NO_SWITCH_ENUM_COVERAGE_END
 
     // Check there is enough room in the destination buffer to copy the
     // certificate perso LTV object.

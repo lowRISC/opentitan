@@ -144,6 +144,9 @@ bool test_main(void) {
 
     // Verilator can operate with any pin/bus configuration because it has
     // ready access to the configuration information.
+    case kDeviceSimVerilator:
+    case kDeviceFpgaCw305:
+    case kDeviceSimQemu:
     default:
       CHECK(kDeviceType == kDeviceSimVerilator);
       ntests = 8U;

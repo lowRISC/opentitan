@@ -89,6 +89,7 @@ static size_t clsindex(alert_class_t cls) {
       return 2;
     case kAlertClassD:
       return 3;
+    case kAlertClassX:
     default:
       return 0;
   }

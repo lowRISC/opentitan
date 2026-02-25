@@ -371,6 +371,7 @@ dif_result_t dif_spi_device_set_flash_command_slot(
       case kDifSpiDeviceFlashAddr4Byte:
         address_mode = SPI_DEVICE_CMD_INFO_0_ADDR_MODE_0_VALUE_ADDR4B;
         break;
+      case kDifSpiDeviceFlashAddrCount:
       default:
         return kDifBadArg;
     }
@@ -397,6 +398,7 @@ dif_result_t dif_spi_device_set_flash_command_slot(
       case kDifSpiDevicePayloadIoQuad:
         payload_en = 0xf;
         break;
+      case kDifSpiDevicePayloadIoInvalid:
       default:
         return kDifBadArg;
     }
@@ -415,6 +417,7 @@ dif_result_t dif_spi_device_set_flash_command_slot(
         read_pipeline_mode =
             SPI_DEVICE_CMD_INFO_0_READ_PIPELINE_MODE_0_VALUE_TWO_STAGES_FULL_CYCLE;
         break;
+      case kDifSpiDeviceReadPipelineModeCount:
       default:
         return kDifBadArg;
     }
@@ -736,6 +739,7 @@ static dif_result_t dif_spi_device_get_flash_buffer_info(
       info->buffer_len = kDifSpiDeviceSfdpLen;
       info->buffer_offset = kDifSpiDeviceSfdpOffset;
       break;
+    case kDifSpiDeviceFlashBufferTypes:
     default:
       return kDifBadArg;
   }
@@ -906,6 +910,7 @@ dif_result_t dif_spi_device_tpm_configure(dif_spi_device_handle_t *spi,
       case kDifSpiDeviceTpmInterfaceCrb:
         use_crb = true;
         break;
+      case kDifSpiDeviceTpmInterfaceCount:
       default:
         return kDifBadArg;
     }

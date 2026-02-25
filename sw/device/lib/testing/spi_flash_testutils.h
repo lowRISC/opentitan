@@ -362,6 +362,11 @@ inline static dif_spi_host_width_t spi_flash_testutils_get_opcode_width(
       return kDifSpiHostWidthDual;
     case kTransactionWidthMode444:
       return kDifSpiHostWidthQuad;
+    case kTransactionWidthMode111:
+    case kTransactionWidthMode112:
+    case kTransactionWidthMode122:
+    case kTransactionWidthMode114:
+    case kTransactionWidthMode144:
     default:
       return kDifSpiHostWidthStandard;
   }
@@ -384,6 +389,9 @@ inline static dif_spi_host_width_t spi_flash_testutils_get_address_width(
       return kDifSpiHostWidthQuad;
     case kTransactionWidthMode444:
       return kDifSpiHostWidthQuad;
+    case kTransactionWidthMode111:
+    case kTransactionWidthMode112:
+    case kTransactionWidthMode114:
     default:
       return kDifSpiHostWidthStandard;
   }
@@ -406,6 +414,9 @@ inline static dif_spi_host_width_t spi_flash_testutils_get_data_width(
       return kDifSpiHostWidthDual;
     case kTransactionWidthMode222:
       return kDifSpiHostWidthDual;
+    case kTransactionWidthMode114:
+    case kTransactionWidthMode144:
+    case kTransactionWidthMode444:
     default:
       return kDifSpiHostWidthQuad;
   }

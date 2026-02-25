@@ -210,9 +210,11 @@ typedef enum dif_entropy_src_test {
    * potential concerns to the hardware.
    */
   kDifEntropySrcTestMailbox = 5,
-  /** \internal */
-  kDifEntropySrcTestNumVariants = 6,
 } dif_entropy_src_test_t;
+
+enum {
+  kDifEntropySrcTestNumVariants = 6,
+};
 
 /**
  * Criteria used by various entropy source health tests to decide whether the
