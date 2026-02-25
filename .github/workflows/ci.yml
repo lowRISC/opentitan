@@ -466,6 +466,28 @@ jobs:
           gcloud storage cp latest.txt $BUCKET_URI/latest.txt
           gcloud storage cp $BUCKET_URI/bitstream-${{ github.sha }}.tar.gz $BUCKET_URI/bitstream-latest.tar.gz
 
+  schedule_fpga_jobs:
+    name: Schedule FPGA jobs
+    runs-on: ubuntu-22.04
+    needs: quick_lint
+    outputs:
+      jobs: ${{ steps.schedule.outputs.jobs }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required for the bitstream cache
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+        with:
+          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
+      - id: schedule
+        run: |
+          {
+            echo 'jobs<<EOF'
+            ./ci/scripts/schedule_fpga_jobs.py --out-dir jobs/ //sw/...
+            echo EOF
+          } >> "$GITHUB_ENV"
+
   # CW310 FPGA jobs.
   execute_test_rom_fpga_tests_cw310:
     name: CW310 Test ROM Tests

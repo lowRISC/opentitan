@@ -17,10 +17,6 @@ load(
     _opentitan_test = "opentitan_test",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:ci.bzl",
-    "ci_orchestrator",
-)
-load(
     "@lowrisc_opentitan//rules/opentitan:fpga.bzl",
     _fpga_cw305 = "fpga_cw305",
     _fpga_cw310 = "fpga_cw310",
@@ -354,9 +350,8 @@ def opentitan_test(
     kwargs_unused = kwargs.keys()
 
     # Build a map from execution environment to test parameters.
-    # Find all exec_env which are not marked as broken at the same time.
     env_to_tparam = {}
-    non_broken_exec_env = []
+
     for (env, pname) in exec_env.items():
         pname = _parameter_name(env, pname)
 
@@ -369,20 +364,12 @@ def opentitan_test(
         if pname not in test_parameters:
             fail("execution environment {} wants test parameters '{}' but those are not specified".format(env, pname))
         env_to_tparam[env] = test_parameters[pname]
-        if not "broken" in env_to_tparam[env].tags:
-            non_broken_exec_env.append(env)
 
     # Make sure that we used all elements in kwargs.
     if len(kwargs_unused) > 0:
         fail("the following arguments passed to opentitan_test were not used: {}".format(", ".join(kwargs_unused)))
 
-    # Compute set of exec_env that should be marked as skip_in_ci.
-    if run_in_ci == None:
-        skip_in_ci = sets.make(ci_orchestrator(name, non_broken_exec_env))
-        all_envs = sets.make(exec_env.keys())
-        run_in_ci = sets.difference(all_envs, skip_in_ci)
-    else:
-        run_in_ci = sets.make(run_in_ci)
+    run_in_ci = sets.make(run_in_ci or [])
 
     # List of test parameters and how they map to the _opentitan_test attributes
     # and which default values they use if not present.
@@ -421,9 +408,10 @@ def opentitan_test(
         test_args["data"] = data + test_args["data"]
         test_args["tags"] = test_args["tags"] + _hacky_tags(env)
 
-        # Tag test if it must not run in CI.
-        if not sets.contains(run_in_ci, env):
-            test_args["tags"].append("skip_in_ci")
+        # Encode run_in_ci as a tag.
+        if sets.contains(run_in_ci, env):
+            test_args["tags"].append("run_in_ci")
+
         all_test_kwargs[env] = test_args
 
     # With multitop, it is possible to have several exec_env with the same suffix
@@ -494,6 +482,8 @@ def opentitan_test(
             rsa_key = rsa_key,
             spx_key = spx_key,
             manifest = manifest,
+            # Point to test suite created below.
+            test_suite = str(Label(":{}".format(name))),
             **test_kwargs
         )
 

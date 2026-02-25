@@ -4,6 +4,8 @@
 
 load("@bazel_skylib//lib:sets.bzl", "sets")
 
+# TODO remove this file
+
 # List of execution environments among which only one should run. The list
 # is sorted by priority: the first available will be picked.
 #

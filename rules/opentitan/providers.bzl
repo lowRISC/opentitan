@@ -11,6 +11,15 @@ OpenTitanBinaryInfo = provider(
     },
 )
 
+OpenTitanTestInfo = provider(
+    doc = "A provider that describes the information about an opentitan test",
+    fields = {
+        "exec_env": "Execution environment for this test (ExecEnvInfo)",
+        "test_suite": "Test suite to which this test belongs (label string)",
+        "tags": "List of tags (list of strings)",
+    }
+)
+
 Cw310BinaryInfo = provider(
     doc = "CW310 Binary Info",
 )
