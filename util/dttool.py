@@ -16,7 +16,6 @@ from importlib.util import module_from_spec, spec_from_file_location
 from reggen.ip_block import IpBlock
 from dtgen.helper import TopHelper, IpHelper, Extension
 from dtgen.ipgen_ext import IpgenExt
-from topgen.lib import CEnum
 
 TOPGEN_TEMPLATE_PATH = Path(__file__).parents[1].resolve() / "util" / "dtgen"
 
@@ -161,7 +160,7 @@ def main():
     else:
         ext_mod = None
 
-    top_helper = TopHelper(topcfg, CEnum)
+    top_helper = TopHelper(topcfg)
 
     if args.gen_top:
         top_lib_header = "hw/top_{0}/sw/autogen/top_{0}.h".format(topcfg["name"])
@@ -197,8 +196,7 @@ def main():
             # The instance name is 'top_{topname}_{ipname}'.
             ipconfig = name_to_ipconfig.get('top_{}_{}'.format(topcfg["name"], ipname), None)
 
-            helper = IpHelper(top_helper, ip, ipconfig, default_node, CEnum,
-                              extension_cls)
+            helper = IpHelper(top_helper, ip, ipconfig, default_node, extension_cls)
 
             render_template(
                 TOPGEN_TEMPLATE_PATH / "dt_ip.h.tpl",

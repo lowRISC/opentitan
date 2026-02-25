@@ -48,14 +48,14 @@ extern "C" {
  *
  * Device types are guaranteed to be numbered consecutively from 0.
  */
-${helper.device_type_enum.render()}
+${helper.device_type_enum.render_type_def()}
 
 /**
  * List of instance IDs.
  *
  * Instance IDs are guaranteed to be numbered consecutively from 0.
  */
-${helper.instance_id_enum.render()}
+${helper.instance_id_enum.render_type_def()}
 
 /**
  * Get the instance type of a device instance.
@@ -126,7 +126,7 @@ dt_instance_id_t dt_alert_id_to_instance_id(dt_alert_id_t alert);
  *
  * Clocks are guaranteed to be numbered consecutively from 0.
  */
-${helper.clock_enum.render()}
+${helper.clock_enum.render_type_def()}
 
 /**
  * Get the frequency of a clock.
@@ -141,12 +141,12 @@ uint32_t dt_clock_frequency(dt_clock_t clk);
  *
  * Resets are guaranteed to be numbered consecutively from 0.
  */
-${helper.reset_enum.render()}
+${helper.reset_enum.render_type_def()}
 
 /**
  * List of pads names.
  */
-${helper.pad_enum.render()}
+${helper.pad_enum.render_type_def()}
 
 /** Type of peripheral I/O. */
 typedef enum dt_periph_io_type {

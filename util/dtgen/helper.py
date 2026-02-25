@@ -11,7 +11,7 @@ from collections.abc import Mapping
 from enum import Enum
 
 from basegen.lib import Name
-from topgen.lib import CEnum, find_modules
+from topgen.lib import find_modules
 from reggen.ip_block import IpBlock
 
 import logging
@@ -205,6 +205,75 @@ class StructType(BaseType):
         return "{\n" + indent_text(text, "  ") + "}"
 
 
+class EnumType(BaseType):
+    NO_DOC = "<nodoc>"
+
+    def __init__(self, name: Name):
+        self.name = name
+        self.constants = OrderedDict()
+        self.first = None
+        self.count = None
+
+    def __str__(self) -> str:
+        return "EnumType{{name={}}}".format(self.name)
+
+    def add_constant(self, constant_name: Name, docstring=""):
+        # Check that we're not adding duplicates
+        assert constant_name not in self.constants, \
+            '{} is already declared in enum'.format(constant_name)
+
+        self.constants[constant_name] = docstring
+
+    def add_first_constant(self, docstring=NO_DOC):
+        self.first = docstring
+
+    def add_count_constant(self, docstring=NO_DOC):
+        self.count = docstring
+
+    def render_type_def(self) -> str:
+        enum_text = ""
+        if self.first:
+            if self.first == self.NO_DOC:
+                docstring = "First value in the enumeration"
+                if len(self.constants) > 0:
+                    first_const = self.name + next(iter(self.constants))
+                    docstring += ", same as {}".format(first_const.as_c_enum())
+            else:
+                docstring = self.first
+            first_name = self.name + Name(["first"])
+            enum_text += "{} = 0, /**< {} */\n".format(first_name.as_c_enum(), docstring)
+
+        for (idx, (const_name, docstring)) in enumerate(self.constants.items()):
+            full_name = self.name + const_name
+            enum_text += "{} = {}, /**< {} */\n".format(full_name.as_c_enum(), idx, docstring)
+
+        text = "typedef enum " + self.name.as_snake_case() + " {\n"
+        text += indent_text(enum_text, "  ")
+        text += "}} {};\n".format(self.name.as_c_type())
+
+        if self.count:
+            if self.count == self.NO_DOC:
+                docstring = "Number of values in {}".format(self.name.as_c_type())
+            else:
+                docstring = self.count
+
+            count_name = self.name + Name(["count"])
+            text += "\nenum {\n"
+            text += "  {} = {}, /**< {} */\n".format(count_name.as_c_enum(), len(self.constants),
+                                                     docstring)
+            text += "};\n"
+
+        return text
+
+    def render_var_decl(self, name: Name) -> str:
+        return "{} {}".format(self.name.as_c_type(), name.as_snake_case())
+
+    def render_value(self, value: object) -> str:
+        assert isinstance(value, Name) and value in self.constants, \
+            "Cannot render value which is not in the enum"
+        return (self.name + value).as_c_enum()
+
+
 class DefinesBlock:
     """
     A block of C `#define`s.
@@ -313,13 +382,10 @@ class TopHelper:
 
     KNOWN_PORT_TYPES = ["input", "output", "inout", "`INOUT_AO"]
 
-    def __init__(self, topcfg, enum_type):
+    def __init__(self, topcfg):
         self.top = topcfg
         self._top_name = Name(["top"]) + Name.from_snake_case(topcfg["name"])
         self._topgen = TopGenHelper(topcfg)
-
-        assert enum_type in [CEnum], "Unsupported enum type"
-        self._enum_type = enum_type
 
         self.addr_space = "hart"
 
@@ -338,18 +404,17 @@ class TopHelper:
         """
         # List of all module instance types (i.e. uart, aes, etc)
         # and put them in an enum.
-        self.device_type_enum = self._enum_type(Name([]), self.DT_DEVICE_TYPE_NAME)
+        self.device_type_enum = EnumType(self.DT_DEVICE_TYPE_NAME)
         self.device_type_enum.add_constant(Name(["unknown"]), "Instance of unknown type")
         for module_name in self._module_types:
             self.device_type_enum.add_constant(
                 Name.from_snake_case(module_name),
                 f"instance of {module_name}"
             )
-        if isinstance(self.device_type_enum, CEnum):
-            self.device_type_enum.add_count_constant("Number of instance types")
+        self.device_type_enum.add_count_constant("Number of instance types")
 
         # List of all module instance IDs and put them in an enum.
-        self.instance_id_enum = self._enum_type(Name([]), self.DT_INSTANCE_ID_NAME)
+        self.instance_id_enum = EnumType(self.DT_INSTANCE_ID_NAME)
         self.instance_id_enum.add_constant(Name(["unknown"]), "Unknown instance")
         for module_name in self._module_types:
             modules = [m for m in self.top["module"] if m["type"] == module_name]
@@ -358,8 +423,7 @@ class TopHelper:
                     Name.from_snake_case(m["name"]),
                     "instance {} of {}".format(m["name"], m["type"])
                 )
-        if isinstance(self.instance_id_enum, CEnum):
-            self.instance_id_enum.add_count_constant("Number of instance IDs")
+        self.instance_id_enum.add_count_constant("Number of instance IDs")
 
         # List all muxed pads directly from the top.
         pads = [pad for pad in self.top['pinout']['pads'] if pad['connection'] == 'muxed']
@@ -368,7 +432,7 @@ class TopHelper:
             pads += [pad for pad in self.top['pinmux']['ios'] if pad['connection'] != 'muxed']
 
         # List all pads and put them in an enum.
-        self.pad_enum = self._enum_type(Name([]), self.DT_PAD_NAME)
+        self.pad_enum = EnumType(self.DT_PAD_NAME)
         self.pad_enum.add_constant(Name.from_snake_case("constant_zero"),
                                    "Pad that is constantly tied to zero (input)")
         self.pad_enum.add_constant(Name.from_snake_case("constant_one"),
@@ -397,11 +461,10 @@ class TopHelper:
                 Name.from_snake_case(name),
                 desc
             )
-        if isinstance(self.pad_enum, CEnum):
-            self.pad_enum.add_count_constant("Number of pads")
+        self.pad_enum.add_count_constant("Number of pads")
 
         # List of all clocks and put them in an enum.
-        self.clock_enum = self._enum_type(Name([]), self.DT_CLOCK_ENUM_NAME)
+        self.clock_enum = EnumType(self.DT_CLOCK_ENUM_NAME)
         clocks = self.top['clocks']
         for clock in clocks["srcs"] + clocks["derived_srcs"]:
             clock_name = Name.from_snake_case(clock["name"])
@@ -415,7 +478,7 @@ class TopHelper:
         self.clock_enum.add_count_constant("Number of clocks")
 
         # List of all reset nodes and put them in an enum.
-        self.reset_enum = self._enum_type(Name([]), self.DT_RESET_ENUM_NAME)
+        self.reset_enum = EnumType(self.DT_RESET_ENUM_NAME)
         self.reset_enum.add_constant(Name(["unknown"]), "Unknown reset")
         for reset_node in self.top["resets"]["nodes"]:
             reset_name = Name.from_snake_case(reset_node["name"])
@@ -645,7 +708,6 @@ class IpHelper:
     EXTENSION_FIELD_NAME = Name(["ext"])
 
     def __init__(self, top_helper: TopHelper, ip: IpBlock, ipconfig: object, default_node: str,
-                 enum_type: object,
                  extension_cls: Optional[list[Extension]] = None):
         self.top_helper = top_helper
         self.top = top_helper.top
@@ -653,9 +715,6 @@ class IpHelper:
         self.ipconfig = ipconfig
         self.default_node = default_node
         self.ip_name = Name.from_snake_case(self.ip.name)
-
-        assert enum_type in [CEnum], "Unsupported enum type"
-        self._enum_type = enum_type
 
         # TODO: discover automatically or take that as argument.
         self._addr_space = "hart"
@@ -692,22 +751,18 @@ class IpHelper:
             assert self.default_node in reg_blocks, \
                 "default node ({}) is invalid".format(self.default_node)
 
-        self.reg_block_enum = self._enum_type(
-            Name([]), Name(["dt"]) + self.ip_name + Name(["reg", "block"]))
+        self.reg_block_enum = EnumType(Name(["dt"]) + self.ip_name + Name(["reg", "block"]))
         for rb in reg_blocks:
             self.reg_block_enum.add_constant(Name.from_snake_case(rb))
-        if isinstance(self.reg_block_enum, CEnum):
-            self.reg_block_enum.add_count_constant("Number of register blocks")
+        self.reg_block_enum.add_count_constant("Number of register blocks")
 
     def _init_memories(self):
         memories = list(self.ip.memories.keys())
 
-        self.memory_enum = self._enum_type(
-            Name([]), Name(["dt"]) + self.ip_name + Name(["memory"]))
+        self.memory_enum = EnumType(Name(["dt"]) + self.ip_name + Name(["memory"]))
         for mem in memories:
             self.memory_enum.add_constant(Name.from_snake_case(mem))
-        if isinstance(self.memory_enum, CEnum):
-            self.memory_enum.add_count_constant("Number of memories")
+        self.memory_enum.add_count_constant("Number of memories")
 
     def has_irqs(self):
         return len(self.ip.interrupts) > 0
@@ -721,11 +776,10 @@ class IpHelper:
             else:
                 device_irqs[sig.name] = sig
 
-        self.irq_enum = self._enum_type(Name([]), Name(["dt"]) + self.ip_name + Name(["irq"]))
+        self.irq_enum = EnumType(Name(["dt"]) + self.ip_name + Name(["irq"]))
         for (irq, sig) in device_irqs.items():
             self.irq_enum.add_constant(Name.from_snake_case(irq), sig.desc)
-        if isinstance(self.reg_block_enum, CEnum):
-            self.irq_enum.add_count_constant("Number of IRQs")
+        self.irq_enum.add_count_constant("Number of IRQs")
 
     def has_alerts(self):
         return len(self.ip.alerts) > 0
@@ -743,11 +797,10 @@ class IpHelper:
             else:
                 device_alerts[sig.name] = sig
 
-        self.alert_enum = self._enum_type(Name([]), Name(["dt"]) + self.ip_name + Name(["alert"]))
+        self.alert_enum = EnumType(Name(["dt"]) + self.ip_name + Name(["alert"]))
         for (alert, sig) in device_alerts.items():
             self.alert_enum.add_constant(Name.from_snake_case(alert), sig.desc)
-        if isinstance(self.reg_block_enum, CEnum):
-            self.alert_enum.add_count_constant("Number of Alerts")
+        self.alert_enum.add_count_constant("Number of Alerts")
 
     def has_clocks(self):
         return len(self._device_clocks) > 0
@@ -759,7 +812,7 @@ class IpHelper:
         if "scan_clk_i" in self._device_clocks:
             self._device_clocks.remove("scan_clk_i")
 
-        self.clock_enum = self._enum_type(Name([]), Name(["dt"]) + self.ip_name + Name(["clock"]))
+        self.clock_enum = EnumType(Name(["dt"]) + self.ip_name + Name(["clock"]))
         self.clock_map = OrderedDict()
         for clk in self._device_clocks:
             clk_orig = clk
@@ -773,8 +826,7 @@ class IpHelper:
                 clk = clk.removeprefix("clk_").removesuffix("_i")
             self.clock_map[clk_orig] = clk
             self.clock_enum.add_constant(Name.from_snake_case(clk), f"Clock port {clk_orig}")
-        if isinstance(self.reg_block_enum, CEnum):
-            self.clock_enum.add_count_constant("Number of clock ports")
+        self.clock_enum.add_count_constant("Number of clock ports")
 
     def has_reset_requests(self):
         return len(self.reset_req_map) > 0
@@ -788,8 +840,7 @@ class IpHelper:
         return req
 
     def _init_reset_requests(self):
-        self.reset_req_enum = self._enum_type(Name([]), Name(["dt"]) + self.ip_name +
-                                              Name(["reset", "req"]))
+        self.reset_req_enum = EnumType(Name(["dt"]) + self.ip_name + Name(["reset", "req"]))
         self.reset_req_map = OrderedDict()
         # Resets are listed alongside clocks.
         for req in self.ip.reset_requests:
@@ -800,14 +851,13 @@ class IpHelper:
 
             self.reset_req_map[req_orig] = req
             self.reset_req_enum.add_constant(Name.from_snake_case(req), desc)
-        if isinstance(self.reset_req_enum, CEnum):
-            self.reset_req_enum.add_count_constant("Number of reset requests")
+        self.reset_req_enum.add_count_constant("Number of reset requests")
 
     def has_resets(self):
         return len(self.reset_map) > 0
 
     def _init_resets(self):
-        self.reset_enum = self._enum_type(Name([]), Name(["dt"]) + self.ip_name + Name(["reset"]))
+        self.reset_enum = EnumType(Name(["dt"]) + self.ip_name + Name(["reset"]))
         self.reset_map = OrderedDict()
         # Resets are listed alongside clocks.
         for rst in self.ip.clocking.reset_signals():
@@ -822,8 +872,7 @@ class IpHelper:
                 rst = rst.removeprefix("rst_").removesuffix("_ni")
             self.reset_map[rst_orig] = rst
             self.reset_enum.add_constant(Name.from_snake_case(rst), f"Reset port {rst_orig}")
-        if isinstance(self.reset_enum, CEnum):
-            self.reset_enum.add_count_constant("Number of reset ports")
+        self.reset_enum.add_count_constant("Number of reset ports")
 
     def has_periph_io(self):
         return len(self._device_signals) > 0
@@ -838,30 +887,22 @@ class IpHelper:
             else:
                 self._device_signals[sig.name] = (sig.name, -1)
 
-        self.periph_io_enum = self._enum_type(
-            Name([]),
-            Name(["dt"]) + self.ip_name + Name(["periph", "io"])
-        )
+        self.periph_io_enum = EnumType(Name(["dt"]) + self.ip_name + Name(["periph", "io"]))
         for sig in self._device_signals.keys():
             self.periph_io_enum.add_constant(Name.from_snake_case(sig))
-        if isinstance(self.reg_block_enum, CEnum):
-            self.periph_io_enum.add_count_constant("Number of peripheral I/O")
+        self.periph_io_enum.add_count_constant("Number of peripheral I/O")
 
     def has_wakeups(self):
         return len(self.ip.wakeups) > 0
 
     def _init_wakeups(self):
-        self.wakeup_enum = self._enum_type(
-            Name([]),
-            Name(["dt"]) + self.ip_name + Name(["wakeup"])
-        )
+        self.wakeup_enum = EnumType(Name(["dt"]) + self.ip_name + Name(["wakeup"]))
         for sig in self.ip.wakeups:
             self.wakeup_enum.add_constant(Name.from_snake_case(sig.name), sig.desc)
-        if isinstance(self.wakeup_enum, CEnum):
-            self.wakeup_enum.add_count_constant("Number of wakeups")
+        self.wakeup_enum.add_count_constant("Number of wakeups")
 
     def _init_instances(self):
-        self.inst_enum = self._enum_type(Name([]), Name(["dt"]) + self.ip_name)
+        self.inst_enum = EnumType(Name(["dt"]) + self.ip_name)
         self.inst_map = OrderedDict()
         self._create_dt_struct()
         self.inst_dt_map = ArrayMapType(
@@ -890,10 +931,8 @@ class IpHelper:
             self.last_inst_id = TopHelper.DT_INSTANCE_ID_NAME + Name.from_snake_case(m["name"])
             self.inst_dt_values[inst_name] = self._create_instance(m)
             self.inst_map[inst_name] = m
-        if isinstance(self.inst_enum, CEnum):
-            if self.inst_enum.constants:
-                self.inst_enum.add_first_constant("First instance")
-            self.inst_enum.add_count_constant("Number of instances")
+        self.inst_enum.add_first_constant("First instance")
+        self.inst_enum.add_count_constant("Number of instances")
 
     def has_reg_blocks(self):
         return len(self.ip.reg_blocks) > 0
