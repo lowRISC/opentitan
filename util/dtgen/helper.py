@@ -11,7 +11,7 @@ from collections.abc import Mapping
 from enum import Enum
 
 from basegen.lib import Name
-from topgen.lib import CEnum, CArrayMapping, find_modules
+from topgen.lib import CEnum, find_modules
 from reggen.ip_block import IpBlock
 
 import logging
@@ -313,16 +313,13 @@ class TopHelper:
 
     KNOWN_PORT_TYPES = ["input", "output", "inout", "`INOUT_AO"]
 
-    def __init__(self, topcfg, enum_type, array_mapping_type):
+    def __init__(self, topcfg, enum_type):
         self.top = topcfg
         self._top_name = Name(["top"]) + Name.from_snake_case(topcfg["name"])
         self._topgen = TopGenHelper(topcfg)
 
         assert enum_type in [CEnum], "Unsupported enum type"
-        assert array_mapping_type in [CArrayMapping], \
-               "Unsupported array mapping type"
         self._enum_type = enum_type
-        self._array_mapping_type = array_mapping_type
 
         self.addr_space = "hart"
 
@@ -648,7 +645,7 @@ class IpHelper:
     EXTENSION_FIELD_NAME = Name(["ext"])
 
     def __init__(self, top_helper: TopHelper, ip: IpBlock, ipconfig: object, default_node: str,
-                 enum_type: object, array_mapping_type: object,
+                 enum_type: object,
                  extension_cls: Optional[list[Extension]] = None):
         self.top_helper = top_helper
         self.top = top_helper.top
@@ -658,10 +655,7 @@ class IpHelper:
         self.ip_name = Name.from_snake_case(self.ip.name)
 
         assert enum_type in [CEnum], "Unsupported enum type"
-        assert array_mapping_type in [CArrayMapping], \
-               "Unsupported array mapping type"
         self._enum_type = enum_type
-        self._array_mapping_type = array_mapping_type
 
         # TODO: discover automatically or take that as argument.
         self._addr_space = "hart"
