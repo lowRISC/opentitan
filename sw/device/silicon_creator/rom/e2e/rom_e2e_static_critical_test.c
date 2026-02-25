@@ -92,15 +92,13 @@ void ottf_exception_handler(uint32_t *exc_info) {
   // subroutine in `sw/device/lib/testing/testing/ottf_isrs.S` for more details.
   uintptr_t *mepc_stack_addr = (uintptr_t *)OT_FRAME_ADDR();
   ibex_exc_t exception = ibex_mcause_read();
-  switch (exception) {
-    case kIbexExcIllegalInstrFault:
-      LOG_INFO("Observed illegal instruction fault");
-      exception_observed = true;
-      *mepc_stack_addr = (uintptr_t)kSecMmioNegTestReturn;
-      break;
-    default:
-      LOG_FATAL("Unexpected exception id = 0x%x", exception);
-      abort();
+  if (exception == kIbexExcIllegalInstrFault) {
+    LOG_INFO("Observed illegal instruction fault");
+    exception_observed = true;
+    *mepc_stack_addr = (uintptr_t)kSecMmioNegTestReturn;
+  } else {
+    LOG_FATAL("Unexpected exception id = 0x%x", exception);
+    abort();
   }
 }
 

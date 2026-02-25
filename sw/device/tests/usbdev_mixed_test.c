@@ -188,6 +188,9 @@ bool test_main(void) {
       break;
     case kDeviceFpgaCw340:
       break;
+    case kDeviceFpgaCw310:
+    case kDeviceFpgaCw305:
+    case kDeviceSimQemu:
     default:
       CHECK(kDeviceType == kDeviceFpgaCw310);
       break;

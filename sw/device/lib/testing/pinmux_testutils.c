@@ -153,6 +153,7 @@ status_t pinmux_testutils_connect(const dif_pinmux_t *pinmux,
         return INVALID_ARGUMENT();
       }
       return OK_STATUS();
+    case kDtPeriphIoTypeUnspecified:
     default:
       return INVALID_ARGUMENT();
   }
@@ -205,6 +206,8 @@ uint32_t pinmux_testutils_get_testable_gpios_mask(void) {
     case kDeviceSilicon:
       // IOA3/6, IOB6, IOC9-12, IOR5-7 and IOR10-13.
       return 0xfe0f0248;
+    case kDeviceFpgaCw305:
+    case kDeviceSimQemu:
     default:
       CHECK(false);
       return 0;

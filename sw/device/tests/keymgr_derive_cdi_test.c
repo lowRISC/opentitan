@@ -413,6 +413,10 @@ static void test_derive_cdi(size_t reset_counter) {
           &offset, write, &next_outputs);
 
       break;
+    case kDifKeymgrStateReset:
+    case kDifKeymgrStateInitialized:
+    case kDifKeymgrStateDisabled:
+    case kDifKeymgrStateInvalid:
     default:
       // Theoretically, the key manager can boot into an earlier state
       // (`kDifKeymgrStateReset` or `kDifKeymgrStateInitialized`). This is not

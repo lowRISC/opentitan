@@ -150,6 +150,7 @@ void ottf_exception_handler(uint32_t *exc_info) {
     case kIbexExcUserECall:
       ottf_user_ecall_handler(exc_info);
       break;
+    case kIbexExcMax:
     default:
       generic_fault_handler(exc_info);
   }

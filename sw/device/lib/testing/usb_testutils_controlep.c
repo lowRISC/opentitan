@@ -325,6 +325,9 @@ static status_t ctrl_tx_done(void *ctctx_v, usb_testutils_xfr_result_t result) {
       ctctx->ctrlstate = kUsbTestutilsCtStatOut;
       return OK_STATUS();
 
+    case kUsbTestutilsCtIdle:
+    case kUsbTestutilsCtStatOut:
+    case kUsbTestutilsCtError:
     default:
       break;
   }
@@ -382,6 +385,11 @@ static status_t ctrl_rx(void *ctctx_v, dif_usbdev_rx_packet_info_t packet_info,
       // anything else is unexpected
       break;
 
+    case kUsbTestutilsCtWaitIn:
+    case kUsbTestutilsCtAddrStatIn:
+    case kUsbTestutilsCtCfgStatIn:
+    case kUsbTestutilsCtStatIn:
+    case kUsbTestutilsCtError:
     default:
       // Error
       break;
@@ -463,6 +471,11 @@ status_t usb_testutils_controlep_config_wait(
       timeout_usecs =
           (uint32_t)udiv64_slow(clk_cycles * 1000000, kClockFreqCpuHz, NULL);
     } break;
+    case kDeviceFpgaCw310:
+    case kDeviceFpgaCw305:
+    case kDeviceFpgaCw340:
+    case kDeviceSilicon:
+    case kDeviceSimQemu:
     default:
       // With an FGPA build the host software will respond more slowly and there
       // may even be a requirement for user intervention such as cabling.

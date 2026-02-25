@@ -128,6 +128,7 @@ dif_result_t dif_adc_ctrl_configure_filter(const dif_adc_ctrl_t *adc_ctrl,
     case kDifAdcCtrlChannel0:
       switch (config.filter) {
         DIF_ADC_CTRL_FILTER_LIST(DIF_ADC_CTRL_CHANNEL0_FILTER_CONFIG_CASE_)
+        case kDifAdcCtrlTrans:
         default:
           return kDifBadArg;
       }
@@ -135,6 +136,7 @@ dif_result_t dif_adc_ctrl_configure_filter(const dif_adc_ctrl_t *adc_ctrl,
     case kDifAdcCtrlChannel1:
       switch (config.filter) {
         DIF_ADC_CTRL_FILTER_LIST(DIF_ADC_CTRL_CHANNEL1_FILTER_CONFIG_CASE_)
+        case kDifAdcCtrlTrans:
         default:
           return kDifBadArg;
       }
@@ -227,6 +229,7 @@ static bool get_filter_offset(dif_adc_ctrl_channel_t channel,
     case kDifAdcCtrlChannel0:
       switch (filter) {
         DIF_ADC_CTRL_FILTER_LIST(DIF_ADC_CTRL_CHANNEL0_FILTER_CTRL_REG_CASE_)
+        case kDifAdcCtrlTrans:
         default:
           return false;
       }
@@ -234,6 +237,7 @@ static bool get_filter_offset(dif_adc_ctrl_channel_t channel,
     case kDifAdcCtrlChannel1:
       switch (filter) {
         DIF_ADC_CTRL_FILTER_LIST(DIF_ADC_CTRL_CHANNEL1_FILTER_CTRL_REG_CASE_)
+        case kDifAdcCtrlTrans:
         default:
           return false;
       }
@@ -265,6 +269,7 @@ static bool get_filter_enable_bit(dif_adc_ctrl_channel_t channel,
     case kDifAdcCtrlChannel0:
       switch (filter) {
         DIF_ADC_CTRL_FILTER_LIST(DIF_ADC_CTRL_CHANNEL0_FILTER_ENABLE_CASE_)
+        case kDifAdcCtrlTrans:
         default:
           return false;
       }
@@ -272,6 +277,7 @@ static bool get_filter_enable_bit(dif_adc_ctrl_channel_t channel,
     case kDifAdcCtrlChannel1:
       switch (filter) {
         DIF_ADC_CTRL_FILTER_LIST(DIF_ADC_CTRL_CHANNEL1_FILTER_ENABLE_CASE_)
+        case kDifAdcCtrlTrans:
         default:
           return false;
       }

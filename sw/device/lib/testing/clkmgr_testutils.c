@@ -100,6 +100,7 @@ static const char *measure_clock_name(const dif_clkmgr_t *clkmgr,
     case kDtClockUsb:
       return "usb_clk";
 #endif
+    case kDtClockAon:
     default:
       return "<unknown>";
   }

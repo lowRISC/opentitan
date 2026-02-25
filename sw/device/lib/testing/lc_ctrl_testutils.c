@@ -48,6 +48,18 @@ status_t lc_ctrl_testutils_lc_state_log(const dif_lc_ctrl_state_t *state) {
     case kDifLcCtrlStateRma:
       LOG_INFO("Life cycle state: RMA");
       break;
+    case kDifLcCtrlStateRaw:
+    case kDifLcCtrlStateTestLocked0:
+    case kDifLcCtrlStateTestLocked1:
+    case kDifLcCtrlStateTestLocked2:
+    case kDifLcCtrlStateTestLocked3:
+    case kDifLcCtrlStateTestLocked4:
+    case kDifLcCtrlStateTestLocked5:
+    case kDifLcCtrlStateTestLocked6:
+    case kDifLcCtrlStateScrap:
+    case kDifLcCtrlStatePostTransition:
+    case kDifLcCtrlStateEscalate:
+    case kDifLcCtrlStateInvalid:
     default:
       LOG_ERROR("CPU is executing in locked/invalid life cycle state: %d",
                 (uint32_t)state);
@@ -74,6 +86,20 @@ status_t lc_ctrl_testutils_debug_func_enabled(const dif_lc_ctrl_t *lc_ctrl,
     case kDifLcCtrlStateRma:
       *debug_enabled = true;
       break;
+    case kDifLcCtrlStateRaw:
+    case kDifLcCtrlStateTestLocked0:
+    case kDifLcCtrlStateTestLocked1:
+    case kDifLcCtrlStateTestLocked2:
+    case kDifLcCtrlStateTestLocked3:
+    case kDifLcCtrlStateTestLocked4:
+    case kDifLcCtrlStateTestLocked5:
+    case kDifLcCtrlStateTestLocked6:
+    case kDifLcCtrlStateProd:
+    case kDifLcCtrlStateProdEnd:
+    case kDifLcCtrlStateScrap:
+    case kDifLcCtrlStatePostTransition:
+    case kDifLcCtrlStateEscalate:
+    case kDifLcCtrlStateInvalid:
     default:
       *debug_enabled = false;
       break;

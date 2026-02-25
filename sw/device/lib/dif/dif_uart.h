@@ -112,7 +112,7 @@ typedef enum dif_uart_watermark {
    */
   kDifUartWatermarkByte32,
   /**
-   * Indicates a sixty-four-byte watermark.
+   * Indicates a sixty-two-byte watermark.
    */
   kDifUartWatermarkByte62,
 } dif_uart_watermark_t;

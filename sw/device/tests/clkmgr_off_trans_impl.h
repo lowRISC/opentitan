@@ -24,8 +24,10 @@ typedef enum test_trans_block {
   kTestTransKmac,
   kTestTransOtbn,
   // Number of types of IP block.
-  kTestTransCount
+  kTestTransLast = kTestTransOtbn,
 } test_trans_block_t;
+
+enum { kTestTransCount = kTestTransLast + 1 };
 
 bool execute_off_trans_test(test_trans_block_t block);
 

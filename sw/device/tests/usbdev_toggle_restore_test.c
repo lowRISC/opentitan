@@ -115,6 +115,11 @@ bool test_main(void) {
       // avoid logging with Verilator because it does not have the back door.
       timeout_micros = 1000u;
       break;
+    case kDeviceFpgaCw310:
+    case kDeviceFpgaCw305:
+    case kDeviceFpgaCw340:
+    case kDeviceSilicon:
+    case kDeviceSimQemu:
     default:
       // FPGA platforms where user intervention may be required.
       timeout_micros = 30 * 1000 * 1000u;

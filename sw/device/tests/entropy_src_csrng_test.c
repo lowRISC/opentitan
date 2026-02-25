@@ -56,8 +56,10 @@ typedef enum irq_flag_id {
   kTestIrqFlagIdCsrngEntropyReq,
   kTestIrqFlagIdEdn1CmdDone,
   kTestIrqFlagIdEdn0CmdDone,
-  kTestIrqFlagCount,
+  kTestIrqFlagLast = kTestIrqFlagIdEdn0CmdDone
 } irq_flag_id_t;
+
+enum { kTestIrqFlagCount = kTestIrqFlagLast + 1 };
 
 /**
  * Interrupt flags. Set by `ottf_external_isr()` and cleared by

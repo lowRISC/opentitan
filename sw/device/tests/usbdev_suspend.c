@@ -514,10 +514,14 @@ static usbdev_suspend_ctx_t suspend_ctx;
  */
 static inline bool physical_timings(void) {
   switch (kDeviceType) {
+    case kDeviceFpgaCw305:
     case kDeviceFpgaCw310:
     case kDeviceFpgaCw340:
     case kDeviceSilicon:
       break;
+    case kDeviceSimDV:
+    case kDeviceSimVerilator:
+    case kDeviceSimQemu:
     default:
       return false;
   }
@@ -643,6 +647,8 @@ static void events_report(usbdev_suspend_ctx_t *ctx, uint32_t snapshot,
         LOG_INFO("Resumed");
         break;
 
+      case kDifUsbdevLinkStateDisconnected:
+      case kDifUsbdevLinkStatePowered:
       default:
         break;
     }
@@ -1021,6 +1027,19 @@ static status_t timeout_handle(usbdev_suspend_ctx_t *ctx) {
 
     // Any other timeout implies that we did not receive the expected link
     // event promptly and the test has failed
+    case kSuspendStatePowerOnReset:
+    case kSuspendStateBusReset:
+    case kSuspendStateActivatedAON:
+    case kSuspendStateNormalSleep:
+    case kSuspendStateDeepSleep:
+    case kSuspendStateNormalWaking:
+    case kSuspendStateDeepWaking:
+    case kSuspendStateAONWakeup:
+    case kSuspendStateWaitFinish:
+    case kSuspendStateNextPhase:
+    case kSuspendStateWaitDisconnect:
+    case kSuspendStateComplete:
+    case kSuspendStateFailed:
     default:
       break;
   }
@@ -1142,6 +1161,22 @@ static status_t phase_start_resume(usbdev_suspend_ctx_t *ctx) {
       // Software and device should already be up and running.
       break;
 
+    case kSuspendStateWaitSuspend:
+    case kSuspendStateWaitLongSuspend:
+    case kSuspendStateWaitResume:
+    case kSuspendStateWaitBusReset:
+    case kSuspendStateWaitSuspendTimeout:
+    case kSuspendStateActivatedAON:
+    case kSuspendStateNormalSleep:
+    case kSuspendStateDeepSleep:
+    case kSuspendStateNormalWaking:
+    case kSuspendStateDeepWaking:
+    case kSuspendStateAONWakeup:
+    case kSuspendStateWaitResumeTimeout:
+    case kSuspendStateWaitFinish:
+    case kSuspendStateWaitDisconnect:
+    case kSuspendStateComplete:
+    case kSuspendStateFailed:
     default:
       TRY_CHECK(ctx->test_state == kSuspendStateDeepSleep);
 
@@ -1237,6 +1272,7 @@ static status_t phase_start_resume(usbdev_suspend_ctx_t *ctx) {
       state_enter(ctx, kSuspendStateWaitSuspend);
       break;
 
+    case kSuspendPhaseDeepDisconnect:
     default:
       CHECK(ctx->test_phase == kSuspendPhaseDeepDisconnect);
       OT_FALLTHROUGH_INTENDED;
@@ -1344,6 +1380,10 @@ static status_t state_service(usbdev_suspend_ctx_t *ctx) {
             }
             break;
 
+          case kSuspendPhaseSuspend:
+          case kSuspendPhaseSleepResume:
+          case kSuspendPhaseDeepResume:
+          case kSuspendPhaseShutdown:
           default:
             TRY_CHECK(ctx->test_phase == kSuspendPhaseSleepResume ||
                       ctx->test_phase == kSuspendPhaseDeepResume);
@@ -1409,6 +1449,10 @@ static status_t state_service(usbdev_suspend_ctx_t *ctx) {
               case kSuspendPhaseDeepDisconnect:
                 action = "; please disconnect and reconnect the USB cable.";
                 break;
+              case kSuspendPhaseSuspend:
+              case kSuspendPhaseSleepResume:
+              case kSuspendPhaseDeepResume:
+              case kSuspendPhaseShutdown:
               default:
                 break;
             }
@@ -1507,6 +1551,9 @@ static status_t state_service(usbdev_suspend_ctx_t *ctx) {
             got_signal = !host_resets || (ctx->wake_status.bus_reset != 0);
             break;
 
+          case kSuspendPhaseSuspend:
+          case kSuspendPhaseDeepDisconnect:
+          case kSuspendPhaseShutdown:
           default:
             TRY_CHECK(ctx->test_phase == kSuspendPhaseDeepDisconnect);
             OT_FALLTHROUGH_INTENDED;
@@ -1594,6 +1641,9 @@ static status_t state_service(usbdev_suspend_ctx_t *ctx) {
             state_enter(ctx, kSuspendStateBusReset);
             break;
 
+          case kSuspendPhaseSuspend:
+          case kSuspendPhaseDeepResume:
+          case kSuspendPhaseShutdown:
           default:
             TRY_CHECK(ctx->test_phase == kSuspendPhaseDeepResume);
             OT_FALLTHROUGH_INTENDED;
@@ -1633,6 +1683,9 @@ static status_t state_service(usbdev_suspend_ctx_t *ctx) {
     case kSuspendStateWaitLongSuspend:
     case kSuspendStateWaitSuspendTimeout:
     case kSuspendStateWaitDisconnect:
+    case kSuspendStateNormalSleep:
+    case kSuspendStateDeepSleep:
+    case kSuspendStateWaitResumeTimeout:
       break;
   }
 
@@ -1666,6 +1719,20 @@ static status_t phase_run(usbdev_suspend_ctx_t *ctx) {
           "phase_start()",
           ctx->test_state, state_name(ctx->test_state));
       return FAILED_PRECONDITION();
+    case kSuspendStateWaitSuspend:
+    case kSuspendStateWaitLongSuspend:
+    case kSuspendStateWaitResume:
+    case kSuspendStateWaitBusReset:
+    case kSuspendStateWaitSuspendTimeout:
+    case kSuspendStateActivatedAON:
+    case kSuspendStateNormalSleep:
+    case kSuspendStateDeepSleep:
+    case kSuspendStateNormalWaking:
+    case kSuspendStateDeepWaking:
+    case kSuspendStateAONWakeup:
+    case kSuspendStateWaitResumeTimeout:
+    case kSuspendStateWaitFinish:
+    case kSuspendStateWaitDisconnect:
     default:
       break;
   }
@@ -1704,6 +1771,15 @@ static status_t phase_run(usbdev_suspend_ctx_t *ctx) {
         TRY(usb_testutils_poll(ctx->usbdev));
         break;
 
+      case kSuspendStateWaitSuspend:
+      case kSuspendStateWaitLongSuspend:
+      case kSuspendStateWaitBusReset:
+      case kSuspendStateWaitSuspendTimeout:
+      case kSuspendStateWaitResumeTimeout:
+      case kSuspendStateWaitFinish:
+      case kSuspendStateWaitDisconnect:
+      case kSuspendStateNormalWaking:
+      case kSuspendStateDeepWaking:
       default:
         if (ctx->with_traffic) {
           // Servicing streams handles usbdev/testutils events for us.
@@ -1751,6 +1827,22 @@ static status_t phase_run(usbdev_suspend_ctx_t *ctx) {
       }
     } break;
 
+    case kSuspendStateWaitSuspend:
+    case kSuspendStateWaitLongSuspend:
+    case kSuspendStateWaitResume:
+    case kSuspendStateWaitBusReset:
+    case kSuspendStateWaitSuspendTimeout:
+    case kSuspendStateActivatedAON:
+    case kSuspendStateNormalSleep:
+    case kSuspendStateDeepSleep:
+    case kSuspendStateNormalWaking:
+    case kSuspendStateDeepWaking:
+    case kSuspendStateAONWakeup:
+    case kSuspendStateWaitResumeTimeout:
+    case kSuspendStateWaitFinish:
+    case kSuspendStateWaitDisconnect:
+    case kSuspendStateComplete:
+    case kSuspendStateFailed:
     default:
       TRY_CHECK(ctx->test_state == kSuspendStateComplete ||
                 ctx->test_state == kSuspendStateFailed);
@@ -1822,9 +1914,7 @@ bool usbdev_suspend_test(usbdev_suspend_phase_t init_phase,
       verbose = false;
       break;
 
-    default:
-      CHECK(kDeviceType == kDeviceFpgaCw310);
-      OT_FALLTHROUGH_INTENDED;
+    case kDeviceFpgaCw310:
     case kDeviceFpgaCw340:
       // FPGA host can be used to perform Bus Resets and (with hoop-jumping)
       // Suspend and Resume. With physical intervention or perhaps a capable
@@ -1840,6 +1930,11 @@ bool usbdev_suspend_test(usbdev_suspend_phase_t init_phase,
       // developer, so verbose reporting is appropriate.
       verbose = false;  // true;
       break;
+
+    case kDeviceFpgaCw305:
+    case kDeviceSimQemu:
+    default:
+      CHECK(false, "Device type not supported by this test");
   }
 
   ctx->with_traffic = with_traffic;

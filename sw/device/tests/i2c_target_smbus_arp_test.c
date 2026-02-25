@@ -257,6 +257,35 @@ void ottf_external_isr(uint32_t *exc_info) {
           (dif_i2c_irq_t)(plic_irq_id - kTopEarlgreyPlicIrqIdI2c0FmtThreshold);
       i2c_isr(irq);
     } break;
+    case kTopEarlgreyPlicPeripheralUnknown:
+    case kTopEarlgreyPlicPeripheralUart1:
+    case kTopEarlgreyPlicPeripheralUart2:
+    case kTopEarlgreyPlicPeripheralUart3:
+    case kTopEarlgreyPlicPeripheralGpio:
+    case kTopEarlgreyPlicPeripheralSpiDevice:
+    case kTopEarlgreyPlicPeripheralI2c1:
+    case kTopEarlgreyPlicPeripheralI2c2:
+    case kTopEarlgreyPlicPeripheralPattgen:
+    case kTopEarlgreyPlicPeripheralRvTimer:
+    case kTopEarlgreyPlicPeripheralOtpCtrl:
+    case kTopEarlgreyPlicPeripheralAlertHandler:
+    case kTopEarlgreyPlicPeripheralSpiHost0:
+    case kTopEarlgreyPlicPeripheralSpiHost1:
+    case kTopEarlgreyPlicPeripheralUsbdev:
+    case kTopEarlgreyPlicPeripheralPwrmgrAon:
+    case kTopEarlgreyPlicPeripheralSysrstCtrlAon:
+    case kTopEarlgreyPlicPeripheralAdcCtrlAon:
+    case kTopEarlgreyPlicPeripheralAonTimerAon:
+    case kTopEarlgreyPlicPeripheralSensorCtrlAon:
+    case kTopEarlgreyPlicPeripheralFlashCtrl:
+    case kTopEarlgreyPlicPeripheralHmac:
+    case kTopEarlgreyPlicPeripheralKmac:
+    case kTopEarlgreyPlicPeripheralOtbn:
+    case kTopEarlgreyPlicPeripheralKeymgr:
+    case kTopEarlgreyPlicPeripheralCsrng:
+    case kTopEarlgreyPlicPeripheralEntropySrc:
+    case kTopEarlgreyPlicPeripheralEdn0:
+    case kTopEarlgreyPlicPeripheralEdn1:
     default:
       goto unexpected_irq;
   }

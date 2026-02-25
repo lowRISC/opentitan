@@ -94,6 +94,7 @@ static void init_peripherals(void) {
 void wait_enough_for_alert_ping(void) {
   // wait enough
   switch (kDeviceType) {
+    case kDeviceFpgaCw305:  // TODO: verify timing on CW305
     case kDeviceFpgaCw310:
     case kDeviceFpgaCw340:
       // 2*margin_of_safety*(2**DW)*(1/kClockFreqPeripheralHz)
@@ -117,6 +118,7 @@ void wait_enough_for_alert_ping(void) {
       // This seems to be impractical for the current clock frequency config
       // of the Verilator tests (kClockFreqPeripheralHz = 125K).
       OT_FALLTHROUGH_INTENDED;
+    case kDeviceSimQemu:
     default:
       LOG_FATAL("SUPPORTED PLATFORMS: DV and FPGA");
       LOG_FATAL("TO SUPPORT THE PLATFORM %d, COMPUTE THE RIGHT WAIT-TIME",

@@ -115,15 +115,13 @@ void ottf_exception_handler(uint32_t *exc_info) {
   uint32_t mcause = ibex_mcause_read();
   ibex_exc_t exception = mcause & kIbexExcMax;
 
-  switch (exception) {
-    case kIbexExcIllegalInstrFault:
-      LOG_INFO("Illegal instruction fault handler");
-      illegal_instr_fault = true;
-      *(uintptr_t *)mepc_stack_addr = ret_addr;
-      break;
-    default:
-      LOG_FATAL("Unexpected exception id = 0x%x", exception);
-      CHECK(false);
+  if (exception == kIbexExcIllegalInstrFault) {
+    LOG_INFO("Illegal instruction fault handler");
+    illegal_instr_fault = true;
+    *(uintptr_t *)mepc_stack_addr = ret_addr;
+  } else {
+    LOG_FATAL("Unexpected exception id = 0x%x", exception);
+    CHECK(false);
   }
 }
 

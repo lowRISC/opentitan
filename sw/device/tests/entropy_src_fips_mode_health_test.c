@@ -202,6 +202,8 @@ status_t log_entropy_src_failures_and_alerts(
         LOG_INFO("Alert Fails (Markov): high=%u, low=%u",
                  fail_counts.high_fails[i], fail_counts.low_fails[i]);
         break;
+      case kDifEntropySrcTestRepetitionCountSymbol:
+      case kDifEntropySrcTestMailbox:
       default:
         LOG_INFO("Test %u: Unused test type, moving on...", i);
         break;
