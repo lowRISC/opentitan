@@ -14,6 +14,7 @@ module tb;
   import chip_test_pkg::*;
   import xbar_test_pkg::*;
   import flash_ctrl_bkdr_util_pkg::*;
+  import rram_ctrl_bkdr_util_pkg::*;
   import mem_bkdr_util_pkg::*;
   import rom_ctrl_bkdr_util_pkg::*;
   import sram_ctrl_bkdr_util_pkg::*;
@@ -461,11 +462,34 @@ module tb;
     initial begin
       // Unfortunately xcelium does not understand typed constructors so we must assign to local
       // variables first.
+      rram_ctrl_bkdr_util data, info;
       flash_ctrl_bkdr_util data0, info0, data1, info1;
       sram_ctrl_bkdr_util ram_main0, ram_ret0;
       rom_ctrl_bkdr_util rom;
       chip_mem_e    mem;
       mem_bkdr_util m_mem_bkdr_util[chip_mem_e];
+
+      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for RRAM data", UVM_MEDIUM)
+      data = new(
+          .name  ("mem_bkdr_util[RramData]"),
+          .path  (`DV_STRINGIFY(`RRAM_DATA_MEM_HIER)),
+          .depth ($size(`RRAM_DATA_MEM_HIER)),
+          .n_bits($bits(`RRAM_DATA_MEM_HIER)),
+          .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone),
+          .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_RRAM_CTRL_HOST_BASE_ADDR));
+      m_mem_bkdr_util[RramData] = data;
+      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RramData], `RRAM_DATA_MEM_HIER)
+
+      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for RRAM info", UVM_MEDIUM)
+      info = new(
+          .name  ("mem_bkdr_util[RramInfo]"),
+          .path  (`DV_STRINGIFY(`RRAM_INFO_MEM_HIER)),
+          .depth ($size(`RRAM_INFO_MEM_HIER)),
+          .n_bits($bits(`RRAM_INFO_MEM_HIER)),
+          .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone),
+          .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_RRAM_CTRL_HOST_BASE_ADDR));
+      m_mem_bkdr_util[RramInfo] = info;
+      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RramInfo], `RRAM_INFO_MEM_HIER)
 
       `uvm_info("tb.sv", "Creating mem_bkdr_util instance for flash 0 data", UVM_MEDIUM)
       data0 = new(
@@ -672,6 +696,7 @@ module tb;
       forever @dut.chip_if.chip_padctrl_attributes_test_sva_disable begin
         if (dut.chip_if.chip_padctrl_attributes_test_sva_disable) begin
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_flash_ctrl);
+          $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_rram_ctrl);
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_gpio);
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_i2c0);
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_i2c1);
@@ -688,6 +713,7 @@ module tb;
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_usbdev);
         end else begin
           $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_flash_ctrl);
+          $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_rram_ctrl);
           $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_gpio);
           $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_i2c0);
           $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_i2c1);
