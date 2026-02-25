@@ -54,6 +54,8 @@ interface chip_if;
 `define ENTROPY_SRC_HIER    `PD_MAIN_HIER.u_entropy_src
 `define EDN_HIER(i)         `PD_MAIN_HIER.u_edn``i
 `define FLASH_CTRL_HIER     `PD_MAIN_HIER.u_flash_ctrl
+`define RRAM_CTRL_HIER      `PD_MAIN_HIER.u_rram_ctrl
+`define RRAM_MACRO_HIER     `PD_MAIN_HIER.u_rram_macro
 `define GPIO_HIER           `PD_MAIN_HIER.u_gpio
 `define HMAC_HIER           `PD_MAIN_HIER.u_hmac
 `define I2C_HIER(i)         `PD_MAIN_HIER.u_i2c``i
