@@ -13,7 +13,7 @@ class chip_sw_rom_e2e_asm_init_vseq extends chip_sw_base_vseq;
   localparam bit [2:0] EPMP_ACCESS_RWX  = 3'b111; // Read-write-execute access.
 
   localparam bit [31:0] RAM_STACK_GUARD_ADDRESS  = 32'h1001C000;
-  localparam bit [31:0] FLASH_TEXT_START_ADDRESS = 32'h20000400;
+  localparam bit [31:0] NVM_TEXT_START_ADDRESS   = 32'h20000400;
   localparam bit [31:0] MMIO_START_ADDRESS       = 32'h40000000;
   localparam bit [31:0] MMIO_END_ADDRESS         = 32'h50000000;
 
@@ -115,7 +115,7 @@ class chip_sw_rom_e2e_asm_init_vseq extends chip_sw_base_vseq;
     `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[14][2:0], EPMP_ACCESS_NONE)
     `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[15][2:0], EPMP_ACCESS_RW)
 
-    // ePMP regions for Flash
+    // ePMP regions for NVM
     `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[4].mode, ibex_pkg::PMP_MODE_OFF)
     `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[5].mode, ibex_pkg::PMP_MODE_NAPOT)
     `DV_CHECK(cfg.chip_vif.pmp_cfg[5].lock)
@@ -167,13 +167,13 @@ class chip_sw_rom_e2e_asm_init_vseq extends chip_sw_base_vseq;
     end
 
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest,
-      "Timeout waiting to boot flash stage.", 200_000_000)
+      "Timeout waiting to boot nvm stage.", 200_000_000)
 
-    // ePMP is unlocked for flash once the signature verification succeeds.
+    // ePMP is unlocked for nvm once the signature verification succeeds.
     `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[4].mode, ibex_pkg::PMP_MODE_TOR)
     `DV_CHECK(cfg.chip_vif.pmp_cfg[4].lock)
     `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[4][2:0], EPMP_ACCESS_RX)
-    `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[3], epmp_addr_tor(FLASH_TEXT_START_ADDRESS))
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[3], epmp_addr_tor(NVM_TEXT_START_ADDRESS))
   endtask
 
 endclass : chip_sw_rom_e2e_asm_init_vseq
