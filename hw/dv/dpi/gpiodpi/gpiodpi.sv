@@ -64,8 +64,6 @@ module gpiodpi
      end
    end
 
-   logic gpio_write_pulse;
-
    always_ff @(posedge eff_clk or negedge rst_ni) begin
      if (!rst_ni) begin
        gpio_p2d <= '0; // default value
