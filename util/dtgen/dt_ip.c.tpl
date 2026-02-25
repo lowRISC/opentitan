@@ -41,7 +41,7 @@ static const ${helper.inst_dt_map.render_var_def(dt_array_name, helper.inst_dt_v
  */
 #define TRY_GET_DT(dt, default) \
   ({ \
-    if ((dt) < (dt_${device_name}_t)0 || (dt) >= ${dt_array_count.as_c_enum()}) \
+    if ((dt) < (dt_${device_name}_t)0 || (int)(dt) >= ${dt_array_count.as_c_enum()}) \
       return (default); \
     &${dt_array}[dt]; \
   })

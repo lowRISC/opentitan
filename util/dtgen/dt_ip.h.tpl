@@ -36,7 +36,7 @@ ${helper.render_extension(Extension.DtIpPos.HeaderIncludes)}
 /**
  * List of instances.
  */
-${helper.inst_enum.render()}
+${helper.inst_enum.render_type_def()}
 
 % if helper.has_reg_blocks():
 /**
@@ -44,7 +44,7 @@ ${helper.inst_enum.render()}
  *
  * Register blocks are guaranteed to start at 0 and to be consecutively numbered.
  */
-${helper.reg_block_enum.render()}
+${helper.reg_block_enum.render_type_def()}
 
 /** Primary register block (associated with the "primary" set of registers that control the IP). */
 <%
@@ -60,7 +60,7 @@ static const ${helper.reg_block_enum.name.as_c_type()} ${default_reg_block_name}
  *
  * Memories are guaranteed to start at 0 and to be consecutively numbered.
  */
-${helper.memory_enum.render()}
+${helper.memory_enum.render_type_def()}
 
 % endif
 % if helper.has_irqs():
@@ -69,7 +69,7 @@ ${helper.memory_enum.render()}
  *
  * IRQs are guaranteed to be numbered consecutively from 0.
  */
-${helper.irq_enum.render()}
+${helper.irq_enum.render_type_def()}
 
 % endif
 % if helper.has_alerts() and helper.has_alert_handler():
@@ -78,7 +78,7 @@ ${helper.irq_enum.render()}
  *
  * Alerts are guaranteed to be numbered consecutively from 0.
  */
-${helper.alert_enum.render()}
+${helper.alert_enum.render_type_def()}
 
 % endif
 % if helper.has_clocks():
@@ -87,7 +87,7 @@ ${helper.alert_enum.render()}
  *
  * Clock ports are guaranteed to be numbered consecutively from 0.
  */
-${helper.clock_enum.render()}
+${helper.clock_enum.render_type_def()}
 
 % endif
 % if helper.has_reset_requests():
@@ -96,7 +96,7 @@ ${helper.clock_enum.render()}
  *
  * Reset requests are guaranteed to be numbered consecutively from 0.
  */
-${helper.reset_req_enum.render()}
+${helper.reset_req_enum.render_type_def()}
 
 % endif
 % if helper.has_resets():
@@ -105,7 +105,7 @@ ${helper.reset_req_enum.render()}
  *
  * Reset ports are guaranteed to be numbered consecutively from 0.
  */
-${helper.reset_enum.render()}
+${helper.reset_enum.render_type_def()}
 
 % endif
 % if helper.has_periph_io():
@@ -114,7 +114,7 @@ ${helper.reset_enum.render()}
  *
  * Peripheral I/O are guaranteed to be numbered consecutively from 0.
  */
-${helper.periph_io_enum.render()}
+${helper.periph_io_enum.render_type_def()}
 
 % endif
 % if helper.has_wakeups():
@@ -123,7 +123,7 @@ ${helper.periph_io_enum.render()}
  *
  * Wakeups are guaranteed to be numbered consecutively from 0.
  */
-${helper.wakeup_enum.render()}
+${helper.wakeup_enum.render_type_def()}
 
 % endif
 % if helper.has_features():

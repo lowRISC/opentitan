@@ -65,7 +65,7 @@ dt_instance_id_t dt_alert_id_to_instance_id(dt_alert_id_t alert) {
 static const ${helper.dev_type_map.render_var_def(Name.from_snake_case("device_type"), helper.dev_type_values)}
 
 dt_device_type_t dt_device_type(dt_instance_id_t dev) {
-  if (dev < kDtInstanceIdCount) {
+  if ((int)dev < kDtInstanceIdCount) {
     return device_type[dev];
   }
   return kDtDeviceTypeUnknown;
@@ -91,7 +91,7 @@ static const ${helper.pad_dt_map.render_var_def(dt_pad_array_name, helper.pad_dt
 
 #define TRY_GET_PAD(pad, default) \
   ({ \
-    if ((pad) < (dt_pad_t)0 || (pad) >= kDtPadCount) \
+    if ((pad) < (dt_pad_t)0 || (int)(pad) >= kDtPadCount) \
       return (default); \
     &dt_pad[pad]; \
   })
