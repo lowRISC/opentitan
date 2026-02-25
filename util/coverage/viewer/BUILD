@@ -59,3 +59,15 @@ py_test(
         ":lcov",
     ],
 )
+
+py_binary(
+    name = "bundler",
+    srcs = ["bundler.py"],
+    data = ["viewer.html"],
+)
+
+py_test(
+    name = "bundler_test",
+    srcs = ["bundler_test.py"],
+    deps = [":bundler"],
+)
