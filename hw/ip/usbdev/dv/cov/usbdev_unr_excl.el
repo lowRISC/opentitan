@@ -18,19 +18,19 @@ INSTANCE: tb.dut.usbdev_impl.u_usb_fs_nb_pe.u_usb_fs_nb_in_pe
 ANNOTATION: "VC_COV_UNR"
 Condition 8 "2275772612" "((in_xact_state == StSendData) && tx_data_get_i) 1 -1" (1 "01")
 CHECKSUM: "3215070453 3446030929"
-INSTANCE: tb.dut.gen_no_stubbed_memory.u_tlul2sram.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt
+INSTANCE: tb.dut.gen_no_stubbed_memory.u_tlul2sram.gen_no_sec_u_sramreqfifo.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt
 ANNOTATION: "VC_COV_UNR"
 Block 19 "4019242409" "wptr_wrap_cnt_q <= (wptr_wrap_cnt_q + {{(WrapPtrW - 1) {1'b0}}, 1'b1});"
 ANNOTATION: "VC_COV_UNR"
 Block 28 "1113085816" "rptr_wrap_cnt_q <= (rptr_wrap_cnt_q + {{(WrapPtrW - 1) {1'b0}}, 1'b1});"
 CHECKSUM: "3215070453 3446030929"
-INSTANCE: tb.dut.gen_no_stubbed_memory.u_tlul2sram.u_rspfifo.gen_normal_fifo.u_fifo_cnt
+INSTANCE: tb.dut.gen_no_stubbed_memory.u_tlul2sram.gen_no_sec_u_rspfifo.u_rspfifo.gen_normal_fifo.u_fifo_cnt
 ANNOTATION: "VC_COV_UNR"
 Block 19 "4019242409" "wptr_wrap_cnt_q <= (wptr_wrap_cnt_q + {{(WrapPtrW - 1) {1'b0}}, 1'b1});"
 ANNOTATION: "VC_COV_UNR"
 Block 28 "1113085816" "rptr_wrap_cnt_q <= (rptr_wrap_cnt_q + {{(WrapPtrW - 1) {1'b0}}, 1'b1});"
 CHECKSUM: "3215070453 3446030929"
-INSTANCE: tb.dut.gen_no_stubbed_memory.u_tlul2sram.u_reqfifo.gen_normal_fifo.u_fifo_cnt
+INSTANCE: tb.dut.gen_no_stubbed_memory.u_tlul2sram.gen_no_sec_u_reqfifo.u_reqfifo.gen_normal_fifo.u_fifo_cnt
 ANNOTATION: "VC_COV_UNR"
 Block 19 "4019242409" "wptr_wrap_cnt_q <= (wptr_wrap_cnt_q + {{(WrapPtrW - 1) {1'b0}}, 1'b1});"
 ANNOTATION: "VC_COV_UNR"
@@ -205,7 +205,7 @@ Condition 43 "721931741" "(rvalid_i & reqfifo_rvalid) 1 -1" (2 "10")
 ANNOTATION: "vcs_gen_start:i=0:vcs_gen_end:VC_COV_UNR"
 Condition 47 "1163750833" "(((|wmask_intg)) & ((|wdata_intg))) 1 -1" (1 "01")
 CHECKSUM: "7115036 2825631531"
-INSTANCE: tb.dut.gen_no_stubbed_memory.u_tlul2sram.u_sramreqfifo
+INSTANCE: tb.dut.gen_no_stubbed_memory.u_tlul2sram.gen_no_sec_u_sramreqfifo.u_sramreqfifo
 ANNOTATION: "VC_COV_UNR"
 Condition 2 "1709501387" "(((~gen_normal_fifo.empty)) & ((~gen_normal_fifo.under_rst))) 1 -1" (2 "10")
 ANNOTATION: "VC_COV_UNR"
@@ -219,7 +219,7 @@ Condition 4 "1324655787" "(rvalid_o & rready_i & ((~gen_normal_fifo.under_rst)))
 ANNOTATION: "VC_COV_UNR"
 Condition 4 "1324655787" "(rvalid_o & rready_i & ((~gen_normal_fifo.under_rst))) 1 -1" (3 "110")
 CHECKSUM: "7115036 2432857915"
-INSTANCE: tb.dut.gen_no_stubbed_memory.u_tlul2sram.u_rspfifo
+INSTANCE: tb.dut.gen_no_stubbed_memory.u_tlul2sram.gen_no_sec_u_rspfifo.u_rspfifo
 ANNOTATION: "VC_COV_UNR"
 Condition 2 "1709501387" "(((~gen_normal_fifo.empty)) & ((~gen_normal_fifo.under_rst))) 1 -1" (2 "10")
 ANNOTATION: "VC_COV_UNR"
@@ -259,7 +259,7 @@ Condition 3 "786039886" "(wvalid_i & wready_o & ((~gen_normal_fifo.under_rst))) 
 ANNOTATION: "VC_COV_UNR"
 Condition 4 "1324655787" "(rvalid_o & rready_i & ((~gen_normal_fifo.under_rst))) 1 -1" (3 "110")
 CHECKSUM: "7115036 3923796707"
-INSTANCE: tb.dut.gen_no_stubbed_memory.u_tlul2sram.u_reqfifo
+INSTANCE: tb.dut.gen_no_stubbed_memory.u_tlul2sram.gen_no_sec_u_reqfifo.u_reqfifo
 ANNOTATION: "VC_COV_UNR"
 Condition 2 "1709501387" "(((~gen_normal_fifo.empty)) & ((~gen_normal_fifo.under_rst))) 1 -1" (2 "10")
 ANNOTATION: "VC_COV_UNR"
@@ -277,7 +277,7 @@ Condition 2 "700807773" "(dst_req_o & dst_ack_i) 1 -1" (1 "01")
 ANNOTATION: "VC_COV_UNR"
 Condition 2 "700807773" "(dst_req_o & dst_ack_i) 1 -1" (2 "10")
 CHECKSUM: "3215070453 33318353"
-INSTANCE: tb.dut.gen_no_stubbed_memory.u_tlul2sram.u_reqfifo.gen_normal_fifo.u_fifo_cnt
+INSTANCE: tb.dut.gen_no_stubbed_memory.u_tlul2sram.gen_no_sec_u_reqfifo.u_reqfifo.gen_normal_fifo.u_fifo_cnt
 ANNOTATION: "VC_COV_UNR"
 Condition 1 "2532211833" "(incr_wptr_i & (wptr_o == 1'((Depth - 1)))) 1 -1" (2 "10")
 ANNOTATION: "VC_COV_UNR"
@@ -287,7 +287,7 @@ Condition 8 "1599734576" "((wptr_wrap_msb == rptr_wrap_msb) ? ((1'(wptr_o) - 1'(
 ANNOTATION: "VC_COV_UNR"
 Condition 9 "446195871" "(wptr_wrap_msb == rptr_wrap_msb) 1 -1" (1 "0")
 CHECKSUM: "3215070453 33318353"
-INSTANCE: tb.dut.gen_no_stubbed_memory.u_tlul2sram.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt
+INSTANCE: tb.dut.gen_no_stubbed_memory.u_tlul2sram.gen_no_sec_u_sramreqfifo.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt
 ANNOTATION: "VC_COV_UNR"
 Condition 1 "2532211833" "(incr_wptr_i & (wptr_o == 1'((Depth - 1)))) 1 -1" (2 "10")
 ANNOTATION: "VC_COV_UNR"
@@ -297,7 +297,7 @@ Condition 8 "1599734576" "((wptr_wrap_msb == rptr_wrap_msb) ? ((1'(wptr_o) - 1'(
 ANNOTATION: "VC_COV_UNR"
 Condition 9 "446195871" "(wptr_wrap_msb == rptr_wrap_msb) 1 -1" (1 "0")
 CHECKSUM: "3215070453 33318353"
-INSTANCE: tb.dut.gen_no_stubbed_memory.u_tlul2sram.u_rspfifo.gen_normal_fifo.u_fifo_cnt
+INSTANCE: tb.dut.gen_no_stubbed_memory.u_tlul2sram.gen_no_sec_u_rspfifo.u_rspfifo.gen_normal_fifo.u_fifo_cnt
 ANNOTATION: "VC_COV_UNR"
 Condition 1 "2532211833" "(incr_wptr_i & (wptr_o == 1'((Depth - 1)))) 1 -1" (2 "10")
 ANNOTATION: "VC_COV_UNR"
@@ -417,7 +417,7 @@ INSTANCE: tb.dut.gen_no_stubbed_memory.u_tlul2sram
 ANNOTATION: "VC_COV_UNR"
 Branch 2 "1058271942" "(vld_rd_rsp && reqfifo_rdata.error)" (0) "(vld_rd_rsp && reqfifo_rdata.error) 1,-"
 CHECKSUM: "3215070453 1827096802"
-INSTANCE: tb.dut.gen_no_stubbed_memory.u_tlul2sram.u_reqfifo.gen_normal_fifo.u_fifo_cnt
+INSTANCE: tb.dut.gen_no_stubbed_memory.u_tlul2sram.gen_no_sec_u_reqfifo.u_reqfifo.gen_normal_fifo.u_fifo_cnt
 ANNOTATION: "VC_COV_UNR"
 Branch 0 "721764659" "full_o" (2) "full_o 0,0"
 ANNOTATION: "VC_COV_UNR"
@@ -425,7 +425,7 @@ Branch 1 "2417346495" "(!rst_ni)" (3) "(!rst_ni) 0,0,0,1"
 ANNOTATION: "VC_COV_UNR"
 Branch 2 "456961687" "(!rst_ni)" (3) "(!rst_ni) 0,0,0,1"
 CHECKSUM: "3215070453 1827096802"
-INSTANCE: tb.dut.gen_no_stubbed_memory.u_tlul2sram.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt
+INSTANCE: tb.dut.gen_no_stubbed_memory.u_tlul2sram.gen_no_sec_u_sramreqfifo.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt
 ANNOTATION: "VC_COV_UNR"
 Branch 0 "721764659" "full_o" (2) "full_o 0,0"
 ANNOTATION: "VC_COV_UNR"
@@ -433,7 +433,7 @@ Branch 1 "2417346495" "(!rst_ni)" (3) "(!rst_ni) 0,0,0,1"
 ANNOTATION: "VC_COV_UNR"
 Branch 2 "456961687" "(!rst_ni)" (3) "(!rst_ni) 0,0,0,1"
 CHECKSUM: "3215070453 1827096802"
-INSTANCE: tb.dut.gen_no_stubbed_memory.u_tlul2sram.u_rspfifo.gen_normal_fifo.u_fifo_cnt
+INSTANCE: tb.dut.gen_no_stubbed_memory.u_tlul2sram.gen_no_sec_u_rspfifo.u_rspfifo.gen_normal_fifo.u_fifo_cnt
 ANNOTATION: "VC_COV_UNR"
 Branch 0 "721764659" "full_o" (2) "full_o 0,0"
 ANNOTATION: "VC_COV_UNR"
