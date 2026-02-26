@@ -182,6 +182,10 @@ impl UsbBackend {
         &self.handle
     }
 
+    pub fn device(&self) -> &rusb::Device<rusb::Context> {
+        &self.device
+    }
+
     pub fn get_vendor_id(&self) -> u16 {
         self.device.device_descriptor().unwrap().vendor_id()
     }
