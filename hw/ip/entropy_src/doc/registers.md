@@ -17,15 +17,15 @@
 | entropy_src.[`ENTROPY_CONTROL`](#entropy_control)                     | 0x24     |        4 | Entropy control register                                     |
 | entropy_src.[`ENTROPY_DATA`](#entropy_data)                           | 0x28     |        4 | Entropy data bits                                            |
 | entropy_src.[`HEALTH_TEST_WINDOWS`](#health_test_windows)             | 0x2c     |        4 | Health test windows register                                 |
-| entropy_src.[`REPCNT_THRESHOLDS`](#repcnt_thresholds)                 | 0x30     |        4 | Repetition Count Test thresholds register                    |
-| entropy_src.[`REPCNTS_THRESHOLDS`](#repcnts_thresholds)               | 0x34     |        4 | Repetition Count Symbol Test thresholds register             |
-| entropy_src.[`ADAPTP_HI_THRESHOLDS`](#adaptp_hi_thresholds)           | 0x38     |        4 | Adaptive proportion test high thresholds register            |
-| entropy_src.[`ADAPTP_LO_THRESHOLDS`](#adaptp_lo_thresholds)           | 0x3c     |        4 | Adaptive proportion test low thresholds register             |
-| entropy_src.[`BUCKET_THRESHOLDS`](#bucket_thresholds)                 | 0x40     |        4 | Bucket test thresholds register                              |
-| entropy_src.[`MARKOV_HI_THRESHOLDS`](#markov_hi_thresholds)           | 0x44     |        4 | Markov test high thresholds register                         |
-| entropy_src.[`MARKOV_LO_THRESHOLDS`](#markov_lo_thresholds)           | 0x48     |        4 | Markov test low thresholds register                          |
-| entropy_src.[`EXTHT_HI_THRESHOLDS`](#extht_hi_thresholds)             | 0x4c     |        4 | External health test high thresholds register                |
-| entropy_src.[`EXTHT_LO_THRESHOLDS`](#extht_lo_thresholds)             | 0x50     |        4 | External health test low thresholds register                 |
+| entropy_src.[`REPCNT_THRESHOLD`](#repcnt_threshold)                   | 0x30     |        4 | Repetition Count Test threshold register                     |
+| entropy_src.[`REPCNTS_THRESHOLD`](#repcnts_threshold)                 | 0x34     |        4 | Repetition Count Symbol Test threshold register              |
+| entropy_src.[`ADAPTP_HI_THRESHOLD`](#adaptp_hi_threshold)             | 0x38     |        4 | Adaptive proportion test high threshold register             |
+| entropy_src.[`ADAPTP_LO_THRESHOLD`](#adaptp_lo_threshold)             | 0x3c     |        4 | Adaptive proportion test low threshold register              |
+| entropy_src.[`BUCKET_THRESHOLD`](#bucket_threshold)                   | 0x40     |        4 | Bucket test threshold register                               |
+| entropy_src.[`MARKOV_HI_THRESHOLD`](#markov_hi_threshold)             | 0x44     |        4 | Markov test high threshold register                          |
+| entropy_src.[`MARKOV_LO_THRESHOLD`](#markov_lo_threshold)             | 0x48     |        4 | Markov test low threshold register                           |
+| entropy_src.[`EXTHT_HI_THRESHOLD`](#extht_hi_threshold)               | 0x4c     |        4 | External health test high threshold register                 |
+| entropy_src.[`EXTHT_LO_THRESHOLD`](#extht_lo_threshold)               | 0x50     |        4 | External health test low threshold register                  |
 | entropy_src.[`HT_WATERMARK_NUM`](#ht_watermark_num)                   | 0x54     |        4 | Health test watermark number register                        |
 | entropy_src.[`HT_WATERMARK`](#ht_watermark)                           | 0x58     |        4 | Health test watermark register                               |
 | entropy_src.[`REPCNT_TOTAL_FAILS`](#repcnt_total_fails)               | 0x5c     |        4 | Repetition Count Test failure counter register               |
@@ -265,7 +265,7 @@ Setting this field to `kMultiBitBool4True` will set the FIPS flag for the ENTROP
 
 ### CONF . FIPS_ENABLE
 Setting this field to `kMultiBitBool4True` selects the mode targeting FIPS/CC compliance (in short FIPS mode) with hardware conditioning enabled.
-The ENTROPY_SRC block will use the FIPS_WINDOW and FIPS_THRESH values of the [`HEALTH_TEST_WINDOWS`](#health_test_windows) and health test thresholds register, respectively.
+The ENTROPY_SRC block will use the FIPS_WINDOW value of the [`HEALTH_TEST_WINDOWS`](#health_test_windows) register.
 Whether the ENTROPY_SRC block is indeed running with the configuration used for FIPS/CC validation is under the control of firmware.
 Thus, firmware must explicitly mark the produced entropy as FIPS qualified using the [`CONF.FIPS_FLAG`](#conf) field.
 Note that the hardware conditioning can still be disabled in FIPS mode by setting both [`ENTROPY_CONTROL.ES_ROUTE`](#entropy_control) and [`ENTROPY_CONTROL.ES_TYPE`](#entropy_control) fields to `kMultiBitBool4True`.
@@ -364,316 +364,226 @@ Note that NIST SP 800-90B (Table 2) requires the Adaptive Proportion Test to be 
 The startup tests must be run on at least 1024 consecutive samples (see Section 4.3 Requirements for Health Tests of NIST SP 800-90B) and this block always uses two subsequent windows for startup health testing.
 The use of window sizes below 512 samples is thus not recommended as this may not comply with NIST SP 800-90B.
 
-## REPCNT_THRESHOLDS
-Repetition Count Test thresholds register
+## REPCNT_THRESHOLD
+Repetition Count Test threshold register
 - Offset: `0x30`
-- Reset default: `0xffffffff`
-- Reset mask: `0xffffffff`
+- Reset default: `0xffff`
+- Reset mask: `0xffff`
 - Register enable: [`REGWEN`](#regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "FIPS_THRESH", "bits": 16, "attr": ["rw"], "rotate": 0}, {"name": "BYPASS_THRESH", "bits": 16, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "REPCNT_THRESHOLD", "bits": 16, "attr": ["rw"], "rotate": 0}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                               |
-|:------:|:------:|:-------:|:---------------------------------------------------|
-| 31:16  |   rw   | 0xffff  | [BYPASS_THRESH](#repcnt_thresholds--bypass_thresh) |
-|  15:0  |   rw   | 0xffff  | [FIPS_THRESH](#repcnt_thresholds--fips_thresh)     |
+|  Bits  |  Type  |  Reset  | Name                                                    |
+|:------:|:------:|:-------:|:--------------------------------------------------------|
+| 31:16  |        |         | Reserved                                                |
+|  15:0  |   rw   | 0xffff  | [REPCNT_THRESHOLD](#repcnt_threshold--repcnt_threshold) |
 
-### REPCNT_THRESHOLDS . BYPASS_THRESH
-This is the threshold for the Repetition Count Test
-   running in bypass mode. This mode is active after reset for the
-   first and only test run, or when this mode is programmed by firmware.
-   This register must be written before the module is enabled.
-   Writing to this register will only update the register if the
-   written value is less than the current value of this register.
-   A read from this register always reflects the current value.
-
-### REPCNT_THRESHOLDS . FIPS_THRESH
+### REPCNT_THRESHOLD . REPCNT_THRESHOLD
 This is the threshold for the Repetition Count Test.
-   This value is used in FIPS mode.
    This register must be written before the module is enabled.
    Writing to this register will only update the register if the
    written value is less than the current value of this register.
    A read from this register always reflects the current value.
 
-## REPCNTS_THRESHOLDS
-Repetition Count Symbol Test thresholds register
+## REPCNTS_THRESHOLD
+Repetition Count Symbol Test threshold register
 - Offset: `0x34`
-- Reset default: `0xffffffff`
-- Reset mask: `0xffffffff`
+- Reset default: `0xffff`
+- Reset mask: `0xffff`
 - Register enable: [`REGWEN`](#regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "FIPS_THRESH", "bits": 16, "attr": ["rw"], "rotate": 0}, {"name": "BYPASS_THRESH", "bits": 16, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "REPCNTS_THRESHOLD", "bits": 16, "attr": ["rw"], "rotate": 0}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                                |
-|:------:|:------:|:-------:|:----------------------------------------------------|
-| 31:16  |   rw   | 0xffff  | [BYPASS_THRESH](#repcnts_thresholds--bypass_thresh) |
-|  15:0  |   rw   | 0xffff  | [FIPS_THRESH](#repcnts_thresholds--fips_thresh)     |
+|  Bits  |  Type  |  Reset  | Name                                                       |
+|:------:|:------:|:-------:|:-----------------------------------------------------------|
+| 31:16  |        |         | Reserved                                                   |
+|  15:0  |   rw   | 0xffff  | [REPCNTS_THRESHOLD](#repcnts_threshold--repcnts_threshold) |
 
-### REPCNTS_THRESHOLDS . BYPASS_THRESH
-This is the threshold for the Repetition Count Symbol Test
-   running in bypass mode. This mode is active after reset for the
-   first and only test run, or when this mode is programmed by firmware.
-   This register must be written before the module is enabled.
-   Writing to this register will only update the register if the
-   written value is less than the current value of this register.
-   A read from this register always reflects the current value.
-
-### REPCNTS_THRESHOLDS . FIPS_THRESH
+### REPCNTS_THRESHOLD . REPCNTS_THRESHOLD
 This is the threshold for the Repetition Count Symbol Test.
-   This value is used in FIPS mode.
    This register must be written before the module is enabled.
    Writing to this register will only update the register if the
    written value is less than the current value of this register.
    A read from this register always reflects the current value.
 
-## ADAPTP_HI_THRESHOLDS
-Adaptive proportion test high thresholds register
+## ADAPTP_HI_THRESHOLD
+Adaptive proportion test high threshold register
 - Offset: `0x38`
-- Reset default: `0xffffffff`
-- Reset mask: `0xffffffff`
+- Reset default: `0xffff`
+- Reset mask: `0xffff`
 - Register enable: [`REGWEN`](#regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "FIPS_THRESH", "bits": 16, "attr": ["rw"], "rotate": 0}, {"name": "BYPASS_THRESH", "bits": 16, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "ADAPTP_HI_THRESHOLD", "bits": 16, "attr": ["rw"], "rotate": 0}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                                  |
-|:------:|:------:|:-------:|:------------------------------------------------------|
-| 31:16  |   rw   | 0xffff  | [BYPASS_THRESH](#adaptp_hi_thresholds--bypass_thresh) |
-|  15:0  |   rw   | 0xffff  | [FIPS_THRESH](#adaptp_hi_thresholds--fips_thresh)     |
+|  Bits  |  Type  |  Reset  | Name                                                             |
+|:------:|:------:|:-------:|:-----------------------------------------------------------------|
+| 31:16  |        |         | Reserved                                                         |
+|  15:0  |   rw   | 0xffff  | [ADAPTP_HI_THRESHOLD](#adaptp_hi_threshold--adaptp_hi_threshold) |
 
-### ADAPTP_HI_THRESHOLDS . BYPASS_THRESH
-This is the threshold for the Adaptive Proportion Test
-   running in bypass mode. This mode is active after reset for the
-   first and only test run, or when this mode is programmed by firmware.
-   This register must be written before the module is enabled.
-   Writing to this register will only update the register if the
-   written value is less than the current value of this register.
-   A read from this register always reflects the current value.
-
-### ADAPTP_HI_THRESHOLDS . FIPS_THRESH
+### ADAPTP_HI_THRESHOLD . ADAPTP_HI_THRESHOLD
 This is the threshold for the Adaptive Proportion Test.
-   This value is used in FIPS mode.
    This register must be written before the module is enabled.
    Writing to this register will only update the register if the
    written value is less than the current value of this register.
    A read from this register always reflects the current value.
 
-## ADAPTP_LO_THRESHOLDS
-Adaptive proportion test low thresholds register
+## ADAPTP_LO_THRESHOLD
+Adaptive proportion test low threshold register
 - Offset: `0x3c`
 - Reset default: `0x0`
-- Reset mask: `0xffffffff`
+- Reset mask: `0xffff`
 - Register enable: [`REGWEN`](#regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "FIPS_THRESH", "bits": 16, "attr": ["rw"], "rotate": 0}, {"name": "BYPASS_THRESH", "bits": 16, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "ADAPTP_LO_THRESHOLD", "bits": 16, "attr": ["rw"], "rotate": 0}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                                  |
-|:------:|:------:|:-------:|:------------------------------------------------------|
-| 31:16  |   rw   |   0x0   | [BYPASS_THRESH](#adaptp_lo_thresholds--bypass_thresh) |
-|  15:0  |   rw   |   0x0   | [FIPS_THRESH](#adaptp_lo_thresholds--fips_thresh)     |
+|  Bits  |  Type  |  Reset  | Name                                                             |
+|:------:|:------:|:-------:|:-----------------------------------------------------------------|
+| 31:16  |        |         | Reserved                                                         |
+|  15:0  |   rw   |   0x0   | [ADAPTP_LO_THRESHOLD](#adaptp_lo_threshold--adaptp_lo_threshold) |
 
-### ADAPTP_LO_THRESHOLDS . BYPASS_THRESH
-This is the threshold for the Adaptive Proportion Test
-   running in bypass mode. This mode is active after reset for the
-   first and only test run, or when this mode is programmed by firmware.
-   This register must be written before the module is enabled.
-   Writing to this register will only update the register if the
-   written value is greater than the current value of this register.
-   A read from this register always reflects the current value.
-
-### ADAPTP_LO_THRESHOLDS . FIPS_THRESH
+### ADAPTP_LO_THRESHOLD . ADAPTP_LO_THRESHOLD
 This is the threshold for the Adaptive Proportion Test.
-   This value is used in FIPS mode.
    This register must be written before the module is enabled.
    Writing to this register will only update the register if the
    written value is greater than the current value of this register.
    A read from this register always reflects the current value.
 
-## BUCKET_THRESHOLDS
-Bucket test thresholds register
+## BUCKET_THRESHOLD
+Bucket test threshold register
 - Offset: `0x40`
-- Reset default: `0xffffffff`
-- Reset mask: `0xffffffff`
+- Reset default: `0xffff`
+- Reset mask: `0xffff`
 - Register enable: [`REGWEN`](#regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "FIPS_THRESH", "bits": 16, "attr": ["rw"], "rotate": 0}, {"name": "BYPASS_THRESH", "bits": 16, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "BUCKET_THRESHOLD", "bits": 16, "attr": ["rw"], "rotate": 0}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                               |
-|:------:|:------:|:-------:|:---------------------------------------------------|
-| 31:16  |   rw   | 0xffff  | [BYPASS_THRESH](#bucket_thresholds--bypass_thresh) |
-|  15:0  |   rw   | 0xffff  | [FIPS_THRESH](#bucket_thresholds--fips_thresh)     |
+|  Bits  |  Type  |  Reset  | Name                                                    |
+|:------:|:------:|:-------:|:--------------------------------------------------------|
+| 31:16  |        |         | Reserved                                                |
+|  15:0  |   rw   | 0xffff  | [BUCKET_THRESHOLD](#bucket_threshold--bucket_threshold) |
 
-### BUCKET_THRESHOLDS . BYPASS_THRESH
-This is the threshold size for the bucket health test
-   running in bypass mode. This mode is active after reset for the
-   first and only test run, or when this mode is programmed by firmware.
-   This register must be written before the module is enabled.
-   Writing to this register will only update the register if the
-   written value is less than the current value of this register.
-   A read from this register always reflects the current value.
-
-### BUCKET_THRESHOLDS . FIPS_THRESH
+### BUCKET_THRESHOLD . BUCKET_THRESHOLD
 This is the threshold size for the bucket health test.
-   This value is used in FIPS mode.
    This register must be written before the module is enabled.
    Writing to this register will only update the register if the
    written value is less than the current value of this register.
    A read from this register always reflects the current value.
 
-## MARKOV_HI_THRESHOLDS
-Markov test high thresholds register
+## MARKOV_HI_THRESHOLD
+Markov test high threshold register
 - Offset: `0x44`
-- Reset default: `0xffffffff`
-- Reset mask: `0xffffffff`
+- Reset default: `0xffff`
+- Reset mask: `0xffff`
 - Register enable: [`REGWEN`](#regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "FIPS_THRESH", "bits": 16, "attr": ["rw"], "rotate": 0}, {"name": "BYPASS_THRESH", "bits": 16, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "MARKOV_HI_THRESHOLD", "bits": 16, "attr": ["rw"], "rotate": 0}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                                  |
-|:------:|:------:|:-------:|:------------------------------------------------------|
-| 31:16  |   rw   | 0xffff  | [BYPASS_THRESH](#markov_hi_thresholds--bypass_thresh) |
-|  15:0  |   rw   | 0xffff  | [FIPS_THRESH](#markov_hi_thresholds--fips_thresh)     |
+|  Bits  |  Type  |  Reset  | Name                                                             |
+|:------:|:------:|:-------:|:-----------------------------------------------------------------|
+| 31:16  |        |         | Reserved                                                         |
+|  15:0  |   rw   | 0xffff  | [MARKOV_HI_THRESHOLD](#markov_hi_threshold--markov_hi_threshold) |
 
-### MARKOV_HI_THRESHOLDS . BYPASS_THRESH
-This is the threshold size for the Markov health test
-   running in bypass mode. This mode is active after reset for the
-   first and only test run, or when this mode is programmed by firmware.
-   This register must be written before the module is enabled.
-   Writing to this register will only update the register if the
-   written value is less than the current value of this register.
-   A read from this register always reflects the current value.
-
-### MARKOV_HI_THRESHOLDS . FIPS_THRESH
+### MARKOV_HI_THRESHOLD . MARKOV_HI_THRESHOLD
 This is the threshold size for the Markov health test.
-   This value is used in FIPS mode.
    This register must be written before the module is enabled.
    Writing to this register will only update the register if the
    written value is less than the current value of this register.
    A read from this register always reflects the current value.
 
-## MARKOV_LO_THRESHOLDS
-Markov test low thresholds register
+## MARKOV_LO_THRESHOLD
+Markov test low threshold register
 - Offset: `0x48`
 - Reset default: `0x0`
-- Reset mask: `0xffffffff`
+- Reset mask: `0xffff`
 - Register enable: [`REGWEN`](#regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "FIPS_THRESH", "bits": 16, "attr": ["rw"], "rotate": 0}, {"name": "BYPASS_THRESH", "bits": 16, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "MARKOV_LO_THRESHOLD", "bits": 16, "attr": ["rw"], "rotate": 0}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                                  |
-|:------:|:------:|:-------:|:------------------------------------------------------|
-| 31:16  |   rw   |   0x0   | [BYPASS_THRESH](#markov_lo_thresholds--bypass_thresh) |
-|  15:0  |   rw   |   0x0   | [FIPS_THRESH](#markov_lo_thresholds--fips_thresh)     |
+|  Bits  |  Type  |  Reset  | Name                                                             |
+|:------:|:------:|:-------:|:-----------------------------------------------------------------|
+| 31:16  |        |         | Reserved                                                         |
+|  15:0  |   rw   |   0x0   | [MARKOV_LO_THRESHOLD](#markov_lo_threshold--markov_lo_threshold) |
 
-### MARKOV_LO_THRESHOLDS . BYPASS_THRESH
-This is the threshold size for the Markov health test
-   running in bypass mode. This mode is active after reset for the
-   first and only test run, or when this mode is programmed by firmware.
-   This register must be written before the module is enabled.
-   Writing to this register will only update the register if the
-   written value is greater than the current value of this register.
-   A read from this register always reflects the current value.
-
-### MARKOV_LO_THRESHOLDS . FIPS_THRESH
+### MARKOV_LO_THRESHOLD . MARKOV_LO_THRESHOLD
 This is the threshold size for the Markov health test.
-   This value is used in FIPS mode.
    This register must be written before the module is enabled.
    Writing to this register will only update the register if the
    written value is greater than the current value of this register.
    A read from this register always reflects the current value.
 
-## EXTHT_HI_THRESHOLDS
-External health test high thresholds register
+## EXTHT_HI_THRESHOLD
+External health test high threshold register
 - Offset: `0x4c`
-- Reset default: `0xffffffff`
-- Reset mask: `0xffffffff`
+- Reset default: `0xffff`
+- Reset mask: `0xffff`
 - Register enable: [`REGWEN`](#regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "FIPS_THRESH", "bits": 16, "attr": ["rw"], "rotate": 0}, {"name": "BYPASS_THRESH", "bits": 16, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "EXTHT_HI_THRESHOLD", "bits": 16, "attr": ["rw"], "rotate": 0}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                                 |
-|:------:|:------:|:-------:|:-----------------------------------------------------|
-| 31:16  |   rw   | 0xffff  | [BYPASS_THRESH](#extht_hi_thresholds--bypass_thresh) |
-|  15:0  |   rw   | 0xffff  | [FIPS_THRESH](#extht_hi_thresholds--fips_thresh)     |
+|  Bits  |  Type  |  Reset  | Name                                                          |
+|:------:|:------:|:-------:|:--------------------------------------------------------------|
+| 31:16  |        |         | Reserved                                                      |
+|  15:0  |   rw   | 0xffff  | [EXTHT_HI_THRESHOLD](#extht_hi_threshold--extht_hi_threshold) |
 
-### EXTHT_HI_THRESHOLDS . BYPASS_THRESH
-This is the threshold size for the external health test
-   running in bypass mode. This mode is active after reset for the
-   first and only test run, or when this mode is programmed by firmware.
-   This register must be written before the module is enabled.
-   Writing to this register will only update the register if the
-   written value is less than the current value of this register.
-   A read from this register always reflects the current value.
-
-### EXTHT_HI_THRESHOLDS . FIPS_THRESH
+### EXTHT_HI_THRESHOLD . EXTHT_HI_THRESHOLD
 This is the threshold size for the external health test.
-   This value is used in FIPS mode.
    This register must be written before the module is enabled.
    Writing to this register will only update the register if the
    written value is less than the current value of this register.
    A read from this register always reflects the current value.
 
-## EXTHT_LO_THRESHOLDS
-External health test low thresholds register
+## EXTHT_LO_THRESHOLD
+External health test low threshold register
 - Offset: `0x50`
 - Reset default: `0x0`
-- Reset mask: `0xffffffff`
+- Reset mask: `0xffff`
 - Register enable: [`REGWEN`](#regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "FIPS_THRESH", "bits": 16, "attr": ["rw"], "rotate": 0}, {"name": "BYPASS_THRESH", "bits": 16, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "EXTHT_LO_THRESHOLD", "bits": 16, "attr": ["rw"], "rotate": 0}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                                 |
-|:------:|:------:|:-------:|:-----------------------------------------------------|
-| 31:16  |   rw   |   0x0   | [BYPASS_THRESH](#extht_lo_thresholds--bypass_thresh) |
-|  15:0  |   rw   |   0x0   | [FIPS_THRESH](#extht_lo_thresholds--fips_thresh)     |
+|  Bits  |  Type  |  Reset  | Name                                                          |
+|:------:|:------:|:-------:|:--------------------------------------------------------------|
+| 31:16  |        |         | Reserved                                                      |
+|  15:0  |   rw   |   0x0   | [EXTHT_LO_THRESHOLD](#extht_lo_threshold--extht_lo_threshold) |
 
-### EXTHT_LO_THRESHOLDS . BYPASS_THRESH
-This is the threshold size for the external health test
-   running in bypass mode. This mode is active after reset for the
-   first and only test run, or when this mode is programmed by firmware.
-   This register must be written before the module is enabled.
-   Writing to this register will only update the register if the
-   written value is greater than the current value of this register.
-   A read from this register always reflects the current value.
-
-### EXTHT_LO_THRESHOLDS . FIPS_THRESH
+### EXTHT_LO_THRESHOLD . EXTHT_LO_THRESHOLD
 This is the threshold size for the external health test.
-   This value is used in FIPS mode.
    This register must be written before the module is enabled.
    Writing to this register will only update the register if the
    written value is greater than the current value of this register.
