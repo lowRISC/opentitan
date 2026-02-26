@@ -2,20 +2,20 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// base register reg class which will be used to generate the reg mem
+// Specialised version of uvm_mem for OpenTitan
+//
+// The specialised version adds the possibilities that a memory:
+//
+//  - might not support partial writes (even if the bus would otherwise support them).
+//
+//  - might store integrity data but not check it (merely passing it through to the next read).
 
 class dv_base_mem extends uvm_mem;
-
-  // if mem doesn't support partial write, doing that will result d_error = 1
+  // If true, the memory supports partial writes. If not, any partial write will get an error
+  // response (d_error=1 in TileLink).
   local bit mem_partial_write_support;
 
-  // Modifies the expectation of writes / reads to RO / WO mem. By default it should be an error
-  // response, but some implementations may choose to just ignore it.
-  local bit write_to_ro_mem_ok;
-  local bit read_to_wo_mem_ok;
-
-  // if data integrity is passthru, mem stores integrity along with data but it won't check the
-  // data integrity
+  // If true, mem stores integrity along with data but it won't check the data integrity
   local bit data_intg_passthru;
 
   // Create a new instance of the memory abstraction class.
@@ -32,12 +32,6 @@ class dv_base_mem extends uvm_mem;
 
   extern function void set_data_intg_passthru(bit enable);
   extern function bit get_data_intg_passthru();
-
-  extern function void set_write_to_ro_mem_ok(bit ok);
-  extern function bit get_write_to_ro_mem_ok();
-
-  extern function void set_read_to_wo_mem_ok(bit ok);
-  extern function bit get_read_to_wo_mem_ok();
 
   // This overrides uvm_mem::configure (which is *not* a virtual function), removing the check that
   // the requested "access" is RW or RO, because we want to support WO as well.
@@ -70,22 +64,6 @@ endfunction
 
 function bit dv_base_mem::get_data_intg_passthru();
   return data_intg_passthru;
-endfunction
-
-function void dv_base_mem::set_write_to_ro_mem_ok(bit ok);
-  write_to_ro_mem_ok = ok;
-endfunction
-
-function bit dv_base_mem::get_write_to_ro_mem_ok();
-  return write_to_ro_mem_ok;
-endfunction
-
-function void dv_base_mem::set_read_to_wo_mem_ok(bit ok);
-  read_to_wo_mem_ok = ok;
-endfunction
-
-function bit dv_base_mem::get_read_to_wo_mem_ok();
-  return read_to_wo_mem_ok;
 endfunction
 
 // Note: This is a copied version of uvm_mem::configure, but tweaked to remove the check on m_access
