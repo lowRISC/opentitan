@@ -2,12 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::task::{Poll, ready};
 use std::time::Duration;
 
 use anyhow::{Context, Result};
 
 use super::ConsoleDevice;
-use crate::io::console::{ConsoleError, Logged};
+use crate::io::console::{ConsoleError, CoverageMiddleware, Logged};
 
 /// Extension trait to [`Uart`] where useful methods are provided.
 pub trait ConsoleExt {
@@ -22,6 +23,11 @@ pub trait ConsoleExt {
 
     /// Return a wrapper that logs all outputs while reading.
     fn logged(self) -> Logged<Self>
+    where
+        Self: Sized;
+
+    /// Return a wrapper that extracts coverage data.
+    fn coverage(self) -> CoverageMiddleware<Self>
     where
         Self: Sized;
 
@@ -54,6 +60,9 @@ pub trait ConsoleExt {
         pattern: P,
         timeout: Duration,
     ) -> Result<P::MatchResult>;
+
+    /// Wait on the console until the coverage profile end or skip anchor is received.
+    fn wait_for_coverage(&self, timeout: Duration) -> Result<()>;
 }
 
 impl<T: ConsoleDevice + ?Sized> ConsoleExt for T {
@@ -73,6 +82,13 @@ impl<T: ConsoleDevice + ?Sized> ConsoleExt for T {
         Self: Sized,
     {
         Logged::new(self)
+    }
+
+    fn coverage(self) -> CoverageMiddleware<Self>
+    where
+        Self: Sized,
+    {
+        CoverageMiddleware::new(self)
     }
 
     fn try_wait_for_line<P: MatchPattern>(
@@ -105,6 +121,37 @@ impl<T: ConsoleDevice + ?Sized> ConsoleExt for T {
     ) -> Result<P::MatchResult> {
         self.try_wait_for_line(pattern, timeout)?
             .with_context(|| ConsoleError::TimedOut)
+    }
+
+    fn wait_for_coverage(&self, timeout: Duration) -> Result<()> {
+        let coverage = self.as_coverage_console().ok_or_else(|| {
+            ConsoleError::GenericError("Coverage extraction not supported by this device".into())
+        })?;
+        let initial = coverage.coverage_blocks_processed();
+        crate::util::runtime::block_on(async {
+            tokio::time::timeout(timeout, async {
+                std::future::poll_fn(|cx| {
+                    if coverage.coverage_blocks_processed() > initial {
+                        return Poll::Ready(Ok(()));
+                    }
+                    let mut buf = [0u8; 1024];
+                    match ready!(self.poll_read(cx, &mut buf)) {
+                        Ok(0) => Poll::Ready(Err(ConsoleError::GenericError(
+                            "EOF reached while waiting for coverage".into(),
+                        )
+                        .into())),
+                        Ok(_) => {
+                            cx.waker().wake_by_ref();
+                            Poll::Pending
+                        }
+                        Err(e) => Poll::Ready(Err(e)),
+                    }
+                })
+                .await
+            })
+            .await
+            .context("Timed out waiting for coverage")?
+        })
     }
 }
 
