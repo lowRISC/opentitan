@@ -13,7 +13,10 @@ OUTPUT_DIR="$(realpath "${OUTPUT_DIR}")"
 TESTS="${OUTPUT_DIR}/test_coverages"
 SOURCES="${OUTPUT_DIR}/source_files"
 COVERAGE="${OUTPUT_DIR}/coverage.dat"
+LCOV_FILES="${OUTPUT_DIR}/lcov_files.tmp"
 HTML_REPORT="${OUTPUT_DIR}/html_report"
+VIEWER_DIR="${OUTPUT_DIR}/viewer"
+COVERAGE_JSON="${VIEWER_DIR}/coverage.json.gz"
 
 echo "Merge artifacts from all jobs"
 function merge_dir() {
@@ -29,6 +32,8 @@ merge_dir "test_logs"
 
 echo "Merge all coverage data"
 find "${TESTS}" -type f -name "*.dat" -exec cat {} + > "${COVERAGE}"
+find "${INPUT_DIR}" -type f -name "lcov_files.tmp" \
+  -exec cat {} + > "${LCOV_FILES}"
 
 echo "Merge static inline copies"
 # i.e. Replace all `FN:lineno,xxx:name` to FN:lineno,name
@@ -44,7 +49,20 @@ if [[ -d "${SOURCES}/bazel-out" ]]; then
   sed -i 's|bazel-out/k8-[^/]*/|generated/|g' "${COVERAGE}"
 fi
 
-echo "Render HTML coverage report"
+echo "Prepare opentitan coverage viewer"
+mkdir -p "${VIEWER_DIR}"
+
+python3 -m util.coverage.viewer.collect \
+  --lcov_files="${LCOV_FILES}" \
+  --coverage_dir="${TESTS}" \
+  --source_dir="${SOURCES}" \
+  --output="${COVERAGE_JSON}"
+
+python3 -m util.coverage.viewer.bundler \
+  --coverage_json="${COVERAGE_JSON}" \
+  --output="${VIEWER_DIR}/index.html"
+
+echo "Render LCOV HTML coverage report"
 genhtml --version
 
 # LCOV 2 has more data consistency checks that need to be disabled.

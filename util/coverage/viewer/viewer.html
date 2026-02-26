@@ -1,0 +1,1799 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenTitan Coverage Viewer</title>
+
+    <!-- Syntax Highlighting Dependencies -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/themes/prism.min.css"
+      integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/prism.min.js"
+      integrity="sha512-HiD3V4nv8fcjtouznjT9TqDNDm1EXngV331YGbfVGeKUoH+OLkRTCMzA34ecjlgSQZpdHZupdSrqHY+Hz3l6uQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/themes/prism-dark.min.css"
+      integrity="sha512-Njdz7T/p6Ud1FiTMqH87bzDxaZBsVNebOWmacBjMdgWyeIhUSFU4V52oGwo3sT+ud+lyIE98sS291/zxBfozKw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+
+    <style>
+      /* --- Application Variables --- */
+      :root {
+        /* UI Color Palette (Dark Theme) */
+        --cv-bg-main: #1e1e1e;
+        --cv-bg-sidebar: #252526;
+        --cv-bg-header: #2d2d2d;
+        --cv-bg-input: #333333;
+        --cv-bg-hover: #3a3a3a;
+        --cv-bg-hover-light: #555555;
+        --cv-bg-active: #3f51b5;
+        --cv-bg-popup: #333333;
+        --cv-bg-selection: #4a4a4a;
+
+        /* Typography */
+        --cv-text-main: #cccccc;
+        --cv-text-dim: #888888;
+        --cv-text-muted: #666666;
+        --cv-text-bright: #ffffff;
+        --cv-text-code: #bbbbbb;
+
+        /* Visual Structural Elements */
+        --cv-border-soft: #3c3c3c;
+        --cv-border-strong: #444444;
+
+        /* Status & Alert Colors */
+        --cv-color-success: #4caf50;
+        --cv-color-warning: #ffb300;
+        --cv-color-error: #ef5350;
+
+        /* Coverage-Specific Semantic Colors */
+        --cv-cov-high: #66bb6a;
+        --cv-cov-medium: #ffb300;
+        --cv-cov-low: #ef5350;
+
+        /* Code Source Line Highlighting */
+        --cv-line-hit-bg: #203320;
+        --cv-line-hit-hover: #336633;
+        --cv-line-miss-bg: #402020;
+        --cv-line-miss-hover: #663333;
+        --cv-line-focus-bg: #4a4a2a;
+        --cv-line-focus-hover: #5a5a3a;
+        --cv-line-hit-focus-bg: #405320;
+        --cv-line-hit-focus-hover: #538633;
+        --cv-line-miss-focus-bg: #604020;
+        --cv-line-miss-focus-hover: #865333;
+
+        /* Responsive Layout Metrics */
+        --cv-sidebar-width: 400px;
+        --cv-splitter-width: 5px;
+      }
+
+      /* --- Global Reset & Base Styles --- */
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        height: 100vh;
+        overflow: hidden;
+        background-color: var(--cv-bg-main);
+        color: var(--cv-text-main);
+      }
+
+      /* --- Initialization Loading Mask --- */
+      #cv-loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: var(--cv-bg-main);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        transition: opacity 0.5s ease;
+      }
+      .cv-loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid var(--cv-bg-input);
+        border-top: 5px solid var(--cv-color-success);
+        border-radius: 50%;
+        animation: cv-spin 1s linear infinite;
+        margin-bottom: 20px;
+      }
+      @keyframes cv-spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* --- Visual Utility Classes --- */
+      ::-webkit-scrollbar {
+        -webkit-appearance: none;
+        width: 0;
+        height: 0;
+      }
+      ::selection {
+        background-color: var(--cv-bg-selection);
+      }
+
+      /* --- Sidebar: Component Layout --- */
+      #cv-sidebar {
+        width: var(--cv-sidebar-width);
+        display: flex;
+        flex-direction: column;
+        background-color: var(--cv-bg-sidebar);
+        position: relative;
+        flex-shrink: 0;
+        color: var(--cv-text-main);
+      }
+
+      /* --- Sidebar: Resizable Divider --- */
+      #cv-sidebar-resizer {
+        width: var(--cv-splitter-width);
+        cursor: ew-resize;
+        background-color: var(--cv-bg-input);
+        flex-shrink: 0;
+      }
+      #cv-sidebar-resizer:hover {
+        background-color: var(--cv-bg-hover-light);
+      }
+
+      /* --- Sidebar: Control Area --- */
+      #cv-controls {
+        padding: 10px;
+        border-bottom: 1px solid var(--cv-border-soft);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      #cv-app-title {
+        font-size: 1.2em;
+        font-weight: bold;
+        margin: 0;
+      }
+      #cv-gen-timestamp {
+        font-family: monospace;
+        font-size: 0.8em;
+        color: var(--cv-text-dim);
+      }
+
+      /* --- Component: Search Bar --- */
+      #cv-search {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+      }
+      #cv-search-icon {
+        position: absolute;
+        left: 10px;
+        color: var(--cv-text-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+      }
+      #cv-search-icon svg {
+        width: 16px;
+        height: 16px;
+        fill: currentColor;
+      }
+      #cv-search-field {
+        width: 100%;
+        padding: 8px 60px 8px 32px;
+        box-sizing: border-box;
+        border: 1px solid var(--cv-border-strong);
+        border-radius: 44px;
+        background-color: var(--cv-bg-input);
+        color: var(--cv-text-main);
+      }
+      #cv-search-modes {
+        position: absolute;
+        right: 12px;
+        display: flex;
+        gap: 2px;
+      }
+      .cv-search-mode-btn {
+        background: transparent;
+        border: none;
+        color: var(--cv-text-muted);
+        cursor: pointer;
+        padding: 2px;
+        user-select: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: monospace;
+        font-size: 0.85em;
+        font-weight: bold;
+        transition: color 0.2s;
+      }
+      .cv-search-mode-btn:hover {
+        color: var(--cv-text-dim);
+      }
+      .cv-search-mode-btn.active {
+        color: var(--cv-color-success);
+      }
+
+      /* --- Component: Test Selection --- */
+      #cv-test-filter {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+      }
+      #cv-test-select {
+        padding: 8px 35px 8px 12px;
+        box-sizing: border-box;
+        border: 1px solid var(--cv-border-strong);
+        border-radius: 100px;
+        width: 100%;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        background-color: var(--cv-bg-input);
+        color: var(--cv-text-main);
+      }
+      #cv-test-reset {
+        position: absolute;
+        right: 10px;
+        background: transparent;
+        border: none;
+        color: var(--cv-text-muted);
+        cursor: pointer;
+        transition: color 0.2s;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+      }
+      #cv-test-reset svg {
+        display: block;
+        fill: currentColor;
+      }
+      #cv-test-reset:hover {
+        color: var(--cv-color-error);
+      }
+
+      /* --- Component: View Hierarchy Filter --- */
+      #cv-view-filter {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+      }
+      #cv-view-container {
+        font-family: monospace;
+        width: 100%;
+      }
+      #cv-view-header {
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        user-select: none;
+        padding: 2px 0;
+      }
+      #cv-view-header:hover {
+        background-color: var(--cv-bg-input);
+      }
+      #cv-view-toggle {
+        margin-right: 5px;
+        font-size: 0.8em;
+        transition: transform 0.2s;
+      }
+      #cv-view-container.collapsed #cv-view-list {
+        display: none;
+      }
+      #cv-view-container.collapsed #cv-view-toggle {
+        transform: rotate(-90deg);
+      }
+      #cv-view-list {
+        margin-left: 25px;
+        max-height: 150px;
+        overflow-y: auto;
+      }
+      .cv-view-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 3px;
+      }
+      .cv-view-item input[type="checkbox"] {
+        accent-color: var(--cv-color-success);
+      }
+      .cv-view-item label {
+        display: inline-block;
+        margin-left: 5px;
+        cursor: pointer;
+      }
+
+      /* --- Sidebar: File Selection Table --- */
+      #cv-file-header {
+        background-color: var(--cv-bg-input);
+        border-bottom: 1px solid var(--cv-border-strong);
+        display: flex;
+        align-items: center;
+        font-family: monospace;
+        font-size: 0.9em;
+        font-weight: bold;
+        width: 100%;
+        z-index: 10;
+      }
+      #cv-file-header span {
+        padding: 4px 8px;
+        text-align: left;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      #cv-export-csv {
+        margin-left: auto;
+        background: transparent;
+        border: none;
+        color: var(--cv-text-muted);
+        cursor: pointer;
+        padding: 4px 10px;
+        height: 100%;
+        transition: color 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #cv-export-csv:hover {
+        color: var(--cv-text-bright);
+        background-color: var(--cv-bg-hover);
+      }
+      #cv-export-csv svg {
+        width: 16px;
+        height: 16px;
+        fill: currentColor;
+      }
+      #cv-file-header .sort-asc::after {
+        content: " ▲";
+      }
+      #cv-file-header .sort-desc::after {
+        content: " ▼";
+      }
+      #cv-file-header ::after {
+        vertical-align: 1px;
+        line-height: 1em;
+      }
+      #cv-file-header-ratio {
+        min-width: 40px;
+      }
+
+      #cv-file-container {
+        flex-grow: 1;
+        overflow-y: auto;
+        margin: 0;
+        padding: 0;
+      }
+      #cv-file-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: monospace;
+        font-size: 0.9em;
+      }
+      #cv-file-table tr {
+        cursor: pointer;
+      }
+      #cv-file-table tbody tr:hover td {
+        background-color: var(--cv-bg-hover);
+      }
+      #cv-file-table tbody tr.active td {
+        background-color: var(--cv-bg-active);
+      }
+      #cv-file-table tbody tr.active {
+        font-weight: bold;
+      }
+      #cv-file-table td {
+        padding: 8px 16px 8px 0px;
+        border-bottom: 1px solid var(--cv-border-soft);
+        white-space: nowrap;
+        overflow: hidden;
+      }
+      .cv-file-ratio {
+        text-align: right;
+        min-width: 50px;
+        position: sticky;
+        left: 0;
+        z-index: 2;
+        background-color: var(--cv-bg-sidebar);
+        padding-left: 8px !important;
+      }
+      .cv-file-ratio.high {
+        color: var(--cv-cov-high);
+      }
+      .cv-file-ratio.medium {
+        color: var(--cv-cov-medium);
+      }
+      .cv-file-ratio.low {
+        color: var(--cv-cov-low);
+      }
+
+      .cv-file-missed {
+        text-align: right;
+        position: sticky;
+        left: 74px;
+        z-index: 2;
+        background-color: var(--cv-bg-sidebar);
+      }
+      .cv-file-missed.nonzero {
+        color: var(--cv-color-error);
+      }
+      .cv-file-name {
+        width: 100%;
+      }
+      .cv-file-name mark {
+        background-color: #ffeb3b;
+        color: #000;
+        padding: 0;
+        border-radius: 2px;
+      }
+
+      /* --- Sidebar: Aggregate Summary --- */
+      #cv-summary-container {
+        padding: 0;
+        border-top: 1px solid var(--cv-border-soft);
+        background-color: var(--cv-bg-sidebar);
+      }
+      #cv-summary-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: monospace;
+        font-size: 0.85em;
+        color: var(--cv-text-main);
+      }
+      #cv-summary-table th,
+      #cv-summary-table td {
+        padding: 4px 8px;
+        text-align: right;
+        border-bottom: 1px solid var(--cv-bg-input);
+      }
+      #cv-summary-table thead tr {
+        background-color: var(--cv-bg-input);
+        border-bottom: 1px solid var(--cv-border-strong);
+      }
+      #cv-summary-table thead th {
+        color: var(--cv-text-main);
+        font-weight: bold;
+        text-align: right;
+      }
+      #cv-summary-table th:first-child {
+        text-align: right;
+        background-color: var(--cv-bg-input);
+        font-weight: bold;
+        color: var(--cv-text-main);
+      }
+      #cv-summary-table td:first-child {
+        text-align: right;
+        font-weight: bold;
+        color: var(--cv-text-dim);
+      }
+      .cv-summary-val-ratio {
+        font-weight: bold;
+      }
+      .cv-summary-val-ratio.high {
+        color: var(--cv-cov-high);
+      }
+      .cv-summary-val-ratio.medium {
+        color: var(--cv-cov-medium);
+      }
+      .cv-summary-val-ratio.low {
+        color: var(--cv-cov-low);
+      }
+      #cv-summary-table tr:last-child td {
+        border-bottom: none;
+      }
+
+      /* --- Component: UI Toggle Switch --- */
+      .cv-switch {
+        position: relative;
+        display: inline-block;
+        width: 34px;
+        height: 20px;
+      }
+      .cv-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .cv-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #555;
+        transition: 0.4s;
+        border-radius: 20px;
+      }
+      .cv-slider:before {
+        position: absolute;
+        content: "";
+        height: 12px;
+        width: 12px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+      input:checked + .cv-slider {
+        background-color: var(--cv-color-success);
+      }
+      input:focus + .cv-slider {
+        box-shadow: 0 0 1px var(--cv-color-success);
+      }
+      input:checked + .cv-slider:before {
+        transform: translateX(14px);
+      }
+
+      /* --- Main Content Area: View Management --- */
+      #cv-main-view {
+        flex-grow: 1;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+      #cv-src-header {
+        padding: 10px;
+        border-bottom: 1px solid var(--cv-border-soft);
+        background-color: var(--cv-bg-header);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: var(--cv-text-main);
+      }
+      #cv-src-path {
+        font-family: monospace;
+      }
+      #cv-syntax-toggle {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      #cv-syntax-toggle label {
+        font-family: monospace;
+        font-size: 0.8em;
+      }
+
+      /* --- Source View: Rendering & Code Formatting --- */
+      #cv-src-container {
+        position: relative;
+        flex-grow: 1;
+        overflow-x: hidden;
+        overflow-y: auto;
+        background-color: var(--cv-bg-main);
+        padding: 10px;
+        box-sizing: border-box;
+        color: #aaaaaa;
+      }
+      #cv-src-container pre {
+        margin: 0;
+        width: 100%;
+        overflow: auto;
+        display: inline-block;
+      }
+      #cv-src-container code {
+        font-family: monospace;
+        line-height: 1.35;
+        font-size: 1em;
+        text-shadow: none;
+        display: inline-block;
+        min-width: 100%;
+        white-space: pre;
+        color: var(--cv-text-code);
+      }
+      #cv-src-code-pre {
+        position: absolute;
+        width: calc(100% - 110px) !important;
+        top: 10px;
+        left: 100px;
+      }
+      #cv-src-code-pre.no-highlight * {
+        color: inherit !important;
+        background: inherit !important;
+        text-shadow: none !important;
+      }
+      #cv-src-code-pre * {
+        background: transparent;
+      }
+      #cv-src-code-pre *::selection {
+        background-color: inherit;
+      }
+
+      /* --- Source View: Line-Based Styles --- */
+      .cv-line {
+        display: block;
+        white-space: pre;
+        position: relative;
+      }
+      .cv-line:hover {
+        background-color: var(--cv-bg-hover);
+      }
+      .cv-line.cv-line--focused {
+        background-color: var(--cv-line-focus-bg);
+      }
+      .cv-line.cv-line--focused:hover {
+        background-color: var(--cv-line-focus-hover);
+      }
+
+      .cv-line-hits {
+        display: inline-block;
+        width: 25px;
+        text-align: right;
+        margin-right: 5px;
+        color: var(--cv-text-dim);
+        user-select: none;
+        font-size: 0.8em;
+        cursor: help;
+      }
+      .cv-line-num {
+        display: inline-block;
+        width: 40px;
+        text-align: right;
+        margin-right: 10px;
+        color: var(--cv-text-muted);
+        user-select: none;
+        cursor: pointer;
+      }
+      .cv-line-num:hover {
+        text-decoration: underline;
+      }
+      .cv-line-code {
+        display: inline-block;
+        vertical-align: top;
+        font-family: monospace;
+      }
+
+      /* --- Coverage: Status Markers --- */
+      .cv-line--hit {
+        background-color: var(--cv-line-hit-bg);
+      }
+      .cv-line--hit.cv-line--focused {
+        background-color: var(--cv-line-hit-focus-bg);
+      }
+      .cv-line--hit:hover {
+        background-color: var(--cv-line-hit-hover);
+      }
+      .cv-line--hit.cv-line--focused:hover {
+        background-color: var(--cv-line-hit-focus-hover);
+      }
+
+      .cv-line--miss {
+        background-color: var(--cv-line-miss-bg);
+      }
+      .cv-line--miss.cv-line--focused {
+        background-color: var(--cv-line-miss-focus-bg);
+      }
+      .cv-line--miss:hover {
+        background-color: var(--cv-line-miss-hover);
+      }
+      .cv-line--miss.cv-line--focused:hover {
+        background-color: var(--cv-line-miss-focus-hover);
+      }
+
+      /* --- Component: Floating Popup Panel --- */
+      #cv-popup {
+        position: fixed;
+        background-color: var(--cv-bg-popup);
+        border: 1px solid var(--cv-border-strong);
+        padding: 1em 2em;
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        display: none;
+        max-height: 300px;
+        overflow-y: auto;
+        min-width: 200px;
+        white-space: nowrap;
+        color: var(--cv-text-main);
+      }
+      #cv-popup-title {
+        margin-block-start: 0.5em;
+      }
+      #cv-popup-content {
+        overflow: auto;
+        width: 100%;
+      }
+      .cv-popup-item {
+        margin-bottom: 5px;
+        font-family: monospace;
+        cursor: pointer;
+      }
+      .cv-popup-item:hover {
+        text-decoration: underline;
+        color: var(--cv-text-bright);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- --- Application Loading State --- -->
+    <div id="cv-loading-overlay">
+      <div class="cv-loading-spinner"></div>
+      <div>Loading Coverage Data...</div>
+    </div>
+
+    <!-- --- Sidebar Navigation: Sidebar provides file list, search, and aggregate controls --- -->
+    <div id="cv-sidebar">
+      <div id="cv-controls">
+        <h1 id="cv-app-title">OpenTitan Coverage</h1>
+        <div id="cv-gen-timestamp"></div>
+
+        <!-- --- View Filters: Filters which coverage runs are aggregated into the current view --- -->
+        <div id="cv-view-filter">
+          <div id="cv-view-container">
+            <div id="cv-view-header">
+              <span id="cv-view-toggle">▼</span>
+              <div class="cv-view-item">
+                <input type="checkbox" id="cv-view-select-all" />
+                <label for="cv-view-select-all">Coverage views</label>
+              </div>
+            </div>
+            <div id="cv-view-list">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+
+        <!-- --- Test Filters: Filters the current view by specific test execution --- -->
+        <div id="cv-test-filter">
+          <select id="cv-test-select">
+            <option value="">All Tests</option>
+            <!-- Dynamically populated -->
+          </select>
+          <button id="cv-test-reset" title="Clear test filter">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M24,2.8L21.2,0L12,9.2L2.8,0L0,2.8L9.2,12L0,21.2L2.8,24L12,14.8L21.2,24L24,21.2L14.8,12L24,2.8Z"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <!-- --- File Search: Regex/Fuzzy search for file paths --- -->
+        <div id="cv-search">
+          <div id="cv-search-icon">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M9.5,3C5.9,3,3,5.9,3,9.5S5.9,16,9.5,16c1.5,0,2.8-0.5,3.9-1.3l6.2,6.2l1.4-1.4l-6.2-6.2c0.8-1.1,1.3-2.4,1.3-3.9C16,5.9,13.1,3,9.5,3z M9.5,14c-2.5,0-4.5-2-4.5-4.5S7,5,9.5,5s4.5,2,4.5,4.5S12,14,9.5,14z"
+              />
+            </svg>
+          </div>
+          <input
+            type="text"
+            id="cv-search-field"
+            placeholder="Search files..."
+            title="Filter files by name"
+          />
+          <div id="cv-search-modes">
+            <button
+              id="cv-search-mode-fuzzy"
+              class="cv-search-mode-btn active"
+              title="Fuzzy matching"
+            >
+              fz
+            </button>
+            <button id="cv-search-mode-regex" class="cv-search-mode-btn" title="Regex matching">
+              .*
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- --- File List Headers: Sortable columns for coverage ratio, missed count, and filename --- -->
+      <div id="cv-file-header">
+        <span id="cv-file-header-ratio" data-sort-key="ratio" class="sortable">Ratio</span>
+        <span id="cv-file-header-missed" data-sort-key="missed" class="sortable">Miss</span>
+        <span id="cv-file-header-name" data-sort-key="filename" class="sortable">Filename</span>
+        <button id="cv-export-csv" title="Export current list to CSV">
+          <svg viewBox="0 0 24 24">
+            <path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z" />
+          </svg>
+        </button>
+      </div>
+
+      <div id="cv-file-container">
+        <table id="cv-file-table">
+          <tbody>
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- --- Summary Statistics: Final aggregation of filtered coverage results --- -->
+      <div id="cv-summary-container">
+        <table id="cv-summary-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Miss</th>
+              <th>Hit</th>
+              <th>Total</th>
+              <th>Ratio</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr id="cv-summary-row-line">
+              <td>Line</td>
+              <td class="cv-summary-val-miss">0</td>
+              <td class="cv-summary-val-hit">0</td>
+              <td class="cv-summary-val-total">0</td>
+              <td class="cv-summary-val-ratio">0.00%</td>
+            </tr>
+            <tr id="cv-summary-row-func">
+              <td>Func</td>
+              <td class="cv-summary-val-miss">0</td>
+              <td class="cv-summary-val-hit">0</td>
+              <td class="cv-summary-val-total">0</td>
+              <td class="cv-summary-val-ratio">0.00%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="cv-sidebar-resizer"></div>
+
+    <!-- --- Main Content View: Source code display area --- -->
+    <div id="cv-main-view">
+      <div id="cv-src-header">
+        <span id="cv-src-path"></span>
+        <div id="cv-syntax-toggle">
+          <label for="cv-syntax-checkbox">&lt;/&gt;</label>
+          <label class="cv-switch">
+            <input type="checkbox" id="cv-syntax-checkbox" checked />
+            <span class="cv-slider"></span>
+          </label>
+        </div>
+      </div>
+      <div id="cv-src-container">
+        <pre><code id="cv-src-lines"><!-- Loaded by JS (Line metadata & indicators) --></code></pre>
+        <pre
+          id="cv-src-code-pre"
+        ><code id="cv-src-code"><!-- Loaded by JS (Actual source content) --></code></pre>
+      </div>
+    </div>
+
+    <!-- --- Global Components --- -->
+    <div id="cv-popup">
+      <p id="cv-popup-title">Covered by:</p>
+      <div id="cv-popup-content"><!-- Dynamically populated --></div>
+    </div>
+
+    <script>
+      "use strict";
+      /**
+       * External Data Map: Used to store base64 encoded gzipped coverage data.
+       * This allows the viewer to be distributed as a single HTML file with embedded data.
+       */
+      const bundledData = new Map();
+      // -- Bundled data --
+    </script>
+
+    <script>
+      "use strict";
+
+      /**
+       * OpenTitan Coverage Viewer - Logic & Controller Module
+       *
+       * This module manages application state, data calculation, routing via URL hashes,
+       * and the dynamic rendering of coverage data across the UI components.
+       */
+      (function () {
+        // --- 1. DOM Cache: Centralized access to frequently accessed elements ---
+        const dom = {
+          fileListBody: document.querySelector("#cv-file-table tbody"),
+          fileListHeaders: document.getElementById("cv-file-header"),
+          searchInput: document.getElementById("cv-search-field"),
+          fuzzySearchBtn: document.getElementById("cv-search-mode-fuzzy"),
+          regexSearchBtn: document.getElementById("cv-search-mode-regex"),
+          currentFileNameSpan: document.getElementById("cv-src-path"),
+          sourceCodeContainer: document.getElementById("cv-src-container"),
+          sourceCodeElement: document.getElementById("cv-src-lines"),
+          sourceContentPre: document.getElementById("cv-src-code-pre"),
+          sourceContentElement: document.getElementById("cv-src-code"),
+          testInfoPanel: document.getElementById("cv-popup"),
+          testListPopup: document.getElementById("cv-popup-content"),
+          filterByTestSelect: document.getElementById("cv-test-select"),
+          resetTestFilterButton: document.getElementById("cv-test-reset"),
+          viewTestListDiv: document.getElementById("cv-view-list"),
+          viewTestSelectAll: document.getElementById("cv-view-select-all"),
+          viewTestHeader: document.getElementById("cv-view-header"),
+          viewTestCheckboxes: document.getElementById("cv-view-container"),
+          sidebar: document.getElementById("cv-sidebar"),
+          sidebarSplitter: document.getElementById("cv-sidebar-resizer"),
+          syntaxHighlightToggle: document.getElementById("cv-syntax-checkbox"),
+          loadingOverlay: document.getElementById("cv-loading-overlay"),
+          headerTimestamp: document.getElementById("cv-gen-timestamp"),
+          exportCsvBtn: document.getElementById("cv-export-csv"),
+          lineHit: document.querySelector("#cv-summary-row-line .cv-summary-val-hit"),
+          lineMiss: document.querySelector("#cv-summary-row-line .cv-summary-val-miss"),
+          lineTotal: document.querySelector("#cv-summary-row-line .cv-summary-val-total"),
+          lineRatio: document.querySelector("#cv-summary-row-line .cv-summary-val-ratio"),
+          funcHit: document.querySelector("#cv-summary-row-func .cv-summary-val-hit"),
+          funcMiss: document.querySelector("#cv-summary-row-func .cv-summary-val-miss"),
+          funcTotal: document.querySelector("#cv-summary-row-func .cv-summary-val-total"),
+          funcRatio: document.querySelector("#cv-summary-row-func .cv-summary-val-ratio"),
+        };
+
+        // --- 2. Configuration: Immutable application constants ---
+        const CONFIG = {
+          THRESHOLDS: { high: 90, medium: 75 }, // Percentages for high/medium coverage
+          MODES: { fuzzy: "fuzzy", regex: "regex", prefix: "prefix" },
+          SORTS: { ratio: "ratio", missed: "missed", filename: "filename" },
+          SIDEBAR_MIN_WIDTH: 200,
+          POPUP_HIDE_DELAY: 100, // Ms to wait before hiding hover popups
+        };
+
+        // --- 3. State Management: The single source of truth for the app ---
+        const state = {
+          // Coverage data model
+          data: { test: null, view: null, metadata: {} },
+          // Applied filters
+          filters: { search: "", mode: CONFIG.MODES.fuzzy, tests: [], views: [] },
+          // UI component state
+          ui: {
+            currentFile: null,
+            currentLine: null,
+            sort: { key: CONFIG.SORTS.filename, order: "asc" },
+            syntaxHighlight: true,
+            scrollBehavior: "instant",
+          },
+          // Internal lookup maps and timers
+          meta: {
+            testToIndex: {},
+            viewToIndex: {},
+            allFiles: [],
+            displayedFiles: [],
+            loadedSources: new Map(), // Cache for processed source code strings
+            hidePanelTimeout: null,
+            searchSyncTimeout: null,
+          },
+        };
+
+        // --- 4. Logic Services: Core data processing logic ---
+        const DataService = {
+          /**
+           * Loads coverage JSON data, handling decompression if necessary.
+           * Supports both fetch (external) and base64 (embedded) data sources.
+           */
+          async loadGzippedJson(gzPath) {
+            let stream = null;
+            if (bundledData.has(gzPath)) {
+              const binaryString = atob(bundledData.get(gzPath));
+              const array = Uint8Array.from(binaryString, (m) => m.charCodeAt(0));
+              stream = new Blob([array]).stream();
+            } else {
+              const response = await fetch(gzPath);
+              if (!response.ok) throw new Error(`HTTP ${response.status}: ${gzPath}`);
+              stream = response.body;
+            }
+            const decompressed = stream.pipeThrough(new DecompressionStream("gzip"));
+            return await new Response(decompressed).json();
+          },
+
+          /**
+           * Aggregates coverage statistics for a specific file based on active filters.
+           * Handles intersection of "test" filters and "view" exclusions.
+           */
+          calculateFileStats(filePath) {
+            const fileProfile = state.data.test.files[filePath];
+            const viewFileProfile = state.data.view.files[filePath];
+            if (!fileProfile) {
+              return {
+                line: { ratio: 0, missed: 0, total: 0, hit: 0 },
+                func: { ratio: 0, missed: 0, total: 0, hit: 0 },
+              };
+            }
+            const filteredViewIndices = state.filters.views.map((n) => state.meta.viewToIndex[n]);
+            const filteredIndices = state.filters.tests.map((n) => state.meta.testToIndex[n]);
+
+            // Line stats calculation
+            let hitLines = 0,
+              totalLines = 0;
+            fileProfile.l.forEach((line, idx) => {
+              if (!this.isLineSkipped(line, viewFileProfile?.l[idx], filteredViewIndices)) {
+                totalLines++;
+                if (
+                  line.t.some(
+                    (tIdx) => filteredIndices.length === 0 || filteredIndices.includes(tIdx),
+                  )
+                )
+                  hitLines++;
+              }
+            });
+
+            // Function stats calculation
+            let hitFuncs = 0,
+              totalFuncs = 0;
+            for (const name in fileProfile.f) {
+              const func = fileProfile.f[name];
+              const viewFunc = viewFileProfile?.f?.[name];
+              const skipped =
+                state.filters.views.length > 0 &&
+                (!viewFunc || !viewFunc.t.some((vi) => filteredViewIndices.includes(vi)));
+              if (!skipped) {
+                totalFuncs++;
+                if (
+                  func.t.some(
+                    (tIdx) => filteredIndices.length === 0 || filteredIndices.includes(tIdx),
+                  )
+                )
+                  hitFuncs++;
+              }
+            }
+            return {
+              line: {
+                total: totalLines,
+                hit: hitLines,
+                missed: totalLines - hitLines,
+                ratio: totalLines > 0 ? (hitLines / totalLines) * 100 : 100,
+              },
+              func: {
+                total: totalFuncs,
+                hit: hitFuncs,
+                missed: totalFuncs - hitFuncs,
+                ratio: totalFuncs > 0 ? (hitFuncs / totalFuncs) * 100 : 100,
+              },
+            };
+          },
+
+          /** Checks if a line should be excluded from statistics based on the active View filter. */
+          isLineSkipped(line, viewLine, filteredViewIndices) {
+            if (state.filters.views.length === 0) return line.s;
+            return !viewLine || !viewLine.t.some((idx) => filteredViewIndices.includes(idx));
+          },
+
+          /** Generates a search RegExp based on fuzzy/regex/prefix modes. */
+          getSearchRegex(flags = "gi") {
+            const term = state.filters.search.trim();
+            if (!term) return null;
+            if (state.filters.mode === CONFIG.MODES.regex) {
+              try {
+                return new RegExp(term, flags);
+              } catch {
+                return null;
+              }
+            } else if (state.filters.mode === CONFIG.MODES.fuzzy) {
+              // Convert "foo/bar" into /(foo)(.*?)(bar)/ for path-based fuzzy matching
+              const parts = term
+                .split(/([ \/_\.])/)
+                .filter((e) => e !== " ")
+                .map((e) => `(${RegExp.escape(e)})`);
+              return new RegExp(parts.join("(.*?)"), flags);
+            }
+            return new RegExp(`^${RegExp.escape(term)}`, flags);
+          },
+        };
+
+        // --- 5. Routing: Synchronizes internal state with the URL hash ---
+        const Router = {
+          /** Serializes current application state into the URL hash. */
+          syncToUrl(urlMode = "pushUrl") {
+            if (urlMode === "keepUrl") return;
+            const p = new URLSearchParams();
+            if (state.ui.currentFile) {
+              p.set("file", state.ui.currentFile);
+              if (state.ui.currentLine !== null) p.set("line", state.ui.currentLine);
+            }
+            if (state.filters.tests.length) p.set("test", state.filters.tests[0]);
+            p.set("view_tests", JSON.stringify(state.filters.views));
+            if (state.filters.search) p.set("search", state.filters.search);
+            if (state.filters.mode !== CONFIG.MODES.fuzzy) p.set("search_mode", state.filters.mode);
+            if (state.ui.sort.key !== CONFIG.SORTS.filename || state.ui.sort.order !== "asc") {
+              p.set("sort_key", state.ui.sort.key);
+              p.set("sort_order", state.ui.sort.order);
+            }
+            if (!state.ui.syntaxHighlight) p.set("highlight", "off");
+            const hash = p.toString();
+            const url = hash ? `#${hash}` : window.location.pathname;
+            if (window.location.hash !== `#${hash}`) {
+              if (urlMode === "pushUrl") window.history.pushState(null, "", url);
+              else window.history.replaceState(null, "", url);
+            }
+          },
+
+          /** Parses URL hash parameters into application state. */
+          syncFromUrl() {
+            const p = new URLSearchParams(window.location.hash.substring(1));
+            let changed = false;
+            const setIfChanged = (obj, key, val) => {
+              if (obj[key] !== val) {
+                obj[key] = val;
+                changed = true;
+              }
+            };
+
+            const file = p.get("file");
+            if (file && state.data.test.files[file]) {
+              setIfChanged(state.ui, "currentFile", file);
+              const line = parseInt(p.get("line"));
+              const validLine =
+                !isNaN(line) && line > 0 && line <= state.data.test.files[file].l.length;
+              setIfChanged(state.ui, "currentLine", validLine ? line : null);
+            } else {
+              setIfChanged(state.ui, "currentFile", null);
+              setIfChanged(state.ui, "currentLine", null);
+            }
+
+            const test = p.get("test");
+            const newTests = test && state.meta.testToIndex[test] !== undefined ? [test] : [];
+            if (JSON.stringify(state.filters.tests) !== JSON.stringify(newTests)) {
+              state.filters.tests = newTests;
+              dom.filterByTestSelect.value = test || "";
+              changed = true;
+            }
+
+            const viewStr = p.get("view_tests");
+            let newViews = [...state.data.view.tests];
+            if (viewStr) {
+              try {
+                newViews = JSON.parse(viewStr).filter(
+                  (n) => state.meta.viewToIndex[n] !== undefined,
+                );
+              } catch {
+                /* ignore */
+              }
+            }
+            if (JSON.stringify(state.filters.views) !== JSON.stringify(newViews)) {
+              state.filters.views = newViews;
+              state.data.view.tests.forEach((name, i) => {
+                const cb = document.getElementById(`cv-view-item-${i}`);
+                if (cb) cb.checked = newViews.includes(name);
+              });
+              UI.Sidebar.updateSelectAllStatus();
+              changed = true;
+            }
+
+            setIfChanged(state.filters, "search", p.get("search") || "");
+            dom.searchInput.value = state.filters.search;
+            const mode = p.get("search_mode");
+            const newMode = Object.values(CONFIG.MODES).includes(mode) ? mode : CONFIG.MODES.fuzzy;
+            if (state.filters.mode !== newMode) {
+              state.filters.mode = newMode;
+              UI.Sidebar.updateSearchModeButtons();
+              changed = true;
+            }
+
+            const sortKey = p.get("sort_key") || CONFIG.SORTS.filename;
+            const sortOrder = p.get("sort_order") || "asc";
+            if (state.ui.sort.key !== sortKey || state.ui.sort.order !== sortOrder) {
+              state.ui.sort = { key: sortKey, order: sortOrder };
+              UI.FileList.updateSortHeaders();
+              changed = true;
+            }
+
+            const highlight = p.get("highlight") !== "off";
+            if (state.ui.syntaxHighlight !== highlight) {
+              state.ui.syntaxHighlight = highlight;
+              dom.syntaxHighlightToggle.checked = highlight;
+              changed = true;
+            }
+            return changed;
+          },
+        };
+
+        // --- 6. UI Components: Controllers for individual view fragments ---
+        const UI = {
+          /** Determines the visual category (high/medium/low) for a ratio. */
+          getRatioClass(ratio) {
+            return ratio > CONFIG.THRESHOLDS.high
+              ? "high"
+              : ratio > CONFIG.THRESHOLDS.medium
+                ? "medium"
+                : "low";
+          },
+
+          /** Orchestrates a full UI refresh when state or filters change. */
+          update(urlMode = "pushUrl") {
+            if (urlMode === "pushUrl") {
+              clearTimeout(state.meta.searchSyncTimeout);
+              state.meta.searchSyncTimeout = null;
+            }
+            Router.syncToUrl(urlMode);
+
+            // Filter and sort the master file list
+            const regex = DataService.getSearchRegex("i");
+            state.meta.displayedFiles = state.meta.allFiles
+              .map((f) => ({ path: f.path, ...DataService.calculateFileStats(f.path) }))
+              .filter((f) => f.line.total > 0 && (!regex || regex.test(f.path)));
+
+            state.meta.displayedFiles.sort((a, b) => {
+              let vA, vB;
+              if (state.ui.sort.key === CONFIG.SORTS.ratio) {
+                vA = a.line.ratio;
+                vB = b.line.ratio;
+              } else if (state.ui.sort.key === CONFIG.SORTS.missed) {
+                vA = a.line.missed;
+                vB = b.line.missed;
+              } else {
+                vA = a.path.toLowerCase();
+                vB = b.path.toLowerCase();
+              }
+              const order = state.ui.sort.order === "asc" ? 1 : -1;
+              return vA < vB ? -1 * order : vA > vB ? 1 * order : 0;
+            });
+
+            // Handle file selection fallback
+            const visible = state.meta.displayedFiles.some((f) => f.path === state.ui.currentFile);
+            if (state.ui.currentFile && visible) {
+              this.Source.render();
+            } else if (state.meta.displayedFiles.length > 0) {
+              state.ui.currentFile = state.meta.displayedFiles[0].path;
+              state.ui.currentLine = null;
+              this.Source.render();
+              Router.syncToUrl(urlMode);
+            } else {
+              this.Source.renderEmpty();
+            }
+
+            this.FileList.render();
+            this.Summary.render();
+            dom.resetTestFilterButton.style.display = dom.filterByTestSelect.value
+              ? "flex"
+              : "none";
+          },
+
+          FileList: {
+            /** Renders the list of files in the sidebar. */
+            render() {
+              dom.fileListBody.innerHTML = "";
+              state.meta.displayedFiles.forEach((file) => {
+                const tr = document.createElement("tr");
+                tr.className = file.path === state.ui.currentFile ? "active" : "";
+                tr.dataset.path = file.path;
+                tr.onclick = () => {
+                  state.ui.currentFile = file.path;
+                  state.ui.currentLine = null;
+                  UI.update("pushUrl");
+                };
+
+                const ratioTd = document.createElement("td");
+                ratioTd.className = `cv-file-ratio ${UI.getRatioClass(file.line.ratio)}`;
+                ratioTd.textContent = `${file.line.ratio.toFixed(2)}%`;
+                tr.appendChild(ratioTd);
+
+                const missedTd = document.createElement("td");
+                missedTd.className = `cv-file-missed ${file.line.missed > 0 ? "nonzero" : ""}`;
+                missedTd.textContent = file.line.missed;
+                tr.appendChild(missedTd);
+
+                const filenameTd = document.createElement("td");
+                filenameTd.className = "cv-file-name";
+                filenameTd.appendChild(this.highlightSearch(file.path));
+                tr.appendChild(filenameTd);
+                dom.fileListBody.appendChild(tr);
+              });
+
+              // Scroll active file into view
+              const activeRow = dom.fileListBody.querySelector("tr.active");
+              if (activeRow) {
+                const mark = activeRow.querySelector("mark:last-of-type");
+                if (mark)
+                  mark.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+                else
+                  activeRow.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center",
+                    inline: "start",
+                  });
+              }
+            },
+
+            /** Injects <MARK> tags into filename strings to highlight search hits. */
+            highlightSearch(str) {
+              const root = document.createElement("span");
+              const regex = DataService.getSearchRegex("gi");
+              if (!regex) return (root.textContent = str), root;
+              const matches = Array.from(str.matchAll(regex));
+              if (!matches.length) return (root.textContent = str), root;
+
+              const append = (text, highlight) => {
+                if (!text) return;
+                const tag = highlight ? "MARK" : "SPAN";
+                if (!root.lastChild || root.lastChild.tagName !== tag)
+                  root.appendChild(document.createElement(tag));
+                root.lastChild.textContent += text;
+              };
+
+              let last = 0;
+              matches.forEach((m) => {
+                if (m.index > last) append(str.substring(last, m.index), false);
+                if (state.filters.mode === CONFIG.MODES.fuzzy) {
+                  for (let i = 1; i < m.length; i++) append(m[i], i % 2 === 1);
+                } else {
+                  append(m[0], true);
+                }
+                last = m.index + m[0].length;
+              });
+              append(str.substring(last), false);
+              return root;
+            },
+
+            /** Updates visual indicator (arrows) for sorted column headers. */
+            updateSortHeaders() {
+              dom.fileListHeaders.querySelectorAll("span").forEach((h) => {
+                h.classList.remove("sort-asc", "sort-desc");
+                if (h.dataset.sortKey === state.ui.sort.key)
+                  h.classList.add(`sort-${state.ui.sort.order}`);
+              });
+            },
+
+            /** Exports the currently displayed file list to a CSV file. */
+            exportCsv() {
+              const rows = [
+                [
+                  "Name",
+                  "Line Miss",
+                  "Line Coverage (%)",
+                  "Fn Coverage (%)",
+                  "Line Hit",
+                  "Line Total",
+                  "Fn Hit",
+                  "Fn Total",
+                ],
+              ];
+              state.meta.displayedFiles.forEach((f) => {
+                rows.push([
+                  f.path,
+                  f.line.missed,
+                  f.line.ratio.toFixed(2),
+                  f.func.ratio.toFixed(2),
+                  f.line.hit,
+                  f.line.total,
+                  f.func.hit,
+                  f.func.total,
+                ]);
+              });
+
+              const csvContent = rows.map((e) => e.join(",")).join("\n");
+              const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+              const url = URL.createObjectURL(blob);
+              const link = document.createElement("a");
+              link.setAttribute("href", url);
+              link.setAttribute("download", `coverage_export_${new Date().toISOString()}.csv`);
+              link.style.visibility = "hidden";
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+            },
+          },
+
+          Source: {
+            /** Renders source code content with line markers and syntax highlighting. */
+            render() {
+              const path = state.ui.currentFile;
+              if (!path || !state.data.test.files[path]) return;
+              dom.currentFileNameSpan.textContent = path;
+              const profile = state.data.test.files[path],
+                viewProfile = state.data.view.files[path];
+              const source = this.getSource(path);
+
+              const newLinesEl = document.createElement("code"),
+                newCodeEl = document.createElement("code");
+              newCodeEl.className = "language-clike";
+              const filteredViewIndices = state.filters.views.map((n) => state.meta.viewToIndex[n]),
+                filteredTests = new Set(state.filters.tests);
+
+              source.split("\n").forEach((content, i) => {
+                const lineNo = i + 1,
+                  lineData = profile.l[i],
+                  viewLineData = viewProfile?.l?.[i];
+                const lineDiv = document.createElement("div");
+                lineDiv.className =
+                  "cv-line" + (lineNo === state.ui.currentLine ? " cv-line--focused" : "");
+                lineDiv.dataset.line = lineNo;
+
+                const skipped = DataService.isLineSkipped(
+                  lineData,
+                  viewLineData,
+                  filteredViewIndices,
+                );
+                const relevantTests = lineData.t.filter(
+                  (idx) =>
+                    filteredTests.size === 0 || filteredTests.has(state.data.test.tests[idx]),
+                );
+
+                // Create Hit Indicator
+                const hitSpan = document.createElement("span");
+                hitSpan.className = "cv-line-hits";
+                if (!skipped && (relevantTests.length > 0 || !lineData.s)) {
+                  hitSpan.textContent = relevantTests.length;
+                  if (relevantTests.length > 0) {
+                    hitSpan.onmouseenter = (e) => UI.Popups.showTestInfo(e, relevantTests, hitSpan);
+                    hitSpan.onmouseleave = () =>
+                      (state.meta.hidePanelTimeout = setTimeout(
+                        () => (dom.testInfoPanel.style.display = "none"),
+                        CONFIG.POPUP_HIDE_DELAY,
+                      ));
+                  }
+                }
+                lineDiv.appendChild(hitSpan);
+
+                // Create Line Number Indicator
+                const numSpan = document.createElement("span");
+                numSpan.className = "cv-line-num";
+                numSpan.textContent = lineNo;
+                numSpan.onclick = () => {
+                  state.ui.currentLine = state.ui.currentLine === lineNo ? null : lineNo;
+                  UI.update("keepUrl");
+                };
+                lineDiv.appendChild(numSpan);
+
+                // Apply semantic classes for background highlighting
+                lineDiv.classList.add(
+                  skipped
+                    ? "cv-line--skipped"
+                    : relevantTests.length > 0
+                      ? "cv-line--hit"
+                      : "cv-line--miss",
+                );
+                newLinesEl.appendChild(lineDiv);
+                newCodeEl.textContent += content + "\n";
+              });
+
+              // Perform syntax highlighting via PrismJS
+              if (state.ui.syntaxHighlight) Prism.highlightElement(newCodeEl);
+              dom.sourceCodeElement.replaceWith(newLinesEl);
+              dom.sourceCodeElement = newLinesEl;
+              dom.sourceContentElement.replaceWith(newCodeEl);
+              dom.sourceContentElement = newCodeEl;
+            },
+
+            /** Manages scrolling behavior to keep focused lines in view. */
+            scrollToCurrentLine() {
+              if (!state.ui.currentLine) return;
+              const el = dom.sourceCodeElement.querySelector(
+                `.cv-line[data-line="${state.ui.currentLine}"]`,
+              );
+              if (el) el.scrollIntoView({ block: "center", behavior: state.ui.scrollBehavior });
+            },
+
+            /** Process and memoize raw source line objects into a combined string. */
+            getSource(path) {
+              if (state.meta.loadedSources.has(path)) return state.meta.loadedSources.get(path);
+              const content = state.data.test.files[path].l.map((l) => l.c).join("\n");
+              state.meta.loadedSources.set(path, content);
+              return content;
+            },
+
+            /** Renders empty state when no files match filters. */
+            renderEmpty() {
+              dom.currentFileNameSpan.textContent = "No files match criteria.";
+              const el1 = document.createElement("code"),
+                el2 = document.createElement("code");
+              el2.className = "language-none";
+              dom.sourceCodeElement.replaceWith(el1);
+              dom.sourceCodeElement = el1;
+              dom.sourceContentElement.replaceWith(el2);
+              dom.sourceContentElement = el2;
+              state.ui.currentFile = state.ui.currentLine = null;
+            },
+          },
+
+          Summary: {
+            /** Renders aggregate coverage statistics table. */
+            render() {
+              const totals = state.meta.displayedFiles.reduce(
+                (acc, f) => {
+                  acc.lH += f.line.hit;
+                  acc.lT += f.line.total;
+                  acc.fH += f.func.hit;
+                  acc.fT += f.func.total;
+                  return acc;
+                },
+                { lH: 0, lT: 0, fH: 0, fT: 0 },
+              );
+
+              const update = (prefix, hit, total) => {
+                const ratio = total > 0 ? (hit / total) * 100 : 0;
+                dom[`${prefix}Hit`].textContent = hit;
+                dom[`${prefix}Miss`].textContent = total - hit;
+                dom[`${prefix}Total`].textContent = total;
+                const rEl = dom[`${prefix}Ratio`];
+                rEl.textContent = total > 0 ? `${ratio.toFixed(2)}%` : "N/A";
+                rEl.className = "cv-summary-val-ratio";
+                if (total > 0) rEl.classList.add(UI.getRatioClass(ratio));
+              };
+              update("line", totals.lH, totals.lT);
+              update("func", totals.fH, totals.fT);
+            },
+          },
+
+          Sidebar: {
+            /** Updates the state of the "Select All" checkbox for Views. */
+            updateSelectAllStatus() {
+              const all = state.data.view.tests.length,
+                sel = state.filters.views.length;
+              dom.viewTestSelectAll.checked = sel === all && all > 0;
+              dom.viewTestSelectAll.indeterminate = sel > 0 && sel < all;
+            },
+            /** Synchronizes search mode button active states. */
+            updateSearchModeButtons() {
+              dom.fuzzySearchBtn.classList.toggle(
+                "active",
+                state.filters.mode === CONFIG.MODES.fuzzy,
+              );
+              dom.regexSearchBtn.classList.toggle(
+                "active",
+                state.filters.mode === CONFIG.MODES.regex,
+              );
+            },
+          },
+
+          Popups: {
+            /** Displays the test info panel when hovering over hit counts. */
+            showTestInfo(event, indices, target) {
+              clearTimeout(state.meta.hidePanelTimeout);
+              dom.testListPopup.innerHTML = "";
+              indices.forEach((idx) => {
+                const name = state.data.test.tests[idx];
+                const div = document.createElement("div");
+                div.className = "cv-popup-item";
+                div.textContent = name;
+                div.onclick = () => {
+                  dom.filterByTestSelect.value = name;
+                  state.filters.tests = [name];
+                  UI.update("pushUrl");
+                  dom.testInfoPanel.style.display = "none";
+                };
+                dom.testListPopup.appendChild(div);
+              });
+              dom.testInfoPanel.style.display = "block";
+
+              // Positioning logic: ensure panel stays within viewport
+              const rect = target.getBoundingClientRect(),
+                panel = dom.testInfoPanel;
+              let left = rect.right + 5;
+              if (left + panel.offsetWidth > window.innerWidth - 30) {
+                panel.style.right = "30px";
+                panel.style.left = "auto";
+              } else {
+                panel.style.left = `${left}px`;
+                panel.style.right = "auto";
+              }
+              let top = rect.top;
+              if (top + panel.offsetHeight > window.innerHeight - 10) {
+                top = Math.max(10, rect.top - panel.offsetHeight);
+              }
+              panel.style.top = `${top}px`;
+            },
+          },
+        };
+
+        // --- 7. Event Handlers: Initialization of user interaction logic ---
+        const initHandlers = () => {
+          // Resize Handler: Sidebar Resizing
+          let resizing = false,
+            initX,
+            initW,
+            origUserSelect;
+          dom.sidebarSplitter.onmousedown = (e) => {
+            resizing = true;
+            initX = e.clientX;
+            initW = dom.sidebar.offsetWidth;
+            origUserSelect = document.body.style.userSelect;
+            document.body.style.userSelect = "none";
+            document.body.style.cursor = "ew-resize";
+            document.onmousemove = (e) => {
+              if (!resizing) return;
+              const w = Math.max(
+                CONFIG.SIDEBAR_MIN_WIDTH,
+                Math.min(initW + (e.clientX - initX), window.innerWidth * 0.8),
+              );
+              dom.sidebar.style.width = `${w}px`;
+            };
+            document.onmouseup = () => {
+              resizing = false;
+              document.onmousemove = document.onmouseup = null;
+              document.body.style.cursor = "";
+              document.body.style.userSelect = origUserSelect;
+            };
+          };
+
+          // Filter Handlers
+          dom.filterByTestSelect.onchange = (e) => {
+            state.filters.tests = e.target.value ? [e.target.value] : [];
+            UI.update("pushUrl");
+          };
+          dom.resetTestFilterButton.onclick = () => {
+            dom.filterByTestSelect.value = "";
+            state.filters.tests = [];
+            UI.update("pushUrl");
+          };
+          dom.viewTestSelectAll.onchange = (e) => {
+            state.filters.views = e.target.checked ? [...state.data.view.tests] : [];
+            state.data.view.tests.forEach(
+              (_, i) => (document.getElementById(`cv-view-item-${i}`).checked = e.target.checked),
+            );
+            UI.update("pushUrl");
+          };
+          dom.viewTestHeader.onclick = (e) => {
+            if (e.target !== dom.viewTestSelectAll && e.target.tagName !== "LABEL")
+              dom.viewTestCheckboxes.classList.toggle("collapsed");
+          };
+
+          // Search Input Handler: includes debouncing for URL updates
+          dom.searchInput.oninput = (e) => {
+            state.filters.search = e.target.value;
+            const mode = state.meta.searchSyncTimeout ? "replaceUrl" : "pushUrl";
+            UI.update(mode);
+            clearTimeout(state.meta.searchSyncTimeout);
+            state.meta.searchSyncTimeout = setTimeout(
+              () => (state.meta.searchSyncTimeout = null),
+              3000,
+            );
+          };
+
+          // Tooling & Preference Handlers
+          dom.fuzzySearchBtn.onclick = () => {
+            state.filters.mode =
+              state.filters.mode === CONFIG.MODES.fuzzy ? CONFIG.MODES.prefix : CONFIG.MODES.fuzzy;
+            UI.Sidebar.updateSearchModeButtons();
+            UI.update("pushUrl");
+          };
+          dom.regexSearchBtn.onclick = () => {
+            state.filters.mode =
+              state.filters.mode === CONFIG.MODES.regex ? CONFIG.MODES.prefix : CONFIG.MODES.regex;
+            UI.Sidebar.updateSearchModeButtons();
+            UI.update("pushUrl");
+          };
+          dom.syntaxHighlightToggle.onchange = (e) => {
+            state.ui.syntaxHighlight = e.target.checked;
+            UI.update("pushUrl");
+          };
+
+          // Sorting Handler
+          dom.fileListHeaders.onclick = (e) => {
+            const h = e.target.closest("span.sortable");
+            if (!h) return;
+            const key = h.dataset.sortKey;
+            state.ui.sort = {
+              key,
+              order: state.ui.sort.key === key && state.ui.sort.order === "asc" ? "desc" : "asc",
+            };
+            UI.FileList.updateSortHeaders();
+            UI.update("pushUrl");
+          };
+
+          dom.exportCsvBtn.onclick = () => UI.FileList.exportCsv();
+
+          // Keyboard Navigation: Shortcuts for search and list traversal
+          document.onkeydown = (e) => {
+            const active = document.activeElement,
+              inputs = new Set(["INPUT", "SELECT", "TEXTAREA"]);
+            if (e.key === "/" && !inputs.has(active.tagName)) {
+              e.preventDefault();
+              dom.searchInput.focus();
+              dom.searchInput.select();
+            } else if (
+              (e.key === "ArrowDown" || e.key === "ArrowUp") &&
+              active.tagName !== "SELECT"
+            ) {
+              const files = state.meta.displayedFiles;
+              if (!files.length) return;
+              e.preventDefault();
+              const idx = files.findIndex((f) => f.path === state.ui.currentFile);
+              const next =
+                e.key === "ArrowDown" ? Math.min(idx + 1, files.length - 1) : Math.max(idx - 1, 0);
+              if (next !== idx) {
+                state.ui.currentFile = files[next].path;
+                state.ui.currentLine = null;
+                UI.update("pushUrl");
+              }
+            }
+          };
+
+          // History/URL Navigation
+          window.onpopstate = () => {
+            clearTimeout(state.meta.searchSyncTimeout);
+            state.meta.searchSyncTimeout = null;
+            if (Router.syncFromUrl()) {
+              UI.update("replaceUrl");
+              UI.Source.scrollToCurrentLine();
+            }
+          };
+          dom.testInfoPanel.onmouseenter = () => clearTimeout(state.meta.hidePanelTimeout);
+          dom.testInfoPanel.onmouseleave = () =>
+            (state.meta.hidePanelTimeout = setTimeout(
+              () => (dom.testInfoPanel.style.display = "none"),
+              CONFIG.POPUP_HIDE_DELAY,
+            ));
+        };
+
+        // --- 8. Initialization: Application bootstrap process ---
+        async function initialize() {
+          try {
+            // Load and parse coverage data
+            const urlParams = new URLSearchParams(window.location.search);
+            const data = await DataService.loadGzippedJson(
+              urlParams.get("cov") || "coverage.json.gz",
+            );
+            if (!data?.test || !data?.view) throw new Error("Incomplete coverage data.");
+
+            // Hydrate state
+            state.data = { test: data.test, view: data.view, metadata: data.metadata || {} };
+            const m = state.data.metadata;
+            if (m.timestamp) {
+              dom.headerTimestamp.textContent = `Generated at ${m.timestamp}`;
+              document.title = `OpenTitan Coverage - ${m.timestamp.split("T")[0]}`;
+            }
+            if (m.commit) dom.headerTimestamp.textContent += ` with commit ${m.commit.slice(0, 8)}`;
+
+            // Build metadata indexing
+            state.data.test.tests.forEach((n, i) => (state.meta.testToIndex[n] = i));
+            state.data.view.tests.forEach((n, i) => (state.meta.viewToIndex[n] = i));
+            state.meta.allFiles = Object.keys(state.data.test.files)
+              .sort()
+              .map((p) => ({ path: p }));
+
+            // Initialize dynamic static UI elements
+            state.data.test.tests
+              .slice()
+              .sort()
+              .forEach((n) => {
+                const opt = document.createElement("option");
+                opt.value = opt.textContent = n;
+                dom.filterByTestSelect.appendChild(opt);
+              });
+            state.data.view.tests.forEach((n, i) => {
+              const div = document.createElement("div");
+              div.className = "cv-view-item";
+              const input = document.createElement("input");
+              input.type = "checkbox";
+              input.id = `cv-view-item-${i}`;
+              input.value = n;
+              const label = document.createElement("label");
+              label.setAttribute("for", `cv-view-item-${i}`);
+              label.textContent = n
+                .substring(n.lastIndexOf(":") + 1)
+                .replace(/_coverage_view$/, "");
+              input.onchange = (e) => {
+                if (e.target.checked) state.filters.views.push(n);
+                else state.filters.views = state.filters.views.filter((v) => v !== n);
+                UI.Sidebar.updateSelectAllStatus();
+                UI.update("pushUrl");
+              };
+              div.appendChild(input);
+              div.appendChild(label);
+              dom.viewTestListDiv.appendChild(div);
+            });
+
+            // Sync with current URL, initialize listeners, and perform first render
+            Router.syncFromUrl();
+            initHandlers();
+            UI.update("replaceUrl");
+            UI.Source.scrollToCurrentLine();
+          } catch (err) {
+            console.error(err);
+            dom.sourceCodeElement.textContent = `Error: ${err.message}`;
+          } finally {
+            state.ui.scrollBehavior = "smooth";
+            dom.loadingOverlay.style.opacity = "0";
+            setTimeout(() => (dom.loadingOverlay.style.display = "none"), 500);
+          }
+        }
+        initialize();
+      })();
+    </script>
+  </body>
+</html>
