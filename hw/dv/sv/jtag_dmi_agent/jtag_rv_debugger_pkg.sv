@@ -219,6 +219,11 @@ package jtag_rv_debugger_pkg;
     logic [BUS_DW-1:0]          tdata2;
   } breakpoint_t;
 
+  // Return the width in bytes of an SBA access with the given size
+  function automatic int unsigned sba_access_size_to_byte_width(sba_access_size_e sz);
+    return 1 << int'(sz);
+  endfunction
+
   // Sources.
   `include "sba_access_item.sv"
   `include "sba_access_monitor.sv"
