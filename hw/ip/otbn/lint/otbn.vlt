@@ -15,6 +15,9 @@ lint_off -rule UNUSED -file "*/rtl/otbn.sv" -match "Signal is not used: 'imem_wm
 
 split_var -module "otbn_controller" -var "err_bits"
 
+// Carries out of vectorized adder are assigned over multiple gen loop iterations. Verilator does not like this.
+split_var -module "otbn_vec_adder" -var "adders_carry_out"
+
 // Without some hints, Verilator's conservative combo-loop detection check flags a combinational
 // loop caused by the fact that a requested secure wipe appears as the "stop" signal in the module.
 // This feeds into the big always_comb block, which drives sec_wipe_base_o. Seeing a (false)
