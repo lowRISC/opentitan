@@ -518,15 +518,22 @@ TEST_F(RomExtBootServicesTest, BootSvcOwnershipActivate) {
 
   owner_page[0].owner_key = {{1}};
   memset(boot_data.next_owner, 0, sizeof(boot_data.next_owner));
-  boot_data.next_owner[0] = 0x1234;
+  boot_data.next_owner[0] = 0x5678;
 
   MakePage1Valid(true);
 
   EXPECT_CALL(mock_hmac_, sha256)
-      .WillOnce(SetArgPointee<2>(hmac_digest_t{0x1234}));
+      .WillOnce(SetArgPointee<2>(
+          hmac_digest_t{boot_svc_msg.header.digest.digest[0]}));
 
-  EXPECT_CALL(mock_hmac_, sha256)
-      .WillOnce(SetArgPointee<2>(hmac_digest_t{0x1234}));
+  // In UnlockedEndorsed, the hash of the owner key in page1 must be equal
+  // to the value stored in boot_data.
+  EXPECT_CALL(mock_hmac_, sha256_init());
+  EXPECT_CALL(mock_hmac_, sha256_update(_, _));
+  EXPECT_CALL(mock_hmac_, sha256_update(_, _));
+  EXPECT_CALL(mock_hmac_, sha256_process());
+  EXPECT_CALL(mock_hmac_, sha256_final(_))
+      .WillOnce(SetArgPointee<0>((hmac_digest_t){{boot_data.next_owner[0]}}));
 
   EXPECT_CALL(mock_ownership_key_,
               validate(1, kOwnershipKeyActivate, kActivate, _, _, _, _))
@@ -567,7 +574,7 @@ TEST_F(RomExtBootServicesTest, BootSvcOwnershipActivate) {
   EXPECT_CALL(mock_rnd_, Uint32()).WillRepeatedly(Return(99));
 
   EXPECT_CALL(mock_hmac_, sha256)
-      .WillOnce(SetArgPointee<2>(hmac_digest_t{0x1234}));
+      .WillOnce(SetArgPointee<2>(hmac_digest_t{0xdeadbeef}));
 
   EXPECT_EQ(
       boot_svc_handler(&boot_svc_msg, &boot_data, &boot_log, lc_state, &keyring,

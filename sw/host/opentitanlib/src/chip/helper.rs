@@ -51,6 +51,8 @@ impl OwnershipUnlockParams {
         }
         if let Some(next_owner) = &self.next_owner {
             let key = EcdsaPublicKey::load(next_owner)?;
+            // TODO: Support transferring to a different algorithm.
+            unlock.next_owner_alg = self.algorithm;
             unlock.next_owner_key = EcdsaRawPublicKey::try_from(&key)?;
         }
         if let Some(signature) = &self.signature {
