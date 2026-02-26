@@ -640,13 +640,13 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       // check if mem read happens while mem doesn't allow read (WO)
       if ((mem_access == "WO") && (item.a_opcode == tlul_pkg::Get)) begin
         invalid_access = 1;
-        mem_wo_err = !mem.get_read_to_wo_mem_ok();
+        mem_wo_err = mem_wo_err = 1;
       end
 
       // check if mem write happens while mem is RO
       if ((mem_access == "RO") && (item.a_opcode != tlul_pkg::Get)) begin
         invalid_access = 1;
-        mem_ro_err = !mem.get_write_to_ro_mem_ok();
+        mem_ro_err = 1;
       end
 
       if (invalid_access) begin
