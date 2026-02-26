@@ -42,6 +42,7 @@ rust_binary(
         "@crate_index//:anyhow",
         "@crate_index//:clap",
         "@crate_index//:object",
+        "@crate_index//:regex",
         "@crate_index//:serde",
         "@crate_index//:serde_json",
     ],
