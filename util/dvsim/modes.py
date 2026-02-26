@@ -241,6 +241,7 @@ class BuildMode(Mode):
         self.post_build_cmds = []
         self.en_build_modes = []
         self.build_opts = []
+        self.post_build_opts = []
         self.build_timeout_mins = None
         self.pre_run_cmds = []
         self.post_run_cmds = []
