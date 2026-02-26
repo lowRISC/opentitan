@@ -225,6 +225,7 @@ package otbn_pkg;
     InsnOpcodeBignumMisc     = 7'h0B,
     InsnOpcodeBignumArith    = 7'h2B,
     InsnOpcodeBignumMulqacc  = 7'h3B,
+    InsnOpcodeBignumVec      = 7'h5B,
     InsnOpcodeBignumBaseMisc = 7'h7B
   } insn_opcode_e;
 
@@ -242,21 +243,32 @@ package otbn_pkg;
     AluOpBaseSll
   } alu_op_base_e;
 
-  typedef enum logic [3:0] {
+  typedef enum logic [4:0] {
     AluOpBignumAdd,
     AluOpBignumAddc,
     AluOpBignumAddm,
+    AluOpBignumAddv,
+    AluOpBignumAddvm,
 
     AluOpBignumSub,
     AluOpBignumSubb,
     AluOpBignumSubm,
+    AluOpBignumSubv,
+    AluOpBignumSubvm,
 
     AluOpBignumRshi,
+    AluOpBignumShv,
 
     AluOpBignumXor,
     AluOpBignumOr,
     AluOpBignumAnd,
     AluOpBignumNot,
+
+    AluOpBignumTrn1,
+    AluOpBignumTrn2,
+
+    AluOpBignumPack,
+    AluOpBignumUnpk,
 
     AluOpBignumNone
   } alu_op_bignum_e;
@@ -267,6 +279,16 @@ package otbn_pkg;
     AluOpLogicAnd = 2'h2,
     AluOpLogicNot = 2'h3
   } alu_op_logic_e;
+
+  typedef enum logic {
+    AluShiftOpFull  = 1'b0,
+    AluShiftOpDense = 1'b1
+  } alu_shifter_op_e;
+
+  typedef enum logic {
+    AluShiftDirLeft  = 1'b0,
+    AluShiftDirRight = 1'b1
+  } alu_shifter_dir_e;
 
   typedef enum logic {
     ComparisonOpBaseEq,
@@ -297,36 +319,29 @@ package otbn_pkg;
     ImmBaseBX
   } imm_b_sel_base_e;
 
-  // Number of ALU ELENs
+  // Number of ALU element lengths (ELEN)
   parameter int NELEN_ALU = 2;
 
   // Vector element length type for bignum vec ISA implemented in BN ALU for
   // bn.addv(m), bn.subv(m) and bn.shv.
-  // The ISA forsees only 4 types (16 to 128 bits). However, only a subset is implemented.
-  // In addtion, vectorized instructions share the hardware and thus we need a 256b type
-  // to signal "regular" 256b operation.
+  // The ISA foresees 4 types (16 to 128 bits) but only a subset is implemented.
+  // In addition, vectorized instructions use the same hardware as regular instructions and thus
+  // we need also a 256b type.
   typedef enum logic {
     AluElen32  = 1'h0,
     AluElen256 = 1'h1
   } alu_elen_e;
 
-  // Number of transpose ELENs
+  // Number of transpose element lengths (ELEN)
   parameter int NELEN_TRN = 3;
 
-  // Vector element length type for bignum vec ISA bn.trn1 and bn.trn2
-  // The ISA forsees 4 types (16 to 128 bits). However, only a subset is implemented.
+  // Vector element length type for bignum instructions bn.trn1 and bn.trn2.
+  // The ISA foresees 4 types (16 to 128 bits) but only a subset is implemented.
   typedef enum logic [1:0] {
     TrnElen32  = 2'b00,
     TrnElen64  = 2'b01,
     TrnElen128 = 2'b10
   } trn_elen_e;
-
-  // Shift amount select for bignum ISA
-  typedef enum logic [1:0] {
-    ShamtSelBignumA,
-    ShamtSelBignumS,
-    ShamtSelBignumZero
-  } shamt_sel_bignum_e;
 
   // Regfile write data selection
   typedef enum logic [2:0] {
@@ -469,17 +484,22 @@ package otbn_pkg;
     logic                    b_inc;           // Increment source register index b in base register
                                               // file
 
+    alu_elen_e               alu_elen;
+    trn_elen_e               trn_elen;
+    logic                    alu_adder_carry_sel;
     // Shifting only applies to a subset of ALU operations
     logic [$clog2(WLEN)-1:0] alu_shift_amt;   // Shift amount
     logic                    alu_shift_right; // Shift right if set otherwise left
+    // Shift mask for vectorized shifting. Replicated for all chunks.
+    logic [VChunkLEN-1:0]    alu_shift_mask;
 
     flag_group_t             alu_flag_group;
     flag_e                   alu_sel_flag;
     logic                    alu_flag_en;
-    logic                    mac_flag_en;
     alu_op_bignum_e          alu_op;
     op_b_sel_e               alu_op_b_sel;
 
+    logic                    mac_flag_en;
     logic [1:0]              mac_op_a_qw_sel;
     logic [1:0]              mac_op_b_qw_sel;
     logic                    mac_wr_hw_sel_upper;
@@ -503,18 +523,35 @@ package otbn_pkg;
   } rf_bignum_predec_t;
 
   typedef struct packed {
+    // ALU
+    alu_elen_e               alu_elen;
     logic                    adder_x_en;
     logic                    x_res_operand_a_sel;
     logic                    adder_y_op_a_en;
     logic                    shift_mod_sel;
+    logic                    unpack_shifter_en;
     logic                    adder_y_op_shifter_en;
-    logic                    shifter_a_en;
-    logic                    shifter_b_en;
-    logic                    shift_right;
+    logic [NVecProc-1:0]     adder_x_carries_in;
+    logic                    adder_x_op_b_invert;
+    logic [NVecProc-2:0]     adder_y_carries_top; // The adder Y carries except the LSB carry
+    logic                    adder_y_op_b_invert;
+    logic                    adder_carry_sel;
+    logic                    mod_is_subtraction;
+    // Shifter
+    logic [1:0]              shift_op_a_sel;
+    logic [1:0]              shift_op_b_sel;
+    logic [1:0]              shift_dir;
     logic [$clog2(WLEN)-1:0] shift_amt;
+    logic [VChunkLEN-1:0]    shift_mask;
+    // Logic
     logic                    logic_a_en;
     logic                    logic_shifter_en;
     logic [3:0]              logic_res_sel;
+    // Vector transposer
+    trn_elen_e               trn_elen;
+    logic                    trn_en;
+    logic                    trn_is_trn1;
+    // Flags
     logic [NFlagGroups-1:0]  flag_group_sel;
     flags_t                  flag_sel;
     logic [NFlagGroups-1:0]  flags_keep;
@@ -559,8 +596,12 @@ package otbn_pkg;
     alu_op_bignum_e op;
     logic [WLEN-1:0]         operand_a;
     logic [WLEN-1:0]         operand_b;
+    alu_elen_e               alu_elen;
+    trn_elen_e               trn_elen;
+    logic                    adder_carry_sel;
     logic                    shift_right;
     logic [$clog2(WLEN)-1:0] shift_amt;
+    logic [VChunkLEN-1:0]    shift_mask;
     flag_group_t             flag_group;
     flag_e                   sel_flag;
     logic                    alu_flag_en;
