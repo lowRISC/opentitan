@@ -245,7 +245,14 @@ fpga_cw340(
         "--logging=info",
         "--interface={interface}",
     ] + select({
-        "//ci:lowrisc_fpga_cw340": ["--uarts=/dev/ttyACM_CW340_1,/dev/ttyACM_CW340_0"],
+        "//ci:lowrisc_fpga_cw340": [
+            "--uarts=/dev/ttyACM_CW340_1,/dev/ttyACM_CW340_0",
+            # The CW340 board has a small design problem where the USB transceiver has its
+            # SOFTCONN pin directly connected to the FPGA without any pull down. When the
+            # bitstream is not loaded, the pin is left floating which can cause the transceiver
+            # to random connect to the bus and confuse the host.
+            "--cw-usb-port-workaround=4",
+        ],
         "//conditions:default": [],
     }),
     design = "earlgrey",
