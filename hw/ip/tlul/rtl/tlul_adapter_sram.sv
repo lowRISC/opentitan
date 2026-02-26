@@ -37,6 +37,7 @@ module tlul_adapter_sram
   parameter bit EnableDataIntgGen = 0,  // 1: Generate response data integrity
   parameter bit EnableDataIntgPt  = 0,  // 1: Passthrough command/response data integrity
   parameter bit SecFifoPtr        = 0,  // 1: Duplicated fifo pointers
+  parameter bit SecFifo           = 0,  // 1: Duplicated fifos
   parameter bit EnableReadback    = 0,  // 1: Readback and check written/read data.
   parameter bit DataXorAddr       = 0,  // 1: XOR data and address for address protection
   localparam int WidthMult        = SramDw / top_pkg::TL_DW,
@@ -563,52 +564,99 @@ module tlul_adapter_sram
   //    responses), storing the request is necessary. And if the read entry
   //    is write op, it is safe to return the response right away. If it is
   //    read request, then D response is waiting until read data arrives.
-  prim_fifo_sync #(
-    .Width       (ReqFifoWidth),
-    .Pass        (1'b0),
-    .Depth       (Outstanding),
-    .NeverClears (1'b1),
-    .Secure      (SecFifoPtr)
-  ) u_reqfifo (
-    .clk_i,
-    .rst_ni,
-    .clr_i   (1'b0),
-    .wvalid_i(reqfifo_wvalid),
-    .wready_o(reqfifo_wready),
-    .wdata_i (reqfifo_wdata),
-    .rvalid_o(reqfifo_rvalid),
-    .rready_i(reqfifo_rready),
-    .rdata_o (reqfifo_rdata),
-    .full_o  (),
-    .depth_o (),
-    .err_o   (reqfifo_error)
-  );
+  if (SecFifo) begin : gen_sec_u_reqfifo
+    prim_fifo_sync_redundant #(
+      .Width       (ReqFifoWidth),
+      .Pass        (1'b0),
+      .Depth       (Outstanding),
+      .NeverClears (1'b1),
+      .Secure      (SecFifoPtr)
+    ) u_reqfifo (
+      .clk_i,
+      .rst_ni,
+      .clr_i   (1'b0),
+      .wvalid_i(reqfifo_wvalid),
+      .wready_o(reqfifo_wready),
+      .wdata_i (reqfifo_wdata),
+      .rvalid_o(reqfifo_rvalid),
+      .rready_i(reqfifo_rready),
+      .rdata_o (reqfifo_rdata),
+      .full_o  (),
+      .depth_o (),
+      .err_o   (reqfifo_error)
+    );
+  end else begin: gen_no_sec_u_reqfifo
+    prim_fifo_sync #(
+      .Width       (ReqFifoWidth),
+      .Pass        (1'b0),
+      .Depth       (Outstanding),
+      .NeverClears (1'b1),
+      .Secure      (SecFifoPtr)
+    ) u_reqfifo (
+      .clk_i,
+      .rst_ni,
+      .clr_i   (1'b0),
+      .wvalid_i(reqfifo_wvalid),
+      .wready_o(reqfifo_wready),
+      .wdata_i (reqfifo_wdata),
+      .rvalid_o(reqfifo_rvalid),
+      .rready_i(reqfifo_rready),
+      .rdata_o (reqfifo_rdata),
+      .full_o  (),
+      .depth_o (),
+      .err_o   (reqfifo_error)
+    );
+  end
 
   // sramreqfifo:
   //    While the ReqFIFO holds the request until it is sent back via TL-UL, the
   //    sramreqfifo only needs to hold the mask and word offset until the read
   //    data returns from memory.
-  prim_fifo_sync #(
-    .Width             (SramReqFifoWidth),
-    .Pass              (1'b0),
-    .Depth             (Outstanding),
-    .NeverClears       (1'b1),
-    .Secure            (SecFifoPtr),
-    .OutputZeroIfEmpty (1)
-  ) u_sramreqfifo (
-    .clk_i,
-    .rst_ni,
-    .clr_i   (1'b0),
-    .wvalid_i(sramreqfifo_wvalid),
-    .wready_o(sramreqfifo_wready),
-    .wdata_i (sramreqfifo_wdata),
-    .rvalid_o(),
-    .rready_i(sramreqfifo_rready),
-    .rdata_o (sramreqfifo_rdata),
-    .full_o  (),
-    .depth_o (),
-    .err_o   (sramreqfifo_error)
-  );
+  if (SecFifo) begin : gen_sec_u_sramreqfifo
+    prim_fifo_sync_redundant #(
+      .Width             (SramReqFifoWidth),
+      .Pass              (1'b0),
+      .Depth             (Outstanding),
+      .NeverClears       (1'b1),
+      .Secure            (SecFifoPtr),
+      .OutputZeroIfEmpty (1)
+    ) u_sramreqfifo (
+      .clk_i,
+      .rst_ni,
+      .clr_i   (1'b0),
+      .wvalid_i(sramreqfifo_wvalid),
+      .wready_o(sramreqfifo_wready),
+      .wdata_i (sramreqfifo_wdata),
+      .rvalid_o(),
+      .rready_i(sramreqfifo_rready),
+      .rdata_o (sramreqfifo_rdata),
+      .full_o  (),
+      .depth_o (),
+      .err_o   (sramreqfifo_error)
+    );
+  end else begin : gen_no_sec_u_sramreqfifo
+    prim_fifo_sync #(
+      .Width             (SramReqFifoWidth),
+      .Pass              (1'b0),
+      .Depth             (Outstanding),
+      .NeverClears       (1'b1),
+      .Secure            (SecFifoPtr),
+      .OutputZeroIfEmpty (1)
+    ) u_sramreqfifo (
+      .clk_i,
+      .rst_ni,
+      .clr_i   (1'b0),
+      .wvalid_i(sramreqfifo_wvalid),
+      .wready_o(sramreqfifo_wready),
+      .wdata_i (sramreqfifo_wdata),
+      .rvalid_o(),
+      .rready_i(sramreqfifo_rready),
+      .rdata_o (sramreqfifo_rdata),
+      .full_o  (),
+      .depth_o (),
+      .err_o   (sramreqfifo_error)
+    );
+  end
 
   if (!DataXorAddr) begin : gen_no_data_xor_addr_fifo
     // If u_sramreqfifo doesn't contain any address data, nothing will be reading sram_addr_wdata or
@@ -623,26 +671,49 @@ module tlul_adapter_sram
   //    back pressured, the response FIFO should store the returned data not to
   //    lose the data from the SRAM interface. Remember, SRAM interface doesn't
   //    have back-pressure signal such as read_ready.
-  prim_fifo_sync #(
-    .Width       (RspFifoWidth),
-    .Pass        (1'b1),
-    .Depth       (Outstanding),
-    .NeverClears (1'b1),
-    .Secure      (SecFifoPtr)
-  ) u_rspfifo (
-    .clk_i,
-    .rst_ni,
-    .clr_i   (1'b0),
-    .wvalid_i(rspfifo_wvalid),
-    .wready_o(rspfifo_wready),
-    .wdata_i (rspfifo_wdata),
-    .rvalid_o(rspfifo_rvalid),
-    .rready_i(rspfifo_rready),
-    .rdata_o (rspfifo_rdata),
-    .full_o  (),
-    .depth_o (),
-    .err_o   (rsp_fifo_error)
-  );
+  if (SecFifo) begin : gen_sec_u_rspfifo
+    prim_fifo_sync_redundant #(
+      .Width       (RspFifoWidth),
+      .Pass        (1'b1),
+      .Depth       (Outstanding),
+      .NeverClears (1'b1),
+      .Secure      (SecFifoPtr)
+    ) u_rspfifo (
+      .clk_i,
+      .rst_ni,
+      .clr_i   (1'b0),
+      .wvalid_i(rspfifo_wvalid),
+      .wready_o(rspfifo_wready),
+      .wdata_i (rspfifo_wdata),
+      .rvalid_o(rspfifo_rvalid),
+      .rready_i(rspfifo_rready),
+      .rdata_o (rspfifo_rdata),
+      .full_o  (),
+      .depth_o (),
+      .err_o   (rsp_fifo_error)
+    );
+  end else begin : gen_no_sec_u_rspfifo
+    prim_fifo_sync #(
+      .Width       (RspFifoWidth),
+      .Pass        (1'b1),
+      .Depth       (Outstanding),
+      .NeverClears (1'b1),
+      .Secure      (SecFifoPtr)
+    ) u_rspfifo (
+      .clk_i,
+      .rst_ni,
+      .clr_i   (1'b0),
+      .wvalid_i(rspfifo_wvalid),
+      .wready_o(rspfifo_wready),
+      .wdata_i (rspfifo_wdata),
+      .rvalid_o(rspfifo_rvalid),
+      .rready_i(rspfifo_rready),
+      .rdata_o (rspfifo_rdata),
+      .full_o  (),
+      .depth_o (),
+      .err_o   (rsp_fifo_error)
+    );
+  end
 
   // below assertion fails when SRAM rvalid is asserted even though ReqFifo is empty
   `ASSERT(rvalidHighReqFifoEmpty, rvalid_i |-> reqfifo_rvalid)
