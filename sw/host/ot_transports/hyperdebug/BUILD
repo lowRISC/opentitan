@@ -36,6 +36,7 @@ rust_library(
         "//sw/host/ot_transports/chipwhisperer",
         "@crate_index//:anyhow",
         "@crate_index//:byteorder",
+        "@crate_index//:clap",
         "@crate_index//:erased-serde",
         "@crate_index//:log",
         "@crate_index//:regex",
