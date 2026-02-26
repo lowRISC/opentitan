@@ -1317,27 +1317,28 @@ module rram_ctrl
 
   // assertions associated with alert_tx_o[1]
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(RdRspFifo,
-                                               u_to_rd_fifo.u_rspfifo,
+                                               u_to_rd_fifo.gen_no_sec_u_rspfifo.u_rspfifo,
                                                alert_tx_o[1])
 
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(RdSramReqFifo,
-                                               u_to_rd_fifo.u_sramreqfifo,
+                                               u_to_rd_fifo.gen_no_sec_u_sramreqfifo.u_sramreqfifo,
                                                alert_tx_o[1])
 
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(RdReqFifo,
-                                               u_to_rd_fifo.u_reqfifo,
+                                               u_to_rd_fifo.gen_no_sec_u_reqfifo.u_reqfifo,
                                                alert_tx_o[1])
 
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(HostRspFifo,
-                                              u_tl_adapter_host.u_rspfifo,
+                                              u_tl_adapter_host.gen_no_sec_u_rspfifo.u_rspfifo,
                                               alert_tx_o[1])
 
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(HostSramReqFifo,
-                                              u_tl_adapter_host.u_sramreqfifo,
+                                              u_tl_adapter_host.gen_no_sec_u_sramreqfifo
+                                                .u_sramreqfifo,
                                               alert_tx_o[1])
 
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(HostReqFifo,
-                                              u_tl_adapter_host.u_reqfifo,
+                                              u_tl_adapter_host.gen_no_sec_u_reqfifo.u_reqfifo,
                                               alert_tx_o[1])
 
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(CtrlWrFifo,

@@ -38,6 +38,7 @@ module tlul_adapter_sram_racl
   parameter bit EnableDataIntgGen = 0,          // 1: Generate response data integrity
   parameter bit EnableDataIntgPt  = 0,          // 1: Passthrough command/response data integrity
   parameter bit SecFifoPtr        = 0,          // 1: Duplicated fifo pointers
+  parameter bit SecFifo           = 0,          // 1: Duplicated fifos
   parameter bit EnableReadback    = 0,          // 1: Readback and check written/read data.
   parameter bit DataXorAddr       = 0,          // 1: XOR data and address for address protection
   parameter bit EnableRacl        = 0,          // 1: Enable RACL checks on access
@@ -113,6 +114,7 @@ module tlul_adapter_sram_racl
     .EnableDataIntgGen ( EnableDataIntgGen ),
     .EnableDataIntgPt  ( EnableDataIntgPt  ),
     .SecFifoPtr        ( SecFifoPtr        ),
+    .SecFifo           ( SecFifo           ),
     .EnableReadback    ( EnableReadback    ),
     .DataXorAddr       ( DataXorAddr       )
   ) tlul_adapter_sram (
