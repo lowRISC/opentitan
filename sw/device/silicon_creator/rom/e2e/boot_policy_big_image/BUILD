@@ -23,6 +23,11 @@ BOOT_POLICY_BIG_IMAGE_CASES = [
     {
         "suffix": "bigger_than_64k",
         "array_size": 65000,
+        "tags": ["coverage_broken"],  # different flash layout
+    },
+    {
+        "suffix": "bigger_than_128k",
+        "array_size": 131073,
     },
 ]
 
@@ -40,7 +45,7 @@ BOOT_POLICY_BIG_IMAGE_CASES = [
         },
         fpga = fpga_params(
             otp = "//hw/ip/otp_ctrl/data:img_{}".format(lc_state),
-            tags = maybe_skip_in_ci(lc_state_val),
+            tags = maybe_skip_in_ci(lc_state_val) + t.get("tags", []),
         ),
         local_defines = ["ARRAY_SIZE={}".format(t["array_size"])],
         deps = [

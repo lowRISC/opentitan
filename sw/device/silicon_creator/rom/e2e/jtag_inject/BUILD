@@ -50,7 +50,10 @@ package(default_visibility = ["//visibility:public"])
             logging = "debug",
             needs_jtag = True,
             otp = ":img_{}_exec_disabled".format(lc_state),
-            tags = ["cw310_rom_with_fake_keys"],
+            tags = [
+                "coverage_broken",  # FIXME: broken in coverage mode.
+                "cw310_rom_with_fake_keys",
+            ],
             test_cmd = """
                 --elf={sram_program}
             """,
