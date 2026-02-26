@@ -549,13 +549,13 @@ interface entropy_src_cov_if
           entropy_src_reg_pkg::ENTROPY_SRC_CONF_OFFSET,
           entropy_src_reg_pkg::ENTROPY_SRC_ENTROPY_CONTROL_OFFSET,
           entropy_src_reg_pkg::ENTROPY_SRC_HEALTH_TEST_WINDOWS_OFFSET,
-          entropy_src_reg_pkg::ENTROPY_SRC_REPCNT_THRESHOLDS_OFFSET,
-          entropy_src_reg_pkg::ENTROPY_SRC_REPCNTS_THRESHOLDS_OFFSET,
-          entropy_src_reg_pkg::ENTROPY_SRC_ADAPTP_HI_THRESHOLDS_OFFSET,
-          entropy_src_reg_pkg::ENTROPY_SRC_ADAPTP_LO_THRESHOLDS_OFFSET,
-          entropy_src_reg_pkg::ENTROPY_SRC_BUCKET_THRESHOLDS_OFFSET,
-          entropy_src_reg_pkg::ENTROPY_SRC_MARKOV_HI_THRESHOLDS_OFFSET,
-          entropy_src_reg_pkg::ENTROPY_SRC_MARKOV_LO_THRESHOLDS_OFFSET,
+          entropy_src_reg_pkg::ENTROPY_SRC_REPCNT_THRESHOLD_OFFSET,
+          entropy_src_reg_pkg::ENTROPY_SRC_REPCNTS_THRESHOLD_OFFSET,
+          entropy_src_reg_pkg::ENTROPY_SRC_ADAPTP_HI_THRESHOLD_OFFSET,
+          entropy_src_reg_pkg::ENTROPY_SRC_ADAPTP_LO_THRESHOLD_OFFSET,
+          entropy_src_reg_pkg::ENTROPY_SRC_BUCKET_THRESHOLD_OFFSET,
+          entropy_src_reg_pkg::ENTROPY_SRC_MARKOV_HI_THRESHOLD_OFFSET,
+          entropy_src_reg_pkg::ENTROPY_SRC_MARKOV_LO_THRESHOLD_OFFSET,
           entropy_src_reg_pkg::ENTROPY_SRC_FW_OV_CONTROL_OFFSET,
           entropy_src_reg_pkg::ENTROPY_SRC_OBSERVE_FIFO_THRESH_OFFSET
       };
@@ -939,15 +939,15 @@ interface entropy_src_cov_if
 
     cp_offset : coverpoint offset {
       bins one_way_regs[] = {
-        entropy_src_reg_pkg::ENTROPY_SRC_REPCNT_THRESHOLDS_OFFSET,
-        entropy_src_reg_pkg::ENTROPY_SRC_REPCNTS_THRESHOLDS_OFFSET,
-        entropy_src_reg_pkg::ENTROPY_SRC_ADAPTP_HI_THRESHOLDS_OFFSET,
-        entropy_src_reg_pkg::ENTROPY_SRC_ADAPTP_LO_THRESHOLDS_OFFSET,
-        entropy_src_reg_pkg::ENTROPY_SRC_BUCKET_THRESHOLDS_OFFSET,
-        entropy_src_reg_pkg::ENTROPY_SRC_MARKOV_HI_THRESHOLDS_OFFSET,
-        entropy_src_reg_pkg::ENTROPY_SRC_MARKOV_LO_THRESHOLDS_OFFSET,
-        entropy_src_reg_pkg::ENTROPY_SRC_EXTHT_HI_THRESHOLDS_OFFSET,
-        entropy_src_reg_pkg::ENTROPY_SRC_EXTHT_LO_THRESHOLDS_OFFSET
+        entropy_src_reg_pkg::ENTROPY_SRC_REPCNT_THRESHOLD_OFFSET,
+        entropy_src_reg_pkg::ENTROPY_SRC_REPCNTS_THRESHOLD_OFFSET,
+        entropy_src_reg_pkg::ENTROPY_SRC_ADAPTP_HI_THRESHOLD_OFFSET,
+        entropy_src_reg_pkg::ENTROPY_SRC_ADAPTP_LO_THRESHOLD_OFFSET,
+        entropy_src_reg_pkg::ENTROPY_SRC_BUCKET_THRESHOLD_OFFSET,
+        entropy_src_reg_pkg::ENTROPY_SRC_MARKOV_HI_THRESHOLD_OFFSET,
+        entropy_src_reg_pkg::ENTROPY_SRC_MARKOV_LO_THRESHOLD_OFFSET,
+        entropy_src_reg_pkg::ENTROPY_SRC_EXTHT_HI_THRESHOLD_OFFSET,
+        entropy_src_reg_pkg::ENTROPY_SRC_EXTHT_LO_THRESHOLD_OFFSET
       };
     }
 

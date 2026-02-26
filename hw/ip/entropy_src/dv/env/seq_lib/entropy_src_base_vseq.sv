@@ -163,13 +163,15 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     // REPCNT and REPCNTS
 
     if (!newcfg.default_ht_thresholds) begin
-      ral.repcnt_thresholds.bypass_thresh.set(newcfg.repcnt_thresh_bypass);
-      ral.repcnt_thresholds.fips_thresh.set(newcfg.repcnt_thresh_fips);
-      csr_update(.csr(ral.repcnt_thresholds));
-
-      ral.repcnts_thresholds.bypass_thresh.set(newcfg.repcnts_thresh_bypass);
-      ral.repcnts_thresholds.fips_thresh.set(newcfg.repcnts_thresh_fips);
-      csr_update(.csr(ral.repcnts_thresholds));
+      if (newcfg.fips_enable == prim_mubi_pkg::MuBi4True) begin
+        ral.repcnt_threshold.set(newcfg.repcnt_thresh_fips);
+        ral.repcnts_threshold.set(newcfg.repcnts_thresh_fips);
+      end else begin
+        ral.repcnt_threshold.set(newcfg.repcnt_thresh_bypass);
+        ral.repcnts_threshold.set(newcfg.repcnts_thresh_bypass);
+      end
+      csr_update(.csr(ral.repcnt_threshold));
+      csr_update(.csr(ral.repcnts_threshold));
     end
     #(pause);
 
@@ -519,16 +521,13 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   endtask // repcnt_ht_fail_seq
 
   task adaptp_ht_fail_seq(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq,
-                          bit[15:0] fips_lo_thresh, bit[15:0] fips_hi_thresh,
-                          bit[15:0] bypass_lo_thresh, bit[15:0] bypass_hi_thresh,
+                          bit[15:0] lo_thresh, bit[15:0] hi_thresh,
                           int num_trans = m_rng_push_seq.num_trans);
     int unsigned lane_idx;
-    ral.adaptp_hi_thresholds.fips_thresh.set(fips_hi_thresh);
-    ral.adaptp_hi_thresholds.bypass_thresh.set(bypass_hi_thresh);
-    csr_update(.csr(ral.adaptp_hi_thresholds));
-    ral.adaptp_lo_thresholds.fips_thresh.set(fips_lo_thresh);
-    ral.adaptp_lo_thresholds.bypass_thresh.set(bypass_lo_thresh);
-    csr_update(.csr(ral.adaptp_lo_thresholds));
+    ral.adaptp_hi_threshold.set(hi_thresh);
+    csr_update(.csr(ral.adaptp_hi_threshold));
+    ral.adaptp_lo_threshold.set(lo_thresh);
+    csr_update(.csr(ral.adaptp_lo_threshold));
     // Turn on module_enable
     enable_dut();
     // Randomly select a lane to fail.
@@ -543,14 +542,13 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   endtask // adaptp_ht_fail_seq
 
   task bucket_ht_fail_seq(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq,
-                          bit[15:0] fips_thresh, bit[15:0] bypass_thresh,
+                          bit[15:0] thresh,
                           int num_trans = m_rng_push_seq.num_trans);
     parameter int BucketHtDataWidth = entropy_src_pkg::bucket_ht_data_width(`RNG_BUS_WIDTH);
     parameter int unsigned NumBucketHtInst = entropy_src_pkg::num_bucket_ht_inst(`RNG_BUS_WIDTH);
     int unsigned group_idx;
-    ral.bucket_thresholds.fips_thresh.set(fips_thresh);
-    ral.bucket_thresholds.bypass_thresh.set(bypass_thresh);
-    csr_update(.csr(ral.bucket_thresholds));
+    ral.bucket_threshold.set(thresh);
+    csr_update(.csr(ral.bucket_threshold));
     // Turn on module_enable
     enable_dut();
     // Randomly select a group to fail.
@@ -564,16 +562,13 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   endtask // bucket_ht_fail_seq
 
   task markov_ht_fail_seq(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq,
-                          bit[15:0] fips_lo_thresh, bit[15:0] fips_hi_thresh,
-                          bit[15:0] bypass_lo_thresh, bit[15:0] bypass_hi_thresh,
+                          bit[15:0] lo_thresh, bit[15:0] hi_thresh,
                           int num_trans = m_rng_push_seq.num_trans);
     int unsigned lane_idx;
-    ral.markov_hi_thresholds.fips_thresh.set(fips_hi_thresh);
-    ral.markov_hi_thresholds.bypass_thresh.set(bypass_hi_thresh);
-    csr_update(.csr(ral.markov_hi_thresholds));
-    ral.markov_lo_thresholds.fips_thresh.set(fips_lo_thresh);
-    ral.markov_lo_thresholds.bypass_thresh.set(bypass_lo_thresh);
-    csr_update(.csr(ral.markov_lo_thresholds));
+    ral.markov_hi_threshold.set(hi_thresh);
+    csr_update(.csr(ral.markov_hi_threshold));
+    ral.markov_lo_threshold.set(lo_thresh);
+    csr_update(.csr(ral.markov_lo_threshold));
     // Turn on module_enable
     enable_dut();
     // Randomly select a lane to fail.
@@ -655,9 +650,8 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     string path;
     `DV_CHECK_STD_RANDOMIZE_FATAL(path_err_val)
     // Set a low threshold to introduce ht fails
-    ral.repcnt_thresholds.fips_thresh.set(16'h0008);
-    ral.repcnt_thresholds.bypass_thresh.set(16'h0008);
-    csr_update(.csr(ral.repcnt_thresholds));
+    ral.repcnt_threshold.set(16'h0008);
+    csr_update(.csr(ral.repcnt_threshold));
     repcnt_ht_fail_seq(m_rng_push_seq);
     m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
     cfg.clk_rst_vif.wait_clks(100);
@@ -667,9 +661,8 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     // the counter error
     force_path_err(path, path_err_val, reg_field, 1'b1);
     // Write the threshold back to a high value
-    ral.repcnt_thresholds.fips_thresh.set(16'hfffe);
-    ral.repcnt_thresholds.bypass_thresh.set(16'hfffe);
-    csr_update(.csr(ral.repcnt_thresholds));
+    ral.repcnt_threshold.set(16'hfffe);
+    csr_update(.csr(ral.repcnt_threshold));
   endtask // repcnt_ht_cntr_test
 
   task repcnts_ht_cntr_test(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq,
@@ -677,9 +670,8 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     string path;
     `DV_CHECK_STD_RANDOMIZE_FATAL(path_err_val)
     // Set a low threshold to introduce ht fails
-    ral.repcnts_thresholds.fips_thresh.set(16'h0008);
-    ral.repcnts_thresholds.bypass_thresh.set(16'h0008);
-    csr_update(.csr(ral.repcnts_thresholds));
+    ral.repcnts_threshold.set(16'h0008);
+    csr_update(.csr(ral.repcnts_threshold));
     repcnt_ht_fail_seq(m_rng_push_seq);
     m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
     cfg.clk_rst_vif.wait_clks(100);
@@ -689,18 +681,16 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     // the counter error
     force_path_err(path, path_err_val, reg_field, 1'b1);
     // Write the threshold back to a high value
-    ral.repcnts_thresholds.fips_thresh.set(16'hfffe);
-    ral.repcnts_thresholds.bypass_thresh.set(16'hfffe);
-    csr_update(.csr(ral.repcnts_thresholds));
+    ral.repcnts_threshold.set(16'hfffe);
+    csr_update(.csr(ral.repcnts_threshold));
   endtask // repcnts_ht_cntr_test
 
   task adaptp_ht_cntr_test(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq,
                            uvm_reg_field reg_field);
     string path;
-    bit [15:0] fips_thresh = 16'h0008;
-    bit [15:0] bypass_thresh = 16'h0008;
+    bit [15:0] thresh = 16'h0008;
     `DV_CHECK_STD_RANDOMIZE_FATAL(path_err_val)
-    adaptp_ht_fail_seq(m_rng_push_seq, fips_thresh, fips_thresh, bypass_thresh, bypass_thresh);
+    adaptp_ht_fail_seq(m_rng_push_seq, thresh, thresh);
     // Start the sequence
     m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
     cfg.clk_rst_vif.wait_clks(100);
@@ -710,23 +700,19 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     // the counter error
     force_path_err(path, path_err_val, reg_field, 1'b1);
     // Write the threshold back to a high value
-    ral.adaptp_hi_thresholds.fips_thresh.set(16'hfffe);
-    ral.adaptp_hi_thresholds.bypass_thresh.set(16'hfffe);
-    csr_update(.csr(ral.adaptp_hi_thresholds));
-    ral.adaptp_lo_thresholds.fips_thresh.set(16'hfffe);
-    ral.adaptp_lo_thresholds.bypass_thresh.set(16'hfffe);
-    csr_update(.csr(ral.adaptp_lo_thresholds));
+    ral.adaptp_hi_threshold.set(16'hfffe);
+    csr_update(.csr(ral.adaptp_hi_threshold));
+    ral.adaptp_lo_threshold.set(16'hfffe);
+    csr_update(.csr(ral.adaptp_lo_threshold));
   endtask // adaptp_ht_cntr_test
 
   task bucket_ht_cntr_test(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq,
                            uvm_reg_field reg_field);
     string path;
-    bit [15:0] fips_thresh = 16'h0008;
-    bit [15:0] bypass_thresh = 16'h0008;
+    bit [15:0] thresh = 16'h0008;
     `DV_CHECK_STD_RANDOMIZE_FATAL(path_err_val)
-    fips_thresh = 16'h0008;
-    bypass_thresh = 16'h0008;
-    bucket_ht_fail_seq(m_rng_push_seq, fips_thresh, bypass_thresh);
+    thresh = 16'h0008;
+    bucket_ht_fail_seq(m_rng_push_seq, thresh);
     m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
     cfg.clk_rst_vif.wait_clks(100);
     // Force bucket ht counter err
@@ -735,21 +721,18 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     // the counter error
     force_path_err(path, path_err_val, reg_field, 1'b1);
     // Write the threshold back to a high value
-    ral.bucket_thresholds.fips_thresh.set(16'hfffe);
-    ral.bucket_thresholds.bypass_thresh.set(16'hfffe);
-    csr_update(.csr(ral.bucket_thresholds));
+    ral.bucket_threshold.set(16'hfffe);
+    csr_update(.csr(ral.bucket_threshold));
   endtask // bucket_ht_cntr_test
 
   task markov_ht_cntr_test(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq,
                            uvm_reg_field reg_field);
     string path;
-    bit [15:0] fips_thresh = 16'h0008;
-    bit [15:0] bypass_thresh = 16'h0008;
+    bit [15:0] thresh = 16'h0008;
     `DV_CHECK_STD_RANDOMIZE_FATAL(path_err_val)
 
-    fips_thresh = 16'h0008;
-    bypass_thresh = 16'h0008;
-    markov_ht_fail_seq(m_rng_push_seq, fips_thresh, fips_thresh, bypass_thresh, bypass_thresh);
+    thresh = 16'h0008;
+    markov_ht_fail_seq(m_rng_push_seq, thresh, thresh);
     // Start the sequence
     m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
     cfg.clk_rst_vif.wait_clks(100);
@@ -759,12 +742,10 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     // the counter error
     force_path_err(path, path_err_val, reg_field, 1'b1);
     // Write the threshold back to a high value
-    ral.markov_hi_thresholds.fips_thresh.set(16'hfffe);
-    ral.markov_hi_thresholds.bypass_thresh.set(16'hfffe);
-    csr_update(.csr(ral.markov_hi_thresholds));
-    ral.markov_lo_thresholds.fips_thresh.set(16'hfffe);
-    ral.markov_lo_thresholds.bypass_thresh.set(16'hfffe);
-    csr_update(.csr(ral.markov_lo_thresholds));
+    ral.markov_hi_threshold.set(16'hfffe);
+    csr_update(.csr(ral.markov_hi_threshold));
+    ral.markov_lo_threshold.set(16'hfffe);
+    csr_update(.csr(ral.markov_lo_threshold));
   endtask // markov_ht_cntr_test
 
   // Find the first or last index in the original string that the target character appears

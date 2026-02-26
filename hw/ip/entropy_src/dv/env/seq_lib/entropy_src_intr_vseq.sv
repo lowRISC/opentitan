@@ -12,7 +12,9 @@ class entropy_src_intr_vseq extends entropy_src_base_vseq;
   push_pull_host_seq#(`RNG_BUS_WIDTH)          m_rng_push_seq;
   push_pull_host_seq#(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)   m_csrng_pull_seq;
 
+  bit [15:0]  thresh;
   bit [15:0]  fips_thresh, bypass_thresh;
+  bit [15:0]  hi_thresh, lo_thresh;
   bit [15:0]  fips_hi_thresh, fips_lo_thresh;
   bit [15:0]  bypass_hi_thresh, bypass_lo_thresh;
   bit [15:0]  one_eighth;
@@ -215,9 +217,8 @@ class entropy_src_intr_vseq extends entropy_src_base_vseq;
         // For our valid inputs a threshold of 10 suffices, since each subsequence of
         // 16 inputs contains all of the numbers 0-15 and since exactly half bits are
         // ones on each lane, the maximum number of repetitions is 8.
-        fips_thresh = 16'h000a;
-        bypass_thresh = 16'h000a;
-        csr_wr(.ptr(ral.repcnt_thresholds), .value({bypass_thresh, fips_thresh}));
+        thresh = 16'h000a;
+        csr_wr(.ptr(ral.repcnt_threshold), .value(thresh));
         enable_dut();
         repcnt_ht_fail_seq(m_rng_push_seq, num_invalid_rng_trans);
       end
@@ -233,8 +234,14 @@ class entropy_src_intr_vseq extends entropy_src_base_vseq;
         fips_lo_thresh = fips_thresh - 1;
         bypass_hi_thresh = bypass_thresh + 3;
         bypass_lo_thresh = bypass_thresh - 3;
-        adaptp_ht_fail_seq(m_rng_push_seq, fips_lo_thresh, fips_hi_thresh,
-                           bypass_lo_thresh, bypass_hi_thresh, num_invalid_rng_trans);
+        if (`gmv(ral.conf.fips_enable) == prim_mubi_pkg::MuBi4True) begin
+          hi_thresh = fips_hi_thresh;
+          lo_thresh = fips_lo_thresh;
+        end else begin
+          hi_thresh = bypass_hi_thresh;
+          lo_thresh = bypass_lo_thresh;
+        end
+        adaptp_ht_fail_seq(m_rng_push_seq, lo_thresh, hi_thresh, num_invalid_rng_trans);
       end
       bucket_ht_fail: begin // Bucket test
         `uvm_info(`gfn, $sformatf("bucket_ht_fail"), UVM_MEDIUM)
@@ -245,7 +252,12 @@ class entropy_src_intr_vseq extends entropy_src_base_vseq;
             (BucketHtDataWidth * NumBuckets * NumBucketHtInst) + 1;
         bypass_thresh = cfg.dut_cfg.bypass_window_size /
             (BucketHtDataWidth * NumBuckets * NumBucketHtInst) + 1;
-        bucket_ht_fail_seq(m_rng_push_seq, fips_thresh, bypass_thresh, num_invalid_rng_trans);
+        if (`gmv(ral.conf.fips_enable) == prim_mubi_pkg::MuBi4True) begin
+          thresh = fips_thresh;
+        end else begin
+          thresh = bypass_thresh;
+        end
+        bucket_ht_fail_seq(m_rng_push_seq, thresh, num_invalid_rng_trans);
       end
       markov_ht_fail: begin // Markov test
         `uvm_info(`gfn, $sformatf("markov_ht_fail"), UVM_MEDIUM)
@@ -260,8 +272,14 @@ class entropy_src_intr_vseq extends entropy_src_base_vseq;
         one_eighth = ((bypass_thresh - 1) / 8 != 0) ? (bypass_thresh - 1) / 8 : 1;
         bypass_hi_thresh = bypass_thresh + one_eighth + 1;
         bypass_lo_thresh = bypass_thresh - one_eighth - 1;
-        markov_ht_fail_seq(m_rng_push_seq, fips_lo_thresh, fips_hi_thresh,
-                           bypass_lo_thresh, bypass_hi_thresh, num_invalid_rng_trans);
+        if (`gmv(ral.conf.fips_enable) == prim_mubi_pkg::MuBi4True) begin
+          hi_thresh = fips_hi_thresh;
+          lo_thresh = fips_lo_thresh;
+        end else begin
+          hi_thresh = bypass_hi_thresh;
+          lo_thresh = bypass_lo_thresh;
+        end
+        markov_ht_fail_seq(m_rng_push_seq, lo_thresh, hi_thresh, num_invalid_rng_trans);
       end
       default: begin
         `uvm_fatal(`gfn, "Invalid case! (bug in environment)")
