@@ -898,7 +898,8 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in
   // sw/host/provisioning/ft_lib/src/lib.rs
   base_printf("Exporting TBS certificates ...\n");
-  RESP_OK(ujson_serialize_perso_blob_t, uj, &perso_blob_to_host);
+  RESP_OK_PADDED_NO_CRC(ujson_serialize_with_padding_perso_blob_t, uj,
+                        &perso_blob_to_host, kPersoBlobSerializedMaxSize);
 
   // Import endorsed certificates from the provisioning appliance.
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in
@@ -1019,7 +1020,8 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
 
 static status_t send_final_hash(ujson_t *uj, serdes_sha256_hash_t *hash) {
   TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleTxReady, true));
-  TRY(RESP_OK(ujson_serialize_serdes_sha256_hash_t, uj, hash));
+  TRY(RESP_OK_PADDED_NO_CRC(ujson_serialize_with_padding_serdes_sha256_hash_t,
+                            uj, hash, kSerdesSha256HashSerializedMaxSize));
   TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleTxReady, false));
   return OK_STATUS();
 }
