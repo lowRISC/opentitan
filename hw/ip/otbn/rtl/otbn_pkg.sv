@@ -53,6 +53,15 @@ package otbn_pkg;
   // _DmemScratchSizeBytes in util/shared/mem_layout.py
   parameter int DmemScratchSizeByte = 16384;
 
+  // Width of vector, in bits
+  parameter int VLEN = WLEN;
+
+  // Width of the smallest vector chunk we operate on, in bits
+  parameter int VChunkLEN = 32;
+
+  // Number of vector chunk processing elements
+  parameter int NVecProc = VLEN / VChunkLEN;
+
   // Toplevel constants ============================================================================
 
   parameter int AlertFatal = 0;
@@ -287,6 +296,30 @@ package otbn_pkg;
     ImmBaseBL,
     ImmBaseBX
   } imm_b_sel_base_e;
+
+  // Number of ALU ELENs
+  parameter int NELEN_ALU = 2;
+
+  // Vector element length type for bignum vec ISA implemented in BN ALU for
+  // bn.addv(m), bn.subv(m) and bn.shv.
+  // The ISA forsees only 4 types (16 to 128 bits). However, only a subset is implemented.
+  // In addtion, vectorized instructions share the hardware and thus we need a 256b type
+  // to signal "regular" 256b operation.
+  typedef enum logic {
+    AluElen32  = 1'h0,
+    AluElen256 = 1'h1
+  } alu_elen_e;
+
+  // Number of transpose ELENs
+  parameter int NELEN_TRN = 3;
+
+  // Vector element length type for bignum vec ISA bn.trn1 and bn.trn2
+  // The ISA forsees 4 types (16 to 128 bits). However, only a subset is implemented.
+  typedef enum logic [1:0] {
+    TrnElen32  = 2'b00,
+    TrnElen64  = 2'b01,
+    TrnElen128 = 2'b10
+  } trn_elen_e;
 
   // Shift amount select for bignum ISA
   typedef enum logic [1:0] {

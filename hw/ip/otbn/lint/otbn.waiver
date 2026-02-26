@@ -35,6 +35,10 @@ waive -rules {CLOCK_USE RESET_USE} -location {otbn_alu_bignum.sv otbn_rf_bignum_
       -regexp {'(clk_i|rst_ni)' is connected to '(prim_onehot_mux|otbn_mac_bignum)' port} \
       -comment {The module is fully combinatorial, clk/rst are only used for assertions.}
 
+waive -rules {CLOCK_USE RESET_USE} -location {otbn_alu_bignum.sv} \
+      -regexp {'(clk_i|rst_ni)' is connected to '(otbn_vec_transposer|otbn_vec_shifter)' port} \
+      -comment {The module is fully combinatorial, clk/rst are only used for assertions.}
+
 waive -rules {CLOCK_USE RESET_USE} -location {otbn_instruction_fetch.sv} \
       -regexp {'(clk_i|rst_ni)' is connected to 'otbn_predecode' port} \
       -comment {The module is fully combinatorial, clk/rst are only used for assertions.}
