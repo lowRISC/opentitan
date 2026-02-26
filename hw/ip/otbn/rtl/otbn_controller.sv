@@ -1006,13 +1006,17 @@ module otbn_controller
     endcase
   end
 
-  assign alu_bignum_operation_o.op          = insn_dec_bignum_i.alu_op;
-  assign alu_bignum_operation_o.shift_right = insn_dec_bignum_i.alu_shift_right;
-  assign alu_bignum_operation_o.shift_amt   = insn_dec_bignum_i.alu_shift_amt;
-  assign alu_bignum_operation_o.flag_group  = insn_dec_bignum_i.alu_flag_group;
-  assign alu_bignum_operation_o.sel_flag    = insn_dec_bignum_i.alu_sel_flag;
-  assign alu_bignum_operation_o.alu_flag_en = insn_dec_bignum_i.alu_flag_en & insn_valid_i;
-  assign alu_bignum_operation_o.mac_flag_en = insn_dec_bignum_i.mac_flag_en & insn_valid_i;
+  assign alu_bignum_operation_o.op              = insn_dec_bignum_i.alu_op;
+  assign alu_bignum_operation_o.alu_elen        = insn_dec_bignum_i.alu_elen;
+  assign alu_bignum_operation_o.trn_elen        = insn_dec_bignum_i.trn_elen;
+  assign alu_bignum_operation_o.adder_carry_sel = insn_dec_bignum_i.alu_adder_carry_sel;
+  assign alu_bignum_operation_o.shift_right     = insn_dec_bignum_i.alu_shift_right;
+  assign alu_bignum_operation_o.shift_amt       = insn_dec_bignum_i.alu_shift_amt;
+  assign alu_bignum_operation_o.shift_mask      = insn_dec_bignum_i.alu_shift_mask;
+  assign alu_bignum_operation_o.flag_group      = insn_dec_bignum_i.alu_flag_group;
+  assign alu_bignum_operation_o.sel_flag        = insn_dec_bignum_i.alu_sel_flag;
+  assign alu_bignum_operation_o.alu_flag_en     = insn_dec_bignum_i.alu_flag_en & insn_valid_i;
+  assign alu_bignum_operation_o.mac_flag_en     = insn_dec_bignum_i.mac_flag_en & insn_valid_i;
 
   assign alu_bignum_operation_valid_o  = insn_valid_i;
   assign alu_bignum_operation_commit_o = insn_executing;
