@@ -339,5 +339,50 @@
       tests: ["chip_sw_alert_handler_reverse_ping_in_deep_sleep"]
       bazel: ["//sw/device/tests:alert_handler_reverse_ping_in_deep_sleep_test"]
     }
+    {
+      name: "chip_sw_alert_handler_all_active_stress",
+      desc: '''Stress test all alert sources in the `all_active` power state.
+
+            Iterate through all configured hardware alerts and perform two sub-tests for each.
+            Use retention SRAM to maintain state across watchdog and hardware resets
+            to sequence through all alerts automatically.
+
+            **Procedure**
+
+            **Phase 1: IRQ Test**
+            - On POR, initialize the test and enter the IRQ phase.
+            - Iterate through each configured alert:
+              - Configure the alert to generate a Class A interrupt.
+              - Force the alert via its peripheral-specific DIF.
+              - Enter a `wait_for_interrupt` (WFI) state.
+              - Verify that the correct alert IRQ is serviced by the ISR.
+              - Acknowledge the alert.
+              - Verify that attempting to clear the alert class with
+                a single write fails.
+              - Clear the alert class using the shadowed write mechanism.
+              - Verify the class state becomes IDLE. 
+              - Trigger a watchdog reset to proceed to the next alert.
+
+            **Phase 2: Reset Test**
+            - After completing all IRQ tests, trigger a software reset to transition
+              to the Reset Phase.
+            - Iterate through each configured alert again:
+              - Configure the alert class for immediate reset escalation.
+              - Arm `rstmgr` to capture a crash dump on the next reset.
+              - Force the alert, expecting an immediate hardware reset via the
+                alert handler's escalation path.
+              - On the subsequent boot, verify:
+                - The reset reason is a hardware request from the alert handler.
+                - The `rstmgr` crash dump correctly identifies the alert that
+                  was forced as the cause of the reset.
+              - Proceed to the next alert in the sequence.
+            '''
+      features: ["ALERT_HANDLER.ESCALATION", "ALERT_HANDLER.INTERRUPT", "ALERT_HANDLER.SHADOWED_REGS"],
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: ["alert_handler_all_active_stress_test"]
+      bazel: ["//sw/device/tests:alert_handler_all_active_stress_test_silicon_owner_gb_rom_ext"]
+    }
   ]
 }

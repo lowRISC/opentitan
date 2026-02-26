@@ -573,6 +573,84 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "alert_handler_all_active_stress_test",
+    srcs = ["alert_handler_all_active_stress_test.c"],
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:silicon_creator": None,
+        },
+    ),
+    fpga = fpga_params(
+        timeout = "long",
+        test_cmd = """
+            --bootstrap={firmware}
+        """,
+        test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
+    ),
+    silicon = silicon_params(
+        timeout = "long",
+        tags = ["broken"],
+        test_cmd = """
+            --bootstrap={firmware}
+        """,
+        test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
+    ),
+    verilator = verilator_params(tags = ["manual"]),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/dif:adc_ctrl",
+        "//sw/device/lib/dif:aes",
+        "//sw/device/lib/dif:alert_handler",
+        "//sw/device/lib/dif:aon_timer",
+        "//sw/device/lib/dif:clkmgr",
+        "//sw/device/lib/dif:csrng",
+        "//sw/device/lib/dif:edn",
+        "//sw/device/lib/dif:entropy_src",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/dif:gpio",
+        "//sw/device/lib/dif:hmac",
+        "//sw/device/lib/dif:i2c",
+        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:kmac",
+        "//sw/device/lib/dif:lc_ctrl",
+        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/dif:pattgen",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:pwm",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rom_ctrl",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/dif:rv_core_ibex",
+        "//sw/device/lib/dif:rv_dm",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/dif:rv_timer",
+        "//sw/device/lib/dif:sensor_ctrl",
+        "//sw/device/lib/dif:spi_device",
+        "//sw/device/lib/dif:spi_host",
+        "//sw/device/lib/dif:sram_ctrl",
+        "//sw/device/lib/dif:sysrst_ctrl",
+        "//sw/device/lib/dif:uart",
+        "//sw/device/lib/dif:usbdev",
+        "//sw/device/lib/runtime:irq",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:alert_handler_testutils",
+        "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing:isr_testutils",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:ret_sram_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing:sensor_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "aon_timer_irq_test",
     srcs = ["aon_timer_irq_test.c"],
     exec_env = dicts.add(
