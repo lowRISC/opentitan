@@ -174,6 +174,8 @@ class spi_host_driver extends spi_driver;
       end else begin
         `DV_CHECK_EQ(req.payload_q.size, 0)
         sck_pulses += req.read_size * (8 / req.num_lanes);
+        if (req.read_pipeline_mode>0)
+          sck_pulses += 2;
       end
     end
 
@@ -198,17 +200,15 @@ class spi_host_driver extends spi_driver;
       if (req.write_command) begin
         issue_data(req.payload_q, dummy_return_q);
       end else begin
-        int iter = 0;
+        repeat (req.read_pipeline_mode>0 ? 2 : 0)
+          cfg.wait_sck_edge(SamplingEdge, active_csb);
         repeat (req.read_size) begin
           logic [7:0] data;
           cfg.read_byte(.num_lanes(req.num_lanes), .is_device_rsp(1),
                         .csb_id(active_csb), .data(data));
-          `uvm_info(`gfn, $sformatf("HOST_DRV: total_size=%0d - iter=%0d - read_byte=0x%0x",
-                                    req.read_size, iter, data), UVM_DEBUG)
-          iter++;
           rsp.payload_q.push_back(data);
         end
-        `uvm_info(`gfn, $sformatf("collect read data for flash: 0x%p", rsp.payload_q), UVM_HIGH)
+        `uvm_info(`gfn, $sformatf("collect read data for flash: %s", rsp.sprint), UVM_HIGH)
       end
     end
 
