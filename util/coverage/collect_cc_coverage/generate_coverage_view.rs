@@ -16,6 +16,7 @@
 use anyhow::{anyhow, Context, Result};
 use clap::Parser;
 use object::{Object, ObjectSection};
+use regex::Regex;
 use serde::Deserialize;
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write;
@@ -113,6 +114,8 @@ fn get_dwarf_line_map(elf_path: &Path) -> Result<BTreeMap<String, BTreeSet<u64>>
     let obj_file = fs::read(elf_path)?;
     let obj = object::File::parse(&*obj_file)?;
 
+    let execroot_regex = Regex::new(r".*/execroot/_main/").unwrap();
+
     for section in obj
         .sections()
         .filter(|s| s.kind() == object::SectionKind::Text)
@@ -125,6 +128,10 @@ fn get_dwarf_line_map(elf_path: &Path) -> Result<BTreeMap<String, BTreeSet<u64>>
                     let file = file
                         .replace("/proc/self/cwd/./", "")
                         .replace("/proc/self/cwd/", "");
+                    let file = execroot_regex.replace_all(&file, "").to_string();
+                    if Path::new(&file).is_absolute() {
+                        return Err(anyhow!("Path {} is absolute", file));
+                    }
                     line_map.entry(file).or_default().insert(line as u64);
                 }
             }
