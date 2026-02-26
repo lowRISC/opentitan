@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
@@ -488,6 +489,16 @@ static rom_error_t rom_ext_advance_secver(boot_data_t *boot_data,
 static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   HARDENED_RETURN_IF_ERROR(rom_ext_init(boot_data));
   const manifest_t *self = rom_ext_manifest();
+
+  lifecycle_claim(kMultiBitBool8True);
+  lifecycle_set_status(kLifecycleStatusWordRomExtVersion, self->version_minor);
+  lifecycle_set_status(kLifecycleStatusWordRomExtSecVersion,
+                       self->security_version);
+  lifecycle_set_status(kLifecycleStatusWordOwnerVersion, 0);
+  lifecycle_set_status(kLifecycleStatusWordDeviceStatus,
+                       kLifecycleDeviceStatusRomExtStart);
+  lifecycle_claim(kMultiBitBool8False);
+
   dbg_printf("ROM_EXT:%u.%u\r\n", self->version_major, self->version_minor);
 
   // Print the version of immutable section if exists.
