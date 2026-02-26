@@ -620,8 +620,8 @@ module sram_ctrl
     assign sram_rerror[1] = uncorrectable_error_q;
 
     // Error log if any error happened
-    assign sram_rerror_o.valid   = sram_rvalid_scr & |ecc_error;
-    assign ecc_error.correctable = sram_rvalid_scr & ~ecc_error[1];
+    assign sram_rerror_o.valid       = sram_rvalid_scr & |ecc_error;
+    assign sram_rerror_o.correctable = sram_rvalid_scr & ~ecc_error[1];
 
     // Translate word address to byte address and fill remaining bits with 0
     always_comb begin
