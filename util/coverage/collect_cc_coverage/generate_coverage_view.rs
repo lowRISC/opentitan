@@ -270,13 +270,15 @@ fn filter_lcov_view(
             } else if kind == "FNDA" {
                 let count: u64 = args[0].parse()?;
                 let name = dedup_inline_copies(args[1])?;
-                if count > 0 && (no_filter || executable.func.contains_key(name)) {
+                let is_executable = no_filter || executable.func.contains_key(name);
+                if is_asm || (count > 0 && is_executable) {
                     filtered.fnda.insert(name.to_string(), count);
                 }
             } else if kind == "DA" {
                 let lineno = args[0].parse()?;
                 let count: u64 = args[1].parse()?;
-                if count > 0 && (no_filter || executable.da.contains(&lineno)) {
+                let is_executable = no_filter || executable.da.contains(&lineno);
+                if is_asm || (count > 0 && is_executable) {
                     filtered.da.insert(lineno);
                 }
             }
