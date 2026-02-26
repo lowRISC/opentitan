@@ -405,6 +405,10 @@ pub struct UsbHub {
 
 // USB hub operation.
 pub enum UsbHubOp {
+    // Power-off a specific port.
+    PowerOff,
+    // Power-on a specific port.
+    PowerOn,
     // Suspend a specific port.
     Suspend,
     // Suspend a specific port.
@@ -415,6 +419,7 @@ pub enum UsbHubOp {
 
 const PORT_SUSPEND: u16 = 2;
 const PORT_RESET: u16 = 4;
+const PORT_POWER: u16 = 8;
 
 impl UsbHub {
     // Construct a hub from a device.
@@ -470,6 +475,8 @@ impl UsbHub {
             UsbHubOp::Suspend => (PORT_SUSPEND, true, "suspend"),
             UsbHubOp::Resume => (PORT_SUSPEND, false, "resume"),
             UsbHubOp::Reset => (PORT_RESET, true, "reset"),
+            UsbHubOp::PowerOn => (PORT_POWER, true, "power on"),
+            UsbHubOp::PowerOff => (PORT_POWER, false, "power off"),
         };
         let req = if set_feature {
             rusb::constants::LIBUSB_REQUEST_SET_FEATURE
