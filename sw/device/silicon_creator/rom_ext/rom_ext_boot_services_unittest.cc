@@ -18,6 +18,7 @@
 #include "sw/device/silicon_creator/lib/ownership/mock_ownership_key.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership_activate.h"
+#include "sw/device/silicon_creator/lib/sigverify/flash_exec.h"
 #include "sw/device/silicon_creator/rom_ext/mock_rom_ext_boot_policy_ptrs.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
@@ -477,8 +478,8 @@ TEST_F(RomExtBootServicesTest, BootSvcOwnershipUnlock) {
 
   EXPECT_CALL(mock_ownership_key_,
               validate(0, static_cast<ownership_key_t>(kOwnershipKeyUnlock),
-                       kUnlock, _, _, _, _))
-      .WillOnce(Return(kErrorOk));
+                       kUnlock, _, _, _, _, _))
+      .WillOnce(DoAll(SetArgPointee<7>(kSigverifyFlashExec), Return(kErrorOk)));
   EXPECT_CALL(mock_lifecycle_, DeviceId(_))
       .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0}));
 
@@ -529,8 +530,8 @@ TEST_F(RomExtBootServicesTest, BootSvcOwnershipActivate) {
       .WillOnce(SetArgPointee<2>(hmac_digest_t{0x1234}));
 
   EXPECT_CALL(mock_ownership_key_,
-              validate(1, kOwnershipKeyActivate, kActivate, _, _, _, _))
-      .WillOnce(Return(kErrorOk));
+              validate(1, kOwnershipKeyActivate, kActivate, _, _, _, _, _))
+      .WillOnce(DoAll(SetArgPointee<7>(kSigverifyFlashExec), Return(kErrorOk)));
 
   EXPECT_CALL(mock_lifecycle_, DeviceId(_))
       .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0}));

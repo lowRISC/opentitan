@@ -43,6 +43,7 @@ typedef struct boot_svc_ownership_activate_req {
   uint32_t din[2];
   /**
    * Erase previous owner's flash (hardened_bool_t).
+   * Currently, this is not implemented.
    */
   uint32_t erase_previous;
   /**
