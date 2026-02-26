@@ -160,9 +160,9 @@ class otbn_common_vseq extends otbn_base_vseq;
   // If returning 1, this also writes to in_req_fifo output argument, setting the bit if this is a
   // request fifo.
   function bit is_ptr_in_adapters_fifo(string path, string adapter_path, output bit in_req_fifo);
-    string fifo_paths[] = '{{adapter_path, ".u_reqfifo"},
-                            {adapter_path, ".u_sramreqfifo"},
-                            {adapter_path, ".u_rspfifo"}};
+    string fifo_paths[] = '{{adapter_path, ".gen_no_sec_u_reqfifo.u_reqfifo"},
+                            {adapter_path, ".gen_no_sec_u_sramreqfifo.u_sramreqfifo"},
+                            {adapter_path, ".gen_no_sec_u_rspfifo.u_rspfifo"}};
 
     foreach (fifo_paths[i]) begin
       if (is_ptr_in_prim_counts_fifo(path, fifo_paths[i])) begin

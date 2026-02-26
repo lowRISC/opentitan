@@ -26,13 +26,13 @@ Block 17 "3979759716" "wptr_wrap_cnt_q <= wptr_wrap_set_cnt;"
 ANNOTATION: "VC_COV_UNR"
 Block 19 "4019242409" "wptr_wrap_cnt_q <= (wptr_wrap_cnt_q + {{(WrapPtrW - 1) {1'b0}}, 1'b1});"
 CHECKSUM: "3215070453 3446030929"
-INSTANCE: tb.dut.u_tlul2sram_egress.u_reqfifo.gen_normal_fifo.u_fifo_cnt
+INSTANCE: tb.dut.u_tlul2sram_egress.gen_no_sec_u_reqfifo.u_reqfifo.gen_normal_fifo.u_fifo_cnt
 ANNOTATION: "VC_COV_UNR"
 Block 19 "4019242409" "wptr_wrap_cnt_q <= (wptr_wrap_cnt_q + {{(WrapPtrW - 1) {1'b0}}, 1'b1});"
 ANNOTATION: "VC_COV_UNR"
 Block 28 "1113085816" "rptr_wrap_cnt_q <= (rptr_wrap_cnt_q + {{(WrapPtrW - 1) {1'b0}}, 1'b1});"
 CHECKSUM: "3215070453 3446030929"
-INSTANCE: tb.dut.u_tlul2sram_egress.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt
+INSTANCE: tb.dut.u_tlul2sram_egress.gen_no_sec_u_sramreqfifo.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt
 ANNOTATION: "VC_COV_UNR"
 Block 17 "3979759716" "wptr_wrap_cnt_q <= wptr_wrap_set_cnt;"
 ANNOTATION: "VC_COV_UNR"
@@ -42,7 +42,7 @@ Block 26 "483722483" "rptr_wrap_cnt_q <= rptr_wrap_set_cnt;"
 ANNOTATION: "VC_COV_UNR"
 Block 28 "1113085816" "rptr_wrap_cnt_q <= (rptr_wrap_cnt_q + {{(WrapPtrW - 1) {1'b0}}, 1'b1});"
 CHECKSUM: "3215070453 3446030929"
-INSTANCE: tb.dut.u_tlul2sram_egress.u_rspfifo.gen_normal_fifo.u_fifo_cnt
+INSTANCE: tb.dut.u_tlul2sram_egress.gen_no_sec_u_rspfifo.u_rspfifo.gen_normal_fifo.u_fifo_cnt
 ANNOTATION: "VC_COV_UNR"
 Block 17 "3979759716" "wptr_wrap_cnt_q <= wptr_wrap_set_cnt;"
 ANNOTATION: "VC_COV_UNR"
@@ -52,19 +52,19 @@ Block 26 "483722483" "rptr_wrap_cnt_q <= rptr_wrap_set_cnt;"
 ANNOTATION: "VC_COV_UNR"
 Block 28 "1113085816" "rptr_wrap_cnt_q <= (rptr_wrap_cnt_q + {{(WrapPtrW - 1) {1'b0}}, 1'b1});"
 CHECKSUM: "3215070453 3446030929"
-INSTANCE: tb.dut.u_tlul2sram_ingress.u_reqfifo.gen_normal_fifo.u_fifo_cnt
+INSTANCE: tb.dut.u_tlul2sram_ingress.gen_no_sec_u_reqfifo.u_reqfifo.gen_normal_fifo.u_fifo_cnt
 ANNOTATION: "VC_COV_UNR"
 Block 19 "4019242409" "wptr_wrap_cnt_q <= (wptr_wrap_cnt_q + {{(WrapPtrW - 1) {1'b0}}, 1'b1});"
 ANNOTATION: "VC_COV_UNR"
 Block 28 "1113085816" "rptr_wrap_cnt_q <= (rptr_wrap_cnt_q + {{(WrapPtrW - 1) {1'b0}}, 1'b1});"
 CHECKSUM: "3215070453 3446030929"
-INSTANCE: tb.dut.u_tlul2sram_ingress.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt
+INSTANCE: tb.dut.u_tlul2sram_ingress.gen_no_sec_u_sramreqfifo.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt
 ANNOTATION: "VC_COV_UNR"
 Block 19 "4019242409" "wptr_wrap_cnt_q <= (wptr_wrap_cnt_q + {{(WrapPtrW - 1) {1'b0}}, 1'b1});"
 ANNOTATION: "VC_COV_UNR"
 Block 28 "1113085816" "rptr_wrap_cnt_q <= (rptr_wrap_cnt_q + {{(WrapPtrW - 1) {1'b0}}, 1'b1});"
 CHECKSUM: "3215070453 3446030929"
-INSTANCE: tb.dut.u_tlul2sram_ingress.u_rspfifo.gen_normal_fifo.u_fifo_cnt
+INSTANCE: tb.dut.u_tlul2sram_ingress.gen_no_sec_u_rspfifo.u_rspfifo.gen_normal_fifo.u_fifo_cnt
 ANNOTATION: "VC_COV_UNR"
 Block 19 "4019242409" "wptr_wrap_cnt_q <= (wptr_wrap_cnt_q + {{(WrapPtrW - 1) {1'b0}}, 1'b1});"
 ANNOTATION: "VC_COV_UNR"
@@ -82,11 +82,11 @@ INSTANCE: tb.dut.u_upload.u_arbiter.u_req_fifo
 ANNOTATION: "VC_COV_UNR"
 Block 12 "4290779677" "gen_normal_fifo.storage[gen_normal_fifo.fifo_wptr] <= wdata_i;"
 CHECKSUM: "3265888114 2343666246"
-INSTANCE: tb.dut.u_tlul2sram_egress.u_sramreqfifo
+INSTANCE: tb.dut.u_tlul2sram_egress.gen_no_sec_u_sramreqfifo.u_sramreqfifo
 ANNOTATION: "VC_COV_UNR"
 Block 12 "4186874349" "gen_normal_fifo.storage[0] <= wdata_i;"
 CHECKSUM: "3265888114 1564321354"
-INSTANCE: tb.dut.u_tlul2sram_egress.u_rspfifo
+INSTANCE: tb.dut.u_tlul2sram_egress.gen_no_sec_u_rspfifo.u_rspfifo
 ANNOTATION: "VC_COV_UNR"
 Block 12 "4186874349" "gen_normal_fifo.storage[0] <= wdata_i;"
 CHECKSUM: "2796702713 3317474151"
@@ -204,7 +204,7 @@ Condition 3 "786039886" "(wvalid_i & wready_o & ((~gen_normal_fifo.under_rst))) 
 ANNOTATION: "VC_COV_UNR"
 Condition 4 "1324655787" "(rvalid_o & rready_i & ((~gen_normal_fifo.under_rst))) 1 -1" (3 "110")
 CHECKSUM: "3265888114 2825631531"
-INSTANCE: tb.dut.u_tlul2sram_egress.u_sramreqfifo
+INSTANCE: tb.dut.u_tlul2sram_egress.gen_no_sec_u_sramreqfifo.u_sramreqfifo
 ANNOTATION: "VC_COV_UNR"
 Condition 1 "2400173860" "(((~full_o)) & ((~gen_normal_fifo.under_rst))) 1 -1" (1 "01")
 ANNOTATION: "VC_COV_UNR"
@@ -228,7 +228,7 @@ Condition 4 "1324655787" "(rvalid_o & rready_i & ((~gen_normal_fifo.under_rst)))
 ANNOTATION: "VC_COV_UNR"
 Condition 5 "742492426" "(gen_normal_fifo.empty ? (5'(0)) : gen_normal_fifo.rdata_int) 1 -1" (1 "0")
 CHECKSUM: "3265888114 2825631531"
-INSTANCE: tb.dut.u_tlul2sram_ingress.u_sramreqfifo
+INSTANCE: tb.dut.u_tlul2sram_ingress.gen_no_sec_u_sramreqfifo.u_sramreqfifo
 ANNOTATION: "VC_COV_UNR"
 Condition 2 "1709501387" "(((~gen_normal_fifo.empty)) & ((~gen_normal_fifo.under_rst))) 1 -1" (2 "10")
 ANNOTATION: "VC_COV_UNR"
@@ -266,7 +266,7 @@ Condition 4 "1324655787" "(rvalid_o & rready_i & ((~gen_normal_fifo.under_rst)))
 ANNOTATION: "VC_COV_UNR"
 Condition 4 "1324655787" "(rvalid_o & rready_i & ((~gen_normal_fifo.under_rst))) 1 -1" (3 "110")
 CHECKSUM: "3265888114 2432857915"
-INSTANCE: tb.dut.u_tlul2sram_egress.u_rspfifo
+INSTANCE: tb.dut.u_tlul2sram_egress.gen_no_sec_u_rspfifo.u_rspfifo
 ANNOTATION: "VC_COV_UNR"
 Condition 1 "2400173860" "(((~full_o)) & ((~gen_normal_fifo.under_rst))) 1 -1" (1 "01")
 ANNOTATION: "VC_COV_UNR"
@@ -300,7 +300,7 @@ Condition 7 "1531674702" "(gen_normal_fifo.fifo_empty & ((~wvalid_i))) 1 -1" (2 
 ANNOTATION: "VC_COV_UNR"
 Condition 8 "568568669" "(gen_normal_fifo.empty ? (40'(0)) : gen_normal_fifo.rdata_int) 1 -1" (1 "0")
 CHECKSUM: "3265888114 2432857915"
-INSTANCE: tb.dut.u_tlul2sram_ingress.u_rspfifo
+INSTANCE: tb.dut.u_tlul2sram_ingress.gen_no_sec_u_rspfifo.u_rspfifo
 ANNOTATION: "VC_COV_UNR"
 Condition 2 "1709501387" "(((~gen_normal_fifo.empty)) & ((~gen_normal_fifo.under_rst))) 1 -1" (2 "10")
 ANNOTATION: "VC_COV_UNR"
@@ -314,7 +314,7 @@ Condition 4 "1324655787" "(rvalid_o & rready_i & ((~gen_normal_fifo.under_rst)))
 ANNOTATION: "VC_COV_UNR"
 Condition 6 "4208363759" "(gen_normal_fifo.fifo_empty && wvalid_i) 1 -1" (1 "01")
 CHECKSUM: "3265888114 3923796707"
-INSTANCE: tb.dut.u_tlul2sram_egress.u_reqfifo
+INSTANCE: tb.dut.u_tlul2sram_egress.gen_no_sec_u_reqfifo.u_reqfifo
 ANNOTATION: "VC_COV_UNR"
 Condition 2 "1709501387" "(((~gen_normal_fifo.empty)) & ((~gen_normal_fifo.under_rst))) 1 -1" (2 "10")
 ANNOTATION: "VC_COV_UNR"
@@ -326,7 +326,7 @@ Condition 4 "1324655787" "(rvalid_o & rready_i & ((~gen_normal_fifo.under_rst)))
 ANNOTATION: "VC_COV_UNR"
 Condition 4 "1324655787" "(rvalid_o & rready_i & ((~gen_normal_fifo.under_rst))) 1 -1" (3 "110")
 CHECKSUM: "3265888114 3923796707"
-INSTANCE: tb.dut.u_tlul2sram_ingress.u_reqfifo
+INSTANCE: tb.dut.u_tlul2sram_ingress.gen_no_sec_u_reqfifo.u_reqfifo
 ANNOTATION: "VC_COV_UNR"
 Condition 2 "1709501387" "(((~gen_normal_fifo.empty)) & ((~gen_normal_fifo.under_rst))) 1 -1" (2 "10")
 ANNOTATION: "VC_COV_UNR"
@@ -618,7 +618,7 @@ Condition 5 "3619927060" "(wptr_wrap_cnt_q == (rptr_wrap_cnt_q ^ {1'b1, {(WrapPt
 ANNOTATION: "VC_COV_UNR"
 Condition 7 "3847229950" "(full_o ? (3'(Depth)) : ((wptr_wrap_msb == rptr_wrap_msb) ? ((3'(wptr_o) - 3'(rptr_o))) : (((3'(Depth) - 3'(rptr_o)) + 3'(wptr_o))))) 1 -1" (2 "1")
 CHECKSUM: "3215070453 33318353"
-INSTANCE: tb.dut.u_tlul2sram_egress.u_reqfifo.gen_normal_fifo.u_fifo_cnt
+INSTANCE: tb.dut.u_tlul2sram_egress.gen_no_sec_u_reqfifo.u_reqfifo.gen_normal_fifo.u_fifo_cnt
 ANNOTATION: "VC_COV_UNR"
 Condition 1 "2532211833" "(incr_wptr_i & (wptr_o == 1'((Depth - 1)))) 1 -1" (2 "10")
 ANNOTATION: "VC_COV_UNR"
@@ -628,25 +628,7 @@ Condition 8 "1599734576" "((wptr_wrap_msb == rptr_wrap_msb) ? ((1'(wptr_o) - 1'(
 ANNOTATION: "VC_COV_UNR"
 Condition 9 "446195871" "(wptr_wrap_msb == rptr_wrap_msb) 1 -1" (1 "0")
 CHECKSUM: "3215070453 33318353"
-INSTANCE: tb.dut.u_tlul2sram_egress.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt
-ANNOTATION: "VC_COV_UNR"
-Condition 1 "2532211833" "(incr_wptr_i & (wptr_o == 1'((Depth - 1)))) 1 -1" (2 "10")
-ANNOTATION: "VC_COV_UNR"
-Condition 1 "2532211833" "(incr_wptr_i & (wptr_o == 1'((Depth - 1)))) 1 -1" (3 "11")
-ANNOTATION: "VC_COV_UNR"
-Condition 3 "2597027294" "(incr_rptr_i & (rptr_o == 1'((Depth - 1)))) 1 -1" (2 "10")
-ANNOTATION: "VC_COV_UNR"
-Condition 3 "2597027294" "(incr_rptr_i & (rptr_o == 1'((Depth - 1)))) 1 -1" (3 "11")
-ANNOTATION: "VC_COV_UNR"
-Condition 5 "3619927060" "(wptr_wrap_cnt_q == (rptr_wrap_cnt_q ^ {1'b1, {(WrapPtrW - 1) {1'b0}}})) 1 -1" (2 "1")
-ANNOTATION: "VC_COV_UNR"
-Condition 7 "687544961" "(full_o ? (1'(Depth)) : ((wptr_wrap_msb == rptr_wrap_msb) ? ((1'(wptr_o) - 1'(rptr_o))) : (((1'(Depth) - 1'(rptr_o)) + 1'(wptr_o))))) 1 -1" (2 "1")
-ANNOTATION: "VC_COV_UNR"
-Condition 8 "1599734576" "((wptr_wrap_msb == rptr_wrap_msb) ? ((1'(wptr_o) - 1'(rptr_o))) : (((1'(Depth) - 1'(rptr_o)) + 1'(wptr_o)))) 1 -1" (1 "0")
-ANNOTATION: "VC_COV_UNR"
-Condition 9 "446195871" "(wptr_wrap_msb == rptr_wrap_msb) 1 -1" (1 "0")
-CHECKSUM: "3215070453 33318353"
-INSTANCE: tb.dut.u_tlul2sram_egress.u_rspfifo.gen_normal_fifo.u_fifo_cnt
+INSTANCE: tb.dut.u_tlul2sram_egress.gen_no_sec_u_sramreqfifo.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt
 ANNOTATION: "VC_COV_UNR"
 Condition 1 "2532211833" "(incr_wptr_i & (wptr_o == 1'((Depth - 1)))) 1 -1" (2 "10")
 ANNOTATION: "VC_COV_UNR"
@@ -664,7 +646,25 @@ Condition 8 "1599734576" "((wptr_wrap_msb == rptr_wrap_msb) ? ((1'(wptr_o) - 1'(
 ANNOTATION: "VC_COV_UNR"
 Condition 9 "446195871" "(wptr_wrap_msb == rptr_wrap_msb) 1 -1" (1 "0")
 CHECKSUM: "3215070453 33318353"
-INSTANCE: tb.dut.u_tlul2sram_ingress.u_reqfifo.gen_normal_fifo.u_fifo_cnt
+INSTANCE: tb.dut.u_tlul2sram_egress.gen_no_sec_u_rspfifo.u_rspfifo.gen_normal_fifo.u_fifo_cnt
+ANNOTATION: "VC_COV_UNR"
+Condition 1 "2532211833" "(incr_wptr_i & (wptr_o == 1'((Depth - 1)))) 1 -1" (2 "10")
+ANNOTATION: "VC_COV_UNR"
+Condition 1 "2532211833" "(incr_wptr_i & (wptr_o == 1'((Depth - 1)))) 1 -1" (3 "11")
+ANNOTATION: "VC_COV_UNR"
+Condition 3 "2597027294" "(incr_rptr_i & (rptr_o == 1'((Depth - 1)))) 1 -1" (2 "10")
+ANNOTATION: "VC_COV_UNR"
+Condition 3 "2597027294" "(incr_rptr_i & (rptr_o == 1'((Depth - 1)))) 1 -1" (3 "11")
+ANNOTATION: "VC_COV_UNR"
+Condition 5 "3619927060" "(wptr_wrap_cnt_q == (rptr_wrap_cnt_q ^ {1'b1, {(WrapPtrW - 1) {1'b0}}})) 1 -1" (2 "1")
+ANNOTATION: "VC_COV_UNR"
+Condition 7 "687544961" "(full_o ? (1'(Depth)) : ((wptr_wrap_msb == rptr_wrap_msb) ? ((1'(wptr_o) - 1'(rptr_o))) : (((1'(Depth) - 1'(rptr_o)) + 1'(wptr_o))))) 1 -1" (2 "1")
+ANNOTATION: "VC_COV_UNR"
+Condition 8 "1599734576" "((wptr_wrap_msb == rptr_wrap_msb) ? ((1'(wptr_o) - 1'(rptr_o))) : (((1'(Depth) - 1'(rptr_o)) + 1'(wptr_o)))) 1 -1" (1 "0")
+ANNOTATION: "VC_COV_UNR"
+Condition 9 "446195871" "(wptr_wrap_msb == rptr_wrap_msb) 1 -1" (1 "0")
+CHECKSUM: "3215070453 33318353"
+INSTANCE: tb.dut.u_tlul2sram_ingress.gen_no_sec_u_reqfifo.u_reqfifo.gen_normal_fifo.u_fifo_cnt
 ANNOTATION: "VC_COV_UNR"
 Condition 1 "2532211833" "(incr_wptr_i & (wptr_o == 1'((Depth - 1)))) 1 -1" (2 "10")
 ANNOTATION: "VC_COV_UNR"
@@ -674,7 +674,7 @@ Condition 8 "1599734576" "((wptr_wrap_msb == rptr_wrap_msb) ? ((1'(wptr_o) - 1'(
 ANNOTATION: "VC_COV_UNR"
 Condition 9 "446195871" "(wptr_wrap_msb == rptr_wrap_msb) 1 -1" (1 "0")
 CHECKSUM: "3215070453 33318353"
-INSTANCE: tb.dut.u_tlul2sram_ingress.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt
+INSTANCE: tb.dut.u_tlul2sram_ingress.gen_no_sec_u_sramreqfifo.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt
 ANNOTATION: "VC_COV_UNR"
 Condition 1 "2532211833" "(incr_wptr_i & (wptr_o == 1'((Depth - 1)))) 1 -1" (2 "10")
 ANNOTATION: "VC_COV_UNR"
@@ -684,7 +684,7 @@ Condition 8 "1599734576" "((wptr_wrap_msb == rptr_wrap_msb) ? ((1'(wptr_o) - 1'(
 ANNOTATION: "VC_COV_UNR"
 Condition 9 "446195871" "(wptr_wrap_msb == rptr_wrap_msb) 1 -1" (1 "0")
 CHECKSUM: "3215070453 33318353"
-INSTANCE: tb.dut.u_tlul2sram_ingress.u_rspfifo.gen_normal_fifo.u_fifo_cnt
+INSTANCE: tb.dut.u_tlul2sram_ingress.gen_no_sec_u_rspfifo.u_rspfifo.gen_normal_fifo.u_fifo_cnt
 ANNOTATION: "VC_COV_UNR"
 Condition 1 "2532211833" "(incr_wptr_i & (wptr_o == 1'((Depth - 1)))) 1 -1" (2 "10")
 ANNOTATION: "VC_COV_UNR"
@@ -746,7 +746,7 @@ INSTANCE: tb.dut.u_readcmd.u_readbuffer
 ANNOTATION: "VC_COV_UNR"
 Branch 6 "347017612" "st_q" (3) "st_q default,-"
 CHECKSUM: "3265888114 4143698547"
-INSTANCE: tb.dut.u_tlul2sram_egress.u_rspfifo
+INSTANCE: tb.dut.u_tlul2sram_egress.gen_no_sec_u_rspfifo.u_rspfifo
 ANNOTATION: "VC_COV_UNR"
 Branch 0 "4156807255" "(gen_normal_fifo.fifo_empty && wvalid_i)" (0) "(gen_normal_fifo.fifo_empty && wvalid_i) 1"
 ANNOTATION: "VC_COV_UNR"
@@ -758,7 +758,7 @@ INSTANCE: tb.dut.u_upload.u_arbiter.u_req_fifo
 ANNOTATION: "VC_COV_UNR"
 Branch 2 "2429929352" "gen_normal_fifo.fifo_incr_wptr" (0) "gen_normal_fifo.fifo_incr_wptr 1"
 CHECKSUM: "3265888114 1676778748"
-INSTANCE: tb.dut.u_tlul2sram_egress.u_sramreqfifo
+INSTANCE: tb.dut.u_tlul2sram_egress.gen_no_sec_u_sramreqfifo.u_sramreqfifo
 ANNOTATION: "VC_COV_UNR"
 Branch 0 "3867317506" "gen_normal_fifo.empty" (1) "gen_normal_fifo.empty 0"
 CHECKSUM: "2263087714 1558911186"
@@ -874,7 +874,7 @@ Branch 1 "2417346495" "(!rst_ni)" (2) "(!rst_ni) 0,0,1,-"
 ANNOTATION: "VC_COV_UNR"
 Branch 1 "2417346495" "(!rst_ni)" (3) "(!rst_ni) 0,0,0,1"
 CHECKSUM: "3215070453 1827096802"
-INSTANCE: tb.dut.u_tlul2sram_egress.u_reqfifo.gen_normal_fifo.u_fifo_cnt
+INSTANCE: tb.dut.u_tlul2sram_egress.gen_no_sec_u_reqfifo.u_reqfifo.gen_normal_fifo.u_fifo_cnt
 ANNOTATION: "VC_COV_UNR"
 Branch 0 "721764659" "full_o" (2) "full_o 0,0"
 ANNOTATION: "VC_COV_UNR"
@@ -882,7 +882,7 @@ Branch 1 "2417346495" "(!rst_ni)" (3) "(!rst_ni) 0,0,0,1"
 ANNOTATION: "VC_COV_UNR"
 Branch 2 "456961687" "(!rst_ni)" (3) "(!rst_ni) 0,0,0,1"
 CHECKSUM: "3215070453 1827096802"
-INSTANCE: tb.dut.u_tlul2sram_egress.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt
+INSTANCE: tb.dut.u_tlul2sram_egress.gen_no_sec_u_sramreqfifo.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt
 ANNOTATION: "VC_COV_UNR"
 Branch 0 "721764659" "full_o" (0) "full_o 1,-"
 ANNOTATION: "VC_COV_UNR"
@@ -896,7 +896,7 @@ Branch 2 "456961687" "(!rst_ni)" (2) "(!rst_ni) 0,0,1,-"
 ANNOTATION: "VC_COV_UNR"
 Branch 2 "456961687" "(!rst_ni)" (3) "(!rst_ni) 0,0,0,1"
 CHECKSUM: "3215070453 1827096802"
-INSTANCE: tb.dut.u_tlul2sram_egress.u_rspfifo.gen_normal_fifo.u_fifo_cnt
+INSTANCE: tb.dut.u_tlul2sram_egress.gen_no_sec_u_rspfifo.u_rspfifo.gen_normal_fifo.u_fifo_cnt
 ANNOTATION: "VC_COV_UNR"
 Branch 0 "721764659" "full_o" (0) "full_o 1,-"
 ANNOTATION: "VC_COV_UNR"
@@ -910,7 +910,7 @@ Branch 2 "456961687" "(!rst_ni)" (2) "(!rst_ni) 0,0,1,-"
 ANNOTATION: "VC_COV_UNR"
 Branch 2 "456961687" "(!rst_ni)" (3) "(!rst_ni) 0,0,0,1"
 CHECKSUM: "3215070453 1827096802"
-INSTANCE: tb.dut.u_tlul2sram_ingress.u_reqfifo.gen_normal_fifo.u_fifo_cnt
+INSTANCE: tb.dut.u_tlul2sram_ingress.gen_no_sec_u_reqfifo.u_reqfifo.gen_normal_fifo.u_fifo_cnt
 ANNOTATION: "VC_COV_UNR"
 Branch 0 "721764659" "full_o" (2) "full_o 0,0"
 ANNOTATION: "VC_COV_UNR"
@@ -918,7 +918,7 @@ Branch 1 "2417346495" "(!rst_ni)" (3) "(!rst_ni) 0,0,0,1"
 ANNOTATION: "VC_COV_UNR"
 Branch 2 "456961687" "(!rst_ni)" (3) "(!rst_ni) 0,0,0,1"
 CHECKSUM: "3215070453 1827096802"
-INSTANCE: tb.dut.u_tlul2sram_ingress.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt
+INSTANCE: tb.dut.u_tlul2sram_ingress.gen_no_sec_u_sramreqfifo.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt
 ANNOTATION: "VC_COV_UNR"
 Branch 0 "721764659" "full_o" (2) "full_o 0,0"
 ANNOTATION: "VC_COV_UNR"
@@ -926,7 +926,7 @@ Branch 1 "2417346495" "(!rst_ni)" (3) "(!rst_ni) 0,0,0,1"
 ANNOTATION: "VC_COV_UNR"
 Branch 2 "456961687" "(!rst_ni)" (3) "(!rst_ni) 0,0,0,1"
 CHECKSUM: "3215070453 1827096802"
-INSTANCE: tb.dut.u_tlul2sram_ingress.u_rspfifo.gen_normal_fifo.u_fifo_cnt
+INSTANCE: tb.dut.u_tlul2sram_ingress.gen_no_sec_u_rspfifo.u_rspfifo.gen_normal_fifo.u_fifo_cnt
 ANNOTATION: "VC_COV_UNR"
 Branch 0 "721764659" "full_o" (2) "full_o 0,0"
 ANNOTATION: "VC_COV_UNR"
