@@ -108,7 +108,6 @@ jobs:
   schedule_fpga_jobs:
     name: Schedule FPGA jobs
     runs-on: ubuntu-22.04
-    needs: quick_lint
     outputs:
       jobs: ${{ steps.schedule.outputs.jobs }}
     steps:
@@ -119,13 +118,46 @@ jobs:
         uses: ./.github/actions/prepare-env
         with:
           service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
-      - id: schedule
+      - name: Compute job schedule
+        id: schedule
         run: |
           {
+            jobs_dir=$(mktemp -d)
+            echo "jobs_dir=$jobs_dir"
             echo 'jobs<<EOF'
-            ./ci/scripts/schedule_fpga_jobs.py --out-dir jobs/ //sw/...
+            ./ci/scripts/schedule_fpga_jobs.py --out-dir $jobs_dir/ \
+              "tests(//sw/... union @manufacturer_test_hooks//...)"
             echo EOF
-          } >> "$GITHUB_ENV"
+          } >> "$GITHUB_OUTPUT"
+      - name: Upload target files
+        uses: actions/upload-artifact@v4
+        with:
+            name: fpga_jobs
+            path: ${{ steps.schedule.outputs.jobs_dir }}
+
+  execute_fpga_jobs:
+    name: ${{ matrix.name }}
+    needs:
+      - schedule_fpga_jobs
+      - quick_lint
+      # TODO improve this, GHA does not allow dynamic needs but there are tricks
+      # to work around this limitation?
+      - chip_earlgrey_cw310_hyperdebug
+      - chip_earlgrey_cw340
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.schedule_fpga_jobs.outputs.jobs) }}
+    uses: ./.github/workflows/fpga.yml
+    if: ${{ github.event_name != 'merge_group' }}
+    secrets: inherit
+    with:
+      job_name: ${{ matrix.id }}
+      bitstream: ${{ matrix.bitstream }}
+      board: ${{ matrix.board }}
+      interface: ${{ matrix.interface }}
+      artifact: fpga_jobs
+      target_file: ${{ matrix.target_file }}
 
   # Single job that we can gate pull requests and merge queues on:
   merge_blocker:

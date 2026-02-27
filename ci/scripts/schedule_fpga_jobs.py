@@ -25,6 +25,14 @@ class TestDatabase:
         # Ignore incompatible tests, or tests where the query could not extract
         # information
         if info.get('incompatible', False) or 'error' in info:
+            if self.explain:
+                print("{} ignored because it is not compatible".format(info["label"]))
+            return
+        # Ignore tests with certain tags
+        BAD_TAGS = ["manual", "slow_test", "skip_in_ci", "broken"]
+        if any(tag in info["tags"] for tag in BAD_TAGS):
+            if self.explain:
+                print("{} ignored because it contains a tag from {}".format(info["label"], BAD_TAGS))
             return
 
         if self.explain:
