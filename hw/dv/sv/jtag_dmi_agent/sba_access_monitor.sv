@@ -264,8 +264,9 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_base_monito
       return 0;
     end
 
-    // Is the transfer size supported?
-    if (size > $clog2(bus_params_pkg::BUS_DBW)) begin
+    // This transfer size is only supported if it will fit on the bus. If not, the agent should drop
+    // the request and report the bad size through its register interface.
+    if (sba_access_size_to_byte_width(size) > bus_params_pkg::BUS_DBW) begin
       void'(jtag_dmi_ral.sbcs.sberror.predict(.value(SbaErrBadSize), .kind(UVM_PREDICT_DIRECT)));
       return 0;
     end
