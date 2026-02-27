@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::app::NoProgressBar;
-use crate::io::eeprom::{AddressMode, MODE_111, MODE_112, MODE_114, Mode, Transaction};
+use crate::io::eeprom::{AddressMode, MODE_111, MODE_112, MODE_114, MODE_444, Mode, Transaction};
 use crate::io::spi::Target;
 use crate::spiflash::sfdp::{
     BlockEraseSize, FastReadParam, SectorErase, Sfdp, SupportedAddressModes,
@@ -25,7 +25,7 @@ pub enum Error {
     #[error("bad sequence length: {0}")]
     BadSequenceLength(usize),
     #[error("unsupported mode: {0:?}")]
-    UnsupportedMode(ReadMode),
+    UnsupportedMode(FlashMode),
     #[error("unsupported opcode: {0:x?}")]
     UnsupportedOpcode(u8),
 }
@@ -41,7 +41,7 @@ impl From<SupportedAddressModes> for AddressMode {
 
 #[derive(Debug, Clone, Copy, ValueEnum, Default)]
 #[value(rename_all = "verbatim")]
-pub enum ReadMode {
+pub enum FlashMode {
     #[default]
     Standard,
     Fast,
@@ -122,7 +122,7 @@ pub struct SpiFlash {
     pub size: u32,
     pub program_size: u32,
     pub address_mode: AddressMode,
-    pub read_mode: ReadMode,
+    pub flash_mode: FlashMode,
     pub erase_mode: EraseMode,
     pub sfdp: Option<Sfdp>,
     pub read_type: ReadTypes,
@@ -135,7 +135,7 @@ impl Default for SpiFlash {
             size: 16 * 1024 * 1024,
             program_size: SpiFlash::LEGACY_PAGE_SIZE,
             address_mode: Default::default(),
-            read_mode: Default::default(),
+            flash_mode: Default::default(),
             erase_mode: Default::default(),
             sfdp: None,
             read_type: Default::default(),
@@ -159,6 +159,9 @@ impl SpiFlash {
     pub const FAST_DUAL_READ_4B: u8 = 0x3c;
     pub const FAST_QUAD_READ_4B: u8 = 0x6c;
     pub const PAGE_PROGRAM: u8 = 0x02;
+    pub const PAGE_PROGRAM_4B: u8 = 0x12;
+    pub const PAGE_PROGRAM_QUAD: u8 = 0x38;
+    pub const PAGE_PROGRAM_QUAD_4B: u8 = 0x3e;
     pub const SECTOR_ERASE: u8 = 0x20;
     pub const BLOCK_ERASE_32K: u8 = 0x52;
     pub const BLOCK_ERASE_64K: u8 = 0xD8;
@@ -311,7 +314,7 @@ impl SpiFlash {
             size: sfdp.jedec.density,
             program_size: SpiFlash::LEGACY_PAGE_SIZE,
             address_mode: AddressMode::from(sfdp.jedec.address_modes),
-            read_mode: Default::default(),
+            flash_mode: Default::default(),
             erase_mode: Default::default(),
             sfdp: Some(sfdp),
             read_type,
@@ -323,6 +326,11 @@ impl SpiFlash {
     pub fn from_spi(spi: &dyn Target) -> Result<Self> {
         let sfdp = SpiFlash::read_sfdp(spi)?;
         Ok(SpiFlash::from_sfdp(sfdp))
+    }
+
+    // Set the SPI flash read/write mode to single, fast, dual, or quad.
+    pub fn set_flash_mode(&mut self, mode: FlashMode) {
+        self.flash_mode = mode;
     }
 
     /// Set the SPI flash addressing mode to either 3b or 4b mode.
@@ -354,16 +362,16 @@ impl SpiFlash {
     }
 
     fn select_read(&self) -> Result<(Mode, &FastReadParam)> {
-        match self.read_mode {
-            ReadMode::Standard => Ok((MODE_111, &self.read_type.standard)),
-            ReadMode::Fast => Ok((MODE_111, &self.read_type.fast)),
-            ReadMode::Dual if self.read_type.dual.opcode != 0 => {
+        match self.flash_mode {
+            FlashMode::Standard => Ok((MODE_111, &self.read_type.standard)),
+            FlashMode::Fast => Ok((MODE_111, &self.read_type.fast)),
+            FlashMode::Dual if self.read_type.dual.opcode != 0 => {
                 Ok((MODE_112, &self.read_type.dual))
             }
-            ReadMode::Quad if self.read_type.quad.opcode != 0 => {
+            FlashMode::Quad if self.read_type.quad.opcode != 0 => {
                 Ok((MODE_114, &self.read_type.quad))
             }
-            _ => Err(Error::UnsupportedMode(self.read_mode).into()),
+            _ => Err(Error::UnsupportedMode(self.flash_mode).into()),
         }
     }
 
@@ -511,7 +519,27 @@ impl SpiFlash {
                 spi.run_eeprom_transactions(&mut [
                     Transaction::Command(MODE_111.cmd(SpiFlash::WRITE_ENABLE)),
                     Transaction::Write(
-                        MODE_111.cmd_addr(SpiFlash::PAGE_PROGRAM, address, self.address_mode),
+                        match self.flash_mode {
+                            FlashMode::Standard | FlashMode::Fast | FlashMode::Dual => MODE_111
+                                .cmd_addr(
+                                    match self.address_mode {
+                                        AddressMode::Mode3b => SpiFlash::PAGE_PROGRAM,
+                                        AddressMode::Mode4b => SpiFlash::PAGE_PROGRAM,
+                                    },
+                                    address,
+                                    self.address_mode,
+                                ),
+                            // TODO(michaelfield) : per `eeprom.rs:default_run_eeprom_transactions`
+                            // MODE_114 is not completely implemented. We fallback to single wire here to ensure no data loss.
+                            FlashMode::Quad => MODE_111.cmd_addr(
+                                match self.address_mode {
+                                    AddressMode::Mode3b => SpiFlash::PAGE_PROGRAM_QUAD,
+                                    AddressMode::Mode4b => SpiFlash::PAGE_PROGRAM_QUAD,
+                                },
+                                address,
+                                self.address_mode,
+                            ),
+                        },
                         chunk,
                     ),
                     Transaction::WaitForBusyClear,
