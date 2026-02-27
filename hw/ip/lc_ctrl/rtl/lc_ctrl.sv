@@ -345,17 +345,23 @@ module lc_ctrl
   // Create the hardware revision with the anchor const that instantiates specific standard cells.
   // This ensures the individual bits are not combined through logic optimization and remain visible
   // in the netlist, thereby enabling metal fixes to be reflected in the hardware revision.
+  localparam int HwRevWidth = $bits(lc_hw_rev_t);
   localparam lc_hw_rev_t HwRev = '{silicon_creator_id: SiliconCreatorId,
                                    product_id:         ProductId,
                                    revision_id:        RevisionId,
                                    reserved:           '0};
 
+  // We need to first cast HwRev to a logic array and then back to lc_hw_rev_t
+  // This explicit cast is required because some tools misinterpret packed struct parameters as
+  // integers, leading to MSB truncation
+  logic [HwRevWidth-1:0] hw_rev_raw;
   prim_const #(
-    .Width($bits(lc_hw_rev_t)),
-    .ConstVal(HwRev)
+    .Width(HwRevWidth),
+    .ConstVal(HwRevWidth'(HwRev))
   ) u_hw_rev_const (
-    .out_o(hw_rev_o)
+    .out_o(hw_rev_raw)
   );
+  assign hw_rev_o = lc_hw_rev_t'(hw_rev_raw);
 
   // OTP Vendor control bits
   logic ext_clock_switched;
