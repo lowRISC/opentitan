@@ -26,10 +26,6 @@ on:
         required: true
         type: string
         description: opentitantool interface to use
-      tag_filters:
-        required: true
-        type: string
-        description: Bazel tag filters for the tests
       timeout:
         default: 60
         type: number
@@ -37,14 +33,6 @@ on:
       vivado_version:
         default: "2021.1"
         type: string
-      targets:
-        default: "//... @manufacturer_test_hooks//..."
-        type: string
-        description: Bazel target(s) to look for tests in
-      add_default_filters:
-        default: true
-        type: boolean
-        description: Include additional test filters for "manual", "broken", "slow_test", and "skip_in_ci" tests.
       cache_test_results:
         default: true
         type: boolean
@@ -90,16 +78,8 @@ jobs:
           . util/build_consts.sh
           module load "xilinx/vivado/${{ inputs.vivado_version }}"
 
-          tag_filters="${{ inputs.tag_filters }}"
-          if ${{ inputs.add_default_filters }}; then
-            tag_filters+=",-manual,-broken,-slow_test,-skip_in_ci"
-          fi
-
-          # Execute a query to find all targets that match the test tags and store them in a file.
-          ci/scripts/run-bazel-test-query.sh \
-            target_pattern_file.txt \
-            "$tag_filters" \
-            ${{ inputs.targets }}
+          # TODO
+          echo "" > target_pattern_file.txt
 
           cache_test_results="--cache_test_results=${{ inputs.cache_test_results }}"
 

@@ -21,7 +21,7 @@ load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_overri
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 load("//rules/opentitan:util.bzl", "assemble_for_test", "recursive_format")
-load("//rules/opentitan:providers.bzl", "OpenTitanBinaryInfo")
+load("//rules/opentitan:providers.bzl", "OpenTitanBinaryInfo", "OpenTitanTestInfo")
 
 def _expand(ctx, name, items):
     """Perform location and make_variable expansion on a list of items.
@@ -486,10 +486,17 @@ def _opentitan_test(ctx):
     else:
         coverage_runfiles = ctx.runfiles()
 
-    return DefaultInfo(
-        executable = executable,
-        runfiles = ctx.runfiles(files = runfiles).merge_all([harness_runfiles, coverage_runfiles]),
-    )
+    return [DefaultInfo(
+            executable = executable,
+            runfiles = ctx.runfiles(files = runfiles).merge_all([harness_runfiles, coverage_runfiles]),
+        ),
+        OpenTitanTestInfo(
+            exec_env = exec_env,
+            # If no test suite us provided, use the test's own label as a test suite.
+            test_suite = ctx.attr.test_suite or str(ctx.label),
+            tags = ctx.attr.tags,
+        )
+    ]
 
 opentitan_test = rv_rule(
     implementation = _opentitan_test,
@@ -571,6 +578,7 @@ opentitan_test = rv_rule(
             executable = True,
             cfg = "exec",
         ),
+        "test_suite": attr.string(doc = "Test suite to which this test belongs"),
     }.items()),
     fragments = ["cpp"],
     toolchains = ["@rules_cc//cc:toolchain_type", LOCALTOOLS_TOOLCHAIN],
