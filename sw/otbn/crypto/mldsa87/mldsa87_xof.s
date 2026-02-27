@@ -6,6 +6,7 @@
 
 .globl xof_shake128_init
 .globl xof_shake256_init
+.globl xof_absorb
 .globl xof_finish
 
 /*
@@ -173,4 +174,119 @@ _xof_fail:
 xof_finish:
   addi x24, x0, KMAC_CMD_FINISH
   csrrw x0, KMAC_CMD, x24
+  ret
+
+/**
+ * Absorb a message of size n bytes.
+ *
+ * Supports the absorption of both masked (two equally-sized Boolean shares at
+ * DMEM[x21], DMEM[x22]) and unmasked (message at DMEM[x21] and x22 = 0) input
+ * messages. This routine *must* only be called after the initialization of the
+ * KMAC interface (see `xof_{shake128,shake256}_init`)
+ *
+ * @param[in] x20: n, size of the input message.
+ * @param[in] x21: DMEM address of the 1st message share.
+ * @param[in] x22: DMEM address of the 2nd message share (0 if unmasked)
+ */
+xof_absorb:
+  /* Exit the absorption loop, if n == 0.  */
+  beq x20, x0, _xof_absorb_end
+
+  /*
+   * Set the strobe register value such that
+   *
+   *    KMAC_BYTE_STROBE = 2^32-1 >> (32 - x),
+   *
+   * where x = 32, if n >= 32, else x = n.
+   */
+  addi x25, x0, 32
+
+  /* x = 2^32-1, if n < 32, else x = 0. */
+  sub x24, x20, x25
+  srai x26, x24, 31
+
+  /* x = n, if x == 2^32-1, else x = 32. */
+  and x24, x24, x26
+  add x24, x25, x24
+
+  /* (32 - x). */
+  sub x25, x25, x24
+
+  /* 2^32-1 >> (32 - x). */
+  addi x24, x0, -1
+  srl x24, x24, x25
+
+  csrrw x0, KMAC_BYTE_STROBE, x24
+
+  /* Make sure KMAC is ready to absorb data. */
+  addi x24, x0, KMAC_IF_STATUS_MSG_WRITE_RDY
+  jal x1, _xof_kmac_if_status_poll
+
+  bne x22, x0, _xof_absorb_masked_begin
+
+  /* Pass the unshared message to the KMAC interface. */
+  addi x24, x0, 26
+  bn.lid x24, 0(x21++)
+  bn.wsrw KMAC_DATA_S0, w26
+  bn.wsrw KMAC_DATA_S1, w31
+  jal x0, _xof_absorb_masked_end
+
+_xof_absorb_masked_begin:
+
+  /* Pass the message word to the KMAC interface, ensuring that the shares are
+     not combined in an unsecure fashion. */
+  addi x24, x0, 26
+  bn.lid x24, 0(x21++)
+  bn.wsrw KMAC_DATA_S0, w26
+
+  bn.xor w31, w31, w31 /* dummy */
+
+  addi x24, x0, 27
+  bn.lid x24, 0(x22++)
+  bn.wsrw KMAC_DATA_S1, w27
+
+_xof_absorb_masked_end:
+
+  /* Trigger the absorption of the written message word. */
+  addi x24, x0, 1
+  csrrw x0, KMAC_MSG_SEND, x24
+
+  /*
+   * Decrement the number of remaining message bytes such that
+   *
+   *    n = max(n - 32, 0).
+   */
+
+  /* (n - 32) */
+  addi x20, x20, -32
+
+  /* n = max(n - 32, 0). */
+  srai x24, x20, 31
+  addi x25, x0, -1
+  xor x24, x24, x25
+  and x20, x20, x24
+
+  /* Absorb the next chunk of <= 32 message bytes. */
+  jal x0, xof_absorb
+
+_xof_absorb_end:
+  ret
+
+/**
+ * Send the `PROCESS` command to the KMAC interface to process the absorbed
+ * message and transfer the module into the `SQUEEZE` state.
+ *
+ * This routine *must* only be called after the initialization of the KMAC
+ * interface (see `xof_{shake128,shake256}_init`) and *must* be called even if
+ * there was no message absorption in order to be able to squeeze the digest.
+ */
+xof_process:
+  /* Trigger the processing of the absorbed message. */
+  addi x24, x0, KMAC_CMD_PROCESS
+  csrrw x0, KMAC_CMD, x24
+
+  /* Poll until the first 64-bit digest is ready to be read out. */
+  addi x24, x0, KMAC_IF_STATUS_DIGEST_VALID
+  jal x1, _xof_kmac_if_status_poll
+
   ret
