@@ -182,6 +182,10 @@ impl UsbBackend {
         &self.handle
     }
 
+    pub fn device(&self) -> &rusb::Device<rusb::Context> {
+        &self.device
+    }
+
     pub fn get_vendor_id(&self) -> u16 {
         self.device.device_descriptor().unwrap().vendor_id()
     }
@@ -317,5 +321,69 @@ impl UsbBackend {
             .write_bulk(endpoint, data, self.timeout)
             .context("USB error")?;
         Ok(len)
+    }
+}
+
+// Structure representing a USB hub. The device needs to have sufficient permission
+// to be opened.
+pub struct UsbHub {
+    handle: rusb::DeviceHandle<rusb::Context>,
+}
+
+// USB hub operation.
+pub enum UsbHubOp {
+    // Power-off a specific port.
+    PowerOff,
+    // Power-on a specific port.
+    PowerOn,
+    // Suspend a specific port.
+    Suspend,
+    // Suspend a specific port.
+    Resume,
+    // Reset a specific port.
+    Reset,
+}
+
+const PORT_SUSPEND: u16 = 2;
+const PORT_RESET: u16 = 4;
+const PORT_POWER: u16 = 8;
+
+impl UsbHub {
+    // Construct a hub from a device.
+    pub fn from_device(dev: &rusb::Device<rusb::Context>) -> Result<UsbHub> {
+        // Make sure the device is a hub.
+        let dev_desc = dev.device_descriptor()?;
+        // Assume that if the device has the HUB class then Linux will already enforce
+        // that it follows the specification.
+        ensure!(
+            dev_desc.class_code() == rusb::constants::LIBUSB_CLASS_HUB,
+            "device is not a hub"
+        );
+        Ok(UsbHub {
+            handle: dev.open().context("cannot open hub")?,
+        })
+    }
+
+    // Perform an operation.
+    pub fn op(&self, op: UsbHubOp, port: u8, timeout: Duration) -> Result<()> {
+        let (value, set_feature) = match op {
+            UsbHubOp::Suspend => (PORT_SUSPEND, true),
+            UsbHubOp::Resume => (PORT_SUSPEND, false),
+            UsbHubOp::Reset => (PORT_RESET, true),
+            UsbHubOp::PowerOn => (PORT_POWER, true),
+            UsbHubOp::PowerOff => (PORT_POWER, false),
+        };
+        let req = if set_feature {
+            rusb::constants::LIBUSB_REQUEST_SET_FEATURE
+        } else {
+            rusb::constants::LIBUSB_REQUEST_CLEAR_FEATURE
+        };
+        let req_type = rusb::constants::LIBUSB_RECIPIENT_OTHER
+            | rusb::constants::LIBUSB_REQUEST_TYPE_CLASS
+            | rusb::constants::LIBUSB_ENDPOINT_OUT;
+        let _ = self
+            .handle
+            .write_control(req_type, req, value, port as u16, &[], timeout)?;
+        Ok(())
     }
 }
