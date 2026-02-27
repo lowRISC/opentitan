@@ -102,11 +102,12 @@ module csrng_state_db
   end
 
   // Pad the logic representation of the selected state with zeros to the next multiple of 32
-  assign state_reg_readout = {{NumRegPadBits{1'b0}}, state_q[reg_rd_id_q]};
+  assign state_reg_readout = (reg_rd_id_q < NumApps) ?
+                             {{NumRegPadBits{1'b0}}, state_q[reg_rd_id_q]} : '0;
 
   always_comb begin
     reg_rd_val_o = '0;
-    if (reg_rd_otp_en_i && reg_rd_regfile_en_i[reg_rd_id_q] &&
+    if (reg_rd_otp_en_i && (reg_rd_id_q < NumApps ? reg_rd_regfile_en_i[reg_rd_id_q] : 1'b0) &&
         (reg_rd_ptr_q < NumRegState)) begin
       reg_rd_val_o = state_reg_readout[reg_rd_ptr_q * RegWidth +: RegWidth];
     end
