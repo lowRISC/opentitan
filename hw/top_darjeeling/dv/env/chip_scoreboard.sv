@@ -75,7 +75,9 @@ class chip_scoreboard #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_b
     // post test checks - ensure that all local fifos and queues are empty
   endfunction
 
-  virtual function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
+  virtual protected function bit predict_tl_err(tl_seq_item item,
+                                                tl_channels_e channel,
+                                                string ral_name);
     uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_normalized_addr(item.a_addr);
     uvm_mem mem = cfg.ral_models[ral_name].default_map.get_mem_by_offset(addr);
 
