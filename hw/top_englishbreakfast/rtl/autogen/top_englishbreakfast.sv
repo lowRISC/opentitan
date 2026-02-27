@@ -304,7 +304,7 @@ module top_englishbreakfast #(
 
 
   // define inter-module signals
-  pwrmgr_pkg::pwr_flash_t       pwrmgr_aon_pwr_flash;
+  pwrmgr_pkg::pwr_nvm_t       pwrmgr_aon_pwr_nvm;
   pwrmgr_pkg::pwr_rst_req_t       pwrmgr_aon_pwr_rst_req;
   pwrmgr_pkg::pwr_rst_rsp_t       pwrmgr_aon_pwr_rst_rsp;
   pwrmgr_pkg::pwr_clk_req_t       pwrmgr_aon_pwr_clk_req;
@@ -860,7 +860,7 @@ module top_englishbreakfast #(
       .pwr_otp_i(pwrmgr_pkg::PWR_OTP_RSP_DEFAULT),
       .pwr_lc_o(),
       .pwr_lc_i(lc_ctrl_pkg::PWR_LC_RSP_DEFAULT),
-      .pwr_flash_i(pwrmgr_aon_pwr_flash),
+      .pwr_nvm_i(pwrmgr_aon_pwr_nvm),
       .esc_rst_tx_i(prim_esc_pkg::ESC_TX_DEFAULT),
       .esc_rst_rx_o(),
       .pwr_cpu_i(rv_core_ibex_pwrmgr),
@@ -1114,7 +1114,7 @@ module top_englishbreakfast #(
 
       // Inter-module signals
       .otp_o(),
-      .otp_i(otp_ctrl_pkg::FLASH_OTP_KEY_RSP_DEFAULT),
+      .otp_i(otp_ctrl_pkg::NVM_OTP_KEY_RSP_DEFAULT),
       .lc_nvm_debug_en_i(lc_ctrl_pkg::LC_TX_DEFAULT),
       .flash_bist_enable_i(flash_bist_enable_i),
       .flash_power_down_h_i(flash_power_down_h_i),
@@ -1129,8 +1129,8 @@ module top_englishbreakfast #(
       .lc_escalate_en_i(lc_ctrl_pkg::LC_TX_DEFAULT),
       .rma_req_i(lc_ctrl_pkg::LC_TX_DEFAULT),
       .rma_ack_o(),
-      .rma_seed_i(lc_ctrl_pkg::LC_FLASH_RMA_SEED_DEFAULT),
-      .pwrmgr_o(pwrmgr_aon_pwr_flash),
+      .rma_seed_i(lc_ctrl_pkg::LC_NVM_RMA_SEED_DEFAULT),
+      .pwrmgr_o(pwrmgr_aon_pwr_nvm),
       .keymgr_o(),
       .obs_ctrl_i(obs_ctrl_i),
       .fla_obs_o(flash_obs_o),

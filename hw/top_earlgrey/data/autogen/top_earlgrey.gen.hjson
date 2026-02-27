@@ -2030,9 +2030,9 @@
           index: -1
         }
         {
-          name: flash_otp_key
-          desc: Key derivation interface for FLASH scrambling.
-          struct: flash_otp_key
+          name: nvm_otp_key
+          desc: Key derivation interface for NVM scrambling.
+          struct: nvm_otp_key
           package: otp_ctrl_pkg
           type: req_rsp
           act: rsp
@@ -2513,7 +2513,7 @@
         }
         {
           name: NumRmaAckSigs
-          desc: Number of Flash RMA wiping response signals
+          desc: Number of NVM RMA wiping response signals
           type: int
           default: "2"
           local: "true"
@@ -2834,7 +2834,7 @@
           index: -1
         }
         {
-          name: lc_flash_rma_req
+          name: lc_nvm_rma_req
           struct: lc_tx
           package: lc_ctrl_pkg
           type: uni
@@ -2844,11 +2844,11 @@
           inst_name: lc_ctrl
           end_idx: -1
           top_type: broadcast
-          top_signame: lc_ctrl_lc_flash_rma_req
+          top_signame: lc_ctrl_lc_nvm_rma_req
           index: -1
         }
         {
-          name: lc_flash_rma_ack
+          name: lc_nvm_rma_ack
           struct: lc_tx
           package: lc_ctrl_pkg
           type: uni
@@ -2858,19 +2858,21 @@
           inst_name: lc_ctrl
           end_idx: -1
           top_type: one-to-N
-          top_signame: lc_ctrl_lc_flash_rma_ack
+          top_signame: lc_ctrl_lc_nvm_rma_ack
           index: -1
         }
         {
-          name: lc_flash_rma_seed
-          struct: lc_flash_rma_seed
+          name: lc_nvm_rma_seed
+          struct: lc_nvm_rma_seed
           package: lc_ctrl_pkg
           type: uni
           act: req
           width: 1
           default: "'0"
           inst_name: lc_ctrl
-          top_signame: flash_ctrl_rma_seed
+          end_idx: -1
+          top_type: broadcast
+          top_signame: lc_ctrl_lc_nvm_rma_seed
           index: -1
         }
         {
@@ -3918,8 +3920,8 @@
           index: -1
         }
         {
-          name: pwr_flash
-          struct: pwr_flash
+          name: pwr_nvm
+          struct: pwr_nvm
           package: pwrmgr_pkg
           type: uni
           act: rcv
@@ -3928,7 +3930,7 @@
           default: ""
           end_idx: -1
           top_type: broadcast
-          top_signame: pwrmgr_aon_pwr_flash
+          top_signame: pwrmgr_aon_pwr_nvm
           index: -1
         }
         {
@@ -6172,7 +6174,7 @@
       [
         {
           name: otp
-          struct: flash_otp_key
+          struct: nvm_otp_key
           package: otp_ctrl_pkg
           type: req_rsp
           act: req
@@ -6346,7 +6348,7 @@
           width: 1
           inst_name: flash_ctrl
           default: ""
-          top_signame: lc_ctrl_lc_flash_rma_req
+          top_signame: lc_ctrl_lc_nvm_rma_req
           index: -1
         }
         {
@@ -6358,33 +6360,31 @@
           width: 1
           inst_name: flash_ctrl
           default: ""
-          top_signame: lc_ctrl_lc_flash_rma_ack
+          top_signame: lc_ctrl_lc_nvm_rma_ack
           index: 0
         }
         {
           name: rma_seed
-          struct: lc_flash_rma_seed
+          struct: lc_nvm_rma_seed
           package: lc_ctrl_pkg
           type: uni
           act: rcv
           width: 1
           inst_name: flash_ctrl
           default: ""
-          end_idx: -1
-          top_type: broadcast
-          top_signame: flash_ctrl_rma_seed
+          top_signame: lc_ctrl_lc_nvm_rma_seed
           index: -1
         }
         {
           name: pwrmgr
-          struct: pwr_flash
+          struct: pwr_nvm
           package: pwrmgr_pkg
           type: uni
           act: req
           width: 1
           inst_name: flash_ctrl
           default: ""
-          top_signame: pwrmgr_aon_pwr_flash
+          top_signame: pwrmgr_aon_pwr_nvm
           index: -1
         }
         {
@@ -7687,7 +7687,7 @@
           width: 1
           default: lc_ctrl_pkg::Off
           inst_name: otbn
-          top_signame: lc_ctrl_lc_flash_rma_req
+          top_signame: lc_ctrl_lc_nvm_rma_req
           index: -1
         }
         {
@@ -7699,7 +7699,7 @@
           width: 1
           default: lc_ctrl_pkg::Off
           inst_name: otbn
-          top_signame: lc_ctrl_lc_flash_rma_ack
+          top_signame: lc_ctrl_lc_nvm_rma_ack
           index: 1
         }
         {
@@ -10018,11 +10018,11 @@
       ]
       flash_ctrl.otp:
       [
-        otp_ctrl.flash_otp_key
+        otp_ctrl.nvm_otp_key
       ]
-      flash_ctrl.rma_seed:
+      lc_ctrl.lc_nvm_rma_seed:
       [
-        lc_ctrl.lc_flash_rma_seed
+        flash_ctrl.rma_seed
       ]
       otp_ctrl.sram_otp_key:
       [
@@ -10030,7 +10030,7 @@
         sram_ctrl_ret_aon.sram_otp_key
         rv_core_ibex.icache_otp_key
       ]
-      pwrmgr_aon.pwr_flash:
+      pwrmgr_aon.pwr_nvm:
       [
         flash_ctrl.pwrmgr
       ]
@@ -10071,12 +10071,12 @@
       [
         keymgr.rom_digest
       ]
-      lc_ctrl.lc_flash_rma_req:
+      lc_ctrl.lc_nvm_rma_req:
       [
         flash_ctrl.rma_req
         otbn.lc_rma_req
       ]
-      lc_ctrl.lc_flash_rma_ack:
+      lc_ctrl.lc_nvm_rma_ack:
       [
         flash_ctrl.rma_ack
         otbn.lc_rma_ack
@@ -19862,9 +19862,9 @@
         index: -1
       }
       {
-        name: flash_otp_key
-        desc: Key derivation interface for FLASH scrambling.
-        struct: flash_otp_key
+        name: nvm_otp_key
+        desc: Key derivation interface for NVM scrambling.
+        struct: nvm_otp_key
         package: otp_ctrl_pkg
         type: req_rsp
         act: rsp
@@ -20412,7 +20412,7 @@
         index: -1
       }
       {
-        name: lc_flash_rma_req
+        name: lc_nvm_rma_req
         struct: lc_tx
         package: lc_ctrl_pkg
         type: uni
@@ -20422,11 +20422,11 @@
         inst_name: lc_ctrl
         end_idx: -1
         top_type: broadcast
-        top_signame: lc_ctrl_lc_flash_rma_req
+        top_signame: lc_ctrl_lc_nvm_rma_req
         index: -1
       }
       {
-        name: lc_flash_rma_ack
+        name: lc_nvm_rma_ack
         struct: lc_tx
         package: lc_ctrl_pkg
         type: uni
@@ -20436,19 +20436,21 @@
         inst_name: lc_ctrl
         end_idx: -1
         top_type: one-to-N
-        top_signame: lc_ctrl_lc_flash_rma_ack
+        top_signame: lc_ctrl_lc_nvm_rma_ack
         index: -1
       }
       {
-        name: lc_flash_rma_seed
-        struct: lc_flash_rma_seed
+        name: lc_nvm_rma_seed
+        struct: lc_nvm_rma_seed
         package: lc_ctrl_pkg
         type: uni
         act: req
         width: 1
         default: "'0"
         inst_name: lc_ctrl
-        top_signame: flash_ctrl_rma_seed
+        end_idx: -1
+        top_type: broadcast
+        top_signame: lc_ctrl_lc_nvm_rma_seed
         index: -1
       }
       {
@@ -21162,8 +21164,8 @@
         index: -1
       }
       {
-        name: pwr_flash
-        struct: pwr_flash
+        name: pwr_nvm
+        struct: pwr_nvm
         package: pwrmgr_pkg
         type: uni
         act: rcv
@@ -21172,7 +21174,7 @@
         default: ""
         end_idx: -1
         top_type: broadcast
-        top_signame: pwrmgr_aon_pwr_flash
+        top_signame: pwrmgr_aon_pwr_nvm
         index: -1
       }
       {
@@ -22545,7 +22547,7 @@
       }
       {
         name: otp
-        struct: flash_otp_key
+        struct: nvm_otp_key
         package: otp_ctrl_pkg
         type: req_rsp
         act: req
@@ -22719,7 +22721,7 @@
         width: 1
         inst_name: flash_ctrl
         default: ""
-        top_signame: lc_ctrl_lc_flash_rma_req
+        top_signame: lc_ctrl_lc_nvm_rma_req
         index: -1
       }
       {
@@ -22731,33 +22733,31 @@
         width: 1
         inst_name: flash_ctrl
         default: ""
-        top_signame: lc_ctrl_lc_flash_rma_ack
+        top_signame: lc_ctrl_lc_nvm_rma_ack
         index: 0
       }
       {
         name: rma_seed
-        struct: lc_flash_rma_seed
+        struct: lc_nvm_rma_seed
         package: lc_ctrl_pkg
         type: uni
         act: rcv
         width: 1
         inst_name: flash_ctrl
         default: ""
-        end_idx: -1
-        top_type: broadcast
-        top_signame: flash_ctrl_rma_seed
+        top_signame: lc_ctrl_lc_nvm_rma_seed
         index: -1
       }
       {
         name: pwrmgr
-        struct: pwr_flash
+        struct: pwr_nvm
         package: pwrmgr_pkg
         type: uni
         act: req
         width: 1
         inst_name: flash_ctrl
         default: ""
-        top_signame: pwrmgr_aon_pwr_flash
+        top_signame: pwrmgr_aon_pwr_nvm
         index: -1
       }
       {
@@ -23507,7 +23507,7 @@
         width: 1
         default: lc_ctrl_pkg::Off
         inst_name: otbn
-        top_signame: lc_ctrl_lc_flash_rma_req
+        top_signame: lc_ctrl_lc_nvm_rma_req
         index: -1
       }
       {
@@ -23519,7 +23519,7 @@
         width: 1
         default: lc_ctrl_pkg::Off
         inst_name: otbn
-        top_signame: lc_ctrl_lc_flash_rma_ack
+        top_signame: lc_ctrl_lc_nvm_rma_ack
         index: 1
       }
       {
@@ -26318,7 +26318,7 @@
       }
       {
         package: otp_ctrl_pkg
-        struct: flash_otp_key_req
+        struct: nvm_otp_key_req
         signame: flash_ctrl_otp_req
         width: 1
         type: req_rsp
@@ -26329,25 +26329,25 @@
       }
       {
         package: otp_ctrl_pkg
-        struct: flash_otp_key_rsp
+        struct: nvm_otp_key_rsp
         signame: flash_ctrl_otp_rsp
         width: 1
         type: req_rsp
         end_idx: -1
         act: req
         suffix: rsp
-        default: otp_ctrl_pkg::FLASH_OTP_KEY_RSP_DEFAULT
+        default: otp_ctrl_pkg::NVM_OTP_KEY_RSP_DEFAULT
       }
       {
         package: lc_ctrl_pkg
-        struct: lc_flash_rma_seed
-        signame: flash_ctrl_rma_seed
+        struct: lc_nvm_rma_seed
+        signame: lc_ctrl_lc_nvm_rma_seed
         width: 1
         type: uni
         end_idx: -1
-        act: rcv
+        act: req
         suffix: ""
-        default: lc_ctrl_pkg::LC_FLASH_RMA_SEED_DEFAULT
+        default: "'0"
       }
       {
         package: otp_ctrl_pkg
@@ -26373,14 +26373,14 @@
       }
       {
         package: pwrmgr_pkg
-        struct: pwr_flash
-        signame: pwrmgr_aon_pwr_flash
+        struct: pwr_nvm
+        signame: pwrmgr_aon_pwr_nvm
         width: 1
         type: uni
         end_idx: -1
         act: rcv
         suffix: ""
-        default: pwrmgr_pkg::PWR_FLASH_DEFAULT
+        default: pwrmgr_pkg::PWR_NVM_DEFAULT
       }
       {
         package: pwrmgr_pkg
@@ -26528,7 +26528,7 @@
       {
         package: lc_ctrl_pkg
         struct: lc_tx
-        signame: lc_ctrl_lc_flash_rma_req
+        signame: lc_ctrl_lc_nvm_rma_req
         width: 1
         type: uni
         end_idx: -1
@@ -26539,7 +26539,7 @@
       {
         package: lc_ctrl_pkg
         struct: lc_tx
-        signame: lc_ctrl_lc_flash_rma_ack
+        signame: lc_ctrl_lc_nvm_rma_ack
         width: 2
         type: uni
         end_idx: -1

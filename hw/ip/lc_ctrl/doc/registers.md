@@ -69,7 +69,7 @@ life cycle status register. Note that all errors are terminal and require a rese
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "INITIALIZED", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "READY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "EXT_CLOCK_SWITCHED", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TRANSITION_SUCCESSFUL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TRANSITION_COUNT_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TRANSITION_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TOKEN_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "FLASH_RMA_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "OTP_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "STATE_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "BUS_INTEG_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "OTP_PARTITION_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 20}], "config": {"lanes": 1, "fontsize": 10, "vspace": 240}}
+{"reg": [{"name": "INITIALIZED", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "READY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "EXT_CLOCK_SWITCHED", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TRANSITION_SUCCESSFUL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TRANSITION_COUNT_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TRANSITION_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TOKEN_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "NVM_RMA_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "OTP_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "STATE_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "BUS_INTEG_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "OTP_PARTITION_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 20}], "config": {"lanes": 1, "fontsize": 10, "vspace": 240}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                      |
@@ -79,7 +79,7 @@ life cycle status register. Note that all errors are terminal and require a rese
 |   10   |   ro   |    x    | [BUS_INTEG_ERROR](#status--bus_integ_error)               |
 |   9    |   ro   |    x    | [STATE_ERROR](#status--state_error)                       |
 |   8    |   ro   |    x    | [OTP_ERROR](#status--otp_error)                           |
-|   7    |   ro   |    x    | [FLASH_RMA_ERROR](#status--flash_rma_error)               |
+|   7    |   ro   |    x    | [NVM_RMA_ERROR](#status--nvm_rma_error)                   |
 |   6    |   ro   |    x    | [TOKEN_ERROR](#status--token_error)                       |
 |   5    |   ro   |    x    | [TRANSITION_ERROR](#status--transition_error)             |
 |   4    |   ro   |    x    | [TRANSITION_COUNT_ERROR](#status--transition_count_error) |
@@ -108,8 +108,8 @@ This bit is set to 1 if an error occurred during an OTP programming operation.
 This error will move the life cycle state automatically to POST_TRANSITION and raise a
 fatal_prog_error alert.
 
-### STATUS . FLASH_RMA_ERROR
-This bit is set to 1 if flash failed to correctly respond to an RMA request.
+### STATUS . NVM_RMA_ERROR
+This bit is set to 1 if NVM failed to correctly respond to an RMA request.
 Note that each transition attempt increments the [`LC_TRANSITION_CNT`](#lc_transition_cnt) and
 moves the life cycle state into POST_TRANSITION.
 

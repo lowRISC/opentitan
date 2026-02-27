@@ -516,16 +516,16 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     `uvm_send(otbn_pull_seq)
   endtask
 
-% if enable_flash_key:
-  virtual task req_flash_addr_key(bit blocking = default_req_blocking);
-    if (cfg.m_flash_addr_pull_agent_cfg.vif.req === 1'b1) return;
+% if enable_nvm_key:
+  virtual task req_nvm_addr_key(bit blocking = default_req_blocking);
+    if (cfg.m_nvm_addr_pull_agent_cfg.vif.req === 1'b1) return;
 
     if (blocking) begin
-      req_flash_addr_key_sub();
+      req_nvm_addr_key_sub();
     end else begin
       fork
         begin
-          req_flash_addr_key_sub();
+          req_nvm_addr_key_sub();
         end
       join_none;
       // Add #0 to ensure that this thread starts executing before any subsequent call
@@ -533,23 +533,23 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     end
   endtask
 
-  virtual task req_flash_addr_key_sub();
-    push_pull_host_seq#(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_addr_pull_seq;
+  virtual task req_nvm_addr_key_sub();
+    push_pull_host_seq#(.DeviceDataWidth(NVM_DATA_SIZE)) nvm_addr_pull_seq;
     wait(cfg.under_reset == 0);
-    `uvm_create_on(flash_addr_pull_seq, p_sequencer.flash_addr_pull_sequencer_h);
-    `DV_CHECK_RANDOMIZE_FATAL(flash_addr_pull_seq)
-    `uvm_send(flash_addr_pull_seq)
+    `uvm_create_on(nvm_addr_pull_seq, p_sequencer.nvm_addr_pull_sequencer_h);
+    `DV_CHECK_RANDOMIZE_FATAL(nvm_addr_pull_seq)
+    `uvm_send(nvm_addr_pull_seq)
   endtask
 
-  virtual task req_flash_data_key(bit blocking = default_req_blocking);
-    if (cfg.m_flash_data_pull_agent_cfg.vif.req === 1'b1) return;
+  virtual task req_nvm_data_key(bit blocking = default_req_blocking);
+    if (cfg.m_nvm_data_pull_agent_cfg.vif.req === 1'b1) return;
 
     if (blocking) begin
-      req_flash_data_key_sub();
+      req_nvm_data_key_sub();
     end else begin
       fork
         begin
-          req_flash_data_key_sub();
+          req_nvm_data_key_sub();
         end
       join_none;
       // Add #0 to ensure that this thread starts executing before any subsequent call
@@ -557,12 +557,12 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     end
   endtask
 
-  virtual task req_flash_data_key_sub();
-    push_pull_host_seq#(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_data_pull_seq;
+  virtual task req_nvm_data_key_sub();
+    push_pull_host_seq#(.DeviceDataWidth(NVM_DATA_SIZE)) nvm_data_pull_seq;
     wait(cfg.under_reset == 0);
-    `uvm_create_on(flash_data_pull_seq, p_sequencer.flash_data_pull_sequencer_h);
-    `DV_CHECK_RANDOMIZE_FATAL(flash_data_pull_seq)
-    `uvm_send(flash_data_pull_seq)
+    `uvm_create_on(nvm_data_pull_seq, p_sequencer.nvm_data_pull_sequencer_h);
+    `DV_CHECK_RANDOMIZE_FATAL(nvm_data_pull_seq)
+    `uvm_send(nvm_data_pull_seq)
   endtask
 
 % endif

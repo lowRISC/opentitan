@@ -72,7 +72,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     err_inj.transition_err == 0;
     err_inj.transition_count_err == 0;
     err_inj.clk_byp_error_rsp == 0;
-    err_inj.flash_rma_error_rsp == 0;
+    err_inj.nvm_rma_error_rsp == 0;
     err_inj.token_mismatch_err == 0;
     err_inj.token_response_err == 0;
     err_inj.token_invalid_err == 0;
@@ -123,7 +123,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
   constraint mubi_err_inj_c {
     err_inj.clk_byp_rsp_mubi_err == 0;
-    err_inj.flash_rma_rsp_mubi_err == 0;
+    err_inj.nvm_rma_rsp_mubi_err == 0;
     err_inj.otp_secrets_valid_mubi_err == 0;
     err_inj.otp_test_tokens_valid_mubi_err == 0;
     err_inj.otp_rma_token_valid_mubi_err == 0;
@@ -169,7 +169,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     disable handle_escalate;
     disable security_escalation_inject;
     disable run_clk_byp_rsp;
-    disable run_flash_rma_rsp;
+    disable run_nvm_rma_rsp;
 
     // Clear escalates
     cfg.escalate_injected = 0;
@@ -224,7 +224,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
       // Kill processes
       disable run_clk_byp_rsp;
-      disable run_flash_rma_rsp;
+      disable run_nvm_rma_rsp;
 
       if (i != 1) begin
         `DV_CHECK_RANDOMIZE_FATAL(this)
@@ -250,7 +250,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       // Respawn processes
       fork
         run_clk_byp_rsp(err_inj.clk_byp_error_rsp);
-        run_flash_rma_rsp(err_inj.flash_rma_error_rsp);
+        run_nvm_rma_rsp(err_inj.nvm_rma_error_rsp);
       join_none
 
       `uvm_info(`gfn, $sformatf(
@@ -697,7 +697,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     bit state_error_exp, state_error_act;
     bit count_error_exp, count_error_act;
     bit token_error_exp, token_error_act;
-    bit flash_rma_error_exp, flash_rma_error_act;
+    bit nvm_rma_error_exp, nvm_rma_error_act;
     bit otp_error_exp, otp_error_act;
     bit transition_error_exp, transition_error_act;
     bit transition_count_error_exp, transition_count_error_act;
@@ -712,7 +712,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       `uvm_info(`gfn, {"wait_status: ", ral.status.sprint(uvm_default_line_printer)}, UVM_MEDIUM)
       if (get_field_val(ral.status.transition_successful, status_val)) break;
       if (get_field_val(ral.status.token_error, status_val)) break;
-      if (get_field_val(ral.status.flash_rma_error, status_val)) break;
+      if (get_field_val(ral.status.nvm_rma_error, status_val)) break;
       if (get_field_val(ral.status.transition_error, status_val)) break;
       if (get_field_val(ral.status.transition_count_error, status_val)) break;
       if (get_field_val(ral.status.otp_error, status_val) ||
@@ -741,7 +741,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
             has_test_token(dec_lc_state(lc_state), next_lc_state)) ||
         (cfg.err_inj.otp_rma_token_valid_mubi_err &&
          has_rma_token(dec_lc_state(lc_state), next_lc_state)) || cfg.err_inj.token_mux_digest_err;
-    flash_rma_error_exp = cfg.err_inj.flash_rma_error_rsp || cfg.err_inj.flash_rma_rsp_mubi_err;
+    nvm_rma_error_exp = cfg.err_inj.nvm_rma_error_rsp || cfg.err_inj.nvm_rma_rsp_mubi_err;
     otp_error_exp = cfg.err_inj.otp_prog_err || cfg.err_inj.clk_byp_error_rsp ||
         cfg.err_inj.clk_byp_rsp_mubi_err;
     transition_count_error_exp = cfg.err_inj.transition_count_err;
@@ -751,7 +751,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     // Actual bits
     state_error_act = get_field_val(ral.status.state_error, status_val);
     token_error_act = get_field_val(ral.status.token_error, status_val);
-    flash_rma_error_act = get_field_val(ral.status.flash_rma_error, status_val);
+    nvm_rma_error_act = get_field_val(ral.status.nvm_rma_error, status_val);
     otp_error_act = get_field_val(ral.status.otp_error, status_val);
     transition_count_error_act = get_field_val(ral.status.transition_count_error, status_val);
     otp_partition_error_act = get_field_val(ral.status.otp_partition_error, status_val);
@@ -765,7 +765,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       if (!cfg.err_inj.token_mux_ctrl_redun_err) begin
         `DV_CHECK_EQ(token_error_act, token_error_exp)
       end
-      `DV_CHECK_EQ(flash_rma_error_act, flash_rma_error_exp)
+      `DV_CHECK_EQ(nvm_rma_error_act, nvm_rma_error_exp)
       `DV_CHECK_EQ(otp_error_act, otp_error_exp)
       `DV_CHECK_EQ(transition_count_error_exp, transition_count_error_act)
       `DV_CHECK_EQ(otp_partition_error_exp, otp_partition_error_act)
@@ -959,71 +959,71 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   endtask
 
 
-  virtual task run_flash_rma_rsp(bit has_err = 0);
-    // Number of lc_flash_rma_ack_i synchronisation FFs
+  virtual task run_nvm_rma_rsp(bit has_err = 0);
+    // Number of lc_nvm_rma_ack_i synchronisation FFs
     // This value can take 2 or 3 cycles after adding cdc instrumentation
     // and we take maximum to be conservative.
-    const int FLASH_RMA_ACK_SYNC_FFS = 3;
+    const int NVM_RMA_ACK_SYNC_FFS = 3;
     // Values to be driven for On and Off
-    lc_ctrl_pkg::lc_tx_t on_val = err_inj.flash_rma_rsp_mubi_err ?
+    lc_ctrl_pkg::lc_tx_t on_val = err_inj.nvm_rma_rsp_mubi_err ?
         // Get a random value for on
         cip_base_pkg::get_rand_lc_tx_val(.t_weight(0), .f_weight(0), .other_weight(1)) :
         // Standard On value
         lc_ctrl_pkg::On;
-    lc_ctrl_pkg::lc_tx_t off_val = err_inj.flash_rma_rsp_mubi_err ?
+    lc_ctrl_pkg::lc_tx_t off_val = err_inj.nvm_rma_rsp_mubi_err ?
         // Get a random value for off
         cip_base_pkg::get_rand_lc_tx_val(.t_weight(0), .f_weight(0), .other_weight(1)) :
         // Standard On value
         lc_ctrl_pkg::Off;
-    `uvm_info(`gfn, $sformatf("run_flash_rma_rsp started off_val=%0x, on_val=%0x",
+    `uvm_info(`gfn, $sformatf("run_nvm_rma_rsp started off_val=%0x, on_val=%0x",
         off_val,on_val), UVM_MEDIUM)
 
-    set_flash_rma_ack(off_val);
+    set_nvm_rma_ack(off_val);
     forever begin
       lc_ctrl_pkg::lc_tx_t rsp = off_val;
-      while (cfg.lc_ctrl_vif.flash_rma_req_o != lc_ctrl_pkg::On &&
-          !err_inj.flash_rma_error_rsp) begin
-        @(cfg.lc_ctrl_vif.flash_rma_req_o or err_inj);
-        if(err_inj.flash_rma_rsp_mubi_err &&
-          cfg.lc_ctrl_vif.flash_rma_req_o != lc_ctrl_pkg::On) begin
-          set_flash_rma_ack(rsp);
+      while (cfg.lc_ctrl_vif.nvm_rma_req_o != lc_ctrl_pkg::On &&
+          !err_inj.nvm_rma_error_rsp) begin
+        @(cfg.lc_ctrl_vif.nvm_rma_req_o or err_inj);
+        if(err_inj.nvm_rma_rsp_mubi_err &&
+          cfg.lc_ctrl_vif.nvm_rma_req_o != lc_ctrl_pkg::On) begin
+          set_nvm_rma_ack(rsp);
         end
       end
-      if (err_inj.flash_rma_error_rsp) begin
-        // Error stream just alternates flash_rma_ack_i every clock cycle. To get the timing right
+      if (err_inj.nvm_rma_error_rsp) begin
+        // Error stream just alternates nvm_rma_ack_i every clock cycle. To get the timing right
         // with this, we set max_delay_cycles to zero.
         rsp = (rsp == lc_ctrl_pkg::On) ? Off : On;
-        set_flash_rma_ack(rsp, .max_delay_cycles(0));
+        set_nvm_rma_ack(rsp, .max_delay_cycles(0));
         cfg.clk_rst_vif.wait_clks(1);
       end else begin
         // Normal behaviour
         rsp = On;
         cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
-        set_flash_rma_ack(rsp);
-        // We can only inject error values after state FlashRmaSt starts
-        if(err_inj.flash_rma_rsp_mubi_err) begin
-          wait(cfg.lc_ctrl_vif.lc_ctrl_fsm_state inside {FlashRmaSt});
+        set_nvm_rma_ack(rsp);
+        // We can only inject error values after state NvmRmaSt starts
+        if(err_inj.nvm_rma_rsp_mubi_err) begin
+          wait(cfg.lc_ctrl_vif.lc_ctrl_fsm_state inside {NvmRmaSt});
           // Allow time to get through the synchronisation FFs
-          cfg.clk_rst_vif.wait_clks(FLASH_RMA_ACK_SYNC_FFS);
-          // Now inject the bad value. When verifying MuBi errors in the Flash RMA response, our
+          cfg.clk_rst_vif.wait_clks(NVM_RMA_ACK_SYNC_FFS);
+          // Now inject the bad value. When verifying MuBi errors in the NVM RMA response, our
           // sequence seems to expect the invalid MuBi signal to arrive within at most 1 clock
           // cycle.
           rsp = on_val;
-          set_flash_rma_ack(rsp, .max_delay_cycles(1));
+          set_nvm_rma_ack(rsp, .max_delay_cycles(1));
         end
       end
-      wait (cfg.lc_ctrl_vif.flash_rma_req_o != lc_ctrl_pkg::On || err_inj.flash_rma_error_rsp);
-      if (err_inj.flash_rma_error_rsp) begin
-        // Error stream just alternates flash_rma_ack_i every clock cycle. To get the timing right
+      wait (cfg.lc_ctrl_vif.nvm_rma_req_o != lc_ctrl_pkg::On || err_inj.nvm_rma_error_rsp);
+      if (err_inj.nvm_rma_error_rsp) begin
+        // Error stream just alternates nvm_rma_ack_i every clock cycle. To get the timing right
         // with this, we set max_delay_cycles to zero.
         rsp = (rsp == lc_ctrl_pkg::On) ? Off : On;
-        set_flash_rma_ack(rsp, .max_delay_cycles(0));
+        set_nvm_rma_ack(rsp, .max_delay_cycles(0));
         cfg.clk_rst_vif.wait_clks(1);
       end else begin
         // Normal behaviour
         rsp = off_val;
         cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
-        set_flash_rma_ack(rsp);
+        set_nvm_rma_ack(rsp);
       end
     end
   endtask
@@ -1067,12 +1067,12 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     // Values other than On/Off trigger assertions in the primitives
     if (err_inj.clk_byp_rsp_mubi_err) `DV_ASSERT_CTRL_REQ("FsmClkBypAckSync", 0)
     else `DV_ASSERT_CTRL_REQ("FsmClkBypAckSync", 1)
-    if (err_inj.flash_rma_rsp_mubi_err) begin
-      `DV_ASSERT_CTRL_REQ("FsmClkFlashRmaAckSync", 0)
-      `DV_ASSERT_CTRL_REQ("FsmClkFlashRmaAckBuf", 0)
+    if (err_inj.nvm_rma_rsp_mubi_err) begin
+      `DV_ASSERT_CTRL_REQ("FsmClkNvmRmaAckSync", 0)
+      `DV_ASSERT_CTRL_REQ("FsmClkNvmRmaAckBuf", 0)
     end else begin
-      `DV_ASSERT_CTRL_REQ("FsmClkFlashRmaAckSync", 1)
-      `DV_ASSERT_CTRL_REQ("FsmClkFlashRmaAckBuf", 1)
+      `DV_ASSERT_CTRL_REQ("FsmClkNvmRmaAckSync", 1)
+      `DV_ASSERT_CTRL_REQ("FsmClkNvmRmaAckBuf", 1)
     end
     if (err_inj.otp_test_tokens_valid_mubi_err) `DV_ASSERT_CTRL_REQ("FsmOtpTestTokensValidSync", 0)
     else `DV_ASSERT_CTRL_REQ("FsmOtpTestTokensValidSync", 1);
@@ -1090,7 +1090,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(inj_state,
                                        inj_state inside {
         ClkMuxSt, CntIncrSt, CntProgSt, TransCheckSt,
-        FlashRmaSt, TokenHashSt, TokenCheck0St, TokenCheck1St}; )
+        NvmRmaSt, TokenHashSt, TokenCheck0St, TokenCheck1St}; )
 
     // Save in config object for scoreboard
     cfg.token_mux_ctrl_redun_err_inj_state = inj_state;

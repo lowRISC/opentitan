@@ -36,7 +36,7 @@ interface pwrmgr_if (
   lc_ctrl_pkg::pwr_lc_req_t                                        pwr_lc_req;
   lc_ctrl_pkg::pwr_lc_rsp_t                                        pwr_lc_rsp;
 
-  pwrmgr_pkg::pwr_flash_t                                          pwr_flash;
+  pwrmgr_pkg::pwr_nvm_t                                            pwr_nvm;
 
   pwrmgr_pkg::pwrmgr_cpu_t                                         cpu_i;
   rv_core_ibex_pkg::cpu_pwrmgr_t                                   pwr_cpu;
@@ -152,8 +152,8 @@ interface pwrmgr_if (
     pwr_lc_rsp.lc_idle = value;
   endfunction
 
-  function automatic void update_flash_idle(logic value);
-    pwr_flash.flash_idle = value;
+  function automatic void update_nvm_idle(logic value);
+    pwr_nvm.nvm_idle = value;
   endfunction
 
   function automatic void update_cpu_sleeping(logic value);
@@ -202,7 +202,7 @@ interface pwrmgr_if (
     pwr_clk_rsp = '{default: '0};
     pwr_otp_rsp = '{default: '0};
     pwr_lc_rsp = '{default: '0};
-    pwr_flash = '{default: '0};
+    pwr_nvm = '{default: '0};
     pwr_cpu = rv_core_ibex_pkg::CPU_PWRMGR_DEFAULT;
     wakeups_i = pwrmgr_pkg::WAKEUPS_DEFAULT;
     rstreqs_i = pwrmgr_pkg::RSTREQS_DEFAULT;

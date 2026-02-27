@@ -80,7 +80,7 @@ module lc_ctrl_fsm
   output logic                  trans_cnt_oflw_error_o,
   output logic                  trans_invalid_error_o,
   output logic                  token_invalid_error_o,
-  output logic                  flash_rma_error_o,
+  output logic                  nvm_rma_error_o,
   output logic                  otp_prog_error_o,
   output logic                  state_invalid_error_o,
   // Local life cycle signal
@@ -104,9 +104,9 @@ module lc_ctrl_fsm
   // Request and feedback to/from clock manager and AST.
   output lc_tx_t                lc_clk_byp_req_o,
   input  lc_tx_t                lc_clk_byp_ack_i,
-  // Request and feedback to/from flash controller
-  output lc_tx_t                     lc_flash_rma_req_o,
-  input  lc_tx_t [NumRmaAckSigs-1:0] lc_flash_rma_ack_i,
+  // Request and feedback to/from nvm controller
+  output lc_tx_t                     lc_nvm_rma_req_o,
+  input  lc_tx_t [NumRmaAckSigs-1:0] lc_nvm_rma_ack_i,
   // State group diversification value for keymgr
   output lc_keymgr_div_t        lc_keymgr_div_o
 );
@@ -135,36 +135,36 @@ module lc_ctrl_fsm
   // multiple modules that perform wiping in parallel. For security reasons, this signal is not
   // daisy-chained - see #19136 for context. Synchronize ACK signals separately, combine with
   // bitwise LC AND function and feed into FSM.
-  lc_tx_t [NumRmaAckSigs-1:0] lc_flash_rma_ack;
+  lc_tx_t [NumRmaAckSigs-1:0] lc_nvm_rma_ack;
   for (genvar k = 0; k < NumRmaAckSigs; k++) begin : gen_syncs
     prim_lc_sync #(
       .NumCopies(1)
-    ) u_prim_lc_sync_flash_rma_ack(
+    ) u_prim_lc_sync_nvm_rma_ack(
       .clk_i,
       .rst_ni,
-      .lc_en_i(lc_flash_rma_ack_i[k]),
-      .lc_en_o({lc_flash_rma_ack[k]})
+      .lc_en_i(lc_nvm_rma_ack_i[k]),
+      .lc_en_o({lc_nvm_rma_ack[k]})
     );
   end
 
-  lc_tx_t lc_flash_rma_ack_combined;
+  lc_tx_t lc_nvm_rma_ack_combined;
   always_comb begin
-    lc_flash_rma_ack_combined = On;
+    lc_nvm_rma_ack_combined = On;
     for (int k = 0; k < NumRmaAckSigs; k++) begin
-      lc_flash_rma_ack_combined = lc_tx_and_hi(lc_flash_rma_ack_combined, lc_flash_rma_ack[k]);
+      lc_nvm_rma_ack_combined = lc_tx_and_hi(lc_nvm_rma_ack_combined, lc_nvm_rma_ack[k]);
     end
   end
 
   // Make buffered copies for consumption in the FSM below.
-  lc_tx_t [2:0] lc_flash_rma_ack_buf;
+  lc_tx_t [2:0] lc_nvm_rma_ack_buf;
   prim_lc_sync #(
     .NumCopies(3),
     .AsyncOn(0)
-  ) u_prim_lc_sync_flash_rma_ack_buf (
+  ) u_prim_lc_sync_nvm_rma_ack_buf (
     .clk_i,
     .rst_ni,
-    .lc_en_i(lc_flash_rma_ack_combined),
-    .lc_en_o(lc_flash_rma_ack_buf)
+    .lc_en_i(lc_nvm_rma_ack_combined),
+    .lc_en_o(lc_nvm_rma_ack_buf)
   );
 
   ///////////////
@@ -185,7 +185,7 @@ module lc_ctrl_fsm
   assign otp_prog_lc_cnt_o   = next_lc_cnt;
 
   // Conditional LC signal outputs
-  lc_tx_t lc_clk_byp_req, lc_flash_rma_req, lc_check_byp_en;
+  lc_tx_t lc_clk_byp_req, lc_nvm_rma_req, lc_check_byp_en;
 
   `ASSERT_KNOWN(LcStateKnown_A,   lc_state_q   )
   `ASSERT_KNOWN(LcCntKnown_A,     lc_cnt_q     )
@@ -221,7 +221,7 @@ module lc_ctrl_fsm
     // Defaults for status/error signals.
     token_invalid_error_o = 1'b0;
     otp_prog_error_o      = 1'b0;
-    flash_rma_error_o     = 1'b0;
+    nvm_rma_error_o       = 1'b0;
     trans_success_o       = 1'b0;
     state_invalid_error_o = 1'b0;
 
@@ -242,7 +242,7 @@ module lc_ctrl_fsm
     // Note that the remaining life cycle signals are decoded in
     // the lc_ctrl_signal_decode submodule.
     lc_clk_byp_req   = lc_clk_byp_req_o;
-    lc_flash_rma_req = lc_flash_rma_req_o;
+    lc_nvm_rma_req   = lc_nvm_rma_req_o;
     lc_check_byp_en  = lc_check_byp_en_o;
 
     unique case (fsm_state_q)
@@ -252,7 +252,7 @@ module lc_ctrl_fsm
       ResetSt: begin
         init_done_o = 1'b0;
         lc_clk_byp_req   = Off;
-        lc_flash_rma_req = Off;
+        lc_nvm_rma_req   = Off;
         lc_check_byp_en  = Off;
         if (init_req_i && lc_state_valid_q) begin
           fsm_state_d = IdleSt;
@@ -458,7 +458,7 @@ module lc_ctrl_fsm
           if (hashed_token_i == hashed_token_mux &&
               !token_hash_err_i &&
               &hashed_token_valid_mux) begin
-            fsm_state_d = FlashRmaSt;
+            fsm_state_d = NvmRmaSt;
           end else begin
             fsm_state_d = PostTransSt;
             token_invalid_error_o = 1'b1;
@@ -466,12 +466,12 @@ module lc_ctrl_fsm
         end
       end
       ///////////////////////////////////////////////////////////////////
-      // Flash RMA state. Note that we check the flash response again
+      // NVM RMA state. Note that we check the nvm response again
       // two times later below.
-      FlashRmaSt: begin
+      NvmRmaSt: begin
         if (trans_target_i == {DecLcStateNumRep{DecLcStRma}}) begin
-          lc_flash_rma_req = On;
-          if (lc_tx_test_true_strict(lc_flash_rma_ack_buf[0])) begin
+          lc_nvm_rma_req = On;
+          if (lc_tx_test_true_strict(lc_nvm_rma_ack_buf[0])) begin
             fsm_state_d = TokenCheck0St;
           end
         end else begin
@@ -480,7 +480,7 @@ module lc_ctrl_fsm
       end
       ///////////////////////////////////////////////////////////////////
       // Check again two times whether this transition and the hashed
-      // token are valid. Also check again whether the flash RMA
+      // token are valid. Also check again whether the nvm RMA
       // response is valid.
       // SEC_CM: TOKEN.DIGEST
       TokenCheck0St,
@@ -491,11 +491,11 @@ module lc_ctrl_fsm
           // If any of these RMA are conditions are true,
           // all of them must be true at the same time.
           if ((trans_target_i != {DecLcStateNumRep{DecLcStRma}} &&
-               lc_tx_test_false_strict(lc_flash_rma_req_o) &&
-               lc_tx_test_false_strict(lc_flash_rma_ack_buf[1])) ||
+               lc_tx_test_false_strict(lc_nvm_rma_req_o) &&
+               lc_tx_test_false_strict(lc_nvm_rma_ack_buf[1])) ||
               (trans_target_i == {DecLcStateNumRep{DecLcStRma}} &&
-               lc_tx_test_true_strict(lc_flash_rma_req_o) &&
-               lc_tx_test_true_strict(lc_flash_rma_ack_buf[1]))) begin
+               lc_tx_test_true_strict(lc_nvm_rma_req_o) &&
+               lc_tx_test_true_strict(lc_nvm_rma_ack_buf[1]))) begin
             if (hashed_token_i == hashed_token_mux &&
                 !token_hash_err_i &&
                 &hashed_token_valid_mux) begin
@@ -510,10 +510,10 @@ module lc_ctrl_fsm
               fsm_state_d = PostTransSt;
               token_invalid_error_o = 1'b1;
             end
-          // The flash RMA process failed.
+          // The NVM RMA process failed.
           end else begin
               fsm_state_d = PostTransSt;
-              flash_rma_error_o = 1'b1;
+              nvm_rma_error_o = 1'b1;
           end
         end
       end
@@ -533,11 +533,11 @@ module lc_ctrl_fsm
         // Also double check that the RMA signals remain stable.
         // Otherwise abort the transition operation.
         end else if ((trans_target_i != {DecLcStateNumRep{DecLcStRma}} &&
-                      (lc_flash_rma_req_o != Off || lc_flash_rma_ack_buf[2] != Off)) ||
+                      (lc_nvm_rma_req_o != Off || lc_nvm_rma_ack_buf[2] != Off)) ||
                      (trans_target_i == {DecLcStateNumRep{DecLcStRma}} &&
-                      (lc_flash_rma_req_o != On || lc_flash_rma_ack_buf[2] != On))) begin
+                      (lc_nvm_rma_req_o != On || lc_nvm_rma_ack_buf[2] != On))) begin
           fsm_state_d = PostTransSt;
-          flash_rma_error_o = 1'b1;
+          nvm_rma_error_o = 1'b1;
         end else if (otp_prog_ack_i) begin
           fsm_state_d = PostTransSt;
           otp_prog_error_o = otp_prog_err_i;
@@ -830,11 +830,11 @@ module lc_ctrl_fsm
     .lc_en_i(lc_clk_byp_req),
     .lc_en_o(lc_clk_byp_req_o)
   );
-  prim_lc_sender u_prim_lc_sender_flash_rma_req (
+  prim_lc_sender u_prim_lc_sender_nvm_rma_req (
     .clk_i,
     .rst_ni,
-    .lc_en_i(lc_flash_rma_req),
-    .lc_en_o(lc_flash_rma_req_o)
+    .lc_en_i(lc_nvm_rma_req),
+    .lc_en_o(lc_nvm_rma_req_o)
   );
   prim_lc_sender u_prim_lc_sender_check_byp_en (
     .clk_i,
@@ -857,10 +857,10 @@ module lc_ctrl_fsm
       |=>
       lc_tx_test_true_strict(lc_clk_byp_req_o))
 
-  `ASSERT(FlashRmaStaysOnOnceAsserted_A,
-      lc_tx_test_true_strict(lc_flash_rma_req_o)
+  `ASSERT(NvmRmaStaysOnOnceAsserted_A,
+      lc_tx_test_true_strict(lc_nvm_rma_req_o)
       |=>
-      lc_tx_test_true_strict(lc_flash_rma_req_o))
+      lc_tx_test_true_strict(lc_nvm_rma_req_o))
 
   `ASSERT(NoClkBypInProdStates_A,
       lc_state_q inside {LcStProd, LcStProdEnd, LcStDev}

@@ -605,12 +605,12 @@ module top_earlgrey #(
   entropy_src_pkg::entropy_src_hw_if_req_t       csrng_entropy_src_hw_if_req;
   entropy_src_pkg::entropy_src_hw_if_rsp_t       csrng_entropy_src_hw_if_rsp;
   flash_ctrl_pkg::keymgr_flash_t       flash_ctrl_keymgr;
-  otp_ctrl_pkg::flash_otp_key_req_t       flash_ctrl_otp_req;
-  otp_ctrl_pkg::flash_otp_key_rsp_t       flash_ctrl_otp_rsp;
-  lc_ctrl_pkg::lc_flash_rma_seed_t       flash_ctrl_rma_seed;
+  otp_ctrl_pkg::nvm_otp_key_req_t       flash_ctrl_otp_req;
+  otp_ctrl_pkg::nvm_otp_key_rsp_t       flash_ctrl_otp_rsp;
+  lc_ctrl_pkg::lc_nvm_rma_seed_t       lc_ctrl_lc_nvm_rma_seed;
   otp_ctrl_pkg::sram_otp_key_req_t [3:0] otp_ctrl_sram_otp_key_req;
   otp_ctrl_pkg::sram_otp_key_rsp_t [3:0] otp_ctrl_sram_otp_key_rsp;
-  pwrmgr_pkg::pwr_flash_t       pwrmgr_aon_pwr_flash;
+  pwrmgr_pkg::pwr_nvm_t       pwrmgr_aon_pwr_nvm;
   pwrmgr_pkg::pwr_rst_req_t       pwrmgr_aon_pwr_rst_req;
   pwrmgr_pkg::pwr_rst_rsp_t       pwrmgr_aon_pwr_rst_rsp;
   pwrmgr_pkg::pwr_clk_req_t       pwrmgr_aon_pwr_clk_req;
@@ -624,8 +624,8 @@ module top_earlgrey #(
   lc_ctrl_pkg::lc_tx_t       pwrmgr_aon_fetch_en;
   rom_ctrl_pkg::pwrmgr_data_t       rom_ctrl_pwrmgr_data;
   rom_ctrl_pkg::keymgr_data_t       rom_ctrl_keymgr_data;
-  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_flash_rma_req;
-  lc_ctrl_pkg::lc_tx_t [1:0] lc_ctrl_lc_flash_rma_ack;
+  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_nvm_rma_req;
+  lc_ctrl_pkg::lc_tx_t [1:0] lc_ctrl_lc_nvm_rma_ack;
   logic       usbdev_usb_dp_pullup;
   logic       usbdev_usb_dn_pullup;
   logic       usbdev_usb_aon_suspend_req;
@@ -1538,8 +1538,8 @@ module top_earlgrey #(
       .lc_rma_state_i(lc_ctrl_lc_rma_state),
       .lc_check_byp_en_i(lc_ctrl_lc_check_byp_en),
       .otp_keymgr_key_o(otp_ctrl_otp_keymgr_key),
-      .flash_otp_key_i(flash_ctrl_otp_req),
-      .flash_otp_key_o(flash_ctrl_otp_rsp),
+      .nvm_otp_key_i(flash_ctrl_otp_req),
+      .nvm_otp_key_o(flash_ctrl_otp_rsp),
       .sram_otp_key_i(otp_ctrl_sram_otp_key_req),
       .sram_otp_key_o(otp_ctrl_sram_otp_key_rsp),
       .otbn_otp_key_i(otp_ctrl_otbn_otp_key_req),
@@ -1646,9 +1646,9 @@ module top_earlgrey #(
       .lc_escalate_en_o(lc_ctrl_lc_escalate_en),
       .lc_clk_byp_req_o(lc_ctrl_lc_clk_byp_req),
       .lc_clk_byp_ack_i(lc_ctrl_lc_clk_byp_ack),
-      .lc_flash_rma_req_o(lc_ctrl_lc_flash_rma_req),
-      .lc_flash_rma_ack_i(lc_ctrl_lc_flash_rma_ack),
-      .lc_flash_rma_seed_o(flash_ctrl_rma_seed),
+      .lc_nvm_rma_req_o(lc_ctrl_lc_nvm_rma_req),
+      .lc_nvm_rma_ack_i(lc_ctrl_lc_nvm_rma_ack),
+      .lc_nvm_rma_seed_o(lc_ctrl_lc_nvm_rma_seed),
       .lc_check_byp_en_o(lc_ctrl_lc_check_byp_en),
       .lc_creator_seed_sw_rw_en_o(lc_ctrl_lc_creator_seed_sw_rw_en),
       .lc_owner_seed_sw_rw_en_o(lc_ctrl_lc_owner_seed_sw_rw_en),
@@ -1877,7 +1877,7 @@ module top_earlgrey #(
       .pwr_otp_i(pwrmgr_aon_pwr_otp_rsp),
       .pwr_lc_o(pwrmgr_aon_pwr_lc_req),
       .pwr_lc_i(pwrmgr_aon_pwr_lc_rsp),
-      .pwr_flash_i(pwrmgr_aon_pwr_flash),
+      .pwr_nvm_i(pwrmgr_aon_pwr_nvm),
       .esc_rst_tx_i(alert_handler_esc_tx[3]),
       .esc_rst_rx_o(alert_handler_esc_rx[3]),
       .pwr_cpu_i(rv_core_ibex_pwrmgr),
@@ -2319,10 +2319,10 @@ module top_earlgrey #(
       .lc_iso_part_sw_wr_en_i(lc_ctrl_lc_iso_part_sw_wr_en),
       .lc_seed_hw_rd_en_i(lc_ctrl_lc_seed_hw_rd_en),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
-      .rma_req_i(lc_ctrl_lc_flash_rma_req),
-      .rma_ack_o(lc_ctrl_lc_flash_rma_ack[0]),
-      .rma_seed_i(flash_ctrl_rma_seed),
-      .pwrmgr_o(pwrmgr_aon_pwr_flash),
+      .rma_req_i(lc_ctrl_lc_nvm_rma_req),
+      .rma_ack_o(lc_ctrl_lc_nvm_rma_ack[0]),
+      .rma_seed_i(lc_ctrl_lc_nvm_rma_seed),
+      .pwrmgr_o(pwrmgr_aon_pwr_nvm),
       .keymgr_o(flash_ctrl_keymgr),
       .obs_ctrl_i(ast_obs_ctrl),
       .fla_obs_o(flash_obs_o),
@@ -2546,8 +2546,8 @@ module top_earlgrey #(
       .ram_cfg_rsp_imem_o(),
       .ram_cfg_rsp_dmem_o(),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
-      .lc_rma_req_i(lc_ctrl_lc_flash_rma_req),
-      .lc_rma_ack_o(lc_ctrl_lc_flash_rma_ack[1]),
+      .lc_rma_req_i(lc_ctrl_lc_nvm_rma_req),
+      .lc_rma_ack_o(lc_ctrl_lc_nvm_rma_ack[1]),
       .keymgr_key_i(keymgr_otbn_key),
       .tl_i(otbn_tl_req),
       .tl_o(otbn_tl_rsp),

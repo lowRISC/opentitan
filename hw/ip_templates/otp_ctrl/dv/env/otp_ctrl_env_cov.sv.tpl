@@ -173,16 +173,16 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
 % endfor
   endgroup
 
-% if enable_flash_key:
-  // This covergroup is sampled only if flash request passed scb check.
-  covergroup flash_req_cg with function sample (int index, bit locked);
-    flash_index: coverpoint index {
-      bins flash_data_key = {FlashDataKey};
-      bins flash_addr_key = {FlashAddrKey};
+% if enable_nvm_key:
+  // This covergroup is sampled only if nvm request passed scb check.
+  covergroup nvm_req_cg with function sample (int index, bit locked);
+    nvm_index: coverpoint index {
+      bins nvm_data_key   = {NvmDataKey};
+      bins nvm_addr_key   = {NvmAddrKey};
       illegal_bins il     = default;
     }
     secret1_lock: coverpoint locked;
-    flash_req_lock_cross: cross flash_index, secret1_lock;
+    nvm_req_lock_cross: cross nvm_index, secret1_lock;
   endgroup
 
 % endif
@@ -278,8 +278,8 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
     super.new(name, parent);
     // Create coverage from local covergroups.
     power_on_cg                   = new();
-  % if enable_flash_key:
-    flash_req_cg                  = new();
+  % if enable_nvm_key:
+    nvm_req_cg                    = new();
   % endif
     sram_req_cg                   = new();
     keymgr_o_cg                   = new();

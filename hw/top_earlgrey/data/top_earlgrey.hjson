@@ -1178,12 +1178,12 @@
       'csrng.csrng_cmd'         : ['edn0.csrng_cmd', 'edn1.csrng_cmd'],
       'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
       'flash_ctrl.keymgr'       : ['keymgr.flash'],
-      'flash_ctrl.otp'          : ['otp_ctrl.flash_otp_key'],
-      'flash_ctrl.rma_seed'     : ['lc_ctrl.lc_flash_rma_seed'],
+      'flash_ctrl.otp'          : ['otp_ctrl.nvm_otp_key'],
+      'lc_ctrl.lc_nvm_rma_seed' : ['flash_ctrl.rma_seed'],
       'otp_ctrl.sram_otp_key'   : ['sram_ctrl_main.sram_otp_key',
                                    'sram_ctrl_ret_aon.sram_otp_key',
                                    'rv_core_ibex.icache_otp_key'],
-      'pwrmgr_aon.pwr_flash'    : ['flash_ctrl.pwrmgr'],
+      'pwrmgr_aon.pwr_nvm'      : ['flash_ctrl.pwrmgr'],
       'pwrmgr_aon.pwr_rst'      : ['rstmgr_aon.pwr'],
       'pwrmgr_aon.pwr_clk'      : ['clkmgr_aon.pwr'],
       'pwrmgr_aon.pwr_otp'      : ['otp_ctrl.pwr_otp'],
@@ -1199,8 +1199,8 @@
 
       // LC RMA req/ack interface: LC --> Flash -> LC
       //                              |-> OTBN  -> LC
-      'lc_ctrl.lc_flash_rma_req' : ['flash_ctrl.rma_req', 'otbn.lc_rma_req'],
-      'lc_ctrl.lc_flash_rma_ack' : ['flash_ctrl.rma_ack', 'otbn.lc_rma_ack'],
+      'lc_ctrl.lc_nvm_rma_req' : ['flash_ctrl.rma_req', 'otbn.lc_rma_req'],
+      'lc_ctrl.lc_nvm_rma_ack' : ['flash_ctrl.rma_ack', 'otbn.lc_rma_ack'],
 
       // usbdev connection to pinmux
       'usbdev.usb_dp_pullup'        : ['pinmux_aon.usbdev_dppullup_en'],

@@ -52,12 +52,12 @@
             // The other digest configurations below are used for
             // key derivation and token hashing.
             {
-                name:       "FlashDataKey",
+                name:       "NvmDataKey",
                 iv_value:   "<random>",
                 cnst_value: "<random>",
             }
             {
-                name:       "FlashAddrKey",
+                name:       "NvmAddrKey",
                 iv_value:   "<random>",
                 cnst_value: "<random>",
             }
@@ -290,12 +290,12 @@
             bkout_type: false,
             items: [
                 {
-                    name: "FLASH_ADDR_KEY_SEED",
+                    name: "NVM_ADDR_KEY_SEED",
                     inv_default: "<random>",
                     size: "32"
                 }
                 {
-                    name: "FLASH_DATA_KEY_SEED",
+                    name: "NVM_DATA_KEY_SEED",
                     inv_default: "<random>",
                     size: "32"
                 }
@@ -305,7 +305,7 @@
                     size: "16"
                 }
             ],
-            desc: '''SRAM and FLASH scrambling key roots
+            desc: '''SRAM and NVM scrambling key roots
             used for scrambling key derivation.
             '''
         }

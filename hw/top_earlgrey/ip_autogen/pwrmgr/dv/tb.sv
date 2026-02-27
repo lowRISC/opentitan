@@ -90,7 +90,7 @@ module tb;
     .pwr_lc_i(pwrmgr_if.pwr_lc_rsp),
     .pwr_lc_o(pwrmgr_if.pwr_lc_req),
 
-    .pwr_flash_i(pwrmgr_if.pwr_flash),
+    .pwr_nvm_i(pwrmgr_if.pwr_nvm),
     .pwr_cpu_i  (pwrmgr_if.pwr_cpu),
 
     .fetch_en_o(pwrmgr_if.fetch_en),

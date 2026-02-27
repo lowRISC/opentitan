@@ -2184,7 +2184,7 @@
         }
       ]
     }
-    enable_flash_key: false
+    enable_nvm_key: false
     topname: darjeeling
     uniquified_modules: {}
     module_instance_name: otp_ctrl

@@ -17,7 +17,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | pwr_clk        | pwrmgr_pkg::pwr_clk          | req_rsp | req   |       1 |               |
 | pwr_otp        | pwrmgr_pkg::pwr_otp          | req_rsp | req   |       1 |               |
 | pwr_lc         | lc_ctrl_pkg::pwr_lc          | req_rsp | req   |       1 |               |
-| pwr_flash      | pwrmgr_pkg::pwr_flash        | uni     | rcv   |       1 |               |
+| pwr_nvm        | pwrmgr_pkg::pwr_nvm          | uni     | rcv   |       1 |               |
 | esc_rst_tx     | prim_esc_pkg::esc_tx         | uni     | rcv   |       1 |               |
 | esc_rst_rx     | prim_esc_pkg::esc_rx         | uni     | req   |       1 |               |
 | pwr_cpu        | rv_core_ibex_pkg::cpu_pwrmgr | uni     | rcv   |       1 |               |

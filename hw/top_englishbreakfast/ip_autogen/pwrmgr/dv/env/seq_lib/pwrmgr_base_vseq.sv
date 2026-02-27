@@ -514,7 +514,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
 
   local task wait_for_abort();
     `DV_WAIT(
-        !cfg.pwrmgr_vif.pwr_flash.flash_idle || !cfg.pwrmgr_vif.pwr_otp_rsp.otp_idle ||
+        !cfg.pwrmgr_vif.pwr_nvm.nvm_idle || !cfg.pwrmgr_vif.pwr_otp_rsp.otp_idle ||
           !cfg.pwrmgr_vif.pwr_lc_rsp.lc_idle)
     exp_intr = 1'b1;
     `uvm_info(`gfn, "wait_for_abort succeeds", UVM_MEDIUM)
@@ -585,11 +585,11 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   // This enables the fast fsm to transition to low power when all nvms are idle after the
   // transition is enabled by software and cpu WFI. When not all are idle the transition is
   // aborted.
-  virtual task set_nvms_idle(logic flash_idle = 1'b1, logic lc_idle = 1'b1, logic otp_idle = 1'b1);
+  virtual task set_nvms_idle(logic nvm_idle = 1'b1, logic lc_idle = 1'b1, logic otp_idle = 1'b1);
     `uvm_info(`gfn, $sformatf(
-              "Setting nvms idle: flash=%b, lc=%b, otp=%b", flash_idle, lc_idle, otp_idle),
+              "Setting nvms idle: nvm=%b, lc=%b, otp=%b", nvm_idle, lc_idle, otp_idle),
               UVM_MEDIUM)
-    cfg.pwrmgr_vif.update_flash_idle(flash_idle);
+    cfg.pwrmgr_vif.update_nvm_idle(nvm_idle);
     cfg.pwrmgr_vif.update_lc_idle(lc_idle);
     cfg.pwrmgr_vif.update_otp_idle(otp_idle);
   endtask

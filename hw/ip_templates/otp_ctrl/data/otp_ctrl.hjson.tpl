@@ -384,15 +384,15 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
       package: "otp_ctrl_pkg"
       desc:    "Key output to the key manager holding CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1."
     }
-  % if enable_flash_key:
-    // Broadcast to Flash Controller
-    { struct:  "flash_otp_key"
+  % if enable_nvm_key:
+    // Broadcast to Nvm Controller
+    { struct:  "nvm_otp_key"
       type:    "req_rsp"
-      name:    "flash_otp_key"
+      name:    "nvm_otp_key"
       act:     "rsp"
       default: "'0"
       package: "otp_ctrl_pkg"
-      desc:    "Key derivation interface for FLASH scrambling."
+      desc:    "Key derivation interface for NVM scrambling."
     }
   % endif
     // Key request from SRAM scramblers
@@ -601,7 +601,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
     }
     {
       name: "OTP_CTRL.KEY_DERIVATION"
-      desc: "OTP controller participate key derivation process by providing scramble key seed to SRAM_CTRL${" and FLASH_CTRL" if enable_flash_key else ""}."
+      desc: "OTP controller participate key derivation process by providing scramble key seed to SRAM_CTRL${" and FLASH_CTRL" if enable_nvm_key else ""}."
     }
     {
       name: "OTP_CTRL.PROGRAM"
@@ -616,7 +616,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
     }
     {
       name: "OTP_CTRL.PARTITION.SECRET1"
-      desc: "SRAM${" and FLASH" if enable_flash_key else ""} scrambling key"
+      desc: "SRAM${" and NVM" if enable_nvm_key else ""} scrambling key"
     }
     {
       name: "OTP_CTRL.PARTITION.SECRET2"

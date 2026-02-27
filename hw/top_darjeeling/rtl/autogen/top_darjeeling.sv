@@ -564,7 +564,7 @@ module top_darjeeling #(
   logic       i2c0_lsio_trigger;
   logic       spi_host0_lsio_trigger;
   logic       uart0_lsio_trigger;
-  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_flash_rma_req;
+  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_nvm_rma_req;
   lc_ctrl_pkg::lc_tx_t       otbn_lc_rma_ack;
   edn_pkg::edn_req_t [Edn0NumEndPoints-1:0] edn0_edn_req;
   edn_pkg::edn_rsp_t [Edn0NumEndPoints-1:0] edn0_edn_rsp;
@@ -1303,9 +1303,9 @@ module top_darjeeling #(
       .lc_escalate_en_o(lc_ctrl_lc_escalate_en),
       .lc_clk_byp_req_o(lc_ctrl_lc_clk_byp_ack),
       .lc_clk_byp_ack_i(lc_ctrl_lc_clk_byp_ack),
-      .lc_flash_rma_req_o(lc_ctrl_lc_flash_rma_req),
-      .lc_flash_rma_ack_i(otbn_lc_rma_ack),
-      .lc_flash_rma_seed_o(),
+      .lc_nvm_rma_req_o(lc_ctrl_lc_nvm_rma_req),
+      .lc_nvm_rma_ack_i(otbn_lc_rma_ack),
+      .lc_nvm_rma_seed_o(),
       .lc_check_byp_en_o(lc_ctrl_lc_check_byp_en),
       .lc_creator_seed_sw_rw_en_o(lc_ctrl_lc_creator_seed_sw_rw_en),
       .lc_owner_seed_sw_rw_en_o(lc_ctrl_lc_owner_seed_sw_rw_en),
@@ -1431,7 +1431,7 @@ module top_darjeeling #(
       .pwr_otp_i(pwrmgr_aon_pwr_otp_rsp),
       .pwr_lc_o(pwrmgr_aon_pwr_lc_req),
       .pwr_lc_i(pwrmgr_aon_pwr_lc_rsp),
-      .pwr_flash_i(pwrmgr_pkg::PWR_FLASH_DEFAULT),
+      .pwr_nvm_i(pwrmgr_pkg::PWR_NVM_DEFAULT),
       .esc_rst_tx_i(alert_handler_esc_tx[3]),
       .esc_rst_rx_o(alert_handler_esc_rx[3]),
       .pwr_cpu_i(rv_core_ibex_pwrmgr),
@@ -1887,7 +1887,7 @@ module top_darjeeling #(
       .ram_cfg_rsp_imem_o(otbn_imem_ram_1p_cfg_rsp_o),
       .ram_cfg_rsp_dmem_o(otbn_dmem_ram_1p_cfg_rsp_o),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
-      .lc_rma_req_i(lc_ctrl_lc_flash_rma_req),
+      .lc_rma_req_i(lc_ctrl_lc_nvm_rma_req),
       .lc_rma_ack_o(otbn_lc_rma_ack),
       .keymgr_key_i(keymgr_dpe_otbn_key),
       .tl_i(otbn_tl_req),
