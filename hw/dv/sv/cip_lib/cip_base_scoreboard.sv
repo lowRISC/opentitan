@@ -509,16 +509,16 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       // For flash, address has to be 8-byte aligned.
       bit ecc_err = ecc_error_addr.exists({item.a_addr[AddrWidth-1:3], 3'b0});
 
-      if (unmapped_err) begin
-        exp_d_error = !block.get_unmapped_access_ok();
-      end
+      // Predict an error if this is not a mapped address and the block doesn't allow unmapped
+      // accesses.
+      exp_d_error |= unmapped_err && !block.get_unmapped_access_ok();
 
       if (mem_access_err) begin
         // Some memory implementations may not return an error response on invalid accesses.
         exp_d_error |= mem_byte_access_err | mem_wo_err | mem_ro_err | custom_err;
       end
 
-      if (is_mem_addr(item.a_addr, block) && cfg.tl_mem_access_gated) begin
+      if (is_mem_addr(item.a_addr, block)) begin
         exp_d_error |= cfg.tl_mem_access_gated;
       end
 
@@ -546,14 +546,41 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
         end
       end
 
-      `DV_CHECK_EQ(item.d_error, exp_d_error,
-          $sformatf({"On interface %0s, TL item: %0s, unmapped_err: %0d, mem_access_err: %0d, ",
-                    "bus_intg_err: %0d, byte_wr_err: %0d, csr_size_err: %0d, tl_item_err: %0d, ",
-                    "write_w_instr_type_err: %0d, ", "cfg.tl_mem_access_gated: %0d ",
-                    "ecc_err: %0d"},
-                    ral_name, item.sprint(uvm_default_line_printer), unmapped_err, mem_access_err,
-                    bus_intg_err, byte_wr_err, csr_size_err, tl_item_err, write_w_instr_type_err,
-                    cfg.tl_mem_access_gated, ecc_err))
+      if (item.d_error != exp_d_error) begin
+        string reasons[$];
+
+        if (exp_d_error) begin
+          if (unmapped_err && !block.get_unmapped_access_ok()) begin
+            reasons.push_back("Unmapped address");
+          end
+          if (mem_access_err) begin
+            if (mem_byte_access_err) reasons.push_back("Unsupported partial write");
+            if (mem_wo_err) reasons.push_back("Read of write-only memory");
+            if (mem_ro_err) reasons.push_back("Write to read-only memory");
+            if (custom_err) reasons.push_back("'custom' error");
+          end
+          if (is_mem_addr(item.a_addr, block) && cfg.tl_mem_access_gated) begin
+            reasons.push_back("Access to gated memory");
+          end
+          if (byte_wr_err) reasons.push_back("Byte write to interface that doesn't support it");
+          if (bus_intg_err) reasons.push_back("Bad A channel integrity");
+          if (csr_size_err) reasons.push_back("Over-wide CSR write");
+          if (tl_item_err) reasons.push_back("A-channel item should trigger error");
+          if (write_w_instr_type_err) reasons.push_back("Write when instr-type is set");
+          if (instr_type_err) reasons.push_back("MuBi error in instr-type");
+          if (ecc_err) reasons.push_back("Access to address with known-bad ECC");
+          if (csr_read_err) reasons.push_back("Fetch from CSR");
+        end
+
+        `uvm_error(get_full_name(),
+                   $sformatf({"On interface %0s, item had unexpected d_error value",
+                              "(predicted %0d, but saw %0d).\n",
+                              " TL item was: %0s",
+                              " Reasons for predicted error: %0p."},
+                             ral_name, exp_d_error, item.d_error,
+                             item.sprint(uvm_default_line_printer),
+                             reasons))
+      end
 
       // In data read phase, check d_data when d_error = 1.
       if (item.d_error && (item.d_opcode == tlul_pkg::AccessAckData)) begin
