@@ -85,15 +85,19 @@ typedef enum otcrypto_status_value {
 /**
  * Struct to hold a fixed-length byte array.
  *
- * Note: the caller must (1) allocate sufficient space and (2) set the `len`
- * field and `data` pointer when `otcrypto_byte_buf_t` is used for output. The
- * crypto library will throw an error if `len` doesn't match expectations.
+ * Note: the caller must (1) allocate sufficient space; (2) set the `len`
+ * field and `data` pointer when `otcrypto_byte_buf_t` is used for output; and
+ * (3) set the checksum using the OTCRYPTO_MAKE_BUF macro. The crypto library
+ * will throw an error if `len` doesn't match expectations.
  */
 typedef struct otcrypto_byte_buf {
   // Pointer to the data.
   uint8_t *data;
   // Length of the data in bytes.
   size_t len;
+  // Integrity of the buffer which is over the address and the length but not
+  // the contents.
+  uint32_t checksum;
 } otcrypto_byte_buf_t;
 
 /**
@@ -109,20 +113,27 @@ typedef struct otcrypto_const_byte_buf {
   const uint8_t *const data;
   // Length of the data in bytes.
   const size_t len;
+  // Integrity of the buffer which is over the address and the length but not
+  // the contents.
+  const uint32_t checksum;
 } otcrypto_const_byte_buf_t;
 
 /**
  * Struct to hold a fixed-length word array.
  *
- * Note: the caller must (1) allocate sufficient space and (2) set the `len`
- * field and `data` pointer when `otcrypto_word32_buf_t` is used for output. The
- * crypto library will throw an error if `len` doesn't match expectations.
+ * Note: the caller must (1) allocate sufficient space; (2) set the `len`
+ * field and `data` pointer when `otcrypto_word32_buf_t` is used for output; and
+ * (3) set the checksum using the OTCRYPTO_MAKE_BUF macro. The crypto library
+ * will throw an error if `len` doesn't match expectations.
  */
 typedef struct otcrypto_word32_buf {
   // Pointer to the data.
   uint32_t *data;
   // Length of the data in words.
   size_t len;
+  // Integrity of the buffer which is over the address and the length but not
+  // the contents.
+  uint32_t checksum;
 } otcrypto_word32_buf_t;
 
 /**
@@ -138,6 +149,9 @@ typedef struct otcrypto_const_word32_buf {
   const uint32_t *const data;
   // Length of the data in words.
   const size_t len;
+  // Integrity of the buffer which is over the address and the length but not
+  // the contents.
+  const uint32_t checksum;
 } otcrypto_const_word32_buf_t;
 
 /**

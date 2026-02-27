@@ -86,16 +86,12 @@ status_t cryptolib_sca_aes_impl(uint8_t data_in[AES_CMD_MAX_MSG_BYTES],
 
   // Convert the data struct into cryptolib types.
   uint32_t iv_buf[kPentestAesIvSize];
+  otcrypto_word32_buf_t aes_iv =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, iv_buf, kPentestAesBlockWords);
   memcpy(iv_buf, iv, sizeof(iv_buf));
-  otcrypto_word32_buf_t aes_iv = {
-      .data = iv_buf,
-      .len = kPentestAesBlockWords,
-  };
 
-  otcrypto_const_byte_buf_t input = {
-      .data = data_in,
-      .len = data_in_len,
-  };
+  otcrypto_const_byte_buf_t input =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, data_in, data_in_len);
 
   // Build the key configuration.
   otcrypto_key_config_t config = {
@@ -135,10 +131,8 @@ status_t cryptolib_sca_aes_impl(uint8_t data_in[AES_CMD_MAX_MSG_BYTES],
     return OUT_OF_RANGE();
   }
   uint32_t output_buf[padded_len_bytes / sizeof(uint32_t)];
-  otcrypto_byte_buf_t output = {
-      .data = (unsigned char *)output_buf,
-      .len = sizeof(output_buf),
-  };
+  otcrypto_byte_buf_t output = OTCRYPTO_MAKE_BUF(
+      otcrypto_byte_buf_t, (unsigned char *)output_buf, sizeof(output_buf));
 
   // Trigger window.
   pentest_set_trigger_high();
@@ -163,17 +157,13 @@ status_t cryptolib_sca_drbg_generate_impl(
   uint8_t nonce_buf[nonce_len];
   memcpy(nonce_buf, nonce, nonce_len);
 
-  otcrypto_const_byte_buf_t nonce_in = {
-      .len = nonce_len,
-      .data = nonce_buf,
-  };
+  otcrypto_const_byte_buf_t nonce_in =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, nonce_buf, nonce_len);
 
   // Buffer for the output entropy data.
   uint32_t output_data[data_out_len];
-  otcrypto_word32_buf_t output = {
-      .data = output_data,
-      .len = ARRAYSIZE(output_data),
-  };
+  otcrypto_word32_buf_t output = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, output_data, ARRAYSIZE(output_data));
 
   // Trigger window 0.
   if (trigger & kPentestTrigger2) {
@@ -201,10 +191,8 @@ status_t cryptolib_sca_drbg_reseed_impl(
   uint8_t entropy_buf[entropy_len];
   memcpy(entropy_buf, entropy, entropy_len);
 
-  otcrypto_const_byte_buf_t entropy_in = {
-      .len = entropy_len,
-      .data = entropy_buf,
-  };
+  otcrypto_const_byte_buf_t entropy_in =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, entropy_buf, entropy_len);
 
   // Trigger window 0.
   if (trigger & kPentestTrigger1) {
@@ -395,17 +383,13 @@ status_t cryptolib_sca_hmac_impl(uint8_t data_in[HMAC_CMD_MAX_MSG_BYTES],
   // Create input message.
   uint8_t msg_buf[data_in_len];
   memcpy(msg_buf, data_in, data_in_len);
-  otcrypto_const_byte_buf_t input_message = {
-      .len = data_in_len,
-      .data = msg_buf,
-  };
+  otcrypto_const_byte_buf_t input_message =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg_buf, data_in_len);
 
   // Create tag.
   uint32_t tag_buf[kPentestHmacMaxTagWords];
-  otcrypto_word32_buf_t tag = {
-      .len = tag_bytes / sizeof(uint32_t),
-      .data = tag_buf,
-  };
+  otcrypto_word32_buf_t tag = OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_buf,
+                                                tag_bytes / sizeof(uint32_t));
 
   // Trigger window.
   pentest_set_trigger_high();

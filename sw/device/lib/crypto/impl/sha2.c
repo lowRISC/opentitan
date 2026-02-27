@@ -8,6 +8,7 @@
 
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
+#include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
 // Module ID for status codes.
@@ -31,7 +32,7 @@ otcrypto_status_t otcrypto_sha2_256(otcrypto_const_byte_buf_t message,
   HARDENED_CHECK_EQ(digest->len, kHmacSha256DigestWords);
   digest->mode = kOtcryptoHashModeSha256;
 
-  return hmac_hash_sha256(message.data, message.len, digest->data);
+  return hmac_hash_sha256(&message, digest->data);
 }
 
 otcrypto_status_t otcrypto_sha2_384(otcrypto_const_byte_buf_t message,
@@ -47,7 +48,7 @@ otcrypto_status_t otcrypto_sha2_384(otcrypto_const_byte_buf_t message,
   HARDENED_CHECK_EQ(digest->len, kHmacSha384DigestWords);
   digest->mode = kOtcryptoHashModeSha384;
 
-  return hmac_hash_sha384(message.data, message.len, digest->data);
+  return hmac_hash_sha384(&message, digest->data);
 }
 
 otcrypto_status_t otcrypto_sha2_512(otcrypto_const_byte_buf_t message,
@@ -63,7 +64,7 @@ otcrypto_status_t otcrypto_sha2_512(otcrypto_const_byte_buf_t message,
   HARDENED_CHECK_EQ(digest->len, kHmacSha512DigestWords);
   digest->mode = kOtcryptoHashModeSha512;
 
-  return hmac_hash_sha512(message.data, message.len, digest->data);
+  return hmac_hash_sha512(&message, digest->data);
 }
 
 otcrypto_status_t otcrypto_sha2_init(otcrypto_hash_mode_t hash_mode,
@@ -139,7 +140,7 @@ otcrypto_status_t otcrypto_sha2_update(otcrypto_sha2_context_t *ctx,
 
   hmac_ctx_t *hmac_ctx = (hmac_ctx_t *)ctx->data;
   HARDENED_TRY(check_lengths(hmac_ctx));
-  return hmac_update(hmac_ctx, message.data, message.len);
+  return hmac_update(hmac_ctx, &message);
 }
 
 otcrypto_status_t otcrypto_sha2_final(otcrypto_sha2_context_t *ctx,
@@ -178,5 +179,8 @@ otcrypto_status_t otcrypto_sha2_final(otcrypto_sha2_context_t *ctx,
   // avoid that multiple cases were executed.
   HARDENED_CHECK_EQ(launder32(len_used), digest->len);
 
-  return hmac_final(hmac_ctx, digest->data);
+  otcrypto_word32_buf_t digest_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, digest->data, digest->len);
+
+  return hmac_final(hmac_ctx, &digest_buf);
 }
