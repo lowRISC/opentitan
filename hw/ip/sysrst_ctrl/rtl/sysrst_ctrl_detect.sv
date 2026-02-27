@@ -56,7 +56,7 @@ module sysrst_ctrl_detect
 
   // This just decodes the active level needed for detection.
   logic trigger_active;
-  if (EventType inside {LowLevel, EdgeToLow}) begin : gen_trigger_active_low
+  if ((EventType == LowLevel) || (EventType == EdgeToLow)) begin : gen_trigger_active_low
     assign trigger_active = (trigger_i == 1'b0);
   end else begin : gen_trigger_active_high
     assign trigger_active = (trigger_i == 1'b1);
@@ -64,7 +64,7 @@ module sysrst_ctrl_detect
 
   // In case of edge events, we also need to detect the transition.
   logic trigger_event;
-  if (EventType inside {EdgeToLow, EdgeToHigh}) begin : gen_trigger_event_edge
+  if ((EventType == EdgeToLow) || (EventType == EdgeToHigh)) begin : gen_trigger_event_edge
     // This flop is always active, no matter the enable state.
     logic trigger_active_q;
     always_ff @(posedge clk_i or negedge rst_ni) begin : p_trigger_reg
@@ -232,7 +232,7 @@ module sysrst_ctrl_detect
   `ASSERT(DisabledIdleSt_A, !cfg_enable_i |=> state_q == IdleSt)
   `ASSERT(DisabledNoDetection_A, !cfg_enable_i |-> !event_detected_o && !event_detected_pulse_o)
 
-  if (EventType inside {LowLevel, EdgeToLow}) begin : gen_low_level_sva
+  if ((EventType == LowLevel) || (EventType == EdgeToLow)) begin : gen_low_level_sva
     `ASSERT(LowLevelEvent_A, !trigger_i === trigger_active)
   end else begin: gen_high_level_sva
     `ASSERT(HighLevelEvent_A, trigger_i === trigger_active)
