@@ -119,13 +119,31 @@ jobs:
         uses: ./.github/actions/prepare-env
         with:
           service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
-      - id: schedule
+      - name: Compute job schedule
+        id: schedule
         run: |
           {
             echo 'jobs<<EOF'
-            ./ci/scripts/schedule_fpga_jobs.py --out-dir jobs/ //sw/...
+            ./ci/scripts/schedule_fpga_jobs.py --out-dir jobs/ \
+              "tests(//... union @manufacturer_test_hooks//...)"
             echo EOF
-          } >> "$GITHUB_ENV"
+          } >> "$GITHUB_OUTPUT"
+
+  execute_fpga_jobs:
+    name: ${{ matrix.name }}
+    needs: schedule_fpga_jobs
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.schedule_fpga_jobs.outputs.jobs) }}
+    uses: ./.github/workflows/fpga.yml
+    if: ${{ github.event_name != 'merge_group' }}
+    secrets: inherit
+    with:
+      job_name: ${{ matrix.id }}
+      bitstream: ${{ matrix.bitstream }}
+      board: ${{ matrix.board }}
+      interface: ${{ matrix.interface }}
 
   # Single job that we can gate pull requests and merge queues on:
   merge_blocker:
