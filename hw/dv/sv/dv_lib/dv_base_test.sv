@@ -48,20 +48,30 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
     if (!uvm_config_db#(uvm_object_wrapper)::get(this, "env", "cfg_type", cfg_type)) begin
       cfg_type = CFG_T::get_type();
     end
-    base_cfg = cfg_type.create_object("cfg");
-    if (!base_cfg) begin
-      `uvm_fatal(`gfn, $sformatf("Failed to create object of type %p", cfg_type))
+
+    // Now we know the config type, see whether one has been created by the testbench, configured
+    // and supplied through uvm_config_db.
+    //
+    // Note that we do the lookup through CFG_T rather than cfg_type, because the latter is only
+    // known at runtime. If there isn't a cfg object that has been provided, we create one ourselves
+    // and call its initialize() method.
+    if (!uvm_config_db#(CFG_T)::get(this, "env", "cfg", cfg)) begin
+      base_cfg = cfg_type.create_object("cfg");
+      if (!base_cfg) begin
+        `uvm_fatal(`gfn, $sformatf("Failed to create object of type %p", cfg_type))
+      end
+
+      // At this point, we will normally have just created an object of type CFG_T, but have a
+      // handle to it with a weaker type. But we might have got an instance of some extension class
+      // if one is passed as cfg_type. Either way, we should be able to cast the result to a CFG_T.
+      if (!$cast(cfg, base_cfg)) begin
+        `uvm_fatal(`gfn,
+                   $sformatf("Failed to cast object of type %p to expected CFG_T class.", cfg_type))
+      end
+
+      cfg.initialize();
     end
 
-    // At this point, we will normally have just created an object of type CFG_T, but have a handle
-    // to it with a weaker type. But we might have got an instance of some extension class if one is
-    // passed as cfg_type. Either way, we should be able to cast the result to a CFG_T.
-    if (!$cast(cfg, base_cfg)) begin
-      `uvm_fatal(`gfn,
-                 $sformatf("Failed to cast object of type %p to expected CFG_T class.", cfg_type))
-    end
-
-    cfg.initialize();
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
     uvm_config_db#(CFG_T)::set(this, "env", "cfg", cfg);
 
@@ -82,6 +92,11 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
     uvm_top.enable_print_topology = print_topology;
 
     void'($value$plusargs("cdc_instrumentation_enabled=%d", cfg.en_dv_cdc));
+
+    // Register cfg in the config db. This might already have been registered, but that shouldn't
+    // matter.
+    uvm_config_db#(CFG_T)::set(this, "*", "cfg", cfg);
+
   endfunction : build_phase
 
   virtual function void end_of_elaboration_phase(uvm_phase phase);
