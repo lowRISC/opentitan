@@ -275,8 +275,7 @@ class chip_base_vseq #(
                                              bit enable_tx_monitor = 1'b1,
                                              bit enable_rx_monitor = 1'b0,
                                              bit en_parity = 1'b0,
-                                             bit odd_parity = 1'b0,
-                                             baud_rate_e baud_rate = cfg.uart_baud_rate);
+                                             bit odd_parity = 1'b0);
     if (enable) begin
       `uvm_info(`gfn, $sformatf("Configuring and connecting UART%0d", uart_idx), UVM_LOW)
       cfg.m_uart_agent_cfgs[uart_idx].set_parity(en_parity, odd_parity);
