@@ -55,9 +55,6 @@ class chip_base_test extends cip_base_test #(
       cfg.parse_sw_images_string(sw_images_plusarg);
     end
 
-    // Knob to perform the AST configuration.
-    void'($value$plusargs("do_creator_sw_cfg_ast_cfg=%0b", cfg.do_creator_sw_cfg_ast_cfg));
-
     // Knob to use small page rma
     void'($value$plusargs("en_small_rma=%0b", cfg.en_small_rma));
 
@@ -92,5 +89,21 @@ class chip_base_test extends cip_base_test #(
       cfg.set_use_jtag_dmi();
     end
   endfunction : build_phase
+
+  virtual function void configure_sequence(uvm_sequence seq);
+    chip_base_vseq vseq;
+
+    super.configure_sequence(seq);
+
+    if (!$cast(vseq, seq)) begin
+      `uvm_fatal(get_full_name(),
+                 $sformatf("Cannot configure sequence that isn't a chip_base_vseq: %0s.",
+                           seq.sprint()))
+    end
+
+    // Should the AST actually be programmed in the vseq? By default, it should, but this can be
+    // disabled with the do_creator_sw_cfg_ast_cfg plusarg.
+    void'($value$plusargs("do_creator_sw_cfg_ast_cfg=%0b", vseq.do_creator_sw_cfg_ast_cfg));
+  endfunction
 
 endclass : chip_base_test
