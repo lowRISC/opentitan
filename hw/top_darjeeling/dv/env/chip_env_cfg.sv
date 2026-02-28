@@ -36,11 +36,6 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // before invoking super.dut_init(), or any other suitable place.
   rand uint creator_sw_cfg_ast_cfg_data[ast_pkg::AstRegsNum];
 
-  // sw related
-  // In OpenTitan, the same SW test image can be built for DV, Verilator and FPGA. SW build for
-  // other platforms can be run on DV as well. We allow that by specifying the SW build device.
-  string sw_build_device = "sim_dv";
-
   // Types of SW images used in the test.
   //
   // Set via plusarg. This is the basename of the SW image. If the SW image is not pre-built
@@ -383,7 +378,8 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // attached to the SW image. They can be used to treat the SW image in a specific way. The flag
   // "signed" for example, is used to set the SW image extension correctly. The flag "test_in_rom"
   // is used to indicate a test runs directly out of ROM instead of flash.
-  virtual function void parse_sw_images_string(string sw_images_string);
+  virtual function void parse_sw_images_string(string sw_build_device,
+                                               string sw_images_string);
     string sw_images_split[$];
 
     // Split sw_images with space.
@@ -410,11 +406,11 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
         sw_image_flags[sw_type] = sw_image_fields[2:$];
       end
     end
-    resolve_sw_image_paths();
+    resolve_sw_image_paths(sw_build_device);
   endfunction
 
   // Finalize the SW image paths, once all SW image settings are done.
-  virtual function void resolve_sw_image_paths();
+  local function void resolve_sw_image_paths(string sw_build_device);
     foreach (sw_images[i]) begin
       if ("prebuilt" inside {sw_image_flags[i]}) begin
         sw_images[i] = $sformatf("%0s", sw_images[i]);

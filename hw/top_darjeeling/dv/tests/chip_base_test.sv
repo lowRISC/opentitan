@@ -47,12 +47,13 @@ class chip_base_test extends cip_base_test #(
     // cfg.use_spi_load_bootstrap will be reset to 0 upon completion.
     void'($value$plusargs("use_spi_load_bootstrap=%0b", cfg.use_spi_load_bootstrap));
 
-    // Knob to indicate what build device to use (DV, Verilator or FPGA).
-    void'($value$plusargs("sw_build_device=%0s", cfg.sw_build_device));
-
     // Knob to set custom sw image names for rom and sw.
     if ($value$plusargs("sw_images=%0s", sw_images_plusarg)) begin
-      cfg.parse_sw_images_string(sw_images_plusarg);
+      // Knob to indicate what build device to use (DV, Verilator or FPGA).
+      string sw_build_device = "sim_dv";
+      void'($value$plusargs("sw_build_device=%0s", sw_build_device));
+
+      cfg.parse_sw_images_string(sw_build_device, sw_images_plusarg);
     end
 
     // Knob to use small page rma
