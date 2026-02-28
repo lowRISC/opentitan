@@ -8,6 +8,9 @@
 class chip_stub_cpu_base_vseq extends chip_base_vseq;
   `uvm_object_utils(chip_stub_cpu_base_vseq)
 
+  // Control which JTAG to mux on the pads, if any. Subclasses may wish to override this choice.
+  protected chip_jtag_tap_e select_jtag = JtagTapNone;
+
   `uvm_object_new
 
   virtual task pre_start();
@@ -19,10 +22,35 @@ class chip_stub_cpu_base_vseq extends chip_base_vseq;
     // monitor in block-level
     foreach (cfg.m_uart_agent_cfgs[i]) cfg.m_uart_agent_cfgs[i].en_tx_monitor = 0;
 
-    // Select/Deselect JTAG interface.
+    // The environment config might have an extra uvm_reg_map that represents registers accessible
+    // over JTAG. If so, and the JTAG riscv_agent is enabled, then drive TAP straps to configure
+    // which JTAG interface will be muxed onto the pads.
+    //
+    // Subclasses might pick that interface before calling super.pre_start. If not, allow the
+    // decision to be configured by passing a plusarg.
     if (cfg.jtag_riscv_map != null || cfg.m_jtag_riscv_agent_cfg.use_jtag_dmi == 1) begin
-      `DV_GET_ENUM_PLUSARG(chip_common_pkg::chip_jtag_tap_e, cfg.select_jtag, select_jtag)
-      cfg.chip_vif.tap_straps_if.drive(cfg.select_jtag);
+      // Set from_plusarg to equal select_jtag (which might have been set by a subclass). This gets
+      // overridden by the DV_GET_ENUM_PLUSARG macro below if the +select_jtag plusarg was provided.
+      chip_jtag_tap_e from_plusarg = select_jtag;
+
+      `DV_GET_ENUM_PLUSARG(chip_common_pkg::chip_jtag_tap_e, from_plusarg, select_jtag)
+
+      if (select_jtag != JtagTapNone) begin
+        // The select_jtag variable must have been set by the subclass. Check that there hasn't been
+        // a +select_jtag plusarg with a different value (we don't support that sort of override).
+        if (select_jtag != from_plusarg) begin
+          `uvm_error(get_name(),
+                     $sformatf({"Cannot use +select_jtag with this sequence: the JTAG interface ",
+                                "was already configured as %p."},
+                               select_jtag))
+        end
+      end else begin
+        // The select_jtag variable has not been overridden by the subclass. If there has been a
+        // +select_jtag plusarg, use the provided value.
+        select_jtag = from_plusarg;
+      end
+
+      cfg.chip_vif.tap_straps_if.drive(select_jtag);
     end
     enable_asserts_in_hw_reset_rand_wr = 0;
     super.pre_start();
