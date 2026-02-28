@@ -7,7 +7,6 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   );
 
   // Testbench settings
-  bit                 en_uart_logger;
   uart_agent_pkg::baud_rate_e uart_baud_rate = uart_agent_pkg::BaudRate1Mbps;
 
   // Write logs from sw test to separate log file as well, in addition to the simulator log file.
