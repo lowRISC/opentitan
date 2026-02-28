@@ -109,10 +109,11 @@ module tb;
     // integrity check, so full chip simulation runs don't do it for each
     // reset.
     .SecRomCtrlDisableScrambling(1'b1)
-) dut (
+  )
 `else
-  chip_earlgrey_asic dut (
+  chip_earlgrey_asic
 `endif
+  dut (
     // Dedicated Pads
     .POR_N(dut.chip_if.dios[top_earlgrey_pkg::DioPadPorN]),
     .USB_P(dut.chip_if.dios[top_earlgrey_pkg::DioPadUsbP]),
