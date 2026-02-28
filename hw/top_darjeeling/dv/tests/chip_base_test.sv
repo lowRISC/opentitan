@@ -35,11 +35,10 @@ class chip_base_test extends cip_base_test #(
     // The following plusargs are only valid for SW based tests (i.e., no stubbed CPU).
     // Knob to configure writing sw logs to a separate file (enabled by default).
     void'($value$plusargs("write_sw_logs_to_file=%0b", cfg.write_sw_logs_to_file));
+    cfg.m_uart_agent_cfgs[0].write_logs_to_file = cfg.write_sw_logs_to_file;
 
     // Knob to enable logging over UART (disabled by default).
-    void'($value$plusargs("en_uart_logger=%0b", cfg.en_uart_logger));
-    cfg.m_uart_agent_cfgs[0].en_logger = cfg.en_uart_logger;
-    cfg.m_uart_agent_cfgs[0].write_logs_to_file = cfg.write_sw_logs_to_file;
+    void'($value$plusargs("en_uart_logger=%0b", cfg.m_uart_agent_cfgs[0].en_logger));
 
     // Knob to set the sw_test_timeout_ns (set to 12ms by default).
     void'($value$plusargs("sw_test_timeout_ns=%0d", cfg.sw_test_timeout_ns));
