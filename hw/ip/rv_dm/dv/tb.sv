@@ -131,6 +131,8 @@ module tb;
 `endif
 
   initial begin
+    rv_dm_env_cfg cfg;
+
     // Copy the clock period from clk_rst_if to clk_lc_rst_if. The clock isn't actually connected to
     // anything in the design, but we have DV code that asserts the reset and then waits a cycle
     // before de-asserting it, so the clock must be running.
@@ -139,32 +141,25 @@ module tb;
     clk_rst_if.set_active();
     clk_lc_rst_if.set_active();
 
-    uvm_config_db#(virtual rv_dm_if)::set(null, "*.env", "rv_dm_vif", rv_dm_if);
+    cfg = rv_dm_env_cfg::type_id::create("cfg");
 
-    // Connect the clk/rst and TL interfaces that apply to the main memory model. These get
-    // retrieved in dv_base_env::build_phase.
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
-    uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_sba_agent*", "vif", sba_tl_if);
+    cfg.rv_dm_vif = rv_dm_if;
+    cfg.clk_rst_vif = clk_rst_if;
+    cfg.clk_rst_vifs["rv_dm_regs_reg_block"] = clk_rst_if;
+    cfg.clk_rst_vifs["rv_dm_mem_reg_block"]  = clk_rst_if;
+    cfg.clk_lc_rst_vif = clk_lc_rst_if;
 
-    // The clk/rst interface used for clk_lc_i and rst_lc_ni
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env",
-                                            "clk_lc_rst_vif", clk_lc_rst_if);
+    cfg.initialize();
 
-    // Similarly, connect clk/rst/TL for regs_reg_block
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env",
-                                            "clk_rst_vif_rv_dm_regs_reg_block", clk_rst_if);
-    uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_rv_dm_regs_reg_block*",
-                                       "vif", regs_tl_if);
+    cfg.m_jtag_agent_cfg.vif     = jtag_if;
+    cfg.m_jtag_agent_cfg.mon_vif = mon_jtag_if;
 
-    // Similarly, connect clk/rst/TL for mem_reg_block
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env",
-                                            "clk_rst_vif_rv_dm_mem_reg_block", clk_rst_if);
-    uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_rv_dm_mem_reg_block*",
-                                       "vif", mem_tl_if);
+    cfg.m_tl_agent_cfgs["rv_dm_regs_reg_block"].vif = regs_tl_if;
+    cfg.m_tl_agent_cfgs["rv_dm_mem_reg_block"].vif = mem_tl_if;
 
-    // Connect the JTAG interface, which is used by the jtag_agent build_phase
-    uvm_config_db#(virtual jtag_if)::set(null, "*.env.m_jtag_agent", "vif", jtag_if);
-    uvm_config_db#(virtual jtag_mon_if)::set(null, "*.env.m_jtag_agent", "mon_vif", mon_jtag_if);
+    cfg.m_tl_sba_agent_cfg.vif = sba_tl_if;
+
+    uvm_config_db#(rv_dm_env_cfg)::set(null, "*.env", "cfg", cfg);
 
     $timeformat(-12, 0, " ps", 12);
     run_test();

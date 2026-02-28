@@ -32,12 +32,14 @@ class rv_dm_env extends cip_base_env #(
     end
 
     // get vifs
-    if (!uvm_config_db#(virtual rv_dm_if)::get(this, "", "rv_dm_vif", cfg.rv_dm_vif)) begin
-      `uvm_fatal(get_full_name(), "failed to get rv_dm_vif from uvm_config_db")
+    if (cfg.rv_dm_vif == null &&
+        !uvm_config_db#(virtual rv_dm_if)::get(this, "", "rv_dm_vif", cfg.rv_dm_vif)) begin
+      `uvm_fatal(get_full_name(), "failed to get rv_dm_vif")
     end
-    if (!uvm_config_db#(virtual clk_rst_if)::get(this, "",
+    if (cfg.clk_lc_rst_vif == null &&
+        !uvm_config_db#(virtual clk_rst_if)::get(this, "",
                                                  "clk_lc_rst_vif", cfg.clk_lc_rst_vif)) begin
-      `uvm_fatal(`gfn, "failed to get clk_lc_rst_vif from uvm_config_db")
+      `uvm_fatal(`gfn, "failed to get clk_lc_rst_vif")
     end
 
     // create components
