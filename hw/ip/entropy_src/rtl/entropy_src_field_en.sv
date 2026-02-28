@@ -23,32 +23,30 @@ module entropy_src_field_en #(
   output logic              enable_o
 );
 
+  localparam logic [FieldW-1:0] FieldEnValBit = FieldW'(FieldEnVal);
+  localparam logic [FieldW-1:0] FieldEnValBitRevert = ~FieldEnValBit;
+
   // signal
   logic  field_update;
-  logic [FieldW-1:0] field_value;
-  logic [FieldW-1:0] field_value_invert;
 
   // flops
   logic [FieldW-1:0] field_q, field_d;
 
-  assign  field_value = FieldEnVal;
-  assign  field_value_invert = ~field_value;
-
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      field_q <= field_value_invert;
+      field_q <= FieldEnValBitRevert;
     end else begin
       field_q <= field_d;
     end
   end
 
   assign field_update = wvalid_i && (field_q == ~wdata_i) &&
-                        ((wdata_i == field_value) ||
-                         (wdata_i == field_value_invert));
+                        ((wdata_i == FieldEnValBit) ||
+                         (wdata_i == FieldEnValBitRevert));
 
   assign field_d = field_update ? wdata_i : field_q;
 
-  assign enable_o = (field_q == field_value);
+  assign enable_o = (field_q == FieldEnValBit);
 
 
 endmodule
