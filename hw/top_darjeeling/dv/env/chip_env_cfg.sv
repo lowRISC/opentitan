@@ -24,10 +24,6 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // Memory backdoor util instances for all memory instances in the chip.
   mem_bkdr_util mem_bkdr_util_h[chip_mem_e];
 
-  // If this is true, the environment will connect DMI over JTAG. If this is enabled through a
-  // plusarg, the test calls set_use_jtag_dmi() to set this bit as part of the build phase.
-  bit use_jtag_dmi = 0;
-
   // Creator SW config region in OTP that holds the AST config data. Randomized for open source.
   //
   // These are written via backdoor to the OTP region that starts at
@@ -231,15 +227,13 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     num_otbn_dmem_tiles = 1;
   endfunction
 
-  // Set the use_jtag_dmi field to be true, which will cause the chip environment to run a DMI agent
-  // over a JTAG connection.
+  // Configure the environment to run a DMI agent over a JTAG connection.
   //
-  // This should be called as part of build_phase in the test, before build_phase for the
-  // environment runs.
+  // To enable DMI over JTAG, the testbench or test must call this function before the chip
+  // environment's build_phase.
   function void set_use_jtag_dmi();
-    if (this.use_jtag_dmi) return;
+    if (m_jtag_riscv_agent_cfg.use_jtag_dmi) return;
 
-    this.use_jtag_dmi = 1;
     m_jtag_riscv_agent_cfg.use_jtag_dmi = 1;
 
     // Both, the regs only supports 1 outstanding.
