@@ -1,0 +1,77 @@
+
+plan my_vplan;
+
+
+    feature technical_specification;
+        feature overview;
+            feature comportability;
+            endfeature
+            feature features;
+                feature mode_sha2_my_ip;
+                    measure Group Measure_1;
+                        source = "group: my_ip_env_pkg::my_ip_env_cov::cfg_cg.my_ip_dis_x_sha_en";
+                    endmeasure
+                endfeature
+                feature digest_size;
+                    measure Group Measure_1;
+                        source = "group: my_ip_env_pkg::my_ip_env_cov::cfg_cg.digest_size";
+                    endmeasure
+                endfeature
+                feature key_legnth;
+                    at_least = 1;
+                    measure Group Measure_1;
+                        source = "group: my_ip_env_pkg::my_ip_env_cov::cfg_cg.key_length";
+                    endmeasure
+                endfeature
+                feature context_switching;
+                    measure Group Measure_1;
+                        source = "group: my_ip_env_pkg::my_ip_env_cov::save_and_restore_cg";
+                    endmeasure
+                endfeature
+                feature message_fifo_size;
+                endfeature
+            endfeature
+            feature description_;
+                owner = "Martin";
+                weight = 5;
+                description = "Test";
+                feature sha2_256;
+                    measure Group Measure_1;
+                        source = "group bin: my_ip_env_pkg::my_ip_env_cov::cfg_cg.digest_size.sha2_256";
+                    endmeasure
+                endfeature
+                feature sha2_384;
+                    owner = "Martin";
+                    description = "It supports SHA-2 256/384/512";
+                    measure Group Measure_1;
+                        source = "group bin: my_ip_env_pkg::my_ip_env_cov::cfg_cg.digest_size.sha2_384";
+                    endmeasure
+                endfeature
+                feature sha2_512;
+                    measure Group Measure_1;
+                        source = "group: my_ip_env_pkg::my_ip_env_cov::cfg_cg.digest_size.sha2_512";
+                    endmeasure
+                endfeature
+                feature sha2_x_keys;
+                    measure Group Measure_1;
+                        source = "group: my_ip_env_pkg::my_ip_env_cov::cfg_cg.key_length_x_digest_size";
+                    endmeasure
+                endfeature
+            endfeature
+        endfeature
+    endfeature
+    feature theory_of_operation;
+        feature block_diagram;
+            feature sha2_msg_padding;
+                measure Group Measure_1;
+                    source = "group: my_ip_env_pkg::my_ip_env_cov::cfg_cg.endian_swap";
+                endmeasure
+            endfeature
+            feature msg_length;
+                measure Group Measure_1;
+                    source = "group: my_ip_env_pkg::my_ip_env_cov::msg_len_cg";
+                endmeasure
+            endfeature
+        endfeature
+    endfeature
+endplan
