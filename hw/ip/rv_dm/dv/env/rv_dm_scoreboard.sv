@@ -434,7 +434,7 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
   // enabled, any TL request will respond with an error. This is what we expect, but the code in
   // cip_base_scoreboard fails because we're responding with an error to an access that would
   // otherwise be perfectly reasonable.
-  function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
+  protected function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
     if (!cfg.tl_err_prediction) begin
       return item.d_error;
     end
