@@ -46,5 +46,5 @@ targets:
       - files_dv
 % if has_ral:
     generate:
-      - ral
+      - "!chip_level ? (ral)"
 % endif
