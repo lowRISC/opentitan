@@ -1116,11 +1116,8 @@ class jtag_rv_debugger extends uvm_object;
           wait(cfg.in_reset);
           begin
             // TODO: Make this timeout controllable.
+            cfg.vif.wait_tck(100000);
 
-            longint unsigned timeout_ps = cfg.vif.tck_period_ps;
-            timeout_ps = timeout_ps * 100000;
-
-            #(timeout_ps * 1ps);
             req.timed_out = 1'b1;
             `uvm_info(`gfn, $sformatf("SBA req timed out: %0s",
                                       req.sprint(uvm_default_line_printer)), UVM_LOW)

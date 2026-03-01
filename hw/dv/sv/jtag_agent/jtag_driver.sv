@@ -44,8 +44,8 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     reset_internal_state();
 
     cfg.vif.tck_en <= 1'b0;
-    cfg.vif.tms <= 1'b0;
-    cfg.vif.tdi <= 1'b0;
+    cfg.vif._tms_internal <= 1'b0;
+    cfg.vif._tdi_internal <= 1'b0;
   endfunction
 
   // Turn on TCK in the jtag_if
@@ -118,7 +118,7 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
         // Send a TCK cycle with tms=0. If we were in Run-Test/Idle, this is a no-op. If we were in
         // Test-Logic-Reset, this steps to Run-Test/Idle. As a side-effect, this also lines us up
         // again with the negedge of tck. Drop out early if trst_n goes low.
-        cfg.vif.tms <= 1'b0;
+        cfg.vif._tms_internal <= 1'b0;
         @(posedge cfg.vif.tck);
         @(`HOST_CB);
         // Now drive the JTAG request itself.
