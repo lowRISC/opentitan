@@ -64,4 +64,4 @@ targets:
       - files_rtl
       - files_dv
     generate:
-      - ral
+      - "!chip_level ? (ral)"
