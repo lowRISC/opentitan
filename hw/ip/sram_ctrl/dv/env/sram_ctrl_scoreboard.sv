@@ -197,7 +197,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     return is_tl_err;
   endfunction
 
-  virtual function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
+  protected function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
     if (ral_name == cfg.sram_ral_name && get_sram_predict_tl_err(item, channel)) begin
       return 1;
     end
