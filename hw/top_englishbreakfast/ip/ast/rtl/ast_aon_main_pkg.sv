@@ -1,0 +1,1 @@
+../../../../top_earlgrey/ip/ast/rtl/ast_aon_main_pkg.sv

@@ -9,7 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:tlul
-      - lowrisc:prim:all
+      - lowrisc:prim_generic:all
       - lowrisc:prim:clock_buf
       - lowrisc:prim:clock_div
       - lowrisc:prim:clock_gating
@@ -29,8 +29,12 @@ filesets:
       - lowrisc:systems:top_englishbreakfast_ast_pkg
     files:
       - rtl/ast_reg_pkg.sv
+      - rtl/ast_pkg.sv
       - rtl/ast_bhv_pkg.sv
+      - rtl/ast_aon_main_pkg.sv
       - rtl/ast.sv
+      - rtl/ast_aon.sv
+      - rtl/ast_main.sv
       - rtl/ast_reg_top.sv
       - rtl/adc.sv
       - rtl/adc_ana.sv
@@ -48,7 +52,8 @@ filesets:
       - rtl/usb_clk.sv
       - rtl/usb_osc.sv
       - rtl/gfr_clk_mux2.sv
-      - rtl/ast_clks_byp.sv
+      - rtl/ast_clks_byp_aon.sv
+      - rtl/ast_clks_byp_main.sv
       - rtl/rglts_pdm_3p3v.sv
       - rtl/ast_pulse_sync.sv
       - rtl/ast_entropy.sv

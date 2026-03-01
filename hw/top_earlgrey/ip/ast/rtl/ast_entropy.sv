@@ -35,13 +35,10 @@ typedef enum logic [2-1:0] {
 
 erq_sm_e erq_sm;
 logic dev0_wready, dev0_ack;
-logic edn_ack, edn_req;
-logic [32-1:0] edn_bus;
+logic edn_req;
 
 // Pack/Un-pack
 assign entropy_req_o.edn_req = edn_req;
-assign edn_ack = entropy_rsp_i.edn_ack;
-assign edn_bus = entropy_rsp_i.edn_bus;
 
 always_ff @( posedge clk_ast_es_i, negedge rst_ast_es_ni ) begin
   if ( !rst_ast_es_ni ) begin
@@ -60,7 +57,7 @@ always_ff @( posedge clk_ast_es_i, negedge rst_ast_es_ni ) begin
       end
 
       ERQ_REQ0: begin
-        if ( edn_ack ) begin
+        if ( entropy_rsp_i.edn_ack ) begin
           edn_req <= 1'b0;
           erq_sm  <= ERQ_ACK0;
         end else begin
@@ -87,7 +84,7 @@ always_ff @( posedge clk_ast_es_i, negedge rst_ast_es_ni ) begin
   end
 end
 
-assign dev0_ack = edn_ack && ((erq_sm == ERQ_REQ0) || (erq_sm == ERQ_ACK0));
+assign dev0_ack = entropy_rsp_i.edn_ack && ((erq_sm == ERQ_REQ0) || (erq_sm == ERQ_ACK0));
 
 
 ////////////////////////////////////////
@@ -107,7 +104,7 @@ dev_entropy #(
   .dev_en_i ( dev0_en ),
   .dev_rate_i ( entropy_rate_i[EntropyRateWidth-1:0] ),
   .dev_ack_i ( dev0_ack ),
-  .dev_data_i ( edn_bus[32-1:0] ),
+  .dev_data_i ( entropy_rsp_i.edn_bus[32-1:0] ),
   .dev_wready_o ( dev0_wready ),
   .dev_data_o ( dev0_entropy )
 );

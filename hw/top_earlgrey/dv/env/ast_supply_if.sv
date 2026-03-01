@@ -36,7 +36,7 @@ interface ast_supply_if (
   localparam int MioInSysrstCtrlAonKey0In = 46;
 
   function static void force_vcaon_pok(bit value);
-    force u_ast.u_rglts_pdm_3p3v.vcaon_pok_h_o = value;
+    force u_ast.u_ast_aon.u_rglts_pdm_3p3v.vcaon_pok_h_o = value;
   endfunction
 
   // Create glitch in vcaon_pok_h_o some cycles after this is invoked. Hold vcaon_pok_h_o low for

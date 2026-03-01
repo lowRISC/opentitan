@@ -5,7 +5,6 @@
 // *Name: vcmain_pgd
 // *Module Description:  VCMAIN Power Good
 //############################################################################
-
 module vcmain_pgd (
   output logic vcmain_pok_o
 );
@@ -26,7 +25,7 @@ initial begin
   init_start = 1'b0;
 end
 
-always @( * ) begin
+always_ff @( * ) begin
   if ( init_start ) begin
     vcmain_pok_o <= 1'b0;
   end else if ( !init_start && gen_supp_a ) begin

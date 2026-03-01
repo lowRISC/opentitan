@@ -36,10 +36,10 @@ assign obs_ctrl_o = '{
 ////////////////////////////////////////
 // Memories Read-write Margins
 ////////////////////////////////////////
-assign dpram_rmf_o = 10'h000;
-assign dpram_rml_o = 10'h000;
-assign spram_rm_o  = 5'h00;
-assign sprgf_rm_o  = 5'h00;
-assign sprom_rm_o  = 5'h00;
+assign dpram_rmf_o = 12'h000;
+assign dpram_rml_o = 12'h000;
+assign spram_rm_o  = 6'h00;
+assign sprgf_rm_o  = 6'h00;
+assign sprom_rm_o  = 6'h00;
 
 endmodule : ast_dft
