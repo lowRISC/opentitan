@@ -285,6 +285,15 @@ bool test_main(void) {
       test_info_part(kFlashInfoPageIdIsoPart, kRandomData3, /*write_allowed=*/1,
                      /*read_allowed=*/1);
       break;
+    case kDifLcCtrlStateRaw:
+    case kDifLcCtrlStateTestLocked0:
+    case kDifLcCtrlStateTestLocked1:
+    case kDifLcCtrlStateTestLocked2:
+    case kDifLcCtrlStateTestLocked3:
+    case kDifLcCtrlStateTestLocked4:
+    case kDifLcCtrlStateTestLocked5:
+    case kDifLcCtrlStateTestLocked6:
+    case kDifLcCtrlStateTestLocked7:
     default:
       LOG_ERROR("Unexpected lc state 0x%x", lc_state);
   }

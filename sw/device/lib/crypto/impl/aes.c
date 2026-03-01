@@ -81,6 +81,7 @@ static status_t aes_key_construct(otcrypto_blinded_key_t *blinded_key,
 
   // Set the block cipher mode based on the key mode.
   otcrypto_key_mode_t blinded_key_mode_used = launder32(0);
+  OT_NO_SWITCH_ENUM_COVERAGE_START
   switch (blinded_key->config.key_mode) {
     case kOtcryptoKeyModeAesEcb:
       aes_key->mode = kAesCipherModeEcb;
@@ -110,6 +111,7 @@ static status_t aes_key_construct(otcrypto_blinded_key_t *blinded_key,
     default:
       return OTCRYPTO_BAD_ARGS;
   }
+  OT_NO_SWITCH_ENUM_COVERAGE_END
   // Check if we landed in the correct case statement. Use ORs for this to
   // avoid that multiple cases were executed.
   HARDENED_CHECK_EQ(launder32(blinded_key_mode_used),

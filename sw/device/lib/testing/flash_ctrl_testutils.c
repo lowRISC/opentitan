@@ -325,6 +325,20 @@ static const char *mubi_prop(multi_bit_bool_t val, const char *name) {
       return name;
     case kMultiBitBool4False:
       return "xx";
+    case kMultiBitBool8False:
+    case kMultiBitBool8True:
+    case kMultiBitBool12False:
+    case kMultiBitBool12True:
+    case kMultiBitBool16False:
+    case kMultiBitBool16True:
+    case kMultiBitBool20False:
+    case kMultiBitBool20True:
+    case kMultiBitBool24False:
+    case kMultiBitBool24True:
+    case kMultiBitBool28False:
+    case kMultiBitBool28True:
+    case kMultiBitBool32False:
+    case kMultiBitBool32True:
     default:
       return "uu";
   }

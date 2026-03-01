@@ -165,6 +165,9 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
       };
       TRY(otcrypto_sha2_256(input, &digest));
     } break;
+    case kDifOtpCtrlPartitionHwCfg0:
+    case kDifOtpCtrlPartitionHwCfg1:
+    case kDifOtpCtrlPartitionHwCfg2:
     default:
       return INVALID_ARGUMENT();
   }

@@ -288,6 +288,18 @@ static bool sw_read_lock_reg_offset(dif_otp_ctrl_partition_t partition,
 #else
 #error "dif_otp_ctrl does not support this top"
 #endif
+    case kDifOtpCtrlPartitionHwCfg0:
+    case kDifOtpCtrlPartitionHwCfg1:
+    case kDifOtpCtrlPartitionSecret0:
+    case kDifOtpCtrlPartitionSecret1:
+    case kDifOtpCtrlPartitionSecret2:
+#if defined(OPENTITAN_IS_DARJEELING)
+    case kDifOtpCtrlPartitionSecret3:
+#endif
+    case kDifOtpCtrlPartitionLifeCycle:
+    case kDifOtpCtrlPartitionDaiError:
+    case kDifOtpCtrlPartitionLciError:
+    case kDifOtpCtrlNumberOfCauses:
     default:
       return false;
   }
@@ -949,6 +961,14 @@ static bool get_digest_regs(dif_otp_ctrl_partition_t partition, ptrdiff_t *reg0,
 // Earlgrey only has 3 secret partitions.
 #else
 #error "dif_otp_ctrl does not support this top"
+#endif
+    case kDifOtpCtrlPartitionLifeCycle:
+    case kDifOtpCtrlPartitionDaiError:
+    case kDifOtpCtrlPartitionLciError:
+    case kDifOtpCtrlNumberOfCauses:
+#if defined(OPENTITAN_IS_DARJEELING)
+    case kDifOtpCtrlPartitionOwnershipSlotState:
+    case kDifOtpCtrlPartitionExtNvm:
 #endif
     default:
       return false;

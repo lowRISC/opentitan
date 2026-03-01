@@ -11,6 +11,7 @@ status_t ujson_ottf_dispatch(ujson_t *uj, test_command_t command) {
   if (uj == NULL) {
     return INVALID_ARGUMENT();
   }
+  OT_NO_SWITCH_ENUM_COVERAGE_START
   switch (command) {
     case kTestCommandMemRead32:
       RESP_ERR(uj, ujcmd_mem_read32(uj));
@@ -28,4 +29,5 @@ status_t ujson_ottf_dispatch(ujson_t *uj, test_command_t command) {
       return UNIMPLEMENTED();
   }
   return OK_STATUS();
+  OT_NO_SWITCH_ENUM_COVERAGE_END
 }

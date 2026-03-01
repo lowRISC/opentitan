@@ -360,6 +360,9 @@ static dif_result_t issue_data_phase(const dif_spi_host_t *spi_host,
                         segment->rx.width, kDifSpiHostDirectionRx,
                         last_segment);
       break;
+    case kDifSpiHostSegmentTypeOpcode:
+    case kDifSpiHostSegmentTypeAddress:
+    case kDifSpiHostSegmentTypeDummy:
     default:
       // Programming error (within this file).  We should never get here.
       // `issue_data_phase` should only get called for segment types which
@@ -431,6 +434,10 @@ dif_result_t dif_spi_host_transaction(const dif_spi_host_t *spi_host,
         spi_host_fifo_read_alias(spi_host, segment->bidir.rxbuf,
                                  (uint16_t)segment->bidir.length);
         break;
+      case kDifSpiHostSegmentTypeOpcode:
+      case kDifSpiHostSegmentTypeAddress:
+      case kDifSpiHostSegmentTypeDummy:
+      case kDifSpiHostSegmentTypeTx:
       default:
           /* do nothing */;
     }

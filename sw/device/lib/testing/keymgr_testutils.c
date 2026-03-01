@@ -366,6 +366,10 @@ status_t keymgr_testutils_max_key_version_get(const dif_keymgr_t *keymgr,
     case kDifKeymgrStateOwnerRootKey:
       *max_key_version = versions.owner_max_key_version;
       break;
+    case kDifKeymgrStateReset:
+    case kDifKeymgrStateInitialized:
+    case kDifKeymgrStateDisabled:
+    case kDifKeymgrStateInvalid:
     default:
       return INTERNAL();
   }

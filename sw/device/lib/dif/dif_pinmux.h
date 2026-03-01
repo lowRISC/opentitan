@@ -51,7 +51,6 @@ typedef enum dif_pinmux_pad_kind {
    * or output, bypassing the multiplexer matrix.
    */
   kDifPinmuxPadKindDio,
-  kDifPinmuxPadKindCount,
 } dif_pinmux_pad_kind_t;
 
 /**
@@ -196,7 +195,6 @@ typedef enum dif_pinmux_sleep_mode {
    * Keep last driven value (including high-Z).
    */
   kDifPinmuxSleepModeKeep,
-  kDifPinmuxSleepModeCount,
 } dif_pinmux_sleep_mode_t;
 
 /**
@@ -227,7 +225,6 @@ typedef enum dif_pinmux_wakeup_mode {
    * `dif_pinmux_wakeup_timed_config_t`, `counter_threshold` field.
    */
   kDifPinmuxWakeupModeTimedLow,
-  kDifPinmuxWakeupModeCount,
 } dif_pinmux_wakeup_mode_t;
 
 /**

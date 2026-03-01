@@ -359,6 +359,9 @@ dif_result_t dif_lc_ctrl_configure(const dif_lc_ctrl_t *lc,
       target = LC_CTRL_TRANSITION_TARGET_STATE_VALUE_SCRAP;
       break;
 
+    case kDifLcCtrlStatePostTransition:
+    case kDifLcCtrlStateEscalate:
+    case kDifLcCtrlStateInvalid:
     default:
       return kDifBadArg;
   }

@@ -363,6 +363,7 @@ dif_result_t dif_pinmux_pad_from_dt_pad(dt_pad_t pad,
       *type_out = kDifPinmuxPadKindDio;
       *index_out = dt_pad_dio_pad_index(pad);
       return kDifOk;
+    case kDtPadTypeUnspecified:
     default:
       return kDifError;
   }

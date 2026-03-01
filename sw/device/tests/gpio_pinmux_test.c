@@ -38,6 +38,9 @@ status_t command_processor(ujson_t *uj) {
       case kTestCommandPinmuxConfig:
         RESP_ERR(uj, pinmux_config(uj, &pinmux));
         break;
+      case kTestCommandChipStartup:
+      case kTestCommandEnterNormalSleep:
+      case kTestCommandEnterDeepSleep:
       default:
         LOG_ERROR("Unrecognized command: %d", command);
         RESP_ERR(uj, INVALID_ARGUMENT());

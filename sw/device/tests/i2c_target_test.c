@@ -173,6 +173,11 @@ static status_t recv_write_transfer(dif_i2c_t *i2c, i2c_transfer_start_t *txn,
       txn->stop = false;
       // Repeated start, return the address of the next operation.
       return OK_STATUS(txn->address);
+    case kDifI2cSignalNone:
+    case kDifI2cSignalStart:
+    case kDifI2cSignalNack:
+    case kDifI2cSignalNackStart:
+    case kDifI2cSignalNackStop:
     default:
       return INTERNAL();
   }

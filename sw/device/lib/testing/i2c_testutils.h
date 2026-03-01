@@ -127,8 +127,10 @@ typedef enum i2c_pinmux_platform_id {
   I2cPinmuxPlatformIdHyper310 = 0,
   I2cPinmuxPlatformIdDvsim,
   I2cPinmuxPlatformIdCw310Pmod,
-  I2cPinmuxPlatformIdCount,
+  I2cPinmuxPlatformIdLast = I2cPinmuxPlatformIdCw310Pmod,
 } i2c_pinmux_platform_id_t;
+
+enum { I2cPinmuxPlatformIdCount = I2cPinmuxPlatformIdLast + 1 };
 
 /**
  * Connect the i2c pins to mio pins via pinmux based on the platform the test is
