@@ -62,6 +62,8 @@ targets:
       - tool_veriblelint ? (files_veriblelint_waiver)
       - files_rtl
       - files_dv
+    flags:
+      chip_level: true
 
   sim:
     <<: *default_target
