@@ -35,10 +35,10 @@ use ot_certs::x509::parse_certificate;
 use ot_hal::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 use perso_tlv_lib::perso_tlv_get_field;
 use perso_tlv_lib::{CertHeader, CertHeaderType, ObjHeader, ObjHeaderType, ObjType};
-use ujson_lib::UjsonPayloads;
 use ujson_lib::provisioning_data::{
     LcTokenHash, ManufCertgenInputs, ManufFtIndividualizeData, PersoBlob, SerdesSha256Hash,
 };
+use ujson_lib::*;
 use util_lib::hash_lc_token;
 use util_lib::response::*;
 
@@ -219,7 +219,7 @@ fn send_rma_unlock_token_hash(
     )?;
     ujson_payloads.dut_in.insert(
         "FT_PERSO_RMA_TOKEN_HASH".to_string(),
-        rma_token_hash.send_with_crc(spi_console)?,
+        rma_token_hash.send_with_padding(spi_console, LC_TOKEN_HASH_SERIALIZED_MAX_SIZE)?,
     );
     Ok(())
 }
@@ -342,7 +342,8 @@ fn provision_certificates(
     let t0 = Instant::now();
     ujson_payloads.dut_in.insert(
         "FT_PERSO_CERTGEN_INPUTS".to_string(),
-        perso_certgen_inputs.send(spi_console)?,
+        perso_certgen_inputs
+            .send_with_padding(spi_console, MANUF_CERTGEN_INPUTS_SERIALIZED_MAX_SIZE)?,
     );
     response.stats.log_elapsed_time("perso-certgen-inputs", t0);
 
@@ -536,7 +537,7 @@ fn provision_certificates(
     let _ = UartConsole::wait_for(spi_console, r"Importing endorsed certificates ...", timeout)?;
     ujson_payloads.dut_in.insert(
         "FT_PERSO_DATA_IN".to_string(),
-        manuf_perso_data_back.send(spi_console)?,
+        manuf_perso_data_back.send_with_padding(spi_console, PERSO_BLOB_SERIALIZED_MAX_SIZE)?,
     );
     let _ = UartConsole::wait_for(spi_console, r"Finished importing certificates.", timeout)?;
     response.stats.log_elapsed_time("perso-import-certs", t0);

@@ -28,6 +28,7 @@ void ujson_crc32_reset(ujson_t *uj) { crc32_init(&uj->crc32); }
 uint32_t ujson_crc32_finish(ujson_t *uj) { return crc32_finish(&uj->crc32); }
 
 status_t ujson_putbuf(ujson_t *uj, const char *buf, size_t len) {
+  uj->str_size += len;
   crc32_add(&uj->crc32, buf, len);
   return uj->putbuf(uj->io_context, buf, len);
 }
@@ -48,6 +49,7 @@ status_t ujson_getc(ujson_t *uj) {
     uj->buffer = -1;
     return OK_STATUS(buffer);
   } else {
+    uj->str_size++;
     status_t s = uj->getc(uj->io_context);
     if (!status_err(s)) {
       crc32_add8(&uj->crc32, (uint8_t)s.value);
