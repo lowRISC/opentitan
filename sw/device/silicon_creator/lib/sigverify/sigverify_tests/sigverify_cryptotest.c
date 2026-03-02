@@ -172,6 +172,8 @@ status_t process_cmd(ujson_t *uj) {
       case kCryptotestCommandEcdsa:
         RESP_ERR(uj, sigverify_ecdsa_process_command(uj));
         break;
+      case kCryptotestCommandQuit:
+        return OK_STATUS(0);
       default:
         LOG_ERROR("Unsupported command: %d", cmd);
         RESP_ERR(uj, INVALID_ARGUMENT());
