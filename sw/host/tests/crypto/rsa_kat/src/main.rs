@@ -256,6 +256,8 @@ fn test_rsa(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
             run_rsa_testcase(rsa_test, opts, &spi_console_device)?;
         }
     }
+    CryptotestCommand::Quit.send(&spi_console_device)?;
+    let _ = UartConsole::wait_for(&spi_console_device, r"PASS!|FAIL!", opts.timeout * 10)?;
     Ok(())
 }
 
