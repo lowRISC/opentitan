@@ -6,6 +6,11 @@
 ![](https://dashboards.lowrisc.org/badges/dv/otbn/functional.svg)
 ![](https://dashboards.lowrisc.org/badges/dv/otbn/code.svg)
 
+> OTBN is currently under development as new PQC related features are added.
+> This is indicated by the development stages (see [`otbn.hjson`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/otbn/data/otbn.hjson) and [here](https://opentitan.org/book/doc/project_governance/development_stages.html)).
+> As of this the documentation can slightly differ from the current RTL / simulator implementation.
+> The documentation for the OTBN version with design stage D2S and verification stage V2S (OTBN v1.1.0) can be found under the Earl Grey v1.0.0 documentation [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/otbn/index.html).
+
 # Overview
 
 This document specifies functionality of the OpenTitan Big Number Accelerator, or OTBN.
