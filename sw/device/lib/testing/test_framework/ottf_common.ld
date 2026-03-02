@@ -251,9 +251,14 @@ SECTIONS {
    * region of an image extends until the end, these sections are placed after
    * all other sections and are NOLOAD so that they don't appear in the binary
    * and therefore don't end up being covered by the signature.
+   *
+   * The region is always allocated at the end of the flash data bank A.
+   * The eflash region is used instead of ottf_flash, as the latter might
+   * point to a virtual address space, whereas the library requires
+   * physical eflash addresses.
    */
    _non_volatile_scratch_size = DEFINED(no_ottf_nv_scratch) ? 0 : 20480;
-   _non_volatile_scratch_end = ORIGIN(ottf_flash) + _ottf_size;
+   _non_volatile_scratch_end = ORIGIN(eflash) + LENGTH(eflash) / 2;
    _non_volatile_scratch_start = _non_volatile_scratch_end - _non_volatile_scratch_size;
 
    _non_volatile_counter_size = DEFINED(no_ottf_nv_counter) ? 0 : 2048;
@@ -286,25 +291,25 @@ SECTIONS {
     KEEP(*(.non_volatile_counter_3))
     KEEP(*(.non_volatile_counter_3.*))
     . = ABSOLUTE(_non_volatile_counter_3_end);
-  } > ottf_flash :scratch_segment
+  } > eflash :scratch_segment
 
   .non_volatile_counter_2 _non_volatile_counter_2_start (NOLOAD) : ALIGN(2048) {
     KEEP(*(.non_volatile_counter_2))
     KEEP(*(.non_volatile_counter_2.*))
     . = ABSOLUTE(_non_volatile_counter_2_end);
-  } > ottf_flash
+  } > eflash
 
   .non_volatile_counter_1 _non_volatile_counter_1_start (NOLOAD) : ALIGN(2048) {
     KEEP(*(.non_volatile_counter_1))
     KEEP(*(.non_volatile_counter_1.*))
     . = ABSOLUTE(_non_volatile_counter_1_end);
-  } > ottf_flash
+  } > eflash
 
   .non_volatile_counter_0 _non_volatile_counter_0_start (NOLOAD) : ALIGN(2048) {
     KEEP(*(.non_volatile_counter_0))
     KEEP(*(.non_volatile_counter_0.*))
     . = ABSOLUTE(_non_volatile_counter_0_end);
-  } > ottf_flash
+  } > eflash
 
   /**
    * Non-volatile scratch area in flash.
@@ -315,7 +320,7 @@ SECTIONS {
     KEEP(*(.non_volatile_scratch.*))
     . = ABSOLUTE(_non_volatile_scratch_end);
     end_of_non_volatile_scratch = . ;
-  } > ottf_flash
+  } > eflash
 
   INCLUDE sw/device/info_sections.ld
 }
