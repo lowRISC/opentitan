@@ -7,9 +7,12 @@ use clap::Parser;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
+use cryptotest_commands::commands::CryptotestCommand;
+
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::test_utils::init::InitializeTest;
+use opentitanlib::test_utils::rpc::ConsoleSend;
 use opentitanlib::uart::console::UartConsole;
 
 mod cshake;
@@ -213,6 +216,8 @@ fn run<R: std::io::Read, W: std::io::Write>(
             }
         }
     }
+    CryptotestCommand::Quit.send(&spi_console_device)?;
+    let _ = UartConsole::wait_for(&spi_console_device, r"PASS!|FAIL!", opts.timeout * 10)?;
     Ok(())
 }
 
