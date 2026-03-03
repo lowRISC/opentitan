@@ -44,6 +44,9 @@ module rv_timer_core_assert_fpv # (
   TickCountIncreases_A : assert property (prescaler_count < prescaler |=>
                                           prescaler_count == $past(prescaler_count) + 1);
 
+  // Tick should not assert when inactive
+  TickLowWhenInactive_A : assert property (disable iff (!rst_ni) !active |-> !tick);
+
   // Tick set means prescaler equals the count.
   // TickSet_A checks that if the RTL has tick set, then our internal logic must be equal to the
   // prescaler max and vice-versa
@@ -91,4 +94,11 @@ module rv_timer_core_assert_fpv # (
     $rose(active) && $rose(intr[fpv_timer_idx]) |-> mtime >= mtimecmp[fpv_timer_idx];
   endproperty
   InterruptRaiseAndActiveRaise_A: assert property (InterruptRaiseAndActiveRaise_p);
+
+  // Check interrupt is low when inactive or interrupt condition is not met
+  property InterruptLowWhenNotExpired_p;
+    !active || mtime < mtimecmp[fpv_timer_idx] |-> intr[fpv_timer_idx] == '0;
+  endproperty
+  InterruptLowWhenNotExpired_A: assert property (InterruptLowWhenNotExpired_p);
+  
 endmodule
