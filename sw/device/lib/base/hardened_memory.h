@@ -97,8 +97,11 @@ hardened_bool_t hardened_memeq(const uint32_t *lhs, const uint32_t *rhs,
  * Constant time memeq implementation that can also handle non 32-bit aligned
  * buffers.
  *
- * Important: not hardened against SCA leakage, only guarantees constant time
- * execution.
+ * SCA protection is provided by choosing a random start index for the
+ * comparison.
+ *
+ * CAUTION! This function is not considered as secure as `hardened_memeq` due to
+ * the byte-sized memory accesses vs. 32b word accesses.
  *
  * @param lhs The first buffer to compare.
  * @param rhs The second buffer to compare.
