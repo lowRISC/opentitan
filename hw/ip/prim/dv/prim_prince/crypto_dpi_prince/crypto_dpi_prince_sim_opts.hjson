@@ -18,5 +18,10 @@
       name: xcelium_crypto_dpi_prince_build_opts
       build_opts: ["-I{build_dir}/fusesoc-work/src/{crypto_prince_ref_src_dir}"]
     }
+
+    {
+      name: z01x_crypto_dpi_prince_build_opts
+      build_opts: ["-CFLAGS -I{build_dir}/fusesoc-work/src/{crypto_prince_ref_src_dir}"]
+    }
   ]
 }
