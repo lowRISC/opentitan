@@ -133,6 +133,8 @@ module otbn_alu_bignum
   output logic [ExtWLEN-1:0]          ispr_acc_wr_data_intg_o,
   output logic                        ispr_acc_wr_en_o,
 
+  output logic [ExtWLEN-1:0]          ispr_mod_intg_o,
+
   output logic                        reg_intg_violation_err_o,
 
   input  logic                        sec_wipe_mod_urnd_i,
@@ -463,6 +465,9 @@ module otbn_alu_bignum
       default:    mod_no_intg_q_replicated = mod_no_intg_q;
     endcase
   end
+
+  // Output current MOD value towards BN MAC
+  assign ispr_mod_intg_o = mod_intg_q;
 
   /////////
   // ACC //

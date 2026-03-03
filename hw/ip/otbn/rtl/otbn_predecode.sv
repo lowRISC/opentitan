@@ -21,7 +21,7 @@ module otbn_predecode
   output rf_bignum_predec_t        rf_bignum_predec_o,
   output alu_bignum_predec_t       alu_bignum_predec_o,
   output ispr_bignum_predec_t      ispr_bignum_predec_o,
-  output mac_bignum_predec_t       mac_bignum_predec_o,
+  output mac_bignum_predec_t       mac_bignum_predec_raw_o,
   output logic                     lsu_addr_en_predec_o,
   output ctrl_flow_predec_t        ctrl_flow_predec_o,
   output logic [ImemAddrWidth-1:0] ctrl_flow_target_predec_o
@@ -99,8 +99,21 @@ module otbn_predecode
   logic alu_bignum_trn_en;
   logic alu_bignum_trn_is_trn1;
 
-  logic mac_bignum_op_en;
-  logic mac_bignum_acc_rd_en;
+  // BN MAC static control signals
+  logic                  mac_bignum_op_en;
+  logic                  mac_bignum_is_vec;
+  logic                  mac_bignum_is_mod;
+  logic                  mac_bignum_is_lane;
+  logic [2:0]            mac_bignum_lane_index;
+  logic [1:0]            mac_bignum_op_a_qw_sel;
+  logic [2:0]            mac_bignum_op_b_elem0_sel;
+  logic [2:0]            mac_bignum_op_b_elem1_sel;
+  logic                  mac_bignum_elen_raw;
+  mac_elen_e             mac_bignum_elen;
+  logic [VLEN/QWLEN-1:0] mac_bignum_adder_carry_sel;
+
+  // Fully instruction-static BN MAC blankers
+  logic mac_bignum_acc_add_en;
 
   logic ispr_rd_en;
   logic ispr_wr_en;
@@ -168,6 +181,10 @@ module otbn_predecode
 
   assign flags_keep = ~(flags_adder_update | flags_logic_update | flags_mac_update | flags_ispr_wr);
 
+  // BN MAC parsing
+  assign mac_bignum_elen_raw   = imem_rdata_i[25];
+  assign mac_bignum_lane_index = imem_rdata_i[30:28];
+
   always_comb begin
     rf_ren_a_base   = 1'b0;
     rf_ren_b_base   = 1'b0;
@@ -211,8 +228,16 @@ module otbn_predecode
     flags_mac_update   = '0;
     flags_ispr_wr      = '0;
 
-    mac_bignum_op_en     = 1'b0;
-    mac_bignum_acc_rd_en = 1'b0;
+    mac_bignum_op_en           = 1'b0;
+    mac_bignum_is_vec          = 1'b0;
+    mac_bignum_is_mod          = 1'b0;
+    mac_bignum_is_lane         = 1'b0;
+    mac_bignum_op_a_qw_sel     = '0;
+    mac_bignum_op_b_elem0_sel  = '0;
+    mac_bignum_op_b_elem1_sel  = '0;
+    mac_bignum_elen            = MacElen64;
+    mac_bignum_acc_add_en      = 1'b0;
+    mac_bignum_adder_carry_sel = '0;
 
     ispr_rd_en = 1'b0;
     ispr_wr_en = 1'b0;
@@ -404,7 +429,7 @@ module otbn_predecode
         // Bignum vectorized insn //
         ////////////////////////////
         InsnOpcodeBignumVec: begin
-          // Some instructions of this opcode are handled in the Bignum MAC.
+          // The following instructions of this opcode are handled in the Bignum MAC.
           // 3'b011 is BN.MULV/BN.MULVL
           // 3'b100 is BN.MULVM/BN.MULVML
 
@@ -488,11 +513,23 @@ module otbn_predecode
                 default: alu_bignum_alu_elen = AluElen256;
               endcase
             end
-            3'b011: begin
-              // BN.MULV/BN.MULVL - not implemented
-            end
+            3'b011,
             3'b100: begin
-              // BN.MULVM/BN.MULVML - not implemented
+              // BN.MULV/BN.MULVL/BN.MULVM/BN.MULVML
+              rf_ren_a_bignum    = 1'b1;
+              rf_ren_b_bignum    = 1'b1;
+              rf_we_bignum       = 1'b1;
+              mac_bignum_op_en   = 1'b1;
+              mac_bignum_is_vec  = 1'b1;
+              mac_bignum_is_mod  = imem_rdata_i[14:12] == 3'b100;
+              mac_bignum_is_lane = imem_rdata_i[27];
+
+              // An invalid choice will raise an illegal insn error in the decoder.
+              // Predecode invalid choices as default ELEN.
+              unique case (mac_bignum_elen_raw)
+                1'b0:    mac_bignum_elen = MacElen32;
+                default: mac_bignum_elen = MacElen64;
+              endcase
             end
             3'b110: begin
               // BN.PACK/BN.UNPK
@@ -517,8 +554,6 @@ module otbn_predecode
               end
             end
             default: ;
-              // 3'b001 reserved for future use
-              // 3'b010 reserved for future use
           endcase
         end
 
@@ -652,9 +687,13 @@ module otbn_predecode
         ////////////////////////////////////////////
 
         InsnOpcodeBignumMulqacc: begin
-          rf_ren_a_bignum  = 1'b1;
-          rf_ren_b_bignum  = 1'b1;
-          mac_bignum_op_en = 1'b1;
+          rf_ren_a_bignum         = 1'b1;
+          rf_ren_b_bignum         = 1'b1;
+          mac_bignum_op_en        = 1'b1;
+
+          mac_bignum_op_a_qw_sel    = imem_rdata_i[26:25];
+          mac_bignum_op_b_elem0_sel = imem_rdata_i[28:27] * 2;
+          mac_bignum_op_b_elem1_sel = imem_rdata_i[28:27] * 2 + 1;
 
           // BN.MULQACC.WO/BN.MULQACC.SO
           if (imem_rdata_i[30] == 1'b1 || imem_rdata_i[29] == 1'b1) begin
@@ -662,10 +701,8 @@ module otbn_predecode
             flags_mac_update[flag_group] = 1'b1;
           end
 
-          if (imem_rdata_i[12] == 1'b0) begin
-            // zero_acc not set
-            mac_bignum_acc_rd_en = 1'b1;
-          end
+          // Clear ACC by disabling the forwarding.
+          mac_bignum_acc_add_en = ~imem_rdata_i[12];
         end
 
         default: ;
@@ -684,10 +721,7 @@ module otbn_predecode
     //     shift amount | shifter mask
     //      0           | 32'b1111....1111
     //      1           | 32'b0111....1111
-    //      2           | 32'b0011....1111
     //      ...         | ...
-    //      29          | 32'b0000....0111
-    //      30          | 32'b0000....0011
     //      31          | 32'b0000....0001
       unique case (alu_bignum_alu_elen)
         AluElen32: begin
@@ -703,6 +737,17 @@ module otbn_predecode
           alu_bignum_shift_mask      = {32{1'b1}};
         end
       endcase
+
+      // Set the carry propagation for the vectorized adder in the modulo reduction path.
+      // The adder is 256b wide and operates on different widths depending on the ELEN.
+      // Modulo reduction for 32b elements: Adder operates on two 64b elements in parallel
+      // Regular 64b multiplication: Adder operates on 256b to accumulate the ACC value.
+      unique case (mac_bignum_elen)
+        MacElen32: mac_bignum_adder_carry_sel = 4'b1111;
+        MacElen64: mac_bignum_adder_carry_sel = 4'b0000;
+        default:   mac_bignum_adder_carry_sel = 4'b0000;
+      endcase
+
     end
   end
 
@@ -770,8 +815,28 @@ module otbn_predecode
   assign alu_bignum_predec_o.shift_dir[AluShiftDirRight] = alu_bignum_shift_en &
                                                            alu_bignum_shift_right;
 
-  assign mac_bignum_predec_o.op_en     = mac_bignum_op_en;
-  assign mac_bignum_predec_o.acc_rd_en = mac_bignum_acc_rd_en;
+  assign mac_bignum_predec_raw_o.op_en               = mac_bignum_op_en;
+  assign mac_bignum_predec_raw_o.is_vec              = mac_bignum_is_vec;
+  assign mac_bignum_predec_raw_o.is_mod              = mac_bignum_is_mod;
+  assign mac_bignum_predec_raw_o.is_lane             = mac_bignum_is_lane;
+  assign mac_bignum_predec_raw_o.lane_index          = mac_bignum_lane_index;
+  assign mac_bignum_predec_raw_o.elen                = mac_bignum_elen;
+  assign mac_bignum_predec_raw_o.adder_carry_sel     = mac_bignum_adder_carry_sel;
+  assign mac_bignum_predec_raw_o.acc_add_en          = mac_bignum_acc_add_en;
+  assign mac_bignum_predec_raw_o.op_a_qw_sel         = mac_bignum_op_a_qw_sel;
+  assign mac_bignum_predec_raw_o.op_b_elem0_sel      = mac_bignum_op_b_elem0_sel;
+  assign mac_bignum_predec_raw_o.op_b_elem1_sel      = mac_bignum_op_b_elem1_sel;
+  // The following predec signals are overwritten by the FSM.
+  assign mac_bignum_predec_raw_o.mul_op_a_tmp_sel    = '0;
+  assign mac_bignum_predec_raw_o.mul_op_b_sel        = MulOpB;
+  assign mac_bignum_predec_raw_o.mul_add_en          = '0;
+  assign mac_bignum_predec_raw_o.c_add_en            = '0;
+  assign mac_bignum_predec_raw_o.add_mod_en          = '0;
+  assign mac_bignum_predec_raw_o.acc_merger_en       = '0;
+  assign mac_bignum_predec_raw_o.mul_shift_en        = '0;
+  assign mac_bignum_predec_raw_o.mul_merger_en       = '0;
+  assign mac_bignum_predec_raw_o.add_res_en          = '0;
+  assign mac_bignum_predec_raw_o.operation_valid_raw = '0;
 
   assign insn_rs1 = imem_rdata_i[19:15];
   assign insn_rs2 = imem_rdata_i[24:20];
