@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
+#include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/include/drbg.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/randomness_quality.h"
@@ -29,6 +30,7 @@ static const uint32_t kExpOutput[16] = {
 static const otcrypto_const_byte_buf_t kEmptyBuffer = {
     .data = NULL,
     .len = 0,
+    .checksum = kOtcryptoInitIntegrityChecksum,
 };
 
 static status_t kat_test(void) {
@@ -67,10 +69,9 @@ static status_t random_test(void) {
 
   // Generate a relatively large amount of output data.
   uint32_t output_data[1024];
-  otcrypto_word32_buf_t output = {
-      .data = output_data,
-      .len = ARRAYSIZE(output_data),
-  };
+  otcrypto_word32_buf_t output = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, output_data, ARRAYSIZE(output_data));
+
   TRY(otcrypto_drbg_generate(/*additional_input=*/kEmptyBuffer, output));
 
   // Run a basic randomness-quality check on the output.

@@ -35,10 +35,8 @@ static status_t run_test_vector(void) {
   size_t digest_len = current_test_vector->digest.len;
   // Allocate the buffer for the maximum digest size (which comes from SHA-512).
   uint32_t act_tag[512 / 32];
-  otcrypto_word32_buf_t tag_buf = {
-      .data = act_tag,
-      .len = digest_len,
-  };
+  otcrypto_word32_buf_t tag_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, act_tag, digest_len);
   otcrypto_hash_digest_t hash_digest = {
       .data = act_tag,
       .len = digest_len,

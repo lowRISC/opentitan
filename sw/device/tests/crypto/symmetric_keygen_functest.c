@@ -26,10 +26,6 @@ static const randomness_quality_significance_t kSignificance =
 
 // Personalization data for testing.
 static const uint8_t kPersonalizationData[5] = {0xf0, 0xf1, 0xf2, 0xf3, 0xf4};
-static const otcrypto_const_byte_buf_t kPersonalization = {
-    .data = kPersonalizationData,
-    .len = sizeof(kPersonalizationData),
-};
 
 // Represents a 192-bit AES-CBC key.
 static const otcrypto_key_config_t kAesKeyConfig = {
@@ -77,6 +73,10 @@ static status_t entropy_complex_init_test(void) {
  * @param config Key configuration.
  */
 static status_t basic_keygen_test(otcrypto_key_config_t config) {
+  const otcrypto_const_byte_buf_t kPersonalization =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, kPersonalizationData,
+                        sizeof(kPersonalizationData));
+
   // Allocate and zeroize keyblob.
   size_t key_share_words = config.key_length / sizeof(uint32_t);
   uint32_t keyblob[key_share_words * 2];
@@ -121,6 +121,9 @@ static status_t kmac_keygen_test(void) {
 }
 
 static status_t generate_multiple_keys_test(void) {
+  const otcrypto_const_byte_buf_t kPersonalization =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, kPersonalizationData,
+                        sizeof(kPersonalizationData));
   // Create a double-length blob for two keys.
   size_t key_share_words = kAesKeyConfig.key_length / sizeof(uint32_t);
   uint32_t keyblob_buffer[key_share_words * 4];

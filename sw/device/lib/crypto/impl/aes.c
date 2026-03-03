@@ -257,6 +257,9 @@ static status_t get_block(otcrypto_const_byte_buf_t input,
     HARDENED_TRY(randomized_bytecopy(block->data,
                                      &input.data[index * kAesBlockNumBytes],
                                      kAesBlockNumBytes));
+
+    // Verify input buffer
+    HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&input));
     return OTCRYPTO_OK;
   }
   HARDENED_CHECK_GE(launder32(index), num_full_blocks);
@@ -521,16 +524,14 @@ otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
 
     // Create the input buffer that contains the cipher_output of the first AES
     // operation.
-    otcrypto_const_byte_buf_t cipher_input_redundant = {
-        .data = cipher_output.data,
-        .len = cipher_output.len,
-    };
+    otcrypto_const_byte_buf_t cipher_input_redundant = OTCRYPTO_MAKE_BUF(
+        otcrypto_const_byte_buf_t, cipher_output.data, cipher_output.len);
+
     // Create the output buffer.
     uint32_t output_buf[len_bytes / sizeof(uint32_t)];
-    otcrypto_byte_buf_t cipher_input_recomputed = {
-        .data = (unsigned char *)output_buf,
-        .len = len_bytes,
-    };
+    otcrypto_byte_buf_t cipher_input_recomputed = OTCRYPTO_MAKE_BUF(
+        otcrypto_byte_buf_t, (unsigned char *)output_buf, len_bytes);
+
     HARDENED_TRY(otcrypto_aes_impl(
         key, iv_redundant, aes_mode, aes_operation_inverse,
         cipher_input_redundant, aes_padding, cipher_input_recomputed));
@@ -540,6 +541,11 @@ otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
         consttime_memeq_byte(cipher_input.data, output_buf, cipher_input.len),
         kHardenedBoolTrue);
   }
+
+  // Verify given buffers
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&cipher_input));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&iv));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&cipher_output));
 
   return OTCRYPTO_OK;
 }

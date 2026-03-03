@@ -79,13 +79,11 @@ static status_t run_test(const uint32_t *key, size_t key_len,
   blinded_key.checksum = integrity_blinded_checksum(&blinded_key);
 
   uint32_t act_tag[kTagLenWords];
-  otcrypto_word32_buf_t tag_buf = {
-      .data = act_tag,
-      .len = ARRAYSIZE(act_tag),
-  };
+  otcrypto_word32_buf_t tag_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, act_tag, ARRAYSIZE(act_tag));
 
   TRY(otcrypto_hmac(&blinded_key, msg, tag_buf));
-  TRY_CHECK_ARRAYS_EQ(act_tag, exp_tag, kTagLenWords);
+  TRY_CHECK_ARRAYS_EQ(act_tag.data, exp_tag, kTagLenWords);
   return OK_STATUS();
 }
 
@@ -98,10 +96,9 @@ static status_t run_test(const uint32_t *key, size_t key_len,
  */
 static status_t simple_test(void) {
   const char plaintext[] = "Test message.";
-  otcrypto_const_byte_buf_t msg_buf = {
-      .data = (unsigned char *)plaintext,
-      .len = sizeof(plaintext) - 1,
-  };
+  otcrypto_const_byte_buf_t msg_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (unsigned char *)plaintext,
+                        sizeof(plaintext) - 1);
   const uint32_t exp_tag[] = {
       0xe069ba2f, 0x9751a19b, 0x378df8af, 0x00eeaa68, 0x5789b69c, 0xcd1dc363,
       0x6d14d0f1, 0xd062444e, 0xed683c1a, 0xe1cee642, 0xa44b7be6, 0x0518dd8b,
@@ -121,10 +118,8 @@ static status_t empty_test(void) {
       0xe97192b6, 0xa45d5f4f, 0xb2cd3703, 0x2b41d3f2, 0x7b8b566d, 0x716fa851,
       0x4f45f809, 0x6c27343c, 0x985b4af4, 0xabe37c99, 0x0b17598f, 0xf9711f6e,
   };
-  otcrypto_const_byte_buf_t msg_buf = {
-      .data = NULL,
-      .len = 0,
-  };
+  otcrypto_const_byte_buf_t msg_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
   return run_test(kBasicTestKey, sizeof(kBasicTestKey), msg_buf, exp_tag);
 }
 
@@ -137,10 +132,9 @@ static status_t empty_test(void) {
  */
 static status_t long_key_test(void) {
   const char plaintext[] = "Test message.";
-  otcrypto_const_byte_buf_t msg_buf = {
-      .data = (unsigned char *)plaintext,
-      .len = sizeof(plaintext) - 1,
-  };
+  otcrypto_const_byte_buf_t msg_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (unsigned char *)plaintext,
+                        sizeof(plaintext) - 1);
   const uint32_t exp_tag[] = {
       0x2d6accaa, 0x92eead9a, 0x7c46788c, 0xb081a802, 0x6b8afc0a, 0xcf094d00,
       0x92a4b805, 0x5c5f1a65, 0x98bcd4f8, 0xbdb29885, 0x72f05431, 0xc08db439,

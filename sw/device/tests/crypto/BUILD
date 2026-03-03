@@ -99,6 +99,7 @@ opentitan_test(
     deps = [
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl:aes",
+        "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -121,6 +122,7 @@ opentitan_test(
     deps = [
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl:aes",
+        "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:keymgr_testutils",
@@ -239,6 +241,7 @@ opentitan_test(
     deps = [
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl:drbg",
+        "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:randomness_quality",
         "//sw/device/lib/testing/test_framework:ottf_main",

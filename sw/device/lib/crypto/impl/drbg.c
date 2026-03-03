@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
+#include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 
@@ -57,6 +58,8 @@ static status_t seed_material_construct(
   size_t unset_bytes = nwords * sizeof(uint32_t) - value.len;
   memset(((unsigned char *)seed_material->data) + value.len, 0, unset_bytes);
 
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&value));
+
   return OTCRYPTO_OK;
 }
 
@@ -93,6 +96,8 @@ static otcrypto_status_t seed_material_xor(
 
   // XOR with seed value.
   HARDENED_TRY(hardened_xor_in_place(seed_material->data, value_words, nwords));
+
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&value));
 
   return OTCRYPTO_OK;
 }
