@@ -7,6 +7,7 @@
 .globl xof_shake128_init
 .globl xof_shake256_init
 .globl xof_absorb
+.globl xof_squeeze32
 .globl xof_finish
 
 /*
@@ -268,5 +269,47 @@ xof_process:
   /* Poll until the first 64-bit digest is ready to be read out. */
   addi x24, x0, KMAC_IF_STATUS_DIGEST_VALID
   jal x1, _xof_kmac_if_status_poll
+
+  ret
+
+/**
+ * Squeeze out 32 Boolean-shared bytes into w29 and w30.
+ *
+ * Depending on how many bytes are remaining in the KMAC-internal rate buffer,
+ * this routine might trigger a `RUN` command that starts a new KMAC round
+ * computation repopulating the rate buffer. This routine *must* only be
+ * called after having issued the `PROCESS` command (see `xof_process`).
+ */
+xof_squeeze32:
+  /* Preload the run command. */
+  addi x26, x0, KMAC_CMD_RUN
+
+  /* Squeeze the 32 bytes in chunks of 64 bits from the KMAC-internal rate
+     buffer. */
+  loopi 4, 10
+
+    /* Only issue the `RUN` command if there are fewer than 64 bits remaining in
+       the rate buffer. */
+    bne x28, x0, _xof_squeeze32_recharge
+
+    csrrw x0, KMAC_CMD, x26
+
+    addi x24, x0, KMAC_IF_STATUS_DIGEST_VALID
+    jal x1, _xof_kmac_if_status_poll
+
+    /* Reset the rate counter. */
+    addi x28, x29, 0
+
+_xof_squeeze32_recharge:
+
+    /* Transfer the 32 squeezed and Boolean shared bytes to w29 and w30. */
+    bn.wsrr w27, KMAC_DATA_S0
+    bn.rshi w29, w27, w29 >> 64
+
+    addi x28, x28, -1
+
+    bn.wsrr w28, KMAC_DATA_S1
+    bn.rshi w30, w28, w30 >> 64
+    /* End of loop */
 
   ret

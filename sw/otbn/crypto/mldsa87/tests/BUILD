@@ -9,6 +9,7 @@ load("@ot_python_deps//:requirements.bzl", "requirement")
 package(default_visibility = ["//visibility:public"])
 
 mldsa87_srcs = [
+    "//sw/otbn/crypto/mldsa87:mldsa87_xof.s",
     "//sw/otbn/crypto/mldsa87:mldsa87_ntt.s",
     "//sw/otbn/crypto/mldsa87:mldsa87_arith.s",
 ]
@@ -23,6 +24,8 @@ mldsa87_unit_tests = [
     "mldsa87_poly_add_test",
     "mldsa87_poly_sub_test",
     "mldsa87_poly_mul_add_test",
+    "mldsa87_xof_shake128_test",
+    "mldsa87_xof_shake256_test",
 ]
 
 [
