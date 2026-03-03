@@ -5,6 +5,8 @@
 
 # Runs the OTBN smoke test (builds software, build simulation, runs simulation
 # and checks expected output)
+#
+# To test the vectorized bignum instructions pass 'vectorized' as first argument.
 
 fail() {
     echo >&2 "OTBN SMOKE FAILURE: $*"
@@ -22,17 +24,27 @@ UTIL_DIR="$(readlink -e "$ROOT_DIR/util")" || \
 
 source "$UTIL_DIR/build_consts.sh"
 
-SMOKE_BIN_DIR=$BIN_DIR/otbn/smoke_test
+if [[ "$1" == "vectorized" ]]; then
+  SMOKE_NAME="smoke_test_vectorized"
+  SMOKE_EXPECTED="smoke_vectorized_expected"
+  NUM_LINES_EXPECTED=71
+else
+  SMOKE_NAME="smoke_test"
+  SMOKE_EXPECTED="smoke_expected"
+  NUM_LINES_EXPECTED=74
+fi
+
+SMOKE_BIN_DIR=$BIN_DIR/otbn/$SMOKE_NAME
 SMOKE_SRC_DIR=$ROOT_DIR/hw/ip/otbn/dv/smoke
 
 mkdir -p $SMOKE_BIN_DIR
 
 OTBN_UTIL=$ROOT_DIR/hw/ip/otbn/util
 
-$OTBN_UTIL/otbn_as.py -o $SMOKE_BIN_DIR/smoke_test.o $SMOKE_SRC_DIR/smoke_test.s || \
-    fail "Failed to assemble smoke_test.s"
-$OTBN_UTIL/otbn_ld.py -o $SMOKE_BIN_DIR/smoke.elf $SMOKE_BIN_DIR/smoke_test.o || \
-    fail "Failed to link smoke_test.o"
+$OTBN_UTIL/otbn_as.py -o $SMOKE_BIN_DIR/$SMOKE_NAME.o $SMOKE_SRC_DIR/$SMOKE_NAME.s || \
+    fail "Failed to assemble $SMOKE_NAME.s"
+$OTBN_UTIL/otbn_ld.py -o $SMOKE_BIN_DIR/$SMOKE_NAME.elf $SMOKE_BIN_DIR/$SMOKE_NAME.o || \
+    fail "Failed to link $SMOKE_NAME.o"
 
 (cd $ROOT_DIR;
  fusesoc --cores-root=. run --target=sim --setup --build \
@@ -46,7 +58,7 @@ trap "rm -rf $RUN_LOG" EXIT
 
 timeout 5s \
   $ROOT_DIR/build/lowrisc_ip_otbn_top_sim_0.1/sim-verilator/Votbn_top_sim \
-  --load-elf=$SMOKE_BIN_DIR/smoke.elf -t | tee $RUN_LOG
+  --load-elf=$SMOKE_BIN_DIR/$SMOKE_NAME.elf -t | tee $RUN_LOG
 
 if [ $? -eq 124 ]; then
   fail "Simulation timeout"
@@ -57,10 +69,10 @@ if [ $? -ne 0 ]; then
 fi
 
 had_diff=0
-grep -A 74 "Call Stack:" $RUN_LOG | diff -U3 $SMOKE_SRC_DIR/smoke_expected.txt - || had_diff=1
+grep -A $NUM_LINES_EXPECTED "Call Stack:" $RUN_LOG | diff -U3 $SMOKE_SRC_DIR/$SMOKE_EXPECTED.txt - || had_diff=1
 
 if [ $had_diff == 0 ]; then
-  echo "OTBN SMOKE PASS"
+  echo "OTBN SMOKE PASS for program $SMOKE_NAME"
 else
-  fail "Simulator output does not match expected output"
+  fail "Simulator output does not match expected output for program $SMOKE_NAME"
 fi

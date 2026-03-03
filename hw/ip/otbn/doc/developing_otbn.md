@@ -109,6 +109,11 @@ hw/ip/otbn/dv/smoke/run_smoke.sh
 This will build the standalone simulation, build the smoke test binary, run it
 and check the results are as expected.
 
+The vectorized bignum instructions can be smoke-tested by adding the 'vectorized' argument:
+```sh
+hw/ip/otbn/dv/smoke/run_smoke.sh vectorized
+```
+
 ### Run the ISS on its own
 
 There are currently two versions of the ISS and they can be found in
