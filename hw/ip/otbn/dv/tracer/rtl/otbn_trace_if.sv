@@ -269,14 +269,14 @@ interface otbn_trace_if
     (insn_fetch_resp_valid &
      (alu_bignum_operation.op inside {AluOpBignumAddm, AluOpBignumSubm}));
 
-  assign ispr_write[IsprAcc] = u_otbn_mac_bignum.acc_en & ~ispr_init;
+  assign ispr_write[IsprAcc] = u_otbn_mac_bignum.acc_wr_en & ~ispr_init;
 
   assign ispr_read[IsprAcc] = (any_ispr_read & (ispr_addr == IsprAcc)) | mac_bignum_en;
   // For ISPR reads look at the ACC flops directly. For other ACC reads look at the `acc_blanked`
   // signal in order to read ACC as 0 for the BN.MULQACC.Z instruction variant.
   assign ispr_read_data[IsprAcc] =
       (any_ispr_read & (ispr_addr == IsprAcc)) ? u_otbn_mac_bignum.acc_no_intg_q  :
-                                                 u_otbn_mac_bignum.acc_blanked;
+                                                 u_otbn_mac_bignum.acc_add_blanked;
 
   assign ispr_write[IsprRnd] = 1'b0;
   assign ispr_write_data[IsprRnd] = '0;
@@ -391,7 +391,7 @@ interface otbn_trace_if
   assign internal_intg_err_i.rf_base_intg_err = rf_base_intg_err_q;
   assign internal_intg_err_i.rf_bignum_intg_err = rf_bignum_intg_err_q;
   assign internal_intg_err_i.mod_ispr_intg_err = alu_bignum_reg_intg_violation_err_q;
-  assign internal_intg_err_i.acc_ispr_intg_err = mac_bignum_reg_intg_violation_err_q;
+  assign internal_intg_err_i.mac_ispr_intg_err = mac_bignum_reg_intg_violation_err_q;
   assign internal_intg_err_i.loop_stack_addr_intg_err = controller_bad_int_i.loop_hw_intg_err;
   assign internal_intg_err_i.insn_fetch_intg_err = insn_fetch_err;
 
