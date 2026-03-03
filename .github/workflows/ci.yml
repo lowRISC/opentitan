@@ -680,6 +680,11 @@ jobs:
             cat missing.txt
             false
           fi
+      - name: Upload complete target list
+        uses: actions/upload-artifact@v4
+        with:
+          name: all_fpga_targets
+          path: all_fpga.txt
 
   build_docker_containers:
     name: Build Docker Containers
