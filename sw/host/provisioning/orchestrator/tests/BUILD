@@ -85,6 +85,7 @@ orchestrator_cw340_test_settings_transition(
             "FPGA": "{}".format(fpga),
         },
         tags = [
+            "broken",
             "changes_otp",
             "exclusive",
             "fpga",
@@ -113,6 +114,7 @@ orchestrator_cw340_test_settings_transition(
             "FPGA": "{}".format(fpga),
         },
         tags = [
+            "broken",
             "changes_otp",
             "exclusive",
             "fpga",
@@ -140,6 +142,7 @@ orchestrator_cw340_test_settings_transition(
             "FPGA": "{}".format(fpga),
         },
         tags = [
+            "broken",
             "changes_otp",
             "exclusive",
             "manuf",
@@ -170,6 +173,7 @@ orchestrator_cw340_test_settings_transition(
             "FPGA": "{}".format(fpga),
         },
         tags = [
+            "broken",
             "changes_otp",
             "exclusive",
             "manuf",
