@@ -32,3 +32,6 @@ isolate_assignments -module "otbn_start_stop_control" -var "sec_wipe_base_o"
 // can write to state_error_d (when state_q is invalid), which then (correctly) feeds into an error
 // condition that can start a secure wipe.
 isolate_assignments -module "otbn_start_stop_control" -var "state_error_d"
+
+// This parameter is only used in DV/FPV.
+lint_off -rule UNUSED -file "*/rtl/otbn_mac_bignum_fsm.sv" -match "*EnableAlertTriggerSVA*"

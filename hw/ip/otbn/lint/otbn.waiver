@@ -32,7 +32,7 @@ waive -rules {HIER_NET_NOT_READ NOT_READ} -location {otbn.sv}  \
       -comment {Signal is used in an assertion.}
 
 waive -rules {CLOCK_USE RESET_USE} -location {otbn_alu_bignum.sv otbn_rf_bignum_ff.sv otbn_core.sv} \
-      -regexp {'(clk_i|rst_ni)' is connected to '(prim_onehot_mux|otbn_mac_bignum)' port} \
+      -regexp {'(clk_i|rst_ni)' is connected to '(prim_onehot_mux)' port} \
       -comment {The module is fully combinatorial, clk/rst are only used for assertions.}
 
 waive -rules {CLOCK_USE RESET_USE} -location {otbn_alu_bignum.sv} \
@@ -46,3 +46,18 @@ waive -rules {CLOCK_USE RESET_USE} -location {otbn_instruction_fetch.sv} \
 waive -rules {ONE_BIT_MEM_WIDTH} -location {otbn_alu_bignum.sv} \
       -msg {Memory 'flag_mux_in' has word width which is single bit wide} \
       -comment {The in_i input of prim_onehot_mux has an unpacked and a packed dimension where in this particular case the latter is 1.}
+
+waive -rules INTEGER  -location {otbn_mac_bignum_fsm.sv}
+      -msg {'cycle' of type int used as a non-constant value} \
+      -comment "This assigns int cycle (unsigned) to a multibit logic variable (unsigned), which is fine because it is used as static value for control signal progression generation."
+
+waive -rules {DIVIDE} -location {otbn_mac_bignum_fsm.sv}
+      -regexp {Divide operation '.*cycle / LatencyMontgMul.*' encountered} \
+      -comment "Divide allowed to compute static values for control signal progression generation. The regexp captures the case with ( and without ( around the expression."
+
+waive -rules {ARITH_CONTEXT} -location {otbn_mac_bignum_fsm.sv}
+      -regexp {Bitlength of arithmetic operation '.*cycle / LatencyMontgMul.*' is self-determined in this context} \
+      -comment "This error does not appear with AscentLint 2022.A.P23.1.2026_01_29 but does with 2022.A.P12.2024_03_13 (CI version at commit date). This is save."
+
+waive -rules {PARAM_NOT_USED} -location {otbn_mac_bignum_fsm.sv} -regexp {.*EnableAlertTriggerSVA.*} \
+      -comment "The parameter is just used to control assertions in DV / FPV."

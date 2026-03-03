@@ -103,6 +103,14 @@
       local:   "false"
       expose:  "true"
     }
+    { name:    "RndCnstBnMacUrndPerm",
+      type:    "otbn_pkg::bn_mac_urnd_perm_t",
+      desc:    '''
+        Compile-time random permutation for URND permutation in BN MAC.
+      '''
+      randcount: "256",
+      randtype:  "perm"
+    },
     { name: "RndCnstOtbnKey",
       type: "otp_ctrl_pkg::otbn_key_t",
       desc: '''

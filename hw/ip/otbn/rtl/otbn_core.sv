@@ -30,6 +30,9 @@ module otbn_core
   parameter bit SecMuteUrnd = 1'b0,
   parameter bit SecSkipUrndReseedAtStart = 1'b0,
 
+  // Compile-time permutation for URND permutation in BN MAC
+  parameter bn_mac_urnd_perm_t RndCnstBnMacUrndPerm = RndCnstBnMacUrndPermDefault,
+
   localparam int ImemAddrWidth = prim_util_pkg::vbits(ImemSizeByte),
   localparam int DmemAddrWidth = prim_util_pkg::vbits(DmemSizeByte)
 ) (
@@ -121,6 +124,7 @@ module otbn_core
   logic [ImemAddrWidth-1:0] ctrl_flow_target_predec;
   ispr_bignum_predec_t      ispr_bignum_predec;
   mac_bignum_predec_t       mac_bignum_predec;
+  mac_bignum_predec_dyn_t   mac_bignum_predec_dyn;
   logic                     lsu_addr_en_predec;
 
   logic [NWdr-1:0] rf_bignum_rd_a_indirect_onehot;
@@ -207,12 +211,14 @@ module otbn_core
 
   mac_bignum_operation_t mac_bignum_operation;
   logic [WLEN-1:0]       mac_bignum_operation_result;
+  logic                  mac_bignum_operation_valid;
   flags_t                mac_bignum_operation_flags;
   flags_t                mac_bignum_operation_flags_en;
   logic                  mac_bignum_en;
   logic                  mac_bignum_commit;
   logic                  mac_bignum_reg_intg_violation_err;
   logic                  mac_bignum_sec_wipe_err;
+  logic                  mac_bignum_urnd_used;
 
   ispr_e                       ispr_addr;
   logic [31:0]                 ispr_base_wdata;
@@ -226,6 +232,7 @@ module otbn_core
   logic [ExtWLEN-1:0]          ispr_acc_intg;
   logic [ExtWLEN-1:0]          ispr_acc_wr_data_intg;
   logic                        ispr_acc_wr_en;
+  logic [ExtWLEN-1:0]          ispr_mod_intg;
   logic                        ispr_init;
 
   logic            rnd_req;
@@ -257,7 +264,7 @@ module otbn_core
   logic sec_wipe_base_urnd;
   logic [4:0] sec_wipe_addr, sec_wipe_wdr_addr_q;
 
-  logic sec_wipe_acc_urnd;
+  logic sec_wipe_mac_urnd;
   logic sec_wipe_mod_urnd;
   logic sec_wipe_zero;
   logic sec_wipe_err;
@@ -282,6 +289,7 @@ module otbn_core
   logic rf_bignum_predec_error, alu_bignum_predec_error, ispr_predec_error, mac_bignum_predec_error;
   logic controller_predec_error;
   logic rd_predec_error, predec_error_d, predec_error;
+  logic mac_bignum_state_error_d, mac_bignum_state_error;
 
   logic req_sec_wipe_urnd_keys_q;
 
@@ -317,7 +325,7 @@ module otbn_core
     .sec_wipe_base_urnd_o(sec_wipe_base_urnd),
     .sec_wipe_addr_o     (sec_wipe_addr),
 
-    .sec_wipe_acc_urnd_o(sec_wipe_acc_urnd),
+    .sec_wipe_mac_urnd_o(sec_wipe_mac_urnd),
     .sec_wipe_mod_urnd_o(sec_wipe_mod_urnd),
     .sec_wipe_zero_o    (sec_wipe_zero),
 
@@ -363,13 +371,14 @@ module otbn_core
     .insn_fetch_err_o       (insn_fetch_err),
     .insn_addr_err_o        (insn_addr_err_d),
 
-    .rf_bignum_predec_o       (rf_bignum_predec),
-    .alu_bignum_predec_o      (alu_bignum_predec),
-    .ctrl_flow_predec_o       (ctrl_flow_predec),
-    .ctrl_flow_target_predec_o(ctrl_flow_target_predec),
-    .ispr_bignum_predec_o     (ispr_bignum_predec),
-    .mac_bignum_predec_o      (mac_bignum_predec),
-    .lsu_addr_en_predec_o     (lsu_addr_en_predec),
+    .rf_bignum_predec_o                (rf_bignum_predec),
+    .alu_bignum_predec_o               (alu_bignum_predec),
+    .ctrl_flow_predec_o                (ctrl_flow_predec),
+    .ctrl_flow_target_predec_o         (ctrl_flow_target_predec),
+    .ispr_bignum_predec_o              (ispr_bignum_predec),
+    .mac_bignum_predec_o               (mac_bignum_predec),
+    .mac_bignum_predec_dyn_o           (mac_bignum_predec_dyn),
+    .lsu_addr_en_predec_o              (lsu_addr_en_predec),
 
     .rf_bignum_rd_a_indirect_onehot_i(rf_bignum_rd_a_indirect_onehot),
     .rf_bignum_rd_b_indirect_onehot_i(rf_bignum_rd_b_indirect_onehot),
@@ -385,6 +394,7 @@ module otbn_core
 
     .sec_wipe_wdr_en_i  (sec_wipe_wdr_d),
     .sec_wipe_wdr_addr_i(sec_wipe_addr),
+    .sec_wipe_mac_urnd_i(sec_wipe_mac_urnd),
 
     .zero_flags_i(zero_flags)
   );
@@ -517,6 +527,7 @@ module otbn_core
     // To/from bignum MAC
     .mac_bignum_operation_o       (mac_bignum_operation),
     .mac_bignum_operation_result_i(mac_bignum_operation_result),
+    .mac_bignum_operation_valid_i (mac_bignum_operation_valid),
     .mac_bignum_en_o              (mac_bignum_en),
     .mac_bignum_commit_o          (mac_bignum_commit),
 
@@ -629,6 +640,7 @@ module otbn_core
       lsu_rdata_err                     <= '0;
       non_controller_reg_intg_violation <= '0;
       insn_addr_err                     <= '0;
+      mac_bignum_state_error            <= '0;
     end else begin
       urnd_all_zero                     <= urnd_all_zero_d;
       predec_error                      <= predec_error_d;
@@ -636,6 +648,7 @@ module otbn_core
       lsu_rdata_err                     <= lsu_rdata_err_d;
       non_controller_reg_intg_violation <= non_controller_reg_intg_violation_d;
       insn_addr_err                     <= insn_addr_err_d;
+      mac_bignum_state_error            <= mac_bignum_state_error_d;
     end
   end
 
@@ -648,6 +661,7 @@ module otbn_core
                            predec_error,
                            insn_addr_err,
                            rf_base_spurious_we_err,
+                           mac_bignum_state_error,
                            mubi_err},
     reg_intg_violation:  |{controller_err_bits.reg_intg_violation,
                            non_controller_reg_intg_violation},
@@ -685,7 +699,7 @@ module otbn_core
                   mubi4_bool_to_mubi(|{start_stop_fatal_error, urnd_all_zero, predec_error,
                                        rf_base_spurious_we_err, lsu_rdata_err,
                                        insn_fetch_err, non_controller_reg_intg_violation,
-                                       insn_addr_err}));
+                                       insn_addr_err, mac_bignum_state_error}));
 
   assign controller_recov_escalate_en =
       mubi4_bool_to_mubi(|{rnd_rep_err, rnd_fips_err});
@@ -695,6 +709,7 @@ module otbn_core
       mubi4_or_hi(escalate_en_i,
                   mubi4_bool_to_mubi(|{urnd_all_zero, rf_base_intg_err, rf_base_spurious_we_err,
                                        predec_error, lsu_rdata_err, insn_fetch_err,
+                                       mac_bignum_state_error,
                                        controller_fatal_err, insn_addr_err}));
 
   // Signal error if MuBi input signals take on invalid values as this means something bad is
@@ -894,6 +909,8 @@ module otbn_core
     .ispr_acc_wr_data_intg_o(ispr_acc_wr_data_intg),
     .ispr_acc_wr_en_o       (ispr_acc_wr_en),
 
+    .ispr_mod_intg_o(ispr_mod_intg),
+
     .reg_intg_violation_err_o(alu_bignum_reg_intg_violation_err),
 
     .sec_wipe_mod_urnd_i(sec_wipe_mod_urnd),
@@ -912,30 +929,40 @@ module otbn_core
     .ispr_predec_error_o(ispr_predec_error)
   );
 
-  otbn_mac_bignum u_otbn_mac_bignum (
+  otbn_mac_bignum #(
+    .RndCnstBnMacUrndPerm(RndCnstBnMacUrndPerm)
+  ) u_otbn_mac_bignum (
     .clk_i,
     .rst_ni,
 
     .operation_i                    (mac_bignum_operation),
     .operation_result_o             (mac_bignum_operation_result),
+    .operation_valid_o              (mac_bignum_operation_valid),
     .operation_flags_o              (mac_bignum_operation_flags),
     .operation_flags_en_o           (mac_bignum_operation_flags_en),
     .operation_intg_violation_err_o (mac_bignum_reg_intg_violation_err),
 
-    .predec_i      (mac_bignum_predec),
-    .predec_error_o(mac_bignum_predec_error),
+    .predec_i               (mac_bignum_predec),
+    .predec_dyn_i           (mac_bignum_predec_dyn),
+    .predec_error_o         (mac_bignum_predec_error),
 
-    .urnd_data_i        (urnd_data),
-    .sec_wipe_acc_urnd_i(sec_wipe_acc_urnd),
-    .sec_wipe_running_i (secure_wipe_running_o),
-    .sec_wipe_err_o     (mac_bignum_sec_wipe_err),
+    .urnd_data_i       (urnd_data),
+    .sec_wipe_urnd_i   (sec_wipe_mac_urnd),
+    .sec_wipe_running_i(secure_wipe_running_o),
+    .sec_wipe_err_o    (mac_bignum_sec_wipe_err),
+
+    .urnd_used_o(mac_bignum_urnd_used),
 
     .mac_en_i    (mac_bignum_en),
     .mac_commit_i(mac_bignum_commit),
 
     .ispr_acc_intg_o        (ispr_acc_intg),
     .ispr_acc_wr_data_intg_i(ispr_acc_wr_data_intg),
-    .ispr_acc_wr_en_i       (ispr_acc_wr_en)
+    .ispr_acc_wr_en_i       (ispr_acc_wr_en),
+
+    .ispr_mod_intg_i(ispr_mod_intg),
+
+    .state_err_o(mac_bignum_state_error_d)
   );
 
   otbn_rnd #(
@@ -975,9 +1002,17 @@ module otbn_core
   // are requested.
   // When SecMuteUrnd is enabled, signal urnd_advance_start_stop_control is muted. Therefore, it is
   // necessary to enable urnd_advance using ispr_bignum_predec.ispr_rd_en[IsprUrnd] whenever URND
-  // data are consumed by the ALU.
-  assign urnd_advance = urnd_advance_start_stop_control | req_sec_wipe_urnd_keys_q |
-                        (SecMuteUrnd & ispr_bignum_predec.ispr_rd_en[IsprUrnd]);
+  // data are consumed by the BN ALU or the BN MAC clears any of its internal registers with data
+  // from URND (includes the ACC WSR).
+  assign urnd_advance = urnd_advance_start_stop_control || req_sec_wipe_urnd_keys_q ||
+                        (SecMuteUrnd && (ispr_bignum_predec.ispr_rd_en[IsprUrnd] ||
+                                         mac_bignum_urnd_used));
+
+  // The signal mac_bignum_urnd_used is only used when muting the URND.
+  if (!SecMuteUrnd) begin : gen_unused_mac_urnd_used
+    logic unused_mac_bignum_urnd_used;
+    assign unused_mac_bignum_urnd_used = ^mac_bignum_urnd_used;
+  end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin

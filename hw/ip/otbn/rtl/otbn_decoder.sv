@@ -74,15 +74,6 @@ module otbn_decoder
 
   comparison_op_base_e comparison_operator_base;
 
-
-  logic [1:0] mac_op_a_qw_sel_bignum;
-  logic [1:0] mac_op_b_qw_sel_bignum;
-  logic       mac_wr_hw_sel_upper_bignum;
-  logic [1:0] mac_pre_acc_shift_bignum;
-  logic       mac_zero_acc_bignum;
-  logic       mac_shift_out_bignum;
-  logic       mac_en_bignum;
-
   logic rf_ren_a_base;
   logic rf_ren_b_base;
 
@@ -181,12 +172,29 @@ module otbn_decoder
   assign loop_bodysize_base  = insn[31:20];
   assign loop_immediate_base = insn[12];
 
-  assign mac_op_a_qw_sel_bignum     = insn[26:25];
-  assign mac_op_b_qw_sel_bignum     = insn[28:27];
+  // Bignum MAC decoding signals
+  mac_elen_e             mac_elen_bignum;
+  logic [1:0]            mac_op_a_qw_sel_raw_bignum;
+  logic [2:0]            mac_op_b_elem0_sel_raw_bignum;
+  logic [2:0]            mac_op_b_elem1_sel_raw_bignum;
+  logic                  mac_wr_hw_sel_upper_bignum;
+  logic [1:0]            mac_pre_acc_shift_bignum;
+  logic                  mac_zero_acc_bignum;
+  logic                  mac_shift_out_bignum;
+  logic                  mac_en_bignum;
+  logic                  mac_is_vec_bignum;
+  logic                  mac_is_mod_bignum;
+  logic                  mac_is_lane_bignum;
+  logic                  mac_vec_elen_raw_bignum;
+  logic [VLEN/QWLEN-1:0] mac_adder_carry_sel_bignum;
+  logic [2:0]            mac_lane_index_bignum;
+
   assign mac_wr_hw_sel_upper_bignum = insn[29];
   assign mac_pre_acc_shift_bignum   = insn[14:13];
   assign mac_zero_acc_bignum        = insn[12];
   assign mac_shift_out_bignum       = insn[30];
+  assign mac_vec_elen_raw_bignum    = insn[25];
+  assign mac_lane_index_bignum      = insn[30:28];
 
   logic d_inc_bignum;
   logic a_inc_bignum;
@@ -242,41 +250,48 @@ module otbn_decoder
   };
 
   assign insn_dec_bignum_o = '{
-    a:                   insn_rs1,
-    b:                   insn_rs2,
-    d:                   insn_rd,
-    i:                   imm_i_type_bignum,
-    rf_a_indirect:       rf_a_indirect_bignum,
-    rf_b_indirect:       rf_b_indirect_bignum,
-    rf_d_indirect:       rf_d_indirect_bignum,
-    d_inc:               d_inc_bignum,
-    a_inc:               a_inc_bignum,
-    a_wlen_word_inc:     a_wlen_word_inc_bignum,
-    b_inc:               b_inc_bignum,
-    alu_elen:            alu_elen_bignum,
-    trn_elen:            trn_elen_bignum,
-    alu_shift_amt:       alu_shift_amt_bignum,
-    alu_shift_right:     alu_shift_right_bignum,
-    alu_shift_mask:      alu_shift_mask_bignum,
-    alu_adder_carry_sel: alu_adder_carry_sel_bignum,
-    alu_flag_group:      alu_flag_group_bignum,
-    alu_sel_flag:        alu_sel_flag_bignum,
-    alu_flag_en:         alu_flag_en_bignum,
-    alu_op:              alu_operator_bignum,
-    alu_op_b_sel:        alu_op_b_mux_sel_bignum,
-    mac_flag_en:         mac_flag_en_bignum,
-    mac_op_a_qw_sel:     mac_op_a_qw_sel_bignum,
-    mac_op_b_qw_sel:     mac_op_b_qw_sel_bignum,
-    mac_wr_hw_sel_upper: mac_wr_hw_sel_upper_bignum,
-    mac_pre_acc_shift:   mac_pre_acc_shift_bignum,
-    mac_zero_acc:        mac_zero_acc_bignum,
-    mac_shift_out:       mac_shift_out_bignum,
-    mac_en:              mac_en_bignum,
-    rf_we:               rf_we_bignum,
-    rf_wdata_sel:        rf_wdata_sel_bignum,
-    rf_ren_a:            rf_ren_a_bignum,
-    rf_ren_b:            rf_ren_b_bignum,
-    sel_insn:            sel_insn_bignum
+    a:                      insn_rs1,
+    b:                      insn_rs2,
+    d:                      insn_rd,
+    i:                      imm_i_type_bignum,
+    rf_a_indirect:          rf_a_indirect_bignum,
+    rf_b_indirect:          rf_b_indirect_bignum,
+    rf_d_indirect:          rf_d_indirect_bignum,
+    d_inc:                  d_inc_bignum,
+    a_inc:                  a_inc_bignum,
+    a_wlen_word_inc:        a_wlen_word_inc_bignum,
+    b_inc:                  b_inc_bignum,
+    alu_elen:               alu_elen_bignum,
+    trn_elen:               trn_elen_bignum,
+    alu_shift_amt:          alu_shift_amt_bignum,
+    alu_shift_right:        alu_shift_right_bignum,
+    alu_shift_mask:         alu_shift_mask_bignum,
+    alu_adder_carry_sel:    alu_adder_carry_sel_bignum,
+    alu_flag_group:         alu_flag_group_bignum,
+    alu_sel_flag:           alu_sel_flag_bignum,
+    alu_flag_en:            alu_flag_en_bignum,
+    alu_op:                 alu_operator_bignum,
+    alu_op_b_sel:           alu_op_b_mux_sel_bignum,
+    mac_flag_en:            mac_flag_en_bignum,
+    mac_op_a_qw_sel_raw:    mac_op_a_qw_sel_raw_bignum,
+    mac_op_b_elem0_sel_raw: mac_op_b_elem0_sel_raw_bignum,
+    mac_op_b_elem1_sel_raw: mac_op_b_elem1_sel_raw_bignum,
+    mac_wr_hw_sel_upper:    mac_wr_hw_sel_upper_bignum,
+    mac_pre_acc_shift:      mac_pre_acc_shift_bignum,
+    mac_zero_acc:           mac_zero_acc_bignum,
+    mac_shift_out:          mac_shift_out_bignum,
+    mac_en:                 mac_en_bignum,
+    mac_is_vec:             mac_is_vec_bignum,
+    mac_is_mod:             mac_is_mod_bignum,
+    mac_is_lane:            mac_is_lane_bignum,
+    mac_elen:               mac_elen_bignum,
+    mac_adder_carry_sel:    mac_adder_carry_sel_bignum,
+    mac_lane_index:         mac_lane_index_bignum,
+    rf_we:                  rf_we_bignum,
+    rf_wdata_sel:           rf_wdata_sel_bignum,
+    rf_ren_a:               rf_ren_a_bignum,
+    rf_ren_b:               rf_ren_b_bignum,
+    sel_insn:               sel_insn_bignum
   };
 
   assign insn_dec_shared_o = '{
@@ -316,7 +331,14 @@ module otbn_decoder
     alu_adder_carry_sel_bignum = 1'b0;
     alu_shift_mask_bignum      = '0;
 
-    mac_en_bignum = 1'b0;
+    mac_en_bignum                 = 1'b0;
+    mac_op_a_qw_sel_raw_bignum    = '0;
+    mac_op_b_elem0_sel_raw_bignum = '0;
+    mac_op_b_elem1_sel_raw_bignum = '0;
+    mac_is_vec_bignum             = 1'b0;
+    mac_is_mod_bignum             = 1'b0;
+    mac_is_lane_bignum            = 1'b0;
+    mac_elen_bignum               = MacElen64; // Default is regular 64-bit multiplication
 
     rf_a_indirect_bignum = 1'b0;
     rf_b_indirect_bignum = 1'b0;
@@ -587,12 +609,37 @@ module otbn_decoder
             endcase
           end
           3'b011: begin
-            // BN.MULV/BN.MULVL - not implemented
-            illegal_insn = 1'b1;
+            // BN.MULV/BN.MULVL
+            insn_subset         = InsnSubsetBignum;
+            rf_ren_a_bignum     = 1'b1;
+            rf_ren_b_bignum     = 1'b1;
+            rf_we_bignum        = 1'b1;
+            rf_wdata_sel_bignum = RfWdSelMac;
+            mac_en_bignum       = 1'b1;
+            mac_is_vec_bignum   = 1'b1;
+            mac_is_lane_bignum  = insn[27];
+
+            unique case (mac_vec_elen_raw_bignum)
+              1'b0:    mac_elen_bignum = MacElen32;
+              default: illegal_insn    = 1'b1;
+            endcase
           end
           3'b100: begin
-            // BN.MULVM/BN.MULVML - not implemented
-            illegal_insn = 1'b1;
+            // BN.MULVM/BN.MULVML
+            insn_subset         = InsnSubsetBignum;
+            rf_ren_a_bignum     = 1'b1;
+            rf_ren_b_bignum     = 1'b1;
+            rf_we_bignum        = 1'b1;
+            rf_wdata_sel_bignum = RfWdSelMac;
+            mac_en_bignum       = 1'b1;
+            mac_is_vec_bignum   = 1'b1;
+            mac_is_mod_bignum   = 1'b1;
+            mac_is_lane_bignum  = insn[27];
+
+            unique case (mac_vec_elen_raw_bignum)
+              1'b0:    mac_elen_bignum = MacElen32;
+              default: illegal_insn    = 1'b1;
+            endcase
           end
           3'b110: begin
             // BN.PACK/BN.UNPK
@@ -763,6 +810,10 @@ module otbn_decoder
         rf_wdata_sel_bignum = RfWdSelMac;
         mac_en_bignum       = 1'b1;
 
+        mac_op_a_qw_sel_raw_bignum    = insn[26:25];
+        mac_op_b_elem0_sel_raw_bignum = insn[28:27] * 2;
+        mac_op_b_elem1_sel_raw_bignum = insn[28:27] * 2 + 1;
+
         if (insn[30] == 1'b1 || insn[29] == 1'b1) begin  // BN.MULQACC.WO/BN.MULQACC.SO
           rf_we_bignum = 1'b1;
         end
@@ -811,6 +862,22 @@ module otbn_decoder
       rf_we_base   = 1'b0;
       rf_we_bignum = 1'b0;
     end
+  end
+
+  ////////////////////////////////
+  // Control signals for BN MAC //
+  ////////////////////////////////
+  // Set the carry propagation for the vectorized adder in the modulo reduction path.
+  // The adder is 256b wide and operates on different widths depending on the ELEN.
+  // Modulo reduction for 32b elements: Adder operates on two 64b elements in parallel
+  // Regular 64b multiplication: Adder operates on 256b to accumulate the ACC value.
+  always_comb begin
+    mac_adder_carry_sel_bignum = '1;
+    unique case (mac_elen_bignum)
+      MacElen32: mac_adder_carry_sel_bignum = 4'b1111;
+      MacElen64: mac_adder_carry_sel_bignum = 4'b0000;
+      default:   mac_adder_carry_sel_bignum = 4'b0000;
+    endcase
   end
 
   /////////////////////////////
