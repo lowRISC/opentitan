@@ -42,6 +42,9 @@ module otbn_instruction_fetch
   output logic [ImemAddrWidth-1:0] ctrl_flow_target_predec_o,
   output ispr_bignum_predec_t      ispr_bignum_predec_o,
   output mac_bignum_predec_t       mac_bignum_predec_o,
+  output mac_bignum_predec_dyn_t   mac_bignum_predec_dyn_o,
+  input  mac_bignum_predec_dyn_t   mac_bignum_predec_dyn_next_i,
+  input  logic                     mac_bignum_predec_dyn_next_valid_i,
   output logic                     lsu_addr_en_predec_o,
 
   input logic [NWdr-1:0] rf_bignum_rd_a_indirect_onehot_i,
@@ -86,16 +89,17 @@ module otbn_instruction_fetch
   logic                     imem_rvalid_final;
   logic                     imem_rvalid_kill_q, imem_rvalid_kill_d;
 
-  rf_bignum_predec_t   rf_bignum_predec_indirect, rf_bignum_predec_sec_wipe;
-  rf_bignum_predec_t   rf_bignum_predec_q, rf_bignum_predec_d, rf_bignum_predec_insn;
-  alu_bignum_predec_t  alu_bignum_predec_zero_flags;
-  alu_bignum_predec_t  alu_bignum_predec_q, alu_bignum_predec_d, alu_bignum_predec_insn;
-  ispr_bignum_predec_t ispr_bignum_predec_q, ispr_bignum_predec_d;
-  ispr_bignum_predec_t ispr_bignum_predec;
-  mac_bignum_predec_t  mac_bignum_predec, mac_bignum_predec_q, mac_bignum_predec_d;
-  logic                lsu_addr_en_predec_q, lsu_addr_en_predec_d;
-  logic                lsu_addr_en_predec_insn;
-  logic                insn_addr_err_unbuf;
+  rf_bignum_predec_t      rf_bignum_predec_indirect, rf_bignum_predec_sec_wipe;
+  rf_bignum_predec_t      rf_bignum_predec_q, rf_bignum_predec_d, rf_bignum_predec_insn;
+  alu_bignum_predec_t     alu_bignum_predec_zero_flags;
+  alu_bignum_predec_t     alu_bignum_predec_q, alu_bignum_predec_d, alu_bignum_predec_insn;
+  ispr_bignum_predec_t    ispr_bignum_predec_q, ispr_bignum_predec_d;
+  ispr_bignum_predec_t    ispr_bignum_predec;
+  mac_bignum_predec_t     mac_bignum_predec, mac_bignum_predec_q, mac_bignum_predec_d;
+  mac_bignum_predec_dyn_t mac_bignum_predec_dyn, mac_bignum_predec_dyn_q, mac_bignum_predec_dyn_d;
+  logic                   lsu_addr_en_predec_q, lsu_addr_en_predec_d;
+  logic                   lsu_addr_en_predec_insn;
+  logic                   insn_addr_err_unbuf;
 
   ctrl_flow_predec_t ctrl_flow_predec, ctrl_flow_predec_d, ctrl_flow_predec_q;
 
@@ -144,6 +148,7 @@ module otbn_instruction_fetch
     .ctrl_flow_target_predec_o(ctrl_flow_target_predec),
     .ispr_bignum_predec_o     (ispr_bignum_predec),
     .mac_bignum_predec_o      (mac_bignum_predec),
+    .mac_bignum_predec_dyn_o  (mac_bignum_predec_dyn),
     .lsu_addr_en_predec_o     (lsu_addr_en_predec_insn)
   );
 
@@ -224,6 +229,11 @@ module otbn_instruction_fetch
 
   assign mac_bignum_predec_d = insn_fetch_en ? mac_bignum_predec : mac_bignum_predec_q;
 
+  // The BN MAC sets certain predecoded signals depending on the internal state.
+  assign mac_bignum_predec_dyn_d =
+      mac_bignum_predec_dyn_next_valid_i ? mac_bignum_predec_dyn_next_i :
+      insn_fetch_en                      ? mac_bignum_predec_dyn        : mac_bignum_predec_dyn_q;
+
   assign ctrl_flow_predec_d = insn_fetch_en           ? ctrl_flow_predec   :
                               insn_fetch_resp_clear_i ? '0                 :
                                                         ctrl_flow_predec_q;
@@ -252,6 +262,17 @@ module otbn_instruction_fetch
 
     .d_i(mac_bignum_predec_d),
     .q_o(mac_bignum_predec_q)
+  );
+
+  prim_flop #(
+    .Width($bits(mac_bignum_predec_dyn_t)),
+    .ResetValue('0)
+  ) u_mac_bignum_predec_dyn_flop (
+    .clk_i,
+    .rst_ni,
+
+    .d_i(mac_bignum_predec_dyn_d),
+    .q_o(mac_bignum_predec_dyn_q)
   );
 
   prim_flop #(
@@ -413,6 +434,7 @@ module otbn_instruction_fetch
   assign ctrl_flow_target_predec_o = ctrl_flow_target_predec_q;
   assign ispr_bignum_predec_o      = ispr_bignum_predec_q;
   assign mac_bignum_predec_o       = mac_bignum_predec_q;
+  assign mac_bignum_predec_dyn_o   = mac_bignum_predec_dyn_q;
   assign lsu_addr_en_predec_o      = lsu_addr_en_predec_q;
 
   `ASSERT(FetchEnOnlyIfValidIMem, insn_fetch_en |-> imem_rvalid_i)
