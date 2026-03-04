@@ -287,6 +287,7 @@ otbn_library(
 otbn_binary(
     name = "run_rsa",
     srcs = [
+        "div.s",
         "gcd.s",
         "modexp.s",
         "montmul.s",

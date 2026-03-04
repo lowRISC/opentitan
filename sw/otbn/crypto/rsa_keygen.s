@@ -247,7 +247,7 @@ _remove_even_factors_end:
   # Calculate LCM(p - 1, q - 1) = (p - 1) * (q - 1) / gcd(p - 1, q - 1).
   # dmem[r0] <= LCM(p - 1, q - 1).
   la x16, r0
-  jal x1, nr_div
+  jal x1, div_word
 
   # Calculate the secret key d = e^-1 mod LCM(p - 1, q - 1).
   # dmem[d0] <= d.
@@ -600,85 +600,6 @@ nr_inv:
     bn.mov w25, w26
     jal x1, mul256_w24xw25
     bn.mov w21, w26
-
-  ret
-
-/**
- * Division x * y^-1 of an n-word integer x and a 256-bit integer y.
- *
- * This algorithm computes the division of x by y through multiplications.
- * Since y < 2^256, it possible complete the division by multiplying each word
- * of x by y^-1. Note that the algorithm assumes that y^-1 mod 2^256 is
- * supplied (see nr_inv on how to compute the inverse).
- *
- * The algorithm is in-place, i.e., the result overwrites DMEM[dtpr_x].
- *
- * @param[in] x16: dptr_x, DMEM address of the n-limb dividend
- * @param[in] x30: n number of limbs
- * @param[in] w20: 256-bit divisor y
- * @param[in] w21: 256-bit divisor y inverted y^-1 mod 2^256
- * @param[in] w31: all-zero
- * @param[out] DMEM[dptr_x]: result x / y
- *
- * Clobbered registers: x10-x15, x31, w20-27
- * Clobbered flag groups: FG0
- */
-nr_div:
-
-  # We compute the following algorithm:
-  #
-  # x12 = x16 = dptr_x
-  # for i = 0 to n - 1 do
-  #     [w27, w26] = w20 * w22 = x[i] * y^-1
-  #     DMEM[x12++] = w26 = (x[i] * y^-1) % 2^256
-  #     [w27, w26] = w21 * w26 = y * ((x[i] * y^-1) % 2^256)
-  #     DMEM[x12:] = DMEM[x12:] - w27 = DMEM[x12:] - (y * x[i] * y^-1) >> 2^256
-  # endfor
-
-  # Wide register and DMEM pointers.
-  addi x10, x0, 22
-  addi x11, x0, 26
-  addi x12, x16, 0
-
-  # Iteration counter.
-  li x13, 0
-
-  # Only iterate over the first n-1 limbs.
-  addi x31, x30, -1
-  loop x31, 18
-    # x[i] * y^-1
-    bn.lid x10, 0(x12)
-    bn.mov w24, w21
-    bn.mov w25, w22
-    jal x1, mul256_w24xw25
-    bn.sid x11, 0(x12++)
-
-    # y * (x[i] * y^-1 % 2^256)
-    bn.mov w24, w26
-    bn.mov w25, w20
-    jal x1, mul256_w24xw25
-
-    # Corrective subtraction. Iterate over the remaining n-1 - i limbs and
-    # subtract y * (x[i] * y^-1) >> 2^256
-    addi x14, x12, 0
-    sub  x15, x30, x13
-    addi x15, x15, -1
-    bn.add w31, w31, w31 # Clear flags.
-
-    loop x15, 4
-      bn.lid x10, 0(x14)
-      bn.subb w22, w22, w27
-      bn.sid x10, 0(x14++)
-      bn.xor w27, w27, w27
-
-    addi x13, x13, 1
-
-  # The last iteration is special. No corrective subtraction is needed.
-  bn.lid x10, 0(x12)
-  bn.mov w24, w21
-  bn.mov w25, w22
-  jal x1, mul256_w24xw25
-  bn.sid x11, 0(x12++)
 
   ret
 
