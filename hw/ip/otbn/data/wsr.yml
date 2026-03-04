@@ -109,3 +109,49 @@
     255-64: |
       Write: Words 1-3 of the message share.
       Read: Returns `0`. Digest shares are read out via the least significant word only.
+
+- name: mai_res_s0
+  address: 10
+  read-only: true
+  doc: |
+    This WSR holds share 0 of the masked results produced by the MAI.
+    The results are organized as eight 32-bit values.
+    Results are valid when MAI is not busy anymore.
+    These values are overwritten when the first results of the next execution are available (this depends on the selected accelerator's latency).
+
+- name: mai_res_s1
+  address: 11
+  read-only: true
+  doc: |
+    This WSR holds share 1 of the masked results produced by the MAI.
+    The results are organized as eight 32-bit values.
+    Results are valid when MAI is not busy anymore.
+    These values are overwritten when the first results of the next execution are available (this depends on the selected accelerator's latency).
+
+- name: mai_in0_s0
+  address: 12
+  doc: |
+    This WSR transfers share 0 of the first input secrets towards the MAI.
+    The inputs are considered as eight 32-bit values.
+    Writing to this WSR while MAI is not ready will cause a MAI_ERROR software error.
+
+- name: mai_in0_s1
+  address: 13
+  doc: |
+    This WSR transfers share 1 of the first input secrets towards the MAI.
+    The inputs are considered as eight 32-bit values.
+    Writing to this WSR while MAI is not ready will cause a MAI_ERROR software error.
+
+- name: mai_in1_s0
+  address: 14
+  doc: |
+    This WSR transfers share 0 of the second input secrets towards the MAI.
+    The inputs are considered as eight 32-bit values.
+    Writing to this WSR while MAI is not ready will cause a MAI_ERROR software error.
+
+- name: mai_in1_s1
+  address: 15
+  doc: |
+    This WSR transfers share 1 of the second input secrets towards the MAI.
+    The inputs are considered as eight 32-bit values.
+    Writing to this WSR while MAI is not ready will cause a MAI_ERROR software error.
