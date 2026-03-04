@@ -4,7 +4,7 @@
 
 load("@ot_python_deps//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_binary")
-load("//rules:otbn.bzl", "otbn_autogen_sim_test")
+load("//rules:otbn.bzl", "otbn_autogen_sim_test", "otbn_sim_testgen")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -86,3 +86,27 @@ py_binary(
     )
     for i in range(10)
 ]
+
+py_binary(
+    name = "mod_f4_testgen",
+    srcs = ["mod_f4_testgen.py"],
+    imports = [
+        "../../../../../hw/ip/otbn/util",
+    ],
+    deps = [
+        "//hw/ip/otbn/util/shared:testgen",
+    ],
+)
+
+otbn_sim_testgen(
+    name = "mod_f4_test",
+    srcs = [
+        "mod_f4_test.s",
+    ],
+    number = 10,
+    testgen = ":mod_f4_testgen",
+    type = "testcase",
+    deps = [
+        "//sw/otbn/crypto:gcd",
+    ],
+)
