@@ -390,7 +390,7 @@ div:
  * @param[in] w31: all-zero
  * @param[out] DMEM[dptr_x]: result x / y
  *
- * Clobbered registers: x10-x15, x31, w20-27
+ * Clobbered registers: x10-x15, x31, w20-22, w24-27
  * Clobbered flag groups: FG0
  */
 div_word:
@@ -399,12 +399,12 @@ div_word:
 
       x12 = x16 = dptr_x
       for i = 0 to n - 1 do
-        [w27, w26] = w20 * w22 = x[i] * y^-1
+        w22 = DMEM[x12] = x[i]
+        [w27, w26] = w21 * w22 = x[i] * y^-1
         DMEM[x12++] = w26 = (x[i] * y^-1) % 2^256
-        [w27, w26] = w21 * w26 = y * ((x[i] * y^-1) % 2^256)
-        DMEM[x12:] = DMEM[x12:] - w27 = DMEM[x12:] - (y * x[i] * y^-1) >> 2^256
-      endfor
-  */
+        [w27, w26] = w20 * w26 = y * ((x[i] * y^-1) % 2^256)
+        DMEM[x12:] = DMEM[x12:] - w27 = DMEM[x12:] - (y * ((x[i] * y^-1) % 2^256)) >> 2^256
+      endfor  */
 
   /* Wide register and DMEM pointers. */
   addi x10, x0, 22
@@ -416,7 +416,7 @@ div_word:
 
   /* Only iterate over the first n-1 limbs. */
   addi x31, x30, -1
-  loop x31, 18
+  loop x31, 17
     /* x[i] * y^-1 */
     bn.lid x10, 0(x12)
     bn.mov w24, w21
@@ -432,8 +432,7 @@ div_word:
     /* Corrective subtraction. Iterate over the remaining n-1 - i limbs and
        subtract y * (x[i] * y^-1) >> 2^256 */
     addi x14, x12, 0
-    sub  x15, x30, x13
-    addi x15, x15, -1
+    sub  x15, x31, x13
     bn.add w31, w31, w31 # Clear flags.
 
     loop x15, 4
