@@ -217,7 +217,7 @@ def otbn_sim_test_suite(name, tests, **kwargs):
         tags = tags,
     )
 
-def otbn_sim_testgen(name, srcs, testgen, number, type = "expectation", **kwargs):
+def otbn_sim_testgen(name, testgen, number, srcs = [], deps = [], type = "expectation", **kwargs):
     """Bazel macro to automatically generate `number` of testcases.
 
     An index i for (0 <= i < `number`) will be appended to the test name.
@@ -229,6 +229,7 @@ def otbn_sim_testgen(name, srcs, testgen, number, type = "expectation", **kwargs
         otbn_autogen_sim_test(
             name = tests[i],
             srcs = srcs,
+            deps = deps,
             testgen = testgen,
             seed = i,
             type = type,
