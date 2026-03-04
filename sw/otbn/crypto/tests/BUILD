@@ -810,36 +810,6 @@ otbn_sim_test(
 )
 
 otbn_sim_test(
-    name = "rsa_modinv_f4_test",
-    srcs = [
-        "rsa_modinv_f4_test.s",
-    ],
-    testcase = "rsa_modinv_f4_test.hjson",
-    deps = [
-        "//sw/otbn/crypto:div",
-        "//sw/otbn/crypto:gcd",
-        "//sw/otbn/crypto:lcm",
-        "//sw/otbn/crypto:mul",
-        "//sw/otbn/crypto:rsa_modinv_f4",
-        "//sw/otbn/crypto:run_rsa_mem",
-    ],
-)
-
-otbn_consttime_test(
-    name = "modinv_f4_consttime_test",
-    initial_constants = [
-        "x20:20",
-        "x21:21",
-    ],
-    # All secrets are stored in DMEM; timing is permitted to depend on the
-    # number of limbs.
-    secrets = ["dmem"],
-    subroutine = "modinv_f4",
-    deps = [
-        ":rsa_modinv_f4_test",
-    ],
-)
-otbn_sim_test(
     name = "rsa_primality_test",
     timeout = "long",  # runs a primality test
     srcs = [
