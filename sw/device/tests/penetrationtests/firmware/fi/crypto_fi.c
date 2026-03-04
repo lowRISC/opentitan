@@ -294,8 +294,9 @@ status_t handle_crypto_fi_kmac(ujson_t *uj) {
     pentest_set_trigger_high();
   }
 
-  TRY(dif_kmac_mode_kmac_start(&kmac, &kmac_operation_state,
-                               kDifKmacModeKmacLen128, 0, &kmac_key, NULL));
+  TRY(dif_kmac_mode_kmac_start(
+      &kmac, &kmac_operation_state, kDifKmacModeKmacLen128,
+      CRYPTOFI_KMAC_MAX_DIGEST_WORDS, &kmac_key, NULL));
   if (uj_mode.start_trigger) {
     pentest_set_trigger_low();
   }
