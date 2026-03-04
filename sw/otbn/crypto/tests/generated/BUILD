@@ -134,3 +134,30 @@ otbn_sim_testgen(
         "//sw/otbn/crypto:div",
     ],
 )
+
+py_binary(
+    name = "modinv_f4_testgen",
+    srcs = ["modinv_f4_testgen.py"],
+    imports = [
+        "../../../../../hw/ip/otbn/util",
+    ],
+    deps = [
+        "//hw/ip/otbn/util/shared:testgen",
+    ],
+)
+
+otbn_sim_testgen(
+    name = "modinv_f4_test",
+    srcs = [
+        "modinv_f4_test.s",
+    ],
+    number = 10,
+    testgen = ":modinv_f4_testgen",
+    type = "testcase",
+    deps = [
+        "//sw/otbn/crypto:div",
+        "//sw/otbn/crypto:gcd",
+        "//sw/otbn/crypto:mul",
+        "//sw/otbn/crypto:rsa_modinv_f4",
+    ],
+)
