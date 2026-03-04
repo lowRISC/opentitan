@@ -1,0 +1,23 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# TODO document
+def format(target):
+    # Ignore incompatible targets
+    info = {
+        "label": str(target.label)
+    }
+    if "IncompatiblePlatformProvider" in providers(target):
+        info["compatible"] = False
+    ot_test_info = None
+    for (provider_name, provider) in providers(target).items():
+        if '//rules/opentitan:providers.bzl%OpenTitanTestInfo' in provider_name:
+            ot_test_info = provider
+    if ot_test_info:
+        info["exec_env"] = ot_test_info.exec_env.exec_env
+        info["test_suite"] = ot_test_info.test_suite
+        info["tags"] = ot_test_info.tags
+    else:
+        info["error"] = "Did not find OpenTitanTestInfo provider"
+    return json.encode(info)

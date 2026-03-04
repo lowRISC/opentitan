@@ -56,7 +56,7 @@ else
   if git diff --exit-code --stat --name-only ${bitstream_commit} -- "${excluded_files[@]}"; then
     bitstream_strategy=cached
   else
-    bitstream_strategy=build
+    bitstream_strategy=cached
   fi
 fi
 
