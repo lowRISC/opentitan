@@ -9,7 +9,7 @@ from sw.host.penetrationtests.python.util import targets
 from sw.host.penetrationtests.python.util import utils
 from sw.host.penetrationtests.python.util import common_library
 import json
-from Crypto.Hash import SHA256, SHA384, SHA512, HMAC
+from Crypto.Hash import SHA256, SHA384, SHA512, HMAC, SHA3_256, KMAC128
 from Crypto.Cipher import AES
 import unittest
 import argparse
@@ -168,10 +168,21 @@ class CryptoFiTest(unittest.TestCase):
         key = [i for i in range(16)]
         actual_result = fi_crypto_functions.char_kmac(target, iterations, plaintext, key, trigger)
         actual_result_json = json.loads(actual_result)
-        expected_result_json = json.loads(
-            '{"digest":[1249211222, 2317242261, 3038518889, 366042454],\
-                "alerts":[0,0,0],"loc_alerts":0,"err_status":0,"ast_alerts":[0,0]}'
-        )
+
+        kmac = KMAC128.new(key=bytes(key), mac_len=16)
+        kmac.update(bytes(plaintext))
+        expected_result = bytearray(kmac.digest())
+        expected_result.reverse()
+        expected_result = utils.bytes_to_words(expected_result)
+        expected_result.reverse()
+
+        expected_result_json = {
+            "digest": expected_result,
+            "err_status": 0,
+            "alerts": [0, 0, 0],
+            "loc_alerts": 0,
+            "ast_alerts": [0, 0],
+        }
         utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_kmac_state(self):
@@ -190,10 +201,22 @@ class CryptoFiTest(unittest.TestCase):
         plaintext = [i for i in range(16)]
         actual_result = fi_crypto_functions.char_sha3(target, iterations, plaintext, trigger)
         actual_result_json = json.loads(actual_result)
-        expected_result_json = json.loads(
-            '{"digest":[707610169, 3673694243, 2962696791, 3564344499],\
-                "alerts":[0,0,0],"loc_alerts":0,"err_status":0,"ast_alerts":[0,0]}'
-        )
+
+        sha3 = SHA3_256.new()
+        sha3.update(bytes(plaintext))
+        expected_result = bytearray(sha3.digest())
+        expected_result.reverse()
+        expected_result = utils.bytes_to_words(expected_result)
+        expected_result.reverse()
+        expected_result = expected_result[:4]
+
+        expected_result_json = {
+            "digest": expected_result,
+            "err_status": 0,
+            "alerts": [0, 0, 0],
+            "loc_alerts": 0,
+            "ast_alerts": [0, 0],
+        }
         utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_hmac(self):
