@@ -139,15 +139,14 @@ derive_d:
        x30 <= n*2 */
   add      x30, x30, x30
 
-  /* Compute d = (65537^-1) mod LCM(p-1,q-1). The modular inverse
-     routine requires two working buffers, which we construct from
-     `rsa_cofactor` and the required-contiguous `rsa_p` and `rsa_q` buffers.
+  /* Compute d = (65537^-1) mod LCM(p-1,q-1). The modular inverse routine
+     requires one working buffer, which we construct from `rsa_cofactor`.
        dmem[rsa_d..rsa_d+(n*2*32)] <= (65537^-1) mod dmem[x12..x12+(n*2*32)] */
-  la       x12, tmp_scratchpad
-  la       x13, rsa_d0
-  la       x14, rsa_cofactor
-  la       x15, rsa_pq
-  jal      x1, modinv_f4
+  la x24, tmp_scratchpad
+  la x25, rsa_d0
+  la x26, rsa_cofactor
+  addi x27, x30, 0
+  jal x1, modinv_f4
 
   # Reset the limb count.
   #      x30 <= (n*2) >> 1 = n

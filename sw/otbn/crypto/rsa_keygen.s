@@ -251,12 +251,10 @@ _remove_even_factors_end:
 
   # Calculate the secret key d = e^-1 mod LCM(p - 1, q - 1).
   # dmem[d0] <= d.
-  la x12, r0
-  la x13, rsa_d0
-  la x14, r1
-  la x15, r2
-  li x20, 20
-  li x21, 21
+  la x24, r0
+  la x25, rsa_d0
+  la x26, r1
+  addi x27, x30, 0
   jal x1, modinv_f4
 
   # The secret exponent d must not be too small. Make sure that it respects
