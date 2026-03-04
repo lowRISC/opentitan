@@ -235,5 +235,9 @@ opentitan_binary(
         "//hw/top_earlgrey:fpga_cw340",
         "//hw/top_earlgrey:silicon_owner_sival_rom_ext",
     ],
+    linkopts = [
+        "-Wl,--defsym=no_ottf_nv_scratch=1",
+        "-Wl,--defsym=no_ottf_nv_counter=1",
+    ],
     deps = FIRMWARE_DEPS,
 )

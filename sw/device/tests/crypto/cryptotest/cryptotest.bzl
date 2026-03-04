@@ -86,5 +86,9 @@ def cryptotest(name, test_vectors, test_args, test_harness, slow_test = False):
             """ + test_args,
             test_harness = test_harness,
         ),
+        linkopts = [
+            "-Wl,--defsym=no_ottf_nv_scratch=1",
+            "-Wl,--defsym=no_ottf_nv_counter=1",
+        ],
         deps = FIRMWARE_DEPS,
     )
