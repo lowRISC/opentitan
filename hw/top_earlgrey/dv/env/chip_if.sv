@@ -40,7 +40,7 @@ interface chip_if;
 `define AES_CONTROL_HIER    `AES_HIER.u_aes_core.u_aes_control
 `define ALERT_HANDLER_HIER  `TOP_HIER.u_alert_handler
 `define AON_TIMER_HIER      `TOP_HIER.u_aon_timer_aon
-`define AST_HIER            u_ast
+`define AST_HIER            u_ast.u_ast_aon
 `define CLKMGR_HIER         `TOP_HIER.u_clkmgr_aon
 `define CPU_HIER            `TOP_HIER.u_rv_core_ibex
 `define CPU_CORE_HIER       `CPU_HIER.u_core

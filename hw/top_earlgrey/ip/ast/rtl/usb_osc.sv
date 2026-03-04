@@ -18,12 +18,14 @@ module usb_osc (
   output logic usb_clk_o  // USB Clock Output
 );
 
+timeunit 1ns / 1ps;
+
+logic clk, en_osc;
+
 `ifndef AST_BYPASS_CLK
 `ifndef SYNTHESIS
 // Behavioral Model
 ////////////////////////////////////////
-timeunit 1ns / 1ps;
-
 real CLK_PERIOD;
 integer beacon_rdly;
 bit calibrate_usb_clk, max_drift;
@@ -110,10 +112,8 @@ always begin
   #(CLK_PERIOD/2) clk_osc = ~clk_osc;
 end
 
-logic en_osc;
-
 // HDL Clock Gate
-logic en_clk, clk;
+logic en_clk;
 
 always_latch begin
   if ( !clk_osc ) en_clk = en_osc;
@@ -126,7 +126,6 @@ assign clk = clk_osc && en_clk;
 logic en_osc_re;
 assign en_osc_re = vcore_pok_h_i && usb_en_i;
 
-logic clk, en_osc;
 assign clk = 1'b0;
 `endif  // of SYNTHESIS
 `else  // of AST_BYPASS_CLK
@@ -137,8 +136,6 @@ assign en_osc_re = vcore_pok_h_i && usb_en_i;
 
 // Clock Oscillator
 ////////////////////////////////////////
-logic clk, en_osc;
-
 prim_clock_gating #(
   .NoFpgaGate ( 1'b1 )
 ) u_clk_ckgt (
@@ -177,7 +174,7 @@ prim_clock_buf #(
 // Unused Signals
 ///////////////////////
 logic unused_sigs;
-assign unused_sigs = ^{ usb_osc_cal_i, usb_ref_pulse_i, usb_ref_val_i };
+assign unused_sigs = ^{ usb_osc_cal_i, usb_ref_pulse_i, usb_ref_val_i, en_osc };
 `endif
 
 endmodule : usb_osc
