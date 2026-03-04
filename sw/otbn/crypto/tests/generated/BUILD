@@ -110,3 +110,27 @@ otbn_sim_testgen(
         "//sw/otbn/crypto:gcd",
     ],
 )
+
+py_binary(
+    name = "div_word_testgen",
+    srcs = ["div_word_testgen.py"],
+    imports = [
+        "../../../../../hw/ip/otbn/util",
+    ],
+    deps = [
+        "//hw/ip/otbn/util/shared:testgen",
+    ],
+)
+
+otbn_sim_testgen(
+    name = "div_word_test",
+    srcs = [
+        "div_word_test.s",
+    ],
+    number = 10,
+    testgen = ":div_word_testgen",
+    type = "testcase",
+    deps = [
+        "//sw/otbn/crypto:div",
+    ],
+)
