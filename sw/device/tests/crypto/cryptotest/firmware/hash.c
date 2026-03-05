@@ -134,6 +134,15 @@ status_t handle_hash(ujson_t *uj) {
       status = otcrypto_cshake256(input_message, cshake_function_name,
                                   customization_string, &digest);
       break;
+    case kCryptotestHashAlgorithmSha256:
+    case kCryptotestHashAlgorithmSha384:
+    case kCryptotestHashAlgorithmSha512:
+    case kCryptotestHashAlgorithmSha3_224:
+    case kCryptotestHashAlgorithmSha3_256:
+    case kCryptotestHashAlgorithmSha3_384:
+    case kCryptotestHashAlgorithmSha3_512:
+    case kCryptotestHashAlgorithmShake128:
+    case kCryptotestHashAlgorithmShake256:
     default:
       status = hash_oneshot(input_message, &digest);
   }

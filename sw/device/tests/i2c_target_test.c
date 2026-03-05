@@ -173,6 +173,11 @@ static status_t recv_write_transfer(dif_i2c_t *i2c, i2c_transfer_start_t *txn,
       txn->stop = false;
       // Repeated start, return the address of the next operation.
       return OK_STATUS(txn->address);
+    case kDifI2cSignalNone:
+    case kDifI2cSignalStart:
+    case kDifI2cSignalNack:
+    case kDifI2cSignalNackStart:
+    case kDifI2cSignalNackStop:
     default:
       return INTERNAL();
   }
@@ -275,6 +280,7 @@ static status_t command_processor(ujson_t *uj) {
   while (true) {
     test_command_t command;
     TRY(UJSON_WITH_CRC(ujson_deserialize_test_command_t, uj, &command));
+    OT_NO_SWITCH_ENUM_COVERAGE_START
     switch (command) {
       case kTestCommandEnterNormalSleep:
         RESP_ERR(uj, enter_sleep(uj, &i2c, true));
@@ -310,6 +316,7 @@ static status_t command_processor(ujson_t *uj) {
         LOG_ERROR("Unrecognized command: %d", command);
         RESP_ERR(uj, INVALID_ARGUMENT());
     }
+    OT_NO_SWITCH_ENUM_COVERAGE_END
   }
   // We should never reach here.
   return INTERNAL();

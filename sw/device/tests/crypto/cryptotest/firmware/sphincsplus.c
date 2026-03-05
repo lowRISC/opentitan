@@ -56,6 +56,7 @@ status_t handle_sphincsplus_verify(ujson_t *uj) {
                  (uint8_t *)uj_message.message, uj_message.message_len,
                  (uint32_t *)uj_public_key.public, act_root);
   cryptotest_sphincsplus_verify_output_t uj_output;
+  OT_NO_SWITCH_ENUM_COVERAGE_START
   switch (error) {
     case kErrorOk:
       uj_output = kCryptotestSphincsPlusVerifyOutputSuccess;
@@ -83,6 +84,7 @@ status_t handle_sphincsplus_verify(ujson_t *uj) {
           error);
       return INTERNAL();
   }
+  OT_NO_SWITCH_ENUM_COVERAGE_END
   return OK_STATUS(0);
 }
 

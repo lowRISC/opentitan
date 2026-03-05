@@ -129,6 +129,7 @@ static status_t run_test(kdf_test_vector_t *test) {
   };
 
   // Run the KDF specified by the key mode.
+  OT_NO_SWITCH_ENUM_COVERAGE_START
   switch (test->key_mode) {
     case kOtcryptoKeyModeHmacSha256:
     case kOtcryptoKeyModeHmacSha384:
@@ -139,6 +140,7 @@ static status_t run_test(kdf_test_vector_t *test) {
       LOG_INFO("Should never end up here.");
       return INVALID_ARGUMENT();
   }
+  OT_NO_SWITCH_ENUM_COVERAGE_END
 
   LOG_INFO("KDF operation completed.");
 

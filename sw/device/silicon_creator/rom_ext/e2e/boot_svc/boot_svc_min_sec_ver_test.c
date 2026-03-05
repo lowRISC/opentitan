@@ -119,6 +119,10 @@ static status_t min_sec_ver_test(void) {
       case kBootSvcTestStateFinal:
         LOG_INFO("FinalBootLog: %d:%s", state->boots, state->partition);
         return OK_STATUS();
+      case kBootSvcTestStateCheckEmpty:
+      case kBootSvcTestStateNextSideB:
+      case kBootSvcTestStateReturnSideA:
+      case kBootSvcTestStateEnterRescue:
       default:
         return UNKNOWN();
     }

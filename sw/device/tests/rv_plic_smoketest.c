@@ -52,6 +52,13 @@ static void handle_uart_isr(const dif_rv_plic_irq_id_t plic_irq_id) {
 
       uart_tx_done_handled = true;
       break;
+    case kDtUartIrqTxWatermark:
+    case kDtUartIrqRxWatermark:
+    case kDtUartIrqRxFrameErr:
+    case kDtUartIrqRxBreakErr:
+    case kDtUartIrqRxTimeout:
+    case kDtUartIrqRxParityErr:
+    case kDtUartIrqTxEmpty:
     default:
       LOG_FATAL("ISR is not implemented!");
       test_status_set(kTestStatusFailed);

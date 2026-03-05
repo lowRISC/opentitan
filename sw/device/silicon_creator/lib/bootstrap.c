@@ -225,9 +225,16 @@ static rom_error_t bootstrap_handle_erase(bootstrap_state_t *state) {
       // Note: We clear WIP and WEN bits in `bootstrap_handle_erase_verify()`
       // after checking that both data banks have been erased.
       break;
+    case kSpiDeviceOpcodeRead:
+    case kSpiDeviceOpcodeReadStatus:
+    case kSpiDeviceOpcodeReadJedecId:
+    case kSpiDeviceOpcodeReadSfdp:
+    case kSpiDeviceOpcodePageProgram:
+    case kSpiDeviceOpcodeReset:
+    case kSpiDeviceOpcodeWriteEnable:
+    case kSpiDeviceOpcodeWriteDisable:
     default:
-      // Ignore any other command, e.g. PAGE_PROGRAM, RESET, and clear WIP and
-      // WEN bits right away.
+      // Ignore any other command and clear WIP and WEN bits right away.
       spi_device_flash_status_clear();
       error = kErrorOk;
   }
@@ -306,6 +313,12 @@ static rom_error_t bootstrap_handle_program(bootstrap_state_t *state) {
       error = kErrorUnknown;
 #endif
       break;
+    case kSpiDeviceOpcodeRead:
+    case kSpiDeviceOpcodeReadStatus:
+    case kSpiDeviceOpcodeReadJedecId:
+    case kSpiDeviceOpcodeReadSfdp:
+    case kSpiDeviceOpcodeWriteEnable:
+    case kSpiDeviceOpcodeWriteDisable:
     default:
       // We don't expect any other commands but we can potentially end up
       // here with a 0x0 opcode due to glitches on SPI or strap lines (see

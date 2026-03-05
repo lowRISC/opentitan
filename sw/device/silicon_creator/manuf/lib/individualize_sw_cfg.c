@@ -339,6 +339,7 @@ status_t manuf_individualize_device_owner_sw_cfg(
 
 status_t manuf_individualize_device_partition_expected_read(
     dif_otp_ctrl_partition_t partition, uint8_t *buffer) {
+  OT_NO_SWITCH_ENUM_COVERAGE_START
   switch (partition) {
     case kDifOtpCtrlPartitionOwnerSwCfg:
       TRY(otp_img_expected_value_read(
@@ -359,6 +360,7 @@ status_t manuf_individualize_device_partition_expected_read(
     default:
       return INTERNAL();
   }
+  OT_NO_SWITCH_ENUM_COVERAGE_END
 
   return OK_STATUS();
 }

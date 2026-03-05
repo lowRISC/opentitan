@@ -563,6 +563,9 @@ rom_error_t owner_block_rescue_apply(const owner_rescue_config_t *rescue) {
         pinmux_enable_pull(index, pull_en, !gpio_value);
       }
       break;
+    case kRescueDetectNone:
+    case kRescueDetectBreak:
+    case kRescueDetectStrap:
     default:
         /* nothing to do */;
   }

@@ -157,6 +157,13 @@ bool ottf_handle_irq(uint32_t *exc_info, dt_instance_id_t devid,
       uart_irq_rx_break_err_fired = true;
       dif_uart_irq = kDifUartIrqRxBreakErr;
       break;
+    case kDtUartIrqTxWatermark:
+    case kDtUartIrqRxWatermark:
+    case kDtUartIrqTxDone:
+    case kDtUartIrqRxOverflow:
+    case kDtUartIrqRxFrameErr:
+    case kDtUartIrqRxTimeout:
+    case kDtUartIrqTxEmpty:
     default:
       // Not our interrupt, let OTTF handle it (e.g., console UART)
       return false;

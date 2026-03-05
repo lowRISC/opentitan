@@ -497,6 +497,7 @@ dif_result_t dif_usbdev_buffer_return(const dif_usbdev_t *usbdev,
       // Mark the buffer as stale
       buffer->type = kDifUsbdevBufferTypeStale;
       return kDifOk;
+    case kDifUsbdevBufferTypeStale:
     default:
       return kDifBadArg;
   }

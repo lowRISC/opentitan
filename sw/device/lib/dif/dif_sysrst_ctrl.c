@@ -71,6 +71,7 @@ dif_result_t dif_sysrst_ctrl_key_combo_detect_configure(
       combo_detect_ctl_reg_offset = SYSRST_CTRL_COM_DET_CTL_3_REG_OFFSET;
       combo_action_ctl_reg_offset = SYSRST_CTRL_COM_OUT_CTL_3_REG_OFFSET;
       break;
+    case kDifSysrstCtrlKeyComboAll:
     default:
       return kDifBadArg;
   }
@@ -188,6 +189,13 @@ dif_result_t dif_sysrst_ctrl_output_pin_override_configure(
       pin_out_allow_0_bit_index = SYSRST_CTRL_PIN_ALLOWED_CTL_FLASH_WP_L_0_BIT;
       pin_out_allow_1_bit_index = SYSRST_CTRL_PIN_ALLOWED_CTL_FLASH_WP_L_1_BIT;
       break;
+    case kDifSysrstCtrlPinKey0In:
+    case kDifSysrstCtrlPinKey1In:
+    case kDifSysrstCtrlPinKey2In:
+    case kDifSysrstCtrlPinPowerButtonIn:
+    case kDifSysrstCtrlPinAcPowerPresentIn:
+    case kDifSysrstCtrlPinLidOpenIn:
+    case kDifSysrstCtrlPinAllNonOpenDrain:
     default:
       return kDifBadArg;
   }
@@ -352,6 +360,13 @@ static bool get_output_pin_allowed_bit_indices(dif_sysrst_ctrl_pin_t pin,
       *allow_0_bit_index = SYSRST_CTRL_PIN_ALLOWED_CTL_FLASH_WP_L_0_BIT;
       *allow_1_bit_index = SYSRST_CTRL_PIN_ALLOWED_CTL_FLASH_WP_L_1_BIT;
       break;
+    case kDifSysrstCtrlPinKey0In:
+    case kDifSysrstCtrlPinKey1In:
+    case kDifSysrstCtrlPinKey2In:
+    case kDifSysrstCtrlPinPowerButtonIn:
+    case kDifSysrstCtrlPinAcPowerPresentIn:
+    case kDifSysrstCtrlPinLidOpenIn:
+    case kDifSysrstCtrlPinAllNonOpenDrain:
     default:
       return false;
   }
@@ -439,6 +454,13 @@ static bool get_output_pin_ctl_bit_index(dif_sysrst_ctrl_pin_t pin,
     case kDifSysrstCtrlPinFlashWriteProtectInOut:
       *pin_out_ctl_bit_index = SYSRST_CTRL_PIN_OUT_CTL_FLASH_WP_L_BIT;
       break;
+    case kDifSysrstCtrlPinKey0In:
+    case kDifSysrstCtrlPinKey1In:
+    case kDifSysrstCtrlPinKey2In:
+    case kDifSysrstCtrlPinPowerButtonIn:
+    case kDifSysrstCtrlPinAcPowerPresentIn:
+    case kDifSysrstCtrlPinLidOpenIn:
+    case kDifSysrstCtrlPinAllNonOpenDrain:
     default:
       return false;
   }
@@ -513,6 +535,13 @@ static bool get_output_pin_value_bit_index(dif_sysrst_ctrl_pin_t pin,
     case kDifSysrstCtrlPinFlashWriteProtectInOut:
       *pin_out_value_bit_index = SYSRST_CTRL_PIN_OUT_VALUE_FLASH_WP_L_BIT;
       break;
+    case kDifSysrstCtrlPinKey0In:
+    case kDifSysrstCtrlPinKey1In:
+    case kDifSysrstCtrlPinKey2In:
+    case kDifSysrstCtrlPinPowerButtonIn:
+    case kDifSysrstCtrlPinAcPowerPresentIn:
+    case kDifSysrstCtrlPinLidOpenIn:
+    case kDifSysrstCtrlPinAllNonOpenDrain:
     default:
       return false;
   }
@@ -587,6 +616,13 @@ static bool get_input_pin_value_bit_index(dif_sysrst_ctrl_pin_t pin,
     case kDifSysrstCtrlPinFlashWriteProtectInOut:
       *pin_in_value_bit_index = SYSRST_CTRL_PIN_IN_VALUE_FLASH_WP_L_BIT;
       break;
+    case kDifSysrstCtrlPinKey0Out:
+    case kDifSysrstCtrlPinKey1Out:
+    case kDifSysrstCtrlPinKey2Out:
+    case kDifSysrstCtrlPinPowerButtonOut:
+    case kDifSysrstCtrlPinBatteryDisableOut:
+    case kDifSysrstCtrlPinZ3WakeupOut:
+    case kDifSysrstCtrlPinAllNonOpenDrain:
     default:
       return false;
   }
@@ -677,6 +713,9 @@ static bool get_key_auto_override_en_bit_index(dif_sysrst_ctrl_key_t key,
     case kDifSysrstCtrlKey2:
       *en_bit_index = SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_KEY2_OUT_SEL_BIT;
       break;
+    case kDifSysrstCtrlKeyPowerButton:
+    case kDifSysrstCtrlKeyAcPowerPresent:
+    case kDifSysrstCtrlKeyAll:
     default:
       return false;
   }

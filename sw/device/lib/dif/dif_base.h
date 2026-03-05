@@ -184,7 +184,19 @@ inline dif_toggle_t dif_multi_bit_bool_to_toggle(multi_bit_bool_t val) {
     case kMultiBitBool8True:
     case kMultiBitBool12True:
     case kMultiBitBool16True:
+    case kMultiBitBool20True:
+    case kMultiBitBool24True:
+    case kMultiBitBool28True:
+    case kMultiBitBool32True:
       return kDifToggleEnabled;
+    case kMultiBitBool4False:
+    case kMultiBitBool8False:
+    case kMultiBitBool12False:
+    case kMultiBitBool16False:
+    case kMultiBitBool20False:
+    case kMultiBitBool24False:
+    case kMultiBitBool28False:
+    case kMultiBitBool32False:
     default:
       return kDifToggleDisabled;
   }

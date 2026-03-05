@@ -46,14 +46,12 @@ void ottf_exception_handler(uint32_t *exc_info) {
   // subroutine in `sw/device/lib/testing/testing/ottf_isrs.S` for more details.
   uintptr_t *mepc_stack_addr = (uintptr_t *)OT_FRAME_ADDR();
   ibex_exc_t exception = ibex_mcause_read();
-  switch (exception) {
-    case kIbexExcInstrAccessFault:
-      LOG_INFO("Detected instruction access fault");
-      *mepc_stack_addr = (uintptr_t)kSramRetNegTestReturn;
-      break;
-    default:
-      LOG_FATAL("Unexpected exception id = 0x%x", exception);
-      abort();
+  if (exception == kIbexExcInstrAccessFault) {
+    LOG_INFO("Detected instruction access fault");
+    *mepc_stack_addr = (uintptr_t)kSramRetNegTestReturn;
+  } else {
+    LOG_FATAL("Unexpected exception id = 0x%x", exception);
+    abort();
   }
 }
 

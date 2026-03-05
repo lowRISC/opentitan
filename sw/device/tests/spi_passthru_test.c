@@ -187,6 +187,7 @@ status_t command_processor(ujson_t *uj) {
     } else if (status_err(result) != kUnimplemented) {
       return result;
     }
+    OT_NO_SWITCH_ENUM_COVERAGE_START
     switch (command) {
       case kTestCommandSpiConfigureJedecId:
         RESP_ERR(uj, configure_jedec_id(uj, &spid));
@@ -235,6 +236,7 @@ status_t command_processor(ujson_t *uj) {
         LOG_ERROR("Unrecognized command: %d", command);
         RESP_ERR(uj, INVALID_ARGUMENT());
     }
+    OT_NO_SWITCH_ENUM_COVERAGE_END
   }
   // We should never reach here.
   return INTERNAL();
