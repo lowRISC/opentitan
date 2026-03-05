@@ -1,0 +1,18 @@
+{
+  "tests": [
+    "//sw/device/lib/coverage/smoke:otbn_simtest"
+  ],
+  "coverage": {
+    "sw/device/lib/coverage/smoke/target_otbn.s": {
+      "funcs": {},
+      "lines": {
+        "addi  x5, x5, START": "hit",
+        "addi  x5, x5, COVFUNC_NESTED_HIT": "hit",
+        "addi  x5, x5, COVFUNC_HIT": "hit",
+        "addi  x5, x5, COVFUNC_NESTED_MISS": "miss",
+        "addi  x5, x5, COVFUNC_MISS": "miss",
+        ".zero COVFUNC_BSS_SKIP": "skip"
+      }
+    }
+  }
+}
