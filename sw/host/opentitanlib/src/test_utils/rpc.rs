@@ -65,6 +65,7 @@ where
     where
         Self: Sized,
     {
+        let device = device.coverage();
         let device: &dyn ConsoleDevice = if quiet { &device } else { &device.logged() };
         let result = device.wait_for_line(
             PassFail(

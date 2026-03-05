@@ -12,10 +12,14 @@ use crate::impl_serializable_error;
 
 pub mod broadcast;
 mod buf;
+mod coverage;
+#[cfg(test)]
+mod coverage_test;
 pub mod ext;
 mod logged;
 pub use broadcast::Broadcaster;
 pub use buf::Buffered;
+pub use coverage::CoverageMiddleware;
 pub use ext::ConsoleExt;
 pub use logged::Logged;
 
@@ -38,26 +42,15 @@ pub trait ConsoleDevice {
 
     /// Writes data from `buf` to the UART.
     fn write(&self, buf: &[u8]) -> Result<()>;
-}
 
-impl<T: ConsoleDevice + ?Sized> ConsoleDevice for &T {
-    fn poll_read(&self, cx: &mut Context<'_>, buf: &mut [u8]) -> Poll<Result<usize>> {
-        T::poll_read(self, cx, buf)
-    }
-
-    /// Writes data from `buf` to the UART.
-    fn write(&self, buf: &[u8]) -> Result<()> {
-        T::write(self, buf)
+    /// Returns a reference to the coverage extraction interface if supported.
+    fn as_coverage_console(&self) -> Option<&dyn CoverageConsole> {
+        None
     }
 }
 
-impl<T: ConsoleDevice + ?Sized> ConsoleDevice for std::rc::Rc<T> {
-    fn poll_read(&self, cx: &mut Context<'_>, buf: &mut [u8]) -> Poll<Result<usize>> {
-        T::poll_read(self, cx, buf)
-    }
-
-    /// Writes data from `buf` to the UART.
-    fn write(&self, buf: &[u8]) -> Result<()> {
-        T::write(self, buf)
-    }
+/// Interface for objects that can wait for coverage extraction to complete.
+pub trait CoverageConsole {
+    /// Returns the number of coverage blocks processed (finished or skipped).
+    fn coverage_blocks_processed(&self) -> usize;
 }
