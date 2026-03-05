@@ -70,6 +70,8 @@ status_t process_cmd(ujson_t *uj) {
       case kCryptotestCommandKmac:
         RESP_ERR(uj, handle_kmac(uj));
         break;
+      case kCryptotestCommandQuit:
+        return OK_STATUS(0);
       case kCryptotestCommandRsa:
         RESP_ERR(uj, handle_rsa(uj));
         break;
