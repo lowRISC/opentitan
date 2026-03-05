@@ -2,6 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//rules:otbn.bzl", "otbn_sim_test")
+
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
@@ -17,4 +19,10 @@ cc_test(
         ":target",
         "@googletest//:gtest_main",
     ],
+)
+
+otbn_sim_test(
+    name = "otbn_simtest",
+    srcs = ["target_otbn.s"],
+    testcase = "otbn_simtest.hjson",
 )
