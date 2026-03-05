@@ -228,6 +228,7 @@ impl UpdateProtocol for Legacy {
         transport: &TransportWrapper,
         payload: &[u8],
         progress: &dyn ProgressIndicator,
+        _check_jedec_id: bool,
     ) -> Result<()> {
         let spi = container.spi_params.create(transport, "BOOTSTRAP")?;
 

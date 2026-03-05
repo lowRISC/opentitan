@@ -312,6 +312,7 @@ impl UpdateProtocol for LegacyRescue {
         transport: &TransportWrapper,
         payload: &[u8],
         progress: &dyn ProgressIndicator,
+        _check_jedec_id: bool,
     ) -> Result<()> {
         let frames = Frame::from_payload(payload)?;
         let uart = container.uart_params.create(transport)?;
