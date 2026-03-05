@@ -59,6 +59,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   import entropy_src_reg_pkg::*;
   import prim_mubi_pkg::mubi4_t;
   import prim_mubi_pkg::mubi4_test_true_strict;
+  import prim_mubi_pkg::mubi4_test_true_loose;
   import prim_mubi_pkg::mubi4_and_hi;
   import prim_mubi_pkg::mubi4_test_false_loose;
   import prim_mubi_pkg::mubi4_test_invalid;
@@ -222,6 +223,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [HalfRegWidth-1:0] health_test_bypass_window;
   logic [HealthTestWindowWidth-1:0] health_test_window;
   logic [HealthTestWindowWidth-1:0] window_cntr_step;
+
+  logic threshold_oneway_pfe;
+  logic threshold_oneway_pfa;
 
   logic [HalfRegWidth-1:0] repcnt_threshold;
   logic [HalfRegWidth-1:0] repcnt_threshold_oneway;
@@ -688,6 +692,25 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .mubi_o(mubi_entropy_reg_en_fanout)
   );
 
+  // SEC_CM: CONFIG.MUBI
+  mubi4_t mubi_threshold_oneway;
+  mubi4_t [1:0] mubi_threshold_oneway_fanout;
+  assign mubi_threshold_oneway = mubi4_t'(reg2hw.threshold_oneway.q);
+  assign threshold_oneway_pfe = mubi4_test_true_loose(mubi_threshold_oneway_fanout[0]);
+  assign threshold_oneway_pfa = mubi4_test_invalid(mubi_threshold_oneway_fanout[1]);
+  assign hw2reg.recov_alert_sts.threshold_oneway_field_alert.de = threshold_oneway_pfa;
+  assign hw2reg.recov_alert_sts.threshold_oneway_field_alert.d =  threshold_oneway_pfa;
+
+  prim_mubi4_sync #(
+    .NumCopies(2),
+    .AsyncOn(0)
+  ) u_prim_mubi4_sync_treshold_oneway (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(mubi_threshold_oneway),
+    .mubi_o(mubi_threshold_oneway_fanout)
+  );
+
   assign observe_fifo_thresh = reg2hw.observe_fifo_thresh.q;
 
   // SEC_CM: CONFIG.MUBI
@@ -1118,6 +1141,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .high_i              (1'b0),
     .clear_i             (1'b0),
+    .oneway_i            (threshold_oneway_pfe),
     .event_i             (repcnt_threshold_wr),
     .value_i             (repcnt_threshold),
     .value_o             (repcnt_threshold_oneway)
@@ -1138,6 +1162,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .high_i              (1'b0),
     .clear_i             (1'b0),
+    .oneway_i            (threshold_oneway_pfe),
     .event_i             (repcnts_threshold_wr),
     .value_i             (repcnts_threshold),
     .value_o             (repcnts_threshold_oneway)
@@ -1158,6 +1183,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .high_i              (1'b0),
     .clear_i             (1'b0),
+    .oneway_i            (threshold_oneway_pfe),
     .event_i             (adaptp_hi_threshold_wr),
     .value_i             (adaptp_hi_threshold),
     .value_o             (adaptp_hi_threshold_oneway)
@@ -1175,6 +1201,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .high_i              (1'b1),
     .clear_i             (1'b0),
+    .oneway_i            (threshold_oneway_pfe),
     .event_i             (adaptp_lo_threshold_wr),
     .value_i             (adaptp_lo_threshold),
     .value_o             (adaptp_lo_threshold_oneway)
@@ -1195,6 +1222,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .high_i              (1'b0),
     .clear_i             (1'b0),
+    .oneway_i            (threshold_oneway_pfe),
     .event_i             (bucket_threshold_wr),
     .value_i             (bucket_threshold),
     .value_o             (bucket_threshold_oneway)
@@ -1215,6 +1243,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .high_i              (1'b0),
     .clear_i             (1'b0),
+    .oneway_i            (threshold_oneway_pfe),
     .event_i             (markov_hi_threshold_wr),
     .value_i             (markov_hi_threshold),
     .value_o             (markov_hi_threshold_oneway)
@@ -1232,6 +1261,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .high_i              (1'b1),
     .clear_i             (1'b0),
+    .oneway_i            (threshold_oneway_pfe),
     .event_i             (markov_lo_threshold_wr),
     .value_i             (markov_lo_threshold),
     .value_o             (markov_lo_threshold_oneway)
@@ -1252,6 +1282,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .high_i              (1'b0),
     .clear_i             (1'b0),
+    .oneway_i            (threshold_oneway_pfe),
     .event_i             (extht_hi_threshold_wr),
     .value_i             (extht_hi_threshold),
     .value_o             (extht_hi_threshold_oneway)
@@ -1269,6 +1300,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .high_i              (1'b1),
     .clear_i             (1'b0),
+    .oneway_i            (threshold_oneway_pfe),
     .event_i             (extht_lo_threshold_wr),
     .value_i             (extht_lo_threshold),
     .value_o             (extht_lo_threshold_oneway)
@@ -1846,6 +1878,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni  (rst_ni),
     .high_i  (ht_watermark_high),
     .clear_i (health_test_clr),
+    .oneway_i(1'b1), // For the watermark register, the one-way behavior is always enabled. Upon
+                     // enabling, the register is then cleared according to ht_watermark_high.
     .event_i (ht_watermark_event),
     .value_i (ht_watermark_cnt),
     .value_o (ht_watermark)

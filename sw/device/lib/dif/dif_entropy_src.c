@@ -260,6 +260,19 @@ dif_result_t dif_entropy_src_health_test_configure(
   return kDifOk;
 }
 
+dif_result_t dif_entropy_src_health_test_threshold_oneway_enable(
+    const dif_entropy_src_t *entropy_src) {
+  if (entropy_src == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32(entropy_src->base_addr,
+                      ENTROPY_SRC_THRESHOLD_ONEWAY_REG_OFFSET,
+                      kMultiBitBool4True);
+
+  return kDifOk;
+}
+
 dif_result_t dif_entropy_src_watermark_configure(
     const dif_entropy_src_t *entropy_src,
     dif_entropy_src_watermark_num_t config) {

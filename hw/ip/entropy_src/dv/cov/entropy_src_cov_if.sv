@@ -989,7 +989,7 @@ interface entropy_src_cov_if
     option.per_instance = 1;
 
     cp_alert_bit : coverpoint alert_bit {
-      bins alert_bits[] = {0, 1, 2, 3, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+      bins alert_bits[] = {0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 31};
     }
   endgroup : recov_alert_cg
 

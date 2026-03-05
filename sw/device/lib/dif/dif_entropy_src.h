@@ -595,6 +595,20 @@ dif_result_t dif_entropy_src_health_test_configure(
     dif_entropy_src_health_test_config_t config);
 
 /**
+ * Enables the one-way behavior of all entropy source health test threshold
+ * registers.
+ *
+ * This function is reentrant: calling it while the one-way behavior is enabled
+ * will have no effect and return `kDifOk`.
+ *
+ * @param entropy_src An entropy source handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_entropy_src_health_test_threshold_oneway_enable(
+    const dif_entropy_src_t *entropy_src);
+
+/**
  * Configures the health test watermark number register to record the high or
  * low watermark of a specific health test.
  *
@@ -625,7 +639,7 @@ dif_result_t dif_entropy_src_set_enabled(const dif_entropy_src_t *entropy_src,
  * Locks out entropy source functionality.
  *
  * This function is reentrant: calling it while functionality is locked will
- * have no effect and return `kDifEntropySrcOk`.
+ * have no effect and return `kDifOk`.
  *
  * @param entropy_src An entropy source handle.
  * @return The result of the operation.
