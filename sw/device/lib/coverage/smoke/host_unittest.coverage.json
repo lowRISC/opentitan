@@ -1,0 +1,35 @@
+{
+  "tests": [
+    "//sw/device/lib/coverage/smoke:host_unittest"
+  ],
+  "coverage": {
+    "sw/device/lib/coverage/smoke/target.c": {
+      "funcs": {
+        "covfunc_hit": "hit",
+        "covfunc_nested_hit": "hit",
+        "covfunc_miss": "miss",
+        "covfunc_nested_miss": "miss"
+      },
+      "lines": {
+        "covfunc_hit(void) {": "hit",
+        "covfunc_nested_hit(void) {": "hit",
+        "covfunc_miss(void) {": "miss",
+        "covfunc_nested_miss(void) {": "miss"
+      }
+    },
+    "sw/device/lib/coverage/smoke/target.h": {
+      "funcs": {
+        "inline_covfunc_hit": "hit",
+        "inline_covfunc_miss": "miss",
+        "_ZL25static_inline_covfunc_hitv": "hit",
+        "_ZL26static_inline_covfunc_missv": "miss"
+      },
+      "lines": {
+        "inline_covfunc_hit(void) {": "hit",
+        "inline_covfunc_miss(void) {": "miss",
+        "static_inline_covfunc_hit(void) {": "hit",
+        "static_inline_covfunc_miss(void) {": "miss"
+      }
+    }
+  }
+}
