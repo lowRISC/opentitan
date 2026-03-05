@@ -26,3 +26,10 @@ otbn_library(
         "mldsa87_xof.s",
     ],
 )
+
+otbn_library(
+    name = "mldsa87_rounding",
+    srcs = [
+        "mldsa87_rounding.s",
+    ],
+)
