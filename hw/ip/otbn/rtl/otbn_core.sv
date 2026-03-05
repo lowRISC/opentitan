@@ -30,6 +30,9 @@ module otbn_core
   parameter bit SecMuteUrnd = 1'b0,
   parameter bit SecSkipUrndReseedAtStart = 1'b0,
 
+  // Compile-time permutation for URND permutation in BN MAC
+  parameter bn_mac_urnd_perm_t RndCnstBnMacUrndPerm = RndCnstBnMacUrndPermDefault,
+
   localparam int ImemAddrWidth = prim_util_pkg::vbits(ImemSizeByte),
   localparam int DmemAddrWidth = prim_util_pkg::vbits(DmemSizeByte)
 ) (
@@ -928,7 +931,9 @@ module otbn_core
     .ispr_predec_error_o(ispr_predec_error)
   );
 
-  otbn_mac_bignum u_otbn_mac_bignum (
+  otbn_mac_bignum #(
+    .RndCnstBnMacUrndPerm(RndCnstBnMacUrndPerm)
+  ) u_otbn_mac_bignum (
     .clk_i,
     .rst_ni,
 

@@ -27,6 +27,9 @@ module otbn
   // Skip URND re-seed at the start of an operation. Useful for SCA only.
   parameter bit SecSkipUrndReseedAtStart = 1'b0,
 
+  // Compile-time permutation for URND permutation in BN MAC
+  parameter bn_mac_urnd_perm_t RndCnstBnMacUrndPerm = RndCnstBnMacUrndPermDefault,
+
   // Default seed and nonce for scrambling
   parameter otp_ctrl_pkg::otbn_key_t   RndCnstOtbnKey   = RndCnstOtbnKeyDefault,
   parameter otp_ctrl_pkg::otbn_nonce_t RndCnstOtbnNonce = RndCnstOtbnNonceDefault
@@ -1111,7 +1114,8 @@ module otbn
     .ImemSizeByte(ImemSizeByte),
     .RndCnstUrndPrngSeed(RndCnstUrndPrngSeed),
     .SecMuteUrnd(SecMuteUrnd),
-    .SecSkipUrndReseedAtStart(SecSkipUrndReseedAtStart)
+    .SecSkipUrndReseedAtStart(SecSkipUrndReseedAtStart),
+    .RndCnstBnMacUrndPerm(RndCnstBnMacUrndPerm)
   ) u_otbn_core (
     .clk_i,
     .rst_ni                      (rst_n),

@@ -790,4 +790,21 @@ typedef enum logic [StateScrambleCtrlWidth-1:0] {
 
   typedef logic [63:0] otbn_dmem_nonce_t;
   typedef logic [63:0] otbn_imem_nonce_t;
+
+  // Permutation for the URND permutation in BN MAC used for register clearing.
+  // These parameters have been generated with
+  // $ ./util/design/gen-lfsr-seed.py --width 256 --seed 3357506447 --prefix "BnMac"
+  // and replaced "Lfsr" with "UrndPerm" and "lfsr_" with "urnd_".
+  parameter int BnMacUrndPermWidth = 256;
+  typedef logic [BnMacUrndPermWidth-1:0][$clog2(BnMacUrndPermWidth)-1:0] bn_mac_urnd_perm_t;
+  parameter bn_mac_urnd_perm_t RndCnstBnMacUrndPermDefault = {
+    256'h5883853c_f22faef4_c975ab18_050bfc6b_b9193e1b_450d686e_5de1cdb5_a02a1532,
+    256'ha3e9dd76_8278f6d4_33f74bd9_edbabd7f_721c5a4e_0c23a6f0_34a477db_84947998,
+    256'h6d0affec_df12e025_0fb41ab3_3bdc90e5_ce279907_91227bf1_e4505bcc_2b4c31be,
+    256'h562047c5_9df5fd21_73acadc3_b1438b53_bc8e87a1_d7b02e88_16de0e97_6c354669,
+    256'he89657fe_2662402d_03e3a849_1f6ff839_668c5574_54e2bf14_9cbb8dd3_d5d1ea81,
+    256'h92c73f60_6402b793_52b68911_5161cb7a_09aacab2_0604865f_4dd8d201_101e08c1,
+    256'h7c95a23a_ef177de6_d65c418f_daa96a70_5929c83d_fafb9f37_8a4436af_a5a71d13,
+    256'hcf48c07e_42d0eb67_c29b3863_9a28e72c_b880f3ee_9e246571_00c6f9c4_4f305e4a
+  };
 endpackage

@@ -2522,6 +2522,7 @@ module top_earlgrey #(
     .RndCnstUrndPrngSeed(RndCnstOtbnUrndPrngSeed),
     .SecMuteUrnd(SecOtbnMuteUrnd),
     .SecSkipUrndReseedAtStart(SecOtbnSkipUrndReseedAtStart),
+    .RndCnstBnMacUrndPerm(RndCnstOtbnBnMacUrndPerm),
     .RndCnstOtbnKey(RndCnstOtbnOtbnKey),
     .RndCnstOtbnNonce(RndCnstOtbnOtbnNonce)
   ) u_otbn (
