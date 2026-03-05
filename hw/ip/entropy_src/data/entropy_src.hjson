@@ -601,6 +601,24 @@
         }
       ]
     },
+    { name: "THRESHOLD_ONEWAY",
+      desc: "Threshold one way control register",
+      tags: [// Exclude from writes to this field because they cause side affects.
+            "excl:CsrAllTests:CsrExclAll"]
+      fields: [
+        { bits: "3:0",
+          mubi: "true",
+          resval: "false",
+          swaccess: "rw1s"
+          hwaccess: "hro",
+          name: "THRESHOLD_ONEWAY",
+          desc: '''
+                Setting this field to `kMultiBitBool4True` will enable enable the one-way behavior of the health test threshold registers.
+                After reset, this field reads as `kMultiBitBool4False` and the health test threshold registers can be configured without limitations.
+                '''
+        },
+      ]
+    },
     { name: "REPCNT_THRESHOLD",
       desc: "Repetition Count Test threshold register",
       swaccess: "rw",
@@ -614,8 +632,7 @@
         { bits: "15:0",
           desc: '''This is the threshold for the Repetition Count Test.
                    This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
+                   If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
                    A read from this register always reflects the current value.
                 '''
           resval: "0xFFFF"
@@ -635,8 +652,7 @@
         { bits: "15:0",
           desc: '''This is the threshold for the Repetition Count Symbol Test.
                    This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
+                   If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
                    A read from this register always reflects the current value.
                 '''
           resval: "0xFFFF"
@@ -656,8 +672,7 @@
         { bits: "15:0",
           desc: '''This is the threshold for the Adaptive Proportion Test.
                    This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
+                   If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
                    A read from this register always reflects the current value.
                 '''
           resval: "0xFFFF"
@@ -677,8 +692,7 @@
         { bits: "15:0",
           desc: '''This is the threshold for the Adaptive Proportion Test.
                    This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is greater than the current value of this register.
+                   If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is greater than the current value of this register.
                    A read from this register always reflects the current value.
                 '''
           resval: "0x0000"
@@ -698,8 +712,7 @@
         { bits: "15:0",
           desc: '''This is the threshold size for the bucket health test.
                    This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
+                   If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
                    A read from this register always reflects the current value.
                 '''
           resval: "0xFFFF"
@@ -719,8 +732,7 @@
         { bits: "15:0",
           desc: '''This is the threshold size for the Markov health test.
                    This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
+                   If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
                    A read from this register always reflects the current value.
                 '''
           resval: "0xFFFF"
@@ -740,8 +752,7 @@
         { bits: "15:0",
           desc: '''This is the threshold size for the Markov health test.
                    This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is greater than the current value of this register.
+                   If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is greater than the current value of this register.
                    A read from this register always reflects the current value.
                 '''
           resval: "0x0000"
@@ -761,8 +772,7 @@
         { bits: "15:0",
           desc: '''This is the threshold size for the external health test.
                    This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
+                   If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing  to this register will only update the register if the written value is less than the current value of this register.
                    A read from this register always reflects the current value.
                 '''
           resval: "0xFFFF"
@@ -782,8 +792,7 @@
         { bits: "15:0",
           desc: '''This is the threshold size for the external health test.
                    This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is greater than the current value of this register.
+                   If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is greater than the current value of this register.
                    A read from this register always reflects the current value.
                 '''
           resval: "0x0000"
@@ -1397,6 +1406,13 @@
           name: "THRESHOLD_SCOPE_FIELD_ALERT",
           desc: '''
                 This bit is set when the THRESHOLD_SCOPE field in the !!CONF register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "4",
+          name: "THRESHOLD_ONEWAY_FIELD_ALERT",
+          desc: '''
+                This bit is set when the !!THRESHOLD_ONEWAY register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
                 Writing a zero resets this status bit.
                 '''
         }

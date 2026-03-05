@@ -45,6 +45,7 @@ class entropy_src_fw_ov_test extends entropy_src_base_test;
     // FW_OV_CONTROL.FW_OV_MODE need to be enabled.
     cfg.otp_en_es_fw_over_pct               = 85;
 
+    cfg.dut_cfg.ht_threshold_oneway_pct     = 10;
     cfg.dut_cfg.ht_threshold_scope_pct      = 50;
     cfg.dut_cfg.default_ht_thresholds_pct   = 0;
 

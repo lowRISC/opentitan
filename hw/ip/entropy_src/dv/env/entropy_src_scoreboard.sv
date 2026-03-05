@@ -1372,17 +1372,12 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   // All the HT threshold registers are one-way: they can only become more strict unless
   // the DUT is reset.  This function encapsulates this behavior.
   //
-  // This function operates on full TL_DW words, with some knowledge of the structure of each
-  // register.
-  // 1. These registers are consist of two 16b thresholds a bypass and a FIPS threshold.
-  //    The one-way restriction is applied to them independently.
-  // 2. Both thresholds have the same directional restriction: both can go up or both can go down.
-  // If the structure of these registers ever becomes more varied we will have to generalize this
-  // function, using structural cues from the RAL model
+  // Note that the threshold registers are NOT one-way if THRESHOLD_ONEWAY is false. This case is
+  // handled externally to this function.
   //
   // new_val:       The value to be written to the register
   // prev_val:      The current value of the register
-  // increase_only: 1 if the register values are allowed to increase.
+  // increase_only: 1 if the register values are allowed to increase. Set for threshold_lo regs.
   //
   // Returns the new predicted value for the register.
   function void predict_one_way_threshold(uvm_reg csr,
@@ -1520,37 +1515,37 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       end
       "repcnt_threshold": begin
         locked_reg_access   = dut_reg_locked;
-        one_way_threshold   = 1;
+        one_way_threshold   = `gmv(ral.threshold_oneway) != MuBi4False;
         threshold_increases = 0;
       end
       "repcnts_threshold": begin
         locked_reg_access = dut_reg_locked;
-        one_way_threshold   = 1;
+        one_way_threshold   = `gmv(ral.threshold_oneway) != MuBi4False;
         threshold_increases = 0;
       end
       "adaptp_hi_threshold": begin
         locked_reg_access = dut_reg_locked;
-        one_way_threshold   = 1;
+        one_way_threshold   = `gmv(ral.threshold_oneway) != MuBi4False;
         threshold_increases = 0;
       end
       "adaptp_lo_threshold": begin
         locked_reg_access = dut_reg_locked;
-        one_way_threshold   = 1;
+        one_way_threshold   = `gmv(ral.threshold_oneway) != MuBi4False;
         threshold_increases = 1;
       end
       "bucket_threshold": begin
         locked_reg_access = dut_reg_locked;
-        one_way_threshold   = 1;
+        one_way_threshold   = `gmv(ral.threshold_oneway) != MuBi4False;
         threshold_increases = 0;
       end
       "markov_hi_threshold": begin
         locked_reg_access = dut_reg_locked;
-        one_way_threshold   = 1;
+        one_way_threshold   = `gmv(ral.threshold_oneway) != MuBi4False;
         threshold_increases = 0;
       end
       "markov_lo_threshold": begin
         locked_reg_access = dut_reg_locked;
-        one_way_threshold   = 1;
+        one_way_threshold   = `gmv(ral.threshold_oneway) != MuBi4False;
         threshold_increases = 1;
       end
       "ht_watermark_num": begin
@@ -1828,6 +1823,12 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
               check_redundancy_val("entropy_control", "es_type", "es_type_field_alert",
                                    invalid_es_type);
             end
+            "threshold_oneway": begin
+              check_redundancy_val("threshold_oneway", "threshold_oneway",
+                                  "threshold_oneway_field_alert",
+                                   invalid_threshold_oneway);
+            end
+
             "ht_watermark_num": begin
               // Resolve unsupported values
               bit [3:0] ht_watermark_num_in = item.a_data[3:0];
