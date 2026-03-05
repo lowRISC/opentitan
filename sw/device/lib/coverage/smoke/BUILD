@@ -2,6 +2,15 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
+load(
+    "//rules/opentitan:defs.bzl",
+    "EARLGREY_CW340_TEST_ENVS",
+    "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
+    "EARLGREY_TEST_ENVS",
+    "OPENTITAN_CPU",
+    "opentitan_test",
+)
 load("//rules:otbn.bzl", "otbn_sim_test")
 
 package(default_visibility = ["//visibility:public"])
@@ -25,4 +34,21 @@ otbn_sim_test(
     name = "otbn_simtest",
     srcs = ["target_otbn.s"],
     testcase = "otbn_simtest.hjson",
+)
+
+opentitan_test(
+    name = "ottf_functest",
+    srcs = ["ottf_functest.c"],
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EARLGREY_CW340_TEST_ENVS,
+        {
+            "//hw/top_earlgrey:silicon_creator": None,
+        },
+    ),
+    deps = [
+        ":target",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
 )
