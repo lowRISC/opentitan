@@ -9,6 +9,7 @@ load("@ot_python_deps//:requirements.bzl", "requirement")
 package(default_visibility = ["//visibility:public"])
 
 mldsa87_srcs = [
+    "//sw/otbn/crypto/mldsa87:mldsa87_rounding.s",
     "//sw/otbn/crypto/mldsa87:mldsa87_xof.s",
     "//sw/otbn/crypto/mldsa87:mldsa87_ntt.s",
     "//sw/otbn/crypto/mldsa87:mldsa87_arith.s",
