@@ -67,16 +67,43 @@ module tlul_fifo_sync #(
     .depth_o       (),
     .err_o         ());
 
+  // Buffer the inputs of the FIFO holding the integrity to avoid synthesis optimizations.
+  localparam int NumBufferBitsReqFifoIntg = $bits({
+    tl_h_i.a_valid,
+    tl_d_i.a_ready
+  });
+
+  logic [NumBufferBitsReqFifoIntg-1:0] buf_reqfifo_intg_in, buf_reqfifo_intg_out;
+  logic reqfifo_intg_a_valid_buf;
+  logic reqfifo_intg_a_ready_buf;
+
+  assign buf_reqfifo_intg_in = {
+    tl_h_i.a_valid,
+    tl_d_i.a_ready
+  };
+
+  assign {
+    reqfifo_intg_a_valid_buf,
+    reqfifo_intg_a_ready_buf
+  } = buf_reqfifo_intg_out;
+
+  prim_buf #(
+    .Width(NumBufferBitsReqFifoIntg)
+  ) u_reqfifo_intg_prim_buf (
+    .in_i(buf_reqfifo_intg_in),
+    .out_o(buf_reqfifo_intg_out)
+  );
+
   prim_fifo_sync #(.Width(REQFIFO_INTG_WIDTH), .Pass(ReqPass), .Depth(ReqDepth)) reqfifo_intg (
     .clk_i,
     .rst_ni,
     .clr_i         (1'b0          ),
-    .wvalid_i      (tl_h_i.a_valid),
+    .wvalid_i      (reqfifo_intg_a_valid_buf),
     .wready_o      (),
     .wdata_i       ({tl_h_i.a_user.cmd_intg,
                      tl_h_i.a_user.data_intg}),
     .rvalid_o      (),
-    .rready_i      (tl_d_i.a_ready),
+    .rready_i      (reqfifo_intg_a_ready_buf),
     .rdata_o       ({tl_d_o.a_user.cmd_intg,
                      tl_d_o.a_user.data_intg}),
     .full_o        (),
@@ -119,15 +146,42 @@ module tlul_fifo_sync #(
     .depth_o       (),
     .err_o         ());
 
+  // Buffer the inputs of the FIFO holding the integrity to avoid synthesis optimizations.
+  localparam int NumBufferBitsRspFifoIntg = $bits({
+    tl_d_i.d_valid,
+    tl_h_i.d_ready
+  });
+
+  logic [NumBufferBitsRspFifoIntg-1:0] buf_rspfifo_intg_in, buf_rspfifo_intg_out;
+  logic rspfifo_intg_d_valid_buf;
+  logic rspfifo_intg_d_ready_buf;
+
+  assign buf_rspfifo_intg_in = {
+    tl_d_i.d_valid,
+    tl_h_i.d_ready
+  };
+
+  assign {
+    rspfifo_intg_d_valid_buf,
+    rspfifo_intg_d_ready_buf
+  } = buf_rspfifo_intg_out;
+
+  prim_buf #(
+    .Width(NumBufferBitsRspFifoIntg)
+  ) u_rspfifo_intg_prim_buf (
+    .in_i(buf_rspfifo_intg_in),
+    .out_o(buf_rspfifo_intg_out)
+  );
+
   prim_fifo_sync #(.Width(RSPFIFO_INTG_WIDTH), .Pass(RspPass), .Depth(RspDepth)) rspfifo_intg (
     .clk_i,
     .rst_ni,
     .clr_i         (1'b0          ),
-    .wvalid_i      (tl_d_i.d_valid),
+    .wvalid_i      (rspfifo_intg_d_valid_buf),
     .wready_o      (),
     .wdata_i       (tl_d_i.d_user),
     .rvalid_o      (),
-    .rready_i      (tl_h_i.d_ready),
+    .rready_i      (rspfifo_intg_d_ready_buf),
     .rdata_o       (tl_h_o.d_user),
     .full_o        (),
     .depth_o       (),

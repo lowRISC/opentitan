@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:dv:pins_if
       - lowrisc:prim:assert
+      - lowrisc:prim:buf
       - lowrisc:prim:fifo
       - lowrisc:tlul:headers
       - lowrisc:tlul:trans_intg
