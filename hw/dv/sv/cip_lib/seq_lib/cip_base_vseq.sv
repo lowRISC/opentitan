@@ -598,7 +598,9 @@ task cip_base_vseq::tl_access_sub(
     tl_sequencer            tl_sequencer_h = p_sequencer.tl_sequencer_h,
     input                   tl_intg_err_e tl_intg_err_type = TlIntgErrNone);
 
+  bit                    timed_out;
   cip_tl_host_single_seq tl_seq;
+
   `uvm_create_on(tl_seq, tl_sequencer_h)
   tl_seq.tl_intg_err_type = tl_intg_err_type;
   if (cfg.zero_delays) begin
@@ -626,11 +628,19 @@ task cip_base_vseq::tl_access_sub(
 
         // Now wait a bounded time to check that the bus hasn't locked up for some reason.
         #(tl_access_timeout_ns * 1ns);
+
+        timed_out = 1;
       end
     join_any
     disable fork;
   end join
   csr_utils_pkg::decrement_outstanding_access();
+
+  if (timed_out) begin
+    `uvm_error(get_name(),
+               $sformatf("Time-out (%0d ns) when sending TL transaction.", tl_access_timeout_ns))
+    return;
+  end
 
   rsp = tl_seq.rsp;
 
