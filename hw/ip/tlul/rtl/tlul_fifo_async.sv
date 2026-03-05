@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// TL-UL fifo, used to add elasticity or an asynchronous clock crossing
-// to an TL-UL bus.  This instantiates two FIFOs, one for the request side,
+// Asynchronous TL-UL FIFO, used to cross asynchronous clock domains.
+// This instantiates two FIFOs, one for the request side,
 // and one for the response side.
 
 `include "prim_assert.sv"

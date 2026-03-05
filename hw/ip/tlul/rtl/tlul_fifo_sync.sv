@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// TL-UL fifo, used to add elasticity or an asynchronous clock crossing
-// to an TL-UL bus.  This instantiates two FIFOs, one for the request side,
-// and one for the response side.
+// Synchronous TL-UL FIFO, used to add elasticity (the ability for
+// transactions to stall on one side without affecting the other side)
+// to a TL-UL bus. This instantiates two pairs (data + integrity) of FIFOs:
+// one pair for the request side, and another pair for the response side.
 
 module tlul_fifo_sync #(
   parameter bit          ReqPass = 1'b1,
