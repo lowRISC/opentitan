@@ -1,0 +1,19 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  "input": {
+    "regs": {
+      "x5": "0x00000000"
+    }
+  }
+  "output": {
+    "regs": {
+      # Sum of:
+      #  - 1 = start
+      #  - 2 = covfunc_hit
+      #  - 4 = covfunc_nested_hit
+      "x5": "0x00000007"
+    }
+  }
+}
