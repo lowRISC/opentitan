@@ -15,6 +15,7 @@ use std::sync::LazyLock;
 use std::time::Duration;
 
 use anyhow::{Context, Result, bail, ensure};
+use clap::Args;
 use regex::Regex;
 use serialport::TTYPort;
 
@@ -31,7 +32,7 @@ use opentitanlib::transport::{
     TransportInterfaceType, UpdateFirmware,
 };
 use opentitanlib::util::fs::builtin_file;
-use opentitanlib::util::usb::UsbBackend;
+use opentitanlib::util::usb::{UsbBackend, UsbHub, UsbHubOp};
 use ot_transport_chipwhisperer::ChipWhisperer;
 use ot_transport_chipwhisperer::board::Board;
 use ot_transport_chipwhisperer::board::{Cw310, Cw340};
@@ -62,6 +63,7 @@ pub struct Hyperdebug<T: Flavor> {
     current_firmware_version: Option<String>,
     cmsis_google_capabilities: Cell<Option<u16>>,
     phantom: PhantomData<T>,
+    cw_usb_port_workaround: Option<u8>,
 }
 
 /// Trait allowing slightly different treatment of USB devices that work almost like a
@@ -144,6 +146,7 @@ impl<T: Flavor> Hyperdebug<T> {
         usb_vid: Option<u16>,
         usb_pid: Option<u16>,
         usb_serial: Option<&str>,
+        cw_usb_port_workaround: Option<u8>,
     ) -> Result<Self> {
         let device = UsbBackend::new(
             usb_vid.unwrap_or_else(T::get_default_usb_vid),
@@ -306,6 +309,7 @@ impl<T: Flavor> Hyperdebug<T> {
             current_firmware_version,
             cmsis_google_capabilities: Cell::new(None),
             phantom: PhantomData,
+            cw_usb_port_workaround,
         };
         Ok(result)
     }
@@ -892,12 +896,57 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
     }
 }
 
+impl<T: Flavor> Hyperdebug<T> {
+    // Return the parent hub of the hyperdebug device.
+    fn usb_ot_parent_hub(&self) -> Result<UsbHub> {
+        UsbHub::from_device(
+            &self
+                .inner
+                .usb_device
+                .borrow()
+                .device()
+                .get_parent()
+                .ok_or(anyhow::anyhow!("Hyperdebug device has no parent?!"))?,
+        )
+        .context("failed to open the parent hub of the hyperdebug device")
+    }
+
+    fn disable_usb_ot_port(&self) -> Result<()> {
+        if let Some(port) = self.cw_usb_port_workaround {
+            let hub = self.usb_ot_parent_hub()?;
+            log::info!("Powering off port {port} on hyperdebug parent hub (CW USB workaround)");
+            hub.op(UsbHubOp::PowerOff, port, Duration::from_secs(1))
+                .context(format!(
+                    "failed to disable port {port} on hyperdebug parent hub (CW USB workaround)"
+                ))?;
+        }
+        Ok(())
+    }
+
+    fn enable_usb_ot_port(&self) -> Result<()> {
+        if let Some(port) = self.cw_usb_port_workaround {
+            let hub = self.usb_ot_parent_hub()?;
+            log::info!("Powering on port {port} on hyperdebug parent hub (CW USB workaround)");
+            hub.op(UsbHubOp::PowerOn, port, Duration::from_secs(1))
+                .context(format!(
+                    "failed to reset port {port} on hyperdebug parent hub (CW USB workaround)"
+                ))?;
+        }
+        Ok(())
+    }
+}
+
 impl<T: Flavor> FpgaOps for Hyperdebug<T> {
     fn load_bitstream(&self, bitstream: &[u8], progress: &dyn ProgressIndicator) -> Result<()> {
-        T::load_bitstream(bitstream, progress)
+        // Before loading the bitstream, we disable the USB port which corresponds to the USB OT
+        // device and only re-enable it after loading.
+        self.disable_usb_ot_port()?;
+        T::load_bitstream(bitstream, progress)?;
+        self.enable_usb_ot_port()
     }
 
     fn clear_bitstream(&self) -> Result<()> {
+        self.disable_usb_ot_port()?;
         T::clear_bitstream()
     }
 }
@@ -1003,16 +1052,28 @@ impl<B: Board> Flavor for ChipWhispererFlavor<B> {
     }
 }
 
+#[derive(Debug, Args)]
+pub struct HyperdebugOpts {
+    /// Work around the USB transceiver on the CW boards not being disabled when the FPGA is
+    /// is not loaded. Enabling this option will cause the backend to disable the USB port
+    /// prior to clearing the bitstream and only re-enable it after loading. It assumes that
+    /// the USB port is connected to the same parent hub as the hyperdebug device and this option
+    /// specifies the port number of that hub.
+    #[arg(long)]
+    pub cw_usb_port_workaround: Option<u8>,
+}
+
 struct HyperdebugBackend<T>(T);
 
 impl<T: Flavor + 'static> Backend for HyperdebugBackend<T> {
-    type Opts = ();
+    type Opts = HyperdebugOpts;
 
-    fn create_transport(args: &BackendOpts, _: &()) -> Result<Box<dyn Transport>> {
+    fn create_transport(args: &BackendOpts, opts: &HyperdebugOpts) -> Result<Box<dyn Transport>> {
         Ok(Box::new(Hyperdebug::<T>::open(
             args.usb_vid,
             args.usb_pid,
             args.usb_serial.as_deref(),
+            opts.cw_usb_port_workaround,
         )?))
     }
 }
