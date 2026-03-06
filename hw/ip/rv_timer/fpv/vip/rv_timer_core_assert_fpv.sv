@@ -97,8 +97,12 @@ module rv_timer_core_assert_fpv # (
 
   // Check interrupt is low when inactive or interrupt condition is not met
   property InterruptLowWhenNotExpired_p;
-    !active || mtime < mtimecmp[fpv_timer_idx] |-> intr[fpv_timer_idx] == '0;
+    disable iff (!rst_ni) 
+    !active || mtime < mtimecmp[fpv_timer_idx] |-> intr[fpv_timer_idx] == '0; 
   endproperty
   InterruptLowWhenNotExpired_A: assert property (InterruptLowWhenNotExpired_p);
   
+  // Check mtime_d is always mtime + step, regardless of reset or active
+  MtimeDAlwaysMtimePlusStep_A: assert property (disable iff ('0)  mtime_d == mtime + 64'(step));
+
 endmodule
