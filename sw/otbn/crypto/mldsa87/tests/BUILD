@@ -27,6 +27,8 @@ mldsa87_unit_tests = [
     "mldsa87_poly_mul_add_test",
     "mldsa87_xof_shake128_test",
     "mldsa87_xof_shake256_test",
+    "mldsa87_shift_left_test",
+    "mldsa87_decompose_test",
 ]
 
 [
