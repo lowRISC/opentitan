@@ -123,18 +123,20 @@ jobs:
       tag_filters: "cw310_sival_rom_ext,-coverage_broken"
       mode: coverage
 
-  execute_manuf_fpga_tests_cw310:
-    name: CW310 Manufacturing Tests
-    needs: chip_earlgrey_cw310_hyperdebug
-    uses: ./.github/workflows/fpga.yml
-    secrets: inherit
-    with:
-      job_name: execute_manuf_fpga_tests_cw310
-      bitstream: chip_earlgrey_cw310_hyperdebug
-      board: cw310
-      interface: hyper310
-      tag_filters: "manuf,-cw340,-qemu,-coverage_broken"
-      mode: coverage
+  # FIXME: Most manuf tests use SRAM binaries, which is not supported in
+  # coverage mode now.
+  # execute_manuf_fpga_tests_cw310:
+  #   name: CW310 Manufacturing Tests
+  #   needs: chip_earlgrey_cw310_hyperdebug
+  #   uses: ./.github/workflows/fpga.yml
+  #   secrets: inherit
+  #   with:
+  #     job_name: execute_manuf_fpga_tests_cw310
+  #     bitstream: chip_earlgrey_cw310_hyperdebug
+  #     board: cw310
+  #     interface: hyper310
+  #     tag_filters: "manuf,-cw340,-qemu,-coverage_broken"
+  #     mode: coverage
 
   execute_fpga_rom_ext_tests_hyper310:
     name: Hyper310 ROM_EXT Tests
@@ -147,6 +149,7 @@ jobs:
       board: cw310
       interface: hyper310
       tag_filters: "hyper310_rom_ext,-coverage_broken"
+      timeout: 90
       mode: coverage
 
   # CW340 FPGA jobs
@@ -215,18 +218,20 @@ jobs:
       tag_filters: "cw340_sival_rom_ext,-coverage_broken"
       mode: coverage
 
-  execute_manuf_fpga_tests_cw340:
-    name: CW340 Manufacturing Tests
-    needs: chip_earlgrey_cw340
-    uses: ./.github/workflows/fpga.yml
-    secrets: inherit
-    with:
-      job_name: execute_manuf_fpga_tests_cw340
-      bitstream: chip_earlgrey_cw340
-      board: cw340
-      interface: cw340
-      tag_filters: "manuf,-hyper310,-qemu,-coverage_broken"
-      mode: coverage
+  # FIXME: Most manuf tests use SRAM binaries, which is not supported in
+  # coverage mode now.
+  # execute_manuf_fpga_tests_cw340:
+  #   name: CW340 Manufacturing Tests
+  #   needs: chip_earlgrey_cw340
+  #   uses: ./.github/workflows/fpga.yml
+  #   secrets: inherit
+  #   with:
+  #     job_name: execute_manuf_fpga_tests_cw340
+  #     bitstream: chip_earlgrey_cw340
+  #     board: cw340
+  #     interface: cw340
+  #     tag_filters: "manuf,-hyper310,-qemu,-coverage_broken"
+  #     mode: coverage
 
   coverage_quick:
     name: Coverage (quick)
@@ -241,14 +246,14 @@ jobs:
       - execute_rom_ext_fpga_tests_cw310
       - execute_sival_fpga_tests_cw310
       - execute_sival_rom_ext_fpga_tests_cw310
-      - execute_manuf_fpga_tests_cw310
+      # - execute_manuf_fpga_tests_cw310
       - execute_fpga_rom_ext_tests_hyper310
       - execute_test_rom_fpga_tests_cw340
       - execute_rom_fpga_tests_cw340
       - execute_rom_ext_fpga_tests_cw340
       - execute_sival_fpga_tests_cw340
       - execute_sival_rom_ext_fpga_tests_cw340
-      - execute_manuf_fpga_tests_cw340
+      # - execute_manuf_fpga_tests_cw340
       - coverage_quick
     if: success() || failure()
     uses: ./.github/workflows/publish-coverage-report.yml

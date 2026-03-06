@@ -83,6 +83,7 @@ opentitan_test(
     ),
     fpga = fpga_params(
         tags = [
+            "coverage_broken",  # perftest instrumentation overhead
             "manual",
         ],
     ),
@@ -207,6 +208,9 @@ opentitan_test(
     name = "memory_perftest",
     srcs = ["memory_perftest.c"],
     exec_env = EARLGREY_TEST_ENVS,
+    fpga = fpga_params(
+        tags = ["coverage_broken"],  # perftest instrumentation overhead
+    ),
     deps = [
         ":macros",
         ":memory",

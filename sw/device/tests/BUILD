@@ -105,6 +105,9 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
+    fpga = fpga_params(
+        tags = ["coverage_broken"],  # FIXME: broken in coverage mode.
+    ),
     qemu = qemu_params(
         globals = {
             "ot-aes.fast-mode": "false",
@@ -1120,6 +1123,9 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
         },
     ),
+    fpga = fpga_params(
+        tags = ["coverage_broken"],  # FIXME: Coverage mode heap is too small.
+    ),
     silicon_owner = silicon_params(
         tags = ["broken"],
     ),
@@ -1649,6 +1655,9 @@ opentitan_test(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
+    fpga = fpga_params(
+        tags = ["coverage_broken"],  # FIXME: Coverage mode heap is too small.
+    ),
     deps = [
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:check",
@@ -1937,6 +1946,9 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
             "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
+    ),
+    fpga = fpga_params(
+        tags = ["coverage_broken"],  # FIXME: broken in coverage mode.
     ),
     # Run also as ROM_EXT stage as test coverage is reduced in silicon owner stage.
     run_in_ci = [
@@ -2963,6 +2975,9 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
+    fpga = fpga_params(
+        tags = ["coverage_broken"],  # FIXME: broken in coverage mode.
+    ),
     verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -3491,6 +3506,7 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
+        tags = ["coverage_broken"],  # FIXME: broken in coverage mode.
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
     ),
     silicon = silicon_params(
@@ -3574,6 +3590,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
+        tags = ["coverage_broken"],  # FIXME: broken in coverage mode.
         test_cmd = "{firmware:elf}",
         test_harness = "//sw/host/tests/chip/gpio:sleep_pin_wake",
     ),
@@ -3727,6 +3744,9 @@ opentitan_test(
         {
             "//hw/top_earlgrey:silicon_creator": None,
         },
+    ),
+    fpga = fpga_params(
+        tags = ["coverage_broken"],  # FIXME: failure due to instrumentation.
     ),
     verilator = verilator_params(
         timeout = "long",
@@ -5119,6 +5139,7 @@ opentitan_test(
         "usbdev_suspend_resume_test.c",
     ],
     cw310 = fpga_params(
+        tags = ["coverage_broken"],  # RAM exhausted in coverage mode.
         test_cmd = """
             --fin-phase=suspend
             --init-phase=suspend
@@ -5133,6 +5154,9 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw310_test_rom": None,
             "//hw/top_earlgrey:sim_dv": None,
         },
+    ),
+    fpga = fpga_params(
+        tags = ["coverage_broken"],  # RAM exhausted in coverage mode.
     ),
     silicon = silicon_params(
         test_cmd = """
@@ -5157,6 +5181,7 @@ opentitan_test(
         "usbdev_sleep_resume_test.c",
     ],
     cw310 = fpga_params(
+        tags = ["coverage_broken"],  # RAM exhausted in coverage mode.
         test_cmd = """
             --fin-phase=sleep-resume
             --init-phase=sleep-resume
@@ -5171,6 +5196,9 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw310_test_rom": None,
             "//hw/top_earlgrey:sim_dv": None,
         },
+    ),
+    fpga = fpga_params(
+        tags = ["coverage_broken"],  # RAM exhausted in coverage mode.
     ),
     silicon = silicon_params(
         test_cmd = """
@@ -5196,6 +5224,7 @@ opentitan_test(
         "usbdev_sleep_reset_test.c",
     ],
     cw310 = fpga_params(
+        tags = ["coverage_broken"],  # RAM exhausted in coverage mode.
         test_cmd = """
             --fin-phase=sleep-reset
             --init-phase=sleep-resume
@@ -5211,6 +5240,9 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw310_test_rom": None,
             "//hw/top_earlgrey:sim_dv": None,
         },
+    ),
+    fpga = fpga_params(
+        tags = ["coverage_broken"],  # RAM exhausted in coverage mode.
     ),
     silicon = silicon_params(
         test_cmd = """
@@ -5277,6 +5309,7 @@ opentitan_test(
         "usbdev_deep_resume_test.c",
     ],
     cw310 = fpga_params(
+        tags = ["coverage_broken"],  # RAM exhausted in coverage mode.
         test_cmd = """
             --fin-phase=deep-resume
             --init-phase=deep-resume
@@ -5292,6 +5325,9 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw310_test_rom": None,
             "//hw/top_earlgrey:sim_dv": None,
         },
+    ),
+    fpga = fpga_params(
+        tags = ["coverage_broken"],  # RAM exhausted in coverage mode.
     ),
     silicon = silicon_params(
         test_cmd = """
@@ -5317,6 +5353,7 @@ opentitan_test(
         "usbdev_deep_reset_test.c",
     ],
     cw310 = fpga_params(
+        tags = ["coverage_broken"],  # RAM exhausted in coverage mode.
         test_cmd = """
             --fin-phase=deep-reset
             --init-phase=deep-resume
@@ -5332,6 +5369,9 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw310_test_rom": None,
             "//hw/top_earlgrey:sim_dv": None,
         },
+    ),
+    fpga = fpga_params(
+        tags = ["coverage_broken"],  # RAM exhausted in coverage mode.
     ),
     silicon = silicon_params(
         test_cmd = """
@@ -5657,6 +5697,7 @@ opentitan_test(
     ),
     fpga = fpga_params(
         otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_prod_manuf_personalized",
+        tags = ["coverage_broken"],  # FIXME: Coverage mode heap is too small.
         test_harness = "//sw/host/tests/chip/power_virus",
     ),
     silicon = silicon_params(
@@ -6422,6 +6463,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_sival": None,
     },
     fpga = fpga_params(
+        tags = ["coverage_broken"],  # RAM exhausted in coverage mode.
         test_cmd = "{firmware:elf}",
         test_harness = "//sw/host/tests/chip/i2c_target:i2c_target_smbus_arp",
     ),
@@ -6866,6 +6908,7 @@ opentitan_test(
         },
         needs_jtag = True,
         otp = "//sw/device/silicon_creator/manuf/tests:otp_img_rom_exec_disabled_test_unlocked0",
+        tags = ["coverage_broken"],  # FIXME: broken in coverage mode.
         test_cmd = "--elf={sram_program}",
         test_harness = "//sw/host/tests/chip/rv_core_ibex_isa",
         testopt_bootstrap = "False",
@@ -7075,6 +7118,7 @@ opentitan_test(
         },
         needs_jtag = True,
         otp = "//sw/device/silicon_creator/manuf/tests:otp_img_rom_exec_disabled_test_unlocked0",
+        tags = ["coverage_broken"],  # FIXME: broken in coverage mode.
         test_cmd = "--elf={sram_program}",
         test_harness = "//sw/host/tests/chip/rv_core_ibex_epmp",
         testopt_bootstrap = "False",
