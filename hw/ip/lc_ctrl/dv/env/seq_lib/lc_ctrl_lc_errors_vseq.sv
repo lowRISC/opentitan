@@ -6,7 +6,7 @@
 // Invalid transition
 // Transition count = 24
 // Clock bypass invalid response
-// Flash RMA invalid response
+// NVM RMA invalid response
 // Incorrect token for transition
 // OTP partition error
 
@@ -23,7 +23,7 @@ class lc_ctrl_lc_errors_vseq extends lc_ctrl_errors_vseq;
           err_inj.transition_err,
           err_inj.transition_count_err,
           err_inj.clk_byp_error_rsp,
-          err_inj.flash_rma_error_rsp,
+          err_inj.nvm_rma_error_rsp,
           err_inj.token_mismatch_err,
           err_inj.token_invalid_err,
           err_inj.token_response_err,

@@ -80,9 +80,9 @@ module otp_ctrl
   output otp_lc_data_t                               otp_lc_data_o,
   output otp_keymgr_key_t                            otp_keymgr_key_o,
   // Scrambling key requests
-% if enable_flash_key:
-  input  flash_otp_key_req_t                         flash_otp_key_i,
-  output flash_otp_key_rsp_t                         flash_otp_key_o,
+% if enable_nvm_key:
+  input  nvm_otp_key_req_t                           nvm_otp_key_i,
+  output nvm_otp_key_rsp_t                           nvm_otp_key_o,
 % endif
   input  sram_otp_key_req_t [NumSramKeyReqSlots-1:0] sram_otp_key_i,
   output sram_otp_key_rsp_t [NumSramKeyReqSlots-1:0] sram_otp_key_o,
@@ -1145,8 +1145,8 @@ end
 
   logic scrmbl_key_seed_valid;
   logic [SramKeySeedWidth-1:0] sram_data_key_seed;
-% if enable_flash_key:
-  logic [FlashKeySeedWidth-1:0] flash_data_key_seed, flash_addr_key_seed;
+% if enable_nvm_key:
+  logic [NvmKeySeedWidth-1:0]  nvm_data_key_seed, nvm_addr_key_seed;
 % endif
 
   otp_ctrl_kdi #(
@@ -1158,17 +1158,17 @@ end
     .escalate_en_i           ( lc_escalate_en[KdiIdx]  ),
     .fsm_err_o               ( part_fsm_err[KdiIdx]    ),
     .scrmbl_key_seed_valid_i ( scrmbl_key_seed_valid   ),
-  % if enable_flash_key:
-    .flash_data_key_seed_i   ( flash_data_key_seed     ),
-    .flash_addr_key_seed_i   ( flash_addr_key_seed     ),
+  % if enable_nvm_key:
+    .nvm_data_key_seed_i     ( nvm_data_key_seed       ),
+    .nvm_addr_key_seed_i     ( nvm_addr_key_seed       ),
   % endif
     .sram_data_key_seed_i    ( sram_data_key_seed      ),
     .edn_req_o               ( key_edn_req             ),
     .edn_ack_i               ( key_edn_ack             ),
     .edn_data_i              ( edn_data                ),
-  % if enable_flash_key:
-    .flash_otp_key_i,
-    .flash_otp_key_o,
+  % if enable_nvm_key:
+    .nvm_otp_key_i,
+    .nvm_otp_key_o,
   % endif
     .sram_otp_key_i,
     .sram_otp_key_o,
@@ -1437,7 +1437,7 @@ end
 
   // Note regarding these breakouts: named_keymgr_key_assign will tie off unused key material /
   // valid signals to '0. This is the case for instance in system configurations that keep the seed
-  // material in the flash instead of OTP.
+  // material in the nvm instead of OTP.
   logic creator_root_key_share0_valid_d, creator_root_key_share0_valid_q;
   logic creator_root_key_share1_valid_d, creator_root_key_share1_valid_q;
   logic creator_seed_valid_d, creator_seed_valid_q;
@@ -1493,11 +1493,11 @@ end
   assign scrmbl_key_seed_valid = part_digest[Secret1Idx] != '0;
   assign sram_data_key_seed    = part_buf_data[SramDataKeySeedOffset +:
                                                SramDataKeySeedSize];
-% if enable_flash_key:
-  assign flash_data_key_seed   = part_buf_data[FlashDataKeySeedOffset +:
-                                               FlashDataKeySeedSize];
-  assign flash_addr_key_seed   = part_buf_data[FlashAddrKeySeedOffset +:
-                                               FlashAddrKeySeedSize];
+% if enable_nvm_key:
+  assign nvm_data_key_seed     = part_buf_data[NvmDataKeySeedOffset +:
+                                               NvmDataKeySeedSize];
+  assign nvm_addr_key_seed     = part_buf_data[NvmAddrKeySeedOffset +:
+                                               NvmAddrKeySeedSize];
 % endif
 
   // Test unlock and exit tokens and RMA token
@@ -1568,9 +1568,9 @@ end
 
   `ASSERT_INIT(CreatorRootKeyShare0Size_A, KeyMgrKeyWidth == CreatorRootKeyShare0Size * 8)
   `ASSERT_INIT(CreatorRootKeyShare1Size_A, KeyMgrKeyWidth == CreatorRootKeyShare1Size * 8)
-% if enable_flash_key:
-  `ASSERT_INIT(FlashDataKeySeedSize_A,     FlashKeySeedWidth == FlashDataKeySeedSize * 8)
-  `ASSERT_INIT(FlashAddrKeySeedSize_A,     FlashKeySeedWidth == FlashAddrKeySeedSize * 8)
+% if enable_nvm_key:
+  `ASSERT_INIT(NvmDataKeySeedSize_A,       NvmKeySeedWidth == NvmDataKeySeedSize * 8)
+  `ASSERT_INIT(NvmAddrKeySeedSize_A,       NvmKeySeedWidth == NvmAddrKeySeedSize * 8)
 % endif
   `ASSERT_INIT(SramDataKeySeedSize_A,      SramKeySeedWidth == SramDataKeySeedSize * 8)
 
@@ -1588,8 +1588,8 @@ end
   `ASSERT_KNOWN(LcOtpProgramRspKnown_A,      lc_otp_program_o)
   `ASSERT_KNOWN(OtpLcDataKnown_A,            otp_lc_data_o)
   `ASSERT_KNOWN(OtpKeymgrKeyKnown_A,         otp_keymgr_key_o)
-% if enable_flash_key:
-  `ASSERT_KNOWN(FlashOtpKeyRspKnown_A,       flash_otp_key_o)
+% if enable_nvm_key:
+  `ASSERT_KNOWN(NvmOtpKeyRspKnown_A,         nvm_otp_key_o)
 % endif
   `ASSERT_KNOWN(OtpSramKeyKnown_A,           sram_otp_key_o)
   `ASSERT_KNOWN(OtpOtgnKeyKnown_A,           otbn_otp_key_o)

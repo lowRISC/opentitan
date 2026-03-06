@@ -17,7 +17,7 @@
 | [`keymgr`]       | Managing identities and root keys; shielding confidential assets from software; providing a key derivation interface for software |
 | [`keymgr_dpe`]   | Manage multiple DICE sessions in a DPE-compatible way                                                                             |
 | [`kmac`]         | Accelerator for Keccak-based keyed hash message authentication code and SHA-3 hash functions; with SCA and FI countermeasures     |
-| [`lc_ctrl`]      | Manages device life cycle states and transitions, and controls key manager, flash, OTP, and debug access                          |
+| [`lc_ctrl`]      | Manages device life cycle states and transitions, and controls key manager, NVM (flash), OTP, and debug access                    |
 | [`mbx`]          | DOE mailbox for use as an integrated OpenTitan communication channel.                                                             |
 | [`otbn`]         | Programmable coprocessor for asymmetric cryptography with SCA and FI countermeasures                                              |
 | [`otp_macro`]    | OTP macro simulation model and CSR block                                                                                          |

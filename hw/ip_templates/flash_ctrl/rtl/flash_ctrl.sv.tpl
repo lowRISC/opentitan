@@ -51,12 +51,12 @@ module flash_ctrl
 
   // otp/lc/pwrmgr/keymgr Interface
   // SEC_CM: SCRAMBLE.KEY.SIDELOAD
-  output       otp_ctrl_pkg::flash_otp_key_req_t otp_o,
-  input        otp_ctrl_pkg::flash_otp_key_rsp_t otp_i,
+  output       otp_ctrl_pkg::nvm_otp_key_req_t otp_o,
+  input        otp_ctrl_pkg::nvm_otp_key_rsp_t otp_i,
   input        lc_ctrl_pkg::lc_tx_t rma_req_i,
-  input        lc_ctrl_pkg::lc_flash_rma_seed_t rma_seed_i,
+  input        lc_ctrl_pkg::lc_nvm_rma_seed_t rma_seed_i,
   output       lc_ctrl_pkg::lc_tx_t rma_ack_o,
-  output       pwrmgr_pkg::pwr_flash_t pwrmgr_o,
+  output       pwrmgr_pkg::pwr_nvm_t pwrmgr_o,
   output       keymgr_flash_t keymgr_o,
 
   // IOs
@@ -924,7 +924,7 @@ module flash_ctrl
     .clk_i,
     .rst_ni,
     .d_i(flash_idle_d),
-    .q_o(pwrmgr_o.flash_idle)
+    .q_o(pwrmgr_o.nvm_idle)
   );
 
   //////////////////////////////////////

@@ -41,8 +41,8 @@ package otp_ctrl_part_pkg;
 
   typedef enum logic [ConstSelWidth-1:0] {
     CnstyDigest,
-    FlashDataKey,
-    FlashAddrKey,
+    NvmDataKey,
+    NvmAddrKey,
     SramDataKey
   } digest_sel_e;
 

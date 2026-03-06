@@ -64,8 +64,8 @@ package lc_ctrl_pkg;
   parameter lc_tx_t LC_TX_DEFAULT = lc_tx_t'(Off);
 
   parameter int RmaSeedWidth = 32;
-  typedef logic [RmaSeedWidth-1:0] lc_flash_rma_seed_t;
-  parameter lc_flash_rma_seed_t LC_FLASH_RMA_SEED_DEFAULT = '0;
+  typedef logic [RmaSeedWidth-1:0] lc_nvm_rma_seed_t;
+  parameter lc_nvm_rma_seed_t LC_NVM_RMA_SEED_DEFAULT = '0;
 
   parameter int LcKeymgrDivWidth = 128;
   typedef logic [LcKeymgrDivWidth-1:0] lc_keymgr_div_t;
@@ -301,7 +301,7 @@ package lc_ctrl_pkg;
     CntProgSt     = 16'b0000110001010100,
     TransCheckSt  = 16'b0110111010110000,
     TokenHashSt   = 16'b1101001000111111,
-    FlashRmaSt    = 16'b1110100010001111,
+    NvmRmaSt      = 16'b1110100010001111,
     TokenCheck0St = 16'b0010000011000000,
     TokenCheck1St = 16'b1101010101101111,
     TransProgSt   = 16'b1000000110101011,

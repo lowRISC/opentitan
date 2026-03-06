@@ -43,12 +43,12 @@
             cnst_value: <random>
           }
           {
-            name: FlashDataKey
+            name: NvmDataKey
             iv_value: <random>
             cnst_value: <random>
           }
           {
-            name: FlashAddrKey
+            name: NvmAddrKey
             iv_value: <random>
             cnst_value: <random>
           }
@@ -1946,7 +1946,7 @@
           items:
           [
             {
-              name: FLASH_ADDR_KEY_SEED
+              name: NVM_ADDR_KEY_SEED
               inv_default: <random>
               size: 32
               isdigest: false
@@ -1957,7 +1957,7 @@
               offset: 1784
             }
             {
-              name: FLASH_DATA_KEY_SEED
+              name: NVM_DATA_KEY_SEED
               inv_default: <random>
               size: 32
               isdigest: false
@@ -1993,7 +1993,7 @@
           desc:
             '''
             Secret partition 1.
-            This contains SRAM and flash scrambling keys.
+            This contains SRAM and NVM scrambling keys.
             '''
           absorb: false
           iskeymgr_creator: false
@@ -2133,7 +2133,7 @@
         }
       ]
     }
-    enable_flash_key: true
+    enable_nvm_key: true
     topname: earlgrey
     uniquified_modules: {}
     module_instance_name: otp_ctrl

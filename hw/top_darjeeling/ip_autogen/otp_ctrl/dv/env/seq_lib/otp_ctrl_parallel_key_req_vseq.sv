@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// This sequence will randomly issue key otbn, sram, flash key requests during or after partition
+// This sequence will randomly issue key otbn, sram, nvm key requests during or after partition
 // is locked.
 // This sequence will check if nonce, seed_valid, and output keys are correct via scb.
 

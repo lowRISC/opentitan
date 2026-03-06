@@ -659,11 +659,11 @@ def _get_flash_ctrl_params(top: ConfigT) -> ParamsT:
 def _get_otp_ctrl_params(top: ConfigT,
                          out_path: Path) -> ParamsT:
 
-    def has_flash_keys(parts, path) -> bool:
-        """Determines if the SECRET1 partition has flash key seeds.
+    def has_nvm_keys(parts, path) -> bool:
+        """Determines if the SECRET1 partition has nvm key seeds.
 
-        This assumes the flash keys are in the secret1 partition, and are
-        named "flash*key_seed" (case doesn't matter). If in some future
+        This assumes the nvm keys are in the secret1 partition, and are
+        named "nvm*key_seed" (case doesn't matter). If in some future
         otp mmap the location of these keys changes we can revisit this
         detection.
         """
@@ -673,10 +673,10 @@ def _get_otp_ctrl_params(top: ConfigT,
                 break
         else:
             raise ValueError(f"SECRET1 partition not found in {path}")
-        flash_keys = [i for i in secret1_partition["items"]
-                      if i["name"].lower().startswith("flash")
-                      and i["name"].lower().endswith("key_seed")]
-        return len(flash_keys) > 0
+        nvm_keys = [i for i in secret1_partition["items"]
+                    if i["name"].lower().startswith("nvm")
+                    and i["name"].lower().endswith("key_seed")]
+        return len(nvm_keys) > 0
 
     def get_param(name: str, param_list: List[Dict[str, Any]]) -> Dict[str, Any]:
         for p in param_list:
@@ -687,7 +687,7 @@ def _get_otp_ctrl_params(top: ConfigT,
     """Returns the parameters extracted from the otp_mmap.hjson file."""
     otp_mmap_path = out_path / "data" / "otp" / "otp_ctrl_mmap.hjson"
     otp_mmap = OtpMemMap.from_mmap_path(otp_mmap_path, generate_fresh_keys=True).config
-    enable_flash_keys = has_flash_keys(otp_mmap["partitions"], otp_mmap_path)
+    enable_nvm_keys = has_nvm_keys(otp_mmap["partitions"], otp_mmap_path)
     otp_ctrl = lib.find_module(top["module"], "otp_ctrl")
 
     # Add the full and non-sanitized OTP map for a later dump to the secrets file.
@@ -746,7 +746,7 @@ def _get_otp_ctrl_params(top: ConfigT,
     ipgen_params = get_ipgen_params(otp_ctrl)
     ipgen_params.update({
         "otp_mmap": otp_mmap,
-        "enable_flash_key": enable_flash_keys,
+        "enable_nvm_key": enable_nvm_keys,
     })
     return ipgen_params
 

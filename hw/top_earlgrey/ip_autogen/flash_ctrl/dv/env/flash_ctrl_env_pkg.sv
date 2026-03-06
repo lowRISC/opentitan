@@ -108,7 +108,7 @@ package flash_ctrl_env_pkg;
   parameter uint NUM_PAGE_PART_INFO1 = flash_ctrl_top_specific_pkg::InfoTypeSize[1];
   parameter uint NUM_PAGE_PART_INFO2 = flash_ctrl_top_specific_pkg::InfoTypeSize[2];
 
-  parameter otp_ctrl_pkg::flash_otp_key_rsp_t FLASH_OTP_RSP_DEFAULT = '{
+  parameter otp_ctrl_pkg::nvm_otp_key_rsp_t NVM_OTP_RSP_DEFAULT = '{
       data_ack: 1'b1,
       addr_ack: 1'b1,
       key: '0,

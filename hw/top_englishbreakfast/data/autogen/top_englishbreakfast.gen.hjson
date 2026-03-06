@@ -1623,8 +1623,8 @@
           index: -1
         }
         {
-          name: pwr_flash
-          struct: pwr_flash
+          name: pwr_nvm
+          struct: pwr_nvm
           package: pwrmgr_pkg
           type: uni
           act: rcv
@@ -1633,7 +1633,7 @@
           default: ""
           end_idx: -1
           top_type: broadcast
-          top_signame: pwrmgr_aon_pwr_flash
+          top_signame: pwrmgr_aon_pwr_nvm
           index: -1
         }
         {
@@ -3127,7 +3127,7 @@
       [
         {
           name: otp
-          struct: flash_otp_key
+          struct: nvm_otp_key
           package: otp_ctrl_pkg
           type: req_rsp
           act: req
@@ -3287,7 +3287,7 @@
         }
         {
           name: rma_seed
-          struct: lc_flash_rma_seed
+          struct: lc_nvm_rma_seed
           package: lc_ctrl_pkg
           type: uni
           act: rcv
@@ -3297,14 +3297,14 @@
         }
         {
           name: pwrmgr
-          struct: pwr_flash
+          struct: pwr_nvm
           package: pwrmgr_pkg
           type: uni
           act: req
           width: 1
           inst_name: flash_ctrl
           default: ""
-          top_signame: pwrmgr_aon_pwr_flash
+          top_signame: pwrmgr_aon_pwr_nvm
           index: -1
         }
         {
@@ -4920,7 +4920,7 @@
   {
     connect:
     {
-      pwrmgr_aon.pwr_flash:
+      pwrmgr_aon.pwr_nvm:
       [
         flash_ctrl.pwrmgr
       ]
@@ -10021,8 +10021,8 @@
         index: -1
       }
       {
-        name: pwr_flash
-        struct: pwr_flash
+        name: pwr_nvm
+        struct: pwr_nvm
         package: pwrmgr_pkg
         type: uni
         act: rcv
@@ -10031,7 +10031,7 @@
         default: ""
         end_idx: -1
         top_type: broadcast
-        top_signame: pwrmgr_aon_pwr_flash
+        top_signame: pwrmgr_aon_pwr_nvm
         index: -1
       }
       {
@@ -10991,7 +10991,7 @@
       }
       {
         name: otp
-        struct: flash_otp_key
+        struct: nvm_otp_key
         package: otp_ctrl_pkg
         type: req_rsp
         act: req
@@ -11151,7 +11151,7 @@
       }
       {
         name: rma_seed
-        struct: lc_flash_rma_seed
+        struct: lc_nvm_rma_seed
         package: lc_ctrl_pkg
         type: uni
         act: rcv
@@ -11161,14 +11161,14 @@
       }
       {
         name: pwrmgr
-        struct: pwr_flash
+        struct: pwr_nvm
         package: pwrmgr_pkg
         type: uni
         act: req
         width: 1
         inst_name: flash_ctrl
         default: ""
-        top_signame: pwrmgr_aon_pwr_flash
+        top_signame: pwrmgr_aon_pwr_nvm
         index: -1
       }
       {
@@ -12711,14 +12711,14 @@
     [
       {
         package: pwrmgr_pkg
-        struct: pwr_flash
-        signame: pwrmgr_aon_pwr_flash
+        struct: pwr_nvm
+        signame: pwrmgr_aon_pwr_nvm
         width: 1
         type: uni
         end_idx: -1
         act: rcv
         suffix: ""
-        default: pwrmgr_pkg::PWR_FLASH_DEFAULT
+        default: pwrmgr_pkg::PWR_NVM_DEFAULT
       }
       {
         package: pwrmgr_pkg

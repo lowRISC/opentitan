@@ -1626,26 +1626,26 @@
       default: "88",
       local: "true"
     },
-    { name: "FlashAddrKeySeedOffset",
-      desc: "Offset of FLASH_ADDR_KEY_SEED",
+    { name: "NvmAddrKeySeedOffset",
+      desc: "Offset of NVM_ADDR_KEY_SEED",
       type: "int",
       default: "1784",
       local: "true"
     },
-    { name: "FlashAddrKeySeedSize",
-      desc: "Size of FLASH_ADDR_KEY_SEED",
+    { name: "NvmAddrKeySeedSize",
+      desc: "Size of NVM_ADDR_KEY_SEED",
       type: "int",
       default: "32",
       local: "true"
     },
-    { name: "FlashDataKeySeedOffset",
-      desc: "Offset of FLASH_DATA_KEY_SEED",
+    { name: "NvmDataKeySeedOffset",
+      desc: "Offset of NVM_DATA_KEY_SEED",
       type: "int",
       default: "1816",
       local: "true"
     },
-    { name: "FlashDataKeySeedSize",
-      desc: "Size of FLASH_DATA_KEY_SEED",
+    { name: "NvmDataKeySeedSize",
+      desc: "Size of NVM_DATA_KEY_SEED",
       type: "int",
       default: "32",
       local: "true"
@@ -1891,14 +1891,14 @@
       package: "otp_ctrl_pkg"
       desc:    "Key output to the key manager holding CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1."
     }
-    // Broadcast to Flash Controller
-    { struct:  "flash_otp_key"
+    // Broadcast to Nvm Controller
+    { struct:  "nvm_otp_key"
       type:    "req_rsp"
-      name:    "flash_otp_key"
+      name:    "nvm_otp_key"
       act:     "rsp"
       default: "'0"
       package: "otp_ctrl_pkg"
-      desc:    "Key derivation interface for FLASH scrambling."
+      desc:    "Key derivation interface for NVM scrambling."
     }
     // Key request from SRAM scramblers
     { struct:  "sram_otp_key"
@@ -2121,7 +2121,7 @@
     }
     {
       name: "OTP_CTRL.PARTITION.SECRET1"
-      desc: "SRAM and FLASH scrambling key"
+      desc: "SRAM and NVM scrambling key"
     }
     {
       name: "OTP_CTRL.PARTITION.SECRET2"

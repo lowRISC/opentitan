@@ -21,13 +21,13 @@ class pwrmgr_aborted_low_power_vseq extends pwrmgr_base_vseq;
     };
   }
 
-  rand bit flash_idle;
+  rand bit nvm_idle;
   rand bit lc_idle;
   rand bit otp_idle;
 
   constraint idle_c {
-    solve cpu_interrupt before flash_idle, lc_idle, otp_idle;
-    if (!cpu_interrupt) {(flash_idle && lc_idle && otp_idle) == 1'b0;}
+    solve cpu_interrupt before nvm_idle, lc_idle, otp_idle;
+    if (!cpu_interrupt) {(nvm_idle && lc_idle && otp_idle) == 1'b0;}
   }
 
   constraint wakeups_c {wakeups != 0;}
@@ -84,12 +84,12 @@ class pwrmgr_aborted_low_power_vseq extends pwrmgr_base_vseq;
             cfg.pwrmgr_vif.update_cpu_sleeping(1'b0);
           end else begin
             `uvm_info(`gfn, $sformatf(
-                      "Expecting an abort (0x80): fi=%b, li=%b, oi=%b",
-                      flash_idle,
+                      "Expecting an abort (0x80): nvm_idle=%b, lc_idle=%b, otp_idle=%b",
+                      nvm_idle,
                       lc_idle,
                       otp_idle
                       ), UVM_MEDIUM)
-            set_nvms_idle(flash_idle, lc_idle, otp_idle);
+            set_nvms_idle(nvm_idle, lc_idle, otp_idle);
           end
         end
       join

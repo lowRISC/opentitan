@@ -58,15 +58,15 @@ enum {
   /**
    * SECRET1 partition OTP fields.
    */
-  kSecret1FlashAddrKeySeedOffset =
-      OTP_CTRL_PARAM_FLASH_ADDR_KEY_SEED_OFFSET - OTP_CTRL_PARAM_SECRET1_OFFSET,
-  kSecret1FlashAddrKeySeed64BitWords =
-      OTP_CTRL_PARAM_FLASH_ADDR_KEY_SEED_SIZE / sizeof(uint64_t),
+  kSecret1NvmAddrKeySeedOffset =
+      OTP_CTRL_PARAM_NVM_ADDR_KEY_SEED_OFFSET - OTP_CTRL_PARAM_SECRET1_OFFSET,
+  kSecret1NvmAddrKeySeed64BitWords =
+      OTP_CTRL_PARAM_NVM_ADDR_KEY_SEED_SIZE / sizeof(uint64_t),
 
-  kSecret1FlashDataKeySeedOffset =
-      OTP_CTRL_PARAM_FLASH_DATA_KEY_SEED_OFFSET - OTP_CTRL_PARAM_SECRET1_OFFSET,
-  kSecret1FlashDataKeySeed64BitWords =
-      OTP_CTRL_PARAM_FLASH_DATA_KEY_SEED_SIZE / sizeof(uint64_t),
+  kSecret1NvmDataKeySeedOffset =
+      OTP_CTRL_PARAM_NVM_DATA_KEY_SEED_OFFSET - OTP_CTRL_PARAM_SECRET1_OFFSET,
+  kSecret1NvmDataKeySeed64BitWords =
+      OTP_CTRL_PARAM_NVM_DATA_KEY_SEED_SIZE / sizeof(uint64_t),
 
   kSecret1SramDataKeySeedOffset =
       OTP_CTRL_PARAM_SRAM_DATA_KEY_SEED_OFFSET - OTP_CTRL_PARAM_SECRET1_OFFSET,
