@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@lowrisc_opentitan//rules/opentitan:transform.bzl", "obj_transform")
+load("//rules/coverage:view.bzl", "coverage_view_test")
 load("//rules/coverage:asm.bzl", "asm_library_with_coverage")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "opentitan_binary")
 load("//rules:linker.bzl", "ld_library")
@@ -149,6 +150,14 @@ ld_library(
     )
     for variation_name, variation_deps in ROM_EXT_VARIATIONS.items()
     for slot in SLOTS
+]
+
+[
+    coverage_view_test(
+        name = "imm_section_{}_coverage_view".format(variation_name),
+        elf = "main_binaries_{}_slot_virtual".format(variation_name),
+    )
+    for variation_name in ROM_EXT_VARIATIONS.keys()
 ]
 
 [
