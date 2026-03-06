@@ -1122,7 +1122,8 @@
     The vectors are multiplied elementwise and each product is truncated to the element length.
     The final vector is stored in `wrd`.
 
-    This instruction stalls OTBN for 4 cycles and writes the final result to the ACC WSR as well as `wrd`.
+    This instruction stalls OTBN for 4 cycles and uses the ACC WSR to assemble the final result, i.e., the previous value of ACC is overwritten with the results.
+    At the end of the instruction, the ACC WSR is cleared using random data supplied by the URND WSR.
 
     Flags are not used or saved.
   iflow:
@@ -1170,7 +1171,8 @@
     For example, for `.8s` lane 0 specifies the bits `[31:0]` of `wrs2`.
     Each product is truncated to the element length and the final vector is stored in `wrd`.
 
-    This instruction stalls OTBN for 4 cycles and writes the final result to the ACC WSR as well as `wrd`.
+    This instruction stalls OTBN for 4 cycles and uses the ACC WSR to assemble the final result, i.e., the previous value of ACC is overwritten with the results.
+    At the end of the instruction, the ACC WSR is cleared using random data supplied by the URND WSR.
 
     Flags are not used or saved.
   iflow:
@@ -1199,7 +1201,8 @@
     This instruction outputs the result in `[0, 2q[` as the final conditional subtraction step is not performed.
     For a result in `[0, q[`, a conditional subtraction must be performed after this instruction, e.g., with `BN.ADDVM` and a zero vector.
 
-    This instructions stalls OTBN for 12 cycles and writes the final result to the ACC WSR as well as `wrd`.
+    This instruction stalls OTBN for 12 cycles and uses the ACC WSR to assemble the final result, i.e., the previous value of ACC is overwritten with the results.
+    At the end of the instruction, the ACC WSR is cleared using random data supplied by the URND WSR.
 
     **Montgomery explanation**\\
     Inputs:
@@ -1238,11 +1241,11 @@
 
     **Micro-architectural remarks**\\
     The ACC WSR is used to temporarily store the partial result before the complete result is written into the destination WDR.
-    It is reset at the start of the instruction but not reset at the end of the instruction.
-    Similarly, the intermediate multiplication results are stored in two hidden registers.
-    These registers are cleared to all-zero after each Montgomery computation (i.e., every 3 cycles).
+    It is cleared at the end of the instruction using random data from the URND WSR.
+    If required for cryptographic reasons, the ACC WSR can be overwritten prior to the execution using a `BN.WSRW` instruction.
 
-    If required for cryptographic reasons, all three registers can be overwritten using a `BN.WSRW` instruction to the ACC WSR.
+    In addition to the ACC WSR use, there are two hidden registers inside the BN MAC module to hold intermediate values of the Montgomery computation.
+    These registers are cleared using random data from URND after each Montgomery multiplication (i.e., every 3 cycles) and cannot be accessed or modified by software.
 
     Flags are not used or saved.
   iflow:
@@ -1275,7 +1278,8 @@
     This instruction requires the modulus `q` and its corresponding Montgomery constant `mu` to be placed in the MOD WSR at the following location:\\
     For `.8s`: `q @ MOD[31:0]`, `mu @ MOD[63:32]`
 
-    This instructions stalls OTBN for 12 cycles and writes the final result to the ACC WSR as well as `wrd`.
+    This instruction stalls OTBN for 12 cycles and uses the ACC WSR to assemble the final result, i.e., the previous value of ACC is overwritten with the results.
+    At the end of the instruction, the ACC WSR is cleared using random data supplied by the URND WSR.
 
     Flags are not used or saved.
   iflow:

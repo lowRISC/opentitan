@@ -1404,19 +1404,18 @@ class BNMULV(BnVecVecMul):
         # processed. We first compute the results and then emulate the register updates.
         result = map_elems(op, size, vec_a, vec_b)
 
-        # Emulate the register updates
-        # In the first cycle ACC is reset and the lowest quarter word is written.
-        # In other cycles ACC is read and the corresponding quarter word is merged.
-        # In the last cycle we also write the result to the destination WDR.
+        # Emulate the register updates by reading the ACC and write current quarter word result to
+        # it. In the last cycle ACC is cleared and the result is written to the destination WDR.
         qword_mask = (1 << 64) - 1
-        for cycle in range(4):
-            acc = 0 if cycle == 0 else state.wsrs.ACC.read_unsigned()
+        for cycle in range(3):
+            acc = state.wsrs.ACC.read_unsigned()
             current_qword_mask = qword_mask << (cycle * 64)
+            acc &= ~current_qword_mask
             acc |= result & current_qword_mask
             state.wsrs.ACC.write_unsigned(acc)
-            if cycle < 3:
-                yield None
+            yield None
 
+        state.wsrs.ACC.write_unsigned(state.wsrs.URND.read_unsigned())
         state.wdrs.get_reg(self.wrd).write_unsigned(result)
 
 
@@ -1453,19 +1452,18 @@ class BNMULVL(BnVecVecMul):
 
         result = map_elems(op, size, vec_a, lane_vec)
 
-        # Emulate the register updates
-        # In the first cycle ACC is reset and the lowest quarter word is written.
-        # In other cycles ACC is read and the corresponding quarter word is merged.
-        # In the last cycle we also write the result to the destination WDR.
+        # Emulate the register updates by reading the ACC and write current quarter word result to
+        # it. In the last cycle ACC is cleared and the result is written to the destination WDR.
         qword_mask = (1 << 64) - 1
-        for cycle in range(4):
-            acc = 0 if cycle == 0 else state.wsrs.ACC.read_unsigned()
+        for cycle in range(3):
+            acc = state.wsrs.ACC.read_unsigned()
             current_qword_mask = qword_mask << (cycle * 64)
+            acc &= ~current_qword_mask
             acc |= result & current_qword_mask
             state.wsrs.ACC.write_unsigned(acc)
-            if cycle < 3:
-                yield None
+            yield None
 
+        state.wsrs.ACC.write_unsigned(state.wsrs.URND.read_unsigned())
         state.wdrs.get_reg(self.wrd).write_unsigned(result)
 
 
@@ -1541,8 +1539,7 @@ class BNMULVM(BnVecVecMul):
         # Cycle 3: ACC is read and written, TMP and C are read
         #
         # We now repeat these 3 cycles for all four 64b chunks (quarter words).
-        # When capturing the first QWord result, the ACC is cleared.
-        # In cycle 12 we also write the result to the destination WDR
+        # In cycle 12 ACC is cleared and the result is written to the destination WDR.
         qword_mask = (1 << 64) - 1
         for qword in range(4):
             # For the first QWord the first cycle is the one when the loop starts.
@@ -1550,11 +1547,14 @@ class BNMULVM(BnVecVecMul):
                 yield None
             yield None
             yield None
-            acc = 0 if qword == 0 else state.wsrs.ACC.read_unsigned()
+            acc = state.wsrs.ACC.read_unsigned()
             current_qword_mask = qword_mask << (qword * 64)
+            acc &= ~current_qword_mask
             acc |= result & current_qword_mask
-            state.wsrs.ACC.write_unsigned(acc)
+            if qword < 3:
+                state.wsrs.ACC.write_unsigned(acc)
 
+        state.wsrs.ACC.write_unsigned(state.wsrs.URND.read_unsigned())
         state.wdrs.get_reg(self.wrd).write_unsigned(result)
 
 
@@ -1604,11 +1604,14 @@ class BNMULVML(BnVecVecMul):
                 yield None
             yield None
             yield None
-            acc = 0 if qword == 0 else state.wsrs.ACC.read_unsigned()
+            acc = state.wsrs.ACC.read_unsigned()
             current_qword_mask = qword_mask << (qword * 64)
+            acc &= ~current_qword_mask
             acc |= result & current_qword_mask
-            state.wsrs.ACC.write_unsigned(acc)
+            if qword < 3:
+                state.wsrs.ACC.write_unsigned(acc)
 
+        state.wsrs.ACC.write_unsigned(state.wsrs.URND.read_unsigned())
         state.wdrs.get_reg(self.wrd).write_unsigned(result)
 
 

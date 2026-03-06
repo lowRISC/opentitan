@@ -702,7 +702,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `DEF_SEEN_CP(rf_base_intg_err_cp, intg_err.rf_base_intg_err)
     `DEF_SEEN_CP(rf_bignum_intg_err_cp, intg_err.rf_bignum_intg_err)
     `DEF_SEEN_CP(mod_ispr_intg_err_cp, intg_err.mod_ispr_intg_err)
-    `DEF_SEEN_CP(acc_ispr_intg_err_cp, intg_err.acc_ispr_intg_err)
+    `DEF_SEEN_CP(mac_ispr_intg_err_cp, intg_err.mac_ispr_intg_err)
     `DEF_SEEN_CP(loop_stack_addr_intg_err_cp, intg_err.loop_stack_addr_intg_err)
     `DEF_SEEN_CP(insn_fetch_intg_err_cp, intg_err.insn_fetch_intg_err)
 

@@ -27,6 +27,9 @@ module otbn
   // Skip URND re-seed at the start of an operation. Useful for SCA only.
   parameter bit SecSkipUrndReseedAtStart = 1'b0,
 
+  // Compile-time permutation for URND permutation in BN MAC
+  parameter bn_mac_urnd_perm_t RndCnstBnMacUrndPerm = RndCnstBnMacUrndPermDefault,
+
   // Default seed and nonce for scrambling
   parameter otp_ctrl_pkg::otbn_key_t   RndCnstOtbnKey   = RndCnstOtbnKeyDefault,
   parameter otp_ctrl_pkg::otbn_nonce_t RndCnstOtbnNonce = RndCnstOtbnNonceDefault
@@ -1111,7 +1114,8 @@ module otbn
     .ImemSizeByte(ImemSizeByte),
     .RndCnstUrndPrngSeed(RndCnstUrndPrngSeed),
     .SecMuteUrnd(SecMuteUrnd),
-    .SecSkipUrndReseedAtStart(SecSkipUrndReseedAtStart)
+    .SecSkipUrndReseedAtStart(SecSkipUrndReseedAtStart),
+    .RndCnstBnMacUrndPerm(RndCnstBnMacUrndPerm)
   ) u_otbn_core (
     .clk_i,
     .rst_ni                      (rst_n),
@@ -1445,8 +1449,12 @@ module otbn
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(
     OtbnLoopInfoStackWrPtrAlertCheck_A,
     u_otbn_core.u_otbn_controller.u_otbn_loop_controller.loop_info_stack.u_stack_wr_ptr,
-    gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
-  )
+    gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i)
+
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(
+    OtbnMacCycleCountAlertCheck_A,
+    u_otbn_core.u_otbn_mac_bignum.u_cycle_count,
+    gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i)
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT_IN(
