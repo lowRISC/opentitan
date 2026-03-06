@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:files.bzl", "copy_files")
+load("//rules:signing.bzl", "signature_test")
 
 package(default_visibility = ["//visibility:public"])
 
