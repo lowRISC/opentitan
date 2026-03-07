@@ -280,6 +280,36 @@ cc_library(
 )
 
 cc_library(
+    name = "boot_fi",
+    srcs = ["boot_fi.c"],
+    hdrs = ["boot_fi.h"],
+    deps = [
+        "//hw/top:flash_ctrl_c_regs",
+        "//hw/top:rom_ctrl_c_regs",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:multibits",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:rom_ctrl",
+        "//sw/device/lib/dif:rv_core_ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib:epmp_state",
+        "//sw/device/silicon_creator/lib:manifest",
+        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_next_boot_bl0_slot",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+        "//sw/device/silicon_creator/rom_ext:rom_ext_manifest",
+        "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
+        "//sw/device/tests/penetrationtests/json:boot_fi_commands",
+    ],
+)
+
+cc_library(
     name = "alert_fi",
     srcs = ["alert_fi.c"],
     hdrs = ["alert_fi.h"],

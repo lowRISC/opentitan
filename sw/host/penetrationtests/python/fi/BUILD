@@ -98,6 +98,22 @@ py_binary(
 )
 
 py_binary(
+    name = "fi_boot_python_test",
+    testonly = True,
+    srcs = ["test_scripts/fi_boot_python_test.py"],
+    data = [
+        "//sw/host/opentitantool",
+    ],
+    deps = [
+        "//sw/host/penetrationtests/python/fi:fi_boot_commands",
+        "//sw/host/penetrationtests/python/fi:fi_boot_functions",
+        "//sw/host/penetrationtests/python/util:common_library",
+        "//sw/host/penetrationtests/python/util:targets",
+        "@rules_python//python/runfiles",
+    ],
+)
+
+py_binary(
     name = "fi_alert_python_test",
     testonly = True,
     srcs = ["test_scripts/fi_alert_python_test.py"],
@@ -395,6 +411,16 @@ py_library(
 )
 
 py_library(
+    name = "fi_boot_functions",
+    srcs = ["host_scripts/fi_boot_functions.py"],
+    deps = [
+        ":fi_boot_commands",
+        "//sw/host/penetrationtests/python/util:common_library",
+        "//sw/host/penetrationtests/python/util:targets",
+    ],
+)
+
+py_library(
     name = "fi_alert_functions",
     srcs = ["host_scripts/fi_alert_functions.py"],
     deps = [
@@ -467,6 +493,12 @@ py_library(
 py_library(
     name = "fi_rom_commands",
     srcs = ["communication/fi_rom_commands.py"],
+    deps = ["//sw/host/penetrationtests/python/util:common_library"],
+)
+
+py_library(
+    name = "fi_boot_commands",
+    srcs = ["communication/fi_boot_commands.py"],
     deps = ["//sw/host/penetrationtests/python/util:common_library"],
 )
 
