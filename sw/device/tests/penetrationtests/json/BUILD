@@ -11,6 +11,7 @@ cc_library(
     deps = [
         ":aes_sca_commands",
         ":alert_fi_commands",
+        ":boot_fi_commands",
         ":crypto_fi_commands",
         ":cryptolib_fi_asym_commands",
         ":cryptolib_fi_sym_commands",
@@ -163,6 +164,13 @@ cc_library(
     name = "rom_fi_commands",
     srcs = ["rom_fi_commands.c"],
     hdrs = ["rom_fi_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
+    name = "boot_fi_commands",
+    srcs = ["boot_fi_commands.c"],
+    hdrs = ["boot_fi_commands.h"],
     deps = ["//sw/device/lib/ujson"],
 )
 

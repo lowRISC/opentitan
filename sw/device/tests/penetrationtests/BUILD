@@ -456,6 +456,14 @@ pentest_fi(
 )
 
 pentest_fi(
+    name = "fi_boot_python_test",
+    tags = [],
+    test_args = "",
+    test_harness = "//sw/host/penetrationtests/python/fi:fi_boot_python_test",
+    test_vectors = [],
+)
+
+pentest_fi(
     name = "fi_alert_python_test",
     tags = [
         "manual",
