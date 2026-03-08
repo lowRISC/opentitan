@@ -61,4 +61,18 @@ package jtag_agent_pkg;
   `include "jtag_dtm_reg_block.sv"
   `include "jtag_dtm_reg_adapter.sv"
 
-  endpackage: jtag_agent_pkg
+  // Convenience function to create JTAG DTM register block
+  function automatic jtag_dtm_reg_block create_jtag_dtm_reg_block(string name);
+    jtag_dtm_reg_block ret = jtag_dtm_reg_block::type_id::create(name);
+    ret.build(.base_addr(0),
+              .csr_excl(null),
+              .addr_width(`UVM_REG_ADDR_WIDTH),
+              .data_width(`UVM_REG_DATA_WIDTH),
+              .be_width(4));
+    ret.set_supports_byte_enable(1'b0);
+    ret.lock_model();
+    ret.set_base_addr(0);
+    return ret;
+  endfunction
+
+endpackage: jtag_agent_pkg
