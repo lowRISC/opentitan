@@ -48,25 +48,31 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   // accessed through RAL_T::type_name, because this allows subclasses of dv_base_env_cfg to
   // override the base RAL type without messing up the parameterized class type.
   //
-  // This string will be prepended to ral_model_names at the start of the initialize function (which
-  // is after a derived class can have overridden it).
+  // This string will be added to ral_model_names at the start of the initialize function (which is
+  // after a derived class can have overridden it).
   protected string ral_type_name = RAL_T::type_name;
 
-  // A queue of the names of RAL models that should be created in the `initialize_ral` function.
+  // A set of the names of RAL models that should be created in the `initialize_ral` function.
   // Related agents and adapters will be created in the environment as well as connecting them with
   // the scoreboard.
   //
   // To add another RAL model, a subclass of dv_base_env_cfg must make sure that the model's name is
-  // added to this queue before running dv_base_env_cfg::initialize_ral. One way to do this is to
-  // implement the function itself and update the queue before calling super.initialize_ral.
+  // added to this set before running dv_base_env_cfg::initialize_ral. One way to do this is to
+  // implement the function itself and update the set before calling super.initialize_ral.
   //
-  // An index into the collection of RAL model names is used as an index in ral_models, clk_rst_vifs
-  // and clk_freqs_mhz.
+  // The set is implemented as an associative array whose keys are elements of the set (and whose
+  // values contain no information).
+  //
+  // The model names (keys of ral_model_names) are used as indices into associative arrays for
+  // ral_models, clk_rst_vifs and clk_freqs_mhz.
+  protected bit ral_model_names[string];
+
   typedef string string_queue_t[$];
-  protected string_queue_t ral_model_names;
 
   function string_queue_t get_ral_model_names();
-    return ral_model_names;
+    string_queue_t ret;
+    foreach (ral_model_names[name]) ret.push_back(name);
+    return ret;
   endfunction
 
   // A RAL model for each name in ral_model_names.
@@ -76,7 +82,7 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   // that should be used for the associated TL interface.
   virtual clk_rst_if clk_rst_vifs[string];
 
-  // Clock frequencies for the TL interfaces indexed by ral_model_names.
+  // Clock frequencies for the TL interfaces indexed by the keys of ral_model_names.
   rand uint clk_freqs_mhz[string];
 
   // The "default" RAL's register model. This corresponds to RAL_T::type_name as a model name, and
@@ -103,7 +109,7 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
     `uvm_field_int              (en_dv_cdc,       UVM_DEFAULT)
     `uvm_field_int              (smoke_test,      UVM_DEFAULT)
     `uvm_field_int              (zero_delays,     UVM_DEFAULT)
-    `uvm_field_queue_string     (ral_model_names, UVM_DEFAULT)
+    `uvm_field_aa_int_string    (ral_model_names, UVM_DEFAULT)
     `uvm_field_aa_object_string (ral_models,      UVM_DEFAULT)
     `uvm_field_aa_int_string    (clk_freqs_mhz,   UVM_DEFAULT)
   `uvm_object_utils_end
@@ -196,8 +202,9 @@ function void dv_base_env_cfg::initialize_ral(int unsigned addr_width,
                                               int unsigned be_width);
   if (is_initialized) `uvm_fatal(`gfn, "Cannot call initialize_ral when already initialized")
 
-  // Prepend ral_type_name to ral_model_names (so the "default RAL" for the class gets index 0)
-  ral_model_names.push_front(ral_type_name);
+  // Add ral_type_name to ral_model_names (we just need the key in the array; the value has no
+  // meaning)
+  ral_model_names[ral_type_name] = 1'b0;
 
   is_initialized = 1'b1;
 
@@ -205,8 +212,8 @@ function void dv_base_env_cfg::initialize_ral(int unsigned addr_width,
   make_ral_models(addr_width, data_width, be_width);
 
   // add items to clk_freqs_mhz before randomizing it
-  foreach (ral_model_names[i]) begin
-    clk_freqs_mhz[ral_model_names[i]] = 0;
+  foreach (ral_model_names[name]) begin
+    clk_freqs_mhz[name] = 0;
   end
 endfunction
 
@@ -231,8 +238,8 @@ endfunction
 function void dv_base_env_cfg::make_ral_models(int unsigned addr_width,
                                                int unsigned data_width,
                                                int unsigned be_width);
-  foreach (ral_model_names[i]) begin
-    make_ral_model(ral_model_names[i], addr_width, data_width, be_width);
+  foreach (ral_model_names[name]) begin
+    make_ral_model(name, addr_width, data_width, be_width);
   end
 
   if (!ral_models.exists(ral_type_name)) begin

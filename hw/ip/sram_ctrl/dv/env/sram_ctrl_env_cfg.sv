@@ -47,8 +47,9 @@ class sram_ctrl_env_cfg #(parameter int AddrWidth = 10)
     tl_intg_alert_name = "fatal_error";
     sec_cm_alert_name  = tl_intg_alert_name;
 
-    // Set up second RAL model for SRAM memory and associated collateral
-    ral_model_names.push_back(sram_ral_name);
+    // Request a second RAL model for SRAM memory and associated collateral, by adding mem_ral_name
+    // to the set of known model names. The associated value has no meaning.
+    ral_model_names[sram_ral_name] = 1'b0;
 
     super.initialize();
     tl_intg_alert_fields[ral.status.bus_integ_error] = 1;

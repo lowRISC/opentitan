@@ -73,9 +73,9 @@ task aon_timer_env_cfg::wait_for_we_pulse(input string path);
 endtask
 
 function void aon_timer_env_cfg::set_intr_state_has_prediction();
-  foreach (ral_model_names[i]) begin
+  foreach (ral_model_names[ral_name]) begin
     dv_base_reg regs_q[$];
-    ral_models[ral_model_names[i]].get_dv_base_regs(regs_q);
+    ral_models[ral_name].get_dv_base_regs(regs_q);
     foreach (regs_q[j]) begin
       if (!uvm_re_match("intr_state*", regs_q[j].get_name())) begin
         dv_base_reg_field fields_q[$];
