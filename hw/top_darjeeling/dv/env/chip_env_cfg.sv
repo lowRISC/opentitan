@@ -76,6 +76,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   rand spi_agent_cfg        m_spi_device_agent_cfgs[NUM_SPI_HOSTS];
   rand jtag_riscv_agent_cfg m_jtag_riscv_agent_cfg;
   rand jtag_agent_cfg       m_jtag_agent_cfg;
+  rand jtag_dtm_reg_block   m_jtag_dtm_ral;
   rand spi_agent_cfg        m_spi_host_agent_cfg;
   rand i2c_agent_cfg        m_i2c_agent_cfgs[NUM_I2CS];
 
@@ -239,15 +240,20 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     m_jtag_agent_cfg.is_active = 1'b1;
     m_jtag_agent_cfg.ir_len = JTAG_IR_LEN;
 
-    // Set the 'correct' IDCODE register value to the JTAG DTM RAL.
-    m_jtag_agent_cfg.jtag_dtm_ral.idcode.set_reset(RV_DM_JTAG_IDCODE);
+    // Create a JTAG DTM RAL and give it the right IDCODE register value.
+    m_jtag_dtm_ral = create_jtag_dtm_reg_block("m_jtag_dtm_ral");
+    m_jtag_dtm_ral.idcode.set_reset(RV_DM_JTAG_IDCODE);
+
     m_jtag_riscv_agent_cfg.m_jtag_agent_cfg = m_jtag_agent_cfg;
 
     // Create the DMI register block. Because use_jtag_dmi was false at the start of the function,
     // we know it is currently null.
     if (jtag_dmi_ral != null) `uvm_fatal(`gfn, "jtag_dmi_ral unexpectedly set")
 
-    jtag_dmi_ral = create_jtag_dmi_reg_block(m_jtag_riscv_agent_cfg.m_jtag_agent_cfg);
+    jtag_dmi_ral = create_jtag_dmi_reg_block("jtag_dmi_ral",
+                                             m_jtag_agent_cfg,
+                                             m_jtag_dtm_ral.dmi,
+                                             m_jtag_dtm_ral.dtmcs);
 
     // Fix the reset values of these fields based on our design.
     `uvm_info(`gfn, "Fixing reset values in jtag_dmi_ral", UVM_LOW)

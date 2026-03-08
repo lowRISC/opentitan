@@ -41,6 +41,9 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
   // Enable scoreboard ral update on write
   bit en_scb_ral_update_write = 1;
 
+  // The JTAG DTM register model.
+  rand jtag_dtm_reg_block m_jtag_dtm_ral;
+
   // OTP
   rand otp_device_id_t otp_device_id;
   rand otp_device_id_t otp_manuf_state;
@@ -95,6 +98,8 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
         alert_esc_agent_cfg::type_id::create("m_esc_scrap_state0_agent_cfg");
     `DV_CHECK_RANDOMIZE_FATAL(m_esc_scrap_state0_agent_cfg)
     m_esc_scrap_state0_agent_cfg.is_alert = 0;
+
+    m_jtag_dtm_ral = create_jtag_dtm_reg_block("m_jtag_dtm_ral");
 
     m_jtag_riscv_agent_cfg = jtag_riscv_agent_cfg::type_id::create("m_jtag_riscv_agent_cfg");
     `DV_CHECK_RANDOMIZE_FATAL(m_jtag_riscv_agent_cfg)

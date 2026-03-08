@@ -158,6 +158,12 @@ class chip_env extends cip_base_env #(
       virtual_sequencer.jtag_sequencer_h = m_jtag_riscv_agent.sequencer;
     end
 
+    // If we are using JTAG DMI, cfg.m_jtag_dtm_ral will have been constructed (when the build_phase
+    // for the next level up called cfg.set_use_jtag_dmi). If not, it will be null.
+    if (cfg.m_jtag_dtm_ral != null) begin
+      m_jtag_riscv_agent.set_dtm_reg_map(cfg.m_jtag_dtm_ral.get_default_map());
+    end
+
     if (cfg.is_active && cfg.m_spi_host_agent_cfg.is_active) begin
       virtual_sequencer.spi_host_sequencer_h = m_spi_host_agent.sequencer;
     end

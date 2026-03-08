@@ -32,7 +32,7 @@ class rv_dm_tap_fsm_vseq extends rv_dm_base_vseq;
       ir == 'h0;
       ir_len == 'd5;
       dr == 'h0;
-      dr_len == cfg.m_jtag_agent_cfg.jtag_dtm_ral.idcode.get_n_bits();
+      dr_len == jtag_dtm_ral.idcode.get_n_bits();
       ir_pause_count == 0;
       dr_pause_count == 0;
       exit_via_pause_dr == 0;
