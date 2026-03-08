@@ -67,6 +67,13 @@ class chip_scoreboard #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_b
 
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
+
+    // If there is a JTAG DTM register model (created by calling cfg.set_use_jtag_dmi) then reset
+    // its values to match the reset event.
+    if (cfg.m_jtag_dtm_ral != null) begin
+      cfg.m_jtag_dtm_ral.reset(kind);
+    end
+
     // reset local fifos queues and variables
   endfunction
 
