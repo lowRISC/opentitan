@@ -44,7 +44,7 @@ class xbar_env_cfg extends dv_base_env_cfg;
 
   virtual function void initialize();
     is_initialized = 1'b1;
-    ral_model_names = {}; // no csr in xbar
+    ral_model_names.delete(); // no csr in xbar
     // Host TL agent cfg
     num_hosts             = xbar_hosts.size();
     num_enabled_hosts     = xbar_hosts.size();

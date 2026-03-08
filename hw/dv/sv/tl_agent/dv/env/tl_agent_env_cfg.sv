@@ -22,7 +22,7 @@ class tl_agent_env_cfg extends dv_base_env_cfg;
     // super.initialize
     is_initialized = 1'b1;
 
-    ral_model_names = {}; // no csr in tl_agent
+    ral_model_names.delete(); // no csr in tl_agent
     host_agent_cfg = tl_agent_cfg::type_id::create("host_agent_cfg");
     host_agent_cfg.max_outstanding_req = 1 << SourceWidth;
     host_agent_cfg.if_mode = dv_utils_pkg::Host;
