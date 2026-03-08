@@ -30,25 +30,18 @@ class jtag_agent extends dv_base_agent #(
     end
 
     if (cfg.is_active) begin
-      uvm_reg_map maps[$];
-      cfg.jtag_dtm_ral.get_maps(maps);
-      if (maps.size() != 1) begin
-        `uvm_fatal(get_full_name(),
-                   $sformatf("Cannot create JTAG DTM reg adapter: there are %0d reg maps.",
-                             maps.size()))
-      end
-
       m_jtag_dtm_reg_adapter = jtag_dtm_reg_adapter::type_id::create("m_jtag_dtm_reg_adapter");
       m_jtag_dtm_reg_adapter.set_ir_len(cfg.ir_len);
-      m_jtag_dtm_reg_adapter.set_reg_map(maps[0]);
     end
   endfunction
 
-  virtual function void end_of_elaboration_phase(uvm_phase phase);
-    super.end_of_elaboration_phase(phase);
-    if (cfg.is_active) begin
-      cfg.jtag_dtm_ral.default_map.set_sequencer(sequencer, m_jtag_dtm_reg_adapter);
+  // Pass a handle to a uvm_reg_map that represents the DTM registers. See jtag_dtm_reg_adapter for
+  // a more detailed description of what this does.
+  function void set_reg_map(uvm_reg_map reg_map);
+    if (m_jtag_dtm_reg_adapter == null) begin
+      `uvm_fatal(get_full_name(), "No reg adapter: is the agent not active?")
     end
-  endfunction : end_of_elaboration_phase
+    m_jtag_dtm_reg_adapter.set_reg_map(reg_map);
+  endfunction
 
 endclass

@@ -29,6 +29,7 @@ class jtag_riscv_agent extends dv_base_agent #(
       `DV_CHECK_RANDOMIZE_FATAL(cfg.m_jtag_agent_cfg)
     end
     m_jtag_agent = jtag_agent::type_id::create("m_jtag_agent", this);
+
     uvm_config_db#(jtag_agent_cfg)::set(this, "m_jtag_agent", "cfg", cfg.m_jtag_agent_cfg);
     cfg.m_jtag_agent_cfg.en_cov = cfg.en_cov;
   endfunction
@@ -40,6 +41,17 @@ class jtag_riscv_agent extends dv_base_agent #(
     if (cfg.use_jtag_dmi == 0) begin
       m_jtag_agent.monitor.analysis_port.connect(monitor.jtag_item_fifo.analysis_export);
     end
+  endfunction
+
+  // Pass a handle to a uvm_reg_map that represents the DTM registers. This gets passed to the
+  // jtag_agent (which uses the reg map to predict register values in order to avoid perturbing
+  // register values on reads)
+  function void set_dtm_reg_map(uvm_reg_map reg_map);
+    if (m_jtag_agent == null)
+      `uvm_fatal(get_full_name(),
+                 "Cannot set reg map without a jtag_agent. This must be after build_phase.")
+
+    m_jtag_agent.set_reg_map(reg_map);
   endfunction
 
 endclass

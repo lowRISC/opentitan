@@ -37,23 +37,22 @@ package jtag_dmi_agent_pkg;
   `include "jtag_dmi_monitor.sv"
 
   // Convenience function to create JTAG DMI RAL block.
-  function automatic jtag_dmi_reg_block create_jtag_dmi_reg_block(jtag_agent_cfg cfg);
-    jtag_dmi_reg_block jtag_dmi_ral = jtag_dmi_reg_block::type_id::create("jtag_dmi_ral");
-    jtag_dtm_reg_block jtag_dtm_ral = cfg.jtag_dtm_ral;
-    jtag_dtm_reg_dmi   dmi_reg      = jtag_dtm_ral.dmi;
-    jtag_dtm_reg_dtmcs dtmcs_reg    = jtag_dtm_ral.dtmcs;
-
-    jtag_dmi_ral.build(.base_addr(0), .csr_excl(null));
-    jtag_dmi_ral.set_supports_byte_enable(1'b0);
-    jtag_dmi_ral.lock_model();
-    jtag_dmi_ral.set_base_addr(0);
+  function automatic jtag_dmi_reg_block create_jtag_dmi_reg_block(string             name,
+                                                                  jtag_agent_cfg     cfg,
+                                                                  jtag_dtm_reg_dmi   dmi_reg,
+                                                                  jtag_dtm_reg_dtmcs dtmcs_reg);
+    jtag_dmi_reg_block reg_block = jtag_dmi_reg_block::type_id::create(name);
+    reg_block.build(.base_addr(0), .csr_excl(null));
+    reg_block.set_supports_byte_enable(1'b0);
+    reg_block.lock_model();
+    reg_block.set_base_addr(0);
     // TODO: fix the computation of mapped and unmapped ranges.
 
     // Attach JTAG DMI frontdoor to all registers.
     begin
       uvm_reg rg[$];
       semaphore sem = new(1);
-      jtag_dmi_ral.get_registers(rg);
+      reg_block.get_registers(rg);
       foreach (rg[i]) begin
         jtag_dmi_reg_frontdoor ftdr = jtag_dmi_reg_frontdoor::type_id::create("ftdr");
         ftdr.configure(cfg, dmi_reg, dtmcs_reg);
@@ -61,7 +60,7 @@ package jtag_dmi_agent_pkg;
         rg[i].set_frontdoor(ftdr);
       end
     end
-    return jtag_dmi_ral;
+    return reg_block;
   endfunction
 
 endpackage: jtag_dmi_agent_pkg

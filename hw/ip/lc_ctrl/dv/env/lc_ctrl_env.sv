@@ -94,6 +94,7 @@ class lc_ctrl_env extends cip_base_env #(
           scoreboard.esc_scrap_state_fifo.analysis_export);
       m_jtag_riscv_agent.monitor.analysis_port.connect(scoreboard.jtag_riscv_fifo.analysis_export);
     end
+    m_jtag_riscv_agent.set_dtm_reg_map(cfg.m_jtag_dtm_ral.get_default_map());
   endfunction
 
   virtual function void end_of_elaboration_phase(uvm_phase phase);
