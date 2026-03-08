@@ -110,11 +110,11 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
     end
   endfunction // post_randomize
 
-  virtual function void initialize(bit [31:0] csr_base_addr = '1);
+  virtual function void initialize();
     list_of_alerts = edn_env_pkg::LIST_OF_ALERTS;
     tl_intg_alert_name = "fatal_alert";
     sec_cm_alert_name = "fatal_alert";
-    super.initialize(csr_base_addr);
+    super.initialize();
 
     // create config objects
     m_csrng_agent_cfg = csrng_agent_cfg::type_id::create("m_csrng_genbits_agent_cfg");

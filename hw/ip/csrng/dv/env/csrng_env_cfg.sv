@@ -230,10 +230,10 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
     end
   endfunction // post_randomize
 
-  virtual function void initialize(bit [31:0] csr_base_addr = '1);
+  virtual function void initialize();
     list_of_alerts = csrng_env_pkg::LIST_OF_ALERTS;
     tl_intg_alert_name = "fatal_alert";
-    super.initialize(csr_base_addr);
+    super.initialize();
 
     // create agent configs
     m_entropy_src_agent_cfg = push_pull_agent_cfg#(.HostDataWidth(entropy_src_pkg::

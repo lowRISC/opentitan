@@ -315,8 +315,8 @@ class dv_base_reg_block extends uvm_reg_block;
     unmapped_addr_ranges.delete();
 
     // unmapped address ranges consist of:
-    // - the address space between all mapped address ranges (if exists)
-    // - space between csr_base_addr and the first mapped address range (if exists)
+    // - any gaps in the address space between mapped address ranges
+    // - any space between the map base address and the first mapped address range
     // - space between the last mapped address and the highest address mapped by the address mask
     if (mapped_addr_ranges.size() == 0) begin
       range.start_addr = default_map.get_base_addr();

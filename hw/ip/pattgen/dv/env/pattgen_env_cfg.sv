@@ -16,7 +16,7 @@ class pattgen_env_cfg extends cip_base_env_cfg #(.RAL_T(pattgen_reg_block));
 
   // Implements a function from dv_base_env_cfg. The base class version creates RAL models. This
   // extension uses the type of the RAL model to set num_interrupts.
-  extern virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
+  extern virtual function void initialize();
 
   `uvm_object_utils_begin(pattgen_env_cfg)
     `uvm_field_object(m_pattgen_agent_cfg, UVM_DEFAULT)
@@ -34,8 +34,8 @@ function pattgen_env_cfg::new (string name="");
   seq_cfg = pattgen_seq_cfg::type_id::create("seq_cfg");
 endfunction
 
-function void pattgen_env_cfg::initialize(bit [TL_AW-1:0] csr_base_addr = '1);
-  super.initialize(csr_base_addr);
+function void pattgen_env_cfg::initialize();
+  super.initialize();
 
   num_interrupts = ral.intr_state.get_n_used_bits();
 endfunction

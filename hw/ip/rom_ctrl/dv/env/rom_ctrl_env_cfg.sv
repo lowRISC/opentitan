@@ -26,7 +26,7 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
 
   extern constraint kmac_accept_delay_max_c;
   extern function new (string name="");
-  extern virtual function void initialize(bit [31:0] csr_base_addr = '1);
+  extern virtual function void initialize();
   extern virtual protected function dv_base_reg_block create_ral_by_name(string name);
 
   `uvm_object_utils_begin(rom_ctrl_env_cfg)
@@ -67,8 +67,8 @@ function rom_ctrl_env_cfg::new (string name="");
   sec_cm_alert_name = "fatal";
 endfunction
 
-function void rom_ctrl_env_cfg::initialize(bit [31:0] csr_base_addr = '1);
-  super.initialize(csr_base_addr);
+function void rom_ctrl_env_cfg::initialize();
+  super.initialize();
 
   // default TLUL supports 1 outstanding item, the rom TLUL supports 2 outstanding items.
   m_tl_agent_cfgs[RAL_T::type_name].max_outstanding_req = 1;

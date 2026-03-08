@@ -14,7 +14,7 @@ class soc_dbg_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(soc_dbg_ctrl_core_r
   extern function new(string name="");
 
   // Class specific methods
-  extern function void initialize(bit [31:0] csr_base_addr = '1);
+  extern function void initialize();
 endclass : soc_dbg_ctrl_env_cfg
 
 
@@ -22,12 +22,12 @@ function soc_dbg_ctrl_env_cfg::new(string name="");
   super.new(name);
 endfunction : new
 
-function void soc_dbg_ctrl_env_cfg::initialize(bit [31:0] csr_base_addr = '1);
+function void soc_dbg_ctrl_env_cfg::initialize();
   list_of_alerts = soc_dbg_ctrl_env_pkg::LIST_OF_ALERTS;
 
   // Set up second RAL model for JTAG registers
   ral_model_names.push_back(jtag_ral_name);
   clk_freqs_mhz[jtag_ral_name] = clk_freq_mhz;
 
-  super.initialize(csr_base_addr);
+  super.initialize();
 endfunction : initialize

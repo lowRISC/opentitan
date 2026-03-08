@@ -54,9 +54,9 @@ class adc_ctrl_env_cfg extends cip_base_env_cfg #(
 
   `uvm_object_new
 
-  virtual function void initialize(bit [31:0] csr_base_addr = '1);
+  virtual function void initialize();
     list_of_alerts = adc_ctrl_env_pkg::LIST_OF_ALERTS;
-    super.initialize(csr_base_addr);
+    super.initialize();
     // Create ADC push pull agent configs
     for (int idx = 0; idx < ADC_CTRL_CHANNELS; idx++) begin
       string name = $sformatf("m_adc_push_pull_cfg_%0d", idx);

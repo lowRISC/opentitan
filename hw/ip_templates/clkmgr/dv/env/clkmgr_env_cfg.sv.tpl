@@ -36,9 +36,9 @@ class clkmgr_env_cfg extends cip_base_env_cfg #(
 
   `uvm_object_new
 
-  virtual function void initialize(bit [31:0] csr_base_addr = '1);
+  virtual function void initialize();
     list_of_alerts = clkmgr_env_pkg::LIST_OF_ALERTS;
-    super.initialize(csr_base_addr);
+    super.initialize();
 
     // This is for the integrity error test.
     tl_intg_alert_name = "fatal_fault";
