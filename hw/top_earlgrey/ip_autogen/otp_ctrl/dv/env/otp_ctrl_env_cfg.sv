@@ -57,7 +57,11 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_core_reg_block
 
   virtual function void initialize();
     string prim_ral_name = "otp_macro_prim_reg_block";
-    ral_model_names.push_back(prim_ral_name);
+
+    // Request an extra RAL models for the prim registers by adding its name to the set of RAL
+    // models. The associated value has no meaning.
+    ral_model_names[prim_ral_name] = 1'b0;
+
     clk_freqs_mhz[prim_ral_name] = clk_freq_mhz;
 
     list_of_alerts = otp_ctrl_env_pkg::LIST_OF_ALERTS;
