@@ -25,7 +25,7 @@ class ac_range_check_env_cfg extends cip_base_env_cfg #(.RAL_T(ac_range_check_re
   extern function new(string name="");
 
   // Class specific methods
-  extern function void initialize(bit [31:0] csr_base_addr = '1);
+  extern function void initialize();
 endclass : ac_range_check_env_cfg
 
 
@@ -33,9 +33,9 @@ function ac_range_check_env_cfg::new(string name="");
   super.new(name);
 endfunction : new
 
-function void ac_range_check_env_cfg::initialize(bit [31:0] csr_base_addr = '1);
+function void ac_range_check_env_cfg::initialize();
   list_of_alerts = ac_range_check_env_pkg::LIST_OF_ALERTS;
-  super.initialize(csr_base_addr);
+  super.initialize();
 
   // Set shadow register error status
   tl_intg_alert_fields[ral.alert_status.reg_intg_err] = 1;

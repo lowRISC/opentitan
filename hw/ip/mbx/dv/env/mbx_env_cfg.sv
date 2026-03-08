@@ -21,13 +21,13 @@ class mbx_env_cfg extends cip_base_env_cfg #(
   `uvm_object_utils_end
   `uvm_object_new
 
-  virtual function void initialize(bit [31:0] csr_base_addr = '1);
+  virtual function void initialize();
     list_of_alerts = mbx_env_pkg::LIST_OF_ALERTS;
 
     // RAL for the SoC-side register interface.
     ral_model_names.push_back(mbx_soc_ral_name);
 
-    super.initialize(csr_base_addr);
+    super.initialize();
 
     // Interrupt count
     num_interrupts = ral.intr_state.get_n_used_bits();

@@ -31,9 +31,9 @@ class pwrmgr_env_cfg extends cip_base_env_cfg #(
   // The run_phase object, to deal with objections.
   uvm_phase run_phase;
 
-  virtual function void initialize(bit [31:0] csr_base_addr = '1);
+  virtual function void initialize();
     list_of_alerts = pwrmgr_env_pkg::LIST_OF_ALERTS;
-    super.initialize(csr_base_addr);
+    super.initialize();
     num_interrupts = ral.intr_state.get_n_used_bits();
     `ASSERT_I(NumInstrMatch_A, num_interrupts == NUM_INTERRUPTS)
     `uvm_info(`gfn, $sformatf("num_interrupts = %0d", num_interrupts), UVM_MEDIUM)

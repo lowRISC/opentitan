@@ -114,7 +114,7 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   // Initialise the object with RAL models and set it up for randomisation
   //
   // This is virtual, allowing subclasses to set up list_of_alerts and num_interrupts.
-  extern virtual function void initialize(bit [BUS_AW-1:0] csr_base_addr = '1);
+  extern virtual function void initialize();
 
   // Set pre-build RAL knobs.
   //
@@ -137,15 +137,10 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   extern virtual function void reset_deasserted();
 
   // Create missing RAL models and set their base addresses based on the supplied arg.
-  //
-  // csr_base_addr is the base address to set to the RAL models. If it is all 1s, then we treat that
-  // as an indication to randomize the base address internally instead.
-  extern local function void make_ral_models(bit [BUS_AW-1:0] csr_base_addr);
+  extern local function void make_ral_models();
 
-  // Create the named RAL model and set its base address based on csr_base_addr. This randomises as
-  // described in make_ral_models.
-  extern local function void make_ral_model(string           ral_model_name,
-                                            bit [BUS_AW-1:0] csr_base_addr);
+  // Create the named RAL model and give it a randomised base address.
+  extern local function void make_ral_model(string ral_model_name);
 
   // Create the named register block. This protected function is virtual to allow subclasses to
   // customise how the register block is created.
@@ -178,7 +173,7 @@ function void dv_base_env_cfg::post_randomize();
   end
 endfunction
 
-function void dv_base_env_cfg::initialize(bit [BUS_AW-1:0] csr_base_addr = '1);
+function void dv_base_env_cfg::initialize();
   if (is_initialized) `uvm_fatal(`gfn, "Cannot call initialize when already initialized")
 
   // Prepend ral_type_name to ral_model_names (so the "default RAL" for the class gets index 0)
@@ -187,7 +182,7 @@ function void dv_base_env_cfg::initialize(bit [BUS_AW-1:0] csr_base_addr = '1);
   is_initialized = 1'b1;
 
   // build the ral model
-  make_ral_models(csr_base_addr);
+  make_ral_models();
 
   // add items to clk_freqs_mhz before randomizing it
   foreach (ral_model_names[i]) begin
@@ -213,15 +208,13 @@ function void dv_base_env_cfg::reset_deasserted();
   csr_utils_pkg::reset_deasserted();
 endfunction
 
-function void dv_base_env_cfg::make_ral_models(bit [BUS_AW-1:0] csr_base_addr);
-  foreach (ral_model_names[i]) make_ral_model(ral_model_names[i], csr_base_addr);
+function void dv_base_env_cfg::make_ral_models();
+  foreach (ral_model_names[i]) make_ral_model(ral_model_names[i]);
   `DV_CHECK_FATAL(ral_models.exists(ral_type_name))
 endfunction
 
-function void dv_base_env_cfg::make_ral_model(string           ral_model_name,
-                                              bit [BUS_AW-1:0] csr_base_addr);
+function void dv_base_env_cfg::make_ral_model(string ral_model_name);
   dv_base_reg_block reg_blk;
-  bit randomize_base_addr = &csr_base_addr;
 
   if (ral_models.exists(ral_model_name)) begin
     // If a model for this name already exists, set reg_blk to point at it.
@@ -250,9 +243,8 @@ function void dv_base_env_cfg::make_ral_model(string           ral_model_name,
     `uvm_fatal(`gfn, $sformatf("ral_models[%s] is not locked.", ral_model_name))
   end
 
-  // Since the model is locked, we know its layout. Set the base address for the register block.
-  reg_blk.set_base_addr(.base_addr(`UVM_REG_ADDR_WIDTH'(csr_base_addr)),
-                        .randomize_base_addr(randomize_base_addr));
+  // Since the model is locked, we know its layout. Pick a base address for the register block.
+  reg_blk.set_base_addr(.base_addr(0), .randomize_base_addr(1));
   ral_models[ral_model_name] = reg_blk;
 endfunction
 

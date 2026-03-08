@@ -140,7 +140,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   `uvm_object_utils_end
 
 
-  virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
+  virtual function void initialize();
     list_of_alerts = chip_common_pkg::LIST_OF_ALERTS;
     is_chip = 1;
 
@@ -151,7 +151,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     // User can read `loc_alert_cause` to check ping timeout.
     en_scb_ping_chk = 0;
 
-    super.initialize(csr_base_addr);
+    super.initialize();
     `uvm_info(`gfn, $sformatf("ral_model_names: %0p", ral_model_names), UVM_LOW)
 
     // Set the a_source width limitation for the TL agent hooked up to the CPU cored port.

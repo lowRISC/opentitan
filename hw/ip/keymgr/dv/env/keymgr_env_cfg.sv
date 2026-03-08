@@ -15,12 +15,12 @@ class keymgr_env_cfg extends cip_base_env_cfg #(.RAL_T(keymgr_reg_block));
 
   `uvm_object_new
 
-  virtual function void initialize(bit [31:0] csr_base_addr = '1);
+  virtual function void initialize();
     list_of_alerts = keymgr_env_pkg::LIST_OF_ALERTS;
     tl_intg_alert_name = "fatal_fault_err";
     sec_cm_alert_name  = tl_intg_alert_name;
     num_edn = 1;
-    super.initialize(csr_base_addr);
+    super.initialize();
     tl_intg_alert_fields[ral.fault_status.regfile_intg] = 1;
     shadow_update_err_status_fields[ral.err_code.invalid_shadow_update] = 1;
     shadow_storage_err_status_fields[ral.fault_status.shadow] = 1;

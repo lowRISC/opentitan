@@ -16,7 +16,7 @@ class aon_timer_env_cfg extends cip_base_env_cfg #(.RAL_T(aon_timer_reg_block));
   `uvm_object_utils_end
 
   extern function new (string name="");
-  extern virtual function void initialize(bit [31:0] csr_base_addr = '1);
+  extern virtual function void initialize();
   // Set the 'has_prediction' field flag for all the intr_state fields so the comparison
   // on reads can be carried out in cip_base_scoreboard
   extern function void set_intr_state_has_prediction();
@@ -38,9 +38,9 @@ function aon_timer_env_cfg::new (string name="");
   super.new(name);
 endfunction : new
 
-function void aon_timer_env_cfg::initialize(bit [31:0] csr_base_addr = '1);
+function void aon_timer_env_cfg::initialize();
   list_of_alerts = aon_timer_env_pkg::LIST_OF_ALERTS;
-  super.initialize(csr_base_addr);
+  super.initialize();
 
   m_tl_agent_cfg.max_outstanding_req = 1;
 
