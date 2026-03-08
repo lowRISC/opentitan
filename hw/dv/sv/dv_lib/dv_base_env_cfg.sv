@@ -211,6 +211,15 @@ function void dv_base_env_cfg::initialize_ral(int unsigned addr_width,
   // build the ral model
   make_ral_models(addr_width, data_width, be_width);
 
+  // At this point, each RAL model will exist in the ral_models associative array. As a convenience,
+  // set the "ral" class variable to the ral model defined for this type. This should have been
+  // created with some subtype of RAL_T.
+  if (!$cast(ral, ral_models[ral_type_name])) begin
+    `uvm_fatal(get_name(),
+               $sformatf("The register model stored under %0s cannot be cast to type RAL_T.",
+                         ral_type_name))
+  end
+
   // add items to clk_freqs_mhz before randomizing it
   foreach (ral_model_names[name]) begin
     clk_freqs_mhz[name] = 0;
@@ -273,7 +282,6 @@ function void dv_base_env_cfg::make_ral_model(string       ral_model_name,
     reg_blk.lock_model();
 
     ral_models[ral_model_name] = reg_blk;
-    if (reg_blk.get_name() == ral_type_name) `downcast(ral, reg_blk)
   end
 
   // At this point, either the model existed already or we've just created and locked it. In
