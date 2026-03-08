@@ -144,9 +144,7 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
                    bus_params_pkg::BUS_DBW);
 
     // Create downstream agent cfg objects.
-    foreach (ral_model_names[i]) begin
-      string ral_name = ral_model_names[i];
-
+    foreach (ral_model_names[ral_name]) begin
       m_tl_agent_cfgs[ral_name] = tl_agent_cfg::type_id::create({"m_tl_agent_cfg_", ral_name});
       m_tl_agent_cfgs[ral_name].is_active = is_active;
       m_tl_agent_cfgs[ral_name].if_mode = (is_active ? dv_utils_pkg::Host : dv_utils_pkg::Monitor);

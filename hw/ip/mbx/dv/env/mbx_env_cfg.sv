@@ -24,8 +24,9 @@ class mbx_env_cfg extends cip_base_env_cfg #(
   virtual function void initialize();
     list_of_alerts = mbx_env_pkg::LIST_OF_ALERTS;
 
-    // RAL for the SoC-side register interface.
-    ral_model_names.push_back(mbx_soc_ral_name);
+    // RAL for the SoC-side register interface: add mbx_soc_ral_name to the set of known model
+    // names. The associated value has no meaning.
+    ral_model_names[mbx_soc_ral_name] = 1'b0;
 
     super.initialize();
 

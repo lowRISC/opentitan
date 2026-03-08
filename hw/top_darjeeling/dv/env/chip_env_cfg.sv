@@ -143,8 +143,10 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     // User can read `loc_alert_cause` to check ping timeout.
     en_scb_ping_chk = 0;
 
-    ral_model_names.push_back("chip_soc_dbg_reg_block");
-    ral_model_names.push_back("chip_soc_mbx_reg_block");
+    // Add the debug and mailbox register blocks to ral_model_names (we just need the keys in the
+    // array; the values have no meaning)
+    ral_model_names["chip_soc_dbg_reg_block"] = 1'b0;
+    ral_model_names["chip_soc_mbx_reg_block"] = 1'b0;
     super.initialize();
     `uvm_info(`gfn, $sformatf("ral_model_names: %0p", ral_model_names), UVM_LOW);
     soc_dbg_base_reg_block = ral_models["chip_soc_dbg_reg_block"];

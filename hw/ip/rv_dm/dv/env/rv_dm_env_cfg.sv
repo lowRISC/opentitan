@@ -48,8 +48,9 @@ class rv_dm_env_cfg extends cip_base_env_cfg #(.RAL_T(rv_dm_regs_reg_block));
     list_of_alerts = rv_dm_env_pkg::LIST_OF_ALERTS;
     tl_intg_alert_name = "fatal_fault";
 
-    // Set up second RAL model for debug memory and associated collateral
-    ral_model_names.push_back(mem_ral_name);
+    // Request a second RAL model for debug memory and associated collateral, by adding mem_ral_name
+    // to the set of known model names. The associated value has no meaning.
+    ral_model_names[mem_ral_name] = 1'b1;
 
     // both RAL models use same clock frequency
     clk_freqs_mhz["rv_dm_mem_reg_block"] = clk_freq_mhz;
