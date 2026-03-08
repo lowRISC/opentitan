@@ -73,9 +73,9 @@ class usbdev_env_cfg extends cip_base_env_cfg #(.RAL_T(usbdev_reg_block));
 
   `uvm_object_new
 
-  virtual function void initialize();
+  virtual function void initialize(bit inherit_ral_models = 1'b0);
     list_of_alerts = usbdev_env_pkg::LIST_OF_ALERTS;
-    super.initialize();
+    super.initialize(inherit_ral_models);
 
     // The DUT supports only a single outstanding request.
     m_tl_agent_cfgs[RAL_T::type_name].max_outstanding_req = 1;

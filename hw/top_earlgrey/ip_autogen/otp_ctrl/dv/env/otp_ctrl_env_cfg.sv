@@ -55,7 +55,7 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_core_reg_block
     }
   }
 
-  virtual function void initialize();
+  virtual function void initialize(bit inherit_ral_models = 1'b0);
     string prim_ral_name = "otp_macro_prim_reg_block";
 
     // Request an extra RAL models for the prim registers by adding its name to the set of RAL
@@ -69,7 +69,7 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_core_reg_block
     tl_intg_alert_name = "fatal_bus_integ_error";
     sec_cm_alert_name  = "fatal_check_error";
 
-    super.initialize();
+    super.initialize(inherit_ral_models);
 
     // create push_pull agent config obj
     for (int i = 0; i < NumSramKeyReqSlots; i++) begin
