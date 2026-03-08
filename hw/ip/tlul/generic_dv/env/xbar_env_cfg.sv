@@ -42,7 +42,7 @@ class xbar_env_cfg extends dv_base_env_cfg;
 
   `uvm_object_new
 
-  virtual function void initialize();
+  virtual function void initialize(bit inherit_ral_models = 1'b0);
     is_initialized = 1'b1;
     ral_model_names.delete(); // no csr in xbar
     // Host TL agent cfg

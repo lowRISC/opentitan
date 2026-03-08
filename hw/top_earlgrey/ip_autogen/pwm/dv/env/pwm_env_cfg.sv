@@ -22,15 +22,15 @@ class pwm_env_cfg extends cip_base_env_cfg #(.RAL_T(pwm_reg_block));
   constraint clk_scale_c { clk_scale inside {[256:1024]}; }
 
   // Method from dv_base_env_cfg. Construct RAL models and fill in monitor configs.
-  extern virtual function void initialize();
+  extern virtual function void initialize(bit inherit_ral_models = 1'b0);
 
   // Return the scaled core clock frequency in MHz.
   extern virtual function int get_clk_core_freq();
 endclass : pwm_env_cfg
 
-function void pwm_env_cfg::initialize();
+function void pwm_env_cfg::initialize(bit inherit_ral_models = 1'b0);
   list_of_alerts = pwm_env_pkg::LIST_OF_ALERTS;
-  super.initialize();
+  super.initialize(inherit_ral_models);
 
   // Set up the configuration for each of the monitors.
   foreach (m_pwm_monitor_cfg[i]) begin

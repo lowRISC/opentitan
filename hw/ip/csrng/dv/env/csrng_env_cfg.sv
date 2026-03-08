@@ -263,7 +263,7 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
     end
   endfunction // post_randomize
 
-  virtual function void initialize();
+  virtual function void initialize(bit inherit_ral_models = 1'b0);
     if (!m_num_hw_apps) begin
       `uvm_fatal(get_name(),
                  "Cannot initialize cfg without any HW apps. Call set_num_hw_apps first.")
@@ -272,7 +272,7 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
     list_of_alerts = csrng_env_pkg::LIST_OF_ALERTS;
     tl_intg_alert_name = "fatal_alert";
 
-    super.initialize();
+    super.initialize(inherit_ral_models);
 
     // create agent configs
     m_entropy_src_agent_cfg = push_pull_agent_cfg#(.HostDataWidth(entropy_src_pkg::

@@ -44,7 +44,7 @@ class rv_dm_env_cfg extends cip_base_env_cfg #(.RAL_T(rv_dm_regs_reg_block));
     can_reset_with_csr_accesses = 1'b1;
   endfunction
 
-  virtual function void initialize();
+  virtual function void initialize(bit inherit_ral_models = 1'b0);
     list_of_alerts = rv_dm_env_pkg::LIST_OF_ALERTS;
     tl_intg_alert_name = "fatal_fault";
 
@@ -55,7 +55,7 @@ class rv_dm_env_cfg extends cip_base_env_cfg #(.RAL_T(rv_dm_regs_reg_block));
     // both RAL models use same clock frequency
     clk_freqs_mhz["rv_dm_mem_reg_block"] = clk_freq_mhz;
 
-    super.initialize();
+    super.initialize(inherit_ral_models);
     `uvm_info(`gfn, $sformatf("ral_model_names: %0p", ral_model_names), UVM_LOW)
 
     // Configure the RAL model for the mem register block (rv_dm_mem_reg_block) so that it doesn't

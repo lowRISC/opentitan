@@ -59,9 +59,9 @@ class adc_ctrl_env_cfg extends cip_base_env_cfg #(
     end
   endfunction
 
-  virtual function void initialize();
+  virtual function void initialize(bit inherit_ral_models = 1'b0);
     list_of_alerts = adc_ctrl_env_pkg::LIST_OF_ALERTS;
-    super.initialize();
+    super.initialize(inherit_ral_models);
     // Create ADC push pull agent configs
     for (int idx = 0; idx < ADC_CTRL_CHANNELS; idx++) begin
       string name = $sformatf("m_adc_push_pull_cfg_%0d", idx);

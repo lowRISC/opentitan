@@ -42,7 +42,8 @@ class sram_ctrl_env_cfg #(parameter int AddrWidth = 10)
   constraint otp_freq_mhz_c {
     `DV_COMMON_CLK_CONSTRAINT(otp_freq_mhz)
   }
-  virtual function void initialize();
+
+  virtual function void initialize(bit inherit_ral_models = 1'b0);
     list_of_alerts = sram_ctrl_env_pkg::LIST_OF_ALERTS;
     tl_intg_alert_name = "fatal_error";
     sec_cm_alert_name  = tl_intg_alert_name;
@@ -51,7 +52,7 @@ class sram_ctrl_env_cfg #(parameter int AddrWidth = 10)
     // to the set of known model names. The associated value has no meaning.
     ral_model_names[sram_ral_name] = 1'b0;
 
-    super.initialize();
+    super.initialize(inherit_ral_models);
     tl_intg_alert_fields[ral.status.bus_integ_error] = 1;
 
     // Build KDI cfg object and configure

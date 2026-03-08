@@ -24,9 +24,9 @@ class ${module_instance_name}_env_cfg extends cip_base_env_cfg #(
     super.new(name);
   endfunction
 
-  virtual function void initialize();
+  virtual function void initialize(bit inherit_ral_models = 1'b0);
     list_of_alerts = ${module_instance_name}_env_pkg::LIST_OF_ALERTS;
-    super.initialize();
+    super.initialize(inherit_ral_models);
     // set num_interrupts & num_alerts which will be used to create coverage and more
     num_interrupts = ral.intr_state.get_n_used_bits();
 

@@ -23,12 +23,12 @@ class ${name}_env_cfg extends dv_base_env_cfg;
 
   `uvm_object_new
 
-  virtual function void initialize();
+  virtual function void initialize(bit inherit_ral_models = 1'b0);
 % if has_alerts:
     list_of_alerts = ${name}_env_pkg::LIST_OF_ALERTS;
 % endif
 % if has_ral:
-    super.initialize();
+    super.initialize(inherit_ral_models);
 % endif
 % for agent in env_agents:
     // create ${agent} agent config obj

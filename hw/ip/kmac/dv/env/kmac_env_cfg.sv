@@ -41,12 +41,12 @@ class kmac_env_cfg extends cip_base_env_cfg #(.RAL_T(kmac_reg_block));
 
   `uvm_object_new
 
-  virtual function void initialize();
+  virtual function void initialize(bit inherit_ral_models = 1'b0);
     num_edn = 1;
     list_of_alerts = kmac_env_pkg::LIST_OF_ALERTS;
     tl_intg_alert_name = "fatal_fault_err";
     sec_cm_alert_name  = "fatal_fault_err";
-    super.initialize();
+    super.initialize(inherit_ral_models);
 
     tl_intg_alert_fields[ral.status.alert_fatal_fault] = 1;
     tl_intg_alert_fields[ral.cfg_regwen.en] = 0;

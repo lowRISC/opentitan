@@ -282,7 +282,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     return region;
   endfunction // get_region_from_info
 
-  virtual function void initialize();
+  virtual function void initialize(bit inherit_ral_models = 1'b0);
     string prim_ral_name = "flash_ctrl_prim_reg_block";
     string fast_rcvr_name = "";
 
@@ -298,7 +298,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     // both RAL models use same clock frequency
     clk_freqs_mhz[flash_ral_name] = clk_freq_mhz;
     clk_freqs_mhz[prim_ral_name] = clk_freq_mhz;
-    super.initialize();
+    super.initialize(inherit_ral_models);
 
     void'($value$plusargs("fast_rcvr_%s", fast_rcvr_name));
     if (fast_rcvr_name != "") begin
