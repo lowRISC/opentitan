@@ -31,7 +31,8 @@ static status_t set_tick(uint32_t tick_hz) {
   return OK_STATUS();
 }
 
-static status_t test_tick(uint32_t tick_hz) {
+static status_t test_tick(uint32_t tick_hz, uint32_t tick_low_bound,
+                          uint32_t tick_high_bound) {
   LOG_INFO("%s: tick_hz = %u", __func__, tick_hz);
 
   TRY(set_tick(tick_hz));
@@ -46,13 +47,20 @@ static status_t test_tick(uint32_t tick_hz) {
   TRY(dif_rv_timer_counter_set_enabled(&timer, kHart, kDifToggleDisabled));
 
   TRY(dif_rv_timer_counter_read(&timer, kHart, &counter));
-  const uint64_t elapsed_millis = udiv64_slow(counter * 1000, tick_hz, NULL);
+
+  // Assuming the measured ticks fit in 32 bits simplifies things. That should
+  // always be true for the tick frequencies and reference time used in this
+  // test (a maximum of ~5000 ticks at the time of writing).
+  TRY_CHECK((uint32_t)counter == counter,
+            "Measured ticks value does not fit in 32 bits");
+
+  LOG_INFO("Elapsed ticks: %u. Bounds: %u--%u", (uint32_t)counter,
+           tick_low_bound, tick_high_bound);
 
   // Verify that `n * T ~= 5 milliseconds` within 3% of tolerance.
-  TRY_CHECK((elapsed_millis >= (uint64_t)(kReferenceTimeMillis * 0.97)) &&
-                (elapsed_millis <= (uint64_t)(kReferenceTimeMillis * 1.03)),
-            "Unexpected elapsed time, expected: %u, got: %u",
-            (uint32_t)kReferenceTimeMillis, (uint32_t)elapsed_millis);
+  TRY_CHECK((counter >= tick_low_bound) && (counter <= tick_high_bound),
+            "Unexpected elapsed time, expected: %u--%u, got: 0x%u ticks",
+            tick_low_bound, tick_high_bound, (uint32_t)counter);
 
   return OK_STATUS();
 }
@@ -103,17 +111,22 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_RV_TIMER_BASE_ADDR), &timer));
   CHECK_DIF_OK(dif_rv_timer_reset(&timer));
 
+// Macros to calculate the 97%--103% tick tolerance values
+#define LOW_TICK_BOUND(x) ((x) / ((1000 + 30) / kReferenceTimeMillis))
+#define HIGH_TICK_BOUND(x) ((x) / ((1000 - 30) / kReferenceTimeMillis))
+#define VALUE_AND_BOUNDS(x) (x), LOW_TICK_BOUND(x), HIGH_TICK_BOUND(x)
+
   const uint32_t kTickHz[] = {
-      1 * 1000 * 1000,  // 1MHz - 1us.
-      200 * 1000,       // 200kHz - 5us.
-      40 * 1000,        // 40kHz - 25us.
-      10 * 1000,        // 10kHz - 100us.
-      8 * 1000,         // 8kHz - 125us.
+      VALUE_AND_BOUNDS(1 * 1000 * 1000),  // 1MHz - 1us.
+      VALUE_AND_BOUNDS(200 * 1000),       // 200kHz - 5us.
+      VALUE_AND_BOUNDS(40 * 1000),        // 40kHz - 25us.
+      VALUE_AND_BOUNDS(10 * 1000),        // 10kHz - 100us.
+      VALUE_AND_BOUNDS(8 * 1000),         // 8kHz - 125us.
   };
 
   status_t result = OK_STATUS();
-  for (size_t i = 0; i < ARRAYSIZE(kTickHz); ++i) {
-    EXECUTE_TEST(result, test_tick, kTickHz[i]);
+  for (size_t i = 0; i < ARRAYSIZE(kTickHz); i += 3) {
+    EXECUTE_TEST(result, test_tick, kTickHz[i], kTickHz[i + 1], kTickHz[i + 2]);
   }
 
   EXECUTE_TEST(result, test_wrap, 10000);
