@@ -1,10 +1,11 @@
 # CSRNG HWIP Technical Specification
+<!-- BEGIN AUTOGEN from util/mdbook_regression_links.py -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`csrng`](https://nightly.reports.lowrisc.org/opentitan_weekly_earlgrey/2026_03_08/index.html) | 3.0.0 | D1, V1 | <img src="https://img.shields.io/badge/Tests_Running-1630-blue"> <img src="https://img.shields.io/badge/Tests_Passing-99.94%25-brightgreen"> <img src="https://img.shields.io/badge/Functional_Coverage-91.09%25-brightgreen"> <img src="https://img.shields.io/badge/Code_Coverage-96.33%25-brightgreen"> |
 
-[`csrng`](https://reports.opentitan.org/hw/ip/csrng/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/csrng/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/csrng/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/csrng/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/csrng/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/csrng/index.html).
+<!-- END AUTOGEN -->
 
 # Overview
 

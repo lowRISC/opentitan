@@ -1,16 +1,12 @@
 # SRAM Controller Technical Specification
+<!-- BEGIN AUTOGEN from util/mdbook_regression_links.py -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`sram_ctrl_main`](https://nightly.reports.lowrisc.org/opentitan_weekly_earlgrey/2026_03_08/index.html) | 1.1.0 | D3, V2S | <img src="https://img.shields.io/badge/Tests_Running-1190-blue"> <img src="https://img.shields.io/badge/Tests_Passing-97.98%25-brightgreen"> <img src="https://img.shields.io/badge/Functional_Coverage-98.33%25-brightgreen"> <img src="https://img.shields.io/badge/Code_Coverage-96.15%25-brightgreen"> |
+ [`sram_ctrl_ret`](https://nightly.reports.lowrisc.org/opentitan_weekly_earlgrey/2026_03_08/index.html) | 1.1.0 | D3, V2S | <img src="https://img.shields.io/badge/Tests_Running-1190-blue"> <img src="https://img.shields.io/badge/Tests_Passing-98.32%25-brightgreen"> <img src="https://img.shields.io/badge/Functional_Coverage-98.33%25-brightgreen"> <img src="https://img.shields.io/badge/Code_Coverage-96.12%25-brightgreen"> |
 
-[`sram_ctrl/main`](https://reports.opentitan.org/hw/ip/sram_ctrl_main/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/sram_ctrl/main/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/sram_ctrl/main/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/sram_ctrl/main/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/sram_ctrl/main/code.svg)
-
-[`sram_ctrl/ret`](https://reports.opentitan.org/hw/ip/sram_ctrl_ret/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/sram_ctrl/ret/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/sram_ctrl/ret/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/sram_ctrl/ret/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/sram_ctrl/ret/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/sram_ctrl/index.html).
+<!-- END AUTOGEN -->
 
 # Overview
 

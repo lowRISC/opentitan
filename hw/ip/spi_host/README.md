@@ -1,10 +1,11 @@
 # SPI_HOST HWIP Technical Specification
+<!-- BEGIN AUTOGEN from util/mdbook_regression_links.py -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`spi_host`](https://nightly.reports.lowrisc.org/opentitan_weekly_earlgrey/2026_03_08/index.html) | 3.0.0 | D0, V0 | <img src="https://img.shields.io/badge/Tests_Running-840-blue"> <img src="https://img.shields.io/badge/Tests_Passing-99.40%25-brightgreen"> <img src="https://img.shields.io/badge/Functional_Coverage-90.76%25-brightgreen"> <img src="https://img.shields.io/badge/Code_Coverage-95.06%25-brightgreen"> |
 
-[`spi_host`](https://reports.opentitan.org/hw/ip/spi_host/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/spi_host/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/spi_host/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/spi_host/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/spi_host/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/spi_host/index.html).
+<!-- END AUTOGEN -->
 
 # Overview
 

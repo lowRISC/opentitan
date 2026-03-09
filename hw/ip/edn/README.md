@@ -1,10 +1,12 @@
 # EDN HWIP Technical Specification
+<!-- BEGIN AUTOGEN from util/mdbook_regression_links.py -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`edn_edn0`](https://nightly.reports.lowrisc.org/opentitan_weekly_earlgrey/2026_03_08/index.html) | 2.0.0 | D2S, V2S | <img src="https://img.shields.io/badge/Tests_Running-1130-blue"> <img src="https://img.shields.io/badge/Tests_Passing-99.91%25-brightgreen"> <img src="https://img.shields.io/badge/Functional_Coverage-92.66%25-brightgreen"> <img src="https://img.shields.io/badge/Code_Coverage-95.40%25-brightgreen"> |
+ [`edn_edn1`](https://nightly.reports.lowrisc.org/opentitan_weekly_earlgrey/2026_03_08/index.html) | 2.0.0 | D2S, V2S | <img src="https://img.shields.io/badge/Tests_Running-1130-blue"> <img src="https://img.shields.io/badge/Tests_Passing-100.00%25-brightgreen"> <img src="https://img.shields.io/badge/Functional_Coverage-92.65%25-brightgreen"> <img src="https://img.shields.io/badge/Code_Coverage-96.41%25-brightgreen"> |
 
-[`edn`](https://reports.opentitan.org/hw/ip/edn/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/edn/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/edn/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/edn/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/edn/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/edn/index.html).
+<!-- END AUTOGEN -->
 
 # Overview
 

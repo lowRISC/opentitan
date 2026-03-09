@@ -1,10 +1,11 @@
 # RISC-V Debug System Wrapper Technical Specification
+<!-- BEGIN AUTOGEN from util/mdbook_regression_links.py -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`rv_dm_use_jtag_interface`](https://nightly.reports.lowrisc.org/opentitan_weekly_earlgrey/2026_03_08/index.html) | 1.2.1 | D2S, V1 | <img src="https://img.shields.io/badge/Tests_Running-483-blue"> <img src="https://img.shields.io/badge/Tests_Passing-83.44%25-green"> <img src="https://img.shields.io/badge/Functional_Coverage-51.71%25-orange"> <img src="https://img.shields.io/badge/Code_Coverage-88.48%25-green"> |
 
-[`rv_dm`](https://reports.opentitan.org/hw/ip/rv_dm/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/rv_dm/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/rv_dm/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/rv_dm/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/rv_dm/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/rv_dm/index.html).
+<!-- END AUTOGEN -->
 
 # Overview
 

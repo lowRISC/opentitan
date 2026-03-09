@@ -1,10 +1,11 @@
 # PWM HWIP Technical Specification
+<!-- BEGIN AUTOGEN from util/mdbook_regression_links.py -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`pwm`](https://nightly.reports.lowrisc.org/opentitan_weekly_earlgrey/2026_03_08/index.html) | 1.0.0 | D2S, V2S | <img src="https://img.shields.io/badge/Tests_Running-276-blue"> <img src="https://img.shields.io/badge/Tests_Passing-99.64%25-brightgreen"> <img src="https://img.shields.io/badge/Functional_Coverage-98.68%25-brightgreen"> <img src="https://img.shields.io/badge/Code_Coverage-96.53%25-brightgreen"> |
 
-[`pwm`](https://reports.opentitan.org/hw/ip/pwm/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/pwm/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/pwm/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/pwm/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/pwm/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/pwm/index.html).
+<!-- END AUTOGEN -->
 
 # Overview
 

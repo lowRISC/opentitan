@@ -1,10 +1,12 @@
 # Life Cycle Controller Technical Specification
+<!-- BEGIN AUTOGEN from util/mdbook_regression_links.py -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`lc_ctrl_volatile_unlock_enabled`](https://nightly.reports.lowrisc.org/opentitan_weekly_earlgrey/2026_03_08/index.html) | 2.1.1 | D3, V1 | <img src="https://img.shields.io/badge/Tests_Running-1030-blue"> <img src="https://img.shields.io/badge/Tests_Passing-97.09%25-brightgreen"> <img src="https://img.shields.io/badge/Functional_Coverage-96.09%25-brightgreen"> <img src="https://img.shields.io/badge/Code_Coverage-87.99%25-green"> |
+ [`lc_ctrl_volatile_unlock_disabled`](https://nightly.reports.lowrisc.org/opentitan_weekly_earlgrey/2026_03_08/index.html) | 2.1.1 | D3, V1 | <img src="https://img.shields.io/badge/Tests_Running-1030-blue"> <img src="https://img.shields.io/badge/Tests_Passing-96.80%25-brightgreen"> <img src="https://img.shields.io/badge/Functional_Coverage-96.26%25-brightgreen"> <img src="https://img.shields.io/badge/Code_Coverage-88.09%25-green"> |
 
-[`lc_ctrl`](https://reports.opentitan.org/hw/ip/lc_ctrl/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/lc_ctrl/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/lc_ctrl/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/lc_ctrl/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/lc_ctrl/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/lc_ctrl/index.html).
+<!-- END AUTOGEN -->
 
 # Overview
 

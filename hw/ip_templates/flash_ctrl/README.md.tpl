@@ -1,10 +1,9 @@
 # Flash Controller HWIP Technical Specification
-
-[`flash_ctrl`](https://reports.opentitan.org/hw/top_${topname}/ip_autogen/flash_ctrl/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/flash_ctrl/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/flash_ctrl/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/flash_ctrl/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/flash_ctrl/code.svg)
+<!-- BEGIN AUTOGEN from util/mdbook_regression_links.py -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`flash_ctrl`](https://nightly.reports.lowrisc.org/opentitan_weekly_earlgrey/2026_03_08/index.html) | 2.0.0 | D2S, V2S | <img src="https://img.shields.io/badge/Tests_Running-1284-blue"> <img src="https://img.shields.io/badge/Tests_Passing-98.60%25-brightgreen"> <img src="https://img.shields.io/badge/Functional_Coverage-98.39%25-brightgreen"> <img src="https://img.shields.io/badge/Code_Coverage-95.62%25-brightgreen"> |
+<!-- END AUTOGEN -->
 
 # Overview
 

@@ -1,10 +1,12 @@
 # SPI Device HWIP Technical Specification
+<!-- BEGIN AUTOGEN from util/mdbook_regression_links.py -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`spi_device_1r1w`](https://nightly.reports.lowrisc.org/opentitan_weekly_earlgrey/2026_03_08/index.html) | 2.0.0 | D2S, V2S | <img src="https://img.shields.io/badge/Tests_Running-1151-blue"> <img src="https://img.shields.io/badge/Tests_Passing-98.09%25-brightgreen"> <img src="https://img.shields.io/badge/Functional_Coverage-99.26%25-brightgreen"> <img src="https://img.shields.io/badge/Code_Coverage-93.39%25-brightgreen"> |
+ [`spi_device_2p`](https://nightly.reports.lowrisc.org/opentitan_weekly_earlgrey/2026_03_08/index.html) | 2.0.0 | D2S, V2S | <img src="https://img.shields.io/badge/Tests_Running-1151-blue"> <img src="https://img.shields.io/badge/Tests_Passing-99.83%25-brightgreen"> <img src="https://img.shields.io/badge/Functional_Coverage-99.26%25-brightgreen"> <img src="https://img.shields.io/badge/Code_Coverage-94.28%25-brightgreen"> |
 
-[`spi_device`](https://reports.opentitan.org/hw/ip/spi_device/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/spi_device/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/spi_device/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/spi_device/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/spi_device/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/spi_device/index.html).
+<!-- END AUTOGEN -->
 
 # Overview
 
