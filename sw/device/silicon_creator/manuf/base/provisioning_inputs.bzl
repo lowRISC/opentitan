@@ -49,6 +49,8 @@ EARLGREY_SKUS = {
         "spx_key": {},
         "signature_prefix": None,
         "orchestrator_cfg": "@//sw/host/provisioning/orchestrator/configs/skus:emulation_dice_cwt.hjson",
+        # FIXME (#29412) The ROM_EXT is bigger than 64k which breaks the perso binaries.
+        "tags": ["broken"],
     },
     # OTP Config: Emulation; DICE Certs: X.509; Additional Certs: TPM EK
     "emulation_tpm": {
