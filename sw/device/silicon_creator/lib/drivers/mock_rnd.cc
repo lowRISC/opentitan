@@ -6,8 +6,9 @@
 
 namespace rom_test {
 extern "C" {
-rom_error_t rnd_health_config_check(lifecycle_state_t lc_state) {
-  return MockRnd::Instance().HealthConfigCheck(lc_state);
+rom_error_t rnd_health_config_check(lifecycle_state_t lc_state,
+                                    hardened_bool_t boot_mode) {
+  return MockRnd::Instance().HealthConfigCheck(lc_state, boot_mode);
 }
 
 uint32_t rnd_uint32(void) { return MockRnd::Instance().Uint32(); }

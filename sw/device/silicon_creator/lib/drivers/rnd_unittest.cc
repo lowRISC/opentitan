@@ -71,15 +71,15 @@ class RndtLcStateTest : public RndTest,
   void ExpectHealthCfgCrcCheck(lifecycle_state_t lc_state,
                                uint32_t expected_crc, uint32_t otp_crc) {
     std::vector<std::pair<uint32_t, uint32_t>> regs = {
-        {ENTROPY_SRC_REPCNT_THRESHOLDS_REG_OFFSET, 0xffffffff},
-        {ENTROPY_SRC_REPCNTS_THRESHOLDS_REG_OFFSET, 0xffffffff},
-        {ENTROPY_SRC_ADAPTP_HI_THRESHOLDS_REG_OFFSET, 0xffffffff},
-        {ENTROPY_SRC_ADAPTP_LO_THRESHOLDS_REG_OFFSET, 0x0},
-        {ENTROPY_SRC_BUCKET_THRESHOLDS_REG_OFFSET, 0xffffffff},
-        {ENTROPY_SRC_MARKOV_HI_THRESHOLDS_REG_OFFSET, 0xffffffff},
-        {ENTROPY_SRC_MARKOV_LO_THRESHOLDS_REG_OFFSET, 0x0},
-        {ENTROPY_SRC_EXTHT_HI_THRESHOLDS_REG_OFFSET, 0xffffffff},
-        {ENTROPY_SRC_EXTHT_LO_THRESHOLDS_REG_OFFSET, 0x0},
+        {ENTROPY_SRC_REPCNT_THRESHOLD_REG_OFFSET, 0xffff},
+        {ENTROPY_SRC_REPCNTS_THRESHOLD_REG_OFFSET, 0xffff},
+        {ENTROPY_SRC_ADAPTP_HI_THRESHOLD_REG_OFFSET, 0xffff},
+        {ENTROPY_SRC_ADAPTP_LO_THRESHOLD_REG_OFFSET, 0x0},
+        {ENTROPY_SRC_BUCKET_THRESHOLD_REG_OFFSET, 0xffff},
+        {ENTROPY_SRC_MARKOV_HI_THRESHOLD_REG_OFFSET, 0xffff},
+        {ENTROPY_SRC_MARKOV_LO_THRESHOLD_REG_OFFSET, 0x0},
+        {ENTROPY_SRC_EXTHT_HI_THRESHOLD_REG_OFFSET, 0xffff},
+        {ENTROPY_SRC_EXTHT_LO_THRESHOLD_REG_OFFSET, 0x0},
         {ENTROPY_SRC_ALERT_THRESHOLD_REG_OFFSET, 0xfffd0002},
     };
     EXPECT_CALL(crc32_, Init(NotNull()));
@@ -97,7 +97,7 @@ class RndtLcStateTest : public RndTest,
 
     EXPECT_CALL(
         otp_,
-        read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_HEALTH_CONFIG_DIGEST_OFFSET))
+        read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_BOOT_CONFIG_DIGEST_OFFSET))
         .WillOnce(Return(otp_crc));
   }
 };
@@ -107,13 +107,14 @@ TEST_P(RndtLcStateTest, HealthCfgCrcEnabled) {
       .WillOnce(Return(kHardenedBoolTrue));
 
   enum {
-    kExpectedCrcValOk = 0x8264cf75,
+    kExpectedCrcValOk = 0xddbce0ed,
     kExpectedCrcValOkOtp = kExpectedCrcValOk ^ kErrorOk,
   };
   ExpectHealthCfgCrcCheck(
       GetParam().lc_state, kExpectedCrcValOk,
       GetParam().mismatch_crc_vals ? 0 : kExpectedCrcValOkOtp);
-  rom_error_t got = rnd_health_config_check(GetParam().lc_state);
+  rom_error_t got =
+      rnd_health_config_check(GetParam().lc_state, kHardenedBoolTrue);
   if (GetParam().expect_error_ok) {
     EXPECT_EQ(got, kErrorOk);
   } else {
@@ -125,7 +126,8 @@ TEST_P(RndtLcStateTest, HealthCfgCrcDisabled) {
   EXPECT_CALL(otp_, read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_EN_OFFSET))
       .WillOnce(Return(kHardenedBoolFalse));
 
-  EXPECT_EQ(rnd_health_config_check(GetParam().lc_state), kErrorOk);
+  EXPECT_EQ(rnd_health_config_check(GetParam().lc_state, kHardenedBoolTrue),
+            kErrorOk);
 }
 
 INSTANTIATE_TEST_SUITE_P(NonTestLcStates, RndtLcStateTest,

@@ -90,8 +90,10 @@ otp_json(
                 "CREATOR_SW_CFG_RNG_MARKOV_LO_THRESHOLDS": otp_hex(0x0),
                 "CREATOR_SW_CFG_RNG_EXTHT_HI_THRESHOLDS": otp_hex(0xffffffff),
                 "CREATOR_SW_CFG_RNG_EXTHT_LO_THRESHOLDS": otp_hex(0x0),
-                "CREATOR_SW_CFG_RNG_ALERT_THRESHOLD": otp_hex(0xfffd0002),
-                "CREATOR_SW_CFG_RNG_HEALTH_CONFIG_DIGEST": otp_hex(0x8264cf75),
+                "CREATOR_SW_CFG_RNG_BOOT_ALERT_THRESHOLD": otp_hex(0xfffd0002),
+                "CREATOR_SW_CFG_RNG_FIPS_ALERT_THRESHOLD": otp_hex(0xfffd0002),
+                "CREATOR_SW_CFG_RNG_BOOT_CONFIG_DIGEST": otp_hex(0xddbce0ed),
+                "CREATOR_SW_CFG_RNG_FIPS_CONFIG_DIGEST": otp_hex(0xddbce0ed),
 
                 # Any value different than `CONST.HARDENED_FALSE` will force
                 # main SRAM scramble key rotation.
