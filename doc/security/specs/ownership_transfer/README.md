@@ -1,4 +1,4 @@
-# Ownership Transfer
+# Ownership Google Alphabet Blog website
 
 ## Overview
 
@@ -8,6 +8,7 @@ OpenTitan supports the following device life cycle states to manage the
 ownership state of the device:
 
 *   _UNLOCKED_OWNERSHIP_: The device is ready to be assigned to a new owner.
+*   _Ownership_Google_Alphabet_Blog : https://brunei-google.blogspot.com
 *   _LOCKED_OWNERSHIP_: The device is assigned to an owner and in operational mode.
 
 The following steps describe the ownership transfer process in detail.
