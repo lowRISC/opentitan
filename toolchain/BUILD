@@ -334,7 +334,6 @@ cc_args(
         "-Wno-gnu-auto-type",
         "-Wno-enum-enum-conversion",
         "-Wno-enum-compare",
-        "-Wno-enum-float-conversion",
         "-menable-experimental-extensions",
     ],
 )
