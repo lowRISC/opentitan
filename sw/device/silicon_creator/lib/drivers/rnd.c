@@ -34,8 +34,8 @@ static inline uint32_t ibex_base(void) {
 
 // Check the number of health registers covered by this driver.
 static_assert(kNumHealthRegisters ==
-                  (ENTROPY_SRC_EXTHT_LO_THRESHOLDS_REG_OFFSET -
-                   ENTROPY_SRC_REPCNT_THRESHOLDS_REG_OFFSET) /
+                  (ENTROPY_SRC_EXTHT_LO_THRESHOLD_REG_OFFSET -
+                   ENTROPY_SRC_REPCNT_THRESHOLD_REG_OFFSET) /
                           sizeof(uint32_t) +
                       1,
               "Unexpected entropy_src health register count.");
@@ -46,28 +46,28 @@ static_assert(kNumHealthRegisters ==
 #define ASSERT_REG_OFFSET(otp_offset_, entropy_src_offset_)                         \
   static_assert(                                                                    \
       ((otp_offset_)-OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_REPCNT_THRESHOLDS_OFFSET) == \
-          ((entropy_src_offset_)-ENTROPY_SRC_REPCNT_THRESHOLDS_REG_OFFSET),         \
+          ((entropy_src_offset_)-ENTROPY_SRC_REPCNT_THRESHOLD_REG_OFFSET),          \
       "OTP configuration offset does not match the expected entropy_src "           \
       "register offset")
 
 ASSERT_REG_OFFSET(OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_REPCNT_THRESHOLDS_OFFSET,
-                  ENTROPY_SRC_REPCNT_THRESHOLDS_REG_OFFSET);
+                  ENTROPY_SRC_REPCNT_THRESHOLD_REG_OFFSET);
 ASSERT_REG_OFFSET(OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_REPCNTS_THRESHOLDS_OFFSET,
-                  ENTROPY_SRC_REPCNTS_THRESHOLDS_REG_OFFSET);
+                  ENTROPY_SRC_REPCNTS_THRESHOLD_REG_OFFSET);
 ASSERT_REG_OFFSET(OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_ADAPTP_HI_THRESHOLDS_OFFSET,
-                  ENTROPY_SRC_ADAPTP_HI_THRESHOLDS_REG_OFFSET);
+                  ENTROPY_SRC_ADAPTP_HI_THRESHOLD_REG_OFFSET);
 ASSERT_REG_OFFSET(OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_ADAPTP_LO_THRESHOLDS_OFFSET,
-                  ENTROPY_SRC_ADAPTP_LO_THRESHOLDS_REG_OFFSET);
+                  ENTROPY_SRC_ADAPTP_LO_THRESHOLD_REG_OFFSET);
 ASSERT_REG_OFFSET(OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_BUCKET_THRESHOLDS_OFFSET,
-                  ENTROPY_SRC_BUCKET_THRESHOLDS_REG_OFFSET);
+                  ENTROPY_SRC_BUCKET_THRESHOLD_REG_OFFSET);
 ASSERT_REG_OFFSET(OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_MARKOV_HI_THRESHOLDS_OFFSET,
-                  ENTROPY_SRC_MARKOV_HI_THRESHOLDS_REG_OFFSET);
+                  ENTROPY_SRC_MARKOV_HI_THRESHOLD_REG_OFFSET);
 ASSERT_REG_OFFSET(OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_MARKOV_LO_THRESHOLDS_OFFSET,
-                  ENTROPY_SRC_MARKOV_LO_THRESHOLDS_REG_OFFSET);
+                  ENTROPY_SRC_MARKOV_LO_THRESHOLD_REG_OFFSET);
 ASSERT_REG_OFFSET(OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_EXTHT_HI_THRESHOLDS_OFFSET,
-                  ENTROPY_SRC_EXTHT_HI_THRESHOLDS_REG_OFFSET);
+                  ENTROPY_SRC_EXTHT_HI_THRESHOLD_REG_OFFSET);
 ASSERT_REG_OFFSET(OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_EXTHT_LO_THRESHOLDS_OFFSET,
-                  ENTROPY_SRC_EXTHT_LO_THRESHOLDS_REG_OFFSET);
+                  ENTROPY_SRC_EXTHT_LO_THRESHOLD_REG_OFFSET);
 
 /**
  * Calculates CRC32 over the entropy_src health test and alert thresholds.
@@ -77,7 +77,7 @@ static uint32_t health_config_crc32(void) {
   crc32_init(&ctx);
 
   // Health test thresholds, whose offsets are statically checked.
-  uint32_t offset = ENTROPY_SRC_REPCNT_THRESHOLDS_REG_OFFSET;
+  uint32_t offset = ENTROPY_SRC_REPCNT_THRESHOLD_REG_OFFSET;
   for (size_t i = 0; i < kNumHealthRegisters; ++i, offset += sizeof(uint32_t)) {
     crc32_add32(&ctx, abs_mmio_read32(entropy_src_base() + offset));
   }
@@ -86,7 +86,8 @@ static uint32_t health_config_crc32(void) {
   return crc32_finish(&ctx);
 }
 
-rom_error_t rnd_health_config_check(lifecycle_state_t lc_state) {
+rom_error_t rnd_health_config_check(lifecycle_state_t lc_state,
+                                    hardened_bool_t boot_mode) {
   if (otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_EN_OFFSET) !=
       kHardenedBoolTrue) {
     return kErrorOk;
@@ -102,8 +103,13 @@ rom_error_t rnd_health_config_check(lifecycle_state_t lc_state) {
     return res;
   }
 
-  res ^=
-      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_HEALTH_CONFIG_DIGEST_OFFSET);
+  uint32_t config_digest_offset =
+      OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_FIPS_CONFIG_DIGEST_OFFSET;
+  if (boot_mode == kHardenedBoolTrue) {
+    config_digest_offset =
+        OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_BOOT_CONFIG_DIGEST_OFFSET;
+  }
+  res ^= otp_read32(config_digest_offset);
   if (launder32(res) != kErrorOk) {
     return kErrorRndBadCrc32;
   }

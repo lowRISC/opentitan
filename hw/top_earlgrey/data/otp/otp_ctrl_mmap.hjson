@@ -291,6 +291,9 @@
                     The repetition count health test thresholds to enable
                     entropy_src with during ROM execution.
                     This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    The LSBs contain the boot-time / bypass mode threshold
+                    value.
+                    The MSBs contain the value for the FIPS / CC compliant mode.
                     See entropy_src documentation for more details.
                     '''
                 }
@@ -301,6 +304,9 @@
                     The repetition count symbol health test thresholds to enable
                     entropy_src with during ROM execution.
                     This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    The LSBs contain the boot-time / bypass mode threshold
+                    value.
+                    The MSBs contain the value for the FIPS / CC compliant mode.
                     See entropy_src documentation for more details.
                     '''
                 }
@@ -311,6 +317,9 @@
                     The adaptive proportion health test high thresholds to
                     enable entropy_src with during ROM execution.
                     This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    The LSBs contain the boot-time / bypass mode threshold
+                    value.
+                    The MSBs contain the value for the FIPS / CC compliant mode.
                     See entropy_src documentation for more details.
                     '''
                 }
@@ -321,6 +330,9 @@
                     The adaptive proportion health test low thresholds to enable
                     entropy_src with during ROM execution.
                     This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    The LSBs contain the boot-time / bypass mode threshold
+                    value.
+                    The MSBs contain the value for the FIPS / CC compliant mode.
                     See entropy_src documentation for more details.
                     '''
                 }
@@ -331,6 +343,9 @@
                     The bucket health test thresholds to enable entropy_src with
                     during ROM execution.
                     This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    The LSBs contain the boot-time / bypass mode threshold
+                    value.
+                    The MSBs contain the value for the FIPS / CC compliant mode.
                     See entropy_src documentation for more details.
                     '''
                 }
@@ -341,6 +356,9 @@
                     The Markov health test high thresholds to enable entropy_src
                     with during ROM execution.
                     This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    The LSBs contain the boot-time / bypass mode threshold
+                    value.
+                    The MSBs contain the value for the FIPS / CC compliant mode.
                     See entropy_src documentation for more details.
                     '''
                 }
@@ -351,6 +369,9 @@
                     The Markov health test low thresholds to enable entropy_src
                     with during ROM execution.
                     This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    The LSBs contain the boot-time / bypass mode threshold
+                    value.
+                    The MSBs contain the value for the FIPS / CC compliant mode.
                     See entropy_src documentation for more details.
                     '''
                 }
@@ -361,6 +382,9 @@
                     The external health test high thresholds to enable the
                     entropy_src with during ROM execution.
                     This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    The LSBs contain the boot-time / bypass mode threshold
+                    value.
+                    The MSBs contain the value for the FIPS / CC compliant mode.
                     See entropy_src documentation for more details.
                     '''
                 }
@@ -371,25 +395,48 @@
                     The external health test low thresholds to enable the
                     entropy_src with during ROM execution.
                     This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    The LSBs contain the boot-time / bypass mode threshold
+                    value.
+                    The MSBs contain the value for the FIPS / CC compliant mode.
                     See entropy_src documentation for more details.
                     '''
                 }
                 {
-                    name: "CREATOR_SW_CFG_RNG_ALERT_THRESHOLD",
+                    name: "CREATOR_SW_CFG_RNG_BOOT_ALERT_THRESHOLD",
                     size: "4",
                     desc: '''
                     The alert threshold to configure the entropy_src with during
-                    ROM execution.
+                    ROM execution in boot-time / bypass mode.
                     This must be configured if CREATOR_SW_CFG_RNG_EN is true.
                     See entropy_src documentation for more details.
                     '''
                 }
                 {
-                    name: "CREATOR_SW_CFG_RNG_HEALTH_CONFIG_DIGEST",
+                    name: "CREATOR_SW_CFG_RNG_FIPS_ALERT_THRESHOLD",
                     size: "4",
                     desc: '''
-                    A CRC32 digest of all entropy_src health test threshold
-                    configuration fields above.
+                    The alert threshold to configure the entropy_src with during
+                    ROM execution in FIPS / CC compliant mode.
+                    This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    See entropy_src documentation for more details.
+                    '''
+                }
+                {
+                    name: "CREATOR_SW_CFG_RNG_BOOT_CONFIG_DIGEST",
+                    size: "4",
+                    desc: '''
+                    A CRC32 digest of the entropy_src configuration above for
+                    boot-time / bypass mode.
+                    This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    See entropy_src documentation for more details.
+                    '''
+                }
+                {
+                    name: "CREATOR_SW_CFG_RNG_FIPS_CONFIG_DIGEST",
+                    size: "4",
+                    desc: '''
+                    A CRC32 digest of the entropy_src configuration above for
+                    FIPS / CC compliant mode.
                     This must be configured if CREATOR_SW_CFG_RNG_EN is true.
                     See entropy_src documentation for more details.
                     '''

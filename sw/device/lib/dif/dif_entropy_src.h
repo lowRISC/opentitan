@@ -224,18 +224,16 @@ typedef struct dif_entropy_src_health_test_config {
    */
   dif_entropy_src_test_t test_type;
   /**
-   * The high threshold for the health test (contains both FIPS and bypass
-   * thresholds).
+   * The high threshold for the health test.
    */
-  uint32_t high_threshold;
+  uint16_t high_threshold;
   /**
-   * The low threshold for the health test (contains both FIPS and bypass
-   * thresholds).
+   * The low threshold for the health test.
    *
    * If the corresponding health test has no low threshold, set to 0, otherwise
    * `dif_entropy_src_health_test_configure()` will return `kDifBadArg`.
    */
-  uint32_t low_threshold;
+  uint16_t low_threshold;
 } dif_entropy_src_health_test_config_t;
 
 /**

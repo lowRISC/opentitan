@@ -157,9 +157,9 @@ package top_earlgrey_rnd_cnst_pkg;
       512'h0,
       32'h0
     }),
-    5696'({
+    5632'({
       64'hA1832965B9E9EB47,
-      96'h0, // unallocated space
+      32'h0, // unallocated space
       1024'h0,
       32'h0,
       32'h0,
@@ -186,11 +186,13 @@ package top_earlgrey_rnd_cnst_pkg;
       32'h0,
       32'h0
     }),
-    2944'({
+    3008'({
       64'hE7DAA2EA63EA3209,
       96'h0, // unallocated space
       256'h0,
       256'h0,
+      32'h0,
+      32'h0,
       32'h0,
       32'h0,
       32'h0,

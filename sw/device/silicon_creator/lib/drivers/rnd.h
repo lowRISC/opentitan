@@ -5,6 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_RND_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_RND_H_
 
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -14,17 +15,21 @@ extern "C" {
 #endif
 
 /**
- * Compare the CRC32 of the configuration registers with the value in OTP.
+ * Compare the CRC32 of the configuration registers with the boot-time / bypass
+ * mode or FIPS / CC compliant value in OTP.
  *
  * This function does not check the CRC32 in TEST_UNLOCKED* life cycle states to
  * allow a test program to configure the entropy src before transitioning to
  * other life cycle states.
  *
  * @param lc_state Life cycle state of the device.
+ * @param boot_mode Whether the configuration should be checked against the
+ * boot-time / bypass mode digest.
  * @return result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t rnd_health_config_check(lifecycle_state_t lc_state);
+rom_error_t rnd_health_config_check(lifecycle_state_t lc_state,
+                                    hardened_bool_t boot_mode);
 
 /**
  * Returns a random word from the RISC-V Ibex core wrapper.

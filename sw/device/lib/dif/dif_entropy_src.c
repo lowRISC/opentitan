@@ -210,50 +210,50 @@ dif_result_t dif_entropy_src_health_test_configure(
     return kDifLocked;
   }
 
-  ptrdiff_t high_thresholds_reg_offset = -1;
-  ptrdiff_t low_thresholds_reg_offset = -1;
+  ptrdiff_t high_threshold_reg_offset = -1;
+  ptrdiff_t low_threshold_reg_offset = -1;
   switch (config.test_type) {
     case kDifEntropySrcTestRepetitionCount:
-      high_thresholds_reg_offset = ENTROPY_SRC_REPCNT_THRESHOLDS_REG_OFFSET;
+      high_threshold_reg_offset = ENTROPY_SRC_REPCNT_THRESHOLD_REG_OFFSET;
       // Ensure low threshold is zero. There is no low threshold for this test.
       if (config.low_threshold) {
         return kDifBadArg;
       }
       break;
     case kDifEntropySrcTestRepetitionCountSymbol:
-      high_thresholds_reg_offset = ENTROPY_SRC_REPCNTS_THRESHOLDS_REG_OFFSET;
+      high_threshold_reg_offset = ENTROPY_SRC_REPCNTS_THRESHOLD_REG_OFFSET;
       // Ensure low threshold is zero. There is no low threshold for this test.
       if (config.low_threshold) {
         return kDifBadArg;
       }
       break;
     case kDifEntropySrcTestAdaptiveProportion:
-      high_thresholds_reg_offset = ENTROPY_SRC_ADAPTP_HI_THRESHOLDS_REG_OFFSET;
-      low_thresholds_reg_offset = ENTROPY_SRC_ADAPTP_LO_THRESHOLDS_REG_OFFSET;
+      high_threshold_reg_offset = ENTROPY_SRC_ADAPTP_HI_THRESHOLD_REG_OFFSET;
+      low_threshold_reg_offset = ENTROPY_SRC_ADAPTP_LO_THRESHOLD_REG_OFFSET;
       break;
     case kDifEntropySrcTestBucket:
-      high_thresholds_reg_offset = ENTROPY_SRC_BUCKET_THRESHOLDS_REG_OFFSET;
+      high_threshold_reg_offset = ENTROPY_SRC_BUCKET_THRESHOLD_REG_OFFSET;
       // Ensure low threshold is zero. There is no low threshold for this test.
       if (config.low_threshold) {
         return kDifBadArg;
       }
       break;
     case kDifEntropySrcTestMarkov:
-      high_thresholds_reg_offset = ENTROPY_SRC_MARKOV_HI_THRESHOLDS_REG_OFFSET;
-      low_thresholds_reg_offset = ENTROPY_SRC_MARKOV_LO_THRESHOLDS_REG_OFFSET;
+      high_threshold_reg_offset = ENTROPY_SRC_MARKOV_HI_THRESHOLD_REG_OFFSET;
+      low_threshold_reg_offset = ENTROPY_SRC_MARKOV_LO_THRESHOLD_REG_OFFSET;
       break;
     case kDifEntropySrcTestMailbox:
-      high_thresholds_reg_offset = ENTROPY_SRC_EXTHT_HI_THRESHOLDS_REG_OFFSET;
-      low_thresholds_reg_offset = ENTROPY_SRC_EXTHT_LO_THRESHOLDS_REG_OFFSET;
+      high_threshold_reg_offset = ENTROPY_SRC_EXTHT_HI_THRESHOLD_REG_OFFSET;
+      low_threshold_reg_offset = ENTROPY_SRC_EXTHT_LO_THRESHOLD_REG_OFFSET;
       break;
     default:
       return kDifBadArg;
   }
 
-  mmio_region_write32(entropy_src->base_addr, high_thresholds_reg_offset,
+  mmio_region_write32(entropy_src->base_addr, high_threshold_reg_offset,
                       config.high_threshold);
-  if (low_thresholds_reg_offset != -1) {
-    mmio_region_write32(entropy_src->base_addr, low_thresholds_reg_offset,
+  if (low_threshold_reg_offset != -1) {
+    mmio_region_write32(entropy_src->base_addr, low_threshold_reg_offset,
                         config.low_threshold);
   }
 

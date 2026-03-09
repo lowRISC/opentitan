@@ -356,14 +356,16 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   // 0 given that it is stored in a software OTP partition.
   li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
-  lw t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_HEALTH_CONFIG_DIGEST_OFFSET(a0)
+  lw t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_BOOT_CONFIG_DIGEST_OFFSET(a0)
   beqz t0, .L_entropy_enable
 
   // Copy the entropy source health checks configuration thresholds from OTP.
+  // In BOOT_ROM, we use the bypass thresholds stored in the lower bits of each threshold value in
+  // OTP.
   li   a0, (TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR + \
-            ENTROPY_SRC_REPCNT_THRESHOLDS_REG_OFFSET)
+            ENTROPY_SRC_REPCNT_THRESHOLD_REG_OFFSET)
   li   a1, (TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR + \
-            ENTROPY_SRC_EXTHT_LO_THRESHOLDS_REG_OFFSET + 4)
+            ENTROPY_SRC_EXTHT_LO_THRESHOLD_REG_OFFSET + 4)
   li   a2, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET + \
             OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_REPCNT_THRESHOLDS_OFFSET)
@@ -373,7 +375,7 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   li a0, TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR
   li a1, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
-  lw t1, OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_ALERT_THRESHOLD_OFFSET(a1)
+  lw t1, OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_BOOT_ALERT_THRESHOLD_OFFSET(a1)
   sw t1, ENTROPY_SRC_ALERT_THRESHOLD_REG_OFFSET(a0)
 
 .L_entropy_enable:

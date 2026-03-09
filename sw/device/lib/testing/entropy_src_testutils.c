@@ -75,7 +75,7 @@ status_t entropy_src_testutils_disable_health_tests(
     TRY(dif_entropy_src_health_test_configure(
         entropy_src,
         (dif_entropy_src_health_test_config_t){.test_type = kHealthTest[i],
-                                               .high_threshold = 0xffffffff,
+                                               .high_threshold = 0xffff,
                                                .low_threshold = 0}));
   }
 
