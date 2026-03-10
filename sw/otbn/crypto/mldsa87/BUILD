@@ -40,3 +40,10 @@ otbn_library(
         "mldsa87_norm.s",
     ],
 )
+
+otbn_library(
+    name = "mldsa87_sample",
+    srcs = [
+        "mldsa87_sample.s",
+    ],
+)
