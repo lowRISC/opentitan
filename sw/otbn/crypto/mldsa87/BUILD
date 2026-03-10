@@ -47,3 +47,10 @@ otbn_library(
         "mldsa87_sample.s",
     ],
 )
+
+otbn_library(
+    name = "mldsa87_expand",
+    srcs = [
+        "mldsa87_expand.s",
+    ],
+)
