@@ -84,12 +84,9 @@ Advanced Encryption Standard (AES) supporting Encryption/Decryption using
 *   Electronic Codebook (ECB) mode,
 *   Cipher Block Chaining (CBC) mode,
 *   Cipher Feedback (CFB) mode with fixed data segment size of 128 bits,
-*   Output Feedback (OFB) mode, and
-*   Counter (CTR) mode.
-
-Galois/Counter Mode (GCM) can be implemented by leveraging Ibex for the GHASH
-operation as demonstrated in [OpenTitan's library of cryptographic
-implementations][cryptolib].
+*   Output Feedback (OFB) mode,
+*   Counter (CTR) mode, and
+*   Galois/Counter mode (GCM).
 
 ### [HMAC][hmac]
 
