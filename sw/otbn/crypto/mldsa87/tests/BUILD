@@ -11,6 +11,7 @@ package(default_visibility = ["//visibility:public"])
 mldsa87_srcs = [
     "//sw/otbn/crypto/mldsa87:mldsa87_rounding.s",
     "//sw/otbn/crypto/mldsa87:mldsa87_xof.s",
+    "//sw/otbn/crypto/mldsa87:mldsa87_norm.s",
     "//sw/otbn/crypto/mldsa87:mldsa87_ntt.s",
     "//sw/otbn/crypto/mldsa87:mldsa87_arith.s",
 ]
@@ -29,6 +30,7 @@ mldsa87_unit_tests = [
     "mldsa87_xof_shake256_test",
     "mldsa87_shift_left_test",
     "mldsa87_decompose_test",
+    "mldsa87_check_infinity_norm_test",
 ]
 
 [

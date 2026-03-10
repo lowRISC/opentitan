@@ -33,3 +33,10 @@ otbn_library(
         "mldsa87_rounding.s",
     ],
 )
+
+otbn_library(
+    name = "mldsa87_norm",
+    srcs = [
+        "mldsa87_norm.s",
+    ],
+)
