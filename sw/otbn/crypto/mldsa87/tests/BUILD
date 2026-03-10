@@ -9,6 +9,7 @@ load("@ot_python_deps//:requirements.bzl", "requirement")
 package(default_visibility = ["//visibility:public"])
 
 mldsa87_srcs = [
+    "//sw/otbn/crypto/mldsa87:mldsa87_sample.s",
     "//sw/otbn/crypto/mldsa87:mldsa87_rounding.s",
     "//sw/otbn/crypto/mldsa87:mldsa87_xof.s",
     "//sw/otbn/crypto/mldsa87:mldsa87_norm.s",
@@ -31,6 +32,7 @@ mldsa87_unit_tests = [
     "mldsa87_shift_left_test",
     "mldsa87_decompose_test",
     "mldsa87_check_infinity_norm_test",
+    "mldsa87_rej_ntt_poly_test",
 ]
 
 [
