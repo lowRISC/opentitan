@@ -43,26 +43,27 @@ build:asan-libfuzzer --@rules_fuzzing//fuzzing:cc_engine_instrumentation=libfuzz
 build:asan-libfuzzer --@rules_fuzzing//fuzzing:cc_engine_sanitizer=asan
 
 # Configuration for clang's source-based coverage instrumentation.
-coverage:ot_coverage --java_runtime_version='remotejdk_11'
-coverage:ot_coverage --instrumentation_filter="^//sw/device"
-coverage:ot_coverage --repo_env='BAZEL_USE_LLVM_NATIVE_COVERAGE=1'
-coverage:ot_coverage --experimental_use_llvm_covmap
-coverage:ot_coverage --experimental_generate_llvm_lcov
-coverage:ot_coverage --combined_report=lcov
+build:ot_coverage --collect_code_coverage
+build:ot_coverage --java_runtime_version='remotejdk_11'
+build:ot_coverage --instrumentation_filter="^//sw/device"
+build:ot_coverage --repo_env='BAZEL_USE_LLVM_NATIVE_COVERAGE=1'
+build:ot_coverage --experimental_use_llvm_covmap
+build:ot_coverage --experimental_generate_llvm_lcov
+build:ot_coverage --combined_report=lcov
 
 # Set coverage mode indicators
-coverage:ot_coverage --define='ot_coverage_enabled=true'
-coverage:ot_coverage --@rules_rust//:extra_rustc_flag='--cfg=feature="ot_coverage_enabled"'
-coverage:ot_coverage --@rules_rust//:extra_exec_rustc_flag='--cfg=feature="ot_coverage_enabled"'
-coverage:ot_coverage --//rules/coverage:enabled_flag
-coverage:ot_coverage --copt='-DOT_COVERAGE_ENABLED=1'
+build:ot_coverage --define='ot_coverage_enabled=true'
+build:ot_coverage --@rules_rust//:extra_rustc_flag='--cfg=feature="ot_coverage_enabled"'
+build:ot_coverage --@rules_rust//:extra_exec_rustc_flag='--cfg=feature="ot_coverage_enabled"'
+build:ot_coverage --//rules/coverage:enabled_flag
+build:ot_coverage --copt='-DOT_COVERAGE_ENABLED=1'
 
 # Host-side toolchain flags for unit tests
 # https://github.com/bazelbuild/bazel/blob/release-8.0.1/src/test/shell/bazel/bazel_coverage_cc_test_llvm.sh#L59-L64
-coverage:ot_coverage --repo_env='BAZEL_LLVM_COV=llvm-cov'
-coverage:ot_coverage --repo_env='BAZEL_LLVM_PROFDATA=llvm-profdata'
-coverage:ot_coverage --repo_env='CC=clang'
-coverage:ot_coverage --repo_env='GCOV=llvm-profdata'
+build:ot_coverage --repo_env='BAZEL_LLVM_COV=llvm-cov'
+build:ot_coverage --repo_env='BAZEL_LLVM_PROFDATA=llvm-profdata'
+build:ot_coverage --repo_env='CC=clang'
+build:ot_coverage --repo_env='GCOV=llvm-profdata'
 
 # Disable ccache if it happens to be installed
 build --define=CCACHE_DISABLE=true
