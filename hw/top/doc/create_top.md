@@ -150,6 +150,9 @@ sim_dv(
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     rom_scramble_config = "//hw/top_darjeeling/data/autogen:top_matcha.secrets.testing.gen.hjson",
+    # Only needed for tops that feature RRAM; the example top above does not,
+    # so this would normally be omitted here.
+    rram_scramble_tool = "//util/design:gen-rram-img",
 )
 
 sim_dv(
