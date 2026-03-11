@@ -22,11 +22,20 @@ OTBN_DECLARE_SYMBOL_ADDR(run_rsa, rsa_d0);  // Private exponent d0.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa, rsa_d1);  // Private exponent d1.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa, inout);   // Input/output buffer.
 
+// Miller-Rabin iteration counter for p.
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, mr_iter_p);
+// Miller-Rabin iteration counter for q.
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, mr_iter_q);
+
 static const otbn_addr_t kOtbnVarRsaMode = OTBN_ADDR_T_INIT(run_rsa, mode);
 static const otbn_addr_t kOtbnVarRsaN = OTBN_ADDR_T_INIT(run_rsa, rsa_n);
 static const otbn_addr_t kOtbnVarRsaD0 = OTBN_ADDR_T_INIT(run_rsa, rsa_d0);
 static const otbn_addr_t kOtbnVarRsaD1 = OTBN_ADDR_T_INIT(run_rsa, rsa_d1);
 static const otbn_addr_t kOtbnVarRsaInOut = OTBN_ADDR_T_INIT(run_rsa, inout);
+static const otbn_addr_t kOtbnVarRsaMrIterP =
+    OTBN_ADDR_T_INIT(run_rsa, mr_iter_p);
+static const otbn_addr_t kOtbnVarRsaMrIterQ =
+    OTBN_ADDR_T_INIT(run_rsa, mr_iter_q);
 
 // Declare mode constants.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_2048_KEYGEN);
@@ -64,7 +73,17 @@ enum {
    * This exponent is 2^16 + 1, and called "F4" because it's the fourth Fermat
    * number.
    */
-  kExponentF4 = 65537
+  kExponentF4 = 65537,
+  /**
+   * Number of expected Miller-Rabin iterations.
+   *
+   * To have strong guarantees on the generated RSA primes, a sufficient number
+   * of iterations in the Miller-Rabin primality test have to be computed.
+   *
+   * This value is a runtime constant in the OTBN app and is in accordance
+   * with Table B.1 of FIPS 186-5.
+   */
+  kMrIters = 4
 };
 
 status_t rsa_modexp_wait(size_t *num_words) {
@@ -292,6 +311,27 @@ static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
     return OTCRYPTO_FATAL_ERR;
   }
   HARDENED_CHECK_EQ(launder32(act_mode), exp_mode);
+
+  // Make sure that an exact amount of Miller-Rabin iterations have been
+  // performed for both primes p and q.
+  uint32_t mr_iters = 0;
+
+  // Prime p.
+  HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(1, kOtbnVarRsaMrIterP, &mr_iters));
+  if (mr_iters != kMrIters) {
+    HARDENED_TRY(otbn_dmem_sec_wipe());
+    return OTCRYPTO_FATAL_ERR;
+  }
+  HARDENED_CHECK_EQ(launder32(mr_iters), kMrIters);
+
+  // Prime q.
+  mr_iters = 0;
+  HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(1, kOtbnVarRsaMrIterQ, &mr_iters));
+  if (mr_iters != kMrIters) {
+    HARDENED_TRY(otbn_dmem_sec_wipe());
+    return OTCRYPTO_FATAL_ERR;
+  }
+  HARDENED_CHECK_EQ(launder32(mr_iters), kMrIters);
 
   // Read the public modulus (n) from OTBN dmem.
   HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(num_words, kOtbnVarRsaN, n));

@@ -244,15 +244,33 @@ rsa_4096_modexp_f4:
  * @param[out] dmem[d1]: d1, second share of secret exponent
  */
 do_keygen:
-  # Save mode indicator in register.
+  # Save mode indicator in the scratchpad.
   la x16, mode
-  lw x28, 0(x16)
+  la x17, mode_tmp
+  lw x18, 0(x16)
+  sw x18, 0(x17)
 
   jal x1, rsa_keygen
 
-  # Restore mode indicator in DMEM.
+  # Restore mode indicator from the scratchpad.
   la x16, mode
-  sw x28, 0(x16)
+  la x17, mode_tmp
+  lw x18, 0(x17)
+  sw x18, 0(x16)
+
+  # Move the Miller-Rabin counter from the scratchpad.
+
+  # Prime p.
+  la x16, mr_iter_p
+  la x17, mr_iter_p_tmp
+  lw x18, 0(x17)
+  sw x18, 0(x16)
+
+  # Prime q.
+  la x16, mr_iter_q
+  la x17, mr_iter_q_tmp
+  lw x18, 0(x17)
+  sw x18, 0(x16)
 
   ecall
 

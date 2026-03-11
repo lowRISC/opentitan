@@ -171,7 +171,7 @@ miller_rabin_test:
   bn.sid  x8,  0(x14++)
 
   # Fix the number of iterations to 4 in accordance with Table B.1 of
-  # FIPS 186-5 to reach an error probability of less than 2^100 for
+  # FIPS 186-5 to reach an error probability of less than 2^-100 for
   # RSA-{2048,3072,4096}.
   loopi 4, 33
     # Generate a witness w as the exponentation base point.
@@ -216,7 +216,9 @@ miller_rabin_test:
       bn.lid  x8, 0(x14)
       bn.xor  w2, w2, w3
       bn.sid  x8, 0(x14++)
-    nop
+    # Increment the iteration counter. To be written to DMEM after the
+    # Miller-Rabin test to make sure all rounds have been executed.
+    addi x28, x28, 1
 
 _miller_rabin_epilogue:
   ret
