@@ -656,9 +656,9 @@ common_binary_attrs = {
         default = "{name}_{exec_env}",
     ),
     "kind": attr.string(
-        doc = "Binary kind: flash, ram or rom",
+        doc = "Binary kind: flash, rram, ram or rom",
         default = "flash",
-        values = ["flash", "ram", "rom"],
+        values = ["flash", "rram", "ram", "rom"],
     ),
     # FIXME(cfrantz): This should come from the ExecEnvInfo provider, but
     # I was unable to make that work.  See the comment in `exec_env.bzl`.
@@ -882,9 +882,12 @@ def _opentitan_binary_assemble_impl(ctx):
         name = "{}_{}".format(ctx.attr.name, exec_env_name)
         spec = []
         input_bins = []
+        last_kind = "flash"
         for binary, offset in ctx.attr.bins.items():
-            if binary[exec_env_provider].kind != "flash":
-                fail("Only flash binaries can be assembled.")
+            # Fixed the fail() syntax here
+            last_kind = binary[exec_env_provider].kind
+            if last_kind not in ["flash", "rram"]:
+                fail("Only flash or rram binaries can be assembled")
             input_bins.append(binary[exec_env_provider].default)
             spec.append("{}@{}".format(binary[exec_env_provider].default.path, offset))
         action_param = {}
@@ -902,14 +905,15 @@ def _opentitan_binary_assemble_impl(ctx):
         # Multi-slot binaries are currently only used for bootstrap operations,
         # i.e., non-backdoor loaded sim environments and FPGA/silicon
         # environments. Therefore we only need unscrambled VMEM files.
+        vmem_word_size = 128 if last_kind == "rram" else 64
         vmem = convert_to_vmem(
             ctx,
             name = name,
             src = bin,
-            word_size = 64,
+            word_size = vmem_word_size,
         )
 
-        result.append(exec_env_provider(default = bin, kind = "flash", vmem = vmem))
+        result.append(exec_env_provider(default = bin, kind = last_kind, vmem = vmem))
         assembled_bins.append(bin)
         assembled_bins.append(vmem)
         ot_bin_env_info[exec_env_provider] = env
