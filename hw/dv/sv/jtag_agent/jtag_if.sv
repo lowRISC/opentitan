@@ -55,12 +55,29 @@
     tck_period_ps = value;
   endfunction
 
-  // task to wait for tck cycles
+  // Wait for one TCK cycle
+  //
+  // This waits for TCK to clear and then be asserted (so is waiting for the next posedge), but
+  // bounds the wait by _tck_period_ps (in case the clock has stopped).
+  //
+  // Waiting for !tck, then for tck ensures that we don't get any strange races when the clock is
+  // enabled: no matter what the relative phase, we will definitely wait at least a half cycle.
+  task automatic wait_one_tck();
+    fork : isolation_fork begin
+      fork
+        begin
+          wait(!tck);
+          wait(tck);
+        end
+        #(_tck_period_ps * 1ps);
+      join_any
+      disable fork;
+    end join
+  endtask
+
+  // Wait for the given number of cycles of TCK
   task automatic wait_tck(int cycles);
-    repeat (cycles) begin
-      if (tck_en) @(posedge tck);
-      else        #(tck_period_ps * 1ps);
-    end
+    repeat (cycles) wait_one_tck();
   endtask
 
   // task to issue trst_n
