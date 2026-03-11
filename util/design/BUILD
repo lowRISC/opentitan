@@ -37,6 +37,19 @@ py_binary(
 )
 
 py_binary(
+    name = "gen-rram-img",
+    srcs = ["gen-rram-img.py"],
+    deps = [
+        ":secded_gen",
+        "//util/design/lib:common",
+        "//util/design/lib:otp_mem_map",
+        "//util/design/lib:present",
+        "//util/topgen",
+        requirement("pyfinite"),
+    ],
+)
+
+py_binary(
     name = "gen-lc-state-enc",
     srcs = ["gen-lc-state-enc.py"],
     data = ["//hw/ip/lc_ctrl/data:lc_ctrl_state.hjson"],

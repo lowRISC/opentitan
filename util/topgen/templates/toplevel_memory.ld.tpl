@@ -19,7 +19,7 @@ def memory_to_flags(memory):
     else:
         flags_str += "rw"
 
-    if memory_type in ["rom", "eflash"]:
+    if memory_type in ["rom", "eflash", "rram"]:
         flags_str += "x"
 
     return flags_str
