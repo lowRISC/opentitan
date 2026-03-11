@@ -174,7 +174,7 @@ def _run_sim_test(ctx, exp, dexp, testcase = None, additional_srcs = []):
     simulator = ctx.executable._simulator
     ctx.actions.write(
         output = ctx.outputs.executable,
-        content = "{} {} -- {} {}".format(sim_test_wrapper.short_path, exp_content, simulator.short_path, elf.short_path),
+        content = "{} {} {} -- {} {}".format(sim_test_wrapper.short_path, exp_content, '"$@"', simulator.short_path, elf.short_path),
     )
 
     # Runfiles include sources, the .elf file, the simulator and test wrapper
