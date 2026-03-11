@@ -14,7 +14,6 @@ hw/dv/sv/csrng_agent/seq_lib/csrng_seq_list.sv
 hw/dv/sv/dv_base_reg/dv_base_reg_map.sv
 hw/dv/sv/dv_lib/dv_lib_pkg.sv
 hw/dv/sv/dv_utils/dv_test_status_pkg.sv
-hw/dv/sv/dv_utils/dv_vif_wrap.sv
 hw/dv/sv/jtag_agent/jtag_agent_cfg.sv
 hw/dv/sv/jtag_agent/jtag_agent_cov.sv
 hw/dv/sv/jtag_agent/seq_lib/jtag_seq_list.sv
