@@ -23,7 +23,6 @@ filesets:
       - lowrisc:dv:lc_ctrl_dv_utils
       - lowrisc:dv:mem_bkdr_util
       - lowrisc:darjeeling_dv:otp_ctrl_mem_bkdr_util
-      - lowrisc:dv:ralgen
       - lowrisc:dv:spi_agent
       - lowrisc:dv:str_utils
       - lowrisc:dv:sw_test_status
@@ -33,6 +32,7 @@ filesets:
       - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:darjeeling_ip:pwrmgr_pkg
       - lowrisc:dv:lc_ctrl_dv_utils
+      - lowrisc:dv:top_darjeeling_chip_ral
       - "!fileset_partner ? (lowrisc:systems:top_darjeeling_ast_pkg)"
       - "fileset_partner ? (partner:systems:top_darjeeling_ast_pkg)"
     files:
@@ -136,17 +136,7 @@ filesets:
       - mbx_if.sv
     file_type: systemVerilogSource
 
-generate:
-  ral:
-    generator: ralgen
-    parameters:
-      name: chip
-      top_hjson: ../../data/top_darjeeling.hjson
-    position: prepend
-
 targets:
   default:
     filesets:
       - files_dv
-    generate:
-      - "!skip_ral_gen ? (ral)"
