@@ -12,6 +12,7 @@ load(
     "convert_to_vmem",
     "extract_software_logs",
     "scramble_flash",
+    "scramble_rram",
 )
 load(
     "@lowrisc_opentitan//rules/opentitan:util.bzl",
@@ -72,7 +73,12 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
             src = signed_bin if signed_bin else binary,
             word_size = 32,
         )
-    elif ctx.attr.kind == "flash":
+    elif ctx.attr.kind in ("flash", "rram"):
+        is_rram = ctx.attr.kind == "rram"
+        word_size = 128 if is_rram else 64
+        scramble = scramble_rram if is_rram else scramble_flash
+        scramble_tool = exec_env.rram_scramble_tool if is_rram else exec_env.flash_scramble_tool
+
         default = signed_bin if signed_bin else binary
         rom = None
 
@@ -81,18 +87,19 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
             ctx,
             name = name,
             src = default,
-            word_size = 64,
+            word_size = word_size,
+            fill = "0x00" if is_rram else "0xff",
         )
-        vmem = scramble_flash(
+        vmem = scramble(
             ctx,
             name = name,
-            suffix = "64.scr.vmem",
+            suffix = "{}.scr.vmem".format(word_size),
             src = vmem_base,
             otp = get_fallback(ctx, "file.otp", exec_env),
             otp_mmap = exec_env.otp_mmap,
             top_secret_cfg = exec_env.top_secret_cfg,
             otp_data_perm = exec_env.otp_data_perm,
-            _tool = exec_env.flash_scramble_tool.files_to_run,
+            _tool = scramble_tool.files_to_run,
         )
     else:
         fail("Not implemented: kind ==", ctx.attr.kind)

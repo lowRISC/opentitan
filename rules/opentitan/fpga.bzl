@@ -105,7 +105,7 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
         default = elf
         rom = None
         rom32 = None
-    elif ctx.attr.kind == "flash":
+    elif ctx.attr.kind in ("flash", "rram"):
         default = signed_bin if signed_bin else binary
         rom = None
         rom32 = None

@@ -278,6 +278,7 @@ silicon(
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
+    rram_scramble_tool = "//util/design:gen-rram-img",
     slot_spec = EARLGREY_SLOTS,
     test_cmd = """
         --exec="transport init"
@@ -323,6 +324,7 @@ silicon(
         "//signing:test_keys": "//sw/device/silicon_creator/rom_ext/sival:rom_ext_dice_x509_fake_slot_a",
         "//conditions:default": "//sw/device/silicon_creator/rom_ext/sival/binaries:rom_ext_dice_x509_prod",
     }),
+    rram_scramble_tool = "//util/design:gen-rram-img",
     slot_spec = EARLGREY_SLOTS,
     test_cmd = """
         --exec="transport init"
@@ -412,6 +414,7 @@ sim_dv(
     otp = "//hw/top_earlgrey/data/otp:img_rma",
     otp_data_perm = "//util/design/data:data_perm",
     otp_mmap = "//hw/top_earlgrey/data/otp:otp_ctrl_mmap.hjson",
+    rram_scramble_tool = "//util/design:gen-rram-img",
     slot_spec = EARLGREY_SLOTS,
 )
 

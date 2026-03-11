@@ -285,6 +285,9 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
             firmware_elf = elf,
         )
         rom = exec_env.rom[SimQemuBinaryInfo].rom
+    elif ctx.attr.kind == "rram":
+        # TODO: add rram implementation
+        fail("RRAM is not yet supported in QEMU")
     else:
         fail("Not implemented: kind == ", ctx.attr.kind)
 
