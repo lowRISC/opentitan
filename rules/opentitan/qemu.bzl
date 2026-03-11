@@ -285,6 +285,15 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
             firmware_elf = elf,
         )
         rom = exec_env.rom[SimQemuBinaryInfo].rom
+    elif ctx.attr.kind == "rram":
+        # TODO: add rram implementation
+        default = gen_flash(
+            ctx,
+            flashgen = exec_env.flashgen,
+            firmware_bin = signed_bin or binary,
+            firmware_elf = elf,
+        )
+        rom = exec_env.rom[SimQemuBinaryInfo].rom
     else:
         fail("Not implemented: kind == ", ctx.attr.kind)
 

@@ -97,6 +97,16 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
         default = vmem
         rom = None
         rom32 = None
+    elif ctx.attr.kind == "rram":
+        vmem = convert_to_vmem(
+            ctx,
+            name = name,
+            src = signed_bin if signed_bin else binary,
+            word_size = 128,
+        )
+        default = vmem
+        rom = None
+        rom32 = None
     else:
         fail("Not implemented: kind ==", ctx.attr.kind)
 
