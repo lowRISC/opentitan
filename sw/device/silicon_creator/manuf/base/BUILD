@@ -16,6 +16,10 @@ load(
     "qemu_params",
 )
 load(
+    "//rules/opentitan:util.bzl",
+    "dict_from_pairs",
+)
+load(
     "//sw/device/silicon_creator/manuf/base:provisioning_inputs.bzl",
     "EARLGREY_SKUS",
     "disqualified_for_signing",
@@ -404,9 +408,16 @@ manifest(d = {
                 "perso_bin",
                 ":ft_personalize_{}".format(sku),
             ): SLOTS["a"],
-            config["rom_ext"]: SLOTS["b"],
-            config["owner_fw"]: OWNER_SLOTS["b"],
-        },
+        } | dict_from_pairs([
+            (
+                config["rom_ext"],
+                SLOTS["b"],
+            ),
+            (
+                config["owner_fw"],
+                OWNER_SLOTS["b"],
+            ),
+        ]),
         exec_env = [
             "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys",
             "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",

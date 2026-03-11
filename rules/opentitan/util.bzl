@@ -119,3 +119,13 @@ def recursive_format(spec, variables, max_depth = 10):
         fail("RecursionError: the spec cannot be fully evaluated after ", max_depth, " levels: ", spec)
 
     return spec.format()
+
+def dict_from_pairs(pairs):
+    """Construct a dict from a list of (k, v) pairs.
+
+    Args:
+      pairs: A list of (k, v) tuples.  A pair is skipped if the key is None.
+    Returns
+      A dict
+    """
+    return {k: v for (k, v) in pairs if k}
