@@ -54,7 +54,7 @@
  */
 rsa_keygen:
   # Temporarily store the limb count in DMEM.
-  la x16, buf7
+  la x16, nlimbs_tmp
   sw x30, 0(x16)
 
   # Generate the RSA primes.
@@ -74,7 +74,7 @@ rsa_keygen:
   jal x1, gen_prime
 
   # Restore limb count.
-  la x16, buf7
+  la x16, nlimbs_tmp
   lw x30, 0(x16)
 
   jal x1, gen_d
@@ -339,8 +339,15 @@ _gen_p_body:
   jal x1, fermat_test
   beq x2, x0, _gen_p_loop
 
+  # Set up Miller-Rabin loop counter.
+  addi x28, x0, 0
+
   jal x1, miller_rabin_test
   beq x2, x0, _gen_p_loop
+
+  # Store the number of executed Miller-Rabin rounds in the scratchpad.
+  la x29, mr_iter_p_tmp
+  sw x28, 0(x29)
 
   # Move the generate prime into dmem[rsa_p].
   li x8, 2
@@ -421,8 +428,15 @@ _gen_q_body_inner:
   jal x1, fermat_test
   beq x2, x0, _gen_q_loop
 
+  # Set up Miller-Rabin loop counter.
+  addi x28, x0, 0
+
   jal x1, miller_rabin_test
   beq x2, x0, _gen_q_loop
+
+  # Store the number of executed Miller-Rabin rounds in the scratchpad.
+  la x29, mr_iter_q_tmp
+  sw x28, 0(x29)
 
   # Move the generate prime into dmem[rsa_q].
   li x8, 2
