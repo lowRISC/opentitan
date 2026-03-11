@@ -358,7 +358,6 @@ package dv_utils_pkg;
 `ifdef UVM
   `include "dv_report_catcher.sv"
   `include "dv_report_server.sv"
-  `include "dv_vif_wrap.sv"
 `endif
 
 endpackage
