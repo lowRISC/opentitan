@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@ot_python_deps//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_test")
 load(
     "//sw/device/silicon_creator/manuf/base:provisioning_inputs.bzl",
@@ -12,7 +13,6 @@ load(
     "orchestrator_cw340_test_settings_transition",
     "orchestrator_hyper310_test_settings_transition",
 )
-load("@ot_python_deps//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -140,6 +140,10 @@ sh_test(
     ],
 )
 
+filegroup(
+    name = "empty",
+)
+
 [
     sh_test(
         name = "e2e_{}_{}_test".format(sku, fpga),
@@ -149,7 +153,7 @@ sh_test(
             ":orchestrator_{}_zip".format(fpga),
             "@python3",
             cfg["orchestrator_cfg"],
-            cfg["owner_fw"],
+            cfg["owner_fw"] if cfg["owner_fw"] else ":empty",
             cfg["rom_ext"],
             "//sw/host/provisioning/orchestrator/src:data_dependencies",
             "//util/coverage/collect_cc_coverage",
