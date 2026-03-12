@@ -1011,6 +1011,12 @@ opentitan_test(
     fpga = fpga_params(
         exit_success = "mode: RESQ",
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_xmodem_enter_on_watchdog",
+        test_cmd = """
+            --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
+            # Try reboot command to make sure resuce is working.
+            --exec="console --non-interactive --send='REBO\r' --exit-success='ROM:' --exit-failure='{exit_failure}'"
+            no-op
+        """,
         testopt_clear_after_test = "True",  # See important note at the top
         testopt_clear_before_test = "True",
     ),
