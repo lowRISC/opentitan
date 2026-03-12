@@ -41,6 +41,11 @@ typedef struct dice_chain {
   dice_page_t page;
 
   /**
+   * Personalization blob version used in the current `page`.
+   */
+  perso_blob_version_t blob_version;
+
+  /**
    * Indicate whether `page` needs to be written back to flash.
    */
   hardened_bool_t data_dirty;
@@ -159,8 +164,9 @@ static rom_error_t dice_chain_load_cert_obj(const char *name,
                                             size_t name_size) {
   rom_error_t err =
       perso_tlv_get_cert_obj(dice_chain_get_tail_buffer(),
-                             dice_chain_get_tail_size(), &dice_chain.cert_obj);
-
+                             dice_chain_get_tail_size(),
+                             dice_chain.blob_version,
+                             &dice_chain.cert_obj);
   if (err != kErrorOk) {
     // Cleanup the stale value if error.
     dice_chain_reset_cert_obj();
@@ -228,6 +234,33 @@ static rom_error_t dice_chain_load_flash(
   dice_chain.info_page = info_page;
   dice_chain_reset_cert_obj();
 
+  // Detect the version of the blob stored in flash.
+  dice_chain.blob_version = kPersoBlobVersionV0;
+  // Read the first object's type to check for Version Object.
+  // Version objects always use V0 16-bit headers.
+  perso_tlv_object_header_t header;
+  memcpy(&header, dice_chain.page.data, sizeof(perso_tlv_object_header_t));
+  perso_tlv_object_type_t type;
+  uint16_t size;
+  PERSO_TLV_GET_FIELD(Objh, Type, header, &type);
+  PERSO_TLV_GET_FIELD(Objh, Size, header, &size);
+  if (type == kPersoObjectTypeBlobVersion) {
+    if (size ==
+        sizeof(perso_tlv_object_header_t) + sizeof(perso_tlv_blob_version_t)) {
+      uint16_t version_be;
+      memcpy(&version_be,
+             dice_chain.page.data + sizeof(perso_tlv_object_header_t),
+             sizeof(uint16_t));
+      uint16_t version = __builtin_bswap16(version_be);
+      if (version == kPersoBlobVersionV1) {
+        dice_chain.blob_version = kPersoBlobVersionV1;
+        // Skip the Version Object.
+        dice_chain.tail_offset =
+            sizeof(perso_tlv_object_header_t) + sizeof(perso_tlv_blob_version_t);
+      }
+    }
+  }
+
   return kErrorOk;
 }
 
@@ -259,12 +292,14 @@ static rom_error_t dice_chain_push_cert(const char *name, const uint8_t *cert,
       kDiceCertFormat == kDiceCertFormatX509TcbInfo ? kPersoObjectTypeX509Cert
                                                     : kPersoObjectTypeCwtCert;
   RETURN_IF_ERROR(perso_tlv_cert_obj_build(name, cert_type, cert, cert_size,
+                                           dice_chain.blob_version,
                                            dice_chain_get_tail_buffer(),
                                            &cert_page_left));
 
   // Move the offset to the new tail.
   RETURN_IF_ERROR(perso_tlv_get_cert_obj(dice_chain_get_tail_buffer(),
                                          dice_chain_get_tail_size(),
+                                         dice_chain.blob_version,
                                          &dice_chain.cert_obj));
   dice_chain_next_cert_obj();
   return kErrorOk;
