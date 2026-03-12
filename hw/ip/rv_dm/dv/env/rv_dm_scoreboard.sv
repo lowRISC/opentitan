@@ -443,7 +443,14 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
         (channel == DataChannel) &&
         !is_debug_enabled()) begin
 
-      `DV_CHECK(item.d_error)
+      if (!item.d_error) begin
+        `uvm_error(get_full_name(),
+                   $sformatf({"Unexpected TL response. The transaction accesses ",
+                              "rv_dm_mem_reg_block when debug is disabled, so ",
+                              "the d_error response should be asserted. Item: %0s"},
+                             item.sprint(uvm_default_line_printer)))
+      end
+
       return 1'b1;
     end
 
