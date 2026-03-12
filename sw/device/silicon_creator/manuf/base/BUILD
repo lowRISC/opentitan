@@ -397,18 +397,28 @@ manifest(d = {
     for sku, config in EARLGREY_SKUS.items()
 ]
 
+# Use a pre-compiled perso binary if the SKU defines it,
+# else use the label of the opentitan_binary for the SKU.
+[
+    alias(
+        name = "ft_perso_bin_{}".format(sku),
+        actual = config.get(
+            "perso_bin",
+            ":ft_personalize_{}".format(sku),
+        ),
+    )
+    for sku, config in EARLGREY_SKUS.items()
+]
+
 [
     opentitan_binary_assemble(
         name = "ft_fw_bundle_{}".format(sku),
         testonly = True,
-        bins = {
-            # Use a pre-compiled perso binary if the SKU defines it,
-            # else use the label of the opentitan_binary for the SKU.
-            config.get(
-                "perso_bin",
-                ":ft_personalize_{}".format(sku),
-            ): SLOTS["a"],
-        } | dict_from_pairs([
+        bins = dict_from_pairs([
+            (
+                "ft_perso_bin_{}".format(sku),
+                SLOTS["a"],
+            ),
             (
                 config["rom_ext"],
                 SLOTS["b"],
@@ -428,26 +438,26 @@ manifest(d = {
 ]
 
 filegroup(
-    name = "ft_personalize_all",
+    name = "ft_fw_bundle_all",
     testonly = True,
-    # The depset(...).to_list() syntax removes duplicate bazel targets. Some
-    # SKUs have duplicate "staging" versions that are identical to their
-    # production counterparts, including the perso binaries used, except for CA
-    # keys, so we need to remove duplicates.
-    srcs = depset([
-                      # Select pre-signed / checked-in perso binaries over ones
-                      # built on the fly with fake keys if a pre-signed one
-                      # exists.
-                      config.get(
-                          "perso_bin",
-                          ":ft_personalize_{}".format(sku),
-                      )
-                      for sku, config in EARLGREY_SKUS.items()
-                  ] +
-                  [
-                      ":ft_fw_bundle_{}".format(sku)
-                      for sku in EARLGREY_SKUS.keys()
-                  ]).to_list(),
+    srcs = [
+        ":ft_fw_bundle_{}".format(sku)
+        for sku in EARLGREY_SKUS.keys()
+    ],
+    # Use data to ensure runfiles are available for coverage collection.
+    data = [
+        ":ft_fw_bundle_{}".format(sku)
+        for sku in EARLGREY_SKUS.keys()
+    ],
+)
+
+filegroup(
+    name = "ft_perso_bin_all",
+    testonly = True,
+    srcs = [
+        ":ft_perso_bin_{}".format(sku)
+        for sku, config in EARLGREY_SKUS.items()
+    ],
 )
 
 [

@@ -140,10 +140,6 @@ sh_test(
     ],
 )
 
-filegroup(
-    name = "empty",
-)
-
 [
     sh_test(
         name = "e2e_{}_{}_test".format(sku, fpga),
@@ -153,9 +149,7 @@ filegroup(
             ":orchestrator_{}_zip".format(fpga),
             "@python3",
             cfg["orchestrator_cfg"],
-            cfg["owner_fw"] if cfg["owner_fw"] else ":empty",
-            cfg["rom_ext"],
-            "//sw/host/provisioning/orchestrator/src:data_dependencies",
+            "//sw/host/provisioning/orchestrator/src:fw_dependencies",
             "//util/coverage/collect_cc_coverage",
         ],
         env = {

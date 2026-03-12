@@ -87,13 +87,29 @@ py_library(
 )
 
 filegroup(
+    name = "fw_dependencies",
+    testonly = True,
+    srcs = [
+        "//sw/device/silicon_creator/manuf/base:ft_fw_bundle_all",
+        "//sw/device/silicon_creator/manuf/base:ft_perso_bin_all",
+        "//sw/device/silicon_creator/manuf/base:sram_cp_provision",
+        "//sw/device/silicon_creator/manuf/base:sram_ft_individualize_all",
+    ],
+    # Use data to ensure runfiles are available for coverage collection.
+    data = [
+        "//sw/device/silicon_creator/manuf/base:ft_fw_bundle_all",
+        "//sw/device/silicon_creator/manuf/base:ft_perso_bin_all",
+        "//sw/device/silicon_creator/manuf/base:sram_cp_provision",
+        "//sw/device/silicon_creator/manuf/base:sram_ft_individualize_all",
+    ],
+)
+
+filegroup(
     name = "data_dependencies",
     testonly = True,
     srcs = [
+        ":fw_dependencies",
         "//hw/bitstream/universal:splice",
-        "//sw/device/silicon_creator/manuf/base:ft_personalize_all",
-        "//sw/device/silicon_creator/manuf/base:sram_cp_provision",
-        "//sw/device/silicon_creator/manuf/base:sram_ft_individualize_all",
         "//sw/device/silicon_creator/manuf/keys:ca_data_all",
         "//sw/host/provisioning/cp",
         "//sw/host/provisioning/ft:ft_all",
