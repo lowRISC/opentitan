@@ -5,6 +5,7 @@
 /* Polynomial sampling routines. */
 
 .globl rej_ntt_poly
+.globl sample_in_ball
 
 .text
 
@@ -196,3 +197,143 @@ _rej_ntt_poly_shift_right_recharge_skip:
   addi x5, x5, -1
 
   ret
+
+/**
+ * Sample a challenge polynomial C with coefficients in {-1, 0, 1} and Hamming
+ * weight TAU = 60.
+ *
+ * This routine implements the `SampleInBall` function (Algorithm 29) in
+ * FIPS-204 and is an adapted variant of the "inside-out" Fisher-Yates shuffle:
+ * https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
+ *
+ * @param[in] x2: Output location of the sampled polynomial C.
+ * @param[in] x3: DMEM location of rho (64 bytes).
+ */
+sample_in_ball:
+  /* Push clobbered registers onto the stack. */
+  .irp reg, x5, x6, x7, x8, x9, x10, x11, x12
+    sw \reg, 0(x31)
+    addi x31, x31, 4
+  .endr
+
+  /* Scratch DMEM location to transfer a value in a WDR to a GPR. */
+  la x4, _sample_in_ball_scratch
+
+  /* Make sure the target location of the sampled polynomial is set to 0. */
+  addi x20, x2, 0
+  addi x21, x0, 32
+  jal x1, zeroize
+
+  /* Loop counter: i = 256-TAU = 256-60 = 196. */
+  addi x6, x0, 196
+
+  /* Initialize the SHAKE256 XOF and absorb the 64 bytes of rho. */
+  jal x1, xof_shake256_init
+  addi x20, x0, 64
+  addi x21, x3, 0
+  addi x22, x0, 0
+  jal x1, xof_absorb
+  jal x1, xof_process
+
+  /*
+   * Squeeze 8 bytes to create the 64-bit string indicator string h.
+   */
+
+  addi x20, x0, 8
+  jal x1, xof_squeeze32
+  bn.xor w29, w29, w30
+
+  /* Isolate the 64 least significant bits. */
+  bn.rshi w2, w29, w31 >> 64
+  bn.rshi w2, w31, w2 >> 192
+
+  /* Use the remaining 192 bits for the rejection loop sampling. */
+  bn.rshi w29, w31, w29 >> 64
+  addi x10, x0, 24 /* Number of bytes remaining in the buffer. */
+
+  /* Byte mask. */
+  bn.addi w1, w31, 0xff
+
+  /* Set up constants. */
+  li x11, 1
+  li x12, 8380417 /* Q */
+
+  /*
+   * In the following, we denote by C[i] the i-th coefficient of the sampled
+   * polynomial. At the beginning of the main loop we have C[i] = 0, for
+   * 0 <= i < 256.
+   */
+
+  /* Set TAU = 60 random coefficients of C to either 1 or -1 depending on the
+   * indicator string h. */
+  loopi 60, 28
+_sample_in_ball_coeff:
+    /* Squeeze a new batch of 32 bytes, if the buffer has been depleted. */
+    bne x10, x0, _sample_in_ball_skip_squeeze
+
+    jal x1, xof_squeeze32
+    bn.xor w29, w29, w30
+
+    addi x10, x0, 32
+
+_sample_in_ball_skip_squeeze:
+    /* Isolate the least signficant byte and store it in DMEM so that the value
+       can be transfered to a GPR. */
+    bn.and w0, w29, w1
+    bn.sid x0, 0(x4)
+
+    /* Update the buffer and a capacity counter. */
+    bn.rshi w29, w31, w29 >> 8
+    addi x10, x10, -1
+
+    /* Perform the comparison j > i:
+       If j > i, then the MSB of i - j will be set. */
+    lw   x7, 0(x4)
+    sub  x8, x6,  x7
+    srli x8, x8,  31
+    bne  x8, x0, _sample_in_ball_coeff
+
+    /* Derive the DMEM addresses of the coefficients C[i] and C[j]. */
+    slli x8, x7,  2
+    add  x8, x8, x2
+    slli x7, x6,  2
+    add  x7, x7, x2
+
+    /* C[i] = C[j]. */
+    lw x9, 0(x8)
+    sw x9, 0(x7)
+
+    /* Depending on the LSB of h we select either 1 or -1 mod q and store it at
+       C[j]. */
+    bn.sub  w2,  w2, w31
+    csrrs   x7, FG0,  x0
+    andi    x7,  x7, 0x4
+
+    /* x7 = 1, if h[i + TAU - 256] = 0, else x7 = -1 mod Q. */
+    srli x7, x7, 2
+    sub x7, x0, x7
+    and x7, x7, x12
+    xor x7, x7, x11
+
+    sw x7, 0(x8)
+
+    /* Update i and h. */
+    addi x6, x6, 1
+    bn.rshi w2, w31, w2 >> 1
+    /* End of loop */
+
+  jal x1, xof_finish
+
+  /* Restore clobbered general-purpose registers. */
+  .irp reg, x12, x11, x10, x9, x8, x7, x6, x5
+    addi x31, x31, -4
+    lw \reg, 0(x31)
+  .endr
+
+  ret
+
+.data
+.balign 32
+
+_sample_in_ball_scratch:
+.zero 32
