@@ -31,6 +31,7 @@ class SkuConfig:
     ast_cfg_version: int = 255  # valid: any positive integer < 256 (to fit in one byte)
     ext_ca: Optional[OrderedDict] = None  # valid: see CaConfig
     owner_fw_boot_str: str = None  # valid: any string
+    blob_version: int = 0  # valid: any unsigned integer
 
     def __post_init__(self):
         # Load CA configs.
