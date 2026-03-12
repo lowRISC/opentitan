@@ -69,21 +69,51 @@ typedef enum perso_tlv_object_type {
   kPersoObjectTypePersoSha256Hash = 7,
 } perso_tlv_object_type_t;
 
+typedef uint16_t perso_tlv_object_header_v0_t;
+typedef uint16_t perso_tlv_cert_header_v0_t;
+typedef uint32_t perso_tlv_object_header_v1_t;
+typedef uint32_t perso_tlv_cert_header_v1_t;
+
 typedef uint16_t perso_tlv_object_header_t;
 typedef uint16_t perso_tlv_cert_header_t;
 typedef uint16_t perso_tlv_dev_seed_header_t;
 
-typedef enum perso_tlv_obj_header_fields {
+typedef enum perso_tlv_obj_header_fields_v0 {
   // Object size, total size, this header included.
-  kObjhSizeFieldShift = 0,
-  kObjhSizeFieldWidth = 12,
-  kObjhSizeFieldMask = (1 << kObjhSizeFieldWidth) - 1,
+  kObjhSizeFieldShiftV0 = 0,
+  kObjhSizeFieldWidthV0 = 12,
+  kObjhSizeFieldMaskV0 = (1 << kObjhSizeFieldWidthV0) - 1,
 
   // Object type, one of perso_tlv_object_type_t.
-  kObjhTypeFieldShift = kObjhSizeFieldWidth,
-  kObjhTypeFieldWidth =
-      sizeof(perso_tlv_object_header_t) * 8 - kObjhSizeFieldWidth,
-  kObjhTypeFieldMask = (1 << kObjhTypeFieldWidth) - 1,
+  kObjhTypeFieldShiftV0 = kObjhSizeFieldWidthV0,
+  kObjhTypeFieldWidthV0 =
+      sizeof(perso_tlv_object_header_v0_t) * 8 - kObjhSizeFieldWidthV0,
+  kObjhTypeFieldMaskV0 = (1 << kObjhTypeFieldWidthV0) - 1,
+} perso_tlv_obj_header_fields_v0_t;
+
+typedef enum perso_tlv_obj_header_fields_v1 {
+  // Object size, total size, this header included.
+  kObjhV1SizeFieldShift = 0,
+  kObjhV1SizeFieldWidth = 24,
+  kObjhV1SizeFieldMask = (1 << kObjhV1SizeFieldWidth) - 1,
+
+  // Object type, one of perso_tlv_object_type_t.
+  kObjhV1TypeFieldShift = kObjhV1SizeFieldWidth,
+  kObjhV1TypeFieldWidth =
+      sizeof(perso_tlv_object_header_v1_t) * 8 - kObjhV1SizeFieldWidth,
+  kObjhV1TypeFieldMask = (1 << kObjhV1TypeFieldWidth) - 1,
+} perso_tlv_obj_header_fields_v1_t;
+
+typedef enum perso_tlv_obj_header_fields {
+  // Object size, total size, this header included.
+  kObjhSizeFieldShift = kObjhSizeFieldShiftV0,
+  kObjhSizeFieldWidth = kObjhSizeFieldWidthV0,
+  kObjhSizeFieldMask = kObjhSizeFieldMaskV0,
+
+  // Object type, one of perso_tlv_object_type_t.
+  kObjhTypeFieldShift = kObjhTypeFieldShiftV0,
+  kObjhTypeFieldWidth = kObjhTypeFieldWidthV0,
+  kObjhTypeFieldMask = kObjhTypeFieldMaskV0,
 } perso_tlv_obj_header_fields_t;
 
 typedef struct perso_tlv_dev_seed_element {
@@ -112,17 +142,42 @@ typedef struct perso_tlv_dev_seed_set {
  *  | 4 bit length|       12 bits total size       |
  *  +-------------+--------------------------------+
  */
-typedef enum perso_tlv_cert_header_fields {
+typedef enum perso_tlv_cert_header_fields_v0 {
   // Certificate size, total size, this header and name length included.
-  kCrthSizeFieldShift = 0,
-  kCrthSizeFieldWidth = 12,
-  kCrthSizeFieldMask = (1 << kCrthSizeFieldWidth) - 1,
+  kCrthSizeFieldShiftV0 = 0,
+  kCrthSizeFieldWidthV0 = 12,
+  kCrthSizeFieldMaskV0 = (1 << kCrthSizeFieldWidthV0) - 1,
 
   // Length of the certificate name immediately following the header.
-  kCrthNameSizeFieldShift = kCrthSizeFieldWidth,
-  kCrthNameSizeFieldWidth =
-      sizeof(perso_tlv_cert_header_t) * 8 - kCrthSizeFieldWidth,
-  kCrthNameSizeFieldMask = (1 << kCrthNameSizeFieldWidth) - 1,
+  kCrthNameSizeFieldShiftV0 = kCrthSizeFieldWidthV0,
+  kCrthNameSizeFieldWidthV0 =
+      sizeof(perso_tlv_cert_header_v0_t) * 8 - kCrthSizeFieldWidthV0,
+  kCrthNameSizeFieldMaskV0 = (1 << kCrthNameSizeFieldWidthV0) - 1,
+} perso_tlv_cert_header_fields_v0_t;
+
+typedef enum perso_tlv_cert_header_fields_v1 {
+  // Certificate size, total size, this header and name length included.
+  kCrthV1SizeFieldShift = 0,
+  kCrthV1SizeFieldWidth = 24,
+  kCrthV1SizeFieldMask = (1 << kCrthV1SizeFieldWidth) - 1,
+
+  // Length of the certificate name immediately following the header.
+  kCrthV1NameSizeFieldShift = kCrthV1SizeFieldWidth,
+  kCrthV1NameSizeFieldWidth =
+      sizeof(perso_tlv_cert_header_v1_t) * 8 - kCrthV1SizeFieldWidth,
+  kCrthV1NameSizeFieldMask = (1 << kCrthV1NameSizeFieldWidth) - 1,
+} perso_tlv_cert_header_fields_v1_t;
+
+typedef enum perso_tlv_cert_header_fields {
+  // Certificate size, total size, this header and name length included.
+  kCrthSizeFieldShift = kCrthSizeFieldShiftV0,
+  kCrthSizeFieldWidth = kCrthSizeFieldWidthV0,
+  kCrthSizeFieldMask = kCrthSizeFieldMaskV0,
+
+  // Length of the certificate name immediately following the header.
+  kCrthNameSizeFieldShift = kCrthNameSizeFieldShiftV0,
+  kCrthNameSizeFieldWidth = kCrthNameSizeFieldWidthV0,
+  kCrthNameSizeFieldMask = kCrthNameSizeFieldMaskV0,
 } perso_tlv_cert_header_fields_t;
 
 // Helper macros allowing set or get various object and certificate header
@@ -144,6 +199,24 @@ typedef enum perso_tlv_cert_header_fields {
     uint16_t mask = k##type_name##field_name##FieldMask;                    \
     uint16_t shift = k##type_name##field_name##FieldShift;                  \
     *(field_value) = (__builtin_bswap16(full_value) >> shift) & mask;       \
+  }
+
+#define PERSO_TLV_SET_FIELD_V1(type_name, field_name, full_value, field_value) \
+  {                                                                            \
+    uint32_t mask = k##type_name##field_name##FieldMask;                       \
+    uint32_t shift = k##type_name##field_name##FieldShift;                     \
+    uint32_t fieldv = (uint32_t)(field_value)&mask;                            \
+    uint32_t fullv = __builtin_bswap32((uint32_t)(full_value));                \
+    mask = (uint32_t)(mask << shift);                                          \
+    (full_value) = __builtin_bswap32(                                          \
+        (uint32_t)((fullv & ~mask) | (((uint32_t)fieldv) << shift)));          \
+  }
+
+#define PERSO_TLV_GET_FIELD_V1(type_name, field_name, full_value, field_value) \
+  {                                                                            \
+    uint32_t mask = k##type_name##field_name##FieldMask;                       \
+    uint32_t shift = k##type_name##field_name##FieldShift;                     \
+    *(field_value) = (__builtin_bswap32(full_value) >> shift) & mask;          \
   }
 
 /**
