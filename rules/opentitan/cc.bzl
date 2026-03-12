@@ -543,7 +543,16 @@ def _opentitan_binary_assemble_impl(ctx):
         result.append(exec_env_provider(default = bin, kind = "flash", vmem = vmem))
         assembled_bins.append(bin)
         assembled_bins.append(vmem)
-    return result + [DefaultInfo(files = depset(assembled_bins))]
+
+    # Propagate runfiles
+    runfiles = ctx.runfiles()
+    for binary in ctx.attr.bins.keys():
+        runfiles = runfiles.merge(binary[DefaultInfo].default_runfiles)
+        if ctx.var.get("ot_coverage_enabled", "false") == "true":
+            # Add elf files to runfiles for coverage
+            runfiles = runfiles.merge(ctx.runfiles(binary.files.to_list()))
+
+    return result + [DefaultInfo(files = depset(assembled_bins), runfiles = runfiles)]
 
 opentitan_binary_assemble = rule(
     implementation = _opentitan_binary_assemble_impl,
