@@ -161,6 +161,9 @@ module otbn_mac_bignum_fsm
   mac_bignum_contrl_t     contrl_mod[LatencyMod];
   mac_bignum_predec_dyn_t predec_mod[LatencyMod];
 
+  logic [2:0] elem0, elem1;
+  logic [1:0] qw_sel;
+
   always_comb begin
     contrl_mod_mul = '{default: ControlDefault};
     predec_mod_mul = '{default: MacBignumPredecDynDefault};
@@ -187,12 +190,17 @@ module otbn_mac_bignum_fsm
 
     // Construct the 4 * 3 = 12 cycles and set the correct qword selection
     for (int unsigned cycle = 0; cycle < LatencyMod; cycle++) begin
+      // Construct the selection signals with explicit bit width
+      qw_sel = 2'(cycle / LatencyMontgMul);
+      elem0  = 3'(2 * (cycle / LatencyMontgMul));
+      elem1  = 3'(2 * (cycle / LatencyMontgMul) + 1);
+
       contrl_mod[cycle]                = contrl_mod_mul[cycle % LatencyMontgMul];
-      contrl_mod[cycle].acc_qw_sel     = 2'(cycle / LatencyMontgMul);
+      contrl_mod[cycle].acc_qw_sel     = qw_sel; // 2'(cycle / LatencyMontgMul);
       predec_mod[cycle]                = predec_mod_mul[cycle % LatencyMontgMul];
-      predec_mod[cycle].op_a_qw_sel    = 2'(cycle / LatencyMontgMul);
-      predec_mod[cycle].op_b_elem0_sel = 3'(2 * (cycle / LatencyMontgMul));
-      predec_mod[cycle].op_b_elem1_sel = 3'(2 * (cycle / LatencyMontgMul) + 1);
+      predec_mod[cycle].op_a_qw_sel    = qw_sel; // 2'(cycle / LatencyMontgMul);
+      predec_mod[cycle].op_b_elem0_sel = elem0; // 3'(2 * (cycle / LatencyMontgMul));
+      predec_mod[cycle].op_b_elem1_sel = elem1; // 3'(2 * (cycle / LatencyMontgMul) + 1);
     end
 
     // Clear ACC in the last cycle with randomness

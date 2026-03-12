@@ -55,9 +55,9 @@ waive -rules {DIVIDE} -location {otbn_mac_bignum_fsm.sv}
       -regexp {Divide operation '.*cycle / LatencyMontgMul.*' encountered} \
       -comment "Divide allowed to compute static values for control signal progression generation. The regexp captures the case with ( and without ( around the expression."
 
-waive -rules {ARITH_CONTEXT} -location {otbn_mac_bignum_fsm.sv}
-      -regexp {Bitlength of arithmetic operation '.*cycle / LatencyMontgMul.*' is self-determined in this context} \
-      -comment "This error does not appear with AscentLint 2022.A.P23.1.2026_01_29 but does with 2022.A.P12.2024_03_13 (CI version at commit date). This is save."
+# waive -rules {ARITH_CONTEXT} -location {otbn_mac_bignum_fsm.sv}
+#       -regexp {Bitlength of arithmetic operation '.*cycle / LatencyMontgMul.*' is self-determined in this context} \
+#       -comment "This error does not appear with AscentLint 2022.A.P23.1.2026_01_29 but does with 2022.A.P12.2024_03_13 (CI version at commit date). This is save."
 
 waive -rules {PARAM_NOT_USED} -location {otbn_mac_bignum_fsm.sv} -regexp {.*EnableAlertTriggerSVA.*} \
       -comment "The parameter is just used to control assertions in DV / FPV."
