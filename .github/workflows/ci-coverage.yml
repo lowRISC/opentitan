@@ -123,6 +123,8 @@ jobs:
       tag_filters: "cw310_sival_rom_ext,-coverage_broken"
       mode: coverage
 
+  # FIXME: Only provisioning e2e tests are enabled now. Most manuf tests use
+  # SRAM binaries which are not supported in coverage mode yet.
   execute_manuf_fpga_tests_cw310:
     name: CW310 Manufacturing Tests
     needs: chip_earlgrey_cw310_hyperdebug
@@ -133,7 +135,7 @@ jobs:
       bitstream: chip_earlgrey_cw310_hyperdebug
       board: cw310
       interface: hyper310
-      tag_filters: "manuf,-cw340,-qemu,-coverage_broken"
+      tag_filters: "provisioning,-cw340,-qemu,-coverage_broken"
       mode: coverage
 
   execute_fpga_rom_ext_tests_hyper310:
@@ -215,6 +217,8 @@ jobs:
       tag_filters: "cw340_sival_rom_ext,-coverage_broken"
       mode: coverage
 
+  # FIXME: Only provisioning e2e tests are enabled now. Most manuf tests use
+  # SRAM binaries which are not supported in coverage mode yet.
   execute_manuf_fpga_tests_cw340:
     name: CW340 Manufacturing Tests
     needs: chip_earlgrey_cw340
@@ -225,7 +229,7 @@ jobs:
       bitstream: chip_earlgrey_cw340
       board: cw340
       interface: cw340
-      tag_filters: "manuf,-hyper310,-qemu,-coverage_broken"
+      tag_filters: "provisioning,-hyper310,-qemu,-coverage_broken"
       mode: coverage
 
   coverage_quick:
