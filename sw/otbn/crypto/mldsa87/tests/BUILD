@@ -16,6 +16,7 @@ mldsa87_srcs = [
     "//sw/otbn/crypto/mldsa87:mldsa87_norm.s",
     "//sw/otbn/crypto/mldsa87:mldsa87_ntt.s",
     "//sw/otbn/crypto/mldsa87:mldsa87_arith.s",
+    "//sw/otbn/crypto/mldsa87:mldsa87_utils.s",
 ]
 
 # Naming convention for the unit tests: Test, *.s and *.hjson files
@@ -35,6 +36,7 @@ mldsa87_unit_tests = [
     "mldsa87_check_infinity_norm_test",
     "mldsa87_rej_ntt_poly_test",
     "mldsa87_expand_a_test",
+    "mldsa87_sample_in_ball_test",
 ]
 
 [
