@@ -67,6 +67,10 @@ typedef enum perso_tlv_object_type {
    * Personalization firmware SHA256 Hash.
    */
   kPersoObjectTypePersoSha256Hash = 7,
+  /**
+   * Personalization blob version.
+   */
+  kPersoObjectTypeBlobVersion = 15,
 } perso_tlv_object_type_t;
 
 typedef uint16_t perso_tlv_object_header_v0_t;
@@ -128,6 +132,13 @@ typedef struct perso_tlv_dev_seed {
 typedef struct perso_tlv_dev_seed_set {
   perso_tlv_dev_seed_t seeds[2];
 } perso_tlv_dev_seed_set_t;
+
+/**
+ * Personalization blob version object payload.
+ */
+typedef struct perso_tlv_blob_version {
+  uint16_t version;
+} perso_tlv_blob_version_t;
 
 /**
  * The x509 certificate is prepended by a 16 bits header followed by the ASCII
@@ -254,12 +265,41 @@ typedef struct perso_tlv_cert_obj {
 } perso_tlv_cert_obj_t;
 
 /**
+ * Personalization blob versions.
+ */
+typedef enum perso_blob_version {
+  /**
+   * V0 is the original personalization blob format. It uses a 16-bit object
+   * header (4-bit type, 12-bit size), which limits the maximum size of any
+   * single object to 4KB.
+   */
+  kPersoBlobVersionV0 = 0,
+  /**
+   * V1 personalization blobs start with a version TLV object (which uses the V0
+   * header format for backwards compatibility). All subsequent objects in the
+   * blob use a larger 32-bit header (8-bit type, 24-bit size), allowing for
+   * significantly larger objects (up to 16MB).
+   */
+  kPersoBlobVersionV1 = 1,
+} perso_blob_version_t;
+
+/**
+ * Initializes the perso blob as a V1 blob.
+ *
+ * @param pb Pointer to the `perso_blob_t` to initialize.
+ * @return status of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t perso_tlv_init_v1_blob(perso_blob_t *pb);
+
+/**
  * Given the pointer to an LTV object, in case this is an endorsed certificate
  * set up the perso_tlv_cert_obj_t structure for it.
  *
  * @param buf Pointer to the LTV object buffer storing the certificate object.
  * @param ltv_buf_size Total number of bytes until the end of the LTV buffer
  *                     (cert LTV object must be <= the buffer size).
+ * @param blob_version The version of the perso blob.
  * @param[out] obj Pointer to the certificate perso LTV object to populate.
  *
  * @return OK_STATUS on success, NOT_FOUND if the object is not an endorsed
@@ -267,6 +307,7 @@ typedef struct perso_tlv_cert_obj {
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
+                                   perso_blob_version_t blob_version,
                                    perso_tlv_cert_obj_t *obj);
 
 /**
@@ -274,14 +315,15 @@ rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
  * buffer.
  *
  * The certificate perso LTV object is laid out as follows:
- * - 16 bit LTV object header
- * - 16 bit cert header
+ * - LTV object header (16-bit for V0, 32-bit for V1)
+ * - cert header (16-bit for V0, 32-bit for V1)
  * - Certificate name string
  * - Cerificate data
  *
- * Note that both certificate and object headers' are 16 bit integers in big
+ * Note that both certificate and object headers' are integers in big
  * endian format.
  *
+ * V0 header format:
  *  d15                                         d0
  * +-------------+--------------------------------+
  * | 4 bit type  |   12 bits total object size    | <-- Object Header
@@ -293,10 +335,23 @@ rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
  * |                   cert                       |
  * +----------------------------------------------+
  *
+ * V1 header format:
+ *  d31             d24                           d0
+ * +---------------+------------------------------+
+ * |   8 bit type  |    24 bits total object size | <-- Object Header
+ * +---------------+------------------------------+
+ * |  8 bit name len|   24 bits total cert size    | <-- Cert Header
+ * +---------------+------------------------------+
+ * |             cert name string                 |
+ * +----------------------------------------------+
+ * |                   cert                       |
+ * +----------------------------------------------+
+ *
  * @param name The name of the certificate.
  * @param obj_type The object type that needs to encoded.
  * @param cert The binary certificate blob.
  * @param cert_size Size of the certificate blob in bytes.
+ * @param blob_version The version of the perso blob.
  * @param[out] buf Output buffer to copy the data into.
  * @param[inout] buf_size Input is size of the output buffer in bytes; output is
  *                        space of buffer that was consumed by the LTV object.
@@ -306,6 +361,7 @@ OT_WARN_UNUSED_RESULT
 rom_error_t perso_tlv_cert_obj_build(const char *name,
                                      const perso_tlv_object_type_t obj_type,
                                      const uint8_t *cert, size_t cert_size,
+                                     perso_blob_version_t blob_version,
                                      uint8_t *buf, size_t *buf_size);
 
 /**
@@ -319,6 +375,7 @@ rom_error_t perso_tlv_cert_obj_build(const char *name,
  * @param cert_format The format of the certificate.
  * @param cert The binary certificate blob.
  * @param cert_size Size of the certificate blob in bytes.
+ * @param blob_version The version of the perso blob.
  * @param perso_blob Pointer to the `perso_blob_t` to copy the object to.
  * @return status of the operation.
  */
@@ -326,7 +383,7 @@ OT_WARN_UNUSED_RESULT
 rom_error_t perso_tlv_push_cert_to_perso_blob(
     const char *name, bool needs_endorsement,
     const dice_cert_format_t cert_format, const uint8_t *cert, size_t cert_size,
-    perso_blob_t *pb);
+    perso_blob_version_t blob_version, perso_blob_t *pb);
 
 /**
  * Pushes arbitrary data to the perso blob that is sent between host and device.
