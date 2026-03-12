@@ -521,6 +521,15 @@ class RunTest(Deploy):
         super()._extract_attrs(self.test_obj.__dict__)
         super()._set_attrs()
 
+        # For z01x FI simulations, the TCL script (fi_sim.tcl) passes run_opts
+        # as args to simv. Save the accumulated UVM/VCS sim opts as sim_run_opts
+        # so the TCL script can use them, and replace run_opts with the FI sim
+        # opts that vc_fcm (the run_cmd) requires.
+        if self.sim_cfg.tool == 'z01x':
+            sim_run_opts = ' '.join(opt.strip() for opt in self.run_opts)
+            self.exports.append({'sim_run_opts': sim_run_opts})
+            self.run_opts = list(self.sim_cfg.run_opts_fi_sim)
+
         # 'test' is used as a substitution variable in the HJson.
         self.test = self.name
         self.build_mode = self.test_obj.build_mode.name
