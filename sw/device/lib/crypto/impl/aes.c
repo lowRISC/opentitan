@@ -525,10 +525,8 @@ otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
         otcrypto_const_byte_buf_t, cipher_output.data, cipher_output.len);
     // Create the output buffer.
     uint32_t output_buf[len_bytes / sizeof(uint32_t)];
-    otcrypto_byte_buf_t cipher_input_recomputed = {
-        .data = (unsigned char *)output_buf,
-        .len = len_bytes,
-    };
+    otcrypto_byte_buf_t cipher_input_recomputed = OTCRYPTO_MAKE_BUF(
+        otcrypto_byte_buf_t, (unsigned char *)output_buf, len_bytes);
     HARDENED_TRY(otcrypto_aes_impl(
         key, iv_redundant, aes_mode, aes_operation_inverse,
         cipher_input_redundant, aes_padding, cipher_input_recomputed));

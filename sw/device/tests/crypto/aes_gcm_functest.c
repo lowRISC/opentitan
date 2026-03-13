@@ -86,7 +86,7 @@ static status_t run_bad_args_test(void) {
   uint8_t data[16] = {0};
   otcrypto_const_byte_buf_t pt =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, data, 16);
-  otcrypto_byte_buf_t ct = {.data = data, .len = 16};
+  otcrypto_byte_buf_t ct = OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, data, 16);
 
   uint32_t tag_data[4] = {0};
   otcrypto_word32_buf_t tag = {.data = tag_data, .len = 4};
@@ -104,7 +104,7 @@ static status_t run_bad_args_test(void) {
             .value == OTCRYPTO_BAD_ARGS.value);
 
   // Test length mismatch between plaintext and ciphertext
-  otcrypto_byte_buf_t bad_ct = {.data = data, .len = 15};
+  otcrypto_byte_buf_t bad_ct = OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, data, 15);
   CHECK(otcrypto_aes_gcm_encrypt(&key, pt, iv, aad, kOtcryptoAesGcmTagLen128,
                                  bad_ct, tag)
             .value == OTCRYPTO_BAD_ARGS.value);
@@ -184,7 +184,7 @@ static status_t run_sideload_test(void) {
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, pt_data, 16);
 
   uint8_t ct_data[16] = {0};
-  otcrypto_byte_buf_t ct = {.data = ct_data, .len = 16};
+  otcrypto_byte_buf_t ct = OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, ct_data, 16);
 
   uint32_t tag_data[4] = {0};
   otcrypto_word32_buf_t tag = {.data = tag_data, .len = 4};
@@ -199,7 +199,8 @@ static status_t run_sideload_test(void) {
 
   // Decrypt
   uint8_t recovered_pt_data[16] = {0};
-  otcrypto_byte_buf_t recovered_pt = {.data = recovered_pt_data, .len = 16};
+  otcrypto_byte_buf_t recovered_pt =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, recovered_pt_data, 16);
   otcrypto_const_byte_buf_t ct_const =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, ct.data, ct.len);
   otcrypto_const_word32_buf_t tag_const = {.data = tag.data, .len = tag.len};

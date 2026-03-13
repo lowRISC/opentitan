@@ -140,10 +140,8 @@ status_t handle_aes_block(ujson_t *uj) {
     return OUT_OF_RANGE();
   }
   uint32_t output_buf[padded_len_bytes / sizeof(uint32_t)];
-  otcrypto_byte_buf_t output = {
-      .data = (unsigned char *)output_buf,
-      .len = sizeof(output_buf),
-  };
+  otcrypto_byte_buf_t output = OTCRYPTO_MAKE_BUF(
+      otcrypto_byte_buf_t, (unsigned char *)output_buf, sizeof(output_buf));
 
   otcrypto_aes(&key, iv, mode, op, input, padding, output);
 
