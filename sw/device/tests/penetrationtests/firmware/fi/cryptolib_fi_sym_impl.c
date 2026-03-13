@@ -84,10 +84,8 @@ status_t cryptolib_fi_aes_impl(cryptolib_fi_sym_aes_in_t uj_input,
   // Convert the data struct into cryptolib types.
   uint32_t iv_buf[kPentestAesIvSize];
   memcpy(iv_buf, uj_input.iv, sizeof(uj_input.iv));
-  otcrypto_word32_buf_t iv = {
-      .data = iv_buf,
-      .len = kPentestAesBlockWords,
-  };
+  otcrypto_word32_buf_t iv = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, iv_buf, kPentestAesBlockWords);
 
   otcrypto_const_byte_buf_t input = OTCRYPTO_MAKE_BUF(
       otcrypto_const_byte_buf_t, uj_input.data, uj_input.data_len);
@@ -161,10 +159,8 @@ status_t cryptolib_fi_drbg_generate_impl(
 
   // Buffer for the output entropy data.
   uint32_t output_data[uj_input.data_len];
-  otcrypto_word32_buf_t output = {
-      .data = output_data,
-      .len = ARRAYSIZE(output_data),
-  };
+  otcrypto_word32_buf_t output = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, output_data, ARRAYSIZE(output_data));
 
   // Trigger window 0.
   if (uj_input.trigger & kPentestTrigger2) {
@@ -266,10 +262,8 @@ status_t cryptolib_fi_gcm_impl(cryptolib_fi_sym_gcm_in_t uj_input,
   size_t tag_num_words =
       (uj_input.tag_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
   uint32_t actual_tag_data[tag_num_words];
-  otcrypto_word32_buf_t actual_tag = {
-      .data = actual_tag_data,
-      .len = tag_num_words,
-  };
+  otcrypto_word32_buf_t actual_tag = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, actual_tag_data, tag_num_words);
 
   uint8_t actual_ciphertext_data[AES_CMD_MAX_MSG_BYTES];
   otcrypto_byte_buf_t actual_ciphertext = OTCRYPTO_MAKE_BUF(
@@ -377,10 +371,8 @@ status_t cryptolib_fi_hmac_impl(cryptolib_fi_sym_hmac_in_t uj_input,
 
   // Create tag.
   uint32_t tag_buf[kPentestHmacMaxTagWords];
-  otcrypto_word32_buf_t tag = {
-      .len = tag_bytes / sizeof(uint32_t),
-      .data = tag_buf,
-  };
+  otcrypto_word32_buf_t tag = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, tag_buf, tag_bytes / sizeof(uint32_t));
 
   // Trigger window.
   PENTEST_MARKER_LABEL(PENTEST_MARKER_HMAC_START);

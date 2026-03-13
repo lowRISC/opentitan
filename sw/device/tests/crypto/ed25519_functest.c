@@ -118,8 +118,8 @@ status_t ed25519_kat_test(void) {
                         ARRAYSIZE(kMessage));
   // Set up signature struct.
   uint32_t signature_data[kEd25519SignatureWords];
-  otcrypto_word32_buf_t signature = {.data = signature_data,
-                                     .len = ARRAYSIZE(signature_data)};
+  otcrypto_word32_buf_t signature = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, signature_data, ARRAYSIZE(signature_data));
 
   // Run ed25519 signature generation.
   CHECK_STATUS_OK(otcrypto_ed25519_sign(

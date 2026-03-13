@@ -175,10 +175,8 @@ status_t handle_rsa_encrypt(ujson_t *uj) {
 
   // Output buffer.
   uint32_t ciphertext_buf[rsa_num_words];
-  otcrypto_word32_buf_t ciphertext = {
-      .data = ciphertext_buf,
-      .len = rsa_num_words,
-  };
+  otcrypto_word32_buf_t ciphertext = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, ciphertext_buf, rsa_num_words);
 
   bool status_resp = true;
   otcrypto_status_t status = otcrypto_rsa_encrypt(

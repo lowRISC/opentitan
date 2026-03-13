@@ -72,10 +72,8 @@ status_t handle_drbg(ujson_t *uj) {
       .output_len = uj_input.output_len,
   };
   size_t output_words = ceil_div(uj_output.output_len, sizeof(uint32_t));
-  otcrypto_word32_buf_t output = {
-      .len = output_words,
-      .data = (uint32_t *)uj_output.output,
-  };
+  otcrypto_word32_buf_t output = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, (uint32_t *)uj_output.output, output_words);
 
   // Instantiate DRBG system. We cannot use the FIPS-compliant APIs
   // because the test vector specifies an entropy string to use.

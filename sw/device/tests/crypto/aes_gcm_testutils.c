@@ -163,10 +163,8 @@ status_t aes_gcm_testutils_encrypt(const aes_gcm_test_t *test, bool streaming,
   size_t tag_num_words =
       (test->tag_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
   uint32_t actual_tag_data[tag_num_words];
-  otcrypto_word32_buf_t actual_tag = {
-      .data = actual_tag_data,
-      .len = tag_num_words,
-  };
+  otcrypto_word32_buf_t actual_tag = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, actual_tag_data, tag_num_words);
 
   size_t ciphertext_blocks = ceil_div(test->plaintext_len, kAesBlockNumBytes);
   uint8_t actual_ciphertext_data[ciphertext_blocks * kAesBlockNumBytes];

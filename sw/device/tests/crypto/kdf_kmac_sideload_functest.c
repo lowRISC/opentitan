@@ -363,10 +363,14 @@ static status_t run_test_vector(void) {
   // Export the derived blinded key
   uint32_t km_share0[km_keyblob_share_len];
   uint32_t km_share1[km_keyblob_share_len];
+  otcrypto_word32_buf_t km_share0_buf = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, km_share0, ARRAYSIZE(km_share0));
+  otcrypto_word32_buf_t km_share1_buf = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, km_share1, ARRAYSIZE(km_share1));
   TRY(otcrypto_export_blinded_key(
       &keying_material1,
-      (otcrypto_word32_buf_t){.data = km_share0, .len = ARRAYSIZE(km_share0)},
-      (otcrypto_word32_buf_t){.data = km_share1, .len = ARRAYSIZE(km_share1)}));
+      km_share0_buf,
+      km_share1_buf));
 
   // Unmask the derived key
   uint32_t first_key[km_key_len];

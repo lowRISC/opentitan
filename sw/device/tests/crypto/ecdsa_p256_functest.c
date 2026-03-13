@@ -107,9 +107,11 @@ static status_t sign_then_verify_test(void) {
 
   // Generate a signature for the message.
   LOG_INFO("Signing...");
+  otcrypto_word32_buf_t sig_buf = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, sig, ARRAYSIZE(sig));
   CHECK_STATUS_OK(otcrypto_ecdsa_p256_sign_verify(
       &private_key, &public_key, msg_digest,
-      (otcrypto_word32_buf_t){.data = sig, .len = ARRAYSIZE(sig)}));
+      sig_buf));
 
   // Verify the signature.
   LOG_INFO("Verifying...");
@@ -161,9 +163,10 @@ static status_t sign_kat(void) {
 
   // Generate a signature for the message.
   LOG_INFO("Signing...");
+  otcrypto_word32_buf_t sig_buf = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, sig, ARRAYSIZE(sig));
   CHECK_STATUS_OK(otcrypto_ecdsa_p256_sign_config_k(
-      &private_key, &secret_scalar, msg_digest,
-      (otcrypto_word32_buf_t){.data = sig, .len = ARRAYSIZE(sig)}));
+      &private_key, &secret_scalar, msg_digest, sig_buf));
 
   // Check if the signature matches the expected value.
   TRY_CHECK_ARRAYS_EQ(sig, kKATExpSignature, kP256SignatureWords);

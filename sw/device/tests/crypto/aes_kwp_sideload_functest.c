@@ -45,10 +45,8 @@ static status_t run_wrap_unwrap(const otcrypto_blinded_key_t *key_to_wrap,
 
   // Wrap the key.
   uint32_t wrapped_key_data[wrapped_num_words];
-  otcrypto_word32_buf_t wrapped_key = {
-      .data = wrapped_key_data,
-      .len = ARRAYSIZE(wrapped_key_data),
-  };
+  otcrypto_word32_buf_t wrapped_key = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, wrapped_key_data, ARRAYSIZE(wrapped_key_data));
   TRY(otcrypto_key_wrap(key_to_wrap, key_kek, wrapped_key));
 
   // Unwrap the key.

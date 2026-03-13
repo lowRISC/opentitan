@@ -177,10 +177,14 @@ static status_t ecdh_p256(cryptotest_ecdh_private_key_t d,
   // Unmask the shared secret.
   uint32_t share0[shared_secret_words];
   uint32_t share1[shared_secret_words];
+  otcrypto_word32_buf_t share0_buf = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, share0, ARRAYSIZE(share0));
+  otcrypto_word32_buf_t share1_buf = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, share1, ARRAYSIZE(share1));
   TRY(otcrypto_export_blinded_key(
       &shared_secret,
-      (otcrypto_word32_buf_t){.data = share0, .len = ARRAYSIZE(share0)},
-      (otcrypto_word32_buf_t){.data = share1, .len = ARRAYSIZE(share1)}));
+      share0_buf,
+      share1_buf));
   for (size_t i = 0; i < shared_secret_words; i++) {
     ss[i] = share0[i] ^ share1[i];
   }
@@ -301,10 +305,14 @@ static status_t ecdh_p384(cryptotest_ecdh_private_key_t d,
   // Unmask the shared secret.
   uint32_t share0[shared_secret_words];
   uint32_t share1[shared_secret_words];
+  otcrypto_word32_buf_t share0_buf = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, share0, ARRAYSIZE(share0));
+  otcrypto_word32_buf_t share1_buf = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, share1, ARRAYSIZE(share1));
   TRY(otcrypto_export_blinded_key(
       &shared_secret,
-      (otcrypto_word32_buf_t){.data = share0, .len = ARRAYSIZE(share0)},
-      (otcrypto_word32_buf_t){.data = share1, .len = ARRAYSIZE(share1)}));
+      share0_buf,
+      share1_buf));
   for (size_t i = 0; i < shared_secret_words; i++) {
     ss[i] = share0[i] ^ share1[i];
   }

@@ -148,10 +148,8 @@ status_t handle_aes_gcm_op(ujson_t *uj) {
   hardened_bool_t tag_valid = kHardenedBoolTrue;
 
   if (op_enc) {
-    otcrypto_word32_buf_t tag = {
-        .data = tag_data,
-        .len = tag_num_words,
-    };
+    otcrypto_word32_buf_t tag = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, tag_data, tag_num_words);
     TRY(otcrypto_aes_gcm_encrypt(&key, input, iv, aad, tag_len, output, tag));
   } else {
     memcpy(tag_data, uj_data.tag, uj_data.tag_length);
