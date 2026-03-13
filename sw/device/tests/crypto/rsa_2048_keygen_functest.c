@@ -6,6 +6,7 @@
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_datatypes.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/rsa.h"
 #include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
@@ -81,8 +82,8 @@ status_t keygen_then_sign_test(void) {
   TRY_CHECK(d_large_enough);
 
   // Hash the message.
-  otcrypto_const_byte_buf_t msg_buf = {.data = kTestMessage,
-                                       .len = kTestMessageLen};
+  otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, kTestMessage, kTestMessageLen);
   uint32_t msg_digest_data[256 / 32];
   otcrypto_hash_digest_t msg_digest = {
       .data = msg_digest_data,

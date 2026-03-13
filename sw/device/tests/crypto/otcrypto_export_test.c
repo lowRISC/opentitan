@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "otcrypto.h"
+#include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 
 // This test checks that the static-linked `otcrypto` library is usable and that
@@ -56,10 +57,9 @@ int32_t hash_test(void) {
       .len = kHashLength,
       .data = digest_content,
   };
-  otcrypto_const_byte_buf_t buf = {
-      .len = sizeof(kGettysburgPrelude) - 1,
-      .data = (const uint8_t *)kGettysburgPrelude,
-  };
+  otcrypto_const_byte_buf_t buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, (const uint8_t *)kGettysburgPrelude,
+      sizeof(kGettysburgPrelude) - 1);
 
   RETURN_IF_ERROR(otcrypto_sha2_init(kOtcryptoHashModeSha256, &ctx));
   RETURN_IF_ERROR(otcrypto_sha2_update(&ctx, buf));

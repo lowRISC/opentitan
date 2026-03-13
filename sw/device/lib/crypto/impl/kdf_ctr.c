@@ -163,20 +163,21 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
     otcrypto_hmac_context_t ctx;
     HARDENED_TRY(otcrypto_hmac_init(&ctx, key_derivation_key));
     uint32_t counter_be = __builtin_bswap32(i + 1);
-    HARDENED_TRY(otcrypto_hmac_update(
-        &ctx, (otcrypto_const_byte_buf_t){
-                  .data = (const unsigned char *const)&counter_be,
-                  .len = sizeof(counter_be)}));
+    otcrypto_const_byte_buf_t counter_be_buf = OTCRYPTO_MAKE_BUF(
+        otcrypto_const_byte_buf_t, (const unsigned char *const)&counter_be,
+        sizeof(counter_be));
+    HARDENED_TRY(otcrypto_hmac_update(&ctx, counter_be_buf));
     HARDENED_TRY(otcrypto_hmac_update(&ctx, label));
-    HARDENED_TRY(otcrypto_hmac_update(
-        &ctx,
-        (otcrypto_const_byte_buf_t){.data = (const unsigned char *const)&zero,
-                                    .len = sizeof(zero)}));
+    otcrypto_const_byte_buf_t zero_buf =
+        OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t,
+                          (const unsigned char *const)&zero, sizeof(zero));
+    HARDENED_TRY(otcrypto_hmac_update(&ctx, zero_buf));
     HARDENED_TRY(otcrypto_hmac_update(&ctx, context));
-    HARDENED_TRY(otcrypto_hmac_update(
-        &ctx, (otcrypto_const_byte_buf_t){
-                  .data = (const unsigned char *const)&required_bit_len,
-                  .len = sizeof(required_bit_len)}));
+    otcrypto_const_byte_buf_t required_bit_len_buf =
+        OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t,
+                          (const unsigned char *const)&required_bit_len,
+                          sizeof(required_bit_len));
+    HARDENED_TRY(otcrypto_hmac_update(&ctx, required_bit_len_buf));
     uint32_t *tag_dest = output_key_material_data + i * digest_word_len;
     HARDENED_TRY(otcrypto_hmac_final(
         &ctx,

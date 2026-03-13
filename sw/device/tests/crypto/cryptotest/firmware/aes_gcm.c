@@ -106,15 +106,11 @@ status_t handle_aes_gcm_op(ujson_t *uj) {
       .len = iv_num_words,
   };
 
-  otcrypto_const_byte_buf_t input = {
-      .data = uj_data.input,
-      .len = (size_t)uj_data.input_length,
-  };
+  otcrypto_const_byte_buf_t input = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, uj_data.input, (size_t)uj_data.input_length);
 
-  otcrypto_const_byte_buf_t aad = {
-      .data = uj_data.aad,
-      .len = uj_data.aad_length,
-  };
+  otcrypto_const_byte_buf_t aad = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, uj_data.aad, uj_data.aad_length);
 
   // Select a random security level.
   size_t sec_lvl_idx = rand_testutils_gen32_range(

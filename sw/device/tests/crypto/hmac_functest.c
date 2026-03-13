@@ -99,8 +99,10 @@ static status_t run_negative_tests(void) {
 
   // Base valid buffers
   uint8_t msg_data[] = "test";
-  otcrypto_const_byte_buf_t msg = {.data = msg_data, .len = 4};
-  otcrypto_const_byte_buf_t bad_msg = {.data = NULL, .len = 4};
+  otcrypto_const_byte_buf_t msg =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg_data, 4);
+  otcrypto_const_byte_buf_t bad_msg =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 4);
 
   uint32_t tag_data[8] = {0};
   otcrypto_word32_buf_t tag = {.data = tag_data, .len = 8};

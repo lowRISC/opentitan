@@ -6,6 +6,7 @@
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/drbg.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/randomness_quality.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -27,16 +28,13 @@ static const uint32_t kExpOutput[16] = {
     0x771c619b, 0xdf82ab22, 0x80b1dc2f, 0x2581f391, 0x64f7ac0c, 0x510494b3,
     0xa43c41b7, 0xdb17514c, 0x87b107ae, 0x793e01c5,
 };
-static const otcrypto_const_byte_buf_t kEmptyBuffer = {
-    .data = NULL,
-    .len = 0,
-};
 
 static status_t kat_test(void) {
-  otcrypto_const_byte_buf_t entropy = {
-      .data = (const unsigned char *)kTestSeed,
-      .len = sizeof(kTestSeed),
-  };
+  otcrypto_const_byte_buf_t kEmptyBuffer =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
+  otcrypto_const_byte_buf_t entropy =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t,
+                        (const unsigned char *)kTestSeed, sizeof(kTestSeed));
 
   // Instantiate DRBG.
   TRY(otcrypto_drbg_manual_instantiate(entropy, /*perso_string=*/kEmptyBuffer));
@@ -66,6 +64,8 @@ static status_t kat_test(void) {
 }
 
 static status_t random_test(void) {
+  otcrypto_const_byte_buf_t kEmptyBuffer =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
   // Instantiate DRBG.
   TRY(otcrypto_drbg_instantiate(/*perso_string=*/kEmptyBuffer));
 
@@ -90,17 +90,16 @@ static status_t random_test(void) {
 
 static status_t reseed_test(void) {
   LOG_INFO("Running reseed and uninstantiate tests...");
+  otcrypto_const_byte_buf_t kEmptyBuffer =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
 
-  otcrypto_const_byte_buf_t entropy = {
-      .data = (const unsigned char *)kTestSeed,
-      .len = sizeof(kTestSeed),
-  };
+  otcrypto_const_byte_buf_t entropy =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t,
+                        (const unsigned char *)kTestSeed, sizeof(kTestSeed));
 
   uint8_t add_input_data[16] = {0xAA};
-  otcrypto_const_byte_buf_t add_input = {
-      .data = add_input_data,
-      .len = sizeof(add_input_data),
-  };
+  otcrypto_const_byte_buf_t add_input = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, add_input_data, sizeof(add_input_data));
 
   // Manual Reseed
   TRY(otcrypto_drbg_manual_instantiate(entropy, kEmptyBuffer));
@@ -117,19 +116,21 @@ static status_t reseed_test(void) {
 
 static status_t run_negative_tests(void) {
   LOG_INFO("Running negative tests...");
+  otcrypto_const_byte_buf_t kEmptyBuffer =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
 
-  otcrypto_const_byte_buf_t valid_entropy = {
-      .data = (const unsigned char *)kTestSeed,
-      .len = sizeof(kTestSeed),
-  };
+  otcrypto_const_byte_buf_t valid_entropy =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t,
+                        (const unsigned char *)kTestSeed, sizeof(kTestSeed));
 
   uint8_t dummy_data[64] = {0};
 
-  otcrypto_const_byte_buf_t null_data_buf = {.data = NULL, .len = 5};
-  otcrypto_const_byte_buf_t too_long_buf = {.data = dummy_data,
-                                            .len = 64};  // > kEntropySeedBytes
-  otcrypto_const_byte_buf_t bad_len_entropy = {
-      .data = dummy_data, .len = 16};  // != kEntropySeedBytes
+  otcrypto_const_byte_buf_t null_data_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 5);
+  otcrypto_const_byte_buf_t too_long_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, dummy_data, 64);  // > kEntropySeedBytes
+  otcrypto_const_byte_buf_t bad_len_entropy = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, dummy_data, 16);  // != kEntropySeedBytes
 
   uint32_t out_data[4] = {0};
   otcrypto_word32_buf_t valid_out = {.data = out_data, .len = 4};

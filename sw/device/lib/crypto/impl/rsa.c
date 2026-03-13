@@ -499,12 +499,10 @@ otcrypto_status_t otcrypto_rsa_decrypt(
     return OTCRYPTO_BAD_ARGS;
   }
   uint8_t dummy_label_data[1] = {0};
-  otcrypto_const_byte_buf_t local_label = {
-      // Catch the case where the data is NULL but the length is zero
-      .data = (label.data == NULL && label.len == 0) ? dummy_label_data
-                                                     : label.data,
-      .len = label.len,
-  };
+  otcrypto_const_byte_buf_t local_label = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t,
+      (label.data == NULL && label.len == 0) ? dummy_label_data : label.data,
+      label.len);
   otcrypto_status_t status =
       otcrypto_rsa_decrypt_async_start(private_key, ciphertext);
   if (status.value != kOtcryptoStatusValueOk) {

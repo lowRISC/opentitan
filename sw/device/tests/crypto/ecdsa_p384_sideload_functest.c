@@ -6,6 +6,7 @@
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/ecc_p384.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/key_transport.h"
 #include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
@@ -68,10 +69,9 @@ status_t sign_then_verify_test(void) {
   CHECK_STATUS_OK(otcrypto_ecdsa_p384_keygen(&private_key, &public_key));
 
   // Hash the message.
-  otcrypto_const_byte_buf_t msg = {
-      .len = sizeof(kMessage) - 1,
-      .data = (unsigned char *)&kMessage,
-  };
+  otcrypto_const_byte_buf_t msg =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (unsigned char *)&kMessage,
+                        sizeof(kMessage) - 1);
   uint32_t msg_digest_data[384 / 32];
   otcrypto_hash_digest_t msg_digest = {
       .data = msg_digest_data,

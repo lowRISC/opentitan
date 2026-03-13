@@ -8,6 +8,8 @@
 
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/integrity.h"
+#include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/crypto/include/sha3.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
@@ -27,18 +29,12 @@ enum {
 status_t manuf_util_hash_lc_transition_token(const uint32_t *raw_token,
                                              size_t token_size_bytes,
                                              uint64_t *hashed_token) {
-  otcrypto_const_byte_buf_t input = {
-      .data = (unsigned char *)raw_token,
-      .len = token_size_bytes,
-  };
-  otcrypto_const_byte_buf_t function_name_string = {
-      .data = (unsigned char *)"",
-      .len = 0,
-  };
-  otcrypto_const_byte_buf_t customization_string = {
-      .data = (unsigned char *)"LC_CTRL",
-      .len = 7,
-  };
+  otcrypto_const_byte_buf_t input = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, (unsigned char *)raw_token, token_size_bytes);
+  otcrypto_const_byte_buf_t function_name_string =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (unsigned char *)"", 0);
+  otcrypto_const_byte_buf_t customization_string = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, (unsigned char *)"LC_CTRL", 7);
 
   // Create a temporary uint32_t buffer and copy the result from there to the
   // uint64_t buffer.
