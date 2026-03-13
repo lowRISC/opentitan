@@ -8,6 +8,7 @@
 
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/crypto/include/sha3.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
@@ -32,18 +33,12 @@ enum {
 status_t manuf_util_hash_lc_transition_token(const uint32_t *raw_token,
                                              size_t token_size_bytes,
                                              uint64_t *hashed_token) {
-  otcrypto_const_byte_buf_t input = {
-      .data = (unsigned char *)raw_token,
-      .len = token_size_bytes,
-  };
-  otcrypto_const_byte_buf_t function_name_string = {
-      .data = (unsigned char *)"",
-      .len = 0,
-  };
-  otcrypto_const_byte_buf_t customization_string = {
-      .data = (unsigned char *)"LC_CTRL",
-      .len = 7,
-  };
+  otcrypto_const_byte_buf_t input = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, (unsigned char *)raw_token, token_size_bytes);
+  otcrypto_const_byte_buf_t function_name_string =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (unsigned char *)"", 0);
+  otcrypto_const_byte_buf_t customization_string = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, (unsigned char *)"LC_CTRL", 7);
 
   // Create a temporary uint32_t buffer and copy the result from there to the
   // uint64_t buffer.
@@ -90,11 +85,10 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
           (OTP_CTRL_PARAM_VENDOR_TEST_SIZE -
            OTP_CTRL_PARAM_VENDOR_TEST_DIGEST_SIZE) /
               sizeof(uint32_t)));
-      otcrypto_const_byte_buf_t input = {
-          .data = (unsigned char *)vendor_test_32bit_array,
-          .len = OTP_CTRL_PARAM_VENDOR_TEST_SIZE -
-                 OTP_CTRL_PARAM_VENDOR_TEST_DIGEST_SIZE,
-      };
+      otcrypto_const_byte_buf_t input = OTCRYPTO_MAKE_BUF(
+          otcrypto_const_byte_buf_t, (unsigned char *)vendor_test_32bit_array,
+          OTP_CTRL_PARAM_VENDOR_TEST_SIZE -
+              OTP_CTRL_PARAM_VENDOR_TEST_DIGEST_SIZE);
       TRY(otcrypto_sha2_256(input, &digest));
     } break;
     case kDifOtpCtrlPartitionCreatorSwCfg: {
@@ -108,25 +102,24 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
       // same CreatorRootKey keymgr attestation binding value computed in the
       // field by the ROM is the same as the one used during perso when all the
       // CreatorSwCfg fields have not yet been set.
-      otcrypto_const_byte_buf_t input = {
-          .data = (unsigned char
-                       *)(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
-                          OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
-                          OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_INIT_EN_OFFSET),
-          .len = OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE -
-                 OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_SIZE -
-                 OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_SIZE,
-      };
+      otcrypto_const_byte_buf_t input = OTCRYPTO_MAKE_BUF(
+          otcrypto_const_byte_buf_t,
+          (unsigned char *)(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
+                            OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
+                            OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_INIT_EN_OFFSET),
+          OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE -
+              OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_SIZE -
+              OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_SIZE);
       TRY(otcrypto_sha2_256(input, &digest));
     } break;
     case kDifOtpCtrlPartitionOwnerSwCfg: {
-      otcrypto_const_byte_buf_t input = {
-          .data = (unsigned char *)(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
-                                    OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
-                                    OTP_CTRL_PARAM_OWNER_SW_CFG_OFFSET),
-          .len = OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE -
-                 OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_SIZE,
-      };
+      otcrypto_const_byte_buf_t input = OTCRYPTO_MAKE_BUF(
+          otcrypto_const_byte_buf_t,
+          (unsigned char *)(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
+                            OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
+                            OTP_CTRL_PARAM_OWNER_SW_CFG_OFFSET),
+          OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE -
+              OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_SIZE);
       TRY(otcrypto_sha2_256(input, &digest));
     } break;
     case kDifOtpCtrlPartitionRotCreatorAuthCodesign: {
@@ -140,11 +133,11 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
           (OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE -
            OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_DIGEST_SIZE) /
               sizeof(uint32_t)));
-      otcrypto_const_byte_buf_t input = {
-          .data = (unsigned char *)rot_creator_auth_codesign_32bit_array,
-          .len = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE -
-                 OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_DIGEST_SIZE,
-      };
+      otcrypto_const_byte_buf_t input = OTCRYPTO_MAKE_BUF(
+          otcrypto_const_byte_buf_t,
+          (unsigned char *)rot_creator_auth_codesign_32bit_array,
+          OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE -
+              OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_DIGEST_SIZE);
       TRY(otcrypto_sha2_256(input, &digest));
     } break;
     case kDifOtpCtrlPartitionRotCreatorAuthState: {
@@ -158,11 +151,11 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
           (OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_SIZE -
            OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_DIGEST_SIZE) /
               sizeof(uint32_t)));
-      otcrypto_const_byte_buf_t input = {
-          .data = (unsigned char *)rot_creator_auth_state_32bit_array,
-          .len = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_SIZE -
-                 OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_DIGEST_SIZE,
-      };
+      otcrypto_const_byte_buf_t input = OTCRYPTO_MAKE_BUF(
+          otcrypto_const_byte_buf_t,
+          (unsigned char *)rot_creator_auth_state_32bit_array,
+          OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_SIZE -
+              OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_DIGEST_SIZE);
       TRY(otcrypto_sha2_256(input, &digest));
     } break;
     default:

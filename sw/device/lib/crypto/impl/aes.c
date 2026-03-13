@@ -521,10 +521,8 @@ otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
 
     // Create the input buffer that contains the cipher_output of the first AES
     // operation.
-    otcrypto_const_byte_buf_t cipher_input_redundant = {
-        .data = cipher_output.data,
-        .len = cipher_output.len,
-    };
+    otcrypto_const_byte_buf_t cipher_input_redundant = OTCRYPTO_MAKE_BUF(
+        otcrypto_const_byte_buf_t, cipher_output.data, cipher_output.len);
     // Create the output buffer.
     uint32_t output_buf[len_bytes / sizeof(uint32_t)];
     otcrypto_byte_buf_t cipher_input_recomputed = {

@@ -180,10 +180,9 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
   uint32_t unmasked_ikm_data[keyblob_share_num_words(ikm->config)];
   HARDENED_TRY(
       keyblob_key_unmask(ikm, ARRAYSIZE(unmasked_ikm_data), unmasked_ikm_data));
-  otcrypto_const_byte_buf_t unmasked_ikm = {
-      .data = (unsigned char *)unmasked_ikm_data,
-      .len = ikm->config.key_length,
-  };
+  otcrypto_const_byte_buf_t unmasked_ikm = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, (unsigned char *)unmasked_ikm_data,
+      ikm->config.key_length);
 
   // Package the salt value in a blinded key, using an all-zero mask because
   // the salt is not actually secret.
@@ -271,10 +270,9 @@ otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
   uint8_t info_and_counter_data[info.len + 1];
   memcpy(info_and_counter_data, info.data, info.len);
   info_and_counter_data[info.len] = 0x00;
-  otcrypto_const_byte_buf_t info_and_counter = {
-      .data = info_and_counter_data,
-      .len = sizeof(info_and_counter_data),
-  };
+  otcrypto_const_byte_buf_t info_and_counter =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, info_and_counter_data,
+                        sizeof(info_and_counter_data));
 
   // Repeatedly call HMAC to generate the derived key (see RFC 5869, section
   // 2.3):
@@ -285,10 +283,9 @@ otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
     otcrypto_hmac_context_t ctx;
     HARDENED_TRY(otcrypto_hmac_init(&ctx, prk));
     if (launder32(i) != 0) {
-      otcrypto_const_byte_buf_t t_bytes = {
-          .data = (unsigned char *)t_data,
-          .len = digest_words * sizeof(uint32_t),
-      };
+      otcrypto_const_byte_buf_t t_bytes =
+          OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (unsigned char *)t_data,
+                            digest_words * sizeof(uint32_t));
       HARDENED_TRY(otcrypto_hmac_update(&ctx, t_bytes));
       t_data += digest_words;
     }

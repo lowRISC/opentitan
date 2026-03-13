@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -53,10 +54,8 @@ static const uint8_t kEmptyExpDigest[] = {
 status_t sha384_test(const unsigned char *msg, const size_t msg_len,
                      const uint8_t *expected_digest) {
   // Construct a buffer for the message.
-  otcrypto_const_byte_buf_t input_message = {
-      .data = msg,
-      .len = msg_len,
-  };
+  otcrypto_const_byte_buf_t input_message =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg, msg_len);
 
   // Allocate space for the computed digest.
   uint32_t actual_digest_data[384 / 32];
@@ -86,10 +85,8 @@ status_t sha384_streaming_test(const unsigned char *msg, size_t msg_len,
   while (msg_len > 0) {
     // Construct a buffer for the next update.
     size_t len = (msg_len <= 5) ? msg_len : 5;
-    otcrypto_const_byte_buf_t input_message = {
-        .data = msg,
-        .len = len,
-    };
+    otcrypto_const_byte_buf_t input_message =
+        OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg, len);
     msg += len;
     msg_len -= len;
     TRY(otcrypto_sha2_update(&ctx, input_message));

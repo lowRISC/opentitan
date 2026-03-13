@@ -26,10 +26,9 @@ static const randomness_quality_significance_t kSignificance =
 
 // Personalization data for testing.
 static const uint8_t kPersonalizationData[5] = {0xf0, 0xf1, 0xf2, 0xf3, 0xf4};
-static const otcrypto_const_byte_buf_t kPersonalization = {
-    .data = kPersonalizationData,
-    .len = sizeof(kPersonalizationData),
-};
+static const otcrypto_const_byte_buf_t kPersonalization =
+    OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, kPersonalizationData,
+                      sizeof(kPersonalizationData));
 
 // Represents a 192-bit AES-CBC key.
 static const otcrypto_key_config_t kAesKeyConfig = {

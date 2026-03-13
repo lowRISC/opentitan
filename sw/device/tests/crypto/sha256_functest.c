@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -78,10 +79,9 @@ static status_t run_test(otcrypto_const_byte_buf_t msg,
  */
 static status_t simple_test(void) {
   const char plaintext[] = "Test message.";
-  otcrypto_const_byte_buf_t msg_buf = {
-      .data = (unsigned char *)plaintext,
-      .len = sizeof(plaintext) - 1,
-  };
+  otcrypto_const_byte_buf_t msg_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (unsigned char *)plaintext,
+                        sizeof(plaintext) - 1);
   const uint32_t exp_digest[] = {
       0x7a99dab2, 0x7ce06e96, 0x83f0e143, 0x88e57c80,
       0xcaa4c04b, 0xca023bd1, 0x18a172dc, 0x1709b520,
@@ -100,10 +100,8 @@ static status_t empty_test(void) {
       0x42c4b0e3, 0x141cfc98, 0xc8f4fb9a, 0x24b96f99,
       0xe441ae27, 0x4c939b64, 0x1b9995a4, 0x55b85278,
   };
-  otcrypto_const_byte_buf_t msg_buf = {
-      .data = NULL,
-      .len = 0,
-  };
+  otcrypto_const_byte_buf_t msg_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
   return run_test(msg_buf, exp_digest);
 }
 
@@ -111,10 +109,8 @@ static status_t empty_test(void) {
  * Test with a two-block message.
  */
 static status_t two_block_test(void) {
-  otcrypto_const_byte_buf_t msg_buf = {
-      .data = kTwoBlockMessage,
-      .len = kTwoBlockMessageLen,
-  };
+  otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, kTwoBlockMessage, kTwoBlockMessageLen);
   uint32_t exp_digest[kSha256DigestWords];
   memcpy(exp_digest, kTwoBlockExpDigest, sizeof(exp_digest));
   return run_test(msg_buf, exp_digest);
@@ -127,10 +123,8 @@ static status_t one_update_streaming_test(void) {
   otcrypto_sha2_context_t ctx;
   TRY(otcrypto_sha2_init(kOtcryptoHashModeSha256, &ctx));
 
-  otcrypto_const_byte_buf_t msg_buf = {
-      .data = kExactBlockMessage,
-      .len = kExactBlockMessageLen,
-  };
+  otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, kExactBlockMessage, kExactBlockMessageLen);
   TRY(otcrypto_sha2_update(&ctx, msg_buf));
 
   uint32_t act_digest[kSha256DigestWords];
@@ -158,10 +152,8 @@ static status_t multiple_update_streaming_test(void) {
   size_t update_size = 0;
   while (len > 0) {
     update_size = len <= update_size ? len : update_size;
-    otcrypto_const_byte_buf_t msg_buf = {
-        .data = next,
-        .len = update_size,
-    };
+    otcrypto_const_byte_buf_t msg_buf =
+        OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, next, update_size);
     TRY(otcrypto_sha2_update(&ctx, msg_buf));
     next += update_size;
     len -= update_size;

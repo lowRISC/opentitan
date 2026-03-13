@@ -98,20 +98,17 @@ status_t handle_kmac(ujson_t *uj) {
   // Create input message
   uint8_t msg_buf[uj_message.message_len];
   memcpy(msg_buf, uj_message.message, uj_message.message_len);
-  otcrypto_const_byte_buf_t input_message = {
-      .len = uj_message.message_len,
-      .data = msg_buf,
-  };
+  otcrypto_const_byte_buf_t input_message = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, msg_buf, uj_message.message_len);
 
   // Create customization string
   uint8_t customization_string_buf[uj_customization_string
                                        .customization_string_len];
   memcpy(customization_string_buf, uj_customization_string.customization_string,
          uj_customization_string.customization_string_len);
-  otcrypto_const_byte_buf_t customization_string = {
-      .len = uj_customization_string.customization_string_len,
-      .data = customization_string_buf,
-  };
+  otcrypto_const_byte_buf_t customization_string =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, customization_string_buf,
+                        uj_customization_string.customization_string_len);
 
   // Create tag
   uint32_t tag_buf[MaxKmacTagWords];

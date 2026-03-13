@@ -144,16 +144,12 @@ static status_t run_test(hkdf_test_vector_t *test) {
   };
 
   // Construct a buffer for the salt.
-  otcrypto_const_byte_buf_t salt = {
-      .data = test->salt,
-      .len = test->salt_bytelen,
-  };
+  otcrypto_const_byte_buf_t salt = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, test->salt, test->salt_bytelen);
 
   // Construct a buffer for the context info.
-  otcrypto_const_byte_buf_t info = {
-      .data = test->info,
-      .len = test->info_bytelen,
-  };
+  otcrypto_const_byte_buf_t info = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, test->info, test->info_bytelen);
 
   // Run the "extract" stage of HKDF.
   TRY(otcrypto_hkdf_extract(&ikm, salt, &prk));

@@ -5,6 +5,7 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/include/drbg.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/randomness_quality.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -26,16 +27,13 @@ static const uint32_t kExpOutput[16] = {
     0x771c619b, 0xdf82ab22, 0x80b1dc2f, 0x2581f391, 0x64f7ac0c, 0x510494b3,
     0xa43c41b7, 0xdb17514c, 0x87b107ae, 0x793e01c5,
 };
-static const otcrypto_const_byte_buf_t kEmptyBuffer = {
-    .data = NULL,
-    .len = 0,
-};
 
 static status_t kat_test(void) {
-  otcrypto_const_byte_buf_t entropy = {
-      .data = (const unsigned char *)kTestSeed,
-      .len = sizeof(kTestSeed),
-  };
+  otcrypto_const_byte_buf_t kEmptyBuffer =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
+  otcrypto_const_byte_buf_t entropy =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t,
+                        (const unsigned char *)kTestSeed, sizeof(kTestSeed));
 
   // Instantiate DRBG.
   TRY(otcrypto_drbg_manual_instantiate(entropy, /*perso_string=*/kEmptyBuffer));
@@ -62,6 +60,8 @@ static status_t kat_test(void) {
 }
 
 static status_t random_test(void) {
+  otcrypto_const_byte_buf_t kEmptyBuffer =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
   // Instantiate DRBG.
   TRY(otcrypto_drbg_instantiate(/*perso_string=*/kEmptyBuffer));
 

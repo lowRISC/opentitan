@@ -114,12 +114,12 @@ static status_t run_rsa_2048_encrypt(const uint8_t *msg, size_t msg_len,
   TRY(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize2048, modulus,
                                         &public_key));
 
-  otcrypto_const_byte_buf_t msg_buf = {.data = msg, .len = msg_len};
-  otcrypto_const_byte_buf_t label_buf = {.data = label, .len = label_len};
-  otcrypto_word32_buf_t ciphertext_buf = {
-      .data = ciphertext,
-      .len = kRsa2048NumWords,
-  };
+  otcrypto_const_byte_buf_t msg_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg, msg_len);
+  otcrypto_const_byte_buf_t label_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, label, label_len);
+  otcrypto_word32_buf_t ciphertext_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ciphertext, kRsa2048NumWords);
   uint64_t t_start = profile_start();
   TRY(otcrypto_rsa_encrypt(&public_key, kTestHashMode, msg_buf, label_buf,
                            ciphertext_buf));
@@ -182,8 +182,10 @@ static status_t run_rsa_2048_decrypt(const uint8_t *label, size_t label_len,
   TRY(otcrypto_rsa_private_key_from_exponents(
       kOtcryptoRsaSize2048, modulus, d_share0, d_share1, &private_key));
 
-  otcrypto_byte_buf_t plaintext_buf = {.data = msg, .len = kMaxPlaintextBytes};
-  otcrypto_const_byte_buf_t label_buf = {.data = label, .len = label_len};
+  otcrypto_byte_buf_t plaintext_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, msg, kMaxPlaintextBytes);
+  otcrypto_const_byte_buf_t label_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, label, label_len);
   otcrypto_const_word32_buf_t ciphertext_buf = {
       .data = ciphertext,
       .len = kRsa2048NumWords,
