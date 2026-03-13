@@ -37,6 +37,7 @@ mldsa87_unit_tests = [
     "mldsa87_rej_ntt_poly_test",
     "mldsa87_expand_a_test",
     "mldsa87_sample_in_ball_test",
+    "mldsa87_challenge_hash_test",
 ]
 
 [

@@ -6,6 +6,7 @@
 
 .globl rej_ntt_poly
 .globl sample_in_ball
+.globl challenge_hash
 
 .text
 
@@ -332,6 +333,43 @@ _sample_in_ball_skip_squeeze:
 
   ret
 
+/**
+ * Calculate the challenge hash c = SHAKE256(mu|w1_enc).
+ *
+ * @param[in] x2: DMEM address of mu (64 bytes).
+ * @param[in] x3: DMEM address of the w1_enc vector (1024 bytes).
+ * @param[in] x4: DMEM address of the output challenge hash c.
+ */
+challenge_hash:
+  /* This routine is only called from the top-level, so no need to preserve
+     the clobbered registers. */
+
+  jal x1, xof_shake256_init
+
+  /* Absorb the 64 bytes of mu. */
+  addi x20, x0, 64
+  addi x21, x2, 0
+  addi x22, x0, 0
+  jal x1, xof_absorb
+
+  /* Absorb the 1024 bytes of w1_enc vector. */
+  addi x20, x0, 1024
+  addi x21, x3, 0
+  addi x22, x0, 0
+  jal x1, xof_absorb
+  jal x1, xof_process
+
+  /* Squeeze the 64-byte challenge hash c. */
+  jal x1, xof_squeeze32
+  bn.xor w0, w29, w30
+  bn.sid x0, 0(x4++)
+  jal x1, xof_squeeze32
+  bn.xor w0, w29, w30
+  bn.sid x0, 0(x4++)
+
+  jal x1, xof_finish
+
+  ret
 .data
 .balign 32
 
