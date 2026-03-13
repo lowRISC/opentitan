@@ -425,10 +425,11 @@ module tlul_assert #(
 
   `ifdef UVM
     initial forever begin
+      automatic string hier_path = $sformatf("%m");
       bit tlul_assert_en;
-      uvm_config_db#(bit)::wait_modified(null, "%m", "tlul_assert_en");
-      if (!uvm_config_db#(bit)::get(null, "%m", "tlul_assert_en", tlul_assert_en)) begin
-        `uvm_fatal($sformatf("%m"), "Can't find tlul_assert_en")
+      uvm_config_db#(bit)::wait_modified(null, hier_path, "tlul_assert_en");
+      if (!uvm_config_db#(bit)::get(null, hier_path, "tlul_assert_en", tlul_assert_en)) begin
+        `uvm_fatal(hier_path, "Can't find tlul_assert_en")
       end
       disable_sva = !tlul_assert_en;
     end
