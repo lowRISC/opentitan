@@ -50,9 +50,15 @@ static status_t run_test_vector(void) {
   current_test_vector->key_derivation_key.checksum =
       integrity_blinded_checksum(&current_test_vector->key_derivation_key);
 
-  TRY(otcrypto_kmac_kdf(&current_test_vector->key_derivation_key,
-                        current_test_vector->label,
-                        current_test_vector->context, &output_key_material));
+  otcrypto_const_byte_buf_t label_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, current_test_vector->label.data,
+      current_test_vector->label.len);
+  otcrypto_const_byte_buf_t context_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, current_test_vector->context.data,
+      current_test_vector->context.len);
+
+  TRY(otcrypto_kmac_kdf(&current_test_vector->key_derivation_key, label_buf,
+                        context_buf, &output_key_material));
 
   HARDENED_CHECK_EQ(integrity_blinded_key_check(&output_key_material),
                     kHardenedBoolTrue);

@@ -120,8 +120,8 @@ otcrypto_status_t otcrypto_kmac_kdf(
       // No need to further check key size against security level because
       // `kmac_key_length_check` ensures that the key is at least 128-bit.
       HARDENED_TRY(kmac_kmac_128(
-          &kmac_key, /*masked_digest=*/kHardenedBoolTrue, context.data,
-          context.len, label.data, label.len, output_key_material->keyblob,
+          &kmac_key, /*masked_digest=*/kHardenedBoolTrue, &context, label.data,
+          label.len, output_key_material->keyblob,
           output_key_material->config.key_length / sizeof(uint32_t)));
       break;
     }
@@ -133,8 +133,8 @@ otcrypto_status_t otcrypto_kmac_kdf(
         return OTCRYPTO_BAD_ARGS;
       }
       HARDENED_TRY(kmac_kmac_256(
-          &kmac_key, /*masked_digest=*/kHardenedBoolTrue, context.data,
-          context.len, label.data, label.len, output_key_material->keyblob,
+          &kmac_key, /*masked_digest=*/kHardenedBoolTrue, &context, label.data,
+          label.len, output_key_material->keyblob,
           output_key_material->config.key_length / sizeof(uint32_t)));
       break;
     }

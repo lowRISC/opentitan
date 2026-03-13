@@ -97,13 +97,12 @@ status_t kmac_hwip_default_configure(void);
  * The caller must ensure that there is at least 224 bits = 28 bytes of space
  * available at the location pointed to by `digest`.
  *
- * @param message The input message.
- * @param message_len The input message length in bytes.
+ * @param message The input message buffer.
  * @param[out] digest Output buffer for the result.
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-status_t kmac_sha3_224(const uint8_t *message, size_t message_len,
+status_t kmac_sha3_224(const otcrypto_const_byte_buf_t *message,
                        uint32_t *digest);
 
 /**
@@ -112,13 +111,12 @@ status_t kmac_sha3_224(const uint8_t *message, size_t message_len,
  * The caller must ensure that there is at least 256 bits = 32 bytes of space
  * available at the location pointed to by `digest`.
  *
- * @param message The input message.
- * @param message_len The input message length in bytes.
+ * @param message The input message buffer.
  * @param[out] digest Output buffer for the result.
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-status_t kmac_sha3_256(const uint8_t *message, size_t message_len,
+status_t kmac_sha3_256(const otcrypto_const_byte_buf_t *message,
                        uint32_t *digest);
 
 /**
@@ -127,13 +125,12 @@ status_t kmac_sha3_256(const uint8_t *message, size_t message_len,
  * The caller must ensure that there is at least 384 bits = 48 bytes of space
  * available at the location pointed to by `digest`.
  *
- * @param message The input message.
- * @param message_len The input message length in bytes.
+ * @param message The input message buffer.
  * @param[out] digest Output buffer for the result.
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-status_t kmac_sha3_384(const uint8_t *message, size_t message_len,
+status_t kmac_sha3_384(const otcrypto_const_byte_buf_t *message,
                        uint32_t *digest);
 
 /**
@@ -142,13 +139,12 @@ status_t kmac_sha3_384(const uint8_t *message, size_t message_len,
  * The caller must ensure that there is at least 512 bits = 64 bytes of space
  * available at the location pointed to by `digest`.
  *
- * @param message The input message.
- * @param message_len The input message length in bytes.
+ * @param message The input message buffer.
  * @param[out] digest Output buffer for the result.
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-status_t kmac_sha3_512(const uint8_t *message, size_t message_len,
+status_t kmac_sha3_512(const otcrypto_const_byte_buf_t *message,
                        uint32_t *digest);
 
 /**
@@ -157,14 +153,13 @@ status_t kmac_sha3_512(const uint8_t *message, size_t message_len,
  * The caller must ensure that `digest_len` words are allocated at the location
  * pointed to by `digest`.
  *
- * @param message The input message.
- * @param message_len The input message length in bytes.
+ * @param message The input message buffer.
  * @param[out] digest Output buffer for the result.
  * @param digest_len Requested digest length in 32-bit words.
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-status_t kmac_shake_128(const uint8_t *message, size_t message_len,
+status_t kmac_shake_128(const otcrypto_const_byte_buf_t *message,
                         uint32_t *digest, size_t digest_len);
 
 /**
@@ -173,14 +168,13 @@ status_t kmac_shake_128(const uint8_t *message, size_t message_len,
  * The caller must ensure that `digest_len` words are allocated at the location
  * pointed to by `digest`.
  *
- * @param message The input message.
- * @param message_len The input message length in bytes.
+ * @param message The input message buffer.
  * @param[out] digest Output buffer for the result.
  * @param digest_len Requested digest length in 32-bit words.
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-status_t kmac_shake_256(const uint8_t *message, size_t message_len,
+status_t kmac_shake_256(const otcrypto_const_byte_buf_t *message,
                         uint32_t *digest, size_t digest_len);
 
 /**
@@ -189,8 +183,7 @@ status_t kmac_shake_256(const uint8_t *message, size_t message_len,
  * The caller must ensure that `digest_len` words are allocated at the location
  * pointed to by `digest`.
  *
- * @param message The input message.
- * @param message_len The input message length in bytes.
+ * @param message The input message buffer.
  * @param func_name The function name.
  * @param func_name_len The function name length in bytes.
  * @param cust_str The customization string.
@@ -200,7 +193,7 @@ status_t kmac_shake_256(const uint8_t *message, size_t message_len,
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-status_t kmac_cshake_128(const uint8_t *message, size_t message_len,
+status_t kmac_cshake_128(const otcrypto_const_byte_buf_t *message,
                          const unsigned char *func_name, size_t func_name_len,
                          const unsigned char *cust_str, size_t cust_str_len,
                          uint32_t *digest, size_t digest_len);
@@ -211,8 +204,7 @@ status_t kmac_cshake_128(const uint8_t *message, size_t message_len,
  * The caller must ensure that `digest_len` words are allocated at the location
  * pointed to by `digest`.
  *
- * @param message The input message.
- * @param message_len The input message length in bytes.
+ * @param message The input message buffer.
  * @param func_name The function name.
  * @param func_name_len The function name length in bytes.
  * @param cust_str The customization string.
@@ -222,7 +214,7 @@ status_t kmac_cshake_128(const uint8_t *message, size_t message_len,
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-status_t kmac_cshake_256(const uint8_t *message, size_t message_len,
+status_t kmac_cshake_256(const otcrypto_const_byte_buf_t *message,
                          const unsigned char *func_name, size_t func_name_len,
                          const unsigned char *cust_str, size_t cust_str_len,
                          uint32_t *digest, size_t digest_len);
@@ -246,8 +238,7 @@ status_t kmac_cshake_256(const uint8_t *message, size_t message_len,
  *
  * @param key The KMAC key.
  * @param masked_digest Whether to return the digest in concatenated shares.
- * @param message The input message.
- * @param message_len The input message length in bytes.
+ * @param message The input message buffer.
  * @param cust_str The customization string.
  * @param cust_str_len The customization string length in bytes.
  * @param[out] digest Output buffer for the result.
@@ -256,7 +247,7 @@ status_t kmac_cshake_256(const uint8_t *message, size_t message_len,
  */
 OT_WARN_UNUSED_RESULT
 status_t kmac_kmac_128(kmac_blinded_key_t *key, hardened_bool_t masked_digest,
-                       const uint8_t *message, size_t message_len,
+                       const otcrypto_const_byte_buf_t *message,
                        const unsigned char *cust_str, size_t cust_str_len,
                        uint32_t *digest, size_t digest_len);
 
@@ -279,8 +270,7 @@ status_t kmac_kmac_128(kmac_blinded_key_t *key, hardened_bool_t masked_digest,
  *
  * @param key The KMAC key.
  * @param masked_digest Whether to return the digest in concatenated shares.
- * @param message The input message.
- * @param message_len The input message length in bytes.
+ * @param message The input message buffer.
  * @param cust_str The customization string.
  * @param cust_str_len The customization string length in bytes.
  * @param[out] digest Output buffer for the result.
@@ -289,7 +279,7 @@ status_t kmac_kmac_128(kmac_blinded_key_t *key, hardened_bool_t masked_digest,
  */
 OT_WARN_UNUSED_RESULT
 status_t kmac_kmac_256(kmac_blinded_key_t *key, hardened_bool_t masked_digest,
-                       const uint8_t *message, size_t message_len,
+                       const otcrypto_const_byte_buf_t *message,
                        const unsigned char *cust_str, size_t cust_str_len,
                        uint32_t *digest, size_t digest_len);
 
