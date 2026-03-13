@@ -130,6 +130,7 @@ cc_library(
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:macros",
+        "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:status",
     ],
 )

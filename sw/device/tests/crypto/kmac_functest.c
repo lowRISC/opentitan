@@ -103,15 +103,18 @@ status_t get_sha3_mode(size_t security_strength, otcrypto_hash_mode_t *mode) {
  * @return OK or error.
  */
 static status_t run_sha3(otcrypto_hash_digest_t *digest) {
+  otcrypto_const_byte_buf_t input_msg = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, current_test_vector->input_msg.data,
+      current_test_vector->input_msg.len);
   switch (current_test_vector->security_strength) {
     case 224:
-      return otcrypto_sha3_224(current_test_vector->input_msg, digest);
+      return otcrypto_sha3_224(input_msg, digest);
     case 256:
-      return otcrypto_sha3_256(current_test_vector->input_msg, digest);
+      return otcrypto_sha3_256(input_msg, digest);
     case 384:
-      return otcrypto_sha3_384(current_test_vector->input_msg, digest);
+      return otcrypto_sha3_384(input_msg, digest);
     case 512:
-      return otcrypto_sha3_512(current_test_vector->input_msg, digest);
+      return otcrypto_sha3_512(input_msg, digest);
     default:
       break;
   }
@@ -129,11 +132,14 @@ static status_t run_sha3(otcrypto_hash_digest_t *digest) {
  * @return OK or error.
  */
 static status_t run_shake(otcrypto_hash_digest_t *digest) {
+  otcrypto_const_byte_buf_t input_msg = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, current_test_vector->input_msg.data,
+      current_test_vector->input_msg.len);
   switch (current_test_vector->security_strength) {
     case 128:
-      return otcrypto_shake128(current_test_vector->input_msg, digest);
+      return otcrypto_shake128(input_msg, digest);
     case 256:
-      return otcrypto_shake256(current_test_vector->input_msg, digest);
+      return otcrypto_shake256(input_msg, digest);
     default:
       break;
   }
@@ -151,15 +157,20 @@ static status_t run_shake(otcrypto_hash_digest_t *digest) {
  * @return OK or error.
  */
 static status_t run_cshake(otcrypto_hash_digest_t *digest) {
+  otcrypto_const_byte_buf_t input_msg = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, current_test_vector->input_msg.data,
+      current_test_vector->input_msg.len);
+  otcrypto_const_byte_buf_t func_name = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, current_test_vector->func_name.data,
+      current_test_vector->func_name.len);
+  otcrypto_const_byte_buf_t cust_str = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, current_test_vector->cust_str.data,
+      current_test_vector->cust_str.len);
   switch (current_test_vector->security_strength) {
     case 128:
-      return otcrypto_cshake128(current_test_vector->input_msg,
-                                current_test_vector->func_name,
-                                current_test_vector->cust_str, digest);
+      return otcrypto_cshake128(input_msg, func_name, cust_str, digest);
     case 256:
-      return otcrypto_cshake256(current_test_vector->input_msg,
-                                current_test_vector->func_name,
-                                current_test_vector->cust_str, digest);
+      return otcrypto_cshake256(input_msg, func_name, cust_str, digest);
     default:
       break;
   }
@@ -179,9 +190,14 @@ static status_t run_cshake(otcrypto_hash_digest_t *digest) {
 static status_t run_kmac(otcrypto_word32_buf_t tag) {
   current_test_vector->key.checksum =
       integrity_blinded_checksum(&current_test_vector->key);
-  return otcrypto_kmac(
-      &current_test_vector->key, current_test_vector->input_msg,
-      current_test_vector->cust_str, current_test_vector->digest.len, tag);
+  otcrypto_const_byte_buf_t input_msg = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, current_test_vector->input_msg.data,
+      current_test_vector->input_msg.len);
+  otcrypto_const_byte_buf_t cust_str = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, current_test_vector->cust_str.data,
+      current_test_vector->cust_str.len);
+  return otcrypto_kmac(&current_test_vector->key, input_msg, cust_str,
+                       current_test_vector->digest.len, tag);
 }
 
 /**
