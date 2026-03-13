@@ -101,10 +101,8 @@ status_t handle_aes_gcm_op(ujson_t *uj) {
   // Convert the data struct into cryptolib types
   uint32_t iv_buf[iv_num_words];
   memcpy(iv_buf, uj_data.iv, uj_data.iv_length);
-  otcrypto_const_word32_buf_t iv = {
-      .data = iv_buf,
-      .len = iv_num_words,
-  };
+  otcrypto_const_word32_buf_t iv =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, iv_buf, iv_num_words);
 
   otcrypto_const_byte_buf_t input = OTCRYPTO_MAKE_BUF(
       otcrypto_const_byte_buf_t, uj_data.input, (size_t)uj_data.input_length);
@@ -148,15 +146,13 @@ status_t handle_aes_gcm_op(ujson_t *uj) {
   hardened_bool_t tag_valid = kHardenedBoolTrue;
 
   if (op_enc) {
-    otcrypto_word32_buf_t tag = OTCRYPTO_MAKE_BUF(
-        otcrypto_word32_buf_t, tag_data, tag_num_words);
+    otcrypto_word32_buf_t tag =
+        OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_data, tag_num_words);
     TRY(otcrypto_aes_gcm_encrypt(&key, input, iv, aad, tag_len, output, tag));
   } else {
     memcpy(tag_data, uj_data.tag, uj_data.tag_length);
-    otcrypto_const_word32_buf_t tag = {
-        .data = tag_data,
-        .len = tag_num_words,
-    };
+    otcrypto_const_word32_buf_t tag =
+        OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, tag_data, tag_num_words);
     TRY(otcrypto_aes_gcm_decrypt(&key, input, iv, aad, tag_len, tag, output,
                                  &tag_valid));
   }

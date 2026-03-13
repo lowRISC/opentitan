@@ -92,8 +92,8 @@ static status_t run_encrypt(const aes_test_t *test, bool streaming) {
   // Construct a buffer to hold the IV.
   uint32_t iv_data[kAesBlockWords];
   memcpy(iv_data, test->iv, kAesBlockBytes);
-  otcrypto_word32_buf_t iv = OTCRYPTO_MAKE_BUF(
-        otcrypto_word32_buf_t, iv_data, kAesBlockWords);
+  otcrypto_word32_buf_t iv =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, iv_data, kAesBlockWords);
 
   // Calculate the size of the padded plaintext.
   size_t padded_len_bytes;
@@ -127,9 +127,9 @@ static status_t run_encrypt(const aes_test_t *test, bool streaming) {
 
   // Encrypt the remaining input in one shot with the requested padding.
   otcrypto_const_byte_buf_t plaintext_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, plaintext, kAesBlockBytes);
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, plaintext, plaintext_len);
   otcrypto_byte_buf_t ciphertext_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, ciphertext, kAesBlockBytes);
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, ciphertext, ciphertext_len);
   TRY(otcrypto_aes(&key, iv, test->mode, kOtcryptoAesOperationEncrypt,
                    plaintext_buf, test->padding, ciphertext_buf));
 
@@ -163,9 +163,9 @@ static status_t run_decrypt(const aes_test_t *test, bool streaming) {
 
   // Construct a buffer to hold the IV.
   uint32_t iv_data[kAesBlockWords];
-  memcpy(iv_data, test->iv, kAesBlockBytes);
-  otcrypto_word32_buf_t iv = OTCRYPTO_MAKE_BUF(
-        otcrypto_word32_buf_t, iv_data, kAesBlockWords);
+  otcrypto_word32_buf_t iv =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, iv_data, kAesBlockWords);
+  memcpy(iv.data, test->iv, kAesBlockBytes);
 
   // Calculate the size of the padded plaintext.
   size_t padded_len_bytes;

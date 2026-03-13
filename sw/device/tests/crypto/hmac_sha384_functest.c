@@ -79,8 +79,8 @@ static status_t run_test(const uint32_t *key, size_t key_len,
   blinded_key.checksum = integrity_blinded_checksum(&blinded_key);
 
   uint32_t act_tag[kTagLenWords];
-  otcrypto_word32_buf_t tag_buf = OTCRYPTO_MAKE_BUF(
-        otcrypto_word32_buf_t, act_tag, ARRAYSIZE(act_tag));
+  otcrypto_word32_buf_t tag_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, act_tag, ARRAYSIZE(act_tag));
 
   TRY(otcrypto_hmac(&blinded_key, msg, tag_buf));
   TRY_CHECK_ARRAYS_EQ(act_tag, exp_tag, kTagLenWords);

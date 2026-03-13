@@ -282,10 +282,10 @@ static status_t run_test_vector(void) {
   current_test_vector->key.checksum =
       integrity_blinded_checksum(&current_test_vector->key);
 
-  otcrypto_word32_buf_t tag_buf1 = OTCRYPTO_MAKE_BUF(
-        otcrypto_word32_buf_t, digest1, ARRAYSIZE(digest1));
-  otcrypto_word32_buf_t tag_buf2 = OTCRYPTO_MAKE_BUF(
-        otcrypto_word32_buf_t, digest2, ARRAYSIZE(digest2));
+  otcrypto_word32_buf_t tag_buf1 =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, digest1, ARRAYSIZE(digest1));
+  otcrypto_word32_buf_t tag_buf2 =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, digest2, ARRAYSIZE(digest2));
 
   digest_num_words = sha3_test_vector.digest.len / sizeof(uint32_t);
   if (sha3_test_vector.digest.len % sizeof(uint32_t) != 0) {

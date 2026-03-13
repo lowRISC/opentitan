@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
@@ -14,7 +15,6 @@
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_img_types.h"
 #include "sw/device/silicon_creator/manuf/lib/util.h"
-#include "sw/device/lib/crypto/include/integrity.h"
 
 #include "hw/top/flash_ctrl_regs.h"  // Generated.
 #include "hw/top/otp_ctrl_regs.h"    // Generated.
@@ -163,8 +163,8 @@ static status_t lock_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
                                    dif_otp_ctrl_partition_t partition) {
   // Compute SHA256 of the OTP partition.
   uint32_t digest[kSha256DigestWords];
-  otcrypto_word32_buf_t otp_partition_digest = OTCRYPTO_MAKE_BUF(
-        otcrypto_word32_buf_t, digest, ARRAYSIZE(digest));
+  otcrypto_word32_buf_t otp_partition_digest =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, digest, ARRAYSIZE(digest));
   TRY(manuf_util_hash_otp_partition(otp_ctrl, partition, otp_partition_digest));
 
   // Get the least significant 64 bits of the digest. We will use this as the
