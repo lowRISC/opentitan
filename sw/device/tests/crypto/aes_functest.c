@@ -209,8 +209,8 @@ static status_t run_decrypt(const aes_test_t *test, bool streaming) {
   // Decrypt the remaining input in one shot.
   otcrypto_const_byte_buf_t ciphertext_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, ciphertext, len);
-  otcrypto_byte_buf_t recovered_plaintext_buf = {.data = recovered_plaintext,
-                                                 .len = len};
+  otcrypto_byte_buf_t recovered_plaintext_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, recovered_plaintext, len);
   TRY(otcrypto_aes(&key, iv, test->mode, kOtcryptoAesOperationDecrypt,
                    ciphertext_buf, test->padding, recovered_plaintext_buf));
 
@@ -279,7 +279,8 @@ static status_t run_negative_tests(void) {
       otcrypto_const_byte_buf_t, input_data, sizeof(input_data));
 
   uint8_t output_data[32] = {0};
-  otcrypto_byte_buf_t output = {.data = output_data, .len = 16};
+  otcrypto_byte_buf_t output =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, output_data, 16);
 
   // Test NULL pointers
   CHECK(otcrypto_aes(NULL, iv, kOtcryptoAesModeCbc,
@@ -307,7 +308,8 @@ static status_t run_negative_tests(void) {
             .value == OTCRYPTO_BAD_ARGS.value);
 
   // Test output buffer length mismatch
-  otcrypto_byte_buf_t bad_len_output = {.data = output_data, .len = 32};
+  otcrypto_byte_buf_t bad_len_output =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, output_data, 32);
   CHECK(otcrypto_aes(&key, iv, kOtcryptoAesModeCbc,
                      kOtcryptoAesOperationEncrypt, input,
                      kOtcryptoAesPaddingNull, bad_len_output)

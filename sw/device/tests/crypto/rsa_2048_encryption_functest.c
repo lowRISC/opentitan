@@ -276,7 +276,8 @@ static status_t run_encrypt_negative_tests(void) {
   otcrypto_word32_buf_t bad_ct_null = {.data = NULL, .len = kRsa2048NumWords};
 
   uint8_t pt_data[256] = {0};
-  otcrypto_byte_buf_t valid_pt = {.data = pt_data, .len = sizeof(pt_data)};
+  otcrypto_byte_buf_t valid_pt =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, pt_data, sizeof(pt_data));
   size_t pt_len = 0;
 
   // Encrypt negative tests
@@ -324,7 +325,8 @@ static status_t run_encrypt_negative_tests(void) {
                              valid_msg, valid_pt, &pt_len)
             .value == OTCRYPTO_BAD_ARGS.value);
 
-  otcrypto_byte_buf_t bad_pt_null = {.data = NULL, .len = 256};
+  otcrypto_byte_buf_t bad_pt_null =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, NULL, 256);
   CHECK(otcrypto_rsa_decrypt(&valid_priv, kTestHashMode, valid_const_ct,
                              valid_msg, bad_pt_null, &pt_len)
             .value == OTCRYPTO_BAD_ARGS.value);
