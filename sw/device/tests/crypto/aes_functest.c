@@ -92,10 +92,8 @@ static status_t run_encrypt(const aes_test_t *test, bool streaming) {
   // Construct a buffer to hold the IV.
   uint32_t iv_data[kAesBlockWords];
   memcpy(iv_data, test->iv, kAesBlockBytes);
-  otcrypto_word32_buf_t iv = {
-      .data = iv_data,
-      .len = kAesBlockWords,
-  };
+  otcrypto_word32_buf_t iv =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, iv_data, kAesBlockWords);
 
   // Calculate the size of the padded plaintext.
   size_t padded_len_bytes;
@@ -166,10 +164,8 @@ static status_t run_decrypt(const aes_test_t *test, bool streaming) {
   // Construct a buffer to hold the IV.
   uint32_t iv_data[kAesBlockWords];
   memcpy(iv_data, test->iv, kAesBlockBytes);
-  otcrypto_word32_buf_t iv = {
-      .data = iv_data,
-      .len = kAesBlockWords,
-  };
+  otcrypto_word32_buf_t iv =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, iv_data, kAesBlockWords);
 
   // Calculate the size of the padded plaintext.
   size_t padded_len_bytes;
@@ -272,7 +268,8 @@ static status_t run_negative_tests(void) {
   key.checksum = integrity_blinded_checksum(&key);
 
   uint32_t iv_data[kAesBlockWords] = {0};
-  otcrypto_word32_buf_t iv = {.data = iv_data, .len = kAesBlockWords};
+  otcrypto_word32_buf_t iv =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, iv_data, kAesBlockWords);
 
   uint8_t input_data[16] = {0};
   otcrypto_const_byte_buf_t input = OTCRYPTO_MAKE_BUF(
@@ -287,7 +284,8 @@ static status_t run_negative_tests(void) {
                      kOtcryptoAesOperationEncrypt, input,
                      kOtcryptoAesPaddingNull, output)
             .value == OTCRYPTO_BAD_ARGS.value);
-  otcrypto_word32_buf_t bad_iv = {.data = NULL, .len = kAesBlockWords};
+  otcrypto_word32_buf_t bad_iv =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, NULL, kAesBlockWords);
   CHECK(otcrypto_aes(&key, bad_iv, kOtcryptoAesModeCbc,
                      kOtcryptoAesOperationEncrypt, input,
                      kOtcryptoAesPaddingNull, output)
@@ -316,7 +314,8 @@ static status_t run_negative_tests(void) {
             .value == OTCRYPTO_BAD_ARGS.value);
 
   // Test invalid IV length
-  otcrypto_word32_buf_t bad_len_iv = {.data = iv_data, .len = 3};
+  otcrypto_word32_buf_t bad_len_iv =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, iv_data, 3);
   CHECK(otcrypto_aes(&key, bad_len_iv, kOtcryptoAesModeCbc,
                      kOtcryptoAesOperationEncrypt, input,
                      kOtcryptoAesPaddingNull, output)

@@ -40,10 +40,9 @@ static status_t kat_test(void) {
   TRY(otcrypto_drbg_manual_instantiate(entropy, /*perso_string=*/kEmptyBuffer));
 
   uint32_t actual_output_words[ARRAYSIZE(kExpOutput)];
-  otcrypto_word32_buf_t actual_output = {
-      .data = actual_output_words,
-      .len = ARRAYSIZE(actual_output_words),
-  };
+  otcrypto_word32_buf_t actual_output =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, actual_output_words,
+                        ARRAYSIZE(actual_output_words));
 
   // Generate output twice.
   LOG_INFO("Generating...");
@@ -71,10 +70,8 @@ static status_t random_test(void) {
 
   // Generate a relatively large amount of output data.
   uint32_t output_data[1024];
-  otcrypto_word32_buf_t output = {
-      .data = output_data,
-      .len = ARRAYSIZE(output_data),
-  };
+  otcrypto_word32_buf_t output = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, output_data, ARRAYSIZE(output_data));
   TRY(otcrypto_drbg_generate(/*additional_input=*/kEmptyBuffer, output));
 
   // Run a basic randomness-quality check on the output.
@@ -133,9 +130,12 @@ static status_t run_negative_tests(void) {
       otcrypto_const_byte_buf_t, dummy_data, 16);  // != kEntropySeedBytes
 
   uint32_t out_data[4] = {0};
-  otcrypto_word32_buf_t valid_out = {.data = out_data, .len = 4};
-  otcrypto_word32_buf_t zero_out = {.data = out_data, .len = 0};
-  otcrypto_word32_buf_t null_out = {.data = NULL, .len = 4};
+  otcrypto_word32_buf_t valid_out =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, out_data, 4);
+  otcrypto_word32_buf_t zero_out =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, out_data, 0);
+  otcrypto_word32_buf_t null_out =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, NULL, 4);
 
   CHECK(otcrypto_drbg_instantiate(null_data_buf).value ==
         OTCRYPTO_BAD_ARGS.value);

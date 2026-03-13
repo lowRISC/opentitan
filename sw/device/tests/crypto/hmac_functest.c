@@ -37,10 +37,8 @@ static status_t run_test_vector(void) {
   size_t digest_len = current_test_vector->digest.len;
   // Allocate the buffer for the maximum digest size (which comes from SHA-512).
   uint32_t act_tag[512 / 32];
-  otcrypto_word32_buf_t tag_buf = {
-      .data = act_tag,
-      .len = digest_len,
-  };
+  otcrypto_word32_buf_t tag_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, act_tag, digest_len);
   otcrypto_hash_digest_t hash_digest = {
       .data = act_tag,
       .len = digest_len,
@@ -105,8 +103,10 @@ static status_t run_negative_tests(void) {
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 4);
 
   uint32_t tag_data[8] = {0};
-  otcrypto_word32_buf_t tag = {.data = tag_data, .len = 8};
-  otcrypto_word32_buf_t bad_tag = {.data = NULL, .len = 8};
+  otcrypto_word32_buf_t tag =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_data, 8);
+  otcrypto_word32_buf_t bad_tag =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, NULL, 8);
 
   // otcrypto_hmac
   CHECK(otcrypto_hmac(&valid_key, msg, bad_tag).value ==
@@ -164,7 +164,8 @@ static status_t run_negative_tests(void) {
   CHECK(otcrypto_hmac_final(NULL, tag).value == OTCRYPTO_BAD_ARGS.value);
   CHECK(otcrypto_hmac_final(&ctx, bad_tag).value == OTCRYPTO_BAD_ARGS.value);
 
-  otcrypto_word32_buf_t bad_tag_len = {.data = tag_data, .len = 7};
+  otcrypto_word32_buf_t bad_tag_len =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_data, 7);
   CHECK(otcrypto_hmac_final(&ctx, bad_tag_len).value ==
         OTCRYPTO_BAD_ARGS.value);
 
