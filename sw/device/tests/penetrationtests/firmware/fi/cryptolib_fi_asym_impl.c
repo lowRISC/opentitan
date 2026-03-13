@@ -107,8 +107,8 @@ status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
   };
 
   // Create label.
-  otcrypto_const_byte_buf_t label_buf = {.data = kTestLabel,
-                                         .len = kTestLabelLen};
+  otcrypto_const_byte_buf_t label_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, kTestLabel, kTestLabelLen);
 
   if (uj_input.op_enc) {
     // Encryption.
@@ -125,10 +125,8 @@ status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
     // Create input message.
     uint8_t msg_buf[num_words];
     memcpy(msg_buf, uj_input.data, uj_input.data_len);
-    otcrypto_const_byte_buf_t input_message = {
-        .len = uj_input.data_len,
-        .data = msg_buf,
-    };
+    otcrypto_const_byte_buf_t input_message = OTCRYPTO_MAKE_BUF(
+        otcrypto_const_byte_buf_t, msg_buf, uj_input.data_len);
 
     // Output buffer.
     uint32_t ciphertext_buf[kPentestRsaMaxMsgWords];
@@ -367,10 +365,8 @@ status_t cryptolib_fi_rsa_sign_impl(
   // Copy the message into the buffer.
   uint8_t msg[uj_input.data_len];
   memcpy(msg, uj_input.data, uj_input.data_len);
-  otcrypto_const_byte_buf_t msg_buf = {
-      .len = uj_input.data_len,
-      .data = msg,
-  };
+  otcrypto_const_byte_buf_t msg_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg, uj_input.data_len);
 
   // Buffer to store the digest.
   uint32_t msg_digest_data[hash_digest_words];
@@ -529,10 +525,8 @@ status_t cryptolib_fi_rsa_verify_impl(
   // Copy the message into the buffer.
   uint8_t msg[uj_input.data_len];
   memcpy(msg, uj_input.data, uj_input.data_len);
-  otcrypto_const_byte_buf_t msg_buf = {
-      .len = uj_input.data_len,
-      .data = msg,
-  };
+  otcrypto_const_byte_buf_t msg_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg, uj_input.data_len);
 
   // Buffer to store the digest.
   uint32_t msg_digest_data[hash_digest_words];

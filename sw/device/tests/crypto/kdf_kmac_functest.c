@@ -113,8 +113,10 @@ static status_t run_kmac_kdf_negative_tests(void) {
   valid_km.checksum = integrity_blinded_checksum(&valid_km);
 
   uint8_t dummy_data[] = "test";
-  otcrypto_const_byte_buf_t valid_buf = {.data = dummy_data, .len = 4};
-  otcrypto_const_byte_buf_t bad_buf_null = {.data = NULL, .len = 4};
+  otcrypto_const_byte_buf_t valid_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, dummy_data, 4);
+  otcrypto_const_byte_buf_t bad_buf_null =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 4);
 
   // Null pointer and length tests
   CHECK(otcrypto_kmac_kdf(&valid_kdk, valid_buf, valid_buf, NULL).value ==

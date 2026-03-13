@@ -156,8 +156,10 @@ static status_t run_rsa_4096_encrypt(const uint8_t *msg, size_t msg_len,
   TRY(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize4096, modulus,
                                         &public_key));
 
-  otcrypto_const_byte_buf_t msg_buf = {.data = msg, .len = msg_len};
-  otcrypto_const_byte_buf_t label_buf = {.data = label, .len = label_len};
+  otcrypto_const_byte_buf_t msg_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg, msg_len);
+  otcrypto_const_byte_buf_t label_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, label, label_len);
   otcrypto_word32_buf_t ciphertext_buf = {
       .data = ciphertext,
       .len = kRsa4096NumWords,
@@ -225,7 +227,8 @@ static status_t run_rsa_4096_decrypt(const uint8_t *label, size_t label_len,
       kOtcryptoRsaSize4096, modulus, d_share0, d_share1, &private_key));
 
   otcrypto_byte_buf_t plaintext_buf = {.data = msg, .len = kMaxPlaintextBytes};
-  otcrypto_const_byte_buf_t label_buf = {.data = label, .len = label_len};
+  otcrypto_const_byte_buf_t label_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, label, label_len);
   otcrypto_const_word32_buf_t ciphertext_buf = {
       .data = ciphertext,
       .len = kRsa4096NumWords,

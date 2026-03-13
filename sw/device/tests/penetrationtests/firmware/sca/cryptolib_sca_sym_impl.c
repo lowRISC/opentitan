@@ -92,10 +92,8 @@ status_t cryptolib_sca_aes_impl(uint8_t data_in[AES_CMD_MAX_MSG_BYTES],
       .len = kPentestAesBlockWords,
   };
 
-  otcrypto_const_byte_buf_t input = {
-      .data = data_in,
-      .len = data_in_len,
-  };
+  otcrypto_const_byte_buf_t input =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, data_in, data_in_len);
 
   // Build the key configuration.
   otcrypto_key_config_t config = {
@@ -161,10 +159,8 @@ status_t cryptolib_sca_drbg_generate_impl(
   uint8_t nonce_buf[nonce_len];
   memcpy(nonce_buf, nonce, nonce_len);
 
-  otcrypto_const_byte_buf_t nonce_in = {
-      .len = nonce_len,
-      .data = nonce_buf,
-  };
+  otcrypto_const_byte_buf_t nonce_in =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, nonce_buf, nonce_len);
 
   // Buffer for the output entropy data.
   uint32_t output_data[data_out_len];
@@ -199,10 +195,8 @@ status_t cryptolib_sca_drbg_reseed_impl(
   uint8_t entropy_buf[entropy_len];
   memcpy(entropy_buf, entropy, entropy_len);
 
-  otcrypto_const_byte_buf_t entropy_in = {
-      .len = entropy_len,
-      .data = entropy_buf,
-  };
+  otcrypto_const_byte_buf_t entropy_in =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, entropy_buf, entropy_len);
 
   // Trigger window 0.
   if (trigger & kPentestTrigger1) {
@@ -270,14 +264,10 @@ status_t cryptolib_sca_gcm_impl(
       .data = iv_data,
       .len = iv_num_words,
   };
-  otcrypto_const_byte_buf_t plaintext = {
-      .data = data_in,
-      .len = data_in_len,
-  };
-  otcrypto_const_byte_buf_t gcm_aad = {
-      .data = aad,
-      .len = aad_len,
-  };
+  otcrypto_const_byte_buf_t plaintext =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, data_in, data_in_len);
+  otcrypto_const_byte_buf_t gcm_aad =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, aad, aad_len);
 
   size_t tag_num_words = (*tag_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
   uint32_t actual_tag_data[tag_num_words];
@@ -390,10 +380,8 @@ status_t cryptolib_sca_hmac_impl(uint8_t data_in[HMAC_CMD_MAX_MSG_BYTES],
   // Create input message.
   uint8_t msg_buf[data_in_len];
   memcpy(msg_buf, data_in, data_in_len);
-  otcrypto_const_byte_buf_t input_message = {
-      .len = data_in_len,
-      .data = msg_buf,
-  };
+  otcrypto_const_byte_buf_t input_message =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg_buf, data_in_len);
 
   // Create tag.
   uint32_t tag_buf[kPentestHmacMaxTagWords];

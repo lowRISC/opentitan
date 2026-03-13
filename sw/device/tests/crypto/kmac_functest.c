@@ -259,10 +259,14 @@ static status_t run_negative_tests(void) {
 
   // Base valid buffers
   uint8_t dummy_data[] = "test";
-  otcrypto_const_byte_buf_t valid_msg = {.data = dummy_data, .len = 4};
-  otcrypto_const_byte_buf_t bad_msg_null = {.data = NULL, .len = 4};
-  otcrypto_const_byte_buf_t valid_cust = {.data = dummy_data, .len = 4};
-  otcrypto_const_byte_buf_t bad_cust_null = {.data = NULL, .len = 4};
+  otcrypto_const_byte_buf_t valid_msg =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, dummy_data, 4);
+  otcrypto_const_byte_buf_t bad_msg_null =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 4);
+  otcrypto_const_byte_buf_t valid_cust =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, dummy_data, 4);
+  otcrypto_const_byte_buf_t bad_cust_null =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 4);
 
   uint32_t tag_data[8] = {0};
   otcrypto_word32_buf_t valid_tag = {.data = tag_data, .len = 8};

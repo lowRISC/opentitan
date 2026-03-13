@@ -6,10 +6,10 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/aes_gcm.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/dif/dif_keymgr.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/runtime/log.h"
@@ -84,13 +84,15 @@ static status_t run_bad_args_test(void) {
   otcrypto_const_word32_buf_t iv = {.data = iv_data, .len = 3};
 
   uint8_t data[16] = {0};
-  otcrypto_const_byte_buf_t pt = {.data = data, .len = 16};
+  otcrypto_const_byte_buf_t pt =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, data, 16);
   otcrypto_byte_buf_t ct = {.data = data, .len = 16};
 
   uint32_t tag_data[4] = {0};
   otcrypto_word32_buf_t tag = {.data = tag_data, .len = 4};
 
-  otcrypto_const_byte_buf_t aad = {.data = NULL, .len = 0};
+  otcrypto_const_byte_buf_t aad =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
 
   // NULL pointer checks
   CHECK(otcrypto_aes_gcm_encrypt(NULL, pt, iv, aad, kOtcryptoAesGcmTagLen128,
@@ -178,7 +180,8 @@ static status_t run_sideload_test(void) {
   otcrypto_const_word32_buf_t iv = {.data = iv_data, .len = 3};
 
   uint8_t pt_data[16] = "Sideload test";
-  otcrypto_const_byte_buf_t pt = {.data = pt_data, .len = 16};
+  otcrypto_const_byte_buf_t pt =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, pt_data, 16);
 
   uint8_t ct_data[16] = {0};
   otcrypto_byte_buf_t ct = {.data = ct_data, .len = 16};
@@ -186,7 +189,8 @@ static status_t run_sideload_test(void) {
   uint32_t tag_data[4] = {0};
   otcrypto_word32_buf_t tag = {.data = tag_data, .len = 4};
 
-  otcrypto_const_byte_buf_t aad = {.data = NULL, .len = 0};
+  otcrypto_const_byte_buf_t aad =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
 
   // Encrypt
   TRY(otcrypto_aes_gcm_encrypt(&sideload_key, pt, iv, aad,
@@ -196,7 +200,8 @@ static status_t run_sideload_test(void) {
   // Decrypt
   uint8_t recovered_pt_data[16] = {0};
   otcrypto_byte_buf_t recovered_pt = {.data = recovered_pt_data, .len = 16};
-  otcrypto_const_byte_buf_t ct_const = {.data = ct.data, .len = ct.len};
+  otcrypto_const_byte_buf_t ct_const =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, ct.data, ct.len);
   otcrypto_const_word32_buf_t tag_const = {.data = tag.data, .len = tag.len};
   hardened_bool_t success;
   TRY(otcrypto_aes_gcm_decrypt(&sideload_key, ct_const, iv, aad,

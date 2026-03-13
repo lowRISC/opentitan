@@ -104,10 +104,8 @@ status_t handle_aes_block(ujson_t *uj) {
       .len = kAesBlockWords,
   };
 
-  otcrypto_const_byte_buf_t input = {
-      .data = uj_data.input,
-      .len = (size_t)uj_data.input_len,
-  };
+  otcrypto_const_byte_buf_t input = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, uj_data.input, (size_t)uj_data.input_len);
 
   // Select a random security level.
   otcrypto_key_security_level_t sec_level;

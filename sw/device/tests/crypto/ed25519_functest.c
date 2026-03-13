@@ -114,10 +114,9 @@ status_t ed25519_kat_test(void) {
   TRY_CHECK_ARRAYS_EQ(kPublicKey, public_key.key, kEd25519PublicKeyWords);
 
   // Set up input_message struct.
-  const otcrypto_const_byte_buf_t input_message = {
-      .data = (const uint8_t *)kMessage,
-      .len = ARRAYSIZE(kMessage),
-  };
+  otcrypto_const_byte_buf_t input_message =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (const uint8_t *)kMessage,
+                        ARRAYSIZE(kMessage));
   // Set up signature struct.
   uint32_t signature_data[kEd25519SignatureWords];
   otcrypto_word32_buf_t signature = {.data = signature_data,
@@ -218,15 +217,12 @@ static status_t run_negative_tests(void) {
   };
   valid_pub.checksum = integrity_unblinded_checksum(&valid_pub);
 
-  otcrypto_const_byte_buf_t msg = {
-      .data = (const uint8_t *)kMessage,
-      .len = ARRAYSIZE(kMessage),
-  };
+  otcrypto_const_byte_buf_t msg =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (const uint8_t *)kMessage,
+                        ARRAYSIZE(kMessage));
 
-  otcrypto_const_byte_buf_t bad_msg = {
-      .data = NULL,
-      .len = 5,
-  };
+  otcrypto_const_byte_buf_t bad_msg =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 5);
 
   uint32_t sig_buf[kEd25519SignatureWords];
   otcrypto_word32_buf_t sig = {.data = sig_buf, .len = kEd25519SignatureWords};

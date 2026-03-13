@@ -117,16 +117,12 @@ static status_t run_test(kdf_test_vector_t *test) {
   };
 
   // Construct a buffer for the context.
-  otcrypto_const_byte_buf_t context = {
-      .data = test->kdf_context,
-      .len = test->kdf_context_bytelen,
-  };
+  otcrypto_const_byte_buf_t context = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, test->kdf_context, test->kdf_context_bytelen);
 
   // Construct a buffer for the label.
-  otcrypto_const_byte_buf_t label = {
-      .data = test->kdf_label,
-      .len = test->kdf_label_bytelen,
-  };
+  otcrypto_const_byte_buf_t label = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, test->kdf_label, test->kdf_label_bytelen);
 
   // Run the KDF specified by the key mode.
   switch (test->key_mode) {
@@ -1120,8 +1116,10 @@ static status_t run_hmac_kdf_negative_tests(void) {
   valid_km.checksum = integrity_blinded_checksum(&valid_km);
 
   uint8_t dummy_data[] = "test";
-  otcrypto_const_byte_buf_t valid_buf = {.data = dummy_data, .len = 4};
-  otcrypto_const_byte_buf_t bad_buf_null = {.data = NULL, .len = 4};
+  otcrypto_const_byte_buf_t valid_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, dummy_data, 4);
+  otcrypto_const_byte_buf_t bad_buf_null =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 4);
 
   // Null pointer and length tests
   CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, valid_buf, valid_buf, NULL).value ==
@@ -1205,7 +1203,8 @@ static status_t run_hmac_kdf_negative_tests(void) {
 
   // Zero byte delimiter tests
   uint8_t zero_data[] = {0x01, 0x00, 0x02};
-  otcrypto_const_byte_buf_t buf_with_zero = {.data = zero_data, .len = 3};
+  otcrypto_const_byte_buf_t buf_with_zero =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, zero_data, 3);
   CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, buf_with_zero, valid_buf, &valid_km)
             .value == OTCRYPTO_BAD_ARGS.value);
   CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, valid_buf, buf_with_zero, &valid_km)

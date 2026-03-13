@@ -189,10 +189,9 @@ otcrypto_status_t otcrypto_ed25519_sign(
                                        prehash_buffer));
 
   // From this point on we are using input_message_ph as the message.
-  otcrypto_const_byte_buf_t input_message_ph = {
-      .data = (const uint8_t *const)message_ph.data,
-      .len = message_ph.len,
-  };
+  otcrypto_const_byte_buf_t input_message_ph =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t,
+                        (const uint8_t *const)message_ph.data, message_ph.len);
 
   // Start sign part 1 to calculate the public key and the signature commitment
   // R.
@@ -220,10 +219,9 @@ otcrypto_status_t otcrypto_ed25519_verify(
   HARDENED_TRY(ed25519_message_prehash(sign_mode, input_message, &message_ph,
                                        prehash_buffer));
 
-  otcrypto_const_byte_buf_t input_message_ph = {
-      .data = (const uint8_t *const)message_ph.data,
-      .len = message_ph.len,
-  };
+  otcrypto_const_byte_buf_t input_message_ph =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t,
+                        (const uint8_t *const)message_ph.data, message_ph.len);
   // Start the execution of the verification.
   HARDENED_TRY(otcrypto_ed25519_verify_async_start(public_key, input_message_ph,
                                                    sign_mode, signature));
@@ -247,9 +245,9 @@ otcrypto_status_t otcrypto_ed25519_keygen_async_start(
   };
 
   // Compute hash_h_low.
-  otcrypto_const_byte_buf_t key_buf = {
-      .data = (const uint8_t *const)private_key->key,
-      .len = private_key->key_length};
+  otcrypto_const_byte_buf_t key_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, (const uint8_t *const)private_key->key,
+      private_key->key_length);
   HARDENED_TRY(otcrypto_sha2_512(key_buf, &key_digest));
 
   // Start the OTBN keygen app.
@@ -280,9 +278,9 @@ otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
 
   // Compute hash_h_low.
   // TODO(#28964) Check SCA hardening of the key digest.
-  otcrypto_const_byte_buf_t key_buf = {
-      .data = (const uint8_t *const)private_key->key,
-      .len = private_key->key_length};
+  otcrypto_const_byte_buf_t key_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, (const uint8_t *const)private_key->key,
+      private_key->key_length);
   HARDENED_TRY(otcrypto_sha2_512(key_buf, key_digest));
 
   // Prepend the dom2 prefix
@@ -305,7 +303,8 @@ otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
   offset += kCurve25519ScalarBytes;
   memcpy(&msg_bytes[offset], input_message_ph.data, input_message_ph.len);
 
-  otcrypto_const_byte_buf_t msg_buf = {.data = msg_bytes, .len = msg_byte_len};
+  otcrypto_const_byte_buf_t msg_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg_bytes, msg_byte_len);
   HARDENED_TRY(otcrypto_sha2_512(msg_buf, msg_digest));
 
   // Start the OTBN sign stage 1 app.
@@ -356,8 +355,8 @@ otcrypto_status_t otcrypto_ed25519_sign_part2_async_start(
   offset += kCurve25519PointBytes;
   memcpy(&challenge_bytes[offset], input_message_ph.data, input_message_ph.len);
 
-  otcrypto_const_byte_buf_t challenge_buf = {.data = challenge_bytes,
-                                             .len = challenge_byte_len};
+  otcrypto_const_byte_buf_t challenge_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, challenge_bytes, challenge_byte_len);
   uint32_t challenge_digest_data[kCurve25519HashWords];
   otcrypto_hash_digest_t challenge_digest = {
       .data = challenge_digest_data,
@@ -431,8 +430,8 @@ otcrypto_status_t otcrypto_ed25519_verify_async_start(
   offset += kCurve25519PointBytes;
   memcpy(&challenge_bytes[offset], input_message_ph.data, input_message_ph.len);
 
-  otcrypto_const_byte_buf_t challenge_buf = {.data = challenge_bytes,
-                                             .len = challenge_byte_len};
+  otcrypto_const_byte_buf_t challenge_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, challenge_bytes, challenge_byte_len);
   uint32_t challenge_digest_data[kCurve25519HashWords];
   otcrypto_hash_digest_t challenge_digest = {
       .data = challenge_digest_data,

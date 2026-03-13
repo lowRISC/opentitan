@@ -91,10 +91,8 @@ status_t cryptolib_fi_aes_impl(cryptolib_fi_sym_aes_in_t uj_input,
       .len = kPentestAesBlockWords,
   };
 
-  otcrypto_const_byte_buf_t input = {
-      .data = uj_input.data,
-      .len = uj_input.data_len,
-  };
+  otcrypto_const_byte_buf_t input = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, uj_input.data, uj_input.data_len);
 
   // Build the key configuration.
   otcrypto_key_config_t config = {
@@ -159,10 +157,8 @@ status_t cryptolib_fi_drbg_generate_impl(
   uint8_t nonce_buf[uj_input.nonce_len];
   memcpy(nonce_buf, uj_input.nonce, uj_input.nonce_len);
 
-  otcrypto_const_byte_buf_t nonce = {
-      .len = uj_input.nonce_len,
-      .data = nonce_buf,
-  };
+  otcrypto_const_byte_buf_t nonce = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, nonce_buf, uj_input.nonce_len);
 
   // Buffer for the output entropy data.
   uint32_t output_data[uj_input.data_len];
@@ -195,10 +191,8 @@ status_t cryptolib_fi_drbg_reseed_impl(
   uint8_t entropy_buf[uj_input.entropy_len];
   memcpy(entropy_buf, uj_input.entropy, uj_input.entropy_len);
 
-  otcrypto_const_byte_buf_t entropy = {
-      .len = uj_input.entropy_len,
-      .data = entropy_buf,
-  };
+  otcrypto_const_byte_buf_t entropy = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, entropy_buf, uj_input.entropy_len);
 
   // Trigger window 0.
   if (uj_input.trigger & kPentestTrigger1) {
@@ -260,14 +254,10 @@ status_t cryptolib_fi_gcm_impl(cryptolib_fi_sym_gcm_in_t uj_input,
       .data = iv_data,
       .len = iv_num_words,
   };
-  otcrypto_const_byte_buf_t plaintext = {
-      .data = uj_input.data,
-      .len = uj_input.data_len,
-  };
-  otcrypto_const_byte_buf_t aad = {
-      .data = uj_input.aad,
-      .len = uj_input.aad_len,
-  };
+  otcrypto_const_byte_buf_t plaintext = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, uj_input.data, uj_input.data_len);
+  otcrypto_const_byte_buf_t aad = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, uj_input.aad, uj_input.aad_len);
 
   size_t tag_num_words =
       (uj_input.tag_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
@@ -379,10 +369,8 @@ status_t cryptolib_fi_hmac_impl(cryptolib_fi_sym_hmac_in_t uj_input,
   // Create input message.
   uint8_t msg_buf[uj_input.data_len];
   memcpy(msg_buf, uj_input.data, uj_input.data_len);
-  otcrypto_const_byte_buf_t input_message = {
-      .len = uj_input.data_len,
-      .data = msg_buf,
-  };
+  otcrypto_const_byte_buf_t input_message =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg_buf, uj_input.data_len);
 
   // Create tag.
   uint32_t tag_buf[kPentestHmacMaxTagWords];

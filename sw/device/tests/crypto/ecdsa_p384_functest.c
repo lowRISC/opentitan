@@ -94,10 +94,9 @@ static status_t sign_then_verify_test(void) {
   CHECK_STATUS_OK(otcrypto_ecdsa_p384_keygen(&private_key, &public_key));
 
   // Hash the message.
-  otcrypto_const_byte_buf_t msg = {
-      .len = sizeof(kMessage) - 1,
-      .data = (unsigned char *)&kMessage,
-  };
+  otcrypto_const_byte_buf_t msg =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (unsigned char *)&kMessage,
+                        sizeof(kMessage) - 1);
   uint32_t msg_digest_data[kP384DigestWords];
   otcrypto_hash_digest_t msg_digest = {
       .data = msg_digest_data,
@@ -153,10 +152,9 @@ static status_t sign_kat(void) {
   private_key.checksum = integrity_blinded_checksum(&private_key);
 
   // Hash the message.
-  otcrypto_const_byte_buf_t msg = {
-      .len = sizeof(kKATMessage) - 1,
-      .data = (unsigned char *)&kKATMessage,
-  };
+  otcrypto_const_byte_buf_t msg =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t,
+                        (unsigned char *)&kKATMessage, sizeof(kKATMessage) - 1);
   uint32_t msg_digest_data[kP384DigestWords];
   otcrypto_hash_digest_t msg_digest = {
       .data = msg_digest_data,

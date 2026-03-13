@@ -206,7 +206,8 @@ static status_t run_rsa_4096_sign(const uint8_t *msg, size_t msg_len,
       kOtcryptoRsaSize4096, modulus, d_share0, d_share1, &private_key));
 
   // Hash the message.
-  otcrypto_const_byte_buf_t msg_buf = {.data = msg, .len = msg_len};
+  otcrypto_const_byte_buf_t msg_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg, msg_len);
   uint32_t msg_digest_data[kSha512DigestWords];
   otcrypto_hash_digest_t msg_digest = {
       .data = msg_digest_data,
@@ -272,7 +273,8 @@ static status_t run_rsa_4096_verify(const uint8_t *msg, size_t msg_len,
                                         &public_key));
 
   // Hash the message.
-  otcrypto_const_byte_buf_t msg_buf = {.data = msg, .len = msg_len};
+  otcrypto_const_byte_buf_t msg_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg, msg_len);
   uint32_t msg_digest_data[kSha512DigestWords];
   otcrypto_hash_digest_t msg_digest = {
       .data = msg_digest_data,

@@ -84,16 +84,13 @@ static status_t run_aes(otcrypto_aes_operation_t operation,
   };
 
   // Construct the input buffer.
-  otcrypto_const_byte_buf_t input_buf = {
-      .data = (const unsigned char *)input,
-      .len = sizeof(kAesPlaintextBlock),
-  };
+  otcrypto_const_byte_buf_t input_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (const unsigned char *)input,
+                        sizeof(kAesPlaintextBlock));
 
   // Construct the output buffer.
-  otcrypto_byte_buf_t output_buf = {
-      .data = (unsigned char *)output,
-      .len = sizeof(kAesPlaintextBlock),
-  };
+  otcrypto_byte_buf_t output_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_byte_buf_t, (unsigned char *)output, sizeof(kAesPlaintextBlock));
 
   return otcrypto_aes(&key, iv, kOtcryptoAesModeCtr, operation, input_buf,
                       kOtcryptoAesPaddingNull, output_buf);

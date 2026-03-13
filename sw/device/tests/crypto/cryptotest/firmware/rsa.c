@@ -163,19 +163,15 @@ status_t handle_rsa_encrypt(ujson_t *uj) {
   uint8_t msg_buf[uj_input.plaintext_len];
   memset(msg_buf, 0, sizeof(msg_buf));
   memcpy(msg_buf, uj_input.plaintext, uj_input.plaintext_len);
-  otcrypto_const_byte_buf_t input_message = {
-      .len = uj_input.plaintext_len,
-      .data = msg_buf,
-  };
+  otcrypto_const_byte_buf_t input_message = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, msg_buf, uj_input.plaintext_len);
 
   // Create label.
   uint8_t label_buf[uj_input.label_len];
   memset(label_buf, 0, sizeof(label_buf));
   memcpy(label_buf, uj_input.label, uj_input.label_len);
-  otcrypto_const_byte_buf_t label = {
-      .data = label_buf,
-      .len = uj_input.label_len,
-  };
+  otcrypto_const_byte_buf_t label = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, label_buf, uj_input.label_len);
 
   // Output buffer.
   uint32_t ciphertext_buf[rsa_num_words];
@@ -343,10 +339,8 @@ status_t handle_rsa_decrypt(ujson_t *uj) {
   uint8_t label_buf[uj_input.label_len];
   memset(label_buf, 0, sizeof(label_buf));
   memcpy(label_buf, uj_input.label, uj_input.label_len);
-  otcrypto_const_byte_buf_t label = {
-      .data = label_buf,
-      .len = uj_input.label_len,
-  };
+  otcrypto_const_byte_buf_t label = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, label_buf, uj_input.label_len);
 
   // Create output buffer for the plaintext.
   // Maximum plaintext length for OAEP (see IETF RFC 8017).
@@ -487,10 +481,8 @@ status_t handle_rsa_verify(ujson_t *uj) {
   // Copy the message into the buffer.
   uint8_t msg[uj_input.msg_len];
   memcpy(msg, uj_input.msg, uj_input.msg_len);
-  otcrypto_const_byte_buf_t msg_buf = {
-      .len = uj_input.msg_len,
-      .data = msg,
-  };
+  otcrypto_const_byte_buf_t msg_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg, uj_input.msg_len);
 
   // Buffer to store the digest.
   uint32_t msg_digest_data[hash_digest_words];

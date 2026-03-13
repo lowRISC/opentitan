@@ -144,16 +144,12 @@ static status_t run_test(hkdf_test_vector_t *test) {
   };
 
   // Construct a buffer for the salt.
-  otcrypto_const_byte_buf_t salt = {
-      .data = test->salt,
-      .len = test->salt_bytelen,
-  };
+  otcrypto_const_byte_buf_t salt = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, test->salt, test->salt_bytelen);
 
   // Construct a buffer for the context info.
-  otcrypto_const_byte_buf_t info = {
-      .data = test->info,
-      .len = test->info_bytelen,
-  };
+  otcrypto_const_byte_buf_t info = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, test->info, test->info_bytelen);
 
   // Run the "extract" stage of HKDF.
   TRY(otcrypto_hkdf_extract(&ikm, salt, &prk));
@@ -389,10 +385,10 @@ static status_t test_otcrypto_hkdf(void) {
       0x562db05d, 0xbfc5c4ec, 0x08720034, 0x1887b8d5, 0x00006558,
   };
 
-  otcrypto_const_byte_buf_t salt = {.data = salt_data,
-                                    .len = sizeof(salt_data)};
-  otcrypto_const_byte_buf_t info = {.data = info_data,
-                                    .len = sizeof(info_data)};
+  otcrypto_const_byte_buf_t salt = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, salt_data, sizeof(salt_data));
+  otcrypto_const_byte_buf_t info = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, info_data, sizeof(info_data));
 
   // Setup IKM
   otcrypto_key_config_t ikm_config = {
@@ -498,8 +494,10 @@ static status_t run_negative_tests(void) {
   valid_okm.checksum = integrity_blinded_checksum(&valid_okm);
 
   uint8_t dummy_data[] = {0x01};
-  otcrypto_const_byte_buf_t valid_buf = {.data = dummy_data, .len = 1};
-  otcrypto_const_byte_buf_t null_data_buf = {.data = NULL, .len = 1};
+  otcrypto_const_byte_buf_t valid_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, dummy_data, 1);
+  otcrypto_const_byte_buf_t null_data_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 1);
 
   // HKDF extract null pointer tests
   CHECK(otcrypto_hkdf_extract(&valid_ikm, valid_buf, NULL).value ==

@@ -6,6 +6,7 @@
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/key_transport.h"
 #include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
@@ -70,10 +71,9 @@ status_t sign_then_verify_test(void) {
   TRY(otcrypto_ecdsa_p256_keygen(&private_key, &public_key));
 
   // Hash the message.
-  otcrypto_const_byte_buf_t message = {
-      .len = sizeof(kMessage) - 1,
-      .data = (unsigned char *)&kMessage,
-  };
+  otcrypto_const_byte_buf_t message =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (unsigned char *)&kMessage,
+                        sizeof(kMessage) - 1);
   uint32_t message_digest_data[kSha256DigestWords];
   otcrypto_hash_digest_t message_digest = {
       .data = message_digest_data,

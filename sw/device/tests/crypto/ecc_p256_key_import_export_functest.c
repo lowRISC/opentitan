@@ -6,6 +6,7 @@
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
@@ -153,10 +154,10 @@ static status_t import_then_verify_test(void) {
   TRY_CHECK_ARRAYS_EQ(exported_y_data, pt->y, kP256CoordWords);
 
   // Hash the message.
-  otcrypto_const_byte_buf_t msg = {
-      .data = (unsigned char *)kMessage,
-      .len = sizeof(kMessage) - 1,
-  };
+  otcrypto_const_byte_buf_t msg =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (unsigned char *)kMessage,
+                        sizeof(kMessage) - 1);
+
   uint32_t msg_digest_data[kP256DigestWords];
   otcrypto_hash_digest_t msg_digest = {
       .data = msg_digest_data,
