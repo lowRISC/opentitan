@@ -530,6 +530,9 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_async_finalize(
     return OTCRYPTO_BAD_ARGS;
   }
 
+  // Verify the input buffer
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&signature));
+
   // Check that the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
 
@@ -600,6 +603,9 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify_async_finalize(
   if (verification_result == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+
+  // Verify the input buffer
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&signature));
 
   // Check that the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());

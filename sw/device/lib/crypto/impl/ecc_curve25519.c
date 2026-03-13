@@ -76,6 +76,9 @@ static status_t ed25519_signature_check(otcrypto_word32_buf_t *signature) {
   HARDENED_CHECK_EQ(launder32(signature->len) * sizeof(uint32_t),
                     sizeof(curve25519_signature_t));
 
+  // Verify the input buffer
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(signature));
+
   return OTCRYPTO_OK;
 }
 
@@ -132,12 +135,17 @@ static status_t ed25519_message_prehash(otcrypto_eddsa_sign_mode_t sign_mode,
     };
 
     HARDENED_TRY(otcrypto_sha2_512(input_message, &input_digest));
+    *message_ph =
+        OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, (uint8_t *)input_digest.data,
+                          input_digest.len * sizeof(uint32_t));
     message_ph->data = (uint8_t *)input_digest.data;
     message_ph->len = input_digest.len * sizeof(uint32_t);
 
     // Use the unity function if the sign mode is kOtcryptoEddsaSignModeEddsa.
   } else if (sign_mode == launder32(kOtcryptoEddsaSignModeEddsa)) {
     sign_mode_used = launder32(sign_mode_used) | kOtcryptoEddsaSignModeEddsa;
+    *message_ph = OTCRYPTO_MAKE_BUF(
+        otcrypto_byte_buf_t, (uint8_t *)input_message.data, input_message.len);
     message_ph->data = (uint8_t *)input_message.data;
     message_ph->len = input_message.len;
 
@@ -147,6 +155,9 @@ static status_t ed25519_message_prehash(otcrypto_eddsa_sign_mode_t sign_mode,
   }
   // Check if we landed in the correct if branch.
   HARDENED_CHECK_EQ(launder32(sign_mode_used), sign_mode);
+
+  // Verify the output buffer
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(message_ph));
 
   return OTCRYPTO_OK;
 }
