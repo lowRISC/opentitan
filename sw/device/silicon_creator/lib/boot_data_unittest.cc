@@ -429,6 +429,34 @@ TEST_F(BootDataReadTest, ReadDefaultNotAllowedInProdTest) {
   EXPECT_EQ(boot_data_read(kLcStateProd, &boot_data), kErrorBootDataNotFound);
 }
 
+TEST_F(BootDataReadTest, ReadDefaultAllowedInProdEndTest) {
+  // Expect both pages to be searched, but give no entry for either.
+  ExpectPageScan(&kFlashCtrlInfoPageBootData0, ErasedPage());
+  ExpectPageScan(&kFlashCtrlInfoPageBootData1, ErasedPage());
+
+  // Expect to fall back to loading the default entry (allowed in prod).
+  ExpectAllowedInProdCheck(true);
+  ExpectDefaultEntryRead();
+
+  boot_data_t boot_data = {{0}};
+  EXPECT_EQ(boot_data_read(kLcStateProdEnd, &boot_data), kErrorOk);
+  EXPECT_EQ(boot_data, kDefaultEntry);
+}
+
+TEST_F(BootDataReadTest, ReadDefaultNotAllowedInProdEndTest) {
+  // Expect both pages to be searched, but give no entry for either.
+  ExpectPageScan(&kFlashCtrlInfoPageBootData0, ErasedPage());
+  ExpectPageScan(&kFlashCtrlInfoPageBootData1, ErasedPage());
+
+  // Expect to fall back to loading the default entry (now allowed in prod).
+  ExpectAllowedInProdCheck(false);
+  // Do not expect the default entry to be read.
+
+  boot_data_t boot_data = {{0}};
+  EXPECT_EQ(boot_data_read(kLcStateProdEnd, &boot_data),
+            kErrorBootDataNotFound);
+}
+
 TEST_F(BootDataReadTest, ReadV1AsV2Test) {
   // Expect both to be searched, but only provide an entry in one.
   ExpectPageScan(&kFlashCtrlInfoPageBootData0, EntryPage(kValidEntryV1));
