@@ -94,10 +94,10 @@ status_t sign_then_verify_test(void) {
   // Verify the signature.
   LOG_INFO("Verifying...");
   hardened_bool_t verification_result;
+  otcrypto_const_word32_buf_t const_sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig, ARRAYSIZE(sig));
   CHECK_STATUS_OK(otcrypto_ecdsa_p256_verify(
-      &public_key, message_digest,
-      (otcrypto_const_word32_buf_t){.data = sig, .len = ARRAYSIZE(sig)},
-      &verification_result));
+      &public_key, message_digest, const_sig_buf, &verification_result));
 
   // The signature should pass verification.
   TRY_CHECK(verification_result == kHardenedBoolTrue);

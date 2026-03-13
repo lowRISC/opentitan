@@ -76,14 +76,13 @@ static status_t import_then_verify_test(void) {
       .exportable = kHardenedBoolTrue,
       .security_level = kOtcryptoKeySecurityLevelLow,
   };
-  otcrypto_const_word32_buf_t share0 = {
-      .data = keyblob,
-      .len = kP384MaskedScalarShareWords,
-  };
-  otcrypto_const_word32_buf_t share1 = {
-      .data = keyblob + kP384MaskedScalarShareWords,
-      .len = kP384MaskedScalarShareWords,
-  };
+  otcrypto_const_word32_buf_t share0 = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, keyblob, kP384MaskedScalarShareWords);
+
+  otcrypto_const_word32_buf_t share1 = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, keyblob + kP384MaskedScalarShareWords,
+      kP384MaskedScalarShareWords);
+
   uint32_t imported_keyblob[kP384MaskedScalarTotalShareWords];
   otcrypto_blinded_key_t imported_private_key = {
       .config = kExportableKeyConfig,
@@ -113,14 +112,12 @@ static status_t import_then_verify_test(void) {
 
   // Import the public key from its coordinates into a fresh buffer.
   p384_point_t *pt = (p384_point_t *)pk_buf;
-  otcrypto_const_word32_buf_t x = {
-      .data = pt->x,
-      .len = kP384CoordWords,
-  };
-  otcrypto_const_word32_buf_t y = {
-      .data = pt->y,
-      .len = kP384CoordWords,
-  };
+  otcrypto_const_word32_buf_t x =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, pt->x, kP384CoordWords);
+
+  otcrypto_const_word32_buf_t y =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, pt->y, kP384CoordWords);
+
   uint32_t imported_pk_buf[kP384PublicKeyWords];
   otcrypto_unblinded_key_t imported_public_key = {
       .key_mode = kOtcryptoKeyModeEcdsaP384,
@@ -165,10 +162,9 @@ static status_t import_then_verify_test(void) {
 
   // Verify the signature using the imported public key.
   LOG_INFO("Verifying signature with imported public key...");
-  otcrypto_const_word32_buf_t const_sig_buf = {
-      .data = sig,
-      .len = ARRAYSIZE(sig),
-  };
+  otcrypto_const_word32_buf_t const_sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig, ARRAYSIZE(sig));
+
   hardened_bool_t verification_result;
   TRY(otcrypto_ecdsa_p384_verify(&imported_public_key, msg_digest,
                                  const_sig_buf, &verification_result));
@@ -193,14 +189,11 @@ static status_t ecdh_key_mode_test(void) {
       0x289a147c, 0xf8f41dbd, 0x9292dc29, 0x5d9e98bf, 0x96262c6f, 0x3617de4a,
   };
 
-  otcrypto_const_word32_buf_t x = {
-      .data = x_data,
-      .len = kP384CoordWords,
-  };
-  otcrypto_const_word32_buf_t y = {
-      .data = y_data,
-      .len = kP384CoordWords,
-  };
+  otcrypto_const_word32_buf_t x =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, x_data, kP384CoordWords);
+
+  otcrypto_const_word32_buf_t y =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, y_data, kP384CoordWords);
 
   uint32_t pk_buf[kP384PublicKeyWords];
   otcrypto_unblinded_key_t public_key = {

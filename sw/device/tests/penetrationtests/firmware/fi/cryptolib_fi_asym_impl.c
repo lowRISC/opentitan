@@ -101,10 +101,8 @@ status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
   memset(n_buf, 0, sizeof(n_buf));
   memcpy(n_buf, uj_input.n, num_bytes);
 
-  otcrypto_const_word32_buf_t modulus = {
-      .data = n_buf,
-      .len = num_words,
-  };
+  otcrypto_const_word32_buf_t modulus =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, n_buf, num_words);
 
   // Create label.
   otcrypto_const_byte_buf_t label_buf =
@@ -163,15 +161,11 @@ status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
     memset(d_buf, 0, sizeof(d_buf));
     memcpy(d_buf, uj_input.d, num_bytes);
 
-    otcrypto_const_word32_buf_t d_share0 = {
-        .data = d_buf,
-        .len = num_words,
-    };
+    otcrypto_const_word32_buf_t d_share0 =
+        OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, d_buf, num_words);
     uint32_t share1[kPentestRsaMaxDWords] = {0};
-    otcrypto_const_word32_buf_t d_share1 = {
-        .data = share1,
-        .len = num_words,
-    };
+    otcrypto_const_word32_buf_t d_share1 =
+        OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, share1, num_words);
 
     // Construct the private key.
     otcrypto_key_config_t private_key_config = {
@@ -203,10 +197,8 @@ status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
     memset(ciphertext_buf, 0, sizeof(ciphertext_buf));
     memcpy(ciphertext_buf, uj_input.data, uj_input.data_len);
 
-    otcrypto_const_word32_buf_t ciphertext = {
-        .len = num_words,
-        .data = ciphertext_buf,
-    };
+    otcrypto_const_word32_buf_t ciphertext = OTCRYPTO_MAKE_BUF(
+        otcrypto_const_word32_buf_t, ciphertext_buf, num_words);
 
     // Create output buffer for the plaintext.
     size_t kMaxPlaintextBytes = num_bytes - 2 * hash_digest_bytes - 2;
@@ -312,15 +304,11 @@ status_t cryptolib_fi_rsa_sign_impl(
   memset(d_buf, 0, sizeof(d_buf));
   memcpy(d_buf, uj_input.d, uj_input.n_len);
 
-  otcrypto_const_word32_buf_t d_share0 = {
-      .data = d_buf,
-      .len = num_words,
-  };
+  otcrypto_const_word32_buf_t d_share0 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, d_buf, num_words);
   uint32_t share1[kPentestRsaMaxDWords] = {0};
-  otcrypto_const_word32_buf_t d_share1 = {
-      .data = share1,
-      .len = num_words,
-  };
+  otcrypto_const_word32_buf_t d_share1 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, share1, num_words);
 
   // Construct the private key.
   otcrypto_key_config_t private_key_config = {
@@ -343,10 +331,8 @@ status_t cryptolib_fi_rsa_sign_impl(
   memset(n_buf, 0, sizeof(n_buf));
   memcpy(n_buf, uj_input.n, uj_input.n_len);
 
-  otcrypto_const_word32_buf_t modulus = {
-      .data = n_buf,
-      .len = num_words,
-  };
+  otcrypto_const_word32_buf_t modulus =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, n_buf, num_words);
 
   // Trigger window.
   if (uj_input.trigger & kPentestTrigger1) {
@@ -484,10 +470,8 @@ status_t cryptolib_fi_rsa_verify_impl(
   memset(n_buf, 0, sizeof(n_buf));
   memcpy(n_buf, uj_input.n, uj_input.n_len);
 
-  otcrypto_const_word32_buf_t modulus = {
-      .data = n_buf,
-      .len = num_words,
-  };
+  otcrypto_const_word32_buf_t modulus =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, n_buf, num_words);
 
   // Create the public key.
   uint32_t public_key_data[ceil_div(public_key_bytes, sizeof(uint32_t))];
@@ -511,10 +495,8 @@ status_t cryptolib_fi_rsa_verify_impl(
   memset(sig_buf, 0, sizeof(sig_buf));
   memcpy(sig_buf, uj_input.sig, uj_input.sig_len);
 
-  otcrypto_const_word32_buf_t sig = {
-      .data = sig_buf,
-      .len = num_words,
-  };
+  otcrypto_const_word32_buf_t sig =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig_buf, num_words);
 
   // Copy the message into the buffer.
   uint8_t msg[uj_input.data_len];
@@ -770,10 +752,9 @@ status_t cryptolib_fi_p256_verify_impl(
   memcpy(signature_p256.r, uj_input.r, P256_CMD_BYTES);
   memcpy(signature_p256.s, uj_input.s, P256_CMD_BYTES);
 
-  otcrypto_const_word32_buf_t signature = {
-      .len = kPentestP256Words * 2,
-      .data = (uint32_t *)&signature_p256,
-  };
+  otcrypto_const_word32_buf_t signature =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t,
+                        (uint32_t *)&signature_p256, kPentestP256Words * 2);
 
   hardened_bool_t verification_result = kHardenedBoolFalse;
 
@@ -994,10 +975,9 @@ status_t cryptolib_fi_p384_verify_impl(
   memcpy(signature_p384.r, uj_input.r, P384_CMD_BYTES);
   memcpy(signature_p384.s, uj_input.s, P384_CMD_BYTES);
 
-  otcrypto_const_word32_buf_t signature = {
-      .len = kPentestP384Words * 2,
-      .data = (uint32_t *)&signature_p384,
-  };
+  otcrypto_const_word32_buf_t signature =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t,
+                        (uint32_t *)&signature_p384, kPentestP384Words * 2);
 
   hardened_bool_t verification_result = kHardenedBoolFalse;
 

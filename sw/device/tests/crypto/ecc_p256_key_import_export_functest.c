@@ -76,14 +76,13 @@ static status_t import_then_verify_test(void) {
       .exportable = kHardenedBoolTrue,
       .security_level = kOtcryptoKeySecurityLevelLow,
   };
-  otcrypto_const_word32_buf_t share0 = {
-      .data = keyblob,
-      .len = kP256MaskedScalarShareWords,
-  };
-  otcrypto_const_word32_buf_t share1 = {
-      .data = keyblob + kP256MaskedScalarShareWords,
-      .len = kP256MaskedScalarShareWords,
-  };
+  otcrypto_const_word32_buf_t share0 = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, keyblob, kP256MaskedScalarShareWords);
+
+  otcrypto_const_word32_buf_t share1 = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, keyblob + kP256MaskedScalarShareWords,
+      kP256MaskedScalarShareWords);
+
   uint32_t imported_keyblob[kP256MaskedScalarTotalShareWords];
   otcrypto_blinded_key_t imported_private_key = {
       .config = kExportableKeyConfig,
@@ -114,14 +113,12 @@ static status_t import_then_verify_test(void) {
 
   // Import the public key from its coordinates into a fresh buffer.
   p256_point_t *pt = (p256_point_t *)pk_buf;
-  otcrypto_const_word32_buf_t x = {
-      .data = pt->x,
-      .len = kP256CoordWords,
-  };
-  otcrypto_const_word32_buf_t y = {
-      .data = pt->y,
-      .len = kP256CoordWords,
-  };
+  otcrypto_const_word32_buf_t x =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, pt->x, kP256CoordWords);
+
+  otcrypto_const_word32_buf_t y =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, pt->y, kP256CoordWords);
+
   uint32_t imported_pk_buf[kP256PublicKeyWords];
   otcrypto_unblinded_key_t imported_public_key = {
       .key_mode = kOtcryptoKeyModeEcdsaP256,
@@ -167,10 +164,9 @@ static status_t import_then_verify_test(void) {
 
   // Verify the signature with the imported public key.
   LOG_INFO("Verifying signature with imported public key...");
-  otcrypto_const_word32_buf_t const_sig_buf = {
-      .data = sig,
-      .len = ARRAYSIZE(sig),
-  };
+  otcrypto_const_word32_buf_t const_sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig, ARRAYSIZE(sig));
+
   hardened_bool_t verification_result;
   TRY(otcrypto_ecdsa_p256_verify(&imported_public_key, msg_digest,
                                  const_sig_buf, &verification_result));
@@ -195,14 +191,11 @@ static status_t ecdh_key_mode_test(void) {
       0x7c0f9e16, 0x8ee7eb4a, 0xfe1a7f9b, 0x4fe342e2,
   };
 
-  otcrypto_const_word32_buf_t x = {
-      .data = x_data,
-      .len = kP256CoordWords,
-  };
-  otcrypto_const_word32_buf_t y = {
-      .data = y_data,
-      .len = kP256CoordWords,
-  };
+  otcrypto_const_word32_buf_t x =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, x_data, kP256CoordWords);
+
+  otcrypto_const_word32_buf_t y =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, y_data, kP256CoordWords);
 
   uint32_t pk_buf[kP256PublicKeyWords];
   otcrypto_unblinded_key_t public_key = {

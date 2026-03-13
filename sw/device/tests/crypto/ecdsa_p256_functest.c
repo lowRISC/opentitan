@@ -114,10 +114,10 @@ static status_t sign_then_verify_test(void) {
 
   // Verify the signature.
   LOG_INFO("Verifying...");
+  otcrypto_const_word32_buf_t const_sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig, ARRAYSIZE(sig));
   CHECK_STATUS_OK(otcrypto_ecdsa_p256_verify(
-      &public_key, msg_digest,
-      (otcrypto_const_word32_buf_t){.data = sig, .len = ARRAYSIZE(sig)},
-      &verificationResult));
+      &public_key, msg_digest, const_sig_buf, &verificationResult));
   TRY_CHECK(verificationResult == kHardenedBoolTrue);
 
   return OK_STATUS();
@@ -203,10 +203,8 @@ static status_t run_ecdsa_negative_tests(void) {
   uint32_t sig_data[64 / 4] = {0};
   otcrypto_word32_buf_t valid_sig =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig_data, 16);
-  otcrypto_const_word32_buf_t valid_const_sig = {
-      .data = sig_data,
-      .len = 16,
-  };
+  otcrypto_const_word32_buf_t valid_const_sig =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig_data, 16);
   hardened_bool_t verify_res;
 
   // ECDSA keygen negative tests
@@ -306,10 +304,9 @@ static status_t run_ecdsa_negative_tests(void) {
             .value == OTCRYPTO_BAD_ARGS.value);
 
   // Bad signature length
-  otcrypto_const_word32_buf_t bad_const_sig_len = {
-      .data = sig_data,
-      .len = 15,
-  };
+  otcrypto_const_word32_buf_t bad_const_sig_len =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig_data, 15);
+
   CHECK(otcrypto_ecdsa_p256_verify(&valid_pub, valid_digest, bad_const_sig_len,
                                    &verify_res)
             .value == OTCRYPTO_BAD_ARGS.value);

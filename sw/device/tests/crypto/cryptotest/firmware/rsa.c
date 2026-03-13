@@ -143,10 +143,8 @@ status_t handle_rsa_encrypt(ujson_t *uj) {
   memset(n_buf, 0, sizeof(n_buf));
   memcpy(n_buf, uj_input.n, n_bytes);
 
-  otcrypto_const_word32_buf_t modulus = {
-      .data = n_buf,
-      .len = rsa_num_words,
-  };
+  otcrypto_const_word32_buf_t modulus =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, n_buf, rsa_num_words);
 
   // Construct the public key.
   uint32_t public_key_data[ceil_div(public_key_bytes, sizeof(uint32_t))];
@@ -276,10 +274,8 @@ status_t handle_rsa_decrypt(ujson_t *uj) {
   memset(n_buf, 0, sizeof(n_buf));
   memcpy(n_buf, uj_input.n, n_bytes);
 
-  otcrypto_const_word32_buf_t modulus = {
-      .data = n_buf,
-      .len = rsa_num_words,
-  };
+  otcrypto_const_word32_buf_t modulus =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, n_buf, rsa_num_words);
 
   // Create two shares for the private exponent (second share is all-zero).
   uint32_t d_buf[rsa_num_words];
@@ -288,19 +284,15 @@ status_t handle_rsa_decrypt(ujson_t *uj) {
   for (size_t i = 0; i < rsa_num_words; i++) {
     d_buf[i] ^= key_mask[i];
   }
-  otcrypto_const_word32_buf_t d_share0 = {
-      .data = d_buf,
-      .len = rsa_num_words,
-  };
+  otcrypto_const_word32_buf_t d_share0 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, d_buf, rsa_num_words);
 
   uint32_t share1[rsa_num_words];
   for (size_t i = 0; i < rsa_num_words; i++) {
     share1[i] = key_mask[i];
   }
-  otcrypto_const_word32_buf_t d_share1 = {
-      .data = share1,
-      .len = rsa_num_words,
-  };
+  otcrypto_const_word32_buf_t d_share1 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, share1, rsa_num_words);
 
   // Construct the private key.
   otcrypto_key_config_t private_key_config = {
@@ -328,10 +320,8 @@ status_t handle_rsa_decrypt(ujson_t *uj) {
   memset(ciphertext_buf, 0, sizeof(ciphertext_buf));
   memcpy(ciphertext_buf, uj_input.ciphertext, uj_input.ciphertext_len);
 
-  otcrypto_const_word32_buf_t ciphertext = {
-      .len = ciphertext_num_words,
-      .data = ciphertext_buf,
-  };
+  otcrypto_const_word32_buf_t ciphertext = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, ciphertext_buf, ciphertext_num_words);
 
   // Create label.
   uint8_t label_buf[uj_input.label_len];
@@ -449,10 +439,8 @@ status_t handle_rsa_verify(ujson_t *uj) {
   memset(n_buf, 0, sizeof(n_buf));
   memcpy(n_buf, uj_input.n, n_bytes);
 
-  otcrypto_const_word32_buf_t modulus = {
-      .data = n_buf,
-      .len = rsa_num_words,
-  };
+  otcrypto_const_word32_buf_t modulus =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, n_buf, rsa_num_words);
 
   // Create the public key.
   uint32_t public_key_data[rsa_num_words];
@@ -469,10 +457,8 @@ status_t handle_rsa_verify(ujson_t *uj) {
   memset(sig_buf, 0, sizeof(sig_buf));
   memcpy(sig_buf, uj_input.sig, sizeof(sig_buf));
 
-  otcrypto_const_word32_buf_t sig = {
-      .data = sig_buf,
-      .len = sig_num_words,
-  };
+  otcrypto_const_word32_buf_t sig =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig_buf, sig_num_words);
 
   // Copy the message into the buffer.
   uint8_t msg[uj_input.msg_len];

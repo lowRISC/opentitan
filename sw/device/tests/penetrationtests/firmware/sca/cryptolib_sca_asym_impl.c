@@ -101,15 +101,11 @@ status_t cryptolib_sca_rsa_dec_impl(
   memset(d_buf, 0, sizeof(d_buf));
   memcpy(d_buf, d, num_bytes);
 
-  otcrypto_const_word32_buf_t d_share0 = {
-      .data = d_buf,
-      .len = num_words,
-  };
+  otcrypto_const_word32_buf_t d_share0 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, d_buf, num_words);
   uint32_t share1[kPentestRsaMaxDWords] = {0};
-  otcrypto_const_word32_buf_t d_share1 = {
-      .data = share1,
-      .len = num_words,
-  };
+  otcrypto_const_word32_buf_t d_share1 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, share1, num_words);
 
   // Construct the private key.
   otcrypto_key_config_t private_key_config = {
@@ -132,10 +128,8 @@ status_t cryptolib_sca_rsa_dec_impl(
   memset(n_buf, 0, sizeof(d_buf));
   memcpy(n_buf, n, num_bytes);
 
-  otcrypto_const_word32_buf_t modulus = {
-      .data = n_buf,
-      .len = num_words,
-  };
+  otcrypto_const_word32_buf_t modulus =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, n_buf, num_words);
 
   // Trigger window.
   if (trigger & kPentestTrigger1) {
@@ -151,10 +145,8 @@ status_t cryptolib_sca_rsa_dec_impl(
   memset(ciphertext_buf, 0, sizeof(ciphertext_buf));
   memcpy(ciphertext_buf, data, data_len);
 
-  otcrypto_const_word32_buf_t ciphertext = {
-      .len = num_words,
-      .data = ciphertext_buf,
-  };
+  otcrypto_const_word32_buf_t ciphertext =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, ciphertext_buf, num_words);
 
   // Create label.
   otcrypto_const_byte_buf_t label_buf =
@@ -340,15 +332,11 @@ status_t cryptolib_sca_rsa_sign_impl(
   memset(d_buf, 0, sizeof(d_buf));
   memcpy(d_buf, d, *n_len);
 
-  otcrypto_const_word32_buf_t d_share0 = {
-      .data = d_buf,
-      .len = num_words,
-  };
+  otcrypto_const_word32_buf_t d_share0 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, d_buf, num_words);
   uint32_t share1[kPentestRsaMaxDWords] = {0};
-  otcrypto_const_word32_buf_t d_share1 = {
-      .data = share1,
-      .len = num_words,
-  };
+  otcrypto_const_word32_buf_t d_share1 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, share1, num_words);
 
   // Construct the private key.
   otcrypto_key_config_t private_key_config = {
@@ -371,10 +359,8 @@ status_t cryptolib_sca_rsa_sign_impl(
   memset(n_buf, 0, sizeof(n_buf));
   memcpy(n_buf, n, *n_len);
 
-  otcrypto_const_word32_buf_t modulus = {
-      .data = n_buf,
-      .len = num_words,
-  };
+  otcrypto_const_word32_buf_t modulus =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, n_buf, num_words);
 
   // Trigger window.
   if (trigger & kPentestTrigger1) {

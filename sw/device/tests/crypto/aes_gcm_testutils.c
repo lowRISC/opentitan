@@ -151,10 +151,8 @@ status_t aes_gcm_testutils_encrypt(const aes_gcm_test_t *test, bool streaming,
       (test->iv_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
   uint32_t iv_data[iv_num_words];
   memcpy(iv_data, test->iv, test->iv_len);
-  otcrypto_const_word32_buf_t iv = {
-      .data = iv_data,
-      .len = iv_num_words,
-  };
+  otcrypto_const_word32_buf_t iv =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, iv_data, iv_num_words);
   otcrypto_const_byte_buf_t plaintext = OTCRYPTO_MAKE_BUF(
       otcrypto_const_byte_buf_t, test->plaintext, test->plaintext_len);
   otcrypto_const_byte_buf_t aad =
@@ -243,10 +241,8 @@ status_t aes_gcm_testutils_decrypt(const aes_gcm_test_t *test,
       (test->iv_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
   uint32_t iv_data[iv_num_words];
   memcpy(iv_data, test->iv, test->iv_len);
-  otcrypto_const_word32_buf_t iv = {
-      .data = iv_data,
-      .len = iv_num_words,
-  };
+  otcrypto_const_word32_buf_t iv =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, iv_data, iv_num_words);
   otcrypto_const_byte_buf_t ciphertext = OTCRYPTO_MAKE_BUF(
       otcrypto_const_byte_buf_t, test->ciphertext, test->plaintext_len);
   otcrypto_const_byte_buf_t aad =
@@ -255,10 +251,8 @@ status_t aes_gcm_testutils_decrypt(const aes_gcm_test_t *test,
       (test->tag_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
   uint32_t tag_data[tag_num_words];
   memcpy(tag_data, test->tag, test->tag_len);
-  otcrypto_const_word32_buf_t tag = {
-      .data = tag_data,
-      .len = tag_num_words,
-  };
+  otcrypto_const_word32_buf_t tag =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, tag_data, tag_num_words);
 
   size_t ciphertext_blocks = ceil_div(test->plaintext_len, kAesBlockNumBytes);
   uint8_t actual_plaintext_data[ciphertext_blocks * kAesBlockNumBytes];
