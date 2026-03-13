@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_INTEGRITY_H_
-#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_INTEGRITY_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_INTEGRITY_H_
+#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_INTEGRITY_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -21,12 +21,6 @@ extern "C" {
  * Pick a value that is loaded in a single cycle.
  */
 #define kOtcryptoInitIntegrityChecksum 0x5A3
-
-typedef struct otcrypto_generic_buf {
-  const void *data;
-  size_t len;
-  uint32_t ptr_checksum;
-} otcrypto_generic_buf_t;
 
 /**
  * Compute the checksum of an unblinded key.
@@ -119,9 +113,6 @@ hardened_bool_t verify_buf_integrity(const otcrypto_generic_buf_t *buf);
  * This should be used after a buffer is consumed (for example after it was fed
  * to an accelerator) but before making security critical decisions on the data.
  */
-// #define OTCRYPTO_CHECK_BUF(buf_ptr) \
-//   verify_buf_integrity((buf_ptr)->data, (buf_ptr)->len, (buf_ptr)->ptr_checksum)
-
 #define OTCRYPTO_CHECK_BUF(buf_ptr) \
   verify_buf_integrity((const otcrypto_generic_buf_t *)(buf_ptr))
 
@@ -129,4 +120,4 @@ hardened_bool_t verify_buf_integrity(const otcrypto_generic_buf_t *buf);
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_INTEGRITY_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_INTEGRITY_H_
