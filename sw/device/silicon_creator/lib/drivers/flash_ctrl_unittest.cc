@@ -419,6 +419,14 @@ TEST_F(TransferTest, EraseDataPageOk) {
             kErrorOk);
 }
 
+TEST_F(TransferTest, EraseDataBankOk) {
+  ExpectTransferStart(0, 0, 1, FLASH_CTRL_CONTROL_OP_VALUE_ERASE, 0x01234567,
+                      1);
+  ExpectWaitForDone(true, false);
+  EXPECT_EQ(flash_ctrl_data_erase(0x01234567, kFlashCtrlEraseTypeBank),
+            kErrorOk);
+}
+
 TEST_F(TransferTest, EraseInfoPageOk) {
   // Address of the `kFlashCtrlInfoPageOwnerSlot0` page, see `info_page_addr`.
   const uint32_t addr =
@@ -427,6 +435,17 @@ TEST_F(TransferTest, EraseInfoPageOk) {
   ExpectWaitForDone(true, false);
   EXPECT_EQ(flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerSlot0,
                                   kFlashCtrlEraseTypePage),
+            kErrorOk);
+}
+
+TEST_F(TransferTest, EraseInfoBankOk) {
+  // Address of the `kFlashCtrlInfoPageOwnerSlot0` page, see `info_page_addr`.
+  const uint32_t addr =
+      1 * FLASH_CTRL_PARAM_BYTES_PER_BANK + 2 * FLASH_CTRL_PARAM_BYTES_PER_PAGE;
+  ExpectTransferStart(1, 0, 1, FLASH_CTRL_CONTROL_OP_VALUE_ERASE, addr, 1);
+  ExpectWaitForDone(true, false);
+  EXPECT_EQ(flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerSlot0,
+                                  kFlashCtrlEraseTypeBank),
             kErrorOk);
 }
 
@@ -880,6 +899,26 @@ INSTANTIATE_TEST_SUITE_P(
         }  // Note: No cases for bank erases since the test times out due to
            // large number of expectations.
         ));
+
+class EraseVerifyBankTest : public rom_test::Unordered<FlashCtrlTest> {};
+
+TEST_F(EraseVerifyBankTest, DataEraseVerifyOk) {
+  EXPECT_CALL(mmio_, Read32(testing::_))
+      .WillRepeatedly(testing::Return(kFlashCtrlErasedWord));
+
+  EXPECT_EQ(flash_ctrl_data_erase_verify(0, kFlashCtrlEraseTypeBank), kErrorOk);
+}
+
+TEST_F(EraseVerifyBankTest, DataEraseVerifyFail) {
+  EXPECT_CALL(mmio_, Read32(testing::_))
+      .WillRepeatedly(testing::Return(kFlashCtrlErasedWord));
+  // Specifically fail one read.
+  EXPECT_CALL(mmio_, Read32(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + 0x1000))
+      .WillOnce(testing::Return(0));
+
+  EXPECT_EQ(flash_ctrl_data_erase_verify(0, kFlashCtrlEraseTypeBank),
+            kErrorFlashCtrlDataEraseVerify);
+}
 
 class DataRegionProtectTestSuite
     : public testing::TestWithParam<
