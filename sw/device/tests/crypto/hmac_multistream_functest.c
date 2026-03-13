@@ -269,10 +269,9 @@ static status_t hmac_oneshot(hmac_test_vector_t *current_test_vector) {
 static status_t feed_msg(otcrypto_sha2_context_t *hash_ctx,
                          hmac_test_vector_t *current_test_vector,
                          size_t segment_start, size_t segment_len) {
-  otcrypto_const_byte_buf_t msg = {
-      .data = &current_test_vector->message.data[segment_start],
-      .len = segment_len,
-  };
+  otcrypto_const_byte_buf_t msg = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t,
+      &current_test_vector->message.data[segment_start], segment_len);
 
   switch (current_test_vector->test_operation) {
     case kHmacTestOperationSha256:

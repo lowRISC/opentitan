@@ -92,10 +92,9 @@ static status_t run_test(const uint32_t *key, size_t key_len,
  */
 static status_t simple_test(void) {
   const char plaintext[] = "Test message.";
-  otcrypto_const_byte_buf_t msg_buf = {
-      .data = (unsigned char *)plaintext,
-      .len = sizeof(plaintext) - 1,
-  };
+  otcrypto_const_byte_buf_t msg_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (unsigned char *)plaintext,
+                        sizeof(plaintext) - 1);
   const uint32_t exp_tag[] = {
       0x025b59b4, 0x38162abe, 0x36663189, 0xe1ec5666,
       0x959b742b, 0x525e81a2, 0x535387d6, 0x6f12f309,
@@ -114,10 +113,8 @@ static status_t empty_test(void) {
       0xbb5c42a9, 0x0e3ad140, 0x61679107, 0xa34a6cc0,
       0x53306979, 0xfa8a5061, 0xbc8b2ee6, 0xa499c0a5,
   };
-  otcrypto_const_byte_buf_t msg_buf = {
-      .data = NULL,
-      .len = 0,
-  };
+  otcrypto_const_byte_buf_t msg_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
   return run_test(kBasicTestKey, sizeof(kBasicTestKey), msg_buf, exp_tag);
 }
 
@@ -129,10 +126,9 @@ static status_t empty_test(void) {
  */
 static status_t long_key_test(void) {
   const char plaintext[] = "Test message.";
-  otcrypto_const_byte_buf_t msg_buf = {
-      .data = (unsigned char *)plaintext,
-      .len = sizeof(plaintext) - 1,
-  };
+  otcrypto_const_byte_buf_t msg_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (unsigned char *)plaintext,
+                        sizeof(plaintext) - 1);
   const uint32_t exp_tag[] = {
       0xa477ab6f, 0x73fae19d, 0x4f7fa9df, 0xd556b936,
       0x1dd1af52, 0xcd84f577, 0x32835c8c, 0x36682ad3,
@@ -148,10 +144,9 @@ static status_t long_key_test(void) {
  */
 static status_t streaming_test(void) {
   const char plaintext[] = "Test message.";
-  otcrypto_const_byte_buf_t msg_buf = {
-      .data = (unsigned char *)plaintext,
-      .len = sizeof(plaintext) - 1,
-  };
+  otcrypto_const_byte_buf_t msg_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (unsigned char *)plaintext,
+                        sizeof(plaintext) - 1);
   const uint32_t exp_tag[] = {
       0x025b59b4, 0x38162abe, 0x36663189, 0xe1ec5666,
       0x959b742b, 0x525e81a2, 0x535387d6, 0x6f12f309,
@@ -200,14 +195,15 @@ static status_t streaming_test(void) {
   TRY(otcrypto_hmac_init(&ctx, &blinded_key));
   size_t offset = 0;
   for (; offset + chunk_size < msg_len; offset += chunk_size) {
-    TRY(otcrypto_hmac_update(&ctx, (otcrypto_const_byte_buf_t){
-                                       .data = msg_bytes, .len = chunk_size}));
+    otcrypto_const_byte_buf_t msg_bytes_buf =
+        OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg_bytes, chunk_size);
+    TRY(otcrypto_hmac_update(&ctx, msg_bytes_buf));
     msg_bytes += chunk_size;
   }
   // One final update for any remaining data (may be 0-length).
-  TRY(otcrypto_hmac_update(
-      &ctx,
-      (otcrypto_const_byte_buf_t){.data = msg_bytes, .len = msg_len - offset}));
+  otcrypto_const_byte_buf_t msg_bytes_buf_remaining =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg_bytes, msg_len - offset);
+  TRY(otcrypto_hmac_update(&ctx, msg_bytes_buf_remaining));
   TRY(otcrypto_hmac_final(&ctx, tag_buf));
   TRY_CHECK_ARRAYS_EQ(act_tag, exp_tag, kTagLenWords);
   return OK_STATUS();

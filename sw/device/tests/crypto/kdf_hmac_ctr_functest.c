@@ -117,16 +117,12 @@ static status_t run_test(kdf_test_vector_t *test) {
   };
 
   // Construct a buffer for the context.
-  otcrypto_const_byte_buf_t context = {
-      .data = test->kdf_context,
-      .len = test->kdf_context_bytelen,
-  };
+  otcrypto_const_byte_buf_t context = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, test->kdf_context, test->kdf_context_bytelen);
 
   // Construct a buffer for the label.
-  otcrypto_const_byte_buf_t label = {
-      .data = test->kdf_label,
-      .len = test->kdf_label_bytelen,
-  };
+  otcrypto_const_byte_buf_t label = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, test->kdf_label, test->kdf_label_bytelen);
 
   // Run the KDF specified by the key mode.
   switch (test->key_mode) {

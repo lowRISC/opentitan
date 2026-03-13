@@ -113,10 +113,9 @@ status_t ed25519_kat_test(void) {
   TRY_CHECK_ARRAYS_EQ(kPublicKey, public_key.key, kEd25519PublicKeyWords);
 
   // Set up input_message struct.
-  const otcrypto_const_byte_buf_t input_message = {
-      .data = (const uint8_t *)kMessage,
-      .len = ARRAYSIZE(kMessage),
-  };
+  otcrypto_const_byte_buf_t input_message =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (const uint8_t *)kMessage,
+                        ARRAYSIZE(kMessage));
   // Set up signature struct.
   uint32_t signature_data[kEd25519SignatureWords];
   otcrypto_word32_buf_t signature = {.data = signature_data,

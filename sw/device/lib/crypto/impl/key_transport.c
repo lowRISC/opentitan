@@ -52,7 +52,8 @@ otcrypto_status_t otcrypto_symmetric_keygen(
 
   // Construct an empty buffer for the "additional input" to the DRBG generate
   // function.
-  otcrypto_const_byte_buf_t empty = {.data = NULL, .len = 0};
+  otcrypto_const_byte_buf_t empty =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
 
   // Generate each share of the key independently.
   HARDENED_TRY(otcrypto_drbg_instantiate(perso_string));

@@ -86,10 +86,8 @@ static status_t stream_gcm(otcrypto_aes_gcm_context_t *ctx,
       if (offset + chunk_len > aad.len) {
         chunk_len = aad.len - offset;
       }
-      otcrypto_const_byte_buf_t aad_chunk = {
-          .data = aad.data + offset,
-          .len = chunk_len,
-      };
+      otcrypto_const_byte_buf_t aad_chunk = OTCRYPTO_MAKE_BUF(
+          otcrypto_const_byte_buf_t, aad.data + offset, chunk_len);
       TRY(otcrypto_aes_gcm_update_aad(ctx, aad_chunk));
     }
   }
@@ -105,10 +103,8 @@ static status_t stream_gcm(otcrypto_aes_gcm_context_t *ctx,
       if (offset + chunk_len > input.len) {
         chunk_len = input.len - offset;
       }
-      otcrypto_const_byte_buf_t input_chunk = {
-          .data = input.data + offset,
-          .len = chunk_len,
-      };
+      otcrypto_const_byte_buf_t input_chunk = OTCRYPTO_MAKE_BUF(
+          otcrypto_const_byte_buf_t, input.data + offset, chunk_len);
       otcrypto_byte_buf_t output_with_offset = {
           .data = output.data + *output_bytes_written,
           .len = output.len - *output_bytes_written,
@@ -160,14 +156,10 @@ status_t aes_gcm_testutils_encrypt(const aes_gcm_test_t *test, bool streaming,
       .data = iv_data,
       .len = iv_num_words,
   };
-  otcrypto_const_byte_buf_t plaintext = {
-      .data = test->plaintext,
-      .len = test->plaintext_len,
-  };
-  otcrypto_const_byte_buf_t aad = {
-      .data = test->aad,
-      .len = test->aad_len,
-  };
+  otcrypto_const_byte_buf_t plaintext = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, test->plaintext, test->plaintext_len);
+  otcrypto_const_byte_buf_t aad =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, test->aad, test->aad_len);
 
   size_t tag_num_words =
       (test->tag_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
@@ -261,14 +253,10 @@ status_t aes_gcm_testutils_decrypt(const aes_gcm_test_t *test,
       .data = iv_data,
       .len = iv_num_words,
   };
-  otcrypto_const_byte_buf_t ciphertext = {
-      .data = test->ciphertext,
-      .len = test->plaintext_len,
-  };
-  otcrypto_const_byte_buf_t aad = {
-      .data = test->aad,
-      .len = test->aad_len,
-  };
+  otcrypto_const_byte_buf_t ciphertext = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, test->ciphertext, test->plaintext_len);
+  otcrypto_const_byte_buf_t aad =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, test->aad, test->aad_len);
   size_t tag_num_words =
       (test->tag_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
   uint32_t tag_data[tag_num_words];

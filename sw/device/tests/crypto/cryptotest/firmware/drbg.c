@@ -24,55 +24,48 @@ status_t handle_drbg(ujson_t *uj) {
   uint8_t entropy_buf[kEntropySeedBytes];
   memset(entropy_buf, 0, kEntropySeedBytes);
   memcpy(entropy_buf, uj_input.entropy, uj_input.entropy_len);
-  otcrypto_const_byte_buf_t entropy = {
-      .len = kEntropySeedBytes,
-      .data = entropy_buf,
-  };
+  otcrypto_const_byte_buf_t entropy = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, entropy_buf, kEntropySeedBytes);
 
   // Personalization string
   uint8_t perso_string_buf[uj_input.personalization_string_len];
   memcpy(perso_string_buf, uj_input.personalization_string,
          uj_input.personalization_string_len);
-  otcrypto_const_byte_buf_t perso_string = {
-      .len = uj_input.personalization_string_len,
-      .data = perso_string_buf,
-  };
+  otcrypto_const_byte_buf_t perso_string =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, perso_string_buf,
+                        uj_input.personalization_string_len);
 
   // Reseed entropy
   uint8_t reseed_entropy_buf[uj_input.reseed_entropy_len];
   memcpy(reseed_entropy_buf, uj_input.reseed_entropy,
          uj_input.reseed_entropy_len);
-  otcrypto_const_byte_buf_t reseed_entropy = {
-      .len = uj_input.reseed_entropy_len,
-      .data = uj_input.reseed_entropy,
-  };
+  otcrypto_const_byte_buf_t reseed_entropy =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, uj_input.reseed_entropy,
+                        uj_input.reseed_entropy_len);
 
   // Reseed additional input
   uint8_t reseed_addl_buf[uj_input.reseed_additional_input_len];
   memcpy(reseed_addl_buf, uj_input.reseed_additional_input,
          uj_input.reseed_additional_input_len);
-  otcrypto_const_byte_buf_t reseed_addl = {
-      .len = uj_input.reseed_additional_input_len,
-      .data = uj_input.reseed_additional_input,
-  };
+  otcrypto_const_byte_buf_t reseed_addl = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, uj_input.reseed_additional_input,
+      uj_input.reseed_additional_input_len);
 
   // First additional input
   uint8_t addl_1_buf[uj_input.additional_input_1_len];
   memcpy(addl_1_buf, uj_input.additional_input_1,
          uj_input.additional_input_1_len);
-  otcrypto_const_byte_buf_t addl_1 = {
-      .len = uj_input.additional_input_1_len,
-      .data = uj_input.additional_input_1,
-  };
+  otcrypto_const_byte_buf_t addl_1 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, uj_input.additional_input_1,
+                        uj_input.additional_input_1_len);
 
   // Second additional input
   uint8_t addl_2_buf[uj_input.additional_input_2_len];
   memcpy(addl_2_buf, uj_input.additional_input_2,
          uj_input.additional_input_2_len);
-  otcrypto_const_byte_buf_t addl_2 = {
-      .len = uj_input.additional_input_2_len,
-      .data = uj_input.additional_input_2,
-  };
+  otcrypto_const_byte_buf_t addl_2 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, uj_input.additional_input_2,
+                        uj_input.additional_input_2_len);
 
   // Buffer for random output
   cryptotest_drbg_output_t uj_output = {

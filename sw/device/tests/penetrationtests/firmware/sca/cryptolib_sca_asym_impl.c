@@ -159,8 +159,8 @@ status_t cryptolib_sca_rsa_dec_impl(
   };
 
   // Create label.
-  otcrypto_const_byte_buf_t label_buf = {.data = kTestLabel,
-                                         .len = kTestLabelLen};
+  otcrypto_const_byte_buf_t label_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, kTestLabel, kTestLabelLen);
 
   // Create output buffer for the plaintext.
   size_t kMaxPlaintextBytes = num_bytes - 2 * hash_digest_bytes - 2;
@@ -392,10 +392,8 @@ status_t cryptolib_sca_rsa_sign_impl(
   // Copy the message into the buffer.
   uint8_t msg[data_len];
   memcpy(msg, data, data_len);
-  otcrypto_const_byte_buf_t msg_buf = {
-      .len = data_len,
-      .data = msg,
-  };
+  otcrypto_const_byte_buf_t msg_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg, data_len);
 
   // Buffer to store the digest.
   uint32_t msg_digest_data[hash_digest_words];
