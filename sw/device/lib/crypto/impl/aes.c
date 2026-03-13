@@ -496,8 +496,8 @@ otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
     // IV.
     uint32_t iv_data[kAesBlockNumWords];
     hardened_memcpy(iv_data, iv.data, kAesBlockNumWords);
-    otcrypto_word32_buf_t iv_redundant = OTCRYPTO_MAKE_BUF(
-        otcrypto_word32_buf_t, iv_data, iv.len);
+    otcrypto_word32_buf_t iv_redundant =
+        OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, iv_data, iv.len);
 
     // First AES operation using the intended AES mode (encryption or
     // decryption).

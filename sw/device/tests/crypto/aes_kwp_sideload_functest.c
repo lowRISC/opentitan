@@ -46,7 +46,7 @@ static status_t run_wrap_unwrap(const otcrypto_blinded_key_t *key_to_wrap,
   // Wrap the key.
   uint32_t wrapped_key_data[wrapped_num_words];
   otcrypto_word32_buf_t wrapped_key = OTCRYPTO_MAKE_BUF(
-        otcrypto_word32_buf_t, wrapped_key_data, ARRAYSIZE(wrapped_key_data));
+      otcrypto_word32_buf_t, wrapped_key_data, ARRAYSIZE(wrapped_key_data));
   TRY(otcrypto_key_wrap(key_to_wrap, key_kek, wrapped_key));
 
   // Unwrap the key.
@@ -58,12 +58,11 @@ static status_t run_wrap_unwrap(const otcrypto_blinded_key_t *key_to_wrap,
       .keyblob_length = keyblob_words * sizeof(uint32_t),
       .keyblob = unwrapped_key_keyblob,
   };
-  TRY(otcrypto_key_unwrap(
-      (otcrypto_const_word32_buf_t){
-          .data = wrapped_key_data,
-          .len = ARRAYSIZE(wrapped_key_data),
-      },
-      key_kek, &success, &unwrapped_key));
+  otcrypto_const_word32_buf_t wrapped_key_data_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, wrapped_key_data,
+                        ARRAYSIZE(wrapped_key_data));
+  TRY(otcrypto_key_unwrap(wrapped_key_data_buf, key_kek, &success,
+                          &unwrapped_key));
 
   // Check the result.
   TRY_CHECK(success == kHardenedBoolTrue);

@@ -84,14 +84,10 @@ status_t handle_hmac(ujson_t *uj) {
   for (size_t i = 0; i < ARRAYSIZE(key_buf); i++) {
     key_buf[i] ^= kTestMask[i];
   }
-  otcrypto_const_word32_buf_t share0 = {
-      .data = key_buf,
-      .len = ARRAYSIZE(key_buf),
-  };
-  otcrypto_const_word32_buf_t share1 = {
-      .data = kTestMask,
-      .len = ARRAYSIZE(key_buf),
-  };
+  otcrypto_const_word32_buf_t share0 = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, key_buf, ARRAYSIZE(key_buf));
+  otcrypto_const_word32_buf_t share1 = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, kTestMask, ARRAYSIZE(key_buf));
   // Create blinded key
   uint32_t keyblob[2 * ARRAYSIZE(key_buf)];
   otcrypto_blinded_key_t key = {
@@ -109,8 +105,8 @@ status_t handle_hmac(ujson_t *uj) {
 
   // Create tag
   uint32_t tag_buf[MaxTagWords];
-  otcrypto_word32_buf_t tag = OTCRYPTO_MAKE_BUF(
-        otcrypto_word32_buf_t, tag_buf, tag_bytes / sizeof(uint32_t));
+  otcrypto_word32_buf_t tag = OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_buf,
+                                                tag_bytes / sizeof(uint32_t));
   otcrypto_status_t status = otcrypto_hmac(&key, input_message, tag);
   if (status.value != kOtcryptoStatusValueOk) {
     return INTERNAL(status.value);

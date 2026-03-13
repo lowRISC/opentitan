@@ -39,8 +39,9 @@ static status_t kat_test(void) {
   TRY(otcrypto_drbg_manual_instantiate(entropy, /*perso_string=*/kEmptyBuffer));
 
   uint32_t actual_output_words[ARRAYSIZE(kExpOutput)];
-  otcrypto_word32_buf_t actual_output = OTCRYPTO_MAKE_BUF(
-        otcrypto_word32_buf_t, actual_output_words, ARRAYSIZE(actual_output_words));
+  otcrypto_word32_buf_t actual_output =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, actual_output_words,
+                        ARRAYSIZE(actual_output_words));
 
   // Generate output twice.
   LOG_INFO("Generating...");
@@ -66,7 +67,7 @@ static status_t random_test(void) {
   // Generate a relatively large amount of output data.
   uint32_t output_data[1024];
   otcrypto_word32_buf_t output = OTCRYPTO_MAKE_BUF(
-        otcrypto_word32_buf_t, output_data, ARRAYSIZE(output_data));
+      otcrypto_word32_buf_t, output_data, ARRAYSIZE(output_data));
   TRY(otcrypto_drbg_generate(/*additional_input=*/kEmptyBuffer, output));
 
   // Run a basic randomness-quality check on the output.

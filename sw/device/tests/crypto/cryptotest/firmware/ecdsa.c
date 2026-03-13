@@ -315,10 +315,8 @@ status_t handle_ecdsa(ujson_t *uj) {
       return INVALID_ARGUMENT();
   }
   public_key.checksum = integrity_unblinded_checksum(&public_key);
-  otcrypto_const_word32_buf_t signature = {
-      .len = signature_mut.len,
-      .data = signature_mut.data,
-  };
+  otcrypto_const_word32_buf_t signature = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, signature_mut.data, signature_mut.len);
 
   otcrypto_hash_mode_t mode;
   switch (uj_hash_alg) {

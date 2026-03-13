@@ -116,15 +116,12 @@ static status_t run_rsa_2048_sign(const uint8_t *msg, size_t msg_len,
   };
 
   // Create two shares for the private exponent (second share is all-zero).
-  otcrypto_const_word32_buf_t d_share0 = {
-      .data = kTestPrivateExponent,
-      .len = ARRAYSIZE(kTestPrivateExponent),
-  };
+  otcrypto_const_word32_buf_t d_share0 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, kTestPrivateExponent,
+                        ARRAYSIZE(kTestPrivateExponent));
   uint32_t share1[ARRAYSIZE(kTestPrivateExponent)] = {0};
-  otcrypto_const_word32_buf_t d_share1 = {
-      .data = share1,
-      .len = ARRAYSIZE(share1),
-  };
+  otcrypto_const_word32_buf_t d_share1 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, share1, ARRAYSIZE(share1));
 
   // Construct the private key.
   otcrypto_key_config_t private_key_config = {
@@ -142,10 +139,8 @@ static status_t run_rsa_2048_sign(const uint8_t *msg, size_t msg_len,
       .keyblob = keyblob,
       .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
   };
-  otcrypto_const_word32_buf_t modulus = {
-      .data = kTestModulus,
-      .len = ARRAYSIZE(kTestModulus),
-  };
+  otcrypto_const_word32_buf_t modulus = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, kTestModulus, ARRAYSIZE(kTestModulus));
   TRY(otcrypto_rsa_private_key_from_exponents(
       kOtcryptoRsaSize2048, modulus, d_share0, d_share1, &private_key));
 
@@ -159,8 +154,8 @@ static status_t run_rsa_2048_sign(const uint8_t *msg, size_t msg_len,
   };
   TRY(otcrypto_sha2_256(msg_buf, &msg_digest));
 
-  otcrypto_word32_buf_t sig_buf = OTCRYPTO_MAKE_BUF(
-        otcrypto_word32_buf_t, sig, kRsa2048NumWords);
+  otcrypto_word32_buf_t sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, kRsa2048NumWords);
   uint64_t t_start = profile_start();
   TRY(otcrypto_rsa_sign(&private_key, msg_digest, padding_mode, sig_buf));
   profile_end_and_print(t_start, "RSA signature generation");
@@ -199,10 +194,8 @@ static status_t run_rsa_2048_verify(const uint8_t *msg, size_t msg_len,
   };
 
   // Construct the public key.
-  otcrypto_const_word32_buf_t modulus = {
-      .data = kTestModulus,
-      .len = ARRAYSIZE(kTestModulus),
-  };
+  otcrypto_const_word32_buf_t modulus = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, kTestModulus, ARRAYSIZE(kTestModulus));
   uint32_t public_key_data[ceil_div(kOtcryptoRsa2048PublicKeyBytes,
                                     sizeof(uint32_t))];
   otcrypto_unblinded_key_t public_key = {
@@ -223,10 +216,8 @@ static status_t run_rsa_2048_verify(const uint8_t *msg, size_t msg_len,
   };
   TRY(otcrypto_sha2_256(msg_buf, &msg_digest));
 
-  otcrypto_const_word32_buf_t sig_buf = {
-      .data = sig,
-      .len = kRsa2048NumWords,
-  };
+  otcrypto_const_word32_buf_t sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig, kRsa2048NumWords);
   uint64_t t_start = profile_start();
   TRY(otcrypto_rsa_verify(&public_key, msg_digest, padding_mode, sig_buf,
                           verification_result));

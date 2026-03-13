@@ -208,8 +208,8 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
 
   // Call HMAC(salt, IKM).
   uint32_t tag_data[digest_words];
-  otcrypto_word32_buf_t tag = OTCRYPTO_MAKE_BUF(
-        otcrypto_word32_buf_t, tag_data, ARRAYSIZE(tag_data));
+  otcrypto_word32_buf_t tag =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_data, ARRAYSIZE(tag_data));
   HARDENED_TRY(otcrypto_hmac(&salt_key, unmasked_ikm, tag));
 
   // Construct the blinded keyblob for PRK (with an all-zero mask for now
@@ -291,8 +291,8 @@ otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
       t_data += digest_words;
     }
     HARDENED_TRY(otcrypto_hmac_update(&ctx, info_and_counter));
-    otcrypto_word32_buf_t t_words = OTCRYPTO_MAKE_BUF(
-        otcrypto_word32_buf_t, t_data, digest_words);
+    otcrypto_word32_buf_t t_words =
+        OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, t_data, digest_words);
     HARDENED_TRY(otcrypto_hmac_final(&ctx, t_words));
   }
 
