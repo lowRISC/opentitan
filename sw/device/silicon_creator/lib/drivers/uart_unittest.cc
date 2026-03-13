@@ -121,6 +121,16 @@ TEST_F(BytesSendTest, SendByteBusy) {
   uart_putchar('X');
 }
 
+TEST_F(BytesSendTest, WriteImm) {
+  uint64_t imm = 0x030201;
+  for (uint8_t i = 1; i <= 3; ++i) {
+    EXPECT_ABS_READ32(base_ + UART_STATUS_REG_OFFSET,
+                      {{UART_STATUS_TXFULL_BIT, false}});
+    EXPECT_ABS_WRITE32(base_ + UART_WDATA_REG_OFFSET, i);
+  }
+  uart_write_imm(imm);
+}
+
 TEST_F(UartTest, RecvByte) {
   EXPECT_ABS_READ32(base_ + UART_STATUS_REG_OFFSET,
                     {{UART_STATUS_RXEMPTY_BIT, false}});
