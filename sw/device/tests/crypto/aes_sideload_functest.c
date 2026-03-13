@@ -78,10 +78,8 @@ static status_t run_aes(otcrypto_aes_operation_t operation,
   // Construct the IV.
   uint32_t iv_data[ARRAYSIZE(kAesIv)];
   memcpy(iv_data, kAesIv, sizeof(kAesIv));
-  otcrypto_word32_buf_t iv = {
-      .data = iv_data,
-      .len = ARRAYSIZE(iv_data),
-  };
+  otcrypto_word32_buf_t iv =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, iv_data, ARRAYSIZE(iv_data));
 
   // Construct the input buffer.
   otcrypto_const_byte_buf_t input_buf =

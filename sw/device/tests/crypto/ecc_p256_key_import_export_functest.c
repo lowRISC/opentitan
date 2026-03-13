@@ -98,14 +98,11 @@ static status_t import_then_verify_test(void) {
   // originals.
   uint32_t exported_share0_data[kP256MaskedScalarShareWords];
   uint32_t exported_share1_data[kP256MaskedScalarShareWords];
-  otcrypto_word32_buf_t exported_share0 = {
-      .data = exported_share0_data,
-      .len = kP256MaskedScalarShareWords,
-  };
-  otcrypto_word32_buf_t exported_share1 = {
-      .data = exported_share1_data,
-      .len = kP256MaskedScalarShareWords,
-  };
+  otcrypto_word32_buf_t exported_share0 = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, exported_share0_data, kP256MaskedScalarShareWords);
+  otcrypto_word32_buf_t exported_share1 = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, exported_share1_data, kP256MaskedScalarShareWords);
+
   LOG_INFO("Exporting private key shares...");
   TRY(otcrypto_ecc_p256_private_key_export(&imported_private_key,
                                            &exported_share0, &exported_share1));
@@ -139,14 +136,10 @@ static status_t import_then_verify_test(void) {
   // match the originals.
   uint32_t exported_x_data[kP256CoordWords];
   uint32_t exported_y_data[kP256CoordWords];
-  otcrypto_word32_buf_t exported_x = {
-      .data = exported_x_data,
-      .len = kP256CoordWords,
-  };
-  otcrypto_word32_buf_t exported_y = {
-      .data = exported_y_data,
-      .len = kP256CoordWords,
-  };
+  otcrypto_word32_buf_t exported_x = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, exported_x_data, kP256CoordWords);
+  otcrypto_word32_buf_t exported_y = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, exported_y_data, kP256CoordWords);
   LOG_INFO("Exporting public key to coordinates...");
   TRY(otcrypto_ecc_p256_public_key_export(&imported_public_key, &exported_x,
                                           &exported_y));
@@ -167,10 +160,8 @@ static status_t import_then_verify_test(void) {
 
   // Sign with the imported private key.
   uint32_t sig[kP256SignatureWords] = {0};
-  otcrypto_word32_buf_t sig_buf = {
-      .data = sig,
-      .len = ARRAYSIZE(sig),
-  };
+  otcrypto_word32_buf_t sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, ARRAYSIZE(sig));
   LOG_INFO("Signing with imported private key...");
   TRY(otcrypto_ecdsa_p256_sign(&imported_private_key, msg_digest, sig_buf));
 

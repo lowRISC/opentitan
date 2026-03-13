@@ -37,14 +37,10 @@ otcrypto_status_t otcrypto_symmetric_keygen(
   HARDENED_TRY(keyblob_to_shares(key, &share0, &share1));
 
   // Construct buffers to direct the DRBG output into the keyblob.
-  otcrypto_word32_buf_t share0_buf = {
-      .data = share0,
-      .len = keyblob_share_num_words(key->config),
-  };
-  otcrypto_word32_buf_t share1_buf = {
-      .data = share1,
-      .len = keyblob_share_num_words(key->config),
-  };
+  otcrypto_word32_buf_t share0_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, share0, keyblob_share_num_words(key->config));
+  otcrypto_word32_buf_t share1_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, share1, keyblob_share_num_words(key->config));
 
   // Randomize the memory before writing the shares.
   HARDENED_TRY(hardened_memshred(share0_buf.data, share0_buf.len));

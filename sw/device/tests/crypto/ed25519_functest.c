@@ -119,8 +119,8 @@ status_t ed25519_kat_test(void) {
                         ARRAYSIZE(kMessage));
   // Set up signature struct.
   uint32_t signature_data[kEd25519SignatureWords];
-  otcrypto_word32_buf_t signature = {.data = signature_data,
-                                     .len = ARRAYSIZE(signature_data)};
+  otcrypto_word32_buf_t signature = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, signature_data, ARRAYSIZE(signature_data));
 
   // Run ed25519 signature generation.
   CHECK_STATUS_OK(otcrypto_ed25519_sign(
@@ -174,8 +174,8 @@ static status_t hasheddsa_test(void) {
   };
 
   uint32_t signature_data[kEd25519SignatureWords];
-  otcrypto_word32_buf_t signature = {.data = signature_data,
-                                     .len = ARRAYSIZE(signature_data)};
+  otcrypto_word32_buf_t signature = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, signature_data, ARRAYSIZE(signature_data));
 
   CHECK_STATUS_OK(otcrypto_ed25519_sign(&private_key, input_message,
                                         kOtcryptoEddsaSignModeHashEddsa,
@@ -225,7 +225,8 @@ static status_t run_negative_tests(void) {
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 5);
 
   uint32_t sig_buf[kEd25519SignatureWords];
-  otcrypto_word32_buf_t sig = {.data = sig_buf, .len = kEd25519SignatureWords};
+  otcrypto_word32_buf_t sig =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig_buf, kEd25519SignatureWords);
 
   // Test ed25519_key_check with invalid key length, mode, data, or checksum
   otcrypto_unblinded_key_t bad_key = valid_priv;
@@ -263,7 +264,8 @@ static status_t run_negative_tests(void) {
             .value == OTCRYPTO_BAD_ARGS.value);
 
   // Test NULL pointer, bad length, or NULL data
-  otcrypto_word32_buf_t bad_sig = {.data = sig_buf, .len = 15};
+  otcrypto_word32_buf_t bad_sig =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig_buf, 15);
   CHECK(otcrypto_ed25519_sign(&valid_priv, msg, kOtcryptoEddsaSignModeEddsa,
                               &bad_sig)
             .value == OTCRYPTO_BAD_ARGS.value);

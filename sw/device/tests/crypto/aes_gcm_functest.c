@@ -89,7 +89,8 @@ static status_t run_bad_args_test(void) {
   otcrypto_byte_buf_t ct = OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, data, 16);
 
   uint32_t tag_data[4] = {0};
-  otcrypto_word32_buf_t tag = {.data = tag_data, .len = 4};
+  otcrypto_word32_buf_t tag =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_data, 4);
 
   otcrypto_const_byte_buf_t aad =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
@@ -98,7 +99,8 @@ static status_t run_bad_args_test(void) {
   CHECK(otcrypto_aes_gcm_encrypt(NULL, pt, iv, aad, kOtcryptoAesGcmTagLen128,
                                  ct, tag)
             .value == OTCRYPTO_BAD_ARGS.value);
-  otcrypto_word32_buf_t null_tag = {.data = NULL, .len = 4};
+  otcrypto_word32_buf_t null_tag =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, NULL, 4);
   CHECK(otcrypto_aes_gcm_encrypt(&key, pt, iv, aad, kOtcryptoAesGcmTagLen128,
                                  ct, null_tag)
             .value == OTCRYPTO_BAD_ARGS.value);
@@ -110,7 +112,8 @@ static status_t run_bad_args_test(void) {
             .value == OTCRYPTO_BAD_ARGS.value);
 
   // Tag length checks
-  otcrypto_word32_buf_t bad_tag_len = {.data = tag_data, .len = 3};
+  otcrypto_word32_buf_t bad_tag_len =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_data, 3);
   CHECK(otcrypto_aes_gcm_encrypt(&key, pt, iv, aad, kOtcryptoAesGcmTagLen128,
                                  ct, bad_tag_len)
             .value == OTCRYPTO_BAD_ARGS.value);
@@ -187,7 +190,8 @@ static status_t run_sideload_test(void) {
   otcrypto_byte_buf_t ct = OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, ct_data, 16);
 
   uint32_t tag_data[4] = {0};
-  otcrypto_word32_buf_t tag = {.data = tag_data, .len = 4};
+  otcrypto_word32_buf_t tag =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_data, 4);
 
   otcrypto_const_byte_buf_t aad =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);

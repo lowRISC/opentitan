@@ -112,10 +112,9 @@ status_t handle_kmac(ujson_t *uj) {
 
   // Create tag
   uint32_t tag_buf[MaxKmacTagWords];
-  otcrypto_word32_buf_t tag = {
-      .len = uj_required_tag_length.required_tag_length / sizeof(uint32_t),
-      .data = tag_buf,
-  };
+  otcrypto_word32_buf_t tag = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, tag_buf,
+      uj_required_tag_length.required_tag_length / sizeof(uint32_t));
   otcrypto_status_t status =
       otcrypto_kmac(&key, input_message, customization_string,
                     uj_required_tag_length.required_tag_length, tag);

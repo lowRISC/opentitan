@@ -11,6 +11,7 @@
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 
 namespace key_transport_unittest {
 namespace {
@@ -144,14 +145,10 @@ TEST(KeyTransport, BlindedKeyImportExport) {
   memset(share1.data(), 0, sizeof(share1));
 
   // Export the key again.
-  otcrypto_word32_buf_t share0_buf = {
-      .data = share0.data(),
-      .len = share0.size(),
-  };
-  otcrypto_word32_buf_t share1_buf = {
-      .data = share1.data(),
-      .len = share1.size(),
-  };
+  otcrypto_word32_buf_t share0_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, share0.data(), share0.size());
+  otcrypto_word32_buf_t share1_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, share1.data(), share1.size());
   EXPECT_EQ(status_ok(otcrypto_export_blinded_key(&blinded_key, share0_buf,
                                                   share1_buf)),
             true);
@@ -248,14 +245,10 @@ TEST(KeyTransport, BlindedKeyExportBadLengths) {
                 &blinded_key)),
             true);
 
-  otcrypto_word32_buf_t share_with_good_length = {
-      .data = share0.data(),
-      .len = share0.size(),
-  };
-  otcrypto_word32_buf_t share_with_bad_length = {
-      .data = share1.data(),
-      .len = share1.size() - 1,
-  };
+  otcrypto_word32_buf_t share_with_good_length =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, share0.data(), share0.size());
+  otcrypto_word32_buf_t share_with_bad_length = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, share1.data(), share1.size() - 1);
 
   // Set a bad length for share 0 and expect the import to fail.
   EXPECT_EQ(status_ok(otcrypto_export_blinded_key(
@@ -307,14 +300,10 @@ TEST(KeyTransport, BlindedKeyExportNotExportable) {
             true);
 
   // Expect key export to fail.
-  otcrypto_word32_buf_t share0_buf = {
-      .data = share0.data(),
-      .len = share0.size(),
-  };
-  otcrypto_word32_buf_t share1_buf = {
-      .data = share1.data(),
-      .len = share1.size(),
-  };
+  otcrypto_word32_buf_t share0_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, share0.data(), share0.size());
+  otcrypto_word32_buf_t share1_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, share1.data(), share1.size());
   EXPECT_EQ(status_ok(otcrypto_export_blinded_key(&blinded_key, share0_buf,
                                                   share1_buf)),
             false);

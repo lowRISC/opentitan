@@ -92,10 +92,8 @@ status_t keygen_then_sign_test(void) {
   TRY(otcrypto_sha2_256(msg_buf, &msg_digest));
 
   uint32_t sig[kRsa2048NumWords];
-  otcrypto_word32_buf_t sig_buf = {
-      .data = sig,
-      .len = kRsa2048NumWords,
-  };
+  otcrypto_word32_buf_t sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, kRsa2048NumWords);
   otcrypto_const_word32_buf_t const_sig_buf = {
       .data = sig,
       .len = kRsa2048NumWords,

@@ -98,14 +98,10 @@ static status_t import_then_verify_test(void) {
   // originals.
   uint32_t exported_share0_data[kP384MaskedScalarShareWords];
   uint32_t exported_share1_data[kP384MaskedScalarShareWords];
-  otcrypto_word32_buf_t exported_share0 = {
-      .data = exported_share0_data,
-      .len = kP384MaskedScalarShareWords,
-  };
-  otcrypto_word32_buf_t exported_share1 = {
-      .data = exported_share1_data,
-      .len = kP384MaskedScalarShareWords,
-  };
+  otcrypto_word32_buf_t exported_share0 = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, exported_share0_data, kP384MaskedScalarShareWords);
+  otcrypto_word32_buf_t exported_share1 = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, exported_share1_data, kP384MaskedScalarShareWords);
   LOG_INFO("Exporting private key shares...");
   TRY(otcrypto_ecc_p384_private_key_export(&imported_private_key,
                                            &exported_share0, &exported_share1));
@@ -139,14 +135,10 @@ static status_t import_then_verify_test(void) {
   // match the originals, completing the import → export round-trip.
   uint32_t exported_x_data[kP384CoordWords];
   uint32_t exported_y_data[kP384CoordWords];
-  otcrypto_word32_buf_t exported_x = {
-      .data = exported_x_data,
-      .len = kP384CoordWords,
-  };
-  otcrypto_word32_buf_t exported_y = {
-      .data = exported_y_data,
-      .len = kP384CoordWords,
-  };
+  otcrypto_word32_buf_t exported_x = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, exported_x_data, kP384CoordWords);
+  otcrypto_word32_buf_t exported_y = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, exported_y_data, kP384CoordWords);
   LOG_INFO("Exporting public key to coordinates...");
   TRY(otcrypto_ecc_p384_public_key_export(&imported_public_key, &exported_x,
                                           &exported_y));
@@ -166,10 +158,8 @@ static status_t import_then_verify_test(void) {
 
   // Sign the message with the imported private key.
   uint32_t sig[kP384SignatureWords] = {0};
-  otcrypto_word32_buf_t sig_buf = {
-      .data = sig,
-      .len = ARRAYSIZE(sig),
-  };
+  otcrypto_word32_buf_t sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, ARRAYSIZE(sig));
   LOG_INFO("Signing with imported private key...");
   TRY(otcrypto_ecdsa_p384_sign(&imported_private_key, msg_digest, sig_buf));
 

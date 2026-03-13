@@ -212,10 +212,8 @@ static status_t run_test_vector(void) {
       break;
     }
     case kKmacTestOperationKmac: {
-      otcrypto_word32_buf_t tag_buf = {
-          .data = digest.data,
-          .len = digest.len,
-      };
+      otcrypto_word32_buf_t tag_buf =
+          OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, digest.data, digest.len);
       run_kmac(tag_buf);
       break;
     }
@@ -269,8 +267,10 @@ static status_t run_negative_tests(void) {
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 4);
 
   uint32_t tag_data[8] = {0};
-  otcrypto_word32_buf_t valid_tag = {.data = tag_data, .len = 8};
-  otcrypto_word32_buf_t bad_tag_null = {.data = NULL, .len = 8};
+  otcrypto_word32_buf_t valid_tag =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_data, 8);
+  otcrypto_word32_buf_t bad_tag_null =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, NULL, 8);
   size_t valid_req_len = 32;
 
   // Null pointer tests

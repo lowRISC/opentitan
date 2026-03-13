@@ -109,9 +109,10 @@ static status_t sign_then_verify_test(void) {
 
   // Generate a signature for the message.
   LOG_INFO("Signing...");
-  CHECK_STATUS_OK(otcrypto_ecdsa_p384_sign_verify(
-      &private_key, &public_key, msg_digest,
-      (otcrypto_word32_buf_t){.data = sig, .len = ARRAYSIZE(sig)}));
+  otcrypto_word32_buf_t sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, ARRAYSIZE(sig));
+  CHECK_STATUS_OK(otcrypto_ecdsa_p384_sign_verify(&private_key, &public_key,
+                                                  msg_digest, sig_buf));
 
   // Verify the signature.
   LOG_INFO("Verifying...");
@@ -167,9 +168,10 @@ static status_t sign_kat(void) {
 
   // Generate a signature for the message.
   LOG_INFO("Signing...");
+  otcrypto_word32_buf_t sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, ARRAYSIZE(sig));
   CHECK_STATUS_OK(otcrypto_ecdsa_p384_sign_config_k(
-      &private_key, &secret_scalar, msg_digest,
-      (otcrypto_word32_buf_t){.data = sig, .len = ARRAYSIZE(sig)}));
+      &private_key, &secret_scalar, msg_digest, sig_buf));
 
   // Check if the signature matches the expected value.
   TRY_CHECK_ARRAYS_EQ(sig, kKATExpSignature, kP384SignatureWords);
@@ -203,10 +205,8 @@ static status_t run_ecdsa_negative_tests(void) {
   };
 
   uint32_t sig_data[96 / 4] = {0};
-  otcrypto_word32_buf_t valid_sig = {
-      .data = sig_data,
-      .len = 24,
-  };
+  otcrypto_word32_buf_t valid_sig =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig_data, 24);
   otcrypto_const_word32_buf_t valid_const_sig = {
       .data = sig_data,
       .len = 24,
@@ -267,10 +267,8 @@ static status_t run_ecdsa_negative_tests(void) {
       otcrypto_ecdsa_p384_sign(&valid_priv, bad_digest_len, valid_sig).value ==
       OTCRYPTO_BAD_ARGS.value);
 
-  otcrypto_word32_buf_t bad_sig_null = {
-      .data = NULL,
-      .len = 24,
-  };
+  otcrypto_word32_buf_t bad_sig_null =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, NULL, 24);
   CHECK(
       otcrypto_ecdsa_p384_sign(&valid_priv, valid_digest, bad_sig_null).value ==
       OTCRYPTO_BAD_ARGS.value);

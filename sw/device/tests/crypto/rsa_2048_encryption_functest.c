@@ -270,10 +270,12 @@ static status_t run_encrypt_negative_tests(void) {
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 4);
 
   uint32_t ct_data[kRsa2048NumWords] = {0};
-  otcrypto_word32_buf_t valid_ct = {.data = ct_data, .len = kRsa2048NumWords};
+  otcrypto_word32_buf_t valid_ct =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ct_data, kRsa2048NumWords);
   otcrypto_const_word32_buf_t valid_const_ct = {.data = ct_data,
                                                 .len = kRsa2048NumWords};
-  otcrypto_word32_buf_t bad_ct_null = {.data = NULL, .len = kRsa2048NumWords};
+  otcrypto_word32_buf_t bad_ct_null =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, NULL, kRsa2048NumWords);
 
   uint8_t pt_data[256] = {0};
   otcrypto_byte_buf_t valid_pt =

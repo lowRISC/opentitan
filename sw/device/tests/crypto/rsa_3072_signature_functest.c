@@ -186,10 +186,8 @@ static status_t run_rsa_3072_sign(const uint8_t *msg, size_t msg_len,
   };
   TRY(otcrypto_sha2_512(msg_buf, &msg_digest));
 
-  otcrypto_word32_buf_t sig_buf = {
-      .data = sig,
-      .len = kRsa3072NumWords,
-  };
+  otcrypto_word32_buf_t sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, kRsa3072NumWords);
 
   uint64_t t_start = profile_start();
   TRY(otcrypto_rsa_sign(&private_key, msg_digest, padding_mode, sig_buf));

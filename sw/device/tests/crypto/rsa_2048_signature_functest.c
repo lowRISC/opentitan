@@ -160,10 +160,8 @@ static status_t run_rsa_2048_sign(const uint8_t *msg, size_t msg_len,
   };
   TRY(otcrypto_sha2_256(msg_buf, &msg_digest));
 
-  otcrypto_word32_buf_t sig_buf = {
-      .data = sig,
-      .len = kRsa2048NumWords,
-  };
+  otcrypto_word32_buf_t sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, kRsa2048NumWords);
   uint64_t t_start = profile_start();
   TRY(otcrypto_rsa_sign(&private_key, msg_digest, padding_mode, sig_buf));
   profile_end_and_print(t_start, "RSA signature generation");
@@ -344,7 +342,8 @@ static status_t run_signature_negative_tests(void) {
                                          .len = ARRAYSIZE(digest_data)};
 
   uint32_t sig_data[kRsa2048NumWords] = {0};
-  otcrypto_word32_buf_t valid_sig = {.data = sig_data, .len = kRsa2048NumWords};
+  otcrypto_word32_buf_t valid_sig =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig_data, kRsa2048NumWords);
   otcrypto_const_word32_buf_t valid_const_sig = {.data = sig_data,
                                                  .len = kRsa2048NumWords};
 
@@ -355,7 +354,8 @@ static status_t run_signature_negative_tests(void) {
       otcrypto_rsa_sign(NULL, valid_digest, kOtcryptoRsaPaddingPkcs, valid_sig)
           .value == OTCRYPTO_BAD_ARGS.value);
 
-  otcrypto_word32_buf_t bad_sig_null = {.data = NULL, .len = kRsa2048NumWords};
+  otcrypto_word32_buf_t bad_sig_null =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, NULL, kRsa2048NumWords);
   CHECK(otcrypto_rsa_sign(&valid_priv, valid_digest, kOtcryptoRsaPaddingPkcs,
                           bad_sig_null)
             .value == OTCRYPTO_BAD_ARGS.value);
