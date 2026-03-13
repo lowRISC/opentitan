@@ -3,8 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "sw/device/lib/testing/entropy_src_testutils.h"
 
+#include "sw/device/lib/base/crc32.h"
+#include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+
+#include "hw/top/entropy_src_regs.h"  // Generated.
 
 #define MODULE_ID MAKE_MODULE_ID('e', 'n', 's')
 
@@ -76,4 +80,44 @@ status_t entropy_src_testutils_disable_health_tests(
   }
 
   return OK_STATUS();
+}
+
+uint32_t entropy_src_config_crc32(dif_entropy_src_t *entropy_src) {
+  uint32_t ctx;
+  crc32_init(&ctx);
+
+  // Health test thresholds.
+  crc32_add32(&ctx,
+              mmio_region_read32(entropy_src->base_addr,
+                                 ENTROPY_SRC_REPCNT_THRESHOLD_REG_OFFSET));
+  crc32_add32(&ctx,
+              mmio_region_read32(entropy_src->base_addr,
+                                 ENTROPY_SRC_REPCNTS_THRESHOLD_REG_OFFSET));
+  crc32_add32(&ctx,
+              mmio_region_read32(entropy_src->base_addr,
+                                 ENTROPY_SRC_ADAPTP_HI_THRESHOLD_REG_OFFSET));
+  crc32_add32(&ctx,
+              mmio_region_read32(entropy_src->base_addr,
+                                 ENTROPY_SRC_ADAPTP_LO_THRESHOLD_REG_OFFSET));
+  crc32_add32(&ctx,
+              mmio_region_read32(entropy_src->base_addr,
+                                 ENTROPY_SRC_BUCKET_THRESHOLD_REG_OFFSET));
+  crc32_add32(&ctx,
+              mmio_region_read32(entropy_src->base_addr,
+                                 ENTROPY_SRC_MARKOV_HI_THRESHOLD_REG_OFFSET));
+  crc32_add32(&ctx,
+              mmio_region_read32(entropy_src->base_addr,
+                                 ENTROPY_SRC_MARKOV_LO_THRESHOLD_REG_OFFSET));
+  crc32_add32(&ctx,
+              mmio_region_read32(entropy_src->base_addr,
+                                 ENTROPY_SRC_EXTHT_HI_THRESHOLD_REG_OFFSET));
+  crc32_add32(&ctx,
+              mmio_region_read32(entropy_src->base_addr,
+                                 ENTROPY_SRC_EXTHT_LO_THRESHOLD_REG_OFFSET));
+
+  // Alert threshold.
+  crc32_add32(&ctx, mmio_region_read32(entropy_src->base_addr,
+                                       ENTROPY_SRC_ALERT_THRESHOLD_REG_OFFSET));
+
+  return crc32_finish(&ctx);
 }
