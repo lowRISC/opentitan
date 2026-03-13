@@ -159,7 +159,7 @@ module prim_diff_decode #(
             if (level) rise_o = 1'b1;
             else       fall_o = 1'b1;
           end else begin
-            if (skew_cnt_q < SkewCycles) begin
+            if ({31'b0,skew_cnt_q} < SkewCycles) begin
               // Still within tolerated skew cycles
               skew_cnt_d = skew_cnt_q + 1;
             end else begin

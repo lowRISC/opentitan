@@ -123,15 +123,15 @@ module i2c_controller_fsm import i2c_pkg::*;
     tcount_d = tcount_q;
     if (load_tcount) begin
       unique case (tcount_sel)
-        tSetupStart : tcount_d = 13'(t_r_i) + 13'(tsu_sta_i);
-        tHoldStart  : tcount_d = 13'(t_f_i) + 13'(thd_sta_i);
+        tSetupStart : tcount_d = {3'b000,13'(t_r_i)} + {3'b000,13'(tsu_sta_i)};
+        tHoldStart  : tcount_d = {3'b000,13'(t_f_i)} + {3'b000,13'(thd_sta_i)};
         tClockStart : tcount_d = 16'(thd_dat_i);
-        tClockLow   : tcount_d = 13'(tlow_i) - 13'(thd_dat_i);
-        tClockPulse : tcount_d = 13'(t_r_i) + 13'(thigh_i);
+        tClockLow   : tcount_d = {3'b000,13'(tlow_i)} - {3'b000,13'(thd_dat_i)};
+        tClockPulse : tcount_d = {3'b000,13'(t_r_i)} + {3'b000,13'(thigh_i)};
         tClockHigh  : tcount_d = 16'(thigh_i);
-        tHoldBit    : tcount_d = 13'(t_f_i) + 13'(thd_dat_i);
-        tClockStop  : tcount_d = 13'(t_f_i) + 13'(tlow_i) - 13'(thd_dat_i);
-        tSetupStop  : tcount_d = 13'(t_r_i) + 13'(tsu_sto_i);
+        tHoldBit    : tcount_d = {3'b000,13'(t_f_i)} + {3'b000,13'(thd_dat_i)};
+        tClockStop  : tcount_d = {3'b000,13'(t_f_i)} + ({3'b000,13'(tlow_i)} - {3'b000,13'(thd_dat_i)});
+        tSetupStop  : tcount_d = {3'b000,13'(t_r_i)} + {3'b000,13'(tsu_sto_i)};
         tNoDelay    : tcount_d = 16'h0001;
         default     : tcount_d = 16'h0001;
       endcase
@@ -392,7 +392,7 @@ module i2c_controller_fsm import i2c_pkg::*;
           // a repeated start, the FSM will just go back to Idle and wait for the bus to go free
           // again.
           ctrl_symbol_failed = 1'b1;
-        end else if (tcount_q == 20'd1) begin
+        end else if ({4'b000,tcount_q} == 20'd1) begin
           log_start = 1'b1;
           event_cmd_complete_o = pend_restart;
         end
@@ -488,7 +488,7 @@ module i2c_controller_fsm import i2c_pkg::*;
       ReadHoldBit : begin
         host_idle_o = 1'b0;
         scl_d = 1'b0;
-        if (bit_index == '0 && tcount_q == 20'd1) begin
+        if ({4'b000,bit_index} == '0 && {4'b000,tcount_q} == 20'd1) begin
           rx_fifo_wvalid_o = 1'b1;      // assert that rx_fifo has valid data
           rx_fifo_wdata_o = read_byte;  // transfer read data to rx_fifo
         end
@@ -670,7 +670,7 @@ module i2c_controller_fsm import i2c_pkg::*;
         end else if (trans_started && !scl_i && scl_i_q) begin
           // Failed to issue repeated Start. Effectively lost arbitration.
           state_d = Idle;
-        end else if (tcount_q == 20'd1) begin
+        end else if ({4'b000,tcount_q} == 20'd1) begin
           state_d = HoldStart;
           load_tcount = 1'b1;
           tcount_sel = tHoldStart;
@@ -678,7 +678,7 @@ module i2c_controller_fsm import i2c_pkg::*;
       end
       // HoldStart: SDA is pulled low, SCL is released
       HoldStart : begin
-        if (tcount_q == 20'd1 || (!scl_i && scl_i_q)) begin
+        if (tcount_q == 16'd1 || (!scl_i && scl_i_q)) begin
           state_d = ClockStart;
           load_tcount = 1'b1;
           tcount_sel = tClockStart;
@@ -686,7 +686,7 @@ module i2c_controller_fsm import i2c_pkg::*;
       end
       // ClockStart: SCL is pulled low, SDA stays low
       ClockStart : begin
-        if (tcount_q == 20'd1) begin
+        if (tcount_q == 16'd1) begin
           state_d = ClockLow;
           load_tcount = 1'b1;
           tcount_sel = tClockLow;
@@ -694,7 +694,7 @@ module i2c_controller_fsm import i2c_pkg::*;
       end
       // ClockLow: SCL stays low, shift indexed bit onto SDA
       ClockLow : begin
-        if (tcount_q == 20'd1) begin
+        if (tcount_q == 16'd1) begin
           load_tcount = 1'b1;
           if (pend_restart) begin
             state_d = SetupStart;
@@ -714,7 +714,7 @@ module i2c_controller_fsm import i2c_pkg::*;
         end else if (scl_i_q && scl_i && (sda_i_q != sda_i)) begin
           // Unexpected Stop / Start
           state_d = Idle;
-        end else if (tcount_q == 20'd1 || (!scl_i && scl_i_q)) begin
+        end else if (tcount_q == 16'd1 || (!scl_i && scl_i_q)) begin
           // Transition either when we finish counting our high period or
           // another controller pulls clock low.
           state_d = HoldBit;
@@ -724,7 +724,7 @@ module i2c_controller_fsm import i2c_pkg::*;
       end
       // HoldBit: SCL is pulled low
       HoldBit : begin
-        if (tcount_q == 20'd1) begin
+        if (tcount_q == 16'd1) begin
           load_tcount = 1'b1;
           tcount_sel = tClockLow;
           if (bit_index == '0) begin
@@ -739,7 +739,7 @@ module i2c_controller_fsm import i2c_pkg::*;
       // ClockLowAck: Target is allowed to drive ack back
       // to host (dut)
       ClockLowAck : begin
-        if (tcount_q == 20'd1) begin
+        if (tcount_q == 16'd1) begin
           state_d = ClockPulseAck;
           load_tcount = 1'b1;
           tcount_sel = tClockPulse;
@@ -755,7 +755,7 @@ module i2c_controller_fsm import i2c_pkg::*;
           // Unexpected Stop / Start
           state_d = Idle;
         end else begin
-          if (tcount_q == 20'd1 || (!scl_i && scl_i_q)) begin
+          if (tcount_q == 16'd1 || (!scl_i && scl_i_q)) begin
             state_d = HoldDevAck;
             load_tcount = 1'b1;
             tcount_sel = tHoldBit;
@@ -764,7 +764,7 @@ module i2c_controller_fsm import i2c_pkg::*;
       end
       // HoldDevAck: SCL is pulled low
       HoldDevAck : begin
-        if (tcount_q == 20'd1) begin
+        if (tcount_q == 16'd1) begin
           if (fmt_flag_stop_after_i) begin
             state_d = ClockStop;
             load_tcount = 1'b1;
@@ -778,7 +778,7 @@ module i2c_controller_fsm import i2c_pkg::*;
       end
       // ReadClockLow: SCL is pulled low, SDA is released
       ReadClockLow : begin
-        if (tcount_q == 20'd1) begin
+        if (tcount_q == 16'd1) begin
           state_d = ReadClockPulse;
           load_tcount = 1'b1;
           tcount_sel = tClockPulse;
@@ -793,7 +793,7 @@ module i2c_controller_fsm import i2c_pkg::*;
         end else if (scl_i_q && scl_i && (sda_i_q != sda_i)) begin
           // Unexpected Stop / Start
           state_d = Idle;
-        end else if (tcount_q == 20'd1 || (!scl_i && scl_i_q)) begin
+        end else if (tcount_q == 16'd1 || (!scl_i && scl_i_q)) begin
           state_d = ReadHoldBit;
           load_tcount = 1'b1;
           tcount_sel = tHoldBit;
@@ -802,7 +802,7 @@ module i2c_controller_fsm import i2c_pkg::*;
       end
       // ReadHoldBit: SCL is pulled low
       ReadHoldBit : begin
-        if (tcount_q == 20'd1) begin
+        if (tcount_q == 16'd1) begin
           load_tcount = 1'b1;
           tcount_sel = tClockLow;
           if (bit_index == '0) begin
@@ -818,7 +818,7 @@ module i2c_controller_fsm import i2c_pkg::*;
       // HostClockLowAck: SCL is pulled low, SDA is conditional based on
       // byte position
       HostClockLowAck : begin
-        if (tcount_q == 20'd1) begin
+        if (tcount_q == 16'd1) begin
           state_d = HostClockPulseAck;
           load_tcount = 1'b1;
           tcount_sel = tClockPulse;
@@ -833,7 +833,7 @@ module i2c_controller_fsm import i2c_pkg::*;
         end else if (scl_i_q && scl_i && (sda_i_q != sda_i)) begin
           // Unexpected Stop / Start
           state_d = Idle;
-        end else if (tcount_q == 20'd1 || (!scl_i && scl_i_q)) begin
+        end else if (tcount_q == 16'd1 || (!scl_i && scl_i_q)) begin
           state_d = HostHoldBitAck;
           load_tcount = 1'b1;
           tcount_sel = tHoldBit;
@@ -841,7 +841,7 @@ module i2c_controller_fsm import i2c_pkg::*;
       end
       // HostHoldBitAck: SCL is pulled low
       HostHoldBitAck : begin
-        if (tcount_q == 20'd1) begin
+        if (tcount_q == 16'd1) begin
           if (byte_index == 9'd1) begin
             if (fmt_flag_stop_after_i) begin
               state_d = ClockStop;
@@ -862,7 +862,7 @@ module i2c_controller_fsm import i2c_pkg::*;
       end
       // ClockStop: SCL is pulled low, SDA stays low
       ClockStop : begin
-        if (tcount_q == 20'd1) begin
+        if (tcount_q == 16'd1) begin
           state_d = SetupStop;
           load_tcount = 1'b1;
           tcount_sel = tSetupStop;
@@ -877,7 +877,7 @@ module i2c_controller_fsm import i2c_pkg::*;
         end else if (!scl_i && scl_i_q) begin
           // Failed to issue Stop before some other device could pull SCL low.
           state_d = Idle;
-        end else if (tcount_q == 20'd1) begin
+        end else if (tcount_q == 16'd1) begin
           state_d = HoldStop;
         end
       end

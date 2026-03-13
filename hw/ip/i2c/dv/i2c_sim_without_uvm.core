@@ -1,0 +1,27 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:i2c_sim_without_uvm:0.1"
+description: "I2C DV sim target"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:ip:i2c:0.1
+
+  files_dv:
+    files:
+      - tb/tb_without_uvm.sv
+      - tb/i2c_port_conv.sv
+    file_type: systemVerilogSource
+
+targets:
+  sim: &sim_target
+    toplevel: tb
+    filesets:
+      - files_rtl
+      - files_dv
+    default_tool: verilator
+
+  lint:
+    <<: *sim_target
