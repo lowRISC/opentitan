@@ -81,7 +81,8 @@ static status_t run_bad_args_test(void) {
   key.checksum = integrity_blinded_checksum(&key);
 
   uint32_t iv_data[3] = {0};
-  otcrypto_const_word32_buf_t iv = {.data = iv_data, .len = 3};
+  otcrypto_const_word32_buf_t iv =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, iv_data, 3);
 
   uint8_t data[16] = {0};
   otcrypto_const_byte_buf_t pt =
@@ -180,7 +181,8 @@ static status_t run_sideload_test(void) {
   sideload_key.checksum = integrity_blinded_checksum(&sideload_key);
 
   uint32_t iv_data[3] = {0x01020304, 0x05060708, 0x090a0b0c};
-  otcrypto_const_word32_buf_t iv = {.data = iv_data, .len = 3};
+  otcrypto_const_word32_buf_t iv =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, iv_data, 3);
 
   uint8_t pt_data[16] = "Sideload test";
   otcrypto_const_byte_buf_t pt =
@@ -207,7 +209,8 @@ static status_t run_sideload_test(void) {
       OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, recovered_pt_data, 16);
   otcrypto_const_byte_buf_t ct_const =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, ct.data, ct.len);
-  otcrypto_const_word32_buf_t tag_const = {.data = tag.data, .len = tag.len};
+  otcrypto_const_word32_buf_t tag_const =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, tag.data, tag.len);
   hardened_bool_t success;
   TRY(otcrypto_aes_gcm_decrypt(&sideload_key, ct_const, iv, aad,
                                kOtcryptoAesGcmTagLen128, tag_const,

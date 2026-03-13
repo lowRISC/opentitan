@@ -258,10 +258,8 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_verify(
       otcrypto_ecdsa_p256_sign(private_key, message_digest, signature));
 
   // Verify signature before releasing it.
-  otcrypto_const_word32_buf_t signature_check = {
-      .data = signature.data,
-      .len = signature.len,
-  };
+  otcrypto_const_word32_buf_t signature_check = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, signature.data, signature.len);
   hardened_bool_t verification_result = kHardenedBoolFalse;
   HARDENED_TRY(otcrypto_ecdsa_p256_verify(
       public_key, message_digest, signature_check, &verification_result));

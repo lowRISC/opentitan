@@ -86,9 +86,9 @@ status_t cryptolib_sca_aes_impl(uint8_t data_in[AES_CMD_MAX_MSG_BYTES],
 
   // Convert the data struct into cryptolib types.
   uint32_t iv_buf[kPentestAesIvSize];
-  memcpy(iv_buf, iv, sizeof(iv_buf));
   otcrypto_word32_buf_t aes_iv =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, iv_buf, kPentestAesBlockWords);
+  memcpy(iv_buf, iv, sizeof(iv_buf));
 
   otcrypto_const_byte_buf_t input =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, data_in, data_in_len);
@@ -254,10 +254,8 @@ status_t cryptolib_sca_gcm_impl(
   size_t iv_num_words = 4;
   uint32_t iv_data[iv_num_words];
   memcpy(iv_data, iv, sizeof(iv_data));
-  otcrypto_const_word32_buf_t gcm_iv = {
-      .data = iv_data,
-      .len = iv_num_words,
-  };
+  otcrypto_const_word32_buf_t gcm_iv =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, iv_data, iv_num_words);
   otcrypto_const_byte_buf_t plaintext =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, data_in, data_in_len);
   otcrypto_const_byte_buf_t gcm_aad =

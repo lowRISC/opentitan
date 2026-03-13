@@ -85,9 +85,9 @@ status_t cryptolib_fi_aes_impl(cryptolib_fi_sym_aes_in_t uj_input,
 
   // Convert the data struct into cryptolib types.
   uint32_t iv_buf[kPentestAesIvSize];
-  memcpy(iv_buf, uj_input.iv, sizeof(uj_input.iv));
   otcrypto_word32_buf_t iv =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, iv_buf, kPentestAesBlockWords);
+  memcpy(iv_buf, uj_input.iv, sizeof(uj_input.iv));
 
   otcrypto_const_byte_buf_t input = OTCRYPTO_MAKE_BUF(
       otcrypto_const_byte_buf_t, uj_input.data, uj_input.data_len);
@@ -244,10 +244,8 @@ status_t cryptolib_fi_gcm_impl(cryptolib_fi_sym_gcm_in_t uj_input,
   size_t iv_num_words = 4;
   uint32_t iv_data[iv_num_words];
   memcpy(iv_data, uj_input.iv, sizeof(iv_data));
-  otcrypto_const_word32_buf_t iv = {
-      .data = iv_data,
-      .len = iv_num_words,
-  };
+  otcrypto_const_word32_buf_t iv =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, iv_data, iv_num_words);
   otcrypto_const_byte_buf_t plaintext = OTCRYPTO_MAKE_BUF(
       otcrypto_const_byte_buf_t, uj_input.data, uj_input.data_len);
   otcrypto_const_byte_buf_t aad = OTCRYPTO_MAKE_BUF(

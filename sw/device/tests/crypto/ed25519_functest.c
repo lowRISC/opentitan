@@ -131,8 +131,9 @@ status_t ed25519_kat_test(void) {
   // Set up signature struct for verification.
   const uint32_t *const signature_verif_data =
       (const uint32_t *const)signature_data;
-  otcrypto_const_word32_buf_t signature_verif = {
-      .data = signature_verif_data, .len = ARRAYSIZE(signature_data)};
+  otcrypto_const_word32_buf_t signature_verif =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, signature_verif_data,
+                        ARRAYSIZE(signature_data));
 
   // Run ed25519 signature verification.
   hardened_bool_t verification_result;
@@ -183,8 +184,9 @@ static status_t hasheddsa_test(void) {
 
   const uint32_t *const signature_verif_data =
       (const uint32_t *const)signature_data;
-  otcrypto_const_word32_buf_t signature_verif = {
-      .data = signature_verif_data, .len = ARRAYSIZE(signature_data)};
+  otcrypto_const_word32_buf_t signature_verif =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, signature_verif_data,
+                        ARRAYSIZE(signature_data));
 
   hardened_bool_t verification_result;
   CHECK_STATUS_OK(otcrypto_ed25519_verify(
@@ -281,7 +283,8 @@ static status_t run_negative_tests(void) {
           .value == OTCRYPTO_BAD_ARGS.value);
 
   // Bad signature verification
-  otcrypto_const_word32_buf_t bad_const_sig = {.data = sig_buf, .len = 15};
+  otcrypto_const_word32_buf_t bad_const_sig =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig_buf, 15);
   hardened_bool_t verify_res;
   CHECK(otcrypto_ed25519_verify(&valid_pub, msg, kOtcryptoEddsaSignModeEddsa,
                                 bad_const_sig, &verify_res)
