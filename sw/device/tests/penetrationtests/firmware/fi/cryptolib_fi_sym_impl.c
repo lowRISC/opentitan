@@ -130,10 +130,8 @@ status_t cryptolib_fi_aes_impl(cryptolib_fi_sym_aes_in_t uj_input,
     return OUT_OF_RANGE();
   }
   uint32_t output_buf[padded_len_bytes / sizeof(uint32_t)];
-  otcrypto_byte_buf_t output = {
-      .data = (unsigned char *)output_buf,
-      .len = sizeof(output_buf),
-  };
+  otcrypto_byte_buf_t output = OTCRYPTO_MAKE_BUF(
+      otcrypto_byte_buf_t, (unsigned char *)output_buf, sizeof(output_buf));
 
   // Trigger window.
   PENTEST_MARKER_LABEL(PENTEST_MARKER_AES_START);
@@ -274,10 +272,8 @@ status_t cryptolib_fi_gcm_impl(cryptolib_fi_sym_gcm_in_t uj_input,
   };
 
   uint8_t actual_ciphertext_data[AES_CMD_MAX_MSG_BYTES];
-  otcrypto_byte_buf_t actual_ciphertext = {
-      .data = actual_ciphertext_data,
-      .len = uj_input.data_len,
-  };
+  otcrypto_byte_buf_t actual_ciphertext = OTCRYPTO_MAKE_BUF(
+      otcrypto_byte_buf_t, actual_ciphertext_data, uj_input.data_len);
 
   otcrypto_aes_gcm_tag_len_t tag_len;
   switch (uj_input.tag_len) {

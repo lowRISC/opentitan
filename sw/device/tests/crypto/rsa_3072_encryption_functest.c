@@ -206,7 +206,8 @@ static status_t run_rsa_3072_decrypt(const uint8_t *label, size_t label_len,
   TRY(otcrypto_rsa_private_key_from_exponents(
       kOtcryptoRsaSize3072, modulus, d_share0, d_share1, &private_key));
 
-  otcrypto_byte_buf_t plaintext_buf = {.data = msg, .len = kMaxPlaintextBytes};
+  otcrypto_byte_buf_t plaintext_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, msg, kMaxPlaintextBytes);
   otcrypto_const_byte_buf_t label_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, label, label_len);
   otcrypto_const_word32_buf_t ciphertext_buf = {

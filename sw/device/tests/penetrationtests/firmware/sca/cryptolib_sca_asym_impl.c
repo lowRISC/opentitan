@@ -165,10 +165,8 @@ status_t cryptolib_sca_rsa_dec_impl(
   // Create output buffer for the plaintext.
   size_t kMaxPlaintextBytes = num_bytes - 2 * hash_digest_bytes - 2;
   uint8_t plaintext_buf[kMaxPlaintextBytes];
-  otcrypto_byte_buf_t plaintext = {
-      .data = plaintext_buf,
-      .len = kMaxPlaintextBytes,
-  };
+  otcrypto_byte_buf_t plaintext =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, plaintext_buf, kMaxPlaintextBytes);
 
   size_t msg_len;
   // Trigger window.

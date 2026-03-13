@@ -346,10 +346,8 @@ status_t handle_rsa_decrypt(ujson_t *uj) {
   // Maximum plaintext length for OAEP (see IETF RFC 8017).
   size_t kMaxPlaintextBytes = n_bytes - 2 * hash_digest_bytes - 2;
   uint8_t plaintext_buf[kMaxPlaintextBytes];
-  otcrypto_byte_buf_t plaintext = {
-      .data = plaintext_buf,
-      .len = kMaxPlaintextBytes,
-  };
+  otcrypto_byte_buf_t plaintext =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, plaintext_buf, kMaxPlaintextBytes);
 
   size_t msg_len = 0;
   bool status_resp = true;

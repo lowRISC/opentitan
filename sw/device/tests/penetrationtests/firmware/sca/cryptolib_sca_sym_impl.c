@@ -133,10 +133,8 @@ status_t cryptolib_sca_aes_impl(uint8_t data_in[AES_CMD_MAX_MSG_BYTES],
     return OUT_OF_RANGE();
   }
   uint32_t output_buf[padded_len_bytes / sizeof(uint32_t)];
-  otcrypto_byte_buf_t output = {
-      .data = (unsigned char *)output_buf,
-      .len = sizeof(output_buf),
-  };
+  otcrypto_byte_buf_t output = OTCRYPTO_MAKE_BUF(
+      otcrypto_byte_buf_t, (unsigned char *)output_buf, sizeof(output_buf));
 
   // Trigger window.
   pentest_set_trigger_high();
@@ -280,10 +278,8 @@ status_t cryptolib_sca_gcm_impl(
   };
 
   uint8_t actual_ciphertext_data[AES_CMD_MAX_MSG_BYTES];
-  otcrypto_byte_buf_t actual_ciphertext = {
-      .data = actual_ciphertext_data,
-      .len = data_in_len,
-  };
+  otcrypto_byte_buf_t actual_ciphertext = OTCRYPTO_MAKE_BUF(
+      otcrypto_byte_buf_t, actual_ciphertext_data, data_in_len);
 
   otcrypto_aes_gcm_tag_len_t gcm_tag_len;
   switch (*tag_len) {

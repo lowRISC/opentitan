@@ -140,10 +140,8 @@ status_t handle_aes_gcm_op(ujson_t *uj) {
   key.checksum = integrity_blinded_checksum(&key);
 
   uint8_t output_data[AES_GCM_CMD_MAX_MSG_BYTES];
-  otcrypto_byte_buf_t output = {
-      .data = output_data,
-      .len = uj_data.input_length,
-  };
+  otcrypto_byte_buf_t output =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, output_data, uj_data.input_length);
 
   uint32_t tag_data[tag_num_words];
 
