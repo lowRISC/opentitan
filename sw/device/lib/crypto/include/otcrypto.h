@@ -15,6 +15,7 @@
 #include "ecc_p384.h"
 #include "hkdf.h"
 #include "hmac.h"
+#include "integrity.h"
 #include "kdf_ctr.h"
 #include "key_transport.h"
 #include "kmac.h"

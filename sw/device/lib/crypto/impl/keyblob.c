@@ -10,8 +10,8 @@
 #include "sw/device/lib/base/random_order.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
-#include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('k', 'b', 'b')
