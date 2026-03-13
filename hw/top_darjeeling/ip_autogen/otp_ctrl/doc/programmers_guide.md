@@ -203,8 +203,8 @@ It is important that SW ensures that each word is only written once, since this 
 The table below provides a detailed overview of the items stored in the OTP partitions.
 Some of the items that are buffered in registers is readable via memory mapped CSRs, and these CSRs are linked in the table below.
 Items that are not linked can only be accessed via the direct programming interface (if the partition is not locked via the corresponding digest).
-It should be noted that CREATOR_SW_CFG and OWNER_SW_CFG are accessible through a memory mapped window, and content of these partitions is not buffered.
-Hence, a read access to those windows will take in the order of 10-20 cycles until the read returns.
+All OTP cells are also accessible through a memory mapped window.
+Read accesses to this window will take in the order of 10-20 cycles until the read returns, and buffered partitions will always read as `0`.
 
 Sizes below are specified in multiples of 32bit words.
 
