@@ -257,6 +257,9 @@ static status_t get_block(otcrypto_const_byte_buf_t input,
     HARDENED_TRY(randomized_bytecopy(block->data,
                                      &input.data[index * kAesBlockNumBytes],
                                      kAesBlockNumBytes));
+
+    // Verify input buffer
+    HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&input));
     return OTCRYPTO_OK;
   }
   HARDENED_CHECK_GE(launder32(index), num_full_blocks);
@@ -534,6 +537,11 @@ otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
         consttime_memeq_byte(cipher_input.data, output_buf, cipher_input.len),
         kHardenedBoolTrue);
   }
+
+  // Verify given buffers
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&cipher_input));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&iv));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&cipher_output));
 
   return OTCRYPTO_OK;
 }
