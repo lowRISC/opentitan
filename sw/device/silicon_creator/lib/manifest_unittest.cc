@@ -114,6 +114,10 @@ TEST_F(ManifestTest, EntryPointUnaligned) {
   EXPECT_EQ(manifest_check(&manifest_), kErrorManifestBadEntryPoint);
 }
 
+TEST_F(ManifestTest, CheckOk) {
+  EXPECT_EQ(manifest_check(&manifest_), kErrorOk);
+}
+
 TEST_F(ManifestTest, ExtSpxKeyGet) {
   char flash[CHIP_ROM_EXT_RESIZABLE_SIZE_MAX];
   memset(flash, 0, sizeof(flash));
