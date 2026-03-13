@@ -160,10 +160,8 @@ static status_t run_rsa_4096_encrypt(const uint8_t *msg, size_t msg_len,
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg, msg_len);
   otcrypto_const_byte_buf_t label_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, label, label_len);
-  otcrypto_word32_buf_t ciphertext_buf = {
-      .data = ciphertext,
-      .len = kRsa4096NumWords,
-  };
+  otcrypto_word32_buf_t ciphertext_buf = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, ciphertext, kRsa4096NumWords);
   uint64_t t_start = profile_start();
   TRY(otcrypto_rsa_encrypt(&public_key, kTestHashMode, msg_buf, label_buf,
                            ciphertext_buf));

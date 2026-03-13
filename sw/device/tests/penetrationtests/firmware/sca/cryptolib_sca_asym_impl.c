@@ -250,10 +250,14 @@ status_t cryptolib_sca_p256_ecdh_impl(
   uint32_t share0[kPentestP256Words];
   uint32_t share1[kPentestP256Words];
   uint32_t ss[kPentestP256Words];
+  otcrypto_word32_buf_t share0_buf = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, share0, ARRAYSIZE(share0));
+  otcrypto_word32_buf_t share1_buf = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, share1, ARRAYSIZE(share1));
   HARDENED_TRY(otcrypto_export_blinded_key(
       &shared_secret,
-      (otcrypto_word32_buf_t){.data = share0, .len = ARRAYSIZE(share0)},
-      (otcrypto_word32_buf_t){.data = share1, .len = ARRAYSIZE(share1)}));
+      share0_buf,
+      share1));
   for (size_t i = 0; i < kPentestP256Words; i++) {
     ss[i] = share0[i] ^ share1[i];
   }
@@ -417,10 +421,8 @@ status_t cryptolib_sca_rsa_sign_impl(
   }
 
   uint32_t sig_buf[kPentestRsaMaxMsgWords];
-  otcrypto_word32_buf_t rsa_sig = {
-      .data = sig_buf,
-      .len = num_words,
-  };
+  otcrypto_word32_buf_t rsa_sig = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, sig_buf, num_words);
 
   // Trigger window.
   if (trigger & kPentestTrigger3) {
@@ -505,10 +507,8 @@ status_t cryptolib_sca_p256_sign_impl(
 
   // Set up the signature buffer.
   uint32_t sig[kPentestP256Words * 2] = {0};
-  otcrypto_word32_buf_t signature_mut = {
-      .data = sig,
-      .len = ARRAYSIZE(sig),
-  };
+  otcrypto_word32_buf_t signature_mut = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, sig, ARRAYSIZE(sig));
 
   // Trigger window 1.
   if (uj_input.trigger == 1) {
@@ -598,10 +598,14 @@ status_t cryptolib_sca_p384_ecdh_impl(
   uint32_t share0[kPentestP384Words];
   uint32_t share1[kPentestP384Words];
   uint32_t ss[kPentestP384Words];
+  otcrypto_word32_buf_t share0_buf = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, share0, ARRAYSIZE(share0));
+  otcrypto_word32_buf_t share1_buf = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, share1, ARRAYSIZE(share1));
   HARDENED_TRY(otcrypto_export_blinded_key(
       &shared_secret,
-      (otcrypto_word32_buf_t){.data = share0, .len = ARRAYSIZE(share0)},
-      (otcrypto_word32_buf_t){.data = share1, .len = ARRAYSIZE(share1)}));
+      share0_buf,
+      share1_buf));
   for (size_t i = 0; i < kPentestP384Words; i++) {
     ss[i] = share0[i] ^ share1[i];
   }
@@ -677,10 +681,8 @@ status_t cryptolib_sca_p384_sign_impl(
 
   // Set up the signature buffer.
   uint32_t sig[kPentestP384Words * 2] = {0};
-  otcrypto_word32_buf_t signature_mut = {
-      .data = sig,
-      .len = ARRAYSIZE(sig),
-  };
+  otcrypto_word32_buf_t signature_mut = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, sig, ARRAYSIZE(sig));
 
   // Trigger window 1.
   if (uj_input.trigger == 1) {

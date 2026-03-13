@@ -99,10 +99,8 @@ status_t handle_aes_block(ujson_t *uj) {
   const size_t AES_IV_SIZE = 4;
   uint32_t iv_buf[AES_IV_SIZE];
   memcpy(iv_buf, uj_data.iv, AES_IV_SIZE * 4);
-  otcrypto_word32_buf_t iv = {
-      .data = iv_buf,
-      .len = kAesBlockWords,
-  };
+  otcrypto_word32_buf_t iv = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, iv_buf, kAesBlockWords);
 
   otcrypto_const_byte_buf_t input = OTCRYPTO_MAKE_BUF(
       otcrypto_const_byte_buf_t, uj_data.input, (size_t)uj_data.input_len);

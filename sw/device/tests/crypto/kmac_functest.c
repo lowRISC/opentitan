@@ -212,10 +212,8 @@ static status_t run_test_vector(void) {
       break;
     }
     case kKmacTestOperationKmac: {
-      otcrypto_word32_buf_t tag_buf = {
-          .data = digest.data,
-          .len = digest.len,
-      };
+      otcrypto_word32_buf_t tag_buf = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, digest.data, digest.len);
       run_kmac(tag_buf);
       break;
     }
