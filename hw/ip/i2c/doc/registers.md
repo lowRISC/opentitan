@@ -20,11 +20,11 @@
 | i2c.[`TARGET_FIFO_STATUS`](#target_fifo_status)               | 0x30     |        4 | Target mode FIFO status register                                                                          |
 | i2c.[`OVRD`](#ovrd)                                           | 0x34     |        4 | I2C Override Control Register                                                                             |
 | i2c.[`VAL`](#val)                                             | 0x38     |        4 | Oversampled RX values                                                                                     |
-| i2c.[`TIMING0`](#timing0)                                     | 0x3c     |        4 | Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).                       |
-| i2c.[`TIMING1`](#timing1)                                     | 0x40     |        4 | Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).                       |
-| i2c.[`TIMING2`](#timing2)                                     | 0x44     |        4 | Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).                       |
-| i2c.[`TIMING3`](#timing3)                                     | 0x48     |        4 | Detailed I2C Timings (directly corresponding to table 10, in the I2C Specification).                      |
-| i2c.[`TIMING4`](#timing4)                                     | 0x4c     |        4 | Detailed I2C Timings (directly corresponding to table 10, in the I2C Specification).                      |
+| i2c.[`TIMING0`](#timing0)                                     | 0x3c     |        4 | Detailed I2C Timings (directly corresponding to table 10 in the I<sup>2</sup>C Specification (rev. 6)).   |
+| i2c.[`TIMING1`](#timing1)                                     | 0x40     |        4 | Detailed I2C Timings (directly corresponding to table 10 in the I<sup>2</sup>C Specification (rev. 6)).   |
+| i2c.[`TIMING2`](#timing2)                                     | 0x44     |        4 | Detailed I2C Timings (directly corresponding to table 10 in the I<sup>2</sup>C Specification (rev. 6)).   |
+| i2c.[`TIMING3`](#timing3)                                     | 0x48     |        4 | Detailed I2C Timings (directly corresponding to table 10 in the I<sup>2</sup>C Specification (rev. 6)).   |
+| i2c.[`TIMING4`](#timing4)                                     | 0x4c     |        4 | Detailed I2C Timings (directly corresponding to table 10 in the I<sup>2</sup>C Specification (rev. 6)).   |
 | i2c.[`TIMEOUT_CTRL`](#timeout_ctrl)                           | 0x50     |        4 | I2C clock stretching and bus timeout control.                                                             |
 | i2c.[`TARGET_ID`](#target_id)                                 | 0x54     |        4 | I2C target address and mask pairs                                                                         |
 | i2c.[`ACQDATA`](#acqdata)                                     | 0x58     |        4 | I2C target acquired data                                                                                  |
@@ -216,7 +216,7 @@ For writes, the Target module will NACK all subsequent data bytes until it recei
 For reads, the Target module will release SDA, causing 0xff to be returned for all data bytes until it receives a Stop.
 
 ### CTRL . LLPBK
-Enable I2C line loopback test
+Enable I2C line loopback test.
 If line loopback is enabled, the internal design sees ACQ and RX data as "1"
 
 ### CTRL . ENABLETARGET
@@ -459,7 +459,7 @@ Oversampled RX values
 |  15:0  |   ro   |    x    | SCL_RX | Last 16 oversampled values of SCL. Most recent bit is bit 0, oldest 15.  |
 
 ## TIMING0
-Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).
+Detailed I2C Timings (directly corresponding to table 10 in the I<sup>2</sup>C Specification (rev. 6)).
 All values are expressed in units of the input clock period.
 These must be greater than 2 in order for the change in SCL to propagate to the input of the FSM so that acknowledgements are detected correctly.
 - Offset: `0x3c`
@@ -480,7 +480,7 @@ These must be greater than 2 in order for the change in SCL to propagate to the 
 |  12:0  |   rw   |   0x0   | THIGH  | The actual time to hold SCL high in a given pulse. This field is sized to have a range of at least Standard Mode's 4.0 us max with a core clock at 1 GHz.          |
 
 ## TIMING1
-Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).
+Detailed I2C Timings (directly corresponding to table 10 in the I<sup>2</sup>C Specification (rev. 6)).
 All values are expressed in units of the input clock period.
 - Offset: `0x40`
 - Reset default: `0x0`
@@ -500,7 +500,7 @@ All values are expressed in units of the input clock period.
 |  9:0   |   rw   |   0x0   | T_R    | The nominal rise time to anticipate for the bus (depends on capacitance). This field is sized to have a range of at least Standard Mode's 1000 ns max with a core clock at 1 GHz.   |
 
 ## TIMING2
-Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).
+Detailed I2C Timings (directly corresponding to table 10 in the I<sup>2</sup>C Specification (rev. 6)).
 All values are expressed in units of the input clock period.
 - Offset: `0x44`
 - Reset default: `0x0`
@@ -520,7 +520,7 @@ All values are expressed in units of the input clock period.
 |  12:0  |   rw   |   0x0   | TSU_STA | Actual setup time for repeated start signals. This field is sized to have a range of at least Standard Mode's 4.7 us max with a core clock at 1 GHz. |
 
 ## TIMING3
-Detailed I2C Timings (directly corresponding to table 10, in the I2C Specification).
+Detailed I2C Timings (directly corresponding to table 10 in the I<sup>2</sup>C Specification (rev. 6)).
 All values are expressed in units of the input clock period.
 - Offset: `0x48`
 - Reset default: `0x0`
@@ -551,7 +551,7 @@ Actual setup time for data (or ack) bits.
 This field is sized to have a range of at least Standard Mode's 250 ns max with a core clock at 1 GHz.
 
 ## TIMING4
-Detailed I2C Timings (directly corresponding to table 10, in the I2C Specification).
+Detailed I2C Timings (directly corresponding to table 10 in the I<sup>2</sup>C Specification (rev. 6)).
 All values are expressed in units of the input clock period.
 - Offset: `0x4c`
 - Reset default: `0x0`
@@ -668,11 +668,11 @@ See the associated values for more information about the contents.
 | Value   | Name       | Description                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 |:--------|:-----------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 0x0     | NONE       | ABYTE contains an ordinary data byte that was received and ACK'd.                                                                                                                                                                                                                                                                                                                                                                                   |
-| 0x1     | START      | A START condition preceded the ABYTE to start a new transaction. ABYTE contains the 7-bit I2C address plus R/W command bit in the order received on the bus, MSB first.                                                                                                                                                                                                                                                                             |
+| 0x1     | START      | A START condition preceded the ABYTE to start a new transaction. ABYTE contains the 7-bit I<sup>2</sup>C address plus R/W command bit in the order received on the bus, MSB first.                                                                                                                                                                                                                                                                  |
 | 0x2     | STOP       | A STOP condition was received for a transaction including a transfer that addressed this Target. No transfers addressing this Target in that transaction were NACK'd. ABYTE contains no data.                                                                                                                                                                                                                                                       |
-| 0x3     | RESTART    | A repeated START condition preceded the ABYTE, extending the current transaction with a new transfer. ABYTE contains the 7-bit I2C address plus R/W command bit in the order received on the bus, MSB first.                                                                                                                                                                                                                                        |
+| 0x3     | RESTART    | A repeated START condition preceded the ABYTE, extending the current transaction with a new transfer. ABYTE contains the 7-bit I<sup>2</sup>C address plus R/W command bit in the order received on the bus, MSB first.                                                                                                                                                                                                                             |
 | 0x4     | NACK       | ABYTE contains an ordinary data byte that was received and NACK'd.                                                                                                                                                                                                                                                                                                                                                                                  |
-| 0x5     | NACK_START | A START condition preceded the ABYTE (including repeated START) that was part of a NACK'd transfer. The ABYTE contains the matching I2C address and command bit. The ABYTE was ACK'd, but the rest of the transaction was NACK'ed.                                                                                                                                                                                                                  |
+| 0x5     | NACK_START | A START condition preceded the ABYTE (including repeated START) that was part of a NACK'd transfer. The ABYTE contains the matching I<sup>2</sup>C address and command bit. The ABYTE was ACK'd, but the rest of the transaction was NACK'ed.                                                                                                                                                                                                       |
 | 0x6     | NACK_STOP  | A transaction including a transfer that addressed this Target was ended, but the transaction ended abnormally and/or the transfer was NACK'd. The end can be due to a STOP condition or unexpected events, such as a bus timeout (if enabled). ABYTE contains no data. NACKing can occur for multiple reasons, including a stretch timeout, a SW-directed NACK, or lost arbitration. This signal is a bucket for all these error-type terminations. |
 
 Other values are reserved.

@@ -18,16 +18,16 @@ The values of these parameters will depend primarily on three bus details:
 - The expected signal rise time, t<sub>r</sub>, in ns.
     - This is not a firmware-controlled parameter.
     Rather, it is a function of the capacitance and physical design of the bus.
-    The specification provides detailed guidelines on how to manage capacitance in an I2C system:
-    - Section 5.2 of the I2C specification indicates that Fast-mode Plus devices may operate at reduced clock speeds if the bus capacitance drives signal rise times (t<sub>r</sub>) outside the nominal 120ns limit.
-    Excess capacitance can also be compensated for by reducing the size of the bus pullup resistor, so long as the total open-drain current does not exceed 20mA for Fast-mode Plus devices (as described in section 7.1 of the I2C specification).
+    The specification provides detailed guidelines on how to manage capacitance in an I<sup>2</sup>C system:
+    - Section 5.2 of the I<sup>2</sup>C specification indicates that Fast-mode Plus devices may operate at reduced clock speeds if the bus capacitance drives signal rise times (t<sub>r</sub>) outside the nominal 120ns limit.
+    Excess capacitance can also be compensated for by reducing the size of the bus pullup resistor, so long as the total open-drain current does not exceed 20mA for Fast-mode Plus devices (as described in section 7.1 of the I<sup>2</sup>C specification).
     However the specification places a hard limit on rise times capping them at 1000ns.
     - If there are Standard- or Fast-mode target devices on the bus, the specified open-drain current limit is reduced to 3mA (section 7.1), thus further restricting the minimum value of the pull-up resistor.
     - In Fast-mode bus designs, where the total line capacitance exceeds 200pF, the specification recommends replacing the pull-up resistor with an active current source, supplying 3mA or less (section 5.1).
     Regardless of the physical construction of the bus, the rise time (t<sub>r</sub>) is a system dependent, parameter that needs to be made known to firmware for I2C initialization.
 - The expected fall time, t<sub>f</sub>, in ns.
     - Like t<sub>r</sub>, this parameter is not firmware controlled rather it is a function of the SCL driver, which in a strictly compliant device is expected to manage the slew-rate for the falling edge of the SDA and SCL signals, through proper design of the SCL output buffer.
-    - See table 10 of the I2C specification for more details.
+    - See table 10 (rev. 6) of the I<sup>2</sup>C specification for more details.
 - (optional) The desired SCL cycle period, t<sub>SCL,user</sub> in ns.
     - By default the device should operate at the maximum frequency for that mode.
     However, If the system developer wishes to operate at slower than the mode-specific maximum, a larger than minimum period could be allowed as an additional functional parameter when calculating the timing parameters.
@@ -116,11 +116,11 @@ All other parameters in registers `TIMING2`, `TIMING3`, `TIMING4` are unchanged 
 ### Writing `n` bytes to a device:
 1. Address the device for writing by writing to:
   - `FDATA.START` = 1;
-  - `FDATA.FBYTE` = <7-bit address + write bit>.
+  - `FDATA.FBYTE` = < 7-bit address + write bit >.
 2. Fill the FMT FIFO by writing to `FDATA.FBYTE` `n`-1 times.
 3. Send last byte with the stop bit by writing to:
   - `FDATA.STOP` = 1;
-  - `FDATA.FBYTE` = <last byte>.
+  - `FDATA.FBYTE` = < last byte >.
 4. Wait for and check the result of the transaction.
   - If `INTR_STATE.CONTROLLER_HALT` is 1, the transaction failed.
     - Check `CONTROLLER_EVENTS` for the reason, reset the FMT FIFO with `FIFO_CTRL.FMTRST`, and clear the latched events.
@@ -129,11 +129,11 @@ All other parameters in registers `TIMING2`, `TIMING3`, `TIMING4` are unchanged 
 ### Reading `n` bytes from a device:
 1. Address the device for reading by writing to the FMT FIFO:
   - `FDATA.START` = 1;
-  - `FDATA.FBYTE` = <7-bit address + read bit>.
+  - `FDATA.FBYTE` = < 7-bit address + read bit >.
 2. Issue a read transfer by writing to the FMT FIFO.
-  - `FDATA.READ` = 1;
+  - `FDATA.READB` = 1;
   - `FDATA.STOP` = 1;
-  - `FDATA.FBYTE` = <`n`>.
+  - `FDATA.FBYTE` = < `n` >.
 3. Wait for the transfer to finish or interrupt by checking:
   - If `STATUS.FMTEMPTY` bit is 1.
     - **Or** if `INTR_STATE.FMT_THRESHOLD` bit is 1 ( as long as `FIFO_CTRL.FMTILVL` is set to 1).
