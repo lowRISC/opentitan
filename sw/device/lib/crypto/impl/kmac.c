@@ -91,17 +91,17 @@ otcrypto_status_t otcrypto_kmac(otcrypto_blinded_key_t *key,
   otcrypto_key_mode_t key_mode_used = launder32(0);
   switch (launder32(key->config.key_mode)) {
     case kOtcryptoKeyModeKmac128:
-      HARDENED_TRY(kmac_kmac_128(
-          &kmac_key, /*masked_digest=*/kHardenedBoolFalse, input_message.data,
-          input_message.len, customization_string.data,
-          customization_string.len, tag.data, tag.len));
+      HARDENED_TRY(kmac_kmac_128(&kmac_key,
+                                 /*masked_digest=*/kHardenedBoolFalse,
+                                 &input_message, customization_string.data,
+                                 customization_string.len, tag.data, tag.len));
       key_mode_used = launder32(key_mode_used) | kOtcryptoKeyModeKmac128;
       break;
     case kOtcryptoKeyModeKmac256:
-      HARDENED_TRY(kmac_kmac_256(
-          &kmac_key, /*masked_digest=*/kHardenedBoolFalse, input_message.data,
-          input_message.len, customization_string.data,
-          customization_string.len, tag.data, tag.len));
+      HARDENED_TRY(kmac_kmac_256(&kmac_key,
+                                 /*masked_digest=*/kHardenedBoolFalse,
+                                 &input_message, customization_string.data,
+                                 customization_string.len, tag.data, tag.len));
       key_mode_used = launder32(key_mode_used) | kOtcryptoKeyModeKmac256;
       break;
     default:
@@ -116,6 +116,10 @@ otcrypto_status_t otcrypto_kmac(otcrypto_blinded_key_t *key,
   } else if (key->config.hw_backed != kHardenedBoolFalse) {
     return OTCRYPTO_BAD_ARGS;
   }
+
+  // Verify the input buffer
+  HARDENED_CHECK_EQ(kHardenedBoolTrue,
+                    OTCRYPTO_CHECK_BUF(&customization_string));
 
   return OTCRYPTO_OK;
 }
