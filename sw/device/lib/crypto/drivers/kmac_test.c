@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_alerts.h"
@@ -32,7 +33,10 @@ static status_t run_kmac_test(void) {
                                        0xbd90d36b, 0x6e085f85, 0x5b529d3e,
                                        0x45e2bf46, 0x32154311};
 
-  TRY(kmac_sha3_256(kMsg, sizeof(kMsg) - 1, digest));
+  otcrypto_const_byte_buf_t msg_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, kMsg, sizeof(kMsg) - 1);
+
+  TRY(kmac_sha3_256(&msg_buf, digest));
 
   CHECK_ARRAYS_EQ(digest, kExpectedDigest, ARRAYSIZE(kExpectedDigest));
 
@@ -46,13 +50,15 @@ static status_t run_negative_test(void) {
   CHECK(kmac_key_length_check(99).value == OTCRYPTO_BAD_ARGS.value);
 
   // Null pointer check
-  CHECK(kmac_sha3_256(NULL, 0, NULL).value == OTCRYPTO_BAD_ARGS.value);
+  otcrypto_const_byte_buf_t null_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
+  CHECK(kmac_sha3_256(&null_buf, NULL).value == OTCRYPTO_BAD_ARGS.value);
 
   // Test string prefix length limits (func_name + cust_str > 36 bytes)
   uint8_t func_name[20] = {0};
   uint8_t cust_str[20] = {0};
   uint32_t dummy_digest[8];
-  CHECK(kmac_cshake_128(NULL, 0, func_name, 20, cust_str, 20, dummy_digest, 8)
+  CHECK(kmac_cshake_128(&null_buf, func_name, 20, cust_str, 20, dummy_digest, 8)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   // Send an invalid command to the CMD register to trigger the error interrupt

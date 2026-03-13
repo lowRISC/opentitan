@@ -26,7 +26,7 @@ otcrypto_status_t otcrypto_sha3_224(otcrypto_const_byte_buf_t message,
   }
   HARDENED_CHECK_EQ(digest->len, kKmacSha3224DigestWords);
   digest->mode = kOtcryptoHashModeSha3_224;
-  return kmac_sha3_224(message.data, message.len, digest->data);
+  return kmac_sha3_224(&message, digest->data);
 }
 
 otcrypto_status_t otcrypto_sha3_256(otcrypto_const_byte_buf_t message,
@@ -42,7 +42,7 @@ otcrypto_status_t otcrypto_sha3_256(otcrypto_const_byte_buf_t message,
   }
   HARDENED_CHECK_EQ(digest->len, kKmacSha3256DigestWords);
   digest->mode = kOtcryptoHashModeSha3_256;
-  return kmac_sha3_256(message.data, message.len, digest->data);
+  return kmac_sha3_256(&message, digest->data);
 }
 
 otcrypto_status_t otcrypto_sha3_384(otcrypto_const_byte_buf_t message,
@@ -58,7 +58,7 @@ otcrypto_status_t otcrypto_sha3_384(otcrypto_const_byte_buf_t message,
   }
   HARDENED_CHECK_EQ(digest->len, kKmacSha3384DigestWords);
   digest->mode = kOtcryptoHashModeSha3_384;
-  return kmac_sha3_384(message.data, message.len, digest->data);
+  return kmac_sha3_384(&message, digest->data);
 }
 
 otcrypto_status_t otcrypto_sha3_512(otcrypto_const_byte_buf_t message,
@@ -74,7 +74,7 @@ otcrypto_status_t otcrypto_sha3_512(otcrypto_const_byte_buf_t message,
   }
   HARDENED_CHECK_EQ(digest->len, kKmacSha3512DigestWords);
   digest->mode = kOtcryptoHashModeSha3_512;
-  return kmac_sha3_512(message.data, message.len, digest->data);
+  return kmac_sha3_512(&message, digest->data);
 }
 
 otcrypto_status_t otcrypto_shake128(otcrypto_const_byte_buf_t message,
@@ -86,7 +86,7 @@ otcrypto_status_t otcrypto_shake128(otcrypto_const_byte_buf_t message,
     return OTCRYPTO_BAD_ARGS;
   }
   digest->mode = kOtcryptoHashXofModeShake128;
-  return kmac_shake_128(message.data, message.len, digest->data, digest->len);
+  return kmac_shake_128(&message, digest->data, digest->len);
 }
 
 otcrypto_status_t otcrypto_shake256(otcrypto_const_byte_buf_t message,
@@ -98,7 +98,7 @@ otcrypto_status_t otcrypto_shake256(otcrypto_const_byte_buf_t message,
     return OTCRYPTO_BAD_ARGS;
   }
   digest->mode = kOtcryptoHashXofModeShake256;
-  return kmac_shake_256(message.data, message.len, digest->data, digest->len);
+  return kmac_shake_256(&message, digest->data, digest->len);
 }
 
 otcrypto_status_t otcrypto_cshake128(
@@ -119,7 +119,7 @@ otcrypto_status_t otcrypto_cshake128(
     return OTCRYPTO_BAD_ARGS;
   }
   digest->mode = kOtcryptoHashXofModeCshake128;
-  return kmac_cshake_128(message.data, message.len, function_name_string.data,
+  return kmac_cshake_128(&message, function_name_string.data,
                          function_name_string.len, customization_string.data,
                          customization_string.len, digest->data, digest->len);
 }
@@ -142,7 +142,7 @@ otcrypto_status_t otcrypto_cshake256(
     return OTCRYPTO_BAD_ARGS;
   }
   digest->mode = kOtcryptoHashXofModeCshake256;
-  return kmac_cshake_256(message.data, message.len, function_name_string.data,
+  return kmac_cshake_256(&message, function_name_string.data,
                          function_name_string.len, customization_string.data,
                          customization_string.len, digest->data, digest->len);
 }

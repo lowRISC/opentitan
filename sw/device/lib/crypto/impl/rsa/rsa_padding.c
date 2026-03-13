@@ -315,16 +315,16 @@ static status_t hash(otcrypto_hash_mode_t hash_mode, const uint8_t *message,
       return hmac_hash_sha512(&message_buf, digest);
     case kOtcryptoHashModeSha3_224:
       HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha3_224);
-      return kmac_sha3_224(message, message_len, digest);
+      return kmac_sha3_224(&message_buf, digest);
     case kOtcryptoHashModeSha3_256:
       HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha3_256);
-      return kmac_sha3_256(message, message_len, digest);
+      return kmac_sha3_256(&message_buf, digest);
     case kOtcryptoHashModeSha3_384:
       HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha3_384);
-      return kmac_sha3_384(message, message_len, digest);
+      return kmac_sha3_384(&message_buf, digest);
     case kOtcryptoHashModeSha3_512:
       HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha3_512);
-      return kmac_sha3_512(message, message_len, digest);
+      return kmac_sha3_512(&message_buf, digest);
     default:
       return OTCRYPTO_BAD_ARGS;
   }
