@@ -575,7 +575,7 @@ ownership_transfer_test(
     srcs = ["flash_contents.c"],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_b",
     shared_params = {
-        "timeout": "long",
+        "timeout": "moderate",
         # We boot on Side B since rescue will rewrite side A.
         "assemble": "{rom_ext}@{rom_ext_slot_a} {firmware}@{owner_slot_b}",
         "test_cmd": """
