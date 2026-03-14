@@ -12,9 +12,7 @@
 // inout clk
 // inout rst_n
 
-interface clk_rst_if #(
-  parameter string IfName = "main"
-) (
+interface clk_rst_if (
   inout clk,
   inout rst_n
 );
@@ -101,8 +99,7 @@ interface clk_rst_if #(
   // If true, this is the only clock in the system; there is no need to add initial jitter.
   bit sole_clock = 1'b0;
 
-  // use IfName as a part of msgs to indicate which clk_rst_vif instance
-  string msg_id = $sformatf("[%m(clk_rst_if):%s]", IfName);
+  string msg_id = $sformatf("[%m(clk_rst_if)]");
 
   clocking cb @(posedge clk);
   endclocking
