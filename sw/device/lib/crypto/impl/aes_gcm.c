@@ -335,6 +335,13 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(otcrypto_blinded_key_t *key,
   // Enable the iCache if it was previously enabled.
   ibex_restore_icache(icache_saved_state);
 
+  // Verify the input buffers
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&plaintext));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&iv));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&aad));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&ciphertext));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&auth_tag));
+
   return OTCRYPTO_OK;
 }
 
@@ -388,6 +395,13 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
   // Enable the iCache if it was previously enabled.
   ibex_restore_icache(icache_saved_state);
 
+  // Verify the input buffers
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&plaintext));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&iv));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&aad));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&ciphertext));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&auth_tag));
+
   return OTCRYPTO_OK;
 }
 
@@ -422,6 +436,9 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
   // Enable the iCache if it was previously enabled.
   ibex_restore_icache(icache_saved_state);
 
+  // Verify the input buffer
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&iv));
+
   return OTCRYPTO_OK;
 }
 
@@ -455,6 +472,9 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
 
   // Enable the iCache if it was previously enabled.
   ibex_restore_icache(icache_saved_state);
+
+  // Verify the input buffer
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&iv));
 
   return OTCRYPTO_OK;
 }
@@ -491,6 +511,9 @@ otcrypto_status_t otcrypto_aes_gcm_update_aad(otcrypto_aes_gcm_context_t *ctx,
 
   // Enable the iCache if it was previously enabled.
   ibex_restore_icache(icache_saved_state);
+
+  // Verify the input buffer
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&aad));
 
   return OTCRYPTO_OK;
 }
@@ -547,6 +570,10 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
   // Enable the iCache if it was previously enabled.
   ibex_restore_icache(icache_saved_state);
 
+  // Verify the input buffers
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&input));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&output));
+
   return OTCRYPTO_OK;
 }
 
@@ -602,6 +629,10 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
   // Enable the iCache if it was previously enabled.
   ibex_restore_icache(icache_saved_state);
 
+  // Verify the input buffers
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&ciphertext));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&auth_tag));
+
   return OTCRYPTO_OK;
 }
 
@@ -654,6 +685,10 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
 
   // Enable the iCache if it was previously enabled.
   ibex_restore_icache(icache_saved_state);
+
+  // Verify the input buffers
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&auth_tag));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&plaintext));
 
   return OTCRYPTO_OK;
 }
