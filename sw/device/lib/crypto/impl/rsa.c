@@ -136,6 +136,9 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
       return OTCRYPTO_BAD_ARGS;
   }
 
+  // Verify the input buffer
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&modulus));
+
   public_key->checksum = integrity_unblinded_checksum(public_key);
   return OTCRYPTO_OK;
 }
@@ -388,6 +391,10 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
       return OTCRYPTO_BAD_ARGS;
   }
 
+  // Verify the input buffers
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&modulus));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&d_share0));
+
   private_key->checksum = integrity_blinded_checksum(private_key);
   return OTCRYPTO_OK;
 }
@@ -594,6 +601,10 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
       cofactor_share1.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+
+  // Verify the input buffers
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&modulus));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&cofactor_share0));
 
   // Entropy complex must be initialized for `hardened_memcpy`.
   HARDENED_TRY(entropy_complex_check());
@@ -817,6 +828,9 @@ otcrypto_status_t otcrypto_rsa_sign_async_finalize(
       return OTCRYPTO_BAD_ARGS;
   }
 
+  // Verify the input buffer
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&signature));
+
   // Should be unreachable.
   HARDENED_TRAP();
   return OTCRYPTO_FATAL_ERR;
@@ -829,6 +843,9 @@ otcrypto_status_t otcrypto_rsa_verify_async_start(
   if (public_key == NULL || public_key->key == NULL || signature.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+
+  // Verify the input buffer
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&signature));
 
   // Check that the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
