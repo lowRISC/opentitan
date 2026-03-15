@@ -76,33 +76,45 @@ status_t handle_hmac(ujson_t *uj) {
       .key_mode = key_mode,
       .key_length = uj_key.key_len,
       .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
       .security_level = sec_level,
   };
   // Create key shares.
-  uint32_t key_buf[ceil_div(uj_key.key_len, sizeof(uint32_t))];
-  memcpy(key_buf, uj_key.key, uj_key.key_len);
-  for (size_t i = 0; i < ARRAYSIZE(key_buf); i++) {
+  size_t key_words = ceil_div(uj_key.key_len, sizeof(uint32_t));
+  size_t keybuf_words = key_words > 0 ? key_words : 1;
+  uint32_t key_buf[keybuf_words];
+  memset(key_buf, 0, sizeof(key_buf));
+
+  if (uj_key.key_len > 0) {
+    memcpy(key_buf, uj_key.key, uj_key.key_len);
+  }
+
+  for (size_t i = 0; i < key_words; i++) {
     key_buf[i] ^= kTestMask[i];
   }
-  otcrypto_const_word32_buf_t share0 = OTCRYPTO_MAKE_BUF(
-      otcrypto_const_word32_buf_t, key_buf, ARRAYSIZE(key_buf));
+  otcrypto_const_word32_buf_t share0 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, key_buf, key_words);
 
-  otcrypto_const_word32_buf_t share1 = OTCRYPTO_MAKE_BUF(
-      otcrypto_const_word32_buf_t, kTestMask, ARRAYSIZE(key_buf));
+  otcrypto_const_word32_buf_t share1 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, kTestMask, key_words);
   // Create blinded key
-  uint32_t keyblob[2 * ARRAYSIZE(key_buf)];
+  uint32_t keyblob[2 * keybuf_words];
   otcrypto_blinded_key_t key = {
       .config = config,
-      .keyblob_length = sizeof(keyblob),
+      .keyblob_length = 2 * key_words * sizeof(uint32_t),
       .keyblob = keyblob,
   };
   TRY(otcrypto_import_blinded_key(share0, share1, &key));
 
   // Create input message
-  uint8_t msg_buf[uj_message.message_len];
-  memcpy(msg_buf, uj_message.message, uj_message.message_len);
-  otcrypto_const_byte_buf_t input_message = OTCRYPTO_MAKE_BUF(
-      otcrypto_const_byte_buf_t, msg_buf, uj_message.message_len);
+  size_t msg_len = uj_message.message_len;
+  uint8_t msg_buf[msg_len > 0 ? msg_len : 1];
+  if (msg_len > 0) {
+    memcpy(msg_buf, uj_message.message, msg_len);
+  }
+
+  otcrypto_const_byte_buf_t input_message =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg_buf, msg_len);
 
   // Create tag
   uint32_t tag_buf[MaxTagWords];
