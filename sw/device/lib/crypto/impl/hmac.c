@@ -52,9 +52,10 @@ static status_t hmac_key_construct(const otcrypto_blinded_key_t *key,
   // HMAC HWIP does not support masking, so we need to unmask the key.
   size_t unmasked_key_len = keyblob_share_num_words(key->config);
   uint32_t unmasked_key[unmasked_key_len];
-  otcrypto_const_byte_buf_t unmasked_key_buf = OTCRYPTO_MAKE_BUF(
-      otcrypto_const_byte_buf_t, (unsigned char *)unmasked_key,
-      unmasked_key_len * sizeof(uint32_t));
+
+  otcrypto_const_byte_buf_t unmasked_key_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t,
+                        (unsigned char *)unmasked_key, key->config.key_length);
   HARDENED_TRY(keyblob_key_unmask(key, unmasked_key_len, unmasked_key));
 
   // Pre-populate with 0s, in order to pad keys smaller than the internal
@@ -74,7 +75,7 @@ static status_t hmac_key_construct(const otcrypto_blinded_key_t *key,
           uint32_t random_unmasked_key[unmasked_key_len];
           otcrypto_const_byte_buf_t random_unmasked_key_buf = OTCRYPTO_MAKE_BUF(
               otcrypto_const_byte_buf_t, (unsigned char *)random_unmasked_key,
-              unmasked_key_len * sizeof(uint32_t));
+              key->config.key_length);
           HARDENED_TRY(
               hardened_memshred(random_unmasked_key, unmasked_key_len));
 
@@ -102,7 +103,7 @@ static status_t hmac_key_construct(const otcrypto_blinded_key_t *key,
           uint32_t random_unmasked_key[unmasked_key_len];
           otcrypto_const_byte_buf_t random_unmasked_key_buf = OTCRYPTO_MAKE_BUF(
               otcrypto_const_byte_buf_t, (unsigned char *)random_unmasked_key,
-              unmasked_key_len * sizeof(uint32_t));
+              key->config.key_length);
           HARDENED_TRY(
               hardened_memshred(random_unmasked_key, unmasked_key_len));
 
@@ -130,7 +131,7 @@ static status_t hmac_key_construct(const otcrypto_blinded_key_t *key,
           uint32_t random_unmasked_key[unmasked_key_len];
           otcrypto_const_byte_buf_t random_unmasked_key_buf = OTCRYPTO_MAKE_BUF(
               otcrypto_const_byte_buf_t, (unsigned char *)random_unmasked_key,
-              unmasked_key_len * sizeof(uint32_t));
+              key->config.key_length);
           HARDENED_TRY(
               hardened_memshred(random_unmasked_key, unmasked_key_len));
 
