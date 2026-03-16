@@ -38,7 +38,7 @@ typedef struct otcrypto_interface_t {
   otcrypto_status_t (*aes)(otcrypto_blinded_key_t *, otcrypto_word32_buf_t,
                            otcrypto_aes_mode_t, otcrypto_aes_operation_t,
                            otcrypto_const_byte_buf_t, otcrypto_aes_padding_t,
-                           otcrypto_byte_buf_t);
+                           otcrypto_byte_buf_t *);
   otcrypto_status_t (*aes_padded_plaintext_length)(size_t,
                                                    otcrypto_aes_padding_t,
                                                    size_t *);
@@ -47,14 +47,12 @@ typedef struct otcrypto_interface_t {
   otcrypto_status_t (*aes_gcm_encrypt)(
       otcrypto_blinded_key_t *, otcrypto_const_byte_buf_t,
       otcrypto_const_word32_buf_t, otcrypto_const_byte_buf_t,
-      otcrypto_aes_gcm_tag_len_t, otcrypto_byte_buf_t, otcrypto_word32_buf_t);
-  otcrypto_status_t (*aes_gcm_decrypt)(otcrypto_blinded_key_t *,
-                                       otcrypto_const_byte_buf_t,
-                                       otcrypto_const_word32_buf_t,
-                                       otcrypto_const_byte_buf_t,
-                                       otcrypto_aes_gcm_tag_len_t,
-                                       otcrypto_const_word32_buf_t,
-                                       otcrypto_byte_buf_t, hardened_bool_t *);
+      otcrypto_aes_gcm_tag_len_t, otcrypto_byte_buf_t *, otcrypto_word32_buf_t);
+  otcrypto_status_t (*aes_gcm_decrypt)(
+      otcrypto_blinded_key_t *, otcrypto_const_byte_buf_t,
+      otcrypto_const_word32_buf_t, otcrypto_const_byte_buf_t,
+      otcrypto_aes_gcm_tag_len_t, otcrypto_const_word32_buf_t,
+      otcrypto_byte_buf_t *, hardened_bool_t *);
   otcrypto_status_t (*aes_gcm_encrypt_init)(otcrypto_blinded_key_t *,
                                             otcrypto_const_word32_buf_t,
                                             otcrypto_aes_gcm_context_t *);
@@ -65,15 +63,15 @@ typedef struct otcrypto_interface_t {
                                           otcrypto_const_byte_buf_t);
   otcrypto_status_t (*aes_gcm_update_encrypted_data)(
       otcrypto_aes_gcm_context_t *, otcrypto_const_byte_buf_t,
-      otcrypto_byte_buf_t, size_t *);
+      otcrypto_byte_buf_t *, size_t *);
   otcrypto_status_t (*aes_gcm_encrypt_final)(otcrypto_aes_gcm_context_t *,
                                              otcrypto_aes_gcm_tag_len_t,
-                                             otcrypto_byte_buf_t, size_t *,
+                                             otcrypto_byte_buf_t *, size_t *,
                                              otcrypto_word32_buf_t);
   otcrypto_status_t (*aes_gcm_decrypt_final)(otcrypto_aes_gcm_context_t *,
                                              otcrypto_const_word32_buf_t,
                                              otcrypto_aes_gcm_tag_len_t,
-                                             otcrypto_byte_buf_t, size_t *,
+                                             otcrypto_byte_buf_t *, size_t *,
                                              hardened_bool_t *);
 
   // DRBG
@@ -246,7 +244,7 @@ typedef struct otcrypto_interface_t {
                                    const otcrypto_hash_mode_t,
                                    otcrypto_const_word32_buf_t,
                                    otcrypto_const_byte_buf_t,
-                                   otcrypto_byte_buf_t, size_t *);
+                                   otcrypto_byte_buf_t *, size_t *);
   otcrypto_status_t (*rsa_keygen_async_start)(otcrypto_rsa_size_t);
   otcrypto_status_t (*rsa_keygen_async_finalize)(otcrypto_unblinded_key_t *,
                                                  otcrypto_blinded_key_t *);
@@ -274,7 +272,7 @@ typedef struct otcrypto_interface_t {
                                                otcrypto_const_word32_buf_t);
   otcrypto_status_t (*rsa_decrypt_async_finalize)(const otcrypto_hash_mode_t,
                                                   otcrypto_const_byte_buf_t,
-                                                  otcrypto_byte_buf_t,
+                                                  otcrypto_byte_buf_t *,
                                                   size_t *);
   // P-256
   otcrypto_status_t (*ecdsa_p256_keygen)(otcrypto_blinded_key_t *,

@@ -72,7 +72,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(otcrypto_blinded_key_t *key,
                                            otcrypto_const_word32_buf_t iv,
                                            otcrypto_const_byte_buf_t aad,
                                            otcrypto_aes_gcm_tag_len_t tag_len,
-                                           otcrypto_byte_buf_t ciphertext,
+                                           otcrypto_byte_buf_t *ciphertext,
                                            otcrypto_word32_buf_t auth_tag);
 
 /**
@@ -106,7 +106,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
     otcrypto_blinded_key_t *key, otcrypto_const_byte_buf_t ciphertext,
     otcrypto_const_word32_buf_t iv, otcrypto_const_byte_buf_t aad,
     otcrypto_aes_gcm_tag_len_t tag_len, otcrypto_const_word32_buf_t auth_tag,
-    otcrypto_byte_buf_t plaintext, hardened_bool_t *success);
+    otcrypto_byte_buf_t *plaintext, hardened_bool_t *success);
 
 /**
  * Initializes the AES-GCM authenticated encryption operation.
@@ -202,7 +202,7 @@ otcrypto_status_t otcrypto_aes_gcm_update_aad(otcrypto_aes_gcm_context_t *ctx,
  */
 otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
     otcrypto_aes_gcm_context_t *ctx, otcrypto_const_byte_buf_t input,
-    otcrypto_byte_buf_t output, size_t *output_bytes_written);
+    otcrypto_byte_buf_t *output, size_t *output_bytes_written);
 
 /**
  * Finishes the AES-GCM authenticated encryption operation.
@@ -225,7 +225,7 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
  */
 otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
     otcrypto_aes_gcm_context_t *ctx, otcrypto_aes_gcm_tag_len_t tag_len,
-    otcrypto_byte_buf_t ciphertext, size_t *ciphertext_bytes_written,
+    otcrypto_byte_buf_t *ciphertext, size_t *ciphertext_bytes_written,
     otcrypto_word32_buf_t auth_tag);
 
 /**
@@ -253,7 +253,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
  */
 otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
     otcrypto_aes_gcm_context_t *ctx, otcrypto_const_word32_buf_t auth_tag,
-    otcrypto_aes_gcm_tag_len_t tag_len, otcrypto_byte_buf_t plaintext,
+    otcrypto_aes_gcm_tag_len_t tag_len, otcrypto_byte_buf_t *plaintext,
     size_t *plaintext_bytes_written, hardened_bool_t *success);
 
 #ifdef __cplusplus

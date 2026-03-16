@@ -267,7 +267,7 @@ otcrypto_status_t otcrypto_rsa_decrypt(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_hash_mode_t hash_mode,
     otcrypto_const_word32_buf_t ciphertext, otcrypto_const_byte_buf_t label,
-    otcrypto_byte_buf_t plaintext, size_t *plaintext_bytelen);
+    otcrypto_byte_buf_t *plaintext, size_t *plaintext_bytelen);
 /**
  * Starts the asynchronous RSA key generation function.
  *
@@ -444,7 +444,7 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
  */
 otcrypto_status_t otcrypto_rsa_decrypt_async_finalize(
     const otcrypto_hash_mode_t hash_mode, otcrypto_const_byte_buf_t label,
-    otcrypto_byte_buf_t plaintext, size_t *plaintext_bytelen);
+    otcrypto_byte_buf_t *plaintext, size_t *plaintext_bytelen);
 
 #ifdef __cplusplus
 }  // extern "C"
