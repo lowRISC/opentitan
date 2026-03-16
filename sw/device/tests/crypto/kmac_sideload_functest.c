@@ -310,7 +310,7 @@ static status_t run_test_vector(void) {
 
   LOG_INFO("Running the first KMAC sideload operation.");
   TRY(otcrypto_kmac(&current_test_vector->key, &input_msg_buf, &cust_str_buf,
-                    current_test_vector->digest.len, tag_buf1));
+                    current_test_vector->digest.len, &tag_buf1));
 
   // Run a SHA-3 operation in between the two KMAC operations.
   LOG_INFO("Running the intermediate SHA3 operation.");
@@ -335,7 +335,7 @@ static status_t run_test_vector(void) {
 
   LOG_INFO("Running the second KMAC sideload operation for comparison.");
   TRY(otcrypto_kmac(&current_test_vector->key, &input_msg_buf, &cust_str_buf,
-                    current_test_vector->digest.len, tag_buf2));
+                    current_test_vector->digest.len, &tag_buf2));
 
   TRY_CHECK_ARRAYS_EQ((unsigned char *)tag_buf1.data,
                       (unsigned char *)tag_buf2.data,

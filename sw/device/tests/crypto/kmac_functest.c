@@ -197,7 +197,7 @@ static status_t run_kmac(otcrypto_word32_buf_t tag) {
       otcrypto_const_byte_buf_t, current_test_vector->cust_str.data,
       current_test_vector->cust_str.len);
   return otcrypto_kmac(&current_test_vector->key, &input_msg, &cust_str,
-                       current_test_vector->digest.len, tag);
+                       current_test_vector->digest.len, &tag);
 }
 
 /**

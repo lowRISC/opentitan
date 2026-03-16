@@ -180,7 +180,7 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
     uint32_t *tag_dest = output_key_material_data + i * digest_word_len;
     otcrypto_word32_buf_t tag_buf =
         OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_dest, digest_word_len);
-    HARDENED_TRY(otcrypto_hmac_final(&ctx, tag_buf));
+    HARDENED_TRY(otcrypto_hmac_final(&ctx, &tag_buf));
   }
 
   // Generate a mask (all-zero for now, since HMAC is unhardened anyway).

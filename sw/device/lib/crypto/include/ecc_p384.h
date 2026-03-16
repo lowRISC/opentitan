@@ -58,7 +58,7 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_config_k(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_blinded_key_t *secret_scalar,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_word32_buf_t signature);
+    otcrypto_word32_buf_t *signature);
 
 /**
  * Generates an ECDSA signature with curve P-384.
@@ -78,7 +78,7 @@ OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p384_sign(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_word32_buf_t signature);
+    otcrypto_word32_buf_t *signature);
 
 /**
  * Generates an ECDSA signature with curve P-384 and verifies the signature
@@ -102,7 +102,7 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_verify(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_word32_buf_t signature);
+    otcrypto_word32_buf_t *signature);
 
 /**
  * Verifies an ECDSA/P-384 signature.
@@ -236,7 +236,7 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_async_start(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p384_sign_async_finalize(
-    otcrypto_word32_buf_t signature);
+    otcrypto_word32_buf_t *signature);
 
 /**
  * Starts asynchronous signature verification for ECDSA/P-384.

@@ -19,11 +19,11 @@ otcrypto_status_t otcrypto_kmac(otcrypto_blinded_key_t *key,
                                 otcrypto_const_byte_buf_t *input_message,
                                 otcrypto_const_byte_buf_t *customization_string,
                                 size_t required_output_len,
-                                otcrypto_word32_buf_t tag) {
+                                otcrypto_word32_buf_t *tag) {
   // TODO (#16410) Revisit/complete error checks
 
   // Check for null pointers.
-  if (key == NULL || key->keyblob == NULL || tag.data == NULL) {
+  if (key == NULL || key->keyblob == NULL || tag->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -38,7 +38,7 @@ otcrypto_status_t otcrypto_kmac(otcrypto_blinded_key_t *key,
   }
 
   // Ensure that tag buffer length and `required_output_len` match each other.
-  if (required_output_len != tag.len * sizeof(uint32_t) ||
+  if (required_output_len != tag->len * sizeof(uint32_t) ||
       required_output_len == 0) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -94,14 +94,16 @@ otcrypto_status_t otcrypto_kmac(otcrypto_blinded_key_t *key,
       HARDENED_TRY(kmac_kmac_128(&kmac_key,
                                  /*masked_digest=*/kHardenedBoolFalse,
                                  input_message, customization_string->data,
-                                 customization_string->len, tag.data, tag.len));
+                                 customization_string->len, tag->data,
+                                 tag->len));
       key_mode_used = launder32(key_mode_used) | kOtcryptoKeyModeKmac128;
       break;
     case kOtcryptoKeyModeKmac256:
       HARDENED_TRY(kmac_kmac_256(&kmac_key,
                                  /*masked_digest=*/kHardenedBoolFalse,
                                  input_message, customization_string->data,
-                                 customization_string->len, tag.data, tag.len));
+                                 customization_string->len, tag->data,
+                                 tag->len));
       key_mode_used = launder32(key_mode_used) | kOtcryptoKeyModeKmac256;
       break;
     default:

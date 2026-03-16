@@ -53,8 +53,8 @@ otcrypto_status_t otcrypto_symmetric_keygen(
 
   // Generate each share of the key independently.
   HARDENED_TRY(otcrypto_drbg_instantiate(perso_string));
-  HARDENED_TRY(otcrypto_drbg_generate(&empty, share0_buf));
-  HARDENED_TRY(otcrypto_drbg_generate(&empty, share1_buf));
+  HARDENED_TRY(otcrypto_drbg_generate(&empty, &share0_buf));
+  HARDENED_TRY(otcrypto_drbg_generate(&empty, &share1_buf));
 
   // Populate the checksum and return.
   key->checksum = integrity_blinded_checksum(key);
@@ -171,9 +171,9 @@ static status_t aes_kwp_key_construct(const otcrypto_blinded_key_t *key_kek,
 
 otcrypto_status_t otcrypto_key_wrap(const otcrypto_blinded_key_t *key_to_wrap,
                                     const otcrypto_blinded_key_t *key_kek,
-                                    otcrypto_word32_buf_t wrapped_key) {
+                                    otcrypto_word32_buf_t *wrapped_key) {
   if (key_to_wrap == NULL || key_to_wrap->keyblob == NULL || key_kek == NULL ||
-      key_kek->keyblob == NULL || wrapped_key.data == NULL) {
+      key_kek->keyblob == NULL || wrapped_key->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -191,7 +191,7 @@ otcrypto_status_t otcrypto_key_wrap(const otcrypto_blinded_key_t *key_to_wrap,
   // Check the length of the output buffer.
   size_t exp_len;
   HARDENED_TRY(otcrypto_wrapped_key_len(key_to_wrap->config, &exp_len));
-  if (wrapped_key.len != exp_len) {
+  if (wrapped_key->len != exp_len) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -225,7 +225,7 @@ otcrypto_status_t otcrypto_key_wrap(const otcrypto_blinded_key_t *key_to_wrap,
                                key_to_wrap->keyblob, keyblob_words));
 
   // Wrap the key.
-  return aes_kwp_wrap(kek, plaintext, sizeof(plaintext), wrapped_key.data);
+  return aes_kwp_wrap(kek, plaintext, sizeof(plaintext), wrapped_key->data);
 }
 
 otcrypto_status_t otcrypto_key_unwrap(otcrypto_const_word32_buf_t wrapped_key,
@@ -334,10 +334,10 @@ otcrypto_status_t otcrypto_import_blinded_key(
 }
 
 otcrypto_status_t otcrypto_export_blinded_key(
-    const otcrypto_blinded_key_t *blinded_key, otcrypto_word32_buf_t key_share0,
-    otcrypto_word32_buf_t key_share1) {
-  if (blinded_key->keyblob == NULL || key_share0.data == NULL ||
-      key_share1.data == NULL) {
+    const otcrypto_blinded_key_t *blinded_key,
+    otcrypto_word32_buf_t *key_share0, otcrypto_word32_buf_t *key_share1) {
+  if (blinded_key->keyblob == NULL || key_share0->data == NULL ||
+      key_share1->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -363,18 +363,18 @@ otcrypto_status_t otcrypto_export_blinded_key(
 
   // Check the lengths of the shares.
   size_t share_words = launder32(keyblob_share_num_words(blinded_key->config));
-  if (launder32(key_share0.len) != share_words ||
-      launder32(key_share1.len) != share_words) {
+  if (launder32(key_share0->len) != share_words ||
+      launder32(key_share1->len) != share_words) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(key_share0.len,
+  HARDENED_CHECK_EQ(key_share0->len,
                     keyblob_share_num_words(blinded_key->config));
-  HARDENED_CHECK_EQ(key_share1.len,
+  HARDENED_CHECK_EQ(key_share1->len,
                     keyblob_share_num_words(blinded_key->config));
 
   // Randomize the destination buffers.
-  HARDENED_TRY(hardened_memshred(key_share0.data, key_share0.len));
-  HARDENED_TRY(hardened_memshred(key_share1.data, key_share1.len));
+  HARDENED_TRY(hardened_memshred(key_share0->data, key_share0->len));
+  HARDENED_TRY(hardened_memshred(key_share1->data, key_share1->len));
 
   // Check the length of the keyblob.
   size_t keyblob_words = launder32(keyblob_num_words(blinded_key->config));
@@ -391,8 +391,8 @@ otcrypto_status_t otcrypto_export_blinded_key(
   HARDENED_TRY(
       keyblob_to_shares(blinded_key, &keyblob_share0, &keyblob_share1));
   HARDENED_TRY(
-      hardened_memcpy(key_share0.data, keyblob_share0, key_share0.len));
+      hardened_memcpy(key_share0->data, keyblob_share0, key_share0->len));
   HARDENED_TRY(
-      hardened_memcpy(key_share1.data, keyblob_share1, key_share1.len));
+      hardened_memcpy(key_share1->data, keyblob_share1, key_share1->len));
   return OTCRYPTO_OK;
 }

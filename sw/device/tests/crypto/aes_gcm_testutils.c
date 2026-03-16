@@ -182,13 +182,13 @@ status_t aes_gcm_testutils_encrypt(const aes_gcm_test_t *test, bool streaming,
         otcrypto_byte_buf_t, actual_ciphertext.data + ciphertext_bytes_written,
         test->plaintext_len - ciphertext_bytes_written);
     TRY(otcrypto_aes_gcm_encrypt_final(&ctx, tag_len, &final_ciphertext,
-                                       &ciphertext_bytes_written, actual_tag));
+                                       &ciphertext_bytes_written, &actual_tag));
     *cycles = profile_end(t_start);
   } else {
     // Call encrypt() with a cycle count timing profile.
     uint64_t t_start = profile_start();
     otcrypto_status_t err = otcrypto_aes_gcm_encrypt(
-        &key, &plaintext, iv, &aad, tag_len, &actual_ciphertext, actual_tag);
+        &key, &plaintext, iv, &aad, tag_len, &actual_ciphertext, &actual_tag);
     *cycles = profile_end(t_start);
 
     // Check for errors.
