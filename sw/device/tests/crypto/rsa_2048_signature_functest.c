@@ -158,7 +158,7 @@ static status_t run_rsa_2048_sign(const uint8_t *msg, size_t msg_len,
   otcrypto_word32_buf_t sig_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, kRsa2048NumWords);
   uint64_t t_start = profile_start();
-  TRY(otcrypto_rsa_sign(&private_key, msg_digest, padding_mode, sig_buf));
+  TRY(otcrypto_rsa_sign(&private_key, msg_digest, padding_mode, &sig_buf));
   profile_end_and_print(t_start, "RSA signature generation");
 
   return OK_STATUS();
@@ -342,13 +342,13 @@ static status_t run_signature_negative_tests(void) {
 
   // Sign negative tests
   CHECK(
-      otcrypto_rsa_sign(NULL, valid_digest, kOtcryptoRsaPaddingPkcs, valid_sig)
+      otcrypto_rsa_sign(NULL, valid_digest, kOtcryptoRsaPaddingPkcs, &valid_sig)
           .value == OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_word32_buf_t bad_sig_null =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, NULL, kRsa2048NumWords);
   CHECK(otcrypto_rsa_sign(&valid_priv, valid_digest, kOtcryptoRsaPaddingPkcs,
-                          bad_sig_null)
+                          &bad_sig_null)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_blinded_key_t bad_priv_chk = {
@@ -358,12 +358,12 @@ static status_t run_signature_negative_tests(void) {
   };
   bad_priv_chk.checksum = valid_priv.checksum ^ 0xFFFFFFFF;
   CHECK(otcrypto_rsa_sign(&bad_priv_chk, valid_digest, kOtcryptoRsaPaddingPkcs,
-                          valid_sig)
+                          &valid_sig)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   // Mismatched padding mode
   CHECK(otcrypto_rsa_sign(&valid_priv, valid_digest, kOtcryptoRsaPaddingPss,
-                          valid_sig)
+                          &valid_sig)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   // Verify negative tests

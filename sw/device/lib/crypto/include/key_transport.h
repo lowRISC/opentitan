@@ -109,7 +109,7 @@ otcrypto_status_t otcrypto_wrapped_key_len(const otcrypto_key_config_t config,
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_key_wrap(const otcrypto_blinded_key_t *key_to_wrap,
                                     const otcrypto_blinded_key_t *key_kek,
-                                    otcrypto_word32_buf_t wrapped_key);
+                                    otcrypto_word32_buf_t *wrapped_key);
 
 /**
  * Unwraps (decrypts) a secret key.
@@ -187,8 +187,8 @@ otcrypto_status_t otcrypto_import_blinded_key(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_export_blinded_key(
-    const otcrypto_blinded_key_t *blinded_key, otcrypto_word32_buf_t key_share0,
-    otcrypto_word32_buf_t key_share1);
+    const otcrypto_blinded_key_t *blinded_key,
+    otcrypto_word32_buf_t *key_share0, otcrypto_word32_buf_t *key_share1);
 
 #ifdef __cplusplus
 }  // extern "C"

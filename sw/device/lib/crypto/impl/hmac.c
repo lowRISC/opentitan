@@ -215,14 +215,14 @@ static status_t check_key(const otcrypto_blinded_key_t *key) {
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
                                 otcrypto_const_byte_buf_t *input_message,
-                                otcrypto_word32_buf_t tag) {
+                                otcrypto_word32_buf_t *tag) {
   // Check for null pointers.
-  if (tag.data == NULL ||
+  if (tag->data == NULL ||
       (input_message->data == NULL && input_message->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
   // Preload the tag with randomness.
-  HARDENED_TRY(hardened_memshred(tag.data, tag.len));
+  HARDENED_TRY(hardened_memshred(tag->data, tag->len));
 
   // Check the key for null pointers or invalid configurations.
   HARDENED_TRY(check_key(key));
@@ -243,7 +243,7 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
         // No protection against FI.
         HARDENED_CHECK_EQ(launder32(key->config.security_level),
                           kOtcryptoKeySecurityLevelLow);
-        return hmac_hmac_sha256_cl(&hmac_key, input_message, &tag);
+        return hmac_hmac_sha256_cl(&hmac_key, input_message, tag);
       } else if (key->config.security_level ==
                  kOtcryptoKeySecurityLevelMedium) {
         // Call the HMAC core twice and compare both tags. This serves as a FI
@@ -251,11 +251,11 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
         // First HMAC computation using the HMAC core.
         HARDENED_CHECK_EQ(launder32(key->config.security_level),
                           kOtcryptoKeySecurityLevelMedium);
-        HARDENED_TRY(hmac_hmac_sha256_cl(&hmac_key, input_message, &tag));
+        HARDENED_TRY(hmac_hmac_sha256_cl(&hmac_key, input_message, tag));
         // Second HMAC computation using the HMAC core.
-        uint32_t tag_redundant_data[tag.len];
+        uint32_t tag_redundant_data[tag->len];
         otcrypto_word32_buf_t tag_redundant = OTCRYPTO_MAKE_BUF(
-            otcrypto_word32_buf_t, tag_redundant_data, tag.len);
+            otcrypto_word32_buf_t, tag_redundant_data, tag->len);
         hmac_key_t hmac_key_redundant;
         HARDENED_TRY(hmac_key_construct(key, kHmacSha256BlockWords,
                                         &hmac_key_redundant));
@@ -263,7 +263,7 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
                                          &tag_redundant));
         // Comparison of both tags.
         HARDENED_CHECK_EQ(
-            hardened_memeq(&tag.data[0], &tag_redundant.data[0], tag.len),
+            hardened_memeq(&tag->data[0], &tag_redundant.data[0], tag->len),
             kHardenedBoolTrue);
         return OTCRYPTO_OK;
       } else {
@@ -273,11 +273,11 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
         HARDENED_CHECK_EQ(launder32(key->config.security_level),
                           kOtcryptoKeySecurityLevelHigh);
         // First HMAC computation using the HMAC core.
-        HARDENED_TRY(hmac_hmac_sha256_cl(&hmac_key, input_message, &tag));
+        HARDENED_TRY(hmac_hmac_sha256_cl(&hmac_key, input_message, tag));
         // Second HMAC computation without using the HMAC core.
-        uint32_t tag_redundant_data[tag.len];
+        uint32_t tag_redundant_data[tag->len];
         otcrypto_word32_buf_t tag_redundant = OTCRYPTO_MAKE_BUF(
-            otcrypto_word32_buf_t, tag_redundant_data, tag.len);
+            otcrypto_word32_buf_t, tag_redundant_data, tag->len);
         hmac_key_t hmac_key_redundant;
         HARDENED_TRY(hmac_key_construct(key, kHmacSha256BlockWords,
                                         &hmac_key_redundant));
@@ -285,7 +285,7 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
                                                 input_message, &tag_redundant));
         // Comparison of both tags.
         HARDENED_CHECK_EQ(
-            hardened_memeq(&tag.data[0], &tag_redundant.data[0], tag.len),
+            hardened_memeq(&tag->data[0], &tag_redundant.data[0], tag->len),
             kHardenedBoolTrue);
         return OTCRYPTO_OK;
       }
@@ -296,7 +296,7 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
       if (key->config.security_level == kOtcryptoKeySecurityLevelLow) {
         HARDENED_CHECK_EQ(launder32(key->config.security_level),
                           kOtcryptoKeySecurityLevelLow);
-        return hmac_hmac_sha384(&hmac_key, input_message, &tag);
+        return hmac_hmac_sha384(&hmac_key, input_message, tag);
       } else if (key->config.security_level ==
                  kOtcryptoKeySecurityLevelMedium) {
         // Call the HMAC core twice and compare both tags. This serves as a FI
@@ -304,11 +304,11 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
         // First HMAC computation using the HMAC core.
         HARDENED_CHECK_EQ(launder32(key->config.security_level),
                           kOtcryptoKeySecurityLevelMedium);
-        HARDENED_TRY(hmac_hmac_sha384(&hmac_key, input_message, &tag));
+        HARDENED_TRY(hmac_hmac_sha384(&hmac_key, input_message, tag));
         // Second HMAC computation using the HMAC core.
-        uint32_t tag_redundant_data[tag.len];
+        uint32_t tag_redundant_data[tag->len];
         otcrypto_word32_buf_t tag_redundant = OTCRYPTO_MAKE_BUF(
-            otcrypto_word32_buf_t, tag_redundant_data, tag.len);
+            otcrypto_word32_buf_t, tag_redundant_data, tag->len);
         hmac_key_t hmac_key_redundant;
         HARDENED_TRY(hmac_key_construct(key, kHmacSha384BlockWords,
                                         &hmac_key_redundant));
@@ -316,7 +316,7 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
                                       &tag_redundant));
         // Comparison of both tags.
         HARDENED_CHECK_EQ(
-            hardened_memeq(&tag.data[0], &tag_redundant.data[0], tag.len),
+            hardened_memeq(&tag->data[0], &tag_redundant.data[0], tag->len),
             kHardenedBoolTrue);
         return OTCRYPTO_OK;
       } else {
@@ -326,11 +326,11 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
         HARDENED_CHECK_EQ(launder32(key->config.security_level),
                           kOtcryptoKeySecurityLevelHigh);
         // First HMAC computation using the HMAC core.
-        HARDENED_TRY(hmac_hmac_sha384(&hmac_key, input_message, &tag));
+        HARDENED_TRY(hmac_hmac_sha384(&hmac_key, input_message, tag));
         // Second HMAC computation without using the HMAC core.
-        uint32_t tag_redundant_data[tag.len];
+        uint32_t tag_redundant_data[tag->len];
         otcrypto_word32_buf_t tag_redundant = OTCRYPTO_MAKE_BUF(
-            otcrypto_word32_buf_t, tag_redundant_data, tag.len);
+            otcrypto_word32_buf_t, tag_redundant_data, tag->len);
         hmac_key_t hmac_key_redundant;
         HARDENED_TRY(hmac_key_construct(key, kHmacSha384BlockWords,
                                         &hmac_key_redundant));
@@ -338,7 +338,7 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
                                                 input_message, &tag_redundant));
         // Comparison of both tags.
         HARDENED_CHECK_EQ(
-            hardened_memeq(&tag.data[0], &tag_redundant.data[0], tag.len),
+            hardened_memeq(&tag->data[0], &tag_redundant.data[0], tag->len),
             kHardenedBoolTrue);
         return OTCRYPTO_OK;
       }
@@ -349,7 +349,7 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
       if (key->config.security_level == kOtcryptoKeySecurityLevelLow) {
         HARDENED_CHECK_EQ(launder32(key->config.security_level),
                           kOtcryptoKeySecurityLevelLow);
-        return hmac_hmac_sha512(&hmac_key, input_message, &tag);
+        return hmac_hmac_sha512(&hmac_key, input_message, tag);
       } else if (key->config.security_level ==
                  kOtcryptoKeySecurityLevelMedium) {
         // Call the HMAC core twice and compare both tags. This serves as a FI
@@ -357,11 +357,11 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
         // First HMAC computation using the HMAC core.
         HARDENED_CHECK_EQ(launder32(key->config.security_level),
                           kOtcryptoKeySecurityLevelMedium);
-        HARDENED_TRY(hmac_hmac_sha512(&hmac_key, input_message, &tag));
+        HARDENED_TRY(hmac_hmac_sha512(&hmac_key, input_message, tag));
         // Second HMAC computation using the HMAC core.
-        uint32_t tag_redundant_data[tag.len];
+        uint32_t tag_redundant_data[tag->len];
         otcrypto_word32_buf_t tag_redundant = OTCRYPTO_MAKE_BUF(
-            otcrypto_word32_buf_t, tag_redundant_data, tag.len);
+            otcrypto_word32_buf_t, tag_redundant_data, tag->len);
         hmac_key_t hmac_key_redundant;
         HARDENED_TRY(hmac_key_construct(key, kHmacSha512BlockWords,
                                         &hmac_key_redundant));
@@ -369,7 +369,7 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
                                       &tag_redundant));
         // Comparison of both tags.
         HARDENED_CHECK_EQ(
-            hardened_memeq(&tag.data[0], &tag_redundant.data[0], tag.len),
+            hardened_memeq(&tag->data[0], &tag_redundant.data[0], tag->len),
             kHardenedBoolTrue);
         return OTCRYPTO_OK;
       } else {
@@ -379,11 +379,11 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
         HARDENED_CHECK_EQ(launder32(key->config.security_level),
                           kOtcryptoKeySecurityLevelHigh);
         // First HMAC computation using the HMAC core.
-        HARDENED_TRY(hmac_hmac_sha512(&hmac_key, input_message, &tag));
+        HARDENED_TRY(hmac_hmac_sha512(&hmac_key, input_message, tag));
         // Second HMAC computation without using the HMAC core.
-        uint32_t tag_redundant_data[tag.len];
+        uint32_t tag_redundant_data[tag->len];
         otcrypto_word32_buf_t tag_redundant = OTCRYPTO_MAKE_BUF(
-            otcrypto_word32_buf_t, tag_redundant_data, tag.len);
+            otcrypto_word32_buf_t, tag_redundant_data, tag->len);
         hmac_key_t hmac_key_redundant;
         HARDENED_TRY(hmac_key_construct(key, kHmacSha512BlockWords,
                                         &hmac_key_redundant));
@@ -391,7 +391,7 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
                                                 input_message, &tag_redundant));
         // Comparison of both tags.
         HARDENED_CHECK_EQ(
-            hardened_memeq(&tag.data[0], &tag_redundant.data[0], tag.len),
+            hardened_memeq(&tag->data[0], &tag_redundant.data[0], tag->len),
             kHardenedBoolTrue);
         return OTCRYPTO_OK;
       }
@@ -474,17 +474,17 @@ otcrypto_status_t otcrypto_hmac_update(
 }
 
 otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,
-                                      otcrypto_word32_buf_t tag) {
-  if (ctx == NULL || tag.data == NULL) {
+                                      otcrypto_word32_buf_t *tag) {
+  if (ctx == NULL || tag->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Check the digest length.
   hmac_ctx_t *hmac_ctx = (hmac_ctx_t *)ctx->data;
-  if (launder32(tag.len) != hmac_ctx->digest_wordlen) {
+  if (launder32(tag->len) != hmac_ctx->digest_wordlen) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(tag.len, hmac_ctx->digest_wordlen);
+  HARDENED_CHECK_EQ(tag->len, hmac_ctx->digest_wordlen);
 
-  return hmac_final(hmac_ctx, &tag);
+  return hmac_final(hmac_ctx, tag);
 }

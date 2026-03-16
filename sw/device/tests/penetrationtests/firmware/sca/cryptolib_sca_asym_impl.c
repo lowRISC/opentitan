@@ -244,7 +244,7 @@ status_t cryptolib_sca_p256_ecdh_impl(
   otcrypto_word32_buf_t share1_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, share1, ARRAYSIZE(share1));
   uint32_t ss[kPentestP256Words];
-  TRY(otcrypto_export_blinded_key(&shared_secret, share0_buf, share1_buf));
+  TRY(otcrypto_export_blinded_key(&shared_secret, &share0_buf, &share1_buf));
   for (size_t i = 0; i < kPentestP256Words; i++) {
     ss[i] = share0[i] ^ share1[i];
   }
@@ -409,7 +409,7 @@ status_t cryptolib_sca_rsa_sign_impl(
   if (trigger & kPentestTrigger3) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_rsa_sign(&private_key, msg_digest, padding_mode, rsa_sig));
+  TRY(otcrypto_rsa_sign(&private_key, msg_digest, padding_mode, &rsa_sig));
   // Trigger window.
   if (trigger & kPentestTrigger3) {
     pentest_set_trigger_low();
@@ -495,7 +495,7 @@ status_t cryptolib_sca_p256_sign_impl(
     pentest_set_trigger_high();
   }
   TRY(otcrypto_ecdsa_p256_sign_verify(&private_key, &public_key, message_digest,
-                                      signature_mut));
+                                      &signature_mut));
   if (uj_input.trigger == 1) {
     pentest_set_trigger_low();
   }
@@ -582,7 +582,7 @@ status_t cryptolib_sca_p384_ecdh_impl(
   otcrypto_word32_buf_t share1_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, share1, ARRAYSIZE(share1));
   uint32_t ss[kPentestP384Words];
-  TRY(otcrypto_export_blinded_key(&shared_secret, share0_buf, share1_buf));
+  TRY(otcrypto_export_blinded_key(&shared_secret, &share0_buf, &share1_buf));
   for (size_t i = 0; i < kPentestP384Words; i++) {
     ss[i] = share0[i] ^ share1[i];
   }
@@ -666,7 +666,7 @@ status_t cryptolib_sca_p384_sign_impl(
     pentest_set_trigger_high();
   }
   TRY(otcrypto_ecdsa_p384_sign_verify(&private_key, &public_key, message_digest,
-                                      signature_mut));
+                                      &signature_mut));
   if (uj_input.trigger == 1) {
     pentest_set_trigger_low();
   }

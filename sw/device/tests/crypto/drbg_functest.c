@@ -48,10 +48,10 @@ static status_t kat_test(void) {
   // Generate output twice.
   LOG_INFO("Generating...");
   TRY(otcrypto_drbg_manual_generate(/*additional_input=*/&kEmptyBuffer,
-                                    actual_output));
+                                    &actual_output));
   LOG_INFO("Generating again...");
   TRY(otcrypto_drbg_manual_generate(/*additional_input=*/&kEmptyBuffer,
-                                    actual_output));
+                                    &actual_output));
 
   // Compare second result to expected output.
   TRY_CHECK_ARRAYS_EQ(kExpOutput, actual_output_words, ARRAYSIZE(kExpOutput));
@@ -73,7 +73,7 @@ static status_t random_test(void) {
   uint32_t output_data[1024];
   otcrypto_word32_buf_t output = OTCRYPTO_MAKE_BUF(
       otcrypto_word32_buf_t, output_data, ARRAYSIZE(output_data));
-  TRY(otcrypto_drbg_generate(/*additional_input=*/&kEmptyBuffer, output));
+  TRY(otcrypto_drbg_generate(/*additional_input=*/&kEmptyBuffer, &output));
 
   // Run a basic randomness-quality check on the output.
   status_t res = randomness_quality_monobit_test(
@@ -167,21 +167,21 @@ static status_t run_negative_tests(void) {
         OTCRYPTO_BAD_ARGS.value);
 
   // Zero length output
-  CHECK(otcrypto_drbg_generate(&kEmptyBuffer, zero_out).value ==
+  CHECK(otcrypto_drbg_generate(&kEmptyBuffer, &zero_out).value ==
         OTCRYPTO_OK.value);
-  CHECK(otcrypto_drbg_manual_generate(&kEmptyBuffer, zero_out).value ==
+  CHECK(otcrypto_drbg_manual_generate(&kEmptyBuffer, &zero_out).value ==
         OTCRYPTO_OK.value);
 
   // Null outputs
-  CHECK(otcrypto_drbg_generate(&kEmptyBuffer, null_out).value ==
+  CHECK(otcrypto_drbg_generate(&kEmptyBuffer, &null_out).value ==
         OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_drbg_manual_generate(&kEmptyBuffer, null_out).value ==
+  CHECK(otcrypto_drbg_manual_generate(&kEmptyBuffer, &null_out).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   // Null additional input
-  CHECK(otcrypto_drbg_generate(&null_data_buf, valid_out).value ==
+  CHECK(otcrypto_drbg_generate(&null_data_buf, &valid_out).value ==
         OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_drbg_manual_generate(&null_data_buf, valid_out).value ==
+  CHECK(otcrypto_drbg_manual_generate(&null_data_buf, &valid_out).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   return OK_STATUS();

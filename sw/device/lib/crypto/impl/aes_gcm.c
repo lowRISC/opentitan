@@ -286,15 +286,15 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(otcrypto_blinded_key_t *key,
                                            otcrypto_const_byte_buf_t *aad,
                                            otcrypto_aes_gcm_tag_len_t tag_len,
                                            otcrypto_byte_buf_t *ciphertext,
-                                           otcrypto_word32_buf_t auth_tag) {
+                                           otcrypto_word32_buf_t *auth_tag) {
   // Check for NULL pointers in input pointers and required-nonzero-length data
   // buffers.
-  if (key == NULL || iv.data == NULL || auth_tag.data == NULL) {
+  if (key == NULL || iv.data == NULL || auth_tag->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Randomize the tag before the operation.
-  HARDENED_TRY(hardened_memshred(auth_tag.data, auth_tag.len));
+  HARDENED_TRY(hardened_memshred(auth_tag->data, auth_tag->len));
 
   // Ensure entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
@@ -314,7 +314,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(otcrypto_blinded_key_t *key,
   HARDENED_CHECK_EQ(ciphertext->len, plaintext->len);
 
   // Check the tag length.
-  HARDENED_TRY(aes_gcm_check_tag_length(auth_tag.len, tag_len));
+  HARDENED_TRY(aes_gcm_check_tag_length(auth_tag->len, tag_len));
 
   // Store the iCache state (on or off) and disable it when it is on.
   hardened_bool_t icache_saved_state;
@@ -326,9 +326,9 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(otcrypto_blinded_key_t *key,
   HARDENED_TRY(load_key_if_sideloaded(aes_key));
 
   // Call the core encryption operation.
-  HARDENED_TRY(aes_gcm_encrypt(aes_key, iv.len, iv.data, plaintext->len,
-                               plaintext->data, aad->len, aad->data,
-                               auth_tag.len, auth_tag.data, ciphertext->data));
+  HARDENED_TRY(aes_gcm_encrypt(
+      aes_key, iv.len, iv.data, plaintext->len, plaintext->data, aad->len,
+      aad->data, auth_tag->len, auth_tag->data, ciphertext->data));
 
   HARDENED_TRY(clear_key_if_sideloaded(aes_key));
 
@@ -340,7 +340,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(otcrypto_blinded_key_t *key,
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&iv));
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(aad));
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(ciphertext));
-  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&auth_tag));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(auth_tag));
 
   return OTCRYPTO_OK;
 }
@@ -581,9 +581,9 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
 otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
     otcrypto_aes_gcm_context_t *ctx, otcrypto_aes_gcm_tag_len_t tag_len,
     otcrypto_byte_buf_t *ciphertext, size_t *ciphertext_bytes_written,
-    otcrypto_word32_buf_t auth_tag) {
+    otcrypto_word32_buf_t *auth_tag) {
   if (ctx == NULL || ciphertext_bytes_written == NULL ||
-      auth_tag.data == NULL) {
+      auth_tag->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (ciphertext->len != 0 && ciphertext->data == NULL) {
@@ -592,7 +592,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
   *ciphertext_bytes_written = 0;
 
   // Randomize the tag before the operation.
-  HARDENED_TRY(hardened_memshred(auth_tag.data, auth_tag.len));
+  HARDENED_TRY(hardened_memshred(auth_tag->data, auth_tag->len));
 
   // Ensure entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
@@ -602,7 +602,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
   HARDENED_TRY(ibex_disable_icache(&icache_saved_state));
 
   // Check the tag length.
-  HARDENED_TRY(aes_gcm_check_tag_length(auth_tag.len, tag_len));
+  HARDENED_TRY(aes_gcm_check_tag_length(auth_tag->len, tag_len));
 
   // Restore the AES-GCM context object and load the key if needed.
   aes_gcm_context_t internal_ctx;
@@ -619,8 +619,8 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
   }
 
   // Call the internal final operation.
-  HARDENED_TRY(aes_gcm_encrypt_final(&internal_ctx, auth_tag.len, auth_tag.data,
-                                     ciphertext_bytes_written,
+  HARDENED_TRY(aes_gcm_encrypt_final(&internal_ctx, auth_tag->len,
+                                     auth_tag->data, ciphertext_bytes_written,
                                      ciphertext->data));
 
   // Clear the context and the key if needed.
@@ -632,7 +632,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
 
   // Verify the input buffers
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(ciphertext));
-  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&auth_tag));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(auth_tag));
 
   return OTCRYPTO_OK;
 }

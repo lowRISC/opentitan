@@ -246,7 +246,7 @@ static status_t hmac_oneshot(hmac_test_vector_t *current_test_vector) {
     case kHmacTestOperationHmacSha384:
       OT_FALLTHROUGH_INTENDED;
     case kHmacTestOperationHmacSha512:
-      TRY(otcrypto_hmac(&current_test_vector->key, &msg_buf, act_tag_buf));
+      TRY(otcrypto_hmac(&current_test_vector->key, &msg_buf, &act_tag_buf));
       break;
     default:
       return INVALID_ARGUMENT();
@@ -330,7 +330,7 @@ static status_t hmac_finalize(otcrypto_sha2_context_t *hash_ctx,
     case kHmacTestOperationHmacSha384:
       OT_FALLTHROUGH_INTENDED;
     case kHmacTestOperationHmacSha512:
-      TRY(otcrypto_hmac_final((otcrypto_hmac_context_t *)hash_ctx, tag_buf));
+      TRY(otcrypto_hmac_final((otcrypto_hmac_context_t *)hash_ctx, &tag_buf));
       break;
     default:
       return INVALID_ARGUMENT();
