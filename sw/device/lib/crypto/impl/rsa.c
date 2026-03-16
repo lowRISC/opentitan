@@ -357,7 +357,7 @@ otcrypto_status_t otcrypto_rsa_decrypt(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_hash_mode_t hash_mode,
     otcrypto_const_word32_buf_t ciphertext, otcrypto_const_byte_buf_t label,
-    otcrypto_byte_buf_t plaintext, size_t *plaintext_bytelen) {
+    otcrypto_byte_buf_t *plaintext, size_t *plaintext_bytelen) {
   HARDENED_TRY(otcrypto_rsa_decrypt_async_start(private_key, ciphertext));
   return otcrypto_rsa_decrypt_async_finalize(hash_mode, label, plaintext,
                                              plaintext_bytelen);
@@ -1102,8 +1102,8 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
 
 otcrypto_status_t otcrypto_rsa_decrypt_async_finalize(
     const otcrypto_hash_mode_t hash_mode, otcrypto_const_byte_buf_t label,
-    otcrypto_byte_buf_t plaintext, size_t *plaintext_bytelen) {
-  if (plaintext.data == NULL || label.data == NULL) {
+    otcrypto_byte_buf_t *plaintext, size_t *plaintext_bytelen) {
+  if (plaintext->data == NULL || label.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -1113,15 +1113,15 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_finalize(
   // Call the unified `finalize()` operation, which will infer the RSA size
   // from OTBN.
   HARDENED_TRY(rsa_decrypt_finalize(hash_mode, label.data, label.len,
-                                    plaintext.len, plaintext.data,
+                                    plaintext->len, plaintext->data,
                                     plaintext_bytelen));
 
   // Consistency check; this should never happen.
-  if (launder32(*plaintext_bytelen) > plaintext.len) {
+  if (launder32(*plaintext_bytelen) > plaintext->len) {
     HARDENED_TRAP();
     return OTCRYPTO_FATAL_ERR;
   }
-  HARDENED_CHECK_LE(*plaintext_bytelen, plaintext.len);
+  HARDENED_CHECK_LE(*plaintext_bytelen, plaintext->len);
 
   return OTCRYPTO_OK;
 }

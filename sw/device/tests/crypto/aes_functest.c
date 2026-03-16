@@ -117,7 +117,7 @@ static status_t run_encrypt(const aes_test_t *test, bool streaming) {
           OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, ciphertext, kAesBlockBytes);
       TRY(otcrypto_aes(&key, iv, test->mode, kOtcryptoAesOperationEncrypt,
                        plaintext_block, kOtcryptoAesPaddingNull,
-                       ciphertext_block));
+                       &ciphertext_block));
       plaintext += kAesBlockBytes;
       ciphertext += kAesBlockBytes;
       plaintext_len -= kAesBlockBytes;
@@ -131,7 +131,7 @@ static status_t run_encrypt(const aes_test_t *test, bool streaming) {
   otcrypto_byte_buf_t ciphertext_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, ciphertext, ciphertext_len);
   TRY(otcrypto_aes(&key, iv, test->mode, kOtcryptoAesOperationEncrypt,
-                   plaintext_buf, test->padding, ciphertext_buf));
+                   plaintext_buf, test->padding, &ciphertext_buf));
 
   TRY_CHECK_ARRAYS_EQ(ciphertext_data, test->exp_ciphertext,
                       ARRAYSIZE(ciphertext_data));
@@ -192,7 +192,7 @@ static status_t run_decrypt(const aes_test_t *test, bool streaming) {
           otcrypto_byte_buf_t, recovered_plaintext, kAesBlockBytes);
       TRY(otcrypto_aes(&key, iv, test->mode, kOtcryptoAesOperationDecrypt,
                        ciphertext_block, kOtcryptoAesPaddingNull,
-                       recovered_plaintext_block));
+                       &recovered_plaintext_block));
       ciphertext += kAesBlockBytes;
       recovered_plaintext += kAesBlockBytes;
       len -= kAesBlockBytes;
@@ -208,7 +208,7 @@ static status_t run_decrypt(const aes_test_t *test, bool streaming) {
   otcrypto_byte_buf_t recovered_plaintext_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, recovered_plaintext, len);
   TRY(otcrypto_aes(&key, iv, test->mode, kOtcryptoAesOperationDecrypt,
-                   ciphertext_buf, test->padding, recovered_plaintext_buf));
+                   ciphertext_buf, test->padding, &recovered_plaintext_buf));
 
   // Check the result (not including padding).
   TRY_CHECK_ARRAYS_EQ((unsigned char *)recovered_plaintext_data,

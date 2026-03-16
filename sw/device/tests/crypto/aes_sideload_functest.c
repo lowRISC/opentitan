@@ -91,7 +91,7 @@ static status_t run_aes(otcrypto_aes_operation_t operation,
       otcrypto_byte_buf_t, (unsigned char *)output, sizeof(kAesPlaintextBlock));
 
   return otcrypto_aes(&key, iv, kOtcryptoAesModeCtr, operation, input_buf,
-                      kOtcryptoAesPaddingNull, output_buf);
+                      kOtcryptoAesPaddingNull, &output_buf);
 }
 
 /**
