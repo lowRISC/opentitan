@@ -73,6 +73,7 @@ load(
     "@provisioning_exts//:cfg.bzl",
     "EXT_EXEC_ENV_SILICON_ROM_EXT",
 )
+load("//rules/opentitan:providers.bzl", "OpenTitanTestInfo")
 
 # The following definition is used to clear the key set in the signing
 # configuration for execution environments (exec_env) and opentitan_test
@@ -494,6 +495,8 @@ def opentitan_test(
             rsa_key = rsa_key,
             spx_key = spx_key,
             manifest = manifest,
+            # Point to test suite created below.
+            test_suite = str(Label(":{}".format(name))),
             **test_kwargs
         )
 
@@ -502,3 +505,50 @@ def opentitan_test(
         tests = all_tests,
         tags = ["manual"],
     )
+
+# This provider holds tags which are extracted from a target through the
+# _query_tags aspect.
+_OpenTitanQueryTags = provider(fields = {"tags": "list of tags"})
+
+def _query_tags_impl(target, ctx):
+    return [_OpenTitanQueryTags(tags = ctx.rule.attr.tags)]
+
+# This aspect extracts the tags of a target and reports them in the
+# _OpenTitanQueryTags provider.
+_query_tags = aspect(
+    implementation = _query_tags_impl,
+)
+
+def _opentitan_test_alias_impl(ctx):
+    PROVIDERS = [RunEnvironmentInfo, OutputGroupInfo, InstrumentedFilesInfo]
+    actual = ctx.attr.actual
+
+    executable = ctx.actions.declare_file(ctx.attr.name)
+    ctx.actions.symlink(output = executable, target_file = ctx.executable.actual, is_executable = True)
+
+    result = [DefaultInfo(
+        runfiles = actual[DefaultInfo].default_runfiles,
+        files = actual[DefaultInfo].files,
+        executable = executable,
+    )]
+    result.append(OpenTitanTestInfo(
+        test_suite = str(ctx.label),
+        tags = actual[_OpenTitanQueryTags].tags,
+    ))
+    result += [actual[prov] for prov in PROVIDERS if prov in actual]
+    return result
+
+opentitan_alias_test = rule(
+    implementation = _opentitan_test_alias_impl,
+    test = True,
+    attrs = {
+        "actual": attr.label(executable = True, doc = "Label of the test to run", cfg = "exec", aspects = [_query_tags]),
+    },
+    doc = """
+    This rule can be used to register tests with the CI when the test rule cannot be modified to include an `OpenTitanTestInfo`
+    provider. This is the case for example of `sh_test`. The rule will automatically extract the tags of the target specified
+    in the `actual` attribute and make them available through the `OpenTitanTestInfo` provider. Users of this rule should
+    never specify tags on this rule so that the test will only appear once when queried with --test_tag_filters,
+    and only once when queried via the `OpenTitanTestInfo` provider.
+""",
+)
