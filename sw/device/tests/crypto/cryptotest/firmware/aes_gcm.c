@@ -149,12 +149,12 @@ status_t handle_aes_gcm_op(ujson_t *uj) {
     otcrypto_word32_buf_t tag =
         OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_data, tag_num_words);
     TRY(otcrypto_aes_gcm_encrypt(&key, &input, iv, &aad, tag_len, &output,
-                                 tag));
+                                 &tag));
   } else {
     memcpy(tag_data, uj_data.tag, uj_data.tag_length);
     otcrypto_const_word32_buf_t tag =
         OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, tag_data, tag_num_words);
-    TRY(otcrypto_aes_gcm_decrypt(&key, &input, iv, &aad, tag_len, tag, &output,
+    TRY(otcrypto_aes_gcm_decrypt(&key, &input, iv, &aad, tag_len, &tag, &output,
                                  &tag_valid));
   }
 

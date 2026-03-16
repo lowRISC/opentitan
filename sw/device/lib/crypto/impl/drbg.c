@@ -198,24 +198,24 @@ otcrypto_status_t otcrypto_drbg_manual_reseed(
  */
 static otcrypto_status_t generate(hardened_bool_t fips_check,
                                   otcrypto_const_byte_buf_t *additional_input,
-                                  otcrypto_word32_buf_t drbg_output) {
+                                  otcrypto_word32_buf_t *drbg_output) {
   entropy_seed_material_t seed_material;
   HARDENED_TRY(seed_material_construct(additional_input, &seed_material));
-  HARDENED_TRY(entropy_csrng_generate(&seed_material, drbg_output.data,
-                                      drbg_output.len, fips_check));
+  HARDENED_TRY(entropy_csrng_generate(&seed_material, drbg_output->data,
+                                      drbg_output->len, fips_check));
 
   return OTCRYPTO_OK;
 }
 
 otcrypto_status_t otcrypto_drbg_generate(
     otcrypto_const_byte_buf_t *additional_input,
-    otcrypto_word32_buf_t drbg_output) {
-  if (drbg_output.len == 0) {
+    otcrypto_word32_buf_t *drbg_output) {
+  if (drbg_output->len == 0) {
     // Nothing to do.
     return OTCRYPTO_OK;
   }
   if ((additional_input->len != 0 && additional_input->data == NULL) ||
-      drbg_output.data == NULL) {
+      drbg_output->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -223,7 +223,7 @@ otcrypto_status_t otcrypto_drbg_generate(
   HARDENED_TRY(entropy_complex_check());
 
   // Randomize destination buffer.
-  HARDENED_TRY(hardened_memshred(drbg_output.data, drbg_output.len));
+  HARDENED_TRY(hardened_memshred(drbg_output->data, drbg_output->len));
 
   return generate(/*fips_check=*/kHardenedBoolTrue, additional_input,
                   drbg_output);
@@ -231,13 +231,13 @@ otcrypto_status_t otcrypto_drbg_generate(
 
 otcrypto_status_t otcrypto_drbg_manual_generate(
     otcrypto_const_byte_buf_t *additional_input,
-    otcrypto_word32_buf_t drbg_output) {
-  if (drbg_output.len == 0) {
+    otcrypto_word32_buf_t *drbg_output) {
+  if (drbg_output->len == 0) {
     // Nothing to do.
     return OTCRYPTO_OK;
   }
   if ((additional_input->len != 0 && additional_input->data == NULL) ||
-      drbg_output.data == NULL) {
+      drbg_output->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 

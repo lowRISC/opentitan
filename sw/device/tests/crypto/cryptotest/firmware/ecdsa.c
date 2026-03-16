@@ -209,7 +209,7 @@ status_t p256_sign(ujson_t *uj, cryptotest_ecdsa_private_key_t *uj_private_key,
   private_key.checksum = integrity_blinded_checksum(&private_key);
 
   otcrypto_status_t status = otcrypto_ecdsa_p256_sign_verify(
-      &private_key, public_key, message_digest, signature_mut);
+      &private_key, public_key, message_digest, &signature_mut);
   if (status.value != kOtcryptoStatusValueOk) {
     return INTERNAL(status.value);
   }
@@ -245,7 +245,7 @@ status_t p384_sign(ujson_t *uj, cryptotest_ecdsa_private_key_t *uj_private_key,
   private_key.checksum = integrity_blinded_checksum(&private_key);
 
   otcrypto_status_t status = otcrypto_ecdsa_p384_sign_verify(
-      &private_key, public_key, message_digest, signature_mut);
+      &private_key, public_key, message_digest, &signature_mut);
   if (status.value != kOtcryptoStatusValueOk) {
     return INTERNAL(status.value);
   }

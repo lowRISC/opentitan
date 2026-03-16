@@ -110,7 +110,7 @@ static status_t sign_then_verify_test(void) {
   otcrypto_word32_buf_t sig_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, ARRAYSIZE(sig));
   CHECK_STATUS_OK(otcrypto_ecdsa_p256_sign_verify(&private_key, &public_key,
-                                                  msg_digest, sig_buf));
+                                                  msg_digest, &sig_buf));
 
   // Verify the signature.
   LOG_INFO("Verifying...");
@@ -167,7 +167,7 @@ static status_t sign_kat(void) {
   otcrypto_word32_buf_t sig_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, ARRAYSIZE(sig));
   CHECK_STATUS_OK(otcrypto_ecdsa_p256_sign_config_k(
-      &private_key, &secret_scalar, msg_digest, sig_buf));
+      &private_key, &secret_scalar, msg_digest, &sig_buf));
 
   // Check if the signature matches the expected value.
   TRY_CHECK_ARRAYS_EQ(sig, kKATExpSignature, kP256SignatureWords);
@@ -245,7 +245,7 @@ static status_t run_ecdsa_negative_tests(void) {
         OTCRYPTO_BAD_ARGS.value);
 
   // ECDSA sign negative tests
-  CHECK(otcrypto_ecdsa_p256_sign(NULL, valid_digest, valid_sig).value ==
+  CHECK(otcrypto_ecdsa_p256_sign(NULL, valid_digest, &valid_sig).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   // Null digest data
@@ -253,9 +253,8 @@ static status_t run_ecdsa_negative_tests(void) {
       .data = NULL,
       .len = 8,
   };
-  CHECK(
-      otcrypto_ecdsa_p256_sign(&valid_priv, bad_digest_null, valid_sig).value ==
-      OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ecdsa_p256_sign(&valid_priv, bad_digest_null, &valid_sig)
+            .value == OTCRYPTO_BAD_ARGS.value);
 
   // Bad digest length
   otcrypto_hash_digest_t bad_digest_len = {
@@ -263,15 +262,14 @@ static status_t run_ecdsa_negative_tests(void) {
       .len = 7,
   };
   CHECK(
-      otcrypto_ecdsa_p256_sign(&valid_priv, bad_digest_len, valid_sig).value ==
+      otcrypto_ecdsa_p256_sign(&valid_priv, bad_digest_len, &valid_sig).value ==
       OTCRYPTO_BAD_ARGS.value);
 
   // Null signature data
   otcrypto_word32_buf_t bad_sig_null =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, NULL, 16);
-  CHECK(
-      otcrypto_ecdsa_p256_sign(&valid_priv, valid_digest, bad_sig_null).value ==
-      OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ecdsa_p256_sign(&valid_priv, valid_digest, &bad_sig_null)
+            .value == OTCRYPTO_BAD_ARGS.value);
 
   // Corrupt private key checksum
   otcrypto_blinded_key_t bad_priv_chk = {
@@ -281,7 +279,7 @@ static status_t run_ecdsa_negative_tests(void) {
   };
   bad_priv_chk.checksum = valid_priv.checksum ^ 0xFFFFFFFF;
   CHECK(
-      otcrypto_ecdsa_p256_sign(&bad_priv_chk, valid_digest, valid_sig).value ==
+      otcrypto_ecdsa_p256_sign(&bad_priv_chk, valid_digest, &valid_sig).value ==
       OTCRYPTO_BAD_ARGS.value);
 
   // ECDSA verify negative tests

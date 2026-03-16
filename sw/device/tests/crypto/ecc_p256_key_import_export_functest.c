@@ -160,7 +160,7 @@ static status_t import_then_verify_test(void) {
   otcrypto_word32_buf_t sig_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, ARRAYSIZE(sig));
   LOG_INFO("Signing with imported private key...");
-  TRY(otcrypto_ecdsa_p256_sign(&imported_private_key, msg_digest, sig_buf));
+  TRY(otcrypto_ecdsa_p256_sign(&imported_private_key, msg_digest, &sig_buf));
 
   // Verify the signature with the imported public key.
   LOG_INFO("Verifying signature with imported public key...");

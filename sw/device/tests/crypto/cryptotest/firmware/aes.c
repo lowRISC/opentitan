@@ -141,7 +141,7 @@ status_t handle_aes_block(ujson_t *uj) {
   otcrypto_byte_buf_t output = OTCRYPTO_MAKE_BUF(
       otcrypto_byte_buf_t, (unsigned char *)output_buf, sizeof(output_buf));
 
-  otcrypto_aes(&key, iv, mode, op, &input, padding, &output);
+  otcrypto_aes(&key, &iv, mode, op, &input, padding, &output);
 
   cryptotest_aes_output_t uj_output;
   uj_output.output_len = padded_len_bytes;

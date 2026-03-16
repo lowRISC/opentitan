@@ -142,7 +142,7 @@ static status_t run_rsa_3072_encrypt(const uint8_t *msg, size_t msg_len,
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ciphertext, kRsa3072NumWords);
   uint64_t t_start = profile_start();
   TRY(otcrypto_rsa_encrypt(&public_key, kTestHashMode, &msg_buf, &label_buf,
-                           ciphertext_buf));
+                           &ciphertext_buf));
   profile_end_and_print(t_start, "RSA-3072 encryption");
 
   return OK_STATUS();

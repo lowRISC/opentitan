@@ -198,12 +198,12 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_config_k(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_blinded_key_t *secret_scalar,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_word32_buf_t signature) {
-  if (signature.data == NULL || private_key == NULL ||
+    otcrypto_word32_buf_t *signature) {
+  if (signature->data == NULL || private_key == NULL ||
       private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (!status_ok(p256_signature_length_check(signature.len)) ||
+  if (!status_ok(p256_signature_length_check(signature->len)) ||
       !status_ok(p256_private_key_length_check(private_key))) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -215,12 +215,12 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_config_k(
 otcrypto_status_t otcrypto_ecdsa_p256_sign(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_word32_buf_t signature) {
-  if (signature.data == NULL || private_key == NULL ||
+    otcrypto_word32_buf_t *signature) {
+  if (signature->data == NULL || private_key == NULL ||
       private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (!status_ok(p256_signature_length_check(signature.len)) ||
+  if (!status_ok(p256_signature_length_check(signature->len)) ||
       !status_ok(p256_private_key_length_check(private_key))) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -252,14 +252,14 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_verify(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_word32_buf_t signature) {
+    otcrypto_word32_buf_t *signature) {
   // Signature generation.
   HARDENED_TRY(
       otcrypto_ecdsa_p256_sign(private_key, message_digest, signature));
 
   // Verify signature before releasing it.
   otcrypto_const_word32_buf_t signature_check = OTCRYPTO_MAKE_BUF(
-      otcrypto_const_word32_buf_t, signature.data, signature.len);
+      otcrypto_const_word32_buf_t, signature->data, signature->len);
   hardened_bool_t verification_result = kHardenedBoolFalse;
   HARDENED_TRY(otcrypto_ecdsa_p256_verify(
       public_key, message_digest, signature_check, &verification_result));
@@ -521,19 +521,19 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_async_start(
 }
 
 otcrypto_status_t otcrypto_ecdsa_p256_sign_async_finalize(
-    otcrypto_word32_buf_t signature) {
-  if (signature.data == NULL) {
+    otcrypto_word32_buf_t *signature) {
+  if (signature->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Verify the input buffer
-  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&signature));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(signature));
 
   // Ensure the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
 
-  HARDENED_TRY(p256_signature_length_check(signature.len));
-  p256_ecdsa_signature_t *sig_p256 = (p256_ecdsa_signature_t *)signature.data;
+  HARDENED_TRY(p256_signature_length_check(signature->len));
+  p256_ecdsa_signature_t *sig_p256 = (p256_ecdsa_signature_t *)signature->data;
   // Note: This operation wipes DMEM, so if an error occurs after this
   // point then the signature would be unrecoverable. This should be the
   // last potentially error-causing line before returning to the caller.

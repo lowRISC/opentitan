@@ -56,7 +56,7 @@ typedef struct otcrypto_hmac_context {
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
                                 otcrypto_const_byte_buf_t *input_message,
-                                otcrypto_word32_buf_t tag);
+                                otcrypto_word32_buf_t *tag);
 
 /**
  * Performs the INIT operation for HMAC.
@@ -113,7 +113,7 @@ otcrypto_status_t otcrypto_hmac_update(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,
-                                      otcrypto_word32_buf_t tag);
+                                      otcrypto_word32_buf_t *tag);
 
 #ifdef __cplusplus
 }  // extern "C"

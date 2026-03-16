@@ -121,7 +121,7 @@ static status_t run_rsa_2048_encrypt(const uint8_t *msg, size_t msg_len,
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ciphertext, kRsa2048NumWords);
   uint64_t t_start = profile_start();
   TRY(otcrypto_rsa_encrypt(&public_key, kTestHashMode, &msg_buf, &label_buf,
-                           ciphertext_buf));
+                           &ciphertext_buf));
   profile_end_and_print(t_start, "RSA-2048 encryption");
 
   return OK_STATUS();
@@ -275,16 +275,16 @@ static status_t run_encrypt_negative_tests(void) {
 
   // Encrypt negative tests
   CHECK(otcrypto_rsa_encrypt(NULL, kTestHashMode, &valid_msg, &valid_msg,
-                             valid_ct)
+                             &valid_ct)
             .value == OTCRYPTO_BAD_ARGS.value);
   CHECK(otcrypto_rsa_encrypt(&valid_pub, kTestHashMode, &bad_msg_null,
-                             &valid_msg, valid_ct)
+                             &valid_msg, &valid_ct)
             .value == OTCRYPTO_BAD_ARGS.value);
   CHECK(otcrypto_rsa_encrypt(&valid_pub, kTestHashMode, &valid_msg,
-                             &bad_msg_null, valid_ct)
+                             &bad_msg_null, &valid_ct)
             .value == OTCRYPTO_BAD_ARGS.value);
   CHECK(otcrypto_rsa_encrypt(&valid_pub, kTestHashMode, &valid_msg, &valid_msg,
-                             bad_ct_null)
+                             &bad_ct_null)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_unblinded_key_t bad_pub_chk = {
@@ -294,7 +294,7 @@ static status_t run_encrypt_negative_tests(void) {
   };
   bad_pub_chk.checksum = valid_pub.checksum ^ 0xFFFFFFFF;
   CHECK(otcrypto_rsa_encrypt(&bad_pub_chk, kTestHashMode, &valid_msg,
-                             &valid_msg, valid_ct)
+                             &valid_msg, &valid_ct)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_unblinded_key_t bad_pub_mode = {
@@ -304,7 +304,7 @@ static status_t run_encrypt_negative_tests(void) {
   };
   bad_pub_mode.checksum = integrity_unblinded_checksum(&bad_pub_mode);
   CHECK(otcrypto_rsa_encrypt(&bad_pub_mode, kTestHashMode, &valid_msg,
-                             &valid_msg, valid_ct)
+                             &valid_msg, &valid_ct)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   // Decrypt negative tests

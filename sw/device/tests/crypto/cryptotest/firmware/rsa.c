@@ -178,7 +178,7 @@ status_t handle_rsa_encrypt(ujson_t *uj) {
 
   bool status_resp = true;
   otcrypto_status_t status = otcrypto_rsa_encrypt(
-      &public_key, hash_mode, &input_message, &label, ciphertext);
+      &public_key, hash_mode, &input_message, &label, &ciphertext);
   if (status.value != kOtcryptoStatusValueOk) {
     status_resp = false;
   }

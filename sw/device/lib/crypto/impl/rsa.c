@@ -458,8 +458,8 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
 otcrypto_status_t otcrypto_rsa_sign(const otcrypto_blinded_key_t *private_key,
                                     const otcrypto_hash_digest_t message_digest,
                                     otcrypto_rsa_padding_t padding_mode,
-                                    otcrypto_word32_buf_t signature) {
-  if (signature.data == NULL) {
+                                    otcrypto_word32_buf_t *signature) {
+  if (signature->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_TRY(
@@ -488,8 +488,8 @@ otcrypto_status_t otcrypto_rsa_verify(
 otcrypto_status_t otcrypto_rsa_encrypt(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_mode_t hash_mode, otcrypto_const_byte_buf_t *message,
-    otcrypto_const_byte_buf_t *label, otcrypto_word32_buf_t ciphertext) {
-  if (ciphertext.data == NULL) {
+    otcrypto_const_byte_buf_t *label, otcrypto_word32_buf_t *ciphertext) {
+  if (ciphertext->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_TRY(
@@ -801,9 +801,9 @@ otcrypto_status_t otcrypto_rsa_sign_async_start(
 }
 
 otcrypto_status_t otcrypto_rsa_sign_async_finalize(
-    otcrypto_word32_buf_t signature) {
+    otcrypto_word32_buf_t *signature) {
   // Check for NULL pointers.
-  if (signature.data == NULL) {
+  if (signature->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -811,25 +811,25 @@ otcrypto_status_t otcrypto_rsa_sign_async_finalize(
   HARDENED_TRY(entropy_complex_check());
 
   // Determine the size based on the signature buffer length.
-  switch (launder32(signature.len)) {
+  switch (launder32(signature->len)) {
     case kRsa2048NumWords:
-      HARDENED_CHECK_EQ(signature.len, kRsa2048NumWords);
+      HARDENED_CHECK_EQ(signature->len, kRsa2048NumWords);
       return rsa_signature_generate_2048_finalize(
-          (rsa_2048_int_t *)signature.data);
+          (rsa_2048_int_t *)signature->data);
     case kRsa3072NumWords:
-      HARDENED_CHECK_EQ(signature.len, kRsa3072NumWords);
+      HARDENED_CHECK_EQ(signature->len, kRsa3072NumWords);
       return rsa_signature_generate_3072_finalize(
-          (rsa_3072_int_t *)signature.data);
+          (rsa_3072_int_t *)signature->data);
     case kRsa4096NumWords:
-      HARDENED_CHECK_EQ(signature.len, kRsa4096NumWords);
+      HARDENED_CHECK_EQ(signature->len, kRsa4096NumWords);
       return rsa_signature_generate_4096_finalize(
-          (rsa_4096_int_t *)signature.data);
+          (rsa_4096_int_t *)signature->data);
     default:
       return OTCRYPTO_BAD_ARGS;
   }
 
   // Verify the input buffer
-  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&signature));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(signature));
 
   // Should be unreachable.
   HARDENED_TRAP();
@@ -1012,32 +1012,32 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_start(
 }
 
 otcrypto_status_t otcrypto_rsa_encrypt_async_finalize(
-    otcrypto_word32_buf_t ciphertext) {
+    otcrypto_word32_buf_t *ciphertext) {
   // Check for NULL pointers.
-  if (ciphertext.data == NULL) {
+  if (ciphertext->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Check that the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
 
-  switch (launder32(ciphertext.len)) {
+  switch (launder32(ciphertext->len)) {
     case kRsa2048NumWords: {
-      HARDENED_CHECK_EQ(ciphertext.len * sizeof(uint32_t),
+      HARDENED_CHECK_EQ(ciphertext->len * sizeof(uint32_t),
                         sizeof(rsa_2048_int_t));
-      rsa_2048_int_t *ctext = (rsa_2048_int_t *)ciphertext.data;
+      rsa_2048_int_t *ctext = (rsa_2048_int_t *)ciphertext->data;
       return rsa_encrypt_2048_finalize(ctext);
     }
     case kRsa3072NumWords: {
-      HARDENED_CHECK_EQ(ciphertext.len * sizeof(uint32_t),
+      HARDENED_CHECK_EQ(ciphertext->len * sizeof(uint32_t),
                         sizeof(rsa_3072_int_t));
-      rsa_3072_int_t *ctext = (rsa_3072_int_t *)ciphertext.data;
+      rsa_3072_int_t *ctext = (rsa_3072_int_t *)ciphertext->data;
       return rsa_encrypt_3072_finalize(ctext);
     }
     case kRsa4096NumWords: {
-      HARDENED_CHECK_EQ(ciphertext.len * sizeof(uint32_t),
+      HARDENED_CHECK_EQ(ciphertext->len * sizeof(uint32_t),
                         sizeof(rsa_4096_int_t));
-      rsa_4096_int_t *ctext = (rsa_4096_int_t *)ciphertext.data;
+      rsa_4096_int_t *ctext = (rsa_4096_int_t *)ciphertext->data;
       return rsa_encrypt_4096_finalize(ctext);
     }
     default:
