@@ -87,7 +87,7 @@ static status_t wrap_unwrap_random_test(void) {
   };
   otcrypto_const_byte_buf_t personalization =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
-  TRY(otcrypto_symmetric_keygen(personalization, &kmac_key));
+  TRY(otcrypto_symmetric_keygen(&personalization, &kmac_key));
 
   // Generate a random AES-KWP key.
   uint32_t kek_keyblob[(kWrappingKeyConfig.key_length * 2) / sizeof(uint32_t)];
@@ -96,7 +96,7 @@ static status_t wrap_unwrap_random_test(void) {
       .keyblob_length = sizeof(kek_keyblob),
       .keyblob = kek_keyblob,
   };
-  TRY(otcrypto_symmetric_keygen(personalization, &kek));
+  TRY(otcrypto_symmetric_keygen(&personalization, &kek));
 
   return run_wrap_unwrap(&kmac_key, &kek);
 }

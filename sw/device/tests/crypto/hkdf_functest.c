@@ -152,7 +152,7 @@ static status_t run_test(hkdf_test_vector_t *test) {
       otcrypto_const_byte_buf_t, test->info, test->info_bytelen);
 
   // Run the "extract" stage of HKDF.
-  TRY(otcrypto_hkdf_extract(&ikm, salt, &prk));
+  TRY(otcrypto_hkdf_extract(&ikm, &salt, &prk));
 
   // If the test includes an expected value of PRK, then check the value.
   if (test->prk != NULL) {
@@ -167,7 +167,7 @@ static status_t run_test(hkdf_test_vector_t *test) {
   }
 
   // Run the "expand" stage of HKDF.
-  TRY(otcrypto_hkdf_expand(&prk, info, &okm));
+  TRY(otcrypto_hkdf_expand(&prk, &info, &okm));
 
   // Unmask the output key value and compare to the expected value.
   uint32_t *okm_share0;
@@ -425,7 +425,7 @@ static status_t test_otcrypto_hkdf(void) {
   };
 
   // Execute all-in-one API
-  CHECK_STATUS_OK(otcrypto_hkdf(&ikm, salt, info, &okm));
+  CHECK_STATUS_OK(otcrypto_hkdf(&ikm, &salt, &info, &okm));
 
   // Check result
   uint32_t *okm_share0;
@@ -500,21 +500,21 @@ static status_t run_negative_tests(void) {
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 1);
 
   // HKDF extract null pointer tests
-  CHECK(otcrypto_hkdf_extract(&valid_ikm, valid_buf, NULL).value ==
+  CHECK(otcrypto_hkdf_extract(&valid_ikm, &valid_buf, NULL).value ==
         OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_hkdf_extract(&valid_ikm, null_data_buf, &valid_prk).value ==
+  CHECK(otcrypto_hkdf_extract(&valid_ikm, &null_data_buf, &valid_prk).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_blinded_key_t bad_ikm_null = {.config = valid_ikm_cfg,
                                          .keyblob_length = sizeof(ikm_blob),
                                          .keyblob = NULL};
-  CHECK(otcrypto_hkdf_extract(&bad_ikm_null, valid_buf, &valid_prk).value ==
+  CHECK(otcrypto_hkdf_extract(&bad_ikm_null, &valid_buf, &valid_prk).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_blinded_key_t bad_prk_null = {.config = valid_prk_cfg,
                                          .keyblob_length = sizeof(prk_blob),
                                          .keyblob = NULL};
-  CHECK(otcrypto_hkdf_extract(&valid_ikm, valid_buf, &bad_prk_null).value ==
+  CHECK(otcrypto_hkdf_extract(&valid_ikm, &valid_buf, &bad_prk_null).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   // HKDF extract config mode tests
@@ -522,7 +522,7 @@ static status_t run_negative_tests(void) {
                                         .keyblob_length = sizeof(ikm_blob),
                                         .keyblob = ikm_blob};
   bad_ikm_chk.checksum = valid_ikm.checksum ^ 0xFFFFFFFF;
-  CHECK(otcrypto_hkdf_extract(&bad_ikm_chk, valid_buf, &valid_prk).value ==
+  CHECK(otcrypto_hkdf_extract(&bad_ikm_chk, &valid_buf, &valid_prk).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_key_config_t bad_mode_cfg = valid_ikm_cfg;
@@ -531,7 +531,7 @@ static status_t run_negative_tests(void) {
                                          .keyblob_length = sizeof(ikm_blob),
                                          .keyblob = ikm_blob};
   bad_ikm_mode.checksum = integrity_blinded_checksum(&bad_ikm_mode);
-  CHECK(otcrypto_hkdf_extract(&bad_ikm_mode, valid_buf, &valid_prk).value ==
+  CHECK(otcrypto_hkdf_extract(&bad_ikm_mode, &valid_buf, &valid_prk).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_key_config_t bad_prk_mode_cfg = valid_prk_cfg;
@@ -540,7 +540,7 @@ static status_t run_negative_tests(void) {
                                          .keyblob_length = sizeof(prk_blob),
                                          .keyblob = prk_blob};
   bad_prk_mode.checksum = integrity_blinded_checksum(&bad_prk_mode);
-  CHECK(otcrypto_hkdf_extract(&valid_ikm, valid_buf, &bad_prk_mode).value ==
+  CHECK(otcrypto_hkdf_extract(&valid_ikm, &valid_buf, &bad_prk_mode).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   // HKDF check PRK tests
@@ -550,34 +550,35 @@ static status_t run_negative_tests(void) {
                                         .keyblob_length = sizeof(prk_blob),
                                         .keyblob = prk_blob};
   bad_prk_len.checksum = integrity_blinded_checksum(&bad_prk_len);
-  CHECK(otcrypto_hkdf_extract(&valid_ikm, valid_buf, &bad_prk_len).value ==
+  CHECK(otcrypto_hkdf_extract(&valid_ikm, &valid_buf, &bad_prk_len).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_blinded_key_t bad_prk_blob_len = {
       .config = valid_prk_cfg, .keyblob_length = 99, .keyblob = prk_blob};
   bad_prk_blob_len.checksum = integrity_blinded_checksum(&bad_prk_blob_len);
-  CHECK(otcrypto_hkdf_extract(&valid_ikm, valid_buf, &bad_prk_blob_len).value ==
-        OTCRYPTO_BAD_ARGS.value);
+  CHECK(
+      otcrypto_hkdf_extract(&valid_ikm, &valid_buf, &bad_prk_blob_len).value ==
+      OTCRYPTO_BAD_ARGS.value);
 
   // HKDF expand null pointer tests
-  CHECK(otcrypto_hkdf_expand(&valid_prk, valid_buf, NULL).value ==
+  CHECK(otcrypto_hkdf_expand(&valid_prk, &valid_buf, NULL).value ==
         OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_hkdf_expand(&valid_prk, null_data_buf, &valid_okm).value ==
+  CHECK(otcrypto_hkdf_expand(&valid_prk, &null_data_buf, &valid_okm).value ==
         OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_hkdf_expand(&bad_prk_null, valid_buf, &valid_okm).value ==
+  CHECK(otcrypto_hkdf_expand(&bad_prk_null, &valid_buf, &valid_okm).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_blinded_key_t bad_okm_null = {.config = valid_okm_cfg,
                                          .keyblob_length = sizeof(okm_blob),
                                          .keyblob = NULL};
-  CHECK(otcrypto_hkdf_expand(&valid_prk, valid_buf, &bad_okm_null).value ==
+  CHECK(otcrypto_hkdf_expand(&valid_prk, &valid_buf, &bad_okm_null).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   // HKDF expand config tests
   otcrypto_blinded_key_t bad_okm_blob_len = {
       .config = valid_okm_cfg, .keyblob_length = 99, .keyblob = okm_blob};
   bad_okm_blob_len.checksum = integrity_blinded_checksum(&bad_okm_blob_len);
-  CHECK(otcrypto_hkdf_expand(&valid_prk, valid_buf, &bad_okm_blob_len).value ==
+  CHECK(otcrypto_hkdf_expand(&valid_prk, &valid_buf, &bad_okm_blob_len).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   // Exceed 255 iterations
@@ -588,7 +589,7 @@ static status_t run_negative_tests(void) {
                                      .keyblob_length = sizeof(huge_blob),
                                      .keyblob = huge_blob};
   huge_okm.checksum = integrity_blinded_checksum(&huge_okm);
-  CHECK(otcrypto_hkdf_expand(&valid_prk, valid_buf, &huge_okm).value ==
+  CHECK(otcrypto_hkdf_expand(&valid_prk, &valid_buf, &huge_okm).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   return OTCRYPTO_OK;

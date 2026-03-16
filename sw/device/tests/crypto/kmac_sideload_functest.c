@@ -309,23 +309,23 @@ static status_t run_test_vector(void) {
       sha3_test_vector.input_msg.len);
 
   LOG_INFO("Running the first KMAC sideload operation.");
-  TRY(otcrypto_kmac(&current_test_vector->key, input_msg_buf, cust_str_buf,
+  TRY(otcrypto_kmac(&current_test_vector->key, &input_msg_buf, &cust_str_buf,
                     current_test_vector->digest.len, tag_buf1));
 
   // Run a SHA-3 operation in between the two KMAC operations.
   LOG_INFO("Running the intermediate SHA3 operation.");
   switch (sha3_test_vector.security_strength) {
     case 224:
-      TRY(otcrypto_sha3_224(sha3_input_buf, &digest_buf));
+      TRY(otcrypto_sha3_224(&sha3_input_buf, &digest_buf));
       break;
     case 256:
-      TRY(otcrypto_sha3_256(sha3_input_buf, &digest_buf));
+      TRY(otcrypto_sha3_256(&sha3_input_buf, &digest_buf));
       break;
     case 384:
-      TRY(otcrypto_sha3_384(sha3_input_buf, &digest_buf));
+      TRY(otcrypto_sha3_384(&sha3_input_buf, &digest_buf));
       break;
     case 512:
-      TRY(otcrypto_sha3_512(sha3_input_buf, &digest_buf));
+      TRY(otcrypto_sha3_512(&sha3_input_buf, &digest_buf));
       break;
     default:
       LOG_INFO("Invalid security level for SHA3: %d bits",
@@ -334,7 +334,7 @@ static status_t run_test_vector(void) {
   }
 
   LOG_INFO("Running the second KMAC sideload operation for comparison.");
-  TRY(otcrypto_kmac(&current_test_vector->key, input_msg_buf, cust_str_buf,
+  TRY(otcrypto_kmac(&current_test_vector->key, &input_msg_buf, &cust_str_buf,
                     current_test_vector->digest.len, tag_buf2));
 
   TRY_CHECK_ARRAYS_EQ((unsigned char *)tag_buf1.data,

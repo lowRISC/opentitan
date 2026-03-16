@@ -62,7 +62,7 @@ int32_t hash_test(void) {
       sizeof(kGettysburgPrelude) - 1);
 
   RETURN_IF_ERROR(otcrypto_sha2_init(kOtcryptoHashModeSha256, &ctx));
-  RETURN_IF_ERROR(otcrypto_sha2_update(&ctx, buf));
+  RETURN_IF_ERROR(otcrypto_sha2_update(&ctx, &buf));
   RETURN_IF_ERROR(otcrypto_sha2_final(&ctx, &digest));
 
   if (memcmp(digest.data, kGettysburgDigest, sizeof(kGettysburgDigest)) != 0) {

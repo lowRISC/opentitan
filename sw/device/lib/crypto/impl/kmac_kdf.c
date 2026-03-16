@@ -17,8 +17,8 @@
 
 otcrypto_status_t otcrypto_kmac_kdf(
     otcrypto_blinded_key_t *key_derivation_key,
-    const otcrypto_const_byte_buf_t label,
-    const otcrypto_const_byte_buf_t context,
+    const otcrypto_const_byte_buf_t *label,
+    const otcrypto_const_byte_buf_t *context,
     otcrypto_blinded_key_t *output_key_material) {
   // Check NULL pointers.
   if (key_derivation_key->keyblob == NULL || output_key_material == NULL ||
@@ -27,17 +27,17 @@ otcrypto_status_t otcrypto_kmac_kdf(
   }
 
   // Check for null label with nonzero length.
-  if (label.data == NULL && label.len != 0) {
+  if (label->data == NULL && label->len != 0) {
     return OTCRYPTO_BAD_ARGS;
   }
   // Because of KMAC HWIPs prefix limitation, `label` should not exceed
   // `kKmacCustStrMaxSize` bytes.
-  if (label.len > kKmacCustStrMaxSize) {
+  if (label->len > kKmacCustStrMaxSize) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Check for null context with nonzero length.
-  if (context.data == NULL && context.len != 0) {
+  if (context->data == NULL && context->len != 0) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -120,8 +120,8 @@ otcrypto_status_t otcrypto_kmac_kdf(
       // No need to further check key size against security level because
       // `kmac_key_length_check` ensures that the key is at least 128-bit.
       HARDENED_TRY(kmac_kmac_128(
-          &kmac_key, /*masked_digest=*/kHardenedBoolTrue, &context, label.data,
-          label.len, output_key_material->keyblob,
+          &kmac_key, /*masked_digest=*/kHardenedBoolTrue, context, label->data,
+          label->len, output_key_material->keyblob,
           output_key_material->config.key_length / sizeof(uint32_t)));
       break;
     }
@@ -133,8 +133,8 @@ otcrypto_status_t otcrypto_kmac_kdf(
         return OTCRYPTO_BAD_ARGS;
       }
       HARDENED_TRY(kmac_kmac_256(
-          &kmac_key, /*masked_digest=*/kHardenedBoolTrue, &context, label.data,
-          label.len, output_key_material->keyblob,
+          &kmac_key, /*masked_digest=*/kHardenedBoolTrue, context, label->data,
+          label->len, output_key_material->keyblob,
           output_key_material->config.key_length / sizeof(uint32_t)));
       break;
     }

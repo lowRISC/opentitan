@@ -129,7 +129,7 @@ static status_t run_test(kdf_test_vector_t *test) {
     case kOtcryptoKeyModeHmacSha256:
     case kOtcryptoKeyModeHmacSha384:
     case kOtcryptoKeyModeHmacSha512:
-      TRY(otcrypto_kdf_ctr_hmac(&kdk, label, context, &km));
+      TRY(otcrypto_kdf_ctr_hmac(&kdk, &label, &context, &km));
       break;
     default:
       LOG_INFO("Should never end up here.");
@@ -1122,22 +1122,22 @@ static status_t run_hmac_kdf_negative_tests(void) {
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 4);
 
   // Null pointer and length tests
-  CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, valid_buf, valid_buf, NULL).value ==
+  CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, &valid_buf, &valid_buf, NULL).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_blinded_key_t bad_km_null = {
       .config = km_cfg, .keyblob_length = sizeof(km_blob), .keyblob = NULL};
-  CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, valid_buf, valid_buf, &bad_km_null)
+  CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, &valid_buf, &valid_buf, &bad_km_null)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_blinded_key_t bad_kdk_null = {
       .config = kdk_cfg, .keyblob_length = sizeof(kdk_blob), .keyblob = NULL};
-  CHECK(otcrypto_kdf_ctr_hmac(&bad_kdk_null, valid_buf, valid_buf, &valid_km)
+  CHECK(otcrypto_kdf_ctr_hmac(&bad_kdk_null, &valid_buf, &valid_buf, &valid_km)
             .value == OTCRYPTO_BAD_ARGS.value);
 
-  CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, bad_buf_null, valid_buf, &valid_km)
+  CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, &bad_buf_null, &valid_buf, &valid_km)
             .value == OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, valid_buf, bad_buf_null, &valid_km)
+  CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, &valid_buf, &bad_buf_null, &valid_km)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   // Checksum and mode tests
@@ -1145,7 +1145,7 @@ static status_t run_hmac_kdf_negative_tests(void) {
                                         .keyblob_length = sizeof(kdk_blob),
                                         .keyblob = kdk_blob};
   bad_kdk_chk.checksum = valid_kdk.checksum ^ 0xFFFFFFFF;
-  CHECK(otcrypto_kdf_ctr_hmac(&bad_kdk_chk, valid_buf, valid_buf, &valid_km)
+  CHECK(otcrypto_kdf_ctr_hmac(&bad_kdk_chk, &valid_buf, &valid_buf, &valid_km)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_key_config_t bad_kdk_mode_cfg = kdk_cfg;
@@ -1154,7 +1154,7 @@ static status_t run_hmac_kdf_negative_tests(void) {
                                          .keyblob_length = sizeof(kdk_blob),
                                          .keyblob = kdk_blob};
   bad_kdk_mode.checksum = integrity_blinded_checksum(&bad_kdk_mode);
-  CHECK(otcrypto_kdf_ctr_hmac(&bad_kdk_mode, valid_buf, valid_buf, &valid_km)
+  CHECK(otcrypto_kdf_ctr_hmac(&bad_kdk_mode, &valid_buf, &valid_buf, &valid_km)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   // OKM configuration tests
@@ -1164,7 +1164,7 @@ static status_t run_hmac_kdf_negative_tests(void) {
                                         .keyblob_length = sizeof(km_blob),
                                         .keyblob = km_blob};
   bad_km_len0.checksum = integrity_blinded_checksum(&bad_km_len0);
-  CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, valid_buf, valid_buf, &bad_km_len0)
+  CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, &valid_buf, &valid_buf, &bad_km_len0)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_key_config_t bad_km_hw_cfg = km_cfg;
@@ -1173,7 +1173,7 @@ static status_t run_hmac_kdf_negative_tests(void) {
                                       .keyblob_length = sizeof(km_blob),
                                       .keyblob = km_blob};
   bad_km_hw.checksum = integrity_blinded_checksum(&bad_km_hw);
-  CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, valid_buf, valid_buf, &bad_km_hw)
+  CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, &valid_buf, &valid_buf, &bad_km_hw)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_key_config_t bad_km_hw_inv_cfg = km_cfg;
@@ -1182,15 +1182,16 @@ static status_t run_hmac_kdf_negative_tests(void) {
                                               .keyblob_length = sizeof(km_blob),
                                               .keyblob = km_blob};
   bad_km_hw_invalid.checksum = integrity_blinded_checksum(&bad_km_hw_invalid);
-  CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, valid_buf, valid_buf,
+  CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, &valid_buf, &valid_buf,
                               &bad_km_hw_invalid)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_blinded_key_t bad_km_bloblen = {
       .config = km_cfg, .keyblob_length = 99, .keyblob = km_blob};
   bad_km_bloblen.checksum = integrity_blinded_checksum(&bad_km_bloblen);
-  CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, valid_buf, valid_buf, &bad_km_bloblen)
-            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(
+      otcrypto_kdf_ctr_hmac(&valid_kdk, &valid_buf, &valid_buf, &bad_km_bloblen)
+          .value == OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_key_config_t bad_km_huge_cfg = km_cfg;
   bad_km_huge_cfg.key_length = (UINT32_MAX / 8) + 1;
@@ -1198,16 +1199,16 @@ static status_t run_hmac_kdf_negative_tests(void) {
                                         .keyblob_length = sizeof(km_blob),
                                         .keyblob = km_blob};
   bad_km_huge.checksum = integrity_blinded_checksum(&bad_km_huge);
-  CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, valid_buf, valid_buf, &bad_km_huge)
+  CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, &valid_buf, &valid_buf, &bad_km_huge)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   // Zero byte delimiter tests
   uint8_t zero_data[] = {0x01, 0x00, 0x02};
   otcrypto_const_byte_buf_t buf_with_zero =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, zero_data, 3);
-  CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, buf_with_zero, valid_buf, &valid_km)
+  CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, &buf_with_zero, &valid_buf, &valid_km)
             .value == OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, valid_buf, buf_with_zero, &valid_km)
+  CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, &valid_buf, &buf_with_zero, &valid_km)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   return OTCRYPTO_OK;

@@ -77,7 +77,7 @@ status_t sign_then_verify_test(void) {
       .data = msg_digest_data,
       .len = ARRAYSIZE(msg_digest_data),
   };
-  TRY(otcrypto_sha2_384(msg, &msg_digest));
+  TRY(otcrypto_sha2_384(&msg, &msg_digest));
 
   // Allocate space for the signature.
   uint32_t sig[kP384SignatureWords] = {0};
