@@ -40,6 +40,7 @@ mldsa87_unit_tests = [
     "mldsa87_sample_in_ball_test",
     "mldsa87_challenge_hash_test",
     "mldsa87_decode_z_test",
+    "mldsa87_decode_t1_test",
 ]
 
 [
