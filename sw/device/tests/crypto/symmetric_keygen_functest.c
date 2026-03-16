@@ -28,7 +28,7 @@ static const randomness_quality_significance_t kSignificance =
 static const uint8_t kPersonalizationData[5] = {0xf0, 0xf1, 0xf2, 0xf3, 0xf4};
 
 // Represents a 192-bit AES-CBC key.
-static const otcrypto_key_config_t kAesKeyConfig = {
+static otcrypto_key_config_t kAesKeyConfig = {
     .version = kOtcryptoLibVersion1,
     .key_mode = kOtcryptoKeyModeAesCbc,
     .key_length = 192 / 8,
@@ -37,7 +37,7 @@ static const otcrypto_key_config_t kAesKeyConfig = {
 };
 
 // Represents a 256-bit HMAC-SHA256 key.
-static const otcrypto_key_config_t kHmacKeyConfig = {
+static otcrypto_key_config_t kHmacKeyConfig = {
     .version = kOtcryptoLibVersion1,
     .key_mode = kOtcryptoKeyModeHmacSha256,
     .key_length = 256 / 8,
@@ -46,7 +46,7 @@ static const otcrypto_key_config_t kHmacKeyConfig = {
 };
 
 // Represents a 128-bit KMAC key.
-static const otcrypto_key_config_t kKmacKeyConfig = {
+static otcrypto_key_config_t kKmacKeyConfig = {
     .version = kOtcryptoLibVersion1,
     .key_mode = kOtcryptoKeyModeKmac128,
     .key_length = 128 / 8,
@@ -73,7 +73,7 @@ static status_t entropy_complex_init_test(void) {
  * @param config Key configuration.
  */
 static status_t basic_keygen_test(otcrypto_key_config_t config) {
-  const otcrypto_const_byte_buf_t kPersonalization =
+  otcrypto_const_byte_buf_t kPersonalization =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, kPersonalizationData,
                         sizeof(kPersonalizationData));
 
@@ -88,7 +88,7 @@ static status_t basic_keygen_test(otcrypto_key_config_t config) {
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
   };
-  TRY(otcrypto_symmetric_keygen(kPersonalization, &key));
+  TRY(otcrypto_symmetric_keygen(&kPersonalization, &key));
 
   // Ensure the checksum passes.
   TRY_CHECK(integrity_blinded_key_check(&key) == kHardenedBoolTrue);
@@ -121,7 +121,7 @@ static status_t kmac_keygen_test(void) {
 }
 
 static status_t generate_multiple_keys_test(void) {
-  const otcrypto_const_byte_buf_t kPersonalization =
+  otcrypto_const_byte_buf_t kPersonalization =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, kPersonalizationData,
                         sizeof(kPersonalizationData));
   // Create a double-length blob for two keys.
@@ -142,8 +142,8 @@ static status_t generate_multiple_keys_test(void) {
       .keyblob_length = sizeof(keyblob_buffer) / 2,
       .keyblob = keyblob2,
   };
-  TRY(otcrypto_symmetric_keygen(kPersonalization, &key1));
-  TRY(otcrypto_symmetric_keygen(kPersonalization, &key2));
+  TRY(otcrypto_symmetric_keygen(&kPersonalization, &key1));
+  TRY(otcrypto_symmetric_keygen(&kPersonalization, &key2));
 
   // Do a statistical test on the entire keyblob (this will check if the keys
   // are statistically related to each other).

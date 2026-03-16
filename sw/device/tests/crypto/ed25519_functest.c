@@ -123,7 +123,7 @@ status_t ed25519_kat_test(void) {
 
   // Run ed25519 signature generation.
   CHECK_STATUS_OK(otcrypto_ed25519_sign(
-      &private_key, input_message, kOtcryptoEddsaSignModeEddsa, &signature));
+      &private_key, &input_message, kOtcryptoEddsaSignModeEddsa, &signature));
   // Check the ed25519 signature generation result.
   TRY_CHECK_ARRAYS_EQ(kSignature, signature.data, kEd25519SignatureWords);
 
@@ -137,7 +137,7 @@ status_t ed25519_kat_test(void) {
   // Run ed25519 signature verification.
   hardened_bool_t verification_result;
   CHECK_STATUS_OK(otcrypto_ed25519_verify(
-      &public_key, input_message, kOtcryptoEddsaSignModeEddsa, signature_verif,
+      &public_key, &input_message, kOtcryptoEddsaSignModeEddsa, signature_verif,
       &verification_result));
 
   // Signature verification is expected to succeed.

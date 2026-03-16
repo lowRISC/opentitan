@@ -179,7 +179,7 @@ static status_t run_rsa_3072_sign(const uint8_t *msg, size_t msg_len,
       .data = msg_digest_data,
       .len = ARRAYSIZE(msg_digest_data),
   };
-  TRY(otcrypto_sha2_512(msg_buf, &msg_digest));
+  TRY(otcrypto_sha2_512(&msg_buf, &msg_digest));
 
   otcrypto_word32_buf_t sig_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, kRsa3072NumWords);
@@ -242,7 +242,7 @@ static status_t run_rsa_3072_verify(const uint8_t *msg, size_t msg_len,
       .data = msg_digest_data,
       .len = ARRAYSIZE(msg_digest_data),
   };
-  TRY(otcrypto_sha2_512(msg_buf, &msg_digest));
+  TRY(otcrypto_sha2_512(&msg_buf, &msg_digest));
 
   otcrypto_const_word32_buf_t sig_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig, kRsa3072NumWords);

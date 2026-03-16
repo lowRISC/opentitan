@@ -59,7 +59,7 @@ otcrypto_status_t otcrypto_ed25519_keygen(
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_sign(
     const otcrypto_unblinded_key_t *private_key,
-    otcrypto_const_byte_buf_t input_message,
+    otcrypto_const_byte_buf_t *input_message,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t *signature);
 
 /**
@@ -80,7 +80,7 @@ otcrypto_status_t otcrypto_ed25519_sign(
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_verify(
     const otcrypto_unblinded_key_t *public_key,
-    otcrypto_const_byte_buf_t input_message,
+    otcrypto_const_byte_buf_t *input_message,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_const_word32_buf_t signature,
     hardened_bool_t *verification_result);
 
@@ -125,7 +125,7 @@ otcrypto_status_t otcrypto_ed25519_keygen_async_finalize(
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
     const otcrypto_unblinded_key_t *private_key,
-    otcrypto_const_byte_buf_t input_message,
+    otcrypto_const_byte_buf_t *input_message,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_hash_digest_t *key_digest,
     otcrypto_hash_digest_t *msg_digest);
 
@@ -145,7 +145,7 @@ otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_sign_part2_async_start(
     const otcrypto_unblinded_key_t *private_key,
-    otcrypto_const_byte_buf_t input_message,
+    otcrypto_const_byte_buf_t *input_message,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t *signature,
     otcrypto_hash_digest_t *key_digest, otcrypto_hash_digest_t *msg_digest);
 
@@ -178,7 +178,7 @@ otcrypto_status_t otcrypto_ed25519_sign_async_finalize(
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_verify_async_start(
     const otcrypto_unblinded_key_t *public_key,
-    otcrypto_const_byte_buf_t input_message,
+    otcrypto_const_byte_buf_t *input_message,
     otcrypto_eddsa_sign_mode_t sign_mode,
     otcrypto_const_word32_buf_t signature);
 

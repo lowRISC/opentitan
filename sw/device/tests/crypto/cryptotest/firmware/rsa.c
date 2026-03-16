@@ -178,7 +178,7 @@ status_t handle_rsa_encrypt(ujson_t *uj) {
 
   bool status_resp = true;
   otcrypto_status_t status = otcrypto_rsa_encrypt(
-      &public_key, hash_mode, input_message, label, ciphertext);
+      &public_key, hash_mode, &input_message, &label, ciphertext);
   if (status.value != kOtcryptoStatusValueOk) {
     status_resp = false;
   }
@@ -340,7 +340,7 @@ status_t handle_rsa_decrypt(ujson_t *uj) {
   size_t msg_len = 0;
   bool status_resp = true;
   otcrypto_status_t status = otcrypto_rsa_decrypt(
-      &private_key, hash_mode, ciphertext, label, &plaintext, &msg_len);
+      &private_key, hash_mode, ciphertext, &label, &plaintext, &msg_len);
   if (status.value != kOtcryptoStatusValueOk) {
     status_resp = false;
   }
@@ -477,22 +477,22 @@ status_t handle_rsa_verify(ujson_t *uj) {
   // Hash the message.
   switch (hash_mode) {
     case kOtcryptoHashModeSha256:
-      TRY(otcrypto_sha2_256(msg_buf, &msg_digest));
+      TRY(otcrypto_sha2_256(&msg_buf, &msg_digest));
       break;
     case kOtcryptoHashModeSha384:
-      TRY(otcrypto_sha2_384(msg_buf, &msg_digest));
+      TRY(otcrypto_sha2_384(&msg_buf, &msg_digest));
       break;
     case kOtcryptoHashModeSha512:
-      TRY(otcrypto_sha2_512(msg_buf, &msg_digest));
+      TRY(otcrypto_sha2_512(&msg_buf, &msg_digest));
       break;
     case kOtcryptoHashModeSha3_256:
-      TRY(otcrypto_sha3_256(msg_buf, &msg_digest));
+      TRY(otcrypto_sha3_256(&msg_buf, &msg_digest));
       break;
     case kOtcryptoHashModeSha3_384:
-      TRY(otcrypto_sha3_384(msg_buf, &msg_digest));
+      TRY(otcrypto_sha3_384(&msg_buf, &msg_digest));
       break;
     case kOtcryptoHashModeSha3_512:
-      TRY(otcrypto_sha3_512(msg_buf, &msg_digest));
+      TRY(otcrypto_sha3_512(&msg_buf, &msg_digest));
       break;
     default:
       LOG_ERROR("Unsupported RSA hash mode: %d", uj_input.hashing);

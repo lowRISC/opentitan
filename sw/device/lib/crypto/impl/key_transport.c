@@ -18,7 +18,7 @@
 #define MODULE_ID MAKE_MODULE_ID('k', 't', 'r')
 
 otcrypto_status_t otcrypto_symmetric_keygen(
-    otcrypto_const_byte_buf_t perso_string, otcrypto_blinded_key_t *key) {
+    otcrypto_const_byte_buf_t *perso_string, otcrypto_blinded_key_t *key) {
   if (key == NULL || key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -53,8 +53,8 @@ otcrypto_status_t otcrypto_symmetric_keygen(
 
   // Generate each share of the key independently.
   HARDENED_TRY(otcrypto_drbg_instantiate(perso_string));
-  HARDENED_TRY(otcrypto_drbg_generate(empty, share0_buf));
-  HARDENED_TRY(otcrypto_drbg_generate(empty, share1_buf));
+  HARDENED_TRY(otcrypto_drbg_generate(&empty, share0_buf));
+  HARDENED_TRY(otcrypto_drbg_generate(&empty, share1_buf));
 
   // Populate the checksum and return.
   key->checksum = integrity_blinded_checksum(key);

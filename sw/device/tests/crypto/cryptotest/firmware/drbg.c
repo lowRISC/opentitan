@@ -77,19 +77,19 @@ status_t handle_drbg(ujson_t *uj) {
 
   // Instantiate DRBG system. We cannot use the FIPS-compliant APIs
   // because the test vector specifies an entropy string to use.
-  TRY(otcrypto_drbg_manual_instantiate(entropy, perso_string));
+  TRY(otcrypto_drbg_manual_instantiate(&entropy, &perso_string));
 
   // Reseed if the test says we need to
   if (uj_input.reseed) {
-    TRY(otcrypto_drbg_manual_reseed(reseed_entropy, reseed_addl));
+    TRY(otcrypto_drbg_manual_reseed(&reseed_entropy, &reseed_addl));
   }
 
   // Add first additional input (the test vectors require generating
   // `output_len` bits of output here, but they may be discarded).
-  TRY(otcrypto_drbg_manual_generate(addl_1, output));
+  TRY(otcrypto_drbg_manual_generate(&addl_1, output));
 
   // Add second additional input and generate random output
-  TRY(otcrypto_drbg_manual_generate(addl_2, output));
+  TRY(otcrypto_drbg_manual_generate(&addl_2, output));
 
   // Uninstantiate the DRBG system
   otcrypto_drbg_uninstantiate();

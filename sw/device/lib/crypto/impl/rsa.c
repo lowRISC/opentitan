@@ -346,8 +346,8 @@ otcrypto_status_t otcrypto_rsa_verify(
 
 otcrypto_status_t otcrypto_rsa_encrypt(
     const otcrypto_unblinded_key_t *public_key,
-    const otcrypto_hash_mode_t hash_mode, otcrypto_const_byte_buf_t message,
-    otcrypto_const_byte_buf_t label, otcrypto_word32_buf_t ciphertext) {
+    const otcrypto_hash_mode_t hash_mode, otcrypto_const_byte_buf_t *message,
+    otcrypto_const_byte_buf_t *label, otcrypto_word32_buf_t ciphertext) {
   HARDENED_TRY(
       otcrypto_rsa_encrypt_async_start(public_key, hash_mode, message, label));
   return otcrypto_rsa_encrypt_async_finalize(ciphertext);
@@ -356,7 +356,7 @@ otcrypto_status_t otcrypto_rsa_encrypt(
 otcrypto_status_t otcrypto_rsa_decrypt(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_hash_mode_t hash_mode,
-    otcrypto_const_word32_buf_t ciphertext, otcrypto_const_byte_buf_t label,
+    otcrypto_const_word32_buf_t ciphertext, otcrypto_const_byte_buf_t *label,
     otcrypto_byte_buf_t *plaintext, size_t *plaintext_bytelen) {
   HARDENED_TRY(otcrypto_rsa_decrypt_async_start(private_key, ciphertext));
   return otcrypto_rsa_decrypt_async_finalize(hash_mode, label, plaintext,
@@ -891,8 +891,8 @@ otcrypto_status_t otcrypto_rsa_verify_async_finalize(
 
 otcrypto_status_t otcrypto_rsa_encrypt_async_start(
     const otcrypto_unblinded_key_t *public_key,
-    const otcrypto_hash_mode_t hash_mode, otcrypto_const_byte_buf_t message,
-    otcrypto_const_byte_buf_t label) {
+    const otcrypto_hash_mode_t hash_mode, otcrypto_const_byte_buf_t *message,
+    otcrypto_const_byte_buf_t *label) {
   // Check for NULL pointers.
   if (public_key == NULL || public_key->key == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -901,11 +901,11 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_start(
   // Check that the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
 
-  if (message.data == NULL && (message.len != 0)) {
+  if (message->data == NULL && (message->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
 
-  if (label.data == NULL && (label.len != 0)) {
+  if (label->data == NULL && (label->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -932,22 +932,22 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_start(
       HARDENED_CHECK_EQ(size, kOtcryptoRsaSize2048);
       HARDENED_CHECK_EQ(public_key->key_length, sizeof(rsa_2048_public_key_t));
       rsa_2048_public_key_t *pk = (rsa_2048_public_key_t *)public_key->key;
-      return rsa_encrypt_2048_start(pk, hash_mode, message.data, message.len,
-                                    label.data, label.len);
+      return rsa_encrypt_2048_start(pk, hash_mode, message->data, message->len,
+                                    label->data, label->len);
     }
     case kOtcryptoRsaSize3072: {
       HARDENED_CHECK_EQ(size, kOtcryptoRsaSize3072);
       HARDENED_CHECK_EQ(public_key->key_length, sizeof(rsa_3072_public_key_t));
       rsa_3072_public_key_t *pk = (rsa_3072_public_key_t *)public_key->key;
-      return rsa_encrypt_3072_start(pk, hash_mode, message.data, message.len,
-                                    label.data, label.len);
+      return rsa_encrypt_3072_start(pk, hash_mode, message->data, message->len,
+                                    label->data, label->len);
     }
     case kOtcryptoRsaSize4096: {
       HARDENED_CHECK_EQ(size, kOtcryptoRsaSize4096);
       HARDENED_CHECK_EQ(public_key->key_length, sizeof(rsa_4096_public_key_t));
       rsa_4096_public_key_t *pk = (rsa_4096_public_key_t *)public_key->key;
-      return rsa_encrypt_4096_start(pk, hash_mode, message.data, message.len,
-                                    label.data, label.len);
+      return rsa_encrypt_4096_start(pk, hash_mode, message->data, message->len,
+                                    label->data, label->len);
     }
     default:
       // Invalid key size. Since the size was inferred, should be unreachable.
@@ -1101,9 +1101,9 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
 }
 
 otcrypto_status_t otcrypto_rsa_decrypt_async_finalize(
-    const otcrypto_hash_mode_t hash_mode, otcrypto_const_byte_buf_t label,
+    const otcrypto_hash_mode_t hash_mode, otcrypto_const_byte_buf_t *label,
     otcrypto_byte_buf_t *plaintext, size_t *plaintext_bytelen) {
-  if (plaintext->data == NULL || label.data == NULL) {
+  if (plaintext->data == NULL || label->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -1112,7 +1112,7 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_finalize(
 
   // Call the unified `finalize()` operation, which will infer the RSA size
   // from OTBN.
-  HARDENED_TRY(rsa_decrypt_finalize(hash_mode, label.data, label.len,
+  HARDENED_TRY(rsa_decrypt_finalize(hash_mode, label->data, label->len,
                                     plaintext->len, plaintext->data,
                                     plaintext_bytelen));
 

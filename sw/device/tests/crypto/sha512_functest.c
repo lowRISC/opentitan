@@ -56,7 +56,7 @@ status_t sha512_test(const unsigned char *msg, const size_t msg_len,
       .len = ARRAYSIZE(actual_digest_data),
       .data = actual_digest_data,
   };
-  TRY(otcrypto_sha2_512(input_message, &actual_digest));
+  TRY(otcrypto_sha2_512(&input_message, &actual_digest));
 
   // Check that the expected and actual digests match.
   TRY_CHECK_ARRAYS_EQ((unsigned char *)actual_digest_data, expected_digest,
@@ -82,7 +82,7 @@ status_t sha512_streaming_test(const unsigned char *msg, size_t msg_len,
         OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg, len);
     msg += len;
     msg_len -= len;
-    TRY(otcrypto_sha2_update(&ctx, input_message));
+    TRY(otcrypto_sha2_update(&ctx, &input_message));
   }
 
   // Allocate space for the computed digest.

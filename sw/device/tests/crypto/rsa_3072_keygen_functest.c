@@ -89,7 +89,7 @@ status_t keygen_then_sign_test(void) {
       .data = msg_digest_data,
       .len = ARRAYSIZE(msg_digest_data),
   };
-  TRY(otcrypto_sha2_512(msg_buf, &msg_digest));
+  TRY(otcrypto_sha2_512(&msg_buf, &msg_digest));
 
   uint32_t sig[kRsa3072NumWords];
   otcrypto_word32_buf_t sig_buf =

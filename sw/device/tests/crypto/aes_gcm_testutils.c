@@ -88,7 +88,7 @@ static status_t stream_gcm(otcrypto_aes_gcm_context_t *ctx,
       }
       otcrypto_const_byte_buf_t aad_chunk = OTCRYPTO_MAKE_BUF(
           otcrypto_const_byte_buf_t, aad.data + offset, chunk_len);
-      TRY(otcrypto_aes_gcm_update_aad(ctx, aad_chunk));
+      TRY(otcrypto_aes_gcm_update_aad(ctx, &aad_chunk));
     }
   }
 
@@ -110,7 +110,7 @@ static status_t stream_gcm(otcrypto_aes_gcm_context_t *ctx,
           output.len - *output_bytes_written);
       size_t bytes_written_for_chunk = 0;
       TRY(otcrypto_aes_gcm_update_encrypted_data(
-          ctx, input_chunk, &output_with_offset, &bytes_written_for_chunk));
+          ctx, &input_chunk, &output_with_offset, &bytes_written_for_chunk));
       *output_bytes_written += bytes_written_for_chunk;
     }
   }
@@ -188,7 +188,7 @@ status_t aes_gcm_testutils_encrypt(const aes_gcm_test_t *test, bool streaming,
     // Call encrypt() with a cycle count timing profile.
     uint64_t t_start = profile_start();
     otcrypto_status_t err = otcrypto_aes_gcm_encrypt(
-        &key, plaintext, iv, aad, tag_len, &actual_ciphertext, actual_tag);
+        &key, &plaintext, iv, &aad, tag_len, &actual_ciphertext, actual_tag);
     *cycles = profile_end(t_start);
 
     // Check for errors.
@@ -280,8 +280,9 @@ status_t aes_gcm_testutils_decrypt(const aes_gcm_test_t *test,
     // Call decrypt() with a cycle count timing profile.
     icache_invalidate();
     uint64_t t_start = profile_start();
-    otcrypto_status_t err = otcrypto_aes_gcm_decrypt(
-        &key, ciphertext, iv, aad, tag_len, tag, &actual_plaintext, tag_valid);
+    otcrypto_status_t err =
+        otcrypto_aes_gcm_decrypt(&key, &ciphertext, iv, &aad, tag_len, tag,
+                                 &actual_plaintext, tag_valid);
     *cycles = profile_end(t_start);
     icache_invalidate();
 

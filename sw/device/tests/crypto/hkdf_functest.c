@@ -152,7 +152,7 @@ static status_t run_test(hkdf_test_vector_t *test) {
       otcrypto_const_byte_buf_t, test->info, test->info_bytelen);
 
   // Run the "extract" stage of HKDF.
-  TRY(otcrypto_hkdf_extract(&ikm, salt, &prk));
+  TRY(otcrypto_hkdf_extract(&ikm, &salt, &prk));
 
   // If the test includes an expected value of PRK, then check the value.
   if (test->prk != NULL) {
@@ -167,7 +167,7 @@ static status_t run_test(hkdf_test_vector_t *test) {
   }
 
   // Run the "expand" stage of HKDF.
-  TRY(otcrypto_hkdf_expand(&prk, info, &okm));
+  TRY(otcrypto_hkdf_expand(&prk, &info, &okm));
 
   // Unmask the output key value and compare to the expected value.
   uint32_t *okm_share0;

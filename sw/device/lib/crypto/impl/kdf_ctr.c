@@ -20,9 +20,9 @@
  * @param buffer Inspected string.
  * @return OK or error.
  */
-static status_t check_zero_byte(const otcrypto_const_byte_buf_t buffer) {
-  for (size_t i = 0; i < buffer.len; i++) {
-    if (buffer.data[i] == 0x00) {
+static status_t check_zero_byte(const otcrypto_const_byte_buf_t *buffer) {
+  for (size_t i = 0; i < buffer->len; i++) {
+    if (buffer->data[i] == 0x00) {
       return OTCRYPTO_BAD_ARGS;
     }
   }
@@ -66,8 +66,8 @@ static status_t digest_num_words_from_key_mode(otcrypto_key_mode_t key_mode,
 
 otcrypto_status_t otcrypto_kdf_ctr_hmac(
     const otcrypto_blinded_key_t *key_derivation_key,
-    const otcrypto_const_byte_buf_t label,
-    const otcrypto_const_byte_buf_t context,
+    const otcrypto_const_byte_buf_t *label,
+    const otcrypto_const_byte_buf_t *context,
     otcrypto_blinded_key_t *output_key_material) {
   // Check NULL pointers.
   if (output_key_material == NULL || output_key_material->keyblob == NULL ||
@@ -84,12 +84,12 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
   }
 
   // Check for null label with nonzero length.
-  if (label.data == NULL && label.len != 0) {
+  if (label->data == NULL && label->len != 0) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Check for null context with nonzero length.
-  if (context.data == NULL && context.len != 0) {
+  if (context->data == NULL && context->len != 0) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -166,17 +166,17 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
     otcrypto_const_byte_buf_t counter_be_buf = OTCRYPTO_MAKE_BUF(
         otcrypto_const_byte_buf_t, (const unsigned char *const)&counter_be,
         sizeof(counter_be));
-    HARDENED_TRY(otcrypto_hmac_update(&ctx, counter_be_buf));
+    HARDENED_TRY(otcrypto_hmac_update(&ctx, &counter_be_buf));
     HARDENED_TRY(otcrypto_hmac_update(&ctx, label));
     otcrypto_const_byte_buf_t zero_buf = OTCRYPTO_MAKE_BUF(
         otcrypto_const_byte_buf_t, (unsigned char *const)&zero, sizeof(zero));
-    HARDENED_TRY(otcrypto_hmac_update(&ctx, zero_buf));
+    HARDENED_TRY(otcrypto_hmac_update(&ctx, &zero_buf));
     HARDENED_TRY(otcrypto_hmac_update(&ctx, context));
     otcrypto_const_byte_buf_t required_bit_len_buf =
         OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t,
                           (const unsigned char *const)&required_bit_len,
                           sizeof(required_bit_len));
-    HARDENED_TRY(otcrypto_hmac_update(&ctx, required_bit_len_buf));
+    HARDENED_TRY(otcrypto_hmac_update(&ctx, &required_bit_len_buf));
     uint32_t *tag_dest = output_key_material_data + i * digest_word_len;
     otcrypto_word32_buf_t tag_buf =
         OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_dest, digest_word_len);
