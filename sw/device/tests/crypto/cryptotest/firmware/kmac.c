@@ -89,7 +89,7 @@ status_t handle_kmac(ujson_t *uj) {
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
   };
-  TRY(otcrypto_import_blinded_key(share0, share1, &key));
+  TRY(otcrypto_import_blinded_key(&share0, &share1, &key));
 
   // Create input message
   uint8_t msg_buf[uj_message.message_len];

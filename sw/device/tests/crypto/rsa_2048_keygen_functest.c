@@ -109,7 +109,7 @@ status_t keygen_then_sign_test(void) {
   LOG_INFO("Starting signature verification...");
   hardened_bool_t verification_result;
   TRY(otcrypto_rsa_verify(&public_key, msg_digest, kOtcryptoRsaPaddingPkcs,
-                          const_sig_buf, &verification_result));
+                          &const_sig_buf, &verification_result));
   LOG_INFO("Signature verification complete.");
   LOG_INFO("OTBN instruction count: %u", otbn_instruction_count_get());
 

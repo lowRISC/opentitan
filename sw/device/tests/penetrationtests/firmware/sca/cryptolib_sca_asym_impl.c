@@ -135,8 +135,8 @@ status_t cryptolib_sca_rsa_dec_impl(
   if (trigger & kPentestTrigger1) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_rsa_private_key_from_exponents(rsa_size, modulus, d_share0,
-                                              d_share1, &private_key));
+  TRY(otcrypto_rsa_private_key_from_exponents(rsa_size, &modulus, &d_share0,
+                                              &d_share1, &private_key));
   if (trigger & kPentestTrigger1) {
     pentest_set_trigger_low();
   }
@@ -163,7 +163,7 @@ status_t cryptolib_sca_rsa_dec_impl(
   if (trigger & kPentestTrigger2) {
     pentest_set_trigger_high();
   }
-  HARDENED_TRY(otcrypto_rsa_decrypt(&private_key, hash_mode, ciphertext,
+  HARDENED_TRY(otcrypto_rsa_decrypt(&private_key, hash_mode, &ciphertext,
                                     &label_buf, &plaintext, &msg_len));
   if (trigger & kPentestTrigger2) {
     pentest_set_trigger_low();
@@ -366,8 +366,8 @@ status_t cryptolib_sca_rsa_sign_impl(
   if (trigger & kPentestTrigger1) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_rsa_private_key_from_exponents(rsa_size, modulus, d_share0,
-                                              d_share1, &private_key));
+  TRY(otcrypto_rsa_private_key_from_exponents(rsa_size, &modulus, &d_share0,
+                                              &d_share1, &private_key));
   if (trigger & kPentestTrigger1) {
     pentest_set_trigger_low();
   }

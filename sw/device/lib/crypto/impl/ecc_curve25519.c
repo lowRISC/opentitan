@@ -220,7 +220,8 @@ otcrypto_status_t otcrypto_ed25519_sign(
 otcrypto_status_t otcrypto_ed25519_verify(
     const otcrypto_unblinded_key_t *public_key,
     otcrypto_const_byte_buf_t *input_message,
-    otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_const_word32_buf_t signature,
+    otcrypto_eddsa_sign_mode_t sign_mode,
+    otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result) {
   if (verification_result == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -405,7 +406,7 @@ otcrypto_status_t otcrypto_ed25519_verify_async_start(
     const otcrypto_unblinded_key_t *public_key,
     otcrypto_const_byte_buf_t *input_message_ph,
     otcrypto_eddsa_sign_mode_t sign_mode,
-    otcrypto_const_word32_buf_t signature) {
+    otcrypto_const_word32_buf_t *signature) {
   // Ensure the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
 
@@ -413,16 +414,16 @@ otcrypto_status_t otcrypto_ed25519_verify_async_start(
   HARDENED_TRY(ed25519_key_check(public_key));
 
   // Do some signature struct validity checks.
-  HARDENED_TRY(ed25519_signature_check((otcrypto_word32_buf_t *)&signature));
-  if (signature.data == NULL) {
+  HARDENED_TRY(ed25519_signature_check((otcrypto_word32_buf_t *)signature));
+  if (signature->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Compute SHA512(R || A || PH(M)).
   curve25519_signature_t sig_curve25519;
-  reverse_bytecpy((uint8_t *)sig_curve25519.r, (uint8_t *)signature.data,
+  reverse_bytecpy((uint8_t *)sig_curve25519.r, (uint8_t *)signature->data,
                   kCurve25519PointBytes);
-  memcpy(sig_curve25519.s, &signature.data[kCurve25519PointWords],
+  memcpy(sig_curve25519.s, &signature->data[kCurve25519PointWords],
          kCurve25519ScalarBytes);
 
   // Prepend the dom2 prefix

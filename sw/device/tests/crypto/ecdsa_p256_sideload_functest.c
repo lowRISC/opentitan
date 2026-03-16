@@ -97,7 +97,7 @@ status_t sign_then_verify_test(void) {
   otcrypto_const_word32_buf_t const_sig_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig, ARRAYSIZE(sig));
   CHECK_STATUS_OK(otcrypto_ecdsa_p256_verify(
-      &public_key, message_digest, const_sig_buf, &verification_result));
+      &public_key, message_digest, &const_sig_buf, &verification_result));
 
   // The signature should pass verification.
   TRY_CHECK(verification_result == kHardenedBoolTrue);

@@ -138,8 +138,8 @@ status_t ed25519_kat_test(void) {
   // Run ed25519 signature verification.
   hardened_bool_t verification_result;
   CHECK_STATUS_OK(otcrypto_ed25519_verify(
-      &public_key, &input_message, kOtcryptoEddsaSignModeEddsa, signature_verif,
-      &verification_result));
+      &public_key, &input_message, kOtcryptoEddsaSignModeEddsa,
+      &signature_verif, &verification_result));
 
   // Signature verification is expected to succeed.
   TRY_CHECK(verification_result == kHardenedBoolTrue);
@@ -191,7 +191,7 @@ static status_t hasheddsa_test(void) {
   hardened_bool_t verification_result;
   CHECK_STATUS_OK(otcrypto_ed25519_verify(
       &public_key, &input_message, kOtcryptoEddsaSignModeHashEddsa,
-      signature_verif, &verification_result));
+      &signature_verif, &verification_result));
 
   TRY_CHECK(verification_result == kHardenedBoolTrue);
 
@@ -287,7 +287,7 @@ static status_t run_negative_tests(void) {
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig_buf, 15);
   hardened_bool_t verify_res;
   CHECK(otcrypto_ed25519_verify(&valid_pub, &msg, kOtcryptoEddsaSignModeEddsa,
-                                bad_const_sig, &verify_res)
+                                &bad_const_sig, &verify_res)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   return OTCRYPTO_OK;

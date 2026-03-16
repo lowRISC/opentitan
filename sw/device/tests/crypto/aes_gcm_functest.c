@@ -97,30 +97,30 @@ static status_t run_bad_args_test(void) {
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
 
   // NULL pointer checks
-  CHECK(otcrypto_aes_gcm_encrypt(NULL, &pt, iv, &aad, kOtcryptoAesGcmTagLen128,
+  CHECK(otcrypto_aes_gcm_encrypt(NULL, &pt, &iv, &aad, kOtcryptoAesGcmTagLen128,
                                  &ct, &tag)
             .value == OTCRYPTO_BAD_ARGS.value);
   otcrypto_word32_buf_t null_tag =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, NULL, 4);
-  CHECK(otcrypto_aes_gcm_encrypt(&key, &pt, iv, &aad, kOtcryptoAesGcmTagLen128,
+  CHECK(otcrypto_aes_gcm_encrypt(&key, &pt, &iv, &aad, kOtcryptoAesGcmTagLen128,
                                  &ct, &null_tag)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   // Test length mismatch between plaintext and ciphertext
   otcrypto_byte_buf_t bad_ct = OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, data, 15);
-  CHECK(otcrypto_aes_gcm_encrypt(&key, &pt, iv, &aad, kOtcryptoAesGcmTagLen128,
+  CHECK(otcrypto_aes_gcm_encrypt(&key, &pt, &iv, &aad, kOtcryptoAesGcmTagLen128,
                                  &bad_ct, &tag)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   // Tag length checks
   otcrypto_word32_buf_t bad_tag_len =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_data, 3);
-  CHECK(otcrypto_aes_gcm_encrypt(&key, &pt, iv, &aad, kOtcryptoAesGcmTagLen128,
+  CHECK(otcrypto_aes_gcm_encrypt(&key, &pt, &iv, &aad, kOtcryptoAesGcmTagLen128,
                                  &ct, &bad_tag_len)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   // Invalid tag length enum
-  CHECK(otcrypto_aes_gcm_encrypt(&key, &pt, iv, &aad,
+  CHECK(otcrypto_aes_gcm_encrypt(&key, &pt, &iv, &aad,
                                  (otcrypto_aes_gcm_tag_len_t)0xFF, &ct, &tag)
             .value == OTCRYPTO_BAD_ARGS.value);
 
@@ -133,7 +133,7 @@ static status_t run_bad_args_test(void) {
       .keyblob = keyblob,
   };
   bad_mode_key.checksum = integrity_blinded_checksum(&bad_mode_key);
-  CHECK(otcrypto_aes_gcm_encrypt(&bad_mode_key, &pt, iv, &aad,
+  CHECK(otcrypto_aes_gcm_encrypt(&bad_mode_key, &pt, &iv, &aad,
                                  kOtcryptoAesGcmTagLen128, &ct, &tag)
             .value == OTCRYPTO_BAD_ARGS.value);
 
@@ -146,7 +146,7 @@ static status_t run_bad_args_test(void) {
       .keyblob = keyblob,
   };
   bad_hw_key.checksum = integrity_blinded_checksum(&bad_hw_key);
-  CHECK(otcrypto_aes_gcm_encrypt(&bad_hw_key, &pt, iv, &aad,
+  CHECK(otcrypto_aes_gcm_encrypt(&bad_hw_key, &pt, &iv, &aad,
                                  kOtcryptoAesGcmTagLen128, &ct, &tag)
             .value == OTCRYPTO_BAD_ARGS.value);
 
@@ -199,7 +199,7 @@ static status_t run_sideload_test(void) {
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
 
   // Encrypt
-  TRY(otcrypto_aes_gcm_encrypt(&sideload_key, &pt, iv, &aad,
+  TRY(otcrypto_aes_gcm_encrypt(&sideload_key, &pt, &iv, &aad,
                                kOtcryptoAesGcmTagLen128, &ct, &tag));
   TRY_CHECK(tag_data[0] != 0 || tag_data[1] != 0);
 
@@ -212,8 +212,8 @@ static status_t run_sideload_test(void) {
   otcrypto_const_word32_buf_t tag_const =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, tag.data, tag.len);
   hardened_bool_t success;
-  TRY(otcrypto_aes_gcm_decrypt(&sideload_key, &ct_const, iv, &aad,
-                               kOtcryptoAesGcmTagLen128, tag_const,
+  TRY(otcrypto_aes_gcm_decrypt(&sideload_key, &ct_const, &iv, &aad,
+                               kOtcryptoAesGcmTagLen128, &tag_const,
                                &recovered_pt, &success));
   TRY_CHECK(success == kHardenedBoolTrue);
   TRY_CHECK_ARRAYS_EQ(recovered_pt_data, pt_data, 16);

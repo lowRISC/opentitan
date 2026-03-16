@@ -127,7 +127,7 @@ OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p256_verify(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_const_word32_buf_t signature,
+    otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result);
 
 /**
@@ -251,7 +251,7 @@ OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p256_verify_async_start(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_const_word32_buf_t signature);
+    otcrypto_const_word32_buf_t *signature);
 
 /**
  * Finalizes asynchronous signature verification for ECDSA/P-256.
@@ -270,7 +270,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_verify_async_start(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p256_verify_async_finalize(
-    otcrypto_const_word32_buf_t signature,
+    otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result);
 
 /**

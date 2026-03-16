@@ -228,14 +228,14 @@ otcrypto_status_t otcrypto_key_wrap(const otcrypto_blinded_key_t *key_to_wrap,
   return aes_kwp_wrap(kek, plaintext, sizeof(plaintext), wrapped_key->data);
 }
 
-otcrypto_status_t otcrypto_key_unwrap(otcrypto_const_word32_buf_t wrapped_key,
+otcrypto_status_t otcrypto_key_unwrap(otcrypto_const_word32_buf_t *wrapped_key,
                                       const otcrypto_blinded_key_t *key_kek,
                                       hardened_bool_t *success,
                                       otcrypto_blinded_key_t *unwrapped_key) {
   *success = kHardenedBoolFalse;
 
-  if (wrapped_key.data == NULL || key_kek == NULL || key_kek->keyblob == NULL ||
-      success == NULL || unwrapped_key == NULL ||
+  if (wrapped_key->data == NULL || key_kek == NULL ||
+      key_kek->keyblob == NULL || success == NULL || unwrapped_key == NULL ||
       unwrapped_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -254,10 +254,10 @@ otcrypto_status_t otcrypto_key_unwrap(otcrypto_const_word32_buf_t wrapped_key,
   }
 
   // Unwrap the key.
-  uint32_t plaintext[wrapped_key.len];
+  uint32_t plaintext[wrapped_key->len];
   HARDENED_TRY(hardened_memshred(plaintext, ARRAYSIZE(plaintext)));
-  HARDENED_TRY(aes_kwp_unwrap(kek, wrapped_key.data,
-                              wrapped_key.len * sizeof(uint32_t), success,
+  HARDENED_TRY(aes_kwp_unwrap(kek, wrapped_key->data,
+                              wrapped_key->len * sizeof(uint32_t), success,
                               plaintext));
 
   if (launder32(*success) != kHardenedBoolTrue) {
@@ -295,11 +295,11 @@ otcrypto_status_t otcrypto_key_unwrap(otcrypto_const_word32_buf_t wrapped_key,
 }
 
 otcrypto_status_t otcrypto_import_blinded_key(
-    const otcrypto_const_word32_buf_t key_share0,
-    const otcrypto_const_word32_buf_t key_share1,
+    const otcrypto_const_word32_buf_t *key_share0,
+    const otcrypto_const_word32_buf_t *key_share1,
     otcrypto_blinded_key_t *blinded_key) {
   if (blinded_key == NULL || blinded_key->keyblob == NULL ||
-      key_share0.data == NULL || key_share1.data == NULL) {
+      key_share0->data == NULL || key_share1->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -308,13 +308,13 @@ otcrypto_status_t otcrypto_import_blinded_key(
 
   // Check the lengths of the shares.
   size_t share_words = launder32(keyblob_share_num_words(blinded_key->config));
-  if (launder32(key_share0.len) != share_words ||
-      launder32(key_share1.len) != share_words) {
+  if (launder32(key_share0->len) != share_words ||
+      launder32(key_share1->len) != share_words) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(key_share0.len,
+  HARDENED_CHECK_EQ(key_share0->len,
                     keyblob_share_num_words(blinded_key->config));
-  HARDENED_CHECK_EQ(key_share1.len,
+  HARDENED_CHECK_EQ(key_share1->len,
                     keyblob_share_num_words(blinded_key->config));
 
   // Check the length of the keyblob.
@@ -327,7 +327,7 @@ otcrypto_status_t otcrypto_import_blinded_key(
                     keyblob_words * sizeof(uint32_t));
 
   // Construct the blinded key.
-  HARDENED_TRY(keyblob_from_shares(key_share0.data, key_share1.data,
+  HARDENED_TRY(keyblob_from_shares(key_share0->data, key_share1->data,
                                    blinded_key->config, blinded_key->keyblob));
   blinded_key->checksum = integrity_blinded_checksum(blinded_key);
   return OTCRYPTO_OK;

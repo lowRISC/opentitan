@@ -374,12 +374,12 @@ status_t handle_ecdsa(ujson_t *uj) {
       switch (uj_curve) {
         case kCryptotestEcdsaCurveP256: {
           status = otcrypto_ecdsa_p256_verify(&public_key, message_digest,
-                                              signature, &verification_result);
+                                              &signature, &verification_result);
           break;
         }
         case kCryptotestEcdsaCurveP384: {
           status = otcrypto_ecdsa_p384_verify(&public_key, message_digest,
-                                              signature, &verification_result);
+                                              &signature, &verification_result);
           break;
         }
         default:

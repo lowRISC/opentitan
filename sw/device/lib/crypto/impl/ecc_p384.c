@@ -279,13 +279,13 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign(
 otcrypto_status_t otcrypto_ecdsa_p384_verify(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_const_word32_buf_t signature,
+    otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result) {
-  if (verification_result == NULL || signature.data == NULL ||
+  if (verification_result == NULL || signature->data == NULL ||
       public_key == NULL || public_key->key == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (!status_ok(p384_signature_length_check(signature.len)) ||
+  if (!status_ok(p384_signature_length_check(signature->len)) ||
       !status_ok(p384_public_key_length_check(public_key))) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -309,7 +309,7 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_verify(
       otcrypto_const_word32_buf_t, signature->data, signature->len);
   hardened_bool_t verification_result = kHardenedBoolFalse;
   HARDENED_TRY(otcrypto_ecdsa_p384_verify(
-      public_key, message_digest, signature_check, &verification_result));
+      public_key, message_digest, &signature_check, &verification_result));
 
   // Trap if signature verification failed.
   HARDENED_CHECK_EQ(verification_result, kHardenedBoolTrue);
@@ -528,8 +528,8 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_async_finalize(
 otcrypto_status_t otcrypto_ecdsa_p384_verify_async_start(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_const_word32_buf_t signature) {
-  if (public_key == NULL || signature.data == NULL ||
+    otcrypto_const_word32_buf_t *signature) {
+  if (public_key == NULL || signature->data == NULL ||
       message_digest.data == NULL || public_key->key == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -561,8 +561,8 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify_async_start(
   HARDENED_CHECK_EQ(launder32(message_digest.len), kP384ScalarWords);
 
   // Check the signature lengths.
-  HARDENED_TRY(p384_signature_length_check(signature.len));
-  p384_ecdsa_signature_t *sig = (p384_ecdsa_signature_t *)signature.data;
+  HARDENED_TRY(p384_signature_length_check(signature->len));
+  p384_ecdsa_signature_t *sig = (p384_ecdsa_signature_t *)signature->data;
 
   // Start the asynchronous signature-verification routine.
   HARDENED_TRY(p384_ecdsa_verify_start(sig, message_digest.data, pk));
@@ -577,20 +577,20 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify_async_start(
 }
 
 otcrypto_status_t otcrypto_ecdsa_p384_verify_async_finalize(
-    otcrypto_const_word32_buf_t signature,
+    otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result) {
   if (verification_result == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Verify the input buffer
-  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&signature));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(signature));
 
   // Check that the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
 
-  HARDENED_TRY(p384_signature_length_check(signature.len));
-  p384_ecdsa_signature_t *sig_p384 = (p384_ecdsa_signature_t *)signature.data;
+  HARDENED_TRY(p384_signature_length_check(signature->len));
+  p384_ecdsa_signature_t *sig_p384 = (p384_ecdsa_signature_t *)signature->data;
   return p384_ecdsa_verify_finalize(sig_p384, verification_result);
 }
 

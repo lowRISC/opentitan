@@ -169,7 +169,7 @@ static status_t run_rsa_3072_sign(const uint8_t *msg, size_t msg_len,
   otcrypto_const_word32_buf_t modulus = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, kTestModulus, ARRAYSIZE(kTestModulus));
   TRY(otcrypto_rsa_private_key_from_exponents(
-      kOtcryptoRsaSize3072, modulus, d_share0, d_share1, &private_key));
+      kOtcryptoRsaSize3072, &modulus, &d_share0, &d_share1, &private_key));
 
   // Hash the message.
   otcrypto_const_byte_buf_t msg_buf =
@@ -231,7 +231,7 @@ static status_t run_rsa_3072_verify(const uint8_t *msg, size_t msg_len,
       .key_length = kOtcryptoRsa3072PublicKeyBytes,
       .key = public_key_data,
   };
-  TRY(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize3072, modulus,
+  TRY(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize3072, &modulus,
                                         &public_key));
 
   // Hash the message.
@@ -248,7 +248,7 @@ static status_t run_rsa_3072_verify(const uint8_t *msg, size_t msg_len,
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig, kRsa3072NumWords);
 
   uint64_t t_start = profile_start();
-  TRY(otcrypto_rsa_verify(&public_key, msg_digest, padding_mode, sig_buf,
+  TRY(otcrypto_rsa_verify(&public_key, msg_digest, padding_mode, &sig_buf,
                           verification_result));
   profile_end_and_print(t_start, "RSA verify");
 
