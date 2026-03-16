@@ -163,8 +163,8 @@ status_t cryptolib_sca_rsa_dec_impl(
   if (trigger & kPentestTrigger2) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_rsa_decrypt(&private_key, hash_mode, ciphertext, label_buf,
-                           plaintext, &msg_len));
+  HARDENED_TRY(otcrypto_rsa_decrypt(&private_key, hash_mode, ciphertext,
+                                    label_buf, &plaintext, &msg_len));
   if (trigger & kPentestTrigger2) {
     pentest_set_trigger_low();
   }
