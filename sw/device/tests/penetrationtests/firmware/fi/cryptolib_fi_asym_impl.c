@@ -211,8 +211,8 @@ status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
     if (uj_input.trigger & kPentestTrigger2) {
       pentest_set_trigger_high();
     }
-    TRY(otcrypto_rsa_decrypt(&private_key, hash_mode, ciphertext, label_buf,
-                             plaintext, &msg_len));
+    HARDENED_TRY(otcrypto_rsa_decrypt(&private_key, hash_mode, ciphertext,
+                                      label_buf, &plaintext, &msg_len));
     if (uj_input.trigger & kPentestTrigger2) {
       pentest_set_trigger_low();
     }

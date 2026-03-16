@@ -117,7 +117,7 @@ static status_t run_encrypt(const aes_test_t *test, bool streaming) {
           OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, ciphertext, kAesBlockBytes);
       TRY(otcrypto_aes(&key, iv, test->mode, kOtcryptoAesOperationEncrypt,
                        plaintext_block, kOtcryptoAesPaddingNull,
-                       ciphertext_block));
+                       &ciphertext_block));
       plaintext += kAesBlockBytes;
       ciphertext += kAesBlockBytes;
       plaintext_len -= kAesBlockBytes;
@@ -131,7 +131,7 @@ static status_t run_encrypt(const aes_test_t *test, bool streaming) {
   otcrypto_byte_buf_t ciphertext_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, ciphertext, ciphertext_len);
   TRY(otcrypto_aes(&key, iv, test->mode, kOtcryptoAesOperationEncrypt,
-                   plaintext_buf, test->padding, ciphertext_buf));
+                   plaintext_buf, test->padding, &ciphertext_buf));
 
   TRY_CHECK_ARRAYS_EQ(ciphertext_data, test->exp_ciphertext,
                       ARRAYSIZE(ciphertext_data));
@@ -192,7 +192,7 @@ static status_t run_decrypt(const aes_test_t *test, bool streaming) {
           otcrypto_byte_buf_t, recovered_plaintext, kAesBlockBytes);
       TRY(otcrypto_aes(&key, iv, test->mode, kOtcryptoAesOperationDecrypt,
                        ciphertext_block, kOtcryptoAesPaddingNull,
-                       recovered_plaintext_block));
+                       &recovered_plaintext_block));
       ciphertext += kAesBlockBytes;
       recovered_plaintext += kAesBlockBytes;
       len -= kAesBlockBytes;
@@ -208,7 +208,7 @@ static status_t run_decrypt(const aes_test_t *test, bool streaming) {
   otcrypto_byte_buf_t recovered_plaintext_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, recovered_plaintext, len);
   TRY(otcrypto_aes(&key, iv, test->mode, kOtcryptoAesOperationDecrypt,
-                   ciphertext_buf, test->padding, recovered_plaintext_buf));
+                   ciphertext_buf, test->padding, &recovered_plaintext_buf));
 
   // Check the result (not including padding).
   TRY_CHECK_ARRAYS_EQ((unsigned char *)recovered_plaintext_data,
@@ -282,13 +282,13 @@ static status_t run_negative_tests(void) {
   // Test NULL pointers
   CHECK(otcrypto_aes(NULL, iv, kOtcryptoAesModeCbc,
                      kOtcryptoAesOperationEncrypt, input,
-                     kOtcryptoAesPaddingNull, output)
+                     kOtcryptoAesPaddingNull, &output)
             .value == OTCRYPTO_BAD_ARGS.value);
   otcrypto_word32_buf_t bad_iv =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, NULL, kAesBlockWords);
   CHECK(otcrypto_aes(&key, bad_iv, kOtcryptoAesModeCbc,
                      kOtcryptoAesOperationEncrypt, input,
-                     kOtcryptoAesPaddingNull, output)
+                     kOtcryptoAesPaddingNull, &output)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   // Test decryption with invalid length
@@ -296,13 +296,13 @@ static status_t run_negative_tests(void) {
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, input_data, 15);
   CHECK(otcrypto_aes(&key, iv, kOtcryptoAesModeCbc,
                      kOtcryptoAesOperationDecrypt, bad_len_input,
-                     kOtcryptoAesPaddingNull, output)
+                     kOtcryptoAesPaddingNull, &output)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   // Test null padding with an unaligned input length
   CHECK(otcrypto_aes(&key, iv, kOtcryptoAesModeCbc,
                      kOtcryptoAesOperationEncrypt, bad_len_input,
-                     kOtcryptoAesPaddingNull, output)
+                     kOtcryptoAesPaddingNull, &output)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   // Test output buffer length mismatch
@@ -310,7 +310,7 @@ static status_t run_negative_tests(void) {
       OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, output_data, 32);
   CHECK(otcrypto_aes(&key, iv, kOtcryptoAesModeCbc,
                      kOtcryptoAesOperationEncrypt, input,
-                     kOtcryptoAesPaddingNull, bad_len_output)
+                     kOtcryptoAesPaddingNull, &bad_len_output)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   // Test invalid IV length
@@ -318,7 +318,7 @@ static status_t run_negative_tests(void) {
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, iv_data, 3);
   CHECK(otcrypto_aes(&key, bad_len_iv, kOtcryptoAesModeCbc,
                      kOtcryptoAesOperationEncrypt, input,
-                     kOtcryptoAesPaddingNull, output)
+                     kOtcryptoAesPaddingNull, &output)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   // Test key integrity checksum failure
@@ -326,7 +326,7 @@ static status_t run_negative_tests(void) {
   bad_key.checksum ^= 0xFFFFFFFF;
   CHECK(otcrypto_aes(&bad_key, iv, kOtcryptoAesModeCbc,
                      kOtcryptoAesOperationEncrypt, input,
-                     kOtcryptoAesPaddingNull, output)
+                     kOtcryptoAesPaddingNull, &output)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   return OTCRYPTO_OK;

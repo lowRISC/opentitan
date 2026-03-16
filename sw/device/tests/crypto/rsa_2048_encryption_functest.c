@@ -184,7 +184,7 @@ static status_t run_rsa_2048_decrypt(const uint8_t *label, size_t label_len,
       otcrypto_const_word32_buf_t, ciphertext, kRsa2048NumWords);
   uint64_t t_start = profile_start();
   TRY(otcrypto_rsa_decrypt(&private_key, kTestHashMode, ciphertext_buf,
-                           label_buf, plaintext_buf, msg_len));
+                           label_buf, &plaintext_buf, msg_len));
   profile_end_and_print(t_start, "RSA-2048 decryption");
 
   return OK_STATUS();
@@ -309,22 +309,22 @@ static status_t run_encrypt_negative_tests(void) {
 
   // Decrypt negative tests
   CHECK(otcrypto_rsa_decrypt(NULL, kTestHashMode, valid_const_ct, valid_msg,
-                             valid_pt, &pt_len)
+                             &valid_pt, &pt_len)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_const_word32_buf_t bad_const_ct_null =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, NULL, kRsa2048NumWords);
   CHECK(otcrypto_rsa_decrypt(&valid_priv, kTestHashMode, bad_const_ct_null,
-                             valid_msg, valid_pt, &pt_len)
+                             valid_msg, &valid_pt, &pt_len)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_byte_buf_t bad_pt_null =
       OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, NULL, 256);
   CHECK(otcrypto_rsa_decrypt(&valid_priv, kTestHashMode, valid_const_ct,
-                             valid_msg, bad_pt_null, &pt_len)
+                             valid_msg, &bad_pt_null, &pt_len)
             .value == OTCRYPTO_BAD_ARGS.value);
   CHECK(otcrypto_rsa_decrypt(&valid_priv, kTestHashMode, valid_const_ct,
-                             valid_msg, valid_pt, NULL)
+                             valid_msg, &valid_pt, NULL)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_blinded_key_t bad_priv_chk = {
@@ -334,7 +334,7 @@ static status_t run_encrypt_negative_tests(void) {
   };
   bad_priv_chk.checksum = valid_priv.checksum ^ 0xFFFFFFFF;
   CHECK(otcrypto_rsa_decrypt(&bad_priv_chk, kTestHashMode, valid_const_ct,
-                             valid_msg, valid_pt, &pt_len)
+                             valid_msg, &valid_pt, &pt_len)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_key_config_t bad_priv_mode_cfg = priv_cfg;
@@ -346,7 +346,7 @@ static status_t run_encrypt_negative_tests(void) {
   };
   bad_priv_mode.checksum = integrity_blinded_checksum(&bad_priv_mode);
   CHECK(otcrypto_rsa_decrypt(&bad_priv_mode, kTestHashMode, valid_const_ct,
-                             valid_msg, valid_pt, &pt_len)
+                             valid_msg, &valid_pt, &pt_len)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   return OTCRYPTO_OK;
