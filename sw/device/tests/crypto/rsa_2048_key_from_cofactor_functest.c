@@ -125,8 +125,8 @@ static status_t run_key_from_cofactor(const uint32_t *cofactor) {
 
   // Construct the RSA key pair using the cofactor.
   uint64_t t_start = profile_start();
-  TRY(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, modulus,
-                                         cofactor_share0, cofactor_share1,
+  TRY(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, &modulus,
+                                         &cofactor_share0, &cofactor_share1,
                                          &public_key, &private_key));
   profile_end_and_print(t_start, "RSA keypair from cofactor");
 

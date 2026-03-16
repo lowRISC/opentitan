@@ -119,7 +119,7 @@ static status_t sign_then_verify_test(void) {
   otcrypto_const_word32_buf_t const_sig_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig, ARRAYSIZE(sig));
   CHECK_STATUS_OK(otcrypto_ecdsa_p384_verify(
-      &public_key, msg_digest, const_sig_buf, &verificationResult));
+      &public_key, msg_digest, &const_sig_buf, &verificationResult));
   TRY_CHECK(verificationResult == kHardenedBoolTrue);
 
   return OK_STATUS();

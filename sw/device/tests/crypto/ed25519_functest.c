@@ -137,8 +137,8 @@ status_t ed25519_kat_test(void) {
   // Run ed25519 signature verification.
   hardened_bool_t verification_result;
   CHECK_STATUS_OK(otcrypto_ed25519_verify(
-      &public_key, &input_message, kOtcryptoEddsaSignModeEddsa, signature_verif,
-      &verification_result));
+      &public_key, &input_message, kOtcryptoEddsaSignModeEddsa,
+      &signature_verif, &verification_result));
 
   // Signature verification is expected to succeed.
   TRY_CHECK(verification_result == kHardenedBoolTrue);

@@ -155,7 +155,7 @@ status_t handle_rsa_encrypt(ujson_t *uj) {
       .key = public_key_data,
   };
 
-  TRY(otcrypto_rsa_public_key_construct(rsa_size, modulus, &public_key));
+  TRY(otcrypto_rsa_public_key_construct(rsa_size, &modulus, &public_key));
 
   // Create input message.
   uint8_t msg_buf[uj_input.plaintext_len];
@@ -311,8 +311,8 @@ status_t handle_rsa_decrypt(ujson_t *uj) {
       .keyblob_length = private_key_blob_bytes,
   };
 
-  TRY(otcrypto_rsa_private_key_from_exponents(rsa_size, modulus, d_share0,
-                                              d_share1, &private_key));
+  TRY(otcrypto_rsa_private_key_from_exponents(rsa_size, &modulus, &d_share0,
+                                              &d_share1, &private_key));
 
   size_t ciphertext_num_words =
       ceil_div(uj_input.ciphertext_len, sizeof(uint32_t));
@@ -340,7 +340,7 @@ status_t handle_rsa_decrypt(ujson_t *uj) {
   size_t msg_len = 0;
   bool status_resp = true;
   otcrypto_status_t status = otcrypto_rsa_decrypt(
-      &private_key, hash_mode, ciphertext, &label, &plaintext, &msg_len);
+      &private_key, hash_mode, &ciphertext, &label, &plaintext, &msg_len);
   if (status.value != kOtcryptoStatusValueOk) {
     status_resp = false;
   }
@@ -449,7 +449,7 @@ status_t handle_rsa_verify(ujson_t *uj) {
       .key_length = n_bytes,
       .key = public_key_data,
   };
-  TRY(otcrypto_rsa_public_key_construct(rsa_size, modulus, &public_key));
+  TRY(otcrypto_rsa_public_key_construct(rsa_size, &modulus, &public_key));
 
   // Create the signature buffer.
   size_t sig_num_words = ceil_div(uj_input.sig_len, sizeof(uint32_t));
@@ -501,7 +501,7 @@ status_t handle_rsa_verify(ujson_t *uj) {
 
   hardened_bool_t verification_result;
   otcrypto_status_t status = otcrypto_rsa_verify(
-      &public_key, msg_digest, padding_mode, sig, &verification_result);
+      &public_key, msg_digest, padding_mode, &sig, &verification_result);
 
   // Return verification result back to host.
   cryptotest_rsa_verify_resp_t uj_output;
