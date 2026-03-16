@@ -490,23 +490,38 @@ class chip_sw_base_vseq extends chip_base_vseq;
     )
   endtask
 
-  // Performs the write command sequence on the spi_host agent, with
-  // a WriteEnable command, followed by the specified command from the
-  // `write_command`, then polling for the busy bit to clear.  `busy_timeout_ns`
-  // and `busy_poll_interval_ns` work similarly as the parameters for
+  // Send a spi_host flash command with the given opcode and with no address or payload
+  local task spi_host_flash_send_raw_opcode(bit [7:0] opcode);
+    spi_host_flash_seq seq = spi_host_flash_seq::type_id::create("seq");
+    if (!seq.randomize() with {opcode == local::opcode;}) begin
+      `uvm_fatal(get_name(), "Failed to randomize spi_host flash seq")
+    end
+    seq.start(p_sequencer.spi_host_sequencer_h);
+  endtask
+
+  // Performs the write command sequence on the spi_host agent, with a WriteEnable command, followed
+  // by the specified command from the `write_command`, then polling for the busy bit to clear.
+  //
+  // `busy_timeout_ns` and `busy_poll_interval_ns` work similarly as the parameters for
   // `spi_host_wait_on_busy`.
-  virtual task spi_host_flash_issue_write_cmd(
-      spi_host_flash_seq write_command,
-      uint busy_timeout_ns = default_spinwait_timeout_ns,
-      uint busy_poll_interval_ns = 1000);
-    spi_host_flash_seq m_spi_host_seq;
-    `uvm_create_on(m_spi_host_seq, p_sequencer.spi_host_sequencer_h)
-    m_spi_host_seq.opcode = SpiFlashWriteEnable;
-    `uvm_send(m_spi_host_seq);
-
-    `uvm_send(write_command);
-
+  task spi_host_flash_issue_write_cmd(spi_host_flash_seq write_command,
+                                      uint busy_timeout_ns = default_spinwait_timeout_ns,
+                                      uint busy_poll_interval_ns = 1000);
+    spi_host_flash_send_raw_opcode(SpiFlashWriteEnable);
+    write_command.start(p_sequencer.spi_host_sequencer_h);
     spi_host_wait_on_busy(busy_timeout_ns, busy_poll_interval_ns);
+  endtask
+
+  // Send a SpiFlashChipErase command to erase flash
+  task spi_host_flash_issue_erase_cmd(int unsigned busy_timeout_ns = default_spinwait_timeout_ns,
+                                      int unsigned busy_poll_interval_ns = 1000);
+    spi_host_flash_seq erase_seq = spi_host_flash_seq::type_id::create("erase_seq");
+    if (!erase_seq.randomize() with {opcode == SpiFlashChipErase;}) begin
+      `uvm_fatal(get_name(), "Failed to randomize spi_host flash erase seq")
+    end
+    spi_host_flash_issue_write_cmd(.write_command(erase_seq),
+                                   .busy_timeout_ns(busy_timeout_ns),
+                                   .busy_poll_interval_ns(busy_poll_interval_ns));
   endtask
 
   // Load the flash binary specified by the `sw_image` path by sending a chip
@@ -552,12 +567,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     read_sw_frames(sw_image, sw_byte_q);
 
-    `uvm_create_on(m_spi_host_seq, p_sequencer.spi_host_sequencer_h)
-    m_spi_host_seq.opcode = SpiFlashChipErase;
-    spi_host_flash_issue_write_cmd(
-      .write_command(m_spi_host_seq),
-      .busy_timeout_ns(200_000_000),
-      .busy_poll_interval_ns(1_000_000));
+    spi_host_flash_issue_erase_cmd(.busy_timeout_ns(200_000_000),
+                                   .busy_poll_interval_ns(1_000_000));
 
     while (sw_byte_q.size > byte_cnt) begin
       `uvm_create_on(m_spi_host_seq, p_sequencer.spi_host_sequencer_h)
