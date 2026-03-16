@@ -494,6 +494,8 @@ def opentitan_test(
             rsa_key = rsa_key,
             spx_key = spx_key,
             manifest = manifest,
+            # Point to test suite created below.
+            test_suite = str(Label(":{}".format(name))),
             **test_kwargs
         )
 
