@@ -125,8 +125,8 @@ static status_t run_key_from_cofactor(const uint32_t *cofactor) {
 
   // Construct the RSA key pair using the cofactor.
   uint64_t t_start = profile_start();
-  TRY(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, modulus,
-                                         cofactor_share0, cofactor_share1,
+  TRY(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, &modulus,
+                                         &cofactor_share0, &cofactor_share1,
                                          &public_key, &private_key));
   profile_end_and_print(t_start, "RSA keypair from cofactor");
 
@@ -196,32 +196,32 @@ static status_t run_cofactor_negative_tests(void) {
   };
 
   // Null tests
-  CHECK(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, bad_mod_null,
-                                           valid_cof, valid_cof, &valid_pub,
+  CHECK(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, &bad_mod_null,
+                                           &valid_cof, &valid_cof, &valid_pub,
                                            &valid_priv)
             .value == OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, valid_mod,
-                                           bad_cof_null, valid_cof, &valid_pub,
+  CHECK(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, &valid_mod,
+                                           &bad_cof_null, &valid_cof,
+                                           &valid_pub, &valid_priv)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, &valid_mod,
+                                           &valid_cof, &valid_cof, NULL,
                                            &valid_priv)
             .value == OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, valid_mod,
-                                           valid_cof, valid_cof, NULL,
-                                           &valid_priv)
-            .value == OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, valid_mod,
-                                           valid_cof, valid_cof, &valid_pub,
+  CHECK(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, &valid_mod,
+                                           &valid_cof, &valid_cof, &valid_pub,
                                            NULL)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   // Cofactor length test
-  CHECK(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, valid_mod,
-                                           bad_cof_len, valid_cof, &valid_pub,
+  CHECK(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, &valid_mod,
+                                           &bad_cof_len, &valid_cof, &valid_pub,
                                            &valid_priv)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   // Bad enum size
-  CHECK(otcrypto_rsa_keypair_from_cofactor((otcrypto_rsa_size_t)999, valid_mod,
-                                           valid_cof, valid_cof, &valid_pub,
+  CHECK(otcrypto_rsa_keypair_from_cofactor((otcrypto_rsa_size_t)999, &valid_mod,
+                                           &valid_cof, &valid_cof, &valid_pub,
                                            &valid_priv)
             .value == OTCRYPTO_BAD_ARGS.value);
 
@@ -231,8 +231,8 @@ static status_t run_cofactor_negative_tests(void) {
       .key_length = 99,
       .key = pub_data,
   };
-  CHECK(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, valid_mod,
-                                           valid_cof, valid_cof, &bad_pub_len,
+  CHECK(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, &valid_mod,
+                                           &valid_cof, &valid_cof, &bad_pub_len,
                                            &valid_priv)
             .value == OTCRYPTO_BAD_ARGS.value);
 
@@ -244,8 +244,8 @@ static status_t run_cofactor_negative_tests(void) {
       .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
       .keyblob = priv_blob,
   };
-  CHECK(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, valid_mod,
-                                           valid_cof, valid_cof, &valid_pub,
+  CHECK(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, &valid_mod,
+                                           &valid_cof, &valid_cof, &valid_pub,
                                            &bad_priv_mode)
             .value == OTCRYPTO_BAD_ARGS.value);
 

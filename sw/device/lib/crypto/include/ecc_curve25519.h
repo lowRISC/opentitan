@@ -81,7 +81,8 @@ OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_verify(
     const otcrypto_unblinded_key_t *public_key,
     otcrypto_const_byte_buf_t *input_message,
-    otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_const_word32_buf_t signature,
+    otcrypto_eddsa_sign_mode_t sign_mode,
+    otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result);
 
 /**
@@ -181,7 +182,7 @@ otcrypto_status_t otcrypto_ed25519_verify_async_start(
     const otcrypto_unblinded_key_t *public_key,
     otcrypto_const_byte_buf_t *input_message_ph,
     otcrypto_eddsa_sign_mode_t sign_mode,
-    otcrypto_const_word32_buf_t signature);
+    otcrypto_const_word32_buf_t *signature);
 
 /**
  * Finalizes asynchronous signature verification for Ed25519.

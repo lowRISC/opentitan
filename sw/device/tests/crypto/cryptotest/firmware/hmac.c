@@ -104,7 +104,7 @@ status_t handle_hmac(ujson_t *uj) {
       .keyblob_length = 2 * key_words * sizeof(uint32_t),
       .keyblob = keyblob,
   };
-  TRY(otcrypto_import_blinded_key(share0, share1, &key));
+  TRY(otcrypto_import_blinded_key(&share0, &share1, &key));
 
   // Create input message
   size_t msg_len = uj_message.message_len;

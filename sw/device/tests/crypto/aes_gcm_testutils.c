@@ -174,7 +174,7 @@ status_t aes_gcm_testutils_encrypt(const aes_gcm_test_t *test, bool streaming,
   if (streaming) {
     uint64_t t_start = profile_start();
     otcrypto_aes_gcm_context_t ctx;
-    TRY(otcrypto_aes_gcm_encrypt_init(&key, iv, &ctx));
+    TRY(otcrypto_aes_gcm_encrypt_init(&key, &iv, &ctx));
     size_t ciphertext_bytes_written;
     TRY(stream_gcm(&ctx, aad, plaintext, actual_ciphertext,
                    &ciphertext_bytes_written));
@@ -188,7 +188,7 @@ status_t aes_gcm_testutils_encrypt(const aes_gcm_test_t *test, bool streaming,
     // Call encrypt() with a cycle count timing profile.
     uint64_t t_start = profile_start();
     otcrypto_status_t err = otcrypto_aes_gcm_encrypt(
-        &key, &plaintext, iv, &aad, tag_len, &actual_ciphertext, &actual_tag);
+        &key, &plaintext, &iv, &aad, tag_len, &actual_ciphertext, &actual_tag);
     *cycles = profile_end(t_start);
 
     // Check for errors.
@@ -264,7 +264,7 @@ status_t aes_gcm_testutils_decrypt(const aes_gcm_test_t *test,
   if (streaming) {
     otcrypto_aes_gcm_context_t ctx;
     uint64_t t_start = profile_start();
-    TRY(otcrypto_aes_gcm_decrypt_init(&key, iv, &ctx));
+    TRY(otcrypto_aes_gcm_decrypt_init(&key, &iv, &ctx));
     size_t plaintext_bytes_written;
     TRY(stream_gcm(&ctx, aad, ciphertext, actual_plaintext,
                    &plaintext_bytes_written));
@@ -272,7 +272,7 @@ status_t aes_gcm_testutils_decrypt(const aes_gcm_test_t *test,
         otcrypto_byte_buf_t, actual_plaintext.data + plaintext_bytes_written,
         actual_plaintext.len - plaintext_bytes_written);
     size_t final_plaintext_bytes_written;
-    TRY(otcrypto_aes_gcm_decrypt_final(&ctx, tag, tag_len, &final_plaintext,
+    TRY(otcrypto_aes_gcm_decrypt_final(&ctx, &tag, tag_len, &final_plaintext,
                                        &final_plaintext_bytes_written,
                                        tag_valid));
     *cycles = profile_end(t_start);
@@ -281,7 +281,7 @@ status_t aes_gcm_testutils_decrypt(const aes_gcm_test_t *test,
     icache_invalidate();
     uint64_t t_start = profile_start();
     otcrypto_status_t err =
-        otcrypto_aes_gcm_decrypt(&key, &ciphertext, iv, &aad, tag_len, tag,
+        otcrypto_aes_gcm_decrypt(&key, &ciphertext, &iv, &aad, tag_len, &tag,
                                  &actual_plaintext, tag_valid);
     *cycles = profile_end(t_start);
     icache_invalidate();

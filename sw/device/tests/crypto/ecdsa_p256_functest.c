@@ -117,7 +117,7 @@ static status_t sign_then_verify_test(void) {
   otcrypto_const_word32_buf_t const_sig_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig, ARRAYSIZE(sig));
   CHECK_STATUS_OK(otcrypto_ecdsa_p256_verify(
-      &public_key, msg_digest, const_sig_buf, &verificationResult));
+      &public_key, msg_digest, &const_sig_buf, &verificationResult));
   TRY_CHECK(verificationResult == kHardenedBoolTrue);
 
   return OK_STATUS();
@@ -283,10 +283,10 @@ static status_t run_ecdsa_negative_tests(void) {
       OTCRYPTO_BAD_ARGS.value);
 
   // ECDSA verify negative tests
-  CHECK(otcrypto_ecdsa_p256_verify(NULL, valid_digest, valid_const_sig,
+  CHECK(otcrypto_ecdsa_p256_verify(NULL, valid_digest, &valid_const_sig,
                                    &verify_res)
             .value == OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_ecdsa_p256_verify(&valid_pub, valid_digest, valid_const_sig,
+  CHECK(otcrypto_ecdsa_p256_verify(&valid_pub, valid_digest, &valid_const_sig,
                                    NULL)
             .value == OTCRYPTO_BAD_ARGS.value);
 
@@ -297,7 +297,7 @@ static status_t run_ecdsa_negative_tests(void) {
       .key = pub_key_data,
   };
   bad_pub_chk.checksum = valid_pub.checksum ^ 0xFFFFFFFF;
-  CHECK(otcrypto_ecdsa_p256_verify(&bad_pub_chk, valid_digest, valid_const_sig,
+  CHECK(otcrypto_ecdsa_p256_verify(&bad_pub_chk, valid_digest, &valid_const_sig,
                                    &verify_res)
             .value == OTCRYPTO_BAD_ARGS.value);
 
@@ -305,7 +305,7 @@ static status_t run_ecdsa_negative_tests(void) {
   otcrypto_const_word32_buf_t bad_const_sig_len =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig_data, 15);
 
-  CHECK(otcrypto_ecdsa_p256_verify(&valid_pub, valid_digest, bad_const_sig_len,
+  CHECK(otcrypto_ecdsa_p256_verify(&valid_pub, valid_digest, &bad_const_sig_len,
                                    &verify_res)
             .value == OTCRYPTO_BAD_ARGS.value);
 

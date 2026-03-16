@@ -69,7 +69,7 @@ typedef struct otcrypto_aes_gcm_context {
  */
 otcrypto_status_t otcrypto_aes_gcm_encrypt(otcrypto_blinded_key_t *key,
                                            otcrypto_const_byte_buf_t *plaintext,
-                                           otcrypto_const_word32_buf_t iv,
+                                           otcrypto_const_word32_buf_t *iv,
                                            otcrypto_const_byte_buf_t *aad,
                                            otcrypto_aes_gcm_tag_len_t tag_len,
                                            otcrypto_byte_buf_t *ciphertext,
@@ -104,8 +104,8 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(otcrypto_blinded_key_t *key,
  */
 otcrypto_status_t otcrypto_aes_gcm_decrypt(
     otcrypto_blinded_key_t *key, otcrypto_const_byte_buf_t *ciphertext,
-    otcrypto_const_word32_buf_t iv, otcrypto_const_byte_buf_t *aad,
-    otcrypto_aes_gcm_tag_len_t tag_len, otcrypto_const_word32_buf_t auth_tag,
+    otcrypto_const_word32_buf_t *iv, otcrypto_const_byte_buf_t *aad,
+    otcrypto_aes_gcm_tag_len_t tag_len, otcrypto_const_word32_buf_t *auth_tag,
     otcrypto_byte_buf_t *plaintext, hardened_bool_t *success);
 
 /**
@@ -131,7 +131,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
  * @return Result of the initialization operation.
  */
 otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
-    otcrypto_blinded_key_t *key, otcrypto_const_word32_buf_t iv,
+    otcrypto_blinded_key_t *key, otcrypto_const_word32_buf_t *iv,
     otcrypto_aes_gcm_context_t *ctx);
 
 /**
@@ -161,7 +161,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
  * @return Result of the initialization operation.
  */
 otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
-    otcrypto_blinded_key_t *key, otcrypto_const_word32_buf_t iv,
+    otcrypto_blinded_key_t *key, otcrypto_const_word32_buf_t *iv,
     otcrypto_aes_gcm_context_t *ctx);
 /**
  * Updates additional authenticated data for an AES-GCM operation.
@@ -252,7 +252,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
  * @return Result of the final operation.
  */
 otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
-    otcrypto_aes_gcm_context_t *ctx, otcrypto_const_word32_buf_t auth_tag,
+    otcrypto_aes_gcm_context_t *ctx, otcrypto_const_word32_buf_t *auth_tag,
     otcrypto_aes_gcm_tag_len_t tag_len, otcrypto_byte_buf_t *plaintext,
     size_t *plaintext_bytes_written, hardened_bool_t *success);
 

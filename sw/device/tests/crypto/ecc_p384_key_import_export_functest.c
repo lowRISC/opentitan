@@ -167,7 +167,7 @@ static status_t import_then_verify_test(void) {
 
   hardened_bool_t verification_result;
   TRY(otcrypto_ecdsa_p384_verify(&imported_public_key, msg_digest,
-                                 const_sig_buf, &verification_result));
+                                 &const_sig_buf, &verification_result));
   TRY_CHECK(verification_result == kHardenedBoolTrue);
 
   return OK_STATUS();
