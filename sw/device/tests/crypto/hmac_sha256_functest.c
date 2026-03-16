@@ -77,7 +77,7 @@ static status_t run_test(const uint32_t *key, size_t key_len,
   otcrypto_word32_buf_t tag_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, act_tag, ARRAYSIZE(act_tag));
 
-  TRY(otcrypto_hmac(&blinded_key, msg, tag_buf));
+  TRY(otcrypto_hmac(&blinded_key, &msg, tag_buf));
   TRY_CHECK_ARRAYS_EQ(act_tag, exp_tag, kTagLenWords);
   return OK_STATUS();
 }
@@ -177,7 +177,7 @@ static status_t streaming_test(void) {
   // First, try using the streaming interface but passing input all at once.
   otcrypto_hmac_context_t ctx;
   TRY(otcrypto_hmac_init(&ctx, &blinded_key));
-  TRY(otcrypto_hmac_update(&ctx, msg_buf));
+  TRY(otcrypto_hmac_update(&ctx, &msg_buf));
   TRY(otcrypto_hmac_final(&ctx, tag_buf));
   TRY_CHECK_ARRAYS_EQ(act_tag, exp_tag, kTagLenWords);
 
@@ -193,13 +193,13 @@ static status_t streaming_test(void) {
   for (; offset + chunk_size < msg_len; offset += chunk_size) {
     otcrypto_const_byte_buf_t msg_buf =
         OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg_bytes, chunk_size);
-    TRY(otcrypto_hmac_update(&ctx, msg_buf));
+    TRY(otcrypto_hmac_update(&ctx, &msg_buf));
     msg_bytes += chunk_size;
   }
   // One final update for any remaining data (may be 0-length).
   otcrypto_const_byte_buf_t msg_final_buffer = OTCRYPTO_MAKE_BUF(
       otcrypto_const_byte_buf_t, (unsigned char *)msg_bytes, msg_len - offset);
-  TRY(otcrypto_hmac_update(&ctx, msg_final_buffer));
+  TRY(otcrypto_hmac_update(&ctx, &msg_final_buffer));
   TRY(otcrypto_hmac_final(&ctx, tag_buf));
   TRY_CHECK_ARRAYS_EQ(act_tag, exp_tag, kTagLenWords);
   return OK_STATUS();

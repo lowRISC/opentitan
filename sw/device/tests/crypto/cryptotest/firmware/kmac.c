@@ -112,7 +112,7 @@ status_t handle_kmac(ujson_t *uj) {
       otcrypto_word32_buf_t, tag_buf,
       uj_required_tag_length.required_tag_length / sizeof(uint32_t));
   otcrypto_status_t status =
-      otcrypto_kmac(&key, input_message, customization_string,
+      otcrypto_kmac(&key, &input_message, &customization_string,
                     uj_required_tag_length.required_tag_length, tag);
   if (status.value != kOtcryptoStatusValueOk) {
     return INTERNAL(status.value);

@@ -56,7 +56,7 @@ status_t manuf_util_hash_lc_transition_token(const uint32_t *raw_token,
       .len = token_num_words,
   };
 
-  TRY(otcrypto_cshake128(input, function_name_string, customization_string,
+  TRY(otcrypto_cshake128(&input, &function_name_string, &customization_string,
                          &output));
   memcpy(hashed_token, token_data, sizeof(token_data));
 
@@ -89,7 +89,7 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
           otcrypto_const_byte_buf_t, (unsigned char *)vendor_test_32bit_array,
           OTP_CTRL_PARAM_VENDOR_TEST_SIZE -
               OTP_CTRL_PARAM_VENDOR_TEST_DIGEST_SIZE);
-      TRY(otcrypto_sha2_256(input, &digest));
+      TRY(otcrypto_sha2_256(&input, &digest));
     } break;
     case kDifOtpCtrlPartitionCreatorSwCfg: {
       // Note: we purposely exclude the AST configuration data field of this
@@ -110,7 +110,7 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
           OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE -
               OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_SIZE -
               OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_SIZE);
-      TRY(otcrypto_sha2_256(input, &digest));
+      TRY(otcrypto_sha2_256(&input, &digest));
     } break;
     case kDifOtpCtrlPartitionOwnerSwCfg: {
       otcrypto_const_byte_buf_t input = OTCRYPTO_MAKE_BUF(
@@ -120,7 +120,7 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
                             OTP_CTRL_PARAM_OWNER_SW_CFG_OFFSET),
           OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE -
               OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_SIZE);
-      TRY(otcrypto_sha2_256(input, &digest));
+      TRY(otcrypto_sha2_256(&input, &digest));
     } break;
     case kDifOtpCtrlPartitionRotCreatorAuthCodesign: {
       uint32_t rot_creator_auth_codesign_32bit_array
@@ -138,7 +138,7 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
           (unsigned char *)rot_creator_auth_codesign_32bit_array,
           OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE -
               OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_DIGEST_SIZE);
-      TRY(otcrypto_sha2_256(input, &digest));
+      TRY(otcrypto_sha2_256(&input, &digest));
     } break;
     case kDifOtpCtrlPartitionRotCreatorAuthState: {
       uint32_t rot_creator_auth_state_32bit_array
@@ -156,7 +156,7 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
           (unsigned char *)rot_creator_auth_state_32bit_array,
           OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_SIZE -
               OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_DIGEST_SIZE);
-      TRY(otcrypto_sha2_256(input, &digest));
+      TRY(otcrypto_sha2_256(&input, &digest));
     } break;
     default:
       return INVALID_ARGUMENT();

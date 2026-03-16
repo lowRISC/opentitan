@@ -57,8 +57,8 @@ static status_t run_test_vector(void) {
       otcrypto_const_byte_buf_t, current_test_vector->context.data,
       current_test_vector->context.len);
 
-  TRY(otcrypto_kmac_kdf(&current_test_vector->key_derivation_key, label_buf,
-                        context_buf, &output_key_material));
+  TRY(otcrypto_kmac_kdf(&current_test_vector->key_derivation_key, &label_buf,
+                        &context_buf, &output_key_material));
 
   HARDENED_CHECK_EQ(integrity_blinded_key_check(&output_key_material),
                     kHardenedBoolTrue);

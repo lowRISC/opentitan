@@ -31,7 +31,7 @@ extern "C" {
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_sha3_224(otcrypto_const_byte_buf_t message,
+otcrypto_status_t otcrypto_sha3_224(otcrypto_const_byte_buf_t *message,
                                     otcrypto_hash_digest_t *digest);
 
 /**
@@ -47,7 +47,7 @@ otcrypto_status_t otcrypto_sha3_224(otcrypto_const_byte_buf_t message,
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_sha3_256(otcrypto_const_byte_buf_t message,
+otcrypto_status_t otcrypto_sha3_256(otcrypto_const_byte_buf_t *message,
                                     otcrypto_hash_digest_t *digest);
 
 /**
@@ -63,7 +63,7 @@ otcrypto_status_t otcrypto_sha3_256(otcrypto_const_byte_buf_t message,
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_sha3_384(otcrypto_const_byte_buf_t message,
+otcrypto_status_t otcrypto_sha3_384(otcrypto_const_byte_buf_t *message,
                                     otcrypto_hash_digest_t *digest);
 
 /**
@@ -79,7 +79,7 @@ otcrypto_status_t otcrypto_sha3_384(otcrypto_const_byte_buf_t message,
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_sha3_512(otcrypto_const_byte_buf_t message,
+otcrypto_status_t otcrypto_sha3_512(otcrypto_const_byte_buf_t *message,
                                     otcrypto_hash_digest_t *digest);
 
 /**
@@ -94,7 +94,7 @@ otcrypto_status_t otcrypto_sha3_512(otcrypto_const_byte_buf_t message,
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_shake128(otcrypto_const_byte_buf_t message,
+otcrypto_status_t otcrypto_shake128(otcrypto_const_byte_buf_t *message,
                                     otcrypto_hash_digest_t *digest);
 
 /**
@@ -109,7 +109,7 @@ otcrypto_status_t otcrypto_shake128(otcrypto_const_byte_buf_t message,
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_shake256(otcrypto_const_byte_buf_t message,
+otcrypto_status_t otcrypto_shake256(otcrypto_const_byte_buf_t *message,
                                     otcrypto_hash_digest_t *digest);
 
 /**
@@ -130,9 +130,9 @@ otcrypto_status_t otcrypto_shake256(otcrypto_const_byte_buf_t message,
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_cshake128(
-    otcrypto_const_byte_buf_t message,
-    otcrypto_const_byte_buf_t function_name_string,
-    otcrypto_const_byte_buf_t customization_string,
+    otcrypto_const_byte_buf_t *message,
+    otcrypto_const_byte_buf_t *function_name_string,
+    otcrypto_const_byte_buf_t *customization_string,
     otcrypto_hash_digest_t *digest);
 
 /**
@@ -153,9 +153,9 @@ otcrypto_status_t otcrypto_cshake128(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_cshake256(
-    otcrypto_const_byte_buf_t message,
-    otcrypto_const_byte_buf_t function_name_string,
-    otcrypto_const_byte_buf_t customization_string,
+    otcrypto_const_byte_buf_t *message,
+    otcrypto_const_byte_buf_t *function_name_string,
+    otcrypto_const_byte_buf_t *customization_string,
     otcrypto_hash_digest_t *digest);
 
 #ifdef __cplusplus
