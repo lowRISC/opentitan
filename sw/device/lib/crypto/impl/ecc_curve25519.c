@@ -113,12 +113,12 @@ static status_t reverse_bytecpy(uint8_t *dst, const uint8_t *src, size_t len) {
  * @param prehash_buffer Prehash buffer.
  * @return OK.
  */
-static status_t ed25519_message_prehash(otcrypto_eddsa_sign_mode_t sign_mode,
-                                        otcrypto_const_byte_buf_t input_message,
-                                        otcrypto_byte_buf_t *message_ph,
-                                        uint32_t *prehash_buffer) {
+static status_t ed25519_message_prehash(
+    otcrypto_eddsa_sign_mode_t sign_mode,
+    otcrypto_const_byte_buf_t *input_message, otcrypto_byte_buf_t *message_ph,
+    uint32_t *prehash_buffer) {
   // Only a message of length zero can have NULL as data.
-  if (input_message.data == NULL && input_message.len != 0) {
+  if (input_message->data == NULL && input_message->len != 0) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -144,10 +144,11 @@ static status_t ed25519_message_prehash(otcrypto_eddsa_sign_mode_t sign_mode,
     // Use the unity function if the sign mode is kOtcryptoEddsaSignModeEddsa.
   } else if (sign_mode == launder32(kOtcryptoEddsaSignModeEddsa)) {
     sign_mode_used = launder32(sign_mode_used) | kOtcryptoEddsaSignModeEddsa;
-    *message_ph = OTCRYPTO_MAKE_BUF(
-        otcrypto_byte_buf_t, (uint8_t *)input_message.data, input_message.len);
-    message_ph->data = (uint8_t *)input_message.data;
-    message_ph->len = input_message.len;
+    *message_ph =
+        OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, (uint8_t *)input_message->data,
+                          input_message->len);
+    message_ph->data = (uint8_t *)input_message->data;
+    message_ph->len = input_message->len;
 
     // Return OTCRYPTO_BAD_ARGS if the sign mode is none of the above.
   } else {
@@ -176,7 +177,7 @@ otcrypto_status_t otcrypto_ed25519_keygen(
 
 otcrypto_status_t otcrypto_ed25519_sign(
     const otcrypto_unblinded_key_t *private_key,
-    otcrypto_const_byte_buf_t input_message,
+    otcrypto_const_byte_buf_t *input_message,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t *signature) {
   // Validate signature buffer
   HARDENED_TRY(ed25519_signature_check(signature));
@@ -207,10 +208,10 @@ otcrypto_status_t otcrypto_ed25519_sign(
   // Start sign part 1 to calculate the public key and the signature commitment
   // R.
   HARDENED_TRY(otcrypto_ed25519_sign_part1_async_start(
-      private_key, input_message_ph, sign_mode, &key_digest, &msg_digest));
+      private_key, &input_message_ph, sign_mode, &key_digest, &msg_digest));
   // Start sign part 2 to calculate the signature response S.
   HARDENED_TRY(otcrypto_ed25519_sign_part2_async_start(
-      private_key, input_message_ph, sign_mode, signature, &key_digest,
+      private_key, &input_message_ph, sign_mode, signature, &key_digest,
       &msg_digest));
   // Finish the execution and retrieve the signature.
   return otcrypto_ed25519_sign_async_finalize(signature);
@@ -218,7 +219,7 @@ otcrypto_status_t otcrypto_ed25519_sign(
 
 otcrypto_status_t otcrypto_ed25519_verify(
     const otcrypto_unblinded_key_t *public_key,
-    otcrypto_const_byte_buf_t input_message,
+    otcrypto_const_byte_buf_t *input_message,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_const_word32_buf_t signature,
     hardened_bool_t *verification_result) {
   if (verification_result == NULL) {
@@ -234,8 +235,8 @@ otcrypto_status_t otcrypto_ed25519_verify(
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t,
                         (const uint8_t *const)message_ph.data, message_ph.len);
   // Start the execution of the verification.
-  HARDENED_TRY(otcrypto_ed25519_verify_async_start(public_key, input_message_ph,
-                                                   sign_mode, signature));
+  HARDENED_TRY(otcrypto_ed25519_verify_async_start(
+      public_key, &input_message_ph, sign_mode, signature));
   // Finish the verification operation and get the result.
   return otcrypto_ed25519_verify_async_finalize(verification_result);
 }
@@ -259,7 +260,7 @@ otcrypto_status_t otcrypto_ed25519_keygen_async_start(
   otcrypto_const_byte_buf_t key_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_byte_buf_t, (const uint8_t *const)private_key->key,
       private_key->key_length);
-  HARDENED_TRY(otcrypto_sha2_512(key_buf, &key_digest));
+  HARDENED_TRY(otcrypto_sha2_512(&key_buf, &key_digest));
 
   // Start the OTBN keygen app.
   HARDENED_TRY(curve25519_keygen_start(key_digest.data));
@@ -278,7 +279,7 @@ otcrypto_status_t otcrypto_ed25519_keygen_async_finalize(
 
 otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
     const otcrypto_unblinded_key_t *private_key,
-    otcrypto_const_byte_buf_t input_message_ph,
+    otcrypto_const_byte_buf_t *input_message_ph,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_hash_digest_t *key_digest,
     otcrypto_hash_digest_t *msg_digest) {
   // Check that the entropy complex is initialized.
@@ -292,13 +293,13 @@ otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
   otcrypto_const_byte_buf_t key_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_byte_buf_t, (const uint8_t *const)private_key->key,
       private_key->key_length);
-  HARDENED_TRY(otcrypto_sha2_512(key_buf, key_digest));
+  HARDENED_TRY(otcrypto_sha2_512(&key_buf, key_digest));
 
   // Prepend the dom2 prefix
   size_t dom2_len =
       (sign_mode == kOtcryptoEddsaSignModeHashEddsa) ? sizeof(kDom2Prefix) : 0;
   size_t msg_byte_len =
-      dom2_len + kCurve25519ScalarBytes + input_message_ph.len;
+      dom2_len + kCurve25519ScalarBytes + input_message_ph->len;
   uint8_t msg_bytes[msg_byte_len];
   size_t offset = 0;
 
@@ -312,11 +313,11 @@ otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
       key_digest->data + kCurve25519ScalarBytes / sizeof(uint32_t);
   memcpy(&msg_bytes[offset], prefix, kCurve25519ScalarBytes);
   offset += kCurve25519ScalarBytes;
-  memcpy(&msg_bytes[offset], input_message_ph.data, input_message_ph.len);
+  memcpy(&msg_bytes[offset], input_message_ph->data, input_message_ph->len);
 
   otcrypto_const_byte_buf_t msg_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg_bytes, msg_byte_len);
-  HARDENED_TRY(otcrypto_sha2_512(msg_buf, msg_digest));
+  HARDENED_TRY(otcrypto_sha2_512(&msg_buf, msg_digest));
 
   // Start the OTBN sign stage 1 app.
   HARDENED_TRY(
@@ -327,7 +328,7 @@ otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
 
 otcrypto_status_t otcrypto_ed25519_sign_part2_async_start(
     const otcrypto_unblinded_key_t *private_key,
-    otcrypto_const_byte_buf_t input_message_ph,
+    otcrypto_const_byte_buf_t *input_message_ph,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t *signature,
     otcrypto_hash_digest_t *key_digest, otcrypto_hash_digest_t *msg_digest) {
   // Ensure the entropy complex is initialized.
@@ -352,7 +353,7 @@ otcrypto_status_t otcrypto_ed25519_sign_part2_async_start(
   size_t dom2_len =
       (sign_mode == kOtcryptoEddsaSignModeHashEddsa) ? sizeof(kDom2Prefix) : 0;
   size_t challenge_byte_len =
-      dom2_len + input_message_ph.len + 2 * kCurve25519PointBytes;
+      dom2_len + input_message_ph->len + 2 * kCurve25519PointBytes;
   uint8_t challenge_bytes[challenge_byte_len];
 
   memcpy(challenge_bytes, kDom2Prefix, dom2_len);
@@ -364,7 +365,8 @@ otcrypto_status_t otcrypto_ed25519_sign_part2_async_start(
   memcpy(&challenge_bytes[offset], (const uint8_t *)public_key_buf,
          kCurve25519PointBytes);
   offset += kCurve25519PointBytes;
-  memcpy(&challenge_bytes[offset], input_message_ph.data, input_message_ph.len);
+  memcpy(&challenge_bytes[offset], input_message_ph->data,
+         input_message_ph->len);
 
   otcrypto_const_byte_buf_t challenge_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_byte_buf_t, challenge_bytes, challenge_byte_len);
@@ -373,7 +375,7 @@ otcrypto_status_t otcrypto_ed25519_sign_part2_async_start(
       .data = challenge_digest_data,
       .len = ARRAYSIZE(challenge_digest_data),
   };
-  HARDENED_TRY(otcrypto_sha2_512(challenge_buf, &challenge_digest));
+  HARDENED_TRY(otcrypto_sha2_512(&challenge_buf, &challenge_digest));
 
   // Start the OTBN sign stage 2 app.
   HARDENED_TRY(curve25519_sign_stage2_start(
@@ -401,7 +403,7 @@ otcrypto_status_t otcrypto_ed25519_sign_async_finalize(
 
 otcrypto_status_t otcrypto_ed25519_verify_async_start(
     const otcrypto_unblinded_key_t *public_key,
-    otcrypto_const_byte_buf_t input_message_ph,
+    otcrypto_const_byte_buf_t *input_message_ph,
     otcrypto_eddsa_sign_mode_t sign_mode,
     otcrypto_const_word32_buf_t signature) {
   // Ensure the entropy complex is initialized.
@@ -427,7 +429,7 @@ otcrypto_status_t otcrypto_ed25519_verify_async_start(
   size_t dom2_len =
       (sign_mode == kOtcryptoEddsaSignModeHashEddsa) ? sizeof(kDom2Prefix) : 0;
   size_t challenge_byte_len =
-      dom2_len + input_message_ph.len + 2 * kCurve25519PointBytes;
+      dom2_len + input_message_ph->len + 2 * kCurve25519PointBytes;
   uint8_t challenge_bytes[challenge_byte_len];
 
   memcpy(challenge_bytes, kDom2Prefix, dom2_len);
@@ -439,7 +441,8 @@ otcrypto_status_t otcrypto_ed25519_verify_async_start(
   memcpy(&challenge_bytes[offset], (const uint8_t *)public_key->key,
          kCurve25519PointBytes);
   offset += kCurve25519PointBytes;
-  memcpy(&challenge_bytes[offset], input_message_ph.data, input_message_ph.len);
+  memcpy(&challenge_bytes[offset], input_message_ph->data,
+         input_message_ph->len);
 
   otcrypto_const_byte_buf_t challenge_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_byte_buf_t, challenge_bytes, challenge_byte_len);
@@ -448,7 +451,7 @@ otcrypto_status_t otcrypto_ed25519_verify_async_start(
       .data = challenge_digest_data,
       .len = ARRAYSIZE(challenge_digest_data),
   };
-  HARDENED_TRY(otcrypto_sha2_512(challenge_buf, &challenge_digest));
+  HARDENED_TRY(otcrypto_sha2_512(&challenge_buf, &challenge_digest));
 
   // Start the OTBN verify app.
   HARDENED_TRY(curve25519_verify_start(challenge_digest.data, &sig_curve25519,

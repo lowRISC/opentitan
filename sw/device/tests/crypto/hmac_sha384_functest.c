@@ -82,7 +82,7 @@ static status_t run_test(const uint32_t *key, size_t key_len,
   otcrypto_word32_buf_t tag_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, act_tag, ARRAYSIZE(act_tag));
 
-  TRY(otcrypto_hmac(&blinded_key, msg, tag_buf));
+  TRY(otcrypto_hmac(&blinded_key, &msg, tag_buf));
   TRY_CHECK_ARRAYS_EQ(act_tag, exp_tag, kTagLenWords);
   return OK_STATUS();
 }

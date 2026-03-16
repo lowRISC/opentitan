@@ -27,7 +27,7 @@ status_t ecdsa_p256_verify_test(
       .data = digest_buf,
       .len = ARRAYSIZE(digest_buf),
   };
-  TRY(otcrypto_sha2_256(msg_buf, &digest));
+  TRY(otcrypto_sha2_256(&msg_buf, &digest));
 
   // Attempt to verify signature.
   TRY(p256_ecdsa_verify_start(&testvec->signature, digest.data,

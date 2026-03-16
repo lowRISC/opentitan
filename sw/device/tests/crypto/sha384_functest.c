@@ -63,7 +63,7 @@ status_t sha384_test(const unsigned char *msg, const size_t msg_len,
       .data = actual_digest_data,
       .len = ARRAYSIZE(actual_digest_data),
   };
-  TRY(otcrypto_sha2_384(input_message, &actual_digest));
+  TRY(otcrypto_sha2_384(&input_message, &actual_digest));
 
   // Check that the expected and actual digests match.
   TRY_CHECK_ARRAYS_EQ((unsigned char *)actual_digest_data, expected_digest,
@@ -89,7 +89,7 @@ status_t sha384_streaming_test(const unsigned char *msg, size_t msg_len,
         OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg, len);
     msg += len;
     msg_len -= len;
-    TRY(otcrypto_sha2_update(&ctx, input_message));
+    TRY(otcrypto_sha2_update(&ctx, &input_message));
   }
 
   // Allocate space for the computed digest.
@@ -144,11 +144,11 @@ static status_t run_negative_tests(void) {
   otcrypto_hash_digest_t bad_digest_null = {.data = NULL, .len = 8};
 
   // otcrypto_sha2_384 negative tests
-  CHECK(otcrypto_sha2_384(bad_msg_null, &valid_digest_384).value ==
+  CHECK(otcrypto_sha2_384(&bad_msg_null, &valid_digest_384).value ==
         OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_sha2_384(valid_msg, &bad_digest_null).value ==
+  CHECK(otcrypto_sha2_384(&valid_msg, &bad_digest_null).value ==
         OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_sha2_384(valid_msg, &valid_digest_256).value ==
+  CHECK(otcrypto_sha2_384(&valid_msg, &valid_digest_256).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   return OTCRYPTO_OK;

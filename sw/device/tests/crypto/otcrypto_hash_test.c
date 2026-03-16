@@ -46,7 +46,7 @@ status_t hash_test(void) {
       sizeof(kGettysburgPrelude) - 1);
 
   TRY(otcrypto_sha2_init(kOtcryptoHashModeSha256, &ctx));
-  TRY(otcrypto_sha2_update(&ctx, buf));
+  TRY(otcrypto_sha2_update(&ctx, &buf));
   TRY(otcrypto_sha2_final(&ctx, &digest));
 
   TRY_CHECK_ARRAYS_EQ((const uint8_t *)digest.data, kGettysburgDigest,

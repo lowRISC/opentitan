@@ -153,7 +153,7 @@ static status_t run_rsa_2048_sign(const uint8_t *msg, size_t msg_len,
       .data = msg_digest_data,
       .len = ARRAYSIZE(msg_digest_data),
   };
-  TRY(otcrypto_sha2_256(msg_buf, &msg_digest));
+  TRY(otcrypto_sha2_256(&msg_buf, &msg_digest));
 
   otcrypto_word32_buf_t sig_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, kRsa2048NumWords);
@@ -215,7 +215,7 @@ static status_t run_rsa_2048_verify(const uint8_t *msg, size_t msg_len,
       .data = msg_digest_data,
       .len = ARRAYSIZE(msg_digest_data),
   };
-  TRY(otcrypto_sha2_256(msg_buf, &msg_digest));
+  TRY(otcrypto_sha2_256(&msg_buf, &msg_digest));
 
   otcrypto_const_word32_buf_t sig_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig, kRsa2048NumWords);

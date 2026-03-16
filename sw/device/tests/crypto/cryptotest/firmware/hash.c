@@ -43,7 +43,7 @@ status_t handle_hash(ujson_t *uj) {
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
 
   // Handle to correct oneshot hash API for the provided algorithm
-  otcrypto_status_t (*hash_oneshot)(otcrypto_const_byte_buf_t,
+  otcrypto_status_t (*hash_oneshot)(otcrypto_const_byte_buf_t *,
                                     otcrypto_hash_digest_t *);
 
   // Digest length in 32-bit words
@@ -123,15 +123,15 @@ status_t handle_hash(ujson_t *uj) {
   // Test oneshot API
   switch (uj_algorithm) {
     case kCryptotestHashAlgorithmCshake128:
-      status = otcrypto_cshake128(input_message, cshake_function_name,
-                                  customization_string, &digest);
+      status = otcrypto_cshake128(&input_message, &cshake_function_name,
+                                  &customization_string, &digest);
       break;
     case kCryptotestHashAlgorithmCshake256:
-      status = otcrypto_cshake256(input_message, cshake_function_name,
-                                  customization_string, &digest);
+      status = otcrypto_cshake256(&input_message, &cshake_function_name,
+                                  &customization_string, &digest);
       break;
     default:
-      status = hash_oneshot(input_message, &digest);
+      status = hash_oneshot(&input_message, &digest);
   }
   if (status.value != kOtcryptoStatusValueOk) {
     LOG_ERROR("Bad status value: 0x%x", status.value);
@@ -158,11 +158,11 @@ status_t handle_hash(ujson_t *uj) {
     otcrypto_const_byte_buf_t input_message_share2 = OTCRYPTO_MAKE_BUF(
         otcrypto_const_byte_buf_t, &msg_buf[uj_message.message_len / 2],
         ceil_div(uj_message.message_len, 2));
-    status = otcrypto_sha2_update(&ctx, input_message_share1);
+    status = otcrypto_sha2_update(&ctx, &input_message_share1);
     if (status.value != kOtcryptoStatusValueOk) {
       return INTERNAL(status.value);
     }
-    status = otcrypto_sha2_update(&ctx, input_message_share2);
+    status = otcrypto_sha2_update(&ctx, &input_message_share2);
     if (status.value != kOtcryptoStatusValueOk) {
       return INTERNAL(status.value);
     }

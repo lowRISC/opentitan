@@ -66,7 +66,7 @@ static status_t run_test(otcrypto_const_byte_buf_t msg,
       .data = act_digest,
       .len = kSha256DigestWords,
   };
-  TRY(otcrypto_sha2_256(msg, &digest_buf));
+  TRY(otcrypto_sha2_256(&msg, &digest_buf));
   TRY_CHECK_ARRAYS_EQ(act_digest, exp_digest, kSha256DigestWords);
   TRY_CHECK(digest_buf.mode == kOtcryptoHashModeSha256);
   return OK_STATUS();
@@ -126,7 +126,7 @@ static status_t one_update_streaming_test(void) {
 
   otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_byte_buf_t, kExactBlockMessage, kExactBlockMessageLen);
-  TRY(otcrypto_sha2_update(&ctx, msg_buf));
+  TRY(otcrypto_sha2_update(&ctx, &msg_buf));
 
   uint32_t act_digest[kSha256DigestWords];
   otcrypto_hash_digest_t digest_buf = {
@@ -155,7 +155,7 @@ static status_t multiple_update_streaming_test(void) {
     update_size = len <= update_size ? len : update_size;
     otcrypto_const_byte_buf_t msg_buf =
         OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, next, update_size);
-    TRY(otcrypto_sha2_update(&ctx, msg_buf));
+    TRY(otcrypto_sha2_update(&ctx, &msg_buf));
     next += update_size;
     len -= update_size;
     update_size++;
@@ -191,11 +191,11 @@ static status_t run_negative_tests(void) {
   otcrypto_hash_digest_t bad_digest_len_256 = {.data = digest_data, .len = 7};
 
   // otcrypto_sha2_256 negative tests
-  CHECK(otcrypto_sha2_256(bad_msg_null, &valid_digest_256).value ==
+  CHECK(otcrypto_sha2_256(&bad_msg_null, &valid_digest_256).value ==
         OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_sha2_256(valid_msg, &bad_digest_null).value ==
+  CHECK(otcrypto_sha2_256(&valid_msg, &bad_digest_null).value ==
         OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_sha2_256(valid_msg, &bad_digest_len_256).value ==
+  CHECK(otcrypto_sha2_256(&valid_msg, &bad_digest_len_256).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   // Streaming API: otcrypto_sha2_init
@@ -210,8 +210,9 @@ static status_t run_negative_tests(void) {
         OTCRYPTO_OK.value);
 
   // Streaming API: otcrypto_sha2_update
-  CHECK(otcrypto_sha2_update(NULL, valid_msg).value == OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_sha2_update(&ctx, bad_msg_null).value ==
+  CHECK(otcrypto_sha2_update(NULL, &valid_msg).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_sha2_update(&ctx, &bad_msg_null).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   // Streaming API: otcrypto_sha2_final

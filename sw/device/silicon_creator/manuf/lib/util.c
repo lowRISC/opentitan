@@ -52,7 +52,7 @@ status_t manuf_util_hash_lc_transition_token(const uint32_t *raw_token,
       .len = token_num_words,
   };
 
-  TRY(otcrypto_cshake128(input, function_name_string, customization_string,
+  TRY(otcrypto_cshake128(&input, &function_name_string, &customization_string,
                          &output));
   memcpy(hashed_token, token_data, sizeof(token_data));
 

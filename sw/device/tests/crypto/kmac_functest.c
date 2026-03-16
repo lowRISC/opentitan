@@ -108,13 +108,13 @@ static status_t run_sha3(otcrypto_hash_digest_t *digest) {
       current_test_vector->input_msg.len);
   switch (current_test_vector->security_strength) {
     case 224:
-      return otcrypto_sha3_224(input_msg, digest);
+      return otcrypto_sha3_224(&input_msg, digest);
     case 256:
-      return otcrypto_sha3_256(input_msg, digest);
+      return otcrypto_sha3_256(&input_msg, digest);
     case 384:
-      return otcrypto_sha3_384(input_msg, digest);
+      return otcrypto_sha3_384(&input_msg, digest);
     case 512:
-      return otcrypto_sha3_512(input_msg, digest);
+      return otcrypto_sha3_512(&input_msg, digest);
     default:
       break;
   }
@@ -137,9 +137,9 @@ static status_t run_shake(otcrypto_hash_digest_t *digest) {
       current_test_vector->input_msg.len);
   switch (current_test_vector->security_strength) {
     case 128:
-      return otcrypto_shake128(input_msg, digest);
+      return otcrypto_shake128(&input_msg, digest);
     case 256:
-      return otcrypto_shake256(input_msg, digest);
+      return otcrypto_shake256(&input_msg, digest);
     default:
       break;
   }
@@ -168,9 +168,9 @@ static status_t run_cshake(otcrypto_hash_digest_t *digest) {
       current_test_vector->cust_str.len);
   switch (current_test_vector->security_strength) {
     case 128:
-      return otcrypto_cshake128(input_msg, func_name, cust_str, digest);
+      return otcrypto_cshake128(&input_msg, &func_name, &cust_str, digest);
     case 256:
-      return otcrypto_cshake256(input_msg, func_name, cust_str, digest);
+      return otcrypto_cshake256(&input_msg, &func_name, &cust_str, digest);
     default:
       break;
   }
@@ -196,7 +196,7 @@ static status_t run_kmac(otcrypto_word32_buf_t tag) {
   otcrypto_const_byte_buf_t cust_str = OTCRYPTO_MAKE_BUF(
       otcrypto_const_byte_buf_t, current_test_vector->cust_str.data,
       current_test_vector->cust_str.len);
-  return otcrypto_kmac(&current_test_vector->key, input_msg, cust_str,
+  return otcrypto_kmac(&current_test_vector->key, &input_msg, &cust_str,
                        current_test_vector->digest.len, tag);
 }
 
@@ -290,9 +290,9 @@ static status_t run_negative_tests(void) {
   size_t valid_req_len = 32;
 
   // Null pointer tests
-  CHECK(otcrypto_kmac(NULL, valid_msg, valid_cust, valid_req_len, valid_tag)
+  CHECK(otcrypto_kmac(NULL, &valid_msg, &valid_cust, valid_req_len, valid_tag)
             .value == OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_kmac(&valid_key, valid_msg, valid_cust, valid_req_len,
+  CHECK(otcrypto_kmac(&valid_key, &valid_msg, &valid_cust, valid_req_len,
                       bad_tag_null)
             .value == OTCRYPTO_BAD_ARGS.value);
 
@@ -301,23 +301,25 @@ static status_t run_negative_tests(void) {
       .keyblob_length = sizeof(valid_keyblob),
       .keyblob = NULL,
   };
-  CHECK(otcrypto_kmac(&bad_key_null, valid_msg, valid_cust, valid_req_len,
+  CHECK(otcrypto_kmac(&bad_key_null, &valid_msg, &valid_cust, valid_req_len,
                       valid_tag)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   // Null Data with non-zero length tests
-  CHECK(otcrypto_kmac(&valid_key, bad_msg_null, valid_cust, valid_req_len,
+  CHECK(otcrypto_kmac(&valid_key, &bad_msg_null, &valid_cust, valid_req_len,
                       valid_tag)
             .value == OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_kmac(&valid_key, valid_msg, bad_cust_null, valid_req_len,
+  CHECK(otcrypto_kmac(&valid_key, &valid_msg, &bad_cust_null, valid_req_len,
                       valid_tag)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   // Tag and output length checks
-  CHECK(otcrypto_kmac(&valid_key, valid_msg, valid_cust, 31, valid_tag).value ==
-        OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_kmac(&valid_key, valid_msg, valid_cust, 0, valid_tag).value ==
-        OTCRYPTO_BAD_ARGS.value);
+  CHECK(
+      otcrypto_kmac(&valid_key, &valid_msg, &valid_cust, 31, valid_tag).value ==
+      OTCRYPTO_BAD_ARGS.value);
+  CHECK(
+      otcrypto_kmac(&valid_key, &valid_msg, &valid_cust, 0, valid_tag).value ==
+      OTCRYPTO_BAD_ARGS.value);
 
   // Checksum and mode tests
   otcrypto_blinded_key_t bad_key_chk = {
@@ -326,7 +328,7 @@ static status_t run_negative_tests(void) {
       .keyblob = valid_keyblob,
   };
   bad_key_chk.checksum = valid_key.checksum ^ 0xFFFFFFFF;
-  CHECK(otcrypto_kmac(&bad_key_chk, valid_msg, valid_cust, valid_req_len,
+  CHECK(otcrypto_kmac(&bad_key_chk, &valid_msg, &valid_cust, valid_req_len,
                       valid_tag)
             .value == OTCRYPTO_BAD_ARGS.value);
 
@@ -338,7 +340,7 @@ static status_t run_negative_tests(void) {
       .keyblob = valid_keyblob,
   };
   bad_key_mode.checksum = integrity_blinded_checksum(&bad_key_mode);
-  CHECK(otcrypto_kmac(&bad_key_mode, valid_msg, valid_cust, valid_req_len,
+  CHECK(otcrypto_kmac(&bad_key_mode, &valid_msg, &valid_cust, valid_req_len,
                       valid_tag)
             .value == OTCRYPTO_BAD_ARGS.value);
 
@@ -349,7 +351,7 @@ static status_t run_negative_tests(void) {
       .keyblob = valid_keyblob,
   };
   bad_sw_len.checksum = integrity_blinded_checksum(&bad_sw_len);
-  CHECK(otcrypto_kmac(&bad_sw_len, valid_msg, valid_cust, valid_req_len,
+  CHECK(otcrypto_kmac(&bad_sw_len, &valid_msg, &valid_cust, valid_req_len,
                       valid_tag)
             .value == OTCRYPTO_BAD_ARGS.value);
 
@@ -362,7 +364,7 @@ static status_t run_negative_tests(void) {
       .keyblob = valid_keyblob,
   };
   bad_hw_enum.checksum = integrity_blinded_checksum(&bad_hw_enum);
-  CHECK(otcrypto_kmac(&bad_hw_enum, valid_msg, valid_cust, valid_req_len,
+  CHECK(otcrypto_kmac(&bad_hw_enum, &valid_msg, &valid_cust, valid_req_len,
                       valid_tag)
             .value == OTCRYPTO_BAD_ARGS.value);
 
@@ -375,7 +377,7 @@ static status_t run_negative_tests(void) {
       .keyblob = valid_keyblob,
   };
   bad_hw_len.checksum = integrity_blinded_checksum(&bad_hw_len);
-  CHECK(otcrypto_kmac(&bad_hw_len, valid_msg, valid_cust, valid_req_len,
+  CHECK(otcrypto_kmac(&bad_hw_len, &valid_msg, &valid_cust, valid_req_len,
                       valid_tag)
             .value == OTCRYPTO_BAD_ARGS.value);
 
@@ -385,29 +387,29 @@ static status_t run_negative_tests(void) {
   otcrypto_hash_digest_t bad_sha3_digest_len = {.data = digest_buf, .len = 7};
 
   // Null digest pointer (would cause a segfault without our patch!)
-  CHECK(otcrypto_sha3_256(valid_msg, NULL).value == OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_shake128(valid_msg, NULL).value == OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_cshake256(valid_msg, valid_cust, valid_cust, NULL).value ==
+  CHECK(otcrypto_sha3_256(&valid_msg, NULL).value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_shake128(&valid_msg, NULL).value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_cshake256(&valid_msg, &valid_cust, &valid_cust, NULL).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   // Null data inside digest
-  CHECK(otcrypto_sha3_256(valid_msg, &bad_sha3_digest_null).value ==
+  CHECK(otcrypto_sha3_256(&valid_msg, &bad_sha3_digest_null).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   // Null message data with non-zero length
-  CHECK(otcrypto_sha3_256(bad_msg_null, &valid_sha3_digest).value ==
+  CHECK(otcrypto_sha3_256(&bad_msg_null, &valid_sha3_digest).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   // Bad length for strict SHA3 functions (must strictly match requested hash
   // length)
-  CHECK(otcrypto_sha3_256(valid_msg, &bad_sha3_digest_len).value ==
+  CHECK(otcrypto_sha3_256(&valid_msg, &bad_sha3_digest_len).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   // cSHAKE specific checks
-  CHECK(otcrypto_cshake256(valid_msg, bad_msg_null, valid_cust,
+  CHECK(otcrypto_cshake256(&valid_msg, &bad_msg_null, &valid_cust,
                            &valid_sha3_digest)
             .value == OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_cshake256(valid_msg, valid_cust, bad_msg_null,
+  CHECK(otcrypto_cshake256(&valid_msg, &valid_cust, &bad_msg_null,
                            &valid_sha3_digest)
             .value == OTCRYPTO_BAD_ARGS.value);
 

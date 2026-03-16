@@ -97,7 +97,7 @@ static status_t wrap_unwrap_random_test(void) {
   };
   otcrypto_const_byte_buf_t personalization =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
-  TRY(otcrypto_symmetric_keygen(personalization, &kmac_key));
+  TRY(otcrypto_symmetric_keygen(&personalization, &kmac_key));
 
   // Construct the sideloaded wrapping key.
   uint32_t keyblob_kek[8];

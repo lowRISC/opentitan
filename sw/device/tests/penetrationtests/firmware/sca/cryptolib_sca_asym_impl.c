@@ -164,7 +164,7 @@ status_t cryptolib_sca_rsa_dec_impl(
     pentest_set_trigger_high();
   }
   HARDENED_TRY(otcrypto_rsa_decrypt(&private_key, hash_mode, ciphertext,
-                                    label_buf, &plaintext, &msg_len));
+                                    &label_buf, &plaintext, &msg_len));
   if (trigger & kPentestTrigger2) {
     pentest_set_trigger_low();
   }
@@ -391,11 +391,11 @@ status_t cryptolib_sca_rsa_sign_impl(
   }
   // Hash the message.
   if (hash_mode == kOtcryptoHashModeSha256) {
-    TRY(otcrypto_sha2_256(msg_buf, &msg_digest));
+    TRY(otcrypto_sha2_256(&msg_buf, &msg_digest));
   } else if (hash_mode == kOtcryptoHashModeSha384) {
-    TRY(otcrypto_sha2_384(msg_buf, &msg_digest));
+    TRY(otcrypto_sha2_384(&msg_buf, &msg_digest));
   } else {
-    TRY(otcrypto_sha2_512(msg_buf, &msg_digest));
+    TRY(otcrypto_sha2_512(&msg_buf, &msg_digest));
   }
   if (trigger & kPentestTrigger2) {
     pentest_set_trigger_low();

@@ -16,8 +16,8 @@
 #define MODULE_ID MAKE_MODULE_ID('k', 'm', 'c')
 
 otcrypto_status_t otcrypto_kmac(otcrypto_blinded_key_t *key,
-                                otcrypto_const_byte_buf_t input_message,
-                                otcrypto_const_byte_buf_t customization_string,
+                                otcrypto_const_byte_buf_t *input_message,
+                                otcrypto_const_byte_buf_t *customization_string,
                                 size_t required_output_len,
                                 otcrypto_word32_buf_t tag) {
   // TODO (#16410) Revisit/complete error checks
@@ -28,12 +28,12 @@ otcrypto_status_t otcrypto_kmac(otcrypto_blinded_key_t *key,
   }
 
   // Check for null input message with nonzero length.
-  if (input_message.data == NULL && input_message.len != 0) {
+  if (input_message->data == NULL && input_message->len != 0) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Check for null customization string with nonzero length.
-  if (customization_string.data == NULL && customization_string.len != 0) {
+  if (customization_string->data == NULL && customization_string->len != 0) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -93,15 +93,15 @@ otcrypto_status_t otcrypto_kmac(otcrypto_blinded_key_t *key,
     case kOtcryptoKeyModeKmac128:
       HARDENED_TRY(kmac_kmac_128(&kmac_key,
                                  /*masked_digest=*/kHardenedBoolFalse,
-                                 &input_message, customization_string.data,
-                                 customization_string.len, tag.data, tag.len));
+                                 input_message, customization_string->data,
+                                 customization_string->len, tag.data, tag.len));
       key_mode_used = launder32(key_mode_used) | kOtcryptoKeyModeKmac128;
       break;
     case kOtcryptoKeyModeKmac256:
       HARDENED_TRY(kmac_kmac_256(&kmac_key,
                                  /*masked_digest=*/kHardenedBoolFalse,
-                                 &input_message, customization_string.data,
-                                 customization_string.len, tag.data, tag.len));
+                                 input_message, customization_string->data,
+                                 customization_string->len, tag.data, tag.len));
       key_mode_used = launder32(key_mode_used) | kOtcryptoKeyModeKmac256;
       break;
     default:
@@ -119,7 +119,7 @@ otcrypto_status_t otcrypto_kmac(otcrypto_blinded_key_t *key,
 
   // Verify the input buffer
   HARDENED_CHECK_EQ(kHardenedBoolTrue,
-                    OTCRYPTO_CHECK_BUF(&customization_string));
+                    OTCRYPTO_CHECK_BUF(customization_string));
 
   return OTCRYPTO_OK;
 }

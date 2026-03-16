@@ -124,7 +124,7 @@ status_t ed25519_kat_test(void) {
 
   // Run ed25519 signature generation.
   CHECK_STATUS_OK(otcrypto_ed25519_sign(
-      &private_key, input_message, kOtcryptoEddsaSignModeEddsa, &signature));
+      &private_key, &input_message, kOtcryptoEddsaSignModeEddsa, &signature));
   // Check the ed25519 signature generation result.
   TRY_CHECK_ARRAYS_EQ(kSignature, signature.data, kEd25519SignatureWords);
 
@@ -138,7 +138,7 @@ status_t ed25519_kat_test(void) {
   // Run ed25519 signature verification.
   hardened_bool_t verification_result;
   CHECK_STATUS_OK(otcrypto_ed25519_verify(
-      &public_key, input_message, kOtcryptoEddsaSignModeEddsa, signature_verif,
+      &public_key, &input_message, kOtcryptoEddsaSignModeEddsa, signature_verif,
       &verification_result));
 
   // Signature verification is expected to succeed.
@@ -169,7 +169,7 @@ static status_t hasheddsa_test(void) {
 
   CHECK_STATUS_OK(otcrypto_ed25519_keygen(&private_key, &public_key));
 
-  const otcrypto_const_byte_buf_t input_message = {
+  otcrypto_const_byte_buf_t input_message = {
       .data = (const uint8_t *)kMessage,
       .len = ARRAYSIZE(kMessage),
   };
@@ -178,7 +178,7 @@ static status_t hasheddsa_test(void) {
   otcrypto_word32_buf_t signature = OTCRYPTO_MAKE_BUF(
       otcrypto_word32_buf_t, signature_data, ARRAYSIZE(signature_data));
 
-  CHECK_STATUS_OK(otcrypto_ed25519_sign(&private_key, input_message,
+  CHECK_STATUS_OK(otcrypto_ed25519_sign(&private_key, &input_message,
                                         kOtcryptoEddsaSignModeHashEddsa,
                                         &signature));
 
@@ -190,7 +190,7 @@ static status_t hasheddsa_test(void) {
 
   hardened_bool_t verification_result;
   CHECK_STATUS_OK(otcrypto_ed25519_verify(
-      &public_key, input_message, kOtcryptoEddsaSignModeHashEddsa,
+      &public_key, &input_message, kOtcryptoEddsaSignModeHashEddsa,
       signature_verif, &verification_result));
 
   TRY_CHECK(verification_result == kHardenedBoolTrue);
@@ -257,36 +257,36 @@ static status_t run_negative_tests(void) {
         OTCRYPTO_BAD_ARGS.value);
 
   // Test NULL data with len > 0 or invalid mode
-  CHECK(otcrypto_ed25519_sign(&valid_priv, bad_msg, kOtcryptoEddsaSignModeEddsa,
-                              &sig)
+  CHECK(otcrypto_ed25519_sign(&valid_priv, &bad_msg,
+                              kOtcryptoEddsaSignModeEddsa, &sig)
             .value == OTCRYPTO_BAD_ARGS.value);
 
-  CHECK(otcrypto_ed25519_sign(&valid_priv, msg,
+  CHECK(otcrypto_ed25519_sign(&valid_priv, &msg,
                               (otcrypto_eddsa_sign_mode_t)0xFF, &sig)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   // Test NULL pointer, bad length, or NULL data
   otcrypto_word32_buf_t bad_sig =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig_buf, 15);
-  CHECK(otcrypto_ed25519_sign(&valid_priv, msg, kOtcryptoEddsaSignModeEddsa,
+  CHECK(otcrypto_ed25519_sign(&valid_priv, &msg, kOtcryptoEddsaSignModeEddsa,
                               &bad_sig)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   bad_sig.data = NULL;
   bad_sig.len = kEd25519SignatureWords;
-  CHECK(otcrypto_ed25519_sign(&valid_priv, msg, kOtcryptoEddsaSignModeEddsa,
+  CHECK(otcrypto_ed25519_sign(&valid_priv, &msg, kOtcryptoEddsaSignModeEddsa,
                               &bad_sig)
             .value == OTCRYPTO_BAD_ARGS.value);
 
-  CHECK(
-      otcrypto_ed25519_sign(&valid_priv, msg, kOtcryptoEddsaSignModeEddsa, NULL)
-          .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ed25519_sign(&valid_priv, &msg, kOtcryptoEddsaSignModeEddsa,
+                              NULL)
+            .value == OTCRYPTO_BAD_ARGS.value);
 
   // Bad signature verification
   otcrypto_const_word32_buf_t bad_const_sig =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig_buf, 15);
   hardened_bool_t verify_res;
-  CHECK(otcrypto_ed25519_verify(&valid_pub, msg, kOtcryptoEddsaSignModeEddsa,
+  CHECK(otcrypto_ed25519_verify(&valid_pub, &msg, kOtcryptoEddsaSignModeEddsa,
                                 bad_const_sig, &verify_res)
             .value == OTCRYPTO_BAD_ARGS.value);
 
