@@ -14,6 +14,7 @@ mldsa87_srcs = [
     "//sw/otbn/crypto/mldsa87:mldsa87_rounding.s",
     "//sw/otbn/crypto/mldsa87:mldsa87_xof.s",
     "//sw/otbn/crypto/mldsa87:mldsa87_norm.s",
+    "//sw/otbn/crypto/mldsa87:mldsa87_encoding.s",
     "//sw/otbn/crypto/mldsa87:mldsa87_ntt.s",
     "//sw/otbn/crypto/mldsa87:mldsa87_arith.s",
     "//sw/otbn/crypto/mldsa87:mldsa87_utils.s",
@@ -38,6 +39,7 @@ mldsa87_unit_tests = [
     "mldsa87_expand_a_test",
     "mldsa87_sample_in_ball_test",
     "mldsa87_challenge_hash_test",
+    "mldsa87_decode_z_test",
 ]
 
 [
