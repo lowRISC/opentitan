@@ -140,6 +140,17 @@ module dma
     .q_o   ( sw_reg_wr2 )
   );
 
+  // delay error.q by one cycle to match delay of error.qe
+  logic status_error_wr;
+  prim_flop #(
+    .Width(1)
+  ) aff_reg_status_error_wr (
+    .clk_i ( clk_i      ),
+    .rst_ni( rst_ni     ),
+    .d_i   ( reg2hw.status.error.q  ),
+    .q_o   ( status_error_wr )
+  );
+
   // Stretch out CR writes to make sure new value can propagate through logic
   logic sw_reg_wr_extended;
   assign sw_reg_wr_extended = sw_reg_wr || sw_reg_wr1 || sw_reg_wr2;
@@ -1320,7 +1331,7 @@ module dma
     end
 
     // Clear the error code if the error flag is cleared (RW1C)
-    if (reg2hw.status.error.qe & reg2hw.status.error.q) begin
+    if (reg2hw.status.error.qe & aff_reg_status_error_wr) begin
       // Clear all errors
       hw2reg.error_code.src_addr_error.de = 1'b1;
       hw2reg.error_code.dst_addr_error.de = 1'b1;
