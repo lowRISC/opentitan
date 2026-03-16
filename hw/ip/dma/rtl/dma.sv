@@ -1331,7 +1331,7 @@ module dma
     end
 
     // Clear the error code if the error flag is cleared (RW1C)
-    if (reg2hw.status.error.qe & aff_reg_status_error_wr) begin
+    if (reg2hw.status.error.qe & status_error_wr) begin
       // Clear all errors
       hw2reg.error_code.src_addr_error.de = 1'b1;
       hw2reg.error_code.dst_addr_error.de = 1'b1;
