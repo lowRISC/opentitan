@@ -294,7 +294,7 @@ status_t cryptolib_sca_gcm_impl(
 
   // Trigger window.
   pentest_set_trigger_high();
-  HARDENED_TRY(otcrypto_aes_gcm_encrypt(&gcm_key, &plaintext, gcm_iv, &gcm_aad,
+  HARDENED_TRY(otcrypto_aes_gcm_encrypt(&gcm_key, &plaintext, &gcm_iv, &gcm_aad,
                                         gcm_tag_len, &actual_ciphertext,
                                         &actual_tag));
   pentest_set_trigger_low();

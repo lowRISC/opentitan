@@ -142,7 +142,7 @@ otcrypto_status_t otcrypto_key_wrap(const otcrypto_blinded_key_t *key_to_wrap,
  * @return Result of the aes-kwp unwrap operation.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_key_unwrap(otcrypto_const_word32_buf_t wrapped_key,
+otcrypto_status_t otcrypto_key_unwrap(otcrypto_const_word32_buf_t *wrapped_key,
                                       const otcrypto_blinded_key_t *key_kek,
                                       hardened_bool_t *success,
                                       otcrypto_blinded_key_t *unwrapped_key);
@@ -166,8 +166,8 @@ otcrypto_status_t otcrypto_key_unwrap(otcrypto_const_word32_buf_t wrapped_key,
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_import_blinded_key(
-    const otcrypto_const_word32_buf_t key_share0,
-    const otcrypto_const_word32_buf_t key_share1,
+    const otcrypto_const_word32_buf_t *key_share0,
+    const otcrypto_const_word32_buf_t *key_share1,
     otcrypto_blinded_key_t *blinded_key);
 
 /**

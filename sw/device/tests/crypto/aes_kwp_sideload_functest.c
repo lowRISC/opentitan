@@ -61,7 +61,7 @@ static status_t run_wrap_unwrap(const otcrypto_blinded_key_t *key_to_wrap,
   otcrypto_const_word32_buf_t wrapped_key_data_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, wrapped_key_data,
                         ARRAYSIZE(wrapped_key_data));
-  TRY(otcrypto_key_unwrap(wrapped_key_data_buf, key_kek, &success,
+  TRY(otcrypto_key_unwrap(&wrapped_key_data_buf, key_kek, &success,
                           &unwrapped_key));
 
   // Check the result.

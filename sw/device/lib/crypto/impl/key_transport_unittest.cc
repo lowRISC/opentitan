@@ -133,7 +133,7 @@ TEST(KeyTransport, BlindedKeyImportExport) {
   otcrypto_const_word32_buf_t import_share1_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, share1.data(), share1.size());
   EXPECT_EQ(status_ok(otcrypto_import_blinded_key(
-                import_share0_buf, import_share1_buf, &blinded_key)),
+                &import_share0_buf, &import_share1_buf, &blinded_key)),
             true);
 
   // Zero the original inputs (they should now be safe to free).
@@ -174,8 +174,8 @@ TEST(KeyTransport, BlindedKeyImportBadLengths) {
       otcrypto_const_word32_buf_t, share0.data(), share0.size() - 1);
   otcrypto_const_word32_buf_t share1_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, share1.data(), share1.size());
-  EXPECT_EQ(status_ok(otcrypto_import_blinded_key(bad_length_share0_buf,
-                                                  share1_buf, &blinded_key)),
+  EXPECT_EQ(status_ok(otcrypto_import_blinded_key(&bad_length_share0_buf,
+                                                  &share1_buf, &blinded_key)),
             false);
 
   // Set a bad length for share 1 and expect the import to fail.
@@ -184,7 +184,7 @@ TEST(KeyTransport, BlindedKeyImportBadLengths) {
   otcrypto_const_word32_buf_t bad_length_share1_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, share1.data(), share1.size() - 1);
   EXPECT_EQ(status_ok(otcrypto_import_blinded_key(
-                share0_buf, bad_length_share1_buf, &blinded_key)),
+                &share0_buf, &bad_length_share1_buf, &blinded_key)),
             false);
 
   // Set a bad length for the keyblob and expect the import to fail.
@@ -193,7 +193,7 @@ TEST(KeyTransport, BlindedKeyImportBadLengths) {
       .keyblob_length = sizeof(keyblob) - 1,
       .keyblob = keyblob,
   };
-  EXPECT_EQ(status_ok(otcrypto_import_blinded_key(share0_buf, share1_buf,
+  EXPECT_EQ(status_ok(otcrypto_import_blinded_key(&share0_buf, &share1_buf,
                                                   &bad_blinded_key)),
             false);
 }
@@ -217,7 +217,7 @@ TEST(KeyTransport, BlindedKeyExportBadLengths) {
       otcrypto_const_word32_buf_t, share0.data(), share0.size());
   otcrypto_const_word32_buf_t share1_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, share1.data(), share1.size());
-  EXPECT_EQ(status_ok(otcrypto_import_blinded_key(share0_buf, share1_buf,
+  EXPECT_EQ(status_ok(otcrypto_import_blinded_key(&share0_buf, &share1_buf,
                                                   &blinded_key)),
             true);
 
@@ -268,7 +268,7 @@ TEST(KeyTransport, BlindedKeyExportNotExportable) {
   otcrypto_const_word32_buf_t import_share1_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, share1.data(), share1.size());
   EXPECT_EQ(status_ok(otcrypto_import_blinded_key(
-                import_share0_buf, import_share1_buf, &blinded_key)),
+                &import_share0_buf, &import_share1_buf, &blinded_key)),
             true);
 
   // Expect key export to fail.
