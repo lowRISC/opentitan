@@ -23,6 +23,9 @@ package(default_visibility = ["//visibility:public"])
 CRYPTOTEST_EXEC_ENVS = dicts.add(
     EARLGREY_TEST_ENVS,
     EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+    {
+        "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
+    },
 )
 
 opentitan_test(
@@ -395,9 +398,6 @@ opentitan_test(
     srcs = ["ed25519_functest.c"],
     exec_env = dicts.add(
         CRYPTOTEST_EXEC_ENVS,
-        {
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
-        },
     ),
     verilator = verilator_params(
         timeout = "eternal",
@@ -675,10 +675,11 @@ opentitan_test(
 opentitan_test(
     name = "rsa_2048_keygen_functest",
     srcs = ["rsa_2048_keygen_functest.c"],
-    # This test is too slow for Verilator/DV, so target FPGA only.
+    # This test is slow, mark as manual.
     exec_env = CRYPTOTEST_EXEC_ENVS,
     fpga = fpga_params(
         timeout = "long",
+        tags = ["manual"],
     ),
     verilator = verilator_params(
         timeout = "eternal",
@@ -720,13 +721,15 @@ opentitan_test(
 opentitan_test(
     name = "rsa_3072_keygen_functest",
     srcs = ["rsa_3072_keygen_functest.c"],
-    # This test is too slow for Verilator/DV, so target FPGA only.
+    # This test is slow, mark as manual.
     exec_env = CRYPTOTEST_EXEC_ENVS,
     fpga = fpga_params(
         timeout = "long",
+        tags = ["manual"],
     ),
     silicon = silicon_params(
         timeout = "long",
+        tags = ["manual"],
     ),
     verilator = verilator_params(
         timeout = "eternal",
@@ -764,13 +767,15 @@ opentitan_test(
 opentitan_test(
     name = "rsa_4096_keygen_functest",
     srcs = ["rsa_4096_keygen_functest.c"],
-    # This test is too slow for Verilator/DV, so target FPGA only.
+    # This test is slow, mark as manual.
     exec_env = CRYPTOTEST_EXEC_ENVS,
     fpga = fpga_params(
         timeout = "long",
+        tags = ["manual"],
     ),
     silicon = silicon_params(
         timeout = "long",
+        tags = ["manual"],
     ),
     verilator = verilator_params(
         timeout = "eternal",
@@ -975,11 +980,7 @@ opentitan_test(
     name = "otcrypto_hash_test",
     srcs = ["otcrypto_hash_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
-        },
+        CRYPTOTEST_EXEC_ENVS,
     ),
     deps = [
         "//sw/device/lib/base:macros",
@@ -994,11 +995,7 @@ opentitan_test(
     name = "otcrypto_export_test",
     srcs = ["otcrypto_export_test.c"],
     exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
-        },
+        CRYPTOTEST_EXEC_ENVS,
     ),
     deps = [
         "//sw/device/lib/crypto:crypto_exported_for_test",
