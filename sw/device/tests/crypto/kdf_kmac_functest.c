@@ -70,8 +70,8 @@ static status_t run_test_vector(void) {
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, km_share0, ARRAYSIZE(km_share0));
   otcrypto_word32_buf_t km_share1_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, km_share1, ARRAYSIZE(km_share1));
-  TRY(otcrypto_export_blinded_key(&output_key_material, km_share0_buf,
-                                  km_share1_buf));
+  TRY(otcrypto_export_blinded_key(&output_key_material, &km_share0_buf,
+                                  &km_share1_buf));
 
   // Unmask the derived key and compare to the expected value.
   uint32_t actual_output[km_num_words];

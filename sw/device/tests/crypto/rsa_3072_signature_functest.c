@@ -185,7 +185,7 @@ static status_t run_rsa_3072_sign(const uint8_t *msg, size_t msg_len,
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, kRsa3072NumWords);
 
   uint64_t t_start = profile_start();
-  TRY(otcrypto_rsa_sign(&private_key, msg_digest, padding_mode, sig_buf));
+  TRY(otcrypto_rsa_sign(&private_key, msg_digest, padding_mode, &sig_buf));
   profile_end_and_print(t_start, "RSA signature generation");
 
   return OK_STATUS();

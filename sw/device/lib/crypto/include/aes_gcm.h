@@ -73,7 +73,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(otcrypto_blinded_key_t *key,
                                            otcrypto_const_byte_buf_t *aad,
                                            otcrypto_aes_gcm_tag_len_t tag_len,
                                            otcrypto_byte_buf_t *ciphertext,
-                                           otcrypto_word32_buf_t auth_tag);
+                                           otcrypto_word32_buf_t *auth_tag);
 
 /**
  * Performs the AES-GCM authenticated decryption operation.
@@ -226,7 +226,7 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
 otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
     otcrypto_aes_gcm_context_t *ctx, otcrypto_aes_gcm_tag_len_t tag_len,
     otcrypto_byte_buf_t *ciphertext, size_t *ciphertext_bytes_written,
-    otcrypto_word32_buf_t auth_tag);
+    otcrypto_word32_buf_t *auth_tag);
 
 /**
  * Finishes the AES-GCM authenticated decryption operation.

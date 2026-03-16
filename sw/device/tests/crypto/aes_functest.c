@@ -115,7 +115,7 @@ static status_t run_encrypt(const aes_test_t *test, bool streaming) {
           otcrypto_const_byte_buf_t, plaintext, kAesBlockBytes);
       otcrypto_byte_buf_t ciphertext_block =
           OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, ciphertext, kAesBlockBytes);
-      TRY(otcrypto_aes(&key, iv, test->mode, kOtcryptoAesOperationEncrypt,
+      TRY(otcrypto_aes(&key, &iv, test->mode, kOtcryptoAesOperationEncrypt,
                        &plaintext_block, kOtcryptoAesPaddingNull,
                        &ciphertext_block));
       plaintext += kAesBlockBytes;
@@ -130,7 +130,7 @@ static status_t run_encrypt(const aes_test_t *test, bool streaming) {
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, plaintext, plaintext_len);
   otcrypto_byte_buf_t ciphertext_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, ciphertext, ciphertext_len);
-  TRY(otcrypto_aes(&key, iv, test->mode, kOtcryptoAesOperationEncrypt,
+  TRY(otcrypto_aes(&key, &iv, test->mode, kOtcryptoAesOperationEncrypt,
                    &plaintext_buf, test->padding, &ciphertext_buf));
 
   TRY_CHECK_ARRAYS_EQ(ciphertext_data, test->exp_ciphertext,
@@ -190,7 +190,7 @@ static status_t run_decrypt(const aes_test_t *test, bool streaming) {
           otcrypto_const_byte_buf_t, ciphertext, kAesBlockBytes);
       otcrypto_byte_buf_t recovered_plaintext_block = OTCRYPTO_MAKE_BUF(
           otcrypto_byte_buf_t, recovered_plaintext, kAesBlockBytes);
-      TRY(otcrypto_aes(&key, iv, test->mode, kOtcryptoAesOperationDecrypt,
+      TRY(otcrypto_aes(&key, &iv, test->mode, kOtcryptoAesOperationDecrypt,
                        &ciphertext_block, kOtcryptoAesPaddingNull,
                        &recovered_plaintext_block));
       ciphertext += kAesBlockBytes;
@@ -207,7 +207,7 @@ static status_t run_decrypt(const aes_test_t *test, bool streaming) {
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, ciphertext, len);
   otcrypto_byte_buf_t recovered_plaintext_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, recovered_plaintext, len);
-  TRY(otcrypto_aes(&key, iv, test->mode, kOtcryptoAesOperationDecrypt,
+  TRY(otcrypto_aes(&key, &iv, test->mode, kOtcryptoAesOperationDecrypt,
                    &ciphertext_buf, test->padding, &recovered_plaintext_buf));
 
   // Check the result (not including padding).

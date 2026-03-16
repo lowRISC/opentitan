@@ -57,7 +57,7 @@ static status_t run_test_vector(void) {
       OT_FALLTHROUGH_INTENDED;
     case kHmacTestOperationHmacSha512:
       TRY(otcrypto_hmac(&current_test_vector->key,
-                        &current_test_vector->message, tag_buf));
+                        &current_test_vector->message, &tag_buf));
       break;
     default:
       return INVALID_ARGUMENT();

@@ -89,7 +89,7 @@ status_t sign_then_verify_test(void) {
   otcrypto_word32_buf_t sig_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, ARRAYSIZE(sig));
   CHECK_STATUS_OK(otcrypto_ecdsa_p256_sign_verify(&private_key, &public_key,
-                                                  message_digest, sig_buf));
+                                                  message_digest, &sig_buf));
 
   // Verify the signature.
   LOG_INFO("Verifying...");
