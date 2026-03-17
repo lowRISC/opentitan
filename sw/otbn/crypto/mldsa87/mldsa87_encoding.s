@@ -6,6 +6,7 @@
 
 .globl decode_z
 .globl decode_t1
+.globl decode_h
 
 .text
 
@@ -220,5 +221,77 @@ _simple_bit_unpack_t1_4x8:
   bn.sid x20++, 64(x3)
   bn.sid x20++, 96(x3)
   addi x3, x3, 128
+
+  ret
+
+/**
+ * Decode the compressed hint bytes to a canonical polynomial H[k].
+ *
+ * A hint is a lookup table that specifies the indices of non-zero coefficients
+ * in the hint polynomial. It is a vector h of 75 + 8 bytes where the first 75
+ * bytes specify the indicies and the last 8 bytes indicate for each of the 8
+ * polynomials the position of the last index within the 75 bytes.
+ *
+ * For example, if h[75 + 0] = a, then the set h[0:a-1] contains all the
+ * non-zero indices in the undecoded hint polynomial H[0]. Analogously,
+ * if h[75 + 1] = b, then the set h[a:b-1] contains all the non-zero indices
+ * in the polynomial H[1].
+ *
+ * To simplify the decoding process the hint vector h shall be given unfolded
+ * where each byte resides in a separate 4-byte DMEM word. Additionally, a
+ * zero word is inserted at h[75] such that the full vector consists of 84
+ * bytes in a 336-byte DMEM regin. This is an adapted implementation of
+ * `HintBitUnpack` (Algorithm 21) of FIPS-204.
+ *
+ * @param[in] x2: DMEM address of the compressed bytes.
+ * @param[in] x3: DMEM address of the computed h[i] (1024 = 4 * 256 bytes).
+ * @param[in] x4: Index k, 0 <= k < 8.
+ */
+decode_h:
+  /* Push clobbered registers onto the stack. */
+  .irp reg, x4, x5, x6, x7, x8, x9
+    sw \reg, 0(x31)
+    addi x31, x31, 4
+  .endr
+
+  /* A hint polynomial is very sparse, zeroize it here before the inserting
+     the non-zero coefficients. */
+  addi x20, x3, 0
+  addi x21, x0, 32
+  jal x1, zeroize
+
+  /* Fetch the start and end position of the H[k] indices. */
+  addi x5, x4, 75
+  slli x5, x5, 2
+  add  x5, x5, x2
+  lw   x6, 0(x5) /* start */
+  lw   x7, 4(x5) /* end */
+
+  /* Calculate the number of iterations end - start. */
+  sub x7, x7, x6
+
+  /* Constant coefficient 1. */
+  addi x8, x0, 1
+
+  /* Iterate over all indices in h[start:end]. */
+  loop x7, 7
+    /* x = h[start+i]. */
+    slli x9, x6, 2
+    add  x9, x9, x2
+    lw   x9, 0(x9)
+
+    /* H[k][x] = H[k][h[start+i] = 1. */
+    slli x9, x9, 2
+    add x9, x9, x3
+    sw x8, 0(x9)
+
+    addi x6, x6, 1
+    /* End of loop */
+
+  /* Restore clobbered general-purpose registers. */
+  .irp reg, x9, x8, x7, x6, x5, x4
+    addi x31, x31, -4
+    lw \reg, 0(x31)
+  .endr
 
   ret
