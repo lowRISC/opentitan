@@ -128,6 +128,17 @@ py_library(
 )
 
 py_library(
+    name = "mai",
+    srcs = ["mai.py"],
+    deps = [
+        ":csr",
+        ":ispr",
+        ":mai_ispr",
+        ":wsr",
+    ],
+)
+
+py_library(
     name = "mai_ispr",
     srcs = ["mai_ispr.py"],
     deps = [
