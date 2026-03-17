@@ -88,6 +88,19 @@ otcrypto_status_t otcrypto_ecdh_p384(const otcrypto_blinded_key_t *private_key,
   return otcrypto_ecdh_p384_async_finalize(shared_secret);
 }
 
+otcrypto_status_t otcrypto_p384_point_on_curve(
+    const otcrypto_unblinded_key_t *point, hardened_bool_t *check_result) {
+  if (point == NULL || point == NULL || point->key == NULL ||
+      check_result == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  p384_point_t *pt = (p384_point_t *)point->key;
+  HARDENED_TRY(p384_point_on_curve_check(pt, check_result));
+
+  return OTCRYPTO_OK;
+}
+
 /**
  * Calls P-384 key generation.
  *
