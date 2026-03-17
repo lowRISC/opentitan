@@ -112,7 +112,8 @@ py_library(
     srcs = ["kmac.py"],
     deps = [
         requirement("pycryptodome"),
-        ":kmac_ispr",
+        ":csr",
+        ":wsr",
     ],
 )
 
