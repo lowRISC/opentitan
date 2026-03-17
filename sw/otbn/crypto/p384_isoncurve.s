@@ -324,11 +324,11 @@ p384_check_public_key:
        FG0.Z <= (y^2) mod p == (x^2 + ax + b) mod p */
   bn.cmp    w4, w6
   /* Fail if FG0.Z is false. */
-  jal       x1, trigger_input_error_if_fg0_not_z
+  jal       x1, p384_trigger_input_error_if_fg0_not_z
 
   bn.cmp    w5, w7
   /* Fail if FG0.Z is false. */
-  jal       x1, trigger_input_error_if_fg0_not_z
+  jal       x1, p384_trigger_input_error_if_fg0_not_z
 
   ret
 
@@ -343,7 +343,8 @@ p384_check_public_key:
  * clobbered registers: x2
  * clobbered flag groups: none
  */
-trigger_input_error_if_fg0_not_z:
+ .globl p384_trigger_input_error_if_fg0_not_z
+p384_trigger_input_error_if_fg0_not_z:
   /* Fail if FG0.Z is false. */
   csrrs     x2, FG0, x0
   srli      x2, x2, 3

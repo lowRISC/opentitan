@@ -56,6 +56,7 @@ OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_ECDH);
 OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_SIDELOAD_KEYGEN);
 OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_SIDELOAD_SIGN);
 OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_SIDELOAD_ECDH);
+OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_POINTONCRV_CHECK);
 static const uint32_t kP384ModeKeygen = OTBN_ADDR_T_INIT(run_p384, MODE_KEYGEN);
 static const uint32_t kP384ModeSign = OTBN_ADDR_T_INIT(run_p384, MODE_SIGN);
 static const uint32_t kP384ModeSignConfigK =
@@ -68,6 +69,8 @@ static const uint32_t kP384ModeSideloadSign =
     OTBN_ADDR_T_INIT(run_p384, MODE_SIDELOAD_SIGN);
 static const uint32_t kP384ModeSideloadEcdh =
     OTBN_ADDR_T_INIT(run_p384, MODE_SIDELOAD_ECDH);
+static const uint32_t kOtbnP384ModePointOnCurveCheck =
+    OTBN_ADDR_T_INIT(run_p384, MODE_POINTONCRV_CHECK);
 
 enum {
   /*
@@ -103,11 +106,14 @@ enum {
    */
   kModeKeygenInsCnt = 1935430,
   kModeKeygenSideloadInsCnt = 1935323,
-  kModeEcdhInsCnt = 1947029,
+  kModeEcdhInsCnt = 1947031,
   kModeEcdhSideloadInsCnt = 1947177,
-  kModeEcdsaSignConfigKInsCnt = 1574544,
-  kModeEcdsaSignInsCnt = 1574769,
+  kModeEcdsaSignConfigKInsCnt = 1574546,
+  kModeEcdsaSignInsCnt = 1574771,
   kModeEcdsaSignSideloadInsCnt = 1574917,
+  kModePointOnCurveCheckInsCnt = 346,
+  kModePointOnCurveCheckInvld1InsCnt = 338,
+  kModePointOnCurveCheckInvld2InsCnt = 345,
 };
 
 static status_t p384_masked_scalar_write(p384_masked_scalar_t *src,
@@ -485,4 +491,47 @@ status_t p384_sideload_ecdh_start(const p384_point_t *public_key) {
 
   // Start the OTBN routine.
   return otbn_execute();
+}
+
+status_t p384_point_on_curve_check(const p384_point_t *point,
+                                   hardened_bool_t *result) {
+  // Load the P-384 app. Fails if OTBN is non-idle.
+  HARDENED_TRY(otbn_load_app(kOtbnAppP384));
+
+  // Set mode so start() will jump into the is on point check routine.
+  uint32_t mode = kOtbnP384ModePointOnCurveCheck;
+  HARDENED_TRY(otbn_dmem_write(kP384ModeWords, &mode, kOtbnVarMode));
+
+  // Set the point x coordinate.
+  HARDENED_TRY(otbn_dmem_write(kP384CoordWords, point->x, kOtbnVarX));
+
+  // Set the point y coordinate.
+  HARDENED_TRY(otbn_dmem_write(kP384CoordWords, point->y, kOtbnVarY));
+
+  HARDENED_TRY(
+      otbn_dmem_set(kCoordPaddingWords, 0, kOtbnVarX + kP384CoordBytes));
+  HARDENED_TRY(
+      otbn_dmem_set(kCoordPaddingWords, 0, kOtbnVarY + kP384CoordBytes));
+
+  // Start the OTBN routine.
+  HARDENED_TRY(otbn_execute());
+
+  // Spin here waiting for OTBN to complete.
+  HARDENED_TRY_WIPE_DMEM(otbn_busy_wait_for_done());
+
+  // Check if we executed the expected number of OTBN instructions.
+  uint32_t ins_cnt = otbn_instruction_count_get();
+  if (launder32(ins_cnt) == kModePointOnCurveCheckInsCnt) {
+    HARDENED_CHECK_EQ(ins_cnt, kModePointOnCurveCheckInsCnt);
+  } else if (launder32(ins_cnt) == kModePointOnCurveCheckInvld1InsCnt) {
+    HARDENED_CHECK_EQ(ins_cnt, kModePointOnCurveCheckInvld1InsCnt);
+  } else {
+    HARDENED_CHECK_EQ(ins_cnt, kModePointOnCurveCheckInvld2InsCnt);
+  }
+
+  // Read the result of the OTBN operation.
+  HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(1, kOtbnVarOk, result));
+
+  // Wipe DMEM.
+  return otbn_dmem_sec_wipe();
 }
