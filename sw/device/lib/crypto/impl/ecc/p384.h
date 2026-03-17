@@ -375,6 +375,21 @@ status_t p384_ecdh_finalize(p384_ecdh_shared_key_t *shared_key);
 OT_WARN_UNUSED_RESULT
 status_t p384_sideload_ecdh_start(const p384_point_t *public_key);
 
+/**
+ * Conduct a point is on curve check operation on OTBN.
+ *
+ * Checks if the provided point in the affine form is on the P-384 curve.
+ *
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * @param point The point to check.
+ * @param[out] result True if point is valid, false otherwise.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t p384_point_on_curve_check(const p384_point_t *point,
+                                   hardened_bool_t *result);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

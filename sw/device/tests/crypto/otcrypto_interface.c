@@ -167,6 +167,9 @@ volatile otcrypto_interface_t otcrypto = {
     .ed25519_verify_async_start = &otcrypto_ed25519_verify_async_start,
     .ed25519_verify_async_finalize = &otcrypto_ed25519_verify_async_finalize,
 
+    // ECC P-384 is on curve checks.
+    .ecc_p384_point_on_curve = &otcrypto_p384_point_on_curve,
+
     // X25519 (blocking).
     .x25519_keygen = &otcrypto_x25519_keygen,
     .x25519 = &otcrypto_x25519,

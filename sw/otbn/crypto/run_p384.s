@@ -13,11 +13,12 @@
  * 5. MODE_SIDELOAD_KEYGEN: generate a keypair from a sideloaded seed
  * 6. MODE_SIDELOAD_SIGN: generate an ECDSA signature using sideloaded secret key/seed
  * 7. MODE_SIDELOAD_ECDH: ECDH key exchange using a secret key from a sideloaded seed
+ * 8. MODE_POINTONCRV_CHECK: Check if the given point is on the P-384 curve
  */
 
 /**
  * Mode magic values generated with
- * $ ./util/design/sparse-fsm-encode.py -d 6 -m 8 -n 11 --avoid-zero -s 1654842154
+ * $ ./util/design/sparse-fsm-encode.py -d 6 -m 9 -n 11 --avoid-zero -s 1654842154
  *
  * Call the same utility with the same arguments and a higher -m to generate
  * additional value(s) without changing the others or sacrificing mutual HD.
@@ -35,6 +36,7 @@
 .equ MODE_SIDELOAD_KEYGEN, 0x31B
 .equ MODE_SIDELOAD_SIGN, 0x2F2
 .equ MODE_SIDELOAD_ECDH, 0x4CB
+.equ MODE_POINTONCRV_CHECK, 0x596
 
 /**
  * Make the mode constants visible to Ibex.
@@ -47,6 +49,7 @@
 .globl MODE_SIDELOAD_KEYGEN
 .globl MODE_SIDELOAD_SIGN
 .globl MODE_SIDELOAD_ECDH
+.globl MODE_POINTONCRV_CHECK
 
 /**
  * Hardened boolean values.
@@ -77,6 +80,9 @@ start:
 
   addi  x3, x0, MODE_SIDELOAD_ECDH
   beq   x2, x3, shared_key_from_seed
+
+  addi  x3, x0, MODE_POINTONCRV_CHECK
+  beq   x2, x3, point_on_curve_check
 
   /* Copy the caller-provided secret key shares into scratchpad memory.
        dmem[d0] <= dmem[d0_io]
@@ -428,3 +434,21 @@ shared_key_from_seed:
 
   /* Jump to shared key computation. */
   jal       x0, shared_key
+
+/**
+ * Check if the point given in the affine coordinate space lies on the P-384
+ * curve.
+ *
+ * If `ok` is false, the point is invalid. The value will be either
+ * HARDENED_BOOL_TRUE or HARDENED_BOOL_FALSE.
+ *
+ * This routine runs in constant time.
+ *
+ * @param[in]   dmem[x]: x-coordinate.
+ * @param[in]   dmem[y]: y-coordinate.
+ * @param[out] dmem[ok]: Whether the point is valid.
+ */
+point_on_curve_check:
+  jal x1, p384_check_isoncurve
+
+  ecall

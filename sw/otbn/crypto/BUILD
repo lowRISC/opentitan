@@ -188,6 +188,13 @@ otbn_library(
 )
 
 otbn_library(
+    name = "p384_isoncurve_check",
+    srcs = [
+        "p384_isoncurve_check.s",
+    ],
+)
+
+otbn_library(
     name = "p384_isoncurve_proj",
     srcs = [
         "p384_isoncurve_proj.s",
@@ -394,6 +401,7 @@ otbn_binary(
         ":p384_base_mult",
         ":p384_internal_mult",
         ":p384_isoncurve",
+        ":p384_isoncurve_check",
         ":p384_isoncurve_proj",
         ":p384_keygen",
         ":p384_keygen_from_seed",
