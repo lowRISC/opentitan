@@ -7,6 +7,7 @@ from .constants import WsrAddrs
 from .ext_regs import OTBNExtRegs
 from .ispr import ISPR, DumbISPR, ISPRChange
 from .kmac_ispr import KmacDataWSRs
+from .mai_ispr import MaiInputWSR, MaiOutputWSR
 from .trace import Trace
 
 
@@ -256,6 +257,12 @@ class WSRFile:
         self.KeyS1L = KeyWSR('KeyS1L', 0, self.KeyS1)
         self.KeyS1H = KeyWSR('KeyS1H', 256, self.KeyS1)
         self.KMAC_DATA = KmacDataWSRs(['KMAC_DATA_S0', 'KMAC_DATA_S1'])
+        self.MAI_RES_S0 = MaiOutputWSR('MAI_RES_S0')
+        self.MAI_RES_S1 = MaiOutputWSR('MAI_RES_S1')
+        self.MAI_IN0_S0 = MaiInputWSR('MAI_IN0_S0')
+        self.MAI_IN0_S1 = MaiInputWSR('MAI_IN0_S1')
+        self.MAI_IN1_S0 = MaiInputWSR('MAI_IN1_S0')
+        self.MAI_IN1_S1 = MaiInputWSR('MAI_IN1_S1')
 
         self._by_addr = {
             WsrAddrs.MOD: self.MOD,
@@ -268,6 +275,12 @@ class WSRFile:
             WsrAddrs.KEY_S1_H: self.KeyS1H,
             WsrAddrs.KMAC_DATA_S0: self.KMAC_DATA.shares[0],
             WsrAddrs.KMAC_DATA_S1: self.KMAC_DATA.shares[1],
+            WsrAddrs.MAI_RES_S0: self.MAI_RES_S0,
+            WsrAddrs.MAI_RES_S1: self.MAI_RES_S1,
+            WsrAddrs.MAI_IN0_S0: self.MAI_IN0_S0,
+            WsrAddrs.MAI_IN0_S1: self.MAI_IN0_S1,
+            WsrAddrs.MAI_IN1_S0: self.MAI_IN1_S0,
+            WsrAddrs.MAI_IN1_S1: self.MAI_IN1_S1,
         }
 
     def on_start(self) -> None:
@@ -333,6 +346,12 @@ class WSRFile:
         self.KeyS0.commit()
         self.KeyS1.commit()
         self.KMAC_DATA.commit()
+        self.MAI_RES_S0.commit()
+        self.MAI_RES_S1.commit()
+        self.MAI_IN0_S0.commit()
+        self.MAI_IN0_S1.commit()
+        self.MAI_IN1_S0.commit()
+        self.MAI_IN1_S1.commit()
 
     def abort(self) -> None:
         self.MOD.abort()
@@ -344,6 +363,15 @@ class WSRFile:
         # instruction itself gets aborted.
         self.KeyS0.commit()
         self.KeyS1.commit()
+        # We commit changes to the MAI output registers from outside, even if
+        # the instruction itself gets aborted (there is never a write to these
+        # WSRs from an instruction).
+        self.MAI_RES_S0.commit()
+        self.MAI_RES_S1.commit()
+        self.MAI_IN0_S0.abort()
+        self.MAI_IN0_S1.abort()
+        self.MAI_IN1_S0.abort()
+        self.MAI_IN1_S1.abort()
 
     def changes(self) -> List[Trace]:
         ret: List[Trace] = []
@@ -353,6 +381,12 @@ class WSRFile:
         ret += self.KeyS0.changes()
         ret += self.KeyS1.changes()
         ret += self.KMAC_DATA.changes()
+        ret += self.MAI_RES_S0.changes()
+        ret += self.MAI_RES_S1.changes()
+        ret += self.MAI_IN0_S0.changes()
+        ret += self.MAI_IN0_S1.changes()
+        ret += self.MAI_IN1_S0.changes()
+        ret += self.MAI_IN1_S1.changes()
         return ret
 
     def set_sideload_keys(self,
@@ -364,3 +398,9 @@ class WSRFile:
     def wipe(self) -> None:
         self.MOD.write_invalid()
         self.ACC.write_invalid()
+        self.MAI_RES_S0.write_invalid()
+        self.MAI_RES_S1.write_invalid()
+        self.MAI_IN0_S0.write_invalid()
+        self.MAI_IN0_S1.write_invalid()
+        self.MAI_IN1_S0.write_invalid()
+        self.MAI_IN1_S1.write_invalid()

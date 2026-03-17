@@ -81,10 +81,12 @@ class CsrAddrs(IntEnum):
     KMAC_MSG_SEND = 0x7dc
     KMAC_CMD = 0x7dd
     KMAC_BYTE_STROBE = 0x7de
+    MAI_CTRL = 0x7e0
     RND = 0xfc0
     URND = 0xfc1
     KMAC_STATUS = 0xfc2
     KMAC_ERROR = 0xfc3
+    MAI_STATUS = 0xfca
 
 
 @unique
@@ -100,3 +102,9 @@ class WsrAddrs(IntEnum):
     KEY_S1_H = 7
     KMAC_DATA_S0 = 8
     KMAC_DATA_S1 = 9
+    MAI_RES_S0 = 10
+    MAI_RES_S1 = 11
+    MAI_IN0_S0 = 12
+    MAI_IN0_S1 = 13
+    MAI_IN1_S0 = 14
+    MAI_IN1_S1 = 15
