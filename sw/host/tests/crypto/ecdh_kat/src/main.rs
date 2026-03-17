@@ -6,6 +6,7 @@ use anyhow::Result;
 use arrayvec::ArrayVec;
 use clap::Parser;
 use num_bigint_dig::BigUint;
+use std::cmp::min;
 use std::fs;
 use std::time::Duration;
 
@@ -26,6 +27,9 @@ use p256::U256;
 use p256::elliptic_curve::scalar::ScalarPrimitive as ScalarPrimitiveP256;
 use p384::U384;
 use p384::elliptic_curve::scalar::ScalarPrimitive as ScalarPrimitiveP384;
+use rand::RngCore;
+use rand::SeedableRng;
+use rand_chacha::ChaCha8Rng;
 
 const ECDH_CMD_MAX_COORDINATE_BYTES_P256: usize = 32;
 const ECDH_CMD_MAX_PRIVATE_KEY_BYTES_P256: usize = 32;
@@ -45,6 +49,17 @@ struct Opts {
     // Console receive timeout.
     #[arg(long, value_parser = humantime::parse_duration, default_value = "10s")]
     timeout: Duration,
+
+    // Reduce number of tests that are run by this factor.
+    // 1 out of skip_stride tests are run. The ID of the first test to run is
+    // (pseudo-)randomly chosen between 0 and skip_stride.
+    // If skip_stride is set to 0, all the tests are run
+    #[arg(long, default_value_t = 0usize)]
+    skip_stride: usize,
+
+    // Seed value for random number generator.
+    #[arg(long)]
+    seed: Option<u64>,
 
     #[arg(long, num_args = 1..)]
     ecdh_json: Vec<String>,
@@ -223,6 +238,18 @@ fn test_ecdh(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let spi_console_device = SpiConsoleDevice::new(&*spi, None, /*ignore_frame_num=*/ false)?;
     let _ = UartConsole::wait_for(&spi_console_device, r"Running ", opts.timeout)?;
 
+    let seed = opts.seed.unwrap_or_else(rand::random::<u64>);
+    log::info!("Using seed {}", seed);
+
+    // Create a deterministic RNG from the seed for skipping
+    let mut drng = ChaCha8Rng::seed_from_u64(seed);
+    let (skip_stride, start_offset) = match (drng.next_u32() as usize).checked_rem(opts.skip_stride)
+    {
+        Some(offset) => (opts.skip_stride, offset),
+        // if opts.skip_stride is 0, skip_stride is set to 1 to execute all the tests
+        None => (1usize, 0usize),
+    };
+
     let mut test_counter = 0u32;
     let mut fail_counter = 0usize;
     let mut failures = vec![];
@@ -231,8 +258,19 @@ fn test_ecdh(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         let raw_json = fs::read_to_string(file)?;
         let ecdh_tests: Vec<EcdhTestCase> = serde_json::from_str(&raw_json)?;
 
+        // Ensure that at least one test per JSON file is run
+        let stride = min(skip_stride, ecdh_tests.len());
+        let offset = start_offset % stride;
+        log::info!("Tests options: skip_stride: {}, offset: {}", stride, offset);
+
         for ecdh_test in &ecdh_tests {
             test_counter += 1;
+
+            if (ecdh_test.test_case_id % stride) != offset {
+                // Skip test
+                continue;
+            }
+
             log::info!("Test counter: {}", test_counter);
             run_ecdh_testcase(
                 ecdh_test,
