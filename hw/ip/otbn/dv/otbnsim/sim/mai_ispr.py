@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from enum import IntEnum
-from typing import Optional
-from .ispr import DumbISPR
+from typing import List, Optional
+from .ispr import DumbISPR, ISPRChange
 
 
 class MaiOperation(IntEnum):
@@ -111,6 +111,11 @@ class MaiCtrlCSR(DumbISPR):
         '''
         return self._extract_operation(value) != self.current_operation()
 
+    # TODO: Remove this function once RTL also generates traces. Without the RTL traces the
+    # simulation detects a trace mismatch and aborts.
+    def changes(self) -> List[ISPRChange]:
+        return []
+
 
 class MaiStatusCSR(DumbISPR):
     '''Models the MAI STATUS CSR'''
@@ -163,6 +168,11 @@ class MaiStatusCSR(DumbISPR):
     def update_busy_bit(self, busy: bool) -> None:
         self._update_bits(busy=busy)
 
+    # TODO: Remove this function once RTL also generates traces. Without the RTL traces the
+    # simulation detects a trace mismatch and aborts.
+    def changes(self) -> List[ISPRChange]:
+        return []
+
 
 class MaiOutputWSR(DumbISPR):
     def __init__(self, name: str) -> None:
@@ -199,6 +209,11 @@ class MaiOutputWSR(DumbISPR):
         assert 0 <= new_value < (1 << 256)
         self.set_unsigned(new_value)
 
+    # TODO: Remove this function once RTL also generates traces. Without the RTL traces the
+    # simulation detects a trace mismatch and aborts.
+    def changes(self) -> List[ISPRChange]:
+        return []
+
 
 class MaiInputWSR(DumbISPR):
     def __init__(self, name: str) -> None:
@@ -208,3 +223,8 @@ class MaiInputWSR(DumbISPR):
         assert 0 <= index < 8
         mask = (1 << 32) - 1
         return (self.read_unsigned() >> (32 * index)) & mask
+
+    # TODO: Remove this function once RTL also generates traces. Without the RTL traces the
+    # simulation detects a trace mismatch and aborts.
+    def changes(self) -> List[ISPRChange]:
+        return []
