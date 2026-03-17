@@ -86,6 +86,19 @@ otcrypto_status_t otcrypto_ecdh_p256(const otcrypto_blinded_key_t *private_key,
   return otcrypto_ecdh_p256_async_finalize(shared_secret);
 }
 
+otcrypto_status_t otcrypto_p256_point_on_curve(
+    const otcrypto_unblinded_key_t *point, hardened_bool_t *check_result) {
+  if (point == NULL || point == NULL || point->key == NULL ||
+      check_result == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  p256_point_t *pt = (p256_point_t *)point->key;
+  HARDENED_TRY(p256_point_on_curve_check(pt, check_result));
+
+  return OTCRYPTO_OK;
+}
+
 /**
  * Calls P-256 key generation.
  *

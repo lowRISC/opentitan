@@ -17,7 +17,7 @@
 
 /**
  * Mode magic values, generated with
- * $ ./util/design/sparse-fsm-encode.py -d 6 -m 8 -n 11 \
+ * $ ./util/design/sparse-fsm-encode.py -d 6 -m 9 -n 11 \
  *     --avoid-zero -s 380925547
  *
  * Call the same utility with the same arguments and a higher -m to generate
@@ -28,14 +28,15 @@
  * as `li`. If support is added, we could use 32-bit values here instead of
  * 11-bit.
  */
-.equ MODE_KEYGEN, 0x1f8
-.equ MODE_SIGN, 0x669
-.equ MODE_SIGN_CONFIG_K, 0x23E
-.equ MODE_VERIFY, 0x54E
-.equ MODE_ECDH, 0x695
-.equ MODE_SIDELOAD_KEYGEN, 0x7A2
-.equ MODE_SIDELOAD_SIGN, 0xE7
-.equ MODE_SIDELOAD_ECDH, 0x353
+.equ MODE_KEYGEN, 0x497
+.equ MODE_SIGN, 0x734
+.equ MODE_SIGN_CONFIG_K, 0x563
+.equ MODE_VERIFY, 0x5D8
+.equ MODE_ECDH, 0x1AD
+.equ MODE_SIDELOAD_KEYGEN, 0x7E
+.equ MODE_SIDELOAD_SIGN, 0x64D
+.equ MODE_SIDELOAD_ECDH, 0x2F1
+.equ MODE_POINTONCRV_CHECK, 0x6AA
 
 /**
  * Make the mode constants visible to Ibex.
@@ -48,6 +49,7 @@
 .globl MODE_SIDELOAD_KEYGEN
 .globl MODE_SIDELOAD_SIGN
 .globl MODE_SIDELOAD_ECDH
+.globl MODE_POINTONCRV_CHECK
 
 /**
  * Hardened boolean values.
@@ -78,6 +80,9 @@ start:
 
   addi  x3, x0, MODE_SIDELOAD_ECDH
   beq   x2, x3, shared_key_from_seed
+
+  addi  x3, x0, MODE_POINTONCRV_CHECK
+  beq   x2, x3, point_on_curve_check
 
   /* Copy the caller-provided secret key shares into scratchpad memory.
        dmem[d0] <= dmem[d0_io]
@@ -340,6 +345,24 @@ shared_key_from_seed:
 
   /* Tail-call shared-key generation. */
   jal      x0, shared_key
+
+/**
+ * Check if the point given in the affine coordinate space lies on the P-256
+ * curve.
+ *
+ * If `ok` is false, the point is invalid. The value will be either
+ * HARDENED_BOOL_TRUE or HARDENED_BOOL_FALSE.
+ *
+ * This routine runs in constant time.
+ *
+ * @param[in]   dmem[x]: x-coordinate.
+ * @param[in]   dmem[y]: y-coordinate.
+ * @param[out] dmem[ok]: Whether the point is valid.
+ */
+point_on_curve_check:
+  jal x1, p256_check_isoncurve
+
+  ecall
 
 /**
  * Generate a secret key from a keymgr-derived seed.

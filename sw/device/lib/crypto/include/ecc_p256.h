@@ -331,6 +331,16 @@ OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
     otcrypto_blinded_key_t *shared_secret);
 
+/**
+ * Is on curve check for given P-256 point.
+ *
+ * @param point Point in the affine coordinates representation that should be
+ * checked.
+ * @return Result of the point valid check operation.
+ */
+otcrypto_status_t otcrypto_p256_point_on_curve(
+    const otcrypto_unblinded_key_t *point, hardened_bool_t *check_result);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
