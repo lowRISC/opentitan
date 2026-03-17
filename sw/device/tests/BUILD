@@ -5317,6 +5317,8 @@ opentitan_test(
         "usbdev_deep_reset_test.c",
     ],
     cw310 = fpga_params(
+        # FIXME (#29490) - we are temporarily experiencing USB issues in CI.
+        tags = ["broken"],
         test_cmd = """
             --fin-phase=deep-reset
             --init-phase=deep-resume
