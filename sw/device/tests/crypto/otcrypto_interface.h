@@ -373,6 +373,8 @@ typedef struct otcrypto_interface_t {
   otcrypto_status_t (*ecdh_p384_async_start)(const otcrypto_blinded_key_t *,
                                              const otcrypto_unblinded_key_t *);
   otcrypto_status_t (*ecdh_p384_async_finalize)(otcrypto_blinded_key_t *);
+  otcrypto_status_t (*ecc_p384_point_on_curve)(
+      const otcrypto_unblinded_key_t *point, hardened_bool_t *check_result);
 
 } otcrypto_interface_t;
 
