@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from typing import List, Optional, Tuple
+from .constants import WsrAddrs
 from .ext_regs import OTBNExtRegs
 from .ispr import ISPR, DumbISPR, ISPRChange
 from .kmac_ispr import KmacDataWSRs
@@ -256,17 +257,17 @@ class WSRFile:
         self.KeyS1H = KeyWSR('KeyS1H', 256, self.KeyS1)
         self.KMAC_DATA = KmacDataWSRs(['KMAC_DATA_S0', 'KMAC_DATA_S1'])
 
-        self._by_idx = {
-            0: self.MOD,
-            1: self.RND,
-            2: self.URND,
-            3: self.ACC,
-            4: self.KeyS0L,
-            5: self.KeyS0H,
-            6: self.KeyS1L,
-            7: self.KeyS1H,
-            8: self.KMAC_DATA.shares[0],
-            9: self.KMAC_DATA.shares[1],
+        self._by_addr = {
+            WsrAddrs.MOD: self.MOD,
+            WsrAddrs.RND: self.RND,
+            WsrAddrs.URND: self.URND,
+            WsrAddrs.ACC: self.ACC,
+            WsrAddrs.KEY_S0_L: self.KeyS0L,
+            WsrAddrs.KEY_S0_H: self.KeyS0H,
+            WsrAddrs.KEY_S1_L: self.KeyS1L,
+            WsrAddrs.KEY_S1_H: self.KeyS1H,
+            WsrAddrs.KMAC_DATA_S0: self.KMAC_DATA.shares[0],
+            WsrAddrs.KMAC_DATA_S1: self.KMAC_DATA.shares[1],
         }
 
     def on_start(self) -> None:
@@ -275,20 +276,21 @@ class WSRFile:
         This clears values that don't persist between runs (everything except
         RND and the key registers)
         '''
-        for reg in self._by_idx.values():
+        for reg in self._by_addr.values():
             reg.on_start()
 
     def check_idx(self, idx: int) -> bool:
         '''Return True if idx is a valid WSR index'''
-        return idx in self._by_idx
+        # TODO: Clean this up once we have python 3.12+
+        return idx in WsrAddrs._value2member_map_
 
     def has_value_at_idx(self, idx: int) -> int:
-        '''Return True if the WSR at idx has a valid valu.
+        '''Return True if the WSR at idx has a valid value.
 
         Assumes that idx is a valid index (call check_idx to ensure this).
 
         '''
-        return self._by_idx[idx].has_value()
+        return self._by_addr[WsrAddrs(idx)].has_value()
 
     def read_at_idx(self, idx: int) -> int:
         '''Read the WSR at idx as an unsigned 256-bit value
@@ -296,14 +298,15 @@ class WSRFile:
         Assumes that idx is a valid index (call check_idx to ensure this).
 
         '''
+        wsr_addr = WsrAddrs(idx)
         # KMAC_DATA_S0/1 should only be accessed through the wrapper class.
-        if idx == 0x8:
+        if wsr_addr == WsrAddrs.KMAC_DATA_S0:
             return self.KMAC_DATA.read_unsigned(share_idx=0)
 
-        elif idx == 0x9:
+        elif wsr_addr == WsrAddrs.KMAC_DATA_S1:
             return self.KMAC_DATA.read_unsigned(share_idx=1)
 
-        return self._by_idx[idx].read_unsigned()
+        return self._by_addr[wsr_addr].read_unsigned()
 
     def write_at_idx(self, idx: int, value: int) -> None:
         '''Write the WSR at idx as an unsigned 256-bit value
@@ -311,15 +314,16 @@ class WSRFile:
         Assumes that idx is a valid index (call check_idx to ensure this).
 
         '''
-        if idx == 0x8:
+        wsr_addr = WsrAddrs(idx)
+        if wsr_addr == WsrAddrs.KMAC_DATA_S0:
             self.KMAC_DATA.write_unsigned(share_idx=0, value=value)
             return
 
-        elif idx == 0x9:
+        elif wsr_addr == WsrAddrs.KMAC_DATA_S1:
             self.KMAC_DATA.write_unsigned(share_idx=1, value=value)
             return
 
-        self._by_idx[idx].write_unsigned(value)
+        self._by_addr[wsr_addr].write_unsigned(value)
 
     def commit(self) -> None:
         self.MOD.commit()

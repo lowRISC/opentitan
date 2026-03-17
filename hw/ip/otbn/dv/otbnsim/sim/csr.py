@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from typing import Any, Callable, Dict, List, Optional
+from .constants import CsrAddrs
 from .flags import FlagGroups
 from .ispr import DumbISPR
 from .kmac_ispr import (
@@ -63,37 +64,22 @@ class CSRFile:
         self.KMAC_CMD = KmacCommandCSR('KMAC_CMD', write_mask=0x3f)
         self.KMAC_BYTE_STROBE = DumbISPR('KMAC_BYTE_STROBE', width=32)
 
-        self._known_indices = {
-            0x7c0,  # FG0
-            0x7c1,  # FG1
-            0x7c8,  # FLAGS
-            *range(0x7d0, 0x7d8),  # MODi
-            0x7d8,  # RND_PREFETCH
-            0x7d9,  # KMAC_IF_STATUS
-            0x7da,  # KMAC_INTR
-            0x7db,  # KMAC_CFG
-            0x7dc,  # KMAC_MSG_SEND
-            0x7dd,  # KMAC_CMD
-            0x7de,  # KMAC_BYTE_STROBE
-            0xfc0,  # RND
-            0xfc1,  # URND
-            0xfc2,  # KMAC_STATUS
-            0xfc3,  # KMAC_ERROR
-        }
-
-        self._idx_to_csr: Dict[int, Any] = {
-            0x7c8: self.flags,
-            0x7d8: self.RND_PREFETCH,
-            0x7d9: self.KMAC_IF_STATUS,
-            0x7da: self.KMAC_INTR,
-            0x7db: self.KMAC_CFG,
-            0x7dc: self.KMAC_MSG_SEND,
-            0x7dd: self.KMAC_CMD,
-            0x7de: self.KMAC_BYTE_STROBE,
-            0xfc0: self.RND,
-            0xfc1: self.URND,
-            0xfc2: self.KMAC_STATUS,
-            0xfc3: self.KMAC_ERROR,
+        # This does not include all CSR addresses because:
+        # - FG0 and FG1 map to the same underlying register.
+        # - MOD0 .. MOD7 map to the MOD WSR.
+        self._by_addr: Dict[CsrAddrs, Any] = {
+            CsrAddrs.FLAGS: self.flags,
+            CsrAddrs.RND_PREFETCH: self.RND_PREFETCH,
+            CsrAddrs.KMAC_IF_STATUS: self.KMAC_IF_STATUS,
+            CsrAddrs.KMAC_INTR: self.KMAC_INTR,
+            CsrAddrs.KMAC_CFG: self.KMAC_CFG,
+            CsrAddrs.KMAC_MSG_SEND: self.KMAC_MSG_SEND,
+            CsrAddrs.KMAC_CMD: self.KMAC_CMD,
+            CsrAddrs.KMAC_BYTE_STROBE: self.KMAC_BYTE_STROBE,
+            CsrAddrs.RND: self.RND,
+            CsrAddrs.URND: self.URND,
+            CsrAddrs.KMAC_STATUS: self.KMAC_STATUS,
+            CsrAddrs.KMAC_ERROR: self.KMAC_ERROR,
         }
 
     @staticmethod
@@ -111,52 +97,54 @@ class CSRFile:
 
     def check_idx(self, idx: int) -> bool:
         '''Return True if idx points to a valid CSR; False otherwise.'''
-        return idx in self._known_indices
+        # TODO: Clean this up once we have python 3.12+
+        return idx in CsrAddrs._value2member_map_
 
     def read_unsigned(self, wsrs: WSRFile, idx: int) -> int:
+        csr_addr = CsrAddrs(idx)
+
         # The flag groups are implemented as one physical register. Reading one flag group is
         # therefore actually a read from both groups.
-        if 0x7c0 <= idx <= 0x7c1:
-            # FG0/FG1
-            fg = idx - 0x7c0
+        if CsrAddrs.FG0 <= csr_addr <= CsrAddrs.FG1:
+            fg = csr_addr - CsrAddrs.FG0
             return self._get_field(fg, 4, self.flags.read_unsigned())
 
-        if 0x7d0 <= idx <= 0x7d7:
+        if CsrAddrs.MOD0 <= csr_addr <= CsrAddrs.MOD7:
             # MOD0 .. MOD7. MODi is bits [32*(i+1)-1..32*i]
-            mod_n = idx - 0x7d0
+            mod_n = csr_addr - CsrAddrs.MOD0
             return self._get_field(mod_n, 32, wsrs.MOD.read_unsigned())
 
-        csr = self._idx_to_csr.get(idx)
+        csr = self._by_addr.get(csr_addr)
         if csr is not None:
             return int(csr.read_unsigned())
 
-        raise RuntimeError('Unknown CSR index: {:#x}'.format(idx))
+        raise RuntimeError('Unhandled CSR index: {:#x}'.format(idx))
 
     def write_unsigned(self, wsrs: WSRFile, idx: int, value: int) -> None:
         assert 0 <= value < (1 << 32)
+        csr_addr = CsrAddrs(idx)
 
-        # The flag groups are implemented as one physical register. Writing to one flag group is
+        # The flag groups are impleme`  nted as one physical register. Writing to one flag group is
         # therefore actually a write to both groups.
-        if 0x7c0 <= idx <= 0x7c1:
-            # FG0/FG1
-            fg = idx - 0x7c0
+        if CsrAddrs.FG0 <= csr_addr <= CsrAddrs.FG1:
+            fg = csr_addr - CsrAddrs.FG0
             old = self.flags.read_unsigned()
             self.flags.write_unsigned(self._set_field(fg, 4, value & 0xf, old))
             return
 
-        if 0x7d0 <= idx <= 0x7d7:
+        if CsrAddrs.MOD0 <= csr_addr <= CsrAddrs.MOD7:
             # MOD0 .. MOD7. MODi is bits [32*(i+1)-1..32*i]. read,modify,write.
-            mod_n = idx - 0x7d0
+            mod_n = csr_addr - CsrAddrs.MOD0
             old = wsrs.MOD.read_unsigned()
             wsrs.MOD.write_unsigned(self._set_field(mod_n, 32, value, old))
             return
 
-        csr = self._idx_to_csr.get(idx)
+        csr = self._by_addr.get(csr_addr)
         if csr is not None:
             csr.write_unsigned(value)
             return
 
-        raise RuntimeError('Unknown CSR index: {:#x}'.format(idx))
+        raise RuntimeError('Unhandled CSR index: {:#x}'.format(idx))
 
     def commit(self) -> None:
         self.flags.commit()

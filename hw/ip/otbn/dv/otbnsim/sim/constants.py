@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from enum import IntEnum
+from enum import IntEnum, unique
 
 
 class Cmd(IntEnum):
@@ -58,3 +58,45 @@ def read_lc_tx_t(value: int) -> LcTx:
         return LcTx.OFF
     else:
         return LcTx.INVALID
+
+
+@unique
+class CsrAddrs(IntEnum):
+    '''All CSR addresses. Keep in sync with csr.yml'''
+    FG0 = 0x7c0
+    FG1 = 0x7c1
+    FLAGS = 0x7c8
+    MOD0 = 0x7d0
+    MOD1 = 0x7d1
+    MOD2 = 0x7d2
+    MOD3 = 0x7d3
+    MOD4 = 0x7d4
+    MOD5 = 0x7d5
+    MOD6 = 0x7d6
+    MOD7 = 0x7d7
+    RND_PREFETCH = 0x7d8
+    KMAC_IF_STATUS = 0x7d9
+    KMAC_INTR = 0x7da
+    KMAC_CFG = 0x7db
+    KMAC_MSG_SEND = 0x7dc
+    KMAC_CMD = 0x7dd
+    KMAC_BYTE_STROBE = 0x7de
+    RND = 0xfc0
+    URND = 0xfc1
+    KMAC_STATUS = 0xfc2
+    KMAC_ERROR = 0xfc3
+
+
+@unique
+class WsrAddrs(IntEnum):
+    '''All WSR addresses. Keep in sync with wsr.yml'''
+    MOD = 0
+    RND = 1
+    URND = 2
+    ACC = 3
+    KEY_S0_L = 4
+    KEY_S0_H = 5
+    KEY_S1_L = 6
+    KEY_S1_H = 7
+    KMAC_DATA_S0 = 8
+    KMAC_DATA_S1 = 9

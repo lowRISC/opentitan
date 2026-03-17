@@ -16,6 +16,7 @@ py_library(
     name = "csr",
     srcs = ["csr.py"],
     deps = [
+        ":constants",
         ":flags",
         ":ispr",
         ":kmac_ispr",
@@ -112,6 +113,7 @@ py_library(
     srcs = ["kmac.py"],
     deps = [
         requirement("pycryptodome"),
+        ":constants",
         ":csr",
         ":wsr",
     ],
