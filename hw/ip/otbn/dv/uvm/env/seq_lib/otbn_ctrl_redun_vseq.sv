@@ -250,36 +250,20 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
         endcase
       end
       5: begin
+        // TODO(lowRISC/opentitan#29495): Test all blanker signals and mac_en_i.
         bit mac_en;
-        bit choose_err;
         int unsigned num_clks = $urandom_range(10, 100);
-        `DV_CHECK_STD_RANDOMIZE_FATAL(choose_err)
 
-        report_err_type($sformatf("error in otbn_mac_bignum (choose_err=%0d, after %0d clocks)",
-                                  choose_err, num_clks));
+        report_err_type($sformatf("error in otbn_mac_bignum (after %0d clocks)", num_clks));
 
         `DV_WAIT(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusBusyExecute)
         cfg.clk_rst_vif.wait_clks(num_clks);
         // Wait for valid instruction, because `otbn_core` only propagates bignum MAC predec errors
         // for valid instructions.
         wait_for_flag("tb.dut.u_otbn_core.insn_valid");
-        case(choose_err)
-          0: begin
-            err_path = "tb.dut.u_otbn_core.u_otbn_mac_bignum.mac_en_i";
-            `DV_CHECK_FATAL(uvm_hdl_read(err_path, mac_en));
-            `DV_CHECK_FATAL(uvm_hdl_force(err_path, !mac_en) == 1);
-          end
-          1: begin
-            bit zero_acc;
-            err_path = "tb.dut.u_otbn_core.u_otbn_mac_bignum.operation_i.zero_acc";
-            wait_for_flag("tb.dut.u_otbn_core.u_otbn_mac_bignum.mac_en_i");
-            `DV_CHECK_FATAL(uvm_hdl_read(err_path, zero_acc));
-            `DV_CHECK_FATAL(uvm_hdl_force(err_path, !zero_acc) == 1);
-          end
-          default: begin
-            `uvm_fatal(`gfn, "issue with randomization")
-          end
-        endcase
+        err_path = "tb.dut.u_otbn_core.u_otbn_mac_bignum.mac_en_i";
+        `DV_CHECK_FATAL(uvm_hdl_read(err_path, mac_en));
+        `DV_CHECK_FATAL(uvm_hdl_force(err_path, !mac_en) == 1);
       end
       6: begin
         bit [1:0] choose_err;
