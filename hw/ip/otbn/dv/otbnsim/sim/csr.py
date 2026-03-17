@@ -14,6 +14,7 @@ from .kmac_ispr import (
     KmacIfStatusCSR,
     KmacIntrCSR,
 )
+from .mai_ispr import MaiCtrlCSR, MaiStatusCSR
 from .trace import Trace
 from .wsr import WSRFile
 
@@ -63,6 +64,8 @@ class CSRFile:
         self.URND = WrapperCSR(read_func=wsrs.URND.read_u32)
         self.KMAC_CMD = KmacCommandCSR('KMAC_CMD', write_mask=0x3f)
         self.KMAC_BYTE_STROBE = DumbISPR('KMAC_BYTE_STROBE', width=32)
+        self.MAI_CTRL = MaiCtrlCSR()
+        self.MAI_STATUS = MaiStatusCSR()
 
         # This does not include all CSR addresses because:
         # - FG0 and FG1 map to the same underlying register.
@@ -76,10 +79,12 @@ class CSRFile:
             CsrAddrs.KMAC_MSG_SEND: self.KMAC_MSG_SEND,
             CsrAddrs.KMAC_CMD: self.KMAC_CMD,
             CsrAddrs.KMAC_BYTE_STROBE: self.KMAC_BYTE_STROBE,
+            CsrAddrs.MAI_CTRL: self.MAI_CTRL,
             CsrAddrs.RND: self.RND,
             CsrAddrs.URND: self.URND,
             CsrAddrs.KMAC_STATUS: self.KMAC_STATUS,
             CsrAddrs.KMAC_ERROR: self.KMAC_ERROR,
+            CsrAddrs.MAI_STATUS: self.MAI_STATUS,
         }
 
     @staticmethod
@@ -156,6 +161,8 @@ class CSRFile:
         self.KMAC_MSG_SEND.commit()
         self.KMAC_CMD.commit()
         self.KMAC_BYTE_STROBE.commit()
+        self.MAI_CTRL.commit()
+        self.MAI_STATUS.commit()
 
     def abort(self) -> None:
         self.flags.abort()
@@ -167,6 +174,9 @@ class CSRFile:
         self.KMAC_MSG_SEND.abort()
         self.KMAC_CMD.abort()
         self.KMAC_BYTE_STROBE.abort()
+        self.MAI_CTRL.abort()
+        # The MAI_STATUS is always committed because only the MAI updates it.
+        self.MAI_STATUS.commit()
 
     def changes(self) -> List[Trace]:
         ret: List[Trace] = []
@@ -179,7 +189,10 @@ class CSRFile:
         ret += self.KMAC_MSG_SEND.changes()
         ret += self.KMAC_CMD.changes()
         ret += self.KMAC_BYTE_STROBE.changes()
+        ret += self.MAI_CTRL.changes()
+        ret += self.MAI_STATUS.changes()
         return ret
 
     def wipe(self) -> None:
         self.flags.write_unsigned(0)
+        # TODO: Wipe or reset MAI CTRL/STATUS?
