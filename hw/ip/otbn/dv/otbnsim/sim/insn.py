@@ -4,7 +4,7 @@
 
 from typing import Dict, Iterator, Optional
 
-from .constants import ErrBits
+from .constants import CsrAddrs, ErrBits, WsrAddrs
 from .flags import FlagReg
 from .isa import (OTBNInsn, RV32RegReg, RV32RegImm,
                   RV32ImmShift, BnVecVecAdd, BnVecVecMul, BnVecVecTrn,
@@ -428,7 +428,7 @@ class CSRRS(OTBNInsn):
             state.stop_at_end_of_cycle(ErrBits.CALL_STACK)
             return None
 
-        if self.csr == 0xfc0:
+        if self.csr == CsrAddrs.RND:
             # A read from RND. If a RND value is not available, request_value()
             # initiates or continues an EDN request and returns False. If a RND
             # value is available, it returns True.
@@ -466,7 +466,7 @@ class CSRRW(OTBNInsn):
             state.stop_at_end_of_cycle(ErrBits.CALL_STACK)
             return None
 
-        if self.csr == 0xfc0 and self.grd != 0:
+        if self.csr == CsrAddrs.RND and self.grd != 0:
             # A read from RND. If a RND value is not available, request_value()
             # initiates or continues an EDN request and returns False. If a RND
             # value is available, it returns True.
@@ -1238,7 +1238,7 @@ class BNWSRR(OTBNInsn):
             state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
             return None
 
-        if self.wsr == 0x1:
+        if self.wsr == WsrAddrs.RND:
             # A read from RND. If a RND value is not available, request_value()
             # initiates or continues an EDN request and returns False. If a RND
             # value is available, it returns True.
