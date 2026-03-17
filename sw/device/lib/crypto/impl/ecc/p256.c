@@ -54,6 +54,7 @@ OTBN_DECLARE_SYMBOL_ADDR(run_p256, MODE_ECDH);
 OTBN_DECLARE_SYMBOL_ADDR(run_p256, MODE_SIDELOAD_KEYGEN);
 OTBN_DECLARE_SYMBOL_ADDR(run_p256, MODE_SIDELOAD_SIGN);
 OTBN_DECLARE_SYMBOL_ADDR(run_p256, MODE_SIDELOAD_ECDH);
+OTBN_DECLARE_SYMBOL_ADDR(run_p256, MODE_POINTONCRV_CHECK);
 static const uint32_t kOtbnP256ModeKeygen =
     OTBN_ADDR_T_INIT(run_p256, MODE_KEYGEN);
 static const uint32_t kOtbnP256ModeSign = OTBN_ADDR_T_INIT(run_p256, MODE_SIGN);
@@ -68,6 +69,8 @@ static const uint32_t kOtbnP256ModeSideloadSign =
     OTBN_ADDR_T_INIT(run_p256, MODE_SIDELOAD_SIGN);
 static const uint32_t kOtbnP256ModeSideloadEcdh =
     OTBN_ADDR_T_INIT(run_p256, MODE_SIDELOAD_ECDH);
+static const uint32_t kOtbnP256ModePointOnCurveCheck =
+    OTBN_ADDR_T_INIT(run_p256, MODE_POINTONCRV_CHECK);
 
 enum {
   /*
@@ -91,11 +94,12 @@ enum {
    */
   kModeKeygenInsCnt = 573915,
   kModeKeygenSideloadInsCnt = 573800,
-  kModeEcdhInsCnt = 581598,
+  kModeEcdhInsCnt = 581600,
   kModeEcdhSideloadInsCnt = 581658,
-  kModeEcdsaSignConfigKInsCnt = 606933,
-  kModeEcdsaSignInsCnt = 607087,
+  kModeEcdsaSignConfigKInsCnt = 606935,
+  kModeEcdsaSignInsCnt = 607089,
   kModeEcdsaSignSideloadInsCnt = 607147,
+  kModePointOnCurveCheckInsCnt = 224,
 };
 
 static status_t p256_masked_scalar_write(p256_masked_scalar_t *src,
@@ -462,4 +466,35 @@ status_t p256_sideload_ecdh_start(const p256_point_t *public_key) {
 
   // Start the OTBN routine.
   return otbn_execute();
+}
+
+status_t p256_point_on_curve_check(const p256_point_t *point,
+                                   hardened_bool_t *result) {
+  // Load the P-256 app. Fails if OTBN is non-idle.
+  HARDENED_TRY(otbn_load_app(kOtbnAppP256));
+
+  // Set mode so start() will jump into the is on point check routine.
+  uint32_t mode = kOtbnP256ModePointOnCurveCheck;
+  HARDENED_TRY(otbn_dmem_write(kOtbnP256ModeWords, &mode, kOtbnVarMode));
+
+  // Set the point x coordinate.
+  HARDENED_TRY(otbn_dmem_write(kP256CoordWords, point->x, kOtbnVarX));
+
+  // Set the point y coordinate.
+  HARDENED_TRY(otbn_dmem_write(kP256CoordWords, point->y, kOtbnVarY));
+
+  // Start the OTBN routine.
+  HARDENED_TRY(otbn_execute());
+
+  // Spin here waiting for OTBN to complete.
+  HARDENED_TRY_WIPE_DMEM(otbn_busy_wait_for_done());
+
+  // Check if we executed the expected number of OTBN instructions.
+  HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModePointOnCurveCheckInsCnt);
+
+  // Read the result of the OTBN operation.
+  HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(1, kOtbnVarOk, result));
+
+  // Wipe DMEM.
+  return otbn_dmem_sec_wipe();
 }
