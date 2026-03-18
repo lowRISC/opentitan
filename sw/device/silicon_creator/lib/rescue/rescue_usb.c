@@ -184,5 +184,4 @@ rom_error_t rescue_protocol(boot_data_t *bootdata, boot_log_t *boot_log,
     RETURN_IF_ERROR(rescue_inactivity(&ctx.state));
     usb_poll();
   }
-  return kErrorOk;
 }
