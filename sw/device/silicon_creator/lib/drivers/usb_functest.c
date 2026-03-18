@@ -98,7 +98,11 @@ typedef enum test_req {
   kTestReqBulkIn = 3,
   kTestReqBulkOut = 4,
   kTestReqExit = 5,
+  kTestReqUartEcho = 6,
+  kTestReqEpConfig = 7,
 } test_req_t;
+
+void handler(void *ctx, uint8_t ep, usb_transfer_flags_t flags, void *data);
 
 void set_serialnumber(void) {
   lifecycle_device_id_t dev;
@@ -156,7 +160,7 @@ rom_error_t my_control(usb_setup_data_t *setup) {
     case kTestReqBulkIn: {
       size_t length = (size_t)setup->value + 1;
       uint8_t ep = (uint8_t)setup->index;
-      base_printf("BulkIn ep=%u sz=%u\r\n", setup->index, length);
+      base_printf("BulkIn ep=0x%02x sz=%u\r\n", ep, length);
       usb_ep_transfer(
           kUsbDirIn | ep, work_buffer, length,
           (length < sizeof(work_buffer) ? kUsbTransferFlagsShortIn : 0));
@@ -166,7 +170,7 @@ rom_error_t my_control(usb_setup_data_t *setup) {
     case kTestReqBulkOut: {
       size_t length = (size_t)setup->value + 1;
       uint8_t ep = (uint8_t)setup->index;
-      base_printf("BulkOut ep=%u sz=%u\r\n", setup->index, length);
+      base_printf("BulkOut ep=0x%02x sz=%u\r\n", ep, length);
       usb_ep_transfer(ep, work_buffer, length, 0);
       usb_ep_transfer(kUsbDirIn | 0, NULL, 0, 0);
       break;
@@ -176,6 +180,17 @@ rom_error_t my_control(usb_setup_data_t *setup) {
       test_exit = 1;
       usb_ep_transfer(kUsbDirIn | 0, NULL, 0, 0);
       break;
+    case kTestReqUartEcho:
+      base_printf("USB UartEcho 0x%x\r\n", setup->value);
+      usb_ep_transfer(kUsbDirIn | 0, NULL, 0, 0);
+      break;
+    case kTestReqEpConfig: {
+      uint8_t ep = (uint8_t)setup->index;
+      bool use_handler = (setup->value != 0);
+      usb_ep_init(ep, kUsbEpTypeBulk, 64, use_handler ? handler : NULL, NULL);
+      usb_ep_transfer(kUsbDirIn | 0, NULL, 0, 0);
+      break;
+    }
     default:
       return kErrorUsbBadSetup;
   }
@@ -184,6 +199,13 @@ rom_error_t my_control(usb_setup_data_t *setup) {
 
 void handler(void *ctx, uint8_t ep, usb_transfer_flags_t flags, void *data) {
   OT_DISCARD(ctx);
+  if (flags & kUsbTransferFlagsReset) {
+    base_printf("USB Reset on EP0x%02x\r\n", ep);
+    return;
+  }
+  if (flags & kUsbTransferFlagsError) {
+    base_printf("USB Error on EP0x%02x\r\n", ep);
+  }
   if (flags & kUsbTransferFlagsSetupData) {
     usb_setup_data_t *setup = (usb_setup_data_t *)data;
     base_printf(
@@ -220,7 +242,8 @@ void handler(void *ctx, uint8_t ep, usb_transfer_flags_t flags, void *data) {
   }
   if (ep != 0) {
     int length = (flags & kUsbTransferFlagsDone) ? *(int *)data : -1;
-    base_printf("Event on EP%u: flags=%08x length=%d\r\n", ep, flags, length);
+    base_printf("Event on EP0x%02x: flags=%08x length=%d\r\n", ep, flags,
+                length);
   }
 }
 
