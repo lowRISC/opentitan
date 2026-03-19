@@ -73,7 +73,7 @@ class alert_monitor extends alert_esc_base_monitor;
   //
   // Unlike ping_thread (which calls this task), monitor_ping_handshake doesn't wait for the ack.
   //
-  // This task ignores cfg.en_alert_lpg and under_reset: if either become true, this task will be
+  // This task ignores cfg.en_alert_lpg and cfg.in_reset: if either become true, this task will be
   // killed by something further up the stack.
   extern local task monitor_ping_handshake();
 
@@ -116,15 +116,15 @@ function alert_monitor::new (string name, uvm_component parent);
 endfunction : new
 
 task alert_monitor::run_phase(uvm_phase phase);
-  // Run the base class run_phase task in parallel (which maintains the under_reset flag).
+  // Run the base class run_phase task in parallel (which maintains the cfg.in_reset flag).
   fork
     super.run_phase(phase);
     forever begin
-      wait (!under_reset);
+      wait (!cfg.in_reset);
       fork begin : isolation_fork
         fork
           run_between_resets();
-          wait (under_reset);
+          wait (cfg.in_reset);
         join_any
         disable fork;
         on_reset();
