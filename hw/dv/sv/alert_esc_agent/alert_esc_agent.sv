@@ -7,7 +7,7 @@
 // ---------------------------------------------
 class alert_esc_agent extends dv_base_agent#(
     .CFG_T           (alert_esc_agent_cfg),
-    .DRIVER_T        (alert_esc_base_driver),
+    .DRIVER_T        (dv_base_driver#(alert_esc_seq_item, alert_esc_agent_cfg)),
     .SEQUENCER_T     (alert_esc_sequencer),
     .MONITOR_T       (alert_esc_base_monitor),
     .COV_T           (alert_esc_agent_cov)
@@ -36,7 +36,7 @@ function void alert_esc_agent::build_phase(uvm_phase phase);
   end
 
   monitor_type = cfg.is_alert ? alert_monitor::get_type() : esc_monitor::get_type();
-  alert_esc_base_monitor::type_id::set_inst_override(monitor_type, "monitor", this);
+  MONITOR_T::type_id::set_inst_override(monitor_type, "monitor", this);
 
   // override driver
   if (cfg.is_active) begin
@@ -53,7 +53,7 @@ function void alert_esc_agent::build_phase(uvm_phase phase);
                     esc_receiver_driver::get_type();
     end
 
-    alert_esc_base_driver::type_id::set_inst_override(driver_type, "driver", this);
+    DRIVER_T::type_id::set_inst_override(driver_type, "driver", this);
   end
 
   super.build_phase(phase);
