@@ -381,10 +381,6 @@ rom_error_t flash_ctrl_info_read_zeros_on_read_error(
   return err;
 }
 
-void flash_ctrl_info_lock(const flash_ctrl_info_page_t *info_page) {
-  abs_mmio_write32(flash_ctrl_core_base() + info_page->cfg_wen_offset, 0);
-}
-
 rom_error_t flash_ctrl_data_write(uint32_t addr, uint32_t word_count,
                                   const void *data) {
   return write(addr, kFlashCtrlPartitionData, word_count, data,
