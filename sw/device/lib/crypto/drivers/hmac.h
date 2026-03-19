@@ -149,7 +149,7 @@ status_t hmac_hmac_sha256_cl(const hmac_key_t *key, const uint8_t *msg,
  * implementation is different to hmac_hmac_sha256() as it manually assembles
  * the HMAC functionality using SHA256. By using two different HMAC
  * implementations, injecting two identical faults affect different parts during
- * the HMAC compuation, which can be detected.
+ * the HMAC computation, which can be detected.
  *
  * @param key HMAC key.
  * @param msg Input message.
@@ -187,7 +187,7 @@ status_t hmac_hmac_sha384(const hmac_key_t *key, const uint8_t *msg,
  * implementation is different to hmac_hmac_sha384() as it manually assembles
  * the HMAC functionality using SHA384. By using two different HMAC
  * implementations, injecting two identical faults affect different parts during
- * the HMAC compuation, which can be detected.
+ * the HMAC computation, which can be detected.
  *
  * @param key HMAC key.
  * @param msg Input message.
@@ -225,7 +225,7 @@ status_t hmac_hmac_sha512(const hmac_key_t *key, const uint8_t *msg,
  * implementation is different to hmac_hmac_sha512() as it manually assembles
  * the HMAC functionality using SHA512. By using two different HMAC
  * implementations, injecting two identical faults affect different parts during
- * the HMAC compuation, which can be detected.
+ * the HMAC computation, which can be detected.
  *
  * @param key HMAC key.
  * @param msg Input message.
@@ -313,7 +313,7 @@ uint32_t hmac_key_integrity_checksum(const hmac_key_t *key);
 hardened_bool_t hmac_key_integrity_checksum_check(const hmac_key_t *key);
 
 /**
- * Update the context with additional messsage data.
+ * Update the context with additional message data.
  *
  * This function can be used with all SHA2 and HMAC operations, and may be
  * called multiple times between init() and final().

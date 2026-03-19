@@ -193,7 +193,7 @@ static status_t key_write(const hmac_key_t *key) {
         hardened_memcpy((uint32_t *)key_reg, key->key_block, key->key_len));
     // We only check the integrity of the key when entering the CryptoLib. This
     // check here will catch any manipulations of the key or the pointer to the
-    // key that might have happend in the meanwhile. We do it at this point as
+    // key that might have happened in the meanwhile. We do it at this point as
     // the key just got written into the HMAC core in the `hardened_memcpy()`
     // above.
     if (launder32(key->key_len) != 0) {
@@ -782,7 +782,7 @@ status_t hmac_update(hmac_ctx_t *ctx, const uint8_t *data, size_t len) {
   size_t len_rem = len % block_bytelen;
   size_t leftover_len = (ctx->partial_block_bytelen + len_rem) % block_bytelen;
 
-  // Retore context will restore the context and also hit start or continue
+  // Restore context will restore the context and also hit start or continue
   // button as necessary.
   HARDENED_TRY(context_restore(ctx));
 
