@@ -55,6 +55,7 @@ hardened_bool_t integrity_blinded_key_check(const otcrypto_blinded_key_t *key) {
   return kHardenedBoolFalse;
 }
 
+#ifndef OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
 OT_NOINLINE
 hardened_bool_t verify_buf_integrity(const otcrypto_generic_buf_t *buf) {
   uint32_t expected = calculate_buf_checksum(buf->data, buf->len);
@@ -65,3 +66,4 @@ hardened_bool_t verify_buf_integrity(const otcrypto_generic_buf_t *buf) {
   }
   return kHardenedBoolFalse;
 }
+#endif  // OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
