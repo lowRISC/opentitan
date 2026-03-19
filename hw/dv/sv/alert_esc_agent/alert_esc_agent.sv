@@ -34,9 +34,9 @@ function void alert_esc_agent::build_phase(uvm_phase phase);
   end
   // override monitor
   if (cfg.is_alert) begin
-    alert_esc_base_monitor::type_id::set_type_override(alert_monitor::get_type());
+    MONITOR_T::type_id::set_inst_override(alert_monitor::get_type(), "monitor", this);
   end else begin
-    alert_esc_base_monitor::type_id::set_type_override(esc_monitor::get_type());
+    MONITOR_T::type_id::set_inst_override(esc_monitor::get_type(), "monitor", this);
   end
 
   // override driver
@@ -45,15 +45,15 @@ function void alert_esc_agent::build_phase(uvm_phase phase);
       // use for reactive device
       cfg.has_req_fifo = 1;
       if (cfg.if_mode == Host) begin
-        alert_esc_base_driver::type_id::set_type_override(alert_sender_driver::get_type());
+        DRIVER_T::type_id::set_inst_override(alert_sender_driver::get_type(), "driver", this);
       end else begin
-        alert_esc_base_driver::type_id::set_type_override(alert_receiver_driver::get_type());
+        DRIVER_T::type_id::set_inst_override(alert_receiver_driver::get_type(), "driver", this);
       end
     end else begin
       if (cfg.if_mode == Host) begin
-        alert_esc_base_driver::type_id::set_type_override(esc_sender_driver::get_type());
+        DRIVER_T::type_id::set_inst_override(esc_sender_driver::get_type(), "driver", this);
       end else begin
-        alert_esc_base_driver::type_id::set_type_override(esc_receiver_driver::get_type());
+        DRIVER_T::type_id::set_inst_override(esc_receiver_driver::get_type(), "driver", this);
       end
     end
   end
