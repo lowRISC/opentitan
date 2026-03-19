@@ -22,7 +22,6 @@ class alert_esc_base_monitor extends dv_base_monitor #(
   extern function new (string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
   extern virtual task run_phase(uvm_phase phase);
-  extern virtual task wait_for_reset_done();
   extern local task reset_thread();
   // this function can be used in derived classes to reset local signals/variables if needed
   extern virtual function void reset_signals();
@@ -42,11 +41,8 @@ task alert_esc_base_monitor::run_phase(uvm_phase phase);
   reset_thread();
 endtask : run_phase
 
-task alert_esc_base_monitor::wait_for_reset_done();
-  @(posedge cfg.vif.rst_n);
-endtask : wait_for_reset_done
-
 task alert_esc_base_monitor::reset_thread();
+  under_reset = 1;
   forever begin
     wait(!cfg.vif.rst_n);
     under_reset = 1;

@@ -47,7 +47,7 @@ task esc_monitor::run_phase(uvm_phase phase);
   fork
     super.run_phase(phase);
     begin
-      wait_for_reset_done();
+      wait(!under_reset);
       fork
         esc_thread();
         unexpected_resp_thread();
