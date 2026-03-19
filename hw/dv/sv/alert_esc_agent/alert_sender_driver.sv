@@ -6,7 +6,7 @@
 // ---------------------------------------------
 // Alert_handler sender driver
 // ---------------------------------------------
-class alert_sender_driver extends alert_esc_base_driver;
+class alert_sender_driver extends alert_base_driver;
 
   `uvm_component_utils(alert_sender_driver)
 
