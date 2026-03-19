@@ -347,15 +347,6 @@ rom_error_t flash_ctrl_info_read_zeros_on_read_error(
     uint32_t word_count, void *data);
 
 /**
- * Locks the configuration of an information page.
- *
- * This writes a zero to the write-enable register for info page configuration.
- *
- * @param info_page Information page to read from.
- */
-void flash_ctrl_info_lock(const flash_ctrl_info_page_t *info_page);
-
-/**
  * Writes data to the data partition.
  *
  * The flash controller will truncate to the closest, lower word aligned

@@ -313,7 +313,7 @@ void ownership_pages_lockdown(boot_data_t *bootdata, hardened_bool_t rescue) {
   // Always make page 0 read only.
   flash_ctrl_info_perms_set(&kFlashCtrlInfoPageOwnerSlot0, perm);
   flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageOwnerSlot0, cfg);
-  flash_ctrl_info_lock(&kFlashCtrlInfoPageOwnerSlot0);
+  flash_ctrl_info_cfg_lock(&kFlashCtrlInfoPageOwnerSlot0);
   if (rescue == kHardenedBoolTrue) {
     // Do not lock page 1 in rescue mode.
     HARDENED_CHECK_EQ(rescue, kHardenedBoolTrue);
@@ -330,6 +330,6 @@ void ownership_pages_lockdown(boot_data_t *bootdata, hardened_bool_t rescue) {
   } else {
     // In any of the unlocked modes, leave page 1 unlocked.
   }
-  flash_ctrl_info_lock(&kFlashCtrlInfoPageOwnerSlot1);
+  flash_ctrl_info_cfg_lock(&kFlashCtrlInfoPageOwnerSlot1);
   return;
 }
