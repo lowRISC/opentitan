@@ -17,6 +17,9 @@ namespace internal {
 class MockRstmgr : public global_mock::GlobalMock<MockRstmgr> {
  public:
   MOCK_METHOD(uint32_t, ReasonGet, ());
+  MOCK_METHOD(bool, IsHwResetReason,
+              (dt_rstmgr_t dt, uint32_t reasons, dt_instance_id_t inst_id,
+               size_t reset_req));
   MOCK_METHOD(void, ReasonClear, (uint32_t));
   MOCK_METHOD(void, AlertInfoEnable, ());
   MOCK_METHOD(void, Reset, ());
