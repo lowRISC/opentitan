@@ -10,7 +10,6 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/status.h"
-#include "sw/device/lib/runtime/hart.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "keymgr_regs.h"
@@ -274,11 +273,6 @@ static status_t keymgr_sideload_clear(uint32_t slot) {
       slot) {
     return OTCRYPTO_FATAL_ERR;
   }
-
-  // Spin for 100 microseconds.
-  // TODO: this value seems to work for tests, but it would be good to run a
-  // more principled analysis.
-  busy_spin_micros(100);
 
   // Stop continuous clearing.
   abs_mmio_write32(
