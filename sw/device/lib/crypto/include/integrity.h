@@ -82,6 +82,8 @@ static inline uint32_t calculate_buf_checksum(const void *data, size_t len) {
          (uint32_t)len;
 }
 
+#ifndef OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
+
 /**
  * Macro to create a buffer such otcrypto_const_word32_buf, otcrypto_word32_buf,
  * otcrypto_const_byte_buf, otcrypto_byte_buf.
@@ -115,6 +117,15 @@ hardened_bool_t verify_buf_integrity(const otcrypto_generic_buf_t *buf);
  */
 #define OTCRYPTO_CHECK_BUF(buf_ptr) \
   verify_buf_integrity((const otcrypto_generic_buf_t *)(buf_ptr))
+
+#else
+
+#define OTCRYPTO_MAKE_BUF(type, data_ptr, length) \
+  (type) { .data = (data_ptr), .len = (length) }
+
+#define OTCRYPTO_CHECK_BUF(buf_ptr) (kHardenedBoolTrue)
+
+#endif  // OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
 
 #ifdef __cplusplus
 }  // extern "C"
