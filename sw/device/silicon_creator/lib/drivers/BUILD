@@ -1019,6 +1019,7 @@ opentitan_test(
         ":rnd",
         ":usb",
         "//sw/device/lib/base:macros",
+        "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
