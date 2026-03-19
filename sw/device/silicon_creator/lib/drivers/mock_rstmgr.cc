@@ -8,6 +8,12 @@ namespace rom_test {
 extern "C" {
 uint32_t rstmgr_reason_get(void) { return MockRstmgr::Instance().ReasonGet(); }
 
+bool rstmgr_is_hw_reset_reason(dt_rstmgr_t dt, uint32_t reasons,
+                               dt_instance_id_t inst_id, size_t reset_req) {
+  return MockRstmgr::Instance().IsHwResetReason(dt, reasons, inst_id,
+                                                reset_req);
+}
+
 void rstmgr_reason_clear(uint32_t reasons) {
   MockRstmgr::Instance().ReasonClear(reasons);
 }
