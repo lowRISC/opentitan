@@ -13,7 +13,6 @@
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/status.h"
-#include "sw/device/lib/runtime/ibex.h"
 
 #include "hmac_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -380,10 +379,7 @@ static status_t msg_fifo_write(const uint8_t *message, size_t message_len) {
  */
 static status_t tmp_avoid_hw_hang(hmac_ctx_t *ctx) {
   // Insert a delay
-  ibex_timeout_t timeout;
-  timeout.cycles = kHmacTmpDelay;
-  timeout.start = ibex_mcycle_read();
-  while (!ibex_timeout_check(&timeout)) {
+  for (volatile uint32_t i = 0; i < kHmacTmpDelay; i++) {
     // NULL statement
   }
 
