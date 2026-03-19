@@ -90,7 +90,9 @@ typedef enum otcrypto_status_value {
 typedef struct otcrypto_generic_buf {
   const void *data;
   size_t len;
+#ifndef OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
   uint32_t ptr_checksum;
+#endif
 } otcrypto_generic_buf_t;
 
 /**
@@ -108,7 +110,9 @@ typedef struct otcrypto_byte_buf {
   size_t len;
   // Integrity of the buffer which is over the address and the length but not
   // the contents.
+#ifndef OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
   uint32_t ptr_checksum;
+#endif
 } otcrypto_byte_buf_t;
 
 /**
@@ -126,7 +130,9 @@ typedef struct otcrypto_const_byte_buf {
   const size_t len;
   // Integrity of the buffer which is over the address and the length but not
   // the contents.
-  const uint32_t ptr_checksum;
+#ifndef OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
+  uint32_t ptr_checksum;
+#endif
 } otcrypto_const_byte_buf_t;
 
 /**
@@ -144,7 +150,9 @@ typedef struct otcrypto_word32_buf {
   size_t len;
   // Integrity of the buffer which is over the address and the length but not
   // the contents.
+#ifndef OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
   uint32_t ptr_checksum;
+#endif
 } otcrypto_word32_buf_t;
 
 /**
@@ -162,7 +170,9 @@ typedef struct otcrypto_const_word32_buf {
   const size_t len;
   // Integrity of the buffer which is over the address and the length but not
   // the contents.
-  const uint32_t ptr_checksum;
+#ifndef OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
+  uint32_t ptr_checksum;
+#endif
 } otcrypto_const_word32_buf_t;
 
 /**
