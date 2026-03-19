@@ -6,13 +6,23 @@ package(default_visibility = ["//visibility:public"])
 
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 
+config_setting(
+    name = "disable_buf_integrity_checks",
+    define_values = {
+        "disable_buf_integrity_checks": "true",
+    },
+)
+
 # Export all headers.
 exports_files(glob(["*.h"]))
 
 cc_library(
     name = "datatypes",
     hdrs = ["datatypes.h"],
-    defines = ["OTCRYPTO_IN_REPO=1"],
+    defines = ["OTCRYPTO_IN_REPO=1"] + select({
+        ":disable_buf_integrity_checks": ["OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS"],
+        "//conditions:default": [],
+    }),
     includes = ["."],
     deps = [
         "//sw/device/lib/base:hardened",
@@ -45,7 +55,10 @@ cc_library(
         "sha3.h",
         "x25519.h",
     ],
-    defines = ["OTCRYPTO_IN_REPO=1"],
+    defines = ["OTCRYPTO_IN_REPO=1"] + select({
+        ":disable_buf_integrity_checks": ["OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS"],
+        "//conditions:default": [],
+    }),
     includes = ["."],
     deps = [
         "//sw/device/lib/base:hardened",
