@@ -63,8 +63,8 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
  *
  * Initializes the HMAC context. The key should be at least as long as the
  * digest for the chosen hash function. The hash function is determined by the
- * key mode. Only SHA-2 hash functions are are supported. Other modes (e.g.
- * SHA-3) are not supported and will result in errors.
+ * key mode. Only SHA-2 hash functions are supported. Other modes (e.g. SHA-3)
+ * are not supported and will result in errors.
  *
  * @param[out] ctx Pointer to the generic HMAC context struct.
  * @param key Pointer to the blinded HMAC key struct.
