@@ -29,7 +29,7 @@ from mako import exceptions
 from mako.lookup import TemplateLookup
 from mako.template import Template
 from raclgen.lib import DEFAULT_RACL_CONFIG
-from reggen import access, gen_rtl, gen_sec_cm_testplan, params, reg_block, window
+from reggen import access, gen_rtl, gen_sec_cm_testplan, params, reg_block, window, vendor_specific
 from reggen.countermeasure import CounterMeasure
 from reggen.ip_block import IpBlock
 from topgen import get_hjsonobj_xbars
@@ -1563,7 +1563,15 @@ def main():
                         action="store_true",
                         help="Only return the list of blocks and exit.")
 
+    parser.add_argument('--vendor-specific-fields',
+                        type=str,
+                        default=None,
+                        help='A hjson file describing vendor defined fields.')
+
     args = parser.parse_args()
+
+    if args.vendor_specific_fields:
+        vendor_specific.extend_optional_fields(args.vendor_specific_fields)
 
     # check combinations
     if args.top_ral:
