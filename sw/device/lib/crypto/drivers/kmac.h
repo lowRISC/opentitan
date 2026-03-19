@@ -16,7 +16,7 @@ extern "C" {
 #endif
 
 /**
- * The exposed costants to caller functions.
+ * The exposed constants to caller functions.
  */
 enum {
   // The total size of prefix registers (in bytes), after removing len encodings
