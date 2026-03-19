@@ -2,13 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// ---------------------------------------------
-// Alert_handler receiver driver
-// ---------------------------------------------
-class esc_receiver_driver extends alert_esc_base_driver;
+// Escalation receiver driver
+
+class esc_receiver_driver extends dv_base_driver#(alert_esc_seq_item, alert_esc_agent_cfg);
 
   `uvm_component_utils(esc_receiver_driver)
-
 
   // Set by esc_ping_detector if it sees a single-cycle pulse on esc_p/esc_n. If set, the receiver
   // will drive a 1010 pattern on resp_p/resp_n for a while in drive_esc_resp (stopping if it
@@ -22,10 +20,11 @@ class esc_receiver_driver extends alert_esc_base_driver;
   // Overridden from dv_base_driver.
   extern virtual task reset_signals();
 
-  // Run rsp_escalator and esc_ping_detector. Does not terminate.
+  // This task runs forever. It works by running rsp_escalator (which consumes and drives items from
+  // seq_item_port) and esc_ping_detector (which responds to ping requests).
   //
-  // Overridden from alert_esc_base_driver.
-  extern virtual task drive_req();
+  // Overridden from dv_base_driver.
+  extern virtual task get_and_drive();
 
   // Run forever, detect single-cycle escalation requests. These are ping requests. When one
   // happens, set is_ping, which tells drive_esc_resp to send the 1010... pattern.
@@ -76,12 +75,12 @@ task esc_receiver_driver::reset_signals();
   end
 endtask : reset_signals
 
-task esc_receiver_driver::drive_req();
+task esc_receiver_driver::get_and_drive();
   fork
     rsp_escalator();
     esc_ping_detector();
   join
-endtask : drive_req
+endtask : get_and_drive
 
 task esc_receiver_driver::esc_ping_detector();
   forever begin
@@ -115,11 +114,12 @@ endtask : esc_ping_detector
 
 task esc_receiver_driver::rsp_escalator();
   forever begin
-    alert_esc_seq_item req, rsp;
-    wait(r_esc_rsp_q.size() > 0 && !under_reset);
-    req = r_esc_rsp_q.pop_front();
+    alert_esc_seq_item rsp;
+
+    seq_item_port.get(req);
     `downcast(rsp, req.clone());
     rsp.set_id_info(req);
+
     `uvm_info(`gfn, $sformatf("starting to send receiver item, esc_rsp=%0b int_fail=%0b",
                               req.r_esc_rsp, req.int_err), UVM_HIGH)
     fork
