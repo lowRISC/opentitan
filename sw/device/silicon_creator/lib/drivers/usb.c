@@ -365,8 +365,10 @@ static void handle_in(void) {
       endpoint = out_endpoints + ep;
     }
     endpoint->transfer.flags |= kUsbTransferFlagsDone | error;
-    endpoint->handler(endpoint->user_ctx, ep, endpoint->transfer.flags,
-                      &endpoint->transfer.bytes_transfered);
+    if (endpoint->handler) {
+      endpoint->handler(endpoint->user_ctx, ep, endpoint->transfer.flags,
+                        &endpoint->transfer.bytes_transfered);
+    }
   }
 }
 
