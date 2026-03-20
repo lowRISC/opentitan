@@ -68,3 +68,10 @@ otbn_library(
         "mldsa87_encoding.s",
     ],
 )
+
+otbn_library(
+    name = "mldsa87_verify_ops",
+    srcs = [
+        "mldsa87_verify_ops.s",
+    ],
+)
