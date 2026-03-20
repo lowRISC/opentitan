@@ -72,7 +72,7 @@ static void HMAC_init_LITE(LITE_HMAC_CTX *ctx, const void *key,
 
 void HMAC_SHA_init(LITE_HMAC_CTX *ctx, const void *key, unsigned int len) {
   SHA_init(&ctx->hash);
-  HMAC_init(ctx, key, len);
+  HMAC_init_LITE(ctx, key, len);
 }
 
 void HMAC_SHA256_init(LITE_HMAC_CTX *ctx, const void *key, unsigned int len) {
