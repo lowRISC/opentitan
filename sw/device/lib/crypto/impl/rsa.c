@@ -332,12 +332,7 @@ otcrypto_status_t otcrypto_rsa_verify(
     const otcrypto_hash_digest_t message_digest,
     otcrypto_rsa_padding_t padding_mode, otcrypto_const_word32_buf_t signature,
     hardened_bool_t *verification_result) {
-  otcrypto_status_t status =
-      otcrypto_rsa_verify_async_start(public_key, signature);
-  if (status.value != kOtcryptoStatusValueOk) {
-    return status;
-  }
-  HARDENED_CHECK_EQ(launder32(status.value), kOtcryptoStatusValueOk);
+  HARDENED_TRY(otcrypto_rsa_verify_async_start(public_key, signature));
   return otcrypto_rsa_verify_async_finalize(message_digest, padding_mode,
                                             verification_result);
 }
@@ -356,12 +351,7 @@ otcrypto_status_t otcrypto_rsa_decrypt(
     const otcrypto_hash_mode_t hash_mode,
     otcrypto_const_word32_buf_t ciphertext, otcrypto_const_byte_buf_t label,
     otcrypto_byte_buf_t plaintext, size_t *plaintext_bytelen) {
-  otcrypto_status_t status =
-      otcrypto_rsa_decrypt_async_start(private_key, ciphertext);
-  if (status.value != kOtcryptoStatusValueOk) {
-    return status;
-  }
-  HARDENED_CHECK_EQ(launder32(status.value), kOtcryptoStatusValueOk);
+  HARDENED_TRY(otcrypto_rsa_decrypt_async_start(private_key, ciphertext));
   return otcrypto_rsa_decrypt_async_finalize(hash_mode, label, plaintext,
                                              plaintext_bytelen);
 }
