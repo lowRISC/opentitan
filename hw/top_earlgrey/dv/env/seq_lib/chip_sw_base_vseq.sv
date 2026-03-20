@@ -95,6 +95,10 @@ class chip_sw_base_vseq extends chip_base_vseq;
     cfg.mem_bkdr_util_h[FlashBank0Data].set_mem();
     cfg.mem_bkdr_util_h[FlashBank1Data].set_mem();
 
+    // Initialize the info and data partition of the RRAM to all 0s.
+    cfg.mem_bkdr_util_h[RramInfo].clear_mem();
+    cfg.mem_bkdr_util_h[RramData].clear_mem();
+
     // Randomize retention memory.  This is done intentionally with wrong integrity
     // as early portions of ROM will initialize it to the correct value.
     // The randomization here is just to ensure we do not have x's in the memory.
@@ -306,6 +310,14 @@ class chip_sw_base_vseq extends chip_base_vseq;
         log_sw_test_status();
       end: isolation_thread
     join
+  endtask
+
+  // Wait for RRAM read-buffer to be ready for a backdoor write operation. This is
+  // required because the RRAM controller reads every word two times. A backdoor
+  // write to a location that has not yet been verified with a second read will
+  // lead to an integrity error.
+  virtual task wait_rram_rd_buf_rdy();
+    `DV_WAIT(cfg.chip_vif.rram_rd_buf_rdy === 1'b1, "RRAM-rd-buf timeout occurred!", 1000);
   endtask
 
   // Print pass / fail message to the log.
@@ -675,7 +687,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     // Infer mem from address.
     `DV_CHECK(cfg.get_mem_from_addr(addr, mem))
-    `DV_CHECK_FATAL(mem inside {Rom, [RamMain0:RamMain15], FlashBank0Data, FlashBank1Data},
+    `DV_CHECK_FATAL(mem inside {Rom, [RamMain0:RamMain15], RramData, FlashBank0Data, FlashBank1Data},
         $sformatf("SW symbol %0s is not expected to appear in %0s mem", symbol, mem))
 
     addr_mask = (2**$clog2(cfg.mem_bkdr_util_h[mem].get_size_bytes()))-1;
@@ -685,9 +697,17 @@ class chip_sw_base_vseq extends chip_base_vseq;
       `uvm_info(`gfn, $sformatf({"Overwriting symbol \"%s\" via backdoor in %0s: ",
                                "abs addr = 0x%0h, mem addr = 0x%0h, size = %0d, ",
                                "addr_mask = 0x%0h"},
-                              symbol, mem, addr, mem_addr, size, addr_mask), UVM_LOW)
-      for (int i = 0; i < size; i++) mem_bkdr_write8(mem, mem_addr + i, data[i]);
-
+                              symbol, mem.name, addr, mem_addr, size, addr_mask), UVM_LOW)
+      for (int i = 0; i < size; i++) begin
+        if (mem == RramData) begin
+          logic [7:0] xor_addr_byte;
+          int byte_offset = (mem_addr+i)%4;
+          // add addr infection
+          xor_addr_byte = (mem_addr + i) >> (byte_offset*8 + 2);
+          data[i] = xor_addr_byte ^ data[i];
+        end
+        mem_bkdr_write8(mem, mem_addr + i, data[i]);
+      end
       if (mem == Rom) begin
         rom_ctrl_bkdr_util rom;
         `downcast(rom, cfg.mem_bkdr_util_h[mem])
@@ -699,7 +719,16 @@ class chip_sw_base_vseq extends chip_base_vseq;
                              "abs addr = 0x%0h, mem addr = 0x%0h, size = %0d, ",
                              "addr_mask = 0x%0h"},
                             symbol, mem, addr, mem_addr, size, addr_mask), UVM_LOW)
-      for (int i = 0; i < size; i++) mem_bkdr_read8(mem, mem_addr + i, data[i]);
+      for (int i = 0; i < size; i++) begin
+        mem_bkdr_read8(mem, mem_addr + i, data[i]);
+        if (mem == RramData) begin
+          logic [7:0] xor_addr_byte;
+          int byte_offset = (mem_addr+i)%4;
+          // remove addr infection
+          xor_addr_byte = (mem_addr + i) >> (byte_offset*8 + 2);
+          data[i] = xor_addr_byte ^ data[i];
+        end
+      end
     end
   endfunction
 
