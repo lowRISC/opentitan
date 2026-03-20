@@ -69,17 +69,17 @@ module prim_subreg_shadow
 
   // Arbite the incoming request versus the committed register.
   prim_subreg_arb #(
-    .DW       ( DW       ),
-    .SwAccess ( SwAccess ),
-    .Mubi     ( Mubi     )
+    .DW      (DW),
+    .SwAccess(SwAccess),
+    .Mubi    (Mubi)
   ) wr_en_data_arb (
-    .we      ( we      ),
-    .wd      ( wd      ),
-    .de      ( de      ),
-    .d       ( d       ),
-    .q       ( q       ),
-    .wr_en   ( wr_en   ),
-    .wr_data ( wr_data )
+    .we     (we),
+    .wd     (wd),
+    .de     (de),
+    .d      (d),
+    .q      (q),
+    .wr_en  (wr_en),
+    .wr_data(wr_data)
   );
 
   // Phase clearing:
@@ -230,21 +230,21 @@ module prim_subreg_shadow
   assign committed_we = we & phase_q & ~err_update & ~err_storage;
   assign committed_de = de & phase_q & ~err_update & ~err_storage;
   prim_subreg #(
-    .DW       ( DW       ),
-    .SwAccess ( SwAccess ),
-    .RESVAL   ( RESVAL   ),
-    .Mubi     ( Mubi     )
+    .DW      (DW),
+    .SwAccess(SwAccess),
+    .RESVAL  (RESVAL),
+    .Mubi    (Mubi)
   ) committed_reg (
-    .clk_i    ( clk_i        ),
-    .rst_ni   ( rst_ni       ),
-    .we       ( committed_we ),
-    .wd       ( wr_data      ),
-    .de       ( committed_de ),
-    .d        ( d            ),
-    .qe       ( committed_qe ),
-    .q        ( committed_q  ),
-    .ds       ( ds           ),
-    .qs       ( committed_qs )
+    .clk_i (clk_i),
+    .rst_ni(rst_ni),
+    .we    (committed_we),
+    .wd    (wr_data),
+    .de    (committed_de),
+    .d     (d),
+    .qe    (committed_qe),
+    .q     (committed_q),
+    .ds    (ds),
+    .qs    (committed_qs)
   );
 
   // Output phase for hwext.
