@@ -276,9 +276,9 @@ def parse_args():
         # Disable it pending more verbose and automatic solution and document in
         # help message
         usage='%(prog)s {} [-h] [options]'.format(cfg_metavar),
-        epilog="Either place the positional argument ahead of the optional args:\n" \
-               "eg. `dvsim.py {} -i ITEM ITEM` \n" \
-               "or end a sequence of optional args with `--`:\n" \
+        epilog="Either place the positional argument ahead of the optional args:\n"
+               "eg. `dvsim.py {} -i ITEM ITEM` \n"
+               "or end a sequence of optional args with `--`:\n"
                "eg. `dvsim.py -i ITEM ITEM -- {}`\n".format(cfg_metavar, cfg_metavar))
 
     parser.add_argument("cfg",
