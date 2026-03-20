@@ -1755,6 +1755,39 @@
     },
     { name: 'cw310',
 
+      // Chip level changes
+      chiplevel: {
+        alter_ports: {
+          'ast.lc_dft_en'                   : { tieoff: true },
+          'ast.usb_ram_1p_cfg'              : { tieoff: true },
+          'ast.ram_1p_cfg'                  : { tieoff: true },
+          'ast.spi_ram_2p_cfg'              : { tieoff: true },
+          'ast.rom_cfg'                     : { tieoff: true },
+          'clkmgr_aon.calib_rdy'            : { signal: 'ast_init_done' },
+          'sram_ctrl_main.cfg'              : { tieoff: true },
+          'sram_ctrl_ret_aon.cfg'           : { tieoff: true },
+          'pinmux_aon.dft_hold_tap_sel'     : { tieoff: true },
+          'pinmux_aon.usb_dnpullup_en'      : { tieoff: true },
+          'pinmux_aon.dft_strap_test'       : { tieoff: true },
+          'usbdev.usb_tx_d'                 : { tieoff: true },
+          'usbdev.usb_tx_se0'               : { tieoff: true },
+          'usbdev.usb_tx_use_d_se0'         : { tieoff: true },
+          'usbdev.usb_rx_d'                 : { signal: 'usb_rx_d'      },
+          'usbdev.usb_rx_enable'            : { signal: 'usb_rx_enable' },
+          'usbdev.usb_ref_val'              : { signal: 'usb_ref_val'   },
+          'usbdev.usb_ref_pulse'            : { signal: 'usb_ref_pulse' },
+          'sensor_ctrl_aon.manual_pad_attr' : { tieoff: true },
+          'sensor_ctrl_aon.ast_alert'       : { signal: 'ast_alert'       },
+          'sensor_ctrl_aon.ast_status'      : { signal: 'ast_pwst.io_pok' },
+          'entropy_src.rng_fips'            : { tieoff: true },
+          'otp_macro.ext_voltage_h'         : { tieoff: true },
+          'flash_ctrl.flash_test_mode_a'    : { tieoff: true },
+          'flash_ctrl.flash_test_voltage_h' : { tieoff: true },
+          'flash_ctrl.flash_power_down_h'   : { tieoff: true },
+          'flash_ctrl.flash_power_ready_h'  : { tieoff: "1'b1" },
+        }
+      }
+
       pinout: {
         remove_ports: [],
         remove_pads: [
@@ -1801,6 +1834,39 @@
       }
     },
     { name: 'cw340',
+
+      // Chip level changes
+      chiplevel: {
+        alter_ports: {
+          'ast.lc_dft_en'                   : { tieoff: true },
+          'ast.usb_ram_1p_cfg'              : { tieoff: true },
+          'ast.ram_1p_cfg'                  : { tieoff: true },
+          'ast.spi_ram_2p_cfg'              : { tieoff: true },
+          'ast.rom_cfg'                     : { tieoff: true },
+          'clkmgr_aon.calib_rdy'            : { signal: 'ast_init_done' },
+          'sram_ctrl_main.cfg'              : { tieoff: true },
+          'sram_ctrl_ret_aon.cfg'           : { tieoff: true },
+          'pinmux_aon.dft_hold_tap_sel'     : { tieoff: true },
+          'pinmux_aon.usb_dnpullup_en'      : { tieoff: true },
+          'pinmux_aon.dft_strap_test'       : { tieoff: true },
+          'usbdev.usb_tx_d'                 : { tieoff: true },
+          'usbdev.usb_tx_se0'               : { tieoff: true },
+          'usbdev.usb_tx_use_d_se0'         : { tieoff: true },
+          'usbdev.usb_rx_d'                 : { signal: 'usb_rx_d'      },
+          'usbdev.usb_rx_enable'            : { signal: 'usb_rx_enable' },
+          'usbdev.usb_ref_val'              : { signal: 'usb_ref_val'   },
+          'usbdev.usb_ref_pulse'            : { signal: 'usb_ref_pulse' },
+          'sensor_ctrl_aon.manual_pad_attr' : { tieoff: true },
+          'sensor_ctrl_aon.ast_alert'       : { signal: 'ast_alert'       },
+          'sensor_ctrl_aon.ast_status'      : { signal: 'ast_pwst.io_pok' },
+          'entropy_src.rng_fips'            : { tieoff: true },
+          'otp_macro.ext_voltage_h'         : { tieoff: true },
+          'flash_ctrl.flash_test_mode_a'    : { tieoff: true },
+          'flash_ctrl.flash_test_voltage_h' : { tieoff: true },
+          'flash_ctrl.flash_power_down_h'   : { tieoff: true },
+          'flash_ctrl.flash_power_ready_h'  : { tieoff: "1'b1" },
+        }
+      }
 
       pinout: {
         remove_ports: [],

@@ -542,11 +542,13 @@ module chip_earlgrey_asic #(
       BidirStd  // IOA0
     })
   ) u_padring (
-  // This is only used for scan and DFT purposes
-    .clk_scan_i   ( ast_base_clks.clk_sys ),
-    .scanmode_i   ( scanmode              ),
-    .mux_iob_sel_i ( mux_iob_sel ),
-    .dio_in_raw_o ( dio_in_raw ),
+    // This is only used for scan and DFT purposes
+    .clk_scan_i(ast_base_clks.clk_sys),
+    .scanmode_i(scanmode),
+
+    .mux_iob_sel_i(mux_iob_sel),
+    .dio_in_raw_o (dio_in_raw ),
+
     // Chip IOs
     .dio_pad_io ({
       IOR9,
@@ -748,8 +750,6 @@ module chip_earlgrey_asic #(
     .mio_attr_i (mio_attr[46:0]),
     .mio_in_raw_o (mio_in_raw[46:0])
   );
-
-
 
 
 
@@ -1056,7 +1056,6 @@ module chip_earlgrey_asic #(
 
 
 
-
   //////////////////////////////////
   // Manual Pad / Signal Tie-offs //
   //////////////////////////////////
@@ -1149,16 +1148,17 @@ module chip_earlgrey_asic #(
     .input_o           ( usb_rx_d              )
   );
 
+
   //////////////////////
   // Top-level design //
   //////////////////////
   top_earlgrey #(
-    .PinmuxAonTargetCfg(PinmuxTargetCfg),
     .I2c0InputDelayCycles(1),
     .I2c1InputDelayCycles(1),
     .I2c2InputDelayCycles(1),
     .SecAesAllowForcingMasks(1'b1),
-    .SecRomCtrlDisableScrambling(SecRomCtrlDisableScrambling)
+    .SecRomCtrlDisableScrambling(SecRomCtrlDisableScrambling),
+    .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_earlgrey (
     // AST clock and reset signals
     .clk_main_i                   ( ast_base_clks.clk_sys      ),
@@ -1247,7 +1247,6 @@ module chip_earlgrey_asic #(
     .mio_attr_o                   ( mio_attr                   ),
     .dio_attr_o                   ( dio_attr                   )
   );
-
 
 
 endmodule : chip_earlgrey_asic

@@ -331,16 +331,17 @@ module chip_${top["name"]}_${target["name"]} #(
 % endfor
     })
   ) u_padring (
-  // This is only used for scan and DFT purposes
+    // This is only used for scan and DFT purposes
 % if target["name"] == "asic":
-    .clk_scan_i   ( ast_base_clks.clk_sys ),
-    .scanmode_i   ( scanmode              ),
+    .clk_scan_i(ast_base_clks.clk_sys),
 % else:
-    .clk_scan_i   ( 1'b0                  ),
-    .scanmode_i   ( prim_mubi_pkg::MuBi4False ),
-  % endif
-    .mux_iob_sel_i ( mux_iob_sel ),
-    .dio_in_raw_o ( dio_in_raw ),
+    .clk_scan_i(1'b0    ),
+% endif
+    .scanmode_i(scanmode),
+
+    .mux_iob_sel_i(mux_iob_sel),
+    .dio_in_raw_o (dio_in_raw ),
+
     // Chip IOs
     .dio_pad_io ({
 % for pad in list(reversed(dedicated_pads)):
@@ -442,10 +443,7 @@ module chip_${top["name"]}_${target["name"]} #(
 
   // Only use the UPHY on CW310, which does not support pin flipping.
   logic usb_dp_pullup_en;
-  logic usb_dn_pullup_en;
   logic usb_rx_d;
-  logic usb_tx_d;
-  logic usb_tx_se0;
   logic usb_rx_enable;
 
   // DioUsbdevUsbDn
@@ -484,9 +482,6 @@ module chip_${top["name"]}_${target["name"]} #(
 
   logic unused_usb_sigs;
   assign unused_usb_sigs = ^{
-    usb_dn_pullup_en,
-    usb_tx_d,
-    usb_tx_se0,
     manual_in_io_usb_connect,
     manual_in_io_usb_oe_n,
     manual_in_io_usb_speed,
@@ -497,14 +492,11 @@ module chip_${top["name"]}_${target["name"]} #(
     dio_attr[DioUsbdevUsbDp],
     dio_attr[DioUsbdevUsbDn]
   };
-
 % endif
-
 
 ###################################################################
 ## AST For all targets                                           ##
 ###################################################################
-
   //////////////////////////////////
   // AST - Common for all targets //
   //////////////////////////////////
@@ -893,7 +885,6 @@ module chip_${top["name"]}_${target["name"]} #(
 ###################################################################
 ## ASIC                                                          ##
 ###################################################################
-
 % if target["name"] == "asic":
 
   //////////////////////////////////
@@ -996,19 +987,97 @@ module chip_${top["name"]}_${target["name"]} #(
     .input_o           ( usb_rx_d              )
   );
 
+###################################################################
+## FPGA shared                                                   ##
+###################################################################
+% else:
+  //////////////////
+  // PLL for FPGA //
+  //////////////////
+
+  assign manual_attr_io_clk = '0;
+  assign manual_out_io_clk = 1'b0;
+  assign manual_oe_io_clk = 1'b0;
+  assign manual_attr_por_n = '0;
+  assign manual_out_por_n = 1'b0;
+  assign manual_oe_por_n = 1'b0;
+  % if target["name"] in ["cw305", "cw310"]:
+  assign manual_attr_por_button_n = '0;
+  assign manual_out_por_button_n = 1'b0;
+  assign manual_oe_por_button_n = 1'b0;
+
+  assign srst_n = manual_in_por_button_n;
+  % endif
+
+  % if target["name"] == "cw305":
+  // TODO: follow-up later and hardwire all ast connects that do not
+  //       exist for this target
+  assign otp_obs_o = '0;
+  % endif
+
+  // the rst_ni pin only goes to AST
+  // the rest of the logic generates reset based on the 'pok' signal.
+  // for verilator purposes, make these two the same.
+  prim_mubi_pkg::mubi4_t lc_clk_bypass;   // TODO Tim
+% endif
+
   //////////////////////
   // Top-level design //
   //////////////////////
   top_${top["name"]} #(
-% if target["name"] != "asic":
-    .PinmuxAonTargetCfg(PinmuxTargetCfg)
-% else:
-    .PinmuxAonTargetCfg(PinmuxTargetCfg),
+% if target["name"] == "cw310":
+    .SecAesMasking(1'b0), // Disable AES masking on the CW310, where we are constrained by area.
+    .SecAesSBoxImpl(aes_pkg::SBoxImplLut),
+% elif target["name"]  == "cw340":
+    .SecAesMasking(1'b1),
+    .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
+% endif
+% if target["name"] in ["cw310", "cw340"]:
+    .SecAesStartTriggerDelay(0),
+    .SecAesAllowForcingMasks(1'b1),
+    .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
+    .OtbnRegFile(otbn_pkg::RegFileFPGA),
+    .SecOtbnMuteUrnd(1'b0),
+    .SecOtbnSkipUrndReseedAtStart(1'b0),
+    .OtpMacroMemInitFile(OtpMacroMemInitFile),
+    .RvCoreIbexPipeLine(1),
+    .SramCtrlRetAonInstrExec(0),
+    .UsbdevRcvrWakeTimeUs(10000),
+% elif target["name"] == "cw305":
+    .RvCoreIbexPipeLine(0),
+    .SecAesMasking(1'b1),
+    .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
+    .SecAesStartTriggerDelay(320),
+    .SecAesAllowForcingMasks(1'b1),
+    .SecAesSkipPRNGReseeding(1'b1),
+    .UsbdevStub(1'b1),
+    .RvCoreIbexSecureIbex(0),
+% endif
+% if target["name"] == "cw340":
+    .KmacEnMasking(1),
+    .KmacSwKeyMasked(1),
+    .KeymgrKmacEnMasking(1),
+    .RvCoreIbexSecureIbex(1),
+% elif target["name"] == "cw310":
+    .KmacEnMasking(0),
+    .KmacSwKeyMasked(1),
+    .KeymgrKmacEnMasking(0),
+    .SecKmacCmdDelay(0),
+    .SecKmacIdleAcceptSwMsg(1'b0),
+    .RvCoreIbexSecureIbex(0),
+% endif
+% if target["name"] == "asic":
     .I2c0InputDelayCycles(1),
     .I2c1InputDelayCycles(1),
     .I2c2InputDelayCycles(1),
     .SecAesAllowForcingMasks(1'b1),
-    .SecRomCtrlDisableScrambling(SecRomCtrlDisableScrambling)
+    .SecRomCtrlDisableScrambling(SecRomCtrlDisableScrambling),
+    .PinmuxAonTargetCfg(PinmuxTargetCfg)
+% else:
+    .RomCtrlBootRomInitFile(BootRomInitFile),
+    .RvCoreIbexRegFile(ibex_pkg::RegFileFPGA),
+    .SramCtrlMainInstrExec(1),
+    .PinmuxAonTargetCfg(PinmuxTargetCfg)
 % endif
   ) top_${top["name"]} (
     // AST clock and reset signals
@@ -1048,190 +1117,6 @@ max_sigwidth = max(len(x["signame_chip"][target["name"]]) for x in port_list) if
     .mio_attr_o                   ( mio_attr                   ),
     .dio_attr_o                   ( dio_attr                   )
   );
-% endif
-
-###################################################################
-## FPGA shared                                                   ##
-###################################################################
-% if target["name"] in ["cw340", "cw310", "cw305"]:
-  //////////////////
-  // PLL for FPGA //
-  //////////////////
-
-  assign manual_attr_io_clk = '0;
-  assign manual_out_io_clk = 1'b0;
-  assign manual_oe_io_clk = 1'b0;
-  assign manual_attr_por_n = '0;
-  assign manual_out_por_n = 1'b0;
-  assign manual_oe_por_n = 1'b0;
-  % if target["name"] in ["cw305", "cw310"]:
-  assign manual_attr_por_button_n = '0;
-  assign manual_out_por_button_n = 1'b0;
-  assign manual_oe_por_button_n = 1'b0;
-
-  assign srst_n = manual_in_por_button_n;
-  % endif
-
-  % if target["name"] == "cw305":
-  // TODO: follow-up later and hardwire all ast connects that do not
-  //       exist for this target
-  assign otp_obs_o = '0;
-  % endif
-
-  //////////////////////
-  // Top-level design //
-  //////////////////////
-
-  // the rst_ni pin only goes to AST
-  // the rest of the logic generates reset based on the 'pok' signal.
-  // for verilator purposes, make these two the same.
-  prim_mubi_pkg::mubi4_t lc_clk_bypass;   // TODO Tim
-
-// TODO: align this with ASIC version to minimize the duplication.
-// Also need to add AST simulation and FPGA emulation models for things like entropy source -
-// otherwise Verilator / FPGA will hang.
-  top_${top["name"]} #(
-% if target["name"] == "cw310":
-    .SecAesMasking(1'b0), // Disable AES masking on the CW310, where we are constrained by area.
-    .SecAesSBoxImpl(aes_pkg::SBoxImplLut),
-% elif target["name"]  == "cw340":
-    .SecAesMasking(1'b1),
-    .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
-% endif
-% if target["name"] in ["cw310", "cw340"]:
-    .SecAesStartTriggerDelay(0),
-    .SecAesAllowForcingMasks(1'b1),
-    .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
-    .OtbnRegFile(otbn_pkg::RegFileFPGA),
-    .SecOtbnMuteUrnd(1'b0),
-    .SecOtbnSkipUrndReseedAtStart(1'b0),
-    .OtpMacroMemInitFile(OtpMacroMemInitFile),
-    .RvCoreIbexPipeLine(1),
-    .SramCtrlRetAonInstrExec(0),
-    .UsbdevRcvrWakeTimeUs(10000),
-% elif target["name"] == "cw305":
-    .RvCoreIbexPipeLine(0),
-    .SecAesMasking(1'b1),
-    .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
-    .SecAesStartTriggerDelay(320),
-    .SecAesAllowForcingMasks(1'b1),
-    .SecAesSkipPRNGReseeding(1'b1),
-    .UsbdevStub(1'b1),
-    .RvCoreIbexSecureIbex(0),
-% else:
-    .SecAesMasking(1'b0),
-    .SecAesSBoxImpl(aes_pkg::SBoxImplLut),
-    .KmacEnMasking(1'b0),
-    .KeymgrKmacEnMasking(0),
-    .SecAesStartTriggerDelay(0),
-    .SecAesAllowForcingMasks(1'b0),
-    .SecAesSkipPRNGReseeding(1'b0),
-    .SramCtrlRetAonInstrExec(0),
-    .EntropySrcStub(1'b1),
-    .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
-    .OtbnRegFile(otbn_pkg::RegFileFPGA),
-    .OtbnStub(1'b1),
-    .OtpMacroMemInitFile(OtpMacroMemInitFile),
-    .RvCoreIbexPipeLine(1),
-% endif
-% if target["name"] == "cw340":
-    .KmacEnMasking(1),
-    .KmacSwKeyMasked(1),
-    .KeymgrKmacEnMasking(1),
-    .RvCoreIbexSecureIbex(1),
-% elif target["name"] == "cw310":
-    .KmacEnMasking(0),
-    .KmacSwKeyMasked(1),
-    .KeymgrKmacEnMasking(0),
-    .SecKmacCmdDelay(0),
-    .SecKmacIdleAcceptSwMsg(1'b0),
-    .RvCoreIbexSecureIbex(0),
-% endif
-    .RomCtrlBootRomInitFile(BootRomInitFile),
-    .RvCoreIbexRegFile(ibex_pkg::RegFileFPGA),
-    .SramCtrlMainInstrExec(1),
-    .PinmuxAonTargetCfg(PinmuxTargetCfg)
-  ) top_${top["name"]} (
-    .por_n_i                      ( por_n                 ),
-    .clk_main_i                   ( ast_base_clks.clk_sys ),
-    .clk_io_i                     ( ast_base_clks.clk_io  ),
-    .clk_usb_i                    ( ast_base_clks.clk_usb ),
-    .clk_aon_i                    ( ast_base_clks.clk_aon ),
-    .clks_ast_o                   ( clkmgr_aon_clocks     ),
-    .clk_main_jitter_en_o         ( clk_main_jitter_en    ),
-    .rsts_ast_o                   ( rstmgr_aon_resets     ),
-    .sck_monitor_o                ( sck_monitor           ),
-    .pwrmgr_ast_req_o             ( pwrmgr_ast_req        ),
-    .pwrmgr_ast_rsp_i             ( pwrmgr_ast_rsp        ),
-    .usb_dp_pullup_en_o           ( usb_dp_pullup_en      ),
-    .usb_dn_pullup_en_o           ( usb_dn_pullup_en      ),
-    .usbdev_usb_rx_d_i            ( usb_rx_d              ),
-    .usbdev_usb_tx_d_o            ( usb_tx_d              ),
-    .usbdev_usb_tx_se0_o          ( usb_tx_se0            ),
-    .usbdev_usb_tx_use_d_se0_o    ( usb_tx_use_d_se0      ),
-    .usbdev_usb_rx_enable_o       ( usb_rx_enable         ),
-    .usbdev_usb_ref_val_o         ( usb_ref_val           ),
-    .usbdev_usb_ref_pulse_o       ( usb_ref_pulse         ),
-    .ast_edn_req_i                ( ast_edn_req           ),
-    .ast_edn_rsp_o                ( ast_edn_rsp           ),
-    .obs_ctrl_i                   ( obs_ctrl              ),
-    .flash_bist_enable_i          ( flash_bist_enable     ),
-    .flash_power_down_h_i         ( 1'b0                  ),
-    .flash_power_ready_h_i        ( 1'b1                  ),
-    .flash_obs_o                  ( flash_obs             ),
-    .io_clk_byp_req_o             ( io_clk_byp_req        ),
-    .io_clk_byp_ack_i             ( io_clk_byp_ack        ),
-    .all_clk_byp_req_o            ( all_clk_byp_req       ),
-    .all_clk_byp_ack_i            ( all_clk_byp_ack       ),
-    .hi_speed_sel_o               ( hi_speed_sel          ),
-    .div_step_down_req_i          ( div_step_down_req     ),
-    .fpga_info_i                  ( fpga_info             ),
-% if target["name"] != "cw305":
-    .ast_tl_req_o                 ( ast_tl_req                 ),
-    .ast_tl_rsp_i                 ( ast_tl_rsp                 ),
-    .adc_req_o                    ( adc_req                    ),
-    .adc_rsp_i                    ( adc_rsp                    ),
-    .otp_macro_pwr_seq_o          ( otp_macro_pwr_seq          ),
-    .otp_macro_pwr_seq_h_i        ( otp_macro_pwr_seq_h        ),
-    .otp_obs_o                    ( otp_obs                    ),
-    .sensor_ctrl_ast_alert_req_i  ( ast_alert_req              ),
-    .sensor_ctrl_ast_alert_rsp_o  ( ast_alert_rsp              ),
-    .sensor_ctrl_ast_status_i     ( ast_pwst.io_pok            ),
-    .es_rng_enable_o              ( es_rng_enable              ),
-    .es_rng_valid_i               ( es_rng_valid               ),
-    .es_rng_bit_i                 ( es_rng_bit                 ),
-    .ast2pinmux_i                 ( ast2pinmux                 ),
-    .calib_rdy_i                  ( ast_init_done              ),
-    .ast_init_done_i              ( ast_init_done              ),
-% endif
-
-    // Multiplexed I/O
-    .mio_in_i        ( mio_in   ),
-    .mio_out_o       ( mio_out  ),
-    .mio_oe_o        ( mio_oe   ),
-
-    // Dedicated I/O
-    .dio_in_i        ( dio_in   ),
-    .dio_out_o       ( dio_out  ),
-    .dio_oe_o        ( dio_oe   ),
-
-    // Pad attributes
-    .mio_attr_o      ( mio_attr      ),
-    .dio_attr_o      ( dio_attr      ),
-
-    // Memory attributes
-    .ram_1p_cfg_i    ( '0 ),
-    .spi_ram_2p_cfg_i( '0 ),
-    .usb_ram_1p_cfg_i( '0 ),
-    .rom_cfg_i       ( '0 ),
-
-    // DFT signals
-    .dft_hold_tap_sel_i ( '0               ),
-    .scan_rst_ni        ( 1'b1             ),
-    .scan_en_i          ( 1'b0             ),
-    .scanmode_i         ( prim_mubi_pkg::MuBi4False )
-  );
-% endif
 
 ###################################################################
 ## CW310/305 capture board interface                             ##
