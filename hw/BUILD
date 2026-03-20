@@ -46,7 +46,7 @@ fusesoc_build(
         # a build directory 6 levels down from where the location directives will
         # evaluate to.
         "CFLAGS_FOR_BUILD": "-I../../../../../../$(location @libelf//:gen_dir)/include",
-        "LDFLAGS_FOR_BUILD": "-static ../../../../../../$(location @libelf//:gen_dir)/lib/libelf.a",
+        "LDFLAGS_FOR_BUILD": "-Wl,-Bstatic ../../../../../../$(location @libelf//:gen_dir)/lib/libelf.a -Wl,-Bdynamic",
     },
     extra_deps = [
         # Note: the current debian/ubuntu `libelf1` package will not statically link.
