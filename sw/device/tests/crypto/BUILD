@@ -207,7 +207,7 @@ cc_library(
 opentitan_test(
     name = "aes_gcm_timing_test",
     srcs = ["aes_gcm_timing_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     fpga = fpga_params(
         timeout = "long",
         tags = [
@@ -234,7 +234,7 @@ opentitan_test(
 opentitan_test(
     name = "drbg_functest",
     srcs = ["drbg_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "eternal",
     ),
@@ -337,7 +337,7 @@ opentitan_test(
 opentitan_test(
     name = "ecdh_p384_functest",
     srcs = ["ecdh_p384_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "eternal",
         # This test can take > 60 minutes, so mark it manual as it shouldn't
@@ -413,18 +413,7 @@ opentitan_test(
 opentitan_test(
     name = "ecdsa_p256_functest",
     srcs = ["ecdsa_p256_functest.c"],
-    exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {
-            # Test is too large for ROM, so excluding rom_with_fake_keys.
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw340_test_rom": None,
-            "//hw/top_earlgrey:sim_dv": None,
-            "//hw/top_earlgrey:sim_verilator": None,
-        },
-    ),
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -443,18 +432,7 @@ opentitan_test(
 opentitan_test(
     name = "ecdsa_p384_functest",
     srcs = ["ecdsa_p384_functest.c"],
-    exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {
-            # Test is too large for ROM, so excluding rom_with_fake_keys.
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw340_test_rom": None,
-            "//hw/top_earlgrey:sim_dv": None,
-            "//hw/top_earlgrey:sim_verilator": None,
-        },
-    ),
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
         # This test can take > 60 minutes, so mark it manual as it shouldn't
@@ -543,12 +521,7 @@ autogen_cryptotest_header(
 opentitan_test(
     name = "ed25519_functest",
     srcs = ["ed25519_functest.c"],
-    exec_env = dicts.add(
-        CRYPTOTEST_EXEC_ENVS,
-        {
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
-        },
-    ),
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "eternal",
         # This test can take > 60 minutes, so mark it manual as it shouldn't
@@ -1146,13 +1119,7 @@ opentitan_test(
 opentitan_test(
     name = "otcrypto_hash_test",
     srcs = ["otcrypto_hash_test.c"],
-    exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
-        },
-    ),
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     deps = [
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:status",
@@ -1166,13 +1133,7 @@ opentitan_test(
 opentitan_test(
     name = "otcrypto_export_test",
     srcs = ["otcrypto_export_test.c"],
-    exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
-        },
-    ),
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     deps = [
         "//sw/device/lib/crypto:crypto_exported_for_test",
         "//sw/device/lib/testing/test_framework:ottf_main",
