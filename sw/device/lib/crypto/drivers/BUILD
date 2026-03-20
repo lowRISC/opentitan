@@ -97,16 +97,7 @@ cc_library(
 opentitan_test(
     name = "keymgr_test",
     srcs = ["keymgr_test.c"],
-    broken = fpga_params(tags = ["broken"]),
-    exec_env = dicts.add(
-        CRYPTO_EXEC_ENVS,
-        {
-            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
-            "//hw/top_earlgrey:sim_qemu_sival_rom_ext": "qemu_broken",
-        },
-    ),
-    qemu_broken = qemu_params(tags = ["broken"]),
+    exec_env = CRYPTO_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
