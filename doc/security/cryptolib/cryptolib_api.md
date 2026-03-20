@@ -196,11 +196,9 @@ In streaming mode, it is strongly recommended not to process the decrypted data 
 
 OpenTitan's [KMAC block][kmac] supports the fixed digest length SHA3\[224, 256, 384, 512\] cryptographic hash functions, and the extendable-output functions of variable digest length SHAKE\[128, 256\] and cSHAKE\[128, 256\].
 
-SHA-2 functions are supported by [OTBN][otbn], and one-shot SHA-256 is supported by the [HMAC block][hmac]
+SHA-2 functions are supported by the [HMAC block][hmac].
 The OpenTitan cryptolib supports SHA2-256, SHA2-384, and SHA2-512.
 For **SHA2 only**, the hash API supports both one-shot and streaming modes of operation.
-
-Note that hardware support for one-shot SHA-256 means that the one-shot version will be significantly faster than streaming mode for that specific algorithm.
 
 ### One-shot mode
 
