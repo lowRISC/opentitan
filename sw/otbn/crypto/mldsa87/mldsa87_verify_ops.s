@@ -5,6 +5,7 @@
 /* High-level operations for the ML-DSA-87 verify function. */
 
 .globl decode_sig
+.globl check_infinity_norm_z
 
 .text
 
@@ -70,5 +71,32 @@ _sig_decode_zero_insert_skip:
     addi x4, x4, 640
     addi x5, x5, 1024
     /* End of loop */
+
+  ret
+
+/**
+ * Check that |Z|_inf < GAMMA - BETA = 2^19 - 120.
+ *
+ * This check is part of the signature verification function of ML-DSA-87.
+ * The polynomial vector z is assumed to be provided in encoded form and is
+ * decoded on-the-fly.
+ *
+ * @param[in] x2: DMEM address of the vector Z (8 * 1024 bytes).
+ * @param[in] x3: DMEM address of the bound vector (32 bytes).
+ * @param[out] w0: 2^256-1 if |Z|_inf < GAMMA1 - BETA, else 0.
+ */
+check_infinity_norm_z:
+  /* Init flag. w16 is not clobbered by `check_infinity_norm`. */
+  bn.subi w16, w31, 1
+
+  /* Iterate over all Z polynomials. */
+  loopi 7, 3
+    jal x1, check_infinity_norm
+
+    bn.and w16, w16, w0
+    addi x2, x2, 1024
+    /* End of loop */
+
+  bn.mov w0, w16
 
   ret
