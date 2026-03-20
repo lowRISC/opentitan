@@ -5938,8 +5938,8 @@
             expose: true
             name_top: SramCtrlRetAonNumRamInst
           }
-          default: "'0"
           inst_name: sram_ctrl_ret_aon
+          default: ""
           external: true
           conn_type: false
           index: -1
@@ -8774,8 +8774,8 @@
             expose: true
             name_top: SramCtrlMainNumRamInst
           }
-          default: "'0"
           inst_name: sram_ctrl_main
+          default: ""
           external: true
           conn_type: false
           index: -1
@@ -14979,6 +14979,121 @@
     }
     {
       name: cw310
+      chiplevel:
+      {
+        port_overrides:
+        {
+          ast.lc_dft_en:
+          {
+            unused: true
+          }
+          ast.usb_ram_1p_cfg:
+          {
+            unused: true
+          }
+          ast.ram_1p_cfg:
+          {
+            unused: true
+          }
+          ast.spi_ram_2p_cfg:
+          {
+            unused: true
+          }
+          ast.rom_cfg:
+          {
+            unused: true
+          }
+          clkmgr_aon.calib_rdy:
+          {
+            signal: ast_init_done
+          }
+          sram_ctrl_main.cfg:
+          {
+            unused: true
+          }
+          sram_ctrl_ret_aon.cfg:
+          {
+            unused: true
+          }
+          pinmux_aon.dft_hold_tap_sel:
+          {
+            unused: true
+          }
+          pinmux_aon.usb_dnpullup_en:
+          {
+            unused: true
+          }
+          pinmux_aon.dft_strap_test:
+          {
+            unused: true
+          }
+          usbdev.usb_tx_d:
+          {
+            unused: true
+          }
+          usbdev.usb_tx_se0:
+          {
+            unused: true
+          }
+          usbdev.usb_tx_use_d_se0:
+          {
+            unused: true
+          }
+          usbdev.usb_rx_d:
+          {
+            signal: usb_rx_d
+          }
+          usbdev.usb_rx_enable:
+          {
+            signal: usb_rx_enable
+          }
+          usbdev.usb_ref_val:
+          {
+            signal: usb_ref_val
+          }
+          usbdev.usb_ref_pulse:
+          {
+            signal: usb_ref_pulse
+          }
+          sensor_ctrl_aon.manual_pad_attr:
+          {
+            unused: true
+          }
+          sensor_ctrl_aon.ast_alert:
+          {
+            signal: ast_alert
+          }
+          sensor_ctrl_aon.ast_status:
+          {
+            signal: ast_pwst.io_pok
+          }
+          entropy_src.rng_fips:
+          {
+            unused: true
+          }
+          otp_macro.ext_voltage_h:
+          {
+            unused: true
+          }
+          flash_ctrl.flash_test_mode_a:
+          {
+            unused: true
+          }
+          flash_ctrl.flash_test_voltage_h:
+          {
+            unused: true
+          }
+          flash_ctrl.flash_power_down_h:
+          {
+            unused: true
+          }
+          flash_ctrl.flash_power_ready_h:
+          {
+            unused: true
+            tie_value: 1'b1
+          }
+        }
+      }
       pinout:
       {
         remove_ports: []
@@ -15164,6 +15279,121 @@
     }
     {
       name: cw340
+      chiplevel:
+      {
+        port_overrides:
+        {
+          ast.lc_dft_en:
+          {
+            unused: true
+          }
+          ast.usb_ram_1p_cfg:
+          {
+            unused: true
+          }
+          ast.ram_1p_cfg:
+          {
+            unused: true
+          }
+          ast.spi_ram_2p_cfg:
+          {
+            unused: true
+          }
+          ast.rom_cfg:
+          {
+            unused: true
+          }
+          clkmgr_aon.calib_rdy:
+          {
+            signal: ast_init_done
+          }
+          sram_ctrl_main.cfg:
+          {
+            unused: true
+          }
+          sram_ctrl_ret_aon.cfg:
+          {
+            unused: true
+          }
+          pinmux_aon.dft_hold_tap_sel:
+          {
+            unused: true
+          }
+          pinmux_aon.usb_dnpullup_en:
+          {
+            unused: true
+          }
+          pinmux_aon.dft_strap_test:
+          {
+            unused: true
+          }
+          usbdev.usb_tx_d:
+          {
+            unused: true
+          }
+          usbdev.usb_tx_se0:
+          {
+            unused: true
+          }
+          usbdev.usb_tx_use_d_se0:
+          {
+            unused: true
+          }
+          usbdev.usb_rx_d:
+          {
+            signal: usb_rx_d
+          }
+          usbdev.usb_rx_enable:
+          {
+            signal: usb_rx_enable
+          }
+          usbdev.usb_ref_val:
+          {
+            signal: usb_ref_val
+          }
+          usbdev.usb_ref_pulse:
+          {
+            signal: usb_ref_pulse
+          }
+          sensor_ctrl_aon.manual_pad_attr:
+          {
+            unused: true
+          }
+          sensor_ctrl_aon.ast_alert:
+          {
+            signal: ast_alert
+          }
+          sensor_ctrl_aon.ast_status:
+          {
+            signal: ast_pwst.io_pok
+          }
+          entropy_src.rng_fips:
+          {
+            unused: true
+          }
+          otp_macro.ext_voltage_h:
+          {
+            unused: true
+          }
+          flash_ctrl.flash_test_mode_a:
+          {
+            unused: true
+          }
+          flash_ctrl.flash_test_voltage_h:
+          {
+            unused: true
+          }
+          flash_ctrl.flash_power_down_h:
+          {
+            unused: true
+          }
+          flash_ctrl.flash_power_ready_h:
+          {
+            unused: true
+            tie_value: 1'b1
+          }
+        }
+      }
       pinout:
       {
         remove_ports: []
@@ -22490,8 +22720,8 @@
           expose: true
           name_top: SramCtrlRetAonNumRamInst
         }
-        default: "'0"
         inst_name: sram_ctrl_ret_aon
+        default: ""
         external: true
         conn_type: false
         index: -1
@@ -24208,8 +24438,8 @@
           expose: true
           name_top: SramCtrlMainNumRamInst
         }
-        default: "'0"
         inst_name: sram_ctrl_main
+        default: ""
         external: true
         conn_type: false
         index: -1
@@ -25577,8 +25807,8 @@
         signame_chip:
         {
           asic: lc_dft_en
-          cw310: lc_dft_en
-          cw340: lc_dft_en
+          cw310: ""
+          cw340: ""
         }
         width: 1
         type: uni
@@ -25613,8 +25843,8 @@
         signame_chip:
         {
           asic: ram_1p_cfg
-          cw310: ram_1p_cfg
-          cw340: ram_1p_cfg
+          cw310: prim_ram_1p_pkg::RAM_1P_CFG_DEFAULT
+          cw340: prim_ram_1p_pkg::RAM_1P_CFG_DEFAULT
         }
         width: 1
         type: uni
@@ -25631,8 +25861,8 @@
         signame_chip:
         {
           asic: "'{ram_1p_cfg}"
-          cw310: "'{ram_1p_cfg}"
-          cw340: "'{ram_1p_cfg}"
+          cw310: "'{prim_ram_1p_pkg::RAM_1P_CFG_DEFAULT}"
+          cw340: "'{prim_ram_1p_pkg::RAM_1P_CFG_DEFAULT}"
         }
         width:
         {
@@ -25646,7 +25876,7 @@
           name_top: SramCtrlMainNumRamInst
         }
         type: uni
-        default: "'0"
+        default: ""
         direction: in
         conn_type: false
         index: -1
@@ -25659,8 +25889,8 @@
         signame_chip:
         {
           asic: "'{ram_1p_cfg}"
-          cw310: "'{ram_1p_cfg}"
-          cw340: "'{ram_1p_cfg}"
+          cw310: "'{prim_ram_1p_pkg::RAM_1P_CFG_DEFAULT}"
+          cw340: "'{prim_ram_1p_pkg::RAM_1P_CFG_DEFAULT}"
         }
         width:
         {
@@ -25674,7 +25904,7 @@
           name_top: SramCtrlRetAonNumRamInst
         }
         type: uni
-        default: "'0"
+        default: ""
         direction: in
         conn_type: false
         index: -1
@@ -25687,8 +25917,8 @@
         signame_chip:
         {
           asic: spi_ram_2p_cfg
-          cw310: spi_ram_2p_cfg
-          cw340: spi_ram_2p_cfg
+          cw310: prim_ram_2p_pkg::RAM_2P_CFG_DEFAULT
+          cw340: prim_ram_2p_pkg::RAM_2P_CFG_DEFAULT
         }
         width: 1
         type: uni
@@ -25705,8 +25935,8 @@
         signame_chip:
         {
           asic: usb_ram_1p_cfg
-          cw310: usb_ram_1p_cfg
-          cw340: usb_ram_1p_cfg
+          cw310: prim_ram_1p_pkg::RAM_1P_CFG_DEFAULT
+          cw340: prim_ram_1p_pkg::RAM_1P_CFG_DEFAULT
         }
         width: 1
         type: uni
@@ -25723,8 +25953,8 @@
         signame_chip:
         {
           asic: rom_cfg
-          cw310: rom_cfg
-          cw340: rom_cfg
+          cw310: prim_rom_pkg::ROM_CFG_DEFAULT
+          cw340: prim_rom_pkg::ROM_CFG_DEFAULT
         }
         width: 1
         type: uni
@@ -25903,8 +26133,8 @@
         signame_chip:
         {
           asic: flash_power_down_h
-          cw310: flash_power_down_h
-          cw340: flash_power_down_h
+          cw310: 1'b0
+          cw340: 1'b0
         }
         width: 1
         type: uni
@@ -25921,8 +26151,8 @@
         signame_chip:
         {
           asic: flash_power_ready_h
-          cw310: flash_power_ready_h
-          cw340: flash_power_ready_h
+          cw310: 1'b1
+          cw340: 1'b1
         }
         width: 1
         type: uni
@@ -25938,9 +26168,9 @@
         signame: flash_test_mode_a_io
         signame_chip:
         {
-          asic: flash_test_mode_a
-          cw310: flash_test_mode_a
-          cw340: flash_test_mode_a
+          asic: "{FLASH_TEST_MODE1, FLASH_TEST_MODE0}"
+          cw310: "'0"
+          cw340: "'0"
         }
         width: 2
         type: io
@@ -25957,8 +26187,8 @@
         signame_chip:
         {
           asic: FLASH_TEST_VOLT
-          cw310: FLASH_TEST_VOLT
-          cw340: FLASH_TEST_VOLT
+          cw310: 1'b0
+          cw340: 1'b0
         }
         width: 1
         type: io
@@ -26062,8 +26292,8 @@
         signame_chip:
         {
           asic: es_rng_fips
-          cw310: es_rng_fips
-          cw340: es_rng_fips
+          cw310: ""
+          cw340: ""
         }
         width: 1
         type: uni
@@ -26116,8 +26346,8 @@
         signame_chip:
         {
           asic: dft_strap_test
-          cw310: dft_strap_test
-          cw340: dft_strap_test
+          cw310: ""
+          cw340: ""
         }
         width: 1
         type: uni
@@ -26134,8 +26364,8 @@
         signame_chip:
         {
           asic: "'0"
-          cw310: dft_hold_tap_sel
-          cw340: dft_hold_tap_sel
+          cw310: "'0"
+          cw340: "'0"
         }
         width: 1
         type: uni
@@ -26170,8 +26400,8 @@
         signame_chip:
         {
           asic: usb_dn_pullup_en
-          cw310: usb_dn_pullup_en
-          cw340: usb_dn_pullup_en
+          cw310: ""
+          cw340: ""
         }
         width: 1
         type: uni
@@ -26260,8 +26490,8 @@
         signame_chip:
         {
           asic: OTP_EXT_VOLT
-          cw310: OTP_EXT_VOLT
-          cw340: OTP_EXT_VOLT
+          cw310: "'0"
+          cw340: "'0"
         }
         width: 1
         type: io
@@ -26422,8 +26652,8 @@
         signame_chip:
         {
           asic: sensor_ctrl_manual_pad_attr
-          cw310: sensor_ctrl_manual_pad_attr
-          cw340: sensor_ctrl_manual_pad_attr
+          cw310: ""
+          cw340: ""
         }
         width: 4
         type: uni
@@ -26476,8 +26706,8 @@
         signame_chip:
         {
           asic: ""
-          cw310: usbdev_usb_tx_d
-          cw340: usbdev_usb_tx_d
+          cw310: ""
+          cw340: ""
         }
         width: 1
         type: uni
@@ -26494,8 +26724,8 @@
         signame_chip:
         {
           asic: ""
-          cw310: usbdev_usb_tx_se0
-          cw340: usbdev_usb_tx_se0
+          cw310: ""
+          cw340: ""
         }
         width: 1
         type: uni
@@ -26512,8 +26742,8 @@
         signame_chip:
         {
           asic: ""
-          cw310: usbdev_usb_tx_use_d_se0
-          cw340: usbdev_usb_tx_use_d_se0
+          cw310: ""
+          cw340: ""
         }
         width: 1
         type: uni
