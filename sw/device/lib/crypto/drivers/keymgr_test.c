@@ -15,6 +15,8 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('t', 's', 't')
 
+static dif_keymgr_t keymgr;
+
 // Key diversification data for testing
 static const keymgr_diversification_t kTestDiversification = {
     .salt =
@@ -28,7 +30,7 @@ static const keymgr_diversification_t kTestDiversification = {
             0x08090a0b,
             0x0c0d0e0f,
         },
-    .version = 0x9,
+    .version = 0x0,
 };
 
 /**
@@ -37,17 +39,10 @@ static const keymgr_diversification_t kTestDiversification = {
  * Run this test before any others.
  */
 status_t test_setup(void) {
-  // Initialize the key manager and advance to OwnerRootKey state.
-  dif_keymgr_t keymgr;
   dif_kmac_t kmac;
-  TRY(keymgr_testutils_startup(&keymgr, &kmac));
-  TRY(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
-  TRY(keymgr_testutils_advance_state(&keymgr, &kOwnerRootKeyParams));
-  TRY(keymgr_testutils_check_state(&keymgr, kDifKeymgrStateOwnerRootKey));
 
-  // Initialize entropy complex, which the key manager uses to clear sideloaded
-  // keys. The `keymgr_testutils_startup` function restarts the device, so this
-  // should happen afterwards.
+  TRY(keymgr_testutils_initialize(&keymgr, &kmac));
+
   return entropy_complex_init();
 }
 
@@ -158,6 +153,16 @@ status_t sw_keys_change_salt_test(void) {
  * produce the same key but with different masking.
  */
 status_t sw_keys_change_version_test(void) {
+  uint32_t max_version;
+  TRY(keymgr_testutils_max_key_version_get(&keymgr, &max_version));
+
+  if (max_version == 0) {
+    LOG_INFO(
+        "Max key version locked to 0 by ROM_EXT. Skipping version change "
+        "test.");
+    return OK_STATUS();
+  }
+
   // Copy the test data into a mutable structure.
   keymgr_diversification_t div;
   memcpy(div.salt, kTestDiversification.salt, sizeof(div.salt));
@@ -180,7 +185,7 @@ status_t sw_keys_change_version_test(void) {
   keymgr_output_t key3;
   TRY(keymgr_generate_key_sw(div, &key3));
 
-  // Check that the key is the equivalent to the first key when unmasked.
+  // Check that the key is equivalent to the first key when unmasked.
   TRY_CHECK(output_equiv(key1, key3));
 
   // Check that the masking on the equivalent keys is different.
