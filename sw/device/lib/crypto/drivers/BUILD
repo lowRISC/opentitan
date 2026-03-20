@@ -14,6 +14,7 @@ load(
 )
 load(
     "//rules/opentitan:defs.bzl",
+    "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "EARLGREY_TEST_ENVS",
     "cw310_params",
     "fpga_params",
@@ -24,6 +25,14 @@ load(
 load(
     "@bazel_skylib//lib:dicts.bzl",
     "dicts",
+)
+
+CRYPTO_EXEC_ENVS = dicts.add(
+    EARLGREY_TEST_ENVS,
+    EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+    {
+        "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
+    },
 )
 
 autogen_cryptolib_build_info(name = "cryptolib_build_info")
@@ -50,7 +59,7 @@ cc_library(
 opentitan_test(
     name = "aes_test",
     srcs = ["aes_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTO_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -90,7 +99,7 @@ opentitan_test(
     srcs = ["keymgr_test.c"],
     broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
+        CRYPTO_EXEC_ENVS,
         {
             # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
@@ -179,7 +188,7 @@ cc_library(
 opentitan_test(
     name = "entropy_test",
     srcs = ["entropy_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTO_EXEC_ENVS,
     fpga = fpga_params(tags = ["coverage"]),
     verilator = verilator_params(
         timeout = "long",
@@ -246,7 +255,7 @@ dual_cc_library(
 opentitan_test(
     name = "rv_core_ibex_test",
     srcs = ["rv_core_ibex_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTO_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
