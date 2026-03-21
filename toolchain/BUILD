@@ -337,7 +337,6 @@ cc_args(
         "-Wno-enum-compare",
         "-Wno-enum-float-conversion",
         "-Wno-implicit-int-conversion",
-        "-Wno-unterminated-string-initialization",
         "-menable-experimental-extensions",
     ],
 )
