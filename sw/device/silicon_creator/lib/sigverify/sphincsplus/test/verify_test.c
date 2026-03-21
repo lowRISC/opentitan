@@ -85,7 +85,7 @@ static rom_error_t spx_verify_negative_test(void) {
 
   if (test.msg_len > 0) {
     // Bitwise-invert the first byte of the message.
-    test.msg[0] = ~test.msg[0];
+    test.msg[0] = (uint8_t)~test.msg[0];
   } else {
     // If the message is empty, change the signature.
     test.sig[0] = ~test.sig[0];
