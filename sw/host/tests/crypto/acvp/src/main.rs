@@ -15,6 +15,7 @@ use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::rpc::ConsoleSend;
 use opentitanlib::uart::console::UartConsole;
 
+mod cshake;
 mod hmac;
 
 #[derive(Debug, Parser)]
@@ -49,6 +50,7 @@ enum AcvpVectors {
         time: String,
     },
     Hmac(hmac::HmacTestVectorSet),
+    Cshake(cshake::CshakeTestVectorSet),
 }
 
 #[derive(Deserialize, PartialEq, Serialize)]
@@ -61,6 +63,7 @@ enum AcvpResults {
         time: String,
     },
     Hmac(hmac::HmacResultVectorSet),
+    Cshake(cshake::CshakeResultVectorSet),
 }
 
 fn run<R: std::io::Read, W: std::io::Write>(
@@ -95,6 +98,9 @@ fn run<R: std::io::Read, W: std::io::Write>(
             }),
             AcvpVectors::Hmac(vs) => acvp_results.push(AcvpResults::Hmac(
                 hmac::run_hmac_vector_set(opts.timeout, &spi_console_device, &vs)?,
+            )),
+            AcvpVectors::Cshake(vs) => acvp_results.push(AcvpResults::Cshake(
+                cshake::run_cshake_vector_set(opts.timeout, &spi_console_device, &vs)?,
             )),
         }
     }
