@@ -329,7 +329,7 @@ cc_args(
         "-Wno-unused-parameter",
         "-Wno-zero-length-array",
         "-Wstrict-prototypes",
-        "-Wno-switch-default",
+        "-Wswitch-default",
         "-Wtype-limits",
         "-Wno-gnu-auto-type",
         "-Wno-enum-enum-conversion",

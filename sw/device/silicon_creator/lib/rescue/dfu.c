@@ -188,6 +188,8 @@ static rom_error_t dfu_control(dfu_ctx_t *ctx, usb_setup_data_t *setup) {
       ctx->dfu_error = kDfuErrOk;
       dfu_transport_data(ctx, kUsbDirIn, NULL, 0, 0);
       break;
+    default:
+      break;
   }
 
   return result;
