@@ -118,12 +118,6 @@ static rom_error_t dfu_control(dfu_ctx_t *ctx, usb_setup_data_t *setup) {
       ctx->dfu_state = tr->next[0];
       dfu_transport_data(ctx, kUsbDirIn, NULL, 0, 0);
       break;
-    case kDfuActionStall:
-      // Stall: move to the next state and stall the transport.
-      ctx->dfu_state = tr->next[0];
-      ctx->dfu_error = kDfuErrStalledPkt;
-      result = kErrorUsbBadSetup;
-      break;
     case kDfuActionDataXfer:
       // Check the length and download/upload.
       // DFU-spec quirks:
@@ -187,6 +181,14 @@ static rom_error_t dfu_control(dfu_ctx_t *ctx, usb_setup_data_t *setup) {
       ctx->dfu_state = tr->next[0];
       ctx->dfu_error = kDfuErrOk;
       dfu_transport_data(ctx, kUsbDirIn, NULL, 0, 0);
+      break;
+    case kDfuActionStall:
+    default:
+      // Stall: move to the next state and stall the transport.
+      // Unknown actions are also treated as an error and stall the transport.
+      ctx->dfu_state = tr->next[0];
+      ctx->dfu_error = kDfuErrStalledPkt;
+      result = kErrorUsbBadSetup;
       break;
   }
 
