@@ -108,8 +108,10 @@ fn run<R: std::io::Read, W: std::io::Write>(
         serde_json::to_writer_pretty(w, &acvp_results)?;
     }
     if let Some(r) = expected {
-        let expected_results: Vec<AcvpResults> = serde_json::from_reader(r)?;
-        if acvp_results != expected_results {
+        let expected_results_json: serde_json::Value = serde_json::from_reader(r)?;
+        let acvp_results_json = serde_json::to_value(&acvp_results)?;
+
+        if acvp_results_json != expected_results_json {
             return Err(std::io::Error::other("ACVP result mismatch").into());
         }
     }
