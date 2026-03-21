@@ -333,7 +333,6 @@ cc_args(
         "-Wtype-limits",
         "-Wno-gnu-auto-type",
         "-Wno-enum-enum-conversion",
-        "-Wno-enum-compare",
         "-menable-experimental-extensions",
     ],
 )
