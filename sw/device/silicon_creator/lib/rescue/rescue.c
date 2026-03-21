@@ -453,6 +453,8 @@ hardened_bool_t rescue_detect_entry(const owner_rescue_config_t *config,
         return kHardenedBoolTrue;
       }
       break;
+    default:
+      break;
   }
   return kHardenedBoolFalse;
 }
