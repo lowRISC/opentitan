@@ -140,7 +140,7 @@ dif_result_t dif_entropy_src_configure(const dif_entropy_src_t *entropy_src,
       config.alert_threshold);
   alert_threshold = bitfield_field32_write(
       alert_threshold, ENTROPY_SRC_ALERT_THRESHOLD_ALERT_THRESHOLD_INV_FIELD,
-      ~config.alert_threshold);
+      ~(uint32_t)config.alert_threshold);
   mmio_region_write32(entropy_src->base_addr,
                       ENTROPY_SRC_ALERT_THRESHOLD_REG_OFFSET, alert_threshold);
 
