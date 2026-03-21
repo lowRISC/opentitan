@@ -102,7 +102,7 @@ static void gpio_output_test(const dif_gpio_t *gpio, uint32_t mask) {
 
   // Now walk 0s - 1110, 1101, 1011, 0111, etc.
   for (uint32_t i = 0; i < kDifGpioNumPins; ++i) {
-    uint32_t gpio_val = ~(1 << i);
+    uint32_t gpio_val = (uint32_t) ~(1 << i);
     CHECK_DIF_OK(dif_gpio_write_all(gpio, gpio_val));
 
     // The GPIO output signals are routed through pinmux back to the GPIO block

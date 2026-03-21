@@ -332,7 +332,6 @@ cc_args(
         "-Wno-switch-default",
         "-Wtype-limits",
         "-Wno-gnu-auto-type",
-        "-Wno-sign-conversion",
         "-Wno-enum-enum-conversion",
         "-Wno-enum-compare",
         "-Wno-enum-float-conversion",
