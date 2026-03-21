@@ -9,4 +9,6 @@ exports_files([
     "hmac_sha256_vectors.json",
     "cshake_expected.json",
     "cshake_vectors.json",
+    "rsa_expected.json",
+    "rsa_vectors.json",
 ])
