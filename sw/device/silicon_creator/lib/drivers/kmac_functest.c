@@ -29,8 +29,8 @@ enum {
 
 typedef struct unalignedhash {
   char unused;
-  char short_payload[kShortMsgLen];
-  char long_payload[kLongMsgLen];
+  OT_NONSTRING char short_payload[kShortMsgLen];
+  OT_NONSTRING char long_payload[kLongMsgLen];
 } unalignedhash_t;
 
 static const alignas(uint32_t) unalignedhash_t kKmacTestData = {
