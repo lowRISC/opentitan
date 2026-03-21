@@ -53,6 +53,19 @@ cryptotest(
     ],
 )
 
+cryptotest(
+    name = "rsa_acvp",
+    test_args = " ".join([
+        "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:rsa_vectors.json)\"",
+        "--expected=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:rsa_expected.json)\"",
+    ]),
+    test_harness = "//sw/host/tests/crypto/acvp:harness",
+    test_vectors = [
+        "//sw/host/cryptotest/testvectors/acvp:rsa_vectors.json",
+        "//sw/host/cryptotest/testvectors/acvp:rsa_expected.json",
+    ],
+)
+
 AES_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:nist_cavp_aes_kat_{}_{}_{}_json".format(alg, kat_type, key_len)
     for alg in ("cbc", "cfb128", "ecb", "ofb")
@@ -609,6 +622,7 @@ test_suite(
         ":hmac_sha384_kat",
         ":hmac_sha512_kat",
         ":kmac_kat",
+        ":rsa_acvp",
         ":rsa_kat",
         ":sha256_kat",
         ":sha384_kat",
