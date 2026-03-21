@@ -14,6 +14,7 @@ use opentitanlib::uart::console::UartConsole;
 
 mod cshake;
 mod hmac;
+mod rsa;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -48,6 +49,7 @@ enum AcvpVectors {
     },
     Hmac(hmac::HmacTestVectorSet),
     Cshake(cshake::CshakeTestVectorSet),
+    Rsa(rsa::RsaTestVectorSet),
 }
 
 #[derive(Deserialize, PartialEq, Serialize)]
@@ -61,6 +63,7 @@ enum AcvpResults {
     },
     Hmac(hmac::HmacResultVectorSet),
     Cshake(cshake::CshakeResultVectorSet),
+    Rsa(rsa::RsaResultVectorSet),
 }
 
 fn run<R: std::io::Read, W: std::io::Write>(
@@ -94,6 +97,11 @@ fn run<R: std::io::Read, W: std::io::Write>(
             AcvpVectors::Cshake(vs) => acvp_results.push(AcvpResults::Cshake(
                 cshake::run_cshake_vector_set(opts.timeout, &spi_console_device, &vs)?,
             )),
+            AcvpVectors::Rsa(vs) => acvp_results.push(AcvpResults::Rsa(rsa::run_rsa_vector_set(
+                opts.timeout,
+                &spi_console_device,
+                &vs,
+            )?)),
         }
     }
     if let Some(w) = output {
