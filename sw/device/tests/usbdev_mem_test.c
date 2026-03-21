@@ -141,7 +141,7 @@ bool test_main(void) {
 
     for (unsigned idx = 0u; idx < sizeof(testpatt); idx++) {
       // Invert the test pattern to ensure every byte is modified
-      testcopy[idx] = ~testcopy[idx];
+      testcopy[idx] = (uint8_t)~testcopy[idx];
     }
 
     // Write the modified test pattern to the device memory
