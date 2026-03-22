@@ -334,7 +334,7 @@ rom_error_t alert_config_check(lifecycle_state_t lc_state) {
     case kLcStateTest:
       HARDENED_CHECK_EQ(lc_state, kLcStateTest);
       enum {
-        kMask = kLcStateTest ^ kErrorOk,
+        kMask = (uint32_t)kLcStateTest ^ (uint32_t)kErrorOk,
       };
       res ^= crc32 ^ kMask;
       break;
