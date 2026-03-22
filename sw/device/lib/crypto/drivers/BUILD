@@ -224,6 +224,26 @@ cc_library(
     ],
 )
 
+opentitan_test(
+    name = "hmac_test",
+    srcs = ["hmac_test.c"],
+    exec_env = CRYPTO_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":hmac",
+        ":rv_core_ibex",
+        "//hw/ip/hmac/data:hmac_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/crypto/impl:status",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
 dual_cc_library(
     name = "rv_core_ibex",
     srcs = dual_inputs(
