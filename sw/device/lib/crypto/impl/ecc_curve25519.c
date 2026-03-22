@@ -146,6 +146,9 @@ static status_t ed25519_message_prehash(otcrypto_eddsa_sign_mode_t sign_mode,
 otcrypto_status_t otcrypto_ed25519_keygen(
     const otcrypto_unblinded_key_t *private_key,
     otcrypto_unblinded_key_t *public_key) {
+  if (public_key == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   // Start the execution of the key generation.
   HARDENED_TRY(otcrypto_ed25519_keygen_async_start(private_key));
   // Finish the keygen operation and get the public key.
@@ -156,6 +159,9 @@ otcrypto_status_t otcrypto_ed25519_sign(
     const otcrypto_unblinded_key_t *private_key,
     otcrypto_const_byte_buf_t input_message,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t *signature) {
+  if (signature == NULL || signature->data == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   // Instantiate struct to store the secret key digest.
   uint32_t key_digest_data[kCurve25519HashWords];
   otcrypto_hash_digest_t key_digest = {
