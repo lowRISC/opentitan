@@ -17,6 +17,13 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('e', '2', '5')
 
+// RFC 8032 dom2(1, "") prefix for Ed25519ph (HashEdDSA)
+static const uint8_t kDom2Prefix[34] = {
+    'S', 'i', 'g', 'E', 'd', '2', '5', '5', '1', '9', ' ', 'n',
+    'o', ' ', 'E', 'd', '2', '5', '5', '1', '9', ' ', 'c', 'o',
+    'l', 'l', 'i', 's', 'i', 'o', 'n', 's', 1,   0  // F=1 (Ed25519ph), C_len=0
+};
+
 /**
  * Check the lengths of public/private keys for curve 25519.
  *
@@ -103,11 +110,13 @@ static status_t reverse_bytecpy(uint8_t *dst, const uint8_t *src, size_t len) {
  * @param sign_mode The prehash function selection.
  * @param input_message The input message.
  * @param[out] message_ph The message prehash.
+ * @param prehash_buffer Prehash buffer.
  * @return OK.
  */
 static status_t ed25519_message_prehash(
     otcrypto_eddsa_sign_mode_t sign_mode,
-    otcrypto_const_byte_buf_t *input_message, otcrypto_byte_buf_t *message_ph) {
+    otcrypto_const_byte_buf_t *input_message, otcrypto_byte_buf_t *message_ph,
+    uint32_t *prehash_buffer) {
   // Only a message of length zero can have NULL as data.
   if (input_message->data == NULL && input_message->len != 0) {
     return OTCRYPTO_BAD_ARGS;
@@ -120,10 +129,9 @@ static status_t ed25519_message_prehash(
     sign_mode_used =
         launder32(sign_mode_used) | kOtcryptoEddsaSignModeHashEddsa;
 
-    uint32_t input_digest_data[kCurve25519HashWords];
     otcrypto_hash_digest_t input_digest = {
-        .data = input_digest_data,
-        .len = ARRAYSIZE(input_digest_data),
+        .data = prehash_buffer,
+        .len = kCurve25519HashWords,
     };
 
     HARDENED_TRY(otcrypto_sha2_512(input_message, &input_digest));
@@ -158,7 +166,7 @@ static status_t ed25519_message_prehash(
 otcrypto_status_t otcrypto_ed25519_keygen(
     const otcrypto_unblinded_key_t *private_key,
     otcrypto_unblinded_key_t *public_key) {
-  if (public_key == NULL) {
+  if (public_key == NULL || public_key->key == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
   // Start the execution of the key generation.
@@ -171,9 +179,9 @@ otcrypto_status_t otcrypto_ed25519_sign(
     const otcrypto_unblinded_key_t *private_key,
     otcrypto_const_byte_buf_t *input_message,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t *signature) {
-  if (signature == NULL || signature->data == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
+  // Validate signature buffer
+  HARDENED_TRY(ed25519_signature_check(signature));
+
   // Instantiate struct to store the secret key digest.
   uint32_t key_digest_data[kCurve25519HashWords];
   otcrypto_hash_digest_t key_digest = {
@@ -187,9 +195,11 @@ otcrypto_status_t otcrypto_ed25519_sign(
       .len = ARRAYSIZE(msg_digest_data),
   };
 
-  // Get the message prehash if needed.
+  uint32_t prehash_buffer[kCurve25519HashWords];
   otcrypto_byte_buf_t message_ph;
-  HARDENED_TRY(ed25519_message_prehash(sign_mode, input_message, &message_ph));
+  HARDENED_TRY(ed25519_message_prehash(sign_mode, input_message, &message_ph,
+                                       prehash_buffer));
+
   // From this point on we are using input_message_ph as the message.
   otcrypto_const_byte_buf_t input_message_ph =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t,
@@ -198,12 +208,11 @@ otcrypto_status_t otcrypto_ed25519_sign(
   // Start sign part 1 to calculate the public key and the signature commitment
   // R.
   HARDENED_TRY(otcrypto_ed25519_sign_part1_async_start(
-      private_key, &input_message_ph, kOtcryptoEddsaSignModeEddsa, &key_digest,
-      &msg_digest));
+      private_key, &input_message_ph, sign_mode, &key_digest, &msg_digest));
   // Start sign part 2 to calculate the signature response S.
   HARDENED_TRY(otcrypto_ed25519_sign_part2_async_start(
-      private_key, &input_message_ph, kOtcryptoEddsaSignModeEddsa, signature,
-      &key_digest, &msg_digest));
+      private_key, &input_message_ph, sign_mode, signature, &key_digest,
+      &msg_digest));
   // Finish the execution and retrieve the signature.
   return otcrypto_ed25519_sign_async_finalize(signature);
 }
@@ -214,16 +223,21 @@ otcrypto_status_t otcrypto_ed25519_verify(
     otcrypto_eddsa_sign_mode_t sign_mode,
     otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result) {
-  // Get the message prehash if needed.
+  if (verification_result == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  uint32_t prehash_buffer[kCurve25519HashWords];
   otcrypto_byte_buf_t message_ph;
-  HARDENED_TRY(ed25519_message_prehash(sign_mode, input_message, &message_ph));
-  // From this point on we are using input_message_ph as the message.
+  HARDENED_TRY(ed25519_message_prehash(sign_mode, input_message, &message_ph,
+                                       prehash_buffer));
+
   otcrypto_const_byte_buf_t input_message_ph =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t,
                         (const uint8_t *const)message_ph.data, message_ph.len);
   // Start the execution of the verification.
   HARDENED_TRY(otcrypto_ed25519_verify_async_start(
-      public_key, &input_message_ph, kOtcryptoEddsaSignModeEddsa, signature));
+      public_key, &input_message_ph, sign_mode, signature));
   // Finish the verification operation and get the result.
   return otcrypto_ed25519_verify_async_finalize(verification_result);
 }
@@ -266,17 +280,9 @@ otcrypto_status_t otcrypto_ed25519_keygen_async_finalize(
 
 otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
     const otcrypto_unblinded_key_t *private_key,
-    otcrypto_const_byte_buf_t *input_message,
+    otcrypto_const_byte_buf_t *input_message_ph,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_hash_digest_t *key_digest,
     otcrypto_hash_digest_t *msg_digest) {
-  // Get the message prehash if needed.
-  otcrypto_byte_buf_t message_ph;
-  HARDENED_TRY(ed25519_message_prehash(sign_mode, input_message, &message_ph));
-  // From this point on we are using input_message_ph as the message.
-  otcrypto_const_byte_buf_t input_message_ph =
-      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t,
-                        (const uint8_t *const)message_ph.data, message_ph.len);
-
   // Check that the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
 
@@ -290,16 +296,25 @@ otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
       private_key->key_length);
   HARDENED_TRY(otcrypto_sha2_512(&key_buf, key_digest));
 
-  // Compute SHA-512(prefix || PH(M)).
-  size_t msg_byte_len = input_message_ph.len + kCurve25519ScalarBytes;
+  // Prepend the dom2 prefix
+  size_t dom2_len =
+      (sign_mode == kOtcryptoEddsaSignModeHashEddsa) ? sizeof(kDom2Prefix) : 0;
+  size_t msg_byte_len =
+      dom2_len + kCurve25519ScalarBytes + input_message_ph->len;
   uint8_t msg_bytes[msg_byte_len];
+  size_t offset = 0;
+
+  if (dom2_len > 0) {
+    memcpy(msg_bytes, kDom2Prefix, dom2_len);
+    offset += dom2_len;
+  }
+
+  // Compute SHA-512(prefix || PH(M)).
   uint32_t *prefix =
       key_digest->data + kCurve25519ScalarBytes / sizeof(uint32_t);
-  HARDENED_TRY(hardened_memcpy((uint32_t *)msg_bytes, prefix,
-                               kCurve25519ScalarBytes / sizeof(uint32_t)));
-  HARDENED_TRY(randomized_bytecopy(&msg_bytes[kCurve25519ScalarBytes],
-                                   input_message_ph.data,
-                                   input_message_ph.len));
+  memcpy(&msg_bytes[offset], prefix, kCurve25519ScalarBytes);
+  offset += kCurve25519ScalarBytes;
+  memcpy(&msg_bytes[offset], input_message_ph->data, input_message_ph->len);
 
   otcrypto_const_byte_buf_t msg_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg_bytes, msg_byte_len);
@@ -314,17 +329,9 @@ otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
 
 otcrypto_status_t otcrypto_ed25519_sign_part2_async_start(
     const otcrypto_unblinded_key_t *private_key,
-    otcrypto_const_byte_buf_t *input_message,
+    otcrypto_const_byte_buf_t *input_message_ph,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t *signature,
     otcrypto_hash_digest_t *key_digest, otcrypto_hash_digest_t *msg_digest) {
-  // Get the message prehash if needed.
-  otcrypto_byte_buf_t message_ph;
-  HARDENED_TRY(ed25519_message_prehash(sign_mode, input_message, &message_ph));
-  // From this point on we are using input_message_ph as the message.
-  otcrypto_const_byte_buf_t input_message_ph =
-      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t,
-                        (const uint8_t *const)message_ph.data, message_ph.len);
-
   // Ensure the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
 
@@ -343,22 +350,25 @@ otcrypto_status_t otcrypto_ed25519_sign_part2_async_start(
   reverse_bytecpy((uint8_t *)signature->data, (uint8_t *)sig_curve25519.r,
                   kCurve25519PointBytes);
 
-  otcrypto_unblinded_key_t public_key = {
-      .key_mode = kOtcryptoKeyModeEd25519,
-      .key_length = kCurve25519PointBytes,
-      .key = public_key_buf,
-  };
-  public_key.checksum = integrity_unblinded_checksum(&public_key);
-
-  // Compute SHA512(R || A || PH(M)).
-  size_t challenge_byte_len = input_message_ph.len + 2 * kCurve25519PointBytes;
+  // Prepend the dom2 prefix
+  size_t dom2_len =
+      (sign_mode == kOtcryptoEddsaSignModeHashEddsa) ? sizeof(kDom2Prefix) : 0;
+  size_t challenge_byte_len =
+      dom2_len + input_message_ph->len + 2 * kCurve25519PointBytes;
   uint8_t challenge_bytes[challenge_byte_len];
-  memcpy(challenge_bytes, (const uint8_t *)sig_curve25519.r,
+
+  memcpy(challenge_bytes, kDom2Prefix, dom2_len);
+  size_t offset = dom2_len;
+
+  memcpy(&challenge_bytes[offset], (const uint8_t *)sig_curve25519.r,
          kCurve25519PointBytes);
-  memcpy(&challenge_bytes[kCurve25519PointBytes],
-         (const uint8_t *)public_key.key, kCurve25519PointBytes);
-  memcpy(&challenge_bytes[2 * kCurve25519PointBytes], input_message_ph.data,
-         input_message_ph.len);
+  offset += kCurve25519PointBytes;
+  memcpy(&challenge_bytes[offset], (const uint8_t *)public_key_buf,
+         kCurve25519PointBytes);
+  offset += kCurve25519PointBytes;
+  memcpy(&challenge_bytes[offset], input_message_ph->data,
+         input_message_ph->len);
+
   otcrypto_const_byte_buf_t challenge_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_byte_buf_t, challenge_bytes, challenge_byte_len);
   uint32_t challenge_digest_data[kCurve25519HashWords];
@@ -394,7 +404,7 @@ otcrypto_status_t otcrypto_ed25519_sign_async_finalize(
 
 otcrypto_status_t otcrypto_ed25519_verify_async_start(
     const otcrypto_unblinded_key_t *public_key,
-    otcrypto_const_byte_buf_t *input_message,
+    otcrypto_const_byte_buf_t *input_message_ph,
     otcrypto_eddsa_sign_mode_t sign_mode,
     otcrypto_const_word32_buf_t *signature) {
   // Ensure the entropy complex is initialized.
@@ -409,28 +419,32 @@ otcrypto_status_t otcrypto_ed25519_verify_async_start(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Get the message prehash if needed.
-  otcrypto_byte_buf_t message_ph;
-  HARDENED_TRY(ed25519_message_prehash(sign_mode, input_message, &message_ph));
-  // From this point on we are using input_message_ph as the message.
-  otcrypto_const_byte_buf_t input_message_ph =
-      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t,
-                        (const uint8_t *const)message_ph.data, message_ph.len);
-
   // Compute SHA512(R || A || PH(M)).
   curve25519_signature_t sig_curve25519;
   reverse_bytecpy((uint8_t *)sig_curve25519.r, (uint8_t *)signature->data,
                   kCurve25519PointBytes);
   memcpy(sig_curve25519.s, &signature->data[kCurve25519PointWords],
          kCurve25519ScalarBytes);
-  size_t challenge_byte_len = input_message_ph.len + 2 * kCurve25519PointBytes;
+
+  // Prepend the dom2 prefix
+  size_t dom2_len =
+      (sign_mode == kOtcryptoEddsaSignModeHashEddsa) ? sizeof(kDom2Prefix) : 0;
+  size_t challenge_byte_len =
+      dom2_len + input_message_ph->len + 2 * kCurve25519PointBytes;
   uint8_t challenge_bytes[challenge_byte_len];
-  memcpy(challenge_bytes, (const uint8_t *)sig_curve25519.r,
+
+  memcpy(challenge_bytes, kDom2Prefix, dom2_len);
+  size_t offset = dom2_len;
+
+  memcpy(&challenge_bytes[offset], (const uint8_t *)sig_curve25519.r,
          kCurve25519PointBytes);
-  memcpy(&challenge_bytes[kCurve25519PointBytes],
-         (const uint8_t *)public_key->key, kCurve25519PointBytes);
-  memcpy(&challenge_bytes[2 * kCurve25519PointBytes], input_message_ph.data,
-         input_message_ph.len);
+  offset += kCurve25519PointBytes;
+  memcpy(&challenge_bytes[offset], (const uint8_t *)public_key->key,
+         kCurve25519PointBytes);
+  offset += kCurve25519PointBytes;
+  memcpy(&challenge_bytes[offset], input_message_ph->data,
+         input_message_ph->len);
+
   otcrypto_const_byte_buf_t challenge_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_byte_buf_t, challenge_bytes, challenge_byte_len);
   uint32_t challenge_digest_data[kCurve25519HashWords];
