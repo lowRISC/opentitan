@@ -15,6 +15,12 @@
 
 otcrypto_status_t otcrypto_sha3_224(otcrypto_const_byte_buf_t message,
                                     otcrypto_hash_digest_t *digest) {
+  if (digest == NULL || digest->data == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (message.data == NULL && message.len != 0) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   if (launder32(digest->len) != kKmacSha3224DigestWords) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -25,6 +31,12 @@ otcrypto_status_t otcrypto_sha3_224(otcrypto_const_byte_buf_t message,
 
 otcrypto_status_t otcrypto_sha3_256(otcrypto_const_byte_buf_t message,
                                     otcrypto_hash_digest_t *digest) {
+  if (digest == NULL || digest->data == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (message.data == NULL && message.len != 0) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   if (launder32(digest->len) != kKmacSha3256DigestWords) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -35,6 +47,12 @@ otcrypto_status_t otcrypto_sha3_256(otcrypto_const_byte_buf_t message,
 
 otcrypto_status_t otcrypto_sha3_384(otcrypto_const_byte_buf_t message,
                                     otcrypto_hash_digest_t *digest) {
+  if (digest == NULL || digest->data == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (message.data == NULL && message.len != 0) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   if (launder32(digest->len) != kKmacSha3384DigestWords) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -45,6 +63,12 @@ otcrypto_status_t otcrypto_sha3_384(otcrypto_const_byte_buf_t message,
 
 otcrypto_status_t otcrypto_sha3_512(otcrypto_const_byte_buf_t message,
                                     otcrypto_hash_digest_t *digest) {
+  if (digest == NULL || digest->data == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (message.data == NULL && message.len != 0) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   if (launder32(digest->len) != kKmacSha3512DigestWords) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -55,12 +79,24 @@ otcrypto_status_t otcrypto_sha3_512(otcrypto_const_byte_buf_t message,
 
 otcrypto_status_t otcrypto_shake128(otcrypto_const_byte_buf_t message,
                                     otcrypto_hash_digest_t *digest) {
+  if (digest == NULL || digest->data == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (message.data == NULL && message.len != 0) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   digest->mode = kOtcryptoHashXofModeShake128;
   return kmac_shake_128(message.data, message.len, digest->data, digest->len);
 }
 
 otcrypto_status_t otcrypto_shake256(otcrypto_const_byte_buf_t message,
                                     otcrypto_hash_digest_t *digest) {
+  if (digest == NULL || digest->data == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (message.data == NULL && message.len != 0) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   digest->mode = kOtcryptoHashXofModeShake256;
   return kmac_shake_256(message.data, message.len, digest->data, digest->len);
 }
@@ -70,6 +106,12 @@ otcrypto_status_t otcrypto_cshake128(
     otcrypto_const_byte_buf_t function_name_string,
     otcrypto_const_byte_buf_t customization_string,
     otcrypto_hash_digest_t *digest) {
+  if (digest == NULL || digest->data == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (message.data == NULL && message.len != 0) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   if (function_name_string.data == NULL && function_name_string.len != 0) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -87,6 +129,12 @@ otcrypto_status_t otcrypto_cshake256(
     otcrypto_const_byte_buf_t function_name_string,
     otcrypto_const_byte_buf_t customization_string,
     otcrypto_hash_digest_t *digest) {
+  if (digest == NULL || digest->data == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (message.data == NULL && message.len != 0) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   if (function_name_string.data == NULL && function_name_string.len != 0) {
     return OTCRYPTO_BAD_ARGS;
   }
