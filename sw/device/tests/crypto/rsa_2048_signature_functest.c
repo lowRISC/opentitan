@@ -5,6 +5,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
+#include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/rsa.h"
 #include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
@@ -310,6 +311,94 @@ status_t pss_verify_invalid_test(void) {
   return OK_STATUS();
 }
 
+static status_t run_signature_negative_tests(void) {
+  LOG_INFO("Running RSA signature negative tests");
+
+  uint32_t pub_data[kOtcryptoRsa2048PublicKeyBytes / 4] = {0};
+  otcrypto_unblinded_key_t valid_pub = {
+      .key_mode = kOtcryptoKeyModeRsaSignPkcs,
+      .key_length = kOtcryptoRsa2048PublicKeyBytes,
+      .key = pub_data,
+  };
+  valid_pub.checksum = integrity_unblinded_checksum(&valid_pub);
+
+  uint32_t priv_blob[kOtcryptoRsa2048PrivateKeyblobBytes / 4] = {0};
+  otcrypto_blinded_key_t valid_priv = {
+      .config =
+          {
+              .version = kOtcryptoLibVersion1,
+              .key_mode = kOtcryptoKeyModeRsaSignPkcs,
+              .key_length = kOtcryptoRsa2048PrivateKeyBytes,
+              .hw_backed = kHardenedBoolFalse,
+              .security_level = kOtcryptoKeySecurityLevelLow,
+          },
+      .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
+      .keyblob = priv_blob,
+  };
+  valid_priv.checksum = integrity_blinded_checksum(&valid_priv);
+
+  uint32_t digest_data[256 / 32] = {0};
+  otcrypto_hash_digest_t valid_digest = {.data = digest_data,
+                                         .len = ARRAYSIZE(digest_data)};
+
+  uint32_t sig_data[kRsa2048NumWords] = {0};
+  otcrypto_word32_buf_t valid_sig = {.data = sig_data, .len = kRsa2048NumWords};
+  otcrypto_const_word32_buf_t valid_const_sig = {.data = sig_data,
+                                                 .len = kRsa2048NumWords};
+
+  hardened_bool_t verify_res;
+
+  // Sign negative tests
+  CHECK(
+      otcrypto_rsa_sign(NULL, valid_digest, kOtcryptoRsaPaddingPkcs, valid_sig)
+          .value == OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_word32_buf_t bad_sig_null = {.data = NULL, .len = kRsa2048NumWords};
+  CHECK(otcrypto_rsa_sign(&valid_priv, valid_digest, kOtcryptoRsaPaddingPkcs,
+                          bad_sig_null)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_blinded_key_t bad_priv_chk = {
+      .config = valid_priv.config,
+      .keyblob_length = valid_priv.keyblob_length,
+      .keyblob = priv_blob,
+  };
+  bad_priv_chk.checksum = valid_priv.checksum ^ 0xFFFFFFFF;
+  CHECK(otcrypto_rsa_sign(&bad_priv_chk, valid_digest, kOtcryptoRsaPaddingPkcs,
+                          valid_sig)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Mismatched padding mode
+  CHECK(otcrypto_rsa_sign(&valid_priv, valid_digest, kOtcryptoRsaPaddingPss,
+                          valid_sig)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Verify negative tests
+  CHECK(otcrypto_rsa_verify(NULL, valid_digest, kOtcryptoRsaPaddingPkcs,
+                            valid_const_sig, &verify_res)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_verify(&valid_pub, valid_digest, kOtcryptoRsaPaddingPkcs,
+                            valid_const_sig, NULL)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_unblinded_key_t bad_pub_chk = {
+      .key_mode = valid_pub.key_mode,
+      .key_length = valid_pub.key_length,
+      .key = pub_data,
+  };
+  bad_pub_chk.checksum = valid_pub.checksum ^ 0xFFFFFFFF;
+  CHECK(otcrypto_rsa_verify(&bad_pub_chk, valid_digest, kOtcryptoRsaPaddingPkcs,
+                            valid_const_sig, &verify_res)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_const_word32_buf_t bad_const_sig_len = {.data = sig_data, .len = 99};
+  CHECK(otcrypto_rsa_verify(&valid_pub, valid_digest, kOtcryptoRsaPaddingPkcs,
+                            bad_const_sig_len, &verify_res)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  return OTCRYPTO_OK;
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
@@ -321,5 +410,6 @@ bool test_main(void) {
   EXECUTE_TEST(test_result, pss_sign_test);
   EXECUTE_TEST(test_result, pss_verify_valid_test);
   EXECUTE_TEST(test_result, pss_verify_invalid_test);
+  EXECUTE_TEST(test_result, run_signature_negative_tests);
   return status_ok(test_result);
 }
