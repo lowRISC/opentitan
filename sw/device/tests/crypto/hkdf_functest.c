@@ -368,6 +368,234 @@ static status_t rfc_test3(void) {
   return run_test(&test);
 }
 
+/**
+ * Test the top-level HKDF function using RFC 5869 Test Case 1.
+ */
+static status_t test_otcrypto_hkdf(void) {
+  LOG_INFO("Running top-level otcrypto_hkdf test");
+
+  uint32_t ikm_data[] = {
+      0x0b0b0b0b, 0x0b0b0b0b, 0x0b0b0b0b, 0x0b0b0b0b, 0x0b0b0b0b, 0x00000b0b,
+  };
+  uint8_t salt_data[] = {
+      0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06,
+      0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c,
+  };
+  uint8_t info_data[] = {
+      0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9,
+  };
+  uint32_t okm_exp_data[] = {
+      0x255fb23c, 0x7ad5acfa, 0x644f4390, 0x2a2f36d0, 0x900a2d2d, 0x4c5a1acf,
+      0x562db05d, 0xbfc5c4ec, 0x08720034, 0x1887b8d5, 0x00006558,
+  };
+
+  otcrypto_const_byte_buf_t salt = {.data = salt_data,
+                                    .len = sizeof(salt_data)};
+  otcrypto_const_byte_buf_t info = {.data = info_data,
+                                    .len = sizeof(info_data)};
+
+  // Setup IKM
+  otcrypto_key_config_t ikm_config = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeHmacSha256,
+      .key_length = 22,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t ikm_keyblob[keyblob_num_words(ikm_config)];
+  TRY(keyblob_from_key_and_mask(ikm_data, kTestMask, ikm_config, ikm_keyblob));
+  otcrypto_blinded_key_t ikm = {
+      .config = ikm_config,
+      .keyblob = ikm_keyblob,
+      .keyblob_length = sizeof(ikm_keyblob),
+  };
+  ikm.checksum = integrity_blinded_checksum(&ikm);
+
+  // Setup OKM
+  otcrypto_key_config_t okm_config = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeAesCtr,
+      .key_length = 42,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t okm_keyblob[keyblob_num_words(okm_config)];
+  otcrypto_blinded_key_t okm = {
+      .config = okm_config,
+      .keyblob = okm_keyblob,
+      .keyblob_length = sizeof(okm_keyblob),
+  };
+
+  // Execute all-in-one API
+  CHECK_STATUS_OK(otcrypto_hkdf(&ikm, salt, info, &okm));
+
+  // Check result
+  uint32_t *okm_share0;
+  uint32_t *okm_share1;
+  TRY(keyblob_to_shares(&okm, &okm_share0, &okm_share1));
+  uint32_t unmasked_okm[keyblob_share_num_words(okm_config)];
+  for (size_t i = 0; i < ARRAYSIZE(unmasked_okm); i++) {
+    unmasked_okm[i] = okm_share0[i] ^ okm_share1[i];
+  }
+
+  TRY_CHECK_ARRAYS_EQ((unsigned char *)unmasked_okm,
+                      (unsigned char *)okm_exp_data, 42);
+
+  return OTCRYPTO_OK;
+}
+
+/**
+ * Negative tests
+ */
+static status_t run_negative_tests(void) {
+  LOG_INFO("Running HKDF BAD_ARGS negative tests.");
+
+  // Base valid configs
+  otcrypto_key_config_t valid_ikm_cfg = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeHmacSha256,
+      .key_length = 22,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  otcrypto_key_config_t valid_prk_cfg = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeHmacSha256,
+      .key_length = 32,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  otcrypto_key_config_t valid_okm_cfg = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeAesCtr,
+      .key_length = 42,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+
+  // Base valid keyblobs
+  uint32_t ikm_blob[keyblob_num_words(valid_ikm_cfg)];
+  otcrypto_blinded_key_t valid_ikm = {.config = valid_ikm_cfg,
+                                      .keyblob_length = sizeof(ikm_blob),
+                                      .keyblob = ikm_blob};
+  valid_ikm.checksum = integrity_blinded_checksum(&valid_ikm);
+
+  uint32_t prk_blob[keyblob_num_words(valid_prk_cfg)];
+  otcrypto_blinded_key_t valid_prk = {.config = valid_prk_cfg,
+                                      .keyblob_length = sizeof(prk_blob),
+                                      .keyblob = prk_blob};
+  valid_prk.checksum = integrity_blinded_checksum(&valid_prk);
+
+  uint32_t okm_blob[keyblob_num_words(valid_okm_cfg)];
+  otcrypto_blinded_key_t valid_okm = {.config = valid_okm_cfg,
+                                      .keyblob_length = sizeof(okm_blob),
+                                      .keyblob = okm_blob};
+  valid_okm.checksum = integrity_blinded_checksum(&valid_okm);
+
+  uint8_t dummy_data[] = {0x01};
+  otcrypto_const_byte_buf_t valid_buf = {.data = dummy_data, .len = 1};
+  otcrypto_const_byte_buf_t null_data_buf = {.data = NULL, .len = 1};
+
+  // HKDF extract null pointer tests
+  CHECK(otcrypto_hkdf_extract(&valid_ikm, valid_buf, NULL).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_hkdf_extract(&valid_ikm, null_data_buf, &valid_prk).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_blinded_key_t bad_ikm_null = {.config = valid_ikm_cfg,
+                                         .keyblob_length = sizeof(ikm_blob),
+                                         .keyblob = NULL};
+  CHECK(otcrypto_hkdf_extract(&bad_ikm_null, valid_buf, &valid_prk).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_blinded_key_t bad_prk_null = {.config = valid_prk_cfg,
+                                         .keyblob_length = sizeof(prk_blob),
+                                         .keyblob = NULL};
+  CHECK(otcrypto_hkdf_extract(&valid_ikm, valid_buf, &bad_prk_null).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  // HKDF extract config mode tests
+  otcrypto_blinded_key_t bad_ikm_chk = {.config = valid_ikm_cfg,
+                                        .keyblob_length = sizeof(ikm_blob),
+                                        .keyblob = ikm_blob};
+  bad_ikm_chk.checksum = valid_ikm.checksum ^ 0xFFFFFFFF;
+  CHECK(otcrypto_hkdf_extract(&bad_ikm_chk, valid_buf, &valid_prk).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_key_config_t bad_mode_cfg = valid_ikm_cfg;
+  bad_mode_cfg.key_mode = kOtcryptoKeyModeAesCtr;
+  otcrypto_blinded_key_t bad_ikm_mode = {.config = bad_mode_cfg,
+                                         .keyblob_length = sizeof(ikm_blob),
+                                         .keyblob = ikm_blob};
+  bad_ikm_mode.checksum = integrity_blinded_checksum(&bad_ikm_mode);
+  CHECK(otcrypto_hkdf_extract(&bad_ikm_mode, valid_buf, &valid_prk).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_key_config_t bad_prk_mode_cfg = valid_prk_cfg;
+  bad_prk_mode_cfg.key_mode = kOtcryptoKeyModeHmacSha384;
+  otcrypto_blinded_key_t bad_prk_mode = {.config = bad_prk_mode_cfg,
+                                         .keyblob_length = sizeof(prk_blob),
+                                         .keyblob = prk_blob};
+  bad_prk_mode.checksum = integrity_blinded_checksum(&bad_prk_mode);
+  CHECK(otcrypto_hkdf_extract(&valid_ikm, valid_buf, &bad_prk_mode).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  // HKDF check PRK tests
+  otcrypto_key_config_t bad_prk_len_cfg = valid_prk_cfg;
+  bad_prk_len_cfg.key_length = 31;
+  otcrypto_blinded_key_t bad_prk_len = {.config = bad_prk_len_cfg,
+                                        .keyblob_length = sizeof(prk_blob),
+                                        .keyblob = prk_blob};
+  bad_prk_len.checksum = integrity_blinded_checksum(&bad_prk_len);
+  CHECK(otcrypto_hkdf_extract(&valid_ikm, valid_buf, &bad_prk_len).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_blinded_key_t bad_prk_blob_len = {
+      .config = valid_prk_cfg, .keyblob_length = 99, .keyblob = prk_blob};
+  bad_prk_blob_len.checksum = integrity_blinded_checksum(&bad_prk_blob_len);
+  CHECK(otcrypto_hkdf_extract(&valid_ikm, valid_buf, &bad_prk_blob_len).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  // HKDF expand null pointer tests
+  CHECK(otcrypto_hkdf_expand(&valid_prk, valid_buf, NULL).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_hkdf_expand(&valid_prk, null_data_buf, &valid_okm).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_hkdf_expand(&bad_prk_null, valid_buf, &valid_okm).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_blinded_key_t bad_okm_null = {.config = valid_okm_cfg,
+                                         .keyblob_length = sizeof(okm_blob),
+                                         .keyblob = NULL};
+  CHECK(otcrypto_hkdf_expand(&valid_prk, valid_buf, &bad_okm_null).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  // HKDF expand config tests
+  otcrypto_blinded_key_t bad_okm_blob_len = {
+      .config = valid_okm_cfg, .keyblob_length = 99, .keyblob = okm_blob};
+  bad_okm_blob_len.checksum = integrity_blinded_checksum(&bad_okm_blob_len);
+  CHECK(otcrypto_hkdf_expand(&valid_prk, valid_buf, &bad_okm_blob_len).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  // Exceed 255 iterations
+  otcrypto_key_config_t huge_okm_cfg = valid_okm_cfg;
+  huge_okm_cfg.key_length = 8161;
+  uint32_t huge_blob[keyblob_num_words(huge_okm_cfg)];
+  otcrypto_blinded_key_t huge_okm = {.config = huge_okm_cfg,
+                                     .keyblob_length = sizeof(huge_blob),
+                                     .keyblob = huge_blob};
+  huge_okm.checksum = integrity_blinded_checksum(&huge_okm);
+  CHECK(otcrypto_hkdf_expand(&valid_prk, valid_buf, &huge_okm).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  return OTCRYPTO_OK;
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
@@ -378,5 +606,7 @@ bool test_main(void) {
   EXECUTE_TEST(test_result, rfc_test1);
   EXECUTE_TEST(test_result, rfc_test2);
   EXECUTE_TEST(test_result, rfc_test3);
+  EXECUTE_TEST(test_result, test_otcrypto_hkdf);
+  EXECUTE_TEST(test_result, run_negative_tests);
   return status_ok(test_result);
 }
