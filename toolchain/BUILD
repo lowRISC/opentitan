@@ -332,7 +332,6 @@ cc_args(
         "-Wswitch-default",
         "-Wtype-limits",
         "-Wno-gnu-auto-type",
-        "-Wno-enum-enum-conversion",
         "-menable-experimental-extensions",
     ],
 )
