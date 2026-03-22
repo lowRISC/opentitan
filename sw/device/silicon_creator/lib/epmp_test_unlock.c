@@ -33,7 +33,7 @@ bool epmp_unlock_test_status(void) {
   // Update the hardware registers.
   static_assert(kEntry == 6, "PMP entry has changed, update CSR operations.");
   CSR_WRITE(CSR_REG_PMPADDR6, status_addr / sizeof(uint32_t));
-  CSR_SET_BITS(CSR_REG_PMPCFG1, (kEpmpModeNa4 | kPerm)
+  CSR_SET_BITS(CSR_REG_PMPCFG1, (kEpmpModeNa4 | (uint32_t)kPerm)
                                     << ((kEntry % sizeof(uint32_t)) * 8));
 
   // Double check that the shadow registers match.
