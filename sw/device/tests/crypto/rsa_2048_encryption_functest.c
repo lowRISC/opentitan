@@ -5,6 +5,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
+#include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/rsa.h"
 #include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
@@ -229,6 +230,129 @@ status_t oaep_encrypt_decrypt_test(void) {
   return OK_STATUS();
 }
 
+/**
+ * Negative tests
+ */
+static status_t run_encrypt_negative_tests(void) {
+  LOG_INFO("Running RSA encrypt/decrypt negative tests");
+
+  // Base valid keys
+  uint32_t pub_data[kOtcryptoRsa2048PublicKeyBytes / 4] = {0};
+  otcrypto_unblinded_key_t valid_pub = {
+      .key_mode = kOtcryptoKeyModeRsaEncryptOaep,
+      .key_length = kOtcryptoRsa2048PublicKeyBytes,
+      .key = pub_data,
+  };
+  valid_pub.checksum = integrity_unblinded_checksum(&valid_pub);
+
+  otcrypto_key_config_t priv_cfg = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeRsaEncryptOaep,
+      .key_length = kOtcryptoRsa2048PrivateKeyBytes,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t priv_blob[kOtcryptoRsa2048PrivateKeyblobBytes / 4] = {0};
+  otcrypto_blinded_key_t valid_priv = {
+      .config = priv_cfg,
+      .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
+      .keyblob = priv_blob,
+  };
+  valid_priv.checksum = integrity_blinded_checksum(&valid_priv);
+
+  // Base valid/invalid buffers
+  uint8_t msg_data[] = "test";
+  otcrypto_const_byte_buf_t valid_msg = {.data = msg_data, .len = 4};
+  otcrypto_const_byte_buf_t bad_msg_null = {.data = NULL, .len = 4};
+
+  uint32_t ct_data[kRsa2048NumWords] = {0};
+  otcrypto_word32_buf_t valid_ct = {.data = ct_data, .len = kRsa2048NumWords};
+  otcrypto_const_word32_buf_t valid_const_ct = {.data = ct_data,
+                                                .len = kRsa2048NumWords};
+  otcrypto_word32_buf_t bad_ct_null = {.data = NULL, .len = kRsa2048NumWords};
+
+  uint8_t pt_data[256] = {0};
+  otcrypto_byte_buf_t valid_pt = {.data = pt_data, .len = sizeof(pt_data)};
+  size_t pt_len = 0;
+
+  // Encrypt negative tests
+  CHECK(
+      otcrypto_rsa_encrypt(NULL, kTestHashMode, valid_msg, valid_msg, valid_ct)
+          .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_encrypt(&valid_pub, kTestHashMode, bad_msg_null, valid_msg,
+                             valid_ct)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_encrypt(&valid_pub, kTestHashMode, valid_msg, bad_msg_null,
+                             valid_ct)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_encrypt(&valid_pub, kTestHashMode, valid_msg, valid_msg,
+                             bad_ct_null)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_unblinded_key_t bad_pub_chk = {
+      .key_mode = valid_pub.key_mode,
+      .key_length = valid_pub.key_length,
+      .key = pub_data,
+  };
+  bad_pub_chk.checksum = valid_pub.checksum ^ 0xFFFFFFFF;
+  CHECK(otcrypto_rsa_encrypt(&bad_pub_chk, kTestHashMode, valid_msg, valid_msg,
+                             valid_ct)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_unblinded_key_t bad_pub_mode = {
+      .key_mode = kOtcryptoKeyModeRsaSignPkcs,
+      .key_length = valid_pub.key_length,
+      .key = pub_data,
+  };
+  bad_pub_mode.checksum = integrity_unblinded_checksum(&bad_pub_mode);
+  CHECK(otcrypto_rsa_encrypt(&bad_pub_mode, kTestHashMode, valid_msg, valid_msg,
+                             valid_ct)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Decrypt negative tests
+  CHECK(otcrypto_rsa_decrypt(NULL, kTestHashMode, valid_const_ct, valid_msg,
+                             valid_pt, &pt_len)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_const_word32_buf_t bad_const_ct_null = {.data = NULL,
+                                                   .len = kRsa2048NumWords};
+  CHECK(otcrypto_rsa_decrypt(&valid_priv, kTestHashMode, bad_const_ct_null,
+                             valid_msg, valid_pt, &pt_len)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_byte_buf_t bad_pt_null = {.data = NULL, .len = 256};
+  CHECK(otcrypto_rsa_decrypt(&valid_priv, kTestHashMode, valid_const_ct,
+                             valid_msg, bad_pt_null, &pt_len)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_decrypt(&valid_priv, kTestHashMode, valid_const_ct,
+                             valid_msg, valid_pt, NULL)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_blinded_key_t bad_priv_chk = {
+      .config = priv_cfg,
+      .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
+      .keyblob = priv_blob,
+  };
+  bad_priv_chk.checksum = valid_priv.checksum ^ 0xFFFFFFFF;
+  CHECK(otcrypto_rsa_decrypt(&bad_priv_chk, kTestHashMode, valid_const_ct,
+                             valid_msg, valid_pt, &pt_len)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_key_config_t bad_priv_mode_cfg = priv_cfg;
+  bad_priv_mode_cfg.key_mode = kOtcryptoKeyModeRsaSignPkcs;
+  otcrypto_blinded_key_t bad_priv_mode = {
+      .config = bad_priv_mode_cfg,
+      .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
+      .keyblob = priv_blob,
+  };
+  bad_priv_mode.checksum = integrity_blinded_checksum(&bad_priv_mode);
+  CHECK(otcrypto_rsa_decrypt(&bad_priv_mode, kTestHashMode, valid_const_ct,
+                             valid_msg, valid_pt, &pt_len)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  return OTCRYPTO_OK;
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
@@ -236,5 +360,6 @@ bool test_main(void) {
   CHECK_STATUS_OK(entropy_complex_init());
   EXECUTE_TEST(test_result, oaep_decrypt_valid_test);
   EXECUTE_TEST(test_result, oaep_encrypt_decrypt_test);
+  EXECUTE_TEST(test_result, run_encrypt_negative_tests);
   return status_ok(test_result);
 }

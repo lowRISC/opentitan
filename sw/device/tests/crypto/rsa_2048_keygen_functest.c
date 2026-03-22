@@ -121,6 +121,66 @@ status_t keygen_then_sign_test(void) {
   return OK_STATUS();
 }
 
+static status_t run_keygen_negative_tests(void) {
+  LOG_INFO("Running RSA keygen negative tests");
+
+  uint32_t pub_data[kOtcryptoRsa2048PublicKeyBytes / 4] = {0};
+  otcrypto_unblinded_key_t valid_pub = {
+      .key_mode = kOtcryptoKeyModeRsaSignPkcs,
+      .key_length = kOtcryptoRsa2048PublicKeyBytes,
+      .key = pub_data,
+  };
+
+  otcrypto_key_config_t valid_priv_cfg = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeRsaSignPkcs,
+      .key_length = kOtcryptoRsa2048PrivateKeyBytes,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+
+  uint32_t priv_blob[kOtcryptoRsa2048PrivateKeyblobBytes / 4] = {0};
+  otcrypto_blinded_key_t valid_priv = {
+      .config = valid_priv_cfg,
+      .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
+      .keyblob = priv_blob,
+  };
+
+  // Null checks
+  CHECK(otcrypto_rsa_keygen(kOtcryptoRsaSize2048, NULL, &valid_priv).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_keygen(kOtcryptoRsaSize2048, &valid_pub, NULL).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  // Bad modes
+  otcrypto_key_config_t bad_mode_cfg = valid_priv_cfg;
+  bad_mode_cfg.key_mode = kOtcryptoKeyModeEcdsaP256;
+  otcrypto_blinded_key_t bad_priv_mode = {
+      .config = bad_mode_cfg,
+      .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
+      .keyblob = priv_blob,
+  };
+  CHECK(otcrypto_rsa_keygen(kOtcryptoRsaSize2048, &valid_pub, &bad_priv_mode)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // HW backed restriction
+  otcrypto_key_config_t bad_hw_cfg = valid_priv_cfg;
+  bad_hw_cfg.hw_backed = kHardenedBoolTrue;
+  otcrypto_blinded_key_t bad_priv_hw = {
+      .config = bad_hw_cfg,
+      .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
+      .keyblob = priv_blob,
+  };
+  CHECK(otcrypto_rsa_keygen(kOtcryptoRsaSize2048, &valid_pub, &bad_priv_hw)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Bad size enum
+  CHECK(otcrypto_rsa_keygen((otcrypto_rsa_size_t)999, &valid_pub, &valid_priv)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  return OTCRYPTO_OK;
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
@@ -128,5 +188,6 @@ bool test_main(void) {
 
   status_t test_result = OK_STATUS();
   EXECUTE_TEST(test_result, keygen_then_sign_test);
+  EXECUTE_TEST(test_result, run_keygen_negative_tests);
   return status_ok(test_result);
 }
