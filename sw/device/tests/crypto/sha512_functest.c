@@ -117,6 +117,33 @@ static status_t streaming_test(void) {
                                kTwoBlockExpDigest);
 }
 
+/**
+ * Negative tests
+ */
+static status_t run_negative_tests(void) {
+  LOG_INFO("Running SHA2 negative tests");
+
+  uint8_t msg_data[] = "test";
+  otcrypto_const_byte_buf_t valid_msg = {.data = msg_data, .len = 4};
+  otcrypto_const_byte_buf_t bad_msg_null = {.data = NULL, .len = 4};
+
+  uint32_t digest_data[16] = {0};
+  otcrypto_hash_digest_t valid_digest_256 = {.data = digest_data, .len = 8};
+  otcrypto_hash_digest_t valid_digest_512 = {.data = digest_data, .len = 16};
+
+  otcrypto_hash_digest_t bad_digest_null = {.data = NULL, .len = 8};
+
+  // otcrypto_sha2_512 negative tests
+  CHECK(otcrypto_sha2_512(bad_msg_null, &valid_digest_512).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_sha2_512(valid_msg, &bad_digest_null).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_sha2_512(valid_msg, &valid_digest_256).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  return OTCRYPTO_OK;
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 // Holds the test result.
@@ -130,5 +157,6 @@ bool test_main(void) {
   EXECUTE_TEST(test_result, one_block_test);
   EXECUTE_TEST(test_result, two_block_test);
   EXECUTE_TEST(test_result, streaming_test);
+  EXECUTE_TEST(test_result, run_negative_tests);
   return status_ok(test_result);
 }
