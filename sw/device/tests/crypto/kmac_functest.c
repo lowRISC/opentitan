@@ -359,6 +359,38 @@ static status_t run_negative_tests(void) {
                       valid_tag)
             .value == OTCRYPTO_BAD_ARGS.value);
 
+  uint32_t digest_buf[8] = {0};
+  otcrypto_hash_digest_t valid_sha3_digest = {.data = digest_buf, .len = 8};
+  otcrypto_hash_digest_t bad_sha3_digest_null = {.data = NULL, .len = 8};
+  otcrypto_hash_digest_t bad_sha3_digest_len = {.data = digest_buf, .len = 7};
+
+  // Null digest pointer (would cause a segfault without our patch!)
+  CHECK(otcrypto_sha3_256(valid_msg, NULL).value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_shake128(valid_msg, NULL).value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_cshake256(valid_msg, valid_cust, valid_cust, NULL).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  // Null data inside digest
+  CHECK(otcrypto_sha3_256(valid_msg, &bad_sha3_digest_null).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  // Null message data with non-zero length
+  CHECK(otcrypto_sha3_256(bad_msg_null, &valid_sha3_digest).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  // Bad length for strict SHA3 functions (must strictly match requested hash
+  // length)
+  CHECK(otcrypto_sha3_256(valid_msg, &bad_sha3_digest_len).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  // cSHAKE specific checks
+  CHECK(otcrypto_cshake256(valid_msg, bad_msg_null, valid_cust,
+                           &valid_sha3_digest)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_cshake256(valid_msg, valid_cust, bad_msg_null,
+                           &valid_sha3_digest)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
   return OTCRYPTO_OK;
 }
 
