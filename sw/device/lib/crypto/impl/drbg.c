@@ -110,7 +110,7 @@ otcrypto_status_t otcrypto_drbg_instantiate(
   entropy_seed_material_t seed_material;
   HARDENED_TRY(
       hardened_memshred(seed_material.data, ARRAYSIZE(seed_material.data)));
-  seed_material_construct(perso_string, &seed_material);
+  HARDENED_TRY(seed_material_construct(perso_string, &seed_material));
 
   HARDENED_TRY(entropy_csrng_uninstantiate());
   return entropy_csrng_instantiate(/*disable_trng_input=*/kHardenedBoolFalse,
@@ -130,7 +130,7 @@ otcrypto_status_t otcrypto_drbg_reseed(
   entropy_seed_material_t seed_material;
   HARDENED_TRY(
       hardened_memshred(seed_material.data, ARRAYSIZE(seed_material.data)));
-  seed_material_construct(additional_input, &seed_material);
+  HARDENED_TRY(seed_material_construct(additional_input, &seed_material));
 
   return entropy_csrng_reseed(/*disable_trng_input=*/kHardenedBoolFalse,
                               &seed_material);
@@ -147,8 +147,8 @@ otcrypto_status_t otcrypto_drbg_manual_instantiate(
   }
 
   entropy_seed_material_t seed_material;
-  seed_material_construct(entropy, &seed_material);
-  seed_material_xor(perso_string, &seed_material);
+  HARDENED_TRY(seed_material_construct(entropy, &seed_material));
+  HARDENED_TRY(seed_material_xor(perso_string, &seed_material));
 
   HARDENED_CHECK_EQ(seed_material.len, kEntropySeedWords);
 
@@ -168,8 +168,8 @@ otcrypto_status_t otcrypto_drbg_manual_reseed(
   }
 
   entropy_seed_material_t seed_material;
-  seed_material_construct(entropy, &seed_material);
-  seed_material_xor(additional_input, &seed_material);
+  HARDENED_TRY(seed_material_construct(entropy, &seed_material));
+  HARDENED_TRY(seed_material_xor(additional_input, &seed_material));
 
   HARDENED_CHECK_EQ(seed_material.len, kEntropySeedWords);
 
@@ -202,7 +202,7 @@ static otcrypto_status_t generate(hardened_bool_t fips_check,
   }
 
   entropy_seed_material_t seed_material;
-  seed_material_construct(additional_input, &seed_material);
+  HARDENED_TRY(seed_material_construct(additional_input, &seed_material));
   HARDENED_TRY(entropy_csrng_generate(&seed_material, drbg_output.data,
                                       drbg_output.len, fips_check));
 
