@@ -16,137 +16,6 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('p', '2', '5')
 
-otcrypto_status_t otcrypto_ecdsa_p256_keygen(
-    otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
-  HARDENED_TRY(otcrypto_ecdsa_p256_keygen_async_start(private_key));
-  return otcrypto_ecdsa_p256_keygen_async_finalize(private_key, public_key);
-}
-
-otcrypto_status_t otcrypto_ecdsa_p256_sign_config_k(
-    const otcrypto_blinded_key_t *private_key,
-    const otcrypto_blinded_key_t *secret_scalar,
-    const otcrypto_hash_digest_t message_digest,
-    otcrypto_word32_buf_t signature) {
-  HARDENED_TRY(otcrypto_ecdsa_p256_sign_config_k_async_start(
-      private_key, secret_scalar, message_digest));
-  return otcrypto_ecdsa_p256_sign_async_finalize(signature);
-}
-
-otcrypto_status_t otcrypto_ecdsa_p256_sign(
-    const otcrypto_blinded_key_t *private_key,
-    const otcrypto_hash_digest_t message_digest,
-    otcrypto_word32_buf_t signature) {
-  HARDENED_TRY(
-      otcrypto_ecdsa_p256_sign_async_start(private_key, message_digest));
-  return otcrypto_ecdsa_p256_sign_async_finalize(signature);
-}
-
-otcrypto_status_t otcrypto_ecdsa_p256_verify(
-    const otcrypto_unblinded_key_t *public_key,
-    const otcrypto_hash_digest_t message_digest,
-    otcrypto_const_word32_buf_t signature,
-    hardened_bool_t *verification_result) {
-  HARDENED_TRY(otcrypto_ecdsa_p256_verify_async_start(
-      public_key, message_digest, signature));
-  return otcrypto_ecdsa_p256_verify_async_finalize(signature,
-                                                   verification_result);
-}
-
-otcrypto_status_t otcrypto_ecdsa_p256_sign_verify(
-    const otcrypto_blinded_key_t *private_key,
-    const otcrypto_unblinded_key_t *public_key,
-    const otcrypto_hash_digest_t message_digest,
-    otcrypto_word32_buf_t signature) {
-  // Signature generation.
-  HARDENED_TRY(
-      otcrypto_ecdsa_p256_sign(private_key, message_digest, signature));
-
-  // Verify signature before releasing it.
-  otcrypto_const_word32_buf_t signature_check = {
-      .data = signature.data,
-      .len = signature.len,
-  };
-  hardened_bool_t verification_result = kHardenedBoolFalse;
-  HARDENED_TRY(otcrypto_ecdsa_p256_verify(
-      public_key, message_digest, signature_check, &verification_result));
-
-  // Trap if signature verification failed.
-  HARDENED_CHECK_EQ(verification_result, kHardenedBoolTrue);
-  return OTCRYPTO_OK;
-}
-
-otcrypto_status_t otcrypto_ecdh_p256_keygen(
-    otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
-  HARDENED_TRY(otcrypto_ecdh_p256_keygen_async_start(private_key));
-  return otcrypto_ecdh_p256_keygen_async_finalize(private_key, public_key);
-}
-
-otcrypto_status_t otcrypto_ecdh_p256(const otcrypto_blinded_key_t *private_key,
-                                     const otcrypto_unblinded_key_t *public_key,
-                                     otcrypto_blinded_key_t *shared_secret) {
-  HARDENED_TRY(otcrypto_ecdh_p256_async_start(private_key, public_key));
-  return otcrypto_ecdh_p256_async_finalize(shared_secret);
-}
-
-otcrypto_status_t otcrypto_p256_point_on_curve(
-    const otcrypto_unblinded_key_t *point, hardened_bool_t *check_result) {
-  if (point == NULL || point == NULL || point->key == NULL ||
-      check_result == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  p256_point_t *pt = (p256_point_t *)point->key;
-  HARDENED_TRY(p256_point_on_curve_check(pt, check_result));
-
-  return OTCRYPTO_OK;
-}
-
-/**
- * Calls P-256 key generation.
- *
- * Can be used for both ECDSA and ECDH. If the key is hardware-backed, loads
- * the data from key manager and calls the sideloaded key generation routine.
- *
- * @param private_key Sideloaded key handle.
- * @return OK or error.
- */
-OT_WARN_UNUSED_RESULT
-static status_t internal_p256_keygen_start(
-    const otcrypto_blinded_key_t *private_key) {
-  // Ensure the entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
-
-  if (private_key->config.hw_backed == kHardenedBoolTrue) {
-    HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
-                      kHardenedBoolTrue);
-    HARDENED_TRY(keyblob_sideload_key_otbn(private_key));
-    return p256_sideload_keygen_start();
-  } else if (private_key->config.hw_backed == kHardenedBoolFalse) {
-    HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
-                      kHardenedBoolFalse);
-    return p256_keygen_start();
-  } else {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  return OTCRYPTO_OK;
-}
-
-otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_start(
-    const otcrypto_blinded_key_t *private_key) {
-  if (private_key == NULL || private_key->keyblob == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  // Check the key mode.
-  if (private_key->config.key_mode != kOtcryptoKeyModeEcdsaP256) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(launder32(private_key->config.key_mode),
-                    kOtcryptoKeyModeEcdsaP256);
-
-  return internal_p256_keygen_start(private_key);
-}
-
 /**
  * Check the lengths of private keys for curve P-256.
  *
@@ -285,6 +154,218 @@ static status_t internal_p256_keygen_finalize(
   return keymgr_sideload_clear_otbn();
 }
 
+/**
+ * Check the length of a signature buffer for ECDSA with P-256.
+ *
+ * If this check passes on `signature.len`, it is safe to interpret
+ * `signature.data` as `p256_ecdsa_signature_t *`.
+ *
+ * @param len Length to check.
+ * @return OK if the lengths are correct or BAD_ARGS otherwise.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t p256_signature_length_check(size_t len) {
+  if (len > UINT32_MAX / sizeof(uint32_t) ||
+      len * sizeof(uint32_t) != sizeof(p256_ecdsa_signature_t)) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(launder32(len) * sizeof(uint32_t),
+                    sizeof(p256_ecdsa_signature_t));
+
+  return OTCRYPTO_OK;
+}
+
+otcrypto_status_t otcrypto_ecdsa_p256_keygen(
+    otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
+  if (private_key == NULL || private_key->keyblob == NULL ||
+      public_key == NULL || public_key->key == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (private_key->config.key_mode != kOtcryptoKeyModeEcdsaP256 ||
+      public_key->key_mode != kOtcryptoKeyModeEcdsaP256) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (!status_ok(p256_private_key_length_check(private_key)) ||
+      !status_ok(p256_public_key_length_check(public_key))) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  HARDENED_TRY(otcrypto_ecdsa_p256_keygen_async_start(private_key));
+  return otcrypto_ecdsa_p256_keygen_async_finalize(private_key, public_key);
+}
+
+otcrypto_status_t otcrypto_ecdsa_p256_sign_config_k(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_blinded_key_t *secret_scalar,
+    const otcrypto_hash_digest_t message_digest,
+    otcrypto_word32_buf_t signature) {
+  if (signature.data == NULL || private_key == NULL ||
+      private_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (!status_ok(p256_signature_length_check(signature.len)) ||
+      !status_ok(p256_private_key_length_check(private_key))) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_TRY(otcrypto_ecdsa_p256_sign_config_k_async_start(
+      private_key, secret_scalar, message_digest));
+  return otcrypto_ecdsa_p256_sign_async_finalize(signature);
+}
+
+otcrypto_status_t otcrypto_ecdsa_p256_sign(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_hash_digest_t message_digest,
+    otcrypto_word32_buf_t signature) {
+  if (signature.data == NULL || private_key == NULL ||
+      private_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (!status_ok(p256_signature_length_check(signature.len)) ||
+      !status_ok(p256_private_key_length_check(private_key))) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_TRY(
+      otcrypto_ecdsa_p256_sign_async_start(private_key, message_digest));
+  return otcrypto_ecdsa_p256_sign_async_finalize(signature);
+}
+
+otcrypto_status_t otcrypto_ecdsa_p256_verify(
+    const otcrypto_unblinded_key_t *public_key,
+    const otcrypto_hash_digest_t message_digest,
+    otcrypto_const_word32_buf_t signature,
+    hardened_bool_t *verification_result) {
+  if (verification_result == NULL || signature.data == NULL ||
+      public_key == NULL || public_key->key == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (!status_ok(p256_signature_length_check(signature.len)) ||
+      !status_ok(p256_public_key_length_check(public_key))) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_TRY(otcrypto_ecdsa_p256_verify_async_start(
+      public_key, message_digest, signature));
+  return otcrypto_ecdsa_p256_verify_async_finalize(signature,
+                                                   verification_result);
+}
+
+otcrypto_status_t otcrypto_ecdsa_p256_sign_verify(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_unblinded_key_t *public_key,
+    const otcrypto_hash_digest_t message_digest,
+    otcrypto_word32_buf_t signature) {
+  // Signature generation.
+  HARDENED_TRY(
+      otcrypto_ecdsa_p256_sign(private_key, message_digest, signature));
+
+  // Verify signature before releasing it.
+  otcrypto_const_word32_buf_t signature_check = {
+      .data = signature.data,
+      .len = signature.len,
+  };
+  hardened_bool_t verification_result = kHardenedBoolFalse;
+  HARDENED_TRY(otcrypto_ecdsa_p256_verify(
+      public_key, message_digest, signature_check, &verification_result));
+
+  // Trap if signature verification failed.
+  HARDENED_CHECK_EQ(verification_result, kHardenedBoolTrue);
+  return OTCRYPTO_OK;
+}
+
+otcrypto_status_t otcrypto_ecdh_p256_keygen(
+    otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
+  if (private_key == NULL || private_key->keyblob == NULL ||
+      public_key == NULL || public_key->key == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (private_key->config.key_mode != kOtcryptoKeyModeEcdhP256 ||
+      public_key->key_mode != kOtcryptoKeyModeEcdhP256) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (!status_ok(p256_private_key_length_check(private_key)) ||
+      !status_ok(p256_public_key_length_check(public_key))) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_TRY(otcrypto_ecdh_p256_keygen_async_start(private_key));
+  return otcrypto_ecdh_p256_keygen_async_finalize(private_key, public_key);
+}
+
+otcrypto_status_t otcrypto_ecdh_p256(const otcrypto_blinded_key_t *private_key,
+                                     const otcrypto_unblinded_key_t *public_key,
+                                     otcrypto_blinded_key_t *shared_secret) {
+  if (shared_secret == NULL || shared_secret->keyblob == NULL ||
+      private_key == NULL || private_key->keyblob == NULL ||
+      public_key == NULL || public_key->key == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (shared_secret->config.key_length != kP256CoordBytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (!status_ok(p256_private_key_length_check(private_key)) ||
+      !status_ok(p256_public_key_length_check(public_key))) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_TRY(otcrypto_ecdh_p256_async_start(private_key, public_key));
+  return otcrypto_ecdh_p256_async_finalize(shared_secret);
+}
+
+otcrypto_status_t otcrypto_p256_point_on_curve(
+    const otcrypto_unblinded_key_t *point, hardened_bool_t *check_result) {
+  if (point == NULL || point->key == NULL || check_result == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  p256_point_t *pt = (p256_point_t *)point->key;
+  HARDENED_TRY(p256_point_on_curve_check(pt, check_result));
+
+  return OTCRYPTO_OK;
+}
+
+/**
+ * Calls P-256 key generation.
+ *
+ * Can be used for both ECDSA and ECDH. If the key is hardware-backed, loads
+ * the data from key manager and calls the sideloaded key generation routine.
+ *
+ * @param private_key Sideloaded key handle.
+ * @return OK or error.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t internal_p256_keygen_start(
+    const otcrypto_blinded_key_t *private_key) {
+  // Ensure the entropy complex is initialized.
+  HARDENED_TRY(entropy_complex_check());
+
+  if (private_key->config.hw_backed == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
+                      kHardenedBoolTrue);
+    HARDENED_TRY(keyblob_sideload_key_otbn(private_key));
+    return p256_sideload_keygen_start();
+  } else if (private_key->config.hw_backed == kHardenedBoolFalse) {
+    HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
+                      kHardenedBoolFalse);
+    return p256_keygen_start();
+  } else {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  return OTCRYPTO_OK;
+}
+
+otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_start(
+    const otcrypto_blinded_key_t *private_key) {
+  if (private_key == NULL || private_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check the key mode.
+  if (private_key->config.key_mode != kOtcryptoKeyModeEcdsaP256) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(launder32(private_key->config.key_mode),
+                    kOtcryptoKeyModeEcdsaP256);
+
+  return internal_p256_keygen_start(private_key);
+}
+
 otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_finalize(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
   // Check for any NULL pointers.
@@ -416,27 +497,6 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_async_start(
   // entering the CryptoLib and here, we would detect this now.
   HARDENED_CHECK_EQ(integrity_blinded_key_check(private_key),
                     kHardenedBoolTrue);
-
-  return OTCRYPTO_OK;
-}
-
-/**
- * Check the length of a signature buffer for ECDSA with P-256.
- *
- * If this check passes on `signature.len`, it is safe to interpret
- * `signature.data` as `p256_ecdsa_signature_t *`.
- *
- * @param len Length to check.
- * @return OK if the lengths are correct or BAD_ARGS otherwise.
- */
-OT_WARN_UNUSED_RESULT
-static status_t p256_signature_length_check(size_t len) {
-  if (len > UINT32_MAX / sizeof(uint32_t) ||
-      len * sizeof(uint32_t) != sizeof(p256_ecdsa_signature_t)) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(launder32(len) * sizeof(uint32_t),
-                    sizeof(p256_ecdsa_signature_t));
 
   return OTCRYPTO_OK;
 }
