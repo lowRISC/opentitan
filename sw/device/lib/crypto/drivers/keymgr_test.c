@@ -4,13 +4,19 @@
 
 #include "sw/device/lib/crypto/drivers/keymgr.h"
 
+#include "sw/device/lib/base/abs_mmio.h"
+#include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "keymgr_regs.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('t', 's', 't')
@@ -48,9 +54,6 @@ status_t test_setup(void) {
 
 /**
  * Test generating a single software-visible key.
- *
- * This test just checks that the key generation process finished without
- * errors, without performing any validation on the key.
  */
 status_t sw_single_key_test(void) {
   keymgr_output_t key;
@@ -59,9 +62,6 @@ status_t sw_single_key_test(void) {
 
 /**
  * Test generating a single sideloaded AES key.
- *
- * This test just checks that the key generation process finished without
- * errors, without actually attempting to use the key.
  */
 status_t aes_basic_test(void) {
   return keymgr_generate_key_aes(kTestDiversification);
@@ -69,9 +69,6 @@ status_t aes_basic_test(void) {
 
 /**
  * Test generating a single sideloaded KMAC key.
- *
- * This test just checks that the key generation process finished without
- * errors, without actually attempting to use the key.
  */
 status_t kmac_basic_test(void) {
   return keymgr_generate_key_kmac(kTestDiversification);
@@ -79,9 +76,6 @@ status_t kmac_basic_test(void) {
 
 /**
  * Test generating a single sideloaded OTBN key.
- *
- * This test just checks that the key generation process finished without
- * errors, without actually attempting to use the key.
  */
 status_t otbn_basic_test(void) {
   return keymgr_generate_key_otbn(kTestDiversification);
@@ -89,13 +83,6 @@ status_t otbn_basic_test(void) {
 
 /**
  * Check whether two key manager output values are equivalent.
- *
- * Unmasks both keys and compares their unmasked values; masking should not
- * affect this comparison.
- *
- * @param key1 First key manager output.
- * @param key2 Second key manager output.
- * @return true if the keys are equivalent, false otherwise.
  */
 static bool output_equiv(keymgr_output_t key1, keymgr_output_t key2) {
   for (size_t i = 0; i < kKeymgrOutputShareNumWords; i++) {
@@ -110,37 +97,26 @@ static bool output_equiv(keymgr_output_t key1, keymgr_output_t key2) {
 
 /**
  * Test generating software-visible keys with different salts.
- *
- * Different salts should produce different keys; the same salt should produce
- * the same key but with different masking.
  */
 status_t sw_keys_change_salt_test(void) {
-  // Copy the test data into a mutable structure.
   keymgr_diversification_t div;
   memcpy(div.salt, kTestDiversification.salt, sizeof(div.salt));
   div.version = kTestDiversification.version;
 
-  // Generate a key.
   keymgr_output_t key1;
   TRY(keymgr_generate_key_sw(div, &key1));
 
-  // Change the salt and generate the key again.
   div.salt[0]++;
   keymgr_output_t key2;
   TRY(keymgr_generate_key_sw(div, &key2));
 
-  // Check that the keys are distinct.
   TRY_CHECK(!output_equiv(key1, key2));
 
-  // Change the salt back to its original value and generate a third time.
   div.salt[0]--;
   keymgr_output_t key3;
   TRY(keymgr_generate_key_sw(div, &key3));
 
-  // Check that the key is the equivalent to the first key when unmasked.
   TRY_CHECK(output_equiv(key1, key3));
-
-  // Check that the masking on the equivalent keys is different.
   TRY_CHECK_ARRAYS_NE(key1.share0, key2.share0, sizeof(key1.share0));
 
   return OK_STATUS();
@@ -148,9 +124,6 @@ status_t sw_keys_change_salt_test(void) {
 
 /**
  * Test generating software-visible keys with different versions.
- *
- * Different versions should produce different keys; the same version should
- * produce the same key but with different masking.
  */
 status_t sw_keys_change_version_test(void) {
   uint32_t max_version;
@@ -163,35 +136,68 @@ status_t sw_keys_change_version_test(void) {
     return OK_STATUS();
   }
 
-  // Copy the test data into a mutable structure.
   keymgr_diversification_t div;
   memcpy(div.salt, kTestDiversification.salt, sizeof(div.salt));
   div.version = kTestDiversification.version;
 
-  // Generate a key.
   keymgr_output_t key1;
   TRY(keymgr_generate_key_sw(div, &key1));
 
-  // Change the version and generate the key again.
   div.version++;
   keymgr_output_t key2;
   TRY(keymgr_generate_key_sw(div, &key2));
 
-  // Check that the keys are distinct.
   TRY_CHECK(!output_equiv(key1, key2));
 
-  // Change the version back to its original value and generate a third time.
   div.version--;
   keymgr_output_t key3;
   TRY(keymgr_generate_key_sw(div, &key3));
 
-  // Check that the key is equivalent to the first key when unmasked.
   TRY_CHECK(output_equiv(key1, key3));
-
-  // Check that the masking on the equivalent keys is different.
   TRY_CHECK_ARRAYS_NE(key1.share0, key2.share0, sizeof(key1.share0));
 
   return OK_STATUS();
+}
+
+static status_t run_negative_test(void) {
+  LOG_INFO("Running negative tests.");
+
+  keymgr_output_t dummy_key;
+
+  // Test the request of a key derivation with exceeding version
+  keymgr_diversification_t bad_version_div = kTestDiversification;
+  bad_version_div.version = 0xFFFFFFFF;
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_start(
+      kTopEarlgreyAlertIdKeymgrRecovOperationErr));
+  CHECK(keymgr_generate_key_sw(bad_version_div, &dummy_key).value ==
+        OTCRYPTO_RECOV_ERR.value);
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_finish(
+      kTopEarlgreyAlertIdKeymgrRecovOperationErr));
+
+  // Negative test keymgr_is_idle()
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_start(
+      kTopEarlgreyAlertIdKeymgrRecovOperationErr));
+  abs_mmio_write32(TOP_EARLGREY_KEYMGR_BASE_ADDR + KEYMGR_START_REG_OFFSET,
+                   1 << KEYMGR_START_EN_BIT);
+  CHECK(keymgr_generate_key_sw(kTestDiversification, &dummy_key).value ==
+        OTCRYPTO_RECOV_ERR.value);
+  uint32_t status;
+  uint32_t reg;
+  do {
+    reg = abs_mmio_read32(TOP_EARLGREY_KEYMGR_BASE_ADDR +
+                          KEYMGR_OP_STATUS_REG_OFFSET);
+    status = bitfield_field32_read(reg, KEYMGR_OP_STATUS_STATUS_FIELD);
+  } while (status == KEYMGR_OP_STATUS_STATUS_VALUE_WIP);
+  abs_mmio_write32(TOP_EARLGREY_KEYMGR_BASE_ADDR + KEYMGR_OP_STATUS_REG_OFFSET,
+                   reg);
+  uint32_t err_code = abs_mmio_read32(TOP_EARLGREY_KEYMGR_BASE_ADDR +
+                                      KEYMGR_ERR_CODE_REG_OFFSET);
+  abs_mmio_write32(TOP_EARLGREY_KEYMGR_BASE_ADDR + KEYMGR_ERR_CODE_REG_OFFSET,
+                   err_code);
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_finish(
+      kTopEarlgreyAlertIdKeymgrRecovOperationErr));
+
+  return OTCRYPTO_OK;
 }
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -206,6 +212,7 @@ bool test_main(void) {
   EXECUTE_TEST(result, aes_basic_test);
   EXECUTE_TEST(result, kmac_basic_test);
   EXECUTE_TEST(result, otbn_basic_test);
+  EXECUTE_TEST(result, run_negative_test);
 
   return status_ok(result);
 }
