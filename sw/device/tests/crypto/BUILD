@@ -133,7 +133,11 @@ opentitan_test(
     deps = [
         ":aes_gcm_testutils",
         ":aes_gcm_testvectors",
+        "//sw/device/lib/crypto/impl:aes_gcm",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:status",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
