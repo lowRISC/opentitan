@@ -16,91 +16,6 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('p', '3', '8')
 
-otcrypto_status_t otcrypto_ecdsa_p384_keygen(
-    otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
-  HARDENED_TRY(otcrypto_ecdsa_p384_keygen_async_start(private_key));
-  return otcrypto_ecdsa_p384_keygen_async_finalize(private_key, public_key);
-}
-
-otcrypto_status_t otcrypto_ecdsa_p384_sign_config_k(
-    const otcrypto_blinded_key_t *private_key,
-    const otcrypto_blinded_key_t *secret_scalar,
-    const otcrypto_hash_digest_t message_digest,
-    otcrypto_word32_buf_t signature) {
-  HARDENED_TRY(otcrypto_ecdsa_p384_sign_config_k_async_start(
-      private_key, secret_scalar, message_digest));
-  return otcrypto_ecdsa_p384_sign_async_finalize(signature);
-}
-
-otcrypto_status_t otcrypto_ecdsa_p384_sign(
-    const otcrypto_blinded_key_t *private_key,
-    const otcrypto_hash_digest_t message_digest,
-    otcrypto_word32_buf_t signature) {
-  HARDENED_TRY(
-      otcrypto_ecdsa_p384_sign_async_start(private_key, message_digest));
-  return otcrypto_ecdsa_p384_sign_async_finalize(signature);
-}
-
-otcrypto_status_t otcrypto_ecdsa_p384_verify(
-    const otcrypto_unblinded_key_t *public_key,
-    const otcrypto_hash_digest_t message_digest,
-    otcrypto_const_word32_buf_t signature,
-    hardened_bool_t *verification_result) {
-  HARDENED_TRY(otcrypto_ecdsa_p384_verify_async_start(
-      public_key, message_digest, signature));
-  return otcrypto_ecdsa_p384_verify_async_finalize(signature,
-                                                   verification_result);
-}
-
-otcrypto_status_t otcrypto_ecdsa_p384_sign_verify(
-    const otcrypto_blinded_key_t *private_key,
-    const otcrypto_unblinded_key_t *public_key,
-    const otcrypto_hash_digest_t message_digest,
-    otcrypto_word32_buf_t signature) {
-  // Signature generation.
-  HARDENED_TRY(
-      otcrypto_ecdsa_p384_sign(private_key, message_digest, signature));
-
-  // Verify signature before releasing it.
-  otcrypto_const_word32_buf_t signature_check = {
-      .data = signature.data,
-      .len = signature.len,
-  };
-  hardened_bool_t verification_result = kHardenedBoolFalse;
-  HARDENED_TRY(otcrypto_ecdsa_p384_verify(
-      public_key, message_digest, signature_check, &verification_result));
-
-  // Trap if signature verification failed.
-  HARDENED_CHECK_EQ(verification_result, kHardenedBoolTrue);
-  return OTCRYPTO_OK;
-}
-
-otcrypto_status_t otcrypto_ecdh_p384_keygen(
-    otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
-  HARDENED_TRY(otcrypto_ecdh_p384_keygen_async_start(private_key));
-  return otcrypto_ecdh_p384_keygen_async_finalize(private_key, public_key);
-}
-
-otcrypto_status_t otcrypto_ecdh_p384(const otcrypto_blinded_key_t *private_key,
-                                     const otcrypto_unblinded_key_t *public_key,
-                                     otcrypto_blinded_key_t *shared_secret) {
-  HARDENED_TRY(otcrypto_ecdh_p384_async_start(private_key, public_key));
-  return otcrypto_ecdh_p384_async_finalize(shared_secret);
-}
-
-otcrypto_status_t otcrypto_p384_point_on_curve(
-    const otcrypto_unblinded_key_t *point, hardened_bool_t *check_result) {
-  if (point == NULL || point == NULL || point->key == NULL ||
-      check_result == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  p384_point_t *pt = (p384_point_t *)point->key;
-  HARDENED_TRY(p384_point_on_curve_check(pt, check_result));
-
-  return OTCRYPTO_OK;
-}
-
 /**
  * Calls P-384 key generation.
  *
@@ -286,6 +201,172 @@ static status_t internal_p384_keygen_finalize(
   return OTCRYPTO_OK;
 }
 
+/**
+ * Check the length of a signature buffer for ECDSA with P-384.
+ *
+ * If this check passes on `signature.len`, it is safe to interpret
+ * `signature.data` as `p384_ecdsa_signature_t *`.
+ *
+ * @param len Length to check.
+ * @return OK if the lengths are correct or BAD_ARGS otherwise.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t p384_signature_length_check(size_t len) {
+  if (len > UINT32_MAX / sizeof(uint32_t) ||
+      len * sizeof(uint32_t) != sizeof(p384_ecdsa_signature_t)) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(launder32(len) * sizeof(uint32_t),
+                    sizeof(p384_ecdsa_signature_t));
+
+  return OTCRYPTO_OK;
+}
+
+otcrypto_status_t otcrypto_ecdsa_p384_keygen(
+    otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
+  if (private_key == NULL || private_key->keyblob == NULL ||
+      public_key == NULL || public_key->key == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (private_key->config.key_mode != kOtcryptoKeyModeEcdsaP384 ||
+      public_key->key_mode != kOtcryptoKeyModeEcdsaP384) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (!status_ok(p384_private_key_length_check(private_key)) ||
+      !status_ok(p384_public_key_length_check(public_key))) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  HARDENED_TRY(otcrypto_ecdsa_p384_keygen_async_start(private_key));
+  return otcrypto_ecdsa_p384_keygen_async_finalize(private_key, public_key);
+}
+
+otcrypto_status_t otcrypto_ecdsa_p384_sign_config_k(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_blinded_key_t *secret_scalar,
+    const otcrypto_hash_digest_t message_digest,
+    otcrypto_word32_buf_t signature) {
+  if (signature.data == NULL || private_key == NULL ||
+      private_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (!status_ok(p384_signature_length_check(signature.len)) ||
+      !status_ok(p384_private_key_length_check(private_key))) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_TRY(otcrypto_ecdsa_p384_sign_config_k_async_start(
+      private_key, secret_scalar, message_digest));
+  return otcrypto_ecdsa_p384_sign_async_finalize(signature);
+}
+
+otcrypto_status_t otcrypto_ecdsa_p384_sign(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_hash_digest_t message_digest,
+    otcrypto_word32_buf_t signature) {
+  if (signature.data == NULL || private_key == NULL ||
+      private_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (!status_ok(p384_signature_length_check(signature.len)) ||
+      !status_ok(p384_private_key_length_check(private_key))) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_TRY(
+      otcrypto_ecdsa_p384_sign_async_start(private_key, message_digest));
+  return otcrypto_ecdsa_p384_sign_async_finalize(signature);
+}
+
+otcrypto_status_t otcrypto_ecdsa_p384_verify(
+    const otcrypto_unblinded_key_t *public_key,
+    const otcrypto_hash_digest_t message_digest,
+    otcrypto_const_word32_buf_t signature,
+    hardened_bool_t *verification_result) {
+  if (verification_result == NULL || signature.data == NULL ||
+      public_key == NULL || public_key->key == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (!status_ok(p384_signature_length_check(signature.len)) ||
+      !status_ok(p384_public_key_length_check(public_key))) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_TRY(otcrypto_ecdsa_p384_verify_async_start(
+      public_key, message_digest, signature));
+  return otcrypto_ecdsa_p384_verify_async_finalize(signature,
+                                                   verification_result);
+}
+
+otcrypto_status_t otcrypto_ecdsa_p384_sign_verify(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_unblinded_key_t *public_key,
+    const otcrypto_hash_digest_t message_digest,
+    otcrypto_word32_buf_t signature) {
+  // Signature generation.
+  HARDENED_TRY(
+      otcrypto_ecdsa_p384_sign(private_key, message_digest, signature));
+
+  // Verify signature before releasing it.
+  otcrypto_const_word32_buf_t signature_check = {
+      .data = signature.data,
+      .len = signature.len,
+  };
+  hardened_bool_t verification_result = kHardenedBoolFalse;
+  HARDENED_TRY(otcrypto_ecdsa_p384_verify(
+      public_key, message_digest, signature_check, &verification_result));
+
+  // Trap if signature verification failed.
+  HARDENED_CHECK_EQ(verification_result, kHardenedBoolTrue);
+  return OTCRYPTO_OK;
+}
+
+otcrypto_status_t otcrypto_ecdh_p384_keygen(
+    otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
+  if (private_key == NULL || private_key->keyblob == NULL ||
+      public_key == NULL || public_key->key == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (private_key->config.key_mode != kOtcryptoKeyModeEcdhP384 ||
+      public_key->key_mode != kOtcryptoKeyModeEcdhP384) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (!status_ok(p384_private_key_length_check(private_key)) ||
+      !status_ok(p384_public_key_length_check(public_key))) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_TRY(otcrypto_ecdh_p384_keygen_async_start(private_key));
+  return otcrypto_ecdh_p384_keygen_async_finalize(private_key, public_key);
+}
+
+otcrypto_status_t otcrypto_ecdh_p384(const otcrypto_blinded_key_t *private_key,
+                                     const otcrypto_unblinded_key_t *public_key,
+                                     otcrypto_blinded_key_t *shared_secret) {
+  if (shared_secret == NULL || shared_secret->keyblob == NULL ||
+      private_key == NULL || private_key->keyblob == NULL ||
+      public_key == NULL || public_key->key == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (shared_secret->config.key_length != kP384CoordBytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (!status_ok(p384_private_key_length_check(private_key)) ||
+      !status_ok(p384_public_key_length_check(public_key))) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_TRY(otcrypto_ecdh_p384_async_start(private_key, public_key));
+  return otcrypto_ecdh_p384_async_finalize(shared_secret);
+}
+
+otcrypto_status_t otcrypto_p384_point_on_curve(
+    const otcrypto_unblinded_key_t *point, hardened_bool_t *check_result) {
+  if (point == NULL || point->key == NULL || check_result == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  p384_point_t *pt = (p384_point_t *)point->key;
+  HARDENED_TRY(p384_point_on_curve_check(pt, check_result));
+
+  return OTCRYPTO_OK;
+}
+
 otcrypto_status_t otcrypto_ecdsa_p384_keygen_async_finalize(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
   // Check for any NULL pointers.
@@ -420,27 +501,6 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_async_start(
   // entering the CryptoLib and here, we would detect this now.
   HARDENED_CHECK_EQ(integrity_blinded_key_check(private_key),
                     kHardenedBoolTrue);
-
-  return OTCRYPTO_OK;
-}
-
-/**
- * Check the length of a signature buffer for ECDSA with P-384.
- *
- * If this check passes on `signature.len`, it is safe to interpret
- * `signature.data` as `p384_ecdsa_signature_t *`.
- *
- * @param len Length to check.
- * @return OK if the lengths are correct or BAD_ARGS otherwise.
- */
-OT_WARN_UNUSED_RESULT
-static status_t p384_signature_length_check(size_t len) {
-  if (len > UINT32_MAX / sizeof(uint32_t) ||
-      len * sizeof(uint32_t) != sizeof(p384_ecdsa_signature_t)) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(launder32(len) * sizeof(uint32_t),
-                    sizeof(p384_ecdsa_signature_t));
 
   return OTCRYPTO_OK;
 }
