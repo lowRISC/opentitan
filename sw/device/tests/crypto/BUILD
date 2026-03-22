@@ -199,6 +199,7 @@ opentitan_test(
     deps = [
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl:drbg",
+        "//sw/device/lib/crypto/impl:status",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:randomness_quality",
         "//sw/device/lib/testing/test_framework:ottf_main",
