@@ -327,3 +327,24 @@ cc_library(
         "//sw/device/lib/crypto/impl:status",
     ],
 )
+
+opentitan_test(
+    name = "otbn_test",
+    srcs = ["otbn_test.c"],
+    exec_env = CRYPTO_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":otbn",
+        ":rv_core_ibex",
+        "//hw/ip/otbn/data:otbn_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/crypto/impl:status",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_alerts",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
