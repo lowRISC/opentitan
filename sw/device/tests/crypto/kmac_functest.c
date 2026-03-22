@@ -232,6 +232,136 @@ static status_t run_test_vector(void) {
   return OTCRYPTO_OK;
 }
 
+/**
+ * Negative tests
+ */
+static status_t run_negative_tests(void) {
+  LOG_INFO("Running KMAC negative tests");
+
+  // Base valid config
+  otcrypto_key_config_t valid_cfg = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeKmac128,
+      .key_length = 32,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+
+  // Base valid keyblob
+  uint32_t valid_keyblob[64 / 4] = {0};
+  otcrypto_blinded_key_t valid_key = {
+      .config = valid_cfg,
+      .keyblob_length = sizeof(valid_keyblob),
+      .keyblob = valid_keyblob,
+  };
+  valid_key.checksum = integrity_blinded_checksum(&valid_key);
+
+  // Base valid buffers
+  uint8_t dummy_data[] = "test";
+  otcrypto_const_byte_buf_t valid_msg = {.data = dummy_data, .len = 4};
+  otcrypto_const_byte_buf_t bad_msg_null = {.data = NULL, .len = 4};
+  otcrypto_const_byte_buf_t valid_cust = {.data = dummy_data, .len = 4};
+  otcrypto_const_byte_buf_t bad_cust_null = {.data = NULL, .len = 4};
+
+  uint32_t tag_data[8] = {0};
+  otcrypto_word32_buf_t valid_tag = {.data = tag_data, .len = 8};
+  otcrypto_word32_buf_t bad_tag_null = {.data = NULL, .len = 8};
+  size_t valid_req_len = 32;
+
+  // Null pointer tests
+  CHECK(otcrypto_kmac(NULL, valid_msg, valid_cust, valid_req_len, valid_tag)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_kmac(&valid_key, valid_msg, valid_cust, valid_req_len,
+                      bad_tag_null)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_blinded_key_t bad_key_null = {
+      .config = valid_cfg,
+      .keyblob_length = sizeof(valid_keyblob),
+      .keyblob = NULL,
+  };
+  CHECK(otcrypto_kmac(&bad_key_null, valid_msg, valid_cust, valid_req_len,
+                      valid_tag)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Null Data with non-zero length tests
+  CHECK(otcrypto_kmac(&valid_key, bad_msg_null, valid_cust, valid_req_len,
+                      valid_tag)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_kmac(&valid_key, valid_msg, bad_cust_null, valid_req_len,
+                      valid_tag)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Tag and output length checks
+  CHECK(otcrypto_kmac(&valid_key, valid_msg, valid_cust, 31, valid_tag).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_kmac(&valid_key, valid_msg, valid_cust, 0, valid_tag).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  // Checksum and mode tests
+  otcrypto_blinded_key_t bad_key_chk = {
+      .config = valid_cfg,
+      .keyblob_length = sizeof(valid_keyblob),
+      .keyblob = valid_keyblob,
+  };
+  bad_key_chk.checksum = valid_key.checksum ^ 0xFFFFFFFF;
+  CHECK(otcrypto_kmac(&bad_key_chk, valid_msg, valid_cust, valid_req_len,
+                      valid_tag)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_key_config_t bad_mode_cfg = valid_cfg;
+  bad_mode_cfg.key_mode = kOtcryptoKeyModeHmacSha256;
+  otcrypto_blinded_key_t bad_key_mode = {
+      .config = bad_mode_cfg,
+      .keyblob_length = sizeof(valid_keyblob),
+      .keyblob = valid_keyblob,
+  };
+  bad_key_mode.checksum = integrity_blinded_checksum(&bad_key_mode);
+  CHECK(otcrypto_kmac(&bad_key_mode, valid_msg, valid_cust, valid_req_len,
+                      valid_tag)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // SW backed constraints
+  otcrypto_blinded_key_t bad_sw_len = {
+      .config = valid_cfg,
+      .keyblob_length = 32,
+      .keyblob = valid_keyblob,
+  };
+  bad_sw_len.checksum = integrity_blinded_checksum(&bad_sw_len);
+  CHECK(otcrypto_kmac(&bad_sw_len, valid_msg, valid_cust, valid_req_len,
+                      valid_tag)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // HW backed constraints
+  otcrypto_key_config_t bad_hw_enum_cfg = valid_cfg;
+  bad_hw_enum_cfg.hw_backed = 0xFF;
+  otcrypto_blinded_key_t bad_hw_enum = {
+      .config = bad_hw_enum_cfg,
+      .keyblob_length = sizeof(valid_keyblob),
+      .keyblob = valid_keyblob,
+  };
+  bad_hw_enum.checksum = integrity_blinded_checksum(&bad_hw_enum);
+  CHECK(otcrypto_kmac(&bad_hw_enum, valid_msg, valid_cust, valid_req_len,
+                      valid_tag)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_key_config_t bad_hw_len_cfg = valid_cfg;
+  bad_hw_len_cfg.hw_backed = kHardenedBoolTrue;
+  bad_hw_len_cfg.key_length = 16;
+  otcrypto_blinded_key_t bad_hw_len = {
+      .config = bad_hw_len_cfg,
+      .keyblob_length = 32,
+      .keyblob = valid_keyblob,
+  };
+  bad_hw_len.checksum = integrity_blinded_checksum(&bad_hw_len);
+  CHECK(otcrypto_kmac(&bad_hw_len, valid_msg, valid_cust, valid_req_len,
+                      valid_tag)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  return OTCRYPTO_OK;
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   LOG_INFO("Testing cryptolib KMAC driver.");
@@ -248,5 +378,6 @@ bool test_main(void) {
              current_test_vector->vector_identifier);
     EXECUTE_TEST(test_result, run_test_vector);
   }
+  EXECUTE_TEST(test_result, run_negative_tests);
   return status_ok(test_result);
 }
