@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/ecc_p384.h"
 #include "sw/device/lib/runtime/log.h"
@@ -132,6 +133,119 @@ status_t key_exchange_test(void) {
 
   return OTCRYPTO_OK;
 }
+static status_t run_ecdh_negative_tests(void) {
+  LOG_INFO("Running ECDH negative tests.");
+
+  uint32_t priv_keyblob[112 / 4] = {0};
+  otcrypto_blinded_key_t valid_priv = {
+      .config = kEcdhPrivateKeyConfig,
+      .keyblob_length = 112,
+      .keyblob = priv_keyblob,
+  };
+  valid_priv.checksum = integrity_blinded_checksum(&valid_priv);
+
+  uint32_t pub_key_data[96 / 4] = {0};
+  otcrypto_unblinded_key_t valid_pub = {
+      .key_mode = kOtcryptoKeyModeEcdhP384,
+      .key_length = 96,
+      .key = pub_key_data,
+  };
+  valid_pub.checksum = integrity_unblinded_checksum(&valid_pub);
+
+  uint32_t shared_keyblob[keyblob_num_words(kEcdhSharedKeyConfig)];
+  otcrypto_blinded_key_t valid_shared = {
+      .config = kEcdhSharedKeyConfig,
+      .keyblob_length = sizeof(shared_keyblob),
+      .keyblob = shared_keyblob,
+  };
+  valid_shared.checksum = integrity_blinded_checksum(&valid_shared);
+
+  // ECDH keygen negative tests
+  CHECK(otcrypto_ecdh_p384_keygen(NULL, &valid_pub).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ecdh_p384_keygen(&valid_priv, NULL).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_blinded_key_t bad_priv_null = {
+      .config = kEcdhPrivateKeyConfig,
+      .keyblob_length = 112,
+      .keyblob = NULL,
+  };
+  CHECK(otcrypto_ecdh_p384_keygen(&bad_priv_null, &valid_pub).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_key_config_t bad_mode_cfg = kEcdhPrivateKeyConfig;
+  bad_mode_cfg.key_mode = kOtcryptoKeyModeEcdsaP384;
+  otcrypto_blinded_key_t bad_priv_mode = {
+      .config = bad_mode_cfg,
+      .keyblob_length = 112,
+      .keyblob = priv_keyblob,
+  };
+  bad_priv_mode.checksum = integrity_blinded_checksum(&bad_priv_mode);
+  CHECK(otcrypto_ecdh_p384_keygen(&bad_priv_mode, &valid_pub).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_key_config_t bad_len_cfg = kEcdhPrivateKeyConfig;
+  bad_len_cfg.key_length = 47;
+  otcrypto_blinded_key_t bad_priv_len = {
+      .config = bad_len_cfg,
+      .keyblob_length = 112,
+      .keyblob = priv_keyblob,
+  };
+  bad_priv_len.checksum = integrity_blinded_checksum(&bad_priv_len);
+  CHECK(otcrypto_ecdh_p384_keygen(&bad_priv_len, &valid_pub).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  // ECDH shared secret negative tests
+  CHECK(otcrypto_ecdh_p384(NULL, &valid_pub, &valid_shared).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ecdh_p384(&valid_priv, NULL, &valid_shared).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ecdh_p384(&valid_priv, &valid_pub, NULL).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_blinded_key_t bad_priv_chk = {
+      .config = kEcdhPrivateKeyConfig,
+      .keyblob_length = 112,
+      .keyblob = priv_keyblob,
+  };
+  bad_priv_chk.checksum = valid_priv.checksum ^ 0xFFFFFFFF;
+  CHECK(otcrypto_ecdh_p384(&bad_priv_chk, &valid_pub, &valid_shared).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_unblinded_key_t bad_pub_chk = {
+      .key_mode = kOtcryptoKeyModeEcdhP384,
+      .key_length = 96,
+      .key = pub_key_data,
+  };
+  bad_pub_chk.checksum = valid_pub.checksum ^ 0xFFFFFFFF;
+  CHECK(otcrypto_ecdh_p384(&valid_priv, &bad_pub_chk, &valid_shared).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_key_config_t bad_hw_cfg = kEcdhSharedKeyConfig;
+  bad_hw_cfg.hw_backed = kHardenedBoolTrue;
+  otcrypto_blinded_key_t bad_shared_hw = {
+      .config = bad_hw_cfg,
+      .keyblob_length = sizeof(shared_keyblob),
+      .keyblob = shared_keyblob,
+  };
+  bad_shared_hw.checksum = integrity_blinded_checksum(&bad_shared_hw);
+  CHECK(otcrypto_ecdh_p384(&valid_priv, &valid_pub, &bad_shared_hw).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_key_config_t bad_sym_len_cfg = kEcdhSharedKeyConfig;
+  bad_sym_len_cfg.key_length = 47;
+  otcrypto_blinded_key_t bad_shared_len = {
+      .config = bad_sym_len_cfg,
+      .keyblob_length = sizeof(shared_keyblob),
+      .keyblob = shared_keyblob,
+  };
+  bad_shared_len.checksum = integrity_blinded_checksum(&bad_shared_len);
+  CHECK(otcrypto_ecdh_p384(&valid_priv, &valid_pub, &bad_shared_len).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  return OTCRYPTO_OK;
+}
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -143,7 +257,12 @@ bool test_main(void) {
     // If there was an error, print the OTBN error bits and instruction count.
     LOG_INFO("OTBN error bits: 0x%08x", otbn_err_bits_get());
     LOG_INFO("OTBN instruction count: 0x%08x", otbn_instruction_count_get());
-    // Print the error.
+    CHECK_STATUS_OK(err);
+    return false;
+  }
+
+  err = run_ecdh_negative_tests();
+  if (!status_ok(err)) {
     CHECK_STATUS_OK(err);
     return false;
   }
