@@ -388,3 +388,14 @@ cc_library(
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
+
+cc_library(
+    name = "mldsa",
+    srcs = ["mldsa.c"],
+    hdrs = ["//sw/device/lib/crypto/include:mldsa.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":status",
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
