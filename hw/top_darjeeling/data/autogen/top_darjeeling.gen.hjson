@@ -4143,8 +4143,8 @@
             expose: true
             name_top: SramCtrlRetAonNumRamInst
           }
-          default: "'0"
           inst_name: sram_ctrl_ret_aon
+          default: ""
           external: true
           top_signame: sram_ctrl_ret_aon_ram_1p_cfg
           conn_type: false
@@ -6601,8 +6601,8 @@
             expose: true
             name_top: SramCtrlMainNumRamInst
           }
-          default: "'0"
           inst_name: sram_ctrl_main
+          default: ""
           external: true
           top_signame: sram_ctrl_main_ram_1p_cfg
           conn_type: false
@@ -6888,8 +6888,8 @@
             expose: true
             name_top: SramCtrlMboxNumRamInst
           }
-          default: "'0"
           inst_name: sram_ctrl_mbox
+          default: ""
           external: true
           top_signame: sram_ctrl_mbox_ram_1p_cfg
           conn_type: false
@@ -17325,6 +17325,352 @@
   [
     {
       name: asic
+      chiplevel:
+      {
+        alter_ports:
+        {
+          rv_core_ibex.fpga_info:
+          {
+            tieoff: true
+          }
+          rv_dm.next_dm_addr:
+          {
+            tieoff: true
+          }
+          pinmux_aon.dft_hold_tap_sel:
+          {
+            tieoff: true
+          }
+          soc_proxy.integrator_id:
+          {
+            tieoff: true
+          }
+          soc_proxy.soc_lsio_trigger:
+          {
+            tieoff: true
+          }
+          soc_proxy.soc_gpi_async:
+          {
+            tieoff: true
+          }
+          soc_proxy.soc_gpo_async:
+          {
+            tieoff: true
+          }
+          soc_proxy.soc_wkup_async:
+          {
+            tieoff: true
+          }
+          soc_proxy.misc_tl_h2d:
+          {
+            feedthrough: true
+          }
+          soc_proxy.misc_tl_d2h:
+          {
+            feedthrough: true
+          }
+          ac_range_check.range_check_overwrite:
+          {
+            feedthrough: true
+          }
+          ac_range_check.ctn_filtered_tl_h2d:
+          {
+            signal: ctn_tl_h2d[0]
+          }
+          ac_range_check.ctn_filtered_tl_d2h:
+          {
+            signal: ctn_tl_d2h[0]
+          }
+          racl_ctrl.racl_policies:
+          {
+            tieoff: true
+          }
+          racl_ctrl.racl_error_external:
+          {
+            signal: ext_racl_error
+          }
+          pwrmgr_aon.ext_rst_ack:
+          {
+            tieoff: true
+          }
+          soc_dbg_ctrl.halt_cpu_boot:
+          {
+            tieoff: true
+          }
+          ast.lc_hw_debug_en:
+          {
+            tieoff: true
+          }
+          ast.lc_dft_en:
+          {
+            signal: lc_dft_en
+          }
+          dma.sys:
+          {
+            tieoff: true
+          }
+          mbx.tl_mbx:
+          {
+            tieoff: true
+          }
+          dbg.tl_dbg:
+          {
+            signal: dmi
+          }
+          otp_macro.ext_voltage_h:
+          {
+            signal: OTP_EXT_VOLT
+          }
+          rom_ctrl0.rom_cfg:
+          {
+            signal: rom_ctrl0_cfg
+          }
+          rom_ctrl1.rom_cfg:
+          {
+            signal: rom_ctrl1_cfg
+          }
+          i2c0.ram_cfg:
+          {
+            signal: ram_1p_cfg
+          }
+          i2c0.ram_cfg_rsp:
+          {
+            tieoff: true
+          }
+          sram_ctrl_ret_aon.cfg:
+          {
+            signal: ram_1p_cfg
+          }
+          sram_ctrl_ret_aon.cfg_rsp:
+          {
+            tieoff: true
+          }
+          sram_ctrl_main.cfg:
+          {
+            signal: ram_1p_cfg
+          }
+          sram_ctrl_main.cfg_rsp:
+          {
+            tieoff: true
+          }
+          sram_ctrl_mbox.cfg:
+          {
+            signal: ram_1p_cfg
+          }
+          sram_ctrl_mbox.cfg_rsp:
+          {
+            tieoff: true
+          }
+          otbn.ram_cfg_imem:
+          {
+            signal: ram_1p_cfg
+          }
+          otbn.ram_cfg_rsp_imem:
+          {
+            tieoff: true
+          }
+          otbn.ram_cfg_dmem:
+          {
+            signal: ram_1p_cfg
+          }
+          otbn.ram_cfg_rsp_dmem:
+          {
+            tieoff: true
+          }
+          rv_core_ibex.ram_cfg_icache_tag:
+          {
+            signal: ram_1p_cfg
+          }
+          rv_core_ibex.ram_cfg_rsp_icache_tag:
+          {
+            tieoff: true
+          }
+          rv_core_ibex.ram_cfg_icache_data:
+          {
+            signal: ram_1p_cfg
+          }
+          rv_core_ibex.ram_cfg_rsp_icache_data:
+          {
+            tieoff: true
+          }
+          spi_device.ram_cfg_sys2spi:
+          {
+            signal: spi_ram_2p_cfg
+          }
+          spi_device.ram_cfg_rsp_sys2spi:
+          {
+            tieoff: true
+          }
+          spi_device.ram_cfg_spi2sys:
+          {
+            signal: spi_ram_2p_cfg
+          }
+          spi_device.ram_cfg_rsp_spi2sys:
+          {
+            tieoff: true
+          }
+          mbx0.doe_intr:
+          {
+            tieoff: true
+          }
+          mbx0.doe_intr_en:
+          {
+            tieoff: true
+          }
+          mbx0.doe_intr_support:
+          {
+            tieoff: true
+          }
+          mbx0.doe_async_msg_support:
+          {
+            tieoff: true
+          }
+          mbx1.doe_intr:
+          {
+            tieoff: true
+          }
+          mbx1.doe_intr_en:
+          {
+            tieoff: true
+          }
+          mbx1.doe_intr_support:
+          {
+            tieoff: true
+          }
+          mbx1.doe_async_msg_support:
+          {
+            tieoff: true
+          }
+          mbx2.doe_intr:
+          {
+            tieoff: true
+          }
+          mbx2.doe_intr_en:
+          {
+            tieoff: true
+          }
+          mbx2.doe_intr_support:
+          {
+            tieoff: true
+          }
+          mbx2.doe_async_msg_support:
+          {
+            tieoff: true
+          }
+          mbx3.doe_intr:
+          {
+            tieoff: true
+          }
+          mbx3.doe_intr_en:
+          {
+            tieoff: true
+          }
+          mbx3.doe_intr_support:
+          {
+            tieoff: true
+          }
+          mbx3.doe_async_msg_support:
+          {
+            tieoff: true
+          }
+          mbx4.doe_intr:
+          {
+            tieoff: true
+          }
+          mbx4.doe_intr_en:
+          {
+            tieoff: true
+          }
+          mbx4.doe_intr_support:
+          {
+            tieoff: true
+          }
+          mbx4.doe_async_msg_support:
+          {
+            tieoff: true
+          }
+          mbx5.doe_intr:
+          {
+            tieoff: true
+          }
+          mbx5.doe_intr_en:
+          {
+            tieoff: true
+          }
+          mbx5.doe_intr_support:
+          {
+            tieoff: true
+          }
+          mbx5.doe_async_msg_support:
+          {
+            tieoff: true
+          }
+          mbx6.doe_intr:
+          {
+            tieoff: true
+          }
+          mbx6.doe_intr_en:
+          {
+            tieoff: true
+          }
+          mbx6.doe_intr_support:
+          {
+            tieoff: true
+          }
+          mbx6.doe_async_msg_support:
+          {
+            tieoff: true
+          }
+          mbx_jtag.doe_intr:
+          {
+            tieoff: true
+          }
+          mbx_jtag.doe_intr_en:
+          {
+            tieoff: true
+          }
+          mbx_jtag.doe_intr_support:
+          {
+            tieoff: true
+          }
+          mbx_jtag.doe_async_msg_support:
+          {
+            tieoff: true
+          }
+          mbx_pcie0.doe_intr:
+          {
+            tieoff: true
+          }
+          mbx_pcie0.doe_intr_en:
+          {
+            tieoff: true
+          }
+          mbx_pcie0.doe_intr_support:
+          {
+            tieoff: true
+          }
+          mbx_pcie0.doe_async_msg_support:
+          {
+            tieoff: true
+          }
+          mbx_pcie1.doe_intr:
+          {
+            tieoff: true
+          }
+          mbx_pcie1.doe_intr_en:
+          {
+            tieoff: true
+          }
+          mbx_pcie1.doe_intr_support:
+          {
+            tieoff: true
+          }
+          mbx_pcie1.doe_async_msg_support:
+          {
+            tieoff: true
+          }
+        }
+      }
       pinout:
       {
         remove_ports: []
@@ -22898,8 +23244,8 @@
           expose: true
           name_top: SramCtrlRetAonNumRamInst
         }
-        default: "'0"
         inst_name: sram_ctrl_ret_aon
+        default: ""
         external: true
         top_signame: sram_ctrl_ret_aon_ram_1p_cfg
         conn_type: false
@@ -24338,8 +24684,8 @@
           expose: true
           name_top: SramCtrlMainNumRamInst
         }
-        default: "'0"
         inst_name: sram_ctrl_main
+        default: ""
         external: true
         top_signame: sram_ctrl_main_ram_1p_cfg
         conn_type: false
@@ -24497,8 +24843,8 @@
           expose: true
           name_top: SramCtrlMboxNumRamInst
         }
-        default: "'0"
         inst_name: sram_ctrl_mbox
+        default: ""
         external: true
         top_signame: sram_ctrl_mbox_ram_1p_cfg
         conn_type: false
@@ -27922,6 +28268,10 @@
         package: lc_ctrl_pkg
         struct: lc_tx
         signame: ast_lc_dft_en_o
+        signame_chip:
+        {
+          asic: lc_dft_en
+        }
         width: 1
         type: uni
         default: ""
@@ -27934,6 +28284,10 @@
         package: lc_ctrl_pkg
         struct: lc_tx
         signame: ast_lc_hw_debug_en_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: ""
@@ -27946,6 +28300,10 @@
         package: ast_pkg
         struct: ast_obs_ctrl
         signame: obs_ctrl_i
+        signame_chip:
+        {
+          asic: obs_ctrl
+        }
         width: 1
         type: uni
         default: ""
@@ -27958,6 +28316,10 @@
         package: prim_rom_pkg
         struct: rom_cfg
         signame: rom_ctrl0_cfg_i
+        signame_chip:
+        {
+          asic: rom_ctrl0_cfg
+        }
         width: 1
         type: uni
         default: ""
@@ -27970,6 +28332,10 @@
         package: prim_rom_pkg
         struct: rom_cfg
         signame: rom_ctrl1_cfg_i
+        signame_chip:
+        {
+          asic: rom_ctrl1_cfg
+        }
         width: 1
         type: uni
         default: ""
@@ -27982,6 +28348,10 @@
         package: prim_ram_1p_pkg
         struct: ram_1p_cfg
         signame: i2c_ram_1p_cfg_i
+        signame_chip:
+        {
+          asic: ram_1p_cfg
+        }
         width: 1
         type: uni
         default: ""
@@ -27994,6 +28364,10 @@
         package: prim_ram_1p_pkg
         struct: ram_1p_cfg_rsp
         signame: i2c_ram_1p_cfg_rsp_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: ""
@@ -28006,6 +28380,10 @@
         package: prim_ram_1p_pkg
         struct: ram_1p_cfg
         signame: sram_ctrl_ret_aon_ram_1p_cfg_i
+        signame_chip:
+        {
+          asic: ram_1p_cfg
+        }
         width:
         {
           name: NumRamInst
@@ -28018,7 +28396,7 @@
           name_top: SramCtrlRetAonNumRamInst
         }
         type: uni
-        default: "'0"
+        default: ""
         direction: in
         conn_type: false
         index: -1
@@ -28028,6 +28406,10 @@
         package: prim_ram_1p_pkg
         struct: ram_1p_cfg_rsp
         signame: sram_ctrl_ret_aon_ram_1p_cfg_rsp_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width:
         {
           name: NumRamInst
@@ -28050,6 +28432,10 @@
         package: prim_ram_1p_pkg
         struct: ram_1p_cfg
         signame: sram_ctrl_main_ram_1p_cfg_i
+        signame_chip:
+        {
+          asic: ram_1p_cfg
+        }
         width:
         {
           name: NumRamInst
@@ -28062,7 +28448,7 @@
           name_top: SramCtrlMainNumRamInst
         }
         type: uni
-        default: "'0"
+        default: ""
         direction: in
         conn_type: false
         index: -1
@@ -28072,6 +28458,10 @@
         package: prim_ram_1p_pkg
         struct: ram_1p_cfg_rsp
         signame: sram_ctrl_main_ram_1p_cfg_rsp_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width:
         {
           name: NumRamInst
@@ -28094,6 +28484,10 @@
         package: prim_ram_1p_pkg
         struct: ram_1p_cfg
         signame: sram_ctrl_mbox_ram_1p_cfg_i
+        signame_chip:
+        {
+          asic: ram_1p_cfg
+        }
         width:
         {
           name: NumRamInst
@@ -28106,7 +28500,7 @@
           name_top: SramCtrlMboxNumRamInst
         }
         type: uni
-        default: "'0"
+        default: ""
         direction: in
         conn_type: false
         index: -1
@@ -28116,6 +28510,10 @@
         package: prim_ram_1p_pkg
         struct: ram_1p_cfg_rsp
         signame: sram_ctrl_mbox_ram_1p_cfg_rsp_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width:
         {
           name: NumRamInst
@@ -28138,6 +28536,10 @@
         package: prim_ram_1p_pkg
         struct: ram_1p_cfg
         signame: otbn_imem_ram_1p_cfg_i
+        signame_chip:
+        {
+          asic: ram_1p_cfg
+        }
         width: 1
         type: uni
         default: ""
@@ -28150,6 +28552,10 @@
         package: prim_ram_1p_pkg
         struct: ram_1p_cfg_rsp
         signame: otbn_imem_ram_1p_cfg_rsp_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: ""
@@ -28162,6 +28568,10 @@
         package: prim_ram_1p_pkg
         struct: ram_1p_cfg
         signame: otbn_dmem_ram_1p_cfg_i
+        signame_chip:
+        {
+          asic: ram_1p_cfg
+        }
         width: 1
         type: uni
         default: ""
@@ -28174,6 +28584,10 @@
         package: prim_ram_1p_pkg
         struct: ram_1p_cfg_rsp
         signame: otbn_dmem_ram_1p_cfg_rsp_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: ""
@@ -28186,6 +28600,10 @@
         package: prim_ram_1p_pkg
         struct: ram_1p_cfg
         signame: rv_core_ibex_icache_tag_ram_1p_cfg_i
+        signame_chip:
+        {
+          asic: ram_1p_cfg
+        }
         width: 1
         type: uni
         default: ""
@@ -28198,6 +28616,10 @@
         package: prim_ram_1p_pkg
         struct: ram_1p_cfg_rsp
         signame: rv_core_ibex_icache_tag_ram_1p_cfg_rsp_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width:
         {
           name: ICacheNWays
@@ -28220,6 +28642,10 @@
         package: prim_ram_1p_pkg
         struct: ram_1p_cfg
         signame: rv_core_ibex_icache_data_ram_1p_cfg_i
+        signame_chip:
+        {
+          asic: ram_1p_cfg
+        }
         width: 1
         type: uni
         default: ""
@@ -28232,6 +28658,10 @@
         package: prim_ram_1p_pkg
         struct: ram_1p_cfg_rsp
         signame: rv_core_ibex_icache_data_ram_1p_cfg_rsp_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width:
         {
           name: ICacheNWays
@@ -28254,6 +28684,10 @@
         package: prim_ram_2p_pkg
         struct: ram_2p_cfg
         signame: spi_device_ram_2p_cfg_sys2spi_i
+        signame_chip:
+        {
+          asic: spi_ram_2p_cfg
+        }
         width: 1
         type: uni
         default: ""
@@ -28266,6 +28700,10 @@
         package: prim_ram_2p_pkg
         struct: ram_2p_cfg_rsp
         signame: spi_device_ram_2p_cfg_rsp_sys2spi_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: ""
@@ -28278,6 +28716,10 @@
         package: prim_ram_2p_pkg
         struct: ram_2p_cfg_rsp
         signame: spi_device_ram_2p_cfg_rsp_spi2sys_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: ""
@@ -28290,6 +28732,10 @@
         package: prim_ram_2p_pkg
         struct: ram_2p_cfg
         signame: spi_device_ram_2p_cfg_spi2sys_i
+        signame_chip:
+        {
+          asic: spi_ram_2p_cfg
+        }
         width: 1
         type: uni
         default: ""
@@ -28302,6 +28748,10 @@
         package: pwrmgr_pkg
         struct: pwr_boot_status
         signame: pwrmgr_boot_status_o
+        signame_chip:
+        {
+          asic: pwrmgr_boot_status
+        }
         width: 1
         type: uni
         default: ""
@@ -28314,6 +28764,10 @@
         package: ""
         struct: logic
         signame: pwrmgr_ext_rst_ack_i
+        signame_chip:
+        {
+          asic: 1'b0
+        }
         width: 1
         type: uni
         default: ""
@@ -28326,6 +28780,10 @@
         package: prim_mubi_pkg
         struct: mubi4
         signame: clk_main_jitter_en_o
+        signame_chip:
+        {
+          asic: clk_main_jitter_en
+        }
         width: 1
         type: uni
         default: ""
@@ -28338,6 +28796,10 @@
         package: dma_pkg
         struct: sys_req
         signame: dma_sys_req_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: req_rsp
         default: ""
@@ -28350,6 +28812,10 @@
         package: dma_pkg
         struct: sys_rsp
         signame: dma_sys_rsp_i
+        signame_chip:
+        {
+          asic: dma_pkg::SYS_RSP_DEFAULT
+        }
         width: 1
         type: req_rsp
         default: ""
@@ -28362,6 +28828,10 @@
         package: ""
         struct: logic
         signame: es_rng_enable_o
+        signame_chip:
+        {
+          asic: es_rng_enable
+        }
         width: 1
         type: uni
         default: ""
@@ -28374,6 +28844,10 @@
         package: ""
         struct: logic
         signame: es_rng_valid_i
+        signame_chip:
+        {
+          asic: es_rng_valid
+        }
         width: 1
         type: uni
         default: ""
@@ -28386,6 +28860,10 @@
         package: ""
         struct: logic
         signame: es_rng_bit_i
+        signame_chip:
+        {
+          asic: es_rng_bit
+        }
         width:
         {
           name: RngBusWidth
@@ -28413,6 +28891,10 @@
         package: ""
         struct: logic
         signame: es_rng_fips_o
+        signame_chip:
+        {
+          asic: es_rng_fips
+        }
         width: 1
         type: uni
         default: ""
@@ -28425,6 +28907,10 @@
         package: tlul_pkg
         struct: tl_h2d
         signame: mbx_tl_req_i
+        signame_chip:
+        {
+          asic: tlul_pkg::TL_H2D_DEFAULT
+        }
         width: 1
         type: req_rsp
         default: ""
@@ -28437,6 +28923,10 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: mbx_tl_rsp_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: req_rsp
         default: ""
@@ -28449,6 +28939,10 @@
         package: ""
         struct: logic
         signame: mbx0_doe_intr_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28461,6 +28955,10 @@
         package: ""
         struct: logic
         signame: mbx0_doe_intr_en_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28473,6 +28971,10 @@
         package: ""
         struct: logic
         signame: mbx0_doe_intr_support_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28485,6 +28987,10 @@
         package: ""
         struct: logic
         signame: mbx0_doe_async_msg_support_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28497,6 +29003,10 @@
         package: ""
         struct: logic
         signame: mbx1_doe_intr_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28509,6 +29019,10 @@
         package: ""
         struct: logic
         signame: mbx1_doe_intr_en_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28521,6 +29035,10 @@
         package: ""
         struct: logic
         signame: mbx1_doe_intr_support_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28533,6 +29051,10 @@
         package: ""
         struct: logic
         signame: mbx1_doe_async_msg_support_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28545,6 +29067,10 @@
         package: ""
         struct: logic
         signame: mbx2_doe_intr_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28557,6 +29083,10 @@
         package: ""
         struct: logic
         signame: mbx2_doe_intr_en_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28569,6 +29099,10 @@
         package: ""
         struct: logic
         signame: mbx2_doe_intr_support_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28581,6 +29115,10 @@
         package: ""
         struct: logic
         signame: mbx2_doe_async_msg_support_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28593,6 +29131,10 @@
         package: ""
         struct: logic
         signame: mbx3_doe_intr_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28605,6 +29147,10 @@
         package: ""
         struct: logic
         signame: mbx3_doe_intr_en_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28617,6 +29163,10 @@
         package: ""
         struct: logic
         signame: mbx3_doe_intr_support_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28629,6 +29179,10 @@
         package: ""
         struct: logic
         signame: mbx3_doe_async_msg_support_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28641,6 +29195,10 @@
         package: ""
         struct: logic
         signame: mbx4_doe_intr_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28653,6 +29211,10 @@
         package: ""
         struct: logic
         signame: mbx4_doe_intr_en_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28665,6 +29227,10 @@
         package: ""
         struct: logic
         signame: mbx4_doe_intr_support_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28677,6 +29243,10 @@
         package: ""
         struct: logic
         signame: mbx4_doe_async_msg_support_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28689,6 +29259,10 @@
         package: ""
         struct: logic
         signame: mbx5_doe_intr_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28701,6 +29275,10 @@
         package: ""
         struct: logic
         signame: mbx5_doe_intr_en_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28713,6 +29291,10 @@
         package: ""
         struct: logic
         signame: mbx5_doe_intr_support_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28725,6 +29307,10 @@
         package: ""
         struct: logic
         signame: mbx5_doe_async_msg_support_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28737,6 +29323,10 @@
         package: ""
         struct: logic
         signame: mbx6_doe_intr_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28749,6 +29339,10 @@
         package: ""
         struct: logic
         signame: mbx6_doe_intr_en_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28761,6 +29355,10 @@
         package: ""
         struct: logic
         signame: mbx6_doe_intr_support_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28773,6 +29371,10 @@
         package: ""
         struct: logic
         signame: mbx6_doe_async_msg_support_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28785,6 +29387,10 @@
         package: ""
         struct: logic
         signame: mbx_jtag_doe_intr_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28797,6 +29403,10 @@
         package: ""
         struct: logic
         signame: mbx_jtag_doe_intr_en_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28809,6 +29419,10 @@
         package: ""
         struct: logic
         signame: mbx_jtag_doe_intr_support_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28821,6 +29435,10 @@
         package: ""
         struct: logic
         signame: mbx_jtag_doe_async_msg_support_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28833,6 +29451,10 @@
         package: ""
         struct: logic
         signame: mbx_pcie0_doe_intr_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28845,6 +29467,10 @@
         package: ""
         struct: logic
         signame: mbx_pcie0_doe_intr_en_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28857,6 +29483,10 @@
         package: ""
         struct: logic
         signame: mbx_pcie0_doe_intr_support_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28869,6 +29499,10 @@
         package: ""
         struct: logic
         signame: mbx_pcie0_doe_async_msg_support_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28881,6 +29515,10 @@
         package: ""
         struct: logic
         signame: mbx_pcie1_doe_intr_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28893,6 +29531,10 @@
         package: ""
         struct: logic
         signame: mbx_pcie1_doe_intr_en_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28905,6 +29547,10 @@
         package: ""
         struct: logic
         signame: mbx_pcie1_doe_intr_support_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28917,6 +29563,10 @@
         package: ""
         struct: logic
         signame: mbx_pcie1_doe_async_msg_support_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -28929,6 +29579,10 @@
         package: tlul_pkg
         struct: tl_h2d
         signame: dbg_tl_req_i
+        signame_chip:
+        {
+          asic: dmi_req
+        }
         width: 1
         type: req_rsp
         default: ""
@@ -28941,6 +29595,10 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: dbg_tl_rsp_o
+        signame_chip:
+        {
+          asic: dmi_rsp
+        }
         width: 1
         type: req_rsp
         default: ""
@@ -28953,6 +29611,10 @@
         package: rv_dm_pkg
         struct: next_dm_addr
         signame: rv_dm_next_dm_addr_i
+        signame_chip:
+        {
+          asic: "'0"
+        }
         width: 1
         type: uni
         default: "'0"
@@ -28965,6 +29627,10 @@
         package: tlul_pkg
         struct: tl_h2d
         signame: ast_tl_req_o
+        signame_chip:
+        {
+          asic: ast_tl_req
+        }
         width: 1
         type: req_rsp
         default: ""
@@ -28977,6 +29643,10 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: ast_tl_rsp_i
+        signame_chip:
+        {
+          asic: ast_tl_rsp
+        }
         width: 1
         type: req_rsp
         default: ""
@@ -28989,6 +29659,10 @@
         package: pwrmgr_pkg
         struct: pwr_ast_req
         signame: pwrmgr_ast_req_o
+        signame_chip:
+        {
+          asic: pwrmgr_ast_req
+        }
         width: 1
         type: req_rsp
         default: ""
@@ -29001,6 +29675,10 @@
         package: pwrmgr_pkg
         struct: pwr_ast_rsp
         signame: pwrmgr_ast_rsp_i
+        signame_chip:
+        {
+          asic: pwrmgr_ast_rsp
+        }
         width: 1
         type: req_rsp
         default: ""
@@ -29013,6 +29691,10 @@
         package: otp_macro_pkg
         struct: pwr_seq
         signame: otp_macro_pwr_seq_o
+        signame_chip:
+        {
+          asic: otp_macro_pwr_seq
+        }
         width: 1
         type: uni
         default: "'0"
@@ -29025,6 +29707,10 @@
         package: otp_macro_pkg
         struct: pwr_seq
         signame: otp_macro_pwr_seq_h_i
+        signame_chip:
+        {
+          asic: otp_macro_pwr_seq_h
+        }
         width: 1
         type: uni
         default: "'0"
@@ -29037,6 +29723,10 @@
         package: ""
         struct: ""
         signame: otp_ext_voltage_h_io
+        signame_chip:
+        {
+          asic: OTP_EXT_VOLT
+        }
         width: 1
         type: io
         default: "'0"
@@ -29049,6 +29739,10 @@
         package: ""
         struct: logic
         signame: otp_obs_o
+        signame_chip:
+        {
+          asic: otp_obs
+        }
         width: 8
         type: uni
         default: ""
@@ -29061,6 +29755,10 @@
         package: otp_macro_pkg
         struct: otp_cfg
         signame: otp_cfg_i
+        signame_chip:
+        {
+          asic: otp_cfg
+        }
         width: 1
         type: uni
         default: "'0"
@@ -29073,6 +29771,10 @@
         package: otp_macro_pkg
         struct: otp_cfg_rsp
         signame: otp_cfg_rsp_o
+        signame_chip:
+        {
+          asic: otp_cfg_rsp
+        }
         width: 1
         type: uni
         default: "'0"
@@ -29085,6 +29787,10 @@
         package: ""
         struct: logic
         signame: por_n_i
+        signame_chip:
+        {
+          asic: por_n
+        }
         width: 2
         type: uni
         default: ""
@@ -29097,6 +29803,10 @@
         package: ""
         struct: logic
         signame: fpga_info_i
+        signame_chip:
+        {
+          asic: "'0"
+        }
         width: 32
         type: uni
         default: ""
@@ -29109,6 +29819,10 @@
         package: tlul_pkg
         struct: tl_h2d
         signame: ctn_misc_tl_h2d_i
+        signame_chip:
+        {
+          asic: ctn_misc_tl_h2d_i
+        }
         width: 1
         type: uni
         default: ""
@@ -29121,6 +29835,10 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: ctn_misc_tl_d2h_o
+        signame_chip:
+        {
+          asic: ctn_misc_tl_d2h_o
+        }
         width: 1
         type: uni
         default: ""
@@ -29133,6 +29851,10 @@
         package: ""
         struct: logic
         signame: soc_wkup_async_i
+        signame_chip:
+        {
+          asic: 1'b0
+        }
         width: 1
         type: uni
         default: ""
@@ -29145,6 +29867,10 @@
         package: ""
         struct: logic
         signame: soc_rst_req_async_i
+        signame_chip:
+        {
+          asic: soc_rst_req_async
+        }
         width: 1
         type: uni
         default: ""
@@ -29157,6 +29883,10 @@
         package: ""
         struct: logic
         signame: soc_lsio_trigger_i
+        signame_chip:
+        {
+          asic: "'0"
+        }
         width: 8
         type: uni
         default: ""
@@ -29169,6 +29899,10 @@
         package: ""
         struct: logic
         signame: soc_gpi_async_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 16
         type: uni
         default: ""
@@ -29181,6 +29915,10 @@
         package: ""
         struct: logic
         signame: soc_gpo_async_i
+        signame_chip:
+        {
+          asic: "'0"
+        }
         width: 16
         type: uni
         default: ""
@@ -29193,6 +29931,10 @@
         package: ""
         struct: logic
         signame: integrator_id_i
+        signame_chip:
+        {
+          asic: "'0"
+        }
         width: 4
         type: uni
         default: ""
@@ -29205,6 +29947,10 @@
         package: ""
         struct: logic
         signame: sck_monitor_o
+        signame_chip:
+        {
+          asic: sck_monitor
+        }
         width: 1
         type: uni
         default: ""
@@ -29217,6 +29963,10 @@
         package: soc_dbg_ctrl_pkg
         struct: soc_dbg_policy
         signame: soc_dbg_policy_bus_o
+        signame_chip:
+        {
+          asic: soc_dbg_policy_bus
+        }
         width: 1
         type: uni
         default: ""
@@ -29229,6 +29979,10 @@
         package: ""
         struct: logic
         signame: debug_halt_cpu_boot_i
+        signame_chip:
+        {
+          asic: 1'b0
+        }
         width: 1
         type: uni
         default: ""
@@ -29241,6 +29995,10 @@
         package: top_racl_pkg
         struct: racl_policy_vec
         signame: racl_policies_o
+        signame_chip:
+        {
+          asic: ""
+        }
         width: 1
         type: uni
         default: ""
@@ -29253,6 +30011,10 @@
         package: top_racl_pkg
         struct: racl_error_log
         signame: racl_error_i
+        signame_chip:
+        {
+          asic: ext_racl_error
+        }
         width:
         {
           name: NumExternalSubscribingIps
@@ -29275,6 +30037,10 @@
         package: prim_mubi_pkg
         struct: mubi8
         signame: ac_range_check_overwrite_i
+        signame_chip:
+        {
+          asic: ac_range_check_overwrite_i
+        }
         width: 1
         type: uni
         default: ""
@@ -29287,6 +30053,10 @@
         package: tlul_pkg
         struct: tl_h2d
         signame: ctn_tl_h2d_o
+        signame_chip:
+        {
+          asic: ctn_tl_h2d[0]
+        }
         width: 1
         type: uni
         default: ""
@@ -29299,6 +30069,10 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: ctn_tl_d2h_i
+        signame_chip:
+        {
+          asic: ctn_tl_d2h[0]
+        }
         width: 1
         type: uni
         default: ""
@@ -29341,7 +30115,7 @@
         end_idx: -1
         act: rcv
         suffix: ""
-        default: prim_esc_pkg::ESC_RX_DEFAULT
+        default: "'{prim_esc_pkg::ESC_RX_DEFAULT}"
       }
       {
         package: prim_esc_pkg
@@ -29352,7 +30126,7 @@
         end_idx: -1
         act: req
         suffix: ""
-        default: prim_esc_pkg::ESC_TX_DEFAULT
+        default: "'{prim_esc_pkg::ESC_TX_DEFAULT}"
       }
       {
         package: ""
@@ -29374,7 +30148,7 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: csrng_pkg::CSRNG_REQ_DEFAULT
+        default: "'{csrng_pkg::CSRNG_REQ_DEFAULT}"
       }
       {
         package: csrng_pkg
@@ -29528,7 +30302,7 @@
         end_idx: -1
         act: req
         suffix: ""
-        default: "'0"
+        default: 1'b0
       }
       {
         package: ""
@@ -29539,7 +30313,7 @@
         end_idx: -1
         act: req
         suffix: ""
-        default: "'0"
+        default: 1'b0
       }
       {
         package: lc_ctrl_pkg
@@ -29605,7 +30379,7 @@
         end_idx: -1
         act: req
         suffix: ""
-        default: "'0"
+        default: 1'b0
       }
       {
         package: ""
@@ -29616,7 +30390,7 @@
         end_idx: -1
         act: req
         suffix: ""
-        default: "'0"
+        default: 1'b0
       }
       {
         package: ""
@@ -29627,7 +30401,7 @@
         end_idx: -1
         act: req
         suffix: ""
-        default: "'0"
+        default: 1'b0
       }
       {
         package: lc_ctrl_pkg
@@ -29820,7 +30594,7 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: kmac_pkg::APP_REQ_DEFAULT
+        default: "'{kmac_pkg::APP_REQ_DEFAULT}"
       }
       {
         package: kmac_pkg
@@ -29852,7 +30626,7 @@
         end_idx: -1
         act: req
         suffix: ""
-        default: "'0"
+        default: 1'b0
       }
       {
         package: prim_mubi_pkg
@@ -29863,7 +30637,7 @@
         end_idx: -1
         act: rcv
         suffix: ""
-        default: prim_mubi_pkg::MUBI4_DEFAULT
+        default: "'{prim_mubi_pkg::MUBI4_DEFAULT}"
       }
       {
         package: otp_ctrl_pkg
@@ -30127,7 +30901,7 @@
         end_idx: -1
         act: req
         suffix: ""
-        default: "'0"
+        default: 1'b0
       }
       {
         package: ""
@@ -30138,7 +30912,7 @@
         end_idx: -1
         act: req
         suffix: ""
-        default: "'0"
+        default: 1'b0
       }
       {
         package: ""
@@ -30204,7 +30978,7 @@
         end_idx: -1
         act: req
         suffix: ""
-        default: "'0"
+        default: 1'b0
       }
       {
         package: prim_mubi_pkg
@@ -32117,7 +32891,7 @@
         end_idx: -1
         act: rcv
         suffix: ""
-        default: top_racl_pkg::RACL_ERROR_LOG_DEFAULT
+        default: "'{top_racl_pkg::RACL_ERROR_LOG_DEFAULT}"
       }
       {
         package: clkmgr_pkg

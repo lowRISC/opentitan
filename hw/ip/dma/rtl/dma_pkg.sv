@@ -153,4 +153,6 @@ package dma_pkg;
     logic [SYS_NUM_ERROR_TYPES-1:0]    error_vec;
   } sys_rsp_t;
 
+  parameter sys_rsp_t SYS_RSP_DEFAULT = '0;
+
 endpackage
