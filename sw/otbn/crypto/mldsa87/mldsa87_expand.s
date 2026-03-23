@@ -26,9 +26,9 @@ expand_a:
   /* Append indices r and s to the seed rho to create a 34-byte input such that
      rho' = rho | s | r.
      Use scratch register x16. */
-  slli x16, x4, 8
-  add  x16, x16, x5
-  sw x16, 32(x3)
+  slli x20, x4, 8
+  add  x20, x20, x5
+  sw x20, 32(x3)
 
   jal x1, rej_ntt_poly
 
