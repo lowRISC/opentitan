@@ -2111,30 +2111,31 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   // process_tl_access:this task processes incoming access into the IP over tl interface
   // this is already called in cip_base_scoreboard::process_tl_a/d_chan_fifo tasks
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
-    uvm_reg csr;
     bit     do_read_check   = 1'b0; // TODO: fixme
     bit     write           = item.is_write();
     uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
+    uvm_reg csr = cfg.ral_models[ral_name].get_default_map().get_reg_by_offset(csr_addr);
 
-    // if access was to a valid csr, get the csr handle
-    if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
-      csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
-      `DV_CHECK_NE_FATAL(csr, null)
-    end
-    else if (csr_addr inside {[cfg.sram_egress_start_addr:cfg.sram_egress_end_addr]}) begin
-      // TODO: Anything to do here?
-      return;
-    end
-    else if (csr_addr inside {[cfg.sram_ingress_start_addr:cfg.sram_ingress_end_addr]}) begin
-      if (!write) begin
-        // cip_base_scoreboard compares the mem read only when the address exists
-        // just need to ensure address exists here and mem check is done at process_mem_read
-        `DV_CHECK(spi_mem.addr_exists(csr_addr))
+    if (csr == null) begin
+      if (csr_addr inside {[cfg.sram_egress_start_addr:cfg.sram_egress_end_addr]}) begin
+        // TODO: Anything to do here?
+        return;
       end
-      return;
-    end
-    else begin
-      `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
+      else if (csr_addr inside {[cfg.sram_ingress_start_addr:cfg.sram_ingress_end_addr]}) begin
+        if (!write) begin
+          // cip_base_scoreboard compares the mem read only when the address exists
+          // just need to ensure address exists here and mem check is done at process_mem_read
+          `DV_CHECK(spi_mem.addr_exists(csr_addr))
+        end
+        return;
+      end
+
+      `uvm_fatal(`gfn,
+                 $sformatf({"Address 0x%0h is neither a CSR, nor in the SRAM egress range ",
+                            "(0x%0h..0x%0h) or ingress range (0x%0h..0x%0h)."},
+                           csr_addr,
+                           cfg.sram_ingress_start_addr, cfg.sram_ingress_end_addr,
+                           cfg.sram_egress_start_addr, cfg.sram_egress_end_addr))
     end
 
     `uvm_info(`gfn,$sformatf(

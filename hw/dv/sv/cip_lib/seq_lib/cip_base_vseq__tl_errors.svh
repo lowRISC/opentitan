@@ -233,9 +233,19 @@ task tl_write_ro_mem_err(string            ral_name,
 endtask
 
 // Return the address of the csr at a random index
-virtual function bit[BUS_AW-1:0] pick_rand_csr_addr (string ral_name, dv_base_reg_block block);
-  int index = $urandom_range(0, block.csr_addrs.size() - 1);
-  return block.csr_addrs[index];
+virtual function bit[BUS_AW-1:0] pick_rand_csr_addr (dv_base_reg_block block);
+  uvm_reg regs[$];
+  uvm_reg chosen_reg;
+  block.get_registers(regs, UVM_HIER);
+
+  if (regs.size() == 0) begin
+    `uvm_fatal(get_name(),
+               $sformatf("Cannot pick a random address: block %0s has no CSRs.", block.get_name()))
+  end
+
+  chosen_reg = regs[$urandom_range(0, regs.size() - 1)];
+
+  return chosen_reg.get_address();
 endfunction
 
 // Generate a stream of transactions that trigger errors connected with instr_type. This is either
@@ -246,8 +256,7 @@ endfunction
 // reset), stop generating transactions and return.
 virtual task tl_instr_type_err(string ral_name);
   dv_base_reg_block ral_model = cfg.ral_models[ral_name];
-  bit has_nofetch_csrs = ((ral_model.csr_addrs.size() > 0) &&
-                          !ral_model.get_allows_csr_fetch());
+  bit has_nofetch_csrs = ral_model.has_csrs() && !ral_model.get_allows_csr_fetch();
 
   repeat ($urandom_range(10, 100)) begin
     bit [BUS_AW-1:0] addr;
@@ -276,7 +285,7 @@ virtual task tl_instr_type_err(string ral_name);
       has_nofetch_csrs: begin
         write = 1'b0;
         instr_type = MuBi4True;
-        addr = pick_rand_csr_addr(ral_name, ral_model);
+        addr = pick_rand_csr_addr(ral_model);
       end
     endcase
 
@@ -301,8 +310,7 @@ virtual task run_tl_errors_vseq_sub(bit do_wait_clk = 0, string ral_name);
   dv_base_reg_block ral_model = cfg.ral_models[ral_name];
   bit [BUS_AW-1:0]  csr_base_addr = ral_model.default_map.get_base_addr();
   bit               has_mem_byte_access_err, has_wo_mem, has_ro_mem;
-
-  bit has_csr_addrs = (ral_model.csr_addrs.size() > 0);
+  bit               has_csrs = ral_model.has_csrs();
 
   // get_addr_mask returns address map size - 1 and get_max_offset return the offset of high byte
   // in address map. The difference btw them is unmapped address
@@ -334,7 +342,7 @@ virtual task run_tl_errors_vseq_sub(bit do_wait_clk = 0, string ral_name);
               1: tl_protocol_err(ral_name);
 
               // If there are CSRs, send writes with invalid byte enable masks to all of them
-              has_csr_addrs: tl_write_less_than_csr_width(ral_name, ral_model);
+              has_csrs: tl_write_less_than_csr_width(ral_name, ral_model);
 
               // If there are some unmapped addresses, generate transactions that access them.
               ral_model.has_unmapped_addrs: tl_access_unmapped_addr(ral_name, ral_model);
