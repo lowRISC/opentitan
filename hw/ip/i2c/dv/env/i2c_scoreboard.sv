@@ -237,14 +237,12 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     bit tl_accessackdata = (!write && channel == DataChannel); // read
     bit tl_accessack     =  (write && channel == DataChannel);
 
-    // If access was not addressed to a valid csr, raise a fatal error
-    if (!(csr_addr inside {i2c_ral.csr_addrs})) begin
+    // The access was to a valid csr, so get the corresponding RAL csr handle. If access was not
+    // addressed to a valid csr, raise a fatal error.
+    csr = i2c_ral.get_default_map().get_reg_by_offset(csr_addr);
+    if (csr == null) begin
       `uvm_fatal(`gfn, $sformatf("An unexpected addr 0x%8h was accessed.", csr_addr))
     end
-
-    // The access was to a valid csr, so get the corresponding RAL csr handle
-    csr = i2c_ral.default_map.get_reg_by_offset(csr_addr);
-    `DV_CHECK_NE_FATAL(csr, null)
 
     // Update the reference model based on the TL-UL access
     // - This also updates the RAL

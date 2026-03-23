@@ -238,26 +238,25 @@ task ${module_instance_name}_scoreboard::process_tl_access(tl_seq_item item,
   if ( write && channel == DataChannel) tl_phase = DChanWrite;
 
   // If access was to a valid csr, get the csr handle
-  if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
-    csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
-    `DV_CHECK_NE_FATAL(csr, null)
-    // When the CSR is defined as an array, simplify the name to make it generic. This will be
-    // useful if the template parameter "num_ranges" is changed.
-    if (csr.get_type_name() == "${module_instance_name}_reg_range_regwen") begin
-      csr_name = "range_regwen";
-    end else if (csr.get_type_name() == "${module_instance_name}_reg_range_base") begin
-      csr_name = "range_base";
-    end else if (csr.get_type_name() == "${module_instance_name}_reg_range_limit") begin
-      csr_name = "range_limit";
-    end else if (csr.get_type_name() == "${module_instance_name}_reg_range_attr") begin
-      csr_name = "range_attr";
-    end else if (csr.get_type_name() == "${module_instance_name}_reg_range_racl_policy_shadowed") begin
-      csr_name = "range_racl_policy_shadowed";
-    end else begin
-      csr_name = csr.get_name();
-    end
-  end else begin
+  csr = cfg.ral_models[ral_name].get_default_map().get_reg_by_offset(csr_addr);
+  if (csr == null) begin
     `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
+  end
+
+  // When the CSR is defined as an array, simplify the name to make it generic. This will be
+  // useful if the template parameter "num_ranges" is changed.
+  if (csr.get_type_name() == "${module_instance_name}_reg_range_regwen") begin
+    csr_name = "range_regwen";
+  end else if (csr.get_type_name() == "${module_instance_name}_reg_range_base") begin
+    csr_name = "range_base";
+  end else if (csr.get_type_name() == "${module_instance_name}_reg_range_limit") begin
+    csr_name = "range_limit";
+  end else if (csr.get_type_name() == "${module_instance_name}_reg_range_attr") begin
+    csr_name = "range_attr";
+  end else if (csr.get_type_name() == "${module_instance_name}_reg_range_racl_policy_shadowed") begin
+    csr_name = "range_racl_policy_shadowed";
+  end else begin
+    csr_name = csr.get_name();
   end
 
   csr_idx = get_csr_idx(csr.get_name(), csr_name);

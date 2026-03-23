@@ -459,14 +459,14 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     bit data_phase_read   = (!write && channel == DataChannel);
     bit data_phase_write  = (write && channel == DataChannel);
 
-    // if access was to a valid csr, get the csr handle
-    if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
-      csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
-      `DV_CHECK_NE_FATAL(csr, null)
-      `downcast(dv_reg, csr)
-    end
-    else begin
+    // Get a handle to the CSR being accessed.
+    csr = cfg.ral_models[ral_name].get_default_map().get_reg_by_offset(csr_addr);
+    if (csr == null) begin
       `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
+    end
+    if (!$cast(dv_reg, csr)) begin
+      `uvm_fatal(get_full_name(),
+                 $sformatf("Cannot cast register %0s to a dv_base_reg.", csr.get_name()))
     end
 
     // if incoming access is a write to a valid csr, then make updates right away

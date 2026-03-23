@@ -83,7 +83,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
     foreach (cfg.ral_models[ral_name]) begin
       bit has_unmapped  = (cfg.ral_models[ral_name].unmapped_addr_ranges.size > 0);
-      bit has_csr       = (cfg.ral_models[ral_name].csr_addrs.size > 0);
+      bit has_csr       = cfg.ral_models[ral_name].has_csrs();
       bit has_mem       = (cfg.ral_models[ral_name].mem_ranges.size > 0);
       bit has_mem_byte_access_err;
       bit has_wo_mem;
@@ -610,6 +610,24 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
             write_w_instr_type_err | instr_type_err | cfg.tl_mem_access_gated | csr_read_err);
   endfunction
 
+  // Return true if accessing size_bytes bytes starting at addr will address at least one register
+  // in block when using the default map.
+  local function bit touches_register(uvm_reg_addr_t    addr,
+                                      int unsigned      size_bytes,
+                                      dv_base_reg_block block);
+    uvm_reg_addr_t hi_addr = addr + size_bytes - 1;
+    uvm_reg_addr_t aligned_lo = block.get_word_aligned_addr(addr);
+    uvm_reg_addr_t aligned_hi = block.get_word_aligned_addr(hi_addr);
+
+    for (uvm_reg_addr_t a = aligned_lo; a <= aligned_hi; a++) begin
+      // We pass read=0 here because the implementation of uvm_reg_map means that this will also
+      // find write-only registers.
+      if (block.get_default_map().get_reg_by_offset(a, 1'b0) != null) return 1'b1;
+    end
+
+    return 1'b0;
+  endfunction
+
   protected function void check_tl_read_value_after_error(tl_seq_item item,
                                                           dv_base_reg_block block);
     bit [DataWidth-1:0] exp_data;
@@ -620,8 +638,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     // When the access target was the memory, tlul_adapter_sram either returns
     // DataWhenInstrError ('1) or DataWhenError ('0) depending whether it was a
     // instruction type access or not.
-    uvm_reg_addr_t csr_addr = block.get_word_aligned_addr(item.a_addr);
-    if (csr_addr inside {block.csr_addrs}) begin
+    if (touches_register(item.a_addr, 1 << item.a_size, block)) begin
       exp_data = '1;
     end else begin
       // if error occurs when it's an instruction, return all 0 since it's an illegal instruction
@@ -632,11 +649,15 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     `DV_CHECK_EQ(item.d_data, exp_data, "d_data mismatch when d_error = 1")
   endfunction
 
-  // Return true if the given address is mapped in the register block
+  // Return true if addr points at a register or inside a memory with the default reg_map for this
+  // block.
   local function bit is_tl_access_mapped_addr(bit [AddrWidth-1:0] addr, dv_base_reg_block block);
+    uvm_reg_map map = block.get_default_map();
     uvm_reg_addr_t norm_addr = block.get_normalized_addr(addr);
-    // check if it's mem addr or reg addr
-    return is_mem_addr(addr, block) || norm_addr inside {block.csr_addrs};
+
+    // Check if it's a memory or register adddress. Passning read=0 to get_reg_by_offset means that
+    // the code in uvm_reg_map will report write-only registers too.
+    return is_mem_addr(norm_addr, block) || (map.get_reg_by_offset(norm_addr, 1'b0) != null);
   endfunction
 
   // check if tl mem access will trigger error or not

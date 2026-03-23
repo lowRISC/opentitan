@@ -559,17 +559,14 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       bit data_phase_read, bit data_phase_write);
 
     bit         do_read_check = 1;
-    uvm_reg     csr;
+    uvm_reg     csr = cfg.ral_models[ral_name].get_default_map().get_reg_by_offset(csr_addr);
     dv_base_reg dv_reg;
     string      csr_name;
 
     `uvm_info(`gfn, $sformatf("sw state %d, reg state %d", direct_access_regwen_state,
                              `gmv(ral.direct_access_regwen)), UVM_LOW);
 
-    // if access was to a valid csr, get the csr handle
-    if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
-      csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
-      `DV_CHECK_NE_FATAL(csr, null)
+    if (csr != null) begin
       `downcast(dv_reg, csr)
     // SW CFG window
     end else if ((csr_addr & addr_mask) inside

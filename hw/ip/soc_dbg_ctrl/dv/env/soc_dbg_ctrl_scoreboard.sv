@@ -95,13 +95,8 @@ task soc_dbg_ctrl_scoreboard::process_tl_core_access(
   tl_seq_item item, uvm_reg_addr_t csr_addr, tl_phase_e tl_phase);
   string  ral_name      = ral.get_name();
   bit     do_read_check = 1;
-  uvm_reg csr;
-
-  // If access was to a valid CSR, get the CSR handle
-  if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
-    csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
-    `DV_CHECK_NE_FATAL(csr, null)
-  end else begin
+  uvm_reg csr = cfg.ral_models[ral_name].get_default_map().get_reg_by_offset(csr_addr);
+  if (csr == null) begin
     `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
   end
 

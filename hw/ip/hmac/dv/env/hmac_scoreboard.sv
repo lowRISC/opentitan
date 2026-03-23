@@ -122,16 +122,19 @@ task hmac_scoreboard::process_tl_access(tl_seq_item item, tl_channels_e channel,
   bit     write                   = item.is_write();
   bit [TL_AW-1:0] addr_mask       = ral.get_addr_mask();
   uvm_reg_addr_t  csr_addr        = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
+  uvm_reg_addr_t  masked_addr     = item.a_addr & addr_mask;
 
-  // if access was to a valid csr, get the csr handle
-  if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
-    csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
-    `DV_CHECK_NE_FATAL(csr, null)
+  // If this is an access to a CSR, get the handle. If not, it should lie in the range
+  // [HMAC_MSG_FIFO_BASE:HMAC_MSG_FIFO_LAST_ADDR].
+
+  csr = cfg.ral_models[ral_name].get_default_map().get_reg_by_offset(csr_addr);
+  if (csr != null) begin
     csr_name = csr.get_name();
-  // if addr inside msg fifo, no ral model
-  end else if (!((item.a_addr & addr_mask) inside {[HMAC_MSG_FIFO_BASE :
-                                                    HMAC_MSG_FIFO_LAST_ADDR]})) begin
-    `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
+  end else if (!(masked_addr inside {[HMAC_MSG_FIFO_BASE:HMAC_MSG_FIFO_LAST_ADDR]})) begin
+    `uvm_fatal(get_full_name(),
+               $sformatf({"Address 0x%0h (from address 0x%0h) is not a register ",
+                          "and does not lie in the msg fifo range (0x%0h..0x%0h)."},
+                         csr_addr, item.a_addr, HMAC_MSG_FIFO_BASE, HMAC_MSG_FIFO_LAST_ADDR))
   end
 
   // if incoming access is a write to a valid csr or mem, then update right away on addr channel
