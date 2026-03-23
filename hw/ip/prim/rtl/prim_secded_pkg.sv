@@ -337,13 +337,13 @@ package prim_secded_pkg;
   function automatic logic [21:0]
       prim_secded_22_16_enc (logic [15:0] data_i);
     logic [21:0] data_o;
-    data_o = 22'(data_i);
-    data_o[16] = ^(data_o & 22'h00496E);
-    data_o[17] = ^(data_o & 22'h00F20B);
-    data_o[18] = ^(data_o & 22'h008ED8);
-    data_o[19] = ^(data_o & 22'h007714);
-    data_o[20] = ^(data_o & 22'h00ACA5);
-    data_o[21] = ^(data_o & 22'h0011F3);
+    data_o[15:0] = data_i;
+    data_o[16] = ^(data_i & 16'h496E);
+    data_o[17] = ^(data_i & 16'hF20B);
+    data_o[18] = ^(data_i & 16'h8ED8);
+    data_o[19] = ^(data_i & 16'h7714);
+    data_o[20] = ^(data_i & 16'hACA5);
+    data_o[21] = ^(data_i & 16'h11F3);
     return data_o;
   endfunction
 
@@ -395,13 +395,13 @@ package prim_secded_pkg;
   function automatic logic [27:0]
       prim_secded_28_22_enc (logic [21:0] data_i);
     logic [27:0] data_o;
-    data_o = 28'(data_i);
-    data_o[22] = ^(data_o & 28'h03003FF);
-    data_o[23] = ^(data_o & 28'h010FC0F);
-    data_o[24] = ^(data_o & 28'h0271C71);
-    data_o[25] = ^(data_o & 28'h03B6592);
-    data_o[26] = ^(data_o & 28'h03DAAA4);
-    data_o[27] = ^(data_o & 28'h03ED348);
+    data_o[21:0] = data_i;
+    data_o[22] = ^(data_i & 22'h3003FF);
+    data_o[23] = ^(data_i & 22'h10FC0F);
+    data_o[24] = ^(data_i & 22'h271C71);
+    data_o[25] = ^(data_i & 22'h3B6592);
+    data_o[26] = ^(data_i & 22'h3DAAA4);
+    data_o[27] = ^(data_i & 22'h3ED348);
     return data_o;
   endfunction
 
@@ -459,14 +459,14 @@ package prim_secded_pkg;
   function automatic logic [38:0]
       prim_secded_39_32_enc (logic [31:0] data_i);
     logic [38:0] data_o;
-    data_o = 39'(data_i);
-    data_o[32] = ^(data_o & 39'h002606BD25);
-    data_o[33] = ^(data_o & 39'h00DEBA8050);
-    data_o[34] = ^(data_o & 39'h00413D89AA);
-    data_o[35] = ^(data_o & 39'h0031234ED1);
-    data_o[36] = ^(data_o & 39'h00C2C1323B);
-    data_o[37] = ^(data_o & 39'h002DCC624C);
-    data_o[38] = ^(data_o & 39'h0098505586);
+    data_o[31:0] = data_i;
+    data_o[32] = ^(data_i & 32'h2606BD25);
+    data_o[33] = ^(data_i & 32'hDEBA8050);
+    data_o[34] = ^(data_i & 32'h413D89AA);
+    data_o[35] = ^(data_i & 32'h31234ED1);
+    data_o[36] = ^(data_i & 32'hC2C1323B);
+    data_o[37] = ^(data_i & 32'h2DCC624C);
+    data_o[38] = ^(data_i & 32'h98505586);
     return data_o;
   endfunction
 
@@ -535,14 +535,14 @@ package prim_secded_pkg;
   function automatic logic [63:0]
       prim_secded_64_57_enc (logic [56:0] data_i);
     logic [63:0] data_o;
-    data_o = 64'(data_i);
-    data_o[57] = ^(data_o & 64'h0103FFF800007FFF);
-    data_o[58] = ^(data_o & 64'h017C1FF801FF801F);
-    data_o[59] = ^(data_o & 64'h01BDE1F87E0781E1);
-    data_o[60] = ^(data_o & 64'h01DEEE3B8E388E22);
-    data_o[61] = ^(data_o & 64'h01EF76CDB2C93244);
-    data_o[62] = ^(data_o & 64'h01F7BB56D5525488);
-    data_o[63] = ^(data_o & 64'h01FBDDA769A46910);
+    data_o[56:0] = data_i;
+    data_o[57] = ^(data_i & 57'h103FFF800007FFF);
+    data_o[58] = ^(data_i & 57'h17C1FF801FF801F);
+    data_o[59] = ^(data_i & 57'h1BDE1F87E0781E1);
+    data_o[60] = ^(data_i & 57'h1DEEE3B8E388E22);
+    data_o[61] = ^(data_i & 57'h1EF76CDB2C93244);
+    data_o[62] = ^(data_i & 57'h1F7BB56D5525488);
+    data_o[63] = ^(data_i & 57'h1FBDDA769A46910);
     return data_o;
   endfunction
 
@@ -636,15 +636,15 @@ package prim_secded_pkg;
   function automatic logic [71:0]
       prim_secded_72_64_enc (logic [63:0] data_i);
     logic [71:0] data_o;
-    data_o = 72'(data_i);
-    data_o[64] = ^(data_o & 72'h00B9000000001FFFFF);
-    data_o[65] = ^(data_o & 72'h005E00000FFFE0003F);
-    data_o[66] = ^(data_o & 72'h0067003FF003E007C1);
-    data_o[67] = ^(data_o & 72'h00CD0FC0F03C207842);
-    data_o[68] = ^(data_o & 72'h00B671C711C4438884);
-    data_o[69] = ^(data_o & 72'h00B5B65926488C9108);
-    data_o[70] = ^(data_o & 72'h00CBDAAA4A91152210);
-    data_o[71] = ^(data_o & 72'h007AED348D221A4420);
+    data_o[63:0] = data_i;
+    data_o[64] = ^(data_i & 64'hB9000000001FFFFF);
+    data_o[65] = ^(data_i & 64'h5E00000FFFE0003F);
+    data_o[66] = ^(data_i & 64'h67003FF003E007C1);
+    data_o[67] = ^(data_i & 64'hCD0FC0F03C207842);
+    data_o[68] = ^(data_i & 64'hB671C711C4438884);
+    data_o[69] = ^(data_i & 64'hB5B65926488C9108);
+    data_o[70] = ^(data_i & 64'hCBDAAA4A91152210);
+    data_o[71] = ^(data_i & 64'h7AED348D221A4420);
     return data_o;
   endfunction
 
@@ -746,13 +746,13 @@ package prim_secded_pkg;
   function automatic logic [21:0]
       prim_secded_hamming_22_16_enc (logic [15:0] data_i);
     logic [21:0] data_o;
-    data_o = 22'(data_i);
-    data_o[16] = ^(data_o & 22'h00AD5B);
-    data_o[17] = ^(data_o & 22'h00366D);
-    data_o[18] = ^(data_o & 22'h00C78E);
-    data_o[19] = ^(data_o & 22'h0007F0);
-    data_o[20] = ^(data_o & 22'h00F800);
-    data_o[21] = ^(data_o & 22'h1FFFFF);
+    data_o[15:0] = data_i;
+    data_o[16] = ^(data_i & 16'hAD5B);
+    data_o[17] = ^(data_i & 16'h366D);
+    data_o[18] = ^(data_i & 16'hC78E);
+    data_o[19] = ^(data_i & 16'h07F0);
+    data_o[20] = ^(data_i & 16'hF800);
+    data_o[21] = ^(data_o[20:0] & 21'h1FFFFF);
     return data_o;
   endfunction
 
@@ -792,7 +792,7 @@ package prim_secded_pkg;
 
     // err_o calc. bit0: single error, bit1: double error
     err_o[0] = syndrome_o[5];
-    err_o[1] = |syndrome_o[4:0] & ~syndrome_o[5];
+    err_o[1] = (|syndrome_o[4:0]) & (~syndrome_o[5]);
 
     dec.data      = data_o;
     dec.syndrome  = syndrome_o;
@@ -804,14 +804,14 @@ package prim_secded_pkg;
   function automatic logic [38:0]
       prim_secded_hamming_39_32_enc (logic [31:0] data_i);
     logic [38:0] data_o;
-    data_o = 39'(data_i);
-    data_o[32] = ^(data_o & 39'h0056AAAD5B);
-    data_o[33] = ^(data_o & 39'h009B33366D);
-    data_o[34] = ^(data_o & 39'h00E3C3C78E);
-    data_o[35] = ^(data_o & 39'h0003FC07F0);
-    data_o[36] = ^(data_o & 39'h0003FFF800);
-    data_o[37] = ^(data_o & 39'h00FC000000);
-    data_o[38] = ^(data_o & 39'h3FFFFFFFFF);
+    data_o[31:0] = data_i;
+    data_o[32] = ^(data_i & 32'h56AAAD5B);
+    data_o[33] = ^(data_i & 32'h9B33366D);
+    data_o[34] = ^(data_i & 32'hE3C3C78E);
+    data_o[35] = ^(data_i & 32'h03FC07F0);
+    data_o[36] = ^(data_i & 32'h03FFF800);
+    data_o[37] = ^(data_i & 32'hFC000000);
+    data_o[38] = ^(data_o[37:0] & 38'h3FFFFFFFFF);
     return data_o;
   endfunction
 
@@ -868,7 +868,7 @@ package prim_secded_pkg;
 
     // err_o calc. bit0: single error, bit1: double error
     err_o[0] = syndrome_o[6];
-    err_o[1] = |syndrome_o[5:0] & ~syndrome_o[6];
+    err_o[1] = (|syndrome_o[5:0]) & (~syndrome_o[6]);
 
     dec.data      = data_o;
     dec.syndrome  = syndrome_o;
@@ -880,15 +880,15 @@ package prim_secded_pkg;
   function automatic logic [71:0]
       prim_secded_hamming_72_64_enc (logic [63:0] data_i);
     logic [71:0] data_o;
-    data_o = 72'(data_i);
-    data_o[64] = ^(data_o & 72'h00AB55555556AAAD5B);
-    data_o[65] = ^(data_o & 72'h00CD9999999B33366D);
-    data_o[66] = ^(data_o & 72'h00F1E1E1E1E3C3C78E);
-    data_o[67] = ^(data_o & 72'h0001FE01FE03FC07F0);
-    data_o[68] = ^(data_o & 72'h0001FFFE0003FFF800);
-    data_o[69] = ^(data_o & 72'h0001FFFFFFFC000000);
-    data_o[70] = ^(data_o & 72'h00FE00000000000000);
-    data_o[71] = ^(data_o & 72'h7FFFFFFFFFFFFFFFFF);
+    data_o[63:0] = data_i;
+    data_o[64] = ^(data_i & 64'hAB55555556AAAD5B);
+    data_o[65] = ^(data_i & 64'hCD9999999B33366D);
+    data_o[66] = ^(data_i & 64'hF1E1E1E1E3C3C78E);
+    data_o[67] = ^(data_i & 64'h01FE01FE03FC07F0);
+    data_o[68] = ^(data_i & 64'h01FFFE0003FFF800);
+    data_o[69] = ^(data_i & 64'h01FFFFFFFC000000);
+    data_o[70] = ^(data_i & 64'hFE00000000000000);
+    data_o[71] = ^(data_o[70:0] & 71'h7FFFFFFFFFFFFFFFFF);
     return data_o;
   endfunction
 
@@ -978,7 +978,7 @@ package prim_secded_pkg;
 
     // err_o calc. bit0: single error, bit1: double error
     err_o[0] = syndrome_o[7];
-    err_o[1] = |syndrome_o[6:0] & ~syndrome_o[7];
+    err_o[1] = (|syndrome_o[6:0]) & (~syndrome_o[7]);
 
     dec.data      = data_o;
     dec.syndrome  = syndrome_o;
@@ -990,15 +990,15 @@ package prim_secded_pkg;
   function automatic logic [75:0]
       prim_secded_hamming_76_68_enc (logic [67:0] data_i);
     logic [75:0] data_o;
-    data_o = 76'(data_i);
-    data_o[68] = ^(data_o & 76'h00AAB55555556AAAD5B);
-    data_o[69] = ^(data_o & 76'h00CCD9999999B33366D);
-    data_o[70] = ^(data_o & 76'h000F1E1E1E1E3C3C78E);
-    data_o[71] = ^(data_o & 76'h00F01FE01FE03FC07F0);
-    data_o[72] = ^(data_o & 76'h00001FFFE0003FFF800);
-    data_o[73] = ^(data_o & 76'h00001FFFFFFFC000000);
-    data_o[74] = ^(data_o & 76'h00FFE00000000000000);
-    data_o[75] = ^(data_o & 76'h7FFFFFFFFFFFFFFFFFF);
+    data_o[67:0] = data_i;
+    data_o[68] = ^(data_i & 68'hAAB55555556AAAD5B);
+    data_o[69] = ^(data_i & 68'hCCD9999999B33366D);
+    data_o[70] = ^(data_i & 68'h0F1E1E1E1E3C3C78E);
+    data_o[71] = ^(data_i & 68'hF01FE01FE03FC07F0);
+    data_o[72] = ^(data_i & 68'h001FFFE0003FFF800);
+    data_o[73] = ^(data_i & 68'h001FFFFFFFC000000);
+    data_o[74] = ^(data_i & 68'hFFE00000000000000);
+    data_o[75] = ^(data_o[74:0] & 75'h7FFFFFFFFFFFFFFFFFF);
     return data_o;
   endfunction
 
@@ -1092,7 +1092,7 @@ package prim_secded_pkg;
 
     // err_o calc. bit0: single error, bit1: double error
     err_o[0] = syndrome_o[7];
-    err_o[1] = |syndrome_o[6:0] & ~syndrome_o[7];
+    err_o[1] = (|syndrome_o[6:0]) & (~syndrome_o[7]);
 
     dec.data      = data_o;
     dec.syndrome  = syndrome_o;
@@ -1104,13 +1104,13 @@ package prim_secded_pkg;
   function automatic logic [21:0]
       prim_secded_inv_22_16_enc (logic [15:0] data_i);
     logic [21:0] data_o;
-    data_o = 22'(data_i);
-    data_o[16] = ^(data_o & 22'h00496E);
-    data_o[17] = ^(data_o & 22'h00F20B);
-    data_o[18] = ^(data_o & 22'h008ED8);
-    data_o[19] = ^(data_o & 22'h007714);
-    data_o[20] = ^(data_o & 22'h00ACA5);
-    data_o[21] = ^(data_o & 22'h0011F3);
+    data_o[15:0] = data_i;
+    data_o[16] = ^(data_i & 16'h496E);
+    data_o[17] = ^(data_i & 16'hF20B);
+    data_o[18] = ^(data_i & 16'h8ED8);
+    data_o[19] = ^(data_i & 16'h7714);
+    data_o[20] = ^(data_i & 16'hACA5);
+    data_o[21] = ^(data_i & 16'h11F3);
     data_o ^= 22'h2A0000;
     return data_o;
   endfunction
@@ -1163,13 +1163,13 @@ package prim_secded_pkg;
   function automatic logic [27:0]
       prim_secded_inv_28_22_enc (logic [21:0] data_i);
     logic [27:0] data_o;
-    data_o = 28'(data_i);
-    data_o[22] = ^(data_o & 28'h03003FF);
-    data_o[23] = ^(data_o & 28'h010FC0F);
-    data_o[24] = ^(data_o & 28'h0271C71);
-    data_o[25] = ^(data_o & 28'h03B6592);
-    data_o[26] = ^(data_o & 28'h03DAAA4);
-    data_o[27] = ^(data_o & 28'h03ED348);
+    data_o[21:0] = data_i;
+    data_o[22] = ^(data_i & 22'h3003FF);
+    data_o[23] = ^(data_i & 22'h10FC0F);
+    data_o[24] = ^(data_i & 22'h271C71);
+    data_o[25] = ^(data_i & 22'h3B6592);
+    data_o[26] = ^(data_i & 22'h3DAAA4);
+    data_o[27] = ^(data_i & 22'h3ED348);
     data_o ^= 28'hA800000;
     return data_o;
   endfunction
@@ -1228,14 +1228,14 @@ package prim_secded_pkg;
   function automatic logic [38:0]
       prim_secded_inv_39_32_enc (logic [31:0] data_i);
     logic [38:0] data_o;
-    data_o = 39'(data_i);
-    data_o[32] = ^(data_o & 39'h002606BD25);
-    data_o[33] = ^(data_o & 39'h00DEBA8050);
-    data_o[34] = ^(data_o & 39'h00413D89AA);
-    data_o[35] = ^(data_o & 39'h0031234ED1);
-    data_o[36] = ^(data_o & 39'h00C2C1323B);
-    data_o[37] = ^(data_o & 39'h002DCC624C);
-    data_o[38] = ^(data_o & 39'h0098505586);
+    data_o[31:0] = data_i;
+    data_o[32] = ^(data_i & 32'h2606BD25);
+    data_o[33] = ^(data_i & 32'hDEBA8050);
+    data_o[34] = ^(data_i & 32'h413D89AA);
+    data_o[35] = ^(data_i & 32'h31234ED1);
+    data_o[36] = ^(data_i & 32'hC2C1323B);
+    data_o[37] = ^(data_i & 32'h2DCC624C);
+    data_o[38] = ^(data_i & 32'h98505586);
     data_o ^= 39'h2A00000000;
     return data_o;
   endfunction
@@ -1305,14 +1305,14 @@ package prim_secded_pkg;
   function automatic logic [63:0]
       prim_secded_inv_64_57_enc (logic [56:0] data_i);
     logic [63:0] data_o;
-    data_o = 64'(data_i);
-    data_o[57] = ^(data_o & 64'h0103FFF800007FFF);
-    data_o[58] = ^(data_o & 64'h017C1FF801FF801F);
-    data_o[59] = ^(data_o & 64'h01BDE1F87E0781E1);
-    data_o[60] = ^(data_o & 64'h01DEEE3B8E388E22);
-    data_o[61] = ^(data_o & 64'h01EF76CDB2C93244);
-    data_o[62] = ^(data_o & 64'h01F7BB56D5525488);
-    data_o[63] = ^(data_o & 64'h01FBDDA769A46910);
+    data_o[56:0] = data_i;
+    data_o[57] = ^(data_i & 57'h103FFF800007FFF);
+    data_o[58] = ^(data_i & 57'h17C1FF801FF801F);
+    data_o[59] = ^(data_i & 57'h1BDE1F87E0781E1);
+    data_o[60] = ^(data_i & 57'h1DEEE3B8E388E22);
+    data_o[61] = ^(data_i & 57'h1EF76CDB2C93244);
+    data_o[62] = ^(data_i & 57'h1F7BB56D5525488);
+    data_o[63] = ^(data_i & 57'h1FBDDA769A46910);
     data_o ^= 64'h5400000000000000;
     return data_o;
   endfunction
@@ -1407,15 +1407,15 @@ package prim_secded_pkg;
   function automatic logic [71:0]
       prim_secded_inv_72_64_enc (logic [63:0] data_i);
     logic [71:0] data_o;
-    data_o = 72'(data_i);
-    data_o[64] = ^(data_o & 72'h00B9000000001FFFFF);
-    data_o[65] = ^(data_o & 72'h005E00000FFFE0003F);
-    data_o[66] = ^(data_o & 72'h0067003FF003E007C1);
-    data_o[67] = ^(data_o & 72'h00CD0FC0F03C207842);
-    data_o[68] = ^(data_o & 72'h00B671C711C4438884);
-    data_o[69] = ^(data_o & 72'h00B5B65926488C9108);
-    data_o[70] = ^(data_o & 72'h00CBDAAA4A91152210);
-    data_o[71] = ^(data_o & 72'h007AED348D221A4420);
+    data_o[63:0] = data_i;
+    data_o[64] = ^(data_i & 64'hB9000000001FFFFF);
+    data_o[65] = ^(data_i & 64'h5E00000FFFE0003F);
+    data_o[66] = ^(data_i & 64'h67003FF003E007C1);
+    data_o[67] = ^(data_i & 64'hCD0FC0F03C207842);
+    data_o[68] = ^(data_i & 64'hB671C711C4438884);
+    data_o[69] = ^(data_i & 64'hB5B65926488C9108);
+    data_o[70] = ^(data_i & 64'hCBDAAA4A91152210);
+    data_o[71] = ^(data_i & 64'h7AED348D221A4420);
     data_o ^= 72'hAA0000000000000000;
     return data_o;
   endfunction
@@ -1518,13 +1518,13 @@ package prim_secded_pkg;
   function automatic logic [21:0]
       prim_secded_inv_hamming_22_16_enc (logic [15:0] data_i);
     logic [21:0] data_o;
-    data_o = 22'(data_i);
-    data_o[16] = ^(data_o & 22'h00AD5B);
-    data_o[17] = ^(data_o & 22'h00366D);
-    data_o[18] = ^(data_o & 22'h00C78E);
-    data_o[19] = ^(data_o & 22'h0007F0);
-    data_o[20] = ^(data_o & 22'h00F800);
-    data_o[21] = ^(data_o & 22'h1FFFFF);
+    data_o[15:0] = data_i;
+    data_o[16] = ^(data_i & 16'hAD5B);
+    data_o[17] = ^(data_i & 16'h366D);
+    data_o[18] = ^(data_i & 16'hC78E);
+    data_o[19] = ^(data_i & 16'h07F0);
+    data_o[20] = ^(data_i & 16'hF800);
+    data_o[21] = ^(data_o[20:0] & 21'h1FFFFF);
     data_o ^= 22'h2A0000;
     return data_o;
   endfunction
@@ -1565,7 +1565,7 @@ package prim_secded_pkg;
 
     // err_o calc. bit0: single error, bit1: double error
     err_o[0] = syndrome_o[5];
-    err_o[1] = |syndrome_o[4:0] & ~syndrome_o[5];
+    err_o[1] = (|syndrome_o[4:0]) & (~syndrome_o[5]);
 
     dec.data      = data_o;
     dec.syndrome  = syndrome_o;
@@ -1577,14 +1577,14 @@ package prim_secded_pkg;
   function automatic logic [38:0]
       prim_secded_inv_hamming_39_32_enc (logic [31:0] data_i);
     logic [38:0] data_o;
-    data_o = 39'(data_i);
-    data_o[32] = ^(data_o & 39'h0056AAAD5B);
-    data_o[33] = ^(data_o & 39'h009B33366D);
-    data_o[34] = ^(data_o & 39'h00E3C3C78E);
-    data_o[35] = ^(data_o & 39'h0003FC07F0);
-    data_o[36] = ^(data_o & 39'h0003FFF800);
-    data_o[37] = ^(data_o & 39'h00FC000000);
-    data_o[38] = ^(data_o & 39'h3FFFFFFFFF);
+    data_o[31:0] = data_i;
+    data_o[32] = ^(data_i & 32'h56AAAD5B);
+    data_o[33] = ^(data_i & 32'h9B33366D);
+    data_o[34] = ^(data_i & 32'hE3C3C78E);
+    data_o[35] = ^(data_i & 32'h03FC07F0);
+    data_o[36] = ^(data_i & 32'h03FFF800);
+    data_o[37] = ^(data_i & 32'hFC000000);
+    data_o[38] = ^(data_o[37:0] & 38'h3FFFFFFFFF);
     data_o ^= 39'h2A00000000;
     return data_o;
   endfunction
@@ -1642,7 +1642,7 @@ package prim_secded_pkg;
 
     // err_o calc. bit0: single error, bit1: double error
     err_o[0] = syndrome_o[6];
-    err_o[1] = |syndrome_o[5:0] & ~syndrome_o[6];
+    err_o[1] = (|syndrome_o[5:0]) & (~syndrome_o[6]);
 
     dec.data      = data_o;
     dec.syndrome  = syndrome_o;
@@ -1654,15 +1654,15 @@ package prim_secded_pkg;
   function automatic logic [71:0]
       prim_secded_inv_hamming_72_64_enc (logic [63:0] data_i);
     logic [71:0] data_o;
-    data_o = 72'(data_i);
-    data_o[64] = ^(data_o & 72'h00AB55555556AAAD5B);
-    data_o[65] = ^(data_o & 72'h00CD9999999B33366D);
-    data_o[66] = ^(data_o & 72'h00F1E1E1E1E3C3C78E);
-    data_o[67] = ^(data_o & 72'h0001FE01FE03FC07F0);
-    data_o[68] = ^(data_o & 72'h0001FFFE0003FFF800);
-    data_o[69] = ^(data_o & 72'h0001FFFFFFFC000000);
-    data_o[70] = ^(data_o & 72'h00FE00000000000000);
-    data_o[71] = ^(data_o & 72'h7FFFFFFFFFFFFFFFFF);
+    data_o[63:0] = data_i;
+    data_o[64] = ^(data_i & 64'hAB55555556AAAD5B);
+    data_o[65] = ^(data_i & 64'hCD9999999B33366D);
+    data_o[66] = ^(data_i & 64'hF1E1E1E1E3C3C78E);
+    data_o[67] = ^(data_i & 64'h01FE01FE03FC07F0);
+    data_o[68] = ^(data_i & 64'h01FFFE0003FFF800);
+    data_o[69] = ^(data_i & 64'h01FFFFFFFC000000);
+    data_o[70] = ^(data_i & 64'hFE00000000000000);
+    data_o[71] = ^(data_o[70:0] & 71'h7FFFFFFFFFFFFFFFFF);
     data_o ^= 72'hAA0000000000000000;
     return data_o;
   endfunction
@@ -1753,7 +1753,7 @@ package prim_secded_pkg;
 
     // err_o calc. bit0: single error, bit1: double error
     err_o[0] = syndrome_o[7];
-    err_o[1] = |syndrome_o[6:0] & ~syndrome_o[7];
+    err_o[1] = (|syndrome_o[6:0]) & (~syndrome_o[7]);
 
     dec.data      = data_o;
     dec.syndrome  = syndrome_o;
@@ -1765,15 +1765,15 @@ package prim_secded_pkg;
   function automatic logic [75:0]
       prim_secded_inv_hamming_76_68_enc (logic [67:0] data_i);
     logic [75:0] data_o;
-    data_o = 76'(data_i);
-    data_o[68] = ^(data_o & 76'h00AAB55555556AAAD5B);
-    data_o[69] = ^(data_o & 76'h00CCD9999999B33366D);
-    data_o[70] = ^(data_o & 76'h000F1E1E1E1E3C3C78E);
-    data_o[71] = ^(data_o & 76'h00F01FE01FE03FC07F0);
-    data_o[72] = ^(data_o & 76'h00001FFFE0003FFF800);
-    data_o[73] = ^(data_o & 76'h00001FFFFFFFC000000);
-    data_o[74] = ^(data_o & 76'h00FFE00000000000000);
-    data_o[75] = ^(data_o & 76'h7FFFFFFFFFFFFFFFFFF);
+    data_o[67:0] = data_i;
+    data_o[68] = ^(data_i & 68'hAAB55555556AAAD5B);
+    data_o[69] = ^(data_i & 68'hCCD9999999B33366D);
+    data_o[70] = ^(data_i & 68'h0F1E1E1E1E3C3C78E);
+    data_o[71] = ^(data_i & 68'hF01FE01FE03FC07F0);
+    data_o[72] = ^(data_i & 68'h001FFFE0003FFF800);
+    data_o[73] = ^(data_i & 68'h001FFFFFFFC000000);
+    data_o[74] = ^(data_i & 68'hFFE00000000000000);
+    data_o[75] = ^(data_o[74:0] & 75'h7FFFFFFFFFFFFFFFFFF);
     data_o ^= 76'hAA00000000000000000;
     return data_o;
   endfunction
@@ -1868,7 +1868,7 @@ package prim_secded_pkg;
 
     // err_o calc. bit0: single error, bit1: double error
     err_o[0] = syndrome_o[7];
-    err_o[1] = |syndrome_o[6:0] & ~syndrome_o[7];
+    err_o[1] = (|syndrome_o[6:0]) & (~syndrome_o[7]);
 
     dec.data      = data_o;
     dec.syndrome  = syndrome_o;
