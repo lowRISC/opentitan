@@ -156,11 +156,7 @@ class chip_sw_spi_passthrough_vseq extends chip_sw_base_vseq;
     super.cpu_init();
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(passthrough_filters);
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(read_pipeline_mode);
-`ifdef GATE_LEVEL
-    // Two stages full cycle is forced since GLS fails for freqs over 24MHz
-    // TODO: does GLS gets satisfied equally for "two stages half cycle" read pipeline value?
-    read_pipeline_mode = 2;
-`endif
+
     read_pipeline_mode_data[0] = {read_pipeline_mode};
     sw_symbol_backdoor_overwrite("kReadPipelineMode", read_pipeline_mode_data);
     sw_filter_config = {<<byte{passthrough_filters}};
