@@ -102,13 +102,6 @@ module top_englishbreakfast #(
 
 
   // Inter-module Signal External type
-  input  edn_pkg::edn_req_t       ast_edn_req_i,
-  output edn_pkg::edn_rsp_t       ast_edn_rsp_o,
-  output lc_ctrl_pkg::lc_tx_t       ast_lc_dft_en_o,
-  input  prim_ram_1p_pkg::ram_1p_cfg_t       ram_1p_cfg_i,
-  input  prim_ram_2p_pkg::ram_2p_cfg_t       spi_ram_2p_cfg_i,
-  input  prim_ram_1p_pkg::ram_1p_cfg_t       usb_ram_1p_cfg_i,
-  input  prim_rom_pkg::rom_cfg_t       rom_cfg_i,
   output prim_mubi_pkg::mubi4_t       clk_main_jitter_en_o,
   output prim_mubi_pkg::mubi4_t       hi_speed_sel_o,
   input  prim_mubi_pkg::mubi4_t       div_step_down_req_i,
@@ -1231,7 +1224,7 @@ module top_englishbreakfast #(
       // Inter-module signals
       .sram_otp_key_o(),
       .sram_otp_key_i(otp_ctrl_pkg::SRAM_OTP_KEY_RSP_DEFAULT),
-      .cfg_i('0),
+      .cfg_i({SramCtrlMainNumRamInst{prim_ram_1p_pkg::RAM_1P_CFG_DEFAULT}}),
       .cfg_rsp_o(),
       .lc_escalate_en_i(lc_ctrl_pkg::Off),
       .lc_hw_debug_en_i(lc_ctrl_pkg::Off),

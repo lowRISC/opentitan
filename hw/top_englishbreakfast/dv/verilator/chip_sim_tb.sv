@@ -180,8 +180,6 @@ module chip_sim_tb (
     .pwrmgr_ast_rsp_i             ( ast_base_pwr     ),
     .usbdev_usb_ref_val_o         (                  ),
     .usbdev_usb_ref_pulse_o       (                  ),
-    .ast_edn_req_i                ( '0               ),
-    .ast_edn_rsp_o                (                  ),
     .flash_bist_enable_i          ( lc_ctrl_pkg::Off ),
     .flash_power_down_h_i         ( 1'b0             ),
     .flash_power_ready_h_i        ( 1'b1             ),
@@ -212,12 +210,6 @@ module chip_sim_tb (
     // Pad attributes
     .mio_attr_o                   ( ),
     .dio_attr_o                   ( ),
-
-    // Memory attributes
-    .ram_1p_cfg_i                 ('0),
-    .spi_ram_2p_cfg_i             ('0),
-    .usb_ram_1p_cfg_i             ('0),
-    .rom_cfg_i                    ('0),
 
     // DFT signals
     .scan_rst_ni                  (1'b1),
