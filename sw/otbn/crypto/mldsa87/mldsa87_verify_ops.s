@@ -6,6 +6,7 @@
 
 .globl decode_sig
 .globl check_infinity_norm_z
+.globl compute_w_approx
 
 .text
 
@@ -98,5 +99,143 @@ check_infinity_norm_z:
     /* End of loop */
 
   bn.mov w0, w16
+
+  ret
+
+/**
+ * Compute the approximated commitment vector W_approx.
+ *
+ * This routine computes INTT(A * NTT(Z) - NTT(C) * NTT(T1 * 2^d)) analogously
+ * to line 9 in Algorithm 8 of FIPS-204. The signature vector Z shall be passed
+ * in decoded form and the public-key vector T1 in encoded form which is
+ * undecoded on-the-fly. Similarly, the polynomial matrix A is expanded
+ * on-the-fly using the RHO seed. The input values are not preserved.
+ *
+ * Note that this routine alone accounts for almost 90% of all verify cycles.
+ *
+ * @param[in] x2: DMEM address of RHO (32 bytes in a 64 byte region).
+ * @param[in] x3: DMEM address of Z (7168 bytes).
+ * @param[in] x4: DMEM adresss of C (1024 bytes).
+ * @param[in] x5: DMEM address of encoded T1 (2560 bytes).
+ * @param[in] x6: DMEM address of the result W_approx (8192 bytes).
+ * @param[in] x7: DMEM address of a polynomial slot (1024 bytes).
+ */
+compute_w_approx:
+  /* Save DMEM address pointers. */
+  addi x8, x2, 0  /* RHO */
+  addi x9, x3, 0  /* Z */
+  addi x10, x4, 0 /* C */
+  addi x11, x5, 0 /* T1_enc */
+  addi x12, x6, 0 /* W_approx */
+  addi x13, x7, 0 /* Slot */
+
+  /* Make sure the output location is properly zeroized. Dangling non-zero
+     values can make the matrix multiplication fail (see `poly_mul_add`). */
+  addi x20, x12, 0
+  addi x21, x0, 256
+  jal x1, zeroize
+
+  /*
+   * Part 1: Compute A * NTT(Z), where A is 8x7 polynomial matrix and Z is the
+   * signature vector. A is sampled on-the-fly.
+   */
+
+  /* Transfer the Z vector into NTT domain in-place. */
+  addi x14, x9, 0
+  loopi 7, 4
+    addi x2, x14, 0
+    addi x3, x14, 0
+    jal x1, ntt
+    addi x14, x14, 1024
+    /* End of loop */
+
+  /* Indices r, s for the expansion of A. */
+  addi x14, x0, 0
+  addi x15, x0, 0
+
+  /* Temp address pointers for Z and W_approx. */
+  addi x16, x9, 0
+  addi x17, x12, 0
+
+  /* Compute W_approx = A * NTT(Z). */
+  loopi 8, 17
+    loopi 7, 12
+      /* Expand A[r][s] into the slot. */
+      addi x2, x13, 0
+      addi x3, x8, 0
+      addi x4, x14, 0
+      addi x5, x15, 0
+      jal x1, expand_a
+
+      /* W_approx[r] += A[r][s] * Z[s]. */
+      addi x2, x13, 0
+      addi x3, x16, 0
+      addi x4, x17, 0
+      addi x5, x17, 0
+      jal x1, poly_mul_add
+
+      /* Increment s and the Z address pointer. */
+      addi x15, x15, 1
+      addi x16, x16, 1024
+      /* End of loop */
+
+  /* Increment r, reset s and the Z address pointer, advance the W_approx
+     pointer. */
+  addi x14, x14, 1
+  addi x15, x0, 0
+  addi x16, x9, 0
+  addi x17, x17, 1024
+  /* End of loop */
+
+  /*
+   * Part 2: Compute the subtraction INTT(A * NTT(Z) - NTT(C) * NTT(T1)) by
+   * decoding T1 on-the-fly.
+   */
+
+  /* Temp W_approx address pointer. */
+  addi x14, x12, 0
+
+  /* Map C into NTT domain in-place. */
+  addi x2, x10, 0
+  addi x3, x10, 0
+  jal x1, ntt
+
+  /* Compute W_approx[i] = INTT((A * NTT(Z))[i] - NTT(C) * NTT(T1[i] * 2^d)). */
+  loopi 8, 22
+    /* Decode T1[i] into slot 0. */
+    addi x2, x11, 0
+    addi x3, x13, 0
+    jal x1, decode_t1
+
+    /* Shift left: T1[i] * 2^d. */
+    addi x2, x13, 0
+    addi x3, x13, 0
+    jal x1, shift_left
+
+    /* Map T1[i] * 2^d into NTT domain in-place. */
+    addi x2, x13, 0
+    addi x3, x13, 0
+    jal x1, ntt
+
+    /* Calculate T1[i] = c * T1[i]. */
+    addi x2, x10, 0
+    addi x3, x13, 0
+    addi x4, x13, 0
+    jal x1, poly_mul
+
+    /* Calculate W[i] = W[i] - c * T1[i]. */
+    addi x2, x14, 0
+    addi x3, x13, 0
+    addi x4, x14, 0
+    jal x1, poly_sub
+
+    /* Map the result back to the time domain. */
+    addi x2, x14, 0
+    addi x3, x14, 0
+    jal x1, intt
+
+    addi x11, x11, 320
+    addi x14, x14, 1024
+    /* End of loop */
 
   ret
