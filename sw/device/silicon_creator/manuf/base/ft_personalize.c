@@ -1101,7 +1101,7 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
     size_t offset = cert_offsets[i];
     TRY(perso_tlv_get_cert_obj(perso_blob_to_host.body + offset,
                                sizeof(perso_blob_to_host.body) - offset,
-                               (perso_blob_version_t)certgen_inputs.blob_version, &cert_obj));
+                               (perso_blob_version_t)certgen_inputs.blob_version, &block));
     if (block.obj_size > free_room)
       return RESOURCE_EXHAUSTED();
 
