@@ -1231,7 +1231,7 @@ module top_englishbreakfast #(
       // Inter-module signals
       .sram_otp_key_o(),
       .sram_otp_key_i(otp_ctrl_pkg::SRAM_OTP_KEY_RSP_DEFAULT),
-      .cfg_i('0),
+      .cfg_i({SramCtrlMainNumRamInst{prim_ram_1p_pkg::RAM_1P_CFG_DEFAULT}}),
       .cfg_rsp_o(),
       .lc_escalate_en_i(lc_ctrl_pkg::Off),
       .lc_hw_debug_en_i(lc_ctrl_pkg::Off),
