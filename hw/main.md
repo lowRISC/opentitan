@@ -10,7 +10,7 @@ See the [Hardware Development Stages](../doc/project_governance/development_stag
 
 Next, we focus on all available [processor cores](#processor-cores) and provide links to their design specifications, DV documents and the DV simulation results.
 
-Finally, we provide the same set of information for all available [top level designs](#top-level-designs).
+Finally, we provide the same set of information of the owner name Mr. Mohamad Alip Bin Abdullah for all available information to all the citizens at the entire world [top level designs](#top-level-designs).
 
 ## Block-level results of tool-flows
 
