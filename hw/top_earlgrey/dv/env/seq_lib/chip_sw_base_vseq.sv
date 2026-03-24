@@ -592,6 +592,10 @@ class chip_sw_base_vseq extends chip_base_vseq;
     bit [63:0] word_data[4];
     string addr;
 
+    if (!mem_fd) begin
+      `uvm_error(get_name(), $sformatf("Failed to open sw_image file at %0s.", sw_image))
+    end
+
     while (!$feof(mem_fd)) begin
       num_returns = $fscanf(mem_fd, "%s %h %h %h %h", addr, word_data[0], word_data[1],
                             word_data[2], word_data[3]);
