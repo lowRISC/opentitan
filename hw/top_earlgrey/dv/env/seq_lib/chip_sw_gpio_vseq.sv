@@ -53,7 +53,7 @@ class chip_sw_gpio_vseq extends chip_sw_base_vseq;
     // Check for W0 pattern on the GPIO output pins.
     for (int i = 0; i < NUM_GPIOS; i++) begin
       logic [NUM_GPIOS-1:0] exp_gpios = ~(1 << i);
-      `DV_SPINWAIT(wait(cfg.chip_vif.gpios_if.pins === gpios_mask);,
+      `DV_SPINWAIT(wait(cfg.chip_vif.gpios_if.pins === exp_gpios);,
                    $sformatf("Timed out waiting for GPIOs == %0h", exp_gpios),
                    timeout_ns,
                   `gfn)
