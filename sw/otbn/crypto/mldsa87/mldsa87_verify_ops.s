@@ -7,6 +7,7 @@
 .globl decode_sig
 .globl check_infinity_norm_z
 .globl compute_w_approx
+.globl use_hint
 
 .text
 
@@ -236,6 +237,132 @@ compute_w_approx:
 
     addi x11, x11, 320
     addi x14, x14, 1024
+    /* End of loop */
+
+  ret
+
+/**
+ * Returns the hint-adjusted high level bits W1 of the commitment vector W
+ * in encoded form (8 * 128 bytes).
+ *
+ * For the signature verification to succeed, the approximation of the high bits
+ * in the commitment vector needs to be corrected using the hint. This routine
+ * implements the `UseHint` function (Algorithm 40) of FIPS-204. The
+ * coefficients of the output polynomials lie in the interval
+ * [0, (q-1)/(2*gamma2)[ = [0, 15].
+ *
+ * This routine is in-place meaning that the corrected and encoded W1 vector
+ * resides at DMEM[x2].
+ *
+ * The hint vector is assumed to be provided in the intermediate encoded
+ * representation (see `sig_decode`).
+ *
+ * @param[in] x2: DMEM address of the approximated commitment vector W_approx.
+ * @param[in] x3: DMEM address of the undecoded hint vector H.
+ * @param[in] x4: DMEM address of the polynomial slot 0.
+ * @param[in] x5: DMEM address of the polynomial slot 1.
+ */
+use_hint:
+
+  /*
+    The original commitment vector is calculated by HighBits(AZ - CT), however
+    due to the decomposition of  T = T1 * 2^d + T0, the verifier can only
+    compute AZ - CT + CT0. Since CT0 contains only small-norm coefficients, all
+    we need to know to recreate HighBits(AZ - CT) from AZ - CT + CT0 is which
+    coefficients of HighBits(AZ - CT) would change with the subtraction of CT0.
+    So the hint is basically the carry bits of the subtraction of CT0.
+   */
+
+  /* Prepare the address pointers. */
+  addi x6, x2, 0 /* w1_approx */
+  addi x7, x3, 0 /* h */
+  addi x8, x4, 0 /* slot 0 */
+  addi x9, x5, 0 /* slot 1 */
+
+  /* Index counter for the decoding of the hint polynomials. */
+  addi x10, x0, 0
+
+  /* WDR pointers. */
+  addi x11, x0, 0
+  addi x12, x0, 1
+  addi x13, x0, 2
+
+  /*
+   * The adjustment algorithm first decomposes the input polynomial in low (r0)
+   * and high (r1) bits polynomials, then decodes the i-th hint polynomial and
+   * adjusts each of the 256 coefficients in r1 per inner loop.
+   */
+  loopi 8, 28
+    /* Decompose W[i] and put the high bits in the output location and the low
+      bits into slot 0. */
+    addi x2, x6, 0
+    addi x3, x8, 0 /* r0 */
+    addi x4, x6, 0 /* r1 */
+    jal x1, decompose
+
+    /* Decode H[i] and place into slot 1. */
+    addi x2, x7, 0
+    addi x3, x9, 0
+    addi x4, x10, 0
+    jal x1, decode_h
+
+    /* Prepare constant vectors. Due to clobbered WDRs place them inside the
+       loop. */
+
+    /* [1, 1, 1, 1, 1, 1, 1, 1]. */
+    bn.not w6, w31
+    bn.shv.8s w6, w6 >> 31
+    /* [15, 15, 15, 15, 15, 15, 15, 15]. */
+    bn.not w7, w31
+    bn.shv.8s w7, w7 >> 28
+
+    loopi 32, 12
+      bn.lid x11, 0(x8++) /* r0 */
+      bn.lid x12, 0(x6)   /* r1 */
+      bn.lid x13, 0(x9++) /* h  */
+
+      /* Create a mask for h; -1 if h = 1, else 0. */
+      bn.subv.8s w2, w31, w2
+
+      /*
+       * Merge lines 3, 4, and 5 of Algorithm 40 into one operation that
+       * calculates (r1 + x) mod 16 where
+       *   x =  1 if h = 1 and r0 > 0,
+       *   x = -1 if h = 1 and r0 <= 0,
+       *   x = 0 otherwise.
+       */
+
+      /* x = -1 if r0 <= 0, else x = 0. */
+      bn.subv.8s w3, w0, w6
+      bn.shv.8s w3, w3 >> 31
+      bn.subv.8s w3, w31, w3
+      /* x = -1 if r0 <= 0, else x = 1. */
+      bn.or w3, w3, w6
+      /* x = -1 if r0 <= 0 and h = 1; x = 1 if r0 > 0 and h = 1. */
+      bn.and w5, w3, w2
+
+      /* r1 + x mod 16. */
+      bn.addv.8s w1, w1, w5
+      bn.and w1, w1, w7
+
+      bn.sid x12, 0(x6++)
+      /* End of loop */
+
+    /* Advance/reset address pointers and hint index. */
+    addi x8, x8, -1024
+    addi x9, x9, -1024
+    addi x10, x10, 1
+    /* End of loop */
+
+  /* Restore the w1 pointer and encode w1 in-place.  */
+  addi x2, x0, 1024
+  slli x2, x2, 3
+  sub  x2, x6, x2
+  addi x3, x2, 0
+  loopi 8, 3
+    jal x1, encode_w1
+    addi x2, x2, 1024
+    addi x3, x3, 128
     /* End of loop */
 
   ret

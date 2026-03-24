@@ -47,6 +47,7 @@ mldsa87_unit_tests = [
     "mldsa87_sig_decode_test",
     "mldsa87_check_infinity_norm_z_test",
     "mldsa87_compute_w_approx_test",
+    "mldsa87_use_hint_test",
 ]
 
 [
