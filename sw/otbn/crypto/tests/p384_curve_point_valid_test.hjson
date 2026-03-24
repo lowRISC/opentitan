@@ -20,8 +20,8 @@
   }
   "output": {
     "regs": {
-      # "ok" code should be unchanged.
-      "x2": "0xffffffff",
+      # "ok" code should be HARDENED_BOOL_TRUE.
+      "x2": "0x739",
     }
   }
 }
