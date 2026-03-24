@@ -52,7 +52,7 @@ endfunction
 function void dv_base_agent::build_phase(uvm_phase phase);
   super.build_phase(phase);
 
-  if (!uvm_config_db#(CFG_T)::get(this, "", "cfg", cfg)) begin
+  if (cfg == null && !uvm_config_db#(CFG_T)::get(this, "", "cfg", cfg)) begin
     `uvm_fatal(`gfn, $sformatf("failed to get %s from uvm_config_db", cfg.get_type_name()))
   end
   `uvm_info(`gfn, $sformatf("\n%0s", cfg.sprint()), UVM_HIGH)
