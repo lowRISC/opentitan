@@ -183,8 +183,19 @@ target_required = {
     'pinout': ['g', 'Target-specific pinout configuration'],
     'pinmux': ['g', 'Target-specific pinmux configuration']
 }
-target_optional = {}
+target_optional = {
+    'chiplevel': ['g', 'Target-specific chiplevel configuration']
+}
 target_added = {}
+
+target_chiplevel_required = {
+    'port_overrides': [
+        'l', 'List of ports to manually assign a connected signal or '
+        'leave unconnected (or stub for inputs).'
+    ],
+}
+target_chiplevel_optional = {}
+target_chiplevel_added = {}
 
 target_pinmux_required = {
     'special_signals':
@@ -828,6 +839,11 @@ def check_implementation_targets(top: ConfigT, prefix: str) -> int:
             log.warning('Target name {} is not unique'.format(target['name']))
             error += 1
         known_names[target['name']] = 1
+
+        if 'chiplevel' in target:
+            error += check_keys(target['chiplevel'], target_chiplevel_required,
+                                target_chiplevel_optional, target_chiplevel_added,
+                                prefix + ' Target chiplevel')
 
         error += check_keys(target['pinmux'], target_pinmux_required,
                             target_pinmux_optional, target_pinmux_added,

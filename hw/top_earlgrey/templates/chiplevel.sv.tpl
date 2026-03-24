@@ -510,16 +510,16 @@ module chip_${top["name"]}_${target["name"]} #(
   //////////////////////////////////
 
   // pwrmgr interface
-  pwrmgr_pkg::pwr_ast_req_t base_ast_pwr;
-  pwrmgr_pkg::pwr_ast_rsp_t ast_base_pwr;
+  pwrmgr_pkg::pwr_ast_req_t pwrmgr_ast_req;
+  pwrmgr_pkg::pwr_ast_rsp_t pwrmgr_ast_rsp;
 
   // assorted ast status
   ast_pkg::ast_pwst_t ast_pwst;
   ast_pkg::ast_pwst_t ast_pwst_h;
 
   // TLUL interface
-  tlul_pkg::tl_h2d_t base_ast_bus;
-  tlul_pkg::tl_d2h_t ast_base_bus;
+  tlul_pkg::tl_h2d_t ast_tl_req;
+  tlul_pkg::tl_d2h_t ast_tl_rsp;
 
   // synchronization clocks / rests
   clkmgr_pkg::clkmgr_out_t clkmgr_aon_clocks;
@@ -532,7 +532,7 @@ module chip_${top["name"]}_${target["name"]} #(
   logic sck_monitor;
 
   // observe interface
-  logic [7:0] fla_obs;
+  logic [7:0] flash_obs;
   logic [7:0] otp_obs;
   ast_pkg::ast_obs_ctrl_t obs_ctrl;
 
@@ -553,8 +553,8 @@ module chip_${top["name"]}_${target["name"]} #(
   logic es_rng_fips;
 
   // entropy distribution network
-  edn_pkg::edn_req_t ast_edn_edn_req;
-  edn_pkg::edn_rsp_t ast_edn_edn_rsp;
+  edn_pkg::edn_req_t ast_edn_req;
+  edn_pkg::edn_rsp_t ast_edn_rsp;
 
   // alerts interface
   ast_pkg::ast_alert_rsp_t ast_alert_rsp;
@@ -575,15 +575,15 @@ module chip_${top["name"]}_${target["name"]} #(
 
   // DFT connections
   logic scan_en;
-  lc_ctrl_pkg::lc_tx_t dft_en;
+  lc_ctrl_pkg::lc_tx_t lc_dft_en;
   pinmux_pkg::dft_strap_test_req_t dft_strap_test;
 
   // Debug connections
   logic [ast_pkg::Ast2PadOutWidth-1:0] ast2pinmux;
   logic [ast_pkg::Pad2AstInWidth-1:0] pad2ast;
 
-  // Jitter enable
-  prim_mubi_pkg::mubi4_t jen;
+  // Jitter enable for main clock
+  prim_mubi_pkg::mubi4_t clk_main_jitter_en;
 
   // reset domain connections
   import rstmgr_pkg::PowerDomains;
@@ -665,7 +665,7 @@ module chip_${top["name"]}_${target["name"]} #(
   ast = ast[0]
 %>\
 
-  assign ast_base_pwr.main_pok = ast_pwst.main_pok;
+  assign pwrmgr_ast_rsp.main_pok = ast_pwst.main_pok;
 
   logic [rstmgr_pkg::PowerDomains-1:0] por_n;
   assign por_n = {ast_pwst.main_pok, ast_pwst.aon_pok};
@@ -681,10 +681,10 @@ module chip_${top["name"]}_${target["name"]} #(
 
   // AST does not use all clocks / resets forwarded to it
   logic unused_slow_clk_en;
-  assign unused_slow_clk_en = base_ast_pwr.slow_clk_en;
+  assign unused_slow_clk_en = pwrmgr_ast_req.slow_clk_en;
 
   logic unused_pwr_clamp;
-  assign unused_pwr_clamp = base_ast_pwr.pwr_clamp;
+  assign unused_pwr_clamp = pwrmgr_ast_req.pwr_clamp;
 
   logic usb_diff_rx_obs;
 
@@ -793,8 +793,8 @@ module chip_${top["name"]}_${target["name"]} #(
     .sns_rsts_i            ( rstmgr_aon_resets    ),
     .sns_spi_ext_clk_i     ( sck_monitor          ),
     // tlul
-    .tl_i                  ( base_ast_bus ),
-    .tl_o                  ( ast_base_bus ),
+    .tl_i                  ( ast_tl_req ),
+    .tl_o                  ( ast_tl_rsp ),
     // init done indication
     .ast_init_done_o       ( ast_init_done ),
     // buffered clocks & resets
@@ -816,33 +816,33 @@ module chip_${top["name"]}_${target["name"]} #(
     .ast_pwst_o            ( ast_pwst ),
     .ast_pwst_h_o          ( ast_pwst_h ),
     // main regulator
-    .main_env_iso_en_i     ( base_ast_pwr.pwr_clamp_env ),
-    .main_pd_ni            ( base_ast_pwr.main_pd_n ),
+    .main_env_iso_en_i     ( pwrmgr_ast_req.pwr_clamp_env ),
+    .main_pd_ni            ( pwrmgr_ast_req.main_pd_n ),
     // pdm control (flash)/otp
     .flash_power_down_h_o  ( flash_power_down_h ),
     .flash_power_ready_h_o ( flash_power_ready_h ),
     .otp_power_seq_i       ( otp_macro_pwr_seq ),
     .otp_power_seq_h_o     ( otp_macro_pwr_seq_h ),
     // system source clock
-    .clk_src_sys_en_i      ( base_ast_pwr.core_clk_en ),
+    .clk_src_sys_en_i      ( pwrmgr_ast_req.core_clk_en ),
     // need to add function in clkmgr
-    .clk_src_sys_jen_i     ( jen ),
+    .clk_src_sys_jen_i     ( clk_main_jitter_en ),
     .clk_src_sys_o         ( ast_base_clks.clk_sys  ),
-    .clk_src_sys_val_o     ( ast_base_pwr.core_clk_val ),
+    .clk_src_sys_val_o     ( pwrmgr_ast_rsp.core_clk_val ),
     // aon source clock
     .clk_src_aon_o         ( ast_base_clks.clk_aon ),
-    .clk_src_aon_val_o     ( ast_base_pwr.slow_clk_val ),
+    .clk_src_aon_val_o     ( pwrmgr_ast_rsp.slow_clk_val ),
     // io source clock
-    .clk_src_io_en_i       ( base_ast_pwr.io_clk_en ),
+    .clk_src_io_en_i       ( pwrmgr_ast_req.io_clk_en ),
     .clk_src_io_o          ( ast_base_clks.clk_io ),
-    .clk_src_io_val_o      ( ast_base_pwr.io_clk_val ),
+    .clk_src_io_val_o      ( pwrmgr_ast_rsp.io_clk_val ),
     .clk_src_io_48m_o      ( div_step_down_req ),
     // usb source clock
     .usb_ref_pulse_i       ( usb_ref_pulse ),
     .usb_ref_val_i         ( usb_ref_val ),
-    .clk_src_usb_en_i      ( base_ast_pwr.usb_clk_en ),
+    .clk_src_usb_en_i      ( pwrmgr_ast_req.usb_clk_en ),
     .clk_src_usb_o         ( ast_base_clks.clk_usb ),
-    .clk_src_usb_val_o     ( ast_base_pwr.usb_clk_val ),
+    .clk_src_usb_val_o     ( pwrmgr_ast_rsp.usb_clk_val ),
     // adc
     .adc_pd_i              ( adc_req.pd ),
     .adc_chnsel_i          ( adc_req.channel_sel ),
@@ -854,15 +854,15 @@ module chip_${top["name"]}_${target["name"]} #(
     .rng_val_o             ( es_rng_valid ),
     .rng_b_o               ( es_rng_bit ),
     // entropy
-    .entropy_rsp_i         ( ast_edn_edn_rsp ),
-    .entropy_req_o         ( ast_edn_edn_req ),
+    .entropy_rsp_i         ( ast_edn_rsp ),
+    .entropy_req_o         ( ast_edn_req ),
     // alerts
     .alert_rsp_i           ( ast_alert_rsp  ),
     .alert_req_o           ( ast_alert_req  ),
     // dft
     .dft_strap_test_i      ( dft_strap_test   ),
-    .lc_dft_en_i           ( dft_en           ),
-    .fla_obs_i             ( fla_obs ),
+    .lc_dft_en_i           ( lc_dft_en        ),
+    .fla_obs_i             ( flash_obs ),
     .otp_obs_i             ( otp_obs ),
     .otm_obs_i             ( '0 ),
     .usb_obs_i             ( usb_diff_rx_obs ),
@@ -997,65 +997,32 @@ module chip_${top["name"]}_${target["name"]} #(
     .SecRomCtrlDisableScrambling(SecRomCtrlDisableScrambling)
 % endif
   ) top_${top["name"]} (
-    // ast connections
-    .por_n_i                      ( por_n                      ),
+    // AST clock and reset signals
     .clk_main_i                   ( ast_base_clks.clk_sys      ),
     .clk_io_i                     ( ast_base_clks.clk_io       ),
     .clk_usb_i                    ( ast_base_clks.clk_usb      ),
     .clk_aon_i                    ( ast_base_clks.clk_aon      ),
     .clks_ast_o                   ( clkmgr_aon_clocks          ),
-    .clk_main_jitter_en_o         ( jen                        ),
     .rsts_ast_o                   ( rstmgr_aon_resets          ),
-    .sck_monitor_o                ( sck_monitor                ),
-    .pwrmgr_ast_req_o             ( base_ast_pwr               ),
-    .pwrmgr_ast_rsp_i             ( ast_base_pwr               ),
-    .sensor_ctrl_ast_alert_req_i  ( ast_alert_req              ),
-    .sensor_ctrl_ast_alert_rsp_o  ( ast_alert_rsp              ),
-    .sensor_ctrl_ast_status_i     ( ast_pwst.io_pok            ),
-    .usb_dp_pullup_en_o           ( usb_dp_pullup_en           ),
-    .usb_dn_pullup_en_o           ( usb_dn_pullup_en           ),
-    .usbdev_usb_rx_d_i            ( usb_rx_d                   ),
-    .usbdev_usb_tx_d_o            (                            ),
-    .usbdev_usb_tx_se0_o          (                            ),
-    .usbdev_usb_tx_use_d_se0_o    (                            ),
-    .usbdev_usb_rx_enable_o       ( usb_rx_enable              ),
-    .usbdev_usb_ref_val_o         ( usb_ref_val                ),
-    .usbdev_usb_ref_pulse_o       ( usb_ref_pulse              ),
-    .ast_tl_req_o                 ( base_ast_bus               ),
-    .ast_tl_rsp_i                 ( ast_base_bus               ),
-    .adc_req_o                    ( adc_req                    ),
-    .adc_rsp_i                    ( adc_rsp                    ),
-    .ast_edn_req_i                ( ast_edn_edn_req            ),
-    .ast_edn_rsp_o                ( ast_edn_edn_rsp            ),
-    .obs_ctrl_i                   ( obs_ctrl                   ),
-    .otp_macro_pwr_seq_o          ( otp_macro_pwr_seq          ),
-    .otp_macro_pwr_seq_h_i        ( otp_macro_pwr_seq_h        ),
-    .otp_obs_o                    ( otp_obs                    ),
-    .flash_bist_enable_i          ( flash_bist_enable          ),
-    .flash_power_down_h_i         ( flash_power_down_h         ),
-    .flash_power_ready_h_i        ( flash_power_ready_h        ),
-    .flash_obs_o                  ( fla_obs                    ),
-    .es_rng_enable_o              ( es_rng_enable              ),
-    .es_rng_valid_i               ( es_rng_valid               ),
-    .es_rng_bit_i                 ( es_rng_bit                 ),
-    .es_rng_fips_o                ( es_rng_fips                ),
-    .io_clk_byp_req_o             ( io_clk_byp_req             ),
-    .io_clk_byp_ack_i             ( io_clk_byp_ack             ),
-    .all_clk_byp_req_o            ( all_clk_byp_req            ),
-    .all_clk_byp_ack_i            ( all_clk_byp_ack            ),
-    .hi_speed_sel_o               ( hi_speed_sel               ),
-    .div_step_down_req_i          ( div_step_down_req          ),
-    .ast2pinmux_i                 ( ast2pinmux                 ),
-    .calib_rdy_i                  ( ast_init_done              ),
-    .ast_init_done_i              ( ast_init_done              ),
 
-    // Flash test mode voltages
-    .flash_test_mode_a_io         ( {FLASH_TEST_MODE1,
-                                     FLASH_TEST_MODE0}         ),
-    .flash_test_voltage_h_io      ( FLASH_TEST_VOLT            ),
+    // Manual DFT signals
+    .scan_en_i                    ( scan_en                    ),
+    .scan_rst_ni                  ( scan_rst_n                 ),
+    .scanmode_i                   ( scanmode                   ),
 
-    // OTP external voltage
-    .otp_ext_voltage_h_io         ( OTP_EXT_VOLT               ),
+<%
+port_list = top["inter_signal"]["external"]
+max_portwidth = max(len(x["signame"]) for x in port_list) if port_list else 0
+if port_list:
+  filtered_port_list = [p for p in port_list if len(p["signame_chip"][target["name"]]) <= 25]
+  max_sigwidth = max(len(p["signame_chip"][target["name"]]) for p in filtered_port_list)
+else:
+  max_sigwidth = 0
+%>\
+    // Auto-generated port map
+    % for sig in port_list:
+    .${lib.ljust(sig["signame"], max_portwidth)}(${lib.ljust(sig["signame_chip"][target["name"]], max_sigwidth)}),
+    % endfor
 
     // Multiplexed I/O
     .mio_in_i                     ( mio_in                     ),
@@ -1069,28 +1036,7 @@ module chip_${top["name"]}_${target["name"]} #(
 
     // Pad attributes
     .mio_attr_o                   ( mio_attr                   ),
-    .dio_attr_o                   ( dio_attr                   ),
-    .sensor_ctrl_manual_pad_attr_o( sensor_ctrl_manual_pad_attr),
-
-    // Memory attributes
-    .ram_1p_cfg_i                 ( ram_1p_cfg                 ),
-    .sram_ctrl_main_cfg_i         ( '{ram_1p_cfg}              ),
-    .sram_ctrl_ret_aon_cfg_i      ( '{ram_1p_cfg}              ),
-    .spi_ram_2p_cfg_i             ( spi_ram_2p_cfg             ),
-    .usb_ram_1p_cfg_i             ( usb_ram_1p_cfg             ),
-
-    .rom_cfg_i                    ( rom_cfg                    ),
-
-    // DFT signals
-    .ast_lc_dft_en_o              ( dft_en                     ),
-    .dft_strap_test_o             ( dft_strap_test             ),
-    .dft_hold_tap_sel_i           ( '0                         ),
-    .scan_rst_ni                  ( scan_rst_n                 ),
-    .scan_en_i                    ( scan_en                    ),
-    .scanmode_i                   ( scanmode                   ),
-
-    // FPGA build info
-    .fpga_info_i                  ( '0                         )
+    .dio_attr_o                   ( dio_attr                   )
   );
 % endif
 
@@ -1202,11 +1148,11 @@ module chip_${top["name"]}_${target["name"]} #(
     .clk_usb_i                    ( ast_base_clks.clk_usb ),
     .clk_aon_i                    ( ast_base_clks.clk_aon ),
     .clks_ast_o                   ( clkmgr_aon_clocks     ),
-    .clk_main_jitter_en_o         ( jen                   ),
+    .clk_main_jitter_en_o         ( clk_main_jitter_en    ),
     .rsts_ast_o                   ( rstmgr_aon_resets     ),
     .sck_monitor_o                ( sck_monitor           ),
-    .pwrmgr_ast_req_o             ( base_ast_pwr          ),
-    .pwrmgr_ast_rsp_i             ( ast_base_pwr          ),
+    .pwrmgr_ast_req_o             ( pwrmgr_ast_req        ),
+    .pwrmgr_ast_rsp_i             ( pwrmgr_ast_rsp        ),
     .usb_dp_pullup_en_o           ( usb_dp_pullup_en      ),
     .usb_dn_pullup_en_o           ( usb_dn_pullup_en      ),
     .usbdev_usb_rx_d_i            ( usb_rx_d              ),
@@ -1216,8 +1162,8 @@ module chip_${top["name"]}_${target["name"]} #(
     .usbdev_usb_rx_enable_o       ( usb_rx_enable         ),
     .usbdev_usb_ref_val_o         ( usb_ref_val           ),
     .usbdev_usb_ref_pulse_o       ( usb_ref_pulse         ),
-    .ast_edn_req_i                ( ast_edn_edn_req       ),
-    .ast_edn_rsp_o                ( ast_edn_edn_rsp       ),
+    .ast_edn_req_i                ( ast_edn_req           ),
+    .ast_edn_rsp_o                ( ast_edn_rsp           ),
     .obs_ctrl_i                   ( obs_ctrl              ),
     .flash_bist_enable_i          ( flash_bist_enable     ),
     .flash_power_down_h_i         ( 1'b0                  ),
@@ -1231,8 +1177,8 @@ module chip_${top["name"]}_${target["name"]} #(
     .div_step_down_req_i          ( div_step_down_req     ),
     .fpga_info_i                  ( fpga_info             ),
 % if target["name"] != "cw305":
-    .ast_tl_req_o                 ( base_ast_bus               ),
-    .ast_tl_rsp_i                 ( ast_base_bus               ),
+    .ast_tl_req_o                 ( ast_tl_req                 ),
+    .ast_tl_rsp_i                 ( ast_tl_rsp                 ),
     .adc_req_o                    ( adc_req                    ),
     .adc_rsp_i                    ( adc_rsp                    ),
     .otp_macro_pwr_seq_o          ( otp_macro_pwr_seq          ),

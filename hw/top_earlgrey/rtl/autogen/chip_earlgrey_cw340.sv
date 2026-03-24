@@ -776,8 +776,8 @@ module chip_earlgrey_cw340 #(
   logic [ast_pkg::Ast2PadOutWidth-1:0] ast2pinmux;
   logic [ast_pkg::Pad2AstInWidth-1:0] pad2ast;
 
-  // Jitter enable
-  prim_mubi_pkg::mubi4_t jen;
+  // Jitter enable for main clock
+  prim_mubi_pkg::mubi4_t clk_main_jitter_en;
 
   // reset domain connections
   import rstmgr_pkg::PowerDomains;
@@ -954,7 +954,7 @@ module chip_earlgrey_cw340 #(
     // system source clock
     .clk_src_sys_en_i      ( base_ast_pwr.core_clk_en ),
     // need to add function in clkmgr
-    .clk_src_sys_jen_i     ( jen ),
+    .clk_src_sys_jen_i     ( clk_main_jitter_en ),
     .clk_src_sys_o         ( ast_base_clks.clk_sys  ),
     .clk_src_sys_val_o     ( ast_base_pwr.core_clk_val ),
     // aon source clock
@@ -1072,7 +1072,7 @@ module chip_earlgrey_cw340 #(
     .clk_usb_i                    ( ast_base_clks.clk_usb ),
     .clk_aon_i                    ( ast_base_clks.clk_aon ),
     .clks_ast_o                   ( clkmgr_aon_clocks     ),
-    .clk_main_jitter_en_o         ( jen                   ),
+    .clk_main_jitter_en_o         ( clk_main_jitter_en    ),
     .rsts_ast_o                   ( rstmgr_aon_resets     ),
     .sck_monitor_o                ( sck_monitor           ),
     .pwrmgr_ast_req_o             ( base_ast_pwr          ),

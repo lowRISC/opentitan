@@ -65,13 +65,17 @@ def intersignal_format(req: Dict) -> str:
     return result
 
 
-def get_suffixes(ims: OrderedDict) -> Tuple[str, str]:
+def get_suffixes(ims: OrderedDict, for_type_def: bool = True) -> Tuple[str, str]:
     """Get suffixes of the struct.
 
     TL-UL struct uses `h2d`, `d2h` suffixes for req, rsp pair.
+    Simply return empty string for non-req_rsp type
     """
+    if ims["type"] != "req_rsp":
+        return ("", "")
+
     if ims["package"] == "tlul_pkg" and ims["struct"] == "tl":
-        return ("_h2d", "_d2h")
+        return ("_h2d", "_d2h") if for_type_def else ("_req", "_rsp")
 
     return ("_req", "_rsp")
 
@@ -247,10 +251,111 @@ def _get_default_name(sig, suffix):
     if sig['default']:
         return sig['default']
     elif sig['package']:
-        return "{}::{}_DEFAULT".format(sig['package'],
-                                       (sig["struct"] + suffix).upper())
+        scalar = "{}::{}_DEFAULT".format(sig['package'],
+                                         (sig["struct"] + suffix).upper())
+        if not isinstance(sig["width"], int):
+            # Return array-assign style for parametrized signal widths
+            return "'{{{}}}".format(scalar)
+        return scalar if sig["width"] == 1 else "'{{{}}}".format(scalar)
     else:
-        return "'0"
+        if sig["struct"] in ["logic", ""] and sig["width"] == 1:
+            return "1'b0"
+        else:
+            return "'0"
+
+
+def get_signame_chip(topcfg: Dict, sig: OrderedDict, port: str, reqrsp: str = "req"):
+    # Determine all possible suffixes and stub strings
+    type_req_suffix, type_rsp_suffix = get_suffixes(sig, True)
+    sig_req_suffix, sig_rsp_suffix = get_suffixes(sig, False)
+    type_reqrsp_suffix = type_req_suffix if (reqrsp == "req") else type_rsp_suffix
+    sig_reqrsp_suffix = sig_req_suffix if (reqrsp == "req") else sig_rsp_suffix
+
+    if sig["type"] == "req_rsp":
+        # Output if both are either "req" or "rsp"
+        if sig["act"] == reqrsp:
+            dir_suffix = "_o"
+            direction = "out"
+        else:
+            dir_suffix = "_i"
+            direction = "in"
+    elif sig["type"] == "io":
+        dir_suffix = "_io"
+        direction = "inout"
+    elif sig["type"] == "uni":
+        if sig["act"] == "req":
+            dir_suffix = "_o"
+            direction = "out"
+        else:
+            dir_suffix = "_i"
+            direction = "in"
+    else:
+        raise ValueError(f"Unknown signal type: {sig['type']}")
+
+    # Stub/tieoff string. For outputs: Simply leave open
+    if direction == "out":
+        stub_str = ""
+    else:
+        stub_str = _get_default_name(sig, type_reqrsp_suffix)
+
+    # Check if a chip-level signal name is specified, otherwise infer it from port name
+    sig_name = port if port != "" else intersignal_format(sig)
+    sig_name_chip_stem = sig_name
+
+    # Make sure to provide a value for the `netname` key
+    netname = sig.get("top_signame", sig_name)
+
+    # Add all suffixes to the signal (port) name
+    sig_name_full = sig_name + sig_reqrsp_suffix + dir_suffix
+
+    # Construct chiplevel signal name dict; overwrite sig_name_chip on stubbed signals
+    sig_name_chip = {}
+    port_name = sig["inst_name"] + '.' + sig["name"]
+    for tgt in topcfg["targets"]:
+        # Use stem + reqrsp-suffix if target does not do any chip-level modifications
+        sig_name_chip[tgt["name"]] = sig_name_chip_stem + sig_reqrsp_suffix
+        # Check if current target wants to do any modifications
+        if "chiplevel" in tgt and port_name in tgt["chiplevel"]["port_overrides"]:
+            # Tieoff, override connection name, or feedthrough
+            p_ovrd = tgt["chiplevel"]["port_overrides"][port_name]
+            # Tieoff logic: Unconnected = 'True' uses infered value for inputs
+            if "unused" in p_ovrd:
+                if p_ovrd["unused"] is True and "tie_value" in p_ovrd:
+                    # Use manual override value, if applicable
+                    if sig["type"] == "uni" and sig["act"] == "req":
+                        sig_name_chip[tgt["name"]] = ""
+                        log.warning("tie_value {} specified for output {} in target {}. "
+                                    "Override values do not apply to outputs.".format(
+                                        p_ovrd["tie_value"], port_name, tgt["name"]))
+                    elif sig["type"] == "req_rsp" and sig["act"] == reqrsp:
+                        # Output part of req_rsp signals, prevent using manual override
+                        sig_name_chip[tgt["name"]] = ""
+                    else:
+                        # Legit use case for manual override in all remaining cases
+                        sig_name_chip[tgt["name"]] = p_ovrd["tie_value"]
+                elif p_ovrd["unused"] is True:
+                    sig_name_chip[tgt["name"]] = stub_str
+                else:
+                    log.warning("unused: {} specified for {} in target {}, which has no "
+                                "effect".format(p_ovrd["unused"], port_name, tgt["name"]))
+            elif "signal" in p_ovrd:
+                sig_name_chip[tgt["name"]] = p_ovrd["signal"] + sig_reqrsp_suffix
+            elif "feedthrough" in p_ovrd:
+                # Simply add the direction suffix for feedthrough
+                sig_name_chip[tgt["name"]] += dir_suffix
+
+    # Return the ready-to-add dict and the signal (port) name
+    return (OrderedDict([('package', sig["package"]),
+                         ('struct', sig["struct"] + type_reqrsp_suffix),
+                         ('signame', sig_name_full),
+                         ('signame_chip', sig_name_chip),
+                         ('width', sig["width"]), ('type', sig["type"]),
+                         ('default', sig["default"]),
+                         ('direction', direction),
+                         ('conn_type', sig["conn_type"]),
+                         ('index', sig["index"]),
+                         ('netname', netname + type_reqrsp_suffix)]),
+            sig_name)
 
 
 def elab_intermodule(topcfg: OrderedDict):
@@ -470,85 +575,29 @@ def elab_intermodule(topcfg: OrderedDict):
         assert sig_i == -1, 'top net connection should not use bit index'
         sig = find_intermodule_signal(list_of_intersignals, sig_m, sig_s)
 
-        # To make netname `_o` or `_i`
+        # To append `_o` or `_i` suffix to netname
         sig['external'] = True
+        # Set to `True` if sig already has a top_signame
+        sig["conn_type"] = "top_signame" in sig
 
-        sig_name = port if port != "" else intersignal_format(sig)
-
-        # if top signame already defined, then a previous connection category
-        # is already connected to external pin.  Sig name is only used for
-        # port definition
-        conn_type = False
-        if "top_signame" not in sig:
-            sig["top_signame"] = sig_name
-        else:
-            conn_type = True
-        sig["conn_type"] = conn_type
-
+        # Make sure there is an index key
         if "index" not in sig:
             sig["index"] = -1
 
         # Add the port definition to top external ports
-        index = sig["index"]
-        netname = sig["top_signame"]
+        sig_dict, sig_name = get_signame_chip(topcfg, sig, port, "req")
+        topcfg["inter_signal"]["external"].append(sig_dict)
+
+        # If top signame already defined, then a previous connection category
+        # is already connected to external pin. Sig name is only used for
+        # port definition
+        if "top_signame" not in sig:
+            sig["top_signame"] = sig_name
+
+        # One more port entry for req_rsp type signals
         if sig["type"] == "req_rsp":
-            req_suffix, rsp_suffix = get_suffixes(sig)
-            if sig["act"] == "req":
-                req_sigsuffix, rsp_sigsuffix = ("_o", "_i")
-
-            else:
-                req_sigsuffix, rsp_sigsuffix = ("_i", "_o")
-
-            topcfg["inter_signal"]["external"].append(
-                OrderedDict([('package', sig["package"]),
-                             ('struct', sig["struct"] + req_suffix),
-                             ('signame', sig_name + "_req" + req_sigsuffix),
-                             ('width', sig["width"]), ('type', sig["type"]),
-                             ('default', sig["default"]),
-                             ('direction',
-                              'out' if sig['act'] == "req" else 'in'),
-                             ('conn_type', conn_type),
-                             ('index', index),
-                             ('netname', netname + req_suffix)]))
-            topcfg["inter_signal"]["external"].append(
-                OrderedDict([('package', sig["package"]),
-                             ('struct', sig["struct"] + rsp_suffix),
-                             ('signame', sig_name + "_rsp" + rsp_sigsuffix),
-                             ('width', sig["width"]), ('type', sig["type"]),
-                             ('default', sig["default"]),
-                             ('direction',
-                              'in' if sig['act'] == "req" else 'out'),
-                             ('conn_type', conn_type),
-                             ('index', index),
-                             ('netname', netname + rsp_suffix)]))
-        elif sig["type"] == "io":
-            sigsuffix = "_io"
-            topcfg["inter_signal"]["external"].append(
-                OrderedDict([('package', sig.get("package", "")),
-                             ('struct', sig["struct"]),
-                             ('signame', sig_name + sigsuffix),
-                             ('width', sig["width"]), ('type', sig["type"]),
-                             ('default', sig["default"]),
-                             ('direction', "inout"),
-                             ('conn_type', conn_type),
-                             ('index', index),
-                             ('netname', netname)]))
-        else:  # uni
-            if sig["act"] == "req":
-                sigsuffix = "_o"
-            else:
-                sigsuffix = "_i"
-            topcfg["inter_signal"]["external"].append(
-                OrderedDict([('package', sig.get("package", "")),
-                             ('struct', sig["struct"]),
-                             ('signame', sig_name + sigsuffix),
-                             ('width', sig["width"]), ('type', sig["type"]),
-                             ('default', sig["default"]),
-                             ('direction',
-                              'out' if sig['act'] == "req" else 'in'),
-                             ('conn_type', conn_type),
-                             ('index', index),
-                             ('netname', netname)]))
+            sig_dict, _ = get_signame_chip(topcfg, sig, port, "rsp")
+            topcfg["inter_signal"]["external"].append(sig_dict)
 
     for sig in topcfg["inter_signal"]["signals"]:
         # Check if it exist in definitions
@@ -888,6 +937,30 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
                                              sig_m, sig_s)
         err, sig_struct = check_intermodule_field(sig_struct)
         total_error += err
+
+    # Check if all ports requested for override exist at the toplevel.
+    # This inherently also makes sure that no port is requested for
+    # override which does not exist on a module, thanks to the check above.
+    for tgt in topcfg["targets"]:
+        if "chiplevel" not in tgt:
+            continue
+        if "port_overrides" not in tgt["chiplevel"]:
+            continue
+
+        for p in tgt["chiplevel"]["port_overrides"].keys():
+            assert p in topcfg["inter_module"]["external"].keys(), \
+                'Port {} was requested for override in target {} but not found ' \
+                'in topcfg["inter_module"]["external"]'.format(p, tgt["name"])
+
+        # Check that each entry specifies exactly one (legal) override instruction
+        for p in tgt["chiplevel"]["port_overrides"].values():
+            if len(p.keys()) == 1:
+                assert (list(p.keys())[0] in ["signal", "unused", "feedthrough"]), \
+                    'Allowed override instructions are "signal", "unused", "feedthrough"'
+            else:
+                assert "unused" in p and "tie_value" in p and len(p.keys()) == 2, \
+                       'port_overrides only support one instruction out of "signal", ' \
+                       '"unused", "feedthrough", or "unused" plus an "tie_value".'
 
     return total_error
 
