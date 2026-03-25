@@ -342,6 +342,20 @@ otcrypto_status_t otcrypto_ecdh_p384_async_finalize(
 otcrypto_status_t otcrypto_p384_point_on_curve(
     const otcrypto_unblinded_key_t *point, hardened_bool_t *check_result);
 
+/**
+ * Base point multiplication given a private key.
+ *
+ * This routine should never be used if the resulting affine coordinates are
+ * sensitive values. They are returned unmasked.
+ *
+ * @param private_key The private key to be multiplied with the base point.
+ * @param public_key The resulting public key of the base point multiplication.
+ * @return Result of the base point multiplication.
+ */
+status_t otcrypto_p384_base_point_mult(
+    const otcrypto_blinded_key_t *private_key,
+    otcrypto_unblinded_key_t *public_key);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
