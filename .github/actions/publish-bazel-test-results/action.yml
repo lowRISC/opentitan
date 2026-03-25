@@ -69,3 +69,10 @@ runs:
         name: ${{ inputs.artifact-name }}-coverage
         path: /tmp/coverage_report
         overwrite: true
+
+    - name: Upload bazel execution log
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}-exec-log
+        path: /tmp/bazel-exec-log/
+        overwrite: true
