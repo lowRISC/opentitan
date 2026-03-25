@@ -235,31 +235,11 @@ static rom_error_t dice_chain_load_flash(
   dice_chain_reset_cert_obj();
 
   // Detect the version of the blob stored in flash.
-  dice_chain.blob_version = kPersoBlobVersionV0;
-  // Read the first object's type to check for Version Object.
-  // Version objects always use V0 16-bit headers.
-  perso_tlv_object_header_t header;
-  memcpy(&header, dice_chain.page.data, sizeof(perso_tlv_object_header_t));
-  perso_tlv_object_type_t type;
-  uint16_t size;
-  PERSO_TLV_GET_FIELD(Objh, Type, header, &type);
-  PERSO_TLV_GET_FIELD(Objh, Size, header, &size);
-  if (type == kPersoObjectTypeBlobVersion) {
-    if (size ==
-        sizeof(perso_tlv_object_header_t) + sizeof(perso_tlv_blob_version_t)) {
-      uint16_t version_be;
-      memcpy(&version_be,
-             dice_chain.page.data + sizeof(perso_tlv_object_header_t),
-             sizeof(uint16_t));
-      uint16_t version = __builtin_bswap16(version_be);
-      if (version == kPersoBlobVersionV1) {
-        dice_chain.blob_version = kPersoBlobVersionV1;
-        // Skip the Version Object.
-        dice_chain.tail_offset =
-            sizeof(perso_tlv_object_header_t) + sizeof(perso_tlv_blob_version_t);
-      }
-    }
-  }
+  size_t offset = 0;
+  RETURN_IF_ERROR(perso_tlv_get_blob_version(
+      dice_chain.page.data, sizeof(dice_chain.page.data),
+      &dice_chain.blob_version, &offset));
+  dice_chain.tail_offset = offset;
 
   return kErrorOk;
 }
