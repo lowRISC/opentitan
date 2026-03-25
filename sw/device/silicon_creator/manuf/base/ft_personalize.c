@@ -213,41 +213,10 @@ OT_WEAK rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
  * Pushes the hash of the personalization firmware to the perso blob.
  */
 static status_t log_self_hash(perso_blob_t *perso_blob_to_host) {
-  switch ((perso_blob_version_t)certgen_inputs.blob_version) {
-    case kPersoBlobVersionV1: {
-      perso_tlv_object_header_v1_t tlv_header = 0;
-      PERSO_TLV_SET_FIELD_V1(ObjhV1, Type, tlv_header,
-                             kPersoObjectTypePersoSha256Hash);
-      PERSO_TLV_SET_FIELD_V1(
-          ObjhV1, Size, tlv_header,
-          sizeof(perso_tlv_object_header_v1_t) + sizeof(keymgr_binding_value_t));
-      TRY(perso_tlv_push_to_perso_blob(&tlv_header,
-                                       sizeof(perso_tlv_object_header_v1_t),
-                                       perso_blob_to_host));
-      TRY(perso_tlv_push_to_perso_blob(boot_measurements.rom_ext.data,
-                                       sizeof(keymgr_binding_value_t),
-                                       perso_blob_to_host));
-      break;
-    }
-    case kPersoBlobVersionV0: {
-      perso_tlv_object_header_t tlv_header = 0;
-      PERSO_TLV_SET_FIELD(Objh, Type, tlv_header,
-                          kPersoObjectTypePersoSha256Hash);
-      PERSO_TLV_SET_FIELD(
-          Objh, Size, tlv_header,
-          sizeof(perso_tlv_object_header_t) + sizeof(keymgr_binding_value_t));
-      TRY(perso_tlv_push_to_perso_blob(&tlv_header,
-                                       sizeof(perso_tlv_object_header_t),
-                                       perso_blob_to_host));
-      TRY(perso_tlv_push_to_perso_blob(boot_measurements.rom_ext.data,
-                                       sizeof(keymgr_binding_value_t),
-                                       perso_blob_to_host));
-      break;
-    }
-    default:
-      return INVALID_ARGUMENT();
-  }
-  perso_blob_to_host->num_objs++;
+  TRY(perso_tlv_push_object_to_perso_blob(
+      kPersoObjectTypePersoSha256Hash, boot_measurements.rom_ext.data,
+      sizeof(keymgr_binding_value_t),
+      (perso_blob_version_t)certgen_inputs.blob_version, perso_blob_to_host));
   return OK_STATUS();
 }
 
@@ -720,24 +689,11 @@ static status_t compute_tbs_was_hmac(perso_blob_t *perso_blob_to_host) {
   uint32_t obj_size;
   perso_tlv_object_type_t obj_type;
   perso_tlv_cert_obj_t cert_obj;
+  perso_blob_version_t version = (perso_blob_version_t)certgen_inputs.blob_version;
   for (size_t i = 0; i < perso_blob_to_host->num_objs; ++i) {
     // Parse the TLV object header.
-    switch ((perso_blob_version_t)certgen_inputs.blob_version) {
-      case kPersoBlobVersionV1: {
-        perso_tlv_object_header_v1_t obj_header = *(uint32_t *)tlv_buf;
-        PERSO_TLV_GET_FIELD_V1(ObjhV1, Type, obj_header, &obj_type);
-        PERSO_TLV_GET_FIELD_V1(ObjhV1, Size, obj_header, &obj_size);
-        break;
-      }
-      case kPersoBlobVersionV0: {
-        perso_tlv_object_header_t obj_header = *(uint16_t *)tlv_buf;
-        PERSO_TLV_GET_FIELD(Objh, Type, obj_header, &obj_type);
-        PERSO_TLV_GET_FIELD(Objh, Size, obj_header, &obj_size);
-        break;
-      }
-      default:
-        return INVALID_ARGUMENT();
-    }
+    obj_type = perso_tlv_object_type(tlv_buf, version);
+    obj_size = perso_tlv_object_size(tlv_buf, version);
 
     // We can skip the version object block if present (it isn't a cert).
     if (obj_type == kPersoObjectTypeBlobVersion) {
@@ -747,7 +703,7 @@ static status_t compute_tbs_was_hmac(perso_blob_t *perso_blob_to_host) {
 
     if (obj_type == kPersoObjectTypeX509Tbs) {
       TRY(perso_tlv_get_cert_obj(
-          tlv_buf, obj_size, (perso_blob_version_t)certgen_inputs.blob_version,
+          tlv_buf, obj_size, version,
           &cert_obj));
       hmac_sha256_update(cert_obj.cert_body_p, cert_obj.cert_body_size);
     }
@@ -758,37 +714,9 @@ static status_t compute_tbs_was_hmac(perso_blob_t *perso_blob_to_host) {
   hmac_sha256_final(&digest);
 
   // Push hash into perso blob.
-  switch ((perso_blob_version_t)certgen_inputs.blob_version) {
-    case kPersoBlobVersionV1: {
-      perso_tlv_object_header_v1_t was_hmac_tlv_header = 0;
-      obj_size = sizeof(perso_tlv_object_header_v1_t) + sizeof(hmac_digest_t);
-      PERSO_TLV_SET_FIELD_V1(ObjhV1, Type, was_hmac_tlv_header,
-                             kPersoObjectTypeWasTbsHmac);
-      PERSO_TLV_SET_FIELD_V1(ObjhV1, Size, was_hmac_tlv_header, obj_size);
-      TRY(perso_tlv_push_to_perso_blob(&was_hmac_tlv_header,
-                                       sizeof(perso_tlv_object_header_v1_t),
-                                       perso_blob_to_host));
-      TRY(perso_tlv_push_to_perso_blob(digest.digest, kHmacDigestNumBytes,
-                                       perso_blob_to_host));
-      break;
-    }
-    case kPersoBlobVersionV0: {
-      perso_tlv_object_header_t was_hmac_tlv_header = 0;
-      obj_size = sizeof(perso_tlv_object_header_t) + sizeof(hmac_digest_t);
-      PERSO_TLV_SET_FIELD(Objh, Type, was_hmac_tlv_header,
-                          kPersoObjectTypeWasTbsHmac);
-      PERSO_TLV_SET_FIELD(Objh, Size, was_hmac_tlv_header, obj_size);
-      TRY(perso_tlv_push_to_perso_blob(&was_hmac_tlv_header,
-                                       sizeof(perso_tlv_object_header_t),
-                                       perso_blob_to_host));
-      TRY(perso_tlv_push_to_perso_blob(digest.digest, kHmacDigestNumBytes,
-                                       perso_blob_to_host));
-      break;
-    }
-    default:
-      return INVALID_ARGUMENT();
-  }
-  perso_blob_to_host->num_objs++;
+  TRY(perso_tlv_push_object_to_perso_blob(kPersoObjectTypeWasTbsHmac,
+                                          digest.digest, kHmacDigestNumBytes,
+                                          version, perso_blob_to_host));
 
   // Read complete device ID and push into perso blob. The host will need the
   // device ID to reconstruct the WAS.
@@ -796,38 +724,9 @@ static status_t compute_tbs_was_hmac(perso_blob_t *perso_blob_to_host) {
   TRY(otp_ctrl_testutils_dai_read32_array(&otp_ctrl, kDifOtpCtrlPartitionHwCfg0,
                                           kHwCfgDeviceIdOffset, device_id,
                                           ARRAYSIZE(device_id)));
-  switch ((perso_blob_version_t)certgen_inputs.blob_version) {
-    case kPersoBlobVersionV1: {
-      perso_tlv_object_header_v1_t device_id_header = 0;
-      obj_size =
-          sizeof(perso_tlv_object_header_v1_t) + kHwCfgDeviceIdSizeInBytes;
-      PERSO_TLV_SET_FIELD_V1(ObjhV1, Type, device_id_header,
-                             kPersoObjectTypeDeviceId);
-      PERSO_TLV_SET_FIELD_V1(ObjhV1, Size, device_id_header, obj_size);
-      TRY(perso_tlv_push_to_perso_blob(&device_id_header,
-                                       sizeof(perso_tlv_object_header_v1_t),
-                                       perso_blob_to_host));
-      TRY(perso_tlv_push_to_perso_blob(device_id, kHwCfgDeviceIdSizeInBytes,
-                                       perso_blob_to_host));
-      break;
-    }
-    case kPersoBlobVersionV0: {
-      perso_tlv_object_header_t device_id_header = 0;
-      obj_size = sizeof(perso_tlv_object_header_t) + kHwCfgDeviceIdSizeInBytes;
-      PERSO_TLV_SET_FIELD(Objh, Type, device_id_header,
-                          kPersoObjectTypeDeviceId);
-      PERSO_TLV_SET_FIELD(Objh, Size, device_id_header, obj_size);
-      TRY(perso_tlv_push_to_perso_blob(&device_id_header,
-                                       sizeof(perso_tlv_object_header_t),
-                                       perso_blob_to_host));
-      TRY(perso_tlv_push_to_perso_blob(device_id, kHwCfgDeviceIdSizeInBytes,
-                                       perso_blob_to_host));
-      break;
-    }
-    default:
-      return INVALID_ARGUMENT();
-  }
-  perso_blob_to_host->num_objs++;
+  TRY(perso_tlv_push_object_to_perso_blob(kPersoObjectTypeDeviceId,
+                                          device_id, kHwCfgDeviceIdSizeInBytes,
+                                          version, perso_blob_to_host));
 
   return OK_STATUS();
 }
@@ -1029,31 +928,13 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
   perso_blob_from_host.next_free = 0;
   perso_blob_from_host_version = kPersoBlobVersionV0;
   if (perso_blob_from_host.num_objs > 0) {
-    // Read the first object's type to check for Version Object.
-    // Version objects always use V0 16-bit headers.
-    perso_tlv_object_header_t header;
-    memcpy(&header, perso_blob_from_host.body, sizeof(perso_tlv_object_header_t));
-    perso_tlv_object_type_t type;
-    uint16_t size;
-    PERSO_TLV_GET_FIELD(Objh, Type, header, &type);
-    PERSO_TLV_GET_FIELD(Objh, Size, header, &size);
-    if (type == kPersoObjectTypeBlobVersion) {
-      if (size !=
-          sizeof(perso_tlv_object_header_t) + sizeof(perso_tlv_blob_version_t)) {
-        return INVALID_ARGUMENT();
-      }
-      uint16_t version_be;
-      memcpy(&version_be,
-             perso_blob_from_host.body + sizeof(perso_tlv_object_header_t),
-             sizeof(uint16_t));
-      uint16_t version = __builtin_bswap16(version_be);
-      if (version != kPersoBlobVersionV1) {
-        return INVALID_ARGUMENT();
-      }
-      perso_blob_from_host_version = kPersoBlobVersionV1;
-      // Skip the Version Object.
-      perso_blob_from_host.next_free =
-          sizeof(perso_tlv_object_header_t) + sizeof(perso_tlv_blob_version_t);
+    size_t offset = 0;
+    TRY(perso_tlv_get_blob_version(
+        perso_blob_from_host.body, sizeof(perso_blob_from_host.body),
+        &perso_blob_from_host_version, &offset));
+    
+    if (offset > 0) {
+      perso_blob_from_host.next_free = offset;
       perso_blob_from_host.num_objs--;
     }
   }

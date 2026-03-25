@@ -386,16 +386,57 @@ rom_error_t perso_tlv_push_cert_to_perso_blob(
     perso_blob_version_t blob_version, perso_blob_t *pb);
 
 /**
- * Pushes arbitrary data to the perso blob that is sent between host and device.
+/**
+ * Parses the beginning of the buffer to detect the personalization blob version.
  *
- * @param data Pointer to the data to add to the blob.
+ * It looks for a `kPersoObjectTypeBlobVersion` object which always uses the V0
+ * 16-bit header. If found, it parses the version from the payload.
+ *
+ * @param data Pointer to the start of the perso blob.
+ * @param size Total size of the perso blob in bytes.
+ * @param[out] version Extracted version, or kPersoBlobVersionV0 if not present.
+ * @param[out] offset Pointer to the first object after the version object.
+ * @return status of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t perso_tlv_get_blob_version(const uint8_t *data, size_t size,
+                                       perso_blob_version_t *version,
+                                       size_t *offset);
+
+/**
+ * Returns the object type from the header.
+ *
+ * @param data Pointer to the start of the object.
+ * @param version The version of the perso blob.
+ * @return The type of the object.
+ */
+perso_tlv_object_type_t perso_tlv_object_type(const uint8_t *data,
+                                              perso_blob_version_t version);
+
+/**
+ * Returns the object size from the header.
+ *
+ * @param data Pointer to the start of the object.
+ * @param version The version of the perso blob.
+ * @return The size of the object in bytes.
+ */
+uint32_t perso_tlv_object_size(const uint8_t *data,
+                               perso_blob_version_t version);
+
+/**
+ * Wraps arbitrary data in a perso LTV object and pushes it to the perso blob.
+ *
+ * @param obj_type The type of the object to add.
+ * @param data Pointer to the data to add.
  * @param size Size of the data to add in bytes.
+ * @param version The version of the perso blob.
  * @param perso_blob Pointer to the perso blob to add the data to.
  * @return status of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t perso_tlv_push_to_perso_blob(const void *data, size_t size,
-                                         perso_blob_t *perso_blob);
+rom_error_t perso_tlv_push_object_to_perso_blob(
+    perso_tlv_object_type_t obj_type, const void *data, size_t size,
+    perso_blob_version_t version, perso_blob_t *perso_blob);
 
 #ifdef __cplusplus
 }  // extern "C"
