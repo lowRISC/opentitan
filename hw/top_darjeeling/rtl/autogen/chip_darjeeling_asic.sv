@@ -1548,16 +1548,16 @@ module chip_darjeeling_asic #(
     .SecRomCtrl1DisableScrambling(SecRomCtrl1DisableScrambling)
   ) top_darjeeling (
     // AST clock and reset signals
-    .clk_main_i                        ( ast_base_clks.clk_sys      ),
-    .clk_io_i                          ( ast_base_clks.clk_io       ),
-    .clk_aon_i                         ( ast_base_clks.clk_aon      ),
-    .clks_ast_o                        ( clkmgr_aon_clocks          ),
-    .rsts_ast_o                        ( rstmgr_aon_resets          ),
+    .clk_main_i(ast_base_clks.clk_sys),
+    .clk_io_i  (ast_base_clks.clk_io ),
+    .clk_aon_i (ast_base_clks.clk_aon),
+    .clks_ast_o(clkmgr_aon_clocks    ),
+    .rsts_ast_o(rstmgr_aon_resets    ),
 
     // Manual DFT signals
-    .scan_en_i                    ( scan_en                    ),
-    .scan_rst_ni                  ( scan_rst_n                 ),
-    .scanmode_i                   ( scanmode                   ),
+    .scan_en_i  (scan_en   ),
+    .scan_rst_ni(scan_rst_n),
+    .scanmode_i (scanmode  ),
 
     // Auto-generated port map
     .ast_lc_dft_en_o                          (lc_dft_en                 ),
@@ -1669,18 +1669,18 @@ module chip_darjeeling_asic #(
     .ctn_tl_d2h_i                             (ctn_tl_d2h[0]             ),
 
     // Multiplexed I/O
-    .mio_in_i                          ( mio_in                     ),
-    .mio_out_o                         ( mio_out                    ),
-    .mio_oe_o                          ( mio_oe                     ),
+    .mio_in_i (mio_in ),
+    .mio_out_o(mio_out),
+    .mio_oe_o (mio_oe ),
 
     // Dedicated I/O
-    .dio_in_i                          ( dio_in                     ),
-    .dio_out_o                         ( dio_out                    ),
-    .dio_oe_o                          ( dio_oe                     ),
+    .dio_in_i (dio_in ),
+    .dio_out_o(dio_out),
+    .dio_oe_o (dio_oe ),
 
     // Pad attributes
-    .mio_attr_o                        ( mio_attr                   ),
-    .dio_attr_o                        ( dio_attr                   )
+    .mio_attr_o(mio_attr),
+    .dio_attr_o(dio_attr)
   );
 
   logic unused_signals;

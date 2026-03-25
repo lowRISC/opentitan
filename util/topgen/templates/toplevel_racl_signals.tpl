@@ -13,9 +13,13 @@
       policy_sel_name = f"{module['name'].upper()}{group_suffix}{if_suffix}"
 %>\
 %     if len(range_mapping) > 0:
-      .racl_policy_sel_ranges_${if_name}_i(RACL_POLICY_SEL_RANGES_${policy_sel_name}),
+
+    // RACL policies
+    .racl_policy_sel_ranges_${if_name}_i(RACL_POLICY_SEL_RANGES_${policy_sel_name}),
 %     else:
-      .racl_policy_sel_ranges_${if_name}_i('{top_racl_pkg::RACL_RANGE_T_DEFAULT}),
+
+    // RACL policies
+    .racl_policy_sel_ranges_${if_name}_i('{top_racl_pkg::RACL_RANGE_T_DEFAULT}),
 %     endif
 %   endif
 % endfor

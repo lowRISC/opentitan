@@ -1054,17 +1054,17 @@ module chip_earlgrey_cw340 #(
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_earlgrey (
     // AST clock and reset signals
-    .clk_main_i                   ( ast_base_clks.clk_sys      ),
-    .clk_io_i                     ( ast_base_clks.clk_io       ),
-    .clk_usb_i                    ( ast_base_clks.clk_usb      ),
-    .clk_aon_i                    ( ast_base_clks.clk_aon      ),
-    .clks_ast_o                   ( clkmgr_aon_clocks          ),
-    .rsts_ast_o                   ( rstmgr_aon_resets          ),
+    .clk_main_i(ast_base_clks.clk_sys),
+    .clk_io_i  (ast_base_clks.clk_io ),
+    .clk_usb_i (ast_base_clks.clk_usb),
+    .clk_aon_i (ast_base_clks.clk_aon),
+    .clks_ast_o(clkmgr_aon_clocks    ),
+    .rsts_ast_o(rstmgr_aon_resets    ),
 
     // Manual DFT signals
-    .scan_en_i                    ( scan_en                    ),
-    .scan_rst_ni                  ( scan_rst_n                 ),
-    .scanmode_i                   ( scanmode                   ),
+    .scan_en_i  (scan_en   ),
+    .scan_rst_ni(scan_rst_n),
+    .scanmode_i (scanmode  ),
 
     // Auto-generated port map
     .adc_req_o                    (adc_req            ),
@@ -1127,18 +1127,18 @@ module chip_earlgrey_cw340 #(
     .usbdev_usb_ref_pulse_o       (usb_ref_pulse      ),
 
     // Multiplexed I/O
-    .mio_in_i                     ( mio_in                     ),
-    .mio_out_o                    ( mio_out                    ),
-    .mio_oe_o                     ( mio_oe                     ),
+    .mio_in_i (mio_in ),
+    .mio_out_o(mio_out),
+    .mio_oe_o (mio_oe ),
 
     // Dedicated I/O
-    .dio_in_i                     ( dio_in                     ),
-    .dio_out_o                    ( dio_out                    ),
-    .dio_oe_o                     ( dio_oe                     ),
+    .dio_in_i (dio_in ),
+    .dio_out_o(dio_out),
+    .dio_oe_o (dio_oe ),
 
     // Pad attributes
-    .mio_attr_o                   ( mio_attr                   ),
-    .dio_attr_o                   ( dio_attr                   )
+    .mio_attr_o(mio_attr),
+    .dio_attr_o(dio_attr)
   );
 
 
