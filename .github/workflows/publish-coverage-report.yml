@@ -46,6 +46,7 @@ jobs:
         run: |
           ci/scripts/merge-coverage-report.sh /tmp/job_reports /tmp/report
       - name: Upload report as artifact
+        if: success() || failure()
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.report-artifact-name }}
