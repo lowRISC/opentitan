@@ -5,9 +5,11 @@
 class rv_dm_env_cfg extends cip_base_env_cfg #(.RAL_T(rv_dm_regs_reg_block));
 
   // ext component cfgs
-  virtual rv_dm_if    rv_dm_vif;
-  rand jtag_agent_cfg m_jtag_agent_cfg;
-  rand tl_agent_cfg   m_tl_sba_agent_cfg;
+  virtual rv_dm_if          rv_dm_vif;
+
+  rand jtag_agent_cfg       m_jtag_agent_cfg;
+  rand tl_agent_cfg         m_tl_sba_agent_cfg;
+  rand rv_dm_mode_agent_cfg m_mode_agent_cfg;
 
   // This controls whether the scoreboard (if enabled) should check correctness of TL error
   // responses. It defaults to being true but a vseq that is forcing internal signals might need to
@@ -42,6 +44,7 @@ class rv_dm_env_cfg extends cip_base_env_cfg #(.RAL_T(rv_dm_regs_reg_block));
   function new (string name="");
     super.new(name);
     can_reset_with_csr_accesses = 1'b1;
+    m_mode_agent_cfg = rv_dm_mode_agent_cfg::type_id::create("m_mode_agent_cfg");
   endfunction
 
   virtual function void initialize();
