@@ -45,7 +45,7 @@ class rv_dm_stress_all_vseq extends rv_dm_base_vseq;
       if (do_apply_reset) rv_dm_vseq.do_apply_reset = $urandom_range(0, 1);
       else                rv_dm_vseq.do_apply_reset = 0;
 
-      rv_dm_vseq.set_sequencer(p_sequencer);
+      configure_child_vseq(rv_dm_vseq);
       `DV_CHECK_RANDOMIZE_FATAL(rv_dm_vseq)
       rv_dm_vseq.start(p_sequencer);
 
@@ -56,5 +56,11 @@ class rv_dm_stress_all_vseq extends rv_dm_base_vseq;
       if (!cfg.clk_rst_vif.rst_n) return;
      end
    endtask
+
+  // Set sequencers in the child vseq to match the ones used in this virtual sequence
+  function void configure_child_vseq(rv_dm_base_vseq child_vseq);
+    child_vseq.set_sequencer(p_sequencer);
+    child_vseq.m_mode_sequencer = m_mode_sequencer;
+  endfunction
 
 endclass : rv_dm_stress_all_vseq

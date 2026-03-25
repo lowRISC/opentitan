@@ -27,6 +27,7 @@ module tb;
   tl_if sba_tl_if(.clk(clk), .rst_n(rst_n));
   jtag_if jtag_if();
   rv_dm_if rv_dm_if(.clk(clk), .rst_n(rst_n));
+  rv_dm_mode_if mode_if(.clk(clk));
 
   // Used for JTAG DTM connections via TL-UL.
   tlul_pkg::tl_h2d_t dbg_tl_h2d;
@@ -45,7 +46,7 @@ module tb;
     .jtag_i      ({jtag_if.tck, jtag_if.tms, jtag_if.trst_n, jtag_if.tdi}),
     .jtag_o      ({jtag_if.tdo, jtag_tdo_oe}),
     .scan_rst_ni (rv_dm_if.scan_rst_n),
-    .scanmode_i  (rv_dm_if.scanmode),
+    .scanmode_i  (mode_if.scanmode),
     .tl_h2d_o    (dbg_tl_h2d),
     .tl_d2h_i    (dbg_tl_d2h)
   );
@@ -66,26 +67,22 @@ module tb;
     .rst_ni                    (rst_n),
     .clk_lc_i                  (clk_lc  ),
     .rst_lc_ni                 (rst_lc_n),
+
     .racl_policies_i           (racl_policies),
     .racl_error_o              (),
-    // We don't currently model systems with multiple debug modules. Tie this port off with the same
-    // value as given as a default for next_dm_addr in rv_dm.hjson.
-    .next_dm_addr_i            ('0),
 
-    // the strapping behavior of lc_hw_debug_en_i will be tested at the top-level.
-    .lc_init_done_i            (rv_dm_if.lc_init_done             ),
-    .lc_hw_debug_clr_i         (rv_dm_if.lc_hw_debug_clr          ),
-    .lc_hw_debug_en_i          (rv_dm_if.lc_hw_debug_en           ),
-    .pinmux_hw_debug_en_i      (rv_dm_if.pinmux_hw_debug_en       ),
-    .lc_dft_en_i               (rv_dm_if.lc_dft_en                ),
-    .lc_check_byp_en_i         (rv_dm_if.lc_check_byp_en          ),
-    .lc_escalate_en_i          (rv_dm_if.lc_escalate_en           ),
-    .strap_en_i                (rv_dm_if.strap_en                 ),
-    .strap_en_override_i       (rv_dm_if.strap_en_override        ),
-
-    .otp_dis_rv_dm_late_debug_i(rv_dm_if.otp_dis_rv_dm_late_debug ),
-
-    .scanmode_i                (rv_dm_if.scanmode      ),
+    .next_dm_addr_i            (mode_if.next_dm_addr            ),
+    .lc_hw_debug_clr_i         (mode_if.lc_hw_debug_clr         ),
+    .lc_hw_debug_en_i          (mode_if.lc_hw_debug_en          ),
+    .lc_dft_en_i               (mode_if.lc_dft_en               ),
+    .pinmux_hw_debug_en_i      (mode_if.pinmux_hw_debug_en      ),
+    .lc_check_byp_en_i         (mode_if.lc_check_byp_en         ),
+    .lc_escalate_en_i          (mode_if.lc_escalate_en          ),
+    .lc_init_done_i            (mode_if.lc_init_done            ),
+    .strap_en_i                (mode_if.strap_en                ),
+    .strap_en_override_i       (mode_if.strap_en_override       ),
+    .otp_dis_rv_dm_late_debug_i(mode_if.otp_dis_rv_dm_late_debug),
+    .scanmode_i                (mode_if.scanmode                ),
     .scan_rst_ni               (rv_dm_if.scan_rst_n    ),
     .ndmreset_req_o            (rv_dm_if.ndmreset_req  ),
     .dmactive_o                (rv_dm_if.dmactive      ),
@@ -148,6 +145,8 @@ module tb;
     cfg.clk_rst_vifs["rv_dm_regs_reg_block"] = clk_rst_if;
     cfg.clk_rst_vifs["rv_dm_mem_reg_block"]  = clk_rst_if;
     cfg.clk_lc_rst_vif = clk_lc_rst_if;
+
+    cfg.m_mode_agent_cfg.vif = mode_if;
 
     cfg.initialize();
 
