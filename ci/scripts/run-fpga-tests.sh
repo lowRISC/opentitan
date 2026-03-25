@@ -68,6 +68,9 @@ trap './bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=${fpga}
 # Print the SAM3X firmware version. HyperDebug transports don't currently support this, so we ignore errors.
 ./bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface="$fpga" fpga get-sam3x-fw-version || true
 
+mkdir -p "/tmp/bazel-exec-log"
+exec_log_file="$(mktemp /tmp/bazel-exec-log/exec-XXXXXX.log)"
+
 TEST_ARGS=(
     --define DISABLE_VERILATOR_BUILD=true
     --nokeep_going
@@ -77,6 +80,7 @@ TEST_ARGS=(
     --define "${fpga}=lowrisc"
     --flaky_test_attempts=2
     --target_pattern_file="${target_pattern_file}"
+    --execution_log_compact_file="${exec_log_file}"
 )
 
 if [[ "${mode}" == "coverage" ]]; then
