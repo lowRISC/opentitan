@@ -33,7 +33,7 @@ status_t ujson_putbuf(ujson_t *uj, const char *buf, size_t len) {
   return uj->putbuf(uj->io_context, buf, len);
 }
 
-static size_t ujson_putbuf_sink(ujson_t *uj, const char *buf, size_t len) {
+static size_t ujson_putbuf_sink(void *uj, const char *buf, size_t len) {
   status_t result = ujson_putbuf(uj, buf, len);
   if (!status_ok(result)) {
     return 0;
@@ -446,7 +446,7 @@ status_t ujson_deserialize_status_t(ujson_t *uj, status_t *value) {
 status_t ujson_serialize_status_t(ujson_t *uj, const status_t *value) {
   buffer_sink_t out = {
       .data = uj,
-      .sink = (sink_func_ptr)ujson_putbuf_sink,
+      .sink = ujson_putbuf_sink,
   };
   base_fprintf(out, "%!r", *value);
   return OK_STATUS();
