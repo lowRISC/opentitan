@@ -119,6 +119,12 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   extern function void pre_randomize();
   extern function void post_randomize();
 
+  // Configure whether this env_cfg is active
+  //
+  // Use this, rather than directly setting is_active, in order that any agents' configurations are
+  // also updated.
+  extern virtual function void set_is_active(bit active);
+
   // Initialise the object with RAL models and set it up for randomisation
   //
   // The addr_width, data_width and be_width arguments are used to configure the analogous fields of
@@ -200,6 +206,10 @@ function void dv_base_env_cfg::post_randomize();
     `DV_CHECK_FATAL(clk_freqs_mhz.exists(ral_type_name))
     clk_freqs_mhz[ral_type_name] = clk_freq_mhz;
   end
+endfunction
+
+function void dv_base_env_cfg::set_is_active(bit active);
+  is_active = active;
 endfunction
 
 function void dv_base_env_cfg::initialize_ral(int unsigned addr_width,
