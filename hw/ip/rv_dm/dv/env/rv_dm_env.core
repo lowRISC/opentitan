@@ -13,6 +13,7 @@ filesets:
       - lowrisc:dv:dv_base_reg
       - lowrisc:dv:jtag_agent
       - lowrisc:dv:jtag_dmi_agent
+      - lowrisc:dv:rv_dm_mode_agent
       - lowrisc:opentitan:bus_params_pkg
     files:
       - rv_dm_env_pkg.sv

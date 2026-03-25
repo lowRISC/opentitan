@@ -106,12 +106,16 @@ class rv_dm_tap_fsm_vseq extends rv_dm_base_vseq;
   task run_smoke();
     rv_dm_smoke_vseq seq;
 
-    `uvm_create_on(seq, p_sequencer)
+    seq = rv_dm_smoke_vseq::type_id::create("seq");
+    seq.set_item_context(this, p_sequencer);
+
     if (!do_apply_reset) seq.do_apply_reset = 1'b0;
-    `DV_CHECK_RANDOMIZE_FATAL(seq)
+
+    configure_child_vseq(seq);
+    if (!seq.randomize()) `uvm_fatal(get_full_name(), "Failed to randomize seq")
 
     `uvm_info(`gfn, "Starting rv_dm_tap_fsm_vseq smoke test", UVM_LOW)
-    `uvm_send(seq)
+    seq.start(p_sequencer);
   endtask
 
 `undef RUN_SPOT_RESETS

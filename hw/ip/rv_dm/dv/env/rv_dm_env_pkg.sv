@@ -25,6 +25,11 @@ package rv_dm_env_pkg;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
+  import rv_dm_mode_agent_pkg::rv_dm_mode_agent;
+  import rv_dm_mode_agent_pkg::rv_dm_mode_agent_cfg;
+  import rv_dm_mode_agent_pkg::rv_dm_mode_sequencer;
+  import rv_dm_mode_agent_pkg::rv_dm_mode_seq;
+
   // parameters
   parameter uint NUM_HARTS = rv_dm_reg_pkg::NrHarts;
   parameter uint RV_DM_JTAG_IDCODE = `BUILD_SEED;
