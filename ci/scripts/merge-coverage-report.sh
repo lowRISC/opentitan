@@ -85,7 +85,7 @@ GENHTML_ARGS=(
   cd "${SOURCES}"
   genhtml "${COVERAGE}" "${IGNORE_ERRORS[@]}" "${GENHTML_ARGS[@]}"
   lcov "${IGNORE_ERRORS[@]}" --summary "${COVERAGE}" > "${GITHUB_STEP_SUMMARY:-/dev/null}"
-)
+) || echo "WARNING: genhtml failed, continue"
 
 echo "Pack directories to reduce artifact size and count"
 function pack_dir() {
