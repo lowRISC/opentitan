@@ -271,21 +271,21 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     uint delay;
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(delay, delay inside {[0:1000]};) // ns
     #(delay * 1ns);
-    cfg.rv_dm_vif.cb.scan_rst_n <= 1'b0;
+    cfg.rv_dm_vif.scan_rst_n_internal <= 1'b0;
     // Wait for core clock cycles.
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(delay, delay inside {[2:50]};) // cycles
     cfg.clk_rst_vif.wait_clks(delay);
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(delay, delay inside {[0:1000]};) // ns
-    cfg.rv_dm_vif.cb.scan_rst_n <= 1'b1;
+    cfg.rv_dm_vif.scan_rst_n_internal <= 1'b1;
   endtask
 
   virtual task apply_resets_concurrently(int reset_duration_ps = 0);
     int trst_n_duration_ps = cfg.m_jtag_agent_cfg.vif.get_tck_period_ps() * $urandom_range(5, 20);
-    cfg.rv_dm_vif.cb.scan_rst_n <= 1'b0;
+    cfg.rv_dm_vif.scan_rst_n_internal <= 1'b0;
     cfg.m_jtag_agent_cfg.vif.assert_test_reset();
     super.apply_resets_concurrently(dv_utils_pkg::max2(reset_duration_ps, trst_n_duration_ps));
     cfg.m_jtag_agent_cfg.vif.clear_test_reset();
-    cfg.rv_dm_vif.cb.scan_rst_n <= 1'b1;
+    cfg.rv_dm_vif.scan_rst_n_internal <= 1'b1;
   endtask
 
   virtual task dut_shutdown();
@@ -358,7 +358,7 @@ class rv_dm_base_vseq extends cip_base_vseq #(
 
     csr_wr(.ptr(jtag_dmi_ral.dmcontrol.haltreq), .value(1));
     if (!cfg.clk_rst_vif.rst_n) return;
-    `DV_CHECK_EQ(cfg.rv_dm_vif.cb.debug_req, 1)
+    `DV_CHECK_EQ(cfg.rv_dm_vif.mon_cb.debug_req, 1)
 
     // Wait a short time (up to 10 cycles, but stopping early if there's a reset)
     fork begin : isolation_fork
