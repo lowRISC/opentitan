@@ -1818,7 +1818,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         // have been squashed to '0 or '1, depending on whether this was a fetch or not.
         if (item.d_opcode == tlul_pkg::AccessAckData) begin
           logic [DataWidth-1:0] exp_data = 0;
-          if (!is_csr_fetch(item, cfg.ral_models[ral_name])) exp_data = ~exp_data;
+          if (!bad_csr_fetch(item, cfg.ral_models[ral_name])) exp_data = ~exp_data;
           `DV_CHECK_EQ(item.d_data, exp_data, "d_data mismatch when d_error = 1")
         end
       end

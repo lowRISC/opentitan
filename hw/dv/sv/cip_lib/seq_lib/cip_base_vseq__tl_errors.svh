@@ -232,65 +232,130 @@ task tl_write_ro_mem_err(string            ral_name,
   end
 endtask
 
-// Return the address of the csr at a random index
-virtual function bit[BUS_AW-1:0] pick_rand_csr_addr (dv_base_reg_block block);
-  uvm_reg regs[$];
-  uvm_reg chosen_reg;
-  block.get_registers(regs, UVM_HIER);
+function void get_possible_instr_type_err_blocks(dv_base_reg_block blk,
+                                                 ref dv_base_reg_block tgts[$]);
+  uvm_reg_block possibles[$];
 
-  if (regs.size() == 0) begin
-    `uvm_fatal(get_name(),
-               $sformatf("Cannot pick a random address: block %0s has no CSRs.", block.get_name()))
+  // Set possibles to be a queue of all the sub-blocks of blk (including blk itself)
+  possibles.push_back(blk);
+  blk.get_blocks(possibles);
+
+  // Now work through these blocks. Collect ones that don't ignore instr_type and that have at least
+  // one memory or CSR as a direct member.
+  foreach(possibles[i]) begin
+    dv_base_reg_block downcast_blk;
+    uvm_mem           mems[$];
+    uvm_reg           regs[$];
+
+    // Can we view possibles[i] as a dv_base_reg_block? If not, it's not something that we're
+    // looking for.
+    if (!$cast(downcast_blk, possibles[i])) continue;
+
+    // Does the block ignore instr_type? If so, it can't report instr_type errors.
+    if (downcast_blk.get_ignores_instr_type()) continue;
+
+    // Does the block have any memories or registers as direct children?
+    possibles[i].get_memories(mems, UVM_NO_HIER);
+    possibles[i].get_registers(regs, UVM_NO_HIER);
+    if ((mems.size() > 0) || (regs.size() > 0)) begin
+      tgts.push_back(downcast_blk);
+    end
   end
-
-  chosen_reg = regs[$urandom_range(0, regs.size() - 1)];
-
-  return chosen_reg.get_address();
 endfunction
 
-// Generate a stream of transactions that trigger errors connected with instr_type. This is either
-// because the multi-bit encoded instr_type is not a valid mubi value or because it is MuBi4True and
-// the transaction is a write ("writing through the fetch port").
+// Generate a single TL transaction that triggers an error connected with instr_type. This is either
+// because the multi-bit encoded instr_type is not a valid mubi value, because it is MuBi4True and
+// the transaction is a write ("writing through the fetch port"), or because this is a CSR
+// ("fetching a register").
+//
+// The transaction will target an address or memory in one of the blocks in tgt_blocks and will be
+// run through sequencer.
+local task tl_instr_type_err(const ref dv_base_reg_block tgt_blocks[$],
+                             tl_sequencer                sequencer);
+  dv_base_reg_block tgt_block;
+  uvm_mem           mems[$];
+  uvm_reg           regs[$];
+  bit               targeting_reg;
+
+  bit [BUS_AW-1:0]  addr;
+  bit               write;
+  bit [BUS_DW-1:0]  data;
+  mubi4_t           instr_type;
+
+  tgt_block = tgt_blocks[$urandom_range(tgt_blocks.size() - 1)];
+  tgt_block.get_memories(mems, UVM_NO_HIER);
+  tgt_block.get_registers(regs, UVM_NO_HIER);
+
+  // The three types of transactions that will generate instr_type errors are:
+  //
+  //   - Send an invalid value for instr_type            (reg or mem)
+  //   - Send a write access with instr_type == True     (reg or mem)
+  //   - Access a register with instr_type == True       (reg only)
+  //
+  // Firstly, decide whether to target a register (a choice which is forced if there are either only
+  // registers or only memories). If there are both memories and registers, use registers half the
+  // time.
+  targeting_reg = (regs.size() == 0) ? 1'b0 : (mems.size() == 0) ? 1'b1 : ($urandom & 1);
+
+  // Select which register or memory to use, in order to get an address
+  if (targeting_reg) begin
+    uvm_reg tgt_reg = regs[$urandom_range(regs.size() - 1)];
+    addr = tgt_reg.get_address();
+  end else begin
+    uvm_mem tgt_mem = mems[$urandom_range(mems.size() - 1)];
+
+    int unsigned mem_size = tgt_mem.get_size();
+    int unsigned mem_word = $urandom_range((mem_size / 4) - 1);
+
+    addr = tgt_mem.get_offset() + 4 * mem_word;
+  end
+
+  // Pick the data value to send in the transaction. This never has an effect for a read
+  // transaction, and should be ignored on a write transaction that generates an error.
+  `DV_CHECK_STD_RANDOMIZE_FATAL(data);
+
+  randcase
+    1: begin
+      // invalid instr_type
+      bit[3:0] instr_type_bits;
+      `DV_CHECK_STD_RANDOMIZE_FATAL(write);
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(instr_type_bits,
+                                         !(instr_type_bits inside {MuBi4True, MuBi4False});)
+      instr_type = mubi4_t'(instr_type_bits);
+    end
+    1: begin
+      // write with instr_type = MuBi4True
+      write = 1'b1;
+      instr_type = MuBi4True;
+    end
+    targeting_reg: begin
+      write = 1'b0;
+      instr_type = MuBi4True;
+    end
+  endcase
+
+  tl_access(.addr(addr), .write(write), .data(data), .instr_type(instr_type), .exp_err_rsp(1),
+            .tl_sequencer_h(sequencer));
+endtask
+
+// Generate a stream of transactions that trigger errors connected with instr_type.
 //
 // If cfg.stop_transaction_generators() becomes true (because we are in reset or wish to start a
 // reset), stop generating transactions and return.
-virtual task tl_instr_type_err(string ral_name);
-  dv_base_reg_block ral_model = cfg.ral_models[ral_name];
-  bit has_nofetch_csrs = ral_model.has_csrs() && !ral_model.get_allows_csr_fetch();
+local task tl_instr_type_errs(string ral_name);
+  dv_base_reg_block tgt_blocks[$];
+
+  get_possible_instr_type_err_blocks(cfg.ral_models[ral_name], tgt_blocks);
+
+  if (!tgt_blocks.size()) begin
+    `uvm_fatal(get_name(),
+               $sformatf("Cannot find any target blocks inside the block for ral_name = %0s.",
+                         ral_name))
+  end
 
   repeat ($urandom_range(10, 100)) begin
-    bit [BUS_AW-1:0] addr;
-    bit              write;
-    bit [BUS_DW-1:0] data;
-    mubi4_t          instr_type;
-
     if (cfg.stop_transaction_generators()) return;
-    `DV_CHECK_STD_RANDOMIZE_FATAL(addr);
-    `DV_CHECK_STD_RANDOMIZE_FATAL(data);
-
-    randcase
-      1: begin
-        // invalid instr_type
-        bit[3:0] instr_type_bits;
-        `DV_CHECK_STD_RANDOMIZE_FATAL(write);
-        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(instr_type_bits,
-                                           !(instr_type_bits inside {MuBi4True, MuBi4False});)
-        instr_type = mubi4_t'(instr_type_bits);
-      end
-      1: begin
-        // write with instr_type = MuBi4True
-        write = 1'b1;
-        instr_type = MuBi4True;
-      end
-      has_nofetch_csrs: begin
-        write = 1'b0;
-        instr_type = MuBi4True;
-        addr = pick_rand_csr_addr(ral_model);
-      end
-    endcase
-
-    tl_access(.addr(addr), .write(write), .data(data), .instr_type(instr_type), .exp_err_rsp(1),
-              .tl_sequencer_h(p_sequencer.tl_sequencer_hs[ral_name]));
+    tl_instr_type_err(tgt_blocks, p_sequencer.tl_sequencer_hs[ral_name]);
   end
 endtask
 
@@ -363,7 +428,7 @@ virtual task run_tl_errors_vseq_sub(bit do_wait_clk = 0, string ral_name);
                                               ral_model,
                                               updated_mem_ranges[ral_name]);
 
-              1: tl_instr_type_err(ral_name);
+              1: tl_instr_type_errs(ral_name);
             endcase
           end
         join_none

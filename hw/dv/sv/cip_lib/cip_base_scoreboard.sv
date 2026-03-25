@@ -437,14 +437,39 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     return 0;
   endfunction
 
-  // Return true if item is a fetch from a mapped address in the given register block
-  protected function bit is_csr_fetch(tl_seq_item item, dv_base_reg_block block);
-    cip_tl_seq_item cip_item;
+  // Return true if item is a fetch from a register in the given block and the register's parent
+  // (which may be a sub-block of the block argument) doesn't allow CSR fetches.
+  protected function bit bad_csr_fetch(tl_seq_item item, dv_base_reg_block block);
+    cip_tl_seq_item   cip_item;
+    uvm_reg           tgt_reg;
+    uvm_reg_block     base_parent_block;
+    dv_base_reg_block parent_block;
+    uvm_reg_addr_t    aligned_addr;
+
     `downcast(cip_item, item)
-    return (item.a_opcode == tlul_pkg::Get &&
-            cip_item.get_instr_type() == MuBi4True &&
-            is_tl_access_mapped_addr(item.a_addr, block) &&
-            !is_mem_addr(item.a_addr, block));
+
+    // If this isn't a fetch, return false.
+    if (!(item.a_opcode == tlul_pkg::Get && cip_item.get_instr_type() == MuBi4True)) begin
+      return 1'b0;
+    end
+
+    // Does this adddress a register? If not, return false.
+    aligned_addr = block.get_word_aligned_addr(item.a_addr);
+    tgt_reg = block.get_default_map().get_reg_by_offset(aligned_addr, 1);
+    if (tgt_reg == null) begin
+      return 1'b0;
+    end
+
+    // If this *does* address a register, get the register's immediate parent block and try to cast
+    // it down to a dv_base_reg_block. If the cast fails, return true: this is a fetch from a CSR
+    // and the register's block isn't even able to be configured to allow fetches.
+    base_parent_block = tgt_reg.get_parent();
+    if (!$cast(parent_block, base_parent_block)) begin
+      return 1'b1;
+    end
+
+    // Finally, return true unless the parent block is declared to ignore the instr_type argument.
+    return !parent_block.get_ignores_instr_type();
   endfunction
 
   // Return whether an A-channel access was invalid and check any D-channel response.
@@ -477,12 +502,12 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
                                                 string        ral_name);
     dv_base_reg_block block = cfg.ral_models[ral_name];
 
-    bit unmapped_err   = !is_tl_access_mapped_addr(item.a_addr, block);
-    bit bus_intg_err   = !item.is_a_chan_intg_ok(.throw_error(0));
-    bit byte_wr_err    = is_tl_access_unsupported_byte_wr(item, block);
-    bit csr_size_err   = !is_tl_csr_write_size_gte_csr_width(item, block);
-    bit tl_item_err    = item.get_exp_d_error();
-    bit csr_read_err   = is_csr_fetch(item, block);
+    bit unmapped_err  = !is_tl_access_mapped_addr(item.a_addr, block);
+    bit bus_intg_err  = !item.is_a_chan_intg_ok(.throw_error(0));
+    bit byte_wr_err   = is_tl_access_unsupported_byte_wr(item, block);
+    bit csr_size_err  = !is_tl_csr_write_size_gte_csr_width(item, block);
+    bit tl_item_err   = item.get_exp_d_error();
+    bit csr_fetch_err = bad_csr_fetch(item, block);
 
     bit mem_access_err, mem_byte_access_err, mem_wo_err, mem_ro_err, custom_err;
 
@@ -524,7 +549,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
       exp_d_error |= byte_wr_err | bus_intg_err | csr_size_err | tl_item_err |
                      write_w_instr_type_err | instr_type_err |
-                     ecc_err | csr_read_err;
+                     ecc_err | csr_fetch_err;
 
       // integrity at d_user is from DUT, which should be always correct, except data integrity for
       // passthru memory
@@ -569,7 +594,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
           if (write_w_instr_type_err) reasons.push_back("Write when instr-type is set");
           if (instr_type_err) reasons.push_back("MuBi error in instr-type");
           if (ecc_err) reasons.push_back("Access to address with known-bad ECC");
-          if (csr_read_err) reasons.push_back("Fetch from CSR");
+          if (csr_fetch_err) reasons.push_back("Fetch from CSR");
         end
 
         `uvm_error(get_full_name(),
@@ -607,7 +632,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     end
 
     return (unmapped_err | mem_access_err | bus_intg_err | csr_size_err | tl_item_err |
-            write_w_instr_type_err | instr_type_err | cfg.tl_mem_access_gated | csr_read_err);
+            write_w_instr_type_err | instr_type_err | cfg.tl_mem_access_gated | csr_fetch_err);
   endfunction
 
   // Return true if accessing size_bytes bytes starting at addr will address at least one register

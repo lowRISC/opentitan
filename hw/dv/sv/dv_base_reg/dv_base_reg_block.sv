@@ -60,10 +60,11 @@ class dv_base_reg_block extends uvm_reg_block;
   // This is added for ease of rv_dm testbench development.
   protected bit supports_byte_enable = 1'b1;
 
-  // Indicates whether an instruction fetch is allowed from a CSR. This isn't something you'd
-  // normally expect, but it allows us to model a block that contains both registers and memory and
-  // doesn't make a distinction between read and fetch.
-  local bit     allows_csr_fetch = 1'b0;
+  // Indicates that access to this reg_block over TileLink will ignore the instr_type field. As
+  // such, the block may allow fetch accesses to what appear to be registers (reasonable for e.g.
+  // registers that implement a debug ROM). What's more, it will ignore malformed mubi values for
+  // instr_type.
+  local bit     m_ignores_instr_type = 1'b0;
 
   // Custom RAL models may support sub-word CSR writes smaller than CSR width.
   protected bit supports_sub_word_csr_writes = 1'b0;
@@ -131,12 +132,12 @@ class dv_base_reg_block extends uvm_reg_block;
     return supports_sub_word_csr_writes;
   endfunction
 
-  function void set_allows_csr_fetch(bit allowed);
-    allows_csr_fetch = allowed;
+  function void set_ignores_instr_type(bit allowed);
+    m_ignores_instr_type = allowed;
   endfunction
 
-  function bit get_allows_csr_fetch();
-    return allows_csr_fetch;
+  function bit get_ignores_instr_type();
+    return m_ignores_instr_type;
   endfunction
 
   // provide build function to supply base addr
