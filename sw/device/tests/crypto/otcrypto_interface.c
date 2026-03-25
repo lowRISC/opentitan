@@ -120,8 +120,9 @@ volatile otcrypto_interface_t otcrypto = {
     .ecdh_p256_async_start = &otcrypto_ecdh_p256_async_start,
     .ecdh_p256_async_finalize = &otcrypto_ecdh_p256_async_finalize,
 
-    // ECC P-256 is on curve checks.
+    // ECC P-256 point checks and key import.
     .ecc_p256_point_on_curve = &otcrypto_p256_point_on_curve,
+    .ecc_p256_public_key_import = &otcrypto_ecc_p256_public_key_import,
 
     // ECDSA P-384 (blocking).
     .ecdsa_p384_keygen = &otcrypto_ecdsa_p384_keygen,
