@@ -37,6 +37,7 @@
 .equ MODE_SIDELOAD_SIGN, 0x2F2
 .equ MODE_SIDELOAD_ECDH, 0x4CB
 .equ MODE_POINTONCRV_CHECK, 0x596
+.equ MODE_BASE_POINT_MULT, 0x62E
 
 /**
  * Make the mode constants visible to Ibex.
@@ -50,6 +51,7 @@
 .globl MODE_SIDELOAD_SIGN
 .globl MODE_SIDELOAD_ECDH
 .globl MODE_POINTONCRV_CHECK
+.globl MODE_BASE_POINT_MULT
 
 /**
  * Hardened boolean values.
@@ -99,6 +101,9 @@ start:
 
   addi  x3, x0, MODE_ECDH
   beq   x2, x3, shared_key
+
+  addi  x3, x0, MODE_BASE_POINT_MULT
+  beq   x2, x3, base_point_mult
 
   /* Copy the caller-provided secret scalar shares into scratchpad memory.
        dmem[k0] <= dmem[k0_io]
@@ -450,5 +455,22 @@ shared_key_from_seed:
  */
 point_on_curve_check:
   jal x1, p384_check_isoncurve
+
+  ecall
+
+/**
+ * Compute a base point multiplication.
+ *
+ * Implicitly, runs a curve-on-point on the computed public key.
+ *
+ * This routine runs in constant time.
+ *
+ * @param[in] dmem[d0_io]: First share of the private key.
+ * @param[in] dmem[d1_io]: Second share of the private key.
+ * @param[in] dmem[x]: x-coordinate of the public key.
+ * @param[in] dmem[y]: y-coordinate of the public key.
+ */
+base_point_mult:
+  jal x1, p384_base_mult_checked
 
   ecall

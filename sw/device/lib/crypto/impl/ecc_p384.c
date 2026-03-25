@@ -367,6 +367,27 @@ otcrypto_status_t otcrypto_p384_point_on_curve(
   return OTCRYPTO_OK;
 }
 
+status_t otcrypto_p384_base_point_mult(
+    const otcrypto_blinded_key_t *private_key,
+    otcrypto_unblinded_key_t *public_key) {
+  if (private_key == NULL || public_key == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  p384_masked_scalar_t private_scalar;
+  HARDENED_TRY(hardened_memcpy(private_scalar.share0, private_key->keyblob,
+                               kP384MaskedScalarTotalShareWords));
+  HARDENED_CHECK_EQ(hardened_memeq(private_key->keyblob, private_scalar.share0,
+                                   kP384MaskedScalarTotalShareWords),
+                    kHardenedBoolTrue);
+  private_scalar.checksum = p384_masked_scalar_checksum(&private_scalar);
+
+  p384_point_t *pk = (p384_point_t *)public_key->key;
+  HARDENED_TRY(p384_base_point_mult(&private_scalar, pk));
+
+  return OTCRYPTO_OK;
+}
+
 otcrypto_status_t otcrypto_ecdsa_p384_keygen_async_finalize(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
   // Check for any NULL pointers.

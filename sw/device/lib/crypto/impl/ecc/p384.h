@@ -390,6 +390,20 @@ OT_WARN_UNUSED_RESULT
 status_t p384_point_on_curve_check(const p384_point_t *point,
                                    hardened_bool_t *result);
 
+/**
+ * Calculate a base point multiplication.
+ *
+ * This function can be used to compute the public-key coordinate from a
+ * private key scalar.
+ *
+ * @param private_key The private key that is multiplied with the base point.
+ * @param[out] public_key The resulting public key of the multiplication.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t p384_base_point_mult(p384_masked_scalar_t *private_key,
+                              p384_point_t *public_key);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
