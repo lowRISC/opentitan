@@ -739,3 +739,39 @@ otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
   // Clear the OTBN sideload slot (in case the seed was sideloaded).
   return keymgr_sideload_clear_otbn();
 }
+
+otcrypto_status_t otcrypto_ecc_p256_public_key_import(
+    const otcrypto_const_word32_buf_t x, const otcrypto_const_word32_buf_t y,
+    otcrypto_unblinded_key_t *public_key) {
+  if (x.data == NULL || y.data == NULL || public_key == NULL ||
+      public_key->key == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check the lengths of the input coordinate buffers.
+  if (x.len != kP256CoordWords || y.len != kP256CoordWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(launder32(x.len), kP256CoordWords);
+  HARDENED_CHECK_EQ(launder32(y.len), kP256CoordWords);
+
+  // Check the output key mode; both ECDSA and ECDH P-256 public key modes are
+  // accepted since the underlying point representation is the same.
+  if (public_key->key_mode != kOtcryptoKeyModeEcdsaP256 &&
+      public_key->key_mode != kOtcryptoKeyModeEcdhP256) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check the output key length (must fit a p256_point_t).
+  HARDENED_TRY(p256_public_key_length_check(public_key));
+
+  // Copy the coordinates into the output key buffer.
+  p256_point_t *pt = (p256_point_t *)public_key->key;
+  HARDENED_TRY(hardened_memcpy(pt->x, x.data, kP256CoordWords));
+  HARDENED_TRY(hardened_memcpy(pt->y, y.data, kP256CoordWords));
+
+  // Calculate the public key checksum.
+  public_key->checksum = integrity_unblinded_checksum(public_key);
+
+  return OTCRYPTO_OK;
+}
