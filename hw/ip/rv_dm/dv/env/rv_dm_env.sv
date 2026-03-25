@@ -10,8 +10,10 @@ class rv_dm_env extends cip_base_env #(
   );
   `uvm_component_utils(rv_dm_env)
 
-  tl_agent         m_tl_sba_agent;
-  jtag_agent       m_jtag_agent;
+  tl_agent           m_tl_sba_agent;
+  jtag_agent         m_jtag_agent;
+  rv_dm_mode_agent   m_mode_agent;
+
   jtag_dmi_monitor   m_jtag_dmi_monitor;
   sba_access_monitor m_sba_access_monitor;
 
@@ -51,6 +53,9 @@ class rv_dm_env extends cip_base_env #(
     m_jtag_agent = jtag_agent::type_id::create("m_jtag_agent", this);
     uvm_config_db#(jtag_agent_cfg)::set(this, "m_jtag_agent*", "cfg", cfg.m_jtag_agent_cfg);
     cfg.m_jtag_agent_cfg.en_cov = cfg.en_cov;
+
+    m_mode_agent = rv_dm_mode_agent::type_id::create("m_mode_agent", this);
+    m_mode_agent.cfg = cfg.m_mode_agent_cfg;
 
     m_jtag_dmi_monitor = jtag_dmi_monitor#()::type_id::create("m_jtag_dmi_monitor", this);
     m_jtag_dmi_monitor.cfg = cfg.m_jtag_agent_cfg;

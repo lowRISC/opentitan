@@ -53,7 +53,8 @@ class rv_dm_debug_disabled_vseq extends rv_dm_base_vseq;
       // make sure it has had an effect.
       upd_lc_hw_debug_en();
       `uvm_info(`gfn,
-                $sformatf("Setting lc_hw_debug_en to %0x", cfg.rv_dm_vif.lc_hw_debug_en),
+                $sformatf("Setting lc_hw_debug_en to %0x",
+                          cfg.m_mode_agent_cfg.vif.mon_cb.lc_hw_debug_en),
                 UVM_LOW)
       cfg.clk_rst_vif.wait_clks(10);
 
