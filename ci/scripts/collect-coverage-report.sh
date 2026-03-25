@@ -9,6 +9,7 @@ OUTPUT_DIR="${1:-/tmp/$USER/coverage_report}"
 TESTS="${OUTPUT_DIR}/test_coverages"
 LOGS="${OUTPUT_DIR}/test_logs"
 SOURCES="${OUTPUT_DIR}/source_files"
+SOURCE_LIST="${OUTPUT_DIR}/source_list.txt"
 COVERAGE="${OUTPUT_DIR}/coverage.dat"
 
 LCOV_FILES="bazel-out/_coverage/lcov_files.tmp"
@@ -44,7 +45,8 @@ done
 
 echo "Collect all source files listed in coverage data"
 mkdir -p "${SOURCES}"
-grep -h '^SF:' "${COVERAGE}" | sed 's/^SF://' | sort -u \
-| rsync -a --ignore-missing-args --files-from=- . "${SOURCES}/"
+grep -h '^SF:' "${COVERAGE}" | sed 's/^SF://' | sort -u > "${SOURCE_LIST}"
+python3 util/fetch-remote-bazel-cache.py --file-list="${SOURCE_LIST}"
+rsync -a --ignore-missing-args --files-from="${SOURCE_LIST}" . "${SOURCES}/"
 
 echo "coverageReport=ok" >> "${GITHUB_OUTPUT:-/dev/null}"
