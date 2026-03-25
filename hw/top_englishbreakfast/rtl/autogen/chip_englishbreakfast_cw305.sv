@@ -963,17 +963,17 @@ module chip_englishbreakfast_cw305 #(
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_englishbreakfast (
     // AST clock and reset signals
-    .clk_main_i                   ( ast_base_clks.clk_sys      ),
-    .clk_io_i                     ( ast_base_clks.clk_io       ),
-    .clk_usb_i                    ( ast_base_clks.clk_usb      ),
-    .clk_aon_i                    ( ast_base_clks.clk_aon      ),
-    .clks_ast_o                   ( clkmgr_aon_clocks          ),
-    .rsts_ast_o                   ( rstmgr_aon_resets          ),
+    .clk_main_i(ast_base_clks.clk_sys),
+    .clk_io_i  (ast_base_clks.clk_io ),
+    .clk_usb_i (ast_base_clks.clk_usb),
+    .clk_aon_i (ast_base_clks.clk_aon),
+    .clks_ast_o(clkmgr_aon_clocks    ),
+    .rsts_ast_o(rstmgr_aon_resets    ),
 
     // Manual DFT signals
-    .scan_en_i                    ( scan_en                    ),
-    .scan_rst_ni                  ( scan_rst_n                 ),
-    .scanmode_i                   ( scanmode                   ),
+    .scan_en_i  (scan_en   ),
+    .scan_rst_ni(scan_rst_n),
+    .scanmode_i (scanmode  ),
 
     // Auto-generated port map
     .ast_edn_req_i            (ast_edn_req                        ),
@@ -1015,18 +1015,18 @@ module chip_englishbreakfast_cw305 #(
     .sck_monitor_o            (sck_monitor                        ),
 
     // Multiplexed I/O
-    .mio_in_i                     ( mio_in                     ),
-    .mio_out_o                    ( mio_out                    ),
-    .mio_oe_o                     ( mio_oe                     ),
+    .mio_in_i (mio_in ),
+    .mio_out_o(mio_out),
+    .mio_oe_o (mio_oe ),
 
     // Dedicated I/O
-    .dio_in_i                     ( dio_in                     ),
-    .dio_out_o                    ( dio_out                    ),
-    .dio_oe_o                     ( dio_oe                     ),
+    .dio_in_i (dio_in ),
+    .dio_out_o(dio_out),
+    .dio_oe_o (dio_oe ),
 
     // Pad attributes
-    .mio_attr_o                   ( mio_attr                   ),
-    .dio_attr_o                   ( dio_attr                   )
+    .mio_attr_o(mio_attr),
+    .dio_attr_o(dio_attr)
   );
 
 
