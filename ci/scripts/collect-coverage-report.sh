@@ -26,6 +26,7 @@ cp -r bazel-out/_coverage/* "${OUTPUT_DIR}" || true
 find "${OUTPUT_DIR}" -type f -exec chmod 644 {} +
 
 echo "Collect all test coverage data"
+rm -rf "${TESTS:?}"
 mkdir -p "${TESTS}"
 rsync -a --ignore-missing-args --files-from="${LCOV_FILES}" . "${TESTS}/"
 
@@ -33,6 +34,7 @@ echo "Merge all coverage data"
 find "${TESTS}" -type f -name "*.dat" -exec cat {} + > "${COVERAGE}"
 
 echo "Collect all test logs"
+rm -rf "${LOGS:?}"
 mkdir -p "${LOGS}"
 cat "${LCOV_FILES}" | while read -r lcov; do
   test_dir=$(dirname "${lcov}")
@@ -44,6 +46,7 @@ cat "${LCOV_FILES}" | while read -r lcov; do
 done
 
 echo "Collect all source files listed in coverage data"
+rm -rf "${SOURCES:?}"
 mkdir -p "${SOURCES}"
 grep -h '^SF:' "${COVERAGE}" | sed 's/^SF://' | sort -u > "${SOURCE_LIST}"
 python3 util/fetch-remote-bazel-cache.py --file-list="${SOURCE_LIST}"
