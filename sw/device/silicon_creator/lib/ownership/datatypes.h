@@ -389,12 +389,12 @@ typedef struct owner_rescue_config {
    */
   uint8_t protocol;
   /**
-   * The gpio configuration (if relevant, depending on `detect`).
+   * The misc & gpio configuration (if relevant, depending on `detect`).
    *
-   *  7             2       1       0
-   * +---------------+--------+-------+
-   * | Reserved      | PullEn | Value |
-   * +---------------+--------+-------+
+   *      7 6       2        1       0
+   * +-----+---------+--------+-------+
+   * | WDT | Reserved| PullEn | Value |
+   * +-----+---------+--------+-------+
    */
   uint8_t gpio;
   /**
@@ -443,8 +443,9 @@ OT_ASSERT_SIZE(owner_rescue_config_t, 16);
 
 #define RESCUE_ENTER_ON_FAIL_BIT 7
 #define RESCUE_TIMEOUT_SECONDS ((bitfield_field32_t){.mask = 0x7F, .index = 0})
-#define RESCUE_GPIO_PULL_EN_BIT 1
-#define RESCUE_GPIO_VALUE_BIT 0
+#define RESCUE_MISC_GPIO_WATCHDOG_TIMEOUT_EN_BIT 7
+#define RESCUE_MISC_GPIO_PULL_EN_BIT 1
+#define RESCUE_MISC_GPIO_VALUE_BIT 0
 #define RESCUE_DETECT ((bitfield_field32_t){.mask = 0x03, .index = 6})
 #define RESCUE_DETECT_INDEX ((bitfield_field32_t){.mask = 0x3F, .index = 0})
 

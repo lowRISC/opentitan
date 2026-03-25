@@ -30,7 +30,7 @@ static const usb_device_descriptor_t device_desc = {
     .device_protocol = 0,
     .max_packet_size_0 = 64,
     .vendor = kUsbVendorGoogle,
-    .product = kUsbProuctRomExt,
+    .product = kUsbProductRomExt,
     .bcd_device = 0x100,
     .imanufacturer = 1,
     .iproduct = 2,
@@ -39,7 +39,7 @@ static const usb_device_descriptor_t device_desc = {
 };
 
 #define DFU_INTERFACE_DSCR(alt)                          \
-  USB_INTERFACE_DSCR(/*inum=*/1, /*alt=*/alt, /*nep=*/0, \
+  USB_INTERFACE_DSCR(/*inum=*/0, /*alt=*/alt, /*nep=*/0, \
                      /*class=*/kDfuDeviceClass,          \
                      /*subclass=*/kDfuDeviceSubClass,    \
                      /*protocol=*/kDfuDeviceProtocol, /*iint=*/4 + alt)
