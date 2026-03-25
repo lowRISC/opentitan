@@ -99,6 +99,27 @@ otcrypto_status_t otcrypto_p256_point_on_curve(
   return OTCRYPTO_OK;
 }
 
+status_t otcrypto_p256_base_point_mult(
+    const otcrypto_blinded_key_t *private_key,
+    otcrypto_unblinded_key_t *public_key) {
+  if (private_key == NULL || public_key == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  p256_masked_scalar_t private_scalar;
+  HARDENED_TRY(hardened_memcpy(private_scalar.share0, private_key->keyblob,
+                               kP256MaskedScalarTotalShareWords));
+  HARDENED_CHECK_EQ(hardened_memeq(private_key->keyblob, private_scalar.share0,
+                                   kP256MaskedScalarTotalShareWords),
+                    kHardenedBoolTrue);
+  private_scalar.checksum = p256_masked_scalar_checksum(&private_scalar);
+
+  p256_point_t *pk = (p256_point_t *)public_key->key;
+  HARDENED_TRY(p256_base_point_mult(&private_scalar, pk));
+
+  return OTCRYPTO_OK;
+}
+
 /**
  * Calls P-256 key generation.
  *
