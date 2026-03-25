@@ -61,6 +61,28 @@ mldsa87_unit_tests = [
     for test in mldsa87_unit_tests
 ]
 
+mldsa87_nist_tests = [
+    "mldsa87_verify_nist_acvp_63_test",
+    "mldsa87_verify_nist_acvp_65_test",
+    "mldsa87_verify_nist_acvp_66_test",
+    "mldsa87_verify_nist_acvp_68_test",
+    "mldsa87_verify_nist_acvp_69_test",
+]
+
+[
+    otbn_sim_test(
+        name = test,
+        srcs = mldsa87_srcs + [
+            # This is a top-level OTBN application test.
+            # Make sure the memory file is placed after all the sources.
+            "//sw/otbn/crypto/mldsa87:mldsa87_%s.s" % test.split("_")[1],
+            "//sw/otbn/crypto/mldsa87:mldsa87_%s_mem.s" % test.split("_")[1],
+            "mldsa87_%s_test.s" % test.split("_")[1],
+        ],
+        testcase = test + ".hjson",
+    )
+    for test in mldsa87_nist_tests
+]
 ####################
 # Randomized tests #
 ####################
