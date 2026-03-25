@@ -75,3 +75,10 @@ otbn_library(
         "mldsa87_verify_ops.s",
     ],
 )
+
+otbn_library(
+    name = "mldsa87_verify_mem",
+    srcs = [
+        "mldsa87_verify_mem.s",
+    ],
+)
