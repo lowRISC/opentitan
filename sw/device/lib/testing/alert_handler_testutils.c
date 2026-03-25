@@ -26,26 +26,38 @@ static_assert(ARRAYSIZE(kAlertClassName) == ALERT_HANDLER_PARAM_N_CLASSES,
  * are updated by num_bits before returning.
  */
 static uint32_t get_next_n_bits(
-    int num_bits, const dif_rstmgr_alert_info_dump_segment_t *dump,
-    int *word_index, int *bit_index) {
+    uint32_t num_bits, const dif_rstmgr_alert_info_dump_segment_t *dump,
+    uint32_t *word_index, uint32_t *bit_index) {
   CHECK(num_bits <= 32);
   CHECK(*bit_index < 32);
-  uint32_t word = dump[*word_index] >> *bit_index;
-  if (*bit_index + num_bits >= 32) {
-    (*word_index) += 1;
-    *bit_index = *bit_index + num_bits - 32;
-  } else {
-    *bit_index += num_bits;
+
+  // Base case: all bits fit within the first word.
+  uint32_t bits_in_word = 32u - *bit_index;
+  unsigned num_bits_word1 =
+      (num_bits <= bits_in_word) ? num_bits : bits_in_word;
+  uint32_t mask1 =
+      (num_bits_word1 == 32) ? 0xFFFFFFFF : ((1u << num_bits_word1) - 1);
+  uint32_t word1 = (dump[*word_index] >> *bit_index) & mask1;
+  *bit_index += num_bits_word1;
+  if (*bit_index == 32) {
+    *bit_index = 0;
+    (*word_index)++;
   }
-  word &= (1 << num_bits) - 1;
-  return word;
+  if (num_bits_word1 == num_bits) {
+    return word1;
+  }
+
+  // Recursive case: read the remaining bits from the next word and combine.
+  unsigned num_bits_word2 = num_bits - num_bits_word1;
+  uint32_t word2 = get_next_n_bits(num_bits_word2, dump, word_index, bit_index);
+  return (word2 << num_bits_word1) | word1;
 }
 
 status_t alert_handler_testutils_info_parse(
     const dif_rstmgr_alert_info_dump_segment_t *dump, int dump_size,
     alert_handler_testutils_info_t *info) {
-  int word_index = 0;
-  int bit_index = 0;
+  uint32_t word_index = 0;
+  uint32_t bit_index = 0;
   for (int i = 0; i < ALERT_HANDLER_PARAM_N_CLASSES; ++i) {
     info->class_esc_state[i] =
         get_next_n_bits(3, dump, &word_index, &bit_index);
