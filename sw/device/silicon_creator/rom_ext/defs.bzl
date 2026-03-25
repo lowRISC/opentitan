@@ -89,7 +89,7 @@ TEST_OWNER_CONFIGS = {
             "WITH_RESCUE_INDEX=2",
             # GPIO param 3 means enable the internal pull resistor and trigger
             # rescue when the GPIO is high.
-            "WITH_RESCUE_GPIO_PARAM=3",
+            "WITH_RESCUE_MISC_GPIO_PARAM=3",
             # Timeout: 0x80=enter_on_fail, 0x05 = 5 seconds.
             "WITH_RESCUE_TIMEOUT=0x85",
         ],
@@ -115,6 +115,16 @@ TEST_OWNER_CONFIGS = {
         ],
         "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
     },
+    "xmodem_enter_on_watchdog": {
+        # Enable Xmodem rescue with enter-on-fail and a timeout.
+        "owner_defines": [
+            # 0x58 is 'X'modem.
+            "WITH_RESCUE_PROTOCOL=0x58",
+            # misc_gpio: 0x80=enter_on_watchdog.
+            "WITH_RESCUE_MISC_GPIO_PARAM=0x80",
+        ],
+        "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
+    },
     "spidfu_restricted_commands": {
         # Enable USB-DFU triggered by SW_STRAPS value 3.
         "owner_defines": [
@@ -127,7 +137,7 @@ TEST_OWNER_CONFIGS = {
             "WITH_RESCUE_INDEX=2",
             # GPIO param 3 means enable the internal pull resistor and trigger
             # rescue when the GPIO is high.
-            "WITH_RESCUE_GPIO_PARAM=3",
+            "WITH_RESCUE_MISC_GPIO_PARAM=3",
             # Timeout: 0x80=enter_on_fail, 0x00 = No timeout.
             "WITH_RESCUE_TIMEOUT=0x80",
             # Restrict rescue to only one command
@@ -156,11 +166,61 @@ TEST_OWNER_CONFIGS = {
             "WITH_RESCUE_INDEX=2",
             # GPIO param 3 means enable the internal pull resistor and trigger
             # rescue when the GPIO is high.
-            "WITH_RESCUE_GPIO_PARAM=3",
+            "WITH_RESCUE_MISC_GPIO_PARAM=3",
             # Timeout: 0x80=enter_on_fail, 0x05 = 5 seconds.
             "WITH_RESCUE_TIMEOUT=0x85",
             # Disallow all the rescue commands.
             "WITH_RESCUE_COMMAND_ALLOW",
+        ],
+        "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_spidfu"],
+    },
+    "rescue_config_module_mismatch": {
+        "owner_defines": [
+            # 0x53 is 'S'pi.
+            "WITH_RESCUE_PROTOCOL=0x53",
+            # Timeout: 0x80=enter_on_fail, 0x05 = 5 seconds.
+            "WITH_RESCUE_TIMEOUT=0x85",
+        ],
+        # Set a rescue module that is not matched with the specified rescue protocol.
+        "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
+    },
+    "spidfu_rescue_boot_svc_req_disability": {
+        "owner_defines": [
+            # 0x53 is 'S'pi.
+            "WITH_RESCUE_PROTOCOL=0x53",
+            # Trigger 3 is GPIO pin.
+            "WITH_RESCUE_TRIGGER=3",
+            # When the trigger is GPIO, the index is the MuxedPad to us as the sense
+            # input. Index 2 is kTopEarlgreyMuxedPadsIoa2.
+            "WITH_RESCUE_INDEX=2",
+            # GPIO param 3 means enable the internal pull resistor and trigger
+            # rescue when the GPIO is high.
+            "WITH_RESCUE_MISC_GPIO_PARAM=3",
+            # Timeout: 0x80=enter_on_fail, 0x05 = 5 seconds.
+            "WITH_RESCUE_TIMEOUT=0x85",
+            "WITH_RESCUE_COMMAND_ALLOW=kRescueModeBootSvcReq",
+        ],
+        "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_spidfu"],
+    },
+    "spidfu_flash_limit_zero": {
+        "owner_defines": [
+            # 0x53 is 'S'pi.
+            "WITH_RESCUE_PROTOCOL=0x53",
+            # Trigger 3 is GPIO pin.
+            "WITH_RESCUE_TRIGGER=3",
+            # When the trigger is GPIO, the index is the MuxedPad to us as the sense
+            # input. Index 2 is kTopEarlgreyMuxedPadsIoa2.
+            "WITH_RESCUE_INDEX=2",
+            # GPIO param 3 means enable the internal pull resistor and trigger
+            # rescue when the GPIO is high.
+            "WITH_RESCUE_MISC_GPIO_PARAM=3",
+            # Timeout: 0x80=enter_on_fail, 0x05 = 5 seconds.
+            "WITH_RESCUE_TIMEOUT=0x85",
+            # Set rescue start and size to 0 to test writing past the end of the flash.
+            "WITH_RESCUE_START=0",
+            "WITH_RESCUE_SIZE=0",
+            # Disable the owner block check in test_owner.c so that the rescue start addr can be 0.
+            "TEST_OWNER_DISABLE_OWNER_BLOCK_CHECK=1",
         ],
         "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_spidfu"],
     },
