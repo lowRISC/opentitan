@@ -100,7 +100,7 @@ module otbn_predecode
   logic alu_bignum_trn_is_trn1;
 
   // BN MAC static control signals
-  logic                  mac_bignum_op_en;
+  logic                  mac_bignum_mac_en;
   logic                  mac_bignum_is_vec;
   logic                  mac_bignum_is_mod;
   logic                  mac_bignum_is_lane;
@@ -228,7 +228,7 @@ module otbn_predecode
     flags_mac_update   = '0;
     flags_ispr_wr      = '0;
 
-    mac_bignum_op_en           = 1'b0;
+    mac_bignum_mac_en          = 1'b0;
     mac_bignum_is_vec          = 1'b0;
     mac_bignum_is_mod          = 1'b0;
     mac_bignum_is_lane         = 1'b0;
@@ -519,7 +519,7 @@ module otbn_predecode
               rf_ren_a_bignum    = 1'b1;
               rf_ren_b_bignum    = 1'b1;
               rf_we_bignum       = 1'b1;
-              mac_bignum_op_en   = 1'b1;
+              mac_bignum_mac_en  = 1'b1;
               mac_bignum_is_vec  = 1'b1;
               mac_bignum_is_mod  = imem_rdata_i[14:12] == 3'b100;
               mac_bignum_is_lane = imem_rdata_i[27];
@@ -689,7 +689,7 @@ module otbn_predecode
         InsnOpcodeBignumMulqacc: begin
           rf_ren_a_bignum         = 1'b1;
           rf_ren_b_bignum         = 1'b1;
-          mac_bignum_op_en        = 1'b1;
+          mac_bignum_mac_en       = 1'b1;
 
           mac_bignum_op_a_qw_sel    = imem_rdata_i[26:25];
           mac_bignum_op_b_elem0_sel = imem_rdata_i[28:27] * 2;
@@ -815,7 +815,7 @@ module otbn_predecode
   assign alu_bignum_predec_o.shift_dir[AluShiftDirRight] = alu_bignum_shift_en &
                                                            alu_bignum_shift_right;
 
-  assign mac_bignum_predec_raw_o.op_en               = mac_bignum_op_en;
+  assign mac_bignum_predec_raw_o.mac_en              = mac_bignum_mac_en;
   assign mac_bignum_predec_raw_o.is_vec              = mac_bignum_is_vec;
   assign mac_bignum_predec_raw_o.is_mod              = mac_bignum_is_mod;
   assign mac_bignum_predec_raw_o.is_lane             = mac_bignum_is_lane;

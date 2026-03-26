@@ -100,6 +100,8 @@ module otbn_mac_bignum
   input logic rst_ni,
 
   input mac_bignum_operation_t operation_i,
+  // The signal mac_en_i must only used by the FSM or by assertions! Everywhere else use the
+  // predecoded version. This ensures that there is a redundancy check in place.
   input logic                  mac_en_i,
   input logic                  mac_commit_i,
 
@@ -268,14 +270,14 @@ module otbn_mac_bignum
   // SEC_CM: DATA_REG_SW.SCA
   prim_blanker #(.Width(WLEN)) u_operand_a_blanker (
     .in_i (operation_i.operand_a),
-    .en_i (predec_i.op_en),
+    .en_i (predec_i.mac_en),
     .out_o(operand_a_blanked)
   );
 
   // SEC_CM: DATA_REG_SW.SCA
   prim_blanker #(.Width(WLEN)) u_operand_b_blanker (
     .in_i (operation_i.operand_b),
-    .en_i (predec_i.op_en),
+    .en_i (predec_i.mac_en),
     .out_o(operand_b_blanked)
   );
 
@@ -627,11 +629,12 @@ module otbn_mac_bignum
   logic tmp_wr_en_raw;
   logic c_wr_en_raw;
 
-  assign acc_wr_en = ((acc_wr_en_raw | acc_clear_en) & (mac_en_i & mac_commit_i))
+  assign acc_wr_en = ((acc_wr_en_raw | acc_clear_en) & (predec_i.mac_en & mac_commit_i))
                      | ispr_acc_wr_en_i | sec_wipe_urnd_i;
-  assign tmp_wr_en = ((tmp_wr_en_raw | tmp_clear_en) & (mac_en_i & mac_commit_i))
+  assign tmp_wr_en = ((tmp_wr_en_raw | tmp_clear_en) & (predec_i.mac_en & mac_commit_i))
                      | sec_wipe_urnd_i;
-  assign c_wr_en   = ((c_wr_en_raw | c_clear_en) & (mac_en_i & mac_commit_i)) | sec_wipe_urnd_i;
+  assign c_wr_en   = ((c_wr_en_raw | c_clear_en) & (predec_i.mac_en & mac_commit_i))
+                     | sec_wipe_urnd_i;
 
   /////////////////////////
   // Multi-cycle control //
@@ -646,10 +649,10 @@ module otbn_mac_bignum
     .clk_i,
     .rst_ni,
 
-    .start_i         (mac_en_i),
-    .mac_en_i        (mac_en_i),
     // This FSM here must use the decoded signals as the counterpart operates on the predecoded
-    // signals. Otherwise both FSM would be controlled with the same control signals.
+    // signals. Otherwise both FSMs would be controlled with the same control signals.
+    .start_i          (mac_en_i),
+    .mac_en_i         (mac_en_i),
     .is_vec_i         (operation_i.is_vec),
     .is_mod_i         (operation_i.is_mod),
     .is_lane_i        (operation_i.is_lane),
@@ -674,9 +677,9 @@ module otbn_mac_bignum
   // For non modulo vectorized multiplications, the blanker must be active if the instructions
   // starts and it must definitively be high if it is already ongoing.
   `ASSERT(VecMulBlankerMulMergerEn_A,
-          predec_i.is_vec && !predec_i.is_mod && mac_en_i
-          |-> expected_predec.mul_merger_en,
-          clk_i, !rst_ni || !mac_en_i)
+          predec_i.is_vec && !predec_i.is_mod && predec_i.mac_en
+          |-> predec_i.mul_merger_en,
+          clk_i, !rst_ni || !predec_i.mac_en)
 
   // We have separate control signals to have a clean separation between the control logic and data
   // path components.
@@ -703,7 +706,7 @@ module otbn_mac_bignum
   // For a regular multiplication shift_acc only applies to the new value written to the
   // accumulator.
   assign operation_result_o = acc_merged | adder_result_blanked;
-  assign operation_valid_o  = predec_i.operation_valid_raw & mac_en_i;
+  assign operation_valid_o  = predec_i.operation_valid_raw & predec_i.mac_en;
 
   /////////////////////
   // Integrity error //
@@ -714,14 +717,14 @@ module otbn_mac_bignum
   logic mod_used;
   logic acc_used;
   // TMP is used if multiplier operand a is set to TMP
-  assign tmp_used = mac_en_i && !predec_i.mul_op_a_tmp_sel;
+  assign tmp_used = predec_i.mac_en && !predec_i.mul_op_a_tmp_sel;
   // c is used if its blanker is enabled
-  assign c_used = mac_en_i & predec_i.c_add_en;
+  assign c_used = predec_i.mac_en & predec_i.c_add_en;
   // MOD is used if modulo operation is active
-  assign mod_used = mac_en_i && predec_i.is_mod;
+  assign mod_used = predec_i.mac_en && predec_i.is_mod;
   // The ACC is used if we do not reset it (regular mul) or require it to merge the current
   // quarter word
-  assign acc_used = mac_en_i && (predec_i.acc_merger_en || operation_i.acc_add_en);
+  assign acc_used = predec_i.mac_en && (predec_i.acc_merger_en || predec_i.acc_add_en);
 
   assign operation_intg_violation_err_o = (tmp_used && |(tmp_intg_err)) ||
                                           (c_used   && |(c_intg_err))   ||
