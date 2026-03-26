@@ -175,7 +175,9 @@ If the packets cannot be consumed at the rate they are received, software can im
 In the unfortunate event that the appropriate Available Buffer FIFO is empty or the Received Buffer FIFO is full, all OUT transactions are NAKed and SETUP transactions are ignored.
 In that event, the host will retry the transaction (up to some maximum attempts or time).
 
-Since a SETUP packet being ignored is understood by the host controller to be an error in transmission, it will retry the transmission almost immediately (intervals of just 15-16us have been observed). To prevent three such failures in rapid succession leading to the Control Transfer being retired, the final entry of the Received Buffer FIFO shall only ever be allocated to a SETUP packet. It is, however, the responsibility of software to keep the Available SETUP Buffer FIFO populated so that this scheme can be successful.
+Since a SETUP packet being ignored is understood by the host controller to be an error in transmission, it will retry the transmission almost immediately (intervals of just 15-16us have been observed).
+To prevent three such failures in rapid succession leading to the Control Transfer being retired, the final entry of the Received Buffer FIFO shall only ever be allocated to a SETUP packet.
+It is, however, the responsibility of software to keep the Available SETUP Buffer FIFO populated so that this scheme can be successful.
 
 There are two options for a given OUT endpoint's flow control, controlled by the [`set_nak_out`](registers.md#set_nak_out) register.
 If `set_nak_out` is 0 for the endpoint, it will accept packets as long as there are buffers available in the Available Buffer FIFO and space available in the Received Buffer FIFO.
@@ -217,7 +219,8 @@ The interface will need extending for high rate isochronous use (a possible opti
 
 ## Optional external AON/Wake functionality
 
-The USB may optionally be coupled with an external support module `usbdev_aon_wake` which can assume control of the USB pullup resistors and monitor the USB when the device has been put in a Suspended state by the USB host controller. In this state no further activity shall occur on the USB until at least 20ms of Resume Signaling has been performed by the USB host controller, indicating that it wishes the device to exit the Suspended state.
+The USB may optionally be coupled with an external support module `usbdev_aon_wake` which can assume control of the USB pullup resistors and monitor the USB when the device has been put in a Suspended state by the USB host controller.
+In this state no further activity shall occur on the USB until at least 20ms of Resume Signaling has been performed by the USB host controller, indicating that it wishes the device to exit the Suspended state.
 
 Whilst `usbdev` is suspended much of the SoC logic including `usbdev` itself may be powered down, and the AON/Wake module remains powered on a low frequency clock, monitoring the USB for any of the following significant events:
 
@@ -232,14 +235,42 @@ module also reports detection of a Bus Reset or a VBUS/SENSE disconnection, sign
 
 If support for low power states is not required then this external module may be excluded from the design, and the input signals may simply be tied inactive (low).
 
-Note that `usbdev_aon_wake` module shall only be activated whilst `usbdev` is in the Suspended state, and the modules do not offer 'remote wakeup' support. Resume signaling shall always be performed by the USB host controller.
+Note that `usbdev_aon_wake` module shall only be activated whilst `usbdev` is in the Suspended state, and the modules do not offer 'remote wakeup' support.
+Resume signaling shall always be performed by the USB host controller.
 
 ### AON/Wake Clocking
 
-The `usbdev_aon_wake` module is expected to be powered at all times, and to operate on a clock frequency much lower than that of `usbdev` for reduced power consumption. It has been designed and verified to operate on a frequency of 200kHz. Its detection of 'Bus Reset' signaling also requires it to have a clock frequency below 1MHz because the 'SE0' state on the USB is used to indicate both 'End Of Packet' events and Bus Resets. With a clock frequency of 1MHz or higher the logic will respond to Low Speed EOP events to the other devices on the bus as if they are Bus Reset signaling and thus awaken the device.
+The `usbdev_aon_wake` module is expected to be powered at all times, and to operate on a clock frequency much lower than that of `usbdev` for reduced power consumption.
+It has been designed and verified to operate on a frequency of 200kHz.
+Its detection of 'Bus Reset' signaling also requires it to have a clock frequency below 1MHz because the 'SE0' state on the USB is used to indicate both 'End Of Packet' events and Bus Resets.
+With a clock frequency of 1MHz or higher the logic will respond to Low Speed EOP events to the other devices on the bus as if they are Bus Reset signaling and thus awaken the device.
 
 ### AON/Wake Interface Pins
 
-When the `usbdev_aon_wake` module is used in a design, the pullup enables 'usb_dp_pullup_o' and 'usb_dn_pullup_o' should be routed to the inputs 'usbdev_dppullup_en_i' and 'usbdev_dnpullup_en_i' of the `usbdev_aon_wake` module rather than directly to the pullups. The AON/Wake module then modifies these pullup signals when it is activated and produces the outputs 'usb_dppullup_en_o' and 'usb_dnpullup_en_o' to drive the actual pullups on the USB.
+When the `usbdev_aon_wake` module is used in a design, the pullup enables 'usb_dp_pullup_o' and 'usb_dn_pullup_o' should be routed to the inputs 'usbdev_dppullup_en_i' and 'usbdev_dnpullup_en_i' of the `usbdev_aon_wake` module rather than directly to the pullups.
+The AON/Wake module then modifies these pullup signals when it is activated and produces the outputs 'usb_dppullup_en_o' and 'usb_dnpullup_en_o' to drive the actual pullups on the USB.
 
-Additionally, the `usbdev_aon_wake` module requires passive inputs that monitor the USB signals 'VBUS', 'D+' and 'D-' in order to produce wake up signaling for significant events on the USB. When an event is detected on the USB the output 'wake_detect_active_aon_o' is asserted, which would typically be routed to a power management IP block. How this produces a return from a sleep state and returned the `usbdev` module to a powered state is system-dependent.
+Additionally, the `usbdev_aon_wake` module requires passive inputs that monitor the USB signals 'VBUS', 'D+' and 'D-' in order to produce wake up signaling for significant events on the USB.
+When an event is detected on the USB the output 'wake_detect_active_aon_o' is asserted, which would typically be routed to a power management IP block.
+How this produces a return from a sleep state and returned the `usbdev` module to a powered state is system-dependent.
+
+## Test Modes
+
+The IP block offers a couple of test modes to assist with electrical compliance testing:
+
+### TX OSC Test Mode
+
+This test mode causes the device to tramit a repeating JKJKJKJK... pattern continuously.
+It is primarily intended for measuring the clock frequency of the USB device, but electrically it may also be useful for measuring the voltage levels, and rise and fall times, as well as capturing eye diagrams.
+THe TX OSC test mode is entered by setting [`phy_config.tx_osc_test_mode`](registers.md#phy_config) to `1`.
+
+### TX PKT Test Mode
+
+Enabling TX PKT Test Mode causes the IP block to transmit a packet continuously if one has been supplied to IN Endpoint Zero.
+Software should populate a packet buffer and program its details into the [`configin_0`](registers.md#configin) and then set [`phy_config.tx_pkt_test_mode`](registers.md#phy_config) to `1`.
+
+The IP block will then transmit the supplied buffer contents as a `DATAx` packet repeatedly, with a specification-compliant inter-packet gap, and never signal that the packet has been sent.
+This test mode should only be used when the USB device is connected only to appropriate analysis equipment since the traffic does not represent a complete, valid IN data transfer.
+
+In both of the above test modes, since the IP block is only transmitting, the clock may drift off frequency because it is not observing the Start Of Frame (SOF) traffic from the USB host controller.
+Note also that VBUS must still be raised for each test mode to operate, even if there is no USB host controller present.
