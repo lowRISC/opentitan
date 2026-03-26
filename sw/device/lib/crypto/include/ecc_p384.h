@@ -333,6 +333,37 @@ otcrypto_status_t otcrypto_ecdh_p384_async_finalize(
     otcrypto_blinded_key_t *shared_secret);
 
 /**
+ * Imports an externally-generated P-384 public key from affine coordinates.
+ *
+ * The caller supplies the uncompressed affine coordinates (x, y) of the
+ * public point Q. No on-curve validation is performed here; it is deferred
+ * to the point of use (sign, verify, ECDH), consistent with the rest of the
+ * P-384 API. If desired, an explicit check if point on curve call can be made
+ * to the API.
+ *
+ * The caller must allocate and partially populate the unblinded key struct
+ * before calling this function:
+ *   - `key_mode` must be `kOtcryptoKeyModeEcdsaP384` or
+ *     `kOtcryptoKeyModeEcdhP384`, depending on the intended use.
+ *   - `key_length` must be 96 bytes (two 384-bit coordinates).
+ *   - `key` must point to a caller-allocated 24-word (96-byte) buffer.
+ *
+ * Coordinates are stored as [x || y], each in little-endian word order,
+ * matching the layout used by the rest of the P-384 implementation.  The
+ * `checksum` field of the unblinded key struct is populated by this function.
+ *
+ * @param x Affine x-coordinate of the public key (must be exactly 12 words).
+ * @param y Affine y-coordinate of the public key (must be exactly 12 words).
+ * @param[out] public_key Unblinded public key struct (Q), partially populated
+ *             by the caller as described above.
+ * @return Result of the P-384 public key import operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ecc_p384_public_key_import(
+    const otcrypto_const_word32_buf_t *x, const otcrypto_const_word32_buf_t *y,
+    otcrypto_unblinded_key_t *public_key);
+
+/**
  * Is on curve check for given P-384 point.
  *
  * @param point Point in the affine coordinates representation that should be
