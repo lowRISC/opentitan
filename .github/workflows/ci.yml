@@ -493,6 +493,7 @@ jobs:
       board: cw310
       interface: hyper310
       tag_filters: hyper310_rom_ext
+      timeout: 90
 
   # CW340 FPGA jobs
   execute_test_rom_fpga_tests_cw340:
