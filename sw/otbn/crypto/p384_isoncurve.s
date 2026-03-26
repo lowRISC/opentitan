@@ -322,7 +322,7 @@ p384_check_isoncurve:
  */
  .globl p384_check_public_key
 p384_check_public_key:
-  jal       x1, p384_check_isoncurve
+  jal       x0, p384_check_isoncurve
 
   /* Compare x to p.
        FG0.C <= (x < p) */
