@@ -309,7 +309,7 @@ module otbn_mac_bignum_fsm
 
   // Combine the static and dynamic predecoded signals into one signal.
   assign predec_o = '{
-    op_en:               mac_en_i,
+    mac_en:              mac_en_i,
     is_vec:              is_vec_i,
     is_mod:              is_mod_i,
     is_lane:             is_lane_i,

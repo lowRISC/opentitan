@@ -600,7 +600,7 @@ package otbn_pkg;
   } ispr_bignum_predec_t;
 
   typedef struct packed {
-    logic                  op_en;
+    logic                  mac_en;
     logic                  is_vec;
     logic                  is_mod;
     logic                  is_lane;
