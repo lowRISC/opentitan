@@ -52,7 +52,7 @@ fi
 
 if [[ -d "${BIT_SRC_DIR}" ]]; then
     mkdir -p "${BIT_CACHE_DIR}"
-    cp -rt "${BIT_CACHE_DIR}" "${BIT_SRC_DIR}"/*
+    cp -rnt "${BIT_CACHE_DIR}" "${BIT_SRC_DIR}"/*
     export BITSTREAM="--offline --list ci_bitstreams"
 fi
 
@@ -66,7 +66,6 @@ TEST_ARGS=(
     --define "${fpga}=lowrisc"
     --flaky_test_attempts=2
     --target_pattern_file="${target_pattern_file}"
-    --disk_cache="/tmp/${USER}/bazel-cache/"
 )
 
 if [[ "${mode}" == "coverage" ]]; then
