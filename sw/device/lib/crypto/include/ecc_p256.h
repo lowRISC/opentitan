@@ -370,6 +370,36 @@ otcrypto_status_t otcrypto_ecc_p256_private_key_import(
     otcrypto_blinded_key_t *private_key);
 
 /**
+ * Exports a P-256 private key as two additive shares.
+ *
+ * Extracts the two 320-bit additive shares from the blinded private key
+ * struct. This is the inverse of `otcrypto_ecc_p256_private_key_import`.
+ *
+ * The private key d is recovered as:
+ *   d = (share0 + share1) mod n
+ * where n is the P-256 curve order. The shares are returned in the same
+ * 320-bit format (256-bit scalar + 64 redundant bits) used internally and
+ * produced by `otcrypto_ecdsa_p256_keygen` / `otcrypto_ecdh_p256_keygen`.
+ *
+ * The caller must allocate and partially populate the output buffers before
+ * calling this function:
+ *   - `share0->data` and `share1->data` must each point to a caller-allocated
+ *     buffer of exactly 10 words (320 bits).
+ *   - `share0->len` and `share1->len` must each be set to 10.
+ *
+ * @param private_key Blinded private key struct to export.
+ * @param[out] share0 First share of the private key (must be exactly 10
+ *             words / 320 bits).
+ * @param[out] share1 Second share of the private key (must be exactly 10
+ *             words / 320 bits).
+ * @return Result of the P-256 private key export operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ecc_p256_private_key_export(
+    const otcrypto_blinded_key_t *private_key, otcrypto_word32_buf_t *share0,
+    otcrypto_word32_buf_t *share1);
+
+/**
  * Imports an externally-generated P-256 public key from affine coordinates.
  *
  * The caller supplies the uncompressed affine coordinates (x, y) of the

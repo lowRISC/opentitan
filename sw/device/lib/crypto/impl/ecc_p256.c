@@ -867,3 +867,65 @@ otcrypto_status_t otcrypto_ecc_p256_private_key_import(
 
   return OTCRYPTO_OK;
 }
+
+otcrypto_status_t otcrypto_ecc_p256_private_key_export(
+    const otcrypto_blinded_key_t *private_key, otcrypto_word32_buf_t *share0,
+    otcrypto_word32_buf_t *share1) {
+  if (share0 == NULL || share0->data == NULL || share1 == NULL ||
+      share1->data == NULL || private_key == NULL ||
+      private_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  HARDENED_TRY(entropy_complex_check());
+
+  // Check the output buffer lengths: each must be exactly 320 bits (256-bit
+  // scalar + 64 redundant bits for side-channel protection).
+  if (share0->len != kP256MaskedScalarShareWords ||
+      share1->len != kP256MaskedScalarShareWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(launder32(share0->len), kP256MaskedScalarShareWords);
+  HARDENED_CHECK_EQ(launder32(share1->len), kP256MaskedScalarShareWords);
+
+  // Check the key mode; both ECDSA and ECDH P-256 modes are accepted since
+  // the private key representation is identical for both.
+  if (private_key->config.key_mode != kOtcryptoKeyModeEcdsaP256 &&
+      private_key->config.key_mode != kOtcryptoKeyModeEcdhP256) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Export is only supported for software-backed keys.
+  if (private_key->config.hw_backed != kHardenedBoolFalse) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
+                    kHardenedBoolFalse);
+
+  // Check that the key is marked exportable.
+  if (launder32(private_key->config.exportable) != kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(private_key->config.exportable, kHardenedBoolTrue);
+
+  // Check that the private key length is correct.
+  HARDENED_TRY(p256_private_key_length_check(private_key));
+
+  // Check the integrity of the provided private key.
+  if (integrity_blinded_key_check(private_key) != kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Randomize output buffers before writing secret data.
+  HARDENED_TRY(hardened_memshred(share0->data, kP256MaskedScalarShareWords));
+  HARDENED_TRY(hardened_memshred(share1->data, kP256MaskedScalarShareWords));
+
+  // Copy the keyblob shares into the caller-supplied output buffers.
+  HARDENED_TRY(hardened_memcpy(share0->data, private_key->keyblob,
+                               kP256MaskedScalarShareWords));
+  HARDENED_TRY(hardened_memcpy(
+      share1->data, private_key->keyblob + kP256MaskedScalarShareWords,
+      kP256MaskedScalarShareWords));
+
+  return OTCRYPTO_OK;
+}
