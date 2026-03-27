@@ -77,6 +77,7 @@ pkg_tar(
     name = "cryptolib",
     srcs = [
         ":package",
+        "//sw/device/lib/crypto/impl/ecc/include:package",
         "//sw/device/lib/crypto/include:package",
         "//sw/device/lib/crypto/include/freestanding:package",
     ],
