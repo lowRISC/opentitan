@@ -2,11 +2,12 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("//rules/opentitan:exec_env.bzl", "ExecEnvInfo")
 load("//rules/opentitan:providers.bzl", "get_one_binary_file")
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 load("//rules/opentitan:util.bzl", "get_fallback")
-load("@nonhermetic//:env.bzl", "ENV")
+load("@nonhermetic//:env.bzl", "BIN_PATHS", "ENV")
 
 # Rules for memory splicing with Vivado.
 
@@ -29,9 +30,6 @@ def gen_vivado_mem_file(ctx, name, src, tool, swap_nibbles = True):
         arguments = [args],
         executable = tool,
         use_default_shell_env = True,
-        execution_requirements = {
-            "no-sandbox": "",
-        },
     )
     return update
 
@@ -62,10 +60,12 @@ def vivado_updatemem(ctx, name, src, instance, mmi, update, debug = False):
         arguments = [args],
         executable = "updatemem",
         use_default_shell_env = False,
-        execution_requirements = {
-            "no-sandbox": "",
-        },
-        env = ENV,
+        env = dicts.add(
+            ENV,
+            {
+                "PATH": BIN_PATHS["updatemem"] + ":/bin:/usr/bin:/usr/local/bin",
+            },
+        ),
     )
     return spliced
 

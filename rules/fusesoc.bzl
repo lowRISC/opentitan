@@ -2,7 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@nonhermetic//:env.bzl", "ENV")
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
+load("@nonhermetic//:env.bzl", "BIN_PATHS", "ENV")
 
 """Rules for running FuseSoC.
 
@@ -30,6 +31,9 @@ def _fusesoc_build_impl(ctx):
     flags = [ctx.expand_location(f, ctx.attr.srcs) for f in ctx.attr.flags]
     outputs = []
     groups = {}
+
+    # Vivado expects `HOME` environment variable to exist. Redirect it to a fake directory.
+    home_dir = "{}/homeless-shelter".format(out_dir)
 
     cache_dir = "{}/fusesoc-cache".format(out_dir)
     cfg_file_path = "build.{}.fusesoc_config.toml".format(ctx.label.name)
@@ -93,7 +97,16 @@ def _fusesoc_build_impl(ctx):
         arguments = [args],
         executable = ctx.executable._fusesoc,
         use_default_shell_env = False,
-        env = ENV | env,
+        env = dicts.add(
+            # Verilator build doesn't need nonhermetic environment variables
+            ENV if ctx.attr.target == "synth" else {},
+            {
+                "HOME": home_dir,
+                # Obtain the non-hermetic binary path and append Bazel's default PATH.
+                "PATH": BIN_PATHS["vivado" if ctx.attr.target == "synth" else "verilator"] + ":/bin:/usr/bin:/usr/local/bin",
+            },
+            env,
+        ),
     )
     return [
         DefaultInfo(
