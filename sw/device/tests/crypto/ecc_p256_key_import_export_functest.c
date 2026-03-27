@@ -39,10 +39,11 @@ static const char kMessage[] = "test message for public key import";
  * public key coordinates, then sign with the imported private key and verify
  * with the imported public key.
  *
- * This tests otcrypto_ecc_p256_private_key_import and
- * otcrypto_ecc_p256_public_key_import together: a valid signature can only be
- * produced and verified if both imports round-tripped the key material
- * correctly.
+ * This tests otcrypto_ecc_p256_private_key_import,
+ * otcrypto_ecc_p256_public_key_import, and otcrypto_ecc_p256_public_key_export
+ * together: a valid signature can only be produced and verified if both imports
+ * round-tripped the key material correctly, and the export is verified against
+ * the original raw coordinates.
  */
 static status_t import_then_verify_test(void) {
   // Allocate space for the generated private key.
@@ -98,6 +99,20 @@ static status_t import_then_verify_test(void) {
   LOG_INFO("Importing public key from coordinates...");
   TRY(otcrypto_ecc_p256_public_key_import(&x, &y, &imported_public_key));
   TRY_CHECK_ARRAYS_EQ(imported_pk_buf, pk_buf, kP256PublicKeyWords);
+
+  // Export the imported public key back to affine coordinates and confirm they
+  // match the originals.
+  uint32_t exported_x_data[kP256CoordWords];
+  uint32_t exported_y_data[kP256CoordWords];
+  otcrypto_word32_buf_t exported_x = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, exported_x_data, kP256CoordWords);
+  otcrypto_word32_buf_t exported_y = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, exported_y_data, kP256CoordWords);
+  LOG_INFO("Exporting public key to coordinates...");
+  TRY(otcrypto_ecc_p256_public_key_export(&imported_public_key, &exported_x,
+                                          &exported_y));
+  TRY_CHECK_ARRAYS_EQ(exported_x_data, pt->x, kP256CoordWords);
+  TRY_CHECK_ARRAYS_EQ(exported_y_data, pt->y, kP256CoordWords);
 
   // Hash the message.
   otcrypto_const_byte_buf_t msg =
