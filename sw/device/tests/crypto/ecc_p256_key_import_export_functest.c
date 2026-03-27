@@ -40,10 +40,10 @@ static const char kMessage[] = "test message for public key import";
  * with the imported public key.
  *
  * This tests otcrypto_ecc_p256_private_key_import,
- * otcrypto_ecc_p256_public_key_import, and otcrypto_ecc_p256_public_key_export
- * together: a valid signature can only be produced and verified if both imports
- * round-tripped the key material correctly, and the export is verified against
- * the original raw coordinates.
+ * otcrypto_ecc_p256_private_key_export, otcrypto_ecc_p256_public_key_import,
+ * and otcrypto_ecc_p256_public_key_export together: a valid signature can only
+ * be produced and verified if both imports round-tripped the key material
+ * correctly, and both exports are verified against the original raw values.
  */
 static status_t import_then_verify_test(void) {
   // Allocate space for the generated private key.
@@ -67,6 +67,15 @@ static status_t import_then_verify_test(void) {
   TRY(otcrypto_ecdsa_p256_keygen(&private_key, &generated_public_key));
 
   // Import the private key shares into a fresh blinded key struct.
+  // Use an exportable config so we can round-trip via export below.
+  static const otcrypto_key_config_t kExportableKeyConfig = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeEcdsaP256,
+      .key_length = kP256PrivateKeyBytes,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolTrue,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
   otcrypto_const_word32_buf_t share0 = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, keyblob, kP256MaskedScalarShareWords);
   otcrypto_const_word32_buf_t share1 = OTCRYPTO_MAKE_BUF(
@@ -74,15 +83,30 @@ static status_t import_then_verify_test(void) {
       kP256MaskedScalarShareWords);
   uint32_t imported_keyblob[kP256MaskedScalarTotalShareWords];
   otcrypto_blinded_key_t imported_private_key = {
-      .config = kPrivateKeyConfig,
+      .config = kExportableKeyConfig,
       .keyblob_length = sizeof(imported_keyblob),
       .keyblob = imported_keyblob,
   };
   LOG_INFO("Importing private key shares...");
   TRY(otcrypto_ecc_p256_private_key_import(share0, share1,
                                            &imported_private_key));
-  TRY_CHECK_ARRAYS_EQ(imported_keyblob, keyblob,
-                      kP256MaskedScalarTotalShareWords);
+
+  // Export the imported private key back to shares and verify they match the
+  // originals.
+  uint32_t exported_share0_data[kP256MaskedScalarShareWords];
+  uint32_t exported_share1_data[kP256MaskedScalarShareWords];
+  otcrypto_word32_buf_t exported_share0 = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, exported_share0_data, kP256MaskedScalarShareWords);
+  otcrypto_word32_buf_t exported_share1 = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, exported_share1_data, kP256MaskedScalarShareWords);
+  LOG_INFO("Exporting private key shares...");
+  TRY(otcrypto_ecc_p256_private_key_export(&imported_private_key,
+                                           &exported_share0, &exported_share1));
+  TRY_CHECK_ARRAYS_EQ(exported_share0_data, keyblob,
+                      kP256MaskedScalarShareWords);
+  TRY_CHECK_ARRAYS_EQ(exported_share1_data,
+                      keyblob + kP256MaskedScalarShareWords,
+                      kP256MaskedScalarShareWords);
 
   // Import the public key from its coordinates into a fresh buffer.
   p256_point_t *pt = (p256_point_t *)pk_buf;
