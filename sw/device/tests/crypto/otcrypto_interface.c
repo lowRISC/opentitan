@@ -123,6 +123,7 @@ volatile otcrypto_interface_t otcrypto = {
     // ECC P-256 point checks and key import.
     .ecc_p256_point_on_curve = &otcrypto_p256_point_on_curve,
     .ecc_p256_public_key_import = &otcrypto_ecc_p256_public_key_import,
+    .ecc_p256_private_key_import = &otcrypto_ecc_p256_private_key_import,
 
     // ECDSA P-384 (blocking).
     .ecdsa_p384_keygen = &otcrypto_ecdsa_p384_keygen,
