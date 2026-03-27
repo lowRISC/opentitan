@@ -10,8 +10,10 @@ package(default_visibility = ["//visibility:public"])
 rust_binary(
     name = "harness",
     srcs = [
+        "src/cshake.rs",
         "src/hmac.rs",
         "src/main.rs",
+        "src/rsa.rs",
     ],
     deps = [
         "//sw/host/cryptotest/ujson_lib:cryptotest_commands",

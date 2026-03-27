@@ -12,7 +12,9 @@ use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;
 
+mod cshake;
 mod hmac;
+mod rsa;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -46,6 +48,8 @@ enum AcvpVectors {
         time: String,
     },
     Hmac(hmac::HmacTestVectorSet),
+    Cshake(cshake::CshakeTestVectorSet),
+    Rsa(rsa::RsaTestVectorSet),
 }
 
 #[derive(Deserialize, PartialEq, Serialize)]
@@ -58,6 +62,8 @@ enum AcvpResults {
         time: String,
     },
     Hmac(hmac::HmacResultVectorSet),
+    Cshake(cshake::CshakeResultVectorSet),
+    Rsa(rsa::RsaResultVectorSet),
 }
 
 fn run<R: std::io::Read, W: std::io::Write>(
@@ -88,14 +94,24 @@ fn run<R: std::io::Read, W: std::io::Write>(
             AcvpVectors::Hmac(vs) => acvp_results.push(AcvpResults::Hmac(
                 hmac::run_hmac_vector_set(opts.timeout, &spi_console_device, &vs)?,
             )),
+            AcvpVectors::Cshake(vs) => acvp_results.push(AcvpResults::Cshake(
+                cshake::run_cshake_vector_set(opts.timeout, &spi_console_device, &vs)?,
+            )),
+            AcvpVectors::Rsa(vs) => acvp_results.push(AcvpResults::Rsa(rsa::run_rsa_vector_set(
+                opts.timeout,
+                &spi_console_device,
+                &vs,
+            )?)),
         }
     }
     if let Some(w) = output {
         serde_json::to_writer_pretty(w, &acvp_results)?;
     }
     if let Some(r) = expected {
-        let expected_results: Vec<AcvpResults> = serde_json::from_reader(r)?;
-        if acvp_results != expected_results {
+        let expected_results_json: serde_json::Value = serde_json::from_reader(r)?;
+        let acvp_results_json = serde_json::to_value(&acvp_results)?;
+
+        if acvp_results_json != expected_results_json {
             return Err(std::io::Error::other("ACVP result mismatch").into());
         }
     }
