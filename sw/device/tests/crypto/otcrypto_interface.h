@@ -325,8 +325,8 @@ typedef struct otcrypto_interface_t {
   otcrypto_status_t (*ecdh_p256_async_start)(const otcrypto_blinded_key_t *,
                                              const otcrypto_unblinded_key_t *);
   otcrypto_status_t (*ecdh_p256_async_finalize)(otcrypto_blinded_key_t *);
-  otcrypto_status_t (*ecc_p256_point_on_curve)(
-      const otcrypto_unblinded_key_t *point, hardened_bool_t *check_result);
+  otcrypto_status_t (*ecc_p256_point_on_curve)(const otcrypto_unblinded_key_t *,
+                                               hardened_bool_t *);
   otcrypto_status_t (*ecc_p256_public_key_import)(
       const otcrypto_const_word32_buf_t *, const otcrypto_const_word32_buf_t *,
       otcrypto_unblinded_key_t *);
