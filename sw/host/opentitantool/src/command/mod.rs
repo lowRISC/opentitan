@@ -6,6 +6,7 @@ pub mod bfv;
 pub mod bootstrap;
 pub mod certificate;
 pub mod clear_bitstream;
+pub mod clear_flash_rom;
 pub mod console;
 pub mod ecdsa;
 pub mod emulator;
