@@ -743,3 +743,57 @@ otcrypto_status_t otcrypto_ecc_p384_public_key_import(
 
   return OTCRYPTO_OK;
 }
+
+otcrypto_status_t otcrypto_ecc_p384_private_key_import(
+    otcrypto_const_word32_buf_t share0, otcrypto_const_word32_buf_t share1,
+    otcrypto_blinded_key_t *private_key) {
+  if (share0.data == NULL || share1.data == NULL || private_key == NULL ||
+      private_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  HARDENED_TRY(entropy_complex_check());
+
+  // Each share must be 448 bits (384-bit scalar + 64 redundant bits for
+  // side-channel protection).
+  if (share0.len != kP384MaskedScalarShareWords ||
+      share1.len != kP384MaskedScalarShareWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(launder32(share0.len), kP384MaskedScalarShareWords);
+  HARDENED_CHECK_EQ(launder32(share1.len), kP384MaskedScalarShareWords);
+
+  // Check the key mode; both ECDSA and ECDH P-384 modes are accepted since
+  // the private key representation is identical for both.
+  if (private_key->config.key_mode != kOtcryptoKeyModeEcdsaP384 &&
+      private_key->config.key_mode != kOtcryptoKeyModeEcdhP384) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Import is only supported for software-backed keys.
+  if (private_key->config.hw_backed != kHardenedBoolFalse) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
+                    kHardenedBoolFalse);
+
+  // Check that the caller-allocated keyblob matches the expected P-384 layout.
+  HARDENED_TRY(p384_private_key_length_check(private_key));
+
+  // Randomize the keyblob before writing secret data.
+  HARDENED_TRY(hardened_memshred(private_key->keyblob,
+                                 kP384MaskedScalarTotalShareWords));
+
+  // Copy the caller-supplied shares into the keyblob as share0 || share1,
+  // matching the p384_masked_scalar_t layout.
+  HARDENED_TRY(hardened_memcpy(private_key->keyblob, share0.data,
+                               kP384MaskedScalarShareWords));
+  HARDENED_TRY(
+      hardened_memcpy(private_key->keyblob + kP384MaskedScalarShareWords,
+                      share1.data, kP384MaskedScalarShareWords));
+
+  // Set the blinded key checksum.
+  private_key->checksum = integrity_blinded_checksum(private_key);
+
+  return OTCRYPTO_OK;
+}
