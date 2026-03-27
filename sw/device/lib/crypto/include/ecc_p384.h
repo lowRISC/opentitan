@@ -333,6 +333,44 @@ otcrypto_status_t otcrypto_ecdh_p384_async_finalize(
     otcrypto_blinded_key_t *shared_secret);
 
 /**
+ * Imports an externally-generated P-384 private key from two additive shares.
+ *
+ * The caller supplies the private key material as two additive shares
+ * (share0, share1) over a 448-bit domain (384-bit scalar + 64 redundant bits).
+ * The internal key d is defined as:
+ *   d = (share0 + share1) mod n
+ * where n is the P-384 curve order. The extra 64 bits in each share provide
+ * side-channel protection and must be present; callers generating a key from
+ * a 384-bit scalar may set the upper 64 bits of one share to zero and the
+ * other share to zero entirely (i.e. share1 = 0). The stored representation
+ * matches the format produced by `otcrypto_ecdsa_p384_keygen` and
+ * `otcrypto_ecdh_p384_keygen`.
+ *
+ * The caller must allocate and partially populate the blinded key struct
+ * before calling this function:
+ *   - `config.key_mode` must be `kOtcryptoKeyModeEcdsaP384` or
+ *     `kOtcryptoKeyModeEcdhP384`, depending on the intended use.
+ *   - `config.key_length` must be 48 bytes (384-bit scalar).
+ *   - `keyblob` must point to a caller-allocated 28-word (112-byte) buffer.
+ *   - `keyblob_length` must be 112.
+ *
+ * The `checksum` field of the blinded key struct is populated by this
+ * function.
+ *
+ * @param share0 First share of the private key (must be exactly 14 words /
+ *               448 bits).
+ * @param share1 Second share of the private key (must be exactly 14 words /
+ *               448 bits).
+ * @param[out] private_key Blinded private key struct, partially populated by
+ *             the caller as described above.
+ * @return Result of the P-384 private key import operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ecc_p384_private_key_import(
+    otcrypto_const_word32_buf_t share0, otcrypto_const_word32_buf_t share1,
+    otcrypto_blinded_key_t *private_key);
+
+/**
  * Imports an externally-generated P-384 public key from affine coordinates.
  *
  * The caller supplies the uncompressed affine coordinates (x, y) of the

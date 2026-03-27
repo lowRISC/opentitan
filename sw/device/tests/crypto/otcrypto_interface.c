@@ -174,6 +174,7 @@ volatile otcrypto_interface_t otcrypto = {
     // ECC P-384 point checks and key import.
     .ecc_p384_point_on_curve = &otcrypto_p384_point_on_curve,
     .ecc_p384_public_key_import = &otcrypto_ecc_p384_public_key_import,
+    .ecc_p384_private_key_import = &otcrypto_ecc_p384_private_key_import,
 
     // X25519 (blocking).
     .x25519_keygen = &otcrypto_x25519_keygen,
