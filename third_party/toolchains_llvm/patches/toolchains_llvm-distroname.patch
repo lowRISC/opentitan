@@ -1,0 +1,13 @@
+diff --git a/toolchain/internal/release_name.bzl b/toolchain/internal/release_name.bzl
+index e3d4a54..d2e5a92 100755
+--- a/toolchain/internal/release_name.bzl
++++ b/toolchain/internal/release_name.bzl
+@@ -151,7 +151,7 @@ def _linux(llvm_version, distname, version, arch):
+         os_name = _ubuntu_osname(arch, "20.04", major_llvm_version, llvm_version)
+     elif distname == "linuxmint" and version.startswith("18"):
+         os_name = "linux-gnu-ubuntu-16.04"
+-    elif distname == "debian":
++    elif distname in ["cros_sdk", "debian"]:
+         int_version = 0
+         if version.isdigit():
+             int_version = int(version)
