@@ -50,7 +50,7 @@ struct tcp_server_ctx {
   pthread_t sock_thread;
 };
 
-static bool tcp_buffer_is_full(struct tcp_buf *buf) {
+static bool tcp_buffer_is_full(volatile struct tcp_buf *buf) {
   if (buf->wptr >= buf->rptr) {
     return (buf->wptr - buf->rptr) == (BUFSIZE_BYTE - 1);
   } else {
@@ -58,11 +58,11 @@ static bool tcp_buffer_is_full(struct tcp_buf *buf) {
   }
 }
 
-static bool tcp_buffer_is_empty(struct tcp_buf *buf) {
+static bool tcp_buffer_is_empty(volatile struct tcp_buf *buf) {
   return (buf->wptr == buf->rptr);
 }
 
-static void tcp_buffer_put_byte(struct tcp_buf *buf, char dat) {
+static void tcp_buffer_put_byte(volatile struct tcp_buf *buf, char dat) {
   bool done = false;
   while (!done) {
     if (!tcp_buffer_is_full(buf)) {
@@ -73,7 +73,7 @@ static void tcp_buffer_put_byte(struct tcp_buf *buf, char dat) {
   }
 }
 
-static bool tcp_buffer_get_byte(struct tcp_buf *buf, char *dat) {
+static bool tcp_buffer_get_byte(volatile struct tcp_buf *buf, char *dat) {
   if (tcp_buffer_is_empty(buf)) {
     return false;
   }
