@@ -202,6 +202,7 @@ module otbn_instruction_fetch
     mac_bignum_predec_to_fsm.mul_add_en,
     mac_bignum_predec_to_fsm.c_add_en,
     mac_bignum_predec_to_fsm.add_mod_en,
+    mac_bignum_predec_to_fsm.acc_qw_sel,
     mac_bignum_predec_to_fsm.acc_merger_en,
     mac_bignum_predec_to_fsm.mul_shift_en,
     mac_bignum_predec_to_fsm.mul_merger_en,
