@@ -34,13 +34,18 @@ static const otcrypto_key_config_t kPrivateKeyConfig = {
 static const char kMessage[] = "test message for public key import";
 
 /**
- * Generate a P-256 keypair, sign a message, re-import the public key
- * coordinates via otcrypto_ecc_p256_public_key_import, and verify the
- * signature with the re-imported key.
+ * Generate a P-256 keypair, re-import both the private key shares and the
+ * public key coordinates, then sign with the imported private key and verify
+ * with the imported public key.
+ *
+ * This tests otcrypto_ecc_p256_private_key_import and
+ * otcrypto_ecc_p256_public_key_import together: a valid signature can only be
+ * produced and verified if both imports round-tripped the key material
+ * correctly.
  */
 static status_t import_then_verify_test(void) {
-  // Allocate space for a masked private key.
-  uint32_t keyblob[keyblob_num_words(kPrivateKeyConfig)];
+  // Allocate space for the generated private key.
+  uint32_t keyblob[kP256MaskedScalarTotalShareWords];
   otcrypto_blinded_key_t private_key = {
       .config = kPrivateKeyConfig,
       .keyblob_length = sizeof(keyblob),
@@ -59,6 +64,47 @@ static status_t import_then_verify_test(void) {
   LOG_INFO("Generating keypair...");
   TRY(otcrypto_ecdsa_p256_keygen(&private_key, &generated_public_key));
 
+  // Import the private key shares into a fresh blinded key struct.
+  otcrypto_const_word32_buf_t share0 = {
+      .data = keyblob,
+      .len = kP256MaskedScalarShareWords,
+  };
+  otcrypto_const_word32_buf_t share1 = {
+      .data = keyblob + kP256MaskedScalarShareWords,
+      .len = kP256MaskedScalarShareWords,
+  };
+  uint32_t imported_keyblob[kP256MaskedScalarTotalShareWords];
+  otcrypto_blinded_key_t imported_private_key = {
+      .config = kPrivateKeyConfig,
+      .keyblob_length = sizeof(imported_keyblob),
+      .keyblob = imported_keyblob,
+  };
+  LOG_INFO("Importing private key shares...");
+  TRY(otcrypto_ecc_p256_private_key_import(share0, share1,
+                                           &imported_private_key));
+  TRY_CHECK_ARRAYS_EQ(imported_keyblob, keyblob,
+                      kP256MaskedScalarTotalShareWords);
+
+  // Import the public key from its coordinates into a fresh buffer.
+  p256_point_t *pt = (p256_point_t *)pk_buf;
+  otcrypto_const_word32_buf_t x = {
+      .data = pt->x,
+      .len = kP256CoordWords,
+  };
+  otcrypto_const_word32_buf_t y = {
+      .data = pt->y,
+      .len = kP256CoordWords,
+  };
+  uint32_t imported_pk_buf[kP256PublicKeyWords];
+  otcrypto_unblinded_key_t imported_public_key = {
+      .key_mode = kOtcryptoKeyModeEcdsaP256,
+      .key_length = sizeof(imported_pk_buf),
+      .key = imported_pk_buf,
+  };
+  LOG_INFO("Importing public key from coordinates...");
+  TRY(otcrypto_ecc_p256_public_key_import(x, y, &imported_public_key));
+  TRY_CHECK_ARRAYS_EQ(imported_pk_buf, pk_buf, kP256PublicKeyWords);
+
   // Hash the message.
   otcrypto_const_byte_buf_t msg = {
       .data = (unsigned char *)kMessage,
@@ -71,41 +117,17 @@ static status_t import_then_verify_test(void) {
   };
   TRY(otcrypto_sha2_256(msg, &msg_digest));
 
-  // Sign the message with the private key.
+  // Sign with the imported private key.
   uint32_t sig[kP256SignatureWords] = {0};
   otcrypto_word32_buf_t sig_buf = {
       .data = sig,
       .len = ARRAYSIZE(sig),
   };
-  LOG_INFO("Signing...");
-  TRY(otcrypto_ecdsa_p256_sign(&private_key, msg_digest, sig_buf));
+  LOG_INFO("Signing with imported private key...");
+  TRY(otcrypto_ecdsa_p256_sign(&imported_private_key, msg_digest, sig_buf));
 
-  // Extract x and y from the generated public key buffer.
-  p256_point_t *pt = (p256_point_t *)pk_buf;
-  otcrypto_const_word32_buf_t x = {
-      .data = pt->x,
-      .len = kP256CoordWords,
-  };
-  otcrypto_const_word32_buf_t y = {
-      .data = pt->y,
-      .len = kP256CoordWords,
-  };
-
-  // Import the public key from its coordinates into a fresh buffer.
-  uint32_t imported_pk_buf[kP256PublicKeyWords];
-  otcrypto_unblinded_key_t imported_public_key = {
-      .key_mode = kOtcryptoKeyModeEcdsaP256,
-      .key_length = sizeof(imported_pk_buf),
-      .key = imported_pk_buf,
-  };
-  LOG_INFO("Importing public key from coordinates...");
-  TRY(otcrypto_ecc_p256_public_key_import(x, y, &imported_public_key));
-
-  // Confirm that the imported key data matches the original.
-  TRY_CHECK_ARRAYS_EQ(imported_pk_buf, pk_buf, kP256PublicKeyWords);
-
-  // Verify the signature using the imported key.
-  LOG_INFO("Verifying signature with imported key...");
+  // Verify the signature with the imported public key.
+  LOG_INFO("Verifying signature with imported public key...");
   otcrypto_const_word32_buf_t const_sig_buf = {
       .data = sig,
       .len = ARRAYSIZE(sig),
