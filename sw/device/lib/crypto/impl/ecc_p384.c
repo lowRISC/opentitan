@@ -779,6 +779,44 @@ otcrypto_status_t otcrypto_ecc_p384_public_key_import(
   return OTCRYPTO_OK;
 }
 
+otcrypto_status_t otcrypto_ecc_p384_public_key_export(
+    const otcrypto_unblinded_key_t *public_key, otcrypto_word32_buf_t *x,
+    otcrypto_word32_buf_t *y) {
+  if (x == NULL || x->data == NULL || y == NULL || y->data == NULL ||
+      public_key == NULL || public_key->key == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check the lengths of the output coordinate buffers.
+  if (x->len != kP384CoordWords || y->len != kP384CoordWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(launder32(x->len), kP384CoordWords);
+  HARDENED_CHECK_EQ(launder32(y->len), kP384CoordWords);
+
+  // Check the output key mode; both ECDSA and ECDH P-384 public key modes are
+  // accepted since the underlying point representation is the same.
+  if (public_key->key_mode != kOtcryptoKeyModeEcdsaP384 &&
+      public_key->key_mode != kOtcryptoKeyModeEcdhP384) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check the key length.
+  HARDENED_TRY(p384_public_key_length_check(public_key));
+
+  // Check the integrity of the public key.
+  if (integrity_unblinded_key_check(public_key) != kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Copy the key into the output buffer.
+  p384_point_t *pt = (p384_point_t *)public_key->key;
+  HARDENED_TRY(hardened_memcpy(x->data, pt->x, kP384CoordWords));
+  HARDENED_TRY(hardened_memcpy(y->data, pt->y, kP384CoordWords));
+
+  return OTCRYPTO_OK;
+}
+
 otcrypto_status_t otcrypto_ecc_p384_private_key_import(
     otcrypto_const_word32_buf_t share0, otcrypto_const_word32_buf_t share1,
     otcrypto_blinded_key_t *private_key) {
