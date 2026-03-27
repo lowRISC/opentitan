@@ -16,12 +16,14 @@ module io_osc (
   output logic io_clk_o   // IO Clock Output
 );
 
+timeunit 1ns / 1ps;
+
+logic clk, en_osc;
+
 `ifndef AST_BYPASS_CLK
 `ifndef SYNTHESIS
 // Behavioral Model
 ////////////////////////////////////////
-timeunit 1ns / 1ps;
-
 real CLK_PERIOD;
 
 reg init_start;
@@ -58,10 +60,8 @@ always begin
    #(CLK_PERIOD/2) clk_osc = ~clk_osc;
 end
 
-logic en_osc;
-
 // HDL Clock Gate
-logic en_clk, clk;
+logic en_clk;
 
 always_latch begin
   if ( !clk_osc ) en_clk = en_osc;
@@ -74,7 +74,6 @@ assign clk = clk_osc && en_clk;
 logic en_osc_re;
 assign en_osc_re = vcore_pok_h_i && io_en_i;
 
-logic clk, en_osc;
 assign clk = 1'b0;
 `endif  // of SYNTHESIS
 `else  // of AST_BYPASS_CLK
@@ -85,8 +84,6 @@ assign en_osc_re = vcore_pok_h_i && io_en_i;
 
 // Clock Oscillator
 ////////////////////////////////////////
-logic clk, en_osc;
-
 prim_clock_gating #(
   .NoFpgaGate ( 1'b1 )
 ) u_clk_ckgt (
@@ -125,7 +122,7 @@ prim_clock_buf #(
 // Unused Signals
 /////////////////////////
 logic unused_sigs;
-assign unused_sigs = ^{ io_osc_cal_i };
+assign unused_sigs = ^{ io_osc_cal_i, en_osc };
 `endif
 
 endmodule : io_osc
