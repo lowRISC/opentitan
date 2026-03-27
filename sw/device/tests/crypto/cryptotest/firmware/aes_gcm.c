@@ -5,7 +5,6 @@
 #include "sw/device/lib/crypto/include/aes_gcm.h"
 
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/include/aes_gcm.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/integrity.h"
