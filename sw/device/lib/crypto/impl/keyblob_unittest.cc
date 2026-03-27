@@ -9,10 +9,10 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 
 namespace keyblob_unittest {
 namespace {
