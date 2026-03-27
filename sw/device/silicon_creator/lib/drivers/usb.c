@@ -161,8 +161,9 @@ void usb_clear_all_toggles(void) {
 
 // Return whether an endpoint is stalled.
 rom_error_t usb_ep_stalled(uint8_t ep, bool *stalled) {
-  uint32_t reg = ep & kUsbDirIn ? abs_mmio_read32(USBDEV_IN_STALL_REG_OFFSET)
-                                : abs_mmio_read32(USBDEV_OUT_STALL_REG_OFFSET);
+  uint32_t reg = ep & kUsbDirIn
+                     ? abs_mmio_read32(kBase + USBDEV_IN_STALL_REG_OFFSET)
+                     : abs_mmio_read32(kBase + USBDEV_OUT_STALL_REG_OFFSET);
   uint8_t i = ep & kEpNumMask;
   if (i >= USBDEV_PARAM_N_ENDPOINTS) {
     return kErrorUsbBadEndpointNumber;
@@ -364,8 +365,10 @@ static void handle_in(void) {
       endpoint = out_endpoints + ep;
     }
     endpoint->transfer.flags |= kUsbTransferFlagsDone | error;
-    endpoint->handler(endpoint->user_ctx, ep, endpoint->transfer.flags,
-                      &endpoint->transfer.bytes_transfered);
+    if (endpoint->handler) {
+      endpoint->handler(endpoint->user_ctx, ep, endpoint->transfer.flags,
+                        &endpoint->transfer.bytes_transfered);
+    }
   }
 }
 

@@ -98,8 +98,10 @@ rom_error_t usb_control_setupdata(usb_control_ctx_t *ctx,
         status = kUsbStatusSelfPowered;
       } else if (type == kUsbReqTypeEndpoint) {
         bool halted;
-        usb_ep_stalled((uint8_t)setup->index, &halted);
+        RETURN_IF_ERROR(usb_ep_stalled((uint8_t)setup->index, &halted));
         status = halted ? kUsbStatusHalted : 0;
+      } else {
+        break;
       }
       return usb_ep_transfer(kUsbDirIn | 0, &status, sizeof(status), 0);
     }
