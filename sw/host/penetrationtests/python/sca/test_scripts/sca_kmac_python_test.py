@@ -37,7 +37,6 @@ BOOTSTRAP = args.bootstrap
 # The KMAC implementation on the testOS works in a stateful way
 # so we reset between tests
 class KmacScaTest(unittest.TestCase):
-
     def test_init(self):
         kmacsca = OTKMAC(target)
         device_id, owner_page, boot_log, boot_measurements, version = kmacsca.init(fpga)
@@ -118,25 +117,44 @@ class KmacScaTest(unittest.TestCase):
         self.assertIn("PENTEST", version)
 
     def test_char_kmac_single(self):
-        key = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
-        text = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
         masking = True
-        actual_result = sca_kmac_functions.char_kmac_single(
-            target, iterations, fpga, masking, key, text, reset=True
-        )
-        actual_result_json = json.loads(actual_result)
 
-        mac = KMAC128.new(key=bytes(key), mac_len=32)
-        mac.update(bytes(text))
-        tag = bytearray(mac.digest())
-        expected_result = [x for x in tag]
+        for i in range(10):
+            key_len = random.choice([16, 24, 32])
+            key = [random.randint(0, 255) for _ in range(key_len)]
 
-        expected_result_json = {
-            "batch_digest": expected_result,
-        }
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+            text_len = random.randint(0, 128)
+            text = [random.randint(0, 255) for _ in range(text_len)]
+
+            custom_len = random.randint(0, 32)
+            customization = [random.randint(0, 255) for _ in range(custom_len)]
+
+            actual_result = sca_kmac_functions.char_kmac_single(
+                target,
+                iterations,
+                fpga,
+                masking,
+                key,
+                key_len,
+                text,
+                text_len,
+                customization,  # Leave [], 0 for regular KMAC
+                custom_len,
+                reset=True,
+            )
+            actual_result_json = json.loads(actual_result)
+
+            mac = KMAC128.new(key=bytes(key), mac_len=16, custom=bytes(customization))
+            mac.update(bytes(text))
+            expected_result = list(bytearray(mac.digest()))
+
+            expected_result_json = {
+                "digest": expected_result,
+            }
+
+            utils.compare_json_data(
+                actual_result_json, expected_result_json, ignored_keys_set
+            )
 
     def test_char_kmac_batch_daisy_chain(self):
         for num_segments in num_segments_list:
@@ -144,15 +162,23 @@ class KmacScaTest(unittest.TestCase):
             text = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             masking = True
             actual_result = sca_kmac_functions.char_kmac_batch_daisy_chain(
-                target, iterations, num_segments, fpga, masking, key, text, reset=True
+                target=target,
+                iterations=iterations,
+                num_segments=num_segments,
+                fpga=fpga,
+                masking=masking,
+                key=key,
+                key_length=len(key),
+                text=text,
+                customization=[],
+                customization_length=0,
             )
             actual_result_json = json.loads(actual_result)
 
             for i in range(num_segments):
-                mac = KMAC128.new(key=bytes(key), mac_len=32)
+                mac = KMAC128.new(key=bytes(key), mac_len=16)
                 mac.update(bytes(text))
-                digest = [x for x in bytearray(mac.digest())]
-                text = digest[:16]
+                text = list(bytearray(mac.digest()))
 
             expected_result_json = {
                 "digest": text,
@@ -164,9 +190,19 @@ class KmacScaTest(unittest.TestCase):
     def test_char_kmac_batch(self):
         for num_segments in num_segments_list:
             key = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            text_length = 16
             masking = True
             actual_result = sca_kmac_functions.char_kmac_batch(
-                target, iterations, num_segments, fpga, masking, key
+                target,
+                iterations,
+                num_segments,
+                fpga,
+                masking,
+                key,
+                len(key),
+                text_length,
+                [],
+                0,
             )
             actual_result_json = json.loads(actual_result)
 
@@ -176,7 +212,6 @@ class KmacScaTest(unittest.TestCase):
             # Generate the batch data
             sample_fixed = 0
             for _ in range(iterations):
-                xor_tag = [0 for _ in range(32)]
                 for __ in range(num_segments):
                     if sample_fixed == 1:
                         batch_key = key
@@ -185,13 +220,12 @@ class KmacScaTest(unittest.TestCase):
                     batch_data = [random.randint(0, 255) for _ in range(16)]
                     sample_fixed = batch_data[0] & 0x1
 
-                    mac = KMAC128.new(key=bytes(batch_key), mac_len=32)
+                    mac = KMAC128.new(key=bytes(batch_key), mac_len=16)
                     mac.update(bytes(batch_data))
                     tag = [x for x in bytearray(mac.digest())]
-                    xor_tag = [xor_tag[i] ^ tag[i] for i in range(32)]
 
             expected_result_json = {
-                "batch_digest": xor_tag,
+                "digest": tag,
             }
             utils.compare_json_data(
                 actual_result_json, expected_result_json, ignored_keys_set
@@ -207,13 +241,9 @@ if __name__ == "__main__":
     # Program the bitstream for FPGAs.
     bitstream_path = None
     if BITSTREAM:
-        bitstream_path = r.Rlocation(
-            "lowrisc_opentitan/" + BITSTREAM
-        )
+        bitstream_path = r.Rlocation("lowrisc_opentitan/" + BITSTREAM)
     # Get the firmware path.
-    firmware_path = r.Rlocation(
-        "lowrisc_opentitan/" + BOOTSTRAP
-    )
+    firmware_path = r.Rlocation("lowrisc_opentitan/" + BOOTSTRAP)
 
     if "fpga" in BOOTSTRAP:
         target_type = "fpga"
@@ -226,7 +256,7 @@ if __name__ == "__main__":
         fw_bin=firmware_path,
         opentitantool=opentitantool_path,
         bitstream=bitstream_path,
-        tool_args=config_args
+        tool_args=config_args,
     )
 
     target = targets.Target(target_cfg)

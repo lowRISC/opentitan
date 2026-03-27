@@ -23,15 +23,15 @@ enum {
   /**
    * Key length in bytes.
    */
-  kKeyLength = 16,
+  kKeyLength = 32,
   /**
    * Message length in bytes.
    */
-  kMessageLength = 16,
+  kMessageLength = 128,
   /**
    * Digest length in 32-bit words.
    */
-  kDigestLength = 8,
+  kDigestLength = 4,
   /**
    * Number of cycles (at `kClockFreqCpuHz`) that Ibex should sleep to minimize
    * noise during SHA3 operations. Caution: This number should be chosen to
@@ -76,38 +76,12 @@ static dif_kmac_t kmac;
 static dif_kmac_operation_state_t kmac_operation_state;
 
 /**
- * KMAC key.
- *
- * Used for caching the key in the 'k' (set key) command packet until it is used
- * when handling a 'p' (absorb) command.
- */
-static dif_kmac_key_t kmac_key;
-
-/**
- * KMAC fixed key.
- *
- * Used for caching the fixed key in the 't' (set fixed key) command packet
- * until it is used when handling a 'b' (batch capture) command.
- */
-uint8_t key_fixed[kKeyLength];
-
-/**
  * Fixed-key indicator.
  *
  * Used in the 'b' (batch capture) command for indicating whether to use fixed
  * or random key.
  */
 static bool run_fixed = false;
-
-/**
- * An array of keys to be used in a batch
- */
-uint8_t kmac_batch_keys[kNumBatchOpsMax][kKeyLength];
-
-/**
- * An array of messages to be used in a batch
- */
-uint8_t batch_messages[kNumBatchOpsMax][kMessageLength];
 
 /**
  * Blocks until KMAC is idle.
@@ -447,8 +421,8 @@ kmac_sca_error_t kmac_get_digest(uint32_t *out, size_t len) {
  */
 status_t handle_kmac_pentest_init(ujson_t *uj) {
   // Read mode. FPGA or discrete.
-  cryptotest_kmac_sca_fpga_mode_t uj_data;
-  TRY(ujson_deserialize_cryptotest_kmac_sca_fpga_mode_t(uj, &uj_data));
+  kmac_sca_fpga_mode_t uj_data;
+  TRY(ujson_deserialize_kmac_sca_fpga_mode_t(uj, &uj_data));
   if (uj_data.fpga_mode == 0x01) {
     fpga_mode = true;
   }
@@ -483,36 +457,6 @@ status_t handle_kmac_pentest_init(ujson_t *uj) {
 }
 
 /**
- * Set key command handler.
- *
- * This function simply caches the provided key in the static `kmac_key`
- * variable so that it can be used in subsequent operations. This function does
- * not use key shares to simplify side-channel analysis. The key must be
- * `kKeyLength` bytes long.
- *
- * The uJSON data contains:
- *  - key Key. Must be `kKeyLength` bytes long.
- *  - key_len Key length. Must be equal to `kKeyLength`.
- *
- * @param uj The received uJSON data.
- */
-status_t handle_kmac_sca_set_key(ujson_t *uj) {
-  cryptotest_kmac_sca_key_t uj_key;
-  TRY(ujson_deserialize_cryptotest_kmac_sca_key_t(uj, &uj_key));
-
-  if (uj_key.key_length != kKeyLength) {
-    return OUT_OF_RANGE();
-  }
-
-  kmac_key = (dif_kmac_key_t){
-      .length = kDifKmacKeyLen128,
-  };
-  memcpy(kmac_key.share0, uj_key.key, kKeyLength);
-
-  return OK_STATUS();
-}
-
-/**
  * Absorbs a message using KMAC128 without a customization string.
  *
  * Two modes are supported: FPGA and non-FPGA mode.
@@ -522,23 +466,59 @@ status_t handle_kmac_sca_set_key(ujson_t *uj) {
  * features are disabled.
  *
  * In the FPGA mode, this function performs:
- * - Configure mode/key/...
+ * - Configure mode/key/customization
  * - Write data to the message FIFO.
  * - Send START and PROCESS commands, put Ibex into sleep.
  *
  * In the non-FPGA mode, this function performs:
- * - Configure mode/key/...
+ * - Configure mode/key/customization
  * - Send START command, put Ibex into sleep.
  * - Write message FIFO.
  * - Send PROCESS command, put Ibex into sleep.
  *
  * @param msg Message.
  * @param msg_len Message length.
+ * @param key Key.
+ * @param key_len Key length.
+ * @param customization Customization buffer.
+ * @param customization_len Customization length.
  */
-static kmac_sca_error_t sha3_ujson_absorb(const uint8_t *msg, size_t msg_len) {
+static kmac_sca_error_t sha3_ujson_absorb(const uint8_t *msg, size_t msg_len,
+                                          const uint8_t *key, size_t key_len,
+                                          const uint8_t *customization,
+                                          size_t customization_len) {
+  dif_kmac_customization_string_t custom;
+
+  if (customization != NULL && customization_len > 0) {
+    if (dif_kmac_customization_string_init((const char *)customization,
+                                           customization_len,
+                                           &custom) != kDifOk) {
+      return kmacScaAborted;
+    }
+  } else {
+    custom.length = 0;
+  }
+
+  dif_kmac_key_t kmac_key = {0};
+  memcpy(kmac_key.share0, key, 16 * sizeof(uint32_t));
+
+  switch (key_len) {
+    case 16:
+      kmac_key.length = kDifKmacKeyLen128;
+      break;
+    case 24:
+      kmac_key.length = kDifKmacKeyLen192;
+      break;
+    case 32:
+      kmac_key.length = kDifKmacKeyLen256;
+      break;
+    default:
+      return kmacScaOutOfRange;
+  }
+
   // Start a new message.
-  if (kmac_msg_start(kDifKmacModeKmacLen128, kDigestLength, &kmac_key, NULL) !=
-      kmacScaOk) {
+  if (kmac_msg_start(kDifKmacModeKmacLen128, kDigestLength, &kmac_key,
+                     &custom) != kmacScaOk) {
     return kmacScaAborted;
   }
 
@@ -575,27 +555,24 @@ static kmac_sca_error_t sha3_ujson_absorb(const uint8_t *msg, size_t msg_len) {
 /**
  * Absorb command handler.
  *
- * Absorbs the given message using KMAC128 without a customization string,
- * and sends the digest over UART. This function also handles the trigger
- * signal.
- *
- * The uJSON data contains:
- *  - msg: Message.
- *  - msg_len: Message length.
+ * Absorbs the given message, key, and customization string using KMAC128, and
+ * sends the digest over UART. This function also handles the trigger signal.
  *
  * @param uj The received uJSON data.
  */
 status_t handle_kmac_sca_single_absorb(ujson_t *uj) {
-  cryptotest_kmac_sca_msg_t uj_msg;
-  TRY(ujson_deserialize_cryptotest_kmac_sca_msg_t(uj, &uj_msg));
+  kmac_sca_in_t uj_data;
+  TRY(ujson_deserialize_kmac_sca_in_t(uj, &uj_data));
 
-  if (uj_msg.msg_length != kMessageLength) {
+  if (uj_data.msg_length > kMessageLength) {
     return OUT_OF_RANGE();
   }
 
   // Ungate the capture trigger signal and then start the operation.
   pentest_set_trigger_high();
-  if (sha3_ujson_absorb(uj_msg.msg, uj_msg.msg_length) != kmacScaOk) {
+  if (sha3_ujson_absorb(uj_data.msg, uj_data.msg_length, uj_data.key,
+                        uj_data.key_length, uj_data.customization,
+                        uj_data.customization_length) != kmacScaOk) {
     return ABORTED();
   }
   pentest_set_trigger_low();
@@ -609,9 +586,9 @@ status_t handle_kmac_sca_single_absorb(ujson_t *uj) {
     return ABORTED();
   }
 
-  cryptotest_kmac_sca_batch_digest_t uj_output;
-  memcpy(uj_output.batch_digest, (uint8_t *)out, kDigestLength * 4);
-  RESP_OK(ujson_serialize_cryptotest_kmac_sca_batch_digest_t, uj, &uj_output);
+  kmac_sca_digest_t uj_output;
+  memcpy(uj_output.digest, (uint8_t *)out, kDigestLength * sizeof(uint32_t));
+  RESP_OK(ujson_serialize_kmac_sca_digest_t, uj, &uj_output);
 
   // Reset before the next absorb since KMAC must be idle before starting
   // another absorb.
@@ -621,65 +598,37 @@ status_t handle_kmac_sca_single_absorb(ujson_t *uj) {
 }
 
 /**
- * Fixed key set command handler.
- *
- *  * The uJSON data contains:
- *  - key: The key to use.
- *  - key_length: The length of the key.
- *
- * @param uj The received uJSON data.
- */
-status_t handle_kmac_sca_fixed_key_set(ujson_t *uj) {
-  cryptotest_kmac_sca_key_t uj_key;
-  TRY(ujson_deserialize_cryptotest_kmac_sca_key_t(uj, &uj_key));
-
-  if (uj_key.key_length != kKeyLength) {
-    return OUT_OF_RANGE();
-  }
-
-  memcpy(key_fixed, uj_key.key, uj_key.key_length);
-
-  return OK_STATUS();
-}
-
-/**
  * Batch command handler.
- *
- * Start batch mode.
- *
- * The uJSON data contains:
- *  - data: The number of encryptions.
  *
  * @param uj The received uJSON data.
  */
 status_t handle_kmac_sca_batch(ujson_t *uj) {
-  penetrationtest_num_enc_t uj_data;
-  TRY(ujson_deserialize_penetrationtest_num_enc_t(uj, &uj_data));
+  penetrationtest_num_enc_t uj_num;
+  TRY(ujson_deserialize_penetrationtest_num_enc_t(uj, &uj_num));
+
+  kmac_sca_in_t uj_data;
+  TRY(ujson_deserialize_kmac_sca_in_t(uj, &uj_data));
 
   uint32_t out[kDigestLength];
-  uint32_t batch_digest[kDigestLength];
+  uint8_t kmac_batch_keys[uj_num.num_enc][KMACSCA_CMD_MAX_KEY_BYTES];
+  uint8_t batch_messages[uj_num.num_enc][KMACSCA_CMD_MAX_MSG_BYTES];
 
-  for (uint32_t j = 0; j < kDigestLength; ++j) {
-    batch_digest[j] = 0;
-  }
-
-  for (uint32_t i = 0; i < uj_data.num_enc; ++i) {
+  for (uint32_t i = 0; i < uj_num.num_enc; ++i) {
     if (run_fixed) {
-      memcpy(kmac_batch_keys[i], key_fixed, kKeyLength);
+      memcpy(kmac_batch_keys[i], uj_data.key, uj_data.key_length);
     } else {
-      prng_rand_bytes(kmac_batch_keys[i], kKeyLength);
+      prng_rand_bytes(kmac_batch_keys[i], uj_data.key_length);
     }
-    prng_rand_bytes(batch_messages[i], kMessageLength);
+    prng_rand_bytes(batch_messages[i], uj_data.msg_length);
     run_fixed = batch_messages[i][0] & 0x1;
   }
 
-  for (uint32_t i = 0; i < uj_data.num_enc; ++i) {
-    kmac_reset();
-    memcpy(kmac_key.share0, kmac_batch_keys[i], kKeyLength);
-    memset(kmac_key.share1, 0, kKeyLength);
-
+  for (uint32_t i = 0; i < uj_num.num_enc; ++i) {
     pentest_set_trigger_high();
-    if (sha3_ujson_absorb(batch_messages[i], kMessageLength) != kmacScaOk) {
+    if (sha3_ujson_absorb(batch_messages[i], uj_data.msg_length,
+                          kmac_batch_keys[i], uj_data.key_length,
+                          uj_data.customization,
+                          uj_data.customization_length) != kmacScaOk) {
       return ABORTED();
     }
     pentest_set_trigger_low();
@@ -688,18 +637,12 @@ status_t handle_kmac_sca_batch(ujson_t *uj) {
     if (kmac_get_digest(out, kDigestLength) != kmacScaOk) {
       return ABORTED();
     }
-
-    // The correctness of each batch is verified by computing and sending
-    // the batch digest. This digest is computed by XORing all outputs of
-    // the batch.
-    for (uint32_t j = 0; j < kDigestLength; ++j) {
-      batch_digest[j] ^= out[j];
-    }
+    kmac_reset();
   }
-  // Send the batch digest to the host for verification.
-  cryptotest_kmac_sca_batch_digest_t uj_output;
-  memcpy(uj_output.batch_digest, (uint8_t *)batch_digest, kDigestLength * 4);
-  RESP_OK(ujson_serialize_cryptotest_kmac_sca_batch_digest_t, uj, &uj_output);
+
+  kmac_sca_digest_t uj_output;
+  memcpy(uj_output.digest, (uint8_t *)out, kDigestLength * sizeof(uint32_t));
+  RESP_OK(ujson_serialize_kmac_sca_digest_t, uj, &uj_output);
 
   return OK_STATUS();
 }
@@ -707,35 +650,27 @@ status_t handle_kmac_sca_batch(ujson_t *uj) {
 /**
  * Batch command handler with daisy chaining.
  *
- * Start batch mode.
- *
- * The uJSON data contains:
- *  - data: The number of encryptions.
- *
  * @param uj The received uJSON data.
  */
 status_t handle_kmac_sca_batch_daisy_chain(ujson_t *uj) {
-  penetrationtest_num_enc_t uj_data;
-  TRY(ujson_deserialize_penetrationtest_num_enc_t(uj, &uj_data));
-  cryptotest_kmac_sca_msg_t uj_message;
-  TRY(ujson_deserialize_cryptotest_kmac_sca_msg_t(uj, &uj_message));
-  cryptotest_kmac_sca_key_t uj_key;
-  TRY(ujson_deserialize_cryptotest_kmac_sca_key_t(uj, &uj_key));
+  penetrationtest_num_enc_t uj_num;
+  TRY(ujson_deserialize_penetrationtest_num_enc_t(uj, &uj_num));
+  kmac_sca_in_t uj_data;
+  TRY(ujson_deserialize_kmac_sca_in_t(uj, &uj_data));
 
   uint32_t out[kDigestLength];
 
-  uint8_t message_buf[KMACSCA_CMD_MAX_MSG_BYTES];
+  uint8_t message_buf[kDigestLength * sizeof(uint32_t)];
   // Pad with zero.
-  memset(message_buf, 0, KMACSCA_CMD_MAX_MSG_BYTES);
-  memcpy(message_buf, uj_message.msg, uj_message.msg_length);
+  memset(message_buf, 0, kDigestLength * sizeof(uint32_t));
+  memcpy(message_buf, uj_data.msg, kDigestLength * sizeof(uint32_t));
 
-  for (uint32_t i = 0; i < uj_data.num_enc; ++i) {
-    kmac_reset();
-    memcpy(kmac_key.share0, uj_key.key, kKeyLength);
-
+  for (uint32_t i = 0; i < uj_num.num_enc; ++i) {
     pentest_set_trigger_high();
-    if (sha3_ujson_absorb(message_buf, KMACSCA_CMD_MAX_MSG_BYTES) !=
-        kmacScaOk) {
+    if (sha3_ujson_absorb(message_buf, kDigestLength * sizeof(uint32_t),
+                          uj_data.key, uj_data.key_length,
+                          uj_data.customization,
+                          uj_data.customization_length) != kmacScaOk) {
       return ABORTED();
     }
     pentest_set_trigger_low();
@@ -744,14 +679,15 @@ status_t handle_kmac_sca_batch_daisy_chain(ujson_t *uj) {
     if (kmac_get_digest(out, kDigestLength) != kmacScaOk) {
       return ABORTED();
     }
+    kmac_reset();
 
     // Copy the output to the input.
-    memcpy(message_buf, (uint8_t *)out, KMACSCA_CMD_MAX_MSG_BYTES);
+    memcpy(message_buf, (uint8_t *)out, kDigestLength * sizeof(uint32_t));
   }
   // Send the last digest to the host for verification.
-  cryptotest_kmac_sca_digest_t uj_output;
-  memcpy(uj_output.digest, (uint8_t *)out, kDigestLength * 2);
-  RESP_OK(ujson_serialize_cryptotest_kmac_sca_digest_t, uj, &uj_output);
+  kmac_sca_digest_t uj_output;
+  memcpy(uj_output.digest, (uint8_t *)out, kDigestLength * sizeof(uint32_t));
+  RESP_OK(ujson_serialize_kmac_sca_digest_t, uj, &uj_output);
 
   return OK_STATUS();
 }
@@ -767,8 +703,8 @@ status_t handle_kmac_sca_batch_daisy_chain(ujson_t *uj) {
  * @param uj The received uJSON data.
  */
 status_t handle_kmac_pentest_seed_lfsr(ujson_t *uj) {
-  cryptotest_kmac_sca_lfsr_t uj_lfsr_data;
-  TRY(ujson_deserialize_cryptotest_kmac_sca_lfsr_t(uj, &uj_lfsr_data));
+  kmac_sca_lfsr_t uj_lfsr_data;
+  TRY(ujson_deserialize_kmac_sca_lfsr_t(uj, &uj_lfsr_data));
   pentest_seed_lfsr(read_32(uj_lfsr_data.seed), kPentestLfsrMasking);
 
   return OK_STATUS();
@@ -787,16 +723,12 @@ status_t handle_kmac_sca(ujson_t *uj) {
   switch (cmd) {
     case kKmacScaSubcommandInit:
       return handle_kmac_pentest_init(uj);
-    case kKmacScaSubcommandSetKey:
-      return handle_kmac_sca_set_key(uj);
     case kKmacScaSubcommandSingleAbsorb:
       return handle_kmac_sca_single_absorb(uj);
     case kKmacScaSubcommandBatch:
       return handle_kmac_sca_batch(uj);
     case kKmacScaSubcommandBatchDaisy:
       return handle_kmac_sca_batch_daisy_chain(uj);
-    case kKmacScaSubcommandFixedKeySet:
-      return handle_kmac_sca_fixed_key_set(uj);
     case kKmacScaSubcommandSeedLfsr:
       return handle_kmac_pentest_seed_lfsr(uj);
     default:
