@@ -270,7 +270,13 @@ jobs:
         with:
           service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
       - name: Execute tests
-        run: ./bazelisk.sh test --test_tag_filters=-nightly //sw/otbn/crypto/...
+        run: |
+          mkdir -p "/tmp/bazel-exec-log"
+          exec_log_file="$(mktemp /tmp/bazel-exec-log/exec-XXXXXX.log)"
+          ./bazelisk.sh test                                \
+            --test_tag_filters=-nightly                     \
+            --execution_log_compact_file="${exec_log_file}" \
+            //sw/otbn/crypto/...
 
   verilator_englishbreakfast:
     name: Verilated English Breakfast
@@ -701,10 +707,13 @@ jobs:
             --target_pattern_file="$target_pattern_file"
       - name: Run software unit tests
         run: |
+          mkdir -p "/tmp/bazel-exec-log"
+          exec_log_file="$(mktemp /tmp/bazel-exec-log/exec-XXXXXX.log)"
           ./bazelisk.sh test                                                \
             --build_tests_only=false                                        \
             --test_output=errors                                            \
             --define DISABLE_VERILATOR_BUILD=true                           \
+            --execution_log_compact_file="${exec_log_file}"                 \
             --test_tag_filters=-broken,-cw310,-verilator,-dv,-silicon,-qemu \
             --target_pattern_file="$target_pattern_file"
       - name: Publish Bazel test results
