@@ -371,6 +371,36 @@ otcrypto_status_t otcrypto_ecc_p384_private_key_import(
     otcrypto_blinded_key_t *private_key);
 
 /**
+ * Exports a P-384 private key as two additive shares.
+ *
+ * Extracts the two 448-bit additive shares from the blinded private key
+ * struct. This is the inverse of `otcrypto_ecc_p384_private_key_import`.
+ *
+ * The private key d is recovered as:
+ *   d = (share0 + share1) mod n
+ * where n is the P-384 curve order. The shares are returned in the same
+ * 448-bit format (384-bit scalar + 64 redundant bits) used internally and
+ * produced by `otcrypto_ecdsa_p384_keygen` / `otcrypto_ecdh_p384_keygen`.
+ *
+ * The caller must allocate and partially populate the output buffers before
+ * calling this function:
+ *   - `share0->data` and `share1->data` must each point to a caller-allocated
+ *     buffer of exactly 14 words (448 bits).
+ *   - `share0->len` and `share1->len` must each be set to 14.
+ *
+ * @param private_key Blinded private key struct to export.
+ * @param[out] share0 First share of the private key (must be exactly 14
+ *             words / 448 bits).
+ * @param[out] share1 Second share of the private key (must be exactly 14
+ *             words / 448 bits).
+ * @return Result of the P-384 private key export operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ecc_p384_private_key_export(
+    const otcrypto_blinded_key_t *private_key, otcrypto_word32_buf_t *share0,
+    otcrypto_word32_buf_t *share1);
+
+/**
  * Imports an externally-generated P-384 public key from affine coordinates.
  *
  * The caller supplies the uncompressed affine coordinates (x, y) of the
