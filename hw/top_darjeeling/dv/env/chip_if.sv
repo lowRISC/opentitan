@@ -463,7 +463,7 @@ interface chip_if;
   // Functional (muxed) interface: external clock source.
   //
   // The reset port is passive only.
-  clk_rst_if#("ExtClkDriver") ext_clk_if(
+  clk_rst_if ext_clk_if(
      .clk (mios[top_darjeeling_pkg::MioPadMio11]),
     .rst_n(dios[top_darjeeling_pkg::DioPadPorN])
   );
