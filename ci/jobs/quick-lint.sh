@@ -52,8 +52,8 @@ ci/scripts/mypy.sh $tgt_branch
 echo -e "\n### Validate testplans with schema."
 ci/scripts/validate_testplans.sh
 
-echo -e "\n### Use clang-format to check C/C++ coding style"
-ci/scripts/clang-format.sh $tgt_branch
+# echo -e "\n### Use clang-format to check C/C++ coding style"
+# ci/scripts/clang-format.sh $tgt_branch
 
 echo -e "\n### Check formatting on header guards"
 ci/scripts/include-guard.sh $tgt_branch

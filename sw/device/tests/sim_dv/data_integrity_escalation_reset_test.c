@@ -243,9 +243,11 @@ void ottf_external_isr(uint32_t *exc_info) {
     CHECK(false, "Unexpected aon timer interrupt %d", irq);
   } else if (peripheral == kTopEarlgreyPlicPeripheralAlertHandler) {
     CHECK(
-        irq_id == kTopEarlgreyPlicIrqIdAlertHandlerClassa + alert_class_to_use,
+        irq_id == (uint32_t)kTopEarlgreyPlicIrqIdAlertHandlerClassa +
+                      alert_class_to_use,
         "Unexpected irq_id, expected %d, got %d",
-        kTopEarlgreyPlicIrqIdAlertHandlerClassa + alert_class_to_use, irq_id);
+        (uint32_t)kTopEarlgreyPlicIrqIdAlertHandlerClassa + alert_class_to_use,
+        irq_id);
 
     // Disable these interrupts from alert_handler so they don't keep happening
     // until NMI.

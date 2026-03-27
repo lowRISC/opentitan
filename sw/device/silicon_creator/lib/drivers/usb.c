@@ -39,7 +39,7 @@ static inline void buffer_pool_put(uint8_t id) {
 static inline uint8_t buffer_pool_get(void) {
   HARDENED_CHECK_NE(buffer_pool, 0);
   uint8_t id = (uint8_t)bitfield_find_first_set32((int32_t)buffer_pool) - 1;
-  buffer_pool &= ~(1 << id);
+  buffer_pool &= (uint32_t) ~(1 << id);
   return id;
 }
 
@@ -317,7 +317,7 @@ static void handle_in(void) {
     if ((sent & (1 << ep)) == 0) {
       continue;
     }
-    sent &= ~(1 << ep);
+    sent &= (uint32_t) ~(1 << ep);
     usb_ep_info_t *endpoint = in_endpoints + ep;
     uint32_t reg = abs_mmio_read32(kBase + USBDEV_CONFIGIN_0_REG_OFFSET +
                                    ep * sizeof(uint32_t));
