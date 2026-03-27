@@ -615,9 +615,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     `uvm_info(`gfn, msg, UVM_HIGH)
   endfunction
 
-  function bit check_threshold(string test, bit fips_mode, int value);
+  function bit check_threshold(string test, int value);
     string        threshold_reg_name;
-    string        threshold_field_name;
     uvm_reg       threshold_reg;
     uvm_reg_field threshold_field;
 
@@ -631,13 +630,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     low_test             = is_low_test(test);
     continuous_test      = (test == "repcnt") || (test == "repcnts");
 
-    threshold_field_name = fips_mode ? "fips_thresh" : "bypass_thresh";
-    threshold_reg_name  = $sformatf("%s_thresholds", test);
-
+    threshold_reg_name  = $sformatf("%s_threshold", test);
     threshold_reg    = ral.get_reg_by_name(threshold_reg_name);
-    threshold_field  = threshold_reg.get_field_by_name(threshold_field_name);
-
-    threshold_val = threshold_field.get_mirrored_value();
+    threshold_val = threshold_reg.get_mirrored_value();
 
     // Continuous tests are more rigorous about holding to the '>=' specified in NIST
     // 800-90B. Meanwhile the windowed tests use "<" or ">" as this allows these tests
@@ -649,11 +644,11 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       failure = (low_test && value < threshold_val) || (!low_test && value > threshold_val);
     end
 
-    fmt = "Threshold for \"%s\" test (FIPS? %d): %04h";
-    `uvm_info(`gfn, $sformatf(fmt, test, fips_mode, threshold_val), UVM_FULL)
+    fmt = "Threshold for \"%s\" test: %04h";
+    `uvm_info(`gfn, $sformatf(fmt, test, threshold_val), UVM_FULL)
 
-    fmt = "Observed value for \"%s\" test (FIPS? %d): %04h, %s";
-    `uvm_info(`gfn, $sformatf(fmt, test, fips_mode, value, failure ? "FAIL" : "PASS"), UVM_FULL)
+    fmt = "Observed value for \"%s\" test: %04h, %s";
+    `uvm_info(`gfn, $sformatf(fmt, test, value, failure ? "FAIL" : "PASS"), UVM_FULL)
 
     return failure;
 
@@ -691,10 +686,10 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     update_watermark("adaptp_lo", total_scope ? value : minval);
     update_watermark("adaptp_hi", total_scope ? value : maxval);
 
-    fail_lo = check_threshold("adaptp_lo", fips_mode, total_scope ? value : minval);
+    fail_lo = check_threshold("adaptp_lo", total_scope ? value : minval);
     if (fail_lo) predict_failure_logs("adaptp_lo");
 
-    fail_hi = check_threshold("adaptp_hi", fips_mode, total_scope ? value : maxval);
+    fail_hi = check_threshold("adaptp_hi", total_scope ? value : maxval);
     if (fail_hi) predict_failure_logs("adaptp_hi");
 
     if (ht_is_active()) begin
@@ -705,10 +700,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           `gmv(ral.health_test_windows.fips_window) * (rng_bit_enable ? 1 : `RNG_BUS_WIDTH) :
           `gmv(ral.health_test_windows.bypass_window);
 
-      threshold_hi = fips_mode ? `gmv(ral.adaptp_hi_thresholds.fips_thresh) :
-                                 `gmv(ral.adaptp_hi_thresholds.bypass_thresh);
-      threshold_lo = fips_mode ? `gmv(ral.adaptp_lo_thresholds.fips_thresh) :
-                                 `gmv(ral.adaptp_lo_thresholds.bypass_thresh);
+      threshold_hi = `gmv(ral.adaptp_hi_threshold);
+      threshold_lo = `gmv(ral.adaptp_lo_threshold);
 
       sigma_hi = ideal_threshold_to_sigma(window_size, adaptp_ht, !total_scope,
                                           rng_bit_enable, high_test, threshold_hi);
@@ -744,7 +737,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     for (int i = 0; i < test_result.size(); i++) begin
       value = test_result[i];
-      fail = check_threshold("bucket", fips_mode, value);
+      fail = check_threshold("bucket", value);
       if (fail) begin
         // The bucket fail counter counts the total number of bucket test failures, where the
         // results of different bucket test instances are accumulated. In contrast, the alert
@@ -764,8 +757,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
               (`gmv(ral.conf.rng_bit_enable) == MuBi4True ? 1 : `RNG_BUS_WIDTH) :
           `gmv(ral.health_test_windows.bypass_window);
 
-      threshold = fips_mode ? `gmv(ral.bucket_thresholds.fips_thresh) :
-                              `gmv(ral.bucket_thresholds.bypass_thresh);
+      threshold = `gmv(ral.bucket_threshold);
 
       sigma = ideal_threshold_to_sigma(window_size, bucket_ht, 0, 0, high_test, threshold);
 
@@ -793,10 +785,10 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     update_watermark("markov_lo", total_scope ? value : minval);
     update_watermark("markov_hi", total_scope ? value : maxval);
 
-    fail_lo = check_threshold("markov_lo", fips_mode, total_scope ? value : minval);
+    fail_lo = check_threshold("markov_lo", total_scope ? value : minval);
     if (fail_lo) predict_failure_logs("markov_lo");
 
-    fail_hi = check_threshold("markov_hi", fips_mode, total_scope ? value : maxval);
+    fail_hi = check_threshold("markov_hi", total_scope ? value : maxval);
     if (fail_hi) predict_failure_logs("markov_hi");
 
     if (ht_is_active()) begin
@@ -807,10 +799,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           `gmv(ral.health_test_windows.fips_window) * (rng_bit_enable ? 1 : `RNG_BUS_WIDTH) :
           `gmv(ral.health_test_windows.bypass_window);
 
-      threshold_hi = fips_mode ? `gmv(ral.markov_hi_thresholds.fips_thresh) :
-                                 `gmv(ral.markov_hi_thresholds.bypass_thresh);
-      threshold_lo = fips_mode ? `gmv(ral.markov_lo_thresholds.fips_thresh) :
-                                 `gmv(ral.markov_lo_thresholds.bypass_thresh);
+      threshold_hi = `gmv(ral.markov_hi_threshold);
+      threshold_lo = `gmv(ral.markov_lo_threshold);
 
       sigma_hi = ideal_threshold_to_sigma(window_size, markov_ht, !total_scope,
                                           rng_bit_enable, high_test, threshold_hi);
@@ -857,7 +847,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     update_watermark("repcnt", value, disabling);
 
-    fail = check_threshold("repcnt", fips_mode, value);
+    fail = check_threshold("repcnt", value);
     if (fail) begin
       `uvm_info(`gfn, "repcnt failure detected", UVM_FULL)
       predict_failure_logs("repcnt");
@@ -878,7 +868,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     update_watermark("repcnts", value, disabling);
 
-    fail = check_threshold("repcnts", fips_mode, value);
+    fail = check_threshold("repcnts", value);
     if (fail) begin
       `uvm_info(`gfn, "repcnts failure detected", UVM_FULL)
       predict_failure_logs("repcnts");
@@ -1382,17 +1372,12 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   // All the HT threshold registers are one-way: they can only become more strict unless
   // the DUT is reset.  This function encapsulates this behavior.
   //
-  // This function operates on full TL_DW words, with some knowledge of the structure of each
-  // register.
-  // 1. These registers are consist of two 16b thresholds a bypass and a FIPS threshold.
-  //    The one-way restriction is applied to them independently.
-  // 2. Both thresholds have the same directional restriction: both can go up or both can go down.
-  // If the structure of these registers ever becomes more varied we will have to generalize this
-  // function, using structural cues from the RAL model
+  // Note that the threshold registers are NOT one-way if THRESHOLD_ONEWAY is false. This case is
+  // handled externally to this function.
   //
   // new_val:       The value to be written to the register
   // prev_val:      The current value of the register
-  // increase_only: 1 if the register values are allowed to increase.
+  // increase_only: 1 if the register values are allowed to increase. Set for threshold_lo regs.
   //
   // Returns the new predicted value for the register.
   function void predict_one_way_threshold(uvm_reg csr,
@@ -1528,39 +1513,39 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       "health_test_windows": begin
         locked_reg_access = dut_reg_locked;
       end
-      "repcnt_thresholds": begin
+      "repcnt_threshold": begin
         locked_reg_access   = dut_reg_locked;
-        one_way_threshold   = 1;
+        one_way_threshold   = `gmv(ral.threshold_oneway) != MuBi4False;
         threshold_increases = 0;
       end
-      "repcnts_thresholds": begin
+      "repcnts_threshold": begin
         locked_reg_access = dut_reg_locked;
-        one_way_threshold   = 1;
+        one_way_threshold   = `gmv(ral.threshold_oneway) != MuBi4False;
         threshold_increases = 0;
       end
-      "adaptp_hi_thresholds": begin
+      "adaptp_hi_threshold": begin
         locked_reg_access = dut_reg_locked;
-        one_way_threshold   = 1;
+        one_way_threshold   = `gmv(ral.threshold_oneway) != MuBi4False;
         threshold_increases = 0;
       end
-      "adaptp_lo_thresholds": begin
+      "adaptp_lo_threshold": begin
         locked_reg_access = dut_reg_locked;
-        one_way_threshold   = 1;
+        one_way_threshold   = `gmv(ral.threshold_oneway) != MuBi4False;
         threshold_increases = 1;
       end
-      "bucket_thresholds": begin
+      "bucket_threshold": begin
         locked_reg_access = dut_reg_locked;
-        one_way_threshold   = 1;
+        one_way_threshold   = `gmv(ral.threshold_oneway) != MuBi4False;
         threshold_increases = 0;
       end
-      "markov_hi_thresholds": begin
+      "markov_hi_threshold": begin
         locked_reg_access = dut_reg_locked;
-        one_way_threshold   = 1;
+        one_way_threshold   = `gmv(ral.threshold_oneway) != MuBi4False;
         threshold_increases = 0;
       end
-      "markov_lo_thresholds": begin
+      "markov_lo_threshold": begin
         locked_reg_access = dut_reg_locked;
-        one_way_threshold   = 1;
+        one_way_threshold   = `gmv(ral.threshold_oneway) != MuBi4False;
         threshold_increases = 1;
       end
       "ht_watermark_num": begin
@@ -1838,6 +1823,12 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
               check_redundancy_val("entropy_control", "es_type", "es_type_field_alert",
                                    invalid_es_type);
             end
+            "threshold_oneway": begin
+              check_redundancy_val("threshold_oneway", "threshold_oneway",
+                                  "threshold_oneway_field_alert",
+                                   invalid_threshold_oneway);
+            end
+
             "ht_watermark_num": begin
               // Resolve unsupported values
               bit [3:0] ht_watermark_num_in = item.a_data[3:0];

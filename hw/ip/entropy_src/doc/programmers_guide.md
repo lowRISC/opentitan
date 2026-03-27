@@ -98,7 +98,6 @@ To enable the single RNG bit mode `RNG_BIT_ENABLE` has to be set to `kMultiBitBo
 To select which specific bit should be used, the `RNG_BIT_SEL` field in the [`CONF`](registers.md#conf) register must be set to the number of the desired lane.
 
 When ENTROPY_SRC is configured in RNG bit mode, only a subset of the health tests are applicable and the health test thresholds need to be set to account for this.
-For this reason, the thresholds for both the bypass and the FIPS values must be set accordingly.
 The Repetition Count Test, Markov test and Adaptive Proportion Test can all still be performed on a single lane.
 However, to get the same number of entropy bits, we now must collect four times as many individual symbols from the PTRNG.
 This should be considered when choosing the health test thresholds, whereas the health test window size is adjusted internally.

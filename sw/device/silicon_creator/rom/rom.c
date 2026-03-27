@@ -452,9 +452,9 @@ static inline uintptr_t rom_ext_vma_get(const manifest_t *manifest,
 static void rom_pre_boot_check(void) {
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 1);
 
-  // Check the alert_handler configuration.
+  // Check the alert_handler and entropy_src configuration.
   SHUTDOWN_IF_ERROR(alert_config_check(lc_state));
-  SHUTDOWN_IF_ERROR(rnd_health_config_check(lc_state));
+  SHUTDOWN_IF_ERROR(rnd_health_config_check(lc_state, kHardenedBoolTrue));
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 2);
 
   // Check cached life cycle state against the value reported by hardware.

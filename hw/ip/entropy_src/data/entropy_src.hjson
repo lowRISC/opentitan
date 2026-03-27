@@ -446,7 +446,7 @@
           mubi: true,
           desc: '''
                 Setting this field to `kMultiBitBool4True` selects the mode targeting FIPS/CC compliance (in short FIPS mode) with hardware conditioning enabled.
-                The ENTROPY_SRC block will use the FIPS_WINDOW and FIPS_THRESH values of the !!HEALTH_TEST_WINDOWS and health test thresholds register, respectively.
+                The ENTROPY_SRC block will use the FIPS_WINDOW value of the !!HEALTH_TEST_WINDOWS register.
                 Whether the ENTROPY_SRC block is indeed running with the configuration used for FIPS/CC validation is under the control of firmware.
                 Thus, firmware must explicitly mark the produced entropy as FIPS qualified using the !!CONF.FIPS_FLAG field.
                 Note that the hardware conditioning can still be disabled in FIPS mode by setting both !!ENTROPY_CONTROL.ES_ROUTE and !!ENTROPY_CONTROL.ES_TYPE fields to `kMultiBitBool4True`.
@@ -601,8 +601,26 @@
         }
       ]
     },
-    { name: "REPCNT_THRESHOLDS",
-      desc: "Repetition Count Test thresholds register",
+    { name: "THRESHOLD_ONEWAY",
+      desc: "Threshold one way control register",
+      tags: [// Exclude from writes to this field because they cause side affects.
+            "excl:CsrAllTests:CsrExclAll"]
+      fields: [
+        { bits: "3:0",
+          mubi: "true",
+          resval: "false",
+          swaccess: "rw1s"
+          hwaccess: "hro",
+          name: "THRESHOLD_ONEWAY",
+          desc: '''
+                Setting this field to `kMultiBitBool4True` will enable enable the one-way behavior of the health test threshold registers.
+                After reset, this field reads as `kMultiBitBool4False` and the health test threshold registers can be configured without limitations.
+                '''
+        },
+      ]
+    },
+    { name: "REPCNT_THRESHOLD",
+      desc: "Repetition Count Test threshold register",
       swaccess: "rw",
       hwaccess: "hrw",
       hwext: "true",
@@ -612,32 +630,17 @@
              "excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
-          name: "FIPS_THRESH",
           desc: '''This is the threshold for the Repetition Count Test.
-                   This value is used in FIPS mode.
                    This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
-                   A read from this register always reflects the current value.
-                '''
-          resval: "0xFFFF"
-        }
-        { bits: "31:16",
-          name: "BYPASS_THRESH",
-          desc: '''This is the threshold for the Repetition Count Test
-                   running in bypass mode. This mode is active after reset for the
-                   first and only test run, or when this mode is programmed by firmware.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
+                   If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
                    A read from this register always reflects the current value.
                 '''
           resval: "0xFFFF"
         }
       ]
     },
-    { name: "REPCNTS_THRESHOLDS",
-      desc: "Repetition Count Symbol Test thresholds register",
+    { name: "REPCNTS_THRESHOLD",
+      desc: "Repetition Count Symbol Test threshold register",
       swaccess: "rw",
       hwaccess: "hrw",
       hwext: "true",
@@ -647,32 +650,17 @@
              "excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
-          name: "FIPS_THRESH",
           desc: '''This is the threshold for the Repetition Count Symbol Test.
-                   This value is used in FIPS mode.
                    This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
-                   A read from this register always reflects the current value.
-                '''
-          resval: "0xFFFF"
-        }
-        { bits: "31:16",
-          name: "BYPASS_THRESH",
-          desc: '''This is the threshold for the Repetition Count Symbol Test
-                   running in bypass mode. This mode is active after reset for the
-                   first and only test run, or when this mode is programmed by firmware.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
+                   If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
                    A read from this register always reflects the current value.
                 '''
           resval: "0xFFFF"
         }
       ]
     },
-    { name: "ADAPTP_HI_THRESHOLDS",
-      desc: "Adaptive proportion test high thresholds register",
+    { name: "ADAPTP_HI_THRESHOLD",
+      desc: "Adaptive proportion test high threshold register",
       swaccess: "rw",
       hwaccess: "hrw",
       hwext: "true",
@@ -682,32 +670,17 @@
              "excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
-          name: "FIPS_THRESH",
           desc: '''This is the threshold for the Adaptive Proportion Test.
-                   This value is used in FIPS mode.
                    This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
-                   A read from this register always reflects the current value.
-                '''
-          resval: "0xFFFF"
-        }
-        { bits: "31:16",
-          name: "BYPASS_THRESH",
-          desc: '''This is the threshold for the Adaptive Proportion Test
-                   running in bypass mode. This mode is active after reset for the
-                   first and only test run, or when this mode is programmed by firmware.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
+                   If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
                    A read from this register always reflects the current value.
                 '''
           resval: "0xFFFF"
         }
       ]
     },
-    { name: "ADAPTP_LO_THRESHOLDS",
-      desc: "Adaptive proportion test low thresholds register",
+    { name: "ADAPTP_LO_THRESHOLD",
+      desc: "Adaptive proportion test low threshold register",
       swaccess: "rw",
       hwaccess: "hrw",
       hwext: "true",
@@ -717,32 +690,17 @@
              "excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
-          name: "FIPS_THRESH",
           desc: '''This is the threshold for the Adaptive Proportion Test.
-                   This value is used in FIPS mode.
                    This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is greater than the current value of this register.
-                   A read from this register always reflects the current value.
-                '''
-          resval: "0x0000"
-        }
-        { bits: "31:16",
-          name: "BYPASS_THRESH",
-          desc: '''This is the threshold for the Adaptive Proportion Test
-                   running in bypass mode. This mode is active after reset for the
-                   first and only test run, or when this mode is programmed by firmware.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is greater than the current value of this register.
+                   If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is greater than the current value of this register.
                    A read from this register always reflects the current value.
                 '''
           resval: "0x0000"
         }
       ]
     },
-    { name: "BUCKET_THRESHOLDS",
-      desc: "Bucket test thresholds register",
+    { name: "BUCKET_THRESHOLD",
+      desc: "Bucket test threshold register",
       swaccess: "rw",
       hwaccess: "hrw",
       hwext: "true",
@@ -752,32 +710,17 @@
              "excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
-          name: "FIPS_THRESH",
           desc: '''This is the threshold size for the bucket health test.
-                   This value is used in FIPS mode.
                    This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
-                   A read from this register always reflects the current value.
-                '''
-          resval: "0xFFFF"
-        }
-        { bits: "31:16",
-          name: "BYPASS_THRESH",
-          desc: '''This is the threshold size for the bucket health test
-                   running in bypass mode. This mode is active after reset for the
-                   first and only test run, or when this mode is programmed by firmware.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
+                   If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
                    A read from this register always reflects the current value.
                 '''
           resval: "0xFFFF"
         }
       ]
     },
-    { name: "MARKOV_HI_THRESHOLDS",
-      desc: "Markov test high thresholds register",
+    { name: "MARKOV_HI_THRESHOLD",
+      desc: "Markov test high threshold register",
       swaccess: "rw",
       hwaccess: "hrw",
       hwext: "true",
@@ -787,32 +730,17 @@
              "excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
-          name: "FIPS_THRESH",
           desc: '''This is the threshold size for the Markov health test.
-                   This value is used in FIPS mode.
                    This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
+                   If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
                    A read from this register always reflects the current value.
                 '''
           resval: "0xFFFF"
         }
-        { bits: "31:16",
-          name: "BYPASS_THRESH",
-          desc: '''This is the threshold size for the Markov health test
-                   running in bypass mode. This mode is active after reset for the
-                   first and only test run, or when this mode is programmed by firmware.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
-                   A read from this register always reflects the current value.
-                '''
-          resval: "0xFFFF"
-       }
       ]
     },
-    { name: "MARKOV_LO_THRESHOLDS",
-      desc: "Markov test low thresholds register",
+    { name: "MARKOV_LO_THRESHOLD",
+      desc: "Markov test low threshold register",
       swaccess: "rw",
       hwaccess: "hrw",
       hwext: "true",
@@ -822,32 +750,17 @@
              "excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
-          name: "FIPS_THRESH",
           desc: '''This is the threshold size for the Markov health test.
-                   This value is used in FIPS mode.
                    This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is greater than the current value of this register.
-                   A read from this register always reflects the current value.
-                '''
-          resval: "0x0000"
-        }
-        { bits: "31:16",
-          name: "BYPASS_THRESH",
-          desc: '''This is the threshold size for the Markov health test
-                   running in bypass mode. This mode is active after reset for the
-                   first and only test run, or when this mode is programmed by firmware.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is greater than the current value of this register.
+                   If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is greater than the current value of this register.
                    A read from this register always reflects the current value.
                 '''
           resval: "0x0000"
         }
       ]
     },
-    { name: "EXTHT_HI_THRESHOLDS",
-      desc: "External health test high thresholds register",
+    { name: "EXTHT_HI_THRESHOLD",
+      desc: "External health test high threshold register",
       swaccess: "rw",
       hwaccess: "hrw",
       hwext: "true",
@@ -857,32 +770,17 @@
              "excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
-          name: "FIPS_THRESH",
           desc: '''This is the threshold size for the external health test.
-                   This value is used in FIPS mode.
                    This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
-                   A read from this register always reflects the current value.
-                '''
-          resval: "0xFFFF"
-        }
-        { bits: "31:16",
-          name: "BYPASS_THRESH",
-          desc: '''This is the threshold size for the external health test
-                   running in bypass mode. This mode is active after reset for the
-                   first and only test run, or when this mode is programmed by firmware.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
+                   If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing  to this register will only update the register if the written value is less than the current value of this register.
                    A read from this register always reflects the current value.
                 '''
           resval: "0xFFFF"
         }
       ]
     },
-    { name: "EXTHT_LO_THRESHOLDS",
-      desc: "External health test low thresholds register",
+    { name: "EXTHT_LO_THRESHOLD",
+      desc: "External health test low threshold register",
       swaccess: "rw",
       hwaccess: "hrw",
       hwext: "true",
@@ -892,24 +790,9 @@
              "excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
-          name: "FIPS_THRESH",
           desc: '''This is the threshold size for the external health test.
-                   This value is used in FIPS mode.
                    This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is greater than the current value of this register.
-                   A read from this register always reflects the current value.
-                '''
-          resval: "0x0000"
-        }
-        { bits: "31:16",
-          name: "BYPASS_THRESH",
-          desc: '''This is the threshold size for the external health test
-                   running in bypass mode. This mode is active after reset for the
-                   first and only test run, or when this mode is programmed by firmware.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is greater than the current value of this register.
+                   If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is greater than the current value of this register.
                    A read from this register always reflects the current value.
                 '''
           resval: "0x0000"
@@ -1523,6 +1406,13 @@
           name: "THRESHOLD_SCOPE_FIELD_ALERT",
           desc: '''
                 This bit is set when the THRESHOLD_SCOPE field in the !!CONF register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "4",
+          name: "THRESHOLD_ONEWAY_FIELD_ALERT",
+          desc: '''
+                This bit is set when the !!THRESHOLD_ONEWAY register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
                 Writing a zero resets this status bit.
                 '''
         }

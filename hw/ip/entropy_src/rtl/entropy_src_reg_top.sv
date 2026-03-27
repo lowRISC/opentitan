@@ -52,9 +52,9 @@ module entropy_src_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [48:0] reg_we_check;
+  logic [49:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(49)
+    .OneHotWidth(50)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -184,60 +184,45 @@ module entropy_src_reg_top (
   logic [15:0] health_test_windows_fips_window_wd;
   logic [15:0] health_test_windows_bypass_window_qs;
   logic [15:0] health_test_windows_bypass_window_wd;
-  logic repcnt_thresholds_re;
-  logic repcnt_thresholds_we;
-  logic [15:0] repcnt_thresholds_fips_thresh_qs;
-  logic [15:0] repcnt_thresholds_fips_thresh_wd;
-  logic [15:0] repcnt_thresholds_bypass_thresh_qs;
-  logic [15:0] repcnt_thresholds_bypass_thresh_wd;
-  logic repcnts_thresholds_re;
-  logic repcnts_thresholds_we;
-  logic [15:0] repcnts_thresholds_fips_thresh_qs;
-  logic [15:0] repcnts_thresholds_fips_thresh_wd;
-  logic [15:0] repcnts_thresholds_bypass_thresh_qs;
-  logic [15:0] repcnts_thresholds_bypass_thresh_wd;
-  logic adaptp_hi_thresholds_re;
-  logic adaptp_hi_thresholds_we;
-  logic [15:0] adaptp_hi_thresholds_fips_thresh_qs;
-  logic [15:0] adaptp_hi_thresholds_fips_thresh_wd;
-  logic [15:0] adaptp_hi_thresholds_bypass_thresh_qs;
-  logic [15:0] adaptp_hi_thresholds_bypass_thresh_wd;
-  logic adaptp_lo_thresholds_re;
-  logic adaptp_lo_thresholds_we;
-  logic [15:0] adaptp_lo_thresholds_fips_thresh_qs;
-  logic [15:0] adaptp_lo_thresholds_fips_thresh_wd;
-  logic [15:0] adaptp_lo_thresholds_bypass_thresh_qs;
-  logic [15:0] adaptp_lo_thresholds_bypass_thresh_wd;
-  logic bucket_thresholds_re;
-  logic bucket_thresholds_we;
-  logic [15:0] bucket_thresholds_fips_thresh_qs;
-  logic [15:0] bucket_thresholds_fips_thresh_wd;
-  logic [15:0] bucket_thresholds_bypass_thresh_qs;
-  logic [15:0] bucket_thresholds_bypass_thresh_wd;
-  logic markov_hi_thresholds_re;
-  logic markov_hi_thresholds_we;
-  logic [15:0] markov_hi_thresholds_fips_thresh_qs;
-  logic [15:0] markov_hi_thresholds_fips_thresh_wd;
-  logic [15:0] markov_hi_thresholds_bypass_thresh_qs;
-  logic [15:0] markov_hi_thresholds_bypass_thresh_wd;
-  logic markov_lo_thresholds_re;
-  logic markov_lo_thresholds_we;
-  logic [15:0] markov_lo_thresholds_fips_thresh_qs;
-  logic [15:0] markov_lo_thresholds_fips_thresh_wd;
-  logic [15:0] markov_lo_thresholds_bypass_thresh_qs;
-  logic [15:0] markov_lo_thresholds_bypass_thresh_wd;
-  logic extht_hi_thresholds_re;
-  logic extht_hi_thresholds_we;
-  logic [15:0] extht_hi_thresholds_fips_thresh_qs;
-  logic [15:0] extht_hi_thresholds_fips_thresh_wd;
-  logic [15:0] extht_hi_thresholds_bypass_thresh_qs;
-  logic [15:0] extht_hi_thresholds_bypass_thresh_wd;
-  logic extht_lo_thresholds_re;
-  logic extht_lo_thresholds_we;
-  logic [15:0] extht_lo_thresholds_fips_thresh_qs;
-  logic [15:0] extht_lo_thresholds_fips_thresh_wd;
-  logic [15:0] extht_lo_thresholds_bypass_thresh_qs;
-  logic [15:0] extht_lo_thresholds_bypass_thresh_wd;
+  logic threshold_oneway_we;
+  logic [3:0] threshold_oneway_qs;
+  logic [3:0] threshold_oneway_wd;
+  logic repcnt_threshold_re;
+  logic repcnt_threshold_we;
+  logic [15:0] repcnt_threshold_qs;
+  logic [15:0] repcnt_threshold_wd;
+  logic repcnts_threshold_re;
+  logic repcnts_threshold_we;
+  logic [15:0] repcnts_threshold_qs;
+  logic [15:0] repcnts_threshold_wd;
+  logic adaptp_hi_threshold_re;
+  logic adaptp_hi_threshold_we;
+  logic [15:0] adaptp_hi_threshold_qs;
+  logic [15:0] adaptp_hi_threshold_wd;
+  logic adaptp_lo_threshold_re;
+  logic adaptp_lo_threshold_we;
+  logic [15:0] adaptp_lo_threshold_qs;
+  logic [15:0] adaptp_lo_threshold_wd;
+  logic bucket_threshold_re;
+  logic bucket_threshold_we;
+  logic [15:0] bucket_threshold_qs;
+  logic [15:0] bucket_threshold_wd;
+  logic markov_hi_threshold_re;
+  logic markov_hi_threshold_we;
+  logic [15:0] markov_hi_threshold_qs;
+  logic [15:0] markov_hi_threshold_wd;
+  logic markov_lo_threshold_re;
+  logic markov_lo_threshold_we;
+  logic [15:0] markov_lo_threshold_qs;
+  logic [15:0] markov_lo_threshold_wd;
+  logic extht_hi_threshold_re;
+  logic extht_hi_threshold_we;
+  logic [15:0] extht_hi_threshold_qs;
+  logic [15:0] extht_hi_threshold_wd;
+  logic extht_lo_threshold_re;
+  logic extht_lo_threshold_we;
+  logic [15:0] extht_lo_threshold_qs;
+  logic [15:0] extht_lo_threshold_wd;
   logic ht_watermark_num_re;
   logic ht_watermark_num_we;
   logic [3:0] ht_watermark_num_qs;
@@ -318,6 +303,8 @@ module entropy_src_reg_top (
   logic recov_alert_sts_module_enable_field_alert_wd;
   logic recov_alert_sts_threshold_scope_field_alert_qs;
   logic recov_alert_sts_threshold_scope_field_alert_wd;
+  logic recov_alert_sts_threshold_oneway_field_alert_qs;
+  logic recov_alert_sts_threshold_oneway_field_alert_wd;
   logic recov_alert_sts_rng_bit_enable_field_alert_qs;
   logic recov_alert_sts_rng_bit_enable_field_alert_wd;
   logic recov_alert_sts_fw_ov_sha3_start_field_alert_qs;
@@ -1133,364 +1120,239 @@ module entropy_src_reg_top (
   );
 
 
-  // R[repcnt_thresholds]: V(True)
-  logic repcnt_thresholds_qe;
-  logic [1:0] repcnt_thresholds_flds_we;
-  assign repcnt_thresholds_qe = &repcnt_thresholds_flds_we;
+  // R[threshold_oneway]: V(False)
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessW1S),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_threshold_oneway (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (threshold_oneway_we),
+    .wd     (threshold_oneway_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.threshold_oneway.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (threshold_oneway_qs)
+  );
+
+
+  // R[repcnt_threshold]: V(True)
+  logic repcnt_threshold_qe;
+  logic [0:0] repcnt_threshold_flds_we;
+  assign repcnt_threshold_qe = &repcnt_threshold_flds_we;
   // Create REGWEN-gated WE signal
-  logic repcnt_thresholds_gated_we;
-  assign repcnt_thresholds_gated_we = repcnt_thresholds_we & regwen_qs;
-  //   F[fips_thresh]: 15:0
+  logic repcnt_threshold_gated_we;
+  assign repcnt_threshold_gated_we = repcnt_threshold_we & regwen_qs;
   prim_subreg_ext #(
     .DW    (16)
-  ) u_repcnt_thresholds_fips_thresh (
-    .re     (repcnt_thresholds_re),
-    .we     (repcnt_thresholds_gated_we),
-    .wd     (repcnt_thresholds_fips_thresh_wd),
-    .d      (hw2reg.repcnt_thresholds.fips_thresh.d),
+  ) u_repcnt_threshold (
+    .re     (repcnt_threshold_re),
+    .we     (repcnt_threshold_gated_we),
+    .wd     (repcnt_threshold_wd),
+    .d      (hw2reg.repcnt_threshold.d),
     .qre    (),
-    .qe     (repcnt_thresholds_flds_we[0]),
-    .q      (reg2hw.repcnt_thresholds.fips_thresh.q),
+    .qe     (repcnt_threshold_flds_we[0]),
+    .q      (reg2hw.repcnt_threshold.q),
     .ds     (),
-    .qs     (repcnt_thresholds_fips_thresh_qs)
+    .qs     (repcnt_threshold_qs)
   );
-  assign reg2hw.repcnt_thresholds.fips_thresh.qe = repcnt_thresholds_qe;
-
-  //   F[bypass_thresh]: 31:16
-  prim_subreg_ext #(
-    .DW    (16)
-  ) u_repcnt_thresholds_bypass_thresh (
-    .re     (repcnt_thresholds_re),
-    .we     (repcnt_thresholds_gated_we),
-    .wd     (repcnt_thresholds_bypass_thresh_wd),
-    .d      (hw2reg.repcnt_thresholds.bypass_thresh.d),
-    .qre    (),
-    .qe     (repcnt_thresholds_flds_we[1]),
-    .q      (reg2hw.repcnt_thresholds.bypass_thresh.q),
-    .ds     (),
-    .qs     (repcnt_thresholds_bypass_thresh_qs)
-  );
-  assign reg2hw.repcnt_thresholds.bypass_thresh.qe = repcnt_thresholds_qe;
+  assign reg2hw.repcnt_threshold.qe = repcnt_threshold_qe;
 
 
-  // R[repcnts_thresholds]: V(True)
-  logic repcnts_thresholds_qe;
-  logic [1:0] repcnts_thresholds_flds_we;
-  assign repcnts_thresholds_qe = &repcnts_thresholds_flds_we;
+  // R[repcnts_threshold]: V(True)
+  logic repcnts_threshold_qe;
+  logic [0:0] repcnts_threshold_flds_we;
+  assign repcnts_threshold_qe = &repcnts_threshold_flds_we;
   // Create REGWEN-gated WE signal
-  logic repcnts_thresholds_gated_we;
-  assign repcnts_thresholds_gated_we = repcnts_thresholds_we & regwen_qs;
-  //   F[fips_thresh]: 15:0
+  logic repcnts_threshold_gated_we;
+  assign repcnts_threshold_gated_we = repcnts_threshold_we & regwen_qs;
   prim_subreg_ext #(
     .DW    (16)
-  ) u_repcnts_thresholds_fips_thresh (
-    .re     (repcnts_thresholds_re),
-    .we     (repcnts_thresholds_gated_we),
-    .wd     (repcnts_thresholds_fips_thresh_wd),
-    .d      (hw2reg.repcnts_thresholds.fips_thresh.d),
+  ) u_repcnts_threshold (
+    .re     (repcnts_threshold_re),
+    .we     (repcnts_threshold_gated_we),
+    .wd     (repcnts_threshold_wd),
+    .d      (hw2reg.repcnts_threshold.d),
     .qre    (),
-    .qe     (repcnts_thresholds_flds_we[0]),
-    .q      (reg2hw.repcnts_thresholds.fips_thresh.q),
+    .qe     (repcnts_threshold_flds_we[0]),
+    .q      (reg2hw.repcnts_threshold.q),
     .ds     (),
-    .qs     (repcnts_thresholds_fips_thresh_qs)
+    .qs     (repcnts_threshold_qs)
   );
-  assign reg2hw.repcnts_thresholds.fips_thresh.qe = repcnts_thresholds_qe;
-
-  //   F[bypass_thresh]: 31:16
-  prim_subreg_ext #(
-    .DW    (16)
-  ) u_repcnts_thresholds_bypass_thresh (
-    .re     (repcnts_thresholds_re),
-    .we     (repcnts_thresholds_gated_we),
-    .wd     (repcnts_thresholds_bypass_thresh_wd),
-    .d      (hw2reg.repcnts_thresholds.bypass_thresh.d),
-    .qre    (),
-    .qe     (repcnts_thresholds_flds_we[1]),
-    .q      (reg2hw.repcnts_thresholds.bypass_thresh.q),
-    .ds     (),
-    .qs     (repcnts_thresholds_bypass_thresh_qs)
-  );
-  assign reg2hw.repcnts_thresholds.bypass_thresh.qe = repcnts_thresholds_qe;
+  assign reg2hw.repcnts_threshold.qe = repcnts_threshold_qe;
 
 
-  // R[adaptp_hi_thresholds]: V(True)
-  logic adaptp_hi_thresholds_qe;
-  logic [1:0] adaptp_hi_thresholds_flds_we;
-  assign adaptp_hi_thresholds_qe = &adaptp_hi_thresholds_flds_we;
+  // R[adaptp_hi_threshold]: V(True)
+  logic adaptp_hi_threshold_qe;
+  logic [0:0] adaptp_hi_threshold_flds_we;
+  assign adaptp_hi_threshold_qe = &adaptp_hi_threshold_flds_we;
   // Create REGWEN-gated WE signal
-  logic adaptp_hi_thresholds_gated_we;
-  assign adaptp_hi_thresholds_gated_we = adaptp_hi_thresholds_we & regwen_qs;
-  //   F[fips_thresh]: 15:0
+  logic adaptp_hi_threshold_gated_we;
+  assign adaptp_hi_threshold_gated_we = adaptp_hi_threshold_we & regwen_qs;
   prim_subreg_ext #(
     .DW    (16)
-  ) u_adaptp_hi_thresholds_fips_thresh (
-    .re     (adaptp_hi_thresholds_re),
-    .we     (adaptp_hi_thresholds_gated_we),
-    .wd     (adaptp_hi_thresholds_fips_thresh_wd),
-    .d      (hw2reg.adaptp_hi_thresholds.fips_thresh.d),
+  ) u_adaptp_hi_threshold (
+    .re     (adaptp_hi_threshold_re),
+    .we     (adaptp_hi_threshold_gated_we),
+    .wd     (adaptp_hi_threshold_wd),
+    .d      (hw2reg.adaptp_hi_threshold.d),
     .qre    (),
-    .qe     (adaptp_hi_thresholds_flds_we[0]),
-    .q      (reg2hw.adaptp_hi_thresholds.fips_thresh.q),
+    .qe     (adaptp_hi_threshold_flds_we[0]),
+    .q      (reg2hw.adaptp_hi_threshold.q),
     .ds     (),
-    .qs     (adaptp_hi_thresholds_fips_thresh_qs)
+    .qs     (adaptp_hi_threshold_qs)
   );
-  assign reg2hw.adaptp_hi_thresholds.fips_thresh.qe = adaptp_hi_thresholds_qe;
-
-  //   F[bypass_thresh]: 31:16
-  prim_subreg_ext #(
-    .DW    (16)
-  ) u_adaptp_hi_thresholds_bypass_thresh (
-    .re     (adaptp_hi_thresholds_re),
-    .we     (adaptp_hi_thresholds_gated_we),
-    .wd     (adaptp_hi_thresholds_bypass_thresh_wd),
-    .d      (hw2reg.adaptp_hi_thresholds.bypass_thresh.d),
-    .qre    (),
-    .qe     (adaptp_hi_thresholds_flds_we[1]),
-    .q      (reg2hw.adaptp_hi_thresholds.bypass_thresh.q),
-    .ds     (),
-    .qs     (adaptp_hi_thresholds_bypass_thresh_qs)
-  );
-  assign reg2hw.adaptp_hi_thresholds.bypass_thresh.qe = adaptp_hi_thresholds_qe;
+  assign reg2hw.adaptp_hi_threshold.qe = adaptp_hi_threshold_qe;
 
 
-  // R[adaptp_lo_thresholds]: V(True)
-  logic adaptp_lo_thresholds_qe;
-  logic [1:0] adaptp_lo_thresholds_flds_we;
-  assign adaptp_lo_thresholds_qe = &adaptp_lo_thresholds_flds_we;
+  // R[adaptp_lo_threshold]: V(True)
+  logic adaptp_lo_threshold_qe;
+  logic [0:0] adaptp_lo_threshold_flds_we;
+  assign adaptp_lo_threshold_qe = &adaptp_lo_threshold_flds_we;
   // Create REGWEN-gated WE signal
-  logic adaptp_lo_thresholds_gated_we;
-  assign adaptp_lo_thresholds_gated_we = adaptp_lo_thresholds_we & regwen_qs;
-  //   F[fips_thresh]: 15:0
+  logic adaptp_lo_threshold_gated_we;
+  assign adaptp_lo_threshold_gated_we = adaptp_lo_threshold_we & regwen_qs;
   prim_subreg_ext #(
     .DW    (16)
-  ) u_adaptp_lo_thresholds_fips_thresh (
-    .re     (adaptp_lo_thresholds_re),
-    .we     (adaptp_lo_thresholds_gated_we),
-    .wd     (adaptp_lo_thresholds_fips_thresh_wd),
-    .d      (hw2reg.adaptp_lo_thresholds.fips_thresh.d),
+  ) u_adaptp_lo_threshold (
+    .re     (adaptp_lo_threshold_re),
+    .we     (adaptp_lo_threshold_gated_we),
+    .wd     (adaptp_lo_threshold_wd),
+    .d      (hw2reg.adaptp_lo_threshold.d),
     .qre    (),
-    .qe     (adaptp_lo_thresholds_flds_we[0]),
-    .q      (reg2hw.adaptp_lo_thresholds.fips_thresh.q),
+    .qe     (adaptp_lo_threshold_flds_we[0]),
+    .q      (reg2hw.adaptp_lo_threshold.q),
     .ds     (),
-    .qs     (adaptp_lo_thresholds_fips_thresh_qs)
+    .qs     (adaptp_lo_threshold_qs)
   );
-  assign reg2hw.adaptp_lo_thresholds.fips_thresh.qe = adaptp_lo_thresholds_qe;
-
-  //   F[bypass_thresh]: 31:16
-  prim_subreg_ext #(
-    .DW    (16)
-  ) u_adaptp_lo_thresholds_bypass_thresh (
-    .re     (adaptp_lo_thresholds_re),
-    .we     (adaptp_lo_thresholds_gated_we),
-    .wd     (adaptp_lo_thresholds_bypass_thresh_wd),
-    .d      (hw2reg.adaptp_lo_thresholds.bypass_thresh.d),
-    .qre    (),
-    .qe     (adaptp_lo_thresholds_flds_we[1]),
-    .q      (reg2hw.adaptp_lo_thresholds.bypass_thresh.q),
-    .ds     (),
-    .qs     (adaptp_lo_thresholds_bypass_thresh_qs)
-  );
-  assign reg2hw.adaptp_lo_thresholds.bypass_thresh.qe = adaptp_lo_thresholds_qe;
+  assign reg2hw.adaptp_lo_threshold.qe = adaptp_lo_threshold_qe;
 
 
-  // R[bucket_thresholds]: V(True)
-  logic bucket_thresholds_qe;
-  logic [1:0] bucket_thresholds_flds_we;
-  assign bucket_thresholds_qe = &bucket_thresholds_flds_we;
+  // R[bucket_threshold]: V(True)
+  logic bucket_threshold_qe;
+  logic [0:0] bucket_threshold_flds_we;
+  assign bucket_threshold_qe = &bucket_threshold_flds_we;
   // Create REGWEN-gated WE signal
-  logic bucket_thresholds_gated_we;
-  assign bucket_thresholds_gated_we = bucket_thresholds_we & regwen_qs;
-  //   F[fips_thresh]: 15:0
+  logic bucket_threshold_gated_we;
+  assign bucket_threshold_gated_we = bucket_threshold_we & regwen_qs;
   prim_subreg_ext #(
     .DW    (16)
-  ) u_bucket_thresholds_fips_thresh (
-    .re     (bucket_thresholds_re),
-    .we     (bucket_thresholds_gated_we),
-    .wd     (bucket_thresholds_fips_thresh_wd),
-    .d      (hw2reg.bucket_thresholds.fips_thresh.d),
+  ) u_bucket_threshold (
+    .re     (bucket_threshold_re),
+    .we     (bucket_threshold_gated_we),
+    .wd     (bucket_threshold_wd),
+    .d      (hw2reg.bucket_threshold.d),
     .qre    (),
-    .qe     (bucket_thresholds_flds_we[0]),
-    .q      (reg2hw.bucket_thresholds.fips_thresh.q),
+    .qe     (bucket_threshold_flds_we[0]),
+    .q      (reg2hw.bucket_threshold.q),
     .ds     (),
-    .qs     (bucket_thresholds_fips_thresh_qs)
+    .qs     (bucket_threshold_qs)
   );
-  assign reg2hw.bucket_thresholds.fips_thresh.qe = bucket_thresholds_qe;
-
-  //   F[bypass_thresh]: 31:16
-  prim_subreg_ext #(
-    .DW    (16)
-  ) u_bucket_thresholds_bypass_thresh (
-    .re     (bucket_thresholds_re),
-    .we     (bucket_thresholds_gated_we),
-    .wd     (bucket_thresholds_bypass_thresh_wd),
-    .d      (hw2reg.bucket_thresholds.bypass_thresh.d),
-    .qre    (),
-    .qe     (bucket_thresholds_flds_we[1]),
-    .q      (reg2hw.bucket_thresholds.bypass_thresh.q),
-    .ds     (),
-    .qs     (bucket_thresholds_bypass_thresh_qs)
-  );
-  assign reg2hw.bucket_thresholds.bypass_thresh.qe = bucket_thresholds_qe;
+  assign reg2hw.bucket_threshold.qe = bucket_threshold_qe;
 
 
-  // R[markov_hi_thresholds]: V(True)
-  logic markov_hi_thresholds_qe;
-  logic [1:0] markov_hi_thresholds_flds_we;
-  assign markov_hi_thresholds_qe = &markov_hi_thresholds_flds_we;
+  // R[markov_hi_threshold]: V(True)
+  logic markov_hi_threshold_qe;
+  logic [0:0] markov_hi_threshold_flds_we;
+  assign markov_hi_threshold_qe = &markov_hi_threshold_flds_we;
   // Create REGWEN-gated WE signal
-  logic markov_hi_thresholds_gated_we;
-  assign markov_hi_thresholds_gated_we = markov_hi_thresholds_we & regwen_qs;
-  //   F[fips_thresh]: 15:0
+  logic markov_hi_threshold_gated_we;
+  assign markov_hi_threshold_gated_we = markov_hi_threshold_we & regwen_qs;
   prim_subreg_ext #(
     .DW    (16)
-  ) u_markov_hi_thresholds_fips_thresh (
-    .re     (markov_hi_thresholds_re),
-    .we     (markov_hi_thresholds_gated_we),
-    .wd     (markov_hi_thresholds_fips_thresh_wd),
-    .d      (hw2reg.markov_hi_thresholds.fips_thresh.d),
+  ) u_markov_hi_threshold (
+    .re     (markov_hi_threshold_re),
+    .we     (markov_hi_threshold_gated_we),
+    .wd     (markov_hi_threshold_wd),
+    .d      (hw2reg.markov_hi_threshold.d),
     .qre    (),
-    .qe     (markov_hi_thresholds_flds_we[0]),
-    .q      (reg2hw.markov_hi_thresholds.fips_thresh.q),
+    .qe     (markov_hi_threshold_flds_we[0]),
+    .q      (reg2hw.markov_hi_threshold.q),
     .ds     (),
-    .qs     (markov_hi_thresholds_fips_thresh_qs)
+    .qs     (markov_hi_threshold_qs)
   );
-  assign reg2hw.markov_hi_thresholds.fips_thresh.qe = markov_hi_thresholds_qe;
-
-  //   F[bypass_thresh]: 31:16
-  prim_subreg_ext #(
-    .DW    (16)
-  ) u_markov_hi_thresholds_bypass_thresh (
-    .re     (markov_hi_thresholds_re),
-    .we     (markov_hi_thresholds_gated_we),
-    .wd     (markov_hi_thresholds_bypass_thresh_wd),
-    .d      (hw2reg.markov_hi_thresholds.bypass_thresh.d),
-    .qre    (),
-    .qe     (markov_hi_thresholds_flds_we[1]),
-    .q      (reg2hw.markov_hi_thresholds.bypass_thresh.q),
-    .ds     (),
-    .qs     (markov_hi_thresholds_bypass_thresh_qs)
-  );
-  assign reg2hw.markov_hi_thresholds.bypass_thresh.qe = markov_hi_thresholds_qe;
+  assign reg2hw.markov_hi_threshold.qe = markov_hi_threshold_qe;
 
 
-  // R[markov_lo_thresholds]: V(True)
-  logic markov_lo_thresholds_qe;
-  logic [1:0] markov_lo_thresholds_flds_we;
-  assign markov_lo_thresholds_qe = &markov_lo_thresholds_flds_we;
+  // R[markov_lo_threshold]: V(True)
+  logic markov_lo_threshold_qe;
+  logic [0:0] markov_lo_threshold_flds_we;
+  assign markov_lo_threshold_qe = &markov_lo_threshold_flds_we;
   // Create REGWEN-gated WE signal
-  logic markov_lo_thresholds_gated_we;
-  assign markov_lo_thresholds_gated_we = markov_lo_thresholds_we & regwen_qs;
-  //   F[fips_thresh]: 15:0
+  logic markov_lo_threshold_gated_we;
+  assign markov_lo_threshold_gated_we = markov_lo_threshold_we & regwen_qs;
   prim_subreg_ext #(
     .DW    (16)
-  ) u_markov_lo_thresholds_fips_thresh (
-    .re     (markov_lo_thresholds_re),
-    .we     (markov_lo_thresholds_gated_we),
-    .wd     (markov_lo_thresholds_fips_thresh_wd),
-    .d      (hw2reg.markov_lo_thresholds.fips_thresh.d),
+  ) u_markov_lo_threshold (
+    .re     (markov_lo_threshold_re),
+    .we     (markov_lo_threshold_gated_we),
+    .wd     (markov_lo_threshold_wd),
+    .d      (hw2reg.markov_lo_threshold.d),
     .qre    (),
-    .qe     (markov_lo_thresholds_flds_we[0]),
-    .q      (reg2hw.markov_lo_thresholds.fips_thresh.q),
+    .qe     (markov_lo_threshold_flds_we[0]),
+    .q      (reg2hw.markov_lo_threshold.q),
     .ds     (),
-    .qs     (markov_lo_thresholds_fips_thresh_qs)
+    .qs     (markov_lo_threshold_qs)
   );
-  assign reg2hw.markov_lo_thresholds.fips_thresh.qe = markov_lo_thresholds_qe;
-
-  //   F[bypass_thresh]: 31:16
-  prim_subreg_ext #(
-    .DW    (16)
-  ) u_markov_lo_thresholds_bypass_thresh (
-    .re     (markov_lo_thresholds_re),
-    .we     (markov_lo_thresholds_gated_we),
-    .wd     (markov_lo_thresholds_bypass_thresh_wd),
-    .d      (hw2reg.markov_lo_thresholds.bypass_thresh.d),
-    .qre    (),
-    .qe     (markov_lo_thresholds_flds_we[1]),
-    .q      (reg2hw.markov_lo_thresholds.bypass_thresh.q),
-    .ds     (),
-    .qs     (markov_lo_thresholds_bypass_thresh_qs)
-  );
-  assign reg2hw.markov_lo_thresholds.bypass_thresh.qe = markov_lo_thresholds_qe;
+  assign reg2hw.markov_lo_threshold.qe = markov_lo_threshold_qe;
 
 
-  // R[extht_hi_thresholds]: V(True)
-  logic extht_hi_thresholds_qe;
-  logic [1:0] extht_hi_thresholds_flds_we;
-  assign extht_hi_thresholds_qe = &extht_hi_thresholds_flds_we;
+  // R[extht_hi_threshold]: V(True)
+  logic extht_hi_threshold_qe;
+  logic [0:0] extht_hi_threshold_flds_we;
+  assign extht_hi_threshold_qe = &extht_hi_threshold_flds_we;
   // Create REGWEN-gated WE signal
-  logic extht_hi_thresholds_gated_we;
-  assign extht_hi_thresholds_gated_we = extht_hi_thresholds_we & regwen_qs;
-  //   F[fips_thresh]: 15:0
+  logic extht_hi_threshold_gated_we;
+  assign extht_hi_threshold_gated_we = extht_hi_threshold_we & regwen_qs;
   prim_subreg_ext #(
     .DW    (16)
-  ) u_extht_hi_thresholds_fips_thresh (
-    .re     (extht_hi_thresholds_re),
-    .we     (extht_hi_thresholds_gated_we),
-    .wd     (extht_hi_thresholds_fips_thresh_wd),
-    .d      (hw2reg.extht_hi_thresholds.fips_thresh.d),
+  ) u_extht_hi_threshold (
+    .re     (extht_hi_threshold_re),
+    .we     (extht_hi_threshold_gated_we),
+    .wd     (extht_hi_threshold_wd),
+    .d      (hw2reg.extht_hi_threshold.d),
     .qre    (),
-    .qe     (extht_hi_thresholds_flds_we[0]),
-    .q      (reg2hw.extht_hi_thresholds.fips_thresh.q),
+    .qe     (extht_hi_threshold_flds_we[0]),
+    .q      (reg2hw.extht_hi_threshold.q),
     .ds     (),
-    .qs     (extht_hi_thresholds_fips_thresh_qs)
+    .qs     (extht_hi_threshold_qs)
   );
-  assign reg2hw.extht_hi_thresholds.fips_thresh.qe = extht_hi_thresholds_qe;
-
-  //   F[bypass_thresh]: 31:16
-  prim_subreg_ext #(
-    .DW    (16)
-  ) u_extht_hi_thresholds_bypass_thresh (
-    .re     (extht_hi_thresholds_re),
-    .we     (extht_hi_thresholds_gated_we),
-    .wd     (extht_hi_thresholds_bypass_thresh_wd),
-    .d      (hw2reg.extht_hi_thresholds.bypass_thresh.d),
-    .qre    (),
-    .qe     (extht_hi_thresholds_flds_we[1]),
-    .q      (reg2hw.extht_hi_thresholds.bypass_thresh.q),
-    .ds     (),
-    .qs     (extht_hi_thresholds_bypass_thresh_qs)
-  );
-  assign reg2hw.extht_hi_thresholds.bypass_thresh.qe = extht_hi_thresholds_qe;
+  assign reg2hw.extht_hi_threshold.qe = extht_hi_threshold_qe;
 
 
-  // R[extht_lo_thresholds]: V(True)
-  logic extht_lo_thresholds_qe;
-  logic [1:0] extht_lo_thresholds_flds_we;
-  assign extht_lo_thresholds_qe = &extht_lo_thresholds_flds_we;
+  // R[extht_lo_threshold]: V(True)
+  logic extht_lo_threshold_qe;
+  logic [0:0] extht_lo_threshold_flds_we;
+  assign extht_lo_threshold_qe = &extht_lo_threshold_flds_we;
   // Create REGWEN-gated WE signal
-  logic extht_lo_thresholds_gated_we;
-  assign extht_lo_thresholds_gated_we = extht_lo_thresholds_we & regwen_qs;
-  //   F[fips_thresh]: 15:0
+  logic extht_lo_threshold_gated_we;
+  assign extht_lo_threshold_gated_we = extht_lo_threshold_we & regwen_qs;
   prim_subreg_ext #(
     .DW    (16)
-  ) u_extht_lo_thresholds_fips_thresh (
-    .re     (extht_lo_thresholds_re),
-    .we     (extht_lo_thresholds_gated_we),
-    .wd     (extht_lo_thresholds_fips_thresh_wd),
-    .d      (hw2reg.extht_lo_thresholds.fips_thresh.d),
+  ) u_extht_lo_threshold (
+    .re     (extht_lo_threshold_re),
+    .we     (extht_lo_threshold_gated_we),
+    .wd     (extht_lo_threshold_wd),
+    .d      (hw2reg.extht_lo_threshold.d),
     .qre    (),
-    .qe     (extht_lo_thresholds_flds_we[0]),
-    .q      (reg2hw.extht_lo_thresholds.fips_thresh.q),
+    .qe     (extht_lo_threshold_flds_we[0]),
+    .q      (reg2hw.extht_lo_threshold.q),
     .ds     (),
-    .qs     (extht_lo_thresholds_fips_thresh_qs)
+    .qs     (extht_lo_threshold_qs)
   );
-  assign reg2hw.extht_lo_thresholds.fips_thresh.qe = extht_lo_thresholds_qe;
-
-  //   F[bypass_thresh]: 31:16
-  prim_subreg_ext #(
-    .DW    (16)
-  ) u_extht_lo_thresholds_bypass_thresh (
-    .re     (extht_lo_thresholds_re),
-    .we     (extht_lo_thresholds_gated_we),
-    .wd     (extht_lo_thresholds_bypass_thresh_wd),
-    .d      (hw2reg.extht_lo_thresholds.bypass_thresh.d),
-    .qre    (),
-    .qe     (extht_lo_thresholds_flds_we[1]),
-    .q      (reg2hw.extht_lo_thresholds.bypass_thresh.q),
-    .ds     (),
-    .qs     (extht_lo_thresholds_bypass_thresh_qs)
-  );
-  assign reg2hw.extht_lo_thresholds.bypass_thresh.qe = extht_lo_thresholds_qe;
+  assign reg2hw.extht_lo_threshold.qe = extht_lo_threshold_qe;
 
 
   // R[ht_watermark_num]: V(True)
@@ -2335,6 +2197,33 @@ module entropy_src_reg_top (
     .qs     (recov_alert_sts_threshold_scope_field_alert_qs)
   );
 
+  //   F[threshold_oneway_field_alert]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_recov_alert_sts_threshold_oneway_field_alert (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (recov_alert_sts_we),
+    .wd     (recov_alert_sts_threshold_oneway_field_alert_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_alert_sts.threshold_oneway_field_alert.de),
+    .d      (hw2reg.recov_alert_sts.threshold_oneway_field_alert.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (recov_alert_sts_threshold_oneway_field_alert_qs)
+  );
+
   //   F[rng_bit_enable_field_alert]: 5:5
   prim_subreg #(
     .DW      (1),
@@ -3109,7 +2998,7 @@ module entropy_src_reg_top (
 
 
 
-  logic [48:0] addr_hit;
+  logic [49:0] addr_hit;
   always_comb begin
     addr_hit[ 0] = (reg_addr == ENTROPY_SRC_INTR_STATE_OFFSET);
     addr_hit[ 1] = (reg_addr == ENTROPY_SRC_INTR_ENABLE_OFFSET);
@@ -3123,43 +3012,44 @@ module entropy_src_reg_top (
     addr_hit[ 9] = (reg_addr == ENTROPY_SRC_ENTROPY_CONTROL_OFFSET);
     addr_hit[10] = (reg_addr == ENTROPY_SRC_ENTROPY_DATA_OFFSET);
     addr_hit[11] = (reg_addr == ENTROPY_SRC_HEALTH_TEST_WINDOWS_OFFSET);
-    addr_hit[12] = (reg_addr == ENTROPY_SRC_REPCNT_THRESHOLDS_OFFSET);
-    addr_hit[13] = (reg_addr == ENTROPY_SRC_REPCNTS_THRESHOLDS_OFFSET);
-    addr_hit[14] = (reg_addr == ENTROPY_SRC_ADAPTP_HI_THRESHOLDS_OFFSET);
-    addr_hit[15] = (reg_addr == ENTROPY_SRC_ADAPTP_LO_THRESHOLDS_OFFSET);
-    addr_hit[16] = (reg_addr == ENTROPY_SRC_BUCKET_THRESHOLDS_OFFSET);
-    addr_hit[17] = (reg_addr == ENTROPY_SRC_MARKOV_HI_THRESHOLDS_OFFSET);
-    addr_hit[18] = (reg_addr == ENTROPY_SRC_MARKOV_LO_THRESHOLDS_OFFSET);
-    addr_hit[19] = (reg_addr == ENTROPY_SRC_EXTHT_HI_THRESHOLDS_OFFSET);
-    addr_hit[20] = (reg_addr == ENTROPY_SRC_EXTHT_LO_THRESHOLDS_OFFSET);
-    addr_hit[21] = (reg_addr == ENTROPY_SRC_HT_WATERMARK_NUM_OFFSET);
-    addr_hit[22] = (reg_addr == ENTROPY_SRC_HT_WATERMARK_OFFSET);
-    addr_hit[23] = (reg_addr == ENTROPY_SRC_REPCNT_TOTAL_FAILS_OFFSET);
-    addr_hit[24] = (reg_addr == ENTROPY_SRC_REPCNTS_TOTAL_FAILS_OFFSET);
-    addr_hit[25] = (reg_addr == ENTROPY_SRC_ADAPTP_HI_TOTAL_FAILS_OFFSET);
-    addr_hit[26] = (reg_addr == ENTROPY_SRC_ADAPTP_LO_TOTAL_FAILS_OFFSET);
-    addr_hit[27] = (reg_addr == ENTROPY_SRC_BUCKET_TOTAL_FAILS_OFFSET);
-    addr_hit[28] = (reg_addr == ENTROPY_SRC_MARKOV_HI_TOTAL_FAILS_OFFSET);
-    addr_hit[29] = (reg_addr == ENTROPY_SRC_MARKOV_LO_TOTAL_FAILS_OFFSET);
-    addr_hit[30] = (reg_addr == ENTROPY_SRC_EXTHT_HI_TOTAL_FAILS_OFFSET);
-    addr_hit[31] = (reg_addr == ENTROPY_SRC_EXTHT_LO_TOTAL_FAILS_OFFSET);
-    addr_hit[32] = (reg_addr == ENTROPY_SRC_ALERT_THRESHOLD_OFFSET);
-    addr_hit[33] = (reg_addr == ENTROPY_SRC_ALERT_SUMMARY_FAIL_COUNTS_OFFSET);
-    addr_hit[34] = (reg_addr == ENTROPY_SRC_ALERT_FAIL_COUNTS_OFFSET);
-    addr_hit[35] = (reg_addr == ENTROPY_SRC_EXTHT_FAIL_COUNTS_OFFSET);
-    addr_hit[36] = (reg_addr == ENTROPY_SRC_FW_OV_CONTROL_OFFSET);
-    addr_hit[37] = (reg_addr == ENTROPY_SRC_FW_OV_SHA3_START_OFFSET);
-    addr_hit[38] = (reg_addr == ENTROPY_SRC_FW_OV_WR_FIFO_FULL_OFFSET);
-    addr_hit[39] = (reg_addr == ENTROPY_SRC_FW_OV_RD_FIFO_OVERFLOW_OFFSET);
-    addr_hit[40] = (reg_addr == ENTROPY_SRC_FW_OV_RD_DATA_OFFSET);
-    addr_hit[41] = (reg_addr == ENTROPY_SRC_FW_OV_WR_DATA_OFFSET);
-    addr_hit[42] = (reg_addr == ENTROPY_SRC_OBSERVE_FIFO_THRESH_OFFSET);
-    addr_hit[43] = (reg_addr == ENTROPY_SRC_OBSERVE_FIFO_DEPTH_OFFSET);
-    addr_hit[44] = (reg_addr == ENTROPY_SRC_DEBUG_STATUS_OFFSET);
-    addr_hit[45] = (reg_addr == ENTROPY_SRC_RECOV_ALERT_STS_OFFSET);
-    addr_hit[46] = (reg_addr == ENTROPY_SRC_ERR_CODE_OFFSET);
-    addr_hit[47] = (reg_addr == ENTROPY_SRC_ERR_CODE_TEST_OFFSET);
-    addr_hit[48] = (reg_addr == ENTROPY_SRC_MAIN_SM_STATE_OFFSET);
+    addr_hit[12] = (reg_addr == ENTROPY_SRC_THRESHOLD_ONEWAY_OFFSET);
+    addr_hit[13] = (reg_addr == ENTROPY_SRC_REPCNT_THRESHOLD_OFFSET);
+    addr_hit[14] = (reg_addr == ENTROPY_SRC_REPCNTS_THRESHOLD_OFFSET);
+    addr_hit[15] = (reg_addr == ENTROPY_SRC_ADAPTP_HI_THRESHOLD_OFFSET);
+    addr_hit[16] = (reg_addr == ENTROPY_SRC_ADAPTP_LO_THRESHOLD_OFFSET);
+    addr_hit[17] = (reg_addr == ENTROPY_SRC_BUCKET_THRESHOLD_OFFSET);
+    addr_hit[18] = (reg_addr == ENTROPY_SRC_MARKOV_HI_THRESHOLD_OFFSET);
+    addr_hit[19] = (reg_addr == ENTROPY_SRC_MARKOV_LO_THRESHOLD_OFFSET);
+    addr_hit[20] = (reg_addr == ENTROPY_SRC_EXTHT_HI_THRESHOLD_OFFSET);
+    addr_hit[21] = (reg_addr == ENTROPY_SRC_EXTHT_LO_THRESHOLD_OFFSET);
+    addr_hit[22] = (reg_addr == ENTROPY_SRC_HT_WATERMARK_NUM_OFFSET);
+    addr_hit[23] = (reg_addr == ENTROPY_SRC_HT_WATERMARK_OFFSET);
+    addr_hit[24] = (reg_addr == ENTROPY_SRC_REPCNT_TOTAL_FAILS_OFFSET);
+    addr_hit[25] = (reg_addr == ENTROPY_SRC_REPCNTS_TOTAL_FAILS_OFFSET);
+    addr_hit[26] = (reg_addr == ENTROPY_SRC_ADAPTP_HI_TOTAL_FAILS_OFFSET);
+    addr_hit[27] = (reg_addr == ENTROPY_SRC_ADAPTP_LO_TOTAL_FAILS_OFFSET);
+    addr_hit[28] = (reg_addr == ENTROPY_SRC_BUCKET_TOTAL_FAILS_OFFSET);
+    addr_hit[29] = (reg_addr == ENTROPY_SRC_MARKOV_HI_TOTAL_FAILS_OFFSET);
+    addr_hit[30] = (reg_addr == ENTROPY_SRC_MARKOV_LO_TOTAL_FAILS_OFFSET);
+    addr_hit[31] = (reg_addr == ENTROPY_SRC_EXTHT_HI_TOTAL_FAILS_OFFSET);
+    addr_hit[32] = (reg_addr == ENTROPY_SRC_EXTHT_LO_TOTAL_FAILS_OFFSET);
+    addr_hit[33] = (reg_addr == ENTROPY_SRC_ALERT_THRESHOLD_OFFSET);
+    addr_hit[34] = (reg_addr == ENTROPY_SRC_ALERT_SUMMARY_FAIL_COUNTS_OFFSET);
+    addr_hit[35] = (reg_addr == ENTROPY_SRC_ALERT_FAIL_COUNTS_OFFSET);
+    addr_hit[36] = (reg_addr == ENTROPY_SRC_EXTHT_FAIL_COUNTS_OFFSET);
+    addr_hit[37] = (reg_addr == ENTROPY_SRC_FW_OV_CONTROL_OFFSET);
+    addr_hit[38] = (reg_addr == ENTROPY_SRC_FW_OV_SHA3_START_OFFSET);
+    addr_hit[39] = (reg_addr == ENTROPY_SRC_FW_OV_WR_FIFO_FULL_OFFSET);
+    addr_hit[40] = (reg_addr == ENTROPY_SRC_FW_OV_RD_FIFO_OVERFLOW_OFFSET);
+    addr_hit[41] = (reg_addr == ENTROPY_SRC_FW_OV_RD_DATA_OFFSET);
+    addr_hit[42] = (reg_addr == ENTROPY_SRC_FW_OV_WR_DATA_OFFSET);
+    addr_hit[43] = (reg_addr == ENTROPY_SRC_OBSERVE_FIFO_THRESH_OFFSET);
+    addr_hit[44] = (reg_addr == ENTROPY_SRC_OBSERVE_FIFO_DEPTH_OFFSET);
+    addr_hit[45] = (reg_addr == ENTROPY_SRC_DEBUG_STATUS_OFFSET);
+    addr_hit[46] = (reg_addr == ENTROPY_SRC_RECOV_ALERT_STS_OFFSET);
+    addr_hit[47] = (reg_addr == ENTROPY_SRC_ERR_CODE_OFFSET);
+    addr_hit[48] = (reg_addr == ENTROPY_SRC_ERR_CODE_TEST_OFFSET);
+    addr_hit[49] = (reg_addr == ENTROPY_SRC_MAIN_SM_STATE_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -3215,7 +3105,8 @@ module entropy_src_reg_top (
                (addr_hit[45] & (|(ENTROPY_SRC_PERMIT[45] & ~reg_be))) |
                (addr_hit[46] & (|(ENTROPY_SRC_PERMIT[46] & ~reg_be))) |
                (addr_hit[47] & (|(ENTROPY_SRC_PERMIT[47] & ~reg_be))) |
-               (addr_hit[48] & (|(ENTROPY_SRC_PERMIT[48] & ~reg_be)))));
+               (addr_hit[48] & (|(ENTROPY_SRC_PERMIT[48] & ~reg_be))) |
+               (addr_hit[49] & (|(ENTROPY_SRC_PERMIT[49] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -3286,101 +3177,86 @@ module entropy_src_reg_top (
   assign health_test_windows_fips_window_wd = reg_wdata[15:0];
 
   assign health_test_windows_bypass_window_wd = reg_wdata[31:16];
-  assign repcnt_thresholds_re = addr_hit[12] & reg_re & !reg_error;
-  assign repcnt_thresholds_we = addr_hit[12] & reg_we & !reg_error;
+  assign threshold_oneway_we = addr_hit[12] & reg_we & !reg_error;
 
-  assign repcnt_thresholds_fips_thresh_wd = reg_wdata[15:0];
+  assign threshold_oneway_wd = reg_wdata[3:0];
+  assign repcnt_threshold_re = addr_hit[13] & reg_re & !reg_error;
+  assign repcnt_threshold_we = addr_hit[13] & reg_we & !reg_error;
 
-  assign repcnt_thresholds_bypass_thresh_wd = reg_wdata[31:16];
-  assign repcnts_thresholds_re = addr_hit[13] & reg_re & !reg_error;
-  assign repcnts_thresholds_we = addr_hit[13] & reg_we & !reg_error;
+  assign repcnt_threshold_wd = reg_wdata[15:0];
+  assign repcnts_threshold_re = addr_hit[14] & reg_re & !reg_error;
+  assign repcnts_threshold_we = addr_hit[14] & reg_we & !reg_error;
 
-  assign repcnts_thresholds_fips_thresh_wd = reg_wdata[15:0];
+  assign repcnts_threshold_wd = reg_wdata[15:0];
+  assign adaptp_hi_threshold_re = addr_hit[15] & reg_re & !reg_error;
+  assign adaptp_hi_threshold_we = addr_hit[15] & reg_we & !reg_error;
 
-  assign repcnts_thresholds_bypass_thresh_wd = reg_wdata[31:16];
-  assign adaptp_hi_thresholds_re = addr_hit[14] & reg_re & !reg_error;
-  assign adaptp_hi_thresholds_we = addr_hit[14] & reg_we & !reg_error;
+  assign adaptp_hi_threshold_wd = reg_wdata[15:0];
+  assign adaptp_lo_threshold_re = addr_hit[16] & reg_re & !reg_error;
+  assign adaptp_lo_threshold_we = addr_hit[16] & reg_we & !reg_error;
 
-  assign adaptp_hi_thresholds_fips_thresh_wd = reg_wdata[15:0];
+  assign adaptp_lo_threshold_wd = reg_wdata[15:0];
+  assign bucket_threshold_re = addr_hit[17] & reg_re & !reg_error;
+  assign bucket_threshold_we = addr_hit[17] & reg_we & !reg_error;
 
-  assign adaptp_hi_thresholds_bypass_thresh_wd = reg_wdata[31:16];
-  assign adaptp_lo_thresholds_re = addr_hit[15] & reg_re & !reg_error;
-  assign adaptp_lo_thresholds_we = addr_hit[15] & reg_we & !reg_error;
+  assign bucket_threshold_wd = reg_wdata[15:0];
+  assign markov_hi_threshold_re = addr_hit[18] & reg_re & !reg_error;
+  assign markov_hi_threshold_we = addr_hit[18] & reg_we & !reg_error;
 
-  assign adaptp_lo_thresholds_fips_thresh_wd = reg_wdata[15:0];
+  assign markov_hi_threshold_wd = reg_wdata[15:0];
+  assign markov_lo_threshold_re = addr_hit[19] & reg_re & !reg_error;
+  assign markov_lo_threshold_we = addr_hit[19] & reg_we & !reg_error;
 
-  assign adaptp_lo_thresholds_bypass_thresh_wd = reg_wdata[31:16];
-  assign bucket_thresholds_re = addr_hit[16] & reg_re & !reg_error;
-  assign bucket_thresholds_we = addr_hit[16] & reg_we & !reg_error;
+  assign markov_lo_threshold_wd = reg_wdata[15:0];
+  assign extht_hi_threshold_re = addr_hit[20] & reg_re & !reg_error;
+  assign extht_hi_threshold_we = addr_hit[20] & reg_we & !reg_error;
 
-  assign bucket_thresholds_fips_thresh_wd = reg_wdata[15:0];
+  assign extht_hi_threshold_wd = reg_wdata[15:0];
+  assign extht_lo_threshold_re = addr_hit[21] & reg_re & !reg_error;
+  assign extht_lo_threshold_we = addr_hit[21] & reg_we & !reg_error;
 
-  assign bucket_thresholds_bypass_thresh_wd = reg_wdata[31:16];
-  assign markov_hi_thresholds_re = addr_hit[17] & reg_re & !reg_error;
-  assign markov_hi_thresholds_we = addr_hit[17] & reg_we & !reg_error;
-
-  assign markov_hi_thresholds_fips_thresh_wd = reg_wdata[15:0];
-
-  assign markov_hi_thresholds_bypass_thresh_wd = reg_wdata[31:16];
-  assign markov_lo_thresholds_re = addr_hit[18] & reg_re & !reg_error;
-  assign markov_lo_thresholds_we = addr_hit[18] & reg_we & !reg_error;
-
-  assign markov_lo_thresholds_fips_thresh_wd = reg_wdata[15:0];
-
-  assign markov_lo_thresholds_bypass_thresh_wd = reg_wdata[31:16];
-  assign extht_hi_thresholds_re = addr_hit[19] & reg_re & !reg_error;
-  assign extht_hi_thresholds_we = addr_hit[19] & reg_we & !reg_error;
-
-  assign extht_hi_thresholds_fips_thresh_wd = reg_wdata[15:0];
-
-  assign extht_hi_thresholds_bypass_thresh_wd = reg_wdata[31:16];
-  assign extht_lo_thresholds_re = addr_hit[20] & reg_re & !reg_error;
-  assign extht_lo_thresholds_we = addr_hit[20] & reg_we & !reg_error;
-
-  assign extht_lo_thresholds_fips_thresh_wd = reg_wdata[15:0];
-
-  assign extht_lo_thresholds_bypass_thresh_wd = reg_wdata[31:16];
-  assign ht_watermark_num_re = addr_hit[21] & reg_re & !reg_error;
-  assign ht_watermark_num_we = addr_hit[21] & reg_we & !reg_error;
+  assign extht_lo_threshold_wd = reg_wdata[15:0];
+  assign ht_watermark_num_re = addr_hit[22] & reg_re & !reg_error;
+  assign ht_watermark_num_we = addr_hit[22] & reg_we & !reg_error;
 
   assign ht_watermark_num_wd = reg_wdata[3:0];
-  assign ht_watermark_re = addr_hit[22] & reg_re & !reg_error;
-  assign repcnt_total_fails_re = addr_hit[23] & reg_re & !reg_error;
-  assign repcnts_total_fails_re = addr_hit[24] & reg_re & !reg_error;
-  assign adaptp_hi_total_fails_re = addr_hit[25] & reg_re & !reg_error;
-  assign adaptp_lo_total_fails_re = addr_hit[26] & reg_re & !reg_error;
-  assign bucket_total_fails_re = addr_hit[27] & reg_re & !reg_error;
-  assign markov_hi_total_fails_re = addr_hit[28] & reg_re & !reg_error;
-  assign markov_lo_total_fails_re = addr_hit[29] & reg_re & !reg_error;
-  assign extht_hi_total_fails_re = addr_hit[30] & reg_re & !reg_error;
-  assign extht_lo_total_fails_re = addr_hit[31] & reg_re & !reg_error;
-  assign alert_threshold_we = addr_hit[32] & reg_we & !reg_error;
+  assign ht_watermark_re = addr_hit[23] & reg_re & !reg_error;
+  assign repcnt_total_fails_re = addr_hit[24] & reg_re & !reg_error;
+  assign repcnts_total_fails_re = addr_hit[25] & reg_re & !reg_error;
+  assign adaptp_hi_total_fails_re = addr_hit[26] & reg_re & !reg_error;
+  assign adaptp_lo_total_fails_re = addr_hit[27] & reg_re & !reg_error;
+  assign bucket_total_fails_re = addr_hit[28] & reg_re & !reg_error;
+  assign markov_hi_total_fails_re = addr_hit[29] & reg_re & !reg_error;
+  assign markov_lo_total_fails_re = addr_hit[30] & reg_re & !reg_error;
+  assign extht_hi_total_fails_re = addr_hit[31] & reg_re & !reg_error;
+  assign extht_lo_total_fails_re = addr_hit[32] & reg_re & !reg_error;
+  assign alert_threshold_we = addr_hit[33] & reg_we & !reg_error;
 
   assign alert_threshold_alert_threshold_wd = reg_wdata[15:0];
 
   assign alert_threshold_alert_threshold_inv_wd = reg_wdata[31:16];
-  assign alert_summary_fail_counts_re = addr_hit[33] & reg_re & !reg_error;
-  assign alert_fail_counts_re = addr_hit[34] & reg_re & !reg_error;
-  assign extht_fail_counts_re = addr_hit[35] & reg_re & !reg_error;
-  assign fw_ov_control_we = addr_hit[36] & reg_we & !reg_error;
+  assign alert_summary_fail_counts_re = addr_hit[34] & reg_re & !reg_error;
+  assign alert_fail_counts_re = addr_hit[35] & reg_re & !reg_error;
+  assign extht_fail_counts_re = addr_hit[36] & reg_re & !reg_error;
+  assign fw_ov_control_we = addr_hit[37] & reg_we & !reg_error;
 
   assign fw_ov_control_fw_ov_mode_wd = reg_wdata[3:0];
 
   assign fw_ov_control_fw_ov_entropy_insert_wd = reg_wdata[7:4];
-  assign fw_ov_sha3_start_we = addr_hit[37] & reg_we & !reg_error;
+  assign fw_ov_sha3_start_we = addr_hit[38] & reg_we & !reg_error;
 
   assign fw_ov_sha3_start_wd = reg_wdata[3:0];
-  assign fw_ov_wr_fifo_full_re = addr_hit[38] & reg_re & !reg_error;
-  assign fw_ov_rd_data_re = addr_hit[40] & reg_re & !reg_error;
-  assign fw_ov_wr_data_we = addr_hit[41] & reg_we & !reg_error;
+  assign fw_ov_wr_fifo_full_re = addr_hit[39] & reg_re & !reg_error;
+  assign fw_ov_rd_data_re = addr_hit[41] & reg_re & !reg_error;
+  assign fw_ov_wr_data_we = addr_hit[42] & reg_we & !reg_error;
 
   assign fw_ov_wr_data_wd = reg_wdata[31:0];
-  assign observe_fifo_thresh_we = addr_hit[42] & reg_we & !reg_error;
+  assign observe_fifo_thresh_we = addr_hit[43] & reg_we & !reg_error;
 
   assign observe_fifo_thresh_wd = reg_wdata[5:0];
-  assign observe_fifo_depth_re = addr_hit[43] & reg_re & !reg_error;
-  assign debug_status_re = addr_hit[44] & reg_re & !reg_error;
-  assign recov_alert_sts_we = addr_hit[45] & reg_we & !reg_error;
+  assign observe_fifo_depth_re = addr_hit[44] & reg_re & !reg_error;
+  assign debug_status_re = addr_hit[45] & reg_re & !reg_error;
+  assign recov_alert_sts_we = addr_hit[46] & reg_we & !reg_error;
 
   assign recov_alert_sts_fips_enable_field_alert_wd = reg_wdata[0];
 
@@ -3389,6 +3265,8 @@ module entropy_src_reg_top (
   assign recov_alert_sts_module_enable_field_alert_wd = reg_wdata[2];
 
   assign recov_alert_sts_threshold_scope_field_alert_wd = reg_wdata[3];
+
+  assign recov_alert_sts_threshold_oneway_field_alert_wd = reg_wdata[4];
 
   assign recov_alert_sts_rng_bit_enable_field_alert_wd = reg_wdata[5];
 
@@ -3417,7 +3295,7 @@ module entropy_src_reg_top (
   assign recov_alert_sts_rng_fips_field_alert_wd = reg_wdata[18];
 
   assign recov_alert_sts_postht_entropy_drop_alert_wd = reg_wdata[31];
-  assign err_code_test_we = addr_hit[47] & reg_we & !reg_error;
+  assign err_code_test_we = addr_hit[48] & reg_we & !reg_error;
 
   assign err_code_test_wd = reg_wdata[4:0];
 
@@ -3435,17 +3313,17 @@ module entropy_src_reg_top (
     reg_we_check[9] = entropy_control_gated_we;
     reg_we_check[10] = 1'b0;
     reg_we_check[11] = health_test_windows_gated_we;
-    reg_we_check[12] = repcnt_thresholds_gated_we;
-    reg_we_check[13] = repcnts_thresholds_gated_we;
-    reg_we_check[14] = adaptp_hi_thresholds_gated_we;
-    reg_we_check[15] = adaptp_lo_thresholds_gated_we;
-    reg_we_check[16] = bucket_thresholds_gated_we;
-    reg_we_check[17] = markov_hi_thresholds_gated_we;
-    reg_we_check[18] = markov_lo_thresholds_gated_we;
-    reg_we_check[19] = extht_hi_thresholds_gated_we;
-    reg_we_check[20] = extht_lo_thresholds_gated_we;
-    reg_we_check[21] = ht_watermark_num_gated_we;
-    reg_we_check[22] = 1'b0;
+    reg_we_check[12] = threshold_oneway_we;
+    reg_we_check[13] = repcnt_threshold_gated_we;
+    reg_we_check[14] = repcnts_threshold_gated_we;
+    reg_we_check[15] = adaptp_hi_threshold_gated_we;
+    reg_we_check[16] = adaptp_lo_threshold_gated_we;
+    reg_we_check[17] = bucket_threshold_gated_we;
+    reg_we_check[18] = markov_hi_threshold_gated_we;
+    reg_we_check[19] = markov_lo_threshold_gated_we;
+    reg_we_check[20] = extht_hi_threshold_gated_we;
+    reg_we_check[21] = extht_lo_threshold_gated_we;
+    reg_we_check[22] = ht_watermark_num_gated_we;
     reg_we_check[23] = 1'b0;
     reg_we_check[24] = 1'b0;
     reg_we_check[25] = 1'b0;
@@ -3455,23 +3333,24 @@ module entropy_src_reg_top (
     reg_we_check[29] = 1'b0;
     reg_we_check[30] = 1'b0;
     reg_we_check[31] = 1'b0;
-    reg_we_check[32] = alert_threshold_gated_we;
-    reg_we_check[33] = 1'b0;
+    reg_we_check[32] = 1'b0;
+    reg_we_check[33] = alert_threshold_gated_we;
     reg_we_check[34] = 1'b0;
     reg_we_check[35] = 1'b0;
-    reg_we_check[36] = fw_ov_control_gated_we;
-    reg_we_check[37] = fw_ov_sha3_start_we;
-    reg_we_check[38] = 1'b0;
+    reg_we_check[36] = 1'b0;
+    reg_we_check[37] = fw_ov_control_gated_we;
+    reg_we_check[38] = fw_ov_sha3_start_we;
     reg_we_check[39] = 1'b0;
     reg_we_check[40] = 1'b0;
-    reg_we_check[41] = fw_ov_wr_data_we;
-    reg_we_check[42] = observe_fifo_thresh_gated_we;
-    reg_we_check[43] = 1'b0;
+    reg_we_check[41] = 1'b0;
+    reg_we_check[42] = fw_ov_wr_data_we;
+    reg_we_check[43] = observe_fifo_thresh_gated_we;
     reg_we_check[44] = 1'b0;
-    reg_we_check[45] = recov_alert_sts_we;
-    reg_we_check[46] = 1'b0;
-    reg_we_check[47] = err_code_test_we;
-    reg_we_check[48] = 1'b0;
+    reg_we_check[45] = 1'b0;
+    reg_we_check[46] = recov_alert_sts_we;
+    reg_we_check[47] = 1'b0;
+    reg_we_check[48] = err_code_test_we;
+    reg_we_check[49] = 1'b0;
   end
 
   // Read data return
@@ -3545,104 +3424,99 @@ module entropy_src_reg_top (
       end
 
       addr_hit[12]: begin
-        reg_rdata_next[15:0] = repcnt_thresholds_fips_thresh_qs;
-        reg_rdata_next[31:16] = repcnt_thresholds_bypass_thresh_qs;
+        reg_rdata_next[3:0] = threshold_oneway_qs;
       end
 
       addr_hit[13]: begin
-        reg_rdata_next[15:0] = repcnts_thresholds_fips_thresh_qs;
-        reg_rdata_next[31:16] = repcnts_thresholds_bypass_thresh_qs;
+        reg_rdata_next[15:0] = repcnt_threshold_qs;
       end
 
       addr_hit[14]: begin
-        reg_rdata_next[15:0] = adaptp_hi_thresholds_fips_thresh_qs;
-        reg_rdata_next[31:16] = adaptp_hi_thresholds_bypass_thresh_qs;
+        reg_rdata_next[15:0] = repcnts_threshold_qs;
       end
 
       addr_hit[15]: begin
-        reg_rdata_next[15:0] = adaptp_lo_thresholds_fips_thresh_qs;
-        reg_rdata_next[31:16] = adaptp_lo_thresholds_bypass_thresh_qs;
+        reg_rdata_next[15:0] = adaptp_hi_threshold_qs;
       end
 
       addr_hit[16]: begin
-        reg_rdata_next[15:0] = bucket_thresholds_fips_thresh_qs;
-        reg_rdata_next[31:16] = bucket_thresholds_bypass_thresh_qs;
+        reg_rdata_next[15:0] = adaptp_lo_threshold_qs;
       end
 
       addr_hit[17]: begin
-        reg_rdata_next[15:0] = markov_hi_thresholds_fips_thresh_qs;
-        reg_rdata_next[31:16] = markov_hi_thresholds_bypass_thresh_qs;
+        reg_rdata_next[15:0] = bucket_threshold_qs;
       end
 
       addr_hit[18]: begin
-        reg_rdata_next[15:0] = markov_lo_thresholds_fips_thresh_qs;
-        reg_rdata_next[31:16] = markov_lo_thresholds_bypass_thresh_qs;
+        reg_rdata_next[15:0] = markov_hi_threshold_qs;
       end
 
       addr_hit[19]: begin
-        reg_rdata_next[15:0] = extht_hi_thresholds_fips_thresh_qs;
-        reg_rdata_next[31:16] = extht_hi_thresholds_bypass_thresh_qs;
+        reg_rdata_next[15:0] = markov_lo_threshold_qs;
       end
 
       addr_hit[20]: begin
-        reg_rdata_next[15:0] = extht_lo_thresholds_fips_thresh_qs;
-        reg_rdata_next[31:16] = extht_lo_thresholds_bypass_thresh_qs;
+        reg_rdata_next[15:0] = extht_hi_threshold_qs;
       end
 
       addr_hit[21]: begin
-        reg_rdata_next[3:0] = ht_watermark_num_qs;
+        reg_rdata_next[15:0] = extht_lo_threshold_qs;
       end
 
       addr_hit[22]: begin
-        reg_rdata_next[15:0] = ht_watermark_qs;
+        reg_rdata_next[3:0] = ht_watermark_num_qs;
       end
 
       addr_hit[23]: begin
-        reg_rdata_next[31:0] = repcnt_total_fails_qs;
+        reg_rdata_next[15:0] = ht_watermark_qs;
       end
 
       addr_hit[24]: begin
-        reg_rdata_next[31:0] = repcnts_total_fails_qs;
+        reg_rdata_next[31:0] = repcnt_total_fails_qs;
       end
 
       addr_hit[25]: begin
-        reg_rdata_next[31:0] = adaptp_hi_total_fails_qs;
+        reg_rdata_next[31:0] = repcnts_total_fails_qs;
       end
 
       addr_hit[26]: begin
-        reg_rdata_next[31:0] = adaptp_lo_total_fails_qs;
+        reg_rdata_next[31:0] = adaptp_hi_total_fails_qs;
       end
 
       addr_hit[27]: begin
-        reg_rdata_next[31:0] = bucket_total_fails_qs;
+        reg_rdata_next[31:0] = adaptp_lo_total_fails_qs;
       end
 
       addr_hit[28]: begin
-        reg_rdata_next[31:0] = markov_hi_total_fails_qs;
+        reg_rdata_next[31:0] = bucket_total_fails_qs;
       end
 
       addr_hit[29]: begin
-        reg_rdata_next[31:0] = markov_lo_total_fails_qs;
+        reg_rdata_next[31:0] = markov_hi_total_fails_qs;
       end
 
       addr_hit[30]: begin
-        reg_rdata_next[31:0] = extht_hi_total_fails_qs;
+        reg_rdata_next[31:0] = markov_lo_total_fails_qs;
       end
 
       addr_hit[31]: begin
-        reg_rdata_next[31:0] = extht_lo_total_fails_qs;
+        reg_rdata_next[31:0] = extht_hi_total_fails_qs;
       end
 
       addr_hit[32]: begin
+        reg_rdata_next[31:0] = extht_lo_total_fails_qs;
+      end
+
+      addr_hit[33]: begin
         reg_rdata_next[15:0] = alert_threshold_alert_threshold_qs;
         reg_rdata_next[31:16] = alert_threshold_alert_threshold_inv_qs;
       end
 
-      addr_hit[33]: begin
+      addr_hit[34]: begin
         reg_rdata_next[15:0] = alert_summary_fail_counts_qs;
       end
 
-      addr_hit[34]: begin
+      addr_hit[35]: begin
         reg_rdata_next[7:4] = alert_fail_counts_repcnt_fail_count_qs;
         reg_rdata_next[11:8] = alert_fail_counts_adaptp_hi_fail_count_qs;
         reg_rdata_next[15:12] = alert_fail_counts_adaptp_lo_fail_count_qs;
@@ -3652,45 +3526,45 @@ module entropy_src_reg_top (
         reg_rdata_next[31:28] = alert_fail_counts_repcnts_fail_count_qs;
       end
 
-      addr_hit[35]: begin
+      addr_hit[36]: begin
         reg_rdata_next[3:0] = extht_fail_counts_extht_hi_fail_count_qs;
         reg_rdata_next[7:4] = extht_fail_counts_extht_lo_fail_count_qs;
       end
 
-      addr_hit[36]: begin
+      addr_hit[37]: begin
         reg_rdata_next[3:0] = fw_ov_control_fw_ov_mode_qs;
         reg_rdata_next[7:4] = fw_ov_control_fw_ov_entropy_insert_qs;
       end
 
-      addr_hit[37]: begin
+      addr_hit[38]: begin
         reg_rdata_next[3:0] = fw_ov_sha3_start_qs;
       end
 
-      addr_hit[38]: begin
+      addr_hit[39]: begin
         reg_rdata_next[0] = fw_ov_wr_fifo_full_qs;
       end
 
-      addr_hit[39]: begin
+      addr_hit[40]: begin
         reg_rdata_next[0] = fw_ov_rd_fifo_overflow_qs;
       end
 
-      addr_hit[40]: begin
+      addr_hit[41]: begin
         reg_rdata_next[31:0] = fw_ov_rd_data_qs;
       end
 
-      addr_hit[41]: begin
+      addr_hit[42]: begin
         reg_rdata_next[31:0] = '0;
       end
 
-      addr_hit[42]: begin
+      addr_hit[43]: begin
         reg_rdata_next[5:0] = observe_fifo_thresh_qs;
       end
 
-      addr_hit[43]: begin
+      addr_hit[44]: begin
         reg_rdata_next[5:0] = observe_fifo_depth_qs;
       end
 
-      addr_hit[44]: begin
+      addr_hit[45]: begin
         reg_rdata_next[1:0] = debug_status_entropy_fifo_depth_qs;
         reg_rdata_next[5:3] = debug_status_sha3_fsm_qs;
         reg_rdata_next[6] = debug_status_sha3_block_pr_qs;
@@ -3701,11 +3575,12 @@ module entropy_src_reg_top (
         reg_rdata_next[17] = debug_status_main_sm_boot_done_qs;
       end
 
-      addr_hit[45]: begin
+      addr_hit[46]: begin
         reg_rdata_next[0] = recov_alert_sts_fips_enable_field_alert_qs;
         reg_rdata_next[1] = recov_alert_sts_entropy_data_reg_en_field_alert_qs;
         reg_rdata_next[2] = recov_alert_sts_module_enable_field_alert_qs;
         reg_rdata_next[3] = recov_alert_sts_threshold_scope_field_alert_qs;
+        reg_rdata_next[4] = recov_alert_sts_threshold_oneway_field_alert_qs;
         reg_rdata_next[5] = recov_alert_sts_rng_bit_enable_field_alert_qs;
         reg_rdata_next[7] = recov_alert_sts_fw_ov_sha3_start_field_alert_qs;
         reg_rdata_next[8] = recov_alert_sts_fw_ov_mode_field_alert_qs;
@@ -3722,7 +3597,7 @@ module entropy_src_reg_top (
         reg_rdata_next[31] = recov_alert_sts_postht_entropy_drop_alert_qs;
       end
 
-      addr_hit[46]: begin
+      addr_hit[47]: begin
         reg_rdata_next[0] = err_code_sfifo_esrng_err_qs;
         reg_rdata_next[1] = err_code_sfifo_distr_err_qs;
         reg_rdata_next[2] = err_code_sfifo_observe_err_qs;
@@ -3737,11 +3612,11 @@ module entropy_src_reg_top (
         reg_rdata_next[30] = err_code_fifo_state_err_qs;
       end
 
-      addr_hit[47]: begin
+      addr_hit[48]: begin
         reg_rdata_next[4:0] = err_code_test_qs;
       end
 
-      addr_hit[48]: begin
+      addr_hit[49]: begin
         reg_rdata_next[8:0] = main_sm_state_qs;
       end
 

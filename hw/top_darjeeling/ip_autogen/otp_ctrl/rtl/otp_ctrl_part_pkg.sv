@@ -118,7 +118,7 @@ package otp_ctrl_part_pkg;
     '{
       variant:          Unbuffered,
       offset:           14'd64,
-      size:             304,
+      size:             312,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -134,7 +134,7 @@ package otp_ctrl_part_pkg;
     // OWNER_SW_CFG
     '{
       variant:          Unbuffered,
-      offset:           14'd368,
+      offset:           14'd376,
       size:             600,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -151,7 +151,7 @@ package otp_ctrl_part_pkg;
     // OWNERSHIP_SLOT_STATE
     '{
       variant:          Unbuffered,
-      offset:           14'd968,
+      offset:           14'd976,
       size:             48,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -168,7 +168,7 @@ package otp_ctrl_part_pkg;
     // ROT_CREATOR_AUTH
     '{
       variant:          Unbuffered,
-      offset:           14'd1016,
+      offset:           14'd1024,
       size:             1424,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -185,7 +185,7 @@ package otp_ctrl_part_pkg;
     // ROT_OWNER_AUTH_SLOT0
     '{
       variant:          Unbuffered,
-      offset:           14'd2440,
+      offset:           14'd2448,
       size:             328,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -202,7 +202,7 @@ package otp_ctrl_part_pkg;
     // ROT_OWNER_AUTH_SLOT1
     '{
       variant:          Unbuffered,
-      offset:           14'd2768,
+      offset:           14'd2776,
       size:             328,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -219,7 +219,7 @@ package otp_ctrl_part_pkg;
     // PLAT_INTEG_AUTH_SLOT0
     '{
       variant:          Unbuffered,
-      offset:           14'd3096,
+      offset:           14'd3104,
       size:             328,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -236,7 +236,7 @@ package otp_ctrl_part_pkg;
     // PLAT_INTEG_AUTH_SLOT1
     '{
       variant:          Unbuffered,
-      offset:           14'd3424,
+      offset:           14'd3432,
       size:             328,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -253,7 +253,7 @@ package otp_ctrl_part_pkg;
     // PLAT_OWNER_AUTH_SLOT0
     '{
       variant:          Unbuffered,
-      offset:           14'd3752,
+      offset:           14'd3760,
       size:             328,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -270,7 +270,7 @@ package otp_ctrl_part_pkg;
     // PLAT_OWNER_AUTH_SLOT1
     '{
       variant:          Unbuffered,
-      offset:           14'd4080,
+      offset:           14'd4088,
       size:             328,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -287,7 +287,7 @@ package otp_ctrl_part_pkg;
     // PLAT_OWNER_AUTH_SLOT2
     '{
       variant:          Unbuffered,
-      offset:           14'd4408,
+      offset:           14'd4416,
       size:             328,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -304,7 +304,7 @@ package otp_ctrl_part_pkg;
     // PLAT_OWNER_AUTH_SLOT3
     '{
       variant:          Unbuffered,
-      offset:           14'd4736,
+      offset:           14'd4744,
       size:             328,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -321,7 +321,7 @@ package otp_ctrl_part_pkg;
     // EXT_NVM
     '{
       variant:          Unbuffered,
-      offset:           14'd5064,
+      offset:           14'd5072,
       size:             1024,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -338,8 +338,8 @@ package otp_ctrl_part_pkg;
     // ROM_PATCH
     '{
       variant:          Unbuffered,
-      offset:           14'd6088,
-      size:             9864,
+      offset:           14'd6096,
+      size:             9856,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,

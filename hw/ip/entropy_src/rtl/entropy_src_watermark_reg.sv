@@ -14,6 +14,7 @@ module entropy_src_watermark_reg #(
 
   input logic                   high_i,
   input logic                   clear_i,
+  input logic                   oneway_i,
   input logic                   event_i,
   input logic [RegWidth-1:0]    value_i,
   output logic [RegWidth-1:0]   value_o
@@ -41,9 +42,14 @@ module entropy_src_watermark_reg #(
     // The mode of this watermark register can be switched based on the high_i input. If high_i is
     // set, the high watermark is indicated, otherwise the low watermark.
     reg_clear         = high_i ? {RegWidth{1'b0}} : {RegWidth{1'b1}};
-    event_cntr_change = high_i ? ((value_i > event_cntr_q) ? value_i : event_cntr_q) :
-                                  (value_i < event_cntr_q) ? value_i : event_cntr_q;
-
+    if (oneway_i) begin
+      // Enforce the one-way behavior if enabled.
+      event_cntr_change = high_i ? ((value_i > event_cntr_q) ? value_i : event_cntr_q) :
+                                    (value_i < event_cntr_q) ? value_i : event_cntr_q;
+    end else begin
+      // Accept any updates otherwise.
+      event_cntr_change = value_i;
+    end
   end
 
   // drive output

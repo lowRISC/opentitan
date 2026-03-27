@@ -135,6 +135,8 @@ cc_library(
     hdrs = ["entropy_src_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        "//sw/device/lib/base:crc32",
+        "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/testing/test_framework:check",
     ],

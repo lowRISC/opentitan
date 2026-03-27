@@ -231,11 +231,19 @@
                     size: "4"
                 }
                 {
-                    name: "CREATOR_SW_CFG_RNG_ALERT_THRESHOLD",
+                    name: "CREATOR_SW_CFG_RNG_BOOT_ALERT_THRESHOLD",
                     size: "4"
                 }
                 {
-                    name: "CREATOR_SW_CFG_RNG_HEALTH_CONFIG_DIGEST",
+                    name: "CREATOR_SW_CFG_RNG_FIPS_ALERT_THRESHOLD",
+                    size: "4"
+                }
+                {
+                    name: "CREATOR_SW_CFG_RNG_BOOT_CONFIG_DIGEST",
+                    size: "4"
+                }
+                {
+                    name: "CREATOR_SW_CFG_RNG_FIPS_CONFIG_DIGEST",
                     size: "4"
                 }
                 {

@@ -280,7 +280,7 @@ TEST_F(HealthTestConfigTest, BadLowThreshold) {
 
 TEST_F(HealthTestConfigTest, SuccessOneThreshold) {
   EXPECT_READ32(ENTROPY_SRC_REGWEN_REG_OFFSET, 1);
-  EXPECT_WRITE32(ENTROPY_SRC_REPCNT_THRESHOLDS_REG_OFFSET,
+  EXPECT_WRITE32(ENTROPY_SRC_REPCNT_THRESHOLD_REG_OFFSET,
                  config_.high_threshold);
   EXPECT_DIF_OK(dif_entropy_src_health_test_configure(&entropy_src_, config_));
 }
@@ -289,9 +289,9 @@ TEST_F(HealthTestConfigTest, SuccessTwoThresholds) {
   config_.test_type = kDifEntropySrcTestMarkov;
   config_.low_threshold = 0xABAB;
   EXPECT_READ32(ENTROPY_SRC_REGWEN_REG_OFFSET, 1);
-  EXPECT_WRITE32(ENTROPY_SRC_MARKOV_HI_THRESHOLDS_REG_OFFSET,
+  EXPECT_WRITE32(ENTROPY_SRC_MARKOV_HI_THRESHOLD_REG_OFFSET,
                  config_.high_threshold);
-  EXPECT_WRITE32(ENTROPY_SRC_MARKOV_LO_THRESHOLDS_REG_OFFSET,
+  EXPECT_WRITE32(ENTROPY_SRC_MARKOV_LO_THRESHOLD_REG_OFFSET,
                  config_.low_threshold);
   EXPECT_DIF_OK(dif_entropy_src_health_test_configure(&entropy_src_, config_));
 }

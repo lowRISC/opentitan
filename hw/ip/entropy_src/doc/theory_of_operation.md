@@ -77,7 +77,6 @@ For more details, refer to the [programmer's guide](programmers_guide.md/#firmwa
 
 Health checks are performed on the input raw data from the PTRNG noise source when in that mode.
 There are four health tests that will be performed: Repetition Count Test, Adaptive Proportion Test, bucket test, and Markov test.
-Each test has a pair of threshold values that determine that pass/fail of the test, one threshold for boot-time / bypass mode, and one for FIPS mode.
 By default, all tests are enabled, but can be turned off by setting the thresholds to the maximum value.
 Because of the variability of the PTRNG noise source, there are several registers that log statistics associated with the health tests.
 In particular, the [`HT_WATERMARK`](registers.md#ht_watermark) can be used to log the highest or lowest results of specific health tests.
