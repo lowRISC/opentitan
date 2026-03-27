@@ -31,8 +31,6 @@ cc_library(
     deps = [
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
@@ -41,7 +39,16 @@ cc_library(
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/firmware/sca:cryptolib_sca_sym_impl",
         "//sw/device/tests/penetrationtests/json:cryptolib_sca_sym_commands",
-    ],
+    ] + select({
+        # This is the target for the cryptolib given as a prebuilt drop
+        "//sw/device/tests/penetrationtests/cryptolib_drop:use_prebuilt_cryptolib": [
+            "//sw/device/tests/penetrationtests/cryptolib_drop:cryptolib_imported",
+        ],
+        # This is the internal cryptolib
+        "//conditions:default": [
+            "//sw/device/lib/crypto",
+        ],
+    }),
 )
 
 cc_library(
@@ -51,8 +58,6 @@ cc_library(
     deps = [
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/include:crypto_hdrs",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
@@ -61,7 +66,16 @@ cc_library(
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/firmware/sca:cryptolib_sca_asym_impl",
         "//sw/device/tests/penetrationtests/json:cryptolib_sca_asym_commands",
-    ],
+    ] + select({
+        # This is the target for the cryptolib given as a prebuilt drop
+        "//sw/device/tests/penetrationtests/cryptolib_drop:use_prebuilt_cryptolib": [
+            "//sw/device/tests/penetrationtests/cryptolib_drop:cryptolib_imported",
+        ],
+        # This is the internal cryptolib
+        "//conditions:default": [
+            "//sw/device/lib/crypto",
+        ],
+    }),
 )
 
 cc_library(
@@ -74,13 +88,21 @@ cc_library(
     deps = [
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/crypto",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/json:cryptolib_sca_asym_commands",
-    ],
+    ] + select({
+        # This is the target for the cryptolib given as a prebuilt drop
+        "//sw/device/tests/penetrationtests/cryptolib_drop:use_prebuilt_cryptolib": [
+            "//sw/device/tests/penetrationtests/cryptolib_drop:cryptolib_imported",
+        ],
+        # This is the internal cryptolib
+        "//conditions:default": [
+            "//sw/device/lib/crypto",
+        ],
+    }),
 )
 
 cc_library(
@@ -92,12 +114,20 @@ cc_library(
     ],
     deps = [
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/crypto",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/json:cryptolib_sca_sym_commands",
-    ],
+    ] + select({
+        # This is the target for the cryptolib given as a prebuilt drop
+        "//sw/device/tests/penetrationtests/cryptolib_drop:use_prebuilt_cryptolib": [
+            "//sw/device/tests/penetrationtests/cryptolib_drop:cryptolib_imported",
+        ],
+        # This is the internal cryptolib
+        "//conditions:default": [
+            "//sw/device/lib/crypto",
+        ],
+    }),
 )
 
 cc_library(
