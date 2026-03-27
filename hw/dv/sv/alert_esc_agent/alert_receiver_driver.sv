@@ -4,7 +4,7 @@
 
 // A driver that receives alerts. This is used in alert_esc_agent when configured in "device mode"
 // (so the dut is a device and the agent is expecting to receive alerts and send occasional pings)
-class alert_receiver_driver extends alert_esc_base_driver;
+class alert_receiver_driver extends alert_base_driver;
   `uvm_component_utils(alert_receiver_driver)
 
   bit working_on_alert;
