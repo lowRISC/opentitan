@@ -70,6 +70,10 @@ pub struct ManufFtProvisioningDataInput {
     /// Pretty-print the provisioning data output.
     #[arg(long, default_value = "false")]
     pretty: bool,
+
+    /// Version of the TLV blob format to use. Defaults to 0.
+    #[arg(long, default_value = "0")]
+    blob_version: u16,
 }
 
 #[derive(Debug, Parser)]
@@ -201,6 +205,7 @@ fn main() -> Result<()> {
     let _perso_certgen_inputs = ManufCertgenInputs {
         dice_auth_key_key_id: dice_ca_key_id.clone(),
         ext_auth_key_key_id: ext_ca_key_id.clone(),
+        blob_version: opts.blob_version,
     };
 
     // Only run test unlock operation if we are in a locked LC state.

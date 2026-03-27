@@ -79,9 +79,9 @@ static status_t personalize_gen_tpm_ek_certificate(
   curr_cert_size = sizeof(cert_buffer);
   TRY(tpm_ek_tbs_cert_build(&tpm_key_ids, &curr_pubkey, cert_buffer,
                             &curr_cert_size));
-  TRY(perso_tlv_push_cert_to_perso_blob("TPM EK", /*needs_endorsement=*/true,
-                                        kDiceCertFormatX509TcbInfo, cert_buffer,
-                                        curr_cert_size, perso_blob));
+  TRY(perso_tlv_push_cert_to_perso_blob(
+      "TPM EK", /*needs_endorsement=*/true, kDiceCertFormatX509TcbInfo,
+      cert_buffer, curr_cert_size, (perso_blob_version_t)certgen_inputs->blob_version, perso_blob));
   return OK_STATUS();
 }
 

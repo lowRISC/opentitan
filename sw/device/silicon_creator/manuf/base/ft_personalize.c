@@ -213,17 +213,10 @@ OT_WEAK rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
  * Pushes the hash of the personalization firmware to the perso blob.
  */
 static status_t log_self_hash(perso_blob_t *perso_blob_to_host) {
-  perso_tlv_object_header_t tlv_header = 0;
-  PERSO_TLV_SET_FIELD(Objh, Type, tlv_header, kPersoObjectTypePersoSha256Hash);
-  PERSO_TLV_SET_FIELD(
-      Objh, Size, tlv_header,
-      sizeof(perso_tlv_object_header_t) + sizeof(keymgr_binding_value_t));
-  TRY(perso_tlv_push_to_perso_blob(
-      &tlv_header, sizeof(perso_tlv_object_header_t), perso_blob_to_host));
-  TRY(perso_tlv_push_to_perso_blob(boot_measurements.rom_ext.data,
-                                   sizeof(keymgr_binding_value_t),
-                                   perso_blob_to_host));
-  perso_blob_to_host->num_objs++;
+  TRY(perso_tlv_push_object_to_perso_blob(
+      kPersoObjectTypePersoSha256Hash, boot_measurements.rom_ext.data,
+      sizeof(keymgr_binding_value_t),
+      (perso_blob_version_t)certgen_inputs.blob_version, perso_blob_to_host));
   return OK_STATUS();
 }
 
@@ -495,8 +488,9 @@ static status_t hash_certificate(const flash_ctrl_info_page_t *page,
   perso_tlv_cert_obj_t cert_obj;
   TRY(flash_ctrl_info_read(page, offset, util_size_to_words(obj_size),
                            cert_buffer));
-  TRY(perso_tlv_get_cert_obj(cert_buffer, kBufferSize, &cert_obj));
-
+  TRY(perso_tlv_get_cert_obj(cert_buffer, kBufferSize,
+                              (perso_blob_version_t)certgen_inputs.blob_version,
+                              &cert_obj));
   hmac_sha256_update(cert_obj.cert_body_p, cert_obj.cert_body_size);
 
   if (size) {
@@ -549,6 +543,16 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, true));
   TRY(ujson_deserialize_manuf_certgen_inputs_t(uj, &certgen_inputs));
   TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, false));
+
+  switch ((perso_blob_version_t)certgen_inputs.blob_version) {
+    case kPersoBlobVersionV1:
+      TRY(perso_tlv_init_v1_blob(&perso_blob_to_host));
+      break;
+    case kPersoBlobVersionV0:
+      break;
+    default:
+      return INVALID_ARGUMENT();
+  }
   // We copy over the UDS endorsement key ID to an SHA256 digest type, since
   // this is the format of key IDs generated on-dice.
   memcpy(uds_endorsement_key_id.digest, certgen_inputs.dice_auth_key_key_id,
@@ -611,7 +615,8 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   TRY(perso_tlv_push_cert_to_perso_blob(
       "UDS",
       /*needs_endorsement=*/kDiceCertFormat == kDiceCertFormatX509TcbInfo,
-      kDiceCertFormat, all_certs, curr_cert_size, &perso_blob_to_host));
+      kDiceCertFormat, all_certs, curr_cert_size,
+      (perso_blob_version_t)certgen_inputs.blob_version, &perso_blob_to_host));
 
   // After we have cranked the keymgr to the CreatorRootKey (UDS) stage, we now
   // can initialize and seal the ownership block.
@@ -632,7 +637,10 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   // collection in sw/host/provisioning/ft_lib/src/lib.rs.
   TRY(perso_tlv_push_cert_to_perso_blob("CDI_0", /*needs_endorsement=*/false,
                                         kDiceCertFormat, all_certs,
-                                        curr_cert_size, &perso_blob_to_host));
+                                        curr_cert_size,
+                                        (perso_blob_version_t)certgen_inputs
+                                            .blob_version,
+                                        &perso_blob_to_host));
 
   // Generate CDI_1 keys and cert.
   curr_cert_size = kCdi1MaxCertSizeBytes;
@@ -650,7 +658,10 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   // collection in sw/host/provisioning/ft_lib/src/lib.rs.
   TRY(perso_tlv_push_cert_to_perso_blob("CDI_1", /*needs_endorsement=*/false,
                                         kDiceCertFormat, all_certs,
-                                        curr_cert_size, &perso_blob_to_host));
+                                        curr_cert_size,
+                                        (perso_blob_version_t)certgen_inputs
+                                            .blob_version,
+                                        &perso_blob_to_host));
 
   return OK_STATUS();
 }
@@ -675,16 +686,25 @@ static status_t compute_tbs_was_hmac(perso_blob_t *perso_blob_to_host) {
   // the same to make the comparison easier.
   sc_hmac_hmac_sha256_init(was, /*big_endian_digest=*/true);
   uint8_t *tlv_buf = perso_blob_to_host->body;
-  uint16_t obj_size;
+  uint32_t obj_size;
   perso_tlv_object_type_t obj_type;
   perso_tlv_cert_obj_t cert_obj;
+  perso_blob_version_t version = (perso_blob_version_t)certgen_inputs.blob_version;
   for (size_t i = 0; i < perso_blob_to_host->num_objs; ++i) {
     // Parse the TLV object header.
-    perso_tlv_object_header_t obj_header = *(uint16_t *)tlv_buf;
-    PERSO_TLV_GET_FIELD(Objh, Type, obj_header, &obj_type);
-    PERSO_TLV_GET_FIELD(Objh, Size, obj_header, &obj_size);
+    obj_type = perso_tlv_object_type(tlv_buf, version);
+    obj_size = perso_tlv_object_size(tlv_buf, version);
+
+    // We can skip the version object block if present (it isn't a cert).
+    if (obj_type == kPersoObjectTypeBlobVersion) {
+      tlv_buf += obj_size;
+      continue;
+    }
+
     if (obj_type == kPersoObjectTypeX509Tbs) {
-      TRY(perso_tlv_get_cert_obj(tlv_buf, obj_size, &cert_obj));
+      TRY(perso_tlv_get_cert_obj(
+          tlv_buf, obj_size, version,
+          &cert_obj));
       hmac_sha256_update(cert_obj.cert_body_p, cert_obj.cert_body_size);
     }
     tlv_buf += obj_size;
@@ -694,17 +714,9 @@ static status_t compute_tbs_was_hmac(perso_blob_t *perso_blob_to_host) {
   hmac_sha256_final(&digest);
 
   // Push hash into perso blob.
-  perso_tlv_object_header_t was_hmac_tlv_header = 0;
-  obj_size = sizeof(perso_tlv_object_header_t) + sizeof(hmac_digest_t);
-  PERSO_TLV_SET_FIELD(Objh, Type, was_hmac_tlv_header,
-                      kPersoObjectTypeWasTbsHmac);
-  PERSO_TLV_SET_FIELD(Objh, Size, was_hmac_tlv_header, obj_size);
-  TRY(perso_tlv_push_to_perso_blob(&was_hmac_tlv_header,
-                                   sizeof(perso_tlv_object_header_t),
-                                   perso_blob_to_host));
-  TRY(perso_tlv_push_to_perso_blob(digest.digest, kHmacDigestNumBytes,
-                                   perso_blob_to_host));
-  perso_blob_to_host->num_objs++;
+  TRY(perso_tlv_push_object_to_perso_blob(kPersoObjectTypeWasTbsHmac,
+                                          digest.digest, kHmacDigestNumBytes,
+                                          version, perso_blob_to_host));
 
   // Read complete device ID and push into perso blob. The host will need the
   // device ID to reconstruct the WAS.
@@ -712,16 +724,9 @@ static status_t compute_tbs_was_hmac(perso_blob_t *perso_blob_to_host) {
   TRY(otp_ctrl_testutils_dai_read32_array(&otp_ctrl, kDifOtpCtrlPartitionHwCfg0,
                                           kHwCfgDeviceIdOffset, device_id,
                                           ARRAYSIZE(device_id)));
-  perso_tlv_object_header_t device_id_header = 0;
-  obj_size = sizeof(perso_tlv_object_header_t) + kHwCfgDeviceIdSizeInBytes;
-  PERSO_TLV_SET_FIELD(Objh, Type, device_id_header, kPersoObjectTypeDeviceId);
-  PERSO_TLV_SET_FIELD(Objh, Size, device_id_header, obj_size);
-  TRY(perso_tlv_push_to_perso_blob(&device_id_header,
-                                   sizeof(perso_tlv_object_header_t),
-                                   perso_blob_to_host));
-  TRY(perso_tlv_push_to_perso_blob(device_id, kHwCfgDeviceIdSizeInBytes,
-                                   perso_blob_to_host));
-  perso_blob_to_host->num_objs++;
+  TRY(perso_tlv_push_object_to_perso_blob(kPersoObjectTypeDeviceId,
+                                          device_id, kHwCfgDeviceIdSizeInBytes,
+                                          version, perso_blob_to_host));
 
   return OK_STATUS();
 }
@@ -817,6 +822,7 @@ static size_t max_available(void) {
  *                  reduces the size of the buffer by the size of the copied
  *                  certificate perso LTV object.
  */
+static perso_blob_version_t perso_blob_from_host_version;
 static status_t extract_next_cert(uint8_t **dest, size_t *free_room) {
   // A just in case sanity check that the next free location in the perso blob
   // data buffer is at the end of the buffer.
@@ -831,18 +837,19 @@ static status_t extract_next_cert(uint8_t **dest, size_t *free_room) {
     // Extract the next perso LTV object, aborting if it is not a certificate.
     rom_error_t err = perso_tlv_get_cert_obj(
         perso_blob_from_host.body + perso_blob_from_host.next_free,
-        max_available(), &block);
-    switch (err) {
-      case kErrorOk:
-        break;
-      case kErrorPersoTlvCertObjNotFound: {
-        // The object found is not a certificate. Skip to next perso LTV object.
-        perso_blob_from_host.next_free += block.obj_size;
-        perso_blob_from_host.num_objs--;
-        continue;
+        max_available(), (perso_blob_version_t)certgen_inputs.blob_version,
+        &block);
+    if (err != kErrorOk) {
+      switch (err) {
+        case kErrorPersoTlvCertObjNotFound: {
+          // The object found is not a certificate. Skip to next perso LTV object.
+          perso_blob_from_host.next_free += block.obj_size;
+          perso_blob_from_host.num_objs--;
+          continue;
+        }
+        default:
+          return INTERNAL();
       }
-      default:
-        return INTERNAL();
     }
 
     // Check there is enough room in the destination buffer to copy the
@@ -917,6 +924,21 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
   TRY(ujson_deserialize_perso_blob_t(uj, &perso_blob_from_host));
   TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, false));
 
+  // Detect the version of the blob received from the host.
+  perso_blob_from_host.next_free = 0;
+  perso_blob_from_host_version = kPersoBlobVersionV0;
+  if (perso_blob_from_host.num_objs > 0) {
+    size_t offset = 0;
+    TRY(perso_tlv_get_blob_version(
+        perso_blob_from_host.body, sizeof(perso_blob_from_host.body),
+        &perso_blob_from_host_version, &offset));
+    
+    if (offset > 0) {
+      perso_blob_from_host.next_free = offset;
+      perso_blob_from_host.num_objs--;
+    }
+  }
+
   /*****************************************************************************
    * Rearrange certificates to prepare for writing to flash.
    *
@@ -960,7 +982,7 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
     size_t offset = cert_offsets[i];
     TRY(perso_tlv_get_cert_obj(perso_blob_to_host.body + offset,
                                sizeof(perso_blob_to_host.body) - offset,
-                               &block));
+                               (perso_blob_version_t)certgen_inputs.blob_version, &block));
     if (block.obj_size > free_room)
       return RESOURCE_EXHAUSTED();
 
@@ -997,7 +1019,8 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
     // endorsed extension certificates received from the host.
     for (size_t j = 0; j < curr_layout.num_certs; j++) {
       // Extract the cert block from the `all_certs` buffer.
-      TRY(perso_tlv_get_cert_obj(next_cert, free_room, &block));
+      TRY(perso_tlv_get_cert_obj(next_cert, free_room,
+                                 (perso_blob_version_t)certgen_inputs.blob_version, &block));
       // Round up the size to the nearest word boundary.
       uint32_t cert_size_words = util_size_to_words(block.obj_size);
       uint32_t cert_size_bytes_ru = cert_size_words * sizeof(uint32_t);

@@ -67,23 +67,57 @@ typedef enum perso_tlv_object_type {
    * Personalization firmware SHA256 Hash.
    */
   kPersoObjectTypePersoSha256Hash = 7,
+  /**
+   * Personalization blob version.
+   */
+  kPersoObjectTypeBlobVersion = 15,
 } perso_tlv_object_type_t;
+
+typedef uint16_t perso_tlv_object_header_v0_t;
+typedef uint16_t perso_tlv_cert_header_v0_t;
+typedef uint32_t perso_tlv_object_header_v1_t;
+typedef uint32_t perso_tlv_cert_header_v1_t;
 
 typedef uint16_t perso_tlv_object_header_t;
 typedef uint16_t perso_tlv_cert_header_t;
 typedef uint16_t perso_tlv_dev_seed_header_t;
 
-typedef enum perso_tlv_obj_header_fields {
+typedef enum perso_tlv_obj_header_fields_v0 {
   // Object size, total size, this header included.
-  kObjhSizeFieldShift = 0,
-  kObjhSizeFieldWidth = 12,
-  kObjhSizeFieldMask = (1 << kObjhSizeFieldWidth) - 1,
+  kObjhSizeFieldShiftV0 = 0,
+  kObjhSizeFieldWidthV0 = 12,
+  kObjhSizeFieldMaskV0 = (1 << kObjhSizeFieldWidthV0) - 1,
 
   // Object type, one of perso_tlv_object_type_t.
-  kObjhTypeFieldShift = kObjhSizeFieldWidth,
-  kObjhTypeFieldWidth =
-      sizeof(perso_tlv_object_header_t) * 8 - kObjhSizeFieldWidth,
-  kObjhTypeFieldMask = (1 << kObjhTypeFieldWidth) - 1,
+  kObjhTypeFieldShiftV0 = kObjhSizeFieldWidthV0,
+  kObjhTypeFieldWidthV0 =
+      sizeof(perso_tlv_object_header_v0_t) * 8 - kObjhSizeFieldWidthV0,
+  kObjhTypeFieldMaskV0 = (1 << kObjhTypeFieldWidthV0) - 1,
+} perso_tlv_obj_header_fields_v0_t;
+
+typedef enum perso_tlv_obj_header_fields_v1 {
+  // Object size, total size, this header included.
+  kObjhV1SizeFieldShift = 0,
+  kObjhV1SizeFieldWidth = 24,
+  kObjhV1SizeFieldMask = (1 << kObjhV1SizeFieldWidth) - 1,
+
+  // Object type, one of perso_tlv_object_type_t.
+  kObjhV1TypeFieldShift = kObjhV1SizeFieldWidth,
+  kObjhV1TypeFieldWidth =
+      sizeof(perso_tlv_object_header_v1_t) * 8 - kObjhV1SizeFieldWidth,
+  kObjhV1TypeFieldMask = (1 << kObjhV1TypeFieldWidth) - 1,
+} perso_tlv_obj_header_fields_v1_t;
+
+typedef enum perso_tlv_obj_header_fields {
+  // Object size, total size, this header included.
+  kObjhSizeFieldShift = kObjhSizeFieldShiftV0,
+  kObjhSizeFieldWidth = kObjhSizeFieldWidthV0,
+  kObjhSizeFieldMask = kObjhSizeFieldMaskV0,
+
+  // Object type, one of perso_tlv_object_type_t.
+  kObjhTypeFieldShift = kObjhTypeFieldShiftV0,
+  kObjhTypeFieldWidth = kObjhTypeFieldWidthV0,
+  kObjhTypeFieldMask = kObjhTypeFieldMaskV0,
 } perso_tlv_obj_header_fields_t;
 
 typedef struct perso_tlv_dev_seed_element {
@@ -100,6 +134,13 @@ typedef struct perso_tlv_dev_seed_set {
 } perso_tlv_dev_seed_set_t;
 
 /**
+ * Personalization blob version object payload.
+ */
+typedef struct perso_tlv_blob_version {
+  uint16_t version;
+} perso_tlv_blob_version_t;
+
+/**
  * The x509 certificate is prepended by a 16 bits header followed by the ASCII
  * characters of the certificate name, followed by the certificate body.
  *
@@ -112,17 +153,42 @@ typedef struct perso_tlv_dev_seed_set {
  *  | 4 bit length|       12 bits total size       |
  *  +-------------+--------------------------------+
  */
-typedef enum perso_tlv_cert_header_fields {
+typedef enum perso_tlv_cert_header_fields_v0 {
   // Certificate size, total size, this header and name length included.
-  kCrthSizeFieldShift = 0,
-  kCrthSizeFieldWidth = 12,
-  kCrthSizeFieldMask = (1 << kCrthSizeFieldWidth) - 1,
+  kCrthSizeFieldShiftV0 = 0,
+  kCrthSizeFieldWidthV0 = 12,
+  kCrthSizeFieldMaskV0 = (1 << kCrthSizeFieldWidthV0) - 1,
 
   // Length of the certificate name immediately following the header.
-  kCrthNameSizeFieldShift = kCrthSizeFieldWidth,
-  kCrthNameSizeFieldWidth =
-      sizeof(perso_tlv_cert_header_t) * 8 - kCrthSizeFieldWidth,
-  kCrthNameSizeFieldMask = (1 << kCrthNameSizeFieldWidth) - 1,
+  kCrthNameSizeFieldShiftV0 = kCrthSizeFieldWidthV0,
+  kCrthNameSizeFieldWidthV0 =
+      sizeof(perso_tlv_cert_header_v0_t) * 8 - kCrthSizeFieldWidthV0,
+  kCrthNameSizeFieldMaskV0 = (1 << kCrthNameSizeFieldWidthV0) - 1,
+} perso_tlv_cert_header_fields_v0_t;
+
+typedef enum perso_tlv_cert_header_fields_v1 {
+  // Certificate size, total size, this header and name length included.
+  kCrthV1SizeFieldShift = 0,
+  kCrthV1SizeFieldWidth = 24,
+  kCrthV1SizeFieldMask = (1 << kCrthV1SizeFieldWidth) - 1,
+
+  // Length of the certificate name immediately following the header.
+  kCrthV1NameSizeFieldShift = kCrthV1SizeFieldWidth,
+  kCrthV1NameSizeFieldWidth =
+      sizeof(perso_tlv_cert_header_v1_t) * 8 - kCrthV1SizeFieldWidth,
+  kCrthV1NameSizeFieldMask = (1 << kCrthV1NameSizeFieldWidth) - 1,
+} perso_tlv_cert_header_fields_v1_t;
+
+typedef enum perso_tlv_cert_header_fields {
+  // Certificate size, total size, this header and name length included.
+  kCrthSizeFieldShift = kCrthSizeFieldShiftV0,
+  kCrthSizeFieldWidth = kCrthSizeFieldWidthV0,
+  kCrthSizeFieldMask = kCrthSizeFieldMaskV0,
+
+  // Length of the certificate name immediately following the header.
+  kCrthNameSizeFieldShift = kCrthNameSizeFieldShiftV0,
+  kCrthNameSizeFieldWidth = kCrthNameSizeFieldWidthV0,
+  kCrthNameSizeFieldMask = kCrthNameSizeFieldMaskV0,
 } perso_tlv_cert_header_fields_t;
 
 // Helper macros allowing set or get various object and certificate header
@@ -144,6 +210,24 @@ typedef enum perso_tlv_cert_header_fields {
     uint16_t mask = k##type_name##field_name##FieldMask;                    \
     uint16_t shift = k##type_name##field_name##FieldShift;                  \
     *(field_value) = (__builtin_bswap16(full_value) >> shift) & mask;       \
+  }
+
+#define PERSO_TLV_SET_FIELD_V1(type_name, field_name, full_value, field_value) \
+  {                                                                            \
+    uint32_t mask = k##type_name##field_name##FieldMask;                       \
+    uint32_t shift = k##type_name##field_name##FieldShift;                     \
+    uint32_t fieldv = (uint32_t)(field_value)&mask;                            \
+    uint32_t fullv = __builtin_bswap32((uint32_t)(full_value));                \
+    mask = (uint32_t)(mask << shift);                                          \
+    (full_value) = __builtin_bswap32(                                          \
+        (uint32_t)((fullv & ~mask) | (((uint32_t)fieldv) << shift)));          \
+  }
+
+#define PERSO_TLV_GET_FIELD_V1(type_name, field_name, full_value, field_value) \
+  {                                                                            \
+    uint32_t mask = k##type_name##field_name##FieldMask;                       \
+    uint32_t shift = k##type_name##field_name##FieldShift;                     \
+    *(field_value) = (__builtin_bswap32(full_value) >> shift) & mask;          \
   }
 
 /**
@@ -181,12 +265,41 @@ typedef struct perso_tlv_cert_obj {
 } perso_tlv_cert_obj_t;
 
 /**
+ * Personalization blob versions.
+ */
+typedef enum perso_blob_version {
+  /**
+   * V0 is the original personalization blob format. It uses a 16-bit object
+   * header (4-bit type, 12-bit size), which limits the maximum size of any
+   * single object to 4KB.
+   */
+  kPersoBlobVersionV0 = 0,
+  /**
+   * V1 personalization blobs start with a version TLV object (which uses the V0
+   * header format for backwards compatibility). All subsequent objects in the
+   * blob use a larger 32-bit header (8-bit type, 24-bit size), allowing for
+   * significantly larger objects (up to 16MB).
+   */
+  kPersoBlobVersionV1 = 1,
+} perso_blob_version_t;
+
+/**
+ * Initializes the perso blob as a V1 blob.
+ *
+ * @param pb Pointer to the `perso_blob_t` to initialize.
+ * @return status of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t perso_tlv_init_v1_blob(perso_blob_t *pb);
+
+/**
  * Given the pointer to an LTV object, in case this is an endorsed certificate
  * set up the perso_tlv_cert_obj_t structure for it.
  *
  * @param buf Pointer to the LTV object buffer storing the certificate object.
  * @param ltv_buf_size Total number of bytes until the end of the LTV buffer
  *                     (cert LTV object must be <= the buffer size).
+ * @param blob_version The version of the perso blob.
  * @param[out] obj Pointer to the certificate perso LTV object to populate.
  *
  * @return OK_STATUS on success, NOT_FOUND if the object is not an endorsed
@@ -194,6 +307,7 @@ typedef struct perso_tlv_cert_obj {
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
+                                   perso_blob_version_t blob_version,
                                    perso_tlv_cert_obj_t *obj);
 
 /**
@@ -201,14 +315,15 @@ rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
  * buffer.
  *
  * The certificate perso LTV object is laid out as follows:
- * - 16 bit LTV object header
- * - 16 bit cert header
+ * - LTV object header (16-bit for V0, 32-bit for V1)
+ * - cert header (16-bit for V0, 32-bit for V1)
  * - Certificate name string
  * - Cerificate data
  *
- * Note that both certificate and object headers' are 16 bit integers in big
+ * Note that both certificate and object headers' are integers in big
  * endian format.
  *
+ * V0 header format:
  *  d15                                         d0
  * +-------------+--------------------------------+
  * | 4 bit type  |   12 bits total object size    | <-- Object Header
@@ -220,10 +335,23 @@ rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
  * |                   cert                       |
  * +----------------------------------------------+
  *
+ * V1 header format:
+ *  d31             d24                           d0
+ * +---------------+------------------------------+
+ * |   8 bit type  |    24 bits total object size | <-- Object Header
+ * +---------------+------------------------------+
+ * |  8 bit name len|   24 bits total cert size    | <-- Cert Header
+ * +---------------+------------------------------+
+ * |             cert name string                 |
+ * +----------------------------------------------+
+ * |                   cert                       |
+ * +----------------------------------------------+
+ *
  * @param name The name of the certificate.
  * @param obj_type The object type that needs to encoded.
  * @param cert The binary certificate blob.
  * @param cert_size Size of the certificate blob in bytes.
+ * @param blob_version The version of the perso blob.
  * @param[out] buf Output buffer to copy the data into.
  * @param[inout] buf_size Input is size of the output buffer in bytes; output is
  *                        space of buffer that was consumed by the LTV object.
@@ -233,6 +361,7 @@ OT_WARN_UNUSED_RESULT
 rom_error_t perso_tlv_cert_obj_build(const char *name,
                                      const perso_tlv_object_type_t obj_type,
                                      const uint8_t *cert, size_t cert_size,
+                                     perso_blob_version_t blob_version,
                                      uint8_t *buf, size_t *buf_size);
 
 /**
@@ -246,6 +375,7 @@ rom_error_t perso_tlv_cert_obj_build(const char *name,
  * @param cert_format The format of the certificate.
  * @param cert The binary certificate blob.
  * @param cert_size Size of the certificate blob in bytes.
+ * @param blob_version The version of the perso blob.
  * @param perso_blob Pointer to the `perso_blob_t` to copy the object to.
  * @return status of the operation.
  */
@@ -253,19 +383,60 @@ OT_WARN_UNUSED_RESULT
 rom_error_t perso_tlv_push_cert_to_perso_blob(
     const char *name, bool needs_endorsement,
     const dice_cert_format_t cert_format, const uint8_t *cert, size_t cert_size,
-    perso_blob_t *pb);
+    perso_blob_version_t blob_version, perso_blob_t *pb);
 
 /**
- * Pushes arbitrary data to the perso blob that is sent between host and device.
+/**
+ * Parses the beginning of the buffer to detect the personalization blob version.
  *
- * @param data Pointer to the data to add to the blob.
+ * It looks for a `kPersoObjectTypeBlobVersion` object which always uses the V0
+ * 16-bit header. If found, it parses the version from the payload.
+ *
+ * @param data Pointer to the start of the perso blob.
+ * @param size Total size of the perso blob in bytes.
+ * @param[out] version Extracted version, or kPersoBlobVersionV0 if not present.
+ * @param[out] offset Pointer to the first object after the version object.
+ * @return status of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t perso_tlv_get_blob_version(const uint8_t *data, size_t size,
+                                       perso_blob_version_t *version,
+                                       size_t *offset);
+
+/**
+ * Returns the object type from the header.
+ *
+ * @param data Pointer to the start of the object.
+ * @param version The version of the perso blob.
+ * @return The type of the object.
+ */
+perso_tlv_object_type_t perso_tlv_object_type(const uint8_t *data,
+                                              perso_blob_version_t version);
+
+/**
+ * Returns the object size from the header.
+ *
+ * @param data Pointer to the start of the object.
+ * @param version The version of the perso blob.
+ * @return The size of the object in bytes.
+ */
+uint32_t perso_tlv_object_size(const uint8_t *data,
+                               perso_blob_version_t version);
+
+/**
+ * Wraps arbitrary data in a perso LTV object and pushes it to the perso blob.
+ *
+ * @param obj_type The type of the object to add.
+ * @param data Pointer to the data to add.
  * @param size Size of the data to add in bytes.
+ * @param version The version of the perso blob.
  * @param perso_blob Pointer to the perso blob to add the data to.
  * @return status of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t perso_tlv_push_to_perso_blob(const void *data, size_t size,
-                                         perso_blob_t *perso_blob);
+rom_error_t perso_tlv_push_object_to_perso_blob(
+    perso_tlv_object_type_t obj_type, const void *data, size_t size,
+    perso_blob_version_t version, perso_blob_t *perso_blob);
 
 #ifdef __cplusplus
 }  // extern "C"

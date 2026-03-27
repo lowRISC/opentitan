@@ -35,19 +35,31 @@ static status_t print_cert(char *dest,
   TRY(flash_ctrl_info_read_zeros_on_read_error(
       info_page, 0, sizeof(data) / sizeof(uint32_t), data));
 
-  uint32_t offset = 0;
-  size_t len = sizeof(data);
+  perso_blob_version_t blob_version;
+  size_t offset = 0;
+  rom_error_t err = perso_tlv_get_blob_version(data, sizeof(data), &blob_version, &offset);
+  if (err != kErrorOk) {
+    return DATA_LOSS();
+  }
+
+  size_t len = sizeof(data) - offset;
   while (true) {
     perso_tlv_cert_obj_t obj = {0};
-    rom_error_t err = perso_tlv_get_cert_obj(data + offset, len, &obj);
+    err = perso_tlv_get_cert_obj(data + offset, len, blob_version, &obj);
     if (err != kErrorOk) {
       break;
     }
     base64_encode(dest, obj.cert_body_p, (int32_t)obj.cert_body_size);
     LOG_INFO("%s type=%d sz=%d", obj.name, obj.obj_type, obj.obj_size);
     LOG_INFO("%s: %s", obj.name, dest);
-    offset += (obj.obj_size + 7) & ~7u;
-    len -= obj.obj_size;
+    
+    // Each certificate must be 8 bytes aligned (flash word size).
+    size_t aligned_size = (obj.obj_size + 7) & ~7u;
+    if (len < aligned_size) {
+      break;
+    }
+    offset += aligned_size;
+    len -= aligned_size;
   }
   return OK_STATUS();
 }

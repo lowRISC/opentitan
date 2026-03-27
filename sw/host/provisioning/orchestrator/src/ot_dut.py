@@ -288,6 +288,8 @@ class OtDut():
             # Add owner FW boot success message check.
             if self.sku_config.owner_fw_boot_str:
                 cmd += f" --owner-success-text=\"{self.sku_config.owner_fw_boot_str}\""
+            if self.sku_config.blob_version > 0:
+                cmd += f" --blob-version {self.sku_config.blob_version}"
 
             # Enable UJSON message logging.
             if self.log_ujson_payloads:
