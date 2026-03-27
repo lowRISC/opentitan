@@ -2,25 +2,95 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// A driver that receives alerts. This is used in alert_esc_agent when configured in "device mode"
-// (so the dut is a device and the agent is expecting to receive alerts and send occasional pings)
-class alert_receiver_driver extends alert_esc_base_driver;
+// A driver that behaves as an alert_receiver. This is used in alert_esc_agent when configured in
+// "device mode"
+
+class alert_receiver_driver extends alert_base_driver;
   `uvm_component_utils(alert_receiver_driver)
 
-  bit working_on_alert;
+  // A pair of ids that can be used as a key for a sequence item. We need the sequence ID as well as
+  // the transaction ID so that we can distinguish items at the same position in different
+  // sequences. The types are chosen to match UVM's get_transaction_id and get_sequence_id.
+  typedef struct {
+    int     sequence_id;
+    integer transaction_id;
+  } id_pair_s;
+
+  // The drive_req_between_resets task will consume requests from m_receiver_requests and add these
+  // requests to this pair of FIFOs (to be consumed by the send_pings and send_alert_rsps tasks that
+  // it spawns).
+  //
+  // When reset is asserted, both of those tasks will exit after flushing their respective queues.
+  local uvm_tlm_analysis_fifo #(alert_esc_seq_item) m_pending_pings;
+  local uvm_tlm_analysis_fifo #(alert_esc_seq_item) m_pending_alert_rsps;
+
+  // A map from item transaction ID to the tasks that are pending for that item. If bit 0 is set,
+  // the item represents an alert that must be responded to. If bit 1 is set, the item represents a
+  // ping request.
+  //
+  // When the send_pings or send_alert_rsps task clears the final bit for an item, it should remove
+  // the item from this map. Because the base driver uses get (instead of get_next_item), we don't
+  // also have to call seq_item_port.item_done to tell the sequencer that the item has been fully
+  // driven, but we *do* send a response (by sending the original item), to allow the sequence to
+  // see that the item is done.
+  //
+  // When reset is asserted, both of those tasks will exit, clearing this map.
+  local bit [1:0] m_transaction_tasks[id_pair_s];
+
+  // When a ping gets an alert response or a genuine alert is sent, this driver needs to acknowledge
+  // the alert, but the two options need to be handled serially. The ack is handled by ack_alert,
+  // which uses this semaphore as a mutex.
+  local semaphore m_ack_semaphore;
 
   extern function new(string name, uvm_component parent);
 
-  extern task drive_req();
-  extern task reset_signals();
-  extern task alert_init_thread();
-  extern task send_ping(alert_esc_seq_item req);
+  // Clear interface signals because reset has been asserted
+  //
+  // This implements a function in dv_base_driver
+  extern function void on_enter_reset();
 
-  // Handle a sequence item that demands an alert response (and was thus put in r_alert_rsp_q).
+  // Drive requests that have been seen by alert_base_driver::get_req. This task runs forever.
+  //
+  // This implements a task in alert_base_driver
+  extern task drive_req();
+
+  // Drive requests that have been seen by alert_base_driver::get_req, until the next reset. This is
+  // called by drive_req.
+  extern local task drive_req_between_resets();
+
+  // Clear the appropriate bit in m_transaction_tasks for the ID pair of item. If the resulting
+  // bitmap is zero, delete the entry from m_transaction_tasks.
+  extern local function void report_done(bit is_ping, alert_esc_seq_item item);
+
+  // Drive any items that were added to m_pending_pings.
+  //
+  // Exits early on reset.
+  extern local task send_pings();
+
+  // Drive any items that were added to m_pending_alert_rsps.
+  //
+  // Exits early on reset.
+  extern local task send_alert_rsps();
+
+  // Send a ping described by item.
+  //
+  // Exits early on reset.
+  extern local task send_ping(alert_esc_seq_item item);
+
+  // Handle a sequence item that demands an alert response
   //
   // An item should only be added to that queue in response to an alert being generated on the
-  // interface. We will wait a randomised time (in set_ack_pins) before acknowledging the alert.
-  extern task rsp_alert(alert_esc_seq_item req);
+  // interface. We will wait a randomised time (in ack_alert) before acknowledging the alert.
+  //
+  // Exits early on reset.
+  extern local task send_alert_rsp(alert_esc_seq_item item);
+
+  // Wait for a short time to allow an alert to propagate through the clocking blocks in the
+  // interface, stopping as soon as it gets through to receiver_cb.alert_tx or
+  // monitor_cb.alert_tx_final or a reset happens.
+  //
+  // Exits early on reset.
+  extern local task wait_for_alert_propagation();
 
   // Drive an alert ping
   //
@@ -29,21 +99,26 @@ class alert_receiver_driver extends alert_esc_base_driver;
   // ping_delay argument.
   //
   // Once the ping has gone out, we wait for an alert to arrive and then acknowledge it using
-  // set_ack_pins (and passing ack_delay and ack_stable).
+  // ack_alert (and passing ack_delay and ack_stable).
   //
   // The task allows to retract driving the ping. If there's an alert (r_alert_rsp_q.size > 0)
   // before the 'ping_delay' the ping is aborted and the driver moves to tackle the alert in
   // 'rsp_alert' task. This is notified by setting `item_not_driven=1`
   //
-  // This task can be safely killed on a reset.
-  extern task drive_alert_ping(int unsigned ping_delay,
-                               int unsigned ack_delay,
-                               int unsigned ack_stable,
-                               output bit item_not_driven);
+  // The task exits early on reset.
+  extern local task drive_alert_ping(int unsigned ping_delay,
+                                     int unsigned ack_delay,
+                                     int unsigned ack_stable);
 
-  // Acknowledge an alert.
+  // Acknowledge the next alert
   //
-  // The ack will come after a delay which is normally randomised in the range [cfg.ack_delay_min,
+  // This task waits until an alert is signalled, then waits a short time before acknowledging the
+  // alert. Once the ack has been asserted, the ack stays high for a time before it, in turn, drops.
+  //
+  // This task uses m_ack_semaphore as a mutex (to serialise ping response acks and other alert
+  // acks).
+  //
+  // The delay before the initial ack is normally randomised in the range [cfg.ack_delay_min,
   // cfg.ack_delay_max] cycles. If cfg.use_seq_item_ack_delay is true then the delay is from the
   // ack_delay argument.
   //
@@ -54,280 +129,291 @@ class alert_receiver_driver extends alert_esc_base_driver;
   // Both of these times will be truncated if cfg.fast_rcvr is true. In that case, they will be
   // cfg.ack_delay_min, cfg.ack_stable_min respectively.
   //
-  // This task can be safely killed on a reset.
-  extern task set_ack_pins(int unsigned ack_delay,
-                           int unsigned ack_stable);
+  // The task will exit quickly on reset (replacing the token on the semaphore)
+  extern local task ack_alert(int unsigned ack_delay, int unsigned ack_stable);
 
-  extern task set_ack();
-  extern task reset_ack();
-  extern task set_ping();
-  extern task wait_alert();
+  // Set the ack signal to be the given boolean value (so either 0;1 or 1;0)
+  extern local task set_ack(bit asserted);
+
+  // Toggle the ping state
+  extern local task set_ping();
+
+  // Set the ping state to 0;1 (the reset value)
   extern task reset_ping();
-  extern task do_reset();
-  extern task do_alert_rx_init();
-  // Clears the items in queues `r_alert_rsp_q` and `r_alert_ping_send_q`.
-  // This gets used in the task `reset_signals` to clear the queues on reset
-  // This task prevents the scenario of accidentally driving ACK after reset
-  extern function void clear_item_queues();
-  extern task ping_and_alert_thread();
 
+  // Perform the alert init handshake, exiting early on reset
+  extern task do_alert_rx_init();
 endclass : alert_receiver_driver
 
 function alert_receiver_driver::new(string name, uvm_component parent);
   super.new(name, parent);
+  m_ack_semaphore = new(1);
+  m_pending_pings = new("m_pending_pings", this);
+  m_pending_alert_rsps = new("m_pending_alert_rsps", this);
+endfunction
+
+function void alert_receiver_driver::on_enter_reset();
+  // Clear ping and ack signals (both the actual signals and the clocking block values)
+  cfg.vif.alert_rx_int.ping_p <= 1'b0;
+  cfg.vif.alert_rx_int.ping_n <= 1'b1;
+  cfg.vif.alert_rx_int.ack_p <= 1'b0;
+  cfg.vif.alert_rx_int.ack_n <= 1'b1;
+  cfg.vif.receiver_cb.alert_rx_int.ping_p <= 1'b0;
+  cfg.vif.receiver_cb.alert_rx_int.ping_n <= 1'b1;
+  cfg.vif.receiver_cb.alert_rx_int.ack_p <= 1'b0;
+  cfg.vif.receiver_cb.alert_rx_int.ack_n <= 1'b1;
 endfunction
 
 task alert_receiver_driver::drive_req();
-  fork
-    ping_and_alert_thread();
-    alert_init_thread();
-  join_none
-endtask : drive_req
-
-// Controls whether 'send_ping' or 'rsp_alert' is called depending on the seq_items received
-// If ping/alert occur close to each other, there's a chance the driver may believe a ping is
-// happening whereas the alert sender is actually sending an alert.
-// This situation doesn't affect behavior since the driver would just ack the ping and the
-// RTL would believe the ack was for the alert, but the next alert request would be for the ping
-// and the handshake would look the same either way.
-task alert_receiver_driver::ping_and_alert_thread();
   forever begin
-    wait( ((r_alert_ping_send_q.size() > 0) || (r_alert_rsp_q.size() > 0)) && !under_reset);
-    `uvm_info(`gfn, $sformatf({"%m - Queues: r_alert_ping_send_q.size=%0d | ",
-                               "r_alert_rsp_q.size()=%0d"}, r_alert_ping_send_q.size,
-                               r_alert_rsp_q.size()), UVM_DEBUG)
-
-    if (r_alert_rsp_q.size() > 0)
-      rsp_alert(r_alert_rsp_q.pop_front());
-    else if (r_alert_ping_send_q.size() > 0)
-      send_ping(r_alert_ping_send_q.pop_front());
-    else begin
-      `uvm_fatal(`gfn, $sformatf({"%m - no items in r_alert_ping_send_q.size=%0d ",
-                                  " nor r_alert_ping_send_q.size=%0d"}, r_alert_ping_send_q.size))
-    end
-  end
-endtask
-
-task alert_receiver_driver::reset_signals();
-  do_reset();
-  forever begin
-    @(negedge cfg.vif.rst_n);
-    under_reset = 1;
-    clear_item_queues();
-    working_on_alert = 0;
-    do_reset();
-    @(posedge cfg.vif.rst_n);
-  end
-endtask
-
-task alert_receiver_driver::alert_init_thread();
-  do_alert_rx_init();
-  forever @(posedge cfg.vif.rst_n) begin
-    do_alert_rx_init();
-  end
-endtask : alert_init_thread
-
-task alert_receiver_driver::send_ping(alert_esc_seq_item req);
-  alert_esc_seq_item  rsp;
-  bit item_not_driven;
-  `downcast(rsp, req.clone());
-  rsp.set_id_info(req);
-
-  `uvm_info(`gfn, $sformatf("%m - Item received: \n%0s",req.sprint), UVM_DEBUG)
-
-  if (!req.int_err) begin
-    `uvm_info(`gfn, $sformatf({"starting to send receiver item, ping_send=%0b, alert_rsp=%0b, ",
-                               "int_fail=%0b"}, req.r_alert_ping_send, req.r_alert_rsp,
-                              req.int_err), UVM_HIGH)
-    fork
-      begin : isolation_fork
+    // Wait until we are out of reset. Until that happens, respond instantly to any sequence items
+    // that come in.
+    while (cfg.in_reset) begin
+      fork : isolation_fork begin
+        alert_esc_seq_item item;
         fork
-          begin
-            while (working_on_alert) begin
-              `uvm_info(`gfn, $sformatf("%m - Waiting for alert to complete"), UVM_DEBUG)
-              @(cfg.vif.receiver_cb);
-            end
-            drive_alert_ping(req.ping_delay, req.ack_delay, req.ack_stable, item_not_driven);
-          end
-          wait(under_reset);
+          wait(!cfg.in_reset);
+          m_receiver_requests.get(item);
         join_any
         disable fork;
-      end
-    join
+        // Since we are in reset, we ignore any item that we see. Because it was fetched by get() in
+        // alert_base_driver (instead of with get_next_item()), we do not have to declare it done.
+      end join
+    end
 
-    if (item_not_driven) begin
-      `uvm_info(`gfn, {"Ping sequence item not driven because there's been an alert with no",
-                       "previous ping - pushing back to its queue"}, UVM_DEBUG)
-      // Note item is pushed to the front since it was the oldest in the queue
-      r_alert_ping_send_q.push_front(req);
-      // A delay is needed to avoid a potential infinite loop if the monitor doesn't have time to sample the next alert
-      @(cfg.vif.receiver_cb);
-      return;
+    drive_req_between_resets();
+  end
+endtask
+
+task alert_receiver_driver::drive_req_between_resets();
+  // Drive the init protocol from the receiver side. do_alert_rx_init will exit early if it sees
+  // reset.
+  do_alert_rx_init();
+  if (cfg.in_reset) return;
+
+  // Fetch items to drive and drive them. All three tasks exit on reset.
+  fork
+    send_alert_rsps();
+    send_pings();
+    fork : isolation_fork begin
+      fork
+        wait(cfg.in_reset);
+        forever begin
+          alert_esc_seq_item item;
+          id_pair_s ids;
+          bit [1:0] jobs;
+
+          m_receiver_requests.get(item);
+          jobs[0] = item.r_alert_rsp;
+          jobs[1] = item.r_alert_ping_send;
+
+          if (!jobs)
+            `uvm_fatal(get_full_name(),
+                       $sformatf("Item sent to driver doesn't have any tasks for us: %0s",
+                                 item.sprint()))
+
+          ids.transaction_id = item.get_transaction_id();
+          ids.sequence_id    = item.get_sequence_id();
+
+          if (m_transaction_tasks.exists(ids))
+            `uvm_fatal(get_full_name(),
+                       $sformatf("Repeated transaction ID: %0d / sequence ID 0x%0x",
+                                 ids.transaction_id, ids.sequence_id))
+
+          m_transaction_tasks[ids] = jobs;
+          if (jobs[1]) m_pending_pings.write(item);
+          if (jobs[0]) m_pending_alert_rsps.write(item);
+        end
+      join_any
+      disable fork;
+    end join
+  join
+
+  // As a consistency check, make sure that m_pending_pings, m_pending_alert_rsps and
+  // m_transaction_tasks were been cleared by send_alert_rsps and send_pings before they exited.
+  if (m_pending_pings.size())
+    `uvm_error(get_full_name(),
+               $sformatf("m_pending_pings nonempty after reset: %0p", m_pending_pings))
+  if (m_pending_alert_rsps.size())
+    `uvm_error(get_full_name(),
+               $sformatf("m_pending_alert_rsps nonempty after reset: %0p", m_pending_alert_rsps))
+  if (m_transaction_tasks.size())
+    `uvm_error(get_full_name(),
+               $sformatf("m_transaction_tasks nonempty after reset: %0p", m_transaction_tasks))
+
+endtask
+
+function void alert_receiver_driver::report_done(bit is_ping, alert_esc_seq_item item);
+  id_pair_s ids;
+  ids.transaction_id = item.get_transaction_id();
+  ids.sequence_id    = item.get_sequence_id();
+
+  if (!m_transaction_tasks.exists(ids))
+    `uvm_fatal(get_full_name(),
+               $sformatf("Cannot check if item is done: %0s", item.sprint()))
+
+  if (!m_transaction_tasks[ids][is_ping])
+    `uvm_fatal(get_full_name(),
+               $sformatf("Cannot clear unset bit %0s for item in m_transaction_tasks: %0s",
+                         is_ping, item.sprint()))
+  m_transaction_tasks[ids][is_ping] = 0;
+
+  `uvm_info(get_full_name(),
+            $sformatf("Item %0d done (ping? %0d). Remaining tasks %02b",
+                      ids.transaction_id, is_ping, m_transaction_tasks[ids]),
+            UVM_LOW)
+
+  if (~|m_transaction_tasks[ids]) begin
+    // If we had originally got the item with get_next_item, this would be the right place to call
+    // item_done. Since we used get instead (allowing alerts and pings to be driven in parallel), we
+    // just send a response (the original item), which allows the sequence that sent the item to
+    // know driving it is completed.
+    m_transaction_tasks.delete(ids);
+    seq_item_port.put_response(item);
+  end
+endfunction
+
+task alert_receiver_driver::send_pings();
+  alert_esc_seq_item item;
+
+  while(!cfg.in_reset) begin
+    fork : isolation_fork begin
+      fork
+        wait(cfg.in_reset);
+        m_pending_pings.get(item);
+      join_any
+      disable fork;
+    end join
+
+    // If there is an item, send it with send_ping. The task will exit early on reset.
+    if (item != null) begin
+      send_ping(item);
+
+      // Now that the item has been sent, report this to the sequencer (if this was the last job to
+      // do for the item)
+      report_done(1, item);
     end
   end
 
-  `uvm_info(`gfn,
-            $sformatf("finished sending receiver item, ping_send=%0b, alert_rsp=%0b, int_fail=%0b",
-                      req.r_alert_ping_send, req.r_alert_rsp, req.int_err), UVM_HIGH)
-  seq_item_port.put_response(rsp);
-endtask : send_ping
+  // When we get here, we must be in reset. m_pending_pings might be nonempty (if reset was asserted
+  // when there were lots of pending pings). Report all the items done (in a trivial way) before
+  // returning.
+  while(m_pending_pings.try_get(item)) report_done(1, item);
+endtask
 
-task alert_receiver_driver::rsp_alert(alert_esc_seq_item req);
-  bit unset_working_on_alerts;
-  bit exit_delay_fork;
-  int unsigned num_iter = 7;
-  alert_esc_seq_item rsp;
-  unset_working_on_alerts = 0;
-  `uvm_info(`gfn, $sformatf("%m - Item received: \n%0s",req.sprint), UVM_DEBUG)
+task alert_receiver_driver::send_alert_rsps();
+  alert_esc_seq_item item;
+
+  while(!cfg.in_reset) begin
+    fork : isolation_fork begin
+      fork
+        wait(cfg.in_reset);
+        m_pending_alert_rsps.get(item);
+      join_any
+      disable fork;
+    end join
+
+    // If there is an item, send it with send_alert_rsp. The task will exit early on reset.
+    if (item != null) begin
+      send_alert_rsp(item);
+
+      // Now that the item has been sent, report this to the sequencer (if this was the last job to
+      // do for the item)
+      report_done(0, item);
+    end
+  end
+
+  // When we get here, we must be in reset. m_pending_alert_rsps might be nonempty. (This probably
+  // shouldn't actually be possible, but let's not worry too much about it). Report all the items
+  // done (in a trivial way) before returning.
+  while(m_pending_pings.try_get(item)) report_done(0, item);
+endtask
+
+task alert_receiver_driver::send_ping(alert_esc_seq_item item);
+  `uvm_info(get_full_name(), "Sending ping", UVM_HIGH)
+
+  if (item.int_err) begin
+    `uvm_info(get_full_name(), "Not actually sending ping (because int_err is true)", UVM_HIGH)
+  end else begin
+    drive_alert_ping(item.ping_delay, item.ack_delay, item.ack_stable);
+  end
+endtask
+
+task alert_receiver_driver::send_alert_rsp(alert_esc_seq_item item);
+  `uvm_info(get_full_name(), "Responding to alert", UVM_HIGH)
+
   // If we get here then something should have been pushed onto the alert queue in response to
   // an alert being generated. Wait a short time to allow the alert to propagate through the
   // clocking blocks (which should only take a cycle, but give it a couple more to make sure).
   // Stop early if we go into reset.
-  fork
-    begin : isolation_fork_1
-      fork
-        wait(under_reset);
+  wait_for_alert_propagation();
+  if (cfg.in_reset) return;
+
+  // Check that the alert really has arrived (which is a consistency check for the testbench, rather
+  // than a check about the dut).
+  if (cfg.vif.receiver_cb.alert_tx.alert_p !== 1'b1) begin
+    `uvm_fatal(get_full_name(), "alert_p not high, despite an item from the monitor")
+  end
+
+  // Now send an ack with ack_alert. This then waits for the alert to drop, then clears the ack
+  // again.
+  //
+  // The task exits early on reset.
+  ack_alert(item.ack_delay, item.ack_stable);
+endtask
+
+task alert_receiver_driver::wait_for_alert_propagation();
+  int unsigned num_iter = 7;
+
+  fork : isolation_fork begin
+    fork
+      wait(cfg.in_reset);
+      fork : isolation_fork begin
+        bit seen_alert;
+
         fork
-          // Wait for num_iter cycles on the slower of the two clocks (by
-          // waiting for both of them in parallel).
-          // 'exit_delay_fork' is used as an escape flag if an alert is detected during the wait
           repeat (num_iter) begin
-            if (cfg.vif.receiver_cb.alert_tx.alert_p || exit_delay_fork) begin
-              exit_delay_fork = 1;
-              break;
+            if (cfg.vif.receiver_cb.alert_tx.alert_p) begin
+              seen_alert = 1;
             end
+            if (seen_alert) break;
             @(cfg.vif.receiver_cb);
           end
           repeat (num_iter) begin
-            if (cfg.vif.monitor_cb.alert_tx_final.alert_p || exit_delay_fork) begin
-              exit_delay_fork = 1;
-              break;
+            if (cfg.vif.monitor_cb.alert_tx_final.alert_p) begin
+              seen_alert = 1;
             end
+            if (seen_alert) break;
             @(cfg.vif.monitor_cb);
           end
         join
-      join_any
-      disable fork;
-    end  : isolation_fork_1
-  join
-
-  if (!under_reset) begin
-    // If we haven't gone into reset, we have an item and have waited a bit for the alert to be
-    // visible. Check that it really has arrived.
-    working_on_alert = 1;
-
-    `DV_CHECK_FATAL(cfg.vif.receiver_cb.alert_tx.alert_p,
-                    "alert_p not high, despite an item in r_alert_rsp_q")
-
-    `uvm_info(`gfn, $sformatf("rsp_alert item (ping_send=%0b, alert_rsp=%0b, int_fail=%0b)",
-                              req.r_alert_ping_send, req.r_alert_rsp, req.int_err), UVM_DEBUG)
-
-    fork
-      begin : isolation_fork_2
-        fork
-          set_ack_pins(req.ack_delay, req.ack_stable);
-          wait(under_reset);
-        join_any
-        disable fork;
-      end : isolation_fork_2
-    join
-  end // if (!under_reset)
-
-
-  `uvm_info(`gfn,
-            $sformatf("%0s rsp_alert item (ping_send=%0b, alert_rsp=%0b, int_fail=%0b)",
-                      under_reset ? "aborting" : "finished",
-                      req.r_alert_ping_send, req.r_alert_rsp, req.int_err),
-            UVM_DEBUG)
-
-  fork
-    begin : isolation_fork_3
-      fork
-        wait (under_reset);
-        repeat (10) begin
-          if (cfg.vif.receiver_cb.alert_tx.alert_p) begin
-            unset_working_on_alerts = 1;
-            break;
-          end
-          @(cfg.vif.receiver_cb);
-          unset_working_on_alerts = 1;
-        end
-      join_any
-      disable fork;
-    end : isolation_fork_3
-  join
-  if (unset_working_on_alerts)
-    working_on_alert = 0;
-
-  `downcast(rsp, req.clone());
-  rsp.set_id_info(req);
-  seq_item_port.put_response(rsp);
-endtask : rsp_alert
+      end join
+    join_any
+    disable fork;
+  end join
+endtask
 
 task alert_receiver_driver::drive_alert_ping(int unsigned ping_delay,
                                              int unsigned ack_delay,
-                                             int unsigned ack_stable,
-                                             output bit item_not_driven
-                                             );
-  item_not_driven = 0;
-  if (!cfg.use_seq_item_ping_delay) begin
-    ping_delay = $urandom_range(cfg.ping_delay_max, cfg.ping_delay_min);
-  end
-  @(cfg.vif.receiver_cb);
-  // Ping fail and differential signal fail scenarios are not implemented now.
-  // This driver is used for IP (instantiate prim_alert_sender) to finish alert handshake.
-  // The current use-case does not test ping fail and differential signal fail scenarios.
-  // These scenarios are check in prim_alert direct sequences.
-
-  `uvm_info(`gfn, $sformatf("%m - Wait for ping_delay=%0d clock cycles before driving ping",
-                            ping_delay), UVM_DEBUG)
-
-  fork
-    begin : delay_isolation_fork
-      fork
+                                             int unsigned ack_stable);
+  // Wait for ping_delay cycles before sending the ping request, but exit early on reset
+  fork : isolation_fork begin
+    fork
+      wait(cfg.in_reset);
+      begin
         repeat (ping_delay) @(cfg.vif.receiver_cb);
-        begin
-          wait(cfg.vif.receiver_cb.alert_tx.alert_p);
-          item_not_driven = 1;
-        end
-      join_any
-      disable fork;
-    end : delay_isolation_fork
-  join
+        set_ping();
+      end
+    join_any
+    disable fork;
+  end join
+  if (cfg.in_reset) return;
 
-  if (item_not_driven)
-    return; // Printout added in caller task
-
-  `uvm_info(`gfn, "Sending ping", UVM_DEBUG)
-  set_ping();
-
-  fork
-    begin : isolation_fork
-      fork
-        begin : ping_timeout
-          // Finally, hold the driver for handshake_timeout_cycle cycles to give the alert
-          // sender time to respond to the ping.
-          repeat (cfg.handshake_timeout_cycle) @(cfg.vif.receiver_cb);
-        end
-        begin : wait_ping_handshake
-          wait_alert();
-          `uvm_info(`gfn, "PING: alert has happened, setting ack signals", UVM_DEBUG)
-          // If we have sent the ping then the alert we have just seen will be a response to it.
-          // Call the set_ack_pins task to wait a randomised time and then ack the response. If
-          // we haven't sent the ping yet, immediately finish handling the sequence item
-          // instead. Another item will be driven through rsp_alert to respond to the alert
-          // properly.
-          set_ack_pins(ack_delay, ack_stable);
-          `uvm_info(`gfn, $sformatf("%m - Ack finished"), UVM_DEBUG)
-        end
-      join_any
-      disable fork;
-    end
-  join
+  // Respond to the next alert with ack_alert
+  ack_alert(ack_delay, ack_stable);
 endtask
 
-task alert_receiver_driver::set_ack_pins(int unsigned ack_delay,
-                                         int unsigned ack_stable);
+task alert_receiver_driver::ack_alert(int unsigned ack_delay, int unsigned ack_stable);
   if (!cfg.use_seq_item_ack_delay) begin
     ack_delay = $urandom_range(cfg.ack_delay_max, cfg.ack_delay_min);
   end
@@ -340,34 +426,60 @@ task alert_receiver_driver::set_ack_pins(int unsigned ack_delay,
     ack_stable = cfg.ack_stable_min;
   end
 
-  @(cfg.vif.receiver_cb);
-  repeat (ack_delay) @(cfg.vif.receiver_cb);
-  set_ack();
-  fork
-    begin : isolation_fork
-      fork
-        begin : ack_timeout
-          repeat (cfg.handshake_timeout_cycle) @(cfg.vif.sender_cb);
-        end
-        begin : wait_ack_handshake
-          while (cfg.vif.receiver_cb.alert_tx.alert_p !== 1'b0) @(cfg.vif.receiver_cb);
-          repeat (ack_stable) @(cfg.vif.receiver_cb);
-          reset_ack();
-        end
-      join_any
-      disable fork;
-    end : isolation_fork
-  join
-endtask : set_ack_pins
+  m_ack_semaphore.get();
 
-task alert_receiver_driver::set_ack();
-  cfg.vif.receiver_cb.alert_rx_int.ack_p <= 1'b1;
-  cfg.vif.receiver_cb.alert_rx_int.ack_n <= 1'b0;
+  // Wait for the alert to appear (up to cfg.handshake_timeout_cycle cycles)
+  fork : isolation_fork1 begin
+    fork
+      wait(cfg.in_reset);
+      repeat(cfg.handshake_timeout_cycle) @(cfg.vif.receiver_cb);
+      wait(cfg.vif.receiver_cb.alert_tx.alert_p);
+    join_any
+    disable fork;
+  end join
+
+  // If there has been a reset or no alert came out, there is nothing more to do.
+  if (cfg.in_reset || (cfg.vif.receiver_cb.alert_tx.alert_p !== 1'b1)) begin
+    m_ack_semaphore.put();
+    return;
+  end
+
+  // Now wait a short time and set the ack (dropping out early on reset)
+  fork : isolation_fork2 begin
+    fork
+      wait(cfg.in_reset);
+      begin
+        repeat (ack_delay + 1) @(cfg.vif.receiver_cb);
+        set_ack(1'b1);
+      end
+    join_any
+    disable fork;
+  end join
+  if (cfg.in_reset) begin
+    m_ack_semaphore.put();
+    return;
+  end
+
+  // Finally, wait for the alert to be cleared again (up to cfg.handshake_timeout_cycle cycles)
+  fork : isolation_fork3 begin
+    fork
+      wait(cfg.in_reset);
+      repeat(cfg.handshake_timeout_cycle) @(cfg.vif.receiver_cb);
+      begin
+        wait(!cfg.vif.receiver_cb.alert_tx.alert_p);
+        repeat (ack_stable) @(cfg.vif.receiver_cb);
+        set_ack(1'b0);
+      end
+    join_any
+    disable fork;
+  end join
+
+  m_ack_semaphore.put();
 endtask
 
-task alert_receiver_driver::reset_ack();
-  cfg.vif.receiver_cb.alert_rx_int.ack_p <= 1'b0;
-  cfg.vif.receiver_cb.alert_rx_int.ack_n <= 1'b1;
+task alert_receiver_driver::set_ack(bit asserted);
+  cfg.vif.receiver_cb.alert_rx_int.ack_p <= asserted;
+  cfg.vif.receiver_cb.alert_rx_int.ack_n <= !asserted;
 endtask
 
 task alert_receiver_driver::set_ping();
@@ -375,72 +487,27 @@ task alert_receiver_driver::set_ping();
   cfg.vif.receiver_cb.alert_rx_int.ping_n <= !cfg.vif.alert_rx.ping_n;
 endtask
 
-task alert_receiver_driver::wait_alert();
-  while (cfg.vif.receiver_cb.alert_tx.alert_p !== 1'b1) @(cfg.vif.receiver_cb);
-endtask : wait_alert
-
 task alert_receiver_driver::reset_ping();
   cfg.vif.receiver_cb.alert_rx_int.ping_p <= 1'b0;
   cfg.vif.receiver_cb.alert_rx_int.ping_n <= 1'b1;
 endtask
 
-task alert_receiver_driver::do_reset();
-  cfg.vif.alert_rx_int.ping_p <= 1'b0;
-  cfg.vif.alert_rx_int.ping_n <= 1'b1;
-  cfg.vif.alert_rx_int.ack_p <= 1'b0;
-  cfg.vif.alert_rx_int.ack_n <= 1'b1;
-endtask
-
-function void alert_receiver_driver::clear_item_queues();
-  fork
-    begin
-      alert_esc_seq_item rsp, req;
-      int unsigned size;
-
-      // There may be a race condition if we call this task directly on reset
-      // since it can clear its queues here but then in the next delta it may
-      // receive a new item
-      // Wait 4 clock cycles here until clearing to ensure any potential item on
-      // the edge is still cleared
-      // The 4 ticks is because the signals are observed via a clocking block
-      // which looks at a delayed signal by 2 cycles, plus an extra cycle in the
-      // monitor before sending the alert_rsp item.
-      repeat (4)
-        @(cfg.vif.receiver_cb);
-
-
-      `uvm_info(`gfn, $sformatf("%m Clearing send and response queues due to reset"), UVM_DEBUG)
-      `uvm_info(`gfn, $sformatf({"%m - Clearing queues: r_alert_ping_send_q.size=%0d | ",
-                                 "r_alert_rsp_q.size()=%0d"}, r_alert_ping_send_q.size,
-                                r_alert_rsp_q.size()), UVM_DEBUG)
-      size = r_alert_rsp_q.size();
-      for(int i=0 ; i < size; i++) begin
-        req = r_alert_rsp_q.pop_front();
-        `downcast(rsp, req.clone());
-        rsp.set_id_info(req);
-        seq_item_port.put_response(rsp);
-      end
-
-      size = r_alert_ping_send_q.size();
-      for(int i=0 ; i < size; i++) begin
-        req = r_alert_ping_send_q.pop_front();
-        `downcast(rsp, req.clone());
-        rsp.set_id_info(req);
-        seq_item_port.put_response(rsp);
-      end
-    end // fork begin
-  join_none
-endfunction
-
 task alert_receiver_driver::do_alert_rx_init();
-  `DV_SPINWAIT_EXIT(
-      // Drive alert init signal integrity error handshake.
-      repeat ($urandom_range(1, 10)) @(cfg.vif.receiver_cb);
-      cfg.vif.alert_rx_int.ack_n <= 1'b0;
-      wait (cfg.vif.receiver_cb.alert_tx.alert_p == cfg.vif.receiver_cb.alert_tx.alert_n);
-      repeat ($urandom_range(1, 10)) @(cfg.vif.receiver_cb);
-      cfg.vif.alert_rx_int.ack_n  <= 1'b1;
-      wait (cfg.vif.receiver_cb.alert_tx.alert_p != cfg.vif.receiver_cb.alert_tx.alert_n);
-      under_reset = 0;,
-      @(negedge cfg.vif.rst_n);)
+  fork : isolation_fork begin
+    fork
+      wait(cfg.in_reset);
+      begin
+        repeat ($urandom_range(1, 10)) @(cfg.vif.receiver_cb);
+        cfg.vif.alert_rx_int.ack_p <= 1'b0;
+        cfg.vif.alert_rx_int.ack_n <= 1'b0;
+
+        wait (cfg.vif.receiver_cb.alert_tx.alert_p == cfg.vif.receiver_cb.alert_tx.alert_n);
+        repeat ($urandom_range(1, 10)) @(cfg.vif.receiver_cb);
+        cfg.vif.alert_rx_int.ack_n <= 1'b1;
+
+        wait (cfg.vif.receiver_cb.alert_tx.alert_p != cfg.vif.receiver_cb.alert_tx.alert_n);
+      end
+    join_any
+    disable fork;
+  end join
 endtask

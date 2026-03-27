@@ -30,11 +30,11 @@ class uart_monitor extends dv_base_monitor#(
         drive_tx_clk();
         drive_rx_clk();
         mon_tx_stable();
-        wait(cfg.under_reset);
+        wait(cfg.in_reset);
       join_any
       disable fork;
 
-      if (cfg.under_reset) process_reset();
+      if (cfg.in_reset) process_reset();
     end
   endtask
 
@@ -205,7 +205,7 @@ class uart_monitor extends dv_base_monitor#(
     cfg.vif.uart_tx_clk        = 1;
     cfg.vif.uart_rx_clk_pulses = 0;
     cfg.vif.uart_rx_clk        = 1;
-    wait(!cfg.under_reset);
+    wait(!cfg.in_reset);
   endtask
 
 endclass

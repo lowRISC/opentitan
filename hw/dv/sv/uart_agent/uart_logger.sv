@@ -56,8 +56,8 @@ class uart_logger extends uvm_component;
       end
       forever begin
         // reset thread - if reset occurs, reset the log to an empty string.
-        @(cfg.under_reset);
-        if (cfg.under_reset) log = "";
+        @(cfg.in_reset);
+        if (cfg.in_reset) log = "";
       end
     join
   endtask
