@@ -31,6 +31,7 @@ libftdi1-2
 libftdi1-dev
 # A requirement of the prebuilt clang toolchain.
 libncursesw5
+libnginx-mod-http-dav-ext
 libpcsclite-dev
 libssl-dev
 libtool
@@ -41,6 +42,7 @@ llvm
 lrzsz
 lsb-release
 make
+nginx-light
 ninja-build
 openssl
 perl
@@ -59,3 +61,4 @@ xxd
 xz-utils
 zip
 zlib1g-dev
+zstd
