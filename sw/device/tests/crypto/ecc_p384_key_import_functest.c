@@ -34,13 +34,19 @@ static const otcrypto_key_config_t kPrivateKeyConfig = {
 static const char kMessage[] = "test message for public key import";
 
 /**
- * Generate a P-384 keypair, sign a message, re-import the public key
- * coordinates via otcrypto_ecc_p384_public_key_import, and verify the
- * signature with the re-imported key.
+ * Generate a P-384 keypair, re-import both the private key shares and the
+ * public key coordinates, then sign with the imported private key and verify
+ * with the imported public key.
+ *
+ * This tests otcrypto_ecc_p384_private_key_import,
+ * otcrypto_ecc_p384_private_key_export, and otcrypto_ecc_p384_public_key_import
+ * together: a valid signature can only be produced and verified if both imports
+ * round-tripped the key material correctly, and the private key export is
+ * verified against the original raw shares.
  */
 static status_t import_then_verify_test(void) {
-  // Allocate space for a masked private key.
-  uint32_t keyblob[keyblob_num_words(kPrivateKeyConfig)];
+  // Allocate space for the generated private key.
+  uint32_t keyblob[kP384MaskedScalarTotalShareWords];
   otcrypto_blinded_key_t private_key = {
       .config = kPrivateKeyConfig,
       .keyblob_length = sizeof(keyblob),
@@ -59,6 +65,75 @@ static status_t import_then_verify_test(void) {
   LOG_INFO("Generating keypair...");
   TRY(otcrypto_ecdsa_p384_keygen(&private_key, &generated_public_key));
 
+  // Import the private key shares into a fresh blinded key struct.
+  // Use an exportable config so we can round-trip via export below.
+  static const otcrypto_key_config_t kExportableKeyConfig = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeEcdsaP384,
+      .key_length = kP384PrivateKeyBytes,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolTrue,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  otcrypto_const_word32_buf_t share0 = {
+      .data = keyblob,
+      .len = kP384MaskedScalarShareWords,
+  };
+  otcrypto_const_word32_buf_t share1 = {
+      .data = keyblob + kP384MaskedScalarShareWords,
+      .len = kP384MaskedScalarShareWords,
+  };
+  uint32_t imported_keyblob[kP384MaskedScalarTotalShareWords];
+  otcrypto_blinded_key_t imported_private_key = {
+      .config = kExportableKeyConfig,
+      .keyblob_length = sizeof(imported_keyblob),
+      .keyblob = imported_keyblob,
+  };
+  LOG_INFO("Importing private key shares...");
+  TRY(otcrypto_ecc_p384_private_key_import(share0, share1,
+                                           &imported_private_key));
+
+  // Export the imported private key back to shares and verify they match the
+  // originals, completing the import → export round-trip.
+  uint32_t exported_share0_data[kP384MaskedScalarShareWords];
+  uint32_t exported_share1_data[kP384MaskedScalarShareWords];
+  otcrypto_word32_buf_t exported_share0 = {
+      .data = exported_share0_data,
+      .len = kP384MaskedScalarShareWords,
+  };
+  otcrypto_word32_buf_t exported_share1 = {
+      .data = exported_share1_data,
+      .len = kP384MaskedScalarShareWords,
+  };
+  LOG_INFO("Exporting private key shares...");
+  TRY(otcrypto_ecc_p384_private_key_export(&imported_private_key,
+                                           &exported_share0, &exported_share1));
+  TRY_CHECK_ARRAYS_EQ(exported_share0_data, keyblob,
+                      kP384MaskedScalarShareWords);
+  TRY_CHECK_ARRAYS_EQ(exported_share1_data,
+                      keyblob + kP384MaskedScalarShareWords,
+                      kP384MaskedScalarShareWords);
+
+  // Import the public key from its coordinates into a fresh buffer.
+  p384_point_t *pt = (p384_point_t *)pk_buf;
+  otcrypto_const_word32_buf_t x = {
+      .data = pt->x,
+      .len = kP384CoordWords,
+  };
+  otcrypto_const_word32_buf_t y = {
+      .data = pt->y,
+      .len = kP384CoordWords,
+  };
+  uint32_t imported_pk_buf[kP384PublicKeyWords];
+  otcrypto_unblinded_key_t imported_public_key = {
+      .key_mode = kOtcryptoKeyModeEcdsaP384,
+      .key_length = sizeof(imported_pk_buf),
+      .key = imported_pk_buf,
+  };
+  LOG_INFO("Importing public key from coordinates...");
+  TRY(otcrypto_ecc_p384_public_key_import(x, y, &imported_public_key));
+  TRY_CHECK_ARRAYS_EQ(imported_pk_buf, pk_buf, kP384PublicKeyWords);
+
   // Hash the message.
   otcrypto_const_byte_buf_t msg = {
       .data = (unsigned char *)kMessage,
@@ -71,41 +146,17 @@ static status_t import_then_verify_test(void) {
   };
   TRY(otcrypto_sha2_384(msg, &msg_digest));
 
-  // Sign the message with the private key.
+  // Sign the message with the imported private key.
   uint32_t sig[kP384SignatureWords] = {0};
   otcrypto_word32_buf_t sig_buf = {
       .data = sig,
       .len = ARRAYSIZE(sig),
   };
-  LOG_INFO("Signing...");
-  TRY(otcrypto_ecdsa_p384_sign(&private_key, msg_digest, sig_buf));
+  LOG_INFO("Signing with imported private key...");
+  TRY(otcrypto_ecdsa_p384_sign(&imported_private_key, msg_digest, sig_buf));
 
-  // Extract x and y from the generated public key buffer.
-  p384_point_t *pt = (p384_point_t *)pk_buf;
-  otcrypto_const_word32_buf_t x = {
-      .data = pt->x,
-      .len = kP384CoordWords,
-  };
-  otcrypto_const_word32_buf_t y = {
-      .data = pt->y,
-      .len = kP384CoordWords,
-  };
-
-  // Import the public key from its coordinates into a fresh buffer.
-  uint32_t imported_pk_buf[kP384PublicKeyWords];
-  otcrypto_unblinded_key_t imported_public_key = {
-      .key_mode = kOtcryptoKeyModeEcdsaP384,
-      .key_length = sizeof(imported_pk_buf),
-      .key = imported_pk_buf,
-  };
-  LOG_INFO("Importing public key from coordinates...");
-  TRY(otcrypto_ecc_p384_public_key_import(x, y, &imported_public_key));
-
-  // Confirm that the imported key data matches the original.
-  TRY_CHECK_ARRAYS_EQ(imported_pk_buf, pk_buf, kP384PublicKeyWords);
-
-  // Verify the signature using the imported key.
-  LOG_INFO("Verifying signature with imported key...");
+  // Verify the signature using the imported public key.
+  LOG_INFO("Verifying signature with imported public key...");
   otcrypto_const_word32_buf_t const_sig_buf = {
       .data = sig,
       .len = ARRAYSIZE(sig),
