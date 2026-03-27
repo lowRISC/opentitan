@@ -254,7 +254,10 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_base_monito
   virtual protected function bit predict_sba_req(input bus_op_e bus_op);
     uvm_reg_addr_t addr = `gmv(jtag_dmi_ral.sbaddress0);
     uvm_reg_data_t data = `gmv(jtag_dmi_ral.sbdata0);
-    sba_access_size_e size = sba_access_size_e'(`gmv(jtag_dmi_ral.sbcs.sbaccess));
+
+    sba_access_size_e size  = sba_access_size_e'(`gmv(jtag_dmi_ral.sbcs.sbaccess));
+    int unsigned size_bytes = 1 << int'(size);
+
     sba_access_item item;
 
     // Is the address aligned?
@@ -264,8 +267,9 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_base_monito
       return 0;
     end
 
-    // Is the transfer size supported?
-    if (size > $clog2(bus_params_pkg::BUS_DBW)) begin
+    // This transfer size is only supported if it will fit on the bus. If not, the agent should drop
+    // the request and report the bad size through its register interface.
+    if (size_bytes > bus_params_pkg::BUS_DBW) begin
       void'(jtag_dmi_ral.sbcs.sberror.predict(.value(SbaErrBadSize), .kind(UVM_PREDICT_DIRECT)));
       return 0;
     end
