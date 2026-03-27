@@ -60,7 +60,7 @@ module otbn_mac_bignum_fsm
    * | op_a_qw_sel         |   0 |   1 |   2 |   3 |        yes |
    * | op_b_elem0_sel      |   0 |   2 |   4 |   6 |        yes |
    * | op_b_elem1_sel      |   1 |   3 |   5 |   7 |        yes |
-   * | acc_qw_sel          |   0 |   1 |   2 |   3 |         no |
+   * | acc_qw_sel          |   0 |   1 |   2 |   3 |        yes |
    * | acc_wr_en_raw       |   1 |   1 |   1 |   0 |         no |
    * | acc_clear_en        |   0 |   0 |   0 |   1 |         no |
    * | acc_merger_en       |   1 |   1 |   1 |   1 |        yes |
@@ -86,7 +86,7 @@ module otbn_mac_bignum_fsm
    * | tmp_clear_en        |   0 |   0 |   1 ||   0 |   0 |   1 ||     ||     |   1 |         no |
    * | c_wr_en_raw         |   1 |   0 |   0 ||   1 |   0 |   0 ||     ||     |   0 |         no |
    * | c_clear_en          |   0 |   0 |   1 ||   0 |   0 |   1 ||     ||     |   1 |         no |
-   * | acc_qw_sel          |   0 |   0 |   0 ||   1 |   1 |   1 ||     ||     |   3 |         no |
+   * | acc_qw_sel          |   0 |   0 |   0 ||   1 |   1 |   1 ||     ||     |   3 |        yes |
    * | acc_wr_en_raw       |   0 |   0 |   1 ||   0 |   0 |   1 ||     ||     |   0 |         no |
    * | acc_clear_en        |   0 |   0 |   0 ||   0 |   0 |   0 ||     ||     |   1 |         no |
    * | mul_add_en          |   0 |   0 |   1 ||   0 |   0 |   1 ||     ||     |   1 |        yes |
@@ -115,19 +115,20 @@ module otbn_mac_bignum_fsm
   localparam mac_bignum_contrl_t ControlDefault = '0;
 
   typedef struct packed {
-    logic [1:0]        op_a_qw_sel;
-    logic [2:0]        op_b_elem0_sel;
-    logic [2:0]        op_b_elem1_sel;
-    logic              mul_op_a_tmp_sel;
-    mac_mul_op_b_sel_e mul_op_b_sel;
-    logic              mul_add_en;
-    logic              c_add_en;
-    logic              add_mod_en;
-    logic              acc_merger_en;
-    logic              mul_shift_en;
-    logic              mul_merger_en;
-    logic              add_res_en;
-    logic              operation_valid_raw;
+    logic [1:0]            op_a_qw_sel;
+    logic [2:0]            op_b_elem0_sel;
+    logic [2:0]            op_b_elem1_sel;
+    logic                  mul_op_a_tmp_sel;
+    mac_mul_op_b_sel_e     mul_op_b_sel;
+    logic                  mul_add_en;
+    logic                  c_add_en;
+    logic                  add_mod_en;
+    logic [VLEN/QWLEN-1:0] acc_qw_sel;
+    logic                  acc_merger_en;
+    logic                  mul_shift_en;
+    logic                  mul_merger_en;
+    logic                  add_res_en;
+    logic                  operation_valid_raw;
   } mac_bignum_predec_dyn_t;
 
   localparam mac_bignum_predec_dyn_t PredecDynDefault = '{
@@ -139,6 +140,7 @@ module otbn_mac_bignum_fsm
     mul_add_en:          1'b0,
     c_add_en:            1'b0,
     add_mod_en:          1'b0,
+    acc_qw_sel:          '0,
     acc_merger_en:       1'b0,
     mul_shift_en:        1'b0,
     mul_merger_en:       1'b0,
@@ -174,11 +176,11 @@ module otbn_mac_bignum_fsm
     predec_vec = '{default: PredecDynDefault};
 
     for (int unsigned cycle = 0; cycle < LatencyVec; cycle++) begin
-      contrl_vec[cycle].acc_qw_sel     = 2'(cycle);
       contrl_vec[cycle].acc_wr_en_raw  = 1'b1;
       predec_vec[cycle].op_a_qw_sel    = 2'(cycle);
       predec_vec[cycle].op_b_elem0_sel = 3'(2 * cycle);
       predec_vec[cycle].op_b_elem1_sel = 3'(2 * cycle + 1);
+      predec_vec[cycle].acc_qw_sel     = (VLEN/QWLEN)'(unsigned'(1) << cycle);
       predec_vec[cycle].acc_merger_en  = 1'b1;
     end
 
@@ -223,11 +225,11 @@ module otbn_mac_bignum_fsm
     // Construct the 4 * 3 = 12 cycles and set the correct qword selection
     for (int unsigned cycle = 0; cycle < LatencyMod; cycle++) begin
       contrl_mod[cycle]                = contrl_mod_mul[cycle % LatencyMontgMul];
-      contrl_mod[cycle].acc_qw_sel     = 2'(cycle / LatencyMontgMul);
       predec_mod[cycle]                = predec_mod_mul[cycle % LatencyMontgMul];
       predec_mod[cycle].op_a_qw_sel    = 2'(cycle / LatencyMontgMul);
       predec_mod[cycle].op_b_elem0_sel = 3'(2 * (cycle / LatencyMontgMul));
       predec_mod[cycle].op_b_elem1_sel = 3'(2 * (cycle / LatencyMontgMul) + 1);
+      predec_mod[cycle].acc_qw_sel     = (VLEN/QWLEN)'(unsigned'(1)) << (cycle / LatencyMontgMul);
     end
 
     // Clear ACC in the last cycle with randomness
@@ -325,6 +327,7 @@ module otbn_mac_bignum_fsm
     mul_add_en:          predec_dyn.mul_add_en,
     c_add_en:            predec_dyn.c_add_en,
     add_mod_en:          predec_dyn.add_mod_en,
+    acc_qw_sel:          predec_dyn.acc_qw_sel,
     acc_merger_en:       predec_dyn.acc_merger_en,
     mul_shift_en:        predec_dyn.mul_shift_en,
     mul_merger_en:       predec_dyn.mul_merger_en,
