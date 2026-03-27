@@ -220,8 +220,9 @@ module prim_subreg_shadow
 
     // Update errors can only occur in Phase 1. At this point, the shadow register contains the
     // unfiltered but negated input from software, i.e., the check has to be performed based on the
-    // unfiltered input.
-    assign err_update = (~shadow_q != wd) ? phase_q & wr_en : 1'b0;
+    // unfiltered input. Note: the unfiltered input wd may be X - we should only use it if wr_en is
+    // asserted.
+    assign err_update = (phase_q && wr_en) ? (~shadow_q != wd) : 1'b0;
   end
 
   // The committed register:
