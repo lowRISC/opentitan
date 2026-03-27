@@ -171,7 +171,7 @@ volatile otcrypto_interface_t otcrypto = {
     .ed25519_verify_async_start = &otcrypto_ed25519_verify_async_start,
     .ed25519_verify_async_finalize = &otcrypto_ed25519_verify_async_finalize,
 
-    // ECC P-384 point checks and key import.
+    // ECC P-384 point checks and key import/export.
     .ecc_p384_point_on_curve = &otcrypto_p384_point_on_curve,
     .ecc_p384_public_key_import = &otcrypto_ecc_p384_public_key_import,
     .ecc_p384_private_key_import = &otcrypto_ecc_p384_private_key_import,
