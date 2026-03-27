@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  name: hmac
+name: hmac
   testpoints: [
     // HMAC integration tests
     {
@@ -150,12 +150,13 @@
 
             This is a low priority test P3.
 
-            Test the permutation of all endianness configuration options for message and digest
-            registers.
+            Test the permutation of all endianness configuration options for message, digest and
+            key registers.
             '''
       features: [
         "HMAC.ENDIANNESS.MESSAGE",
         "HMAC.ENDIANNESS.DIGEST",
+	"HMAC.CFG.KEY_SWAP",
       ]
       stage: V3
       si_stage: SV3
