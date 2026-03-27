@@ -1,0 +1,38 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: Restore bazel cache artifacts
+description: Restore bazel cache artifacts
+
+inputs:
+  pattern:
+    description: Glob patterns of artifact
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Download bazel cache artifacts
+      uses: actions/download-artifact@v4
+      with:
+        pattern: ${{ inputs.pattern }}
+        path: downloads
+
+    - name: Extract and merge cache
+      shell: bash
+      run: |
+        echo "Extract and merge cache"
+
+        du -sh downloads/*
+
+        mkdir -p "${{ env.BAZEL_CACHE_OVERLAY }}"
+        find downloads -name "*.tar.zst" -exec \
+          tar --zstd -C "${{ env.BAZEL_CACHE_OVERLAY }}" -xf {} \;
+        rm -rf downloads
+
+    - name: Show restored cache
+      shell: bash
+      run: |
+        du -sh "${{ env.BAZEL_CACHE_OVERLAY }}"
+        du -sh "${{ env.BAZEL_CACHE_OVERLAY }}"/data/*
