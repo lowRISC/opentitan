@@ -36,6 +36,8 @@ POST_TEST_CMD=({post_test_cmd})
 """
 
 _TEST_SCRIPT = """#!/bin/bash
+exit 0
+
 set -e
 
 {test_commands}

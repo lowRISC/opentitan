@@ -38,9 +38,135 @@ on:
         type: string
 
 jobs:
-  fpga:
+  fpga-query:
+    name: Query
+    runs-on: ubuntu-22.04
+    outputs:
+      skipped: ${{ steps.list.outputs.skipped }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: List FPGA tests
+        id: list
+        run: |
+          # Execute a query to find all targets that match the test tags and store them in a file.
+          ci/scripts/run-bazel-test-query.sh \
+            target_pattern_file.txt \
+            "${{ inputs.tag_filters }}",-manual,-broken,-skip_in_ci \
+            //... @manufacturer_test_hooks//...
+          wc -l target_pattern_file.txt
+
+          if [[ -s target_pattern_file.txt ]]; then
+            wc -l target_pattern_file.txt
+            echo "skipped=false" >> "${GITHUB_OUTPUT:-/dev/null}"
+          else
+            echo "No tests to run after filtering"
+            echo "skipped=true" >> "${GITHUB_OUTPUT:-/dev/null}"
+          fi
+
+      - name: Upload target pattern file
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.job_name }}-targets
+          path: target_pattern_file.txt
+
+  fpga-build:
+    name: Build
+    runs-on: ubuntu-22.04-vivado
+    timeout-minutes: ${{ inputs.timeout }}
+    needs: fpga-query
+    if: needs.fpga-query.outputs.skipped == 'false'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+        with:
+          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
+      - name: Download bitstream
+        uses: ./.github/actions/download-partial-build-bin
+        with:
+          job-patterns: ${{ inputs.bitstream }}
+
+      - name: Download test target list
+        uses: actions/download-artifact@v4
+        with:
+          pattern: ${{ inputs.job_name }}-targets
+          path: /tmp/target_pattern
+
+      - name: Start bazel cache overlay
+        run: bash ci/scripts/run-bazel-cache-overlay.sh
+
+      - name: Build FPGA tests
+        run: |
+          cat /tmp/target_pattern/**/*.txt > target_pattern_file.txt
+          wc -l target_pattern_file.txt
+
+          . util/build_consts.sh
+          module load "xilinx/vivado/2021.1"
+          ci/scripts/run-fpga-tests.sh --build-only \
+            "--mode=${{ inputs.mode }}" "${{ inputs.interface }}" \
+            target_pattern_file.txt
+
+      - name: Show cache stats
+        if: ${{ env.BAZEL_CACHE_OVERLAY != '' }}
+        run: |
+          cd "${{ env.BAZEL_CACHE_OVERLAY }}"
+          echo "Remote cache overlay stats"
+          cat access.log | sort -u | cut -f 1 | uniq -c
+          echo "Uncompressed size"
+          du -sh .
+          echo "Compressing cache overlay"
+          time tar --zstd -cf /tmp/cache-overlay-full.tar.zst .
+          du -sh /tmp/cache-overlay-full.tar.zst
+          rm /tmp/cache-overlay-full.tar.zst
+
+      - name: Trim bazel cache
+        if: ${{ env.BAZEL_CACHE_OVERLAY != '' }}
+        run: |
+          echo "Reset local status"
+          ci/bazelisk.sh clean --async
+          truncate -s 0 "${{ env.BAZEL_CACHE_OVERLAY }}/access.log"
+
+          echo "Rerun to find required cache files"
+          . util/build_consts.sh
+          module load "xilinx/vivado/2021.1"
+          ci/scripts/run-fpga-tests.sh --build-only \
+            "--mode=${{ inputs.mode }}" "${{ inputs.interface }}" \
+            target_pattern_file.txt
+
+      - name: Pack bazel cache
+        if: ${{ env.BAZEL_CACHE_OVERLAY != '' }}
+        run: |
+          cd "${{ env.BAZEL_CACHE_OVERLAY }}"
+          echo "Remote cache overlay stats"
+          cat access.log | sort -u | cut -f 1 | uniq -c
+
+          echo "Trim cache overlay"
+          cat access.log | grep '^HIT' | cut -f 2 | sort -u > cache_files
+          wc -l cache_files
+          mkdir -p /tmp/trimmed-cache/
+          rsync -a --files-from=cache_files . /tmp/trimmed-cache/
+          du -sh /tmp/trimmed-cache/
+
+          echo "Compressing trimmed overlay"
+          time tar --zstd -C /tmp/trimmed-cache/ -cf /tmp/cache-overlay.tar.zst .
+          du -sh /tmp/cache-overlay.tar.zst
+
+      - name: Upload bazel cache
+        if: ${{ env.BAZEL_CACHE_OVERLAY != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.job_name }}-bazel-cache
+          path: /tmp/cache-overlay.tar.zst
+          retention-days: 1
+          compression-level: 0
+
+  fpga-test:
     name: FPGA test
     runs-on: [ubuntu-22.04-fpga, "${{ inputs.board }}"]
+    needs: fpga-build
     timeout-minutes: ${{ inputs.timeout }}
     steps:
       - uses: actions/checkout@v4
@@ -55,6 +181,20 @@ jobs:
         with:
           job-patterns: ${{ inputs.bitstream }}
 
+      - name: Download test target list
+        uses: actions/download-artifact@v4
+        with:
+          pattern: ${{ inputs.job_name }}-targets
+          path: /tmp/target_pattern
+
+      - name: Start bazel cache overlay
+        run: bash ci/scripts/run-bazel-cache-overlay.sh
+
+      - name: Restore bazel cache
+        uses: ./.github/actions/restore-bazel-cache
+        with:
+          pattern: ${{ inputs.job_name }}-bazel-cache
+
       - name: Update hyperdebug firmware
         if: inputs.interface == 'hyper310'
         run: |
@@ -64,33 +204,23 @@ jobs:
 
       - name: Execute tests
         run: |
+          cat /tmp/target_pattern/**/*.txt > target_pattern_file.txt
+
           . util/build_consts.sh
           module load "xilinx/vivado/${{ inputs.vivado_version }}"
+          ci/scripts/run-fpga-tests.sh \
+            "--mode=${{ inputs.mode }}" "${{ inputs.interface }}" \
+            target_pattern_file.txt
 
-          # Execute a query to find all targets that match the test tags and store them in a file.
-          ci/scripts/run-bazel-test-query.sh \
-            target_pattern_file.txt \
-            "${{ inputs.tag_filters }}",-manual,-broken,-skip_in_ci \
-            //... @manufacturer_test_hooks//...
-
-          # Run FPGA tests
-          if [[ -s target_pattern_file.txt ]]; then
-            ci/scripts/run-fpga-tests.sh "--mode=${{ inputs.mode }}" "${{ inputs.interface }}" target_pattern_file.txt || {
-              res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}";
-            }
-          else
-            echo "No tests to run after filtering"
-          fi
+      - name: Show cache stats
+        if: ${{ env.BAZEL_CACHE_OVERLAY != '' }}
+        run: |
+          cd "${{ env.BAZEL_CACHE_OVERLAY }}"
+          echo "Remote cache overlay stats"
+          cat access.log | sort -u | cut -f 1 | uniq -c
 
       - name: Publish Bazel test results
         uses: ./.github/actions/publish-bazel-test-results
         if: ${{ !cancelled() }}
         with:
           artifact-name: ${{ inputs.job_name }}-test-results
-
-      - name: Upload target pattern file
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ inputs.job_name }}-targets
-          path: target_pattern_file.txt

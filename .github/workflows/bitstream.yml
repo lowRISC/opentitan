@@ -15,18 +15,20 @@ on:
         type: string
 
 jobs:
-  bitstream:
-    name: Build bitstream
-    runs-on: ubuntu-22.04-bitstream
-    timeout-minutes: 240
+  bitstream_find:
+    name: Find bitstream
+    runs-on: ubuntu-22.04
+    outputs:
+      bitstreamStrategy: ${{ steps.strategy.outputs.bitstreamStrategy }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Required by get-bitstream-strategy.sh
-      - name: Prepare environment
-        uses: ./.github/actions/prepare-env
-        with:
-          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
+
+      # - name: Prepare environment
+      #   uses: ./.github/actions/prepare-env
+      #   with:
+      #     service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
 
       - name: Configure bitstream strategy
         id: strategy
@@ -56,8 +58,28 @@ jobs:
           bitstream_archive=$(./bazelisk.sh outquery "${cached_archive}")
           cp -Lv ${bitstream_archive} build-bin.tar
 
+      - name: Upload step outputs
+        if: steps.strategy.outputs.bitstreamStrategy == 'cached'
+        uses: actions/upload-artifact@v4
+        with:
+          name: partial-build-bin-chip_${{ inputs.top_name }}_${{ inputs.design_suffix }}
+          path: build-bin.tar
+
+  bitstream_build:
+    name: Build bitstream
+    runs-on: ubuntu-22.04-bitstream
+    timeout-minutes: 240
+    needs: bitstream_find
+    if: needs.bitstream_find.outputs.bitstreamStrategy != 'cached'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+        with:
+          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
+
       - name: Build and splice bitstream with Vivado
-        if: steps.strategy.outputs.bitstreamStrategy != 'cached'
         run: |
           bazel_package=//hw/bitstream/vivado
           bitstream_target=${bazel_package}:fpga_${{ inputs.design_suffix }}
@@ -79,7 +101,6 @@ jobs:
           ./bazelisk.sh build ${archive_target}
 
       - name: Display synthesis & implementation logs
-        if: steps.strategy.outputs.bitstreamStrategy != 'cached'
         run: |
           . util/build_consts.sh
           echo "Synthesis log"
