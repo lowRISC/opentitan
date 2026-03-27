@@ -259,8 +259,8 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "ecc_p384_public_key_import_functest",
-    srcs = ["ecc_p384_public_key_import_functest.c"],
+    name = "ecc_p384_key_import_functest",
+    srcs = ["ecc_p384_key_import_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
