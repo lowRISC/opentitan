@@ -402,6 +402,30 @@ otcrypto_status_t otcrypto_ecc_p384_public_key_import(
     otcrypto_unblinded_key_t *public_key);
 
 /**
+ * Exports the affine coordinates of a P-384 public key.
+ *
+ * Extracts the affine x and y coordinates from the unblinded public key
+ * struct. This is the inverse of `otcrypto_ecc_p384_public_key_import`.
+ *
+ * The caller must allocate and partially populate the output buffers before
+ * calling this function:
+ *   - `x->data` and `y->data` must each point to a caller-allocated buffer of
+ *     exactly 12 words (384 bits).
+ *   - `x->len` and `y->len` must each be set to 12.
+ *
+ * @param public_key Unblinded public key struct (Q) to export.
+ * @param[out] x Affine x-coordinate of the public key (must be exactly 8
+ *             words).
+ * @param[out] y Affine y-coordinate of the public key (must be exactly 8
+ *             words).
+ * @return Result of the P-384 public key export operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ecc_p384_public_key_export(
+    const otcrypto_unblinded_key_t *public_key, otcrypto_word32_buf_t *x,
+    otcrypto_word32_buf_t *y);
+
+/**
  * Is on curve check for given P-384 point.
  *
  * @param point Point in the affine coordinates representation that should be

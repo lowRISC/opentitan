@@ -393,6 +393,9 @@ typedef struct otcrypto_interface_t {
   otcrypto_status_t (*ecc_p384_private_key_import)(otcrypto_const_word32_buf_t,
                                                    otcrypto_const_word32_buf_t,
                                                    otcrypto_blinded_key_t *);
+  otcrypto_status_t (*ecc_p384_public_key_export)(
+      const otcrypto_unblinded_key_t *, otcrypto_word32_buf_t *,
+      otcrypto_word32_buf_t *);
 
 } otcrypto_interface_t;
 
