@@ -172,7 +172,10 @@ cc_library(
 cc_library(
     name = "keyblob",
     srcs = ["keyblob.c"],
-    hdrs = ["keyblob.h"],
+    hdrs = [
+        "keyblob.h",
+        "//sw/device/lib/crypto/include:keyblob.h",
+    ],
     deps = [
         ":integrity",
         ":status",
