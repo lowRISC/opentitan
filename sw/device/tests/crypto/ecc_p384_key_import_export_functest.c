@@ -40,10 +40,10 @@ static const char kMessage[] = "test message for public key import";
  * with the imported public key.
  *
  * This tests otcrypto_ecc_p384_private_key_import,
- * otcrypto_ecc_p384_private_key_export, and otcrypto_ecc_p384_public_key_import
- * together: a valid signature can only be produced and verified if both imports
- * round-tripped the key material correctly, and the private key export is
- * verified against the original raw shares.
+ * otcrypto_ecc_p384_private_key_export, otcrypto_ecc_p384_public_key_import,
+ * and otcrypto_ecc_p384_public_key_export together: a valid signature can only
+ * be produced and verified if both imports round-tripped the key material
+ * correctly, and both exports are verified against the original raw values.
  */
 static status_t import_then_verify_test(void) {
   // Allocate space for the generated private key.
@@ -92,7 +92,7 @@ static status_t import_then_verify_test(void) {
                                            &imported_private_key));
 
   // Export the imported private key back to shares and verify they match the
-  // originals, completing the import → export round-trip.
+  // originals.
   uint32_t exported_share0_data[kP384MaskedScalarShareWords];
   uint32_t exported_share1_data[kP384MaskedScalarShareWords];
   otcrypto_word32_buf_t exported_share0 = OTCRYPTO_MAKE_BUF(
@@ -123,6 +123,20 @@ static status_t import_then_verify_test(void) {
   LOG_INFO("Importing public key from coordinates...");
   TRY(otcrypto_ecc_p384_public_key_import(&x, &y, &imported_public_key));
   TRY_CHECK_ARRAYS_EQ(imported_pk_buf, pk_buf, kP384PublicKeyWords);
+
+  // Export the imported public key back to affine coordinates and confirm they
+  // match the originals, completing the import → export round-trip.
+  uint32_t exported_x_data[kP384CoordWords];
+  uint32_t exported_y_data[kP384CoordWords];
+  otcrypto_word32_buf_t exported_x = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, exported_x_data, kP384CoordWords);
+  otcrypto_word32_buf_t exported_y = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, exported_y_data, kP384CoordWords);
+  LOG_INFO("Exporting public key to coordinates...");
+  TRY(otcrypto_ecc_p384_public_key_export(&imported_public_key, &exported_x,
+                                          &exported_y));
+  TRY_CHECK_ARRAYS_EQ(exported_x_data, pt->x, kP384CoordWords);
+  TRY_CHECK_ARRAYS_EQ(exported_y_data, pt->y, kP384CoordWords);
 
   // Hash the message.
   otcrypto_const_byte_buf_t msg =
