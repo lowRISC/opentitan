@@ -4,10 +4,10 @@
 
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/crypto/impl/integrity.h"
-#include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/drbg.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/key_transport.h"
+#include "sw/device/lib/crypto/include/keyblob.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/randomness_quality.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -100,7 +100,7 @@ static status_t basic_keygen_test(otcrypto_key_config_t config) {
   // Log the generated key.
   uint32_t *share0;
   uint32_t *share1;
-  HARDENED_TRY(keyblob_to_shares(&key, &share0, &share1));
+  TRY(keyblob_to_shares(&key, &share0, &share1));
   for (size_t i = 0; i < key_share_words; i++) {
     LOG_INFO("key[%d] = 0x%08x", i, share0[i] ^ share1[i]);
   }

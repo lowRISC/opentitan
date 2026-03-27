@@ -6,10 +6,8 @@
 
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/base/status.h"
-#include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
@@ -21,11 +19,11 @@ status_t handle_drbg(ujson_t *uj) {
   TRY(ujson_deserialize_cryptotest_drbg_input_t(uj, &uj_input));
 
   // Entropy for initialization
-  uint8_t entropy_buf[kEntropySeedBytes];
-  memset(entropy_buf, 0, kEntropySeedBytes);
+  uint8_t entropy_buf[(256 + 128) / 8];
+  memset(entropy_buf, 0, (256 + 128) / 8);
   memcpy(entropy_buf, uj_input.entropy, uj_input.entropy_len);
   otcrypto_const_byte_buf_t entropy = {
-      .len = kEntropySeedBytes,
+      .len = (256 + 128) / 8,
       .data = entropy_buf,
   };
 

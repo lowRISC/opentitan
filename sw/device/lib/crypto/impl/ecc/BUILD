@@ -9,7 +9,10 @@ load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
 cc_library(
     name = "curve25519",
     srcs = ["curve25519.c"],
-    hdrs = ["curve25519.h"],
+    hdrs = [
+        "curve25519.h",
+        "//sw/device/lib/crypto/impl/ecc/include:curve25519.h",
+    ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//sw/device/lib/base:crc32",
@@ -25,7 +28,10 @@ cc_library(
 cc_library(
     name = "p256",
     srcs = ["p256.c"],
-    hdrs = ["p256.h"],
+    hdrs = [
+        "p256.h",
+        "//sw/device/lib/crypto/impl/ecc/include:p256.h",
+    ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//sw/device/lib/base:crc32",
@@ -41,7 +47,10 @@ cc_library(
 cc_library(
     name = "p384",
     srcs = ["p384.c"],
-    hdrs = ["p384.h"],
+    hdrs = [
+        "p384.h",
+        "//sw/device/lib/crypto/impl/ecc/include:p384.h",
+    ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//sw/device/lib/base:crc32",

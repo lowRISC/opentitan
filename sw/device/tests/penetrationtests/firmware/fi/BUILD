@@ -36,8 +36,6 @@ cc_library(
     deps = [
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/include:crypto_hdrs",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
@@ -45,7 +43,16 @@ cc_library(
         "//sw/device/tests/penetrationtests/firmware/fi:cryptolib_fi_sym_impl",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/json:cryptolib_fi_sym_commands",
-    ],
+    ] + select({
+        # This is the target for the cryptolib given as a prebuilt drop
+        "//sw/device/tests/penetrationtests/cryptolib_drop:use_prebuilt_cryptolib": [
+            "//sw/device/tests/penetrationtests/cryptolib_drop:cryptolib_imported",
+        ],
+        # This is the internal cryptolib
+        "//conditions:default": [
+            "//sw/device/lib/crypto",
+        ],
+    }),
 )
 
 cc_library(
@@ -55,8 +62,6 @@ cc_library(
     deps = [
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/include:crypto_hdrs",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
@@ -64,7 +69,16 @@ cc_library(
         "//sw/device/tests/penetrationtests/firmware/fi:cryptolib_fi_asym_impl",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/json:cryptolib_fi_asym_commands",
-    ],
+    ] + select({
+        # This is the target for the cryptolib given as a prebuilt drop
+        "//sw/device/tests/penetrationtests/cryptolib_drop:use_prebuilt_cryptolib": [
+            "//sw/device/tests/penetrationtests/cryptolib_drop:cryptolib_imported",
+        ],
+        # This is the internal cryptolib
+        "//conditions:default": [
+            "//sw/device/lib/crypto",
+        ],
+    }),
 )
 
 cc_library(
@@ -77,24 +91,22 @@ cc_library(
     deps = [
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/impl:cryptolib_build_info",
-        "//sw/device/lib/crypto/impl:ecc_p256",
-        "//sw/device/lib/crypto/impl:ecc_p384",
-        "//sw/device/lib/crypto/impl:integrity",
-        "//sw/device/lib/crypto/impl:key_transport",
-        "//sw/device/lib/crypto/impl:keyblob",
-        "//sw/device/lib/crypto/impl:rsa",
-        "//sw/device/lib/crypto/impl:sha2",
-        "//sw/device/lib/crypto/include:crypto_hdrs",
-        "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/json:cryptolib_fi_asym_commands",
-    ],
+    ] + select({
+        # This is the target for the cryptolib given as a prebuilt drop
+        "//sw/device/tests/penetrationtests/cryptolib_drop:use_prebuilt_cryptolib": [
+            "//sw/device/tests/penetrationtests/cryptolib_drop:cryptolib_imported",
+        ],
+        # This is the internal cryptolib
+        "//conditions:default": [
+            "//sw/device/lib/crypto",
+        ],
+    }),
 )
 
 cc_library(
@@ -106,23 +118,22 @@ cc_library(
     ],
     deps = [
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/impl:aes",
-        "//sw/device/lib/crypto/impl:aes_gcm",
-        "//sw/device/lib/crypto/impl:cryptolib_build_info",
-        "//sw/device/lib/crypto/impl:drbg",
-        "//sw/device/lib/crypto/impl:hmac",
-        "//sw/device/lib/crypto/impl:integrity",
-        "//sw/device/lib/crypto/impl:keyblob",
-        "//sw/device/lib/crypto/include:crypto_hdrs",
-        "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/json:cryptolib_fi_sym_commands",
-    ],
+    ] + select({
+        # This is the target for the cryptolib given as a prebuilt drop
+        "//sw/device/tests/penetrationtests/cryptolib_drop:use_prebuilt_cryptolib": [
+            "//sw/device/tests/penetrationtests/cryptolib_drop:cryptolib_imported",
+        ],
+        # This is the internal cryptolib
+        "//conditions:default": [
+            "//sw/device/lib/crypto",
+        ],
+    }),
 )
 
 cc_library(

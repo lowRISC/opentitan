@@ -2,13 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_INTEGRITY_H_
-#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_INTEGRITY_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_INTEGRITY_H_
+#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_INTEGRITY_H_
 
 #include <stddef.h>
 #include <stdint.h>
 
+#ifdef OTCRYPTO_IN_REPO
 #include "sw/device/lib/base/hardened.h"
+#else
+#include "freestanding/hardened.h"
+#endif
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 
@@ -67,4 +71,4 @@ hardened_bool_t integrity_blinded_key_check(const otcrypto_blinded_key_t *key);
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_INTEGRITY_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_INTEGRITY_H_
