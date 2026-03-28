@@ -92,6 +92,10 @@ static status_t digest_info_length_get(const otcrypto_hash_mode_t hash_mode,
     case kOtcryptoHashModeSha3_512:
       *len = sizeof(kSha512DigestIdentifier) + kKmacSha3512DigestBytes;
       break;
+    case kOtcryptoHashXofModeShake128:
+    case kOtcryptoHashXofModeShake256:
+    case kOtcryptoHashXofModeCshake128:
+    case kOtcryptoHashXofModeCshake256:
     default:
       // Unsupported or unrecognized hash function.
       return OTCRYPTO_BAD_ARGS;
@@ -159,6 +163,10 @@ static status_t digest_info_write(const otcrypto_hash_digest_t message_digest,
       memcpy(encoding + digest_wordlen, &kSha3_512DigestIdentifier,
              sizeof(kSha3_512DigestIdentifier));
       break;
+    case kOtcryptoHashXofModeShake128:
+    case kOtcryptoHashXofModeShake256:
+    case kOtcryptoHashXofModeCshake128:
+    case kOtcryptoHashXofModeCshake256:
     default:
       // Unsupported or unrecognized hash function.
       return OTCRYPTO_BAD_ARGS;
@@ -275,6 +283,10 @@ static status_t digest_wordlen_get(otcrypto_hash_mode_t hash_mode,
       hash_mode_used = launder32(hash_mode_used) | kOtcryptoHashModeSha3_512;
       *num_words = 512 / 32;
       break;
+    case kOtcryptoHashXofModeShake128:
+    case kOtcryptoHashXofModeShake256:
+    case kOtcryptoHashXofModeCshake128:
+    case kOtcryptoHashXofModeCshake256:
     default:
       return OTCRYPTO_BAD_ARGS;
   }

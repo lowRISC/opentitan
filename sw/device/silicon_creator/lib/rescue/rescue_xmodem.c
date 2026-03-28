@@ -103,6 +103,7 @@ static rom_error_t protocol(rescue_state_t *state) {
       continue;
     }
 
+    OT_NO_SWITCH_ENUM_COVERAGE_START
     switch (result) {
       case kErrorOk:
         // Packet ok. Cancel the inactivity deadline.
@@ -146,6 +147,7 @@ static rom_error_t protocol(rescue_state_t *state) {
       default:
         return result;
     }
+    OT_NO_SWITCH_ENUM_COVERAGE_END
     state->frame += 1;
   }
 }

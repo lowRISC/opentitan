@@ -80,6 +80,9 @@ static uint8_t packet_length(const usbdev_stream_t *s, uint32_t bytes_done,
           const unsigned max_bytes = USBDEV_MAX_PACKET_SIZE - sig_bytes;
           num_bytes = sig_bytes + (*bufsz_lfsr % (max_bytes + 1u));
         } break;
+        case kUsbTransferTypeControl:
+        case kUsbTransferTypeBulk:
+        case kUsbTransferTypeInterrupt:
         default:
           num_bytes = sig_bytes;
           break;
@@ -139,6 +142,7 @@ static uint8_t buffer_sig_create(usb_testutils_streams_ctx_t *ctx,
       // memory.
       OT_FALLTHROUGH_INTENDED;
 #endif
+    case kWriteMethodStandard:
     default:
       CHECK_DIF_OK(dif_usbdev_buffer_write(
           ctx->usbdev->dev, buf, (uint8_t *)&sig, sizeof(sig), &bytes_written));
@@ -275,6 +279,7 @@ static void buffer_fill(usb_testutils_streams_ctx_t *ctx, usbdev_stream_t *s,
       // memory.
       OT_FALLTHROUGH_INTENDED;
 #endif
+    case kWriteMethodStandard:
     default:
       CHECK_DIF_OK(dif_usbdev_buffer_write(ctx->usbdev->dev, buf, data,
                                            num_bytes, &bytes_written));
@@ -309,6 +314,8 @@ static void buffer_check(usb_testutils_streams_ctx_t *ctx, usbdev_stream_t *s,
         // TODO: faster read method not yet integrated, defaulting to standard
         OT_FALLTHROUGH_INTENDED;
 #endif
+      case kReadMethodNone:
+      case kReadMethodStandard:
       default:
         CHECK_DIF_OK(dif_usbdev_buffer_read(usbdev->dev, usbdev->buffer_pool,
                                             &buf, data, len, &bytes_read));
@@ -366,6 +373,7 @@ static void buffer_check(usb_testutils_streams_ctx_t *ctx, usbdev_stream_t *s,
         s->rx_bytes += bytes_read - offset;
       } break;
 
+      case kUsbTransferTypeControl:
       default:
         CHECK(s->xfr_type == kUsbTransferTypeControl);
         break;
@@ -454,6 +462,8 @@ static status_t strm_rx(void *cb_v, dif_usbdev_rx_packet_info_t packet_info,
       size_t bytes_read;
 
       switch (read_method) {
+        case kReadMethodNone:
+          OT_UNREACHABLE();
 #if USBUTILS_MEM_FASTER
         // Faster read performance using custom routine
         case kReadMethodFaster:
@@ -461,6 +471,7 @@ static status_t strm_rx(void *cb_v, dif_usbdev_rx_packet_info_t packet_info,
           OT_FALLTHROUGH_INTENDED;
 #endif
         //  Use the standard interface
+        case kReadMethodStandard:
         default:
           TRY(dif_usbdev_buffer_read(usbdev->dev, usbdev->buffer_pool, &buf,
                                      data, len, &bytes_read));

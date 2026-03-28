@@ -75,6 +75,12 @@ static status_t empty_message_test(void) {
       case kBootSvcTestStateFinal:
         LOG_INFO("FinalBootLog: %d:%s", state->boots, state->partition);
         return OK_STATUS();
+      case kBootSvcTestStateNextSideB:
+      case kBootSvcTestStateReturnSideA:
+      case kBootSvcTestStateMinSecAdvance:
+      case kBootSvcTestStateMinSecTooFar:
+      case kBootSvcTestStateMinSecGoBack:
+      case kBootSvcTestStateEnterRescue:
       default:
         return UNKNOWN();
     }

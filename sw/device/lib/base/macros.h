@@ -523,6 +523,22 @@ extern "C++" {
 #define OT_ALIAS(name) __attribute__((alias(name)))
 
 /**
+ * Pragma to start a range of code where the compiler should not warn about
+ * unhandled enum values in switch statements. Terminate that range with
+ * `OT_NO_SWITCH_ENUM_COVERAGE_END`.
+ */
+#define OT_NO_SWITCH_ENUM_COVERAGE_START \
+  _Pragma("GCC diagnostic push")         \
+      _Pragma("GCC diagnostic ignored \"-Wswitch-enum\"")
+
+/**
+ * Pragma to end a range of code where the compiler should not warn about
+ * unhandled enum values in switch statements. Start that range with
+ * `OT_NO_SWITCH_ENUM_COVERAGE_START`.
+ */
+#define OT_NO_SWITCH_ENUM_COVERAGE_END _Pragma("GCC diagnostic pop")
+
+/**
  * Defines a local symbol named `kName_` whose address resolves to the
  * program counter value an inline assembly block at this location would
  * see.

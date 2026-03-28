@@ -254,6 +254,7 @@ dif_result_t dif_dma_get_digest_length(dif_dma_transaction_opcode_t opcode,
     case kDifDmaSha512Opcode:
       *digest_len = 16;
       break;
+    case kDifDmaCopyOpcode:
     default:
       return kDifBadArg;
       break;

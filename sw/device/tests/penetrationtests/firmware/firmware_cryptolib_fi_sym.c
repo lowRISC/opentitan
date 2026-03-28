@@ -24,6 +24,7 @@ status_t process_cmd(ujson_t *uj) {
   while (true) {
     penetrationtest_cmd_t cmd;
     TRY(ujson_deserialize_penetrationtest_cmd_t(uj, &cmd));
+    OT_NO_SWITCH_ENUM_COVERAGE_START
     switch (cmd) {
       case kPenetrationtestCommandCryptoLibFiSym:
         RESP_ERR(uj, handle_cryptolib_fi_sym(uj));
@@ -33,6 +34,7 @@ status_t process_cmd(ujson_t *uj) {
         RESP_ERR(uj, INVALID_ARGUMENT());
     }
   }
+  OT_NO_SWITCH_ENUM_COVERAGE_END
 
   return OK_STATUS();
 }

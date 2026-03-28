@@ -37,6 +37,7 @@ status_t command_processor(ujson_t *uj) {
   while (true) {
     test_command_t command;
     TRY(ujson_deserialize_test_command_t(uj, &command));
+    OT_NO_SWITCH_ENUM_COVERAGE_START
     switch (command) {
       case kTestCommandSwStrapRead:
         RESP_ERR(uj, test_sw_strap_read(uj));
@@ -45,6 +46,7 @@ status_t command_processor(ujson_t *uj) {
         LOG_ERROR("Unrecognized command: %d", command);
         RESP_ERR(uj, INVALID_ARGUMENT());
     }
+    OT_NO_SWITCH_ENUM_COVERAGE_END
   }
   return OK_STATUS(0);
 }

@@ -267,6 +267,10 @@ dif_result_t dif_alert_handler_configure_class(
       case kDifAlertHandlerClassStatePhase3:
         continue;
         break;
+      case kDifAlertHandlerClassStateIdle:
+      case kDifAlertHandlerClassStateTimeout:
+      case kDifAlertHandlerClassStateFsmError:
+      case kDifAlertHandlerClassStateTerminal:
       default:
         return kDifBadArg;
     }
@@ -423,6 +427,10 @@ dif_result_t dif_alert_handler_configure_class(
             alert_handler->base_addr, phase3_cycles_reg_offset,
             config.escalation_phases[i].duration_cycles);
         break;
+      case kDifAlertHandlerClassStateIdle:
+      case kDifAlertHandlerClassStateTimeout:
+      case kDifAlertHandlerClassStateFsmError:
+      case kDifAlertHandlerClassStateTerminal:
       default:
         return kDifBadArg;
     }

@@ -91,10 +91,9 @@ status_t kmac_testutils_check_error(const dif_kmac_t *kmac) {
   TRY(dif_kmac_err_processed(kmac));
 
   // Return with a status based on the error code.
-  switch (err) {
-    case kDifErrorKeyNotValid:
-      return FAILED_PRECONDITION();
-    default:
-      return INTERNAL();
+  if (err == kDifErrorKeyNotValid) {
+    return FAILED_PRECONDITION();
+  } else {
+    return INTERNAL();
   }
 }

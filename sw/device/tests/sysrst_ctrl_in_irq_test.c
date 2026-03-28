@@ -217,6 +217,7 @@ void ottf_external_isr(uint32_t *exc_info) {
   top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
       top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
 
+  OT_NO_SWITCH_ENUM_COVERAGE_START
   switch (peripheral) {
     case kTopEarlgreyPlicPeripheralUart0:
       if (!ottf_console_flow_control_isr(exc_info)) {
@@ -238,6 +239,7 @@ void ottf_external_isr(uint32_t *exc_info) {
     default:
       goto unexpected_irq;
   }
+  OT_NO_SWITCH_ENUM_COVERAGE_END
 
   // Complete the IRQ at PLIC.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kPlicTarget, plic_irq_id));
