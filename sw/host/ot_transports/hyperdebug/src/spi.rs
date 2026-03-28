@@ -11,6 +11,7 @@ use anyhow::{Result, bail, ensure};
 use rusb::{Direction, Recipient, RequestType};
 use zerocopy::{FromBytes, Immutable, IntoBytes};
 
+use crate::spiflash::flash::SpiFlash;
 use opentitanlib::io::eeprom;
 use opentitanlib::io::gpio::GpioPin;
 use opentitanlib::io::spi::{
@@ -1054,10 +1055,10 @@ impl Target for HyperdebugSpiTarget {
                 }
                 [eeprom::Transaction::WaitForBusyClear, rest @ ..] => {
                     self.get_last_streamed_data(stream_state)?;
-                    let mut status = eeprom::STATUS_WIP;
-                    while status & eeprom::STATUS_WIP != 0 {
+                    let mut status = SpiFlash::STATUS_WIP;
+                    while status & SpiFlash::STATUS_WIP != 0 {
                         self.run_transaction(&mut [
-                            Transfer::Write(&[eeprom::READ_STATUS]),
+                            Transfer::Write(&[SpiFlash::READ_STATUS]),
                             Transfer::Read(std::slice::from_mut(&mut status)),
                         ])?;
                     }
