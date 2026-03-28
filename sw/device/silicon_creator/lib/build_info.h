@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CHIP_INFO_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CHIP_INFO_H_
+#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_BUILD_INFO_H_
+#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_BUILD_INFO_H_
 
 #include <stdint.h>
 
@@ -13,7 +13,7 @@
  * A truncated commit hash from the open-source OpenTitan repo that can be
  * used to reproduce the ROM binary.
  */
-typedef struct chip_info_scm_revision {
+typedef struct build_info_scm_revision {
   /**
    * Least significant word of the truncated commit hash.
    */
@@ -22,13 +22,13 @@ typedef struct chip_info_scm_revision {
    * Most significant word of the truncated commit hash.
    */
   uint32_t scm_revision_high;
-} chip_info_scm_revision_t;
+} build_info_scm_revision_t;
 
-typedef struct chip_info {
+typedef struct build_info {
   /**
    * Truncated commit hash.
    */
-  chip_info_scm_revision_t scm_revision;
+  build_info_scm_revision_t scm_revision;
   /**
    * Chip info format version.
    *
@@ -38,23 +38,21 @@ typedef struct chip_info {
    * field. See `sw/device/silicon_creator/rom/rom.ld` for details.
    */
   uint32_t version;
-} chip_info_t;
-OT_ASSERT_MEMBER_OFFSET(chip_info_t, scm_revision, 0);
-OT_ASSERT_MEMBER_OFFSET(chip_info_t, version, 8);
-OT_ASSERT_SIZE(chip_info_t, 12);
+} build_info_t;
+OT_ASSERT_MEMBER_OFFSET(build_info_t, scm_revision, 0);
+OT_ASSERT_MEMBER_OFFSET(build_info_t, version, 8);
+OT_ASSERT_SIZE(build_info_t, 12);
 
 enum {
   /**
    * Chip info format version 1 value.
    */
-  kChipInfoVersion1 = 0x4efecea6,
+  kBuildInfoVersion1 = 0x4efecea6,
 };
 
 /**
- * Extern declaration for the `kChipInfo` instance placed at the end of ROM.
- *
- * The actual definition is in an auto-generated file.
+ * The build information.
  */
-extern const chip_info_t kChipInfo;
+extern const build_info_t kBuildInfo;
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CHIP_INFO_H_
+#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_BUILD_INFO_H_

@@ -7,7 +7,7 @@ load(
     "dicts",
 )
 load("//hw/top:defs.bzl", "ALL_IP_NAMES", "opentitan_alias_top_attr", "opentitan_if_ip", "opentitan_select_top")
-load("//rules:autogen.bzl", "autogen_chip_info")
+load("//rules:autogen.bzl", "autogen_build_info")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
 load(
@@ -118,7 +118,7 @@ cc_library(
         ":boot_data_header",
         ":nonce_header",
         "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib:chip_info",
+        "//sw/device/silicon_creator/lib:build_info",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/ownership:datatypes",
@@ -130,7 +130,7 @@ cc_test(
     srcs = ["boot_log_unittest.cc"],
     deps = [
         ":boot_log",
-        "//sw/device/silicon_creator/lib:chip_info",
+        "//sw/device/silicon_creator/lib:build_info",
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "@googletest//:gtest_main",
     ],
@@ -373,7 +373,7 @@ filegroup(
     ],
 )
 
-autogen_chip_info(name = "chip_info")
+autogen_build_info(name = "build_info")
 
 dual_cc_library(
     name = "shutdown",
@@ -401,7 +401,7 @@ dual_cc_library(
             "@googletest//:gtest",
         ],
         shared = [
-            ":chip_info",
+            ":build_info",
             ":error",
             ":epmp_defs",
             ":stack_utilization",

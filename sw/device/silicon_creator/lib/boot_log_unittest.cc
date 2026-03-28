@@ -7,7 +7,7 @@
 #include <cstring>
 
 #include "gtest/gtest.h"
-#include "sw/device/silicon_creator/lib/chip_info.h"
+#include "sw/device/silicon_creator/lib/build_info.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_hmac.h"
 
@@ -19,8 +19,8 @@ bool operator!=(hmac_digest_t lhs, hmac_digest_t rhs) {
   return std::memcmp(&lhs, &rhs, sizeof(hmac_digest_t)) != 0;
 }
 
-bool operator==(chip_info_scm_revision_t lhs, chip_info_scm_revision_t rhs) {
-  return std::memcmp(&lhs, &rhs, sizeof(chip_info_scm_revision_t)) == 0;
+bool operator==(build_info_scm_revision_t lhs, build_info_scm_revision_t rhs) {
+  return std::memcmp(&lhs, &rhs, sizeof(build_info_scm_revision_t)) == 0;
 }
 
 namespace boot_log_unittest {
@@ -46,7 +46,7 @@ class BootLogTest : public rom_test::RomTest {
           },
   };
 
-  chip_info_scm_revision_t expected_chip_version = {
+  build_info_scm_revision_t expected_chip_version = {
       .scm_revision_low = 0x76543210,
       .scm_revision_high = 0xcafecafe,
   };
