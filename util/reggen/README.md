@@ -517,6 +517,30 @@ For example the data bits and mask bits could be in the lower and upper parts of
 In this case instance 1 will use bits 1 and 17, instance 2 will use 2 and 18 and so on.
 Instance 16 does not fit, so will start a new register.
 
+#### Vendor-specific fields
+Regtool supports vendor-specific fields/attributes in the <IP>.hjson files.
+To add a vendor-specific field, one can use the argument `--vendor-specific-fields` when invoking `regtool.py`.
+These fields will not affect any of the regtool outputs.
+Therefore, they can be used by vendor-specific tools that also ingest the HJSON files; regtool merely tolerates these fields.
+
+This is a contrived example of how the vendor-specific HJSON configuration file:
+```hjson
+{
+  ip_block: {
+    lowrisc_block_field : ['s', 'This is Lowrisc awesome block field']
+  }
+  register: {
+    lowrisc_reg_field : ['s', 'This is Lowrisc awesome register field']
+  }
+  field: {
+    lowrisc_field : ['s', 'This is Lowrisc awesome field attr']
+  }
+  window: {
+    lowrisc_window_field : ['s', 'This is Lowrisc awesome window field']
+  }
+}
+```
+
 ### Verification Tags Definition and Format
 
 This section documents the usage of tags in the register Hjson file.
