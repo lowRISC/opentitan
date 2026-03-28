@@ -117,11 +117,11 @@ static status_t keymgr_wait_until_done(void) {
                         KEYMGR_OP_STATUS_STATUS_VALUE_DONE_ERROR);
       return OTCRYPTO_RECOV_ERR;
     }
+    default:
+      // Should be unreachable.
+      HARDENED_TRAP();
+      return OTCRYPTO_FATAL_ERR;
   }
-
-  // Should be unreachable.
-  HARDENED_TRAP();
-  return OTCRYPTO_FATAL_ERR;
 }
 
 /**
