@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 load("//rules/opentitan:keyutils.bzl", "key_ecdsa")
+load("//rules:signing.bzl", "keyset")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -23,6 +24,11 @@ filegroup(
 filegroup(
     name = "unlock_key",
     srcs = ["unlock_ecdsa_p256.der"],
+)
+
+filegroup(
+    name = "all_zero_sig",
+    srcs = ["all_zero_sig.bin"],
 )
 
 filegroup(
@@ -56,4 +62,14 @@ key_ecdsa(
     private_key = "app_prod_ecdsa_p256.der",
     pub_key = "app_prod_ecdsa_p256.pub.der",
     type = "ProdKey",
+)
+
+keyset(
+    name = "ecdsa_keyset",
+    build_setting_default = "",
+    keys = {
+        "app_prod_ecdsa_p256.der": "app_prod_0",
+    },
+    profile = "local",
+    tool = "//signing/tokens:local",
 )

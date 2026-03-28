@@ -75,6 +75,8 @@ fn rescue_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<(
         } else {
             None
         },
+        None,
+        false,
     )?;
 
     log::info!("###### Get Boot Log (2/2) ######");
@@ -105,6 +107,7 @@ fn rescue_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<(
             .clone()
             .or_else(|| opts.next_activate_key.clone()),
         None,
+        BootSlot::SlotA,
     )?;
 
     log::info!("###### Check Rescue Dis-Allowed Command ######");
