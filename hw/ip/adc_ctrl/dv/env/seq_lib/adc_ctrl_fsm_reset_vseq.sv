@@ -93,23 +93,39 @@ class adc_ctrl_fsm_reset_vseq extends adc_ctrl_base_vseq;
     `DV_ASSERT_CTRL_REQ("ADC_CTRL_FSM_A_CTRL", 1)
   endtask
 
+  function void set_named_field(uvm_reg csr, string name, uvm_reg_data_t value);
+    uvm_reg_field fld = csr.get_field_by_name(name);
+    if (!fld) begin
+      `uvm_fatal(`gfn, $sformatf("Register %s has no field called %s.", csr.get_name(), name))
+    end
+
+    fld.set(value);
+  endfunction
+
+  // Configure the filter whose control register is in csr so that it will match every possible
+  // input.
+  task set_filter_to_always_match(uvm_reg csr);
+    uvm_status_e status;
+
+    set_named_field(csr, "min_v", 0);
+    set_named_field(csr, "max_v", 1023);
+    set_named_field(csr, "cond",  0);
+    set_named_field(csr, "en",    1);
+    csr.update(status);
+
+    if (status != UVM_IS_OK) begin
+      `uvm_error(`gfn, $sformatf("Failed to update filter register (in %s)", csr.get_name()))
+    end
+  endtask
 
   virtual task body();
     uvm_reg_data_t rdata;
     // Make sure ADC is off
     csr_wr(ral.adc_en_ctl, 'h0);
 
-    // Make sure filters will always match
-    ral.adc_chn0_filter_ctl[0].min_v.set(0);
-    ral.adc_chn0_filter_ctl[0].max_v.set(1023);
-    ral.adc_chn0_filter_ctl[0].cond.set(ADC_CTRL_FILTER_COND_IN);
-    ral.adc_chn0_filter_ctl[0].en.set(1);
-    ral.adc_chn1_filter_ctl[0].min_v.set(0);
-    ral.adc_chn1_filter_ctl[0].max_v.set(1023);
-    ral.adc_chn1_filter_ctl[0].cond.set(ADC_CTRL_FILTER_COND_IN);
-    ral.adc_chn1_filter_ctl[0].en.set(1);
-    csr_wr(ral.adc_chn0_filter_ctl[0], ral.adc_chn0_filter_ctl[0].get());
-    csr_wr(ral.adc_chn1_filter_ctl[0], ral.adc_chn1_filter_ctl[0].get());
+    // Make sure ony filter on each channel will always match
+    set_filter_to_always_match(ral.adc_chn0_filter_ctl[0]);
+    set_filter_to_always_match(ral.adc_chn1_filter_ctl[0]);
 
     repeat (num_trans) begin
       // Set up sample counts
