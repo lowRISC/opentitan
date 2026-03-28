@@ -65,13 +65,17 @@ def intersignal_format(req: Dict) -> str:
     return result
 
 
-def get_suffixes(ims: OrderedDict) -> Tuple[str, str]:
+def get_suffixes(ims: OrderedDict, for_type_def: bool = True) -> Tuple[str, str]:
     """Get suffixes of the struct.
 
     TL-UL struct uses `h2d`, `d2h` suffixes for req, rsp pair.
+    Simply return empty string for non-req_rsp type
     """
+    if ims["type"] != "req_rsp":
+        return ("", "")
+
     if ims["package"] == "tlul_pkg" and ims["struct"] == "tl":
-        return ("_h2d", "_d2h")
+        return ("_h2d", "_d2h") if for_type_def else ("_req", "_rsp")
 
     return ("_req", "_rsp")
 
@@ -247,10 +251,94 @@ def _get_default_name(sig, suffix):
     if sig['default']:
         return sig['default']
     elif sig['package']:
-        return "{}::{}_DEFAULT".format(sig['package'],
-                                       (sig["struct"] + suffix).upper())
+        single = "{}::{}_DEFAULT".format(sig['package'],
+                                         (sig["struct"] + suffix).upper())
+        return single if sig["width"] == 1 else "'{{{}}}".format(single)
     else:
-        return "'0"
+        if sig["struct"] in ["logic", ""] and sig["width"] == 1:
+            return "1'b0"
+        else:
+            return "'0"
+
+
+def get_signame_chip(topcfg: Dict, sig: OrderedDict, port: str, reqrsp: str = "req"):
+    # Determine all possible suffixes and stub strings
+    type_req_suffix, type_rsp_suffix = get_suffixes(sig, True)
+    sig_req_suffix, sig_rsp_suffix = get_suffixes(sig, False)
+    type_reqrsp_suffix = type_req_suffix if (reqrsp == "req") else type_rsp_suffix
+    sig_reqrsp_suffix = sig_req_suffix if (reqrsp == "req") else sig_rsp_suffix
+
+    if sig["type"] == "req_rsp":
+        # Output if both are either "req" or "rsp"
+        if sig["act"] == reqrsp:
+            dir_suffix = "_o"
+            direction = "out"
+        else:
+            dir_suffix = "_i"
+            direction = "in"
+    elif sig["type"] == "io":
+        dir_suffix = "_io"
+        direction = "inout"
+    elif sig["type"] == "uni":
+        if sig["act"] == "req":
+            dir_suffix = "_o"
+            direction = "out"
+        else:
+            dir_suffix = "_i"
+            direction = "in"
+
+    # Stub/tieoff string. For outputs: Simply leave open
+    if direction == "out":
+        stub_str = ""
+    else:
+        stub_str = _get_default_name(sig, type_reqrsp_suffix)
+
+    # Check if a chip-level signal name is specified, otherwise infer it from port name
+    sig_name = port if port != "" else intersignal_format(sig)
+    sig_name_chip_stem = sig_name
+
+    # Update empty `top_netname` keys; required for the `netname` key
+    if sig["top_signame"] == "":
+        sig["top_signame"] = sig_name
+
+    # Add all suffixes to the signal (port) name
+    sig_name_full = sig_name + sig_reqrsp_suffix + dir_suffix
+
+    # Construct chiplevel signal name dict; overwrite sig_name_chip on stubbed signals
+    sig_name_chip = {}
+    port_name = sig["inst_name"] + '.' + sig["name"]
+    for tgt in topcfg["targets"]:
+        # Use stem + reqrsp-suffix if target does not do any chip-level modifications
+        sig_name_chip[tgt["name"]] = sig_name_chip_stem + sig_reqrsp_suffix
+        # Check if current target wants to do any modifications
+        if "chiplevel" in tgt and port_name in tgt["chiplevel"]["alter_ports"]:
+            # Tieoff, alter connection name, and/or feedthrough
+            alter = tgt["chiplevel"]["alter_ports"][port_name]
+            # Tieoff logic: 'True' uses infered value
+            if "tieoff" in alter:
+                if alter["tieoff"] is True:
+                    sig_name_chip[tgt["name"]] = stub_str
+                elif alter["tieoff"] is not False:
+                    sig_name_chip[tgt["name"]] = alter["tieoff"]
+            elif "signal" in alter:
+                sig_name_chip[tgt["name"]] = alter["signal"] + sig_reqrsp_suffix
+
+            # Check if we must add a feedthrough suffix
+            if "feedthrough" in alter:
+                sig_name_chip[tgt["name"]] += dir_suffix
+
+    # Return the ready-to-add dict and the signal (port) name
+    return (OrderedDict([('package', sig["package"]),
+                         ('struct', sig["struct"] + type_reqrsp_suffix),
+                         ('signame', sig_name_full),
+                         ('signame_chip', sig_name_chip),
+                         ('width', sig["width"]), ('type', sig["type"]),
+                         ('default', sig["default"]),
+                         ('direction', direction),
+                         ('conn_type', sig["conn_type"]),
+                         ('index', sig["index"]),
+                         ('netname', sig["top_signame"] + type_reqrsp_suffix)]),
+            sig_name)
 
 
 def elab_intermodule(topcfg: OrderedDict):
@@ -472,83 +560,32 @@ def elab_intermodule(topcfg: OrderedDict):
 
         # To make netname `_o` or `_i`
         sig['external'] = True
-
-        sig_name = port if port != "" else intersignal_format(sig)
-
-        # if top signame already defined, then a previous connection category
-        # is already connected to external pin.  Sig name is only used for
-        # port definition
-        conn_type = False
+        # Provide a placeholder, will be updated below
         if "top_signame" not in sig:
-            sig["top_signame"] = sig_name
+            sig["top_signame"] = ""
+            sig["conn_type"] = False
         else:
-            conn_type = True
-        sig["conn_type"] = conn_type
+            # Set to `True` if sig already has a top_signame
+            sig["conn_type"] = True
 
+        # Make sure there is an index key
         if "index" not in sig:
             sig["index"] = -1
 
         # Add the port definition to top external ports
-        index = sig["index"]
-        netname = sig["top_signame"]
+        sig_dict, sig_name = get_signame_chip(topcfg, sig, port, "req")
+        topcfg["inter_signal"]["external"].append(sig_dict)
+
+        # If top signame already defined, then a previous connection category
+        # is already connected to external pin. Sig name is only used for
+        # port definition
+        if sig["top_signame"] == "":
+            sig["top_signame"] = sig_name
+
+        # One more port entry for req_rsp type signals
         if sig["type"] == "req_rsp":
-            req_suffix, rsp_suffix = get_suffixes(sig)
-            if sig["act"] == "req":
-                req_sigsuffix, rsp_sigsuffix = ("_o", "_i")
-
-            else:
-                req_sigsuffix, rsp_sigsuffix = ("_i", "_o")
-
-            topcfg["inter_signal"]["external"].append(
-                OrderedDict([('package', sig["package"]),
-                             ('struct', sig["struct"] + req_suffix),
-                             ('signame', sig_name + "_req" + req_sigsuffix),
-                             ('width', sig["width"]), ('type', sig["type"]),
-                             ('default', sig["default"]),
-                             ('direction',
-                              'out' if sig['act'] == "req" else 'in'),
-                             ('conn_type', conn_type),
-                             ('index', index),
-                             ('netname', netname + req_suffix)]))
-            topcfg["inter_signal"]["external"].append(
-                OrderedDict([('package', sig["package"]),
-                             ('struct', sig["struct"] + rsp_suffix),
-                             ('signame', sig_name + "_rsp" + rsp_sigsuffix),
-                             ('width', sig["width"]), ('type', sig["type"]),
-                             ('default', sig["default"]),
-                             ('direction',
-                              'in' if sig['act'] == "req" else 'out'),
-                             ('conn_type', conn_type),
-                             ('index', index),
-                             ('netname', netname + rsp_suffix)]))
-        elif sig["type"] == "io":
-            sigsuffix = "_io"
-            topcfg["inter_signal"]["external"].append(
-                OrderedDict([('package', sig.get("package", "")),
-                             ('struct', sig["struct"]),
-                             ('signame', sig_name + sigsuffix),
-                             ('width', sig["width"]), ('type', sig["type"]),
-                             ('default', sig["default"]),
-                             ('direction', "inout"),
-                             ('conn_type', conn_type),
-                             ('index', index),
-                             ('netname', netname)]))
-        else:  # uni
-            if sig["act"] == "req":
-                sigsuffix = "_o"
-            else:
-                sigsuffix = "_i"
-            topcfg["inter_signal"]["external"].append(
-                OrderedDict([('package', sig.get("package", "")),
-                             ('struct', sig["struct"]),
-                             ('signame', sig_name + sigsuffix),
-                             ('width', sig["width"]), ('type', sig["type"]),
-                             ('default', sig["default"]),
-                             ('direction',
-                              'out' if sig['act'] == "req" else 'in'),
-                             ('conn_type', conn_type),
-                             ('index', index),
-                             ('netname', netname)]))
+            sig_dict, _ = get_signame_chip(topcfg, sig, port, "rsp")
+            topcfg["inter_signal"]["external"].append(sig_dict)
 
     for sig in topcfg["inter_signal"]["signals"]:
         # Check if it exist in definitions

@@ -3825,7 +3825,6 @@
             expose: true
             name_top: SramCtrlMainNumRamInst
           }
-          default: "'0"
           inst_name: sram_ctrl_main
           index: -1
         }
@@ -7559,6 +7558,108 @@
   [
     {
       name: cw305
+      chiplevel:
+      {
+        alter_ports:
+        {
+          ast.lc_dft_en:
+          {
+            tieoff: true
+          }
+          ast.usb_ram_1p_cfg:
+          {
+            tieoff: true
+          }
+          ast.ram_1p_cfg:
+          {
+            tieoff: true
+          }
+          ast.spi_ram_2p_cfg:
+          {
+            tieoff: true
+          }
+          ast.rom_cfg:
+          {
+            tieoff: true
+          }
+          sram_ctrl_main.cfg:
+          {
+            tieoff: true
+          }
+          sram_ctrl_ret_aon.cfg:
+          {
+            tieoff: true
+          }
+          pinmux_aon.dft_hold_tap_sel:
+          {
+            tieoff: true
+          }
+          pinmux_aon.usb_dnpullup_en:
+          {
+            tieoff: true
+          }
+          pinmux_aon.dft_strap_test:
+          {
+            tieoff: true
+          }
+          usbdev.usb_tx_d:
+          {
+            tieoff: true
+          }
+          usbdev.usb_tx_se0:
+          {
+            tieoff: true
+          }
+          usbdev.usb_tx_use_d_se0:
+          {
+            tieoff: true
+          }
+          usbdev.usb_rx_d:
+          {
+            signal: usb_rx_d
+          }
+          usbdev.usb_rx_enable:
+          {
+            signal: usb_rx_enable
+          }
+          usbdev.usb_ref_val:
+          {
+            signal: usb_ref_val
+          }
+          usbdev.usb_ref_pulse:
+          {
+            signal: usb_ref_pulse
+          }
+          sensor_ctrl_aon.manual_pad_attr:
+          {
+            tieoff: true
+          }
+          entropy_src.rng_fips:
+          {
+            tieoff: true
+          }
+          otp_macro.ext_voltage_h:
+          {
+            tieoff: true
+          }
+          flash_ctrl.flash_test_mode_a:
+          {
+            tieoff: true
+          }
+          flash_ctrl.flash_test_voltage_h:
+          {
+            tieoff: true
+          }
+          flash_ctrl.flash_power_down_h:
+          {
+            tieoff: true
+          }
+          flash_ctrl.flash_power_ready_h:
+          {
+            tieoff: 1'b1
+          }
+        }
+      }
       pinout:
       {
         remove_ports: []
@@ -11381,7 +11482,6 @@
           expose: true
           name_top: SramCtrlMainNumRamInst
         }
-        default: "'0"
         inst_name: sram_ctrl_main
         index: -1
       }
@@ -12266,6 +12366,10 @@
         package: edn_pkg
         struct: edn_req
         signame: ast_edn_req_i
+        signame_chip:
+        {
+          cw305: ast_edn_req
+        }
         width: 1
         type: req_rsp
         default: ""
@@ -12278,6 +12382,10 @@
         package: edn_pkg
         struct: edn_rsp
         signame: ast_edn_rsp_o
+        signame_chip:
+        {
+          cw305: ast_edn_rsp
+        }
         width: 1
         type: req_rsp
         default: ""
@@ -12290,6 +12398,10 @@
         package: lc_ctrl_pkg
         struct: lc_tx
         signame: ast_lc_dft_en_o
+        signame_chip:
+        {
+          cw305: ""
+        }
         width: 1
         type: uni
         default: ""
@@ -12302,6 +12414,10 @@
         package: prim_ram_1p_pkg
         struct: ram_1p_cfg
         signame: ram_1p_cfg_i
+        signame_chip:
+        {
+          cw305: prim_ram_1p_pkg::RAM_1P_CFG_DEFAULT
+        }
         width: 1
         type: uni
         default: ""
@@ -12314,6 +12430,10 @@
         package: prim_ram_2p_pkg
         struct: ram_2p_cfg
         signame: spi_ram_2p_cfg_i
+        signame_chip:
+        {
+          cw305: prim_ram_2p_pkg::RAM_2P_CFG_DEFAULT
+        }
         width: 1
         type: uni
         default: ""
@@ -12326,6 +12446,10 @@
         package: prim_ram_1p_pkg
         struct: ram_1p_cfg
         signame: usb_ram_1p_cfg_i
+        signame_chip:
+        {
+          cw305: prim_ram_1p_pkg::RAM_1P_CFG_DEFAULT
+        }
         width: 1
         type: uni
         default: ""
@@ -12338,6 +12462,10 @@
         package: prim_rom_pkg
         struct: rom_cfg
         signame: rom_cfg_i
+        signame_chip:
+        {
+          cw305: prim_rom_pkg::ROM_CFG_DEFAULT
+        }
         width: 1
         type: uni
         default: ""
@@ -12350,6 +12478,10 @@
         package: prim_mubi_pkg
         struct: mubi4
         signame: clk_main_jitter_en_o
+        signame_chip:
+        {
+          cw305: clk_main_jitter_en
+        }
         width: 1
         type: uni
         default: ""
@@ -12362,6 +12494,10 @@
         package: prim_mubi_pkg
         struct: mubi4
         signame: hi_speed_sel_o
+        signame_chip:
+        {
+          cw305: hi_speed_sel
+        }
         width: 1
         type: uni
         default: ""
@@ -12374,6 +12510,10 @@
         package: prim_mubi_pkg
         struct: mubi4
         signame: div_step_down_req_i
+        signame_chip:
+        {
+          cw305: div_step_down_req
+        }
         width: 1
         type: uni
         default: ""
@@ -12386,6 +12526,10 @@
         package: prim_mubi_pkg
         struct: mubi4
         signame: all_clk_byp_req_o
+        signame_chip:
+        {
+          cw305: all_clk_byp_req
+        }
         width: 1
         type: uni
         default: ""
@@ -12398,6 +12542,10 @@
         package: prim_mubi_pkg
         struct: mubi4
         signame: all_clk_byp_ack_i
+        signame_chip:
+        {
+          cw305: all_clk_byp_ack
+        }
         width: 1
         type: uni
         default: ""
@@ -12410,6 +12558,10 @@
         package: prim_mubi_pkg
         struct: mubi4
         signame: io_clk_byp_req_o
+        signame_chip:
+        {
+          cw305: io_clk_byp_req
+        }
         width: 1
         type: uni
         default: ""
@@ -12422,6 +12574,10 @@
         package: prim_mubi_pkg
         struct: mubi4
         signame: io_clk_byp_ack_i
+        signame_chip:
+        {
+          cw305: io_clk_byp_ack
+        }
         width: 1
         type: uni
         default: ""
@@ -12434,6 +12590,10 @@
         package: prim_mubi_pkg
         struct: mubi4
         signame: flash_bist_enable_i
+        signame_chip:
+        {
+          cw305: flash_bist_enable
+        }
         width: 1
         type: uni
         default: ""
@@ -12446,6 +12606,10 @@
         package: ""
         struct: logic
         signame: flash_power_down_h_i
+        signame_chip:
+        {
+          cw305: 1'b0
+        }
         width: 1
         type: uni
         default: ""
@@ -12458,6 +12622,10 @@
         package: ""
         struct: logic
         signame: flash_power_ready_h_i
+        signame_chip:
+        {
+          cw305: 1'b1
+        }
         width: 1
         type: uni
         default: ""
@@ -12470,6 +12638,10 @@
         package: ast_pkg
         struct: ast_obs_ctrl
         signame: obs_ctrl_i
+        signame_chip:
+        {
+          cw305: obs_ctrl
+        }
         width: 1
         type: uni
         default: ""
@@ -12482,6 +12654,10 @@
         package: ""
         struct: logic
         signame: flash_obs_o
+        signame_chip:
+        {
+          cw305: flash_obs
+        }
         width: 8
         type: uni
         default: ""
@@ -12494,6 +12670,10 @@
         package: tlul_pkg
         struct: tl_h2d
         signame: ast_tl_req_o
+        signame_chip:
+        {
+          cw305: ast_tl_req
+        }
         width: 1
         type: req_rsp
         default: ""
@@ -12506,6 +12686,10 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: ast_tl_rsp_i
+        signame_chip:
+        {
+          cw305: ast_tl_rsp
+        }
         width: 1
         type: req_rsp
         default: ""
@@ -12518,6 +12702,10 @@
         package: pinmux_pkg
         struct: dft_strap_test_req
         signame: dft_strap_test_o
+        signame_chip:
+        {
+          cw305: ""
+        }
         width: 1
         type: uni
         default: "'0"
@@ -12530,6 +12718,10 @@
         package: ""
         struct: logic
         signame: dft_hold_tap_sel_i
+        signame_chip:
+        {
+          cw305: "'0"
+        }
         width: 1
         type: uni
         default: "'0"
@@ -12542,6 +12734,10 @@
         package: ""
         struct: logic
         signame: usb_dp_pullup_en_o
+        signame_chip:
+        {
+          cw305: usb_dp_pullup_en
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -12554,6 +12750,10 @@
         package: ""
         struct: logic
         signame: usb_dn_pullup_en_o
+        signame_chip:
+        {
+          cw305: ""
+        }
         width: 1
         type: uni
         default: 1'b0
@@ -12566,6 +12766,10 @@
         package: pwrmgr_pkg
         struct: pwr_ast_req
         signame: pwrmgr_ast_req_o
+        signame_chip:
+        {
+          cw305: pwrmgr_ast_req
+        }
         width: 1
         type: req_rsp
         default: ""
@@ -12578,6 +12782,10 @@
         package: pwrmgr_pkg
         struct: pwr_ast_rsp
         signame: pwrmgr_ast_rsp_i
+        signame_chip:
+        {
+          cw305: pwrmgr_ast_rsp
+        }
         width: 1
         type: req_rsp
         default: ""
@@ -12590,6 +12798,10 @@
         package: ""
         struct: logic
         signame: por_n_i
+        signame_chip:
+        {
+          cw305: por_n
+        }
         width: 2
         type: uni
         default: ""
@@ -12602,6 +12814,10 @@
         package: ""
         struct: logic
         signame: fpga_info_i
+        signame_chip:
+        {
+          cw305: fpga_info
+        }
         width: 32
         type: uni
         default: ""
@@ -12614,6 +12830,10 @@
         package: ""
         struct: logic
         signame: usbdev_usb_rx_d_i
+        signame_chip:
+        {
+          cw305: usb_rx_d
+        }
         width: 1
         type: uni
         default: ""
@@ -12626,6 +12846,10 @@
         package: ""
         struct: logic
         signame: usbdev_usb_tx_d_o
+        signame_chip:
+        {
+          cw305: ""
+        }
         width: 1
         type: uni
         default: ""
@@ -12638,6 +12862,10 @@
         package: ""
         struct: logic
         signame: usbdev_usb_tx_se0_o
+        signame_chip:
+        {
+          cw305: ""
+        }
         width: 1
         type: uni
         default: ""
@@ -12650,6 +12878,10 @@
         package: ""
         struct: logic
         signame: usbdev_usb_tx_use_d_se0_o
+        signame_chip:
+        {
+          cw305: ""
+        }
         width: 1
         type: uni
         default: ""
@@ -12662,6 +12894,10 @@
         package: ""
         struct: logic
         signame: usbdev_usb_rx_enable_o
+        signame_chip:
+        {
+          cw305: usb_rx_enable
+        }
         width: 1
         type: uni
         default: ""
@@ -12674,6 +12910,10 @@
         package: ""
         struct: logic
         signame: usbdev_usb_ref_val_o
+        signame_chip:
+        {
+          cw305: usb_ref_val
+        }
         width: 1
         type: uni
         default: ""
@@ -12686,6 +12926,10 @@
         package: ""
         struct: logic
         signame: usbdev_usb_ref_pulse_o
+        signame_chip:
+        {
+          cw305: usb_ref_pulse
+        }
         width: 1
         type: uni
         default: ""
@@ -12698,6 +12942,10 @@
         package: ""
         struct: logic
         signame: sck_monitor_o
+        signame_chip:
+        {
+          cw305: sck_monitor
+        }
         width: 1
         type: uni
         default: ""
@@ -12773,7 +13021,7 @@
         end_idx: -1
         act: req
         suffix: ""
-        default: "'0"
+        default: 1'b0
       }
       {
         package: ""
@@ -12784,7 +13032,7 @@
         end_idx: -1
         act: req
         suffix: ""
-        default: "'0"
+        default: 1'b0
       }
       {
         package: lc_ctrl_pkg
@@ -12806,7 +13054,7 @@
         end_idx: -1
         act: req
         suffix: ""
-        default: "'0"
+        default: 1'b0
       }
       {
         package: ""
@@ -12817,7 +13065,7 @@
         end_idx: -1
         act: req
         suffix: ""
-        default: "'0"
+        default: 1'b0
       }
       {
         package: ""
@@ -12828,7 +13076,7 @@
         end_idx: -1
         act: req
         suffix: ""
-        default: "'0"
+        default: 1'b0
       }
       {
         package: ""
@@ -12839,7 +13087,7 @@
         end_idx: -1
         act: req
         suffix: ""
-        default: "'0"
+        default: 1'b0
       }
       {
         package: ""
@@ -12850,7 +13098,7 @@
         end_idx: -1
         act: rcv
         suffix: ""
-        default: "'0"
+        default: 1'b0
       }
       {
         package: ""
@@ -12861,7 +13109,7 @@
         end_idx: -1
         act: rcv
         suffix: ""
-        default: "'0"
+        default: 1'b0
       }
       {
         package: ""
@@ -12894,7 +13142,7 @@
         end_idx: -1
         act: req
         suffix: ""
-        default: "'0"
+        default: 1'b0
       }
       {
         package: ""
@@ -12905,7 +13153,7 @@
         end_idx: -1
         act: req
         suffix: ""
-        default: "'0"
+        default: 1'b0
       }
       {
         package: rv_core_ibex_pkg
@@ -12982,7 +13230,7 @@
         end_idx: -1
         act: rcv
         suffix: ""
-        default: "'0"
+        default: 1'b0
       }
       {
         package: tlul_pkg
