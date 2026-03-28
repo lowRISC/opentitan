@@ -616,6 +616,7 @@ package otbn_pkg;
     logic                  mul_add_en;
     logic                  c_add_en;
     logic                  add_mod_en;
+    logic [VLEN/QWLEN-1:0] acc_qw_sel;
     logic                  acc_merger_en;
     logic                  mul_shift_en;
     logic                  mul_merger_en;
@@ -624,13 +625,12 @@ package otbn_pkg;
   } mac_bignum_predec_t;
 
   typedef struct packed {
-    logic       tmp_wr_en_raw;
-    logic       tmp_clear_en;
-    logic       c_wr_en_raw;
-    logic       c_clear_en;
-    logic [1:0] acc_qw_sel;
-    logic       acc_wr_en_raw;
-    logic       acc_clear_en;
+    logic tmp_wr_en_raw;
+    logic tmp_clear_en;
+    logic c_wr_en_raw;
+    logic c_clear_en;
+    logic acc_wr_en_raw;
+    logic acc_clear_en;
   } mac_bignum_contrl_t;
 
   typedef struct packed {

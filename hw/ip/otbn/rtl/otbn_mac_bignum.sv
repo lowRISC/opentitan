@@ -505,7 +505,6 @@ module otbn_mac_bignum
   ///////////////////////////////////////////
   // ACC merging for vectorized operations //
   ///////////////////////////////////////////
-  logic [1:0]       acc_qw_sel;
   logic [QWLEN-1:0] acc_new_qw;
   logic [WLEN-1:0]  acc_blanked;
   logic [WLEN-1:0]  acc_merged;
@@ -526,14 +525,10 @@ module otbn_mac_bignum
   );
 
   // Place the computed 64-bit chunk at the desired location in the ACC register.
-  assign acc_merged[0*QWLEN+:QWLEN] = (acc_qw_sel == 2'd0) ? acc_new_qw :
-                                                             acc_blanked[0*QWLEN+:QWLEN];
-  assign acc_merged[1*QWLEN+:QWLEN] = (acc_qw_sel == 2'd1) ? acc_new_qw :
-                                                             acc_blanked[1*QWLEN+:QWLEN];
-  assign acc_merged[2*QWLEN+:QWLEN] = (acc_qw_sel == 2'd2) ? acc_new_qw :
-                                                             acc_blanked[2*QWLEN+:QWLEN];
-  assign acc_merged[3*QWLEN+:QWLEN] = (acc_qw_sel == 2'd3) ? acc_new_qw :
-                                                             acc_blanked[3*QWLEN+:QWLEN];
+  for (genvar qw = 0; qw < VLEN/QWLEN; qw++) begin : gen_acc_merged
+    assign acc_merged[qw * QWLEN +: QWLEN] = predec_i.acc_qw_sel[qw] ?
+        acc_new_qw : acc_blanked[qw * QWLEN +: QWLEN];
+  end
 
   //////////////////////////////////////////////////////
   // Adder result handling for regular multiplication //
@@ -687,7 +682,6 @@ module otbn_mac_bignum
   assign tmp_clear_en  = contrl.tmp_clear_en;
   assign c_wr_en_raw   = contrl.c_wr_en_raw;
   assign c_clear_en    = contrl.c_clear_en;
-  assign acc_qw_sel    = contrl.acc_qw_sel;
   assign acc_wr_en_raw = contrl.acc_wr_en_raw;
   assign acc_clear_en  = contrl.acc_clear_en;
 
@@ -745,4 +739,10 @@ module otbn_mac_bignum
   assign sec_wipe_err_o = sec_wipe_urnd_i & ~sec_wipe_running_i;
 
   `ASSERT(NoISPRAccWrAndMacEn, ~(ispr_acc_wr_en_i & mac_en_i))
+
+  // Only one QWORD must be overwritten at the same time.
+  `ASSERT(AccQwSelOnehot_A,
+          predec_i.acc_merger_en |-> $onehot(predec_i.acc_qw_sel),
+          clk_i, !rst_ni || predec_error_o || state_err_o)
+
 endmodule

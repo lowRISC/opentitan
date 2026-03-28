@@ -832,6 +832,7 @@ module otbn_predecode
   assign mac_bignum_predec_raw_o.mul_add_en          = '0;
   assign mac_bignum_predec_raw_o.c_add_en            = '0;
   assign mac_bignum_predec_raw_o.add_mod_en          = '0;
+  assign mac_bignum_predec_raw_o.acc_qw_sel          = '0;
   assign mac_bignum_predec_raw_o.acc_merger_en       = '0;
   assign mac_bignum_predec_raw_o.mul_shift_en        = '0;
   assign mac_bignum_predec_raw_o.mul_merger_en       = '0;
