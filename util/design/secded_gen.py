@@ -474,12 +474,16 @@ def print_fn(n, k, m, codes, suffix, codetype, inv=False):
 
     return outstr
 
+def hex_format(bits):
+    return str(bits) + "'h{:0" + str((bits + 3) // 4) + "X}"
+
 
 def print_enc(n, k, m, codes, codetype):
-    invert = 1 if codetype in ["inv_hsiao", "inv_hamming"] else 0
-    outstr = "    data_o = {}'(data_i);\n".format(n)
-    hex_format = str(n) + "'h{:0" + str((n + 3) // 4) + "X}"
-    format_str = "    data_o[{}] = ^(data_o & " + hex_format + ");\n"
+    hamming = codetype in ["hamming", "inv_hamming"]
+    invert = codetype in ["inv_hsiao", "inv_hamming"]
+    outstr = "    data_o[{}:0] = data_i;\n".format(k - 1)
+    fmt_str = "    data_o[{}] = ^(data_i & " + hex_format(k) + ");\n"
+    fmt_str_h = "    data_o[{}] = ^(data_o[{}:0] & " + hex_format(n-1) + ");\n"
     # Print parity computation If inverted encoding is turned on, we only
     # invert every odd bit so that both all-one and all-zero encodings are not
     # possible. This works for most encodings generated if the fanin is
@@ -489,10 +493,13 @@ def print_enc(n, k, m, codes, codetype):
     inv_mask = 0
     for j, mask in enumerate(calc_bitmasks(k, m, codes, False)):
         inv_mask += (j % 2) << j
-        outstr += format_str.format(j + k, mask)
+        if (j == (m - 1) and hamming):
+            outstr += fmt_str_h.format(j + k, j + k - 1, mask)
+        else:
+            outstr += fmt_str.format(j + k, mask)
     # Selectively invert parity bits as determined above.
     if invert:
-        outstr += ("    data_o ^= " + hex_format + ";\n").format(inv_mask << k)
+        outstr += ("    data_o ^= " + hex_format(n) + ";\n").format(inv_mask << k)
     return outstr
 
 
@@ -529,7 +536,7 @@ def print_dec(n, k, m, codes, codetype, print_type="logic"):
     # The Hsiao and Hamming syndromes are interpreted slightly differently.
     if codetype in ["hamming", "inv_hamming"]:
         outstr += "    err_o[0] = syndrome_o[%d];\n" % (m - 1)
-        outstr += "    err_o[1] = |syndrome_o[%d:0] & ~syndrome_o[%d];\n" % (
+        outstr += "    err_o[1] = (|syndrome_o[%d:0]) & (~syndrome_o[%d]);\n" % (
             m - 2, m - 1)
     else:
         outstr += "    err_o[0] = ^syndrome_o;\n"

@@ -10,13 +10,13 @@ module prim_secded_inv_28_22_enc (
 );
 
   always_comb begin : p_encode
-    data_o = 28'(data_i);
-    data_o[22] = ^(data_o & 28'h03003FF);
-    data_o[23] = ^(data_o & 28'h010FC0F);
-    data_o[24] = ^(data_o & 28'h0271C71);
-    data_o[25] = ^(data_o & 28'h03B6592);
-    data_o[26] = ^(data_o & 28'h03DAAA4);
-    data_o[27] = ^(data_o & 28'h03ED348);
+    data_o[21:0] = data_i;
+    data_o[22] = ^(data_i & 22'h3003FF);
+    data_o[23] = ^(data_i & 22'h10FC0F);
+    data_o[24] = ^(data_i & 22'h271C71);
+    data_o[25] = ^(data_i & 22'h3B6592);
+    data_o[26] = ^(data_i & 22'h3DAAA4);
+    data_o[27] = ^(data_i & 22'h3ED348);
     data_o ^= 28'hA800000;
   end
 

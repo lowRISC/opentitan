@@ -90,6 +90,6 @@ module prim_secded_inv_hamming_72_64_dec (
 
     // err_o calc. bit0: single error, bit1: double error
     err_o[0] = syndrome_o[7];
-    err_o[1] = |syndrome_o[6:0] & ~syndrome_o[7];
+    err_o[1] = (|syndrome_o[6:0]) & (~syndrome_o[7]);
   end
 endmodule : prim_secded_inv_hamming_72_64_dec
