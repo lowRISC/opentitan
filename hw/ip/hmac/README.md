@@ -1,10 +1,11 @@
 # HMAC HWIP Technical Specification
+<!-- BEGIN AUTOGEN from util/mdbook_regression_links.py -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`hmac`](https://nightly.reports.lowrisc.org/opentitan_weekly_earlgrey/2026_03_08/index.html) | 2.0.1 | D3, V3 | <img src="https://img.shields.io/badge/Tests_Running-821-blue"> <img src="https://img.shields.io/badge/Tests_Passing-100.00%25-brightgreen"> <img src="https://img.shields.io/badge/Functional_Coverage-100.00%25-brightgreen"> <img src="https://img.shields.io/badge/Code_Coverage-99.34%25-brightgreen"> |
 
-[`hmac`](https://reports.opentitan.org/hw/ip/hmac/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/hmac/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/hmac/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/hmac/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/hmac/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/hmac/index.html).
+<!-- END AUTOGEN -->
 
 # Overview
 

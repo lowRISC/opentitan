@@ -1,10 +1,11 @@
 # OpenTitan Big Number Accelerator (OTBN) Technical Specification
+<!-- BEGIN AUTOGEN from util/mdbook_regression_links.py -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`otbn`](https://nightly.reports.lowrisc.org/opentitan_weekly_earlgrey/2026_03_08/index.html) | 1.2.0 | D1, V0 | <img src="https://img.shields.io/badge/Tests_Running-585-blue"> <img src="https://img.shields.io/badge/Tests_Passing-59.66%25-orange"> <img src="https://img.shields.io/badge/Functional_Coverage-100.00%25-brightgreen"> <img src="https://img.shields.io/badge/Code_Coverage-94.63%25-brightgreen"> |
 
-[`otbn`](https://reports.opentitan.org/hw/ip/otbn/dv/uvm/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/otbn/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/otbn/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/otbn/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/otbn/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/otbn/index.html).
+<!-- END AUTOGEN -->
 
 > OTBN is currently under development as new PQC related features are added.
 > This is indicated by the development stages (see [`otbn.hjson`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/otbn/data/otbn.hjson) and [here](https://opentitan.org/book/doc/project_governance/development_stages.html)).

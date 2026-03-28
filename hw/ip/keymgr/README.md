@@ -1,10 +1,11 @@
 # Key Manager HWIP Technical Specification
+<!-- BEGIN AUTOGEN from util/mdbook_regression_links.py -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`keymgr`](https://nightly.reports.lowrisc.org/opentitan_weekly_earlgrey/2026_03_08/index.html) | 2.0.0 | D2S, V2S | <img src="https://img.shields.io/badge/Tests_Running-1110-blue"> <img src="https://img.shields.io/badge/Tests_Passing-96.85%25-brightgreen"> <img src="https://img.shields.io/badge/Functional_Coverage-91.16%25-brightgreen"> <img src="https://img.shields.io/badge/Code_Coverage-98.97%25-brightgreen"> |
 
-[`keymgr`](https://reports.opentitan.org/hw/ip/keymgr/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/keymgr/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/keymgr/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/keymgr/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/keymgr/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/keymgr/index.html).
+<!-- END AUTOGEN -->
 
 # Overview
 

@@ -1,10 +1,12 @@
 # ROM Controller Technical Specification
+<!-- BEGIN AUTOGEN from util/mdbook_regression_links.py -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`rom_ctrl_32kb`](https://nightly.reports.lowrisc.org/opentitan_weekly_earlgrey/2026_03_08/index.html) | 1.0.1 | D3, V2S | <img src="https://img.shields.io/badge/Tests_Running-266-blue"> <img src="https://img.shields.io/badge/Tests_Passing-98.50%25-brightgreen"> <img src="https://img.shields.io/badge/Functional_Coverage-99.28%25-brightgreen"> <img src="https://img.shields.io/badge/Code_Coverage-99.58%25-brightgreen"> |
+ [`rom_ctrl_64kb`](https://nightly.reports.lowrisc.org/opentitan_weekly_earlgrey/2026_03_08/index.html) | 1.0.1 | D3, V2S | <img src="https://img.shields.io/badge/Tests_Running-266-blue"> <img src="https://img.shields.io/badge/Tests_Passing-99.62%25-brightgreen"> <img src="https://img.shields.io/badge/Functional_Coverage-99.28%25-brightgreen"> <img src="https://img.shields.io/badge/Code_Coverage-99.68%25-brightgreen"> |
 
-[`rom_ctrl`](https://reports.opentitan.org/hw/ip/rom_ctrl/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/rom_ctrl/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/rom_ctrl/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/rom_ctrl/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/rom_ctrl/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/rom_ctrl/index.html).
+<!-- END AUTOGEN -->
 
 # Overview
 

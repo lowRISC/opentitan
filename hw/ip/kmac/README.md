@@ -1,16 +1,12 @@
 # KMAC HWIP Technical Specification
+<!-- BEGIN AUTOGEN from util/mdbook_regression_links.py -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`kmac_masked`](https://nightly.reports.lowrisc.org/opentitan_weekly_earlgrey/2026_03_08/index.html) | 2.0.0 | D2S, V2S | <img src="https://img.shields.io/badge/Tests_Running-940-blue"> <img src="https://img.shields.io/badge/Tests_Passing-99.79%25-brightgreen"> <img src="https://img.shields.io/badge/Functional_Coverage-97.85%25-brightgreen"> <img src="https://img.shields.io/badge/Code_Coverage-94.21%25-brightgreen"> |
+ [`kmac_unmasked`](https://nightly.reports.lowrisc.org/opentitan_weekly_earlgrey/2026_03_08/index.html) | 2.0.0 | D2S, V2S | <img src="https://img.shields.io/badge/Tests_Running-940-blue"> <img src="https://img.shields.io/badge/Tests_Passing-97.98%25-brightgreen"> <img src="https://img.shields.io/badge/Functional_Coverage-96.25%25-brightgreen"> <img src="https://img.shields.io/badge/Code_Coverage-92.18%25-brightgreen"> |
 
-[`kmac/masked`](https://reports.opentitan.org/hw/ip/kmac_masked/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/kmac/masked/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/kmac/masked/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/kmac/masked/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/kmac/masked/code.svg)
-
-[`kmac/unmasked`](https://reports.opentitan.org/hw/ip/kmac_unmasked/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/kmac/unmasked/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/kmac/unmasked/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/kmac/unmasked/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/kmac/unmasked/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/kmac/index.html).
+<!-- END AUTOGEN -->
 
 # Overview
 

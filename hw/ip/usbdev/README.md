@@ -1,10 +1,11 @@
 # USB 2.0 Full-Speed Device HWIP Technical Specification
+<!-- BEGIN AUTOGEN from util/mdbook_regression_links.py -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`usbdev`](https://nightly.reports.lowrisc.org/opentitan_weekly_earlgrey/2026_03_08/index.html) | 2.0.0 | D2S, V2S | <img src="https://img.shields.io/badge/Tests_Running-3970-blue"> <img src="https://img.shields.io/badge/Tests_Passing-98.46%25-brightgreen"> <img src="https://img.shields.io/badge/Functional_Coverage-98.55%25-brightgreen"> <img src="https://img.shields.io/badge/Code_Coverage-96.96%25-brightgreen"> |
 
-[`usbdev`](https://reports.opentitan.org/hw/ip/usbdev/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/usbdev/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/usbdev/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/usbdev/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/usbdev/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/usbdev/index.html).
+<!-- END AUTOGEN -->
 
 # Overview
 

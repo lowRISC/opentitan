@@ -1,10 +1,11 @@
 # Analog to Digital Converter Control Interface
+<!-- BEGIN AUTOGEN from util/mdbook_regression_links.py -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`adc_ctrl`](https://nightly.reports.lowrisc.org/opentitan_weekly_earlgrey/2026_03_08/index.html) | 2.0.0 | D2S, V2S | <img src="https://img.shields.io/badge/Tests_Running-920-blue"> <img src="https://img.shields.io/badge/Tests_Passing-97.17%25-brightgreen"> <img src="https://img.shields.io/badge/Functional_Coverage-91.68%25-brightgreen"> <img src="https://img.shields.io/badge/Code_Coverage-98.74%25-brightgreen"> |
 
-[`adc_ctrl`](https://reports.opentitan.org/hw/ip/adc_ctrl/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/adc_ctrl/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/adc_ctrl/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/adc_ctrl/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/adc_ctrl/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/adc_ctrl/index.html).
+<!-- END AUTOGEN -->
 
 # Overview
 

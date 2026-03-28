@@ -1,16 +1,12 @@
 # AES HWIP Technical Specification
+<!-- BEGIN AUTOGEN from util/mdbook_regression_links.py -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`aes_masked`](https://nightly.reports.lowrisc.org/opentitan_weekly_earlgrey/2026_03_08/index.html) | 1.1.0 | D1, V1 | <img src="https://img.shields.io/badge/Tests_Running-1793-blue"> <img src="https://img.shields.io/badge/Tests_Passing-97.10%25-brightgreen"> <img src="https://img.shields.io/badge/Functional_Coverage-94.95%25-brightgreen"> <img src="https://img.shields.io/badge/Code_Coverage-98.19%25-brightgreen"> |
+ [`aes_unmasked`](https://nightly.reports.lowrisc.org/opentitan_weekly_earlgrey/2026_03_08/index.html) | 1.1.0 | D1, V1 | <img src="https://img.shields.io/badge/Tests_Running-1793-blue"> <img src="https://img.shields.io/badge/Tests_Passing-97.10%25-brightgreen"> <img src="https://img.shields.io/badge/Functional_Coverage-91.67%25-brightgreen"> <img src="https://img.shields.io/badge/Code_Coverage-95.01%25-brightgreen"> |
 
-[`aes/masked`](https://reports.opentitan.org/hw/ip/aes_masked/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/aes/masked/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/aes/masked/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/aes/masked/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/aes/masked/code.svg)
-
-[`aes/unmasked`](https://reports.opentitan.org/hw/ip/aes_unmasked/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/aes/unmasked/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/aes/unmasked/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/aes/unmasked/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/aes/unmasked/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/aes/index.html).
+<!-- END AUTOGEN -->
 
 # Overview
 

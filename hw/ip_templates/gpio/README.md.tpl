@@ -1,10 +1,11 @@
 # GPIO HWIP Technical Specification
+<!-- BEGIN AUTOGEN from util/mdbook_regression_links.py -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`gpio`](https://nightly.reports.lowrisc.org/opentitan_weekly_earlgrey/2026_03_08/index.html) | 1.2.0 | D3, V2S | <img src="https://img.shields.io/badge/Tests_Running-1020-blue"> <img src="https://img.shields.io/badge/Tests_Passing-95.10%25-brightgreen"> <img src="https://img.shields.io/badge/Functional_Coverage-100.00%25-brightgreen"> <img src="https://img.shields.io/badge/Code_Coverage-98.27%25-brightgreen"> |
 
-[`gpio`](https://reports.opentitan.org/hw/ip/gpio/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/gpio/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/gpio/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/gpio/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/gpio/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/gpio/index.html).
+<!-- END AUTOGEN -->
 
 # Overview
 
