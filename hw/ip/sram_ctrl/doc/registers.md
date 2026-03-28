@@ -1,4 +1,7 @@
-## Summary of the **`regs`** interface's registers
+# Registers
+
+<!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/sram_ctrl/data/sram_ctrl.hjson -->
+## Summary
 
 | Name                                            | Offset   |   Length | Description                                  |
 |:------------------------------------------------|:---------|---------:|:---------------------------------------------|
@@ -132,8 +135,10 @@ Sram execution enable.
 ### EXEC . EN
 Write kMultiBitBool4True to this field to enable execution from SRAM.
 Note that this register only takes effect if the EN_SRAM_IFETCH switch
-in the OTP HW_CFG1 partition is set to kMultiBitBool8True. Otherwise execution
-from SRAM cannot be enabled via this register.
+in the OTP HW_CFG1 partition is set to kMultiBitBool8True. Otherwise
+execution from SRAM cannot be enabled via this register, and is instead
+only enabled with HW debug functionality (via the lifecycle controller's
+lc_hw_debug_en signal).
 
 ## CTRL_REGWEN
 Lock register for control register.
@@ -252,4 +257,5 @@ Write kMultiBitBool4True to this field to enable the readback security feature f
 A readback of each memory write or read request will be performed and a comparison happens.
 Any other value than kMultiBitBool4False written to this field is interpreted as kMultiBitBool4True.
 
-This interface does not expose any registers.
+
+<!-- END CMDGEN -->
