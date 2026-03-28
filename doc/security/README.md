@@ -55,9 +55,9 @@ The security goals of the project are derived from a list of target
 requirements. Such requirements influence the system architecture, as well as
 the certification strategy for silicon implementations.
 
-## Security Primitives
+## Security Hardware Primitives
 
-All hardware security primitives adhere to the OpenTitan
+All security hardware primitives adhere to the OpenTitan
 [comportable][comportable_ip] peripheral interface specification.
 Implementations for some of these components are available for reference and
 may not meet production or certification criteria yet.
@@ -84,12 +84,9 @@ Advanced Encryption Standard (AES) supporting Encryption/Decryption using
 *   Electronic Codebook (ECB) mode,
 *   Cipher Block Chaining (CBC) mode,
 *   Cipher Feedback (CFB) mode with fixed data segment size of 128 bits,
-*   Output Feedback (OFB) mode, and
-*   Counter (CTR) mode.
-
-Galois/Counter Mode (GCM) can be implemented by leveraging Ibex for the GHASH
-operation as demonstrated in [OpenTitan's library of cryptographic
-implementations][cryptolib].
+*   Output Feedback (OFB) mode,
+*   Counter (CTR) mode, and
+*   Galois/Counter mode (GCM).
 
 ### [HMAC][hmac]
 
@@ -112,6 +109,18 @@ security threats, converting them to processor interrupts. It also supports
 alert policy assignments to handle alerts completely in hardware depending on
 the assigned severity.
 
+## Cryptography Library
+
+OpenTitan's [cryptography library][cryptolib] leverages the
+[security hardware primitives](#security-hardware-primitives) to offer a
+platform-specific library of cryptographic functions. This library includes
+symmetric and asymmetric cryptographic algorithms that are hardened to mitigate
+attacks defined in the [threat model][threat_model].
+
+OpenTitan also offers a subset of NIST approved Post-Quantum Cryptography
+(PQC) primitives. While SLH-DSA is implemented on Ibex, an upcoming ML-DSA
+implementation will be hardware accelerated using [OTBN][otbn].
+
 [aes]: ../../hw/ip/aes/README.md
 [alert_handler]: ../../hw/top_earlgrey/ip_autogen/alert_handler/README.md
 [comportable_ip]: ../contributing/hw/comportability/README.md
@@ -125,4 +134,4 @@ the assigned severity.
 [security_model]: ./specs/README.md
 [use_cases]: ../use_cases/README.md
 [threat_model]: ./threat_model/README.md
-[cryptolib]: https://github.com/lowRISC/opentitan/tree/master/sw/device/lib/crypto
+[cryptolib]: ./cryptolib/README.md
