@@ -154,7 +154,21 @@ class spi_agent_cfg extends dv_base_agent_cfg;
 
   virtual function void add_cmd_info(spi_flash_cmd_info info);
     // opcode must be unique
-    `DV_CHECK_EQ(is_opcode_supported(info.opcode), 0)
+    if (is_opcode_supported(info.opcode)) begin
+      bit [7:0] known_opcodes[$];
+      foreach (cmd_infos[op]) begin
+        known_opcodes.push_back(op);
+      end
+
+      `uvm_error(get_name(),
+                 $sformatf({"Opcode %0d (0x%0x) already has an associated spi_flash_cmd_info.\n",
+                            "Known opcodes: %p.\n",
+                            "Associated cmd_info: %p"},
+                           info.opcode, info.opcode,
+                           known_opcodes,
+                           cmd_infos[info.opcode]))
+    end
+
     cmd_infos[info.opcode] = info;
   endfunction  : add_cmd_info
 
