@@ -29,6 +29,22 @@ OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_security_config_check(
     otcrypto_key_security_level_t security_level);
 
+/**
+ * Initializes the crypto library for use.
+ * 
+ * Check the security configuration
+ * Set up alert management
+ * Perform (some) KATs for FIPS
+ * Set up the entropy source
+ *
+ * @param security_level Security level of the used key.
+ * @returns OK when the security check passed.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level);
+
+
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

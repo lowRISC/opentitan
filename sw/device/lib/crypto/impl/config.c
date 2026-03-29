@@ -36,3 +36,9 @@ else {
 #endif
 return OTCRYPTO_OK;
 }
+
+otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level) {
+  (void)security_level;
+
+  return OTCRYPTO_OK;
+}
