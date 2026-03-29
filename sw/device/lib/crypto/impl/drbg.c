@@ -9,6 +9,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 
@@ -119,8 +120,8 @@ otcrypto_status_t otcrypto_drbg_instantiate(
   HARDENED_TRY(seed_material_construct(perso_string, &seed_material));
 
   HARDENED_TRY(entropy_csrng_uninstantiate());
-  return entropy_csrng_instantiate(/*disable_trng_input=*/kHardenedBoolFalse,
-                                   &seed_material);
+  return otcrypto_eval_exit(entropy_csrng_instantiate(
+      /*disable_trng_input=*/kHardenedBoolFalse, &seed_material));
 }
 
 otcrypto_status_t otcrypto_drbg_reseed(
@@ -138,8 +139,8 @@ otcrypto_status_t otcrypto_drbg_reseed(
       hardened_memshred(seed_material.data, ARRAYSIZE(seed_material.data)));
   HARDENED_TRY(seed_material_construct(additional_input, &seed_material));
 
-  return entropy_csrng_reseed(/*disable_trng_input=*/kHardenedBoolFalse,
-                              &seed_material);
+  return otcrypto_eval_exit(entropy_csrng_reseed(
+      /*disable_trng_input=*/kHardenedBoolFalse, &seed_material));
 }
 
 otcrypto_status_t otcrypto_drbg_manual_instantiate(
@@ -159,8 +160,8 @@ otcrypto_status_t otcrypto_drbg_manual_instantiate(
 
   HARDENED_CHECK_EQ(seed_material.len, kEntropySeedWords);
 
-  return entropy_csrng_instantiate(/*disable_trng_input=*/kHardenedBoolTrue,
-                                   &seed_material);
+  return otcrypto_eval_exit(entropy_csrng_instantiate(
+      /*disable_trng_input=*/kHardenedBoolTrue, &seed_material));
 }
 
 otcrypto_status_t otcrypto_drbg_manual_reseed(
@@ -180,8 +181,8 @@ otcrypto_status_t otcrypto_drbg_manual_reseed(
 
   HARDENED_CHECK_EQ(seed_material.len, kEntropySeedWords);
 
-  return entropy_csrng_reseed(/*disable_trng_input=*/kHardenedBoolTrue,
-                              &seed_material);
+  return otcrypto_eval_exit(entropy_csrng_reseed(
+      /*disable_trng_input=*/kHardenedBoolTrue, &seed_material));
 }
 
 /**
@@ -225,8 +226,8 @@ otcrypto_status_t otcrypto_drbg_generate(
   // Randomize destination buffer.
   HARDENED_TRY(hardened_memshred(drbg_output->data, drbg_output->len));
 
-  return generate(/*fips_check=*/kHardenedBoolTrue, additional_input,
-                  drbg_output);
+  return otcrypto_eval_exit(generate(/*fips_check=*/kHardenedBoolTrue,
+                                     additional_input, drbg_output));
 }
 
 otcrypto_status_t otcrypto_drbg_manual_generate(
@@ -241,10 +242,10 @@ otcrypto_status_t otcrypto_drbg_manual_generate(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  return generate(/*fips_check=*/kHardenedBoolFalse, additional_input,
-                  drbg_output);
+  return otcrypto_eval_exit(generate(/*fips_check=*/kHardenedBoolFalse,
+                                     additional_input, drbg_output));
 }
 
 otcrypto_status_t otcrypto_drbg_uninstantiate(void) {
-  return entropy_csrng_uninstantiate();
+  return otcrypto_eval_exit(entropy_csrng_uninstantiate());
 }

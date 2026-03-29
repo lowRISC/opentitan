@@ -140,7 +140,7 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(modulus));
 
   public_key->checksum = integrity_unblinded_checksum(public_key);
-  return OTCRYPTO_OK;
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 /**
@@ -398,7 +398,7 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(d_share0));
 
   private_key->checksum = integrity_blinded_checksum(private_key);
-  return OTCRYPTO_OK;
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
@@ -437,7 +437,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
       }
       rsa_2048_public_key_t *pk = (rsa_2048_public_key_t *)public_key->key;
       modulus_eq = hardened_memeq(modulus->data, pk->n.data, modulus->len);
-      return OTCRYPTO_OK;
+      return otcrypto_eval_exit(OTCRYPTO_OK);
     }
     case kOtcryptoRsaSize3072:
       return OTCRYPTO_NOT_IMPLEMENTED;
@@ -454,7 +454,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(modulus_eq, kHardenedBoolTrue);
-  return OTCRYPTO_OK;
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_rsa_sign(const otcrypto_blinded_key_t *private_key,
@@ -480,7 +480,7 @@ otcrypto_status_t otcrypto_rsa_verify(
   otcrypto_status_t status =
       otcrypto_rsa_verify_async_start(public_key, signature);
   if (status.value != kOtcryptoStatusValueOk) {
-    return status;
+    return otcrypto_eval_exit(status);
   }
   HARDENED_CHECK_EQ(launder32(status.value), kOtcryptoStatusValueOk);
   return otcrypto_rsa_verify_async_finalize(message_digest, padding_mode,
@@ -515,7 +515,7 @@ otcrypto_status_t otcrypto_rsa_decrypt(
   otcrypto_status_t status =
       otcrypto_rsa_decrypt_async_start(private_key, ciphertext);
   if (status.value != kOtcryptoStatusValueOk) {
-    return status;
+    return otcrypto_eval_exit(status);
   }
   HARDENED_CHECK_EQ(launder32(status.value), kOtcryptoStatusValueOk);
   return otcrypto_rsa_decrypt_async_finalize(hash_mode, &local_label, plaintext,
@@ -592,7 +592,7 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
   public_key->checksum = integrity_unblinded_checksum(public_key);
   private_key->checksum = integrity_blinded_checksum(private_key);
 
-  return OTCRYPTO_OK;
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
@@ -632,7 +632,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
       }
       rsa_2048_public_key_t pk;
       HARDENED_TRY(hardened_memcpy(pk.n.data, modulus->data, modulus->len));
-      return rsa_keygen_from_cofactor_2048_start(&pk, cf);
+      return otcrypto_eval_exit(rsa_keygen_from_cofactor_2048_start(&pk, cf));
     }
     case kOtcryptoRsaSize3072: {
       return OTCRYPTO_NOT_IMPLEMENTED;
@@ -701,7 +701,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
   // Construct checksums for the new keys.
   public_key->checksum = integrity_unblinded_checksum(public_key);
   private_key->checksum = integrity_blinded_checksum(private_key);
-  return OTCRYPTO_OK;
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 /**
@@ -774,22 +774,22 @@ otcrypto_status_t otcrypto_rsa_sign_async_start(
       HARDENED_CHECK_EQ(size, kOtcryptoRsaSize2048);
       rsa_2048_private_key_t *sk =
           (rsa_2048_private_key_t *)private_key->keyblob;
-      return rsa_signature_generate_2048_start(
-          sk, message_digest, (rsa_signature_padding_t)padding_mode);
+      return otcrypto_eval_exit(rsa_signature_generate_2048_start(
+          sk, message_digest, (rsa_signature_padding_t)padding_mode));
     }
     case kOtcryptoRsaSize3072: {
       HARDENED_CHECK_EQ(size, kOtcryptoRsaSize3072);
       rsa_3072_private_key_t *sk =
           (rsa_3072_private_key_t *)private_key->keyblob;
-      return rsa_signature_generate_3072_start(
-          sk, message_digest, (rsa_signature_padding_t)padding_mode);
+      return otcrypto_eval_exit(rsa_signature_generate_3072_start(
+          sk, message_digest, (rsa_signature_padding_t)padding_mode));
     }
     case kOtcryptoRsaSize4096: {
       HARDENED_CHECK_EQ(size, kOtcryptoRsaSize4096);
       rsa_4096_private_key_t *sk =
           (rsa_4096_private_key_t *)private_key->keyblob;
-      return rsa_signature_generate_4096_start(
-          sk, message_digest, (rsa_signature_padding_t)padding_mode);
+      return otcrypto_eval_exit(rsa_signature_generate_4096_start(
+          sk, message_digest, (rsa_signature_padding_t)padding_mode));
     }
     default:
       // Invalid key size. Since the size was inferred, should be unreachable.
@@ -824,8 +824,8 @@ otcrypto_status_t otcrypto_rsa_sign_async_finalize(
           (rsa_3072_int_t *)signature->data);
     case kRsa4096NumWords:
       HARDENED_CHECK_EQ(signature->len, kRsa4096NumWords);
-      return rsa_signature_generate_4096_finalize(
-          (rsa_4096_int_t *)signature->data);
+      return otcrypto_eval_exit(rsa_signature_generate_4096_finalize(
+          (rsa_4096_int_t *)signature->data));
     default:
       return OTCRYPTO_BAD_ARGS;
   }
@@ -909,7 +909,7 @@ otcrypto_status_t otcrypto_rsa_verify_async_start(
         return OTCRYPTO_BAD_ARGS;
       }
 
-      return rsa_signature_verify_4096_start(pk, sig);
+      return otcrypto_eval_exit(rsa_signature_verify_4096_start(pk, sig));
     }
     default:
       // Invalid key size. Since the size was inferred, should be unreachable.
@@ -938,9 +938,9 @@ otcrypto_status_t otcrypto_rsa_verify_async_finalize(
 
   // Call the unified `finalize` operation, which will determine the RSA size
   // based on the mode stored in OTBN.
-  return rsa_signature_verify_finalize(message_digest,
-                                       (rsa_signature_padding_t)padding_mode,
-                                       verification_result);
+  return otcrypto_eval_exit(rsa_signature_verify_finalize(
+      message_digest, (rsa_signature_padding_t)padding_mode,
+      verification_result));
 }
 
 otcrypto_status_t otcrypto_rsa_encrypt_async_start(
@@ -986,22 +986,22 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_start(
       HARDENED_CHECK_EQ(size, kOtcryptoRsaSize2048);
       HARDENED_CHECK_EQ(public_key->key_length, sizeof(rsa_2048_public_key_t));
       rsa_2048_public_key_t *pk = (rsa_2048_public_key_t *)public_key->key;
-      return rsa_encrypt_2048_start(pk, hash_mode, message->data, message->len,
-                                    label->data, label->len);
+      return otcrypto_eval_exit(rsa_encrypt_2048_start(
+          pk, hash_mode, message->data, message->len, label->data, label->len));
     }
     case kOtcryptoRsaSize3072: {
       HARDENED_CHECK_EQ(size, kOtcryptoRsaSize3072);
       HARDENED_CHECK_EQ(public_key->key_length, sizeof(rsa_3072_public_key_t));
       rsa_3072_public_key_t *pk = (rsa_3072_public_key_t *)public_key->key;
-      return rsa_encrypt_3072_start(pk, hash_mode, message->data, message->len,
-                                    label->data, label->len);
+      return otcrypto_eval_exit(rsa_encrypt_3072_start(
+          pk, hash_mode, message->data, message->len, label->data, label->len));
     }
     case kOtcryptoRsaSize4096: {
       HARDENED_CHECK_EQ(size, kOtcryptoRsaSize4096);
       HARDENED_CHECK_EQ(public_key->key_length, sizeof(rsa_4096_public_key_t));
       rsa_4096_public_key_t *pk = (rsa_4096_public_key_t *)public_key->key;
-      return rsa_encrypt_4096_start(pk, hash_mode, message->data, message->len,
-                                    label->data, label->len);
+      return otcrypto_eval_exit(rsa_encrypt_4096_start(
+          pk, hash_mode, message->data, message->len, label->data, label->len));
     }
     default:
       // Invalid key size. Since the size was inferred, should be unreachable.
@@ -1029,19 +1029,19 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_finalize(
       HARDENED_CHECK_EQ(ciphertext->len * sizeof(uint32_t),
                         sizeof(rsa_2048_int_t));
       rsa_2048_int_t *ctext = (rsa_2048_int_t *)ciphertext->data;
-      return rsa_encrypt_2048_finalize(ctext);
+      return otcrypto_eval_exit(rsa_encrypt_2048_finalize(ctext));
     }
     case kRsa3072NumWords: {
       HARDENED_CHECK_EQ(ciphertext->len * sizeof(uint32_t),
                         sizeof(rsa_3072_int_t));
       rsa_3072_int_t *ctext = (rsa_3072_int_t *)ciphertext->data;
-      return rsa_encrypt_3072_finalize(ctext);
+      return otcrypto_eval_exit(rsa_encrypt_3072_finalize(ctext));
     }
     case kRsa4096NumWords: {
       HARDENED_CHECK_EQ(ciphertext->len * sizeof(uint32_t),
                         sizeof(rsa_4096_int_t));
       rsa_4096_int_t *ctext = (rsa_4096_int_t *)ciphertext->data;
-      return rsa_encrypt_4096_finalize(ctext);
+      return otcrypto_eval_exit(rsa_encrypt_4096_finalize(ctext));
     }
     default:
       return OTCRYPTO_BAD_ARGS;
@@ -1103,7 +1103,7 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
         return OTCRYPTO_BAD_ARGS;
       }
 
-      return rsa_decrypt_2048_start(sk, ctext);
+      return otcrypto_eval_exit(rsa_decrypt_2048_start(sk, ctext));
     }
     case kOtcryptoRsaSize3072: {
       HARDENED_CHECK_EQ(size, kOtcryptoRsaSize3072);
@@ -1122,7 +1122,7 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
         return OTCRYPTO_BAD_ARGS;
       }
 
-      return rsa_decrypt_3072_start(sk, ctext);
+      return otcrypto_eval_exit(rsa_decrypt_3072_start(sk, ctext));
     }
     case kOtcryptoRsaSize4096: {
       HARDENED_CHECK_EQ(size, kOtcryptoRsaSize4096);
@@ -1141,7 +1141,7 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
         return OTCRYPTO_BAD_ARGS;
       }
 
-      return rsa_decrypt_4096_start(sk, ctext);
+      return otcrypto_eval_exit(rsa_decrypt_4096_start(sk, ctext));
     }
     default:
       // Invalid key size. Since the size was inferred, should be unreachable.
@@ -1177,5 +1177,5 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_finalize(
   }
   HARDENED_CHECK_LE(*plaintext_bytelen, plaintext->len);
 
-  return OTCRYPTO_OK;
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
