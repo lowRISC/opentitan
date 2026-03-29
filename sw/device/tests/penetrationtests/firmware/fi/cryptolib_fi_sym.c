@@ -6,8 +6,8 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/cryptolib_build_info.h"
-#include "sw/device/lib/crypto/include/security_config.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"

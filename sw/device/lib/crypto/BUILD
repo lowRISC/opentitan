@@ -15,6 +15,7 @@ ot_static_library(
     deps = [
         "//sw/device/lib/crypto/impl:aes",
         "//sw/device/lib/crypto/impl:aes_gcm",
+        "//sw/device/lib/crypto/impl:config",
         "//sw/device/lib/crypto/impl:cryptolib_build_info",
         "//sw/device/lib/crypto/impl:drbg",
         "//sw/device/lib/crypto/impl:ecc_curve25519",
@@ -27,7 +28,6 @@ ot_static_library(
         "//sw/device/lib/crypto/impl:kmac",
         "//sw/device/lib/crypto/impl:kmac_kdf",
         "//sw/device/lib/crypto/impl:rsa",
-        "//sw/device/lib/crypto/impl:security_config",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/crypto/impl:sha3",
         "//sw/device/lib/crypto/impl:x25519",
