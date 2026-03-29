@@ -38,6 +38,44 @@ CRYPTO_EXEC_ENVS = dicts.add(
 autogen_cryptolib_build_info(name = "cryptolib_build_info")
 
 cc_library(
+    name = "alert",
+    srcs = ["alert.c"],
+    hdrs = [
+        "alert.h",
+    ],
+    deps = [
+        "//hw/top_earlgrey:alert_handler_c_regs",
+        "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/crypto/impl:status",
+    ],
+)
+
+opentitan_test(
+    name = "alert_test",
+    srcs = ["alert_test.c"],
+    exec_env = CRYPTO_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":alert",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/crypto/impl:status",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_alerts",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+cc_library(
     name = "aes",
     srcs = ["aes.c"],
     hdrs = ["aes.h"],
