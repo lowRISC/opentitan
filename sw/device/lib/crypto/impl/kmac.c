@@ -123,5 +123,5 @@ otcrypto_status_t otcrypto_kmac(otcrypto_blinded_key_t *key,
   HARDENED_CHECK_EQ(kHardenedBoolTrue,
                     OTCRYPTO_CHECK_BUF(customization_string));
 
-  return OTCRYPTO_OK;
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
