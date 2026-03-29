@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_SECURITY_CONFIG_H_
-#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_SECURITY_CONFIG_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_CONFIG_H_
+#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_CONFIG_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -33,4 +33,4 @@ status_t otcrypto_security_config_check(
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_SECURITY_CONFIG_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_CONFIG_H_

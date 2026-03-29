@@ -26,9 +26,9 @@ cc_library(
     srcs = ["aes.c"],
     hdrs = ["//sw/device/lib/crypto/include:aes.h"],
     deps = [
+        ":config",
         ":integrity",
         ":keyblob",
-        ":security_config",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:aes",
@@ -43,9 +43,9 @@ cc_library(
     srcs = ["aes_gcm.c"],
     hdrs = ["//sw/device/lib/crypto/include:aes_gcm.h"],
     deps = [
+        ":config",
         ":integrity",
         ":keyblob",
-        ":security_config",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:aes",
@@ -88,10 +88,10 @@ cc_library(
     hdrs = ["//sw/device/lib/crypto/include:ecc_curve25519.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":config",
         ":hmac",
         ":integrity",
         ":keyblob",
-        ":security_config",
         ":sha2",
         ":status",
         "//sw/device/lib/base:hardened_memory",
@@ -107,8 +107,8 @@ cc_library(
     hdrs = ["//sw/device/lib/crypto/include:ecc_p256.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":config",
         ":keyblob",
-        ":security_config",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/impl/ecc:p256",
@@ -122,8 +122,8 @@ cc_library(
     hdrs = ["//sw/device/lib/crypto/include:ecc_p384.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":config",
         ":keyblob",
-        ":security_config",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/impl/ecc:p384",
@@ -240,8 +240,8 @@ cc_library(
     srcs = ["rsa.c"],
     hdrs = ["//sw/device/lib/crypto/include:rsa.h"],
     deps = [
+        ":config",
         ":integrity",
-        ":security_config",
         ":status",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:entropy",
@@ -254,9 +254,9 @@ cc_library(
 )
 
 cc_library(
-    name = "security_config",
-    srcs = ["security_config.c"],
-    hdrs = ["//sw/device/lib/crypto/include:security_config.h"],
+    name = "config",
+    srcs = ["config.c"],
+    hdrs = ["//sw/device/lib/crypto/include:config.h"],
     deps = [
         ":integrity",
         ":status",
@@ -346,9 +346,9 @@ cc_library(
         "//sw/device/lib/crypto/include:hmac.h",
     ],
     deps = [
+        ":config",
         ":integrity",
         ":keyblob",
-        ":security_config",
         ":sha2",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
@@ -365,9 +365,9 @@ cc_library(
         "//sw/device/lib/crypto/include:kmac.h",
     ],
     deps = [
+        ":config",
         ":integrity",
         ":keyblob",
-        ":security_config",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:kmac",
