@@ -28,7 +28,6 @@ The main address space, shared between the CPU and DM
 | otp_ctrl          | core        | `0x40130000`   | `0x1000`       | `0x400`        | core device on otp_ctrl          |
 | otp_macro         | prim        | `0x40138000`   | `0x20`         | `0x8`          | prim device on otp_macro         |
 | lc_ctrl           | regs        | `0x40140000`   | `0x100`        | `0x40`         | regs device on lc_ctrl           |
-| lc_ctrl           | dmi         | `0x0`          | `0x1000`       | `0x400`        | dmi device on lc_ctrl            |
 | alert_handler     | default     | `0x40150000`   | `0x800`        | `0x200`        | alert_handler                    |
 | spi_host0         | default     | `0x40300000`   | `0x40`         | `0x10`         | spi_host0                        |
 | spi_host1         | default     | `0x40310000`   | `0x40`         | `0x10`         | spi_host1                        |

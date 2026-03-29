@@ -1066,25 +1066,55 @@ This value is undefined if the block is not connected to the Alert Handler."""
                     rb = self.UNNAMED_REG_BLOCK_NAME
                     rb_key = "null"  # Due to json serializing, None appears as null.
                 rb = Name.from_snake_case(rb)
-                # It is possible that this module is not accessible in this
-                # address space. In this case, return a dummy value.
-                # FIXME Maybe find a better way of doing this.
-                assert rb_key in m["base_addrs"]
-                reg_block_map[rb] = m["base_addrs"][rb_key].get(self._addr_space, "0xffffffff")
+
+                # The register block may not actually be accessible in this
+                # address space. Indeed, the top-level might not connect up the
+                # register block at all, because it also passes a parameter
+                # value that turns off the interface that this address space
+                # would be using.
+                #
+                # If so, use the same behaviour here: don't add the block to
+                # reg_block_map.
+                asid_to_base_addr = m["base_addrs"].get(rb_key)
+                if asid_to_base_addr is not None:
+                    reg_block_map[rb] = asid_to_base_addr.get(self._addr_space,
+                                                              "0xffffffff")
+
             inst_desc[self.REG_BLOCK_ADDR_FIELD_NAME] = reg_block_map
+
         # Memories.
         if self.has_memories():
             mem_addr_map = OrderedDict()
             mem_size_map = OrderedDict()
             for mem in self.ip.memories.keys():
                 mem_name = Name.from_snake_case(mem)
-                # It is possible that this module is not accessible in this
-                # address space. In this case, return a dummy value.
-                # FIXME Maybe find a better way of doing this.
-                assert mem in m["base_addrs"]
-                mem_addr_map[mem_name] = m["base_addrs"][mem].get(self._addr_space, "0xffffffff")
-                assert mem in m["memory"] and "size" in m["memory"][mem]
-                mem_size_map[mem_name] = m["memory"][mem]["size"]
+
+                # As with register blocks, the memory might not be accessible
+                # in this address space. As before, don't add the memory to
+                # mem_addr_map and mem_size_map.
+                #
+                # Note that we *do* expect m["memory"][mem] to exist if the
+                # memory is accessible. If it doesn't, the configuration
+                # requested a connection for a memory without describing what
+                # was connected.
+                asid_to_base_addr = m["base_addrs"].get(mem)
+                if asid_to_base_addr is not None:
+                    mem_addr_map[mem_name] = asid_to_base_addr.get(self._addr_space, "0xffffffff")
+
+                    memory_mem = m["memory"].get(mem)
+                    if memory_mem is None:
+                        raise RuntimeError(f"Connection described for memory "
+                                           f"{mem_name}, but the memory has "
+                                           f"no description.")
+
+                    memory_mem_size = memory_mem.get("size")
+                    if memory_mem_size is None:
+                        raise RuntimeError(f"The memory {mem_name} has a "
+                                           f"connection described, but the "
+                                           f"size is not defined.")
+
+                    mem_size_map[mem_name] = memory_mem_size
+
             inst_desc[self.MEM_ADDR_FIELD_NAME] = mem_addr_map
             inst_desc[self.MEM_SIZE_FIELD_NAME] = mem_size_map
         # Clock map.

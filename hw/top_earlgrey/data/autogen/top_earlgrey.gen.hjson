@@ -2424,10 +2424,6 @@
         {
           hart: 0x40140000
         }
-        dmi:
-        {
-          hart: 0x0
-        }
       }
       param_decl:
       {
