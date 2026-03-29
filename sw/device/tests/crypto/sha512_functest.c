@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
@@ -152,7 +152,7 @@ bool test_main(void) {
   test_result = OK_STATUS();
   // Even though the HMAC IP itself does not need entropy, we need to initialize
   // the entropy complex to be able to clear HMAC with randomness.
-  CHECK_STATUS_OK(entropy_complex_init());
+  CHECK_STATUS_OK(otcrypto_entropy_init());
   EXECUTE_TEST(test_result, one_block_test);
   EXECUTE_TEST(test_result, two_block_test);
   EXECUTE_TEST(test_result, streaming_test);

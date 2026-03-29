@@ -38,7 +38,7 @@ opentitan_binary(
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:ujson_ottf",

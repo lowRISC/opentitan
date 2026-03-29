@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/aes_gcm/aes_gcm.h"
+#include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -75,7 +75,7 @@ static status_t test_decrypt_timing(void) {
 OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   status_t result;
-  CHECK_STATUS_OK(entropy_complex_init());
+  CHECK_STATUS_OK(otcrypto_entropy_init());
   for (size_t i = 0; i < ARRAYSIZE(kAesGcmTestvectors); i++) {
     current_test = &kAesGcmTestvectors[i];
     LOG_INFO("Key length = %d", current_test->key_len * sizeof(uint32_t));
