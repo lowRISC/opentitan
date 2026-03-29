@@ -34,6 +34,13 @@ enum {
    * CSRNG genbits buffer size in uint32_t words.
    */
   kEntropyCsrngBitsBufferNumWords = 4,
+
+  // Fast timeout for checking if hardware is ready to accept a command word
+  kEntropyPollReadyTimeout = 1000000,
+  // Longer timeout for waiting for a command to finish executing
+  kEntropyPollCmdDoneTimeout = 1000000,
+  // Timeout for waiting for GenBits to become valid
+  kEntropyPollGenBitsTimeout = 131071,
 };
 
 /**
@@ -362,10 +369,15 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
   if ((cmd_type == kEntropyCsrngSendAppCmdTypeCsrng) ||
       (cmd_type == kEntropyCsrngSendAppCmdTypeEdnSw)) {
     // Wait for the status register to be ready to accept the next command.
+    uint32_t timeout = kEntropyPollReadyTimeout;
     do {
       reg = abs_mmio_read32(sts_reg_addr);
       ready = bitfield_bit32_read(reg, rdy_bit_offset);
-    } while (!ready);
+    } while (!ready && --timeout);
+
+    if (timeout == 0) {
+      return OTCRYPTO_RECOV_ERR;
+    }
   }
 
 #define ENTROPY_CMD(m, i) ((bitfield_field32_t){.mask = m, .index = i})
@@ -420,10 +432,15 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
     // SW register of EDN, respectively.
     if (cmd_type == kEntropyCsrngSendAppCmdTypeCsrng ||
         cmd_type == kEntropyCsrngSendAppCmdTypeEdnSw) {
+      uint32_t timeout = kEntropyPollReadyTimeout;
       do {
         reg = abs_mmio_read32(sts_reg_addr);
         ready = bitfield_bit32_read(reg, reg_rdy_bit_offset);
-      } while (!ready);
+      } while (!ready && --timeout);
+
+      if (timeout == 0) {
+        return OTCRYPTO_RECOV_ERR;
+      }
     }
     abs_mmio_write32(cmd_reg_addr, cmd.seed_material->data[i]);
   }
@@ -433,17 +450,30 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
       // The Generate command is complete only after all entropy bits have been
       // consumed. Thus poll the register that indicates if entropy bits are
       // available.
+      uint32_t timeout = kEntropyPollGenBitsTimeout;
       do {
         reg = abs_mmio_read32(kBaseCsrng + CSRNG_GENBITS_VLD_REG_OFFSET);
-      } while (!bitfield_bit32_read(reg, CSRNG_GENBITS_VLD_GENBITS_VLD_BIT));
+      } while (!bitfield_bit32_read(reg, CSRNG_GENBITS_VLD_GENBITS_VLD_BIT) &&
+               --timeout);
+
+      if (timeout == 0) {
+        return OTCRYPTO_RECOV_ERR;
+      }
 
     } else {
       // The non-Generate commands complete earlier, so poll the "command
       // request done" interrupt bit.  Once it is set, the "status" bit is
       // updated.
+      uint32_t timeout = kEntropyPollCmdDoneTimeout;
       do {
         reg = abs_mmio_read32(kBaseCsrng + CSRNG_INTR_STATE_REG_OFFSET);
-      } while (!bitfield_bit32_read(reg, CSRNG_INTR_STATE_CS_CMD_REQ_DONE_BIT));
+      } while (
+          !bitfield_bit32_read(reg, CSRNG_INTR_STATE_CS_CMD_REQ_DONE_BIT) &&
+          --timeout);
+
+      if (timeout == 0) {
+        return OTCRYPTO_RECOV_ERR;
+      }
 
       // Check the "status" bit, which will be 0 unless there was an error.
       reg = abs_mmio_read32(kBaseCsrng + CSRNG_SW_CMD_STS_REG_OFFSET);
@@ -458,9 +488,15 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
     // entropy is consumed. Thus the acknowledgement bit shall only be polled
     // for non-generate commands.
     if (cmd.id != kEntropyDrbgOpGenerate) {
+      uint32_t timeout = kEntropyPollCmdDoneTimeout;
       do {
         reg = abs_mmio_read32(sts_reg_addr);
-      } while (!bitfield_bit32_read(reg, EDN_SW_CMD_STS_CMD_ACK_BIT));
+      } while (!bitfield_bit32_read(reg, EDN_SW_CMD_STS_CMD_ACK_BIT) &&
+               --timeout);
+
+      if (timeout == 0) {
+        return OTCRYPTO_RECOV_ERR;
+      }
 
       // Check the "status" bit, which will be 0 unless there was an error.
       if (bitfield_field32_read(reg, CSRNG_SW_CMD_STS_CMD_STS_FIELD)) {
@@ -533,9 +569,14 @@ static void edn_stop(uint32_t edn_address) {
 OT_WARN_UNUSED_RESULT
 static status_t edn_ready_block(uint32_t edn_address) {
   uint32_t reg;
+  uint32_t timeout = kEntropyPollReadyTimeout;
   do {
     reg = abs_mmio_read32(edn_address + EDN_SW_CMD_STS_REG_OFFSET);
-  } while (!bitfield_bit32_read(reg, EDN_SW_CMD_STS_CMD_RDY_BIT));
+  } while (!bitfield_bit32_read(reg, EDN_SW_CMD_STS_CMD_RDY_BIT) && --timeout);
+
+  if (timeout == 0) {
+    return OTCRYPTO_RECOV_ERR;
+  }
 
   if (bitfield_field32_read(reg, CSRNG_SW_CMD_STS_CMD_STS_FIELD)) {
     return OTCRYPTO_RECOV_ERR;
@@ -965,9 +1006,16 @@ status_t entropy_csrng_generate_data_get(uint32_t *buf, size_t len,
     // Block until there is more data available in the genbits buffer. CSRNG
     // generates data in 128bit chunks (i.e. 4 words).
     uint32_t reg;
+    uint32_t timeout = kEntropyPollGenBitsTimeout;
+
     do {
       reg = abs_mmio_read32(kBaseCsrng + CSRNG_GENBITS_VLD_REG_OFFSET);
-    } while (!bitfield_bit32_read(reg, CSRNG_GENBITS_VLD_GENBITS_VLD_BIT));
+    } while (!bitfield_bit32_read(reg, CSRNG_GENBITS_VLD_GENBITS_VLD_BIT) &&
+             --timeout);
+
+    if (timeout == 0) {
+      return OTCRYPTO_RECOV_ERR;
+    }
 
     if (fips_check != kHardenedBoolFalse &&
         !bitfield_bit32_read(reg, CSRNG_GENBITS_VLD_GENBITS_FIPS_BIT)) {
