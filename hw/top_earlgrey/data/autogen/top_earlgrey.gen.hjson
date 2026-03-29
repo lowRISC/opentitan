@@ -6505,10 +6505,6 @@
         {
           hart: 0x41200000
         }
-        dbg:
-        {
-          hart: 0x00001000
-        }
       }
       generate_dif: false
       clock_connections:
