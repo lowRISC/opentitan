@@ -31,7 +31,7 @@ otcrypto_status_t otcrypto_security_config_check(
 
 /**
  * Initializes the crypto library for use.
- * 
+ *
  * Check the security configuration
  * Set up alert management
  * Perform (some) KATs for FIPS
@@ -43,7 +43,17 @@ otcrypto_status_t otcrypto_security_config_check(
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level);
 
-
+/**
+ * Function used to return to the user, the last function call of every crypto
+ * API. Only to be used when OTCRYPTO_OK can be returned.
+ *
+ * This function checks whether any alert was fired.
+ *
+ * @param security_level Security level of the used key.
+ * @returns OK when the security check passed.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_eval_exit(otcrypto_status_t status);
 
 #ifdef __cplusplus
 }  // extern "C"
