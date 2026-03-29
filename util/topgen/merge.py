@@ -245,16 +245,21 @@ def elaborate_instance(instance, block: IpBlock):
             log.error(f'Instance {instance["name"]} has both a base_addr '
                       'and a base_addrs field.')
 
-        # Since the instance already has a base_addrs field, make sure that
-        # it's got the same set of keys as the name of the interfaces in the
-        # block.
+        # The base_addrs field for the instance might not have an entry for
+        # every one of the block's interfaces: some of those interfaces might
+        # be disabled through a parameter and thus we don't want to wire them
+        # up.
+        #
+        # But we do expect that every interface that *is* given a base address
+        # has an associated reg_block or memory in the block.
         inst_if_names = set(base_addrs.keys())
         block_if_names = set(block.reg_blocks.keys()) | set(block.memories.keys())
-        if block_if_names != inst_if_names:
-            log.error('Instance {!r} has a base_addrs field with keys {} '
-                      'but the block it instantiates ({!r}) has device '
-                      'interfaces {}.'.format(instance['name'], inst_if_names,
-                                              block.name, block_if_names))
+
+        if inst_if_names - block_if_names:
+            log.error(f"Instance {instance['name']} has a base_addrs field "
+                      f"that defines base addresses for interfaces not named "
+                      f"in the block itself. Extra items: "
+                      f"{list(inst_if_names - block_if_names)}")
 
     if 'base_addr' in instance:
         del instance['base_addr']
@@ -436,8 +441,21 @@ def xbar_adddevice(top: ConfigT, name_to_block: IpBlocksT, xbar: ConfigT,
     # If we get here, inst points an instance of some block or memory. It
     # shouldn't point at a crossbar (because that would imply a naming clash)
     assert device_base not in other_xbars
-    base_addrs, size_byte = lib.get_base_and_size(name_to_block, inst,
-                                                  device_ifname)
+
+    block = name_to_block.get(inst['type'])
+    if block is None:
+        raise RuntimeError(f"No block defined for instance "
+                           f"type {inst['type']} (with name "
+                           f"{inst['name']})")
+
+    bases_size = lib.get_base_and_size(block, inst, device_ifname)
+    if bases_size is None:
+        # If get_base_and_size returned None, that means the instance doesn't
+        # actually connect with this interface and thus doesn't connect to this
+        # crossbar. Nothing more to do.
+        return
+
+    base_addrs, size_byte = bases_size
     addr_range = {
         "base_addrs":
         {asid: hex(base_addr)

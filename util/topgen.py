@@ -856,10 +856,12 @@ def generate_top_ral(topname: str, top: ConfigT, name_to_block: IpBlocksT,
 
         inst_to_block[inst_name] = block_name
         for if_name in block.reg_blocks.keys():
-            if_addr = {
-                asid: int(addr, 0)
-                for (asid, addr) in module["base_addrs"][if_name].items()
-            }
+            base_addrs = module["base_addrs"].get(if_name)
+            if base_addrs is None:
+                continue
+
+            if_addr = {asid: int(addr, 0)
+                       for (asid, addr) in base_addrs.items()}
             if_addrs[(inst_name, if_name)] = if_addr
 
     # Top-level may override the mem setting. Store the new type to
