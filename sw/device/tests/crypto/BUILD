@@ -168,8 +168,8 @@ cc_library(
 )
 
 opentitan_test(
-    name = "aes_gcm_timing_test",
-    srcs = ["aes_gcm_timing_test.c"],
+    name = "aes_gcm_timing_functest",
+    srcs = ["aes_gcm_timing_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
     fpga = fpga_params(
         timeout = "long",
@@ -1112,12 +1112,26 @@ filegroup(
     ],
 )
 
+opentitan_test(
+    name = "status_functest",
+    srcs = ["status_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/impl:status",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
 test_suite(
     name = "cryptolib_test_suite",
     tests = [
         ":aes_functest",
         ":aes_gcm_functest",
-        ":aes_gcm_timing_test",
+        ":aes_gcm_timing_functest",
         ":aes_kwp_functest",
         ":aes_kwp_kat_functest",
         ":aes_kwp_sideload_functest",
@@ -1146,6 +1160,7 @@ test_suite(
         ":sha256_functest",
         ":sha384_functest",
         ":sha512_functest",
+        ":status_functest",
         ":symmetric_keygen_functest",
     ],
 )
