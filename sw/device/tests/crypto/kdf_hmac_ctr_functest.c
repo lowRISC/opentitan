@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/kdf_ctr.h"
 #include "sw/device/lib/runtime/log.h"
@@ -1218,7 +1218,7 @@ OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   // Start the entropy complex.
-  CHECK_STATUS_OK(entropy_complex_init());
+  CHECK_STATUS_OK(otcrypto_entropy_init());
 
   status_t test_result = OK_STATUS();
 

@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/drbg.h"
+#include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/key_transport.h"
 #include "sw/device/lib/runtime/log.h"
@@ -52,12 +52,10 @@ static otcrypto_key_config_t kKmacKeyConfig = {
 };
 
 static status_t entropy_complex_init_test(void) {
-  // This initialization should happen in ROM_EXT, so there is no public API
-  // for it in cryptolib.
-  TRY(entropy_complex_init());
+  TRY(otcrypto_entropy_init());
 
   // Check the configuration.
-  return entropy_complex_check();
+  return otcrypto_entropy_check();
 }
 
 /**

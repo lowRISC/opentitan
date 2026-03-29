@@ -20,6 +20,7 @@ ot_static_library(
         "//sw/device/lib/crypto/impl:ecc_curve25519",
         "//sw/device/lib/crypto/impl:ecc_p256",
         "//sw/device/lib/crypto/impl:ecc_p384",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:hkdf",
         "//sw/device/lib/crypto/impl:hmac",
         "//sw/device/lib/crypto/impl:kdf_ctr",

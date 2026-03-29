@@ -14,8 +14,8 @@
 #include <stdbool.h>
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -276,7 +276,7 @@ status_t handle_gdb(ujson_t *uj) {
 }
 
 bool test_main(void) {
-  CHECK_STATUS_OK(entropy_complex_init());
+  CHECK_STATUS_OK(otcrypto_entropy_init());
   ujson_t uj = ujson_ottf_console();
   return status_ok(handle_gdb(&uj));
 }

@@ -40,7 +40,7 @@ opentitan_test(
     ),
     deps = [
         ":aes_testvectors",
-        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
@@ -54,6 +54,7 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl/aes_kwp",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -68,8 +69,8 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
-        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl:aes",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/runtime:log",
@@ -85,8 +86,8 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
-        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl:aes",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/runtime:log",
@@ -104,9 +105,9 @@ opentitan_test(
     ),
     deps = [
         "//sw/device/lib/crypto/drivers:aes",
-        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:keymgr",
         "//sw/device/lib/crypto/impl:aes",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:keymgr_testutils",
@@ -136,6 +137,7 @@ opentitan_test(
         ":aes_gcm_testutils",
         ":aes_gcm_testvectors",
         "//sw/device/lib/crypto/impl:aes_gcm",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:status",
         "//sw/device/lib/runtime:log",
@@ -184,6 +186,7 @@ opentitan_test(
     deps = [
         ":aes_gcm_testutils",
         ":aes_gcm_testvectors",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl/aes_gcm",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:check",
@@ -199,8 +202,8 @@ opentitan_test(
         timeout = "eternal",
     ),
     deps = [
-        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl:drbg",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:status",
         "//sw/device/lib/runtime:log",
@@ -363,9 +366,9 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
-        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/crypto/impl:ecc_p256",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
@@ -385,9 +388,9 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
-        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/crypto/impl:ecc_p384",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/runtime:log",
@@ -449,10 +452,10 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
-        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:keymgr",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/crypto/impl:ecc_p256",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/crypto/impl:sha2",
@@ -473,10 +476,10 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
-        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:keymgr",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/crypto/impl:ecc_p384",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/impl:sha2",
@@ -504,9 +507,9 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
-        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/crypto/impl:ecc_curve25519",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/runtime:log",
@@ -546,6 +549,7 @@ opentitan_test(
         ":kmac_testvectors_hardcoded_header",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/crypto/drivers:kmac",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:kmac",
         "//sw/device/lib/crypto/impl:sha3",
@@ -565,7 +569,7 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
-        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:kdf_ctr",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -586,6 +590,7 @@ opentitan_test(
         ":kdf_testvectors_random_header",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/crypto/drivers:kmac",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/crypto/impl:kmac",
         "//sw/device/lib/crypto/impl:kmac_kdf",
@@ -605,7 +610,7 @@ opentitan_test(
     deps = [
         ":hmac_testvectors_random_header",
         "//sw/device/lib/base:macros",
-        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:hmac",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/testing/test_framework:check",
@@ -644,6 +649,7 @@ opentitan_test(
     deps = [
         "//sw/device/lib/base:macros",
         "//sw/device/lib/crypto/drivers:kmac",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/crypto/impl:kmac_kdf",
         "//sw/device/lib/crypto/impl:sha3",
@@ -665,6 +671,7 @@ opentitan_test(
     deps = [
         "//sw/device/lib/base:macros",
         "//sw/device/lib/crypto/drivers:kmac",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:kmac",
         "//sw/device/lib/crypto/impl:sha3",
@@ -686,6 +693,7 @@ opentitan_test(
     deps = [
         ":ecdsa_p256_verify_testvectors_hardcoded_header",
         "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/crypto/impl/ecc:p256",
@@ -705,6 +713,7 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/runtime:log",
@@ -724,6 +733,7 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/runtime:log",
@@ -743,6 +753,7 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/runtime:log",
@@ -762,6 +773,7 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/crypto/impl/rsa:rsa_datatypes",
@@ -787,6 +799,7 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/crypto/impl:sha2",
@@ -809,6 +822,7 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/crypto/impl:sha2",
@@ -836,6 +850,7 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/crypto/impl:sha2",
@@ -856,6 +871,7 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/crypto/impl:sha2",
@@ -883,6 +899,7 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/crypto/impl:sha2",
@@ -903,6 +920,7 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/crypto/impl:sha2",
@@ -921,6 +939,7 @@ opentitan_test(
     ),
     deps = [
         "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/runtime:log",
@@ -937,6 +956,7 @@ opentitan_test(
     ),
     deps = [
         "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/crypto/impl:status",
@@ -950,8 +970,8 @@ opentitan_test(
     srcs = ["symmetric_keygen_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
     deps = [
-        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl:drbg",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/impl:status",
@@ -980,7 +1000,7 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
-        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:hkdf",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/runtime:log",
@@ -997,6 +1017,7 @@ opentitan_test(
     ),
     deps = [
         "//sw/device/lib/crypto/drivers:hmac",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:hmac",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -1011,6 +1032,7 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:hmac",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -1025,6 +1047,7 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:hmac",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -1072,8 +1095,8 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
-        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:hmac",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/runtime:log",
