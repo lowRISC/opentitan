@@ -13,28 +13,28 @@
 otcrypto_status_t otcrypto_security_config_check(
     otcrypto_key_security_level_t security_level) {
 #if defined(OPENTITAN_IS_EARLGREY)
-  // Check if the jittery clock is enabled on OpenTitan EarlGrey.
-  uint32_t jittery_clk_en = abs_mmio_read32(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR +
-                                            CLKMGR_JITTER_ENABLE_REG_OFFSET);
-  if (launder32(jittery_clk_en) != kMultiBitBool4True) {
-    return OTCRYPTO_FATAL_ERR;
-  }
-  HARDENED_CHECK_EQ(jittery_clk_en, kMultiBitBool4True);
+  if (launder32(security_level) != kOtcryptoKeySecurityLevelLow) {
+    // Check if the jittery clock is enabled on OpenTitan EarlGrey.
+    uint32_t jittery_clk_en = abs_mmio_read32(
+        TOP_EARLGREY_CLKMGR_AON_BASE_ADDR + CLKMGR_JITTER_ENABLE_REG_OFFSET);
+    if (launder32(jittery_clk_en) != kMultiBitBool4True) {
+      return OTCRYPTO_FATAL_ERR;
+    }
+    HARDENED_CHECK_EQ(jittery_clk_en, kMultiBitBool4True);
 
-  // Check if the dummy instructions and the data independent timing is
-  // enabled in ibex.
-  hardened_bool_t ibex_secure_config = ibex_check_security_config();
-  if (launder32(ibex_secure_config) == kHardenedBoolFalse) {
-    return OTCRYPTO_FATAL_ERR;
+    // Check if the dummy instructions and the data independent timing is
+    // enabled in ibex.
+    hardened_bool_t ibex_secure_config = ibex_check_security_config();
+    if (launder32(ibex_secure_config) == kHardenedBoolFalse) {
+      return OTCRYPTO_FATAL_ERR;
+    }
+    HARDENED_CHECK_EQ(ibex_secure_config, kHardenedBoolTrue);
+  } else {
+    // Do not check the device config when security level is low.
+    HARDENED_CHECK_EQ(security_level, kOtcryptoKeySecurityLevelLow);
   }
-  HARDENED_CHECK_EQ(ibex_secure_config, kHardenedBoolTrue);
-}
-else {
-  // Do not check the device config when security level is low.
-  HARDENED_CHECK_EQ(security_level, kOtcryptoKeySecurityLevelLow);
-}
 #endif
-return OTCRYPTO_OK;
+  return OTCRYPTO_OK;
 }
 
 otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level) {

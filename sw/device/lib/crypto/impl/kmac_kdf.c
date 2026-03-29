@@ -9,6 +9,7 @@
 #include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 
@@ -150,5 +151,5 @@ otcrypto_status_t otcrypto_kmac_kdf(
       integrity_blinded_checksum(output_key_material);
 
   // Clear the KMAC sideload slot in case the key was sideloaded.
-  return keymgr_sideload_clear_kmac();
+  return otcrypto_eval_exit(keymgr_sideload_clear_kmac());
 }

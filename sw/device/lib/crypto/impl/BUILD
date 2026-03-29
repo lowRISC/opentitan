@@ -83,6 +83,7 @@ cc_library(
     srcs = ["drbg.c"],
     hdrs = ["//sw/device/lib/crypto/include:drbg.h"],
     deps = [
+        ":config",
         ":integrity",
         ":status",
         "//sw/device/lib/base:hardened_memory",
@@ -147,6 +148,7 @@ cc_library(
     srcs = ["hkdf.c"],
     hdrs = ["//sw/device/lib/crypto/include:hkdf.h"],
     deps = [
+        ":config",
         ":hmac",
         ":integrity",
         ":keyblob",
@@ -172,6 +174,7 @@ cc_library(
     srcs = ["kdf_ctr.c"],
     hdrs = ["//sw/device/lib/crypto/include:kdf_ctr.h"],
     deps = [
+        ":config",
         ":hmac",
         ":integrity",
         ":keyblob",
@@ -211,6 +214,7 @@ cc_library(
     srcs = ["key_transport.c"],
     hdrs = ["//sw/device/lib/crypto/include:key_transport.h"],
     deps = [
+        ":config",
         ":status",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
         "//sw/device/lib/crypto/impl:drbg",
@@ -235,6 +239,7 @@ cc_library(
     srcs = ["kmac_kdf.c"],
     hdrs = ["//sw/device/lib/crypto/include:kmac_kdf.h"],
     deps = [
+        ":config",
         ":integrity",
         ":keyblob",
         ":status",
@@ -286,6 +291,7 @@ cc_library(
     ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":config",
         ":integrity",
         ":status",
         "//sw/device/lib/base:hardened",
@@ -304,6 +310,7 @@ cc_library(
     ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":config",
         ":status",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
