@@ -26,7 +26,7 @@ extern "C" {
  * @returns OK when the security check passed.
  */
 OT_WARN_UNUSED_RESULT
-status_t otcrypto_security_config_check(
+otcrypto_status_t otcrypto_security_config_check(
     otcrypto_key_security_level_t security_level);
 
 #ifdef __cplusplus
