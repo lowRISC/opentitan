@@ -136,6 +136,18 @@ module i2c_bus_monitor import i2c_pkg::*;
   logic bus_inactive_timeout_en;
   assign bus_inactive_timeout_en = (bus_inactive_timeout_i > '0);
 
+  // SDA is stuck if SCL has been inactive. This is a precondition for
+  // starting to count down the bus timeout after SCL has been high.
+  logic sda_stuck_active_d, sda_stuck_active_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      sda_stuck_active_q <= 1'b0;
+    end else begin
+      sda_stuck_active_q <= sda_stuck_active_d;
+    end
+  end
+
   // bus_active_timeout latches high when SCL has been held low for too long.
   // This can be done intentionally or unintentionally, as the response for
   // target devices should be to abort the current transaction and release any
@@ -192,6 +204,7 @@ module i2c_bus_monitor import i2c_pkg::*;
     bus_release_cnt_dec = 1'b0;
     bus_inactive_timeout_det = 1'b0;
     bus_active_timeout_det_d = bus_active_timeout_det_q;
+    sda_stuck_active_d = sda_stuck_active_q;
 
     unique case (state_q)
       StBusFree: begin
@@ -206,6 +219,7 @@ module i2c_bus_monitor import i2c_pkg::*;
 
       StBusBusyLow: begin
         bus_release_cnt_dec = !scl_i;
+        sda_stuck_active_d = 1'b0;
 
         if (stop_det) begin
           state_d = StBusBusyStop;
@@ -249,7 +263,18 @@ module i2c_bus_monitor import i2c_pkg::*;
           // cause a transition back to StBusBusyLow. If SDA changes from low
           // to high, we get a Stop condition and transition to StBusBusyStop.
           bus_inactive_timeout_det = bus_inactive_timeout_en;
-          if (sda_i) begin
+          if (!sda_i) begin
+            // SDA is also stuck low.
+            if (!sda_stuck_active_q) begin
+              // Begin counting down the bus timeout.
+              bus_release_cnt_load = 1'b1;
+              bus_release_cnt_sel = bus_active_timeout_i;
+              sda_stuck_active_d = 1'b1;
+            end else begin
+              // Signal bus timeout if we've been stuck active for long.
+              bus_active_timeout_det_d = bus_active_timeout_en_i;
+            end
+          end else begin
             state_d = StBusFree;
           end
         end
