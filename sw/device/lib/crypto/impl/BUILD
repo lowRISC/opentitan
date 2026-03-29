@@ -406,6 +406,17 @@ cc_library(
 )
 
 cc_library(
+    name = "entropy_src",
+    srcs = ["entropy_src.c"],
+    hdrs = ["//sw/device/lib/crypto/include:entropy_src.h"],
+    deps = [
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
+cc_library(
     name = "mldsa",
     srcs = ["mldsa.c"],
     hdrs = ["//sw/device/lib/crypto/include:mldsa.h"],

@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/drbg.h"
+#include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/randomness_quality.h"
@@ -191,8 +191,8 @@ bool test_main(void) {
   status_t result = OK_STATUS();
 
   // Initialize the entropy complex.
-  CHECK_STATUS_OK(entropy_complex_init());
-  CHECK_STATUS_OK(entropy_complex_check());
+  CHECK_STATUS_OK(otcrypto_entropy_init());
+  CHECK_STATUS_OK(otcrypto_entropy_check());
 
   EXECUTE_TEST(result, kat_test);
   EXECUTE_TEST(result, random_test);

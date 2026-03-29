@@ -281,6 +281,7 @@ cc_library(
     deps = [
         ":bitfield",
         ":hardened",
+        "//sw/device/lib/crypto/drivers:rv_core_ibex",
     ],
 )
 
