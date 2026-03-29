@@ -10,7 +10,7 @@
 #include "clkmgr_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-status_t otcrypto_security_config_check(
+otcrypto_status_t otcrypto_security_config_check(
     otcrypto_key_security_level_t security_level) {
 #if defined(OPENTITAN_IS_EARLGREY)
   // Check if the jittery clock is enabled on OpenTitan EarlGrey.
