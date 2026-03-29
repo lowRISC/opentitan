@@ -211,26 +211,6 @@ static status_t key_write(const hmac_key_t *key) {
 }
 
 /**
- * Copy the digest result from HMAC HWIP to given `digest` buffer.
- *
- * This function does not return error, so it is the responsibility of the
- * caller to check that `digest` and `digest_wordlen` are correctly set.
- * Moreover, the caller must ensure that HMAC HWIP is in a state that permits
- * reading the digest value, that is, either of stop or process commands is
- * issued.
- *
- * @param[out] digest The digest buffer to copy to the result.
- * @param digest_wordlen The length of the digest buffer in words.
- */
-static void digest_read(uint32_t *digest, size_t digest_wordlen) {
-  const uint32_t kBase = hmac_base();
-  for (size_t i = 0; i < digest_wordlen; i++) {
-    digest[i] = abs_mmio_read32(kBase + HMAC_DIGEST_0_REG_OFFSET +
-                                sizeof(uint32_t) * i);
-  }
-}
-
-/**
  * Resume a streaming operation from a saved context.
  *
  * @param ctx Context object from which to restore.
@@ -296,7 +276,9 @@ static status_t context_restore(hmac_ctx_t *ctx) {
 static void context_save(hmac_ctx_t *ctx) {
   // For SHA-256 and HMAC-256, we do not need to save to the second half of
   // DIGEST registers, but we do it anyway to keep the driver simple.
-  digest_read(ctx->H, kHmacMaxDigestWords);
+  hardened_memcpy(ctx->H,
+                  (const uint32_t *)(hmac_base() + HMAC_DIGEST_0_REG_OFFSET),
+                  kHmacMaxDigestWords);
   ctx->lower = abs_mmio_read32(hmac_base() + HMAC_MSG_LENGTH_LOWER_REG_OFFSET);
   ctx->upper = abs_mmio_read32(hmac_base() + HMAC_MSG_LENGTH_UPPER_REG_OFFSET);
 }
@@ -447,7 +429,10 @@ static status_t oneshot(const uint32_t cfg, const hmac_key_t *key,
 
   // Wait for the digest to be ready, then read it.
   HARDENED_TRY(hmac_idle_wait());
-  digest_read(digest, digest_wordlen);
+  // Copy the digest result from HMAC HWIP to given `digest` buffer.
+  HARDENED_TRY(hardened_memcpy(
+      digest, (const uint32_t *)(hmac_base() + HMAC_DIGEST_0_REG_OFFSET),
+      digest_wordlen));
 
   // Read back the HMAC configuration and compare to the expected configuration.
   HARDENED_CHECK_EQ(abs_mmio_read32(hmac_base() + HMAC_CFG_REG_OFFSET),
@@ -813,7 +798,10 @@ status_t hmac_final(hmac_ctx_t *ctx, otcrypto_word32_buf_t *digest) {
 
   // Wait for HMAC to be done, then read the digest.
   HARDENED_TRY(hmac_idle_wait());
-  digest_read(digest->data, ctx->digest_wordlen);
+  // Copy the digest result from HMAC HWIP to given `digest` buffer.
+  HARDENED_TRY(hardened_memcpy(
+      digest->data, (const uint32_t *)(hmac_base() + HMAC_DIGEST_0_REG_OFFSET),
+      ctx->digest_wordlen));
 
   // Destroy sensitive values in the ctx object.
   HARDENED_TRY(hmac_context_wipe(ctx));
