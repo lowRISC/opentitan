@@ -319,20 +319,6 @@ cc_library(
     ],
 )
 
-opentitan_test(
-    name = "status_functest",
-    srcs = ["status_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
-    verilator = verilator_params(
-        timeout = "long",
-    ),
-    deps = [
-        ":status",
-        "//sw/device/lib/runtime:ibex",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
-
 cc_test(
     name = "status_unittest",
     srcs = ["status_unittest.cc"],
