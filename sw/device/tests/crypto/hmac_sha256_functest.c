@@ -5,6 +5,7 @@
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/hmac.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/runtime/log.h"
@@ -212,7 +213,7 @@ static volatile status_t test_result;
 
 bool test_main(void) {
   test_result = OK_STATUS();
-  CHECK_STATUS_OK(entropy_complex_init());
+  CHECK_STATUS_OK(otcrypto_entropy_init());
   EXECUTE_TEST(test_result, simple_test);
   EXECUTE_TEST(test_result, empty_test);
   EXECUTE_TEST(test_result, long_key_test);
