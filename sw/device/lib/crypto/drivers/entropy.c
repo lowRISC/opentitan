@@ -639,51 +639,54 @@ static void entropy_complex_stop_all(void) {
 OT_WARN_UNUSED_RESULT
 static status_t entropy_src_configure(const entropy_src_config_t *config) {
   if (config->bypass_conditioner != kMultiBitBool4False) {
+    HARDENED_CHECK_NE(config->bypass_conditioner, kMultiBitBool4False);
     // Bypassing the conditioner is not supported.
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Control register configuration.
-  uint32_t reg = bitfield_field32_write(
+  uint32_t entropy_control = bitfield_field32_write(
       0, ENTROPY_SRC_ENTROPY_CONTROL_ES_ROUTE_FIELD, config->route_to_firmware);
-  reg = bitfield_field32_write(reg, ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_FIELD,
-                               config->bypass_conditioner);
+  entropy_control = bitfield_field32_write(
+      entropy_control, ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_FIELD,
+      config->bypass_conditioner);
   abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_ENTROPY_CONTROL_REG_OFFSET,
-                   reg);
+                   entropy_control);
 
   // Config register configuration
-  reg = bitfield_field32_write(0, ENTROPY_SRC_CONF_FIPS_ENABLE_FIELD,
-                               config->fips_enable);
-  reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_FIPS_FLAG_FIELD,
-                               config->fips_flag);
-  reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_RNG_FIPS_FIELD,
-                               config->rng_fips);
-  reg = bitfield_field32_write(reg,
-                               ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_FIELD,
-                               config->route_to_firmware);
-  reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_THRESHOLD_SCOPE_FIELD,
-                               kMultiBitBool4False);
-  reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_RNG_BIT_ENABLE_FIELD,
-                               config->single_bit_mode);
-  reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_RNG_BIT_SEL_FIELD, 0);
-  abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_CONF_REG_OFFSET, reg);
+  uint32_t conf = bitfield_field32_write(0, ENTROPY_SRC_CONF_FIPS_ENABLE_FIELD,
+                                         config->fips_enable);
+  conf = bitfield_field32_write(conf, ENTROPY_SRC_CONF_FIPS_FLAG_FIELD,
+                                config->fips_flag);
+  conf = bitfield_field32_write(conf, ENTROPY_SRC_CONF_RNG_FIPS_FIELD,
+                                config->rng_fips);
+  conf = bitfield_field32_write(conf,
+                                ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_FIELD,
+                                config->route_to_firmware);
+  conf = bitfield_field32_write(conf, ENTROPY_SRC_CONF_THRESHOLD_SCOPE_FIELD,
+                                kMultiBitBool4False);
+  conf = bitfield_field32_write(conf, ENTROPY_SRC_CONF_RNG_BIT_ENABLE_FIELD,
+                                config->single_bit_mode);
+  conf = bitfield_field32_write(conf, ENTROPY_SRC_CONF_RNG_BIT_SEL_FIELD, 0);
+  abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_CONF_REG_OFFSET, conf);
 
   // Configure health test window. Conditioning bypass is not supported.
-  abs_mmio_write32(
-      kBaseEntropySrc + ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_OFFSET,
+  uint32_t health_test_windows =
       bitfield_field32_write(ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_RESVAL,
                              ENTROPY_SRC_HEALTH_TEST_WINDOWS_FIPS_WINDOW_FIELD,
-                             config->fips_test_window_size));
+                             config->fips_test_window_size);
+  abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_OFFSET,
+                   health_test_windows);
 
   // Configure alert threshold
-  reg = bitfield_field32_write(
+  uint32_t alert_threshold = bitfield_field32_write(
       0, ENTROPY_SRC_ALERT_THRESHOLD_ALERT_THRESHOLD_FIELD,
       config->alert_threshold);
-  reg = bitfield_field32_write(
-      reg, ENTROPY_SRC_ALERT_THRESHOLD_ALERT_THRESHOLD_INV_FIELD,
+  alert_threshold = bitfield_field32_write(
+      alert_threshold, ENTROPY_SRC_ALERT_THRESHOLD_ALERT_THRESHOLD_INV_FIELD,
       ~config->alert_threshold);
   abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_ALERT_THRESHOLD_REG_OFFSET,
-                   reg);
+                   alert_threshold);
 
   // Configure health test thresholds. Conditioning bypass is not supported.
   SET_FIPS_THRESH(REPCNT, config->repcnt_threshold);
@@ -696,11 +699,26 @@ static status_t entropy_src_configure(const entropy_src_config_t *config) {
   SET_FIPS_THRESH(EXTHT_HI, config->extht_hi_threshold);
   SET_FIPS_THRESH(EXTHT_LO, config->extht_lo_threshold);
 
+  HARDENED_CHECK_EQ(
+      abs_mmio_read32(kBaseEntropySrc + ENTROPY_SRC_ENTROPY_CONTROL_REG_OFFSET),
+      entropy_control);
+  HARDENED_CHECK_EQ(
+      abs_mmio_read32(kBaseEntropySrc + ENTROPY_SRC_CONF_REG_OFFSET), conf);
+  HARDENED_CHECK_EQ(abs_mmio_read32(kBaseEntropySrc +
+                                    ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_OFFSET),
+                    health_test_windows);
+  HARDENED_CHECK_EQ(
+      abs_mmio_read32(kBaseEntropySrc + ENTROPY_SRC_ALERT_THRESHOLD_REG_OFFSET),
+      alert_threshold);
+
   // Enable entropy_src.
   abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET,
                    kMultiBitBool4True);
 
-  // TODO: Add FI checks.
+  HARDENED_CHECK_EQ(
+      abs_mmio_read32(kBaseEntropySrc + ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET),
+      kMultiBitBool4True);
+
   return OTCRYPTO_OK;
 }
 
@@ -809,7 +827,6 @@ static status_t entropy_src_check(const entropy_src_config_t *config) {
   VERIFY_FIPS_THRESH(EXTHT_HI, config->extht_hi_threshold);
   VERIFY_FIPS_THRESH(EXTHT_LO, config->extht_lo_threshold);
 
-  // TODO: more FI checks on comparisons here.
   return OTCRYPTO_OK;
 }
 
