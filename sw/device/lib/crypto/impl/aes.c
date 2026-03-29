@@ -465,7 +465,7 @@ static otcrypto_status_t otcrypto_aes_impl(
   }
 
   // In case the key was sideloaded, clear it.
-  return keymgr_sideload_clear_aes();
+  return otcrypto_eval_exit(keymgr_sideload_clear_aes());
 }
 
 otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
@@ -487,8 +487,9 @@ otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
   if (launder32(key->config.security_level) == kOtcryptoKeySecurityLevelLow) {
     HARDENED_CHECK_EQ(key->config.security_level, kOtcryptoKeySecurityLevelLow);
     // No additional FI protection.
-    return otcrypto_aes_impl(key, iv, aes_mode, aes_operation, cipher_input,
-                             aes_padding, cipher_output);
+    return otcrypto_eval_exit(otcrypto_aes_impl(key, iv, aes_mode,
+                                                aes_operation, cipher_input,
+                                                aes_padding, cipher_output));
   } else {
     HARDENED_CHECK_NE(key->config.security_level, kOtcryptoKeySecurityLevelLow);
     // Protect the AES computation against faults. Recomputes the ciphertext or
@@ -543,5 +544,5 @@ otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(iv));
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(cipher_output));
 
-  return OTCRYPTO_OK;
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }

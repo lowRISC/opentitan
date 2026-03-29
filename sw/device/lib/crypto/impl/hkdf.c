@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/hkdf.h"
 #include "sw/device/lib/crypto/include/hmac.h"
@@ -221,7 +222,7 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
   HARDENED_TRY(
       keyblob_from_key_and_mask(tag_data, prk_mask, prk->config, prk->keyblob));
   prk->checksum = integrity_blinded_checksum(prk);
-  return OTCRYPTO_OK;
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
@@ -306,5 +307,5 @@ otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
   HARDENED_TRY(
       keyblob_from_key_and_mask(okm_data, mask, okm->config, okm->keyblob));
   okm->checksum = integrity_blinded_checksum(okm);
-  return OTCRYPTO_OK;
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }

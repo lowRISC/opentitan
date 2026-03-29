@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/hmac.h"
 #include "sw/device/lib/crypto/include/integrity.h"
@@ -196,5 +197,5 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
   output_key_material->checksum =
       integrity_blinded_checksum(output_key_material);
 
-  return OTCRYPTO_OK;
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }

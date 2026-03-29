@@ -243,7 +243,8 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
         // No protection against FI.
         HARDENED_CHECK_EQ(launder32(key->config.security_level),
                           kOtcryptoKeySecurityLevelLow);
-        return hmac_hmac_sha256_cl(&hmac_key, input_message, tag);
+        return otcrypto_eval_exit(
+            hmac_hmac_sha256_cl(&hmac_key, input_message, tag));
       } else if (key->config.security_level ==
                  kOtcryptoKeySecurityLevelMedium) {
         // Call the HMAC core twice and compare both tags. This serves as a FI
@@ -265,7 +266,7 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
         HARDENED_CHECK_EQ(
             hardened_memeq(&tag->data[0], &tag_redundant.data[0], tag->len),
             kHardenedBoolTrue);
-        return OTCRYPTO_OK;
+        return otcrypto_eval_exit(OTCRYPTO_OK);
       } else {
         // Perform two HMAC operations. The first call uses the HMAC core. The
         // second use uses a HMAC implementation that does not use the HMAC
@@ -287,7 +288,7 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
         HARDENED_CHECK_EQ(
             hardened_memeq(&tag->data[0], &tag_redundant.data[0], tag->len),
             kHardenedBoolTrue);
-        return OTCRYPTO_OK;
+        return otcrypto_eval_exit(OTCRYPTO_OK);
       }
     }
     case kOtcryptoKeyModeHmacSha384: {
@@ -296,7 +297,8 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
       if (key->config.security_level == kOtcryptoKeySecurityLevelLow) {
         HARDENED_CHECK_EQ(launder32(key->config.security_level),
                           kOtcryptoKeySecurityLevelLow);
-        return hmac_hmac_sha384(&hmac_key, input_message, tag);
+        return otcrypto_eval_exit(
+            hmac_hmac_sha384(&hmac_key, input_message, tag));
       } else if (key->config.security_level ==
                  kOtcryptoKeySecurityLevelMedium) {
         // Call the HMAC core twice and compare both tags. This serves as a FI
@@ -318,7 +320,7 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
         HARDENED_CHECK_EQ(
             hardened_memeq(&tag->data[0], &tag_redundant.data[0], tag->len),
             kHardenedBoolTrue);
-        return OTCRYPTO_OK;
+        return otcrypto_eval_exit(OTCRYPTO_OK);
       } else {
         // Perform two HMAC operations. The first call uses the HMAC core. The
         // second use uses a HMAC implementation that does not use the HMAC
@@ -340,7 +342,7 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
         HARDENED_CHECK_EQ(
             hardened_memeq(&tag->data[0], &tag_redundant.data[0], tag->len),
             kHardenedBoolTrue);
-        return OTCRYPTO_OK;
+        return otcrypto_eval_exit(OTCRYPTO_OK);
       }
     }
     case kOtcryptoKeyModeHmacSha512: {
@@ -349,7 +351,8 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
       if (key->config.security_level == kOtcryptoKeySecurityLevelLow) {
         HARDENED_CHECK_EQ(launder32(key->config.security_level),
                           kOtcryptoKeySecurityLevelLow);
-        return hmac_hmac_sha512(&hmac_key, input_message, tag);
+        return otcrypto_eval_exit(
+            hmac_hmac_sha512(&hmac_key, input_message, tag));
       } else if (key->config.security_level ==
                  kOtcryptoKeySecurityLevelMedium) {
         // Call the HMAC core twice and compare both tags. This serves as a FI
@@ -371,7 +374,7 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
         HARDENED_CHECK_EQ(
             hardened_memeq(&tag->data[0], &tag_redundant.data[0], tag->len),
             kHardenedBoolTrue);
-        return OTCRYPTO_OK;
+        return otcrypto_eval_exit(OTCRYPTO_OK);
       } else {
         // Perform two HMAC operations. The first call uses the HMAC core. The
         // second use uses a HMAC implementation that does not use the HMAC
@@ -393,7 +396,7 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
         HARDENED_CHECK_EQ(
             hardened_memeq(&tag->data[0], &tag_redundant.data[0], tag->len),
             kHardenedBoolTrue);
-        return OTCRYPTO_OK;
+        return otcrypto_eval_exit(OTCRYPTO_OK);
       }
     }
     default:
@@ -402,7 +405,7 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
 
   // Should be unreachable.
   HARDENED_TRAP();
-  return OTCRYPTO_FATAL_ERR;
+  return otcrypto_eval_exit(OTCRYPTO_FATAL_ERR);
 }
 
 otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
@@ -453,7 +456,7 @@ otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
   HARDENED_CHECK_EQ(
       consttime_memeq_byte(&hmac_ctx, ctx->data, sizeof(hmac_ctx)),
       kHardenedBoolTrue);
-  return OTCRYPTO_OK;
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_hmac_update(
@@ -470,7 +473,7 @@ otcrypto_status_t otcrypto_hmac_update(
 
   hmac_ctx_t *hmac_ctx = (hmac_ctx_t *)ctx->data;
   HARDENED_TRY(hmac_update(hmac_ctx, input_message));
-  return OTCRYPTO_OK;
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,
@@ -486,5 +489,5 @@ otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,
   }
   HARDENED_CHECK_EQ(tag->len, hmac_ctx->digest_wordlen);
 
-  return hmac_final(hmac_ctx, tag);
+  return otcrypto_eval_exit(hmac_final(hmac_ctx, tag));
 }

@@ -362,7 +362,7 @@ otcrypto_status_t otcrypto_p384_point_on_curve(
   p384_point_t *pt = (p384_point_t *)point->key;
   HARDENED_TRY(p384_point_on_curve_check(pt, check_result));
 
-  return OTCRYPTO_OK;
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 status_t otcrypto_p384_base_point_mult(
@@ -406,7 +406,7 @@ otcrypto_status_t otcrypto_ecdsa_p384_keygen_async_finalize(
   HARDENED_TRY(internal_p384_keygen_finalize(private_key, public_key));
 
   // Clear the OTBN sideload slot (in case the seed was sideloaded).
-  return keymgr_sideload_clear_otbn();
+  return otcrypto_eval_exit(keymgr_sideload_clear_otbn());
 }
 
 static otcrypto_status_t otcrypto_ecdsa_p384_sign_async_start_setup(
@@ -479,7 +479,7 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_config_k_async_start(
   HARDENED_CHECK_EQ(integrity_blinded_key_check(private_key),
                     kHardenedBoolTrue);
 
-  return OTCRYPTO_OK;
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_ecdsa_p384_sign_async_start(
@@ -521,7 +521,7 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_async_start(
   HARDENED_CHECK_EQ(integrity_blinded_key_check(private_key),
                     kHardenedBoolTrue);
 
-  return OTCRYPTO_OK;
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_ecdsa_p384_sign_async_finalize(
@@ -544,7 +544,7 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_async_finalize(
   HARDENED_TRY(p384_ecdsa_sign_finalize(sig_p384));
 
   // Clear the OTBN sideload slot (in case the key was sideloaded).
-  return keymgr_sideload_clear_otbn();
+  return otcrypto_eval_exit(keymgr_sideload_clear_otbn());
 }
 otcrypto_status_t otcrypto_ecdsa_p384_verify_async_start(
     const otcrypto_unblinded_key_t *public_key,
@@ -594,7 +594,7 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify_async_start(
   // entering the CryptoLib and here, we would detect this now.
   HARDENED_CHECK_EQ(integrity_unblinded_key_check(public_key),
                     kHardenedBoolTrue);
-  return OTCRYPTO_OK;
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_ecdsa_p384_verify_async_finalize(
@@ -612,7 +612,8 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify_async_finalize(
 
   HARDENED_TRY(p384_signature_length_check(signature->len));
   p384_ecdsa_signature_t *sig_p384 = (p384_ecdsa_signature_t *)signature->data;
-  return p384_ecdsa_verify_finalize(sig_p384, verification_result);
+  return otcrypto_eval_exit(
+      p384_ecdsa_verify_finalize(sig_p384, verification_result));
 }
 
 otcrypto_status_t otcrypto_ecdh_p384_keygen_async_start(
@@ -626,7 +627,7 @@ otcrypto_status_t otcrypto_ecdh_p384_keygen_async_start(
   }
   HARDENED_CHECK_EQ(launder32(private_key->config.key_mode),
                     kOtcryptoKeyModeEcdhP384);
-  return internal_p384_keygen_start(private_key);
+  return otcrypto_eval_exit(internal_p384_keygen_start(private_key));
 }
 
 otcrypto_status_t otcrypto_ecdh_p384_keygen_async_finalize(
@@ -644,7 +645,8 @@ otcrypto_status_t otcrypto_ecdh_p384_keygen_async_finalize(
   HARDENED_CHECK_EQ(launder32(public_key->key_mode), kOtcryptoKeyModeEcdhP384);
   HARDENED_CHECK_EQ(launder32(private_key->config.key_mode),
                     kOtcryptoKeyModeEcdhP384);
-  return internal_p384_keygen_finalize(private_key, public_key);
+  return otcrypto_eval_exit(
+      internal_p384_keygen_finalize(private_key, public_key));
 }
 
 otcrypto_status_t otcrypto_ecdh_p384_async_start(
@@ -713,7 +715,7 @@ otcrypto_status_t otcrypto_ecdh_p384_async_start(
   HARDENED_CHECK_EQ(integrity_unblinded_key_check(public_key),
                     kHardenedBoolTrue);
 
-  return OTCRYPTO_OK;
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_ecdh_p384_async_finalize(
@@ -765,7 +767,7 @@ otcrypto_status_t otcrypto_ecdh_p384_async_finalize(
   shared_secret->checksum = integrity_blinded_checksum(shared_secret);
 
   // Clear the OTBN sideload slot (in case the seed was sideloaded).
-  return keymgr_sideload_clear_otbn();
+  return otcrypto_eval_exit(keymgr_sideload_clear_otbn());
 }
 
 otcrypto_status_t otcrypto_ecc_p384_public_key_import(
@@ -801,7 +803,7 @@ otcrypto_status_t otcrypto_ecc_p384_public_key_import(
   // Calculate the public key checksum.
   public_key->checksum = integrity_unblinded_checksum(public_key);
 
-  return OTCRYPTO_OK;
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_ecc_p384_public_key_export(
@@ -839,7 +841,7 @@ otcrypto_status_t otcrypto_ecc_p384_public_key_export(
   HARDENED_TRY(hardened_memcpy(x->data, pt->x, kP384CoordWords));
   HARDENED_TRY(hardened_memcpy(y->data, pt->y, kP384CoordWords));
 
-  return OTCRYPTO_OK;
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_ecc_p384_private_key_import(
@@ -893,7 +895,7 @@ otcrypto_status_t otcrypto_ecc_p384_private_key_import(
   // Set the blinded key checksum.
   private_key->checksum = integrity_blinded_checksum(private_key);
 
-  return OTCRYPTO_OK;
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_ecc_p384_private_key_export(
@@ -955,5 +957,5 @@ otcrypto_status_t otcrypto_ecc_p384_private_key_export(
       share1->data, private_key->keyblob + kP384MaskedScalarShareWords,
       kP384MaskedScalarShareWords));
 
-  return OTCRYPTO_OK;
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }

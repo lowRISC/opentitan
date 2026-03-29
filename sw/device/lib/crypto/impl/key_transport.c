@@ -10,6 +10,7 @@
 #include "sw/device/lib/crypto/impl/aes_kwp/aes_kwp.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/drbg.h"
 #include "sw/device/lib/crypto/include/integrity.h"
@@ -58,7 +59,7 @@ otcrypto_status_t otcrypto_symmetric_keygen(
 
   // Populate the checksum and return.
   key->checksum = integrity_blinded_checksum(key);
-  return OTCRYPTO_OK;
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_hw_backed_key(uint32_t version,
@@ -87,7 +88,7 @@ otcrypto_status_t otcrypto_hw_backed_key(uint32_t version,
   // Set the checksum.
   key->checksum = integrity_blinded_checksum(key);
 
-  return OTCRYPTO_OK;
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_wrapped_key_len(const otcrypto_key_config_t config,
@@ -113,7 +114,7 @@ otcrypto_status_t otcrypto_wrapped_key_len(const otcrypto_key_config_t config,
     *wrapped_num_words += 1;
   }
 
-  return OTCRYPTO_OK;
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 /**
@@ -225,7 +226,8 @@ otcrypto_status_t otcrypto_key_wrap(const otcrypto_blinded_key_t *key_to_wrap,
                                key_to_wrap->keyblob, keyblob_words));
 
   // Wrap the key.
-  return aes_kwp_wrap(kek, plaintext, sizeof(plaintext), wrapped_key->data);
+  return otcrypto_eval_exit(
+      aes_kwp_wrap(kek, plaintext, sizeof(plaintext), wrapped_key->data));
 }
 
 otcrypto_status_t otcrypto_key_unwrap(otcrypto_const_word32_buf_t *wrapped_key,
@@ -262,7 +264,7 @@ otcrypto_status_t otcrypto_key_unwrap(otcrypto_const_word32_buf_t *wrapped_key,
 
   if (launder32(*success) != kHardenedBoolTrue) {
     *success = kHardenedBoolFalse;
-    return OTCRYPTO_OK;
+    return otcrypto_eval_exit(OTCRYPTO_OK);
   }
   HARDENED_CHECK_EQ(*success, kHardenedBoolTrue);
 
@@ -279,7 +281,7 @@ otcrypto_status_t otcrypto_key_unwrap(otcrypto_const_word32_buf_t *wrapped_key,
   uint32_t keyblob_words = plaintext[config_words + 1];
   if (keyblob_words != keyblob_num_words(unwrapped_key->config)) {
     *success = kHardenedBoolFalse;
-    return OTCRYPTO_OK;
+    return otcrypto_eval_exit(OTCRYPTO_OK);
   }
 
   // Extract the keyblob.
@@ -291,7 +293,7 @@ otcrypto_status_t otcrypto_key_unwrap(otcrypto_const_word32_buf_t *wrapped_key,
 
   // Finally, check the integrity of the key material we unwrapped.
   *success = integrity_blinded_key_check(unwrapped_key);
-  return OTCRYPTO_OK;
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_import_blinded_key(
@@ -330,7 +332,7 @@ otcrypto_status_t otcrypto_import_blinded_key(
   HARDENED_TRY(keyblob_from_shares(key_share0->data, key_share1->data,
                                    blinded_key->config, blinded_key->keyblob));
   blinded_key->checksum = integrity_blinded_checksum(blinded_key);
-  return OTCRYPTO_OK;
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_export_blinded_key(
@@ -394,5 +396,5 @@ otcrypto_status_t otcrypto_export_blinded_key(
       hardened_memcpy(key_share0->data, keyblob_share0, key_share0->len));
   HARDENED_TRY(
       hardened_memcpy(key_share1->data, keyblob_share1, key_share1->len));
-  return OTCRYPTO_OK;
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
