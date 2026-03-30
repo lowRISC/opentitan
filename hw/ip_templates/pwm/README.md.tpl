@@ -1,10 +1,6 @@
 # PWM HWIP Technical Specification
-
-[`pwm`](https://reports.opentitan.org/hw/ip/pwm/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/pwm/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/pwm/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/pwm/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/pwm/code.svg)
+<!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/top_${topname}/ip_autogen/pwm/data/pwm.hjson --top ${topname} -->
+<!-- END CMDGEN -->
 
 # Overview
 
@@ -12,7 +8,7 @@ This document specifies PWM hardware IP (HWIP) functionality.
 This module conforms to the [Comportable guideline for peripheral functionality.](../../../../doc/contributing/hw/comportability/README.md)
 See that document for integration overview within the broader top-level system.
 
-## Features
+${"##"} Features
 
 - Pulse-width modulation (PWM) with adjustable duty cycle
 - Suitable for general-purpose use, but primarily designed for control of tri-color LEDs
@@ -31,7 +27,7 @@ See that document for integration overview within the broader top-level system.
 - Channels can be configured to blink synchronously or independently
 - All duty cycle settings are independently programmable
 
-## Description
+${"##"} Description
 
 The PWM IP is primarily designed to drive a parameterizable number of pulse-width modulated outputs with periodic pulses each with a programmable frequency, phase, and duty cycle (i.e. the ratio between the pulse duration and the overall period between pulses.)
 

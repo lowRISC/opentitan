@@ -1,9 +1,6 @@
 # Power Manager HWIP Technical Specification
-[`pwrmgr`](https://reports.opentitan.org/hw/top_${topname}/ip_autogen/pwrmgr/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/pwrmgr/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/pwrmgr/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/pwrmgr/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/pwrmgr/code.svg)
+<!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/top_${topname}/ip_autogen/pwrmgr/data/pwrmgr.hjson --top ${topname} -->
+<!-- END CMDGEN -->
 
 # Overview
 

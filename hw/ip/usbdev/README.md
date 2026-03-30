@@ -1,10 +1,12 @@
 # USB 2.0 Full-Speed Device HWIP Technical Specification
+<!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/ip/usbdev/data/usbdev.hjson --top earlgrey -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`usbdev`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 2.0.0 | D2S, V2S | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/usbdev/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/usbdev/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/usbdev/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/usbdev/code.svg) |
 
-[`usbdev`](https://reports.opentitan.org/hw/ip/usbdev/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/usbdev/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/usbdev/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/usbdev/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/usbdev/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/usbdev/index.html).
+
+<!-- END CMDGEN -->
 
 # Overview
 

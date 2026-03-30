@@ -1,10 +1,12 @@
 # ENTROPY_SRC HWIP Technical Specification
+<!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/ip/entropy_src/data/entropy_src.hjson --top earlgrey -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`entropy_src_rng_4bits`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 3.0.0 | D2S, V2S | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/entropy_src_rng_4bits/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/entropy_src_rng_4bits/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/entropy_src_rng_4bits/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/entropy_src_rng_4bits/code.svg) |
 
-[`entropy_src`](https://reports.opentitan.org/hw/ip/entropy_src/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/entropy_src/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/entropy_src/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/entropy_src/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/entropy_src/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/entropy_src/index.html).
+
+<!-- END CMDGEN -->
 
 # Overview
 

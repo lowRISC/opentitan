@@ -1,10 +1,10 @@
 # Flash Controller HWIP Technical Specification
+<!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/top_englishbreakfast/ip_autogen/flash_ctrl/data/flash_ctrl.hjson --top englishbreakfast -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`flash_ctrl`](https://dashboard.reports.lowrisc.org/opentitan/englishbreakfast/dashboard.html) | 2.0.0 | D2S, V2S | ![](https://dashboard.reports.lowrisc.org/opentitan/englishbreakfast/badge/flash_ctrl/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/englishbreakfast/badge/flash_ctrl/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/englishbreakfast/badge/flash_ctrl/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/englishbreakfast/badge/flash_ctrl/code.svg) |
 
-[`flash_ctrl`](https://reports.opentitan.org/hw/top_englishbreakfast/ip_autogen/flash_ctrl/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/flash_ctrl/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/flash_ctrl/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/flash_ctrl/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/flash_ctrl/code.svg)
+<!-- END CMDGEN -->
 
 # Overview
 

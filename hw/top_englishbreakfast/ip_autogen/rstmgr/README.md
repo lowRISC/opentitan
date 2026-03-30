@@ -1,16 +1,10 @@
 # Reset Manager HWIP Technical Specification
+<!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/top_englishbreakfast/ip_autogen/rstmgr/data/rstmgr.hjson --top englishbreakfast -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`rstmgr`](https://dashboard.reports.lowrisc.org/opentitan/englishbreakfast/dashboard.html) | 1.0.0 | D3, V2S | ![](https://dashboard.reports.lowrisc.org/opentitan/englishbreakfast/badge/rstmgr/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/englishbreakfast/badge/rstmgr/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/englishbreakfast/badge/rstmgr/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/englishbreakfast/badge/rstmgr/code.svg) |
 
-[`rstmgr`](https://reports.opentitan.org/hw/top_englishbreakfast/ip_autogen/rstmgr/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/rstmgr/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/rstmgr/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/rstmgr/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/rstmgr/code.svg)
-
-[`rstmgr_cnsty_chk`](https://reports.opentitan.org/hw/top_englishbreakfast/ip_autogen/rstmgr/dv/rstmgr_cnsty_chk/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/rstmgr_cnsty_chk/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/rstmgr_cnsty_chk/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/rstmgr_cnsty_chk/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/rstmgr_cnsty_chk/code.svg)
+<!-- END CMDGEN -->
 
 # Overview
 

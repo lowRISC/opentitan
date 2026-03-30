@@ -1,10 +1,10 @@
 # GPIO HWIP Technical Specification
+<!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/top_englishbreakfast/ip_autogen/gpio/data/gpio.hjson --top englishbreakfast -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`gpio`](https://dashboard.reports.lowrisc.org/opentitan/englishbreakfast/dashboard.html) | 1.2.0 | D3, V2S | ![](https://dashboard.reports.lowrisc.org/opentitan/englishbreakfast/badge/gpio/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/englishbreakfast/badge/gpio/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/englishbreakfast/badge/gpio/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/englishbreakfast/badge/gpio/code.svg) |
 
-[`gpio`](https://reports.opentitan.org/hw/ip/gpio/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/gpio/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/gpio/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/gpio/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/gpio/code.svg)
+<!-- END CMDGEN -->
 
 # Overview
 

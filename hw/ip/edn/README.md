@@ -1,10 +1,13 @@
 # EDN HWIP Technical Specification
+<!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/ip/edn/data/edn.hjson --top earlgrey -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`edn_edn0`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 2.0.0 | D2S, V2S | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/edn_edn0/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/edn_edn0/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/edn_edn0/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/edn_edn0/code.svg) |
+ [`edn_edn1`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 2.0.0 | D2S, V2S | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/edn_edn1/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/edn_edn1/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/edn_edn1/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/edn_edn1/code.svg) |
 
-[`edn`](https://reports.opentitan.org/hw/ip/edn/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/edn/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/edn/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/edn/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/edn/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/edn/index.html).
+
+<!-- END CMDGEN -->
 
 # Overview
 

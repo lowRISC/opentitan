@@ -1,16 +1,13 @@
 # SRAM Controller Technical Specification
+<!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/ip/sram_ctrl/data/sram_ctrl.hjson --top earlgrey -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`sram_ctrl_main`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 1.1.0 | D3, V2S | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/sram_ctrl_main/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/sram_ctrl_main/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/sram_ctrl_main/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/sram_ctrl_main/code.svg) |
+ [`sram_ctrl_ret`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 1.1.0 | D3, V2S | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/sram_ctrl_ret/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/sram_ctrl_ret/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/sram_ctrl_ret/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/sram_ctrl_ret/code.svg) |
 
-[`sram_ctrl/main`](https://reports.opentitan.org/hw/ip/sram_ctrl_main/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/sram_ctrl/main/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/sram_ctrl/main/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/sram_ctrl/main/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/sram_ctrl/main/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/sram_ctrl/index.html).
 
-[`sram_ctrl/ret`](https://reports.opentitan.org/hw/ip/sram_ctrl_ret/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/sram_ctrl/ret/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/sram_ctrl/ret/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/sram_ctrl/ret/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/sram_ctrl/ret/code.svg)
+<!-- END CMDGEN -->
 
 # Overview
 
