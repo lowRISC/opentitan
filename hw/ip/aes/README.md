@@ -1,16 +1,13 @@
 # AES HWIP Technical Specification
+<!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/ip/aes/data/aes.hjson --top earlgrey -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`aes_masked`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 1.1.0 | D1, V1 | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/aes_masked/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/aes_masked/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/aes_masked/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/aes_masked/code.svg) |
+ [`aes_unmasked`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 1.1.0 | D1, V1 | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/aes_unmasked/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/aes_unmasked/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/aes_unmasked/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/aes_unmasked/code.svg) |
 
-[`aes/masked`](https://reports.opentitan.org/hw/ip/aes_masked/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/aes/masked/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/aes/masked/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/aes/masked/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/aes/masked/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/aes/index.html).
 
-[`aes/unmasked`](https://reports.opentitan.org/hw/ip/aes_unmasked/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/aes/unmasked/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/aes/unmasked/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/aes/unmasked/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/aes/unmasked/code.svg)
+<!-- END CMDGEN -->
 
 # Overview
 

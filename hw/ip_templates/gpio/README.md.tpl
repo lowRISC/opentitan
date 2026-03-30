@@ -1,10 +1,6 @@
 # GPIO HWIP Technical Specification
-
-[`gpio`](https://reports.opentitan.org/hw/ip/gpio/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/gpio/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/gpio/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/gpio/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/gpio/code.svg)
+<!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/top_${topname}/ip_autogen/gpio/data/gpio.hjson --top ${topname} -->
+<!-- END CMDGEN -->
 
 # Overview
 

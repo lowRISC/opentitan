@@ -1,10 +1,6 @@
 # OTP Controller Technical Specification
-
-[`otp_ctrl`](https://reports.opentitan.org/hw/top_${topname}/ip_autogen/otp_ctrl/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/otp_ctrl/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/otp_ctrl/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/otp_ctrl/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/otp_ctrl/code.svg)
+<!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/top_${topname}/ip_autogen/otp_ctrl/data/otp_ctrl.hjson --top ${topname} -->
+<!-- END CMDGEN -->
 
 # Overview
 

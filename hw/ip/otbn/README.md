@@ -1,10 +1,12 @@
 # OpenTitan Big Number Accelerator (OTBN) Technical Specification
+<!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/ip/otbn/data/otbn.hjson --top earlgrey -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`otbn`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 1.2.0 | D1, V0 | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/otbn/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/otbn/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/otbn/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/otbn/code.svg) |
 
-[`otbn`](https://reports.opentitan.org/hw/ip/otbn/dv/uvm/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/otbn/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/otbn/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/otbn/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/otbn/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/otbn/index.html).
+
+<!-- END CMDGEN -->
 
 > OTBN is currently under development as new PQC related features are added.
 > This is indicated by the development stages (see [`otbn.hjson`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/otbn/data/otbn.hjson) and [here](https://opentitan.org/book/doc/project_governance/development_stages.html)).

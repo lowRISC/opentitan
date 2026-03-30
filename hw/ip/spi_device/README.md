@@ -1,10 +1,13 @@
 # SPI Device HWIP Technical Specification
+<!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/ip/spi_device/data/spi_device.hjson --top earlgrey -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`spi_device_1r1w`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 2.0.0 | D2S, V2S | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/spi_device_1r1w/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/spi_device_1r1w/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/spi_device_1r1w/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/spi_device_1r1w/code.svg) |
+ [`spi_device_2p`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 2.0.0 | D2S, V2S | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/spi_device_2p/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/spi_device_2p/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/spi_device_2p/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/spi_device_2p/code.svg) |
 
-[`spi_device`](https://reports.opentitan.org/hw/ip/spi_device/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/spi_device/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/spi_device/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/spi_device/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/spi_device/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/spi_device/index.html).
+
+<!-- END CMDGEN -->
 
 # Overview
 

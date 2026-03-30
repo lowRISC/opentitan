@@ -1,10 +1,6 @@
 # Alert Handler Technical Specification
-
-[`alert_handler`](https://reports.opentitan.org/hw/top_earlgrey/ip_autogen/alert_handler/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/alert_handler/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/alert_handler/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/alert_handler/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/alert_handler/code.svg)
+<!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/top_${topname}/ip_autogen/alert_handler/data/alert_handler.hjson --top ${topname} -->
+<!-- END CMDGEN -->
 
 # Overview
 
@@ -14,7 +10,7 @@ It gathers alerts - defined as interrupt-type signals from other peripherals tha
 If the processor does not handle them, the alert handler mechanism provides hardware responses to handle the threat.
 
 
-## Features
+${"##"} Features
 
 - Differentially-signaled, asynchronous alert inputs from `NAlerts` peripheral sources, where `NAlerts` is a function of the requirements of the peripherals.
 
@@ -46,7 +42,7 @@ If the processor does not handle them, the alert handler mechanism provides hard
     - Ping response from a source has failed.
 
 
-## Description
+${"##"} Description
 
 The alert handler module manages incoming alerts from throughout the system, classifies them, sends interrupts, and escalates interrupts to hardware responses if the processor does not respond to any interrupts.
 The intention is for this module to be a stand-in for security responses in the case where the processor can not handle the security alerts.

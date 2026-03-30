@@ -1,10 +1,10 @@
 # Alert Handler Technical Specification
+<!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/top_earlgrey/ip_autogen/alert_handler/data/alert_handler.hjson --top earlgrey -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`alert_handler`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 1.0.1 | D3, V2S | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/alert_handler/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/alert_handler/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/alert_handler/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/alert_handler/code.svg) |
 
-[`alert_handler`](https://reports.opentitan.org/hw/top_earlgrey/ip_autogen/alert_handler/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/alert_handler/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/alert_handler/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/alert_handler/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/alert_handler/code.svg)
+<!-- END CMDGEN -->
 
 # Overview
 
