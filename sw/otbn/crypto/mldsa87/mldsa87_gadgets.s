@@ -7,6 +7,7 @@
 .globl sec_a2b_8x32
 .globl sec_b2a_8x32
 .globl sec_add_8x32
+.globl sec_unmask_8x32
 
 /*
 
@@ -135,5 +136,26 @@ sec_add_8x32:
   bn.wsrr w0, MAI_RES_S0
   bn.xor w31, w31, w31 /* dummy */
   bn.wsrr w1, MAI_RES_S1
+
+  ret
+
+/**
+ * Securely unmask a vector of 8 Boolean-shared coefficients.
+ *
+ * This is an implementation of the `SecUnMask` function (Algorithm 3 in [1]).
+ *
+ * @param[in]  w0: x0_B, first Boolean share of x
+ * @param[in]  w1: x1_B, second Boolean share of x.
+ * @param[out] w0: x, unmasked value x.
+ */
+sec_unmask_8x32:
+  /* Sample a fresh random mask and XOR it to the shares before unmasking. */
+  bn.wsrr w20, URND
+
+  bn.xor w0, w0, w20
+  bn.xor w31, w31, w31 /* dummy */
+  bn.xor w1, w1, w20
+
+  bn.xor w0, w0, w1
 
   ret
