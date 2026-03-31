@@ -76,6 +76,8 @@ jobs:
     timeout-minutes: ${{ inputs.timeout }}
     needs: fpga-query
     if: needs.fpga-query.outputs.skipped == 'false'
+    outputs:
+      skipped: ${{ steps.test-cache.outputs.skipped }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -121,8 +123,44 @@ jobs:
           echo "Uncompressed size"
           du -sh .
 
-      - name: Trim bazel cache
+      - name: Check cached test
         if: ${{ env.BAZEL_CACHE_OVERLAY != '' }}
+        id: test-cache
+        run: |
+          log="${{ env.BAZEL_CACHE_OVERLAY }}/access.log"
+          stats="$(cat "$log" | cut -f 1 | sort -u)"
+          echo "$stats"
+
+          if [[ "$stats" != "DOWN" ]]; then
+              echo "Some actions are not cached, continue test job"
+              echo "skipped=false" >> "${GITHUB_OUTPUT:-/dev/null}"
+              exit 0
+          fi
+
+          echo "All actions are cached, try to fetch cached test results"
+          . util/build_consts.sh
+          module load "xilinx/vivado/${{ inputs.vivado_version }}"
+          ci/scripts/run-fpga-tests.sh --no-fpga \
+            "--mode=${{ inputs.mode }}" -- \
+            "${{ inputs.interface }}" target_pattern_file.txt \
+            --notest_keep_going \
+          || {
+            echo "Some tests are not cached, continue test job"
+            echo "skipped=false" >> "${GITHUB_OUTPUT:-/dev/null}"
+            exit 0
+          }
+
+          echo "All tests are cached, skip testing"
+          echo "skipped=true" >> "${GITHUB_OUTPUT:-/dev/null}"
+
+      - name: Publish Bazel test results
+        uses: ./.github/actions/publish-bazel-test-results
+        if: steps.test-cache.outputs.skipped == 'true'
+        with:
+          artifact-name: ${{ inputs.job_name }}-test-results
+
+      - name: Trim bazel cache
+        if: steps.test-cache.outputs.skipped == 'false'
         run: |
           echo "Reset local status"
           ci/bazelisk.sh clean --async
@@ -136,7 +174,7 @@ jobs:
             target_pattern_file.txt
 
       - name: Pack bazel cache
-        if: ${{ env.BAZEL_CACHE_OVERLAY != '' }}
+        if: steps.test-cache.outputs.skipped == 'false'
         run: |
           cd "${{ env.BAZEL_CACHE_OVERLAY }}"
           echo "Remote cache overlay stats"
@@ -155,7 +193,7 @@ jobs:
           du -sh /tmp/cache-overlay.tar.zst
 
       - name: Upload bazel cache
-        if: ${{ env.BAZEL_CACHE_OVERLAY != '' }}
+        if: steps.test-cache.outputs.skipped == 'false'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.job_name }}-bazel-cache
@@ -167,6 +205,7 @@ jobs:
     name: FPGA test
     runs-on: [ubuntu-22.04-fpga, "${{ inputs.board }}"]
     needs: fpga-build
+    if: needs.fpga-build.outputs.skipped != 'true'
     timeout-minutes: ${{ inputs.timeout }}
     steps:
       - uses: actions/checkout@v4
