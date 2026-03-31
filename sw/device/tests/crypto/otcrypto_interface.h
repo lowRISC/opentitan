@@ -49,6 +49,9 @@ typedef struct otcrypto_interface_t {
   hardened_bool_t (*integrity_blinded_key_check)(
       const otcrypto_blinded_key_t *);
 
+  // Self integrity.
+  otcrypto_status_t (*integrity_check)(void);
+
   // Key utilities
   otcrypto_status_t (*symmetric_keygen)(const otcrypto_const_byte_buf_t *,
                                         otcrypto_blinded_key_t *);
