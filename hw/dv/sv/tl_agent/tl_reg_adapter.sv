@@ -29,6 +29,14 @@ class tl_reg_adapter #(type ITEM_T = tl_seq_item) extends uvm_reg_adapter;
   extern function uvm_sequence_item reg2bus(const ref uvm_reg_bus_op rw);
   extern function void bus2reg(uvm_sequence_item bus_item, ref uvm_reg_bus_op rw);
 
+  // Configure and randomise a bus request for a register read or write
+  extern local function void fill_bus_rd(const ref uvm_reg_bus_op rw, ref ITEM_T bus_req);
+  extern local function void fill_bus_wr(const ref uvm_reg_bus_op rw, ref ITEM_T bus_req);
+
+  // Return the highest bit index in the target of a uvm_reg_item. This will be the highest bit in a
+  // field of a register, or will be the bus width if item is a memory.
+  extern local function int unsigned get_tgt_msb(uvm_reg_item item);
+
   // Check that the requested bit indices for something will fit in the A channel's user field.
   extern local function bit check_user_bit_idx(string       field_name,
                                                int unsigned lsb,
@@ -50,55 +58,14 @@ function tl_reg_adapter::new(string name = "");
 endfunction
 
 function uvm_sequence_item tl_reg_adapter::reg2bus(const ref uvm_reg_bus_op rw);
-  uvm_reg_item item = get_item();
-  ITEM_T bus_req;
-  bus_req = ITEM_T::type_id::create("bus_req");
+  ITEM_T bus_req = ITEM_T::type_id::create("bus_req");
 
-  // randomize CSR partial or full read for partial read DUT (except memory) always return the
-  // entire 4 bytes bus data if CSR full read (all bytes are enabled) & !MEM, randomly select full
-  // or partial read if CSR field read, will do a partial read if protocal allows by setting a_mask
-  // to byte_en
   if (rw.kind == UVM_READ) begin
-    if (rw.byte_en == '1 && item.element_kind == UVM_REG) begin // csr full read
-      `DV_CHECK_RANDOMIZE_WITH_FATAL(bus_req,
-          a_opcode              == tlul_pkg::Get;
-          a_addr[AddrWidth-1:2] == rw.addr[AddrWidth-1:2];
-          $countones(a_mask)  dist {MaskWidth       :/ 1,
-                                    [0:MaskWidth-1] :/ 1};)
-    end else begin // csr field read
-      `DV_CHECK_RANDOMIZE_WITH_FATAL(bus_req,
-          a_opcode              == tlul_pkg::Get;
-          a_addr[AddrWidth-1:2] == rw.addr[AddrWidth-1:2];
-          a_mask                == rw.byte_en[MaskWidth-1:0];)
-    end
-  end else begin // randomize CSR partial or full write
-    // Actual width of the CSR may be < DataWidth bits depending on fields and their widths. In that
-    // case, the transaction size in bytes and partial write mask need to be at least as wide as the
-    // CSR to be a valid transaction. Otherwise, the DUT can return an error response.
-    int msb;
-
-    // Check if csr addr or mem addr; accordingly, get the msb bit.
-    if (item.element_kind == UVM_REG) begin
-      dv_base_reg csr;
-      uvm_object rg = item.element;
-      `downcast(csr, rg)
-      msb = csr.get_msb_pos();
-    end else if (item.element_kind == UVM_MEM) begin
-      msb = DataWidth - 1;
-    end else begin
-      `uvm_fatal(`gfn, $sformatf("Unexpected address 0x%0h", rw.addr))
-    end
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(bus_req,
-        a_opcode inside {PutFullData, PutPartialData};
-        a_addr    == AddrWidth'(rw.addr);
-        a_data    == DataWidth'(rw.data);
-        a_mask[0] == 1;
-        if (supports_byte_enable) {
-          $countones(a_mask) > (msb / 8);
-        } else {
-          a_mask  == '1;
-        })
+    fill_bus_rd (rw, bus_req);
+  end else begin
+    fill_bus_wr (rw, bus_req);
   end
+
   if (cfg.csr_access_abort_pct_in_adapter > $urandom_range(0, 100)) begin
     bus_req.req_abort_after_a_valid_len = 1;
     `uvm_info(`gfn, $sformatf("tl reg req item is allowed to be aborted"), UVM_MEDIUM)
@@ -120,6 +87,76 @@ function void tl_reg_adapter::bus2reg(uvm_sequence_item bus_item, ref uvm_reg_bu
   `uvm_info(`gfn, {"tl_reg_adapter::bus2reg: ", bus_rsp.convert2string()}, UVM_HIGH)
 endfunction
 
+function void tl_reg_adapter::fill_bus_rd(const ref uvm_reg_bus_op rw, ref ITEM_T bus_req);
+  // The tl_seq_item::mask_in_active_lanes_c constraint ensures that a_mask is only asserted in
+  // active byte lanes. For 50% of CSR full reads (with element_kind == UVM_REG and all bits set in
+  // byte_en), we ask mask to be asserted for a strict subset of the lanes.
+  bit is_csr_full_read = (rw.byte_en == '1 && get_item().element_kind == UVM_REG);
+
+  if (!bus_req.randomize() with {
+        bus_req.a_opcode == tlul_pkg::Get;
+        bus_req.a_addr[AddrWidth-1:2] == local::rw.addr[AddrWidth-1:2];
+        if (local::is_csr_full_read) {
+          $countones(bus_req.a_mask) dist {MaskWidth :/ 1, [0:MaskWidth-1] :/ 1};
+        } else {
+          bus_req.a_mask == rw.byte_en[MaskWidth-1:0];
+        }
+      }) begin
+    `uvm_fatal(get_name(), "Failed to randomize bus request for read")
+  end
+endfunction
+
+function void tl_reg_adapter::fill_bus_wr(const ref uvm_reg_bus_op rw, ref ITEM_T bus_req);
+  // The TL bus may support byte-enable values, which might be given by allowing some bits of a_mask
+  // to be zero. Since CSRs in OpenTitan don't support partial accesses, the reg adapter wants to
+  // choose an a_mask which is true for every byte that exists in the target.
+  //
+  // The tl_seq_item::mask_contiguous_c constraint means that we can require that the bytes
+  // containing bits 0..msb are enabled by just requiring the ends to be enabled. These are the
+  // bytes with indices 0 and msb / 8.
+  int unsigned msb = supports_byte_enable ? get_tgt_msb(get_item()) : (DataWidth - 1);
+
+  if (!bus_req.randomize() with {
+        bus_req.a_opcode inside {PutFullData, PutPartialData};
+        bus_req.a_addr        == AddrWidth'(rw.addr);
+        bus_req.a_data        == DataWidth'(rw.data);
+        bus_req.a_mask[0]     == 1;
+        bus_req.a_mask[msb/8] == 1;
+      }) begin
+    `uvm_fatal(get_name(), "Failed to randomize bus request for write")
+  end
+endfunction
+
+function int unsigned tl_reg_adapter::get_tgt_msb(uvm_reg_item item);
+  case (item.element_kind)
+    UVM_REG: begin
+      // We only support registers that are instances of dv_base_reg. These registers have an msb
+      // position pre-calculated, which gives the highest bit that is contained in any field.
+      dv_base_reg csr;
+      if (!$cast(csr, item.element)) begin
+        `uvm_fatal(get_name(), "Cannot cast UVM_REG item to a dv_base_reg.")
+      end
+      return csr.get_msb_pos();
+    end
+
+    UVM_FIELD: begin
+      uvm_reg_field field;
+      if (!$cast(field, item.element)) begin
+        `uvm_fatal(get_name(), "Cannot cast UVM_FIELD item to a uvm_reg_field.")
+      end
+      return field.get_lsb_pos() + field.get_n_bits() - 1;
+    end
+
+    UVM_MEM: begin
+      // Set msb to be the top bit of a_data, forcing all of the a_mask bits to be set.
+      return DataWidth - 1;
+    end
+
+    default:
+      `uvm_fatal(get_name(), $sformatf("Unknown element_kind: %0p", item.element_kind))
+  endcase
+endfunction
+
 function bit tl_reg_adapter::check_user_bit_idx(string       field_name,
                                                 int unsigned lsb,
                                                 int unsigned nbits);
@@ -137,7 +174,7 @@ function void tl_reg_adapter::configure_racl_bits(int unsigned role_lsb,
                                                   int unsigned uid_lsb,
                                                   int unsigned uid_nbits);
   // Check that both sides can fit in the USER field for the A channel, zeroing out their width if
-  // not.
+  // not. If either doesn't fit, its call to check_user_bit_idx will have reported a uvm_error.
   if (!check_user_bit_idx("role", role_lsb, role_nbits)) role_nbits = 0;
   if (!check_user_bit_idx("uid", uid_lsb, uid_nbits)) uid_nbits = 0;
 
