@@ -34,6 +34,7 @@ unit_tests = [
     "mldsa87_xof_shake128_test",
     "mldsa87_xof_shake256_test",
     "mldsa87_sec_a2b_test",
+    "mldsa87_sec_b2a_test",
 ]
 
 [
