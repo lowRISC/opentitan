@@ -4,7 +4,6 @@
 #include <stdbool.h>
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
@@ -38,7 +37,6 @@ status_t process_cmd(ujson_t *uj) {
 }
 
 bool test_main(void) {
-  CHECK_STATUS_OK(entropy_complex_init());
   ujson_t uj = ujson_ottf_console();
   return status_ok(process_cmd(&uj));
 }
