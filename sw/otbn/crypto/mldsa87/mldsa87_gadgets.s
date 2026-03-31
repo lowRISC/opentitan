@@ -5,6 +5,7 @@
 /* Secure masked gadgets. */
 
 .globl sec_a2b_8x32
+.globl sec_b2a_8x32
 
 /*
 
@@ -32,6 +33,7 @@ work of Azouaoui et al. [1].
  * Configuration values for the MAI_CTRL register.
  */
 .set MAI_CTRL_A2B, 0x1
+.set MAI_CTRL_B2A, 0x3
 
 .text
 
@@ -62,6 +64,35 @@ sec_a2b_8x32:
   csrrw x0, MAI_CTRL, x20
 
   /* TODO: Replace with deterministic wait, once exact latency is known. */
+  jal x1, _mai_poll
+
+  /* Read back the result. */
+  bn.wsrr w0, MAI_RES_S0
+  bn.xor w31, w31, w31 /* dummy */
+  bn.wsrr w1, MAI_RES_S1
+
+  ret
+
+/**
+ * Convert the Boolean sharing of a vector of 8 coefficients (x0_B, x1_B) to a
+ * arithmetic sharing (x0_A, x1_A).
+ *
+ * @param[in]  w0: x0_B, first arithmetic share.
+ * @param[in]  w1: x1_B, second arithmetic share.
+ * @param[out] w0: x0_A, first Boolean share.
+ * @param[out] w1: x1_A, second Boolean share
+ */
+sec_b2a_8x32:
+  /* Write the two shares to the input WSRs (intersperse with configuration of
+     MAI_CTRL to not access both shares in subsequent instructions). */
+  bn.wsrw MAI_IN0_S0, w0
+  addi x20, x0, MAI_CTRL_B2A
+  bn.wsrw MAI_IN0_S1, w1
+
+  /* Trigger the conversion. */
+  csrrw x0, MAI_CTRL, x20
+
+  /* TODO: Replace with deterministic wait, once latency is known. */
   jal x1, _mai_poll
 
   /* Read back the result. */
