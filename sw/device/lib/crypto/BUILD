@@ -15,6 +15,7 @@ ot_static_library(
     deps = [
         "//sw/device/lib/crypto/impl:aes",
         "//sw/device/lib/crypto/impl:aes_gcm",
+        "//sw/device/lib/crypto/impl:cryptolib_build_info",
         "//sw/device/lib/crypto/impl:drbg",
         "//sw/device/lib/crypto/impl:ecc_curve25519",
         "//sw/device/lib/crypto/impl:ecc_p256",
