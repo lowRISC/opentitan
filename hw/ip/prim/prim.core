@@ -37,6 +37,8 @@ filesets:
       - lowrisc:prim:sha2
     files:
       - rtl/prim_clock_gating_sync.sv
+      - rtl/prim_hpc2.sv
+      - rtl/prim_hpc3.sv
       - rtl/prim_sram_arbiter.sv
       - rtl/prim_slicer.sv
       - rtl/prim_sync_reqack.sv
