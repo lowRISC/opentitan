@@ -6,10 +6,10 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/aes_gcm.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/integrity.h"
+#include "sw/device/lib/crypto/include/key_transport.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
@@ -123,19 +123,31 @@ status_t handle_aes_gcm_op(ujson_t *uj) {
       .security_level = security_level[sec_lvl_idx],
   };
 
-  // Create buffer to store key
+  size_t key_words = uj_data.key_length / sizeof(uint32_t);
+
   uint32_t key_buf[kAesMaxKeyWords];
-  memcpy(key_buf, uj_data.key, kAesMaxKeyBytes);
-  // Create keyblob
-  uint32_t keyblob[keyblob_num_words(config)];
-  // Create blinded key
-  TRY(keyblob_from_key_and_mask(key_buf, kKeyMask, config, keyblob));
+  memcpy(key_buf, uj_data.key, uj_data.key_length);
+
+  uint32_t share0_data[kAesMaxKeyWords];
+  uint32_t share1_data[kAesMaxKeyWords];
+
+  for (size_t i = 0; i < key_words; ++i) {
+    share0_data[i] = key_buf[i] ^ kKeyMask[i];
+    share1_data[i] = kKeyMask[i];
+  }
+
+  otcrypto_const_word32_buf_t key_share0 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, share0_data, key_words);
+  otcrypto_const_word32_buf_t key_share1 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, share1_data, key_words);
+  uint32_t keyblob[2 * kAesMaxKeyWords];
   otcrypto_blinded_key_t key = {
       .config = config,
-      .keyblob_length = sizeof(keyblob),
+      .keyblob_length = key_words * 2 * sizeof(uint32_t),
       .keyblob = keyblob,
   };
-  key.checksum = integrity_blinded_checksum(&key);
+
+  TRY(otcrypto_import_blinded_key(&key_share0, &key_share1, &key));
 
   uint8_t output_data[AES_GCM_CMD_MAX_MSG_BYTES];
   otcrypto_byte_buf_t output =
