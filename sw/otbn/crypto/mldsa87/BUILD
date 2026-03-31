@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:otbn.bzl", "otbn_binary", "otbn_library")
+load("//rules:otbn.bzl", "otbn_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -24,20 +24,6 @@ otbn_library(
     name = "mldsa87_xof",
     srcs = [
         "mldsa87_xof.s",
-    ],
-)
-
-otbn_library(
-    name = "mldsa87_rounding",
-    srcs = [
-        "mldsa87_rounding.s",
-    ],
-)
-
-otbn_library(
-    name = "mldsa87_norm",
-    srcs = [
-        "mldsa87_norm.s",
     ],
 )
 
@@ -70,22 +56,8 @@ otbn_library(
 )
 
 otbn_library(
-    name = "mldsa87_verify_ops",
+    name = "mldsa87_gadgets",
     srcs = [
-        "mldsa87_verify_ops.s",
-    ],
-)
-
-otbn_library(
-    name = "mldsa87_verify_mem",
-    srcs = [
-        "mldsa87_verify_mem.s",
-    ],
-)
-
-otbn_library(
-    name = "mldsa87_verify",
-    srcs = [
-        "mldsa87_verify.s",
+        "mldsa87_gadgets.s",
     ],
 )
