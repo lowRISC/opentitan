@@ -9,9 +9,20 @@ load("//rules/opentitan:static_library.bzl", "ot_static_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
-# Top-level cryptolib target.
-ot_static_library(
-    name = "otcrypto",
+cc_library(
+    name = "otcrypto_api",
+    copts = select({
+        "//rules/configs:pic": [
+            "-mcmodel=medany",
+            "-mno-relax",
+        ],
+        "//conditions:default": ["-mcmodel=medlow"],
+    }),
+    defines =
+        select({
+            "//rules/configs:hashed": ["HASH_SELF_CHECK_ENABLE"],
+            "//conditions:default": [],
+        }),
     deps = [
         "//sw/device/lib/crypto/impl:aes",
         "//sw/device/lib/crypto/impl:aes_gcm",
@@ -32,6 +43,18 @@ ot_static_library(
         "//sw/device/lib/crypto/impl:x25519",
         "//sw/device/lib/crypto/include:datatypes",
     ],
+)
+
+# Top-level cryptolib target.
+ot_static_library(
+    name = "otcrypto",
+    deps = select({
+        "//rules/configs:type_static": [":otcrypto_api"],
+        # Only static type is supported for the moment
+        #"//rules/configs:type_binary_blob": [":otcrypto_binary_blob_api"],
+        #"//rules/configs:type_relocatable": [":otcrypto_relocatable_api",],
+        "//conditions:default": [],
+    }),
 )
 
 # This library imports the archive created by the static library rule

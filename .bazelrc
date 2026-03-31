@@ -92,6 +92,12 @@ build:clang_tidy_fix --aspects rules/quality.bzl%clang_tidy_fix_aspect
 build:clang_tidy_fix --output_groups=clang_tidy
 build:clang_tidy_fix --spawn_strategy=local
 
+# The configuration of the crypto library.
+# The development is the default version which allows for static libraries.
+# The fips version is one which is position independent code, as a binary blob, calculating a hash across its boundary.
+common:dev --//rules/configs:pic_flag=False --//rules/configs:hashed_flag=False --//rules/configs:type_flag="static"
+common:fips_all --//rules/configs:pic_flag=True --//rules/configs:hashed_flag=True --//rules/configs:type_flag="binary_blob"
+
 # AddressSanitizer (ASan) catches runtime out-of-bounds accesses to globals, the
 # stack, and (less importantly for OpenTitan) the heap. ASan instruments
 # programs at compile time and also requires a runtime library.
