@@ -6,6 +6,8 @@ load("@bazel_skylib//rules:common_settings.bzl", "bool_flag", "string_flag")
 
 package(default_visibility = ["//visibility:public"])
 
+exports_files(["fips_all.txt"])
+
 config_setting(
     name = "pic",
     flag_values = {
@@ -41,6 +43,13 @@ config_setting(
     },
 )
 
+config_setting(
+    name = "fips_all",
+    flag_values = {
+        ":config_flag": "fips_all",
+    },
+)
+
 # Enable compilation of position-independent code
 bool_flag(
     name = "pic_flag",
@@ -68,4 +77,13 @@ string_flag(
 bool_flag(
     name = "hashed_flag",
     build_setting_default = False,
+)
+
+string_flag(
+    name = "config_flag",
+    build_setting_default = "dev",
+    values = [
+        "dev",
+        "fips_all",
+    ],
 )
