@@ -213,3 +213,87 @@ Run the following command to see the circuit diagramm if there is a leakage:
    ```sh
    xdot tmp/dbg-circuit-0.dot
    ```
+
+## Formally verifying the HPC Gadgets used in the OTBN core
+
+After completing the prerequisites above, source the build constants, activate the Alma virtual
+environment and run `verify_sec_add.sh` with the desired gadget:
+
+```sh
+cd ${REPO_TOP}
+source util/build_consts.sh
+cd ~/alma
+source dev/bin/activate
+${REPO_TOP}/hw/ip/otbn/pre_sca/alma/verify_sec_add.sh <gadget>
+```
+
+where `<gadget>` is one of `hpc2`, `hpc2o`, `hpc3`, or `hpc3o`.
+The script runs all steps (parse, label, trace, verify) automatically, using the synthesized
+netlist from `syn_out/latest/generated/`.
+
+A passing verification produces output similar to the following (shown for `hpc3`):
+
+```sh
+Verifying prim_hpc3_sca_wrapper using Alma
+Starting yosys synthesis...
+| CircuitGraph | Total:   35 | Linear:    6 | Non-linear:    4 | Registers:    6 | Mux:    6 |
+parse.py successful (1.62s)
+1: Running verilator on given netlist
+2: Compiling verilated netlist library
+3: Compiling provided verilator testbench
+4: Simulating circuit and generating VCD
+| CircuitGraph | Total:   35 | Linear:    6 | Non-linear:    4 | Registers:    6 | Mux:    6 |
+Building formula for cycle 0: vars 0 clauses 0
+Checking cycle 0:
+Building formula for cycle 1: vars 0 clauses 0
+Checking cycle 1:
+Building formula for cycle 2: vars 114 clauses 178
+Checking cycle 2:
+Checking probe (cycle 2, xor sum_o[0]): 0.00
+Checking probe (cycle 2, xor sum_o[1]): 0.00
+...
+Finished in 0.01
+The execution is secure
+```
+
+For `hpc2`, Alma reports a leak due to false positives.
+Alma's verification approach based on approximated Fourier coefficients is sound but not complete,
+meaning it can report leaks that do not exist in practice (see [Gigerl et al.](https://tugraz.elsevierpure.com/ws/portalfiles/portal/50728519/camera_ready.pdf)).
+The output looks as follows:
+
+```sh
+Verifying prim_hpc2_sca_wrapper using Alma
+Starting yosys synthesis...
+| CircuitGraph | Total:   51 | Linear:    6 | Non-linear:    6 | Registers:   14 | Mux:   11 |
+parse.py successful (1.40s)
+1: Running verilator on given netlist
+2: Compiling verilated netlist library
+3: Compiling provided verilator testbench
+4: Simulating circuit and generating VCD
+| CircuitGraph | Total:   51 | Linear:    6 | Non-linear:    6 | Registers:   14 | Mux:   11 |
+Building formula for cycle 0: vars 0 clauses 0
+Checking cycle 0:
+Building formula for cycle 1: vars 0 clauses 0
+Checking cycle 1:
+Building formula for cycle 2: vars 78 clauses 81
+Checking cycle 2:
+Building formula for cycle 3: vars 165 clauses 233
+Checking cycle 3:
+Checking probe (cycle 3, xor sum_o[0]): 0.00
+Finished in 0.01
+The execution is not secure, here are some leaks:
+leak 0: (cycle: 3, cell: xor sum_o[0], id: 10)
+3 stable xor sum_o[0] vars   : ['s1:0', 's1:1']
+3 stable xor sum_o[0] signals: share0_i[1] ^ share1_i[1]
+3 trans  xor sum_o[0] vars   : ['s1:0', 's1:1']
+3 trans  xor sum_o[0] signals: share0_i[1] ^ share1_i[1]
+```
+
+The design can still be verified using PROLEAD, where the leakage analysis passes successfully.
+For this, please follow the [PROLEAD README](../prolead/README.md).
+
+If a leak is found, generate a PNG of the leaking circuit with:
+
+```sh
+xdot ./tmp/dbg-circuit-0.dot
+```
