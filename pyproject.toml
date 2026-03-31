@@ -71,7 +71,7 @@ dependencies = [
   "fusesoc==2.4.3",
 
   # Build and run tool for Design Verification flows
-  "dvsim==1.6.1",
+  "dvsim==1.17.3",
 
   "peakrdl-systemrdl >= 1.0",
 ]
