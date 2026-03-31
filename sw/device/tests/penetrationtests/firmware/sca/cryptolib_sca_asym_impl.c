@@ -7,8 +7,6 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/crypto/impl/ecc/p256.h"
-#include "sw/device/lib/crypto/impl/ecc/p384.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
 #include "sw/device/lib/crypto/include/ecc_p384.h"
@@ -162,8 +160,8 @@ status_t cryptolib_sca_rsa_dec_impl(
   if (trigger & kPentestTrigger2) {
     pentest_set_trigger_high();
   }
-  HARDENED_TRY(otcrypto_rsa_decrypt(&private_key, hash_mode, &ciphertext,
-                                    &label_buf, &plaintext, &msg_len));
+  TRY(otcrypto_rsa_decrypt(&private_key, hash_mode, &ciphertext, &label_buf,
+                           &plaintext, &msg_len));
   if (trigger & kPentestTrigger2) {
     pentest_set_trigger_low();
   }
@@ -182,10 +180,6 @@ status_t cryptolib_sca_p256_ecdh_impl(
     cryptolib_sca_asym_p256_ecdh_out_t *uj_output) {
   // Construct the private key object.
   uint32_t private_keyblob[kPentestP256MaskedPrivateKeyWords * 2];
-  memset(private_keyblob, 0, sizeof(private_keyblob));
-  memcpy(private_keyblob, uj_input.private_key, P256_CMD_BYTES);
-  memcpy(private_keyblob + kPentestP256MaskedPrivateKeyWords, 0,
-         P256_CMD_BYTES);
   otcrypto_blinded_key_t private_key = {
       .config =
           {
@@ -198,21 +192,39 @@ status_t cryptolib_sca_p256_ecdh_impl(
           },
       .keyblob_length = sizeof(private_keyblob),
       .keyblob = private_keyblob,
-      .checksum = 0,
   };
-  private_key.checksum = integrity_blinded_checksum(&private_key);
+
+  uint32_t share0[kPentestP256MaskedPrivateKeyWords] = {0};
+  uint32_t share1[kPentestP256MaskedPrivateKeyWords] = {0};
+  memcpy(share0, uj_input.private_key, P256_CMD_BYTES);
+
+  otcrypto_const_word32_buf_t share0_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, share0, kPentestP256MaskedPrivateKeyWords);
+  otcrypto_const_word32_buf_t share1_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, share1, kPentestP256MaskedPrivateKeyWords);
+
+  TRY(otcrypto_ecc_p256_private_key_import(share0_buf, share1_buf,
+                                           &private_key));
 
   // Construct the public key object.
   uint32_t public_key_buf[kPentestP256Words * 2];
-  memset(public_key_buf, 0, sizeof(public_key_buf));
-  memcpy(public_key_buf, uj_input.public_x, P256_CMD_BYTES);
-  memcpy(public_key_buf + kPentestP256Words, uj_input.public_y, P256_CMD_BYTES);
   otcrypto_unblinded_key_t public_key = {
       .key_mode = kOtcryptoKeyModeEcdhP256,
       .key_length = sizeof(public_key_buf),
       .key = public_key_buf,
   };
-  public_key.checksum = integrity_unblinded_checksum(&public_key);
+
+  uint32_t pub_x[kPentestP256Words] = {0};
+  uint32_t pub_y[kPentestP256Words] = {0};
+  memcpy(pub_x, uj_input.public_x, P256_CMD_BYTES);
+  memcpy(pub_y, uj_input.public_y, P256_CMD_BYTES);
+
+  otcrypto_const_word32_buf_t x_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, pub_x, kPentestP256Words);
+  otcrypto_const_word32_buf_t y_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, pub_y, kPentestP256Words);
+
+  TRY(otcrypto_ecc_p256_public_key_import(x_buf, y_buf, &public_key));
 
   // Create a destination for the shared secret.
   uint32_t shared_secretblob[kPentestP256Words * 2];
@@ -236,16 +248,17 @@ status_t cryptolib_sca_p256_ecdh_impl(
       otcrypto_ecdh_p256(&private_key, &public_key, &shared_secret);
   pentest_set_trigger_low();
 
-  uint32_t share0[kPentestP256Words];
-  uint32_t share1[kPentestP256Words];
-  otcrypto_word32_buf_t share0_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, share0, ARRAYSIZE(share0));
-  otcrypto_word32_buf_t share1_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, share1, ARRAYSIZE(share1));
+  uint32_t ss_share0[kPentestP256Words];
+  uint32_t ss_share1[kPentestP256Words];
+  otcrypto_word32_buf_t ss_share0_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share0, ARRAYSIZE(ss_share0));
+  otcrypto_word32_buf_t ss_share1_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share1, ARRAYSIZE(ss_share1));
   uint32_t ss[kPentestP256Words];
-  TRY(otcrypto_export_blinded_key(&shared_secret, &share0_buf, &share1_buf));
+  TRY(otcrypto_export_blinded_key(&shared_secret, &ss_share0_buf,
+                                  &ss_share1_buf));
   for (size_t i = 0; i < kPentestP256Words; i++) {
-    ss[i] = share0[i] ^ share1[i];
+    ss[i] = ss_share0[i] ^ ss_share1[i];
   }
 
   // Return data back to host.
@@ -435,29 +448,44 @@ status_t cryptolib_sca_p256_sign_impl(
   };
 
   // Create the private key.
-  p256_masked_scalar_t private_key_masked;
+  uint32_t private_keyblob[kPentestP256MaskedPrivateKeyWords * 2];
   otcrypto_blinded_key_t private_key = {
       .config = kP256PrivateKeyConfig,
-      .keyblob_length = kP256MaskedScalarTotalShareBytes,
-      .keyblob = (uint32_t *)&private_key_masked,
+      .keyblob_length = sizeof(private_keyblob),
+      .keyblob = private_keyblob,
   };
-  memset(private_key_masked.share0, 0, kP256MaskedScalarShareBytes);
-  memcpy(private_key_masked.share0, uj_input.scalar, kP256ScalarBytes);
-  memset(private_key_masked.share1, 0, kP256MaskedScalarShareBytes);
-  private_key.checksum = integrity_blinded_checksum(&private_key);
+
+  uint32_t share0[kPentestP256MaskedPrivateKeyWords] = {0};
+  uint32_t share1[kPentestP256MaskedPrivateKeyWords] = {0};
+  memcpy(share0, uj_input.scalar, P256_CMD_BYTES);
+
+  otcrypto_const_word32_buf_t share0_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, share0, kPentestP256MaskedPrivateKeyWords);
+  otcrypto_const_word32_buf_t share1_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, share1, kPentestP256MaskedPrivateKeyWords);
+
+  TRY(otcrypto_ecc_p256_private_key_import(share0_buf, share1_buf,
+                                           &private_key));
 
   // Create the public key.
-  p256_point_t pub_p256;
+  uint32_t public_key_buf[kPentestP256Words * 2];
   otcrypto_unblinded_key_t public_key = {
       .key_mode = kOtcryptoKeyModeEcdsaP256,
-      .key_length = sizeof(p256_point_t),
-      .key = (uint32_t *)&pub_p256,
+      .key_length = sizeof(public_key_buf),
+      .key = public_key_buf,
   };
-  memset(pub_p256.x, 0, kP256CoordBytes);
-  memcpy(pub_p256.x, uj_input.pubx, P256_CMD_BYTES);
-  memset(pub_p256.y, 0, kP256CoordBytes);
-  memcpy(pub_p256.y, uj_input.puby, P256_CMD_BYTES);
-  public_key.checksum = integrity_unblinded_checksum(&public_key);
+
+  uint32_t pub_x[kPentestP256Words] = {0};
+  uint32_t pub_y[kPentestP256Words] = {0};
+  memcpy(pub_x, uj_input.pubx, P256_CMD_BYTES);
+  memcpy(pub_y, uj_input.puby, P256_CMD_BYTES);
+
+  otcrypto_const_word32_buf_t x_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, pub_x, kPentestP256Words);
+  otcrypto_const_word32_buf_t y_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, pub_y, kPentestP256Words);
+
+  TRY(otcrypto_ecc_p256_public_key_import(x_buf, y_buf, &public_key));
 
   // Create a key pair if requested.
   // This will overwrite the private and public key above.
@@ -503,15 +531,23 @@ status_t cryptolib_sca_p256_sign_impl(
   uj_output->cfg = 0;
   memset(uj_output->r, 0, P256_CMD_BYTES);
   memset(uj_output->s, 0, P256_CMD_BYTES);
-  p256_ecdsa_signature_t *signature_p256 =
-      (p256_ecdsa_signature_t *)signature_mut.data;
-  memcpy(uj_output->r, signature_p256->r, kP256ScalarBytes);
-  memcpy(uj_output->s, signature_p256->s, kP256ScalarBytes);
+
+  uint8_t *sig_bytes = (uint8_t *)signature_mut.data;
+  memcpy(uj_output->r, sig_bytes, P256_CMD_BYTES);
+  memcpy(uj_output->s, sig_bytes + P256_CMD_BYTES, P256_CMD_BYTES);
 
   // Return the public key.
-  p256_point_t *pub = (p256_point_t *)public_key.key;
-  memcpy(uj_output->pubx, pub->x, P256_CMD_BYTES);
-  memcpy(uj_output->puby, pub->y, P256_CMD_BYTES);
+  uint32_t out_pub_x[kPentestP256Words];
+  uint32_t out_pub_y[kPentestP256Words];
+  otcrypto_word32_buf_t out_x_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, out_pub_x, kPentestP256Words);
+  otcrypto_word32_buf_t out_y_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, out_pub_y, kPentestP256Words);
+
+  TRY(otcrypto_ecc_p256_public_key_export(&public_key, &out_x_buf, &out_y_buf));
+
+  memcpy(uj_output->pubx, out_pub_x, P256_CMD_BYTES);
+  memcpy(uj_output->puby, out_pub_y, P256_CMD_BYTES);
 
   return OK_STATUS();
 }
@@ -521,10 +557,6 @@ status_t cryptolib_sca_p384_ecdh_impl(
     cryptolib_sca_asym_p384_ecdh_out_t *uj_output) {
   // Construct the private key object.
   uint32_t private_keyblob[kPentestP384MaskedPrivateKeyWords * 2];
-  memset(private_keyblob, 0, sizeof(private_keyblob));
-  memcpy(private_keyblob, uj_input.private_key, P384_CMD_BYTES);
-  memcpy(private_keyblob + kPentestP384MaskedPrivateKeyWords, 0,
-         P384_CMD_BYTES);
   otcrypto_blinded_key_t private_key = {
       .config =
           {
@@ -537,21 +569,39 @@ status_t cryptolib_sca_p384_ecdh_impl(
           },
       .keyblob_length = sizeof(private_keyblob),
       .keyblob = private_keyblob,
-      .checksum = 0,
   };
-  private_key.checksum = integrity_blinded_checksum(&private_key);
+
+  uint32_t share0[kPentestP384MaskedPrivateKeyWords] = {0};
+  uint32_t share1[kPentestP384MaskedPrivateKeyWords] = {0};
+  memcpy(share0, uj_input.private_key, P384_CMD_BYTES);
+
+  otcrypto_const_word32_buf_t share0_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, share0, kPentestP384MaskedPrivateKeyWords);
+  otcrypto_const_word32_buf_t share1_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, share1, kPentestP384MaskedPrivateKeyWords);
+
+  TRY(otcrypto_ecc_p384_private_key_import(share0_buf, share1_buf,
+                                           &private_key));
 
   // Construct the public key object.
   uint32_t public_key_buf[kPentestP384Words * 2];
-  memset(public_key_buf, 0, sizeof(public_key_buf));
-  memcpy(public_key_buf, uj_input.public_x, P384_CMD_BYTES);
-  memcpy(public_key_buf + kPentestP384Words, uj_input.public_y, P384_CMD_BYTES);
   otcrypto_unblinded_key_t public_key = {
       .key_mode = kOtcryptoKeyModeEcdhP384,
       .key_length = sizeof(public_key_buf),
       .key = public_key_buf,
   };
-  public_key.checksum = integrity_unblinded_checksum(&public_key);
+
+  uint32_t pub_x[kPentestP384Words] = {0};
+  uint32_t pub_y[kPentestP384Words] = {0};
+  memcpy(pub_x, uj_input.public_x, P384_CMD_BYTES);
+  memcpy(pub_y, uj_input.public_y, P384_CMD_BYTES);
+
+  otcrypto_const_word32_buf_t x_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, pub_x, kPentestP384Words);
+  otcrypto_const_word32_buf_t y_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, pub_y, kPentestP384Words);
+
+  TRY(otcrypto_ecc_p384_public_key_import(x_buf, y_buf, &public_key));
 
   // Create a destination for the shared secret.
   uint32_t shared_secretblob[kPentestP384Words * 2];
@@ -571,23 +621,26 @@ status_t cryptolib_sca_p384_ecdh_impl(
   };
 
   pentest_set_trigger_high();
-  TRY(otcrypto_ecdh_p384(&private_key, &public_key, &shared_secret));
+  otcrypto_status_t status_out =
+      otcrypto_ecdh_p384(&private_key, &public_key, &shared_secret);
   pentest_set_trigger_low();
 
-  uint32_t share0[kPentestP384Words];
-  uint32_t share1[kPentestP384Words];
-  otcrypto_word32_buf_t share0_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, share0, ARRAYSIZE(share0));
-  otcrypto_word32_buf_t share1_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, share1, ARRAYSIZE(share1));
+  uint32_t ss_share0[kPentestP384Words];
+  uint32_t ss_share1[kPentestP384Words];
+  otcrypto_word32_buf_t ss_share0_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share0, ARRAYSIZE(ss_share0));
+  otcrypto_word32_buf_t ss_share1_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share1, ARRAYSIZE(ss_share1));
   uint32_t ss[kPentestP384Words];
-  TRY(otcrypto_export_blinded_key(&shared_secret, &share0_buf, &share1_buf));
+  TRY(otcrypto_export_blinded_key(&shared_secret, &ss_share0_buf,
+                                  &ss_share1_buf));
   for (size_t i = 0; i < kPentestP384Words; i++) {
-    ss[i] = share0[i] ^ share1[i];
+    ss[i] = ss_share0[i] ^ ss_share1[i];
   }
 
   // Return data back to host.
   uj_output->cfg = 0;
+  uj_output->status = (size_t)status_out.value;
   memset(uj_output->shared_key, 0, P384_CMD_BYTES);
   memcpy(uj_output->shared_key, ss, P384_CMD_BYTES);
 
@@ -606,29 +659,44 @@ status_t cryptolib_sca_p384_sign_impl(
   };
 
   // Create the private key.
-  p384_masked_scalar_t private_key_masked;
+  uint32_t private_keyblob[kPentestP384MaskedPrivateKeyWords * 2];
   otcrypto_blinded_key_t private_key = {
       .config = kP384PrivateKeyConfig,
-      .keyblob_length = kP384MaskedScalarTotalShareBytes,
-      .keyblob = (uint32_t *)&private_key_masked,
+      .keyblob_length = sizeof(private_keyblob),
+      .keyblob = private_keyblob,
   };
-  memset(private_key_masked.share0, 0, kP384MaskedScalarShareBytes);
-  memcpy(private_key_masked.share0, uj_input.scalar, kP384ScalarBytes);
-  memset(private_key_masked.share1, 0, kP384MaskedScalarShareBytes);
-  private_key.checksum = integrity_blinded_checksum(&private_key);
+
+  uint32_t share0[kPentestP384MaskedPrivateKeyWords] = {0};
+  uint32_t share1[kPentestP384MaskedPrivateKeyWords] = {0};
+  memcpy(share0, uj_input.scalar, P384_CMD_BYTES);
+
+  otcrypto_const_word32_buf_t share0_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, share0, kPentestP384MaskedPrivateKeyWords);
+  otcrypto_const_word32_buf_t share1_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, share1, kPentestP384MaskedPrivateKeyWords);
+
+  TRY(otcrypto_ecc_p384_private_key_import(share0_buf, share1_buf,
+                                           &private_key));
 
   // Create the public key.
-  p384_point_t pub_p384;
+  uint32_t public_key_buf[kPentestP384Words * 2];
   otcrypto_unblinded_key_t public_key = {
       .key_mode = kOtcryptoKeyModeEcdsaP384,
-      .key_length = sizeof(p384_point_t),
-      .key = (uint32_t *)&pub_p384,
+      .key_length = sizeof(public_key_buf),
+      .key = public_key_buf,
   };
-  memset(pub_p384.x, 0, kP384CoordBytes);
-  memcpy(pub_p384.x, uj_input.pubx, P384_CMD_BYTES);
-  memset(pub_p384.y, 0, kP384CoordBytes);
-  memcpy(pub_p384.y, uj_input.puby, P384_CMD_BYTES);
-  public_key.checksum = integrity_unblinded_checksum(&public_key);
+
+  uint32_t pub_x[kPentestP384Words] = {0};
+  uint32_t pub_y[kPentestP384Words] = {0};
+  memcpy(pub_x, uj_input.pubx, P384_CMD_BYTES);
+  memcpy(pub_y, uj_input.puby, P384_CMD_BYTES);
+
+  otcrypto_const_word32_buf_t x_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, pub_x, kPentestP384Words);
+  otcrypto_const_word32_buf_t y_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, pub_y, kPentestP384Words);
+
+  TRY(otcrypto_ecc_p384_public_key_import(x_buf, y_buf, &public_key));
 
   // Create a key pair if requested.
   // This will overwrite the private and public key above.
@@ -674,15 +742,23 @@ status_t cryptolib_sca_p384_sign_impl(
   uj_output->cfg = 0;
   memset(uj_output->r, 0, P384_CMD_BYTES);
   memset(uj_output->s, 0, P384_CMD_BYTES);
-  p384_ecdsa_signature_t *signature_p384 =
-      (p384_ecdsa_signature_t *)signature_mut.data;
-  memcpy(uj_output->r, signature_p384->r, kP384ScalarBytes);
-  memcpy(uj_output->s, signature_p384->s, kP384ScalarBytes);
+
+  uint8_t *sig_bytes = (uint8_t *)signature_mut.data;
+  memcpy(uj_output->r, sig_bytes, P384_CMD_BYTES);
+  memcpy(uj_output->s, sig_bytes + P384_CMD_BYTES, P384_CMD_BYTES);
 
   // Return the public key.
-  p384_point_t *pub = (p384_point_t *)public_key.key;
-  memcpy(uj_output->pubx, pub->x, P384_CMD_BYTES);
-  memcpy(uj_output->puby, pub->y, P384_CMD_BYTES);
+  uint32_t out_pub_x[kPentestP384Words];
+  uint32_t out_pub_y[kPentestP384Words];
+  otcrypto_word32_buf_t out_x_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, out_pub_x, kPentestP384Words);
+  otcrypto_word32_buf_t out_y_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, out_pub_y, kPentestP384Words);
+
+  TRY(otcrypto_ecc_p384_public_key_export(&public_key, &out_x_buf, &out_y_buf));
+
+  memcpy(uj_output->pubx, out_pub_x, P384_CMD_BYTES);
+  memcpy(uj_output->puby, out_pub_y, P384_CMD_BYTES);
 
   return OK_STATUS();
 }

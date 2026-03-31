@@ -3,9 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/base/status.h"
-#include "sw/device/lib/crypto/impl/ecc/p256.h"
-#include "sw/device/lib/crypto/impl/ecc/p384.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
 #include "sw/device/lib/crypto/include/ecc_p384.h"
@@ -15,12 +12,26 @@
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/tests/crypto/cryptotest/json/ecdsa_commands.h"
 
-// Copied from //sw/device/tests/crypto/ecdsa_p256_functest.c
+// Copied from internal headers to remove dependencies
 enum {
-  /* Number of bytes in a P-256 private key. */
   kP256PrivateKeyBytes = 256 / 8,
-  /* Number of bytes in a P-384 private key. */
   kP384PrivateKeyBytes = 384 / 8,
+
+  kP256CoordBytes = 32,
+  kP256CoordWords = 32 / 4,
+  kP256ScalarBytes = 32,
+  kP256ScalarWords = 32 / 4,
+  kP256MaskedScalarShareBytes = 40,
+  kP256MaskedScalarShareWords = 40 / 4,
+  kP256MaskedScalarTotalShareBytes = 80,
+
+  kP384CoordBytes = 48,
+  kP384CoordWords = 48 / 4,
+  kP384ScalarBytes = 48,
+  kP384ScalarWords = 48 / 4,
+  kP384MaskedScalarShareBytes = 56,
+  kP384MaskedScalarShareWords = 56 / 4,
+  kP384MaskedScalarTotalShareBytes = 112,
 };
 
 static const otcrypto_key_config_t kP256PrivateKeyConfig = {
@@ -45,8 +56,7 @@ int set_nist_p256_params(cryptotest_ecdsa_coordinate_t uj_qx,
                          cryptotest_ecdsa_coordinate_t uj_qy,
                          cryptotest_ecdsa_signature_t uj_signature,
                          otcrypto_unblinded_key_t *public_key,
-                         p256_ecdsa_signature_t *signature_p256,
-                         p256_point_t *pub_p256,
+                         uint32_t *signature_p256, uint32_t *pub_p256,
                          otcrypto_word32_buf_t *signature_mut,
                          size_t *digest_len) {
   if (uj_qx.coordinate_len > kP256CoordBytes) {
@@ -63,13 +73,22 @@ int set_nist_p256_params(cryptotest_ecdsa_coordinate_t uj_qx,
         uj_qy.coordinate_len, kP256CoordBytes);
     return false;
   }
-  memset(pub_p256->x, 0, kP256CoordBytes);
-  memcpy(pub_p256->x, uj_qx.coordinate, uj_qx.coordinate_len);
-  memset(pub_p256->y, 0, kP256CoordBytes);
-  memcpy(pub_p256->y, uj_qy.coordinate, uj_qy.coordinate_len);
+
+  uint32_t x[kP256CoordWords] = {0};
+  uint32_t y[kP256CoordWords] = {0};
+  memcpy(x, uj_qx.coordinate, uj_qx.coordinate_len);
+  memcpy(y, uj_qy.coordinate, uj_qy.coordinate_len);
+
   public_key->key_mode = kOtcryptoKeyModeEcdsaP256;
-  public_key->key_length = sizeof(p256_point_t);
-  public_key->key = (uint32_t *)pub_p256;
+  public_key->key_length = kP256CoordBytes * 2;
+  public_key->key = pub_p256;
+
+  otcrypto_const_word32_buf_t x_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, x, kP256CoordWords);
+  otcrypto_const_word32_buf_t y_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, y, kP256CoordWords);
+  otcrypto_ecc_p256_public_key_import(x_buf, y_buf, public_key);
+
   *digest_len = kP256ScalarWords;
   if (uj_signature.r_len > kP256ScalarBytes) {
     LOG_ERROR(
@@ -85,12 +104,13 @@ int set_nist_p256_params(cryptotest_ecdsa_coordinate_t uj_qx,
         uj_signature.s_len, kP256ScalarBytes);
     return false;
   }
-  memset(signature_p256->r, 0, kP256ScalarBytes);
-  memcpy(signature_p256->r, uj_signature.r, uj_signature.r_len);
-  memset(signature_p256->s, 0, kP256ScalarBytes);
-  memcpy(signature_p256->s, uj_signature.s, uj_signature.s_len);
-  *signature_mut = OTCRYPTO_MAKE_BUF(
-      otcrypto_word32_buf_t, (uint32_t *)signature_p256, kP256ScalarWords * 2);
+
+  memset(signature_p256, 0, kP256ScalarBytes * 2);
+  memcpy((uint8_t *)signature_p256, uj_signature.r, uj_signature.r_len);
+  memcpy((uint8_t *)signature_p256 + kP256ScalarBytes, uj_signature.s,
+         uj_signature.s_len);
+  *signature_mut = OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, signature_p256,
+                                     kP256ScalarWords * 2);
 
   return true;
 }
@@ -99,8 +119,7 @@ int set_nist_p384_params(cryptotest_ecdsa_coordinate_t uj_qx,
                          cryptotest_ecdsa_coordinate_t uj_qy,
                          cryptotest_ecdsa_signature_t uj_signature,
                          otcrypto_unblinded_key_t *public_key,
-                         p384_ecdsa_signature_t *signature_p384,
-                         p384_point_t *pub_p384,
+                         uint32_t *signature_p384, uint32_t *pub_p384,
                          otcrypto_word32_buf_t *signature_mut,
                          size_t *digest_len) {
   if (uj_qx.coordinate_len > kP384CoordBytes) {
@@ -117,13 +136,22 @@ int set_nist_p384_params(cryptotest_ecdsa_coordinate_t uj_qx,
         uj_qy.coordinate_len, kP384CoordBytes);
     return false;
   }
-  memset(pub_p384->x, 0, kP384CoordBytes);
-  memcpy(pub_p384->x, uj_qx.coordinate, uj_qx.coordinate_len);
-  memset(pub_p384->y, 0, kP384CoordBytes);
-  memcpy(pub_p384->y, uj_qy.coordinate, uj_qy.coordinate_len);
+
+  uint32_t x[kP384CoordWords] = {0};
+  uint32_t y[kP384CoordWords] = {0};
+  memcpy(x, uj_qx.coordinate, uj_qx.coordinate_len);
+  memcpy(y, uj_qy.coordinate, uj_qy.coordinate_len);
+
   public_key->key_mode = kOtcryptoKeyModeEcdsaP384;
-  public_key->key_length = sizeof(p384_point_t);
-  public_key->key = (uint32_t *)pub_p384;
+  public_key->key_length = kP384CoordBytes * 2;
+  public_key->key = pub_p384;
+
+  otcrypto_const_word32_buf_t x_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, x, kP384CoordWords);
+  otcrypto_const_word32_buf_t y_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, y, kP384CoordWords);
+  otcrypto_ecc_p384_public_key_import(x_buf, y_buf, public_key);
+
   *digest_len = kP384ScalarWords;
   if (uj_signature.r_len > kP384ScalarBytes) {
     LOG_ERROR(
@@ -139,12 +167,13 @@ int set_nist_p384_params(cryptotest_ecdsa_coordinate_t uj_qx,
         uj_signature.s_len, kP384ScalarBytes);
     return false;
   }
-  memset(signature_p384->r, 0, kP384ScalarBytes);
-  memcpy(signature_p384->r, uj_signature.r, uj_signature.r_len);
-  memset(signature_p384->s, 0, kP384ScalarBytes);
-  memcpy(signature_p384->s, uj_signature.s, uj_signature.s_len);
-  *signature_mut = OTCRYPTO_MAKE_BUF(
-      otcrypto_word32_buf_t, (uint32_t *)signature_p384, kP384ScalarWords * 2);
+
+  memset(signature_p384, 0, kP384ScalarBytes * 2);
+  memcpy((uint8_t *)signature_p384, uj_signature.r, uj_signature.r_len);
+  memcpy((uint8_t *)signature_p384 + kP384ScalarBytes, uj_signature.s,
+         uj_signature.s_len);
+  *signature_mut = OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, signature_p384,
+                                     kP384ScalarWords * 2);
 
   return true;
 }
@@ -195,17 +224,28 @@ status_t p256_sign(ujson_t *uj, cryptotest_ecdsa_private_key_t *uj_private_key,
                    otcrypto_hash_digest_t message_digest,
                    otcrypto_word32_buf_t signature_mut,
                    cryptotest_ecdsa_signature_t *uj_signature) {
-  p256_masked_scalar_t private_key_masked;
+  uint32_t share0[kP256MaskedScalarShareWords] = {0};
+  uint32_t share1[kP256MaskedScalarShareWords] = {0};
+  memcpy(share0, uj_private_key->d0, kP256ScalarBytes);
+  memcpy(share1, uj_private_key->d1, kP256ScalarBytes);
+
+  otcrypto_const_word32_buf_t share0_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, share0, kP256MaskedScalarShareWords);
+  otcrypto_const_word32_buf_t share1_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, share1, kP256MaskedScalarShareWords);
+
+  uint32_t keyblob[kP256MaskedScalarTotalShareBytes / sizeof(uint32_t)];
   otcrypto_blinded_key_t private_key = {
       .config = kP256PrivateKeyConfig,
-      .keyblob_length = kP256MaskedScalarTotalShareBytes,
-      .keyblob = (uint32_t *)&private_key_masked,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
   };
-  memset(private_key_masked.share0, 0, kP256MaskedScalarShareBytes);
-  memcpy(private_key_masked.share0, uj_private_key->d0, kP256ScalarBytes);
-  memset(private_key_masked.share1, 0, kP256MaskedScalarShareBytes);
-  memcpy(private_key_masked.share1, uj_private_key->d1, kP256ScalarBytes);
-  private_key.checksum = integrity_blinded_checksum(&private_key);
+
+  otcrypto_status_t import_status = otcrypto_ecc_p256_private_key_import(
+      share0_buf, share1_buf, &private_key);
+  if (import_status.value != kOtcryptoStatusValueOk) {
+    return INTERNAL(import_status.value);
+  }
 
   otcrypto_status_t status = otcrypto_ecdsa_p256_sign_verify(
       &private_key, public_key, message_digest, &signature_mut);
@@ -215,11 +255,11 @@ status_t p256_sign(ujson_t *uj, cryptotest_ecdsa_private_key_t *uj_private_key,
 
   memset(uj_signature->r, 0, ECDSA_CMD_MAX_SIGNATURE_SCALAR_BYTES);
   memset(uj_signature->s, 0, ECDSA_CMD_MAX_SIGNATURE_SCALAR_BYTES);
-  p256_ecdsa_signature_t *signature_p256 =
-      (p256_ecdsa_signature_t *)signature_mut.data;
-  memcpy(uj_signature->r, signature_p256->r, kP256ScalarBytes);
+
+  uint8_t *sig_bytes = (uint8_t *)signature_mut.data;
+  memcpy(uj_signature->r, sig_bytes, kP256ScalarBytes);
   uj_signature->r_len = kP256ScalarBytes;
-  memcpy(uj_signature->s, signature_p256->s, kP256ScalarBytes);
+  memcpy(uj_signature->s, sig_bytes + kP256ScalarBytes, kP256ScalarBytes);
   uj_signature->s_len = kP256ScalarBytes;
   RESP_OK(ujson_serialize_cryptotest_ecdsa_signature_t, uj, uj_signature);
 
@@ -231,17 +271,28 @@ status_t p384_sign(ujson_t *uj, cryptotest_ecdsa_private_key_t *uj_private_key,
                    otcrypto_hash_digest_t message_digest,
                    otcrypto_word32_buf_t signature_mut,
                    cryptotest_ecdsa_signature_t *uj_signature) {
-  p384_masked_scalar_t private_key_masked;
+  uint32_t share0[kP384MaskedScalarShareWords] = {0};
+  uint32_t share1[kP384MaskedScalarShareWords] = {0};
+  memcpy(share0, uj_private_key->d0, kP384ScalarBytes);
+  memcpy(share1, uj_private_key->d1, kP384ScalarBytes);
+
+  otcrypto_const_word32_buf_t share0_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, share0, kP384MaskedScalarShareWords);
+  otcrypto_const_word32_buf_t share1_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, share1, kP384MaskedScalarShareWords);
+
+  uint32_t keyblob[kP384MaskedScalarTotalShareBytes / sizeof(uint32_t)];
   otcrypto_blinded_key_t private_key = {
       .config = kP384PrivateKeyConfig,
-      .keyblob_length = kP384MaskedScalarTotalShareBytes,
-      .keyblob = (uint32_t *)&private_key_masked,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
   };
-  memset(private_key_masked.share0, 0, kP384MaskedScalarShareBytes);
-  memcpy(private_key_masked.share0, uj_private_key->d0, kP384ScalarBytes);
-  memset(private_key_masked.share1, 0, kP384MaskedScalarShareBytes);
-  memcpy(private_key_masked.share1, uj_private_key->d1, kP384ScalarBytes);
-  private_key.checksum = integrity_blinded_checksum(&private_key);
+
+  otcrypto_status_t import_status = otcrypto_ecc_p384_private_key_import(
+      share0_buf, share1_buf, &private_key);
+  if (import_status.value != kOtcryptoStatusValueOk) {
+    return INTERNAL(import_status.value);
+  }
 
   otcrypto_status_t status = otcrypto_ecdsa_p384_sign_verify(
       &private_key, public_key, message_digest, &signature_mut);
@@ -251,11 +302,11 @@ status_t p384_sign(ujson_t *uj, cryptotest_ecdsa_private_key_t *uj_private_key,
 
   memset(uj_signature->r, 0, ECDSA_CMD_MAX_SIGNATURE_SCALAR_BYTES);
   memset(uj_signature->s, 0, ECDSA_CMD_MAX_SIGNATURE_SCALAR_BYTES);
-  p384_ecdsa_signature_t *signature_p384 =
-      (p384_ecdsa_signature_t *)signature_mut.data;
-  memcpy(uj_signature->r, signature_p384->r, kP384ScalarBytes);
+
+  uint8_t *sig_bytes = (uint8_t *)signature_mut.data;
+  memcpy(uj_signature->r, sig_bytes, kP384ScalarBytes);
   uj_signature->r_len = kP384ScalarBytes;
-  memcpy(uj_signature->s, signature_p384->s, kP384ScalarBytes);
+  memcpy(uj_signature->s, sig_bytes + kP384ScalarBytes, kP384ScalarBytes);
   uj_signature->s_len = kP384ScalarBytes;
   RESP_OK(ujson_serialize_cryptotest_ecdsa_signature_t, uj, uj_signature);
 
@@ -288,14 +339,15 @@ status_t handle_ecdsa(ujson_t *uj) {
 
   otcrypto_word32_buf_t signature_mut;
   int success;
-  p256_ecdsa_signature_t signature_p256;
-  p384_ecdsa_signature_t signature_p384;
-  p256_point_t pub_p256;
-  p384_point_t pub_p384;
+  uint32_t signature_p256[kP256ScalarWords * 2];
+  uint32_t signature_p384[kP384ScalarWords * 2];
+  uint32_t pub_p256[kP256CoordWords * 2];
+  uint32_t pub_p384[kP384CoordWords * 2];
+
   switch (uj_curve) {
     case kCryptotestEcdsaCurveP256:
       success = set_nist_p256_params(uj_qx, uj_qy, uj_signature, &public_key,
-                                     &signature_p256, &pub_p256, &signature_mut,
+                                     signature_p256, pub_p256, &signature_mut,
                                      &digest_len);
       if (!success) {
         return INVALID_ARGUMENT();
@@ -303,7 +355,7 @@ status_t handle_ecdsa(ujson_t *uj) {
       break;
     case kCryptotestEcdsaCurveP384:
       success = set_nist_p384_params(uj_qx, uj_qy, uj_signature, &public_key,
-                                     &signature_p384, &pub_p384, &signature_mut,
+                                     signature_p384, pub_p384, &signature_mut,
                                      &digest_len);
       if (!success) {
         return INVALID_ARGUMENT();
@@ -313,7 +365,7 @@ status_t handle_ecdsa(ujson_t *uj) {
       LOG_ERROR("Unsupported ECC curve: %d", uj_curve);
       return INVALID_ARGUMENT();
   }
-  public_key.checksum = integrity_unblinded_checksum(&public_key);
+
   otcrypto_const_word32_buf_t signature = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, signature_mut.data, signature_mut.len);
 
