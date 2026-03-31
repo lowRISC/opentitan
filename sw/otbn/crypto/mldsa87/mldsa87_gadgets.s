@@ -6,6 +6,7 @@
 
 .globl sec_a2b_8x32
 .globl sec_b2a_8x32
+.globl sec_add_8x32
 
 /*
 
@@ -34,6 +35,7 @@ work of Azouaoui et al. [1].
  */
 .set MAI_CTRL_A2B, 0x1
 .set MAI_CTRL_B2A, 0x3
+.set MAI_CTRL_ADD, 0x5
 
 .text
 
@@ -88,6 +90,40 @@ sec_b2a_8x32:
   bn.wsrw MAI_IN0_S0, w0
   addi x20, x0, MAI_CTRL_B2A
   bn.wsrw MAI_IN0_S1, w1
+
+  /* Trigger the conversion. */
+  csrrw x0, MAI_CTRL, x20
+
+  /* TODO: Replace with deterministic wait, once latency is known. */
+  jal x1, _mai_poll
+
+  /* Read back the result. */
+  bn.wsrr w0, MAI_RES_S0
+  bn.xor w31, w31, w31 /* dummy */
+  bn.wsrr w1, MAI_RES_S1
+
+  ret
+
+/**
+ * Calculate a vectorized addition modulo 2^32 of 8 Boolean-shared coefficients.
+ *
+ * @param[in]  w0: x0_B, first Boolean share of x
+ * @param[in]  w1: x1_B, second Boolean share of x.
+ * @param[in]  w2: y0_B, first Boolean share of y
+ * @param[in]  w3: y1_B, second Boolean share of y.
+ * @param[out] w0: z0_B, first Boolean share of the result z = x + y.
+ * @param[out] w1: z1_B, second Boolean share of the result z = x + y.
+ */
+sec_add_8x32:
+  /* Write the two summands to the input WSRs (intersperse with configuration of
+     MAI_CTRL to not access both shares in subsequent instructions). */
+  bn.wsrw MAI_IN0_S0, w0
+  bn.wsrw MAI_IN1_S0, w2
+
+  addi x20, x0, MAI_CTRL_ADD
+
+  bn.wsrw MAI_IN0_S1, w1
+  bn.wsrw MAI_IN1_S1, w3
 
   /* Trigger the conversion. */
   csrrw x0, MAI_CTRL, x20
