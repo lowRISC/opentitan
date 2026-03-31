@@ -138,42 +138,6 @@ decompose:
 
   ret
 
-/* x2: t, x3: t0, x4: t1 */
-power2round:
-  /* Push clobbered registers onto the stack. */
-  .irp reg, x2, x3, x4, x5, x6
-    sw \reg, 0(x31)
-    addi x31, x31, 4
-  .endr
-
-  addi x5, x0, 3
-  la x6, _power2round
-  bn.lid x5, 0(x6)
-
-  addi x5, x0, 0
-  addi x6, x0, 1
-
-  loopi 32, 7
-    bn.lid x5, 0(x2++)
-
-    bn.addv.8S w1, w0, w3
-    bn.shv.8S w1, w1 >> 13
-
-    bn.shv.8S w2, w1 << 13
-    bn.subvm.8S w0, w0, w2
-
-    bn.sid x5, 0(x3++)
-    bn.sid x6, 0(x4++)
-    /* End of loop */
-
-  /* Restore clobbered general-purpose registers. */
-  .irp reg, x6, x5, x4, x3, x2
-    addi x31, x31, -4
-    lw \reg, 0(x31)
-  .endr
-
-  ret
-
 .data
 .balign 32
 
@@ -210,13 +174,3 @@ _decompose_const_q:
 .word 0x007fe001
 .word 0x007fe001
 .word 0x007fe001
-
-_power2round:
-.word 0x00000fff
-.word 0x00000fff
-.word 0x00000fff
-.word 0x00000fff
-.word 0x00000fff
-.word 0x00000fff
-.word 0x00000fff
-.word 0x00000fff

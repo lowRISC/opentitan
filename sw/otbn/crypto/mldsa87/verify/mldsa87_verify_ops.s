@@ -4,7 +4,7 @@
 
 /* High-level operations for the ML-DSA-87 verify function. */
 
-.globl decode_sig
+.globl sig_decode
 .globl check_infinity_norm_z
 .globl compute_w_approx
 .globl use_hint

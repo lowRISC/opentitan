@@ -370,6 +370,7 @@ challenge_hash:
   jal x1, xof_finish
 
   ret
+
 .data
 .balign 32
 
