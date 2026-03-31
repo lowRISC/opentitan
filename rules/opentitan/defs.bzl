@@ -14,6 +14,7 @@ load(
 load(
     "@lowrisc_opentitan//rules/opentitan:cc.bzl",
     _opentitan_binary = "opentitan_binary",
+    _opentitan_binary_blob = "opentitan_binary_blob",
     _opentitan_test = "opentitan_test",
 )
 load(
@@ -81,6 +82,7 @@ OPENTITAN_CPU = _OPENTITAN_CPU
 OPENTITAN_PLATFORM = _OPENTITAN_PLATFORM
 opentitan_transition = _opentitan_transition
 
+opentitan_binary_blob = _opentitan_binary_blob
 fpga_cw305 = _fpga_cw305
 fpga_cw310 = _fpga_cw310
 fpga_cw340 = _fpga_cw340
