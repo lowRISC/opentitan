@@ -189,6 +189,22 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "self_integrity",
+    srcs = ["self_integrity.c"],
+    hdrs = ["//sw/device/lib/crypto/include:self_integrity.h"],
+    local_defines = select({
+        "//sw/device/lib/crypto/configs:hashed": ["HASH_SELF_CHECK_ENABLE"],
+        "//conditions:default": [],
+    }),
+    deps = [
+        ":sha2",
+        ":status",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
 cc_test(
     name = "integrity_unittest",
     srcs = ["integrity_unittest.cc"],

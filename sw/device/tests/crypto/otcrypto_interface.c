@@ -36,6 +36,9 @@ volatile otcrypto_interface_t otcrypto = {
     .integrity_unblinded_key_check = &otcrypto_integrity_unblinded_key_check,
     .integrity_blinded_key_check = &otcrypto_integrity_blinded_key_check,
 
+    // Self integrity.
+    .integrity_check = &otcrypto_integrity_check,
+
     // Symmetric key generation.
     .symmetric_keygen = &otcrypto_symmetric_keygen,
     .hw_backed_key = &otcrypto_hw_backed_key,
