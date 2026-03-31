@@ -17,7 +17,7 @@ See that document for integration overview within the broader OpenTitan top leve
 
 - Two modes: SHA-2 | HMAC based on SHA-2
 - Multiple digest sizes supported (for both modes): SHA-2 256/384/512 hashing algorithm
-- Configurable key length 128/256/384/512/1024-bit secret key for HMAC mode
+- Configurable key length up to 1024-bit secret key for HMAC mode
 - Support for context switching (via saving and restoring) across multiple message streams
 - 32 x 32-bit message FIFO buffer
 
