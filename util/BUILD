@@ -39,6 +39,11 @@ py_binary(
 )
 
 py_binary(
+    name = "generate_jump_table",
+    srcs = ["generate_jump_table.py"],
+)
+
+py_binary(
     name = "regtool",
     srcs = ["regtool.py"],
     deps = [
