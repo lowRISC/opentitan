@@ -1487,12 +1487,15 @@ opentitan_test(
     name = "otcrypto_hash_test",
     srcs = ["otcrypto_hash_test.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
+    local_defines = select({
+        "//sw/device/lib/crypto/configs:hashed": ["HASH_SELF_CHECK_ENABLE"],
+        "//conditions:default": [],
+    }),
     deps = [
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto",
-        "//sw/device/lib/crypto/impl:config",
-        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/include:crypto_hdrs",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],

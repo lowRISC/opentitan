@@ -4,14 +4,19 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
+load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "opentitan_binary_blob")
 load("//rules/opentitan:static_library.bzl", "ot_static_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
+load("//rules:linker.bzl", "ld_library")
 
-# Top-level cryptolib target.
-ot_static_library(
-    name = "otcrypto",
+cc_library(
+    name = "otcrypto_api",
+    defines =
+        select({
+            "//sw/device/lib/crypto/configs:hashed": ["HASH_SELF_CHECK_ENABLE"],
+            "//conditions:default": [],
+        }),
     deps = [
         "//sw/device/lib/crypto/impl:aes",
         "//sw/device/lib/crypto/impl:aes_gcm",
@@ -25,15 +30,45 @@ ot_static_library(
         "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:hkdf",
         "//sw/device/lib/crypto/impl:hmac",
+        "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:kdf_ctr",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/crypto/impl:kmac",
         "//sw/device/lib/crypto/impl:kmac_kdf",
         "//sw/device/lib/crypto/impl:rsa",
+        "//sw/device/lib/crypto/impl:self_integrity",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/crypto/impl:sha3",
         "//sw/device/lib/crypto/include:datatypes",
     ],
+)
+
+opentitan_binary_blob(
+    name = "otcrypto_binary_blob_api",
+    config = select({
+        "//sw/device/lib/crypto/configs:crypto_fips_all": "//sw/device/lib/crypto/configs:crypto_fips_all.txt",
+        "//conditions:default": None,
+    }),
+    deps_blob = [
+        ":otcrypto_api",
+        "//sw/device/lib/crypto/include:crypto_hdrs",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/runtime:log",
+    ],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/crypto/include:crypto_hdrs",
+    ],
+)
+
+# Top-level cryptolib target.
+ot_static_library(
+    name = "otcrypto",
+    deps = select({
+        "//sw/device/lib/crypto/configs:type_static": [":otcrypto_api"],
+        "//sw/device/lib/crypto/configs:type_binary_blob": [":otcrypto_binary_blob_api"],
+        "//conditions:default": [":otcrypto_api"],
+    }),
 )
 
 # This library imports the archive created by the static library rule
@@ -83,4 +118,10 @@ pkg_tar(
         "//sw/device/lib/crypto/include/freestanding:package",
     ],
     extension = "tar.xz",
+)
+
+# Rule to be used to view the dis and elf files for the binary blob
+filegroup(
+    name = "otcrypto_binary_blob_inspection",
+    srcs = [":otcrypto_binary_blob_api"],
 )
