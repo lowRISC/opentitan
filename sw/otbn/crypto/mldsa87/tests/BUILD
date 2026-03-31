@@ -13,6 +13,7 @@ srcs = [
     "//sw/otbn/crypto/mldsa87:mldsa87_ntt.s",
     "//sw/otbn/crypto/mldsa87:mldsa87_sample.s",
     "//sw/otbn/crypto/mldsa87:mldsa87_encoding.s",
+    "//sw/otbn/crypto/mldsa87:mldsa87_gadgets.s",
     "//sw/otbn/crypto/mldsa87:mldsa87_xof.s",
     "//sw/otbn/crypto/mldsa87:mldsa87_expand.s",
 ]
@@ -32,6 +33,7 @@ unit_tests = [
     "mldsa87_encode_w1_test",
     "mldsa87_xof_shake128_test",
     "mldsa87_xof_shake256_test",
+    "mldsa87_sec_a2b_test",
 ]
 
 [
