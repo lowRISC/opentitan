@@ -2,38 +2,51 @@
 
 This directory contains the FIPS-204-compliant and hardened OpenTitan OTBN implementation of the ML-DSA-87 (Dilithium-5) post-quantum cryptography signature algorithm.
 
-The implementation is structured hierarchically where the bottom layer consists of routines that operate on polynomials in `Z_q[X] / (X^256 + 1)` composed of 256 24-bit coefficients in the ring Z_q each occupying one 32-bit memory word such that one complete polynomial takes up 1024 bytes.
+The implementation is split into three separate OTBN applications (keygen, sign, verify) that are structured hierarchically where the bottom layer consists of routines that operate on polynomials in `Z_q[X] / (X^256 + 1)` composed of 256 24-bit coefficients in the ring Z_q each occupying one 32-bit memory word such that one complete polynomial takes up 1024 bytes.
 
 The polynomial operations form the base for the vector operations through which the lattice is realized.
-These routines are grouped into three distinct sets (one for each of the fundamental ML-DSA functions; key generation, sign and verify) akin to the three high-level algorithms detailed in FIPS-204.
-Every set of vector operation routines then bootstraps one OTBN application that is callable by the host CPU. The general organisation of the ML-DSA OTBN implementation is sketched below.
+These vector operations follow the schematics of the three high-level algorithms detailed in FIPS-204.
+The general organisation of the ML-DSA OTBN implementation is sketched below.
 
 ```
-                  ML-DSA-87 OTBN Apps
-                 +--------------------------------------------------------------------------+
-                 |   +------------------+     +----------------+     +------------------+   |
-                 |   | mldsa87_keygen.s |     | mldsa87_sign.s |     | mldsa87_verify.s |   |
-                 |   +--------+---------+     +--------+-------+     +---------+--------+   |
-                 +------------|------------------------|-----------------------|------------+
-                              |                        |                       |
-                              |                        |                       |
-                  Vector Ops  |                        |                       |
-                 +------------|------------------------|-----------------------|------------+
-                 | +----------+-----------+ +----------+---------+ +-----------+----------+ |
-                 | | mldsa87_keygen_ops.s | | mldsa87_sign_ops.s | | mldsa87_verify_ops.s | |
-                 | +----------------------+ +--------------------+ +----------------------+ |
-                 +-------------------------------------+------------------------------------+
-                                                       |
-                                                       |
-  Polynomial Ops                                       |
- +-----------------------------------------------------+------------------------------------------------------+
- | +-----------------+ +--------------------+ +------------------+   +-------------------+ +----------------+ |
- | | mldsa87_arith.s | | mldsa87_encoding.s | | mldsa87_expand.s |   | mldsa87_gadgets.s | | mldsa87_norm.s | |
- | +-----------------+ +--------------------+ +------------------+   +-------------------+ +----------------+ |
- | +---------------+   +------------------+   +--------------------+ +------------------+  +---------------+  |
- | | mldsa87_ntt.s |   | mldsa87_reduce.s |   | mldsa87_rounding.s | | mldsa87_sample.s |  | mldsa87_xof.s |  |
- | +---------------+   +------------------+   +--------------------+ +------------------+  +---------------+  |
- +------------------------------------------------------------------------------------------------------------+
+  ML-DSA-87 Keygen                              ML-DSA-87 Sign                               ML-DSA-87 Verify
+ +---------------------------------------+    +---------------------------------------+    +---------------------------------------+
+ |               Entrypoint              |    |               Entrypoint              |    |               Entrypoint              |
+ |          +------------------+         |    |          +----------------+           |    |          +------------------+         |
+ |          | mldsa87_keygen.s |         |    |          | mldsa87_sign.s |           |    |          | mldsa87_verify.s |         |
+ |          +--------+---------+         |    |          +--------+-------+           |    |          +--------+---------+         |
+ |                   |                   |    |                   |                   |    |                   |                   |
+ |          Vector   |                   |    |          Vector   |                   |    |          Vector   |                   |
+ |        +----------+-----------+       |    |        +----------+---------+         |    |        +----------+-----------+       |
+ |        | mldsa87_keygen_ops.s |       |    |        | mldsa87_sign_ops.s |         |    |        | mldsa87_verify_ops.s |       |
+ |        +----------+-----------+       |    |        +----------+---------+         |    |        +----------+-----------+       |
+ |                   |                   |    |                   |                   |    |                   |                   |
+ |    Poly           |                   |    |    Poly           |                   |    |    Poly           |                   |
+ |  +----------------+----------------+  |    |  +----------------+----------------+  |    |  +----------------+----------------+  |
+ |  |  +---------------------------+  |  |    |  |  +-------------------------+    |  |    |  |  +---------------------------+  |  |
+ |  |  | mldsa87_keygen_encoding.s |  |  |    |  |  | mldsa87_sign_encoding.s |    |  |    |  |  | mldsa87_verify_encoding.s |  |  |
+ |  |  +---------------------------+  |  |    |  |  +-------------------------+    |  |    |  |  +---------------------------+  |  |
+ |  |  +-------------------------+    |  |    |  |  +-----------------------+      |  |    |  |  +-----------------------+      |  |
+ |  |  | mldsa87_keygen_expand.s |    |  |    |  |  | mldsa87_sign_expand.s |      |  |    |  |  | mldsa87_verify_norm.s |      |  |
+ |  |  +-------------------------+    |  |    |  |  +-----------------------+      |  |    |  |  +-----------------------+      |  |
+ |  |  +---------------------------+  |  |    |  |  +-------------------------+    |  |    |  |  +---------------------------+  |  |
+ |  |  | mldsa87_keygen_rounding.s |  |  |    |  |  | mldsa87_sign_sample.s   |    |  |    |  |  | mldsa87_verify_rounding.s |  |  |
+ |  |  +---------------------------+  |  |    |  |  +-------------------------+    |  |    |  |  +---------------------------+  |  |
+ |  |  +-------------------------+    |  |    |  +---------------------------------+  |    |  +---------------------------------+  |
+ |  |  | mldsa87_keygen_sample.s |    |  |    |                                       |    |                                       |
+ |  |  +-------------------------+    |  |    |                                       |    |                                       |
+ |  +---------------------------------+  |    |                                       |    |                                       |
+ +--------------------+------------------+    +--------------------+------------------+    +--------------------+------------------+
+                      |                                            |                                            |
+                Poly  |                                            |                                            |
+               +------+--------------------------------------------+--------------------------------------------+-----+
+               |        +-----------------+ +--------------------+ +------------------+ +-------------------+         |
+               |        | mldsa87_arith.s | | mldsa87_encoding.s | | mldsa87_expand.s | | mldsa87_gadgets.s |         |
+               |        +-----------------+ +--------------------+ +------------------+ +-------------------+         |
+               |        +---------------+ +------------------+ +---------------+ +-----------------+                  |
+               |        | mldsa87_ntt.s | | mldsa87_sample.s | | mldsa87_xof.s | | mldsa87_utils.s |                  |
+               |        +---------------+ +------------------+ +---------------+ +-----------------+                  |
+               +------------------------------------------------------------------------------------------------------+
 ```
 
 ## Calling Convention
