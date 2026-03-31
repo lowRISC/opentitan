@@ -37,6 +37,7 @@ cc_library(
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/crypto/include:crypto_hdrs",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:log",
