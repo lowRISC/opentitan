@@ -4,10 +4,11 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
+load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "opentitan_binary_blob")
 load("//rules/opentitan:static_library.bzl", "ot_static_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
+load("//rules:linker.bzl", "ld_library")
 
 cc_library(
     name = "otcrypto_api",
@@ -45,13 +46,59 @@ cc_library(
     ],
 )
 
+opentitan_binary_blob(
+    name = "otcrypto_binary_blob_api",
+    config = select({
+        "//rules/configs:fips_all": "//rules/configs:fips_all.txt",
+        "//conditions:default": None,
+    }),
+    deps_blob = [
+        ":otcrypto_api",
+        "//sw/device/lib/crypto/include:crypto_hdrs",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/runtime:log",
+    ],
+    # Public headers so generate_jump_table.py can parse them
+    header = [
+        "//sw/device/lib/crypto/include:aes.h",
+        "//sw/device/lib/crypto/include:aes_gcm.h",
+        "//sw/device/lib/crypto/include:drbg.h",
+        "//sw/device/lib/crypto/include:ecc_curve25519.h",
+        "//sw/device/lib/crypto/include:ecc_p256.h",
+        "//sw/device/lib/crypto/include:ecc_p384.h",
+        "//sw/device/lib/crypto/include:hkdf.h",
+        "//sw/device/lib/crypto/include:hmac.h",
+        "//sw/device/lib/crypto/include:kdf_ctr.h",
+        "//sw/device/lib/crypto/include:key_transport.h",
+        "//sw/device/lib/crypto/include:kmac.h",
+        "//sw/device/lib/crypto/include:kmac_kdf.h",
+        "//sw/device/lib/crypto/include:otcrypto.h",
+        "//sw/device/lib/crypto/include:rsa.h",
+        "//sw/device/lib/crypto/include:security_config.h",
+        "//sw/device/lib/crypto/include:sha2.h",
+        "//sw/device/lib/crypto/include:sha3.h",
+        "//sw/device/lib/crypto/include:x25519.h",
+    ],
+    linkopts = select({
+        "//rules/configs:pic": ["-mno-relax"],
+        "//conditions:default": [],
+    }),
+    pic = select({
+        "//rules/configs:pic": True,
+        "//conditions:default": False,
+    }),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/crypto/include:crypto_hdrs",
+    ],
+)
+
 # Top-level cryptolib target.
 ot_static_library(
     name = "otcrypto",
     deps = select({
         "//rules/configs:type_static": [":otcrypto_api"],
-        # Only static type is supported for the moment
-        #"//rules/configs:type_binary_blob": [":otcrypto_binary_blob_api"],
+        "//rules/configs:type_binary_blob": [":otcrypto_binary_blob_api"],
         #"//rules/configs:type_relocatable": [":otcrypto_relocatable_api",],
         "//conditions:default": [],
     }),
@@ -104,4 +151,14 @@ pkg_tar(
         "//sw/device/lib/crypto/include/freestanding:package",
     ],
     extension = "tar.xz",
+)
+
+filegroup(
+    name = "otcrypto_binary_blob_elf",
+    srcs = [":otcrypto_binary_blob_api"],
+)
+
+filegroup(
+    name = "otcrypto_binary_blob_dis",
+    srcs = [":otcrypto_binary_blob_api"],
 )
