@@ -9,8 +9,11 @@ set -e
 . util/build_consts.sh
 
 function usage() {
-    echo >&2 "Usage: run-fpga-tests.sh [--mode=(coverage|test)] [--build-only] [--no-fpga] <fpga> <target_pattern_file>"
+    echo >&2 "Usage: run-fpga-tests.sh" \
+             "[--mode=(coverage|test)] [--build-only] [--no-fpga]" \
+             "<fpga> <target_pattern_file> [bazel options...]"
     echo >&2 "E.g. ./run-fpga-tests.sh cw310 list_of_test.txt"
+    echo >&2 "E.g. ./run-fpga-tests.sh cw310 list_of_test.txt --cache_test_results=no"
     echo >&2 "E.g. ./run-fpga-tests.sh --mode=coverage cw310 list_of_test.txt"
     echo >&2 "E.g. ./run-fpga-tests.sh --build-only cw310 list_of_test.txt"
     echo >&2 "E.g. ./run-fpga-tests.sh --no-fpga cw310 list_of_test.txt"
@@ -41,6 +44,7 @@ fi
 
 fpga="$1"
 target_pattern_file="$2"
+shift 2
 
 echo "Running $mode with $fpga on $target_pattern_file"
 
@@ -77,6 +81,10 @@ if [[ "${mode}" == "coverage" ]]; then
     --keep_going
   )
 fi
+
+TEST_ARGS+=(
+  "$@"
+)
 
 if [[ "${build_only}" == "true" ]]; then
     ci/bazelisk.sh build //sw/host/opentitantool
