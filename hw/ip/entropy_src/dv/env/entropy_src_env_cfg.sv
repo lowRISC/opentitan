@@ -155,7 +155,7 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   // Constraints //
   /////////////////
   constraint sim_duration_ms_c {
-    7 <= sim_duration_ms && sim_duration_ms <= 20;
+    13 <= sim_duration_ms && sim_duration_ms <= 14;
   }
 
   constraint which_ht_state_c {
