@@ -179,6 +179,44 @@ status_t randomized_bytexor_in_place(void *OT_RESTRICT x,
                                      const void *OT_RESTRICT y,
                                      size_t byte_len);
 
+/**
+ * Combines two word buffers with ADD and store the result in the dest. buffer.
+ *
+ * Warning: the side-channel protection of this function call can not be
+ * guaranteed.
+ * The function is hardened against fault injections.
+ *
+ * This mimics the OTBN `add`.
+ *
+ * @param x Pointer to the first operand.
+ * @param y Pointer to the second operand.
+ * @param word_len Length in words of each operand.
+ * @param dest[out] Pointer to the output buffer.
+ * @return OK or error.
+ */
+status_t hardened_add(const uint32_t *OT_RESTRICT x,
+                      const uint32_t *OT_RESTRICT y, size_t word_len,
+                      uint32_t *OT_RESTRICT dest);
+
+/**
+ * Combines two word buffers with SUB and store the result in the dest. buffer.
+ *
+ * Warning: the side-channel protection of this function call can not be
+ * guaranteed.
+ * The function is hardened against fault injections.
+ *
+ * This mimics the OTBN `sub`.
+ *
+ * @param x Pointer to the first operand.
+ * @param y Pointer to the second operand.
+ * @param word_len Length in words of each operand.
+ * @param dest[out] Pointer to the output buffer.
+ * @return OK or error.
+ */
+status_t hardened_sub(const uint32_t *OT_RESTRICT x,
+                      const uint32_t *OT_RESTRICT y, size_t word_len,
+                      uint32_t *OT_RESTRICT dest);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
