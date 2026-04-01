@@ -168,12 +168,14 @@ dif_result_t dif_clkmgr_jitter_get_enabled(const dif_clkmgr_t *clkmgr,
                                            dif_toggle_t *state);
 
 /**
- * Enable jitter.
+ *  Enable of Disable jitter.
  * @param clkmgr Clock Manager Handle.
+ * @param new_state whether to enable or disable jitter.
  * @returns The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_clkmgr_jitter_set_enabled(const dif_clkmgr_t *clkmgr);
+dif_result_t dif_clkmgr_jitter_set_enabled(const dif_clkmgr_t *clkmgr,
+                                           dif_toggle_t new_state);
 
 /**
  * Check if a Gateable Clock is Enabled or Disabled.

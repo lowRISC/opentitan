@@ -539,7 +539,7 @@ bool test_main(void) {
   init_units();
 
   set_edn_auto_mode();
-  CHECK_DIF_OK(dif_clkmgr_jitter_set_enabled(&clkmgr));
+  CHECK_DIF_OK(dif_clkmgr_jitter_set_enabled(&clkmgr, kDifToggleEnabled));
 
   // Enable both recoverable and fatal alerts
   CHECK_DIF_OK(dif_alert_handler_configure_alert(

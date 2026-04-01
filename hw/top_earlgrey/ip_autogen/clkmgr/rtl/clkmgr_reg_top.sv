@@ -877,7 +877,7 @@ module clkmgr_reg_top (
 
     // from register interface
     .we     (jitter_enable_gated_we),
-    .wd     (prim_mubi_pkg::MuBi4True),
+    .wd     (jitter_enable_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2829,11 +2829,6 @@ module clkmgr_reg_top (
 
 
   // Unused signal tieoff
-
-  // Any write to the jitter_enable CSR writes MuBi4True.
-  // The actual write data is ignored.
-  logic unused_jitter_enable_wd;
-  assign unused_jitter_enable_wd = ^jitter_enable_wd;
 
   // wdata / byte enable are not always fully used
   // add a blanket unused statement to handle lint waivers

@@ -120,13 +120,27 @@ dif_result_t dif_clkmgr_jitter_get_enabled(const dif_clkmgr_t *clkmgr,
   return kDifOk;
 }
 
-dif_result_t dif_clkmgr_jitter_set_enabled(const dif_clkmgr_t *clkmgr) {
+dif_result_t dif_clkmgr_jitter_set_enabled(const dif_clkmgr_t *clkmgr,
+                                           dif_toggle_t new_state) {
+  multi_bit_bool_t new_jitter_enable_val;
   if (clkmgr == NULL) {
     return kDifBadArg;
   }
-  // Any write sets jitter enable to kMultiBitBool4True.
+  if (jitter_enable_register_is_locked(clkmgr)) {
+    return kDifLocked;
+  }
+  switch (new_state) {
+    case kDifToggleEnabled:
+      new_jitter_enable_val = kMultiBitBool4True;
+      break;
+    case kDifToggleDisabled:
+      new_jitter_enable_val = kMultiBitBool4False;
+      break;
+    default:
+      return kDifBadArg;
+  }
   mmio_region_write32(clkmgr->base_addr, CLKMGR_JITTER_ENABLE_REG_OFFSET,
-                      kMultiBitBool4True);
+                      new_jitter_enable_val);
   return kDifOk;
 }
 

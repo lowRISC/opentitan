@@ -192,8 +192,9 @@
 
             Test the following properties of jitter enable:
             - The reset value of jitter_enable is off.
-            - Any write to jitter_enable turns jitter on.
-            - jitter_regwen has no impact on jitter_enable.
+            - The jitter can be enabled and disabled.
+            - The jitter can be enabled and locked with jitter_regwen
+            - The jitter cannot be disabled after being locked
 
             X-ref with various specific jitter enable tests.
             SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.

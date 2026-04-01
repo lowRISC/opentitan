@@ -118,7 +118,7 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_clkmgr_jitter_get_enabled(&clkmgr, &jitter_status));
   if (jitter_status == kDifToggleDisabled) {
     test_clock_frequencies_with_jitter_disabled(delay_micros);
-    CHECK_DIF_OK(dif_clkmgr_jitter_set_enabled(&clkmgr));
+    CHECK_DIF_OK(dif_clkmgr_jitter_set_enabled(&clkmgr, kDifToggleEnabled));
   }
   test_clock_frequencies_with_jitter_enabled(delay_micros);
   return true;

@@ -65,10 +65,27 @@ TEST_F(JitterRegwenTest, SetLockedError) {
 
 class JitterEnableTest : public ClkMgrTest {};
 
+// SetEnabled uses EXPECT_WRITE32 instead of EXPECT_MASK32 because
+// dif_clkmgr_jitter_set_enabled doesn't perform a read, just a write.
 TEST_F(JitterEnableTest, SetEnabled) {
-  // Enable jitter regardless of the current state will enable it.
-  EXPECT_WRITE32(CLKMGR_JITTER_ENABLE_REG_OFFSET, kMultiBitBool4True);
-  EXPECT_DIF_OK(dif_clkmgr_jitter_set_enabled(&clkmgr_));
+  // Disable jitter with jitter unlocked.
+  {
+    EXPECT_READ32(CLKMGR_JITTER_REGWEN_REG_OFFSET, 1);
+    EXPECT_WRITE32(CLKMGR_JITTER_ENABLE_REG_OFFSET, kMultiBitBool4False);
+    EXPECT_DIF_OK(dif_clkmgr_jitter_set_enabled(&clkmgr_, kDifToggleDisabled));
+  }
+  // Enable jitter with jitter unlocked.
+  {
+    EXPECT_READ32(CLKMGR_JITTER_REGWEN_REG_OFFSET, 1);
+    EXPECT_WRITE32(CLKMGR_JITTER_ENABLE_REG_OFFSET, kMultiBitBool4True);
+    EXPECT_DIF_OK(dif_clkmgr_jitter_set_enabled(&clkmgr_, kDifToggleEnabled));
+  }
+}
+
+TEST_F(JitterEnableTest, SetEnabledLocked) {
+  // Lock the register via regwen, and check no change occurs.
+  EXPECT_READ32(CLKMGR_JITTER_REGWEN_REG_OFFSET, 0);
+  EXPECT_DIF_LOCKED(dif_clkmgr_jitter_set_enabled(&clkmgr_, kDifToggleEnabled));
 }
 
 TEST_F(JitterEnableTest, GetEnabled) {
