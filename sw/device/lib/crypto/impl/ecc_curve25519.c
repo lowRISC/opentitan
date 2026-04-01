@@ -242,6 +242,27 @@ otcrypto_status_t otcrypto_ed25519_verify(
   return otcrypto_ed25519_verify_async_finalize(verification_result);
 }
 
+otcrypto_status_t otcrypto_ed25519_sign_verify(
+    const otcrypto_unblinded_key_t *private_key,
+    const otcrypto_unblinded_key_t *public_key,
+    otcrypto_const_byte_buf_t *input_message,
+    otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t *signature) {
+  // Signature generation.
+  HARDENED_TRY(
+      otcrypto_ed25519_sign(private_key, input_message, sign_mode, signature));
+
+  // Verify signature before releasing it.
+  otcrypto_const_word32_buf_t signature_check = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, signature->data, signature->len);
+  hardened_bool_t verification_result = kHardenedBoolFalse;
+  HARDENED_TRY(otcrypto_ed25519_verify(public_key, input_message, sign_mode,
+                                       &signature_check, &verification_result));
+
+  // Trap if signature verification failed.
+  HARDENED_CHECK_EQ(verification_result, kHardenedBoolTrue);
+  return OTCRYPTO_OK;
+}
+
 otcrypto_status_t otcrypto_ed25519_keygen_async_start(
     const otcrypto_unblinded_key_t *private_key) {
   // Check the private key.
