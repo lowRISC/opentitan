@@ -34,6 +34,8 @@ OTBN_DECLARE_SYMBOL_ADDR(
     run_curve25519,
     ed25519_hash_h_low);  // 32 lowest bytes of the key hash.
 OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, ed25519_hash_r);  // Message hash r.
+OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, ed25519_verify_lhs);
+OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, ed25519_verify_rhs);
 
 static const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(run_curve25519, mode);
 static const otbn_addr_t kOtbnVarVerifyRes =
@@ -50,6 +52,10 @@ static const otbn_addr_t kOtbnVarHashHlow =
     OTBN_ADDR_T_INIT(run_curve25519, ed25519_hash_h_low);
 static const otbn_addr_t kOtbnVarHashR =
     OTBN_ADDR_T_INIT(run_curve25519, ed25519_hash_r);
+static const otbn_addr_t kOtbnVarVerifyLhs =
+    OTBN_ADDR_T_INIT(run_curve25519, ed25519_verify_lhs);
+static const otbn_addr_t kOtbnVarVerifyRhs =
+    OTBN_ADDR_T_INIT(run_curve25519, ed25519_verify_rhs);
 
 // Declare mode constants.
 OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, MODE_KEYGEN);
@@ -202,11 +208,23 @@ status_t curve25519_verify_finalize(hardened_bool_t *result) {
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY_WIPE_DMEM(otbn_busy_wait_for_done());
 
-  uint32_t resp;
-  uint32_t expected_resp = kCurve25519VerifySuccess;
+  uint32_t ok;
+  HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(1, kOtbnVarVerifyRes, &ok));
+  if (launder32(ok) != kHardenedBoolTrue) {
+    HARDENED_TRY(otbn_dmem_sec_wipe());
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(ok, kHardenedBoolTrue);
+
+  // Read the computed LHS and RHS out of OTBN dmem.
+  uint32_t lhs[kCurve25519PointWords];
+  uint32_t rhs[kCurve25519PointWords];
   HARDENED_TRY_WIPE_DMEM(
-      otbn_dmem_read(kCurve25519ResultWords, kOtbnVarVerifyRes, &resp));
-  *result = hardened_memeq(&resp, &expected_resp, kCurve25519ResultWords);
+      otbn_dmem_read(kCurve25519PointWords, kOtbnVarVerifyLhs, lhs));
+  HARDENED_TRY_WIPE_DMEM(
+      otbn_dmem_read(kCurve25519PointWords, kOtbnVarVerifyRhs, rhs));
+
+  *result = hardened_memeq(lhs, rhs, kCurve25519PointWords);
 
   // Wipe DMEM.
   return otbn_dmem_sec_wipe();
