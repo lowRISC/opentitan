@@ -31,7 +31,7 @@ enum {
   /**
    * Number of bytes needed to hold an encoded point for Curve25519.
    */
-  kCurve25519PointBytes = kCurve25519PointWords * 4,
+  kCurve25519PointBytes = kCurve25519PointWords * sizeof(uint32_t),
   /**
    * Number of bytes needed to hold a SHA512 hash.
    */
@@ -39,7 +39,7 @@ enum {
   /**
    * Number of words needed to hold a SHA512 hash.
    */
-  kCurve25519HashWords = kCurve25519HashBytes / 4,
+  kCurve25519HashWords = kCurve25519HashBytes / sizeof(uint32_t),
   /**
    * Number of words needed to hold half of a SHA512 hash.
    */
@@ -49,13 +49,42 @@ enum {
    */
   kCurve25519KeyBytes = 32,
   /**
+   * Number of words needed to hold a encoded public or private key.
+   */
+  kCurve25519KeyWords = kCurve25519KeyBytes / sizeof(uint32_t),
+  /**
    * Number of bytes needed to hold a scalar.
    */
   kCurve25519ScalarBytes = 32,
   /**
    * Number of words needed to hold a scalar.
    */
-  kCurve25519ScalarWords = kCurve25519ScalarBytes / 4,
+  kCurve25519ScalarWords = kCurve25519ScalarBytes / sizeof(uint32_t),
+  /**
+   * Length of a masked secret scalar share in bytes.
+   *
+   * This implementation uses extra redundant bits for side-channel protection.
+   */
+  kCurve25519MaskedScalarShareBytes = kCurve25519ScalarBytes + 8,
+  /**
+   * Length of masked secret scalar share in words.
+   */
+  kCurve25519MaskedScalarShareWords =
+      kCurve25519MaskedScalarShareBytes / sizeof(uint32_t),
+  /**
+   * Number of shares for the scalar.
+   */
+  kCurve25519MaskedScalarNumShares = 2,
+  /**
+   * Length of the full masked secret scalar share in bytes.
+   */
+  kCurve25519MaskedScalarTotalShareBytes =
+      kCurve25519MaskedScalarNumShares * kCurve25519MaskedScalarShareBytes,
+  /**
+   * Length of the full masked secret scalar share in words.
+   */
+  kCurve25519MaskedScalarTotalShareWords =
+      kCurve25519MaskedScalarNumShares * kCurve25519MaskedScalarShareWords,
   /**
    * Magic value for verify success response.
    */

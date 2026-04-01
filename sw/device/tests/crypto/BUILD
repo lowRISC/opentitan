@@ -508,6 +508,7 @@ opentitan_test(
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/crypto/impl:ecc_curve25519",
         "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",

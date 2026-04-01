@@ -38,19 +38,19 @@ typedef enum otcrypto_eddsa_sign_mode {
  * keyblob should be 80 bytes. The value in the `checksum` field of the
  * key struct will be populated by the key generation function.
  *
- * @param[out] private_key Pointer to the unblinded private key struct.
+ * @param[out] private_key Pointer to the blinded private key struct.
  * @param[out] public_key Pointer to the unblinded public key struct.
  * @return Result of the Ed25519 key generation.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_keygen(
-    const otcrypto_unblinded_key_t *private_key,
+    const otcrypto_blinded_key_t *private_key,
     otcrypto_unblinded_key_t *public_key);
 
 /**
  * Generates an Ed25519 digital signature.
  *
- * @param private_key Pointer to the unblinded private key struct.
+ * @param private_key Pointer to the blinded private key struct.
  * @param input_message Input message to be signed.
  * @param sign_mode EdDSA signature hashing mode.
  * @param[out] signature Pointer to the EdDSA signature with (r,s) values.
@@ -58,7 +58,7 @@ otcrypto_status_t otcrypto_ed25519_keygen(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_sign(
-    const otcrypto_unblinded_key_t *private_key,
+    const otcrypto_blinded_key_t *private_key,
     otcrypto_const_byte_buf_t *input_message,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t *signature);
 
@@ -95,7 +95,7 @@ otcrypto_status_t otcrypto_ed25519_verify(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_keygen_async_start(
-    const otcrypto_unblinded_key_t *private_key);
+    const otcrypto_blinded_key_t *private_key);
 
 /**
  * Finalizes asynchronous key generation for Ed25519.
@@ -116,7 +116,7 @@ otcrypto_status_t otcrypto_ed25519_keygen_async_finalize(
  *
  * See `otcrypto_ed25519_sign` for requirements on input values.
  *
- * @param private_key Pointer to the unblinded private key struct.
+ * @param private_key Pointer to the blinded private key struct.
  * @param input_message_ph Pre-hashed input message to be signed.
  * @param sign_mode EdDSA signature hashing mode.
  * @param key_digest[out] Pointer to the key digest.
@@ -125,7 +125,7 @@ otcrypto_status_t otcrypto_ed25519_keygen_async_finalize(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
-    const otcrypto_unblinded_key_t *private_key,
+    const otcrypto_blinded_key_t *private_key,
     otcrypto_const_byte_buf_t *input_message_ph,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_hash_digest_t *key_digest,
     otcrypto_hash_digest_t *msg_digest);
@@ -135,7 +135,7 @@ otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
  *
  * See `otcrypto_ed25519_sign` for requirements on input values.
  *
- * @param private_key Pointer to the unblinded private key struct.
+ * @param private_key Pointer to the blinded private key struct.
  * @param input_message_ph Pre-hashed input message to be signed.
  * @param sign_mode EdDSA signature hashing mode.
  * @param signature[out] Pointer to the EdDSA signature to get (R) value.
@@ -145,7 +145,7 @@ otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_sign_part2_async_start(
-    const otcrypto_unblinded_key_t *private_key,
+    const otcrypto_blinded_key_t *private_key,
     otcrypto_const_byte_buf_t *input_message_ph,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t *signature,
     otcrypto_hash_digest_t *key_digest, otcrypto_hash_digest_t *msg_digest);
