@@ -56,5 +56,46 @@ TEST(HardenedMemory, MemEq) {
             kHardenedBoolFalse);
 }
 
+TEST(HardenedMemory, XorReversibility) {
+  std::vector<uint32_t> xs = {0x11111111, 0x22222222, 0x33333333, 0x44444444};
+  std::vector<uint32_t> ys = {0x55555555, 0x66666666, 0x77777777, 0x88888888};
+
+  std::vector<uint32_t> masked(4);
+  std::vector<uint32_t> unmasked(4);
+
+  // Mask: xs ^ ys = masked
+  hardened_xor(xs.data(), ys.data(), xs.size(), masked.data());
+
+  // Unmask: masked ^ ys = unmasked
+  hardened_xor(masked.data(), ys.data(), ys.size(), unmasked.data());
+
+  EXPECT_EQ(unmasked, xs);
+}
+
+TEST(HardenedMemory, AddSubReversibility) {
+  // We choose boundary values (0xFFFFFFFF and 0x00000000) to ensure the
+  // carry/borrow chain logic triggers multiple times across word boundaries.
+  std::vector<uint32_t> xs = {0x00000000, 0xFFFFFFFF, 0x00000000, 0xFFFFFFFF};
+  std::vector<uint32_t> ys = {0x00000001, 0x00000002, 0xFFFFFFFF, 0x00000004};
+
+  std::vector<uint32_t> sub_result(4);
+  std::vector<uint32_t> add_result(4);
+
+  // 1. Test Subtraction followed by Addition: (X - Y) + Y == X
+  hardened_sub(xs.data(), ys.data(), xs.size(), sub_result.data());
+  hardened_add(sub_result.data(), ys.data(), ys.size(), add_result.data());
+
+  EXPECT_EQ(add_result, xs);
+
+  std::vector<uint32_t> add_first(4);
+  std::vector<uint32_t> sub_second(4);
+
+  // 2. Test Addition followed by Subtraction: (X + Y) - Y == X
+  hardened_add(xs.data(), ys.data(), xs.size(), add_first.data());
+  hardened_sub(add_first.data(), ys.data(), ys.size(), sub_second.data());
+
+  EXPECT_EQ(sub_second, xs);
+}
+
 }  // namespace
 }  // namespace hardened_memory_unittest
