@@ -5,6 +5,12 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "hw/top/dt/dt_alert_handler.h"  // Generated
+#include "hw/top/dt/dt_aon_timer.h"      // Generated
+#include "hw/top/dt/dt_lc_ctrl.h"        // Generated
+#include "hw/top/dt/dt_rstmgr.h"         // Generated
+#include "hw/top/dt/dt_rv_core_ibex.h"   // Generated
+#include "hw/top/dt/dt_rv_plic.h"        // Generated
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/math.h"
@@ -25,10 +31,10 @@
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top/alert_handler_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 /*
  * Checks the result of getting an otp programming error, as when attempting
@@ -63,9 +69,19 @@ static dif_alert_handler_t alert_handler;
 static dif_lc_ctrl_t lc_ctrl;
 static dif_rstmgr_t rstmgr;
 
-static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
+static const uint32_t kPlicTarget = 0;
 static dif_rv_plic_t plic;
 static dif_rv_core_ibex_t rv_core_ibex;
+
+static const dt_alert_handler_t kAlertHandlerDt = (dt_alert_handler_t)0;
+static const dt_lc_ctrl_t kLcCtrlDt = (dt_lc_ctrl_t)0;
+static const dt_rstmgr_t kRstmgrDt = kDtRstmgrAon;
+static const dt_rv_plic_t kRvPlicDt = (dt_rv_plic_t)0;
+static const dt_rv_core_ibex_t kRvCoreIbexDt = (dt_rv_core_ibex_t)0;
+static_assert(kDtAlertHandlerCount >= 1, "This test needs an Alert Handler");
+static_assert(kDtLcCtrlCount >= 1, "This test needs a LC CTRL");
+static_assert(kDtRvPlicCount >= 1, "This test needs a RV PLIC");
+static_assert(kDtRvCoreIbexCount >= 1, "This test needs an Ibex core");
 
 // Used for checking whether a regular alert interrupt has been seen.
 static volatile bool alert_irq_seen = false;
@@ -129,8 +145,10 @@ static void lc_ctrl_fault_checker(bool enable, const char *ip_inst) {
       .mask = UINT32_MAX, .index = kDifLcCtrlStatusCodeTooManyTransitions};
   uint32_t mask = bitfield_field32_write(0, relevant_field, UINT32_MAX);
   uint32_t relevant_status = status & mask;
+  dt_alert_id_t lc_ctrl_fatal_prog_error_alert_id =
+      dt_lc_ctrl_alert_to_alert_id(kLcCtrlDt, kDtLcCtrlAlertFatalProgError);
   uint32_t fatal_prog_error =
-      bitfield_bit32_write(0, kTopEarlgreyAlertIdLcCtrlFatalProgError, true);
+      bitfield_bit32_write(0, lc_ctrl_fatal_prog_error_alert_id, true);
   uint32_t expected_status = enable ? fatal_prog_error : 0;
   CHECK(relevant_status == expected_status,
         "For %s got codes 0x%x, expected 0x%x", ip_inst, relevant_status,
@@ -138,62 +156,55 @@ static void lc_ctrl_fault_checker(bool enable, const char *ip_inst) {
 }
 
 /**
- * External ISR.
+ * External IRQ handler.
  *
  * Handles all peripheral interrupts on Ibex. PLIC asserts an external interrupt
  * line to the CPU, which results in a call to this OTTF ISR. This ISR
- * overrides the default OTTF implementation.
+ * overrides the default OTTF implementation using the new interrupt handler
+ * form.
  */
-void ottf_external_isr(uint32_t *exc_info) {
-  dif_rv_plic_irq_id_t irq_id;
-
+bool ottf_handle_irq(uint32_t *exc_info, dt_instance_id_t devid,
+                     dif_rv_plic_irq_id_t irq_id) {
   LOG_INFO("At regular external ISR");
 
   // There may be multiple interrupts due to the alert firing, so this keeps an
   // interrupt counter and errors-out if there are too many interrupts.
   CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterInterrupt));
 
-  CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &irq_id));
-
-  top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[irq_id];
-
-  if (peripheral == kTopEarlgreyPlicPeripheralAonTimerAon) {
-    uint32_t irq =
-        (irq_id - (dif_rv_plic_irq_id_t)
-                      kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
+  if (devid == dt_aon_timer_instance_id(kDtAonTimerAon)) {
+    dt_aon_timer_irq_t irq =
+        dt_aon_timer_irq_from_plic_id(kDtAonTimerAon, irq_id);
 
     // We should not get aon timer interrupts since escalation suppresses them.
     CHECK(false, "Unexpected aon timer interrupt %d", irq);
-  } else if (peripheral == kTopEarlgreyPlicPeripheralAlertHandler) {
+  } else if (devid == dt_alert_handler_instance_id(kAlertHandlerDt)) {
     // Don't acknowledge the interrupt to alert_handler so it escalates.
     CHECK(fault_checker.function);
     CHECK(fault_checker.ip_inst);
 
     // Fatal alerts are only cleared by reset.
     fault_checker.function(/*enable=*/true, fault_checker.ip_inst);
+
+    // Disable these interrupts from alert_handler so they don't keep happening
+    // until NMI.
+    dt_alert_handler_irq_t irq =
+        dt_alert_handler_irq_from_plic_id(kAlertHandlerDt, irq_id);
+    CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(&alert_handler, irq,
+                                                   kDifToggleDisabled));
+
+    // Disable this interrupt to prevent it from continuously firing. This
+    // should not prevent escalation from continuing.
+    CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(&plic, irq_id, kPlicTarget,
+                                             kDifToggleDisabled));
+
+    // Notify test function that the alert IRQ has been seen
+    alert_irq_seen = true;
+
+    LOG_INFO("Regular external ISR exiting");
+    return true;
   }
 
-  // Disable these interrupts from alert_handler so they don't keep happening
-  // until NMI.
-  uint32_t irq =
-      (irq_id - (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAlertHandlerClassa);
-  CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(&alert_handler, irq,
-                                                 kDifToggleDisabled));
-
-  // Disable this interrupt to prevent it from continuously firing. This
-  // should not prevent escalation from continuing.
-  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(&plic, irq_id, kPlicTarget,
-                                           kDifToggleDisabled));
-
-  // Complete the IRQ by writing the IRQ source to the Ibex specific CC
-  // register.
-  CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kPlicTarget, irq_id));
-
-  // Notify test function that the alert IRQ has been seen
-  alert_irq_seen = true;
-
-  LOG_INFO("Regular external ISR exiting");
+  return false;
 }
 
 /**
@@ -228,14 +239,16 @@ void ottf_external_nmi_handler(uint32_t *exc_info) {
   CHECK(state == kDifAlertHandlerClassStatePhase1, "Wrong phase %d", state);
 
   // Check this gets the expected alert.
+  dt_alert_id_t lc_ctrl_fatal_prog_error_alert_id =
+      dt_lc_ctrl_alert_to_alert_id(kLcCtrlDt, kDtLcCtrlAlertFatalProgError);
   bool is_cause = false;
   CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
-      &alert_handler, kTopEarlgreyAlertIdLcCtrlFatalProgError, &is_cause));
+      &alert_handler, lc_ctrl_fatal_prog_error_alert_id, &is_cause));
   CHECK(is_cause);
 
   // Acknowledge the cause, which doesn't affect escalation.
   CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
-      &alert_handler, kTopEarlgreyAlertIdLcCtrlFatalProgError));
+      &alert_handler, lc_ctrl_fatal_prog_error_alert_id));
   LOG_INFO("NMI handler exiting");
 }
 
@@ -259,15 +272,17 @@ void check_alert_dump(void) {
   LOG_INFO("The alert info crash dump:");
   alert_handler_testutils_info_dump(&actual_info);
   // Check alert cause.
+  dt_alert_id_t lc_ctrl_fatal_prog_error_alert_id =
+      dt_lc_ctrl_alert_to_alert_id(kLcCtrlDt, kDtLcCtrlAlertFatalProgError);
   for (int i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
-    if (i == kTopEarlgreyAlertIdLcCtrlFatalProgError) {
+    if (i == lc_ctrl_fatal_prog_error_alert_id) {
       CHECK(actual_info.alert_cause[i], "Expected alert cause %d to be set", i);
     } else {
       // It is possible some alerts can trigger others; for example, some
       // lc_ctrl faults lead to otp_ctrl faults.
       if (actual_info.alert_cause[i]) {
         LOG_INFO("Unexpected alert cause %d, may be triggered by %d", i,
-                 kTopEarlgreyAlertIdLcCtrlFatalProgError);
+                 lc_ctrl_fatal_prog_error_alert_id);
       }
     }
   }
@@ -279,19 +294,16 @@ bool test_main(void) {
   irq_external_ctrl(true);
 
   // Initialize core and peripherals.
-  CHECK_DIF_OK(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
+  CHECK_DIF_OK(dif_rv_core_ibex_init_from_dt(kRvCoreIbexDt, &rv_core_ibex));
 
-  CHECK_DIF_OK(dif_lc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
+  CHECK_DIF_OK(dif_lc_ctrl_init_from_dt(kLcCtrlDt, &lc_ctrl));
 
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
 
-  CHECK_DIF_OK(dif_alert_handler_init(
-      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
-      &alert_handler));
+  CHECK_DIF_OK(dif_alert_handler_init_from_dt(kAlertHandlerDt, &alert_handler));
+
+  // Initialize PLIC.
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &plic));
 
   // Check if there was a HW reset caused by the escalation.
   dif_rstmgr_reset_info_bitfield_t rst_info = rstmgr_testutils_reason_get();
@@ -317,8 +329,10 @@ bool test_main(void) {
     LOG_INFO("Configuring alert handlers");
     // Configure the alert handler, LC controller fault checker and start
     // executing the test. Set the alert we care about to class A.
+    dt_alert_id_t lc_ctrl_fatal_prog_error_alert_id =
+        dt_lc_ctrl_alert_to_alert_id(kLcCtrlDt, kDtLcCtrlAlertFatalProgError);
     CHECK_DIF_OK(dif_alert_handler_configure_alert(
-        &alert_handler, kTopEarlgreyAlertIdLcCtrlFatalProgError,
+        &alert_handler, lc_ctrl_fatal_prog_error_alert_id,
         kDifAlertHandlerClassA, /*enabled=*/kDifToggleEnabled,
         /*locked=*/kDifToggleEnabled));
 
@@ -390,10 +404,8 @@ bool test_main(void) {
     LOG_INFO("NMI count %d", nmi_count);
 
     CHECK(interrupt_count == 0,
-          "Regular ISR should not run for "
-          "kTopEarlgreyAlertIdLcCtrlFatalProgError");
-    CHECK(nmi_count == 0,
-          "NMI should not run for kTopEarlgreyAlertIdLcCtrlFatalProgError");
+          "Regular ISR should not run for lc_ctrl fatal prog error");
+    CHECK(nmi_count == 0, "NMI should not run for lc_ctrl fatal prog error");
 
     // Get the retention sram maintained reset counter.
     uint32_t reset_count;
@@ -406,9 +418,11 @@ bool test_main(void) {
     CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterReset));
 
     // Check that the alert handler cause is cleared after reset.
+    dt_alert_id_t lc_ctrl_fatal_prog_error_alert_id =
+        dt_lc_ctrl_alert_to_alert_id(kLcCtrlDt, kDtLcCtrlAlertFatalProgError);
     bool is_cause = true;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
-        &alert_handler, kTopEarlgreyAlertIdLcCtrlFatalProgError, &is_cause));
+        &alert_handler, lc_ctrl_fatal_prog_error_alert_id, &is_cause));
     CHECK(!is_cause);
 
     // Check that the fault register is cleared after reset.
