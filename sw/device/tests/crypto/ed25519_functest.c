@@ -199,6 +199,51 @@ static status_t hasheddsa_test(void) {
 }
 
 /**
+ * Test the combined sign-and-verify function.
+ */
+static status_t sign_verify_test(void) {
+  LOG_INFO("Running sign_verify test");
+
+  // Set up private_key struct.
+  otcrypto_unblinded_key_t private_key = {
+      .key_mode = kOtcryptoKeyModeEd25519,
+      .key_length = kEd25519PrivateKeyBytes,
+      .key = kSecretKey,
+  };
+  private_key.checksum = integrity_unblinded_checksum(&private_key);
+
+  // Set up public_key struct.
+  uint32_t public_key_buf[kEd25519PublicKeyWords];
+  memcpy(public_key_buf, kPublicKey, kEd25519PublicKeyBytes);
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeEd25519,
+      .key_length = kEd25519PublicKeyBytes,
+      .key = public_key_buf,
+  };
+  public_key.checksum = integrity_unblinded_checksum(&public_key);
+
+  // Set up input_message struct.
+  otcrypto_const_byte_buf_t input_message =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (const uint8_t *)kMessage,
+                        ARRAYSIZE(kMessage));
+
+  // Set up signature struct.
+  uint32_t signature_data[kEd25519SignatureWords];
+  otcrypto_word32_buf_t signature = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, signature_data, ARRAYSIZE(signature_data));
+
+  // Run combined ed25519 signature generation and verification.
+  CHECK_STATUS_OK(
+      otcrypto_ed25519_sign_verify(&private_key, &public_key, &input_message,
+                                   kOtcryptoEddsaSignModeEddsa, &signature));
+
+  // Check the ed25519 signature generation result still matches the KAT.
+  TRY_CHECK_ARRAYS_EQ(kSignature, signature.data, kEd25519SignatureWords);
+
+  return OTCRYPTO_OK;
+}
+
+/**
  * Execute negative testing.
  */
 static status_t run_negative_tests(void) {
@@ -302,6 +347,7 @@ bool test_main(void) {
 
   EXECUTE_TEST(result, ed25519_kat_test);
   EXECUTE_TEST(result, hasheddsa_test);
+  EXECUTE_TEST(result, sign_verify_test);
   EXECUTE_TEST(result, run_negative_tests);
 
   return status_ok(result);
