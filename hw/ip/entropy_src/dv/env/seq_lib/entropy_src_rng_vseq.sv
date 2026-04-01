@@ -103,8 +103,8 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   constraint dly_to_reenable_dut_c {
     dly_to_reenable_dut dist {
       [1      :10]       :/ 10,
-      [101    :100]      :/ 3,
-      [1001   :1000]     :/ 1
+      [11     :100]      :/ 3,
+      [101    :1000]     :/ 1
     };
   }
 
