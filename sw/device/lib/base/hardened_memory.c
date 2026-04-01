@@ -300,3 +300,106 @@ status_t randomized_bytexor_in_place(void *restrict x, const void *restrict y,
 
   return (status_t){.value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value)};
 }
+
+status_t hardened_add(const uint32_t *restrict x, const uint32_t *restrict y,
+                      size_t word_len, uint32_t *restrict dest) {
+  // Randomize the content of the output buffer before writing to it.
+  hardened_memshred(dest, word_len);
+
+  // Cast pointers to `uintptr_t` to erase their provenance.
+  uintptr_t x_addr = (uintptr_t)x;
+  uintptr_t y_addr = (uintptr_t)y;
+  uintptr_t dest_addr = (uintptr_t)dest;
+
+  uint32_t carry = 0;
+  size_t count = 0;
+
+  // We must iterate strictly sequentially from LSB to MSB because of the
+  // arithmetic carry chain, so we do not use `random_order_advance` here.
+  for (; launderw(count) < word_len; count = launderw(count) + 1) {
+    size_t byte_idx = count * sizeof(uint32_t);
+
+    // Prevent the compiler from re-ordering the loop.
+    barrierw(byte_idx);
+
+    // Calculate pointers.
+    uintptr_t xp = x_addr + byte_idx;
+    uintptr_t yp = y_addr + byte_idx;
+    uintptr_t destp = dest_addr + byte_idx;
+
+    // Set the pointers.
+    void *xv = (void *)launderw(xp);
+    void *yv = (void *)launderw(yp);
+    void *destv = (void *)launderw(destp);
+
+    // Read the values.
+    uint32_t x_val = read_32(xv);
+    uint32_t y_val = read_32(yv);
+
+    // Perform constant-time addition with carry.
+    // This matches otbn's `add`.
+    uint32_t res = x_val + carry;
+    uint32_t next_carry = (res < carry) ? 1 : 0;
+    res += y_val;
+    next_carry += (res < y_val) ? 1 : 0;
+
+    // Write the result and update the carry for the next word.
+    write_32(res, destv);
+    carry = next_carry;
+  }
+
+  HARDENED_CHECK_EQ(count, word_len);
+
+  return (status_t){.value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value)};
+}
+
+status_t hardened_sub(const uint32_t *restrict x, const uint32_t *restrict y,
+                      size_t word_len, uint32_t *restrict dest) {
+  // Randomize the content of the output buffer before writing to it.
+  hardened_memshred(dest, word_len);
+
+  // Cast pointers to `uintptr_t` to erase their provenance.
+  uintptr_t x_addr = (uintptr_t)x;
+  uintptr_t y_addr = (uintptr_t)y;
+  uintptr_t dest_addr = (uintptr_t)dest;
+
+  uint32_t borrow = 0;
+  size_t count = 0;
+
+  // We must iterate strictly sequentially from LSB to MSB because of the
+  // arithmetic borrow chain.
+  for (; launderw(count) < word_len; count = launderw(count) + 1) {
+    size_t byte_idx = count * sizeof(uint32_t);
+
+    // Prevent the compiler from re-ordering the loop.
+    barrierw(byte_idx);
+
+    // Calculate pointers.
+    uintptr_t xp = x_addr + byte_idx;
+    uintptr_t yp = y_addr + byte_idx;
+    uintptr_t destp = dest_addr + byte_idx;
+
+    // Set the pointers.
+    void *xv = (void *)launderw(xp);
+    void *yv = (void *)launderw(yp);
+    void *destv = (void *)launderw(destp);
+
+    // Read the values.
+    uint32_t x_val = read_32(xv);
+    uint32_t y_val = read_32(yv);
+
+    // Perform constant-time subtraction with borrow.
+    uint32_t res = x_val - borrow;
+    uint32_t next_borrow = (x_val < borrow) ? 1 : 0;
+    next_borrow += (res < y_val) ? 1 : 0;
+    res -= y_val;
+
+    // Write the result and update the borrow for the next word.
+    write_32(res, destv);
+    borrow = next_borrow;
+  }
+
+  HARDENED_CHECK_EQ(count, word_len);
+
+  return (status_t){.value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value)};
+}
