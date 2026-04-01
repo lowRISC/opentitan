@@ -1017,9 +1017,9 @@ task cip_base_vseq::wait_alert_trigger(string alert_name,
                                        int    max_wait_cycle = 7,
                                        bit    wait_complete = 0);
   // wait until ping finishes before the dv_spinwait in case
-  // m_alert_agent_cfgs[alert_name].vif.is_alert_handshaking() is true due to a ping
+  // m_alert_agent_cfgs[alert_name].vif.is_alert_handshaking is true due to a ping
   wait_until_ping_is_finished(cfg.m_alert_agent_cfgs[alert_name]);
-  `DV_SPINWAIT_EXIT(while (!cfg.m_alert_agent_cfgs[alert_name].vif.is_alert_handshaking()) begin
+  `DV_SPINWAIT_EXIT(while (!cfg.m_alert_agent_cfgs[alert_name].vif.is_alert_handshaking) begin
                       cfg.clk_rst_vif.wait_clks(1);
                       wait_until_ping_is_finished(cfg.m_alert_agent_cfgs[alert_name]);
                     end,
