@@ -548,13 +548,33 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   // 2. Stops background processes
   task main_timer_thread();
     realtime delta = cfg.sim_duration - $realtime();
-    `uvm_info(`gfn, "Starting main timer", UVM_LOW)
+    `uvm_info("timer",
+              $sformatf("Starting main timer. Randomised sim duration is %0dms",
+                        cfg.sim_duration_ms), UVM_LOW)
 
-    // Assumes that continue_sim has already
-    // been set to 1
+    // If delta is positive then we have more expected time to wait. We assume that continue_sim has
+    // already been initialised to 1: a separate thread that wants to end the simulation can set it
+    // to 0.
+    //
+    // Since this might be quite a long wait, send roughly 20 progress messages, giving the amount
+    // of time left to wait.
     if (delta > 0) begin
-      `DV_SPINWAIT_EXIT(#(delta);, wait(~continue_sim))
+      fork : isolation_fork begin
+        fork
+          #(delta);
+          wait(~continue_sim);
+          forever begin
+            `uvm_info("timer",
+                      $sformatf("Waiting in main_timer_thread. %0.1f %% of total.",
+                                (100 * $realtime) / cfg.sim_duration),
+                      UVM_LOW)
+            #(delta / 20);
+          end
+        join_any
+        disable fork;
+      end join
     end
+
     do_background_procs = 0;
     continue_sim = 0;
     `uvm_info(`gfn, "Exiting main timer", UVM_LOW)
