@@ -138,8 +138,8 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
   virtual task try_apply_base_configuration(entropy_src_dut_cfg newcfg,
                                             realtime pause,
+                                            ref bit stop_early,
                                             output bit completed);
-
     int hi_thresh, lo_thresh;
     mubi4_t threshold_scope = newcfg.ht_threshold_scope;
     mubi4_t rng_bit_enable = newcfg.rng_bit_enable;
@@ -165,7 +165,9 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       ral.adaptp_hi_threshold.set(hi_thresh[15:0]);
       ral.adaptp_lo_threshold.set(lo_thresh[15:0]);
       csr_update(.csr(ral.adaptp_hi_threshold));
+      if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
       csr_update(.csr(ral.adaptp_lo_threshold));
+      if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
 
       // Bucket thresholds
       // Disable the bucket health test if rng_bit_enable is not set to MuBi4False.
@@ -178,6 +180,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
         ral.bucket_threshold.set(hi_thresh[15:0]);
       end
       csr_update(.csr(ral.bucket_threshold));
+      if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
 
       // Markov Thresholds
       `uvm_info(`gfn, "Setting MARKOV thresholds", UVM_DEBUG)
@@ -188,14 +191,16 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       ral.markov_hi_threshold.set(hi_thresh[15:0]);
       ral.markov_lo_threshold.set(lo_thresh[15:0]);
       csr_update(.csr(ral.markov_hi_threshold));
+      if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
       csr_update(.csr(ral.markov_lo_threshold));
+      if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
     end
 
     // configure the rest of the variables afterwards so that sw_regupd & module_enable
     // get written last
     // Note there is no need to disable the dut again for the remaining registers
     // it has already been done above.
-    super.try_apply_base_configuration(.newcfg(newcfg), .pause(pause), .completed(completed));
+    super.try_apply_base_configuration(newcfg, pause, stop_early, completed);
   endtask
 
   task pre_start();
