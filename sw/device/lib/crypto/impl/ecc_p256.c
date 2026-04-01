@@ -106,6 +106,9 @@ status_t otcrypto_p256_base_point_mult(
     return OTCRYPTO_BAD_ARGS;
   }
 
+  HARDENED_CHECK_EQ(integrity_blinded_key_check(private_key),
+                    kHardenedBoolTrue);
+
   p256_masked_scalar_t private_scalar;
   HARDENED_TRY(hardened_memcpy(private_scalar.share0, private_key->keyblob,
                                kP256MaskedScalarTotalShareWords));
@@ -116,6 +119,8 @@ status_t otcrypto_p256_base_point_mult(
 
   p256_point_t *pk = (p256_point_t *)public_key->key;
   HARDENED_TRY(p256_base_point_mult(&private_scalar, pk));
+
+  public_key->checksum = integrity_unblinded_checksum(public_key);
 
   return OTCRYPTO_OK;
 }
