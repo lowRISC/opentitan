@@ -68,20 +68,20 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   // the test instead.
   //
   task check_ht_diagnostics();
-    int val;
-    string stat_regs [] = '{
-        "ht_watermark",
-        "repcnt_total_fails", "repcnts_total_fails", "adaptp_hi_total_fails",
-        "adaptp_lo_total_fails", "bucket_total_fails", "markov_hi_total_fails",
-        "markov_lo_total_fails", "extht_hi_total_fails", "extht_lo_total_fails",
-        "alert_summary_fail_counts", "alert_fail_counts", "extht_fail_counts"
+    uvm_reg stat_regs[] = '{
+      ral.ht_watermark,
+      ral.repcnt_total_fails, ral.repcnts_total_fails, ral.adaptp_hi_total_fails,
+      ral.adaptp_lo_total_fails, ral.bucket_total_fails, ral.markov_hi_total_fails,
+      ral.markov_lo_total_fails, ral.extht_hi_total_fails, ral.extht_lo_total_fails,
+      ral.alert_summary_fail_counts, ral.alert_fail_counts, ral.extht_fail_counts
     };
     foreach (stat_regs[i]) begin
-      int val;
-      uvm_reg csr = ral.get_reg_by_name(stat_regs[i]);
-      csr_rd(.ptr(csr), .value(val));
+      uvm_status_e status;
+      stat_regs[i].mirror(status);
+      if (cfg.m_rng_agent_cfg.in_reset) return;
+      if (status != UVM_IS_OK)
+        `uvm_error("mirror", $sformatf("Failed to mirror %0s", stat_regs[i].get_name()))
     end
-
   endtask
 
   virtual task apply_reset(string kind = "HARD");
@@ -119,18 +119,24 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     csr_wr(.ptr(ral.module_enable.module_enable), .value(prim_mubi_pkg::MuBi4True));
   endtask
 
-  task disable_dut();
-    bit [TL_DW - 1:0] regval;
+  protected task disable_dut();
+    uvm_status_e status;
 
-    csr_wr(.ptr(ral.module_enable.module_enable), .value(MuBi4False));
+    ral.module_enable.module_enable.write(status, MuBi4False);
+    if (cfg.m_rng_agent_cfg.in_reset) return;
+    if (status != UVM_IS_OK) `uvm_error("write", "Writing MuBi4False to module_enable failed")
 
     // Disabling the module will clear the error state,
     // as well as the observe and entropy_data FIFOs
     // Clear all interrupts here
-    csr_wr(.ptr(ral.intr_state), .value(32'hf));
+    ral.intr_state.write(status, 32'hf);
+    if (cfg.m_rng_agent_cfg.in_reset) return;
+    if (status != UVM_IS_OK) `uvm_error("write", "Writing '1 to intr_state failed")
 
     // Check, but do not clear alert_sts, as the handlers for those conditions may need to see them.
-    csr_rd(.ptr(ral.recov_alert_sts.es_main_sm_alert), .value(regval));
+    ral.recov_alert_sts.es_main_sm_alert.mirror(status);
+    if (cfg.m_rng_agent_cfg.in_reset) return;
+    if (status != UVM_IS_OK) `uvm_error("mirror", "Mirroring recov_alert_sts failed")
 
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(do_check_ht_diag)
     if (do_check_ht_diag) begin
@@ -141,9 +147,38 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     end
   endtask
 
+  // Wait the given time, but stop early if cfg.m_rng_agent_cfg.in_reset is asserted or if the stop_early flag
+  // (passed by reference) becomes true.
+  task pause_until_reset_or_flag(realtime pause, ref bit stop_early);
+    // The code here is a little complicated, because we are not allowed to access a reference
+    // argument in a fork/join_any. The trick is to make a manual version of fork/join_any with a
+    // done flag, which is asserted when either event happens. The genuine join_any is needed to
+    // kill the #(pause) process.
+    bit done;
+    fork
+      begin
+        wait (stop_early || done);
+        done = 1'b1;
+      end
+      fork : isolation_fork begin
+        fork
+          wait (cfg.m_rng_agent_cfg.in_reset);
+          wait (done);
+          #(pause);
+        join_any
+        disable fork;
+        done = 1'b1;
+      end join
+    join
+  endtask
+
   // Helper function to entropy_src_init. Tries to apply the new configuration
   // Does not check for invalid MuBi or threshold alert values
-  virtual task try_apply_base_configuration(entropy_src_dut_cfg newcfg, realtime pause,
+  //
+  // If stop_early or reset is asserted, stop the task when the next transaction finishes.
+  virtual task try_apply_base_configuration(entropy_src_dut_cfg newcfg,
+                                            realtime pause,
+                                            ref bit stop_early,
                                             output bit completed);
 
     completed = 0;
@@ -152,12 +187,14 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     ral.entropy_control.es_type.set(newcfg.type_bypass);
     ral.entropy_control.es_route.set(newcfg.route_software);
     csr_update(.csr(ral.entropy_control));
-    #(pause);
+    pause_until_reset_or_flag(pause, stop_early);
+    if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
 
     ral.health_test_windows.fips_window.set(newcfg.fips_window_size);
     ral.health_test_windows.bypass_window.set(newcfg.bypass_window_size);
     csr_update(.csr(ral.health_test_windows));
-    #(pause);
+    pause_until_reset_or_flag(pause, stop_early);
+    if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
 
     // Thresholds for the continuous health checks:
     // REPCNT and REPCNTS
@@ -171,34 +208,41 @@ class entropy_src_base_vseq extends cip_base_vseq #(
         ral.repcnts_threshold.set(newcfg.repcnts_thresh_bypass);
       end
       csr_update(.csr(ral.repcnt_threshold));
+      if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
       csr_update(.csr(ral.repcnts_threshold));
     end
-    #(pause);
+    pause_until_reset_or_flag(pause, stop_early);
+    if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
 
     // Windowed health test thresholds managed in derived vseq classes
 
     ral.ht_watermark_num.set(newcfg.ht_watermark_num);
     csr_update(.csr(ral.ht_watermark_num));
-    #(pause);
+    pause_until_reset_or_flag(pause, stop_early);
+    if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
 
     // FW_OV registers
     ral.fw_ov_control.fw_ov_mode.set(newcfg.fw_read_enable);
     ral.fw_ov_control.fw_ov_entropy_insert.set(newcfg.fw_over_enable);
     csr_update(.csr(ral.fw_ov_control));
-    #(pause);
+    pause_until_reset_or_flag(pause, stop_early);
+    if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
 
     ral.fw_ov_sha3_start.fw_ov_insert_start.set(newcfg.fw_ov_insert_start);
     csr_update(.csr(ral.fw_ov_sha3_start));
-    #(pause);
+    pause_until_reset_or_flag(pause, stop_early);
+    if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
 
     ral.alert_threshold.alert_threshold.set(newcfg.alert_threshold);
     ral.alert_threshold.alert_threshold_inv.set(newcfg.alert_threshold_inv);
     csr_update(.csr(ral.alert_threshold));
-    #(pause);
+    pause_until_reset_or_flag(pause, stop_early);
+    if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
 
     ral.observe_fifo_thresh.observe_fifo_thresh.set(newcfg.observe_fifo_thresh);
     csr_update(ral.observe_fifo_thresh);
-    #(pause);
+    pause_until_reset_or_flag(pause, stop_early);
+    if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
 
     ral.conf.fips_enable.set(newcfg.fips_enable);
     ral.conf.entropy_data_reg_enable.set(newcfg.entropy_data_reg_enable);
@@ -208,7 +252,8 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     ral.conf.rng_bit_sel.set(newcfg.rng_bit_sel);
     ral.conf.threshold_scope.set(newcfg.ht_threshold_scope);
     csr_update(.csr(ral.conf));
-    #(pause);
+    pause_until_reset_or_flag(pause, stop_early);
+    if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
 
     // The CSR write accesses above may trigger recoverable alerts (e.g. in case invalid MuBis are
     // written to the CSRs). To handle such cases, the calling entropy_src_init() task listens for
@@ -225,7 +270,8 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     // Register write enable lock is on be default
     // Setting this to zero will lock future writes
     csr_wr(.ptr(ral.sw_regupd), .value(newcfg.sw_regupd));
-    #(pause);
+    pause_until_reset_or_flag(pause, stop_early);
+    if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
 
     // Module_enables (should be done last)
     if (newcfg.module_enable == MuBi4True) begin
@@ -239,20 +285,24 @@ class entropy_src_base_vseq extends cip_base_vseq #(
       ral.module_enable.set(newcfg.module_enable);
       csr_update(.csr(ral.module_enable));
     end
-    #(pause);
+    pause_until_reset_or_flag(pause, stop_early);
+    if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
 
     ral.me_regwen.set(newcfg.me_regwen);
     csr_update(.csr(ral.me_regwen));
-    #(pause);
+    pause_until_reset_or_flag(pause, stop_early);
+    if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
 
     if (do_interrupt) begin
       ral.intr_enable.set(newcfg.en_intr);
       csr_update(ral.intr_enable);
+      if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
     end
 
-    cfg.clk_rst_vif.wait_clks(2);
-    `uvm_info(`gfn, "Configuration Complete", UVM_MEDIUM)
+    cfg.clk_rst_vif.wait_clks_or_rst(2);
+    if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
 
+    `uvm_info(`gfn, "Configuration Complete", UVM_MEDIUM)
     completed = 1;
   endtask
 
@@ -281,51 +331,58 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
     csr_rd(.ptr(ral.regwen.regwen), .value(regwen));
 
-    wait_no_outstanding_access();
-
+    // Set up configuration for the block (with try_apply_base_configuration). If an alert handshake
+    // starts, set the stop_early bit, which causes the task to stop.
+    //
+    // If a reset is asserted, try_apply_base_configuration will exit immediately.
     `uvm_info(`gfn, "Applying configuration", UVM_MEDIUM)
+    fork : isolation_fork begin
+      bit stop_early = 0;
 
-    `DV_SPINWAIT_EXIT(
-      try_apply_base_configuration(newcfg, pause, completed);,
-      wait (cfg.m_alert_agent_cfgs["recov_alert"].vif.is_alert_handshaking);
-      wait_no_outstanding_access();
-    )
-
-    if (!completed) begin
-      bit [TL_DW - 1:0] value;
-      `uvm_info(`gfn, "Detected recoverable alert", UVM_LOW)
-
-      `uvm_info(`gfn, "Falling back on safe config", UVM_LOW)
-
-      // Set all fields with redundancy to safe values
-      entropy_src_safe_config();
-      // Read the alert sts register, let the scoreboard validate the value (if enabled)
-      csr_rd(.ptr(ral.recov_alert_sts), .value(value));
-      `uvm_info(`gfn, $sformatf("RECOV_ALERT_STS (pre): %08x", value), UVM_MEDIUM)
-      // clear the alert status register.
-      csr_wr(.ptr(ral.recov_alert_sts), .value('h0));
-      // Re-read the alert_status register to confirm that it has been cleared.
-      csr_rd(.ptr(ral.recov_alert_sts), .value(value));
-      `uvm_info(`gfn, $sformatf("RECOV_ALERT_STS: %08x", value), UVM_MEDIUM)
+      fork
+        try_apply_base_configuration(newcfg, pause, stop_early, completed);
+        begin
+          wait (cfg.m_alert_agent_cfgs["recov_alert"].vif.is_alert_handshaking);
+          stop_early = 1'b1;
+          wait (0);
+        end
+      join_any
+      disable fork;
+    end join
+    if (completed) begin
+      `uvm_info(get_full_name(), "Configuration applied.", UVM_MEDIUM)
+      return;
     end
 
-    `uvm_info(`gfn, $sformatf("Exiting configuration, status %d", completed) , UVM_MEDIUM)
+    if (cfg.m_rng_agent_cfg.in_reset) return;
 
+    // If we get here, we stopped early in try_apply_base_configuration because we saw an alert.
+    `uvm_info(`gfn, "Detected recoverable alert. Falling back on safe config", UVM_LOW)
+
+    // Set all fields with redundancy to safe values
+    entropy_src_safe_config();
+    if (cfg.m_rng_agent_cfg.in_reset) return;
+
+    `uvm_info(`gfn, $sformatf("Exiting configuration, status %d", completed) , UVM_MEDIUM)
   endtask
 
-  // helper task to clear any invalid configurations
-  task entropy_src_safe_config();
+  // Clear any invalid configurations, then read the alert status register and clear it if nonzero.
+  //
+  // This will exit early on reset
+  local task entropy_src_safe_config();
+    uvm_status_e status;
 
-    `uvm_info(`gfn, "Moving DUT into a safe configuration", UVM_MEDIUM)
     // explicitly clear module_enable to allow module writes
     disable_dut();
 
     // Clear all interrupts
     csr_wr(.ptr(ral.intr_state), .value(32'hf));
+    if (cfg.m_rng_agent_cfg.in_reset) return;
 
     ral.entropy_control.es_type.set(MuBi4False);
     ral.entropy_control.es_route.set(MuBi4False);
     csr_update(.csr(ral.entropy_control));
+    if (cfg.m_rng_agent_cfg.in_reset) return;
 
     ral.conf.fips_enable.set(MuBi4False);
     ral.conf.entropy_data_reg_enable.set(MuBi4False);
@@ -334,18 +391,39 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     ral.conf.rng_bit_enable.set(MuBi4False);
     ral.conf.threshold_scope.set(MuBi4False);
     csr_update(.csr(ral.conf));
+    if (cfg.m_rng_agent_cfg.in_reset) return;
 
     ral.fw_ov_control.fw_ov_mode.set(MuBi4False);
     ral.fw_ov_control.fw_ov_entropy_insert.set(MuBi4False);
     csr_update(.csr(ral.fw_ov_control));
+    if (cfg.m_rng_agent_cfg.in_reset) return;
 
     ral.fw_ov_sha3_start.fw_ov_insert_start.set(MuBi4False);
     csr_update(.csr(ral.fw_ov_sha3_start));
+    if (cfg.m_rng_agent_cfg.in_reset) return;
 
     csr_wr(.ptr(ral.alert_threshold), .value(ral.alert_threshold.get_reset()));
+    if (cfg.m_rng_agent_cfg.in_reset) return;
+
+    // Read the alert_sts register (whose value will be checked by the scoreboard)
+    ral.recov_alert_sts.mirror(status);
+    if (cfg.m_rng_agent_cfg.in_reset) return;
+    if (status != UVM_IS_OK) `uvm_error("mirror", "Failed to mirror alert_sts")
+
+    // If the current status value is nonzero, clear it and then read it back (causing the
+    // scoreboard to check that it has indeed been cleared).
+    ral.recov_alert_sts.set(0);
+    if (ral.recov_alert_sts.needs_update()) begin
+      ral.recov_alert_sts.write(status, {32{1'b1}});
+      if (cfg.m_rng_agent_cfg.in_reset) return;
+      if (status != UVM_IS_OK) `uvm_error("update", "Failed to update alert_sts")
+
+      ral.recov_alert_sts.mirror(status);
+      if (cfg.m_rng_agent_cfg.in_reset) return;
+      if (status != UVM_IS_OK) `uvm_error("mirror", "Failed to mirror alert_sts")
+    end
 
     `uvm_info(`gfn, "Safe configuration", UVM_MEDIUM)
-
   endtask
 
   typedef enum int {
