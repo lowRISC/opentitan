@@ -3,3 +3,5 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // comportable IP waiver rules for verilator
+
+//lint_off -msg UNDRIVEN -file "src/lowrisc_ip_i2c_0.1/rtl/i2c_fifos.sv" -lines 235
