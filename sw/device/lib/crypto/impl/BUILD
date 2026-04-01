@@ -262,7 +262,6 @@ cc_library(
         ":status",
         "//hw/top_earlgrey/ip_autogen/clkmgr:clkmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/arch:device",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
     ],
