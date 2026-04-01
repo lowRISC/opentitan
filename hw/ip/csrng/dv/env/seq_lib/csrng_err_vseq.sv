@@ -57,9 +57,6 @@ class csrng_err_vseq extends csrng_base_vseq;
     // Turn off assertions
     $assertoff(0, "tb.entropy_src_if.ReqHighUntilAck_A");
     $assertoff(0, "tb.entropy_src_if.AckAssertedOnlyWhenReqAsserted_A");
-    $assertoff(0, "tb.dut.u_csrng_core.u_prim_arbiter_ppc_updblk_arb.LockArbDecision_A");
-    $assertoff(0, "tb.dut.u_csrng_core.u_prim_arbiter_ppc_benblk_arb.ReqStaysHighUntilGranted0_M");
-    $assertoff(0, "tb.dut.u_csrng_core.u_prim_arbiter_ppc_updblk_arb.ReqStaysHighUntilGranted0_M");
     $assertoff(0, `HIER_PATH(`CMD_STAGE_0, u_state_regs_A));
     $assertoff(0, `HIER_PATH(`CMD_STAGE_1, u_state_regs_A));
     $assertoff(0, `HIER_PATH(`CMD_STAGE_2, u_state_regs_A));
@@ -274,9 +271,6 @@ class csrng_err_vseq extends csrng_base_vseq;
     // Turn assertions back on
     $asserton(0, "tb.entropy_src_if.ReqHighUntilAck_A");
     $asserton(0, "tb.entropy_src_if.AckAssertedOnlyWhenReqAsserted_A");
-    $asserton(0, "tb.dut.u_csrng_core.u_prim_arbiter_ppc_updblk_arb.LockArbDecision_A");
-    $asserton(0, "tb.dut.u_csrng_core.u_prim_arbiter_ppc_benblk_arb.ReqStaysHighUntilGranted0_M");
-    $asserton(0, "tb.dut.u_csrng_core.u_prim_arbiter_ppc_updblk_arb.ReqStaysHighUntilGranted0_M");
     $asserton(0, `HIER_PATH(`CMD_STAGE_0, u_state_regs_A));
     $asserton(0, `HIER_PATH(`CMD_STAGE_1, u_state_regs_A));
     $asserton(0, `HIER_PATH(`CMD_STAGE_2, u_state_regs_A));
