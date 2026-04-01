@@ -56,7 +56,7 @@ interface entropy_src_path_if ();
     $assertoff(0, tb.dut.IntrEsEntropyValidKnownO_A);
     $assertoff(0, tb.dut.IntrEsHealthTestFailedKnownO_A);
     $assertoff(0, tb.dut.tlul_assert_device.dKnown_A);
-    $assertoff(0, tb.dut.tlul_assert_device.gen_device.dDataKnown_A);
+    $assertoff(0, tb.dut.tlul_assert_device.gen_device.gen_d2h.dDataKnown_A);
     $assertoff(0, tb.dut.gen_alert_tx[0].u_prim_alert_sender.AlertPKnownO_A);
     $assertoff(0, tb.dut.gen_alert_tx[0].u_prim_alert_sender.gen_async_assert.DiffEncoding_A);
     $assertoff(0, `CORE.AtReset_ValidRngBitsPushedIntoEsrngFifo_A);
