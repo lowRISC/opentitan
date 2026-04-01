@@ -70,8 +70,8 @@
    magic values, but they cause errors in the assembler from the LI
    instructions.
 
-.equ FAILURE,          0xeda2bfaf
-.equ SUCCESS,          0xf77fe650
+.equ FAILURE,          0x1d4
+.equ SUCCESS,          0x739
 */
 
 /**
@@ -283,7 +283,7 @@ ed25519_verify_var:
   jal     x1, affine_decode_var
 
   /* If R was not a valid point (x20 != SUCCESS), fail. */
-  li      x21, 0xf77fe650
+  li      x21, 0x739
   bne     x20, x21, verify_fail
 
   /* Save R (in affine coordinates) for later.
@@ -386,19 +386,44 @@ ed25519_verify_var:
        [w13:w10] <= w28 * [w9:w6] = [8][S]B */
   jal      x1, ext_scmul
 
-  /* Compare both sides of the equation for equality.
-       dmem[ed25519_verify_result] <= SUCCESS if [w5:w2] == [w13:w10],
-                                      otherwise FAILURE */
-  jal      x1, ext_equal_var
+  /* Convert LHS [8][S]B to affine and encode. */
+  jal      x1, ext_to_affine
+  jal      x1, affine_encode
+
+  /* Write encoded LHS to dmem[ed25519_verify_lhs] */
+  li       x2, 11
+  la       x3, ed25519_verify_lhs
+  bn.sid   x2, 0(x3)
+
+  /* Prepare RHS [8]R + [8][k]A for encoding.
+     [w5:w2] holds the RHS from earlier. Move it to [w13:w10] */
+  bn.mov   w10, w2
+  bn.mov   w11, w3
+  bn.mov   w12, w4
+  bn.mov   w13, w5
+
+  /* Convert RHS to affine and encode. */
+  jal      x1, ext_to_affine
+  jal      x1, affine_encode
+
+  /* Write encoded RHS to dmem[ed25519_verify_rhs] */
+  li       x2, 11
+  la       x3, ed25519_verify_rhs
+  bn.sid   x2, 0(x3)
+
+  /* Exit with SUCCESS. */
+  li       x23, 0x739
+  la       x4, ed25519_verify_result
+  sw       x23, 0(x4)
 
   ret
 
   verify_fail:
-  /* Write the FAILURE magic value.
-       dmem[ed25519_verify_result] <= x23 = FAILURE */
-  li       x22, 0xeda2bfaf
-  la       x2, ed25519_verify_result
-  sw       x22, 0(x2)
+  /* Write FAILURE.
+     dmem[ed25519_verify_result] <= x22 = FAILURE */
+  li       x22, 0x1d4
+  la       x4, ed25519_verify_result
+  sw       x22, 0(x4)
   ret
 
 /**
@@ -982,7 +1007,7 @@ affine_decode_var:
 
   /* If we get here, then r^2 was not equal to either (u/v) or - (u/v), so we
      are in case 3, (u/v) is nonsquare mod p, and point decoding fails. */
-  li       x20, 0xeda2bfaf
+  li       x22, 0x1d4
   bn.mov   w10, w31
   bn.mov   w11, w31
   ret
@@ -1034,7 +1059,7 @@ affine_decode_var:
      against glitching? */
 
   /* Exit point decoding with SUCCESS. */
-  li       x20, 0xf77fe650
+  li       x20, 0x739
 
   ret
 
@@ -1342,121 +1367,6 @@ ext_add:
 
   ret
 
-/**
- * Check if two points in extended coordinates are equal.
- *
- * If the input points (X1, Y1, Z1, T1) and (X2, Y2, Z2, T2) are not equal,
- * this procedure writes FAILURE to dmem[ed25519_verify_result]. If the points
- * are equal, it appends the third and final byte of the SUCCESS magic value to
- * dmem[ed25519_verify_result] by shifting the current value left by 8 and then
- * ORing with the final byte.
- *
- * As per RFC 8032, returns 1 iff:
- *   (X1 * Z2 - X2 * Z1) mod p = 0, and
- *   (Y1 * Z2 - Y2 * Z2) mod p = 0.
- *
- * This routine runs in variable time.
- *
- * @param[in]  w2: input X1 (X1 < p)
- * @param[in]  w3: input Y1 (Y1 < p)
- * @param[in]  w4: input Z1 (Z1 < p)
- * @param[in]  w5: input T1 (T1 < p)
- * @param[in]  w10: input X2 (X2 < p)
- * @param[in]  w11: input Y2 (Y2 < p)
- * @param[in]  w12: input Z2 (Z2 < p)
- * @param[in]  w13: input T2 (T2 < p)
- * @param[in]  w19: constant, w19 = 19
- * @param[in]  w31: all-zero
- * @param[in]  MOD: p, modulus = 2^255 - 19
- * @param[out] dmem[ed25519_verify_result]: result, SUCCESS or FAILURE
- *
- * clobbered registers: w14 to w17
- * clobbered flag groups: FG0
- */
-ext_equal_var:
-  /* x22 <= FAILURE */
-  li       x22, 0xeda2bfaf
-  /* x23 <= SUCCESS */
-  li       x23, 0xf77fe650
-
-  /* Compute (X1 * Z2). */
-
-  /* w22 <= w2 = X1 */
-  bn.mov   w22, w2
-  /* w23 <= w12 = Z2 */
-  bn.mov   w23, w12
-  /* w22 <= w22 * w23 = X1 * Z2 */
-  jal      x1, fe_mul
-  /* w16 <= w22 <= X1 * Z2 */
-  bn.mov   w16, w22
-
-  /* Compute (X2 * Z1). */
-
-  /* w22 <= w10 = X2 */
-  bn.mov   w22, w10
-  /* w23 <= w4 = Z1 */
-  bn.mov   w23, w4
-  /* w22 <= w22 * w23 = X2 * Z1 */
-  jal      x1, fe_mul
-
-  /* First check. */
-
-  /* w16 <= w16 - w22 <= (X1 * Z2) - (X2 * Z1) */
-  bn.sub  w16, w16, w22
-  /* x2 <= FG0[3] = FG0.Z << 3 = result of check 1 */
-  csrrs    x2, FG0, x0
-  andi     x2, x2, 8
-
-  /* Fail if the FG0.Z flag was unset. */
-  li       x3, 8
-  bne      x2, x3, ext_equal_var_fail
-
-  /* Compute (Y1 * Z2). */
-
-  /* w22 <= w3 = Y1 */
-  bn.mov   w22, w3
-  /* w23 <= w12 = Z2 */
-  bn.mov   w23, w12
-  /* w22 <= w22 * w23 = Y1 * Z2 */
-  jal      x1, fe_mul
-  /* w6 <= w22 <= Y1 * Z2 */
-  bn.mov   w16, w22
-
-  /* Compute (Y2 * Z1). */
-
-  /* w22 <= w11 = Y2 */
-  bn.mov   w22, w11
-  /* w23 <= w4 = Z1 */
-  bn.mov   w23, w4
-  /* w22 <= w22 * w23 = Y2 * Z1 */
-  jal      x1, fe_mul
-
-  /* Second check. */
-
-  /* w16 <= w16 - w22 <= (Y1 * Z2) - (Y2 * Z1) */
-  bn.sub  w16, w16, w22
-  /* x2 <= FG0[3] = FG0.Z << 3 = result of check 2 */
-  csrrs    x2, FG0, x0
-  andi     x2, x2, 8
-
-  /* Fail if the FG0.Z flag was unset. */
-  li       x3, 8
-  bne      x2, x3, ext_equal_var_fail
-
-  /* If we got here, both checks passed; write the SUCCESS value to DMEM.
-
-     TODO: this should be hardened against glitching attacks that simply jump
-     to this point in the code, perhaps by separating the SUCCESS code into
-     multiple shares that get XORed into the final value at multiple points in
-     the successful code path. */
-
-  /* Write the SUCCESS magic value.
-       dmem[ed25519_verify_result] <= x23 = SUCCESS */
-  la       x4, ed25519_verify_result
-  sw       x23, 0(x4)
-
-  ret
-
   ext_equal_var_fail:
   /* Write the FAILURE magic value.
        dmem[ed25519_verify_result] <= x22 = FAILURE */
@@ -1604,8 +1514,8 @@ fe_pow_2252m3:
 .bss
 
 /* Verification result code (32 bits). Output for verify.
-   If verification is successful, this will be SUCCESS = 0xf77fe650.
-   Otherwise, this will be FAILURE = 0xeda2bfaf. */
+   If verification is successful, this will be SUCCESS = 0x739.
+   Otherwise, this will be FAILURE = 0x1d4. */
 .balign 32
 .weak ed25519_verify_result
 ed25519_verify_result:
@@ -1648,6 +1558,18 @@ ed25519_hash_h_low:
 .weak ed25519_hash_r
 ed25519_hash_r:
   .zero 64
+
+/* Encoded LHS for verification (256 bits). */
+.balign 32
+.globl ed25519_verify_lhs
+ed25519_verify_lhs:
+  .zero 32
+
+/* Encoded RHS for verification (256 bits). */
+.balign 32
+.globl ed25519_verify_rhs
+ed25519_verify_rhs:
+  .zero 32
 
 .data
 

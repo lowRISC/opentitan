@@ -56,10 +56,6 @@ enum {
    * Number of words needed to hold a scalar.
    */
   kCurve25519ScalarWords = kCurve25519ScalarBytes / 4,
-  /**
-   * Magic value for verify success response.
-   */
-  kCurve25519VerifySuccess = 0xf77fe650,
 };
 
 /**
