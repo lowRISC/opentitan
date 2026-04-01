@@ -52,7 +52,6 @@ cc_library(
         ":rsa_datatypes",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:otbn",
-        "//sw/device/lib/runtime:log",
         "//sw/otbn/crypto:run_rsa",
     ],
 )
