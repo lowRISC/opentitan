@@ -86,6 +86,24 @@ otcrypto_status_t otcrypto_ed25519_verify(
     hardened_bool_t *verification_result);
 
 /**
+ * Generates an Ed25519 signature and verifies the signature
+ * before releasing it to mitigate fault injection attacks.
+ *
+ * @param private_key Pointer to the blinded private key struct.
+ * @param public_key Pointer to the unblinded public key struct.
+ * @param input_message Message digest to be signed.
+ * @param sign_mode EdDSA signature hashing mode.
+ * @param[out] signature Pointer to the EdDSA signature with (r,s) values.
+ * @return Result of the Ed25519 signature generation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ed25519_sign_verify(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_unblinded_key_t *public_key,
+    otcrypto_const_byte_buf_t *input_message,
+    otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t *signature);
+
+/**
  * Starts asynchronous key generation for Ed25519.
  *
  * See `otcrypto_ed25519_keygen` for requirements on input values.
