@@ -16,7 +16,7 @@ import argparse
 import sys
 import random
 from Crypto.PublicKey import RSA, ECC
-from Crypto.Signature import pkcs1_15, DSS
+from Crypto.Signature import pkcs1_15, DSS, eddsa
 from Crypto.Hash import SHA256, SHA384
 
 ignored_keys_set = set([])
@@ -569,6 +569,101 @@ class SymCryptolibFiTest(unittest.TestCase):
             r_bytes,
             s_bytes,
             message_digest,
+            cfg,
+            trigger,
+        )
+        actual_result_json = json.loads(actual_result)
+
+        expected_result_json = {
+            "status": 0,
+            "result": True,
+            "err_status": 0,
+            "alerts": [0, 0, 0],
+            "loc_alerts": 0,
+            "ast_alerts": [0, 0],
+            "cfg": 0,
+        }
+
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
+
+    def test_char_ed25519_sign(self):
+        key = ECC.generate(curve="ed25519")
+        scalar = [x for x in key.seed]
+        message = [random.randint(0, 255) for _ in range(16)]
+        cfg = 0
+        trigger = 0
+        padded_message = message + [0] * (128 - len(message))
+        message_len = 16
+
+        actual_result = fi_asym_cryptolib_functions.char_ed25519_sign(
+            target,
+            iterations,
+            scalar,
+            padded_message,
+            message_len,
+            cfg,
+            trigger,
+        )
+        actual_result_json = json.loads(actual_result)
+
+        sign_ignored_keys_set = ignored_keys_set.copy()
+        sign_ignored_keys_set.add("r")
+        sign_ignored_keys_set.add("s")
+        sign_ignored_keys_set.add("pubx")
+        sign_ignored_keys_set.add("puby")
+
+        expected_result_json = {
+            "status": 0,
+            "err_status": 0,
+            "alerts": [0, 0, 0],
+            "loc_alerts": 0,
+            "ast_alerts": [0, 0],
+            "cfg": 0,
+        }
+
+        utils.compare_json_data(actual_result_json, expected_result_json, sign_ignored_keys_set)
+
+        verifier = eddsa.new(key.public_key(), 'rfc8032')
+        r = actual_result_json["r"][:32]
+        s = actual_result_json["s"][:32]
+        r.reverse()
+
+        signature = bytes(r + s)
+        verifier.verify(bytes(message), signature)
+
+    def test_char_ed25519_verify(self):
+        key = ECC.generate(curve="ed25519")
+        pub_bytes = key.public_key().export_key(format="raw")
+        pubx = [x for x in pub_bytes]
+        puby = [0] * 32
+
+        message = [random.randint(0, 255) for _ in range(16)]
+        padded_message = message + [0] * (128 - len(message))
+        message_len = 16
+
+        signer = eddsa.new(key, 'rfc8032')
+        signature = signer.sign(bytes(message))
+
+        r_bytes = [x for x in signature[:32]]
+        s_bytes = [x for x in signature[32:]]
+
+        r_bytes.reverse()
+
+        r_bytes = utils.pad_with_zeros(r_bytes, 64)
+        s_bytes = utils.pad_with_zeros(s_bytes, 64)
+
+        cfg = 0
+        trigger = 1
+
+        actual_result = fi_asym_cryptolib_functions.char_ed25519_verify(
+            target,
+            iterations,
+            pubx,
+            puby,
+            r_bytes,
+            s_bytes,
+            padded_message,
+            message_len,
             cfg,
             trigger,
         )

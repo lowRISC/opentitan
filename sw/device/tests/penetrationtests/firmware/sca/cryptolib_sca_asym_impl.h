@@ -102,4 +102,15 @@ status_t cryptolib_sca_p384_sign_impl(
     cryptolib_sca_asym_p384_sign_in_t uj_input,
     cryptolib_sca_asym_p384_sign_out_t *uj_output);
 
+/**
+ * Wrapper to Ed25519 Sign cryptolib implementation.
+ *
+ * @param uj_input An initialized uJSON context.
+ * @param uj_output An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t cryptolib_sca_ed25519_sign_impl(
+    cryptolib_sca_asym_ed25519_sign_in_t uj_input,
+    cryptolib_sca_asym_ed25519_sign_out_t *uj_output);
+
 #endif  // OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_SCA_CRYPTOLIB_SCA_ASYM_IMPL_H_

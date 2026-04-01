@@ -820,6 +820,9 @@ status_t handle_cryptolib_sca_asym_ed25519_sign(ujson_t *uj) {
 
   cryptolib_sca_asym_ed25519_sign_out_t uj_output;
   memset(&uj_output, 0, sizeof(uj_output));
+
+  uj_output.status =
+      (size_t)cryptolib_sca_ed25519_sign_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_sca_asym_ed25519_sign_out_t, uj,
           &uj_output);

@@ -428,3 +428,51 @@ class OTFIAsymCrypto:
             "trigger": trigger,
         }
         self.target.write(json.dumps(input_data).encode("ascii"))
+
+    def handle_ed25519_sign(self, scalar, message, message_len, cfg, trigger) -> None:
+        """Call the cryptolib ed25519 signing.
+
+        Args:
+            scalar: Array of 32 bytes of scalar data.
+            message: Array of 32 bytes of message data.
+            message_len: length of the message.
+            cfg: Integer for configuration.
+            trigger: Integer specifying which triggers to set.
+        """
+        self._ujson_asym_crypto_fi_cmd()
+        self.target.write(json.dumps("Ed25519Sign").encode("ascii"))
+        input_data = {
+            "scalar": scalar,
+            "message": message,
+            "message_len": message_len,
+            "cfg": cfg,
+            "trigger": trigger,
+        }
+        self.target.write(json.dumps(input_data).encode("ascii"))
+
+    def handle_ed25519_verify(self, pubx, puby, r, s, message, message_len, cfg, trigger) -> None:
+        """Call the cryptolib ed25519 verify.
+
+        Args:
+            pubx: Array of 32 bytes of x-coord data.
+            puby: Array of 32 bytes of y-coord data.
+            r: Array of 32 bytes of signature data.
+            s: Array of 32 bytes of signature data.
+            message: Array of 32 bytes of message data.
+            message_len: length of the message.
+            cfg: Integer for configuration.
+            trigger: Integer specifying which triggers to set.
+        """
+        self._ujson_asym_crypto_fi_cmd()
+        self.target.write(json.dumps("Ed25519Verify").encode("ascii"))
+        input_data = {
+            "pubx": pubx,
+            "puby": puby,
+            "r": r,
+            "s": s,
+            "message": message,
+            "message_len": message_len,
+            "cfg": cfg,
+            "trigger": trigger,
+        }
+        self.target.write(json.dumps(input_data).encode("ascii"))

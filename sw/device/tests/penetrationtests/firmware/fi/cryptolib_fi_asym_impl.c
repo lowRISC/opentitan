@@ -4,6 +4,7 @@
 
 #include "sw/device/tests/penetrationtests/firmware/fi/cryptolib_fi_asym_impl.h"
 
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
@@ -11,6 +12,7 @@
 #include "sw/device/lib/crypto/impl/ecc/p384.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/ecc_curve25519.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
 #include "sw/device/lib/crypto/include/ecc_p384.h"
 #include "sw/device/lib/crypto/include/integrity.h"
@@ -29,6 +31,14 @@
 // OAEP label for testing.
 static const unsigned char kTestLabel[] = "Test label.";
 static const size_t kTestLabelLen = sizeof(kTestLabel) - 1;
+
+static const otcrypto_key_config_t kEd25519PrivateKeyConfig = {
+    .version = kOtcryptoLibVersion1,
+    .key_mode = kOtcryptoKeyModeEd25519,
+    .key_length = 32,
+    .hw_backed = kHardenedBoolFalse,
+    .security_level = kOtcryptoKeySecurityLevelHigh,
+};
 
 status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
                                    cryptolib_fi_asym_rsa_enc_out_t *uj_output) {
@@ -991,6 +1001,114 @@ status_t cryptolib_fi_p384_verify_impl(
   if (verification_result != kHardenedBoolTrue) {
     uj_output->result = false;
   }
+  uj_output->cfg = 0;
+
+  return OK_STATUS();
+}
+
+status_t cryptolib_fi_ed25519_sign_impl(
+    cryptolib_fi_asym_ed25519_sign_in_t uj_input,
+    cryptolib_fi_asym_ed25519_sign_out_t *uj_output) {
+  size_t share_words = keyblob_share_num_words(kEd25519PrivateKeyConfig);
+  size_t share_bytes = share_words * sizeof(uint32_t);
+
+  uint32_t keyblob[20];
+  memset(keyblob, 0, sizeof(keyblob));
+
+  uint32_t scalar_320[10] = {0};
+  memcpy(scalar_320, uj_input.scalar, ED25519_CMD_SCALAR_BYTES);
+
+  // Define a fixed 320-bit Share 1
+  uint32_t share1[10] = {0x11111111, 0x11111111, 0x11111111, 0x01111111,
+                         0x11111111, 0x11111111, 0x11111111, 0x11111111,
+                         0x11111111, 0x11111111};
+  uint32_t share0[10] = {0};
+  TRY(hardened_add(scalar_320, share1, 10, share0));
+
+  memcpy(keyblob, share0, share_bytes);
+  memcpy(keyblob + share_words, share1, share_bytes);
+
+  otcrypto_blinded_key_t private_key = {
+      .config = kEd25519PrivateKeyConfig,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+  };
+  private_key.checksum = integrity_blinded_checksum(&private_key);
+
+  // Buffer for input message.
+  otcrypto_const_byte_buf_t input_message = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, uj_input.message, uj_input.message_len);
+
+  // Buffer to capture signature.
+  uint32_t sig_buf[16] = {0};
+  otcrypto_word32_buf_t signature =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig_buf, ARRAYSIZE(sig_buf));
+
+  if (uj_input.trigger == kPentestTrigger1) {
+    pentest_set_trigger_high();
+  }
+  TRY(otcrypto_ed25519_sign(&private_key, &input_message,
+                            kOtcryptoEddsaSignModeEddsa, &signature));
+  if (uj_input.trigger == kPentestTrigger1) {
+    pentest_set_trigger_low();
+  }
+
+  // Return data.
+  uj_output->cfg = 0;
+  memset(uj_output->r, 0, ED25519_CMD_SIG_BYTES);
+  memset(uj_output->s, 0, ED25519_CMD_SIG_BYTES);
+
+  // sig_buf contains R then S
+  uint8_t *sig_bytes = (uint8_t *)sig_buf;
+  memcpy(uj_output->r, sig_bytes, ED25519_CMD_SCALAR_BYTES);
+  memcpy(uj_output->s, sig_bytes + ED25519_CMD_SCALAR_BYTES,
+         ED25519_CMD_SCALAR_BYTES);
+
+  memset(uj_output->pubx, 0, ED25519_CMD_SCALAR_BYTES);
+  memset(uj_output->puby, 0, ED25519_CMD_SCALAR_BYTES);
+
+  return OK_STATUS();
+}
+
+status_t cryptolib_fi_ed25519_verify_impl(
+    cryptolib_fi_asym_ed25519_verify_in_t uj_input,
+    cryptolib_fi_asym_ed25519_verify_out_t *uj_output) {
+  uint32_t public_key_buf[8];
+  memcpy(public_key_buf, uj_input.pubx, ED25519_CMD_SCALAR_BYTES);
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeEd25519,
+      .key_length = ED25519_CMD_SCALAR_BYTES,
+      .key = public_key_buf,
+  };
+  public_key.checksum = integrity_unblinded_checksum(&public_key);
+
+  // Buffer for input message.
+  otcrypto_const_byte_buf_t input_message = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, uj_input.message, uj_input.message_len);
+
+  // Construct the signature struct (R || S)
+  uint32_t sig_buf[8 * 2];
+  uint8_t *sig_bytes = (uint8_t *)sig_buf;
+  memcpy(sig_bytes, uj_input.r, ED25519_CMD_SCALAR_BYTES);
+  memcpy(sig_bytes + ED25519_CMD_SCALAR_BYTES, uj_input.s,
+         ED25519_CMD_SCALAR_BYTES);
+
+  otcrypto_const_word32_buf_t signature = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, sig_buf, ARRAYSIZE(sig_buf));
+
+  hardened_bool_t verification_result = kHardenedBoolFalse;
+
+  if (uj_input.trigger == kPentestTrigger1) {
+    pentest_set_trigger_high();
+  }
+  TRY(otcrypto_ed25519_verify(&public_key, &input_message,
+                              kOtcryptoEddsaSignModeEddsa, &signature,
+                              &verification_result));
+  if (uj_input.trigger == kPentestTrigger1) {
+    pentest_set_trigger_low();
+  }
+
+  uj_output->result = (verification_result == kHardenedBoolTrue);
   uj_output->cfg = 0;
 
   return OK_STATUS();

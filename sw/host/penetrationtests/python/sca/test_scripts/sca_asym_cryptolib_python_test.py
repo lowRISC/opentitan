@@ -17,7 +17,7 @@ import unittest
 import argparse
 import sys
 from Crypto.PublicKey import RSA, ECC
-from Crypto.Signature import pkcs1_15, DSS
+from Crypto.Signature import pkcs1_15, DSS, eddsa
 from Crypto.Hash import SHA256, SHA384
 
 ignored_keys_set = set([])
@@ -338,6 +338,49 @@ class AsymCryptoScaTest(unittest.TestCase):
         s.reverse()
         signature = r + s
         verifier.verify(h, bytes(signature))
+
+    def test_char_ed25519_sign(self):
+        key = ECC.generate(curve="ed25519")
+        scalar = [x for x in key.seed]
+        message = [random.randint(0, 255) for _ in range(16)]
+        cfg = 0
+        trigger = 0
+        padded_message = message + [0] * (128 - len(message))
+
+        actual_result = sca_asym_cryptolib_functions.char_ed25519_sign(
+            target,
+            iterations,
+            scalar,
+            padded_message,
+            len(message),
+            cfg,
+            trigger,
+        )
+        actual_result_json = json.loads(actual_result)
+
+        sign_ignored_keys_set = ignored_keys_set.copy()
+        sign_ignored_keys_set.add("r")
+        sign_ignored_keys_set.add("s")
+        sign_ignored_keys_set.add("pubx")
+        sign_ignored_keys_set.add("puby")
+
+        expected_result_json = {
+            "status": 0,
+            "cfg": 0,
+        }
+
+        utils.compare_json_data(
+            actual_result_json, expected_result_json, sign_ignored_keys_set
+        )
+
+        verifier = eddsa.new(key.public_key(), 'rfc8032')
+        r = actual_result_json["r"][:32]
+        s = actual_result_json["s"][:32]
+
+        r.reverse()
+
+        signature = bytes(r + s)
+        verifier.verify(bytes(message), signature)
 
 
 if __name__ == "__main__":
