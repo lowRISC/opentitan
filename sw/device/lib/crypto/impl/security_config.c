@@ -7,7 +7,9 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
-#include "sw/device/silicon_creator/lib/drivers/clkmgr.h"
+
+#include "clkmgr_regs.h"
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 status_t otcrypto_security_config_check(
     otcrypto_key_security_level_t security_level) {
@@ -17,11 +19,12 @@ status_t otcrypto_security_config_check(
     if (launder32(security_level) != kOtcryptoKeySecurityLevelLow) {
 #if defined(OPENTITAN_IS_EARLGREY)
       // Check if the jittery clock is enabled on OpenTitan EarlGrey.
-      hardened_bool_t jittery_clk_en = clkmgr_check_jittery_clk_en();
-      if (launder32(jittery_clk_en) == kHardenedBoolFalse) {
+      uint32_t jittery_clk_en = abs_mmio_read32(
+          TOP_EARLGREY_CLKMGR_AON_BASE_ADDR + CLKMGR_JITTER_ENABLE_REG_OFFSET);
+      if (launder32(jittery_clk_en) != kMultiBitBool4True) {
         return OTCRYPTO_FATAL_ERR;
       }
-      HARDENED_CHECK_EQ(jittery_clk_en, kHardenedBoolTrue);
+      HARDENED_CHECK_EQ(jittery_clk_en, kMultiBitBool4True);
 #endif
 
       // Check if the dummy instructions and the data independent timing is
