@@ -85,10 +85,6 @@ enum {
    */
   kCurve25519MaskedScalarTotalShareWords =
       kCurve25519MaskedScalarNumShares * kCurve25519MaskedScalarShareWords,
-  /**
-   * Magic value for verify success response.
-   */
-  kCurve25519VerifySuccess = 0xf77fe650,
 };
 
 /**
