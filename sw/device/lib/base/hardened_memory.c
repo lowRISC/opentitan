@@ -300,3 +300,56 @@ status_t randomized_bytexor_in_place(void *restrict x, const void *restrict y,
 
   return (status_t){.value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value)};
 }
+
+status_t hardened_add(const uint32_t *restrict x, const uint32_t *restrict y,
+                      size_t word_len, uint32_t *restrict dest) {
+  // Randomize the content of the output buffer before writing to it.
+  hardened_memshred(dest, word_len);
+
+  uint32_t carry = 0;
+  size_t count = 0;
+
+  for (; launderw(count) < word_len; count = launderw(count) + 1) {
+    uint32_t x_val = x[count];
+    uint32_t y_val = y[count];
+
+    uint32_t res = x_val + carry;
+    uint32_t next_carry = (res < carry);
+
+    res += y_val;
+    next_carry += (res < y_val);
+
+    dest[count] = res;
+    carry = next_carry;
+  }
+  HARDENED_CHECK_EQ(count, word_len);
+
+  return (status_t){.value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value)};
+}
+
+status_t hardened_sub(const uint32_t *restrict x, const uint32_t *restrict y,
+                      size_t word_len, uint32_t *restrict dest) {
+  // Randomize the content of the output buffer before writing to it.
+  hardened_memshred(dest, word_len);
+
+  uint32_t borrow = 0;
+  size_t count = 0;
+
+  for (; launderw(count) < word_len; count = launderw(count) + 1) {
+    uint32_t x_val = x[count];
+    uint32_t y_val = y[count];
+
+    uint32_t res = x_val - borrow;
+
+    uint32_t next_borrow = (x_val < borrow);
+
+    next_borrow += (res < y_val);
+    res -= y_val;
+
+    dest[count] = res;
+    borrow = next_borrow;
+  }
+  HARDENED_CHECK_EQ(count, word_len);
+
+  return (status_t){.value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value)};
+}
