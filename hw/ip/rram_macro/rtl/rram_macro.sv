@@ -111,7 +111,7 @@ module rram_macro #(
   localparam int InitLatency     = 10000;
   localparam int ReadLatency     = 3;
   localparam int WriteLatency    = 1000;
-  localparam int StoreBufLatency = 1;
+  localparam int StoreBufLatency = 2;
 
   // Encoding generated at commit 0eeae81c80 using Python 3.12.13 with:
   // $ ./util/design/sparse-fsm-encode.py --language=sv \

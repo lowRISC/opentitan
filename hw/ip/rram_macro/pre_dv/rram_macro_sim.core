@@ -1,0 +1,24 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:pre_dv:rram_macro_sim:0.1"
+description: "RRAM_MACRO PRE DV sim target"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim:util
+      - lowrisc:ip:rram_macro
+
+  files_dv:
+    files:
+      - tb.sv
+    file_type: systemVerilogSource
+
+targets:
+  sim: &sim_target
+    toplevel: tb
+    filesets:
+      - files_rtl
+      - files_dv
+    default_tool: vcs
