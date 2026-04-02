@@ -39,6 +39,7 @@ IPS ?= aes           \
        pattgen       \
        pwm           \
        rom_ctrl      \
+       rram_ctrl     \
        rram_macro    \
        rv_dm         \
        rv_timer      \
