@@ -5,6 +5,8 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_CRYPTOLIB_BUILD_INFO_H_
 #define OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_CRYPTOLIB_BUILD_INFO_H_
 
+#include <stdbool.h>
+
 #include "datatypes.h"
 
 /**
