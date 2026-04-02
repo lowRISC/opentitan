@@ -12,8 +12,6 @@ package rram_ctrl_pkg;
   parameter int unsigned TotalInfoBytes  = 4*1024; // 4 KiB
   parameter int unsigned TotalOtpBytes   = 2*1024 + 512; // (2 KiB + 0.5KiB interity)
   parameter int unsigned DataWidth       = 128; // 1 RRAM word in bits
-  parameter int unsigned MetaDataWidth   = 16; // meta data width of 1 RRAM word
-  parameter int unsigned FullDataWidth   = DataWidth + MetaDataWidth; // data width including ECC
   parameter int unsigned WordsPerPage    = 32; // Number of RRAM words per page
   parameter int unsigned TotalPages      = TotalBytes / (DataWidth / 8) / WordsPerPage; // 4096
   parameter int unsigned TotalInfoPages  = TotalInfoBytes / (DataWidth / 8) / WordsPerPage; // 8
@@ -61,23 +59,24 @@ package rram_ctrl_pkg;
   // Open-Source interface RRAM macro <-> RRAM controller //
   //////////////////////////////////////////////////////////
   typedef struct packed {
-    logic                     rd_req;
-    logic                     wr_req;
-    logic                     wr_last;
-    logic [AddrW-1:0]         addr;
-    logic [FullDataWidth-1:0] wr_data;
-    rram_part_e               part;
+    logic                 rd_req;
+    logic                 wr_req;
+    logic                 wr_last;
+    logic [AddrW-1:0]     addr;
+    logic [DataWidth-1:0] wr_data;
+    rram_part_e           part;
+    logic                 ecc_en;
   } rram_macro_req_t;
 
   typedef struct packed {
-    logic                     ack;
-    logic                     done;
-    logic                     err;
-    logic                     ecc_err;
-    logic [FullDataWidth-1:0] rd_data;
-    logic                     init_done;
-    logic                     fatal_err;
-    logic                     recov_err;
+    logic                 ack;
+    logic                 done;
+    logic                 err;
+    logic                 ecc_err;
+    logic [DataWidth-1:0] rd_data;
+    logic                 init_done;
+    logic                 fatal_err;
+    logic                 recov_err;
   } rram_macro_rsp_t;
 
 endpackage : rram_ctrl_pkg

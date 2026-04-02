@@ -1,0 +1,23 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: lowrisc:ip:rram_macro_pkg:0.1
+description: "RRAM macro package"
+virtual:
+  - lowrisc:virtual_ip:rram_macro_pkg
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim:util
+      - lowrisc:ip:jtag_pkg
+      - lowrisc:tlul:headers
+    files:
+      - rtl/rram_macro_reg_pkg.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl
