@@ -6,7 +6,7 @@
 {
   name:               "rram_macro",
   human_name:         "RRAM macro",
-  one_line_desc:      "Open-source emulation model of the RRAM macro;",
+  one_line_desc:      "Open-source emulation model of the RRAM macro",
   one_paragraph_desc: '''
   Open-source emulation model of the RRAM macro.
   It supports a large data array and a small info array that are both emulated with prim_ram_1p.
