@@ -113,6 +113,9 @@ module uart_core (
   // break_err edges in same cycle as event_rx_frame_err edges ; that way the
   // reset-on-read works the same way for break and frame error interrupts.
 
+  //// Determine break error threshold based on RX break level configuration.
+// This defines how many consecutive zero bits trigger a break condition.
+
   always_comb begin
     unique case (reg2hw.ctrl.rxblvl.q)
       2'h0:    break_err = allzero_cnt_d >= 5'd2;
