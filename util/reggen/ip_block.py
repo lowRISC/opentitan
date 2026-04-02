@@ -69,6 +69,7 @@ KNOWN_CIP_IDS = {
     42: 'soc_dbg_ctrl',
     43: 'racl_ctrl',
     44: 'otp_macro',
+    46: 'rram_macro'
 }
 
 REQUIRED_ALIAS_FIELDS = {
