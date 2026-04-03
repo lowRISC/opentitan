@@ -185,6 +185,10 @@ module uart_core (
 
   assign tx_fifo_rready = tx_uart_idle & tx_fifo_rvalid & tx_enable;
 
+  // Ensure TX FIFO is not read when empty
+`ASSERT(TxFifoReadValid_A, !
+(tx_fifo_rready && !tx_fifo_rvalid))
+
   prim_fifo_sync #(
     .Width   (8),
     .Pass    (1'b0),
