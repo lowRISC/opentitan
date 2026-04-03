@@ -20,6 +20,19 @@ OpenTitan project. It is structured as monolithic repository, or "monorepo",
 where all components live in one repository. It exists to enable collaboration
 across partners participating in the OpenTitan project.
 
+## Tool setup
+Step 1: Create a virtual environment:
+  $ pyhton3 -m venv .venv
+
+step 2: Activate vend
+  $ source .venv/bin/activate
+
+Step 3: Install requirements:
+  $ pip3 install -r python-requirements.txt --require-hashes
+
+Step 4: Install tool chain (if you see SSL errors, may be run with sudo):
+  $python3 ./util/get-toolchain.py
+
 ## Documentation
 
 The project contains comprehensive documentation of all IPs and tools. You can
