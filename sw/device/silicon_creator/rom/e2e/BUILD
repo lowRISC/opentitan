@@ -244,6 +244,8 @@ opentitan_test(
         name = "empty_test_slot_{}_{}_corrupted_sim_dv_scr_vmem64_signed".format(slot, key),
         testonly = True,
         src = ":empty_test_slot_{}_{}_corrupted_sim_dv_vmem64_signed".format(slot, key),
+        # Override the name to match what the dv testbench expects.
+        out = "empty_test_slot_{}_corrupted_sim_dv.{}.signed.64".format(slot, key),
     )
     for slot in SLOTS
     for key in SIGVERIFY_LC_KEYS
