@@ -182,9 +182,9 @@ status_t randomized_bytexor_in_place(void *OT_RESTRICT x,
 /**
  * Combines two word buffers with ADD and store the result in the dest. buffer.
  *
- * Warning: the side-channel protection of this function call can not be
- * guaranteed.
- * The function is hardened against fault injections.
+ * Warning: Only limited SCA hardening measures are applied due to the nature of
+ * arithmetic operations. guaranteed. The function is hardened against fault
+ * injections.
  *
  * This mimics the OTBN `add`.
  *
@@ -216,6 +216,23 @@ status_t hardened_add(const uint32_t *OT_RESTRICT x,
 status_t hardened_sub(const uint32_t *OT_RESTRICT x,
                       const uint32_t *OT_RESTRICT y, size_t word_len,
                       uint32_t *OT_RESTRICT dest);
+
+/**
+ * Perform a range check whether the value is larger than zero and smaller than
+ * N. Namely, it checks whether 0 < value < N. Values are expected to follow
+ * little-endian layout.
+ *
+ * Warning: the side-channel protection of this function call can not be
+ * guaranteed.
+ * The function is hardened against fault injections and is constant time.
+ *
+ * @param value Pointer to the value to check.
+ * @param N Pointer to the upper limit of the range.
+ * @param word_len Length in words of value and N.
+ * @return OK or error.
+ */
+status_t hardened_range_check(const uint32_t *value, const uint32_t *N,
+                              size_t word_len);
 
 #ifdef __cplusplus
 }  // extern "C"
