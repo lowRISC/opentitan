@@ -190,3 +190,73 @@ sec_leq_8x32:
   bn.subv.8S w0, w31, w0
 
   ret
+
+/**
+ * Calculate a secure bound check on the arithmetically shared coefficients of
+ * a polynomial.
+ *
+ * This is a masked variant of the infinity norm check that verifies for a
+ * polynomial X that its infinity norm is smaller than a given bound b, i.e.,
+ * |X|_inf < b. For a detailed explanation of the inner workings of this
+ * algorithm see `mldsa87_verify_norm.s`.
+ *
+ * This routine implements the `SecBoundCheck` function (Algorithm 5 in [1]).
+ *
+ * @param[in]  x2: DMEM address of the first arith. share of the polynomial X.
+ * @param[in]  x3: DMEM address of the second arith. share of the polynomial X.
+ * @param[in]  x4: DMEM address of the vectorized bound b (32 bytes).
+ * @param[out] w0: result, 2^32-1 if the |X|_inf < b, else 0.
+ */
+sec_bound_check:
+  /* Push clobbered registers onto the stack. */
+  .irp reg, x2, x3, x5, x6
+    sw \reg, 0(x31)
+    addi x31, x31, 4
+  .endr
+
+  /* Load the bound constant b and subtract 1 from it. */
+  bn.lid x0, 0(x4)
+  bn.not w1, w31
+  bn.shv.8s w1, w1 >> 31
+  bn.subv.8s w4, w0, w1
+
+  /* b' = 2 * (b - 1). */
+  bn.addv.8S w5, w4, w4
+
+  /* First and second share WDR pointers. */
+  addi x5, x0, 0
+  addi x6, x0, 1
+
+  bn.not w6, w31 /* flag */
+
+  /* Iterate over the entire polynomial in chunks of 8 coefficients and check
+     their infinity norm in parallel. */
+  loopi 32, 7
+    /* Load the first share x0 and add the bound b, x0 + b mod Q. */
+    bn.lid x5, 0(x2++)
+    bn.addvm.8S w0, w0, w4
+
+    /* Slot b' into w2 for `seq_leq`. */
+    bn.mov w2, w5
+
+    bn.lid x6, 0(x3++)
+
+    /* Convert to Boolean shares and invoke `sec_leq` with b'. */
+    jal x1, sec_a2b_8x32
+    jal x1, sec_leq_8x32
+
+    bn.and w6, w6, w0
+    /* End of loop */
+
+  /* w0 = 2^256 - 1 if |X|_inf < b, else 0. */
+  bn.not w0, w31
+  bn.cmp w6, w0, FG0
+  bn.sel w0, w0, w31, FG0.Z
+
+  /* Restore clobbered general-purpose registers. */
+  .irp reg, x6, x5, x3, x2
+    addi x31, x31, -4
+    lw \reg, 0(x31)
+  .endr
+
+  ret
