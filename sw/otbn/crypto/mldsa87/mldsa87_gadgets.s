@@ -159,3 +159,34 @@ sec_unmask_8x32:
   bn.xor w0, w0, w1
 
   ret
+
+/**
+ * Compute a secure less-than equal operation on 8 Boolean-shared coefficients.
+ *
+ * This gadgets returns 2^32-1 for a coefficient x in [0, 2^32-1] if x <= b for
+ * a bound b < 2^32-1. This is an implementation fo the `SecLeq` function
+ * (Algorithm 4 in [1]).
+ *
+ * Note that the WDRs w0-w3 are clobbered.
+ *
+ * @param[in]  w0: x0_B, first Boolean share of x.
+ * @param[in]  w1: x1_B, second Boolean share of x.
+ * @param[in]  w2: b, vectorized bound b.
+ * @param[out] w0: the result of the bound check.
+ */
+sec_leq_8x32:
+  /* Calculate the bound b = 2^32 - b - 1. */
+  bn.not w3, w31
+  bn.subv.8S w2, w3, w2
+
+  bn.xor w3, w3, w3
+
+  /* Compute y = x + b mod 2^32. */
+  jal x1, sec_add_8x32
+  jal x1, sec_unmask_8x32
+
+  /* x = 2^32 - 1 if x <= b, else 0. */
+  bn.shv.8S w0, w0 >> 31
+  bn.subv.8S w0, w31, w0
+
+  ret

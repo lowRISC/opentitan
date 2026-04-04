@@ -37,6 +37,7 @@ unit_tests = [
     "mldsa87_sec_b2a_test",
     "mldsa87_sec_add_test",
     "mldsa87_sec_unmask_test",
+    "mldsa87_sec_leq_test",
 ]
 
 [
