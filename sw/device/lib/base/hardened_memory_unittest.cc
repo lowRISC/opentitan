@@ -97,5 +97,54 @@ TEST(HardenedMemory, AddSubReversibility) {
   EXPECT_EQ(sub_second, xs);
 }
 
+TEST(HardenedMemory, RangeCheck) {
+  // Single-word tests
+  std::vector<uint32_t> n_single = {10};
+
+  std::vector<uint32_t> val_single_zero = {0};
+  std::vector<uint32_t> val_single_valid = {5};
+  std::vector<uint32_t> val_single_equal = {10};
+  std::vector<uint32_t> val_single_large = {15};
+
+  EXPECT_EQ(
+      hardened_range_check(val_single_zero.data(), n_single.data(), 1).value,
+      OTCRYPTO_BAD_ARGS.value);
+
+  EXPECT_EQ(
+      hardened_range_check(val_single_valid.data(), n_single.data(), 1).value,
+      OTCRYPTO_OK.value);
+
+  EXPECT_EQ(
+      hardened_range_check(val_single_equal.data(), n_single.data(), 1).value,
+      OTCRYPTO_BAD_ARGS.value);
+
+  EXPECT_EQ(
+      hardened_range_check(val_single_large.data(), n_single.data(), 1).value,
+      OTCRYPTO_BAD_ARGS.value);
+
+  // Multi-word tests
+  std::vector<uint32_t> n_multi = {0x00000000, 0x00000002};
+  std::vector<uint32_t> val_multi_zero = {0x00000000, 0x00000000};
+  std::vector<uint32_t> val_multi_valid = {0xFFFFFFFF, 0x00000001};
+  std::vector<uint32_t> val_multi_equal = {0x00000000, 0x00000002};
+  std::vector<uint32_t> val_multi_large = {0x00000001, 0x00000002};
+
+  EXPECT_EQ(
+      hardened_range_check(val_multi_zero.data(), n_multi.data(), 2).value,
+      OTCRYPTO_BAD_ARGS.value);
+
+  EXPECT_EQ(
+      hardened_range_check(val_multi_valid.data(), n_multi.data(), 2).value,
+      OTCRYPTO_OK.value);
+
+  EXPECT_EQ(
+      hardened_range_check(val_multi_equal.data(), n_multi.data(), 2).value,
+      OTCRYPTO_BAD_ARGS.value);
+
+  EXPECT_EQ(
+      hardened_range_check(val_multi_large.data(), n_multi.data(), 2).value,
+      OTCRYPTO_BAD_ARGS.value);
+}
+
 }  // namespace
 }  // namespace hardened_memory_unittest
