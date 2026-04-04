@@ -353,3 +353,38 @@ status_t hardened_sub(const uint32_t *restrict x, const uint32_t *restrict y,
 
   return (status_t){.value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value)};
 }
+
+status_t hardened_range_check(const uint32_t *value, const uint32_t *N,
+                              size_t word_len) {
+  uint32_t borrow = 0;
+  uint32_t is_zero_acc = 0;
+  size_t count = 0;
+
+  for (; launderw(count) < word_len; count = launderw(count) + 1) {
+    uint32_t val_word = value[count];
+    uint32_t n_word = N[count];
+
+    // Accumulate bits to check if value is zero.
+    is_zero_acc = launder32(is_zero_acc) | launder32(val_word);
+
+    // Compute borrow to check if value < N.
+    uint32_t res = val_word - borrow;
+    uint32_t next_borrow = (val_word < borrow);
+    next_borrow += (res < n_word);
+
+    borrow = next_borrow;
+  }
+  HARDENED_CHECK_EQ(count, word_len);
+
+  uint32_t is_zero = (launder32(is_zero_acc) == 0);
+  uint32_t is_greater_or_eq = (launder32(borrow) == 0);
+  uint32_t is_bad = launder32(is_zero) | launder32(is_greater_or_eq);
+
+  if (launder32(is_bad) != 0) {
+    return (status_t){
+        .value = (int32_t)launder32((uint32_t)OTCRYPTO_BAD_ARGS.value)};
+  }
+  HARDENED_CHECK_EQ(is_bad, 0);
+
+  return (status_t){.value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value)};
+}
