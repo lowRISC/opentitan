@@ -384,15 +384,6 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
     return OTCRYPTO_RECOV_ERR;
   }
 
-  // TODO: Consider removing this since the driver will be constructing these
-  // commands internally.
-  // Ensure the `seed_material` array is word-aligned, so it can be loaded to a
-  // CPU register with natively aligned loads.
-  if (cmd.seed_material != NULL &&
-      misalignment32_of((uintptr_t)cmd.seed_material->data) != 0) {
-    return OTCRYPTO_RECOV_ERR;
-  }
-
   if (check_completion && (cmd_type == kEntropyCsrngSendAppCmdTypeCsrng)) {
     // Clear the `cs_cmd_req_done` bit, which is asserted whenever a command
     // request is completed, because that bit will be used below to determine if
