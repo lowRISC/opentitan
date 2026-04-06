@@ -294,6 +294,7 @@ Pointers can be dereferenced with the `*ptr` syntax[^32], though this is Unsafe 
 When pointers are dereferenced, they must be well-aligned and point to valid memory, like in C; failure to do so is UB.
 Unlike in C, the address-of operator, `&x`, produces a reference[^33], rather than a pointer.
 `&x as *const T` will create a pointer, instead.
+For creating pointers to values without creating an intermediate reference (which is safer, especially for unaligned or uninitialized memory), you should use the `addr_of!(x)` and `addr_of_mut!(x)` macros. See [https://doc.rust-lang.org/stable/core/ptr/macro.addr_of.html](https://doc.rust-lang.org/stable/core/ptr/macro.addr_of.html).
 
 Pointer dereference is still subject to move semantics, like in normal Rust[^34].
 the `read()` and `write()` methods on pointers can be used to ignore these rules[^35].
@@ -391,7 +392,7 @@ Rust, like C, has macros.
 Rust macros are much more powerful than C macros, and operate on Rust syntax trees, rather than by string replacement.
 Macro calls are differentiated from function calls with a `!` following the macro name.
 For example, `file!()` expands to a string literal with the file name.
-To learn more about macros, see [https://danielkeep.github.io/tlborm/book/index.html](https://danielkeep.github.io/tlborm/book/index.html).
+To learn more about macros, see [https://veykril.github.io/tlborm/](https://veykril.github.io/tlborm/).
 
 
 #### Aliases
@@ -593,12 +594,10 @@ The same caveat applies in C: `volatile uint64_t` will emit multiple accesses on
 
 #### Inline Assembly
 
-Rust does not quite support inline assembly yet.
-Clang's inline assembly syntax is available behind the unstable macro `llvm_asm!()`, which will eventually be replaced with a Rust-specific syntax that better integrates with the language.
+Rust supports inline assembly directly in the language.
+The syntax revolves around the stable macro `asm!()`, which integrates well with the language and is defined in the `core::arch` module.
 `global_asm!()` is the same, but usable in global scope, for defining whole functions.
-Naked functions can be created using `#[naked]`. See [https://doc.rust-lang.org/1.8.0/book/inline-assembly.html](https://doc.rust-lang.org/1.8.0/book/inline-assembly.html).
-
-[Note that this syntax is currently in the process of being redesigned and stabilized.](https://blog.rust-lang.org/inside-rust/2020/06/08/new-inline-asm.html)
+Naked functions can be created using `#[naked]`. See the official documentation: [https://doc.rust-lang.org/stable/core/arch/macro.asm.html](https://doc.rust-lang.org/stable/core/arch/macro.asm.html).
 
 #### Bit Casting
 
@@ -1193,6 +1192,17 @@ while let Some(x) = some_func() {
 }
 ```
 Unlike normal `let` statements, `if let` and `while let` expressions are meant to be used with refutable patterns.
+
+Rust also provides `let-else` statements, which allow you to use a refutable pattern with a normal `let` binding, provided you provide an `else` block that diverges (returns, panics, or breaks). This is extremely useful for early returns without adding indentation:
+
+```rust
+let Some(x) = some_func() else {
+  // This block must diverge (e.g., return, break, panic)
+  return;
+};
+// `x` is now bound for the rest of the current scope
+do_thing(x);
+```
 
 In general, almost every place where a value is bound can be an irrefutable pattern, such as function parameters and `for` loop variables:
 ```rust
@@ -2065,7 +2075,7 @@ Rust is still in the process of being specified, so, for now, `rustc`'s behavior
 [^5]: Inline assembly is the most salient of these.
 Nightly also provides support for the sanitizers, such as ASAN and TSAN.
 
-[^6]: Example from Tock: [https://github.com/tock/tock/blob/master/rust-toolchain](https://github.com/tock/tock/blob/master/rust-toolchain)
+[^6]: Example from Tock: [https://github.com/tock/tock/blob/master/rust-toolchain.toml](https://github.com/tock/tock/blob/master/rust-toolchain.toml)
 
 [^7]: Rust libraries use their own special "rlib" format, which carries extra metadata past what a normal .a file would.
 
@@ -2219,7 +2229,7 @@ Merely materializing an invalid reference is Undefined Behavior, because LLVM wi
 
 [^70]: There's only a couple of dynamically sized types built into the language; user-defined DSTs exist, but they're a very advanced topic.
 
-[^71]: https://doc.rust-lang.org/std/str/index.html
+[^71]: [https://doc.rust-lang.org/std/str/index.html](https://doc.rust-lang.org/std/str/index.html)
 
 [^72]: It should be noted that `a..b` is itself an expression, which creates a `Range<T>` of the chosen numeric type.
 
@@ -2324,7 +2334,7 @@ In practice, the compiler is pretty good at inlining away the extra calls and re
 
 [^117]: See [https://doc.rust-lang.org/std/option/index.html#options-and-pointers-nullable-pointers](https://doc.rust-lang.org/std/option/index.html#options-and-pointers-nullable-pointers)
 
-[^118]: See [https://doc.rust-lang.org/std/num/struct.NonZeroI32.html](https://doc.rust-lang.org/std/num/struct.NonZeroI32.html)
+[^118]: See [https://doc.rust-lang.org/std/num/type.NonZeroI32.html](https://doc.rust-lang.org/std/num/type.NonZeroI32.html)
 
 [^119]: See [https://doc.rust-lang.org/std/convert/enum.Infallible.html](https://doc.rust-lang.org/std/convert/enum.Infallible.html)
 
