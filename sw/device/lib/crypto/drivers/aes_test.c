@@ -129,6 +129,12 @@ static status_t run_negative_test(void) {
   CHECK(aes_encrypt_begin(bad_sideload_key, &kIv).value ==
         OTCRYPTO_BAD_ARGS.value);
 
+  // Test Invalid Bool
+  aes_key_t ctrl_reg_key = base_key;
+  ctrl_reg_key.checksum = aes_key_integrity_checksum(&ctrl_reg_key);
+  CHECK(aes_verify_ctrl_reg(ctrl_reg_key, (hardened_bool_t)0x12345678).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
   // Test Invalid Key Length
   aes_key_t bad_key_len = base_key;
   bad_key_len.key_len = 99;  // Not 128, 192, or 256
