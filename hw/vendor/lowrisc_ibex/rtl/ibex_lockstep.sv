@@ -98,7 +98,17 @@ module ibex_lockstep import ibex_pkg::*; #(
   output logic                         alert_major_bus_o,
   input  ibex_mubi_t                   core_busy_i,
   input  logic                         test_en_i,
-  input  logic                         scan_rst_ni
+  input  logic                         scan_rst_ni,
+
+  output ibex_mubi_t                   lockstep_cmp_en_o,
+  output logic                         data_req_shadow_o,
+  output logic                         data_we_shadow_o,
+  output logic [3:0]                   data_be_shadow_o,
+  output logic [31:0]                  data_addr_shadow_o,
+  output logic [31:0]                  data_wdata_shadow_o,
+  output logic [6:0]                   data_wdata_intg_shadow_o,
+  output logic                         instr_req_shadow_o,
+  output logic [31:0]                  instr_addr_shadow_o
 );
 
   import prim_secded_pkg::SecdedInv3932ZeroWord;
@@ -569,4 +579,14 @@ module ibex_lockstep import ibex_pkg::*; #(
   assign alert_major_bus_o      = shadow_alert_major_bus;
   assign alert_minor_o          = shadow_alert_minor;
 
+  assign lockstep_cmp_en_o = enable_cmp_q;
+
+  assign data_req_shadow_o = shadow_outputs_d.data_req;
+  assign data_we_shadow_o = shadow_outputs_d.data_we;
+  assign data_be_shadow_o = shadow_outputs_d.data_be;
+  assign data_addr_shadow_o = shadow_outputs_d.data_addr;
+  assign data_wdata_shadow_o = shadow_outputs_d.data_wdata[31:0];
+  assign data_wdata_intg_shadow_o = shadow_outputs_d.data_wdata[38:32];
+  assign instr_req_shadow_o = shadow_outputs_d.instr_req;
+  assign instr_addr_shadow_o = shadow_outputs_d.instr_addr;
 endmodule
