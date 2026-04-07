@@ -9,36 +9,38 @@
 
 // SEC_CM: LOGIC.SHADOW
 module ibex_lockstep import ibex_pkg::*; #(
-  parameter int unsigned LockstepOffset    = 2,
-  parameter bit          PMPEnable         = 1'b0,
-  parameter int unsigned PMPGranularity    = 0,
-  parameter int unsigned PMPNumRegions     = 4,
-  parameter int unsigned MHPMCounterNum    = 0,
-  parameter int unsigned MHPMCounterWidth  = 40,
-  parameter bit          RV32E             = 1'b0,
-  parameter rv32m_e      RV32M             = RV32MFast,
-  parameter rv32b_e      RV32B             = RV32BNone,
-  parameter bit          BranchTargetALU   = 1'b0,
-  parameter bit          WritebackStage    = 1'b0,
-  parameter bit          ICache            = 1'b0,
-  parameter bit          ICacheECC         = 1'b0,
-  parameter int unsigned BusSizeECC        = BUS_SIZE,
-  parameter int unsigned TagSizeECC        = IC_TAG_SIZE,
-  parameter int unsigned LineSizeECC       = IC_LINE_SIZE,
-  parameter bit          BranchPredictor   = 1'b0,
-  parameter bit          DbgTriggerEn      = 1'b0,
-  parameter int unsigned DbgHwBreakNum     = 1,
-  parameter bit          ResetAll          = 1'b0,
-  parameter lfsr_seed_t  RndCnstLfsrSeed   = RndCnstLfsrSeedDefault,
-  parameter lfsr_perm_t  RndCnstLfsrPerm   = RndCnstLfsrPermDefault,
-  parameter bit          SecureIbex        = 1'b0,
-  parameter bit          DummyInstructions = 1'b0,
-  parameter bit          RegFileECC        = 1'b0,
-  parameter int unsigned RegFileDataWidth  = 32,
-  parameter bit          MemECC            = 1'b0,
-  parameter int unsigned MemDataWidth      = MemECC ? 32 + 7 : 32,
-  parameter int unsigned DmHaltAddr        = 32'h1A110800,
-  parameter int unsigned DmExceptionAddr   = 32'h1A110808
+  parameter int unsigned LockstepOffset      = 2,
+  parameter bit          PMPEnable           = 1'b0,
+  parameter int unsigned PMPGranularity      = 0,
+  parameter int unsigned PMPNumRegions       = 4,
+  parameter int unsigned MHPMCounterNum      = 0,
+  parameter int unsigned MHPMCounterWidth    = 40,
+  parameter bit          RV32E               = 1'b0,
+  parameter rv32m_e      RV32M               = RV32MFast,
+  parameter rv32b_e      RV32B               = RV32BNone,
+  parameter bit          BranchTargetALU     = 1'b0,
+  parameter bit          WritebackStage      = 1'b0,
+  parameter bit          ICache              = 1'b0,
+  parameter bit          ICacheECC           = 1'b0,
+  parameter int unsigned BusSizeECC          = BUS_SIZE,
+  parameter int unsigned TagSizeECC          = IC_TAG_SIZE,
+  parameter int unsigned LineSizeECC         = IC_LINE_SIZE,
+  parameter bit          BranchPredictor     = 1'b0,
+  parameter bit          DbgTriggerEn        = 1'b0,
+  parameter int unsigned DbgHwBreakNum       = 1,
+  parameter bit          ResetAll            = 1'b0,
+  parameter lfsr_seed_t  RndCnstLfsrSeed     = RndCnstLfsrSeedDefault,
+  parameter lfsr_perm_t  RndCnstLfsrPerm     = RndCnstLfsrPermDefault,
+  parameter bit          SecureIbex          = 1'b0,
+  parameter bit          DummyInstructions   = 1'b0,
+  parameter bit          RegFileECC          = 1'b0,
+  parameter int unsigned RegFileDataWidth    = 32,
+  parameter int unsigned RegFileDataEccWidth = 39,
+  parameter regfile_e    RegFile             = RegFileFF,
+  parameter bit          MemECC              = 1'b0,
+  parameter int unsigned MemDataWidth        = MemECC ? 32 + 7 : 32,
+  parameter int unsigned DmHaltAddr          = 32'h1A110800,
+  parameter int unsigned DmExceptionAddr     = 32'h1A110808
 ) (
   input  logic                         clk_i,
   input  logic                         rst_ni,
@@ -63,15 +65,8 @@ module ibex_lockstep import ibex_pkg::*; #(
   input  logic [MemDataWidth-1:0]      data_rdata_i,
   input  logic                         data_err_i,
 
-  input  logic                         dummy_instr_id_i,
-  input  logic                         dummy_instr_wb_i,
-  input  logic [4:0]                   rf_raddr_a_i,
-  input  logic [4:0]                   rf_raddr_b_i,
-  input  logic [4:0]                   rf_waddr_wb_i,
-  input  logic                         rf_we_wb_i,
-  input  logic [RegFileDataWidth-1:0]  rf_wdata_wb_ecc_i,
-  input  logic [RegFileDataWidth-1:0]  rf_rdata_a_ecc_i,
-  input  logic [RegFileDataWidth-1:0]  rf_rdata_b_ecc_i,
+  input  logic [RegFileDataWidth-1:0]  rf_rdata_a_i,
+  input  logic [RegFileDataWidth-1:0]  rf_rdata_b_i,
 
   input  logic [IC_NUM_WAYS-1:0]       ic_tag_req_i,
   input  logic                         ic_tag_write_i,
@@ -105,6 +100,8 @@ module ibex_lockstep import ibex_pkg::*; #(
   input  logic                         test_en_i,
   input  logic                         scan_rst_ni
 );
+
+  import prim_secded_pkg::SecdedInv3932ZeroWord;
 
   localparam int unsigned LockstepOffsetW = $clog2(LockstepOffset);
   // Core outputs are delayed for an extra cycle due to shadow output registers
@@ -204,8 +201,8 @@ module ibex_lockstep import ibex_pkg::*; #(
     logic                        data_rvalid;
     logic [MemDataWidth-1:0]     data_rdata;
     logic                        data_err;
-    logic [RegFileDataWidth-1:0] rf_rdata_a_ecc;
-    logic [RegFileDataWidth-1:0] rf_rdata_b_ecc;
+    logic [RegFileDataWidth-1:0] rf_rdata_a;
+    logic [RegFileDataWidth-1:0] rf_rdata_b;
     logic                        irq_software;
     logic                        irq_timer;
     logic                        irq_external;
@@ -231,8 +228,8 @@ module ibex_lockstep import ibex_pkg::*; #(
   assign shadow_inputs_in.data_rvalid      = data_rvalid_i;
   assign shadow_inputs_in.data_rdata       = data_rdata_i;
   assign shadow_inputs_in.data_err         = data_err_i;
-  assign shadow_inputs_in.rf_rdata_a_ecc   = rf_rdata_a_ecc_i;
-  assign shadow_inputs_in.rf_rdata_b_ecc   = rf_rdata_b_ecc_i;
+  assign shadow_inputs_in.rf_rdata_a       = rf_rdata_a_i;
+  assign shadow_inputs_in.rf_rdata_b       = rf_rdata_b_i;
   assign shadow_inputs_in.irq_software     = irq_software_i;
   assign shadow_inputs_in.irq_timer        = irq_timer_i;
   assign shadow_inputs_in.irq_external     = irq_external_i;
@@ -274,13 +271,6 @@ module ibex_lockstep import ibex_pkg::*; #(
     logic [3:0]                  data_be;
     logic [31:0]                 data_addr;
     logic [MemDataWidth-1:0]     data_wdata;
-    logic                        dummy_instr_id;
-    logic                        dummy_instr_wb;
-    logic [4:0]                  rf_raddr_a;
-    logic [4:0]                  rf_raddr_b;
-    logic [4:0]                  rf_waddr_wb;
-    logic                        rf_we_wb;
-    logic [RegFileDataWidth-1:0] rf_wdata_wb_ecc;
     logic [IC_NUM_WAYS-1:0]      ic_tag_req;
     logic                        ic_tag_write;
     logic [IC_INDEX_W-1:0]       ic_tag_addr;
@@ -308,13 +298,6 @@ module ibex_lockstep import ibex_pkg::*; #(
   assign core_outputs_in.data_be             = data_be_i;
   assign core_outputs_in.data_addr           = data_addr_i;
   assign core_outputs_in.data_wdata          = data_wdata_i;
-  assign core_outputs_in.dummy_instr_id      = dummy_instr_id_i;
-  assign core_outputs_in.dummy_instr_wb      = dummy_instr_wb_i;
-  assign core_outputs_in.rf_raddr_a          = rf_raddr_a_i;
-  assign core_outputs_in.rf_raddr_b          = rf_raddr_b_i;
-  assign core_outputs_in.rf_waddr_wb         = rf_waddr_wb_i;
-  assign core_outputs_in.rf_we_wb            = rf_we_wb_i;
-  assign core_outputs_in.rf_wdata_wb_ecc     = rf_wdata_wb_ecc_i;
   assign core_outputs_in.ic_tag_req          = ic_tag_req_i;
   assign core_outputs_in.ic_tag_write        = ic_tag_write_i;
   assign core_outputs_in.ic_tag_addr         = ic_tag_addr_i;
@@ -341,7 +324,22 @@ module ibex_lockstep import ibex_pkg::*; #(
   // Shadow core instantiation //
   ///////////////////////////////
 
+  // The following outputs are generated by the shadow core and directly fed into the shadow core
+  // register file. There is no need to compare those signals against the signals generated by the
+  // main core in the lockstep comparison. A fault into one of those signals will cause a mismatch
+  // in the main core and shadow core register file instances. As the outputs of both register
+  // files are combined, the ECC checker inside the shadow core will detect the fault.
+  logic [RegFileDataEccWidth-1:0] shadow_rf_wdata_wb_ecc;
+  logic [4:0]                     shadow_rf_raddr_a;
+  logic [4:0]                     shadow_rf_raddr_b;
+  logic [4:0]                     shadow_rf_waddr_wb;
+  logic                           shadow_rf_we_wb;
+  logic                           shadow_dummy_instr_id;
+  logic                           shadow_dummy_instr_wb;
+
   logic shadow_alert_minor, shadow_alert_major_internal, shadow_alert_major_bus;
+  logic [RegFileDataEccWidth - RegFileDataWidth - 1:0] shadow_rf_rdata_a_intg;
+  logic [RegFileDataEccWidth - RegFileDataWidth - 1:0] shadow_rf_rdata_b_intg;
 
   ibex_core #(
     .PMPEnable         ( PMPEnable         ),
@@ -368,7 +366,7 @@ module ibex_lockstep import ibex_pkg::*; #(
     .SecureIbex        ( SecureIbex        ),
     .DummyInstructions ( DummyInstructions ),
     .RegFileECC        ( RegFileECC        ),
-    .RegFileDataWidth  ( RegFileDataWidth  ),
+    .RegFileDataWidth  ( RegFileDataEccWidth ),
     .MemECC            ( MemECC            ),
     .MemDataWidth      ( MemDataWidth      ),
     .DmHaltAddr        ( DmHaltAddr        ),
@@ -397,15 +395,15 @@ module ibex_lockstep import ibex_pkg::*; #(
     .data_rdata_i        (shadow_inputs_q[0].data_rdata),
     .data_err_i          (shadow_inputs_q[0].data_err),
 
-    .dummy_instr_id_o    (shadow_outputs_d.dummy_instr_id),
-    .dummy_instr_wb_o    (shadow_outputs_d.dummy_instr_wb),
-    .rf_raddr_a_o        (shadow_outputs_d.rf_raddr_a),
-    .rf_raddr_b_o        (shadow_outputs_d.rf_raddr_b),
-    .rf_waddr_wb_o       (shadow_outputs_d.rf_waddr_wb),
-    .rf_we_wb_o          (shadow_outputs_d.rf_we_wb),
-    .rf_wdata_wb_ecc_o   (shadow_outputs_d.rf_wdata_wb_ecc),
-    .rf_rdata_a_ecc_i    (shadow_inputs_q[0].rf_rdata_a_ecc),
-    .rf_rdata_b_ecc_i    (shadow_inputs_q[0].rf_rdata_b_ecc),
+    .dummy_instr_id_o    (shadow_dummy_instr_id),
+    .dummy_instr_wb_o    (shadow_dummy_instr_wb),
+    .rf_raddr_a_o        (shadow_rf_raddr_a),
+    .rf_raddr_b_o        (shadow_rf_raddr_b),
+    .rf_waddr_wb_o       (shadow_rf_waddr_wb),
+    .rf_we_wb_o          (shadow_rf_we_wb),
+    .rf_wdata_wb_ecc_o   (shadow_rf_wdata_wb_ecc),
+    .rf_rdata_a_ecc_i    ({shadow_rf_rdata_a_intg, shadow_inputs_q[0].rf_rdata_a}),
+    .rf_rdata_b_ecc_i    ({shadow_rf_rdata_b_intg, shadow_inputs_q[0].rf_rdata_b}),
 
     .ic_tag_req_o        (shadow_outputs_d.ic_tag_req),
     .ic_tag_write_o      (shadow_outputs_d.ic_tag_write),
@@ -479,6 +477,83 @@ module ibex_lockstep import ibex_pkg::*; #(
   // Register the shadow core outputs
   always_ff @(posedge clk_i) begin
     shadow_outputs_q <= shadow_outputs_d;
+  end
+
+  // The lower RegFileDataWidth bits (which are the data bits) are not fed into the shadow
+  // register file as they are handled by the main register file.
+  logic [RegFileDataWidth-1:0] unused_shadow_rf_wdata_wb_ecc;
+  assign unused_shadow_rf_wdata_wb_ecc = shadow_rf_wdata_wb_ecc[RegFileDataWidth-1:0];
+
+  //////////////////////////
+  // Shadow register file //
+  //////////////////////////
+  // SEC_CM: DATA_REG_SW.GLITCH_DETECT
+  if (RegFile == RegFileFF) begin : gen_shadow_regfile_ff
+    ibex_register_file_ff #(
+      .RV32E            (RV32E),
+      .DataWidth        (RegFileDataEccWidth - RegFileDataWidth),
+      .DummyInstructions(DummyInstructions),
+      .WordZeroVal      (SecdedInv3932ZeroWord[RegFileDataEccWidth-1:RegFileDataWidth])
+    ) register_file_shadow_i (
+      .clk_i            (clk_i),
+      .rst_ni           (rst_shadow_n),
+
+      .test_en_i        (test_en_i),
+      .dummy_instr_id_i (shadow_dummy_instr_id),
+      .dummy_instr_wb_i (shadow_dummy_instr_wb),
+
+      .raddr_a_i        (shadow_rf_raddr_a),
+      .rdata_a_o        (shadow_rf_rdata_a_intg),
+      .raddr_b_i        (shadow_rf_raddr_b),
+      .rdata_b_o        (shadow_rf_rdata_b_intg),
+      .waddr_a_i        (shadow_rf_waddr_wb),
+      .wdata_a_i        (shadow_rf_wdata_wb_ecc[RegFileDataEccWidth-1:RegFileDataWidth]),
+      .we_a_i           (shadow_rf_we_wb)
+    );
+  end else if (RegFile == RegFileFPGA) begin : gen_regfile_fpga
+    ibex_register_file_fpga #(
+      .RV32E            (RV32E),
+      .DataWidth        (RegFileDataEccWidth - RegFileDataWidth),
+      .DummyInstructions(DummyInstructions),
+      .WordZeroVal      (SecdedInv3932ZeroWord[RegFileDataEccWidth-1:RegFileDataWidth])
+    ) register_file_shadow_i (
+      .clk_i            (clk_i),
+      .rst_ni           (rst_shadow_n),
+
+      .test_en_i        (test_en_i),
+      .dummy_instr_id_i (shadow_dummy_instr_id),
+      .dummy_instr_wb_i (shadow_dummy_instr_wb),
+
+      .raddr_a_i        (shadow_rf_raddr_a),
+      .rdata_a_o        (shadow_rf_rdata_a_intg),
+      .raddr_b_i        (shadow_rf_raddr_b),
+      .rdata_b_o        (shadow_rf_rdata_b_intg),
+      .waddr_a_i        (shadow_rf_waddr_wb),
+      .wdata_a_i        (shadow_rf_wdata_wb_ecc[RegFileDataEccWidth-1:RegFileDataWidth]),
+      .we_a_i           (shadow_rf_we_wb)
+    );
+  end else if (RegFile == RegFileLatch) begin : gen_regfile_latch
+    ibex_register_file_latch #(
+      .RV32E            (RV32E),
+      .DataWidth        (RegFileDataEccWidth - RegFileDataWidth),
+      .DummyInstructions(DummyInstructions),
+      .WordZeroVal      (SecdedInv3932ZeroWord[RegFileDataEccWidth-1:RegFileDataWidth])
+    ) register_file_shadow_i (
+      .clk_i            (clk_i),
+      .rst_ni           (rst_shadow_n),
+
+      .test_en_i        (test_en_i),
+      .dummy_instr_id_i (shadow_dummy_instr_id),
+      .dummy_instr_wb_i (shadow_dummy_instr_wb),
+
+      .raddr_a_i        (shadow_rf_raddr_a),
+      .rdata_a_o        (shadow_rf_rdata_a_intg),
+      .raddr_b_i        (shadow_rf_raddr_b),
+      .rdata_b_o        (shadow_rf_rdata_b_intg),
+      .waddr_a_i        (shadow_rf_waddr_wb),
+      .wdata_a_i        (shadow_rf_wdata_wb_ecc[RegFileDataEccWidth-1:RegFileDataWidth]),
+      .we_a_i           (shadow_rf_we_wb)
+    );
   end
 
   /////////////////////////

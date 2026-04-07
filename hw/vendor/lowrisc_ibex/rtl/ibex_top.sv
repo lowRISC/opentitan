@@ -145,8 +145,10 @@ module ibex_top import ibex_pkg::*; #(
   localparam bit          Lockstep              = SecureIbex;
   localparam bit          ResetAll              = Lockstep;
   localparam bit          DummyInstructions     = SecureIbex;
-  localparam bit          RegFileECC            = SecureIbex;
-  localparam int unsigned RegFileDataWidth      = RegFileECC ? 32 + 7 : 32;
+  localparam bit          RegFileECC            = 0;
+  localparam bit          RegFileLockstepECC    = Lockstep;
+  localparam int unsigned RegFileDataWidth      = 32;
+  localparam int unsigned RegFileDataEccWidth   = 32 + 7;
   localparam bit          MemECC                = SecureIbex;
   localparam int unsigned MemDataWidth          = MemECC ? 32 + 7 : 32;
   // Icache parameters
@@ -168,9 +170,9 @@ module ibex_top import ibex_pkg::*; #(
   logic [4:0]                  rf_raddr_b;
   logic [4:0]                  rf_waddr_wb;
   logic                        rf_we_wb;
-  logic [RegFileDataWidth-1:0] rf_wdata_wb_ecc;
-  logic [RegFileDataWidth-1:0] rf_rdata_a_ecc, rf_rdata_a_ecc_buf;
-  logic [RegFileDataWidth-1:0] rf_rdata_b_ecc, rf_rdata_b_ecc_buf;
+  logic [RegFileDataWidth-1:0] rf_wdata_wb;
+  logic [RegFileDataWidth-1:0] rf_rdata_a;
+  logic [RegFileDataWidth-1:0] rf_rdata_b;
 
   // Combined data and integrity for data and instruction busses
   logic [MemDataWidth-1:0]     data_wdata_core;
@@ -252,17 +254,6 @@ module ibex_top import ibex_pkg::*; #(
     .out_o(fetch_enable_buf)
   );
 
-  prim_buf #(.Width(RegFileDataWidth)) u_rf_rdata_a_ecc_buf (
-    .in_i (rf_rdata_a_ecc),
-    .out_o(rf_rdata_a_ecc_buf)
-  );
-
-  prim_buf #(.Width(RegFileDataWidth)) u_rf_rdata_b_ecc_buf (
-    .in_i (rf_rdata_b_ecc),
-    .out_o(rf_rdata_b_ecc_buf)
-  );
-
-
   // ibex_core takes integrity and data bits together. Combine the separate integrity and data
   // inputs here.
   assign data_rdata_core[31:0] = data_rdata_i;
@@ -337,9 +328,9 @@ module ibex_top import ibex_pkg::*; #(
     .rf_raddr_b_o     (rf_raddr_b),
     .rf_waddr_wb_o    (rf_waddr_wb),
     .rf_we_wb_o       (rf_we_wb),
-    .rf_wdata_wb_ecc_o(rf_wdata_wb_ecc),
-    .rf_rdata_a_ecc_i (rf_rdata_a_ecc_buf),
-    .rf_rdata_b_ecc_i (rf_rdata_b_ecc_buf),
+    .rf_wdata_wb_ecc_o(rf_wdata_wb),
+    .rf_rdata_a_ecc_i (rf_rdata_a),
+    .rf_rdata_b_ecc_i (rf_rdata_b),
 
     .ic_tag_req_o      (ic_tag_req),
     .ic_tag_write_o    (ic_tag_write),
@@ -429,11 +420,11 @@ module ibex_top import ibex_pkg::*; #(
       .dummy_instr_wb_i(dummy_instr_wb),
 
       .raddr_a_i(rf_raddr_a),
-      .rdata_a_o(rf_rdata_a_ecc),
+      .rdata_a_o(rf_rdata_a),
       .raddr_b_i(rf_raddr_b),
-      .rdata_b_o(rf_rdata_b_ecc),
+      .rdata_b_o(rf_rdata_b),
       .waddr_a_i(rf_waddr_wb),
-      .wdata_a_i(rf_wdata_wb_ecc),
+      .wdata_a_i(rf_wdata_wb),
       .we_a_i   (rf_we_wb)
     );
   end else if (RegFile == RegFileFPGA) begin : gen_regfile_fpga
@@ -451,11 +442,11 @@ module ibex_top import ibex_pkg::*; #(
       .dummy_instr_wb_i(dummy_instr_wb),
 
       .raddr_a_i(rf_raddr_a),
-      .rdata_a_o(rf_rdata_a_ecc),
+      .rdata_a_o(rf_rdata_a),
       .raddr_b_i(rf_raddr_b),
-      .rdata_b_o(rf_rdata_b_ecc),
+      .rdata_b_o(rf_rdata_b),
       .waddr_a_i(rf_waddr_wb),
-      .wdata_a_i(rf_wdata_wb_ecc),
+      .wdata_a_i(rf_wdata_wb),
       .we_a_i   (rf_we_wb)
     );
   end else if (RegFile == RegFileLatch) begin : gen_regfile_latch
@@ -473,11 +464,11 @@ module ibex_top import ibex_pkg::*; #(
       .dummy_instr_wb_i(dummy_instr_wb),
 
       .raddr_a_i(rf_raddr_a),
-      .rdata_a_o(rf_rdata_a_ecc),
+      .rdata_a_o(rf_rdata_a),
       .raddr_b_i(rf_raddr_b),
-      .rdata_b_o(rf_rdata_b_ecc),
+      .rdata_b_o(rf_rdata_b),
       .waddr_a_i(rf_waddr_wb),
-      .wdata_a_i(rf_wdata_wb_ecc),
+      .wdata_a_i(rf_wdata_wb),
       .we_a_i   (rf_we_wb)
     );
   end
@@ -754,15 +745,8 @@ module ibex_top import ibex_pkg::*; #(
       data_wdata_core,
       data_rdata_core,
       data_err_i,
-      dummy_instr_id,
-      dummy_instr_wb,
-      rf_raddr_a,
-      rf_raddr_b,
-      rf_waddr_wb,
-      rf_we_wb,
-      rf_wdata_wb_ecc,
-      rf_rdata_a_ecc,
-      rf_rdata_b_ecc,
+      rf_rdata_a,
+      rf_rdata_b,
       ic_tag_req,
       ic_tag_write,
       ic_tag_addr,
@@ -808,15 +792,8 @@ module ibex_top import ibex_pkg::*; #(
     logic [MemDataWidth-1:0]      data_rdata_local;
     logic                         data_err_local;
 
-    logic                         dummy_instr_id_local;
-    logic                         dummy_instr_wb_local;
-    logic [4:0]                   rf_raddr_a_local;
-    logic [4:0]                   rf_raddr_b_local;
-    logic [4:0]                   rf_waddr_wb_local;
-    logic                         rf_we_wb_local;
-    logic [RegFileDataWidth-1:0]  rf_wdata_wb_ecc_local;
-    logic [RegFileDataWidth-1:0]  rf_rdata_a_ecc_local;
-    logic [RegFileDataWidth-1:0]  rf_rdata_b_ecc_local;
+    logic [RegFileDataWidth-1:0]  rf_rdata_a_local;
+    logic [RegFileDataWidth-1:0]  rf_rdata_b_local;
 
     logic [IC_NUM_WAYS-1:0]       ic_tag_req_local;
     logic                         ic_tag_write_local;
@@ -861,15 +838,8 @@ module ibex_top import ibex_pkg::*; #(
       data_wdata_core,
       data_rdata_core,
       data_err_i,
-      dummy_instr_id,
-      dummy_instr_wb,
-      rf_raddr_a,
-      rf_raddr_b,
-      rf_waddr_wb,
-      rf_we_wb,
-      rf_wdata_wb_ecc,
-      rf_rdata_a_ecc,
-      rf_rdata_b_ecc,
+      rf_rdata_a,
+      rf_rdata_b,
       ic_tag_req,
       ic_tag_write,
       ic_tag_addr,
@@ -911,15 +881,8 @@ module ibex_top import ibex_pkg::*; #(
       data_wdata_local,
       data_rdata_local,
       data_err_local,
-      dummy_instr_id_local,
-      dummy_instr_wb_local,
-      rf_raddr_a_local,
-      rf_raddr_b_local,
-      rf_waddr_wb_local,
-      rf_we_wb_local,
-      rf_wdata_wb_ecc_local,
-      rf_rdata_a_ecc_local,
-      rf_rdata_b_ecc_local,
+      rf_rdata_a_local,
+      rf_rdata_b_local,
       ic_tag_req_local,
       ic_tag_write_local,
       ic_tag_addr_local,
@@ -966,34 +929,36 @@ module ibex_top import ibex_pkg::*; #(
     logic lockstep_alert_major_bus_local;
 
     ibex_lockstep #(
-      .PMPEnable        (PMPEnable),
-      .PMPGranularity   (PMPGranularity),
-      .PMPNumRegions    (PMPNumRegions),
-      .MHPMCounterNum   (MHPMCounterNum),
-      .MHPMCounterWidth (MHPMCounterWidth),
-      .RV32E            (RV32E),
-      .RV32M            (RV32M),
-      .RV32B            (RV32B),
-      .BranchTargetALU  (BranchTargetALU),
-      .ICache           (ICache),
-      .ICacheECC        (ICacheECC),
-      .BusSizeECC       (BusSizeECC),
-      .TagSizeECC       (TagSizeECC),
-      .LineSizeECC      (LineSizeECC),
-      .BranchPredictor  (BranchPredictor),
-      .DbgTriggerEn     (DbgTriggerEn),
-      .DbgHwBreakNum    (DbgHwBreakNum),
-      .WritebackStage   (WritebackStage),
-      .ResetAll         (ResetAll),
-      .RndCnstLfsrSeed  (RndCnstLfsrSeed),
-      .RndCnstLfsrPerm  (RndCnstLfsrPerm),
-      .SecureIbex       (SecureIbex),
-      .DummyInstructions(DummyInstructions),
-      .RegFileECC       (RegFileECC),
-      .RegFileDataWidth (RegFileDataWidth),
-      .MemECC           (MemECC),
-      .DmHaltAddr       (DmHaltAddr),
-      .DmExceptionAddr  (DmExceptionAddr)
+      .PMPEnable           (PMPEnable),
+      .PMPGranularity      (PMPGranularity),
+      .PMPNumRegions       (PMPNumRegions),
+      .MHPMCounterNum      (MHPMCounterNum),
+      .MHPMCounterWidth    (MHPMCounterWidth),
+      .RV32E               (RV32E),
+      .RV32M               (RV32M),
+      .RV32B               (RV32B),
+      .BranchTargetALU     (BranchTargetALU),
+      .ICache              (ICache),
+      .ICacheECC           (ICacheECC),
+      .BusSizeECC          (BusSizeECC),
+      .TagSizeECC          (TagSizeECC),
+      .LineSizeECC         (LineSizeECC),
+      .BranchPredictor     (BranchPredictor),
+      .DbgTriggerEn        (DbgTriggerEn),
+      .DbgHwBreakNum       (DbgHwBreakNum),
+      .WritebackStage      (WritebackStage),
+      .ResetAll            (ResetAll),
+      .RndCnstLfsrSeed     (RndCnstLfsrSeed),
+      .RndCnstLfsrPerm     (RndCnstLfsrPerm),
+      .SecureIbex          (SecureIbex),
+      .DummyInstructions   (DummyInstructions),
+      .RegFileECC          (RegFileLockstepECC),
+      .RegFileDataWidth    (RegFileDataWidth),
+      .RegFileDataEccWidth (RegFileDataEccWidth),
+      .RegFile             (RegFile),
+      .MemECC              (MemECC),
+      .DmHaltAddr          (DmHaltAddr),
+      .DmExceptionAddr     (DmExceptionAddr)
     ) u_ibex_lockstep (
       .clk_i                  (clk),
       .rst_ni                 (rst_ni),
@@ -1018,15 +983,8 @@ module ibex_top import ibex_pkg::*; #(
       .data_rdata_i           (data_rdata_local),
       .data_err_i             (data_err_local),
 
-      .dummy_instr_id_i       (dummy_instr_id_local),
-      .dummy_instr_wb_i       (dummy_instr_wb_local),
-      .rf_raddr_a_i           (rf_raddr_a_local),
-      .rf_raddr_b_i           (rf_raddr_b_local),
-      .rf_waddr_wb_i          (rf_waddr_wb_local),
-      .rf_we_wb_i             (rf_we_wb_local),
-      .rf_wdata_wb_ecc_i      (rf_wdata_wb_ecc_local),
-      .rf_rdata_a_ecc_i       (rf_rdata_a_ecc_local),
-      .rf_rdata_b_ecc_i       (rf_rdata_b_ecc_local),
+      .rf_rdata_a_i           (rf_rdata_a_local),
+      .rf_rdata_b_i           (rf_rdata_b_local),
 
       .ic_tag_req_i           (ic_tag_req_local),
       .ic_tag_write_i         (ic_tag_write_local),

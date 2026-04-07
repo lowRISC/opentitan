@@ -395,6 +395,7 @@ interface core_ibex_fcov_if import ibex_pkg::*; (
     id_stall_type_last_valid;
 
   // V2S Related Probes for Top-Level
+  logic rf_glitch_err;
   logic lockstep_glitch_err;
 
   logic imem_single_cycle_response, dmem_single_cycle_response;
@@ -492,6 +493,7 @@ interface core_ibex_fcov_if import ibex_pkg::*; (
     `DV_FCOV_EXPR_SEEN(mem_store_ecc_err, load_store_unit_i.store_resp_intg_err_o)
 
     `DV_FCOV_EXPR_SEEN(lockstep_err, lockstep_glitch_err)
+    `DV_FCOV_EXPR_SEEN(rf_glitch_err, rf_glitch_err)
     `DV_FCOV_EXPR_SEEN(pc_mismatch_err, if_stage_i.pc_mismatch_alert_o)
 
     cp_fetch_enable: coverpoint fetch_enable_i {

@@ -1,0 +1,34 @@
+diff --git a/uvm/core_ibex/fcov/core_ibex_fcov_if.sv b/uvm/core_ibex/fcov/core_ibex_fcov_if.sv
+index fa5fa2e185..f1a33651c8 100644
+--- a/uvm/core_ibex/fcov/core_ibex_fcov_if.sv
++++ b/uvm/core_ibex/fcov/core_ibex_fcov_if.sv
+@@ -395,6 +395,7 @@ interface core_ibex_fcov_if import ibex_pkg::*; (
+     id_stall_type_last_valid;
+ 
+   // V2S Related Probes for Top-Level
++  logic rf_glitch_err;
+   logic lockstep_glitch_err;
+ 
+   logic imem_single_cycle_response, dmem_single_cycle_response;
+@@ -492,6 +493,7 @@ interface core_ibex_fcov_if import ibex_pkg::*; (
+     `DV_FCOV_EXPR_SEEN(mem_store_ecc_err, load_store_unit_i.store_resp_intg_err_o)
+ 
+     `DV_FCOV_EXPR_SEEN(lockstep_err, lockstep_glitch_err)
++    `DV_FCOV_EXPR_SEEN(rf_glitch_err, rf_glitch_err)
+     `DV_FCOV_EXPR_SEEN(pc_mismatch_err, if_stage_i.pc_mismatch_alert_o)
+ 
+     cp_fetch_enable: coverpoint fetch_enable_i {
+diff --git a/uvm/core_ibex/tb/core_ibex_tb_top.sv b/uvm/core_ibex/tb/core_ibex_tb_top.sv
+index 94c7934702..8cbaf56258 100644
+--- a/uvm/core_ibex/tb/core_ibex_tb_top.sv
++++ b/uvm/core_ibex/tb/core_ibex_tb_top.sv
+@@ -181,6 +181,9 @@ module core_ibex_tb_top;
+       `IBEX_LOCKSTEP_PATH.u_shadow_core.NoMemResponseWithoutPendingAccess)
+   end
+ 
++  assign dut.u_ibex_top.u_ibex_core.u_fcov_bind.rf_glitch_err =
++    dut.u_ibex_top.alert_major_internal_o;
++
+   assign dut.u_ibex_top.u_ibex_core.u_fcov_bind.lockstep_glitch_err =
+     dut.u_ibex_top.lockstep_alert_major_internal;
+ 
