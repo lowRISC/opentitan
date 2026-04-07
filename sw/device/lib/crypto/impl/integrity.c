@@ -67,3 +67,38 @@ hardened_bool_t verify_buf_integrity(const otcrypto_generic_buf_t *buf) {
   return kHardenedBoolFalse;
 }
 #endif  // OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
+
+otcrypto_byte_buf_t otcrypto_make_byte_buf(uint8_t *data, size_t len) {
+  return OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, data, len);
+}
+
+otcrypto_const_byte_buf_t otcrypto_make_const_byte_buf(const uint8_t *data,
+                                                       size_t len) {
+  return OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, data, len);
+}
+otcrypto_word32_buf_t otcrypto_make_word32_buf(uint32_t *data, size_t len) {
+  return OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, data, len);
+}
+
+otcrypto_const_word32_buf_t otcrypto_make_const_word32_buf(const uint32_t *data,
+                                                           size_t len) {
+  return OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, data, len);
+}
+
+hardened_bool_t otcrypto_check_byte_buf(const otcrypto_byte_buf_t *buf) {
+  return OTCRYPTO_CHECK_BUF(buf);
+}
+
+hardened_bool_t otcrypto_check_const_byte_buf(
+    const otcrypto_const_byte_buf_t *buf) {
+  return OTCRYPTO_CHECK_BUF(buf);
+}
+
+hardened_bool_t otcrypto_check_word32_buf(const otcrypto_word32_buf_t *buf) {
+  return OTCRYPTO_CHECK_BUF(buf);
+}
+
+hardened_bool_t otcrypto_check_const_word32_buf(
+    const otcrypto_const_word32_buf_t *buf) {
+  return OTCRYPTO_CHECK_BUF(buf);
+}
