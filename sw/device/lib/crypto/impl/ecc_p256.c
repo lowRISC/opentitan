@@ -899,3 +899,76 @@ otcrypto_status_t otcrypto_ecc_p256_private_key_export(
 
   return OTCRYPTO_OK;
 }
+
+otcrypto_status_t otcrypto_ecc_p256_arith_share_private_key(
+    otcrypto_const_word32_buf_t *bool_private_key_share0,
+    otcrypto_const_word32_buf_t *bool_private_key_share1,
+    otcrypto_blinded_key_t *arith_private_key) {
+  if (bool_private_key_share0 == NULL || bool_private_key_share1 == NULL ||
+      arith_private_key == NULL || arith_private_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  HARDENED_TRY(entropy_complex_check());
+
+  // The key shares must resided in 320-bit buffers.
+  if (bool_private_key_share0->len != kP256MaskedScalarShareWords ||
+      bool_private_key_share1->len != kP256MaskedScalarShareWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(launder32(bool_private_key_share0->len),
+                    kP256MaskedScalarShareWords);
+  HARDENED_CHECK_EQ(launder32(bool_private_key_share1->len),
+                    kP256MaskedScalarShareWords);
+
+  // Check the key mode; both ECDSA and ECDH P-256 modes are accepted since
+  // the private key representation is identical for both.
+  if (arith_private_key->config.key_mode != kOtcryptoKeyModeEcdsaP256 &&
+      arith_private_key->config.key_mode != kOtcryptoKeyModeEcdhP256) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Import is only supported for software-backed keys.
+  if (arith_private_key->config.hw_backed != kHardenedBoolFalse) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(launder32(arith_private_key->config.hw_backed),
+                    kHardenedBoolFalse);
+
+  // Check that the caller-allocated keyblob matches the expected P-256 layout.
+  HARDENED_TRY(p256_private_key_length_check(arith_private_key));
+
+  // Randomize the keyblob before writing secret data.
+  HARDENED_TRY(hardened_memshred(arith_private_key->keyblob,
+                                 kP256MaskedScalarTotalShareWords));
+
+  p256_masked_scalar_t boolean_private_scalar;
+  p256_masked_scalar_t arith_private_scalar;
+  HARDENED_TRY(hardened_memcpy(boolean_private_scalar.share0,
+                               bool_private_key_share0->data,
+                               kP256MaskedScalarShareWords));
+  HARDENED_TRY(hardened_memcpy(boolean_private_scalar.share1,
+                               bool_private_key_share1->data,
+                               kP256MaskedScalarShareWords));
+  boolean_private_scalar.checksum =
+      p256_masked_scalar_checksum(&boolean_private_scalar);
+
+  // Invoke the sharing routine.
+  HARDENED_TRY(
+      arith_share_private_key(&boolean_private_scalar, &arith_private_scalar));
+
+  // Copy the two arithmetic shares into the output buffer.
+  HARDENED_TRY(hardened_memcpy(arith_private_key->keyblob,
+                               arith_private_scalar.share0,
+                               kP256MaskedScalarTotalShareWords));
+
+  // Set the shared key checksum.
+  arith_private_key->checksum = integrity_blinded_checksum(arith_private_key);
+
+  HARDENED_CHECK_EQ(OTCRYPTO_CHECK_BUF(bool_private_key_share0),
+                    kHardenedBoolTrue);
+  HARDENED_CHECK_EQ(OTCRYPTO_CHECK_BUF(bool_private_key_share1),
+                    kHardenedBoolTrue);
+
+  return OTCRYPTO_OK;
+}
