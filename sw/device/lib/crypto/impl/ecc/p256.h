@@ -404,6 +404,21 @@ OT_WARN_UNUSED_RESULT
 status_t p256_base_point_mult(p256_masked_scalar_t *private_key,
                               p256_point_t *public_key);
 
+/**
+ * Generate a secret key arithmetic sharing.
+ *
+ * The input can either be an unshared raw key (two 320-bit shares d0, d1 with
+ * the upper 64 bits of d0 being 0 and d1 being 0) or a Boolean-shared key (two
+ * 320 bit shares).
+ *
+ * @param boolean_private_key The key that is being arithmetically shared.
+ * @param arithmetic_private_key The resulting arithmetically shared key.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t arith_share_private_key(p256_masked_scalar_t *boolean_private_key,
+                                 p256_masked_scalar_t *arith_private_key);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

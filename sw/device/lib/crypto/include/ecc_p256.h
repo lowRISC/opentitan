@@ -478,6 +478,33 @@ status_t otcrypto_p256_base_point_mult(
     const otcrypto_blinded_key_t *private_key,
     otcrypto_unblinded_key_t *public_key);
 
+/**
+ * Arithmetically share a private key provided as Boolean shares.
+ *
+ * Given a Boolean-shared private key d in the range [1, n-1] and shared, this
+ * routine arithmetically shares the key such that d = d0 + d1 mod n, where n
+ * is the curve order.
+ *
+ * It is allowed to pass the key in plain with the second share being set to 0.
+ *
+ * Note that no checks are performed to verify whether the input key d is in
+ * the interval, this is the responsibility of the caller. I.e., this routine
+ * does not (!) provide checks as per FIPS 186-5 for the case of generating a
+ * key without extra random bits. The routine will though reduce modulo n
+ * implicitly. The routine can be used to generate keys according to FIPS 186-5
+ * with extra random bits. The modulo n reduction will not introduce bias due
+ * to the extra bits. Note that the routine will not check for zero.
+ *
+ * @param bool_private_key_share0 First Boolean share of the private key.
+ * @param bool_private_key_share1 Second Boolean share of the private key.
+ * @param arith_shared_private_key The resulting arithmetically shared key.
+ * @return Result of the sharing operation.
+ */
+otcrypto_status_t otcrypto_ecc_p256_arith_share_private_key(
+    otcrypto_const_word32_buf_t *bool_private_key_share0,
+    otcrypto_const_word32_buf_t *bool_private_key_share1,
+    otcrypto_blinded_key_t *arith_private_key);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
