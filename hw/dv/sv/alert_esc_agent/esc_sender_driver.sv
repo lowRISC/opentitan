@@ -11,7 +11,7 @@ class esc_sender_driver extends dv_base_driver#(alert_esc_seq_item, alert_esc_ag
   extern virtual task reset_signals();
   extern virtual task get_and_drive();
 
-  extern local task do_reset();
+  extern local task reset_esc();
 endclass : esc_sender_driver
 
 function esc_sender_driver::new (string name, uvm_component parent);
@@ -22,7 +22,7 @@ task esc_sender_driver::reset_signals();
   wait(cfg.vif.rst_n !== 1'b1);
   forever begin
     under_reset = 1;
-    do_reset();
+    reset_esc();
     wait(cfg.vif.rst_n === 1'b1);
     under_reset = 0;
 
@@ -37,7 +37,7 @@ task esc_sender_driver::get_and_drive();
   wait(!under_reset);
 endtask : get_and_drive
 
-task esc_sender_driver::do_reset();
+task esc_sender_driver::reset_esc();
   cfg.vif.esc_tx_int.esc_p <= 1'b0;
   cfg.vif.esc_tx_int.esc_n <= 1'b1;
-endtask : do_reset
+endtask : reset_esc
