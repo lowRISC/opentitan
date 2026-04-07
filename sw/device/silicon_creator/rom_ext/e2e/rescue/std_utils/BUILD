@@ -48,6 +48,7 @@ opentitan_test(
             --clear-bitstream
             --bootstrap={rom_ext}
             --firmware={boot_test}
+            rescue
             --trigger=strap
             --value=3
         """,
