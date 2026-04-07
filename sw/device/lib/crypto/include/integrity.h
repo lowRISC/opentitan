@@ -127,6 +127,90 @@ hardened_bool_t verify_buf_integrity(const otcrypto_generic_buf_t *buf);
 
 #endif  // OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
 
+/**
+ * Function to create an integrity protected byte buffer.
+ * Serves as a wrapper for the OTCRYPTO_MAKE_BUF macro.
+ *
+ * @param data Byte data buffer.
+ * @param len Length of the buffer in bytes.
+ * @returns otcrypto_byte_buf_t with integrity.
+ */
+otcrypto_byte_buf_t otcrypto_make_byte_buf(uint8_t *data, size_t len);
+
+/**
+ * Function to create an integrity protected const byte buffer.
+ * Serves as a wrapper for the OTCRYPTO_MAKE_BUF macro.
+ *
+ * @param data Byte data buffer.
+ * @param len Length of the buffer in bytes.
+ * @returns otcrypto_const_byte_buf_t with integrity.
+ */
+otcrypto_const_byte_buf_t otcrypto_make_const_byte_buf(const uint8_t *data,
+                                                       size_t len);
+
+/**
+ * Function to create an integrity protected word32 buffer.
+ * Serves as a wrapper for the OTCRYPTO_MAKE_BUF macro.
+ *
+ * @param data Word data buffer.
+ * @param len Length of the buffer in words.
+ * @returns otcrypto_word32_buf_t with integrity.
+ */
+otcrypto_word32_buf_t otcrypto_make_word32_buf(uint32_t *data, size_t len);
+
+/**
+ * Function to create an integrity protected const word32 buffer.
+ * Serves as a wrapper for the OTCRYPTO_MAKE_BUF macro.
+ *
+ * @param data Word data buffer.
+ * @param len Length of the buffer in words.
+ * @returns otcrypto_const_word32_buf_t with integrity.
+ */
+otcrypto_const_word32_buf_t otcrypto_make_const_word32_buf(const uint32_t *data,
+                                                           size_t len);
+
+/**
+ * Function to verify the integrity of a byte buffer.
+ * Serves as a wrapper for the OTCRYPTO_CHECK_BUF macro.
+ *
+ * @param buf The buffer to check.
+ * @returns Whether the integrity check passed.
+ */
+OT_WARN_UNUSED_RESULT
+hardened_bool_t otcrypto_check_byte_buf(const otcrypto_byte_buf_t *buf);
+
+/**
+ * Function to verify the integrity of a const byte buffer.
+ * Serves as a wrapper for the OTCRYPTO_CHECK_BUF macro.
+ *
+ * @param buf The buffer to check.
+ * @returns Whether the integrity check passed.
+ */
+OT_WARN_UNUSED_RESULT
+hardened_bool_t otcrypto_check_const_byte_buf(
+    const otcrypto_const_byte_buf_t *buf);
+
+/**
+ * Function to verify the integrity of a word32 buffer.
+ * Serves as a wrapper for the OTCRYPTO_CHECK_BUF macro.
+ *
+ * @param buf The buffer to check.
+ * @returns Whether the integrity check passed.
+ */
+OT_WARN_UNUSED_RESULT
+hardened_bool_t otcrypto_check_word32_buf(const otcrypto_word32_buf_t *buf);
+
+/**
+ * Function to verify the integrity of a const word32 buffer.
+ * Serves as a wrapper for the OTCRYPTO_CHECK_BUF macro.
+ *
+ * @param buf The buffer to check.
+ * @returns Whether the integrity check passed.
+ */
+OT_WARN_UNUSED_RESULT
+hardened_bool_t otcrypto_check_const_word32_buf(
+    const otcrypto_const_word32_buf_t *buf);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
