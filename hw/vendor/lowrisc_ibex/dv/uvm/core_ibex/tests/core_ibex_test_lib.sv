@@ -132,12 +132,15 @@ class core_ibex_rf_intg_test extends core_ibex_base_test;
     int    rnd_delay;
     bit    port_idx;
     string port_name;
+    int unsigned lockstep_delay;
 
     vseq.start(env.vseqr);
 
     // Pick port to corrupt.
     port_idx = $urandom_range(1);
-    port_name = port_idx ? "rf_rdata_b_ecc" : "rf_rdata_a_ecc";
+    port_name = port_idx ? "rf_rdata_b" : "rf_rdata_a";
+
+    lockstep_delay = read_data("gen_lockstep.u_ibex_lockstep.LockstepOffset");
 
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(rnd_delay, rnd_delay > 1000; rnd_delay < 10_000;)
     clk_vif.wait_n_clks(rnd_delay);
@@ -182,8 +185,8 @@ class core_ibex_rf_intg_test extends core_ibex_base_test;
       // Determine whether an alert is expected: if the instruction is valid.
       exp_alert = read_data("u_ibex_core.instr_valid_id");
 
-      // Schedule a simulation step so the DUT can react.
-      #1step;
+      // Wait LockstepOffset cycles before reading the error.
+      clk_vif.wait_n_clks(lockstep_delay);
 
       // Check if the major alert matches our expectation.
       alert_major_internal = read_data("alert_major_internal_o");
