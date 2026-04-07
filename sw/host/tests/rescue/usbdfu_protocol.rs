@@ -4,14 +4,14 @@
 
 #![allow(clippy::bool_assert_comparison)]
 use anyhow::{Result, anyhow};
-use clap::Parser;
+use clap::{Args, Parser, Subcommand};
 use std::process::Command;
 use std::time::Duration;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::chip::boot_log::BootLog;
 use opentitanlib::execute_test;
-use opentitanlib::rescue::{EntryMode, RescueParams, RescueProtocol, RescueTrigger};
+use opentitanlib::rescue::{EntryMode, RescueParams};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;
 
@@ -20,15 +20,8 @@ struct Opts {
     #[command(flatten)]
     init: InitializeTest,
 
-    /// The rescue protocol.
-    #[arg(short, long, value_enum, default_value_t = RescueProtocol::UsbDfu)]
-    rescue_protocol: RescueProtocol,
-    /// The rescue trigger mechanism.
-    #[arg(short, long, value_enum, default_value_t = RescueTrigger::Strap)]
-    trigger: RescueTrigger,
-    /// The rescue trigger value.
-    #[arg(short, long, default_value = "")]
-    value: String,
+    #[command(subcommand)]
+    command: Commands,
 
     /// Console receive timeout.
     #[arg(long, value_parser = humantime::parse_duration, default_value = "10s")]
@@ -39,17 +32,28 @@ struct Opts {
     firmware: String,
 }
 
+/// RescueParams wrapped in a subcommand because its flags conflict with
+/// BootstrapOptions from InitializeTest.
+#[derive(Debug, Subcommand)]
+enum Commands {
+    Rescue(UsbRescueParams),
+}
+
+/// Override RescueParams with default values for USB DFU protocol.
+#[derive(Clone, Debug, Args)]
+#[command(mut_arg("protocol", |arg| arg.default_value("usb-dfu")))]
+#[command(mut_arg("trigger", |arg| arg.default_value("strap")))]
+struct UsbRescueParams {
+    #[command(flatten)]
+    params: RescueParams,
+}
+
 /// Checks that we can use the primitive xmodem tools from the `lrzsz` package
 /// to perform firmware rescue.
 fn firmware_update_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let uart = transport.uart("console")?;
-    let params = RescueParams {
-        protocol: opts.rescue_protocol,
-        trigger: opts.trigger,
-        value: opts.value.clone(),
-        ..Default::default()
-    };
-    let rescue = params.create(transport)?;
+    let Commands::Rescue(rescue_cmd) = &opts.command;
+    let rescue = rescue_cmd.params.create(transport)?;
 
     // It would be even cooler to do this in a python script or shell script, but
     // opentitanlib is just too convenient for manipulating our test infrastructure.
@@ -82,13 +86,8 @@ fn firmware_update_test(opts: &Opts, transport: &TransportWrapper) -> Result<()>
 /// Checks that we can use the primitive xmodem tools from the `lrzsz` package
 /// to perform get the BootLog from the chip.
 fn get_boot_log_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let params = RescueParams {
-        protocol: opts.rescue_protocol,
-        trigger: opts.trigger,
-        value: opts.value.clone(),
-        ..Default::default()
-    };
-    let rescue = params.create(transport)?;
+    let Commands::Rescue(rescue_cmd) = &opts.command;
+    let rescue = rescue_cmd.params.create(transport)?;
 
     let path = format!("boot_log-{}.bin", std::process::id());
     let _ = std::fs::remove_file(&path);

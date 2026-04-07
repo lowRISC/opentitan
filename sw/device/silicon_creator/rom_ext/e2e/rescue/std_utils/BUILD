@@ -47,6 +47,7 @@ opentitan_test(
         test_cmd = """
             --bootstrap={rom_ext}
             --firmware={boot_test}
+            rescue
             --trigger=strap
             --value=3
         """,
