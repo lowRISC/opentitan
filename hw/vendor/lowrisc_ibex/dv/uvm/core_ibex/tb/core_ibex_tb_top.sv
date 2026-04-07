@@ -163,10 +163,6 @@ module core_ibex_tb_top;
   `ASSERT(NoAlertsTriggered,
     !dut_if.alert_minor && !dut_if.alert_major_internal && !dut_if.alert_major_bus, clk, !rst_n)
   `DV_ASSERT_CTRL("tb_no_alerts_triggered", core_ibex_tb_top.NoAlertsTriggered)
-  `DV_ASSERT_CTRL("tb_rf_rd_mux_a_onehot",
-    `IBEX_RF_PATH.gen_rdata_mux_check.u_rdata_a_mux.SelIsOnehot_A)
-  `DV_ASSERT_CTRL("tb_rf_rd_mux_b_onehot",
-    `IBEX_RF_PATH.gen_rdata_mux_check.u_rdata_b_mux.SelIsOnehot_A)
 
   `DV_ASSERT_CTRL("tb_no_spurious_response",
     core_ibex_tb_top.dut.u_ibex_top.u_ibex_core.NoMemResponseWithoutPendingAccess)
