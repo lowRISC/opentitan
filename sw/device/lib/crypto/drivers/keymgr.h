@@ -95,11 +95,13 @@ status_t keymgr_generate_key_kmac(
  * waits until the operation is complete before returning.
  *
  * @param diversification Diversification input for the key derivation.
+ * @param attestation Whether to use the DICE key.
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
 status_t keymgr_generate_key_otbn(
-    const keymgr_diversification_t diversification);
+    const keymgr_diversification_t diversification,
+    hardened_bool_t attestation);
 
 /**
  * Clear the sideloaded AES key.

@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -31,6 +32,9 @@ OTBN_DECLARE_SYMBOL_ADDR(run_p256, k0_io);  // Secret scalar k (share 0).
 OTBN_DECLARE_SYMBOL_ADDR(run_p256, k1_io);  // Secret scalar k (share 1).
 OTBN_DECLARE_SYMBOL_ADDR(run_p256, x_r);    // ECDSA verification result.
 OTBN_DECLARE_SYMBOL_ADDR(run_p256, ok);     // Status code.
+OTBN_DECLARE_SYMBOL_ADDR(
+    run_p256,
+    attestation_additional_seed);  // Additional seed for attestation keygen.
 
 static const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(run_p256, mode);
 static const otbn_addr_t kOtbnVarMsg = OTBN_ADDR_T_INIT(run_p256, msg);
@@ -44,6 +48,8 @@ static const otbn_addr_t kOtbnVarK0 = OTBN_ADDR_T_INIT(run_p256, k0_io);
 static const otbn_addr_t kOtbnVarK1 = OTBN_ADDR_T_INIT(run_p256, k1_io);
 static const otbn_addr_t kOtbnVarXr = OTBN_ADDR_T_INIT(run_p256, x_r);
 static const otbn_addr_t kOtbnVarOk = OTBN_ADDR_T_INIT(run_p256, ok);
+static const otbn_addr_t kOtbnVarBootAttestationAdditionalSeed =
+    OTBN_ADDR_T_INIT(run_p256, attestation_additional_seed);
 
 // Declare mode constants.
 OTBN_DECLARE_SYMBOL_ADDR(run_p256, MODE_KEYGEN);
@@ -99,12 +105,12 @@ enum {
    * The expected instruction counts for constant time functions.
    */
   kModeKeygenInsCnt = 573915,
-  kModeKeygenSideloadInsCnt = 573800,
+  kModeKeygenSideloadInsCnt = 573807,
   kModeEcdhInsCnt = 581600,
-  kModeEcdhSideloadInsCnt = 581658,
+  kModeEcdhSideloadInsCnt = 581665,
   kModeEcdsaSignConfigKInsCnt = 606939,
   kModeEcdsaSignInsCnt = 607089,
-  kModeEcdsaSignSideloadInsCnt = 607147,
+  kModeEcdsaSignSideloadInsCnt = 607154,
   kModePointOnCurveCheckInsCnt = 224,
   kModeBasePointMultInsCnt = 573749,
   kModeShareSecretKeyInsCnt = 147,
@@ -188,6 +194,36 @@ status_t p256_sideload_keygen_start(void) {
   // Set mode so start() will jump into sideload-keygen.
   uint32_t mode = kOtbnP256ModeSideloadKeygen;
   HARDENED_TRY(otbn_dmem_write(kOtbnP256ModeWords, &mode, kOtbnVarMode));
+  // No attestation seed is used.
+  HARDENED_TRY(otbn_dmem_set(kDiceAttestationMaxSeedLength, 0,
+                             kOtbnVarBootAttestationAdditionalSeed));
+
+  // Start the OTBN routine.
+  return otbn_execute();
+}
+
+status_t p256_sideload_attestation_keygen_start(
+    otcrypto_const_word32_buf_t *attestation_seed) {
+  if (launder32(attestation_seed->len) > kDiceAttestationMaxSeedLength) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(attestation_seed));
+
+  // Load the P-256 app. Fails if OTBN is non-idle.
+  HARDENED_TRY(otbn_load_app(kOtbnAppP256));
+
+  // Set mode so start() will jump into sideload-keygen.
+  uint32_t mode = kOtbnP256ModeSideloadKeygen;
+  HARDENED_TRY(otbn_dmem_write(kOtbnP256ModeWords, &mode, kOtbnVarMode));
+
+  HARDENED_TRY(otbn_dmem_write(attestation_seed->len, attestation_seed->data,
+                               kOtbnVarBootAttestationAdditionalSeed));
+  // Pad the remainder by zeros.
+  HARDENED_TRY(
+      otbn_dmem_set(kDiceAttestationMaxSeedLength - attestation_seed->len, 0,
+                    kOtbnVarBootAttestationAdditionalSeed +
+                        attestation_seed->len * sizeof(uint32_t)));
 
   // Start the OTBN routine.
   return otbn_execute();
@@ -309,9 +345,43 @@ status_t p256_ecdsa_sideload_sign_start(
   // Set mode so start() will jump into sideloaded signing.
   uint32_t mode = kOtbnP256ModeSideloadSign;
   HARDENED_TRY(otbn_dmem_write(kOtbnP256ModeWords, &mode, kOtbnVarMode));
+  // No attestation seed is used.
+  HARDENED_TRY(otbn_dmem_set(kDiceAttestationMaxSeedLength, 0,
+                             kOtbnVarBootAttestationAdditionalSeed));
 
   // Set the message digest.
   HARDENED_TRY(set_message_digest(digest));
+
+  // Start the OTBN routine.
+  return otbn_execute();
+}
+
+status_t p256_sideload_attestation_sign_start(
+    const uint32_t digest[kP256ScalarWords],
+    otcrypto_const_word32_buf_t *attestation_seed) {
+  if (launder32(attestation_seed->len) > kDiceAttestationMaxSeedLength) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(attestation_seed));
+
+  // Load the P-256 app. Fails if OTBN is non-idle.
+  HARDENED_TRY(otbn_load_app(kOtbnAppP256));
+
+  // Set mode so start() will jump into sideloaded signing.
+  uint32_t mode = kOtbnP256ModeSideloadSign;
+  HARDENED_TRY(otbn_dmem_write(kOtbnP256ModeWords, &mode, kOtbnVarMode));
+
+  // Set the message digest.
+  HARDENED_TRY(set_message_digest(digest));
+
+  // Write the attestation seed to the extra variables area.
+  HARDENED_TRY(otbn_dmem_write(attestation_seed->len, attestation_seed->data,
+                               kOtbnVarBootAttestationAdditionalSeed));
+  // Pad the remainder by zeros.
+  HARDENED_TRY(
+      otbn_dmem_set(kDiceAttestationMaxSeedLength - attestation_seed->len, 0,
+                    kOtbnVarBootAttestationAdditionalSeed +
+                        attestation_seed->len * sizeof(uint32_t)));
 
   // Start the OTBN routine.
   return otbn_execute();
@@ -471,6 +541,10 @@ status_t p256_sideload_ecdh_start(const p256_point_t *public_key) {
 
   // Set the public key y coordinate.
   HARDENED_TRY(otbn_dmem_write(kP256CoordWords, public_key->y, kOtbnVarY));
+
+  // No attestation seed is used.
+  HARDENED_TRY(otbn_dmem_set(kDiceAttestationMaxSeedLength, 0,
+                             kOtbnVarBootAttestationAdditionalSeed));
 
   // Start the OTBN routine.
   return otbn_execute();

@@ -78,7 +78,14 @@ status_t kmac_basic_test(void) {
  * Test generating a single sideloaded OTBN key.
  */
 status_t otbn_basic_test(void) {
-  return keymgr_generate_key_otbn(kTestDiversification);
+  return keymgr_generate_key_otbn(kTestDiversification, kHardenedBoolFalse);
+}
+
+/**
+ * Test generating a single sideloaded OTBN CDI key.
+ */
+status_t otbn_basic_cdi_test(void) {
+  return keymgr_generate_key_otbn(kTestDiversification, kHardenedBoolTrue);
 }
 
 /**
@@ -212,6 +219,7 @@ bool test_main(void) {
   EXECUTE_TEST(result, aes_basic_test);
   EXECUTE_TEST(result, kmac_basic_test);
   EXECUTE_TEST(result, otbn_basic_test);
+  EXECUTE_TEST(result, otbn_basic_cdi_test);
   EXECUTE_TEST(result, run_negative_test);
 
   return status_ok(result);

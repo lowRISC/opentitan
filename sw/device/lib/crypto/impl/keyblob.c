@@ -150,6 +150,35 @@ status_t keyblob_to_keymgr_diversification(
       key->keyblob, key->config.key_mode, diversification);
 }
 
+status_t keyblob_to_keymgr_attestation_diversification(
+    const otcrypto_blinded_key_t *key,
+    keymgr_diversification_t *diversification) {
+  if (launder32(key->config.hw_backed) != kHardenedBoolTrue ||
+      key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(key->config.hw_backed, kHardenedBoolTrue);
+
+  if (key->keyblob_length != kCdiKeyblobHwBackedBytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  diversification->version = launder32(key->keyblob[0]);
+
+  // Entropy complex must be initialized for `hardened_memcpy`.
+  HARDENED_TRY(entropy_complex_check());
+
+  HARDENED_TRY(hardened_memcpy(diversification->salt, &key->keyblob[1],
+                               kKeymgrSaltNumWords));
+
+  HARDENED_CHECK_EQ(diversification->version, key->keyblob[0]);
+  HARDENED_CHECK_EQ(hardened_memeq(diversification->salt, &key->keyblob[1],
+                                   kKeymgrSaltNumWords),
+                    kHardenedBoolTrue);
+
+  return OTCRYPTO_OK;
+}
+
 status_t keyblob_ensure_xor_masked(const otcrypto_key_config_t config) {
   // Reject hardware-backed keys, since the keyblob is not the actual key
   // material in this case but the version/salt.
@@ -261,5 +290,5 @@ status_t keyblob_key_unmask(const otcrypto_blinded_key_t *key,
 status_t keyblob_sideload_key_otbn(const otcrypto_blinded_key_t *key) {
   keymgr_diversification_t diversification;
   HARDENED_TRY(keyblob_to_keymgr_diversification(key, &diversification));
-  return keymgr_generate_key_otbn(diversification);
+  return keymgr_generate_key_otbn(diversification, kHardenedBoolFalse);
 }

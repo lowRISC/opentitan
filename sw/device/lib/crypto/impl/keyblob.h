@@ -22,6 +22,14 @@ enum {
    * Number of bytes in a hardware-backed key's keyblob.
    */
   kKeyblobHwBackedBytes = kKeyblobHwBackedWords * sizeof(uint32_t),
+  /**
+   * Number of 32-bit words in an attestation key's keyblob.
+   */
+  kCdiKeyblobHwBackedWords = kKeymgrSaltNumWords + 1,
+  /**
+   * Number of bytes in an attestation key's keyblob.
+   */
+  kCdiKeyblobHwBackedBytes = kCdiKeyblobHwBackedWords * sizeof(uint32_t),
 };
 
 /**
@@ -110,6 +118,20 @@ status_t keyblob_buffer_to_keymgr_diversification(
  */
 OT_WARN_UNUSED_RESULT
 status_t keyblob_to_keymgr_diversification(
+    const otcrypto_blinded_key_t *key,
+    keymgr_diversification_t *diversification);
+
+/**
+ * Construct key manager diversification data from a blinded key.
+ *
+ * Similar to keyblob_to_keymgr_diversification but using the specific salt for
+ * attestation keys.
+ *
+ * @param key Blinded key to use.
+ * @param[out] Destination key manager diversification struct.
+ */
+OT_WARN_UNUSED_RESULT
+status_t keyblob_to_keymgr_attestation_diversification(
     const otcrypto_blinded_key_t *key,
     keymgr_diversification_t *diversification);
 
