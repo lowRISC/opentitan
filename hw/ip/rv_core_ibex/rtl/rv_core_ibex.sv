@@ -130,6 +130,9 @@ module rv_core_ibex
   // ICache creates more outstanding transactions
   localparam int NumOutstandingReqs = ICache ? 8 : 2;
 
+  // Ibex uses a lockstep offset of 2 cycles.
+  localparam int unsigned LockstepOffset = 2;
+
   // Instruction interface (internal)
   logic        instr_req;
   logic        instr_gnt;
