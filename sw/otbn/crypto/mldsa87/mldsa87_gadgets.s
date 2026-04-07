@@ -260,3 +260,112 @@ sec_bound_check:
   .endr
 
   ret
+
+/**
+ * Securely decompose an arithmetically shared polynomial X = X0_A + X1_A into
+ * two polynomials W0 = W00_A + W01_A and W1 composed of the lower and higher
+ * bits of each coefficient in X respectively. W0 will be arithmetically shared
+ * while W1 is unmasked.
+ *
+ * This routine is a masked variant of the polynomial decomposition. See
+ * `mldsa87_verify_rounding.s` for detailed breakdown of the individual
+ * computational steps. This is an implementation of the `SecDecompose`
+ * function (Algorithm 7 in [1]).
+ *
+ * Note that this routine will overwrite the inputs X0_A and X1_A with W00_A
+ * and W01_A.
+ *
+ * @param[in] x2: DMEM address of the first input share polynomial X0_A and
+ *                the output polynomial W00_A.
+ * @param[in] x3: DMEM address of the second input share polynomial X1_A and
+ *                the output polynomial W01_A.
+ * @param[in] x4: DMEM address of output polynomial W1.
+ */
+sec_decompose:
+  /* Push clobbered registers onto the stack. */
+  .irp reg, x2, x3, x4, x5, x6
+    sw \reg, 0(x31)
+    addi x31, x31, 4
+  .endr
+
+  /* Load decomposition constants into w4-w7. */
+  addi x5, x0, 4
+  la x6, _sec_decompose_gamma2
+  bn.lid x5++, 0(x6)  /* w4 = GAMMA2 */
+  bn.lid x5++, 32(x6) /* w5 = (ALPHA, ALPHA^-1) */
+
+  bn.not w6, w31
+  bn.shv.8s w6, w6 >> 28 /* w6 = (0x0000000f, 0x0000000f, ..., 0x0000000f) */
+  bn.shv.8s w7, w6 >> 3  /* w7 = (0x00000001, 0x00000001, ..., 0x00000001) */
+
+  /* WDR pointers. */
+  addi x5, x0, 8  /* x0 */
+  addi x6, x0, 9  /* x1 */
+
+  loopi 32, 16
+    bn.lid x5, 0(x2)
+
+    /*
+     * Part 1: b = ALPHA^-1 * (x0 + GAMMA2) - 1, with b = b0 + b1 mod Q.
+     */
+
+    /* b0 = x0 + GAMMA2 mod Q. */
+    bn.addvm.8S w0, w8, w4
+
+    /* b0 = ALPHA^-1 * b - 1 mod Q. */
+    bn.mulvml.8S w0, w0, w5, 1
+    bn.addvm.8S w0, w0, w31 /* cond sub */
+    bn.subvm.8S w0, w0, w7
+
+    bn.xor w31, w31, w31 /* dummy */
+
+    /* b1 = ALPHA^-1 * x1 mod Q. */
+    bn.lid x6, 0(x3++)
+    bn.mulvml.8S w1, w9, w5, 1
+    bn.addvm.8S w1, w1, w31 /* cond sub */
+
+    /* Convert (b0, b1) to Boolean shares. */
+    jal x1, sec_a2b_8x32
+    jal x1, sec_unmask_8x32
+
+    /*
+     * Part 2: w1 = (b0 ^ b1) mod 16, w0 = b0 - ALPHA * w1.
+     */
+
+    /* w1 = b mod 16. */
+    bn.and w0, w0, w6
+
+    /* w0 = b0 - ALPHA * w1. */
+    bn.mulvl.8S w1, w0, w5, 0
+    bn.subvm.8S w8, w8, w1
+
+    bn.sid x5, 0(x2++)
+    bn.sid x0, 0(x4++)
+    /* End of loop */
+
+  /* Restore clobbered general-purpose registers. */
+  .irp reg, x6, x5, x4, x3, x2
+    addi x31, x31, -4
+    lw \reg, 0(x31)
+  .endr
+
+  ret
+
+.data
+.balign 32
+
+/* GAMMA2 = (Q - 1) / 32. */
+_sec_decompose_gamma2:
+.word 0x0003ff00
+.word 0x0003ff00
+.word 0x0003ff00
+.word 0x0003ff00
+.word 0x0003ff00
+.word 0x0003ff00
+.word 0x0003ff00
+.word 0x0003ff00
+
+_sec_decompose_alphas:
+.word 0x0007fe00 /* ALPHA = 2 * GAMMA1 = (Q - 1) / 16 */
+.word 0x007f0009 /* ALPHA^-1 * 2^32 mod Q (Montgomery domain) */
+.zero 24 /* Padding */
