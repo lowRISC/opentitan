@@ -1,0 +1,69 @@
+diff --git a/uvm/core_ibex/fcov/core_ibex_fcov_if.sv b/uvm/core_ibex/fcov/core_ibex_fcov_if.sv
+index 3c844da742..fa5fa2e185 100644
+--- a/uvm/core_ibex/fcov/core_ibex_fcov_if.sv
++++ b/uvm/core_ibex/fcov/core_ibex_fcov_if.sv
+@@ -395,7 +395,6 @@ interface core_ibex_fcov_if import ibex_pkg::*; (
+     id_stall_type_last_valid;
+ 
+   // V2S Related Probes for Top-Level
+-  logic rf_we_glitch_err;
+   logic lockstep_glitch_err;
+ 
+   logic imem_single_cycle_response, dmem_single_cycle_response;
+@@ -493,7 +492,6 @@ interface core_ibex_fcov_if import ibex_pkg::*; (
+     `DV_FCOV_EXPR_SEEN(mem_store_ecc_err, load_store_unit_i.store_resp_intg_err_o)
+ 
+     `DV_FCOV_EXPR_SEEN(lockstep_err, lockstep_glitch_err)
+-    `DV_FCOV_EXPR_SEEN(rf_we_glitch_err, rf_we_glitch_err)
+     `DV_FCOV_EXPR_SEEN(pc_mismatch_err, if_stage_i.pc_mismatch_alert_o)
+ 
+     cp_fetch_enable: coverpoint fetch_enable_i {
+diff --git a/uvm/core_ibex/ibex_dv.f b/uvm/core_ibex/ibex_dv.f
+index c8ec489eb2..5f5367227d 100644
+--- a/uvm/core_ibex/ibex_dv.f
++++ b/uvm/core_ibex/ibex_dv.f
+@@ -68,9 +68,6 @@ ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_39_32_enc.sv
+ ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_39_32_dec.sv
+ ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_72_64_enc.sv
+ ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_72_64_dec.sv
+-${LOWRISC_IP_DIR}/ip/prim/rtl/prim_onehot_check.sv
+-${LOWRISC_IP_DIR}/ip/prim/rtl/prim_onehot_enc.sv
+-${LOWRISC_IP_DIR}/ip/prim/rtl/prim_onehot_mux.sv
+ 
+ // ibex CORE RTL files
+ +incdir+${PRJ_DIR}/rtl
+diff --git a/uvm/core_ibex/tb/core_ibex_tb_top.sv b/uvm/core_ibex/tb/core_ibex_tb_top.sv
+index 601509975d..94c7934702 100644
+--- a/uvm/core_ibex/tb/core_ibex_tb_top.sv
++++ b/uvm/core_ibex/tb/core_ibex_tb_top.sv
+@@ -181,9 +181,6 @@ module core_ibex_tb_top;
+       `IBEX_LOCKSTEP_PATH.u_shadow_core.NoMemResponseWithoutPendingAccess)
+   end
+ 
+-  assign dut.u_ibex_top.u_ibex_core.u_fcov_bind.rf_we_glitch_err =
+-    dut.u_ibex_top.rf_alert_major_internal;
+-
+   assign dut.u_ibex_top.u_ibex_core.u_fcov_bind.lockstep_glitch_err =
+     dut.u_ibex_top.lockstep_alert_major_internal;
+ 
+@@ -366,20 +363,6 @@ module core_ibex_tb_top;
+           unused_assert_connected = 1;
+   end
+ 
+-  // Disable the assertion for onhot check in case WrenCheck (set by SecureIbex) is enabled.
+-  if (SecureIbex) begin : gen_disable_onehot_check
+-    assign dut.u_ibex_top.gen_regfile_ff.register_file_i.gen_wren_check.u_prim_onehot_check.
+-          unused_assert_connected = 1;
+-  end
+-
+-  // Disable the assertion for onhot check in case RdataMuxCheck (set by SecureIbex) is enabled.
+-  if (SecureIbex) begin : gen_disable_rdata_mux_check
+-    assign dut.u_ibex_top.gen_regfile_ff.register_file_i.gen_rdata_mux_check.
+-          u_prim_onehot_check_raddr_a.unused_assert_connected = 1;
+-    assign dut.u_ibex_top.gen_regfile_ff.register_file_i.gen_rdata_mux_check.
+-          u_prim_onehot_check_raddr_b.unused_assert_connected = 1;
+-  end
+-
+   ibex_pkg::ctrl_fsm_e controller_state;
+   logic                controller_handle_irq;
+   ibex_pkg::irqs_t     ibex_irqs, last_ibex_irqs;

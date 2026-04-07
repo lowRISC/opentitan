@@ -181,9 +181,6 @@ module core_ibex_tb_top;
       `IBEX_LOCKSTEP_PATH.u_shadow_core.NoMemResponseWithoutPendingAccess)
   end
 
-  assign dut.u_ibex_top.u_ibex_core.u_fcov_bind.rf_we_glitch_err =
-    dut.u_ibex_top.rf_alert_major_internal;
-
   assign dut.u_ibex_top.u_ibex_core.u_fcov_bind.lockstep_glitch_err =
     dut.u_ibex_top.lockstep_alert_major_internal;
 
@@ -364,20 +361,6 @@ module core_ibex_tb_top;
   if (SecureIbex) begin : gen_disable_count_check
     assign dut.u_ibex_top.gen_lockstep.u_ibex_lockstep.u_rst_shadow_cnt.
           unused_assert_connected = 1;
-  end
-
-  // Disable the assertion for onhot check in case WrenCheck (set by SecureIbex) is enabled.
-  if (SecureIbex) begin : gen_disable_onehot_check
-    assign dut.u_ibex_top.gen_regfile_ff.register_file_i.gen_wren_check.u_prim_onehot_check.
-          unused_assert_connected = 1;
-  end
-
-  // Disable the assertion for onhot check in case RdataMuxCheck (set by SecureIbex) is enabled.
-  if (SecureIbex) begin : gen_disable_rdata_mux_check
-    assign dut.u_ibex_top.gen_regfile_ff.register_file_i.gen_rdata_mux_check.
-          u_prim_onehot_check_raddr_a.unused_assert_connected = 1;
-    assign dut.u_ibex_top.gen_regfile_ff.register_file_i.gen_rdata_mux_check.
-          u_prim_onehot_check_raddr_b.unused_assert_connected = 1;
   end
 
   ibex_pkg::ctrl_fsm_e controller_state;

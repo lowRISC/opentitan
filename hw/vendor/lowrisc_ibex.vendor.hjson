@@ -12,7 +12,11 @@
   },
 
   mapping: [
-    "doc",
+    {
+      from:      "doc",
+      to:        "doc",
+      patch_dir: "doc"
+    }
     {
       from:      "dv",
       to:        "dv",
