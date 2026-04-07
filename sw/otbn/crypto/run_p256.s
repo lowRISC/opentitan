@@ -462,6 +462,16 @@ secret_key_from_seed:
   /* Init all-zero register. */
   bn.xor   w31, w31, w31
 
+  /* Load the additional DRBG seed from DMEM and XOR with one share of the
+     sideloaded seed.
+       w20, w21 <= seed0 ^ dmem[attestation_additional_seed] */
+  la       x2, attestation_additional_seed
+  li       x3, 22
+  bn.lid   x3++, 0(x2)
+  bn.xor   w20, w20, w22
+  bn.lid   x3, 32(x2)
+  bn.xor   w21, w21, w23
+
   /* Generate secret key shares.
        w20, w21 <= d0
        w10, w11 <= d1 */
@@ -556,6 +566,12 @@ k1_io:
 .balign 32
 x_r:
   .zero 32
+
+/* DRBG output to XOR with key manager seed. */
+.globl attestation_additional_seed
+.balign 32
+attestation_additional_seed:
+.zero 64
 
 .section .scratchpad
 

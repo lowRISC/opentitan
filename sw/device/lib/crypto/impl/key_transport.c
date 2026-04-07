@@ -91,6 +91,26 @@ otcrypto_status_t otcrypto_hw_backed_key(uint32_t version,
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
+otcrypto_status_t otcrypto_hw_backed_attestation_key(
+    uint32_t version, const uint32_t salt[8], otcrypto_blinded_key_t *key) {
+  if (key == NULL || key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  if (key->keyblob_length != 9 * sizeof(uint32_t) ||
+      key->config.hw_backed != kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  key->keyblob[0] = version;
+  memcpy(&key->keyblob[1], salt, 8 * sizeof(uint32_t));
+
+  // Set the checksum.
+  key->checksum = integrity_blinded_checksum(key);
+
+  return OTCRYPTO_OK;
+}
+
 otcrypto_status_t otcrypto_wrapped_key_len(const otcrypto_key_config_t config,
                                            size_t *wrapped_num_words) {
   // Check that the total wrapped key length will fit in 32 bits.

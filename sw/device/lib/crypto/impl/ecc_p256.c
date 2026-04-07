@@ -194,6 +194,15 @@ otcrypto_status_t otcrypto_ecdsa_p256_keygen(
   return otcrypto_ecdsa_p256_keygen_async_finalize(private_key, public_key);
 }
 
+otcrypto_status_t otcrypto_ecdsa_p256_dice_keygen(
+    otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key,
+    otcrypto_const_word32_buf_t *attestation_seed) {
+  HARDENED_TRY(otcrypto_ecdsa_p256_dice_keygen_async_start(private_key,
+                                                           attestation_seed));
+  return otcrypto_ecdsa_p256_dice_keygen_async_finalize(private_key,
+                                                        public_key);
+}
+
 otcrypto_status_t otcrypto_ecdsa_p256_sign_config_k(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_blinded_key_t *secret_scalar,
@@ -411,6 +420,34 @@ otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_finalize(
       internal_p256_keygen_finalize(private_key, public_key));
 }
 
+otcrypto_status_t otcrypto_ecdsa_p256_dice_keygen_async_start(
+    const otcrypto_blinded_key_t *private_key,
+    otcrypto_const_word32_buf_t *attestation_seed) {
+  if (private_key == NULL || private_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check the key mode.
+  if (private_key->config.key_mode != kOtcryptoKeyModeEcdsaP256) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(launder32(private_key->config.key_mode),
+                    kOtcryptoKeyModeEcdsaP256);
+
+  HARDENED_TRY(entropy_complex_check());
+
+  keymgr_diversification_t diversification;
+  HARDENED_TRY(keyblob_to_keymgr_attestation_diversification(private_key,
+                                                             &diversification));
+  HARDENED_TRY(keymgr_generate_key_otbn(diversification, kHardenedBoolTrue));
+  return p256_sideload_attestation_keygen_start(attestation_seed);
+}
+
+otcrypto_status_t otcrypto_ecdsa_p256_dice_keygen_async_finalize(
+    otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
+  return otcrypto_ecdsa_p256_keygen_async_finalize(private_key, public_key);
+}
+
 static otcrypto_status_t otcrypto_ecdsa_p256_sign_async_start_setup(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_hash_digest_t message_digest) {
@@ -547,6 +584,44 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_async_finalize(
 
   // Clear the OTBN sideload slot (in case the key was sideloaded).
   return otcrypto_eval_exit(keymgr_sideload_clear_otbn());
+}
+
+otcrypto_status_t otcrypto_ecdsa_p256_dice_sign_async_start(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_hash_digest_t message_digest,
+    otcrypto_const_word32_buf_t *attestation_seed) {
+  if (private_key == NULL || private_key->keyblob == NULL ||
+      message_digest.data == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check the key mode.
+  if (private_key->config.key_mode != kOtcryptoKeyModeEcdsaP256) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(launder32(private_key->config.key_mode),
+                    kOtcryptoKeyModeEcdsaP256);
+
+  // Check the digest length.
+  if (message_digest.len != kP256ScalarWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(launder32(message_digest.len), kP256ScalarWords);
+
+  HARDENED_TRY(entropy_complex_check());
+
+  keymgr_diversification_t diversification;
+  HARDENED_TRY(keyblob_to_keymgr_attestation_diversification(private_key,
+                                                             &diversification));
+  HARDENED_TRY(keymgr_generate_key_otbn(diversification, kHardenedBoolTrue));
+
+  return p256_sideload_attestation_sign_start(message_digest.data,
+                                              attestation_seed);
+}
+
+otcrypto_status_t otcrypto_ecdsa_p256_dice_sign_async_finalize(
+    otcrypto_word32_buf_t *signature) {
+  return otcrypto_ecdsa_p256_sign_async_finalize(signature);
 }
 
 otcrypto_status_t otcrypto_ecdsa_p256_verify_async_start(

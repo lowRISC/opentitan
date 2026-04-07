@@ -226,6 +226,29 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "ecc_p256_dice_functest",
+    srcs = ["ecc_p256_dice_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "eternal",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/drivers:keymgr",
+        "//sw/device/lib/crypto/impl:ecc_p256",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:key_transport",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/crypto/impl:status",
+        "//sw/device/lib/crypto/impl/ecc:p256",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:hexstr",
+        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "drbg_functest",
     srcs = ["drbg_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
