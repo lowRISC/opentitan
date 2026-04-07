@@ -78,6 +78,21 @@ otcrypto_status_t otcrypto_hw_backed_key(uint32_t version,
                                          otcrypto_blinded_key_t *key);
 
 /**
+ * Creates a handle for a hardware-backed key for attestation.
+ *
+ * Similar to otcrypto_hw_backed_key, however, the salt is one word longer
+ * specifically for the CDI key derivation.
+ *
+ * @param version Key version.
+ * @param salt Key salt (diversification data for KDF).
+ * @param[out] key Destination blinded key struct.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_hw_backed_attestation_key(
+    uint32_t version, const uint32_t salt[8], otcrypto_blinded_key_t *key);
+
+/**
  * Returns the length that the blinded key will have once wrapped.
  *
  * @param config Key configuration.
