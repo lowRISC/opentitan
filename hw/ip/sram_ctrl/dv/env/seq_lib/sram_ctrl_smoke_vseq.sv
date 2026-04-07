@@ -49,17 +49,19 @@ class sram_ctrl_smoke_vseq extends sram_ctrl_base_vseq;
     if (!do_sram_ctrl_init) cfg.disable_d_user_data_intg_check_for_passthru_mem = 1;
 
     // do some memory transactions right after reset (zeroed key and nonce)
-    `uvm_info(`gfn,
+    `uvm_info(get_name(),
               $sformatf("Performing %0d random memory accesses after reset!", num_ops_after_reset),
               UVM_LOW)
     do_rand_ops(.num_ops(num_ops_after_reset),
                 .en_ifetch(en_ifetch));
 
-    `uvm_info(`gfn, $sformatf("Starting %0d SRAM transactions", num_trans), UVM_LOW)
     for (int i = 0; i < num_trans; i++) begin
-      `uvm_info(`gfn, $sformatf("iteration: %0d", i), UVM_LOW)
-
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_ops)
+
+      `uvm_info(get_name(),
+                $sformatf("Iteration %0d / %0d (%0d random memory accesses)",
+                          i + 1, num_trans, num_ops),
+                UVM_LOW)
 
       if (access_during_key_req) begin
         // Request new key and issue mem init, in the meanwhile, do some random SRAM operations.
@@ -78,7 +80,7 @@ class sram_ctrl_smoke_vseq extends sram_ctrl_base_vseq;
             // Also need to enable zero_delays, otherwise, the CSR programming may take random
             // cycles to finish
             cfg.clk_rst_vif.wait_clks(2);
-            `uvm_info(`gfn, "accessing during key req", UVM_HIGH)
+            `uvm_info(get_name(), "Accessing during key req", UVM_HIGH)
 
             // SRAM init is basically to write all the mem with random value.
             // When a read happens right after init, it's read-after-write hazard. SCB expects the
@@ -96,9 +98,6 @@ class sram_ctrl_smoke_vseq extends sram_ctrl_base_vseq;
       end
 
       // Do some random memory accesses
-      `uvm_info(`gfn,
-                $sformatf("Performing %0d random memory accesses!", num_ops),
-                UVM_LOW)
       if (stress_pipeline) begin
         bit [TL_AW-1:0] stress_addr;
         for (int i = 0; i < num_ops; i++) begin
