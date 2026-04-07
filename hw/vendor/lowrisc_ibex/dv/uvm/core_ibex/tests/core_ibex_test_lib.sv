@@ -205,8 +205,8 @@ class core_ibex_rf_intg_test extends core_ibex_base_test;
 
 endclass
 
-class core_ibex_rf_ctrl_intg_test extends core_ibex_base_test;
-  `uvm_component_utils(core_ibex_rf_ctrl_intg_test)
+class core_ibex_rf_addr_intg_test extends core_ibex_base_test;
+  `uvm_component_utils(core_ibex_rf_addr_intg_test)
   `uvm_component_new
 
   uvm_report_server rs;
@@ -215,23 +215,47 @@ class core_ibex_rf_ctrl_intg_test extends core_ibex_base_test;
     int          rnd_delay;
     int unsigned bit_idx;
     logic [31:0] orig_val, glitch_val;
-    logic        alert_major_internal;
-    string       glitch_path, alert_major_internal_path;
+    logic [1:0]  ecc_err;
+    string       glitch_path, ecc_alert_path, lockstep_delay_path;
+    string       trgt_core_path[];
     string       ctrl_signals[];
+    string       err_signals[];
     int unsigned ctrl_signal_idx;
+    int unsigned trgt_core_idx;
     string       top_path = "core_ibex_tb_top.dut.u_ibex_top";
+    // Main core signals.
     string       ibex_rf_path = {top_path, ".gen_regfile_ff.register_file_i"};
+    // Shadow core signals.
+    string       lockstep_path = {top_path, ".gen_lockstep.u_ibex_lockstep"};
+    string       shdw_ecc_path =  {lockstep_path, ".u_shadow_core.gen_regfile_ecc"};
+    string       shdw_rf_path = {lockstep_path, ".gen_shadow_regfile_ff.register_file_shadow_i"};
+    // The lockstep delay.
+    int unsigned lockstep_delay;
 
-    ctrl_signals = {
-      "we_a_dec",
-      "gen_rdata_mux_check.raddr_onehot_a",
-      "gen_rdata_mux_check.raddr_onehot_b"
+    trgt_core_path = {
+      ibex_rf_path,
+      shdw_rf_path
     };
 
+    ctrl_signals = {
+      "raddr_a_i",
+      "raddr_b_i"
+    };
+
+    err_signals = {
+      "rf_ecc_err_a",
+      "rf_ecc_err_b"
+    };
+
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(trgt_core_idx, trgt_core_idx < trgt_core_path.size();)
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(ctrl_signal_idx, ctrl_signal_idx < ctrl_signals.size();)
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(rnd_delay, rnd_delay > 1000; rnd_delay < 10_000;)
 
-    glitch_path = $sformatf("%s.%s", ibex_rf_path, ctrl_signals[ctrl_signal_idx]);
+    glitch_path = $sformatf("%s.%s", trgt_core_path[trgt_core_idx], ctrl_signals[ctrl_signal_idx]);
+
+    // Read the lockstep delay.
+    lockstep_delay_path = $sformatf("%s.%s", lockstep_path, "LockstepOffset");
+    `DV_CHECK_FATAL(uvm_hdl_read(lockstep_delay_path, lockstep_delay));
 
     vseq.start(env.vseqr);
     clk_vif.wait_n_clks(rnd_delay);
@@ -240,27 +264,31 @@ class core_ibex_rf_ctrl_intg_test extends core_ibex_base_test;
     `DV_CHECK_FATAL(uvm_hdl_read(glitch_path, orig_val));
     `uvm_info(`gfn, $sformatf("Read %x", orig_val), UVM_LOW)
 
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bit_idx, bit_idx < 32;)
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bit_idx, bit_idx < 5;)
 
     glitch_val = orig_val;
     glitch_val[bit_idx] = ~glitch_val[bit_idx];
 
     // Disable TB assertion for alerts.
     `DV_ASSERT_CTRL_REQ("tb_no_alerts_triggered", 1'b0)
-    // Disable one-hot check assertions for RF muxes
-    `DV_ASSERT_CTRL_REQ("tb_rf_rd_mux_a_onehot", 1'b0)
-    `DV_ASSERT_CTRL_REQ("tb_rf_rd_mux_b_onehot", 1'b0)
 
     `uvm_info(`gfn, $sformatf("Forcing %s to value 'h%0x", glitch_path, glitch_val), UVM_LOW)
     `DV_CHECK_FATAL(uvm_hdl_force(glitch_path, glitch_val));
 
-    // Leave glitch applied for one clock cycle.
-    clk_vif.wait_n_clks(1);
+    // Determine how long it takes until the error gets noticed.
+    if (trgt_core_idx == 0) begin
+      // When we are faulting the main core RF, it takes lockstep_delay until we detect the fault.
+      // This is because the shadow core ECC checker is responsible for detecting the fault.
+      clk_vif.wait_n_clks(lockstep_delay);
+    end else begin
+      // When we are faulting the shadow core RF, the fault is immediately detected.
+      #1step;
+    end
 
     // Check that the alert matches our expectation.
-    alert_major_internal_path = $sformatf("%s.alert_major_internal_o", top_path);
-    `DV_CHECK_FATAL(uvm_hdl_read(alert_major_internal_path, alert_major_internal))
-    `DV_CHECK_FATAL(alert_major_internal, "Major alert did not fire!")
+    ecc_alert_path = $sformatf("%s.%s", shdw_ecc_path, err_signals[ctrl_signal_idx]);
+    `DV_CHECK_FATAL(uvm_hdl_read(ecc_alert_path, ecc_err))
+    `DV_CHECK_FATAL(|ecc_err, "ECC alert did not fire!")
 
     // Release glitch.
     `DV_CHECK_FATAL(uvm_hdl_release(glitch_path))
