@@ -716,7 +716,6 @@ status_t rsa_padding_oaep_encode(const otcrypto_hash_mode_t hash_mode,
 
   // Generate a random string the same length as a hash digest (step 2d).
   uint32_t seed[digest_wordlen];
-  HARDENED_TRY(entropy_complex_check());
   HARDENED_TRY(entropy_csrng_instantiate(
       /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
   HARDENED_TRY(entropy_csrng_generate(&kEntropyEmptySeed, seed, ARRAYSIZE(seed),

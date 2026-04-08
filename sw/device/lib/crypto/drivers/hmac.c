@@ -10,7 +10,6 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/integrity.h"
@@ -292,9 +291,6 @@ static void context_save(hmac_ctx_t *ctx) {
  * @return Result of the operation.
  */
 static status_t hmac_context_wipe(hmac_ctx_t *ctx) {
-  // Ensure entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
-
   // Randomize sensitive data.
   HARDENED_TRY(hardened_memshred(ctx->key.key_block, kHmacMaxBlockWords));
   HARDENED_TRY(hardened_memshred(ctx->H, kHmacMaxDigestWords));
@@ -438,9 +434,6 @@ static status_t oneshot(const uint32_t cfg, const hmac_key_t *key,
                         size_t digest_wordlen, uint32_t *digest) {
   // Check that the block is idle.
   HARDENED_TRY(ensure_idle());
-
-  // Make sure that the entropy complex is configured correctly.
-  HARDENED_TRY(entropy_complex_check());
 
   // Configure the HMAC block.
   abs_mmio_write32(kHmacBaseAddr + HMAC_CFG_REG_OFFSET, cfg);
@@ -774,9 +767,6 @@ hardened_bool_t hmac_key_integrity_checksum_check(const hmac_key_t *key) {
 }
 
 status_t hmac_update(hmac_ctx_t *ctx, const otcrypto_const_byte_buf_t *data) {
-  // Make sure that the entropy complex is configured correctly.
-  HARDENED_TRY(entropy_complex_check());
-
   // If we don't have enough new bytes to fill a block, just update the partial
   // block and return.
   size_t block_bytelen = ctx->msg_block_wordlen * sizeof(uint32_t);
@@ -836,9 +826,6 @@ status_t hmac_update(hmac_ctx_t *ctx, const otcrypto_const_byte_buf_t *data) {
 }
 
 status_t hmac_final(hmac_ctx_t *ctx, otcrypto_word32_buf_t *digest) {
-  // Make sure that the entropy complex is configured correctly.
-  HARDENED_TRY(entropy_complex_check());
-
   // Retore context will restore the context and also hit start or continue
   // button as necessary.
   HARDENED_TRY(context_restore(ctx));

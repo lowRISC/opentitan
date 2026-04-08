@@ -5,7 +5,6 @@
 #include "sw/device/lib/crypto/include/ecc_curve25519.h"
 
 #include "sw/device/lib/base/hardened_memory.h"
-#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/impl/ecc/curve25519.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
@@ -245,9 +244,6 @@ otcrypto_status_t otcrypto_ed25519_verify(
 
 otcrypto_status_t otcrypto_ed25519_keygen_async_start(
     const otcrypto_unblinded_key_t *private_key) {
-  // Check that the entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
-
   // Check the private key.
   HARDENED_TRY(ed25519_key_check(private_key));
 
@@ -284,9 +280,6 @@ otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
     otcrypto_const_byte_buf_t *input_message_ph,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_hash_digest_t *key_digest,
     otcrypto_hash_digest_t *msg_digest) {
-  // Check that the entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
-
   // Check the private key.
   HARDENED_TRY(ed25519_key_check(private_key));
 
@@ -333,9 +326,6 @@ otcrypto_status_t otcrypto_ed25519_sign_part2_async_start(
     otcrypto_const_byte_buf_t *input_message_ph,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t *signature,
     otcrypto_hash_digest_t *key_digest, otcrypto_hash_digest_t *msg_digest) {
-  // Ensure the entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
-
   // Check the signature.
   HARDENED_TRY(ed25519_signature_check(signature));
 
@@ -388,9 +378,6 @@ otcrypto_status_t otcrypto_ed25519_sign_part2_async_start(
 
 otcrypto_status_t otcrypto_ed25519_sign_async_finalize(
     otcrypto_word32_buf_t *signature) {
-  // Ensure the entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
-
   // Check the signature.
   HARDENED_TRY(ed25519_signature_check(signature));
 
@@ -408,9 +395,6 @@ otcrypto_status_t otcrypto_ed25519_verify_async_start(
     otcrypto_const_byte_buf_t *input_message_ph,
     otcrypto_eddsa_sign_mode_t sign_mode,
     otcrypto_const_word32_buf_t *signature) {
-  // Ensure the entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
-
   // Check the public key.
   HARDENED_TRY(ed25519_key_check(public_key));
 

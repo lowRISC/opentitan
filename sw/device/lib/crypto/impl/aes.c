@@ -9,7 +9,6 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/aes.h"
-#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/keymgr.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -309,9 +308,6 @@ static otcrypto_status_t otcrypto_aes_impl(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Ensure the entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
-
   // Calculate the number of blocks for the input, including the padding for
   // encryption.
   size_t input_nblocks;
@@ -480,9 +476,6 @@ otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
       cipher_input->data == NULL || cipher_output->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-
-  // Ensure the entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
 
   if (launder32(key->config.security_level) == kOtcryptoKeySecurityLevelLow) {
     HARDENED_CHECK_EQ(key->config.security_level, kOtcryptoKeySecurityLevelLow);

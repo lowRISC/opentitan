@@ -938,6 +938,37 @@ status_t entropy_complex_check(void) {
   return edn_check(&config->edn1);
 }
 
+OT_WARN_UNUSED_RESULT
+status_t entropy_complex_health_test_config_check(void) {
+  const entropy_src_config_t *entropy_src_config =
+      &kEntropyComplexConfigs[kEntropyComplexConfigIdContinuous].entropy_src;
+
+  uint32_t reg;
+  // Check health test window
+  reg = abs_mmio_read32(kBaseEntropySrc +
+                        ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_OFFSET);
+  HARDENED_CHECK_EQ(bitfield_field32_read(
+                        reg, ENTROPY_SRC_HEALTH_TEST_WINDOWS_FIPS_WINDOW_FIELD),
+                    entropy_src_config->fips_test_window_size);
+
+  // Check recoverable alerts
+  if (abs_mmio_read32(kBaseEntropySrc +
+                      ENTROPY_SRC_RECOV_ALERT_STS_REG_OFFSET) != 0) {
+    return OTCRYPTO_RECOV_ERR;
+  }
+
+  // Check health test thresholds
+  VERIFY_FIPS_THRESH(REPCNT, entropy_src_config->repcnt_threshold);
+  VERIFY_FIPS_THRESH(REPCNTS, entropy_src_config->repcnts_threshold);
+  VERIFY_FIPS_THRESH(ADAPTP_HI, entropy_src_config->adaptp_hi_threshold);
+  VERIFY_FIPS_THRESH(ADAPTP_LO, entropy_src_config->adaptp_lo_threshold);
+  VERIFY_FIPS_THRESH(BUCKET, entropy_src_config->bucket_threshold);
+  VERIFY_FIPS_THRESH(MARKOV_HI, entropy_src_config->markov_hi_threshold);
+  VERIFY_FIPS_THRESH(MARKOV_LO, entropy_src_config->markov_lo_threshold);
+
+  return OTCRYPTO_OK;
+}
+
 status_t entropy_csrng_instantiate(
     hardened_bool_t disable_trng_input,
     const entropy_seed_material_t *seed_material) {

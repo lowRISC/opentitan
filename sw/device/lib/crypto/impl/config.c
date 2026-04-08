@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/crypto/drivers/alert.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
+#include "sw/device/lib/crypto/include/entropy_src.h"
 
 #include "clkmgr_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -43,6 +44,9 @@ otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level) {
 
   HARDENED_TRY(init_alert_registers());
 
+  // Instantiate the RNG.
+  HARDENED_TRY(otcrypto_entropy_init());
+
   return OTCRYPTO_OK;
 }
 
@@ -51,6 +55,9 @@ otcrypto_status_t otcrypto_eval_exit(otcrypto_status_t status) {
     return OTCRYPTO_FATAL_ERR;
   }
   HARDENED_CHECK_EQ(launder32(read_alert_registers()), 0);
+
+  // Verify the entropy source before leaving.
+  HARDENED_TRY(otcrypto_entropy_health_test_config_check());
 
   return status;
 }
