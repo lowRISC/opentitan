@@ -536,3 +536,21 @@ pentest_rom_ext_imm_skip_fi_gdb(
     test_harness = "//sw/host/penetrationtests/python/fi:fi_rom_ext_imm_skip_python_gdb_test",
     test_vectors = [],
 )
+
+# RNG test for certification, this is a manual tests
+pentest_cryptolib_fi_sym(
+    name = "cc_rng_output_test",
+    tags = ["manual"],
+    test_args = "",
+    test_harness = "//sw/host/penetrationtests/python/fi:cc_rng_output_test",
+    test_vectors = [],
+)
+
+# RNG test for certification, this is a manual tests
+pentest_fi(
+    name = "fips_rng_output_test",
+    tags = ["manual"],
+    test_args = "",
+    test_harness = "//sw/host/penetrationtests/python/fi:fips_rng_output_test",
+    test_vectors = [],
+)
