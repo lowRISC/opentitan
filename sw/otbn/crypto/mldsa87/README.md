@@ -64,6 +64,10 @@ The following rules/conventions are followed in this implementation:
   4. GPRs `x28-x30` and WDRs `w29-w30` are reserved for the global state of the KMAC interface (see preamble of the XOF module).
   5. All WDRs (except `w29-w30` and the all zero `w31`) are considered _clobberable_ and are never preserved, except in the case where they are being used as input/output values of routines (e.g., the MAI routines).
   6. Vector routines do not need to preserve the _unclobberable_ registers as they sit on top of the hierarchy and are not part of other logic except the gluing code of the OTBN apps.
+  7. The `MOD` WSR contains three 32-bit constants throughout the computation.
+     - `MOD[31:0] = Q = 8380417` (ML-DSA prime number).
+     - `MOD[63:32] = MU = -Q^-1 mod 2^32` (Montgomery multiplication constant).
+     - `MOD[95:64] = F = 256^-1 * 2^32 * 2^32 mod Q` (Corrective factor of the inverse NTT).
 
 The calling convention of the ML-DSA implementation bears similarities to its x86 counterpart and allows for complex applications that are composed of dozens of interleaved routines with a deep call stack.
 The overhead of keeping a dynamic stack is negligible.
