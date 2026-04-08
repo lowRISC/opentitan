@@ -314,20 +314,41 @@ class sram_ctrl_base_vseq #(
     if (wait_complete) csr_utils_pkg::wait_no_outstanding_access();
   endtask
 
-  // the input write argument will be used in extended test where this function is overridden
+  // Return a randomised contiguous mask as a bit-vector with width BUS_DBW.
+  //
+  // With probability partial_access_pct/100, this mask will have less than every bit set.
+  //
+  // The input write argument will be used in extended test where this function is overridden
   virtual function bit[bus_params_pkg::BUS_DBW-1:0] get_rand_mask(bit write);
-    bit [bus_params_pkg::BUS_DBW-1:0] mask;
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask,
-        // mask to be contiguous
-        // if one bit is set, 'b1 ^ 'b10 <= 2
-        // if 2 bits are set, 'b11 ^ 'b110 <= 2
-        //     non-contiguous cases: 'b101 ^ 'b1010 = 4, 'b1001 ^ 'b0010 = 3
-        // if 3 bits are set, 'b111 ^ 'b1110 <= 2
-        //     non-contiguous cases: 'b1101 ^ 'b1010 = 3, 'b1011 ^ 'b0110 = 3
-        $countones(mask ^ {mask[bus_params_pkg::BUS_DBW-2:0], 1'b0}) <= 2;
-        mask dist {'1 :/ 100 - partial_access_pct,
-                   [0 : '1 - 1] :/ partial_access_pct};)
-    return mask;
+    import bus_params_pkg::BUS_DBW;
+
+    // We want a partial mask with probability partial_access_pct/100. Start by picking whether to
+    // get a full or partial mask.
+    if ($urandom_range(0, 99) >= partial_access_pct) begin
+      // If the random value in 0..99 was at least equal to the threshold, we are in the "full mask"
+      // case and can just return '1.
+      return {BUS_DBW{1'b1}};
+    end else begin
+      // If the random value was less than the threshold, we need to pick a partial mask.
+      //
+      // This mask needs to have a contiguous set of bits that are asserted. To require this, notice
+      // that if x is some nonzero value computing (x - 1) | x gives the value, but setting every
+      // bit below the least significant bit that was set in x. For example, if x was 'b1101100 then
+      // (x - 1) | x  is 'b1101111.
+      //
+      // If y is that result, it will be one less than a power of two iff x had a contiguous set of
+      // bits. In that case, y & (y + 1) will be zero.
+      //
+      // To ensure the mask is actually partial, we need at least one bit to be clear.
+      bit [BUS_DBW-1:0] mask;
+      if (!std::randomize(mask) with {
+            ((mask - 1) | mask) & (((mask - 1) | mask) + 1) == '0;
+            mask != '1;
+          }) begin
+        `uvm_fatal(get_name(), "Failed to randomise partial mask.")
+      end
+      return mask;
+    end
   endfunction
 
 endclass : sram_ctrl_base_vseq
