@@ -9,20 +9,29 @@ set -e
 . util/build_consts.sh
 
 function usage() {
-    echo >&2 "Usage: run-fpga-tests.sh [--mode=(coverage|test)] <fpga> <target_pattern_file>"
+    echo >&2 "Usage: run-fpga-tests.sh" \
+             "[--mode=(coverage|test)] [--build-only] [--no-fpga]" \
+             "<fpga> <target_pattern_file> [bazel options...]"
     echo >&2 "E.g. ./run-fpga-tests.sh cw310 list_of_test.txt"
+    echo >&2 "E.g. ./run-fpga-tests.sh cw310 list_of_test.txt --cache_test_results=no"
     echo >&2 "E.g. ./run-fpga-tests.sh --mode=coverage cw310 list_of_test.txt"
+    echo >&2 "E.g. ./run-fpga-tests.sh --build-only cw310 list_of_test.txt"
+    echo >&2 "E.g. ./run-fpga-tests.sh --no-fpga cw310 list_of_test.txt"
 }
 
 mode="test"
+build_only=false
+no_fpga=false
 
 # Parse arguments
-TEMP=$(getopt -o '' --long mode: -n 'run-fpga-tests.sh' -- "$@")
+TEMP=$(getopt -o '' --long mode:,build-only,no-fpga -n 'run-fpga-tests.sh' -- "$@")
 eval set -- "$TEMP"
 
 while true; do
     case "$1" in
         --mode) mode="$2"; shift 2 ;;
+        --build-only) build_only=true; shift ;;
+        --no-fpga) no_fpga=true; shift ;;
         --) shift; break ;;
         *) break ;;
     esac
@@ -35,6 +44,7 @@ fi
 
 fpga="$1"
 target_pattern_file="$2"
+shift 2
 
 echo "Running $mode with $fpga on $target_pattern_file"
 
@@ -46,27 +56,13 @@ if [ "${fpga}" = "hyper310" ]; then
 else
     readonly BIT_SRC_DIR="${BIN_DIR}/hw/top_earlgrey/chip_earlgrey_${fpga}"
 fi
-mkdir -p "${BIT_CACHE_DIR}"
-cp -rt "${BIT_CACHE_DIR}" "${BIT_SRC_DIR}"/*
 
-export BITSTREAM="--offline --list ci_bitstreams"
+if [[ -d "${BIT_SRC_DIR}" ]]; then
+    mkdir -p "${BIT_CACHE_DIR}"
+    cp -rnt "${BIT_CACHE_DIR}" "${BIT_SRC_DIR}"/*
+    export BITSTREAM="--offline --list ci_bitstreams"
+fi
 
-# We will lose serial access when we reboot, but if tests fail we should reboot
-# in case we've crashed the UART handler on the CW310's SAM3U
-# Note that the hyperdebug backend does not have the reset-sam3x command so this will fail but not trigger an error.
-trap 'ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=${fpga} fpga reset-sam3x || true' EXIT
-
-# In case tests update OTP or otherwise leave state on the FPGA we should start
-# by clearing the bitstream.
-# FIXME: #16543 The following step sometimes has trouble reading the I2C we'll
-# log it better and continue even if it fails (the pll is mostly correctly set
-# anyway).
-# Note that the hyperdebug backend does not have the set-pll command so this will fail but not trigger an error.
-ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface="$fpga" --logging debug fpga set-pll || true
-ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface="$fpga" fpga clear-bitstream
-
-# Print the SAM3X firmware version. HyperDebug transports don't currently support this, so we ignore errors.
-ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface="$fpga" fpga get-sam3x-fw-version || true
 
 TEST_ARGS=(
     --define DISABLE_VERILATOR_BUILD=true
@@ -86,4 +82,32 @@ if [[ "${mode}" == "coverage" ]]; then
   )
 fi
 
-ci/bazelisk.sh "${mode}" "${TEST_ARGS[@]}"
+TEST_ARGS+=(
+  "$@"
+)
+
+if [[ "${build_only}" == "true" ]]; then
+    ci/bazelisk.sh build //sw/host/opentitantool
+    ci/bazelisk.sh build "${TEST_ARGS[@]}"
+else
+    if [[ "${no_fpga}" == "false" ]]; then
+        # We will lose serial access when we reboot, but if tests fail we should reboot
+        # in case we've crashed the UART handler on the CW310's SAM3U
+        # Note that the hyperdebug backend does not have the reset-sam3x command so this will fail but not trigger an error.
+        trap 'ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=${fpga} fpga reset-sam3x || true' EXIT
+
+        # In case tests update OTP or otherwise leave state on the FPGA we should start
+        # by clearing the bitstream.
+        # FIXME: #16543 The following step sometimes has trouble reading the I2C we'll
+        # log it better and continue even if it fails (the pll is mostly correctly set
+        # anyway).
+        # Note that the hyperdebug backend does not have the set-pll command so this will fail but not trigger an error.
+        ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface="$fpga" --logging debug fpga set-pll || true
+        ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface="$fpga" fpga clear-bitstream
+
+        # Print the SAM3X firmware version. HyperDebug transports don't currently support this, so we ignore errors.
+        ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface="$fpga" fpga get-sam3x-fw-version || true
+    fi
+
+    ci/bazelisk.sh "${mode}" "${TEST_ARGS[@]}"
+fi
