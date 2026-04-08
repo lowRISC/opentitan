@@ -9,6 +9,11 @@
 
 #include "sw/device/lib/crypto/include/datatypes.h"
 
+// By default we set that the cryptolib is not released.
+#ifndef CRYPTOLIB_IS_RELEASED
+#define CRYPTOLIB_IS_RELEASED false
+#endif
+
 /**
  * A truncated commit hash from the sw/device/lib/crypto directory from
  * the open-source OpenTitan repo that can be used to reproduce the
@@ -50,7 +55,7 @@ enum {
   /**
    * Indicates whether the cryptolib is released or not.
    */
-  kCryptoLibReleased = false,
+  kCryptoLibReleased = CRYPTOLIB_IS_RELEASED,
 };
 
 /**
