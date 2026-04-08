@@ -95,6 +95,7 @@ cc_library(
         ":sha2",
         ":status",
         "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:random_order",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl/ecc:curve25519",
         "//sw/device/lib/crypto/include:datatypes",

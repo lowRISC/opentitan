@@ -198,8 +198,11 @@ ed25519_hash_k:
 /* Lower half of precomputed hash h (256 bits). See RFC 8032, section
    5.1.6, step 1 or the docstring of ed25519_sign. Input for sign. */
 .balign 32
-.globl ed25519_hash_h_low
-ed25519_hash_h_low:
+.globl ed25519_hash_h_low_share0
+ed25519_hash_h_low_share0:
+  .zero 32
+.globl ed25519_hash_h_low_share1
+ed25519_hash_h_low_share1:
   .zero 32
 
 /* Precomputed hash r (512 bits). See RFC 8032, section 5.1.6, step 2 or the

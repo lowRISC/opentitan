@@ -32,7 +32,10 @@ OTBN_DECLARE_SYMBOL_ADDR(run_curve25519,
                          ed25519_hash_k);  // Challenge hash k.
 OTBN_DECLARE_SYMBOL_ADDR(
     run_curve25519,
-    ed25519_hash_h_low);  // 32 lowest bytes of the key hash.
+    ed25519_hash_h_low_share0);  // 32 lowest bytes of the key hash.
+OTBN_DECLARE_SYMBOL_ADDR(
+    run_curve25519,
+    ed25519_hash_h_low_share1);  // 32 lowest bytes of the key hash.
 OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, ed25519_hash_r);  // Message hash r.
 
 static const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(run_curve25519, mode);
@@ -46,8 +49,10 @@ static const otbn_addr_t kOtbnVarPubKey =
     OTBN_ADDR_T_INIT(run_curve25519, ed25519_public_key);
 static const otbn_addr_t kOtbnVarHashK =
     OTBN_ADDR_T_INIT(run_curve25519, ed25519_hash_k);
-static const otbn_addr_t kOtbnVarHashHlow =
-    OTBN_ADDR_T_INIT(run_curve25519, ed25519_hash_h_low);
+static const otbn_addr_t kOtbnVarHashHlowShare0 =
+    OTBN_ADDR_T_INIT(run_curve25519, ed25519_hash_h_low_share0);
+static const otbn_addr_t kOtbnVarHashHlowShare1 =
+    OTBN_ADDR_T_INIT(run_curve25519, ed25519_hash_h_low_share1);
 static const otbn_addr_t kOtbnVarHashR =
     OTBN_ADDR_T_INIT(run_curve25519, ed25519_hash_r);
 
@@ -67,7 +72,8 @@ static const uint32_t kOtbnCurve25519ModeVerify =
     OTBN_ADDR_T_INIT(run_curve25519, MODE_VERIFY);
 
 status_t curve25519_keygen_start(
-    const uint32_t hash_h_low[kCurve25519HalfHashWords]) {
+    const uint32_t hash_h_low_share0[kCurve25519HalfHashWords],
+    const uint32_t hash_h_low_share1[kCurve25519HalfHashWords]) {
   // Load the Curve25519 app. Fails if OTBN is non-idle.
   HARDENED_TRY(otbn_load_app(kOtbnAppCurve25519));
 
@@ -76,8 +82,10 @@ status_t curve25519_keygen_start(
   HARDENED_TRY(otbn_dmem_write(kCurve25519ModeWords, &mode, kOtbnVarMode));
 
   // Set lower 32 bytes of private key hash h.
-  HARDENED_TRY(
-      otbn_dmem_write(kCurve25519HalfHashWords, hash_h_low, kOtbnVarHashHlow));
+  HARDENED_TRY(otbn_dmem_write(kCurve25519HalfHashWords, hash_h_low_share0,
+                               kOtbnVarHashHlowShare0));
+  HARDENED_TRY(otbn_dmem_write(kCurve25519HalfHashWords, hash_h_low_share1,
+                               kOtbnVarHashHlowShare1));
 
   // Start the OTBN routine.
   return otbn_execute();
@@ -98,7 +106,8 @@ status_t curve25519_keygen_finalize(
 
 status_t curve25519_sign_stage1_start(
     const uint32_t hash_r[kCurve25519HashWords],
-    const uint32_t hash_h_low[kCurve25519HalfHashWords]) {
+    const uint32_t hash_h_low_share0[kCurve25519HalfHashWords],
+    const uint32_t hash_h_low_share1[kCurve25519HalfHashWords]) {
   // Load the Curve25519 app. Fails if OTBN is non-idle.
   HARDENED_TRY(otbn_load_app(kOtbnAppCurve25519));
 
@@ -110,8 +119,10 @@ status_t curve25519_sign_stage1_start(
   HARDENED_TRY(otbn_dmem_write(kCurve25519HashWords, hash_r, kOtbnVarHashR));
 
   // Set lower 32 bytes of private key hash h.
-  HARDENED_TRY(
-      otbn_dmem_write(kCurve25519HalfHashWords, hash_h_low, kOtbnVarHashHlow));
+  HARDENED_TRY(otbn_dmem_write(kCurve25519HalfHashWords, hash_h_low_share0,
+                               kOtbnVarHashHlowShare0));
+  HARDENED_TRY(otbn_dmem_write(kCurve25519HalfHashWords, hash_h_low_share1,
+                               kOtbnVarHashHlowShare1));
 
   // Start the OTBN routine.
   return otbn_execute();
@@ -137,7 +148,8 @@ status_t curve25519_sign_stage1_finalize(
 status_t curve25519_sign_stage2_start(
     const uint32_t hash_k[kCurve25519HashWords],
     const uint32_t hash_r[kCurve25519HashWords],
-    const uint32_t hash_h_low[kCurve25519HalfHashWords]) {
+    const uint32_t hash_h_low_share0[kCurve25519HalfHashWords],
+    const uint32_t hash_h_low_share1[kCurve25519HalfHashWords]) {
   // Load the Curve25519 app. Fails if OTBN is non-idle.
   HARDENED_TRY(otbn_load_app(kOtbnAppCurve25519));
 
@@ -152,8 +164,10 @@ status_t curve25519_sign_stage2_start(
   HARDENED_TRY(otbn_dmem_write(kCurve25519HashWords, hash_r, kOtbnVarHashR));
 
   // Set lower half of precomputed secret key hash h.
-  HARDENED_TRY(
-      otbn_dmem_write(kCurve25519HalfHashWords, hash_h_low, kOtbnVarHashHlow));
+  HARDENED_TRY(otbn_dmem_write(kCurve25519HalfHashWords, hash_h_low_share0,
+                               kOtbnVarHashHlowShare0));
+  HARDENED_TRY(otbn_dmem_write(kCurve25519HalfHashWords, hash_h_low_share1,
+                               kOtbnVarHashHlowShare1));
 
   // Start the OTBN routine.
   return otbn_execute();

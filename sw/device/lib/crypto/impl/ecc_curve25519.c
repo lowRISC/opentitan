@@ -5,6 +5,7 @@
 #include "sw/device/lib/crypto/include/ecc_curve25519.h"
 
 #include "sw/device/lib/base/hardened_memory.h"
+#include "sw/device/lib/base/random_order.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/impl/ecc/curve25519.h"
@@ -87,6 +88,33 @@ static status_t reverse_bytecpy(uint8_t *dst, const uint8_t *src, size_t len) {
   for (size_t i = 0; i < len; i++) {
     dst[i] = src[len - 1 - i];
   }
+
+  return OTCRYPTO_OK;
+}
+
+/**
+ * Boolean mask a buffer of 32-bit words.
+ *
+ * @param src Buffer to be masked.
+ * @param share0 First output share.
+ * @param share1 Second output share.
+ * @param len Length of the src buffer.
+ */
+static status_t boolean_mask(uint32_t *src, uint32_t *share0, uint32_t *share1,
+                             size_t len) {
+  random_order_t order;
+  random_order_init(&order, len);
+
+  size_t i = 0;
+  for (; launderw(i) < len; i = launderw(i) + 1) {
+    size_t idx = launderw(random_order_advance(&order));
+    barrierw(idx);
+
+    share1[idx] = hardened_memshred_random_word();
+    share0[idx] = share1[idx] ^ src[idx];
+  }
+  RANDOM_ORDER_HARDENED_CHECK_DONE(order);
+  HARDENED_CHECK_EQ(i, len);
 
   return OTCRYPTO_OK;
 }
@@ -243,8 +271,14 @@ otcrypto_status_t otcrypto_ed25519_keygen_async_start(
       private_key->key_length);
   HARDENED_TRY(otcrypto_sha2_512(&key_buf, &key_digest));
 
+  // Mask hash_h_low.
+  uint32_t hash_h_low_share0[kCurve25519HalfHashWords] = {0};
+  uint32_t hash_h_low_share1[kCurve25519HalfHashWords] = {0};
+  HARDENED_TRY(boolean_mask(key_digest.data, hash_h_low_share0,
+                            hash_h_low_share1, kCurve25519HalfHashWords));
+
   // Start the OTBN keygen app.
-  HARDENED_TRY(curve25519_keygen_start(key_digest.data));
+  HARDENED_TRY(curve25519_keygen_start(hash_h_low_share0, hash_h_low_share1));
 
   return OTCRYPTO_OK;
 }
@@ -299,9 +333,15 @@ otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg_bytes, msg_byte_len);
   HARDENED_TRY(otcrypto_sha2_512(&msg_buf, msg_digest));
 
+  // Mask hash_h_low.
+  uint32_t hash_h_low_share0[kCurve25519HalfHashWords] = {0};
+  uint32_t hash_h_low_share1[kCurve25519HalfHashWords] = {0};
+  HARDENED_TRY(boolean_mask(key_digest->data, hash_h_low_share0,
+                            hash_h_low_share1, kCurve25519HalfHashWords));
+
   // Start the OTBN sign stage 1 app.
-  HARDENED_TRY(
-      curve25519_sign_stage1_start(msg_digest->data, key_digest->data));
+  HARDENED_TRY(curve25519_sign_stage1_start(msg_digest->data, hash_h_low_share0,
+                                            hash_h_low_share1));
 
   return OTCRYPTO_OK;
 }
@@ -362,9 +402,16 @@ otcrypto_status_t otcrypto_ed25519_sign_part2_async_start(
   };
   HARDENED_TRY(otcrypto_sha2_512(&challenge_buf, &challenge_digest));
 
+  // Mask hash_h_low.
+  uint32_t hash_h_low_share0[kCurve25519HalfHashWords] = {0};
+  uint32_t hash_h_low_share1[kCurve25519HalfHashWords] = {0};
+  HARDENED_TRY(boolean_mask(key_digest->data, hash_h_low_share0,
+                            hash_h_low_share1, kCurve25519HalfHashWords));
+
   // Start the OTBN sign stage 2 app.
-  HARDENED_TRY(curve25519_sign_stage2_start(
-      challenge_digest.data, msg_digest->data, key_digest->data));
+  HARDENED_TRY(curve25519_sign_stage2_start(challenge_digest.data,
+                                            msg_digest->data, hash_h_low_share0,
+                                            hash_h_low_share1));
 
   return OTCRYPTO_OK;
 }

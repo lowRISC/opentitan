@@ -81,7 +81,8 @@ typedef struct curve25519_signature_t {
  * @return Result of the operation (OK or error).
  */
 status_t curve25519_keygen_start(
-    const uint32_t hash_h_low[kCurve25519HalfHashWords]);
+    const uint32_t hash_h_low_share0[kCurve25519HalfHashWords],
+    const uint32_t hash_h_low_share1[kCurve25519HalfHashWords]);
 
 /**
  * Finish an async Ed25519 keygen operation on OTBN.
@@ -105,7 +106,8 @@ status_t curve25519_keygen_finalize(uint32_t public_key[kCurve25519PointWords]);
 OT_WARN_UNUSED_RESULT
 status_t curve25519_sign_stage1_start(
     const uint32_t hash_r[kCurve25519HashWords],
-    const uint32_t hash_h_low[kCurve25519HalfHashWords]);
+    const uint32_t hash_h_low_share0[kCurve25519HalfHashWords],
+    const uint32_t hash_h_low_share1[kCurve25519HalfHashWords]);
 
 /**
  * Finish stage 1 of an async Ed25519 sign operation on OTBN.
@@ -134,7 +136,8 @@ OT_WARN_UNUSED_RESULT
 status_t curve25519_sign_stage2_start(
     const uint32_t hash_k[kCurve25519HashWords],
     const uint32_t hash_r[kCurve25519HashWords],
-    const uint32_t hash_h_low[kCurve25519HalfHashWords]);
+    const uint32_t hash_h_low_share0[kCurve25519HalfHashWords],
+    const uint32_t hash_h_low_share1[kCurve25519HalfHashWords]);
 
 /**
  * Finish stage 2 of an async Ed25519 sign operation on OTBN.

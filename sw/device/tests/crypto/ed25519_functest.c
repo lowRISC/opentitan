@@ -109,6 +109,7 @@ status_t ed25519_kat_test(void) {
 
   // Run ed25519 key generation.
   CHECK_STATUS_OK(otcrypto_ed25519_keygen(&private_key, &public_key));
+
   // Check the ed25519 key generation result.
   TRY_CHECK_ARRAYS_EQ(kPublicKey, public_key.key, kEd25519PublicKeyWords);
 
