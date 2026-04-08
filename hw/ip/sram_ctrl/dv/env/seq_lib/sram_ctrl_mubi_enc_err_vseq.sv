@@ -123,7 +123,7 @@ class sram_ctrl_mubi_enc_err_vseq extends sram_ctrl_base_vseq;
 
     // Turn off tlul_adapter_sram assertions as we are messing around with some
     // signals that would trigger an assertion.
-    $assertoff(0, "tb.dut.u_tlul_adapter_sram");
+    $assertoff(0, "tb.dut.u_tlul_adapter_sram_racl.tlul_adapter_sram");
     // As we injecting faults into prim_ram, disable TL-UL integrity checks.
     cfg.m_tl_agent_cfgs[cfg.sram_ral_name].check_tl_errs = 0;
 
