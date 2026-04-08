@@ -111,9 +111,6 @@ otcrypto_status_t otcrypto_drbg_instantiate(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Ensure the entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
-
   entropy_seed_material_t seed_material;
   HARDENED_TRY(
       hardened_memshred(seed_material.data, ARRAYSIZE(seed_material.data)));
@@ -130,9 +127,6 @@ otcrypto_status_t otcrypto_drbg_reseed(
   if (additional_input->len != 0 && additional_input->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-
-  // Ensure the entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
 
   entropy_seed_material_t seed_material;
   HARDENED_TRY(
@@ -219,9 +213,6 @@ otcrypto_status_t otcrypto_drbg_generate(
       drbg_output->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-
-  // Ensure the entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
 
   // Randomize destination buffer.
   HARDENED_TRY(hardened_memshred(drbg_output->data, drbg_output->len));

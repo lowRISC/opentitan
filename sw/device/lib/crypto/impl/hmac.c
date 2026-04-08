@@ -5,7 +5,6 @@
 #include "sw/device/lib/crypto/include/hmac.h"
 
 #include "sw/device/lib/base/hardened_memory.h"
-#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
@@ -226,11 +225,6 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
 
   // Check the key for null pointers or invalid configurations.
   HARDENED_TRY(check_key(key));
-
-  if (key->config.security_level != kOtcryptoKeySecurityLevelLow) {
-    // Entropy complex must be initialized for `hardened_memeq`.
-    HARDENED_TRY(entropy_complex_check());
-  }
 
   // Call the appropriate function from the HMAC driver.
   hmac_key_t hmac_key;

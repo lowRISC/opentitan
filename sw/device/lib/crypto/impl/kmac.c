@@ -5,7 +5,6 @@
 #include "sw/device/lib/crypto/include/kmac.h"
 
 #include "sw/device/lib/base/hardened_memory.h"
-#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -42,9 +41,6 @@ otcrypto_status_t otcrypto_kmac(otcrypto_blinded_key_t *key,
       required_output_len == 0) {
     return OTCRYPTO_BAD_ARGS;
   }
-
-  // Ensure the entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
 
   size_t key_len = keyblob_share_num_words(key->config) * sizeof(uint32_t);
 
