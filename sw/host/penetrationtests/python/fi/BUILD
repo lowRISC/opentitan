@@ -379,6 +379,34 @@ py_binary(
     ],
 )
 
+py_binary(
+    name = "cc_rng_output_test",
+    testonly = True,
+    srcs = ["test_scripts/cc_rng_output_test.py"],
+    data = [
+        "//sw/host/opentitantool",
+    ],
+    deps = [
+        "//sw/host/penetrationtests/python/fi:fi_sym_cryptolib_commands",
+        "//sw/host/penetrationtests/python/util:targets",
+        "@rules_python//python/runfiles",
+    ],
+)
+
+py_binary(
+    name = "fips_rng_output_test",
+    testonly = True,
+    srcs = ["test_scripts/fips_rng_output_test.py"],
+    data = [
+        "//sw/host/opentitantool",
+    ],
+    deps = [
+        "//sw/host/penetrationtests/python/fi:fi_rng_commands",
+        "//sw/host/penetrationtests/python/util:targets",
+        "@rules_python//python/runfiles",
+    ],
+)
+
 py_library(
     name = "fi_ibex_functions",
     srcs = ["host_scripts/fi_ibex_functions.py"],
