@@ -4,6 +4,12 @@
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "fi_headers",
+    srcs = glob(["*.h"]),
+    visibility = ["//visibility:public"],
+)
+
 cc_library(
     name = "crypto_fi",
     srcs = ["crypto_fi.c"],
