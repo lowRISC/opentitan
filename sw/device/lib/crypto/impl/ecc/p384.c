@@ -107,17 +107,17 @@ enum {
   /*
    * The expected instruction counts for constant time functions.
    */
-  kModeKeygenInsCnt = 1935430,
-  kModeKeygenSideloadInsCnt = 1935323,
-  kModeEcdhInsCnt = 1947025,
-  kModeEcdhSideloadInsCnt = 1947171,
-  kModeEcdsaSignConfigKInsCnt = 1574548,
-  kModeEcdsaSignInsCnt = 1574771,
-  kModeEcdsaSignSideloadInsCnt = 1574917,
+  kModeKeygenInsCnt = 1961351,
+  kModeKeygenSideloadInsCnt = 1961244,
+  kModeEcdhInsCnt = 1972946,
+  kModeEcdhSideloadInsCnt = 1973092,
+  kModeEcdsaSignConfigKInsCnt = 1600469,
+  kModeEcdsaSignInsCnt = 1600692,
+  kModeEcdsaSignSideloadInsCnt = 1600838,
   kModePointOnCurveCheckInsCnt = 346,
   kModePointOnCurveCheckInvld1InsCnt = 338,
   kModePointOnCurveCheckInvld2InsCnt = 345,
-  kModeBasePointMultInsCnt = 1935184,
+  kModeBasePointMultInsCnt = 1961105,
 };
 
 static status_t p384_masked_scalar_write(p384_masked_scalar_t *src,
