@@ -103,3 +103,35 @@ pkg_files(
     srcs = glob(["*.h"]),
     prefix = "crypto/include",
 )
+
+genrule(
+    name = "doxygen",
+    srcs = glob(["*.h"]),
+    outs = [
+        "Doxyfile",
+        "latex/refman.pdf",
+    ],
+    cmd = """
+        GIT_COMMIT=$$(grep STABLE_BUILD_SCM_REVISION bazel-out/stable-status.txt | cut -d' ' -f2 || echo "unknown")
+        
+        DOXY_VERSION="$${GIT_COMMIT}"
+
+        cat <<EOF > $(location Doxyfile)
+PROJECT_NAME="Cryptolib API User Guidance"
+PROJECT_NUMBER="version: $${DOXY_VERSION}"
+OUTPUT_DIRECTORY="$(RULEDIR)"
+HAVE_DOT=NO
+OPTIMIZE_OUTPUT_FOR_C=YES
+LATEX_HIDE_INDICES=YES
+EOF
+        
+        for f in $(SRCS); do
+            echo "INPUT+=$$f" >> $(location Doxyfile)
+        done
+
+        doxygen $(locations Doxyfile)
+        make -C $(RULEDIR)/latex
+    """,
+    # Tell Bazel we want to version this
+    stamp = 1,
+)
