@@ -19,6 +19,8 @@ filesets:
       - rtl/prim_secded_64_57_enc.sv
       - rtl/prim_secded_72_64_dec.sv
       - rtl/prim_secded_72_64_enc.sv
+      - rtl/prim_secded_137_128_dec.sv
+      - rtl/prim_secded_137_128_enc.sv
       - rtl/prim_secded_hamming_22_16_dec.sv
       - rtl/prim_secded_hamming_22_16_enc.sv
       - rtl/prim_secded_hamming_39_32_dec.sv
@@ -27,6 +29,8 @@ filesets:
       - rtl/prim_secded_hamming_72_64_enc.sv
       - rtl/prim_secded_hamming_76_68_dec.sv
       - rtl/prim_secded_hamming_76_68_enc.sv
+      - rtl/prim_secded_hamming_137_128_dec.sv
+      - rtl/prim_secded_hamming_137_128_enc.sv
       - rtl/prim_secded_inv_22_16_dec.sv
       - rtl/prim_secded_inv_22_16_enc.sv
       - rtl/prim_secded_inv_28_22_dec.sv
@@ -37,6 +41,8 @@ filesets:
       - rtl/prim_secded_inv_64_57_enc.sv
       - rtl/prim_secded_inv_72_64_dec.sv
       - rtl/prim_secded_inv_72_64_enc.sv
+      - rtl/prim_secded_inv_137_128_dec.sv
+      - rtl/prim_secded_inv_137_128_enc.sv
       - rtl/prim_secded_inv_hamming_22_16_dec.sv
       - rtl/prim_secded_inv_hamming_22_16_enc.sv
       - rtl/prim_secded_inv_hamming_39_32_dec.sv
@@ -45,6 +51,8 @@ filesets:
       - rtl/prim_secded_inv_hamming_72_64_enc.sv
       - rtl/prim_secded_inv_hamming_76_68_dec.sv
       - rtl/prim_secded_inv_hamming_76_68_enc.sv
+      - rtl/prim_secded_inv_hamming_137_128_dec.sv
+      - rtl/prim_secded_inv_hamming_137_128_enc.sv
       - rtl/prim_secded_inc.svh: {is_include_file: true}
     file_type: systemVerilogSource
 
