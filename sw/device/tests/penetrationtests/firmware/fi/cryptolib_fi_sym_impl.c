@@ -10,6 +10,7 @@
 #include "sw/device/lib/crypto/include/aes_gcm.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/drbg.h"
+#include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/hmac.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/key_transport.h"
@@ -207,6 +208,24 @@ status_t cryptolib_fi_drbg_reseed_impl(
     pentest_set_trigger_high();
   }
   TRY(otcrypto_drbg_instantiate(&entropy));
+  if (uj_input.trigger & kPentestTrigger1) {
+    pentest_set_trigger_low();
+  }
+
+  // Return data back to host.
+  uj_output->cfg = 0;
+
+  return OK_STATUS();
+}
+
+status_t cryptolib_fi_trng_init_impl(
+    cryptolib_fi_sym_trng_init_in_t uj_input,
+    cryptolib_fi_sym_trng_init_out_t *uj_output) {
+  // Trigger window 0.
+  if (uj_input.trigger & kPentestTrigger1) {
+    pentest_set_trigger_high();
+  }
+  TRY(otcrypto_entropy_init());
   if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_low();
   }
