@@ -4,6 +4,12 @@
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "sca_headers",
+    srcs = glob(["*.h"]),
+    visibility = ["//visibility:public"],
+)
+
 cc_library(
     name = "aes_sca",
     srcs = ["aes_sca.c"],

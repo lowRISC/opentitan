@@ -566,3 +566,43 @@ pentest_owner_upgrade_self_signed_fi_gdb(
     test_harness = "//sw/host/penetrationtests/python/fi:fi_owner_upgrade_self_signed_python_gdb_test",
     test_vectors = [],
 )
+
+genrule(
+    name = "doxygen",
+    srcs = [
+        "//sw/device/tests/penetrationtests/firmware/fi:fi_headers",
+        "//sw/device/tests/penetrationtests/firmware/sca:sca_headers",
+        # We link directly to pentest_lib to pull out the version number
+        "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib.h",
+        "doc/README.md",
+    ],
+    outs = [
+        "Doxyfile_testOS",
+        "testOS_manual.pdf",
+    ],
+    cmd = """
+        RAW_VERSION=$$(grep "PENTEST_VERSION" $(location //sw/device/tests/penetrationtests/firmware/lib:pentest_lib.h) | cut -d'"' -f2)
+
+        TESTOS_VERSION=$${RAW_VERSION#PENTEST: }
+
+        cat <<EOF > $(location Doxyfile_testOS)
+PROJECT_NAME="TestOS $${TESTOS_VERSION} API Manual"
+PROJECT_NUMBER="revision 0"
+OUTPUT_DIRECTORY="$(RULEDIR)"
+HAVE_DOT=NO
+OPTIMIZE_OUTPUT_FOR_C=YES
+EXTRACT_ALL=YES
+JAVADOC_AUTOBRIEF=YES
+STRIP_CODE_COMMENTS=NO
+USE_MDFILE_AS_MAINPAGE=$(location doc/README.md)
+EOF
+
+        echo "INPUT = $(locations //sw/device/tests/penetrationtests/firmware/fi:fi_headers)" >> $(location Doxyfile_testOS)
+        echo "INPUT += $(locations //sw/device/tests/penetrationtests/firmware/sca:sca_headers)" >> $(location Doxyfile_testOS)
+        echo "INPUT += $(location doc/README.md)" >> $(location Doxyfile_testOS)
+
+        doxygen $(location Doxyfile_testOS)
+        make -C $(RULEDIR)/latex
+        mv $(RULEDIR)/latex/refman.pdf $(location testOS_manual.pdf)
+    """,
+)
