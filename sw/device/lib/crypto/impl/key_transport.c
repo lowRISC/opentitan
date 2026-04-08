@@ -6,7 +6,6 @@
 
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/aes_kwp/aes_kwp.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -27,9 +26,6 @@ otcrypto_status_t otcrypto_symmetric_keygen(
   // Ensure that the key material is masked with XOR; this will fail on
   // hardware-backed or non-symmetric keys.
   HARDENED_TRY(keyblob_ensure_xor_masked(key->config));
-
-  // Ensure that the entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
 
   // Get pointers to the shares within the keyblob. Fails if the key length
   // doesn't match the mode.
@@ -198,9 +194,6 @@ otcrypto_status_t otcrypto_key_wrap(const otcrypto_blinded_key_t *key_to_wrap,
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Ensure the entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
-
   // Check the integrity of the key material we are wrapping.
   if (launder32(integrity_blinded_key_check(key_to_wrap)) !=
       kHardenedBoolTrue) {
@@ -261,9 +254,6 @@ otcrypto_status_t otcrypto_key_unwrap(otcrypto_const_word32_buf_t *wrapped_key,
       unwrapped_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-
-  // Ensure the entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
 
   // Check the integrity/lengths/mode of the key encryption key, and construct
   // an internal AES key.
@@ -362,9 +352,6 @@ otcrypto_status_t otcrypto_export_blinded_key(
       key_share1->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-
-  // Ensure the entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
 
   // Check key integrity.
   if (launder32(integrity_blinded_key_check(blinded_key)) !=

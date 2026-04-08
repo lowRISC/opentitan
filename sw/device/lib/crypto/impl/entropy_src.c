@@ -21,3 +21,8 @@ otcrypto_status_t otcrypto_entropy_check(void) {
   HARDENED_TRY(entropy_complex_check());
   return OTCRYPTO_OK;
 }
+
+otcrypto_status_t otcrypto_entropy_health_test_config_check(void) {
+  HARDENED_TRY(entropy_complex_health_test_config_check());
+  return OTCRYPTO_OK;
+}

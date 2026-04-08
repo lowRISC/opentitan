@@ -9,7 +9,6 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
 #include "hw/top/keymgr_regs.h"
@@ -169,8 +168,6 @@ static status_t keymgr_wait_until_done(void) {
 
 status_t keymgr_generate_key_sw(keymgr_diversification_t diversification,
                                 keymgr_output_t *key) {
-  // Ensure that the entropy complex has been initialized and keymgr is idle.
-  HARDENED_TRY(entropy_complex_check());
   HARDENED_TRY(keymgr_is_idle());
 
   // Set the control register to generate a software-visible key.
@@ -199,8 +196,6 @@ status_t keymgr_generate_key_sw(keymgr_diversification_t diversification,
 }
 
 status_t keymgr_generate_key_aes(keymgr_diversification_t diversification) {
-  // Ensure that the entropy complex has been initialized and keymgr is idle.
-  HARDENED_TRY(entropy_complex_check());
   HARDENED_TRY(keymgr_is_idle());
 
   // Set the control register to generate an AES key.
@@ -216,8 +211,6 @@ status_t keymgr_generate_key_aes(keymgr_diversification_t diversification) {
 }
 
 status_t keymgr_generate_key_kmac(keymgr_diversification_t diversification) {
-  // Ensure that the entropy complex has been initialized and keymgr is idle.
-  HARDENED_TRY(entropy_complex_check());
   HARDENED_TRY(keymgr_is_idle());
 
   // Set the control register to generate a KMAC key.
@@ -233,8 +226,6 @@ status_t keymgr_generate_key_kmac(keymgr_diversification_t diversification) {
 
 status_t keymgr_generate_key_otbn(keymgr_diversification_t diversification,
                                   hardened_bool_t attestation) {
-  // Ensure that the entropy complex has been initialized and keymgr is idle.
-  HARDENED_TRY(entropy_complex_check());
   HARDENED_TRY(keymgr_is_idle());
 
   // Set the control register to generate an OTBN key.
@@ -279,8 +270,6 @@ status_t keymgr_generate_key_otbn(keymgr_diversification_t diversification,
  * @param slot Value to write to the SIDELOAD_CLEAR register.
  */
 static status_t keymgr_sideload_clear(uint32_t slot) {
-  // Ensure that the entropy complex has been initialized and keymgr is idle.
-  HARDENED_TRY(entropy_complex_check());
   HARDENED_TRY(keymgr_is_idle());
 
   // Set SIDELOAD_CLEAR to begin continuously clearing the requested slot.
