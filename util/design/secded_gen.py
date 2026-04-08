@@ -149,6 +149,19 @@ def calc_bitmasks(k, m, codes, dec):
     return tuple(fanin_masks)
 
 
+def calc_spaces(bignum, thisnum = 1):
+    # Calculate the number of extra spaces required to indent some code
+    # based on the number of characters required to represent
+    # some number compared to a larger number (i.e. signal widths).
+    if thisnum == 0:
+        thisnum += 1  # log10 doesn't like 0, but "0" is the same width as "1"
+    return math.floor(math.log10(bignum)) - math.floor(math.log10(thisnum))
+
+
+def hex_format(bits):
+    return str(bits) + "'h{:0" + str((bits + 3) // 4) + "X}"
+
+
 type_enum_template = Template("""\
   typedef enum int {
 % for type_name in type_names.values():
@@ -431,11 +444,14 @@ def print_pkg_types(n, k, m, codes, suffix, codetype):
 
     typestr = '''
   typedef struct packed {{
-    logic [{}:0] data;
-    logic [{}:0] syndrome;
-    logic [1:0]  err;
+    logic [{}:0] {}data;
+    logic [{}:0] {}syndrome;
+    logic [1:0] {}err;
   }} {};
-'''.format((k - 1), (m - 1), typename)
+'''.format((k - 1), "",
+           (m - 1), " " * calc_spaces(k, m),
+           " " * calc_spaces(k),
+           typename)
 
     return typestr
 
@@ -456,9 +472,9 @@ def print_fn(n, k, m, codes, suffix, codetype, inv=False):
 
   function automatic {}
       {}_dec (logic [{}:0] data_i);
-    logic [{}:0] data_o;
-    logic [{}:0] syndrome_o;
-    logic [1:0]  err_o;
+    logic [{}:0] {}data_o;
+    logic [{}:0] {}syndrome_o;
+    logic [1:0] {}err_o;
 
     {} dec;
 
@@ -470,29 +486,38 @@ def print_fn(n, k, m, codes, suffix, codetype, inv=False):
 
   endfunction
 '''.format((n - 1), module_name, (k - 1), (n - 1), enc_out,
-           typename, module_name, (n - 1), (k - 1), (m - 1), typename, dec_out)
+           typename,
+           module_name, (n - 1),
+           (k - 1), " " * calc_spaces(n, k),
+           (m - 1), " " * calc_spaces(n, m),
+           " " * calc_spaces(n),
+           typename, dec_out)
 
     return outstr
 
 
 def print_enc(n, k, m, codes, codetype):
-    invert = 1 if codetype in ["inv_hsiao", "inv_hamming"] else 0
-    outstr = "    data_o = {}'(data_i);\n".format(n)
-    hex_format = str(n) + "'h{:0" + str((n + 3) // 4) + "X}"
-    format_str = "    data_o[{}] = ^(data_o & " + hex_format + ");\n"
+    hamming = codetype in ["hamming", "inv_hamming"]
+    invert = codetype in ["inv_hsiao", "inv_hamming"]
+    outstr = "    data_o[{}:0] = data_i;\n".format(k - 1)
     # Print parity computation If inverted encoding is turned on, we only
     # invert every odd bit so that both all-one and all-zero encodings are not
     # possible. This works for most encodings generated if the fanin is
     # balanced (such as inverted Hsiao codes). However, since there is no
     # guarantee, an FPV assertion is added to prove that all-zero and all-one
     # encodings do not exist if an inverted code is used.
-    inv_mask = 0
     for j, mask in enumerate(calc_bitmasks(k, m, codes, False)):
-        inv_mask += (j % 2) << j
-        outstr += format_str.format(j + k, mask)
-    # Selectively invert parity bits as determined above.
-    if invert:
-        outstr += ("    data_o ^= " + hex_format + ";\n").format(inv_mask << k)
+        outstr += "    data_o[{}] = ".format(j + k)
+        if invert:
+            outstr += "("
+        if (hamming and j == (m - 1)):
+            assert (mask == (pow(2, j + k) - 1))  # mask should be all-ones here
+            outstr += "^data_o[{}:0]".format(j + k - 1)
+        else:
+            outstr += ("^(data_i & " + hex_format(k) + ")").format(mask)
+        if invert:
+            outstr += ") ^ 1'b{}".format((j % 2))
+        outstr += ";\n"
     return outstr
 
 
@@ -504,17 +529,17 @@ def calc_syndrome(code):
 def print_dec(n, k, m, codes, codetype, print_type="logic"):
     outstr = ""
     outstr += "    // Syndrome calculation\n"
-    hexfmt = str(n) + "'h{:0" + str((n + 3) // 4) + "X}"
     format_str = "    syndrome_o[{}] = ^("
     # Add ECC bit inversion if needed (see print_enc function).
     if codetype in ["inv_hsiao", "inv_hamming"]:
         invval = 0
         for x in range(m):
             invval += (x % 2) << x
-        format_str += "(data_i ^ " + hexfmt.format(invval << k) + ")"
+        format_str += "(data_i ^ " + hex_format(n).format(invval << k) + ") &"
+        format_str += ("\n" + (" " * 22)) if n > 104 else " "
     else:
-        format_str += "data_i"
-    format_str += " & " + hexfmt + ");\n"
+        format_str += "data_i & "
+    format_str += hex_format(n) + ");\n"
 
     # Print syndrome computation
     for j, mask in enumerate(calc_bitmasks(k, m, codes, True)):
@@ -522,25 +547,26 @@ def print_dec(n, k, m, codes, codetype, print_type="logic"):
     outstr += "\n"
     outstr += "    // Corrected output calculation\n"
     for i in range(k):
-        outstr += "    data_o[%d] = (syndrome_o == %d'h%x) ^ data_i[%d];\n" % (
-            i, m, calc_syndrome(codes[i]), i)
+        outstr += (("    data_o[{}] {}= (syndrome_o == " + hex_format(m) +
+                    ") ^ data_i[{}];\n")
+                   .format(i, " " * calc_spaces(k, i), calc_syndrome(codes[i]), i))
     outstr += "\n"
     outstr += "    // err_o calc. bit0: single error, bit1: double error\n"
     # The Hsiao and Hamming syndromes are interpreted slightly differently.
     if codetype in ["hamming", "inv_hamming"]:
         outstr += "    err_o[0] = syndrome_o[%d];\n" % (m - 1)
-        outstr += "    err_o[1] = |syndrome_o[%d:0] & ~syndrome_o[%d];\n" % (
+        outstr += "    err_o[1] = (|syndrome_o[%d:0]) & (~syndrome_o[%d]);\n" % (
             m - 2, m - 1)
     else:
         outstr += "    err_o[0] = ^syndrome_o;\n"
-        outstr += "    err_o[1] = ~err_o[0] & (|syndrome_o);\n"
+        outstr += "    err_o[1] = (~err_o[0]) & (|syndrome_o);\n"
     return outstr
 
 
 def verify(cfgs):
     error = 0
     for cfg in cfgs['cfgs']:
-        if (cfg['k'] <= 1 or cfg['k'] > 120):
+        if (cfg['k'] <= 1 or cfg['k'] > 256):
             error += 1
             log.error("Current tool doesn't support the value k (%d)", cfg['k'])
 
@@ -676,8 +702,9 @@ def generate(cfgs, args):
         # write out rtl files
         write_enc_dec_files(n, k, m, codes, suffix, args.outdir, codetype)
 
-        # write out C files, only hsiao codes are supported
-        if codetype in ["hsiao", "inv_hsiao"]:
+        # write out C files, only hsiao codes with no more then 64 message bits
+        # are supported.
+        if codetype in ["hsiao", "inv_hsiao"] and k <= 64:
             write_c_files(n, k, m, codes, suffix, c_src_filename, c_h_filename,
                           codetype)
 
@@ -752,20 +779,22 @@ def _hsiao_code(k, m):
             # we need more round use all of them
             codes.extend(candidate)
             required_row -= len(candidate)
-        else:
-            # Find optimized fan-in ==========================================
+        elif k <= 64:
+            # Find optimized fan-in using Random Shuffling ====================
+            #
+            # This random shuffling method was the first method to be used
+            # in OpenTitan. It is still used for short message lengths both
+            # to avoid changing codes dating from that time and because
+            # it quickly finds solutions with ideal fan-in counts
+            # for k <= 128. Conversely, it seems to fail to converge
+            # in a timely manner for k => 256.
 
-            # Calculate each row fan-in with current
+            # Calculate the fan-in (count) for each column for the current rows
             fanins = calc_fanin(m, codes)
             while required_row != 0:
                 # Let's shuffle
                 # Shuffling makes the sequence randomized --> it reduces the
                 # fanin as the code takes randomly at the end of the round
-
-                # TODO: There should be a clever way to find the subset without
-                # random retrying.
-                # Suggested this algorithm
-                #    https://en.wikipedia.org/wiki/Assignment_problem
                 random.shuffle(candidate)
 
                 # Take a subset
@@ -782,6 +811,85 @@ def _hsiao_code(k, m):
 
                 if ideal:
                     required_row = 0
+
+            # Append to the code matrix
+            codes.extend(subset)
+
+        else:
+            # Find optimized fan-in using Iterative Algorithm ===================
+            #
+            # This iterative algorithm is used for longer message lengths
+            # where random shuffling does not converge in a timely manner.
+
+            # Calculate the fan-in (count) for each column for the current rows
+            fanins = calc_fanin(m, codes)
+
+            starting_required_row = required_row
+            subset = []
+            other = candidate[:]
+
+            # Find the current maximum fan-in to any particular column
+            max_fanin = max(fanins)
+
+            # Add rows in an iterative, greedy manner
+            while required_row != 0:
+                current_fanins = calc_fanin(m, subset)
+                for i in range(m):
+                    current_fanins[i] += fanins[i]
+
+                added = False
+                min_fanin = min(current_fanins)
+
+                # First, try to increase minimum while keeping maximum low
+                for i in range(len(other)):
+                    # Copy the contents of the list of rows chosen so far
+                    tmp_fanins = current_fanins[:]
+                    # Try a potential row
+                    for j in range(step):
+                        tmp_fanins[other[i][j]] += 1
+                    # Add the row to our list of chosen if it meets our criteria
+                    if min(tmp_fanins) > min_fanin and max(tmp_fanins) <= max_fanin:
+                        added = True
+                        subset.append(other.pop(i))
+                        required_row -= 1
+                        break
+                if added:
+                    # Found something, try again to see if there are any more
+                    continue
+
+                # Second, try only to keep maximum low
+                for i in range(len(other)):
+                    # Copy the contents of the list of rows chosen so far
+                    tmp_fanins = current_fanins[:]
+                    # Try a potential row
+                    for j in range(step):
+                        tmp_fanins[other[i][j]] += 1
+                    # Add the row to our list of chosen if it meets our criteria
+                    if max(tmp_fanins) <= max_fanin:
+                        added = True
+                        subset.append(other.pop(i))
+                        required_row -= 1
+                        break
+                if added:
+                    # Found something, try again to see if there are any more
+                    continue
+
+                # Last resort: increase maximum fan-in and restart the search.
+                # We may be locked into a non-ideal solution if we do not drop
+                # the rows found with the previous maximum fan-in value.
+                required_row = starting_required_row
+                subset = []
+                other = candidate[:]
+                max_fanin += 1
+
+            subset_fanins = calc_fanin(m, subset)
+            # Check if the chosen rows exceed the ideal fan-in
+            for i in range(m):
+                col_fanin = fanins[i] + subset_fanins[i]
+                if col_fanin > fanin_ideal:
+                    log.warning(("Fan-in of {} exceeds ideal of {} " +
+                                 "(Hsiao, k {}, m {}, column {})")
+                                .format(col_fanin, fanin_ideal, k, m, i))
 
             # Append to the code matrix
             codes.extend(subset)
@@ -931,15 +1039,18 @@ def write_enc_dec_files(n, k, m, codes, suffix, outdir, codetype):
         outstr = '''{}// SECDED encoder generated by util/design/secded_gen.py
 
 module {}_enc (
-  input        [{}:0] data_i,
-  output logic [{}:0] data_o
+  input        [{}:0] {}data_i,
+  output logic [{}:0] {}data_o
 );
 
   always_comb begin : p_encode
 {}  end
 
 endmodule : {}_enc
-'''.format(COPYRIGHT, module_name, (k - 1), (n - 1), enc_out, module_name)
+'''.format(COPYRIGHT, module_name,
+           (k - 1), " " * calc_spaces(n, k),
+           (n - 1), "",
+           enc_out, module_name)
         f.write(outstr)
 
     dec_out = print_dec(n, k, m, codes, codetype)
@@ -948,16 +1059,20 @@ endmodule : {}_enc
         outstr = '''{}// SECDED decoder generated by util/design/secded_gen.py
 
 module {}_dec (
-  input        [{}:0] data_i,
-  output logic [{}:0] data_o,
-  output logic [{}:0] syndrome_o,
-  output logic [1:0] err_o
+  input        [{}:0] {}data_i,
+  output logic [{}:0] {}data_o,
+  output logic [{}:0] {}syndrome_o,
+  output logic [1:0] {}err_o
 );
 
   always_comb begin : p_encode
 {}  end
 endmodule : {}_dec
-'''.format(COPYRIGHT, module_name, (n - 1), (k - 1), (m - 1),
+'''.format(COPYRIGHT, module_name,
+           (n - 1), "",
+           (k - 1), " " * calc_spaces(n, k),
+           (m - 1), " " * calc_spaces(n, m),
+           " " * calc_spaces(n),
            dec_out, module_name)
         f.write(outstr)
 
@@ -969,14 +1084,14 @@ def write_fpv_files(n, k, m, codes, suffix, outdir, codetype):
         outstr = '''{}// SECDED FPV testbench generated by util/design/secded_gen.py
 
 module {}_tb (
-  input               clk_i,
-  input               rst_ni,
-  input        [{}:0] data_i,
-  output logic [{}:0] data_o,
-  output logic [{}:0] encoded_o,
-  output logic [{}:0] syndrome_o,
-  output logic [1:0]  err_o,
-  input        [{}:0] error_inject_i
+  input              {}clk_i,
+  input              {}rst_ni,
+  input        [{}:0] {}data_i,
+  output logic [{}:0] {}data_o,
+  output logic [{}:0] {}encoded_o,
+  output logic [{}:0] {}syndrome_o,
+  output logic [1:0] {}err_o,
+  input        [{}:0] {}error_inject_i
 );
 
   {}_enc {}_enc (
@@ -992,7 +1107,15 @@ module {}_tb (
   );
 
 endmodule : {}_tb
-'''.format(COPYRIGHT, module_name, (k - 1), (k - 1), (n - 1), (m - 1), (n - 1),
+'''.format(COPYRIGHT, module_name,
+           " " * calc_spaces(n),
+           " " * calc_spaces(n),
+           (k - 1), " " * calc_spaces(n, k),
+           (k - 1), " " * calc_spaces(n, k),
+           (n - 1), "",
+           (m - 1), " " * calc_spaces(n, m),
+           " " * calc_spaces(n),
+           (n - 1), "",
            module_name, module_name, module_name, module_name, module_name)
         f.write(outstr)
 
@@ -1011,14 +1134,14 @@ endmodule : {}_tb
         outstr = '''{}// SECDED FPV assertion file generated by util/design/secded_gen.py
 
 module {}_assert_fpv (
-  input        clk_i,
-  input        rst_ni,
-  input [{}:0] data_i,
-  input [{}:0] data_o,
-  input [{}:0] encoded_o,
-  input [{}:0] syndrome_o,
-  input [1:0]  err_o,
-  input [{}:0] error_inject_i
+  input       {}clk_i,
+  input       {}rst_ni,
+  input [{}:0] {}data_i,
+  input [{}:0] {}data_o,
+  input [{}:0] {}encoded_o,
+  input [{}:0] {}syndrome_o,
+  input [1:0] {}err_o,
+  input [{}:0] {}error_inject_i
 );
 
   // Inject a maximum of two errors simultaneously.
@@ -1036,7 +1159,15 @@ module {}_assert_fpv (
   `ASSERT(SyndromeCheckReverse_A, $countones(error_inject_i) > 0 |-> |syndrome_o)
 {}
 endmodule : {}_assert_fpv
-'''.format(COPYRIGHT, module_name, (k - 1), (k - 1), (n - 1), (m - 1), (n - 1),
+'''.format(COPYRIGHT, module_name,
+           " " * calc_spaces(n),
+           " " * calc_spaces(n),
+           (k - 1), " " * calc_spaces(n, k),
+           (k - 1), " " * calc_spaces(n, k),
+           (n - 1), "",
+           (m - 1), " " * calc_spaces(n, m),
+           " " * calc_spaces(n),
+           (n - 1), "",
            inv_asserts, module_name)
         f.write(outstr)
 
