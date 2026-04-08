@@ -125,12 +125,26 @@ impl UsbBackend {
 
     /// Create a new UsbBackend.
     pub fn new(usb_vid: u16, usb_pid: u16, usb_serial: Option<&str>) -> Result<Self> {
+        let serial_str = if let Some(s) = usb_serial {
+            format!(" ({})", s)
+        } else {
+            "".to_string()
+        };
         let mut devices = UsbBackend::scan(Some((usb_vid, usb_pid)), None, usb_serial)?;
-        ensure!(!devices.is_empty(), TransportError::NoDevice);
-        ensure!(
-            devices.len() == 1,
-            TransportError::MultipleDevices(format!("{:?}", devices))
-        );
+        if devices.is_empty() {
+            return Err(TransportError::NoDevice(format!(
+                "vid:pid=0x{:04x}:0x{:04x}{}",
+                usb_vid, usb_pid, serial_str
+            ))
+            .into());
+        }
+        if devices.len() > 1 {
+            return Err(TransportError::MultipleDevices(
+                format!("{:?}", devices),
+                format!("vid:pid=0x{:04x}:0x{:04x}{}", usb_vid, usb_pid, serial_str),
+            )
+            .into());
+        }
 
         let (device, serial_number) = devices.remove(0);
         Ok(UsbBackend {
@@ -158,6 +172,11 @@ impl UsbBackend {
         timeout: Duration,
     ) -> Result<Self> {
         let deadline = Instant::now() + timeout;
+        let serial_str = if let Some(s) = usb_serial {
+            format!(" ({})", s)
+        } else {
+            "".to_string()
+        };
         loop {
             let mut devices =
                 UsbBackend::scan(None, Some((class, subclass, protocol)), usb_serial)?;
@@ -166,13 +185,23 @@ impl UsbBackend {
                     std::thread::sleep(Duration::from_millis(100));
                     continue;
                 } else {
-                    return Err(TransportError::NoDevice.into());
+                    return Err(TransportError::NoDevice(format!(
+                        "class:subclass:protocol=0x{:02x}:0x{:02x}:0x{:02x}{}",
+                        class, subclass, protocol, serial_str
+                    ))
+                    .into());
                 }
             }
-            ensure!(
-                devices.len() == 1,
-                TransportError::MultipleDevices(format!("{:?}", devices))
-            );
+            if devices.len() > 1 {
+                return Err(TransportError::MultipleDevices(
+                    format!("{:?}", devices),
+                    format!(
+                        "class:subclass:protocol=0x{:02x}:0x{:02x}:0x{:02x}{}",
+                        class, subclass, protocol, serial_str
+                    ),
+                )
+                .into());
+            }
 
             let (device, serial_number) = devices.remove(0);
             return Ok(UsbBackend {
