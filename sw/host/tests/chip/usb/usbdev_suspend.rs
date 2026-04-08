@@ -331,7 +331,11 @@ fn usbdev_suspend(
                         connect(&opts.usb, transport)?;
                     } else {
                         log::info!("Skipping VBUS Disconnection because support unavailable");
-                        resume(&hub, port, !opts.usb.relaxed_hub_op)?;
+                        // When VBUS control is not available (e.g. on FPGA), the device will prepare
+                        // everything to go to sleep but it will not actually sleep and go on with
+                        // the next phase immediately. Since the next phase is to shutdown, the device
+                        // will then disconnect from the bus. This means that at this point, the device
+                        // may or may not be connected.
                     }
                     next_phase = SuspendPhase::Shutdown;
                 }
