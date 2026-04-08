@@ -10,7 +10,7 @@ module prim_secded_72_64_tb (
   input        [63:0] data_i,
   output logic [63:0] data_o,
   output logic [71:0] encoded_o,
-  output logic [7:0] syndrome_o,
+  output logic [7:0]  syndrome_o,
   output logic [1:0]  err_o,
   input        [71:0] error_inject_i
 );
