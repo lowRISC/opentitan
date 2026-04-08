@@ -42,6 +42,17 @@ status_t cryptolib_fi_drbg_reseed_impl(
     cryptolib_fi_sym_drbg_reseed_out_t *uj_output);
 
 /**
+ * Wrapper to TRNG init cryptolib implementation.
+ *
+ * @param uj_input An initialized uJSON context.
+ * @param uj_output An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t cryptolib_fi_trng_init_impl(
+    cryptolib_fi_sym_trng_init_in_t uj_input,
+    cryptolib_fi_sym_trng_init_out_t *uj_output);
+
+/**
  * Wrapper to AES-GCM cryptolib implementation.
  *
  * @param uj_input An initialized uJSON context.
