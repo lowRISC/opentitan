@@ -108,6 +108,9 @@ class sram_ctrl_readback_err_vseq extends sram_ctrl_base_vseq;
 
     // Disable certain checks for FI.
     cfg.is_fi_test = 1'b1;
+    cfg.m_tl_agent_cfg.check_tl_errs = 0;
+    cfg.m_tl_agent_cfgs["sram_ctrl_regs_reg_block"].check_tl_errs = 0;
+    cfg.m_tl_agent_cfgs["sram_ctrl_prim_reg_block"].check_tl_errs = 0;
 
     // If we are faulting the sram_we signal, this assertion would trigger. Disable it.
     $assertoff(0,
