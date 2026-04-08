@@ -11,7 +11,6 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
@@ -248,10 +247,6 @@ status_t aes_verify_ctrl_aux_reg(void) {
  */
 static status_t aes_begin(aes_key_t key, const aes_block_t *iv,
                           hardened_bool_t encrypt) {
-  // Ensure the entropy complex is in an appropriate state. The AES block seeds
-  // its PRNG from EDN for masking every time a new key is provided.
-  HARDENED_TRY(entropy_complex_check());
-
   // Wait for the AES block to be idle.
   HARDENED_TRY(spin_until(AES_STATUS_IDLE_BIT));
 

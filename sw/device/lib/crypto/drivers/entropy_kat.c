@@ -110,9 +110,6 @@ static status_t check_internal_state(
 }
 
 status_t entropy_csrng_kat(void) {
-  // Check that the complex is initialized.
-  TRY(entropy_complex_check());
-
   TRY(entropy_csrng_uninstantiate());
 
   const entropy_seed_material_t kEntropyInput = {

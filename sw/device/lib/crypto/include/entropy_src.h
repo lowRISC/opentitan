@@ -43,6 +43,20 @@ otcrypto_status_t otcrypto_entropy_init(void);
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_entropy_check(void);
 
+/**
+ * Check the entropy complex health test and alert configurations.
+ *
+ * This function checks the entropy src registers to detect tampering.
+ * The multi-bit encoded registers are checked by the HW.
+ *
+ * This function does not return a status error, and will simply assert the chip
+ * is in the correct configuration.
+ *
+ * @return Operation status in `otcrypto_status_t` format.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_entropy_health_test_config_check(void);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

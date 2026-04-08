@@ -5,7 +5,6 @@
 #include "sw/device/lib/crypto/include/ecc_p256.h"
 
 #include "sw/device/lib/base/hardened_memory.h"
-#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/impl/ecc/p256.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
@@ -107,9 +106,6 @@ static status_t p256_public_key_length_check(
 OT_WARN_UNUSED_RESULT
 static status_t internal_p256_keygen_finalize(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
-  // Ensure the entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
-
   // Check the lengths of caller-allocated buffers.
   HARDENED_TRY(p256_private_key_length_check(private_key));
   HARDENED_TRY(p256_public_key_length_check(public_key));
@@ -365,9 +361,6 @@ status_t otcrypto_p256_base_point_mult(
 OT_WARN_UNUSED_RESULT
 static status_t internal_p256_keygen_start(
     const otcrypto_blinded_key_t *private_key) {
-  // Ensure the entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
-
   if (private_key->config.hw_backed == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
                       kHardenedBoolTrue);
@@ -434,8 +427,6 @@ otcrypto_status_t otcrypto_ecdsa_p256_dice_keygen_async_start(
   HARDENED_CHECK_EQ(launder32(private_key->config.key_mode),
                     kOtcryptoKeyModeEcdsaP256);
 
-  HARDENED_TRY(entropy_complex_check());
-
   keymgr_diversification_t diversification;
   HARDENED_TRY(keyblob_to_keymgr_attestation_diversification(private_key,
                                                              &diversification));
@@ -455,9 +446,6 @@ static otcrypto_status_t otcrypto_ecdsa_p256_sign_async_start_setup(
       message_digest.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-
-  // Check that the entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
 
   // Check the integrity of the private key.
   if (integrity_blinded_key_check(private_key) != kHardenedBoolTrue) {
@@ -572,9 +560,6 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_async_finalize(
   // Verify the input buffer
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(signature));
 
-  // Ensure the entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
-
   HARDENED_TRY(p256_signature_length_check(signature->len));
   p256_ecdsa_signature_t *sig_p256 = (p256_ecdsa_signature_t *)signature->data;
   // Note: This operation wipes DMEM, so if an error occurs after this
@@ -608,8 +593,6 @@ otcrypto_status_t otcrypto_ecdsa_p256_dice_sign_async_start(
   }
   HARDENED_CHECK_EQ(launder32(message_digest.len), kP256ScalarWords);
 
-  HARDENED_TRY(entropy_complex_check());
-
   keymgr_diversification_t diversification;
   HARDENED_TRY(keyblob_to_keymgr_attestation_diversification(private_key,
                                                              &diversification));
@@ -632,9 +615,6 @@ otcrypto_status_t otcrypto_ecdsa_p256_verify_async_start(
       message_digest.data == NULL || public_key->key == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-
-  // Ensure the entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
 
   // Check the integrity of the public key.
   if (integrity_unblinded_key_check(public_key) != kHardenedBoolTrue) {
@@ -685,9 +665,6 @@ otcrypto_status_t otcrypto_ecdsa_p256_verify_async_finalize(
   // Verify the input buffer
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(signature));
 
-  // Ensure the entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
-
   HARDENED_TRY(p256_signature_length_check(signature->len));
   p256_ecdsa_signature_t *sig_p256 = (p256_ecdsa_signature_t *)signature->data;
   return otcrypto_eval_exit(
@@ -733,9 +710,6 @@ otcrypto_status_t otcrypto_ecdh_p256_async_start(
       private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-
-  // Ensure the entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
 
   // Check the integrity of the keys.
   if (integrity_blinded_key_check(private_key) != kHardenedBoolTrue ||
@@ -800,9 +774,6 @@ otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
   if (shared_secret == NULL || shared_secret->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-
-  // Ensure the entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
 
   // Randomize the output before computing it.
   HARDENED_TRY(hardened_memshred(shared_secret->keyblob, kP256CoordWords));
@@ -929,8 +900,6 @@ otcrypto_status_t otcrypto_ecc_p256_private_key_import(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  HARDENED_TRY(entropy_complex_check());
-
   // Each share must be 320 bits (256-bit scalar + 64 redundant bits for
   // side-channel protection).
   if (share0.len != kP256MaskedScalarShareWords ||
@@ -983,8 +952,6 @@ otcrypto_status_t otcrypto_ecc_p256_private_key_export(
       private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-
-  HARDENED_TRY(entropy_complex_check());
 
   // Check the output buffer lengths: each must be exactly 320 bits (256-bit
   // scalar + 64 redundant bits for side-channel protection).
@@ -1045,8 +1012,6 @@ otcrypto_status_t otcrypto_ecc_p256_arith_share_private_key(
       arith_private_key == NULL || arith_private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-
-  HARDENED_TRY(entropy_complex_check());
 
   // The key shares must resided in 320-bit buffers.
   if (bool_private_key_share0->len != kP256MaskedScalarShareWords ||

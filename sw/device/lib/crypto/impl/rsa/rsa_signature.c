@@ -95,7 +95,6 @@ static status_t message_encode(const otcrypto_hash_digest_t message_digest,
       HARDENED_CHECK_EQ(padding_mode, kRsaSignaturePaddingPss);
       // Generate a random salt value whose length matches the digest length.
       uint32_t salt[message_digest.len];
-      HARDENED_TRY(entropy_complex_check());
       HARDENED_TRY(entropy_csrng_uninstantiate());
       HARDENED_TRY(entropy_csrng_instantiate(
           /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));

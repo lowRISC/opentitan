@@ -9,7 +9,6 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/aes.h"
-#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/keymgr.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/aes_gcm/aes_gcm.h"
@@ -296,9 +295,6 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(otcrypto_blinded_key_t *key,
   // Randomize the tag before the operation.
   HARDENED_TRY(hardened_memshred(auth_tag->data, auth_tag->len));
 
-  // Ensure entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
-
   // Conditionally check for null pointers in data buffers that may be
   // 0-length.
   if ((aad->len != 0 && aad->data == NULL) ||
@@ -364,9 +360,6 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Ensure entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
-
   // Store the iCache state (on or off) and disable it when it is on.
   hardened_bool_t icache_saved_state;
   HARDENED_TRY(ibex_disable_icache(&icache_saved_state));
@@ -412,9 +405,6 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Ensure entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
-
   // Store the iCache state (on or off) and disable it when it is on.
   hardened_bool_t icache_saved_state;
   HARDENED_TRY(ibex_disable_icache(&icache_saved_state));
@@ -449,9 +439,6 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Ensure entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
-
   // Store the iCache state (on or off) and disable it when it is on.
   hardened_bool_t icache_saved_state;
   HARDENED_TRY(ibex_disable_icache(&icache_saved_state));
@@ -484,9 +471,6 @@ otcrypto_status_t otcrypto_aes_gcm_update_aad(otcrypto_aes_gcm_context_t *ctx,
   if (ctx == NULL || aad->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-
-  // Ensure entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
 
   if (aad->len == 0) {
     // Nothing to do.
@@ -526,9 +510,6 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
     return OTCRYPTO_BAD_ARGS;
   }
   *output_bytes_written = 0;
-
-  // Ensure entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
 
   if (input->len == 0) {
     // Nothing to do.
@@ -594,9 +575,6 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
   // Randomize the tag before the operation.
   HARDENED_TRY(hardened_memshred(auth_tag->data, auth_tag->len));
 
-  // Ensure entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
-
   // Store the iCache state (on or off) and disable it when it is on.
   hardened_bool_t icache_saved_state;
   HARDENED_TRY(ibex_disable_icache(&icache_saved_state));
@@ -650,9 +628,6 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
   }
   *plaintext_bytes_written = 0;
   *success = kHardenedBoolFalse;
-
-  // Entropy complex needs to be initialized for `memshred`.
-  HARDENED_TRY(entropy_complex_check());
 
   // Store the iCache state (on or off) and disable it when it is on.
   hardened_bool_t icache_saved_state;

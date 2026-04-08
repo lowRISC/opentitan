@@ -23,6 +23,8 @@ status_t entropy_complex_init(void) { return OTCRYPTO_OK; }
 
 status_t entropy_complex_check(void) { return OTCRYPTO_OK; }
 
+status_t entropy_complex_health_test_config_check(void) { return OTCRYPTO_OK; }
+
 status_t entropy_csrng_instantiate(
     hardened_bool_t disable_trng_input,
     const entropy_seed_material_t *seed_material) {

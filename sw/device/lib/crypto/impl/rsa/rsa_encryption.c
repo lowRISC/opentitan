@@ -8,7 +8,6 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_padding.h"
 #include "sw/device/lib/crypto/impl/rsa/run_rsa.h"
 

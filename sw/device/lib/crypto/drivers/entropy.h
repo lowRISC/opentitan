@@ -113,6 +113,20 @@ OT_WARN_UNUSED_RESULT
 status_t entropy_complex_check(void);
 
 /**
+ * Check the entropy complex health test and alert configurations.
+ *
+ * This function checks the entropy src registers to detect tampering.
+ * The multi-bit encoded registers are checked by the HW.
+ *
+ * This function does not return a status error, and will simply assert the chip
+ * is in the correct configuration.
+ *
+ * @return error on failure.
+ */
+OT_WARN_UNUSED_RESULT
+status_t entropy_complex_health_test_config_check(void);
+
+/**
  * Instantiate the SW CSRNG with a new seed value.
  *
  * SW CSRNG refers to the CSRNG hardware instance available for software use.
