@@ -48,6 +48,13 @@
             .syndrome_o(_SYND),                                              \
             .err_o(_ERR));                                                   \
         end                                                                  \
+        128: begin : gen_dec_hsiao_128                                       \
+          prim_secded_137_128_dec _INST(                                     \
+            .data_i(_ENC_DATA),                                              \
+            .data_o(_DATA),                                                  \
+            .syndrome_o(_SYND),                                              \
+            .err_o(_ERR));                                                   \
+        end                                                                  \
         default: begin : gen_dec_hsiao_default                               \
         end                                                                  \
       endcase                                                                \
@@ -77,6 +84,13 @@
         end                                                                  \
         68: begin : gen_dec_hamming_68                                       \
           prim_secded_hamming_76_68_dec _INST(                               \
+            .data_i(_ENC_DATA),                                              \
+            .data_o(_DATA),                                                  \
+            .syndrome_o(_SYND),                                              \
+            .err_o(_ERR));                                                   \
+        end                                                                  \
+        128: begin : gen_dec_hamming_128                                     \
+          prim_secded_hamming_137_128_dec _INST(                             \
             .data_i(_ENC_DATA),                                              \
             .data_o(_DATA),                                                  \
             .syndrome_o(_SYND),                                              \
@@ -123,6 +137,13 @@
             .syndrome_o(_SYND),                                              \
             .err_o(_ERR));                                                   \
         end                                                                  \
+        128: begin : gen_dec_inv_hsiao_128                                   \
+          prim_secded_inv_137_128_dec _INST(                                 \
+            .data_i(_ENC_DATA),                                              \
+            .data_o(_DATA),                                                  \
+            .syndrome_o(_SYND),                                              \
+            .err_o(_ERR));                                                   \
+        end                                                                  \
         default: begin : gen_dec_inv_hsiao_default                           \
         end                                                                  \
       endcase                                                                \
@@ -152,6 +173,13 @@
         end                                                                  \
         68: begin : gen_dec_inv_hamming_68                                   \
           prim_secded_inv_hamming_76_68_dec _INST(                           \
+            .data_i(_ENC_DATA),                                              \
+            .data_o(_DATA),                                                  \
+            .syndrome_o(_SYND),                                              \
+            .err_o(_ERR));                                                   \
+        end                                                                  \
+        128: begin : gen_dec_inv_hamming_128                                 \
+          prim_secded_inv_hamming_137_128_dec _INST(                         \
             .data_i(_ENC_DATA),                                              \
             .data_o(_DATA),                                                  \
             .syndrome_o(_SYND),                                              \
@@ -195,6 +223,11 @@
             .data_i(_DATA),                                     \
             .data_o(_ENC_DATA));                                \
         end                                                     \
+        128: begin : gen_enc_hsiao_128                          \
+          prim_secded_137_128_enc _INST(                        \
+            .data_i(_DATA),                                     \
+            .data_o(_ENC_DATA));                                \
+        end                                                     \
         default: begin : gen_enc_hsiao_default                  \
         end                                                     \
       endcase                                                   \
@@ -218,6 +251,11 @@
         end                                                     \
         68: begin : gen_enc_hamming_68                          \
           prim_secded_hamming_76_68_enc _INST(                  \
+            .data_i(_DATA),                                     \
+            .data_o(_ENC_DATA));                                \
+        end                                                     \
+        128: begin : gen_enc_hamming_128                        \
+          prim_secded_hamming_137_128_enc _INST(                \
             .data_i(_DATA),                                     \
             .data_o(_ENC_DATA));                                \
         end                                                     \
@@ -252,6 +290,11 @@
             .data_i(_DATA),                                     \
             .data_o(_ENC_DATA));                                \
         end                                                     \
+        128: begin : gen_enc_inv_hsiao_128                      \
+          prim_secded_inv_137_128_enc _INST(                    \
+            .data_i(_DATA),                                     \
+            .data_o(_ENC_DATA));                                \
+        end                                                     \
         default: begin : gen_enc_inv_hsiao_default              \
         end                                                     \
       endcase                                                   \
@@ -275,6 +318,11 @@
         end                                                     \
         68: begin : gen_enc_inv_hamming_68                      \
           prim_secded_inv_hamming_76_68_enc _INST(              \
+            .data_i(_DATA),                                     \
+            .data_o(_ENC_DATA));                                \
+        end                                                     \
+        128: begin : gen_enc_inv_hamming_128                    \
+          prim_secded_inv_hamming_137_128_enc _INST(            \
             .data_i(_DATA),                                     \
             .data_o(_ENC_DATA));                                \
         end                                                     \
