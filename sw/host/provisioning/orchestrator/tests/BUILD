@@ -13,6 +13,10 @@ load(
     "orchestrator_cw310_test_settings_transition",
     "orchestrator_cw340_test_settings_transition",
 )
+load(
+    "//sw/host/provisioning/orchestrator/tests:test.bzl",
+    "opentitan_sh_test",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -70,7 +74,7 @@ orchestrator_cw340_test_settings_transition(
 )
 
 [
-    sh_test(
+    opentitan_sh_test(
         name = "e2e_option_flags_test_{}".format(fpga),
         timeout = "moderate",
         srcs = ["e2e_option_flags.sh"],
@@ -98,7 +102,7 @@ orchestrator_cw340_test_settings_transition(
 ]
 
 [
-    sh_test(
+    opentitan_sh_test(
         name = "e2e_ate_individ_test_{}".format(fpga),
         timeout = "moderate",
         srcs = ["e2e_ate_individ.sh"],
@@ -126,7 +130,7 @@ orchestrator_cw340_test_settings_transition(
 ]
 
 [
-    sh_test(
+    opentitan_sh_test(
         name = "e2e_{}_{}_multistage_test".format(sku, fpga),
         srcs = ["e2e_multistage.sh"],
         data = [
@@ -142,6 +146,7 @@ orchestrator_cw340_test_settings_transition(
         tags = [
             "changes_otp",
             "exclusive",
+            "fpga",
             "manuf",
         ] + [fpga] + cfg.get("tags", []) + ([
             "manual",
@@ -155,7 +160,7 @@ orchestrator_cw340_test_settings_transition(
 ]
 
 [
-    sh_test(
+    opentitan_sh_test(
         name = "e2e_{}_{}_test".format(sku, fpga),
         timeout = "moderate",
         srcs = ["e2e.sh"],
@@ -172,6 +177,7 @@ orchestrator_cw340_test_settings_transition(
         tags = [
             "changes_otp",
             "exclusive",
+            "fpga",
             "manuf",
         ] + [fpga] + cfg.get("tags", []) + ([
             "manual",
