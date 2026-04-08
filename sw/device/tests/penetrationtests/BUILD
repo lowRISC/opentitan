@@ -567,6 +567,24 @@ pentest_owner_upgrade_self_signed_fi_gdb(
     test_vectors = [],
 )
 
+# RNG test for certification, this is a manual tests
+pentest_cryptolib_fi_sym(
+    name = "cc_rng_output_test",
+    tags = ["manual"],
+    test_args = "",
+    test_harness = "//sw/host/penetrationtests/python/fi:cc_rng_output_test",
+    test_vectors = [],
+)
+
+# RNG test for certification, this is a manual tests
+pentest_fi(
+    name = "fips_rng_output_test",
+    tags = ["manual"],
+    test_args = "",
+    test_harness = "//sw/host/penetrationtests/python/fi:fips_rng_output_test",
+    test_vectors = [],
+)
+
 genrule(
     name = "doxygen",
     srcs = [
