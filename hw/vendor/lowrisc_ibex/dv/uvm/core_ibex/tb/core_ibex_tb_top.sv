@@ -63,6 +63,7 @@ module core_ibex_tb_top;
   parameter bit WritebackStage            = 1'b0;
   parameter bit ICache                    = 1'b0;
   parameter bit ICacheECC                 = 1'b0;
+  parameter bit ICacheTweakInfection      = 1'b0;
   parameter bit BranchPredictor           = 1'b0;
   parameter bit SecureIbex                = 1'b0;
   parameter bit ICacheScramble            = 1'b0;
@@ -84,25 +85,26 @@ module core_ibex_tb_top;
   assign {scramble_key, scramble_nonce} = scrambling_key_if.d_data;
 
   ibex_top_tracing #(
-    .DmHaltAddr       (32'h`BOOT_ADDR + 'h0 ),
-    .DmExceptionAddr  (32'h`BOOT_ADDR + 'h4 ),
-    .PMPEnable        (PMPEnable        ),
-    .PMPGranularity   (PMPGranularity   ),
-    .PMPNumRegions    (PMPNumRegions    ),
-    .MHPMCounterNum   (MHPMCounterNum   ),
-    .MHPMCounterWidth (MHPMCounterWidth ),
-    .RV32E            (RV32E            ),
-    .RV32M            (RV32M            ),
-    .RV32B            (RV32B            ),
-    .RegFile          (RegFile          ),
-    .BranchTargetALU  (BranchTargetALU  ),
-    .WritebackStage   (WritebackStage   ),
-    .ICache           (ICache           ),
-    .ICacheECC        (ICacheECC        ),
-    .SecureIbex       (SecureIbex       ),
-    .ICacheScramble   (ICacheScramble   ),
-    .BranchPredictor  (BranchPredictor  ),
-    .DbgTriggerEn     (DbgTriggerEn     )
+    .DmHaltAddr           (32'h`BOOT_ADDR + 'h0 ),
+    .DmExceptionAddr      (32'h`BOOT_ADDR + 'h4 ),
+    .PMPEnable            (PMPEnable        ),
+    .PMPGranularity       (PMPGranularity   ),
+    .PMPNumRegions        (PMPNumRegions    ),
+    .MHPMCounterNum       (MHPMCounterNum   ),
+    .MHPMCounterWidth     (MHPMCounterWidth ),
+    .RV32E                (RV32E            ),
+    .RV32M                (RV32M            ),
+    .RV32B                (RV32B            ),
+    .RegFile              (RegFile          ),
+    .BranchTargetALU      (BranchTargetALU  ),
+    .WritebackStage       (WritebackStage   ),
+    .ICache               (ICache           ),
+    .ICacheECC            (ICacheECC        ),
+    .ICacheTweakInfection (ICacheTweakInfection),
+    .SecureIbex           (SecureIbex       ),
+    .ICacheScramble       (ICacheScramble   ),
+    .BranchPredictor      (BranchPredictor  ),
+    .DbgTriggerEn         (DbgTriggerEn     )
 
   ) dut (
     .clk_i                  (clk                        ),

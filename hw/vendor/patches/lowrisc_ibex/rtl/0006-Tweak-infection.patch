@@ -1,0 +1,742 @@
+diff --git a/ibex_core.sv b/ibex_core.sv
+index 5df9ae1b70..60c927ce34 100644
+--- a/ibex_core.sv
++++ b/ibex_core.sv
+@@ -14,35 +14,36 @@
+  * Top level module of the ibex RISC-V core
+  */
+ module ibex_core import ibex_pkg::*; #(
+-  parameter bit          PMPEnable         = 1'b0,
+-  parameter int unsigned PMPGranularity    = 0,
+-  parameter int unsigned PMPNumRegions     = 4,
+-  parameter int unsigned MHPMCounterNum    = 0,
+-  parameter int unsigned MHPMCounterWidth  = 40,
+-  parameter bit          RV32E             = 1'b0,
+-  parameter rv32m_e      RV32M             = RV32MFast,
+-  parameter rv32b_e      RV32B             = RV32BNone,
+-  parameter bit          BranchTargetALU   = 1'b0,
+-  parameter bit          WritebackStage    = 1'b0,
+-  parameter bit          ICache            = 1'b0,
+-  parameter bit          ICacheECC         = 1'b0,
+-  parameter int unsigned BusSizeECC        = BUS_SIZE,
+-  parameter int unsigned TagSizeECC        = IC_TAG_SIZE,
+-  parameter int unsigned LineSizeECC       = IC_LINE_SIZE,
+-  parameter bit          BranchPredictor   = 1'b0,
+-  parameter bit          DbgTriggerEn      = 1'b0,
+-  parameter int unsigned DbgHwBreakNum     = 1,
+-  parameter bit          ResetAll          = 1'b0,
+-  parameter lfsr_seed_t  RndCnstLfsrSeed   = RndCnstLfsrSeedDefault,
+-  parameter lfsr_perm_t  RndCnstLfsrPerm   = RndCnstLfsrPermDefault,
+-  parameter bit          SecureIbex        = 1'b0,
+-  parameter bit          DummyInstructions = 1'b0,
+-  parameter bit          RegFileECC        = 1'b0,
+-  parameter int unsigned RegFileDataWidth  = 32,
+-  parameter bit          MemECC            = 1'b0,
+-  parameter int unsigned MemDataWidth      = MemECC ? 32 + 7 : 32,
+-  parameter int unsigned DmHaltAddr        = 32'h1A110800,
+-  parameter int unsigned DmExceptionAddr   = 32'h1A110808
++  parameter bit          PMPEnable            = 1'b0,
++  parameter int unsigned PMPGranularity       = 0,
++  parameter int unsigned PMPNumRegions        = 4,
++  parameter int unsigned MHPMCounterNum       = 0,
++  parameter int unsigned MHPMCounterWidth     = 40,
++  parameter bit          RV32E                = 1'b0,
++  parameter rv32m_e      RV32M                = RV32MFast,
++  parameter rv32b_e      RV32B                = RV32BNone,
++  parameter bit          BranchTargetALU      = 1'b0,
++  parameter bit          WritebackStage       = 1'b0,
++  parameter bit          ICache               = 1'b0,
++  parameter bit          ICacheECC            = 1'b0,
++  parameter bit          ICacheTweakInfection = 1'b0,
++  parameter int unsigned BusSizeECC           = BUS_SIZE,
++  parameter int unsigned TagSizeECC           = IC_TAG_SIZE,
++  parameter int unsigned LineSizeECC          = IC_LINE_SIZE,
++  parameter bit          BranchPredictor      = 1'b0,
++  parameter bit          DbgTriggerEn         = 1'b0,
++  parameter int unsigned DbgHwBreakNum        = 1,
++  parameter bit          ResetAll             = 1'b0,
++  parameter lfsr_seed_t  RndCnstLfsrSeed      = RndCnstLfsrSeedDefault,
++  parameter lfsr_perm_t  RndCnstLfsrPerm      = RndCnstLfsrPermDefault,
++  parameter bit          SecureIbex           = 1'b0,
++  parameter bit          DummyInstructions    = 1'b0,
++  parameter bit          RegFileECC           = 1'b0,
++  parameter int unsigned RegFileDataWidth     = 32,
++  parameter bit          MemECC               = 1'b0,
++  parameter int unsigned MemDataWidth         = MemECC ? 32 + 7 : 32,
++  parameter int unsigned DmHaltAddr           = 32'h1A110800,
++  parameter int unsigned DmExceptionAddr      = 32'h1A110808
+ ) (
+   // Clock and Reset
+   input  logic                         clk_i,
+@@ -414,21 +415,22 @@ module ibex_core import ibex_pkg::*; #(
+   //////////////
+ 
+   ibex_if_stage #(
+-    .DmHaltAddr       (DmHaltAddr),
+-    .DmExceptionAddr  (DmExceptionAddr),
+-    .DummyInstructions(DummyInstructions),
+-    .ICache           (ICache),
+-    .ICacheECC        (ICacheECC),
+-    .BusSizeECC       (BusSizeECC),
+-    .TagSizeECC       (TagSizeECC),
+-    .LineSizeECC      (LineSizeECC),
+-    .PCIncrCheck      (PCIncrCheck),
+-    .ResetAll         (ResetAll),
+-    .RndCnstLfsrSeed  (RndCnstLfsrSeed),
+-    .RndCnstLfsrPerm  (RndCnstLfsrPerm),
+-    .BranchPredictor  (BranchPredictor),
+-    .MemECC           (MemECC),
+-    .MemDataWidth     (MemDataWidth)
++    .DmHaltAddr           (DmHaltAddr),
++    .DmExceptionAddr      (DmExceptionAddr),
++    .DummyInstructions    (DummyInstructions),
++    .ICache               (ICache),
++    .ICacheECC            (ICacheECC),
++    .ICacheTweakInfection (ICacheTweakInfection),
++    .BusSizeECC           (BusSizeECC),
++    .TagSizeECC           (TagSizeECC),
++    .LineSizeECC          (LineSizeECC),
++    .PCIncrCheck          (PCIncrCheck),
++    .ResetAll             (ResetAll),
++    .RndCnstLfsrSeed      (RndCnstLfsrSeed),
++    .RndCnstLfsrPerm      (RndCnstLfsrPerm),
++    .BranchPredictor      (BranchPredictor),
++    .MemECC               (MemECC),
++    .MemDataWidth         (MemDataWidth)
+   ) if_stage_i (
+     .clk_i (clk_i),
+     .rst_ni(rst_ni),
+diff --git a/ibex_icache.sv b/ibex_icache.sv
+index 23f4357028..30dbad4d12 100644
+--- a/ibex_icache.sv
++++ b/ibex_icache.sv
+@@ -17,7 +17,8 @@ module ibex_icache import ibex_pkg::*; #(
+   parameter int unsigned TagSizeECC      = IC_TAG_SIZE,
+   parameter int unsigned LineSizeECC     = IC_LINE_SIZE,
+   // Only cache branch targets
+-  parameter bit          BranchCache     = 1'b0
++  parameter bit          BranchCache     = 1'b0,
++  parameter bit          TweakInfection  = 1'b0
+ ) (
+   // Clock and reset
+   input  logic                           clk_i,
+@@ -98,6 +99,13 @@ module ibex_icache import ibex_pkg::*; #(
+   logic [IC_NUM_WAYS-1:0]                 data_banks_ic0;
+   logic                                   data_write_ic0;
+   logic [LineSizeECC-1:0]                 data_wdata_ic0;
++
++  // Tweak Infection signals
++  logic [LineSizeECC-1:0]                 data_tweak_lw_ic0;
++  logic [LineSizeECC-1:0]                 data_tweak_lw_ic1;
++  logic [TagSizeECC-1:0]                  tag_tweak_lw_ic0;
++  logic [TagSizeECC-1:0]                  tag_tweak_lw_ic1;
++
+   // Cache pipelipe IC1 signals
+   logic [TagSizeECC-1:0]                  tag_rdata_ic1  [IC_NUM_WAYS];
+   logic [LineSizeECC-1:0]                 data_rdata_ic1 [IC_NUM_WAYS];
+@@ -307,6 +315,89 @@ module ibex_icache import ibex_pkg::*; #(
+     assign data_wdata_ic0 = fill_wdata_ic0;
+   end
+ 
++  /////////////////////
++  // Tweak Infection //
++  /////////////////////
++  if (TweakInfection) begin : gen_tweak_infection
++    // Before writing the data to the data bank, XOR the tweak on top of the data.
++    // When reading back the data, undo this XOR.
++    // Determine the full address used for the outgoing data bank request. Apply '0, wich
++    // effectively disabled the tweak infection, when (a) invalidating the cache and (b)
++    // when there is already an ECC error (we have already raised a minor alert).
++    logic [ADDR_W-1:0]  data_address_ic0;
++    logic [ADDR_W-1:0]  data_tweak_ic0;
++    assign data_address_ic0 = inval_write_req ? '0 :
++                              ecc_write_req   ? '0 :
++                              fill_grant_ic0  ? fill_ram_req_addr :
++                                                lookup_addr_ic0;
++
++    // Mask the IC_LINE_W LSBs to remove the offset within a cache line.
++    assign data_tweak_ic0 = {data_address_ic0[ADDR_W-1:IC_LINE_W], {IC_LINE_W{1'b0}}};
++
++    // Tie off the unused LSBs.
++    logic unused_data_address_ic0;
++    assign unused_data_address_ic0 = ^data_address_ic0[IC_LINE_W-1:0];
++
++    // Replicate the ADDR_W-bit tweak to match the LineSizeECC width.
++    if (ICacheECC) begin : gen_ecc_tweak
++      always_comb begin
++        data_tweak_lw_ic0 = '0;
++        for (int i = 0; i < IC_LINE_BEATS; i++) begin
++          data_tweak_lw_ic0 |= (LineSizeECC'({data_tweak_ic0}) <<
++                               (i * (ADDR_W + IC_DATA_ECC_SIZE)));
++        end
++      end
++    end else begin: gen_no_ecc_tweak
++      always_comb begin
++        data_tweak_lw_ic0 = '0;
++        for (int i = 0; i < IC_LINE_BEATS; i++) begin
++          data_tweak_lw_ic0 |= (LineSizeECC'({data_tweak_ic0}) << (i * ADDR_W));
++        end
++      end
++    end
++
++    // Pipeline the tweak to IC1 to align with the data RAM output timing.
++    always_ff @(posedge clk_i or negedge rst_ni) begin
++      if (!rst_ni) begin
++        data_tweak_lw_ic1 <= '0;
++      end else if (data_req_ic0) begin
++        data_tweak_lw_ic1 <= data_tweak_lw_ic0;
++      end
++    end
++
++    // Setup the tweak for the tag bank. Here, use the tag index as a tweak.
++    if (ICacheECC) begin : gen_ecc_tag_tweak
++      always_comb begin
++        tag_tweak_lw_ic0 = '0;
++        for (int i = 0; i < IC_LINE_BEATS; i++) begin
++          tag_tweak_lw_ic0 |= (TagSizeECC'({tag_index_ic0}) <<
++                              (i * (IC_INDEX_W + IC_TAG_ECC_SIZE)));
++        end
++      end
++    end else begin: gen_no_ecc_tag_tweak
++      always_comb begin
++        tag_tweak_lw_ic0 = '0;
++        for (int i = 0; i < IC_LINE_BEATS; i++) begin
++          tag_tweak_lw_ic0 |= (TagSizeECC'({tag_index_ic0}) << (i * IC_INDEX_W));
++        end
++      end
++    end
++
++    // Pipeline the tag tweak to IC1 to align with the tag RAM output timing.
++    always_ff @(posedge clk_i or negedge rst_ni) begin
++      if (!rst_ni) begin
++        tag_tweak_lw_ic1 <= '0;
++      end else if (tag_req_ic0) begin
++        tag_tweak_lw_ic1 <= tag_tweak_lw_ic0;
++      end
++    end
++  end else begin: gen_no_tweak_infection
++    assign data_tweak_lw_ic0 = '0;
++    assign data_tweak_lw_ic1 = '0;
++    assign tag_tweak_lw_ic0 = '0;
++    assign tag_tweak_lw_ic1 = '0;
++  end
++
+   ////////////////
+   // IC0 -> IC1 //
+   ////////////////
+@@ -315,19 +406,28 @@ module ibex_icache import ibex_pkg::*; #(
+   assign ic_tag_req_o    = {IC_NUM_WAYS{tag_req_ic0}} & tag_banks_ic0;
+   assign ic_tag_write_o  = tag_write_ic0;
+   assign ic_tag_addr_o   = tag_index_ic0;
+-  assign ic_tag_wdata_o  = tag_wdata_ic0;
++  // Tweak infection, XOR the tag with the tweak.
++  assign ic_tag_wdata_o  = tag_wdata_ic0 ^ tag_tweak_lw_ic0;
+ 
+   // Tag RAMs inputs
+-  assign tag_rdata_ic1   = ic_tag_rdata_i;
++  // Tweak infection, un-XOR the tag using the tweak.
++  for (genvar way = 0; way < IC_NUM_WAYS; way++) begin : gen_tag_untweak
++    assign tag_rdata_ic1[way] = ic_tag_rdata_i[way] ^ tag_tweak_lw_ic1;
++  end
+ 
+   // Data RAMs outputs
+   assign ic_data_req_o   = {IC_NUM_WAYS{data_req_ic0}} & data_banks_ic0;
+   assign ic_data_write_o = data_write_ic0;
+   assign ic_data_addr_o  = data_index_ic0;
+-  assign ic_data_wdata_o = data_wdata_ic0;
++
++  // Tweak infection, XOR the data with the tweak before writing to RAM.
++  assign ic_data_wdata_o = data_wdata_ic0 ^ data_tweak_lw_ic0;
+ 
+   // Data RAMs inputs
+-  assign data_rdata_ic1  = ic_data_rdata_i;
++  // Tweak infection, un-XOR the data using the tweak.
++  for (genvar way = 0; way < IC_NUM_WAYS; way++) begin : gen_data_untweak
++    assign data_rdata_ic1[way] = ic_data_rdata_i[way] ^ data_tweak_lw_ic1;
++  end
+ 
+   always_ff @(posedge clk_i or negedge rst_ni) begin
+     if (!rst_ni) begin
+diff --git a/ibex_if_stage.sv b/ibex_if_stage.sv
+index b5650cac6b..b9c1d26d08 100644
+--- a/ibex_if_stage.sv
++++ b/ibex_if_stage.sv
+@@ -14,21 +14,22 @@
+ `include "dv_fcov_macros.svh"
+ 
+ module ibex_if_stage import ibex_pkg::*; #(
+-  parameter int unsigned DmHaltAddr        = 32'h1A110800,
+-  parameter int unsigned DmExceptionAddr   = 32'h1A110808,
+-  parameter bit          DummyInstructions = 1'b0,
+-  parameter bit          ICache            = 1'b0,
+-  parameter bit          ICacheECC         = 1'b0,
+-  parameter int unsigned BusSizeECC        = BUS_SIZE,
+-  parameter int unsigned TagSizeECC        = IC_TAG_SIZE,
+-  parameter int unsigned LineSizeECC       = IC_LINE_SIZE,
+-  parameter bit          PCIncrCheck       = 1'b0,
+-  parameter bit          ResetAll          = 1'b0,
+-  parameter lfsr_seed_t  RndCnstLfsrSeed   = RndCnstLfsrSeedDefault,
+-  parameter lfsr_perm_t  RndCnstLfsrPerm   = RndCnstLfsrPermDefault,
+-  parameter bit          BranchPredictor   = 1'b0,
+-  parameter bit          MemECC            = 1'b0,
+-  parameter int unsigned MemDataWidth      = MemECC ? 32 + 7 : 32
++  parameter int unsigned DmHaltAddr           = 32'h1A110800,
++  parameter int unsigned DmExceptionAddr      = 32'h1A110808,
++  parameter bit          DummyInstructions    = 1'b0,
++  parameter bit          ICache               = 1'b0,
++  parameter bit          ICacheECC            = 1'b0,
++  parameter bit          ICacheTweakInfection = 1'b0,
++  parameter int unsigned BusSizeECC           = BUS_SIZE,
++  parameter int unsigned TagSizeECC           = IC_TAG_SIZE,
++  parameter int unsigned LineSizeECC          = IC_LINE_SIZE,
++  parameter bit          PCIncrCheck          = 1'b0,
++  parameter bit          ResetAll             = 1'b0,
++  parameter lfsr_seed_t  RndCnstLfsrSeed      = RndCnstLfsrSeedDefault,
++  parameter lfsr_perm_t  RndCnstLfsrPerm      = RndCnstLfsrPermDefault,
++  parameter bit          BranchPredictor      = 1'b0,
++  parameter bit          MemECC               = 1'b0,
++  parameter int unsigned MemDataWidth         = MemECC ? 32 + 7 : 32
+ ) (
+   input  logic                         clk_i,
+   input  logic                         rst_ni,
+@@ -268,7 +269,8 @@ module ibex_if_stage import ibex_pkg::*; #(
+       .ResetAll        (ResetAll),
+       .BusSizeECC      (BusSizeECC),
+       .TagSizeECC      (TagSizeECC),
+-      .LineSizeECC     (LineSizeECC)
++      .LineSizeECC     (LineSizeECC),
++      .TweakInfection  (ICacheTweakInfection)
+     ) icache_i (
+         .clk_i               ( clk_i                      ),
+         .rst_ni              ( rst_ni                     ),
+diff --git a/ibex_lockstep.sv b/ibex_lockstep.sv
+index 449fc986db..55c10087f6 100644
+--- a/ibex_lockstep.sv
++++ b/ibex_lockstep.sv
+@@ -9,38 +9,39 @@
+ 
+ // SEC_CM: LOGIC.SHADOW
+ module ibex_lockstep import ibex_pkg::*; #(
+-  parameter int unsigned LockstepOffset      = 2,
+-  parameter bit          PMPEnable           = 1'b0,
+-  parameter int unsigned PMPGranularity      = 0,
+-  parameter int unsigned PMPNumRegions       = 4,
+-  parameter int unsigned MHPMCounterNum      = 0,
+-  parameter int unsigned MHPMCounterWidth    = 40,
+-  parameter bit          RV32E               = 1'b0,
+-  parameter rv32m_e      RV32M               = RV32MFast,
+-  parameter rv32b_e      RV32B               = RV32BNone,
+-  parameter bit          BranchTargetALU     = 1'b0,
+-  parameter bit          WritebackStage      = 1'b0,
+-  parameter bit          ICache              = 1'b0,
+-  parameter bit          ICacheECC           = 1'b0,
+-  parameter int unsigned BusSizeECC          = BUS_SIZE,
+-  parameter int unsigned TagSizeECC          = IC_TAG_SIZE,
+-  parameter int unsigned LineSizeECC         = IC_LINE_SIZE,
+-  parameter bit          BranchPredictor     = 1'b0,
+-  parameter bit          DbgTriggerEn        = 1'b0,
+-  parameter int unsigned DbgHwBreakNum       = 1,
+-  parameter bit          ResetAll            = 1'b0,
+-  parameter lfsr_seed_t  RndCnstLfsrSeed     = RndCnstLfsrSeedDefault,
+-  parameter lfsr_perm_t  RndCnstLfsrPerm     = RndCnstLfsrPermDefault,
+-  parameter bit          SecureIbex          = 1'b0,
+-  parameter bit          DummyInstructions   = 1'b0,
+-  parameter bit          RegFileECC          = 1'b0,
+-  parameter int unsigned RegFileDataWidth    = 32,
+-  parameter int unsigned RegFileDataEccWidth = 39,
+-  parameter regfile_e    RegFile             = RegFileFF,
+-  parameter bit          MemECC              = 1'b0,
+-  parameter int unsigned MemDataWidth        = MemECC ? 32 + 7 : 32,
+-  parameter int unsigned DmHaltAddr          = 32'h1A110800,
+-  parameter int unsigned DmExceptionAddr     = 32'h1A110808
++  parameter int unsigned LockstepOffset       = 2,
++  parameter bit          PMPEnable            = 1'b0,
++  parameter int unsigned PMPGranularity       = 0,
++  parameter int unsigned PMPNumRegions        = 4,
++  parameter int unsigned MHPMCounterNum       = 0,
++  parameter int unsigned MHPMCounterWidth     = 40,
++  parameter bit          RV32E                = 1'b0,
++  parameter rv32m_e      RV32M                = RV32MFast,
++  parameter rv32b_e      RV32B                = RV32BNone,
++  parameter bit          BranchTargetALU      = 1'b0,
++  parameter bit          WritebackStage       = 1'b0,
++  parameter bit          ICache               = 1'b0,
++  parameter bit          ICacheECC            = 1'b0,
++  parameter bit          ICacheTweakInfection = 1'b0,
++  parameter int unsigned BusSizeECC           = BUS_SIZE,
++  parameter int unsigned TagSizeECC           = IC_TAG_SIZE,
++  parameter int unsigned LineSizeECC          = IC_LINE_SIZE,
++  parameter bit          BranchPredictor      = 1'b0,
++  parameter bit          DbgTriggerEn         = 1'b0,
++  parameter int unsigned DbgHwBreakNum        = 1,
++  parameter bit          ResetAll             = 1'b0,
++  parameter lfsr_seed_t  RndCnstLfsrSeed      = RndCnstLfsrSeedDefault,
++  parameter lfsr_perm_t  RndCnstLfsrPerm      = RndCnstLfsrPermDefault,
++  parameter bit          SecureIbex           = 1'b0,
++  parameter bit          DummyInstructions    = 1'b0,
++  parameter bit          RegFileECC           = 1'b0,
++  parameter int unsigned RegFileDataWidth     = 32,
++  parameter int unsigned RegFileDataEccWidth  = 39,
++  parameter regfile_e    RegFile              = RegFileFF,
++  parameter bit          MemECC               = 1'b0,
++  parameter int unsigned MemDataWidth         = MemECC ? 32 + 7 : 32,
++  parameter int unsigned DmHaltAddr           = 32'h1A110800,
++  parameter int unsigned DmExceptionAddr      = 32'h1A110808
+ ) (
+   input  logic                         clk_i,
+   input  logic                         rst_ni,
+@@ -352,35 +353,36 @@ module ibex_lockstep import ibex_pkg::*; #(
+   logic [RegFileDataEccWidth - RegFileDataWidth - 1:0] shadow_rf_rdata_b_intg;
+ 
+   ibex_core #(
+-    .PMPEnable         ( PMPEnable         ),
+-    .PMPGranularity    ( PMPGranularity    ),
+-    .PMPNumRegions     ( PMPNumRegions     ),
+-    .MHPMCounterNum    ( MHPMCounterNum    ),
+-    .MHPMCounterWidth  ( MHPMCounterWidth  ),
+-    .RV32E             ( RV32E             ),
+-    .RV32M             ( RV32M             ),
+-    .RV32B             ( RV32B             ),
+-    .BranchTargetALU   ( BranchTargetALU   ),
+-    .ICache            ( ICache            ),
+-    .ICacheECC         ( ICacheECC         ),
+-    .BusSizeECC        ( BusSizeECC        ),
+-    .TagSizeECC        ( TagSizeECC        ),
+-    .LineSizeECC       ( LineSizeECC       ),
+-    .BranchPredictor   ( BranchPredictor   ),
+-    .DbgTriggerEn      ( DbgTriggerEn      ),
+-    .DbgHwBreakNum     ( DbgHwBreakNum     ),
+-    .WritebackStage    ( WritebackStage    ),
+-    .ResetAll          ( ResetAll          ),
+-    .RndCnstLfsrSeed   ( RndCnstLfsrSeed   ),
+-    .RndCnstLfsrPerm   ( RndCnstLfsrPerm   ),
+-    .SecureIbex        ( SecureIbex        ),
+-    .DummyInstructions ( DummyInstructions ),
+-    .RegFileECC        ( RegFileECC        ),
+-    .RegFileDataWidth  ( RegFileDataEccWidth ),
+-    .MemECC            ( MemECC            ),
+-    .MemDataWidth      ( MemDataWidth      ),
+-    .DmHaltAddr        ( DmHaltAddr        ),
+-    .DmExceptionAddr   ( DmExceptionAddr   )
++    .PMPEnable            ( PMPEnable         ),
++    .PMPGranularity       ( PMPGranularity    ),
++    .PMPNumRegions        ( PMPNumRegions     ),
++    .MHPMCounterNum       ( MHPMCounterNum    ),
++    .MHPMCounterWidth     ( MHPMCounterWidth  ),
++    .RV32E                ( RV32E             ),
++    .RV32M                ( RV32M             ),
++    .RV32B                ( RV32B             ),
++    .BranchTargetALU      ( BranchTargetALU   ),
++    .ICache               ( ICache            ),
++    .ICacheECC            ( ICacheECC         ),
++    .ICacheTweakInfection ( ICacheTweakInfection ),
++    .BusSizeECC           ( BusSizeECC        ),
++    .TagSizeECC           ( TagSizeECC        ),
++    .LineSizeECC          ( LineSizeECC       ),
++    .BranchPredictor      ( BranchPredictor   ),
++    .DbgTriggerEn         ( DbgTriggerEn      ),
++    .DbgHwBreakNum        ( DbgHwBreakNum     ),
++    .WritebackStage       ( WritebackStage    ),
++    .ResetAll             ( ResetAll          ),
++    .RndCnstLfsrSeed      ( RndCnstLfsrSeed   ),
++    .RndCnstLfsrPerm      ( RndCnstLfsrPerm   ),
++    .SecureIbex           ( SecureIbex        ),
++    .DummyInstructions    ( DummyInstructions ),
++    .RegFileECC           ( RegFileECC        ),
++    .RegFileDataWidth     ( RegFileDataEccWidth ),
++    .MemECC               ( MemECC            ),
++    .MemDataWidth         ( MemDataWidth      ),
++    .DmHaltAddr           ( DmHaltAddr        ),
++    .DmExceptionAddr      ( DmExceptionAddr   )
+   ) u_shadow_core (
+     .clk_i               (clk_i),
+     .rst_ni              (rst_shadow_n),
+diff --git a/ibex_pkg.sv b/ibex_pkg.sv
+index bf379ad029..39cd31bd51 100644
+--- a/ibex_pkg.sv
++++ b/ibex_pkg.sv
+@@ -380,6 +380,8 @@ package ibex_pkg;
+   parameter int unsigned IC_INDEX_HI      = IC_INDEX_W + IC_LINE_W - 1;
+   parameter int unsigned IC_TAG_SIZE      = ADDR_W - IC_INDEX_W - IC_LINE_W + 1; // 1 valid bit
+   parameter int unsigned IC_OUTPUT_BEATS  = (BUS_BYTES / 2); // number of halfwords
++  parameter int unsigned IC_DATA_ECC_SIZE = 7;
++  parameter int unsigned IC_TAG_ECC_SIZE  = 6;
+   // ICache Scrambling Parameters
+   parameter int unsigned SCRAMBLE_KEY_W   = 128;
+   parameter int unsigned SCRAMBLE_NONCE_W = 64;
+diff --git a/ibex_top.sv b/ibex_top.sv
+index e8da8dc540..3d1258f123 100644
+--- a/ibex_top.sv
++++ b/ibex_top.sv
+@@ -34,6 +34,7 @@ module ibex_top import ibex_pkg::*; #(
+   parameter int unsigned MemDataWidth                 = MemECC ? 32 + 7 : 32,
+   parameter bit          ICacheScramble               = 1'b0,
+   parameter int unsigned ICacheScrNumPrinceRoundsHalf = 2,
++  parameter bit          ICacheTweakInfection         = SecureIbex,
+   parameter lfsr_seed_t  RndCnstLfsrSeed              = RndCnstLfsrSeedDefault,
+   parameter lfsr_perm_t  RndCnstLfsrPerm              = RndCnstLfsrPermDefault,
+   parameter int unsigned DmHaltAddr                   = 32'h1A110800,
+@@ -167,9 +168,11 @@ module ibex_top import ibex_pkg::*; #(
+   localparam int unsigned RegFileDataWidth      = 32;
+   localparam int unsigned RegFileDataEccWidth   = 32 + 7;
+   // Icache parameters
+-  localparam int unsigned BusSizeECC        = ICacheECC ? (BUS_SIZE + 7) : BUS_SIZE;
++  localparam int unsigned BusSizeECC        = ICacheECC ? (BUS_SIZE + IC_DATA_ECC_SIZE) :
++                                                           BUS_SIZE;
+   localparam int unsigned LineSizeECC       = BusSizeECC * IC_LINE_BEATS;
+-  localparam int unsigned TagSizeECC        = ICacheECC ? (IC_TAG_SIZE + 6) : IC_TAG_SIZE;
++  localparam int unsigned TagSizeECC        = ICacheECC ? (IC_TAG_SIZE + IC_TAG_ECC_SIZE) :
++                                                           IC_TAG_SIZE;
+   // Scrambling Parameter
+   localparam int unsigned NumAddrScrRounds  = ICacheScramble ? 2 : 0;
+ 
+@@ -284,35 +287,36 @@ module ibex_top import ibex_pkg::*; #(
+   end
+ 
+   ibex_core #(
+-    .PMPEnable        (PMPEnable),
+-    .PMPGranularity   (PMPGranularity),
+-    .PMPNumRegions    (PMPNumRegions),
+-    .MHPMCounterNum   (MHPMCounterNum),
+-    .MHPMCounterWidth (MHPMCounterWidth),
+-    .RV32E            (RV32E),
+-    .RV32M            (RV32M),
+-    .RV32B            (RV32B),
+-    .BranchTargetALU  (BranchTargetALU),
+-    .ICache           (ICache),
+-    .ICacheECC        (ICacheECC),
+-    .BusSizeECC       (BusSizeECC),
+-    .TagSizeECC       (TagSizeECC),
+-    .LineSizeECC      (LineSizeECC),
+-    .BranchPredictor  (BranchPredictor),
+-    .DbgTriggerEn     (DbgTriggerEn),
+-    .DbgHwBreakNum    (DbgHwBreakNum),
+-    .WritebackStage   (WritebackStage),
+-    .ResetAll         (ResetAll),
+-    .RndCnstLfsrSeed  (RndCnstLfsrSeed),
+-    .RndCnstLfsrPerm  (RndCnstLfsrPerm),
+-    .SecureIbex       (SecureIbex),
+-    .DummyInstructions(DummyInstructions),
+-    .RegFileECC       (RegFileECC),
+-    .RegFileDataWidth (RegFileDataWidth),
+-    .MemECC           (MemECC),
+-    .MemDataWidth     (MemDataWidth),
+-    .DmHaltAddr       (DmHaltAddr),
+-    .DmExceptionAddr  (DmExceptionAddr)
++    .PMPEnable            (PMPEnable),
++    .PMPGranularity       (PMPGranularity),
++    .PMPNumRegions        (PMPNumRegions),
++    .MHPMCounterNum       (MHPMCounterNum),
++    .MHPMCounterWidth     (MHPMCounterWidth),
++    .RV32E                (RV32E),
++    .RV32M                (RV32M),
++    .RV32B                (RV32B),
++    .BranchTargetALU      (BranchTargetALU),
++    .ICache               (ICache),
++    .ICacheECC            (ICacheECC),
++    .ICacheTweakInfection (ICacheTweakInfection),
++    .BusSizeECC           (BusSizeECC),
++    .TagSizeECC           (TagSizeECC),
++    .LineSizeECC          (LineSizeECC),
++    .BranchPredictor      (BranchPredictor),
++    .DbgTriggerEn         (DbgTriggerEn),
++    .DbgHwBreakNum        (DbgHwBreakNum),
++    .WritebackStage       (WritebackStage),
++    .ResetAll             (ResetAll),
++    .RndCnstLfsrSeed      (RndCnstLfsrSeed),
++    .RndCnstLfsrPerm      (RndCnstLfsrPerm),
++    .SecureIbex           (SecureIbex),
++    .DummyInstructions    (DummyInstructions),
++    .RegFileECC           (RegFileECC),
++    .RegFileDataWidth     (RegFileDataWidth),
++    .MemECC               (MemECC),
++    .MemDataWidth         (MemDataWidth),
++    .DmHaltAddr           (DmHaltAddr),
++    .DmExceptionAddr      (DmExceptionAddr)
+   ) u_ibex_core (
+     .clk_i(clk),
+     .rst_ni,
+@@ -944,36 +948,37 @@ module ibex_top import ibex_pkg::*; #(
+     logic lockstep_alert_major_bus_local;
+ 
+     ibex_lockstep #(
+-      .PMPEnable           (PMPEnable),
+-      .PMPGranularity      (PMPGranularity),
+-      .PMPNumRegions       (PMPNumRegions),
+-      .MHPMCounterNum      (MHPMCounterNum),
+-      .MHPMCounterWidth    (MHPMCounterWidth),
+-      .RV32E               (RV32E),
+-      .RV32M               (RV32M),
+-      .RV32B               (RV32B),
+-      .BranchTargetALU     (BranchTargetALU),
+-      .ICache              (ICache),
+-      .ICacheECC           (ICacheECC),
+-      .BusSizeECC          (BusSizeECC),
+-      .TagSizeECC          (TagSizeECC),
+-      .LineSizeECC         (LineSizeECC),
+-      .BranchPredictor     (BranchPredictor),
+-      .DbgTriggerEn        (DbgTriggerEn),
+-      .DbgHwBreakNum       (DbgHwBreakNum),
+-      .WritebackStage      (WritebackStage),
+-      .ResetAll            (ResetAll),
+-      .RndCnstLfsrSeed     (RndCnstLfsrSeed),
+-      .RndCnstLfsrPerm     (RndCnstLfsrPerm),
+-      .SecureIbex          (SecureIbex),
+-      .DummyInstructions   (DummyInstructions),
+-      .RegFileECC          (RegFileLockstepECC),
+-      .RegFileDataWidth    (RegFileDataWidth),
+-      .RegFileDataEccWidth (RegFileDataEccWidth),
+-      .RegFile             (RegFile),
+-      .MemECC              (MemECC),
+-      .DmHaltAddr          (DmHaltAddr),
+-      .DmExceptionAddr     (DmExceptionAddr)
++      .PMPEnable            (PMPEnable),
++      .PMPGranularity       (PMPGranularity),
++      .PMPNumRegions        (PMPNumRegions),
++      .MHPMCounterNum       (MHPMCounterNum),
++      .MHPMCounterWidth     (MHPMCounterWidth),
++      .RV32E                (RV32E),
++      .RV32M                (RV32M),
++      .RV32B                (RV32B),
++      .BranchTargetALU      (BranchTargetALU),
++      .ICache               (ICache),
++      .ICacheECC            (ICacheECC),
++      .ICacheTweakInfection (ICacheTweakInfection),
++      .BusSizeECC           (BusSizeECC),
++      .TagSizeECC           (TagSizeECC),
++      .LineSizeECC          (LineSizeECC),
++      .BranchPredictor      (BranchPredictor),
++      .DbgTriggerEn         (DbgTriggerEn),
++      .DbgHwBreakNum        (DbgHwBreakNum),
++      .WritebackStage       (WritebackStage),
++      .ResetAll             (ResetAll),
++      .RndCnstLfsrSeed      (RndCnstLfsrSeed),
++      .RndCnstLfsrPerm      (RndCnstLfsrPerm),
++      .SecureIbex           (SecureIbex),
++      .DummyInstructions    (DummyInstructions),
++      .RegFileECC           (RegFileLockstepECC),
++      .RegFileDataWidth     (RegFileDataWidth),
++      .RegFileDataEccWidth  (RegFileDataEccWidth),
++      .RegFile              (RegFile),
++      .MemECC               (MemECC),
++      .DmHaltAddr           (DmHaltAddr),
++      .DmExceptionAddr      (DmExceptionAddr)
+     ) u_ibex_lockstep (
+       .clk_i                    (clk),
+       .rst_ni                   (rst_ni),
+diff --git a/ibex_top_tracing.sv b/ibex_top_tracing.sv
+index 1db28fcffb..593214690a 100644
+--- a/ibex_top_tracing.sv
++++ b/ibex_top_tracing.sv
+@@ -7,30 +7,31 @@
+  */
+ 
+ module ibex_top_tracing import ibex_pkg::*; #(
+-  parameter bit          PMPEnable        = 1'b0,
+-  parameter int unsigned PMPGranularity   = 0,
+-  parameter int unsigned PMPNumRegions    = 4,
+-  parameter int unsigned MHPMCounterNum   = 0,
+-  parameter int unsigned MHPMCounterWidth = 40,
+-  parameter bit          RV32E            = 1'b0,
+-  parameter rv32m_e      RV32M            = RV32MFast,
+-  parameter rv32b_e      RV32B            = RV32BNone,
+-  parameter regfile_e    RegFile          = RegFileFF,
+-  parameter bit          BranchTargetALU  = 1'b0,
+-  parameter bit          WritebackStage   = 1'b0,
+-  parameter bit          ICache           = 1'b0,
+-  parameter bit          ICacheECC        = 1'b0,
+-  parameter bit          BranchPredictor  = 1'b0,
+-  parameter bit          DbgTriggerEn     = 1'b0,
+-  parameter int unsigned DbgHwBreakNum    = 1,
+-  parameter bit          SecureIbex       = 1'b0,
+-  parameter bit          MemECC           = SecureIbex,
+-  parameter int unsigned MemDataWidth     = MemECC ? 32 + 7 : 32,
+-  parameter bit          ICacheScramble   = 1'b0,
+-  parameter lfsr_seed_t  RndCnstLfsrSeed  = RndCnstLfsrSeedDefault,
+-  parameter lfsr_perm_t  RndCnstLfsrPerm  = RndCnstLfsrPermDefault,
+-  parameter int unsigned DmHaltAddr       = 32'h1A110800,
+-  parameter int unsigned DmExceptionAddr  = 32'h1A110808
++  parameter bit          PMPEnable            = 1'b0,
++  parameter int unsigned PMPGranularity       = 0,
++  parameter int unsigned PMPNumRegions        = 4,
++  parameter int unsigned MHPMCounterNum       = 0,
++  parameter int unsigned MHPMCounterWidth     = 40,
++  parameter bit          RV32E                = 1'b0,
++  parameter rv32m_e      RV32M                = RV32MFast,
++  parameter rv32b_e      RV32B                = RV32BNone,
++  parameter regfile_e    RegFile              = RegFileFF,
++  parameter bit          BranchTargetALU      = 1'b0,
++  parameter bit          WritebackStage       = 1'b0,
++  parameter bit          ICache               = 1'b0,
++  parameter bit          ICacheECC            = 1'b0,
++  parameter bit          ICacheTweakInfection = 1'b0,
++  parameter bit          BranchPredictor      = 1'b0,
++  parameter bit          DbgTriggerEn         = 1'b0,
++  parameter int unsigned DbgHwBreakNum        = 1,
++  parameter bit          SecureIbex           = 1'b0,
++  parameter bit          MemECC               = SecureIbex,
++  parameter int unsigned MemDataWidth         = MemECC ? 32 + 7 : 32,
++  parameter bit          ICacheScramble       = 1'b0,
++  parameter lfsr_seed_t  RndCnstLfsrSeed      = RndCnstLfsrSeedDefault,
++  parameter lfsr_perm_t  RndCnstLfsrPerm      = RndCnstLfsrPermDefault,
++  parameter int unsigned DmHaltAddr           = 32'h1A110800,
++  parameter int unsigned DmExceptionAddr      = 32'h1A110808
+ ) (
+   // Clock and Reset
+   input  logic                         clk_i,
+@@ -181,30 +182,31 @@ module ibex_top_tracing import ibex_pkg::*; #(
+   assign unused_rvfi_ext_irq_valid = rvfi_ext_irq_valid;
+ 
+   ibex_top #(
+-    .PMPEnable        ( PMPEnable        ),
+-    .PMPGranularity   ( PMPGranularity   ),
+-    .PMPNumRegions    ( PMPNumRegions    ),
+-    .MHPMCounterNum   ( MHPMCounterNum   ),
+-    .MHPMCounterWidth ( MHPMCounterWidth ),
+-    .RV32E            ( RV32E            ),
+-    .RV32M            ( RV32M            ),
+-    .RV32B            ( RV32B            ),
+-    .RegFile          ( RegFile          ),
+-    .BranchTargetALU  ( BranchTargetALU  ),
+-    .ICache           ( ICache           ),
+-    .ICacheECC        ( ICacheECC        ),
+-    .BranchPredictor  ( BranchPredictor  ),
+-    .DbgTriggerEn     ( DbgTriggerEn     ),
+-    .DbgHwBreakNum    ( DbgHwBreakNum    ),
+-    .WritebackStage   ( WritebackStage   ),
+-    .SecureIbex       ( SecureIbex       ),
+-    .MemECC           ( MemECC           ),
+-    .MemDataWidth     ( MemDataWidth     ),
+-    .ICacheScramble   ( ICacheScramble   ),
+-    .RndCnstLfsrSeed  ( RndCnstLfsrSeed  ),
+-    .RndCnstLfsrPerm  ( RndCnstLfsrPerm  ),
+-    .DmHaltAddr       ( DmHaltAddr       ),
+-    .DmExceptionAddr  ( DmExceptionAddr  )
++    .PMPEnable            ( PMPEnable        ),
++    .PMPGranularity       ( PMPGranularity   ),
++    .PMPNumRegions        ( PMPNumRegions    ),
++    .MHPMCounterNum       ( MHPMCounterNum   ),
++    .MHPMCounterWidth     ( MHPMCounterWidth ),
++    .RV32E                ( RV32E            ),
++    .RV32M                ( RV32M            ),
++    .RV32B                ( RV32B            ),
++    .RegFile              ( RegFile          ),
++    .BranchTargetALU      ( BranchTargetALU  ),
++    .ICache               ( ICache           ),
++    .ICacheECC            ( ICacheECC        ),
++    .ICacheTweakInfection ( ICacheTweakInfection ),
++    .BranchPredictor      ( BranchPredictor  ),
++    .DbgTriggerEn         ( DbgTriggerEn     ),
++    .DbgHwBreakNum        ( DbgHwBreakNum    ),
++    .WritebackStage       ( WritebackStage   ),
++    .SecureIbex           ( SecureIbex       ),
++    .MemECC               ( MemECC           ),
++    .MemDataWidth         ( MemDataWidth     ),
++    .ICacheScramble       ( ICacheScramble   ),
++    .RndCnstLfsrSeed      ( RndCnstLfsrSeed  ),
++    .RndCnstLfsrPerm      ( RndCnstLfsrPerm  ),
++    .DmHaltAddr           ( DmHaltAddr       ),
++    .DmExceptionAddr      ( DmExceptionAddr  )
+   ) u_ibex_top (
+     .clk_i,
+     .rst_ni,

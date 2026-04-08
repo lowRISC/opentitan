@@ -1,0 +1,146 @@
+diff --git a/riscv_compliance/rtl/ibex_riscv_compliance.sv b/riscv_compliance/rtl/ibex_riscv_compliance.sv
+index aa1c4628fe..e69d9c564a 100644
+--- a/riscv_compliance/rtl/ibex_riscv_compliance.sv
++++ b/riscv_compliance/rtl/ibex_riscv_compliance.sv
+@@ -28,6 +28,7 @@ module ibex_riscv_compliance (
+   parameter bit WritebackStage            = 1'b0;
+   parameter bit ICache                    = 1'b0;
+   parameter bit ICacheECC                 = 1'b0;
++  parameter bit ICacheTweakInfection      = 1'b0;
+   parameter bit BranchPredictor           = 1'b0;
+   parameter bit SecureIbex                = 1'b0;
+   parameter bit ICacheScramble            = 1'b0;
+@@ -138,25 +139,26 @@ module ibex_riscv_compliance (
+   end
+ 
+   ibex_top_tracing #(
+-      .PMPEnable        (PMPEnable         ),
+-      .PMPGranularity   (PMPGranularity    ),
+-      .PMPNumRegions    (PMPNumRegions     ),
+-      .MHPMCounterNum   (MHPMCounterNum    ),
+-      .MHPMCounterWidth (MHPMCounterWidth  ),
+-      .RV32E            (RV32E             ),
+-      .RV32M            (RV32M             ),
+-      .RV32B            (RV32B             ),
+-      .RegFile          (RegFile           ),
+-      .BranchTargetALU  (BranchTargetALU   ),
+-      .WritebackStage   (WritebackStage    ),
+-      .ICache           (ICache            ),
+-      .ICacheECC        (ICacheECC         ),
+-      .BranchPredictor  (BranchPredictor   ),
+-      .DbgTriggerEn     (DbgTriggerEn      ),
+-      .SecureIbex       (SecureIbex        ),
+-      .ICacheScramble   (ICacheScramble    ),
+-      .DmHaltAddr       (32'h00000000      ),
+-      .DmExceptionAddr  (32'h00000000      )
++      .PMPEnable            (PMPEnable         ),
++      .PMPGranularity       (PMPGranularity    ),
++      .PMPNumRegions        (PMPNumRegions     ),
++      .MHPMCounterNum       (MHPMCounterNum    ),
++      .MHPMCounterWidth     (MHPMCounterWidth  ),
++      .RV32E                (RV32E             ),
++      .RV32M                (RV32M             ),
++      .RV32B                (RV32B             ),
++      .RegFile              (RegFile           ),
++      .BranchTargetALU      (BranchTargetALU   ),
++      .WritebackStage       (WritebackStage    ),
++      .ICache               (ICache            ),
++      .ICacheECC            (ICacheECC         ),
++      .ICacheTweakInfection (ICacheTweakInfection),
++      .BranchPredictor      (BranchPredictor   ),
++      .DbgTriggerEn         (DbgTriggerEn      ),
++      .SecureIbex           (SecureIbex        ),
++      .ICacheScramble       (ICacheScramble    ),
++      .DmHaltAddr           (32'h00000000      ),
++      .DmExceptionAddr      (32'h00000000      )
+     ) u_top (
+       .clk_i                  (clk_sys              ),
+       .rst_ni                 (rst_sys_n            ),
+diff --git a/uvm/core_ibex/tb/core_ibex_tb_top.sv b/uvm/core_ibex/tb/core_ibex_tb_top.sv
+index b96137df0a..583c5cedf0 100644
+--- a/uvm/core_ibex/tb/core_ibex_tb_top.sv
++++ b/uvm/core_ibex/tb/core_ibex_tb_top.sv
+@@ -63,6 +63,7 @@ module core_ibex_tb_top;
+   parameter bit WritebackStage            = 1'b0;
+   parameter bit ICache                    = 1'b0;
+   parameter bit ICacheECC                 = 1'b0;
++  parameter bit ICacheTweakInfection      = 1'b0;
+   parameter bit BranchPredictor           = 1'b0;
+   parameter bit SecureIbex                = 1'b0;
+   parameter bit ICacheScramble            = 1'b0;
+@@ -84,25 +85,26 @@ module core_ibex_tb_top;
+   assign {scramble_key, scramble_nonce} = scrambling_key_if.d_data;
+ 
+   ibex_top_tracing #(
+-    .DmHaltAddr       (32'h`BOOT_ADDR + 'h0 ),
+-    .DmExceptionAddr  (32'h`BOOT_ADDR + 'h4 ),
+-    .PMPEnable        (PMPEnable        ),
+-    .PMPGranularity   (PMPGranularity   ),
+-    .PMPNumRegions    (PMPNumRegions    ),
+-    .MHPMCounterNum   (MHPMCounterNum   ),
+-    .MHPMCounterWidth (MHPMCounterWidth ),
+-    .RV32E            (RV32E            ),
+-    .RV32M            (RV32M            ),
+-    .RV32B            (RV32B            ),
+-    .RegFile          (RegFile          ),
+-    .BranchTargetALU  (BranchTargetALU  ),
+-    .WritebackStage   (WritebackStage   ),
+-    .ICache           (ICache           ),
+-    .ICacheECC        (ICacheECC        ),
+-    .SecureIbex       (SecureIbex       ),
+-    .ICacheScramble   (ICacheScramble   ),
+-    .BranchPredictor  (BranchPredictor  ),
+-    .DbgTriggerEn     (DbgTriggerEn     )
++    .DmHaltAddr           (32'h`BOOT_ADDR + 'h0 ),
++    .DmExceptionAddr      (32'h`BOOT_ADDR + 'h4 ),
++    .PMPEnable            (PMPEnable        ),
++    .PMPGranularity       (PMPGranularity   ),
++    .PMPNumRegions        (PMPNumRegions    ),
++    .MHPMCounterNum       (MHPMCounterNum   ),
++    .MHPMCounterWidth     (MHPMCounterWidth ),
++    .RV32E                (RV32E            ),
++    .RV32M                (RV32M            ),
++    .RV32B                (RV32B            ),
++    .RegFile              (RegFile          ),
++    .BranchTargetALU      (BranchTargetALU  ),
++    .WritebackStage       (WritebackStage   ),
++    .ICache               (ICache           ),
++    .ICacheECC            (ICacheECC        ),
++    .ICacheTweakInfection (ICacheTweakInfection),
++    .SecureIbex           (SecureIbex       ),
++    .ICacheScramble       (ICacheScramble   ),
++    .BranchPredictor      (BranchPredictor  ),
++    .DbgTriggerEn         (DbgTriggerEn     )
+ 
+   ) dut (
+     .clk_i                  (clk                        ),
+diff --git a/uvm/icache/dv/tb/tb.sv b/uvm/icache/dv/tb/tb.sv
+index 0b1d0e0018..f664192a97 100644
+--- a/uvm/icache/dv/tb/tb.sv
++++ b/uvm/icache/dv/tb/tb.sv
+@@ -4,7 +4,8 @@
+ //
+ import ibex_pkg::*;
+ module tb #(
+- parameter bit ICacheECC = 1'b1
++ parameter bit ICacheECC = 1'b1,
++ parameter bit ICacheTweakInfection = 1'b1
+  );
+   // dep packages
+   import uvm_pkg::*;
+@@ -49,10 +50,11 @@ module tb #(
+ 
+   // DUT
+   ibex_icache #(
+-      .ICacheECC       (ICacheECC),
+-      .BusSizeECC      (BusSizeECC),
+-      .TagSizeECC      (TagSizeECC),
+-      .LineSizeECC     (LineSizeECC)
++      .ICacheECC            (ICacheECC),
++      .ICacheTweakInfection (ICacheTweakInfection),
++      .BusSizeECC           (BusSizeECC),
++      .TagSizeECC           (TagSizeECC),
++      .LineSizeECC          (LineSizeECC)
+   ) dut (
+       .clk_i               ( clk                        ),
+       .rst_ni              ( rst_n                      ),
