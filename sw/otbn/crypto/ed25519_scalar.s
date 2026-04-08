@@ -5,6 +5,8 @@
 .globl sc_init
 .globl sc_reduce
 .globl sc_mul
+.globl sc_mul_320x128
+.globl sc_mod_inv
 
 /**
  * This library contains arithmetic for the scalar field of the Ed25519
@@ -284,10 +286,107 @@ sc_mul:
 
   ret
 
+/**
+ * Multiply a 320-bit and a 128-bit number and reduce modulo L.
+ *
+ * Returns c = (a * b) mod L.
+ *
+ * This routine runs in constant time.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  [w21:w20]: a, first operand (320 bits)
+ * @param[in]  w22: b, second operand (128 bits)
+ * @param[in]  [w15:w14]: mu = floor(2^512 / L) (precomputed constant)
+ * @param[in]  MOD: L, modulus
+ * @param[in]  w31: all-zero
+ * @param[out] w18: c, result = (a * b) mod L
+ *
+ * clobbered registers: w10 to w13, w16 to w18
+ * clobbered flag groups: FG0
+ */
+sc_mul_320x128:
+  /* Compute the integer product of the operands x = a * b
+     x = [w20, w19] = a * b = w24 * w25
+     => max. length of x: 448 bit */
+  bn.mulqacc.z          w20.0, w22.0, 0
+  bn.mulqacc            w20.0, w22.1, 64
+  bn.mulqacc.so  w16.L, w20.1, w22.0, 64
+  bn.mulqacc            w20.1, w22.1, 0
+  bn.mulqacc            w20.2, w22.0, 0
+  bn.mulqacc            w20.2, w22.1, 64
+  bn.mulqacc.so  w16.U, w20.3, w22.0, 64
+  bn.mulqacc            w20.3, w22.1, 0
+  bn.mulqacc            w21.0, w22.0, 0
+  bn.mulqacc.wo    w17, w21.0, w22.1, 64
+
+  /* Reduce product modulo m (tail-call). */
+  jal       x0, sc_reduce
+
+/**
+ * Invert a 256-bit integer modulo L.
+ *
+ * Returns b = a^-1 mod L.
+ *
+ * This routine runs in constant time.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in] w23: a, value to be inverted.
+ * @param[in]  [w15:w14]: mu = floor(2^512 / L) (precomputed constant)
+ * @param[in]  MOD: L, modulus
+ * @param[in]  w31: all-zero
+ * @param[out] w18: b, result = a^-1 mod L
+ *
+ * clobbered registers: w10 to w13, w16 to w18, w24 to w26
+ * clobbered flag groups: FG0
+ */
+sc_mod_inv:
+  /* subtract 2 from modulus for Fermat's little theorem
+     w24 = MOD - 2 = m - 2 */
+  bn.wsrr   w24, MOD
+  bn.subi   w24, w24, 2
+
+  /* init square and multiply: w25 = 1 */
+  bn.addi   w25, w31, 1
+
+  /* square and multiply loop */
+  loopi     256, 14
+
+    /* square: w26 = w18 = w21*w21 = w25^2  mod m */
+    bn.mov    w21, w25
+    bn.mov    w22, w25
+    jal       x1, sc_mul
+    bn.mov    w26, w18
+
+    /* shift MSB into carry flag
+       w24 = 2*w24 = w24 << 1 */
+    bn.add    w24, w24, w24
+
+    /* skip multiplication if C flag not set */
+    bn.sel    w25, w25, w26, C
+    csrrs     x2, FG0, x0
+    andi      x2, x2, 1
+    beq       x2, x0, sc_mod_inv_skip_mul
+
+    /* multiply: w25 = w18 = w21*w22 = w26*w23  mod m */
+    bn.mov    w21, w26
+    bn.mov    w22, w23
+    jal       x1, sc_mul
+    bn.mov    w25, w18
+
+sc_mod_inv_skip_mul:
+    nop
+
+  bn.mov w18, w25
+
+  ret
+
 .data
 
 /* Modulus L = 2^252+27742317777372353535851937790883648493 */
 .balign 32
+.globl ed25519_scalar_L
 ed25519_scalar_L:
   .word 0x5cf5d3ed
   .word 0x5812631a

@@ -34,6 +34,13 @@ otbn_library(
 )
 
 otbn_library(
+    name = "ed25519_b2a",
+    srcs = [
+        "ed25519_b2a.s",
+    ],
+)
+
+otbn_library(
     name = "div",
     srcs = [
         "div.s",
@@ -54,6 +61,7 @@ otbn_binary(
     ],
     deps = [
         ":ed25519",
+        ":ed25519_b2a",
         ":ed25519_scalar",
         ":field25519",
     ],
