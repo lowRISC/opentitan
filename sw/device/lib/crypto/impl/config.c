@@ -58,6 +58,16 @@ otcrypto_status_t otcrypto_set_security_config(
   return OTCRYPTO_OK;
 }
 
+otcrypto_status_t otcrypto_disable_icache(hardened_bool_t *icache_enabled) {
+  HARDENED_TRY(ibex_disable_icache(icache_enabled));
+  return OTCRYPTO_OK;
+}
+
+otcrypto_status_t otcrypto_restore_icache(hardened_bool_t icache_enabled) {
+  ibex_restore_icache(icache_enabled);
+  return OTCRYPTO_OK;
+}
+
 otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level) {
   HARDENED_TRY(otcrypto_set_security_config(security_level));
 

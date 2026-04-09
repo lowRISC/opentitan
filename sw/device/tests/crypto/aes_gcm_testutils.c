@@ -278,13 +278,11 @@ status_t aes_gcm_testutils_decrypt(const aes_gcm_test_t *test,
     *cycles = profile_end(t_start);
   } else {
     // Call decrypt() with a cycle count timing profile.
-    icache_invalidate();
     uint64_t t_start = profile_start();
     otcrypto_status_t err =
         otcrypto_aes_gcm_decrypt(&key, &ciphertext, &iv, &aad, tag_len, &tag,
                                  &actual_plaintext, tag_valid);
     *cycles = profile_end(t_start);
-    icache_invalidate();
 
     // Check for errors.
     TRY(err);
