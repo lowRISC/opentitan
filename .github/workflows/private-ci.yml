@@ -37,7 +37,7 @@ jobs:
                 branch: context.eventName === 'pull_request_target' ? undefined : context.ref,
                 run_name: context.eventName === 'pull_request_target' ? context.payload.pull_request.title : context.payload.head_commit.message.split('\n')[0],
                 // Only run for earlgrey
-                designs: 'earlgrey',
+                designs: '["earlgrey"]',
               },
             };
             await github.rest.repos.createDispatchEvent({
