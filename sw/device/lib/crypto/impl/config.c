@@ -5,6 +5,7 @@
 #include "sw/device/lib/crypto/include/config.h"
 
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/crypto/drivers/alert.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 
 #include "clkmgr_regs.h"
@@ -40,9 +41,16 @@ otcrypto_status_t otcrypto_security_config_check(
 otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level) {
   (void)security_level;
 
+  HARDENED_TRY(init_alert_registers());
+
   return OTCRYPTO_OK;
 }
 
 otcrypto_status_t otcrypto_eval_exit(otcrypto_status_t status) {
+  if (read_alert_registers()) {
+    return OTCRYPTO_FATAL_ERR;
+  }
+  HARDENED_CHECK_EQ(launder32(read_alert_registers()), 0);
+
   return status;
 }
