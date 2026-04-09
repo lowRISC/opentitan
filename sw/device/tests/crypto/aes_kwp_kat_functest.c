@@ -5,6 +5,7 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/impl/aes_kwp/aes_kwp.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -155,7 +156,7 @@ OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   status_t result = OK_STATUS();
 
-  CHECK_STATUS_OK(otcrypto_entropy_init());
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
   EXECUTE_TEST(result, no_padding_test);
   EXECUTE_TEST(result, needs_padding_test);
 

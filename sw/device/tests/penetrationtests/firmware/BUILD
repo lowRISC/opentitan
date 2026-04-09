@@ -45,6 +45,7 @@ FIRMWARE_DEPS_FI = [
     "//sw/device/lib/testing/test_framework:check",
     "//sw/device/lib/testing/test_framework:ottf_main",
     "//sw/device/lib/testing/test_framework:ujson_ottf",
+    "//sw/device/lib/testing:entropy_testutils",
     "//sw/device/lib/ujson",
 
     # Include all JSON commands.
@@ -60,6 +61,7 @@ FIRMWARE_DEPS_FI_IBEX = [
     "//sw/device/lib/testing/test_framework:check",
     "//sw/device/lib/testing/test_framework:ottf_main",
     "//sw/device/lib/testing/test_framework:ujson_ottf",
+    "//sw/device/lib/testing:entropy_testutils",
     "//sw/device/lib/ujson",
 
     # Include all JSON commands.
@@ -75,6 +77,7 @@ FIRMWARE_DEPS_FI_OTBN = [
     "//sw/device/lib/testing/test_framework:check",
     "//sw/device/lib/testing/test_framework:ottf_main",
     "//sw/device/lib/testing/test_framework:ujson_ottf",
+    "//sw/device/lib/testing:entropy_testutils",
     "//sw/device/lib/ujson",
 
     # Include all JSON commands.
@@ -93,6 +96,7 @@ FIRMWARE_DEPS_SCA = [
     "//sw/device/tests/penetrationtests/firmware/sca:trigger_sca",
     "//sw/device/tests/penetrationtests/firmware/lib:extclk_sca_fi",
     "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
+    "//sw/device/lib/testing:entropy_testutils",
     "//sw/device/lib/base:csr",
     "//sw/device/lib/base:status",
     "//sw/device/lib/crypto",
