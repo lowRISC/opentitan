@@ -490,7 +490,7 @@ class OTBNSim:
                 self.state.wipe()
             else:
                 self.state.wsrs.URND.running = False
-                self.state._urnd_client.request()
+                self.state.wsrs.URND.requesting = True
 
         if self.state.wipe_cycles == 0:
             if was_wiping:

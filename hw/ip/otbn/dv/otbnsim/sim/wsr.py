@@ -9,6 +9,7 @@ from .ispr import ISPR, DumbISPR, ISPRChange
 from .kmac_ispr import KmacDataWSRs
 from .mai_ispr import MaiInputWSR, MaiOutputWSR
 from .trace import Trace
+from .trivium import CipherType, SeedType, Trivium, b2i, i2b
 
 
 class RandWSR(ISPR):
@@ -103,15 +104,24 @@ class RandWSR(ISPR):
 
 
 class URNDWSR(ISPR):
+
+    _BIVIUM_OUTPUT_WIDTH = 256
+
     '''Models URND PRNG Structure'''
     def __init__(self, name: str):
         super().__init__(name, 256)
-        seed = [0x84ddfadaf7e1134d, 0x70aa1c59de6197ff,
-                0x25a4fe335d095f1e, 0x2cba89acbe4a07e9]
-        self._state = [seed, 4 * [0], 4 * [0], 4 * [0], 4 * [0]]
-        self._next_value = 0
-        self._value = 0
+
+        self._trivium = Trivium(
+            CipherType.BIVIUM,
+            SeedType.STATE_PARTIAL,
+            self._BIVIUM_OUTPUT_WIDTH,
+        )
+
+        self._next_value: List[int] = []
+        self._value: List[int] = []
+
         self.running = False
+        self.requesting = False
 
     def rol(self, n: int, d: int) -> int:
         '''Rotate n left by d bits'''
@@ -129,45 +139,29 @@ class URNDWSR(ISPR):
         self.running = False
 
     def read_unsigned(self) -> int:
-        return self._value
+        return b2i(self._value)
 
-    def state_update(self, data_in: List[int]) -> List[int]:
-        a_in = data_in[3]
-        b_in = data_in[2]
-        c_in = data_in[1]
-        d_in = data_in[0]
-
-        a_out = a_in ^ b_in ^ d_in
-        b_out = a_in ^ b_in ^ c_in
-        c_out = a_in ^ ((b_in << 17) & ((1 << 64) - 1)) ^ c_in
-        d_out = self.rol(d_in ^ b_in, 45)
-        assert a_out < (1 << 64)
-        assert b_out < (1 << 64)
-        assert c_out < (1 << 64)
-        assert d_out < (1 << 64)
-        return [d_out, c_out, b_out, a_out]
-
-    def set_seed(self, value: List[int]) -> None:
-        assert len(value) == 4
+    def set_seed(self, value: int) -> None:
+        assert value >= 0 and value < 2**32
+        # Upon seeing the first seed value the PRNG can be used to
+        # generate a keystream.
+        self._trivium.seed(i2b(value, 32))
         self.running = True
-        self._state[0] = value
-        # Step immediately to update the internal state with the new seed
-        self.step()
 
     def step(self) -> None:
-        if self.running:
-            mask64 = (1 << 64) - 1
-            mid = 4 * [0]
-            nv = 0
-            for i in range(4):
-                st_i = self._state[i]
-                self._state[(i + 1) & 3] = self.state_update(st_i)
-                mid[i] = (st_i[3] + st_i[0]) & mask64
-                nv |= ((self.rol(mid[i], 23) + st_i[3]) & mask64) << (64 * i)
-            self._next_value = nv
+        # Schedule an state update and readout the keystream.
+        self._trivium.update()
+        self._next_value = self._trivium.keystream()
 
     def commit(self) -> None:
+        # Step the PRNG one cycle forward.
+        self._trivium.step()
         self._value = self._next_value
+
+        # Stop requesting EDN seeds once all the seed rounds have
+        # been completed.
+        if self._trivium.seed_done() and self.running:
+            self.requesting = False
 
     def changes(self) -> List[ISPRChange]:
         # Our URND model doesn't track (or report) changes to its internal
