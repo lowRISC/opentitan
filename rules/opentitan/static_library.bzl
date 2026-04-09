@@ -54,10 +54,12 @@ def _ot_static_library_impl(ctx):
     lib_paths = [lib.path for lib in libs]
 
     ctx.actions.run_shell(
-        command = "\"{0}\" rcT {1} {2} && echo -e 'create {1}\naddlib {1}\nsave\nend' | \"{0}\" -M".format(
+        command = "ARCHIVER=\"$(pwd)/{0}\" && \"$ARCHIVER\" rcT {1} {2} && cd {3} && echo -e 'create {4}\naddlib {4}\nsave\nend' | \"$ARCHIVER\" -M".format(
             archiver,
             output_lib.path,
             " ".join(lib_paths),
+            output_lib.dirname,
+            output_lib.basename,
         ),
         inputs = libs + cc_toolchain.all_files.to_list(),
         outputs = [output_lib],
