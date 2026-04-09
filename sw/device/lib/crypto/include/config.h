@@ -34,7 +34,7 @@ otcrypto_status_t otcrypto_security_config_check(
  * and the data independent timing. On low security level, leaves the chip as it
  * is.
  *
- * This function writes to Ibex registers.
+ * This function writes to Ibex registers. Hence, it is only usable in M mode.
  *
  * @param security_level Security level of the used key.
  * @returns OK when the configuration is correctly set.
@@ -42,6 +42,33 @@ otcrypto_status_t otcrypto_security_config_check(
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_set_security_config(
     otcrypto_key_security_level_t security_level);
+
+/**
+ * Disable the Ibex Instruction Cache if it is enabled.
+ *
+ * Reads out the current state of the instruction cache. If it is enabled,
+ * disable it for the crypto lib.
+ * It is only usable in M mode.
+ *
+ * @param[out] icache_enabled kHardenedBoolTrue if the iCache was enabled before
+ * we disabled it.
+ * @return Error status.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_disable_icache(hardened_bool_t *icache_enabled);
+
+/**
+ * Enables the Ibex Instruction Cache if icache_enabled is set.
+ *
+ * If icache_enabled == kHardenedBoolTrue, this function enables the iCache by
+ * writing to CPUCTRL.
+ * It is only usable in M mode.
+ *
+ * @param icache_enabled kHardenedBoolTrue to enable the iCache.
+ * @return Error status.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_restore_icache(hardened_bool_t icache_enabled);
 
 /**
  * Initializes the crypto library for use.
@@ -52,6 +79,7 @@ otcrypto_status_t otcrypto_set_security_config(
  * Set up the entropy source
  *
  * This function writes to alert manager and Ibex registers.
+ * It is only usable in M mode.
  *
  * @param security_level Security level of the used key.
  * @returns OK when the security check passed.
