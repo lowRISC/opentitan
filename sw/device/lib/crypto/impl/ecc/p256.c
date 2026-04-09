@@ -56,7 +56,7 @@ OTBN_DECLARE_SYMBOL_ADDR(run_p256, MODE_SIDELOAD_SIGN);
 OTBN_DECLARE_SYMBOL_ADDR(run_p256, MODE_SIDELOAD_ECDH);
 OTBN_DECLARE_SYMBOL_ADDR(run_p256, MODE_POINTONCRV_CHECK);
 OTBN_DECLARE_SYMBOL_ADDR(run_p256, MODE_BASE_POINT_MULT);
-OTBN_DECLARE_SYMBOL_ADDR(run_p256, MODE_SHARE_SECRET_KEY);
+OTBN_DECLARE_SYMBOL_ADDR(run_p256, MODE_ARITH_SHARE_SECRET_KEY);
 static const uint32_t kOtbnP256ModeKeygen =
     OTBN_ADDR_T_INIT(run_p256, MODE_KEYGEN);
 static const uint32_t kOtbnP256ModeSign = OTBN_ADDR_T_INIT(run_p256, MODE_SIGN);
@@ -75,8 +75,8 @@ static const uint32_t kOtbnP256ModePointOnCurveCheck =
     OTBN_ADDR_T_INIT(run_p256, MODE_POINTONCRV_CHECK);
 static const uint32_t kOtbnP256ModeBasePointMult =
     OTBN_ADDR_T_INIT(run_p256, MODE_BASE_POINT_MULT);
-static const uint32_t kOtbnP256ModeShareSecretKey =
-    OTBN_ADDR_T_INIT(run_p256, MODE_SHARE_SECRET_KEY);
+static const uint32_t kOtbnP256ModeArithShareSecretKey =
+    OTBN_ADDR_T_INIT(run_p256, MODE_ARITH_SHARE_SECRET_KEY);
 
 enum {
   /*
@@ -107,7 +107,7 @@ enum {
   kModeEcdsaSignSideloadInsCnt = 607154,
   kModePointOnCurveCheckInsCnt = 224,
   kModeBasePointMultInsCnt = 573756,
-  kModeShareSecretKeyInsCnt = 147,
+  kModeArithShareSecretKeyInsCnt = 147,
 };
 
 static status_t p256_masked_scalar_write(p256_masked_scalar_t *src,
@@ -527,13 +527,13 @@ status_t p256_base_point_mult(p256_masked_scalar_t *private_key,
 }
 
 OT_WARN_UNUSED_RESULT
-status_t arith_share_private_key(p256_masked_scalar_t *boolean_private_key,
-                                 p256_masked_scalar_t *arith_private_key) {
+status_t p256_arith_share_private_key(p256_masked_scalar_t *boolean_private_key,
+                                      p256_masked_scalar_t *arith_private_key) {
   // Load the P-256 app. Fails if OTBN is non-idle.
   HARDENED_TRY(otbn_load_app(kOtbnAppP256));
 
   // Set mode so start() will jump into the share secret key routine.
-  uint32_t mode = kOtbnP256ModeShareSecretKey;
+  uint32_t mode = kOtbnP256ModeArithShareSecretKey;
   HARDENED_TRY(otbn_dmem_write(kOtbnP256ModeWords, &mode, kOtbnVarMode));
 
   // Write the Boolean-shared key to DMEM.
@@ -547,7 +547,8 @@ status_t arith_share_private_key(p256_masked_scalar_t *boolean_private_key,
   HARDENED_TRY_WIPE_DMEM(otbn_busy_wait_for_done());
 
   // Check if we executed the expected number of OTBN instructions.
-  HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModeShareSecretKeyInsCnt);
+  HARDENED_CHECK_EQ(otbn_instruction_count_get(),
+                    kModeArithShareSecretKeyInsCnt);
 
   // Read back the shared private key.
   HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(kP256MaskedScalarShareWords, kOtbnVarD0,
