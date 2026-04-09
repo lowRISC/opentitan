@@ -1016,8 +1016,8 @@ otcrypto_status_t otcrypto_ecc_p256_arith_share_private_key(
       p256_masked_scalar_checksum(&boolean_private_scalar);
 
   // Invoke the sharing routine.
-  HARDENED_TRY(
-      arith_share_private_key(&boolean_private_scalar, &arith_private_scalar));
+  HARDENED_TRY(p256_arith_share_private_key(&boolean_private_scalar,
+                                            &arith_private_scalar));
 
   // Copy the two arithmetic shares into the output buffer.
   HARDENED_TRY(hardened_memcpy(arith_private_key->keyblob,

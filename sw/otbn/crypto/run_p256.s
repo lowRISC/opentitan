@@ -38,7 +38,7 @@
 .equ MODE_SIDELOAD_ECDH, 0x2F1
 .equ MODE_POINTONCRV_CHECK, 0x6AA
 .equ MODE_BASE_POINT_MULT, 0x3C6
-.equ MODE_SHARE_SECRET_KEY, 0x31B
+.equ MODE_ARITH_SHARE_SECRET_KEY, 0x31B
 
 /**
  * Make the mode constants visible to Ibex.
@@ -53,7 +53,7 @@
 .globl MODE_SIDELOAD_ECDH
 .globl MODE_POINTONCRV_CHECK
 .globl MODE_BASE_POINT_MULT
-.globl MODE_SHARE_SECRET_KEY
+.globl MODE_ARITH_SHARE_SECRET_KEY
 
 /**
  * Hardened boolean values.
@@ -107,8 +107,8 @@ start:
   addi  x3, x0, MODE_BASE_POINT_MULT
   beq   x2, x3, base_point_mult
 
-  addi  x3, x0, MODE_SHARE_SECRET_KEY
-  beq   x2, x3, share_secret_key
+  addi  x3, x0, MODE_ARITH_SHARE_SECRET_KEY
+  beq   x2, x3, arith_share_secret_key
 
   /* Copy the caller-provided secret scalar shares into scratchpad memory.
        dmem[k0] <= dmem[k0_io]
@@ -401,7 +401,7 @@ base_point_mult:
  * @param[out] dmem[d0]: d0, first arithmetic share of the secret key.
  * @param[out] dmem[d1]: d1, second arithmetic share of the secret key.
  */
-share_secret_key:
+arith_share_secret_key:
   /* w31 <= 0. */
   bn.xor w31, w31, w31
 

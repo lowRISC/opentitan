@@ -416,8 +416,8 @@ status_t p256_base_point_mult(p256_masked_scalar_t *private_key,
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t arith_share_private_key(p256_masked_scalar_t *boolean_private_key,
-                                 p256_masked_scalar_t *arith_private_key);
+status_t p256_arith_share_private_key(p256_masked_scalar_t *boolean_private_key,
+                                      p256_masked_scalar_t *arith_private_key);
 
 #ifdef __cplusplus
 }  // extern "C"
