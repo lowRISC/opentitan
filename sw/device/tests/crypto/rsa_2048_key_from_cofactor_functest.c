@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_datatypes.h"
+#include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/rsa.h"
@@ -256,7 +257,7 @@ OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   status_t test_result = OK_STATUS();
-  CHECK_STATUS_OK(otcrypto_entropy_init());
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
   EXECUTE_TEST(test_result, keypair_from_p_test);
   EXECUTE_TEST(test_result, keypair_from_q_test);
   EXECUTE_TEST(test_result, run_cofactor_negative_tests);

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/hmac.h"
 #include "sw/device/lib/crypto/include/integrity.h"
@@ -449,6 +450,7 @@ OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   LOG_INFO("Testing cryptolib SHA-2/HMAC with parallel multiple streams.");
   status_t test_result = OK_STATUS();
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
   EXECUTE_TEST(test_result, run_test);
   return status_ok(test_result);
 }

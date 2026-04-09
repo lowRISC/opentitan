@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/key_transport.h"
@@ -106,7 +107,7 @@ OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   status_t result = OK_STATUS();
 
-  CHECK_STATUS_OK(otcrypto_entropy_init());
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
   EXECUTE_TEST(result, wrap_unwrap_random_test);
 
   return status_ok(result);

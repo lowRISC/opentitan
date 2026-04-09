@@ -8,6 +8,7 @@
 #include "otcrypto.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -59,6 +60,7 @@ OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   status_t result = OK_STATUS();
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
   result = hash_test();
   return status_ok(result);
 }

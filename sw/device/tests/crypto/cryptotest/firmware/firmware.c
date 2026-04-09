@@ -3,10 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 #include <stdbool.h>
 
+#include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
+#include "sw/device/tests/crypto/lib/crypto_test_lib.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -86,6 +88,10 @@ status_t process_cmd(ujson_t *uj) {
 }
 
 bool test_main(void) {
+  // We pick a random security level for the entire test run
+  otcrypto_key_security_level_t sec_level;
+  CHECK_STATUS_OK(determine_security_level(&sec_level));
+  CHECK_STATUS_OK(otcrypto_init(sec_level));
   ujson_t uj = ujson_ottf_console();
   return status_ok(process_cmd(&uj));
 }
