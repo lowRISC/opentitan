@@ -90,6 +90,21 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
 
   bit [TL_AW-1:0] sram_addr_mask = (1 << (AddrWidth + 2)) - 1;
 
+  // Access to the SRAM is gated by an instance of tlul_lc_gate and we might not know the precise
+  // time that the gate closes after an error.
+  //
+  // To allow for this, we have "Open" (value 0), "Closed" (value 1) and "Closing" states. These are
+  // intended to model whether a TL response we see now is expected to have been caught by the gate
+  // (and thus report an error).
+  //
+  // Opening the gate is instant. An observed injected error moves the gate to "Closing" (some value
+  // greater than 1). If a TL response is seen when the gate is closed, we predict an error. After
+  // any TL response when the counter is greater than one, we decrement the counter towards
+  // "Closed".
+  //
+  // On a reset (including the start of the simulation), the counter is set to zero ("Open").
+  int unsigned m_gate_counter;
+
   // Only LSB is used in the sram, the other MSB bits will be ignored. Use the simplified
   // address for mem_bkdr_scb
   function bit [TL_AW-1:0] simplify_addr(bit [TL_AW-1:0] addr);
@@ -155,11 +170,28 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     end
     if (status_lc_esc == EscFinal) is_tl_err |= 1;
 
-    if (channel == DataChannel && is_tl_err) begin
-      `DV_CHECK_EQ(item.d_error, 1,
-          $sformatf({"item_err: %0d, allow_ifetch : %0d, sram_ifetch: %0d, exec: %0d, ",
-                     "debug_en: %0d, lc_esc %0d"},
-                    is_tl_err, allow_ifetch, sram_ifetch, csr_exec, hw_debug_en, status_lc_esc))
+    // The position of the LC gate might affect the possible values of d_error.
+    //
+    //  - If it is open (m_gate_counter == 0), it will not affect any other errors.
+    //  - If it is closed (m_gate_counter == 1), an error is expected.
+    //  - In any other situation, an error is *possible*
+    //
+    // For that last case, update the prediction to match the observed d_error value if an error has
+    // been seen that we wouldn't predict otherwise.
+    if (channel == DataChannel) begin
+      if (m_gate_counter == 1) begin
+        is_tl_err = 1;
+      end else if (m_gate_counter > 1) begin
+        is_tl_err |= item.d_error;
+      end
+
+      if (is_tl_err) begin
+        `DV_CHECK_EQ(item.d_error, 1,
+                     $sformatf({"item_err: %0d, allow_ifetch : %0d, sram_ifetch: %0d, exec: %0d, ",
+                                "debug_en: %0d, lc_esc %0d"},
+                               is_tl_err, allow_ifetch, sram_ifetch,
+                               csr_exec, hw_debug_en, status_lc_esc))
+      end
     end
 
     return is_tl_err;
@@ -209,6 +241,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       `RUN_FOREVR_W_RESET_EXIT(process_lc_escalation)
       process_kdi_fifo();
       `RUN_FOREVR_W_RESET_EXIT(process_write_done_and_check)
+      start_gate_closures();
     join_none
   endtask
 
@@ -484,6 +517,16 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     end
   endtask
 
+  virtual task process_tl_d_item(string ral_name, tl_seq_item item);
+    super.process_tl_d_item(ral_name, item);
+
+    // If this is a D channel response to an access to the memory when the gate counter is closing
+    // (value greater than 1), step it closer to being closed.
+    if (ral_name == cfg.sram_ral_name) begin
+      if (m_gate_counter > 1) m_gate_counter--;
+    end
+  endtask
+
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg csr;
     string  csr_name;
@@ -621,6 +664,55 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     end
   endtask
 
+  // Wait for a change to sram_we, sram_wdata or sram_addr which will have an effect (so sram_req
+  // and any other enable signals are true) but happens at a time other than a posedge of the clock.
+  // This must have been caused by an injected error.
+  //
+  // When this happens, set the gate counter to 3, meaning that the current TL transaction and next
+  // TL transaction *might* have the gate closed, and all future ones must.
+  //
+  // This task is oblivious to resets, but be safely killed at any time.
+  local task start_gate_closures_between_resets();
+    fork : isolation_fork begin
+      fork
+        cfg.fault_vif.wait_for_sram_we_corruption();
+        cfg.fault_vif.wait_for_sram_wdata_corruption();
+        cfg.fault_vif.wait_for_sram_addr_corruption();
+      join_any
+      disable fork;
+    end join
+
+    if (m_gate_counter == 0) begin
+      // Set the gate counter to 3
+      m_gate_counter = 3;
+
+      `uvm_info(get_full_name(),
+                $sformatf("Seen signal corruption when gate open. Setting gate counter to %0d.",
+                          m_gate_counter),
+                UVM_MEDIUM)
+    end
+  endtask
+
+  // This task runs forever and keeps track of observed injected faults on sram_we, sram_wdata and
+  // sram_addr, starting closure of the gate tracked by m_gate_counter when this happens. It will
+  // run start_gate_closures_between_resets in each window between resets.
+  local task start_gate_closures();
+    forever begin
+      wait(!cfg.under_reset);
+
+      fork : isolation_fork begin
+        fork
+          wait(cfg.under_reset);
+          begin
+            start_gate_closures_between_resets();
+            wait(cfg.under_reset);
+          end
+        join_any
+        disable fork;
+      end join
+    end
+  endtask
+
   virtual function void reset_key_nonce();
     key = sram_ctrl_pkg::RndCnstSramKeyDefault;
     nonce = sram_ctrl_pkg::RndCnstSramNonceDefault;
@@ -643,6 +735,9 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     exp_scr_key_rotated = MuBi4False;
     write_item_q.delete();
     exp_mem[cfg.sram_ral_name].init();
+
+    // Set the gate back to its default "open" state.
+    m_gate_counter = 0;
 
     // Once esc happens, vseq will send enough transaction to make sure d_error occurs
     // so that scb updates to EscFinal
