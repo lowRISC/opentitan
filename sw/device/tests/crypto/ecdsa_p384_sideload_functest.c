@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/crypto/impl/keyblob.h"
+#include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/ecc_p384.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
@@ -124,7 +125,7 @@ static status_t test_setup(void) {
   // Initialize entropy complex for cryptolib, which the key manager uses to
   // clear sideloaded keys. The `keymgr_testutils_startup` function restarts
   // the device, so this should happen afterwards.
-  return otcrypto_entropy_init();
+  return otcrypto_init(kOtcryptoKeySecurityLevelLow);
 }
 
 OTTF_DEFINE_TEST_CONFIG();

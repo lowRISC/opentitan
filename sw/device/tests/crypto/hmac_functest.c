@@ -5,6 +5,7 @@
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/hmac.h"
@@ -178,9 +179,7 @@ OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   LOG_INFO("Testing cryptolib HMAC/SHA-2 streaming implementations.");
   status_t test_result = OK_STATUS();
-  // Even though the HMAC IP itself does not need entropy, we need to initialize
-  // the entropy complex to be able to clear HMAC with randomness.
-  CHECK_STATUS_OK(otcrypto_entropy_init());
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
   for (size_t i = 0; i < ARRAYSIZE(kHmacTestVectors); i++) {
     current_test_vector = &kHmacTestVectors[i];
     LOG_INFO("Running test %d of %d, test vector identifier: %s", i + 1,

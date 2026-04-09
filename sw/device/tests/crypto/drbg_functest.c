@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/drbg.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
@@ -190,9 +191,7 @@ static status_t run_negative_tests(void) {
 bool test_main(void) {
   status_t result = OK_STATUS();
 
-  // Initialize the entropy complex.
-  CHECK_STATUS_OK(otcrypto_entropy_init());
-  CHECK_STATUS_OK(otcrypto_entropy_check());
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
 
   EXECUTE_TEST(result, kat_test);
   EXECUTE_TEST(result, random_test);

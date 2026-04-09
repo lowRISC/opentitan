@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
+#include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/drbg.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
@@ -50,13 +51,6 @@ static otcrypto_key_config_t kKmacKeyConfig = {
     .hw_backed = kHardenedBoolFalse,
     .security_level = kOtcryptoKeySecurityLevelLow,
 };
-
-static status_t entropy_complex_init_test(void) {
-  TRY(otcrypto_entropy_init());
-
-  // Check the configuration.
-  return otcrypto_entropy_check();
-}
 
 /**
  * Basic test for generating a symmetric key.
@@ -155,7 +149,8 @@ static status_t generate_multiple_keys_test(void) {
 bool test_main(void) {
   status_t result = OK_STATUS();
 
-  EXECUTE_TEST(result, entropy_complex_init_test);
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+
   EXECUTE_TEST(result, aes_keygen_test);
   EXECUTE_TEST(result, hmac_keygen_test);
   EXECUTE_TEST(result, kmac_keygen_test);

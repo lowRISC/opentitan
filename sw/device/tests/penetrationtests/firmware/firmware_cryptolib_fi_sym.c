@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -38,7 +39,7 @@ status_t process_cmd(ujson_t *uj) {
 }
 
 bool test_main(void) {
-  CHECK_STATUS_OK(otcrypto_entropy_init());
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
   ujson_t uj = ujson_ottf_console();
   return status_ok(process_cmd(&uj));
 }
