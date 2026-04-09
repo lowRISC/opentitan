@@ -51,6 +51,11 @@ hardened_bool_t ibex_check_security_config(void) {
   return kHardenedBoolTrue;
 }
 
+status_t ibex_set_security_config(void) {
+  CSR_SET_BITS(CSR_REG_CPUCTRL, kExpectedConfig << kIdx);
+  return OTCRYPTO_OK;
+}
+
 /**
  * Blocks until data is ready in the RND register.
  */

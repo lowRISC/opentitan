@@ -39,8 +39,27 @@ otcrypto_status_t otcrypto_security_config_check(
   return OTCRYPTO_OK;
 }
 
+otcrypto_status_t otcrypto_set_security_config(
+    otcrypto_key_security_level_t security_level) {
+#if defined(OPENTITAN_IS_EARLGREY)
+  if (launder32(security_level) != kOtcryptoKeySecurityLevelLow) {
+    // Enable the jittery clock in OpenTitan Earlgrey.
+    abs_mmio_write32(
+        TOP_EARLGREY_CLKMGR_AON_BASE_ADDR + CLKMGR_JITTER_ENABLE_REG_OFFSET,
+        kMultiBitBool4True);
+
+    // Enable the dummy instructions and the data independent timing in ibex.
+    HARDENED_TRY(ibex_set_security_config());
+  } else {
+    // Do not check the device config when security level is low.
+    HARDENED_CHECK_EQ(security_level, kOtcryptoKeySecurityLevelLow);
+  }
+#endif
+  return OTCRYPTO_OK;
+}
+
 otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level) {
-  (void)security_level;
+  HARDENED_TRY(otcrypto_set_security_config(security_level));
 
   HARDENED_TRY(init_alert_registers());
 
