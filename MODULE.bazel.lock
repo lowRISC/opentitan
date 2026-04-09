@@ -460,7 +460,7 @@
     },
     "//third_party/hwtrust:extensions.bzl%hwtrust": {
       "general": {
-        "bzlTransitiveDigest": "k+eVkpIKKoll+00pC23CYyiPcbMEgx6k1EdN7iQxiCA=",
+        "bzlTransitiveDigest": "jg1j7e/qXB1A+k6ICrVCENLVqG1FQkDPpoPpYiH12UQ=",
         "usagesDigest": "E7yErwZF7b/bpM+r5XyMZeprKVdzGd+ET8BdGKkLXmE=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -470,10 +470,11 @@
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
             "attributes": {
               "urls": [
-                "https://android.googlesource.com/platform/tools/security/+archive/da7738aaf3ece666272adab6b3091f72ce027e9c.tar.gz"
+                "https://storage.googleapis.com/lowrisc-ci-cache/external/security-da7738aaf3ece666272adab6b3091f72ce027e9c.tar.gz"
               ],
               "strip_prefix": "remote_provisioning/hwtrust",
-              "build_file": "@@//third_party/hwtrust:BUILD.hwtrust.bazel"
+              "build_file": "@@//third_party/hwtrust:BUILD.hwtrust.bazel",
+              "sha256": "3a94aaa098bb746af3c0b7d4e759546eb9135cdb1ee054128238c2bdf1577881"
             }
           }
         },
