@@ -30,6 +30,7 @@ class sram_ctrl_env_cfg #(parameter int AddrWidth = 10)
   virtual sram_ctrl_lc_if lc_vif;
   virtual sram_ctrl_exec_if exec_vif;
   sram_ctrl_bkdr_util sram_ctrl_bkdr_util_h;
+  virtual sram_ctrl_fault_if fault_vif;
 
   // Store the scb handle for seq. When seq initializes the mem, we should initialize mem_model in
   // scb as well.
