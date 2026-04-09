@@ -28,12 +28,30 @@ otcrypto_status_t otcrypto_security_config_check(
     otcrypto_key_security_level_t security_level);
 
 /**
+ * Set the chip in a secure configuration state.
+ *
+ * On non-low security level, enables the jittery clock, the dummy instructions,
+ * and the data independent timing. On low security level, leaves the chip as it
+ * is.
+ *
+ * This function writes to Ibex registers.
+ *
+ * @param security_level Security level of the used key.
+ * @returns OK when the configuration is correctly set.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_set_security_config(
+    otcrypto_key_security_level_t security_level);
+
+/**
  * Initializes the crypto library for use.
  *
  * Check the security configuration
  * Set up alert management
  * Perform (some) KATs for FIPS
  * Set up the entropy source
+ *
+ * This function writes to alert manager and Ibex registers.
  *
  * @param security_level Security level of the used key.
  * @returns OK when the security check passed.
