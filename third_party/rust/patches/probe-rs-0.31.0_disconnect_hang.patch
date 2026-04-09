@@ -1,0 +1,31 @@
+commit b5b3e1cf6349ecd01a27de2c9680975052f4028a
+Author: Lex Bailey <lex.bailey@lowrisc.org>
+Date:   Fri May 8 20:00:42 2026 +0100
+
+    workaround: probe-rs will hang during disconnect
+
+diff --git a/probe-rs/src/session.rs b/probe-rs/src/session.rs
+index 02138ffb..2833ad5f 100644
+--- a/probe-rs/src/session.rs
++++ b/probe-rs/src/session.rs
+@@ -909,6 +909,12 @@ const _: fn() = || {
+ impl Drop for Session {
+     #[tracing::instrument(name = "session_drop", skip(self))]
+     fn drop(&mut self) {
++        // calling clear_all_hw_breakpoints, or debug_core_stop appears to hang the application
++        // which means tests can't progress past any point at which they disconnect from the
++        // target. I don't know why these don't work, but they both result in the chip responding
++        // to debug commands with an all-ones reply value??? Maybe a hardware bug? Maybe an issue
++        // with HyperDebug?? I'm not sure. For now, we just skip this part of session deinit.
++        /*
+         if let Err(err) = self.clear_all_hw_breakpoints() {
+             tracing::warn!(
+                 "Could not clear all hardware breakpoints: {:?}",
+@@ -924,6 +930,7 @@ impl Drop for Session {
+         }) {
+             tracing::warn!("Failed to deconfigure device during shutdown: {:?}", err);
+         }
++        */
+     }
+ }
+ 

@@ -10,7 +10,7 @@ mod gpio;
 mod i2c;
 mod spi;
 
-use crate::debug::openocd::OpenOcdJtagChain;
+use crate::debug::{openocd::OpenOcdJtagChain, probe::ProbeJtagChain};
 use crate::io::emu::Emulator;
 use crate::io::gpio::{GpioBitbanging, GpioMonitoring, GpioPin, PinMode, PullMode};
 use crate::io::i2c::Bus;
@@ -802,16 +802,26 @@ impl TransportWrapper {
 
     /// Returns a [`JtagChain`] implementation.
     pub fn jtag(&self, opts: &JtagParams) -> Result<Box<dyn JtagChain + '_>> {
-        if let Some(ref path) = self.openocd_adapter_config {
-            // Use specified external JTAG dongle, instead of the transport driver itself.
-            return Ok(Box::new(OpenOcdJtagChain::new(
-                &std::fs::read_to_string(path)?,
-                opts,
-            )?));
+        match opts.jtag_interface.as_str() {
+            "openocd" => {
+                if let Some(ref path) = self.openocd_adapter_config {
+                    // Use specified external JTAG dongle, instead of the transport driver itself.
+                    return Ok(Box::new(OpenOcdJtagChain::new(
+                        &std::fs::read_to_string(path)?,
+                        opts,
+                    )?));
+                }
+                // Use JTAG functionality of the transport driver itself.  (Currently, HyperDebug is the
+                // only transport which has such support.)
+                self.transport.jtag(opts)
+            }
+            "probe-rs" => Ok(Box::new(ProbeJtagChain::new(opts))),
+            i => Err(TransportError::InvalidConfig(format!(
+                "Unknown jtag interface '{}'. expected 'openocd' or 'probe-rs'",
+                i
+            ))
+            .into()),
         }
-        // Use JTAG functionality of the transport driver itself.  (Currently, HyperDebug is the
-        // only transport which has such support.)
-        self.transport.jtag(opts)
     }
 
     /// Returns a SPI [`Target`] implementation.

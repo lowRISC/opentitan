@@ -66,6 +66,7 @@ p384 = "0.13.0"
 paste = "1.0"
 pem-rfc7468 = { version = "0.7.0", features = ["alloc", "std"] }
 pkcs8 = { version = "0.10", features = ["std"] }
+probe-rs = "0.31.0"
 proc-macro2 = "1.0.45"
 quote = "1.0"
 rand = "0.8.4"
