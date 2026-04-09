@@ -11,6 +11,8 @@ extern "C" {
 
 hardened_bool_t ibex_check_security_config(void) { return kHardenedBoolTrue; }
 
+status_t ibex_set_security_config(void) { return OTCRYPTO_OK; }
+
 status_t ibex_disable_icache(hardened_bool_t *icache_enabled) {
   return OTCRYPTO_OK;
 }

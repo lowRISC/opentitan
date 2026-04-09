@@ -45,6 +45,19 @@ OT_WARN_UNUSED_RESULT
 hardened_bool_t ibex_check_security_config(void);
 
 /**
+ * Enables the expected Ibex Security Features.
+ *
+ * This function enables the following security features in the Ibex cpuctrl
+ * register:
+ * - data_ind_timing
+ * - dummy_instr_en
+ *
+ * @returns Error status.
+ */
+OT_WARN_UNUSED_RESULT
+status_t ibex_set_security_config(void);
+
+/**
  * Get random data from the EDN0 interface.
  *
  * Important: this function will hang if the entropy complex is not
