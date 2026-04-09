@@ -61,7 +61,6 @@ enum {
  * https://opentitan.org/book/hw/ip/csrng/doc/theory_of_operation.html#command-header
  * for details.
  */
-// TODO(#14542): Harden csrng/edn command fields.
 typedef enum entropy_csrng_op {
   kEntropyDrbgOpInstantiate = 1,
   kEntropyDrbgOpReseed = 2,
