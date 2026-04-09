@@ -18,7 +18,7 @@
 
 /**
  * Mode magic values generated with
- * $ ./util/design/sparse-fsm-encode.py -d 6 -m 9 -n 11 --avoid-zero -s 1654842154
+ * $ ./util/design/sparse-fsm-encode.py -d 6 -m 11 -n 11 --avoid-zero -s 1654842154
  *
  * Call the same utility with the same arguments and a higher -m to generate
  * additional value(s) without changing the others or sacrificing mutual HD.
@@ -38,6 +38,7 @@
 .equ MODE_SIDELOAD_ECDH, 0x4CB
 .equ MODE_POINTONCRV_CHECK, 0x596
 .equ MODE_BASE_POINT_MULT, 0x62E
+.equ MODE_ARITH_SHARE_SECRET_KEY, 0x167
 
 /**
  * Make the mode constants visible to Ibex.
@@ -52,6 +53,7 @@
 .globl MODE_SIDELOAD_ECDH
 .globl MODE_POINTONCRV_CHECK
 .globl MODE_BASE_POINT_MULT
+.globl MODE_ARITH_SHARE_SECRET_KEY
 
 /**
  * Hardened boolean values.
@@ -104,6 +106,9 @@ start:
 
   addi  x3, x0, MODE_BASE_POINT_MULT
   beq   x2, x3, base_point_mult
+
+  addi  x3, x0, MODE_ARITH_SHARE_SECRET_KEY
+  beq   x2, x3, arith_share_secret_key
 
   /* Copy the caller-provided secret scalar shares into scratchpad memory.
        dmem[k0] <= dmem[k0_io]
@@ -472,5 +477,59 @@ point_on_curve_check:
  */
 base_point_mult:
   jal x1, p384_base_mult_checked
+
+  ecall
+
+/**
+ * Generate a secret key arithmetic sharing.
+ *
+ * The input is a Boolean-shared key (two 448-bit shares).
+ *
+ * This routine runs in constant time.
+ *
+ * @param[in]  dmem[d0]: d0, first share of the secret key.
+ * @param[in]  dmem[d1]: d1, second share of the secret key.
+ * @param[out] dmem[d0]: d0, first arithmetic share of the secret key.
+ * @param[out] dmem[d1]: d1, second arithmetic share of the secret key.
+ */
+arith_share_secret_key:
+  la       x13, d0_io
+  la       x14, d0
+  jal      x1, copy_share
+  la       x13, d1_io
+  la       x14, d1
+  jal      x1, copy_share
+
+  /* Load the key shares:
+     w20, w21 <= d0
+     w10, w11 <= d1. */
+  li x2, 20
+  la x3, d0
+  bn.lid x2++, 0(x3)
+  bn.lid x2++, 32(x3)
+  li x2, 10
+  la x3, d1
+  bn.lid x2++, 0(x3)
+  bn.lid x2++, 32(x3)
+
+  /* Remask the shares. */
+  bn.wsrr w0, URND
+  bn.wsrr w1, URND
+  bn.rshi w1, w31, w1 >> 128
+
+  bn.xor w20, w20, w0
+  bn.xor w21, w21, w1
+  bn.xor w31, w31, w31 /* dummy */
+  bn.xor w10, w10, w0
+  bn.xor w11, w11, w1
+
+  jal x1, p384_key_from_seed
+
+  la       x13, d0
+  la       x14, d0_io
+  jal      x1, copy_share
+  la       x13, d1
+  la       x14, d1_io
+  jal      x1, copy_share
 
   ecall

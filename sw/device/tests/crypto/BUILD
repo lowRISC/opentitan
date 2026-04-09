@@ -375,6 +375,25 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "ecc_p384_arith_share_private_key_functest",
+    srcs = ["ecc_p384_arith_share_private_key_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl:ecc_p384",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/crypto/impl:sha2",
+        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "ecdh_p256_functest",
     srcs = ["ecdh_p256_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
