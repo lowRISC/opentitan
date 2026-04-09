@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// An interface that can be bound into sram_ctrl in order to cleanly detect injected faults.
+// An interface that can be bound into sram_ctrl in order to inject (and cleanly detect) faults.
 //
 // To avoid needing to parameterise the interface, this uses a "max footprint" approach, with
 // sram_addr and sram_wdata using 64 bits each, rather than AddrWidth and DataWidth.
@@ -17,6 +17,48 @@ interface sram_ctrl_fault_if (
   input wire [63:0] sram_wdata
 );
   import uvm_pkg::*;
+
+  // Inject a fault by flipping fault_bits on the signal at rel_path until we have seen the clock
+  // low, high and then low again (meaning that we straddle a posedge). The path in rel_path is
+  // interpreted relative to the module instance into which this interface is bound.
+  //
+  // Exits early on reset.
+  task automatic fault_signal(string rel_path, uvm_hdl_data_t fault_bits);
+    uvm_hdl_data_t good_value;
+    string full_path;
+
+    full_path = $sformatf("%0s.%0s",
+                         dv_utils_pkg::get_parent_hier($sformatf("%m"), 2),
+                         rel_path);
+
+    if (!uvm_hdl_read(full_path, good_value)) begin
+      `uvm_fatal($sformatf("%m"), {"Failed to read ", full_path})
+    end
+
+    if (!uvm_hdl_force(full_path, good_value ^ fault_bits)) begin
+      `uvm_fatal($sformatf("%m"), {"Failed to force ", full_path})
+    end
+
+    // Wait for the clock to become high and then low again, exiting early on reset
+    fork : isolation_fork begin
+      fork
+        @(negedge clk_i);
+        wait(!rst_ni);
+      join_any
+      disable fork;
+    end join
+
+    // Release the forced signal
+    if (!uvm_hdl_release(full_path)) begin
+      `uvm_fatal($sformatf("%m"), {"Failed to release ", full_path})
+    end
+
+    // Use uvm_hdl_deposit to put back the original good_value (in case the target at full_path
+    // isn't driven by a continuous assignment)
+    if (!uvm_hdl_deposit(full_path, good_value)) begin
+      `uvm_fatal($sformatf("%m"), {"Failed to restore ", full_path})
+    end
+  endtask
 
   // Wait until the negedge of the clock on a cycle where an SRAM read or write (depending on the
   // write flag) is in progress.
