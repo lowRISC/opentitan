@@ -7,3 +7,4 @@
 pub mod dmi;
 pub mod elf_debugger;
 pub mod openocd;
+pub mod probe;

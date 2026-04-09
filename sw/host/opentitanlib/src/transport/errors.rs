@@ -69,6 +69,8 @@ pub enum TransportError {
     RequiresUnequal(String, String, String),
     #[error("Expected value \"{1}\" for key \"{0}\", found none")]
     RequiresMissing(String, String),
+    #[error("Invalid configuration: \"{0}\"")]
+    InvalidConfig(String),
 }
 impl_serializable_error!(TransportError);
 
