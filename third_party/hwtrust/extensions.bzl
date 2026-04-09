@@ -11,7 +11,12 @@ hwtrust = module_extension(
 def _hwtrust_repos():
     http_archive(
         name = "hwtrust",
-        urls = ["https://android.googlesource.com/platform/tools/security/+archive/da7738aaf3ece666272adab6b3091f72ce027e9c.tar.gz"],
+        urls = [
+            # Use lowrisc cache due to rate limiting on the original URL
+            "https://storage.googleapis.com/lowrisc-ci-cache/external/security-da7738aaf3ece666272adab6b3091f72ce027e9c.tar.gz",
+            # "https://android.googlesource.com/platform/tools/security/+archive/da7738aaf3ece666272adab6b3091f72ce027e9c.tar.gz"
+        ],
         strip_prefix = "remote_provisioning/hwtrust",
         build_file = Label("//third_party/hwtrust:BUILD.hwtrust.bazel"),
+        sha256 = "3a94aaa098bb746af3c0b7d4e759546eb9135cdb1ee054128238c2bdf1577881",
     )
