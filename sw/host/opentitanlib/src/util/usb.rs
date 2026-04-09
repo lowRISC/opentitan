@@ -419,21 +419,10 @@ impl UsbHub {
         let req_type = rusb::constants::LIBUSB_RECIPIENT_OTHER
             | rusb::constants::LIBUSB_REQUEST_TYPE_CLASS
             | rusb::constants::LIBUSB_ENDPOINT_OUT;
-        // Make sure that the port status is the expected one before the operation.
+        // Expected port status after the operation.
         let port_status_mask = 1u16 << feature_index;
-        let port_status_before = if set_feature { 0u16 } else { port_status_mask };
         let port_status_after = if set_feature { port_status_mask } else { 0u16 };
 
-        if check_status {
-            let port_status = self.port_status(port, timeout)?;
-            ensure!(
-                port_status & port_status_mask == port_status_before,
-                "Trying to {} port {} but port has unexpected status {:#x}",
-                human_op,
-                port,
-                port_status
-            );
-        }
         // Perform operation.
         let _ =
             self.handle
