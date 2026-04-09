@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -36,7 +37,9 @@ static status_t ibex_security_config_test(void) {
 
   uint32_t original_csr;
   CSR_READ(CSR_REG_CPUCTRL, &original_csr);
-  CSR_SET_BITS(CSR_REG_CPUCTRL, 0x6);
+
+  TRY(ibex_set_security_config());
+
   uint32_t current_csr;
   CSR_READ(CSR_REG_CPUCTRL, &current_csr);
 

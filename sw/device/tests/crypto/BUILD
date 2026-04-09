@@ -256,6 +256,23 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "config_functest",
+    srcs = ["config_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "eternal",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:status",
+        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:randomness_quality",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "drbg_functest",
     srcs = ["drbg_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
