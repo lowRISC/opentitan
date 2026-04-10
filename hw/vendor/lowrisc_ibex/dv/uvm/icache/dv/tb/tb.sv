@@ -4,7 +4,8 @@
 //
 import ibex_pkg::*;
 module tb #(
- parameter bit ICacheECC = 1'b1
+ parameter bit ICacheECC = 1'b1,
+ parameter bit ICacheTweakInfection = 1'b1
  );
   // dep packages
   import uvm_pkg::*;
@@ -49,10 +50,11 @@ module tb #(
 
   // DUT
   ibex_icache #(
-      .ICacheECC       (ICacheECC),
-      .BusSizeECC      (BusSizeECC),
-      .TagSizeECC      (TagSizeECC),
-      .LineSizeECC     (LineSizeECC)
+      .ICacheECC            (ICacheECC),
+      .ICacheTweakInfection (ICacheTweakInfection),
+      .BusSizeECC           (BusSizeECC),
+      .TagSizeECC           (TagSizeECC),
+      .LineSizeECC          (LineSizeECC)
   ) dut (
       .clk_i               ( clk                        ),
       .rst_ni              ( rst_n                      ),

@@ -268,8 +268,7 @@ class ibex_cosim_scoreboard extends uvm_scoreboard;
     bit [31:0] aligned_next_addr;
     forever begin
       // Wait for new instruction to appear in ID stage
-      wait (instr_vif.instr_cb.valid_id &&
-            instr_vif.instr_cb.instr_new_id &&
+      wait (instr_vif.instr_cb.rvfi_id_done &&
             latest_order != instr_vif.instr_cb.rvfi_order_id);
 
       latest_order = instr_vif.instr_cb.rvfi_order_id;
@@ -320,9 +319,9 @@ class ibex_cosim_scoreboard extends uvm_scoreboard;
       // Wait for a new instruction or a writeback exception. When a new instruction has entered the
       // ID stage and we haven't seen a writeback exception we know the instruction associated with the
       // error just added to the queue isn't getting flushed.
-      wait (instr_vif.instr_cb.instr_new_id || dut_vif.dut_cb.wb_exception);
+      wait (instr_vif.instr_cb.rvfi_id_done || dut_vif.dut_cb.wb_exception);
 
-      if (!instr_vif.instr_cb.instr_new_id && dut_vif.dut_cb.wb_exception) begin
+      if (!instr_vif.instr_cb.rvfi_id_done && dut_vif.dut_cb.wb_exception) begin
         // If we hit a writeback exception without seeing a new instruction then the newly added
         // error relates to an instruction just flushed from the ID stage so pop it from the
         // queue.
