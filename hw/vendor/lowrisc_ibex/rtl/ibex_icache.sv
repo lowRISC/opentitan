@@ -324,15 +324,15 @@ module ibex_icache import ibex_pkg::*; #(
     // Determine the full address used for the outgoing data bank request. Apply '0, wich
     // effectively disabled the tweak infection, when (a) invalidating the cache and (b)
     // when there is already an ECC error (we have already raised a minor alert).
-    logic [ADDR_W-1:0]  data_address_ic0;
-    logic [ADDR_W-1:0]  data_tweak_ic0;
+    logic [ADDR_W-1:0]           data_address_ic0;
+    logic [ADDR_W-IC_LINE_W-1:0] data_tweak_ic0;
     assign data_address_ic0 = inval_write_req ? '0 :
                               ecc_write_req   ? '0 :
                               fill_grant_ic0  ? fill_ram_req_addr :
                                                 lookup_addr_ic0;
 
     // Mask the IC_LINE_W LSBs to remove the offset within a cache line.
-    assign data_tweak_ic0 = {data_address_ic0[ADDR_W-1:IC_LINE_W], {IC_LINE_W{1'b0}}};
+    assign data_tweak_ic0 = data_address_ic0[ADDR_W-1:IC_LINE_W];
 
     // Tie off the unused LSBs.
     logic unused_data_address_ic0;
@@ -343,7 +343,7 @@ module ibex_icache import ibex_pkg::*; #(
       always_comb begin
         data_tweak_lw_ic0 = '0;
         for (int i = 0; i < IC_LINE_BEATS; i++) begin
-          data_tweak_lw_ic0 |= (LineSizeECC'({data_tweak_ic0}) <<
+          data_tweak_lw_ic0 |= (LineSizeECC'({data_tweak_ic0, {IC_LINE_W{1'b0}}}) <<
                                (i * (ADDR_W + IC_DATA_ECC_SIZE)));
         end
       end
@@ -351,17 +351,37 @@ module ibex_icache import ibex_pkg::*; #(
       always_comb begin
         data_tweak_lw_ic0 = '0;
         for (int i = 0; i < IC_LINE_BEATS; i++) begin
-          data_tweak_lw_ic0 |= (LineSizeECC'({data_tweak_ic0}) << (i * ADDR_W));
+          data_tweak_lw_ic0 |= (LineSizeECC'({data_tweak_ic0, {IC_LINE_W{1'b0}}}) <<
+                               (i * ADDR_W));
         end
       end
     end
 
     // Pipeline the tweak to IC1 to align with the data RAM output timing.
+    logic [ADDR_W-IC_LINE_W-1:0] data_tweak_ic1;
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
-        data_tweak_lw_ic1 <= '0;
+        data_tweak_ic1 <= '0;
       end else if (data_req_ic0) begin
-        data_tweak_lw_ic1 <= data_tweak_lw_ic0;
+        data_tweak_ic1 <= data_tweak_ic0;
+      end
+    end
+
+    // Replicate the ADDR_W-bit tweak to match the LineSizeECC width.
+    if (ICacheECC) begin : gen_ecc_tweak_ic1
+      always_comb begin
+        data_tweak_lw_ic1 = '0;
+        for (int i = 0; i < IC_LINE_BEATS; i++) begin
+          data_tweak_lw_ic1 |= (LineSizeECC'({data_tweak_ic1, {IC_LINE_W{1'b0}}}) <<
+                               (i * (ADDR_W + IC_DATA_ECC_SIZE)));
+        end
+      end
+    end else begin : gen_no_ecc_tweak_ic1
+      always_comb begin
+        data_tweak_lw_ic1 = '0;
+        for (int i = 0; i < IC_LINE_BEATS; i++) begin
+          data_tweak_lw_ic1 |= (LineSizeECC'({data_tweak_ic1, {IC_LINE_W{1'b0}}}) << (i * ADDR_W));
+        end
       end
     end
 
@@ -384,11 +404,30 @@ module ibex_icache import ibex_pkg::*; #(
     end
 
     // Pipeline the tag tweak to IC1 to align with the tag RAM output timing.
+    logic [IC_INDEX_W-1:0] tag_index_ic1;
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
-        tag_tweak_lw_ic1 <= '0;
+        tag_index_ic1 <= '0;
       end else if (tag_req_ic0) begin
-        tag_tweak_lw_ic1 <= tag_tweak_lw_ic0;
+        tag_index_ic1 <= tag_index_ic0;
+      end
+    end
+
+    // Extend tag_index_ic1 to full TagSizeECC width for use at the read XOR.
+    if (ICacheECC) begin : gen_ecc_tag_tweak_ic1
+      always_comb begin
+        tag_tweak_lw_ic1 = '0;
+        for (int i = 0; i < IC_LINE_BEATS; i++) begin
+          tag_tweak_lw_ic1 |= (TagSizeECC'({tag_index_ic1}) <<
+                              (i * (IC_INDEX_W + IC_TAG_ECC_SIZE)));
+        end
+      end
+    end else begin : gen_no_ecc_tag_tweak_ic1
+      always_comb begin
+        tag_tweak_lw_ic1 = '0;
+        for (int i = 0; i < IC_LINE_BEATS; i++) begin
+          tag_tweak_lw_ic1 |= (TagSizeECC'({tag_index_ic1}) << (i * IC_INDEX_W));
+        end
       end
     end
   end else begin: gen_no_tweak_infection
