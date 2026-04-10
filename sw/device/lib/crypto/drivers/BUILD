@@ -37,9 +37,12 @@ CRYPTO_EXEC_ENVS = dicts.add(
 
 autogen_cryptolib_build_info(name = "cryptolib_build_info")
 
-cc_library(
+dual_cc_library(
     name = "alert",
-    srcs = ["alert.c"],
+    srcs = dual_inputs(
+        device = ["alert.c"],
+        host = ["mock_alert.cc"],
+    ),
     hdrs = [
         "alert.h",
     ],
