@@ -45,7 +45,8 @@ module hmac_core import prim_sha2_pkg::*; (
   input  [63:0] message_length_i,
   output [63:0] sha_message_length_o,
 
-  output logic idle_o
+  output logic idle_o,
+  output logic err_o
 );
 
   localparam int unsigned BlockSizeSHA256     = 512;
@@ -103,6 +104,38 @@ module hmac_core import prim_sha2_pkg::*; (
   logic update_round ;
   round_t round_q, round_d;
 
+  // Secondary round counter for FI protection.
+  // This counter only advances when sha_hash_done_i for the inner and outer hash has been seen.
+  // At StDone it must match the primary round tracking (round_q).
+  //
+  // Encoding generated at commit 14d1c47dfd using Python 3.12.13 with:
+  // $ ./util/design/sparse-fsm-encode.py --language=sv \
+  //     --seed 1 --distance 3 --states 4 --bits 5
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: |||||||||||||||||||| (66.67%)
+  //  4: |||||||||| (33.33%)
+  //  5: --
+  //
+  // Minimum Hamming distance: 3
+  // Maximum Hamming distance: 4
+  // Minimum Hamming weight: 1
+  // Maximum Hamming weight: 4
+  //
+  localparam int RndCtrWidth = 5;
+  typedef enum logic [RndCtrWidth-1:0] {
+    RndIdle         = 5'b10010, // No round completed yet
+    RndInnerDone    = 5'b11001, // Inner hash done, continuing with the outer hash
+    RndInnerStopped = 5'b01111, // Inner hash done, stopped by SW (no outer hash)
+    RndOuterDone    = 5'b00100  // Outer hash done
+  } rnd_ctr_e;
+
+  rnd_ctr_e rnd_ctr_q, rnd_ctr_d;
+
   typedef enum logic [2:0] {
     StIdle,
     StIPad,
@@ -110,7 +143,8 @@ module hmac_core import prim_sha2_pkg::*; (
     StPushToMsgFifo,    // Digest --> Msg Fifo
     StWaitResp,         // Hash done( by checking processed_length? or hash_done)
     StOPad,
-    StDone              // hmac_done
+    StDone,             // hmac_done
+    StError
   } st_e ;
 
   st_e st_q, st_d;
@@ -297,6 +331,16 @@ module hmac_core import prim_sha2_pkg::*; (
     end
   end
 
+  prim_flop #(
+    .Width(RndCtrWidth),
+    .ResetValue(RndCtrWidth'(RndIdle))
+  ) u_rnd_ctr_flop (
+    .clk_i,
+    .rst_ni,
+    .d_i(RndCtrWidth'(rnd_ctr_d)),
+    .q_o({rnd_ctr_q})
+  );
+
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       fifo_wdata_sel_o <= '0;
@@ -321,6 +365,7 @@ module hmac_core import prim_sha2_pkg::*; (
     load_txcount       = 1'b0;
     update_round       = 1'b0;
     round_d            = Inner;
+    rnd_ctr_d          = rnd_ctr_q;
     fifo_wsel_o        = 1'b0;   // from register
     fifo_wvalid_o      = 1'b0;
     clr_fifo_wdata_sel = 1'b1;
@@ -328,6 +373,7 @@ module hmac_core import prim_sha2_pkg::*; (
     hash_start         = 1'b0;
     hash_continue      = 1'b0;
     hash_process       = 1'b0;
+    err_o              = 1'b0;
     st_d               = st_q;
 
     unique case (st_q)
@@ -337,6 +383,7 @@ module hmac_core import prim_sha2_pkg::*; (
         // single block at the end (outer key pad + inner hash)
         update_round = 1'b1;
         round_d      = Inner;
+        rnd_ctr_d    = RndIdle;
         if (hmac_en_i && reg_hash_start_i) begin
           st_d = StIPad; // start at StIPad if told to start
 
@@ -394,6 +441,17 @@ module hmac_core import prim_sha2_pkg::*; (
         hmac_sha_rvalid = 1'b0;
 
         if (sha_hash_done_i) begin
+          // Only advance the secondary counter when the hash has been completed.
+          unique case (rnd_ctr_q)
+            RndIdle: begin
+              rnd_ctr_d = reg_hash_stop_q ? RndInnerStopped : RndInnerDone;
+            end
+            RndInnerDone: begin
+              rnd_ctr_d = RndOuterDone;
+            end
+            default: rnd_ctr_d = rnd_ctr_q;
+          endcase
+
           if (round_q == Outer) begin
             st_d = StDone;
           end else begin // round_q == Inner
@@ -446,14 +504,25 @@ module hmac_core import prim_sha2_pkg::*; (
       end
 
       StDone: begin
-        // raise interrupt (hash_done)
         st_d = StIdle;
+        // Check primary (round_q) and secondary (rnd_ctr_q) counter.
+        //   Normal HMAC completion  : round_q == Outer, rnd_ctr_q == RndOuterDone
+        //   Stopped after inner hash: round_q == Inner, rnd_ctr_q == RndInnerStopped
+        if ((round_q == Outer && rnd_ctr_q == RndOuterDone) ||
+            (round_q == Inner && rnd_ctr_q == RndInnerStopped)) begin
+          hmac_hash_done = 1'b1;
+        end else begin
+          st_d = StError;
+        end
+      end
 
-        hmac_hash_done = 1'b1;
+      StError: begin
+        st_d = StIdle;
+        err_o = 1'b1;
       end
 
       default: begin
-        st_d = StIdle;
+        st_d = StError;
       end
 
     endcase

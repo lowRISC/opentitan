@@ -159,6 +159,7 @@ module hmac
   logic                 msg_allowed; // MSG_FIFO from software is allowed
 
   logic hmac_core_idle;
+  logic hmac_core_err;
   logic sha_core_idle;
   logic hash_running;
   logic idle;
@@ -826,7 +827,8 @@ module hmac
     .message_length_i     (message_length),
     .sha_message_length_o (sha_message_length),
 
-    .idle_o           (hmac_core_idle)
+    .idle_o           (hmac_core_idle),
+    .err_o            (hmac_core_err)
   );
 
   // Instantiate SHA-2 256/384/512 engine
@@ -881,6 +883,9 @@ module hmac
     reg2hw.alert_test.qe
   };
 
+  logic alert_req;
+  assign alert_req = alerts[0] | hmac_core_err;
+
   localparam logic [NumAlerts-1:0] AlertIsFatal = {1'b1};
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
@@ -891,7 +896,7 @@ module hmac
       .clk_i,
       .rst_ni,
       .alert_test_i  ( alert_test[i] ),
-      .alert_req_i   ( alerts[0]     ),
+      .alert_req_i   ( alert_req     ),
       .alert_ack_o   (               ),
       .alert_state_o (               ),
       .alert_rx_i    ( alert_rx_i[i] ),
