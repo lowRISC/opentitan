@@ -45,8 +45,9 @@ enum {
 
 /**
  * Supported CSRNG application commands.
- * See https://docs.opentitan.org/hw/ip/csrng/doc/#command-header for
- * details.
+ * See
+ * https://opentitan.org/earlgrey_1.0.0/book/hw/ip/csrng/doc/theory_of_operation.html#command-header
+ * for details.
  */
 typedef enum entropy_csrng_op {
   kEntropyDrbgOpInstantiate = 1,
