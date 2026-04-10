@@ -248,7 +248,7 @@ def _get_default_name(sig, suffix):
     # The else case covers the scenario where neither package nor default is provided.
     # Specifically, the interface is 'logic' and has no default value.
     # In this situation, just return 0's
-    if sig['default']:
+    if sig.get("default"):
         return sig['default']
     elif sig['package']:
         scalar = "{}::{}_DEFAULT".format(sig['package'],
@@ -264,7 +264,29 @@ def _get_default_name(sig, suffix):
             return "'0"
 
 
-def get_signame_chip(topcfg: Dict, sig: OrderedDict, port: str, reqrsp: str = "req"):
+def _make_req_rsp(signal: OrderedDict, default_val: str) -> Tuple[OrderedDict, OrderedDict]:
+    req_suffix, rsp_suffix = get_suffixes(signal)
+    if default_val:
+        (req_default, rsp_default) = (default_val, default_val)
+    else:
+        req_default = _get_default_name(signal, req_suffix)
+        rsp_default = _get_default_name(signal, rsp_suffix)
+
+    signal_rsp = signal.copy()
+    signal["struct"] += req_suffix
+    signal["default"] = req_default
+    signal["signame"] += "_req"
+    signal["suffix"] = "req"
+    signal_rsp["struct"] += rsp_suffix
+    signal_rsp["default"] = rsp_default
+    signal_rsp["signame"] += "_rsp"
+    signal_rsp["suffix"] = "rsp"
+
+    return (signal, signal_rsp)
+
+
+def get_signame_chip(topcfg: Dict, sig: OrderedDict, port: str, reqrsp: str = "req",
+                     inter_pd: bool = False):
     # Determine all possible suffixes and stub strings
     type_req_suffix, type_rsp_suffix = get_suffixes(sig, True)
     sig_req_suffix, sig_rsp_suffix = get_suffixes(sig, False)
@@ -301,6 +323,13 @@ def get_signame_chip(topcfg: Dict, sig: OrderedDict, port: str, reqrsp: str = "r
     # Check if a chip-level signal name is specified, otherwise infer it from port name
     sig_name = port if port != "" else intersignal_format(sig)
     sig_name_chip_stem = sig_name
+
+    # Determine physical power domain
+    module = lib.get_module_by_name(topcfg, sig['inst_name'], True)
+    assert module is not None, f"Module {sig['inst_name']} associated with signal" \
+                               f"{sig['name']} not found in topcfg."
+    domain = module.get('domain')
+    assert domain is not None, f"Module {sig['inst_name']} has no power domain attribute."
 
     # Make sure to provide a value for the `netname` key
     netname = sig.get("top_signame", sig_name)
@@ -347,15 +376,212 @@ def get_signame_chip(topcfg: Dict, sig: OrderedDict, port: str, reqrsp: str = "r
     # Return the ready-to-add dict and the signal (port) name
     return (OrderedDict([('package', sig["package"]),
                          ('struct', sig["struct"] + type_reqrsp_suffix),
+                         ('domain', domain),
+                         ('inter_pd', inter_pd),
                          ('signame', sig_name_full),
                          ('signame_chip', sig_name_chip),
-                         ('width', sig["width"]), ('type', sig["type"]),
+                         ('width', sig["width"]),
+                         ('type', sig["type"]),
                          ('default', sig["default"]),
                          ('direction', direction),
                          ('conn_type', sig["conn_type"]),
                          ('index', sig["index"]),
                          ('netname', netname + type_reqrsp_suffix)]),
             sig_name)
+
+
+def handle_multi_pd_intersig(topcfg, definitions, package,
+                             lhs_struct, lhs_pd,
+                             rhs_structs, rhs_pds):
+
+    # Inter-power-domain dictionary and signal list
+    topcfg.setdefault("inter_pd", {})
+    topcfg["inter_pd"].setdefault("definitions", [])
+    # List of "external" signals of toplevel (ports)
+    topcfg["inter_signal"].setdefault("external", [])
+
+    # Create a blueprint for signal definition
+    definition = OrderedDict([('package', package),
+                              ('struct', lhs_struct["struct"]),
+                              ('domain', lhs_pd),
+                              ('signame', lhs_struct["top_signame"]),
+                              ('width', lhs_struct["width"]),
+                              ('type', lhs_struct["type"]),
+                              ('end_idx', lhs_struct["end_idx"]),
+                              ('act', lhs_struct["act"]),
+                              ('suffix', "")])
+
+    # "Main" chiplevel signal
+
+    # Determine cumulative width of all rhs signals in foreign PDs
+    # Note: This assumes that the width of all rhs signals is 1. Apart from calculating
+    # the total rhs width in check_intermodule() correctly, we do not seem to support
+    # this anywhere. For example, lib.index() always returns [i], and never [i+width-1:i].
+    # Therefore, check that this condition holds.
+    for r in rhs_structs:
+        if r['width'] != 1:
+            log.error(f"Signal {r['name']} of module {r['inst_name']} is an rhs signal for"
+                      f"an intermodule connection, but not of width one (actual: {r['width']})."
+                      f"This is currently not supported.")
+    width_rhs_sigs = len([r for r in rhs_structs if r['domain'] != lhs_pd])
+
+    # Create definition info
+    chiplevel_def = definition.copy()
+    chiplevel_def["domain"] = "chip"
+    # Subtract lhs signal width on non-broadcast signal
+    if lhs_struct['top_type'] != "broadcast":
+        # Chiplevel signal must be wide enough to accomodate all rhs signals
+        chiplevel_def["width"] = width_rhs_sigs
+
+    # req_rsp requires two definitions, suffixes and defaults
+    if lhs_struct["type"] == "req_rsp":
+        (chiplevel_def, chiplevel_def_rsp) = _make_req_rsp(chiplevel_def,
+                                                           lhs_struct.get("default"))
+    else:
+        chiplevel_def["default"] = _get_default_name(lhs_struct, "")
+
+    topcfg['inter_pd']['definitions'].append(chiplevel_def)
+    if lhs_struct["type"] == "req_rsp":
+        topcfg['inter_pd']['definitions'].append(chiplevel_def_rsp)
+
+    # We always need a port in the lhs domain in order to connect to the rhs PD(s)
+    lhs_struct["external"] = True
+
+    # Check if a manual port of the LHS signals was specified in the top.hjson
+    # In this case, we must create a signal definition in the lhs domain, and
+    # then connect both the manual port and the inter-pd port to this signal.
+    lhs_manual_port = f"{lhs_struct['inst_name']}.{lhs_struct['name']}" \
+        in topcfg["inter_module"]["external"]
+
+    # Check if the lhs signal has unused entries
+    lhs_tieoff = lhs_struct['top_type'] == "partial-one-to-N"
+
+    # Create local signal(s) and connections in the lhs domain, if required
+    # 1) The lhs signal does not only connect to foreign PD(s), but also to the lhs PD
+    # 2) Multiple ports in the lhs domain for the same signal, see comment above
+    # 3) partial-one-to-N type and all rhs signals are in foreign PDs (so 1) does not apply)
+    if lhs_pd in rhs_pds or lhs_manual_port or lhs_tieoff:
+        # Mark this as connect type
+        lhs_struct['conn_type'] = True
+
+        # Create signal(s) in lhs domain
+        lhs_pd_def = definition.copy()
+        lhs_pd_def["act"] = lhs_struct["act"]
+        lhs_pd_def["domain"] = lhs_pd
+
+        # req_rsp requires two definitions, suffixes and defaults
+        if lhs_struct["type"] == "req_rsp":
+            (lhs_pd_def, lhs_pd_def_rsp) = _make_req_rsp(lhs_pd_def,
+                                                         lhs_struct.get("default"))
+        else:
+            lhs_pd_def["default"] = _get_default_name(lhs_struct, "")
+
+        # Append to global definition list
+        definitions.append(lhs_pd_def)
+        if lhs_struct["type"] == "req_rsp":
+            definitions.append(lhs_pd_def_rsp)
+
+        # Create connections in lhs PD
+        # If not broadcast, we must filter out the indices for the LHS domain
+        if lhs_struct["top_type"] != "broadcast":
+            # Prepare an empty assign list
+            lhs_struct["index"] = []
+
+        for i, rhs_struct in enumerate(rhs_structs):
+            # Advance index but skip struct
+            if rhs_struct["domain"] != lhs_pd:
+                # Insert current index as assign to/from port
+                if lhs_struct["top_type"] != "broadcast":
+                    lhs_struct["index"].append(i)
+                continue
+
+            rhs_struct["top_signame"] = lhs_struct["top_signame"]
+            if lhs_struct["top_type"] == "broadcast":
+                rhs_struct["index"] = -1
+            else:
+                rhs_struct["index"] = i
+
+        if lhs_struct["top_type"] != "broadcast":
+            # Make sure the assign list is not empty for non-broadcast
+            assert len(lhs_struct["index"]) > 0
+            # Don't keep degenerated single-entry list
+            if len(lhs_struct["index"]) == 1:
+                lhs_struct["index"] = lhs_struct["index"][0]
+
+        # Determine port width
+        if lhs_struct['top_type'] == "broadcast":
+            lhs_port_width = 1
+        else:
+            lhs_port_width = width_rhs_sigs
+
+    else:
+        # Simple port connect; all rhs are in foreign domains
+        # Connect full port width
+        lhs_struct["index"] = -1
+        # No mixed connection, direct feedthrough to/from module port
+        lhs_struct['conn_type'] = False
+        # Port width is full lhs signal width
+        lhs_port_width = lhs_struct["width"]
+
+    # Create port for lhs PD
+
+    # Obtain port dictionary
+    sig_dict, _ = get_signame_chip(topcfg, lhs_struct, "", "req", inter_pd=True)
+    sig_dict["width"] = lhs_port_width
+    # Add to PD-specific port list
+    topcfg['inter_signal']['external'].append(sig_dict)
+
+    # Once more for req_rsp type
+    if lhs_struct["type"] == "req_rsp":
+        sig_dict, _ = get_signame_chip(topcfg, lhs_struct, "", "rsp", inter_pd=True)
+        sig_dict["width"] = lhs_port_width
+        topcfg['inter_signal']['external'].append(sig_dict)
+
+    # Create ports and connections in all target (rhs) domains
+
+    # Create a copy of the lhs struct with opposite direction
+    lhs_struct_inv = lhs_struct.copy()
+    lhs_struct_inv['act'] = lib.invert_signal_act(lhs_struct)
+    # Reset connection type to false
+    lhs_struct_inv['conn_type'] = False
+
+    for rhs_pd in rhs_pds:
+        # lhs pd could be part of the rhs pds - skip, handled above
+        if rhs_pd == lhs_pd:
+            continue
+
+        # Loop over all rsps, filter for rhs_pd
+        rhs_structs_filtered = [r for r in rhs_structs if r['domain'] == rhs_pd]
+        if lhs_struct["top_type"] == "broadcast":
+            conn_cnt = 1
+        else:
+            conn_cnt = len(rhs_structs_filtered)
+
+        # Create PD-level port
+        sig_dict, _ = get_signame_chip(topcfg, lhs_struct_inv, "", "req", inter_pd=True)
+        sig_dict['width'] = conn_cnt
+        # Update the PD to the current rhs PD
+        sig_dict['domain'] = rhs_pd
+        topcfg['inter_signal']['external'].append(sig_dict)
+
+        # Once more for req_rsp type
+        if lhs_struct["type"] == "req_rsp":
+            sig_dict, _ = get_signame_chip(topcfg, lhs_struct_inv, "", "rsp", inter_pd=True)
+            sig_dict['width'] = conn_cnt
+            sig_dict['domain'] = rhs_pd
+            topcfg['inter_signal']['external'].append(sig_dict)
+
+        # Connect module ports to PD-level port
+        for i, rhs_struct in enumerate(rhs_structs_filtered):
+            rhs_struct["top_signame"] = lhs_struct["top_signame"]
+            if lhs_struct["top_type"] in ["broadcast", "one-to-one"]:
+                rhs_struct["index"] = -1
+            else:
+                rhs_struct["index"] = -1 if conn_cnt == 1 else i
+
+            # Connect to port
+            rhs_struct["external"] = True
+            rhs_struct["conn_type"] = False
 
 
 def elab_intermodule(topcfg: OrderedDict):
@@ -373,8 +599,7 @@ def elab_intermodule(topcfg: OrderedDict):
         topcfg["inter_signal"] = OrderedDict()
 
     # Gather the inter_signal_list
-    instances = topcfg["module"] + topcfg["xbar"] + \
-        topcfg["port"]
+    instances = topcfg["module"] + topcfg["xbar"] + topcfg["port"]
 
     for x in instances:
         old_isl = x.get('inter_signal_list')
@@ -422,8 +647,6 @@ def elab_intermodule(topcfg: OrderedDict):
     # such that `lc.pwrup --> pwr_mgr.pwrup[0]` and
     # `otp.pwrup --> pwr_mgr.pwrup[1]`
 
-    uid = 0  # Unique connection ID across the top
-
     for req, rsps in topcfg["inter_module"]["connect"].items():
         log.info("{req} --> {rsps}".format(req=req, rsps=rsps))
 
@@ -438,6 +661,8 @@ def elab_intermodule(topcfg: OrderedDict):
         sig_name = intersignal_format(req_struct)
         req_struct["top_signame"] = sig_name
 
+        req_struct["index"] = -1
+
         # Find package in req, rsps
         if "package" in req_struct:
             package = req_struct["package"]
@@ -451,6 +676,29 @@ def elab_intermodule(topcfg: OrderedDict):
                     break
             if not package:
                 package = ""
+
+        # Check multi-PD
+        rsp_pds = []
+        rsp_structs = []
+        req_pd = lib.get_module_by_name(topcfg, req_struct['inst_name'], True)['domain']
+        for rsp in rsps:
+            rsp_module, rsp_signal, _rsp_index = filter_index(rsp)
+            rsp_struct = find_intermodule_signal(list_of_intersignals,
+                                                 rsp_module, rsp_signal)
+            rsp_pd = lib.get_module_by_name(topcfg, rsp_struct['inst_name'], True)['domain']
+            rsp_struct['domain'] = rsp_pd
+            rsp_structs.append(rsp_struct)
+
+            # Add rsp PD if not already there
+            if rsp_pd not in rsp_pds:
+                rsp_pds.append(rsp_pd)
+
+        # Condition for multi-pd signals; skip regular processing below
+        if len(rsp_pds) > 1 or rsp_pds[0] != req_pd:
+            handle_multi_pd_intersig(topcfg, definitions, package,
+                                     req_struct, req_pd,
+                                     rsp_structs, rsp_pds)
+            continue
 
         # Add to definition
         if req_struct["type"] == "req_rsp":
@@ -469,6 +717,7 @@ def elab_intermodule(topcfg: OrderedDict):
             definitions.append(
                 OrderedDict([('package', package),
                              ('struct', req_struct["struct"] + req_suffix),
+                             ('domain', req_pd),
                              ('signame', sig_name + "_req"),
                              ('width', req_struct["width"]),
                              ('type', req_struct["type"]),
@@ -479,6 +728,7 @@ def elab_intermodule(topcfg: OrderedDict):
             definitions.append(
                 OrderedDict([('package', package),
                              ('struct', req_struct["struct"] + rsp_suffix),
+                             ('domain', req_pd),
                              ('signame', sig_name + "_rsp"),
                              ('width', req_struct["width"]),
                              ('type', req_struct["type"]),
@@ -492,6 +742,7 @@ def elab_intermodule(topcfg: OrderedDict):
             definitions.append(
                 OrderedDict([('package', package),
                              ('struct', req_struct["struct"]),
+                             ('domain', req_pd),
                              ('signame', sig_name),
                              ('width', req_struct["width"]),
                              ('type', req_struct["type"]),
@@ -500,8 +751,6 @@ def elab_intermodule(topcfg: OrderedDict):
                              ('suffix', ""),
                              ('default', default)]))
 
-        req_struct["index"] = -1
-
         for i, rsp in enumerate(rsps):
             # Split index
             rsp_module, rsp_signal, _rsp_index = filter_index(rsp)
@@ -509,8 +758,7 @@ def elab_intermodule(topcfg: OrderedDict):
             rsp_struct = find_intermodule_signal(list_of_intersignals,
                                                  rsp_module, rsp_signal)
 
-            # determine the signal name
-
+            # Determine the signal name
             rsp_struct["top_signame"] = sig_name
             if req_struct["type"] == "uni" and req_struct[
                     "top_type"] == "broadcast":
@@ -526,9 +774,6 @@ def elab_intermodule(topcfg: OrderedDict):
                 assert req_struct[
                     "type"] != "req_rsp", "logic signal cannot have req_rsp type"
 
-            # increase Unique ID
-            uid += 1
-
     # TODO: Check unconnected port
     if "top" not in topcfg["inter_module"]:
         topcfg["inter_module"]["top"] = []
@@ -538,6 +783,7 @@ def elab_intermodule(topcfg: OrderedDict):
         assert sig_i == -1, 'top net connection should not use bit index'
         sig = find_intermodule_signal(list_of_intersignals, sig_m, sig_s)
         sig_name = intersignal_format(sig)
+        domain = lib.get_module_by_name(topcfg, sig['inst_name'], True)['domain']
         sig["top_signame"] = sig_name
         if "index" not in sig:
             sig["index"] = -1
@@ -548,6 +794,7 @@ def elab_intermodule(topcfg: OrderedDict):
             definitions.append(
                 OrderedDict([('package', sig["package"]),
                              ('struct', sig["struct"] + req_suffix),
+                             ('domain', domain),
                              ('signame', sig_name + "_req"),
                              ('width', sig["width"]), ('type', sig["type"]),
                              ('end_idx', -1),
@@ -555,6 +802,7 @@ def elab_intermodule(topcfg: OrderedDict):
             definitions.append(
                 OrderedDict([('package', sig["package"]),
                              ('struct', sig["struct"] + rsp_suffix),
+                             ('domain', domain),
                              ('signame', sig_name + "_rsp"),
                              ('width', sig["width"]), ('type', sig["type"]),
                              ('end_idx', -1),
@@ -563,6 +811,7 @@ def elab_intermodule(topcfg: OrderedDict):
             definitions.append(
                 OrderedDict([('package', sig["package"]),
                              ('struct', sig["struct"]), ('signame', sig_name),
+                             ('domain', domain),
                              ('width', sig["width"]), ('type', sig["type"]),
                              ('end_idx', -1),
                              ('default', sig["default"])]))
@@ -611,6 +860,13 @@ def elab_intermodule(topcfg: OrderedDict):
 
     if "definitions" not in topcfg["inter_signal"]:
         topcfg["inter_signal"]["definitions"] = definitions
+
+    # Append inter-pd signals and ports emitted by pinmux
+    if topcfg["pinmux"]["inter_pd"] is not None:
+        topcfg["inter_signal"]["external"].extend(topcfg["pinmux"]["inter_pd"]["ports"])
+        topcfg["inter_pd"]["definitions"].extend(topcfg["pinmux"]["inter_pd"]["definitions"])
+        # No longer needed, delete
+        del topcfg["pinmux"]["inter_pd"]
 
 
 def filter_index(signame: str) -> Tuple[str, str, int]:
@@ -917,6 +1173,10 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
             # one-to-one connection
             req_struct["top_type"] = "broadcast"
 
+        elif req_struct["type"] == "req_rsp":
+            # one-to-one connection
+            req_struct["top_type"] = "one-to-one"
+
         # If req is array, it is not allowed to have partial connections.
         # Doing for loop again here: Make code separate from other checker
         # for easier maintenance
@@ -1063,35 +1323,23 @@ def im_netname(sig: OrderedDict, suffix: str = "", default_name=False) -> str:
             suffix=suffix) if suffix != "" else suffix
 
     # External signal handling
-    if "external" in obj and obj["external"]:
-        if obj["conn_type"]:
-            pairs = {
-                # act , suffix: additional suffix
-                ("req", "req"): "",
-                ("req", "rsp"): "_i",
-                ("rsp", "req"): "_i",
-                ("rsp", "rsp"): "",
-                ("req", ""): "",
-                ("rcv", ""): "_i",
-                ("none", "io"): ""
-            }
-        else:
-            pairs = {
-                # act , suffix: additional suffix
-                ("req", "req"): "_o",
-                ("req", "rsp"): "_i",
-                ("rsp", "req"): "_i",
-                ("rsp", "rsp"): "_o",
-                ("req", ""): "_o",
-                ("rcv", ""): "_i",
-                ("none", "io"): "_io"
-            }
+    if "external" in obj and obj["external"] and not obj["conn_type"]:
+        pairs = {
+            # act , suffix: additional suffix
+            ("req", "req"): "_o",
+            ("req", "rsp"): "_i",
+            ("rsp", "req"): "_i",
+            ("rsp", "rsp"): "_o",
+            ("req", ""): "_o",
+            ("rcv", ""): "_i",
+            ("none", "io"): "_io"
+        }
         suffix_s += pairs[(obj['act'], suffix)]
 
     return "{top_signame}{suffix}{index}".format(
         top_signame=obj["top_signame"],
         suffix=suffix_s,
-        index=lib.index(obj["index"]))
+        index=lib.index(obj))
 
 
 def im_portname(obj: OrderedDict, suffix: str = "") -> str:

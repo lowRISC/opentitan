@@ -415,13 +415,22 @@ def get_hjsonobj_xbars(xbar_path: Path) -> Dict[str, ConfigT]:
     return xbar_objs
 
 
-def get_module_by_name(top: ConfigT, name: str) -> Optional[ConfigT]:
+def get_module_by_name(top: ConfigT, name: str,
+                       search_xbars: bool = False) -> Optional[ConfigT]:
     """Search in top["module"] by name
     """
     module = None
     for m in top["module"]:
         if m["name"] == name:
             module = m
+            break
+
+    if module or not search_xbars:
+        return module
+
+    for x in top["xbar"]:
+        if x["name"] == name:
+            module = x
             break
 
     return module
@@ -433,6 +442,25 @@ def intersignal_to_signalname(top, m_name: str, s_name: str) -> str:
     # signal name
 
     return "{m_name}_{s_name}".format(m_name=m_name, s_name=s_name)
+
+
+def get_intermodule_list(top: ConfigT, domain: str = None):
+    if domain is not None:
+        return [x for x in top["inter_signal"]["definitions"] if x["domain"] == domain]
+    else:
+        return top["inter_signal"]["definitions"]
+
+
+def get_intermodule_ports(top: ConfigT, domain: str = None, inter_pd: bool = None):
+    if inter_pd is not None:
+        inter_pd_list = [x for x in top["inter_signal"]["external"] if x["inter_pd"] == inter_pd]
+    else:
+        inter_pd_list = top["inter_signal"]["external"]
+
+    if domain is not None:
+        return [x for x in inter_pd_list if x["domain"] == domain]
+    else:
+        return inter_pd_list
 
 
 def get_package_name_by_intermodule_signal(top: ConfigT, struct: str) -> str:
@@ -478,6 +506,19 @@ def add_module_prefix_to_signal(signal, module: str) -> str:
     result["module_name"] = module
 
     return result
+
+
+def invert_signal_act(signal) -> str:
+    if signal['type'] == "req_rsp":
+        if signal['act'] == "rsp":
+            return "req"
+        else:
+            return "rsp"
+    elif signal['type'] == "uni":
+        if signal['act'] == "rcv":
+            return "req"
+        else:
+            return "rcv"
 
 
 def get_ms_name(name: str) -> Tuple[str, Optional[str]]:
@@ -571,10 +612,14 @@ def parameterize(text: str) -> str:
     return text
 
 
-def index(i: int) -> str:
-    """Return index if it is not -1
+def index(sig: Dict) -> str:
+    """Return index if it is not -1 and signal does not connect to
+    an intermediate net.
     """
-    return "[{}]".format(i) if i != -1 else ""
+    if sig.get("conn_type", False):
+        return ""
+    else:
+        return "[{}]".format(sig["index"]) if sig["index"] != -1 else ""
 
 
 def get_clk_name(clk: str) -> str:
