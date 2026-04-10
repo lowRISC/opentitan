@@ -51,5 +51,14 @@
                cov: true
                exp_fail_hjson: "{proj_root}/hw/{top_chip}/ip_autogen/rv_plic/fpv/rv_plic_expected_failure.hjson"
              }
+
+             {
+               name: rstmgr_fpv
+               dut: rstmgr_fpv_tb
+               fusesoc_core: lowrisc:darjeeling_ip:rstmgr_fpv
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/top_darjeeling/ip_autogen/rstmgr/{sub_flow}/{tool}"
+               after_load: ["{proj_root}/hw/ip/rstmgr/fpv/rstmgr_formal.tcl"]
+             }
             ]
 }
