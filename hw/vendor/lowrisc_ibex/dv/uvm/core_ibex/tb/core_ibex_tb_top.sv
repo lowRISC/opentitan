@@ -66,6 +66,7 @@ module core_ibex_tb_top;
   parameter bit WritebackStage            = 1'b0;
   parameter bit ICache                    = 1'b0;
   parameter bit ICacheECC                 = 1'b0;
+  parameter bit ICacheTweakInfection      = 1'b0;
   parameter bit BranchPredictor           = 1'b0;
   parameter bit SecureIbex                = 1'b0;
   parameter int unsigned LockstepOffset   = 1;
@@ -94,28 +95,29 @@ module core_ibex_tb_top;
   assign {scramble_key, scramble_nonce} = scrambling_key_if.d_data;
 
   ibex_top_tracing #(
-    .PMPEnable        (PMPEnable        ),
-    .PMPGranularity   (PMPGranularity   ),
-    .PMPNumRegions    (PMPNumRegions    ),
-    .MHPMCounterNum   (MHPMCounterNum   ),
-    .MHPMCounterWidth (MHPMCounterWidth ),
-    .RV32E            (RV32E            ),
-    .RV32M            (RV32M            ),
-    .RV32B            (RV32B            ),
-    .RegFile          (RegFile          ),
-    .BranchTargetALU  (BranchTargetALU  ),
-    .WritebackStage   (WritebackStage   ),
-    .ICache           (ICache           ),
-    .ICacheECC        (ICacheECC        ),
-    .SecureIbex       (SecureIbex       ),
-    .LockstepOffset   (LockstepOffset   ),
-    .ICacheScramble   (ICacheScramble   ),
-    .BranchPredictor  (BranchPredictor  ),
-    .DbgTriggerEn     (DbgTriggerEn     ),
-    .DmBaseAddr       (DmBaseAddr       ),
-    .DmAddrMask       (DmAddrMask       ),
-    .DmHaltAddr       (DmHaltAddr       ),
-    .DmExceptionAddr  (DmExceptionAddr  )
+    .PMPEnable            (PMPEnable           ),
+    .PMPGranularity       (PMPGranularity      ),
+    .PMPNumRegions        (PMPNumRegions       ),
+    .MHPMCounterNum       (MHPMCounterNum      ),
+    .MHPMCounterWidth     (MHPMCounterWidth    ),
+    .RV32E                (RV32E               ),
+    .RV32M                (RV32M               ),
+    .RV32B                (RV32B               ),
+    .RegFile              (RegFile             ),
+    .BranchTargetALU      (BranchTargetALU     ),
+    .WritebackStage       (WritebackStage      ),
+    .ICache               (ICache              ),
+    .ICacheECC            (ICacheECC           ),
+    .ICacheTweakInfection (ICacheTweakInfection),
+    .SecureIbex           (SecureIbex          ),
+    .LockstepOffset       (LockstepOffset      ),
+    .ICacheScramble       (ICacheScramble      ),
+    .BranchPredictor      (BranchPredictor     ),
+    .DbgTriggerEn         (DbgTriggerEn        ),
+    .DmBaseAddr           (DmBaseAddr          ),
+    .DmAddrMask           (DmAddrMask          ),
+    .DmHaltAddr           (DmHaltAddr          ),
+    .DmExceptionAddr      (DmExceptionAddr     )
 
   ) dut (
     .clk_i                     (clk                        ),
@@ -190,10 +192,6 @@ module core_ibex_tb_top;
   `ASSERT(NoAlertsTriggered,
     !dut_if.alert_minor && !dut_if.alert_major_internal && !dut_if.alert_major_bus, clk, !rst_n)
   `DV_ASSERT_CTRL("tb_no_alerts_triggered", core_ibex_tb_top.NoAlertsTriggered)
-  `DV_ASSERT_CTRL("tb_rf_rd_mux_a_onehot",
-    `IBEX_RF_PATH.gen_rdata_mux_check.u_rdata_a_mux.SelIsOnehot_A)
-  `DV_ASSERT_CTRL("tb_rf_rd_mux_b_onehot",
-    `IBEX_RF_PATH.gen_rdata_mux_check.u_rdata_b_mux.SelIsOnehot_A)
 
   `DV_ASSERT_CTRL("tb_no_spurious_response",
     core_ibex_tb_top.dut.u_ibex_top.u_ibex_core.NoMemResponseWithoutPendingAccess)
@@ -286,7 +284,7 @@ module core_ibex_tb_top;
   // Instruction monitor connections
   assign instr_monitor_if.reset        = ~rst_n;
   assign instr_monitor_if.valid_id     = dut.u_ibex_top.u_ibex_core.id_stage_i.instr_valid_i;
-  assign instr_monitor_if.instr_new_id = dut.u_ibex_top.u_ibex_core.instr_new_id;
+  assign instr_monitor_if.rvfi_id_done = dut.u_ibex_top.u_ibex_core.rvfi_id_done;
 
   assign instr_monitor_if.err_id =
     dut.u_ibex_top.u_ibex_core.id_stage_i.controller_i.instr_fetch_err;

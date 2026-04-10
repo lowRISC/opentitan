@@ -14,22 +14,23 @@
 `include "dv_fcov_macros.svh"
 
 module ibex_if_stage import ibex_pkg::*; #(
-  parameter int unsigned DmHaltAddr        = 32'h1A110800,
-  parameter int unsigned DmExceptionAddr   = 32'h1A110808,
-  parameter bit          DummyInstructions = 1'b0,
-  parameter bit          ICache            = 1'b0,
-  parameter rv32zc_e     RV32ZC            = RV32ZcaZcbZcmp,
-  parameter bit          ICacheECC         = 1'b0,
-  parameter int unsigned BusSizeECC        = BUS_SIZE,
-  parameter int unsigned TagSizeECC        = IC_TAG_SIZE,
-  parameter int unsigned LineSizeECC       = IC_LINE_SIZE,
-  parameter bit          PCIncrCheck       = 1'b0,
-  parameter bit          ResetAll          = 1'b0,
-  parameter lfsr_seed_t  RndCnstLfsrSeed   = RndCnstLfsrSeedDefault,
-  parameter lfsr_perm_t  RndCnstLfsrPerm   = RndCnstLfsrPermDefault,
-  parameter bit          BranchPredictor   = 1'b0,
-  parameter bit          MemECC            = 1'b0,
-  parameter int unsigned MemDataWidth      = MemECC ? 32 + 7 : 32
+  parameter int unsigned DmHaltAddr           = 32'h1A110800,
+  parameter int unsigned DmExceptionAddr      = 32'h1A110808,
+  parameter bit          DummyInstructions    = 1'b0,
+  parameter bit          ICache               = 1'b0,
+  parameter rv32zc_e     RV32ZC               = RV32ZcaZcbZcmp,
+  parameter bit          ICacheECC            = 1'b0,
+  parameter bit          ICacheTweakInfection = 1'b0,
+  parameter int unsigned BusSizeECC           = BUS_SIZE,
+  parameter int unsigned TagSizeECC           = IC_TAG_SIZE,
+  parameter int unsigned LineSizeECC          = IC_LINE_SIZE,
+  parameter bit          PCIncrCheck          = 1'b0,
+  parameter bit          ResetAll             = 1'b0,
+  parameter lfsr_seed_t  RndCnstLfsrSeed      = RndCnstLfsrSeedDefault,
+  parameter lfsr_perm_t  RndCnstLfsrPerm      = RndCnstLfsrPermDefault,
+  parameter bit          BranchPredictor      = 1'b0,
+  parameter bit          MemECC               = 1'b0,
+  parameter int unsigned MemDataWidth         = MemECC ? 32 + 7 : 32
 ) (
   input  logic                         clk_i,
   input  logic                         rst_ni,
@@ -276,7 +277,8 @@ module ibex_if_stage import ibex_pkg::*; #(
       .ResetAll        (ResetAll),
       .BusSizeECC      (BusSizeECC),
       .TagSizeECC      (TagSizeECC),
-      .LineSizeECC     (LineSizeECC)
+      .LineSizeECC     (LineSizeECC),
+      .TweakInfection  (ICacheTweakInfection)
     ) icache_i (
         .clk_i               ( clk_i                      ),
         .rst_ni              ( rst_ni                     ),
