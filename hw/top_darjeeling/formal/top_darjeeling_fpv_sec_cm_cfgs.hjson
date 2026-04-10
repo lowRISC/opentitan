@@ -196,7 +196,7 @@
               {
                name: rv_plic_sec_cm
                dut: rv_plic
-               fusesoc_core: lowrisc:darjeeling_fpv:rv_plic_fpv
+               fusesoc_core: lowrisc:darjeeling_ip:rv_plic_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/{top_darjeeling}/ip/rv_plic/{sub_flow}/{tool}/sec_cm"
                task: "FpvSecCm"
