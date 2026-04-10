@@ -1,0 +1,40 @@
+diff --git a/ibex_icache.sv b/ibex_icache.sv
+index 0755c00e40..077e077d91 100644
+--- a/ibex_icache.sv
++++ b/ibex_icache.sv
+@@ -108,7 +108,6 @@ module ibex_icache import ibex_pkg::*; #(
+ 
+   // Cache pipelipe IC1 signals
+   logic [TagSizeECC-1:0]                  tag_rdata_ic1  [IC_NUM_WAYS];
+-  logic [LineSizeECC-1:0]                 data_rdata_ic1 [IC_NUM_WAYS];
+   logic [LineSizeECC-1:0]                 hit_data_ecc_ic1;
+   logic [IC_LINE_SIZE-1:0]                hit_data_ic1;
+   logic                                   lookup_valid_ic1;
+@@ -462,12 +461,6 @@ module ibex_icache import ibex_pkg::*; #(
+   // Tweak infection, XOR the data with the tweak before writing to RAM.
+   assign ic_data_wdata_o = data_wdata_ic0 ^ data_tweak_lw_ic0;
+ 
+-  // Data RAMs inputs
+-  // Tweak infection, un-XOR the data using the tweak.
+-  for (genvar way = 0; way < IC_NUM_WAYS; way++) begin : gen_data_untweak
+-    assign data_rdata_ic1[way] = ic_data_rdata_i[way] ^ data_tweak_lw_ic1;
+-  end
+-
+   always_ff @(posedge clk_i or negedge rst_ni) begin
+     if (!rst_ni) begin
+       lookup_valid_ic1 <= 1'b0;
+@@ -508,12 +501,12 @@ module ibex_icache import ibex_pkg::*; #(
+ 
+   assign tag_hit_ic1 = |tag_match_ic1;
+ 
+-  // Hit data mux
++  // Hit data mux. Un-XOR the tweak only for the matching way.
+   always_comb begin
+     hit_data_ecc_ic1 = 'b0;
+     for (int way = 0; way < IC_NUM_WAYS; way++) begin
+       if (tag_match_ic1[way]) begin
+-        hit_data_ecc_ic1 |= data_rdata_ic1[way];
++        hit_data_ecc_ic1 |= ic_data_rdata_i[way] ^ data_tweak_lw_ic1;
+       end
+     end
+   end
