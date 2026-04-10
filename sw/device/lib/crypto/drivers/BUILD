@@ -37,22 +37,29 @@ CRYPTO_EXEC_ENVS = dicts.add(
 
 autogen_cryptolib_build_info(name = "cryptolib_build_info")
 
-cc_library(
+dual_cc_library(
     name = "alert",
-    srcs = ["alert.c"],
+    srcs = dual_inputs(
+        device = ["alert.c"],
+        host = ["mock_alert.cc"],
+    ),
     hdrs = [
         "alert.h",
     ],
-    deps = [
-        "//hw/top_earlgrey:alert_handler_c_regs",
-        "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:abs_mmio",
-        "//sw/device/lib/base:bitfield",
-        "//sw/device/lib/base:hardened_memory",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/crypto/impl:status",
-    ],
+    deps = dual_inputs(
+        device = [
+            "//hw/top_earlgrey:alert_handler_c_regs",
+            "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_c_regs",
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/lib/base:abs_mmio",
+            "//sw/device/lib/base:bitfield",
+            "//sw/device/lib/base:hardened_memory",
+            "//sw/device/lib/base:macros",
+        ],
+        shared = [
+            "//sw/device/lib/crypto/impl:status",
+        ],
+    ),
 )
 
 opentitan_test(
