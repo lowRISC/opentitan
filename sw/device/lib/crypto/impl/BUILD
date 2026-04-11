@@ -168,6 +168,32 @@ cc_library(
 )
 
 cc_library(
+    name = "kats",
+    srcs = ["kats.c"],
+    hdrs = ["kats.h"],
+    deps = [
+        ":aes",
+        ":aes_gcm",
+        ":config",
+        ":drbg",
+        ":ecc_p256",
+        ":ecc_p384",
+        ":entropy_src",
+        ":hmac",
+        ":integrity",
+        ":keyblob",
+        ":kmac",
+        ":rsa",
+        ":sha2",
+        ":sha3",
+        ":status",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/crypto/drivers:entropy_kat",
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
+cc_library(
     name = "kdf_ctr",
     srcs = ["kdf_ctr.c"],
     hdrs = ["//sw/device/lib/crypto/include:kdf_ctr.h"],
