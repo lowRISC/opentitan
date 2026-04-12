@@ -218,6 +218,50 @@ status_t hardened_sub(const uint32_t *OT_RESTRICT x,
                       uint32_t *OT_RESTRICT dest);
 
 /**
+ * Perform a modular subtraction of two multi-word values.
+ *
+ * It computes (x - y) mod n. The values are expected to follow a
+ * little-endian layout.
+ *
+ * Warning: the side-channel protection of this function call can not be
+ * guaranteed. The function is hardened against fault injections and is
+ * constant time in the value being reduced.
+ *
+ * @param x Pointer to the first operand.
+ * @param y Pointer to the second operand.
+ * @param n Pointer to the multi-word modulus.
+ * @param word_len Length in words of each operand and the modulus.
+ * @param[out] dest Pointer to the multi-word result.
+ * @return OK or error.
+ */
+status_t hardened_sub_mod(const uint32_t *OT_RESTRICT x,
+                          const uint32_t *OT_RESTRICT y,
+                          const uint32_t *OT_RESTRICT n, size_t word_len,
+                          uint32_t *OT_RESTRICT dest);
+
+/**
+ * Perform a modular addition of two multi-word values.
+ *
+ * It computes (x + y) mod n. The values are expected to follow a
+ * little-endian layout.
+ *
+ * Warning: the side-channel protection of this function call can not be
+ * guaranteed. The function is hardened against fault injections and is
+ * constant time in the value being reduced.
+ *
+ * @param x Pointer to the first operand.
+ * @param y Pointer to the second operand.
+ * @param n Pointer to the multi-word modulus.
+ * @param word_len Length in words of each operand and the modulus.
+ * @param[out] dest Pointer to the multi-word result.
+ * @return OK or error.
+ */
+status_t hardened_add_mod(const uint32_t *OT_RESTRICT x,
+                          const uint32_t *OT_RESTRICT y,
+                          const uint32_t *OT_RESTRICT n, size_t word_len,
+                          uint32_t *OT_RESTRICT dest);
+
+/**
  * Perform a range check whether the value is larger than zero and smaller than
  * N. Namely, it checks whether 0 < value < N. Values are expected to follow
  * little-endian layout.
@@ -233,6 +277,25 @@ status_t hardened_sub(const uint32_t *OT_RESTRICT x,
  */
 status_t hardened_range_check(const uint32_t *value, const uint32_t *N,
                               size_t word_len);
+
+/**
+ * Perform a modular reduction of a multi-word value by a multi-word modulus.
+ *
+ * It checks whether value % n. The value is expected to follow a
+ * little-endian layout.
+ *
+ * Warning: the side-channel protection of this function call can not be
+ * guaranteed. The function is hardened against fault injections and is
+ * constant time in the value being reduced.
+ *
+ * @param value Pointer to the value to check.
+ * @param n Pointer to the multi-word modulus.
+ * @param word_len Length in words of value.
+ * @param[out] result Pointer to the multi-word result.
+ * @return OK or error.
+ */
+status_t hardened_mod_reduce(const uint32_t *value, const uint32_t *n,
+                             size_t word_len, uint32_t *result);
 
 #ifdef __cplusplus
 }  // extern "C"
