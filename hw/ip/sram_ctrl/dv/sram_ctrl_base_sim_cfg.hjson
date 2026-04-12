@@ -12,7 +12,7 @@
   tb: tb
 
   // Simulator used to sign off this block
-  tool: vcs
+  tool: xcelium
 
   // Fusesoc core file used for building the file list.
   fusesoc_core: lowrisc:dv:sram_ctrl_sim:0.1
@@ -37,6 +37,10 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"
                 ]
 
+  // A manually generated vRefine file with exclusions that hold for
+  // both variants (main and ret).
+  xcelium_cov_refine_files: ["{proj_root}/hw/ip/sram_ctrl/dv/cov/manual.vRefine"]
+
   en_build_modes: ["{tool}_memutil_dpi_scrambled_build_opts"]
 
   // Add additional tops for simulation.
@@ -45,9 +49,6 @@
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
-
-  vcs_cov_excl_files: ["{proj_root}/hw/ip/sram_ctrl/dv/cov/sram_ctrl_cov_excl.el",
-                       "{proj_root}/hw/ip/sram_ctrl/dv/cov/sram_ctrl_unr_excl.el"]
 
   // Need to override the default output directory
   overrides: [
