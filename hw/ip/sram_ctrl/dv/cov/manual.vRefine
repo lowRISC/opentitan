@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<refinement-file-root>
+  <information comment-version="2" creation-time="Sun 12 Apr 2026 18:23:50 BST" creator="rjs" csCheck="true" save-ref-method="seq" tool-version="Cadence Verisium Manager24.03" rules-signature-c="708d7db790b04533744ec11e3f9fec88">
+    <ucm-files>
+      <ucm-file domain="icc" modelCheckSum="2100925901" path="/home/rjs/work/opentitan/scratch/work/sram_ctrl_main-sim-xcelium/cov_merge/merged/icc_7d3995cd_57531c91.ucm"></ucm-file>
+    </ucm-files>
+    <ccf-files>
+      <ccf-file content="// Copyright lowRISC contributors (OpenTitan project).;// Licensed under the Apache License, Version 2.0, see LICENSE for details.;// SPDX-License-Identifier: Apache-2.0;;// Include our common coverage CCF.;include_ccf ${dv_root}/tools/xcelium/common.ccf;	/home/rjs/work/opentitan/hw/dv/tools/xcelium/common.ccf;	// Copyright lowRISC contributors (OpenTitan project).;	// Licensed under the Apache License, Version 2.0, see LICENSE for details.;	// SPDX-License-Identifier: Apache-2.0;	;	// Common coverage commands that apply to all DUTs.;	//;	// This coverge config file is provided by Xcelium and is located at:;	// ${XCELIUM_HOME}/tools/icc/include/all_coverage.ccf;	// Xcelium recommends including it, since it bundles together the common set of commands that enable;	// coverage collection on various design elements, that are otherwise turned off by default. We;	// maintain it locally with minor amends.;	;	// Enables expression coverage of various Verilog operators.;	set_expr_coverable_operators -all -event_or;	;	// Enables expression coverage of operators in various conditions and assignments.;	set_expr_coverable_statements -procassign -event_control -misc;	;	// Enables scoring of Verilog modules compiled with -v/-y or -libcell option but continues to;	// disable the scoring of Verilog modules defined with the 'celldefine compiler directive.;	set_libcell_scoring;	;	// Enables scoring of SystemVerilog continuous assignments, which is by disabled by default.;	set_assign_scoring;	;	// Scores branches together with block coverage.;	set_branch_scoring;	;	// Scores statements within a block.;	set_statement_scoring;	;	// Enables Toggle scoring and reporting of SystemVerilog enumerations and multidimensional static;	// arrays , vectors, packed union, modport and generate blocks.;	set_toggle_scoring -sv_enum enable_mda -sv_struct_with_enum -sv_modport -sv_mda 16 -sv_mda_of_struct -sv_generate -sv_packed_union;	;	// Enable toggle coverage only on ports.;	set_toggle_portsonly;	;	// Enable scoring of FSM arcs (state transitions).;	// TODO: re-enable this setting, temp disable due to #12544;	// set_fsm_arc_scoring;	;	// Include X-&gt;1|0 for toggle coverage collection. #10332;	set_toggle_includex;	;	// For ternary operator in default SOP mode;	set_expr_scoring -vlog_short_circuit;;// enable coverage on dut and below;;select_coverage -befts -module ${DUT_TOP}...;;// Black-box pre-verified IPs from coverage collection.;deselect_coverage -betfs -module pins_if;deselect_coverage -betfs -module clk_rst_if;deselect_coverage -betfs -module prim_alert_sender...;deselect_coverage -betfs -module prim_alert_receiver...;deselect_coverage -betfs -module prim_count...;deselect_coverage -betfs -module prim_esc_sender...;deselect_coverage -betfs -module prim_esc_receiver...;deselect_coverage -betfs -module prim_onehot_check...;deselect_coverage -betfs -module prim_prince...;deselect_coverage -betfs -module prim_lfsr...;deselect_coverage -betfs -module prim_secded_inv_64_57_dec...;deselect_coverage -betfs -module prim_secded_inv_39_32_dec...;deselect_coverage -betfs -module prim_secded_inv_64_57_enc...;deselect_coverage -betfs -module prim_secded_inv_39_32_enc...;;// Black-box DV CDC module.;deselect_coverage -betfs -module prim_cdc_rand_delay;;// csr_assert_fpv is an auto-generated csr read assertion module. So only assertion coverage is;// meaningful to collect.;deselect_coverage -betf -module *csr_assert_fpv...;select_coverage -assert -module *csr_assert_fpv;;// Only enable assertion coverage;deselect_coverage -betf -module *tlul_assert...;select_coverage -assert -module *tlul_assert;;// Only collect toggle coverage on the DUT and the black-boxed IP (above) ports.;deselect_coverage -toggle -module ${DUT_TOP}...;select_coverage -toggle -module ${DUT_TOP};;select_coverage -toggle -module prim_alert_sender;select_coverage -toggle -module prim_alert_receiver;select_coverage -toggle -module prim_count;select_coverage -toggle -module prim_esc_sender;select_coverage -toggle -module prim_esc_receiver;select_coverage -toggle -module prim_onehot_check;select_coverage -toggle -module prim_prince;select_coverage -toggle -module prim_lfsr;select_coverage -toggle -module prim_secded_inv_64_57_dec;select_coverage -toggle -module prim_secded_inv_39_32_dec;" path="/home/rjs/work/opentitan/hw/dv/tools/xcelium/cover.ccf"></ccf-file>
+    </ccf-files>
+  </information>
+  <rules>
+    <rule ccType="inst" ccfFlagsMask="2199136515010-42" comment="0" domain="icc" entityName="sram_ctrl/u_tlul_lc_gate/37" entityType="block" excTime="1776014607" file="5" im-checksum="1735970557" line="218" name="exclude_review" reviewer="14" text="if (outstanding_txn == '0) begin" user="0" vscope="default"></rule>
+  </rules>
+  <cache-map>
+    <cache-entry key="0" value="The branch to StActive will always be taken. This is because the only
+way to arrive at the StErrorOutstanding state is that lc_en_i becomes
+lc_ctrl_pkg::On when the FSM is in the StError state.
+
+The lc_en_i signal comes from the lc_tlul_gate_en signal in sram_ctrl.
+That module's local escalation system ensures the signal can only move
+from On to Off: if it is ever a value other than lc_ctrl_pkg::On, it
+will jump to lc_ctrl_pkg::Off and remain there until reset.
+
+However, the FSM can get to StError when lc_en_i is On: this is
+actually the initial state of the FSM after reset. For the FSM to get
+to StErrorOutstanding, lc_en_i must have been On at reset and this must
+be the second cycle. If there was an A channel TL transaction being
+signalled on the cycle the module comes out of reset, this *can* need
+flushing.
+
+This feature is unlikely to be used, and doesn't present a 'one-cycle
+security risk' anyway: when the FSM is in the StErrorOutstanding state,
+the err_en signal is On, which means that any responses will be blanked
+anyway."></cache-entry>
+    <cache-entry key="14" value="Rupert Swarbrick"></cache-entry>
+  </cache-map>
+</refinement-file-root>
