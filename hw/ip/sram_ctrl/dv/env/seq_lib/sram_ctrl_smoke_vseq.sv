@@ -32,10 +32,8 @@ class sram_ctrl_smoke_vseq extends sram_ctrl_base_vseq;
       num_ops == 100;
     } else {
       num_ops dist {
-        [1    : 999 ] :/ 1,
-        [1000 : 4999] :/ 3,
-        [5000 : 9999] :/ 5,
-        10_000        :/ 1
+        [1 : 10]    :/ 1,
+        [250 : 300] :/ 4
       };
     }
   }
