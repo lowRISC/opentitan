@@ -141,7 +141,7 @@ class sram_ctrl_common_vseq extends sram_ctrl_base_vseq;
   // If returning 1, this also writes to in_req_fifo output argument, setting the bit if this is a
   // request fifo.
   function bit is_ptr_in_adapters_fifo(string path, output bit in_req_fifo);
-    string adapter_path = {"tb.dut.u_tlul_adapter_sram"};
+    string adapter_path = {"tb.dut.u_tlul_adapter_sram_racl.tlul_adapter_sram"};
     string fifo_paths[] = '{{adapter_path, ".u_reqfifo"},
                             {adapter_path, ".u_sramreqfifo"},
                             {adapter_path, ".u_rspfifo"}};
