@@ -307,7 +307,9 @@ opentitan_test(
     ),
     deps = [
         "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl:drbg",
         "//sw/device/lib/crypto/impl:ecc_p256",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/crypto/include:datatypes",
