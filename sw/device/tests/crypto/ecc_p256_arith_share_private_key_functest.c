@@ -6,7 +6,9 @@
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/ecc/p256.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
+#include "sw/device/lib/crypto/include/drbg.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
+#include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
@@ -36,46 +38,37 @@ static const otcrypto_key_config_t kPrivateKeyConfig = {
 static const char kMessage[] = "test message";
 
 // Generate a random plain private key in the interval [1, n - 1].
-void generate_random_key(uint32_t *key) {
-  hardened_memshred(key, kP256ScalarWords);
-
-  const uint32_t zero[kP256ScalarWords] = {0};
+status_t generate_random_key(uint32_t *key) {
+  otcrypto_word32_buf_t key_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, key, kP256ScalarWords);
+  otcrypto_const_byte_buf_t kEmptyBuffer =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
 
   // n - 1
   const uint32_t n1[kP256ScalarWords] = {0xfc632551, 0xf3b9cac2, 0xa7179e84,
                                          0xbce6faad, 0xffffffff, 0xffffffff,
                                          0x00000000, 0xffffffff};
 
-  while (1) {
+  TRY(otcrypto_drbg_instantiate(/*perso_string=*/&kEmptyBuffer));
+  // Attempt to generate a valid key until successful.
+  // Each attempt has around a 1 - 2^-32 probability to succeed
+  // To avoid infinite loops, we set to try  a total of 128 times
+  // for a total failure probability of 2^-4096
+  uint32_t try_count = 128;
+  uint32_t idx = 0;
+  while (idx < try_count) {
+    idx++;
     // Generate a random scalar.
-    size_t i = 0;
-    for (; launder32(i) < kP256ScalarWords; i++) {
-      key[i] = hardened_memshred_random_word();
-    }
-    HARDENED_CHECK_EQ(i, kP256ScalarWords);
+    TRY(otcrypto_drbg_generate(&kEmptyBuffer, &key_buf));
 
-    // If the generated key is 0, restart.
-    if (hardened_memeq(key, zero, kP256ScalarWords) == kHardenedBoolTrue) {
+    // If the generated key is not in the range [1, n-1], restart.
+    if (hardened_range_check(key, n1, kP256ScalarWords).value !=
+        kOtcryptoStatusValueOk) {
       continue;
     }
-    HARDENED_CHECK_EQ(hardened_memeq(key, zero, kP256ScalarWords),
-                      kHardenedBoolFalse);
-
-    // If the generated key is > n - 1, restart.
-    uint32_t borrow = 0;
-    i = 0;
-    for (; launder32(i) < kP256ScalarWords; i++) {
-      borrow = (n1[i] < borrow) + ((n1[i] - borrow) < key[i]);
-    }
-    HARDENED_CHECK_EQ(i, kP256ScalarWords);
-
-    if (borrow) {
-      continue;
-    }
-    HARDENED_CHECK_EQ(borrow, 0);
-
-    return;
+    return OTCRYPTO_OK;
   }
+  return OTCRYPTO_RECOV_ERR;
 }
 
 // Verify that we can correctly arithmetically share a plain private key.
@@ -84,7 +77,12 @@ status_t arith_share_private_key_test(void) {
 
   uint32_t key_share0[kP256MaskedScalarShareWords] = {0};
   uint32_t key_share1[kP256MaskedScalarShareWords] = {0};
-  generate_random_key(key_share0);
+  TRY(generate_random_key(key_share0));
+
+  // Share the key
+  TRY(hardened_memshred(key_share1, kP256MaskedScalarShareWords));
+  TRY(hardened_xor_in_place(key_share0, key_share1,
+                            kP256MaskedScalarShareWords));
 
   otcrypto_const_word32_buf_t private_key_share0 = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, key_share0, kP256MaskedScalarShareWords);
@@ -152,7 +150,7 @@ status_t arith_share_private_key_test(void) {
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
-  CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
+  CHECK_STATUS_OK(otcrypto_entropy_init());
 
   status_t err = arith_share_private_key_test();
   if (!status_ok(err)) {
