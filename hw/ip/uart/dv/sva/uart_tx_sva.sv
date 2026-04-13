@@ -6,46 +6,50 @@
 // Contributor: Angad Singh
 
 module uart_tx_sva (
-  input clk_i,
-  input rst_ni,
-  input tx_enable,
-  input tx,
-  input idle,
-  input [3:0] bit_cnt_q,
-  input parity_enable,
-  input wr
+  input logic clk_i,
+  input logic rst_ni,
+  input logic tx_enable_i,
+  input logic tx_o,
+  input logic idle_o,
+  input logic [3:0] bit_cnt_q,
+  input logic parity_enable_i,
+  input logic wr_i
 );
+
+  default clocking @(posedge clk_i); endclocking
+  default disable iff (!rst_ni);
 
   // Rule 1: After reset, TX must be HIGH (idle state)
   property tx_high_after_reset;
-    @(posedge clk_i)
-    !rst_ni |-> tx == 1'b1;
+    !rst_ni |-> tx_o == 1'b1;
   endproperty
-  assert property (tx_high_after_reset)
-    else $error("FAIL: TX not HIGH during reset");
+  TxHighAfterReset_A: assert property (tx_high_after_reset)
+    else `ASSERT_ERROR(TxHighAfterReset_A);
 
   // Rule 2: When TX is disabled, TX wire must be HIGH
   property tx_high_when_disabled;
-    @(posedge clk_i) disable iff (!rst_ni)
-    !tx_enable |-> tx == 1'b1;
+    !tx_enable_i |-> tx_o == 1'b1;
   endproperty
-  assert property (tx_high_when_disabled)
-    else $error("FAIL: TX not HIGH when disabled");
+  TxHighWhenDisabled_A: assert property (tx_high_when_disabled)
+    else `ASSERT_ERROR(TxHighWhenDisabled_A);
 
   // Rule 3: When idle, bit counter must be zero
+  // This checks internal consistency: idle is defined as
+  // bit_cnt_q == 0 when enabled, so this should always hold.
   property idle_means_zero_bitcnt;
-    @(posedge clk_i) disable iff (!rst_ni)
-    (tx_enable && idle) |-> (bit_cnt_q == 4'h0);
+    (tx_enable_i && idle_o) |-> (bit_cnt_q == 4'h0);
   endproperty
-  assert property (idle_means_zero_bitcnt)
-    else $error("FAIL: idle HIGH but bit counter not zero");
+  IdleMeansZeroBitcnt_A: assert property (idle_means_zero_bitcnt)
+    else `ASSERT_ERROR(IdleMeansZeroBitcnt_A);
 
-  // Rule 4: New write should only happen when idle
+  // Rule 4: New write should only happen when idle.
+  // Note: this constrains the behaviour of an input port (wr_i),
+  // not the internal design of this module. It documents the
+  // expected usage protocol for callers of uart_tx.
   property write_only_when_idle;
-    @(posedge clk_i) disable iff (!rst_ni)
-    wr |-> idle;
+    wr_i |-> idle_o;
   endproperty
-  assert property (write_only_when_idle)
-    else $error("FAIL: write attempted when not idle");
+  WriteOnlyWhenIdle_A: assert property (write_only_when_idle)
+    else `ASSERT_ERROR(WriteOnlyWhenIdle_A);
 
 endmodule

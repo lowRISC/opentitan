@@ -10,6 +10,7 @@ module uart_bind;
     .h2d  (tl_i),
     .d2h  (tl_o)
   );
+
   bind uart uart_csr_assert_fpv uart_csr_assert (
     .clk_i,
     .rst_ni,
@@ -19,11 +20,11 @@ module uart_bind;
   bind uart_tx uart_tx_sva uart_tx_sva_inst (
     .clk_i,
     .rst_ni,
-    .tx_enable,
-    .tx,
-    .idle,
+    .tx_enable_i  (tx_enable),
+    .tx_o         (tx),
+    .idle_o       (idle),
     .bit_cnt_q,
-    .parity_enable,
-    .wr
+    .parity_enable_i (parity_enable),
+    .wr_i         (wr)
   );
 endmodule
