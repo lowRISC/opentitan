@@ -1,0 +1,193 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// This is a basic owner block with invalid key material.  It is used to
+// create the binary blocks used by the owner_block_unittest.
+//
+// To convert this file to binary form, use opentitantool:
+// $ opentitantool ownership config --input file.json file.bin
+{
+  sram_exec: "DisabledLocked",
+  ownership_key_alg: "HybridSpxPrehash",
+  owner_key: {
+    Hybrid: {
+      ecdsa: "sw/device/silicon_creator/lib/ownership/keys/dummy/owner_ecdsa_p256.pub.der",
+      spx: "sw/device/silicon_creator/lib/ownership/keys/dummy/owner_spx.pub.pem"
+    }
+  },
+  activate_key: {
+    Ecdsa: {
+        x: "0000000000000000000000000000000000000000000000000000000000000000",
+        y: "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  },
+  unlock_key: {
+    Ecdsa: {
+        x: "0000000000000000000000000000000000000000000000000000000000000000",
+        y: "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  },
+  data: [
+    {
+      ApplicationKey: {
+        key_alg: "EcdsaP256",
+        key_domain: "Prod",
+        key_diversifier: [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        usage_constraint: 0,
+        key: {
+          Ecdsa: {
+              x: "0000000000000000000000000000000000000000000000000000000000000000",
+              y: "0000000000000000000000000000000000000000000000000000000000000000"
+          }
+        }
+      }
+    },
+    {
+      FlashConfig: {
+        config: [
+          {
+            start: 32,
+            size: 192,
+            read: true,
+            program: true,
+            erase: true,
+            scramble: true,
+            ecc: true,
+            high_endurance: false,
+            protect_when_active: true
+          },
+          {
+            start: 224,
+            size: 32,
+            read: true,
+            program: true,
+            erase: true,
+            scramble: false,
+            ecc: false,
+            high_endurance: true,
+            protect_when_active: false
+          },
+          {
+            start: 288,
+            size: 192,
+            read: true,
+            program: true,
+            erase: true,
+            scramble: true,
+            ecc: true,
+            high_endurance: false,
+            protect_when_active: true
+          },
+          {
+            start: 480,
+            size: 32,
+            read: true,
+            program: true,
+            erase: true,
+            scramble: false,
+            ecc: false,
+            high_endurance: true,
+            protect_when_active: false
+          }
+        ]
+      }
+    },
+    {
+      FlashInfoConfig: {
+        config: [
+          {
+            bank: 0,
+            page: 5,
+            pad: 0,
+            read: true,
+            program: true,
+            erase: true,
+            scramble: true,
+            ecc: true,
+            high_endurance: false,
+            protect_when_active: false
+          },
+          {
+            bank: 0,
+            page: 6,
+            pad: 0,
+            read: true,
+            program: true,
+            erase: true,
+            scramble: true,
+            ecc: true,
+            high_endurance: false,
+            protect_when_active: false
+          },
+          {
+            bank: 0,
+            page: 7,
+            pad: 0,
+            read: true,
+            program: true,
+            erase: true,
+            scramble: true,
+            ecc: true,
+            high_endurance: false,
+            protect_when_active: false
+          },
+          {
+            bank: 0,
+            page: 8,
+            pad: 0,
+            read: true,
+            program: true,
+            erase: true,
+            scramble: true,
+            ecc: true,
+            high_endurance: false,
+            protect_when_active: false
+          }
+        ]
+      }
+    },
+    {
+      IsfbConfig: {
+        bank: 0,
+        page: 5,
+        erase_conditions: 0x666,
+        key_domain: "Dev",
+        product_words: 4
+      }
+    },
+    {
+      RescueConfig: {
+        rescue_type: "Xmodem",
+        trigger: "UartBreak",
+        trigger_index: 0,
+        gpio_pull_en: false,
+        gpio_value: false,
+        enter_on_failure: false,
+        timeout: 0,
+        start: 32,
+        size: 192,
+        command_allow: [
+          "Empty",
+          "MinBl0SecVerRequest",
+          "NextBl0SlotRequest",
+          "OwnershipUnlockRequest",
+          "OwnershipActivateRequest",
+          "Rescue",
+          "GetBootLog",
+          "BootSvcReq",
+          "BootSvcRsp",
+          "OwnerBlock"
+        ]
+      }
+    }
+  ],
+}

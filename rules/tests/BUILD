@@ -4,7 +4,11 @@
 
 load("//rules/tests:const_unittest.bzl", "const_test_suite")
 load("//rules/tests:otp_unittest.bzl", "otp_test_suite")
-load("//rules:signing.bzl", "signature_test")
+load(
+    "//rules:signing.bzl",
+    "ownership_signature_test",
+    "signature_test",
+)
 
 const_test_suite()
 
@@ -41,4 +45,69 @@ signature_test(
     negative_test = True,
     spx_domain = "PrehashedSha256",  # "Pure", "PrehashedSha256"
     spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:spx_keyset": "prod_key_0"},
+)
+
+ownership_signature_test(
+    name = "valid_owner_signature_test",
+    srcs = ["//sw/device/silicon_creator/lib/ownership/testdata:hybrid_owner_bin"],
+    ecdsa_key = "//sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key_pub",
+    ecdsa_signature = "//sw/device/silicon_creator/lib/ownership/testdata:hybrid_owner_ecdsa_signature",
+    spx_key = "//sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key_spx_pub",
+    spx_signature = "//sw/device/silicon_creator/lib/ownership/testdata:hybrid_owner_spx_signature",
+)
+
+ownership_signature_test(
+    name = "wrong_owner_ecdsa_key_test",
+    srcs = ["//sw/device/silicon_creator/lib/ownership/testdata:hybrid_owner_bin"],
+    ecdsa_key = "//sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key_pub",
+    ecdsa_signature = "//sw/device/silicon_creator/lib/ownership/testdata:hybrid_owner_ecdsa_signature",
+    negative_test = True,
+    spx_key = "//sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key_spx_pub",
+    spx_signature = "//sw/device/silicon_creator/lib/ownership/testdata:hybrid_owner_spx_signature",
+)
+
+ownership_signature_test(
+    name = "wrong_owner_spx_key_test",
+    srcs = ["//sw/device/silicon_creator/lib/ownership/testdata:hybrid_owner_bin"],
+    ecdsa_key = "//sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key_pub",
+    ecdsa_signature = "//sw/device/silicon_creator/lib/ownership/testdata:hybrid_owner_ecdsa_signature",
+    negative_test = True,
+    spx_key = "//sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key_spx_pub",
+    spx_signature = "//sw/device/silicon_creator/lib/ownership/testdata:hybrid_owner_spx_signature",
+)
+
+genrule(
+    name = "corrupt_hybrid_owner_ecdsa_signature",
+    srcs = ["//sw/device/silicon_creator/lib/ownership/testdata:hybrid_owner_ecdsa_signature"],
+    outs = ["hybrid_owner.ecdsa_signature.corrupted.bin"],
+    cmd = "cp $(location //sw/device/silicon_creator/lib/ownership/testdata:hybrid_owner_ecdsa_signature) $(location hybrid_owner.ecdsa_signature.corrupted.bin) && " +
+          "sed -i '1s/^./\\x00/' $(location hybrid_owner.ecdsa_signature.corrupted.bin)",
+)
+
+ownership_signature_test(
+    name = "wrong_owner_ecdsa_signature_test",
+    srcs = ["//sw/device/silicon_creator/lib/ownership/testdata:hybrid_owner_bin"],
+    ecdsa_key = "//sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key_pub",
+    ecdsa_signature = ":corrupt_hybrid_owner_ecdsa_signature",
+    negative_test = True,
+    spx_key = "//sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key_spx_pub",
+    spx_signature = "//sw/device/silicon_creator/lib/ownership/testdata:hybrid_owner_spx_signature",
+)
+
+genrule(
+    name = "corrupt_hybrid_owner_spx_signature",
+    srcs = ["//sw/device/silicon_creator/lib/ownership/testdata:hybrid_owner_spx_signature"],
+    outs = ["hybrid_owner.spx_signature.corrupted.bin"],
+    cmd = "cp $(location //sw/device/silicon_creator/lib/ownership/testdata:hybrid_owner_spx_signature) $(location hybrid_owner.spx_signature.corrupted.bin) && " +
+          "sed -i '1s/^./\\x00/' $(location hybrid_owner.spx_signature.corrupted.bin)",
+)
+
+ownership_signature_test(
+    name = "wrong_owner_spx_signature_test",
+    srcs = ["//sw/device/silicon_creator/lib/ownership/testdata:hybrid_owner_bin"],
+    ecdsa_key = "//sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key_pub",
+    ecdsa_signature = "//sw/device/silicon_creator/lib/ownership/testdata:hybrid_owner_ecdsa_signature",
+    negative_test = True,
+    spx_key = "//sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key_spx_pub",
+    spx_signature = ":corrupt_hybrid_owner_spx_signature",
 )
