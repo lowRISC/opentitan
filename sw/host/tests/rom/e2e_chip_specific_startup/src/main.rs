@@ -178,7 +178,7 @@ fn check_epmp(_opts: &Opts, cs: &ChipStartup) -> Result<()> {
         EpmpEntry {
             cfg: EPMP_CFG_LRX,
             kind: EpmpRegionKind::Tor,
-            range: EpmpAddressRange(0x8000, _)
+            range: EpmpAddressRange(0x20000, _)
         }
     ));
     assert!(matches!(
@@ -186,7 +186,7 @@ fn check_epmp(_opts: &Opts, cs: &ChipStartup) -> Result<()> {
         EpmpEntry {
             cfg: EPMP_CFG_LRO,
             kind: EpmpRegionKind::Napot,
-            range: EpmpAddressRange(0x8000, 0x10000)
+            range: EpmpAddressRange(0x20000, 0x40000)
         }
     ));
     assert!(matches!(
@@ -254,7 +254,7 @@ fn check_epmp(_opts: &Opts, cs: &ChipStartup) -> Result<()> {
                 EpmpEntry {
                     cfg: EPMP_CFG_LRWX,
                     kind: EpmpRegionKind::Napot,
-                    range: EpmpAddressRange(0x10000, 0x11000)
+                    range: EpmpAddressRange(0x40000, 0x41000)
                 }
             ));
         }
@@ -268,7 +268,7 @@ fn check_epmp(_opts: &Opts, cs: &ChipStartup) -> Result<()> {
                 EpmpEntry {
                     cfg: EPMP_CFG_LOCKED_NONE,
                     kind: EpmpRegionKind::Napot,
-                    range: EpmpAddressRange(0x10000, 0x11000)
+                    range: EpmpAddressRange(0x40000, 0x41000)
                 }
             ));
         }

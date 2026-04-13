@@ -6503,7 +6503,7 @@
       {
         mem:
         {
-          hart: 0x00010000
+          hart: 0x00040000
         }
         regs:
         {
@@ -8936,7 +8936,7 @@
       {
         rom:
         {
-          hart: 0x00008000
+          hart: 0x00020000
         }
         regs:
         {
@@ -8952,7 +8952,7 @@
           data_intg_passthru: True
           exec: True
           byte_write: False
-          size: 0x8000
+          size: 0x20000
         }
       }
       param_decl:
@@ -9008,7 +9008,7 @@
           desc: Memory size of the ROM (in bytes).
           type: int
           name_top: MemSizeRomCtrlRom
-          default: 32768
+          default: 131072
         }
       ]
       inter_signal_list:
@@ -10818,7 +10818,7 @@
             {
               base_addrs:
               {
-                hart: 0x10000
+                hart: 0x40000
               }
               size_byte: 0x1000
             }
@@ -10840,9 +10840,9 @@
             {
               base_addrs:
               {
-                hart: 0x8000
+                hart: 0x20000
               }
-              size_byte: 0x8000
+              size_byte: 0x20000
             }
           ]
           xbar: false

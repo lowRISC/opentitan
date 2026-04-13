@@ -47,7 +47,7 @@ The main address space, shared between the CPU and DM
 | flash_ctrl        | core        | `0x41000000`   | `0x200`        | `0x80`         | core device on flash_ctrl        |
 | flash_ctrl        | prim        | `0x41008000`   | `0x80`         | `0x20`         | prim device on flash_ctrl        |
 | rv_dm             | regs        | `0x41200000`   | `0x10`         | `0x4`          | regs device on rv_dm             |
-| rv_dm             | mem         | `0x10000`      | `0x1000`       | `0x400`        | mem device on rv_dm              |
+| rv_dm             | mem         | `0x40000`      | `0x1000`       | `0x400`        | mem device on rv_dm              |
 | rv_dm             | dbg         | `0x1000`       | `0x200`        | `0x80`         | dbg device on rv_dm              |
 | rv_plic           | default     | `0x48000000`   | `0x8000000`    | `0x2000000`    | rv_plic                          |
 | aes               | default     | `0x41100000`   | `0x100`        | `0x40`         | aes                              |
@@ -70,4 +70,4 @@ The main address space, shared between the CPU and DM
 | sram_ctrl_ret_aon | ram         | `0x40600000`   | `0x1000`       | `0x400`        |
 | flash_ctrl        | mem         | `0x20000000`   | `0x100000`     | `0x40000`      |
 | sram_ctrl_main    | ram         | `0x10000000`   | `0x20000`      | `0x8000`       |
-| rom_ctrl          | rom         | `0x8000`       | `0x8000`       | `0x2000`       |
+| rom_ctrl          | rom         | `0x20000`      | `0x20000`      | `0x8000`       |

@@ -198,7 +198,7 @@
         {
           base_addrs:
           {
-            hart: 0x10000
+            hart: 0x40000
           }
           size_byte: 0x1000
         }
@@ -220,9 +220,9 @@
         {
           base_addrs:
           {
-            hart: 0x8000
+            hart: 0x20000
           }
-          size_byte: 0x8000
+          size_byte: 0x20000
         }
       ]
       xbar: false
