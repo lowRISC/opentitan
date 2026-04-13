@@ -31,7 +31,7 @@ OpenTitan gold members are primarily organizations who are designing a security 
 **[Member individual accounts](./useraccounts.md):**
 - Gold members are allowed up to 100 x individual accounts.
 
-In addition Gold members gain all benefits available to Silver members
+In addition Gold members gain all benefits and deliverables available to Silver members
 
 ## Silver members
 
@@ -47,17 +47,17 @@ OpenTitan silver members are Organizations who want to integrate OpenTitan IP in
 - Access to integration and certification services from [lowRISC CIC](./lowRISC.md)
 
 **Key Deliverables:**
-- Settings for CDC/RDC, CWE checking and AI Agent tools
+- Settings for CDC/RDC
 - Integration documentation and tooling
-- Coverage gap analysis for latest release of each IP
+- Coverage gap analysis reports produced for each IP
 - Integration checklist
 - Pre-silicon FI verification
-- Information (from lowRISC) necessary for Common Criteria certification
+- Information (from lowRISC) for helping with Common Criteria certification
 
 **[Member individual accounts](./useraccounts.md):**
 - Silver members are allowed 10 x individual accounts and may purchase more.
 
-In addition Silver members gain all benefits available to Bronze members
+In addition Silver members gain all benefits and deliverables available to Bronze members
 
 ## Bronze members
 
