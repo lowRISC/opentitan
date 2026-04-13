@@ -29,7 +29,6 @@
              "{proj_root}/hw/ip/entropy_src/dv/entropy_src_rng16bits_sim_cfg.hjson",
              "{proj_root}/hw/ip/hmac/dv/hmac_sim_cfg.hjson",
              "{proj_root}/hw/ip/i2c/dv/i2c_sim_cfg.hjson",
-             "{proj_root}/hw/ip/keymgr/dv/keymgr_sim_cfg.hjson",
              "{proj_root}/hw/ip/keymgr_dpe/dv/keymgr_dpe_sim_cfg.hjson",
              "{proj_root}/hw/ip/kmac/dv/kmac_masked_sim_cfg.hjson",
              "{proj_root}/hw/ip/kmac/dv/kmac_unmasked_sim_cfg.hjson",
