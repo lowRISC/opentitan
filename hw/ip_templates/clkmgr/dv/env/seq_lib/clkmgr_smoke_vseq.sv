@@ -33,6 +33,7 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
       cfg.clk_rst_vif.wait_clks(6);
       csr_wr(.ptr(ral.jitter_enable), .value('0));
       csr_rd_check(.ptr(ral.jitter_enable), .compare_value('0));
+    end
   endtask
 
   // Flips all clk_enables bits from the reset value with all enabled. All is checked

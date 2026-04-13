@@ -20,7 +20,7 @@ class clkmgr_regwen_vseq extends clkmgr_base_vseq;
     csr_wr(.ptr(ral.jitter_regwen), .value(enable));
     csr_rd(.ptr(ral.jitter_enable), .value(prev_value));
     csr_wr(.ptr(ral.jitter_enable), .value(new_value));
-    csr_rd_check(.ptr(ral.jitter_enable), .compare_value(MuBi4True));
+    csr_rd_check(.ptr(ral.jitter_enable), .compare_value(enable ? new_value : prev_value));
     `uvm_info(`gfn, "Check jitter regwen end", UVM_MEDIUM)
   endtask : check_jitter_regwen
 
