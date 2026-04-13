@@ -136,18 +136,38 @@ module hmac_core import prim_sha2_pkg::*; (
 
   rnd_ctr_e rnd_ctr_q, rnd_ctr_d;
 
-  typedef enum logic [2:0] {
-    StIdle,
-    StIPad,
-    StMsg,              // Actual Msg, and Digest both
-    StPushToMsgFifo,    // Digest --> Msg Fifo
-    StWaitResp,         // Hash done( by checking processed_length? or hash_done)
-    StOPad,
-    StDone,             // hmac_done
-    StError
-  } st_e ;
+// Encoding generated at commit 03200db88c using Python 3.10.19 with:
+// $ ./util/design/sparse-fsm-encode.py --language=sv \
+//     --seed 2 --distance 3 --states 8 --bits 6
+//
+// Hamming distance histogram:
+//
+//  0: --
+//  1: --
+//  2: --
+//  3: |||||||||||||||||||| (57.14%)
+//  4: ||||||||||||||| (42.86%)
+//  5: --
+//  6: --
+//
+// Minimum Hamming distance: 3
+// Maximum Hamming distance: 4
+// Minimum Hamming weight: 1
+// Maximum Hamming weight: 5
+//
+localparam int StateWidth = 6;
+typedef enum logic [StateWidth-1:0] {
+  StIdle          = 6'b001100,
+  StIPad          = 6'b001011,
+  StMsg           = 6'b111001, // Actual Msg, and Digest both
+  StPushToMsgFifo = 6'b100111, // Digest --> Msg Fifo
+  StWaitResp      = 6'b010101, // Hash done( by checking processed_length? or hash_done)
+  StOPad          = 6'b100000,
+  StDone          = 6'b010010,  // hmac_done
+  StError         = 6'b111110
+} state_e;
 
-  st_e st_q, st_d;
+  state_e st_q, st_d;
 
   logic clr_fifo_wdata_sel;
   logic txcnt_eq_blksz;
@@ -353,10 +373,7 @@ module hmac_core import prim_sha2_pkg::*; (
 
   assign sel_msglen = (round_q == Inner) ? SelIPadMsg : SelOPadMsg ;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : state_ff
-    if (!rst_ni) st_q <= StIdle;
-    else         st_q <= st_d;
-  end
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, st_d, st_q, state_e, StIdle)
 
   always_comb begin : next_state
     hmac_hash_done     = 1'b0;
@@ -523,6 +540,7 @@ module hmac_core import prim_sha2_pkg::*; (
 
       default: begin
         st_d = StError;
+        err_o = 1'b1;
       end
 
     endcase

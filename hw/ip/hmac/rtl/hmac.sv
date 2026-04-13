@@ -163,6 +163,7 @@ module hmac
   logic sha_core_idle;
   logic hash_running;
   logic idle;
+  logic fsm_err;
 
   ///////////////////////
   // Connect registers //
@@ -172,18 +173,38 @@ module hmac
   assign hw2reg.status.fifo_depth.d = fifo_depth;
   assign hw2reg.status.hmac_idle.d  = idle;
 
-  typedef enum logic [1:0] {
-    DoneAwaitCmd,
-    DoneAwaitHashDone,
-    DoneAwaitMessageComplete,
-    DoneAwaitHashComplete
+  // Encoding generated at commit 1640db307c using Python 3.10.19 with:
+  // $ ./util/design/sparse-fsm-encode.py --language=sv \
+  //     --seed 2 --distance 3 --states 4 --bits 5
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: |||||||||||||||||||| (66.67%)
+  //  4: |||||||||| (33.33%)
+  //  5: --
+  //
+  // Minimum Hamming distance: 3
+  // Maximum Hamming distance: 4
+  // Minimum Hamming weight: 1
+  // Maximum Hamming weight: 4
+  //
+  localparam int StateWidth = 5;
+  typedef enum logic [StateWidth-1:0] {
+    DoneAwaitCmd             = 5'b11011,
+    DoneAwaitHashDone        = 5'b00001,
+    DoneAwaitMessageComplete = 5'b00110,
+    DoneAwaitHashComplete    = 5'b11100
   } done_state_e;
 
   done_state_e done_state_d, done_state_q;
 
-  always_comb begin
+  always_comb begin : p_fsm
     done_state_d    = done_state_q;
     hash_done_event = 1'b0;
+    fsm_err         = 1'b0;
 
     unique case (done_state_q)
       DoneAwaitCmd: begin
@@ -218,7 +239,10 @@ module hmac
         end
       end
 
-      default: ;
+      default: begin
+        done_state_d = DoneAwaitCmd;
+        fsm_err = 1'b1;
+      end
     endcase
 
     // An aborted operation never completes.
@@ -228,13 +252,7 @@ module hmac
     end
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      done_state_q <= DoneAwaitCmd;
-    end else begin
-      done_state_q <= done_state_d;
-    end
-  end
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, done_state_d, done_state_q, done_state_e, DoneAwaitCmd)
 
   assign wipe_secret = reg2hw.wipe_secret.qe;
   assign wipe_v      = reg2hw.wipe_secret.q;
@@ -884,7 +902,7 @@ module hmac
   };
 
   logic alert_req;
-  assign alert_req = alerts[0] | hmac_core_err;
+  assign alert_req = alerts[0] | hmac_core_err | fsm_err;
 
   localparam logic [NumAlerts-1:0] AlertIsFatal = {1'b1};
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
@@ -1103,4 +1121,8 @@ module hmac
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
+
+  // FSM assertions.
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(HmacFsmCheck_A, u_state_regs, alert_tx_o[0])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(HmacCoreFsmCheck_A, u_hmac.u_state_regs, alert_tx_o[0])
 endmodule
