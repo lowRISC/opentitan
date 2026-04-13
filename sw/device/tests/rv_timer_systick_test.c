@@ -46,13 +46,20 @@ static status_t test_tick(uint32_t tick_hz) {
   TRY(dif_rv_timer_counter_set_enabled(&timer, kHart, kDifToggleDisabled));
 
   TRY(dif_rv_timer_counter_read(&timer, kHart, &counter));
-  const uint64_t elapsed_millis = udiv64_slow(counter * 1000, tick_hz, NULL);
+  TRY_CHECK(counter <= UINT32_MAX,
+            "uint32_t overflow, refactor this code to use uint64_t instead");
+  // To find total ticks, we need (ms / 1000) * Hz.
+  // We use (ms * Hz) vs (counter * 1000) to keep all operations as
+  // multiplications.
+  const uint32_t ticks = (uint32_t)counter * 1000;
+  const uint32_t reference_ticks = kReferenceTimeMillis * tick_hz;
 
   // Verify that `n * T ~= 5 milliseconds` within 3% of tolerance.
-  TRY_CHECK((elapsed_millis >= (uint64_t)(kReferenceTimeMillis * 0.97)) &&
-                (elapsed_millis <= (uint64_t)(kReferenceTimeMillis * 1.03)),
-            "Unexpected elapsed time, expected: %u, got: %u",
-            (uint32_t)kReferenceTimeMillis, (uint32_t)elapsed_millis);
+  // `ticks * 100 == ref * 97` is equivalent to `ticks == ref * 0.97`)
+  TRY_CHECK((ticks * 100 >= reference_ticks * 97) &&
+                (ticks * 100 <= reference_ticks * 103),
+            "Unexpected elapsed time, expected: %u ticks +-3%%, got: %u ticks",
+            reference_ticks, ticks);
 
   return OK_STATUS();
 }
