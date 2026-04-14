@@ -64,6 +64,9 @@ status_t rsa_decrypt_finalize(const otcrypto_hash_mode_t hash_mode,
   ptrdiff_t misalignment = misalignment32_of((uintptr_t)plaintext);
   size_t aligned_offset =
       (sizeof(uint32_t) - (size_t)misalignment) % sizeof(uint32_t);
+  if (plaintext_max_bytelen < aligned_offset) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   size_t num_aligned_full_words =
       (plaintext_max_bytelen - aligned_offset) / sizeof(uint32_t);
   HARDENED_TRY(
