@@ -38,8 +38,8 @@ static status_t seed_material_construct(
   seed_material->len = nwords;
 
   // Copy seed data.
-  if (misalignment32_of((uintptr_t)&value->data) == 0 &&
-      value->len % sizeof(uint32_t)) {
+  if (misalignment32_of((uintptr_t)value->data) == 0 &&
+      value->len % sizeof(uint32_t) == 0) {
     // The data buffer is word-aligned and the data length is a multiple of the
     // word size. We can use the SCA hardened memcpy.
     HARDENED_TRY(hardened_memcpy(seed_material->data,
