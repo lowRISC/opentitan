@@ -44,9 +44,6 @@ static const uint32_t kOtbnRsaModeCofactor2048 =
     OTBN_ADDR_T_INIT(run_rsa_key_from_cofactor, MODE_COFACTOR_RSA_2048);
 
 enum {
-  /* Fixed public exponent for generated keys. This exponent is 2^16 + 1, also
-     known as "F4" because it's the fourth Fermat number. */
-  kFixedPublicExponent = 65537,
   /* Number of words used to represent the application mode. */
   kOtbnRsaModeWords = 1,
 };
