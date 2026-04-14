@@ -95,6 +95,17 @@ otbn_sim_test(
 )
 
 otbn_sim_test(
+    name = "ed25519_sc_reduce_test",
+    srcs = [
+        "ed25519_sc_reduce_test.s",
+    ],
+    testcase = "ed25519_sc_reduce_test.hjson",
+    deps = [
+        "//sw/otbn/crypto:ed25519_scalar",
+    ],
+)
+
+otbn_sim_test(
     name = "ed25519_sign_test",
     srcs = [
         "ed25519_sign_test.s",
