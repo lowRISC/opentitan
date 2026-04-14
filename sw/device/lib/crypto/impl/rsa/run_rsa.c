@@ -336,10 +336,10 @@ static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
   HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(num_words, kOtbnVarRsaN, n));
 
   // Read the first share of the private exponent (d) from OTBN dmem.
-  HARDENED_TRY(otbn_dmem_read(num_words, kOtbnVarRsaD0, d0));
+  HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(num_words, kOtbnVarRsaD0, d0));
 
   // Read the second share of the private exponent (d) from OTBN dmem.
-  HARDENED_TRY(otbn_dmem_read(num_words, kOtbnVarRsaD1, d1));
+  HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(num_words, kOtbnVarRsaD1, d1));
 
   // Wipe DMEM.
   return otbn_dmem_sec_wipe();
