@@ -13,7 +13,6 @@ filesets:
     depend:
       - ${instance_vlnv(f"lowrisc:dv:{module_instance_name}_test")}
       - ${instance_vlnv(f"lowrisc:dv:{module_instance_name}_sva")}
-      - ${instance_vlnv(f"lowrisc:dv:{module_instance_name}_if")}
     files:
       - tb/tb.sv
     file_type: systemVerilogSource
