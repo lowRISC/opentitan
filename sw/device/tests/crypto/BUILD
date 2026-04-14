@@ -18,6 +18,7 @@ load(
     "verilator_params",
 )
 load("@ot_python_deps//:requirements.bzl", "requirement")
+load("//rules/coverage:view.bzl", "coverage_view_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -49,6 +50,7 @@ opentitan_binary(
     copts = ["-fno-lto"],
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310_rom_ext",
+        "//hw/top_earlgrey:silicon_creator",
     ],
     linker_script = "//sw/device/silicon_owner/bare_metal:ld_slot_a",
     manifest = "//sw/device/silicon_owner/bare_metal:manifest",
@@ -57,6 +59,11 @@ opentitan_binary(
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
     ],
+)
+
+coverage_view_test(
+    name = "otcrypto_coverage_view",
+    elf = "otcrypto_export_size",
 )
 
 opentitan_test(
