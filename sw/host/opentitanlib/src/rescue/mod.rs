@@ -55,7 +55,7 @@ pub enum RescueTrigger {
     Strap,
 }
 
-#[derive(Clone, Default, Debug, Args)]
+#[derive(Clone, Debug, Args)]
 pub struct RescueParams {
     /// Rescue Protocol
     #[arg(short, long, value_enum, default_value_t = RescueProtocol::Xmodem)]
