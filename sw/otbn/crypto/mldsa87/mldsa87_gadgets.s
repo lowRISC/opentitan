@@ -80,10 +80,10 @@ sec_a2b_8x32:
  * Convert the Boolean sharing of a vector of 8 coefficients (x0_B, x1_B) to a
  * arithmetic sharing (x0_A, x1_A).
  *
- * @param[in]  w0: x0_B, first arithmetic share.
- * @param[in]  w1: x1_B, second arithmetic share.
- * @param[out] w0: x0_A, first Boolean share.
- * @param[out] w1: x1_A, second Boolean share
+ * @param[in]  w0: x0_B, first Boolean share.
+ * @param[in]  w1: x1_B, second Boolean share.
+ * @param[out] w0: x0_A, first arithmetic share.
+ * @param[out] w1: x1_A, second arithmetic share
  */
 sec_b2a_8x32:
   /* Write the two shares to the input WSRs (intersperse with configuration of

@@ -19,5 +19,6 @@ otbn_binary(
         "//sw/otbn/crypto/mldsa87:mldsa87_expand.s",
         "//sw/otbn/crypto/mldsa87:mldsa87_gadgets.s",
         "mldsa87_sign_sample.s",
+        "mldsa87_sign_expand.s",
     ],
 )
