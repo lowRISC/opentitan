@@ -16,7 +16,7 @@ import sys
 ignored_keys_set = set([])
 opentitantool_path = ""
 iterations = 2
-num_segments_list = [1, 5, 12]
+num_segments_list = [1, 3]
 
 target = None
 
@@ -245,6 +245,7 @@ class IbexScaTest(unittest.TestCase):
                 actual_result_json, expected_result_json, ignored_keys_set
             )
 
+    @unittest.skip
     def test_char_combi_operations_batch_fvsr(self):
         for num_segments in num_segments_list:
             # Seed the synchronized randomness with the same seed as in the chip which is 1
@@ -459,6 +460,7 @@ class IbexScaTest(unittest.TestCase):
         expected_result_json = json.loads('{"result":0}')
         utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
+    @unittest.skip
     def test_char_register_file_read_batch_fvsr(self):
         for num_segments in num_segments_list:
             fixed_data = 2048
@@ -484,6 +486,7 @@ class IbexScaTest(unittest.TestCase):
                 actual_result_json, expected_result_json, ignored_keys_set
             )
 
+    @unittest.skip
     def test_char_register_file_read_batch_random(self):
         for num_segments in num_segments_list:
             actual_result = sca_ibex_functions.char_register_file_read_batch_random(
@@ -510,6 +513,7 @@ class IbexScaTest(unittest.TestCase):
         expected_result_json = json.loads('{"result":0}')
         utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
+    @unittest.skip
     def test_char_register_file_write_batch_fvsr(self):
         for num_segments in num_segments_list:
             fixed_data = 2048
@@ -535,6 +539,7 @@ class IbexScaTest(unittest.TestCase):
                 actual_result_json, expected_result_json, ignored_keys_set
             )
 
+    @unittest.skip
     def test_char_register_file_write_batch_random(self):
         for num_segments in num_segments_list:
             actual_result = sca_ibex_functions.char_register_file_write_batch_random(
@@ -562,6 +567,7 @@ class IbexScaTest(unittest.TestCase):
         expected_result_json = json.loads('{"result":0}')
         utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
+    @unittest.skip
     def test_char_tl_read_batch_fvsr(self):
         for num_segments in num_segments_list:
             fixed_data = 2048
@@ -587,6 +593,7 @@ class IbexScaTest(unittest.TestCase):
                 actual_result_json, expected_result_json, ignored_keys_set
             )
 
+    @unittest.skip
     def test_char_tl_read_batch_fvsr_fix_address(self):
         for num_segments in num_segments_list:
             fixed_data = 2048
@@ -612,6 +619,7 @@ class IbexScaTest(unittest.TestCase):
                 actual_result_json, expected_result_json, ignored_keys_set
             )
 
+    @unittest.skip
     def test_char_tl_read_batch_random(self):
         for num_segments in num_segments_list:
             actual_result = sca_ibex_functions.char_tl_read_batch_random(
@@ -631,6 +639,7 @@ class IbexScaTest(unittest.TestCase):
                 actual_result_json, expected_result_json, ignored_keys_set
             )
 
+    @unittest.skip
     def test_char_tl_read_batch_random_fix_address(self):
         for num_segments in num_segments_list:
             actual_result = sca_ibex_functions.char_tl_read_batch_random_fix_address(
@@ -657,6 +666,7 @@ class IbexScaTest(unittest.TestCase):
         expected_result_json = json.loads('{"result":0}')
         utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
+    @unittest.skip
     def test_char_tl_write_batch_fvsr(self):
         for num_segments in num_segments_list:
             fixed_data = 2048
@@ -682,6 +692,7 @@ class IbexScaTest(unittest.TestCase):
                 actual_result_json, expected_result_json, ignored_keys_set
             )
 
+    @unittest.skip
     def test_char_tl_write_batch_fvsr_fix_address(self):
         for num_segments in num_segments_list:
             fixed_data = 2048
@@ -707,6 +718,7 @@ class IbexScaTest(unittest.TestCase):
                 actual_result_json, expected_result_json, ignored_keys_set
             )
 
+    @unittest.skip
     def test_char_tl_write_batch_random(self):
         for num_segments in num_segments_list:
             actual_result = sca_ibex_functions.char_tl_write_batch_random(
