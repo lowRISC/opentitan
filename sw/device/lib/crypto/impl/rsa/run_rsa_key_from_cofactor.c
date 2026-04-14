@@ -89,11 +89,11 @@ status_t rsa_keygen_from_cofactor_2048_finalize(
       otbn_dmem_read(kRsa2048NumWords, kOtbnVarRsaN, private_key->n.data));
 
   // Read the first share of the private exponent (d) from OTBN dmem.
-  HARDENED_TRY(
+  HARDENED_TRY_WIPE_DMEM(
       otbn_dmem_read(kRsa2048NumWords, kOtbnVarRsaD0, private_key->d0.data));
 
   // Read the second share of the private exponent (d) from OTBN dmem.
-  HARDENED_TRY(
+  HARDENED_TRY_WIPE_DMEM(
       otbn_dmem_read(kRsa2048NumWords, kOtbnVarRsaD1, private_key->d1.data));
 
   // Copy the modulus to the public key.
