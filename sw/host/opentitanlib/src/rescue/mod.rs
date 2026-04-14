@@ -70,7 +70,7 @@ pub struct RescueParams {
     pub uart: UartParams,
     #[arg(long)]
     pub usb_serial: Option<String>,
-    #[arg(long, value_parser = humantime::parse_duration, default_value = "5s")]
+    #[arg(long, value_parser = humantime::parse_duration, default_value = "15s")]
     pub enter_delay: Duration,
 }
 
