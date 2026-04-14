@@ -9,6 +9,7 @@ filesets:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
+      - ${instance_vlnv(f"lowrisc:dv:{module_instance_name}_if")}
     files:
       - ${module_instance_name}_env_pkg.sv
       - ${module_instance_name}_env_cfg.sv: {is_include_file: true}
