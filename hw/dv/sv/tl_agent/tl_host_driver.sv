@@ -124,46 +124,23 @@ task tl_host_driver::wait_clk_or_rst();
 endtask
 
 task tl_host_driver::a_channel_thread();
-  // Each time the body of the main loop of a_channel_thread, we expect either to be synchronised
-  // with the TL clock or to be in reset. Make sure that is true from the start of the task.
   wait_clk_or_rst();
 
   forever begin
-    // Grab as many items as we can from seq_item_port and immediately send them on the bus. The
-    // calls to try_next_item will not block, but sending the items on the bus probably will (unless
-    // we enter reset).
-    forever begin
-      seq_item_port.try_next_item(req);
-      if (req == null) break;
-      send_a_channel_request(req);
+    // At the start of the loop, either the interface is in reset or we are either aligned with a
+    // clock edge. Look to see whether there is a request ready to be sent.
+    seq_item_port.try_next_item(req);
+
+    // If there was not a request ready, use get_next_item(). Since that task blocks, we then have
+    // to resynchronise with the clock edge (or see a reset) before starting to drive the item.
+    if (req == null) begin
+      seq_item_port.get_next_item(req);
+      wait_clk_or_rst();
     end
 
-    // We just looked and seq_item_port didn't have an item. Wait a clock before we try again, but
-    // stop waiting if we happen to enter reset.
-    wait_clk_or_rst();
-
-    // If we are not in reset, we've just waited the cycle we wanted to wait and we should go back
-    // to the start of the loop and try again.
-    if (!cfg.in_reset) continue;
-
-    // If we get here, we *are* in reset and we should switch to a different mode where we
-    // continuously flush seq_item_port.
-    forever begin
-      // Wait for the next item, but drop out early if we leave reset
-      `DV_SPINWAIT_EXIT(seq_item_port.get_next_item(req);,
-                        wait(!cfg.in_reset);)
-      if (!cfg.in_reset) break;
-
-      // If we get here then we are still in reset and the get_next_item() call yielded an item in
-      // req. Send the A-channel request (which will complete in zero time)
-      send_a_channel_request(req);
-    end
-
-    // At this point, we've just come out of reset. Resynchronise to the TL clock before we go
-    // around the loop again. If we go into reset again before the clock edge, we'll go back to the
-    // top of the loop, but nothing will consume time until we get back to the forever loop we've
-    // just finished.
-    wait_clk_or_rst();
+    // At this point, we have a request to send and either the interface is in reset or we are
+    // aligned with a clock edge. Send that request.
+    send_a_channel_request(req);
   end
 endtask
 
