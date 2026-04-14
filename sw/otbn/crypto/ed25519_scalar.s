@@ -4,6 +4,7 @@
 .text
 .globl sc_init
 .globl sc_reduce
+.globl sc_reduce_768
 .globl sc_mul
 
 /**
@@ -233,6 +234,46 @@ sc_reduce:
   /* Second conditional subtraction can simply use add-modulo.
        w18 <= w18 < L ? w18 : w18 - L = x mod L */
   bn.addm w18, w18, w31
+
+  ret
+
+/**
+ * Fully reduce a 768-bit number modulo L.
+ *
+ * Returns c = a mod L.
+ *
+ * Using Horner's method we can reduce the 768-bit integer a with two 512-bit
+ * Barrett reductions (`see sc_reduce`):
+ *
+ *   a mod L = a2 * 2^512 + a1 * 2^256 + a0 mod L
+ *           = (a2 * 2^256 + a1) * 2^256 + a0
+ *           = b * 2^256 + a0
+ *           = ((b mod L) * 2^256 + a0) mod L
+ *
+ * In other words, we first reduce the 512-bit number b (the upper two 256-bit
+ * words of a) by L, followed by reduction of a0 + (b mod L) * 2^256.
+ *
+ * This routine runs in constant time.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  [w22:w20]: a, number to be reduced (a < 2^768)
+ * @param[in]  [w15:w14]: mu = floor(2^512 / L) (precomputed constant)
+ * @param[in]  MOD: L, modulus
+ * @param[in]  w31: all-zero
+ * @param[out] w18: c, result = a mod L
+ *
+ * clobbered registers: w10 to w13, w16 to w17, w18
+ * clobbered flag groups: FG0
+ */
+sc_reduce_768:
+  bn.mov w16, w21
+  bn.mov w17, w22
+  jal x1, sc_reduce
+
+  bn.mov w16, w20
+  bn.mov w17, w18
+  jal x1, sc_reduce
 
   ret
 
