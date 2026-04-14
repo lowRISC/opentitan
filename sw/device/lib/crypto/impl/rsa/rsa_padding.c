@@ -278,7 +278,7 @@ static status_t digest_wordlen_get(otcrypto_hash_mode_t hash_mode,
     default:
       return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_GT(num_words, 0);
+  HARDENED_CHECK_GT(*num_words, 0);
   HARDENED_CHECK_EQ(launder32(hash_mode_used), hash_mode);
 
   return OTCRYPTO_OK;
