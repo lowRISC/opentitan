@@ -769,6 +769,7 @@ jobs:
   coverage_quick:
     name: Coverage (quick)
     needs: quick_lint
+    if: ${{ github.event_name == 'pull_request' }}
     uses: ./.github/workflows/coverage-quick.yml
     secrets: inherit
 
