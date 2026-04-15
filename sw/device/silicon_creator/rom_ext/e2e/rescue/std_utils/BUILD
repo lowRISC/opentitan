@@ -39,6 +39,8 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
+        # FIXME (#29490) - we are temporarily experiencing USB issues in CI.
+        tags = ["broken"],
         assemble = "",
         binaries = {
             "//sw/device/silicon_creator/rom_ext/e2e/rescue:boot_test_slot_a": "boot_test",
