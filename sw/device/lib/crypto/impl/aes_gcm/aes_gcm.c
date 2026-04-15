@@ -576,7 +576,6 @@ status_t aes_gcm_final(aes_gcm_context_t *ctx, size_t tag_len, uint32_t *tag,
   // stage), process the remaining partial AAD and update the state.
   size_t partial_ghash_block_len = ctx->aad_len % kGhashBlockNumBytes;
   if (ctx->input_len == 0 && partial_ghash_block_len != 0) {
-    size_t partial_ghash_block_len = ctx->aad_len % kGhashBlockNumBytes;
     if (ctx->security_level != kOtcryptoKeySecurityLevelLow) {
       // To mitigate FI, perform the GHASH update twice and compare the result.
       HARDENED_TRY(ghash_update_redundant(
