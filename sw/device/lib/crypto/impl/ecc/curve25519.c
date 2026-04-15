@@ -92,10 +92,10 @@ status_t curve25519_keygen_start(
 status_t curve25519_keygen_finalize(
     uint32_t public_key[kCurve25519PointWords]) {
   // Spin here waiting for OTBN to complete.
-  HARDENED_TRY_WIPE_DMEM(otbn_busy_wait_for_done());
+  HARDENED_TRY(otbn_busy_wait_for_done());
 
   // Read the public key A from OTBN dmem.
-  HARDENED_TRY_WIPE_DMEM(
+  HARDENED_TRY(
       otbn_dmem_read(kCurve25519PointWords, kOtbnVarPubKey, public_key));
 
   // Wipe DMEM.
@@ -126,14 +126,13 @@ status_t curve25519_sign_stage1_start(
 status_t curve25519_sign_stage1_finalize(
     curve25519_signature_t *sig, uint32_t public_key[kCurve25519PointWords]) {
   // Spin here waiting for OTBN to complete.
-  HARDENED_TRY_WIPE_DMEM(otbn_busy_wait_for_done());
+  HARDENED_TRY(otbn_busy_wait_for_done());
 
   // Read the signature commitment R from OTBN dmem.
-  HARDENED_TRY_WIPE_DMEM(
-      otbn_dmem_read(kCurve25519PointWords, kOtbnVarSigR, sig->r));
+  HARDENED_TRY(otbn_dmem_read(kCurve25519PointWords, kOtbnVarSigR, sig->r));
 
   // Read the public key A from OTBN dmem.
-  HARDENED_TRY_WIPE_DMEM(
+  HARDENED_TRY(
       otbn_dmem_read(kCurve25519PointWords, kOtbnVarPubKey, public_key));
 
   // Wipe DMEM.
@@ -167,11 +166,10 @@ status_t curve25519_sign_stage2_start(
 
 status_t curve25519_sign_stage2_finalize(curve25519_signature_t *sig) {
   // Spin here waiting for OTBN to complete.
-  HARDENED_TRY_WIPE_DMEM(otbn_busy_wait_for_done());
+  HARDENED_TRY(otbn_busy_wait_for_done());
 
   // Read the signature response S from OTBN dmem.
-  HARDENED_TRY_WIPE_DMEM(
-      otbn_dmem_read(kCurve25519ScalarWords, kOtbnVarSigS, sig->s));
+  HARDENED_TRY(otbn_dmem_read(kCurve25519ScalarWords, kOtbnVarSigS, sig->s));
 
   // Wipe DMEM.
   return otbn_dmem_sec_wipe();
@@ -206,10 +204,10 @@ status_t curve25519_verify_start(
 
 status_t curve25519_verify_finalize(hardened_bool_t *result) {
   // Spin here waiting for OTBN to complete.
-  HARDENED_TRY_WIPE_DMEM(otbn_busy_wait_for_done());
+  HARDENED_TRY(otbn_busy_wait_for_done());
 
   uint32_t ok;
-  HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(1, kOtbnVarVerifyRes, &ok));
+  HARDENED_TRY(otbn_dmem_read(1, kOtbnVarVerifyRes, &ok));
   if (launder32(ok) != kHardenedBoolTrue) {
     HARDENED_TRY(otbn_dmem_sec_wipe());
     return OTCRYPTO_BAD_ARGS;
@@ -219,10 +217,8 @@ status_t curve25519_verify_finalize(hardened_bool_t *result) {
   // Read the computed LHS and RHS out of OTBN dmem.
   uint32_t lhs[kCurve25519PointWords];
   uint32_t rhs[kCurve25519PointWords];
-  HARDENED_TRY_WIPE_DMEM(
-      otbn_dmem_read(kCurve25519PointWords, kOtbnVarVerifyLhs, lhs));
-  HARDENED_TRY_WIPE_DMEM(
-      otbn_dmem_read(kCurve25519PointWords, kOtbnVarVerifyRhs, rhs));
+  HARDENED_TRY(otbn_dmem_read(kCurve25519PointWords, kOtbnVarVerifyLhs, lhs));
+  HARDENED_TRY(otbn_dmem_read(kCurve25519PointWords, kOtbnVarVerifyRhs, rhs));
 
   *result = hardened_memeq(lhs, rhs, kCurve25519PointWords);
 
