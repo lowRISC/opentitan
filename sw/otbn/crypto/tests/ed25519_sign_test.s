@@ -190,45 +190,89 @@ ed25519_hash_k:
   .word 0x7bee6837
   .word 0x9f0e3ca0
 
-.globl ed25519_hash_r
+.globl ed25519_r0
 .balign 32
-ed25519_hash_r:
-  .word 0xd89cb1b6
-  .word 0x596f42e0
-  .word 0x2d11fa83
-  .word 0xaa43a189
-  .word 0xbcb8da97
-  .word 0x5b8deb5d
-  .word 0x28c95362
-  .word 0xf47252b6
-  .word 0xc2984004
-  .word 0x9c0390a9
-  .word 0x486a5bde
-  .word 0xfb0bdf18
-  .word 0x5ddc406e
-  .word 0x802454ee
-  .word 0x23239632
-  .word 0x2d3501e7
+ed25519_r0:
+  .word 0xc116c7c9
+  .word 0x915b1fba
+  .word 0xae4522f9
+  .word 0xcdeb12a3
+  .word 0x04df610a
+  .word 0x7f544c8d
+  .word 0xea45b5db
+  .word 0x0cb926da
+  .word 0x60e5ae41
+  .word 0x68a9364b
+  .word 0x888b8ad6
+  .word 0xf7c8e3db
+  .word 0x46c161d9
+  .word 0x087a6c01
+  .word 0x1ebb6a68
+  .word 0xe1bb2d09
+  .word 0xcf6a659e
+  .word 0x9a164106
+  .word 0xe6f4590b
+  .word 0x259f4329
+  .zero 16
 
-.globl ed25519_hash_h_low
+.globl ed25519_r1
 .balign 32
-ed25519_hash_h_low:
-  .word 0x86837c35
-  .word 0xcb33284f
-  .word 0xf12e7a42
-  .word 0x3c010ac0
-  .word 0x6827fffd
-  .word 0xa3c080d9
-  .word 0x06f020a5
-  .word 0x0fe94d90
-  .word 0x86837c35
-  .word 0xcb33284f
-  .word 0xf12e7a42
-  .word 0x3c010ac0
-  .word 0x6827fffd
-  .word 0xa3c080d9
-  .word 0x06f020a5
-  .word 0x0fe94d90
+ed25519_r1:
+  .word 0xe87a1613
+  .word 0x37ebdcd9
+  .word 0x81332876
+  .word 0x23a7711a
+  .word 0x48268673
+  .word 0x23c6612f
+  .word 0xc17c6279
+  .word 0x1846d424
+  .word 0x9e4d6e3c
+  .word 0xcca5a5a1
+  .word 0x40212ef7
+  .word 0xfcbd04c3
+  .word 0xe8e5216a
+  .word 0x88561712
+  .word 0xfb97d435
+  .word 0xb4862b21
+  .word 0xcf6a659e
+  .word 0x9a164106
+  .word 0xe6f4590b
+  .word 0x259f4329
+  .zero 16
+
+.globl ed25519_s0
+.balign 32
+ed25519_s0:
+  .word 0x4f2a8269
+  .word 0x9fa465b0
+  .word 0x3ed4614c
+  .word 0x33c2c848
+  .word 0xe22a4202
+  .word 0xff69a088
+  .word 0x9c48a724
+  .word 0x342d2d08
+  .word 0xe87a1614
+  .word 0x37ebdcd9
+  .word 0x81332876
+  .word 0x23a7711a
+  .zero 16
+
+.globl ed25519_s1
+.balign 32
+ed25519_s1:
+  .word 0xc8a70639
+  .word 0xd4713d60
+  .word 0x4da5e709
+  .word 0xf7c1bd87
+  .word 0x7a024204
+  .word 0x5ba91faf
+  .word 0x9558867f
+  .word 0xe443df78
+  .word 0xe87a1613
+  .word 0x37ebdcd9
+  .word 0x81332876
+  .word 0x23a7711a
+  .zero 16
 
 .globl test1_expected_sig_R
 .balign 32

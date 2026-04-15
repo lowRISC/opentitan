@@ -195,16 +195,28 @@ ed25519_public_key:
 ed25519_hash_k:
   .zero 64
 
-/* Lower half of precomputed hash h (256 bits). See RFC 8032, section
-   5.1.6, step 1 or the docstring of ed25519_sign. Input for sign. */
+/* Precomputed arithmetic shares of the clamped integer s (256 bits embedded in
+   384 bits). See RFC 8032, section 5.1.6, step 1 or the docstring of
+   ed25519_sign. Input for sign. */
 .balign 32
-.globl ed25519_hash_h_low
-ed25519_hash_h_low:
-  .zero 32
-
-/* Precomputed hash r (512 bits). See RFC 8032, section 5.1.6, step 2 or the
-   docstring of ed25519_sign. Input for sign. */
-.balign 32
-.globl ed25519_hash_r
-ed25519_hash_r:
+.globl ed25519_s0
+ed25519_s0:
   .zero 64
+
+.balign 32
+.globl ed25519_s1
+ed25519_s1:
+  .zero 64
+
+/* Precomputed arithmetic shares of r (512 bits embedded in 640 bits). See
+   RFC 8032, section 5.1.6, step 2 or the docstring of ed25519_sign.
+   Input for sign. */
+.balign 32
+.globl ed25519_r0
+ed25519_r0:
+  .zero 96
+
+.balign 32
+.globl ed25519_r1
+ed25519_r1:
+  .zero 96

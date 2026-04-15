@@ -163,6 +163,24 @@ static status_t ed25519_message_prehash(
   return OTCRYPTO_OK;
 }
 
+/**
+ * Clamp the lower half of the h digest, to create the scalar s.
+ *
+ * This function is in accordance with RFC 8032, see Section 5.1.5 Step 2.
+ *
+ * @param h_hash_low The lower 256 bits of the h digest.
+ * @param[out] s, the clamped scalar s.
+ * @return OK.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t ed25519_clamp(uint32_t hash_h_low[kCurve25519HalfHashWords]) {
+  // Set the lower 3 bits and the MSB to 0, set the MSB-1 to 1.
+  hash_h_low[0] &= 0xfffffff8;
+  hash_h_low[kCurve25519HalfHashWords - 1] &= 0x7fffffff;
+  hash_h_low[kCurve25519HalfHashWords - 1] |= 0x40000000;
+  return OTCRYPTO_OK;
+}
+
 otcrypto_status_t otcrypto_ed25519_keygen(
     const otcrypto_unblinded_key_t *private_key,
     otcrypto_unblinded_key_t *public_key) {
@@ -281,6 +299,8 @@ otcrypto_status_t otcrypto_ed25519_keygen_async_start(
       private_key->key_length);
   HARDENED_TRY(otcrypto_sha2_512(&key_buf, &key_digest));
 
+  HARDENED_TRY(ed25519_clamp(key_digest.data));
+
   // Start the OTBN keygen app.
   HARDENED_TRY_WIPE_DMEM(curve25519_keygen_start(key_digest.data));
 
@@ -310,6 +330,8 @@ otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
       otcrypto_const_byte_buf_t, (const uint8_t *const)private_key->key,
       private_key->key_length);
   HARDENED_TRY(otcrypto_sha2_512(&key_buf, key_digest));
+
+  HARDENED_TRY(ed25519_clamp(key_digest->data));
 
   // Prepend the dom2 prefix
   size_t dom2_len =
