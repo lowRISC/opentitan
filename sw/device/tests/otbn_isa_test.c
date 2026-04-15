@@ -31,7 +31,7 @@ static const otbn_addr_t kWdrState = OTBN_ADDR_T_INIT(smoke_test, wdr_state);
 enum {
   kNumExpectedGprs = 30,
   kNumExpectedWdrs = 32,
-  kExpectedInstrCount = 284,
+  kExpectedInstrCount = 323,
 };
 
 // The expected values of the GPRs and WDRs are taken from
@@ -104,10 +104,10 @@ static const uint32_t kExpectedWdrs[kNumExpectedWdrs][8] = {
             0x23631fe5, 0xbbb1704f, 0xd25666ac},
     [29] = {0xeb0953c2, 0xe0654fef, 0x63388709, 0x5763bcdf, 0x26628bdb,
             0x64341d3c, 0x9f24f0c1, 0x4f0d4b81},
-    [30] = {0x68ba2fa1, 0xb55098e0, 0x4efa2ec9, 0xaee49292, 0xab123192,
-            0xffa3d88b, 0xe9ee7ac7, 0x2167f87d},
-    [31] = {0x0f09b7c8, 0x25769434, 0x6978ad1b, 0x67a8c221, 0x5466a52c,
-            0x73880075, 0xf9dbff5e, 0x37adadae},
+    [30] = {0xd796d33b, 0xb1555176, 0xd88c0b57, 0xc4018e58, 0x184382f7,
+            0x1ad4e5f9, 0x2f752b5d, 0x5348efc4},
+    [31] = {0x5cee80a0, 0x5cee80a0, 0x5cee80a0, 0x5cee80a0, 0x5cee80a0,
+            0x5cee80a0, 0x5cee80a0, 0x5cee80a0},
 };
 
 bool test_main(void) {
