@@ -111,4 +111,4 @@ _xof_shake256_msg_128b:
 .zero 128
 
 _stack:
-.zero 4
+.zero 256

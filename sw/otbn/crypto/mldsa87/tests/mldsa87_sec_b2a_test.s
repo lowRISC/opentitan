@@ -56,4 +56,4 @@ _params:
 .word 0x00000000
 
 _stack:
-.zero 4
+.zero 256

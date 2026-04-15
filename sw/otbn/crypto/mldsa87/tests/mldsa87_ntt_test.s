@@ -52,4 +52,4 @@ _ntt_y:
 .zero 1024
 
 _stack:
-.zero 4
+.zero 256

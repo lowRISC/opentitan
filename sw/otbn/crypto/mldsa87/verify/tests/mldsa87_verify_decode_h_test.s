@@ -46,4 +46,4 @@ _decode_h_h7:
 .zero 1024
 
 _stack:
-.zero 4
+.zero 256

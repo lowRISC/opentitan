@@ -52,4 +52,4 @@ _poly_mul_add_d:
 .zero 1024
 
 _stack:
-.zero 4
+.zero 256
