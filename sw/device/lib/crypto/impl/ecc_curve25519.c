@@ -282,7 +282,7 @@ otcrypto_status_t otcrypto_ed25519_keygen_async_start(
   HARDENED_TRY(otcrypto_sha2_512(&key_buf, &key_digest));
 
   // Start the OTBN keygen app.
-  HARDENED_TRY(curve25519_keygen_start(key_digest.data));
+  HARDENED_TRY_WIPE_DMEM(curve25519_keygen_start(key_digest.data));
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
@@ -290,7 +290,7 @@ otcrypto_status_t otcrypto_ed25519_keygen_async_start(
 otcrypto_status_t otcrypto_ed25519_keygen_async_finalize(
     otcrypto_unblinded_key_t *public_key) {
   // Finalize the keygen operation and retrieve the public key.
-  HARDENED_TRY(curve25519_keygen_finalize(public_key->key));
+  HARDENED_TRY_WIPE_DMEM(curve25519_keygen_finalize(public_key->key));
   // Calculate the public key checksum.
   public_key->checksum = integrity_unblinded_checksum(public_key);
   return otcrypto_eval_exit(OTCRYPTO_OK);
@@ -336,7 +336,7 @@ otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
   HARDENED_TRY(otcrypto_sha2_512(&msg_buf, msg_digest));
 
   // Start the OTBN sign stage 1 app.
-  HARDENED_TRY(
+  HARDENED_TRY_WIPE_DMEM(
       curve25519_sign_stage1_start(msg_digest->data, key_digest->data));
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
@@ -357,7 +357,7 @@ otcrypto_status_t otcrypto_ed25519_sign_part2_async_start(
   // public key A.
   curve25519_signature_t sig_curve25519;
   uint32_t public_key_buf[kCurve25519PointWords];
-  HARDENED_TRY(
+  HARDENED_TRY_WIPE_DMEM(
       curve25519_sign_stage1_finalize(&sig_curve25519, public_key_buf));
   reverse_bytecpy((uint8_t *)signature->data, (uint8_t *)sig_curve25519.r,
                   kCurve25519PointBytes);
@@ -391,7 +391,7 @@ otcrypto_status_t otcrypto_ed25519_sign_part2_async_start(
   HARDENED_TRY(otcrypto_sha2_512(&challenge_buf, &challenge_digest));
 
   // Start the OTBN sign stage 2 app.
-  HARDENED_TRY(curve25519_sign_stage2_start(
+  HARDENED_TRY_WIPE_DMEM(curve25519_sign_stage2_start(
       challenge_digest.data, msg_digest->data, key_digest->data));
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
@@ -404,7 +404,7 @@ otcrypto_status_t otcrypto_ed25519_sign_async_finalize(
 
   // Finalize the signature stage 1 and retrieve the signature response S.
   curve25519_signature_t sig;
-  HARDENED_TRY(curve25519_sign_stage2_finalize(&sig));
+  HARDENED_TRY_WIPE_DMEM(curve25519_sign_stage2_finalize(&sig));
   memcpy(&(signature->data[kCurve25519PointWords]), sig.s,
          kCurve25519ScalarBytes);
 
@@ -461,8 +461,8 @@ otcrypto_status_t otcrypto_ed25519_verify_async_start(
   HARDENED_TRY(otcrypto_sha2_512(&challenge_buf, &challenge_digest));
 
   // Start the OTBN verify app.
-  HARDENED_TRY(curve25519_verify_start(challenge_digest.data, &sig_curve25519,
-                                       public_key->key));
+  HARDENED_TRY_WIPE_DMEM(curve25519_verify_start(
+      challenge_digest.data, &sig_curve25519, public_key->key));
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
@@ -470,6 +470,6 @@ otcrypto_status_t otcrypto_ed25519_verify_async_start(
 otcrypto_status_t otcrypto_ed25519_verify_async_finalize(
     hardened_bool_t *verification_result) {
   // Finalize the verify operation and retrieve the verification result.
-  HARDENED_TRY(curve25519_verify_finalize(verification_result));
+  HARDENED_TRY_WIPE_DMEM(curve25519_verify_finalize(verification_result));
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }

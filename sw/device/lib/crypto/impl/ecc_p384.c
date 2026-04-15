@@ -55,7 +55,8 @@ otcrypto_status_t otcrypto_ecdsa_p384_keygen_async_start(
   HARDENED_CHECK_EQ(launder32(private_key->config.key_mode),
                     kOtcryptoKeyModeEcdsaP384);
 
-  return internal_p384_keygen_start(private_key);
+  HARDENED_TRY_WIPE_DMEM(internal_p384_keygen_start(private_key));
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 /**
@@ -377,7 +378,7 @@ status_t otcrypto_p384_base_point_mult(
   private_scalar.checksum = p384_masked_scalar_checksum(&private_scalar);
 
   p384_point_t *pk = (p384_point_t *)public_key->key;
-  HARDENED_TRY(p384_base_point_mult(&private_scalar, pk));
+  HARDENED_TRY_WIPE_DMEM(p384_base_point_mult(&private_scalar, pk));
 
   public_key->checksum = integrity_unblinded_checksum(public_key);
 
@@ -401,7 +402,8 @@ otcrypto_status_t otcrypto_ecdsa_p384_keygen_async_finalize(
                     kOtcryptoKeyModeEcdsaP384);
   HARDENED_CHECK_EQ(launder32(public_key->key_mode), kOtcryptoKeyModeEcdsaP384);
 
-  HARDENED_TRY(internal_p384_keygen_finalize(private_key, public_key));
+  HARDENED_TRY_WIPE_DMEM(
+      internal_p384_keygen_finalize(private_key, public_key));
 
   // Clear the OTBN sideload slot (in case the seed was sideloaded).
   return otcrypto_eval_exit(keymgr_sideload_clear_otbn());
@@ -464,7 +466,7 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_config_k_async_start(
   HARDENED_TRY(hardened_memcpy(config_k_scalar.share0, secret_scalar->keyblob,
                                kP384MaskedScalarTotalShareWords));
   config_k_scalar.checksum = p384_masked_scalar_checksum(&config_k_scalar);
-  HARDENED_TRY(p384_ecdsa_sign_config_k_start(
+  HARDENED_TRY_WIPE_DMEM(p384_ecdsa_sign_config_k_start(
       message_digest.data, &private_scalar, &config_k_scalar));
 
   // To detect forgeries of the pointer to the private key that we have passed
@@ -497,13 +499,14 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_async_start(
                        kP384MaskedScalarTotalShareWords),
         kHardenedBoolTrue);
     private_scalar.checksum = p384_masked_scalar_checksum(&private_scalar);
-    HARDENED_TRY(p384_ecdsa_sign_start(message_digest.data, &private_scalar));
+    HARDENED_TRY_WIPE_DMEM(
+        p384_ecdsa_sign_start(message_digest.data, &private_scalar));
   } else if (private_key->config.hw_backed == kHardenedBoolTrue) {
     // Load the key and start in sideloaded-key mode.
     HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
                       kHardenedBoolTrue);
-    HARDENED_TRY(keyblob_sideload_key_otbn(private_key));
-    HARDENED_TRY(p384_ecdsa_sideload_sign_start(message_digest.data));
+    HARDENED_TRY_WIPE_DMEM(keyblob_sideload_key_otbn(private_key));
+    HARDENED_TRY_WIPE_DMEM(p384_ecdsa_sideload_sign_start(message_digest.data));
   } else {
     // Invalid value for private_key->hw_backed.
     return OTCRYPTO_BAD_ARGS;
@@ -533,7 +536,7 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_async_finalize(
   // Note: This operation wipes DMEM, so if an error occurs after this
   // point then the signature would be unrecoverable. This should be the
   // last potentially error-causing line before returning to the caller.
-  HARDENED_TRY(p384_ecdsa_sign_finalize(sig_p384));
+  HARDENED_TRY_WIPE_DMEM(p384_ecdsa_sign_finalize(sig_p384));
 
   // Clear the OTBN sideload slot (in case the key was sideloaded).
   return otcrypto_eval_exit(keymgr_sideload_clear_otbn());
@@ -575,7 +578,7 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify_async_start(
   p384_ecdsa_signature_t *sig = (p384_ecdsa_signature_t *)signature->data;
 
   // Start the asynchronous signature-verification routine.
-  HARDENED_TRY(p384_ecdsa_verify_start(sig, message_digest.data, pk));
+  HARDENED_TRY_WIPE_DMEM(p384_ecdsa_verify_start(sig, message_digest.data, pk));
 
   // To detect forgeries of the pointer to the public key that we have passed
   // to the ECC implementation, check again its integrity. If the pointer would
@@ -598,8 +601,11 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify_async_finalize(
 
   HARDENED_TRY(p384_signature_length_check(signature->len));
   p384_ecdsa_signature_t *sig_p384 = (p384_ecdsa_signature_t *)signature->data;
-  return otcrypto_eval_exit(
+
+  HARDENED_TRY_WIPE_DMEM(
       p384_ecdsa_verify_finalize(sig_p384, verification_result));
+
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_ecdh_p384_keygen_async_start(
@@ -613,7 +619,8 @@ otcrypto_status_t otcrypto_ecdh_p384_keygen_async_start(
   }
   HARDENED_CHECK_EQ(launder32(private_key->config.key_mode),
                     kOtcryptoKeyModeEcdhP384);
-  return otcrypto_eval_exit(internal_p384_keygen_start(private_key));
+  HARDENED_TRY_WIPE_DMEM(internal_p384_keygen_start(private_key));
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_ecdh_p384_keygen_async_finalize(
@@ -631,8 +638,9 @@ otcrypto_status_t otcrypto_ecdh_p384_keygen_async_finalize(
   HARDENED_CHECK_EQ(launder32(public_key->key_mode), kOtcryptoKeyModeEcdhP384);
   HARDENED_CHECK_EQ(launder32(private_key->config.key_mode),
                     kOtcryptoKeyModeEcdhP384);
-  return otcrypto_eval_exit(
+  HARDENED_TRY_WIPE_DMEM(
       internal_p384_keygen_finalize(private_key, public_key));
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_ecdh_p384_async_start(
@@ -670,8 +678,8 @@ otcrypto_status_t otcrypto_ecdh_p384_async_start(
   if (private_key->config.hw_backed == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
                       kHardenedBoolTrue);
-    HARDENED_TRY(keyblob_sideload_key_otbn(private_key));
-    HARDENED_TRY(p384_sideload_ecdh_start(pk));
+    HARDENED_TRY_WIPE_DMEM(keyblob_sideload_key_otbn(private_key));
+    HARDENED_TRY_WIPE_DMEM(p384_sideload_ecdh_start(pk));
   } else if (private_key->config.hw_backed == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
                       kHardenedBoolFalse);
@@ -683,7 +691,7 @@ otcrypto_status_t otcrypto_ecdh_p384_async_start(
                        kP384MaskedScalarTotalShareWords),
         kHardenedBoolTrue);
     private_scalar.checksum = p384_masked_scalar_checksum(&private_scalar);
-    HARDENED_TRY(p384_ecdh_start(&private_scalar, pk));
+    HARDENED_TRY_WIPE_DMEM(p384_ecdh_start(&private_scalar, pk));
   } else {
     // Invalid value for `hw_backed`.
     return OTCRYPTO_BAD_ARGS;
@@ -737,7 +745,7 @@ otcrypto_status_t otcrypto_ecdh_p384_async_finalize(
   p384_ecdh_shared_key_t ss;
   HARDENED_TRY(hardened_memshred(ss.share0, ARRAYSIZE(ss.share0)));
   HARDENED_TRY(hardened_memshred(ss.share1, ARRAYSIZE(ss.share1)));
-  HARDENED_TRY(p384_ecdh_finalize(&ss));
+  HARDENED_TRY_WIPE_DMEM(p384_ecdh_finalize(&ss));
   HARDENED_CHECK_EQ(p384_ecdh_shared_key_checksum_check(&ss),
                     kHardenedBoolTrue);
   HARDENED_TRY(keyblob_from_shares(ss.share0, ss.share1, shared_secret->config,
@@ -988,8 +996,8 @@ otcrypto_status_t otcrypto_ecc_p384_arith_share_private_key(
       p384_masked_scalar_checksum(&boolean_private_scalar);
 
   // Invoke the sharing routine.
-  HARDENED_TRY(p384_arith_share_private_key(&boolean_private_scalar,
-                                            &arith_private_scalar));
+  HARDENED_TRY_WIPE_DMEM(p384_arith_share_private_key(&boolean_private_scalar,
+                                                      &arith_private_scalar));
 
   // Copy the two arithmetic shares into the output buffer.
   HARDENED_TRY(hardened_memcpy(arith_private_key->keyblob,
