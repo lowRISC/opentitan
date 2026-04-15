@@ -56,6 +56,30 @@ enum {
    * Number of words needed to hold a scalar.
    */
   kCurve25519ScalarWords = kCurve25519ScalarBytes / 4,
+  /**
+   * Number of bytes needed to hold a masked scalar s.
+   */
+  kCurve25519MaskedScalarSBytes = 48,
+  /**
+   * Number of words needed to hold a masked scalar s.
+   */
+  kCurve25519MaskedScalarSWords = kCurve25519MaskedScalarSBytes / 4,
+  /**
+   * Number of bytes needed to hold a masked scalar r.
+   */
+  kCurve25519MaskedScalarRBytes = 80,
+  /**
+   * Number of words needed to hold a masked scalar r.
+   */
+  kCurve25519MaskedScalarRWords = kCurve25519MaskedScalarRBytes / 4,
+  /**
+   * Number of zero padding words after a masked scalar share.
+   */
+  kCurve25519MaskedScalarPaddingWords = 4,
+  /**
+   * Magic value for verify success response.
+   */
+  kCurve25519VerifySuccess = 0xf77fe650,
 };
 
 /**
