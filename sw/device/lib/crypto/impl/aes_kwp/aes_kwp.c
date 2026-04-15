@@ -164,14 +164,13 @@ status_t aes_kwp_unwrap(const aes_key_t kek, const uint32_t *ciphertext,
     return OTCRYPTO_OK;
   }
 
-  // Check that the padding bytes are zero. Note: this should happen only after
-  // the prefix check. Otherwise it could expose a padding oracle, because
-  // memcmp is not constant-time.
+  // Check that the padding bytes are zero.
   if (pad_len != 0) {
     uint8_t exp_pad[pad_len];
     memset(exp_pad, 0, pad_len);
     unsigned char *pad_start = ((unsigned char *)r) + plaintext_len;
-    if (memcmp(pad_start, exp_pad, pad_len) != 0) {
+    if (consttime_memeq_byte(pad_start, exp_pad, pad_len) !=
+        kHardenedBoolTrue) {
       *success = kHardenedBoolFalse;
       return OTCRYPTO_OK;
     }
