@@ -157,9 +157,9 @@ static void dice_chain_next_cert_obj(void) {
 OT_WARN_UNUSED_RESULT
 static rom_error_t dice_chain_load_cert_obj(const char *name,
                                             size_t name_size) {
-  rom_error_t err =
-      perso_tlv_get_cert_obj(dice_chain_get_tail_buffer(),
-                             dice_chain_get_tail_size(), &dice_chain.cert_obj);
+  rom_error_t err = perso_tlv_get_cert_obj(
+      dice_chain_get_tail_buffer(), dice_chain_get_tail_size(),
+      kPersoBlobVersionV0, &dice_chain.cert_obj);
 
   if (err != kErrorOk) {
     // Cleanup the stale value if error.
@@ -258,14 +258,14 @@ static rom_error_t dice_chain_push_cert(const char *name, const uint8_t *cert,
   perso_tlv_object_type_t cert_type =
       kDiceCertFormat == kDiceCertFormatX509TcbInfo ? kPersoObjectTypeX509Cert
                                                     : kPersoObjectTypeCwtCert;
-  RETURN_IF_ERROR(perso_tlv_cert_obj_build(name, cert_type, cert, cert_size,
-                                           dice_chain_get_tail_buffer(),
-                                           &cert_page_left));
+  RETURN_IF_ERROR(perso_tlv_cert_obj_build(
+      name, cert_type, cert, cert_size, kPersoBlobVersionV0,
+      dice_chain_get_tail_buffer(), &cert_page_left));
 
   // Move the offset to the new tail.
-  RETURN_IF_ERROR(perso_tlv_get_cert_obj(dice_chain_get_tail_buffer(),
-                                         dice_chain_get_tail_size(),
-                                         &dice_chain.cert_obj));
+  RETURN_IF_ERROR(perso_tlv_get_cert_obj(
+      dice_chain_get_tail_buffer(), dice_chain_get_tail_size(),
+      kPersoBlobVersionV0, &dice_chain.cert_obj));
   dice_chain_next_cert_obj();
   return kErrorOk;
 }
