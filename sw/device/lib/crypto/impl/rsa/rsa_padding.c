@@ -35,7 +35,7 @@ static const uint8_t kSha512DigestIdentifier[] = {
     0x48, 0x86, 0x60, 0x09, 0x06, 0x0d, 0x30, 0x51, 0x30,
 };
 /*
- * SHA-3 digest identifiers adapted from the SHA-2 identifers based on the
+ * SHA-3 digest identifiers adapted from the SHA-2 identifiers based on the
  * algorithm identifiers on
  * https://csrc.nist.gov/projects/computer-security-objects-register/algorithm-registration
  */
@@ -805,7 +805,6 @@ status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
   size_t db_bytelen = encoded_message_bytelen - digest_bytelen - 1;
   size_t db_wordlen = ceil_div(db_bytelen, sizeof(uint32_t));
   uint32_t db[db_wordlen];
-  // memcpy(db, encoded_message_bytes + 1 + sizeof(seed), db_bytelen);
   HARDENED_TRY(randomized_bytecopy(db, encoded_message_bytes + 1 + sizeof(seed),
                                    db_bytelen));
   // Check whether a FI tampered copying the bytes.
