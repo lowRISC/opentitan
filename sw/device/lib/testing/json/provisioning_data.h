@@ -36,9 +36,9 @@ enum {
  * Version of the personalization blob format.
  */
 // clang-format off
-#define ENUM_PERSO_BLOB_VERSION(_, value) \
-    value(_, V0, 0) \
-    value(_, V1, 1)
+#define ENUM_PERSO_BLOB_VERSION(field, value) \
+    value(field, V0, 0) \
+    value(field, V1, 1)
 UJSON_SERDE_ENUM(PersoBlobVersion, perso_blob_version_t, ENUM_PERSO_BLOB_VERSION);
 // clang-format on
 
