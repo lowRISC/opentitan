@@ -71,7 +71,8 @@ static status_t test_debug_mode(void) {
   size_t len = sizeof(data);
   while (true) {
     perso_tlv_cert_obj_t obj = {0};
-    rom_error_t err = perso_tlv_get_cert_obj(data + offset, len, &obj);
+    rom_error_t err =
+        perso_tlv_get_cert_obj(data + offset, len, kPersoBlobVersionV0, &obj);
     if (err != kErrorOk) {
       break;
     }
