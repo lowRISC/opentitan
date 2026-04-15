@@ -488,7 +488,6 @@ static status_t hash_certificate(const flash_ctrl_info_page_t *page,
                            cert_buffer));
   TRY(perso_tlv_get_cert_obj(cert_buffer, kBufferSize, kPersoBlobVersionV0,
                              &cert_obj));
-
   hmac_sha256_update(cert_obj.cert_body_p, cert_obj.cert_body_size);
 
   if (size) {
@@ -541,6 +540,16 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, true));
   TRY(ujson_deserialize_manuf_certgen_inputs_t(uj, &certgen_inputs));
   TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, false));
+
+  switch ((perso_blob_version_t)certgen_inputs.blob_version) {
+    case kPersoBlobVersionV1:
+      TRY(perso_tlv_init_v1_blob(&perso_blob_to_host));
+      break;
+    case kPersoBlobVersionV0:
+      break;
+    default:
+      return INVALID_ARGUMENT();
+  }
   // We copy over the UDS endorsement key ID to an SHA256 digest type, since
   // this is the format of key IDs generated on-dice.
   memcpy(uds_endorsement_key_id.digest, certgen_inputs.dice_auth_key_key_id,
@@ -804,6 +813,7 @@ static size_t max_available(void) {
  *                  reduces the size of the buffer by the size of the copied
  *                  certificate perso LTV object.
  */
+static perso_blob_version_t perso_blob_from_host_version;
 static status_t extract_next_cert(uint8_t **dest, size_t *free_room) {
   // A just in case sanity check that the next free location in the perso blob
   // data buffer is at the end of the buffer.
@@ -904,6 +914,21 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
   TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, true));
   TRY(ujson_deserialize_perso_blob_t(uj, &perso_blob_from_host));
   TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, false));
+
+  // Detect the version of the blob received from the host.
+  perso_blob_from_host.next_free = 0;
+  perso_blob_from_host_version = kPersoBlobVersionV0;
+  if (perso_blob_from_host.num_objs > 0) {
+    size_t offset = 0;
+    TRY(perso_tlv_get_blob_version(perso_blob_from_host.body,
+                                   sizeof(perso_blob_from_host.body),
+                                   &perso_blob_from_host_version, &offset));
+
+    if (offset > 0) {
+      perso_blob_from_host.next_free = offset;
+      perso_blob_from_host.num_objs--;
+    }
+  }
 
   /*****************************************************************************
    * Rearrange certificates to prepare for writing to flash.
