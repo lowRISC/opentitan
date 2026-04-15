@@ -62,15 +62,6 @@ pkg_files(
     },
 )
 
-# TODO(cfrantz): Implement release automation so we don't have to publish the artifact manually.
-# Upload this to the GCS bucket `artifacts.opentitan.org` and name the file
-# with a date tag (e.g. devbundle-YYYYMMDD.tar.xz).
-#
-# For example:
-# $ gcloud --acount=foo@opentitan.org \
-#       storage cp \
-#           bazel-bin/release/devbundle/devbundle.tar.xz \
-#           gs://artifacts.opentitan.org/dev_bundle/devbundle-20250718.tar.xz
 pkg_tar(
     name = "devbundle",
     testonly = True,
