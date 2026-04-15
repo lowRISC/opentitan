@@ -131,7 +131,7 @@ status_t aes_gcm_encrypt(const aes_key_t key, const size_t iv_len,
  * @param iv_len length of IV in 32-bit words
  * @param iv IV value (may be NULL if iv_len is 0)
  * @param ciphertext_len length of ciphertext in bytes
- * @param ciphertext plaintext value (may be NULL if ciphertext_len is 0)
+ * @param ciphertext ciphertext value (may be NULL if ciphertext_len is 0)
  * @param aad_len length of AAD in bytes
  * @param aad AAD value (may be NULL if aad_len is 0)
  * @param tag_len Tag length in 32-bit words
@@ -256,7 +256,7 @@ status_t aes_gcm_encrypt_final(aes_gcm_context_t *ctx, size_t tag_len,
  *   aes_gcm_decrypt_init(...)
  *   aes_gcm_update_aad(...) // call 0 or more times
  *   aes_gcm_update_encrypted_data(...) // call 0 or more times
- *   aes_gcm_encrypt_final(...)
+ *   aes_gcm_decrypt_final(...)
  *
  * @param key AES key
  * @param iv_len length of IV in 32-bit words
