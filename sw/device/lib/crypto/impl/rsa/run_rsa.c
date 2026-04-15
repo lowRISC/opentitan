@@ -87,11 +87,11 @@ enum {
 
 status_t rsa_modexp_wait(size_t *num_words) {
   // Spin here waiting for OTBN to complete.
-  HARDENED_TRY_WIPE_DMEM(otbn_busy_wait_for_done());
+  HARDENED_TRY(otbn_busy_wait_for_done());
 
   // Read the application mode.
   uint32_t mode;
-  HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(1, kOtbnVarRsaMode, &mode));
+  HARDENED_TRY(otbn_dmem_read(1, kOtbnVarRsaMode, &mode));
 
   *num_words = 0;
   if (mode == kMode2048Modexp || mode == kMode2048ModexpF4) {
@@ -123,7 +123,7 @@ status_t rsa_modexp_wait(size_t *num_words) {
 static status_t rsa_modexp_finalize(const size_t num_words, uint32_t *result) {
   // Wait for OTBN to complete and get the result size.
   size_t num_words_inferred;
-  HARDENED_TRY_WIPE_DMEM(rsa_modexp_wait(&num_words_inferred));
+  HARDENED_TRY(rsa_modexp_wait(&num_words_inferred));
 
   // Check that the inferred result size matches expectations.
   if (num_words != num_words_inferred) {
@@ -134,7 +134,7 @@ static status_t rsa_modexp_finalize(const size_t num_words, uint32_t *result) {
   HARDENED_CHECK_EQ(launder32(num_words), num_words_inferred);
 
   // Read the result.
-  HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(num_words, kOtbnVarRsaInOut, result));
+  HARDENED_TRY(otbn_dmem_read(num_words, kOtbnVarRsaInOut, result));
 
   // Wipe DMEM.
   return otbn_dmem_sec_wipe();
@@ -300,11 +300,11 @@ static status_t keygen_start(uint32_t mode) {
 static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
                                 uint32_t *n, uint32_t *d0, uint32_t *d1) {
   // Spin here waiting for OTBN to complete.
-  HARDENED_TRY_WIPE_DMEM(otbn_busy_wait_for_done());
+  HARDENED_TRY(otbn_busy_wait_for_done());
 
   // Read the mode from OTBN dmem and panic if it's not as expected.
   uint32_t act_mode = 0;
-  HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(1, kOtbnVarRsaMode, &act_mode));
+  HARDENED_TRY(otbn_dmem_read(1, kOtbnVarRsaMode, &act_mode));
   if (act_mode != exp_mode) {
     HARDENED_TRY(otbn_dmem_sec_wipe());
     return OTCRYPTO_FATAL_ERR;
@@ -316,7 +316,7 @@ static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
   uint32_t mr_iters = 0;
 
   // Prime p.
-  HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(1, kOtbnVarRsaMrIterP, &mr_iters));
+  HARDENED_TRY(otbn_dmem_read(1, kOtbnVarRsaMrIterP, &mr_iters));
   if (mr_iters != kMrIters) {
     HARDENED_TRY(otbn_dmem_sec_wipe());
     return OTCRYPTO_FATAL_ERR;
@@ -325,7 +325,7 @@ static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
 
   // Prime q.
   mr_iters = 0;
-  HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(1, kOtbnVarRsaMrIterQ, &mr_iters));
+  HARDENED_TRY(otbn_dmem_read(1, kOtbnVarRsaMrIterQ, &mr_iters));
   if (mr_iters != kMrIters) {
     HARDENED_TRY(otbn_dmem_sec_wipe());
     return OTCRYPTO_FATAL_ERR;
@@ -333,13 +333,13 @@ static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
   HARDENED_CHECK_EQ(launder32(mr_iters), kMrIters);
 
   // Read the public modulus (n) from OTBN dmem.
-  HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(num_words, kOtbnVarRsaN, n));
+  HARDENED_TRY(otbn_dmem_read(num_words, kOtbnVarRsaN, n));
 
   // Read the first share of the private exponent (d) from OTBN dmem.
-  HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(num_words, kOtbnVarRsaD0, d0));
+  HARDENED_TRY(otbn_dmem_read(num_words, kOtbnVarRsaD0, d0));
 
   // Read the second share of the private exponent (d) from OTBN dmem.
-  HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(num_words, kOtbnVarRsaD1, d1));
+  HARDENED_TRY(otbn_dmem_read(num_words, kOtbnVarRsaD1, d1));
 
   // Wipe DMEM.
   return otbn_dmem_sec_wipe();
