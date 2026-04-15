@@ -30,12 +30,14 @@ OTBN_DECLARE_SYMBOL_ADDR(run_curve25519,
                          ed25519_public_key);  // Public Key A.
 OTBN_DECLARE_SYMBOL_ADDR(run_curve25519,
                          ed25519_hash_k);  // Challenge hash k.
-OTBN_DECLARE_SYMBOL_ADDR(
-    run_curve25519,
-    ed25519_hash_h_low);  // 32 lowest bytes of the key hash.
-OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, ed25519_hash_r);  // Message hash r.
 OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, ed25519_verify_lhs);
 OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, ed25519_verify_rhs);
+OTBN_DECLARE_SYMBOL_ADDR(run_curve25519,
+                         ed25519_s0);  // 384-bit first share of s.
+OTBN_DECLARE_SYMBOL_ADDR(run_curve25519,
+                         ed25519_s1);  // 384-bit second shares of s.
+OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, ed25519_r0); // 640-bit first share of r.
+OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, ed25519_r1); // 640-bit second share of r.
 
 static const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(run_curve25519, mode);
 static const otbn_addr_t kOtbnVarVerifyRes =
@@ -48,14 +50,18 @@ static const otbn_addr_t kOtbnVarPubKey =
     OTBN_ADDR_T_INIT(run_curve25519, ed25519_public_key);
 static const otbn_addr_t kOtbnVarHashK =
     OTBN_ADDR_T_INIT(run_curve25519, ed25519_hash_k);
-static const otbn_addr_t kOtbnVarHashHlow =
-    OTBN_ADDR_T_INIT(run_curve25519, ed25519_hash_h_low);
-static const otbn_addr_t kOtbnVarHashR =
-    OTBN_ADDR_T_INIT(run_curve25519, ed25519_hash_r);
 static const otbn_addr_t kOtbnVarVerifyLhs =
     OTBN_ADDR_T_INIT(run_curve25519, ed25519_verify_lhs);
 static const otbn_addr_t kOtbnVarVerifyRhs =
     OTBN_ADDR_T_INIT(run_curve25519, ed25519_verify_rhs);
+static const otbn_addr_t kOtbnVarS0 =
+    OTBN_ADDR_T_INIT(run_curve25519, ed25519_s0);
+static const otbn_addr_t kOtbnVarS1 =
+    OTBN_ADDR_T_INIT(run_curve25519, ed25519_s1);
+static const otbn_addr_t kOtbnVarR0 =
+    OTBN_ADDR_T_INIT(run_curve25519, ed25519_r0);
+static const otbn_addr_t kOtbnVarR1 =
+    OTBN_ADDR_T_INIT(run_curve25519, ed25519_r1);
 
 // Declare mode constants.
 OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, MODE_KEYGEN);
@@ -81,9 +87,13 @@ status_t curve25519_keygen_start(
   uint32_t mode = kOtbnCurve25519ModeKeygen;
   HARDENED_TRY(otbn_dmem_write(kCurve25519ModeWords, &mode, kOtbnVarMode));
 
-  // Set lower 32 bytes of private key hash h.
+  // Set the shares of s.
   HARDENED_TRY(
-      otbn_dmem_write(kCurve25519HalfHashWords, hash_h_low, kOtbnVarHashHlow));
+      otbn_dmem_write(kCurve25519HalfHashWords, hash_h_low, kOtbnVarS0));
+
+  // TODO: Remove once s is properly arithmetically shared.
+  HARDENED_TRY(otbn_dmem_set(8, 0, kOtbnVarS0 + 32));
+  HARDENED_TRY(otbn_dmem_set(16, 0, kOtbnVarS1 + 0));
 
   // Start the OTBN routine.
   return otbn_execute();
@@ -113,11 +123,18 @@ status_t curve25519_sign_stage1_start(
   HARDENED_TRY(otbn_dmem_write(kCurve25519ModeWords, &mode, kOtbnVarMode));
 
   // Set 64 Byte hash r.
-  HARDENED_TRY(otbn_dmem_write(kCurve25519HashWords, hash_r, kOtbnVarHashR));
+  HARDENED_TRY(otbn_dmem_write(kCurve25519HashWords, hash_r, kOtbnVarR0));
 
-  // Set lower 32 bytes of private key hash h.
+  HARDENED_TRY(otbn_dmem_set(8, 0, kOtbnVarR0 + 64));
+  HARDENED_TRY(otbn_dmem_set(24, 0, kOtbnVarR1 + 0));
+
+  // Set the shares of s.
   HARDENED_TRY(
-      otbn_dmem_write(kCurve25519HalfHashWords, hash_h_low, kOtbnVarHashHlow));
+      otbn_dmem_write(kCurve25519HalfHashWords, hash_h_low, kOtbnVarS0));
+
+  // TODO: Remove once s is properly arithmetically shared.
+  HARDENED_TRY(otbn_dmem_set(8, 0, kOtbnVarS0 + 32));
+  HARDENED_TRY(otbn_dmem_set(16, 0, kOtbnVarS1 + 0));
 
   // Start the OTBN routine.
   return otbn_execute();
@@ -153,12 +170,20 @@ status_t curve25519_sign_stage2_start(
   // Set challenge hash k.
   HARDENED_TRY(otbn_dmem_write(kCurve25519HashWords, hash_k, kOtbnVarHashK));
 
-  // Set 64 Byte hash r.
-  HARDENED_TRY(otbn_dmem_write(kCurve25519HashWords, hash_r, kOtbnVarHashR));
+  // Set the shares of r.
+  HARDENED_TRY(otbn_dmem_write(kCurve25519HashWords, hash_r, kOtbnVarR0));
 
-  // Set lower half of precomputed secret key hash h.
+  // TODO: Remove once r is properly arithmetically masked.
+  HARDENED_TRY(otbn_dmem_set(8, 0, kOtbnVarR0 + 64));
+  HARDENED_TRY(otbn_dmem_set(24, 0, kOtbnVarR1 + 0));
+
+  // Set the shares of s.
   HARDENED_TRY(
-      otbn_dmem_write(kCurve25519HalfHashWords, hash_h_low, kOtbnVarHashHlow));
+      otbn_dmem_write(kCurve25519HalfHashWords, hash_h_low, kOtbnVarS0));
+
+  // TODO: Remove once s is properly arithmetically masked.
+  HARDENED_TRY(otbn_dmem_set(8, 0, kOtbnVarS0 + 32));
+  HARDENED_TRY(otbn_dmem_set(16, 0, kOtbnVarS1 + 0));
 
   // Start the OTBN routine.
   return otbn_execute();
