@@ -32,6 +32,176 @@ static cert_key_id_pair_t dice_chain_cdi_0_key_ids = (cert_key_id_pair_t){
     .cert = &static_dice_cdi_0.cdi_0_pubkey_id,
 };
 
+// Get the size of the remaining tail space that is not processed yet.
+OT_WARN_UNUSED_RESULT
+OT_NOINLINE
+static size_t dice_chain_get_tail_size(void) {
+  HARDENED_CHECK_GE(sizeof(dice_chain.page.data), dice_chain.tail_offset);
+  return sizeof(dice_chain.page.data) - dice_chain.tail_offset;
+}
+
+// Get the pointer to the remaining tail space that is not processed yet.
+OT_WARN_UNUSED_RESULT
+static uint8_t *dice_chain_get_tail_buffer(void) {
+  return &dice_chain.page.data[dice_chain.tail_offset];
+}
+
+// Cleanup stale `cert_obj` data and mark it as invalid.
+static void dice_chain_reset_cert_obj(void) {
+  memset(&dice_chain.cert_obj, 0, sizeof(dice_chain.cert_obj));
+  dice_chain.cert_valid = kHardenedBoolFalse;
+}
+
+/**
+ * Increments the DICE cert buffer offset to the next TLV object.
+ * (ensuring to round up to the 64-bit flash word offset to prevent potential
+ * ECC issues).
+ */
+static void dice_chain_next_cert_obj(void) {
+  // Round up to next flash word for next perso TLV object offset.
+  size_t cert_size = dice_chain.cert_obj.obj_size;
+
+  // The cert_size is only 12-bit, which won't cause unsigned overflow.
+  cert_size = util_size_to_words(cert_size) * sizeof(uint32_t);
+  cert_size = util_round_up_to(cert_size, 3);
+
+  // Jump to the next object.
+  dice_chain.tail_offset += cert_size;
+
+  // Post-check for the buffer boundary.
+  HARDENED_CHECK_LE(dice_chain.tail_offset, sizeof(dice_chain.page.data));
+
+  dice_chain_reset_cert_obj();
+}
+
+/**
+ * Load the tlv cert obj from the tail buffer and check if it's valid.
+ *
+ * This method will update the `dice_chain` fields of current certificate:
+ *   * `cert_obj` will be all zeros if not TLV cert entry is found.
+ *   * `cert_valid` will only be set to true if name and pubkey matches.
+ *
+ * @param name The cert name to match.
+ * @param name_size Size in byte of the `name` argument. Caller has to ensure it
+ * is smaller than kCrthNameSizeFieldMask.
+ * @return errors encountered during the operation.
+ */
+OT_WARN_UNUSED_RESULT
+static rom_error_t dice_chain_load_cert_obj(const char *name,
+                                            size_t name_size) {
+  rom_error_t err = perso_tlv_get_cert_obj(
+      dice_chain_get_tail_buffer(), dice_chain_get_tail_size(),
+      kPersoBlobVersionV0, &dice_chain.cert_obj);
+
+  if (err != kErrorOk) {
+    // Cleanup the stale value if error.
+    dice_chain_reset_cert_obj();
+
+    // If the cert is not found or corrupted, continue and allow the ROM_EXT
+    // to generate an identity certificate for the current DICE stage. The
+    // error is not fatal, and the cert obj has been marked as invalid.
+    return kErrorOk;
+  }
+
+  // Check if this cert is what we are looking for. The name and type (X.509 vs
+  // CWT) should match.
+  const perso_tlv_object_type_t kExpectedCertType =
+      kDiceCertFormat == kDiceCertFormatX509TcbInfo ? kPersoObjectTypeX509Cert
+                                                    : kPersoObjectTypeCwtCert;
+  if (name == NULL || memcmp(dice_chain.cert_obj.name, name, name_size) != 0 ||
+      kExpectedCertType != dice_chain.cert_obj.obj_type) {
+    // Name unmatched, keep the cert_obj but mark it as invalid.
+    dice_chain.cert_valid = kHardenedBoolFalse;
+    return kErrorOk;
+  }
+
+  // Check if the subject pubkey is matched. `cert_valid` will be set to false
+  // if unmatched.
+  RETURN_IF_ERROR(dice_cert_check_valid(
+      &dice_chain.cert_obj, &dice_chain.subject_pubkey_id,
+      &dice_chain.subject_pubkey, &dice_chain.cert_valid));
+
+  return kErrorOk;
+}
+
+// Skip the TLV entry if the name matches.
+static rom_error_t dice_chain_skip_cert_obj(const char *name,
+                                            size_t name_size) {
+  RETURN_IF_ERROR(dice_chain_load_cert_obj(NULL, 0));
+  if (memcmp(dice_chain.cert_obj.name, name, name_size) == 0) {
+    dice_chain_next_cert_obj();
+  }
+  return kErrorOk;
+}
+
+// Load the certificate data from flash to RAM buffer.
+OT_WARN_UNUSED_RESULT
+static rom_error_t dice_chain_load_flash(
+    const flash_ctrl_info_page_t *info_page) {
+  // Skip reload if it's already buffered.
+  if (dice_chain.info_page == info_page) {
+    dice_chain.tail_offset = 0;
+    return kErrorOk;
+  }
+
+  // We are switching to a different page, flush changes (if dirty) first.
+  RETURN_IF_ERROR(dice_chain_flush_flash());
+
+  // Read in a DICE certificate(s) page.
+  static_assert(sizeof(dice_chain.page) == kFlashPageSize,
+                "Invalid dice_chain buffer size");
+  RETURN_IF_ERROR(flash_ctrl_info_read_zeros_on_read_error(
+      info_page, /*offset=*/0,
+      /*word_count=*/kFlashPageSize / sizeof(uint32_t), &dice_chain.page));
+
+  // Resets the flash page status.
+  dice_chain.data_dirty = kHardenedBoolFalse;
+  dice_chain.tail_offset = 0;
+  dice_chain.info_page = info_page;
+  dice_chain_reset_cert_obj();
+
+  return kErrorOk;
+}
+
+// Add the hash digest to the last of the page.
+static rom_error_t dice_chain_seal_page(void) {
+  // Hash the entire page before the digest.
+  hmac_sha256(dice_chain.page.data, sizeof(dice_chain.page.data),
+              &dice_chain.page.digest);
+
+  // The page is going to be updated.
+  dice_chain.data_dirty = kHardenedBoolTrue;
+
+  return kErrorOk;
+}
+
+// Push the certificate to the tail with TLV header.
+OT_WARN_UNUSED_RESULT
+static rom_error_t dice_chain_push_cert(const char *name, const uint8_t *cert,
+                                        const size_t cert_size) {
+  // The data is going to be updated, mark it as dirty and clear the tail.
+  dice_chain.data_dirty = kHardenedBoolTrue;
+
+  // Invalidate all the remaining certificates in the tail buffer.
+  memset(dice_chain_get_tail_buffer(), 0, dice_chain_get_tail_size());
+
+  // Encode the certificate to the tail buffer.
+  size_t cert_page_left = dice_chain_get_tail_size();
+  perso_tlv_object_type_t cert_type =
+      kDiceCertFormat == kDiceCertFormatX509TcbInfo ? kPersoObjectTypeX509Cert
+                                                    : kPersoObjectTypeCwtCert;
+  RETURN_IF_ERROR(perso_tlv_cert_obj_build(
+      name, cert_type, cert, cert_size, kPersoBlobVersionV0,
+      dice_chain_get_tail_buffer(), &cert_page_left));
+
+  // Move the offset to the new tail.
+  RETURN_IF_ERROR(perso_tlv_get_cert_obj(
+      dice_chain_get_tail_buffer(), dice_chain_get_tail_size(),
+      kPersoBlobVersionV0, &dice_chain.cert_obj));
+  dice_chain_next_cert_obj();
+  return kErrorOk;
+}
+
 rom_error_t dice_chain_attestation_silicon(void) {
   // Initialize the entropy complex and KMAC for key manager operations.
   // Note: `OTCRYPTO_OK.value` is equal to `kErrorOk` but we cannot add a static
