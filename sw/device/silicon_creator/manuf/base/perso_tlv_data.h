@@ -174,25 +174,6 @@ typedef struct perso_tlv_cert_obj {
 } perso_tlv_cert_obj_t;
 
 /**
- * Personalization blob versions.
- */
-typedef enum perso_blob_version {
-  /**
-   * V0 is the original personalization blob format. It uses a 16-bit object
-   * header (4-bit type, 12-bit size), which limits the maximum size of any
-   * single object to 4KB.
-   */
-  kPersoBlobVersionV0 = 0,
-  /**
-   * V1 personalization blobs start with a version TLV object (which uses the V0
-   * header format for backwards compatibility). All subsequent objects in the
-   * blob use a larger 32-bit header (8-bit type, 24-bit size), allowing for
-   * significantly larger objects (up to 16MB).
-   */
-  kPersoBlobVersionV1 = 1,
-} perso_blob_version_t;
-
-/**
  * Initializes the perso blob as a V1 blob.
  *
  * @param pb Pointer to the `perso_blob_t` to initialize.

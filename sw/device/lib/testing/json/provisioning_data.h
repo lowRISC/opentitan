@@ -27,10 +27,20 @@ extern "C" {
 enum {
   kSerdesSha256HashSerializedMaxSize = 98,
   kLcTokenHashSerializedMaxSize = 52,
-  kManufCertgenInputsSerializedMaxSize = 210,
+  kManufCertgenInputsSerializedMaxSize = 215,
   kPersoBlobSerializedMaxSize = 20535,
 };
 #endif
+
+/**
+ * Version of the personalization blob format.
+ */
+// clang-format off
+#define ENUM_PERSO_BLOB_VERSION(_, value) \
+    value(_, V0, 0) \
+    value(_, V1, 1)
+UJSON_SERDE_ENUM(PersoBlobVersion, perso_blob_version_t, ENUM_PERSO_BLOB_VERSION);
+// clang-format on
 
 /**
  * Provisioning data imported onto the device during CP.
@@ -111,7 +121,8 @@ UJSON_SERDE_STRUCT(ManufFtIndividualizeData, \
 // clang-format off
 #define STRUCT_MANUF_CERTGEN_INPUTS(field, string) \
     field(dice_auth_key_key_id, uint8_t, 20) \
-    field(ext_auth_key_key_id, uint8_t, 20)
+    field(ext_auth_key_key_id, uint8_t, 20) \
+    field(blob_version, perso_blob_version_t)
 UJSON_SERDE_STRUCT(ManufCertgenInputs, \
                    manuf_certgen_inputs_t, \
                    STRUCT_MANUF_CERTGEN_INPUTS);
