@@ -101,28 +101,34 @@
  */
 ed25519_gen_public_key:
 
-  /* Load the 256-bit lower half of the precomputed hash h.
-       w16 <= h[255:0] */
+  /* Load the arithmetic shares (s0, s1) of the precomputed and clamped secret
+     s and reduce them modulo L. */
+
+  /* [w17:w16] <= s0. */
   li       x2, 16
-  la       x3, ed25519_hash_h_low
-  bn.lid   x2, 0(x3)
+  la       x3, ed25519_s0
+  bn.lid   x2++, 0(x3)
+  bn.lid   x2++, 32(x3)
 
-  /* Recover the secret scalar s from h.
-       w16 <= s */
-  jal      x1, sc_clamp
+  /* w28 <= [w17:w16] mod L = s0 mod L. */
+  jal x1, sc_reduce
+  bn.mov w28, w18
 
-  /* Reduce s modulo L. Note: s is only 255 bits, so this full 512-bit
-     reduction could be much faster (in fact, since clamping guarantees 3L < s
-     < 4L, we can simply subtract 3L instead). However, this routine is not
-     performance-critical, so we use the generalized routine and set the high
-     bits to zero.
-       w18 <= [w31,w16] mod L = s mod L */
-  bn.mov   w17, w31
-  jal      x1, sc_reduce
+  /* Clear w16 and w17 with randomness before loading the second share s1. */
+  bn.wsrr w16, URND
+  bn.wsrr w17, URND
 
-  /* Save s for later.
-       w28 <= s mod L */
-  bn.mov   w28, w18
+  /* [w17:w16] <= s1. */
+  li       x2, 16
+  la       x3, ed25519_s1
+  bn.lid   x2++, 0(x3)
+  bn.lid   x2++, 32(x3)
+
+  /* w18 <= [w17:w16] mod L = s1 mod L. */
+  jal x1, sc_reduce
+
+  /* TODO: Remove once everything is in place. */
+  bn.subm w28, w28, w18
 
   /* Set up for field arithmetic in preparation for scalar multiplication.
        MOD <= p
@@ -476,21 +482,37 @@ ed25519_sign_stage1:
        MOD <= L */
   jal      x1, sc_init
 
-  /* Load the 512-bit precomputed hash r.
-       [w17:w16] <= r */
-  li       x2, 16
-  la       x3, ed25519_hash_r
-  bn.lid   x2, 0(x3++)
-  addi     x2, x2, 1
-  bn.lid   x2, 0(x3)
+  /* Load the 640-bit shares (r0, r1) of the precomputed hash r and reduce
+     them. */
 
-  /* Reduce r modulo L.
-       w18 <= [w17:w16] mod L = r mod L */
-  jal      x1, sc_reduce
+  /* [w22:w20] <= r0. */
+  li       x2, 20
+  la       x3, ed25519_r0
+  bn.lid   x2++, 0(x3)
+  bn.lid   x2++, 32(x3)
+  bn.lid   x2++, 64(x3)
 
-  /* Save r for later.
-       w5 <= w18 = r mod L */
-  bn.mov   w5, w18
+  /* w5 <= [w22:w20] mod L = r0 mod L. */
+  jal x1, sc_reduce_768
+  bn.mov w5, w18
+
+  /* Overwrite w20-w22 with randomness before loading the second share r1. */
+  bn.wsrr w20, URND
+  bn.wsrr w21, URND
+  bn.wsrr w22, URND
+
+  /* [w22:w20] <= r1. */
+  li       x2, 20
+  la       x3, ed25519_r1
+  bn.lid   x2++, 0(x3)
+  bn.lid   x2++, 32(x3)
+  bn.lid   x2++, 64(x3)
+
+  /* w18 <= [w22:w20] mod L = r1 mod L. */
+  jal x1, sc_reduce_768
+
+  /* TODO remove this once everything is in place. */
+  bn.subm   w5, w5, w18
 
   /* Calculate and write encoded public key A (A_) to DMEM.
        dmem[ed25519_public_key] <= A_
@@ -559,21 +581,35 @@ ed25519_sign_stage2:
        MOD <= L */
   jal      x1, sc_init
 
-  /* Load the 512-bit precomputed hash r.
-       [w17:w16] <= r */
-  li       x2, 16
-  la       x3, ed25519_hash_r
-  bn.lid   x2, 0(x3++)
-  addi     x2, x2, 1
-  bn.lid   x2, 0(x3)
+  /* Load the 640-bit shares (r0, r1) of the precomputed hash r and reduce
+     them. */
 
-  /* Reduce r modulo L.
-       w18 <= [w17:w16] mod L = r mod L */
-  jal      x1, sc_reduce
+  /* [w22:w20] <= r0. */
+  li       x2, 20
+  la       x3, ed25519_r0
+  bn.lid   x2++, 0(x3)
+  bn.lid   x2++, 32(x3)
+  bn.lid   x2++, 64(x3)
 
-  /* Save r for later.
-       w5 <= r mod L */
-  bn.mov   w5, w18
+  /* w5 <= [w22:w20] mod L = r0 mod L. */
+  jal x1, sc_reduce_768
+  bn.mov w5, w18
+
+  /* Overwrite w20-w22 with randomness before loading the second share r1. */
+  bn.wsrr w20, URND
+  bn.wsrr w21, URND
+  bn.wsrr w22, URND
+
+  /* [w22:w20] <= r1. */
+  li       x2, 20
+  la       x3, ed25519_r1
+  bn.lid   x2++, 0(x3)
+  bn.lid   x2++, 32(x3)
+  bn.lid   x2++, 64(x3)
+
+  /* w6 <= [w22:w20] mod L = r1 mod L. */
+  jal x1, sc_reduce_768
+  bn.mov w6, w18
 
   /* Load the 512-bit precomputed hash k.
        [w17:w16] <= k */
@@ -591,28 +627,57 @@ ed25519_sign_stage2:
        w4 <= k mod L */
   bn.mov   w4, w18
 
-  /* Load the 256-bit lower half of the precomputed hash h.
-       w16 <= h[255:0] */
+  /* Load the arithmetic shares (s0, s1) of the precomputed and clamped secret
+     s and reduce them modulo L. */
+
+  /* [w17:w16] <= s0. */
   li       x2, 16
-  la       x3, ed25519_hash_h_low
-  bn.lid   x2, 0(x3)
+  la       x3, ed25519_s0
+  bn.lid   x2++, 0(x3)
+  bn.lid   x2++, 32(x3)
 
-  /* Recover the secret scalar s from h.
-       w16 <= s */
-  jal      x1, sc_clamp
+  /* w7 <= [w17:w16] mod L = s0 mod L. */
+  jal x1, sc_reduce
+  bn.mov w7, w18
 
-  /* Compute the signature scalar S = (r + (k * s)) mod L. Note: s is not fully
-     reduced modulo L here, but that is permitted according to the
-     specification of sc_mul, which only requires that its inputs fit in 256
-     bits. */
+  /* Clear w16 and w17 with randomness before loading the second share s1. */
+  bn.wsrr w16, URND
+  bn.wsrr w17, URND
 
-  /* w18 <= (w4 * w16) mod L = (k * s) mod L */
-  bn.mov   w21, w4
-  bn.mov   w22, w16
-  jal      x1, sc_mul
+  /* [w17:w16] <= s1. */
+  li       x2, 16
+  la       x3, ed25519_s1
+  bn.lid   x2++, 0(x3)
+  bn.lid   x2++, 32(x3)
 
-  /* w4 <= (w5 + w18) mod L = (r + k * s) mod L = S */
-  bn.addm  w4, w5, w18
+  /* w8 <= [w17:w16] mod L = s1 mod L. */
+  jal x1, sc_reduce
+  bn.mov w8, w18
+
+  /* Compute the signature scalar S = (r0 + (k * s0)) - (r1 + (k * s0)) mod L. */
+
+  /* w7 <= w4 * [w22:w21] mod L = k * s0 mod L. */
+  bn.mov w21, w4
+  bn.mov w22, w7
+  jal x1, sc_mul
+  bn.mov w7, w18
+
+  /* w8 <= w4 * [w22:w21] mod L = k * s1 mod L. */
+  bn.mov w21, w4
+  bn.mov w22, w8
+  jal x1, sc_mul
+  bn.mov w8, w18
+
+  /* w5 <= w5 + w7 mod L = (r0 + (k * s0)) mod L. */
+  bn.addm w5, w5, w7
+
+  bn.xor w31, w31, w31 /* dummy */
+
+  /* w6 <= w6 + w8 mod L = (r1 + (k * s1)) mod L. */
+  bn.addm w6, w6, w8
+
+  /* w4 <= w5 - w6 mod L = S = (r0 + (k * s0)) - (r1 + (k * s0)) mod L. */
+  bn.subm w4, w5, w6
 
   /* Write S to dmem.
        dmem[ed25519_sig_S] <= w4 = S */
@@ -1545,20 +1610,6 @@ ed25519_public_key:
 ed25519_hash_k:
   .zero 64
 
-/* Lower half of precomputed hash h (256 bits). See RFC 8032, section
-   5.1.6, step 1 or the docstring of ed25519_sign. Input for sign. */
-.balign 32
-.weak ed25519_hash_h_low
-ed25519_hash_h_low:
-  .zero 32
-
-/* Precomputed hash r (512 bits). See RFC 8032, section 5.1.6, step 2 or the
-   docstring of ed25519_sign. Input for sign. */
-.balign 32
-.weak ed25519_hash_r
-ed25519_hash_r:
-  .zero 64
-
 /* Encoded LHS for verification (256 bits). */
 .balign 32
 .globl ed25519_verify_lhs
@@ -1570,6 +1621,32 @@ ed25519_verify_lhs:
 .globl ed25519_verify_rhs
 ed25519_verify_rhs:
   .zero 32
+
+/* Precomputed arithmetic shares of the clamped integer s (256 bits embedded in
+   384 bits). See RFC 8032, section 5.1.6, step 1 or the docstring of
+   ed25519_sign. Input for sign. */
+.balign 32
+.weak ed25519_s0
+ed25519_s0:
+  .zero 64
+
+.balign 32
+.weak ed25519_s1
+ed25519_s1:
+  .zero 64
+
+/* Precomputed arithmetic shares of r (512 bits embedded in 640 bits). See
+   RFC 8032, section 5.1.6, step 2 or the docstring of ed25519_sign. Input for
+   sign. */
+.balign 32
+.weak ed25519_r0
+ed25519_r0:
+  .zero 96
+
+.balign 32
+.weak ed25519_r1
+ed25519_r1:
+  .zero 96
 
 .data
 
