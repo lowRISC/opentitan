@@ -21,7 +21,7 @@ enum {
   /**
    * Number of windows for Galois field pre-computed tables.
    *
-   * We suse 4-bit windows, so the number of windows is 2x the number of bytes
+   * We use 4-bit windows, so the number of windows is 2x the number of bytes
    * in a block.
    */
   kNumWindows = kGhashBlockNumBytes << 1,
