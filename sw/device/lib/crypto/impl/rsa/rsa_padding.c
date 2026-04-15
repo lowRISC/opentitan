@@ -90,7 +90,7 @@ static status_t digest_info_length_get(const otcrypto_hash_mode_t hash_mode,
       *len = sizeof(kSha3_384DigestIdentifier) + kKmacSha3384DigestBytes;
       break;
     case kOtcryptoHashModeSha3_512:
-      *len = sizeof(kSha512DigestIdentifier) + kKmacSha3512DigestBytes;
+      *len = sizeof(kSha3_512DigestIdentifier) + kKmacSha3512DigestBytes;
       break;
     default:
       // Unsupported or unrecognized hash function.
