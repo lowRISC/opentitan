@@ -27,6 +27,84 @@
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 static dice_storage_page_t dice_page;
 
+#include "hw/top/flash_ctrl_regs.h"  // Generated.
+
+enum {
+  kFlashPageSize = FLASH_CTRL_PARAM_BYTES_PER_PAGE,
+};
+
+/**
+ * Defines a class for parsing and building the DICE cert chain.
+ *
+ * All of the fields in this struct should be considered private, and users
+ * should call the public `dice_chain_*` functions instead.
+ */
+typedef struct dice_chain {
+  /**
+   * RAM buffer that mirrors the DICE cert chain in a flash page.
+   */
+  dice_page_t page;
+
+  /**
+   * Indicate whether `page` needs to be written back to flash.
+   */
+  hardened_bool_t data_dirty;
+
+  /**
+   * The amount of bytes in `page.data` that has been processed.
+   */
+  size_t tail_offset;
+
+  /**
+   * Indicate the info page currently buffered in `page`.
+   * This is used to skip unnecessary read ops.
+   */
+  const flash_ctrl_info_page_t *info_page;
+
+  /**
+   * Id pair which points to the endorsement and cert ids below.
+   */
+  cert_key_id_pair_t key_ids;
+
+  /**
+   * Public key id for signing endorsement cert.
+   */
+  hmac_digest_t endorsement_pubkey_id;
+
+  /**
+   * Subject public key id of the current cert.
+   */
+  hmac_digest_t subject_pubkey_id;
+
+  /**
+   * Subject public key contents of the current cert.
+   */
+  ecdsa_p256_public_key_t subject_pubkey;
+
+  /**
+   * Scratch buffer for constructing CDI certs.
+   */
+  uint8_t scratch_cert[kDicePageDataSize];
+
+  /**
+   * The current tlv cert the builder is processing.
+   */
+  perso_tlv_cert_obj_t cert_obj;
+
+  /**
+   * The version of the perso blob.
+   */
+  perso_blob_version_t blob_version;
+
+  /**
+   * Indicate whether the `cert_obj` is valid for the current `subject_pubkey`.
+   */
+  hardened_bool_t cert_valid;
+
+} dice_chain_t;
+
+static dice_chain_t dice_chain;
+
 static cert_key_id_pair_t dice_chain_cdi_0_key_ids = (cert_key_id_pair_t){
     .endorsement = &static_dice_cdi_0.uds_pubkey_id,
     .cert = &static_dice_cdi_0.cdi_0_pubkey_id,
@@ -91,8 +169,7 @@ static rom_error_t dice_chain_load_cert_obj(const char *name,
                                             size_t name_size) {
   rom_error_t err = perso_tlv_get_cert_obj(
       dice_chain_get_tail_buffer(), dice_chain_get_tail_size(),
-      kPersoBlobVersionV0, &dice_chain.cert_obj);
-
+      dice_chain.blob_version, &dice_chain.cert_obj);
   if (err != kErrorOk) {
     // Cleanup the stale value if error.
     dice_chain_reset_cert_obj();
@@ -160,6 +237,13 @@ static rom_error_t dice_chain_load_flash(
   dice_chain.info_page = info_page;
   dice_chain_reset_cert_obj();
 
+  // Detect the version of the blob stored in flash.
+  size_t offset = 0;
+  RETURN_IF_ERROR(perso_tlv_get_blob_version(
+      dice_chain.page.data, sizeof(dice_chain.page.data),
+      &dice_chain.blob_version, &offset));
+  dice_chain.tail_offset = offset;
+
   return kErrorOk;
 }
 
@@ -191,13 +275,13 @@ static rom_error_t dice_chain_push_cert(const char *name, const uint8_t *cert,
       kDiceCertFormat == kDiceCertFormatX509TcbInfo ? kPersoObjectTypeX509Cert
                                                     : kPersoObjectTypeCwtCert;
   RETURN_IF_ERROR(perso_tlv_cert_obj_build(
-      name, cert_type, cert, cert_size, kPersoBlobVersionV0,
+      name, cert_type, cert, cert_size, dice_chain.blob_version,
       dice_chain_get_tail_buffer(), &cert_page_left));
 
   // Move the offset to the new tail.
   RETURN_IF_ERROR(perso_tlv_get_cert_obj(
       dice_chain_get_tail_buffer(), dice_chain_get_tail_size(),
-      kPersoBlobVersionV0, &dice_chain.cert_obj));
+      dice_chain.blob_version, &dice_chain.cert_obj));
   dice_chain_next_cert_obj();
   return kErrorOk;
 }
