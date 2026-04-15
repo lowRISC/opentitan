@@ -1,0 +1,15 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for rram_macro
+
+# rst_ni is the asynchronous reset of rram_macro. It's unused in the generic
+# prim_ram_1p implementation, but other implementations may use it.
+waive -rules {RESET_USE} -location {rram_macro.sv} \
+      -regexp {rst_ni' is connected to 'prim_ram_1p' port 'rst_ni', and used as an asynchronous reset or set at rram_macro.sv} \
+      -comment "rst_ni is the asynchronous reset of rram_macro. It's unused in the generic implementation, but other implementations may use it."
+
+waive -rules {INOUT_AS_IN} -location {rram_macro.sv} \
+      -msg {Inout port 'rram_test_analog_io' has no driver in module 'rram_macro'} \
+      -comment "This signal is not driven in the open-source emulation model."
