@@ -28,4 +28,4 @@ _challenge_hash_c:
 .zero 64
 
 _stack:
-.zero 4
+.zero 256

@@ -36,7 +36,7 @@ _expand_a_rho:
 .zero 64
 
 _stack:
-.zero 4
+.zero 256
 
 .section .scratchpad
 

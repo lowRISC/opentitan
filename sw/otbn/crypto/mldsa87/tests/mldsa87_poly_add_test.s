@@ -61,4 +61,4 @@ _poly_add_c_overflow:
 .zero 1024
 
 _stack:
-.zero 4
+.zero 256

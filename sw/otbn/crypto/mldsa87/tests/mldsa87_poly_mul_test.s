@@ -49,4 +49,4 @@ _poly_mul_c:
 .zero 1024
 
 _stack:
-.zero 4
+.zero 256

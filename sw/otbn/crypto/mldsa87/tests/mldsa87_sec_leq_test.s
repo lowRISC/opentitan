@@ -68,4 +68,4 @@ _sec_leq_8x32_res:
 .zero 1024
 
 _stack:
-.zero 4
+.zero 256

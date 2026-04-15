@@ -61,4 +61,4 @@ _poly_sub_c_underflow:
 .zero 1024
 
 _stack:
-.zero 4
+.zero 256

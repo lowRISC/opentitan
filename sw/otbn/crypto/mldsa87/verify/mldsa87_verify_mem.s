@@ -101,8 +101,8 @@ mldsa87_verify_const_gamma1_beta_bound:
 .word 0x0007ff88
 .word 0x0007ff88
 
-_stack:
-.zero 4
+stack:
+.zero 256
 
 .section .scratchpad
 .balign 32

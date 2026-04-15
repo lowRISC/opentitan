@@ -26,4 +26,4 @@ _sample_in_ball_c:
 .zero 1024
 
 _stack:
-.zero 4
+.zero 256

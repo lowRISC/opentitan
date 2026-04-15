@@ -72,4 +72,4 @@ _sec_bound_check_b:
 .word 0x0007ff88
 
 _stack:
-.zero 4
+.zero 256

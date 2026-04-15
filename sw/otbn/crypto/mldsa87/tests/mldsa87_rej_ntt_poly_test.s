@@ -26,4 +26,4 @@ _rej_ntt_poly_output:
 .zero 1024
 
 _stack:
-.zero 4
+.zero 256

@@ -13,6 +13,14 @@
  * of FIPS-204.
  */
 mldsa87_verify:
+  /* Initialize stack and all-zero WDR. */
+  la x31, stack
+  bn.xor w31, w31, w31
+
+  /* Load the ML-DSA parameters into the MOD register. */
+  la x2, mldsa87_verify_const_params
+  bn.lid x0, 0(x2)
+  bn.wsrw MOD, w0
 
   /* Decode the signature blob. */
   la x2, mldsa87_verify_sig_h
