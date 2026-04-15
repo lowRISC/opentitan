@@ -945,8 +945,6 @@ otcrypto_status_t otcrypto_ecc_p384_arith_share_private_key(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  HARDENED_TRY(entropy_complex_check());
-
   // The key shares must resided in 448-bit buffers.
   if (bool_private_key_share0->len != kP384MaskedScalarShareWords ||
       bool_private_key_share1->len != kP384MaskedScalarShareWords) {
