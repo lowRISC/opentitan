@@ -431,7 +431,7 @@ static status_t oneshot(const uint32_t cfg, const hmac_key_t *key,
   HARDENED_CHECK_EQ(abs_mmio_read32(hmac_base() + HMAC_CFG_REG_OFFSET),
                     launder32(cfg));
 
-  // HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(msg));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(msg));
 
   HARDENED_TRY(clear());
   return OTCRYPTO_OK;
