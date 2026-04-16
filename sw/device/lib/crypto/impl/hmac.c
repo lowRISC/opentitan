@@ -465,8 +465,15 @@ otcrypto_status_t otcrypto_hmac_update(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  hmac_ctx_t *hmac_ctx = (hmac_ctx_t *)ctx->data;
-  HARDENED_TRY(hmac_update(hmac_ctx, input_message));
+  hmac_ctx_t hmac_ctx;
+  HARDENED_TRY(hardened_memcpy((uint32_t *)&hmac_ctx,
+                               (const uint32_t *)ctx->data,
+                               sizeof(hmac_ctx_t) / sizeof(uint32_t)));
+  HARDENED_TRY(hmac_update(&hmac_ctx, input_message));
+  randomized_bytecopy(ctx->data, &hmac_ctx, sizeof(hmac_ctx_t));
+  HARDENED_CHECK_EQ(
+      consttime_memeq_byte(&hmac_ctx, ctx->data, sizeof(hmac_ctx_t)),
+      kHardenedBoolTrue);
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
@@ -476,12 +483,17 @@ otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,
     return OTCRYPTO_BAD_ARGS;
   }
 
+  // Restore the context into a local copy before operating on it.
+  hmac_ctx_t hmac_ctx;
+  HARDENED_TRY(hardened_memcpy((uint32_t *)&hmac_ctx,
+                               (const uint32_t *)ctx->data,
+                               sizeof(hmac_ctx_t) / sizeof(uint32_t)));
+
   // Check the digest length.
-  hmac_ctx_t *hmac_ctx = (hmac_ctx_t *)ctx->data;
-  if (launder32(tag->len) != hmac_ctx->digest_wordlen) {
+  if (launder32(tag->len) != hmac_ctx.digest_wordlen) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(tag->len, hmac_ctx->digest_wordlen);
+  HARDENED_CHECK_EQ(tag->len, hmac_ctx.digest_wordlen);
 
-  return otcrypto_eval_exit(hmac_final(hmac_ctx, tag));
+  return otcrypto_eval_exit(hmac_final(&hmac_ctx, tag));
 }
