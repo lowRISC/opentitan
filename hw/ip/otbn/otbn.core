@@ -11,7 +11,7 @@ filesets:
       - lowrisc:prim:assert
       - lowrisc:prim:util
       - lowrisc:prim:lfsr
-      - lowrisc:prim:xoshiro256pp
+      - lowrisc:prim:trivium
       - lowrisc:prim:cipher_pkg
       - lowrisc:prim:mubi
       - lowrisc:prim:crc32
