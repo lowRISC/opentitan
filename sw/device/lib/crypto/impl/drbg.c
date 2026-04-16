@@ -89,8 +89,8 @@ static otcrypto_status_t seed_material_xor(
   // Copy into a word-aligned buffer. This allows us to use a XOR that is more
   // resilient against SCA leakage.
   size_t nwords = ceil_div(value->len, sizeof(uint32_t));
-  uint32_t value_words[nwords];
-  value_words[nwords - 1] = 0;
+  uint32_t value_words[kEntropySeedWords];
+  memset(value_words, 0, sizeof(value_words));
   HARDENED_TRY(randomized_bytecopy(value_words, value->data, value->len));
   // Check whether a FI tampered copying the bytes.
   HARDENED_CHECK_EQ(consttime_memeq_byte(value->data, value_words, value->len),
