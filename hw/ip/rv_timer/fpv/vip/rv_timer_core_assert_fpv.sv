@@ -67,6 +67,9 @@ module rv_timer_core_assert_fpv # (
   endproperty
   TickCountPrescalerMaxReset_A: assert property (PrescalerMaxReset_p);
 
+  // Make sure prescaler_count never exceeds prescaler
+  PrescalerCountBounded_A: assert property (prescaler_count <= prescaler);
+
   // Free variable to avoid having to declare a generate block and hence proving faster
   int unsigned fpv_timer_idx;
   // Free variable constraints:
@@ -101,7 +104,14 @@ module rv_timer_core_assert_fpv # (
     !active || mtime < mtimecmp[fpv_timer_idx] |-> intr[fpv_timer_idx] == '0; 
   endproperty
   InterruptLowWhenNotExpired_A: assert property (InterruptLowWhenNotExpired_p);
-  
+
+  // Check interrupt is raised when active and mtime >= mtimecmp for selected index 
+  property InterruptHighWhenExpired_p;
+    disable iff (!rst_ni)
+    active && mtime >= mtimecmp[fpv_timer_idx] |-> intr[fpv_timer_idx];
+  endproperty
+  InterruptHighWhenExpired_A: assert property (InterruptHighWhenExpired_p);
+
   // Check mtime_d is always mtime + step, regardless of reset or active
   MtimeDAlwaysMtimePlusStep_A: assert property (disable iff ('0)  mtime_d == mtime + 64'(step));
 
