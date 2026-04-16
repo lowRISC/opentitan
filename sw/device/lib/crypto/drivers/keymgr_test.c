@@ -55,7 +55,7 @@ status_t test_setup(void) {
 
   TRY(keymgr_testutils_initialize(&keymgr, &kmac));
 
-  return entropy_complex_init();
+  return entropy_complex_init(kHardenedBoolFalse);
 }
 
 /**

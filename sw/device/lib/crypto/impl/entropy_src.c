@@ -13,16 +13,16 @@
 #define MODULE_ID MAKE_MODULE_ID('e', 't', 's')
 
 otcrypto_status_t otcrypto_entropy_init(void) {
-  HARDENED_TRY(entropy_complex_init());
+  HARDENED_TRY(entropy_complex_init(kHardenedBoolTrue));
   return OTCRYPTO_OK;
 }
 
 otcrypto_status_t otcrypto_entropy_check(void) {
-  HARDENED_TRY(entropy_complex_check());
+  HARDENED_TRY(entropy_complex_check(kHardenedBoolTrue));
   return OTCRYPTO_OK;
 }
 
 otcrypto_status_t otcrypto_entropy_health_test_config_check(void) {
-  HARDENED_TRY(entropy_complex_health_test_config_check());
+  HARDENED_TRY(entropy_complex_health_test_config_check(kHardenedBoolTrue));
   return OTCRYPTO_OK;
 }
