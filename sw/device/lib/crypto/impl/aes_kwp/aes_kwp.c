@@ -168,8 +168,8 @@ status_t aes_kwp_unwrap(const aes_key_t kek, const uint32_t *ciphertext,
   // the prefix check. Otherwise it could expose a padding oracle, because
   // memcmp is not constant-time.
   if (pad_len != 0) {
-    uint8_t exp_pad[pad_len];
-    memset(exp_pad, 0, pad_len);
+    uint8_t exp_pad[kSemiblockBytes];
+    memset(exp_pad, 0, kSemiblockBytes);
     unsigned char *pad_start = ((unsigned char *)r) + plaintext_len;
     if (memcmp(pad_start, exp_pad, pad_len) != 0) {
       *success = kHardenedBoolFalse;
