@@ -36,8 +36,10 @@ OTBN_DECLARE_SYMBOL_ADDR(run_curve25519,
                          ed25519_s0);  // 384-bit first share of s.
 OTBN_DECLARE_SYMBOL_ADDR(run_curve25519,
                          ed25519_s1);  // 384-bit second shares of s.
-OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, ed25519_r0); // 640-bit first share of r.
-OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, ed25519_r1); // 640-bit second share of r.
+OTBN_DECLARE_SYMBOL_ADDR(run_curve25519,
+                         ed25519_r0);  // 640-bit first share of r.
+OTBN_DECLARE_SYMBOL_ADDR(run_curve25519,
+                         ed25519_r1);  // 640-bit second share of r.
 
 static const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(run_curve25519, mode);
 static const otbn_addr_t kOtbnVarVerifyRes =
@@ -78,8 +80,38 @@ static const uint32_t kOtbnCurve25519ModeSignStage2 =
 static const uint32_t kOtbnCurve25519ModeVerify =
     OTBN_ADDR_T_INIT(run_curve25519, MODE_VERIFY);
 
-status_t curve25519_keygen_start(
-    const uint32_t hash_h_low[kCurve25519HalfHashWords]) {
+/**
+ * Write a masked scalar to DMEM.
+ *
+ * This routine can be used for both s and r by passing the shares directly to
+ * this function and setting `share_len` accordingly.
+ *
+ * @param share0 The first share of the scalar.
+ * @param share1 The second share of the scalar.
+ * @param share_len The size of the scalar shares in number of 32-bit words.
+ * @param share0_addr The DMEM address of the first share.
+ * @param share1_addr The DMEM address of the second share.
+ * @return OK.
+ */
+static status_t curve25519_masked_scalar_write(const uint32_t *share0,
+                                               const uint32_t *share1,
+                                               size_t share_len,
+                                               const otbn_addr_t share0_addr,
+                                               const otbn_addr_t share1_addr) {
+  HARDENED_TRY(otbn_dmem_write(share_len, share0, share0_addr));
+  HARDENED_TRY(otbn_dmem_write(share_len, share1, share1_addr));
+
+  // Write trailing 0s so that OTBN's 256-bit read of the shares does not cause
+  // an error.
+  HARDENED_TRY(otbn_dmem_set(kCurve25519MaskedScalarPaddingWords, 0,
+                             share0_addr + (share_len << 2)));
+  HARDENED_TRY(otbn_dmem_set(kCurve25519MaskedScalarPaddingWords, 0,
+                             share1_addr + (share_len << 2)));
+
+  return OTCRYPTO_OK;
+}
+
+status_t curve25519_keygen_start(const curve25519_masked_scalar_s_t *s) {
   // Load the Curve25519 app. Fails if OTBN is non-idle.
   HARDENED_TRY(otbn_load_app(kOtbnAppCurve25519));
 
@@ -87,13 +119,10 @@ status_t curve25519_keygen_start(
   uint32_t mode = kOtbnCurve25519ModeKeygen;
   HARDENED_TRY(otbn_dmem_write(kCurve25519ModeWords, &mode, kOtbnVarMode));
 
-  // Set the shares of s.
-  HARDENED_TRY(
-      otbn_dmem_write(kCurve25519HalfHashWords, hash_h_low, kOtbnVarS0));
-
-  // TODO: Remove once s is properly arithmetically shared.
-  HARDENED_TRY(otbn_dmem_set(8, 0, kOtbnVarS0 + 32));
-  HARDENED_TRY(otbn_dmem_set(16, 0, kOtbnVarS1 + 0));
+  // Write the shares of s to DMEM.
+  HARDENED_TRY(curve25519_masked_scalar_write(s->share0, s->share1,
+                                              kCurve25519MaskedScalarSWords,
+                                              kOtbnVarS0, kOtbnVarS1));
 
   // Start the OTBN routine.
   return otbn_execute();
@@ -112,9 +141,8 @@ status_t curve25519_keygen_finalize(
   return otbn_dmem_sec_wipe();
 }
 
-status_t curve25519_sign_stage1_start(
-    const uint32_t hash_r[kCurve25519HashWords],
-    const uint32_t hash_h_low[kCurve25519HalfHashWords]) {
+status_t curve25519_sign_stage1_start(const curve25519_masked_scalar_r_t *r,
+                                      const curve25519_masked_scalar_s_t *s) {
   // Load the Curve25519 app. Fails if OTBN is non-idle.
   HARDENED_TRY(otbn_load_app(kOtbnAppCurve25519));
 
@@ -122,19 +150,13 @@ status_t curve25519_sign_stage1_start(
   uint32_t mode = kOtbnCurve25519ModeSignStage1;
   HARDENED_TRY(otbn_dmem_write(kCurve25519ModeWords, &mode, kOtbnVarMode));
 
-  // Set 64 Byte hash r.
-  HARDENED_TRY(otbn_dmem_write(kCurve25519HashWords, hash_r, kOtbnVarR0));
-
-  HARDENED_TRY(otbn_dmem_set(8, 0, kOtbnVarR0 + 64));
-  HARDENED_TRY(otbn_dmem_set(24, 0, kOtbnVarR1 + 0));
-
-  // Set the shares of s.
-  HARDENED_TRY(
-      otbn_dmem_write(kCurve25519HalfHashWords, hash_h_low, kOtbnVarS0));
-
-  // TODO: Remove once s is properly arithmetically shared.
-  HARDENED_TRY(otbn_dmem_set(8, 0, kOtbnVarS0 + 32));
-  HARDENED_TRY(otbn_dmem_set(16, 0, kOtbnVarS1 + 0));
+  // Write the shares of r and s to DMEM.
+  HARDENED_TRY(curve25519_masked_scalar_write(r->share0, r->share1,
+                                              kCurve25519MaskedScalarRWords,
+                                              kOtbnVarR0, kOtbnVarR1));
+  HARDENED_TRY(curve25519_masked_scalar_write(s->share0, s->share1,
+                                              kCurve25519MaskedScalarSWords,
+                                              kOtbnVarS0, kOtbnVarS1));
 
   // Start the OTBN routine.
   return otbn_execute();
@@ -158,8 +180,8 @@ status_t curve25519_sign_stage1_finalize(
 
 status_t curve25519_sign_stage2_start(
     const uint32_t hash_k[kCurve25519HashWords],
-    const uint32_t hash_r[kCurve25519HashWords],
-    const uint32_t hash_h_low[kCurve25519HalfHashWords]) {
+    const curve25519_masked_scalar_r_t *r,
+    const curve25519_masked_scalar_s_t *s) {
   // Load the Curve25519 app. Fails if OTBN is non-idle.
   HARDENED_TRY(otbn_load_app(kOtbnAppCurve25519));
 
@@ -170,20 +192,13 @@ status_t curve25519_sign_stage2_start(
   // Set challenge hash k.
   HARDENED_TRY(otbn_dmem_write(kCurve25519HashWords, hash_k, kOtbnVarHashK));
 
-  // Set the shares of r.
-  HARDENED_TRY(otbn_dmem_write(kCurve25519HashWords, hash_r, kOtbnVarR0));
-
-  // TODO: Remove once r is properly arithmetically masked.
-  HARDENED_TRY(otbn_dmem_set(8, 0, kOtbnVarR0 + 64));
-  HARDENED_TRY(otbn_dmem_set(24, 0, kOtbnVarR1 + 0));
-
-  // Set the shares of s.
-  HARDENED_TRY(
-      otbn_dmem_write(kCurve25519HalfHashWords, hash_h_low, kOtbnVarS0));
-
-  // TODO: Remove once s is properly arithmetically masked.
-  HARDENED_TRY(otbn_dmem_set(8, 0, kOtbnVarS0 + 32));
-  HARDENED_TRY(otbn_dmem_set(16, 0, kOtbnVarS1 + 0));
+  // Write the shares of r and s to DMEM.
+  HARDENED_TRY(curve25519_masked_scalar_write(r->share0, r->share1,
+                                              kCurve25519MaskedScalarRWords,
+                                              kOtbnVarR0, kOtbnVarR1));
+  HARDENED_TRY(curve25519_masked_scalar_write(s->share0, s->share1,
+                                              kCurve25519MaskedScalarSWords,
+                                              kOtbnVarS0, kOtbnVarS1));
 
   // Start the OTBN routine.
   return otbn_execute();

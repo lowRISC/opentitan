@@ -93,6 +93,40 @@ typedef struct curve25519_signature_t {
 } curve25519_signature_t;
 
 /**
+ * A type that holds the arithmetically masked shares of s.
+ *
+ * s is a 256-bit value secret scalar represesented by two 384-bit arithmetic
+ * shares (s0, s1) such that s = s0 - s1.
+ */
+typedef struct curve25519_masked_scalar_s {
+  /**
+   * First share of the secret scalar.
+   */
+  uint32_t share0[kCurve25519MaskedScalarSWords];
+  /**
+   * Second share of the secret scalar.
+   */
+  uint32_t share1[kCurve25519MaskedScalarSWords];
+} curve25519_masked_scalar_s_t;
+
+/**
+ * A type that holds the arithmetically masked shares of r.
+ *
+ * s is a 512-bit value secret scalar represesented by two 640-bit arithmetic
+ * shares (r0, r1) such that r = r0 - r1.
+ */
+typedef struct curve25519_masked_scalar_r {
+  /**
+   * First share of the secret scalar.
+   */
+  uint32_t share0[kCurve25519MaskedScalarRWords];
+  /**
+   * Second share of the secret scalar.
+   */
+  uint32_t share1[kCurve25519MaskedScalarRWords];
+} curve25519_masked_scalar_r_t;
+
+/**
  * Start an async Ed25519 keygen operation on OTBN.
  *
  * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
@@ -100,8 +134,7 @@ typedef struct curve25519_signature_t {
  * @param hash_h_low 32 low bytes of the key hash.
  * @return Result of the operation (OK or error).
  */
-status_t curve25519_keygen_start(
-    const uint32_t hash_h_low[kCurve25519HalfHashWords]);
+status_t curve25519_keygen_start(const curve25519_masked_scalar_s_t *s);
 
 /**
  * Finish an async Ed25519 keygen operation on OTBN.
@@ -118,14 +151,13 @@ status_t curve25519_keygen_finalize(uint32_t public_key[kCurve25519PointWords]);
  *
  * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
  *
- * @param hash_r Message hash r.
- * @param hash_h_low 32 low bytes of the key hash.
+ * @param r The masked scalar r.
+ * @param s The masked scalar s.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t curve25519_sign_stage1_start(
-    const uint32_t hash_r[kCurve25519HashWords],
-    const uint32_t hash_h_low[kCurve25519HalfHashWords]);
+status_t curve25519_sign_stage1_start(const curve25519_masked_scalar_r_t *r,
+                                      const curve25519_masked_scalar_s_t *s);
 
 /**
  * Finish stage 1 of an async Ed25519 sign operation on OTBN.
@@ -146,15 +178,15 @@ status_t curve25519_sign_stage1_finalize(
  * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
  *
  * @param hash_k Challenge hash k.
- * @param hash_r Message hash r.
- * @param hash_h_low 32 low bytes of the key hash.
+ * @param r The masked scalar r.
+ * @param s The masked scalar s.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t curve25519_sign_stage2_start(
     const uint32_t hash_k[kCurve25519HashWords],
-    const uint32_t hash_r[kCurve25519HashWords],
-    const uint32_t hash_h_low[kCurve25519HalfHashWords]);
+    const curve25519_masked_scalar_r_t *r,
+    const curve25519_masked_scalar_s_t *s);
 
 /**
  * Finish stage 2 of an async Ed25519 sign operation on OTBN.

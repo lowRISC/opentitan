@@ -654,7 +654,7 @@ ed25519_sign_stage2:
   jal x1, sc_reduce
   bn.mov w8, w18
 
-  /* Compute the signature scalar S = (r0 + (k * s0)) - (r1 + (k * s0)) mod L. */
+  /* Compute the signature scalar S = (r0 + (k * s0)) - (r1 + (k * s1)) mod L. */
 
   /* w7 <= w4 * [w22:w21] mod L = k * s0 mod L. */
   bn.mov w21, w4
@@ -676,7 +676,7 @@ ed25519_sign_stage2:
   /* w6 <= w6 + w8 mod L = (r1 + (k * s1)) mod L. */
   bn.addm w6, w6, w8
 
-  /* w4 <= w5 - w6 mod L = S = (r0 + (k * s0)) - (r1 + (k * s0)) mod L. */
+  /* w4 <= w5 - w6 mod L = S = (r0 + (k * s0)) - (r1 + (k * s1)) mod L. */
   bn.subm w4, w5, w6
 
   /* Write S to dmem.
