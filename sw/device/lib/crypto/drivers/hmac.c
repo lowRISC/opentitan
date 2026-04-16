@@ -829,7 +829,7 @@ status_t hmac_update(hmac_ctx_t *ctx, const otcrypto_const_byte_buf_t *data) {
 }
 
 status_t hmac_final(hmac_ctx_t *ctx, otcrypto_word32_buf_t *digest) {
-  // Retore context will restore the context and also hit start or continue
+  // Restore context will restore the context and also hit start or continue
   // button as necessary.
   HARDENED_TRY(context_restore(ctx));
 
