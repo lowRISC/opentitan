@@ -270,17 +270,20 @@ static status_t context_restore(hmac_ctx_t *ctx) {
  * HMAC HWIP is idle.
  *
  * @param[out] ctx Context to which values are written.
+ * @return Result of the operation.
  */
-static void context_save(hmac_ctx_t *ctx) {
+static status_t context_save(hmac_ctx_t *ctx) {
   // For SHA-256 and HMAC-256, we do not need to save to the second half of
   // DIGEST registers, but we do it anyway to keep the driver simple.
-  hardened_memcpy(ctx->H,
-                  (const uint32_t *)(kHmacBaseAddr + HMAC_DIGEST_0_REG_OFFSET),
-                  kHmacMaxDigestWords);
+  HARDENED_TRY(hardened_memcpy(
+      ctx->H, (const uint32_t *)(kHmacBaseAddr + HMAC_DIGEST_0_REG_OFFSET),
+      kHmacMaxDigestWords));
   ctx->lower =
       abs_mmio_read32(kHmacBaseAddr + HMAC_MSG_LENGTH_LOWER_REG_OFFSET);
   ctx->upper =
       abs_mmio_read32(kHmacBaseAddr + HMAC_MSG_LENGTH_UPPER_REG_OFFSET);
+
+  return OTCRYPTO_OK;
 }
 
 /**
@@ -365,7 +368,7 @@ static status_t tmp_avoid_hw_hang(hmac_ctx_t *ctx) {
 
   // Save current context as it is updated after each block even if stop is not
   // triggered
-  context_save(ctx);
+  HARDENED_TRY(context_save(ctx));
 
   // Trigger hash_process
   uint32_t cmd_reg = abs_mmio_read32(kHmacBaseAddr + HMAC_CMD_REG_OFFSET);
