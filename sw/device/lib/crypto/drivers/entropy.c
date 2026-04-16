@@ -85,10 +85,18 @@ typedef struct entropy_csrng_cmd {
  */
 typedef enum entropy_complex_config_id {
   /**
-   * Entropy complex in continuous mode. This is the default runtime
+   * Entropy complex in continuous mode. This is the default boot
    * configuration.
    */
   kEntropyComplexConfigIdContinuous,
+  /**
+   * Entropy complex in continuous mode with fips thresholds for the health
+   * tests of the entropy src. This is the default cryptolib configuration.
+   */
+  kEntropyComplexConfigIdFipsContinuous,
+  /**
+   * Marker for the number of configurations.
+   */
   kEntropyComplexConfigIdNumEntries,
 } entropy_complex_config_id_t;
 
@@ -229,6 +237,7 @@ static const entropy_complex_config_t
     kEntropyComplexConfigs[kEntropyComplexConfigIdNumEntries] = {
         [kEntropyComplexConfigIdContinuous] =
             {
+                .id = kEntropyComplexConfigIdContinuous,
                 .entropy_src =
                     {
                         .fips_enable = kMultiBitBool4True,
@@ -302,6 +311,86 @@ static const entropy_complex_config_t
                             },
                     },
             },
+        [kEntropyComplexConfigIdFipsContinuous] =
+            // All cut off values are calculated with the assumption that:
+            // H = 0.5 per bit => H = 2 for 4-bit symbols
+            // α = 2⁻⁴⁰ (alpha = 2^-40), false positive probability
+            // Please note that entropy H per bit will depend on silicon and
+            // will likely need to be adapted
+        {
+            .id = kEntropyComplexConfigIdFipsContinuous,
+            .entropy_src =
+                {
+                    .fips_enable = kMultiBitBool4True,
+                    .fips_flag = kMultiBitBool4True,
+                    .rng_fips = kMultiBitBool4True,
+                    .route_to_firmware = kMultiBitBool4False,
+                    .bypass_conditioner = kMultiBitBool4False,
+                    .single_bit_mode = kMultiBitBool4False,
+                    .fips_test_window_size = 2048,
+                    .alert_threshold = 4,
+                    .repcnt_threshold = 81,
+                    .repcnts_threshold = 21,
+                    .adaptp_hi_threshold = 1591,
+                    .adaptp_lo_threshold = 2048 - 1591,  // 457
+                    .bucket_threshold = 201,
+                    .markov_hi_threshold = 824,
+                    .markov_lo_threshold = 1024 - 824,  // 200
+                    .extht_hi_threshold = 0xffff,
+                    .extht_lo_threshold = 0x0,
+                },
+            .edn0 =
+                {
+                    .base_address = kBaseEdn0,
+                    .reseed_interval = 128,
+                    .instantiate =
+                        {
+                            .id = kEntropyDrbgOpInstantiate,
+                            .disable_trng_input = kHardenedBoolFalse,
+                            .seed_material = NULL,
+                            .generate_len = 0,
+                        },
+                    .generate =
+                        {
+                            .id = kEntropyDrbgOpGenerate,
+                            .disable_trng_input = kHardenedBoolFalse,
+                            .seed_material = NULL,
+                            .generate_len = 32,
+                        },
+                    .reseed =
+                        {
+                            .id = kEntropyDrbgOpReseed,
+                            .disable_trng_input = kHardenedBoolFalse,
+                            .seed_material = NULL,
+                            .generate_len = 0,
+                        },
+                },
+            .edn1 =
+                {
+                    .base_address = kBaseEdn1,
+                    .reseed_interval = 4,
+                    .instantiate =
+                        {
+                            .id = kEntropyDrbgOpInstantiate,
+                            .disable_trng_input = kHardenedBoolFalse,
+                            .seed_material = NULL,
+                            .generate_len = 0,
+                        },
+                    .generate =
+                        {
+                            .id = kEntropyDrbgOpGenerate,
+                            .seed_material = NULL,
+                            .generate_len = 4,
+                        },
+                    .reseed =
+                        {
+                            .id = kEntropyDrbgOpReseed,
+                            .disable_trng_input = kHardenedBoolFalse,
+                            .seed_material = NULL,
+                            .generate_len = 0,
+                        },
+                },
+        },
 };
 
 // Write a CSRNG command to a register. That register can be the SW interface
@@ -910,12 +999,20 @@ static status_t edn_check(const edn_config_t *config) {
   return OTCRYPTO_RECOV_ERR;
 }
 
-status_t entropy_complex_init(void) {
+status_t entropy_complex_init(hardened_bool_t fips) {
   entropy_complex_stop_all();
 
   const entropy_complex_config_t *config =
-      &kEntropyComplexConfigs[kEntropyComplexConfigIdContinuous];
-  if (launder32(config->id) != kEntropyComplexConfigIdContinuous) {
+      &kEntropyComplexConfigs[kEntropyComplexConfigIdFipsContinuous];
+
+  if (launder32(fips) == kHardenedBoolFalse) {
+    HARDENED_CHECK_EQ(fips, kHardenedBoolFalse);
+    config = &kEntropyComplexConfigs[kEntropyComplexConfigIdContinuous];
+  }
+
+  if (launder32(config->id) != ((fips == kHardenedBoolFalse)
+                                    ? kEntropyComplexConfigIdContinuous
+                                    : kEntropyComplexConfigIdFipsContinuous)) {
     return OTCRYPTO_RECOV_ERR;
   }
 
@@ -925,10 +1022,18 @@ status_t entropy_complex_init(void) {
   return edn_configure(&config->edn1);
 }
 
-status_t entropy_complex_check(void) {
+status_t entropy_complex_check(hardened_bool_t fips) {
   const entropy_complex_config_t *config =
-      &kEntropyComplexConfigs[kEntropyComplexConfigIdContinuous];
-  if (launder32(config->id) != kEntropyComplexConfigIdContinuous) {
+      &kEntropyComplexConfigs[kEntropyComplexConfigIdFipsContinuous];
+
+  if (launder32(fips) == kHardenedBoolFalse) {
+    HARDENED_CHECK_EQ(fips, kHardenedBoolFalse);
+    config = &kEntropyComplexConfigs[kEntropyComplexConfigIdContinuous];
+  }
+
+  if (launder32(config->id) != ((fips == kHardenedBoolFalse)
+                                    ? kEntropyComplexConfigIdContinuous
+                                    : kEntropyComplexConfigIdFipsContinuous)) {
     return OTCRYPTO_RECOV_ERR;
   }
 
@@ -939,9 +1044,16 @@ status_t entropy_complex_check(void) {
 }
 
 OT_WARN_UNUSED_RESULT
-status_t entropy_complex_health_test_config_check(void) {
+status_t entropy_complex_health_test_config_check(hardened_bool_t fips) {
   const entropy_src_config_t *entropy_src_config =
-      &kEntropyComplexConfigs[kEntropyComplexConfigIdContinuous].entropy_src;
+      &kEntropyComplexConfigs[kEntropyComplexConfigIdFipsContinuous]
+           .entropy_src;
+
+  if (launder32(fips) == kHardenedBoolFalse) {
+    HARDENED_CHECK_EQ(fips, kHardenedBoolFalse);
+    entropy_src_config =
+        &kEntropyComplexConfigs[kEntropyComplexConfigIdContinuous].entropy_src;
+  }
 
   uint32_t reg;
   // Check health test window

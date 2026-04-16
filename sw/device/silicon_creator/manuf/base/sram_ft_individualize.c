@@ -192,7 +192,7 @@ static status_t provision(ujson_t *uj) {
 
 bool test_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
-  CHECK_STATUS_OK(entropy_complex_init());
+  CHECK_STATUS_OK(entropy_complex_init(kHardenedBoolFalse));
   CHECK_STATUS_OK(configure_ate_gpio_indicators());
   ujson_t uj;
 #ifndef ATE

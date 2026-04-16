@@ -223,7 +223,7 @@ bool test_main(void) {
   status_t result = OK_STATUS();
 
   // Initialize the entropy complex, KMAC, and the key manager.
-  CHECK_STATUS_OK(entropy_complex_init());
+  CHECK_STATUS_OK(entropy_complex_init(kHardenedBoolFalse));
   dif_kmac_t kmac;
   CHECK_STATUS_OK(keymgr_testutils_startup(&keymgr, &kmac));
   CHECK_STATUS_OK(

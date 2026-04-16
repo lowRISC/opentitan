@@ -552,7 +552,7 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
          kCertKeyIdSizeInBytes);
 
   // Initialize entropy complex / KMAC for key manager operations.
-  TRY(entropy_complex_init());
+  TRY(entropy_complex_init(kHardenedBoolFalse));
   TRY(kmac_keymgr_configure());
 
   // Advance keymgr to CreatorRootKey state.
@@ -1190,7 +1190,7 @@ bool test_main(void) {
   pinmux_testutils_init(&pinmux);
   CHECK_STATUS_OK(configure_ate_gpio_indicators());
   CHECK_DIF_OK(dif_gpio_write(&gpio, kGpioPinTestStart, true));
-  CHECK_STATUS_OK(entropy_complex_init());
+  CHECK_STATUS_OK(entropy_complex_init(kHardenedBoolFalse));
   ujson_t uj = ujson_ottf_console();
 
   // Read the reset reason directly from the RSTMGR.
