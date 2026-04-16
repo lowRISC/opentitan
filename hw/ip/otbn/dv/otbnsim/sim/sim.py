@@ -244,7 +244,7 @@ class OTBNSim:
             # wiping state (because the entropy complex might not have been set
             # up yet, we might not even be able to seed URND). In that case, we
             # jump straight to the LOCKED state.
-            if self.state.wsrs.URND.running:
+            if self.state.wsrs.URND.reseed_done:
                 # If URND finishes, it's probably the seed for a secure wipe.
                 # But there's an extra possibility: we might have seen an RMA
                 # request before any instructions get run. In that case, the
@@ -279,7 +279,7 @@ class OTBNSim:
         In this state, we're waiting for a URND seed. Once that appears, we
         switch to EXEC.
         '''
-        if self.state.wsrs.URND.running:
+        if self.state.wsrs.URND.reseed_done:
             self.state.set_fsm_state(FsmState.EXEC)
 
         changes = self._on_stall(verbose, fetch_next=False)
@@ -411,7 +411,7 @@ class OTBNSim:
         # Zero INSN_CNT once if we're going to lock after wipe.
         self._delayed_insn_cnt_zero(0)
 
-        if self.state.wsrs.URND.running:
+        if self.state.wsrs.URND.reseed_done:
             # Reflect wiping in STATUS register if it has not been updated yet.
             if ((self.state.ext_regs.read('STATUS', True) not in
                  [Status.BUSY_SEC_WIPE_INT, Status.LOCKED])):
@@ -490,7 +490,8 @@ class OTBNSim:
                 self.state.wipe()
             else:
                 self.state.wsrs.URND.running = False
-                self.state._urnd_client.request()
+                self.state.wsrs.URND.reseed_done = False
+                self.state.wsrs.URND.requesting = True
 
         if self.state.wipe_cycles == 0:
             if was_wiping:
