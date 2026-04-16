@@ -678,7 +678,7 @@ status_t aes_gcm_decrypt_final(aes_gcm_context_t *ctx, size_t tag_len,
                                const uint32_t *tag, size_t *output_len,
                                uint8_t *output, hardened_bool_t *success) {
   // Get the expected authentication tag.
-  uint32_t expected_tag[tag_len];
+  uint32_t expected_tag[kAesBlockNumWords];
   size_t bytes_written;
   HARDENED_TRY(
       aes_gcm_final(ctx, tag_len, expected_tag, &bytes_written, output));
