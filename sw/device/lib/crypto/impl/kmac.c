@@ -70,7 +70,7 @@ otcrypto_status_t otcrypto_kmac(otcrypto_blinded_key_t *key,
     // Diversification call also checks that `key->keyblob_length` is 8 words
     // long.
     HARDENED_TRY(keyblob_to_keymgr_diversification(key, &diversification));
-    HARDENED_TRY(keymgr_generate_key_kmac(diversification));
+    HARDENED_TRY(keymgr_generate_key_kmac(diversification, kHardenedBoolFalse));
   } else if (key->config.hw_backed == kHardenedBoolFalse) {
     // Remask the key.
     HARDENED_TRY(keyblob_remask(key));

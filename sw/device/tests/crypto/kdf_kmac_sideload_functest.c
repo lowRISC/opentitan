@@ -30,6 +30,7 @@ typedef enum kdf_test_operation_t {
 typedef struct kdf_test_vector {
   char *vector_identifier;
   kdf_test_operation_t test_operation;
+  hardened_bool_t is_cdi;
   otcrypto_blinded_key_t key_derivation_key;
   otcrypto_const_byte_buf_t label;
   otcrypto_const_byte_buf_t context;
@@ -65,6 +66,7 @@ static kdf_kmac_test_vector_t kKdfTestVectors[] = {
     {
         .vector_identifier = "Manually edited KDF-KMAC sample #1",
         .test_operation = kKdfTestOperationKmac128,
+        .is_cdi = kHardenedBoolFalse,
         .key_derivation_key =
             {
                 .config =
@@ -124,6 +126,7 @@ static kdf_kmac_test_vector_t kKdfTestVectors[] = {
     {
         .vector_identifier = "Manually edited KDF-KMAC sample #2",
         .test_operation = kKdfTestOperationKmac128,
+        .is_cdi = kHardenedBoolFalse,
         .key_derivation_key =
             {
                 .config =
@@ -207,6 +210,7 @@ static kdf_kmac_test_vector_t kKdfTestVectors[] = {
     {
         .vector_identifier = "Manually edited KDF-KMAC sample #3",
         .test_operation = kKdfTestOperationKmac256,
+        .is_cdi = kHardenedBoolFalse,
         .key_derivation_key =
             {
                 .config =
@@ -259,6 +263,76 @@ static kdf_kmac_test_vector_t kKdfTestVectors[] = {
                 .config =
                     {
                         .key_length = 64,
+                    },
+            },
+    },
+    {
+        .vector_identifier = "Manually integrated CDI-KMAC DICE sample",
+        .test_operation = kKdfTestOperationKmac256,
+        .is_cdi = kHardenedBoolTrue,
+        .key_derivation_key =
+            {
+                .config =
+                    {
+                        .version = kOtcryptoLibVersion1,
+                        .key_mode = kOtcryptoKeyModeKdfKmac256,
+                        .key_length = 32,
+                        .hw_backed = kHardenedBoolTrue,
+                        .security_level = kOtcryptoKeySecurityLevelHigh,
+                        .exportable = kHardenedBoolFalse,
+                    },
+                .keyblob_length = 36,
+                .keyblob =
+                    (uint32_t[]){
+                        // Zeroes to be populated by
+                        // `otcrypto_hw_backed_attestation_key`
+                        0x00000000,
+                        0x00000000,
+                        0x00000000,
+                        0x00000000,
+                        0x00000000,
+                        0x00000000,
+                        0x00000000,
+                        0x00000000,
+                        0x00000000,
+                    },
+            },
+        .context =
+            {
+                // Simulated DICE Measurement (TcbInfo)
+                .data =
+                    (uint8_t[]){
+                        0x70,
+                        0x71,
+                        0x72,
+                        0x73,
+                        0x74,
+                        0x75,
+                        0x76,
+                        0x77,
+                        0x78,
+                        0x79,
+                        0x7a,
+                        0x7b,
+                        0x7c,
+                        0x7d,
+                        0x7e,
+                        0x7f,
+                    },
+                .len = 16,
+            },
+        .label =
+            {
+                // Domain separation for Attestation CDI
+                .data = (uint8_t[]){'D', 'I', 'C', 'E', '_', 'A', 't', 't', 'e',
+                                    's', 't'},
+                .len = 11,
+            },
+        .keying_material =
+            {
+                .config =
+                    {
+                        .key_length = 32,
                     },
             },
     },
@@ -318,6 +392,17 @@ static status_t run_test_vector(void) {
   uint32_t km_buffer1[km_keyblob_len];
   uint32_t km_buffer2[km_keyblob_len];
 
+  if (current_test_vector->is_cdi == kHardenedBoolTrue) {
+    const uint32_t kPrivateKeySalt[8] = {0x00010203, 0x04050607, 0x08090a0b,
+                                         0x0c0d0e0f, 0xf0f1f2f3, 0xf4f5f6f7,
+                                         0xf8f9fafb, 0xfcfdfeff};
+    const uint32_t kPrivateKeyVersion = 0x0;
+
+    TRY(otcrypto_hw_backed_attestation_key(
+        kPrivateKeyVersion, kPrivateKeySalt,
+        &current_test_vector->key_derivation_key));
+  }
+
   current_test_vector->key_derivation_key.checksum =
       integrity_blinded_checksum(&current_test_vector->key_derivation_key);
 
@@ -365,9 +450,15 @@ static status_t run_test_vector(void) {
       otcrypto_const_byte_buf_t, sha3_test_vector.input_msg.data,
       sha3_test_vector.input_msg.len);
 
-  LOG_INFO("Running the first KDF-KMAC sideload operation.");
-  TRY(otcrypto_kmac_kdf(&current_test_vector->key_derivation_key, &label_buf,
-                        &context_buf, &keying_material1));
+  if (current_test_vector->is_cdi == kHardenedBoolTrue) {
+    LOG_INFO("Running the first CDI-KMAC sideload operation.");
+    TRY(otcrypto_cdi_kmac_kdf(&current_test_vector->key_derivation_key,
+                              &label_buf, &context_buf, &keying_material1));
+  } else {
+    LOG_INFO("Running the first KDF-KMAC sideload operation.");
+    TRY(otcrypto_kmac_kdf(&current_test_vector->key_derivation_key, &label_buf,
+                          &context_buf, &keying_material1));
+  }
 
   // Export the derived blinded key
   uint32_t km_share0[km_keyblob_share_len];
@@ -406,9 +497,15 @@ static status_t run_test_vector(void) {
       return INVALID_ARGUMENT();
   }
 
-  LOG_INFO("Running the second KDF-KMAC sideload operation for comparison.");
-  TRY(otcrypto_kmac_kdf(&current_test_vector->key_derivation_key, &label_buf,
-                        &context_buf, &keying_material2));
+  if (current_test_vector->is_cdi == kHardenedBoolTrue) {
+    LOG_INFO("Running the second CDI-KMAC sideload operation for comparison.");
+    TRY(otcrypto_cdi_kmac_kdf(&current_test_vector->key_derivation_key,
+                              &label_buf, &context_buf, &keying_material2));
+  } else {
+    LOG_INFO("Running the second KDF-KMAC sideload operation for comparison.");
+    TRY(otcrypto_kmac_kdf(&current_test_vector->key_derivation_key, &label_buf,
+                          &context_buf, &keying_material2));
+  }
 
   // Export the second derived blinded key
   TRY(otcrypto_export_blinded_key(&keying_material2, &km_share0_buf,

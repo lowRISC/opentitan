@@ -82,11 +82,13 @@ status_t keymgr_generate_key_aes(
  * waits until the operation is complete before returning.
  *
  * @param diversification Diversification input for the key derivation.
+ * @param attestation Whether to use the CDI key.
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
 status_t keymgr_generate_key_kmac(
-    const keymgr_diversification_t diversification);
+    const keymgr_diversification_t diversification,
+    hardened_bool_t attestation);
 
 /**
  * Derive a key manager key for the OTBN block.
@@ -95,7 +97,7 @@ status_t keymgr_generate_key_kmac(
  * waits until the operation is complete before returning.
  *
  * @param diversification Diversification input for the key derivation.
- * @param attestation Whether to use the DICE key.
+ * @param attestation Whether to use the CDI key.
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT

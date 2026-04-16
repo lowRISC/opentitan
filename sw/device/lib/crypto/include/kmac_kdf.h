@@ -47,6 +47,24 @@ otcrypto_status_t otcrypto_kmac_kdf(
     const otcrypto_const_byte_buf_t *context,
     otcrypto_blinded_key_t *output_key_material);
 
+/**
+ * Performs KMAC-KDF similar to otcrypto_kmac_kdf but uses CDI=1.
+ *
+ * @param key_derivation_key Blinded key with configuration and private key
+ * handle returned by `otcrypto_hw_backed_attestation_key`.
+ * @param kmac_mode Either KMAC128 or KMAC256 as PRF.
+ * @param cdi_label Label string (optional, may be empty).
+ * @param dice_measurement Measurement info which can be the combined
+ * seed/code/config (optional, may be empty).
+ * @param[out] output_key_material Blinded output key material.
+ * @return Result of the key derivation operation.
+ */
+otcrypto_status_t otcrypto_cdi_kmac_kdf(
+    otcrypto_blinded_key_t *key_derivation_key,
+    const otcrypto_const_byte_buf_t *cdi_label,
+    const otcrypto_const_byte_buf_t *dice_measurement,
+    otcrypto_blinded_key_t *output_key_material);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

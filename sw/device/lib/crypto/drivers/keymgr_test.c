@@ -71,7 +71,7 @@ status_t aes_basic_test(void) {
  * Test generating a single sideloaded KMAC key.
  */
 status_t kmac_basic_test(void) {
-  return keymgr_generate_key_kmac(kTestDiversification);
+  return keymgr_generate_key_kmac(kTestDiversification, kHardenedBoolFalse);
 }
 
 /**

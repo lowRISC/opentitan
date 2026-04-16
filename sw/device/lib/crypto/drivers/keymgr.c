@@ -208,17 +208,40 @@ status_t keymgr_generate_key_aes(keymgr_diversification_t diversification) {
   return OTCRYPTO_OK;
 }
 
-status_t keymgr_generate_key_kmac(keymgr_diversification_t diversification) {
+status_t keymgr_generate_key_kmac(keymgr_diversification_t diversification,
+                                  hardened_bool_t attestation) {
   HARDENED_TRY(keymgr_is_idle());
 
   // Set the control register to generate a KMAC key.
-  WRITE_CTRL(KMAC, GENERATE_HW, false);
+  // Set the control register to generate an OTBN key.
+  switch (attestation) {
+    case kHardenedBoolFalse:
+      WRITE_CTRL(KMAC, GENERATE_HW, false);
+      break;
+    case kHardenedBoolTrue:
+      WRITE_CTRL(KMAC, GENERATE_HW, true);
+      break;
+    default:
+      HARDENED_TRAP();
+      return OTCRYPTO_FATAL_ERR;
+  }
 
   // Start the operation and wait for it to complete.
   HARDENED_TRY(keymgr_start(diversification));
   HARDENED_TRY(keymgr_wait_until_done());
   // Check the control register.
-  VERIFY_CTRL(KMAC, GENERATE_HW, false);
+  // Check the control register.
+  switch (attestation) {
+    case kHardenedBoolFalse:
+      VERIFY_CTRL(KMAC, GENERATE_HW, false);
+      break;
+    case kHardenedBoolTrue:
+      VERIFY_CTRL(KMAC, GENERATE_HW, true);
+      break;
+    default:
+      HARDENED_TRAP();
+      return OTCRYPTO_FATAL_ERR;
+  }
   return OTCRYPTO_OK;
 }
 
