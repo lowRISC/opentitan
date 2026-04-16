@@ -10,7 +10,6 @@ from shared.mem_layout import get_memory_layout
 from .csr import CSRFile
 from .dmem import Dmem
 from .constants import ErrBits, LcTx, Status
-from .edn_client import EdnClient
 from .ext_regs import OTBNExtRegs
 from .flags import FlagReg
 from .gpr import GPRs
@@ -115,8 +114,6 @@ class OTBNState:
         self.pending_halt = False
         self._pending_err_bits = 0
 
-        self._urnd_client = EdnClient()
-
         # To simulate injecting integrity errors, we set a flag to say that
         # IMEM is no longer readable without getting an error. This can't take
         # effect instantly because the RTL's prefetch stage (which we don't
@@ -217,18 +214,18 @@ class OTBNState:
         self._pc_next_override = next_pc
 
     def edn_urnd_step(self, urnd_data: int) -> None:
-        self._urnd_client.take_word(urnd_data, False)
+        self.wsrs.URND.set_seed(urnd_data)
+        self.wsrs.URND.commit()
 
     def edn_rnd_step(self, rnd_data: int, fips_err: bool) -> None:
         self.ext_regs.rnd_take_word(rnd_data, fips_err)
 
     def edn_flush(self) -> None:
         self.ext_regs.rnd_reset()
-        self._urnd_client.edn_reset()
         # If the initial secure wipe is running, OTBN will directly request a
         # new URND value.
         if self.init_sec_wipe_is_running():
-            self._urnd_client.request()
+            self.wsrs.URND.requesting = True
 
     def rnd_completed(self) -> None:
         '''Called when CDC completes for the EDN RND interface'''
@@ -240,22 +237,13 @@ class OTBNState:
             self.wsrs.RND.set_unsigned(rnd_val, fips_err, rep_err)
 
     def urnd_completed(self) -> None:
-        w256, retry, _, _ = self._urnd_client.cdc_complete()
-        # The URND client should never be poisoned
-        assert w256 is not None and retry is False
-
-        # cdc_complete() returned a 256-bit value but we actually need to split
-        # it back into four 64-bit words.
-        w64s = [(w256 >> (64 * i)) & ((1 << 64) - 1) for i in range(4)]
-
         self.edn_seen_running = True
-
-        self.wsrs.URND.set_seed(w64s)
+        self.wsrs.URND.reseed_done = True
 
     def start_init_sec_wipe(self) -> None:
         self._init_sec_wipe_state = InitSecWipeState.IN_PROGRESS
         # OTBN will request a new URND value, so the model has to do the same.
-        self._urnd_client.request()
+        self.wsrs.URND.requesting = True
 
     def init_sec_wipe_is_running(self) -> bool:
         return self._init_sec_wipe_state == InitSecWipeState.IN_PROGRESS
@@ -313,7 +301,6 @@ class OTBNState:
         if handle_injected_error:
             self.take_injected_err_bits()
         self.ext_regs.step()
-        self._urnd_client.step()
         self.kmac.step()
         self.mai.step()
 
@@ -398,7 +385,8 @@ class OTBNState:
         # request.
         self.ext_regs.rnd_poison()
 
-        self._urnd_client.request()
+        # Immediately start requesting EDN seeds upon startup.
+        self.wsrs.URND.requesting = True
 
     def stop(self) -> None:
         '''Set flags to stop the processor and maybe abort the instruction.

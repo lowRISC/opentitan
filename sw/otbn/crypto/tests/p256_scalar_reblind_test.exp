@@ -1,7 +1,7 @@
 # Expected values ([w1, w0] = first share hidden scalar):
-w0 = 0x4452f19aed10de71eae096c716ed1217a1203179a058d8fb995fac7cc6ed2874
-w1 = 0x7695e18e35854643
+w0 = 0xe6f44c4a06649d5efcb6178dd5acf06f2d0d635e625edc4a454f437806abd271
+w1 = 0x328afb2a92e3eb93
 
 # Expected values ([w3, w2] = second share hidden scalar):
-w2 = 0xea32cfec5c7928b8a2339a57a0ad6988438c82ef9755ef2c4da39b12b71debeb
-w3 = 0x18bde0a258fa567f2
+w2 = 0x252d6c28ad20ddc6c0b37ea28024fca805a496f7d1805d3c1df398ef45c33b59
+w3 = 0x117805b7054aacbb6
