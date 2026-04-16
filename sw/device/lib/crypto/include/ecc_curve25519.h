@@ -137,7 +137,10 @@ otcrypto_status_t otcrypto_ed25519_keygen_async_finalize(
  * @param private_key Pointer to the unblinded private key struct.
  * @param input_message_ph Pre-hashed input message to be signed.
  * @param sign_mode EdDSA signature hashing mode.
- * @param key_digest[out] Pointer to the key digest.
+ * @param[out] s0 Pointer to the first arithmetic share of s.
+ * @param[out] s1 Pointer to the second arithmetic share of s.
+ * @param[out] r0 Pointer to the first arithmetic share of r.
+ * @param[out] r1 Pointer to the second arithmetic share of r.
  * @param msg_digest[out] Pointer to the msg digest.
  * @return Result of async Ed25519 start operation.
  */
@@ -145,8 +148,9 @@ OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
     const otcrypto_unblinded_key_t *private_key,
     otcrypto_const_byte_buf_t *input_message_ph,
-    otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_hash_digest_t *key_digest,
-    otcrypto_hash_digest_t *msg_digest);
+    otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t *s0,
+    otcrypto_word32_buf_t *s1, otcrypto_word32_buf_t *r0,
+    otcrypto_word32_buf_t *r1);
 
 /**
  * Starts asynchronous signature generation for Ed25519.
@@ -157,8 +161,10 @@ otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
  * @param input_message_ph Pre-hashed input message to be signed.
  * @param sign_mode EdDSA signature hashing mode.
  * @param signature[out] Pointer to the EdDSA signature to get (R) value.
- * @param key_digest Pointer to the key digest.
- * @param msg_digest Pointer to the msg digest.
+ * @param s0 Pointer to the first arithmetic share of s.
+ * @param s1 Pointer to the second arithmetic share of s.
+ * @param r0 Pointer to the first arithmetic share of r.
+ * @param r1 Pointer to the second arithmetic share of r.
  * @return Result of async Ed25519 start operation.
  */
 OT_WARN_UNUSED_RESULT
@@ -166,7 +172,8 @@ otcrypto_status_t otcrypto_ed25519_sign_part2_async_start(
     const otcrypto_unblinded_key_t *private_key,
     otcrypto_const_byte_buf_t *input_message_ph,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t *signature,
-    otcrypto_hash_digest_t *key_digest, otcrypto_hash_digest_t *msg_digest);
+    otcrypto_word32_buf_t *s0, otcrypto_word32_buf_t *s1,
+    otcrypto_word32_buf_t *r0, otcrypto_word32_buf_t *r1);
 
 /**
  * Finalizes asynchronous signature generation for Ed25519.

@@ -99,6 +99,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":config",
+        ":drbg",
         ":hmac",
         ":integrity",
         ":keyblob",
