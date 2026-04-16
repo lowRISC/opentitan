@@ -173,7 +173,7 @@ static void sw_reset(void) {
 
 bool test_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
-  CHECK_STATUS_OK(entropy_complex_init());
+  CHECK_STATUS_OK(entropy_complex_init(kHardenedBoolFalse));
 
   // Provision CREATOR_SW_CFG partition.
   if (!status_ok(manuf_individualize_device_creator_sw_cfg_check(&otp_ctrl))) {

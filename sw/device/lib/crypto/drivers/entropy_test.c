@@ -24,10 +24,10 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 static status_t entropy_complex_init_test(void) {
-  TRY(entropy_complex_init());
+  TRY(entropy_complex_init(kHardenedBoolFalse));
 
   // Check the configuration.
-  TRY(entropy_complex_check());
+  TRY(entropy_complex_check(kHardenedBoolFalse));
 
   // The following test requests entropy from both EDN0 and EDN1.
   dif_otbn_t otbn;
@@ -56,7 +56,8 @@ static status_t run_negative_test(void) {
   CHECK_STATUS_OK(
       ottf_alerts_expect_alert_start(kTopEarlgreyAlertIdCsrngRecovAlert));
   abs_mmio_write32(csrng_ctrl_addr, 0);
-  CHECK(entropy_complex_check().value == OTCRYPTO_RECOV_ERR.value);
+  CHECK(entropy_complex_check(kHardenedBoolFalse).value ==
+        OTCRYPTO_RECOV_ERR.value);
   abs_mmio_write32(csrng_ctrl_addr, old_csrng_ctrl);
   CHECK_STATUS_OK(
       ottf_alerts_expect_alert_finish(kTopEarlgreyAlertIdCsrngRecovAlert));
@@ -67,7 +68,8 @@ static status_t run_negative_test(void) {
   CHECK_STATUS_OK(
       ottf_alerts_expect_alert_start(kTopEarlgreyAlertIdEdn0RecovAlert));
   abs_mmio_write32(edn0_ctrl_addr, 0);
-  CHECK(entropy_complex_check().value == OTCRYPTO_RECOV_ERR.value);
+  CHECK(entropy_complex_check(kHardenedBoolFalse).value ==
+        OTCRYPTO_RECOV_ERR.value);
   abs_mmio_write32(edn0_ctrl_addr, old_edn0_ctrl);
   CHECK_STATUS_OK(
       ottf_alerts_expect_alert_finish(kTopEarlgreyAlertIdEdn0RecovAlert));
