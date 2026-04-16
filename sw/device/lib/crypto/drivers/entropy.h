@@ -89,16 +89,18 @@ extern const entropy_seed_material_t kEntropyEmptySeed;
  * The complex is configured in continuous mode with FIPS mode enabled. This is
  * the default operational mode of the entropy_src, csrng, edn0 and edn1 blocks.
  *
+ * @param fips kHardenedTrue to enable FIPS health test threshold settings,
+ * otherwise use the boot settings.
  * @return Operation status in `status_t` format.
  */
 OT_WARN_UNUSED_RESULT
-status_t entropy_complex_init(void);
+status_t entropy_complex_init(hardened_bool_t fips);
 
 /**
  * Ensures that the entropy complex is ready for use.
  *
  * Ensures that the entropy complex is running and that `entropy_src` is in
- * FIPS mode, and verifies the thresholds for health tests in `entropy_src`.
+ * FIPS mode, and runs the thresholds for health tests in `entropy_src`.
  * This function should be called periodically while the entropy complex is in
  * use, because the threshold registers are not shadowed.
  *
@@ -107,10 +109,12 @@ status_t entropy_complex_init(void);
  * to note that passing the check does not by itself guarantee FIPS-compatible
  * entropy from CSRNG.
  *
+ * @param fips kHardenedTrue to enable FIPS health test threshold settings,
+ * otherwise use the boot settings.
  * @return Operation status in `status_t` format.
  */
 OT_WARN_UNUSED_RESULT
-status_t entropy_complex_check(void);
+status_t entropy_complex_check(hardened_bool_t fips);
 
 /**
  * Check the entropy complex health test and alert configurations.
@@ -121,10 +125,12 @@ status_t entropy_complex_check(void);
  * This function does not return a status error, and will simply assert the chip
  * is in the correct configuration.
  *
+ * @param fips kHardenedTrue to enable FIPS health test threshold settings,
+ * otherwise use the boot settings.
  * @return error on failure.
  */
 OT_WARN_UNUSED_RESULT
-status_t entropy_complex_health_test_config_check(void);
+status_t entropy_complex_health_test_config_check(hardened_bool_t fips);
 
 /**
  * Instantiate the SW CSRNG with a new seed value.

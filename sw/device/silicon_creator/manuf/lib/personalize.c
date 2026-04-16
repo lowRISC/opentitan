@@ -218,8 +218,8 @@ status_t manuf_personalize_device_secrets(
   }
 
   // Re-initialize the entropy complex in continous mode. This also configures
-  // the entropy_src health checks in FIPS mode.
-  TRY(entropy_complex_init());
+  // the entropy_src health checks.
+  TRY(entropy_complex_init(kHardenedBoolFalse));
 
   // Provision secret Creator / Owner key seeds in flash.
   // Provision CreatorSeed into target flash info page.
@@ -321,7 +321,7 @@ status_t manuf_personalize_device_secret1(const dif_lc_ctrl_t *lc_ctrl,
     return INTERNAL();
   }
 
-  TRY(entropy_complex_init());
+  TRY(entropy_complex_init(kHardenedBoolFalse));
   TRY(entropy_csrng_instantiate(/*disable_trng_input=*/kHardenedBoolFalse,
                                 /*seed_material=*/NULL));
 
