@@ -137,7 +137,7 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
   }
 
   // Check the private key checksum.
-  if (integrity_blinded_key_check(ikm) != kHardenedBoolTrue) {
+  if (launder32(integrity_blinded_key_check(ikm)) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
 
