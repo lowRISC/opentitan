@@ -9,9 +9,8 @@ load(
     "EARLGREY_SKUS",
 )
 load(
-    "//sw/host/provisioning/orchestrator/tests:transition.bzl",
-    "orchestrator_cw310_test_settings_transition",
-    "orchestrator_cw340_test_settings_transition",
+    "//sw/host/provisioning/orchestrator/tests:defs.bzl",
+    "orchestrator_test",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -54,150 +53,68 @@ py_test(
     ],
 )
 
-# These transitions have the same effect as supplying the following flags to bazel test:
-#  --//hw/bitstream/universal:env=//hw/top_earlgrey:fpga_<fpga>_rom_with_fake_keys
-#  --//hw/bitstream/universal:otp=//hw/top_earlgrey/data/otp/emulation:otp_img_test_unlocked0_manuf_empty
-orchestrator_cw310_test_settings_transition(
-    name = "orchestrator_cw310_zip",
-    testonly = True,
-    target = "//sw/host/provisioning/orchestrator/src:orchestrator.zip",
+EMULATION_SKUS = {
+    "emulation": {
+        "orchestrator_cfg": "//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
+    },
+}
+
+EXEC_ENVS = {
+    "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": "cw310",
+    "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "cw340",
+}
+
+orchestrator_test(
+    name = "e2e_option_flags_test",
+    timeout = "moderate",
+    src = "e2e_option_flags.sh",
+    env = {
+        "PACKAGE": "npcr12",
+    },
+    exec_env = EXEC_ENVS,
+    orchestrator = "//sw/host/provisioning/orchestrator/src:orchestrator",
+    skus = EMULATION_SKUS,
 )
 
-orchestrator_cw340_test_settings_transition(
-    name = "orchestrator_cw340_zip",
-    testonly = True,
-    target = "//sw/host/provisioning/orchestrator/src:orchestrator.zip",
+orchestrator_test(
+    name = "e2e_ate_individ_test",
+    src = "e2e_ate_individ.sh",
+    exec_env = EXEC_ENVS,
+    orchestrator = "//sw/host/provisioning/orchestrator/src:orchestrator",
+    skus = EMULATION_SKUS,
 )
 
-[
-    sh_test(
-        name = "e2e_option_flags_test_{}".format(fpga),
-        timeout = "moderate",
-        srcs = ["e2e_option_flags.sh"],
-        data = [
-            ":orchestrator_{}_zip".format(fpga),
-            "@//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
-            "@python3",
-        ],
-        env = {
-            "PYTHON": "$(location @python3//:python3)",
-            "PACKAGE": "npcr12",
-            "FPGA": "{}".format(fpga),
-        },
-        tags = [
-            "changes_otp",
-            "exclusive",
-            "fpga",
-            "manuf",
-        ] + [fpga],
-    )
-    for fpga in [
-        "cw310",
-        "cw340",
-    ]
-]
+orchestrator_test(
+    name = "e2e_multistage_test",
+    src = "e2e_multistage.sh",
+    exec_env = EXEC_ENVS,
+    orchestrator = "//sw/host/provisioning/orchestrator/src:orchestrator",
+    skus = EARLGREY_SKUS,
+)
 
-[
-    sh_test(
-        name = "e2e_ate_individ_test_{}".format(fpga),
-        timeout = "moderate",
-        srcs = ["e2e_ate_individ.sh"],
-        data = [
-            ":orchestrator_{}_zip".format(fpga),
-            "@//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
-            "@python3",
-        ],
-        env = {
-            "PYTHON": "$(location @python3//:python3)",
-            "PACKAGE": "npcr12",
-            "FPGA": "{}".format(fpga),
-        },
-        tags = [
-            "changes_otp",
-            "exclusive",
-            "fpga",
-            "manuf",
-        ] + [fpga],
-    )
-    for fpga in [
-        "cw310",
-        "cw340",
-    ]
-]
-
-[
-    sh_test(
-        name = "e2e_{}_{}_multistage_test".format(sku, fpga),
-        srcs = ["e2e_multistage.sh"],
-        data = [
-            ":orchestrator_{}_zip".format(fpga),
-            cfg["orchestrator_cfg"],
-            "@python3",
-        ],
-        env = {
-            "PYTHON": "$(location @python3//:python3)",
-            "SKU_CONFIG_PATH": "$(location {})".format(cfg["orchestrator_cfg"]),
-            "FPGA": "{}".format(fpga),
-        },
-        tags = [
-            "changes_otp",
-            "exclusive",
-            "manuf",
-        ] + [fpga] + cfg.get("tags", []) + ([
-            "manual",
-        ] if cfg.get("offline", False) else []),
-    )
-    for sku, cfg in EARLGREY_SKUS.items()
-    for fpga in [
-        "cw310",
-        "cw340",
-    ]
-]
-
-[
-    sh_test(
-        name = "e2e_{}_{}_test".format(sku, fpga),
-        timeout = "moderate",
-        srcs = ["e2e.sh"],
-        data = [
-            ":orchestrator_{}_zip".format(fpga),
-            cfg["orchestrator_cfg"],
-            "@python3",
-        ],
-        env = {
-            "PYTHON": "$(location @python3//:python3)",
-            "SKU_CONFIG_PATH": "$(location {})".format(cfg["orchestrator_cfg"]),
-            "FPGA": "{}".format(fpga),
-        },
-        tags = [
-            "changes_otp",
-            "exclusive",
-            "manuf",
-        ] + [fpga] + cfg.get("tags", []) + ([
-            "manual",
-        ] if cfg.get("offline", False) else []),
-    )
-    for sku, cfg in EARLGREY_SKUS.items()
-    for fpga in [
-        "cw310",
-        "cw340",
-    ]
-]
+orchestrator_test(
+    name = "e2e_test",
+    timeout = "moderate",
+    src = "e2e.sh",
+    exec_env = EXEC_ENVS,
+    orchestrator = "//sw/host/provisioning/orchestrator/src:orchestrator",
+    skus = EARLGREY_SKUS,
+)
 
 [
     test_suite(
         name = "e2e_{}".format(fpga),
         tags = ["manual"],
         tests = [
-            ":e2e_{}_{}_test".format(sku, fpga)
+            ":e2e_test_{}_{}".format(
+                sku,
+                exec_env.split(":")[-1],
+            )
             for sku, config in EARLGREY_SKUS.items()
             if not config.get("offline", False)
         ],
     )
-    for fpga in [
-        "cw310",
-        "cw340",
-    ]
+    for exec_env, fpga in EXEC_ENVS.items()
 ]
 
 [
@@ -205,12 +122,12 @@ orchestrator_cw340_test_settings_transition(
         name = "e2e_including_offline_{}".format(fpga),
         tags = ["manual"],
         tests = [
-            ":e2e_{}_{}_test".format(sku, fpga)
+            ":e2e_test_{}_{}".format(
+                sku,
+                exec_env.split(":")[-1],
+            )
             for sku in EARLGREY_SKUS.keys()
         ],
     )
-    for fpga in [
-        "cw310",
-        "cw340",
-    ]
+    for exec_env, fpga in EXEC_ENVS.items()
 ]
