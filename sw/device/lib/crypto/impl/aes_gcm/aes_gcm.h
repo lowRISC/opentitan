@@ -94,6 +94,7 @@ typedef struct aes_gcm_context {
  * @param aad_len length of AAD in bytes
  * @param aad AAD value (may be NULL if aad_len is 0)
  * @param tag_len Tag length in 32-bit words
+ * @param security_level The used security level
  * @param[out] tag Output buffer for tag
  * @param[out] ciphertext Output buffer for ciphertext (same length as
  * plaintext)
@@ -104,6 +105,7 @@ status_t aes_gcm_encrypt(const aes_key_t key, const size_t iv_len,
                          const uint32_t *iv, const size_t plaintext_len,
                          const uint8_t *plaintext, const size_t aad_len,
                          const uint8_t *aad, const size_t tag_len,
+                         otcrypto_key_security_level_t security_level,
                          uint32_t *tag, uint8_t *ciphertext);
 
 /**
@@ -136,6 +138,7 @@ status_t aes_gcm_encrypt(const aes_key_t key, const size_t iv_len,
  * @param aad AAD value (may be NULL if aad_len is 0)
  * @param tag_len Tag length in 32-bit words
  * @param tag Authentication tag
+ * @param security_level The used security level
  * @param[out] plaintext Output buffer for plaintext (same length as ciphertext)
  * @param[out] success True if authentication was successful, otherwise false
  * @return Error status; OK if no errors
@@ -146,6 +149,7 @@ status_t aes_gcm_decrypt(const aes_key_t key, const size_t iv_len,
                          const uint8_t *ciphertext, const size_t aad_len,
                          const uint8_t *aad, const size_t tag_len,
                          const uint32_t *tag, uint8_t *plaintext,
+                         otcrypto_key_security_level_t security_level,
                          hardened_bool_t *success);
 
 /**

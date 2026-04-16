@@ -318,9 +318,10 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(otcrypto_blinded_key_t *key,
   HARDENED_TRY(load_key_if_sideloaded(aes_key));
 
   // Call the core encryption operation.
-  HARDENED_TRY(aes_gcm_encrypt(
-      aes_key, iv->len, iv->data, plaintext->len, plaintext->data, aad->len,
-      aad->data, auth_tag->len, auth_tag->data, ciphertext->data));
+  HARDENED_TRY(aes_gcm_encrypt(aes_key, iv->len, iv->data, plaintext->len,
+                               plaintext->data, aad->len, aad->data,
+                               auth_tag->len, key->config.security_level,
+                               auth_tag->data, ciphertext->data));
 
   HARDENED_TRY(clear_key_if_sideloaded(aes_key));
 
@@ -368,9 +369,10 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
   HARDENED_TRY(aes_gcm_check_tag_length(auth_tag->len, tag_len));
 
   // Call the core decryption operation.
-  HARDENED_TRY(aes_gcm_decrypt(
-      aes_key, iv->len, iv->data, ciphertext->len, ciphertext->data, aad->len,
-      aad->data, auth_tag->len, auth_tag->data, plaintext->data, success));
+  HARDENED_TRY(aes_gcm_decrypt(aes_key, iv->len, iv->data, ciphertext->len,
+                               ciphertext->data, aad->len, aad->data,
+                               auth_tag->len, auth_tag->data, plaintext->data,
+                               key->config.security_level, success));
 
   HARDENED_TRY(clear_key_if_sideloaded(aes_key));
 
