@@ -57,9 +57,8 @@ module otbn_rnd import otbn_pkg::*;
   input  logic                    edn_rnd_fips_i,
   input  logic                    edn_rnd_err_i,
 
-  output logic                    edn_urnd_req_o,
-  input  logic                    edn_urnd_ack_i,
-  input  logic [EdnDataWidth-1:0] edn_urnd_data_i
+  output edn_pkg::edn_req_t       edn_urnd_o,
+  input  edn_pkg::edn_rsp_t       edn_urnd_i
 );
 
   logic rnd_valid_q, rnd_valid_d;
@@ -75,6 +74,12 @@ module otbn_rnd import otbn_pkg::*;
 
   logic rnd_req_queued_d, rnd_req_queued_q;
   logic edn_rnd_data_ignore_d, edn_rnd_data_ignore_q;
+
+  logic urnd_reseed_req_q;
+  logic urnd_reseed_ack_d, urnd_reseed_ack_q;
+  logic seed_en_d, seed_en_q;
+
+  logic [WLEN-1:0] urnd_data_d, urnd_data_q;
 
   ////////////////////////
   // RND Implementation //
@@ -165,43 +170,65 @@ module otbn_rnd import otbn_pkg::*;
   // PRNG Implementation //
   /////////////////////////
 
-  logic edn_urnd_req_complete;
-  logic edn_urnd_req_q, edn_urnd_req_d;
-
-  assign edn_urnd_req_complete = edn_urnd_req_o & edn_urnd_ack_i;
-
-  // Keep EDN URND request high even if input URND reseed request goes low before the reseed has
-  // completed.
-  assign edn_urnd_req_d = (edn_urnd_req_q | urnd_reseed_req_i) & ~edn_urnd_req_complete;
-
-  assign edn_urnd_req_o = edn_urnd_req_q;
-  assign urnd_reseed_ack_o = edn_urnd_ack_i;
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      edn_urnd_req_q <= 1'b0;
-    end else begin
-      edn_urnd_req_q <= edn_urnd_req_d;
-    end
-  end
-
-  logic xoshiro_seed_en;
-
-  assign xoshiro_seed_en = edn_urnd_req_complete;
-
-  prim_xoshiro256pp #(
-    .OutputDw   (WLEN),
-    .DefaultSeed(RndCnstUrndPrngSeed)
-  ) u_xoshiro256pp(
+  prim_trivium #(
+    .BiviumVariant(1'b1),
+    .OutputWidth(WLEN),
+    .StrictLockupProtection(1'b1),
+    .SeedType(prim_trivium_pkg::SeedTypeStatePartial),
+    .PartialSeedWidth(edn_pkg::ENDPOINT_BUS_WIDTH),
+    .RndCnstTriviumLfsrSeed(RndCnstUrndPrngSeed)
+  ) u_prim_trivium (
     .clk_i,
     .rst_ni,
-    .seed_en_i    (xoshiro_seed_en),
-    .seed_i       (edn_urnd_data_i),
-    .xoshiro_en_i (urnd_advance_i),
-    .entropy_i    ('0),
-    .data_o       (urnd_data_o),
-    .all_zero_o   (urnd_all_zero_o)
+    .en_i                (urnd_advance_i),
+    .allow_lockup_i      (1'b0),
+    .seed_en_i           (seed_en_q),
+    .seed_done_o         (urnd_reseed_ack_d),
+    .seed_req_o          (edn_urnd_o.edn_req),
+    .seed_ack_i          (edn_urnd_i.edn_ack),
+    .seed_key_i          ('0), // Not connected
+    .seed_iv_i           ('0), // Not connected
+    .seed_state_full_i   ('0), // Not connected
+    .seed_state_partial_i(edn_urnd_i.edn_bus),
+    .key_o               (urnd_data_d),
+    .err_o               (urnd_all_zero_o)
   );
 
-  `ASSERT(rnd_clear_on_req_complete, rnd_req_complete |=> ~rnd_valid_q)
+  // Buffer Bivium's output to relax timing and to prevent glitching on the URND signals.
+  always_ff @(posedge clk_i) begin : proc_bivium_output_buffer
+    urnd_data_q <= urnd_data_d;
+  end
+  assign urnd_data_o = urnd_data_q;
+
+  // Signal urnd_reseed_req_i is high even during reset. Ensure we do not start until
+  // reset has been completed
+  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_gate_seed_en
+    if (~rst_ni) begin
+      urnd_reseed_req_q <= 1'b0;
+      seed_en_q         <= 1'b0;
+    end else begin
+      urnd_reseed_req_q <= urnd_reseed_req_i;
+      seed_en_q         <= seed_en_d;
+    end
+  end
+  assign seed_en_d = !urnd_reseed_req_q & urnd_reseed_req_i;
+
+  // The logic around the previous PRNG (xoshiro256pp) has acknowledged the reseeding
+  // operation one cycle after fetching the seed data from EDN. This cut emulates
+  // this behavior.
+  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_delay_reseed_ack
+    if (~rst_ni) begin
+      urnd_reseed_ack_q <= 1'b0;
+    end else begin
+      urnd_reseed_ack_q <= urnd_reseed_ack_d;
+    end
+  end
+  assign urnd_reseed_ack_o = urnd_reseed_ack_q;
+
+  // Unused signals
+  logic unused_trivium;
+  assign unused_trivium = ^edn_urnd_i.edn_fips;
+
+  `ASSERT(RndClearOnReqComplete_A, rnd_req_complete |=> ~rnd_valid_q)
+  `ASSERT(UrndNoReseedOnReset_A, ~rst_ni === ~seed_en_q, clk_i, rst_ni)
 endmodule

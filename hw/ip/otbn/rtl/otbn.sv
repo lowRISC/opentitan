@@ -1049,12 +1049,8 @@ module otbn
   logic [EdnDataWidth-1:0] edn_rnd_data;
   logic edn_rnd_fips, edn_rnd_err;
 
-  logic edn_urnd_req, edn_urnd_ack;
-  logic [EdnDataWidth-1:0] edn_urnd_data;
-
-  // These synchronize the data coming from EDN and stack the 32 bit EDN words to achieve an
-  // internal entropy width of 256 bit.
-
+  // This EDN request module synchronizes the data coming from EDN and stack the 32 bit EDN words
+  // to achieve an internal entropy width of 256 bit.
   prim_edn_req #(
     .EnRstChks(1'b1),
     .OutWidth(EdnDataWidth),
@@ -1075,24 +1071,28 @@ module otbn
     .edn_i      ( edn_rnd_i )
   );
 
-  prim_edn_req #(
-    .EnRstChks(1'b1),
-    .OutWidth(EdnDataWidth)
-  ) u_prim_edn_urnd_req (
-    .clk_i,
-    .rst_ni     ( rst_n         ),
-    .req_chk_i  ( 1'b1          ),
-    .req_i      ( edn_urnd_req  ),
-    .ack_o      ( edn_urnd_ack  ),
-    .data_o     ( edn_urnd_data ),
-    .fips_o     (               ), // unused
-    .err_o      (               ), // unused
-    .clk_edn_i,
-    .rst_edn_ni,
-    .edn_o      ( edn_urnd_o    ),
-    .edn_i      ( edn_urnd_i    )
-  );
+  edn_pkg::edn_req_t edn_urnd_req;
+  edn_pkg::edn_rsp_t edn_urnd_rsp;
 
+  // Synchronize the data from the EDN network to the main clock of OTBN.
+  prim_sync_reqack_data #(
+    .Width(edn_pkg::ENDPOINT_BUS_WIDTH + 32'd1),
+    .EnRstChks(1'b1),
+    .DataSrc2Dst(1'b0),
+    .DataReg(1'b0)
+  ) u_prim_sync_reqack_data_urnd (
+    .clk_src_i (clk_i),
+    .rst_src_ni(rst_n),
+    .clk_dst_i (clk_edn_i),
+    .rst_dst_ni(rst_edn_ni),
+    .req_chk_i (1'b1),
+    .src_req_i (edn_urnd_req.edn_req),
+    .src_ack_o (edn_urnd_rsp.edn_ack),
+    .dst_req_o (edn_urnd_o.edn_req),
+    .dst_ack_i (edn_urnd_i.edn_ack),
+    .data_i    ({edn_urnd_i.edn_fips,   edn_urnd_i.edn_bus  }),
+    .data_o    ({edn_urnd_rsp.edn_fips, edn_urnd_rsp.edn_bus})
+  );
 
   // OTBN Core =================================================================
 
@@ -1149,9 +1149,8 @@ module otbn
     .edn_rnd_fips_i              (edn_rnd_fips),
     .edn_rnd_err_i               (edn_rnd_err),
 
-    .edn_urnd_req_o              (edn_urnd_req),
-    .edn_urnd_ack_i              (edn_urnd_ack),
-    .edn_urnd_data_i             (edn_urnd_data),
+    .edn_urnd_o                  (edn_urnd_req),
+    .edn_urnd_i                  (edn_urnd_rsp),
 
     .insn_cnt_o                  (insn_cnt),
     .insn_cnt_clear_i            (insn_cnt_clear),

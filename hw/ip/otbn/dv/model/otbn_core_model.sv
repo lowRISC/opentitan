@@ -195,6 +195,10 @@ module otbn_core_model
       OtbnCoreModelUrndStateAwaitInitialAck: begin
         edn_urnd_o = 1'b1;
         if (edn_urnd_cdc_done_i) begin
+          // Bivium has already completed the reseeding operation and does no longer request EDN
+          // data via `otbn_rnd.edn_urnd_o.edn_req` (has to match the model output `edn_urnd_o`)
+          // when the otbn_rnd.urnd_reseed_ack_o (= edn_urnd_cdc_done_i) is pulsed.
+          edn_urnd_o = 1'b0;
           wipe_cyc_cnt_d = wipe_cyc_cnt_t'(WIPE_CYCLES);
           urnd_state_d   = OtbnCoreModelUrndStateAwaitWipe;
         end
@@ -211,6 +215,10 @@ module otbn_core_model
       OtbnCoreModelUrndStateAwaitSecondAck: begin
         edn_urnd_o = 1'b1;
         if (edn_urnd_cdc_done_i) begin
+          // Bivium has already completed the reseeding operation and does no longer request EDN
+          // data via `otbn_rnd.edn_urnd_o.edn_req` (has to match the model output `edn_urnd_o`)
+          // when the otbn_rnd.urnd_reseed_ack_o (= edn_urnd_cdc_done_i) is pulsed.
+          edn_urnd_o = 1'b0;
           urnd_state_d = OtbnCoreModelUrndStateAwaitStart;
         end
       end
@@ -224,6 +232,10 @@ module otbn_core_model
       OtbnCoreModelUrndStateAwaitPostStartAck: begin
         edn_urnd_o = 1'b1;
         if (edn_urnd_cdc_done_i) begin
+          // Bivium has already completed the reseeding operation and does no longer request EDN
+          // data via `otbn_rnd.edn_urnd_o.edn_req` (has to match the model output `edn_urnd_o`)
+          // when the otbn_rnd.urnd_reseed_ack_o (= edn_urnd_cdc_done_i) is pulsed.
+          edn_urnd_o = 1'b0;
           urnd_state_d = OtbnCoreModelUrndStateAwaitPostExecSecWipe;
         end
       end

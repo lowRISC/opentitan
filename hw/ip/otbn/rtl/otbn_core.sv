@@ -72,9 +72,8 @@ module otbn_core
   input  logic                    edn_rnd_fips_i,
   input  logic                    edn_rnd_err_i,
 
-  output logic                    edn_urnd_req_o,
-  input  logic                    edn_urnd_ack_i,
-  input  logic [EdnDataWidth-1:0] edn_urnd_data_i,
+  output edn_pkg::edn_req_t       edn_urnd_o,
+  input  edn_pkg::edn_rsp_t       edn_urnd_i,
 
   output logic [31:0] insn_cnt_o,
   input  logic        insn_cnt_clear_i,
@@ -990,9 +989,8 @@ module otbn_core
     .edn_rnd_fips_i,
     .edn_rnd_err_i,
 
-    .edn_urnd_req_o,
-    .edn_urnd_ack_i,
-    .edn_urnd_data_i
+    .edn_urnd_o,
+    .edn_urnd_i
   );
 
   // Advance URND either when the start_stop_control commands it or when temporary secure wipe keys
@@ -1035,13 +1033,13 @@ module otbn_core
   `ASSERT_KNOWN_IF(DmemWmaskOKnown_A, dmem_wmask_o, dmem_req_o & dmem_write_o)
   `ASSERT_KNOWN_IF(DmemRmaskOKnown_A, dmem_rmask_o, dmem_req_o)
   `ASSERT_KNOWN(EdnRndReqOKnown_A, edn_rnd_req_o)
-  `ASSERT_KNOWN(EdnUrndReqOKnown_A, edn_urnd_req_o)
+  `ASSERT_KNOWN(EdnUrndReqOKnown_A, edn_urnd_o.edn_req)
   `ASSERT_KNOWN(InsnCntOKnown_A, insn_cnt_o)
   `ASSERT_KNOWN(ErrBitsKnown_A, err_bits_o)
 
   // Keep the EDN requests active until they are acknowledged.
   `ASSERT(EdnRndReqStable_A, edn_rnd_req_o & ~edn_rnd_ack_i |=> edn_rnd_req_o)
-  `ASSERT(EdnUrndReqStable_A, edn_urnd_req_o & ~edn_urnd_ack_i |=> edn_urnd_req_o)
+  `ASSERT(EdnUrndReqStable_A, edn_urnd_o.edn_req & ~edn_urnd_i.edn_ack |=> edn_urnd_o.edn_req)
 
   `ASSERT(OnlyWriteLoadDataBignumWhenDMemValid_A,
           rf_bignum_wr_en_ctrl & insn_dec_bignum.rf_wdata_sel == RfWdSelLsu |-> dmem_rvalid_i)

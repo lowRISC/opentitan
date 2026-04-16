@@ -778,12 +778,9 @@ typedef enum logic [StateScrambleCtrlWidth-1:0] {
 } scramble_ctrl_state_e;
 
   // URNG PRNG default seed.
-  // These parameters have been generated with
-  // $ ./util/design/gen-lfsr-seed.py --width 256 --seed 2840984437 --prefix "Urnd"
-  parameter int UrndPrngWidth = 256;
-  typedef logic [UrndPrngWidth-1:0] urnd_prng_seed_t;
+  typedef prim_trivium_pkg::trivium_lfsr_seed_t urnd_prng_seed_t;
   parameter urnd_prng_seed_t RndCnstUrndPrngSeedDefault =
-      256'h84ddfadaf7e1134d70aa1c59de6197ff25a4fe335d095f1e2cba89acbe4a07e9;
+      urnd_prng_seed_t'(prim_trivium_pkg::RndCnstTriviumLfsrSeedDefault);
 
   parameter otp_ctrl_pkg::otbn_key_t RndCnstOtbnKeyDefault =
       128'h14e8cecae3040d5e12286bb3cc113298;

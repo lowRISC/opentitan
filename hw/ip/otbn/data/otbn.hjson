@@ -78,7 +78,7 @@
       desc:    '''
         Default seed of the PRNG used for URND.
       '''
-      randcount: "256",
+      randcount: "288",
       randtype:  "data"
     },
     { name:    "SecMuteUrnd"
