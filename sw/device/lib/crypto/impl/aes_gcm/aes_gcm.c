@@ -357,8 +357,10 @@ status_t aes_gcm_encrypt(const aes_key_t key, const size_t iv_len,
                          const uint32_t *iv, const size_t plaintext_len,
                          const uint8_t *plaintext, const size_t aad_len,
                          const uint8_t *aad, const size_t tag_len,
+                         otcrypto_key_security_level_t security_level,
                          uint32_t *tag, uint8_t *ciphertext) {
   aes_gcm_context_t ctx;
+  ctx.security_level = security_level;
   HARDENED_TRY(aes_gcm_encrypt_init(key, iv_len, iv, &ctx));
   HARDENED_TRY(aes_gcm_update_aad(&ctx, aad_len, aad));
   size_t ciphertext_bytes_written;
@@ -655,8 +657,10 @@ status_t aes_gcm_decrypt(const aes_key_t key, const size_t iv_len,
                          const uint8_t *ciphertext, const size_t aad_len,
                          const uint8_t *aad, const size_t tag_len,
                          const uint32_t *tag, uint8_t *plaintext,
+                         otcrypto_key_security_level_t security_level,
                          hardened_bool_t *success) {
   aes_gcm_context_t ctx;
+  ctx.security_level = security_level;
   HARDENED_TRY(aes_gcm_decrypt_init(key, iv_len, iv, &ctx));
   HARDENED_TRY(aes_gcm_update_aad(&ctx, aad_len, aad));
   size_t plaintext_bytes_written;
