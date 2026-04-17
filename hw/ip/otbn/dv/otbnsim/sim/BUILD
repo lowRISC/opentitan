@@ -232,6 +232,20 @@ py_library(
 )
 
 py_library(
+    name = "trivium",
+    srcs = ["trivium.py"],
+)
+
+py_test(
+    name = "trivium_test",
+    srcs = ["trivium.py"],
+    main = "trivium.py",
+    deps = [
+        ":trivium",
+    ],
+)
+
+py_library(
     name = "wsr",
     srcs = ["wsr.py"],
     deps = [
@@ -239,5 +253,6 @@ py_library(
         ":ispr",
         ":kmac_ispr",
         ":trace",
+        ":trivium",
     ],
 )
