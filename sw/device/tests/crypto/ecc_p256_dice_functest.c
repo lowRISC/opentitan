@@ -8,6 +8,7 @@
 #include "sw/device/lib/crypto/impl/ecc/p256.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
 #include "sw/device/lib/crypto/include/integrity.h"
@@ -145,7 +146,7 @@ static status_t test_setup(void) {
   // Initialize entropy complex for cryptolib, which the key manager uses to
   // clear sideloaded keys. The `keymgr_testutils_startup` function restarts
   // the device, so this should happen afterwards.
-  return entropy_complex_init();
+  return otcrypto_init(kOtcryptoKeySecurityLevelLow);
 }
 
 bool test_main(void) {
