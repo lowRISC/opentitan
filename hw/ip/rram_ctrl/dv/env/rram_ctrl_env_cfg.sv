@@ -14,6 +14,8 @@ class rram_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rram_ctrl_core_reg_blo
   uint rd_en_pct  = 100;
   uint ecc_en_pct = 100;
 
+  virtual clk_rst_if otp_clk_rst_vif;
+
   bit skip_init_data_array = 1'b0;
   bit skip_init_info_array = 1'b0;
   bit skip_lc_init         = 1'b0;

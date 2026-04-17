@@ -16,16 +16,19 @@ module tb;
 
   wire                          clk;
   wire                          rst_n;
+  wire                          clk_otp;
+  wire                          rst_otp_n;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
   wire                          rram_test_analog;
 
   // Interfaces
-  clk_rst_if                    clk_rst_if(.clk(clk), .rst_n(rst_n));
-  pins_if #(NUM_MAX_INTERRUPTS) intr_if   (interrupts);
-  tl_if                         tl_core_if(.clk(clk), .rst_n(rst_n));
-  tl_if                         tl_host_if(.clk(clk), .rst_n(rst_n));
-  tl_if                         tl_prim_if(.clk(clk), .rst_n(rst_n));
-  rram_ctrl_misc_io_if          misc_if   (.clk(clk), .rst_n(rst_n));
+  clk_rst_if                    clk_rst_if    (.clk(clk),     .rst_n(rst_n));
+  clk_rst_if                    otp_clk_rst_if(.clk(clk_otp), .rst_n(rst_otp_n));
+  tl_if                         tl_core_if    (.clk(clk),     .rst_n(rst_n));
+  tl_if                         tl_host_if    (.clk(clk),     .rst_n(rst_n));
+  tl_if                         tl_prim_if    (.clk(clk),     .rst_n(rst_n));
+  rram_ctrl_misc_io_if          misc_if       (.clk(clk_otp), .rst_n(rst_otp_n));
+  pins_if #(NUM_MAX_INTERRUPTS) intr_if       (interrupts);
 
   rram_ctrl_pkg::rram_macro_req_t rram_req;
   rram_ctrl_pkg::rram_macro_rsp_t rram_rsp;
@@ -68,8 +71,8 @@ module tb;
     .clk_i          (clk),
     .rst_ni         (rst_n),
 
-    .clk_otp_i      (clk),
-    .rst_otp_ni     (rst_n),
+    .clk_otp_i      (clk_otp),
+    .rst_otp_ni     (rst_otp_n),
 
     // various tlul interfaces
     .core_tl_i(tl_core_if.h2d),
@@ -183,8 +186,11 @@ module tb;
   assign (pull1, pull0) rram_test_analog = 1'b0;
 
   initial begin
+    otp_clk_rst_if.set_freq_mhz(OTP_CLK_FREQ_MHZ);
     clk_rst_if.set_active();
+    otp_clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "otp_clk_rst_vif", otp_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(
       null, "*.env", "clk_rst_vif_rram_ctrl_host_reg_block", clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(

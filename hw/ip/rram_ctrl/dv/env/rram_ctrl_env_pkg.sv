@@ -41,6 +41,8 @@ package rram_ctrl_env_pkg;
     "recov_macro_err"
   };
 
+  parameter uint OTP_CLK_FREQ_MHZ = 24;
+
   // Types
   typedef virtual rram_ctrl_misc_io_if misc_vif_t;
 

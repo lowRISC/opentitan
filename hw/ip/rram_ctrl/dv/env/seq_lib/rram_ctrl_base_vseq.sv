@@ -31,6 +31,7 @@ class rram_ctrl_base_vseq extends cip_base_vseq #(
                                                             int word_offset,
                                                             rram_part_e partition);
 
+  extern virtual task apply_reset(string kind = "HARD");
   extern task pre_start();
   extern task dut_init(string reset_kind = "HARD");
   extern task update_default_region_cfg(input prim_mubi_pkg::mubi4_t wr_en,
@@ -93,7 +94,7 @@ class rram_ctrl_base_vseq extends cip_base_vseq #(
     // The order is always 'addr' followed by 'data'.
     fork
       forever begin // addr
-        @(posedge cfg.clk_rst_vif.rst_n);
+        @(posedge cfg.otp_clk_rst_vif.rst_n);
         @(posedge cfg.misc_vif.otp_key_req.addr_req);
         `uvm_info(`gfn, $sformatf("OTP Addr Key Applied to DUT : otp_addr_key : %0x",
           otp_addr_key), UVM_MEDIUM)
@@ -110,7 +111,7 @@ class rram_ctrl_base_vseq extends cip_base_vseq #(
         cfg.misc_vif.otp_key_rsp.seed_valid = 1'b0;
       end
       forever begin // data
-        @(posedge cfg.clk_rst_vif.rst_n);
+        @(posedge cfg.otp_clk_rst_vif.rst_n);
         @(posedge cfg.misc_vif.otp_key_req.data_req);
         cfg.misc_vif.otp_key_rsp.key = otp_data_key;
         cfg.misc_vif.otp_key_rsp.rand_key = otp_data_rand_key;
@@ -133,7 +134,7 @@ class rram_ctrl_base_vseq extends cip_base_vseq #(
   virtual task rma_req();
     // Local Variables
     bit done;
-    int freq = cfg.clk_rst_vif.clk_freq_mhz;
+    int freq = cfg.otp_clk_rst_vif.clk_freq_mhz;
     // RMA request takes approx. 100ms@100MHz. Setting timeout to 200ms@100MHz
     time timeout = (20000 / freq) * 1ms;
 
@@ -150,7 +151,7 @@ class rram_ctrl_base_vseq extends cip_base_vseq #(
         do begin
           `uvm_info(`gfn, "Polling RMA ACK ...", UVM_LOW)
           #10ms; // Jump Ahead (Not Sampling Clocks)
-          @(posedge cfg.clk_rst_vif.clk); // Align to Clock
+          @(posedge cfg.otp_clk_rst_vif.clk); // Align to Clock
           if (cfg.misc_vif.rma_ack == lc_ctrl_pkg::On) begin
             done = 1;
           end
@@ -182,6 +183,15 @@ function void rram_ctrl_base_vseq::set_handles();
   super.set_handles();
   `downcast(prim_ral, cfg.ral_models[cfg.prim_ral_name]);
 endfunction : set_handles
+
+// Apply reset to both the primary and OTP clock domains in parallel so that both clock
+// generators (which each block on @(negedge rst_n) before starting) get their reset.
+task rram_ctrl_base_vseq::apply_reset(string kind = "HARD");
+  fork
+    super.apply_reset(kind);
+    cfg.otp_clk_rst_vif.apply_reset();
+  join
+endtask : apply_reset
 
 // setup inputs for DUT
 task rram_ctrl_base_vseq::pre_start();

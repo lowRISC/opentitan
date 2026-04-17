@@ -31,6 +31,12 @@ function void rram_ctrl_env::build_phase(uvm_phase phase);
     `uvm_fatal(`gfn, "Failed to get misc_vif from uvm_config_db")
   end
 
+  // Retrieve the otp_clk_rst_if virtual interface
+  if (!uvm_config_db#(virtual clk_rst_if)::get(this, "", "otp_clk_rst_vif",
+      cfg.otp_clk_rst_vif)) begin
+    `uvm_fatal(`gfn, "failed to get otp_clk_rst_vif from uvm_config_db")
+  end
+
   foreach (parts[i]) begin
     rram_part_e part = parts[i];
     string name = $sformatf("rram_ctrl_bkdr_util[%0s]", part.name());
