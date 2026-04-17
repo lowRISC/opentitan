@@ -44,23 +44,24 @@ static status_t run_test_vector(void) {
       .data = act_tag,
       .len = digest_len,
   };
+  otcrypto_const_byte_buf_t msg_buf = otcrypto_make_const_byte_buf(
+      current_test_vector->message.data, current_test_vector->message.len);
   switch (current_test_vector->test_operation) {
     case kHmacTestOperationSha256:
-      TRY(otcrypto_sha2_256(&current_test_vector->message, &hash_digest));
+      TRY(otcrypto_sha2_256(&msg_buf, &hash_digest));
       break;
     case kHmacTestOperationSha384:
-      TRY(otcrypto_sha2_384(&current_test_vector->message, &hash_digest));
+      TRY(otcrypto_sha2_384(&msg_buf, &hash_digest));
       break;
     case kHmacTestOperationSha512:
-      TRY(otcrypto_sha2_512(&current_test_vector->message, &hash_digest));
+      TRY(otcrypto_sha2_512(&msg_buf, &hash_digest));
       break;
     case kHmacTestOperationHmacSha256:
       OT_FALLTHROUGH_INTENDED;
     case kHmacTestOperationHmacSha384:
       OT_FALLTHROUGH_INTENDED;
     case kHmacTestOperationHmacSha512:
-      TRY(otcrypto_hmac(&current_test_vector->key,
-                        &current_test_vector->message, &tag_buf));
+      TRY(otcrypto_hmac(&current_test_vector->key, &msg_buf, &tag_buf));
       break;
     default:
       return INVALID_ARGUMENT();

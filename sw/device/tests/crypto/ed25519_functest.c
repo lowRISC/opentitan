@@ -169,10 +169,9 @@ static status_t hasheddsa_test(void) {
 
   CHECK_STATUS_OK(otcrypto_ed25519_keygen(&private_key, &public_key));
 
-  otcrypto_const_byte_buf_t input_message = {
-      .data = (const uint8_t *)kMessage,
-      .len = ARRAYSIZE(kMessage),
-  };
+  otcrypto_const_byte_buf_t input_message =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (const uint8_t *)kMessage,
+                        ARRAYSIZE(kMessage));
 
   uint32_t signature_data[kEd25519SignatureWords];
   otcrypto_word32_buf_t signature = OTCRYPTO_MAKE_BUF(
