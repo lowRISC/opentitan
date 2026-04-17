@@ -280,6 +280,10 @@ nonhermetic_repo = use_repo_rule("//rules:nonhermetic.bzl", "nonhermetic_repo")
 
 nonhermetic_repo(name = "nonhermetic")
 
+devices_repo = use_repo_rule("//rules:devices.bzl", "devices_repo")
+
+devices_repo(name = "devices")
+
 # Source repositories (not Bazel-aware):
 github_tools = use_extension("//third_party/github:extensions.bzl", "github_tools")
 use_repo(github_tools, "com_github_gh")
