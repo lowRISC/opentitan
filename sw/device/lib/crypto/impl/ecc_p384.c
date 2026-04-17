@@ -1012,5 +1012,5 @@ otcrypto_status_t otcrypto_ecc_p384_arith_share_private_key(
   HARDENED_CHECK_EQ(OTCRYPTO_CHECK_BUF(bool_private_key_share1),
                     kHardenedBoolTrue);
 
-  return OTCRYPTO_OK;
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
