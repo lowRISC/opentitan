@@ -63,14 +63,19 @@ class xbar_env_cov extends dv_base_env_cov #(.CFG_T(xbar_env_cfg));
     super.build_phase(phase);
     same_device_access_cg = new(cfg.num_devices);
     same_source_access_cg = new(1 << cfg.valid_a_source_width);
+
     foreach (xbar_hosts[i]) begin
-      host_access_mapped_addr_cg[xbar_hosts[i].host_name] = new(xbar_hosts[i].host_name);
-      max_delay_cg_obj[xbar_hosts[i].host_name]           = new(xbar_hosts[i].host_name);
+      host_access_mapped_addr_cg[xbar_hosts[i].host_name] =
+        new({"host_access_mapped_addr_", xbar_hosts[i].host_name, "_cg"});
+      max_delay_cg_obj[xbar_hosts[i].host_name] =
+        new({"host_max_delay_", xbar_hosts[i].host_name, "_cg"});
       max_delay_cg_obj[xbar_hosts[i].host_name].sample(cfg.max_host_req_delay,
                                                        cfg.max_host_rsp_delay);
     end
+
     foreach (xbar_devices[i]) begin
-      max_delay_cg_obj[xbar_devices[i].device_name] = new(xbar_devices[i].device_name);
+      max_delay_cg_obj[xbar_devices[i].device_name] =
+        new({"device_max_delay_", xbar_devices[i].device_name, "_cg"});
       max_delay_cg_obj[xbar_devices[i].device_name].sample(cfg.max_device_req_delay,
                                                            cfg.max_device_rsp_delay);
     end
