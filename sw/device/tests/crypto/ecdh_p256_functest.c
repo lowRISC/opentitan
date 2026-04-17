@@ -2,12 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
+#include "sw/device/lib/crypto/include/key_transport.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -31,17 +33,17 @@ static const otcrypto_key_config_t kEcdhPrivateKeyConfig = {
     .key_mode = kOtcryptoKeyModeEcdhP256,
     .key_length = kP256PrivateKeyBytes,
     .hw_backed = kHardenedBoolFalse,
+    .exportable = kHardenedBoolFalse,
     .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
-// Configuration for the ECDH shared (symmetric) key. This configuration
-// specifies an AES key, but any symmetric mode that supports 256-bit keys is
-// OK here.
+// Configuration for the ECDH shared (symmetric) key.
 static const otcrypto_key_config_t kEcdhSharedKeyConfig = {
     .version = kOtcryptoLibVersion1,
     .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = kP256SharedKeyBytes,
     .hw_backed = kHardenedBoolFalse,
+    .exportable = kHardenedBoolTrue,
     .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
@@ -87,15 +89,14 @@ status_t key_exchange_test(void) {
   // Sanity check; public keys should be different from each other.
   CHECK_ARRAYS_NE(pkA, pkB, ARRAYSIZE(pkA));
 
-  // Allocate space for two shared keys.
-  uint32_t shared_keyblobA[keyblob_num_words(kEcdhSharedKeyConfig)];
+  uint32_t shared_keyblobA[kP256SharedKeyWords * 2];
   otcrypto_blinded_key_t shared_keyA = {
       .config = kEcdhSharedKeyConfig,
       .keyblob_length = sizeof(shared_keyblobA),
       .keyblob = shared_keyblobA,
       .checksum = 0,
   };
-  uint32_t shared_keyblobB[keyblob_num_words(kEcdhSharedKeyConfig)];
+  uint32_t shared_keyblobB[kP256SharedKeyWords * 2];
   otcrypto_blinded_key_t shared_keyB = {
       .config = kEcdhSharedKeyConfig,
       .keyblob_length = sizeof(shared_keyblobB),
@@ -103,31 +104,36 @@ status_t key_exchange_test(void) {
       .checksum = 0,
   };
 
-  // Compute the shared secret from A's side of the computation (using A's
-  // private key and B's public key).
+  // Compute the shared secret from A's side of the computation.
   LOG_INFO("Generating shared secret (A)...");
   TRY(otcrypto_ecdh_p256(&private_keyA, &public_keyB, &shared_keyA));
 
-  // Compute the shared secret from B's side of the computation (using B's
-  // private key and A's public key).
+  // Compute the shared secret from B's side of the computation.
   LOG_INFO("Generating shared secret (B)...");
   TRY(otcrypto_ecdh_p256(&private_keyB, &public_keyA, &shared_keyB));
 
   // Get pointers to individual shares of both shared keys.
-  uint32_t *keyA0;
-  uint32_t *keyA1;
-  TRY(keyblob_to_shares(&shared_keyA, &keyA0, &keyA1));
-  uint32_t *keyB0;
-  uint32_t *keyB1;
-  TRY(keyblob_to_shares(&shared_keyB, &keyB0, &keyB1));
+  uint32_t keyA0[kP256SharedKeyWords];
+  uint32_t keyA1[kP256SharedKeyWords];
+  otcrypto_word32_buf_t keyA0_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, keyA0, ARRAYSIZE(keyA0));
+  otcrypto_word32_buf_t keyA1_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, keyA1, ARRAYSIZE(keyA1));
+  TRY(otcrypto_export_blinded_key(&shared_keyA, &keyA0_buf, &keyA1_buf));
+
+  uint32_t keyB0[kP256SharedKeyWords];
+  uint32_t keyB1[kP256SharedKeyWords];
+  otcrypto_word32_buf_t keyB0_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, keyB0, ARRAYSIZE(keyB0));
+  otcrypto_word32_buf_t keyB1_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, keyB1, ARRAYSIZE(keyB1));
+  TRY(otcrypto_export_blinded_key(&shared_keyB, &keyB0_buf, &keyB1_buf));
 
   // Unmask the keys and check that they match.
   uint32_t keyA[kP256SharedKeyWords];
   uint32_t keyB[kP256SharedKeyWords];
-  for (size_t i = 0; i < ARRAYSIZE(keyA); i++) {
-    keyA[i] = keyA0[i] ^ keyA1[i];
-    keyB[i] = keyB0[i] ^ keyB1[i];
-  }
+  TRY(hardened_xor(keyA0, keyA1, kP256SharedKeyWords, keyA));
+  TRY(hardened_xor(keyB0, keyB1, kP256SharedKeyWords, keyB));
   CHECK_ARRAYS_EQ(keyA, keyB, ARRAYSIZE(keyA));
 
   return OTCRYPTO_OK;
