@@ -19,7 +19,7 @@ otcrypto_status_t otcrypto_sha3_224(const otcrypto_const_byte_buf_t *message,
   if (digest == NULL || digest->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (message->data == NULL && message->len != 0) {
+  if (message == NULL || (message->data == NULL && message->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (launder32(digest->len) != kKmacSha3224DigestWords) {
@@ -35,7 +35,7 @@ otcrypto_status_t otcrypto_sha3_256(const otcrypto_const_byte_buf_t *message,
   if (digest == NULL || digest->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (message->data == NULL && message->len != 0) {
+  if (message == NULL || (message->data == NULL && message->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (launder32(digest->len) != kKmacSha3256DigestWords) {
@@ -51,7 +51,7 @@ otcrypto_status_t otcrypto_sha3_384(const otcrypto_const_byte_buf_t *message,
   if (digest == NULL || digest->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (message->data == NULL && message->len != 0) {
+  if (message == NULL || (message->data == NULL && message->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (launder32(digest->len) != kKmacSha3384DigestWords) {
@@ -67,7 +67,7 @@ otcrypto_status_t otcrypto_sha3_512(const otcrypto_const_byte_buf_t *message,
   if (digest == NULL || digest->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (message->data == NULL && message->len != 0) {
+  if (message == NULL || (message->data == NULL && message->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (launder32(digest->len) != kKmacSha3512DigestWords) {
@@ -83,7 +83,7 @@ otcrypto_status_t otcrypto_shake128(const otcrypto_const_byte_buf_t *message,
   if (digest == NULL || digest->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (message->data == NULL && message->len != 0) {
+  if (message == NULL || (message->data == NULL && message->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
   digest->mode = kOtcryptoHashXofModeShake128;
@@ -95,7 +95,7 @@ otcrypto_status_t otcrypto_shake256(const otcrypto_const_byte_buf_t *message,
   if (digest == NULL || digest->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (message->data == NULL && message->len != 0) {
+  if (message == NULL || (message->data == NULL && message->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
   digest->mode = kOtcryptoHashXofModeShake256;
@@ -110,13 +110,15 @@ otcrypto_status_t otcrypto_cshake128(
   if (digest == NULL || digest->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (message->data == NULL && message->len != 0) {
+  if (message == NULL || (message->data == NULL && message->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (function_name_string->data == NULL && function_name_string->len != 0) {
+  if (function_name_string == NULL ||
+      (function_name_string->data == NULL && function_name_string->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (customization_string->data == NULL && customization_string->len != 0) {
+  if (customization_string == NULL ||
+      (customization_string->data == NULL && customization_string->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
   digest->mode = kOtcryptoHashXofModeCshake128;
@@ -134,13 +136,15 @@ otcrypto_status_t otcrypto_cshake256(
   if (digest == NULL || digest->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (message->data == NULL && message->len != 0) {
+  if (message == NULL || (message->data == NULL && message->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (function_name_string->data == NULL && function_name_string->len != 0) {
+  if (function_name_string == NULL ||
+      (function_name_string->data == NULL && function_name_string->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (customization_string->data == NULL && customization_string->len != 0) {
+  if (customization_string == NULL ||
+      (customization_string->data == NULL && customization_string->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
   digest->mode = kOtcryptoHashXofModeCshake256;
