@@ -216,7 +216,7 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
                                 const otcrypto_const_byte_buf_t *input_message,
                                 otcrypto_word32_buf_t *tag) {
   // Check for null pointers.
-  if (tag->data == NULL ||
+  if (tag == NULL || tag->data == NULL || input_message == NULL ||
       (input_message->data == NULL && input_message->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -456,7 +456,7 @@ otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
 otcrypto_status_t otcrypto_hmac_update(
     otcrypto_hmac_context_t *const ctx,
     const otcrypto_const_byte_buf_t *input_message) {
-  if (ctx == NULL) {
+  if (ctx == NULL || input_message == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -479,7 +479,7 @@ otcrypto_status_t otcrypto_hmac_update(
 
 otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,
                                       otcrypto_word32_buf_t *tag) {
-  if (ctx == NULL || tag->data == NULL) {
+  if (ctx == NULL || tag == NULL || tag->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
