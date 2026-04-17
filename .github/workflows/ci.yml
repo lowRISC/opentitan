@@ -63,3 +63,9 @@ jobs:
         if: ${{ !cancelled() }}
         with:
           artifact-name: verilator_earlgrey-test-results
+      - name: Upload Bazel execution logs
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: exec_log.log
+          path: build.log
