@@ -303,8 +303,10 @@ static otcrypto_status_t otcrypto_aes_impl(
     const otcrypto_const_byte_buf_t *cipher_input,
     otcrypto_aes_padding_t aes_padding, otcrypto_byte_buf_t *cipher_output) {
   // Check for NULL pointers in input pointers and data buffers.
-  if (key == NULL || (aes_mode != kOtcryptoAesModeEcb && iv->data == NULL) ||
-      cipher_input->data == NULL || cipher_output->data == NULL) {
+  if (key == NULL ||
+      (aes_mode != kOtcryptoAesModeEcb && (iv == NULL || iv->data == NULL)) ||
+      cipher_input == NULL || cipher_input->data == NULL ||
+      cipher_output == NULL || cipher_output->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 

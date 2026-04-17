@@ -22,11 +22,11 @@ static_assert(
 
 otcrypto_status_t otcrypto_sha2_256(const otcrypto_const_byte_buf_t *message,
                                     otcrypto_hash_digest_t *digest) {
-  if (message->data == NULL && message->len != 0) {
+  if (message == NULL || (message->data == NULL && message->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
 
-  if (digest->data == NULL ||
+  if (digest == NULL || digest->data == NULL ||
       launder32(digest->len) != kHmacSha256DigestWords) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -38,11 +38,11 @@ otcrypto_status_t otcrypto_sha2_256(const otcrypto_const_byte_buf_t *message,
 
 otcrypto_status_t otcrypto_sha2_384(const otcrypto_const_byte_buf_t *message,
                                     otcrypto_hash_digest_t *digest) {
-  if (message->data == NULL && message->len != 0) {
+  if (message == NULL || (message->data == NULL && message->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
 
-  if (digest->data == NULL ||
+  if (digest == NULL || digest->data == NULL ||
       launder32(digest->len) != kHmacSha384DigestWords) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -54,11 +54,11 @@ otcrypto_status_t otcrypto_sha2_384(const otcrypto_const_byte_buf_t *message,
 
 otcrypto_status_t otcrypto_sha2_512(const otcrypto_const_byte_buf_t *message,
                                     otcrypto_hash_digest_t *digest) {
-  if (message->data == NULL && message->len != 0) {
+  if (message == NULL || (message->data == NULL && message->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
 
-  if (digest->data == NULL ||
+  if (digest == NULL || digest->data == NULL ||
       launder32(digest->len) != kHmacSha512DigestWords) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -130,12 +130,16 @@ static status_t check_lengths(hmac_ctx_t *hmac_ctx) {
 
 otcrypto_status_t otcrypto_sha2_update(
     otcrypto_sha2_context_t *ctx, const otcrypto_const_byte_buf_t *message) {
+  if (ctx == NULL || message == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
   // Return early if the update size is 0.
   if (message->len == 0) {
     return otcrypto_eval_exit(OTCRYPTO_OK);
   }
 
-  if (ctx == NULL || message->data == NULL) {
+  if (message->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -146,7 +150,7 @@ otcrypto_status_t otcrypto_sha2_update(
 
 otcrypto_status_t otcrypto_sha2_final(otcrypto_sha2_context_t *ctx,
                                       otcrypto_hash_digest_t *digest) {
-  if (ctx == NULL || digest->data == NULL) {
+  if (ctx == NULL || digest == NULL || digest->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 

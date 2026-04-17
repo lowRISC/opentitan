@@ -72,7 +72,7 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
     otcrypto_blinded_key_t *output_key_material) {
   // Check NULL pointers.
   if (output_key_material == NULL || output_key_material->keyblob == NULL ||
-      key_derivation_key->keyblob == NULL) {
+      key_derivation_key == NULL || key_derivation_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -85,12 +85,12 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
   }
 
   // Check for null label with nonzero length.
-  if (label->data == NULL && label->len != 0) {
+  if (label == NULL || (label->data == NULL && label->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Check for null context with nonzero length.
-  if (context->data == NULL && context->len != 0) {
+  if (context == NULL || (context->data == NULL && context->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
 
