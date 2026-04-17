@@ -63,9 +63,9 @@ module rram_ctrl_otp
   logic fsm_err;
   err_e err_d, err_q;
   logic valid_d, valid_q;
-  logic ready;
+  logic otp_req_ready;
 
-  // to store the number of 16b chunks in one RRAM word
+  // To store the number of 16b chunks in one RRAM word
   localparam int unsigned RramOtpSizeWidth = vbits(DataWidth / OtpWidth);
   localparam int unsigned OtpIntgIndWidth = vbits(DataWidth / OtpIntgWidth);
   localparam int unsigned OtpDataIndWidth = vbits(DataWidth / OtpIntgDataWidth);
@@ -85,7 +85,7 @@ module rram_ctrl_otp
   logic [DataWidth-1:0]    rram_word_d, rram_word_q;
   logic [BusAddrByteW-1:0] addr_q, addr_d, addr;
 
-  logic                        rmw_en, clr_buf;
+  logic                        rsw_en, clr_buf;
   logic                        wdata_inconsistent;
   logic [RramOtpSizeWidth-1:0] otp_off_q;
   logic [OtpSizeWidth-1:0]     otp_size_q;
@@ -147,22 +147,18 @@ module rram_ctrl_otp
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, StReset)
 
   ///////////////////////////////
-  // read data integrity check //
+  // Read-data integrity check //
   ///////////////////////////////
   // This integrity was added in phy_rd and is checked here
   logic data_invalid_d, data_invalid_q;
   logic data_err;
-
-  logic [BusWidth-1:0]                      wdata;
-  logic [2**OtpSizeWidth-1:0][OtpWidth-1:0] rdata;
-  logic [2**OtpSizeWidth-1:0][OtpWidth-1:0] wdata_mod;
 
   tlul_data_integ_dec u_data_intg_chk (
     .data_intg_i(rdata_i),
     .data_err_o (data_err)
   );
 
-  // hold on to failed integrity until reset
+  // Hold on to failed integrity until reset
   assign data_invalid_d = data_invalid_q | (rvalid_i & data_err);
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -173,40 +169,120 @@ module rram_ctrl_otp
     end
   end
 
-  // add bus integrity for wdata
+  //////////////////////////////
+  // wdata integrity addition //
+  //////////////////////////////
+  logic [BusWidth-1:0] wdata;
   tlul_data_integ_enc u_bus_intg (
     .data_i     (wdata),
     .data_intg_o(wdata_o)
   );
 
-  // Instantiate secded encoder and decoder based on parameters.
-  `include "prim_secded_inc.svh"
-
   ////////////////////////////////
   // otp_ctrl <-> rram_ctrl CDC //
   ////////////////////////////////
+
+  // -----------------------------------------------------------------------
+  // Request path: OTP domain (clk_otp_i) --> RRAM domain (clk_i)
+  //
+  // A prim_fifo_async_simple captures the OTP request on the write clock
+  // (clk_otp_i) and presents it to the RRAM FSM on the read clock (clk_i).
+  // wready_o (= otp_macro_rsp_o.ready) is asserted whenever the FIFO is
+  // empty, acknowledging OTP in the same cycle it writes.  The FIFO holds
+  // the request until the FSM asserts otp_req_ready (rready_i).
+  // -----------------------------------------------------------------------
+
   logic [OtpAddrWidth-1:0]                  otp_req_addr;
   cmd_e                                     otp_req_cmd;
   logic                                     otp_req_valid;
   logic [OtpSizeWidth-1:0]                  otp_req_size;
   logic [2**OtpSizeWidth-1:0][OtpWidth-1:0] otp_req_wdata;
 
-  assign otp_req_addr  = otp_macro_req_i.addr;
-  assign otp_req_cmd   = otp_macro_req_i.cmd;
-  assign otp_req_valid = otp_macro_req_i.valid;
-  assign otp_req_size  = otp_macro_req_i.size;
-  assign otp_req_wdata = otp_macro_req_i.wdata;
+  localparam int unsigned ReqDataWidth = OtpAddrWidth + $bits(cmd_e) +
+                                         OtpSizeWidth + (2**OtpSizeWidth)*OtpWidth;
 
-  assign otp_macro_rsp_o.rvalid = valid_q;
-  assign otp_macro_rsp_o.err    = err_q;
-  assign otp_macro_rsp_o.rdata  = rdata;
-  assign otp_macro_rsp_o.ready  = ready;
+  prim_fifo_async #(
+    .Width(ReqDataWidth),
+    .Depth(1),
+    .OutputZeroIfInvalid(1'b1)
+  ) u_otp_req_fifo (
+    .clk_wr_i (clk_otp_i),
+    .rst_wr_ni(rst_otp_ni),
+    .wvalid_i (otp_macro_req_i.valid),
+    .wready_o (otp_macro_rsp_o.ready),
+    .wdata_i  ({otp_macro_req_i.addr,
+                otp_macro_req_i.cmd,
+                otp_macro_req_i.size,
+                otp_macro_req_i.wdata}),
+    .wdepth_o (),
+    .clk_rd_i (clk_i),
+    .rst_rd_ni(rst_ni),
+    .rvalid_o (otp_req_valid),
+    .rready_i (otp_req_ready),
+    .rdata_o  ({otp_req_addr,
+                otp_req_cmd,
+                otp_req_size,
+                otp_req_wdata}),
+    .rdepth_o ()
+  );
 
-  // faults and alerts propagate to rram_ctrl
+  // -----------------------------------------------------------------------
+  // Response path: RRAM domain (clk_i) --> OTP domain (clk_otp_i)
+  //
+  // valid_d fires for one cycle when a transaction completes.  valid_q is valid_d delayed by
+  // one clock: at T+1 rram_word_q holds the complete word (all bus-beats registered) and err_q
+  // holds the transaction error (e.g. MacroEccUncorrError from StIntgCheck) before StIdle resets
+  // it to NoError.  The FIFO captures {err_q, rdata} on its write clock and holds them in an
+  // internal register, so there is no hold-stability requirement on the write-side inputs.
+  //
+  // otp_req_ready is gated with !valid_q in StIdle so that a new request cannot fire clr_buf
+  // in the same cycle as the FIFO write (which would corrupt rram_word_q / rdata).
+  // -----------------------------------------------------------------------
+
+  localparam int unsigned RspDataWidth = $bits(err_e) + (2**OtpSizeWidth)*OtpWidth;
+
+  logic fifo_wready;
+
+  logic                                     otp_rsp_valid;
+  err_e                                     otp_rsp_err;
+  logic [2**OtpSizeWidth-1:0][OtpWidth-1:0] otp_rsp_rdata;
+  logic [2**OtpSizeWidth-1:0][OtpWidth-1:0] rdata;
+
+  prim_fifo_async #(
+    .Width(RspDataWidth),
+    .Depth(1),
+    .OutputZeroIfInvalid(1'b1)
+  ) u_otp_rsp_fifo (
+    .clk_wr_i (clk_i),
+    .rst_wr_ni(rst_ni),
+    .wvalid_i (valid_q),
+    .wready_o (fifo_wready),
+    .wdata_i  ({err_q, rdata}),
+    .wdepth_o (),
+    .clk_rd_i (clk_otp_i),
+    .rst_rd_ni(rst_otp_ni),
+    .rvalid_o (otp_rsp_valid),
+    .rready_i (1'b1),
+    .rdata_o  ({otp_rsp_err, otp_rsp_rdata}),
+    .rdepth_o ()
+  );
+
+  assign otp_macro_rsp_o.rvalid = otp_rsp_valid;
+  assign otp_macro_rsp_o.err    = otp_rsp_err;
+  assign otp_macro_rsp_o.rdata  = otp_rsp_rdata;
+
+  // Faults and alerts propagate to rram_ctrl
   assign otp_macro_rsp_o.fatal_lc_fsm_err = 1'b0;
   assign otp_macro_rsp_o.fatal_alert      = 1'b0;
   assign otp_macro_rsp_o.recov_alert      = 1'b0;
 
+  ////////////////////////////////
+  // OTP through read-set-write //
+  ////////////////////////////////
+
+  // Integrity computation
+  // Instantiate secded encoder and decoder based on parameters.
+  `include "prim_secded_inc.svh"
   logic [OtpIntgDataWidth-1:0] unused_data, data_plain;
 
   assign data_plain = rram_word_q[OtpIntgDataWidth*intg_ind_q[OtpDataIndWidth-1:0] +:
@@ -215,7 +291,7 @@ module rram_ctrl_otp
   `SECDED_INST_ENC(prim_secded_pkg::SecdedHamming, OtpIntgDataWidth, u_enc, data_plain,
                    {intg_ecc, unused_data})
 
-  assign otp_byte_addr = BusAddrByteW'(otp_req_addr) << OtpAddrShift;
+  logic [2**OtpSizeWidth-1:0][OtpWidth-1:0] wdata_mod;
 
   // Only issue 128b aligned transfers
   assign addr_o             = {addr[BusAddrByteW-1 : DataByteWidth], {DataByteWidth{1'b0}}};
@@ -223,38 +299,39 @@ module rram_ctrl_otp
   assign ctrl_o.op.q        = op;
   assign ctrl_o.partition.q = RramPartData;
   assign ctrl_o.num.q       = WidthMultiple - 1;
+  assign rready_o           = 1'b1;
 
-  assign rready_o = 1'b1;
+  assign otp_byte_addr = BusAddrByteW'(otp_req_addr) << OtpAddrShift;
 
+  // OTP-FSM
   always_comb begin : p_fsm
-    // Default
-    state_d     = state_q;
-    ready       = 1'b0;
-    err_d       = err_q;
-    bus_cnt_clr = 1'b0;
-    bus_cnt_en  = 1'b0;
-    rmw_en      = 1'b0;
-    intg_update = 1'b0;
-    clr_buf     = 1'b0;
-    zer_en_d    = zer_en_q;
-    fsm_err     = 1'b0;
-    valid_d     = 1'b0;
-    addr_d      = addr_q;
-    start       = 1'b0;
-    req_o       = 1'b0;
-    op          = RramOpRead;
-    wvalid_o    = 1'b0;
-    intg_d      = intg_q;
-    addr        = addr_q;
-    intg_en_d   = intg_en_q;
-    intg_addr_d = intg_addr_q;
-    intg_ind_d  = intg_ind_q;
+    state_d       = state_q;
+    otp_req_ready = 1'b0;
+    err_d         = err_q;
+    bus_cnt_clr   = 1'b0;
+    bus_cnt_en    = 1'b0;
+    rsw_en        = 1'b0;
+    intg_update   = 1'b0;
+    clr_buf       = 1'b0;
+    zer_en_d      = zer_en_q;
+    fsm_err       = 1'b0;
+    valid_d       = 1'b0;
+    addr_d        = addr_q;
+    start         = 1'b0;
+    req_o         = 1'b0;
+    op            = RramOpRead;
+    wvalid_o      = 1'b0;
+    intg_d        = intg_q;
+    addr          = addr_q;
+    intg_en_d     = intg_en_q;
+    intg_addr_d   = intg_addr_q;
+    intg_ind_d    = intg_ind_q;
 
     unique case (state_q)
       // Wait here until the initialization command is received.
       StReset: begin
         err_d = NoError;
-        ready = 1'b1;
+        otp_req_ready = 1'b1;
         if (otp_req_valid) begin
           if (otp_req_cmd == Init) begin
             state_d = StInit;
@@ -272,10 +349,10 @@ module rram_ctrl_otp
 
       // Idle state: ready to receive new commands.
       StIdle: begin
-        ready    = 1'b1;
-        err_d    = NoError;
-        zer_en_d = MuBi4False;
-        if (otp_req_valid) begin
+        otp_req_ready = fifo_wready && !valid_q;
+        err_d         = NoError;
+        zer_en_d      = MuBi4False;
+        if (otp_req_valid && otp_req_ready) begin
           req_o       = 1'b1;
           addr_d      = OtpStartAddr + otp_byte_addr;
           intg_addr_d = OtpIntgStartAddr + (otp_byte_addr >> vbits(OtpIntgDataWidth/8));
@@ -351,7 +428,7 @@ module rram_ctrl_otp
       // Set selected bits in rram_word_d and go to StWrite to write it back to the RRAM.
       StWriteMod: begin
         req_o  = 1'b1;
-        rmw_en = 1'b1;
+        rsw_en = 1'b1;
         if (wdata_inconsistent) begin
           err_d = MacroWriteBlankError;
         end
@@ -492,16 +569,16 @@ module rram_ctrl_otp
     end
   end
 
-  // read modify write operation: OTP can only set bits to 1, but never clear to 0.
-  // zeroization writes set all bits to 1
+  // Read-set-write operation: OTP can only set bits to 1, but never clear to 0.
+  // Zeroization writes set all bits to 1
   assign wdata_mod = mubi4_test_true_strict(zer_en_q) ? '1 : (otp_wdata_q | rdata);
 
-  // update RRAM word buffer
+  // Update RRAM word buffer
   always_comb begin
     rram_word_d        = rram_word_q;
     wdata_inconsistent = '0;
 
-    if (rmw_en) begin
+    if (rsw_en) begin
       for (int k = 0; k <= otp_size_q; k++) begin
         rram_word_d[(otp_off_q + k)*OtpWidth +: OtpWidth] = wdata_mod[k];
         if (mubi4_test_false_strict(zer_en_q)) begin
@@ -524,7 +601,7 @@ module rram_ctrl_otp
     end
   end
 
-  // rram word buffer
+  // RRAM word buffer
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       rram_word_q <= '0;
@@ -543,7 +620,7 @@ module rram_ctrl_otp
   end
 
   //////////////////////
-  // bus word counter //
+  // Bus word counter //
   //////////////////////
 
   // SEC_CM: CTR.REDUN
@@ -567,6 +644,7 @@ module rram_ctrl_otp
     .err_o             (bus_wcnt_err_d)
   );
 
+  // Registers
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       bus_wcnt_err_q <= '0;
@@ -574,24 +652,24 @@ module rram_ctrl_otp
       otp_size_q     <= '0;
       addr_q         <= '0;
       otp_wdata_q    <= '0;
-      valid_q        <= '0;
       zer_en_q       <= MuBi4False;
       intg_q         <= '0;
       intg_addr_q    <= '0;
       intg_ind_q     <= '0;
       intg_en_q      <= MuBi4True;
       err_q          <= NoError;
+      valid_q        <= '0;
     end else begin
       bus_wcnt_err_q <= bus_wcnt_err_q | bus_wcnt_err_d;
       addr_q         <= addr_d;
-      valid_q        <= valid_d;
       zer_en_q       <= zer_en_d;
       intg_q         <= intg_d;
       intg_addr_q    <= intg_addr_d;
       intg_ind_q     <= intg_ind_d;
       intg_en_q      <= intg_en_d;
       err_q          <= err_d;
-      if (ready && otp_req_valid) begin
+      valid_q        <= valid_d;
+      if (otp_req_ready && otp_req_valid) begin
         otp_off_q   <= otp_req_addr[RramOtpSizeWidth-1:0];
         otp_size_q  <= otp_req_size;
         otp_wdata_q <= otp_req_wdata;
@@ -608,11 +686,12 @@ module rram_ctrl_otp
   // Assertions //
   ////////////////
 
-  // check for illegal access requests
+  // Check for illegal access requests - these signals are in the OTP clock domain
   `ASSERT(AddrAlignment32b, (otp_macro_req_i.valid && (otp_macro_req_i.size == 2'd1))
-                             |-> (otp_macro_req_i.addr[0] == '0))
+                             |-> (otp_macro_req_i.addr[0] == '0), clk_otp_i, !rst_otp_ni)
   `ASSERT(AddrAlignment64b, (otp_macro_req_i.valid && (otp_macro_req_i.size == 2'd3))
-                             |-> (otp_macro_req_i.addr[1:0] == '0))
-  `ASSERT(IllegalSize,      (otp_macro_req_i.valid |-> (otp_macro_req_i.size != 2'd2)))
+                             |-> (otp_macro_req_i.addr[1:0] == '0), clk_otp_i, !rst_otp_ni)
+  `ASSERT(IllegalSize,      (otp_macro_req_i.valid |-> (otp_macro_req_i.size != 2'd2)),
+                             clk_otp_i, !rst_otp_ni)
 
 endmodule : rram_ctrl_otp
