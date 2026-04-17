@@ -238,6 +238,12 @@ use_repo(python, python3 = "python_3_10", python3_host = "python_3_10_host")
 # Pip dependencies:
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 pip.parse(
+    # For any python dependencies that must be resolved via building from an sdist instead
+    # of using a wheel, defensively try to reduce the chance of this resulting in non-
+    # deterministic outputs due to including a source timestamp.
+    environment = {
+        "SOURCE_DATE_EPOCH": "0",
+    },
     # When using sdists instead of wheels, some dependencies will locally build output
     # files with non-deterministic results (e.g. timestamped). These are then passed by
     # Bazel into builds, causing potential cache misses. This can have a big impact on
