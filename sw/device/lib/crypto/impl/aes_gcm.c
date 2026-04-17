@@ -286,7 +286,8 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(
     otcrypto_word32_buf_t *auth_tag) {
   // Check for NULL pointers in input pointers and required-nonzero-length data
   // buffers.
-  if (key == NULL || iv->data == NULL || auth_tag->data == NULL) {
+  if (key == NULL || iv == NULL || iv->data == NULL || auth_tag == NULL ||
+      auth_tag->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -295,7 +296,8 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(
 
   // Conditionally check for null pointers in data buffers that may be
   // 0-length.
-  if ((aad->len != 0 && aad->data == NULL) ||
+  if (aad == NULL || ciphertext == NULL || plaintext == NULL ||
+      (aad->len != 0 && aad->data == NULL) ||
       (ciphertext->len != 0 && ciphertext->data == NULL) ||
       (plaintext->len != 0 && plaintext->data == NULL)) {
     return OTCRYPTO_BAD_ARGS;
@@ -341,13 +343,15 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
     hardened_bool_t *success) {
   // Check for NULL pointers in input pointers and required-nonzero-length data
   // buffers.
-  if (key == NULL || iv->data == NULL || auth_tag->data == NULL) {
+  if (key == NULL || iv == NULL || iv->data == NULL || auth_tag == NULL ||
+      auth_tag->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Conditionally check for null pointers in data buffers that may be
   // 0-length.
-  if ((aad->len != 0 && aad->data == NULL) ||
+  if (aad == NULL || ciphertext == NULL || plaintext == NULL ||
+      (aad->len != 0 && aad->data == NULL) ||
       (ciphertext->len != 0 && ciphertext->data == NULL) ||
       (plaintext->len != 0 && plaintext->data == NULL)) {
     return OTCRYPTO_BAD_ARGS;
@@ -388,7 +392,8 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
 otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
     otcrypto_blinded_key_t *key, const otcrypto_const_word32_buf_t *iv,
     otcrypto_aes_gcm_context_t *ctx) {
-  if (key == NULL || key->keyblob == NULL || iv->data == NULL || ctx == NULL) {
+  if (key == NULL || key->keyblob == NULL || iv == NULL || iv->data == NULL ||
+      ctx == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -415,7 +420,8 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
 otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
     otcrypto_blinded_key_t *key, const otcrypto_const_word32_buf_t *iv,
     otcrypto_aes_gcm_context_t *ctx) {
-  if (key == NULL || key->keyblob == NULL || iv->data == NULL || ctx == NULL) {
+  if (key == NULL || key->keyblob == NULL || iv == NULL || iv->data == NULL ||
+      ctx == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -441,7 +447,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
 
 otcrypto_status_t otcrypto_aes_gcm_update_aad(
     otcrypto_aes_gcm_context_t *ctx, const otcrypto_const_byte_buf_t *aad) {
-  if (ctx == NULL || aad->data == NULL) {
+  if (ctx == NULL || aad == NULL || aad->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -471,8 +477,8 @@ otcrypto_status_t otcrypto_aes_gcm_update_aad(
 otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
     otcrypto_aes_gcm_context_t *ctx, const otcrypto_const_byte_buf_t *input,
     otcrypto_byte_buf_t *output, size_t *output_bytes_written) {
-  if (ctx == NULL || input->data == NULL || output->data == NULL ||
-      output_bytes_written == NULL) {
+  if (ctx == NULL || input == NULL || input->data == NULL || output == NULL ||
+      output->data == NULL || output_bytes_written == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
   *output_bytes_written = 0;
@@ -522,11 +528,12 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
     otcrypto_aes_gcm_context_t *ctx, otcrypto_aes_gcm_tag_len_t tag_len,
     otcrypto_byte_buf_t *ciphertext, size_t *ciphertext_bytes_written,
     otcrypto_word32_buf_t *auth_tag) {
-  if (ctx == NULL || ciphertext_bytes_written == NULL ||
+  if (ctx == NULL || ciphertext_bytes_written == NULL || auth_tag == NULL ||
       auth_tag->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (ciphertext->len != 0 && ciphertext->data == NULL) {
+  if (ciphertext == NULL ||
+      (ciphertext->len != 0 && ciphertext->data == NULL)) {
     return OTCRYPTO_BAD_ARGS;
   }
   *ciphertext_bytes_written = 0;
@@ -572,11 +579,11 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
     const otcrypto_const_word32_buf_t *auth_tag,
     otcrypto_aes_gcm_tag_len_t tag_len, otcrypto_byte_buf_t *plaintext,
     size_t *plaintext_bytes_written, hardened_bool_t *success) {
-  if (ctx == NULL || plaintext_bytes_written == NULL ||
+  if (ctx == NULL || plaintext_bytes_written == NULL || auth_tag == NULL ||
       auth_tag->data == NULL || success == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (plaintext->len != 0 && plaintext->data == NULL) {
+  if (plaintext == NULL || (plaintext->len != 0 && plaintext->data == NULL)) {
     return OTCRYPTO_BAD_ARGS;
   }
   *plaintext_bytes_written = 0;

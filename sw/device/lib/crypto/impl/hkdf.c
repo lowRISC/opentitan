@@ -129,10 +129,11 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
                                         const otcrypto_const_byte_buf_t *salt,
                                         otcrypto_blinded_key_t *prk) {
   // Check for null pointers.
-  if (ikm->keyblob == NULL || prk == NULL || prk->keyblob == NULL) {
+  if (ikm == NULL || ikm->keyblob == NULL || prk == NULL ||
+      prk->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (salt->data == NULL && salt->len != 0) {
+  if (salt == NULL || (salt->data == NULL && salt->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -228,10 +229,11 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
 otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
                                        const otcrypto_const_byte_buf_t *info,
                                        otcrypto_blinded_key_t *okm) {
-  if (okm == NULL || okm->keyblob == NULL || prk->keyblob == NULL) {
+  if (okm == NULL || okm->keyblob == NULL || prk == NULL ||
+      prk->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (info->data == NULL && info->len != 0) {
+  if (info == NULL || (info->data == NULL && info->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
 
