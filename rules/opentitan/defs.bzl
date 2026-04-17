@@ -65,6 +65,10 @@ load(
     _sim_qemu = "sim_qemu",
 )
 load(
+    "@lowrisc_opentitan//rules/opentitan:select.bzl",
+    "opentitan_select_test",
+)
+load(
     "@lowrisc_opentitan//hw/top:defs.bzl",
     "ALL_TOPS",
     "opentitan_select_top",
@@ -499,6 +503,18 @@ def opentitan_test(
             test_suite = str(Label(":{}".format(name))),
             **test_kwargs
         )
+
+    opentitan_select_test(
+        name = name + "_any",
+        tests = all_tests,
+        tags = ["manual"],
+    )
+
+    native.test_suite(
+        name = name + "_all",
+        tests = all_tests,
+        tags = ["manual"],
+    )
 
     native.test_suite(
         name = name,
