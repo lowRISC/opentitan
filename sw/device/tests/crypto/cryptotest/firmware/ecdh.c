@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
@@ -75,7 +76,7 @@ enum {
  *
  * @param d Private key.
  * @param qx Public key x coordinate.
- * @param qx Public key y coordinate.
+ * @param qy Public key y coordinate.
  * @param[out] ss Shared secret key.
  * @param[out] valid Whether the input arguments were valid.
  * @return Status code (OK or error).
@@ -102,11 +103,7 @@ static status_t ecdh_p256(cryptotest_ecdh_private_key_t d,
   }
 
   // Construct the private key object.
-  // TODO(#20762): once key-import exists for ECDH, use that instead.
   uint32_t private_keyblob[kP256MaskedPrivateKeyWords * 2];
-  memset(private_keyblob, 0, sizeof(private_keyblob));
-  memcpy(private_keyblob, d.d0, d.d0_len);
-  memcpy(private_keyblob + kP256MaskedPrivateKeyWords, d.d1, d.d1_len);
   otcrypto_blinded_key_t private_key = {
       .config =
           {
@@ -120,21 +117,54 @@ static status_t ecdh_p256(cryptotest_ecdh_private_key_t d,
       .keyblob_length = sizeof(private_keyblob),
       .keyblob = private_keyblob,
   };
-  private_key.checksum = integrity_blinded_checksum(&private_key);
+
+  uint32_t p256_share0_data[kP256MaskedPrivateKeyWords] = {0};
+  uint32_t p256_share1_data[kP256MaskedPrivateKeyWords] = {0};
+  memcpy(p256_share0_data, d.d0, d.d0_len);
+  memcpy(p256_share1_data, d.d1, d.d1_len);
+
+  otcrypto_const_word32_buf_t share0 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, p256_share0_data,
+                        kP256MaskedPrivateKeyWords);
+  otcrypto_const_word32_buf_t share1 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, p256_share1_data,
+                        kP256MaskedPrivateKeyWords);
+
+  otcrypto_status_t priv_status =
+      otcrypto_ecc_p256_private_key_import(share0, share1, &private_key);
+  if (priv_status.value == kOtcryptoStatusValueBadArgs) {
+    *valid = false;
+    memset(ss, 0, kP256SharedSecretBytes);
+    return OK_STATUS();
+  }
+  TRY(priv_status);
 
   // Construct the public key object.
-  // TODO(#20762): once key-import exists for ECDH, use that instead.
   uint32_t public_key_buf[kP256CoordinateWords * 2];
-  memset(public_key_buf, 0, sizeof(public_key_buf));
-  memcpy(public_key_buf, qx.coordinate, qx.coordinate_len);
-  memcpy(public_key_buf + kP256CoordinateWords, qy.coordinate,
-         qy.coordinate_len);
   otcrypto_unblinded_key_t public_key = {
       .key_mode = kOtcryptoKeyModeEcdhP256,
       .key_length = sizeof(public_key_buf),
       .key = public_key_buf,
   };
-  public_key.checksum = integrity_unblinded_checksum(&public_key);
+
+  uint32_t p256_x_data[kP256CoordinateWords] = {0};
+  uint32_t p256_y_data[kP256CoordinateWords] = {0};
+  memcpy(p256_x_data, qx.coordinate, qx.coordinate_len);
+  memcpy(p256_y_data, qy.coordinate, qy.coordinate_len);
+
+  otcrypto_const_word32_buf_t x = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, p256_x_data, kP256CoordinateWords);
+  otcrypto_const_word32_buf_t y = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, p256_y_data, kP256CoordinateWords);
+
+  otcrypto_status_t pub_status =
+      otcrypto_ecc_p256_public_key_import(x, y, &public_key);
+  if (pub_status.value == kOtcryptoStatusValueBadArgs) {
+    *valid = false;
+    memset(ss, 0, kP256SharedSecretBytes);
+    return OK_STATUS();
+  }
+  TRY(pub_status);
 
   // Create a destination for the shared secret.
   size_t shared_secret_words = kP256SharedSecretBytes / sizeof(uint32_t);
@@ -174,16 +204,14 @@ static status_t ecdh_p256(cryptotest_ecdh_private_key_t d,
   }
 
   // Unmask the shared secret.
-  uint32_t share0[shared_secret_words];
-  uint32_t share1[shared_secret_words];
-  otcrypto_word32_buf_t share0_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, share0, ARRAYSIZE(share0));
-  otcrypto_word32_buf_t share1_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, share1, ARRAYSIZE(share1));
+  uint32_t dest_share0[shared_secret_words];
+  uint32_t dest_share1[shared_secret_words];
+  otcrypto_word32_buf_t share0_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, dest_share0, ARRAYSIZE(dest_share0));
+  otcrypto_word32_buf_t share1_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, dest_share1, ARRAYSIZE(dest_share1));
   TRY(otcrypto_export_blinded_key(&shared_secret, &share0_buf, &share1_buf));
-  for (size_t i = 0; i < shared_secret_words; i++) {
-    ss[i] = share0[i] ^ share1[i];
-  }
+  TRY(hardened_xor(dest_share0, dest_share1, shared_secret_words, ss));
   return OK_STATUS();
 }
 
@@ -198,7 +226,7 @@ static status_t ecdh_p256(cryptotest_ecdh_private_key_t d,
  *
  * @param d Private key.
  * @param qx Public key x coordinate.
- * @param qx Public key y coordinate.
+ * @param qy Public key y coordinate.
  * @param[out] ss Shared secret key.
  * @param[out] valid Whether the input arguments were valid.
  * @return Status code (OK or error).
@@ -225,13 +253,7 @@ static status_t ecdh_p384(cryptotest_ecdh_private_key_t d,
   }
 
   // Construct the private key object.
-  // TODO(#20762): once key-import exists for ECDH, use that instead.
-  // Note: the test harness does not produce the extra masking bytes; leave
-  // them zeroed.
   uint32_t private_keyblob[kP384MaskedPrivateKeyWords * 2];
-  memset(private_keyblob, 0, sizeof(private_keyblob));
-  memcpy(private_keyblob, d.d0, d.d0_len);
-  memcpy(private_keyblob + kP384MaskedPrivateKeyWords, d.d1, d.d1_len);
   otcrypto_blinded_key_t private_key = {
       .config =
           {
@@ -245,21 +267,56 @@ static status_t ecdh_p384(cryptotest_ecdh_private_key_t d,
       .keyblob_length = sizeof(private_keyblob),
       .keyblob = private_keyblob,
   };
-  private_key.checksum = integrity_blinded_checksum(&private_key);
+
+  // Note: the test harness might not produce the extra masking bytes; leaving
+  // them safely zeroed by explicitly copying into padded buffers.
+  uint32_t p384_share0_data[kP384MaskedPrivateKeyWords] = {0};
+  uint32_t p384_share1_data[kP384MaskedPrivateKeyWords] = {0};
+  memcpy(p384_share0_data, d.d0, d.d0_len);
+  memcpy(p384_share1_data, d.d1, d.d1_len);
+
+  otcrypto_const_word32_buf_t share0 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, p384_share0_data,
+                        kP384MaskedPrivateKeyWords);
+  otcrypto_const_word32_buf_t share1 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, p384_share1_data,
+                        kP384MaskedPrivateKeyWords);
+
+  otcrypto_status_t priv_status =
+      otcrypto_ecc_p384_private_key_import(share0, share1, &private_key);
+  if (priv_status.value == kOtcryptoStatusValueBadArgs) {
+    *valid = false;
+    memset(ss, 0, kP384SharedSecretBytes);
+    return OK_STATUS();
+  }
+  TRY(priv_status);
 
   // Construct the public key object.
-  // TODO(#20762): once key-import exists for ECDH, use that instead.
   uint32_t public_key_buf[kP384CoordinateWords * 2];
-  memset(public_key_buf, 0, sizeof(public_key_buf));
-  memcpy(public_key_buf, qx.coordinate, qx.coordinate_len);
-  memcpy(public_key_buf + kP384CoordinateWords, qy.coordinate,
-         qy.coordinate_len);
   otcrypto_unblinded_key_t public_key = {
       .key_mode = kOtcryptoKeyModeEcdhP384,
       .key_length = sizeof(public_key_buf),
       .key = public_key_buf,
   };
-  public_key.checksum = integrity_unblinded_checksum(&public_key);
+
+  uint32_t p384_x_data[kP384CoordinateWords] = {0};
+  uint32_t p384_y_data[kP384CoordinateWords] = {0};
+  memcpy(p384_x_data, qx.coordinate, qx.coordinate_len);
+  memcpy(p384_y_data, qy.coordinate, qy.coordinate_len);
+
+  otcrypto_const_word32_buf_t x = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, p384_x_data, kP384CoordinateWords);
+  otcrypto_const_word32_buf_t y = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, p384_y_data, kP384CoordinateWords);
+
+  otcrypto_status_t pub_status =
+      otcrypto_ecc_p384_public_key_import(x, y, &public_key);
+  if (pub_status.value == kOtcryptoStatusValueBadArgs) {
+    *valid = false;
+    memset(ss, 0, kP384SharedSecretBytes);
+    return OK_STATUS();
+  }
+  TRY(pub_status);
 
   // Create a destination for the shared secret.
   size_t shared_secret_words = kP384SharedSecretBytes / sizeof(uint32_t);
@@ -299,16 +356,14 @@ static status_t ecdh_p384(cryptotest_ecdh_private_key_t d,
   }
 
   // Unmask the shared secret.
-  uint32_t share0[shared_secret_words];
-  uint32_t share1[shared_secret_words];
-  otcrypto_word32_buf_t share0_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, share0, ARRAYSIZE(share0));
-  otcrypto_word32_buf_t share1_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, share1, ARRAYSIZE(share1));
+  uint32_t dest_share0[shared_secret_words];
+  uint32_t dest_share1[shared_secret_words];
+  otcrypto_word32_buf_t share0_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, dest_share0, ARRAYSIZE(dest_share0));
+  otcrypto_word32_buf_t share1_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, dest_share1, ARRAYSIZE(dest_share1));
   TRY(otcrypto_export_blinded_key(&shared_secret, &share0_buf, &share1_buf));
-  for (size_t i = 0; i < shared_secret_words; i++) {
-    ss[i] = share0[i] ^ share1[i];
-  }
+  TRY(hardened_xor(dest_share0, dest_share1, shared_secret_words, ss));
   return OK_STATUS();
 }
 
