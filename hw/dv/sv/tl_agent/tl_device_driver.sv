@@ -35,9 +35,9 @@ class tl_device_driver extends tl_base_driver;
     forever begin
       ready_delay = $urandom_range(cfg.a_ready_delay_min, cfg.a_ready_delay_max);
       repeat(ready_delay) @(cfg.vif.device_cb);
-      cfg.vif.device_cb.d2h_int.a_ready <= 1'b1;
+      cfg.vif.device_cb.d2h.a_ready <= 1'b1;
       @(cfg.vif.device_cb);
-      cfg.vif.device_cb.d2h_int.a_ready <= 1'b0;
+      cfg.vif.device_cb.d2h.a_ready <= 1'b0;
     end
   endtask
 
