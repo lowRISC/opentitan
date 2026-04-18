@@ -43,4 +43,4 @@ targets:
     filesets:
       - files_dv
     generate:
-      - ral
+      - "!chip_level ? (ral)"

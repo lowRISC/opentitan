@@ -8,7 +8,7 @@ filesets:
   files_dv:
     depend:
       - lowrisc:dv:cip_lib
-      - lowrisc:dv:racl_ctrl_ral
+      - "!chip_level ? (lowrisc:dv:racl_ctrl_ral)"
       - lowrisc:dv:racl_error_log_agent
     files:
       - racl_ctrl_policies_if.sv
