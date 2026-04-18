@@ -259,49 +259,101 @@ module tlul_assert #(
   if (EndpointType == "Host") begin : gen_host
     // h2d
     if (1) begin : gen_h2d
-      legalAOpcode_A:     assert property (h2d_pre_S |-> legalAOpcode_S);
-      legalAParam_A:      assert property (h2d_pre_S |-> legalAParam_S);
-      sizeGTEMask_A:      assert property (h2d_pre_S |-> sizeGTEMask_S);
-      sizeMatchesMask_A:  assert property (h2d_pre_S |-> sizeMatchesMask_S);
-      pendingReqPerSrc_A: assert property (h2d_pre_S |-> pendingReqPerSrc_S);
-      addrSizeAligned_A:  assert property (h2d_pre_S |-> addrSizeAligned_S);
-      contigMask_A:       assert property (h2d_pre_S and contigMask_pre_S |-> contigMask_S);
-      aDataKnown_A:       assert property (h2d_pre_S and aDataKnown_pre_S |-> aDataKnown_S);
+      legalAOpcode_A:
+        assert property (h2d_pre_S |-> legalAOpcode_S)
+        else `ASSERT_ERROR(legalAOpcode_A)
+      legalAParam_A:
+        assert property (h2d_pre_S |-> legalAParam_S)
+        else `ASSERT_ERROR(legalAParam_A)
+      sizeGTEMask_A:
+        assert property (h2d_pre_S |-> sizeGTEMask_S)
+        else `ASSERT_ERROR(sizeGTEMask_A)
+      sizeMatchesMask_A:
+        assert property (h2d_pre_S |-> sizeMatchesMask_S)
+        else `ASSERT_ERROR(sizeMatchesMask_A)
+      pendingReqPerSrc_A:
+        assert property (h2d_pre_S |-> pendingReqPerSrc_S)
+        else `ASSERT_ERROR(pendingReqPerSrc_A)
+      addrSizeAligned_A:
+        assert property (h2d_pre_S |-> addrSizeAligned_S)
+        else `ASSERT_ERROR(addrSizeAligned_A)
+      contigMask_A:
+        assert property (h2d_pre_S and contigMask_pre_S |-> contigMask_S)
+        else `ASSERT_ERROR(contigMask_A)
+      aDataKnown_A:
+        assert property (h2d_pre_S and aDataKnown_pre_S |-> aDataKnown_S)
+        else `ASSERT_ERROR(aDataKnown_A)
     end
     // d2h
     if (1) begin : gen_d2h
-      respOpcode_M:       assume property (d2h_pre_S |-> respOpcode_S);
-      legalDParam_M:      assume property (d2h_pre_S |-> legalDParam_S);
-      respSzEqReqSz_M:    assume property (d2h_pre_S |-> respSzEqReqSz_S);
-      respMustHaveReq_M:  assume property (d2h_pre_S |-> respMustHaveReq_S);
-      dDataKnown_M:       assume property (d2h_pre_S and dDataKnown_pre_S |-> dDataKnown_S);
+      respOpcode_M:
+        assume property (d2h_pre_S |-> respOpcode_S)
+        else `ASSERT_ERROR(respOpcode_M)
+      legalDParam_M:
+        assume property (d2h_pre_S |-> legalDParam_S)
+        else `ASSERT_ERROR(legalDParam_M)
+      respSzEqReqSz_M:
+        assume property (d2h_pre_S |-> respSzEqReqSz_S)
+        else `ASSERT_ERROR(respSzEqReqSz_M)
+      respMustHaveReq_M:
+        assume property (d2h_pre_S |-> respMustHaveReq_S)
+        else `ASSERT_ERROR(respMustHaveReq_M)
+      dDataKnown_M:
+        assume property (d2h_pre_S and dDataKnown_pre_S |-> dDataKnown_S)
+        else `ASSERT_ERROR(dDataKnown_M)
     end
   // in this case all signals coming from the host side have an assumed property
   end else if (EndpointType == "Device") begin : gen_device
     // h2d
     if (1) begin : gen_h2d
-      legalAParam_M:      assume property (h2d_pre_S |-> legalAParam_S);
-      pendingReqPerSrc_M: assume property (h2d_pre_S |-> pendingReqPerSrc_S);
-      aDataKnown_M:       assume property (h2d_pre_S and aDataKnown_pre_S |-> aDataKnown_S);
-      contigMask_M:       assume property (h2d_pre_S and contigMask_pre_S |-> contigMask_S);
+      legalAParam_M:
+        assume property (h2d_pre_S |-> legalAParam_S)
+        else `ASSERT_ERROR(legalAParam_M)
+      pendingReqPerSrc_M:
+        assume property (h2d_pre_S |-> pendingReqPerSrc_S)
+        else `ASSERT_ERROR(pendingReqPerSrc_M)
+      aDataKnown_M:
+        assume property (h2d_pre_S and aDataKnown_pre_S |-> aDataKnown_S)
+        else `ASSERT_ERROR(aDataKnown_M)
+      contigMask_M:
+        assume property (h2d_pre_S and contigMask_pre_S |-> contigMask_S)
+        else `ASSERT_ERROR(contigMask_M)
     end
     // d2h
     if (1) begin : gen_d2h
-      respOpcode_A: assert property (d2h_pre_S |-> respOpcode_S);
-      legalDParam_A: assert property (d2h_pre_S |-> legalDParam_S);
-      respSzEqReqSz_A: assert property (d2h_pre_S |-> respSzEqReqSz_S);
-      respMustHaveReq_A: assert property (d2h_pre_S |-> respMustHaveReq_S);
-      dDataKnown_A: assert property (d2h_pre_S and dDataKnown_pre_S |-> dDataKnown_S);
+      respOpcode_A:
+        assert property (d2h_pre_S |-> respOpcode_S)
+        else `ASSERT_ERROR(respOpcode_A)
+      legalDParam_A:
+        assert property (d2h_pre_S |-> legalDParam_S)
+        else `ASSERT_ERROR(legalDParam_A)
+      respSzEqReqSz_A:
+        assert property (d2h_pre_S |-> respSzEqReqSz_S)
+        else `ASSERT_ERROR(respSzEqReqSz_A)
+      respMustHaveReq_A:
+        assert property (d2h_pre_S |-> respMustHaveReq_S)
+        else `ASSERT_ERROR(respMustHaveReq_A)
+      dDataKnown_A:
+        assert property (d2h_pre_S and dDataKnown_pre_S |-> dDataKnown_S)
+        else `ASSERT_ERROR(dDataKnown_A)
 
       // d2h error cases
-      legalAOpcodeErr_A:    assert property (d_error_pre_S and legalAOpcodeErr_S |=>
-                                             s_eventually (d2h.d_valid && d2h.d_error));
-      sizeGTEMaskErr_A:     assert property (d_error_pre_S and sizeGTEMaskErr_S |=>
-                                             s_eventually (d2h.d_valid && d2h.d_error));
-      sizeMatchesMaskErr_A: assert property (d_error_pre_S and sizeMatchesMaskErr_S |=>
-                                             s_eventually (d2h.d_valid && d2h.d_error));
-      addrSizeAlignedErr_A: assert property (d_error_pre_S and addrSizeAlignedErr_S |=>
-                                             s_eventually (d2h.d_valid && d2h.d_error));
+      legalAOpcodeErr_A:
+        assert property (d_error_pre_S and legalAOpcodeErr_S |=>
+                         s_eventually (d2h.d_valid && d2h.d_error))
+        else `ASSERT_ERROR(legalAOpcodeErr_A)
+      sizeGTEMaskErr_A:
+        assert property (d_error_pre_S and sizeGTEMaskErr_S |=>
+                         s_eventually (d2h.d_valid && d2h.d_error))
+        else `ASSERT_ERROR(sizeGTEMaskErr_A)
+      sizeMatchesMaskErr_A:
+        assert property (d_error_pre_S and sizeMatchesMaskErr_S |=>
+                         s_eventually (d2h.d_valid && d2h.d_error))
+        else `ASSERT_ERROR(sizeMatchesMaskErr_A)
+      addrSizeAlignedErr_A:
+        assert property (d_error_pre_S and addrSizeAlignedErr_S |=>
+                         s_eventually (d2h.d_valid && d2h.d_error))
+        else `ASSERT_ERROR(addrSizeAlignedErr_A)
     end
   end else begin : gen_unknown
     initial begin : p_unknown
