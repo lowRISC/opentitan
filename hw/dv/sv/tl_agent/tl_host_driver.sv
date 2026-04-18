@@ -202,15 +202,15 @@ task tl_host_driver::send_a_channel_request(tl_seq_item req);
 
     if (!cfg.in_reset) begin
       pending_a_req.push_back(req);
-      cfg.vif.host_cb.h2d_int.a_address <= req.a_addr;
-      cfg.vif.host_cb.h2d_int.a_opcode  <= tl_a_op_e'(req.a_opcode);
-      cfg.vif.host_cb.h2d_int.a_size    <= req.a_size;
-      cfg.vif.host_cb.h2d_int.a_param   <= req.a_param;
-      cfg.vif.host_cb.h2d_int.a_data    <= req.a_data;
-      cfg.vif.host_cb.h2d_int.a_mask    <= req.a_mask;
-      cfg.vif.host_cb.h2d_int.a_user    <= req.a_user;
-      cfg.vif.host_cb.h2d_int.a_source  <= req.a_source;
-      cfg.vif.host_cb.h2d_int.a_valid   <= 1'b1;
+      cfg.vif.host_cb.h2d.a_address <= req.a_addr;
+      cfg.vif.host_cb.h2d.a_opcode  <= tl_a_op_e'(req.a_opcode);
+      cfg.vif.host_cb.h2d.a_size    <= req.a_size;
+      cfg.vif.host_cb.h2d.a_param   <= req.a_param;
+      cfg.vif.host_cb.h2d.a_data    <= req.a_data;
+      cfg.vif.host_cb.h2d.a_mask    <= req.a_mask;
+      cfg.vif.host_cb.h2d.a_user    <= req.a_user;
+      cfg.vif.host_cb.h2d.a_source  <= req.a_source;
+      cfg.vif.host_cb.h2d.a_valid   <= 1'b1;
     end else begin
       req_abort = 1;
     end
@@ -218,9 +218,9 @@ task tl_host_driver::send_a_channel_request(tl_seq_item req);
     `DV_SPINWAIT_EXIT(send_a_request_body(req, a_valid_len, req_done, req_abort);,
                       wait(cfg.in_reset);)
 
-    // when reset and host_cb.h2d_int.a_valid <= 1 occur at the same time, if clock is off,
-    // there is a race condition and invalidate_a_channel can't clear a_valid.
-    if (cfg.in_reset) cfg.vif.host_cb.h2d_int.a_valid <= 1'b0;
+    // when reset and host_cb.h2d.a_valid <= 1 occur at the same time, if clock is off, there is a
+    // race condition and invalidate_a_channel can't clear a_valid.
+    if (cfg.in_reset) cfg.vif.host_cb.h2d.a_valid <= 1'b0;
     invalidate_a_channel();
   end
   seq_item_port.item_done();
@@ -251,7 +251,7 @@ task tl_host_driver::send_a_request_body(tl_seq_item req, int a_valid_len,
     end else if ((req.req_abort_after_a_valid_len || cfg.allow_a_valid_drop_wo_a_ready) &&
                  a_valid_cnt >= a_valid_len) begin
       if (req.req_abort_after_a_valid_len) req_abort = 1;
-      cfg.vif.host_cb.h2d_int.a_valid <= 1'b0;
+      cfg.vif.host_cb.h2d.a_valid <= 1'b0;
       // remove unaccepted item
       void'(pending_a_req.pop_back());
       invalidate_a_channel();
@@ -270,13 +270,13 @@ task tl_host_driver::d_ready_rsp();
     d_ready_delay = $urandom_range(cfg.d_ready_delay_min, cfg.d_ready_delay_max);
     // if a_valid high then d_ready must be high, exit the delay when a_valid is set
     repeat (d_ready_delay) begin
-      if (!cfg.host_can_stall_rsp_when_a_valid_high && cfg.vif.h2d_int.a_valid) break;
+      if (!cfg.host_can_stall_rsp_when_a_valid_high && cfg.vif.h2d.a_valid) break;
       @(cfg.vif.host_cb);
     end
 
-    cfg.vif.host_cb.h2d_int.d_ready <= 1'b1;
+    cfg.vif.host_cb.h2d.d_ready <= 1'b1;
     @(cfg.vif.host_cb);
-    cfg.vif.host_cb.h2d_int.d_ready <= 1'b0;
+    cfg.vif.host_cb.h2d.d_ready <= 1'b0;
   end
 endtask
 
@@ -285,7 +285,7 @@ task tl_host_driver::d_channel_thread();
   tl_seq_item rsp;
 
   forever begin
-    if ((cfg.vif.host_cb.d2h.d_valid && cfg.vif.h2d_int.d_ready && !cfg.in_reset) ||
+    if ((cfg.vif.host_cb.d2h.d_valid && cfg.vif.h2d.d_ready && !cfg.in_reset) ||
         ((pending_a_req.size() != 0) & cfg.in_reset)) begin
       // Use the source ID to find the matching request
       foreach (pending_a_req[i]) begin
