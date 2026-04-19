@@ -5,7 +5,7 @@
 <%from collections import defaultdict%>\
 <%from topgen.merge import is_unmanaged_reset%>\
 <%from topgen.merge import alert_handler_signals%>\
-<%page args="top, plic_info"/>\
+<%page args="top"/>\
   // Peripheral Instantiation
 <% outgoing_interrupt_idx = defaultdict(int) %>\
 % for m in top["module"]:
@@ -96,7 +96,9 @@ has_params, param_items = lib.get_params(top, m)
     % endfor
   % endif
   % if m.get("template_type") == "rv_plic":
-    .intr_src_i (${plic_info[m["name"]]["vector"]}),
+<% prefix = m["name"] + "_" if len(top["plic_info"]) > 1 else "" %>
+    // Interrupt source vector
+    .intr_src_i (${prefix}intr_vector),
   % endif
   % if m.get("template_type") == "pinmux":
 
