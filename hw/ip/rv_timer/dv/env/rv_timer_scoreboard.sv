@@ -50,6 +50,8 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
       `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
     end
 
+    csr_name = csr.get_name();
+
     if (!write && channel == AddrChannel) begin
       if (!uvm_re_match("intr_state*", csr_name)) begin
         for (int i = 0; i < NUM_HARTS; i++) begin
