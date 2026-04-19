@@ -1113,6 +1113,7 @@ def amend_interrupt(top: ConfigT,
     default_plic = top.get("default_plic", None)
     interrupts = []
     outgoing_interrupts = defaultdict(list)
+    plic_info = {}
     for m in modules + list(chain(*outgoing_modules.values())):
         ips = list(filter(lambda module: module["name"] == m, top["module"]))
         if len(ips) == 0:
@@ -1132,6 +1133,9 @@ def amend_interrupt(top: ConfigT,
             qual["intr_type"] = signal.intr_type
             qual["default_val"] = signal.default_val
             qual["incoming"] = False
+            # Add power domain info
+            module_dict = lib.get_module_by_name(top, m)
+            qual["domain"] = module_dict.get("domain", top["power"]["default"])
             plic = ip.get("plic", default_plic)
             if plic is not None:
                 qual["plic"] = plic
@@ -1156,8 +1160,56 @@ def amend_interrupt(top: ConfigT,
             qual_irq["outgoing"] = False
             interrupts.append(qual_irq)
 
+    # Determine PLIC info
+    plics = lib.find_modules(top["module"], "rv_plic", use_base_template_type=True)
+    for plic in plics:
+        domain = plic.get("domain", top["power"]["default"])
+        # Interrupt source 0 is tied to 0 to conform to the RISC-V PLIC spec.
+        # The total number of interrupts is the sum of the widths of each entry
+        # in the list over all power domains, plus 1.
+        p_info = {"domain": domain, "count_tot": 1, "count_pd": {}}
+        for pd in top["power"]["domains"]:
+            p_info["count_pd"][pd] = 0
+
+        # Add schaffold to dict
+        plic_info[plic["name"]] = p_info
+
+    # Populate counts
+    for irq in interrupts:
+        if irq["outgoing"]:
+            continue
+        plic_info[irq["plic"]]["count_tot"] += irq.get("width", 1)
+        plic_info[irq["plic"]]["count_pd"][irq["domain"]] += irq.get("width", 1)
+
     top["interrupt"] = interrupts
     top["outgoing_interrupt"] = outgoing_interrupts
+    top["plic_info"] = plic_info
+
+    # Create chiplevel signal definitions
+    sigdefs = []
+    for plic, info in plic_info.items():
+        plic_str = plic + "_" if len(plic_info) > 1 else ""
+        for pd in top["power"]["domains"]:
+            if pd != info["domain"] and info["count_pd"][pd] > 0:
+                sig_name = f"intr_vector{plic_str}_pd_{pd.lower()}"
+                sigdefs.append(
+                    OrderedDict([('package', ''),
+                                 ('struct', 'logic'),
+                                 ('domain', 'chip'),
+                                 ('signame', sig_name),
+                                 ('width', info["count_pd"][pd]),
+                                 ('type', 'uni'),
+                                 ('special', 'interrupt'),
+                                 ('end_idx', -1),
+                                 ('act', 'req'),
+                                 ('suffix', ''),
+                                 ('default', "'0")]))
+
+    # Add to inter-pd definitions
+    topdefs = top.setdefault("inter_pd", defaultdict()).setdefault("definitions", [])
+    for sd in sigdefs:
+        if sd["signame"] not in [td["signame"] for td in topdefs]:
+            topdefs.append(sd)
 
 
 def get_alert_modules(top: ConfigT,

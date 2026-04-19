@@ -2,7 +2,7 @@
 ## Licensed under the Apache License, Version 2.0, see LICENSE for details.
 ## SPDX-License-Identifier: Apache-2.0
 <%import topgen.lib as lib%>\
-<%page args="top, feature_info, cio_info"/>\
+<%page args="top, feature_info, cio_info, domain"/>\
 % if feature_info["has_pinmux"]:
 % if cio_info["num_mio_pads"] != 0:
   // Multiplexed I/O
@@ -35,6 +35,26 @@
   // Outgoing interrupt of group ${irq_group}
   output logic [top_${top["name"]}_pkg::NOutgoingInterrupts${irq_group.capitalize()}-1:0] outgoing_interrupt_${irq_group}_o,
 % endfor\
+
+% for name, plic in top["plic_info"].items():
+<% prefix = "_" + name if len(top["plic_info"]) > 1 else "" %>\
+% if plic["domain"] == domain:
+  % for pd in top["power"]["physical"]:
+<% if pd == domain: continue %>\
+<% pd_len = plic["count_pd"][pd] - 1 %>\
+    % if pd_len >= 0:
+  // Interrupts from power domain ${pd}
+  input  logic [${pd_len}:0] intr_vector${prefix}_pd_${pd.lower()}_i,
+    % endif
+  % endfor
+% else:
+<% pd_len = plic["count_pd"][domain] - 1 %>\
+  % if pd_len >= 0:
+  // Interrupts to PLIC ${name} in power domain ${plic["domain"]}
+  output logic [${pd_len}:0] intr_vector${prefix}_o,
+  % endif
+% endif
+% endfor
 
   // All externally supplied clocks
 % for clk in top['clocks'].typed_clocks().ast_clks:
