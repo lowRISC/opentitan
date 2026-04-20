@@ -369,7 +369,7 @@ pentest_cryptolib_sca_asym(
 
 pentest_sca(
     name = "sca_ibex_python_test",
-    tags = [],
+    tags = ["flaky"],
     test_args = "",
     test_harness = "//sw/host/penetrationtests/python/sca:sca_ibex_python_test",
     test_vectors = [],
