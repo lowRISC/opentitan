@@ -133,7 +133,7 @@ static void irq_block_wait(irq_flag_id_t isr_id) {
                                            kDifToggleDisabled));
       break;
     case kTestIrqFlagIdEdn1CmdDone:
-      CHECK_DIF_OK(dif_edn_irq_set_enabled(&edn0, kDifEdnIrqEdnCmdReqDone,
+      CHECK_DIF_OK(dif_edn_irq_set_enabled(&edn1, kDifEdnIrqEdnCmdReqDone,
                                            kDifToggleDisabled));
       break;
     default:
