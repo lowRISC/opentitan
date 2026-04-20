@@ -760,7 +760,7 @@ jobs:
       - name: Run software unit tests
         run: |
           ./bazelisk.sh test                                          \
-            --build_tests_only=false                                  \
+            --build_tests_only=true                                   \
             --test_output=errors                                      \
             --define DISABLE_VERILATOR_BUILD=true                     \
             --test_tag_filters=-broken,-cw310,-verilator,-dv,-silicon \
