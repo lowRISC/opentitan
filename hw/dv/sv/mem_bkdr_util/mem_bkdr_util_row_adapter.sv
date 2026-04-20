@@ -20,14 +20,14 @@ class mem_bkdr_util_row_adapter;
   // Translates a raw encoded UVM data row from the memory in a contiguous
   // row of memory.
   //
-  virtual function uvm_hdl_data_t decode_row(uvm_hdl_data_t read_data);
+  virtual function row_data_t decode_row(row_data_t read_data);
     return read_data;
   endfunction
 
   // Translates a contiguous UVM data row to the internal organization of a row
   // that can be written to the memory.
   //
-  virtual function uvm_hdl_data_t encode_row(uvm_hdl_data_t write_data);
+  virtual function row_data_t encode_row(row_data_t write_data);
     return write_data;
   endfunction
 
@@ -36,9 +36,9 @@ class mem_bkdr_util_row_adapter;
   // Given decoded `row_data`, a 39-bit `data` word to be written, and an address, return the
   // decoded row data with the data word at the correct position for the memory architecture and
   // the given address.
-  virtual function uvm_hdl_data_t write_row_data_39b(bit [bus_params_pkg::BUS_AW-1:0] addr,
-                                                     logic [38:0] data,
-                                                     uvm_hdl_data_t row_data);
+  virtual function row_data_t write_row_data_39b(bit [bus_params_pkg::BUS_AW-1:0] addr,
+                                                 logic [38:0]                     data,
+                                                 row_data_t                       row_data);
     row_data[38:0] = data;
     return row_data;
   endfunction
@@ -48,10 +48,8 @@ class mem_bkdr_util_row_adapter;
   // Given decoded `row_data` and an address, return the 39-bit data from the correct position
   // for the memory architecture and the given address.
   virtual function logic [38:0] read_row_data_39b(bit [bus_params_pkg::BUS_AW-1:0] addr,
-                                                  uvm_hdl_data_t row_data);
-    logic data;
-    data = row_data[38:0];
-    return data;
+                                                  row_data_t                       row_data);
+    return row_data[38:0];
   endfunction
 
 endclass
