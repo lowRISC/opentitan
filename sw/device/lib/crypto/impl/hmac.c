@@ -66,6 +66,7 @@ static status_t hmac_key_construct(const otcrypto_blinded_key_t *key,
   if (launder32(key->config.key_length) >
       key_block_wordlen * sizeof(uint32_t)) {
     otcrypto_hmac_key_mode_t used_key_mode = launder32(0);
+    OT_NO_SWITCH_ENUM_COVERAGE_START
     switch (key->config.key_mode) {
       case kOtcryptoKeyModeHmacSha256:
         if (key->config.security_level == kOtcryptoKeySecurityLevelHigh) {
@@ -154,6 +155,7 @@ static status_t hmac_key_construct(const otcrypto_blinded_key_t *key,
       default:
         return OTCRYPTO_BAD_ARGS;
     }
+    OT_NO_SWITCH_ENUM_COVERAGE_END
     HARDENED_CHECK_EQ(used_key_mode, key->config.key_mode);
   } else {
     HARDENED_CHECK_LE(key->config.key_length,
@@ -234,6 +236,7 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
 
   // Call the appropriate function from the HMAC driver.
   hmac_key_t hmac_key;
+  OT_NO_SWITCH_ENUM_COVERAGE_START
   switch (key->config.key_mode) {
     case kOtcryptoKeyModeHmacSha256: {
       HARDENED_CHECK_EQ(launder32(key->config.key_mode),
@@ -399,6 +402,7 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
     default:
       return OTCRYPTO_BAD_ARGS;
   }
+  OT_NO_SWITCH_ENUM_COVERAGE_END
 
   // Should be unreachable.
   HARDENED_TRAP();

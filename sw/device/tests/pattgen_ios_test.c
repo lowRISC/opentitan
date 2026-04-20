@@ -125,6 +125,7 @@ void ottf_external_isr(uint32_t *exc_info) {
   LOG_INFO("IRQ detected %d", irq_id);
 
   bool is_pending;
+  OT_NO_SWITCH_ENUM_COVERAGE_START
   switch (irq_id) {
     case kTopEarlgreyPlicIrqIdPattgenDoneCh0:
       LOG_INFO("Channel 0");
@@ -150,6 +151,7 @@ void ottf_external_isr(uint32_t *exc_info) {
       LOG_FATAL("IRQ: unknown irq %d", irq_id);
       break;
   }
+  OT_NO_SWITCH_ENUM_COVERAGE_END
   // Complete the IRQ by writing the IRQ source to the Ibex specific CC.
   // register.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kPlicTarget, irq_id));

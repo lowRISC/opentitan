@@ -42,6 +42,10 @@ static void init_test(dif_spi_host_t *spi_host) {
     case kDeviceFpgaCw340:
       platform_id = kSpiPinmuxPlatformIdCw340;
       break;
+    case kDeviceSimDV:
+    case kDeviceSimVerilator:
+    case kDeviceFpgaCw305:
+    case kDeviceSimQemu:
     default:
       CHECK(false, "Device not supported %u", kDeviceType);
       break;

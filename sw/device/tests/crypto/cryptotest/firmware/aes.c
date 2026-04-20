@@ -158,6 +158,7 @@ status_t handle_aes(ujson_t *uj) {
     case kAesSubcommandAesBlock:
       return handle_aes_block(uj);
       break;
+    case kAesSubcommandAesGcm:
     default:
       LOG_ERROR("Unrecognized AES subcommand: %d", cmd);
       return INVALID_ARGUMENT();

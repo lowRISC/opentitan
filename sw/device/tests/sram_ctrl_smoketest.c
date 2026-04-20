@@ -96,6 +96,10 @@ bool test_main(void) {
         sram_ctrl[sc].name = SRAM_CTRL_NAME(kDtSramCtrlMain);
         break;
 
+      case kDtSramCtrlRetAon:
+#if defined(OPENTITAN_IS_DARJEELING)
+      case kDtSramCtrlMbox:
+#endif
       default:
         // Ret SRAM can start at the beginning of the owner section.
         sram_ctrl[sc].buf =

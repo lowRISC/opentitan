@@ -61,6 +61,9 @@ status_t handle_hmac(ujson_t *uj) {
       key_mode = kOtcryptoKeyModeHmacSha512;
       tag_bytes = kOtcryptoHmacTagBytesSha512;
       break;
+    case kCryptotestHmacHashAlgSha3_256:
+    case kCryptotestHmacHashAlgSha3_384:
+    case kCryptotestHmacHashAlgSha3_512:
     default:
       LOG_ERROR("Unsupported HMAC key mode: %d", uj_hash_alg);
       return INVALID_ARGUMENT();

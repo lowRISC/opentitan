@@ -265,7 +265,7 @@ TEST_F(HealthTestConfigTest, Locked) {
 }
 
 TEST_F(HealthTestConfigTest, BadTestType) {
-  config_.test_type = kDifEntropySrcTestNumVariants;
+  config_.test_type = (dif_entropy_src_test_t)kDifEntropySrcTestNumVariants;
   EXPECT_READ32(ENTROPY_SRC_REGWEN_REG_OFFSET, 1);
   EXPECT_DIF_BADARG(
       dif_entropy_src_health_test_configure(&entropy_src_, config_));

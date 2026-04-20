@@ -59,6 +59,7 @@ bool test_main(void) {
   dif_lc_ctrl_state_t lc_state = kDifLcCtrlStateInvalid;
   CHECK_DIF_OK(dif_lc_ctrl_get_state(&lc_ctrl, &lc_state));
 
+  OT_NO_SWITCH_ENUM_COVERAGE_START
   switch (lc_state) {
     case kDifLcCtrlStateTestUnlocked0:
     case kDifLcCtrlStateTestUnlocked1:
@@ -88,6 +89,7 @@ bool test_main(void) {
     default:
       return false;
   }
+  OT_NO_SWITCH_ENUM_COVERAGE_END
 
   return true;
 }

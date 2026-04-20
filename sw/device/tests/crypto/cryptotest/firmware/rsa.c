@@ -494,6 +494,11 @@ status_t handle_rsa_verify(ujson_t *uj) {
     case kOtcryptoHashModeSha3_512:
       TRY(otcrypto_sha3_512(&msg_buf, &msg_digest));
       break;
+    case kOtcryptoHashXofModeShake128:
+    case kOtcryptoHashXofModeShake256:
+    case kOtcryptoHashXofModeCshake128:
+    case kOtcryptoHashXofModeCshake256:
+    case kOtcryptoHashModeSha3_224:
     default:
       LOG_ERROR("Unsupported RSA hash mode: %d", uj_input.hashing);
       return INVALID_ARGUMENT();

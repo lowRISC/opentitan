@@ -133,6 +133,11 @@ void ottf_exception_handler(uint32_t *exc_info) {
       test_status_set(kTestStatusPassed);
       finish_test();
       OT_UNREACHABLE();
+    case kIbexExcInstrMisaligned:
+    case kIbexExcIllegalInstrFault:
+    case kIbexExcBreakpoint:
+    case kIbexExcMachineECall:
+    case kIbexExcMax:
     default:
       CHECK(false,
             "Unexpected Exception:"

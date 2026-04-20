@@ -238,6 +238,18 @@ rom_error_t rescue_send_handler(rescue_state_t *state) {
     case kRescueModeNoOp:
       // The No-Op mode is always allowed and does nothing.
       return kErrorOk;
+    case kRescueModeBaud:
+    case kRescueModeBootLog:
+    case kRescueModeBootSvcRsp:
+    case kRescueModeBootSvcReq:
+    case kRescueModeKlobber:
+    case kRescueModeOwnerBlock:
+    case kRescueModeOwnerPage0:
+    case kRescueModeOwnerPage1:
+    case kRescueModeOpenTitanID:
+    case kRescueModeFirmware:
+    case kRescueModeFirmwareSlotB:
+    case kRescueModeWait:
     default:
         /* do nothing */;
   }
@@ -279,8 +291,13 @@ rom_error_t rescue_send_handler(rescue_state_t *state) {
     case kRescueModeFirmwareSlotB:
       // Nothing to do for receive modes.
       return kErrorOk;
+    case kRescueModeBaud:
+    case kRescueModeKlobber:
+    case kRescueModeNoOp:
+    case kRescueModeReboot:
+    case kRescueModeWait:
     default:
-      // This state should be impossible.
+      // These states should be impossible.
       return kErrorRescueBadMode;
   }
   return kErrorRescueSendStart;
@@ -328,9 +345,12 @@ rom_error_t rescue_recv_handler(rescue_state_t *state) {
         state->offset = 0;
       }
       break;
+    case kRescueModeBaud:
+    case kRescueModeKlobber:
     case kRescueModeReboot:
+    case kRescueModeWait:
     default:
-      // This state should be impossible.
+      // These states should be impossible.
       return kErrorRescueBadMode;
   }
   return kErrorOk;
@@ -407,6 +427,7 @@ hardened_bool_t rescue_detect_entry(const owner_rescue_config_t *config,
       return kHardenedBoolTrue;
     case kRescueRequestSkip:
       return kHardenedBoolFalse;
+    case kRescueRequestNone:
     default:
         /* do nothing and continue with trigger detection */;
   }

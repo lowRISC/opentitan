@@ -28,8 +28,9 @@ typedef enum uart_pinmux_platform_id {
 typedef enum uart_pinmux_channel {
   kUartPinmuxChannelConsole,
   kUartPinmuxChannelDut,
-  kUartPinmuxChannelCount,
 } uart_pinmux_channel_t;
+
+enum { kUartPinmuxChannelCount = 2 };
 
 /**
  * Connect the uart pins to mio pins via pinmux based on the platform the test

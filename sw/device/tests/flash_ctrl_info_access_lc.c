@@ -285,6 +285,25 @@ bool test_main(void) {
       test_info_part(kFlashInfoPageIdIsoPart, kRandomData3, /*write_allowed=*/1,
                      /*read_allowed=*/1);
       break;
+    case kDifLcCtrlStateRaw:
+    case kDifLcCtrlStateTestLocked0:
+    case kDifLcCtrlStateTestLocked1:
+    case kDifLcCtrlStateTestLocked2:
+    case kDifLcCtrlStateTestLocked3:
+    case kDifLcCtrlStateTestLocked4:
+    case kDifLcCtrlStateTestLocked5:
+    case kDifLcCtrlStateTestLocked6:
+    case kDifLcCtrlStateTestUnlocked1:
+    case kDifLcCtrlStateTestUnlocked2:
+    case kDifLcCtrlStateTestUnlocked3:
+    case kDifLcCtrlStateTestUnlocked4:
+    case kDifLcCtrlStateTestUnlocked5:
+    case kDifLcCtrlStateTestUnlocked6:
+    case kDifLcCtrlStateTestUnlocked7:
+    case kDifLcCtrlStateScrap:
+    case kDifLcCtrlStatePostTransition:
+    case kDifLcCtrlStateEscalate:
+    case kDifLcCtrlStateInvalid:
     default:
       LOG_ERROR("Unexpected lc state 0x%x", lc_state);
   }

@@ -103,6 +103,7 @@ void ottf_external_isr(uint32_t *exc_info) {
   isr_testutils_spi_device_isr(plic_ctx, spi_device_ctx, false, &peripheral,
                                &spi_device_irq);
 
+  OT_NO_SWITCH_ENUM_COVERAGE_START
   switch (spi_device_irq) {
     case kDifSpiDeviceIrqTpmHeaderNotEmpty:
       header_interrupt_received = true;
@@ -115,6 +116,7 @@ void ottf_external_isr(uint32_t *exc_info) {
       LOG_ERROR("Unexpected interrupt: %d", spi_device_irq);
       break;
   }
+  OT_NO_SWITCH_ENUM_COVERAGE_END
 }
 
 static void ack_spi_tpm_header_irq(dif_spi_device_handle_t *spi_device) {

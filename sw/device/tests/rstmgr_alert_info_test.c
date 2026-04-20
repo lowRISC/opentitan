@@ -280,6 +280,7 @@ static test_alert_info_t expected_info[kRoundTotal] = {
 static node_t test_node(dt_instance_id_t inst_id) {
   dt_device_type_t device_type = dt_device_type(inst_id);
 
+  OT_NO_SWITCH_ENUM_COVERAGE_START
   switch (device_type) {
     case kDtDeviceTypeSpiHost:
       return (node_t){
@@ -316,6 +317,7 @@ static node_t test_node(dt_instance_id_t inst_id) {
       CHECK(false, "unhandled device type");
       abort();
   }
+  OT_NO_SWITCH_ENUM_COVERAGE_END
 }
 
 static void set_extra_alert(volatile uint32_t *set) {
@@ -477,6 +479,7 @@ static void prgm_alert_handler_round3(void) {
     dt_device_type_t device_type = dt_device_type(inst_id);
 
     dif_alert_handler_class_t alert_class;
+    OT_NO_SWITCH_ENUM_COVERAGE_START
     switch (device_type) {
       case kDtDeviceTypeSpiHost:
         alert_class = kDifAlertHandlerClassB;
@@ -491,6 +494,7 @@ static void prgm_alert_handler_round3(void) {
         alert_class = kDifAlertHandlerClassD;
         break;
     }
+    OT_NO_SWITCH_ENUM_COVERAGE_END
 
     CHECK_DIF_OK(dif_alert_handler_configure_alert(
         &alert_handler, i, alert_class, /*enabled=*/kDifToggleEnabled,

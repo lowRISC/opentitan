@@ -94,6 +94,7 @@ rom_error_t rescue_protocol(boot_data_t *bootdata, boot_log_t *boot_log,
   while (true) {
     RETURN_IF_ERROR(rescue_inactivity(&ctx.state));
     rom_error_t result = spi_device_cmd_get(&cmd, /*blocking=*/false);
+    OT_NO_SWITCH_ENUM_COVERAGE_START
     switch (result) {
       case kErrorOk:
         break;
@@ -135,5 +136,6 @@ rom_error_t rescue_protocol(boot_data_t *bootdata, boot_log_t *boot_log,
       default:
         dfu_transport_result(&ctx, kErrorUsbBadSetup);
     }
+    OT_NO_SWITCH_ENUM_COVERAGE_END
   }
 }

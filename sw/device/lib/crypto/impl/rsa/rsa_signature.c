@@ -57,6 +57,10 @@ static status_t digest_check(const otcrypto_hash_digest_t digest) {
       used_mode = launder32(used_mode) | kOtcryptoHashModeSha3_512;
       num_words = 512 / 32;
       break;
+    case kOtcryptoHashXofModeShake128:
+    case kOtcryptoHashXofModeShake256:
+    case kOtcryptoHashXofModeCshake128:
+    case kOtcryptoHashXofModeCshake256:
     default:
       return OTCRYPTO_BAD_ARGS;
   }

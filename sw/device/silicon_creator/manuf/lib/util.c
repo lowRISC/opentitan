@@ -158,6 +158,15 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
               OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_DIGEST_SIZE);
       TRY(otcrypto_sha2_256(&input, &digest));
     } break;
+    case kDifOtpCtrlPartitionHwCfg0:
+    case kDifOtpCtrlPartitionHwCfg1:
+    case kDifOtpCtrlPartitionSecret0:
+    case kDifOtpCtrlPartitionSecret1:
+    case kDifOtpCtrlPartitionSecret2:
+    case kDifOtpCtrlPartitionLifeCycle:
+    case kDifOtpCtrlPartitionDaiError:
+    case kDifOtpCtrlPartitionLciError:
+    case kDifOtpCtrlNumberOfCauses:
     default:
       return INVALID_ARGUMENT();
   }

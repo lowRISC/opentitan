@@ -164,6 +164,9 @@ static status_t get_hash_mode(hmac_test_vector_t *test_vec,
     case kHmacTestOperationSha512:
       *hash_mode = kOtcryptoHashModeSha512;
       return OK_STATUS();
+    case kHmacTestOperationHmacSha256:
+    case kHmacTestOperationHmacSha384:
+    case kHmacTestOperationHmacSha512:
     default:
       return INVALID_ARGUMENT();
   }
