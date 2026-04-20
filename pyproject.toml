@@ -68,7 +68,7 @@ dependencies = [
   "tockloader==1.13",
 
   # The hardware package manager and build system.
-  "fusesoc==2.4.3",
+  "fusesoc==2.4.5",
 
   # Build and run tool for Design Verification flows
   "dvsim==1.17.3",
