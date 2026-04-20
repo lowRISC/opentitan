@@ -593,12 +593,15 @@ def find_intermodule_signal(sig_list, m_name, s_name) -> Dict:
         x for x in sig_list if x["name"] == s_name and x["inst_name"] == m_name
     ]
 
-    if len(filtered) == 1:
+    count = len(filtered)
+    if count == 1:
         return filtered[0]
-
-    log.error("Found {num} entry/entries for {m_name}.{s_name}:".format(
-        num=len(filtered), m_name=m_name, s_name=s_name))
-    return None
+    elif count == 0:
+        log.error(f"Found no intermodule signal {m_name}.{s_name}")
+        raise ValueError(f"Cannot find intermodule signal {s_name} in module {m_name}")
+    else:  # count > 1
+        log.error(f"Found {count} entry/entries for {m_name}.{s_name}: {filtered}")
+        raise ValueError(f"Found mulitple intermodule signals {s_name} in module {m_name}")
 
 
 # Validation
