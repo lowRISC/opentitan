@@ -752,6 +752,7 @@ jobs:
         run: |
           # Build everything we selected, excluding some tags.
           ./bazelisk.sh build                                \
+            --remote_download_outputs=minimal                \
             --build_tests_only=false                         \
             --define DISABLE_VERILATOR_BUILD=true            \
             --test_tag_filters=-broken,-cw310,-verilator,-dv \
@@ -796,6 +797,7 @@ jobs:
         run: |
           # Compile some selected targets
           ./bazelisk.sh build                                \
+            --remote_download_outputs=minimal                \
             --build_tests_only=false                         \
             --//hw/top=darjeeling                            \
             //sw/device/tests/...
