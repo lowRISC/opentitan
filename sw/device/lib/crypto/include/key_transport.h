@@ -93,6 +93,27 @@ otcrypto_status_t otcrypto_hw_backed_attestation_key(
     uint32_t version, const uint32_t salt[8], otcrypto_blinded_key_t *key);
 
 /**
+ * Generate a HW-backed key from key manager that is returned to SW. The
+ * key consists of two Boolean shares of eight words (uint32_t) each, for a
+ * total of 16 words. The actual key is retrieved by the word-wise XOR of the
+ * two shares.
+ *
+ * The key should first be passed to otcrypto_hw_backed_key when
+ * attestation is kHardenedBoolFalse or otcrypto_hw_backed_attestation_key when
+ * attestation is kHardenedBoolTrue, to set the key handle. These functions
+ * ingest the version and salt.
+ *
+ * @param attestation To either use the sealing ladder (kHardenedBoolFalse) or
+ * the attestation ladder (kHardenedBoolTrue).
+ * @param[out] key Destination blinded key preset by otcrypto_hw_backed_key or
+ * otcrypto_hw_backed_attestation_key.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t ot_crypto_hw_backed_keygen(hardened_bool_t attestation,
+                                             otcrypto_blinded_key_t *key);
+
+/**
  * Returns the length that the blinded key will have once wrapped.
  *
  * @param config Key configuration.
