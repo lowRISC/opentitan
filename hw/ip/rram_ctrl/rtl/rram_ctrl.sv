@@ -28,8 +28,8 @@ module rram_ctrl
   parameter all_seeds_t           RndCnstAllSeeds = RndCnstAllSeedsDefault,
   parameter lfsr_seed_t           RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t           RndCnstLfsrPerm = RndCnstLfsrPermDefault,
-  parameter int                   WrFifoDepth     = MaxFifoDepth,
-  parameter int                   RdFifoDepth     = MaxFifoDepth,
+  parameter int unsigned          WrFifoDepth     = MaxFifoDepth,
+  parameter int unsigned          RdFifoDepth     = MaxFifoDepth,
   parameter bit                   SecScrambleEn   = 1'b1
 ) (
   input logic clk_i,
@@ -436,6 +436,53 @@ module rram_ctrl
   );
   assign hw2reg.curr_fifo_lvl.rd.d = MaxFifoWidth'(rd_fifo_depth);
 
+  /////////////////////
+  // LCMGR_HW_ACCESS //
+  /////////////////////
+  // todo add rram_ctrl_lcmgr
+  assign otp_key_o.data_req = 1'b0;
+  assign otp_key_o.addr_req = 1'b0;
+
+  assign rma_dis_access = lc_ctrl_pkg::Off;
+  assign rma_ack_o      = lc_ctrl_pkg::Off;
+
+  assign keymgr_o = '0;
+
+  ///////////////////
+  // OTP_HW_ACCESS //
+  ///////////////////
+  // todo add rram_ctrl_otp
+  assign otp_macro_o.ready  = 1'b0;
+  assign otp_macro_o.rvalid = 1'b0;
+  assign otp_macro_o.rdata  = '0;
+  assign otp_macro_o.err    = otp_ctrl_macro_pkg::NoError;
+
+  assign pwrmgr_o.nvm_idle = 1'b1;
+
+  ///////////////////////
+  // SW/HW ARBITRATION //
+  ///////////////////////
+  // todo add rram_ctrl_arb
+  assign wr_fifo_wdata  = '0;
+  assign wr_fifo_wvalid = 1'b0;
+  assign wr_fifo_clr    = 1'b0;
+
+  assign rd_fifo_wvalid = 1'b0;
+  assign rd_fifo_wdata  = '0;
+
+  assign sw_wready      = 1'b0;
+
+  /////////////
+  // WR_CTRL //
+  /////////////
+  // todo add rram_ctrl_wr
+  assign wr_fifo_rready = 1'b0;
+
+  /////////////
+  // RD_CTRL //
+  /////////////
+  // todo add rram_ctrl_rd
+
   /////////////////////////////////////////
   // RRAM HOST ACCESS (read-only access) //
   /////////////////////////////////////////
@@ -530,6 +577,26 @@ module rram_ctrl
     .wr_collision_i            (1'b0),
     .write_pending_i           (1'b0)
   );
+
+  ///////////////////////
+  // MEMORY PROTECTION //
+  ///////////////////////
+  // todo add rram_ctrl_mp
+  assign host_rd_data = '0;
+  assign host_rd_done = 1'b0;
+  assign host_rd_err  = 1'b0;
+  assign host_gnt     = 1'b0;
+
+  //////////////
+  // RRAM phy //
+  //////////////
+  // todo add rram_phy
+  assign rram_macro_o.rd_req  = 1'b0;
+  assign rram_macro_o.wr_req  = 1'b0;
+  assign rram_macro_o.wr_last = 1'b0;
+  assign rram_macro_o.addr    = '0;
+  assign rram_macro_o.wr_data = '0;
+  assign rram_macro_o.part    = RramPartData;
 
   ///////////////////
   // Alert senders //
