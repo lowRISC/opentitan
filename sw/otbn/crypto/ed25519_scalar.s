@@ -6,6 +6,7 @@
 .globl sc_reduce
 .globl sc_reduce_768
 .globl sc_mul
+.globl sc_blind
 
 /**
  * This library contains arithmetic for the scalar field of the Ed25519
@@ -322,6 +323,55 @@ sc_mul:
   /* Reduce modulo L.
        w18 <= (a * b) mod L */
   jal  x1, sc_reduce
+
+  ret
+
+/**
+ * Blind a scalar with a multiple of the curve order L.
+ *
+ * Given a scalar s < L, this routine adds a random multiple of the group order
+ * k * L to the scalar such that s + k * L. In accordance, with Schindler's and
+ * Wiemers' recommendation [1] the blinding factor k is 128 bits. Since the
+ * curve order L is 253 bits, by choosing a 128-bit factor k we can guarantee
+ * that the blinded scalar s + k * L is at most 382 bits.
+ *
+ * [1] https://csrc.nist.gov/csrc/media/events/workshop-on-elliptic-curve-cryptography-standards/documents/papers/session6-schindler-werner.pdf
+ *
+ * @param[in] w20: s, the scalar to be blinded (s < L).
+ * @param[in] w31: all-zero.
+ * @param[out] [w17:w16]: The blinded scalar s + k * L.
+ *
+ * Clobbered registers: x2, x3, w21, w22, w23.
+ * Clobbered flag groups: FG0.
+ */
+sc_blind:
+  /* w21 <= L. */
+  li x2, 21
+  la x3, ed25519_scalar_L
+  bn.lid x2, 0(x3)
+
+  /* Load a 128-bit random blinding factor k.
+       w22 <= URND & (2^128 - 1). */
+  bn.wsrr w22, URND
+  bn.rshi w22, w31, w22 >> 128
+
+  /* Calculate k * L, i.e., 128-bit x 253-bit multiplication resulting in a
+     381-bit value.
+       [w17:w16] <= [w23:w22] * w21 = k * L. */
+  bn.mulqacc.z          w21.0, w22.0, 0
+  bn.mulqacc            w21.0, w22.1, 64
+  bn.mulqacc.so  w16.L, w21.1, w22.0, 64
+  bn.mulqacc            w21.1, w22.1, 0
+  bn.mulqacc            w21.2, w22.0, 0
+  bn.mulqacc            w21.2, w22.1, 64
+  bn.mulqacc.so  w16.U, w21.3, w22.0, 64
+  bn.mulqacc.wo  w17,   w21.3, w22.1, 0
+
+  /* Add the 381-bit blinding value to the 253-bit scalar resulting in a
+     382-bit blinded scalar avoiding any overflow.
+       [w17:w16] <= [w17:w16] + w20 = k * L + s. */
+  bn.add w16, w16, w20
+  bn.addc w17, w17, w31
 
   ret
 
