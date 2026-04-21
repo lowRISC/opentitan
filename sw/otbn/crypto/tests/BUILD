@@ -63,6 +63,19 @@ otbn_sim_test(
     ],
 )
 
+otbn_sim_test(
+    name = "ed25519_ext_scmul_test",
+    srcs = [
+        "ed25519_ext_scmul_test.s",
+    ],
+    testcase = "ed25519_ext_scmul_test.hjson",
+    deps = [
+        "//sw/otbn/crypto:ed25519",
+        "//sw/otbn/crypto:ed25519_scalar",
+        "//sw/otbn/crypto:field25519",
+    ],
+)
+
 otbn_consttime_test(
     name = "ed25519_ext_add_consttime",
     subroutine = "ext_add",
