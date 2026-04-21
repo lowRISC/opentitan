@@ -5383,6 +5383,20 @@
           name_top: SecOtbnMuteUrnd
         }
         {
+          name: SecFixMaiOpSeq
+          desc:
+            '''
+            If enabled (1), masking accelerator interface will not randomize operand start indexes.
+            Disabled (0) by default.
+            Useful for SCA measurements only.
+            '''
+          type: bit
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: SecOtbnFixMaiOpSeq
+        }
+        {
           name: SecSkipUrndReseedAtStart
           desc:
             '''

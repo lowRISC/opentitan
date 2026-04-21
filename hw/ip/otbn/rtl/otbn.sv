@@ -26,6 +26,8 @@ module otbn
   parameter bit SecMuteUrnd = 1'b0,
   // Skip URND re-seed at the start of an operation. Useful for SCA only.
   parameter bit SecSkipUrndReseedAtStart = 1'b0,
+  // Masking accelerator interface will not randomize operand start indexes.
+  parameter bit SecFixMaiOpSeq = 1'b0,
 
   // Compile-time permutation for URND permutation in BN MAC
   parameter bn_mac_urnd_perm_t RndCnstBnMacUrndPerm = RndCnstBnMacUrndPermDefault,
@@ -936,6 +938,7 @@ module otbn
   assign hw2reg.err_bits.illegal_bus_access.d = err_bits_q.illegal_bus_access;
   assign hw2reg.err_bits.lifecycle_escalation.d = err_bits_q.lifecycle_escalation;
   assign hw2reg.err_bits.fatal_software.d = err_bits_q.fatal_software;
+  assign hw2reg.err_bits.mai_software_error.d = err_bits_q.mai_error;
 
   assign err_bits_clear = reg2hw.err_bits.bad_data_addr.qe & is_not_running_q;
   assign err_bits_d = err_bits_clear ? '0 : err_bits;
@@ -960,7 +963,8 @@ module otbn
                                     reg2hw.err_bits.bad_internal_state,
                                     reg2hw.err_bits.illegal_bus_access,
                                     reg2hw.err_bits.lifecycle_escalation,
-                                    reg2hw.err_bits.fatal_software};
+                                    reg2hw.err_bits.fatal_software,
+                                    reg2hw.err_bits.mai_software_error};
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -1114,6 +1118,7 @@ module otbn
     .ImemSizeByte(ImemSizeByte),
     .RndCnstUrndPrngSeed(RndCnstUrndPrngSeed),
     .SecMuteUrnd(SecMuteUrnd),
+    .SecFixMaiOpSeq(SecFixMaiOpSeq),
     .SecSkipUrndReseedAtStart(SecSkipUrndReseedAtStart),
     .RndCnstBnMacUrndPerm(RndCnstBnMacUrndPerm)
   ) u_otbn_core (
@@ -1214,7 +1219,8 @@ module otbn
     illegal_insn:         core_err_bits.illegal_insn,
     call_stack:           core_err_bits.call_stack,
     bad_insn_addr:        core_err_bits.bad_insn_addr,
-    bad_data_addr:        core_err_bits.bad_data_addr
+    bad_data_addr:        core_err_bits.bad_data_addr,
+    mai_error:            core_err_bits.mai_error
   };
 
   // An error signal going down into the core to show that it should locally escalate. In
@@ -1503,6 +1509,16 @@ module otbn
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
     ImemReqFifo,
     u_tlul_adapter_sram_imem.u_reqfifo,
+    gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
+  )
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(
+    OtbnMaiInputCntAlertCheck_A,
+    u_otbn_core.u_otbn_mai.u_prim_count_input_word_select,
+    gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
+  )
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(
+    OtbnMaiOutputCntAlertCheck_A,
+    u_otbn_core.u_otbn_mai.u_prim_count_output_word_select,
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
   )
 endmodule

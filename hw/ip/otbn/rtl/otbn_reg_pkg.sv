@@ -95,6 +95,10 @@ package otbn_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
+    } mai_software_error;
+    struct packed {
+      logic        q;
+      logic        qe;
     } rnd_fips_chk_fail;
     struct packed {
       logic        q;
@@ -177,6 +181,9 @@ package otbn_reg_pkg;
     } imem_intg_violation;
     struct packed {
       logic        d;
+    } mai_software_error;
+    struct packed {
+      logic        d;
     } rnd_fips_chk_fail;
     struct packed {
       logic        d;
@@ -246,23 +253,23 @@ package otbn_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    otbn_reg2hw_intr_state_reg_t intr_state; // [116:116]
-    otbn_reg2hw_intr_enable_reg_t intr_enable; // [115:115]
-    otbn_reg2hw_intr_test_reg_t intr_test; // [114:113]
-    otbn_reg2hw_alert_test_reg_t alert_test; // [112:109]
-    otbn_reg2hw_cmd_reg_t cmd; // [108:100]
-    otbn_reg2hw_ctrl_reg_t ctrl; // [99:98]
-    otbn_reg2hw_err_bits_reg_t err_bits; // [97:66]
+    otbn_reg2hw_intr_state_reg_t intr_state; // [118:118]
+    otbn_reg2hw_intr_enable_reg_t intr_enable; // [117:117]
+    otbn_reg2hw_intr_test_reg_t intr_test; // [116:115]
+    otbn_reg2hw_alert_test_reg_t alert_test; // [114:111]
+    otbn_reg2hw_cmd_reg_t cmd; // [110:102]
+    otbn_reg2hw_ctrl_reg_t ctrl; // [101:100]
+    otbn_reg2hw_err_bits_reg_t err_bits; // [99:66]
     otbn_reg2hw_insn_cnt_reg_t insn_cnt; // [65:33]
     otbn_reg2hw_load_checksum_reg_t load_checksum; // [32:0]
   } otbn_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    otbn_hw2reg_intr_state_reg_t intr_state; // [107:106]
-    otbn_hw2reg_ctrl_reg_t ctrl; // [105:105]
-    otbn_hw2reg_status_reg_t status; // [104:96]
-    otbn_hw2reg_err_bits_reg_t err_bits; // [95:80]
+    otbn_hw2reg_intr_state_reg_t intr_state; // [108:107]
+    otbn_hw2reg_ctrl_reg_t ctrl; // [106:106]
+    otbn_hw2reg_status_reg_t status; // [105:97]
+    otbn_hw2reg_err_bits_reg_t err_bits; // [96:80]
     otbn_hw2reg_fatal_alert_cause_reg_t fatal_alert_cause; // [79:64]
     otbn_hw2reg_insn_cnt_reg_t insn_cnt; // [63:32]
     otbn_hw2reg_load_checksum_reg_t load_checksum; // [31:0]
@@ -300,6 +307,7 @@ package otbn_reg_pkg;
   parameter logic [0:0] OTBN_ERR_BITS_KEY_INVALID_RESVAL = 1'h 0;
   parameter logic [0:0] OTBN_ERR_BITS_RND_REP_CHK_FAIL_RESVAL = 1'h 0;
   parameter logic [0:0] OTBN_ERR_BITS_RND_FIPS_CHK_FAIL_RESVAL = 1'h 0;
+  parameter logic [0:0] OTBN_ERR_BITS_MAI_SOFTWARE_ERROR_RESVAL = 1'h 0;
   parameter logic [0:0] OTBN_ERR_BITS_IMEM_INTG_VIOLATION_RESVAL = 1'h 0;
   parameter logic [0:0] OTBN_ERR_BITS_DMEM_INTG_VIOLATION_RESVAL = 1'h 0;
   parameter logic [0:0] OTBN_ERR_BITS_REG_INTG_VIOLATION_RESVAL = 1'h 0;

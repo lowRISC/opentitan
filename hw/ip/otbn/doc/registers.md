@@ -185,12 +185,12 @@ The host CPU can clear this register when OTBN is not running,
 by writing any value. Write attempts while OTBN is running are ignored.
 - Offset: `0x1c`
 - Reset default: `0x0`
-- Reset mask: `0xff00ff`
+- Reset mask: `0xff01ff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "bad_data_addr", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "bad_insn_addr", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "call_stack", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "illegal_insn", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "loop", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "key_invalid", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rnd_rep_chk_fail", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rnd_fips_chk_fail", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 8}, {"name": "imem_intg_violation", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "dmem_intg_violation", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "reg_intg_violation", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "bus_intg_violation", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "bad_internal_state", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "illegal_bus_access", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "lifecycle_escalation", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "fatal_software", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 8}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
+{"reg": [{"name": "bad_data_addr", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "bad_insn_addr", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "call_stack", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "illegal_insn", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "loop", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "key_invalid", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rnd_rep_chk_fail", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rnd_fips_chk_fail", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "mai_software_error", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 7}, {"name": "imem_intg_violation", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "dmem_intg_violation", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "reg_intg_violation", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "bus_intg_violation", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "bad_internal_state", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "illegal_bus_access", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "lifecycle_escalation", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "fatal_software", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 8}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                 | Description                                  |
@@ -204,7 +204,8 @@ by writing any value. Write attempts while OTBN is running are ignored.
 |   18   |   rw   |   0x0   | reg_intg_violation   | A `REG_INTG_VIOLATION` error was observed.   |
 |   17   |   rw   |   0x0   | dmem_intg_violation  | A `DMEM_INTG_VIOLATION` error was observed.  |
 |   16   |   rw   |   0x0   | imem_intg_violation  | A `IMEM_INTG_VIOLATION` error was observed.  |
-|  15:8  |        |         |                      | Reserved                                     |
+|  15:9  |        |         |                      | Reserved                                     |
+|   8    |   rw   |   0x0   | mai_software_error   | An `MAI_SOFTWARE_ERROR` error was observed.  |
 |   7    |   rw   |   0x0   | rnd_fips_chk_fail    | An `RND_FIPS_CHK_FAIL` error was observed.   |
 |   6    |   rw   |   0x0   | rnd_rep_chk_fail     | An `RND_REP_CHK_FAIL` error was observed.    |
 |   5    |   rw   |   0x0   | key_invalid          | A `KEY_INVALID` error was observed.          |

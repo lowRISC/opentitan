@@ -92,6 +92,17 @@
       local:   "false"
       expose:  "true"
     }
+    { name:    "SecFixMaiOpSeq"
+      type:    "bit"
+      default: "0"
+      desc: '''
+        If enabled (1), masking accelerator interface will not randomize operand start indexes.
+        Disabled (0) by default.
+        Useful for SCA measurements only.
+        '''
+      local:   "false"
+      expose:  "true"
+    }
     { name:    "SecSkipUrndReseedAtStart"
       type:    "bit"
       default: "0"
@@ -592,6 +603,11 @@
           name: "rnd_fips_chk_fail"
           resval: 0,
           desc: "An `RND_FIPS_CHK_FAIL` error was observed."
+        }
+        { bits: "8",
+          name: "mai_software_error"
+          resval: 0,
+          desc: "An `MAI_SOFTWARE_ERROR` error was observed."
         }
 
         // Fatal errors. Keep in sync with list in FATAL_ALERT_CAUSE.

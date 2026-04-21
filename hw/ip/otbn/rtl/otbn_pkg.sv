@@ -110,6 +110,7 @@ package otbn_pkg;
   //
   // Note: These errors are duplicated in other places. If updating them here, update those too.
   typedef struct packed {
+    logic mai_error;
     logic fatal_software;
     logic lifecycle_escalation;
     logic illegal_bus_access;
@@ -176,6 +177,7 @@ package otbn_pkg;
   // organised to include every software error (including 'call_stack', which actually gets fed in
   // from the base register file)
   typedef struct packed {
+    logic mai_error;
     logic fatal_software;
     logic bad_internal_state;
     logic reg_intg_violation;
@@ -189,6 +191,7 @@ package otbn_pkg;
 
   // All the error signals that can be generated somewhere inside otbn_core
   typedef struct packed {
+    logic mai_error;
     logic fatal_software;
     logic bad_internal_state;
     logic reg_intg_violation;
@@ -388,53 +391,79 @@ package otbn_pkg;
   typedef enum logic [CsrNumWidth-1:0] {
     // Address ranges follow the RISC-V Privileged Specification v1.11
     // 0x7C0-0x7FF Custom read/write
-    CsrFg0         = 12'h7C0,
-    CsrFg1         = 12'h7C1,
-    CsrFlags       = 12'h7C8,
-    CsrMod0        = 12'h7D0,
-    CsrMod1        = 12'h7D1,
-    CsrMod2        = 12'h7D2,
-    CsrMod3        = 12'h7D3,
-    CsrMod4        = 12'h7D4,
-    CsrMod5        = 12'h7D5,
-    CsrMod6        = 12'h7D6,
-    CsrMod7        = 12'h7D7,
-    CsrRndPrefetch = 12'h7D8,
+    CsrFg0            = 12'h7C0,
+    CsrFg1            = 12'h7C1,
+    CsrFlags          = 12'h7C8,
+    CsrMod0           = 12'h7D0,
+    CsrMod1           = 12'h7D1,
+    CsrMod2           = 12'h7D2,
+    CsrMod3           = 12'h7D3,
+    CsrMod4           = 12'h7D4,
+    CsrMod5           = 12'h7D5,
+    CsrMod6           = 12'h7D6,
+    CsrMod7           = 12'h7D7,
+    CsrRndPrefetch    = 12'h7D8,
+    // CsrKmacIfStatus   = 12'h7d9,
+    // CsrKmacIntr       = 12'h7da,
+    // CsrKmacCfg        = 12'h7db,
+    // CsrKmacMsgSend    = 12'h7dc,
+    // CsrKmacCmd        = 12'h7dd,
+    // CsrKmacByteStrobe = 12'h7de,
+    CsrMaiCtrl        = 12'h7e0,
 
     // 0xFC0-0xFFF Custom read-only
     CsrRnd         = 12'hFC0,
-    CsrUrnd        = 12'hFC1
+    CsrUrnd        = 12'hFC1,
+    // CsrKmacStatus  = 12'hfc2,
+    // CsrKmacError   = 12'hfc3,
+    CsrMaiStatus   = 12'hfca
   } csr_e;
 
   // Wide Special Purpose Registers (WSRs)
-  parameter int NWsr = 8; // Number of WSRs
+  parameter int NWsr = 16; // Number of WSRs
   parameter int WsrNumWidth = $clog2(NWsr);
   typedef enum logic [WsrNumWidth-1:0] {
-    WsrMod    = 'd0,
-    WsrRnd    = 'd1,
-    WsrUrnd   = 'd2,
-    WsrAcc    = 'd3,
-    WsrKeyS0L = 'd4,
-    WsrKeyS0H = 'd5,
-    WsrKeyS1L = 'd6,
-    WsrKeyS1H = 'd7
+    WsrMod        = 'd0,
+    WsrRnd        = 'd1,
+    WsrUrnd       = 'd2,
+    WsrAcc        = 'd3,
+    WsrKeyS0L     = 'd4,
+    WsrKeyS0H     = 'd5,
+    WsrKeyS1L     = 'd6,
+    WsrKeyS1H     = 'd7,
+    // WsrKmacDataS0 = 'd8,
+    // WsrKmacDataS1 = 'd9,
+    WsrMaiResS0   = 'd10,
+    WsrMaiResS1   = 'd11,
+    WsrMaiIn0S0   = 'd12,
+    WsrMaiIn0S1   = 'd13,
+    WsrMaiIn1S0   = 'd14,
+    WsrMaiIn1S1   = 'd15
   } wsr_e;
 
   // Internal Special Purpose Registers (ISPRs)
   // CSRs and WSRs have some overlap into what they map into. ISPRs are the actual registers in the
   // design which CSRs and WSRs are mapped on to.
-  parameter int NIspr = 9;
+  parameter int NIspr = 17;
   parameter int IsprNumWidth = $clog2(NIspr);
   typedef enum logic [IsprNumWidth-1:0] {
-    IsprMod    = 'd0,
-    IsprRnd    = 'd1,
-    IsprAcc    = 'd2,
-    IsprFlags  = 'd3,
-    IsprUrnd   = 'd4,
-    IsprKeyS0L = 'd5,
-    IsprKeyS0H = 'd6,
-    IsprKeyS1L = 'd7,
-    IsprKeyS1H = 'd8
+    IsprMod       = 'd0,
+    IsprRnd       = 'd1,
+    IsprAcc       = 'd2,
+    IsprFlags     = 'd3,
+    IsprUrnd      = 'd4,
+    IsprKeyS0L    = 'd5,
+    IsprKeyS0H    = 'd6,
+    IsprKeyS1L    = 'd7,
+    IsprKeyS1H    = 'd8,
+    IsprMaiResS0  = 'd9,
+    IsprMaiResS1  = 'd10,
+    IsprMaiIn0S0  = 'd11,
+    IsprMaiIn0S1  = 'd12,
+    IsprMaiIn1S0  = 'd13,
+    IsprMaiIn1S1  = 'd14,
+    IsprMaiCtrl   = 'd15,
+    IsprMaiStatus = 'd16
   } ispr_e;
 
   typedef logic [$clog2(NFlagGroups)-1:0] flag_group_t;
@@ -720,38 +749,39 @@ package otbn_pkg;
   } otbn_state_e;
 
   // States for start_stop_controller
-  // Encoding generated with:
-  // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 9 -n 7 \
-  //      -s 573771984 --language=sv
+  // Encoding generated at commit 8e0414b5fc using Python 3.10.19 with:
+  // $ ./util/design/sparse-fsm-encode.py --language=sv \
+  //     --seed 573771984 --distance 3 --states 10 --bits 8
   //
   // Hamming distance histogram:
   //
   //  0: --
   //  1: --
   //  2: --
-  //  3: |||||||||||||||||||| (44.44%)
-  //  4: |||||||||||||||||| (41.67%)
-  //  5: | (2.78%)
-  //  6: | (2.78%)
-  //  7: ||| (8.33%)
+  //  3: |||||||||||||||||||| (31.11%)
+  //  4: |||||||||||||||||||| (31.11%)
+  //  5: |||||||||||| (20.00%)
+  //  6: |||||||| (13.33%)
+  //  7: || (4.44%)
+  //  8: --
   //
   // Minimum Hamming distance: 3
   // Maximum Hamming distance: 7
   // Minimum Hamming weight: 1
   // Maximum Hamming weight: 6
   //
-  localparam int StateStartStopWidth = 7;
+  localparam int StateStartStopWidth = 8;
   typedef enum logic [StateStartStopWidth-1:0] {
-    OtbnStartStopStateInitial             = 7'b1010011,
-    OtbnStartStopStateHalt                = 7'b1111001,
-    OtbnStartStopStateUrndRefresh         = 7'b0000110,
-    OtbnStartStopStateRunning             = 7'b1001000,
-    OtbnStartStopSecureWipeWdrUrnd        = 7'b0101100,
-    OtbnStartStopSecureWipeAccModBaseUrnd = 7'b0010000,
-    OtbnStartStopSecureWipeAllZero        = 7'b0110101,
-    OtbnStartStopSecureWipeComplete       = 7'b0001011,
-    OtbnStartStopStateLocked              = 7'b1101111
+    OtbnStartStopStateInitial             = 8'b10100111,
+    OtbnStartStopStateHalt                = 8'b00000001,
+    OtbnStartStopStateUrndRefresh         = 8'b11110010,
+    OtbnStartStopStateRunning             = 8'b01110111,
+    OtbnStartStopSecureWipeWdrUrnd        = 8'b10010000,
+    OtbnStartStopSecureWipeAccModBaseUrnd = 8'b10001110,
+    OtbnStartStopSecureWipeExtIsprsUrnd   = 8'b00110100,
+    OtbnStartStopSecureWipeAllZero        = 8'b01111000,
+    OtbnStartStopSecureWipeComplete       = 8'b10101001,
+    OtbnStartStopStateLocked              = 8'b01101101
   } otbn_start_stop_state_e;
 
 // Encoding generated with:
@@ -835,5 +865,8 @@ typedef enum logic [StateScrambleCtrlWidth-1:0] {
     ArithToBool = 5'b01011,
     BoolToArith = 5'b10000
   } mask_op_e;
+
+  // Width of randomness required by the mask accelerator
+  localparam int unsigned MaRndLen = 32'd322;
 
 endpackage

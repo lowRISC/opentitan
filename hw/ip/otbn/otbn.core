@@ -38,6 +38,7 @@ filesets:
       - rtl/otbn_alu_bignum.sv
       - rtl/otbn_mac_bignum_fsm.sv
       - rtl/otbn_mac_bignum.sv
+      - rtl/otbn_mai.sv
       - rtl/otbn_mask_accelerator.sv
       - rtl/otbn_mod_result_selector.sv
       - rtl/otbn_loop_controller.sv
