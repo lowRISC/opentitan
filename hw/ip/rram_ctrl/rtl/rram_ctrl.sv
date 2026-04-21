@@ -146,32 +146,31 @@ module rram_ctrl
   logic                    wr_last;
   logic                    wr_done;
 
-  // rram_ctrl_arb
-  //rram_sel_e                if_sel;
-  //logic                     sw_sel;
-  //logic                     hw_loopback_sel;
-  //logic                     arb_fsm_err;
-  //logic                     sw_ctrl_done;
-  //rram_ctrl_err_t           sw_ctrl_err;
-  //rram_part_e               ctrl_part;
-  //logic [BusAddrW-1:0]      ctrl_addr;
+  // rram_ctrl_rd to rram_ctrl_mp signals
+  logic                    rd_req;
+  logic [BusAddrW-1:0]     rd_addr;
+  logic                    rd_ovfl;
+  logic [BusFullWidth-1:0] rd_data;
+  logic                    rd_err;
+
+  // rram_ctrl_rd <-> rram_ctrl_arb signals
+  logic                     rd_op_start;
+  logic                     rd_op_done;
+  logic [BusAddrW-1:0]      rd_op_addr;
+  rram_ctrl_err_t           rd_op_err;
+  logic [BusAddrW-1:0]      rd_op_err_addr;
+  logic                     rd_cnt_err;
+  logic                     rd_fsm_err;
+  logic [BusFullWidth-1:0]  rd_ctrl_data;
+  logic                     rd_ctrl_valid;
+  logic                     rd_ctrl_ready;
+
   logic [CtrlMaxWordsW-1:0] ctrl_num_words;
-  //logic [BusAddrW-1:0]      ctrl_err_addr;
 
   // rram_ctrl_mp signals
-  logic                     mp_err;
+  logic mp_err;
 
   // rram_phy signals
-  //logic phy_wr_busy;
-  //logic phy_init_done;
-  //logic phy_host_spurious_done;
-  //logic phy_host_gnt_err;
-  //logic phy_fsm_err;
-  //logic phy_cnt_err;
-  //logic phy_fifo_err;
-  //logic phy_arb_err;
-  //logic phy_rd_intg_err;
-  //logic phy_rd_ctrl_err;
   logic phy_wr_intg_err;
 
   lc_ctrl_pkg::lc_tx_t rma_dis_access;
@@ -298,9 +297,9 @@ module rram_ctrl
   assign hw2reg.std_fault_status.phy_arb_err.d      = 1'b1;
   assign hw2reg.std_fault_status.phy_arb_err.de     = 1'b0;
   assign hw2reg.std_fault_status.ctrl_fsm_err.d     = 1'b1;
-  assign hw2reg.std_fault_status.ctrl_fsm_err.de    = wr_fsm_err;
+  assign hw2reg.std_fault_status.ctrl_fsm_err.de    = rd_fsm_err | wr_fsm_err;
   assign hw2reg.std_fault_status.ctrl_cnt_err.d     = 1'b1;
-  assign hw2reg.std_fault_status.ctrl_cnt_err.de    = wr_cnt_err;
+  assign hw2reg.std_fault_status.ctrl_cnt_err.de    = rd_cnt_err | wr_cnt_err;
 
   // Location of the last correctable error
   assign hw2reg.corr_err_loc.addr.d  = '0;
@@ -515,8 +514,13 @@ module rram_ctrl
   assign wr_fifo_wvalid = 1'b0;
   assign wr_fifo_clr    = 1'b0;
 
+  assign rd_op_start    = 1'b0;
+  assign rd_op_addr     = '0;
+
   assign rd_fifo_wvalid = 1'b0;
   assign rd_fifo_wdata  = '0;
+
+  assign rd_ctrl_ready = 1'b0;
 
   assign ctrl_num_words = '0;
   assign sw_wready      = 1'b0;
@@ -554,7 +558,31 @@ module rram_ctrl
   /////////////
   // RD_CTRL //
   /////////////
-  // todo add rram_ctrl_rd
+  rram_ctrl_rd u_rram_ctrl_rd (
+    .clk_i,
+    .rst_ni,
+    // Software interface
+    .op_start_i     (rd_op_start),
+    .op_num_words_i (ctrl_num_words),
+    .op_done_o      (rd_op_done),
+    .op_addr_i      (rd_op_addr),
+    .op_err_o       (rd_op_err),
+    .op_err_addr_o  (rd_op_err_addr),
+    .cnt_err_o      (rd_cnt_err),
+    .fsm_err_o      (rd_fsm_err),
+    // Data interface to arbiter
+    .rd_ctrl_data_o (rd_ctrl_data),
+    .rd_ctrl_valid_o(rd_ctrl_valid),
+    .rd_ctrl_ready_i(rd_ctrl_ready),
+    // Read interface to rram_ctrl_mp
+    .rram_req_o     (rd_req),
+    .rram_addr_o    (rd_addr),
+    .rram_ovfl_o    (rd_ovfl),
+    .rram_data_i    (rd_data),
+    .rram_done_i    (rd_done),
+    .rram_rd_err_i  (rd_err),
+    .rram_mp_err_i  (mp_err)
+  );
 
   /////////////////////////////////////////
   // RRAM HOST ACCESS (read-only access) //
@@ -657,6 +685,10 @@ module rram_ctrl
   // todo add rram_ctrl_mp
   assign mp_err  = 1'b0;
   assign wr_done = 1'b0;
+
+  assign rd_data = '0;
+  assign rd_done = 1'b0;
+  assign rd_err  = 1'b0;
 
   assign host_rd_data = '0;
   assign host_rd_done = 1'b0;
@@ -938,6 +970,10 @@ module rram_ctrl
                                          alert_tx_o[1])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(WrFsm_A, u_rram_ctrl_wr.u_state_regs,
                                        alert_tx_o[1])
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(RdCnt_A, u_rram_ctrl_rd.u_cnt,
+                                         alert_tx_o[1])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(RdFsm_A, u_rram_ctrl_rd.u_state_regs,
+                                         alert_tx_o[1])
 
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(TlLcGateFsm_A, u_tl_gate.u_state_regs,
                                        alert_tx_o[1])
