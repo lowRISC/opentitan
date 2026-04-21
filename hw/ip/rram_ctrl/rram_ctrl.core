@@ -24,6 +24,7 @@ filesets:
       - lowrisc:ip:rram_ctrl_reg
     files:
       - rtl/rram_ctrl_wr.sv
+      - rtl/rram_ctrl_rd.sv
       - rtl/rram_ctrl.sv
     file_type: systemVerilogSource
 
