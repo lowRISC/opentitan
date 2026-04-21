@@ -31,7 +31,7 @@ waive -rules {HIER_NET_NOT_READ NOT_READ} -location {otbn.sv}  \
       -regexp {(Net|Signal) 'imem_wmask_bus' is not read from} \
       -comment {Signal is used in an assertion.}
 
-waive -rules {CLOCK_USE RESET_USE} -location {otbn_alu_bignum.sv otbn_rf_bignum_ff.sv otbn_core.sv} \
+waive -rules {CLOCK_USE RESET_USE} -location {otbn_alu_bignum.sv otbn_rf_bignum_ff.sv otbn_core.sv otbn_mai.sv} \
       -regexp {'(clk_i|rst_ni)' is connected to '(prim_onehot_mux)' port} \
       -comment {The module is fully combinatorial, clk/rst are only used for assertions.}
 

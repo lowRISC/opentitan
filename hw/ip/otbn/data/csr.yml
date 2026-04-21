@@ -170,15 +170,16 @@
     0: |
       MAI_START: Writing 1 to this bit starts the MAI operation.
       Writing it when MAI is busy will cause a MAI_ERROR software error.
-    2-1:
+    5-1:
       doc: |
         The MAI_OPERATION field defines which accelerator is used for the next operation.
         Invalid values and writing to these bits when MAI is busy will cause a MAI_ERROR software error.
       values:
-        0: A2B
-        1: B2A
-        2: secAdd
-    31-3: Reserved. Any write is ignored. Always reads as 0.
+        11: A2B
+        16: B2A
+        23: secAdd
+        12: secAddMod
+    31-6: Reserved. Any write is ignored. Always reads as 0.
 
 - name: rnd
   address: 0xfc0
