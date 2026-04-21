@@ -52,6 +52,7 @@ class rv_dm_env extends cip_base_env #(
 
     m_jtag_dmi_monitor = jtag_dmi_monitor#()::type_id::create("m_jtag_dmi_monitor", this);
     m_jtag_dmi_monitor.cfg = cfg.m_jtag_agent_cfg;
+    m_jtag_dmi_monitor.set_dmi_address(cfg.m_jtag_agent_cfg.jtag_dtm_ral.dmi.get_address());
 
     m_sba_access_monitor = sba_access_monitor#()::type_id::create("m_sba_access_monitor", this);
     m_sba_access_monitor.cfg = cfg.m_jtag_agent_cfg;

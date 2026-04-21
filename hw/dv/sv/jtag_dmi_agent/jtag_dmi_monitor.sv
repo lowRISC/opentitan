@@ -24,13 +24,24 @@ class jtag_dmi_monitor #(type ITEM_T = jtag_dmi_item) extends dv_base_monitor#(
   // Does the JTAG FSM currently have an instruction register equal to the DMI address?
   bit dmi_selected = 1'b0;
 
+  // A uvm_reg representing a DMI register. This isn't really being monitored in the design (so
+  // doesn't have to be related to any model), but makes it convenient to access register field
+  // values from monitored traffic.
+  local jtag_dtm_reg_dmi m_dmi_reg;
 
-  `uvm_component_new
+  // The IR of the DMI register that is being monitored. Set this with set_dmi_address().
+  local uvm_reg_addr_t   m_dmi_address = '1;
+
+  function new (string name, uvm_component parent);
+    super.new(name, parent);
+    m_dmi_reg = jtag_dtm_reg_dmi::type_id::create("m_dmi_reg");
+  endfunction
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     jtag_item_fifo = new("jtag_item_fifo", this);
     non_dmi_jtag_dtm_analysis_port = new("non_dmi_jtag_dtm_analysis_port", this);
+    m_dmi_reg.build();
   endfunction
 
   task run_phase(uvm_phase phase);
@@ -40,8 +51,18 @@ class jtag_dmi_monitor #(type ITEM_T = jtag_dmi_item) extends dv_base_monitor#(
     join
   endtask
 
+  // Set the address of the DMI register that is being monitored.
+  function void set_dmi_address(uvm_reg_addr_t addr);
+    if (&addr) `uvm_fatal(get_full_name(), "The DMI address can't possibly be '1.")
+    m_dmi_address = addr;
+  endfunction
+
   virtual protected task collect_trans();
     jtag_item jtag_item;
+
+    if (&m_dmi_address) begin
+      `uvm_fatal(get_full_name(), "Cannot collect transactions as we don't know the DMI address.")
+    end
 
     forever begin
       bit is_ir_update, is_dr_update;
@@ -60,7 +81,7 @@ class jtag_dmi_monitor #(type ITEM_T = jtag_dmi_item) extends dv_base_monitor#(
 
       // If this is an IR update, update our dmi_selected flag to reflect the new IR.
       if (is_ir_update) begin
-        dmi_selected = (jtag_item.ir == cfg.jtag_dtm_ral.dmi.get_address());
+        dmi_selected = (jtag_item.ir == m_dmi_address);
       end
 
       // If we're not currently operating on the DMI register, pass the item to our non-DMI analysis
@@ -89,8 +110,7 @@ class jtag_dmi_monitor #(type ITEM_T = jtag_dmi_item) extends dv_base_monitor#(
   // Returns true if the response was captured, or if there was no previous request, false if the
   // response returned was busy.
   virtual function bit capture_response(jtag_item jtag_item);
-    jtag_dmi_op_rsp_e rsp_op = jtag_dmi_op_rsp_e'(
-        get_field_val(cfg.jtag_dtm_ral.dmi.op, jtag_item.dout));
+    jtag_dmi_op_rsp_e rsp_op = jtag_dmi_op_rsp_e'(get_field_val(m_dmi_reg.op, jtag_item.dout));
 
     if (dmi_req_q.size() != 0) begin
       if (rsp_op == DmiOpInProgress) begin
@@ -99,8 +119,7 @@ class jtag_dmi_monitor #(type ITEM_T = jtag_dmi_item) extends dv_base_monitor#(
         ITEM_T dmi_item = dmi_req_q.pop_front();
         dmi_item.rsp_op = rsp_op;
         if (dmi_item.req_op == DmiOpRead) begin
-          uvm_reg_data_t data = get_field_val(cfg.jtag_dtm_ral.dmi.data,
-                                              jtag_item.dout);
+          uvm_reg_data_t data = get_field_val(m_dmi_reg.data, jtag_item.dout);
           dmi_item.rdata = data;
         end
         `uvm_info(`gfn, $sformatf("Writing DMI item to analysis_port: %0s",
@@ -117,16 +136,14 @@ class jtag_dmi_monitor #(type ITEM_T = jtag_dmi_item) extends dv_base_monitor#(
 
   // Capture a new DMI request.
   virtual function void capture_request(jtag_item jtag_item);
-    jtag_dmi_op_req_e req_op = jtag_dmi_op_req_e'(
-        get_field_val(cfg.jtag_dtm_ral.dmi.op, jtag_item.dr));
+    jtag_dmi_op_req_e req_op = jtag_dmi_op_req_e'(get_field_val(m_dmi_reg.op, jtag_item.dr));
 
     if (req_op inside {DmiOpRead, DmiOpWrite}) begin
       ITEM_T dmi_item = ITEM_T::type_id::create("dmi_item");
       dmi_item.req_op = req_op;
-      dmi_item.addr = uvm_reg_addr_t'(
-          get_field_val(cfg.jtag_dtm_ral.dmi.address, jtag_item.dr));
+      dmi_item.addr = uvm_reg_addr_t'(get_field_val(m_dmi_reg.address, jtag_item.dr));
       if (req_op == DmiOpWrite) begin
-        dmi_item.wdata = get_field_val(cfg.jtag_dtm_ral.dmi.data, jtag_item.dr);
+        dmi_item.wdata = get_field_val(m_dmi_reg.data, jtag_item.dr);
       end
       `uvm_info(`gfn, $sformatf("Writing DMI req to req_analysis_port: %0s",
                                 dmi_item.sprint(uvm_default_line_printer)), UVM_HIGH)
