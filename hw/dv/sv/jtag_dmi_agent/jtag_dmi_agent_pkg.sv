@@ -39,6 +39,10 @@ package jtag_dmi_agent_pkg;
   // Convenience function to create JTAG DMI RAL block.
   function automatic jtag_dmi_reg_block create_jtag_dmi_reg_block(jtag_agent_cfg cfg);
     jtag_dmi_reg_block jtag_dmi_ral = jtag_dmi_reg_block::type_id::create("jtag_dmi_ral");
+    jtag_dtm_reg_block jtag_dtm_ral = cfg.jtag_dtm_ral;
+    jtag_dtm_reg_dmi   dmi_reg      = jtag_dtm_ral.dmi;
+    jtag_dtm_reg_dtmcs dtmcs_reg    = jtag_dtm_ral.dtmcs;
+
     jtag_dmi_ral.build(.base_addr(0), .csr_excl(null));
     jtag_dmi_ral.set_supports_byte_enable(1'b0);
     jtag_dmi_ral.lock_model();
@@ -52,7 +56,7 @@ package jtag_dmi_agent_pkg;
       jtag_dmi_ral.get_registers(rg);
       foreach (rg[i]) begin
         jtag_dmi_reg_frontdoor ftdr = jtag_dmi_reg_frontdoor::type_id::create("ftdr");
-        ftdr.jtag_agent_cfg_h = cfg;
+        ftdr.configure(cfg, dmi_reg, dtmcs_reg);
         ftdr.jtag_dtm_ral_sem_h = sem;
         rg[i].set_frontdoor(ftdr);
       end

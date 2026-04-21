@@ -9,8 +9,15 @@
 class jtag_dmi_reg_frontdoor extends uvm_reg_frontdoor;
   `uvm_object_utils(jtag_dmi_reg_frontdoor)
 
-  // Handle to JTAG agent cfg which has the handle to the DTM RAL model and the vif.
-  jtag_agent_cfg jtag_agent_cfg_h;
+  // Handle to JTAG agent cfg (with the virtual interface)
+  local jtag_agent_cfg     m_agent_cfg;
+
+  // Handle to the modelled DMI register (which allows the next layer down of front-door access)
+  local jtag_dtm_reg_dmi   m_dmi_reg;
+
+  // Handle to the modelled DTMCS register (used when writing dmireset to clear the sticky
+  // "operation in progress" flag).
+  local jtag_dtm_reg_dtmcs m_dtmcs_reg;
 
   // The same frontdoor instance can be attached to all DMI registers, since they all need to be
   // accessed via the same shared resource (the DTM DMI register). The semaphore ensures atomicity.
@@ -18,19 +25,37 @@ class jtag_dmi_reg_frontdoor extends uvm_reg_frontdoor;
   // object.
   semaphore jtag_dtm_ral_sem_h;
 
-  `uvm_object_new
+  function new(string name="");
+    super.new(name);
+  endfunction
+
+  // Configure this frontdoor by passing it a JTAG agent configuration (used for interface access).
+  // Also, pass a uvm_reg that tracks the DMI register, through which all accesses will flow, and a
+  // uvm_reg that tracks the DTMCS register (needed in order to clear an operation-in-progress
+  // flag).
+  function void configure(jtag_agent_cfg     agent_cfg,
+                          jtag_dtm_reg_dmi   dmi_reg,
+                          jtag_dtm_reg_dtmcs dtmcs_reg);
+    m_agent_cfg = agent_cfg;
+    m_dmi_reg   = dmi_reg;
+    m_dtmcs_reg = dtmcs_reg;
+  endfunction
 
   virtual task body();
     csr_field_t         csr_or_fld;
     uvm_reg_data_t      wdata = 0;
-    jtag_dtm_reg_block  jtag_dtm_ral = jtag_agent_cfg_h.jtag_dtm_ral;
+
+    // Check that configure() has been called
+    if ((m_agent_cfg == null) || (m_dmi_reg == null) || (m_dtmcs_reg == null)) begin
+      `uvm_fatal(get_name(), "Frontdoor not configured: it needs JTAG agent cfg and dmi/dtmcs regs")
+    end
 
     // Configure the JTAG agent to have a positive run-to-clear length, ensuring that DMI operations
     // make it from dmi_jtag to dm_top and back again before TCK stops.
-    jtag_agent_cfg_h.rtc_length = 4;
+    m_agent_cfg.rtc_length = 4;
 
     // If the JTAG agent is sitting in reset, print a debug message and exit early
-    if (jtag_agent_cfg_h.in_reset) begin
+    if (m_agent_cfg.in_reset) begin
       `uvm_info(`gfn, "DMI CSR req skipped due to reset", UVM_HIGH)
       return;
     end
@@ -62,19 +87,19 @@ class jtag_dmi_reg_frontdoor extends uvm_reg_frontdoor;
     // At this point, wdata is zero if this is a UVM_READ and is the write value for the CSR if this
     // is a UVM_WRITE. Shift the bits as necessary so that they are laid out in the right place for
     // the data field inside the DMI register.
-    wdata = get_csr_val_with_updated_field(jtag_dtm_ral.dmi.data, '0, wdata);
+    wdata = get_csr_val_with_updated_field(m_dmi_reg.data, '0, wdata);
 
     // Add in the op and address fields. When this is done, wdata is suitable for writing over JTAG
     // in order to perform the requested DMI operation (read or write).
-    wdata = get_csr_val_with_updated_field(jtag_dtm_ral.dmi.op, wdata,
+    wdata = get_csr_val_with_updated_field(m_dmi_reg.op, wdata,
                                            (rw_info.kind == UVM_WRITE ? DmiOpWrite : DmiOpRead));
-    wdata = get_csr_val_with_updated_field(jtag_dtm_ral.dmi.address, wdata,
+    wdata = get_csr_val_with_updated_field(m_dmi_reg.address, wdata,
                                            csr_or_fld.csr.get_address());
 
     // Start the DMI request.
-    csr_wr(.ptr(jtag_dtm_ral.dmi), .value(wdata), .blocking(1), .predict(1));
+    csr_wr(.ptr(m_dmi_reg), .value(wdata), .blocking(1), .predict(1));
 
-    if (jtag_agent_cfg_h.in_reset) begin
+    if (m_agent_cfg.in_reset) begin
       `uvm_info(`gfn, "DMI operation aborted: reset happened in middle of request", UVM_HIGH)
       jtag_dtm_ral_sem_h.put();
       return;
@@ -85,12 +110,12 @@ class jtag_dmi_reg_frontdoor extends uvm_reg_frontdoor;
     // a reset in the middle of the wait, stop immediately.
     fork begin
       fork
-        jtag_agent_cfg_h.vif.wait_tck(10);
-        wait(jtag_agent_cfg_h.in_reset);
+        m_agent_cfg.vif.wait_tck(10);
+        wait(m_agent_cfg.in_reset);
       join_any
       disable fork;
     end join
-    if (jtag_agent_cfg_h.in_reset) begin
+    if (m_agent_cfg.in_reset) begin
       `uvm_info(`gfn, "DMI operation aborted: reset happened in middle of request", UVM_HIGH)
       jtag_dtm_ral_sem_h.put();
       return;
@@ -104,10 +129,10 @@ class jtag_dmi_reg_frontdoor extends uvm_reg_frontdoor;
 
       fork
         begin
-          poll_for_completion(jtag_dtm_ral, csr_or_fld.field);
+          poll_for_completion(csr_or_fld.field);
           saw_completion = 1'b1;
         end
-        jtag_agent_cfg_h.vif.wait_tck(10_000);
+        m_agent_cfg.vif.wait_tck(10_000);
       join_any
 
       // The DMI operation should have completed in the time we were waiting
@@ -128,21 +153,21 @@ class jtag_dmi_reg_frontdoor extends uvm_reg_frontdoor;
   //
   // If there is a reset while we are waiting for completion, stop and set rw_info.status to
   // UVM_NOT_OK.
-  task poll_for_completion(jtag_dtm_reg_block jtag_dtm_ral, uvm_reg_field field);
+  local task poll_for_completion(uvm_reg_field field);
     forever begin
       uvm_reg_data_t    rdata;
       jtag_dmi_op_rsp_e op_rsp;
 
       // Try to read the DMI register over JTAG
-      csr_rd(.ptr(jtag_dtm_ral.dmi), .value(rdata), .blocking(1));
+      csr_rd(.ptr(m_dmi_reg), .value(rdata), .blocking(1));
 
       // If there was a JTAG reset in the meantime, set rw_info.status to UVM_NOT_OK and return.
-      if (jtag_agent_cfg_h.in_reset) begin
+      if (m_agent_cfg.in_reset) begin
         rw_info.status = UVM_NOT_OK;
         return;
       end
 
-      op_rsp = jtag_dmi_op_rsp_e'(get_field_val(jtag_dtm_ral.dmi.op, rdata));
+      op_rsp = jtag_dmi_op_rsp_e'(get_field_val(m_dmi_reg.op, rdata));
       `uvm_info(`gfn, $sformatf("DMI CSR req status: %0s", op_rsp.name()), UVM_HIGH)
 
       // If op_rsp isn't DmiOpInProgress then the DMI operation has run to completion. Write the
@@ -150,7 +175,7 @@ class jtag_dmi_reg_frontdoor extends uvm_reg_frontdoor;
       if (op_rsp != DmiOpInProgress) begin
         rw_info.status = op_rsp == DmiOpOk ? UVM_IS_OK : UVM_NOT_OK;
         if (rw_info.kind == UVM_READ) begin
-          rdata = get_field_val(jtag_dtm_ral.dmi.data, rdata);
+          rdata = get_field_val(m_dmi_reg.data, rdata);
           if (field != null) begin
             rdata = get_field_val(field, rdata);
           end
@@ -161,11 +186,11 @@ class jtag_dmi_reg_frontdoor extends uvm_reg_frontdoor;
       end
 
       // Otherwise, the operation was still in progress. Clear the (sticky) flag.
-      csr_wr(.ptr(jtag_dtm_ral.dtmcs.dmireset), .value(1), .blocking(1), .predict(1));
+      csr_wr(.ptr(m_dtmcs_reg.dmireset), .value(1), .blocking(1), .predict(1));
 
       // Check there hasn't been a JTAG reset while we were clearing the "op in progress" flag. If
       // not, we'll go around again (and read the DMI register again)
-      if (jtag_agent_cfg_h.in_reset) begin
+      if (m_agent_cfg.in_reset) begin
         rw_info.status = UVM_NOT_OK;
         return;
       end
