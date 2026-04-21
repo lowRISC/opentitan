@@ -165,18 +165,39 @@ static status_t keymgr_wait_until_done(void) {
   } while (false);
 
 status_t keymgr_generate_key_sw(keymgr_diversification_t diversification,
+                                hardened_bool_t attestation,
                                 keymgr_output_t *key) {
   HARDENED_TRY(keymgr_is_idle());
 
   // Set the control register to generate a software-visible key.
-  WRITE_CTRL(NONE, GENERATE_SW, false);
+  switch (attestation) {
+    case kHardenedBoolFalse:
+      WRITE_CTRL(NONE, GENERATE_SW, false);
+      break;
+    case kHardenedBoolTrue:
+      WRITE_CTRL(NONE, GENERATE_SW, true);
+      break;
+    default:
+      HARDENED_TRAP();
+      return OTCRYPTO_FATAL_ERR;
+  }
 
   // Start the operation and wait for it to complete.
   HARDENED_TRY(keymgr_start(diversification));
   HARDENED_TRY(keymgr_wait_until_done());
 
   // Check the control register.
-  VERIFY_CTRL(NONE, GENERATE_SW, false);
+  switch (attestation) {
+    case kHardenedBoolFalse:
+      VERIFY_CTRL(NONE, GENERATE_SW, false);
+      break;
+    case kHardenedBoolTrue:
+      VERIFY_CTRL(NONE, GENERATE_SW, true);
+      break;
+    default:
+      HARDENED_TRAP();
+      return OTCRYPTO_FATAL_ERR;
+  }
 
   // Collect the output. To avoid side-channel lekage, first randomize the
   // destination buffers using memshred. Then copy the key using a hardened

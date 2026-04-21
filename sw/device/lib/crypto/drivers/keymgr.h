@@ -55,11 +55,13 @@ typedef struct keymgr_output {
  * Derive a key manager key that is visible to software.
  *
  * @param diversification Diversification input for the key derivation.
+ * @param attestation Whether to use the attestation or the sealing ladder.
  * @param[out] key Destination key struct.
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
 status_t keymgr_generate_key_sw(const keymgr_diversification_t diversification,
+                                hardened_bool_t attestation,
                                 keymgr_output_t *key);
 
 /**
