@@ -78,6 +78,29 @@ otcrypto_status_t otcrypto_aes_padded_plaintext_length(
     size_t *padded_len);
 
 /**
+ * Strips padding bytes from a decrypted AES plaintext buffer.
+ *
+ * After decryption, `otcrypto_aes` leaves the padding bytes intact in the
+ * output buffer. This function validates the padding according to `aes_padding`
+ * and writes the true plaintext length to `*plaintext_len`. The caller can then
+ * use only the first `*plaintext_len` bytes of the buffer. The buffer itself is
+ * not modified.
+ *
+ * WARNING: Exposing whether this function returns a padding error to an
+ * external party can enable a padding oracle attack. The caller must ensure
+ * that any distinction between valid and invalid padding is not observable by
+ * an attacker. This function checks the padding in constant time.
+ *
+ * @param padded_plaintext Decrypted data buffer, including padding bytes.
+ * @param aes_padding Padding scheme that was used during encryption.
+ * @param[out] plaintext_len Number of real (non-padding) bytes in the buffer.
+ * @return Result of the operation.
+ */
+otcrypto_status_t otcrypto_aes_padding_strip(
+    otcrypto_byte_buf_t *padded_plaintext, otcrypto_aes_padding_t aes_padding,
+    size_t *plaintext_len);
+
+/**
  * Performs the AES operation.
  *
  * The input data in the `cipher_input` is first padded using the
