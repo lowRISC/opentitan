@@ -113,6 +113,61 @@ otcrypto_status_t otcrypto_hw_backed_attestation_key(
   return OTCRYPTO_OK;
 }
 
+otcrypto_status_t ot_crypto_hw_backed_keygen(hardened_bool_t attestation,
+                                             otcrypto_blinded_key_t *key) {
+  if (key == NULL || key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Extract the diversification data.
+  keymgr_diversification_t diversification;
+  if (attestation == kHardenedBoolTrue) {
+    HARDENED_TRY(
+        keyblob_to_keymgr_attestation_diversification(key, &diversification));
+  } else if (attestation == kHardenedBoolFalse) {
+    HARDENED_TRY(keyblob_to_keymgr_diversification(key, &diversification));
+  } else {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Generate the key.
+  keymgr_output_t output;
+  HARDENED_TRY(keymgr_generate_key_sw(diversification, attestation, &output));
+
+  // Morph the key into a software-backed key.
+  otcrypto_key_config_t *config_mut = (otcrypto_key_config_t *)&key->config;
+  config_mut->hw_backed = kHardenedBoolFalse;
+
+  uint32_t keyblob_words = launder32(keyblob_num_words(key->config));
+  uint32_t *keyblob_length_mut = (uint32_t *)&key->keyblob_length;
+  *keyblob_length_mut = keyblob_words * sizeof(uint32_t);
+
+  // Extract pointers to the shares.
+  uint32_t *share0;
+  uint32_t *share1;
+  HARDENED_TRY(keyblob_to_shares(key, &share0, &share1));
+
+  // Ensure the allocated share size perfectly matches the key manager output.
+  size_t share_words = launder32(keyblob_share_num_words(key->config));
+  if (share_words != kKeymgrOutputShareNumWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Preload the target key shares with randomness.
+  HARDENED_TRY(hardened_memshred(share0, share_words));
+  HARDENED_TRY(hardened_memshred(share1, share_words));
+
+  HARDENED_TRY(hardened_memcpy(share0, output.share0, share_words));
+  HARDENED_TRY(hardened_memcpy(share1, output.share1, share_words));
+
+  // Wipe the sensitive key material.
+  HARDENED_TRY(hardened_memshred(output.share0, share_words));
+
+  key->checksum = integrity_blinded_checksum(key);
+
+  return otcrypto_eval_exit(OTCRYPTO_OK);
+}
+
 otcrypto_status_t otcrypto_wrapped_key_len(const otcrypto_key_config_t config,
                                            size_t *wrapped_num_words) {
   // Check that the total wrapped key length will fit in 32 bits.
