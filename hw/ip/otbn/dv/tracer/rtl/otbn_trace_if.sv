@@ -77,11 +77,11 @@ interface otbn_trace_if
   input otbn_pkg::alu_bignum_operation_t alu_bignum_operation,
   input logic                            mac_bignum_en,
 
-  input logic [otbn_pkg::WLEN-1:0] rnd_data,
-  input logic                      rnd_req,
-  input logic                      rnd_valid,
+  input logic [otbn_pkg::WLEN-1:0]    rnd_data,
+  input logic                         rnd_req,
+  input logic                         rnd_valid,
 
-  input logic [otbn_pkg::WLEN-1:0] urnd_data,
+  input logic [otbn_pkg::UrndLen-1:0] urnd_data,
 
   input logic [1:0][otbn_pkg::SideloadKeyWidth-1:0] sideload_key_shares_i,
 
@@ -287,7 +287,11 @@ interface otbn_trace_if
   assign ispr_read_data[IsprRnd] = rnd_data;
 
   assign ispr_read[IsprUrnd] = any_ispr_read & (ispr_addr == IsprUrnd);
-  assign ispr_read_data[IsprUrnd] = urnd_data;
+  assign ispr_read_data[IsprUrnd] = urnd_data[WLEN-1:0];
+
+  // Upper bits of URND are currently unused in the tracer interface
+  logic unused_urnd;
+  assign unused_urnd = ^urnd_data[UrndLen-1:WLEN];
 
   assign ispr_write[IsprKeyS0L] = 1'b0;
   assign ispr_write_data[IsprKeyS0L] = '0;
