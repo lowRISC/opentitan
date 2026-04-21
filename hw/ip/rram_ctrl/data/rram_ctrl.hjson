@@ -1107,9 +1107,9 @@
                   '''
           },
           { bits: "10",
-            name: "arb_fsm_err",
+            name: "ctrl_fsm_err",
             desc: '''
-                  The arbiter fsm has encountered a sparse encoding error.
+                  Any of the arbiter or rd/wr control FSMs have encountered a sparse encoding error.
                   '''
           },
           { bits: "11",
