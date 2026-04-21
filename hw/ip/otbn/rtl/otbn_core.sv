@@ -240,13 +240,13 @@ module otbn_core
   logic            rnd_rep_err;
   logic            rnd_fips_err;
 
-  logic            urnd_reseed_req;
-  logic            urnd_reseed_ack;
-  logic            urnd_reseed_err;
-  logic            urnd_advance;
-  logic            urnd_advance_start_stop_control;
-  logic [WLEN-1:0] urnd_data;
-  logic            urnd_all_zero_d, urnd_all_zero;
+  logic               urnd_reseed_req;
+  logic               urnd_reseed_ack;
+  logic               urnd_reseed_err;
+  logic               urnd_advance;
+  logic               urnd_advance_start_stop_control;
+  logic [UrndLen-1:0] urnd_data;
+  logic               urnd_all_zero_d, urnd_all_zero;
 
   logic        controller_start;
 
@@ -865,7 +865,7 @@ module otbn_core
     if (sec_wipe_wdr_q) begin
       // Wipe the WDR with either random numbers or zeroes.
       if (sec_wipe_wdr_urnd_q) begin
-        rf_bignum_wr_data_no_intg = urnd_data;
+        rf_bignum_wr_data_no_intg = urnd_data[WLEN-1:0];
       end else begin
         rf_bignum_wr_data_no_intg = 256'b0;
       end
@@ -918,7 +918,7 @@ module otbn_core
     .mac_operation_flags_en_i(mac_bignum_operation_flags_en),
 
     .rnd_data_i (rnd_data),
-    .urnd_data_i(urnd_data),
+    .urnd_data_i(urnd_data[WLEN-1:0]),
 
     .sideload_key_shares_i,
 
@@ -942,7 +942,7 @@ module otbn_core
     .predec_i      (mac_bignum_predec),
     .predec_error_o(mac_bignum_predec_error),
 
-    .urnd_data_i       (urnd_data),
+    .urnd_data_i       (urnd_data[WLEN-1:0]),
     .sec_wipe_urnd_i   (sec_wipe_mac_urnd),
     .sec_wipe_running_i(secure_wipe_running_o),
     .sec_wipe_err_o    (mac_bignum_sec_wipe_err),
