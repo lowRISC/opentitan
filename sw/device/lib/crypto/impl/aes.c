@@ -468,6 +468,88 @@ static otcrypto_status_t otcrypto_aes_impl(
   return keymgr_sideload_clear_aes();
 }
 
+otcrypto_status_t otcrypto_aes_padding_strip(
+    otcrypto_byte_buf_t *padded_plaintext, otcrypto_aes_padding_t aes_padding,
+    size_t *plaintext_len) {
+  if (padded_plaintext == NULL || padded_plaintext->data == NULL ||
+      plaintext_len == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Input must be a non-zero multiple of the AES block size.
+  if (padded_plaintext->len == 0 ||
+      padded_plaintext->len % kAesBlockNumBytes != 0) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  const uint8_t *data = (const uint8_t *)padded_plaintext->data;
+  size_t len = padded_plaintext->len;
+  const uint8_t *last_block = data + len - kAesBlockNumBytes;
+
+  switch (launder32(aes_padding)) {
+    case kOtcryptoAesPaddingPkcs7: {
+      // The last byte encodes the number of padding bytes; must be in [1, 16].
+      // Use unsigned subtraction: (pad_byte - 1) < 16 covers exactly [1, 16].
+      uint8_t pad_byte = last_block[kAesBlockNumBytes - 1];
+      uint32_t valid = (uint32_t)((uint8_t)(pad_byte - 1) < kAesBlockNumBytes);
+
+      // Validate all 16 bytes of the last block without early exit to avoid
+      // leaking which byte failed (timing side-channel). Byte at position i is
+      // a padding byte iff i >= kAesBlockNumBytes - pad_byte; it must equal
+      // pad_byte. Accumulate failures into `valid` using bitmask arithmetic.
+      for (size_t i = 0; i < kAesBlockNumBytes; i++) {
+        uint32_t is_pad = (uint32_t)(i + pad_byte >= kAesBlockNumBytes);
+        uint32_t matches = (uint32_t)(last_block[i] == pad_byte);
+        // If is_pad: valid &= matches. If not is_pad: valid unchanged.
+        valid &= (1u - is_pad) | matches;
+      }
+
+      *plaintext_len = len - pad_byte;
+      otcrypto_status_t status = OTCRYPTO_OK;
+      status.value ^= (int32_t)(((uint32_t)OTCRYPTO_OK.value ^
+                                 (uint32_t)OTCRYPTO_BAD_ARGS.value) &
+                                (valid - 1));
+      return status;
+    }
+    case kOtcryptoAesPaddingIso9797M2: {
+      // Format: [data...][0x80][0x00...0x00]. Scan the entire last block from
+      // the end without early exit to avoid leaking the marker position. All
+      // bytes trailing the 0x80 marker must be 0x00. Use bitmask arithmetic to
+      // accumulate validity and the marker index with no data-dependent
+      // branches.
+      uint32_t valid = 1;
+      uint32_t found_marker = 0;
+      uint32_t marker_idx = 0;
+      for (size_t i = kAesBlockNumBytes - 1; i < kAesBlockNumBytes; i--) {
+        uint8_t byte = last_block[i];
+        uint32_t is_zero = (uint32_t)(byte == 0x00);
+        uint32_t is_marker = (uint32_t)(byte == 0x80);
+        uint32_t searching = (uint32_t)(found_marker == 0);
+        // While searching: byte must be 0x00 or 0x80; anything else is invalid.
+        valid &= 1u - (searching & (1u - (is_zero | is_marker)));
+        // Record the index of the first (rightmost) 0x80 byte found.
+        uint32_t record = searching & is_marker;
+        uint32_t rec_mask = (uint32_t)(-(int32_t)record);
+        marker_idx = (marker_idx & ~rec_mask) | ((uint32_t)i & rec_mask);
+        found_marker |= record;
+      }
+      // A marker must have been found somewhere in the last block.
+      valid &= found_marker;
+      *plaintext_len = len - kAesBlockNumBytes + marker_idx;
+      otcrypto_status_t status = {.value = OTCRYPTO_OK.value};
+      status.value ^= (int32_t)(((uint32_t)OTCRYPTO_OK.value ^
+                                 (uint32_t)OTCRYPTO_BAD_ARGS.value) &
+                                (valid - 1));
+      return status;
+    }
+    case kOtcryptoAesPaddingNull:
+      // Null padding adds no bytes; there is nothing to strip.
+      return OTCRYPTO_BAD_ARGS;
+    default:
+      return OTCRYPTO_BAD_ARGS;
+  }
+}
+
 otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
                                otcrypto_word32_buf_t *iv,
                                otcrypto_aes_mode_t aes_mode,
