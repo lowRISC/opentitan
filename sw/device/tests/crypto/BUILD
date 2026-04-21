@@ -217,20 +217,16 @@ opentitan_test(
     name = "aes_gcm_timing_functest",
     srcs = ["aes_gcm_timing_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
-    fpga = fpga_params(
-        timeout = "long",
-        tags = ["broken"],
-    ),
     verilator = verilator_params(
         timeout = "long",
         tags = ["broken"],
     ),
     deps = [
-        ":aes_gcm_testutils",
         ":aes_gcm_testvectors",
         "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl/aes_gcm",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:profile",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
@@ -1352,6 +1348,7 @@ test_suite(
     tests = [
         ":aes_functest",
         ":aes_gcm_functest",
+        ":aes_gcm_timing_functest",
         ":aes_kwp_functest",
         ":aes_kwp_kat_functest",
         ":aes_kwp_sideload_functest",
