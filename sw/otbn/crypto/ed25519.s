@@ -6,11 +6,16 @@
 .globl ed25519_verify_var
 .globl ed25519_sign_stage1
 .globl ed25519_sign_stage2
+
+/* Expose for testing only. */
 .globl affine_encode
 .globl affine_decode_var
 .globl ext_scmul
+.globl ext_scmul_sca
 .globl ext_double
 .globl ext_add
+.globl ext_to_affine
+
 
 /**
  * This library contains an implementation of the Ed25519 signature scheme
@@ -100,6 +105,10 @@
  * clobbered flag groups: FG0
  */
 ed25519_gen_public_key:
+  /* Set up scalar arithmetic for the scalar reductions.
+       MOD <= L.
+       [w15:w14] <= mu. */
+  jal x1, sc_init
 
   /* Load the arithmetic shares (s0, s1) of the precomputed and clamped secret
      s and reduce them modulo L. */
@@ -112,7 +121,7 @@ ed25519_gen_public_key:
 
   /* w28 <= [w17:w16] mod L = s0 mod L. */
   jal x1, sc_reduce
-  bn.mov w28, w18
+  bn.mov w2, w18
 
   /* Clear w16 and w17 with randomness before loading the second share s1. */
   bn.wsrr w16, URND
@@ -126,9 +135,7 @@ ed25519_gen_public_key:
 
   /* w18 <= [w17:w16] mod L = s1 mod L. */
   jal x1, sc_reduce
-
-  /* TODO: Remove once everything is in place. */
-  bn.subm w28, w28, w18
+  bn.mov w4, w18
 
   /* Set up for field arithmetic in preparation for scalar multiplication.
        MOD <= p
@@ -161,9 +168,9 @@ ed25519_gen_public_key:
        [w9:w6] <= extended(B) = (B.X, B.Y, B.Z, B.T) */
   jal      x1, affine_to_ext
 
-  /* Compute the public key point A = [s]B.
-       [w13:w10] <= w28 * [w9:w6] = [s]B */
-  jal      x1, ext_scmul
+  /* Compute the public key point A = [s0 - s1]B.
+       [w13:w10] <= (w2 - w4) * [w9:w6] = [s0 - s1]B */
+  jal      x1, ext_scmul_sca
 
   /* Convert A to affine coordinates.
        w10 <= A.x, w11 <= A.y */
@@ -477,6 +484,20 @@ ed25519_verify_var:
  * clobbered flag groups: FG0
  */
 ed25519_sign_stage1:
+  /* Calculate and write encoded public key A (A_) to DMEM.
+       dmem[ed25519_public_key] <= A_
+
+     Furthermore, set up for field arithmetic in preparation for scalar multiplication.
+       MOD <= p
+       w19 <= 19
+
+     And initialize curve parameter d.
+       w30 <= dmem[d] = (-121665/121666) mod p
+
+     Lastly, load B in extended coordinates.
+       [w9:w6] <= extended(B) = (B.X, B.Y, B.Z, B.T)*/
+  jal      x1, ed25519_gen_public_key
+
   /* Set up for scalar arithmetic.
        [w15:w14] <= mu
        MOD <= L */
@@ -492,9 +513,9 @@ ed25519_sign_stage1:
   bn.lid   x2++, 32(x3)
   bn.lid   x2++, 64(x3)
 
-  /* w5 <= [w22:w20] mod L = r0 mod L. */
+  /* w2 <= [w22:w20] mod L = r0 mod L. */
   jal x1, sc_reduce_768
-  bn.mov w5, w18
+  bn.mov w2, w18
 
   /* Overwrite w20-w22 with randomness before loading the second share r1. */
   bn.wsrr w20, URND
@@ -508,30 +529,19 @@ ed25519_sign_stage1:
   bn.lid   x2++, 32(x3)
   bn.lid   x2++, 64(x3)
 
-  /* w18 <= [w22:w20] mod L = r1 mod L. */
+  /* w4 <= [w22:w20] mod L = r1 mod L. */
   jal x1, sc_reduce_768
+  bn.mov w4, w18
 
-  /* TODO remove this once everything is in place. */
-  bn.subm   w5, w5, w18
-
-  /* Calculate and write encoded public key A (A_) to DMEM.
-       dmem[ed25519_public_key] <= A_
-
-     Furthermore, set up for field arithmetic in preparation for scalar multiplication.
+  /* Set up for field arithmetic in preparation for scalar multiplication.
        MOD <= p
-       w19 <= 19
+       w19 <= 19 */
+  jal x1, fe_init
 
-     And initialize curve parameter d.
-       w30 <= dmem[d] = (-121665/121666) mod p
-
-     Lastly, load B in extended coordinates.
-       [w9:w6] <= extended(B) = (B.X, B.Y, B.Z, B.T)*/
-  jal      x1, ed25519_gen_public_key
-
-  /* Compute the signature point R = [r]B.
-       [w13:w10] <= w5 * [w9:w6] = [r]B */
-  bn.mov   w28, w5
-  jal      x1, ext_scmul
+  /* Compute the signature point R = [r0 - r1]B.
+       [w13:w10] <= (w2 - w4) * [w9:w6] = [r0 - r1]B */
+  /* bn.mov   w28, w5 */
+  jal      x1, ext_scmul_sca
 
   /* Convert R to affine coordinates.
        w10 <= R.x, w11 <= R.y */
@@ -1244,6 +1254,199 @@ ext_scmul:
 
   /* End loop. From the loop invariants, we know
        [w13:w10] = P = a * (X1, Y1, Z1, T1) */
+  ret
+
+/**
+ * Scalar-point multiplication with an arithmetically masked scalar.
+ *
+ * Returns (X2, Y2, Z2, T2) = (s0 - s1) * (X1, Y1, Z1, T1) = (s0 - s1) * P.
+ *
+ * This routine calculates both terms s0 * (X1, Y1, Z1, T1) and
+ * -s1 * (X1, Y1, Z1, T1) in parallel with the following double-and-add-always
+ * algorithm:
+ *
+ * Q = (0, 1, 1, 0)
+ *
+ * for i = bitlen(s0) - 1 to 0:
+ *   Q = 2 * Q
+ *   A = s0[i] ? P : -P
+ *   B = Q + A
+ *   Q = (s0[i] ^ s1[i]) ? B : Q
+ *
+ * return Q
+ *
+ * This routine runs in constant time.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]   w2: s0, first scalar share, s0 < L
+ * @param[in]   w4: s1, second scalar share, s1 < L
+ * @param[in]   w6: input X1 (X1 < p)
+ * @param[in]   w7: input Y1 (Y1 < p)
+ * @param[in]   w8: input Z1 (Z1 < p)
+ * @param[in]   wQ: input T1 (T1 < p)
+ * @param[in]  w19: constant, w19 = 19
+ * @param[in]  w29: constant, w29 = (2*d) mod p, d = (-121665/121666) mod p
+ * @param[in]  w31: all-zero
+ * @param[in]  MOD: p, modulus = 2^255 - 19
+ * @param[out] w10: output X2
+ * @param[out] w11: output Y2
+ * @param[out] w12: output Z2
+ * @param[out] w13: output T2
+ *
+ * Clobbered registers: w2 to w18, w20 to w27
+ * Clobbered flag groups: FG0, FG1
+ */
+ext_scmul_sca:
+  /* Initialize the intermediate result Q to the origin point.
+       [w13:w10] <= (0, 1, 1, 0) */
+  bn.mov   w10, w31
+  bn.addi  w11, w31, 1
+  bn.addi  w12, w31, 1
+  bn.mov   w13, w31
+
+  /*
+   * Blind both 253-bit scalar shares and expand them to 382-bit shares. Such
+   * large blinding factors are necessary to protect them against powerful SCA
+   * attacks.
+   */
+
+  /* [w3:w2] <= w2 + k * L = s0 + k * L. */
+  bn.mov w20, w2
+  jal x1, sc_blind
+  bn.mov w2, w16
+  bn.mov w3, w17
+
+  /* [w5:w4] <= w4 + k * L = s1 + k' * L. */
+  bn.mov w20, w4
+  jal x1, sc_blind
+  bn.mov w4, w16
+  bn.mov w5, w17
+
+  /* Move the blinded 382-bit share s0 to the MSB position. */
+  bn.rshi w3, w3, w2 >> 126
+  bn.rshi w2, w2, w31 >> 126
+
+  bn.xor w31, w31, w31 /* dummy */
+
+  /* Move the blinded 382-bit share s1 to the MSB position. */
+  bn.rshi w5, w5, w4 >> 126
+  bn.rshi w4, w4, w31 >> 126
+
+  /* Iterate over all scalar bits starting at the MSB. */
+  loopi  382, 54
+    /* Compute Q = 2 * Q.
+         [w13:w10] <= [w13:w10] + [w13:w10] = 2 * Q  */
+    jal x1, ext_double
+
+    /* Save the value 2 * Q for later.
+         [w17:w14] <= [w13:w10] = 2 * Q. */
+    bn.mov w14, w10
+    bn.mov w15, w11
+    bn.mov w16, w12
+    bn.mov w17, w13
+
+    /*
+     * First selection: A = s0[i] ? P : -P.
+     *
+     * It is important that the destination register of `bn.sel` is different
+     * from the source register to avoid leaking the secret flag bit.
+     */
+
+    /* Randomize the destination registers. */
+    bn.wsrr w10, URND
+    bn.wsrr w11, URND
+    bn.wsrr w12, URND
+    bn.wsrr w13, URND
+
+    /* Negate P.
+         [w23:w20] <= (-P.X, P.Y, P.Z, -P.T). */
+    bn.subm w20, w31, w6
+    bn.mov  w21, w7
+    bn.mov  w22, w8
+    bn.subm w23, w31, w9
+
+    /* Isolate the bit s0[381] which is s0[i]. */
+    bn.addi w3, w3, 0, FG0
+
+    /* Perform the selection A = s0[i] ? P : -P.
+         [w13:w10] <= s0[i] ? P : -P. */
+    bn.sel w10, w6, w20, FG0.M
+    bn.sel w11, w7, w21, FG0.M
+    bn.sel w12, w8, w22, FG0.M
+    bn.sel w13, w9, w23, FG0.M
+
+    /* Clear the flag. */
+    bn.sub w31, w31, w31, FG0
+
+    /* Compute the addition B = Q + A.
+         [w13:w10] <= [w13:w10] + [w17:w14] = A + Q. */
+    jal x1, ext_add
+
+    /*
+     * Second selection: Q = (s0[i] ^ s1[i]) ? B : Q.
+     * The XOR (s0[i] ^ s1[i]) can be computed with 3 successive selections
+     * such that (s0[i] ^ s1[i]) = (s1[i]) ? (s0[i] ? B : Q) : (s1[i] ? Q : B).
+     */
+
+    /* Randomize the destination registers. */
+    bn.wsrr w20, URND
+    bn.wsrr w21, URND
+    bn.wsrr w22, URND
+    bn.wsrr w23, URND
+    bn.wsrr w24, URND
+    bn.wsrr w25, URND
+    bn.wsrr w26, URND
+    bn.wsrr w27, URND
+
+    /* Isolate the bit s0[381] which is s0[i]. */
+    bn.addi w3, w3, 0, FG0
+
+    /* [w23:w20] <= s0[i] ? B : Q. */
+    bn.sel w20, w10, w14, FG0.M
+    bn.sel w21, w11, w15, FG0.M
+    bn.sel w22, w12, w16, FG0.M
+    bn.sel w23, w13, w17, FG0.M
+
+    /* [w27:w24] <= s0[i] ? Q : B. */
+    bn.sel w24, w14, w10, FG0.M
+    bn.sel w25, w15, w11, FG0.M
+    bn.sel w26, w16, w12, FG0.M
+    bn.sel w27, w17, w13, FG0.M
+
+    /* Clear the flag. */
+    bn.sub w31, w31, w31, FG0
+
+    /* Randomize the destination registers. */
+    bn.wsrr w10, URND
+    bn.wsrr w11, URND
+    bn.wsrr w12, URND
+    bn.wsrr w13, URND
+
+    /* Isolate the bit s1[381] which is s1[i]. */
+    bn.addi w5, w5, 0, FG1
+
+    /* [w13:w10] <= s1[i] ? (s0[i] ? B : Q) : (s0[i] ? Q : B). */
+    bn.sel w10, w24, w20, FG1.M
+    bn.sel w11, w25, w21, FG1.M
+    bn.sel w12, w26, w22, FG1.M
+    bn.sel w13, w27, w23, FG1.M
+
+    /* Clear the flag. */
+    bn.sub w31, w31, w31, FG0
+
+    /* Shift both scalars one position to the left and pad with randomness. */
+    bn.wsrr w20, URND
+
+    bn.rshi w3, w3, w2 >> 255
+    bn.rshi w2, w2, w20 >> 255
+
+    bn.xor w31, w31, w31 /* dummy */
+
+    bn.rshi w5, w5, w4 >> 255
+    bn.rshi w4, w4, w20 >> 255
+    /* End of loop */
+
   ret
 
 /**
