@@ -30,8 +30,17 @@ class jtag_agent extends dv_base_agent #(
     end
 
     if (cfg.is_active) begin
+      uvm_reg_map maps[$];
+      cfg.jtag_dtm_ral.get_maps(maps);
+      if (maps.size() != 1) begin
+        `uvm_fatal(get_full_name(),
+                   $sformatf("Cannot create JTAG DTM reg adapter: there are %0d reg maps.",
+                             maps.size()))
+      end
+
       m_jtag_dtm_reg_adapter = jtag_dtm_reg_adapter::type_id::create("m_jtag_dtm_reg_adapter");
-      m_jtag_dtm_reg_adapter.cfg = cfg;
+      m_jtag_dtm_reg_adapter.set_ir_len(cfg.ir_len);
+      m_jtag_dtm_reg_adapter.set_reg_map(maps[0]);
     end
   endfunction
 
