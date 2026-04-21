@@ -761,18 +761,26 @@ module otbn_predecode
         CsrMod4, CsrMod5, CsrMod6, CsrMod7: ispr_addr = IsprMod;
         CsrRnd:                             ispr_addr = IsprRnd;
         CsrUrnd:                            ispr_addr = IsprUrnd;
+        CsrMaiCtrl:                         ispr_addr = IsprMaiCtrl;
+        CsrMaiStatus:                       ispr_addr = IsprMaiStatus;
         default: ;
       endcase
     end else begin
       unique case (wsr_addr)
-        WsrMod:    ispr_addr = IsprMod;
-        WsrRnd:    ispr_addr = IsprRnd;
-        WsrUrnd:   ispr_addr = IsprUrnd;
-        WsrAcc:    ispr_addr = IsprAcc;
-        WsrKeyS0L: ispr_addr = IsprKeyS0L;
-        WsrKeyS0H: ispr_addr = IsprKeyS0H;
-        WsrKeyS1L: ispr_addr = IsprKeyS1L;
-        WsrKeyS1H: ispr_addr = IsprKeyS1H;
+        WsrMod:      ispr_addr = IsprMod;
+        WsrRnd:      ispr_addr = IsprRnd;
+        WsrUrnd:     ispr_addr = IsprUrnd;
+        WsrAcc:      ispr_addr = IsprAcc;
+        WsrKeyS0L:   ispr_addr = IsprKeyS0L;
+        WsrKeyS0H:   ispr_addr = IsprKeyS0H;
+        WsrKeyS1L:   ispr_addr = IsprKeyS1L;
+        WsrKeyS1H:   ispr_addr = IsprKeyS1H;
+        WsrMaiResS0: ispr_addr = IsprMaiResS0;
+        WsrMaiResS1: ispr_addr = IsprMaiResS1;
+        WsrMaiIn0S0: ispr_addr = IsprMaiIn0S0;
+        WsrMaiIn0S1: ispr_addr = IsprMaiIn0S1;
+        WsrMaiIn1S0: ispr_addr = IsprMaiIn1S0;
+        WsrMaiIn1S1: ispr_addr = IsprMaiIn1S1;
         default: ;
       endcase
     end

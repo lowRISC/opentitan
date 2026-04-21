@@ -17,6 +17,7 @@
  *    -Delete Base registers
  *    -Delete Accumulator
  *    -Delete Modulus
+ *    -Delete Accelerator ISPRs
  *    -Reset stack
  */
 
@@ -60,6 +61,13 @@ module otbn_start_stop_control
   output logic sec_wipe_mac_urnd_o,
   output logic sec_wipe_mod_urnd_o,
   output logic sec_wipe_zero_o,
+
+  output logic sec_wipe_mai_in0_s0_urnd_o,
+  output logic sec_wipe_mai_in0_s1_urnd_o,
+  output logic sec_wipe_mai_in1_s0_urnd_o,
+  output logic sec_wipe_mai_in1_s1_urnd_o,
+  output logic sec_wipe_mai_res_s0_urnd_o,
+  output logic sec_wipe_mai_res_s1_urnd_o,
 
   output logic ispr_init_o,
   output logic state_reset_o,
@@ -151,29 +159,35 @@ module otbn_start_stop_control
       otbn_start_stop_state_e, OtbnStartStopStateInitial)
 
   always_comb begin
-    urnd_reseed_req_o         = 1'b0;
-    urnd_advance_o            = 1'b0;
-    state_d                   = state_q;
-    ispr_init_o               = 1'b0;
-    state_reset_o             = 1'b0;
-    insn_cnt_clear_int_o      = 1'b0;
-    sec_wipe_wdr_o            = 1'b0;
-    sec_wipe_wdr_urnd_o       = 1'b0;
-    sec_wipe_base_o           = 1'b0;
-    sec_wipe_base_urnd_o      = 1'b0;
-    sec_wipe_mac_urnd_o       = 1'b0;
-    sec_wipe_mod_urnd_o       = 1'b0;
-    sec_wipe_zero_o           = 1'b0;
-    addr_cnt_inc              = 1'b0;
-    secure_wipe_ack_o         = 1'b0;
-    secure_wipe_running_d     = 1'b0;
-    state_error_d             = state_error_q;
-    allow_secure_wipe         = 1'b0;
-    expect_secure_wipe        = 1'b0;
-    spurious_urnd_ack_error   = 1'b0;
-    wipe_after_urnd_refresh_d = wipe_after_urnd_refresh_q;
-    rma_ack_d                 = rma_ack_q;
-    mubi_err_d                = mubi_err_q;
+    urnd_reseed_req_o          = 1'b0;
+    urnd_advance_o             = 1'b0;
+    state_d                    = state_q;
+    ispr_init_o                = 1'b0;
+    state_reset_o              = 1'b0;
+    insn_cnt_clear_int_o       = 1'b0;
+    sec_wipe_wdr_o             = 1'b0;
+    sec_wipe_wdr_urnd_o        = 1'b0;
+    sec_wipe_base_o            = 1'b0;
+    sec_wipe_base_urnd_o       = 1'b0;
+    sec_wipe_mac_urnd_o        = 1'b0;
+    sec_wipe_mod_urnd_o        = 1'b0;
+    sec_wipe_zero_o            = 1'b0;
+    sec_wipe_mai_in0_s0_urnd_o = 1'b0;
+    sec_wipe_mai_in0_s1_urnd_o = 1'b0;
+    sec_wipe_mai_in1_s0_urnd_o = 1'b0;
+    sec_wipe_mai_in1_s1_urnd_o = 1'b0;
+    sec_wipe_mai_res_s0_urnd_o = 1'b0;
+    sec_wipe_mai_res_s1_urnd_o = 1'b0;
+    addr_cnt_inc               = 1'b0;
+    secure_wipe_ack_o          = 1'b0;
+    secure_wipe_running_d      = 1'b0;
+    state_error_d              = state_error_q;
+    allow_secure_wipe          = 1'b0;
+    expect_secure_wipe         = 1'b0;
+    spurious_urnd_ack_error    = 1'b0;
+    wipe_after_urnd_refresh_d  = wipe_after_urnd_refresh_q;
+    rma_ack_d                  = rma_ack_q;
+    mubi_err_d                 = mubi_err_q;
 
     unique case (state_q)
       OtbnStartStopStateInitial: begin
@@ -303,6 +317,30 @@ module otbn_start_stop_control
         sec_wipe_base_o       = (addr_cnt_q > 6'b000001);
         sec_wipe_base_urnd_o  = (addr_cnt_q > 6'b000001);
         if (addr_cnt_q == 6'b011111) begin
+          // Reset `addr_cnt` on the transition out of this state.
+          addr_cnt_inc = 1'b0;
+          state_d = OtbnStartStopSecureWipeExtIsprsUrnd;
+        end
+      end
+      // Writing random numbers to external ISPRs
+      OtbnStartStopSecureWipeExtIsprsUrnd: begin
+        urnd_advance_o        = 1'b1;
+        addr_cnt_inc          = 1'b1;
+        allow_secure_wipe     = 1'b1;
+        expect_secure_wipe    = 1'b1;
+        secure_wipe_running_d = 1'b1;
+        // reset registers in sequence
+        sec_wipe_mai_res_s0_urnd_o = (addr_cnt_q == 6'b000000);
+        sec_wipe_mai_res_s1_urnd_o = (addr_cnt_q == 6'b000001);
+        sec_wipe_mai_in0_s0_urnd_o = (addr_cnt_q == 6'b000010);
+        sec_wipe_mai_in0_s1_urnd_o = (addr_cnt_q == 6'b000011);
+        sec_wipe_mai_in1_s0_urnd_o = (addr_cnt_q == 6'b000100);
+        sec_wipe_mai_in1_s1_urnd_o = (addr_cnt_q == 6'b000101);
+        // We let this phase run for 32 cycles to allow future accelerator registers
+        // to be cleared in this stage without the need to adapt the DV model of OTBN.
+        if (addr_cnt_q == 6'b011111) begin
+          // Reset `addr_cnt` on the transition out of this state.
+          addr_cnt_inc = 1'b0;
           state_d = OtbnStartStopSecureWipeAllZero;
         end
       end
@@ -470,6 +508,7 @@ module otbn_start_stop_control
                       OtbnStartStopStateRunning,
                       OtbnStartStopSecureWipeWdrUrnd,
                       OtbnStartStopSecureWipeAccModBaseUrnd,
+                      OtbnStartStopSecureWipeExtIsprsUrnd,
                       OtbnStartStopSecureWipeAllZero,
                       OtbnStartStopSecureWipeComplete,
                       OtbnStartStopStateLocked})
