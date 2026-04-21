@@ -34,7 +34,7 @@ module tlul_assert #(
   bit disable_sva;
 
   default disable iff disable_sva || !rst_ni;
-  default clocking @(negedge clk_i); endclocking
+  default clocking @(posedge clk_i); endclocking
 
   //////////////////////////////////
   // check requests and responses //
@@ -86,23 +86,23 @@ module tlul_assert #(
   // keep track of pending requests //
   ////////////////////////////////////
 
-  // use negedge clk to avoid possible race conditions
-  always_ff @(negedge clk_i or negedge rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       pend_req <= '0;
     end else begin
-      // store each request in pend_req array, ignoring requests that receive a combinational
-      // response.
-      if (curr_req.pend & (!d2h.d_valid || d2h.d_source != h2d.a_source)) begin
+      // Update pend_req if there is an A channel transaction on this cycle.
+      //
+      // Note that we can safely do this if there was a combinatorial response. In that case, it
+      // will be removed again just below.
+      if (curr_req.pend) begin
         pend_req[h2d.a_source] <= curr_req;
       end
 
-      if (d2h.d_valid) begin
-        // update pend_req array
-        if (h2d.d_ready) begin
-          pend_req[d2h.d_source].pend <= 0;
-        end
-      end //d2h.d_valid
+      // If there is a D channel transaction on this cycle, clear any pending request for the
+      // associated d_source.
+      if (d2h.d_valid && h2d.d_ready) begin
+        pend_req[d2h.d_source] <= '0;
+      end
     end
   end
 
