@@ -21,8 +21,9 @@ from .trace import Trace, TracePC
 from .wsr import WSRFile
 
 # The number of cycles spent per round of a secure wipe. This takes constant
-# time in the RTL, mirrored here.
-_WIPE_CYCLES = 68
+# time in the RTL, mirrored here. The constant here needs to be incremented
+# by one compared to the constant found in RTL (`otbn_core_model.sv`)
+_WIPE_CYCLES = 99 + 1
 
 
 class FsmState(IntEnum):
