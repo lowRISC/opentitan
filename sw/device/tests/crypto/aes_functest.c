@@ -177,6 +177,9 @@ static status_t run_decrypt(const aes_test_t *test, bool streaming) {
   size_t padded_len_words = padded_len_bytes / sizeof(uint32_t);
   uint32_t recovered_plaintext_data[padded_len_words];
   memset(recovered_plaintext_data, 0, sizeof(recovered_plaintext_data));
+  otcrypto_byte_buf_t recovered_plaintext_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t,
+                        (uint8_t *)recovered_plaintext_data, padded_len_bytes);
 
   // If in streaming mode, decrypt one block at a time with null padding until
   // there is only 1 block of input remaining.
@@ -205,14 +208,21 @@ static status_t run_decrypt(const aes_test_t *test, bool streaming) {
   // Decrypt the remaining input in one shot.
   otcrypto_const_byte_buf_t ciphertext_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, ciphertext, len);
-  otcrypto_byte_buf_t recovered_plaintext_buf =
+  otcrypto_byte_buf_t recovered_plaintext_buf_last_block =
       OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, recovered_plaintext, len);
   TRY(otcrypto_aes(&key, &iv, test->mode, kOtcryptoAesOperationDecrypt,
-                   &ciphertext_buf, test->padding, &recovered_plaintext_buf));
-
+                   &ciphertext_buf, test->padding,
+                   &recovered_plaintext_buf_last_block));
   // Check the result (not including padding).
   TRY_CHECK_ARRAYS_EQ((unsigned char *)recovered_plaintext_data,
                       (unsigned char *)test->plaintext, test->plaintext_len);
+
+  if (test->padding != kOtcryptoAesPaddingNull) {
+    size_t plaintext_len_from_padding;
+    TRY(otcrypto_aes_padding_strip(&recovered_plaintext_buf, test->padding,
+                                   &plaintext_len_from_padding));
+    TRY_CHECK(plaintext_len_from_padding == test->plaintext_len);
+  }
 
   return OK_STATUS();
 }
