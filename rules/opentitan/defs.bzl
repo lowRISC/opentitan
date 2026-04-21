@@ -179,7 +179,7 @@ def _parameter_name(env, pname):
             fail("Unable to identify parameter block name:", env)
     return pname
 
-def _hacky_tags(env):
+def hacky_tags(env):
     (_, suffix) = env.split(":")
     tags = []
     if suffix.startswith("fpga"):
@@ -419,7 +419,7 @@ def opentitan_test(
         # Modify test parameters to account for global parameters.
         test_args["defines"] = defines + test_args["defines"]
         test_args["data"] = data + test_args["data"]
-        test_args["tags"] = test_args["tags"] + _hacky_tags(env)
+        test_args["tags"] = test_args["tags"] + hacky_tags(env)
 
         # Tag test if it must not run in CI.
         if not sets.contains(run_in_ci, env):
