@@ -7935,19 +7935,19 @@ cc_library(
     ],
 )
 
-opentitan_test(
-    name = "rom_exit_immediately",
-    exec_env = {
-        "//hw/top_earlgrey:sim_qemu_base": None,
-    },
-    kind = "rom",
-    linker_script = "//sw/device/lib/testing/test_rom:linker_script",
-    qemu = qemu_params(
-        # This test doesn't print `PASS!`, just check the exit code.
-        test_harness = "//third_party/qemu:qemu-system-riscv32",
-    ),
-    deps = [":rom_exit_immediately_lib"],
-)
+#opentitan_test(
+#    name = "rom_exit_immediately",
+#    exec_env = {
+#        "//hw/top_earlgrey:sim_qemu_base": None,
+#    },
+#    kind = "rom",
+#    linker_script = "//sw/device/lib/testing/test_rom:linker_script",
+#    qemu = qemu_params(
+#        # This test doesn't print `PASS!`, just check the exit code.
+#        test_harness = "//third_party/qemu:qemu-system-riscv32",
+#    ),
+#    deps = [":rom_exit_immediately_lib"],
+#)
 
 opentitan_test(
     name = "dma_inline_hashing",

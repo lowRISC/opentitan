@@ -473,7 +473,7 @@ pub const RV_DM_REGS_SIZE_BYTES: usize = 0x10;
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const RV_DM_MEM_BASE_ADDR: usize = 0x10000;
+pub const RV_DM_MEM_BASE_ADDR: usize = 0x40000;
 
 /// Peripheral size for mem device on rv_dm in top earlgrey.
 ///
@@ -698,10 +698,10 @@ pub const SRAM_CTRL_MAIN_RAM_BASE_ADDR: usize = 0x10000000;
 pub const SRAM_CTRL_MAIN_RAM_SIZE_BYTES: usize = 0x20000;
 
 /// Memory base address for rom memory on rom_ctrl in top earlgrey.
-pub const ROM_CTRL_ROM_BASE_ADDR: usize = 0x8000;
+pub const ROM_CTRL_ROM_BASE_ADDR: usize = 0x20000;
 
 /// Memory size for rom memory on rom_ctrl in top earlgrey.
-pub const ROM_CTRL_ROM_SIZE_BYTES: usize = 0x8000;
+pub const ROM_CTRL_ROM_SIZE_BYTES: usize = 0x20000;
 
 /// PLIC Interrupt Source Peripheral.
 ///

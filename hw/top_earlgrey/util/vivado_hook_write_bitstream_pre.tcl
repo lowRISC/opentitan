@@ -76,6 +76,12 @@ proc generate_mmi {filename mem_infos designtask_count} {
             }
             set space [expr {($space * $addr_end_multiplier / 8) - 1}]
 
+            # Manually update the size if we generate a 128kB ROM
+            if { $space eq 159743 } {
+              send_msg "${designtask_count}-1" INFO "Manually edit the Addressspace of the MMI file"
+              set space 163840
+            }
+
             # Generate the MMI.
             if { $schema eq "Processor" } {
                 puts $fileout "  <Processor Endianness=\"Little\" InstPath=\"$id\">"

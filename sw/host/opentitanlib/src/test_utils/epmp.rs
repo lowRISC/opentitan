@@ -145,8 +145,8 @@ mod tests {
     // - Addition of entry 6: a duplicate of entry 2 with the perms set to RWX.
     const PMPCFG: [u32; 4] = [0x998d00, 0x1f998d, 0x8b000000, 0x9b909f00];
     const PMPADDR: [u32; 16] = [
-        0x2000, 0x3411, 0x2fff, 0x8000100, 0x8001203, 0x801ffff, 0x2fff, 0x0, 0x0, 0x0, 0x10000000,
-        0x14000000, 0x0, 0x41ff, 0x4007000, 0x4003fff,
+        0x8000, 0x97e6, 0xbfff, 0x8000100, 0x8001203, 0x801ffff, 0xbfff, 0x0, 0x0, 0x0, 0x10000000,
+        0x14000000, 0x0, 0x101ff, 0x4007000, 0x4003fff,
     ];
 
     #[test]
@@ -169,26 +169,26 @@ mod tests {
             EpmpEntry {
                 cfg: EPMP_CFG_LRX,
                 kind: EpmpRegionKind::Tor,
-                range: EpmpAddressRange(0x8000, 0xd044)
+                range: EpmpAddressRange(0x20000, 0x25f98)
             }
         ));
-        // The second entry is a Napot region representing the entire 32K of ROM.
+        // The second entry is a Napot region representing the entire 128K of ROM.
         assert!(matches!(
             epmp.entry[2],
             EpmpEntry {
                 cfg: EPMP_CFG_LRO,
                 kind: EpmpRegionKind::Napot,
-                range: EpmpAddressRange(0x8000, 0x10000)
+                range: EpmpAddressRange(0x20000, 0x40000)
             }
         ));
-        // The sixth entry is a Napot region representing the entire 32K of ROM, but is set to
+        // The sixth entry is a Napot region representing the entire 128K of ROM, but is set to
         // RWX (tests the decode of the `cfg` field with lock bit clear).
         assert!(matches!(
             epmp.entry[6],
             EpmpEntry {
                 cfg: EPMP_CFG_RWX,
                 kind: EpmpRegionKind::Napot,
-                range: EpmpAddressRange(0x8000, 0x10000)
+                range: EpmpAddressRange(0x20000, 0x40000)
             }
         ));
 
@@ -198,7 +198,7 @@ mod tests {
             EpmpEntry {
                 cfg: EPMP_CFG_LRWX,
                 kind: EpmpRegionKind::Napot,
-                range: EpmpAddressRange(0x10000, 0x11000)
+                range: EpmpAddressRange(0x40000, 0x41000)
             }
         ));
 

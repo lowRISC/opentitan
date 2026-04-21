@@ -332,7 +332,7 @@ package top_earlgrey_pkg;
   /**
    * Peripheral base address for mem device on rv_dm in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_RV_DM_MEM_BASE_ADDR = 32'h10000;
+  parameter int unsigned TOP_EARLGREY_RV_DM_MEM_BASE_ADDR = 32'h40000;
 
   /**
    * Peripheral size in bytes for mem device on rv_dm in top earlgrey.
@@ -512,12 +512,12 @@ package top_earlgrey_pkg;
   /**
    * Memory base address for rom memory on rom_ctrl in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR = 32'h8000;
+  parameter int unsigned TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR = 32'h20000;
 
   /**
    * Memory size for rom memory on rom_ctrl in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES = 32'h8000;
+  parameter int unsigned TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES = 32'h20000;
 
 
   // Enumeration of alert modules
