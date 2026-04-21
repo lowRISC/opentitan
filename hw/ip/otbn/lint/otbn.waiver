@@ -61,3 +61,6 @@ waive -rules {ARITH_CONTEXT} -location {otbn_mac_bignum_fsm.sv}
 
 waive -rules {PARAM_NOT_USED} -location {otbn_mac_bignum_fsm.sv} -regexp {.*EnableAlertTriggerSVA.*} \
       -comment "The parameter is just used to control assertions in DV / FPV."
+
+waive -rules {CONST_FF} -location {otbn_mask_accelerator.sv} -regexp {Flip-flop 'pipeline.*share_1.*' is driven by constant zero} \
+      -comment "Share one is assigned mod_i divided by two. The MSB is always zero. This is just a placeholder IP"

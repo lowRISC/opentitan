@@ -809,4 +809,31 @@ typedef enum logic [StateScrambleCtrlWidth-1:0] {
     256'h7c95a23a_ef177de6_d65c418f_daa96a70_5929c83d_fafb9f37_8a4436af_a5a71d13,
     256'hcf48c07e_42d0eb67_c29b3863_9a28e72c_b880f3ee_9e246571_00c6f9c4_4f305e4a
   };
+
+  // Encoding generated at commit 2f740b6f5b using Python 3.10.19 with:
+  // $ ./util/design/sparse-fsm-encode.py --language=sv \
+  //     --seed 2298832222 --distance 3 --states 4 --bits 5
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: |||||||||||||||||||| (66.67%)
+  //  4: |||||||||| (33.33%)
+  //  5: --
+  //
+  // Minimum Hamming distance: 3
+  // Maximum Hamming distance: 4
+  // Minimum Hamming weight: 1
+  // Maximum Hamming weight: 4
+  //
+  localparam int MaskOpWidth = 5;
+  typedef enum logic [MaskOpWidth-1:0] {
+    SecAdd      = 5'b10111,
+    SecAddMod   = 5'b01100,
+    ArithToBool = 5'b01011,
+    BoolToArith = 5'b10000
+  } mask_op_e;
+
 endpackage
