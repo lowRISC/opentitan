@@ -55,13 +55,6 @@ module tlul_assert #(
 
   pend_req_t [2**TL_AIW-1:0] pend_req;
 
-  logic [7:0]  a_mask, d_mask;
-  logic [63:0] a_data, d_data;
-  assign a_mask = 8'(h2d.a_mask);
-  assign a_data = 64'(h2d.a_data);
-  assign d_mask = 8'(pend_req[d2h.d_source].mask);
-  assign d_data = 64'(d2h.d_data);
-
   ////////////////////////////////////
   // Current request                //
   ////////////////////////////////////
@@ -81,6 +74,13 @@ module tlul_assert #(
   // assertion of `d_valid`.
   logic curr_fwd;
   assign curr_fwd = curr_req.pend & (d2h.d_source == h2d.a_source);
+
+  logic [7:0]  a_mask, d_mask;
+  logic [63:0] a_data, d_data;
+  assign a_mask = 8'(h2d.a_mask);
+  assign a_data = 64'(h2d.a_data);
+  assign d_mask = 8'(curr_fwd ? curr_req.mask : pend_req[d2h.d_source].mask);
+  assign d_data = 64'(d2h.d_data);
 
   ////////////////////////////////////
   // keep track of pending requests //
