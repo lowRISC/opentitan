@@ -541,7 +541,7 @@ module rram_ctrl_core_reg_top (
   logic std_fault_status_phy_fsm_err_qs;
   logic std_fault_status_phy_cnt_err_qs;
   logic std_fault_status_phy_arb_err_qs;
-  logic std_fault_status_arb_fsm_err_qs;
+  logic std_fault_status_ctrl_fsm_err_qs;
   logic std_fault_status_ctrl_cnt_err_qs;
   logic fault_status_we;
   logic fault_status_lcmgr_op_err_qs;
@@ -5341,13 +5341,13 @@ module rram_ctrl_core_reg_top (
     .qs     (std_fault_status_phy_arb_err_qs)
   );
 
-  //   F[arb_fsm_err]: 10:10
+  //   F[ctrl_fsm_err]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_std_fault_status_arb_fsm_err (
+  ) u_std_fault_status_ctrl_fsm_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
@@ -5356,16 +5356,16 @@ module rram_ctrl_core_reg_top (
     .wd     ('0),
 
     // from internal hardware
-    .de     (hw2reg.std_fault_status.arb_fsm_err.de),
-    .d      (hw2reg.std_fault_status.arb_fsm_err.d),
+    .de     (hw2reg.std_fault_status.ctrl_fsm_err.de),
+    .d      (hw2reg.std_fault_status.ctrl_fsm_err.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.std_fault_status.arb_fsm_err.q),
+    .q      (reg2hw.std_fault_status.ctrl_fsm_err.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (std_fault_status_arb_fsm_err_qs)
+    .qs     (std_fault_status_ctrl_fsm_err_qs)
   );
 
   //   F[ctrl_cnt_err]: 11:11
@@ -7095,7 +7095,7 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[7] = std_fault_status_phy_fsm_err_qs;
         reg_rdata_next[8] = std_fault_status_phy_cnt_err_qs;
         reg_rdata_next[9] = std_fault_status_phy_arb_err_qs;
-        reg_rdata_next[10] = std_fault_status_arb_fsm_err_qs;
+        reg_rdata_next[10] = std_fault_status_ctrl_fsm_err_qs;
         reg_rdata_next[11] = std_fault_status_ctrl_cnt_err_qs;
       end
 

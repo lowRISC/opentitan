@@ -129,6 +129,51 @@ module rram_ctrl
   logic [BusFullWidth-1:0] sw_wdata;
   logic                    sw_wready;
 
+  // rram_ctrl_wr <-> rram_ctrl_arb signals
+  logic                wr_op_start;
+  logic                wr_op_done;
+  logic [BusAddrW-1:0] wr_op_addr;
+  rram_ctrl_err_t      wr_op_err;
+  logic [BusAddrW-1:0] wr_op_err_addr;
+  logic                wr_cnt_err;
+  logic                wr_fsm_err;
+
+  // rram_ctrl_wr <-> rram_ctrl_mp signals
+  logic                    wr_req;
+  logic [BusAddrW-1:0]     wr_addr;
+  logic                    wr_ovfl;
+  logic [BusFullWidth-1:0] wr_data;
+  logic                    wr_last;
+  logic                    wr_done;
+
+  // rram_ctrl_arb
+  //rram_sel_e                if_sel;
+  //logic                     sw_sel;
+  //logic                     hw_loopback_sel;
+  //logic                     arb_fsm_err;
+  //logic                     sw_ctrl_done;
+  //rram_ctrl_err_t           sw_ctrl_err;
+  //rram_part_e               ctrl_part;
+  //logic [BusAddrW-1:0]      ctrl_addr;
+  logic [CtrlMaxWordsW-1:0] ctrl_num_words;
+  //logic [BusAddrW-1:0]      ctrl_err_addr;
+
+  // rram_ctrl_mp signals
+  logic                     mp_err;
+
+  // rram_phy signals
+  //logic phy_wr_busy;
+  //logic phy_init_done;
+  //logic phy_host_spurious_done;
+  //logic phy_host_gnt_err;
+  //logic phy_fsm_err;
+  //logic phy_cnt_err;
+  //logic phy_fifo_err;
+  //logic phy_arb_err;
+  //logic phy_rd_intg_err;
+  //logic phy_rd_ctrl_err;
+  logic phy_wr_intg_err;
+
   lc_ctrl_pkg::lc_tx_t rma_dis_access;
   lc_ctrl_pkg::lc_tx_t lc_escalate_en;
 
@@ -243,7 +288,7 @@ module rram_ctrl
   assign hw2reg.std_fault_status.otp_intg_err.d     = 1'b1;
   assign hw2reg.std_fault_status.otp_intg_err.de    = 1'b0;
   assign hw2reg.std_fault_status.phy_wr_intg_err.d  = 1'b1;
-  assign hw2reg.std_fault_status.phy_wr_intg_err.de = 1'b0;
+  assign hw2reg.std_fault_status.phy_wr_intg_err.de = phy_wr_intg_err;
   assign hw2reg.std_fault_status.phy_fifo_err.d     = 1'b1;
   assign hw2reg.std_fault_status.phy_fifo_err.de    = 1'b0;
   assign hw2reg.std_fault_status.phy_fsm_err.d      = 1'b1;
@@ -252,10 +297,10 @@ module rram_ctrl
   assign hw2reg.std_fault_status.phy_cnt_err.de     = 1'b0;
   assign hw2reg.std_fault_status.phy_arb_err.d      = 1'b1;
   assign hw2reg.std_fault_status.phy_arb_err.de     = 1'b0;
-  assign hw2reg.std_fault_status.arb_fsm_err.d      = 1'b1;
-  assign hw2reg.std_fault_status.arb_fsm_err.de     = 1'b0;
+  assign hw2reg.std_fault_status.ctrl_fsm_err.d     = 1'b1;
+  assign hw2reg.std_fault_status.ctrl_fsm_err.de    = wr_fsm_err;
   assign hw2reg.std_fault_status.ctrl_cnt_err.d     = 1'b1;
-  assign hw2reg.std_fault_status.ctrl_cnt_err.de    = 1'b0;
+  assign hw2reg.std_fault_status.ctrl_cnt_err.de    = wr_cnt_err;
 
   // Location of the last correctable error
   assign hw2reg.corr_err_loc.addr.d  = '0;
@@ -463,6 +508,9 @@ module rram_ctrl
   // SW/HW ARBITRATION //
   ///////////////////////
   // todo add rram_ctrl_arb
+  assign wr_op_start    = 1'b0;
+  assign wr_op_addr     = '0;
+
   assign wr_fifo_wdata  = '0;
   assign wr_fifo_wvalid = 1'b0;
   assign wr_fifo_clr    = 1'b0;
@@ -470,13 +518,38 @@ module rram_ctrl
   assign rd_fifo_wvalid = 1'b0;
   assign rd_fifo_wdata  = '0;
 
+  assign ctrl_num_words = '0;
   assign sw_wready      = 1'b0;
 
   /////////////
   // WR_CTRL //
   /////////////
-  // todo add rram_ctrl_wr
-  assign wr_fifo_rready = 1'b0;
+  rram_ctrl_wr u_rram_ctrl_wr (
+    .clk_i,
+    .rst_ni,
+    // Control interface
+    .op_start_i        (wr_op_start),
+    .op_num_words_i    (ctrl_num_words),
+    .op_done_o         (wr_op_done),
+    .op_addr_i         (wr_op_addr),
+    .op_err_o          (wr_op_err),
+    .op_err_addr_o     (wr_op_err_addr),
+    .cnt_err_o         (wr_cnt_err),
+    .fsm_err_o         (wr_fsm_err),
+    // FIFO interface
+    .fifo_rvalid_i     (wr_fifo_rvalid),
+    .fifo_rdata_i      (wr_fifo_rdata),
+    .fifo_rready_o     (wr_fifo_rready),
+    // Write interface to rram_ctrl_mp
+    .rram_req_o        (wr_req),
+    .rram_addr_o       (wr_addr),
+    .rram_ovfl_o       (wr_ovfl),
+    .rram_data_o       (wr_data),
+    .rram_last_o       (wr_last),
+    .rram_done_i       (wr_done),
+    .rram_mp_err_i     (mp_err),
+    .rram_wr_intg_err_i(phy_wr_intg_err)
+  );
 
   /////////////
   // RD_CTRL //
@@ -582,6 +655,9 @@ module rram_ctrl
   // MEMORY PROTECTION //
   ///////////////////////
   // todo add rram_ctrl_mp
+  assign mp_err  = 1'b0;
+  assign wr_done = 1'b0;
+
   assign host_rd_data = '0;
   assign host_rd_done = 1'b0;
   assign host_rd_err  = 1'b0;
@@ -591,6 +667,9 @@ module rram_ctrl
   // RRAM phy //
   //////////////
   // todo add rram_phy
+  assign phy_wr_intg_err = 1'b0;
+
+
   assign rram_macro_o.rd_req  = 1'b0;
   assign rram_macro_o.wr_req  = 1'b0;
   assign rram_macro_o.wr_last = 1'b0;
@@ -854,6 +933,11 @@ module rram_ctrl
                                               alert_tx_o[1])
 
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_core, alert_tx_o[1])
+
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(WrCnt_A, u_rram_ctrl_wr.u_cnt,
+                                         alert_tx_o[1])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(WrFsm_A, u_rram_ctrl_wr.u_state_regs,
+                                       alert_tx_o[1])
 
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(TlLcGateFsm_A, u_tl_gate.u_state_regs,
                                        alert_tx_o[1])

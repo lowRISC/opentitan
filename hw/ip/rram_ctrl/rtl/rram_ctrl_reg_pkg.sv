@@ -238,7 +238,7 @@ package rram_ctrl_reg_pkg;
     } ctrl_cnt_err;
     struct packed {
       logic        q;
-    } arb_fsm_err;
+    } ctrl_fsm_err;
     struct packed {
       logic        q;
     } phy_arb_err;
@@ -456,7 +456,7 @@ package rram_ctrl_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } arb_fsm_err;
+    } ctrl_fsm_err;
     struct packed {
       logic        d;
       logic        de;
