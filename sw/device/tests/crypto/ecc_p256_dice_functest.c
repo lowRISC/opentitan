@@ -19,13 +19,107 @@
 #include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/silicon_creator/lib/base/util.h"
+#include "sw/device/silicon_creator/lib/cert/dice_keys.h"
+#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
+#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 
 // Keymgr handle for this test.
 static dif_keymgr_t keymgr;
 
 OTTF_DEFINE_TEST_CONFIG();
 
+static status_t get_stored_certificate(const char *cert_name, size_t name_size,
+                                       const flash_ctrl_info_page_t *info_page,
+                                       perso_tlv_cert_obj_t *out_cert_obj) {
+  uint8_t data[2048];
+  TRY(flash_ctrl_info_read(info_page, 0, sizeof(data) / sizeof(uint32_t),
+                           data));
+
+  uint32_t offset = 0;
+  size_t len = sizeof(data);
+
+  while (len > 0) {
+    rom_error_t err = perso_tlv_get_cert_obj(data + offset, len, out_cert_obj);
+    if (err != kErrorOk) {
+      break;
+    }
+
+    if (memcmp(out_cert_obj->name, cert_name, name_size) == 0) {
+      return OK_STATUS();
+    }
+
+    uint32_t jump_size = (out_cert_obj->obj_size + 7) & ~7u;
+    offset += jump_size;
+
+    if (jump_size >= len)
+      break;
+    len -= jump_size;
+  }
+
+  return NOT_FOUND();
+}
+
+static status_t extract_public_key_from_der(const uint8_t *der_bytes,
+                                            size_t der_size, uint32_t *pk_out) {
+  // The fixed ASN.1 DER sequence for an uncompressed P-256
+  const uint8_t kPubKeyPrefix[] = {0x30, 0x13, 0x06, 0x07, 0x2a, 0x86, 0x48,
+                                   0xce, 0x3d, 0x02, 0x01, 0x06, 0x08, 0x2a,
+                                   0x86, 0x48, 0xce, 0x3d, 0x03, 0x01, 0x07,
+                                   0x03, 0x42, 0x00, 0x04};
+
+  if (der_size < sizeof(kPubKeyPrefix) + 64) {
+    return INVALID_ARGUMENT();
+  }
+
+  // Scan for the prefix
+  for (size_t i = 0; i <= der_size - sizeof(kPubKeyPrefix) - 64; i++) {
+    if (memcmp(&der_bytes[i], kPubKeyPrefix, sizeof(kPubKeyPrefix)) == 0) {
+      memcpy(pk_out, &der_bytes[i + sizeof(kPubKeyPrefix)], 64);
+      return OK_STATUS();
+    }
+  }
+
+  return NOT_FOUND();
+}
+
+static status_t read_attestation_seed_configured(uint32_t *attestation_data) {
+  if (kDeviceType != kDeviceSilicon) {
+    // When not on silicon, we use a zeroized attestation seed as it was not
+    // personalized.
+    LOG_INFO("Using zeroed attestation seed.");
+    memset(attestation_data, 0, 10 * sizeof(uint32_t));
+    return OK_STATUS();
+  }
+
+  uint32_t kAttestationSeedWords = 10;
+  uint32_t kAttestationSeedBytes = kAttestationSeedWords * sizeof(uint32_t);
+  uint32_t seed_flash_offset =
+      kFlashInfoFieldCdi1KeySeedIdx * kAttestationSeedBytes;
+
+  TRY(flash_ctrl_info_read(&kFlashCtrlInfoPageAttestationKeySeeds,
+                           seed_flash_offset, kAttestationSeedWords,
+                           attestation_data));
+
+  return OK_STATUS();
+}
+
 status_t dice_test(void) {
+  perso_tlv_cert_obj_t target_cert = {0};
+
+  TRY(get_stored_certificate("CDI_1", 5, &kFlashCtrlInfoPageDiceCerts,
+                             &target_cert));
+  LOG_INFO("Found CDI_1 cert. Size: %d bytes", target_cert.cert_body_size);
+
+  uint32_t cert_pk[512 / 32] = {0};
+  TRY(extract_public_key_from_der(target_cert.cert_body_p,
+                                  target_cert.cert_body_size, cert_pk));
+
+  char cert_pk_hex[256];
+  hexstr_encode(cert_pk_hex, sizeof(cert_pk_hex), cert_pk, sizeof(cert_pk));
+  LOG_INFO("Cert public key: %s\r", cert_pk_hex);
+
   char buf[256];
 
   otcrypto_key_config_t kPrivateKeyConfig = {
@@ -36,13 +130,6 @@ status_t dice_test(void) {
       .security_level = kOtcryptoKeySecurityLevelLow,
   };
 
-  // This is an example salt, for the CDI key, a specific salt should be used.
-  const uint32_t kPrivateKeySalt[8] = {0x00010203, 0x04050607, 0x08090a0b,
-                                       0x0c0d0e0f, 0xf0f1f2f3, 0xf4f5f6f7,
-                                       0xf8f9fafb, 0xfcfdfeff};
-
-  const uint32_t kPrivateKeyVersion = 0x0;
-
   uint32_t keyblob[9];
   otcrypto_blinded_key_t private_key = {
       .config = kPrivateKeyConfig,
@@ -50,16 +137,18 @@ status_t dice_test(void) {
       .keyblob = keyblob,
   };
 
-  TRY(otcrypto_hw_backed_attestation_key(kPrivateKeyVersion, kPrivateKeySalt,
-                                         &private_key));
+  // CDI_1 (Owner) attestation key diversifier salt and version from dice_keys.h
+  TRY(otcrypto_hw_backed_attestation_key(
+      kDiceKeyCdi1.keymgr_diversifier->version,
+      kDiceKeyCdi1.keymgr_diversifier->salt, &private_key));
 
-  // This is an example attestation seed, for the CDI key, a specific seed
-  // should be used.
-  uint32_t attestation_data[10] = {
-      0x70717273, 0x74757677, 0x78797a7b, 0x7c7d7e7f, 0x80818283,
-      0x84858687, 0x88898a8b, 0x8c8d8e8f, 0x90b1b2b3, 0x94959697};
-  otcrypto_const_word32_buf_t attestation_seed =
-      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, attestation_data, 10);
+  // Read the attestation seed from flash.
+  uint32_t kAttestationSeedWords = 10;
+  uint32_t kAttestationSeedBytes = kAttestationSeedWords * sizeof(uint32_t);
+  uint32_t attestation_data[10] = {0};
+  TRY(read_attestation_seed_configured(attestation_data));
+  otcrypto_const_word32_buf_t attestation_seed = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, attestation_data, kAttestationSeedWords);
 
   uint32_t pk[512 / 32] = {0};
   otcrypto_unblinded_key_t public_key = {
@@ -78,6 +167,16 @@ status_t dice_test(void) {
   LOG_INFO("Public key: %s\r", buf);
   LOG_INFO("OTBN keygen instruction count: 0x%08x",
            otbn_instruction_count_get());
+
+  // Compare the public key from what is given in the cert.
+  // Needs endianness transformations.
+  uint32_t pk_be[512 / 32];
+  memcpy(pk_be, pk, sizeof(pk_be));
+  uint8_t *pk_be_bytes = (uint8_t *)pk_be;
+  util_reverse_bytes(pk_be_bytes, 32);
+  util_reverse_bytes(pk_be_bytes + 32, 32);
+
+  CHECK_ARRAYS_EQ(cert_pk, pk_be, 512 / 32);
 
   // Checking the synchronous call and whether the same public key is generated
   // the second time.
