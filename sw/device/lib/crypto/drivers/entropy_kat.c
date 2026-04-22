@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
+#include "sw/device/lib/crypto/impl/status.h"
 
 #include "hw/top/csrng_regs.h"  // Generated
 
@@ -106,13 +107,13 @@ static status_t check_internal_state(
   entropy_csrng_internal_state_t got = {0};
   entropy_csrng_internal_state_get(kCsrngInternalStateIdSw, &got);
   if (memcmp(&got, expected, sizeof(entropy_csrng_internal_state_t)) == 0) {
-    return OK_STATUS();
+    return OTCRYPTO_OK;
   }
-  return INTERNAL();
+  return OTCRYPTO_FATAL_ERR;
 }
 
 status_t entropy_csrng_kat(void) {
-  TRY(entropy_csrng_uninstantiate());
+  HARDENED_TRY(entropy_csrng_uninstantiate());
 
   const entropy_seed_material_t kEntropyInput = {
       .data = {0x73bec010, 0x9262474c, 0x16a30f76, 0x531b51de, 0x2ee494e5,
@@ -120,7 +121,7 @@ status_t entropy_csrng_kat(void) {
                0xa468649e, 0xdf5d73fa},
       .len = 12,
   };
-  TRY(entropy_csrng_instantiate(
+  HARDENED_TRY(entropy_csrng_instantiate(
       /*disable_trng_input=*/kHardenedBoolTrue, &kEntropyInput));
 
   const entropy_csrng_internal_state_t kExpectedStateInstantiate = {
@@ -131,17 +132,19 @@ status_t entropy_csrng_kat(void) {
       .instantiated = true,
       .fips_compliance = false,
   };
-  TRY(check_internal_state(&kExpectedStateInstantiate));
+  HARDENED_TRY(check_internal_state(&kExpectedStateInstantiate));
 
   enum {
     kExpectedOutputLen = 16,
   };
 
   uint32_t got[kExpectedOutputLen];
-  TRY(entropy_csrng_generate(/*seed_material=*/NULL, got, kExpectedOutputLen,
-                             /*fips_check=*/kHardenedBoolFalse));
-  TRY(entropy_csrng_generate(/*seed_material=*/NULL, got, kExpectedOutputLen,
-                             /*fips_check=*/kHardenedBoolFalse));
+  HARDENED_TRY(entropy_csrng_generate(/*seed_material=*/NULL, got,
+                                      kExpectedOutputLen,
+                                      /*fips_check=*/kHardenedBoolFalse));
+  HARDENED_TRY(entropy_csrng_generate(/*seed_material=*/NULL, got,
+                                      kExpectedOutputLen,
+                                      /*fips_check=*/kHardenedBoolFalse));
 
   const entropy_csrng_internal_state_t kExpectedStateGenerate = {
       .reseed_counter = 2,
@@ -152,7 +155,7 @@ status_t entropy_csrng_kat(void) {
       .instantiated = true,
       .fips_compliance = false,
   };
-  TRY(check_internal_state(&kExpectedStateGenerate));
+  HARDENED_TRY(check_internal_state(&kExpectedStateGenerate));
 
   // Note that the word order here is reversed compared to the NIST test
   // vectors.
@@ -162,8 +165,8 @@ status_t entropy_csrng_kat(void) {
       0xa43c41b7, 0xdb17514c, 0x87b107ae, 0x793e01c5,
   };
   if (!memcmp(got, kExpectedOutput, sizeof(kExpectedOutput))) {
-    return OK_STATUS();
+    return OTCRYPTO_OK;
   }
 
-  return INTERNAL();
+  return OTCRYPTO_FATAL_ERR;
 }
