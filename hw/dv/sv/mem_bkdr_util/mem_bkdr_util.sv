@@ -299,25 +299,53 @@ class mem_bkdr_util extends uvm_object;
     return 1'b1;
   endfunction
 
-  // Read the entire word at the given address.
+  // Read the memory row that contains the given address.
   //
-  // addr is the byte address starting at offset 0. Mask the upper address bits as needed before
+  // addr is the byte address, starting at offset 0. Mask the upper address bits as needed before
   // invocation.
   //
   // Returns the entire width of the memory at the given address, including the ECC bits. The data
   // returned is 'raw' i.e. it includes the parity bits. It also does not de-scramble the data if
   // encryption is enabled.
-  virtual function uvm_hdl_data_t read(bit [bus_params_pkg::BUS_AW-1:0] addr);
-    bit res;
-    uint32_t index, ram_tile;
-    uvm_hdl_data_t encoded_row, data;
+  virtual function row_data_t read(bit [bus_params_pkg::BUS_AW-1:0] addr);
+    int unsigned row_index, rel_row_index, row_width;
+    string       tile_path;
+    row_data_t   encoded_row = 0;
+
     if (!check_addr_valid(addr)) return 'x;
-    index    = addr >> addr_lsb;
-    ram_tile = index / tile_depth;
-    res      = uvm_hdl_read($sformatf("%0s[%0d]", get_full_path(ram_tile), index), encoded_row);
-    `DV_CHECK_EQ(res, 1, $sformatf("uvm_hdl_read failed at index %0d", index))
-    data     = row_adapter.decode_row(encoded_row);
-    return data;
+
+    // Convert addr to the index of the row (there are 2 ** addr_lsb items in each row)
+    row_index = addr >> this.addr_lsb;
+
+    // Get an HDL path for tile that contains this row index, then reduce the row index to be
+    // relative to the tile.
+    tile_path     = this.get_full_path(row_index / this.tile_depth);
+    rel_row_index = row_index % this.tile_depth;
+
+    // The row itself contains this.width data bits plus (possibly) some extra bits, as defined by
+    // the row adapter.
+    row_width = this.width + this.row_adapter.get_num_extra_bits();
+
+    for (int unsigned lsb = 0; lsb < row_width; lsb += bits_per_backdoor_access) begin
+      int unsigned   msb = lsb + bits_per_backdoor_access - 1;
+      uvm_hdl_data_t data;
+      string         access_path;
+
+      if (msb >= row_width) begin
+        msb = row_width - 1;
+      end
+
+      access_path = $sformatf("%0s[%0d][%0d:%0d]", tile_path, rel_row_index, msb, lsb);
+
+      if (!uvm_hdl_read(access_path, data)) begin
+        `uvm_error(get_name(),
+                   $sformatf("Failed to access %0s with uvm_hdl_read.", access_path))
+      end
+
+      encoded_row |= row_data_t'(data) << lsb;
+    end
+
+    return this.row_adapter.decode_row(encoded_row);
   endfunction
 
   // Convenience macro to check the addr for each flavor of read and write functions.
@@ -328,7 +356,7 @@ class mem_bkdr_util extends uvm_object;
   //
   // The data returned does not include the parity bits.
   virtual function logic [7:0] read8(bit [bus_params_pkg::BUS_AW-1:0] addr);
-    uvm_hdl_data_t data = read(addr);
+    row_data_t data = read(addr);
     int byte_offset = addr % bytes_per_word;
     return (data >> (byte_offset * byte_width)) & 8'hff;
   endfunction
@@ -423,17 +451,48 @@ class mem_bkdr_util extends uvm_object;
   // invocation.
   //
   // Updates the entire width of the memory at the given address, including the ECC bits.
-  virtual function void write(bit [bus_params_pkg::BUS_AW-1:0] addr, uvm_hdl_data_t data);
-    bit res;
-    uvm_hdl_data_t encoded_row;
-    uint32_t index, ram_tile;
+  virtual function void write(bit [bus_params_pkg::BUS_AW-1:0] addr, row_data_t data);
+    row_data_t   encoded_row;
+    int unsigned row_index, rel_row_index, row_width;
+    string       tile_path;
+
     if (!check_addr_valid(addr)) return;
-    index       = addr >> addr_lsb;
-    ram_tile    = index / tile_depth;
-    encoded_row = row_adapter.encode_row(data);
-    res         = uvm_hdl_deposit($sformatf("%0s[%0d]", get_full_path(ram_tile), index),
-                                  encoded_row);
-    `DV_CHECK_EQ(res, 1, $sformatf("uvm_hdl_deposit failed at index %0d", index))
+
+    // Convert addr to the row_index of the row (there are 2 ** addr_lsb items in each row)
+    row_index = addr >> this.addr_lsb;
+
+    // Get an HDL path for tile that contains this row index, then reduce the row index to be
+    // relative to the tile.
+    tile_path     = this.get_full_path(row_index / this.tile_depth);
+    rel_row_index = row_index % this.tile_depth;
+
+    // The row itself contains this.width data bits plus (possibly) some extra bits, as defined by
+    // the row adapter.
+    row_width = this.width + this.row_adapter.get_num_extra_bits();
+
+    encoded_row = this.row_adapter.encode_row(data);
+
+    for (int unsigned lsb = 0; lsb < row_width; lsb += bits_per_backdoor_access) begin
+      int unsigned   msb = lsb + bits_per_backdoor_access - 1;
+      string         access_path;
+      int unsigned   access_width;
+      uvm_hdl_data_t wmask, wdata;
+
+      if (msb >= row_width) begin
+        msb = row_width - 1;
+      end
+
+      access_path  = $sformatf("%0s[%0d][%0d:%0d]", tile_path, rel_row_index, msb, lsb);
+      access_width = msb - lsb + 1;
+
+      wmask = (1 << access_width) - 1;
+      wdata = (encoded_row >> lsb) & wmask;
+
+      if (!uvm_hdl_deposit(access_path, wdata)) begin
+        `uvm_error(get_name(),
+                   $sformatf("Failed to access %0s with uvm_hdl_deposit.", access_path))
+      end
+    end
   endfunction
 
   // Write a single byte at specified address.
@@ -441,7 +500,7 @@ class mem_bkdr_util extends uvm_object;
   // Does a read-modify-write on the whole word. It updates the byte at the given address and
   // computes the parity and ECC bits as applicable.
   virtual function void write8(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [7:0] data);
-    uvm_hdl_data_t rw_data;
+    row_data_t rw_data;
     uint32_t word_idx;
     uint32_t byte_idx;
 
@@ -484,7 +543,7 @@ class mem_bkdr_util extends uvm_object;
 
   // this is used to write 32bit of data plus 7 raw integrity bits.
   virtual function void write39integ(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [38:0] data);
-    uvm_hdl_data_t rw_data;
+    row_data_t rw_data;
     `_ACCESS_CHECKS(addr, 32) // this is essentially an aligned 32bit access.
     if (!check_addr_valid(addr)) return;
     // Perform a read-modify-write to access the underlying memory architecture
@@ -526,7 +585,7 @@ class mem_bkdr_util extends uvm_object;
 
   // Intended for use with memories which have data width of 16 bits and 6 ECC bits.
   virtual function secded_22_16_t ecc_read16(bit [bus_params_pkg::BUS_AW-1:0] addr);
-    uvm_hdl_data_t data;
+    row_data_t data;
     if (!check_addr_valid(addr)) return 'x;
     data = read(addr);
     case (err_detection_scheme)
@@ -548,7 +607,7 @@ class mem_bkdr_util extends uvm_object;
 
   // Intended for use with memories which have data width of 32 bits and 7 ECC bits.
   virtual function secded_39_32_t ecc_read32(bit [bus_params_pkg::BUS_AW-1:0] addr);
-    uvm_hdl_data_t data;
+    row_data_t data;
     if (!check_addr_valid(addr)) return 'x;
     data = read(addr);
     case (err_detection_scheme)
@@ -570,7 +629,7 @@ class mem_bkdr_util extends uvm_object;
 
   // Intended for use with memories which have data width of 64 bits and 8 ECC bits.
   virtual function secded_72_64_t ecc_read64(bit [bus_params_pkg::BUS_AW-1:0] addr);
-    uvm_hdl_data_t data;
+    row_data_t data;
     if (!check_addr_valid(addr)) return 'x;
     data = read(addr);
     case (err_detection_scheme)
@@ -643,7 +702,7 @@ class mem_bkdr_util extends uvm_object;
   virtual function void print_mem();
     `uvm_info(`gfn, "Print memory", UVM_LOW)
     for (int i = 0; i < depth; i++) begin
-      uvm_hdl_data_t data = read(i * bytes_per_word);
+      row_data_t data = read(i * bytes_per_word);
       `uvm_info(`gfn, $sformatf("mem[%0d] = 0x%0h", i, data), UVM_LOW)
     end
   endfunction
@@ -652,7 +711,7 @@ class mem_bkdr_util extends uvm_object;
   virtual function void clear_mem();
     `uvm_info(`gfn, "Clear memory", UVM_LOW)
     for (int i = 0; i < depth; i++) begin
-      uvm_hdl_data_t data = '{default:0};
+      row_data_t data = '{default:0};
       write(i * bytes_per_word, data);
     end
   endfunction
@@ -661,7 +720,7 @@ class mem_bkdr_util extends uvm_object;
   virtual function void set_mem();
     `uvm_info(`gfn, "Set memory", UVM_LOW)
     for (int i = 0; i < depth; i++) begin
-      uvm_hdl_data_t data = '{default:1};
+      row_data_t data = '{default:1};
       write(i * bytes_per_word, data);
     end
   endfunction
@@ -670,10 +729,10 @@ class mem_bkdr_util extends uvm_object;
   virtual function void randomize_mem();
     `uvm_info(`gfn, "Randomizing mem contents", UVM_LOW)
     for (int i = 0; i < depth; i++) begin
-      uvm_hdl_data_t data;
+      row_data_t data;
       `DV_CHECK_STD_RANDOMIZE_FATAL(data, "Randomization failed!", path)
       if (`HAS_PARITY) begin
-        uvm_hdl_data_t raw_data = data;
+        row_data_t raw_data = data;
         for (int byte_idx = 0; byte_idx < bytes_per_word; byte_idx++) begin
           bit raw_byte = raw_data[byte_idx * 8 +: 8];
           bit parity = (err_detection_scheme == ParityOdd) ? ~(^raw_byte) : (^raw_byte);
@@ -690,7 +749,7 @@ class mem_bkdr_util extends uvm_object;
   virtual function void invalidate_mem();
     `uvm_info(`gfn, "Invalidating (Xs) mem contents", UVM_LOW)
     for (int i = 0; i < depth; i++) begin
-      uvm_hdl_data_t data;
+      row_data_t data;
       write(i * bytes_per_word, data);
     end
   endfunction
@@ -698,7 +757,7 @@ class mem_bkdr_util extends uvm_object;
   // Inject ECC or parity errors to the memory word at the given address.
   virtual function void inject_errors(bit [bus_params_pkg::BUS_AW-1:0] addr,
                                       uint32_t inject_num_errors);
-    uvm_hdl_data_t rw_data, err_mask;
+    row_data_t rw_data, err_mask;
     if (!check_addr_valid(addr)) return;
     `DV_CHECK_LE_FATAL(inject_num_errors, max_errors)
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(err_mask,

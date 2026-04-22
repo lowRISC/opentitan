@@ -10,6 +10,15 @@ package mem_bkdr_util_pkg;
   import prim_secded_pkg::*;
   import uvm_pkg::*;
 
+  // A data row in the memory.
+  //
+  // Note that this uses 4-state logic, which allows the row to contain 'x values.
+  typedef logic [1023:0] row_data_t;
+
+  // The number of bits used in each backdoor read from / write to memory. This must be small enough
+  // to fit in a uvm_hdl_data_t.
+  int unsigned bits_per_backdoor_access = 256;
+
   // Represents the various forms of error detection / correction supported.
   typedef enum int {
     ErrDetectionNone    = prim_secded_pkg::SecdedNone,
