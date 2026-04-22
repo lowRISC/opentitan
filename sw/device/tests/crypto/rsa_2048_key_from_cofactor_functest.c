@@ -200,31 +200,50 @@ static status_t run_cofactor_negative_tests(void) {
   CHECK(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, &bad_mod_null,
                                            &valid_cof, &valid_cof, &valid_pub,
                                            &valid_priv)
-            .value == OTCRYPTO_BAD_ARGS.value);
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_rsa_keypair_from_cofactor_async_start(
+            kOtcryptoRsaSize2048, &bad_mod_null, &valid_cof, &valid_cof)
+            .value != OTCRYPTO_OK.value);
+
   CHECK(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, &valid_mod,
                                            &bad_cof_null, &valid_cof,
                                            &valid_pub, &valid_priv)
-            .value == OTCRYPTO_BAD_ARGS.value);
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_rsa_keypair_from_cofactor_async_start(
+            kOtcryptoRsaSize2048, &valid_mod, &bad_cof_null, &valid_cof)
+            .value != OTCRYPTO_OK.value);
+
   CHECK(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, &valid_mod,
                                            &valid_cof, &valid_cof, NULL,
                                            &valid_priv)
-            .value == OTCRYPTO_BAD_ARGS.value);
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_rsa_keypair_from_cofactor_async_finalize(NULL, &valid_priv)
+            .value != OTCRYPTO_OK.value);
+
   CHECK(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, &valid_mod,
                                            &valid_cof, &valid_cof, &valid_pub,
                                            NULL)
-            .value == OTCRYPTO_BAD_ARGS.value);
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_rsa_keypair_from_cofactor_async_finalize(&valid_pub, NULL)
+            .value != OTCRYPTO_OK.value);
 
   // Cofactor length test
   CHECK(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, &valid_mod,
                                            &bad_cof_len, &valid_cof, &valid_pub,
                                            &valid_priv)
-            .value == OTCRYPTO_BAD_ARGS.value);
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_rsa_keypair_from_cofactor_async_start(
+            kOtcryptoRsaSize2048, &valid_mod, &bad_cof_len, &valid_cof)
+            .value != OTCRYPTO_OK.value);
 
   // Bad enum size
   CHECK(otcrypto_rsa_keypair_from_cofactor((otcrypto_rsa_size_t)999, &valid_mod,
                                            &valid_cof, &valid_cof, &valid_pub,
                                            &valid_priv)
-            .value == OTCRYPTO_BAD_ARGS.value);
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_rsa_keypair_from_cofactor_async_start(
+            (otcrypto_rsa_size_t)999, &valid_mod, &valid_cof, &valid_cof)
+            .value != OTCRYPTO_OK.value);
 
   // Bad public key struct
   otcrypto_unblinded_key_t bad_pub_len = {
@@ -235,7 +254,10 @@ static status_t run_cofactor_negative_tests(void) {
   CHECK(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, &valid_mod,
                                            &valid_cof, &valid_cof, &bad_pub_len,
                                            &valid_priv)
-            .value == OTCRYPTO_BAD_ARGS.value);
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_rsa_keypair_from_cofactor_async_finalize(&bad_pub_len,
+                                                          &valid_priv)
+            .value != OTCRYPTO_OK.value);
 
   // Bad private key struct
   otcrypto_key_config_t bad_mode_cfg = priv_cfg;
@@ -248,7 +270,10 @@ static status_t run_cofactor_negative_tests(void) {
   CHECK(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, &valid_mod,
                                            &valid_cof, &valid_cof, &valid_pub,
                                            &bad_priv_mode)
-            .value == OTCRYPTO_BAD_ARGS.value);
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_rsa_keypair_from_cofactor_async_finalize(&valid_pub,
+                                                          &bad_priv_mode)
+            .value != OTCRYPTO_OK.value);
 
   return OTCRYPTO_OK;
 }

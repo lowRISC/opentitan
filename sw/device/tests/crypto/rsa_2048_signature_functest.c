@@ -342,16 +342,24 @@ static status_t run_signature_negative_tests(void) {
   hardened_bool_t verify_res;
 
   // Sign negative tests
+
+  // Null pointers
   CHECK(
       otcrypto_rsa_sign(NULL, valid_digest, kOtcryptoRsaPaddingPkcs, &valid_sig)
           .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(
+      otcrypto_rsa_sign_async_start(NULL, valid_digest, kOtcryptoRsaPaddingPkcs)
+          .value != OTCRYPTO_OK.value);
 
   otcrypto_word32_buf_t bad_sig_null =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, NULL, kRsa2048NumWords);
   CHECK(otcrypto_rsa_sign(&valid_priv, valid_digest, kOtcryptoRsaPaddingPkcs,
                           &bad_sig_null)
             .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_sign_async_finalize(&bad_sig_null).value !=
+        OTCRYPTO_OK.value);
 
+  // Corrupt checksum
   otcrypto_blinded_key_t bad_priv_chk = {
       .config = valid_priv.config,
       .keyblob_length = valid_priv.keyblob_length,
@@ -361,20 +369,35 @@ static status_t run_signature_negative_tests(void) {
   CHECK(otcrypto_rsa_sign(&bad_priv_chk, valid_digest, kOtcryptoRsaPaddingPkcs,
                           &valid_sig)
             .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_sign_async_start(&bad_priv_chk, valid_digest,
+                                      kOtcryptoRsaPaddingPkcs)
+            .value != OTCRYPTO_OK.value);
 
   // Mismatched padding mode
   CHECK(otcrypto_rsa_sign(&valid_priv, valid_digest, kOtcryptoRsaPaddingPss,
                           &valid_sig)
             .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_sign_async_start(&valid_priv, valid_digest,
+                                      kOtcryptoRsaPaddingPss)
+            .value != OTCRYPTO_OK.value);
 
   // Verify negative tests
+
+  // Null pointers
   CHECK(otcrypto_rsa_verify(NULL, valid_digest, kOtcryptoRsaPaddingPkcs,
                             &valid_const_sig, &verify_res)
             .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_verify_async_start(NULL, &valid_const_sig).value !=
+        OTCRYPTO_OK.value);
+
   CHECK(otcrypto_rsa_verify(&valid_pub, valid_digest, kOtcryptoRsaPaddingPkcs,
                             &valid_const_sig, NULL)
             .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_verify_async_finalize(valid_digest,
+                                           kOtcryptoRsaPaddingPkcs, NULL)
+            .value != OTCRYPTO_OK.value);
 
+  // Corrupt checksum
   otcrypto_unblinded_key_t bad_pub_chk = {
       .key_mode = valid_pub.key_mode,
       .key_length = valid_pub.key_length,
@@ -384,12 +407,17 @@ static status_t run_signature_negative_tests(void) {
   CHECK(otcrypto_rsa_verify(&bad_pub_chk, valid_digest, kOtcryptoRsaPaddingPkcs,
                             &valid_const_sig, &verify_res)
             .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_verify_async_start(&bad_pub_chk, &valid_const_sig).value !=
+        OTCRYPTO_OK.value);
 
+  // Bad signature length
   otcrypto_const_word32_buf_t bad_const_sig_len =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig_data, 99);
   CHECK(otcrypto_rsa_verify(&valid_pub, valid_digest, kOtcryptoRsaPaddingPkcs,
                             &bad_const_sig_len, &verify_res)
             .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_verify_async_start(&valid_pub, &bad_const_sig_len).value !=
+        OTCRYPTO_OK.value);
 
   return OTCRYPTO_OK;
 }
