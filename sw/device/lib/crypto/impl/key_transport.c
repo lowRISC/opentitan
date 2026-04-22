@@ -191,7 +191,8 @@ otcrypto_status_t otcrypto_key_wrap(const otcrypto_blinded_key_t *key_to_wrap,
                                     const otcrypto_blinded_key_t *key_kek,
                                     otcrypto_word32_buf_t *wrapped_key) {
   if (key_to_wrap == NULL || key_to_wrap->keyblob == NULL || key_kek == NULL ||
-      key_kek->keyblob == NULL || wrapped_key->data == NULL) {
+      key_kek->keyblob == NULL || wrapped_key == NULL ||
+      wrapped_key->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -248,13 +249,13 @@ otcrypto_status_t otcrypto_key_unwrap(
     const otcrypto_const_word32_buf_t *wrapped_key,
     const otcrypto_blinded_key_t *key_kek, hardened_bool_t *success,
     otcrypto_blinded_key_t *unwrapped_key) {
-  *success = kHardenedBoolFalse;
-
-  if (wrapped_key->data == NULL || key_kek == NULL ||
+  if (wrapped_key == NULL || wrapped_key->data == NULL || key_kek == NULL ||
       key_kek->keyblob == NULL || success == NULL || unwrapped_key == NULL ||
       unwrapped_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+
+  *success = kHardenedBoolFalse;
 
   // Check the integrity/lengths/mode of the key encryption key, and construct
   // an internal AES key.
@@ -291,7 +292,6 @@ otcrypto_status_t otcrypto_key_unwrap(
   unwrapped_key->checksum = plaintext[config_words];
   uint32_t keyblob_words = plaintext[config_words + 1];
   if (keyblob_words != keyblob_num_words(unwrapped_key->config)) {
-    *success = kHardenedBoolFalse;
     return otcrypto_eval_exit(OTCRYPTO_OK);
   }
 
