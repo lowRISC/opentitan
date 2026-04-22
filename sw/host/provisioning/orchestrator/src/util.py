@@ -66,6 +66,11 @@ def run(cmd, stdout_logfile, stderr_logfile):
                          stderr=err_tee.stdin)
     out_tee.stdin.close()
     err_tee.stdin.close()
+
+    # Wait for any final buffered output to be written by tees
+    out_tee.wait()
+    err_tee.wait()
+
     return res
 
 
