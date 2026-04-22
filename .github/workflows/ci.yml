@@ -156,7 +156,7 @@ jobs:
       - name: Build documentation
         run: util/site/build-docs.sh build
       - name: Upload files as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: docs
           path: build-site/
@@ -315,7 +315,7 @@ jobs:
           mkdir -p build-bin/hw/top_englishbreakfast
           cp ${sim_binary_path} build-bin/hw/top_englishbreakfast/
       - name: Upload binary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: verilated_englishbreakfast
           path: build-bin/hw/top_englishbreakfast/Vchip_englishbreakfast_verilator
@@ -399,7 +399,7 @@ jobs:
           cp "$vmem" "build-bin/${rom_path}"
 
       - name: Upload bitstream
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: chip_englishbreakfast_cw305
           path: build-bin.tar
@@ -681,7 +681,7 @@ jobs:
             false
           fi
       - name: Upload complete target list
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: all_fpga_targets
           path: all_fpga.txt
@@ -851,7 +851,7 @@ jobs:
           opentitan/bazelisk.sh build --override_repository="+qemu+qemu_opentitan_src=$PWD/qemu/" //third_party/qemu/...
       - name: Upload error logs
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: qemu-override-build-logs
           path: qemu/build/*.log
