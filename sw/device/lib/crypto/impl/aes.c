@@ -73,11 +73,6 @@ static status_t aes_key_construct(otcrypto_blinded_key_t *blinded_key,
   }
   aes_key->sideload = blinded_key->config.hw_backed;
 
-  // Check for null pointer.
-  if (blinded_key->keyblob == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
   // Set the block cipher mode based on the key mode.
   otcrypto_key_mode_t blinded_key_mode_used = launder32(0);
   switch (blinded_key->config.key_mode) {
@@ -556,8 +551,10 @@ otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
                                otcrypto_aes_padding_t aes_padding,
                                otcrypto_byte_buf_t *cipher_output) {
   // Check for NULL pointers in input pointers and data buffers.
-  if (key == NULL || (aes_mode != kOtcryptoAesModeEcb && iv->data == NULL) ||
-      cipher_input->data == NULL || cipher_output->data == NULL) {
+  if (key == NULL || key->keyblob == NULL ||
+      (aes_mode != kOtcryptoAesModeEcb && (iv == NULL || iv->data == NULL)) ||
+      (cipher_input == NULL || cipher_input->data == NULL) ||
+      (cipher_output == NULL || cipher_output->data == NULL)) {
     return OTCRYPTO_BAD_ARGS;
   }
 
