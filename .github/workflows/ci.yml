@@ -694,7 +694,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Build Developer Utility Container
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7.0.0
         env:
           DOCKER_BUILD_SUMMARY: false
           DOCKER_BUILD_RECORD_UPLOAD: false
