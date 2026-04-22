@@ -223,8 +223,8 @@ volatile otcrypto_interface_t otcrypto = {
     .ecc_p256_private_key_export = &otcrypto_ecc_p256_private_key_export,
     .ecc_p256_public_key_import = &otcrypto_ecc_p256_public_key_import,
     .ecc_p256_public_key_export = &otcrypto_ecc_p256_public_key_export,
-    .p256_point_on_curve = &otcrypto_p256_point_on_curve,
-    .p256_base_point_mult = &otcrypto_p256_base_point_mult,
+    .ecc_p256_point_on_curve = &otcrypto_ecc_p256_point_on_curve,
+    .ecc_p256_base_point_mult = &otcrypto_ecc_p256_base_point_mult,
     .ecc_p256_arith_share_private_key =
         &otcrypto_ecc_p256_arith_share_private_key,
 
@@ -263,8 +263,8 @@ volatile otcrypto_interface_t otcrypto = {
     .ecc_p384_private_key_export = &otcrypto_ecc_p384_private_key_export,
     .ecc_p384_public_key_import = &otcrypto_ecc_p384_public_key_import,
     .ecc_p384_public_key_export = &otcrypto_ecc_p384_public_key_export,
-    .p384_point_on_curve = &otcrypto_p384_point_on_curve,
-    .p384_base_point_mult = &otcrypto_p384_base_point_mult,
+    .ecc_p384_point_on_curve = &otcrypto_ecc_p384_point_on_curve,
+    .ecc_p384_base_point_mult = &otcrypto_ecc_p384_base_point_mult,
     .ecc_p384_arith_share_private_key =
         &otcrypto_ecc_p384_arith_share_private_key,
 
