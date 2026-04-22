@@ -1247,16 +1247,43 @@ def alert_handler_signals(handler):
     return (f"alert{suffix}_tx", f"alert{suffix}_rx")
 
 
-def get_alert_connections(top: ConfigT,
-                          name_to_block: IpBlocksT,
-                          allow_missing_blocks=False) -> List[str]:
-    """Return an existing top['alert_connections'] or generate one.
+def commit_alert_connections(top: ConfigT,
+                             name_to_block: IpBlocksT,
+                             allow_missing_blocks=False):
+    """Populate alert-related connection information in top
+
+    This function populates top['alert_connections'] and top['alert_handler_info'],
+    and adds the required chip-level signals to connect alert handlers with alert
+    sources in different power domains.
     """
     if "alert_connections" in top:
         return top["alert_connections"]
 
     default_handler = top.get("default_alert_handler", None)
     connections = defaultdict(list)
+
+    alert_handler_info = defaultdict()
+
+    # Construct info dicts for internal alert handlers
+    alert_handlers = lib.find_modules(top["module"], "alert_handler")
+    for ah in alert_handlers:
+        domain = ah.get("domain", top["power"]["default"])
+        ah_info = {"domain": domain, "count_tot": 0, "count_pd": {}, "connect_pd": {}}
+        for pd in top["power"]["domains"]:
+            ah_info["count_pd"][pd] = 0
+
+        # Add schaffold to dict
+        alert_handler_info[ah["name"]] = ah_info
+
+    # Construct info dicts for external alert handlers
+    alert_handlers = top["outgoing_alert"]
+    for ah in alert_handlers:
+        ah_info = {"domain": "external", "count_tot": 0, "count_pd": {}}
+        for pd in top["power"]["domains"]:
+            ah_info["count_pd"][pd] = 0
+
+        # Add schaffold to dict
+        alert_handler_info[ah] = ah_info
 
     # Construct the connection information here
     alert_idx = defaultdict(int)
@@ -1269,6 +1296,11 @@ def get_alert_connections(top: ConfigT,
         if block.alerts:
             alert_comments = []
             handler = module.get("alert_handler", default_handler)
+            m_domain = module.get("domain", top["power"]["default"])
+            if handler is not None:
+                a_domain = alert_handler_info[handler]["domain"]
+            else:
+                a_domain = top["power"]["default"]
 
             # Checking whether there is a handler is done in validation
             if not outgoing and not handler:
@@ -1278,18 +1310,52 @@ def get_alert_connections(top: ConfigT,
             w = len(block.alerts)
             if outgoing:
                 outgoing_group = module["outgoing_alert"]
-                lo = outgoing_alert_idx[outgoing_group]
-                slice = f"{lo+w-1}:{lo}"
-                async_expr = f"AsyncOnOutgoingAlert{outgoing_group.capitalize()}[{slice}]"
+                lo_async = outgoing_alert_idx[outgoing_group]
+                lo = alert_handler_info[outgoing_group]["count_pd"][m_domain]
+                if w > 1:
+                    slice = f"{lo+w-1}:{lo}"
+                    slice_async = f"{lo_async+w-1}:{lo_async}"
+                else:
+                    slice = lo
+                    slice_async = lo_async
+                async_expr = f"AsyncOnOutgoingAlert{outgoing_group.capitalize()}[{slice_async}]"
                 alert_tx_expr = f"outgoing_alert_{outgoing_group}_tx_o[{slice}]"
                 alert_rx_expr = f"outgoing_alert_{outgoing_group}_rx_i[{slice}]"
+
+                # Increase counts
+                alert_handler_info[outgoing_group]["count_tot"] += w
+                alert_handler_info[outgoing_group]["count_pd"][m_domain] += w
             else:
+                len_tot = alert_idx[handler]
+                len_pd = alert_handler_info[handler]["count_pd"][m_domain]
+                if m_domain != a_domain:
+                    for i in range(w):
+                        conn_info = {"src_pd": m_domain, "idx": len_pd + i}
+                        alert_handler_info[handler]["connect_pd"][len_tot + i] = conn_info
+
                 alert_tx, alert_rx = alert_handler_signals(handler)
-                lo = alert_idx[handler]
-                slice = f"{lo+w-1}:{lo}"
-                async_expr = f"{handler}_reg_pkg::AsyncOn[{slice}]"
+                lo_async = alert_idx[handler]
+                # Suffixes and indices for alerts to handlers in other domains
+                if m_domain != a_domain:
+                    alert_tx += "_o"
+                    alert_rx += "_i"
+                    lo = alert_handler_info[handler]["count_pd"][m_domain]
+                else:
+                    lo = alert_idx[handler]
+
+                if w > 1:
+                    slice = f"{lo+w-1}:{lo}"
+                    slice_async = f"{lo_async+w-1}:{lo_async}"
+                else:
+                    slice = lo
+                    slice_async = lo_async
+                async_expr = f"{handler}_reg_pkg::AsyncOn[{slice_async}]"
                 alert_tx_expr = f"{alert_tx}[{slice}]"
                 alert_rx_expr = f"{alert_rx}[{slice}]"
+
+                # Increase counts
+                alert_handler_info[handler]["count_tot"] += w
+                alert_handler_info[handler]["count_pd"][m_domain] += w
 
             # Generate comments, and increment the applicable alert indices
             for a in block.alerts:
@@ -1336,17 +1402,52 @@ def get_alert_connections(top: ConfigT,
         }
         connections["incoming_" + alert_group] = alert_info
 
-    return connections
+    # Create chiplevel signal definitions
+    sigdefs = []
+    proto = OrderedDict([('package', 'prim_alert_pkg'),
+                        ('struct', ''),
+                        ('domain', 'chip'),
+                        ('signame', ''),
+                        ('width', -1),
+                        ('type', 'uni'),
+                        ('special', 'alert'),
+                        ('end_idx', -1),
+                        ('act', 'req'),
+                        ('suffix', ''),
+                        ('default', "'0")])
+
+    for name, info in alert_handler_info.items():
+        signals = alert_handler_signals(name)
+        for pd in top["power"]["domains"]:
+            width = info["count_pd"][pd]
+            if pd != info["domain"] and width > 0:
+                sig_names = (signals[0] + f"_pd_{pd.lower()}",
+                             signals[1] + f"_pd_{pd.lower()}")
+                sig_tx = proto.copy()
+                sig_rx = proto.copy()
+                sig_tx["struct"] = 'alert_tx'
+                sig_rx["struct"] = 'alert_rx'
+                sig_tx["signame"] = sig_names[0]
+                sig_rx["signame"] = sig_names[1]
+                sig_tx["width"] = width
+                sig_rx["width"] = width
+
+                sigdefs.append(sig_tx)
+                sigdefs.append(sig_rx)
+
+    # Add to inter-pd dict, create if nonexistent, avoid duplicates
+    topdefs = top.setdefault("inter_pd", defaultdict()).setdefault("definitions", [])
+    for sd in sigdefs:
+        if sd["signame"] not in [td["signame"] for td in topdefs]:
+            topdefs.append(sd)
+
+    top['alert_connections'] = connections
+    top['alert_handler_info'] = alert_handler_info
 
 
 def commit_alert_modules(top: ConfigT, name_to_block: IpBlocksT):
     """Make sure top['alert_module'] is populated in the final config."""
     top['alert_module'] = get_alert_modules(top, name_to_block)
-
-
-def commit_alert_connections(top: ConfigT, name_to_block: IpBlocksT):
-    """Make sure top['alert_connections'] is populated in the final config."""
-    top['alert_connections'] = get_alert_connections(top, name_to_block)
 
 
 def get_outgoing_alert_modules(top: ConfigT,
