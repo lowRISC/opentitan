@@ -339,6 +339,40 @@ class AsymCryptoScaTest(unittest.TestCase):
         signature = r + s
         verifier.verify(h, bytes(signature))
 
+    def test_char_ed25519_sign(self):
+        scalar = [random.randint(0, 255) for _ in range(32)]
+        message = [random.randint(0, 255) for _ in range(16)]
+        message_padded = utils.pad_with_zeros(message, 128)
+        message_len = len(message)
+        cfg = 0
+        trigger = 1
+
+        actual_result = sca_asym_cryptolib_functions.char_ed25519_sign(
+            target,
+            iterations,
+            scalar,
+            message_padded,
+            message_len,
+            cfg,
+            trigger,
+        )
+        actual_result_json = json.loads(actual_result)
+
+        sign_ignored_keys_set = ignored_keys_set.copy()
+        sign_ignored_keys_set.add("r")
+        sign_ignored_keys_set.add("s")
+        sign_ignored_keys_set.add("pubx")
+        sign_ignored_keys_set.add("puby")
+
+        expected_result_json = {
+            "status": 0,
+            "cfg": 0,
+        }
+
+        # As the verify is done on the device after the sign, just check if the reported
+        # status is valid.
+        utils.compare_json_data(actual_result_json, expected_result_json, sign_ignored_keys_set)
+
 
 if __name__ == "__main__":
     r = Runfiles.Create()

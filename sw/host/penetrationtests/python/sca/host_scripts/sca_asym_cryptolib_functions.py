@@ -419,3 +419,33 @@ def char_p384_sign(
         asymsca.handle_p384_sign(scalar, pubx, puby, message, cfg, trigger)
         response = target.read_response()
     return response
+
+
+def char_ed25519_sign(
+    target,
+    iterations,
+    scalar,
+    message,
+    message_len,
+    cfg,
+    trigger,
+    reset=False,
+):
+    asymsca = OTAsymCrypto(target)
+    if reset:
+        target.reset_target()
+        # Clear the output from the reset
+        target.dump_all()
+    # Initialize our chip and catch its output
+    (
+        device_id,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = asymsca.init()
+    for _ in range(iterations):
+        asymsca.handle_ed25519_sign(scalar, message, message_len, cfg, trigger)
+        response = target.read_response()
+    return response

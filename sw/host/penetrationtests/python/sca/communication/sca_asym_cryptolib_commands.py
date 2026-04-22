@@ -353,3 +353,24 @@ class OTAsymCrypto:
             "trigger": trigger,
         }
         self.target.write(json.dumps(input_data).encode("ascii"))
+
+    def handle_ed25519_sign(self, scalar, message, message_len, cfg, trigger) -> None:
+        """Call the cryptolib Ed25519 signing.
+
+        Args:
+            scalar: Array of 32 bytes of private key seed data.
+            message: Array of max 128 bytes of message data.
+            message_len: Length of the message in bytes.
+            cfg: Integer for configuration.
+            trigger: Integer specifying which triggers to set.
+        """
+        self._ujson_asym_crypto_sca_cmd()
+        self.target.write(json.dumps("Ed25519Sign").encode("ascii"))
+        input_data = {
+            "scalar": scalar,
+            "message": message,
+            "message_len": message_len,
+            "cfg": cfg,
+            "trigger": trigger,
+        }
+        self.target.write(json.dumps(input_data).encode("ascii"))
