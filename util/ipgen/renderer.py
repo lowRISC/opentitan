@@ -7,7 +7,7 @@ import os
 import shutil
 import time
 from pathlib import Path
-from typing import Dict, Optional, Union
+from typing import Dict, List, Optional, Union
 
 import reggen.gen_rtl
 from mako import exceptions as mako_exceptions  # type: ignore
@@ -251,12 +251,15 @@ class IpBlockRenderer(IpTemplateRendererBase):
     """
 
     def _refresh_directory(self, staging_dir: Path, output_dir: Path,
-                           overwrite_output_dir: bool) -> None:
+                           overwrite_output_dir: bool,
+                           preserve_patterns: Optional[List[str]] = None) -> None:
         """Safely overwrite the existing directory if necessary.
 
         The staging directory contains the newly generated contents.
         - First move the existing directory out of the way.
         - Then move the staging directory in place.
+        - Optionally copy back files matching preserve_patterns from the old dir
+          that are not present in the new output dir.
         - Finally remove the old directory.
 
         If anything goes wrong in the meantime we are left with either
@@ -283,6 +286,14 @@ class IpBlockRenderer(IpTemplateRendererBase):
                    f'{output_dir}.')
             raise TemplateRenderError(msg).with_traceback(e.__traceback__)
 
+        if do_overwrite and preserve_patterns:
+            for pattern in preserve_patterns:
+                for old_file in output_dir_existing_bak.glob(pattern):
+                    rel = old_file.relative_to(output_dir_existing_bak)
+                    new_file = output_dir / rel
+                    new_file.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(old_file, new_file)
+
         if do_overwrite:
             try:
                 shutil.rmtree(output_dir_existing_bak)
@@ -292,7 +303,8 @@ class IpBlockRenderer(IpTemplateRendererBase):
                        'Please remove it manually.')
                 raise TemplateRenderError(msg).with_traceback(e.__traceback__)
 
-    def render(self, output_dir: Path, overwrite_output_dir: bool) -> None:
+    def render(self, output_dir: Path, overwrite_output_dir: bool,
+               preserve_patterns: Optional[List[str]] = None) -> None:
         """ Render the IP template into output_dir.
 
         Generates the IP directory in a staging area and atomically moves it
@@ -301,6 +313,11 @@ class IpBlockRenderer(IpTemplateRendererBase):
         - Copy all non-template files.
         - Render all *.tpl files to their corresponding location.
         - Generate register file description with reggen.
+
+        If preserve_patterns is given, files matching those glob patterns in the
+        existing output directory that are not produced by the new render are
+        copied back (useful for dev workflows where separately-generated files
+        such as registers.md should not be wiped).
         """
         # Ensure to operate on an absolute path for output_dir.
         output_dir = output_dir.resolve()
@@ -379,7 +396,8 @@ class IpBlockRenderer(IpTemplateRendererBase):
             f'{self.ip_config.instance_name}.ipconfig.hjson',
             header=_HJSON_LICENSE_HEADER)
 
-        self._refresh_directory(staging_dir, output_dir, overwrite_output_dir)
+        self._refresh_directory(staging_dir, output_dir, overwrite_output_dir,
+                                preserve_patterns)
 
         # Ensure that the staging directory is removed at the end. Ignore
         # errors as the directory should not exist at this point actually.

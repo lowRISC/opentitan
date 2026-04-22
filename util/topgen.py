@@ -155,7 +155,7 @@ def ipgen_hjson_render(template_name: str, topname: str,
 
 
 def ipgen_render(template_name: str, topname: str, params: ParamsT,
-                 out_path: Path) -> None:
+                 out_path: Path, keep_docs: bool = False) -> None:
     """ Render an IP template for a specific toplevel using ipgen.
 
     The generated IP block is placed in the "ip_autogen" directory of the
@@ -166,10 +166,12 @@ def ipgen_render(template_name: str, topname: str, params: ParamsT,
     (module_name, ip_template,
      ip_config) = _ipgen_render_prelude(template_name, topname, params)
 
+    preserve_patterns = ['**/*.md'] if keep_docs else None
     try:
         renderer = IpBlockRenderer(ip_template, ip_config)
         renderer.render(out_path / "ip_autogen" / module_name,
-                        overwrite_output_dir=True)
+                        overwrite_output_dir=True,
+                        preserve_patterns=preserve_patterns)
     except TemplateRenderError as e:
         log.error(e.verbose_str())
         sys.exit(1)
@@ -268,7 +270,7 @@ def generate_xbars(top: ConfigT, out_path: Path) -> None:
 
 
 def generate_ipgen(top: ConfigT, module: ConfigT, params: ParamsT,
-                   out_path: Path) -> None:
+                   out_path: Path, keep_docs: bool = False) -> None:
     topname = top["name"]
     template_name = module["template_type"]
     module_name = module["type"]
@@ -282,7 +284,7 @@ def generate_ipgen(top: ConfigT, module: ConfigT, params: ParamsT,
         raise ValueError(
             f"Unexpected uniquified name: expected {module_instance_name}, "
             f"got {uniq_name}")
-    ipgen_render(module["template_type"], topname, params, out_path)
+    ipgen_render(module["template_type"], topname, params, out_path, keep_docs)
 
 
 def _get_alert_handler_params(top: ConfigT, name: str) -> ParamsT:
@@ -1475,6 +1477,8 @@ def generate_full_ipgens(args: argparse.Namespace, topcfg: ConfigT,
     # TODO, there are no interdependencies between ips so do them in any
     # order, which means could just iterate over all in the topcfg.
 
+    keep_docs = getattr(args, 'keep_ip_docs', False)
+
     def generate_modules(template_type: str,
                          single_instance: bool,
                          get_params: Callable[[Dict, Dict, Path], None] = None) -> None:
@@ -1488,7 +1492,7 @@ def generate_full_ipgens(args: argparse.Namespace, topcfg: ConfigT,
                 params = get_params(*args)
             else:
                 params = _get_basic_ipgen_params(topcfg, template_type)
-            generate_ipgen(topcfg, module, params, out_path)
+            generate_ipgen(topcfg, module, params, out_path, keep_docs)
 
     ipgens_by_template_type = defaultdict(list)
     for m in topcfg["module"]:
@@ -1729,6 +1733,16 @@ def main():
                         type=str,
                         default=None,
                         help='A hjson file describing vendor defined fields.')
+
+    parser.add_argument(
+        '--keep-ip-docs',
+        action='store_true',
+        default=False,
+        help='Preserve existing .md files in ip_autogen directories that are '
+             'not produced by ipgen (e.g. registers.md). Useful during '
+             'development to avoid having to regenerate docs after each '
+             'topgen run.'
+    )
 
     args = parser.parse_args()
 
