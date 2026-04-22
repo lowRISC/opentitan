@@ -262,7 +262,7 @@ otcrypto_status_t otcrypto_ecdh_p256(const otcrypto_blinded_key_t *private_key,
   return otcrypto_ecdh_p256_async_finalize(shared_secret);
 }
 
-otcrypto_status_t otcrypto_p256_point_on_curve(
+otcrypto_status_t otcrypto_ecc_p256_point_on_curve(
     const otcrypto_unblinded_key_t *point, hardened_bool_t *check_result) {
   if (point == NULL || point->key == NULL || check_result == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -274,7 +274,7 @@ otcrypto_status_t otcrypto_p256_point_on_curve(
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
-status_t otcrypto_p256_base_point_mult(
+status_t otcrypto_ecc_p256_base_point_mult(
     const otcrypto_blinded_key_t *private_key,
     otcrypto_unblinded_key_t *public_key) {
   if (private_key == NULL || public_key == NULL) {

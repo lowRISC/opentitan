@@ -47,7 +47,7 @@ status_t point_valid_test(void) {
 
   // Verify the valid point.
   hardened_bool_t result;
-  TRY(otcrypto_p256_point_on_curve(&point_valid, &result));
+  TRY(otcrypto_ecc_p256_point_on_curve(&point_valid, &result));
 
   if (result != kHardenedBoolTrue) {
     LOG_ERROR("Valid point failed point check.");
@@ -62,7 +62,7 @@ status_t point_valid_test(void) {
   };
 
   // Verify the invalid point.
-  TRY(otcrypto_p256_point_on_curve(&point_invalid, &result));
+  TRY(otcrypto_ecc_p256_point_on_curve(&point_invalid, &result));
 
   if (result != kHardenedBoolFalse) {
     LOG_ERROR("Invalid point passed point check.");

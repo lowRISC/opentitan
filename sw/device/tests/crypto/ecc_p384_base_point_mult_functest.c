@@ -60,7 +60,8 @@ status_t base_point_mult_test(void) {
   };
 
   LOG_INFO("Calculating base point multiplication...");
-  CHECK_STATUS_OK(otcrypto_p384_base_point_mult(&private_key, &public_key_ver));
+  CHECK_STATUS_OK(
+      otcrypto_ecc_p384_base_point_mult(&private_key, &public_key_ver));
 
   // The intial generated public key and the public key from the base point
   // multipliation must match.

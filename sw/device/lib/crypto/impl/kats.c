@@ -663,7 +663,7 @@ static status_t kat_p256_base_point_mul(void) {
       .key = pk_act,
   };
 
-  HARDENED_TRY(otcrypto_p256_base_point_mult(&private_key, &public_key));
+  HARDENED_TRY(otcrypto_ecc_p256_base_point_mult(&private_key, &public_key));
 
   if (memcmp(pk_act, p256_Q, 64)) {
     return OTCRYPTO_BAD_ARGS;
@@ -710,7 +710,7 @@ static status_t kat_p256_point_on_curve(void) {
                                     .key_length = sizeof(p256_Q)};
   point.checksum = integrity_unblinded_checksum(&point);
 
-  HARDENED_TRY(otcrypto_p256_point_on_curve(&point, &result));
+  HARDENED_TRY(otcrypto_ecc_p256_point_on_curve(&point, &result));
   HARDENED_CHECK_EQ(result, kHardenedBoolTrue);
 
   uint32_t bad_point_data[16] = {0};
@@ -722,7 +722,7 @@ static status_t kat_p256_point_on_curve(void) {
                                         .key_length = sizeof(bad_point_data)};
   bad_point.checksum = integrity_unblinded_checksum(&bad_point);
 
-  HARDENED_TRY(otcrypto_p256_point_on_curve(&bad_point, &result));
+  HARDENED_TRY(otcrypto_ecc_p256_point_on_curve(&bad_point, &result));
   HARDENED_CHECK_EQ(result, kHardenedBoolFalse);
 
   return OTCRYPTO_OK;
@@ -784,7 +784,7 @@ static status_t kat_p384_base_point_mul(void) {
       .key = pk_act,
   };
 
-  HARDENED_TRY(otcrypto_p384_base_point_mult(&private_key, &public_key));
+  HARDENED_TRY(otcrypto_ecc_p384_base_point_mult(&private_key, &public_key));
 
   if (memcmp(pk_act, p384_Q, 96)) {
     return OTCRYPTO_BAD_ARGS;
@@ -831,7 +831,7 @@ static status_t kat_p384_point_on_curve(void) {
                                     .key_length = sizeof(p384_Q)};
   point.checksum = integrity_unblinded_checksum(&point);
 
-  HARDENED_TRY(otcrypto_p384_point_on_curve(&point, &result));
+  HARDENED_TRY(otcrypto_ecc_p384_point_on_curve(&point, &result));
   HARDENED_CHECK_EQ(result, kHardenedBoolTrue);
 
   uint32_t bad_point_data[24] = {0};
@@ -843,7 +843,7 @@ static status_t kat_p384_point_on_curve(void) {
                                         .key_length = sizeof(bad_point_data)};
   bad_point.checksum = integrity_unblinded_checksum(&bad_point);
 
-  HARDENED_TRY(otcrypto_p384_point_on_curve(&bad_point, &result));
+  HARDENED_TRY(otcrypto_ecc_p384_point_on_curve(&bad_point, &result));
   HARDENED_CHECK_EQ(result, kHardenedBoolFalse);
 
   return OTCRYPTO_OK;
