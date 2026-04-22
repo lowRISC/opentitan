@@ -64,7 +64,7 @@ jobs:
     runs-on: [ubuntu-22.04-fpga, "${{ inputs.board }}"]
     timeout-minutes: ${{ inputs.timeout }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ inputs.branch }}
           fetch-depth: 0
@@ -112,7 +112,7 @@ jobs:
             echo "No tests to run after filtering"
           fi
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         if: ${{ !cancelled() }}
         with:
           ref: ${{ github.ref }}
