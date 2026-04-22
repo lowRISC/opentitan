@@ -168,6 +168,7 @@ Because the crypto library uses the hardware AES block, it does not expose an in
 A one-shot API initializes the required block cipher mode of operation (ECB, CBC, CFB, OFB or CTR) and performs the required encryption/decryption.
 
 {{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_padded_plaintext_length }}
+{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_padding_strip }}
 {{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes }}
 
 ### AES-GCM
@@ -390,6 +391,7 @@ For Ed25519 (a curve-specialized version of EdDSA, the Edwards curve digital sig
 {{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_keygen }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_sign }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_verify }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_sign_verify }}
 
 #### X25519
 
@@ -454,6 +456,32 @@ Each party should generate a key pair, exchange public keys, and then generate t
 
 {{#header-snippet sw/device/lib/crypto/include/x25519.h otcrypto_x25519_async_start }}
 {{#header-snippet sw/device/lib/crypto/include/x25519.h otcrypto_x25519_async_finalize }}
+
+### Generic ECC Functions
+
+In addition to the specific ECC functions, the cryptolib also offers more generic functions.
+
+The following key import, export, and sharing functions are available.
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecc_p256_private_key_import }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecc_p256_private_key_export }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecc_p256_public_key_import }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecc_p256_public_key_export }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecc_p256_arith_share_private_key }}
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecc_p384_private_key_import }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecc_p384_private_key_export }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecc_p384_public_key_import }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecc_p384_public_key_export }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecc_p384_arith_share_private_key }}
+
+Cryptolib also offers helper functions to check a given point as well as perform a base point multiplication.
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecc_p256_point_on_curve }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecc_p256_base_point_mult }}
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecc_p384_point_on_curve }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecc_p384_base_point_mult }}
 
 ## Deterministic random bit generation
 
