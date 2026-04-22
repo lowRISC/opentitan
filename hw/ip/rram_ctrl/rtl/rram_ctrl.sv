@@ -177,8 +177,6 @@ module rram_ctrl
   logic                    rd_req;
   logic [BusAddrW-1:0]     rd_addr;
   logic                    rd_ovfl;
-  logic [BusFullWidth-1:0] rd_data;
-  logic                    rd_err;
   logic                    rd_done;
 
   // hw-lcmgr to arbiter
@@ -215,13 +213,33 @@ module rram_ctrl
   rram_phase_e              phase;
 
   // rram_ctrl_mp signals
-  logic mp_err;
+  logic           mp_err;
+  mp_region_cfg_t region_cfgs[TotalMpRegions];
+  mp_info_cfg_t   info_page_cfgs[TotalInfoPages];
 
   // lcmgr signals
   logic lcmgr_keys_valid;
   logic lcmgr_init_done;
 
   // rram_phy signals
+  logic                    phy_ctrl_req;
+  logic [BusAddrW-1:0]     phy_ctrl_addr;
+  logic                    phy_ctrl_rd;
+  logic                    phy_ctrl_wr;
+  logic                    phy_ctrl_ecc_en;
+  logic                    phy_ctrl_scramble_en;
+  logic                    phy_ctrl_wr_done;
+  logic                    phy_ctrl_rd_err;
+  logic                    phy_ctrl_rd_done;
+  logic [BusFullWidth-1:0] phy_ctrl_rd_data;
+  logic                    phy_host_req;
+  logic                    phy_host_gnt;
+  logic                    phy_host_scramble_en;
+  logic                    phy_host_ecc_en;
+  logic                    phy_host_rd_err;
+  logic                    phy_host_rd_done;
+  logic [BusFullWidth-1:0] phy_host_rd_data;
+
   logic phy_init_done;
   logic phy_wr_intg_err;
 
@@ -717,9 +735,9 @@ module rram_ctrl
     .rram_req_o     (rd_req),
     .rram_addr_o    (rd_addr),
     .rram_ovfl_o    (rd_ovfl),
-    .rram_data_i    (rd_data),
+    .rram_data_i    (phy_ctrl_rd_data),
     .rram_done_i    (rd_done),
-    .rram_rd_err_i  (rd_err),
+    .rram_rd_err_i  (phy_ctrl_rd_err),
     .rram_mp_err_i  (mp_err)
   );
 
@@ -753,10 +771,7 @@ module rram_ctrl
   assign sw_rram_exec_en = mubi4_t'(sw_rram_exec_en_raw);
   assign hw_rram_exec_en = mubi4_t'(~rram_disable[IFetchDisableIdx]);
 
-  assign rram_exec_en =  prim_mubi_pkg::mubi4_and_hi(
-                           hw_rram_exec_en,
-                           sw_rram_exec_en
-                         );
+  assign rram_exec_en =  prim_mubi_pkg::mubi4_and_hi(hw_rram_exec_en, sw_rram_exec_en);
 
   tlul_pkg::tl_h2d_t gate_tl_h2d;
   tlul_pkg::tl_d2h_t gate_tl_d2h;
@@ -821,18 +836,71 @@ module rram_ctrl
   ///////////////////////
   // MEMORY PROTECTION //
   ///////////////////////
-  // todo add rram_ctrl_mp
-  assign mp_err  = 1'b0;
-  assign wr_done = 1'b0;
+  // Convert all mp rules to an array
+  rram_ctrl_region_cfg u_rram_ctrl_region_cfg (
+    .clk_i,
+    .rst_ni,
+    .lc_creator_seed_sw_rw_en_i,
+    .lc_owner_seed_sw_rw_en_i,
+    .lc_iso_part_sw_wr_en_i,
+    .lc_iso_part_sw_rd_en_i,
+    .region_i        (reg2hw.mp_region),
+    .region_cfg_i    (reg2hw.mp_region_cfg),
+    .default_cfg_i   (reg2hw.default_region),
+    .info_page_cfg_i (reg2hw.info_page_cfg),
+    .region_cfgs_o   (region_cfgs),
+    .info_page_cfgs_o(info_page_cfgs)
+  );
 
-  assign rd_data = '0;
-  assign rd_done = 1'b0;
-  assign rd_err  = 1'b0;
-
-  assign host_rd_data = '0;
-  assign host_rd_done = 1'b0;
-  assign host_rd_err  = 1'b0;
-  assign host_gnt     = 1'b0;
+  rram_ctrl_mp u_rram_ctrl_mp (
+    .clk_i,
+    .rst_ni,
+    .rram_disable_i     (rram_disable[MpDisableIdx]),
+    // Interface selection
+    .if_sel_i           (if_sel),
+    // Memory protection configuration
+    .region_cfgs_i      (region_cfgs),
+    .info_page_cfgs_i   (info_page_cfgs),
+    // Hardware interface override
+    .hw_info_scr_dis_i  (mubi4_t'(reg2hw.hw_info_cfg_override.scramble_dis.q)),
+    .hw_info_ecc_dis_i  (mubi4_t'(reg2hw.hw_info_cfg_override.ecc_dis.q)),
+    // Interface signals to/from rd/wr ctrl
+    .ctrl_phase_i       (phase),
+    .ctrl_part_i        (ctrl_part),
+    .ctrl_rd_req_i      (rd_req),
+    .ctrl_rd_addr_i     (rd_addr),
+    .ctrl_rd_addr_ovfl_i(rd_ovfl),
+    .ctrl_rd_done_o     (rd_done),
+    .ctrl_wr_req_i      (wr_req),
+    .ctrl_wr_addr_i     (wr_addr),
+    .ctrl_wr_addr_ovfl_i(wr_ovfl),
+    .ctrl_wr_done_o     (wr_done),
+    .ctrl_mp_err_o      (mp_err),
+    // Interface signals to/from host adapter
+    .host_req_i         (host_req),
+    .host_gnt_o         (host_gnt),
+    .host_addr_i        (host_addr),
+    .host_rd_err_o      (host_rd_err),
+    .host_rd_done_o     (host_rd_done),
+    .host_rd_data_o     (host_rd_data),
+    // Interface signals to/from rram_phy (ctrl)
+    .ctrl_req_o         (phy_ctrl_req),
+    .ctrl_addr_o        (phy_ctrl_addr),
+    .ctrl_rd_o          (phy_ctrl_rd),
+    .ctrl_wr_o          (phy_ctrl_wr),
+    .ctrl_scramble_en_o (phy_ctrl_scramble_en),
+    .ctrl_ecc_en_o      (phy_ctrl_ecc_en),
+    .ctrl_rd_done_i     (phy_ctrl_rd_done),
+    .ctrl_wr_done_i     (phy_ctrl_wr_done),
+    // Interface signals to/from rram_phy (host)
+    .host_req_o         (phy_host_req),
+    .host_gnt_i         (phy_host_gnt),
+    .host_scramble_en_o (phy_host_scramble_en),
+    .host_ecc_en_o      (phy_host_ecc_en),
+    .host_rd_err_i      (phy_host_rd_err),
+    .host_rd_done_i     (phy_host_rd_done),
+    .host_rd_data_i     (phy_host_rd_data)
+  );
 
   //////////////
   // RRAM phy //
@@ -840,6 +908,16 @@ module rram_ctrl
   // todo add rram_phy
   assign phy_wr_intg_err = 1'b0;
   assign phy_init_done   = 1'b1;
+
+  assign phy_ctrl_rd_err  = 1'b0;
+  assign phy_ctrl_rd_data = '0;
+  assign phy_ctrl_rd_done = 1'b0;
+  assign phy_ctrl_wr_done = 1'b0;
+
+  assign phy_host_gnt     = 1'b0;
+  assign phy_host_rd_err  = 1'b0;
+  assign phy_host_rd_done = 1'b0;
+  assign phy_host_rd_data = '0;
 
   assign rram_macro_o.rd_req  = 1'b0;
   assign rram_macro_o.wr_req  = 1'b0;

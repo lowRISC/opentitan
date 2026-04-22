@@ -104,7 +104,7 @@ module rram_ctrl_rd import rram_ctrl_pkg::*; (
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       op_err_addr_o <= '0;
-    end else if (~|op_err_q && |op_err_d) begin
+    end else if ((op_err_q == 0) && (op_err_d != 0)) begin
       op_err_addr_o <= rram_addr_o;
     end
   end
@@ -134,7 +134,7 @@ module rram_ctrl_rd import rram_ctrl_pkg::*; (
         end
       end
 
-      // Note the address counter is incremented on tx_done
+      // Note the address counter is incremented on rd_done
       // and cleared when the entire operation is complete.
       StNorm: begin
         rram_req_o = op_start_i & rd_ctrl_ready_i;
