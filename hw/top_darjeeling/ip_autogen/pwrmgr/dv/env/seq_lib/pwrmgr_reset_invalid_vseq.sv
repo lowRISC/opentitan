@@ -42,7 +42,6 @@ class pwrmgr_reset_invalid_vseq extends pwrmgr_base_vseq;
 
     wait_for_rom_and_active();
     check_reset_status('0);
-    $assertoff(0, "tb.dut.u_cdc.u_clr_reqack.SyncReqAckHoldReq");
 
     for (int i = 0; i < num_of_target_states; ++i) begin
       `uvm_info(`gfn, $sformatf("Starting new round %0d", i), UVM_MEDIUM)
