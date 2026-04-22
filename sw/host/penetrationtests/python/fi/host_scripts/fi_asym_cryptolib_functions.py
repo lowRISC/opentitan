@@ -382,6 +382,56 @@ def char_p384_sign(
     return response
 
 
+def char_ed25519_sign(
+    target, iterations, scalar, message, message_len, cfg, trigger, reset=False
+):
+    asymfi = OTFIAsymCrypto(target)
+    if reset:
+        target.reset_target()
+        # Clear the output from the reset
+        target.dump_all()
+    # Initialize our chip and catch its output
+    (
+        device_id,
+        sensors,
+        alerts,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
+    for _ in range(iterations):
+        asymfi.handle_ed25519_sign(scalar, message, message_len, cfg, trigger)
+        response = target.read_response()
+    return response
+
+
+def char_ed25519_verify(
+    target, iterations, pubx, puby, r, s, message, message_len, cfg, trigger, reset=False
+):
+    asymfi = OTFIAsymCrypto(target)
+    if reset:
+        target.reset_target()
+        # Clear the output from the reset
+        target.dump_all()
+    # Initialize our chip and catch its output
+    (
+        device_id,
+        sensors,
+        alerts,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
+    for _ in range(iterations):
+        asymfi.handle_ed25519_verify(pubx, puby, r, s, message, message_len, cfg, trigger)
+        response = target.read_response()
+    return response
+
+
 def char_p384_verify(
     target, iterations, pubx, puby, r, s, message, cfg, trigger, reset=False
 ):
