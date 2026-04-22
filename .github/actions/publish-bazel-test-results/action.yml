@@ -59,7 +59,7 @@ runs:
         gcloud storage cp "${{ inputs.merged-results }}" "gs://${BUCKET_PATH}"
 
     - name: Publish job summary
-      uses: mikepenz/action-junit-report@ec3a351c13e080dc4fa94c49ab7ad5bf778a9668 # v5
+      uses: mikepenz/action-junit-report@5b7ee5a21e8674b695313d769f3cbdfd5d4d53a4 # v6.0.0
       with:
         report_paths: ${{ inputs.merged-results }}
         annotate_only: true
