@@ -41,7 +41,7 @@ status_t handle_hash(ujson_t *uj) {
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
 
   // Handle to correct oneshot hash API for the provided algorithm
-  otcrypto_status_t (*hash_oneshot)(otcrypto_const_byte_buf_t *,
+  otcrypto_status_t (*hash_oneshot)(const otcrypto_const_byte_buf_t *,
                                     otcrypto_hash_digest_t *);
 
   // Digest length in 32-bit words

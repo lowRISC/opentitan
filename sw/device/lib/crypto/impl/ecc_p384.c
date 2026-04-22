@@ -273,7 +273,7 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign(
 otcrypto_status_t otcrypto_ecdsa_p384_verify(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_const_word32_buf_t *signature,
+    const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result) {
   if (verification_result == NULL || signature->data == NULL ||
       public_key == NULL || public_key->key == NULL) {
@@ -544,7 +544,7 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_async_finalize(
 otcrypto_status_t otcrypto_ecdsa_p384_verify_async_start(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_const_word32_buf_t *signature) {
+    const otcrypto_const_word32_buf_t *signature) {
   if (public_key == NULL || signature->data == NULL ||
       message_digest.data == NULL || public_key->key == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -590,7 +590,7 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify_async_start(
 }
 
 otcrypto_status_t otcrypto_ecdsa_p384_verify_async_finalize(
-    otcrypto_const_word32_buf_t *signature,
+    const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result) {
   if (verification_result == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -945,8 +945,8 @@ otcrypto_status_t otcrypto_ecc_p384_private_key_export(
 }
 
 otcrypto_status_t otcrypto_ecc_p384_arith_share_private_key(
-    otcrypto_const_word32_buf_t *bool_private_key_share0,
-    otcrypto_const_word32_buf_t *bool_private_key_share1,
+    const otcrypto_const_word32_buf_t *bool_private_key_share0,
+    const otcrypto_const_word32_buf_t *bool_private_key_share1,
     otcrypto_blinded_key_t *arith_private_key) {
   if (bool_private_key_share0 == NULL || bool_private_key_share1 == NULL ||
       arith_private_key == NULL || arith_private_key->keyblob == NULL) {

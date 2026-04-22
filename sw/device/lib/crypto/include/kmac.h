@@ -47,11 +47,10 @@ extern "C" {
  * @return The result of the KMAC operation.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_kmac(otcrypto_blinded_key_t *key,
-                                otcrypto_const_byte_buf_t *input_message,
-                                otcrypto_const_byte_buf_t *customization_string,
-                                size_t required_output_len,
-                                otcrypto_word32_buf_t *tag);
+otcrypto_status_t otcrypto_kmac(
+    otcrypto_blinded_key_t *key, const otcrypto_const_byte_buf_t *input_message,
+    const otcrypto_const_byte_buf_t *customization_string,
+    size_t required_output_len, otcrypto_word32_buf_t *tag);
 
 #ifdef __cplusplus
 }  // extern "C"

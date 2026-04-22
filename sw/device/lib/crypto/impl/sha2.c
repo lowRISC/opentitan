@@ -20,7 +20,7 @@ static_assert(
     sizeof(otcrypto_sha2_context_t) == sizeof(hmac_ctx_t),
     "`otcrypto_sha2_context_t` must be the same size as `hmac_ctx_t`.");
 
-otcrypto_status_t otcrypto_sha2_256(otcrypto_const_byte_buf_t *message,
+otcrypto_status_t otcrypto_sha2_256(const otcrypto_const_byte_buf_t *message,
                                     otcrypto_hash_digest_t *digest) {
   if (message->data == NULL && message->len != 0) {
     return OTCRYPTO_BAD_ARGS;
@@ -36,7 +36,7 @@ otcrypto_status_t otcrypto_sha2_256(otcrypto_const_byte_buf_t *message,
   return otcrypto_eval_exit(hmac_hash_sha256(message, digest->data));
 }
 
-otcrypto_status_t otcrypto_sha2_384(otcrypto_const_byte_buf_t *message,
+otcrypto_status_t otcrypto_sha2_384(const otcrypto_const_byte_buf_t *message,
                                     otcrypto_hash_digest_t *digest) {
   if (message->data == NULL && message->len != 0) {
     return OTCRYPTO_BAD_ARGS;
@@ -52,7 +52,7 @@ otcrypto_status_t otcrypto_sha2_384(otcrypto_const_byte_buf_t *message,
   return otcrypto_eval_exit(hmac_hash_sha384(message, digest->data));
 }
 
-otcrypto_status_t otcrypto_sha2_512(otcrypto_const_byte_buf_t *message,
+otcrypto_status_t otcrypto_sha2_512(const otcrypto_const_byte_buf_t *message,
                                     otcrypto_hash_digest_t *digest) {
   if (message->data == NULL && message->len != 0) {
     return OTCRYPTO_BAD_ARGS;
@@ -128,8 +128,8 @@ static status_t check_lengths(hmac_ctx_t *hmac_ctx) {
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_sha2_update(otcrypto_sha2_context_t *ctx,
-                                       otcrypto_const_byte_buf_t *message) {
+otcrypto_status_t otcrypto_sha2_update(
+    otcrypto_sha2_context_t *ctx, const otcrypto_const_byte_buf_t *message) {
   // Return early if the update size is 0.
   if (message->len == 0) {
     return otcrypto_eval_exit(OTCRYPTO_OK);

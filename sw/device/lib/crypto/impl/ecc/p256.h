@@ -234,7 +234,7 @@ status_t p256_sideload_keygen_start(void);
  */
 OT_WARN_UNUSED_RESULT
 status_t p256_sideload_attestation_keygen_start(
-    otcrypto_const_word32_buf_t *attestation_seed);
+    const otcrypto_const_word32_buf_t *attestation_seed);
 
 /**
  * Finish an async P-256 sideloaded keypair generation operation on OTBN.
@@ -314,7 +314,7 @@ status_t p256_ecdsa_sideload_sign_start(
 OT_WARN_UNUSED_RESULT
 status_t p256_sideload_attestation_sign_start(
     const uint32_t digest[kP256ScalarWords],
-    otcrypto_const_word32_buf_t *attestation_seed);
+    const otcrypto_const_word32_buf_t *attestation_seed);
 
 /**
  * Finish an async ECDSA/P-256 signature generation operation on OTBN.

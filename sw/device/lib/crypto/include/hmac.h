@@ -55,7 +55,7 @@ typedef struct otcrypto_hmac_context {
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
-                                otcrypto_const_byte_buf_t *input_message,
+                                const otcrypto_const_byte_buf_t *input_message,
                                 otcrypto_word32_buf_t *tag);
 
 /**
