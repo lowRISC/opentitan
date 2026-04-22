@@ -213,7 +213,7 @@ static status_t check_key(const otcrypto_blinded_key_t *key) {
 
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
-                                otcrypto_const_byte_buf_t *input_message,
+                                const otcrypto_const_byte_buf_t *input_message,
                                 otcrypto_word32_buf_t *tag) {
   // Check for null pointers.
   if (tag->data == NULL ||

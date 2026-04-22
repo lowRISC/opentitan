@@ -54,8 +54,8 @@ static status_t digest_num_words_from_key_mode(otcrypto_key_mode_t key_mode,
 }
 
 otcrypto_status_t otcrypto_hkdf(const otcrypto_blinded_key_t *ikm,
-                                otcrypto_const_byte_buf_t *salt,
-                                otcrypto_const_byte_buf_t *info,
+                                const otcrypto_const_byte_buf_t *salt,
+                                const otcrypto_const_byte_buf_t *info,
                                 otcrypto_blinded_key_t *okm) {
   // Infer the digest length.
   size_t digest_wordlen;
@@ -126,7 +126,7 @@ static status_t hkdf_check_prk(size_t digest_words,
 }
 
 otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
-                                        otcrypto_const_byte_buf_t *salt,
+                                        const otcrypto_const_byte_buf_t *salt,
                                         otcrypto_blinded_key_t *prk) {
   // Check for null pointers.
   if (ikm->keyblob == NULL || prk == NULL || prk->keyblob == NULL) {
@@ -226,7 +226,7 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
 }
 
 otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
-                                       otcrypto_const_byte_buf_t *info,
+                                       const otcrypto_const_byte_buf_t *info,
                                        otcrypto_blinded_key_t *okm) {
   if (okm == NULL || okm->keyblob == NULL || prk->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;

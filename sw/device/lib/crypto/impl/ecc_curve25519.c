@@ -116,8 +116,8 @@ static status_t reverse_bytecpy(uint8_t *dst, const uint8_t *src, size_t len) {
  */
 static status_t ed25519_message_prehash(
     otcrypto_eddsa_sign_mode_t sign_mode,
-    otcrypto_const_byte_buf_t *input_message, otcrypto_byte_buf_t *message_ph,
-    uint32_t *prehash_buffer) {
+    const otcrypto_const_byte_buf_t *input_message,
+    otcrypto_byte_buf_t *message_ph, uint32_t *prehash_buffer) {
   // Only a message of length zero can have NULL as data.
   if (input_message->data == NULL && input_message->len != 0) {
     return OTCRYPTO_BAD_ARGS;
@@ -245,7 +245,7 @@ otcrypto_status_t otcrypto_ed25519_keygen(
 
 otcrypto_status_t otcrypto_ed25519_sign(
     const otcrypto_unblinded_key_t *private_key,
-    otcrypto_const_byte_buf_t *input_message,
+    const otcrypto_const_byte_buf_t *input_message,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t *signature) {
   // Validate signature buffer
   HARDENED_TRY(ed25519_signature_check(signature));
@@ -290,9 +290,9 @@ otcrypto_status_t otcrypto_ed25519_sign(
 
 otcrypto_status_t otcrypto_ed25519_verify(
     const otcrypto_unblinded_key_t *public_key,
-    otcrypto_const_byte_buf_t *input_message,
+    const otcrypto_const_byte_buf_t *input_message,
     otcrypto_eddsa_sign_mode_t sign_mode,
-    otcrypto_const_word32_buf_t *signature,
+    const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result) {
   if (verification_result == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -316,7 +316,7 @@ otcrypto_status_t otcrypto_ed25519_verify(
 otcrypto_status_t otcrypto_ed25519_sign_verify(
     const otcrypto_unblinded_key_t *private_key,
     const otcrypto_unblinded_key_t *public_key,
-    otcrypto_const_byte_buf_t *input_message,
+    const otcrypto_const_byte_buf_t *input_message,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t *signature) {
   // Signature generation.
   HARDENED_TRY(
@@ -378,7 +378,7 @@ otcrypto_status_t otcrypto_ed25519_keygen_async_finalize(
 
 otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
     const otcrypto_unblinded_key_t *private_key,
-    otcrypto_const_byte_buf_t *input_message_ph,
+    const otcrypto_const_byte_buf_t *input_message_ph,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t *s0,
     otcrypto_word32_buf_t *s1, otcrypto_word32_buf_t *r0,
     otcrypto_word32_buf_t *r1) {
@@ -463,7 +463,7 @@ otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
 
 otcrypto_status_t otcrypto_ed25519_sign_part2_async_start(
     const otcrypto_unblinded_key_t *private_key,
-    otcrypto_const_byte_buf_t *input_message_ph,
+    const otcrypto_const_byte_buf_t *input_message_ph,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t *signature,
     otcrypto_word32_buf_t *s0, otcrypto_word32_buf_t *s1,
     otcrypto_word32_buf_t *r0, otcrypto_word32_buf_t *r1) {
@@ -544,9 +544,9 @@ otcrypto_status_t otcrypto_ed25519_sign_async_finalize(
 
 otcrypto_status_t otcrypto_ed25519_verify_async_start(
     const otcrypto_unblinded_key_t *public_key,
-    otcrypto_const_byte_buf_t *input_message_ph,
+    const otcrypto_const_byte_buf_t *input_message_ph,
     otcrypto_eddsa_sign_mode_t sign_mode,
-    otcrypto_const_word32_buf_t *signature) {
+    const otcrypto_const_word32_buf_t *signature) {
   // Check the public key.
   HARDENED_TRY(ed25519_key_check(public_key));
 

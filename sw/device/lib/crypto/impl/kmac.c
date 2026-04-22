@@ -14,11 +14,10 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('k', 'm', 'c')
 
-otcrypto_status_t otcrypto_kmac(otcrypto_blinded_key_t *key,
-                                otcrypto_const_byte_buf_t *input_message,
-                                otcrypto_const_byte_buf_t *customization_string,
-                                size_t required_output_len,
-                                otcrypto_word32_buf_t *tag) {
+otcrypto_status_t otcrypto_kmac(
+    otcrypto_blinded_key_t *key, const otcrypto_const_byte_buf_t *input_message,
+    const otcrypto_const_byte_buf_t *customization_string,
+    size_t required_output_len, otcrypto_word32_buf_t *tag) {
   // TODO (#16410) Revisit/complete error checks
 
   // Check for null pointers.

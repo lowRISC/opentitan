@@ -234,7 +234,7 @@ static status_t num_padded_blocks_get(size_t plaintext_len,
  * @param padding Padding mode.
  * @returns Number of AES blocks required.
  */
-static status_t get_block(otcrypto_const_byte_buf_t *input,
+static status_t get_block(const otcrypto_const_byte_buf_t *input,
                           otcrypto_aes_padding_t padding, size_t index,
                           aes_block_t *block) {
   size_t num_full_blocks = input->len / kAesBlockNumBytes;
@@ -300,8 +300,8 @@ otcrypto_status_t otcrypto_aes_padded_plaintext_length(
 static otcrypto_status_t otcrypto_aes_impl(
     otcrypto_blinded_key_t *key, otcrypto_word32_buf_t *iv,
     otcrypto_aes_mode_t aes_mode, otcrypto_aes_operation_t aes_operation,
-    otcrypto_const_byte_buf_t *cipher_input, otcrypto_aes_padding_t aes_padding,
-    otcrypto_byte_buf_t *cipher_output) {
+    const otcrypto_const_byte_buf_t *cipher_input,
+    otcrypto_aes_padding_t aes_padding, otcrypto_byte_buf_t *cipher_output) {
   // Check for NULL pointers in input pointers and data buffers.
   if (key == NULL || (aes_mode != kOtcryptoAesModeEcb && iv->data == NULL) ||
       cipher_input->data == NULL || cipher_output->data == NULL) {
@@ -550,7 +550,7 @@ otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
                                otcrypto_word32_buf_t *iv,
                                otcrypto_aes_mode_t aes_mode,
                                otcrypto_aes_operation_t aes_operation,
-                               otcrypto_const_byte_buf_t *cipher_input,
+                               const otcrypto_const_byte_buf_t *cipher_input,
                                otcrypto_aes_padding_t aes_padding,
                                otcrypto_byte_buf_t *cipher_output) {
   // Check for NULL pointers in input pointers and data buffers.

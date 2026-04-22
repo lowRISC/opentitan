@@ -203,7 +203,7 @@ status_t p256_sideload_keygen_start(void) {
 }
 
 status_t p256_sideload_attestation_keygen_start(
-    otcrypto_const_word32_buf_t *attestation_seed) {
+    const otcrypto_const_word32_buf_t *attestation_seed) {
   if (launder32(attestation_seed->len) > kDiceAttestationMaxSeedLength) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -354,7 +354,7 @@ status_t p256_ecdsa_sideload_sign_start(
 
 status_t p256_sideload_attestation_sign_start(
     const uint32_t digest[kP256ScalarWords],
-    otcrypto_const_word32_buf_t *attestation_seed) {
+    const otcrypto_const_word32_buf_t *attestation_seed) {
   if (launder32(attestation_seed->len) > kDiceAttestationMaxSeedLength) {
     return OTCRYPTO_BAD_ARGS;
   }
