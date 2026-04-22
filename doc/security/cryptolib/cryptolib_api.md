@@ -171,6 +171,82 @@ A one-shot API initializes the required block cipher mode of operation (ECB, CBC
 {{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_padding_strip }}
 {{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes }}
 
+#### Usage
+
+The following example shows how a message can be encrypted and decrypted using the cryptolib AES API.
+
+```c
+enum {
+  // Plaintext is 20 bytes: not a multiple of the 16-byte AES block size.
+  kPlaintextLen = 20,
+};
+
+// Two key shares that XOR to the actual 128-bit key.
+static const uint32_t kKeyShare0[4] = {0xdeadbeef, 0x01234567, 0x89abcdef, 0xfedcba98};
+static const uint32_t kKeyShare1[4] = {0x00000000, 0x00000000, 0x00000000, 0x00000000};
+
+bool aes_encrypt_decrypt_example(void) {
+  // --- Build the blinded AES-ECB key ---
+  otcrypto_key_config_t key_config = {
+    .version        = kOtcryptoLibVersion1,
+    .key_mode       = kOtcryptoKeyModeAesEcb,
+    .key_length     = 16,
+    .hw_backed      = kHardenedBoolFalse,
+    .exportable     = kHardenedBoolFalse,
+    .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  // Keyblob must be twice the key length (holds two shares).
+  uint32_t keyblob[8];
+  otcrypto_blinded_key_t key = {
+    .config         = key_config,
+    .keyblob_length = sizeof(keyblob),
+    .keyblob        = keyblob,
+  };
+  otcrypto_const_word32_buf_t share0 =
+    OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, kKeyShare0, 4);
+  otcrypto_const_word32_buf_t share1 =
+    OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, kKeyShare1, 4);
+  TRY(otcrypto_import_blinded_key(&share0, &share1, &key));
+
+  // --- Plaintext: 20 bytes, not a multiple of the block size ---
+  static const uint8_t kPlaintext[kPlaintextLen] = "Hello, OpenTitan!!!";
+
+  // --- Query padded length, then allocate output buffers ---
+  size_t padded_len;
+  TRY(otcrypto_aes_padded_plaintext_length(
+    kPlaintextLen, kOtcryptoAesPaddingPkcs7, &padded_len));
+
+  uint8_t ciphertext[padded_len];
+  uint8_t decrypted[padded_len];
+
+  // --- Encrypt ---
+  otcrypto_const_byte_buf_t plaintext_buf =
+    OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, kPlaintext, kPlaintextLen);
+  otcrypto_byte_buf_t ciphertext_buf =
+    OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, ciphertext, padded_len);
+  TRY(otcrypto_aes(&key, /*iv=*/NULL, kOtcryptoAesModeEcb,
+                   kOtcryptoAesOperationEncrypt, &plaintext_buf,
+                   kOtcryptoAesPaddingPkcs7, &ciphertext_buf));
+
+  // --- Decrypt ---
+  otcrypto_const_byte_buf_t ciphertext_in =
+    OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, ciphertext, padded_len);
+  otcrypto_byte_buf_t decrypted_buf =
+    OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, decrypted, padded_len);
+  TRY(otcrypto_aes(&key, /*iv=*/NULL, kOtcryptoAesModeEcb,
+                   kOtcryptoAesOperationDecrypt, &ciphertext_in,
+                   kOtcryptoAesPaddingPkcs7, &decrypted_buf));
+
+  // --- Strip padding ---
+  size_t recovered_len;
+  TRY(otcrypto_aes_padding_strip(
+    &decrypted_buf, kOtcryptoAesPaddingPkcs7, &recovered_len));
+
+  // --- Compare ---
+  return memcmp(kPlaintext, decrypted, recovered_len) == 0;
+}
+```
+
 ### AES-GCM
 
 AES-GCM (Galois/Counter Mode) is an authenticated encryption with associated data (AEAD) scheme.
