@@ -92,7 +92,7 @@ module rram_ctrl_wr import rram_ctrl_pkg::*; (
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       op_err_addr_o <= '0;
-    end else if (~|op_err_q && |op_err_d) begin
+    end else if ((op_err_q == 0) && (op_err_d != 0)) begin
       op_err_addr_o <= int_addr[BusAddrW-1:0];
     end
   end
