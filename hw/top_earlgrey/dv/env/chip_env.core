@@ -23,7 +23,6 @@ filesets:
       - lowrisc:dv:lc_ctrl_dv_utils
       - lowrisc:earlgrey_dv:flash_ctrl_bkdr_util
       - lowrisc:earlgrey_dv:otp_ctrl_mem_bkdr_util
-      - lowrisc:dv:ralgen
       - lowrisc:dv:spi_agent
       - lowrisc:dv:spi_host_sva
       - lowrisc:dv:str_utils
@@ -36,6 +35,7 @@ filesets:
       - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:earlgrey_ip:pwrmgr_pkg
       - lowrisc:dv:lc_ctrl_dv_utils
+      - lowrisc:dv:top_earlgrey_chip_ral
       - "!fileset_partner ? (lowrisc:systems:top_earlgrey_ast_pkg)"
       - "fileset_partner ? (partner:systems:top_earlgrey_ast_pkg)"
     files:
@@ -166,17 +166,7 @@ filesets:
       - top_earlgrey_error_injection_ifs_bind.sv
     file_type: systemVerilogSource
 
-generate:
-  ral:
-    generator: ralgen
-    parameters:
-      name: chip
-      top_hjson: ../../data/top_earlgrey.hjson
-    position: prepend
-
 targets:
   default:
     filesets:
       - files_dv
-    generate:
-      - "!skip_ral_gen ? (ral)"
