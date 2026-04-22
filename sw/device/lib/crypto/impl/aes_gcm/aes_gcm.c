@@ -504,11 +504,6 @@ status_t aes_gcm_update_encrypted_data(aes_gcm_context_t *ctx, size_t input_len,
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Check for null pointers.
-  if (ctx == NULL || input == NULL || output == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
   // If this is the first part of the plaintext and we haven't finished the AAD
   // yet, process the remaining partial AAD and update the state.
   size_t partial_ghash_block_len = ctx->aad_len % kGhashBlockNumBytes;
@@ -569,11 +564,6 @@ status_t aes_gcm_update_encrypted_data(aes_gcm_context_t *ctx, size_t input_len,
  */
 status_t aes_gcm_final(aes_gcm_context_t *ctx, size_t tag_len, uint32_t *tag,
                        size_t *output_len, uint8_t *output) {
-  // Check for null pointers.
-  if (ctx == NULL || output_len == NULL || tag == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
   // If there was no input (we never entered the "update encrypted data"
   // stage), process the remaining partial AAD and update the state.
   size_t partial_ghash_block_len = ctx->aad_len % kGhashBlockNumBytes;
