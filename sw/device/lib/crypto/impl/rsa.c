@@ -94,7 +94,7 @@ static hardened_bool_t bignum_lt(const uint32_t *a, const uint32_t *b,
 }
 
 otcrypto_status_t otcrypto_rsa_public_key_construct(
-    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t *modulus,
+    otcrypto_rsa_size_t size, const otcrypto_const_word32_buf_t *modulus,
     otcrypto_unblinded_key_t *public_key) {
   if (modulus->data == NULL || public_key == NULL || public_key->key == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -318,9 +318,9 @@ otcrypto_status_t otcrypto_rsa_keygen(otcrypto_rsa_size_t size,
 }
 
 otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
-    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t *modulus,
-    otcrypto_const_word32_buf_t *d_share0,
-    otcrypto_const_word32_buf_t *d_share1,
+    otcrypto_rsa_size_t size, const otcrypto_const_word32_buf_t *modulus,
+    const otcrypto_const_word32_buf_t *d_share0,
+    const otcrypto_const_word32_buf_t *d_share1,
     otcrypto_blinded_key_t *private_key) {
   if (modulus->data == NULL || d_share0->data == NULL ||
       d_share1->data == NULL || private_key == NULL ||
@@ -393,9 +393,9 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
 }
 
 otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
-    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t *modulus,
-    otcrypto_const_word32_buf_t *cofactor_share0,
-    otcrypto_const_word32_buf_t *cofactor_share1,
+    otcrypto_rsa_size_t size, const otcrypto_const_word32_buf_t *modulus,
+    const otcrypto_const_word32_buf_t *cofactor_share0,
+    const otcrypto_const_word32_buf_t *cofactor_share1,
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *private_key) {
   if (public_key == NULL || public_key->key == NULL || private_key == NULL ||
       private_key->keyblob == NULL) {
@@ -460,7 +460,8 @@ otcrypto_status_t otcrypto_rsa_sign(const otcrypto_blinded_key_t *private_key,
 otcrypto_status_t otcrypto_rsa_verify(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_rsa_padding_t padding_mode, otcrypto_const_word32_buf_t *signature,
+    otcrypto_rsa_padding_t padding_mode,
+    const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result) {
   if (verification_result == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -477,8 +478,9 @@ otcrypto_status_t otcrypto_rsa_verify(
 
 otcrypto_status_t otcrypto_rsa_encrypt(
     const otcrypto_unblinded_key_t *public_key,
-    const otcrypto_hash_mode_t hash_mode, otcrypto_const_byte_buf_t *message,
-    otcrypto_const_byte_buf_t *label, otcrypto_word32_buf_t *ciphertext) {
+    const otcrypto_hash_mode_t hash_mode,
+    const otcrypto_const_byte_buf_t *message,
+    const otcrypto_const_byte_buf_t *label, otcrypto_word32_buf_t *ciphertext) {
   if (ciphertext->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -490,8 +492,9 @@ otcrypto_status_t otcrypto_rsa_encrypt(
 otcrypto_status_t otcrypto_rsa_decrypt(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_hash_mode_t hash_mode,
-    otcrypto_const_word32_buf_t *ciphertext, otcrypto_const_byte_buf_t *label,
-    otcrypto_byte_buf_t *plaintext, size_t *plaintext_bytelen) {
+    const otcrypto_const_word32_buf_t *ciphertext,
+    const otcrypto_const_byte_buf_t *label, otcrypto_byte_buf_t *plaintext,
+    size_t *plaintext_bytelen) {
   if (plaintext->data == NULL || plaintext_bytelen == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -581,9 +584,9 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
 }
 
 otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
-    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t *modulus,
-    otcrypto_const_word32_buf_t *cofactor_share0,
-    otcrypto_const_word32_buf_t *cofactor_share1) {
+    otcrypto_rsa_size_t size, const otcrypto_const_word32_buf_t *modulus,
+    const otcrypto_const_word32_buf_t *cofactor_share0,
+    const otcrypto_const_word32_buf_t *cofactor_share1) {
   if (modulus->data == NULL || cofactor_share0->data == NULL ||
       cofactor_share1->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -821,7 +824,7 @@ otcrypto_status_t otcrypto_rsa_sign_async_finalize(
 
 otcrypto_status_t otcrypto_rsa_verify_async_start(
     const otcrypto_unblinded_key_t *public_key,
-    otcrypto_const_word32_buf_t *signature) {
+    const otcrypto_const_word32_buf_t *signature) {
   // Check for NULL pointers.
   if (public_key == NULL || public_key->key == NULL ||
       signature->data == NULL) {
@@ -924,8 +927,9 @@ otcrypto_status_t otcrypto_rsa_verify_async_finalize(
 
 otcrypto_status_t otcrypto_rsa_encrypt_async_start(
     const otcrypto_unblinded_key_t *public_key,
-    const otcrypto_hash_mode_t hash_mode, otcrypto_const_byte_buf_t *message,
-    otcrypto_const_byte_buf_t *label) {
+    const otcrypto_hash_mode_t hash_mode,
+    const otcrypto_const_byte_buf_t *message,
+    const otcrypto_const_byte_buf_t *label) {
   // Check for NULL pointers.
   if (public_key == NULL || public_key->key == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -1034,7 +1038,7 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_finalize(
 
 otcrypto_status_t otcrypto_rsa_decrypt_async_start(
     const otcrypto_blinded_key_t *private_key,
-    otcrypto_const_word32_buf_t *ciphertext) {
+    const otcrypto_const_word32_buf_t *ciphertext) {
   // Check for NULL pointers.
   if (private_key == NULL || private_key->keyblob == NULL ||
       ciphertext->data == NULL) {
@@ -1135,8 +1139,9 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
 }
 
 otcrypto_status_t otcrypto_rsa_decrypt_async_finalize(
-    const otcrypto_hash_mode_t hash_mode, otcrypto_const_byte_buf_t *label,
-    otcrypto_byte_buf_t *plaintext, size_t *plaintext_bytelen) {
+    const otcrypto_hash_mode_t hash_mode,
+    const otcrypto_const_byte_buf_t *label, otcrypto_byte_buf_t *plaintext,
+    size_t *plaintext_bytelen) {
   if (plaintext->data == NULL || label->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }

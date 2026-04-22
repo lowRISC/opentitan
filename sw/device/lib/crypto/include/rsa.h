@@ -115,7 +115,7 @@ otcrypto_status_t otcrypto_rsa_keygen(otcrypto_rsa_size_t size,
  * @return Result of the RSA key construction.
  */
 otcrypto_status_t otcrypto_rsa_public_key_construct(
-    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t *modulus,
+    otcrypto_rsa_size_t size, const otcrypto_const_word32_buf_t *modulus,
     otcrypto_unblinded_key_t *public_key);
 
 /**
@@ -132,9 +132,10 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
  * @return Result of the RSA key construction.
  */
 otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
-    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t *modulus,
-    otcrypto_const_word32_buf_t *d_share0,
-    otcrypto_const_word32_buf_t *d_share1, otcrypto_blinded_key_t *private_key);
+    otcrypto_rsa_size_t size, const otcrypto_const_word32_buf_t *modulus,
+    const otcrypto_const_word32_buf_t *d_share0,
+    const otcrypto_const_word32_buf_t *d_share1,
+    otcrypto_blinded_key_t *private_key);
 
 /**
  * Constructs an RSA keypair from the public key and one prime cofactor.
@@ -153,9 +154,9 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
  * @return Result of the RSA key construction.
  */
 otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
-    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t *modulus,
-    otcrypto_const_word32_buf_t *cofactor_share0,
-    otcrypto_const_word32_buf_t *cofactor_share1,
+    otcrypto_rsa_size_t size, const otcrypto_const_word32_buf_t *modulus,
+    const otcrypto_const_word32_buf_t *cofactor_share0,
+    const otcrypto_const_word32_buf_t *cofactor_share1,
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *private_key);
 
 /**
@@ -194,7 +195,8 @@ otcrypto_status_t otcrypto_rsa_sign(const otcrypto_blinded_key_t *private_key,
 otcrypto_status_t otcrypto_rsa_verify(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_rsa_padding_t padding_mode, otcrypto_const_word32_buf_t *signature,
+    otcrypto_rsa_padding_t padding_mode,
+    const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result);
 
 /**
@@ -230,8 +232,9 @@ otcrypto_status_t otcrypto_rsa_verify(
  */
 otcrypto_status_t otcrypto_rsa_encrypt(
     const otcrypto_unblinded_key_t *public_key,
-    const otcrypto_hash_mode_t hash_mode, otcrypto_const_byte_buf_t *message,
-    otcrypto_const_byte_buf_t *label, otcrypto_word32_buf_t *ciphertext);
+    const otcrypto_hash_mode_t hash_mode,
+    const otcrypto_const_byte_buf_t *message,
+    const otcrypto_const_byte_buf_t *label, otcrypto_word32_buf_t *ciphertext);
 
 /**
  * Decrypts a message with RSA.
@@ -266,8 +269,9 @@ otcrypto_status_t otcrypto_rsa_encrypt(
 otcrypto_status_t otcrypto_rsa_decrypt(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_hash_mode_t hash_mode,
-    otcrypto_const_word32_buf_t *ciphertext, otcrypto_const_byte_buf_t *label,
-    otcrypto_byte_buf_t *plaintext, size_t *plaintext_bytelen);
+    const otcrypto_const_word32_buf_t *ciphertext,
+    const otcrypto_const_byte_buf_t *label, otcrypto_byte_buf_t *plaintext,
+    size_t *plaintext_bytelen);
 /**
  * Starts the asynchronous RSA key generation function.
  *
@@ -305,9 +309,9 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
  * @return Result of the RSA key construction.
  */
 otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
-    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t *modulus,
-    otcrypto_const_word32_buf_t *cofactor_share0,
-    otcrypto_const_word32_buf_t *cofactor_share1);
+    otcrypto_rsa_size_t size, const otcrypto_const_word32_buf_t *modulus,
+    const otcrypto_const_word32_buf_t *cofactor_share0,
+    const otcrypto_const_word32_buf_t *cofactor_share1);
 
 /**
  * Finalizes constructing an RSA private key using a cofactor.
@@ -367,7 +371,7 @@ otcrypto_status_t otcrypto_rsa_sign_async_finalize(
  */
 otcrypto_status_t otcrypto_rsa_verify_async_start(
     const otcrypto_unblinded_key_t *public_key,
-    otcrypto_const_word32_buf_t *signature);
+    const otcrypto_const_word32_buf_t *signature);
 
 /**
  * Finalizes the asynchronous signature verification function.
@@ -399,8 +403,9 @@ otcrypto_status_t otcrypto_rsa_verify_async_finalize(
  */
 otcrypto_status_t otcrypto_rsa_encrypt_async_start(
     const otcrypto_unblinded_key_t *public_key,
-    const otcrypto_hash_mode_t hash_mode, otcrypto_const_byte_buf_t *message,
-    otcrypto_const_byte_buf_t *label);
+    const otcrypto_hash_mode_t hash_mode,
+    const otcrypto_const_byte_buf_t *message,
+    const otcrypto_const_byte_buf_t *label);
 
 /**
  * Finalizes the asynchronous encryption function.
@@ -428,7 +433,7 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_finalize(
  */
 otcrypto_status_t otcrypto_rsa_decrypt_async_start(
     const otcrypto_blinded_key_t *private_key,
-    otcrypto_const_word32_buf_t *ciphertext);
+    const otcrypto_const_word32_buf_t *ciphertext);
 
 /**
  * Finalizes the asynchronous decryption function.
@@ -443,8 +448,9 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
  * @return Result of the RSA decryption finalize operation.
  */
 otcrypto_status_t otcrypto_rsa_decrypt_async_finalize(
-    const otcrypto_hash_mode_t hash_mode, otcrypto_const_byte_buf_t *label,
-    otcrypto_byte_buf_t *plaintext, size_t *plaintext_bytelen);
+    const otcrypto_hash_mode_t hash_mode,
+    const otcrypto_const_byte_buf_t *label, otcrypto_byte_buf_t *plaintext,
+    size_t *plaintext_bytelen);
 
 #ifdef __cplusplus
 }  // extern "C"

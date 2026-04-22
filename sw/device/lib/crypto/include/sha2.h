@@ -47,7 +47,7 @@ typedef struct otcrypto_sha2_context {
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_sha2_256(otcrypto_const_byte_buf_t *message,
+otcrypto_status_t otcrypto_sha2_256(const otcrypto_const_byte_buf_t *message,
                                     otcrypto_hash_digest_t *digest);
 
 /**
@@ -62,7 +62,7 @@ otcrypto_status_t otcrypto_sha2_256(otcrypto_const_byte_buf_t *message,
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_sha2_384(otcrypto_const_byte_buf_t *message,
+otcrypto_status_t otcrypto_sha2_384(const otcrypto_const_byte_buf_t *message,
                                     otcrypto_hash_digest_t *digest);
 
 /**
@@ -77,7 +77,7 @@ otcrypto_status_t otcrypto_sha2_384(otcrypto_const_byte_buf_t *message,
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_sha2_512(otcrypto_const_byte_buf_t *message,
+otcrypto_status_t otcrypto_sha2_512(const otcrypto_const_byte_buf_t *message,
                                     otcrypto_hash_digest_t *digest);
 
 /**
@@ -99,8 +99,8 @@ otcrypto_status_t otcrypto_sha2_init(otcrypto_hash_mode_t hash_mode,
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_sha2_update(otcrypto_sha2_context_t *ctx,
-                                       otcrypto_const_byte_buf_t *message);
+otcrypto_status_t otcrypto_sha2_update(
+    otcrypto_sha2_context_t *ctx, const otcrypto_const_byte_buf_t *message);
 
 /**
  * Finish a streaming SHA2 operation.

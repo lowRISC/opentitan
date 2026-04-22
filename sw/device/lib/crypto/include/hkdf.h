@@ -43,8 +43,8 @@ extern "C" {
  * @return Result of the key derivation operation.
  */
 otcrypto_status_t otcrypto_hkdf(const otcrypto_blinded_key_t *ikm,
-                                otcrypto_const_byte_buf_t *salt,
-                                otcrypto_const_byte_buf_t *info,
+                                const otcrypto_const_byte_buf_t *salt,
+                                const otcrypto_const_byte_buf_t *info,
                                 otcrypto_blinded_key_t *okm);
 
 /**
@@ -67,7 +67,7 @@ otcrypto_status_t otcrypto_hkdf(const otcrypto_blinded_key_t *ikm,
  * @return Result of the key derivation operation.
  */
 otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
-                                        otcrypto_const_byte_buf_t *salt,
+                                        const otcrypto_const_byte_buf_t *salt,
                                         otcrypto_blinded_key_t *prk);
 
 /**
@@ -85,7 +85,7 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
  * @return Result of the key derivation operation.
  */
 otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
-                                       otcrypto_const_byte_buf_t *info,
+                                       const otcrypto_const_byte_buf_t *info,
                                        otcrypto_blinded_key_t *okm);
 
 #ifdef __cplusplus

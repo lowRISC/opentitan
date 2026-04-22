@@ -128,7 +128,7 @@ OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p384_verify(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_const_word32_buf_t *signature,
+    const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result);
 
 /**
@@ -252,7 +252,7 @@ OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p384_verify_async_start(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_const_word32_buf_t *signature);
+    const otcrypto_const_word32_buf_t *signature);
 
 /**
  * Finalizes asynchronous signature verification for ECDSA/P-384.
@@ -271,7 +271,7 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify_async_start(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p384_verify_async_finalize(
-    otcrypto_const_word32_buf_t *signature,
+    const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result);
 
 /**
@@ -502,8 +502,8 @@ status_t otcrypto_p384_base_point_mult(
  * @return Result of the sharing operation.
  */
 otcrypto_status_t otcrypto_ecc_p384_arith_share_private_key(
-    otcrypto_const_word32_buf_t *bool_private_key_share0,
-    otcrypto_const_word32_buf_t *bool_private_key_share1,
+    const otcrypto_const_word32_buf_t *bool_private_key_share0,
+    const otcrypto_const_word32_buf_t *bool_private_key_share1,
     otcrypto_blinded_key_t *arith_private_key);
 
 #ifdef __cplusplus
