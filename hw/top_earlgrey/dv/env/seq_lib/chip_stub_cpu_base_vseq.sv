@@ -33,7 +33,7 @@ class chip_stub_cpu_base_vseq extends chip_base_vseq;
       // overridden by the DV_GET_ENUM_PLUSARG macro below if the +select_jtag plusarg was provided.
       chip_jtag_tap_e from_plusarg = select_jtag;
 
-      `DV_GET_ENUM_PLUSARG(chip_common_pkg::chip_jtag_tap_e, from_plusarg, select_jtag)
+      `DV_GET_ENUM_PLUSARG(chip_common_pkg::chip_jtag_tap_e, from_plusarg, "select_jtag")
 
       if (select_jtag != JtagTapNone) begin
         // The select_jtag variable must have been set by the subclass. Check that there hasn't been
