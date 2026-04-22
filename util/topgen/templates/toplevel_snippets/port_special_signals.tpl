@@ -56,6 +56,31 @@
 % endif
 % endfor
 
+% if feature_info["has_alert_handler"]:
+% for name, ah in top["alert_handler_info"].items():
+<% signals = alert_handler_signals(name) %>\
+% if ah["domain"] == domain:
+  % for pd in top["power"]["domains"]:
+<% if pd == domain: continue %>\
+<% pd_len = ah["count_pd"][pd] - 1 %>\
+    % if pd_len >= 0:
+  // Alerts from power domain ${pd}
+  output prim_alert_pkg::alert_rx_t [${pd_len}:0] ${signals[1]}_pd_${pd.lower()}_o,
+  input  prim_alert_pkg::alert_tx_t [${pd_len}:0] ${signals[0]}_pd_${pd.lower()}_i,
+    % endif
+  % endfor
+% else:
+<% pd_len = ah["count_pd"][domain] - 1 %>\
+  % if pd_len >= 0:
+  // Alerts to power domain ${ah["domain"]}
+  input  prim_alert_pkg::alert_rx_t [${pd_len}:0] ${signals[1]}_i,
+  output prim_alert_pkg::alert_tx_t [${pd_len}:0] ${signals[0]}_o,
+  % endif
+% endif
+% endfor
+
+% endif\
+
   // All externally supplied clocks
 % for clk in top['clocks'].typed_clocks().ast_clks:
   input ${clk},
