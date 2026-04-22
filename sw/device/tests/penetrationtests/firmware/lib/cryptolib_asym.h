@@ -81,6 +81,16 @@ enum {
    */
   kPentestP384MaskedPrivateKeyWords =
       kPentestP384MaskedPrivateKeyBytes / sizeof(uint32_t),
+  /**
+   * Bytes in one share of a masked Ed25519 private key (32-byte seed + 8
+   * redundant ECC arithmetic extension bytes).
+   */
+  kPentestEd25519MaskedPrivateKeyBytes = 40,
+  /**
+   * Words in one share of a masked Ed25519 private key.
+   */
+  kPentestEd25519MaskedPrivateKeyWords =
+      kPentestEd25519MaskedPrivateKeyBytes / sizeof(uint32_t),
 };
 
 #endif  // OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_LIB_CRYPTOLIB_ASYM_H_

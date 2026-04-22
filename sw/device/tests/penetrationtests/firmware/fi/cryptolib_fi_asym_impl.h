@@ -107,4 +107,26 @@ status_t cryptolib_fi_p384_verify_impl(
     cryptolib_fi_asym_p384_verify_in_t uj_input,
     cryptolib_fi_asym_p384_verify_out_t *uj_output);
 
+/**
+ * Wrapper to Ed25519 Sign cryptolib implementation.
+ *
+ * @param uj_input An initialized uJSON context.
+ * @param uj_output An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t cryptolib_fi_ed25519_sign_impl(
+    cryptolib_fi_asym_ed25519_sign_in_t uj_input,
+    cryptolib_fi_asym_ed25519_sign_out_t *uj_output);
+
+/**
+ * Wrapper to Ed25519 Verify cryptolib implementation.
+ *
+ * @param uj_input An initialized uJSON context.
+ * @param uj_output An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t cryptolib_fi_ed25519_verify_impl(
+    cryptolib_fi_asym_ed25519_verify_in_t uj_input,
+    cryptolib_fi_asym_ed25519_verify_out_t *uj_output);
+
 #endif  // OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_FI_CRYPTOLIB_FI_ASYM_IMPL_H_
