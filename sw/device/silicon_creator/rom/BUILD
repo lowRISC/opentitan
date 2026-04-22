@@ -16,6 +16,7 @@ load(
     "opentitan_test",
 )
 load("//rules/opentitan:legacy.bzl", "legacy_rom_targets")
+load("//rules:symbols.bzl", "check_elf_symbols_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -237,6 +238,15 @@ opentitan_binary(
         # by tests such as `rom_epmp_test`.
         ":rom_isrs",
     ],
+)
+
+check_elf_symbols_test(
+    name = "mask_rom_symbol_check",
+    forbidden = [
+        "__udivdi3",
+        "__divdi3",
+    ],
+    target = ":mask_rom",
 )
 
 # Create the legacy ROM target names so that existing splicing rules can find
