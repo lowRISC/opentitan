@@ -1059,9 +1059,11 @@ status_t entropy_complex_health_test_config_check(hardened_bool_t fips) {
   // Check health test window
   reg = abs_mmio_read32(kBaseEntropySrc +
                         ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_OFFSET);
-  HARDENED_CHECK_EQ(bitfield_field32_read(
-                        reg, ENTROPY_SRC_HEALTH_TEST_WINDOWS_FIPS_WINDOW_FIELD),
-                    entropy_src_config->fips_test_window_size);
+  if (bitfield_field32_read(
+          reg, ENTROPY_SRC_HEALTH_TEST_WINDOWS_FIPS_WINDOW_FIELD) !=
+      entropy_src_config->fips_test_window_size) {
+    return OTCRYPTO_RECOV_ERR;
+  }
 
   // Check recoverable alerts
   if (abs_mmio_read32(kBaseEntropySrc +
