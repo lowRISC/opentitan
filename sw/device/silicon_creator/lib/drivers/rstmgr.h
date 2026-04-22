@@ -156,6 +156,17 @@ bool rstmgr_is_hw_reset_reason(dt_rstmgr_t dt, uint32_t reasons,
                                dt_instance_id_t inst_id, size_t reset_req);
 
 /**
+ * Check if the AON timer triggered a HW reset request.
+ *
+ * This is potentially more optimized version of rstmgr_is_hw_reset_reason
+ * for the special case of the AON timer, assuming there is a unique rstmgr.
+ *
+ * @param dt Instance of rstmgr.
+ * @param reasons Reset reasons bit field.
+ */
+bool rstmgr_is_hw_reset_reason_aon_timer(uint32_t reasons);
+
+/**
  * Bitfields for `OWNER_SW_CFG_ROM_RSTMGR_INFO_EN" OTP item.
  *
  * Defined here to be able to use in tests.

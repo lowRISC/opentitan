@@ -169,6 +169,21 @@ bool rstmgr_is_hw_reset_reason(dt_rstmgr_t dt, uint32_t reasons,
   return false;
 }
 
+bool rstmgr_is_hw_reset_reason_aon_timer(uint32_t reasons) {
+#ifdef OPENTITAN_IS_EARLGREY
+  // Space optimized version to keep the ROM/ROM_EXT small.
+  // Unfortunately, there is no define in the top headers for this field field.
+  const size_t kRstmgrResetInfoHwReqAonTimer =
+      RSTMGR_RESET_INFO_HW_REQ_OFFSET + 0;
+  return !!(reasons & (1 << kRstmgrResetInfoHwReqAonTimer));
+#else
+  // Generic version working on any top.
+  return rstmgr_is_hw_reset_reason(kDtRstmgrAon, reset_reasons,
+                                   kDtInstanceIdAonTimerAon,
+                                   kDtAonTimerResetReqAonTimer);
+#endif
+}
+
 void rstmgr_reboot(void) {
   rstmgr_reason_clear(1 << kRstmgrReasonPowerOn);
   rstmgr_reset();
