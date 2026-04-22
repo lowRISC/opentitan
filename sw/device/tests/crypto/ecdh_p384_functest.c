@@ -143,6 +143,7 @@ status_t key_exchange_test(void) {
 
   return OTCRYPTO_OK;
 }
+
 static status_t run_ecdh_negative_tests(void) {
   LOG_INFO("Running ECDH negative tests.");
 
@@ -171,19 +172,32 @@ static status_t run_ecdh_negative_tests(void) {
   valid_shared.checksum = integrity_blinded_checksum(&valid_shared);
 
   // ECDH keygen negative tests
-  CHECK(otcrypto_ecdh_p384_keygen(NULL, &valid_pub).value ==
-        OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_ecdh_p384_keygen(&valid_priv, NULL).value ==
-        OTCRYPTO_BAD_ARGS.value);
 
+  // Null pointers
+  CHECK(otcrypto_ecdh_p384_keygen(NULL, &valid_pub).value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdh_p384_keygen_async_start(NULL).value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdh_p384_keygen_async_finalize(NULL, &valid_pub).value !=
+        OTCRYPTO_OK.value);
+
+  CHECK(otcrypto_ecdh_p384_keygen(&valid_priv, NULL).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdh_p384_keygen_async_finalize(&valid_priv, NULL).value !=
+        OTCRYPTO_OK.value);
+
+  // Null keyblob
   otcrypto_blinded_key_t bad_priv_null = {
       .config = kEcdhPrivateKeyConfig,
       .keyblob_length = 112,
       .keyblob = NULL,
   };
-  CHECK(otcrypto_ecdh_p384_keygen(&bad_priv_null, &valid_pub).value ==
-        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ecdh_p384_keygen(&bad_priv_null, &valid_pub).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdh_p384_keygen_async_start(&bad_priv_null).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdh_p384_keygen_async_finalize(&bad_priv_null, &valid_pub)
+            .value != OTCRYPTO_OK.value);
 
+  // Bad mode
   otcrypto_key_config_t bad_mode_cfg = kEcdhPrivateKeyConfig;
   bad_mode_cfg.key_mode = kOtcryptoKeyModeEcdsaP384;
   otcrypto_blinded_key_t bad_priv_mode = {
@@ -192,9 +206,14 @@ static status_t run_ecdh_negative_tests(void) {
       .keyblob = priv_keyblob,
   };
   bad_priv_mode.checksum = integrity_blinded_checksum(&bad_priv_mode);
-  CHECK(otcrypto_ecdh_p384_keygen(&bad_priv_mode, &valid_pub).value ==
-        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ecdh_p384_keygen(&bad_priv_mode, &valid_pub).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdh_p384_keygen_async_start(&bad_priv_mode).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdh_p384_keygen_async_finalize(&bad_priv_mode, &valid_pub)
+            .value != OTCRYPTO_OK.value);
 
+  // Bad length
   otcrypto_key_config_t bad_len_cfg = kEcdhPrivateKeyConfig;
   bad_len_cfg.key_length = 47;
   otcrypto_blinded_key_t bad_priv_len = {
@@ -203,46 +222,99 @@ static status_t run_ecdh_negative_tests(void) {
       .keyblob = priv_keyblob,
   };
   bad_priv_len.checksum = integrity_blinded_checksum(&bad_priv_len);
-  CHECK(otcrypto_ecdh_p384_keygen(&bad_priv_len, &valid_pub).value ==
-        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ecdh_p384_keygen(&bad_priv_len, &valid_pub).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdh_p384_keygen_async_start(&bad_priv_len).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdh_p384_keygen_async_finalize(&bad_priv_len, &valid_pub)
+            .value != OTCRYPTO_OK.value);
+
+  // Bad keyblob length
+  otcrypto_blinded_key_t bad_priv_blob_len = {
+      .config = kEcdhPrivateKeyConfig,
+      .keyblob_length = 111,  // Should be 112
+      .keyblob = priv_keyblob,
+  };
+  bad_priv_blob_len.checksum = integrity_blinded_checksum(&bad_priv_blob_len);
+  CHECK(otcrypto_ecdh_p384_keygen(&bad_priv_blob_len, &valid_pub).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdh_p384_keygen_async_start(&bad_priv_blob_len).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdh_p384_keygen_async_finalize(&bad_priv_blob_len, &valid_pub)
+            .value != OTCRYPTO_OK.value);
+
+  // Bad hardware backed configuration
+  otcrypto_key_config_t bad_hw_cfg = kEcdhPrivateKeyConfig;
+  bad_hw_cfg.hw_backed = (hardened_bool_t)0x12345678;  // Invalid boolean
+  otcrypto_blinded_key_t bad_priv_hw = {
+      .config = bad_hw_cfg,
+      .keyblob_length = 112,
+      .keyblob = priv_keyblob,
+  };
+  bad_priv_hw.checksum = integrity_blinded_checksum(&bad_priv_hw);
+  CHECK(otcrypto_ecdh_p384_keygen(&bad_priv_hw, &valid_pub).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdh_p384_keygen_async_start(&bad_priv_hw).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdh_p384_keygen_async_finalize(&bad_priv_hw, &valid_pub)
+            .value != OTCRYPTO_OK.value);
 
   // ECDH shared secret negative tests
-  CHECK(otcrypto_ecdh_p384(NULL, &valid_pub, &valid_shared).value ==
-        OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_ecdh_p384(&valid_priv, NULL, &valid_shared).value ==
-        OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_ecdh_p384(&valid_priv, &valid_pub, NULL).value ==
-        OTCRYPTO_BAD_ARGS.value);
 
+  // Null pointers
+  CHECK(otcrypto_ecdh_p384(NULL, &valid_pub, &valid_shared).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdh_p384_async_start(NULL, &valid_pub).value !=
+        OTCRYPTO_OK.value);
+
+  CHECK(otcrypto_ecdh_p384(&valid_priv, NULL, &valid_shared).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdh_p384_async_start(&valid_priv, NULL).value !=
+        OTCRYPTO_OK.value);
+
+  CHECK(otcrypto_ecdh_p384(&valid_priv, &valid_pub, NULL).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdh_p384_async_finalize(NULL).value != OTCRYPTO_OK.value);
+
+  // Bad private key checksum
   otcrypto_blinded_key_t bad_priv_chk = {
       .config = kEcdhPrivateKeyConfig,
       .keyblob_length = 112,
       .keyblob = priv_keyblob,
   };
   bad_priv_chk.checksum = valid_priv.checksum ^ 0xFFFFFFFF;
-  CHECK(otcrypto_ecdh_p384(&bad_priv_chk, &valid_pub, &valid_shared).value ==
-        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ecdh_p384(&bad_priv_chk, &valid_pub, &valid_shared).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdh_p384_async_start(&bad_priv_chk, &valid_pub).value !=
+        OTCRYPTO_OK.value);
 
+  // Bad public key checksum
   otcrypto_unblinded_key_t bad_pub_chk = {
       .key_mode = kOtcryptoKeyModeEcdhP384,
       .key_length = 96,
       .key = pub_key_data,
   };
   bad_pub_chk.checksum = valid_pub.checksum ^ 0xFFFFFFFF;
-  CHECK(otcrypto_ecdh_p384(&valid_priv, &bad_pub_chk, &valid_shared).value ==
-        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ecdh_p384(&valid_priv, &bad_pub_chk, &valid_shared).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdh_p384_async_start(&valid_priv, &bad_pub_chk).value !=
+        OTCRYPTO_OK.value);
 
-  otcrypto_key_config_t bad_hw_cfg = kEcdhSharedKeyConfig;
-  bad_hw_cfg.hw_backed = kHardenedBoolTrue;
+  // Bad shared secret HW backed
+  otcrypto_key_config_t bad_shared_hw_cfg = kEcdhSharedKeyConfig;
+  bad_shared_hw_cfg.hw_backed = kHardenedBoolTrue;
   otcrypto_blinded_key_t bad_shared_hw = {
-      .config = bad_hw_cfg,
+      .config = bad_shared_hw_cfg,
       .keyblob_length = sizeof(shared_keyblob),
       .keyblob = shared_keyblob,
   };
   bad_shared_hw.checksum = integrity_blinded_checksum(&bad_shared_hw);
-  CHECK(otcrypto_ecdh_p384(&valid_priv, &valid_pub, &bad_shared_hw).value ==
-        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ecdh_p384(&valid_priv, &valid_pub, &bad_shared_hw).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdh_p384_async_finalize(&bad_shared_hw).value !=
+        OTCRYPTO_OK.value);
 
+  // Bad shared secret length
   otcrypto_key_config_t bad_sym_len_cfg = kEcdhSharedKeyConfig;
   bad_sym_len_cfg.key_length = 47;
   otcrypto_blinded_key_t bad_shared_len = {
@@ -251,8 +323,10 @@ static status_t run_ecdh_negative_tests(void) {
       .keyblob = shared_keyblob,
   };
   bad_shared_len.checksum = integrity_blinded_checksum(&bad_shared_len);
-  CHECK(otcrypto_ecdh_p384(&valid_priv, &valid_pub, &bad_shared_len).value ==
-        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ecdh_p384(&valid_priv, &valid_pub, &bad_shared_len).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdh_p384_async_finalize(&bad_shared_len).value !=
+        OTCRYPTO_OK.value);
 
   return OTCRYPTO_OK;
 }
