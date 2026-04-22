@@ -519,8 +519,10 @@ status_t hmac_hmac_sha256_redundant(const hmac_key_t *key,
   uint32_t ipad[kHmacSha256BlockWords];
   memset(opad, 0x5c5c5c5c, kHmacSha256BlockBytes);
   memset(ipad, 0x36363636, kHmacSha256BlockBytes);
-  TRY(hardened_xor(key->key_block, opad, kHmacSha256BlockWords, o_key_pad));
-  TRY(hardened_xor(key->key_block, ipad, kHmacSha256BlockWords, i_key_pad));
+  HARDENED_TRY(
+      hardened_xor(key->key_block, opad, kHmacSha256BlockWords, o_key_pad));
+  HARDENED_TRY(
+      hardened_xor(key->key_block, ipad, kHmacSha256BlockWords, i_key_pad));
 
   // h_i_key_pad_msg = H(i_key_pad || m).
   hmac_ctx_t ctx;
