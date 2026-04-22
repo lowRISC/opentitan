@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/ecc_curve25519.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
 #include "sw/device/lib/crypto/include/ecc_p384.h"
 #include "sw/device/lib/crypto/include/integrity.h"
@@ -759,6 +760,83 @@ status_t cryptolib_sca_p384_sign_impl(
 
   memcpy(uj_output->pubx, out_pub_x, P384_CMD_BYTES);
   memcpy(uj_output->puby, out_pub_y, P384_CMD_BYTES);
+
+  return OK_STATUS();
+}
+
+status_t cryptolib_sca_ed25519_sign_impl(
+    cryptolib_sca_asym_ed25519_sign_in_t uj_input,
+    cryptolib_sca_asym_ed25519_sign_out_t *uj_output) {
+  // Set up the private key with the input scalar as seed (share0 = scalar,
+  // share1 = 0). Each share is kPentestEd25519MaskedPrivateKeyWords wide
+  // (seed bytes + 8 redundant ECC arithmetic extension bytes).
+  uint32_t private_keyblob[kPentestEd25519MaskedPrivateKeyWords * 2];
+  memset(private_keyblob, 0, sizeof(private_keyblob));
+  memcpy(private_keyblob, uj_input.scalar, ED25519_CMD_SCALAR_BYTES);
+  otcrypto_blinded_key_t private_key = {
+      .config =
+          {
+              .version = kOtcryptoLibVersion1,
+              .key_mode = kOtcryptoKeyModeEd25519,
+              .key_length = ED25519_CMD_SCALAR_BYTES,
+              .hw_backed = kHardenedBoolFalse,
+              .exportable = kHardenedBoolFalse,
+              .security_level = kOtcryptoKeySecurityLevelLow,
+          },
+      .keyblob_length = sizeof(private_keyblob),
+      .keyblob = private_keyblob,
+  };
+  private_key.checksum = integrity_blinded_checksum(&private_key);
+
+  // Derive the public key (required by sign_verify).
+  uint32_t public_key_data[ED25519_CMD_SCALAR_BYTES / sizeof(uint32_t)];
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeEd25519,
+      .key_length = ED25519_CMD_SCALAR_BYTES,
+      .key = public_key_data,
+  };
+
+  // Trigger window 0: Keygen.
+  if (uj_input.trigger == 0) {
+    pentest_set_trigger_high();
+  }
+  TRY(otcrypto_ed25519_public_key_from_private(&private_key, &public_key));
+  if (uj_input.trigger == 0) {
+    pentest_set_trigger_low();
+  }
+
+  // Set up the input message.
+  otcrypto_const_byte_buf_t input_message = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, uj_input.message, uj_input.message_len);
+
+  // Set up the signature buffer.
+  uint32_t signature_data[ED25519_CMD_SIG_BYTES / sizeof(uint32_t)];
+  otcrypto_word32_buf_t signature =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, signature_data,
+                        ED25519_CMD_SIG_BYTES / sizeof(uint32_t));
+
+  // Trigger window 1: Sign-and-verify.
+  if (uj_input.trigger == 1) {
+    pentest_set_trigger_high();
+  }
+  TRY(otcrypto_ed25519_sign_verify(&private_key, &public_key, &input_message,
+                                   kOtcryptoEddsaSignModeEddsa, &signature));
+  if (uj_input.trigger == 1) {
+    pentest_set_trigger_low();
+  }
+
+  // Return signature: R component (first 32 bytes) in r, S (next 32) in s.
+  uj_output->cfg = 0;
+  memset(uj_output->r, 0, ED25519_CMD_SIG_BYTES);
+  memset(uj_output->s, 0, ED25519_CMD_SIG_BYTES);
+  memcpy(uj_output->r, (uint8_t *)signature_data, ED25519_CMD_SIG_BYTES / 2);
+  memcpy(uj_output->s, (uint8_t *)signature_data + ED25519_CMD_SIG_BYTES / 2,
+         ED25519_CMD_SIG_BYTES / 2);
+
+  // Return the derived public key in pubx; puby is unused for Ed25519.
+  memset(uj_output->pubx, 0, ED25519_CMD_SCALAR_BYTES);
+  memset(uj_output->puby, 0, ED25519_CMD_SCALAR_BYTES);
+  memcpy(uj_output->pubx, public_key_data, ED25519_CMD_SCALAR_BYTES);
 
   return OK_STATUS();
 }
