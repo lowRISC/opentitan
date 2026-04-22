@@ -41,6 +41,11 @@ typedef struct dice_chain {
   dice_page_t page;
 
   /**
+   * Personalization blob version used in the current `page`.
+   */
+  perso_blob_version_t blob_version;
+
+  /**
    * Indicate whether `page` needs to be written back to flash.
    */
   hardened_bool_t data_dirty;
@@ -159,8 +164,9 @@ static rom_error_t dice_chain_load_cert_obj(const char *name,
                                             size_t name_size) {
   rom_error_t err =
       perso_tlv_get_cert_obj(dice_chain_get_tail_buffer(),
-                             dice_chain_get_tail_size(), &dice_chain.cert_obj);
-
+                             dice_chain_get_tail_size(),
+                             dice_chain.blob_version,
+                             &dice_chain.cert_obj);
   if (err != kErrorOk) {
     // Cleanup the stale value if error.
     dice_chain_reset_cert_obj();
@@ -228,6 +234,13 @@ static rom_error_t dice_chain_load_flash(
   dice_chain.info_page = info_page;
   dice_chain_reset_cert_obj();
 
+  // Detect the version of the blob stored in flash.
+  size_t offset = 0;
+  RETURN_IF_ERROR(perso_tlv_get_blob_version(
+      dice_chain.page.data, sizeof(dice_chain.page.data),
+      &dice_chain.blob_version, &offset));
+  dice_chain.tail_offset = offset;
+
   return kErrorOk;
 }
 
@@ -259,12 +272,14 @@ static rom_error_t dice_chain_push_cert(const char *name, const uint8_t *cert,
       kDiceCertFormat == kDiceCertFormatX509TcbInfo ? kPersoObjectTypeX509Cert
                                                     : kPersoObjectTypeCwtCert;
   RETURN_IF_ERROR(perso_tlv_cert_obj_build(name, cert_type, cert, cert_size,
+                                           dice_chain.blob_version,
                                            dice_chain_get_tail_buffer(),
                                            &cert_page_left));
 
   // Move the offset to the new tail.
   RETURN_IF_ERROR(perso_tlv_get_cert_obj(dice_chain_get_tail_buffer(),
                                          dice_chain_get_tail_size(),
+                                         dice_chain.blob_version,
                                          &dice_chain.cert_obj));
   dice_chain_next_cert_obj();
   return kErrorOk;
