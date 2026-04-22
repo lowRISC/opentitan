@@ -204,6 +204,27 @@ __attribute__((noinline)) static uint32_t run_mod_reduce_test_multi(
   return cycles;
 }
 
+__attribute__((noinline)) static uint32_t run_memeq_test(const uint32_t *a_val,
+                                                         const uint32_t *b_val,
+                                                         size_t word_len,
+                                                         hardened_bool_t *res) {
+  uint64_t start_cycles = profile_start();
+  *res = hardened_memeq(a_val, b_val, word_len);
+  uint32_t cycles = profile_end(start_cycles);
+
+  return cycles;
+}
+
+__attribute__((noinline)) static uint32_t run_memeq_byte_test(
+    const void *a_val, const void *b_val, size_t byte_len,
+    hardened_bool_t *res) {
+  uint64_t start_cycles = profile_start();
+  *res = consttime_memeq_byte(a_val, b_val, byte_len);
+  uint32_t cycles = profile_end(start_cycles);
+
+  return cycles;
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
@@ -426,6 +447,72 @@ bool test_main(void) {
   CHECK(cycles_1 == cycles_2,
         "hardened_mod_reduce (multi-word) is not constant-time");
   CHECK(res_multi_1[0] == 0x1, "hardened_mod_reduce multi correctness failed");
+
+  LOG_INFO("Testing hardened_memeq");
+  uint32_t memeq_a[MULTI_WORD_TEST_SIZE] = {0x11111111, 0x22222222, 0x33333333,
+                                            0x44444444};
+  uint32_t memeq_match[MULTI_WORD_TEST_SIZE] = {0x11111111, 0x22222222,
+                                                0x33333333, 0x44444444};
+
+  // Mismatch at the first word
+  uint32_t memeq_mismatch_1[MULTI_WORD_TEST_SIZE] = {0x00000000, 0x22222222,
+                                                     0x33333333, 0x44444444};
+  // Mismatch at the last word
+  uint32_t memeq_mismatch_2[MULTI_WORD_TEST_SIZE] = {0x11111111, 0x22222222,
+                                                     0x33333333, 0x00000000};
+
+  hardened_bool_t memeq_res_match, memeq_res_mismatch_1, memeq_res_mismatch_2;
+
+  // Time the mismatched cases
+  cycles_1 = run_memeq_test(memeq_a, memeq_mismatch_1, MULTI_WORD_TEST_SIZE,
+                            &memeq_res_mismatch_1);
+  cycles_2 = run_memeq_test(memeq_a, memeq_mismatch_2, MULTI_WORD_TEST_SIZE,
+                            &memeq_res_mismatch_2);
+
+  // Run the positive case
+  memeq_res_match = hardened_memeq(memeq_a, memeq_match, MULTI_WORD_TEST_SIZE);
+
+  CHECK(cycles_1 == cycles_2,
+        "hardened_memeq is not constant-time across different mismatch "
+        "locations");
+  CHECK(memeq_res_match == kHardenedBoolTrue,
+        "hardened_memeq positive test failed");
+  CHECK(memeq_res_mismatch_1 == kHardenedBoolFalse,
+        "hardened_memeq negative test 1 failed (idx 0)");
+  CHECK(memeq_res_mismatch_2 == kHardenedBoolFalse,
+        "hardened_memeq negative test 2 failed (idx 3)");
+
+  LOG_INFO("Testing consttime_memeq_byte");
+  uint8_t byteeq_a[MULTI_WORD_TEST_SIZE] = {0xAA, 0xBB, 0xCC, 0xDD};
+  uint8_t byteeq_match[MULTI_WORD_TEST_SIZE] = {0xAA, 0xBB, 0xCC, 0xDD};
+
+  // Mismatch at the first byte
+  uint8_t byteeq_mismatch_1[MULTI_WORD_TEST_SIZE] = {0x00, 0xBB, 0xCC, 0xDD};
+  // Mismatch at the last byte
+  uint8_t byteeq_mismatch_2[MULTI_WORD_TEST_SIZE] = {0xAA, 0xBB, 0xCC, 0x00};
+
+  hardened_bool_t byteeq_res_match, byteeq_res_mismatch_1,
+      byteeq_res_mismatch_2;
+
+  // Time the mismatched cases
+  cycles_1 = run_memeq_byte_test(byteeq_a, byteeq_mismatch_1,
+                                 MULTI_WORD_TEST_SIZE, &byteeq_res_mismatch_1);
+  cycles_2 = run_memeq_byte_test(byteeq_a, byteeq_mismatch_2,
+                                 MULTI_WORD_TEST_SIZE, &byteeq_res_mismatch_2);
+
+  // Run the positive case
+  byteeq_res_match =
+      consttime_memeq_byte(byteeq_a, byteeq_match, MULTI_WORD_TEST_SIZE);
+
+  CHECK(cycles_1 == cycles_2,
+        "consttime_memeq_byte is not constant-time across different mismatch "
+        "locations");
+  CHECK(byteeq_res_match == kHardenedBoolTrue,
+        "consttime_memeq_byte positive test failed");
+  CHECK(byteeq_res_mismatch_1 == kHardenedBoolFalse,
+        "consttime_memeq_byte negative test 1 failed (idx 0)");
+  CHECK(byteeq_res_mismatch_2 == kHardenedBoolFalse,
+        "consttime_memeq_byte negative test 2 failed (idx 3)");
 
   return true;
 }
