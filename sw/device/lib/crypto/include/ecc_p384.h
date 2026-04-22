@@ -462,7 +462,7 @@ otcrypto_status_t otcrypto_ecc_p384_public_key_export(
  * checked.
  * @return Result of the point valid check operation.
  */
-otcrypto_status_t otcrypto_p384_point_on_curve(
+otcrypto_status_t otcrypto_ecc_p384_point_on_curve(
     const otcrypto_unblinded_key_t *point, hardened_bool_t *check_result);
 
 /**
@@ -475,7 +475,7 @@ otcrypto_status_t otcrypto_p384_point_on_curve(
  * @param public_key The resulting public key of the base point multiplication.
  * @return Result of the base point multiplication.
  */
-status_t otcrypto_p384_base_point_mult(
+status_t otcrypto_ecc_p384_base_point_mult(
     const otcrypto_blinded_key_t *private_key,
     otcrypto_unblinded_key_t *public_key);
 

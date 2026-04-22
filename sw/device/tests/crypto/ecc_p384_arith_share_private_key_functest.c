@@ -113,8 +113,8 @@ status_t arith_share_private_key_test(void) {
   };
 
   LOG_INFO("Calculating the public key...");
-  CHECK_STATUS_OK(
-      otcrypto_p384_base_point_mult(&arith_shared_private_key, &public_key));
+  CHECK_STATUS_OK(otcrypto_ecc_p384_base_point_mult(&arith_shared_private_key,
+                                                    &public_key));
 
   // Part 3: Sign a message with the arithmetically shared key.
 
