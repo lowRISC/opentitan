@@ -6,6 +6,7 @@
 
 .globl decode_t0
 .globl decode_w1
+.globl encode_z
 
 .text
 
@@ -206,5 +207,99 @@ _simple_bit_unpack_w1:
   bn.sid x7++, 192(x3)
   bn.sid x7++, 224(x3)
   addi x3, x3, 256
+
+  ret
+
+/**
+ * Encode a Z polynomial into a dense representation.
+ *
+ * A Z polynomial consists of 256 20-bit coefficients in the range
+ * ]-GAMMA1, GAMMA1] for GAMMA1 = 2^19 hence its encoded representation has a
+ * size of 256 * 20 = 5120 bits of 640 bytes. This routine is a part of the
+ * `sigEncode` function (Algorithm 26) of FIPS-204.
+ *
+ * @param[in] x2: DMEM location of the decoded Z polynomial.
+ * @param[in] x3: DMEM location of the encoded Z polynomial.
+ */
+encode_z:
+  /* Push clobbered registers onto the stack. */
+  .irp reg, x2, x3, x4
+    sw \reg, 0(x31)
+    addi x31, x31, 4
+  .endr
+
+  /* w5 = 2^GAMMA1 = 2^19. */
+  bn.not w5, w31
+  bn.shv.8s w5, w5 >> 31
+  bn.shv.8s w5, w5 << 19
+
+  /* Since LCM(20, 256) = 1280 = 5 * 256, we can store densely encoded 64
+     coefficients in 5 WDRs. Hence in each iteration, we load 64 coefficients
+     into w6-w13 before bit packing them.*/
+  loopi 4, 11
+    addi x4, x0, 6
+    bn.lid x4++, 0(x2)
+    bn.lid x4++, 32(x2)
+    bn.lid x4++, 64(x2)
+    bn.lid x4++, 96(x2)
+    bn.lid x4++, 128(x2)
+    bn.lid x4++, 160(x2)
+    bn.lid x4++, 192(x2)
+    bn.lid x4++, 224(x2)
+
+    jal x1, _bit_pack_z
+
+    addi x2, x2, 256
+    /* End of loop */
+
+  /* Restore clobbered general-purpose registers. */
+  .irp reg, x4, x3, x2
+    addi x31, x31, -4
+    lw \reg, 0(x31)
+  .endr
+
+  ret
+
+/*
+ * Bit pack 64 coefficients in w6-w13 into a dense representation before
+ * storing them into DMEM. This routine is akin to the `BitPack` function
+ * (Algorithm 17) of FIPS-204.
+ */
+_bit_pack_z:
+  /* In each iteration densely pack 8 coefficients into w0-w4. */
+  loopi 8, 16
+
+    /* Calculate GAMMA1 - x mod Q to center the coefficients. */
+    bn.subvm.8s w6, w5, w6
+
+    loopi 8, 13
+      /* Shift in one 20-bit coefficient into w0-w4. */
+      bn.rshi w0, w1, w0 >> 20
+      bn.rshi w1, w2, w1 >> 20
+      bn.rshi w2, w3, w2 >> 20
+      bn.rshi w3, w4, w3 >> 20
+      bn.rshi w4, w6, w4 >> 20
+
+      /* Shift out the processed coefficient from w6-w13. */
+      bn.rshi  w6,  w7,  w6 >> 32
+      bn.rshi  w7,  w8,  w7 >> 32
+      bn.rshi  w8,  w9,  w8 >> 32
+      bn.rshi  w9, w10,  w9 >> 32
+      bn.rshi w10, w11, w10 >> 32
+      bn.rshi w11, w12, w11 >> 32
+      bn.rshi w12, w13, w12 >> 32
+      bn.rshi w13, w31, w13 >> 32
+      /* End of loop */
+    nop
+    /* End of loop */
+
+  /* Store the bit-packed coefficients to DMEM. */
+  addi x4, x0, 0
+  bn.sid x4++, 0(x3)
+  bn.sid x4++, 32(x3)
+  bn.sid x4++, 64(x3)
+  bn.sid x4++, 96(x3)
+  bn.sid x4++, 128(x3)
+  addi x3, x3, 160
 
   ret
