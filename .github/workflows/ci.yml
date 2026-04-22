@@ -34,7 +34,7 @@ jobs:
     name: Lint (quick)
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0 # Required so we can lint commit messages.
       - name: Prepare environment
@@ -87,7 +87,7 @@ jobs:
     needs: quick_lint
     if: ${{ github.event_name != 'merge_group' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0 # Bitstream cache requires all commits.
       - name: Prepare environment
@@ -146,7 +146,7 @@ jobs:
     env:
       BUCKET: gold-hybrid-255313-prod
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0 # Bitstream cache requires all commits.
       - name: Prepare environment
@@ -193,7 +193,7 @@ jobs:
     needs: quick_lint
     if: ${{ github.event_name != 'merge_group' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0 # Bitstream cache requires all commits.
       - name: Prepare environment
@@ -223,7 +223,7 @@ jobs:
       verible_config: hw/lint/tools/veriblelint/lowrisc-styleguide.rules.verible_lint
       verible_version: v0.0-3430-g060bde0f
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Prepare Verible config
         run: |
           echo "Concatenating Verible waivers"
@@ -253,7 +253,7 @@ jobs:
     if: ${{ github.event_name != 'merge_group' }}
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0 # Bitstream cache requires all commits.
       - name: Prepare environment
@@ -287,7 +287,7 @@ jobs:
     if: ${{ github.event_name != 'merge_group' }}
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0 # Bitstream cache requires all commits.
       - name: Prepare environment
@@ -303,7 +303,7 @@ jobs:
     needs: quick_lint
     if: ${{ github.event_name != 'merge_group' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
         with:
@@ -335,7 +335,7 @@ jobs:
     if: ${{ github.event_name != 'merge_group' }}
     timeout-minutes: 240
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
         with:
@@ -355,7 +355,7 @@ jobs:
     needs: quick_lint
     if: ${{ github.event_name != 'merge_group' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
         with:
@@ -435,7 +435,7 @@ jobs:
         run: |
           echo ":information_source: Bitstream caching is skipped for this pull request job" \
             >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         if: ${{ github.event_name != 'pull_request' }}
       - name: Prepare environment
         if: ${{ github.event_name != 'pull_request' }}
@@ -644,7 +644,7 @@ jobs:
       - execute_manuf_fpga_tests_cw340
     if: success() || failure()
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Download target pattern files
         uses: actions/download-artifact@v4
         with:
@@ -692,7 +692,7 @@ jobs:
     needs: quick_lint
     if: ${{ github.event_name != 'merge_group' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Build Developer Utility Container
         uses: docker/build-push-action@v6
         env:
@@ -709,7 +709,7 @@ jobs:
     needs: quick_lint
     if: ${{ github.event_name != 'merge_group' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0 # Required for bitstream cache to work.
       - name: Prepare environment
@@ -781,7 +781,7 @@ jobs:
     needs: quick_lint
     if: ${{ github.event_name != 'merge_group' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0 # Required for bitstream cache to work.
       - name: Prepare environment
@@ -808,7 +808,7 @@ jobs:
     needs: quick_lint
     if: ${{ github.event_name != 'merge_group' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Prepare environment
@@ -825,7 +825,7 @@ jobs:
     needs: quick_lint
     if: ${{ github.event_name != 'merge_group' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           path: opentitan
@@ -834,7 +834,7 @@ jobs:
         with:
           service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
           working-directory: opentitan
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           repository: lowRISC/qemu
           ref: v9.2.0-2025-02-11

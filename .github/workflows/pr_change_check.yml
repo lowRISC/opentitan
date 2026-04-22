@@ -16,10 +16,10 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - name: Checkout the default branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Checkout the target branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.event.pull_request.base.ref }}
           path: "target-branch"
