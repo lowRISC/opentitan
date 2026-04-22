@@ -25,6 +25,7 @@ unit_tests = [
     "mldsa87_sign_expand_mask_test",
     "mldsa87_sign_decode_t0_test",
     "mldsa87_sign_decode_w1_test",
+    "mldsa87_sign_encode_z_test",
 ]
 
 [
