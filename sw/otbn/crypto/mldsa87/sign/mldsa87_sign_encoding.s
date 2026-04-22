@@ -5,6 +5,7 @@
 /* Polynomial encoding/decoding routines for ML-DSA-87 sign. */
 
 .globl decode_t0
+.globl decode_w1
 
 .text
 
@@ -130,5 +131,80 @@ _bit_unpack_t0:
   bn.sid x20++, 64(x3)
   bn.sid x20++, 96(x3)
   addi x3, x3, 128
+
+  ret
+
+/**
+ * Decode a W1 polynomial to the canonical representation.
+ *
+ * The W1 polynomials are the high bits (after decomposition) of the commitment
+ * polynomials W. Each coefficient of W1 is 4 bits, hence an encoded polynomial
+ * consists of 4 * 256 = 1024 bits or 128 bytes.
+ *
+ * This routine is not part of the FIPS-204 specification but it helps us
+ * reduce the DMEM footprint by keeping the W1 polynomials in encoded form
+ * throughout the sign procedure. It is the inverse of the `w1Encode` function
+ * (Algorithm 28) in FIPS-204.
+ *
+ * @param[in] x2: DMEM location of the encoded W1 polynomial.
+ * @param[in] x3: DMEM location of the decoded W1 polynomial.
+ */
+decode_w1:
+  /* Push clobbered registers onto the stack. */
+  .irp reg, x2, x3, x4, x5, x6, x7
+    sw \reg, 0(x31)
+    addi x31, x31, 4
+  .endr
+
+  /* WDR pointer. */
+  addi x4, x0, 8
+
+  /* The encoded polynomial W1 fits into 4 WDRs containing 64 coefficients each,
+     thus decode it in 4 iterations. */
+  loopi 4, 3
+    bn.lid x4, 0(x2++)
+    jal x1, _simple_bit_unpack_w1
+    nop
+    /* End of loop */
+
+  /* Restore clobbered general-purpose registers. */
+  .irp reg, x7, x6, x5, x4, x3, x2
+    addi x31, x31, -4
+    lw \reg, 0(x31)
+  .endr
+
+  ret
+
+/*
+ * Decode 64 4-bit coefficients in a single WDR w8. This subroutine is akin to
+ * the `SimpleBitUnpack` function (Algorithm 18) of FIPS-204.
+ */
+_simple_bit_unpack_w1:
+  /* WDR pointers for intermediate results. */
+  addi x5, x0, 0
+  addi x6, x0, 9
+
+  /* Decode 64 4-bit to 64 32-bit coefficients in w0-w7. */
+  loopi 8, 5
+    loopi 8, 3
+      /* Shift out the least significant bits into a 32-bit slot in w9. */
+      bn.rshi w9, w8, w9 >> 4
+      bn.rshi w9, w31, w9 >> 28
+      bn.rshi w8, w31, w8 >> 4
+      /* End of loop */
+    bn.movr x5++, x6
+    /* End of loop */
+
+  /* Store the decoded 64 32-bit coefficients into DMEM. */
+  addi x7, x0, 0
+  bn.sid x7++, 0(x3)
+  bn.sid x7++, 32(x3)
+  bn.sid x7++, 64(x3)
+  bn.sid x7++, 96(x3)
+  bn.sid x7++, 128(x3)
+  bn.sid x7++, 160(x3)
+  bn.sid x7++, 192(x3)
+  bn.sid x7++, 224(x3)
+  addi x3, x3, 256
 
   ret
