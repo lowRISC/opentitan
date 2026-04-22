@@ -18,7 +18,8 @@
 #define MODULE_ID MAKE_MODULE_ID('k', 't', 'r')
 
 otcrypto_status_t otcrypto_symmetric_keygen(
-    otcrypto_const_byte_buf_t *perso_string, otcrypto_blinded_key_t *key) {
+    const otcrypto_const_byte_buf_t *perso_string,
+    otcrypto_blinded_key_t *key) {
   if (key == NULL || key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -243,10 +244,10 @@ otcrypto_status_t otcrypto_key_wrap(const otcrypto_blinded_key_t *key_to_wrap,
       aes_kwp_wrap(kek, plaintext, sizeof(plaintext), wrapped_key->data));
 }
 
-otcrypto_status_t otcrypto_key_unwrap(otcrypto_const_word32_buf_t *wrapped_key,
-                                      const otcrypto_blinded_key_t *key_kek,
-                                      hardened_bool_t *success,
-                                      otcrypto_blinded_key_t *unwrapped_key) {
+otcrypto_status_t otcrypto_key_unwrap(
+    const otcrypto_const_word32_buf_t *wrapped_key,
+    const otcrypto_blinded_key_t *key_kek, hardened_bool_t *success,
+    otcrypto_blinded_key_t *unwrapped_key) {
   *success = kHardenedBoolFalse;
 
   if (wrapped_key->data == NULL || key_kek == NULL ||

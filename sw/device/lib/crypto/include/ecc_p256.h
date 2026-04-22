@@ -51,7 +51,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_keygen(
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p256_dice_keygen(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key,
-    otcrypto_const_word32_buf_t *attestation_seed);
+    const otcrypto_const_word32_buf_t *attestation_seed);
 
 /**
  * Generates an ECDSA signature with curve P-256.
@@ -144,7 +144,7 @@ OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p256_verify(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_const_word32_buf_t *signature,
+    const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result);
 
 /**
@@ -221,7 +221,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_finalize(
  */
 otcrypto_status_t otcrypto_ecdsa_p256_dice_keygen_async_start(
     const otcrypto_blinded_key_t *private_key,
-    otcrypto_const_word32_buf_t *attestation_seed);
+    const otcrypto_const_word32_buf_t *attestation_seed);
 
 /**
  * Finalizes asynchronous key generation for P-256 with the CDI key.
@@ -308,7 +308,7 @@ OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p256_dice_sign_async_start(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_const_word32_buf_t *attestation_seed);
+    const otcrypto_const_word32_buf_t *attestation_seed);
 
 /**
  * Finalizes asynchronous signature generation for ECDSA/P-256 with the CDI key.
@@ -340,7 +340,7 @@ OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p256_verify_async_start(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_const_word32_buf_t *signature);
+    const otcrypto_const_word32_buf_t *signature);
 
 /**
  * Finalizes asynchronous signature verification for ECDSA/P-256.
@@ -359,7 +359,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_verify_async_start(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p256_verify_async_finalize(
-    otcrypto_const_word32_buf_t *signature,
+    const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result);
 
 /**
@@ -590,8 +590,8 @@ status_t otcrypto_p256_base_point_mult(
  * @return Result of the sharing operation.
  */
 otcrypto_status_t otcrypto_ecc_p256_arith_share_private_key(
-    otcrypto_const_word32_buf_t *bool_private_key_share0,
-    otcrypto_const_word32_buf_t *bool_private_key_share1,
+    const otcrypto_const_word32_buf_t *bool_private_key_share0,
+    const otcrypto_const_word32_buf_t *bool_private_key_share1,
     otcrypto_blinded_key_t *arith_private_key);
 
 #ifdef __cplusplus

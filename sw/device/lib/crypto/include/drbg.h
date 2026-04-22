@@ -31,7 +31,7 @@ extern "C" {
  * @return Result of the DRBG instantiate operation.
  */
 otcrypto_status_t otcrypto_drbg_instantiate(
-    otcrypto_const_byte_buf_t *perso_string);
+    const otcrypto_const_byte_buf_t *perso_string);
 
 /**
  * Reseeds the DRBG with fresh entropy.
@@ -43,7 +43,7 @@ otcrypto_status_t otcrypto_drbg_instantiate(
  * @return Result of the DRBG reseed operation.
  */
 otcrypto_status_t otcrypto_drbg_reseed(
-    otcrypto_const_byte_buf_t *additional_input);
+    const otcrypto_const_byte_buf_t *additional_input);
 
 /**
  * Instantiates the DRBG system.
@@ -63,8 +63,8 @@ otcrypto_status_t otcrypto_drbg_reseed(
  * @return Result of the DRBG manual instantiation.
  */
 otcrypto_status_t otcrypto_drbg_manual_instantiate(
-    otcrypto_const_byte_buf_t *entropy,
-    otcrypto_const_byte_buf_t *perso_string);
+    const otcrypto_const_byte_buf_t *entropy,
+    const otcrypto_const_byte_buf_t *perso_string);
 
 /**
  * Reseeds the DRBG with fresh entropy.
@@ -78,8 +78,8 @@ otcrypto_status_t otcrypto_drbg_manual_instantiate(
  * @return Result of the manual DRBG reseed operation.
  */
 otcrypto_status_t otcrypto_drbg_manual_reseed(
-    otcrypto_const_byte_buf_t *entropy,
-    otcrypto_const_byte_buf_t *additional_input);
+    const otcrypto_const_byte_buf_t *entropy,
+    const otcrypto_const_byte_buf_t *additional_input);
 
 /**
  * DRBG function for generating random bits.
@@ -100,7 +100,7 @@ otcrypto_status_t otcrypto_drbg_manual_reseed(
  * @return Result of the DRBG generate operation.
  */
 otcrypto_status_t otcrypto_drbg_generate(
-    otcrypto_const_byte_buf_t *additional_input,
+    const otcrypto_const_byte_buf_t *additional_input,
     otcrypto_word32_buf_t *drbg_output);
 
 /**
@@ -122,7 +122,7 @@ otcrypto_status_t otcrypto_drbg_generate(
  * @return Result of the DRBG generate operation.
  */
 otcrypto_status_t otcrypto_drbg_manual_generate(
-    otcrypto_const_byte_buf_t *additional_input,
+    const otcrypto_const_byte_buf_t *additional_input,
     otcrypto_word32_buf_t *drbg_output);
 
 /**
