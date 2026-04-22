@@ -101,8 +101,6 @@ status_t rsa_modexp_wait(size_t *num_words) {
   } else if (mode == kMode4096Modexp || mode == kMode4096ModexpF4) {
     *num_words = kRsa4096NumWords;
   } else {
-    // Wipe DMEM.
-    HARDENED_TRY(otbn_dmem_sec_wipe());
     // Unrecognized mode.
     return OTCRYPTO_FATAL_ERR;
   }
@@ -127,8 +125,6 @@ static status_t rsa_modexp_finalize(const size_t num_words, uint32_t *result) {
 
   // Check that the inferred result size matches expectations.
   if (num_words != num_words_inferred) {
-    // Wipe DMEM.
-    HARDENED_TRY(otbn_dmem_sec_wipe());
     return OTCRYPTO_FATAL_ERR;
   }
   HARDENED_CHECK_EQ(launder32(num_words), num_words_inferred);
@@ -306,7 +302,6 @@ static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
   uint32_t act_mode = 0;
   HARDENED_TRY(otbn_dmem_read(1, kOtbnVarRsaMode, &act_mode));
   if (act_mode != exp_mode) {
-    HARDENED_TRY(otbn_dmem_sec_wipe());
     return OTCRYPTO_FATAL_ERR;
   }
   HARDENED_CHECK_EQ(launder32(act_mode), exp_mode);
@@ -318,7 +313,6 @@ static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
   // Prime p.
   HARDENED_TRY(otbn_dmem_read(1, kOtbnVarRsaMrIterP, &mr_iters));
   if (mr_iters != kMrIters) {
-    HARDENED_TRY(otbn_dmem_sec_wipe());
     return OTCRYPTO_FATAL_ERR;
   }
   HARDENED_CHECK_EQ(launder32(mr_iters), kMrIters);
@@ -327,7 +321,6 @@ static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
   mr_iters = 0;
   HARDENED_TRY(otbn_dmem_read(1, kOtbnVarRsaMrIterQ, &mr_iters));
   if (mr_iters != kMrIters) {
-    HARDENED_TRY(otbn_dmem_sec_wipe());
     return OTCRYPTO_FATAL_ERR;
   }
   HARDENED_CHECK_EQ(launder32(mr_iters), kMrIters);

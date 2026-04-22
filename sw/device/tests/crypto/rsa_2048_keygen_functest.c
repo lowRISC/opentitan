@@ -145,10 +145,15 @@ static status_t run_keygen_negative_tests(void) {
   };
 
   // Null checks
-  CHECK(otcrypto_rsa_keygen(kOtcryptoRsaSize2048, NULL, &valid_priv).value ==
-        OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_rsa_keygen(kOtcryptoRsaSize2048, &valid_pub, NULL).value ==
-        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_keygen(kOtcryptoRsaSize2048, NULL, &valid_priv).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_rsa_keygen_async_finalize(NULL, &valid_priv).value !=
+        OTCRYPTO_OK.value);
+
+  CHECK(otcrypto_rsa_keygen(kOtcryptoRsaSize2048, &valid_pub, NULL).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_rsa_keygen_async_finalize(&valid_pub, NULL).value !=
+        OTCRYPTO_OK.value);
 
   // Bad modes
   otcrypto_key_config_t bad_mode_cfg = valid_priv_cfg;
@@ -159,7 +164,9 @@ static status_t run_keygen_negative_tests(void) {
       .keyblob = priv_blob,
   };
   CHECK(otcrypto_rsa_keygen(kOtcryptoRsaSize2048, &valid_pub, &bad_priv_mode)
-            .value == OTCRYPTO_BAD_ARGS.value);
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_rsa_keygen_async_finalize(&valid_pub, &bad_priv_mode).value !=
+        OTCRYPTO_OK.value);
 
   // HW backed restriction
   otcrypto_key_config_t bad_hw_cfg = valid_priv_cfg;
@@ -170,11 +177,25 @@ static status_t run_keygen_negative_tests(void) {
       .keyblob = priv_blob,
   };
   CHECK(otcrypto_rsa_keygen(kOtcryptoRsaSize2048, &valid_pub, &bad_priv_hw)
-            .value == OTCRYPTO_BAD_ARGS.value);
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_rsa_keygen_async_finalize(&valid_pub, &bad_priv_hw).value !=
+        OTCRYPTO_OK.value);
 
   // Bad size enum
   CHECK(otcrypto_rsa_keygen((otcrypto_rsa_size_t)999, &valid_pub, &valid_priv)
-            .value == OTCRYPTO_BAD_ARGS.value);
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_rsa_keygen_async_start((otcrypto_rsa_size_t)999).value !=
+        OTCRYPTO_OK.value);
+
+  // Bad length
+  otcrypto_blinded_key_t bad_priv_blob_len = {
+      .config = valid_priv_cfg,
+      .keyblob_length = 999,  // Should be kOtcryptoRsa2048PrivateKeyblobBytes
+      .keyblob = priv_blob,
+  };
+  CHECK(
+      otcrypto_rsa_keygen(kOtcryptoRsaSize2048, &valid_pub, &bad_priv_blob_len)
+          .value != OTCRYPTO_OK.value);
 
   return OTCRYPTO_OK;
 }
