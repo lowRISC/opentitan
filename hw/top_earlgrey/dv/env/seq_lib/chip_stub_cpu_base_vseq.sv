@@ -31,7 +31,7 @@ class chip_stub_cpu_base_vseq extends chip_base_vseq;
     if (cfg.jtag_riscv_map != null || cfg.m_jtag_riscv_agent_cfg.use_jtag_dmi == 1) begin
       chip_jtag_tap_e from_plusarg = select_jtag;
 
-      `DV_GET_ENUM_PLUSARG(chip_common_pkg::chip_jtag_tap_e, from_plusarg, select_jtag)
+      `DV_GET_ENUM_PLUSARG(chip_common_pkg::chip_jtag_tap_e, from_plusarg, "select_jtag")
 
       if (select_jtag != JtagTapNone && select_jtag != from_plusarg) begin
         `uvm_error(get_name(),

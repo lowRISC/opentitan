@@ -122,7 +122,7 @@ ${spc}ral.${src}_meas_ctrl_shadowed.hi,
 ${spc}ral.${src}_meas_ctrl_shadowed.lo};
 % endfor
     mubi_mode = ClkmgrMubiNone;
-    `DV_GET_ENUM_PLUSARG(clkmgr_mubi_e, mubi_mode, clkmgr_mubi_mode)
+    `DV_GET_ENUM_PLUSARG(clkmgr_mubi_e, mubi_mode, "clkmgr_mubi_mode")
     `uvm_info(`gfn, $sformatf("mubi_mode = %s", mubi_mode.name), UVM_MEDIUM)
   % if ext_clk_bypass:
     cfg.clkmgr_vif.init(.idle({NUM_TRANS{MuBi4True}}), .scanmode(scanmode), .lc_debug_en(Off));
