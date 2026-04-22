@@ -48,16 +48,22 @@ struct ScaAsymCryptoLibTestCase {
     expected_output: Vec<String>,
 }
 
-fn filter_response(response: serde_json::Value) -> serde_json::Map<String, serde_json::Value> {
+fn filter_response(
+    response: serde_json::Value,
+    command: &str,
+) -> serde_json::Map<String, serde_json::Value> {
     // Filter common items.
     let response_common_filtered = filter_response_common(response.clone());
-    // Filter test-specifc items.
     let mut map: serde_json::Map<String, serde_json::Value> = response_common_filtered.clone();
-    // Filter response P256 sign operation as it is randomized.
-    map.remove("r");
-    map.remove("s");
-    map.remove("pubx");
-    map.remove("puby");
+    // ECDSA sign operations (P256/P384) use a random nonce, so r, s, pubx, puby
+    // cannot be compared against fixed expected values. Ed25519 sign is
+    // deterministic, so those fields are intentionally kept for comparison.
+    if !command.contains("Ed25519") {
+        map.remove("r");
+        map.remove("s");
+        map.remove("pubx");
+        map.remove("puby");
+    }
     map
 }
 
@@ -109,12 +115,12 @@ fn run_sca_asym_cryptolib_testcase(
             )?;
             // Only check non empty JSON responses.
             if output.as_object().is_some() {
-                let output_received = filter_response(output.clone());
+                let output_received = filter_response(output.clone(), &test_case.command);
 
                 // Filter expected output.
                 let exp_output: serde_json::Value =
                     serde_json::from_str(exp_output.as_str()).unwrap();
-                let output_expected = filter_response(exp_output.clone());
+                let output_expected = filter_response(exp_output.clone(), &test_case.command);
 
                 // Check received with expected output.
                 if output_expected != output_received {
