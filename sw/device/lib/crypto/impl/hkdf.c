@@ -200,8 +200,8 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
       .security_level = kOtcryptoKeySecurityLevelLow,
   };
   uint32_t salt_keyblob[keyblob_num_words(salt_key_config)];
-  TRY(keyblob_from_key_and_mask(salt_aligned_data, salt_mask, salt_key_config,
-                                salt_keyblob));
+  HARDENED_TRY(keyblob_from_key_and_mask(salt_aligned_data, salt_mask,
+                                         salt_key_config, salt_keyblob));
   otcrypto_blinded_key_t salt_key = {
       .config = salt_key_config,
       .keyblob = salt_keyblob,
