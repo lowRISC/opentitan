@@ -479,18 +479,18 @@
 //
 // ENUM_: The enum type.
 // VAR_: The enum variable to which the plusarg value will be set (must be declared already).
-// PLUSARG_: the name of the plusarg (as raw text). This is typically the same as the enum variable.
+// PLUSARG_: the name of the plusarg (as a string). This is typically the same as the enum variable.
 // CHECK_EXISTS_: Throws a fatal error if the plusarg is not set.
 `ifndef DV_GET_ENUM_PLUSARG
 `define DV_GET_ENUM_PLUSARG(ENUM_, VAR_, PLUSARG_, CHECK_EXISTS_ = 0, ID_ = `gfn) \
   begin \
     string str; \
-    if ($value$plusargs(`"``PLUSARG_``=%0s`", str)) begin \
+    if ($value$plusargs({PLUSARG_, "=%0s"}, str)) begin \
       if (!uvm_enum_wrapper#(ENUM_)::from_name(str, VAR_)) begin \
         `uvm_fatal(ID_, $sformatf(`"Cannot find %s from enum ``ENUM_```", VAR_.name())) \
       end \
     end else if (CHECK_EXISTS_) begin \
-      `uvm_fatal(ID_, `"Please pass the plusarg +``PLUSARG_``=<``ENUM_``-literal>`") \
+      `uvm_fatal(ID_, $sformatf(`"Please pass the plusarg +%0s=<``ENUM_``-literal>`", PLUSARG_)) \
     end \
   end
 `endif
