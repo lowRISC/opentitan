@@ -43,7 +43,7 @@ runs:
 
     - name: Upload report as artifact
       if: ${{ success() && inputs.artifact-name != '' }}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ inputs.artifact-name }}
         path: ${{ inputs.merged-results }}
