@@ -17,6 +17,9 @@ namespace key_transport_unittest {
 namespace {
 using ::testing::ElementsAreArray;
 
+#define EXPECT_OK(status_) EXPECT_EQ(status_.value, OTCRYPTO_OK.value)
+#define EXPECT_NOT_OK(status_) EXPECT_NE(status_.value, OTCRYPTO_OK.value)
+
 // Key configuration for testing (128-bit AES-CTR hardware-backed key).
 constexpr otcrypto_key_config_t kConfigHwBackedAesCtr128 = {
     .version = kOtcryptoLibVersion1,
@@ -52,6 +55,16 @@ constexpr otcrypto_key_config_t kConfigNonExportableAesCtr128 = {
     .version = kOtcryptoLibVersion1,
     .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = 128 / 8,
+    .hw_backed = kHardenedBoolFalse,
+    .exportable = kHardenedBoolFalse,
+    .security_level = kOtcryptoKeySecurityLevelLow,
+};
+
+// Key configuration for testing (256-bit AES-KWP key).
+constexpr otcrypto_key_config_t kConfigAesKwp256 = {
+    .version = kOtcryptoLibVersion1,
+    .key_mode = kOtcryptoKeyModeAesKwp,
+    .key_length = 256 / 8,
     .hw_backed = kHardenedBoolFalse,
     .exportable = kHardenedBoolFalse,
     .security_level = kOtcryptoKeySecurityLevelLow,
@@ -279,6 +292,73 @@ TEST(KeyTransport, BlindedKeyExportNotExportable) {
   EXPECT_EQ(status_ok(otcrypto_export_blinded_key(&blinded_key, &share0_buf,
                                                   &share1_buf)),
             false);
+}
+
+TEST(KeyTransport, KeyWrapUnwrapNegative) {
+  uint32_t target_keyblob[8] = {0};
+  otcrypto_blinded_key_t target_key = {
+      .config = kConfigNonExportableAesCtr128,
+      .keyblob_length = sizeof(target_keyblob),
+      .keyblob = target_keyblob,
+      .checksum = 0,
+  };
+  target_key.checksum = integrity_blinded_checksum(&target_key);
+
+  uint32_t kek_keyblob[16] = {0};
+  otcrypto_blinded_key_t kek_key = {
+      .config = kConfigAesKwp256,
+      .keyblob_length = sizeof(kek_keyblob),
+      .keyblob = kek_keyblob,
+      .checksum = 0,
+  };
+  kek_key.checksum = integrity_blinded_checksum(&kek_key);
+
+  uint32_t wrapped_data[64] = {0};
+  otcrypto_word32_buf_t wrapped_buf = {
+      .data = wrapped_data,
+      .len = 64,
+  };
+  otcrypto_const_word32_buf_t const_wrapped_buf = {
+      .data = wrapped_data,
+      .len = 64,
+  };
+
+  hardened_bool_t success;
+
+  // Wrap negative tests
+  EXPECT_NOT_OK(otcrypto_key_wrap(nullptr, &kek_key, &wrapped_buf));
+  EXPECT_NOT_OK(otcrypto_key_wrap(&target_key, nullptr, &wrapped_buf));
+
+  otcrypto_word32_buf_t wrapped_buf_null = {.data = nullptr, .len = 64};
+  EXPECT_NOT_OK(otcrypto_key_wrap(&target_key, &kek_key, &wrapped_buf_null));
+
+  // Bad KEK mode
+  otcrypto_blinded_key_t bad_kek_mode = {
+      .config = kConfigNonExportableAesCtr128,
+      .keyblob_length = sizeof(kek_keyblob),
+      .keyblob = kek_keyblob,
+      .checksum = 0,
+  };
+  bad_kek_mode.checksum = integrity_blinded_checksum(&bad_kek_mode);
+  EXPECT_NOT_OK(otcrypto_key_wrap(&target_key, &bad_kek_mode, &wrapped_buf));
+
+  // Target key checksum error
+  otcrypto_blinded_key_t bad_target_chk = target_key;
+  bad_target_chk.checksum ^= 0xFFFFFFFF;
+  EXPECT_NOT_OK(otcrypto_key_wrap(&bad_target_chk, &kek_key, &wrapped_buf));
+
+  // Unwrap negative tests
+  EXPECT_NOT_OK(otcrypto_key_unwrap(nullptr, &kek_key, &success, &target_key));
+  EXPECT_NOT_OK(
+      otcrypto_key_unwrap(&const_wrapped_buf, nullptr, &success, &target_key));
+  EXPECT_NOT_OK(
+      otcrypto_key_unwrap(&const_wrapped_buf, &kek_key, nullptr, &target_key));
+  EXPECT_NOT_OK(
+      otcrypto_key_unwrap(&const_wrapped_buf, &kek_key, &success, nullptr));
+
+  // Bad KEK mode
+  EXPECT_NOT_OK(otcrypto_key_unwrap(&const_wrapped_buf, &bad_kek_mode, &success,
+                                    &target_key));
 }
 
 }  // namespace
