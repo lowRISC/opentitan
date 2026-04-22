@@ -76,7 +76,6 @@ status_t rsa_keygen_from_cofactor_2048_finalize(
   HARDENED_TRY_WIPE_DMEM(
       otbn_dmem_read(kOtbnRsaModeWords, kOtbnVarRsaMode, &act_mode));
   if (act_mode != kOtbnRsaModeCofactor2048) {
-    HARDENED_TRY(otbn_dmem_sec_wipe());
     return OTCRYPTO_FATAL_ERR;
   }
   HARDENED_CHECK_EQ(launder32(act_mode), kOtbnRsaModeCofactor2048);

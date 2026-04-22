@@ -275,19 +275,36 @@ static status_t run_encrypt_negative_tests(void) {
   size_t pt_len = 0;
 
   // Encrypt negative tests
+
+  // Null pointers
   CHECK(otcrypto_rsa_encrypt(NULL, kTestHashMode, &valid_msg, &valid_msg,
                              &valid_ct)
             .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_encrypt_async_start(NULL, kTestHashMode, &valid_msg,
+                                         &valid_msg)
+            .value != OTCRYPTO_OK.value);
+
   CHECK(otcrypto_rsa_encrypt(&valid_pub, kTestHashMode, &bad_msg_null,
                              &valid_msg, &valid_ct)
             .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_encrypt_async_start(&valid_pub, kTestHashMode,
+                                         &bad_msg_null, &valid_msg)
+            .value != OTCRYPTO_OK.value);
+
   CHECK(otcrypto_rsa_encrypt(&valid_pub, kTestHashMode, &valid_msg,
                              &bad_msg_null, &valid_ct)
             .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_encrypt_async_start(&valid_pub, kTestHashMode, &valid_msg,
+                                         &bad_msg_null)
+            .value != OTCRYPTO_OK.value);
+
   CHECK(otcrypto_rsa_encrypt(&valid_pub, kTestHashMode, &valid_msg, &valid_msg,
                              &bad_ct_null)
             .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_encrypt_async_finalize(&bad_ct_null).value !=
+        OTCRYPTO_OK.value);
 
+  // Corrupt checksum
   otcrypto_unblinded_key_t bad_pub_chk = {
       .key_mode = valid_pub.key_mode,
       .key_length = valid_pub.key_length,
@@ -297,7 +314,11 @@ static status_t run_encrypt_negative_tests(void) {
   CHECK(otcrypto_rsa_encrypt(&bad_pub_chk, kTestHashMode, &valid_msg,
                              &valid_msg, &valid_ct)
             .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_encrypt_async_start(&bad_pub_chk, kTestHashMode,
+                                         &valid_msg, &valid_msg)
+            .value != OTCRYPTO_OK.value);
 
+  // Bad mode
   otcrypto_unblinded_key_t bad_pub_mode = {
       .key_mode = kOtcryptoKeyModeRsaSignPkcs,
       .key_length = valid_pub.key_length,
@@ -307,27 +328,45 @@ static status_t run_encrypt_negative_tests(void) {
   CHECK(otcrypto_rsa_encrypt(&bad_pub_mode, kTestHashMode, &valid_msg,
                              &valid_msg, &valid_ct)
             .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_encrypt_async_start(&bad_pub_mode, kTestHashMode,
+                                         &valid_msg, &valid_msg)
+            .value != OTCRYPTO_OK.value);
 
   // Decrypt negative tests
+
+  // Null pointers
   CHECK(otcrypto_rsa_decrypt(NULL, kTestHashMode, &valid_const_ct, &valid_msg,
                              &valid_pt, &pt_len)
             .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_decrypt_async_start(NULL, &valid_const_ct).value !=
+        OTCRYPTO_OK.value);
 
   otcrypto_const_word32_buf_t bad_const_ct_null =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, NULL, kRsa2048NumWords);
   CHECK(otcrypto_rsa_decrypt(&valid_priv, kTestHashMode, &bad_const_ct_null,
                              &valid_msg, &valid_pt, &pt_len)
             .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(
+      otcrypto_rsa_decrypt_async_start(&valid_priv, &bad_const_ct_null).value !=
+      OTCRYPTO_OK.value);
 
   otcrypto_byte_buf_t bad_pt_null =
       OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, NULL, 256);
   CHECK(otcrypto_rsa_decrypt(&valid_priv, kTestHashMode, &valid_const_ct,
                              &valid_msg, &bad_pt_null, &pt_len)
             .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_decrypt_async_finalize(kTestHashMode, &valid_msg,
+                                            &bad_pt_null, &pt_len)
+            .value != OTCRYPTO_OK.value);
+
   CHECK(otcrypto_rsa_decrypt(&valid_priv, kTestHashMode, &valid_const_ct,
                              &valid_msg, &valid_pt, NULL)
             .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_decrypt_async_finalize(kTestHashMode, &valid_msg,
+                                            &valid_pt, NULL)
+            .value != OTCRYPTO_OK.value);
 
+  // Corrupt checksum
   otcrypto_blinded_key_t bad_priv_chk = {
       .config = priv_cfg,
       .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
@@ -337,7 +376,11 @@ static status_t run_encrypt_negative_tests(void) {
   CHECK(otcrypto_rsa_decrypt(&bad_priv_chk, kTestHashMode, &valid_const_ct,
                              &valid_msg, &valid_pt, &pt_len)
             .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(
+      otcrypto_rsa_decrypt_async_start(&bad_priv_chk, &valid_const_ct).value !=
+      OTCRYPTO_OK.value);
 
+  // Bad mode
   otcrypto_key_config_t bad_priv_mode_cfg = priv_cfg;
   bad_priv_mode_cfg.key_mode = kOtcryptoKeyModeRsaSignPkcs;
   otcrypto_blinded_key_t bad_priv_mode = {
@@ -348,6 +391,219 @@ static status_t run_encrypt_negative_tests(void) {
   bad_priv_mode.checksum = integrity_blinded_checksum(&bad_priv_mode);
   CHECK(otcrypto_rsa_decrypt(&bad_priv_mode, kTestHashMode, &valid_const_ct,
                              &valid_msg, &valid_pt, &pt_len)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(
+      otcrypto_rsa_decrypt_async_start(&bad_priv_mode, &valid_const_ct).value !=
+      OTCRYPTO_OK.value);
+
+  return OTCRYPTO_OK;
+}
+
+static status_t run_public_key_construct_negative_tests(void) {
+  LOG_INFO("Running RSA public key construct negative tests");
+
+  uint32_t mod_data[kRsa2048NumWords] = {0};
+  otcrypto_const_word32_buf_t valid_mod = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, mod_data, kRsa2048NumWords);
+  otcrypto_const_word32_buf_t bad_mod_null =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, NULL, kRsa2048NumWords);
+  otcrypto_const_word32_buf_t bad_mod_len = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, mod_data, kRsa2048NumWords - 1);
+
+  uint32_t pub_data[kOtcryptoRsa2048PublicKeyBytes / 4] = {0};
+  otcrypto_unblinded_key_t valid_pub = {
+      .key_mode = kOtcryptoKeyModeRsaEncryptOaep,
+      .key_length = kOtcryptoRsa2048PublicKeyBytes,
+      .key = pub_data,
+  };
+
+  otcrypto_unblinded_key_t bad_pub_null_key = {
+      .key_mode = kOtcryptoKeyModeRsaEncryptOaep,
+      .key_length = kOtcryptoRsa2048PublicKeyBytes,
+      .key = NULL,
+  };
+
+  otcrypto_unblinded_key_t bad_pub_mode = {
+      .key_mode = kOtcryptoKeyModeEcdsaP256,
+      .key_length = kOtcryptoRsa2048PublicKeyBytes,
+      .key = pub_data,
+  };
+
+  otcrypto_unblinded_key_t bad_pub_len = {
+      .key_mode = kOtcryptoKeyModeRsaEncryptOaep,
+      .key_length = kOtcryptoRsa2048PublicKeyBytes - 1,
+      .key = pub_data,
+  };
+
+  // Null pointers
+  CHECK(
+      otcrypto_rsa_public_key_construct(kOtcryptoRsaSize2048, NULL, &valid_pub)
+          .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize2048, &bad_mod_null,
+                                          &valid_pub)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(
+      otcrypto_rsa_public_key_construct(kOtcryptoRsaSize2048, &valid_mod, NULL)
+          .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize2048, &valid_mod,
+                                          &bad_pub_null_key)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Bad mode
+  CHECK(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize2048, &valid_mod,
+                                          &bad_pub_mode)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Mismatched lengths for 2048
+  CHECK(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize2048, &bad_mod_len,
+                                          &valid_pub)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize2048, &valid_mod,
+                                          &bad_pub_len)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Mismatched size enum
+  CHECK(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize3072, &valid_mod,
+                                          &valid_pub)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize4096, &valid_mod,
+                                          &valid_pub)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Invalid size enum
+  CHECK(otcrypto_rsa_public_key_construct((otcrypto_rsa_size_t)999, &valid_mod,
+                                          &valid_pub)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  return OTCRYPTO_OK;
+}
+
+static status_t run_private_key_from_exponents_negative_tests(void) {
+  LOG_INFO("Running RSA private key from exponents negative tests");
+
+  // Allocate valid base buffers
+  uint32_t mod_data[kRsa2048NumWords] = {0};
+  uint32_t d0_data[kRsa2048NumWords] = {0};
+  uint32_t d1_data[kRsa2048NumWords] = {0};
+
+  otcrypto_const_word32_buf_t valid_mod = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, mod_data, kRsa2048NumWords);
+  otcrypto_const_word32_buf_t valid_d0 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, d0_data, kRsa2048NumWords);
+  otcrypto_const_word32_buf_t valid_d1 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, d1_data, kRsa2048NumWords);
+
+  // Allocate invalid base buffers
+  otcrypto_const_word32_buf_t bad_buf_null =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, NULL, kRsa2048NumWords);
+  otcrypto_const_word32_buf_t bad_buf_len = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, d0_data, kRsa2048NumWords - 1);
+
+  // Setup valid private key config
+  uint32_t priv_blob[kOtcryptoRsa2048PrivateKeyblobBytes / 4] = {0};
+  otcrypto_key_config_t valid_priv_cfg = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeRsaSignPkcs,  // valid RSA mode
+      .key_length = kOtcryptoRsa2048PrivateKeyBytes,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  otcrypto_blinded_key_t valid_priv = {
+      .config = valid_priv_cfg,
+      .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
+      .keyblob = priv_blob,
+  };
+
+  // Setup invalid private key configs using initializer lists
+  otcrypto_blinded_key_t bad_priv_null_blob = {
+      .config = valid_priv_cfg,
+      .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
+      .keyblob = NULL,
+  };
+
+  otcrypto_key_config_t bad_mode_cfg = valid_priv_cfg;
+  bad_mode_cfg.key_mode = kOtcryptoKeyModeEcdsaP256;
+  otcrypto_blinded_key_t bad_priv_mode = {
+      .config = bad_mode_cfg,
+      .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
+      .keyblob = priv_blob,
+  };
+
+  otcrypto_key_config_t bad_hw_cfg = valid_priv_cfg;
+  bad_hw_cfg.hw_backed = kHardenedBoolTrue;
+  otcrypto_blinded_key_t bad_priv_hw = {
+      .config = bad_hw_cfg,
+      .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
+      .keyblob = priv_blob,
+  };
+
+  otcrypto_blinded_key_t bad_priv_blob_len = {
+      .config = valid_priv_cfg,
+      .keyblob_length = 99,
+      .keyblob = priv_blob,
+  };
+
+  // Null pointers
+  CHECK(otcrypto_rsa_private_key_from_exponents(
+            kOtcryptoRsaSize2048, NULL, &valid_d0, &valid_d1, &valid_priv)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_private_key_from_exponents(kOtcryptoRsaSize2048,
+                                                &bad_buf_null, &valid_d0,
+                                                &valid_d1, &valid_priv)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_private_key_from_exponents(kOtcryptoRsaSize2048,
+                                                &valid_mod, &bad_buf_null,
+                                                &valid_d1, &valid_priv)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_private_key_from_exponents(kOtcryptoRsaSize2048,
+                                                &valid_mod, &valid_d0,
+                                                &bad_buf_null, &valid_priv)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_private_key_from_exponents(
+            kOtcryptoRsaSize2048, &valid_mod, &valid_d0, &valid_d1, NULL)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_private_key_from_exponents(kOtcryptoRsaSize2048,
+                                                &valid_mod, &valid_d0,
+                                                &valid_d1, &bad_priv_null_blob)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Mismatched share lengths vs modulus length
+  CHECK(otcrypto_rsa_private_key_from_exponents(kOtcryptoRsaSize2048,
+                                                &valid_mod, &bad_buf_len,
+                                                &valid_d1, &valid_priv)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_private_key_from_exponents(kOtcryptoRsaSize2048,
+                                                &valid_mod, &valid_d0,
+                                                &bad_buf_len, &valid_priv)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Bad Mode
+  CHECK(otcrypto_rsa_private_key_from_exponents(kOtcryptoRsaSize2048,
+                                                &valid_mod, &valid_d0,
+                                                &valid_d1, &bad_priv_mode)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Bad HW backed config
+  CHECK(otcrypto_rsa_private_key_from_exponents(kOtcryptoRsaSize2048,
+                                                &valid_mod, &valid_d0,
+                                                &valid_d1, &bad_priv_hw)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Bad Blob length vs Config Length
+  CHECK(otcrypto_rsa_private_key_from_exponents(kOtcryptoRsaSize2048,
+                                                &valid_mod, &valid_d0,
+                                                &valid_d1, &bad_priv_blob_len)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Mismatched size enum vs actual buffer sizes
+  CHECK(otcrypto_rsa_private_key_from_exponents(
+            kOtcryptoRsaSize3072, &valid_mod, &valid_d0, &valid_d1, &valid_priv)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Invalid size enum
+  CHECK(otcrypto_rsa_private_key_from_exponents((otcrypto_rsa_size_t)999,
+                                                &valid_mod, &valid_d0,
+                                                &valid_d1, &valid_priv)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   return OTCRYPTO_OK;
@@ -361,5 +617,7 @@ bool test_main(void) {
   EXECUTE_TEST(test_result, oaep_decrypt_valid_test);
   EXECUTE_TEST(test_result, oaep_encrypt_decrypt_test);
   EXECUTE_TEST(test_result, run_encrypt_negative_tests);
+  EXECUTE_TEST(test_result, run_public_key_construct_negative_tests);
+  EXECUTE_TEST(test_result, run_private_key_from_exponents_negative_tests);
   return status_ok(test_result);
 }

@@ -96,7 +96,8 @@ static hardened_bool_t bignum_lt(const uint32_t *a, const uint32_t *b,
 otcrypto_status_t otcrypto_rsa_public_key_construct(
     otcrypto_rsa_size_t size, const otcrypto_const_word32_buf_t *modulus,
     otcrypto_unblinded_key_t *public_key) {
-  if (modulus->data == NULL || public_key == NULL || public_key->key == NULL) {
+  if (modulus == NULL || modulus->data == NULL || public_key == NULL ||
+      public_key->key == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_TRY(rsa_mode_check(public_key->key_mode));
@@ -301,15 +302,13 @@ otcrypto_status_t otcrypto_rsa_keygen_async_start(otcrypto_rsa_size_t size) {
 otcrypto_status_t otcrypto_rsa_keygen(otcrypto_rsa_size_t size,
                                       otcrypto_unblinded_key_t *public_key,
                                       otcrypto_blinded_key_t *private_key) {
-  if (public_key == NULL || public_key->key == NULL || private_key == NULL ||
-      private_key->keyblob == NULL) {
+  if (public_key == NULL || private_key == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+  // Check the size against the public key.
   otcrypto_rsa_size_t inferred_size;
   if (!status_ok(rsa_size_from_public_key(public_key, &inferred_size)) ||
-      inferred_size != size ||
-      !status_ok(public_key_structural_check(public_key)) ||
-      !status_ok(private_key_structural_check(size, private_key))) {
+      inferred_size != size) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -322,9 +321,9 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
     const otcrypto_const_word32_buf_t *d_share0,
     const otcrypto_const_word32_buf_t *d_share1,
     otcrypto_blinded_key_t *private_key) {
-  if (modulus->data == NULL || d_share0->data == NULL ||
-      d_share1->data == NULL || private_key == NULL ||
-      private_key->keyblob == NULL) {
+  if (modulus == NULL || modulus->data == NULL || d_share0 == NULL ||
+      d_share0->data == NULL || d_share1 == NULL || d_share1->data == NULL ||
+      private_key == NULL || private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_TRY(rsa_mode_check(private_key->config.key_mode));
@@ -397,61 +396,26 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
     const otcrypto_const_word32_buf_t *cofactor_share0,
     const otcrypto_const_word32_buf_t *cofactor_share1,
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *private_key) {
-  if (public_key == NULL || public_key->key == NULL || private_key == NULL ||
-      private_key->keyblob == NULL) {
+  if (public_key == NULL || private_key == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+  // Check the size against the public key.
   otcrypto_rsa_size_t inferred_size;
   if (!status_ok(rsa_size_from_public_key(public_key, &inferred_size)) ||
-      inferred_size != size ||
-      !status_ok(public_key_structural_check(public_key)) ||
-      !status_ok(private_key_structural_check(size, private_key))) {
+      inferred_size != size) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   HARDENED_TRY(otcrypto_rsa_keypair_from_cofactor_async_start(
       size, modulus, cofactor_share0, cofactor_share1));
-  HARDENED_TRY(otcrypto_rsa_keypair_from_cofactor_async_finalize(public_key,
-                                                                 private_key));
-
-  // Interpret the recomputed public key. Double-check the lengths to be safe,
-  // but they should have been checked above already.
-  hardened_bool_t modulus_eq = kHardenedBoolFalse;
-  switch (size) {
-    case kOtcryptoRsaSize2048: {
-      if (public_key->key_length != sizeof(rsa_2048_public_key_t) ||
-          modulus->len != kRsa2048NumWords) {
-        return OTCRYPTO_RECOV_ERR;
-      }
-      rsa_2048_public_key_t *pk = (rsa_2048_public_key_t *)public_key->key;
-      modulus_eq = hardened_memeq(modulus->data, pk->n.data, modulus->len);
-      return otcrypto_eval_exit(OTCRYPTO_OK);
-    }
-    case kOtcryptoRsaSize3072:
-      return OTCRYPTO_NOT_IMPLEMENTED;
-    case kOtcryptoRsaSize4096:
-      return OTCRYPTO_NOT_IMPLEMENTED;
-    default:
-      return OTCRYPTO_BAD_ARGS;
-  }
-
-  if (launder32(modulus_eq) != kHardenedBoolTrue) {
-    // This likely means that the cofactor/modulus combination was invalid,
-    // for example the modulus was not divisible by the cofactor, or the
-    // cofactor was too small.
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(modulus_eq, kHardenedBoolTrue);
-  return otcrypto_eval_exit(OTCRYPTO_OK);
+  return otcrypto_rsa_keypair_from_cofactor_async_finalize(public_key,
+                                                           private_key);
 }
 
 otcrypto_status_t otcrypto_rsa_sign(const otcrypto_blinded_key_t *private_key,
                                     const otcrypto_hash_digest_t message_digest,
                                     otcrypto_rsa_padding_t padding_mode,
                                     otcrypto_word32_buf_t *signature) {
-  if (signature->data == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
   HARDENED_TRY(
       otcrypto_rsa_sign_async_start(private_key, message_digest, padding_mode));
   return otcrypto_rsa_sign_async_finalize(signature);
@@ -463,15 +427,7 @@ otcrypto_status_t otcrypto_rsa_verify(
     otcrypto_rsa_padding_t padding_mode,
     const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result) {
-  if (verification_result == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  otcrypto_status_t status =
-      otcrypto_rsa_verify_async_start(public_key, signature);
-  if (status.value != kOtcryptoStatusValueOk) {
-    return otcrypto_eval_exit(status);
-  }
-  HARDENED_CHECK_EQ(launder32(status.value), kOtcryptoStatusValueOk);
+  HARDENED_TRY(otcrypto_rsa_verify_async_start(public_key, signature));
   return otcrypto_rsa_verify_async_finalize(message_digest, padding_mode,
                                             verification_result);
 }
@@ -481,9 +437,6 @@ otcrypto_status_t otcrypto_rsa_encrypt(
     const otcrypto_hash_mode_t hash_mode,
     const otcrypto_const_byte_buf_t *message,
     const otcrypto_const_byte_buf_t *label, otcrypto_word32_buf_t *ciphertext) {
-  if (ciphertext->data == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
   HARDENED_TRY(
       otcrypto_rsa_encrypt_async_start(public_key, hash_mode, message, label));
   return otcrypto_rsa_encrypt_async_finalize(ciphertext);
@@ -495,21 +448,8 @@ otcrypto_status_t otcrypto_rsa_decrypt(
     const otcrypto_const_word32_buf_t *ciphertext,
     const otcrypto_const_byte_buf_t *label, otcrypto_byte_buf_t *plaintext,
     size_t *plaintext_bytelen) {
-  if (plaintext->data == NULL || plaintext_bytelen == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  uint8_t dummy_label_data[1] = {0};
-  otcrypto_const_byte_buf_t local_label = OTCRYPTO_MAKE_BUF(
-      otcrypto_const_byte_buf_t,
-      (label->data == NULL && label->len == 0) ? dummy_label_data : label->data,
-      label->len);
-  otcrypto_status_t status =
-      otcrypto_rsa_decrypt_async_start(private_key, ciphertext);
-  if (status.value != kOtcryptoStatusValueOk) {
-    return otcrypto_eval_exit(status);
-  }
-  HARDENED_CHECK_EQ(launder32(status.value), kOtcryptoStatusValueOk);
-  return otcrypto_rsa_decrypt_async_finalize(hash_mode, &local_label, plaintext,
+  HARDENED_TRY(otcrypto_rsa_decrypt_async_start(private_key, ciphertext));
+  return otcrypto_rsa_decrypt_async_finalize(hash_mode, label, plaintext,
                                              plaintext_bytelen);
 }
 
@@ -587,7 +527,8 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
     otcrypto_rsa_size_t size, const otcrypto_const_word32_buf_t *modulus,
     const otcrypto_const_word32_buf_t *cofactor_share0,
     const otcrypto_const_word32_buf_t *cofactor_share1) {
-  if (modulus->data == NULL || cofactor_share0->data == NULL ||
+  if (modulus == NULL || modulus->data == NULL || cofactor_share0 == NULL ||
+      cofactor_share0->data == NULL || cofactor_share1 == NULL ||
       cofactor_share1->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -788,9 +729,12 @@ otcrypto_status_t otcrypto_rsa_sign_async_start(
 otcrypto_status_t otcrypto_rsa_sign_async_finalize(
     otcrypto_word32_buf_t *signature) {
   // Check for NULL pointers.
-  if (signature->data == NULL) {
+  if (signature == NULL || signature->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+
+  // Verify the input buffer
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(signature));
 
   // Determine the size based on the signature buffer length.
   switch (launder32(signature->len)) {
@@ -814,9 +758,6 @@ otcrypto_status_t otcrypto_rsa_sign_async_finalize(
       return OTCRYPTO_BAD_ARGS;
   }
 
-  // Verify the input buffer
-  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(signature));
-
   // Should be unreachable.
   HARDENED_TRAP();
   return OTCRYPTO_FATAL_ERR;
@@ -826,7 +767,7 @@ otcrypto_status_t otcrypto_rsa_verify_async_start(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_const_word32_buf_t *signature) {
   // Check for NULL pointers.
-  if (public_key == NULL || public_key->key == NULL ||
+  if (public_key == NULL || public_key->key == NULL || signature == NULL ||
       signature->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -935,11 +876,11 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_start(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  if (message->data == NULL && (message->len != 0)) {
+  if (message == NULL || ((message->data == NULL) && (message->len != 0))) {
     return OTCRYPTO_BAD_ARGS;
   }
 
-  if (label->data == NULL && (label->len != 0)) {
+  if (label == NULL || ((label->data == NULL) && (label->len != 0))) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -1001,7 +942,7 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_start(
 otcrypto_status_t otcrypto_rsa_encrypt_async_finalize(
     otcrypto_word32_buf_t *ciphertext) {
   // Check for NULL pointers.
-  if (ciphertext->data == NULL) {
+  if (ciphertext == NULL || ciphertext->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -1142,7 +1083,8 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_finalize(
     const otcrypto_hash_mode_t hash_mode,
     const otcrypto_const_byte_buf_t *label, otcrypto_byte_buf_t *plaintext,
     size_t *plaintext_bytelen) {
-  if (plaintext->data == NULL || label->data == NULL) {
+  if (plaintext == NULL || plaintext->data == NULL || label == NULL ||
+      label->data == NULL || plaintext_bytelen == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
