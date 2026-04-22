@@ -82,9 +82,9 @@ module rram_ctrl
   input  rram_macro_rsp_t rram_macro_i
 );
 
-  //////////////////////////////////////////////////////////
-  // Double check supplied param is not bigger than allowed
-  //////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////
+  // Double check supplied param is not bigger than allowed //
+  ////////////////////////////////////////////////////////////
   `ASSERT_INIT(FifoDepthCheck_A, (WrFifoDepth <= MaxFifoDepth) &
                                  (RdFifoDepth <= MaxFifoDepth))
 
@@ -94,15 +94,20 @@ module rram_ctrl
   import prim_mubi_pkg::MuBi4True;
   import lc_ctrl_pkg::lc_tx_test_true_strict;
 
+  ////////////////////////////
+  // Localparam definitions //
+  ////////////////////////////
+  localparam int unsigned WrDepthW = prim_util_pkg::vbits(WrFifoDepth+1);
+  localparam int unsigned RdDepthW = prim_util_pkg::vbits(RdFifoDepth+1);
+
+  /////////////////////////
+  // Signal declarations //
+  /////////////////////////
   rram_ctrl_core_reg2hw_t reg2hw;
   rram_ctrl_core_hw2reg_t hw2reg;
 
   tlul_pkg::tl_h2d_t tl_win_h2d [2];
   tlul_pkg::tl_d2h_t tl_win_d2h [2];
-
-  // FIFO Connections
-  localparam int unsigned WrDepthW = prim_util_pkg::vbits(WrFifoDepth+1);
-  localparam int unsigned RdDepthW = prim_util_pkg::vbits(RdFifoDepth+1);
 
   // rd_fifo signals
   logic                    rd_fifo_wvalid;
@@ -129,6 +134,16 @@ module rram_ctrl
   logic [BusFullWidth-1:0] sw_wdata;
   logic                    sw_wready;
 
+  // hw-lcmgr interface to wr fifo
+  logic                    hw_lcmgr_wvalid;
+  logic [BusFullWidth-1:0] hw_lcmgr_wdata;
+  logic                    hw_lcmgr_wready;
+
+  // hw-otp interface to wr fifo
+  logic                    hw_otp_wvalid;
+  logic [BusFullWidth-1:0] hw_otp_wdata;
+  logic                    hw_otp_wready;
+
   // rram_ctrl_wr <-> rram_ctrl_arb signals
   logic                wr_op_start;
   logic                wr_op_done;
@@ -137,6 +152,18 @@ module rram_ctrl
   logic [BusAddrW-1:0] wr_op_err_addr;
   logic                wr_cnt_err;
   logic                wr_fsm_err;
+
+  // rram_ctrl_rd <-> rram_ctrl_arb signals
+  logic                    rd_op_start;
+  logic                    rd_op_done;
+  logic [BusAddrW-1:0]     rd_op_addr;
+  rram_ctrl_err_t          rd_op_err;
+  logic [BusAddrW-1:0]     rd_op_err_addr;
+  logic                    rd_cnt_err;
+  logic                    rd_fsm_err;
+  logic [BusFullWidth-1:0] rd_ctrl_data;
+  logic                    rd_ctrl_valid;
+  logic                    rd_ctrl_ready;
 
   // rram_ctrl_wr <-> rram_ctrl_mp signals
   logic                    wr_req;
@@ -152,27 +179,53 @@ module rram_ctrl
   logic                    rd_ovfl;
   logic [BusFullWidth-1:0] rd_data;
   logic                    rd_err;
+  logic                    rd_done;
 
-  // rram_ctrl_rd <-> rram_ctrl_arb signals
-  logic                     rd_op_start;
-  logic                     rd_op_done;
-  logic [BusAddrW-1:0]      rd_op_addr;
-  rram_ctrl_err_t           rd_op_err;
-  logic [BusAddrW-1:0]      rd_op_err_addr;
-  logic                     rd_cnt_err;
-  logic                     rd_fsm_err;
-  logic [BusFullWidth-1:0]  rd_ctrl_data;
-  logic                     rd_ctrl_valid;
-  logic                     rd_ctrl_ready;
+  // hw-lcmgr to arbiter
+  rram_ctrl_reg2hw_control_reg_t hw_lcmgr_ctrl;
+  logic                          hw_lcmgr_req;
+  logic [BusAddrByteW-1:0]       hw_lcmgr_addr;
+  logic                          hw_lcmgr_done;
+  rram_ctrl_err_t                hw_lcmgr_err;
+  rram_phase_e                   hw_lcmgr_phase;
+  logic                          hw_lcmgr_rready;
+  logic                          hw_lcmgr_rvalid;
+  logic [BusFullWidth-1:0]       hw_lcmgr_rdata;
 
+  // hw-otp to arbiter
+  rram_ctrl_reg2hw_control_reg_t hw_otp_ctrl;
+  logic                          hw_otp_req;
+  logic [BusAddrByteW-1:0]       hw_otp_addr;
+  logic                          hw_otp_done;
+  rram_ctrl_err_t                hw_otp_err;
+  logic                          hw_otp_rready;
+  logic                          hw_otp_rvalid;
+  logic [BusFullWidth-1:0]       hw_otp_rdata;
+
+  // Arbiter signals
+  rram_sel_e                if_sel;
+  logic                     sw_sel;
+  logic                     hw_loopback_sel;
+  logic                     arb_fsm_err;
+  logic                     sw_ctrl_done;
+  rram_ctrl_err_t           sw_ctrl_err;
+  rram_part_e               ctrl_part;
   logic [CtrlMaxWordsW-1:0] ctrl_num_words;
+  logic [BusAddrW-1:0]      ctrl_err_addr;
+  rram_phase_e              phase;
 
   // rram_ctrl_mp signals
   logic mp_err;
 
+  // lcmgr signals
+  logic lcmgr_keys_valid;
+  logic lcmgr_init_done;
+
   // rram_phy signals
+  logic phy_init_done;
   logic phy_wr_intg_err;
 
+  // local escalation signals
   lc_ctrl_pkg::lc_tx_t rma_dis_access;
   lc_ctrl_pkg::lc_tx_t lc_escalate_en;
 
@@ -205,40 +258,42 @@ module rram_ctrl
   );
 
   // todo connect in future commits:
-  assign hw2reg.ctrl_regwen.d = 1'b0;
+  assign hw2reg.ctrl_regwen.d = (sw_sel | hw_loopback_sel) ? ~reg2hw.control.start.q : 1'b1;
 
   assign hw2reg.control.start.d  = 1'b0;
-  assign hw2reg.control.start.de = 1'b0;
+  assign hw2reg.control.start.de = sw_ctrl_done;
 
   assign hw2reg.op_status.done.d  = 1'b1;
-  assign hw2reg.op_status.done.de = 1'b0;
+  assign hw2reg.op_status.done.de = sw_ctrl_done;
   assign hw2reg.op_status.err.d   = 1'b1;
-  assign hw2reg.op_status.err.de  = 1'b0;
+  assign hw2reg.op_status.err.de  = |sw_ctrl_err;
 
   assign hw2reg.status.rd_full.d     = rd_fifo_full;
-  assign hw2reg.status.rd_full.de    = 1'b0;
+  assign hw2reg.status.rd_full.de    = sw_sel;
   assign hw2reg.status.rd_empty.d    = ~rd_fifo_rvalid;
-  assign hw2reg.status.rd_empty.de   = 1'b0;
+  assign hw2reg.status.rd_empty.de   = sw_sel;
   assign hw2reg.status.wr_full.d     = ~wr_fifo_wready;
-  assign hw2reg.status.wr_full.de    = 1'b0;
+  assign hw2reg.status.wr_full.de    = sw_sel;
   assign hw2reg.status.wr_empty.d    = ~wr_fifo_rvalid;
-  assign hw2reg.status.wr_empty.de   = 1'b0;
-  assign hw2reg.status.init_done.d   = 1'b0;
+  assign hw2reg.status.wr_empty.de   = sw_sel;
+  assign hw2reg.status.init_done.d   = lcmgr_init_done;
   assign hw2reg.status.init_done.de  = 1'b1;
-  assign hw2reg.status.keys_valid.d  = 1'b0;
+  assign hw2reg.status.keys_valid.d  = lcmgr_keys_valid;
   assign hw2reg.status.keys_valid.de = 1'b1;
 
   assign hw2reg.err_code.op_err.d  = 1'b1;
-  assign hw2reg.err_code.op_err.de = 1'b0;
+  assign hw2reg.err_code.op_err.de = sw_ctrl_err.invalid_op_err;
   assign hw2reg.err_code.mp_err.d  = 1'b1;
-  assign hw2reg.err_code.mp_err.de = 1'b0;
+  assign hw2reg.err_code.mp_err.de = sw_ctrl_err.mp_err;
   assign hw2reg.err_code.rd_err.d  = 1'b1;
-  assign hw2reg.err_code.rd_err.de = 1'b0;
+  assign hw2reg.err_code.rd_err.de = sw_ctrl_err.rd_err;
   assign hw2reg.err_code.wr_err.d  = 1'b1;
-  assign hw2reg.err_code.wr_err.de = 1'b0;
+  assign hw2reg.err_code.wr_err.de = sw_ctrl_err.wr_err;
 
-  assign hw2reg.err_addr.d  = '0;
-  assign hw2reg.err_addr.de = 1'b0;
+  assign hw2reg.err_addr.d  = {ctrl_err_addr, {BusByteWidth{1'h0}}};
+  assign hw2reg.err_addr.de = sw_ctrl_err.mp_err |
+                              sw_ctrl_err.rd_err |
+                              sw_ctrl_err.wr_err;
 
   // All hardware interface errors are considered faults
   // There are two types of faults: Custom (fault_status) and standard faults (std_fault_status)
@@ -297,7 +352,7 @@ module rram_ctrl
   assign hw2reg.std_fault_status.phy_arb_err.d      = 1'b1;
   assign hw2reg.std_fault_status.phy_arb_err.de     = 1'b0;
   assign hw2reg.std_fault_status.ctrl_fsm_err.d     = 1'b1;
-  assign hw2reg.std_fault_status.ctrl_fsm_err.de    = rd_fsm_err | wr_fsm_err;
+  assign hw2reg.std_fault_status.ctrl_fsm_err.de    = rd_fsm_err | wr_fsm_err | arb_fsm_err;
   assign hw2reg.std_fault_status.ctrl_cnt_err.d     = 1'b1;
   assign hw2reg.std_fault_status.ctrl_cnt_err.de    = rd_cnt_err | wr_cnt_err;
 
@@ -310,7 +365,7 @@ module rram_ctrl
   assign hw2reg.corr_err_cnt.de      = '0;
 
   // Phy status
-  assign hw2reg.phy_status.init_done.d  = 1'b0;
+  assign hw2reg.phy_status.init_done.d  = phy_init_done;
   assign hw2reg.phy_status.init_done.de = 1'b1;
   assign hw2reg.phy_status.wr_busy.d    = 1'b0;
   assign hw2reg.phy_status.wr_busy.de   = 1'b1;
@@ -490,6 +545,20 @@ module rram_ctrl
   assign rma_dis_access = lc_ctrl_pkg::Off;
   assign rma_ack_o      = lc_ctrl_pkg::Off;
 
+  assign lcmgr_keys_valid = 1'b0;
+  assign lcmgr_init_done  = 1'b1;
+
+  assign hw_lcmgr_req              = 1'b0;
+  assign hw_lcmgr_ctrl.start.q     = 1'b0;
+  assign hw_lcmgr_ctrl.op.q        = RramOpRead;
+  assign hw_lcmgr_ctrl.partition.q = RramPartData;
+  assign hw_lcmgr_ctrl.num.q       = 0;
+  assign hw_lcmgr_phase            = PhaseNone;
+  assign hw_lcmgr_addr             = '0;
+  assign hw_lcmgr_rready           = 1'b0;
+  assign hw_lcmgr_wvalid           = 1'b0;
+  assign hw_lcmgr_wdata            = '0;
+
   assign keymgr_o = '0;
 
   ///////////////////
@@ -501,29 +570,99 @@ module rram_ctrl
   assign otp_macro_o.rdata  = '0;
   assign otp_macro_o.err    = otp_ctrl_macro_pkg::NoError;
 
+  assign hw_otp_req              = 1'b0;
+  assign hw_otp_ctrl.start.q     = 1'b0;
+  assign hw_otp_ctrl.op.q        = RramOpRead;
+  assign hw_otp_ctrl.partition.q = RramPartData;
+  assign hw_otp_ctrl.num.q       = 0;
+  assign hw_otp_addr             = '0;
+  assign hw_otp_rready           = 1'b0;
+  assign hw_otp_wvalid           = 1'b0;
+  assign hw_otp_wdata            = '0;
+
   assign pwrmgr_o.nvm_idle = 1'b1;
 
   ///////////////////////
   // SW/HW ARBITRATION //
   ///////////////////////
-  // todo add rram_ctrl_arb
-  assign wr_op_start    = 1'b0;
-  assign wr_op_addr     = '0;
-
-  assign wr_fifo_wdata  = '0;
-  assign wr_fifo_wvalid = 1'b0;
-  assign wr_fifo_clr    = 1'b0;
-
-  assign rd_op_start    = 1'b0;
-  assign rd_op_addr     = '0;
-
-  assign rd_fifo_wvalid = 1'b0;
-  assign rd_fifo_wdata  = '0;
-
-  assign rd_ctrl_ready = 1'b0;
-
-  assign ctrl_num_words = '0;
-  assign sw_wready      = 1'b0;
+  rram_ctrl_arb u_rram_ctrl_arb (
+    .clk_i,
+    .rst_ni,
+    .disable_i        (rram_disable[ArbFsmDisableIdx]),
+    // sw ctrl interface
+    .sw_ctrl_i        (reg2hw.control),
+    .sw_addr_i        (reg2hw.addr.q),
+    .sw_done_o        (sw_ctrl_done),
+    .sw_err_o         (sw_ctrl_err),
+    // sw wr-fifo interface
+    .sw_wvalid_i      (sw_wvalid),
+    .sw_wready_o      (sw_wready),
+    .sw_wdata_i       (sw_wdata),
+    // sw rd-fifo interface
+    .sw_rready_i      (rd_fifo_wready),
+    .sw_rvalid_o      (rd_fifo_wvalid),
+    .sw_rdata_o       (rd_fifo_wdata),
+    // hw-lcmgr ctrl interface
+    .hw_lcmgr_req_i   (hw_lcmgr_req),
+    .hw_lcmgr_ctrl_i  (hw_lcmgr_ctrl),
+    .hw_lcmgr_phase_i (hw_lcmgr_phase),
+    .hw_lcmgr_addr_i  (hw_lcmgr_addr),
+    .hw_lcmgr_done_o  (hw_lcmgr_done),
+    .hw_lcmgr_err_o   (hw_lcmgr_err),
+    // hw-lcmgr wr-fifo interface
+    .hw_lcmgr_wvalid_i(hw_lcmgr_wvalid),
+    .hw_lcmgr_wdata_i (hw_lcmgr_wdata),
+    .hw_lcmgr_wready_o(hw_lcmgr_wready),
+    // hw-lcmgr read interface
+    .hw_lcmgr_rready_i(hw_lcmgr_rready),
+    .hw_lcmgr_rvalid_o(hw_lcmgr_rvalid),
+    .hw_lcmgr_rdata_o (hw_lcmgr_rdata),
+    // hw-otp ctrl interface
+    .hw_otp_req_i     (hw_otp_req),
+    .hw_otp_ctrl_i    (hw_otp_ctrl),
+    .hw_otp_addr_i    (hw_otp_addr),
+    .hw_otp_done_o    (hw_otp_done),
+    .hw_otp_err_o     (hw_otp_err),
+    // hw-otp wr-fifo interface
+    .hw_otp_wvalid_i  (hw_otp_wvalid),
+    .hw_otp_wdata_i   (hw_otp_wdata),
+    .hw_otp_wready_o  (hw_otp_wready),
+    // hw-otp read interface
+    .hw_otp_rready_i  (hw_otp_rready),
+    .hw_otp_rvalid_o  (hw_otp_rvalid),
+    .hw_otp_rdata_o   (hw_otp_rdata),
+    // Arbiter interface to wr/rd handler
+    .ctrl_part_o      (ctrl_part),
+    .ctrl_num_words_o (ctrl_num_words),
+    .wr_op_start_o    (wr_op_start),
+    .wr_op_addr_o     (wr_op_addr),
+    .rd_op_start_o    (rd_op_start),
+    .rd_op_addr_o     (rd_op_addr),
+    // wr/rd handler to arbiter
+    .wr_done_i        (wr_op_done),
+    .wr_err_i         (wr_op_err),
+    .wr_err_addr_i    (wr_op_err_addr),
+    .rd_done_i        (rd_op_done),
+    .rd_err_i         (rd_op_err),
+    .rd_err_addr_i    (rd_op_err_addr),
+    .rd_ctrl_rdata_i  (rd_ctrl_data),
+    .rd_ctrl_rvalid_i (rd_ctrl_valid),
+    .rd_ctrl_rready_o (rd_ctrl_ready),
+    // Muxed interface to wr_fifo
+    .wr_fifo_wvalid_o (wr_fifo_wvalid),
+    .wr_fifo_wdata_o  (wr_fifo_wdata),
+    .wr_fifo_wready_i (wr_fifo_wready),
+    .wr_fifo_clr_o    (wr_fifo_clr),
+    // Arbiter ctrl and status signals
+    .ctrl_init_done_i (lcmgr_init_done & lcmgr_keys_valid),
+    .phy_init_done_i  (phy_init_done),
+    .if_sel_o         (if_sel),
+    .phase_o          (phase),
+    .ctrl_err_addr_o  (ctrl_err_addr),
+    .fsm_err_o        (arb_fsm_err)
+  );
+  assign sw_sel = (if_sel == SwSel);
+  assign hw_loopback_sel = (if_sel == HwLoopBack);
 
   /////////////
   // WR_CTRL //
@@ -700,7 +839,7 @@ module rram_ctrl
   //////////////
   // todo add rram_phy
   assign phy_wr_intg_err = 1'b0;
-
+  assign phy_init_done   = 1'b1;
 
   assign rram_macro_o.rd_req  = 1'b0;
   assign rram_macro_o.wr_req  = 1'b0;
@@ -720,7 +859,7 @@ module rram_ctrl
   logic recov_err;
   logic fatal_std_err;
 
-  assign recov_err     = 1'b0;
+  assign recov_err     = (sw_ctrl_done & |sw_ctrl_err);
   assign fatal_err     = |reg2hw.fault_status;
   assign fatal_std_err = |reg2hw.std_fault_status;
 
@@ -836,7 +975,7 @@ module rram_ctrl
   // Check whether this FIFO has been filled to a certain level.
   assign intr_event[RdLvl]   = reg2hw.fifo_lvl.rd.q <= MaxFifoWidth'(rd_fifo_depth);
   // Event types
-  assign intr_event[OpDone]  = 1'b0;
+  assign intr_event[OpDone]  = sw_ctrl_done;
   assign intr_event[CorrErr] = 1'b0; // todo connect in future commits
 
   prim_intr_hw #(
@@ -974,6 +1113,8 @@ module rram_ctrl
                                          alert_tx_o[1])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(RdFsm_A, u_rram_ctrl_rd.u_state_regs,
                                          alert_tx_o[1])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(ArbFsmCheck_A, u_rram_ctrl_arb.u_state_regs,
+                                       alert_tx_o[1])
 
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(TlLcGateFsm_A, u_tl_gate.u_state_regs,
                                        alert_tx_o[1])
