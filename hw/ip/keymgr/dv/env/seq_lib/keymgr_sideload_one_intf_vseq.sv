@@ -22,7 +22,15 @@ class keymgr_sideload_one_intf_vseq extends keymgr_sideload_vseq;
   }
 
   function void pre_randomize();
-    `DV_GET_ENUM_PLUSARG(keymgr_pkg::keymgr_key_dest_e, sideload_dest, "sideload_dest", 1)
+    // Use $value$plusargs and save the result in a string, in order to check that the plusarg has
+    // actually been supplied. To cast it to an appropriate enum value, load again with
+    // DV_GET_ENUM_PLUSARG.
+    string _ignored_str;
+    if (!$value$plusargs("sideload_dest=%0s", _ignored_str)) begin
+      `uvm_fatal(get_name(), "Missing +sideload_dest plusarg.")
+    end
+    `DV_GET_ENUM_PLUSARG(keymgr_pkg::keymgr_key_dest_e, sideload_dest, "sideload_dest")
+
     super.pre_randomize();
   endfunction
 endclass : keymgr_sideload_one_intf_vseq
