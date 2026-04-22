@@ -29,6 +29,24 @@ constexpr otcrypto_key_config_t kConfigCtr128 = {
     .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
+// Key configuration for testing (RSA 2048).
+constexpr otcrypto_key_config_t kConfigRsa2048 = {
+    .version = kOtcryptoLibVersion1,
+    .key_mode = kOtcryptoKeyModeRsaSignPkcs,
+    .key_length = 256,
+    .hw_backed = kHardenedBoolFalse,
+    .security_level = kOtcryptoKeySecurityLevelLow,
+};
+
+// Key configuration for testing (ECC P256).
+constexpr otcrypto_key_config_t kConfigEcdsaP256 = {
+    .version = kOtcryptoLibVersion1,
+    .key_mode = kOtcryptoKeyModeEcdsaP256,
+    .key_length = 32,
+    .hw_backed = kHardenedBoolFalse,
+    .security_level = kOtcryptoKeySecurityLevelLow,
+};
+
 // Key configuration for testing (31-byte key; not valid but helps test for
 // issues with keys that don't have an even word size).
 constexpr otcrypto_key_config_t kConfigOddBytes = {
@@ -389,6 +407,93 @@ TEST(Keyblob, RemaskPassesIntegrity) {
 
   // Check that the integrity checksum was updated.
   EXPECT_EQ(integrity_blinded_key_check(&key), kHardenedBoolTrue);
+}
+
+TEST(Keyblob, ShareNumWordsRsa) {
+  size_t share_words = keyblob_share_num_words(kConfigRsa2048);
+  EXPECT_EQ(share_words, kConfigRsa2048.key_length / sizeof(uint32_t));
+}
+
+TEST(Keyblob, ToKeymgrDiversificationNegative) {
+  keymgr_diversification_t div;
+  uint32_t keyblob[8] = {0};
+
+  // hw_backed is false
+  otcrypto_blinded_key_t key_not_hw_backed = {
+      .config = kConfigCtr128,
+      .keyblob_length = 32,  // Assumes kKeyblobHwBackedBytes == 32
+      .keyblob = keyblob,
+      .checksum = 0,
+  };
+  EXPECT_NOT_OK(keyblob_to_keymgr_diversification(&key_not_hw_backed, &div));
+  EXPECT_NOT_OK(
+      keyblob_to_keymgr_attestation_diversification(&key_not_hw_backed, &div));
+
+  // keyblob is NULL
+  otcrypto_blinded_key_t key_null_blob = {
+      .config = kConfigCtrSideloaded,
+      .keyblob_length = 32,
+      .keyblob = nullptr,
+      .checksum = 0,
+  };
+  EXPECT_NOT_OK(keyblob_to_keymgr_diversification(&key_null_blob, &div));
+  EXPECT_NOT_OK(
+      keyblob_to_keymgr_attestation_diversification(&key_null_blob, &div));
+
+  // Bad keyblob_length
+  otcrypto_blinded_key_t key_bad_length = {
+      .config = kConfigCtrSideloaded,
+      .keyblob_length = 99,
+      .keyblob = keyblob,
+      .checksum = 0,
+  };
+  EXPECT_NOT_OK(keyblob_to_keymgr_diversification(&key_bad_length, &div));
+  EXPECT_NOT_OK(
+      keyblob_to_keymgr_attestation_diversification(&key_bad_length, &div));
+}
+
+TEST(Keyblob, EnsureXorMaskedNegative) {
+  uint32_t key_data[64] = {0};
+  uint32_t mask_data[64] = {0};
+  uint32_t keyblob_buf[128] = {0};
+
+  // ECC key
+  EXPECT_NOT_OK(keyblob_from_key_and_mask(key_data, mask_data, kConfigEcdsaP256,
+                                          keyblob_buf));
+
+  // RSA key
+  EXPECT_NOT_OK(keyblob_from_key_and_mask(key_data, mask_data, kConfigRsa2048,
+                                          keyblob_buf));
+
+  // HW backed
+  EXPECT_NOT_OK(keyblob_from_key_and_mask(key_data, mask_data,
+                                          kConfigCtrSideloaded, keyblob_buf));
+
+  // Invalid / Unrecognized mode
+  otcrypto_key_config_t bad_config = kConfigCtr128;
+  bad_config.key_mode = static_cast<otcrypto_key_mode_t>(0xFFFFFFFF);
+  EXPECT_NOT_OK(
+      keyblob_from_key_and_mask(key_data, mask_data, bad_config, keyblob_buf));
+}
+
+TEST(Keyblob, KeyUnmaskNegative) {
+  uint32_t keyblob_buf[8] = {0};
+  otcrypto_blinded_key_t key = {
+      .config = kConfigCtr128,
+      .keyblob_length = sizeof(keyblob_buf),
+      .keyblob = keyblob_buf,
+      .checksum = 0,
+  };
+  uint32_t unmasked_key[4] = {0};
+
+  // NULL key
+  EXPECT_NOT_OK(keyblob_key_unmask(nullptr, 4, unmasked_key));
+
+  // NULL unmasked_key destination
+  EXPECT_NOT_OK(keyblob_key_unmask(&key, 4, nullptr));
+
+  // Mismatched length
+  EXPECT_NOT_OK(keyblob_key_unmask(&key, 99, unmasked_key));
 }
 
 }  // namespace
