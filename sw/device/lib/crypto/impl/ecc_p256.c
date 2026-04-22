@@ -31,10 +31,6 @@
 OT_WARN_UNUSED_RESULT
 static status_t p256_private_key_length_check(
     const otcrypto_blinded_key_t *private_key) {
-  if (private_key->keyblob == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
   if (private_key->config.hw_backed == kHardenedBoolTrue) {
     // Skip the length check in this case; if the salt is the wrong length, the
     // keyblob library will catch it before we sideload the key.
@@ -173,19 +169,6 @@ static status_t p256_signature_length_check(size_t len) {
 
 otcrypto_status_t otcrypto_ecdsa_p256_keygen(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
-  if (private_key == NULL || private_key->keyblob == NULL ||
-      public_key == NULL || public_key->key == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  if (private_key->config.key_mode != kOtcryptoKeyModeEcdsaP256 ||
-      public_key->key_mode != kOtcryptoKeyModeEcdsaP256) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  if (!status_ok(p256_private_key_length_check(private_key)) ||
-      !status_ok(p256_public_key_length_check(public_key))) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
   HARDENED_TRY(otcrypto_ecdsa_p256_keygen_async_start(private_key));
   return otcrypto_ecdsa_p256_keygen_async_finalize(private_key, public_key);
 }
@@ -239,14 +222,6 @@ otcrypto_status_t otcrypto_ecdsa_p256_verify(
     const otcrypto_hash_digest_t message_digest,
     const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result) {
-  if (verification_result == NULL || signature->data == NULL ||
-      public_key == NULL || public_key->key == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  if (!status_ok(p256_signature_length_check(signature->len)) ||
-      !status_ok(p256_public_key_length_check(public_key))) {
-    return OTCRYPTO_BAD_ARGS;
-  }
   HARDENED_TRY(otcrypto_ecdsa_p256_verify_async_start(
       public_key, message_digest, signature));
   return otcrypto_ecdsa_p256_verify_async_finalize(signature,
@@ -276,18 +251,6 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_verify(
 
 otcrypto_status_t otcrypto_ecdh_p256_keygen(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
-  if (private_key == NULL || private_key->keyblob == NULL ||
-      public_key == NULL || public_key->key == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  if (private_key->config.key_mode != kOtcryptoKeyModeEcdhP256 ||
-      public_key->key_mode != kOtcryptoKeyModeEcdhP256) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  if (!status_ok(p256_private_key_length_check(private_key)) ||
-      !status_ok(p256_public_key_length_check(public_key))) {
-    return OTCRYPTO_BAD_ARGS;
-  }
   HARDENED_TRY(otcrypto_ecdh_p256_keygen_async_start(private_key));
   return otcrypto_ecdh_p256_keygen_async_finalize(private_key, public_key);
 }
@@ -295,18 +258,6 @@ otcrypto_status_t otcrypto_ecdh_p256_keygen(
 otcrypto_status_t otcrypto_ecdh_p256(const otcrypto_blinded_key_t *private_key,
                                      const otcrypto_unblinded_key_t *public_key,
                                      otcrypto_blinded_key_t *shared_secret) {
-  if (shared_secret == NULL || shared_secret->keyblob == NULL ||
-      private_key == NULL || private_key->keyblob == NULL ||
-      public_key == NULL || public_key->key == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  if (shared_secret->config.key_length != kP256CoordBytes) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  if (!status_ok(p256_private_key_length_check(private_key)) ||
-      !status_ok(p256_public_key_length_check(public_key))) {
-    return OTCRYPTO_BAD_ARGS;
-  }
   HARDENED_TRY(otcrypto_ecdh_p256_async_start(private_key, public_key));
   return otcrypto_ecdh_p256_async_finalize(shared_secret);
 }
