@@ -37,6 +37,11 @@ For more details, see later sections (links in the "category" column).
 | [**Deterministic random bit generation**](#deterministic-random-bit-generation) | AES-CTR-DRBG |
 | [**Key derivation**](#key-derivation) | HMAC-KDF-CTR<br>KMAC-KDF-CTR |
 
+## Cryptolib Usage Examples
+
+Examples of how to use the cryptolib API are provided in the [cryptolib test directory][crypto-tests].
+These examples cover a range of algorithms and demonstrate the typical call sequence for symmetric and asymmetric cryptographic operations including key generation.
+
 ## Data structures
 
 These are the basic data structures used by the crypto library to communicate with the caller.
@@ -818,3 +823,4 @@ The table below is a recommendation from [NIST SP800-57 Part 1][nist-sp800-57] a
 [sha2-spec]: https://csrc.nist.gov/publications/detail/fips/180/4/final
 [sha3-spec]: https://csrc.nist.gov/publications/detail/fips/202/final
 [sha3-derived-spec]: https://csrc.nist.gov/publications/detail/sp/800-185/final
+[crypto-tests]: https://github.com/lowRISC/opentitan/tree/earlgrey_1.0.0/sw/device/tests/crypto
