@@ -813,13 +813,9 @@ status_t handle_cryptolib_sca_asym_ed25519_sign(ujson_t *uj) {
   cryptolib_sca_asym_ed25519_sign_in_t uj_input;
   TRY(ujson_deserialize_cryptolib_sca_asym_ed25519_sign_in_t(uj, &uj_input));
 
-  /////////////// STUB START ///////////////
-  // Perform a ED25519 signature.
-  // Trigger are over the API calls.
-
   cryptolib_sca_asym_ed25519_sign_out_t uj_output;
   memset(&uj_output, 0, sizeof(uj_output));
-  /////////////// STUB END ///////////////
+  TRY(cryptolib_sca_ed25519_sign_impl(uj_input, &uj_output));
   RESP_OK(ujson_serialize_cryptolib_sca_asym_ed25519_sign_out_t, uj,
           &uj_output);
 
