@@ -66,7 +66,7 @@ static status_t decrypt_streaming_test(void) {
 static status_t run_bad_args_test(void) {
   LOG_INFO("Running AES-GCM BAD_ARGS negative tests.");
 
-  uint32_t keyblob[8] = {0};
+  uint32_t keyblob[16] = {0};
   otcrypto_key_config_t config = {
       .version = kOtcryptoLibVersion1,
       .key_mode = kOtcryptoKeyModeAesGcm,
@@ -107,10 +107,34 @@ static status_t run_bad_args_test(void) {
                                  &ct, &null_tag)
             .value == OTCRYPTO_BAD_ARGS.value);
 
-  // Test length mismatch between plaintext and ciphertext
+  // Length mismatch checks
   otcrypto_byte_buf_t bad_ct = OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, data, 15);
+  otcrypto_const_byte_buf_t bad_ct_const =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, data, 15);
+  otcrypto_const_word32_buf_t tag_const =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, tag_data, 4);
+  hardened_bool_t success;
+
   CHECK(otcrypto_aes_gcm_encrypt(&key, &pt, &iv, &aad, kOtcryptoAesGcmTagLen128,
                                  &bad_ct, &tag)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_aes_gcm_decrypt(&key, &bad_ct_const, &iv, &aad,
+                                 kOtcryptoAesGcmTagLen128, &tag_const, &ct,
+                                 &success)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // IV length checks
+  otcrypto_const_word32_buf_t short_iv =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, iv_data, 2);
+  CHECK(otcrypto_aes_gcm_encrypt(&key, &pt, &short_iv, &aad,
+                                 kOtcryptoAesGcmTagLen128, &ct, &tag)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  uint32_t long_iv_data[5] = {0};
+  otcrypto_const_word32_buf_t long_iv =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, long_iv_data, 5);
+  CHECK(otcrypto_aes_gcm_encrypt(&key, &pt, &long_iv, &aad,
+                                 kOtcryptoAesGcmTagLen128, &ct, &tag)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   // Tag length checks
@@ -125,7 +149,7 @@ static status_t run_bad_args_test(void) {
                                  (otcrypto_aes_gcm_tag_len_t)0xFF, &ct, &tag)
             .value == OTCRYPTO_BAD_ARGS.value);
 
-  // Invalid key mode
+  // Key Mode & Integrity Checks
   otcrypto_key_config_t bad_mode_config = config;
   bad_mode_config.key_mode = kOtcryptoKeyModeAesCbc;
   otcrypto_blinded_key_t bad_mode_key = {
@@ -138,7 +162,6 @@ static status_t run_bad_args_test(void) {
                                  kOtcryptoAesGcmTagLen128, &ct, &tag)
             .value == OTCRYPTO_BAD_ARGS.value);
 
-  // Invalid sideload keyblob length
   otcrypto_key_config_t bad_hw_config = config;
   bad_hw_config.hw_backed = kHardenedBoolTrue;
   otcrypto_blinded_key_t bad_hw_key = {
@@ -150,6 +173,213 @@ static status_t run_bad_args_test(void) {
   CHECK(otcrypto_aes_gcm_encrypt(&bad_hw_key, &pt, &iv, &aad,
                                  kOtcryptoAesGcmTagLen128, &ct, &tag)
             .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Streaming API BAD_ARGS tests
+  otcrypto_aes_gcm_context_t ctx;
+
+  // Init checks
+  CHECK(otcrypto_aes_gcm_encrypt_init(NULL, &iv, &ctx).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_aes_gcm_encrypt_init(&key, NULL, &ctx).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_aes_gcm_encrypt_init(&key, &iv, NULL).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_aes_gcm_encrypt_init(&key, &short_iv, &ctx).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_aes_gcm_encrypt_init(&key, &long_iv, &ctx).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  CHECK(otcrypto_aes_gcm_decrypt_init(NULL, &iv, &ctx).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_aes_gcm_decrypt_init(&key, NULL, &ctx).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_aes_gcm_decrypt_init(&key, &iv, NULL).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_aes_gcm_decrypt_init(&key, &short_iv, &ctx).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_aes_gcm_decrypt_init(&key, &long_iv, &ctx).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  // Initialize a valid context for further testing
+  TRY(otcrypto_aes_gcm_encrypt_init(&key, &iv, &ctx));
+
+  // Update AAD checks
+  otcrypto_const_byte_buf_t valid_aad =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, data, 16);
+  CHECK(otcrypto_aes_gcm_update_aad(NULL, &valid_aad).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  otcrypto_const_byte_buf_t null_aad_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 5);
+  CHECK(otcrypto_aes_gcm_update_aad(&ctx, &null_aad_buf).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  // Update encrypted data checks
+  size_t written;
+  CHECK(
+      otcrypto_aes_gcm_update_encrypted_data(NULL, &pt, &ct, &written).value ==
+      OTCRYPTO_BAD_ARGS.value);
+  otcrypto_const_byte_buf_t null_pt =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 16);
+  CHECK(otcrypto_aes_gcm_update_encrypted_data(&ctx, &null_pt, &ct, &written)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  otcrypto_byte_buf_t null_ct =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, NULL, 16);
+  CHECK(otcrypto_aes_gcm_update_encrypted_data(&ctx, &pt, &null_ct, &written)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_aes_gcm_update_encrypted_data(&ctx, &pt, &ct, NULL).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_byte_buf_t short_ct =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, data, 15);
+  CHECK(otcrypto_aes_gcm_update_encrypted_data(&ctx, &pt, &short_ct, &written)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Update the key checksum because we remasked before
+  key.checksum = integrity_blinded_checksum(&key);
+
+  // Test operation ordering
+  otcrypto_aes_gcm_context_t ctx_aad_after_data;
+  TRY(otcrypto_aes_gcm_encrypt_init(&key, &iv, &ctx_aad_after_data));
+  TRY(otcrypto_aes_gcm_update_encrypted_data(&ctx_aad_after_data, &pt, &ct,
+                                             &written));
+  // Adding AAD after data has already been accumulated must return BAD_ARGS
+  CHECK(otcrypto_aes_gcm_update_aad(&ctx_aad_after_data, &valid_aad).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  // Encrypt final checks
+  CHECK(otcrypto_aes_gcm_encrypt_final(NULL, kOtcryptoAesGcmTagLen128, &ct,
+                                       &written, &tag)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_aes_gcm_encrypt_final(&ctx, kOtcryptoAesGcmTagLen128, &ct,
+                                       NULL, &tag)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_aes_gcm_encrypt_final(&ctx, kOtcryptoAesGcmTagLen128, &ct,
+                                       &written, &null_tag)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Partial block length check in final
+  otcrypto_const_byte_buf_t partial_pt =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, data, 10);
+  TRY(otcrypto_aes_gcm_update_encrypted_data(
+      &ctx, &partial_pt, &ct, &written));  // Push 10 bytes to context
+  otcrypto_byte_buf_t too_short_ct_final =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, data, 9);
+  CHECK(otcrypto_aes_gcm_encrypt_final(&ctx, kOtcryptoAesGcmTagLen128,
+                                       &too_short_ct_final, &written, &tag)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Decrypt final checks
+  otcrypto_const_word32_buf_t null_const_tag =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, NULL, 4);
+  CHECK(otcrypto_aes_gcm_decrypt_final(
+            NULL, &tag_const, kOtcryptoAesGcmTagLen128, &ct, &written, &success)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_aes_gcm_decrypt_final(&ctx, &null_const_tag,
+                                       kOtcryptoAesGcmTagLen128, &ct, &written,
+                                       &success)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_aes_gcm_decrypt_final(
+            &ctx, &tag_const, kOtcryptoAesGcmTagLen128, &ct, NULL, &success)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_aes_gcm_decrypt_final(
+            &ctx, &tag_const, kOtcryptoAesGcmTagLen128, &ct, &written, NULL)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Update the key checksum because we remasked before
+  key.checksum = integrity_blinded_checksum(&key);
+
+  // Re-init context for decrypt to reset input_len for the partial block test
+  TRY(otcrypto_aes_gcm_decrypt_init(&key, &iv, &ctx));
+  TRY(otcrypto_aes_gcm_update_encrypted_data(&ctx, &partial_pt, &ct,
+                                             &written));  // Push 10 bytes
+  CHECK(otcrypto_aes_gcm_decrypt_final(&ctx, &tag_const,
+                                       kOtcryptoAesGcmTagLen128,
+                                       &too_short_ct_final, &written, &success)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Edge Case & Fault Injection Coverage
+
+  // Failed Decryption Tag Check
+  key.checksum = integrity_blinded_checksum(&key);
+  TRY(otcrypto_aes_gcm_encrypt(&key, &pt, &iv, &aad, kOtcryptoAesGcmTagLen128,
+                               &ct, &tag));
+  ct.data[0] ^= 0x01;  // Corrupt ciphertext bit
+  otcrypto_const_byte_buf_t ct_const_corrupt =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, ct.data, 16);
+  TRY(otcrypto_aes_gcm_decrypt(&key, &ct_const_corrupt, &iv, &aad,
+                               kOtcryptoAesGcmTagLen128, &tag_const, &ct,
+                               &success));
+  CHECK(success == kHardenedBoolFalse);
+  ct.data[0] ^= 0x01;
+
+  // Top-Level NULL Pointer Checks
+  otcrypto_const_byte_buf_t null_buf_16 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 16);
+  otcrypto_byte_buf_t null_out_16 =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, NULL, 16);
+
+  // Just one check per top-level API is enough to light up the coverage lines
+  CHECK(otcrypto_aes_gcm_encrypt(&key, &null_buf_16, &iv, &aad,
+                                 kOtcryptoAesGcmTagLen128, &ct, &tag)
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_aes_gcm_decrypt(&key, &null_buf_16, &iv, &aad,
+                                 kOtcryptoAesGcmTagLen128, &tag_const, &ct,
+                                 &success)
+            .value != OTCRYPTO_OK.value);
+
+  // Inner Driver Bounds & Overflows
+  key.checksum = integrity_blinded_checksum(&key);
+  TRY(otcrypto_aes_gcm_encrypt_init(&key, &iv, &ctx));
+
+  otcrypto_const_byte_buf_t buf_16 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, data, 16);
+  otcrypto_byte_buf_t out_16 = OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, data, 16);
+  otcrypto_const_byte_buf_t huge_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, data, UINT32_MAX);
+
+  // Inner AAD Overflow & Inner NULL check
+  TRY(otcrypto_aes_gcm_update_aad(&ctx, &buf_16));
+  CHECK(otcrypto_aes_gcm_update_aad(&ctx, &huge_buf).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_aes_gcm_update_encrypted_data(&ctx, &null_buf_16, &out_16,
+                                               &written)
+            .value != OTCRYPTO_OK.value);
+
+  // Inner Data Overflow & Inner Final NULL check
+  TRY(otcrypto_aes_gcm_update_encrypted_data(&ctx, &buf_16, &out_16, &written));
+  CHECK(
+      otcrypto_aes_gcm_update_encrypted_data(&ctx, &huge_buf, &out_16, &written)
+          .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_aes_gcm_encrypt_final(&ctx, kOtcryptoAesGcmTagLen128, &out_16,
+                                       NULL, &tag)
+            .value != OTCRYPTO_OK.value);
+
+  // Final API NULL Checks
+  key.checksum = integrity_blinded_checksum(&key);
+  TRY(otcrypto_aes_gcm_encrypt_init(&key, &iv, &ctx));
+  CHECK(otcrypto_aes_gcm_encrypt_final(&ctx, kOtcryptoAesGcmTagLen128,
+                                       &null_out_16, &written, &tag)
+            .value != OTCRYPTO_OK.value);
+
+  key.checksum = integrity_blinded_checksum(&key);
+  TRY(otcrypto_aes_gcm_decrypt_init(&key, &iv, &ctx));
+  CHECK(otcrypto_aes_gcm_decrypt_final(&ctx, &tag_const,
+                                       kOtcryptoAesGcmTagLen128, &null_out_16,
+                                       &written, &success)
+            .value != OTCRYPTO_OK.value);
+
+  // Fault Injection
+  key.checksum = integrity_blinded_checksum(&key);
+  TRY(otcrypto_aes_gcm_encrypt_init(&key, &iv, &ctx));
+  ctx.data[0] = 0xBADBAD;  // Corrupt is_encrypt boolean
+  CHECK(otcrypto_aes_gcm_update_encrypted_data(&ctx, &buf_16, &out_16, &written)
+            .value != OTCRYPTO_OK.value);
+
+  key.checksum = integrity_blinded_checksum(&key);
+  TRY(otcrypto_aes_gcm_encrypt_init(&key, &iv, &ctx));
+  ctx.data[1] = 0xBADBAD;  // Corrupt aes_key.mode enum
+  CHECK(otcrypto_aes_gcm_update_encrypted_data(&ctx, &buf_16, &out_16, &written)
+            .value != OTCRYPTO_OK.value);
 
   return OTCRYPTO_OK;
 }
@@ -218,6 +448,14 @@ static status_t run_sideload_test(void) {
                                &recovered_pt, &success));
   TRY_CHECK(success == kHardenedBoolTrue);
   TRY_CHECK_ARRAYS_EQ(recovered_pt_data, pt_data, 16);
+
+  otcrypto_aes_gcm_context_t sl_ctx;
+  size_t sl_written;
+  TRY(otcrypto_aes_gcm_encrypt_init(&sideload_key, &iv, &sl_ctx));
+  TRY(otcrypto_aes_gcm_update_aad(&sl_ctx, &pt));
+  TRY(otcrypto_aes_gcm_update_encrypted_data(&sl_ctx, &pt, &ct, &sl_written));
+  TRY(otcrypto_aes_gcm_encrypt_final(&sl_ctx, kOtcryptoAesGcmTagLen128, &ct,
+                                     &sl_written, &tag));
 
   return OTCRYPTO_OK;
 }

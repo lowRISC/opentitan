@@ -132,11 +132,6 @@ static status_t aes_gcm_key_construct(otcrypto_blinded_key_t *blinded_key,
   // Set the AES key length (in words).
   aes_key->key_len = keyblob_share_num_words(blinded_key->config);
 
-  // Check for null pointer.
-  if (blinded_key->keyblob == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
   if (launder32(blinded_key->config.hw_backed) == kHardenedBoolTrue) {
     // In this case, we use an implementation-specific representation; the
     // first "share" is the keyblob and the second share is ignored.
@@ -291,9 +286,6 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Randomize the tag before the operation.
-  HARDENED_TRY(hardened_memshred(auth_tag->data, auth_tag->len));
-
   // Conditionally check for null pointers in data buffers that may be
   // 0-length.
   if (aad == NULL || ciphertext == NULL || plaintext == NULL ||
@@ -311,6 +303,9 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(
 
   // Check the tag length.
   HARDENED_TRY(aes_gcm_check_tag_length(auth_tag->len, tag_len));
+
+  // Randomize the tag before the operation.
+  HARDENED_TRY(hardened_memshred(auth_tag->data, auth_tag->len));
 
   // Construct the AES key.
   aes_key_t aes_key;
@@ -343,8 +338,8 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
     hardened_bool_t *success) {
   // Check for NULL pointers in input pointers and required-nonzero-length data
   // buffers.
-  if (key == NULL || iv == NULL || iv->data == NULL || auth_tag == NULL ||
-      auth_tag->data == NULL) {
+  if (key == NULL || key->keyblob == NULL || iv == NULL || iv->data == NULL ||
+      auth_tag == NULL || auth_tag->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -538,11 +533,11 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
   }
   *ciphertext_bytes_written = 0;
 
-  // Randomize the tag before the operation.
-  HARDENED_TRY(hardened_memshred(auth_tag->data, auth_tag->len));
-
   // Check the tag length.
   HARDENED_TRY(aes_gcm_check_tag_length(auth_tag->len, tag_len));
+
+  // Randomize the tag before the operation.
+  HARDENED_TRY(hardened_memshred(auth_tag->data, auth_tag->len));
 
   // Restore the AES-GCM context object and load the key if needed.
   aes_gcm_context_t internal_ctx;
