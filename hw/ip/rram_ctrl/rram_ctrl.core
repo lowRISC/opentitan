@@ -26,6 +26,9 @@ filesets:
       - rtl/rram_ctrl_wr.sv
       - rtl/rram_ctrl_rd.sv
       - rtl/rram_ctrl_arb.sv
+      - rtl/rram_ctrl_region_cfg.sv
+      - rtl/rram_ctrl_mp_region_sel.sv
+      - rtl/rram_ctrl_mp.sv
       - rtl/rram_ctrl.sv
     file_type: systemVerilogSource
 

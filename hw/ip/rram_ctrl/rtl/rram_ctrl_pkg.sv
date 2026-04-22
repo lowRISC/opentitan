@@ -283,6 +283,14 @@ package rram_ctrl_pkg;
     ecc_en:      MuBi4False
   };
 
+  parameter page_cfg_t CfgNoAccess = '{
+    en:          MuBi4True,
+    rd_en:       MuBi4False,
+    wr_en:       MuBi4False,
+    scramble_en: MuBi4False,
+    ecc_en:      MuBi4False
+  };
+
   parameter page_cfg_t CfgRw = '{
     en:          MuBi4True,
     rd_en:       MuBi4True,
@@ -346,7 +354,7 @@ package rram_ctrl_pkg;
   // RD/WR access to OTP space, everything else is disabled
   parameter mp_region_cfg_t SwInitDataCfg = '{
     phase: PhaseInvalid,
-    cfg:   CfgDisable,
+    cfg:   CfgNoAccess,
     base:  PageW'(OtpStartPage),
     size:  OtpPages-1
   };
