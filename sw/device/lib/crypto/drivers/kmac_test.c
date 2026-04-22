@@ -29,7 +29,7 @@ static inline uintptr_t kmac_base(void) {
 static status_t run_kmac_test(void) {
   LOG_INFO("Running positive KMAC (SHA3-256) test.");
 
-  HARDENED_TRY(kmac_hwip_default_configure());
+  TRY(kmac_hwip_default_configure());
 
   const uint8_t kMsg[] = "abc";
   uint32_t digest[8];
