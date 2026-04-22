@@ -240,9 +240,9 @@ uint32_t gpiodpi_host_to_device_tick(void *ctx_void, svBitVecVal *gpio_oe,
             ++gpio_text;
             int idx = parse_dec(&gpio_text);
             if (idx < NUM_GPIO) {
-              if (!GET_BIT(gpio_oe[0], idx)) {
+              if (GET_BIT(gpio_oe[0], idx)) {
                 fprintf(stderr,
-                        "GPIO: Host tried to pull disabled pin low: pin %2d\n",
+                        "GPIO: Host tried to pull output pin low: pin %2d\n",
                         idx);
               }
               CLR_BIT(ctx->driven_pin_values, idx);
@@ -260,9 +260,9 @@ uint32_t gpiodpi_host_to_device_tick(void *ctx_void, svBitVecVal *gpio_oe,
             ++gpio_text;
             int idx = parse_dec(&gpio_text);
             if (idx < NUM_GPIO) {
-              if (!GET_BIT(gpio_oe[0], idx)) {
+              if (GET_BIT(gpio_oe[0], idx)) {
                 fprintf(stderr,
-                        "GPIO: Host tried to pull disabled pin high: pin %2d\n",
+                        "GPIO: Host tried to pull output pin high: pin %2d\n",
                         idx);
               }
               SET_BIT(ctx->driven_pin_values, idx);
