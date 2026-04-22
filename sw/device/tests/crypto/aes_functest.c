@@ -340,6 +340,13 @@ static status_t run_negative_tests(void) {
                      kOtcryptoAesPaddingNull, &output)
             .value == OTCRYPTO_BAD_ARGS.value);
 
+  // Test mode mismatch between the key's internal mode and the requested AES
+  // mode.
+  CHECK(otcrypto_aes(&key, &iv, kOtcryptoAesModeEcb,
+                     kOtcryptoAesOperationEncrypt, &input,
+                     kOtcryptoAesPaddingNull, &output)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
   return OTCRYPTO_OK;
 }
 
