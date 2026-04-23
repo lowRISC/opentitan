@@ -396,3 +396,17 @@ opentitan_test(
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
+
+test_suite(
+    name = "drivers_test_suite",
+    tests = [
+        ":aes_test",
+        ":alert_test",
+        ":entropy_test",
+        ":hmac_test",
+        ":keymgr_test",
+        ":kmac_test",
+        ":otbn_test",
+        ":rv_core_ibex_test",
+    ],
+)

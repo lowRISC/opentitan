@@ -436,3 +436,13 @@ cc_library(
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
+
+test_suite(
+    name = "impl_unittest_suite",
+    tests = [
+        ":key_transport_unittest",
+        ":keyblob_unittest",
+        ":status_debug_unittest",
+        ":status_unittest",
+    ],
+)
