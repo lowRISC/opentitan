@@ -21,17 +21,19 @@ otcrypto_status_t otcrypto_kmac(
   // TODO (#16410) Revisit/complete error checks
 
   // Check for null pointers.
-  if (key == NULL || key->keyblob == NULL || tag->data == NULL) {
+  if (key == NULL || key->keyblob == NULL || tag == NULL || tag->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Check for null input message with nonzero length.
-  if (input_message->data == NULL && input_message->len != 0) {
+  if (input_message == NULL ||
+      (input_message->data == NULL && input_message->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Check for null customization string with nonzero length.
-  if (customization_string->data == NULL && customization_string->len != 0) {
+  if (customization_string == NULL ||
+      (customization_string->data == NULL && customization_string->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
 
