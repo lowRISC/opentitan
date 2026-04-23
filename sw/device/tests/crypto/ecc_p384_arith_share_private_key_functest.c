@@ -7,6 +7,7 @@
 #include "sw/device/lib/crypto/impl/ecc/p384.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/drbg.h"
 #include "sw/device/lib/crypto/include/ecc_p384.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/sha2.h"
@@ -37,55 +38,75 @@ static const otcrypto_key_config_t kPrivateKeyConfig = {
 static const char kMessage[] = "test message";
 
 // Generate a random plain private key in the interval [1, n - 1].
-void generate_random_key(uint32_t *key) {
-  hardened_memshred(key, kP384ScalarWords);
-
-  const uint32_t zero[kP384ScalarWords] = {0};
+status_t generate_random_key(uint32_t *key) {
+  otcrypto_word32_buf_t key_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, key, kP384ScalarWords);
+  otcrypto_const_byte_buf_t kEmptyBuffer =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
 
   // n - 1
   const uint32_t n1[kP384ScalarWords] = {
       0xccc52972, 0xecec196a, 0x48b0a77a, 0x581a0db2, 0xf4372ddf, 0xc7634d81,
       0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff};
 
-  while (1) {
+  TRY(otcrypto_drbg_instantiate(/*perso_string=*/&kEmptyBuffer));
+  // Attempt to generate a valid key until successful.
+  // Each attempt has an overwhelming probability to succeed
+  // Still, to avoid infinite loops, we set to try a total of 128 times
+  uint32_t try_count = 128;
+  uint32_t idx = 0;
+  while (idx < try_count) {
+    idx++;
     // Generate a random scalar.
-    size_t i = 0;
-    for (; launder32(i) < kP384ScalarWords; i++) {
-      key[i] = hardened_memshred_random_word();
-    }
-    HARDENED_CHECK_EQ(i, kP384ScalarWords);
+    TRY(otcrypto_drbg_generate(&kEmptyBuffer, &key_buf));
 
-    // If the generated key is 0, restart.
-    if (hardened_memeq(key, zero, kP384ScalarWords) == kHardenedBoolTrue) {
+    // If the generated key is not in the range [1, n-1], restart.
+    if (hardened_range_check(key, n1, kP384ScalarWords).value !=
+        kOtcryptoStatusValueOk) {
       continue;
     }
-    HARDENED_CHECK_EQ(hardened_memeq(key, zero, kP384ScalarWords),
-                      kHardenedBoolFalse);
-
-    // If the generated key is > n - 1, restart.
-    uint32_t borrow = 0;
-    i = 0;
-    for (; launder32(i) < kP384ScalarWords; i++) {
-      borrow = (n1[i] < borrow) + ((n1[i] - borrow) < key[i]);
-    }
-    HARDENED_CHECK_EQ(i, kP384ScalarWords);
-
-    if (borrow) {
-      continue;
-    }
-    HARDENED_CHECK_EQ(borrow, 0);
-
-    return;
+    return OTCRYPTO_OK;
   }
+  return OTCRYPTO_RECOV_ERR;
 }
 
-// Verify that we can correctly arithmetically share a plain private key.
-status_t arith_share_private_key_test(void) {
+// Generate a random 448-bit Boolean-shared shared seed.
+status_t generate_random_seed(uint32_t *share0, uint32_t *share1) {
+  otcrypto_word32_buf_t key_buf0 = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, share0, kP384MaskedScalarShareWords);
+  otcrypto_word32_buf_t key_buf1 = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, share1, kP384MaskedScalarShareWords);
+
+  otcrypto_const_byte_buf_t kEmptyBuffer =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
+
+  TRY(otcrypto_drbg_instantiate(/*perso_string=*/&kEmptyBuffer));
+  TRY(otcrypto_drbg_generate(&kEmptyBuffer, &key_buf0));
+  TRY(otcrypto_drbg_generate(&kEmptyBuffer, &key_buf1));
+  TRY(hardened_xor_in_place(share0, share1, kP384MaskedScalarShareWords));
+  return OTCRYPTO_OK;
+}
+
+// Verify that we can correctly arithmetically share a Boolean-shared key.
+status_t arith_share_private_key_test(bool seed) {
   // Part 1: Generate a random private key and arithmetically share it.
 
   uint32_t key_share0[kP384MaskedScalarShareWords] = {0};
   uint32_t key_share1[kP384MaskedScalarShareWords] = {0};
-  generate_random_key(key_share0);
+
+  // Either generate a 448-bit Boolean-shared seed that is converted to an
+  // 448-bit arithmetically shared key or generate a 384-bit unshared key in
+  // the interval [1, n-1] according to FIPS 186-5 and expand it to 448-bit
+  // Boolean shares before the conversion to arithmetic shares.
+  if (seed) {
+    TRY(generate_random_seed(key_share0, key_share1));
+  } else {
+    TRY(generate_random_key(key_share0));
+    // Share the key
+    TRY(hardened_memshred(key_share1, kP384MaskedScalarShareWords));
+    TRY(hardened_xor_in_place(key_share0, key_share1,
+                              kP384MaskedScalarShareWords));
+  }
 
   otcrypto_const_word32_buf_t private_key_share0 = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, key_share0, kP384MaskedScalarShareWords);
@@ -155,13 +176,15 @@ OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
 
-  status_t err = arith_share_private_key_test();
-  if (!status_ok(err)) {
+  status_t err0 = arith_share_private_key_test(false);
+  status_t err1 = arith_share_private_key_test(true);
+  if (!status_ok(err0) || !status_ok(err1)) {
     // If there was an error, print the OTBN error bits and instruction count.
     LOG_INFO("OTBN error bits: 0x%08x", otbn_err_bits_get());
     LOG_INFO("OTBN instruction count: 0x%08x", otbn_instruction_count_get());
     // Print the error.
-    CHECK_STATUS_OK(err);
+    CHECK_STATUS_OK(err0);
+    CHECK_STATUS_OK(err1);
     return false;
   }
 
