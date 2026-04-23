@@ -170,6 +170,7 @@ filegroup(
         exclude = [
             "foundry/**",
             "**/dv/**",
+            "**/generic_dv/**",
             "doc/**",
         ],
     ) + [
