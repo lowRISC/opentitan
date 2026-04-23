@@ -92,3 +92,19 @@ jobs:
       - name: Check for unrunnable tests
         run: ./ci/scripts/check-unrunnable-tests.sh
         continue-on-error: true
+
+  coverage_smoketest:
+    name: Coverage smoketest
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+        with:
+          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
+      - name: Execute coverage smoketest
+        run: |
+          python3 util/coverage/run_smoke_test.py \
+            sw/device/lib/coverage/smoke/*.coverage.json
