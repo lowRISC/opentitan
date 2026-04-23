@@ -348,63 +348,6 @@ jobs:
         with:
           artifact-name: verilator_earlgrey-test-results
 
-  # Build CW305 variant of the English Breakfast toplevel design using Vivado
-  chip_englishbreakfast_cw305:
-    name: CW305's Bitstream
-    runs-on: ubuntu-22.04-vivado
-    needs: quick_lint
-    if: ${{ github.event_name != 'merge_group' }}
-    steps:
-      - uses: actions/checkout@v6
-      - name: Prepare environment
-        uses: ./.github/actions/prepare-env
-        with:
-          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
-      - name: Build bitstream
-        run: |
-          . util/build_consts.sh
-
-          bitstream_target=//hw/top_englishbreakfast/bitstream:fpga_cw305
-          archive_target=//hw/top_englishbreakfast/bitstream:englishbreakfast_cw305_archive
-          bitstream_archive=$(./bazelisk.sh outquery ${archive_target})
-
-          trap 'get_logs' EXIT
-          get_logs() {
-            design_name=chip_englishbreakfast_cw305
-            SUB_PATH="hw/top_englishbreakfast/${design_name}"
-            mkdir -p "$OBJ_DIR/$SUB_PATH" "$BIN_DIR/$SUB_PATH"
-            # This can fail if the build result is from Bazel cache
-            cp -rLvt "$OBJ_DIR/$SUB_PATH/" \
-              $(./bazelisk.sh outquery-all ${bitstream_target}) || true
-
-            # TODO: Splice ROM into the bitstream?
-            cp -Lv ${bitstream_archive} build-bin.tar
-          }
-
-          # Build the bitstream first. It has an empty ROM (all zeroes).
-          module load "xilinx/vivado/${VIVADO_VERSION}"
-          ./bazelisk.sh build //hw/top_englishbreakfast/bitstream:englishbreakfast_cw305_archive
-          tar xvf ${bitstream_archive}
-
-          # Build CW305 test rom required by `build-bitstream-vivado.sh`
-          rom_path="sw/device/lib/testing/test_rom"
-          ./bazelisk.sh build "//${rom_path}:test_rom_fpga_cw305" \
-            --features=-rv32_bitmanip \
-            --copt=-DOT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_
-          vmem="$(./bazelisk.sh cquery --output=files "//${rom_path}:test_rom_fpga_cw305" \
-            --features=-rv32_bitmanip \
-            --copt=-DOT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_
-          )"
-          mkdir -p "build-bin/${rom_path}"
-          cp "$vmem" "build-bin/${rom_path}"
-
-      - name: Upload bitstream
-        uses: actions/upload-artifact@v7
-        with:
-          name: chip_englishbreakfast_cw305
-          path: build-bin.tar
-          overwrite: true
-
   chip_earlgrey_cw310_hyperdebug:
     name: Earl Grey for CW310 Hyperdebug
     needs: quick_lint
