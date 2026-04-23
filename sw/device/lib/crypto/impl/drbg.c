@@ -126,7 +126,8 @@ otcrypto_status_t otcrypto_drbg_instantiate(
 otcrypto_status_t otcrypto_drbg_reseed(
     const otcrypto_const_byte_buf_t *additional_input) {
   // Check for NULL pointers or bad length.
-  if (additional_input->len != 0 && additional_input->data == NULL) {
+  if (additional_input == NULL ||
+      (additional_input->len != 0 && additional_input->data == NULL)) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -164,10 +165,12 @@ otcrypto_status_t otcrypto_drbg_manual_reseed(
     const otcrypto_const_byte_buf_t *entropy,
     const otcrypto_const_byte_buf_t *additional_input) {
   // Check for NULL pointers or bad length.
-  if (additional_input->len != 0 && additional_input->data == NULL) {
+  if (additional_input == NULL ||
+      (additional_input->len != 0 && additional_input->data == NULL)) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (entropy->data == NULL || entropy->len != kEntropySeedBytes) {
+  if (entropy == NULL || entropy->data == NULL ||
+      entropy->len != kEntropySeedBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -212,8 +215,9 @@ otcrypto_status_t otcrypto_drbg_generate(
     // Nothing to do.
     return OTCRYPTO_OK;
   }
-  if ((additional_input->len != 0 && additional_input->data == NULL) ||
-      drbg_output->data == NULL) {
+  if (additional_input == NULL ||
+      (additional_input->len != 0 && additional_input->data == NULL) ||
+      drbg_output == NULL || drbg_output->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -231,8 +235,9 @@ otcrypto_status_t otcrypto_drbg_manual_generate(
     // Nothing to do.
     return OTCRYPTO_OK;
   }
-  if ((additional_input->len != 0 && additional_input->data == NULL) ||
-      drbg_output->data == NULL) {
+  if (additional_input == NULL ||
+      (additional_input->len != 0 && additional_input->data == NULL) ||
+      drbg_output == NULL || drbg_output->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
