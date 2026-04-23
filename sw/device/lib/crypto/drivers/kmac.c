@@ -193,6 +193,8 @@ static status_t kmac_get_keccak_rate_words(kmac_security_str_t security_str,
       security_str_set = launder32(security_str_set) | kKmacSecurityStrength512;
       break;
     default:
+      // COVERAGE (SW ERR) This is an internal function, we only provide valid
+      // inputs to it, hence the default case should not be reached.
       return OTCRYPTO_BAD_ARGS;
   }
   // Check if we landed in the correct case statement. Use ORs for this to
@@ -354,15 +356,19 @@ status_t kmac_hwip_default_configure(void) {
 OT_WARN_UNUSED_RESULT
 static status_t wait_status_bit(uint32_t bit_position, bool bit_value) {
   if (bit_position > 31) {
+    // COVERAGE (SW ERR) This is an internal function, we only provide valid
+    // inputs to it, hence the if case should not be reached.
     return OTCRYPTO_BAD_ARGS;
   }
 
   while (true) {
     uint32_t reg = abs_mmio_read32(kKmacBaseAddr + KMAC_STATUS_REG_OFFSET);
     if (bitfield_bit32_read(reg, KMAC_STATUS_ALERT_FATAL_FAULT_BIT)) {
+      // COVERAGE (HW ERR) This is only reached if KMAC raises an alert.
       return OTCRYPTO_FATAL_ERR;
     }
     if (bitfield_bit32_read(reg, KMAC_STATUS_ALERT_RECOV_CTRL_UPDATE_ERR_BIT)) {
+      // COVERAGE (HW ERR) This is only reached if KMAC raises an alert.
       return OTCRYPTO_RECOV_ERR;
     }
     if (bitfield_bit32_read(reg, bit_position) == bit_value) {
@@ -510,6 +516,8 @@ static status_t kmac_init(kmac_operation_t operation,
   } else if (hw_backed == kHardenedBoolFalse) {
     cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_SIDELOAD_BIT, 0);
   } else {
+    // COVERAGE (SW ERR) This internal function is only given valid encodings of
+    // hw_backed.
     return OTCRYPTO_BAD_ARGS;
   };
 
@@ -548,6 +556,8 @@ static status_t kmac_write_key_block(kmac_blinded_key_t *key) {
     return OTCRYPTO_OK;
   } else if (launder32(key->hw_backed) != kHardenedBoolFalse) {
     // Invalid value.
+    // COVERAGE (SW ERR) This is only reached with a bad encoding of
+    // key->hw_backed.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(key->hw_backed, kHardenedBoolFalse);
@@ -647,6 +657,8 @@ static status_t kmac_process_msg_blocks(
   if (operation == kKmacOperationKmac) {
     uint32_t digest_len_bits = 8 * sizeof(uint32_t) * digest_len_words;
     if (digest_len_bits / (8 * sizeof(uint32_t)) != digest_len_words) {
+      // COVERAGE (SW ERR) This is an internal function, we only provide it
+      // valid inputs.
       return OTCRYPTO_BAD_ARGS;
     }
 

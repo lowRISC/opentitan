@@ -276,6 +276,9 @@ static status_t aes_begin(aes_key_t key, const aes_block_t *iv,
   // Check that AES is ready to receive input data.
   uint32_t status = abs_mmio_read32(kBase + AES_STATUS_REG_OFFSET);
   if (!bitfield_bit32_read(status, AES_STATUS_INPUT_READY_BIT)) {
+    // COVERAGE (HW ERR) This line checks whether the AES HW is ready to receive
+    // input but after spin_until(AES_STATUS_IDLE_BIT), hence it will always be
+    // ready unless there is a HW error.
     return OTCRYPTO_RECOV_ERR;
   }
   HARDENED_CHECK_EQ(launder32(bitfield_bit32_read(

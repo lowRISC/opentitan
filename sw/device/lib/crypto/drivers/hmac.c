@@ -140,6 +140,7 @@ static status_t hmac_idle_wait(void) {
   uint32_t intr_state =
       abs_mmio_read32(kHmacBaseAddr + HMAC_INTR_STATE_REG_OFFSET);
   if (bitfield_bit32_read(intr_state, HMAC_INTR_STATE_HMAC_DONE_BIT) == 0) {
+    // COVERAGE (HW ERR) Only reached if the HMAC has a HW error.
     return OTCRYPTO_FATAL_ERR;
   }
 
