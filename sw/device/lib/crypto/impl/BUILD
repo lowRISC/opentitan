@@ -314,7 +314,6 @@ cc_library(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/crypto/drivers:alert",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
-        "//sw/device/lib/base:abs_mmio",
     ],
 )
 
