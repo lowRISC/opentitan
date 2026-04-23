@@ -35,6 +35,7 @@ filesets:
       - lowrisc:prim_asap7:xnor2
       - lowrisc:prim_asap7:xor2
       - lowrisc:prim_asap7:flop_no_rst
+      - lowrisc:prim_asap7:inv
 # Note that flash is a macro that depends on IPs, so they are not
 # included here. They must be brought in explicitly.
 #      - lowrisc:prim_generic:flash
@@ -64,6 +65,7 @@ mapping:
   "lowrisc:prim:xnor2"        : "lowrisc:prim_asap7:xnor2"
   "lowrisc:prim:xor2"         : "lowrisc:prim_asap7:xor2"
   "lowrisc:prim:flop_no_rst"  : "lowrisc:prim_asap7:flop_no_rst"
+  "lowrisc:prim:inv"          : "lowrisc:prim_asap7:inv"
   # Flash is a good canditate to be removed from the prims and become a macro like OTP.
   # TODO(#27042): When this is done, it should be removed from this mapping.
   "lowrisc:prim:flash": "lowrisc:prim_generic:flash"
