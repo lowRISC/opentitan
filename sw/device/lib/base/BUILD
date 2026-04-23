@@ -5,6 +5,7 @@
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 load(
     "//rules/opentitan:defs.bzl",
+    "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "EARLGREY_TEST_ENVS",
     "cw310_params",
     "fpga_params",
@@ -14,6 +15,14 @@ load(
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 
 package(default_visibility = ["//visibility:public"])
+
+BASE_EXEC_ENVS = dicts.add(
+    EARLGREY_TEST_ENVS,
+    EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+    {
+        "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
+    },
+)
 
 filegroup(
     name = "doc_files",
@@ -62,7 +71,7 @@ cc_test(
 opentitan_test(
     name = "crc32_functest",
     srcs = ["crc32_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = BASE_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -76,7 +85,7 @@ opentitan_test(
     name = "crc32_perftest",
     srcs = ["crc32_perftest.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
+        BASE_EXEC_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_test_rom": None,
         },
@@ -207,7 +216,7 @@ cc_library(
 opentitan_test(
     name = "memory_perftest",
     srcs = ["memory_perftest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = BASE_EXEC_ENVS,
     fpga = fpga_params(
         tags = ["coverage_broken"],  # perftest instrumentation overhead
     ),
@@ -256,7 +265,7 @@ cc_test(
 opentitan_test(
     name = "hardened_functest",
     srcs = ["hardened_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = BASE_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -307,6 +316,21 @@ cc_test(
         ":hardened_memory",
         ":random_order",
         "@googletest//:gtest_main",
+    ],
+)
+
+opentitan_test(
+    name = "hardened_memory_functest",
+    srcs = ["hardened_memory_functest.c"],
+    exec_env = BASE_EXEC_ENVS,
+    deps = [
+        "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/crypto/drivers:rv_core_ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:profile",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
