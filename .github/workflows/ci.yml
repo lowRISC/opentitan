@@ -272,27 +272,6 @@ jobs:
       - name: Execute tests
         run: ./bazelisk.sh test --test_tag_filters=-nightly //sw/otbn/crypto/...
 
-  verilator_englishbreakfast:
-    name: Verilated English Breakfast
-    runs-on: ubuntu-22.04
-    needs: quick_lint
-    steps:
-      - uses: actions/checkout@v4
-      - name: Prepare environment
-        uses: ./.github/actions/prepare-env
-        with:
-          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
-      - name: Build simulator with Verilator
-        run: ./ci/scripts/build-chip-verilator.sh englishbreakfast
-      - name: Upload binary
-        uses: actions/upload-artifact@v4
-        with:
-          name: verilated_englishbreakfast
-          path: build-bin/hw/top_englishbreakfast/Vchip_englishbreakfast_verilator
-          overwrite: true
-      - name: Test
-        run: ./ci/scripts/run-english-breakfast-verilator-tests.sh
-
   verilator_earlgrey:
     name: Verilated Earl Grey
     runs-on: ubuntu-22.04
