@@ -5,7 +5,8 @@
 name: Nightly
 on:
   schedule:
-    - cron: "00 04 * * *"
+    - cron: "00 01 * * *"
+      timezone: "Europe/London"
 
   workflow_dispatch:
     inputs:
