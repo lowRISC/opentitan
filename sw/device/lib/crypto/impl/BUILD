@@ -165,6 +165,15 @@ cc_library(
     ],
 )
 
+cc_test(
+    name = "integrity_unittest",
+    srcs = ["integrity_unittest.cc"],
+    deps = [
+        ":integrity",
+        "@googletest//:gtest_main",
+    ],
+)
+
 cc_library(
     name = "kats",
     srcs = ["kats.c"],
