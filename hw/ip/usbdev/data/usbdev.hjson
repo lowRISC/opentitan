@@ -1208,9 +1208,25 @@
                 Disable (0) or enable (1) oscillator test mode.
                 If enabled, the device constantly transmits a J/K pattern, which is useful for testing the USB clock.
                 Note that while in oscillator test mode, the device no longer receives SOFs and consequently does not generate the reference signal for clock synchronization.
-                The clock might drift off.
+                The clock may drift off.
 
                 '''
+          tags: [// Writing can provoke state changes in the receiver logic and thus raise errors.
+                 "excl:CsrNonInitTests:CsrExclWrite"]
+        }
+        {
+          bits: "8"
+          resval: "0"
+          name: "tx_pkt_test_mode",
+          desc: '''
+                Disable (0) or enable (1) packet transmission test mode.
+                If enabled, the device constantly transmits a packet presented to IN Endpoint Zero. It is expected that there will no response to the transmission,
+                which will not be signaled to the CPU and the packet will not be marked as sent.
+                Note that while in oscillator test mode, the device no longer receives SOFs and consequently does not generate the reference signal for clock synchronization.
+                The clock may drift off.
+
+                '''
+          hwaccess: "hrw",
           tags: [// Writing can provoke state changes in the receiver logic and thus raise errors.
                  "excl:CsrNonInitTests:CsrExclWrite"]
         }

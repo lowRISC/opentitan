@@ -704,6 +704,8 @@ module usbdev_reg_top (
   logic phy_config_usb_ref_disable_wd;
   logic phy_config_tx_osc_test_mode_qs;
   logic phy_config_tx_osc_test_mode_wd;
+  logic phy_config_tx_pkt_test_mode_qs;
+  logic phy_config_tx_pkt_test_mode_wd;
   logic wake_control_we;
   logic [1:0] wake_control_qs;
   logic wake_control_busy;
@@ -7740,6 +7742,33 @@ module usbdev_reg_top (
     .qs     (phy_config_tx_osc_test_mode_qs)
   );
 
+  //   F[tx_pkt_test_mode]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_phy_config_tx_pkt_test_mode (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (phy_config_we),
+    .wd     (phy_config_tx_pkt_test_mode_wd),
+
+    // from internal hardware
+    .de     (hw2reg.phy_config.tx_pkt_test_mode.de),
+    .d      (hw2reg.phy_config.tx_pkt_test_mode.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.phy_config.tx_pkt_test_mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (phy_config_tx_pkt_test_mode_qs)
+  );
+
 
   // R[wake_control]: V(True)
   logic wake_control_qe;
@@ -8993,6 +9022,8 @@ module usbdev_reg_top (
   assign phy_config_usb_ref_disable_wd = reg_wdata[6];
 
   assign phy_config_tx_osc_test_mode_wd = reg_wdata[7];
+
+  assign phy_config_tx_pkt_test_mode_wd = reg_wdata[8];
   assign wake_control_we = addr_hit[36] & reg_we & !reg_error;
 
 
@@ -9477,6 +9508,7 @@ module usbdev_reg_top (
         reg_rdata_next[5] = phy_config_pinflip_qs;
         reg_rdata_next[6] = phy_config_usb_ref_disable_qs;
         reg_rdata_next[7] = phy_config_tx_osc_test_mode_qs;
+        reg_rdata_next[8] = phy_config_tx_pkt_test_mode_qs;
       end
 
       addr_hit[36]: begin
