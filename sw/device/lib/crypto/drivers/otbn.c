@@ -80,11 +80,15 @@ static status_t check_offset_len(uint32_t offset_bytes, size_t num_words,
   uint32_t num_bytes = num_words * sizeof(uint32_t);
 
   if (offset_bytes > UINT32_MAX - num_bytes) {
+    // COVERAGE (SW ERR) This is an internal function, we only provide it valid
+    // inputs.
     return OTCRYPTO_BAD_ARGS;
   }
   uint32_t adjusted_offset_bytes = offset_bytes + num_bytes;
 
   if (adjusted_offset_bytes > mem_size) {
+    // COVERAGE (SW ERR) This is an internal function, we only provide it valid
+    // inputs.
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -228,11 +232,13 @@ status_t otbn_busy_wait_for_done(void) {
   // If OTBN is idle (not locked), then return a recoverable error.
   if (launder32(status) == kOtbnStatusIdle) {
     HARDENED_CHECK_EQ(status, kOtbnStatusIdle);
+    // COVERAGE (HW ERR) This requires the OTBN to reach an error.
     return OTCRYPTO_RECOV_ERR;
   }
 
   // OTBN is locked; return a fatal error.
   HARDENED_CHECK_EQ(status, kOtbnStatusLocked);
+  // COVERAGE (HW ERR) This is only reached when the OTBN has a HW error.
   return OTCRYPTO_FATAL_ERR;
 }
 
@@ -290,6 +296,8 @@ status_t otbn_set_ctrl_software_errs_fatal(bool enable) {
 static status_t check_app_address_ranges(const otbn_app_t *app) {
   // IMEM must not be backwards or empty.
   if (app->imem_end <= app->imem_start) {
+    // COVERAGE (SW ERR) This is an internal function, we only provide it valid
+    // inputs.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_LT(app->imem_start, app->imem_end);
