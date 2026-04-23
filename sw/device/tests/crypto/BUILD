@@ -656,6 +656,22 @@ opentitan_test(
     ],
 )
 
+opentitan_test(
+    name = "entropy_src_functest",
+    srcs = ["entropy_src_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
 autogen_cryptotest_header(
     name = "kmac_testvectors_hardcoded_header",
     hjson = "//sw/device/tests/crypto/testvectors:kmac_testvectors_hardcoded",
@@ -1358,6 +1374,7 @@ test_suite(
         ":ecdsa_p384_functest",
         ":ecdsa_p384_sideload_functest",
         ":ed25519_functest",
+        ":entropy_src_functest",
         ":hkdf_functest",
         ":hmac_functest",
         ":hmac_multistream_functest",
