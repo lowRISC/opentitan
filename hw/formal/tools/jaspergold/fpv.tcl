@@ -188,7 +188,7 @@ if {($env(DUT_TOP) == "pinmux_tb") || ($env(DUT_TOP) == "pinmux_chip_tb")} {
   clock -rate -default clk_i
   reset -expr {!rst_ni !rst_main_ni}
 
-} elseif {$env(DUT_TOP) == "rstmgr"} {
+} elseif {$env(DUT_TOP) == "rstmgr_fpv_tb"} {
   clock clk_main_i
   clock clk_i -both_edges
   clock clk_io_i -factor 1
