@@ -10,16 +10,15 @@ module prim_secded_inv_hamming_72_64_enc (
 );
 
   always_comb begin : p_encode
-    data_o = 72'(data_i);
-    data_o[64] = ^(data_o & 72'h00AB55555556AAAD5B);
-    data_o[65] = ^(data_o & 72'h00CD9999999B33366D);
-    data_o[66] = ^(data_o & 72'h00F1E1E1E1E3C3C78E);
-    data_o[67] = ^(data_o & 72'h0001FE01FE03FC07F0);
-    data_o[68] = ^(data_o & 72'h0001FFFE0003FFF800);
-    data_o[69] = ^(data_o & 72'h0001FFFFFFFC000000);
-    data_o[70] = ^(data_o & 72'h00FE00000000000000);
-    data_o[71] = ^(data_o & 72'h7FFFFFFFFFFFFFFFFF);
-    data_o ^= 72'hAA0000000000000000;
+    data_o[63:0] = data_i;
+    data_o[64] = (^(data_i & 64'hAB55555556AAAD5B)) ^ 1'b0;
+    data_o[65] = (^(data_i & 64'hCD9999999B33366D)) ^ 1'b1;
+    data_o[66] = (^(data_i & 64'hF1E1E1E1E3C3C78E)) ^ 1'b0;
+    data_o[67] = (^(data_i & 64'h01FE01FE03FC07F0)) ^ 1'b1;
+    data_o[68] = (^(data_i & 64'h01FFFE0003FFF800)) ^ 1'b0;
+    data_o[69] = (^(data_i & 64'h01FFFFFFFC000000)) ^ 1'b1;
+    data_o[70] = (^(data_i & 64'hFE00000000000000)) ^ 1'b0;
+    data_o[71] = (^data_o[70:0]) ^ 1'b1;
   end
 
 endmodule : prim_secded_inv_hamming_72_64_enc
