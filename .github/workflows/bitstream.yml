@@ -43,6 +43,7 @@ jobs:
             ':!/*.md' \
             ':!/.github/' \
             ':!/hw/**/dv/*' \
+            ':!/hw/**/generic_dv/*' \
             ':!/hw/dv/'
 
       - name: Extract cached bitstream

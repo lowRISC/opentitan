@@ -10,6 +10,7 @@ filegroup(
         ["**"],
         exclude = [
             "*/dv/**",
+            "*/generic_dv/**",
             "*/doc/**",
             "*/README.md",
         ],
