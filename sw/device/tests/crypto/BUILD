@@ -1156,6 +1156,7 @@ opentitan_test(
     srcs = ["symmetric_keygen_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
     deps = [
+        "//sw/device/lib/crypto/drivers:keymgr",
         "//sw/device/lib/crypto/impl:config",
         "//sw/device/lib/crypto/impl:drbg",
         "//sw/device/lib/crypto/impl:entropy_src",
@@ -1163,6 +1164,7 @@ opentitan_test(
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/impl:status",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing:randomness_quality",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
