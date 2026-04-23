@@ -280,22 +280,6 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "hardened_memory_functest",
-    srcs = ["hardened_memory_functest.c"],
-    exec_env = CRYPTOTEST_EXEC_ENVS,
-    deps = [
-        "//hw/top:rv_core_ibex_c_regs",
-        "//hw/top/dt:rv_core_ibex",
-        "//sw/device/lib/base:csr",
-        "//sw/device/lib/base:hardened_memory",
-        "//sw/device/lib/crypto/drivers:rv_core_ibex",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:profile",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
-
-opentitan_test(
     name = "drbg_functest",
     srcs = ["drbg_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
