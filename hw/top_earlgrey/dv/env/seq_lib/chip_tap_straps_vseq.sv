@@ -23,8 +23,8 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
 
   lc_ctrl_state_pkg::lc_state_e cur_lc_state;
 
-  local uvm_reg lc_csrs[$];
-  chip_jtag_tap_e select_jtag;
+  local uvm_reg         lc_csrs[$];
+  local chip_jtag_tap_e select_jtag;
 
   `uvm_object_utils(chip_tap_straps_vseq)
 

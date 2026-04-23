@@ -37,7 +37,7 @@ class chip_sw_lc_ctrl_scrap_vseq extends chip_sw_lc_base_vseq;
 
       // source state is randomized by default,
       // but if a plusarg is supplied, assign the given value
-      `DV_GET_ENUM_PLUSARG(lc_ctrl_state_pkg::dec_lc_state_e, src_state, src_dec_state)
+      `DV_GET_ENUM_PLUSARG(lc_ctrl_state_pkg::dec_lc_state_e, src_state, "src_dec_state")
       `uvm_info(`gfn, $sformatf("Source state is %0s", src_state.name), UVM_MEDIUM)
     end
   endfunction : pre_randomize

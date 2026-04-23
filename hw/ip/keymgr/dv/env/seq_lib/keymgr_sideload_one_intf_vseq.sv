@@ -22,7 +22,11 @@ class keymgr_sideload_one_intf_vseq extends keymgr_sideload_vseq;
   }
 
   function void pre_randomize();
-    `DV_GET_ENUM_PLUSARG(keymgr_pkg::keymgr_key_dest_e, sideload_dest, sideload_dest, 1)
+    if (!$test$plusargs("sideload_dest")) begin
+      `uvm_fatal(get_name(), "Missing +sideload_dest plusarg.")
+    end
+    `DV_GET_ENUM_PLUSARG(keymgr_pkg::keymgr_key_dest_e, sideload_dest, "sideload_dest")
+
     super.pre_randomize();
   endfunction
 endclass : keymgr_sideload_one_intf_vseq
