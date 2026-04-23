@@ -21,7 +21,7 @@ def hr(char: str) -> None:
 class Parser:
     # List of patterns we want to use for finding size_only constraints.
     size_only_patterns = [
-        "u_size_only",
+        "u_size_only", "u_size_only_inv",
         "u_size_only_xor", "u_size_only_xnor", "u_size_only_and",
         "u_size_only_mux", "u_size_only_flop", "u_size_only_buf",
         "u_size_only_tie", "u_size_only_clock_gate"

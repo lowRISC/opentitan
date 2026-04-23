@@ -32,6 +32,7 @@ filesets:
       - lowrisc:prim:xor2
       - lowrisc:prim:xnor2
       - lowrisc:prim:and2
+      - lowrisc:prim:inv
       - lowrisc:prim:reg_we_check
       - lowrisc:prim:sha2
     files:
