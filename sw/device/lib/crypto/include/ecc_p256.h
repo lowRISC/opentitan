@@ -570,9 +570,8 @@ status_t otcrypto_ecc_p256_base_point_mult(
 /**
  * Arithmetically share a private key provided as Boolean shares.
  *
- * Given a Boolean-shared private key d in the range [1, n-1] and shared, this
- * routine arithmetically shares the key such that d = d0 + d1 mod n, where n
- * is the curve order.
+ * Given a Boolean-shared 320-bit key d this function arithmetically shares the
+ * key such that d = d0 + d1 mod n where n is the curve order.
  *
  * It is allowed to pass the key in plain with the second share being set to 0.
  *
