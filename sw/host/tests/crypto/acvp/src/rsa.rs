@@ -5,6 +5,7 @@
 use anyhow::Result;
 use hex::FromHex;
 use serde::{Deserialize, Serialize};
+use std::cmp::min;
 use std::time::Duration;
 
 use cryptotest_commands::commands::CryptotestCommand;
@@ -14,6 +15,9 @@ use cryptotest_commands::rsa_commands::{
 
 use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::test_utils::rpc::{ConsoleRecv, ConsoleSend};
+use rand::RngCore;
+use rand::SeedableRng;
+use rand_chacha::ChaCha8Rng;
 
 // OpenTitan uJSON allocates 514 bytes for these arrays
 const RSA_MAX_BYTES: usize = 512;
@@ -79,32 +83,32 @@ pub struct RsaTestVectorSet {
 
 #[derive(Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-struct RsaResultCase {
-    tc_id: usize,
+pub struct RsaResultCase {
+    pub tc_id: usize,
     #[serde(skip_serializing_if = "Option::is_none")]
-    test_passed: Option<bool>,
+    pub test_passed: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    ct: Option<String>,
+    pub ct: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pt: Option<String>,
+    pub pt: Option<String>,
 }
 
 #[derive(Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-struct RsaResultGroup {
-    tg_id: usize,
-    tests: Vec<RsaResultCase>,
+pub struct RsaResultGroup {
+    pub tg_id: usize,
+    pub tests: Vec<RsaResultCase>,
 }
 
 #[derive(Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RsaResultVectorSet {
-    vs_id: usize,
-    algorithm: String,
-    revision: String,
+    pub vs_id: usize,
+    pub algorithm: String,
+    pub revision: String,
     #[serde(default)]
-    is_sample: bool,
-    test_groups: Vec<RsaResultGroup>,
+    pub is_sample: bool,
+    pub test_groups: Vec<RsaResultGroup>,
 }
 
 fn map_hash_alg(alg: &str) -> Result<usize> {
@@ -184,9 +188,11 @@ fn run_rsa_group(
     spi_console: &SpiConsoleDevice,
     algorithm: &str,
     tg: &RsaTestGroup,
+    skip_stride: usize,
+    start_offset: usize,
 ) -> Result<RsaResultGroup> {
     log::info!("tg_id: {}", tg.tg_id);
-    let mut result_cases = Vec::with_capacity(tg.tests.len());
+    let mut result_cases = Vec::new();
 
     let hashing = map_hash_alg(&tg.hash_alg)?;
 
@@ -202,7 +208,19 @@ fn run_rsa_group(
         _ => PADDING_PKCS,
     };
 
+    // Ensure that at least one test per group is run
+    let stride = min(skip_stride, tg.tests.len());
+
+    // Prevent division by zero if a test group happens to be entirely empty
+    let offset = if stride > 0 { start_offset % stride } else { 0 };
+    log::info!("Tests options: skip_stride: {}, offset: {}", stride, offset);
+
     for tc in &tg.tests {
+        if stride > 0 && (tc.tc_id % stride) != offset {
+            // Skip test
+            continue;
+        }
+
         log::info!("tc_id: {}", tc.tc_id);
 
         if algorithm.contains("sigVer") {
@@ -232,12 +250,34 @@ pub fn run_rsa_vector_set(
     timeout: Duration,
     spi_console: &SpiConsoleDevice,
     vs: &RsaTestVectorSet,
+    skip_stride_arg: usize,
+    seed_arg: Option<u64>,
 ) -> Result<RsaResultVectorSet> {
     log::info!("vs_id: {}", vs.vs_id);
+
+    let seed = seed_arg.unwrap_or_else(rand::random::<u64>);
+    log::info!("Using seed {}", seed);
+
+    // Create a deterministic RNG from the seed for skipping
+    let mut drng = ChaCha8Rng::seed_from_u64(seed);
+    let (skip_stride, start_offset) = match (drng.next_u32() as usize).checked_rem(skip_stride_arg)
+    {
+        Some(offset) => (skip_stride_arg, offset),
+        // if skip_stride_arg is 0, skip_stride is set to 1 to execute all the tests
+        None => (1usize, 0usize),
+    };
+
     let mut result_groups = Vec::with_capacity(vs.test_groups.len());
 
     for tg in &vs.test_groups {
-        result_groups.push(run_rsa_group(timeout, spi_console, &vs.algorithm, tg)?);
+        result_groups.push(run_rsa_group(
+            timeout,
+            spi_console,
+            &vs.algorithm,
+            tg,
+            skip_stride,
+            start_offset,
+        )?);
     }
 
     Ok(RsaResultVectorSet {

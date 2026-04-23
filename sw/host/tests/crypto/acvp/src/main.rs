@@ -28,6 +28,17 @@ struct Opts {
     #[arg(long, value_parser = humantime::parse_duration, default_value = "10s")]
     timeout: Duration,
 
+    // Reduce number of tests that are run by this factor.
+    // 1 out of skip_stride tests are run. The ID of the first test to run is
+    // (pseudo-)randomly chosen between 0 and skip_stride.
+    // If skip_stride is set to 0, all the tests are run
+    #[arg(long, default_value_t = 0usize)]
+    skip_stride: usize,
+
+    // Seed value for random number generator.
+    #[arg(long)]
+    seed: Option<u64>,
+
     // Input ACVP JSON test vector file.
     #[arg(long)]
     input: Option<std::path::PathBuf>,
@@ -69,6 +80,74 @@ enum AcvpResults {
     Rsa(rsa::RsaResultVectorSet),
 }
 
+fn validate_subset(actual: &[AcvpResults], expected_json: &serde_json::Value) -> Result<()> {
+    let exp_array = expected_json
+        .as_array()
+        .ok_or_else(|| std::io::Error::other("Expected JSON is not an array"))?;
+
+    if actual.len() != exp_array.len() {
+        return Err(std::io::Error::other(
+            "ACVP structure mismatch: different number of vector sets",
+        )
+        .into());
+    }
+
+    let act_json = serde_json::to_value(actual)?;
+    let act_array = act_json.as_array().unwrap();
+
+    for (a_idx, (act_val, exp_val)) in act_array.iter().zip(exp_array.iter()).enumerate() {
+        if act_val.get("url").is_some() {
+            continue;
+        }
+
+        let act_tgs = act_val.get("testGroups").and_then(|t| t.as_array());
+        let exp_tgs = exp_val.get("testGroups").and_then(|t| t.as_array());
+
+        if let (Some(act_tgs), Some(exp_tgs)) = (act_tgs, exp_tgs) {
+            for act_tg in act_tgs {
+                let tg_id = act_tg.get("tgId").unwrap();
+                let exp_tg = exp_tgs
+                    .iter()
+                    .find(|tg| tg.get("tgId") == Some(tg_id))
+                    .ok_or_else(|| {
+                        std::io::Error::other(format!(
+                            "Test Group {} missing in expected JSON",
+                            tg_id
+                        ))
+                    })?;
+
+                let act_tests = act_tg.get("tests").unwrap().as_array().unwrap();
+                let exp_tests = exp_tg.get("tests").unwrap().as_array().unwrap();
+
+                for act_tc in act_tests {
+                    let tc_id = act_tc.get("tcId").unwrap();
+                    let exp_tc = exp_tests
+                        .iter()
+                        .find(|tc| tc.get("tcId") == Some(tc_id))
+                        .ok_or_else(|| {
+                            std::io::Error::other(format!(
+                                "Test Case {} missing in expected JSON",
+                                tc_id
+                            ))
+                        })?;
+                    if act_tc != exp_tc {
+                        return Err(
+                            std::io::Error::other(format!("Test Case {} mismatch", tc_id)).into(),
+                        );
+                    }
+                }
+            }
+        } else {
+            return Err(std::io::Error::other(format!(
+                "ACVP structure mismatch at index {}",
+                a_idx
+            ))
+            .into());
+        }
+    }
+    Ok(())
+}
+
 fn run<R: std::io::Read, W: std::io::Write>(
     opts: &Opts,
     transport: &TransportWrapper,
@@ -99,16 +178,30 @@ fn run<R: std::io::Read, W: std::io::Write>(
                 vector_set_urls,
                 time,
             }),
-            AcvpVectors::Hmac(vs) => acvp_results.push(AcvpResults::Hmac(
-                hmac::run_hmac_vector_set(opts.timeout, &spi_console_device, &vs)?,
-            )),
-            AcvpVectors::Cshake(vs) => acvp_results.push(AcvpResults::Cshake(
-                cshake::run_cshake_vector_set(opts.timeout, &spi_console_device, &vs)?,
-            )),
+            AcvpVectors::Hmac(vs) => {
+                acvp_results.push(AcvpResults::Hmac(hmac::run_hmac_vector_set(
+                    opts.timeout,
+                    &spi_console_device,
+                    &vs,
+                    opts.skip_stride,
+                    opts.seed,
+                )?))
+            }
+            AcvpVectors::Cshake(vs) => {
+                acvp_results.push(AcvpResults::Cshake(cshake::run_cshake_vector_set(
+                    opts.timeout,
+                    &spi_console_device,
+                    &vs,
+                    opts.skip_stride,
+                    opts.seed,
+                )?))
+            }
             AcvpVectors::Rsa(vs) => acvp_results.push(AcvpResults::Rsa(rsa::run_rsa_vector_set(
                 opts.timeout,
                 &spi_console_device,
                 &vs,
+                opts.skip_stride,
+                opts.seed,
             )?)),
         }
     }
@@ -117,10 +210,15 @@ fn run<R: std::io::Read, W: std::io::Write>(
     }
     if let Some(r) = expected {
         let expected_results_json: serde_json::Value = serde_json::from_reader(r)?;
-        let acvp_results_json = serde_json::to_value(&acvp_results)?;
-
-        if acvp_results_json != expected_results_json {
-            return Err(std::io::Error::other("ACVP result mismatch").into());
+        validate_subset(&acvp_results, &expected_results_json)?;
+        if opts.skip_stride == 0 {
+            let acvp_results_json = serde_json::to_value(&acvp_results)?;
+            if acvp_results_json != expected_results_json {
+                return Err(std::io::Error::other(
+                    "ACVP result mismatch (strict parity check failed)",
+                )
+                .into());
+            }
         }
     }
     CryptotestCommand::Quit.send(&spi_console_device)?;
