@@ -460,6 +460,8 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
           launder32(cmd_type_used) | kEntropyCsrngSendAppCmdTypeEdnRes;
       break;
     default:
+      // COVERAGE (SW ERR) This is an internal function, the cmd_type given will
+      // always be from these cases.
       return OTCRYPTO_BAD_ARGS;
   }
   // Check if we landed in the correct case statement. Use ORs for this to
@@ -476,6 +478,7 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
     } while (!ready && --timeout);
 
     if (timeout == 0) {
+      // COVERAGE (HW ERR) The timeout should only happen with a HW error.
       return OTCRYPTO_RECOV_ERR;
     }
   }
@@ -530,6 +533,7 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
       } while (!ready && --timeout);
 
       if (timeout == 0) {
+        // COVERAGE (HW ERR) The timeout should only happen with a HW error.
         return OTCRYPTO_RECOV_ERR;
       }
     }
@@ -548,6 +552,7 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
                --timeout);
 
       if (timeout == 0) {
+        // COVERAGE (HW ERR) The timeout should only happen with a HW error.
         return OTCRYPTO_RECOV_ERR;
       }
 
@@ -563,12 +568,14 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
           --timeout);
 
       if (timeout == 0) {
+        // COVERAGE (HW ERR) The timeout should only happen with a HW error.
         return OTCRYPTO_RECOV_ERR;
       }
 
-      // Check the "status" bit, which will be 0 unless there was an error.
       reg = abs_mmio_read32(csrng_base() + CSRNG_SW_CMD_STS_REG_OFFSET);
       if (bitfield_field32_read(reg, CSRNG_SW_CMD_STS_CMD_STS_FIELD)) {
+        // COVERAGE (HW ERR) The status bit will be 0 unless there was a HW
+        // error.
         return OTCRYPTO_RECOV_ERR;
       }
     }
@@ -586,11 +593,13 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
                --timeout);
 
       if (timeout == 0) {
+        // COVERAGE (HW ERR) The timeout should only happen with a HW error.
         return OTCRYPTO_RECOV_ERR;
       }
 
-      // Check the "status" bit, which will be 0 unless there was an error.
       if (bitfield_field32_read(reg, CSRNG_SW_CMD_STS_CMD_STS_FIELD)) {
+        // COVERAGE (HW ERR) The status bit will be 0 unless there was a HW
+        // error.
         return OTCRYPTO_RECOV_ERR;
       }
     }
@@ -666,10 +675,12 @@ static status_t edn_ready_block(uint32_t edn_address) {
   } while (!bitfield_bit32_read(reg, EDN_SW_CMD_STS_CMD_RDY_BIT) && --timeout);
 
   if (timeout == 0) {
+    // COVERAGE (HW ERR) The timeout should only happen with a HW error.
     return OTCRYPTO_RECOV_ERR;
   }
 
   if (bitfield_field32_read(reg, CSRNG_SW_CMD_STS_CMD_STS_FIELD)) {
+    // COVERAGE (HW ERR) The status bit will be 0 unless there was a HW error.
     return OTCRYPTO_RECOV_ERR;
   }
   return OTCRYPTO_OK;
@@ -783,6 +794,7 @@ static status_t entropy_src_configure(const entropy_src_config_t *config) {
   if (config->bypass_conditioner != kMultiBitBool4False) {
     HARDENED_CHECK_NE(config->bypass_conditioner, kMultiBitBool4False);
     // Bypassing the conditioner is not supported.
+    // COVERAGE (SW ERR) The configs provided in the code do not support bypass.
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -898,6 +910,7 @@ static status_t entropy_src_check(const entropy_src_config_t *config) {
       config->route_to_firmware != kMultiBitBool4False) {
     // This check only supports FIPS-compatible configurations which do not
     // bypass the conditioner or route to firmware.
+    // COVERAGE (SW ERR) This code does not support bypass.
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -905,6 +918,8 @@ static status_t entropy_src_check(const entropy_src_config_t *config) {
   uint32_t reg = abs_mmio_read32(entropy_src_base() +
                                  ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET);
   if (reg != kMultiBitBool4True) {
+    // COVERAGE (HW ERR) This is only reached when the HW was not enabled before
+    // the check.
     return OTCRYPTO_RECOV_ERR;
   }
 
@@ -922,6 +937,8 @@ static status_t entropy_src_check(const entropy_src_config_t *config) {
       bitfield_field32_read(reg, ENTROPY_SRC_CONF_RNG_BIT_ENABLE_FIELD);
   if (conf_fips_enable != kMultiBitBool4True ||
       conf_rng_bit_enable != kMultiBitBool4False) {
+    // COVERAGE (SW ERR) This is only reached when the RNG was not set in FIPS
+    // mode, but we only support FIPS mode.
     return OTCRYPTO_RECOV_ERR;
   }
   reg = abs_mmio_read32(entropy_src_base() +
@@ -932,6 +949,8 @@ static status_t entropy_src_check(const entropy_src_config_t *config) {
       bitfield_field32_read(reg, ENTROPY_SRC_ENTROPY_CONTROL_ES_ROUTE_FIELD);
   if (control_es_type != kMultiBitBool4False ||
       control_es_route != kMultiBitBool4False) {
+    // COVERAGE (SW ERR) We only support configurations which set ES TYPE and
+    // ROUTE to true.
     return OTCRYPTO_RECOV_ERR;
   }
 
@@ -941,6 +960,7 @@ static status_t entropy_src_check(const entropy_src_config_t *config) {
   if (bitfield_field32_read(
           reg, ENTROPY_SRC_HEALTH_TEST_WINDOWS_FIPS_WINDOW_FIELD) !=
       config->fips_test_window_size) {
+    // COVERAGE (SW ERR) We only support a single test window size.
     return OTCRYPTO_RECOV_ERR;
   }
 
@@ -953,6 +973,7 @@ static status_t entropy_src_check(const entropy_src_config_t *config) {
       ~(uint32_t)config->alert_threshold);
   if (exp_reg != abs_mmio_read32(entropy_src_base() +
                                  ENTROPY_SRC_ALERT_THRESHOLD_REG_OFFSET)) {
+    // COVERAGE (SW ERR) We only support a single alert threshold.
     return OTCRYPTO_RECOV_ERR;
   }
 
@@ -1077,6 +1098,7 @@ status_t entropy_complex_init(hardened_bool_t fips) {
   if (launder32(config->id) != ((fips == kHardenedBoolFalse)
                                     ? kEntropyComplexConfigIdContinuous
                                     : kEntropyComplexConfigIdFipsContinuous)) {
+    // COVERAGE (SW ERR) We only support FIPS mode.
     return OTCRYPTO_RECOV_ERR;
   }
 
@@ -1098,6 +1120,7 @@ status_t entropy_complex_check(hardened_bool_t fips) {
   if (launder32(config->id) != ((fips == kHardenedBoolFalse)
                                     ? kEntropyComplexConfigIdContinuous
                                     : kEntropyComplexConfigIdFipsContinuous)) {
+    // COVERAGE (SW ERR) We only support FIPS mode.
     return OTCRYPTO_RECOV_ERR;
   }
 
@@ -1132,6 +1155,7 @@ status_t entropy_complex_health_test_config_check(hardened_bool_t fips) {
   // Check recoverable alerts
   if (abs_mmio_read32(entropy_src_base() +
                       ENTROPY_SRC_RECOV_ALERT_STS_REG_OFFSET) != 0) {
+    // COVERAGE (HW ERR) This is only reached when we detect a HW alert.
     return OTCRYPTO_RECOV_ERR;
   }
 
@@ -1242,6 +1266,7 @@ status_t entropy_csrng_generate_data_get(uint32_t *buf, size_t len,
              --timeout);
 
     if (timeout == 0) {
+      // COVERAGE (HW ERR) The timeout should only happen with a HW error.
       return OTCRYPTO_RECOV_ERR;
     }
 
@@ -1249,6 +1274,7 @@ status_t entropy_csrng_generate_data_get(uint32_t *buf, size_t len,
         !bitfield_bit32_read(reg, CSRNG_GENBITS_VLD_GENBITS_FIPS_BIT)) {
       // Entropy isn't FIPS-compatible, so we should return an error when
       // done. However, we still need to read the result to clear CSRNG's FIFO.
+      // COVERAGE (SW ERR) We only support FIPS mode.
       res = OTCRYPTO_RECOV_ERR;
     }
 
