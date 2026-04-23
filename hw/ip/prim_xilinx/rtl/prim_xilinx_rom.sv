@@ -7,7 +7,7 @@
 module prim_rom import prim_rom_pkg::*; #(
   parameter  int Width       = 32,
   parameter  int Depth       = 2048, // 8kB default
-  parameter  string MemInitFile = "", // VMEM file to initialize the memory with
+  parameter      MemInitFile = "", // VMEM file to initialize the memory with
 
   localparam int Aw          = $clog2(Depth)
 ) (
