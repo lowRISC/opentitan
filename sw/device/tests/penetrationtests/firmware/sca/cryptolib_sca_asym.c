@@ -856,8 +856,6 @@ status_t handle_cryptolib_sca_asym_init(ujson_t *uj) {
                 released ? "true" : "false", build_hash_high, build_hash_low);
   RESP_OK(ujson_serialize_string, uj, cryptolib_version);
 
-  // Check the security config of the device.
-  TRY(otcrypto_security_config_check(kOtcryptoKeySecurityLevelHigh));
   /////////////// STUB END ///////////////
 
   return OK_STATUS();

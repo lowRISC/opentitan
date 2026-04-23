@@ -259,11 +259,19 @@ opentitan_test(
 opentitan_test(
     name = "config_functest",
     srcs = ["config_functest.c"],
-    exec_env = CRYPTOTEST_EXEC_ENVS,
+    # This test does not work on cw310 since it does not connect the jittery clock
+    exec_env = dicts.add(
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
+        },
+    ),
     verilator = verilator_params(
         timeout = "eternal",
     ),
     deps = [
+        "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
+        "//sw/device/lib/base:csr",
         "//sw/device/lib/crypto/impl:config",
         "//sw/device/lib/crypto/impl:status",
         "//sw/device/lib/crypto/include:datatypes",
@@ -1353,6 +1361,7 @@ test_suite(
         ":aes_kwp_kat_functest",
         ":aes_kwp_sideload_functest",
         ":aes_sideload_functest",
+        ":config_functest",
         ":drbg_functest",
         ":ecc_p256_arith_share_private_key_functest",
         ":ecc_p256_base_point_mult_functest",
