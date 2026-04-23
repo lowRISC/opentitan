@@ -48,10 +48,12 @@ class rv_dm_env extends cip_base_env #(
 
     m_jtag_agent = jtag_agent::type_id::create("m_jtag_agent", this);
     uvm_config_db#(jtag_agent_cfg)::set(this, "m_jtag_agent*", "cfg", cfg.m_jtag_agent_cfg);
+
     cfg.m_jtag_agent_cfg.en_cov = cfg.en_cov;
 
     m_jtag_dmi_monitor = jtag_dmi_monitor#()::type_id::create("m_jtag_dmi_monitor", this);
     m_jtag_dmi_monitor.cfg = cfg.m_jtag_agent_cfg;
+    m_jtag_dmi_monitor.set_dmi_address(cfg.m_jtag_dtm_ral.dmi.get_address());
 
     m_sba_access_monitor = sba_access_monitor#()::type_id::create("m_sba_access_monitor", this);
     m_sba_access_monitor.cfg = cfg.m_jtag_agent_cfg;
@@ -71,11 +73,16 @@ class rv_dm_env extends cip_base_env #(
       m_tl_sba_agent.monitor.a_chan_port.connect(scoreboard.tl_sba_a_chan_fifo.analysis_export);
       m_tl_sba_agent.monitor.d_chan_port.connect(scoreboard.tl_sba_d_chan_fifo.analysis_export);
     end
-    if (cfg.is_active && cfg.m_jtag_agent_cfg.is_active) begin
-      virtual_sequencer.jtag_sequencer_h = m_jtag_agent.sequencer;
-    end
-    if (cfg.is_active && cfg.m_tl_sba_agent_cfg.is_active) begin
-      virtual_sequencer.tl_sba_sequencer_h = m_tl_sba_agent.sequencer;
+    if (cfg.is_active) begin
+      if (cfg.m_jtag_agent_cfg.is_active) begin
+        virtual_sequencer.jtag_sequencer_h = m_jtag_agent.sequencer;
+        cfg.m_jtag_dtm_ral.default_map.set_sequencer(m_jtag_agent.sequencer,
+                                                     m_jtag_agent.m_jtag_dtm_reg_adapter);
+        m_jtag_agent.set_reg_map(cfg.m_jtag_dtm_ral.default_map);
+      end
+      if (cfg.m_tl_sba_agent_cfg.is_active) begin
+        virtual_sequencer.tl_sba_sequencer_h = m_tl_sba_agent.sequencer;
+      end
     end
   endfunction
 

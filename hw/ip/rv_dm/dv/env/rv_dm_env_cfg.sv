@@ -23,6 +23,9 @@ class rv_dm_env_cfg extends cip_base_env_cfg #(.RAL_T(rv_dm_regs_reg_block));
   // use the unsynchronised reset signal.
   virtual clk_rst_if clk_lc_rst_vif;
 
+  // The JTAG DTM register model.
+  rand jtag_dtm_reg_block m_jtag_dtm_ral;
+
   // The JTAG DMI register model.
   rand jtag_dmi_reg_block jtag_dmi_ral;
 
@@ -73,16 +76,20 @@ class rv_dm_env_cfg extends cip_base_env_cfg #(.RAL_T(rv_dm_regs_reg_block));
     m_jtag_agent_cfg.is_active = 1'b1;
     m_jtag_agent_cfg.ir_len = JTAG_IR_LEN;
 
-    // Set the 'correct' IDCODE register value to the JTAG DTM RAL.
-    m_jtag_agent_cfg.jtag_dtm_ral.idcode.set_reset(RV_DM_JTAG_IDCODE);
-
     // Create TL agent config obj for the SBA port.
     m_tl_sba_agent_cfg = tl_agent_cfg::type_id::create("m_tl_sba_agent_cfg");
     m_tl_sba_agent_cfg.if_mode = dv_utils_pkg::Device;
     m_tl_sba_agent_cfg.is_active = 1'b1;
     m_tl_sba_agent_cfg.max_outstanding_req = 1;
 
-    jtag_dmi_ral = create_jtag_dmi_reg_block(m_jtag_agent_cfg);
+    // Create a JTAG DTM RAL and give it the right IDCODE register value.
+    m_jtag_dtm_ral = create_jtag_dtm_reg_block("m_jtag_dtm_ral");
+    m_jtag_dtm_ral.idcode.set_reset(RV_DM_JTAG_IDCODE);
+
+    jtag_dmi_ral = create_jtag_dmi_reg_block("jtag_dmi_ral",
+                                             m_jtag_agent_cfg,
+                                             m_jtag_dtm_ral.dmi,
+                                             m_jtag_dtm_ral.dtmcs);
     // Fix the reset values of these fields based on our design.
     `uvm_info(`gfn, "Fixing reset values in jtag_dmi_ral", UVM_LOW)
     jtag_dmi_ral.hartinfo.dataaddr.set_reset(dm::DataAddr);
