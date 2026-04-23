@@ -5,6 +5,7 @@
 use anyhow::Result;
 use hex::FromHex;
 use serde::{Deserialize, Serialize};
+use std::cmp::min;
 use std::time::Duration;
 
 use cryptotest_commands::commands::CryptotestCommand;
@@ -15,6 +16,9 @@ use cryptotest_commands::hash_commands::{
 
 use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::test_utils::rpc::{ConsoleRecv, ConsoleSend};
+use rand::RngCore;
+use rand::SeedableRng;
+use rand_chacha::ChaCha8Rng;
 
 #[derive(Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -48,27 +52,27 @@ pub struct CshakeTestVectorSet {
 
 #[derive(Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-struct CshakeResultCase {
-    tc_id: usize,
-    mac: String,
+pub struct CshakeResultCase {
+    pub tc_id: usize,
+    pub mac: String,
 }
 
 #[derive(Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
-struct CshakeResultGroup {
-    tg_id: usize,
-    tests: Vec<CshakeResultCase>,
+pub struct CshakeResultGroup {
+    pub tg_id: usize,
+    pub tests: Vec<CshakeResultCase>,
 }
 
 #[derive(Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CshakeResultVectorSet {
-    vs_id: usize,
-    algorithm: String,
-    revision: String,
+    pub vs_id: usize,
+    pub algorithm: String,
+    pub revision: String,
     #[serde(default)]
-    is_sample: bool,
-    test_groups: Vec<CshakeResultGroup>,
+    pub is_sample: bool,
+    pub test_groups: Vec<CshakeResultGroup>,
 }
 
 fn run_cshake_case(
@@ -121,10 +125,25 @@ fn run_cshake_group(
     spi_console: &SpiConsoleDevice,
     algorithm: &CryptotestHashAlgorithm,
     tg: &CshakeTestGroup,
+    skip_stride: usize,
+    start_offset: usize,
 ) -> Result<CshakeResultGroup> {
     log::info!("tg_id: {}", tg.tg_id);
-    let mut result_cases: Vec<CshakeResultCase> = Vec::with_capacity(tg.tests.len());
+    let mut result_cases: Vec<CshakeResultCase> = Vec::new();
+
+    // Ensure that at least one test per group is run
+    let stride = min(skip_stride, tg.tests.len());
+
+    // Prevent division by zero if a test group happens to be entirely empty
+    let offset = if stride > 0 { start_offset % stride } else { 0 };
+    log::info!("Tests options: skip_stride: {}, offset: {}", stride, offset);
+
     for tc in &tg.tests {
+        if stride > 0 && (tc.tc_id % stride) != offset {
+            // Skip test
+            continue;
+        }
+
         result_cases.push(run_cshake_case(
             timeout,
             spi_console,
@@ -143,8 +162,23 @@ pub fn run_cshake_vector_set(
     timeout: Duration,
     spi_console: &SpiConsoleDevice,
     vs: &CshakeTestVectorSet,
+    skip_stride_arg: usize,
+    seed_arg: Option<u64>,
 ) -> Result<CshakeResultVectorSet> {
     log::info!("vs_id: {}", vs.vs_id);
+
+    let seed = seed_arg.unwrap_or_else(rand::random::<u64>);
+    log::info!("Using seed {}", seed);
+
+    // Create a deterministic RNG from the seed for skipping
+    let mut drng = ChaCha8Rng::seed_from_u64(seed);
+    let (skip_stride, start_offset) = match (drng.next_u32() as usize).checked_rem(skip_stride_arg)
+    {
+        Some(offset) => (skip_stride_arg, offset),
+        // if skip_stride_arg is 0, skip_stride is set to 1 to execute all the tests
+        None => (1usize, 0usize),
+    };
+
     let mut result_groups: Vec<CshakeResultGroup> = Vec::with_capacity(vs.test_groups.len());
 
     let algorithm = match vs.algorithm.as_str() {
@@ -154,8 +188,16 @@ pub fn run_cshake_vector_set(
     };
 
     for tg in &vs.test_groups {
-        result_groups.push(run_cshake_group(timeout, spi_console, &algorithm, tg)?);
+        result_groups.push(run_cshake_group(
+            timeout,
+            spi_console,
+            &algorithm,
+            tg,
+            skip_stride,
+            start_offset,
+        )?);
     }
+
     Ok(CshakeResultVectorSet {
         vs_id: vs.vs_id,
         algorithm: vs.algorithm.clone(),
