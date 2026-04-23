@@ -16,9 +16,8 @@
 
 otcrypto_status_t otcrypto_security_config_check(
     otcrypto_key_security_level_t security_level) {
-#if defined(OPENTITAN_IS_EARLGREY)
   if (launder32(security_level) != kOtcryptoKeySecurityLevelLow) {
-    // Check if the jittery clock is enabled on OpenTitan EarlGrey.
+    // Check if the jittery clock is enabled.
     mmio_region_t clkmgr =
         mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR);
     uint32_t jittery_clk_en =
@@ -39,15 +38,13 @@ otcrypto_status_t otcrypto_security_config_check(
     // Do not check the device config when security level is low.
     HARDENED_CHECK_EQ(security_level, kOtcryptoKeySecurityLevelLow);
   }
-#endif
   return OTCRYPTO_OK;
 }
 
 otcrypto_status_t otcrypto_set_security_config(
     otcrypto_key_security_level_t security_level) {
-#if defined(OPENTITAN_IS_EARLGREY)
   if (launder32(security_level) != kOtcryptoKeySecurityLevelLow) {
-    // Enable the jittery clock in OpenTitan Earlgrey.
+    // Enable the jittery clock.
     abs_mmio_write32(
         TOP_EARLGREY_CLKMGR_AON_BASE_ADDR + CLKMGR_JITTER_ENABLE_REG_OFFSET,
         kMultiBitBool4True);
@@ -58,7 +55,6 @@ otcrypto_status_t otcrypto_set_security_config(
     // Do not check the device config when security level is low.
     HARDENED_CHECK_EQ(security_level, kOtcryptoKeySecurityLevelLow);
   }
-#endif
   return OTCRYPTO_OK;
 }
 
