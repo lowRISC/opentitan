@@ -1072,7 +1072,9 @@ status_t handle_cryptolib_fi_asym_ed25519_sign(ujson_t *uj) {
       &rv_core_ibex));
 
   cryptolib_fi_asym_ed25519_sign_out_t uj_output;
-  memset(&uj_output, 0, sizeof(uj_output));
+  uj_output.status = kUnknown;
+  uj_output.status =
+      (size_t)cryptolib_fi_ed25519_sign_impl(uj_input, &uj_output).value;
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -1115,8 +1117,9 @@ status_t handle_cryptolib_fi_asym_ed25519_verify(ujson_t *uj) {
       &rv_core_ibex));
 
   cryptolib_fi_asym_ed25519_verify_out_t uj_output;
-  memset(&uj_output, 0, sizeof(uj_output));
-  uj_output.result = true;
+  uj_output.status = kUnknown;
+  uj_output.status =
+      (size_t)cryptolib_fi_ed25519_verify_impl(uj_input, &uj_output).value;
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
