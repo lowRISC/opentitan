@@ -489,6 +489,31 @@ cc_test(
     ],
 )
 
+test_suite(
+    name = "base_functest_suite",
+    tests = [
+        ":crc32_functest",
+        ":hardened_memory_functest",
+    ],
+)
+
+test_suite(
+    name = "base_unittest_suite",
+    tests = [
+        ":crc32_unittest",
+        ":global_mock_unittest",
+        ":hardened_memory_unittest",
+        ":hardened_unittest",
+        ":math_unittest",
+        ":memory_unittest",
+        ":mmio_unittest",
+        ":mock_csr_unittest",
+        ":random_order_unittest",
+        ":status_report_unittest",
+        ":status_unittest",
+    ],
+)
+
 doxygen_gather_all_package_cc(
     name = "doxy_target",
 )
