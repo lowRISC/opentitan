@@ -85,7 +85,9 @@ module rram_ctrl_rd import rram_ctrl_pkg::*; (
   end
 
   prim_count #(
-    .Width(CtrlMaxWordsW)
+    .Width(CtrlMaxWordsW),
+    .PossibleActions(prim_count_pkg::Clr |
+                     prim_count_pkg::Incr)
   ) u_cnt (
     .clk_i,
     .rst_ni,
