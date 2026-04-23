@@ -6,7 +6,6 @@
 
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
-#include "sw/device/lib/runtime/log.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('r', 'm', 'e')

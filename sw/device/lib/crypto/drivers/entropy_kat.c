@@ -8,7 +8,6 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/runtime/log.h"
 
 #include "hw/top/csrng_regs.h"  // Generated
 
