@@ -10,10 +10,6 @@ class usb20_device_driver extends usb20_driver;
 
   `uvm_component_new
 
-  // reset signals
-  virtual task reset_signals();
-  endtask
-
   // drive trans received from sequencer
   virtual task get_and_drive();
   endtask
