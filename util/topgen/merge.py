@@ -1672,6 +1672,108 @@ def amend_pinmux_io(top: ConfigT,
     temp['inputs'] = []
     temp['outputs'] = []
 
+    # Port and signal prototypes for cross-PD connections
+    pd_default = top["power"]["default"]
+    m_pinmux = lib.find_module(top["module"], "pinmux")
+    pd_pinmux = m_pinmux.get("domain", pd_default)
+
+    port_proto = OrderedDict([('package', ''),
+                              ('struct', 'logic'),
+                              ('domain', ''),
+                              ('inter_pd', True),
+                              ('signame', ''),
+                              ('signame_chip', ''),
+                              ('width', -1),
+                              ('type', 'uni'),
+                              ('default', "'0"),
+                              ('direction', 'invalid'),
+                              ('conn_type', False),
+                              ('index', -1),
+                              ('netname', '')])
+
+    sig_proto = OrderedDict([('package', ''),
+                             ('struct', 'logic'),
+                             ('domain', 'chip'),
+                             ('signame', ''),
+                             ('width', -1),
+                             ('type', 'uni'),
+                             ('end_idx', -1),
+                             ('act', ''),
+                             ('suffix', ''),
+                             ('default', "'0")])
+
+    inter_pd_ports = []
+    chiplevel_sigs = []
+
+    # Helper function
+    def add_inter_pd_port_and_sig(sig_name, width, pd_mod, stem, mod_dir):
+        """Create ports for both PDs and a chiplevel signal for one IO signal.
+
+        mod_dir is the module port direction ('in' or 'out'); the pinmux port
+        gets the opposite direction. Port signames are stem + '_o'/'_i' to
+        match their respective directions.
+        """
+        pinm_dir = 'in' if mod_dir == 'out' else 'out'
+        mod_sfx = '_o' if mod_dir == 'out' else '_i'
+        pinm_sfx = '_i' if mod_dir == 'out' else '_o'
+
+        port_mod = port_proto.copy()
+        port_mod["domain"] = pd_mod
+        port_mod["signame"] = sig_name + stem + mod_sfx
+        port_mod["netname"] = sig_name + stem
+        port_mod["width"] = width
+        port_mod["direction"] = mod_dir
+
+        port_pinm = port_mod.copy()
+        port_pinm["domain"] = pd_pinmux
+        port_pinm["signame"] = sig_name + stem + pinm_sfx
+        port_pinm["direction"] = pinm_dir
+
+        chip_sig = sig_proto.copy()
+        chip_sig["signame"] = sig_name + stem
+        chip_sig["width"] = width
+
+        inter_pd_ports.append(port_mod)
+        inter_pd_ports.append(port_pinm)
+        chiplevel_sigs.append(chip_sig)
+
+    for m in top["module"]:
+        # Skip all modules that are in the same PD as the pinmux
+        pd_mod = m.get("domain", pd_default)
+        if pd_mod == pd_pinmux:
+            continue
+
+        block = name_to_block.get(m['type'])
+        if block is None and allow_missing_blocks:
+            continue
+
+        for sig in block.get_signals_as_list_of_dicts():
+            sig_name = f"cio_{m['name']}_{sig['name']}"
+
+            # Required objects to be created:
+            # 1) Ports for both PDs
+            # 2) Chiplevel signal
+            if sig["type"] in ['output', 'inout']:
+                add_inter_pd_port_and_sig(sig_name, sig['width'],
+                                          pd_mod, '_d2p', 'out')
+                add_inter_pd_port_and_sig(sig_name, sig['width'],
+                                          pd_mod, '_en_d2p', 'out')
+
+            if sig["type"] in ['input', 'inout']:
+                add_inter_pd_port_and_sig(sig_name, sig['width'],
+                                          pd_mod, '_p2d', 'in')
+
+    # Bring signame_chip into the expected dict format
+    for p in inter_pd_ports:
+        signame_chip = {}
+        for tgt in top["targets"]:
+            signame_chip[tgt["name"]] = p["netname"]
+        p["signame_chip"] = signame_chip
+
+    pinmux.setdefault("inter_pd", defaultdict())
+    pinmux["inter_pd"]["ports"] = inter_pd_ports
+    pinmux["inter_pd"]["definitions"] = chiplevel_sigs
+
     for sig in pinmux['signals']:
         # Get the signal information from the IP block type of this instance/
         mod_name = sig['instance']
@@ -1679,6 +1781,8 @@ def amend_pinmux_io(top: ConfigT,
 
         if m is None:
             raise SystemExit("Module {} is not searchable.".format(mod_name))
+
+        pd_mod = m.get("domain", pd_default)
 
         block = name_to_block.get(m['type'])
         if block is None and allow_missing_blocks:
@@ -1715,6 +1819,7 @@ def amend_pinmux_io(top: ConfigT,
                 'desc': sig['desc']
             })
             sig_inst['name'] = mod_name + '_' + sig_inst['name']
+            sig_inst['domain'] = pd_mod
             append_io_signal(temp, sig_inst)
 
         # Otherwise the name is a wildcard for selecting all available IO
@@ -1738,6 +1843,7 @@ def amend_pinmux_io(top: ConfigT,
                         })
                         sig_inst_copy['name'] = sig[
                             'instance'] + '_' + sig_inst_copy['name']
+                        sig_inst_copy['domain'] = pd_mod
                         append_io_signal(temp, sig_inst_copy)
                 else:
                     sig_inst.update({
@@ -1748,6 +1854,7 @@ def amend_pinmux_io(top: ConfigT,
                         'desc': sig['desc']
                     })
                     sig_inst['name'] = sig['instance'] + '_' + sig_inst['name']
+                    sig_inst['domain'] = pd_mod
                     append_io_signal(temp, sig_inst)
 
     # Now that we've collected all input and output signals,

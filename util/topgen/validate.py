@@ -111,6 +111,7 @@ pinmux_optional = {
     'num_wkup_detect': ['d', 'Number of wakeup detectors'],
     'wkup_cnt_width': ['d', 'Number of bits in wakeup detector counters'],
     'signals': ['l', 'List of Dedicated IOs.'],
+    'inter_pd': ['g', 'Info about inter-PD pinmux related signals.'],
 }
 pinmux_added = {
     'ios': ['l', 'Full list of IO'],

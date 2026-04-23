@@ -1230,7 +1230,7 @@ def create_ipgen_blocks(topcfg: ConfigT, alias_cfgs: Dict[str, ConfigT],
 
     # Pinmux depends on flash_ctrl and otp_ctrl
     if "pinmux" in ipgen_instances:
-        amend_pinmux_io(topcfg, name_to_block)
+        amend_pinmux_io(topcfg, name_to_block, allow_missing_blocks=True)
         instance = ipgen_instances["pinmux"][0]
         insert_ip_attrs(instance, _get_pinmux_params(topcfg))
 
