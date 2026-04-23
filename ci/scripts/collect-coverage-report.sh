@@ -9,6 +9,7 @@ OUTPUT_DIR="${1:-/tmp/$USER/coverage_report}"
 TESTS="${OUTPUT_DIR}/test_coverages"
 LOGS="${OUTPUT_DIR}/test_logs"
 SOURCES="${OUTPUT_DIR}/source_files"
+SOURCE_LIST="${OUTPUT_DIR}/source_list.txt"
 COVERAGE="${OUTPUT_DIR}/coverage.dat"
 
 LCOV_FILES="bazel-out/_coverage/lcov_files.tmp"
@@ -25,6 +26,7 @@ cp -r bazel-out/_coverage/* "${OUTPUT_DIR}" || true
 find "${OUTPUT_DIR}" -type f -exec chmod 644 {} +
 
 echo "Collect all test coverage data"
+rm -rf "${TESTS:?}"
 mkdir -p "${TESTS}"
 rsync -a --ignore-missing-args --files-from="${LCOV_FILES}" . "${TESTS}/"
 
@@ -32,6 +34,7 @@ echo "Merge all coverage data"
 find "${TESTS}" -type f -name "*.dat" -exec cat {} + > "${COVERAGE}"
 
 echo "Collect all test logs"
+rm -rf "${LOGS:?}"
 mkdir -p "${LOGS}"
 cat "${LCOV_FILES}" | while read -r lcov; do
   test_dir=$(dirname "${lcov}")
@@ -43,8 +46,10 @@ cat "${LCOV_FILES}" | while read -r lcov; do
 done
 
 echo "Collect all source files listed in coverage data"
+rm -rf "${SOURCES:?}"
 mkdir -p "${SOURCES}"
-grep -h '^SF:' "${COVERAGE}" | sed 's/^SF://' | sort -u \
-| rsync -a --ignore-missing-args --files-from=- . "${SOURCES}/"
+grep -h '^SF:' "${COVERAGE}" | sed 's/^SF://' | sort -u > "${SOURCE_LIST}"
+python3 util/fetch-remote-bazel-cache.py --file-list="${SOURCE_LIST}"
+rsync -a --ignore-missing-args --files-from="${SOURCE_LIST}" . "${SOURCES}/"
 
 echo "coverageReport=ok" >> "${GITHUB_OUTPUT:-/dev/null}"
