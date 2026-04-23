@@ -197,11 +197,11 @@ static rom_error_t keymgr_wait_until_done(void) {
       abs_mmio_write32(kBase + KEYMGR_ERR_CODE_REG_OFFSET, err_code);
       return kErrorKeymgrInternal;
     }
+    default:
+      // Should be unreachable.
+      HARDENED_TRAP();
+      return kErrorKeymgrInternal;
   }
-
-  // Should be unreachable.
-  HARDENED_TRAP();
-  return kErrorKeymgrInternal;
 }
 
 rom_error_t sc_keymgr_generate_key(
