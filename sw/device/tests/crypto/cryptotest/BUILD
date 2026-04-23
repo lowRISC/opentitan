@@ -29,6 +29,7 @@ cryptotest(
 
 cryptotest(
     name = "hmac_sha256_acvp",
+    slow_test = True,
     test_args = " ".join([
         "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:hmac_sha256_vectors.json)\"",
         "--expected=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:hmac_sha256_expected.json)\"",
@@ -42,6 +43,7 @@ cryptotest(
 
 cryptotest(
     name = "cshake_acvp",
+    slow_test = True,
     test_args = " ".join([
         "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:cshake_vectors.json)\"",
         "--expected=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:cshake_expected.json)\"",
@@ -55,6 +57,7 @@ cryptotest(
 
 cryptotest(
     name = "rsa_acvp",
+    slow_test = True,
     test_args = " ".join([
         "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:rsa_vectors.json)\"",
         "--expected=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:rsa_expected.json)\"",
