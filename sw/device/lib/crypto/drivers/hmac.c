@@ -760,7 +760,8 @@ uint32_t hmac_key_integrity_checksum(const hmac_key_t *key) {
   uint32_t ctx;
   crc32_init(&ctx);
   crc32_add32(&ctx, key->key_len);
-  crc32_add(&ctx, (unsigned char *)key->key_block, key->key_len);
+  crc32_add(&ctx, (unsigned char *)key->key_block,
+            key->key_len * sizeof(uint32_t));
   return crc32_finish(&ctx);
 }
 
