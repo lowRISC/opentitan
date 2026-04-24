@@ -110,7 +110,8 @@ status_t ed25519_kat_test(void) {
   };
 
   // Run ed25519 key generation.
-  CHECK_STATUS_OK(otcrypto_ed25519_keygen(&private_key, &public_key));
+  CHECK_STATUS_OK(
+      otcrypto_ed25519_public_key_from_private(&private_key, &public_key));
   // Check the ed25519 key generation result.
   TRY_CHECK_ARRAYS_EQ(kPublicKey, public_key.key, kEd25519PublicKeyWords);
 
@@ -168,7 +169,8 @@ static status_t hasheddsa_test(void) {
       .key = public_key_buf,
   };
 
-  CHECK_STATUS_OK(otcrypto_ed25519_keygen(&private_key, &public_key));
+  CHECK_STATUS_OK(
+      otcrypto_ed25519_public_key_from_private(&private_key, &public_key));
 
   otcrypto_const_byte_buf_t input_message =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (const uint8_t *)kMessage,
@@ -279,26 +281,26 @@ static status_t run_negative_tests(void) {
   otcrypto_unblinded_key_t bad_key = valid_priv;
   bad_key.key_length = 31;
   bad_key.checksum = integrity_unblinded_checksum(&bad_key);
-  CHECK(otcrypto_ed25519_keygen(&bad_key, &valid_pub).value ==
+  CHECK(otcrypto_ed25519_public_key_from_private(&bad_key, &valid_pub).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   bad_key = valid_priv;
   bad_key.key_mode = kOtcryptoKeyModeEcdsaP256;
   bad_key.checksum = integrity_unblinded_checksum(&bad_key);
-  CHECK(otcrypto_ed25519_keygen(&bad_key, &valid_pub).value ==
+  CHECK(otcrypto_ed25519_public_key_from_private(&bad_key, &valid_pub).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   bad_key = valid_priv;
   bad_key.key = NULL;
-  CHECK(otcrypto_ed25519_keygen(&bad_key, &valid_pub).value ==
+  CHECK(otcrypto_ed25519_public_key_from_private(&bad_key, &valid_pub).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   bad_key = valid_priv;
   bad_key.checksum ^= 0xFFFFFFFF;
-  CHECK(otcrypto_ed25519_keygen(&bad_key, &valid_pub).value ==
+  CHECK(otcrypto_ed25519_public_key_from_private(&bad_key, &valid_pub).value ==
         OTCRYPTO_BAD_ARGS.value);
 
-  CHECK(otcrypto_ed25519_keygen(NULL, &valid_pub).value ==
+  CHECK(otcrypto_ed25519_public_key_from_private(NULL, &valid_pub).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   // Test NULL data with len > 0 or invalid mode

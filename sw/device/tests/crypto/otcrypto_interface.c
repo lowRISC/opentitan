@@ -119,14 +119,17 @@ volatile otcrypto_interface_t otcrypto = {
     .cshake256 = &otcrypto_cshake256,
 
     // Ed25519 (blocking).
-    .ed25519_keygen = &otcrypto_ed25519_keygen,
+    .ed25519_public_key_from_private =
+        &otcrypto_ed25519_public_key_from_private,
     .ed25519_sign = &otcrypto_ed25519_sign,
     .ed25519_sign_verify = &otcrypto_ed25519_sign_verify,
     .ed25519_verify = &otcrypto_ed25519_verify,
 
     // Ed25519 (async).
-    .ed25519_keygen_async_start = &otcrypto_ed25519_keygen_async_start,
-    .ed25519_keygen_async_finalize = &otcrypto_ed25519_keygen_async_finalize,
+    .ed25519_public_key_from_private_async_start =
+        &otcrypto_ed25519_public_key_from_private_async_start,
+    .ed25519_public_key_from_private_async_finalize =
+        &otcrypto_ed25519_public_key_from_private_async_finalize,
     .ed25519_sign_part1_async_start = &otcrypto_ed25519_sign_part1_async_start,
     .ed25519_sign_part2_async_start = &otcrypto_ed25519_sign_part2_async_start,
     .ed25519_sign_async_finalize = &otcrypto_ed25519_sign_async_finalize,
