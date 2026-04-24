@@ -218,21 +218,42 @@ class aes_reseed_vseq extends aes_base_vseq;
     end
   endtask
 
+  // Wait until the AES control FSM completes a handshake with the cipher core.
+  //
+  // The aes_ctrl_fsm_path argument should be a hierarchical path to the aes_control_fsm instance in
+  // the AES block.
+  //
+  // This task does not exit on reset, but is safe to kill at any time.
+  local task wait_cipher_out_handshake(string aes_ctrl_fsm_path);
+    string cipher_out_valid_path = $sformatf("%s.cipher_out_valid_i", aes_ctrl_fsm_path);
+    string cipher_out_ready_path = $sformatf("%s.cipher_out_ready_o", aes_ctrl_fsm_path);
+
+    forever begin
+      logic valid, ready;
+
+      if (!uvm_hdl_read(cipher_out_valid_path, valid)) begin
+        `uvm_fatal(get_full_name(), $sformatf("Failed to read %0s.", cipher_out_valid_path))
+      end
+      if (!uvm_hdl_read(cipher_out_ready_path, ready)) begin
+        `uvm_fatal(get_full_name(), $sformatf("Failed to read %0s.", cipher_out_ready_path))
+      end
+
+      if (valid && ready) break;
+
+      cfg.clk_rst_vif.wait_n_clks(1);
+    end
+  endtask
+
   task check_reseed_rate();
     bit [BlockCtrWidth-1:0] block_ctr;
     bit [BlockCtrWidth-1:0] block_ctr_set_val = BlockCtrWidth'(3);
     bit cipher_crypt;
-    bit cipher_out_valid;
-    bit cipher_out_ready;
     string base_path = $sformatf("%s.%s",
         "tb.dut.u_aes_core.u_aes_control", // Control module
         "gen_fsm[0].gen_fsm_p.u_aes_control_fsm_i.u_aes_control_fsm"); // FSM instance
     string block_ctr_path = $sformatf("%s.gen_block_ctr.block_ctr_q", base_path);
     string cipher_crypt_path = $sformatf("%s.crypt", base_path);
-    string cipher_out_valid_path = $sformatf("%s.cipher_out_valid_i", base_path);
-    string cipher_out_ready_path = $sformatf("%s.cipher_out_ready_o", base_path);
     status_t status;
-    bit block_done;
 
     if (`EN_MASKING) begin
       // Check paths to signals we need to probe.
@@ -242,18 +263,11 @@ class aes_reseed_vseq extends aes_base_vseq;
       if (!uvm_hdl_check_path(cipher_crypt_path)) begin
         `uvm_fatal(`gfn, $sformatf("\n\t ----| PATH NOT FOUND"))
       end
-      if (!uvm_hdl_check_path(cipher_out_valid_path)) begin
-        `uvm_fatal(`gfn, $sformatf("\n\t ----| PATH NOT FOUND"))
-      end
-      if (!uvm_hdl_check_path(cipher_out_ready_path)) begin
-        `uvm_fatal(`gfn, $sformatf("\n\t ----| PATH NOT FOUND"))
-      end
     end
 
-    while (!finished_all_msgs) begin
-      // Wait for next negative clock edge.
-      #1step;
-      @(cfg.clk_rst_vif.cbn);
+    while (!finished_all_msgs && !cfg.under_reset) begin
+      cfg.clk_rst_vif.wait_n_clks_or_rst(1);
+      if (cfg.under_reset) return;
 
       if (`EN_MASKING) begin
         // Read the block counter.
@@ -262,37 +276,41 @@ class aes_reseed_vseq extends aes_base_vseq;
         // Force a lower value to get more action.
         if (block_ctr == 8188 || // Speed up testing of the PER_8K setting.
             block_ctr == 60) begin // Speed up testing of the PER_64 setting.
-          `uvm_info(`gfn, $sformatf("Lowering block counter from %0d to %0d to speed up testing",
-              block_ctr, block_ctr_set_val), UVM_LOW)
+          `uvm_info(`gfn,
+                    $sformatf("Lowering block counter from %0d to %0d to speed up testing",
+                              block_ctr, block_ctr_set_val),
+                    UVM_LOW)
           `DV_CHECK(uvm_hdl_force(block_ctr_path, block_ctr_set_val));
-          cfg.clk_rst_vif.wait_n_clks(1);
+          cfg.clk_rst_vif.wait_n_clks_or_rst(1);
           `DV_CHECK_FATAL(uvm_hdl_release(block_ctr_path))
-
+          if (cfg.under_reset) return;
         end else if (block_ctr == 0) begin
           // Check whether the DUT is actually busy. Unless it's doing a block operation, no reseed
           // operation is getting triggered.
           csr_rd(.ptr(ral.status), .value(status), .blocking(1), .backdoor(1));
+          if (cfg.under_reset) return;
+
           `DV_CHECK_FATAL(uvm_hdl_read(cipher_crypt_path, cipher_crypt))
           if (!status.idle && cipher_crypt) begin
             // Check entropy_masking_req to verify the reseeding is actually triggered.
             check_masking_prng_reseed();
+            if (cfg.under_reset) return;
 
-            // Wait for the DUT to finish the current block.
-            block_done = 0;
-            `DV_SPINWAIT_EXIT(
-                while (!block_done) begin
-                  `DV_CHECK_FATAL(uvm_hdl_read(cipher_out_valid_path, cipher_out_valid))
-                  `DV_CHECK_FATAL(uvm_hdl_read(cipher_out_ready_path, cipher_out_ready))
-                  if (cipher_out_valid && cipher_out_ready) begin
-                    block_done = 1;
-                  end
-                  cfg.clk_rst_vif.wait_n_clks(1);
-                end;,
-                cfg.clk_rst_vif.wait_n_clks(wait_timeout_cycles_max);,
-                "Timeout waiting for block to finish")
+            // Wait for the DUT to finish the current block, exiting early on reset
+            fork : isolation_fork begin
+              fork
+                wait(cfg.under_reset);
+                wait_cipher_out_handshake(base_path);
+                begin
+                  cfg.clk_rst_vif.wait_n_clks(wait_timeout_cycles_max);
+                  `uvm_error(get_full_name(), "Timeout waiting for block to finish")
+                end
+              join_any
+              disable fork;
+            end join
+            if (cfg.under_reset) return;
           end
         end
-
       end else begin
         // There is no masking PRNG and hence no block counter. entropy_masking_req must never be
         // asserted.
@@ -301,10 +319,7 @@ class aes_reseed_vseq extends aes_base_vseq;
     end
   endtask
 
-  // The core of the body() task, which is split out from body so that it can return more easily
-  // (even though other processes are in a fork).
-  //
-  // This task is run in an isolation fork.
+  // The core of the body() task, which is split out from body so that it can return more easily.
   task body_main_thread();
     // Trigger reseed by manually setting the PRNG_RESEED bit in the TRIGGER register.
     `uvm_info(`gfn, "Triggering PRNG reseed via trigger register", UVM_LOW)
@@ -343,8 +358,7 @@ class aes_reseed_vseq extends aes_base_vseq;
 
       // Check that the reseeds happens when the counter expires.
       check_reseed_rate();
-    join_any
-    disable fork;
+    join
   endtask
 
   task body();
@@ -356,10 +370,10 @@ class aes_reseed_vseq extends aes_base_vseq;
 
     fork
       start_sideload_seq();
-      fork : isolation_fork begin
+      begin
         body_main_thread();
         stop_sideload_seq();
-      end join
+      end
     join
 
   endtask : body
