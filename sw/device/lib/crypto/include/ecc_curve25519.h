@@ -29,21 +29,23 @@ typedef enum otcrypto_eddsa_sign_mode {
 } otcrypto_eddsa_sign_mode_t;
 
 /**
- * Generates a key pair for Ed25519.
+ * Derives the Ed25519 public key corresponding to a given private key.
  *
- * The caller should allocate and partially populate the public key struct,
- * including populating the key configuration and allocating space for the
- * keyblob. For a hardware-backed key, use the private key handle returned by
- * `otcrypto_hw_backed_key`. Otherwise, the mode should indicate Ed25519 and the
- * keyblob should be 80 bytes. The value in the `checksum` field of the
- * key struct will be populated by the key generation function.
+ * The private key must be a pre-existing 32-byte Ed25519 seed with a valid
+ * checksum (e.g. as returned by an import function). The public key is
+ * derived by SHA-512-hashing the seed, clamping the result to obtain the
+ * secret scalar, and multiplying the Ed25519 base point by that scalar.
  *
- * @param[out] private_key Pointer to the unblinded private key struct.
- * @param[out] public_key Pointer to the unblinded public key struct.
- * @return Result of the Ed25519 key generation.
+ * The caller must allocate the public key struct and its `key` buffer
+ * (32 bytes) before calling this function. The `checksum` field will be
+ * populated on success.
+ *
+ * @param[in]  private_key Pointer to the private key seed struct.
+ * @param[out] public_key  Pointer to the public key struct to populate.
+ * @return Result of the Ed25519 public key derivation.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_ed25519_keygen(
+otcrypto_status_t otcrypto_ed25519_public_key_from_private(
     const otcrypto_unblinded_key_t *private_key,
     otcrypto_unblinded_key_t *public_key);
 
@@ -106,19 +108,21 @@ otcrypto_status_t otcrypto_ed25519_sign_verify(
 /**
  * Starts asynchronous key generation for Ed25519.
  *
- * See `otcrypto_ed25519_keygen` for requirements on input values.
+ * See `otcrypto_ed25519_public_key_from_private` for requirements on input
+ * values.
  *
  * @param private_key Source structure for private key, or key handle.
  * @return Result of asynchronous Ed25519 keygen start operation.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_ed25519_keygen_async_start(
+otcrypto_status_t otcrypto_ed25519_public_key_from_private_async_start(
     const otcrypto_unblinded_key_t *private_key);
 
 /**
  * Finalizes asynchronous key generation for Ed25519.
  *
- * See `otcrypto_ed25519_keygen` for requirements on input values.
+ * See `otcrypto_ed25519_public_key_from_private` for requirements on input
+ * values.
  *
  * May block until the operation is complete.
  *
@@ -126,7 +130,7 @@ otcrypto_status_t otcrypto_ed25519_keygen_async_start(
  * @return Result of asynchronous ed25519 keygen finalize operation.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_ed25519_keygen_async_finalize(
+otcrypto_status_t otcrypto_ed25519_public_key_from_private_async_finalize(
     otcrypto_unblinded_key_t *public_key);
 
 /**

@@ -231,16 +231,17 @@ static status_t ed25519_mask_scalar(uint32_t *scalar, size_t scalar_len,
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_ed25519_keygen(
+otcrypto_status_t otcrypto_ed25519_public_key_from_private(
     const otcrypto_unblinded_key_t *private_key,
     otcrypto_unblinded_key_t *public_key) {
   if (public_key == NULL || public_key->key == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
   // Start the execution of the key generation.
-  HARDENED_TRY(otcrypto_ed25519_keygen_async_start(private_key));
+  HARDENED_TRY(
+      otcrypto_ed25519_public_key_from_private_async_start(private_key));
   // Finish the keygen operation and get the public key.
-  return otcrypto_ed25519_keygen_async_finalize(public_key);
+  return otcrypto_ed25519_public_key_from_private_async_finalize(public_key);
 }
 
 otcrypto_status_t otcrypto_ed25519_sign(
@@ -334,7 +335,7 @@ otcrypto_status_t otcrypto_ed25519_sign_verify(
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_ed25519_keygen_async_start(
+otcrypto_status_t otcrypto_ed25519_public_key_from_private_async_start(
     const otcrypto_unblinded_key_t *private_key) {
   // Check the private key.
   HARDENED_TRY(ed25519_key_check(private_key));
@@ -367,7 +368,7 @@ otcrypto_status_t otcrypto_ed25519_keygen_async_start(
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
-otcrypto_status_t otcrypto_ed25519_keygen_async_finalize(
+otcrypto_status_t otcrypto_ed25519_public_key_from_private_async_finalize(
     otcrypto_unblinded_key_t *public_key) {
   // Finalize the keygen operation and retrieve the public key.
   HARDENED_TRY_WIPE_DMEM(curve25519_keygen_finalize(public_key->key));
