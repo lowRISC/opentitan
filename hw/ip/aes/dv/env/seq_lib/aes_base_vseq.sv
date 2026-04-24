@@ -444,8 +444,7 @@ class aes_base_vseq extends cip_base_vseq #(
     end
   endtask
 
-
-  virtual task generate_aes_item_queue(aes_message_item msg_item);
+  function void generate_aes_item_queue(aes_message_item msg_item);
     // init aes item
     aes_item_init(msg_item);
     // generate DUT cfg
@@ -460,11 +459,11 @@ class aes_base_vseq extends cip_base_vseq #(
       generate_data_stream(msg_item, 0, 1);
     end
     aes_print_item_queue(aes_item_queue);
-  endtask
+  endfunction
 
   // Generate the data for a single message based
   // on the configuration in the message Item
-  virtual task generate_data_stream(aes_message_item msg_item, bit aad, bit tag);
+  virtual function void generate_data_stream(aes_message_item msg_item, bit aad, bit tag);
     aes_seq_item item_clone;
     bit [3:0][31:0] len_aad_data_conc;
     bit [3:0][31:0] len_aad_data;
@@ -520,7 +519,7 @@ class aes_base_vseq extends cip_base_vseq #(
       `downcast(item_clone, aes_item.clone());
       aes_item_queue.push_front(item_clone);
     end
-  endtask // generate_data_stream
+  endfunction // generate_data_stream
 
 
   virtual task write_data_key_iv(
