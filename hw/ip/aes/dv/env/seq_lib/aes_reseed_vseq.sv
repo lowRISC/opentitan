@@ -157,18 +157,12 @@ class aes_reseed_vseq extends aes_base_vseq;
     `uvm_info(`gfn, $sformatf("\n\n\t ----| STARTING AES MAIN SEQUENCE |----\n %s",
                               cfg.convert2string()), UVM_LOW)
 
-    // Create one thread such that we can kill all its children without unwanted side effects on the
-    // caller.
+    // generate list of messages
+    generate_message_queue();
+
     fork
-      begin
-
-        fork
-          // generate list of messages //
-          generate_message_queue();
-          // start sideload (even if not used)
-          start_sideload_seq();
-        join_any
-
+      start_sideload_seq();
+      fork : isolation_fork begin
         // Trigger reseed by manually setting the PRNG_RESEED bit in the TRIGGER register.
         `uvm_info(`gfn, "Triggering PRNG reseed via trigger register", UVM_LOW)
         fork
@@ -262,10 +256,10 @@ class aes_reseed_vseq extends aes_base_vseq;
           // Check that the reseeds happens when the counter expires.
           check_reseed_rate();
         join_any
+        disable fork;
 
-      end
-    // Kill all children.
-    disable fork;
+        stop_sideload_seq();
+      end join
     join
 
   endtask : body

@@ -10,7 +10,6 @@ class aes_base_vseq extends cip_base_vseq #(
   );
 
   `uvm_object_utils(aes_base_vseq)
-  `uvm_object_new
 
   aes_reg2hw_t       aes_reg;
   aes_seq_item       aes_item;
@@ -29,6 +28,20 @@ class aes_base_vseq extends cip_base_vseq #(
   bit                key_used      = 0;
   bit                key_rdy       = 0;
   bit                new_key       = 0;
+
+  // A flag used by start_sideload_seq / stop_sideload_seq to track whether a sideload sequence is
+  // currently running. If true, there is currently a process running the sideload_sequences task.
+  local bit          m_sideload_seq_running;
+
+  // An event to control a sideload_sequences task if one is running. When the event is triggered,
+  // the task will tell the currently running sequence to stop, then will clear
+  // m_sideload_seq_running and exit.
+  local uvm_event    m_stop_sideload_seqs_event;
+
+  function new (string name="");
+    super.new(name);
+    m_stop_sideload_seqs_event = new();
+  endfunction
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
@@ -637,23 +650,49 @@ class aes_base_vseq extends cip_base_vseq #(
                         txt, data), UVM_MEDIUM)
   endtask // write_data_key_iv
 
-
-  // Repeatedly run a sideload sequences. These generate new keys at random times, presenting them
-  // through the key sideload interface.
+  // Repeatedly run the sideload sequence, which generates new keys at random times.
   //
-  // Return if reset is asserted
+  // This task runs until there is a reset or stop_sideload_seq() is called. The sequences that pass
+  // the new keys are run with priority 100: to pass a different key, send a sequence with a higher
+  // priority.
   task start_sideload_seq();
     typedef key_sideload_set_seq#(keymgr_pkg::hw_key_req_t) sideload_seq_t;
 
-    while (!cfg.under_reset) begin
+    bit end_loop = 0;
+
+    if (m_sideload_seq_running) begin
+      `uvm_fatal(get_name(), "Cannot start multiple sideload sequences.")
+    end
+    m_sideload_seq_running = 1;
+
+    while (!cfg.under_reset && !end_loop) begin
       sideload_seq_t sideload_seq = sideload_seq_t::type_id::create("sideload_seq");
 
       if (!sideload_seq.randomize()) begin
         `uvm_fatal(get_name(), "Failed to randomize sideload_seq.")
       end
 
-      sideload_seq.start(p_sequencer.key_sideload_sequencer_h);
+      fork : isolation_fork begin
+        fork
+          sideload_seq.start(p_sequencer.key_sideload_sequencer_h, this, 100);
+          begin
+            m_stop_sideload_seqs_event.wait_ptrigger();
+            end_loop = 1;
+            sideload_seq.request_stop();
+            wait(0);
+          end
+        join_any
+        disable fork;
+      end join
     end
+
+    m_sideload_seq_running = 0;
+  endtask
+
+  // Stop a sideload sequence if there is one running. Returns when the sequence has finished.
+  task stop_sideload_seq();
+    m_stop_sideload_seqs_event.trigger();
+    wait (!m_sideload_seq_running);
   endtask
 
   task req_sideload_key();
