@@ -128,6 +128,17 @@ interface clk_rst_if (
     end join
   endtask
 
+  // Wait for 'num_clks' clocks based on the negative clock edge or reset, whichever comes first.
+  task automatic wait_n_clks_or_rst(int num_clks);
+    fork begin : isolation_fork
+      fork
+        wait_n_clks(num_clks);
+        wait_for_reset(.wait_negedge(1'b1), .wait_posedge(1'b0));
+      join_any
+      disable fork;
+    end join
+  endtask
+
   // wait for rst_n to assert and then deassert
   task automatic wait_for_reset(bit wait_negedge = 1'b1, bit wait_posedge = 1'b1);
     if (wait_negedge && ($isunknown(rst_n) || rst_n === 1'b1)) @(negedge rst_n);
