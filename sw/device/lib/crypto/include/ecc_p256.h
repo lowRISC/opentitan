@@ -43,7 +43,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_keygen(
  * including populating the key configuration and use the private key handle
  * returned by `otcrypto_hw_backed_attestation_key`.
  *
- * @param[out] private_key Pointer to the blinded private key (d) struct.
+ * @param private_key Pointer to the blinded private key (d) struct.
  * @param[out] public_key Pointer to the unblinded public key (Q) struct.
  * @param attestation_seed The additional per-chip fixed entropy.
  * @return Result of the ECDSA key generation.
