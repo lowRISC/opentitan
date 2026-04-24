@@ -553,6 +553,7 @@ static status_t kmac_init(kmac_operation_t operation,
 OT_WARN_UNUSED_RESULT
 static status_t kmac_write_key_block(kmac_blinded_key_t *key) {
   if (launder32(key->hw_backed) == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(key->hw_backed, kHardenedBoolTrue);
     // Nothing to do.
     return OTCRYPTO_OK;
   } else if (launder32(key->hw_backed) != kHardenedBoolFalse) {
@@ -582,6 +583,9 @@ static status_t kmac_write_key_block(kmac_blinded_key_t *key) {
   HARDENED_TRY(hardened_memshred((uint32_t *)share1_addr, key_len_words));
   HARDENED_TRY(
       hardened_memcpy((uint32_t *)share1_addr, key->share1, key_len_words));
+
+  // Verify the checksum of the given key.
+  HARDENED_CHECK_EQ(kmac_key_integrity_checksum_check(key), kHardenedBoolTrue);
 
   return OTCRYPTO_OK;
 }
