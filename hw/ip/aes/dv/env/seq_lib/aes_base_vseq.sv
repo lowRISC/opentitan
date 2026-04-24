@@ -244,6 +244,7 @@ class aes_base_vseq extends cip_base_vseq #(
 
     if (wait_idle) begin
       csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
+      if (cfg.under_reset) return;
     end
 
     // In case configuration error injection is enabled, we inject an error with a probability of
@@ -319,6 +320,8 @@ class aes_base_vseq extends cip_base_vseq #(
         phase_prev.name(), phase_wr.name(), phase.name()), UVM_MEDIUM)
     `uvm_info(`gfn, $sformatf("Writing num_bytes_valid %0d", num_bytes_wr), UVM_MEDIUM)
     csr_update(.csr(ral.ctrl_gcm_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+    if (cfg.under_reset) return;
+
     if (phase != phase_wr) begin
       // Reflect the resolution of invalid values in the abstraction class.
       ral.ctrl_gcm_shadowed.phase.set(phase_prev);
@@ -329,6 +332,7 @@ class aes_base_vseq extends cip_base_vseq #(
       // Perform a readback to check that the DUT resolved potentially illegal phase value changes
       // correctly.
       csr_rd(.ptr(ral.ctrl_gcm_shadowed), .value(ctrl_gcm), .blocking(1));
+      if (cfg.under_reset) return;
       if (ctrl_gcm.phase != phase_prev) begin
         `uvm_fatal(`gfn, $sformatf("Expected GCM phase %s, got %s",
             phase_prev.name(), ctrl_gcm.phase.name()))

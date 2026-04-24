@@ -251,9 +251,13 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block_extended));
     keymgr_sideload_agent_cfg.start_default_seq = 0;
     num_edn = 1;
     super.initialize();
+
+    can_reset_with_csr_accesses = 1;
+
     tl_intg_alert_fields[ral.status.alert_fatal_fault] = 1;
     shadow_update_err_status_fields[ral.status.alert_recov_ctrl_update_err] = 1;
     shadow_storage_err_status_fields[ral.status.alert_fatal_fault] = 1;
+
     // get aes reseed check interface handle
     if (!uvm_config_db#(virtual aes_reseed_if)::get(null, "*.env" , "aes_reseed_vif",
                                                     aes_reseed_vif)) begin
