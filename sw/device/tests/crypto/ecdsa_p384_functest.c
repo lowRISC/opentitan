@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/config.h"
@@ -128,8 +129,37 @@ static status_t sign_then_verify_test(void) {
 
 OTTF_DEFINE_TEST_CONFIG();
 
+/**
+ * A test where a known input is signed and is compared to the expected output.
+ * In addition, it draws randomness to share the known input using
+ * hardened_memshred. The input is shared using the hardened_sub_mod function
+ * using the P-384 curve order n.
+ */
 static status_t sign_kat(void) {
   uint32_t keyblob_len = 2 * kP384SecretScalarWords;
+
+  // P-384 curve order n, padded to 448 bits (14 words) for our math operations.
+  static const uint32_t kP384Order[kP384SecretScalarWords] = {
+      0xCCC52973, 0xECEC196A, 0x48B0A77A, 0x581A0DB2, 0xF4372DDF,
+      0xC7634D81, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
+      0xFFFFFFFF, 0xFFFFFFFF, 0x00000000, 0x00000000};
+
+  uint32_t unmasked_val[kP384SecretScalarWords];
+  uint32_t share1_rand[kP384SecretScalarWords];
+  uint32_t share0[kP384SecretScalarWords];
+  uint32_t share1[kP384SecretScalarWords];
+
+  memset(unmasked_val, 0, kP384SecretScalarBytes);
+  memcpy(unmasked_val, kKATSecretScalar, kP384TestVectorScalarInpBytes);
+
+  // Generate a random value and reduce it modulo n to get a valid share1
+  TRY(hardened_memshred(share1_rand, kP384SecretScalarWords));
+  TRY(hardened_mod_reduce(share1_rand, kP384Order, kP384SecretScalarWords,
+                          share1));
+
+  // Calculate share0 = (unmasked_val - share1) mod n
+  TRY(hardened_sub_mod(unmasked_val, share1, kP384Order, kP384SecretScalarWords,
+                       share0));
 
   // Allocate space for a masked secret scalar.
   uint32_t keyblob_scalar[keyblob_len];
@@ -138,9 +168,23 @@ static status_t sign_kat(void) {
       .keyblob_length = sizeof(keyblob_scalar),
       .keyblob = keyblob_scalar,
   };
-  memset(keyblob_scalar, 0, 2 * kP384SecretScalarBytes);
-  memcpy(keyblob_scalar, kKATSecretScalar, kP384TestVectorScalarInpBytes);
+  memcpy(keyblob_scalar, share0, kP384SecretScalarBytes);
+  // We copy over the full random bits
+  memcpy(keyblob_scalar + kP384SecretScalarWords, share1,
+         kP384SecretScalarBytes);
   secret_scalar.checksum = integrity_blinded_checksum(&secret_scalar);
+
+  memset(unmasked_val, 0, kP384SecretScalarBytes);
+  memcpy(unmasked_val, kKATKey, kP384TestVectorScalarInpBytes);
+
+  // Generate new random noise and reduce it modulo n
+  TRY(hardened_memshred(share1_rand, kP384SecretScalarWords));
+  TRY(hardened_mod_reduce(share1_rand, kP384Order, kP384SecretScalarWords,
+                          share1));
+
+  // Calculate share0 = (unmasked_val - share1) mod n
+  TRY(hardened_sub_mod(unmasked_val, share1, kP384Order, kP384SecretScalarWords,
+                       share0));
 
   // Allocate space for a masked private key.
   uint32_t keyblob_sk[keyblob_len];
@@ -149,8 +193,8 @@ static status_t sign_kat(void) {
       .keyblob_length = sizeof(keyblob_sk),
       .keyblob = keyblob_sk,
   };
-  memset(keyblob_sk, 0, 2 * kP384SecretScalarBytes);
-  memcpy(keyblob_sk, kKATKey, kP384TestVectorScalarInpBytes);
+  memcpy(keyblob_sk, share0, kP384SecretScalarBytes);
+  memcpy(keyblob_sk + kP384SecretScalarWords, share1, kP384SecretScalarBytes);
   private_key.checksum = integrity_blinded_checksum(&private_key);
 
   // Hash the message.

@@ -227,6 +227,10 @@ status_t hardened_sub(const uint32_t *OT_RESTRICT x,
  * guaranteed. The function is hardened against fault injections and is
  * constant time in the value being reduced.
  *
+ * In order to have this function constant time, it conditionally adds n only
+ * once.
+ * This function mimics OTBN's subm.
+ *
  * @param x Pointer to the first operand.
  * @param y Pointer to the second operand.
  * @param n Pointer to the multi-word modulus.
@@ -248,6 +252,10 @@ status_t hardened_sub_mod(const uint32_t *OT_RESTRICT x,
  * Warning: the side-channel protection of this function call can not be
  * guaranteed. The function is hardened against fault injections and is
  * constant time in the value being reduced.
+ *
+ * In order to have this function constant time, it conditionally subtracts n
+ * only once.
+ * This function mimics OTBN's addm.
  *
  * @param x Pointer to the first operand.
  * @param y Pointer to the second operand.

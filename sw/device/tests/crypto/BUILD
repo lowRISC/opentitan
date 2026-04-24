@@ -542,6 +542,7 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/crypto/impl:config",
         "//sw/device/lib/crypto/impl:ecc_p256",
@@ -565,6 +566,7 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/crypto/impl:config",
         "//sw/device/lib/crypto/impl:ecc_p384",
