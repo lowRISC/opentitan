@@ -80,6 +80,56 @@ enum {
    * Magic value for verify success response.
    */
   kCurve25519VerifySuccess = 0xf77fe650,
+  /**
+   * Length of a Curve25519 curve point coordinate in bits.
+   */
+  kCurve25519CoordBits = 256,
+  /**
+   * Length of a Curve25519 curve point coordinate in bytes.
+   */
+  kCurve25519CoordBytes = kCurve25519CoordBits / 8,
+  /**
+   * Length of a Curve25519 curve point coordinate in words.
+   */
+  kCurve25519CoordWords = kCurve25519CoordBytes / sizeof(uint32_t),
+  /**
+   * Length of an element in the Curve25519 scalar field in bits.
+   */
+  kCurve25519ScalarBits = 256,
+  /**
+   * Length of a masked secret scalar share.
+   *
+   * Ed25519 uses no extra redundant bits for the initial seed sharing.
+   */
+  kCurve25519MaskedScalarShareBits = kCurve25519ScalarBits,
+  /**
+   * Length of a masked secret scalar share in bytes.
+   */
+  kCurve25519MaskedScalarShareBytes = kCurve25519MaskedScalarShareBits / 8,
+  /**
+   * Length of masked secret scalar share in words.
+   */
+  kCurve25519MaskedScalarShareWords =
+      kCurve25519MaskedScalarShareBytes / sizeof(uint32_t),
+  /**
+   * Number of shares for the scalar.
+   */
+  kCurve25519MaskedScalarNumShares = 2,
+  /**
+   * Length of the full masked secret scalar share in bits.
+   */
+  kCurve25519MaskedScalarTotalShareBits =
+      kCurve25519MaskedScalarNumShares * kCurve25519MaskedScalarShareBits,
+  /**
+   * Length of the full masked secret scalar share in bytes.
+   */
+  kCurve25519MaskedScalarTotalShareBytes =
+      kCurve25519MaskedScalarNumShares * kCurve25519MaskedScalarShareBytes,
+  /**
+   * Length of the full masked secret scalar share in words.
+   */
+  kCurve25519MaskedScalarTotalShareWords =
+      kCurve25519MaskedScalarNumShares * kCurve25519MaskedScalarShareWords,
 };
 
 /**
