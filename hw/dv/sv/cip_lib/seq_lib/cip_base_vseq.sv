@@ -304,10 +304,21 @@ class cip_base_vseq #(
   //  alert_name      The name of the alert to wait for.
   //
   //  max_wait_cycle  After any pending ping operation has completed, this gives the number of
-  //                  cycles to wait until the alert. By default it is 7, which gives one extra
-  //                  cycle longer than the gap we expect between continuously triggered alerts.
-  //                  That gap is 6 cycles: 2-3 cycles for a CDC, 2 for pauses and 1 for the idle
-  //                  state.
+  //                  cycles to wait until the alert. By default it is 7, which matches the minimum
+  //                  gap we expect between the ack signal dropping and the alert signal being
+  //                  asserted again if an alert is continuously triggered.
+  //
+  //                  The "ack drops" to "alert asserted" path is as follows:
+  //
+  //                    - ack_p in the interface drops
+  //
+  //                    - This is decoded in the sender (through prim_diff_decode), which takes up
+  //                      to three posedges in the sender's clock.
+  //
+  //                    - Four cycles in the sender: final cycle in the handshake state; two pause
+  //                      cycles; single cycle in the idle state.
+  //
+  //                    - The sender asserts alert_p as it moves into AlertHsPhase1.
   //
   //  wait_complete   If this is true, the task waits for the alert to be acked before exiting.
   extern protected task wait_alert_trigger(string alert_name,
@@ -1016,19 +1027,58 @@ endtask
 task cip_base_vseq::wait_alert_trigger(string alert_name,
                                        int    max_wait_cycle = 7,
                                        bit    wait_complete = 0);
-  // wait until ping finishes before the dv_spinwait in case
-  // m_alert_agent_cfgs[alert_name].vif.is_alert_handshaking is true due to a ping
-  wait_until_ping_is_finished(cfg.m_alert_agent_cfgs[alert_name]);
-  `DV_SPINWAIT_EXIT(while (!cfg.m_alert_agent_cfgs[alert_name].vif.is_alert_handshaking) begin
-                      cfg.clk_rst_vif.wait_clks(1);
-                      wait_until_ping_is_finished(cfg.m_alert_agent_cfgs[alert_name]);
-                    end,
-                    // another thread to wait for given cycles. If timeout, report an error.
-                    cfg.clk_rst_vif.wait_clks(max_wait_cycle);
-                    `uvm_error(`gfn, $sformatf("expect alert:%0s to fire", alert_name)))
+  alert_esc_agent_cfg agent_cfg = cfg.m_alert_agent_cfgs[alert_name];
+  virtual alert_esc_if alert_vif = agent_cfg.vif;
+
+  // In case there is a ping in flight when we arrive, wait for the ping to clear.
+  wait_until_ping_is_finished(agent_cfg);
+
+  fork : isolation_fork begin
+    fork
+      // Stop early on reset
+      cfg.clk_rst_vif.wait_for_reset(.wait_negedge(1), .wait_posedge(0));
+
+      // The timer thread (wait for max_wait_cycle cycles, then generate an error). To avoid a race
+      // if the alert is asserted on the positive edge of the clock after exactly that number of
+      // cycles, the timer waits for the following negative edge.
+      begin
+        repeat (max_wait_cycle) @(posedge alert_vif.clk);
+        @(negedge alert_vif.clk);
+        `uvm_error(get_name(),
+                   $sformatf("Expected alert (%0s) did not fire in %0d cycles.",
+                             alert_name, max_wait_cycle))
+      end
+
+      // Wait to see an alert come out. This happens if is_alert_handshaking becomes true
+      // when there is no active_ping.
+      forever begin
+        wait(alert_vif.is_alert_handshaking);
+        if (!alert_vif.in_ping_st()) break;
+        // If we get here, we were in the middle of a ping. Wait for it to complete and then wait
+        // for another handshake.
+        wait_until_ping_is_finished(agent_cfg);
+      end
+    join_any
+    disable fork;
+  end join
+
   if (wait_complete) begin
-    `DV_SPINWAIT(cfg.m_alert_agent_cfgs[alert_name].vif.wait_ack_complete();,
-                 $sformatf("timeout wait for alert handshake:%0s", alert_name))
+    // Wait for the ack to be asserted and then cleared again. The wait_ack_complete task ends as
+    // soon as the ack signal drops. Wait until the next clock edge so that we end on the first
+    // clock edge where the dropped ack signal is seen.
+    fork : ack_isolation_fork begin
+      fork
+        begin
+          alert_vif.wait_ack_complete();
+          @(posedge alert_vif.clk);
+        end
+        begin
+          #(default_spinwait_timeout_ns * 1ns);
+          `uvm_error(get_name(), {"Timeout waiting for end of ack for alert ", alert_name})
+        end
+      join_any
+      disable fork;
+    end join
   end
 endtask
 
