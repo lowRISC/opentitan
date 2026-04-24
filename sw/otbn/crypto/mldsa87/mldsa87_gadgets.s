@@ -34,9 +34,9 @@ work of Azouaoui et al. [1].
 /*
  * Configuration values for the MAI_CTRL register.
  */
-.set MAI_CTRL_A2B, 0x1
-.set MAI_CTRL_B2A, 0x3
-.set MAI_CTRL_ADD, 0x5
+.set MAI_CTRL_A2B, 0x17
+.set MAI_CTRL_B2A, 0x21
+.set MAI_CTRL_ADD, 0x2F
 
 .text
 

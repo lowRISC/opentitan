@@ -209,6 +209,8 @@ module otbn_reg_top (
   logic err_bits_rnd_rep_chk_fail_wd;
   logic err_bits_rnd_fips_chk_fail_qs;
   logic err_bits_rnd_fips_chk_fail_wd;
+  logic err_bits_mai_software_error_qs;
+  logic err_bits_mai_software_error_wd;
   logic err_bits_imem_intg_violation_qs;
   logic err_bits_imem_intg_violation_wd;
   logic err_bits_dmem_intg_violation_qs;
@@ -426,7 +428,7 @@ module otbn_reg_top (
 
   // R[err_bits]: V(True)
   logic err_bits_qe;
-  logic [15:0] err_bits_flds_we;
+  logic [16:0] err_bits_flds_we;
   assign err_bits_qe = &err_bits_flds_we;
   //   F[bad_data_addr]: 0:0
   prim_subreg_ext #(
@@ -556,6 +558,22 @@ module otbn_reg_top (
   );
   assign reg2hw.err_bits.rnd_fips_chk_fail.qe = err_bits_qe;
 
+  //   F[mai_software_error]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_err_bits_mai_software_error (
+    .re     (err_bits_re),
+    .we     (err_bits_we),
+    .wd     (err_bits_mai_software_error_wd),
+    .d      (hw2reg.err_bits.mai_software_error.d),
+    .qre    (),
+    .qe     (err_bits_flds_we[8]),
+    .q      (reg2hw.err_bits.mai_software_error.q),
+    .ds     (),
+    .qs     (err_bits_mai_software_error_qs)
+  );
+  assign reg2hw.err_bits.mai_software_error.qe = err_bits_qe;
+
   //   F[imem_intg_violation]: 16:16
   prim_subreg_ext #(
     .DW    (1)
@@ -565,7 +583,7 @@ module otbn_reg_top (
     .wd     (err_bits_imem_intg_violation_wd),
     .d      (hw2reg.err_bits.imem_intg_violation.d),
     .qre    (),
-    .qe     (err_bits_flds_we[8]),
+    .qe     (err_bits_flds_we[9]),
     .q      (reg2hw.err_bits.imem_intg_violation.q),
     .ds     (),
     .qs     (err_bits_imem_intg_violation_qs)
@@ -581,7 +599,7 @@ module otbn_reg_top (
     .wd     (err_bits_dmem_intg_violation_wd),
     .d      (hw2reg.err_bits.dmem_intg_violation.d),
     .qre    (),
-    .qe     (err_bits_flds_we[9]),
+    .qe     (err_bits_flds_we[10]),
     .q      (reg2hw.err_bits.dmem_intg_violation.q),
     .ds     (),
     .qs     (err_bits_dmem_intg_violation_qs)
@@ -597,7 +615,7 @@ module otbn_reg_top (
     .wd     (err_bits_reg_intg_violation_wd),
     .d      (hw2reg.err_bits.reg_intg_violation.d),
     .qre    (),
-    .qe     (err_bits_flds_we[10]),
+    .qe     (err_bits_flds_we[11]),
     .q      (reg2hw.err_bits.reg_intg_violation.q),
     .ds     (),
     .qs     (err_bits_reg_intg_violation_qs)
@@ -613,7 +631,7 @@ module otbn_reg_top (
     .wd     (err_bits_bus_intg_violation_wd),
     .d      (hw2reg.err_bits.bus_intg_violation.d),
     .qre    (),
-    .qe     (err_bits_flds_we[11]),
+    .qe     (err_bits_flds_we[12]),
     .q      (reg2hw.err_bits.bus_intg_violation.q),
     .ds     (),
     .qs     (err_bits_bus_intg_violation_qs)
@@ -629,7 +647,7 @@ module otbn_reg_top (
     .wd     (err_bits_bad_internal_state_wd),
     .d      (hw2reg.err_bits.bad_internal_state.d),
     .qre    (),
-    .qe     (err_bits_flds_we[12]),
+    .qe     (err_bits_flds_we[13]),
     .q      (reg2hw.err_bits.bad_internal_state.q),
     .ds     (),
     .qs     (err_bits_bad_internal_state_qs)
@@ -645,7 +663,7 @@ module otbn_reg_top (
     .wd     (err_bits_illegal_bus_access_wd),
     .d      (hw2reg.err_bits.illegal_bus_access.d),
     .qre    (),
-    .qe     (err_bits_flds_we[13]),
+    .qe     (err_bits_flds_we[14]),
     .q      (reg2hw.err_bits.illegal_bus_access.q),
     .ds     (),
     .qs     (err_bits_illegal_bus_access_qs)
@@ -661,7 +679,7 @@ module otbn_reg_top (
     .wd     (err_bits_lifecycle_escalation_wd),
     .d      (hw2reg.err_bits.lifecycle_escalation.d),
     .qre    (),
-    .qe     (err_bits_flds_we[14]),
+    .qe     (err_bits_flds_we[15]),
     .q      (reg2hw.err_bits.lifecycle_escalation.q),
     .ds     (),
     .qs     (err_bits_lifecycle_escalation_qs)
@@ -677,7 +695,7 @@ module otbn_reg_top (
     .wd     (err_bits_fatal_software_wd),
     .d      (hw2reg.err_bits.fatal_software.d),
     .qre    (),
-    .qe     (err_bits_flds_we[15]),
+    .qe     (err_bits_flds_we[16]),
     .q      (reg2hw.err_bits.fatal_software.q),
     .ds     (),
     .qs     (err_bits_fatal_software_qs)
@@ -1018,6 +1036,8 @@ module otbn_reg_top (
 
   assign err_bits_rnd_fips_chk_fail_wd = reg_wdata[7];
 
+  assign err_bits_mai_software_error_wd = reg_wdata[8];
+
   assign err_bits_imem_intg_violation_wd = reg_wdata[16];
 
   assign err_bits_dmem_intg_violation_wd = reg_wdata[17];
@@ -1099,6 +1119,7 @@ module otbn_reg_top (
         reg_rdata_next[5] = err_bits_key_invalid_qs;
         reg_rdata_next[6] = err_bits_rnd_rep_chk_fail_qs;
         reg_rdata_next[7] = err_bits_rnd_fips_chk_fail_qs;
+        reg_rdata_next[8] = err_bits_mai_software_error_qs;
         reg_rdata_next[16] = err_bits_imem_intg_violation_qs;
         reg_rdata_next[17] = err_bits_dmem_intg_violation_qs;
         reg_rdata_next[18] = err_bits_reg_intg_violation_qs;

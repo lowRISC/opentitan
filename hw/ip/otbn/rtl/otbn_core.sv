@@ -233,6 +233,29 @@ module otbn_core
   logic [ExtWLEN-1:0]          ispr_mod_intg;
   logic                        ispr_init;
 
+  logic               ispr_mai_ctrl_wr;
+  logic [31:0]        ispr_mai_ctrl_wdata;
+  logic [31:0]        ispr_mai_ctrl_rdata;
+  logic [31:0]        ispr_mai_status_rdata;
+  logic               ispr_mai_in0_s0_wr;
+  logic [ExtWLEN-1:0] ispr_mai_in0_s0_wdata;
+  logic               ispr_mai_in0_s1_wr;
+  logic [ExtWLEN-1:0] ispr_mai_in0_s1_wdata;
+  logic               ispr_mai_in1_s0_wr;
+  logic [ExtWLEN-1:0] ispr_mai_in1_s0_wdata;
+  logic               ispr_mai_in1_s1_wr;
+  logic [ExtWLEN-1:0] ispr_mai_in1_s1_wdata;
+  logic               ispr_mai_res_s0_wr;
+  logic [ExtWLEN-1:0] ispr_mai_res_s0_wdata;
+  logic               ispr_mai_res_s1_wr;
+  logic [ExtWLEN-1:0] ispr_mai_res_s1_wdata;
+  logic [ExtWLEN-1:0] ispr_mai_in0_s0_rdata;
+  logic [ExtWLEN-1:0] ispr_mai_in0_s1_rdata;
+  logic [ExtWLEN-1:0] ispr_mai_in1_s0_rdata;
+  logic [ExtWLEN-1:0] ispr_mai_in1_s1_rdata;
+  logic [ExtWLEN-1:0] ispr_mai_res_s0_rdata;
+  logic [ExtWLEN-1:0] ispr_mai_res_s1_rdata;
+
   logic            rnd_req;
   logic            rnd_prefetch_req;
   logic            rnd_valid;
@@ -240,13 +263,13 @@ module otbn_core
   logic            rnd_rep_err;
   logic            rnd_fips_err;
 
-  logic            urnd_reseed_req;
-  logic            urnd_reseed_ack;
-  logic            urnd_reseed_err;
-  logic            urnd_advance;
-  logic            urnd_advance_start_stop_control;
-  logic [WLEN-1:0] urnd_data;
-  logic            urnd_all_zero_d, urnd_all_zero;
+  logic               urnd_reseed_req;
+  logic               urnd_reseed_ack;
+  logic               urnd_reseed_err;
+  logic               urnd_advance;
+  logic               urnd_advance_start_stop_control;
+  logic [UrndLen-1:0] urnd_data;
+  logic               urnd_all_zero_d, urnd_all_zero;
 
   logic        controller_start;
 
@@ -266,6 +289,13 @@ module otbn_core
   logic sec_wipe_mod_urnd;
   logic sec_wipe_zero;
   logic sec_wipe_err;
+
+  logic sec_wipe_mai_in0_s0_urnd;
+  logic sec_wipe_mai_in0_s1_urnd;
+  logic sec_wipe_mai_in1_s0_urnd;
+  logic sec_wipe_mai_in1_s1_urnd;
+  logic sec_wipe_mai_res_s0_urnd;
+  logic sec_wipe_mai_res_s1_urnd;
 
   logic zero_flags;
 
@@ -288,6 +318,10 @@ module otbn_core
   logic controller_predec_error;
   logic rd_predec_error, predec_error_d, predec_error;
   logic mac_bignum_state_error_d, mac_bignum_state_error;
+
+  logic mai_software_error;
+  logic mai_reg_intg_violation_err;
+  logic mai_state_err;
 
   logic req_sec_wipe_urnd_keys_q;
 
@@ -326,6 +360,13 @@ module otbn_core
     .sec_wipe_mac_urnd_o(sec_wipe_mac_urnd),
     .sec_wipe_mod_urnd_o(sec_wipe_mod_urnd),
     .sec_wipe_zero_o    (sec_wipe_zero),
+
+    .sec_wipe_mai_in0_s0_urnd_o(sec_wipe_mai_in0_s0_urnd),
+    .sec_wipe_mai_in0_s1_urnd_o(sec_wipe_mai_in0_s1_urnd),
+    .sec_wipe_mai_in1_s0_urnd_o(sec_wipe_mai_in1_s0_urnd),
+    .sec_wipe_mai_in1_s1_urnd_o(sec_wipe_mai_in1_s1_urnd),
+    .sec_wipe_mai_res_s0_urnd_o(sec_wipe_mai_res_s0_urnd),
+    .sec_wipe_mai_res_s1_urnd_o(sec_wipe_mai_res_s1_urnd),
 
     .ispr_init_o         (ispr_init),
     .state_reset_o       (state_reset),
@@ -552,6 +593,9 @@ module otbn_core
     .ispr_rdata_intg_i       (ispr_rdata_intg),
     .ispr_rd_en_o            (ispr_rd_en),
 
+    // MAI
+    .mai_software_error_i(mai_software_error),
+
     // RND interface
     .rnd_req_o         (rnd_req),
     .rnd_prefetch_req_o(rnd_prefetch_req),
@@ -599,7 +643,8 @@ module otbn_core
 
   logic non_controller_reg_intg_violation_d, non_controller_reg_intg_violation;
   assign non_controller_reg_intg_violation_d =
-      |{alu_bignum_reg_intg_violation_err, mac_bignum_reg_intg_violation_err, rf_base_intg_err_d};
+      |{alu_bignum_reg_intg_violation_err, mac_bignum_reg_intg_violation_err, rf_base_intg_err_d,
+        mai_reg_intg_violation_err};
 
   ////////////////////////////////////////////////////////////////
   // Register local escalation signals for timinig optimization //
@@ -659,7 +704,8 @@ module otbn_core
                            insn_addr_err,
                            rf_base_spurious_we_err,
                            mac_bignum_state_error,
-                           mubi_err},
+                           mubi_err,
+                           mai_state_err},
     reg_intg_violation:  |{controller_err_bits.reg_intg_violation,
                            non_controller_reg_intg_violation},
     dmem_intg_violation: lsu_rdata_err,
@@ -671,7 +717,8 @@ module otbn_core
     illegal_insn:        controller_err_bits.illegal_insn,
     call_stack:          controller_err_bits.call_stack,
     bad_insn_addr:       controller_err_bits.bad_insn_addr,
-    bad_data_addr:       controller_err_bits.bad_data_addr
+    bad_data_addr:       controller_err_bits.bad_data_addr,
+    mai_error:           controller_err_bits.mai_error
   };
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -696,7 +743,7 @@ module otbn_core
                   mubi4_bool_to_mubi(|{start_stop_fatal_error, urnd_all_zero, predec_error,
                                        rf_base_spurious_we_err, lsu_rdata_err,
                                        insn_fetch_err, non_controller_reg_intg_violation,
-                                       insn_addr_err, mac_bignum_state_error}));
+                                       insn_addr_err, mac_bignum_state_error, mai_state_err}));
 
   assign controller_recov_escalate_en =
       mubi4_bool_to_mubi(|{rnd_rep_err, rnd_fips_err});
@@ -707,7 +754,7 @@ module otbn_core
                   mubi4_bool_to_mubi(|{urnd_all_zero, rf_base_intg_err, rf_base_spurious_we_err,
                                        predec_error, lsu_rdata_err, insn_fetch_err,
                                        mac_bignum_state_error,
-                                       controller_fatal_err, insn_addr_err}));
+                                       controller_fatal_err, insn_addr_err, mai_state_err}));
 
   // Signal error if MuBi input signals take on invalid values as this means something bad is
   // happening. The explicit error detection is required as the mubi4_or_hi operations above
@@ -865,7 +912,7 @@ module otbn_core
     if (sec_wipe_wdr_q) begin
       // Wipe the WDR with either random numbers or zeroes.
       if (sec_wipe_wdr_urnd_q) begin
-        rf_bignum_wr_data_no_intg = urnd_data;
+        rf_bignum_wr_data_no_intg = urnd_data[WLEN-1:0];
       end else begin
         rf_bignum_wr_data_no_intg = 256'b0;
       end
@@ -908,6 +955,29 @@ module otbn_core
 
     .ispr_mod_intg_o(ispr_mod_intg),
 
+    .ispr_mai_ctrl_wr_o     (ispr_mai_ctrl_wr),
+    .ispr_mai_ctrl_wdata_o  (ispr_mai_ctrl_wdata),
+    .ispr_mai_ctrl_rdata_i  (ispr_mai_ctrl_rdata),
+    .ispr_mai_status_rdata_i(ispr_mai_status_rdata),
+    .ispr_mai_in0_s0_wr_o   (ispr_mai_in0_s0_wr),
+    .ispr_mai_in0_s0_wdata_o(ispr_mai_in0_s0_wdata),
+    .ispr_mai_in0_s1_wr_o   (ispr_mai_in0_s1_wr),
+    .ispr_mai_in0_s1_wdata_o(ispr_mai_in0_s1_wdata),
+    .ispr_mai_in1_s0_wr_o   (ispr_mai_in1_s0_wr),
+    .ispr_mai_in1_s0_wdata_o(ispr_mai_in1_s0_wdata),
+    .ispr_mai_in1_s1_wr_o   (ispr_mai_in1_s1_wr),
+    .ispr_mai_in1_s1_wdata_o(ispr_mai_in1_s1_wdata),
+    .ispr_mai_res_s0_wr_o   (ispr_mai_res_s0_wr),
+    .ispr_mai_res_s0_wdata_o(ispr_mai_res_s0_wdata),
+    .ispr_mai_res_s1_wr_o   (ispr_mai_res_s1_wr),
+    .ispr_mai_res_s1_wdata_o(ispr_mai_res_s1_wdata),
+    .ispr_mai_in0_s0_rdata_i(ispr_mai_in0_s0_rdata),
+    .ispr_mai_in0_s1_rdata_i(ispr_mai_in0_s1_rdata),
+    .ispr_mai_in1_s0_rdata_i(ispr_mai_in1_s0_rdata),
+    .ispr_mai_in1_s1_rdata_i(ispr_mai_in1_s1_rdata),
+    .ispr_mai_res_s0_rdata_i(ispr_mai_res_s0_rdata),
+    .ispr_mai_res_s1_rdata_i(ispr_mai_res_s1_rdata),
+
     .reg_intg_violation_err_o(alu_bignum_reg_intg_violation_err),
 
     .sec_wipe_mod_urnd_i(sec_wipe_mod_urnd),
@@ -918,7 +988,7 @@ module otbn_core
     .mac_operation_flags_en_i(mac_bignum_operation_flags_en),
 
     .rnd_data_i (rnd_data),
-    .urnd_data_i(urnd_data),
+    .urnd_data_i(urnd_data[WLEN-1:0]),
 
     .sideload_key_shares_i,
 
@@ -942,7 +1012,7 @@ module otbn_core
     .predec_i      (mac_bignum_predec),
     .predec_error_o(mac_bignum_predec_error),
 
-    .urnd_data_i       (urnd_data),
+    .urnd_data_i       (urnd_data[WLEN-1:0]),
     .sec_wipe_urnd_i   (sec_wipe_mac_urnd),
     .sec_wipe_running_i(secure_wipe_running_o),
     .sec_wipe_err_o    (mac_bignum_sec_wipe_err),
@@ -959,6 +1029,46 @@ module otbn_core
     .ispr_mod_intg_i(ispr_mod_intg),
 
     .state_err_o(mac_bignum_state_error_d)
+  );
+
+  otbn_mai u_otbn_mai (
+    .clk_i,
+    .rst_ni,
+    .sec_wipe_running_i          (secure_wipe_running_o),
+    .mai_wipe_i                  (sec_wipe_zero),
+    .ispr_mai_ctrl_wr_i          (ispr_mai_ctrl_wr),
+    .ispr_mai_ctrl_wdata_i       (ispr_mai_ctrl_wdata),
+    .ispr_mai_ctrl_rdata_o       (ispr_mai_ctrl_rdata),
+    .ispr_mai_status_rdata_o     (ispr_mai_status_rdata),
+    .ispr_mai_in0_s0_wr_i        (ispr_mai_in0_s0_wr),
+    .ispr_mai_in0_s0_sec_wipe_i  (sec_wipe_mai_in0_s0_urnd),
+    .ispr_mai_in0_s0_wdata_i     (ispr_mai_in0_s0_wdata),
+    .ispr_mai_in0_s1_wr_i        (ispr_mai_in0_s1_wr),
+    .ispr_mai_in0_s1_sec_wipe_i  (sec_wipe_mai_in0_s1_urnd),
+    .ispr_mai_in0_s1_wdata_i     (ispr_mai_in0_s1_wdata),
+    .ispr_mai_in1_s0_wr_i        (ispr_mai_in1_s0_wr),
+    .ispr_mai_in1_s0_sec_wipe_i  (sec_wipe_mai_in1_s0_urnd),
+    .ispr_mai_in1_s0_wdata_i     (ispr_mai_in1_s0_wdata),
+    .ispr_mai_in1_s1_wr_i        (ispr_mai_in1_s1_wr),
+    .ispr_mai_in1_s1_sec_wipe_i  (sec_wipe_mai_in1_s1_urnd),
+    .ispr_mai_in1_s1_wdata_i     (ispr_mai_in1_s1_wdata),
+    .ispr_mai_res_s0_wr_i        (ispr_mai_res_s0_wr),
+    .ispr_mai_res_s0_sec_wipe_i  (sec_wipe_mai_res_s0_urnd),
+    .ispr_mai_res_s0_wdata_i     (ispr_mai_res_s0_wdata),
+    .ispr_mai_res_s1_wr_i        (ispr_mai_res_s1_wr),
+    .ispr_mai_res_s1_sec_wipe_i  (sec_wipe_mai_res_s1_urnd),
+    .ispr_mai_res_s1_wdata_i     (ispr_mai_res_s1_wdata),
+    .ispr_mai_in0_s0_rdata_o     (ispr_mai_in0_s0_rdata),
+    .ispr_mai_in0_s1_rdata_o     (ispr_mai_in0_s1_rdata),
+    .ispr_mai_in1_s0_rdata_o     (ispr_mai_in1_s0_rdata),
+    .ispr_mai_in1_s1_rdata_o     (ispr_mai_in1_s1_rdata),
+    .ispr_mai_res_s0_rdata_o     (ispr_mai_res_s0_rdata),
+    .ispr_mai_res_s1_rdata_o     (ispr_mai_res_s1_rdata),
+    .ispr_mod_intg_i             (ispr_mod_intg),
+    .mai_software_error_o        (mai_software_error),
+    .mai_reg_intg_violation_err_o(mai_reg_intg_violation_err),
+    .mai_state_err_o             (mai_state_err),
+    .urnd_data_i                 (urnd_data)
   );
 
   otbn_rnd #(

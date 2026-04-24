@@ -18,9 +18,9 @@ CHECK_ACCELERATOR_CONSTRAINTS = False
 
 # Latencies of the accelerators in cycles.
 ACCELERATOR_LATENCIES = {
-    MaiOperation.A2B: 32,
-    MaiOperation.B2A: 32,
-    MaiOperation.SECADD: 32,
+    MaiOperation.A2B: 18,
+    MaiOperation.B2A: 18,
+    MaiOperation.SECADD: 18,
 }
 
 
@@ -95,7 +95,7 @@ class A2BAccelerator(MaskingAccelerator):
 
         s = in0_s1
         # We take a fixed mask which satisfies the constraints until the exact design is known.
-        r = self._modulus() // 3
+        r = self._modulus() // 2
         secret = (in0_s0 + s) % self._modulus()
         masked_secret = (secret ^ r)
 
@@ -126,7 +126,7 @@ class B2AAccelerator(MaskingAccelerator):
         # in1_s0 and in1_s1 are not used by the B2A accelerator
 
         # We take a fixed mask which satisfies the constraints until the exact design is known.
-        s = self._modulus() // 3
+        s = self._modulus() // 2
         r = in0_s1
 
         secret = in0_s0 ^ r
@@ -159,7 +159,7 @@ class SecAddModkAccelerator(MaskingAccelerator):
         r1 = in0_s1
         s1 = in1_s1
         # We take a fixed mask until the exact design is known.
-        t = self._modulus() // 3
+        t = self._modulus() // 2
 
         x = in0_s0 ^ r1
         y = in1_s0 ^ s1

@@ -593,6 +593,11 @@
           resval: 0,
           desc: "An `RND_FIPS_CHK_FAIL` error was observed."
         }
+        { bits: "8",
+          name: "mai_software_error"
+          resval: 0,
+          desc: "An `MAI_SOFTWARE_ERROR` error was observed."
+        }
 
         // Fatal errors. Keep in sync with list in FATAL_ALERT_CAUSE.
         { bits: "16",

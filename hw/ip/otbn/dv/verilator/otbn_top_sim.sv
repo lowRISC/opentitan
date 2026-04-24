@@ -185,7 +185,8 @@ module otbn_top_sim (
     illegal_insn:         core_err_bits.illegal_insn,
     call_stack:           core_err_bits.call_stack,
     bad_insn_addr:        core_err_bits.bad_insn_addr,
-    bad_data_addr:        core_err_bits.bad_data_addr
+    bad_data_addr:        core_err_bits.bad_data_addr,
+    mai_error:            core_err_bits.mai_error
   };
 
   // Track when OTBN is done with its initial secure wipe of the internal state.  We use this to

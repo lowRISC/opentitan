@@ -3,14 +3,15 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from enum import IntEnum
-from typing import List, Optional
-from .ispr import DumbISPR, ISPRChange
+from typing import Optional
+from .ispr import DumbISPR
 
 
 class MaiOperation(IntEnum):
-    A2B = 0
-    B2A = 1
-    SECADD = 2
+    A2B = 11
+    B2A = 16
+    SECADD = 23
+    SECADDMOD = 12
 
 
 class MaiCtrlCSR(DumbISPR):
@@ -18,7 +19,7 @@ class MaiCtrlCSR(DumbISPR):
     def __init__(self) -> None:
         self.START_BIT_MASK = 0x1
         self.START_BIT_OFFSET = 0
-        self.OPERATION_MASK = 0x3
+        self.OPERATION_MASK = 0x1f
         self.OPERATION_OFFSET = 1
         super().__init__("MAI_CTRL", 32)
         self.on_start()
@@ -67,7 +68,7 @@ class MaiCtrlCSR(DumbISPR):
             self._operation = operation
         self._value = self._get_value()
         self._next_value = self._get_value()
-        self._pending_write = True
+        self._pending_write = False
 
     def commit(self) -> None:
         if self._next_value is not None:
@@ -111,11 +112,6 @@ class MaiCtrlCSR(DumbISPR):
         '''
         return self._extract_operation(value) != self.current_operation()
 
-    # TODO: Remove this function once RTL also generates traces. Without the RTL traces the
-    # simulation detects a trace mismatch and aborts.
-    def changes(self) -> List[ISPRChange]:
-        return []
-
 
 class MaiStatusCSR(DumbISPR):
     '''Models the MAI STATUS CSR'''
@@ -154,7 +150,7 @@ class MaiStatusCSR(DumbISPR):
             self._is_ready = ready
         self._value = self._get_value()
         self._next_value = self._get_value()
-        self._pending_write = True
+        self._pending_write = False
 
     def is_ready(self) -> bool:
         return self._is_ready
@@ -168,19 +164,10 @@ class MaiStatusCSR(DumbISPR):
     def update_busy_bit(self, busy: bool) -> None:
         self._update_bits(busy=busy)
 
-    # TODO: Remove this function once RTL also generates traces. Without the RTL traces the
-    # simulation detects a trace mismatch and aborts.
-    def changes(self) -> List[ISPRChange]:
-        return []
-
 
 class MaiOutputWSR(DumbISPR):
     def __init__(self, name: str) -> None:
         super().__init__(name, 256)
-
-    def write_unsigned(self, value: int) -> None:
-        # Writes are ignored
-        return
 
     def set_unsigned(self, value: int) -> None:
         '''Sets a value that can be read by a future `read_unsigned`.
@@ -195,7 +182,7 @@ class MaiOutputWSR(DumbISPR):
         assert 0 <= value < (1 << 256)
         self._value = value
         self._next_value = value
-        self._pending_write = True
+        self._pending_write = False
 
     def set_32bit_unsigned(self, value: int, index: int) -> None:
         '''Sets the 32-bit chunk at the given index to the unsigned value.
@@ -209,11 +196,6 @@ class MaiOutputWSR(DumbISPR):
         assert 0 <= new_value < (1 << 256)
         self.set_unsigned(new_value)
 
-    # TODO: Remove this function once RTL also generates traces. Without the RTL traces the
-    # simulation detects a trace mismatch and aborts.
-    def changes(self) -> List[ISPRChange]:
-        return []
-
 
 class MaiInputWSR(DumbISPR):
     def __init__(self, name: str) -> None:
@@ -223,8 +205,3 @@ class MaiInputWSR(DumbISPR):
         assert 0 <= index < 8
         mask = (1 << 32) - 1
         return (self.read_unsigned() >> (32 * index)) & mask
-
-    # TODO: Remove this function once RTL also generates traces. Without the RTL traces the
-    # simulation detects a trace mismatch and aborts.
-    def changes(self) -> List[ISPRChange]:
-        return []

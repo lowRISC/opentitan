@@ -106,7 +106,7 @@ class RandWSR(ISPR):
 class URNDWSR(ISPR):
     '''Models URND PRNG Structure'''
 
-    _BIVIUM_OUTPUT_WIDTH = 256
+    _BIVIUM_OUTPUT_WIDTH = 512
 
     def __init__(self, name: str):
         super().__init__(name, 256)

@@ -136,6 +136,9 @@ module otbn_controller
   input  logic [ExtWLEN-1:0]          ispr_rdata_intg_i,
   output logic                        ispr_rd_en_o,
 
+  // MAI
+  input logic mai_software_error_i,
+
   // RND interface
   output logic rnd_req_o,
   output logic rnd_prefetch_req_o,
@@ -627,7 +630,8 @@ module otbn_controller
                                         loop_sw_err,
                                         illegal_insn_err,
                                         call_stack_sw_err,
-                                        bad_data_addr_err};
+                                        bad_data_addr_err,
+                                        mai_software_error_i};
 
   assign bad_insn_addr_err = imem_addr_err & ~non_insn_addr_software_err;
 
@@ -640,7 +644,8 @@ module otbn_controller
     illegal_insn:       illegal_insn_err,
     call_stack:         call_stack_sw_err,
     bad_data_addr:      bad_data_addr_err,
-    bad_insn_addr:      bad_insn_addr_err
+    bad_insn_addr:      bad_insn_addr_err,
+    mai_error:          mai_software_error_i
   };
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -1308,6 +1313,14 @@ module otbn_controller
         ispr_addr_base      = IsprUrnd;
         ispr_word_addr_base = '0;
       end
+      CsrMaiCtrl: begin
+        ispr_addr_base      = IsprMaiCtrl;
+        ispr_word_addr_base = '0;
+      end
+      CsrMaiStatus: begin
+        ispr_addr_base      = IsprMaiStatus;
+        ispr_word_addr_base = '0;
+      end
       default: csr_illegal_addr = 1'b1;
     endcase
   end
@@ -1453,6 +1466,12 @@ module otbn_controller
         ispr_addr_bignum = IsprKeyS1H;
         key_invalid = ~sideload_key_shares_valid_i[1];
       end
+      WsrMaiResS0: ispr_addr_bignum = IsprMaiResS0;
+      WsrMaiResS1: ispr_addr_bignum = IsprMaiResS1;
+      WsrMaiIn0S0: ispr_addr_bignum = IsprMaiIn0S0;
+      WsrMaiIn0S1: ispr_addr_bignum = IsprMaiIn0S1;
+      WsrMaiIn1S0: ispr_addr_bignum = IsprMaiIn1S0;
+      WsrMaiIn1S1: ispr_addr_bignum = IsprMaiIn1S1;
       default: wsr_illegal_addr = 1'b1;
     endcase
   end

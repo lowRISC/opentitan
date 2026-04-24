@@ -112,7 +112,6 @@
 
 - name: mai_res_s0
   address: 10
-  read-only: true
   doc: |
     This WSR holds share 0 of the masked results produced by the MAI.
     The results are organized as eight 32-bit values.
@@ -121,7 +120,6 @@
 
 - name: mai_res_s1
   address: 11
-  read-only: true
   doc: |
     This WSR holds share 1 of the masked results produced by the MAI.
     The results are organized as eight 32-bit values.

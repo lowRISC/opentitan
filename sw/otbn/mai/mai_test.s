@@ -21,11 +21,6 @@ main:
   csrrs x4, MAI_CTRL, x0
   csrrs x3, MAI_STATUS, x0
 
-  /* Configure MAI - select B2A */
-  /* B2A requires the value 0x1 in the field operation. This field is in bits[2:1] */
-  li x2, 0x2
-  csrrs x0, MAI_CTRL, x2
-
   /* Add boolean mask to the secret in w0 */
   bn.wsrr w2, URND
   bn.xor w1, w0, w2
@@ -39,12 +34,10 @@ main:
   andi x3, x3, 0x2
   beq x3, x0, _mai_error
 
-  /* Start conversion by writing the start bit */
-  li x10, 0x1
+  /* Start A2B conversion by writing the operation and the start bit */
+  li x10, 0x21
   csrrs x3, MAI_STATUS, x0  /* Optional: Just to populate the trace */
-  csrrs x4, MAI_CTRL, x0    /* Optional: Just to populate the trace */
-  csrrs x0, MAI_CTRL, x10
-  csrrs x4, MAI_CTRL, x0  /* Optional: Just to populate the trace */
+  csrrw x0, MAI_CTRL, x10
 
   /* Poll busy bit */
   jal x1, _poll_busy
@@ -57,15 +50,9 @@ main:
   bn.wsrw MAI_IN0_s1, w20
   bn.wsrw MAI_IN0_s0, w21
 
-  /* Configure MAI - select A2B */
-  /* A2B requires the value 0x0 in the field operation. This field is in bits[2:1] */
-  li x2, 0x0
-  csrrw x0, MAI_CTRL, x2
-  csrrs x4, MAI_CTRL, x0  /* Optional: Just to populate the trace */
-
-  /* Start conversion by writing the start bit */
-  li x10, 0x1
-  csrrs x0, MAI_CTRL, x10
+  /* Start B2A conversion by writing the start bit */
+  li x10, 0x17
+  csrrw x0, MAI_CTRL, x10
 
   jal x1, _poll_busy
 

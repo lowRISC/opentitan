@@ -81,7 +81,7 @@ interface otbn_trace_if
   input logic                      rnd_req,
   input logic                      rnd_valid,
 
-  input logic [otbn_pkg::WLEN-1:0] urnd_data,
+  input logic [otbn_pkg::UrndLen-1:0] urnd_data,
 
   input logic [1:0][otbn_pkg::SideloadKeyWidth-1:0] sideload_key_shares_i,
 
@@ -287,7 +287,11 @@ interface otbn_trace_if
   assign ispr_read_data[IsprRnd] = rnd_data;
 
   assign ispr_read[IsprUrnd] = any_ispr_read & (ispr_addr == IsprUrnd);
-  assign ispr_read_data[IsprUrnd] = urnd_data;
+  assign ispr_read_data[IsprUrnd] = urnd_data[WLEN-1:0];
+
+  // Upper bits of URND are currently unused in the tracer interface
+  logic unused_urnd;
+  assign unused_urnd = ^urnd_data[UrndLen-1:WLEN];
 
   assign ispr_write[IsprKeyS0L] = 1'b0;
   assign ispr_write_data[IsprKeyS0L] = '0;
@@ -311,6 +315,72 @@ interface otbn_trace_if
   assign ispr_read[IsprKeyS1H] = any_ispr_read & (ispr_addr == IsprKeyS1H);
   assign ispr_read_data[IsprKeyS1H] = {{(WLEN - (SideloadKeyWidth - 256)){1'b0}},
                                        sideload_key_shares_i[1][SideloadKeyWidth-1:256]};
+
+
+  assign ispr_read[IsprMaiResS0]  = any_ispr_read & (ispr_addr == IsprMaiResS0);
+  assign ispr_read[IsprMaiResS1]  = any_ispr_read & (ispr_addr == IsprMaiResS1);
+  assign ispr_read[IsprMaiIn0S0]  = any_ispr_read & (ispr_addr == IsprMaiIn0S0);
+  assign ispr_read[IsprMaiIn0S1]  = any_ispr_read & (ispr_addr == IsprMaiIn0S1);
+  assign ispr_read[IsprMaiIn1S0]  = any_ispr_read & (ispr_addr == IsprMaiIn1S0);
+  assign ispr_read[IsprMaiIn1S1]  = any_ispr_read & (ispr_addr == IsprMaiIn1S1);
+
+  assign ispr_read[IsprMaiCtrl]   = any_ispr_read & (ispr_addr == IsprMaiCtrl);
+  assign ispr_read[IsprMaiStatus] = any_ispr_read & (ispr_addr == IsprMaiStatus);
+
+  for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : gen_mai_ispr_read_words
+    assign ispr_read_data[IsprMaiResS0][i_word*32+:32] =
+      u_otbn_mai.ispr_mai_res_s0_q.intgword[i_word].word;
+    assign ispr_read_data[IsprMaiResS1][i_word*32+:32] =
+      u_otbn_mai.ispr_mai_res_s1_q.intgword[i_word].word;
+    assign ispr_read_data[IsprMaiIn0S0][i_word*32+:32] =
+      u_otbn_mai.ispr_mai_in0_s0_q.intgword[i_word].word;
+    assign ispr_read_data[IsprMaiIn0S1][i_word*32+:32] =
+      u_otbn_mai.ispr_mai_in0_s1_q.intgword[i_word].word;
+    assign ispr_read_data[IsprMaiIn1S0][i_word*32+:32] =
+      u_otbn_mai.ispr_mai_in1_s0_q.intgword[i_word].word;
+    assign ispr_read_data[IsprMaiIn1S1][i_word*32+:32] =
+      u_otbn_mai.ispr_mai_in1_s1_q.intgword[i_word].word;
+  end
+
+
+  assign ispr_read_data[IsprMaiCtrl]   = {{(WLEN - 32){1'b0}}, u_otbn_mai.ispr_mai_ctrl_r.bus};
+  assign ispr_read_data[IsprMaiStatus] = {{(WLEN - 32){1'b0}}, u_otbn_mai.ispr_mai_status.bus};
+
+  assign ispr_write[IsprMaiResS0]  = u_otbn_mai.ispr_mai_res_s0_wr_i |
+                                     u_otbn_mai.ispr_mai_res_s0_sec_wipe_i;
+  assign ispr_write[IsprMaiResS1]  = u_otbn_mai.ispr_mai_res_s1_wr_i |
+                                     u_otbn_mai.ispr_mai_res_s1_sec_wipe_i;
+  assign ispr_write[IsprMaiIn0S0]  = u_otbn_mai.ispr_mai_in0_s0_wr_i |
+                                     u_otbn_mai.ispr_mai_in0_s0_sec_wipe_i;
+  assign ispr_write[IsprMaiIn0S1]  = u_otbn_mai.ispr_mai_in0_s1_wr_i |
+                                     u_otbn_mai.ispr_mai_in0_s1_sec_wipe_i;
+  assign ispr_write[IsprMaiIn1S0]  = u_otbn_mai.ispr_mai_in1_s0_wr_i |
+                                     u_otbn_mai.ispr_mai_in1_s0_sec_wipe_i;
+  assign ispr_write[IsprMaiIn1S1]  = u_otbn_mai.ispr_mai_in1_s1_wr_i |
+                                     u_otbn_mai.ispr_mai_in1_s1_sec_wipe_i;
+
+  assign ispr_write[IsprMaiCtrl]   = u_otbn_mai.ispr_mai_ctrl_wr_i;
+  assign ispr_write[IsprMaiStatus] = 1'b0;
+
+  for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : gen_mai_ispr_write_words
+    assign ispr_write_data[IsprMaiResS0][i_word*32+:32] =
+      u_otbn_mai.ispr_mai_res_s0_d.intgword[i_word].word;
+    assign ispr_write_data[IsprMaiResS1][i_word*32+:32] =
+      u_otbn_mai.ispr_mai_res_s1_d.intgword[i_word].word;
+    assign ispr_write_data[IsprMaiIn0S0][i_word*32+:32] =
+      u_otbn_mai.ispr_mai_in0_s0_d.intgword[i_word].word;
+    assign ispr_write_data[IsprMaiIn0S1][i_word*32+:32] =
+      u_otbn_mai.ispr_mai_in0_s1_d.intgword[i_word].word;
+    assign ispr_write_data[IsprMaiIn1S0][i_word*32+:32] =
+      u_otbn_mai.ispr_mai_in1_s0_d.intgword[i_word].word;
+    assign ispr_write_data[IsprMaiIn1S1][i_word*32+:32] =
+      u_otbn_mai.ispr_mai_in1_s1_d.intgword[i_word].word;
+  end
+
+  assign ispr_write_data[IsprMaiCtrl]   = {{(WLEN - 32'd32){1'b0}},
+                                          u_otbn_mai.ispr_mai_ctrl_wdata_i};
+  assign ispr_write_data[IsprMaiStatus] = '0;
+
 
   // Separate per flag group tracking using the flags_t struct so tracer can cleanly present flag
   // accesses.
