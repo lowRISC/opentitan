@@ -88,6 +88,8 @@ otcrypto_status_t otcrypto_kmac_kdf(
     }
     HARDENED_TRY(keyblob_to_shares(key_derivation_key, &kmac_key.share0,
                                    &kmac_key.share1));
+    // Set the checksum of the key.
+    kmac_key.checksum = kmac_key_integrity_checksum(&kmac_key);
   } else {
     return OTCRYPTO_BAD_ARGS;
   }
