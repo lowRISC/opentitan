@@ -36,14 +36,16 @@ TEST_F(PersoTlvDataTest, PersoTlvCertObjBuildX509Cert) {
   size_t buf_size = kScratchBufferSize;
 
   EXPECT_EQ(perso_tlv_cert_obj_build(name, obj_type, cert, cert_size,
-                                     scratch_buf_.data(), &buf_size),
+                                     kPersoBlobVersionV0, scratch_buf_.data(),
+                                     &buf_size),
             kErrorOk);
 
   perso_tlv_cert_obj_t obj;
   size_t ltv_buf_size = buf_size;  // Simulate reading the built object back
 
   // Should be able to get the object from the built buffer
-  EXPECT_EQ(perso_tlv_get_cert_obj(scratch_buf_.data(), ltv_buf_size, &obj),
+  EXPECT_EQ(perso_tlv_get_cert_obj(scratch_buf_.data(), ltv_buf_size,
+                                   kPersoBlobVersionV0, &obj),
             kErrorOk);
 
   EXPECT_EQ(obj.obj_type, obj_type);
@@ -62,7 +64,8 @@ TEST_F(PersoTlvDataTest, PersoTlvCertObjBuildBufTooSmall) {
   size_t buf_size = 10;  // Intentionally too small
 
   EXPECT_EQ(perso_tlv_cert_obj_build(name, obj_type, cert, cert_size,
-                                     scratch_buf_.data(), &buf_size),
+                                     kPersoBlobVersionV0, scratch_buf_.data(),
+                                     &buf_size),
             kErrorPersoTlvOutputBufTooSmall);
 }
 
@@ -75,21 +78,24 @@ TEST_F(PersoTlvDataTest, PersoTlvCertObjBuildNameTooLong) {
   size_t buf_size = kScratchBufferSize;
 
   EXPECT_EQ(perso_tlv_cert_obj_build(name, obj_type, cert, cert_size,
-                                     scratch_buf_.data(), &buf_size),
+                                     kPersoBlobVersionV0, scratch_buf_.data(),
+                                     &buf_size),
             kErrorPersoTlvCertNameTooLong);
 }
 
 TEST_F(PersoTlvDataTest, PersoTlvGetCertObjEmptyBuf) {
   perso_tlv_cert_obj_t obj;
   size_t ltv_buf_size = 0;
-  EXPECT_EQ(perso_tlv_get_cert_obj(scratch_buf_.data(), ltv_buf_size, &obj),
+  EXPECT_EQ(perso_tlv_get_cert_obj(scratch_buf_.data(), ltv_buf_size,
+                                   kPersoBlobVersionV0, &obj),
             kErrorPersoTlvInternal);  // Not enough size for header
 }
 
 TEST_F(PersoTlvDataTest, PersoTlvGetCertObjBufTooSmallForHeader) {
   perso_tlv_cert_obj_t obj;
   size_t ltv_buf_size = sizeof(perso_tlv_object_header_t) - 1;
-  EXPECT_EQ(perso_tlv_get_cert_obj(scratch_buf_.data(), ltv_buf_size, &obj),
+  EXPECT_EQ(perso_tlv_get_cert_obj(scratch_buf_.data(), ltv_buf_size,
+                                   kPersoBlobVersionV0, &obj),
             kErrorPersoTlvInternal);
 }
 
@@ -103,7 +109,8 @@ TEST_F(PersoTlvDataTest, PersoTlvGetCertObjEmptyObject) {
 
   perso_tlv_cert_obj_t obj;
   size_t ltv_buf_size = sizeof(obj_header);
-  EXPECT_EQ(perso_tlv_get_cert_obj(scratch_buf_.data(), ltv_buf_size, &obj),
+  EXPECT_EQ(perso_tlv_get_cert_obj(scratch_buf_.data(), ltv_buf_size,
+                                   kPersoBlobVersionV0, &obj),
             kErrorPersoTlvCertObjNotFound);  // Object is empty
 }
 
@@ -118,7 +125,8 @@ TEST_F(PersoTlvDataTest, PersoTlvGetCertObjTooBigForBuf) {
 
   perso_tlv_cert_obj_t obj;
   size_t ltv_buf_size = sizeof(obj_header);  // Only header is actually in buf
-  EXPECT_EQ(perso_tlv_get_cert_obj(scratch_buf_.data(), ltv_buf_size, &obj),
+  EXPECT_EQ(perso_tlv_get_cert_obj(scratch_buf_.data(), ltv_buf_size,
+                                   kPersoBlobVersionV0, &obj),
             kErrorPersoTlvInternal);  // Object exceeds buffer size
 }
 
@@ -134,7 +142,8 @@ TEST_F(PersoTlvDataTest, PersoTlvGetCertObjBufTooSmallForCertHeader) {
 
   perso_tlv_cert_obj_t obj;
   // Provide buffer size just enough for object header
-  EXPECT_EQ(perso_tlv_get_cert_obj(scratch_buf_.data(), ltv_buf_size, &obj),
+  EXPECT_EQ(perso_tlv_get_cert_obj(scratch_buf_.data(), ltv_buf_size,
+                                   kPersoBlobVersionV0, &obj),
             kErrorPersoTlvInternal);  // Not enough size for cert header
 }
 
@@ -167,7 +176,8 @@ TEST_F(PersoTlvDataTest, PersoTlvGetCertObjSizeMismatch) {
   perso_tlv_cert_obj_t obj;
   size_t ltv_buf_size =
       expected_total_size;  // Buffer is large enough for actual data
-  EXPECT_EQ(perso_tlv_get_cert_obj(scratch_buf_.data(), ltv_buf_size, &obj),
+  EXPECT_EQ(perso_tlv_get_cert_obj(scratch_buf_.data(), ltv_buf_size,
+                                   kPersoBlobVersionV0, &obj),
             kErrorPersoTlvInternal);  // Size mismatch detected by sanity check
 }
 
@@ -194,7 +204,8 @@ TEST_F(PersoTlvDataTest, PersoTlvGetCertObjCertTooLong) {
 
   perso_tlv_cert_obj_t obj;
   // Expected to fail due to wrapped_cert_size is too long.
-  EXPECT_EQ(perso_tlv_get_cert_obj(scratch_buf_.data(), ltv_buf_size, &obj),
+  EXPECT_EQ(perso_tlv_get_cert_obj(scratch_buf_.data(), ltv_buf_size,
+                                   kPersoBlobVersionV0, &obj),
             kErrorPersoTlvInternal);
 }
 
@@ -207,13 +218,15 @@ TEST_F(PersoTlvDataTest, PersoTlvGetCertObjX509SanityCheckPass) {
   size_t buf_size = kScratchBufferSize;
 
   EXPECT_EQ(perso_tlv_cert_obj_build(name, obj_type, cert, cert_size,
-                                     scratch_buf_.data(), &buf_size),
+                                     kPersoBlobVersionV0, scratch_buf_.data(),
+                                     &buf_size),
             kErrorOk);
 
   perso_tlv_cert_obj_t obj;
   size_t ltv_buf_size = buf_size;
 
-  EXPECT_EQ(perso_tlv_get_cert_obj(scratch_buf_.data(), ltv_buf_size, &obj),
+  EXPECT_EQ(perso_tlv_get_cert_obj(scratch_buf_.data(), ltv_buf_size,
+                                   kPersoBlobVersionV0, &obj),
             kErrorOk);
 }
 

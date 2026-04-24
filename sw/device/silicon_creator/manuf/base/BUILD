@@ -284,7 +284,11 @@ cc_test(
 # environment.
 cc_library(
     name = "perso_tlv_headers",
-    hdrs = ["perso_tlv_data.h"],
+    hdrs = [
+        "perso_tlv_data.h",
+        "perso_tlv_data_v0.h",
+        "perso_tlv_data_v1.h",
+    ],
     deps = [
         "//sw/device/lib/testing/json:provisioning_data",
         "//sw/device/silicon_creator/lib:error",
