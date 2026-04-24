@@ -26,18 +26,66 @@ static const uint8_t kDom2Prefix[34] = {
 };
 
 /**
- * Check the lengths of public/private keys for curve 25519.
+ * Check the lengths of private keys for curve 25519.
+ *
+ * Checks the length of caller-allocated buffers for a 25519 private key.
+ *
+ * @param private_key Private key struct to check.
+ * @return OK if the lengths are correct or BAD_ARGS otherwise.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t ed25519_private_key_length_check(
+    const otcrypto_blinded_key_t *private_key) {
+  if (private_key == NULL || private_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  if (private_key->config.hw_backed == kHardenedBoolTrue) {
+    // Skip the length check in this case; if the salt is the wrong length, the
+    // keyblob library will catch it before we sideload the key.
+    return OTCRYPTO_OK;
+  }
+  HARDENED_CHECK_NE(launder32(private_key->config.hw_backed),
+                    kHardenedBoolTrue);
+
+  // Check the unmasked length.
+  if (private_key->config.key_length != kCurve25519KeyBytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(launder32(private_key->config.key_length),
+                    kCurve25519KeyBytes);
+
+  // Check the key mode.
+  if (private_key->config.key_mode != kOtcryptoKeyModeEd25519) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(launder32(private_key->config.key_mode),
+                    kOtcryptoKeyModeEd25519);
+
+  // Check the integrity of the key.
+  if (integrity_blinded_key_check(private_key) != kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(launder32(integrity_blinded_key_check(private_key)),
+                    kHardenedBoolTrue);
+
+  return OTCRYPTO_OK;
+}
+
+/**
+ * Check the lengths of public keys for curve 25519.
  *
  * This function also does some basic checks on the key struct.
  *
  * Checks the length of caller-allocated buffers for a 25519 unblinded
  * key.
  *
- * @param key Public/private key struct to check.
+ * @param key Public key struct to check.
  * @return OK if the lengths are correct or BAD_ARGS otherwise.
  */
 OT_WARN_UNUSED_RESULT
-static status_t ed25519_key_check(const otcrypto_unblinded_key_t *key) {
+static status_t ed25519_public_key_length_check(
+    const otcrypto_unblinded_key_t *key) {
   // Check the key struct and key length.
   if (key == NULL || key->key_length != kCurve25519KeyBytes ||
       key->key == NULL || key->key_mode != kOtcryptoKeyModeEd25519) {
@@ -232,7 +280,7 @@ static status_t ed25519_mask_scalar(uint32_t *scalar, size_t scalar_len,
 }
 
 otcrypto_status_t otcrypto_ed25519_public_key_from_private(
-    const otcrypto_unblinded_key_t *private_key,
+    const otcrypto_blinded_key_t *private_key,
     otcrypto_unblinded_key_t *public_key) {
   if (public_key == NULL || public_key->key == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -245,7 +293,7 @@ otcrypto_status_t otcrypto_ed25519_public_key_from_private(
 }
 
 otcrypto_status_t otcrypto_ed25519_sign(
-    const otcrypto_unblinded_key_t *private_key,
+    const otcrypto_blinded_key_t *private_key,
     const otcrypto_const_byte_buf_t *input_message,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t *signature) {
   // Validate signature buffer
@@ -315,7 +363,7 @@ otcrypto_status_t otcrypto_ed25519_verify(
 }
 
 otcrypto_status_t otcrypto_ed25519_sign_verify(
-    const otcrypto_unblinded_key_t *private_key,
+    const otcrypto_blinded_key_t *private_key,
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_const_byte_buf_t *input_message,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t *signature) {
@@ -336,9 +384,9 @@ otcrypto_status_t otcrypto_ed25519_sign_verify(
 }
 
 otcrypto_status_t otcrypto_ed25519_public_key_from_private_async_start(
-    const otcrypto_unblinded_key_t *private_key) {
+    const otcrypto_blinded_key_t *private_key) {
   // Check the private key.
-  HARDENED_TRY(ed25519_key_check(private_key));
+  HARDENED_TRY(ed25519_private_key_length_check(private_key));
 
   // Instantiate struct to store the secret key digest.
   uint32_t key_digest_data[kCurve25519HashWords];
@@ -348,10 +396,26 @@ otcrypto_status_t otcrypto_ed25519_public_key_from_private_async_start(
   };
 
   // Compute hash_h.
-  otcrypto_const_byte_buf_t key_buf = OTCRYPTO_MAKE_BUF(
-      otcrypto_const_byte_buf_t, (const uint8_t *const)private_key->key,
-      private_key->key_length);
-  HARDENED_TRY(otcrypto_sha2_512(&key_buf, &key_digest));
+  if (private_key->config.hw_backed == kHardenedBoolFalse) {
+    uint32_t seed_data[kCurve25519KeyBytes / sizeof(uint32_t)];
+    uint32_t *share0 = private_key->keyblob;
+    uint32_t *share1 =
+        private_key->keyblob + keyblob_share_num_words(private_key->config);
+
+    // Unmask the seed using addition modulo 2^256.
+    HARDENED_TRY(hardened_add(share0, share1, ARRAYSIZE(seed_data), seed_data));
+
+    otcrypto_const_byte_buf_t key_buf =
+        OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t,
+                          (const uint8_t *const)seed_data, kCurve25519KeyBytes);
+    HARDENED_TRY(otcrypto_sha2_512(&key_buf, &key_digest));
+
+    // Memshred the unmasked seed.
+    HARDENED_TRY(hardened_memshred(seed_data, ARRAYSIZE(seed_data)));
+  } else {
+    // Not supported at the moment.
+    return OTCRYPTO_NOT_IMPLEMENTED;
+  }
 
   // Immediately clamp the lower half of hash_h to create the secret scalar s.
   HARDENED_TRY(ed25519_clamp(key_digest.data));
@@ -378,13 +442,13 @@ otcrypto_status_t otcrypto_ed25519_public_key_from_private_async_finalize(
 }
 
 otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
-    const otcrypto_unblinded_key_t *private_key,
+    const otcrypto_blinded_key_t *private_key,
     const otcrypto_const_byte_buf_t *input_message_ph,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t *s0,
     otcrypto_word32_buf_t *s1, otcrypto_word32_buf_t *r0,
     otcrypto_word32_buf_t *r1) {
   // Check the private key.
-  HARDENED_TRY(ed25519_key_check(private_key));
+  HARDENED_TRY(ed25519_private_key_length_check(private_key));
 
   // Instantiate struct to store the secret key digest.
   uint32_t key_digest_data[kCurve25519HashWords];
@@ -394,11 +458,25 @@ otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
   };
 
   // Compute hash_h.
-  // TODO(#28964) Check SCA hardening of the key digest.
-  otcrypto_const_byte_buf_t key_buf = OTCRYPTO_MAKE_BUF(
-      otcrypto_const_byte_buf_t, (const uint8_t *const)private_key->key,
-      private_key->key_length);
-  HARDENED_TRY(otcrypto_sha2_512(&key_buf, &key_digest));
+  if (private_key->config.hw_backed == kHardenedBoolFalse) {
+    uint32_t seed_data[kCurve25519KeyBytes / sizeof(uint32_t)];
+    uint32_t *share0 = private_key->keyblob;
+    uint32_t *share1 =
+        private_key->keyblob + keyblob_share_num_words(private_key->config);
+
+    // Unmask the seed using addition modulo 2^256.
+    HARDENED_TRY(hardened_add(share0, share1, ARRAYSIZE(seed_data), seed_data));
+
+    otcrypto_const_byte_buf_t key_buf =
+        OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t,
+                          (const uint8_t *const)seed_data, kCurve25519KeyBytes);
+    HARDENED_TRY(otcrypto_sha2_512(&key_buf, &key_digest));
+
+    HARDENED_TRY(hardened_memshred(seed_data, ARRAYSIZE(seed_data)));
+  } else {
+    // Not supported at the moment.
+    return OTCRYPTO_NOT_IMPLEMENTED;
+  }
 
   // Immediately clamp the lower half of hash_h to create the secret scalar s.
   HARDENED_TRY(ed25519_clamp(key_digest.data));
@@ -463,7 +541,7 @@ otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
 }
 
 otcrypto_status_t otcrypto_ed25519_sign_part2_async_start(
-    const otcrypto_unblinded_key_t *private_key,
+    const otcrypto_blinded_key_t *private_key,
     const otcrypto_const_byte_buf_t *input_message_ph,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t *signature,
     otcrypto_word32_buf_t *s0, otcrypto_word32_buf_t *s1,
@@ -472,7 +550,7 @@ otcrypto_status_t otcrypto_ed25519_sign_part2_async_start(
   HARDENED_TRY(ed25519_signature_check(signature));
 
   // Check the private key.
-  HARDENED_TRY(ed25519_key_check(private_key));
+  HARDENED_TRY(ed25519_private_key_length_check(private_key));
 
   // Finalize the signature stage 1 and retrieve the signature commitment R and
   // public key A.
@@ -549,7 +627,7 @@ otcrypto_status_t otcrypto_ed25519_verify_async_start(
     otcrypto_eddsa_sign_mode_t sign_mode,
     const otcrypto_const_word32_buf_t *signature) {
   // Check the public key.
-  HARDENED_TRY(ed25519_key_check(public_key));
+  HARDENED_TRY(ed25519_public_key_length_check(public_key));
 
   // Do some signature struct validity checks.
   HARDENED_TRY(ed25519_signature_check((otcrypto_word32_buf_t *)signature));

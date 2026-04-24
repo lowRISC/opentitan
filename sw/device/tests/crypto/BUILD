@@ -542,6 +542,7 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/crypto/impl:config",
         "//sw/device/lib/crypto/impl:ecc_p256",
@@ -565,6 +566,7 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/crypto/impl:config",
         "//sw/device/lib/crypto/impl:ecc_p384",
@@ -645,11 +647,13 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/crypto/impl:config",
         "//sw/device/lib/crypto/impl:ecc_curve25519",
         "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
