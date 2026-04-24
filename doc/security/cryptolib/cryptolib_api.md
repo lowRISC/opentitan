@@ -37,6 +37,22 @@ For more details, see later sections (links in the "category" column).
 | [**Deterministic random bit generation**](#deterministic-random-bit-generation) | AES-CTR-DRBG |
 | [**Key derivation**](#key-derivation) | HMAC-KDF-CTR<br>KMAC-KDF-CTR |
 
+## Cryptolib Initialization
+
+Before using the cryptolib, the user should initialize the system with the dedicated `otcrypto_init` function.
+Depending on the provided `security_level` (`kOtcryptoKeySecurityLevelLow`, `kOtcryptoKeySecurityLevelMedium`, `kOtcryptoKeySecurityLevelHigh`), the initialization function enables certain countermeasures (e.g., the Ibex dummy instruction [feature][dummy-instruction]).
+Please note that this function only can be called from the machine (M) mode privilege level as it writes to system registers.
+
+{{#header-snippet sw/device/lib/crypto/include/config.h otcrypto_init }}
+
+## Cryptolib Exit
+
+Before returning to the caller, the cryptolib invokes `otcrypto_eval_exit` with the status returned by the cryptolib operation.
+This function checks whether any security alert was fired during the operation and returns an error if so.
+Moreover, the function also checks the entropy complex health test and alert configurations.
+
+{{#header-snippet sw/device/lib/crypto/include/config.h otcrypto_eval_exit }}
+
 ## Cryptolib Usage Examples
 
 Examples of how to use the cryptolib API are provided in the [cryptolib test directory][crypto-tests].
@@ -86,7 +102,7 @@ Secret keys are "blinded", meaning that keys are represented by at least two "sh
 Blinded keys are also sometimes referred to as "masked".
 This helps protect against e.g. power side-channel attacks, because the code will never handle a bit of the "real" key, only the independent shares.
 The exact blinding method and internal representation of blinded key data is opaque to the caller and subject to change in future library versions.
-Lke unblinded keys, they include a checksum.
+Like unblinded keys, they include a checksum.
 Callers should use key import/export functions to generate, construct, and interpret blinded keys.
 
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_blinded_key }}
@@ -191,6 +207,9 @@ static const uint32_t kKeyShare0[4] = {0xdeadbeef, 0x01234567, 0x89abcdef, 0xfed
 static const uint32_t kKeyShare1[4] = {0x00000000, 0x00000000, 0x00000000, 0x00000000};
 
 bool aes_encrypt_decrypt_example(void) {
+  // --- Initialize the system for the cryptolib execution  ---
+  TRY(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+
   // --- Build the blinded AES-ECB key ---
   otcrypto_key_config_t key_config = {
     .version        = kOtcryptoLibVersion1,
@@ -294,7 +313,7 @@ This mode is used when the entire data to be hashed is available upfront.
 {{#header-snippet sw/device/lib/crypto/include/sha3.h otcrypto_sha3_384 }}
 {{#header-snippet sw/device/lib/crypto/include/sha3.h otcrypto_sha3_512 }}
 
-The cryptolib supports the SHAKE and cSHAKE extendable-output functions, which can produce a varaible-sized digest.
+The cryptolib supports the SHAKE and cSHAKE extendable-output functions, which can produce a variable-sized digest.
 To avoid locking up the KMAC block, only a one-shot mode is supported.
 
 {{#header-snippet sw/device/lib/crypto/include/sha3.h otcrypto_shake128 }}
@@ -660,7 +679,7 @@ The crypto library will always refuse to export these keys.
 ## Asynchronous operations
 
 For some functions, OpenTitan's cryptolib supports asynchronous calls.
-All operations which take longer than 10ms should have an asychronous interface.
+All operations which take longer than 10ms should have an asynchronous interface.
 This is helpful for compatibility with TockOS, which has a low latency return call programming model.
 
 The OpenTitan cryptolib does not implement any thread management.
@@ -824,3 +843,4 @@ The table below is a recommendation from [NIST SP800-57 Part 1][nist-sp800-57] a
 [sha3-spec]: https://csrc.nist.gov/publications/detail/fips/202/final
 [sha3-derived-spec]: https://csrc.nist.gov/publications/detail/sp/800-185/final
 [crypto-tests]: https://github.com/lowRISC/opentitan/tree/earlgrey_1.0.0/sw/device/tests/crypto
+[dummy-instruction]: https://ibex-core.readthedocs.io/en/latest/03_reference/security.html#dummy-instruction-insertion

@@ -93,7 +93,7 @@ otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level);
  *
  * This function checks whether any alert was fired.
  *
- * @param security_level Security level of the used key.
+ * @param status The status returned by the cryptolib operation.
  * @returns OK when the security check passed.
  */
 OT_WARN_UNUSED_RESULT
