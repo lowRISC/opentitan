@@ -175,6 +175,8 @@ class aes_base_vseq extends cip_base_vseq #(
     if (ral.ctrl_shadowed.sideload.get_mirrored_value() != sideload) begin
       ral.ctrl_shadowed.sideload.set(sideload);
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+      if (cfg.under_reset) return;
+
       void'(ral.ctrl_shadowed.sideload.predict(sideload));
     end
   endtask
