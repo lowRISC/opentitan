@@ -42,9 +42,6 @@ class tl_device_seq #(type REQ = tl_seq_item, int unsigned AddrWidth = 32) exten
   }
 
   virtual task body();
-    // Clear the stop flag (which may have been set by seq_stop on the previous run of the sequence)
-    stop = 0;
-
     fork
       begin: isolation_thread
         fork
@@ -56,6 +53,11 @@ class tl_device_seq #(type REQ = tl_seq_item, int unsigned AddrWidth = 32) exten
         disable fork;
       end
     join
+
+    // Clear the stop flag. It must be set (because collect_request_thread and send_response_thread
+    // don't stop otherwise). Clear it to allow a virtual sequence to start the same sequence object
+    // again if it wishes.
+    stop = 0;
   endtask
 
   // A blocking task that retrieves a request from the TLM fifo, unless the seq is stopped.
