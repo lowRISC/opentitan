@@ -47,4 +47,30 @@ interface aes_reseed_if
   `ASSERT(KeyTouchForcesReseed_A, key_touch_forces_reseed && key_init_new_pulse |->
     ##[1:20] entropy_clearing_req && (`EN_MASKING == entropy_masking_req) || alert_fatal)
 
+  // Wait until entropy_clearing_req becomes high, exiting immediately on reset
+  //
+  // This task is safe to kill.
+  task automatic wait_entropy_clearing_req();
+    fork : isolation_fork begin
+      fork
+        wait(entropy_clearing_req);
+        wait(!rst_ni);
+      join_any
+      disable fork;
+    end join
+  endtask
+
+  // Wait until entropy_masking_req has the requested value, exiting immediately on reset
+  //
+  // This task is safe to kill.
+  task automatic wait_entropy_masking_req(bit expected);
+    fork : isolation_fork begin
+      fork
+        wait(entropy_masking_req == expected);
+        wait(!rst_ni);
+      join_any
+      disable fork;
+    end join
+  endtask
+
 endinterface // aes_reseed_if

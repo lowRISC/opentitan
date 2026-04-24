@@ -16,45 +16,73 @@ class aes_reseed_vseq extends aes_base_vseq;
   // Max wait time to accommodate long entropy delays and DUT stalls.
   int wait_timeout_cycles_max = 100000;
 
-  task check_clearing_prng_reseed();
-    // Wait for entropy_clearing_req to verify the reseeding is triggered.
-    bit request_seen = 0;
-    `uvm_info(`gfn, $sformatf("Checking that entropy_clearing_req goes high, currently %d",
-        cfg.aes_reseed_vif.entropy_clearing_req), UVM_MEDIUM)
-    `DV_SPINWAIT_EXIT(
-        wait (cfg.aes_reseed_vif.entropy_clearing_req) request_seen = 1;,
-        cfg.clk_rst_vif.wait_clks(wait_timeout_cycles_max);,
-        "Timeout waiting for entropy_clearing_req")
-    `DV_CHECK_EQ_FATAL(request_seen, 1'b1)
+  // Wait until the entropy_clearing_req signal goes high, verifying reseeding is triggered. This
+  // runs with a timeout: if the timeout is hit, it will generate an error.
+  //
+  // Exit immediately on reset.
+  local task check_clearing_prng_reseed();
+    `uvm_info(get_full_name(),
+              $sformatf("Waiting for entropy_clearing_req to go high (currently %d)",
+                        cfg.aes_reseed_vif.entropy_clearing_req),
+              UVM_MEDIUM)
+
+    fork : isolation_fork begin
+      fork
+        cfg.aes_reseed_vif.wait_entropy_clearing_req();
+        begin
+          cfg.clk_rst_vif.wait_clks(wait_timeout_cycles_max);
+          `uvm_error(get_full_name(), "Timeout waiting for entropy_clearing_req")
+        end
+      join_any
+      disable fork;
+    end join
   endtask
 
-  task check_masking_prng_reseed();
-    // Wait for entropy_masking_req to go high to verify the reseeding is triggered.
-    bit request_seen = 0;
-    `uvm_info(`gfn, $sformatf("Checking that entropy_masking_req goes high, currently %d",
-        cfg.aes_reseed_vif.entropy_masking_req), UVM_MEDIUM)
-    `DV_SPINWAIT_EXIT(
-        wait (cfg.aes_reseed_vif.entropy_masking_req) request_seen = 1;,
-        cfg.clk_rst_vif.wait_clks(wait_timeout_cycles);,
-        "Timeout waiting for entropy_masking_req")
-    `DV_CHECK_EQ_FATAL(request_seen | finished_all_msgs, 1'b1)
-    // Wait for entropy_masking_req to go low again to verify the reseeding finishes.
-    request_seen = 0;
-    `uvm_info(`gfn, $sformatf("Checking that entropy_masking_req goes low, currently %d",
-        cfg.aes_reseed_vif.entropy_masking_req), UVM_MEDIUM)
-    `DV_SPINWAIT_EXIT(
-        wait (!cfg.aes_reseed_vif.entropy_masking_req) request_seen = 1;,
-        cfg.clk_rst_vif.wait_clks(wait_timeout_cycles_max);,
-        "Timeout waiting for entropy_masking_req")
-    `DV_CHECK_EQ_FATAL(request_seen | finished_all_msgs, 1'b1)
+  // Wait for entropy_masking_req to go high and then low again.
+  //
+  // Exit immediately on reset or if finished_all_msgs becomes true.
+  local task check_masking_prng_reseed();
+    `uvm_info(get_full_name(),
+              $sformatf("Waiting for entropy_masking_req to go high (currently %d)",
+                        cfg.aes_reseed_vif.entropy_masking_req),
+              UVM_MEDIUM)
+    fork : isolation_fork_rise begin
+      fork
+        cfg.aes_reseed_vif.wait_entropy_masking_req(1);
+        wait(finished_all_msgs);
+        begin
+          cfg.clk_rst_vif.wait_clks(wait_timeout_cycles);
+          `uvm_error(get_full_name(), "Timeout waiting for entropy_masking_req to go high")
+        end
+      join_any
+      disable fork;
+    end join
+    if (cfg.under_reset || finished_all_msgs) return;
+
+    `uvm_info(get_full_name(), "Waiting for entropy_masking_req to go low again", UVM_MEDIUM)
+    fork : isolation_fork_fall begin
+      fork
+        cfg.aes_reseed_vif.wait_entropy_masking_req(0);
+        wait(finished_all_msgs);
+        begin
+          cfg.clk_rst_vif.wait_clks(wait_timeout_cycles_max);
+          `uvm_error(get_full_name(), "Timeout waiting for entropy_masking_req to go low again")
+        end
+      join_any
+      disable fork;
+    end join
   endtask
 
+  // Wait for the PRNG to reseed (with a reseeding that should have already been requested)
   task check_prng_reseed();
-    // Check entropy_clearing_req to verify the reseeding is actually triggered.
     check_clearing_prng_reseed();
+    if (cfg.under_reset) return;
+
     if (`EN_MASKING) begin
       check_masking_prng_reseed();
     end
+    if (cfg.under_reset) return;
+
     // Wait for the DUT to become idle again. This happens once the reseed operation finishes.
     csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
   endtask
@@ -165,6 +193,7 @@ class aes_reseed_vseq extends aes_base_vseq;
       prng_reseed();
       check_prng_reseed();
     join
+    if (cfg.under_reset) return;
 
     // Trigger reseed by writing a new key to the initial key registers. In case
     // KEY_TOUCH_FORCES_RESEED is not set, no reseed operation is supposed to be triggered. The
