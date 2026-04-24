@@ -23,6 +23,7 @@ exports_files(glob(["**"]))
         "clang",
         "clang++",
         "ar",
+        "nm",
         "objcopy",
         "objdump",
         "strip",

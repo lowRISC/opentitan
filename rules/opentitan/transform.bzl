@@ -7,7 +7,7 @@ load("@rules_cc//cc:action_names.bzl", "OBJ_COPY_ACTION_NAME")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_override")
-load("//rules:actions.bzl", "OT_ACTION_OBJDUMP")
+load("//rules:actions.bzl", "OT_ACTION_NM", "OT_ACTION_OBJDUMP")
 
 def obj_transform(ctx, strip_llvm_prf_cnts = False, **kwargs):
     """Transform an object file via objcopy.
@@ -133,6 +133,50 @@ def obj_disassemble(ctx, **kwargs):
             output.path,
         ],
         command = "$1 -wx --disassemble --line-numbers --disassemble-zeroes --source --visualize-jumps $2 | expand > $3",
+    )
+    return output
+
+def obj_list_symbols(ctx, **kwargs):
+    """Use nm to list all symbols.
+
+    Args:
+      ctx: The context object for this rule.
+      kwargs: Overrides of values normally retrived from the context object.
+        output: The name of the output file.  Constructed from `name` if not
+                specified.
+        src: The src File object.
+    Returns:
+      The output File.
+    """
+    cc_toolchain = find_cc_toolchain(ctx)
+    feature_config = cc_common.configure_features(
+        ctx = ctx,
+        cc_toolchain = cc_toolchain,
+        requested_features = ctx.features,
+        unsupported_features = ctx.disabled_features,
+    )
+    nm = cc_common.get_tool_for_action(
+        feature_configuration = feature_config,
+        action_name = OT_ACTION_NM,
+    )
+
+    output = kwargs.get("output")
+    if not output:
+        name = get_override(ctx, "attr.name", kwargs)
+        output = "{}.nm".format(name)
+
+    output = ctx.actions.declare_file(output)
+    src = get_override(ctx, "attr.src", kwargs)
+
+    ctx.actions.run_shell(
+        outputs = [output],
+        inputs = [src] + cc_toolchain.all_files.to_list(),
+        arguments = [
+            nm,
+            src.path,
+            output.path,
+        ],
+        command = "$1 $2 > $3",
     )
     return output
 
