@@ -35,6 +35,23 @@ use util_lib::{
 };
 
 /// Provisioning data command-line parameters.
+#[derive(clap::ValueEnum, Clone, Copy, Debug, PartialEq, Eq)]
+pub enum BlobVersion {
+    #[clap(alias = "0")]
+    V0,
+    #[clap(alias = "1")]
+    V1,
+}
+
+impl From<BlobVersion> for ujson_lib::provisioning_data::perso_blob_version_t {
+    fn from(v: BlobVersion) -> Self {
+        match v {
+            BlobVersion::V0 => ujson_lib::provisioning_data::perso_blob_version_t::V0,
+            BlobVersion::V1 => ujson_lib::provisioning_data::perso_blob_version_t::V1,
+        }
+    }
+}
+
 #[derive(Debug, Args, Clone)]
 pub struct ManufFtProvisioningDataInput {
     /// FT Device ID to provision.
@@ -70,6 +87,10 @@ pub struct ManufFtProvisioningDataInput {
     /// Pretty-print the provisioning data output.
     #[arg(long, default_value = "false")]
     pretty: bool,
+
+    /// Version of the TLV blob format to use.
+    #[arg(long, value_enum, default_value_t = BlobVersion::V0)]
+    pub blob_version: BlobVersion,
 }
 
 #[derive(Debug, Parser)]
@@ -201,6 +222,7 @@ fn main() -> Result<()> {
     let _perso_certgen_inputs = ManufCertgenInputs {
         dice_auth_key_key_id: dice_ca_key_id.clone(),
         ext_auth_key_key_id: ext_ca_key_id.clone(),
+        blob_version: opts.provisioning_data.blob_version.into(),
     };
 
     // Only run test unlock operation if we are in a locked LC state.
