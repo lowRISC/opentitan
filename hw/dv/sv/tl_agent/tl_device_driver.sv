@@ -19,20 +19,14 @@ class tl_device_driver extends tl_base_driver;
       a_channel_thread();
       d_channel_thread();
     join_none
- endtask
+  endtask
 
-  // reset signals every time reset occurs.
-  virtual task reset_signals();
+  task on_enter_reset();
     invalidate_d_channel();
     cfg.vif.d2h_int.a_ready <= 1'b0;
-    forever begin
-      @(negedge cfg.vif.rst_n);
-      invalidate_d_channel();
-      cfg.vif.d2h_int.a_ready <= 1'b0;
-      // Check for seq_item_port FIFO is empty when coming out of reset
-      `DV_CHECK_EQ(seq_item_port.has_do_available(), 0);
-      @(posedge cfg.vif.rst_n);
-    end
+
+    // Make sure that seq_item_port FIFO will be empty when coming out of reset
+    `DV_CHECK_EQ(seq_item_port.has_do_available(), 0);
   endtask
 
   virtual task a_channel_thread();
@@ -41,9 +35,9 @@ class tl_device_driver extends tl_base_driver;
     forever begin
       ready_delay = $urandom_range(cfg.a_ready_delay_min, cfg.a_ready_delay_max);
       repeat(ready_delay) @(cfg.vif.device_cb);
-      cfg.vif.device_cb.d2h_int.a_ready <= 1'b1;
+      cfg.vif.device_cb.d2h.a_ready <= 1'b1;
       @(cfg.vif.device_cb);
-      cfg.vif.device_cb.d2h_int.a_ready <= 1'b0;
+      cfg.vif.device_cb.d2h.a_ready <= 1'b0;
     end
   endtask
 
