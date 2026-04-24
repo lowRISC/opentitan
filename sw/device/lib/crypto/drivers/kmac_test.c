@@ -81,6 +81,20 @@ static status_t run_negative_test(void) {
   CHECK_STATUS_OK(ottf_alerts_expect_alert_finish(
       kTopEarlgreyAlertIdKmacRecovOperationErr));
 
+  // Negative test kmac_key_integrity_checksum_check()
+  uint32_t share0[16] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF,
+                         0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF};
+  uint32_t share1[16] = {0xEF, 0xCD, 0xAB, 0x89, 0x67, 0x45, 0x23, 0x01,
+                         0xEF, 0xCD, 0xAB, 0x89, 0x67, 0x45, 0x23, 0x01};
+  kmac_blinded_key_t bad_key = {
+      .len = 16 * sizeof(uint32_t),
+      .share0 = &share0[0],
+      .share1 = &share1[0],
+      .hw_backed = kHardenedBoolFalse,
+  };
+  bad_key.checksum = kmac_key_integrity_checksum(&bad_key) ^ 0xFFFFFFFF;
+  CHECK(kmac_key_integrity_checksum_check(&bad_key) == kHardenedBoolFalse);
+
   return OTCRYPTO_OK;
 }
 

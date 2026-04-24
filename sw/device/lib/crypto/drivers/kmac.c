@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/crc32.h"
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
@@ -878,4 +879,26 @@ status_t kmac_kmac_256(kmac_blinded_key_t *key, hardened_bool_t masked_digest,
 
   return kmac_process_msg_blocks(kKmacOperationKmac, message, digest,
                                  digest_len, masked_digest);
+}
+
+uint32_t kmac_key_integrity_checksum(const kmac_blinded_key_t *key) {
+  uint32_t ctx;
+  crc32_init(&ctx);
+  crc32_add32(&ctx, key->len);
+  // Compute the checksum only over a single share to avoid side-channel
+  // leakage. From a FI perspective only covering one key share is fine as
+  // (a) manipulating the second share with FI has only limited use to an
+  // adversary and (b) when manipulating the entire pointer to the key structure
+  // the checksum check fails.
+  crc32_add(&ctx, (unsigned char *)key->share0, key->len);
+  crc32_add32(&ctx, key->hw_backed);
+  return crc32_finish(&ctx);
+}
+
+hardened_bool_t kmac_key_integrity_checksum_check(
+    const kmac_blinded_key_t *key) {
+  if (key->checksum == launder32(kmac_key_integrity_checksum(key))) {
+    return kHardenedBoolTrue;
+  }
+  return kHardenedBoolFalse;
 }
