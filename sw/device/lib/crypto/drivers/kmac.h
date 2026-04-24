@@ -55,6 +55,10 @@ typedef struct kmac_blinded_key {
   // Whether the key should be provided by keymgr through sideload port.
   // If `hw_backed` is true, `share0/1` pointers and `len` are ignored.
   hardened_bool_t hw_backed;
+  /**
+   * Checksum of this KMAC key structure.
+   */
+  uint32_t checksum;
 } kmac_blinded_key_t;
 
 /**
@@ -282,6 +286,28 @@ status_t kmac_kmac_256(kmac_blinded_key_t *key, hardened_bool_t masked_digest,
                        const otcrypto_const_byte_buf_t *message,
                        const unsigned char *cust_str, size_t cust_str_len,
                        uint32_t *digest, size_t digest_len);
+
+/**
+ * Compute the checksum of an KMAC key.
+ *
+ * Call this routine after creating or modifying the KMAC key structure.
+ *
+ * @param key KMAC key.
+ * @returns Checksum value.
+ */
+uint32_t kmac_key_integrity_checksum(const kmac_blinded_key_t *key);
+
+/**
+ * Perform an integrity check on the KMAC key.
+ *
+ * Returns `kHardenedBoolTrue` if the check passed and `kHardenedBoolFalse`
+ * otherwise.
+ *
+ * @param key KMAC key.
+ * @returns Whether the integrity check passed.
+ */
+hardened_bool_t kmac_key_integrity_checksum_check(
+    const kmac_blinded_key_t *key);
 
 #ifdef __cplusplus
 }
