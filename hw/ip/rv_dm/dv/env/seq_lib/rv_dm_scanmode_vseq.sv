@@ -41,7 +41,7 @@ class rv_dm_scanmode_vseq extends rv_dm_base_vseq;
     dout = '0;
 
     for (int i = 0; i < len; i++) begin
-      dout[i] = cfg.m_jtag_agent_cfg.vif._tdo_internal;
+      dout[i] = cfg.m_jtag_agent_cfg.vif.tdo;
       tms_tdi(i == len - 1, value[i]);
     end
 
