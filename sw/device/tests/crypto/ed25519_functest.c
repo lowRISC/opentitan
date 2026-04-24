@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/ecc_curve25519.h"
@@ -92,15 +94,47 @@ static const char kMessage[] = {
     0x72,
 };
 
+static const otcrypto_key_config_t kPrivateKeyConfig = {
+    .version = kOtcryptoLibVersion1,
+    .key_mode = kOtcryptoKeyModeEd25519,
+    .key_length = kEd25519PrivateKeyBytes,
+    .hw_backed = kHardenedBoolFalse,
+    .security_level = kOtcryptoKeySecurityLevelLow,
+};
+
+/**
+ * Helper function to securely populate the keyblob array with two shares.
+ */
+static status_t create_blinded_kat_keyblob(uint32_t *keyblob) {
+  // Zero out the entire blob to avoid checksumming uninitialized padding
+  memset(keyblob, 0, keyblob_num_words(kPrivateKeyConfig) * sizeof(uint32_t));
+
+  uint32_t *share0 = keyblob;
+  uint32_t *share1 = keyblob + keyblob_share_num_words(kPrivateKeyConfig);
+
+  // Generate a random mask for share1 (only need 8 words for the seed)
+  HARDENED_TRY(hardened_memshred(share1, kEd25519PrivateKeyWords));
+
+  // Calculate share0 = kSecretKey - share1 (implicitly modulo 2^256)
+  HARDENED_TRY(
+      hardened_sub(kSecretKey, share1, kEd25519PrivateKeyWords, share0));
+
+  return OTCRYPTO_OK;
+}
+
 status_t ed25519_kat_test(void) {
   LOG_INFO("Running Ed25519 KAT Test");
-  // Set up private_key struct.
-  otcrypto_unblinded_key_t private_key = {
-      .key_mode = kOtcryptoKeyModeEd25519,
-      .key_length = kEd25519PrivateKeyBytes,
-      .key = kSecretKey,
+
+  uint32_t keyblob[keyblob_num_words(kPrivateKeyConfig)];
+  CHECK_STATUS_OK(create_blinded_kat_keyblob(keyblob));
+
+  otcrypto_blinded_key_t private_key = {
+      .config = kPrivateKeyConfig,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
   };
-  private_key.checksum = integrity_unblinded_checksum(&private_key);
+  private_key.checksum = integrity_blinded_checksum(&private_key);
+
   // Set up public_key struct.
   uint32_t public_key_buf[kEd25519PublicKeyWords];
   otcrypto_unblinded_key_t public_key = {
@@ -155,12 +189,15 @@ status_t ed25519_kat_test(void) {
 static status_t hasheddsa_test(void) {
   LOG_INFO("Running HashEdDSA test");
 
-  otcrypto_unblinded_key_t private_key = {
-      .key_mode = kOtcryptoKeyModeEd25519,
-      .key_length = kEd25519PrivateKeyBytes,
-      .key = kSecretKey,
+  uint32_t keyblob[keyblob_num_words(kPrivateKeyConfig)];
+  CHECK_STATUS_OK(create_blinded_kat_keyblob(keyblob));
+
+  otcrypto_blinded_key_t private_key = {
+      .config = kPrivateKeyConfig,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
   };
-  private_key.checksum = integrity_unblinded_checksum(&private_key);
+  private_key.checksum = integrity_blinded_checksum(&private_key);
 
   uint32_t public_key_buf[kEd25519PublicKeyWords];
   otcrypto_unblinded_key_t public_key = {
@@ -206,13 +243,15 @@ static status_t hasheddsa_test(void) {
 static status_t sign_verify_test(void) {
   LOG_INFO("Running sign_verify test");
 
-  // Set up private_key struct.
-  otcrypto_unblinded_key_t private_key = {
-      .key_mode = kOtcryptoKeyModeEd25519,
-      .key_length = kEd25519PrivateKeyBytes,
-      .key = kSecretKey,
+  uint32_t keyblob[keyblob_num_words(kPrivateKeyConfig)];
+  CHECK_STATUS_OK(create_blinded_kat_keyblob(keyblob));
+
+  otcrypto_blinded_key_t private_key = {
+      .config = kPrivateKeyConfig,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
   };
-  private_key.checksum = integrity_unblinded_checksum(&private_key);
+  private_key.checksum = integrity_blinded_checksum(&private_key);
 
   // Set up public_key struct.
   uint32_t public_key_buf[kEd25519PublicKeyWords];
@@ -251,12 +290,15 @@ static status_t sign_verify_test(void) {
 static status_t run_negative_tests(void) {
   LOG_INFO("Running negative tests");
 
-  otcrypto_unblinded_key_t valid_priv = {
-      .key_mode = kOtcryptoKeyModeEd25519,
-      .key_length = kEd25519PrivateKeyBytes,
-      .key = kSecretKey,
+  uint32_t priv_keyblob[keyblob_num_words(kPrivateKeyConfig)];
+  CHECK_STATUS_OK(create_blinded_kat_keyblob(priv_keyblob));
+
+  otcrypto_blinded_key_t valid_priv = {
+      .config = kPrivateKeyConfig,
+      .keyblob_length = sizeof(priv_keyblob),
+      .keyblob = priv_keyblob,
   };
-  valid_priv.checksum = integrity_unblinded_checksum(&valid_priv);
+  valid_priv.checksum = integrity_blinded_checksum(&valid_priv);
 
   uint32_t public_key_buf[kEd25519PublicKeyWords];
   otcrypto_unblinded_key_t valid_pub = {
@@ -277,29 +319,50 @@ static status_t run_negative_tests(void) {
   otcrypto_word32_buf_t sig =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig_buf, kEd25519SignatureWords);
 
-  // Test ed25519_key_check with invalid key length, mode, data, or checksum
-  otcrypto_unblinded_key_t bad_key = valid_priv;
-  bad_key.key_length = 31;
-  bad_key.checksum = integrity_unblinded_checksum(&bad_key);
-  CHECK(otcrypto_ed25519_public_key_from_private(&bad_key, &valid_pub).value ==
-        OTCRYPTO_BAD_ARGS.value);
+  // Test ed25519_key_check with invalid key length
+  otcrypto_key_config_t bad_len_cfg = kPrivateKeyConfig;
+  bad_len_cfg.key_length = 31;
+  otcrypto_blinded_key_t bad_key_len = {
+      .config = bad_len_cfg,
+      .keyblob_length = sizeof(priv_keyblob),
+      .keyblob = priv_keyblob,
+  };
+  bad_key_len.checksum = integrity_blinded_checksum(&bad_key_len);
+  CHECK(otcrypto_ed25519_public_key_from_private(&bad_key_len, &valid_pub)
+            .value == OTCRYPTO_BAD_ARGS.value);
 
-  bad_key = valid_priv;
-  bad_key.key_mode = kOtcryptoKeyModeEcdsaP256;
-  bad_key.checksum = integrity_unblinded_checksum(&bad_key);
-  CHECK(otcrypto_ed25519_public_key_from_private(&bad_key, &valid_pub).value ==
-        OTCRYPTO_BAD_ARGS.value);
+  // Test ed25519_key_check with invalid key mode
+  otcrypto_key_config_t bad_mode_cfg = kPrivateKeyConfig;
+  bad_mode_cfg.key_mode = kOtcryptoKeyModeEcdsaP256;
+  otcrypto_blinded_key_t bad_key_mode = {
+      .config = bad_mode_cfg,
+      .keyblob_length = sizeof(priv_keyblob),
+      .keyblob = priv_keyblob,
+  };
+  bad_key_mode.checksum = integrity_blinded_checksum(&bad_key_mode);
+  CHECK(otcrypto_ed25519_public_key_from_private(&bad_key_mode, &valid_pub)
+            .value == OTCRYPTO_BAD_ARGS.value);
 
-  bad_key = valid_priv;
-  bad_key.key = NULL;
-  CHECK(otcrypto_ed25519_public_key_from_private(&bad_key, &valid_pub).value ==
-        OTCRYPTO_BAD_ARGS.value);
+  // Test ed25519_key_check with NULL data
+  otcrypto_blinded_key_t bad_key_null = {
+      .config = kPrivateKeyConfig,
+      .keyblob_length = sizeof(priv_keyblob),
+      .keyblob = NULL,
+  };
+  CHECK(otcrypto_ed25519_public_key_from_private(&bad_key_null, &valid_pub)
+            .value == OTCRYPTO_BAD_ARGS.value);
 
-  bad_key = valid_priv;
-  bad_key.checksum ^= 0xFFFFFFFF;
-  CHECK(otcrypto_ed25519_public_key_from_private(&bad_key, &valid_pub).value ==
-        OTCRYPTO_BAD_ARGS.value);
+  // Test ed25519_key_check with bad checksum
+  otcrypto_blinded_key_t bad_key_chk = {
+      .config = kPrivateKeyConfig,
+      .keyblob_length = sizeof(priv_keyblob),
+      .keyblob = priv_keyblob,
+  };
+  bad_key_chk.checksum = valid_priv.checksum ^ 0xFFFFFFFF;
+  CHECK(otcrypto_ed25519_public_key_from_private(&bad_key_chk, &valid_pub)
+            .value == OTCRYPTO_BAD_ARGS.value);
 
+  // Null pointer tests
   CHECK(otcrypto_ed25519_public_key_from_private(NULL, &valid_pub).value ==
         OTCRYPTO_BAD_ARGS.value);
 

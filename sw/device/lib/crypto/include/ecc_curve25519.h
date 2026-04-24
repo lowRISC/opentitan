@@ -39,20 +39,21 @@ typedef enum otcrypto_eddsa_sign_mode {
  * The caller must allocate the public key struct and its `key` buffer
  * (32 bytes) before calling this function. The `checksum` field will be
  * populated on success.
- *
- * @param[in]  private_key Pointer to the private key seed struct.
- * @param[out] public_key  Pointer to the public key struct to populate.
- * @return Result of the Ed25519 public key derivation.
+ * @param private_key Pointer to the blinded private key struct which is
+ * shared into d0, d1 such that d = d0 + d1 mod 2^256.
+ * @param[out] public_key Pointer to the unblinded public key struct.
+ * @return Result of the Ed25519 key generation.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_public_key_from_private(
-    const otcrypto_unblinded_key_t *private_key,
+    const otcrypto_blinded_key_t *private_key,
     otcrypto_unblinded_key_t *public_key);
 
 /**
  * Generates an Ed25519 digital signature.
  *
- * @param private_key Pointer to the unblinded private key struct.
+ * @param private_key Pointer to the blinded private key struct which is shared
+ * into d0, d1 such that d = d0 + d1 mod 2^256.
  * @param input_message Input message to be signed.
  * @param sign_mode EdDSA signature hashing mode.
  * @param[out] signature Pointer to the EdDSA signature with (r,s) values.
@@ -60,7 +61,7 @@ otcrypto_status_t otcrypto_ed25519_public_key_from_private(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_sign(
-    const otcrypto_unblinded_key_t *private_key,
+    const otcrypto_blinded_key_t *private_key,
     const otcrypto_const_byte_buf_t *input_message,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t *signature);
 
@@ -91,7 +92,8 @@ otcrypto_status_t otcrypto_ed25519_verify(
  * Generates an Ed25519 signature and verifies the signature
  * before releasing it to mitigate fault injection attacks.
  *
- * @param private_key Pointer to the unblinded private key struct.
+ * @param private_key Pointer to the blinded private key struct which is shared
+ * into d0, d1 such that d = d0 + d1 mod 2^256.
  * @param public_key Pointer to the unblinded public key struct.
  * @param input_message Message digest to be signed.
  * @param sign_mode EdDSA signature hashing mode.
@@ -100,7 +102,7 @@ otcrypto_status_t otcrypto_ed25519_verify(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_sign_verify(
-    const otcrypto_unblinded_key_t *private_key,
+    const otcrypto_blinded_key_t *private_key,
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_const_byte_buf_t *input_message,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t *signature);
@@ -111,12 +113,13 @@ otcrypto_status_t otcrypto_ed25519_sign_verify(
  * See `otcrypto_ed25519_public_key_from_private` for requirements on input
  * values.
  *
- * @param private_key Source structure for private key, or key handle.
+ * @param private_key Pointer to the blinded private key struct which is shared
+ * into d0, d1 such that d = d0 + d1 mod 2^256.
  * @return Result of asynchronous Ed25519 keygen start operation.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_public_key_from_private_async_start(
-    const otcrypto_unblinded_key_t *private_key);
+    const otcrypto_blinded_key_t *private_key);
 
 /**
  * Finalizes asynchronous key generation for Ed25519.
@@ -138,7 +141,8 @@ otcrypto_status_t otcrypto_ed25519_public_key_from_private_async_finalize(
  *
  * See `otcrypto_ed25519_sign` for requirements on input values.
  *
- * @param private_key Pointer to the unblinded private key struct.
+ * @param private_key Pointer to the blinded private key struct which is shared
+ * into d0, d1 such that d = d0 + d1 mod 2^256.
  * @param input_message_ph Pre-hashed input message to be signed.
  * @param sign_mode EdDSA signature hashing mode.
  * @param[out] s0 Pointer to the first arithmetic share of s.
@@ -150,7 +154,7 @@ otcrypto_status_t otcrypto_ed25519_public_key_from_private_async_finalize(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
-    const otcrypto_unblinded_key_t *private_key,
+    const otcrypto_blinded_key_t *private_key,
     const otcrypto_const_byte_buf_t *input_message_ph,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t *s0,
     otcrypto_word32_buf_t *s1, otcrypto_word32_buf_t *r0,
@@ -161,7 +165,8 @@ otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
  *
  * See `otcrypto_ed25519_sign` for requirements on input values.
  *
- * @param private_key Pointer to the unblinded private key struct.
+ * @param private_key Pointer to the blinded private key struct which is shared
+ * into d0, d1 such that d = d0 + d1 mod 2^256.
  * @param input_message_ph Pre-hashed input message to be signed.
  * @param sign_mode EdDSA signature hashing mode.
  * @param signature[out] Pointer to the EdDSA signature to get (R) value.
@@ -173,7 +178,7 @@ otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_sign_part2_async_start(
-    const otcrypto_unblinded_key_t *private_key,
+    const otcrypto_blinded_key_t *private_key,
     const otcrypto_const_byte_buf_t *input_message_ph,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t *signature,
     otcrypto_word32_buf_t *s0, otcrypto_word32_buf_t *s1,
