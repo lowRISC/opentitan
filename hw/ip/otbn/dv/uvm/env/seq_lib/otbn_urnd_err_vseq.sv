@@ -10,9 +10,12 @@ class otbn_urnd_err_vseq extends otbn_base_vseq;
   `uvm_object_new
 
   task body();
-    // Inject error on signal after `prim_edn_req`, which may at some point implement its own
-    // countermeasure against spurious ACKs.
-    string err_path = "tb.dut.edn_urnd_ack";
+    // Force urnd_reseed_ack_q directly rather than edn_ack. prim_trivium gates seed_done_o (the
+    // only source of urnd_reseed_ack_o) by its own seed_req_o, so a spurious edn_ack when no
+    // request is active has no effect. However, the urnd_reseed_ack_q is used to advance the
+    // start_stop controller. If this signal is faulted, we could advance its state unexpectedly.
+    // The start stop controller should detect such a spurious reseed ack case.
+    string err_path = "tb.dut.u_otbn_core.u_otbn_rnd.urnd_reseed_ack_q";
     bit skip_err_injection = 1'b0;
     bit while_executing;
 
