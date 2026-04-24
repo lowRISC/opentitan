@@ -8,6 +8,7 @@
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/rsa.h"
 #include "sw/device/lib/crypto/include/sha2.h"
+#include "sw/device/lib/crypto/include/sha3.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/profile.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -117,6 +118,40 @@ static const uint32_t kValidSignaturePss[kRsa3072NumWords] = {
 };
 
 /**
+ * Helper function to compute a message digest for various hash modes.
+ */
+static status_t compute_digest(const otcrypto_const_byte_buf_t *msg,
+                               otcrypto_hash_mode_t hash_mode,
+                               otcrypto_hash_digest_t *digest) {
+  digest->mode = hash_mode;
+  switch (hash_mode) {
+    case kOtcryptoHashModeSha256:
+      digest->len = 256 / 32;
+      return otcrypto_sha2_256(msg, digest);
+    case kOtcryptoHashModeSha384:
+      digest->len = 384 / 32;
+      return otcrypto_sha2_384(msg, digest);
+    case kOtcryptoHashModeSha512:
+      digest->len = 512 / 32;
+      return otcrypto_sha2_512(msg, digest);
+    case kOtcryptoHashModeSha3_224:
+      digest->len = 224 / 32;
+      return otcrypto_sha3_224(msg, digest);
+    case kOtcryptoHashModeSha3_256:
+      digest->len = 256 / 32;
+      return otcrypto_sha3_256(msg, digest);
+    case kOtcryptoHashModeSha3_384:
+      digest->len = 384 / 32;
+      return otcrypto_sha3_384(msg, digest);
+    case kOtcryptoHashModeSha3_512:
+      digest->len = 512 / 32;
+      return otcrypto_sha3_512(msg, digest);
+    default:
+      return INVALID_ARGUMENT();
+  }
+}
+
+/**
  * Helper function to run the RSA-3072 signing routine.
  *
  * Packages input into cryptolib-style structs and calls `otcrypto_rsa_sign`
@@ -131,6 +166,7 @@ static const uint32_t kValidSignaturePss[kRsa3072NumWords] = {
  */
 static status_t run_rsa_3072_sign(const uint8_t *msg, size_t msg_len,
                                   otcrypto_rsa_padding_t padding_mode,
+                                  otcrypto_hash_mode_t hash_mode,
                                   uint32_t *sig) {
   otcrypto_key_mode_t key_mode;
   switch (padding_mode) {
@@ -172,15 +208,14 @@ static status_t run_rsa_3072_sign(const uint8_t *msg, size_t msg_len,
   TRY(otcrypto_rsa_private_key_from_exponents(
       kOtcryptoRsaSize3072, &modulus, &d_share0, &d_share1, &private_key));
 
-  // Hash the message.
+  // Hash the message dynamically.
   otcrypto_const_byte_buf_t msg_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg, msg_len);
   uint32_t msg_digest_data[kSha512DigestWords];
   otcrypto_hash_digest_t msg_digest = {
       .data = msg_digest_data,
-      .len = ARRAYSIZE(msg_digest_data),
   };
-  TRY(otcrypto_sha2_512(&msg_buf, &msg_digest));
+  TRY(compute_digest(&msg_buf, hash_mode, &msg_digest));
 
   otcrypto_word32_buf_t sig_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, kRsa3072NumWords);
@@ -196,19 +231,20 @@ static status_t run_rsa_3072_sign(const uint8_t *msg, size_t msg_len,
  * Helper function to run the RSA-3072 verification routine.
  *
  * Packages input into cryptolib-style structs and calls `otcrypto_rsa_verify`
- * using the constant test public key. Always uses SHA-512 as the hash
- * function.
+ * using the constant test public key.
  *
  * @param msg Message to verify.
  * @param msg_len Message length in bytes.
  * @param sig Signature to verify
  * @param padding_mode RSA padding mode.
+ * @param hash_mode Hash function to use.
  * @param[out] verification_result Whether the signature passed verification.
  * @return OK or error.
  */
 static status_t run_rsa_3072_verify(const uint8_t *msg, size_t msg_len,
                                     const uint32_t *sig,
                                     const otcrypto_rsa_padding_t padding_mode,
+                                    otcrypto_hash_mode_t hash_mode,
                                     hardened_bool_t *verification_result) {
   otcrypto_key_mode_t key_mode;
   switch (padding_mode) {
@@ -235,15 +271,14 @@ static status_t run_rsa_3072_verify(const uint8_t *msg, size_t msg_len,
   TRY(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize3072, &modulus,
                                         &public_key));
 
-  // Hash the message.
+  // Hash the message dynamically.
   otcrypto_const_byte_buf_t msg_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg, msg_len);
   uint32_t msg_digest_data[kSha512DigestWords];
   otcrypto_hash_digest_t msg_digest = {
       .data = msg_digest_data,
-      .len = ARRAYSIZE(msg_digest_data),
   };
-  TRY(otcrypto_sha2_512(&msg_buf, &msg_digest));
+  TRY(compute_digest(&msg_buf, hash_mode, &msg_digest));
 
   otcrypto_const_word32_buf_t sig_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig, kRsa3072NumWords);
@@ -261,7 +296,7 @@ status_t pkcs1v15_sign_test(void) {
   // function.
   uint32_t sig[kRsa3072NumWords];
   TRY(run_rsa_3072_sign(kTestMessage, kTestMessageLen, kOtcryptoRsaPaddingPkcs,
-                        sig));
+                        kOtcryptoHashModeSha512, sig));
 
   // Compare to the expected signature.
   TRY_CHECK_ARRAYS_EQ(sig, kValidSignaturePkcs1v15,
@@ -274,7 +309,7 @@ status_t pkcs1v15_verify_valid_test(void) {
   hardened_bool_t verification_result;
   TRY(run_rsa_3072_verify(kTestMessage, kTestMessageLen,
                           kValidSignaturePkcs1v15, kOtcryptoRsaPaddingPkcs,
-                          &verification_result));
+                          kOtcryptoHashModeSha512, &verification_result));
 
   // Expect the signature to pass verification.
   TRY_CHECK(verification_result == kHardenedBoolTrue);
@@ -285,26 +320,11 @@ status_t pkcs1v15_verify_invalid_test(void) {
   // Try to verify an invalid signature (wrong padding mode).
   hardened_bool_t verification_result;
   TRY(run_rsa_3072_verify(kTestMessage, kTestMessageLen, kValidSignaturePss,
-                          kOtcryptoRsaPaddingPkcs, &verification_result));
+                          kOtcryptoRsaPaddingPkcs, kOtcryptoHashModeSha512,
+                          &verification_result));
 
   // Expect the signature to fail verification.
   TRY_CHECK(verification_result == kHardenedBoolFalse);
-  return OK_STATUS();
-}
-
-status_t pss_sign_test(void) {
-  // PSS signatures are not deterministic, so we need to sign-then-verify.
-  uint32_t sig[kRsa3072NumWords];
-  TRY(run_rsa_3072_sign(kTestMessage, kTestMessageLen, kOtcryptoRsaPaddingPss,
-                        sig));
-
-  // Try to verify the signature.
-  hardened_bool_t verification_result;
-  TRY(run_rsa_3072_verify(kTestMessage, kTestMessageLen, sig,
-                          kOtcryptoRsaPaddingPss, &verification_result));
-
-  // Expect the signature to pass verification.
-  TRY_CHECK(verification_result == kHardenedBoolTrue);
   return OK_STATUS();
 }
 
@@ -312,7 +332,8 @@ status_t pss_verify_valid_test(void) {
   // Try to verify a valid signature.
   hardened_bool_t verification_result;
   TRY(run_rsa_3072_verify(kTestMessage, kTestMessageLen, kValidSignaturePss,
-                          kOtcryptoRsaPaddingPss, &verification_result));
+                          kOtcryptoRsaPaddingPss, kOtcryptoHashModeSha512,
+                          &verification_result));
 
   // Expect the signature to pass verification.
   TRY_CHECK(verification_result == kHardenedBoolTrue);
@@ -324,10 +345,43 @@ status_t pss_verify_invalid_test(void) {
   hardened_bool_t verification_result;
   TRY(run_rsa_3072_verify(kTestMessage, kTestMessageLen,
                           kValidSignaturePkcs1v15, kOtcryptoRsaPaddingPss,
-                          &verification_result));
+                          kOtcryptoHashModeSha512, &verification_result));
 
   // Expect the signature to fail verification.
   TRY_CHECK(verification_result == kHardenedBoolFalse);
+  return OK_STATUS();
+}
+
+status_t all_hashes_sign_verify_test(void) {
+  static const otcrypto_hash_mode_t kHashModes[] = {
+      kOtcryptoHashModeSha256,   kOtcryptoHashModeSha384,
+      kOtcryptoHashModeSha512,   kOtcryptoHashModeSha3_224,
+      kOtcryptoHashModeSha3_256, kOtcryptoHashModeSha3_384,
+      kOtcryptoHashModeSha3_512,
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE(kHashModes); i++) {
+    otcrypto_hash_mode_t hash_mode = kHashModes[i];
+    uint32_t sig[kRsa3072NumWords];
+    hardened_bool_t verification_result;
+
+    // Test PKCS#1 v1.5 dynamically
+    TRY(run_rsa_3072_sign(kTestMessage, kTestMessageLen,
+                          kOtcryptoRsaPaddingPkcs, hash_mode, sig));
+    TRY(run_rsa_3072_verify(kTestMessage, kTestMessageLen, sig,
+                            kOtcryptoRsaPaddingPkcs, hash_mode,
+                            &verification_result));
+    TRY_CHECK(verification_result == kHardenedBoolTrue);
+
+    // Test PSS dynamically
+    TRY(run_rsa_3072_sign(kTestMessage, kTestMessageLen, kOtcryptoRsaPaddingPss,
+                          hash_mode, sig));
+    TRY(run_rsa_3072_verify(kTestMessage, kTestMessageLen, sig,
+                            kOtcryptoRsaPaddingPss, hash_mode,
+                            &verification_result));
+    TRY_CHECK(verification_result == kHardenedBoolTrue);
+  }
+
   return OK_STATUS();
 }
 
@@ -339,8 +393,8 @@ bool test_main(void) {
   EXECUTE_TEST(test_result, pkcs1v15_sign_test);
   EXECUTE_TEST(test_result, pkcs1v15_verify_valid_test);
   EXECUTE_TEST(test_result, pkcs1v15_verify_invalid_test);
-  EXECUTE_TEST(test_result, pss_sign_test);
   EXECUTE_TEST(test_result, pss_verify_valid_test);
   EXECUTE_TEST(test_result, pss_verify_invalid_test);
+  EXECUTE_TEST(test_result, all_hashes_sign_verify_test);
   return status_ok(test_result);
 }
