@@ -10,7 +10,6 @@ class aes_reseed_vseq extends aes_base_vseq;
   `uvm_object_new
   aes_message_item my_message;
   bit finished_all_msgs = 0;
-  rand bit [7:0][31:0] init_key[2];
   // Regular wait time - in the order of a block.
   int wait_timeout_cycles = 100;
   // Max wait time to accommodate long entropy delays and DUT stalls.
@@ -74,7 +73,7 @@ class aes_reseed_vseq extends aes_base_vseq;
   endtask
 
   // Wait for the PRNG to reseed (with a reseeding that should have already been requested)
-  task check_prng_reseed();
+  local task check_prng_reseed();
     check_clearing_prng_reseed();
     if (cfg.under_reset) return;
 
@@ -87,11 +86,38 @@ class aes_reseed_vseq extends aes_base_vseq;
     csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
   endtask
 
-  task check_no_prng_reseed();
-    // No reseed operation is supposed to be triggered.
-    cfg.clk_rst_vif.wait_clks(1);
-    `DV_CHECK_EQ_FATAL(cfg.aes_reseed_vif.entropy_clearing_req |
-                       cfg.aes_reseed_vif.entropy_masking_req, 1'b0)
+  // Wait a cycle and check that no reseed operation has been triggered.
+  local task check_no_prng_reseed();
+    cfg.clk_rst_vif.wait_clks_or_rst(1);
+    if (cfg.under_reset) return;
+
+    if (cfg.aes_reseed_vif.entropy_clearing_req)
+      `uvm_error(get_name(), "entropy_clearing_req should not have been set.")
+    if (cfg.aes_reseed_vif.entropy_masking_req)
+      `uvm_error(get_name(), "entropy_masking_req should not have been set.")
+  endtask
+
+  // Trigger reseed by writing a new key to the initial key registers. In case
+  // KEY_TOUCH_FORCES_RESEED is not set, no reseed operation is supposed to be triggered. The
+  // default configuration written after reset is not using the sideload interface for the key.
+  local task write_key_regs();
+    bit [7:0][31:0] init_key[2];
+
+    if (!std::randomize(init_key)) `uvm_fatal(get_name(), "Failed to randomize init_key")
+
+    // Wait for the DUT to be idle before writing the key.
+    csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
+    if (cfg.under_reset) return;
+
+    if (cfg.do_reseed) begin
+      fork
+        write_key(init_key, 1'b0);
+        check_prng_reseed();
+      join
+    end else begin
+      write_key(init_key, 1'b0);
+      check_no_prng_reseed();
+    end
   endtask
 
   task check_reseed_rate();
@@ -195,23 +221,12 @@ class aes_reseed_vseq extends aes_base_vseq;
     join
     if (cfg.under_reset) return;
 
-    // Trigger reseed by writing a new key to the initial key registers. In case
-    // KEY_TOUCH_FORCES_RESEED is not set, no reseed operation is supposed to be triggered. The
-    // default configuration written after reset is not using the sideload interface for the
-    // key.
-    `uvm_info(`gfn, "Potentially triggering PRNG reseed by writing a new key", UVM_LOW)
-    `DV_CHECK_STD_RANDOMIZE_FATAL(init_key)
-    // Wait for the DUT to be idle before writing the key.
-    csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
-    if (cfg.do_reseed) begin
-      fork
-        write_key(init_key, 1'b0);
-        check_prng_reseed();
-      join
-    end else begin
-      write_key(init_key, 1'b0);
-      check_no_prng_reseed();
-    end
+    `uvm_info(get_name(),
+              $sformatf("Writing a new key, which should%0s trigger a PRNG reseed.",
+                        cfg.do_reseed ? "" : " not"),
+              UVM_LOW)
+    write_key_regs();
+    if (cfg.under_reset) return;
 
     // Trigger reseed by loading a new key via sideload interface. In case
     // KEY_TOUCH_FORCES_RESEED is not set, no reseed operation is supposed to be triggered.
