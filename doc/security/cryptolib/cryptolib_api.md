@@ -37,6 +37,14 @@ For more details, see later sections (links in the "category" column).
 | [**Deterministic random bit generation**](#deterministic-random-bit-generation) | AES-CTR-DRBG |
 | [**Key derivation**](#key-derivation) | HMAC-KDF-CTR<br>KMAC-KDF-CTR |
 
+## Cryptolib Initialization
+
+Before using the cryptolib, the user should initialize the system with the dedicated `otcrypto_init` function.
+Depending on the provided `security_level` (`kOtcryptoKeySecurityLevelLow`, `kOtcryptoKeySecurityLevelMedium`, `kOtcryptoKeySecurityLevelHigh`), the initialization function enables certain countermeasures (e.g., the Ibex dummy instruction [feature][dummy-instruction]).
+Please note that this function only can be called from the machine (M) mode privilege level as it writes to system registers.
+
+{{#header-snippet sw/device/lib/crypto/include/config.h otcrypto_init }}
+
 ## Cryptolib Usage Examples
 
 Examples of how to use the cryptolib API are provided in the [cryptolib test directory][crypto-tests].
@@ -191,6 +199,9 @@ static const uint32_t kKeyShare0[4] = {0xdeadbeef, 0x01234567, 0x89abcdef, 0xfed
 static const uint32_t kKeyShare1[4] = {0x00000000, 0x00000000, 0x00000000, 0x00000000};
 
 bool aes_encrypt_decrypt_example(void) {
+  // --- Initialize the system for the cryptolib execution  ---
+  TRY(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+
   // --- Build the blinded AES-ECB key ---
   otcrypto_key_config_t key_config = {
     .version        = kOtcryptoLibVersion1,
@@ -824,3 +835,4 @@ The table below is a recommendation from [NIST SP800-57 Part 1][nist-sp800-57] a
 [sha3-spec]: https://csrc.nist.gov/publications/detail/fips/202/final
 [sha3-derived-spec]: https://csrc.nist.gov/publications/detail/sp/800-185/final
 [crypto-tests]: https://github.com/lowRISC/opentitan/tree/earlgrey_1.0.0/sw/device/tests/crypto
+[dummy-instruction]: https://ibex-core.readthedocs.io/en/latest/03_reference/security.html#dummy-instruction-insertion
