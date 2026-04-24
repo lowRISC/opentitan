@@ -94,7 +94,7 @@ Secret keys are "blinded", meaning that keys are represented by at least two "sh
 Blinded keys are also sometimes referred to as "masked".
 This helps protect against e.g. power side-channel attacks, because the code will never handle a bit of the "real" key, only the independent shares.
 The exact blinding method and internal representation of blinded key data is opaque to the caller and subject to change in future library versions.
-Lke unblinded keys, they include a checksum.
+Like unblinded keys, they include a checksum.
 Callers should use key import/export functions to generate, construct, and interpret blinded keys.
 
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_blinded_key }}
@@ -305,7 +305,7 @@ This mode is used when the entire data to be hashed is available upfront.
 {{#header-snippet sw/device/lib/crypto/include/sha3.h otcrypto_sha3_384 }}
 {{#header-snippet sw/device/lib/crypto/include/sha3.h otcrypto_sha3_512 }}
 
-The cryptolib supports the SHAKE and cSHAKE extendable-output functions, which can produce a varaible-sized digest.
+The cryptolib supports the SHAKE and cSHAKE extendable-output functions, which can produce a variable-sized digest.
 To avoid locking up the KMAC block, only a one-shot mode is supported.
 
 {{#header-snippet sw/device/lib/crypto/include/sha3.h otcrypto_shake128 }}
@@ -671,7 +671,7 @@ The crypto library will always refuse to export these keys.
 ## Asynchronous operations
 
 For some functions, OpenTitan's cryptolib supports asynchronous calls.
-All operations which take longer than 10ms should have an asychronous interface.
+All operations which take longer than 10ms should have an asynchronous interface.
 This is helpful for compatibility with TockOS, which has a low latency return call programming model.
 
 The OpenTitan cryptolib does not implement any thread management.
