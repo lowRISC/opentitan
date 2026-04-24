@@ -168,31 +168,36 @@ class aes_base_vseq extends cip_base_vseq #(
     end
   endtask // set_key_len
 
+  // Set and update a shadowed register field
+  //
+  // This uses csr_update to do the double-write that's necessary for shadowed fields.
+  protected task set_shadowed_field(uvm_reg_field field, uvm_reg_data_t value);
+    // If the field already has the value, there's nothing to do
+    if (field.get_mirrored_value() == value) return;
 
-  virtual task set_sideload(bit sideload);
-    if (ral.ctrl_shadowed.sideload.get_mirrored_value() != sideload) begin
-      ral.ctrl_shadowed.sideload.set(sideload);
-      csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
-      void'(ral.ctrl_shadowed.sideload.predict(sideload));
+    field.set(value);
+    csr_update(.csr(field.get_parent()), .en_shadow_wr(1'b1), .blocking(1));
+    if (cfg.under_reset) return;
+
+    if (!field.predict(value, UVM_PREDICT_WRITE)) begin
+      `uvm_fatal(get_full_name(),
+                 $sformatf("Failed to predict %0s.%0s after an observed write.",
+                           field.get_parent().get_name(), field.get_name()))
     end
   endtask
 
-
-  virtual task set_prng_reseed_rate(prs_rate_e reseed_rate);
-    if (ral.ctrl_shadowed.prng_reseed_rate.get_mirrored_value() != reseed_rate) begin
-      ral.ctrl_shadowed.prng_reseed_rate.set(reseed_rate);
-      csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
-      void'(ral.ctrl_shadowed.prng_reseed_rate.predict(reseed_rate));
-    end
+  task set_sideload(bit sideload);
+    set_shadowed_field(ral.ctrl_shadowed.sideload, sideload);
   endtask
 
 
-  virtual task set_manual_operation(bit manual_operation);
-    if (ral.ctrl_shadowed.manual_operation.get_mirrored_value() != manual_operation) begin
-      ral.ctrl_shadowed.manual_operation.set(manual_operation);
-      csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
-      void'(ral.ctrl_shadowed.manual_operation.predict(manual_operation));
-    end
+  task set_prng_reseed_rate(prs_rate_e reseed_rate);
+    set_shadowed_field(ral.ctrl_shadowed.prng_reseed_rate, reseed_rate);
+  endtask
+
+
+  task set_manual_operation(bit manual_operation);
+    set_shadowed_field(ral.ctrl_shadowed.manual_operation, manual_operation);
   endtask
 
 

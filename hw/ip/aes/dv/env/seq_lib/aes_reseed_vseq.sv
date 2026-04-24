@@ -92,9 +92,9 @@ class aes_reseed_vseq extends aes_base_vseq;
     if (cfg.under_reset) return;
 
     if (cfg.aes_reseed_vif.entropy_clearing_req)
-      `uvm_error(get_name(), "entropy_clearing_req should not have been set.")
+      `uvm_error(`gfn, "entropy_clearing_req should not have been set.")
     if (cfg.aes_reseed_vif.entropy_masking_req)
-      `uvm_error(get_name(), "entropy_masking_req should not have been set.")
+      `uvm_error(`gfn, "entropy_masking_req should not have been set.")
   endtask
 
   // Trigger reseed by writing a new key to the initial key registers. In case
@@ -103,7 +103,7 @@ class aes_reseed_vseq extends aes_base_vseq;
   local task write_key_regs();
     bit [7:0][31:0] init_key[2];
 
-    if (!std::randomize(init_key)) `uvm_fatal(get_name(), "Failed to randomize init_key")
+    if (!std::randomize(init_key)) `uvm_fatal(`gfn, "Failed to randomize init_key")
 
     // Wait for the DUT to be idle before writing the key.
     csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
@@ -116,6 +116,104 @@ class aes_reseed_vseq extends aes_base_vseq;
       join
     end else begin
       write_key(init_key, 1'b0);
+      check_no_prng_reseed();
+    end
+  endtask
+
+  // Do a backdoor read to get the value of the keymgr_key_i.valid port, treating 'x and 'z as
+  // invalid.
+  local function bit snoop_sideload_valid();
+    string sideload_valid_path = "tb.dut.keymgr_key_i.valid";
+    logic  valid;
+
+    if (!uvm_hdl_check_path(sideload_valid_path)) begin
+      `uvm_fatal(`gfn, $sformatf("\n\t ----| PATH '%0s' NOT FOUND", sideload_valid_path))
+    end
+
+    if (!uvm_hdl_read(sideload_valid_path, valid)) begin
+      `uvm_fatal(`gfn, $sformatf("Failed to backdoor read from %0s", sideload_valid_path))
+    end
+
+    return valid === 1;
+  endfunction
+
+  // Trigger reseed by loading a new key via sideload interface. In case KEY_TOUCH_FORCES_RESEED is
+  // not set, no reseed operation is supposed to be triggered. Wait for the DUT to be idle before
+  // enabling sideload.
+  local task pass_new_sideload_key();
+    bit sideload_setup_done;
+
+    while (!sideload_setup_done) begin
+      bit sideload_valid;
+      bit sideload_enabled;
+
+      csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
+      if (cfg.under_reset) return;
+
+      // Make sure sideload is disabled.
+      set_sideload(1'b0);
+      if (cfg.under_reset) return;
+
+      // Wait for sideload key to be valid before enabling sideload, timing out after
+      // wait_timeout_cycles.
+      fork : isolation_fork begin
+        fork
+          begin
+            cfg.clk_rst_vif.wait_n_clks(wait_timeout_cycles);
+            `uvm_error(`gfn, "Timeout waiting for valid sideload key")
+          end
+          begin
+            while (!sideload_valid && !cfg.under_reset) begin
+              cfg.clk_rst_vif.wait_n_clks_or_rst(1);
+              sideload_valid = snoop_sideload_valid();
+            end
+          end
+        join_any
+        disable fork;
+      end join
+      if (cfg.under_reset) return;
+
+      // Enable sideload by writing to CTRL_SHADOWED, doing repeated backdoor reads of the sideload
+      // valid flag and clearing sideload_valid if it becomes false.
+      //
+      // If reset is asserted, set_sideload will exit and the first process will set
+      // sideload_enabled, causing the second process to complete.
+      fork
+        // Enable sideload.
+        begin
+          set_sideload(1'b1);
+          sideload_enabled = 1'b1;
+        end
+        // Detect if the sideload valid bit gets de-asserted while trying to enable sideload.
+        //
+        // This detection is a backdoor HDL access, which we perform on negative edges of the clock
+        // to avoid racing with the posedge state updates.
+        //
+        // If reset is asserted, this process will finish immediately, because set_sideload will
+        // exit in the other process, causing that process to set sideload_enabled.
+        begin
+          while (sideload_valid && !sideload_enabled) begin
+            cfg.clk_rst_vif.wait_n_clks_or_rst(1);
+            sideload_valid = snoop_sideload_valid();
+          end
+        end
+      join
+      if (cfg.under_reset) return;
+
+      // If the sideload valid bit got de-asserted again before fully enabling sideload, the key
+      // did not get loaded and we have to repeat the setup procedure. Otherwise, sideload was
+      // enabled successfully.
+      if (sideload_valid) begin
+        sideload_setup_done = 1;
+      end
+    end
+    if (cfg.under_reset) return;
+
+    // Sideload got enabled with a valid sideload key present. This must trigger a reseed in
+    // case KEY_TOUCH_FORCES_RESEED is set.
+    if (cfg.do_reseed) begin
+      check_prng_reseed();
+    end else begin
       check_no_prng_reseed();
     end
   endtask
@@ -208,11 +306,6 @@ class aes_reseed_vseq extends aes_base_vseq;
   //
   // This task is run in an isolation fork.
   task body_main_thread();
-    bit sideload_setup_done;
-    bit sideload_valid;
-    string sideload_valid_path = "tb.dut.keymgr_key_i.valid";
-    bit sideload_enabled;
-
     // Trigger reseed by manually setting the PRNG_RESEED bit in the TRIGGER register.
     `uvm_info(`gfn, "Triggering PRNG reseed via trigger register", UVM_LOW)
     fork
@@ -221,7 +314,7 @@ class aes_reseed_vseq extends aes_base_vseq;
     join
     if (cfg.under_reset) return;
 
-    `uvm_info(get_name(),
+    `uvm_info(`gfn,
               $sformatf("Writing a new key, which should%0s trigger a PRNG reseed.",
                         cfg.do_reseed ? "" : " not"),
               UVM_LOW)
@@ -231,56 +324,11 @@ class aes_reseed_vseq extends aes_base_vseq;
     // Trigger reseed by loading a new key via sideload interface. In case
     // KEY_TOUCH_FORCES_RESEED is not set, no reseed operation is supposed to be triggered.
     // Wait for the DUT to be idle before enabling sideload.
-    `uvm_info(`gfn, "Potentially triggering PRNG reseed by providing a new sideload key",
-        UVM_LOW)
-    if (!uvm_hdl_check_path(sideload_valid_path)) begin
-      `uvm_fatal(`gfn, $sformatf("\n\t ----| PATH NOT FOUND"))
-    end
-    sideload_setup_done = 0;
-    while (!sideload_setup_done) begin
-      csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
-      // Make sure sideload is disabled.
-      set_sideload(1'b0);
-      sideload_enabled = 1'b0;
-      // Wait for sideload key to be valid before enabling sideload.
-      sideload_valid = 0;
-      `DV_SPINWAIT_EXIT(
-        while (!sideload_valid) begin
-          cfg.clk_rst_vif.wait_n_clks(1);
-          `DV_CHECK_FATAL(uvm_hdl_read(sideload_valid_path, sideload_valid))
-        end,
-        cfg.clk_rst_vif.wait_n_clks(wait_timeout_cycles);,
-        "Timeout waiting for valid sideload key")
-      fork
-        // Enable sideload.
-        begin
-          set_sideload(1'b1);
-          sideload_enabled = 1'b1;
-        end
-        // Detect if the sideload valid bit gets de-asserted while trying to enable sideload.
-        begin
-          while (sideload_valid && !sideload_enabled) begin
-            cfg.clk_rst_vif.wait_n_clks(1);
-            `DV_CHECK_FATAL(uvm_hdl_read(sideload_valid_path, sideload_valid))
-          end
-        end
-      join
-
-      // If the sideload valid bit got de-asserted again before fully enabling sideload, the key
-      // did not get loaded and we have to repeat the setup procedure. Otherwise, sideload was
-      // enabled successfully.
-      if (sideload_valid) begin
-        sideload_setup_done = 1;
-      end
-    end
-
-    // Sideload got enabled with a valid sideload key present. This must trigger a reseed in
-    // case KEY_TOUCH_FORCES_RESEED is set.
-    if (cfg.do_reseed) begin
-      check_prng_reseed();
-    end else begin
-      check_no_prng_reseed();
-    end
+    `uvm_info(`gfn,
+              "Potentially triggering PRNG reseed by providing a new sideload key",
+              UVM_LOW)
+    pass_new_sideload_key();
+    if (cfg.under_reset) return;
 
     // Test that the PRNGs are reseeded at the proper rate during message processing.
     `uvm_info(`gfn, "Testing automatic / block counter based reseeding of the masking PRNG",
