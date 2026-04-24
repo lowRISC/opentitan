@@ -94,7 +94,7 @@ Secret keys are "blinded", meaning that keys are represented by at least two "sh
 Blinded keys are also sometimes referred to as "masked".
 This helps protect against e.g. power side-channel attacks, because the code will never handle a bit of the "real" key, only the independent shares.
 The exact blinding method and internal representation of blinded key data is opaque to the caller and subject to change in future library versions.
-Lke unblinded keys, they include a checksum.
+Like unblinded keys, they include a checksum.
 Callers should use key import/export functions to generate, construct, and interpret blinded keys.
 
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_blinded_key }}
