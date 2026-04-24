@@ -12,6 +12,8 @@
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/silicon_creator/lib/cert/cert.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/manuf/base/perso_tlv_data_v0.h"
+#include "sw/device/silicon_creator/manuf/base/perso_tlv_data_v1.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -75,15 +77,14 @@ typedef uint16_t perso_tlv_dev_seed_header_t;
 
 typedef enum perso_tlv_obj_header_fields {
   // Object size, total size, this header included.
-  kObjhSizeFieldShift = 0,
-  kObjhSizeFieldWidth = 12,
-  kObjhSizeFieldMask = (1 << kObjhSizeFieldWidth) - 1,
+  kObjhSizeFieldShift = kObjhSizeFieldShiftV0,
+  kObjhSizeFieldWidth = kObjhSizeFieldWidthV0,
+  kObjhSizeFieldMask = kObjhSizeFieldMaskV0,
 
   // Object type, one of perso_tlv_object_type_t.
-  kObjhTypeFieldShift = kObjhSizeFieldWidth,
-  kObjhTypeFieldWidth =
-      sizeof(perso_tlv_object_header_t) * 8 - kObjhSizeFieldWidth,
-  kObjhTypeFieldMask = (1 << kObjhTypeFieldWidth) - 1,
+  kObjhTypeFieldShift = kObjhTypeFieldShiftV0,
+  kObjhTypeFieldWidth = kObjhTypeFieldWidthV0,
+  kObjhTypeFieldMask = kObjhTypeFieldMaskV0,
 } perso_tlv_obj_header_fields_t;
 
 typedef struct perso_tlv_dev_seed_element {
@@ -114,37 +115,15 @@ typedef struct perso_tlv_dev_seed_set {
  */
 typedef enum perso_tlv_cert_header_fields {
   // Certificate size, total size, this header and name length included.
-  kCrthSizeFieldShift = 0,
-  kCrthSizeFieldWidth = 12,
-  kCrthSizeFieldMask = (1 << kCrthSizeFieldWidth) - 1,
+  kCrthSizeFieldShift = kCrthSizeFieldShiftV0,
+  kCrthSizeFieldWidth = kCrthSizeFieldWidthV0,
+  kCrthSizeFieldMask = kCrthSizeFieldMaskV0,
 
   // Length of the certificate name immediately following the header.
-  kCrthNameSizeFieldShift = kCrthSizeFieldWidth,
-  kCrthNameSizeFieldWidth =
-      sizeof(perso_tlv_cert_header_t) * 8 - kCrthSizeFieldWidth,
-  kCrthNameSizeFieldMask = (1 << kCrthNameSizeFieldWidth) - 1,
+  kCrthNameSizeFieldShift = kCrthNameSizeFieldShiftV0,
+  kCrthNameSizeFieldWidth = kCrthNameSizeFieldWidthV0,
+  kCrthNameSizeFieldMask = kCrthNameSizeFieldMaskV0,
 } perso_tlv_cert_header_fields_t;
-
-// Helper macros allowing set or get various object and certificate header
-// fields. Operate on objects in big endian representation, as they are
-// transferred over wire.
-#define PERSO_TLV_SET_FIELD(type_name, field_name, full_value, field_value) \
-  {                                                                         \
-    uint16_t mask = k##type_name##field_name##FieldMask;                    \
-    uint16_t shift = k##type_name##field_name##FieldShift;                  \
-    uint16_t fieldv = (uint16_t)(field_value)&mask;                         \
-    uint16_t fullv = __builtin_bswap16((uint16_t)(full_value));             \
-    mask = (uint16_t)(mask << shift);                                       \
-    (full_value) = __builtin_bswap16(                                       \
-        (uint16_t)((fullv & ~mask) | (((uint16_t)fieldv) << shift)));       \
-  }
-
-#define PERSO_TLV_GET_FIELD(type_name, field_name, full_value, field_value) \
-  {                                                                         \
-    uint16_t mask = k##type_name##field_name##FieldMask;                    \
-    uint16_t shift = k##type_name##field_name##FieldShift;                  \
-    *(field_value) = (__builtin_bswap16(full_value) >> shift) & mask;       \
-  }
 
 /**
  * A helper structure for quick access to a certificate stored as a perso LTV
