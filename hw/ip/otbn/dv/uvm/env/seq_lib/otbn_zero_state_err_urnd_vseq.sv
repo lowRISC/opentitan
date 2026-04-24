@@ -22,7 +22,7 @@ class otbn_zero_state_err_urnd_vseq extends otbn_single_vseq;
       end
       begin
         bit [31:0] err_val = 32'd1 << 20;
-        string prng_path = "tb.dut.u_otbn_core.u_otbn_rnd.u_xoshiro256pp.xoshiro_q";
+        string prng_path = "tb.dut.u_otbn_core.u_otbn_rnd.u_prim_trivium.state_q";
 
         cfg.clk_rst_vif.wait_clks($urandom_range(10, 1000));
         `DV_CHECK_FATAL(uvm_hdl_force(prng_path, 'b0) == 1);
