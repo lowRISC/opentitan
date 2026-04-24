@@ -6,7 +6,6 @@ typedef class i2c_scoreboard;
 class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
 
   i2c_scoreboard scoreboard;
-  virtual i2c_dv_if i2c_dv_vif;
 
   ////////////////////////////////
   // Test Configuration Options //
