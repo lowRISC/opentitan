@@ -45,6 +45,14 @@ Please note that this function only can be called from the machine (M) mode priv
 
 {{#header-snippet sw/device/lib/crypto/include/config.h otcrypto_init }}
 
+## Cryptolib Exit
+
+Before returning to the caller, the cryptolib invokes `otcrypto_eval_exit` with the status returned by the cryptolib operation.
+This function checks whether any security alert was fired during the operation and returns an error if so.
+Moreover, the function also checks the entropy complex health test and alert configurations.
+
+{{#header-snippet sw/device/lib/crypto/include/config.h otcrypto_eval_exit }}
+
 ## Cryptolib Usage Examples
 
 Examples of how to use the cryptolib API are provided in the [cryptolib test directory][crypto-tests].
