@@ -13,10 +13,6 @@ class rng_driver extends dv_base_driver #(.ITEM_T(rng_item),
 
   `uvm_component_new
 
-  // reset signals
-  virtual task reset_signals();
-  endtask
-
   // drive outputs based on inputs
   virtual task get_and_drive();
     forever begin

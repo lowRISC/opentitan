@@ -10,12 +10,16 @@ class alert_sender_driver extends alert_base_driver;
 
   `uvm_component_utils(alert_sender_driver)
 
+  // An event that can be triggered (by functions as well as tasks). This is monitored by
+  // maintain_alert_drive, which will call cfg.vif.force_alert with m_desired_alert_val.
+  uvm_event m_update_alert_val;
+  bit [1:0] m_desired_alert_val;
+
   extern function new (string name, uvm_component parent);
 
-  // Monitor resets and reset all driven signals when a reset occurs.
-  //
-  // An implementation of dv_base_driver::reset_signals.
-  extern virtual task reset_signals();
+  // This function gets called by dv_base_driver::reset_signals when the interface enters reset.
+  // Clear any alert signal.
+  extern virtual task on_enter_reset();
 
   // Drive sequence items for alerts and pings that have been retrieved by get_req (and therefore
   // have started) and have been pushed to the various queues. This also does the alert init
@@ -62,8 +66,9 @@ class alert_sender_driver extends alert_base_driver;
   // Set the alert pins to be (alert_p=1; alert_n=0) if enabled=1 and (alert_p=0; alert_n=1)
   // otherwise.
   //
-  // This task takes zero time (but needs to be a task because it uses non-blocking assignment)
-  extern local task set_alert(bit enabled);
+  // Because the alert signals are set through a clocking block (using cfg.vif.force_alert()), this
+  // works by setting m_desired_alert_val and triggering the m_update_alert_val event.
+  extern local function void set_alert(bit enabled);
 
   // Set the alert pins to 11 or 00 (depending on the high argument).
   //
@@ -84,62 +89,53 @@ class alert_sender_driver extends alert_base_driver;
   // This task exits early on reset or if cfg.en_alert_lpg is asserted (in which case, the receiver
   // won't reply to the init)
   extern local task do_alert_tx_init();
+
+  // This task runs forever, calling cfg.vif.set_alert() each time the m_update_alert_val event is
+  // triggered.
+  extern local task maintain_alert_drive();
 endclass : alert_sender_driver
 
 function alert_sender_driver::new (string name, uvm_component parent);
   super.new(name, parent);
+  m_update_alert_val = new("m_update_alert_val");
 endfunction : new
 
-task alert_sender_driver::reset_signals();
+task alert_sender_driver::on_enter_reset();
   set_alert(1'b0);
-  forever begin
-    wait(!cfg.in_reset);
-    wait(cfg.in_reset);
-    set_alert(1'b0);
-  end
 endtask
 
 task alert_sender_driver::drive_req();
-  forever begin
-    // Wait until we are out of reset. Until that happens, respond instantly to any sequence items
-    // that come in.
-    while (cfg.in_reset) begin
-      fork : isolation_fork begin
-        alert_esc_seq_item item;
-        fork
-          wait (!cfg.in_reset);
-          begin
-            wait(s_alert_send_q.size());
-            item = s_alert_send_q.pop_front();
-          end
-          begin
-            wait(s_alert_ping_rsp_q.size());
-            item = s_alert_ping_rsp_q.pop_front();
-          end
-        join_any
-        disable fork;
-        if (item != null) begin
-          alert_esc_seq_item rsp;
-          `downcast(rsp, item.clone());
-          rsp.set_id_info(item);
-          seq_item_port.put_response(rsp);
-        end
-      end join
-    end
-
-    while(!cfg.in_reset) begin
-      bit en_alert_lpg = cfg.en_alert_lpg;
-
-      // If LPG is not enabled, initialise the alert interface
-      if (!en_alert_lpg) begin
-        do_alert_tx_init();
+  fork
+    maintain_alert_drive();
+    forever begin
+      // Wait until we are out of reset. Until that happens, respond instantly to any sequence items
+      // that come in.
+      while (cfg.in_reset) begin
+        fork : isolation_fork begin
+          alert_esc_seq_item item;
+          fork
+            wait(!cfg.in_reset);
+            m_sender_requests.get(item);
+          join_any
+          disable fork;
+          if (item != null) seq_item_port.put_response(item);
+        end join
       end
 
-      // Drive any requests that we see. The task will exit on reset or if the LPG flag changes,
-      // letting us initialise the alert interface (if LPG is disabled) and continue.
-      drive_reqs_with_lpg_mode(en_alert_lpg);
+      while(!cfg.in_reset) begin
+        bit en_alert_lpg = cfg.en_alert_lpg;
+
+        // If LPG is not enabled, initialise the alert interface
+        if (!en_alert_lpg) begin
+          do_alert_tx_init();
+        end
+
+        // Drive any requests that we see. The task will exit on reset or if the LPG flag changes,
+        // letting us initialise the alert interface (if LPG is disabled) and continue.
+        drive_reqs_with_lpg_mode(en_alert_lpg);
+      end
     end
-  end
+  join
 endtask
 
 task alert_sender_driver::drive_reqs_with_lpg_mode(bit en_alert_lpg);
@@ -150,30 +146,22 @@ task alert_sender_driver::drive_reqs_with_lpg_mode(bit en_alert_lpg);
     // Pick an item to drive, but keep track of resets and any change to the LPG flag.
     fork : isolation_fork begin
       fork
-        wait (cfg.en_alert_lpg != en_alert_lpg);
-        wait (cfg.in_reset);
-        begin
-          wait(s_alert_send_q.size());
-          item = s_alert_send_q.pop_front();
-          is_alert = 1;
-        end
-        begin
-          wait(s_alert_ping_rsp_q.size());
-          item = s_alert_ping_rsp_q.pop_front();
-          is_ping = 1;
-        end
+        wait(cfg.en_alert_lpg != en_alert_lpg);
+        wait(cfg.in_reset);
+        m_sender_requests.get(item);
       join_any
       disable fork;
     end join
 
-    // Handle the alert or ping response. If there is no item, there has been a reset or the LPG
-    // flag has changed. Return from the task.
-    //
-    // The send_alert and send_ping_rsp tasks both exit early when they see a reset, but ignore any
-    // further changes to en_alert_lpg.
-    if (is_alert) send_item(1'b0, item);
-    else if (is_ping) send_item(1'b1, item);
-    else return;
+    // If there is no item, there has been a reset or the LPG flag has changed. Return from the
+    // task.
+    if (item == null) return;
+
+    // Handle the alert request or ping response. If the item requests both, send the ping response
+    // first and then the real alert.
+    if (item.s_alert_ping_rsp) send_item(1'b1, item);
+    if (item.s_alert_send) send_item(1'b0, item);
+    seq_item_port.put_response(item);
   end
 endtask
 
@@ -196,7 +184,6 @@ task alert_sender_driver::send_item(bit is_ping_rsp, alert_esc_seq_item item);
     join_any
     disable fork;
   end join
-
   `uvm_info(`gfn,
             $sformatf("finished sending sender item, alert_send=%0b, ping_rsp=%0b, int_err=%0b",
                       item.s_alert_send, item.s_alert_ping_rsp, item.int_err), UVM_HIGH)
@@ -257,10 +244,10 @@ task alert_sender_driver::random_drive_int_fail(int int_err_cyc);
   end
 endtask
 
-task alert_sender_driver::set_alert(bit enabled);
-  cfg.vif.sender_cb.alert_tx_int.alert_p <= enabled;
-  cfg.vif.sender_cb.alert_tx_int.alert_n <= !enabled;
-endtask
+function void alert_sender_driver::set_alert(bit enabled);
+  m_desired_alert_val = {enabled, !enabled};
+  m_update_alert_val.trigger();
+endfunction
 
 task alert_sender_driver::drive_invalid_alert(bit high);
   cfg.vif.sender_cb.alert_tx_int.alert_p <= high;
@@ -284,4 +271,12 @@ task alert_sender_driver::do_alert_tx_init();
     join_any
     disable fork;
   end join
+endtask
+
+task alert_sender_driver::maintain_alert_drive();
+  forever begin
+    m_update_alert_val.wait_ptrigger();
+    cfg.vif.force_alert(m_desired_alert_val[1], m_desired_alert_val[0]);
+    m_update_alert_val.reset();
+  end
 endtask
