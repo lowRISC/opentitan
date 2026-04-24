@@ -449,6 +449,7 @@ cc_library(
 test_suite(
     name = "impl_unittest_suite",
     tests = [
+        ":integrity_unittest",
         ":key_transport_unittest",
         ":keyblob_unittest",
         ":status_debug_unittest",
