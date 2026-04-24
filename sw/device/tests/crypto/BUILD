@@ -1386,6 +1386,7 @@ test_suite(
         ":kdf_kmac_functest",
         ":kdf_kmac_sideload_functest_hardcoded",
         ":kmac_functest_hardcoded",
+        ":kmac_sideload_functest_hardcoded",
         ":otcrypto_export_test",
         ":otcrypto_hash_test",
         ":rsa_2048_encryption_functest",
