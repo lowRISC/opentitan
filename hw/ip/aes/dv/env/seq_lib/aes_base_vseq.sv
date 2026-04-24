@@ -1324,22 +1324,27 @@ class aes_base_vseq extends cip_base_vseq #(
 
   endtask // try_recover
 
-
-  virtual task send_msg_queue (
-     bit unbalanced, // uses the probabilities to randomize if we read or write
-     int read_prob,  // chance of reading an available output
-     int write_prob  // chance of writing input data to a ready DUT
-     );
-    // variables
-    aes_message_item my_message;
+  // Send the messages in message_queue, removing them as we go
+  //
+  // The unbalanced, read_prob and write_prob arguments are passed to send_msg, controlling to read
+  // or write each message.
+  //
+  // If reset is asserted, exit immediately.
+  virtual task send_msg_queue (bit unbalanced, int read_prob, int write_prob);
     bit  rst_set = 0;
-    while (message_queue.size() > 0 ) begin
+    bit  enable_sideload = 0;
+
+    while (message_queue.size() > 0 && !cfg.under_reset) begin
+      aes_message_item my_message;
+
       `uvm_info(`gfn, $sformatf("Starting New Message - messages left %d",
                                  message_queue.size() ), UVM_MEDIUM)
-      my_message = new();
       my_message = message_queue.pop_back();
       generate_aes_item_queue(my_message);
+
       fork
+        // This process supplies sideload keys, then setting key_rdy. It will exit when key_used is
+        // set. If sideload_en is false, key_rdy is set immediately.
         begin
           if (my_message.sideload_en) begin
             req_sideload_key();
@@ -1347,42 +1352,46 @@ class aes_base_vseq extends cip_base_vseq #(
             key_rdy = 1;
           end
         end
-        // stay in for until a valid key is ready
-        wait(key_rdy);
-      join_any
-      send_msg(my_message.manual_operation, my_message.sideload_en,
-               unbalanced, read_prob, write_prob, rst_set);
-      if (my_message.sideload_en) begin
-        // release sideload
-        key_used = 1;
-        csr_spinwait(.ptr(ral.status.idle) , .exp_data(1'b1));
-        clear_regs(2'b11);
-        csr_spinwait(.ptr(ral.status.idle) , .exp_data(1'b1));
-      end
 
-      // when using sideload we need to wait for sequence to release key
-      // before starting a new message
-      wait(!key_used);
-      key_rdy = 0;
+        begin
+          // Send the message. This will consume the key (waiting for key_rdy)
+          send_msg(my_message.manual_operation, my_message.sideload_en,
+                   unbalanced, read_prob, write_prob, rst_set);
 
+          if (my_message.sideload_en && !cfg.under_reset) begin
+            // If we sent a sideload message, set key_used. This tells req_sideload_key that we are
+            // done, causing that task to clear key_used again and exit.
+            key_used = 1;
 
-      if (rst_set) begin
-        aes_item_queue.delete();
-        message_queue.delete();
-        // send a few msg to make sure
-        // everything still works
-        cfg.num_messages = 2;
-        generate_message_queue();
-        // if process was halted from the outside //
-        if (global_reset) begin
-          global_reset = 0;
-          // wait for resset to get set
-          wait(cfg.under_reset);
-          `uvm_info(`gfn, $sformatf("WAITING FOR RESET RELEASE"), UVM_MEDIUM)
-          wait(cfg.clk_rst_vif.rst_n);
-          #1ps;
-          dut_init("HARD");
+            if (!cfg.under_reset) csr_spinwait(.ptr(ral.status.idle) , .exp_data(1'b1));
+            if (!cfg.under_reset) clear_regs(2'b11);
+            if (!cfg.under_reset) csr_spinwait(.ptr(ral.status.idle) , .exp_data(1'b1));
+          end
         end
+      join
+
+      // Clear key_rdy again for the next loop
+      key_rdy = 0;
+    end
+
+    // If we are in reset (which means that either rst_set or cfg.under_reset will be true) then we
+    // want to clean up the contents of the message queue.
+    if (rst_set || cfg.under_reset) begin
+      aes_item_queue.delete();
+      message_queue.delete();
+      // send a few msg to make sure
+      // everything still works
+      cfg.num_messages = 2;
+      generate_message_queue();
+      // if process was halted from the outside //
+      if (global_reset) begin
+        global_reset = 0;
+        // wait for resset to get set
+        wait(cfg.under_reset);
+        `uvm_info(`gfn, $sformatf("WAITING FOR RESET RELEASE"), UVM_MEDIUM)
+        wait(cfg.clk_rst_vif.rst_n);
+        #1ps;
+        dut_init("HARD");
       end
     end
   endtask // send_msg_queue
