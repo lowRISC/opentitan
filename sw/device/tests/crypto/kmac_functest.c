@@ -381,36 +381,109 @@ static status_t run_negative_tests(void) {
                       &valid_tag)
             .value == OTCRYPTO_BAD_ARGS.value);
 
-  uint32_t digest_buf[8] = {0};
-  otcrypto_hash_digest_t valid_sha3_digest = {.data = digest_buf, .len = 8};
-  otcrypto_hash_digest_t bad_sha3_digest_null = {.data = NULL, .len = 8};
-  otcrypto_hash_digest_t bad_sha3_digest_len = {.data = digest_buf, .len = 7};
+  // Set up valid buffers for all strict SHA3 lengths
+  uint32_t digest_buf_224[7] = {0};   // 224 bits = 7 words
+  uint32_t digest_buf_256[8] = {0};   // 256 bits = 8 words
+  uint32_t digest_buf_384[12] = {0};  // 384 bits = 12 words
+  uint32_t digest_buf_512[16] = {0};  // 512 bits = 16 words
 
-  // Null digest pointer (would cause a segfault without our patch!)
+  otcrypto_hash_digest_t valid_sha3_224_digest = {.data = digest_buf_224,
+                                                  .len = 7};
+  otcrypto_hash_digest_t valid_sha3_256_digest = {.data = digest_buf_256,
+                                                  .len = 8};
+  otcrypto_hash_digest_t valid_sha3_384_digest = {.data = digest_buf_384,
+                                                  .len = 12};
+  otcrypto_hash_digest_t valid_sha3_512_digest = {.data = digest_buf_512,
+                                                  .len = 16};
+
+  // Generic buffer for SHAKE/cSHAKE tests
+  otcrypto_hash_digest_t valid_xof_digest = {.data = digest_buf_256, .len = 8};
+
+  // Reusable bad digests
+  otcrypto_hash_digest_t bad_digest_null_data = {.data = NULL, .len = 8};
+
+  // Null digest pointer checks
+  CHECK(otcrypto_sha3_224(&valid_msg, NULL).value == OTCRYPTO_BAD_ARGS.value);
   CHECK(otcrypto_sha3_256(&valid_msg, NULL).value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_sha3_384(&valid_msg, NULL).value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_sha3_512(&valid_msg, NULL).value == OTCRYPTO_BAD_ARGS.value);
   CHECK(otcrypto_shake128(&valid_msg, NULL).value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_shake256(&valid_msg, NULL).value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_cshake128(&valid_msg, &valid_cust, &valid_cust, NULL).value ==
+        OTCRYPTO_BAD_ARGS.value);
   CHECK(otcrypto_cshake256(&valid_msg, &valid_cust, &valid_cust, NULL).value ==
         OTCRYPTO_BAD_ARGS.value);
 
-  // Null data inside digest
-  CHECK(otcrypto_sha3_256(&valid_msg, &bad_sha3_digest_null).value ==
+  // Null data inside digest struct checks
+  CHECK(otcrypto_sha3_224(&valid_msg, &bad_digest_null_data).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_sha3_256(&valid_msg, &bad_digest_null_data).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_sha3_384(&valid_msg, &bad_digest_null_data).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_sha3_512(&valid_msg, &bad_digest_null_data).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_shake128(&valid_msg, &bad_digest_null_data).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_shake256(&valid_msg, &bad_digest_null_data).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_cshake128(&valid_msg, &valid_cust, &valid_cust,
+                           &bad_digest_null_data)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_cshake256(&valid_msg, &valid_cust, &valid_cust,
+                           &bad_digest_null_data)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Null message data with non-zero length checks
+  CHECK(otcrypto_sha3_224(&bad_msg_null, &valid_sha3_224_digest).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_sha3_256(&bad_msg_null, &valid_sha3_256_digest).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_sha3_384(&bad_msg_null, &valid_sha3_384_digest).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_sha3_512(&bad_msg_null, &valid_sha3_512_digest).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_shake128(&bad_msg_null, &valid_xof_digest).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_shake256(&bad_msg_null, &valid_xof_digest).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_cshake128(&bad_msg_null, &valid_cust, &valid_cust,
+                           &valid_xof_digest)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_cshake256(&bad_msg_null, &valid_cust, &valid_cust,
+                           &valid_xof_digest)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Bad length for strict SHA3 functions
+  otcrypto_hash_digest_t bad_sha3_224_digest_len = {.data = digest_buf_224,
+                                                    .len = 6};
+  otcrypto_hash_digest_t bad_sha3_256_digest_len = {.data = digest_buf_256,
+                                                    .len = 7};
+  otcrypto_hash_digest_t bad_sha3_384_digest_len = {.data = digest_buf_384,
+                                                    .len = 11};
+  otcrypto_hash_digest_t bad_sha3_512_digest_len = {.data = digest_buf_512,
+                                                    .len = 15};
+
+  CHECK(otcrypto_sha3_224(&valid_msg, &bad_sha3_224_digest_len).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_sha3_256(&valid_msg, &bad_sha3_256_digest_len).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_sha3_384(&valid_msg, &bad_sha3_384_digest_len).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_sha3_512(&valid_msg, &bad_sha3_512_digest_len).value ==
         OTCRYPTO_BAD_ARGS.value);
 
-  // Null message data with non-zero length
-  CHECK(otcrypto_sha3_256(&bad_msg_null, &valid_sha3_digest).value ==
-        OTCRYPTO_BAD_ARGS.value);
-
-  // Bad length for strict SHA3 functions (must strictly match requested hash
-  // length)
-  CHECK(otcrypto_sha3_256(&valid_msg, &bad_sha3_digest_len).value ==
-        OTCRYPTO_BAD_ARGS.value);
-
-  // cSHAKE specific checks
+  CHECK(otcrypto_cshake128(&valid_msg, &bad_msg_null, &valid_cust,
+                           &valid_xof_digest)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_cshake128(&valid_msg, &valid_cust, &bad_msg_null,
+                           &valid_xof_digest)
+            .value == OTCRYPTO_BAD_ARGS.value);
   CHECK(otcrypto_cshake256(&valid_msg, &bad_msg_null, &valid_cust,
-                           &valid_sha3_digest)
+                           &valid_xof_digest)
             .value == OTCRYPTO_BAD_ARGS.value);
   CHECK(otcrypto_cshake256(&valid_msg, &valid_cust, &bad_msg_null,
-                           &valid_sha3_digest)
+                           &valid_xof_digest)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   return OTCRYPTO_OK;
