@@ -26,10 +26,34 @@ on:
         required: true
         type: string
         description: opentitantool interface to use
+      # There are two *mutually-exclusive* ways to run this work:
+      #
+      # 1) Specify a target file
+      # You need to specify the name of the artifact in which the target file
+      # can be found, and the target file name
+      artifact:
+        required: false
+        type: string
+        description: name of the artifact containing the target file
+      target_file:
+        required: false
+        type: string
+        description: name of the target file in the artifact
+      # 2) Specify a set of filters
+      # This is the set of filters following bazel's `--test_tag_filters` syntax.
       tag_filters:
-        required: true
+        required: false
         type: string
         description: Bazel tag filters for the tests
+      add_default_filters:
+        default: true
+        type: boolean
+        description: Include additional test filters for "manual", "broken", "slow_test", and "skip_in_ci" tests.
+      targets:
+        default: "//... @manufacturer_test_hooks//..."
+        type: string
+        description: Bazel target(s) to look for tests in
+
       timeout:
         default: 60
         type: number
@@ -37,14 +61,6 @@ on:
       vivado_version:
         default: "2021.1"
         type: string
-      targets:
-        default: "//... @manufacturer_test_hooks//..."
-        type: string
-        description: Bazel target(s) to look for tests in
-      add_default_filters:
-        default: true
-        type: boolean
-        description: Include additional test filters for "manual", "broken", "slow_test", and "skip_in_ci" tests.
       cache_test_results:
         default: true
         type: boolean
@@ -78,6 +94,43 @@ jobs:
         with:
           job-patterns: ${{ inputs.bitstream }}
 
+      # If the user provided an artifact and target file, download the file
+      # and set up the target_pattern_file variable.
+      - name: Download job target file
+        if: inputs.artifact != ''
+        uses: actions/download-artifact@v5
+        with:
+          name: ${{ inputs.artifact }}
+          path: job_schedule
+      - name: List target files and set up variables
+        if: inputs.artifact != ''
+        run: |
+          ls -R job_schedule
+          echo "target_pattern_file=job_schedule/${{ inputs.target_file }}" >> "$GITHUB_ENV"
+      # Otherwise, use the tag filters to create a target list
+      - name: Create target list
+        if: inputs.artifact == ''
+        run: |
+          tag_filters="${{ inputs.tag_filters }}"
+          if ${{ inputs.add_default_filters }}; then
+            tag_filters+=",-manual,-broken,-slow_test,-skip_in_ci"
+          fi
+
+          target_pattern_file=target_pattern_file.txt
+          echo "target_pattern_file=$target_pattern_file" >> "$GITHUB_ENV"
+
+          # Execute a query to find all targets that match the test tags and store them in a file.
+          ci/scripts/run-bazel-test-query.sh \
+            "$target_pattern_file" \
+            "$tag_filters" \
+            ${{ inputs.targets }}
+      - name: Upload target pattern file
+        if: inputs.artifact == ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.job_name }}-targets
+          path: target_pattern_file.txt
+
       - name: Update hyperdebug firmware
         if: inputs.interface == 'hyper310' || inputs.interface == 'cw340'
         run: |
@@ -90,22 +143,11 @@ jobs:
           . util/build_consts.sh
           module load "xilinx/vivado/${{ inputs.vivado_version }}"
 
-          tag_filters="${{ inputs.tag_filters }}"
-          if ${{ inputs.add_default_filters }}; then
-            tag_filters+=",-manual,-broken,-slow_test,-skip_in_ci"
-          fi
-
-          # Execute a query to find all targets that match the test tags and store them in a file.
-          ci/scripts/run-bazel-test-query.sh \
-            target_pattern_file.txt \
-            "$tag_filters" \
-            ${{ inputs.targets }}
-
           cache_test_results="--cache_test_results=${{ inputs.cache_test_results }}"
 
           # Run FPGA tests
-          if [[ -s target_pattern_file.txt ]]; then
-            ci/scripts/run-fpga-tests.sh "${{ inputs.interface }}" target_pattern_file.txt "$cache_test_results" || {
+          if [[ -s "$target_pattern_file" ]]; then
+            ci/scripts/run-fpga-tests.sh "${{ inputs.interface }}" "$target_pattern_file" "$cache_test_results" || {
               res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}";
             }
           else
@@ -127,10 +169,3 @@ jobs:
           upload-to-bucket: ${{ inputs.upload_to_bucket }}
           bucket-job-folder-name: ${{ inputs.bucket_job_folder_name }}
           branch: ${{ inputs.branch }}
-
-      - name: Upload target pattern file
-        uses: actions/upload-artifact@v7
-        if: ${{ !cancelled() }}
-        with:
-          name: ${{ inputs.job_name }}-targets
-          path: target_pattern_file.txt
