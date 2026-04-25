@@ -56,9 +56,9 @@ task is primarily implemented to use after reset, to make sure all the CSRs are
 being reset to the default value.
 
 ##### Under_reset
-Due to `csr_utils_pkg` is not connected to any interface, methods inside
-this package are not able to get reset information. Current the `under_reset`
-bit is declared with two functions:
+Because `csr_utils_pkg` is not connected to any interface, methods inside
+this package are not able to get reset information. The `under_reset`
+bit can be kept up to date with two functions:
 ```systemverilog
 function automatic void reset_asserted();
   under_reset = 1;
@@ -68,9 +68,10 @@ function automatic void reset_deasserted();
   under_reset = 0;
 endfunction
 ```
-This reset information is updated in `dv_lib/dv_base_vseq.sv`. When the
-`apply_reset` task is triggered, it will set and reset the `under_reset` bit
-via the functions above.
+This reset information is tracked by `dv_base_scoreboard` (using its
+`monitor_reset` task). When that task sees a reset, it calls `reset_asserted` or
+`reset_deasserted` in its environment config. That function, in turn, calls the
+`csr_utils_pkg` function.
 
 #### Global CSR util methods
 ##### Global methods for CSR and MEM attributes
