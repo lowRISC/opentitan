@@ -165,6 +165,19 @@ class aes_common_vseq extends aes_base_vseq;
     end
   endfunction
 
+  // This task is extended from the one in cip_base_vseq. If seq is actually an aes_stress_all_vseq,
+  // tell that virtual sequence that it might be reset (so shouldn't run any sequences that
+  // themselves involve resets)
+  virtual protected task run_seq_with_rand_reset_vseq(uvm_sequence seq,
+                                                      int          num_times,
+                                                      uint         reset_delay_bound);
+    aes_stress_all_vseq stress_all_vseq;
+    if ($cast(stress_all_vseq, seq)) begin
+      stress_all_vseq.require_resettable();
+    end
+    super.run_seq_with_rand_reset_vseq(seq, num_times, reset_delay_bound);
+  endtask
+
   virtual task body();
     run_common_vseq_wrapper(num_trans);
   endtask : body

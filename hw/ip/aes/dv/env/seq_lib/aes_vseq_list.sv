@@ -6,7 +6,6 @@
 `include "aes_wake_up_vseq.sv"
 `include "aes_nist_vectors_vseq.sv"
 `include "aes_nist_vectors_gcm_vseq.sv"
-`include "aes_common_vseq.sv"
 `include "aes_stress_vseq.sv"
 `include "aes_alert_reset_vseq.sv"
 `include "aes_deinit_vseq.sv"
@@ -21,3 +20,4 @@
 `include "aes_readability_vseq.sv"
 `include "aes_stress_all_vseq.sv"
 `include "aes_gcm_save_restore_vseq.sv"
+`include "aes_common_vseq.sv"

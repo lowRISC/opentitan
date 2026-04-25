@@ -360,9 +360,9 @@ class cip_base_vseq #(
   //   reset_delay_bound  Each time the sequence runs, this task will wait a random amount of time
   //                      before it starts waiting for an opportune time to inject the reset. This
   //                      is the upper bound on that wait.
-  extern protected task run_seq_with_rand_reset_vseq(uvm_sequence seq,
-                                                     int          num_times,
-                                                     uint         reset_delay_bound);
+  extern protected virtual task run_seq_with_rand_reset_vseq(uvm_sequence seq,
+                                                             int          num_times,
+                                                             uint         reset_delay_bound);
 
   // If cfg.can_reset_with_csr_accesses is false, wait_to_issue_reset() will try to wait for a time
   // with no CSR accesses before it injects the reset. The value returned by this function is an
