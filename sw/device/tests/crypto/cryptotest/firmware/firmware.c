@@ -91,6 +91,10 @@ bool test_main(void) {
   // We pick a random security level for the entire test run
   otcrypto_key_security_level_t sec_level;
   CHECK_STATUS_OK(determine_security_level(&sec_level));
+#ifdef OT_COVERAGE_INSTRUMENTED
+  // Coverage becomes flaky with the jittery clock and dummy operations.
+  sec_level = kOtcryptoKeySecurityLevelLow;
+#endif
   CHECK_STATUS_OK(otcrypto_init(sec_level));
   ujson_t uj = ujson_ottf_console();
   return status_ok(process_cmd(&uj));
