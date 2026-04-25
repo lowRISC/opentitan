@@ -270,13 +270,18 @@ opentitan_test(
         timeout = "eternal",
     ),
     deps = [
+        "//hw/ip/aes/data:aes_c_regs",
         "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/crypto/impl:config",
         "//sw/device/lib/crypto/impl:status",
         "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:randomness_quality",
+        "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )

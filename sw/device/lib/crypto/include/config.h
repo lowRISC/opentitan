@@ -71,6 +71,20 @@ OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_restore_icache(hardened_bool_t icache_enabled);
 
 /**
+ * Clear the alerts including local alerts and sensors.
+ *
+ * The cryptolib locks itself when there is a class (A,B,C,D) acumulation count
+ * higher than zero or when a local alert or sensor is triggered. This function
+ * reset these registers to continue crypto operations. Note that it writes to
+ * the registers in the alert manager.
+ *
+ * @param icache_enabled kHardenedBoolTrue to enable the iCache.
+ * @return Error status.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_clear_alerts(void);
+
+/**
  * Initializes the crypto library for use.
  *
  * Check the security configuration
@@ -91,7 +105,7 @@ otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level);
  * Function used to return to the user, the last function call of every crypto
  * API. Only to be used when OTCRYPTO_OK can be returned.
  *
- * This function checks whether any alert was fired.
+ * This function checks whether any alert or sensor was fired.
  *
  * @param security_level Security level of the used key.
  * @returns OK when the security check passed.
