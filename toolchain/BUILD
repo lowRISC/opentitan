@@ -332,6 +332,7 @@ cc_args(
         "-Wtype-limits",
         "-Wno-gnu-auto-type",
         "-Wsign-conversion",
+        "-menable-experimental-extensions",
     ],
 )
 

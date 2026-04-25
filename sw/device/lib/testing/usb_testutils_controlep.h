@@ -112,14 +112,14 @@ status_t usb_testutils_controlep_config_wait(
 #define USB_CFG_DSCR_LEN 9
 #define USB_CFG_DSCR_HEAD(total_len, nint)                                   \
   /* This is the actual configuration descriptor                 */          \
-  USB_CFG_DSCR_LEN,     /* bLength                                   */      \
-      2,                /* bDescriptorType                           */      \
-      (total_len)&0xff, /* wTotalLength[0]                           */      \
-      (total_len) >> 8, /* wTotalLength[1]                           */      \
-      (nint),           /* bNumInterfaces                            */      \
-      1,                /* bConfigurationValue                       */      \
-      0,                /* iConfiguration                            */      \
-      0xC0,             /* bmAttributes: must-be-one, self-powered   */      \
+  USB_CFG_DSCR_LEN,       /* bLength                                   */    \
+      2,                  /* bDescriptorType                           */    \
+      (total_len) & 0xff, /* wTotalLength[0]                           */    \
+      (total_len) >> 8,   /* wTotalLength[1]                           */    \
+      (nint),             /* bNumInterfaces                            */    \
+      1,                  /* bConfigurationValue                       */    \
+      0,                  /* iConfiguration                            */    \
+      0xC0,               /* bmAttributes: must-be-one, self-powered   */    \
       50 /* bMaxPower                                 */ /* MUST be followed \
                                                             by (nint)        \
                                                             Interface +      \
@@ -152,7 +152,7 @@ status_t usb_testutils_controlep_config_wait(
       5,                           /* bDescriptorType                      */ \
       (ep) | (((in) << 7) & 0x80), /* bEndpointAddress, top bit set for IN */ \
       attr,                        /* bmAttributes                         */ \
-      (maxsize)&0xff,              /* wMaxPacketSize[0]                    */ \
+      (maxsize) & 0xff,            /* wMaxPacketSize[0]                    */ \
       (maxsize) >> 8,              /* wMaxPacketSize[1]                    */ \
       (interval)                   /* bInterval                            */
 
@@ -163,7 +163,7 @@ status_t usb_testutils_controlep_config_wait(
       5,                           /* bDescriptorType                      */ \
       (ep) | (((in) << 7) & 0x80), /* bEndpointAddress, top bit set for IN */ \
       kUsbTransferTypeBulk,        /* bmAttributes (0x02=bulk, data)       */ \
-      (maxsize)&0xff,              /* wMaxPacketSize[0]                    */ \
+      (maxsize) & 0xff,            /* wMaxPacketSize[0]                    */ \
       (maxsize) >> 8,              /* wMaxPacketSize[1]                    */ \
       (interval)                   /* bInterval                            */
 
@@ -173,14 +173,14 @@ status_t usb_testutils_controlep_config_wait(
 /* Below this point are macros used to construct the test descriptor   */
 /* Use them to initialize a uint8_t array for test_dscr                */
 #define USB_TESTUTILS_TEST_DSCR_LEN 0x10u
-#define USB_TESTUTILS_TEST_DSCR(num, arg0, arg1, arg2, arg3)            \
-  0x7e, 0x57, 0xc0, 0xf1u,                /* Header signature        */ \
-      (USB_TESTUTILS_TEST_DSCR_LEN)&0xff, /* Descriptor length[0]    */ \
-      (USB_TESTUTILS_TEST_DSCR_LEN) >> 8, /* Descriptor length[1]    */ \
-      (num)&0xff,                         /* Test number[0]          */ \
-      (num) >> 8,                         /* Test number[1]          */ \
-      (arg0), (arg1), (arg2), (arg3),     /* Test-specific arugments */ \
-      0x1fu, 0x0cu, 0x75, 0xe7u           /* Tail signature */
+#define USB_TESTUTILS_TEST_DSCR(num, arg0, arg1, arg2, arg3)              \
+  0x7e, 0x57, 0xc0, 0xf1u,                  /* Header signature        */ \
+      (USB_TESTUTILS_TEST_DSCR_LEN) & 0xff, /* Descriptor length[0]    */ \
+      (USB_TESTUTILS_TEST_DSCR_LEN) >> 8,   /* Descriptor length[1]    */ \
+      (num) & 0xff,                         /* Test number[0]          */ \
+      (num) >> 8,                           /* Test number[1]          */ \
+      (arg0), (arg1), (arg2), (arg3),       /* Test-specific arugments */ \
+      0x1fu, 0x0cu, 0x75, 0xe7u             /* Tail signature */
 
 // KEEP BLANK LINE ABOVE, it is in the macro!
 

@@ -97,7 +97,8 @@ TEST(Asn1, PushEmptyTag) {
   size_t out_size;
   EXPECT_EQ(asn1_finish(&state, &out_size), kErrorOk);
   const std::array<uint8_t, 2> kExpectedResult = {
-      0x30, 0x00,  // Identifier octet, length, no contents.
+      0x30,
+      0x00,  // Identifier octet, length, no contents.
   };
   EXPECT_EQ_CONST_ARRAY(buf, out_size, kExpectedResult);
 }

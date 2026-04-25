@@ -8,8 +8,8 @@
 
 #define INFO_PAGE_STRUCT_(name_, bank_, page_)                          \
   const flash_ctrl_info_page_t name_ = {                                \
-      .base_addr = (bank_)*FLASH_CTRL_PARAM_BYTES_PER_BANK +            \
-                   (page_)*FLASH_CTRL_PARAM_BYTES_PER_PAGE,             \
+      .base_addr = (bank_) * FLASH_CTRL_PARAM_BYTES_PER_BANK +          \
+                   (page_) * FLASH_CTRL_PARAM_BYTES_PER_PAGE,           \
       .cfg_wen_offset =                                                 \
           FLASH_CTRL_BANK##bank_##_INFO0_REGWEN_##page_##_REG_OFFSET,   \
       .cfg_offset =                                                     \
