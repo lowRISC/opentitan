@@ -19,6 +19,14 @@ OT_WARN_UNUSED_RESULT
 uint32_t read_alert_registers(void);
 
 /**
+ * Clear the class alerts accumulators.
+ *
+ * @return OK when the alert accumulators are cleared.
+ */
+OT_WARN_UNUSED_RESULT
+status_t clear_alert_class_accum(void);
+
+/**
  * Clear the alert, the sensors, and the local alert registers.
  *
  * @return OK when the alerts are cleared.
