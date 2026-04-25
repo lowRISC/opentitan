@@ -2,13 +2,15 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files")
-load("//rules:files.bzl", "output_groups")
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
+load("//rules:files.bzl", "output_groups")
 load("//rules:linker.bzl", "ld_library")
 load("//rules:manifest.bzl", "manifest")
 load("//rules/coverage:asm.bzl", "asm_library_with_coverage")
+load("//rules:signing.bzl", "signature_test")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "opentitan_binary")
 load(
     "//sw/device/silicon_creator/rom_ext:defs.bzl",
@@ -336,6 +338,7 @@ manifest(d = {
             "//hw/top_earlgrey:silicon_creator",
         ],
         extra_bazel_features = [
+            "conditional_uninitialized",
             "minsize",
             "use_lld",
         ],
@@ -373,6 +376,7 @@ ROM_EXT_LABELS.extend([
             "//hw/top_earlgrey:sim_qemu_base",
         ],
         extra_bazel_features = [
+            "conditional_uninitialized",
             "minsize",
             "use_lld",
         ],
@@ -413,6 +417,7 @@ opentitan_binary(
         "//hw/top_earlgrey:sim_verilator_base",
     ],
     extra_bazel_features = [
+        "conditional_uninitialized",
         "minsize",
         "use_lld",
     ],
