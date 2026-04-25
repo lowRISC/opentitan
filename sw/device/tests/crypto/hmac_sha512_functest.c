@@ -12,6 +12,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/tests/crypto/lib/crypto_test_lib.h"
 
 enum {
   /**
@@ -51,6 +52,9 @@ static const uint32_t kTestMask[ARRAYSIZE(kLongTestKey)] = {
     0x04b2a1b9, 0x764a9630, 0x78b8f9c5, 0x3f2a1d8e,
 };
 
+static otcrypto_key_security_level_t current_sec_level =
+    kOtcryptoKeySecurityLevelLow;
+
 /**
  * Call the `otcrypto_mac` API and check the resulting tag.
  *
@@ -70,7 +74,7 @@ static status_t run_test(const uint32_t *key, size_t key_len,
       .key_length = key_len,
       .hw_backed = kHardenedBoolFalse,
       .exportable = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelLow,
+      .security_level = current_sec_level,
   };
 
   uint32_t keyblob[keyblob_num_words(config)];
@@ -160,9 +164,33 @@ static volatile status_t test_result;
 
 bool test_main(void) {
   test_result = OK_STATUS();
+
+  const otcrypto_key_security_level_t security_levels[] = {
+      kOtcryptoKeySecurityLevelLow,
+      kOtcryptoKeySecurityLevelMedium,
+      kOtcryptoKeySecurityLevelHigh,
+  };
+
+  // Testing overall cryptolib low security, i.e., no jittery clock or dummy
+  // instructions
   CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
-  EXECUTE_TEST(test_result, empty_test);
-  EXECUTE_TEST(test_result, simple_test);
-  EXECUTE_TEST(test_result, long_key_test);
+
+  for (size_t i = 0; i < ARRAYSIZE(available_security_levels); ++i) {
+    current_sec_level = available_security_levels[i];
+    LOG_INFO("Running HMAC-SHA512 tests with security level: %d",
+             current_sec_level);
+
+    // Initialize hardware for the current security level
+    CHECK_STATUS_OK(otcrypto_init(current_sec_level));
+
+    EXECUTE_TEST(test_result, empty_test);
+    EXECUTE_TEST(test_result, simple_test);
+    EXECUTE_TEST(test_result, long_key_test);
+
+    if (status_err(test_result)) {
+      break;
+    }
+  }
+
   return status_ok(test_result);
 }

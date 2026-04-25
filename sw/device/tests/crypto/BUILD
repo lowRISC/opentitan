@@ -1211,6 +1211,7 @@ opentitan_test(
         "//sw/device/lib/crypto/impl:hmac",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests/crypto/lib:crypto_test_lib",
     ],
 )
 
@@ -1227,6 +1228,7 @@ opentitan_test(
         "//sw/device/lib/crypto/impl:hmac",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests/crypto/lib:crypto_test_lib",
     ],
 )
 
@@ -1243,6 +1245,7 @@ opentitan_test(
         "//sw/device/lib/crypto/impl:hmac",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests/crypto/lib:crypto_test_lib",
     ],
 )
 
