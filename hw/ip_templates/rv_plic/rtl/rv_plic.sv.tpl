@@ -104,10 +104,6 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
   //`ASSERT_PULSE(claimPulse, claim_re[i])
   //`ASSERT_PULSE(completePulse, complete_we[i])
 
-  `ASSERT(onehot0Claim, $onehot0(claim_re))
-
-  `ASSERT(onehot0Complete, $onehot0(complete_we))
-
   //////////////
   // Priority //
   //////////////
