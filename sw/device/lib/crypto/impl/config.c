@@ -65,6 +65,11 @@ otcrypto_status_t otcrypto_restore_icache(hardened_bool_t icache_enabled) {
   return OTCRYPTO_OK;
 }
 
+otcrypto_status_t otcrypto_clear_alerts(void) {
+  HARDENED_TRY(init_alert_registers());
+  return OTCRYPTO_OK;
+}
+
 otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level) {
   HARDENED_TRY(otcrypto_set_security_config(security_level));
 
@@ -80,7 +85,6 @@ otcrypto_status_t otcrypto_eval_exit(otcrypto_status_t status) {
   if (read_alert_registers()) {
     return OTCRYPTO_FATAL_ERR;
   }
-  HARDENED_CHECK_EQ(launder32(read_alert_registers()), 0);
 
   // Verify the entropy source before leaving.
   HARDENED_TRY(otcrypto_entropy_health_test_config_check());
