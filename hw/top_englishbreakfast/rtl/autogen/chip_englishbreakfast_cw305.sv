@@ -416,11 +416,13 @@ module chip_englishbreakfast_cw305 #(
       BidirStd  // IOA0
     })
   ) u_padring (
-  // This is only used for scan and DFT purposes
-    .clk_scan_i   ( 1'b0                  ),
-    .scanmode_i   ( prim_mubi_pkg::MuBi4False ),
-    .mux_iob_sel_i ( mux_iob_sel ),
-    .dio_in_raw_o ( dio_in_raw ),
+    // This is only used for scan and DFT purposes
+    .clk_scan_i(1'b0    ),
+    .scanmode_i(scanmode),
+
+    .mux_iob_sel_i(mux_iob_sel),
+    .dio_in_raw_o (dio_in_raw ),
+
     // Chip IOs
     .dio_pad_io ({
       IO_TRIGGER,
@@ -599,23 +601,21 @@ module chip_englishbreakfast_cw305 #(
   assign usb_rx_d = 1'b0;
 
 
-
-
   //////////////////////////////////
   // AST - Common for all targets //
   //////////////////////////////////
 
   // pwrmgr interface
-  pwrmgr_pkg::pwr_ast_req_t base_ast_pwr;
-  pwrmgr_pkg::pwr_ast_rsp_t ast_base_pwr;
+  pwrmgr_pkg::pwr_ast_req_t pwrmgr_ast_req;
+  pwrmgr_pkg::pwr_ast_rsp_t pwrmgr_ast_rsp;
 
   // assorted ast status
   ast_pkg::ast_pwst_t ast_pwst;
   ast_pkg::ast_pwst_t ast_pwst_h;
 
   // TLUL interface
-  tlul_pkg::tl_h2d_t base_ast_bus;
-  tlul_pkg::tl_d2h_t ast_base_bus;
+  tlul_pkg::tl_h2d_t ast_tl_req;
+  tlul_pkg::tl_d2h_t ast_tl_rsp;
 
   // synchronization clocks / rests
   clkmgr_pkg::clkmgr_out_t clkmgr_aon_clocks;
@@ -628,7 +628,7 @@ module chip_englishbreakfast_cw305 #(
   logic sck_monitor;
 
   // observe interface
-  logic [7:0] fla_obs;
+  logic [7:0] flash_obs;
   logic [7:0] otp_obs;
   ast_pkg::ast_obs_ctrl_t obs_ctrl;
 
@@ -649,8 +649,8 @@ module chip_englishbreakfast_cw305 #(
   logic es_rng_fips;
 
   // entropy distribution network
-  edn_pkg::edn_req_t ast_edn_edn_req;
-  edn_pkg::edn_rsp_t ast_edn_edn_rsp;
+  edn_pkg::edn_req_t ast_edn_req;
+  edn_pkg::edn_rsp_t ast_edn_rsp;
 
   // alerts interface
   ast_pkg::ast_alert_rsp_t ast_alert_rsp;
@@ -671,15 +671,15 @@ module chip_englishbreakfast_cw305 #(
 
   // DFT connections
   logic scan_en;
-  lc_ctrl_pkg::lc_tx_t dft_en;
+  lc_ctrl_pkg::lc_tx_t lc_dft_en;
   pinmux_pkg::dft_strap_test_req_t dft_strap_test;
 
   // Debug connections
   logic [ast_pkg::Ast2PadOutWidth-1:0] ast2pinmux;
   logic [ast_pkg::Pad2AstInWidth-1:0] pad2ast;
 
-  // Jitter enable
-  prim_mubi_pkg::mubi4_t jen;
+  // Jitter enable for main clock
+  prim_mubi_pkg::mubi4_t clk_main_jitter_en;
 
   // reset domain connections
   import rstmgr_pkg::PowerDomains;
@@ -756,7 +756,7 @@ module chip_englishbreakfast_cw305 #(
   //////////////////////////////////
 
 
-  assign ast_base_pwr.main_pok = ast_pwst.main_pok;
+  assign pwrmgr_ast_rsp.main_pok = ast_pwst.main_pok;
 
   logic [rstmgr_pkg::PowerDomains-1:0] por_n;
   assign por_n = {ast_pwst.main_pok, ast_pwst.aon_pok};
@@ -817,8 +817,8 @@ module chip_englishbreakfast_cw305 #(
     .sns_rsts_i            ( rstmgr_aon_resets    ),
     .sns_spi_ext_clk_i     ( sck_monitor          ),
     // tlul
-    .tl_i                  ( base_ast_bus ),
-    .tl_o                  ( ast_base_bus ),
+    .tl_i                  ( ast_tl_req ),
+    .tl_o                  ( ast_tl_rsp ),
     // init done indication
     .ast_init_done_o       ( ast_init_done ),
     // buffered clocks & resets
@@ -846,33 +846,33 @@ module chip_englishbreakfast_cw305 #(
     .ast_pwst_o            ( ast_pwst ),
     .ast_pwst_h_o          ( ast_pwst_h ),
     // main regulator
-    .main_env_iso_en_i     ( base_ast_pwr.pwr_clamp_env ),
-    .main_pd_ni            ( base_ast_pwr.main_pd_n ),
+    .main_env_iso_en_i     ( pwrmgr_ast_req.pwr_clamp_env ),
+    .main_pd_ni            ( pwrmgr_ast_req.main_pd_n ),
     // pdm control (flash)/otp
     .flash_power_down_h_o  ( flash_power_down_h ),
     .flash_power_ready_h_o ( flash_power_ready_h ),
     .otp_power_seq_i       ( otp_macro_pwr_seq ),
     .otp_power_seq_h_o     ( otp_macro_pwr_seq_h ),
     // system source clock
-    .clk_src_sys_en_i      ( base_ast_pwr.core_clk_en ),
+    .clk_src_sys_en_i      ( pwrmgr_ast_req.core_clk_en ),
     // need to add function in clkmgr
-    .clk_src_sys_jen_i     ( jen ),
+    .clk_src_sys_jen_i     ( clk_main_jitter_en ),
     .clk_src_sys_o         ( ast_base_clks.clk_sys  ),
-    .clk_src_sys_val_o     ( ast_base_pwr.core_clk_val ),
+    .clk_src_sys_val_o     ( pwrmgr_ast_rsp.core_clk_val ),
     // aon source clock
     .clk_src_aon_o         ( ast_base_clks.clk_aon ),
-    .clk_src_aon_val_o     ( ast_base_pwr.slow_clk_val ),
+    .clk_src_aon_val_o     ( pwrmgr_ast_rsp.slow_clk_val ),
     // io source clock
-    .clk_src_io_en_i       ( base_ast_pwr.io_clk_en ),
+    .clk_src_io_en_i       ( pwrmgr_ast_req.io_clk_en ),
     .clk_src_io_o          ( ast_base_clks.clk_io ),
-    .clk_src_io_val_o      ( ast_base_pwr.io_clk_val ),
+    .clk_src_io_val_o      ( pwrmgr_ast_rsp.io_clk_val ),
     .clk_src_io_48m_o      ( div_step_down_req ),
     // usb source clock
     .usb_ref_pulse_i       ( usb_ref_pulse ),
     .usb_ref_val_i         ( usb_ref_val ),
-    .clk_src_usb_en_i      ( base_ast_pwr.usb_clk_en ),
+    .clk_src_usb_en_i      ( pwrmgr_ast_req.usb_clk_en ),
     .clk_src_usb_o         ( ast_base_clks.clk_usb ),
-    .clk_src_usb_val_o     ( ast_base_pwr.usb_clk_val ),
+    .clk_src_usb_val_o     ( pwrmgr_ast_rsp.usb_clk_val ),
     // adc
     .adc_pd_i              ( adc_req.pd ),
     .adc_chnsel_i          ( adc_req.channel_sel ),
@@ -884,15 +884,15 @@ module chip_englishbreakfast_cw305 #(
     .rng_val_o             ( es_rng_valid ),
     .rng_b_o               ( es_rng_bit ),
     // entropy
-    .entropy_rsp_i         ( ast_edn_edn_rsp ),
-    .entropy_req_o         ( ast_edn_edn_req ),
+    .entropy_rsp_i         ( ast_edn_rsp ),
+    .entropy_req_o         ( ast_edn_req ),
     // alerts
     .alert_rsp_i           ( ast_alert_rsp  ),
     .alert_req_o           ( ast_alert_req  ),
     // dft
     .dft_strap_test_i      ( dft_strap_test   ),
-    .lc_dft_en_i           ( dft_en           ),
-    .fla_obs_i             ( fla_obs ),
+    .lc_dft_en_i           ( lc_dft_en        ),
+    .fla_obs_i             ( flash_obs ),
     .otp_obs_i             ( otp_obs ),
     .otm_obs_i             ( '0 ),
     .usb_obs_i             ( usb_diff_rx_obs ),
@@ -920,8 +920,6 @@ module chip_englishbreakfast_cw305 #(
   );
 
 
-
-
   //////////////////
   // PLL for FPGA //
   //////////////////
@@ -942,18 +940,14 @@ module chip_englishbreakfast_cw305 #(
   //       exist for this target
   assign otp_obs_o = '0;
 
-  //////////////////////
-  // Top-level design //
-  //////////////////////
-
   // the rst_ni pin only goes to AST
   // the rest of the logic generates reset based on the 'pok' signal.
   // for verilator purposes, make these two the same.
   prim_mubi_pkg::mubi4_t lc_clk_bypass;   // TODO Tim
 
-// TODO: align this with ASIC version to minimize the duplication.
-// Also need to add AST simulation and FPGA emulation models for things like entropy source -
-// otherwise Verilator / FPGA will hang.
+  //////////////////////
+  // Top-level design //
+  //////////////////////
   top_englishbreakfast #(
     .RvCoreIbexPipeLine(0),
     .SecAesMasking(1'b1),
@@ -968,66 +962,64 @@ module chip_englishbreakfast_cw305 #(
     .SramCtrlMainInstrExec(1),
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_englishbreakfast (
-    .por_n_i                      ( por_n                 ),
-    .clk_main_i                   ( ast_base_clks.clk_sys ),
-    .clk_io_i                     ( ast_base_clks.clk_io  ),
-    .clk_usb_i                    ( ast_base_clks.clk_usb ),
-    .clk_aon_i                    ( ast_base_clks.clk_aon ),
-    .clks_ast_o                   ( clkmgr_aon_clocks     ),
-    .clk_main_jitter_en_o         ( jen                   ),
-    .rsts_ast_o                   ( rstmgr_aon_resets     ),
-    .sck_monitor_o                ( sck_monitor           ),
-    .pwrmgr_ast_req_o             ( base_ast_pwr          ),
-    .pwrmgr_ast_rsp_i             ( ast_base_pwr          ),
-    .usb_dp_pullup_en_o           ( usb_dp_pullup_en      ),
-    .usb_dn_pullup_en_o           ( usb_dn_pullup_en      ),
-    .usbdev_usb_rx_d_i            ( usb_rx_d              ),
-    .usbdev_usb_tx_d_o            ( usb_tx_d              ),
-    .usbdev_usb_tx_se0_o          ( usb_tx_se0            ),
-    .usbdev_usb_tx_use_d_se0_o    ( usb_tx_use_d_se0      ),
-    .usbdev_usb_rx_enable_o       ( usb_rx_enable         ),
-    .usbdev_usb_ref_val_o         ( usb_ref_val           ),
-    .usbdev_usb_ref_pulse_o       ( usb_ref_pulse         ),
-    .ast_edn_req_i                ( ast_edn_edn_req       ),
-    .ast_edn_rsp_o                ( ast_edn_edn_rsp       ),
-    .obs_ctrl_i                   ( obs_ctrl              ),
-    .flash_bist_enable_i          ( flash_bist_enable     ),
-    .flash_power_down_h_i         ( 1'b0                  ),
-    .flash_power_ready_h_i        ( 1'b1                  ),
-    .flash_obs_o                  ( flash_obs             ),
-    .io_clk_byp_req_o             ( io_clk_byp_req        ),
-    .io_clk_byp_ack_i             ( io_clk_byp_ack        ),
-    .all_clk_byp_req_o            ( all_clk_byp_req       ),
-    .all_clk_byp_ack_i            ( all_clk_byp_ack       ),
-    .hi_speed_sel_o               ( hi_speed_sel          ),
-    .div_step_down_req_i          ( div_step_down_req     ),
-    .fpga_info_i                  ( fpga_info             ),
+    // AST clock and reset signals
+    .clk_main_i(ast_base_clks.clk_sys),
+    .clk_io_i  (ast_base_clks.clk_io ),
+    .clk_usb_i (ast_base_clks.clk_usb),
+    .clk_aon_i (ast_base_clks.clk_aon),
+    .clks_ast_o(clkmgr_aon_clocks    ),
+    .rsts_ast_o(rstmgr_aon_resets    ),
+
+    // Manual DFT signals
+    .scan_en_i  (scan_en   ),
+    .scan_rst_ni(scan_rst_n),
+    .scanmode_i (scanmode  ),
+
+    // Auto-generated port map
+    .clk_main_jitter_en_o     (clk_main_jitter_en),
+    .hi_speed_sel_o           (hi_speed_sel      ),
+    .div_step_down_req_i      (div_step_down_req ),
+    .all_clk_byp_req_o        (all_clk_byp_req   ),
+    .all_clk_byp_ack_i        (all_clk_byp_ack   ),
+    .io_clk_byp_req_o         (io_clk_byp_req    ),
+    .io_clk_byp_ack_i         (io_clk_byp_ack    ),
+    .flash_bist_enable_i      (flash_bist_enable ),
+    .flash_power_down_h_i     (1'b0              ),
+    .flash_power_ready_h_i    (1'b1              ),
+    .obs_ctrl_i               (obs_ctrl          ),
+    .flash_obs_o              (flash_obs         ),
+    .ast_tl_req_o             (ast_tl_req        ),
+    .ast_tl_rsp_i             (ast_tl_rsp        ),
+    .dft_strap_test_o         (                  ),
+    .dft_hold_tap_sel_i       ('0                ),
+    .usb_dp_pullup_en_o       (usb_dp_pullup_en  ),
+    .usb_dn_pullup_en_o       (                  ),
+    .pwrmgr_ast_req_o         (pwrmgr_ast_req    ),
+    .pwrmgr_ast_rsp_i         (pwrmgr_ast_rsp    ),
+    .por_n_i                  (por_n             ),
+    .fpga_info_i              (fpga_info         ),
+    .usbdev_usb_rx_d_i        (usb_rx_d          ),
+    .usbdev_usb_tx_d_o        (                  ),
+    .usbdev_usb_tx_se0_o      (                  ),
+    .usbdev_usb_tx_use_d_se0_o(                  ),
+    .usbdev_usb_rx_enable_o   (usb_rx_enable     ),
+    .usbdev_usb_ref_val_o     (usb_ref_val       ),
+    .usbdev_usb_ref_pulse_o   (usb_ref_pulse     ),
+    .sck_monitor_o            (sck_monitor       ),
 
     // Multiplexed I/O
-    .mio_in_i        ( mio_in   ),
-    .mio_out_o       ( mio_out  ),
-    .mio_oe_o        ( mio_oe   ),
+    .mio_in_i (mio_in ),
+    .mio_out_o(mio_out),
+    .mio_oe_o (mio_oe ),
 
     // Dedicated I/O
-    .dio_in_i        ( dio_in   ),
-    .dio_out_o       ( dio_out  ),
-    .dio_oe_o        ( dio_oe   ),
+    .dio_in_i (dio_in ),
+    .dio_out_o(dio_out),
+    .dio_oe_o (dio_oe ),
 
     // Pad attributes
-    .mio_attr_o      ( mio_attr      ),
-    .dio_attr_o      ( dio_attr      ),
-
-    // Memory attributes
-    .ram_1p_cfg_i    ( '0 ),
-    .spi_ram_2p_cfg_i( '0 ),
-    .usb_ram_1p_cfg_i( '0 ),
-    .rom_cfg_i       ( '0 ),
-
-    // DFT signals
-    .dft_hold_tap_sel_i ( '0               ),
-    .scan_rst_ni        ( 1'b1             ),
-    .scan_en_i          ( 1'b0             ),
-    .scanmode_i         ( prim_mubi_pkg::MuBi4False )
+    .mio_attr_o(mio_attr),
+    .dio_attr_o(dio_attr)
   );
 
 

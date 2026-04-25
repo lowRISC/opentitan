@@ -492,9 +492,9 @@
       width: 1
       default: ""
       external: true
-      top_signame: ast_tl
       conn_type: false
       index: -1
+      top_signame: ast_tl
     }
   ]
 }

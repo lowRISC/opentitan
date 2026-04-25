@@ -782,36 +782,24 @@
 
     // ext is to create port in the top.
     'external': {
-        # 'adc_ctrl_aon.adc'             : 'adc'
-        'ast.edn'                      : '',
-        'ast.lc_dft_en'                : '',
-        'ast.ram_1p_cfg'               : 'ram_1p_cfg',
-        'ast.spi_ram_2p_cfg'           : 'spi_ram_2p_cfg',
-        'ast.usb_ram_1p_cfg'           : 'usb_ram_1p_cfg',
-        'ast.rom_cfg'                  : 'rom_cfg',
-        'clkmgr_aon.jitter_en'         : 'clk_main_jitter_en',
-        'clkmgr_aon.hi_speed_sel'      : 'hi_speed_sel',
-        'clkmgr_aon.div_step_down_req' : 'div_step_down_req',
-        'clkmgr_aon.all_clk_byp_req'   : 'all_clk_byp_req',
-        'clkmgr_aon.all_clk_byp_ack'   : 'all_clk_byp_ack',
-        'clkmgr_aon.io_clk_byp_req'    : 'io_clk_byp_req',
-        'clkmgr_aon.io_clk_byp_ack'    : 'io_clk_byp_ack',
-        'flash_ctrl.flash_bist_enable'    : 'flash_bist_enable',
-        'flash_ctrl.flash_power_down_h'   : 'flash_power_down_h',
-        'flash_ctrl.flash_power_ready_h'  : 'flash_power_ready_h',
-        'flash_ctrl.obs_ctrl'             : 'obs_ctrl',
-        'flash_ctrl.fla_obs'              : 'flash_obs',
-        # 'entropy_src.entropy_src_rng'  : '',
-        # 'entropy_src.rng_fips'         : '',
-        'peri.tl_ast'                  : 'ast_tl',
-        'pinmux_aon.dft_strap_test'    : 'dft_strap_test'
-        'pinmux_aon.dft_hold_tap_sel'  : 'dft_hold_tap_sel',
-        'pinmux_aon.usb_dppullup_en'   : 'usb_dp_pullup_en',
-        'pinmux_aon.usb_dnpullup_en'   : 'usb_dn_pullup_en',
-        'pwrmgr_aon.pwr_ast'           : 'pwrmgr_ast',
-        # 'otp_ctrl.otp_ast_pwr_seq'     : '',
-        # 'otp_ctrl.otp_ast_pwr_seq_h'   : '',
-        # 'otp_ctrl.otp_alert'           : 'otp_alert',
+        'clkmgr_aon.jitter_en'           : 'clk_main_jitter_en',
+        'clkmgr_aon.hi_speed_sel'        : 'hi_speed_sel',
+        'clkmgr_aon.div_step_down_req'   : 'div_step_down_req',
+        'clkmgr_aon.all_clk_byp_req'     : 'all_clk_byp_req',
+        'clkmgr_aon.all_clk_byp_ack'     : 'all_clk_byp_ack',
+        'clkmgr_aon.io_clk_byp_req'      : 'io_clk_byp_req',
+        'clkmgr_aon.io_clk_byp_ack'      : 'io_clk_byp_ack',
+        'flash_ctrl.flash_bist_enable'   : 'flash_bist_enable',
+        'flash_ctrl.flash_power_down_h'  : 'flash_power_down_h',
+        'flash_ctrl.flash_power_ready_h' : 'flash_power_ready_h',
+        'flash_ctrl.obs_ctrl'            : 'obs_ctrl',
+        'flash_ctrl.fla_obs'             : 'flash_obs',
+        'peri.tl_ast'                    : 'ast_tl',
+        'pinmux_aon.dft_strap_test'      : 'dft_strap_test'
+        'pinmux_aon.dft_hold_tap_sel'    : 'dft_hold_tap_sel',
+        'pinmux_aon.usb_dppullup_en'     : 'usb_dp_pullup_en',
+        'pinmux_aon.usb_dnpullup_en'     : 'usb_dn_pullup_en',
+        'pwrmgr_aon.pwr_ast'             : 'pwrmgr_ast',
         'rstmgr_aon.por_n'               : 'por_n'
         'rv_core_ibex.fpga_info'         : 'fpga_info'
         'usbdev.usb_rx_d'                : '',
@@ -1045,6 +1033,25 @@
   // setups may differ among the targets.
   targets: [
     { name: 'cw305',
+
+      // Chip level changes
+      chiplevel: {
+        port_overrides: {
+          'pinmux_aon.dft_hold_tap_sel'     : { unused: true },
+          'pinmux_aon.usb_dnpullup_en'      : { unused: true },
+          'pinmux_aon.dft_strap_test'       : { unused: true },
+          'usbdev.usb_tx_d'                 : { unused: true },
+          'usbdev.usb_tx_se0'               : { unused: true },
+          'usbdev.usb_tx_use_d_se0'         : { unused: true },
+          'usbdev.usb_rx_d'                 : { signal: 'usb_rx_d'      },
+          'usbdev.usb_rx_enable'            : { signal: 'usb_rx_enable' },
+          'usbdev.usb_ref_val'              : { signal: 'usb_ref_val'   },
+          'usbdev.usb_ref_pulse'            : { signal: 'usb_ref_pulse' },
+          'flash_ctrl.flash_power_down_h'   : { unused: true },
+          'flash_ctrl.flash_power_ready_h'  : { unused: true, tie_value: "1'b1" },
+        }
+      }
+
       pinout: {
         remove_ports: [],
         remove_pads: [

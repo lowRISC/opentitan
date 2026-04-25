@@ -1373,8 +1373,8 @@
         'ast.lc_dft_en'                      : '',
         'ast.obs_ctrl'                       : 'obs_ctrl',
         'ast.ram_1p_cfg'                     : 'ram_1p_cfg',
-        'sram_ctrl_main.cfg'                 : 'sram_ctrl_main_cfg'
-        'sram_ctrl_ret_aon.cfg'              : 'sram_ctrl_ret_aon_cfg'
+        'sram_ctrl_main.cfg'                 : '',
+        'sram_ctrl_ret_aon.cfg'              : '',
         'ast.spi_ram_2p_cfg'                 : 'spi_ram_2p_cfg',
         'ast.usb_ram_1p_cfg'                 : 'usb_ram_1p_cfg',
         'ast.rom_cfg'                        : 'rom_cfg',
@@ -1669,6 +1669,30 @@
   targets: [
     { name: 'asic',
 
+      // Chip level changes
+      chiplevel: {
+        port_overrides: {
+          'ast.lc_dft_en'                   : { signal: 'lc_dft_en'       },
+          'sram_ctrl_main.cfg'              : { signal: "'{ram_1p_cfg}"   },
+          'sram_ctrl_ret_aon.cfg'           : { signal: "'{ram_1p_cfg}"   },
+          'clkmgr_aon.calib_rdy'            : { signal: 'ast_init_done'   },
+          'flash_ctrl.flash_test_mode_a'    : { signal: "{FLASH_TEST_MODE1, FLASH_TEST_MODE0}"},
+          'flash_ctrl.flash_test_voltage_h' : { signal: 'FLASH_TEST_VOLT' },
+          'otp_macro.ext_voltage_h'         : { signal: 'OTP_EXT_VOLT'    },
+          'sensor_ctrl_aon.ast_alert'       : { signal: 'ast_alert'       },
+          'sensor_ctrl_aon.ast_status'      : { signal: 'ast_pwst.io_pok' },
+          'usbdev.usb_rx_d'                 : { signal: 'usb_rx_d'        },
+          'usbdev.usb_rx_enable'            : { signal: 'usb_rx_enable'   },
+          'usbdev.usb_tx_d'                 : { unused: true              },
+          'usbdev.usb_tx_se0'               : { unused: true              },
+          'usbdev.usb_tx_use_d_se0'         : { unused: true              },
+          'usbdev.usb_ref_val'              : { signal: 'usb_ref_val'     },
+          'usbdev.usb_ref_pulse'            : { signal: 'usb_ref_pulse'   },
+          'rv_core_ibex.fpga_info'          : { unused: true              },
+          'pinmux_aon.dft_hold_tap_sel'     : { unused: true              },
+        }
+      },
+
       // Pinout Changes.
       pinout: {
         // This is a list of port names to remove from the chip port list.
@@ -1729,6 +1753,39 @@
     },
     { name: 'cw310',
 
+      // Chip level changes
+      chiplevel: {
+        port_overrides: {
+          'ast.lc_dft_en'                   : { unused: true },
+          'ast.usb_ram_1p_cfg'              : { unused: true },
+          'ast.ram_1p_cfg'                  : { unused: true },
+          'ast.spi_ram_2p_cfg'              : { unused: true },
+          'ast.rom_cfg'                     : { unused: true },
+          'clkmgr_aon.calib_rdy'            : { signal: 'ast_init_done' },
+          'sram_ctrl_main.cfg'              : { unused: true },
+          'sram_ctrl_ret_aon.cfg'           : { unused: true },
+          'pinmux_aon.dft_hold_tap_sel'     : { unused: true },
+          'pinmux_aon.usb_dnpullup_en'      : { unused: true },
+          'pinmux_aon.dft_strap_test'       : { unused: true },
+          'usbdev.usb_tx_d'                 : { unused: true },
+          'usbdev.usb_tx_se0'               : { unused: true },
+          'usbdev.usb_tx_use_d_se0'         : { unused: true },
+          'usbdev.usb_rx_d'                 : { signal: 'usb_rx_d'      },
+          'usbdev.usb_rx_enable'            : { signal: 'usb_rx_enable' },
+          'usbdev.usb_ref_val'              : { signal: 'usb_ref_val'   },
+          'usbdev.usb_ref_pulse'            : { signal: 'usb_ref_pulse' },
+          'sensor_ctrl_aon.manual_pad_attr' : { unused: true },
+          'sensor_ctrl_aon.ast_alert'       : { signal: 'ast_alert'       },
+          'sensor_ctrl_aon.ast_status'      : { signal: 'ast_pwst.io_pok' },
+          'entropy_src.rng_fips'            : { unused: true },
+          'otp_macro.ext_voltage_h'         : { unused: true },
+          'flash_ctrl.flash_test_mode_a'    : { unused: true },
+          'flash_ctrl.flash_test_voltage_h' : { unused: true },
+          'flash_ctrl.flash_power_down_h'   : { unused: true },
+          'flash_ctrl.flash_power_ready_h'  : { unused: true, tie_value: "1'b1" },
+        }
+      }
+
       pinout: {
         remove_ports: [],
         remove_pads: [
@@ -1775,6 +1832,39 @@
       }
     },
     { name: 'cw340',
+
+      // Chip level changes
+      chiplevel: {
+        port_overrides: {
+          'ast.lc_dft_en'                   : { unused: true },
+          'ast.usb_ram_1p_cfg'              : { unused: true },
+          'ast.ram_1p_cfg'                  : { unused: true },
+          'ast.spi_ram_2p_cfg'              : { unused: true },
+          'ast.rom_cfg'                     : { unused: true },
+          'clkmgr_aon.calib_rdy'            : { signal: 'ast_init_done' },
+          'sram_ctrl_main.cfg'              : { unused: true },
+          'sram_ctrl_ret_aon.cfg'           : { unused: true },
+          'pinmux_aon.dft_hold_tap_sel'     : { unused: true },
+          'pinmux_aon.usb_dnpullup_en'      : { unused: true },
+          'pinmux_aon.dft_strap_test'       : { unused: true },
+          'usbdev.usb_tx_d'                 : { unused: true },
+          'usbdev.usb_tx_se0'               : { unused: true },
+          'usbdev.usb_tx_use_d_se0'         : { unused: true },
+          'usbdev.usb_rx_d'                 : { signal: 'usb_rx_d'      },
+          'usbdev.usb_rx_enable'            : { signal: 'usb_rx_enable' },
+          'usbdev.usb_ref_val'              : { signal: 'usb_ref_val'   },
+          'usbdev.usb_ref_pulse'            : { signal: 'usb_ref_pulse' },
+          'sensor_ctrl_aon.manual_pad_attr' : { unused: true },
+          'sensor_ctrl_aon.ast_alert'       : { signal: 'ast_alert'       },
+          'sensor_ctrl_aon.ast_status'      : { signal: 'ast_pwst.io_pok' },
+          'entropy_src.rng_fips'            : { unused: true },
+          'otp_macro.ext_voltage_h'         : { unused: true },
+          'flash_ctrl.flash_test_mode_a'    : { unused: true },
+          'flash_ctrl.flash_test_voltage_h' : { unused: true },
+          'flash_ctrl.flash_power_down_h'   : { unused: true },
+          'flash_ctrl.flash_power_ready_h'  : { unused: true, tie_value: "1'b1" },
+        }
+      }
 
       pinout: {
         remove_ports: [],
