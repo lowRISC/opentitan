@@ -47,7 +47,9 @@ class aes_stress_all_vseq extends aes_base_vseq;
       `uvm_fatal(get_name(), "Cannot downcast sequence to a dv_base_vseq.")
     end
 
-    vseq.do_apply_reset = (do_apply_reset && !m_must_be_resettable) ? $urandom_range(0, 1) : 0;
+    vseq.do_apply_reset   = (do_apply_reset && !m_must_be_resettable) ? $urandom_range(0, 1) : 0;
+    vseq.m_external_reset = m_must_be_resettable;
+
     vseq.set_sequencer(p_sequencer);
 
     `uvm_info(get_name(),
