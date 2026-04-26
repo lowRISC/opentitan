@@ -158,6 +158,8 @@ hardened_bool_t p384_masked_scalar_checksum_check(
   if (scalar->checksum == launder32(p384_masked_scalar_checksum(scalar))) {
     return kHardenedBoolTrue;
   }
+  // COVERAGE (FI CM) We only provide correct encoded scalars, this is to check
+  // for faults.
   return kHardenedBoolFalse;
 }
 
@@ -221,6 +223,8 @@ hardened_bool_t p384_ecdh_shared_key_checksum_check(
   if (key->checksum == launder32(p384_ecdh_shared_key_checksum(key))) {
     return kHardenedBoolTrue;
   }
+  // COVERAGE (FI CM) We only provide correct encoded keys, this is to check for
+  // faults.
   return kHardenedBoolFalse;
 }
 
@@ -443,6 +447,8 @@ status_t p384_ecdh_finalize(p384_ecdh_shared_key_t *shared_key) {
   HARDENED_TRY(otbn_dmem_read(1, kOtbnVarOk, &ok));
   if (launder32(ok) != kHardenedBoolTrue) {
     HARDENED_TRY(otbn_dmem_sec_wipe());
+    // COVERAGE (MISSING) We do not cover a negative ECDH check where a bad
+    // public key is given.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(ok, kHardenedBoolTrue);
@@ -514,6 +520,7 @@ status_t p384_point_on_curve_check(const p384_point_t *point,
   } else if (launder32(ins_cnt) == kModePointOnCurveCheckInvld1InsCnt) {
     HARDENED_CHECK_EQ(ins_cnt, kModePointOnCurveCheckInvld1InsCnt);
   } else {
+    // COVERAGE (MISSING) We do not cover PointOnCurveCheckInvld2
     HARDENED_CHECK_EQ(ins_cnt, kModePointOnCurveCheckInvld2InsCnt);
   }
 
