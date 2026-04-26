@@ -94,6 +94,7 @@ static status_t digest_info_length_get(const otcrypto_hash_mode_t hash_mode,
       break;
     default:
       // Unsupported or unrecognized hash function.
+      // COVERAGE (MISSING) We do not cover bad padding modes.
       return OTCRYPTO_BAD_ARGS;
   };
 
@@ -161,9 +162,11 @@ static status_t digest_info_write(const otcrypto_hash_digest_t message_digest,
       break;
     default:
       // Unsupported or unrecognized hash function.
+      // COVERAGE (MISSING) We do not cover bad padding modes.
       return OTCRYPTO_BAD_ARGS;
   };
   if (launder32(message_digest.len) != digest_wordlen) {
+    // COVERAGE (MISSING) We do not cover bad digests.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(message_digest.len, digest_wordlen);
@@ -202,6 +205,8 @@ status_t rsa_padding_pkcs1v15_encode(
   if (tlen + 3 + 8 >= encoded_message_bytelen) {
     // Invalid encoded message length/hash function combination; the RFC
     // specifies that the 0xff padding must be at least 8 octets.
+    // COVERAGE (SW ERR) This is an internal function which is given correct
+    // input lengths.
     return OTCRYPTO_BAD_ARGS;
   }
   // Write the digest info to the start of the buffer.
@@ -276,6 +281,7 @@ static status_t digest_wordlen_get(otcrypto_hash_mode_t hash_mode,
       *num_words = 512 / 32;
       break;
     default:
+      // COVERAGE (MISSING) We do not cover bad padding modes.
       return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_GT(*num_words, 0);
@@ -326,11 +332,15 @@ static status_t hash(otcrypto_hash_mode_t hash_mode, const uint8_t *message,
       HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha3_512);
       return kmac_sha3_512(&message_buf, digest);
     default:
+      // COVERAGE (SW ERR) This mode is checked before this function and is
+      // unreachable.
       return OTCRYPTO_BAD_ARGS;
   }
 
   // Should be unreachable.
   HARDENED_TRAP();
+  // COVERAGE (FI CM) This is unreachable and is coded in as a fault
+  // countermeasure.
   return OTCRYPTO_FATAL_ERR;
 }
 
@@ -522,6 +532,8 @@ status_t rsa_padding_pss_encode(const otcrypto_hash_digest_t message_digest,
   size_t salt_bytelen = salt_len * sizeof(uint32_t);
   size_t encoded_message_bytelen = encoded_message_len * sizeof(uint32_t);
   if (encoded_message_bytelen < salt_bytelen + digest_bytelen + 2) {
+    // COVERAGE (SW ERR) This is an internal function which is called with
+    // correct inputs that do not trigger this return.
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -685,6 +697,8 @@ status_t rsa_padding_oaep_max_message_bytelen(
   size_t rsa_bytelen = rsa_wordlen * sizeof(uint32_t);
   if (2 * digest_bytelen + 2 > rsa_bytelen) {
     // This case would cause underflow if we continue; return an error.
+    // COVERAGE (SW ERR) This is an internal function which is called with
+    // correct inputs that do not trigger this return.
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -702,6 +716,8 @@ status_t rsa_padding_oaep_encode(const otcrypto_hash_mode_t hash_mode,
   HARDENED_TRY(rsa_padding_oaep_max_message_bytelen(
       hash_mode, encoded_message_len, &max_message_bytelen));
   if (message_bytelen > max_message_bytelen) {
+    // COVERAGE (SW ERR) This is an internal function which is called with
+    // correct inputs that do not trigger this return.
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -860,6 +876,7 @@ status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
   if (!status_ok(oaep_check_padding_and_find_message_start(
           db, lhash, digest_wordlen, digest_bytelen, encoded_message_bytes,
           db_bytelen, &message_start_idx1))) {
+    // COVERAGE (FI CM) This is coded as an FI hardening countermeasure.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(message_start_idx0, message_start_idx1);

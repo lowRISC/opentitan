@@ -99,6 +99,8 @@ extern "C" {
       asm volatile("unimp");                                           \
     }                                                                  \
   } while (false)
+// COVERAGE (FI CM) We do not cover the redundant checks of the HARDENED_TRY as
+// they serve as redundant encoding against fault attacks.
 #else  // !OT_PLATFORM_RV32 || OT_DISABLE_HARDENING
 /**
  * Alternate version of HARDENED_TRY that is logically equivalent.

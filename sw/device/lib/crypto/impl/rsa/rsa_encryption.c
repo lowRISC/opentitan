@@ -55,6 +55,7 @@ status_t rsa_decrypt_finalize(const otcrypto_hash_mode_t hash_mode,
   HARDENED_TRY(rsa_padding_oaep_max_message_bytelen(hash_mode, num_words,
                                                     &max_plaintext_bytelen));
   if (plaintext_max_bytelen < max_plaintext_bytelen) {
+    // COVERAGE (MISSING) We do not cover too large inputs.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_GE(plaintext_max_bytelen, max_plaintext_bytelen);
@@ -102,11 +103,13 @@ status_t rsa_decrypt_finalize(const otcrypto_hash_mode_t hash_mode,
     }
     default:
       // Unexpected number of words; should never get here.
+      // COVERAGE (FI CM) Unreachable code, checked against fault injections.
       return OTCRYPTO_FATAL_ERR;
   }
 
   // Should be unreachable.
   HARDENED_TRAP();
+  // COVERAGE (FI CM) Unreachable code, checked against fault injections.
   return OTCRYPTO_FATAL_ERR;
 }
 

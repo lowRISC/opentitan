@@ -49,6 +49,7 @@ static status_t p256_private_key_length_check(
   // Check the single-share length.
   if (keyblob_share_num_words(private_key->config) !=
       kP256MaskedScalarShareWords) {
+    // COVERAGE (MISSING) We do not cover bad share length inputs
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(launder32(keyblob_share_num_words(private_key->config)),
@@ -265,6 +266,7 @@ otcrypto_status_t otcrypto_ecdh_p256(const otcrypto_blinded_key_t *private_key,
 otcrypto_status_t otcrypto_ecc_p256_point_on_curve(
     const otcrypto_unblinded_key_t *point, hardened_bool_t *check_result) {
   if (point == NULL || point->key == NULL || check_result == NULL) {
+    // COVERAGE (MISSING) We do not cover null inputs
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -278,6 +280,7 @@ status_t otcrypto_ecc_p256_base_point_mult(
     const otcrypto_blinded_key_t *private_key,
     otcrypto_unblinded_key_t *public_key) {
   if (private_key == NULL || public_key == NULL) {
+    // COVERAGE (MISSING) We do not cover null inputs
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -321,10 +324,8 @@ static status_t internal_p256_keygen_start(
     HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
                       kHardenedBoolFalse);
     return otcrypto_eval_exit(p256_keygen_start());
-  } else {
-    return OTCRYPTO_BAD_ARGS;
   }
-  return otcrypto_eval_exit(OTCRYPTO_OK);
+  return OTCRYPTO_BAD_ARGS;
 }
 
 otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_start(
@@ -350,12 +351,14 @@ otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_finalize(
   // Check for any NULL pointers.
   if (private_key == NULL || public_key == NULL ||
       private_key->keyblob == NULL || public_key->key == NULL) {
+    // COVERAGE (MISSING) We do not cover null inputs.
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Check the key modes.
   if (private_key->config.key_mode != kOtcryptoKeyModeEcdsaP256 ||
       public_key->key_mode != kOtcryptoKeyModeEcdsaP256) {
+    // COVERAGE (MISSING) We do not cover bad key mode inputs.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(launder32(private_key->config.key_mode),
@@ -414,6 +417,7 @@ static otcrypto_status_t otcrypto_ecdsa_p256_sign_async_start_setup(
                     kHardenedBoolTrue);
 
   if (private_key->config.key_mode != kOtcryptoKeyModeEcdsaP256) {
+    // COVERAGE (MISSING) We do not cover bad key mode inputs.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(launder32(private_key->config.key_mode),
@@ -498,6 +502,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_async_start(
     HARDENED_TRY_WIPE_DMEM(p256_ecdsa_sideload_sign_start(message_digest.data));
   } else {
     // Invalid value for private_key->hw_backed.
+    // COVERAGE (MISSING) We do not cover bad hw_backed inputs.
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -537,11 +542,13 @@ otcrypto_status_t otcrypto_ecdsa_p256_dice_sign_async_start(
     const otcrypto_const_word32_buf_t *attestation_seed) {
   if (private_key == NULL || private_key->keyblob == NULL ||
       message_digest.data == NULL) {
+    // COVERAGE (MISSING) We do not cover bad null inputs.
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Check the key mode.
   if (private_key->config.key_mode != kOtcryptoKeyModeEcdsaP256) {
+    // COVERAGE (MISSING) We do not cover bad key_mode inputs.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(launder32(private_key->config.key_mode),
@@ -549,6 +556,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_dice_sign_async_start(
 
   // Check the digest length.
   if (message_digest.len != kP256ScalarWords) {
+    // COVERAGE (MISSING) We do not cover bad length inputs.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(launder32(message_digest.len), kP256ScalarWords);
@@ -575,6 +583,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_verify_async_start(
     const otcrypto_const_word32_buf_t *signature) {
   if (public_key == NULL || signature->data == NULL ||
       message_digest.data == NULL || public_key->key == NULL) {
+    // COVERAGE (MISSING) We do not cover null inputs.
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -587,6 +596,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_verify_async_start(
 
   // Check the public key mode.
   if (public_key->key_mode != kOtcryptoKeyModeEcdsaP256) {
+    // COVERAGE (MISSING) We do not cover bad key mode inputs.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(launder32(public_key->key_mode), kOtcryptoKeyModeEcdsaP256);
@@ -597,6 +607,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_verify_async_start(
 
   // Check the digest length.
   if (message_digest.len != kP256ScalarWords) {
+    // COVERAGE (MISSING) We do not cover bad length inputs.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(launder32(message_digest.len), kP256ScalarWords);
@@ -691,6 +702,7 @@ otcrypto_status_t otcrypto_ecdh_p256_async_start(
   // Check the key modes.
   if (private_key->config.key_mode != kOtcryptoKeyModeEcdhP256 ||
       public_key->key_mode != kOtcryptoKeyModeEcdhP256) {
+    // COVERAGE (MISSING) We do not cover bad key mode inputs.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(launder32(private_key->config.key_mode),
@@ -721,6 +733,7 @@ otcrypto_status_t otcrypto_ecdh_p256_async_start(
     HARDENED_TRY_WIPE_DMEM(p256_ecdh_start(&private_scalar, pk));
   } else {
     // Invalid value for `hw_backed`.
+    // COVERAGE (MISSING) We do not cover bad hw_backed inputs.
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -760,6 +773,7 @@ otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
                     kP256CoordBytes);
   if (shared_secret->keyblob_length !=
       keyblob_num_words(shared_secret->config) * sizeof(uint32_t)) {
+    // COVERAGE (MISSING) We do not cover bad keyblob length inputs.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(
@@ -790,11 +804,13 @@ otcrypto_status_t otcrypto_ecc_p256_public_key_import(
     otcrypto_unblinded_key_t *public_key) {
   if (x.data == NULL || y.data == NULL || public_key == NULL ||
       public_key->key == NULL) {
+    // COVERAGE (MISSING) We do not cover null inputs.
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Check the lengths of the input coordinate buffers.
   if (x.len != kP256CoordWords || y.len != kP256CoordWords) {
+    // COVERAGE (MISSING) We do not cover bad length inputs.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(launder32(x.len), kP256CoordWords);
@@ -804,6 +820,7 @@ otcrypto_status_t otcrypto_ecc_p256_public_key_import(
   // accepted since the underlying point representation is the same.
   if (public_key->key_mode != kOtcryptoKeyModeEcdsaP256 &&
       public_key->key_mode != kOtcryptoKeyModeEcdhP256) {
+    // COVERAGE (MISSING) We do not cover bad key_mode inputs.
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -826,11 +843,13 @@ otcrypto_status_t otcrypto_ecc_p256_public_key_export(
     otcrypto_word32_buf_t *y) {
   if (x == NULL || x->data == NULL || y == NULL || y->data == NULL ||
       public_key == NULL || public_key->key == NULL) {
+    // COVERAGE (MISSING) We do not cover null inputs.
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Check the lengths of the output coordinate buffers.
   if (x->len != kP256CoordWords || y->len != kP256CoordWords) {
+    // COVERAGE (MISSING) We do not cover bad length inputs.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(launder32(x->len), kP256CoordWords);
@@ -840,6 +859,7 @@ otcrypto_status_t otcrypto_ecc_p256_public_key_export(
   // accepted since the underlying point representation is the same.
   if (public_key->key_mode != kOtcryptoKeyModeEcdsaP256 &&
       public_key->key_mode != kOtcryptoKeyModeEcdhP256) {
+    // COVERAGE (MISSING) We do not cover bad key_mode inputs.
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -848,6 +868,7 @@ otcrypto_status_t otcrypto_ecc_p256_public_key_export(
 
   // Check the integrity of the public key.
   if (integrity_unblinded_key_check(public_key) != kHardenedBoolTrue) {
+    // COVERAGE (MISSING) We do not cover bad integrity set keys.
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -864,6 +885,7 @@ otcrypto_status_t otcrypto_ecc_p256_private_key_import(
     otcrypto_blinded_key_t *private_key) {
   if (share0.data == NULL || share1.data == NULL || private_key == NULL ||
       private_key->keyblob == NULL) {
+    // COVERAGE (MISSING) We do not cover null inputs.
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -871,6 +893,7 @@ otcrypto_status_t otcrypto_ecc_p256_private_key_import(
   // side-channel protection).
   if (share0.len != kP256MaskedScalarShareWords ||
       share1.len != kP256MaskedScalarShareWords) {
+    // COVERAGE (MISSING) We do not cover bad length inputs.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(launder32(share0.len), kP256MaskedScalarShareWords);
@@ -880,11 +903,13 @@ otcrypto_status_t otcrypto_ecc_p256_private_key_import(
   // the private key representation is identical for both.
   if (private_key->config.key_mode != kOtcryptoKeyModeEcdsaP256 &&
       private_key->config.key_mode != kOtcryptoKeyModeEcdhP256) {
+    // COVERAGE (MISSING) We do not cover bad key_mode inputs.
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Import is only supported for software-backed keys.
   if (private_key->config.hw_backed != kHardenedBoolFalse) {
+    // COVERAGE (MISSING) We do not cover bad hw_backed inputs.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
@@ -917,6 +942,7 @@ otcrypto_status_t otcrypto_ecc_p256_private_key_export(
   if (share0 == NULL || share0->data == NULL || share1 == NULL ||
       share1->data == NULL || private_key == NULL ||
       private_key->keyblob == NULL) {
+    // COVERAGE (MISSING) We do not cover null inputs.
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -924,6 +950,7 @@ otcrypto_status_t otcrypto_ecc_p256_private_key_export(
   // scalar + 64 redundant bits for side-channel protection).
   if (share0->len != kP256MaskedScalarShareWords ||
       share1->len != kP256MaskedScalarShareWords) {
+    // COVERAGE (MISSING) We do not cover bad length inputs.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(launder32(share0->len), kP256MaskedScalarShareWords);
@@ -933,11 +960,13 @@ otcrypto_status_t otcrypto_ecc_p256_private_key_export(
   // the private key representation is identical for both.
   if (private_key->config.key_mode != kOtcryptoKeyModeEcdsaP256 &&
       private_key->config.key_mode != kOtcryptoKeyModeEcdhP256) {
+    // COVERAGE (MISSING) We do not cover bad key_mode inputs.
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Export is only supported for software-backed keys.
   if (private_key->config.hw_backed != kHardenedBoolFalse) {
+    // COVERAGE (MISSING) We do not cover bad hw_backed inputs.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
@@ -945,6 +974,7 @@ otcrypto_status_t otcrypto_ecc_p256_private_key_export(
 
   // Check that the key is marked exportable.
   if (launder32(private_key->config.exportable) != kHardenedBoolTrue) {
+    // COVERAGE (MISSING) We do not cover non exportable inputs.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(private_key->config.exportable, kHardenedBoolTrue);
@@ -977,12 +1007,14 @@ otcrypto_status_t otcrypto_ecc_p256_arith_share_private_key(
     otcrypto_blinded_key_t *arith_private_key) {
   if (bool_private_key_share0 == NULL || bool_private_key_share1 == NULL ||
       arith_private_key == NULL || arith_private_key->keyblob == NULL) {
+    // COVERAGE (MISSING) We do not cover null inputs.
     return OTCRYPTO_BAD_ARGS;
   }
 
   // The key shares must resided in 320-bit buffers.
   if (bool_private_key_share0->len != kP256MaskedScalarShareWords ||
       bool_private_key_share1->len != kP256MaskedScalarShareWords) {
+    // COVERAGE (MISSING) We do not cover bad length inputs.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(launder32(bool_private_key_share0->len),
@@ -994,11 +1026,13 @@ otcrypto_status_t otcrypto_ecc_p256_arith_share_private_key(
   // the private key representation is identical for both.
   if (arith_private_key->config.key_mode != kOtcryptoKeyModeEcdsaP256 &&
       arith_private_key->config.key_mode != kOtcryptoKeyModeEcdhP256) {
+    // COVERAGE (MISSING) We do not cover bad key_mode inputs.
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Import is only supported for software-backed keys.
   if (arith_private_key->config.hw_backed != kHardenedBoolFalse) {
+    // COVERAGE (MISSING) We do not cover bad hw_backed inputs.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(launder32(arith_private_key->config.hw_backed),

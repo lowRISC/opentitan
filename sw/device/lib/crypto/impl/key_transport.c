@@ -21,6 +21,7 @@ otcrypto_status_t otcrypto_symmetric_keygen(
     const otcrypto_const_byte_buf_t *perso_string,
     otcrypto_blinded_key_t *key) {
   if (key == NULL || key->keyblob == NULL) {
+    // COVERAGE (MISSING) We do not cover null inputs
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -63,10 +64,12 @@ otcrypto_status_t otcrypto_hw_backed_key(uint32_t version,
                                          const uint32_t salt[7],
                                          otcrypto_blinded_key_t *key) {
   if (key == NULL || key->keyblob == NULL) {
+    // COVERAGE (MISSING) We do not cover null inputs
     return OTCRYPTO_BAD_ARGS;
   }
   if (key->keyblob_length != 8 * sizeof(uint32_t) ||
       key->config.hw_backed != kHardenedBoolTrue) {
+    // COVERAGE (MISSING) We do not cover bad length/hw_backed inputs
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -91,11 +94,13 @@ otcrypto_status_t otcrypto_hw_backed_key(uint32_t version,
 otcrypto_status_t otcrypto_hw_backed_attestation_key(
     uint32_t version, const uint32_t salt[8], otcrypto_blinded_key_t *key) {
   if (key == NULL || key->keyblob == NULL) {
+    // COVERAGE (MISSING) We do not cover null inputs
     return OTCRYPTO_BAD_ARGS;
   }
 
   if (key->keyblob_length != 9 * sizeof(uint32_t) ||
       key->config.hw_backed != kHardenedBoolTrue) {
+    // COVERAGE (MISSING) We do not cover bad length/hw_backed inputs
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -313,6 +318,7 @@ otcrypto_status_t otcrypto_import_blinded_key(
     otcrypto_blinded_key_t *blinded_key) {
   if (blinded_key == NULL || blinded_key->keyblob == NULL ||
       key_share0->data == NULL || key_share1->data == NULL) {
+    // COVERAGE (MISSING) We do not cover null inputs
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -351,6 +357,7 @@ otcrypto_status_t otcrypto_export_blinded_key(
     otcrypto_word32_buf_t *key_share0, otcrypto_word32_buf_t *key_share1) {
   if (blinded_key->keyblob == NULL || key_share0->data == NULL ||
       key_share1->data == NULL) {
+    // COVERAGE (MISSING) We do not cover null inputs
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -390,6 +397,7 @@ otcrypto_status_t otcrypto_export_blinded_key(
   size_t keyblob_words = launder32(keyblob_num_words(blinded_key->config));
   if ((blinded_key->keyblob_length % sizeof(uint32_t) != 0) ||
       (blinded_key->keyblob_length / sizeof(uint32_t) != keyblob_words)) {
+    // COVERAGE (MISSING) We do not cover bad keyblob length inputs
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(blinded_key->keyblob_length,

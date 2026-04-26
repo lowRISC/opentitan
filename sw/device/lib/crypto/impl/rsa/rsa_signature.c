@@ -64,6 +64,7 @@ static status_t digest_check(const otcrypto_hash_digest_t digest) {
   HARDENED_CHECK_EQ(launder32(used_mode), digest.mode);
 
   if (num_words != digest.len) {
+    // COVERAGE (MISSING) We only provide digests with correct length.
     return OTCRYPTO_BAD_ARGS;
   }
   return OTCRYPTO_OK;
@@ -107,11 +108,13 @@ static status_t message_encode(const otcrypto_hash_digest_t message_digest,
     }
     default:
       // Unrecognized padding mode.
+      // COVERAGE (MISSING) We only provide inputs with correct padding modes.
       return OTCRYPTO_BAD_ARGS;
   }
 
   // Unreachable.
   HARDENED_TRAP();
+  // COVERAGE (FI CM) Unreachable code, checked against fault injections.
   return OTCRYPTO_FATAL_ERR;
 }
 
@@ -150,11 +153,13 @@ static status_t encoded_message_verify(
                                     encoded_message_len, result);
     default:
       // Unrecognized padding mode.
+      // COVERAGE (MISSING) We only provide inputs with correct padding modes.
       return OTCRYPTO_BAD_ARGS;
   }
 
   // Unreachable.
   HARDENED_TRAP();
+  // COVERAGE (FI CM) Unreachable code, checked against fault injections.
   return OTCRYPTO_FATAL_ERR;
 }
 
@@ -220,11 +225,14 @@ status_t rsa_signature_verify_finalize(
     }
     default:
       // Unexpected number of words; should never get here.
+      // COVERAGE (SW ERR) This is an internal function that is only given
+      // correctly encoded inputs.
       return OTCRYPTO_FATAL_ERR;
   }
 
   // Should be unreachable.
   HARDENED_TRAP();
+  // COVERAGE (FI CM) Unreachable code, checked against fault injections.
   return OTCRYPTO_FATAL_ERR;
 }
 
