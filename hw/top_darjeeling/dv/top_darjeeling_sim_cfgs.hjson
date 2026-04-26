@@ -19,8 +19,8 @@
              // Unit tests for UVCs.
              "{proj_root}/hw/dv/sv/tl_agent/dv/tl_agent_sim_cfg.hjson",
              // IPs.
-             "{proj_root}/hw/ip/aes/dv/aes_unmasked_sim_cfg.hjson",
-             "{proj_root}/hw/ip/aes/dv/aes_masked_sim_cfg.hjson",
+             "{proj_root}/hw/ip/aes/dv/aes_gcm_unmasked_sim_cfg.hjson",
+             "{proj_root}/hw/ip/aes/dv/aes_gcm_masked_sim_cfg.hjson",
              "{proj_root}/hw/ip/aon_timer/dv/aon_timer_sim_cfg.hjson",
              "{proj_root}/hw/ip/csrng/dv/csrng_sim_cfg.hjson",
              "{proj_root}/hw/ip/dma/dv/dma_sim_cfg.hjson",

@@ -384,8 +384,8 @@ interface aes_cov_if
  `DV_FCOV_INSTANTIATE_CG(aes_iv_interleave_cg, en_full_cov)
  `DV_FCOV_INSTANTIATE_CG(aes_key_interleave_cg, en_full_cov)
  `DV_FCOV_INSTANTIATE_CG(aes_reg_interleave_cg, en_full_cov)
- `DV_FCOV_INSTANTIATE_CG(aes_gcm_len_cg, en_full_cov)
- `DV_FCOV_INSTANTIATE_CG(aes_ctrl_gcm_reg_cg, en_full_cov)
+ `DV_FCOV_INSTANTIATE_CG(aes_gcm_len_cg, en_full_cov && `EN_GCM)
+ `DV_FCOV_INSTANTIATE_CG(aes_ctrl_gcm_reg_cg, en_full_cov && `EN_GCM)
 
   ///////////////////////////////////
   // Sample functions              //
