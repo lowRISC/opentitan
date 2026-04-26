@@ -21,6 +21,13 @@ class aes_base_vseq extends cip_base_vseq #(
   bit                do_aes_init   = 1'b1;
   bit                global_reset  = 1'b0;
 
+  // If this flag is set, the virtual sequence is being run in a situation where a reset will
+  // eventually be applied. The sequence should not inject its own resets, and should complete
+  // immediately when the reset is applied.
+  //
+  // This flag is set on the children of aes_stress_all_vseq if it has been configured with
+  // require_resettable().
+  bit                m_external_reset = 0;
 
   // handshake with key manager
   bit                key_used      = 0;
@@ -146,6 +153,8 @@ class aes_base_vseq extends cip_base_vseq #(
     if (ral.ctrl_shadowed.operation.get_mirrored_value() != operation) begin
       ral.ctrl_shadowed.operation.set(operation);
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+      if (cfg.under_reset) return;
+
       void'(ral.ctrl_shadowed.operation.predict(operation));
     end
   endtask // set_operation
@@ -155,6 +164,8 @@ class aes_base_vseq extends cip_base_vseq #(
     if (ral.ctrl_shadowed.mode.get_mirrored_value() != mode) begin
       ral.ctrl_shadowed.mode.set(mode);
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+      if (cfg.under_reset) return;
+
       void'(ral.ctrl_shadowed.mode.predict(mode));
     end
   endtask
@@ -164,6 +175,8 @@ class aes_base_vseq extends cip_base_vseq #(
     if (ral.ctrl_shadowed.key_len.get_mirrored_value() != key_len) begin
       ral.ctrl_shadowed.key_len.set(key_len);
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+      if (cfg.under_reset) return;
+
       void'(ral.ctrl_shadowed.key_len.predict(key_len));
     end
   endtask // set_key_len
@@ -184,6 +197,8 @@ class aes_base_vseq extends cip_base_vseq #(
     if (ral.ctrl_shadowed.prng_reseed_rate.get_mirrored_value() != reseed_rate) begin
       ral.ctrl_shadowed.prng_reseed_rate.set(reseed_rate);
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+      if (cfg.under_reset) return;
+
       void'(ral.ctrl_shadowed.prng_reseed_rate.predict(reseed_rate));
     end
   endtask
@@ -193,6 +208,8 @@ class aes_base_vseq extends cip_base_vseq #(
     if (ral.ctrl_shadowed.manual_operation.get_mirrored_value() != manual_operation) begin
       ral.ctrl_shadowed.manual_operation.set(manual_operation);
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+      if (cfg.under_reset) return;
+
       void'(ral.ctrl_shadowed.manual_operation.predict(manual_operation));
     end
   endtask
@@ -390,7 +407,6 @@ class aes_base_vseq extends cip_base_vseq #(
   // ADVANCED TASKS                    //
   ///////////////////////////////////////
 
-
   virtual task setup_dut(aes_seq_item item);
     // Write the shadwoed CTRL register.
     status_t status;
@@ -417,6 +433,7 @@ class aes_base_vseq extends cip_base_vseq #(
       set_manual_operation(item.manual_op);
       set_prng_reseed_rate(prs_rate_e'(item.reseed_rate));
       set_sideload(item.sideload_en);
+      if (cfg.under_reset) return;
     end else begin
       // Assemble the intended value.
       ral.ctrl_shadowed.operation.set(item.operation);
@@ -431,6 +448,8 @@ class aes_base_vseq extends cip_base_vseq #(
             UVM_MEDIUM)
         // Perform the first write using the correct data.
         csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b0), .blocking(1));
+        if (cfg.under_reset) return;
+
         // Make sure at least one field is flipped.
         begin
           unique case (idx_error_field)
@@ -445,10 +464,14 @@ class aes_base_vseq extends cip_base_vseq #(
         end
         // Perform the second write.
         csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b0), .blocking(1));
+        if (cfg.under_reset) return;
+
         // Check that we get the recoverable alert. It's possible that DV inserted a fatal error
         // condition before the second write could go through. The recovery from the fatal alert
         // is handled separately.
         csr_rd(.ptr(ral.status), .value(status), .blocking(1));
+        if (cfg.under_reset) return;
+
         `DV_CHECK_FATAL(status.alert_recov_ctrl_update_err == 1'b1 ||
                         status.alert_fatal_fault == 1'b1);
         // Re-assemble the intended value.
@@ -462,12 +485,18 @@ class aes_base_vseq extends cip_base_vseq #(
       // Perform the register update without control update error. This will resolve potential
       // previous update errors.
       csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
+      if (cfg.under_reset) return;
+
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+      if (cfg.under_reset) return;
+
       // Make sure the update went through and there wasn't an update error. It's possible that DV
       // inserted a fatal error condition before the second write could go through. In this case,
       // the recoverable alert condition may still be visible together with the fatal alert. The
       // fatal alert is handled separately.
       csr_rd(.ptr(ral.status), .value(status), .blocking(1));
+      if (cfg.under_reset) return;
+
       `DV_CHECK_FATAL(status.alert_recov_ctrl_update_err == 1'b0 ||
                       status.alert_fatal_fault == 1'b1);
     end
@@ -750,6 +779,12 @@ class aes_base_vseq extends cip_base_vseq #(
     return s.atoi();
   endfunction
 
+  // Send an AES message
+  //
+  // m_external_reset is true, this task will not generate its own resets. When an event that locks
+  // up the block happens, the task will just wait for a reset to be generated elsewhere and then
+  // return. If m_external_reset is false, the task checks that no external reset has been
+  // generated.
   virtual task send_msg (
      bit manual_operation,                   // use manual operation
      bit sideload_en,                        // use sideload key
@@ -778,8 +813,12 @@ class aes_base_vseq extends cip_base_vseq #(
     // Make sure the DUT is idle before setting it up. Writes to the main control register are only
     // accepted when idle.
     status_fsm(cfg_item, data_item, new_msg, manual_operation, sideload_en, 1, 0, status, rst_set);
+    if (cfg.under_reset) return;
+
     // Configure the main control register.
     setup_dut(cfg_item);
+    if (cfg.under_reset) return;
+
     // For some reason DV just waits for the DUT to be idle but not necessarily for it to accept
     // new input data before providing the first block. But at the beginning of a message, the DUT
     // is always ready to accept new input data anyway. Waiting for the DUT to be idle is required
@@ -790,6 +829,8 @@ class aes_base_vseq extends cip_base_vseq #(
       while ((aes_item_queue.size() > 0) && !rst_set) begin
         status_fsm(cfg_item, data_item, new_msg, manual_operation,
                    sideload_en, return_on_idle, 0, status, rst_set);
+        if (cfg.under_reset) return;
+
         // From now on, DV always waits for the DUT to be idle and to accept new input data.
         return_on_idle = 0;
         if (status.input_ready && status.idle) begin
@@ -810,6 +851,8 @@ class aes_base_vseq extends cip_base_vseq #(
           config_and_transmit(cfg_item, data_item, new_msg, first_data_block,
                               first_aad_block, manual_operation, sideload_en,
                               read_output, rst_set);
+          if (cfg.under_reset) return;
+
           if (data_item.mode == AES_GCM && new_msg == 1) begin
             // In comparison to other modes, in AES-GCM, the config_and_transmit()
             // function only configures key and IV as we need to first put the
@@ -834,6 +877,7 @@ class aes_base_vseq extends cip_base_vseq #(
           data_item = aes_item_queue.pop_back();
           config_and_transmit(cfg_item, data_item, new_msg, 0, 0,
                               manual_operation, sideload_en, 0, rst_set);
+          if (cfg.under_reset) return;
         end
       end
 
@@ -876,6 +920,8 @@ class aes_base_vseq extends cip_base_vseq #(
         // get the status to make sure we can provide data - but don't wait for output //
         status_fsm(cfg_item, data_item, new_msg,
                    manual_operation, sideload_en, return_on_idle, 0, status, rst_set);
+        if (cfg.under_reset) return;
+
         return_on_idle = 0;
         read  = ($urandom_range(0, 100) <= read_prob);
         write = ($urandom_range(0, 100) <= write_prob);
@@ -886,11 +932,15 @@ class aes_base_vseq extends cip_base_vseq #(
           data_item = aes_item_queue.pop_back();
           config_and_transmit(cfg_item, data_item, new_msg, 0, 0,
                                manual_operation, sideload_en, 0, rst_set);
+          if (cfg.under_reset) return;
+
         end else if (status.input_ready && (aes_item_queue.size() > 0) && write &&
                      (~wait_for_idle || status.idle)) begin
           data_item = aes_item_queue.pop_back();
-          config_and_transmit(cfg_item, data_item, new_msg, first_data_block,
-                              first_aad_block, manual_operation, sideload_en, 0, rst_set);
+          config_and_transmit(cfg_item, data_item, new_msg, first_data_block, first_aad_block,
+                              manual_operation, sideload_en, 0, rst_set);
+          if (cfg.under_reset) return;
+
           if (data_item.mode == AES_GCM && new_msg == 1) begin
             // In comparison to other modes, in AES-GCM, the config_and_transmit()
             // function only configures key and IV when processing the AES_CFG
@@ -926,6 +976,7 @@ class aes_base_vseq extends cip_base_vseq #(
           if (read_queue.size() > 0)  begin
             read_item = read_queue.pop_front();
             read_data(read_item.data_out, cfg_item.do_b2b);
+            if (cfg.under_reset) return;
           end else begin
             `uvm_fatal(`gfn, $sformatf("\n\t ----| DATA READY but no ITEM to add it to! |----"))
           end
@@ -964,7 +1015,8 @@ class aes_base_vseq extends cip_base_vseq #(
     rst_set = 0;
     if (new_msg) begin
       write_data_key_iv(cfg_item, data_item, new_msg,
-                   manual_operation, sideload_en, 0, rst_set);
+                        manual_operation, sideload_en, 0, rst_set);
+      if (cfg.under_reset) return;
     end else begin
       if (data_item.mode == AES_GCM) begin
         int valid_bytes;
@@ -975,7 +1027,8 @@ class aes_base_vseq extends cip_base_vseq #(
             // partial block.
             valid_bytes = data_item.data_len == 0 ? 16 : data_item.data_len;
             set_gcm_phase(GCM_AAD, valid_bytes, 0,
-                cfg.error_types.cfg && cfg.config_error_type_en.gcm_phase);
+                          cfg.error_types.cfg && cfg.config_error_type_en.gcm_phase);
+            if (cfg.under_reset) return;
           end
         end else if (data_item.item_type == AES_DATA) begin
           if (new_data || data_item.data_len[3:0] != 4'd0) begin
@@ -983,14 +1036,18 @@ class aes_base_vseq extends cip_base_vseq #(
             // partial block.
             valid_bytes = data_item.data_len == 0 ? 16 : data_item.data_len;
             set_gcm_phase(GCM_TEXT, valid_bytes, 0,
-                cfg.error_types.cfg && cfg.config_error_type_en.gcm_phase);
+                          cfg.error_types.cfg && cfg.config_error_type_en.gcm_phase);
+            if (cfg.under_reset) return;
           end
         end else if (data_item.item_type == AES_GCM_TAG) begin
           set_gcm_phase(GCM_TAG, 16, 0,
-              cfg.error_types.cfg && cfg.config_error_type_en.gcm_phase);
+                        cfg.error_types.cfg && cfg.config_error_type_en.gcm_phase);
+          if (cfg.under_reset) return;
         end
       end
       add_data(data_item.data_in, cfg_item.do_b2b);
+      if (cfg.under_reset) return;
+
       // sometimes randomly write a reg while busy
       if (!manual_operation && cfg.error_types.mal_inject && ($urandom(3) == 1)) begin
         int wr_reg = $urandom_range(3,1);
@@ -1000,8 +1057,10 @@ class aes_base_vseq extends cip_base_vseq #(
           3: csr_wr(.ptr(ral.data_in[$urandom(3)]), .value($urandom()), .blocking(is_blocking));
           default: `uvm_fatal(`gfn, $sformatf("UNREACHABLE BUT NEEDED DUE TO SYNTAX CHECK"))
         endcase
+        if (cfg.under_reset) return;
       end
     end
+
     if (manual_operation && !rst_set) trigger();
     // When in AES-GCM mode, trigger twice to encrypt the all-zero block and afterwards the
     // initial counter block and load them into the GHASH block.
@@ -1009,17 +1068,24 @@ class aes_base_vseq extends cip_base_vseq #(
     if (read_output && !rst_set) begin
        status_fsm(cfg_item, data_item, new_msg,
                    manual_operation, sideload_en, 0, read_output, status, rst_set);
+      if (cfg.under_reset) return;
     end
     // After having read the tag in GCM, move the DUT back into the GCM_INIT phase with a 25%
     // chance. This is not really needed but it allows checking that the DUT can't be moved
     // to other phases if the injection of conifg errors is turned on at the same time.
     if ((data_item.item_type == AES_GCM_TAG) && ($urandom_range(0, 3) == 0)) begin
       set_gcm_phase(GCM_INIT, 16, 0,
-          cfg.error_types.cfg && cfg.config_error_type_en.gcm_phase);
+                    cfg.error_types.cfg && cfg.config_error_type_en.gcm_phase);
+      if (cfg.under_reset) return;
     end
   endtask // config_and_transmit
 
 
+  // Wait for a fatal alert that we expect to have been triggered
+  //
+  // If m_external_reset is false, apply a reset, re-initialise the dut, and return. If
+  // m_external_reset is true, we expect some other mechanism to apply the reset. Wait until one is
+  // asserted and then return immediately.
   virtual task wait_for_fatal_alert_and_reset ();
     // According to spec, check period will append an 'hFF from the LSF. Add 10 cycle buffers for
     // register updates
@@ -1031,14 +1097,18 @@ class aes_base_vseq extends cip_base_vseq #(
         cfg.clk_rst_vif.wait_clks(check_wait_cycles);,
         $sformatf("Timeout waiting for alert %0s", "fatal_check_error"))
     check_fatal_alert_nonblocking("fatal_fault");
-    // Reset and re-initialize the DUT.
-    // To avoid assertions firing erroneously due to resetting AES prior to the EDN
-    // interface, pull all resets concurrently. See
-    // https://github.com/lowRISC/opentitan/issues/13573 for details.
-    apply_resets_concurrently();
-    dut_init("HARD");
-  endtask
 
+    if (m_external_reset) begin
+      wait(cfg.under_reset);
+    end else begin
+      // Reset and re-initialize the DUT.
+      // To avoid assertions firing erroneously due to resetting AES prior to the EDN
+      // interface, pull all resets concurrently. See
+      // https://github.com/lowRISC/opentitan/issues/13573 for details.
+      apply_resets_concurrently();
+      dut_init("HARD");
+    end
+  endtask
 
   ////////////////////////////////////////////////////////////////////////////////////////////
   // the status fsm has two tasks
@@ -1047,7 +1117,10 @@ class aes_base_vseq extends cip_base_vseq #(
   //   i.e update error / clear error / misconfiguration or missing configuration
   // 2. if wanted it will read output data when ready and return it to the caller
   //
-  // the task operates on block level
+  // If m_external_reset argument is true, this task will not generate its own resets. When an event
+  // that locks up the block happens, the task will just wait for a reset to be generated elsewhere
+  // and then return. If m_external_reset is false, the task checks that no external reset has been
+  // generated.
   ////////////////////////////////////////////////////////////////////////////////////////////
 
   virtual task status_fsm (
@@ -1075,12 +1148,16 @@ class aes_base_vseq extends cip_base_vseq #(
     // enable get status when provided with an empty Item.
     if (data_item.mode === 'X) begin
       csr_rd(.ptr(ral.status), .value(status), .blocking(1));
+      if (cfg.under_reset) return;
     end
 
     while(!done && !global_reset) begin
+      if (cfg.under_reset) return;
+
       //read the status register to see that we have triggered the operation
-      wait(!cfg.under_reset)
       csr_rd(.ptr(ral.status), .value(status), .blocking(1));
+      if (cfg.under_reset) return;
+
       txt = {txt, "\n ----|reading STATUS", status2string(status)};
       // check status and act accordingly //
       if (status.alert_fatal_fault) begin
@@ -1090,12 +1167,17 @@ class aes_base_vseq extends cip_base_vseq #(
                   $sformatf("\n\t ----| Saw expected Fatal alert - trying to recover \n\t ----| %s",
                               status2string(status)), UVM_MEDIUM)
           try_recover(cfg_item, data_item, manual_operation, sideload_en, new_msg);
+          if (cfg.under_reset) return;
           csr_rd(.ptr(ral.status), .value(status), .blocking(1));
+          if (cfg.under_reset) return;
+
           if ( !status.alert_fatal_fault) begin
             `uvm_fatal(`gfn, $sformatf("\n\t Was able to clear FATAL ALERT without reset \n\t %s",
                        status2string(status)))
           end else begin
             wait_for_fatal_alert_and_reset();
+            if (cfg.under_reset) return;
+
             rst_set = 1;
             done    = 1;
           end
@@ -1115,18 +1197,22 @@ class aes_base_vseq extends cip_base_vseq #(
         if (status.idle && status.input_ready) begin
           if (status.output_valid && read_output) begin
             read_data(data_item.data_out, is_blocking);
+            if (cfg.under_reset) return;
+
             txt = {txt, $sformatf("\n\t ----| status state 0 ")};
             done = 1;
           end else if (!read_output) begin
             done = 1; // get more data
           end else begin
             try_recover(cfg_item, data_item, manual_operation, sideload_en, new_msg);
+            if (cfg.under_reset) return;
           end
         end else if (status.idle && !status.input_ready) begin
           // state 1 //
           // if data ready just read and return
           if (status.output_valid && read_output) begin
             read_data(data_item.data_out, is_blocking);
+            if (cfg.under_reset) return;
             done = 1;
           end else if (return_on_idle) begin
             // We expect dut to be IDLE
@@ -1135,6 +1221,7 @@ class aes_base_vseq extends cip_base_vseq #(
             // if data is not ready the DUT is missing
             // KEY and IV - or the configuration
             try_recover(cfg_item, data_item, manual_operation, sideload_en, new_msg);
+            if (cfg.under_reset) return;
             txt = {txt, $sformatf("\n\t ----| status state 1 ")};
           end
         end else if (status.output_valid) begin
@@ -1144,6 +1231,7 @@ class aes_base_vseq extends cip_base_vseq #(
           done = 1;
           if (read_output) begin
             read_data(data_item.data_out, is_blocking);
+            if (cfg.under_reset) return;
             txt = {txt, $sformatf("\n\t ----| status state 2 ")};
           end
 
@@ -1206,19 +1294,26 @@ class aes_base_vseq extends cip_base_vseq #(
     ral.ctrl_shadowed.key_len.set(cfg_item.key_len);
     ral.ctrl_shadowed.manual_operation.set(cfg_item.manual_op);
     ral.ctrl_shadowed.sideload.set(cfg_item.sideload_en);
+    if (cfg.under_reset) return;
+
     // key and IV missing clear all and rewrite (a soon to come update will merge
     // the clear options into a single bit)
     clear_regs(2'b11);
+    if (cfg.under_reset) return;
+
     // when using sideload we need to generate
     // new key for agent to send new key item
     if (sideload_en) begin
       new_key = 1;
       key_rdy = 0;
-      wait(key_rdy);
+      wait(key_rdy || cfg.under_reset);
+      if (cfg.under_reset) return;
     end
 
     // check for fatal
     csr_rd(.ptr(ral.status), .value(status), .blocking(1));
+    if (cfg.under_reset) return;
+
     if (!status.alert_fatal_fault) begin
       // wait for idle
       if (!status.idle)  csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
@@ -1228,11 +1323,13 @@ class aes_base_vseq extends cip_base_vseq #(
       // if alert just try to update ctrl and everything else
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(is_blocking));
     end
+    if (cfg.under_reset) return;
 
     // Read the main control register. This will update the mirrored values thereby getting them
     // back in sync with the DUT (updated via csr_update() above) and the predicted values (updated
     // via set() above).
     csr_rd(.ptr(ral.ctrl_shadowed), .value(ctrl), .backdoor(1));
+    if (cfg.under_reset) return;
 
     if (cfg_item.mode == AES_GCM && !status.alert_fatal_fault) begin
       // As we are splitting the message, we also need to recalculate the length
@@ -1284,21 +1381,29 @@ class aes_base_vseq extends cip_base_vseq #(
       // After re-calculating len(aad) || len(data) start the AES-GCM operation
       // by putting the block into the GCM_INIT phase.
       set_gcm_phase(GCM_INIT, 16, 1, 0);
+      if (cfg.under_reset) return;
     end
 
     write_key(cfg_item.key, is_blocking);
+    if (cfg.under_reset) return;
+
     // wait for reseed but check for fatal
     // if fatal idle will never come
     csr_rd(.ptr(ral.status), .value(status), .blocking(1));
+    if (cfg.under_reset) return;
+
     if (!status.alert_fatal_fault && !status.idle) begin
       if (cfg.reseed_en) csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
+      if (cfg.under_reset) return;
     end
     write_iv(cfg_item.iv, is_blocking);
+    if (cfg.under_reset) return;
 
     // When in AES-GCM mode & manual operation is enabled, we need to trigger
     // twice to process IV/key and calculate the hash subkey.
     if (cfg_item.mode == AES_GCM && manual_operation && !status.alert_fatal_fault) trigger();
     if (cfg_item.mode == AES_GCM && manual_operation && !status.alert_fatal_fault) trigger();
+      if (cfg.under_reset) return;
 
     if (cfg_item.mode == AES_GCM) begin
       int valid_bytes = data_item.data_len == 0 ? 16 : data_item.data_len;
@@ -1321,7 +1426,6 @@ class aes_base_vseq extends cip_base_vseq #(
       add_data(data_item.data_in, cfg_item.do_b2b);
       if (manual_operation) trigger();
     end
-
   endtask // try_recover
 
   // Send the messages in message_queue, removing them as we go
@@ -1329,7 +1433,8 @@ class aes_base_vseq extends cip_base_vseq #(
   // The unbalanced, read_prob and write_prob arguments are passed to send_msg, controlling to read
   // or write each message.
   //
-  // If reset is asserted, exit immediately.
+  // If m_external_reset is true and reset is asserted, exit immediately. If m_external_reset is
+  // false, the task might itself cause resets.
   virtual task send_msg_queue (bit unbalanced, int read_prob, int write_prob);
     bit  rst_set = 0;
     bit  enable_sideload = 0;
@@ -1358,6 +1463,9 @@ class aes_base_vseq extends cip_base_vseq #(
           send_msg(my_message.manual_operation, my_message.sideload_en,
                    unbalanced, read_prob, write_prob, rst_set);
 
+          // Note that the resets checks here are not predicated on m_external_reset, because
+          // send_msg might have injected a reset if m_external_reset is false. We'll handle that
+          // cleanly after the join.
           if (my_message.sideload_en && !cfg.under_reset) begin
             // If we sent a sideload message, set key_used. This tells req_sideload_key that we are
             // done, causing that task to clear key_used again and exit.
@@ -1374,8 +1482,12 @@ class aes_base_vseq extends cip_base_vseq #(
       key_rdy = 0;
     end
 
-    // If we are in reset (which means that either rst_set or cfg.under_reset will be true) then we
-    // want to clean up the contents of the message queue.
+    // If we are in reset and m_external_reset is false, this may have been caused by a call to
+    // send_msg in the loop. If so, we need to tidy it up before exiting. If m_external_reset is
+    // true, we haven't caused a reset ourselves, so don't need to do any tidying up: if we are in
+    // reset, we should just return.
+    if (!m_external_reset) return;
+
     if (rst_set || cfg.under_reset) begin
       aes_item_queue.delete();
       message_queue.delete();
