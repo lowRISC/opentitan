@@ -120,7 +120,7 @@ class i2c_base_seq extends dv_base_seq #(
         StDataByte: begin
           if (inp_xfer.dir == i2c_pkg::READ) begin
             // The agent drives the read bytes as target-transmitter.
-            fork drive_read_byte(); join_none
+            fork drive_read_byte($urandom); join_none
           end
         end
         StDataByteRcvd: begin
@@ -147,11 +147,11 @@ class i2c_base_seq extends dv_base_seq #(
   endtask : drive_addr_byte_ack
 
 
-  virtual task drive_read_byte();
+  virtual task drive_read_byte(bit [7:0] rdata);
     `uvm_create_obj(REQ, req);
     start_item(req);
     req.drv_type = RdData;
-    req.rdata = $urandom;
+    req.rdata = rdata;
     finish_item(req);
     `uvm_info(`gfn, "drive_read_byte()::finish_item()", UVM_DEBUG)
   endtask : drive_read_byte
