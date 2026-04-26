@@ -151,6 +151,8 @@ static status_t hmac_key_construct(const otcrypto_blinded_key_t *key,
         used_key_mode = launder32(used_key_mode) | kOtcryptoKeyModeHmacSha512;
         break;
       default:
+        // COVERAGE (SW ERR) This is an internal function which is given only
+        // correct coded inputs.
         return OTCRYPTO_BAD_ARGS;
     }
     HARDENED_CHECK_EQ(used_key_mode, key->config.key_mode);
@@ -177,11 +179,7 @@ static status_t hmac_key_construct(const otcrypto_blinded_key_t *key,
   hmac_key->key_len = key_block_wordlen;
 
   // Create the checksum of the key and store it in the key structure.
-  if (launder32(hmac_key->key_len) > 0) {
-    hmac_key->checksum = hmac_key_integrity_checksum(hmac_key);
-  } else {
-    HARDENED_CHECK_EQ(hmac_key->key_len, 0);
-  }
+  hmac_key->checksum = hmac_key_integrity_checksum(hmac_key);
 
   return OTCRYPTO_OK;
 }
@@ -199,6 +197,7 @@ static status_t check_key(const otcrypto_blinded_key_t *key) {
 
   // The underlying HMAC hardware does not have sideload support.
   if (key->config.hw_backed != kHardenedBoolFalse) {
+    // COVERAGE (NOT IMPL) Not implemented.
     return OTCRYPTO_NOT_IMPLEMENTED;
   }
 
@@ -398,6 +397,8 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
   }
 
   // Should be unreachable.
+  // COVERAGE (FI CM) This is unreachable code, it is added for fault
+  // protection.
   HARDENED_TRAP();
   return otcrypto_eval_exit(OTCRYPTO_FATAL_ERR);
 }
@@ -413,6 +414,7 @@ otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
 
   // Only security level low is supported for the streaming mode.
   if (key->config.security_level != kOtcryptoKeySecurityLevelLow) {
+    // COVERAGE (NOT IMPL) Not implemented.
     return OTCRYPTO_NOT_IMPLEMENTED;
   }
 

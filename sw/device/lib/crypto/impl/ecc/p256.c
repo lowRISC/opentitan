@@ -150,6 +150,8 @@ hardened_bool_t p256_masked_scalar_checksum_check(
   if (scalar->checksum == launder32(p256_masked_scalar_checksum(scalar))) {
     return kHardenedBoolTrue;
   }
+  // COVERAGE (FI CM) We only provide correct encoded scalars, this is to check
+  // for faults.
   return kHardenedBoolFalse;
 }
 
@@ -170,6 +172,8 @@ hardened_bool_t p256_ecdh_shared_key_checksum_check(
   if (key->checksum == launder32(p256_ecdh_shared_key_checksum(key))) {
     return kHardenedBoolTrue;
   }
+  // COVERAGE (FI CM) We only provide correct encoded keys, this is to check for
+  // faults.
   return kHardenedBoolFalse;
 }
 
@@ -203,6 +207,7 @@ status_t p256_sideload_keygen_start(void) {
 status_t p256_sideload_attestation_keygen_start(
     const otcrypto_const_word32_buf_t *attestation_seed) {
   if (launder32(attestation_seed->len) > kDiceAttestationMaxSeedLength) {
+    // COVERAGE (MISSING) We do not cover too long attestation seed inputs.
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -350,6 +355,7 @@ status_t p256_sideload_attestation_sign_start(
     const uint32_t digest[kP256ScalarWords],
     const otcrypto_const_word32_buf_t *attestation_seed) {
   if (launder32(attestation_seed->len) > kDiceAttestationMaxSeedLength) {
+    // COVERAGE (MISSING) We do not cover too long attestation seed inputs.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(attestation_seed));

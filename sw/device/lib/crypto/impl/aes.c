@@ -147,10 +147,6 @@ static status_t aes_key_construct(otcrypto_blinded_key_t *blinded_key,
 static status_t aes_padding_apply(otcrypto_aes_padding_t padding_mode,
                                   const size_t partial_data_len,
                                   aes_block_t *block) {
-  if (partial_data_len >= kAesBlockNumBytes) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
   // Get a byte-sized pointer to the padding start point within the block's
   // data buffer.
   char *padding = ((char *)block->data) + partial_data_len;
@@ -174,9 +170,12 @@ static status_t aes_padding_apply(otcrypto_aes_padding_t padding_mode,
       break;
     case kOtcryptoAesPaddingNull:
       // This routine should not be called if padding is not needed.
+      // COVERAGE (SW ERR) The internal routine is not called with PaddingNull
       return OTCRYPTO_RECOV_ERR;
     default:
       // Unrecognized padding mode.
+      // COVERAGE (SW ERR) This is an internal routine which is given correct
+      // inputs
       return OTCRYPTO_BAD_ARGS;
   }
   // Check if we landed in the correct case statement. Use ORs for this to
@@ -297,14 +296,6 @@ static otcrypto_status_t otcrypto_aes_impl(
     otcrypto_aes_mode_t aes_mode, otcrypto_aes_operation_t aes_operation,
     const otcrypto_const_byte_buf_t *cipher_input,
     otcrypto_aes_padding_t aes_padding, otcrypto_byte_buf_t *cipher_output) {
-  // Check for NULL pointers in input pointers and data buffers.
-  if (key == NULL ||
-      (aes_mode != kOtcryptoAesModeEcb && (iv == NULL || iv->data == NULL)) ||
-      cipher_input == NULL || cipher_input->data == NULL ||
-      cipher_output == NULL || cipher_output->data == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
   // Calculate the number of blocks for the input, including the padding for
   // encryption.
   size_t input_nblocks;
@@ -364,6 +355,7 @@ static otcrypto_status_t otcrypto_aes_impl(
           launder32(aes_operation_started) | kOtcryptoAesOperationDecrypt;
       break;
     default:
+      // COVERAGE (MISSING) The default bad argument input is not covered.
       return OTCRYPTO_BAD_ARGS;
   }
   // Check if we landed in the correct case statement. Use ORs for this to

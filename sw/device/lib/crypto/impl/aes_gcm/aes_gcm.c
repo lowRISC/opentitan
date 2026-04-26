@@ -384,11 +384,6 @@ status_t aes_gcm_encrypt(const aes_key_t key, const size_t iv_len,
  */
 static status_t aes_gcm_init(const aes_key_t key, const size_t iv_len,
                              const uint32_t *iv, aes_gcm_context_t *ctx) {
-  // Check for null pointers and IV length (must be 96 or 128 bits = 3 or 4
-  // words).
-  if (ctx == NULL || iv == NULL || (iv_len != 3 && iv_len != 4)) {
-    return OTCRYPTO_BAD_ARGS;
-  }
   HARDENED_CHECK_EQ(key.checksum, aes_key_integrity_checksum(&key));
 
   // Initialize the hash subkey H.
@@ -501,6 +496,7 @@ status_t aes_gcm_update_encrypted_data(aes_gcm_context_t *ctx, size_t input_len,
   // than NIST requires, but SP800-38D also allows implementations to stipulate
   // lower length limits.
   if (input_len > UINT32_MAX - ctx->input_len) {
+    // COVERAGE (MISSING) We do not cover too large inputs.
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -532,6 +528,8 @@ status_t aes_gcm_update_encrypted_data(aes_gcm_context_t *ctx, size_t input_len,
     // Since we only generate ciphertext in full-block increments, no partial
     // blocks are possible in this case.
     if (*output_len % kGhashBlockNumBytes != 0) {
+      // COVERAGE (SW ERR) Since we call aes_gcm_gctr before, this should
+      // normally not be called.
       return OTCRYPTO_RECOV_ERR;
     }
     HARDENED_TRY(ghash_process_full_blocks(&ctx->ghash_ctx, /*partial_len=*/0,

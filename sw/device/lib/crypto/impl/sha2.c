@@ -121,6 +121,7 @@ OT_WARN_UNUSED_RESULT
 static status_t check_lengths(hmac_ctx_t *hmac_ctx) {
   if (launder32(hmac_ctx->msg_block_wordlen) > kHmacMaxBlockWords ||
       launder32(hmac_ctx->digest_wordlen) > kHmacMaxDigestWords) {
+    // COVERAGE (MISSING) We do not cover badly encoded contexts.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_LE(hmac_ctx->msg_block_wordlen, kHmacMaxBlockWords);
@@ -178,6 +179,7 @@ otcrypto_status_t otcrypto_sha2_final(otcrypto_sha2_context_t *ctx,
       len_used = launder32(len_used) | kHmacSha512DigestWords;
       break;
     default:
+      // COVERAGE (MISSING) We do not cover bad digest lengths.
       return OTCRYPTO_BAD_ARGS;
   }
   // Check if we landed in the correct case statement. Use ORs for this to

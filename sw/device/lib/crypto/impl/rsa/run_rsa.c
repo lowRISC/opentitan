@@ -102,6 +102,7 @@ status_t rsa_modexp_wait(size_t *num_words) {
     *num_words = kRsa4096NumWords;
   } else {
     // Unrecognized mode.
+    // COVERAGE (SW ERR) We only provide OTBN with correct modes.
     return OTCRYPTO_FATAL_ERR;
   }
 
@@ -125,6 +126,8 @@ static status_t rsa_modexp_finalize(const size_t num_words, uint32_t *result) {
 
   // Check that the inferred result size matches expectations.
   if (num_words != num_words_inferred) {
+    // COVERAGE (SW ERR) This is an internal functions only provided with
+    // correct inputs.
     return OTCRYPTO_FATAL_ERR;
   }
   HARDENED_CHECK_EQ(launder32(num_words), num_words_inferred);
@@ -302,6 +305,8 @@ static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
   uint32_t act_mode = 0;
   HARDENED_TRY(otbn_dmem_read(1, kOtbnVarRsaMode, &act_mode));
   if (act_mode != exp_mode) {
+    // COVERAGE (MISSING) We do not cover calling different finalize functions
+    // from their start functions.
     return OTCRYPTO_FATAL_ERR;
   }
   HARDENED_CHECK_EQ(launder32(act_mode), exp_mode);
@@ -313,6 +318,8 @@ static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
   // Prime p.
   HARDENED_TRY(otbn_dmem_read(1, kOtbnVarRsaMrIterP, &mr_iters));
   if (mr_iters != kMrIters) {
+    // COVERAGE (FI CM) The number of iterations can only deviate if there was a
+    // fault injection or fatal error.
     return OTCRYPTO_FATAL_ERR;
   }
   HARDENED_CHECK_EQ(launder32(mr_iters), kMrIters);
@@ -321,6 +328,8 @@ static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
   mr_iters = 0;
   HARDENED_TRY(otbn_dmem_read(1, kOtbnVarRsaMrIterQ, &mr_iters));
   if (mr_iters != kMrIters) {
+    // COVERAGE (FI CM) The number of iterations can only deviate if there was a
+    // fault injection or fatal error.
     return OTCRYPTO_FATAL_ERR;
   }
   HARDENED_CHECK_EQ(launder32(mr_iters), kMrIters);
