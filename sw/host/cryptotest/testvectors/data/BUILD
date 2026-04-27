@@ -734,17 +734,26 @@ WYCHEPROOF_RSA_PSS_SUFFIXES = {
 # the output file name; the parser reads group["sha"] for the actual alg.
 WYCHEPROOF_RSA_OAEP_SIGN_SOURCES = {
     2048: [
-        ("sha256_mgf1sha256", "sha256"),
-        ("sha384_mgf1sha384", "sha384"),
-        ("sha512_mgf1sha512", "sha512"),
+        ("sha256_mgf1sha256", "sha256", None),
+        ("sha384_mgf1sha384", "sha384", None),
+        ("sha512_mgf1sha512", "sha512", None),
+        ("sha256_mgf1sha256", "sha3_256", "sha3-256"),
+        ("sha256_mgf1sha256", "sha3_384", "sha3-384"),
+        ("sha256_mgf1sha256", "sha3_512", "sha3-512"),
     ],
     3072: [
-        ("sha256_mgf1sha256", "sha256"),
-        ("sha512_mgf1sha512", "sha512"),
+        ("sha256_mgf1sha256", "sha256", None),
+        ("sha512_mgf1sha512", "sha512", None),
+        ("sha256_mgf1sha256", "sha3_256", "sha3-256"),
+        ("sha256_mgf1sha256", "sha3_384", "sha3-384"),
+        ("sha256_mgf1sha256", "sha3_512", "sha3-512"),
     ],
     4096: [
-        ("sha256_mgf1sha256", "sha256"),
-        ("sha512_mgf1sha512", "sha512"),
+        ("sha256_mgf1sha256", "sha256", None),
+        ("sha512_mgf1sha512", "sha512", None),
+        ("sha256_mgf1sha256", "sha3_256", "sha3-256"),
+        ("sha256_mgf1sha256", "sha3_384", "sha3-384"),
+        ("sha256_mgf1sha256", "sha3_512", "sha3-512"),
     ],
 }
 
@@ -787,7 +796,10 @@ WYCHEPROOF_RSA_OAEP_SIGN_SOURCES = {
             padding_mode,
             "--security_level",
             str(security_level),
-        ],
+        ] + ([
+            "--hash",
+            hash_override,
+        ] if hash_override else []),
         tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_rsa_parser",
     )
     for security_level in [
@@ -795,7 +807,7 @@ WYCHEPROOF_RSA_OAEP_SIGN_SOURCES = {
         3072,
         4096,
     ]
-    for oaep_suffix, hash_suffix in WYCHEPROOF_RSA_OAEP_SIGN_SOURCES[security_level]
+    for oaep_suffix, hash_suffix, hash_override in WYCHEPROOF_RSA_OAEP_SIGN_SOURCES[security_level]
     for padding_mode in [
         "pkcs1_1.5",
         "pss",
