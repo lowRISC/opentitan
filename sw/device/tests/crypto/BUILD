@@ -64,23 +64,22 @@ opentitan_binary(
 # ------------------------------------------------------------------------------
 # Coverage Generation for Cryptolib
 # ------------------------------------------------------------------------------
-# To run coverage manually, use the `ot_coverage` config. If you are running
-# multiple `bazel coverage` commands sequentially, you must concatenate the
-# resulting `bazel-out/_coverage/lcov_files.tmp` into a single master list
-# between runs, as Bazel will overwrite it each time.
+# To run coverage manually, use the `ot_coverage` config.
 #
 # 1. Run Unit Tests
 #    bazel coverage --config=ot_coverage --nocache_test_results --test_output=errors \
 #        //sw/device/lib/crypto/impl:impl_unittest_suite \
 #        //sw/device/lib/base:base_unittest_suite \
-#        //sw/device/tests/crypto:otcrypto_coverage_view
+#        //sw/device/tests/crypto:otcrypto_coverage_view \
+#    bash ci/scripts/collect-coverage-report.sh /path/to/collect/dir/<name-a>
+#
 #
 # 2. Run Device Tests
 #    Note: This requires the Google A1 silicon provisioning git repository to be
 #    available (PROV_EXTS_DIR). To run on FPGA instead, drop the two `--//signing`
 #    flags and swap the suffix below to `fpga_cw340_sival_rom_ext`.
-#    Note that the CW340 can provide garbled outputs during the KATs due to SPI flakyness,
-#    hence why the silicon version is shown instead.
+#    Note that the CW340 can provide garbled outputs during the KATs due to SPI
+#    flakiness, hence why the silicon version is shown instead.
 #
 #    bazel coverage \
 #        --//signing:token=@provisioning_exts//shared/tokens:cloud_kms_gb \
@@ -93,11 +92,16 @@ opentitan_binary(
 #        //sw/device/tests/crypto:cryptolib_test_suite_silicon_owner_gb_rom_ext \
 #        //sw/device/tests/crypto:cryptolib_keygen_test_suite_silicon_owner_gb_rom_ext \
 #        //sw/device/tests/crypto:otcrypto_coverage_view
+#   bash ci/scripts/collect-coverage-report.sh /path/to/collect/dir/<name-b>
 #
-# 3. Collect and Bundle Viewer
-#    Note: Change lcov_files to the concatenated master list if running multiple tests.
-#    python3 -m util.coverage.viewer.collect --lcov_files=bazel-out/_coverage/lcov_files.tmp
-#    python3 -m util.coverage.viewer.bundler --output /tmp/viewer.html
+# 3. Run OTBN Tests
+#   bazel coverage --config=ot_coverage --nocache_test_results --test_output=errors \
+#        //sw/otbn/crypto:cryptolib_coverage_view \
+#        //sw/otbn/crypto/tests:cryptolib_sim_test_suite
+#   bash ci/scripts/collect-coverage-report.sh /path/to/collect/dir/<name-c>
+#
+# 4. Collect and Bundle Viewer (available at /path/to/report/dir/viewer/index.html)
+#    bash ci/scripts/merge-coverage-report.sh /path/to/collect/dir/ /path/to/report/dir/
 # ------------------------------------------------------------------------------
 coverage_view_test(
     name = "otcrypto_coverage_view",

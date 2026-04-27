@@ -477,3 +477,28 @@ otbn_binary(
         ":x25519",
     ],
 )
+
+CRYPTOLIB_OTBN_APPS = [
+    "run_curve25519",
+    "run_p256",
+    "run_rsa",
+    "run_rsa_key_from_cofactor",
+    "run_p384",
+]
+
+[
+    coverage_view_test(
+        name = "{}_cryptolib_coverage_view".format(app),
+        elf = ":{}".format(app),
+        kind = "otbn",
+    )
+    for app in CRYPTOLIB_OTBN_APPS
+]
+
+test_suite(
+    name = "cryptolib_coverage_view",
+    tests = [
+        ":{}_cryptolib_coverage_view".format(app)
+        for app in CRYPTOLIB_OTBN_APPS
+    ],
+)
