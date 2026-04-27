@@ -423,7 +423,7 @@ package rram_ctrl_pkg;
   } rd_buf_t;
 
   typedef struct packed {
-    logic                 ecc_err;
+    logic                 err;
     logic [DataWidth-1:0] data;
   } rd_rsp_entry_t;
   parameter int unsigned RdRspFifoWidth = $bits(rd_rsp_entry_t);
