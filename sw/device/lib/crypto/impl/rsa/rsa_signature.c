@@ -64,7 +64,6 @@ static status_t digest_check(const otcrypto_hash_digest_t digest) {
   HARDENED_CHECK_EQ(launder32(used_mode), digest.mode);
 
   if (num_words != digest.len) {
-    // COVERAGE (MISSING) We only provide digests with correct length.
     return OTCRYPTO_BAD_ARGS;
   }
   return OTCRYPTO_OK;

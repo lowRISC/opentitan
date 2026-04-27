@@ -323,6 +323,38 @@ static status_t run_ecdh_negative_tests(void) {
   CHECK(otcrypto_ecdh_p256_async_finalize(&bad_shared_len).value !=
         OTCRYPTO_OK.value);
 
+  otcrypto_key_config_t bad_ecdh_mode_cfg = kEcdhPrivateKeyConfig;
+  bad_ecdh_mode_cfg.key_mode = kOtcryptoKeyModeEcdsaP256;
+  otcrypto_blinded_key_t bad_ecdh_mode = {
+      .config = bad_ecdh_mode_cfg,
+      .keyblob_length = 80,
+      .keyblob = priv_keyblob,
+  };
+  bad_ecdh_mode.checksum = integrity_blinded_checksum(&bad_ecdh_mode);
+  CHECK(otcrypto_ecdh_p256_async_start(&bad_ecdh_mode, &valid_pub).value !=
+        OTCRYPTO_OK.value);
+
+  otcrypto_key_config_t bad_ecdh_hw_cfg = kEcdhPrivateKeyConfig;
+  bad_ecdh_hw_cfg.hw_backed = (hardened_bool_t)0xFFFFFFFF;  // invalid value
+  otcrypto_blinded_key_t bad_ecdh_hw = {
+      .config = bad_ecdh_hw_cfg,
+      .keyblob_length = 80,
+      .keyblob = priv_keyblob,
+  };
+  bad_ecdh_hw.checksum = integrity_blinded_checksum(&bad_ecdh_hw);
+  CHECK(otcrypto_ecdh_p256_async_start(&bad_ecdh_hw, &valid_pub).value !=
+        OTCRYPTO_OK.value);
+
+  otcrypto_blinded_key_t bad_shared_blob_len = {
+      .config = kEcdhSharedKeyConfig,
+      .keyblob_length = sizeof(shared_keyblob) - 4,  // Off by one word
+      .keyblob = valid_shared.keyblob,
+  };
+  bad_shared_blob_len.checksum =
+      integrity_blinded_checksum(&bad_shared_blob_len);
+  CHECK(otcrypto_ecdh_p256_async_finalize(&bad_shared_blob_len).value !=
+        OTCRYPTO_OK.value);
+
   return OTCRYPTO_OK;
 }
 

@@ -396,6 +396,47 @@ static status_t run_encrypt_negative_tests(void) {
       otcrypto_rsa_decrypt_async_start(&bad_priv_mode, &valid_const_ct).value !=
       OTCRYPTO_OK.value);
 
+  // Bad ciphertext length in finalize
+  otcrypto_word32_buf_t bad_ct_len =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ct_data, kRsa2048NumWords - 1);
+  CHECK(otcrypto_rsa_encrypt_async_finalize(&bad_ct_len).value !=
+        OTCRYPTO_OK.value);
+
+  // Ciphertext larger than modulus (n) in decrypt_start
+  // We fill a buffer with 0xFF to guarantee it is larger than the test modulus
+  uint32_t large_ct_data[kRsa2048NumWords];
+  memset(large_ct_data, 0xFF, sizeof(large_ct_data));
+  otcrypto_const_word32_buf_t large_ct = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, large_ct_data, kRsa2048NumWords);
+  CHECK(otcrypto_rsa_decrypt(&valid_priv, kTestHashMode, &large_ct, &valid_msg,
+                             &valid_pt, &pt_len)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_decrypt_async_start(&valid_priv, &large_ct).value !=
+        OTCRYPTO_OK.value);
+
+  // Plaintext buffer too small for OAEP max message length in decrypt_finalize
+  // kMaxPlaintextBytes for 2048 with SHA256 is ~190 bytes. 10 is definitely too
+  // small.
+  otcrypto_byte_buf_t small_pt =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, pt_data, 10);
+  CHECK(otcrypto_rsa_decrypt(&valid_priv, kTestHashMode, &valid_const_ct,
+                             &valid_msg, &small_pt, &pt_len)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_decrypt_async_finalize(kTestHashMode, &valid_msg,
+                                            &small_pt, &pt_len)
+            .value != OTCRYPTO_OK.value);
+
+  // Unrecognized key length in rsa_size_from_public_key (via encrypt)
+  otcrypto_unblinded_key_t pub_bad_size = {
+      .key_mode = valid_pub.key_mode,
+      .key_length = 257,  // Unrecognized length
+      .key = pub_data,
+  };
+  pub_bad_size.checksum = integrity_unblinded_checksum(&pub_bad_size);
+  CHECK(otcrypto_rsa_encrypt(&pub_bad_size, kTestHashMode, &valid_msg,
+                             &valid_msg, &valid_ct)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
   return OTCRYPTO_OK;
 }
 
@@ -604,6 +645,23 @@ static status_t run_private_key_from_exponents_negative_tests(void) {
   CHECK(otcrypto_rsa_private_key_from_exponents((otcrypto_rsa_size_t)999,
                                                 &valid_mod, &valid_d0,
                                                 &valid_d1, &valid_priv)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_const_word32_buf_t mod_bad_len = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, mod_data, kRsa2048NumWords - 1);
+  CHECK(otcrypto_rsa_private_key_from_exponents(kOtcryptoRsaSize2048,
+                                                &mod_bad_len, &valid_d0,
+                                                &valid_d1, &valid_priv)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_blinded_key_t priv_bad_blob_len = {
+      .config = valid_priv_cfg,
+      .keyblob_length = 999,  // Invalid length
+      .keyblob = priv_blob,
+  };
+  CHECK(otcrypto_rsa_private_key_from_exponents(kOtcryptoRsaSize2048,
+                                                &valid_mod, &valid_d0,
+                                                &valid_d1, &priv_bad_blob_len)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   return OTCRYPTO_OK;

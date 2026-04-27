@@ -463,6 +463,68 @@ static status_t run_ecdsa_negative_tests(void) {
       otcrypto_ecdsa_p384_verify_async_finalize(&bad_const_sig_len, &verify_res)
           .value != OTCRYPTO_OK.value);
 
+  // Null inputs in otcrypto_ecdsa_p384_keygen_async_finalize
+  CHECK(otcrypto_ecdsa_p384_keygen_async_finalize(NULL, NULL).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdsa_p384_keygen_async_finalize(&valid_priv, NULL).value !=
+        OTCRYPTO_OK.value);
+
+  // Bad key mode inputs in otcrypto_ecdsa_p384_keygen_async_finalize
+  CHECK(otcrypto_ecdsa_p384_keygen_async_finalize(&bad_priv_mode, &valid_pub)
+            .value != OTCRYPTO_OK.value);
+
+  // Note: unblinded key fields usually aren't const, but initializing cleanly
+  // to be safe
+  otcrypto_unblinded_key_t bad_pub_mode = {
+      .key_mode = kOtcryptoKeyModeEcdhP384,
+      .key_length = valid_pub.key_length,
+      .key = valid_pub.key,
+  };
+  bad_pub_mode.checksum = integrity_unblinded_checksum(&bad_pub_mode);
+  CHECK(otcrypto_ecdsa_p384_keygen_async_finalize(&valid_priv, &bad_pub_mode)
+            .value != OTCRYPTO_OK.value);
+
+  // Bad hw_backed inputs in otcrypto_ecdsa_p384_sign_async_start
+  otcrypto_key_config_t bad_sign_hw_cfg = kPrivateKeyConfig;
+  bad_sign_hw_cfg.hw_backed = (hardened_bool_t)0xDEADBEEF;
+  otcrypto_blinded_key_t bad_sign_hw = {
+      .config = bad_sign_hw_cfg,
+      .keyblob_length = 112,
+      .keyblob = priv_keyblob,
+  };
+  bad_sign_hw.checksum = integrity_blinded_checksum(&bad_sign_hw);
+  CHECK(
+      otcrypto_ecdsa_p384_sign_async_start(&bad_sign_hw, valid_digest).value !=
+      OTCRYPTO_OK.value);
+
+  // Bad key mode inputs in otcrypto_ecdsa_p384_verify_async_start
+  CHECK(otcrypto_ecdsa_p384_verify_async_start(&bad_pub_mode, valid_digest,
+                                               &valid_const_sig)
+            .value != OTCRYPTO_OK.value);
+
+  // Bad length inputs in otcrypto_ecdsa_p384_verify_async_start (digest length)
+  otcrypto_hash_digest_t bad_verify_digest_len = {
+      .data = digest_data,
+      .len = 6,  // kP384ScalarWords is 12
+  };
+  CHECK(otcrypto_ecdsa_p384_verify_async_start(
+            &valid_pub, bad_verify_digest_len, &valid_const_sig)
+            .value != OTCRYPTO_OK.value);
+
+  // Bad key mode for signing
+  CHECK(otcrypto_ecdsa_p384_sign(&bad_priv_mode, valid_digest, &valid_sig)
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdsa_p384_sign_async_start(&bad_priv_mode, valid_digest)
+            .value != OTCRYPTO_OK.value);
+
+  // Bad key mode for sign_config_k
+  CHECK(otcrypto_ecdsa_p384_sign_config_k(&bad_priv_mode, &valid_priv,
+                                          valid_digest, &valid_sig)
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdsa_p384_sign_config_k_async_start(&bad_priv_mode,
+                                                      &valid_priv, valid_digest)
+            .value != OTCRYPTO_OK.value);
+
   return OTCRYPTO_OK;
 }
 

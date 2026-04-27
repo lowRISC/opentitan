@@ -149,9 +149,70 @@ static status_t test_setup(void) {
   return otcrypto_init(kOtcryptoKeySecurityLevelLow);
 }
 
+static status_t run_dice_negative_tests(void) {
+  LOG_INFO("Running DICE negative tests.");
+
+  uint32_t priv_keyblob[80] = {0};
+  otcrypto_key_config_t dice_cfg = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeEcdsaP256,
+      .key_length = 256 / 8,
+      .hw_backed = kHardenedBoolTrue,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  otcrypto_blinded_key_t valid_priv = {
+      .config = dice_cfg,
+      .keyblob_length = sizeof(priv_keyblob),
+      .keyblob = priv_keyblob,
+  };
+  valid_priv.checksum = integrity_blinded_checksum(&valid_priv);
+
+  uint32_t digest_data[8] = {0};
+  otcrypto_hash_digest_t valid_digest = {
+      .data = digest_data,
+      .len = 8,
+  };
+
+  uint32_t attestation_data[10] = {0};
+  otcrypto_const_word32_buf_t attestation_seed =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, attestation_data, 10);
+
+  // Null inputs
+  CHECK(otcrypto_ecdsa_p256_dice_sign_async_start(NULL, valid_digest,
+                                                  &attestation_seed)
+            .value != OTCRYPTO_OK.value);
+
+  otcrypto_hash_digest_t null_digest = {.data = NULL, .len = 8};
+  CHECK(otcrypto_ecdsa_p256_dice_sign_async_start(&valid_priv, null_digest,
+                                                  &attestation_seed)
+            .value != OTCRYPTO_OK.value);
+
+  // Bad key_mode
+  otcrypto_key_config_t bad_mode_cfg = dice_cfg;
+  bad_mode_cfg.key_mode = kOtcryptoKeyModeEcdhP256;
+  otcrypto_blinded_key_t bad_mode_priv = {
+      .config = bad_mode_cfg,
+      .keyblob_length = sizeof(priv_keyblob),
+      .keyblob = priv_keyblob,
+  };
+  bad_mode_priv.checksum = integrity_blinded_checksum(&bad_mode_priv);
+  CHECK(otcrypto_ecdsa_p256_dice_sign_async_start(&bad_mode_priv, valid_digest,
+                                                  &attestation_seed)
+            .value != OTCRYPTO_OK.value);
+
+  // Bad length inputs
+  otcrypto_hash_digest_t bad_len_digest = {.data = digest_data, .len = 7};
+  CHECK(otcrypto_ecdsa_p256_dice_sign_async_start(&valid_priv, bad_len_digest,
+                                                  &attestation_seed)
+            .value != OTCRYPTO_OK.value);
+
+  return OTCRYPTO_OK;
+}
+
 bool test_main(void) {
   status_t result = OTCRYPTO_OK;
   CHECK_STATUS_OK(test_setup());
   EXECUTE_TEST(result, dice_test);
+  EXECUTE_TEST(result, run_dice_negative_tests);
   return status_ok(result);
 }

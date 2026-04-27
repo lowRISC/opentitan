@@ -69,6 +69,13 @@ status_t point_valid_test(void) {
     return OTCRYPTO_RECOV_ERR;
   }
 
+  // Null inputs
+  hardened_bool_t null_res;
+  CHECK(otcrypto_ecc_p256_point_on_curve(NULL, &null_res).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecc_p256_point_on_curve(&point_valid, NULL).value !=
+        OTCRYPTO_OK.value);
+
   return OTCRYPTO_OK;
 }
 
