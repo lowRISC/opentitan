@@ -305,8 +305,6 @@ static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
   uint32_t act_mode = 0;
   HARDENED_TRY(otbn_dmem_read(1, kOtbnVarRsaMode, &act_mode));
   if (act_mode != exp_mode) {
-    // COVERAGE (MISSING) We do not cover calling different finalize functions
-    // from their start functions.
     return OTCRYPTO_FATAL_ERR;
   }
   HARDENED_CHECK_EQ(launder32(act_mode), exp_mode);
