@@ -235,6 +235,41 @@ RSA_TESTVECTOR_TARGETS = [
         "sha256_mgf1sha256",
         "sha512_mgf1sha512",
     ]
+] + [
+    "//sw/host/cryptotest/testvectors/data:wycheproof_rsa_{}_{}_{}_sign.json".format(
+        padding_mode,
+        security_level,
+        hash_suffix,
+    )
+    for security_level, hash_suffixes in [
+        (
+            2048,
+            [
+                "sha256",
+                "sha384",
+                "sha512",
+            ],
+        ),
+        (
+            3072,
+            [
+                "sha256",
+                "sha512",
+            ],
+        ),
+        (
+            4096,
+            [
+                "sha256",
+                "sha512",
+            ],
+        ),
+    ]
+    for hash_suffix in hash_suffixes
+    for padding_mode in [
+        "pkcs1_1.5",
+        "pss",
+    ]
 ]
 
 RSA_TESTVECTOR_ARGS = " ".join([
