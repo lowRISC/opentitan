@@ -503,6 +503,8 @@ ee_vsprintf(char *buf, const char *fmt, va_list args)
             case '0':
                 flags |= ZEROPAD;
                 goto repeat;
+            default:
+                break;
         }
 
         // Get field width
