@@ -171,6 +171,65 @@ status_t arith_share_private_key_test(bool seed) {
   return OTCRYPTO_OK;
 }
 
+static status_t run_arith_share_negative_tests(void) {
+  LOG_INFO("Running arithmetic share negative tests.");
+
+  // kP384MaskedScalarShareWords is 14
+  uint32_t share_data[14] = {0};
+  otcrypto_const_word32_buf_t share0 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, share_data, 14);
+  otcrypto_const_word32_buf_t share1 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, share_data, 14);
+
+  uint32_t keyblob[28] = {0};
+  otcrypto_blinded_key_t priv_key = {
+      .config = kPrivateKeyConfig,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+  };
+  priv_key.checksum = integrity_blinded_checksum(&priv_key);
+
+  // Null inputs
+  CHECK(otcrypto_ecc_p384_arith_share_private_key(NULL, &share1, &priv_key)
+            .value != OTCRYPTO_OK.value);
+  CHECK(
+      otcrypto_ecc_p384_arith_share_private_key(&share0, &share1, NULL).value !=
+      OTCRYPTO_OK.value);
+
+  // Bad length inputs
+  otcrypto_const_word32_buf_t bad_len_share = {.data = share_data, .len = 13};
+  CHECK(otcrypto_ecc_p384_arith_share_private_key(&bad_len_share, &share1,
+                                                  &priv_key)
+            .value != OTCRYPTO_OK.value);
+
+  // Bad key mode
+  otcrypto_key_config_t bad_mode_cfg = kPrivateKeyConfig;
+  bad_mode_cfg.key_mode = kOtcryptoKeyModeAesCtr;
+  otcrypto_blinded_key_t bad_mode_key = {
+      .config = bad_mode_cfg,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+  };
+  bad_mode_key.checksum = integrity_blinded_checksum(&bad_mode_key);
+  CHECK(
+      otcrypto_ecc_p384_arith_share_private_key(&share0, &share1, &bad_mode_key)
+          .value != OTCRYPTO_OK.value);
+
+  // Bad hw backed
+  otcrypto_key_config_t bad_hw_cfg = kPrivateKeyConfig;
+  bad_hw_cfg.hw_backed = kHardenedBoolTrue;
+  otcrypto_blinded_key_t bad_hw_key = {
+      .config = bad_hw_cfg,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+  };
+  bad_hw_key.checksum = integrity_blinded_checksum(&bad_hw_key);
+  CHECK(otcrypto_ecc_p384_arith_share_private_key(&share0, &share1, &bad_hw_key)
+            .value != OTCRYPTO_OK.value);
+
+  return OTCRYPTO_OK;
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
@@ -185,6 +244,12 @@ bool test_main(void) {
     // Print the error.
     CHECK_STATUS_OK(err0);
     CHECK_STATUS_OK(err1);
+    return false;
+  }
+
+  status_t err = run_arith_share_negative_tests();
+  if (!status_ok(err)) {
+    CHECK_STATUS_OK(err);
     return false;
   }
 

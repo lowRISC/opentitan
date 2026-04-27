@@ -221,7 +221,6 @@ static status_t rsa_size_from_public_key(
       return OTCRYPTO_OK;
     default:
       // No matches.
-      // COVERAGE (MISSING) We do not cover bad key lengths
       return OTCRYPTO_BAD_ARGS;
   }
 
@@ -513,7 +512,7 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
     }
     default:
       // Invalid key size.
-      // COVERAGE (MISSING) We do not cover bad size.
+      // COVERAGE (FI CM) size is internally generated.
       return OTCRYPTO_BAD_ARGS;
   }
 
@@ -631,7 +630,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
     }
     default:
       // Invalid key size.
-      // COVERAGE (MISSING) We do not cover bad size.
+      // COVERAGE (FI CM) size is internally generated.
       return OTCRYPTO_BAD_ARGS;
   }
 
@@ -670,7 +669,6 @@ static status_t key_mode_padding_check(otcrypto_key_mode_t key_mode,
       return OTCRYPTO_OK;
     default:
       // Invalid padding mode.
-      // COVERAGE (MISSING) We do not cover bad padding_modes.
       return OTCRYPTO_BAD_ARGS;
   }
 
@@ -774,7 +772,6 @@ otcrypto_status_t otcrypto_rsa_sign_async_finalize(
               (rsa_4096_int_t *)signature->data)));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     default:
-      // COVERAGE (MISSING) We do not cover bad signature lengths.
       return OTCRYPTO_BAD_ARGS;
   }
 
@@ -994,7 +991,6 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_finalize(
       return otcrypto_eval_exit(OTCRYPTO_OK);
     }
     default:
-      // COVERAGE (MISSING) We do not cover bad ciphertext lengths.
       return OTCRYPTO_BAD_ARGS;
   }
 
@@ -1049,7 +1045,6 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
       // Check that ciphertext is < n.
       if (bignum_lt(ctext->data, sk->n.data, kRsa2048NumWords) ==
           kHardenedBoolFalse) {
-        // COVERAGE (MISSING) We do not cover ciphertexts larger than n.
         return OTCRYPTO_BAD_ARGS;
       }
 

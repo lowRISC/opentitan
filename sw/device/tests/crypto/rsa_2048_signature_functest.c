@@ -430,6 +430,46 @@ static status_t run_signature_negative_tests(void) {
   CHECK(otcrypto_rsa_verify_async_start(&valid_pub, &bad_const_sig_len).value !=
         OTCRYPTO_OK.value);
 
+  // Bad signature length in sign_async_finalize
+  otcrypto_word32_buf_t bad_sig_len =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig_data, kRsa2048NumWords - 1);
+  CHECK(otcrypto_rsa_sign_async_finalize(&bad_sig_len).value !=
+        OTCRYPTO_OK.value);
+
+  // Bad digest length for the specified hash mode
+  // SHA-256 expects 8 words. Passing 7 triggers the digest_check length
+  // failure.
+  otcrypto_hash_digest_t bad_digest_len = {
+      .data = digest_data, .len = 7, .mode = kOtcryptoHashModeSha256};
+  CHECK(otcrypto_rsa_sign(&valid_priv, bad_digest_len, kOtcryptoRsaPaddingPkcs,
+                          &valid_sig)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_verify(&valid_pub, bad_digest_len, kOtcryptoRsaPaddingPkcs,
+                            &valid_const_sig, &verify_res)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Unrecognized padding mode
+  CHECK(otcrypto_rsa_sign(&valid_priv, valid_digest,
+                          (otcrypto_rsa_padding_t)999, &valid_sig)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_verify(&valid_pub, valid_digest,
+                            (otcrypto_rsa_padding_t)999, &valid_const_sig,
+                            &verify_res)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Unrecognized hash mode
+  otcrypto_hash_digest_t bad_hash_mode = {
+      .data = digest_data,
+      .len = ARRAYSIZE(digest_data),
+      .mode = (otcrypto_hash_mode_t)999  // Invalid mode
+  };
+  CHECK(otcrypto_rsa_sign(&valid_priv, bad_hash_mode, kOtcryptoRsaPaddingPkcs,
+                          &valid_sig)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_verify(&valid_pub, bad_hash_mode, kOtcryptoRsaPaddingPkcs,
+                            &valid_const_sig, &verify_res)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
   return OTCRYPTO_OK;
 }
 
@@ -462,6 +502,20 @@ status_t all_hashes_sign_verify_test(void) {
                             &verification_result));
     TRY_CHECK(verification_result == kHardenedBoolTrue);
   }
+
+  // Encrypt Finalize: Bad Ciphertext Length
+  uint32_t fake_ct_data[kRsa2048NumWords];
+  otcrypto_word32_buf_t bad_ct_len = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, fake_ct_data, 999);  // Unrecognized length
+  CHECK(otcrypto_rsa_encrypt_async_finalize(&bad_ct_len).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  // Sign Finalize: Bad Signature Length
+  uint32_t fake_sig_data[kRsa2048NumWords];
+  otcrypto_word32_buf_t bad_sig_len = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, fake_sig_data, 999);  // Unrecognized length
+  CHECK(otcrypto_rsa_sign_async_finalize(&bad_sig_len).value ==
+        OTCRYPTO_BAD_ARGS.value);
 
   return OK_STATUS();
 }
