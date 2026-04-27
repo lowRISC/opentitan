@@ -80,6 +80,40 @@ status_t point_valid_test(void) {
   return OTCRYPTO_OK;
 }
 
+status_t point_partial_collision_test(void) {
+  // This constructs a point where (Y^2 % p) and (X^3 - 3X + b % p)
+  // share the same lower 256 bits, but differ in the upper 128 bits.
+  // x
+  p384_point_t point_invalid_raw = {
+      .x = {0x00000001, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+            0x00000000, 0x00000000},
+      .y = {0x8d32a89f, 0xf4b1cd74, 0x274c130d, 0xcf3a3e8a, 0x0116d5e6,
+            0x64d700b3, 0x51d7182c, 0x5465e170, 0x080a67b2, 0x23b8ad4d,
+            0x983109dc, 0x0de970b2}};
+
+  uint32_t pt_invld_buf[kP384PointWords];
+  memcpy(pt_invld_buf, &point_invalid_raw, sizeof(point_invalid_raw));
+
+  otcrypto_unblinded_key_t point_invalid = {
+      .key_length = sizeof(pt_invld_buf),
+      .key = pt_invld_buf,
+  };
+
+  hardened_bool_t result;
+  TRY(otcrypto_ecc_p384_point_on_curve(&point_invalid, &result));
+
+  // The OTBN routine will pass the `bn.cmp w4, w6` check,
+  // but fail the subsequent `bn.cmp w5, w7` check, trigger an ecall,
+  // and safely return HARDENED_BOOL_FALSE to the host.
+  if (result != kHardenedBoolFalse) {
+    LOG_ERROR("Partial collision point bypassed point check.");
+    return OTCRYPTO_RECOV_ERR;
+  }
+
+  return OTCRYPTO_OK;
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
@@ -91,6 +125,14 @@ bool test_main(void) {
     LOG_INFO("OTBN error bits: 0x%08x", otbn_err_bits_get());
     LOG_INFO("OTBN instruction count: 0x%08x", otbn_instruction_count_get());
     // Print the error.
+    CHECK_STATUS_OK(err);
+    return false;
+  }
+
+  err = point_partial_collision_test();
+  if (!status_ok(err)) {
+    LOG_INFO("OTBN error bits: 0x%08x", otbn_err_bits_get());
+    LOG_INFO("OTBN instruction count: 0x%08x", otbn_instruction_count_get());
     CHECK_STATUS_OK(err);
     return false;
   }
