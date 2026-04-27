@@ -11,16 +11,16 @@ class clkmgr_regwen_vseq extends clkmgr_base_vseq;
 
   task check_jitter_regwen();
     bit enable;
-    mubi4_t prev_value;
-    mubi4_t new_value;
+    logic [3:0] prev_value_bits;
+    mubi4_t     new_value;
 
     `DV_CHECK_STD_RANDOMIZE_FATAL(enable)
     new_value = get_rand_mubi4_val(.t_weight(1), .f_weight(1), .other_weight(2));
     `uvm_info(`gfn, $sformatf("Check jitter_regwen = %b", enable), UVM_MEDIUM)
     csr_wr(.ptr(ral.jitter_regwen), .value(enable));
-    csr_rd(.ptr(ral.jitter_enable), .value(prev_value));
+    csr_rd(.ptr(ral.jitter_enable), .value(prev_value_bits));
     csr_wr(.ptr(ral.jitter_enable), .value(new_value));
-    csr_rd_check(.ptr(ral. jitter_enable), .compare_value(enable ? new_value : prev_value));
+    csr_rd_check(.ptr(ral.jitter_enable), .compare_value(enable ? new_value : prev_value_bits));
     `uvm_info(`gfn, "Check jitter_regwen done", UVM_MEDIUM)
   endtask : check_jitter_regwen
 
