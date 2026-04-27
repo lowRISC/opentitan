@@ -291,7 +291,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_aes_alert_force(&aes, kDifAesAlertRecovCtrlUpdateErr + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdAesRecovCtrlUpdateErr + i;
+    exp_alert = (int)kTopDarjeelingAlertIdAesRecovCtrlUpdateErr + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -306,7 +306,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_aon_timer_alert_force(&aon_timer_aon, kDifAonTimerAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdAonTimerAonFatalFault + i;
+    exp_alert = (int)kTopDarjeelingAlertIdAonTimerAonFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -321,7 +321,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_clkmgr_alert_force(&clkmgr_aon, kDifClkmgrAlertRecovFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdClkmgrAonRecovFault + i;
+    exp_alert = (int)kTopDarjeelingAlertIdClkmgrAonRecovFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -336,7 +336,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_csrng_alert_force(&csrng, kDifCsrngAlertRecovAlert + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdCsrngRecovAlert + i;
+    exp_alert = (int)kTopDarjeelingAlertIdCsrngRecovAlert + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -351,7 +351,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_dma_alert_force(&dma, kDifDmaAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdDmaFatalFault + i;
+    exp_alert = (int)kTopDarjeelingAlertIdDmaFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -366,7 +366,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_edn_alert_force(&edn0, kDifEdnAlertRecovAlert + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdEdn0RecovAlert + i;
+    exp_alert = (int)kTopDarjeelingAlertIdEdn0RecovAlert + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -381,7 +381,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_edn_alert_force(&edn1, kDifEdnAlertRecovAlert + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdEdn1RecovAlert + i;
+    exp_alert = (int)kTopDarjeelingAlertIdEdn1RecovAlert + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -396,7 +396,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_entropy_src_alert_force(&entropy_src, kDifEntropySrcAlertRecovAlert + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdEntropySrcRecovAlert + i;
+    exp_alert = (int)kTopDarjeelingAlertIdEntropySrcRecovAlert + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -411,7 +411,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_gpio_alert_force(&gpio, kDifGpioAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdGpioFatalFault + i;
+    exp_alert = (int)kTopDarjeelingAlertIdGpioFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -426,7 +426,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_hmac_alert_force(&hmac, kDifHmacAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdHmacFatalFault + i;
+    exp_alert = (int)kTopDarjeelingAlertIdHmacFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -441,7 +441,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_i2c_alert_force(&i2c0, kDifI2cAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdI2c0FatalFault + i;
+    exp_alert = (int)kTopDarjeelingAlertIdI2c0FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -456,7 +456,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_keymgr_dpe_alert_force(&keymgr_dpe, kDifKeymgrDpeAlertRecovOperationErr + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdKeymgrDpeRecovOperationErr + i;
+    exp_alert = (int)kTopDarjeelingAlertIdKeymgrDpeRecovOperationErr + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -471,7 +471,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_kmac_alert_force(&kmac, kDifKmacAlertRecovOperationErr + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdKmacRecovOperationErr + i;
+    exp_alert = (int)kTopDarjeelingAlertIdKmacRecovOperationErr + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -486,7 +486,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_lc_ctrl_alert_force(&lc_ctrl, kDifLcCtrlAlertFatalProgError + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdLcCtrlFatalProgError + i;
+    exp_alert = (int)kTopDarjeelingAlertIdLcCtrlFatalProgError + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -501,7 +501,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_mbx_alert_force(&mbx0, kDifMbxAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdMbx0FatalFault + i;
+    exp_alert = (int)kTopDarjeelingAlertIdMbx0FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -516,7 +516,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_mbx_alert_force(&mbx1, kDifMbxAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdMbx1FatalFault + i;
+    exp_alert = (int)kTopDarjeelingAlertIdMbx1FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -531,7 +531,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_mbx_alert_force(&mbx2, kDifMbxAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdMbx2FatalFault + i;
+    exp_alert = (int)kTopDarjeelingAlertIdMbx2FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -546,7 +546,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_mbx_alert_force(&mbx3, kDifMbxAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdMbx3FatalFault + i;
+    exp_alert = (int)kTopDarjeelingAlertIdMbx3FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -561,7 +561,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_mbx_alert_force(&mbx4, kDifMbxAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdMbx4FatalFault + i;
+    exp_alert = (int)kTopDarjeelingAlertIdMbx4FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -576,7 +576,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_mbx_alert_force(&mbx5, kDifMbxAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdMbx5FatalFault + i;
+    exp_alert = (int)kTopDarjeelingAlertIdMbx5FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -591,7 +591,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_mbx_alert_force(&mbx6, kDifMbxAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdMbx6FatalFault + i;
+    exp_alert = (int)kTopDarjeelingAlertIdMbx6FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -606,7 +606,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_mbx_alert_force(&mbx_jtag, kDifMbxAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdMbxJtagFatalFault + i;
+    exp_alert = (int)kTopDarjeelingAlertIdMbxJtagFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -621,7 +621,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_mbx_alert_force(&mbx_pcie0, kDifMbxAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdMbxPcie0FatalFault + i;
+    exp_alert = (int)kTopDarjeelingAlertIdMbxPcie0FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -636,7 +636,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_mbx_alert_force(&mbx_pcie1, kDifMbxAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdMbxPcie1FatalFault + i;
+    exp_alert = (int)kTopDarjeelingAlertIdMbxPcie1FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -651,7 +651,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_otbn_alert_force(&otbn, kDifOtbnAlertFatal + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdOtbnFatal + i;
+    exp_alert = (int)kTopDarjeelingAlertIdOtbnFatal + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -668,7 +668,7 @@ static void trigger_alert_test(void) {
       CHECK_DIF_OK(dif_otp_ctrl_alert_force(&otp_ctrl, kDifOtpCtrlAlertFatalMacroError + i));
 
       // Verify that alert handler received it.
-      exp_alert = kTopDarjeelingAlertIdOtpCtrlFatalMacroError + i;
+      exp_alert = (int)kTopDarjeelingAlertIdOtpCtrlFatalMacroError + i;
       CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
           &alert_handler, exp_alert, &is_cause));
       CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -684,7 +684,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_pinmux_alert_force(&pinmux_aon, kDifPinmuxAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdPinmuxAonFatalFault + i;
+    exp_alert = (int)kTopDarjeelingAlertIdPinmuxAonFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -699,7 +699,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_pwrmgr_alert_force(&pwrmgr_aon, kDifPwrmgrAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdPwrmgrAonFatalFault + i;
+    exp_alert = (int)kTopDarjeelingAlertIdPwrmgrAonFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -714,7 +714,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_rom_ctrl_alert_force(&rom_ctrl0, kDifRomCtrlAlertFatal + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdRomCtrl0Fatal + i;
+    exp_alert = (int)kTopDarjeelingAlertIdRomCtrl0Fatal + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -729,7 +729,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_rom_ctrl_alert_force(&rom_ctrl1, kDifRomCtrlAlertFatal + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdRomCtrl1Fatal + i;
+    exp_alert = (int)kTopDarjeelingAlertIdRomCtrl1Fatal + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -744,7 +744,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_rstmgr_alert_force(&rstmgr_aon, kDifRstmgrAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdRstmgrAonFatalFault + i;
+    exp_alert = (int)kTopDarjeelingAlertIdRstmgrAonFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -759,7 +759,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_rv_core_ibex_alert_force(&rv_core_ibex, kDifRvCoreIbexAlertFatalSwErr + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdRvCoreIbexFatalSwErr + i;
+    exp_alert = (int)kTopDarjeelingAlertIdRvCoreIbexFatalSwErr + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -774,7 +774,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_rv_plic_alert_force(&rv_plic, kDifRvPlicAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdRvPlicFatalFault + i;
+    exp_alert = (int)kTopDarjeelingAlertIdRvPlicFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -789,7 +789,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_rv_timer_alert_force(&rv_timer, kDifRvTimerAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdRvTimerFatalFault + i;
+    exp_alert = (int)kTopDarjeelingAlertIdRvTimerFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -804,7 +804,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_soc_dbg_ctrl_alert_force(&soc_dbg_ctrl, kDifSocDbgCtrlAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdSocDbgCtrlFatalFault + i;
+    exp_alert = (int)kTopDarjeelingAlertIdSocDbgCtrlFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -819,7 +819,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_soc_proxy_alert_force(&soc_proxy, kDifSocProxyAlertFatalAlertIntg + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdSocProxyFatalAlertIntg + i;
+    exp_alert = (int)kTopDarjeelingAlertIdSocProxyFatalAlertIntg + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -834,7 +834,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_spi_device_alert_force(&spi_device, kDifSpiDeviceAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdSpiDeviceFatalFault + i;
+    exp_alert = (int)kTopDarjeelingAlertIdSpiDeviceFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -849,7 +849,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_spi_host_alert_force(&spi_host0, kDifSpiHostAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdSpiHost0FatalFault + i;
+    exp_alert = (int)kTopDarjeelingAlertIdSpiHost0FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -864,7 +864,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_sram_ctrl_alert_force(&sram_ctrl_main, kDifSramCtrlAlertFatalError + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdSramCtrlMainFatalError + i;
+    exp_alert = (int)kTopDarjeelingAlertIdSramCtrlMainFatalError + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -879,7 +879,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_sram_ctrl_alert_force(&sram_ctrl_mbox, kDifSramCtrlAlertFatalError + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdSramCtrlMboxFatalError + i;
+    exp_alert = (int)kTopDarjeelingAlertIdSramCtrlMboxFatalError + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -894,7 +894,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_sram_ctrl_alert_force(&sram_ctrl_ret_aon, kDifSramCtrlAlertFatalError + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdSramCtrlRetAonFatalError + i;
+    exp_alert = (int)kTopDarjeelingAlertIdSramCtrlRetAonFatalError + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -909,7 +909,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_uart_alert_force(&uart0, kDifUartAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdUart0FatalFault + i;
+    exp_alert = (int)kTopDarjeelingAlertIdUart0FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
