@@ -67,6 +67,12 @@ status_t base_point_mult_test(void) {
   // multipliation must match.
   TRY_CHECK_ARRAYS_EQ(pk, pk_ver, kP384PublicKeyWords);
 
+  // Null inputs
+  CHECK(otcrypto_ecc_p384_base_point_mult(NULL, &public_key_ver).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecc_p384_base_point_mult(&private_key, NULL).value !=
+        OTCRYPTO_OK.value);
+
   return OTCRYPTO_OK;
 }
 
