@@ -16,6 +16,7 @@
   - [Governing Board](./doc/project_governance/governing_board.md)
   - [Technical Committee](./doc/project_governance/technical_committee.md)
   - [Working Groups](./doc/project_governance/working_group.md)
+    - [Good Practices](./doc/project_governance/wg_good_practice.md)
   - [User accounts](./doc/project_governance/useraccounts.md)
   - [Trademarks](./doc/project_governance/trademark.md)
   - [Code of Conduct](./doc/project_governance/code_of_conduct.md)
