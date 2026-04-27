@@ -10,7 +10,7 @@
 //
 // - Alloc:      If the requested data is not in the read-buffer, a new entry will be allocated with
 //               the requested address, partition, and a hint that indicates if the data needs to be
-//               descrambled or not.
+//               descrambled or not and if ecc is enabled or not.
 // - Update:     Data and error signal is stored in the allocated entry
 // - Invalidate: If a write to an address currently present in the read-buffer is seen, the data is
 //               wiped from the buffer
@@ -28,6 +28,7 @@ module rram_phy_rd_buffer import rram_ctrl_pkg::*; (
   input  logic [AddrW-1:0]                           addr_i,
   input  rram_part_e                                 part_i,
   input  logic                                       descramble_en_i,
+  input  logic                                       ecc_en_i,
   input  logic [WidthMultiple-1:0][BusFullWidth-1:0] data_i,
   input  logic                                       err_i,
   output rd_buf_t                                    rd_buf_o,
@@ -49,15 +50,17 @@ module rram_phy_rd_buffer import rram_ctrl_pkg::*; (
       rd_buf_d.data          = '0;
       rd_buf_d.addr          = '0;
       rd_buf_d.part          = RramPartData;
-      rd_buf_d.err           = '0;
-      rd_buf_d.descramble_en = '0;
+      rd_buf_d.err           = 1'b0;
+      rd_buf_d.descramble_en = 1'b0;
+      rd_buf_d.ecc_en        = 1'b1;
       rd_buf_d.attr          = Invalid;
     end else if (alloc_i) begin
       rd_buf_d.data          = '0;
       rd_buf_d.addr          = addr_i;
       rd_buf_d.part          = part_i;
-      rd_buf_d.err           = '0;
+      rd_buf_d.err           = 1'b0;
       rd_buf_d.descramble_en = descramble_en_i;
+      rd_buf_d.ecc_en        = ecc_en_i;
       rd_buf_d.attr          = Alloc;
     end else if (update_i) begin
       rd_buf_d.data = data_i;
@@ -82,8 +85,9 @@ module rram_phy_rd_buffer import rram_ctrl_pkg::*; (
       rd_buf_q.addr          <= '0;
       rd_buf_q.part          <= RramPartData;
       rd_buf_q.descramble_en <= 1'b0;
+      rd_buf_q.ecc_en        <= 1'b1;
       rd_buf_q.attr          <= Invalid;
-      rd_buf_q.err           <= '0;
+      rd_buf_q.err           <= 1'b0;
     end else begin
       rd_buf_q <= rd_buf_d;
     end
