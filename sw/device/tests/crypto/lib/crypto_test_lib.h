@@ -5,9 +5,18 @@
 #ifndef OPENTITAN_SW_DEVICE_TESTS_CRYPTO_LIB_CRYPTO_TEST_LIB_H_
 #define OPENTITAN_SW_DEVICE_TESTS_CRYPTO_LIB_CRYPTO_TEST_LIB_H_
 
+#include "sw/device/lib/crypto/include/datatypes.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
+
+// Available security levels. The test randomly chooses one.
+static const otcrypto_key_security_level_t available_security_levels[3] = {
+    kOtcryptoKeySecurityLevelLow,
+    kOtcryptoKeySecurityLevelMedium,
+    kOtcryptoKeySecurityLevelHigh,
+};
 
 /**
  * Determine a random security level.
