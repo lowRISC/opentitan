@@ -14,7 +14,8 @@ use serde::Deserialize;
 use cryptotest_commands::commands::CryptotestCommand;
 use cryptotest_commands::rsa_commands::{
     CryptotestRsaDecrypt, CryptotestRsaDecryptResp, CryptotestRsaEncrypt, CryptotestRsaEncryptResp,
-    CryptotestRsaVerify, CryptotestRsaVerifyResp, RsaSubcommand,
+    CryptotestRsaSign, CryptotestRsaSignResp, CryptotestRsaVerify, CryptotestRsaVerifyResp,
+    RsaSubcommand,
 };
 
 use opentitanlib::app::TransportWrapper;
@@ -136,6 +137,56 @@ fn run_rsa_testcase(
                 let rsa_verify_resp =
                     CryptotestRsaVerifyResp::recv(spi_console, opts.timeout, false, false)?;
                 assert_eq!(rsa_verify_resp.result, test_case.result);
+            }
+            "sign" => {
+                // Send RsaSign command.
+                RsaSubcommand::RsaSign.send(spi_console)?;
+
+                // Convert the inputs into the expected format for the CL.
+                let d: Vec<_> = test_case.d.iter().copied().rev().collect();
+
+                // Assemble the input.
+                CryptotestRsaSign {
+                    msg: ArrayVec::try_from(test_case.message.as_slice()).unwrap(),
+                    msg_len: test_case.message.len(),
+                    e: test_case.e,
+                    d: ArrayVec::try_from(d.as_slice()).unwrap(),
+                    n: ArrayVec::try_from(n.as_slice()).unwrap(),
+                    security_level: test_case.security_level,
+                    label: ArrayVec::try_from(test_case.label.as_slice()).unwrap(),
+                    label_len: test_case.label.len(),
+                    hashing,
+                    padding,
+                }
+                .send(spi_console)?;
+
+                // Get the response.
+                let rsa_sign_resp =
+                    CryptotestRsaSignResp::recv(spi_console, opts.timeout, false, false)?;
+
+                // Verify the produced signature against the same key and message.
+                CryptotestCommand::Rsa.send(spi_console)?;
+                RsaSubcommand::RsaVerify.send(spi_console)?;
+
+                // The signature is already in device byte order; pass it as-is.
+                let sig = Vec::from(&rsa_sign_resp.signature[..rsa_sign_resp.signature_len]);
+
+                CryptotestRsaVerify {
+                    msg: ArrayVec::try_from(test_case.message.as_slice()).unwrap(),
+                    msg_len: test_case.message.len(),
+                    e: test_case.e,
+                    n: ArrayVec::try_from(n.as_slice()).unwrap(),
+                    security_level: test_case.security_level,
+                    sig: ArrayVec::try_from(sig.as_slice()).unwrap(),
+                    sig_len: rsa_sign_resp.signature_len,
+                    hashing,
+                    padding,
+                }
+                .send(spi_console)?;
+
+                let rsa_verify_resp =
+                    CryptotestRsaVerifyResp::recv(spi_console, opts.timeout, false, false)?;
+                assert!(rsa_verify_resp.result);
             }
             "decrypt" => {
                 // Send RsaDecrypt command.
