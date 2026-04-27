@@ -41,6 +41,13 @@ def parse_test_vectors(raw_data, args):
                 test_vec["signature"] = str_to_byte_array(test["sig"])
                 test_vec["n"] = str_to_byte_array(group["publicKey"]["modulus"])
                 test_vec["e"] = int(group["publicKey"]["publicExponent"], 16)
+            elif args.operation == "sign":
+                test_vec["n"] = str_to_byte_array(group["privateKey"]["modulus"])
+                test_vec["d"] = str_to_byte_array(group["privateKey"]["privateExponent"])
+                test_vec["e"] = int(group["privateKey"]["publicExponent"], 16)
+                test_vec["label"] = []
+                # Sign-then-verify: result is always True for a valid key.
+                test_vec["result"] = True
             else:
                 raise ValueError(f"Unsupported RSA operation: {args.operation}")
 
@@ -97,7 +104,7 @@ def main():
         "--operation",
         type = str,
         help = "RSA operation under test",
-        choices = ["verify", "decrypt"],
+        choices = ["verify", "decrypt", "sign"],
     )
     parser.add_argument(
         "--padding",

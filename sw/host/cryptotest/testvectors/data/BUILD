@@ -729,6 +729,79 @@ WYCHEPROOF_RSA_PSS_SUFFIXES = {
     for wy_suffix in suffixes
 ]
 
+# OAEP source files that carry private keys (e = 65537) reused as sign
+# test vectors.  Each entry maps an OAEP suffix to the hash name used in
+# the output file name; the parser reads group["sha"] for the actual alg.
+WYCHEPROOF_RSA_OAEP_SIGN_SOURCES = {
+    2048: [
+        ("sha256_mgf1sha256", "sha256"),
+        ("sha384_mgf1sha384", "sha384"),
+        ("sha512_mgf1sha512", "sha512"),
+    ],
+    3072: [
+        ("sha256_mgf1sha256", "sha256"),
+        ("sha512_mgf1sha512", "sha512"),
+    ],
+    4096: [
+        ("sha256_mgf1sha256", "sha256"),
+        ("sha512_mgf1sha512", "sha512"),
+    ],
+}
+
+[
+    run_binary(
+        name = "wycheproof_rsa_{}_{}_{}_sign_json".format(
+            padding_mode,
+            security_level,
+            hash_suffix,
+        ),
+        srcs = [
+            "@wycheproof//testvectors_v1:rsa_oaep_{}_{}_test.json".format(
+                security_level,
+                oaep_suffix,
+            ),
+            "//sw/host/cryptotest/testvectors/data/schemas:rsa_schema.json",
+        ],
+        outs = [":wycheproof_rsa_{}_{}_{}_sign.json".format(
+            padding_mode,
+            security_level,
+            hash_suffix,
+        )],
+        args = [
+            "--src",
+            "$(location @wycheproof//testvectors_v1:rsa_oaep_{}_{}_test.json)".format(
+                security_level,
+                oaep_suffix,
+            ),
+            "--dst",
+            "$(location :wycheproof_rsa_{}_{}_{}_sign.json)".format(
+                padding_mode,
+                security_level,
+                hash_suffix,
+            ),
+            "--schema",
+            "$(location //sw/host/cryptotest/testvectors/data/schemas:rsa_schema.json)",
+            "--operation",
+            "sign",
+            "--padding",
+            padding_mode,
+            "--security_level",
+            str(security_level),
+        ],
+        tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_rsa_parser",
+    )
+    for security_level in [
+        2048,
+        3072,
+        4096,
+    ]
+    for oaep_suffix, hash_suffix in WYCHEPROOF_RSA_OAEP_SIGN_SOURCES[security_level]
+    for padding_mode in [
+        "pkcs1_1.5",
+        "pss",
+    ]
+]
+
 [
     run_binary(
         name = cryptotest_name,
