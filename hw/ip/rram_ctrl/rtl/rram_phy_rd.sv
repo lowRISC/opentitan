@@ -77,7 +77,7 @@ module rram_phy_rd
   meta_entry_t meta_d, meta_q;
   logic meta_fifo_req, meta_fifo_rdy, meta_fifo_valid, meta_fifo_pop;
   logic meta_fifo_err;
-  logic [2:0] unused_meta_depth;
+  logic [prim_util_pkg::vbits(NumOutstandingRdReq + 1)-1:0] unused_meta_depth;
 
   /////////////////////////////////
   // Rd-fifo signals
@@ -512,7 +512,7 @@ module rram_phy_rd
     assign scramble_req_o.addr     = calc_addr_q;
   end else begin : gen_direct_mask_req
     `ASSERT(PendingCalcReq, (calc_start |-> (calc_busy_q == 1'b0)))
-    assign scramble_req_o.calc_req = calc_start ? 1'b1 : calc_busy_q;
+    assign scramble_req_o.calc_req = calc_start ? 1'b1        : calc_busy_q;
     assign scramble_req_o.addr     = calc_start ? calc_addr_d : calc_addr_q;
   end
 
