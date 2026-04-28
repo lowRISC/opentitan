@@ -176,6 +176,10 @@ ed25519_gen_public_key:
        w10 <= A.x, w11 <= A.y */
   jal      x1, ext_to_affine
 
+  /* Check that A is a curve point. */
+  jal      x1, ext_is_on_curve
+  jal      x1, trigger_fault_if_fg0_not_z
+
   /* Encode A.
        w11 <= encode(w10, w11) = A_ */
   jal      x1, affine_encode
@@ -399,8 +403,14 @@ ed25519_verify_var:
        [w13:w10] <= w28 * [w9:w6] = [8][S]B */
   jal      x1, ext_scmul
 
-  /* Convert LHS [8][S]B to affine and encode. */
+  /* Convert LHS [8][S]B to affine. */
   jal      x1, ext_to_affine
+
+  /* Check that LHS is a curve point. */
+  jal      x1, ext_is_on_curve
+  jal      x1, trigger_fault_if_fg0_not_z
+
+  /* Encode LHS. */
   jal      x1, affine_encode
 
   /* Write encoded LHS to dmem[ed25519_verify_lhs] */
@@ -415,8 +425,14 @@ ed25519_verify_var:
   bn.mov   w12, w4
   bn.mov   w13, w5
 
-  /* Convert RHS to affine and encode. */
+  /* Convert RHS to affine. */
   jal      x1, ext_to_affine
+
+  /* Check that RHS is a curve point. */
+  jal      x1, ext_is_on_curve
+  jal      x1, trigger_fault_if_fg0_not_z
+
+  /* Encode RHS. */
   jal      x1, affine_encode
 
   /* Write encoded RHS to dmem[ed25519_verify_rhs] */
@@ -546,6 +562,10 @@ ed25519_sign_stage1:
   /* Convert R to affine coordinates.
        w10 <= R.x, w11 <= R.y */
   jal      x1, ext_to_affine
+
+  /* Check that R is a curve point. */
+  jal      x1, ext_is_on_curve
+  jal      x1, trigger_fault_if_fg0_not_z
 
   /* Encode R.
        w11 <= encode(w10, w11) = R_ */
@@ -1845,6 +1865,42 @@ fe_pow_2252m3:
   /* w22 <= w22 * w16 = a^(2^252 - 2^2 + 1) = a^(2^252 - 3) */
   bn.mov  w23, w16
   jal     x1, fe_mul
+
+  ret
+
+/**
+ * Trigger a fault if the FG0.Z flag is 0.
+ *
+ * If the flag is 0, then this routine will trigger an `ILLEGAL_INSN` error and
+ * abort the OTBN program. If the flag is 1, the routine will essentially do
+ * nothing.
+ *
+ * NOTE: Be careful when calling this routine that the FG0.Z flag is not
+ * sensitive; since aborting the program will be quicker than completing it,
+ * the flag's value is likely clearly visible to an attacker through timing.
+ *
+ * @param[in]  FG0.Z: boolean indicating fault condition when 0
+ *
+ * clobbered registers: x2, w31
+ * clobbered flag groups: none
+ */
+trigger_fault_if_fg0_not_z:
+  /* Read the FG0.Z flag (position 3).
+       x2 <= FG0.Z */
+  csrrw     x2, FG0, x0
+  andi      x2, x2, 8
+  xori      x2, x2, 8
+  addi      x2, x2, 31
+
+  /* The `bn.lid` instruction causes an `ILLEGAL_INSN` error if the index of the
+     bignum register (stored in x2 in this case) is invalid. Therefore, if FG0.Z
+     is 0, this instruction causes an error, but if FG0.Z is 1 it simply loads
+     the word at address 0 into w31. */
+  bn.lid    x2, 0(x0)
+
+  /* If we get here, the flag must have been 1. Restore w31 to zero and return.
+       w31 <= 0 */
+  bn.xor    w31, w31, w31
 
   ret
 
