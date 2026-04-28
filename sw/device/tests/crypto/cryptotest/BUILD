@@ -270,12 +270,32 @@ RSA_TESTVECTOR_TARGETS = [
         "pkcs1_1.5",
         "pss",
     ]
+] + [
+    "//sw/host/cryptotest/testvectors/data:wycheproof_rsa_{}_{}_{}_sign.json".format(
+        padding_mode,
+        security_level,
+        hash_suffix,
+    )
+    for security_level in [
+        2048,
+        3072,
+        4096,
+    ]
+    for hash_suffix in [
+        "sha3_256",
+        "sha3_384",
+        "sha3_512",
+    ]
+    for padding_mode in [
+        "pkcs1_1.5",
+        "pss",
+    ]
 ]
 
 RSA_TESTVECTOR_ARGS = " ".join([
     "--rsa-json=\"$(rootpath {})\"".format(target)
     for target in RSA_TESTVECTOR_TARGETS
-])
+] + ["--run_keygen"])
 
 cryptotest(
     name = "rsa_kat",
