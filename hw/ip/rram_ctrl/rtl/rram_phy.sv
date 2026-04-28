@@ -80,7 +80,7 @@ module rram_phy
 
   logic phy_req;
   logic phy_rdy;
-  logic phy_init_done;
+  logic phy_init_done_q;
 
   // phy_rd signals
   logic rd_req;
@@ -140,17 +140,17 @@ module rram_phy
   // - there is a write request pending
   // - a RRAM write operation is in progress
   // - the host is disabled
-  // - phy is initialized
-  assign host_req = host_req_i & (ctrl_wr_pending == 1'b0) & (wr_busy == 1'b0) & phy_init_done &
+  // - phy is not initialized
+  assign host_req = host_req_i & (ctrl_wr_pending == 1'b0) & (wr_busy == 1'b0) & phy_init_done_q &
                     mubi4_test_false_strict(rram_disable[HostDisableIdx]);
 
   // The controller request is suppressed if:
   // - there is already a controller request pending (wr or rd)
   // - a RRAM write operation is in progress
-  // - phy is initialized
+  // - phy is not initialized
   // - the controller has been disabled
   assign ctrl_req = ctrl_req_i & (ctrl_rd_pending == 1'b0) & (ctrl_wr_pending == 1'b0) &
-                    (wr_busy == 1'b0) & phy_init_done &
+                    (wr_busy == 1'b0) & phy_init_done_q &
                     mubi4_test_false_strict(rram_disable[CtrlDisableIdx]);
 
   prim_arbiter_tree_dup #(
@@ -367,20 +367,19 @@ module rram_phy
         rram_macro_req_o.part   = wr_part;
         rram_macro_req_o.ecc_en = wr_ecc_en;
       end
-      default:
-      ;
+      default: ;
     endcase
   end
 
   // phy init done
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      phy_init_done <= '0;
+      phy_init_done_q <= '0;
     end else begin
-      phy_init_done <= rram_macro_rsp_i.init_done;
+      phy_init_done_q <= rram_macro_rsp_i.init_done;
     end
   end
-  assign phy_init_done_o = phy_init_done;
+  assign phy_init_done_o = phy_init_done_q;
 
   //////////////////////////////
   // Shared scrambling module //

@@ -240,8 +240,24 @@ module rram_ctrl
   logic                    phy_host_rd_done;
   logic [BusFullWidth-1:0] phy_host_rd_data;
 
+  // phy status and error signals
+  logic phy_wr_busy;
   logic phy_init_done;
+  logic phy_host_spurious_done;
+  logic phy_host_gnt_err;
+  logic phy_fsm_err;
+  logic phy_cnt_err;
+  logic phy_fifo_err;
+  logic phy_arb_err;
+  logic phy_rd_intg_err;
+  logic phy_rd_ctrl_err;
   logic phy_wr_intg_err;
+  logic phy_relbl_err;
+
+  // ECC error information
+  logic             phy_ecc_corr_err;
+  logic [AddrW-1:0] phy_ecc_corr_addr;
+  rram_part_e       phy_ecc_corr_part;
 
   // local escalation signals
   lc_ctrl_pkg::lc_tx_t rma_dis_access;
@@ -336,15 +352,15 @@ module rram_ctrl
   assign hw2reg.fault_status.seed_err.d         = 1'b1;
   assign hw2reg.fault_status.seed_err.de        = 1'b0;
   assign hw2reg.fault_status.phy_relbl_err.d    = 1'b1;
-  assign hw2reg.fault_status.phy_relbl_err.de   = 1'b0;
+  assign hw2reg.fault_status.phy_relbl_err.de   = phy_relbl_err;
   assign hw2reg.fault_status.phy_rd_intg_err.d  = 1'b1;
-  assign hw2reg.fault_status.phy_rd_intg_err.de = 1'b0;
+  assign hw2reg.fault_status.phy_rd_intg_err.de = phy_rd_intg_err;
   assign hw2reg.fault_status.phy_rd_ctrl_err.d  = 1'b1;
-  assign hw2reg.fault_status.phy_rd_ctrl_err.de = 1'b0;
+  assign hw2reg.fault_status.phy_rd_ctrl_err.de = phy_rd_ctrl_err;
   assign hw2reg.fault_status.spurious_done.d    = 1'b1;
-  assign hw2reg.fault_status.spurious_done.de   = 1'b0;
+  assign hw2reg.fault_status.spurious_done.de   = phy_host_spurious_done;
   assign hw2reg.fault_status.host_gnt_err.d     = 1'b1;
-  assign hw2reg.fault_status.host_gnt_err.de    = 1'b0;
+  assign hw2reg.fault_status.host_gnt_err.de    = phy_host_gnt_err;
 
   // Standard faults - things like FSM / counter / tlul integrity
   assign hw2reg.std_fault_status.reg_intg_err.d     = 1'b1;
@@ -362,30 +378,32 @@ module rram_ctrl
   assign hw2reg.std_fault_status.phy_wr_intg_err.d  = 1'b1;
   assign hw2reg.std_fault_status.phy_wr_intg_err.de = phy_wr_intg_err;
   assign hw2reg.std_fault_status.phy_fifo_err.d     = 1'b1;
-  assign hw2reg.std_fault_status.phy_fifo_err.de    = 1'b0;
+  assign hw2reg.std_fault_status.phy_fifo_err.de    = phy_fifo_err;
   assign hw2reg.std_fault_status.phy_fsm_err.d      = 1'b1;
-  assign hw2reg.std_fault_status.phy_fsm_err.de     = 1'b0;
+  assign hw2reg.std_fault_status.phy_fsm_err.de     = phy_fsm_err;
   assign hw2reg.std_fault_status.phy_cnt_err.d      = 1'b1;
-  assign hw2reg.std_fault_status.phy_cnt_err.de     = 1'b0;
+  assign hw2reg.std_fault_status.phy_cnt_err.de     = phy_cnt_err;
   assign hw2reg.std_fault_status.phy_arb_err.d      = 1'b1;
-  assign hw2reg.std_fault_status.phy_arb_err.de     = 1'b0;
+  assign hw2reg.std_fault_status.phy_arb_err.de     = phy_arb_err;
   assign hw2reg.std_fault_status.ctrl_fsm_err.d     = 1'b1;
   assign hw2reg.std_fault_status.ctrl_fsm_err.de    = rd_fsm_err | wr_fsm_err | arb_fsm_err;
   assign hw2reg.std_fault_status.ctrl_cnt_err.d     = 1'b1;
   assign hw2reg.std_fault_status.ctrl_cnt_err.de    = rd_cnt_err | wr_cnt_err;
 
   // Location of the last correctable error
-  assign hw2reg.corr_err_loc.addr.d  = '0;
-  assign hw2reg.corr_err_loc.addr.de = '0;
-  assign hw2reg.corr_err_loc.part.d  = '0;
-  assign hw2reg.corr_err_loc.part.de = '0;
-  assign hw2reg.corr_err_cnt.d       = '0;
-  assign hw2reg.corr_err_cnt.de      = '0;
+  assign hw2reg.corr_err_loc.addr.d = {phy_ecc_corr_addr, {(BusAddrByteW - AddrW){1'b0}}};
+  assign hw2reg.corr_err_loc.addr.de = phy_ecc_corr_err;
+  assign hw2reg.corr_err_loc.part.d  = logic'(phy_ecc_corr_part);
+  assign hw2reg.corr_err_loc.part.de = phy_ecc_corr_err;
+  // corr_err_cnt is saturating
+  assign hw2reg.corr_err_cnt.d       =  &reg2hw.corr_err_cnt.q ? reg2hw.corr_err_cnt.q :
+                                                                 reg2hw.corr_err_cnt.q + 1'b1;
+  assign hw2reg.corr_err_cnt.de = phy_ecc_corr_err;
 
   // Phy status
   assign hw2reg.phy_status.init_done.d  = phy_init_done;
   assign hw2reg.phy_status.init_done.de = 1'b1;
-  assign hw2reg.phy_status.wr_busy.d    = 1'b0;
+  assign hw2reg.phy_status.wr_busy.d    = phy_wr_busy;
   assign hw2reg.phy_status.wr_busy.de   = 1'b1;
 
   ///////////////////////
@@ -556,6 +574,11 @@ module rram_ctrl
   /////////////////////
   // LCMGR_HW_ACCESS //
   /////////////////////
+  rram_key_t addr_key;
+  rram_key_t data_key;
+  rram_key_t rand_addr_key;
+  rram_key_t rand_data_key;
+
   // todo add rram_ctrl_lcmgr
   assign otp_key_o.data_req = 1'b0;
   assign otp_key_o.addr_req = 1'b0;
@@ -563,8 +586,12 @@ module rram_ctrl
   assign rma_dis_access = lc_ctrl_pkg::Off;
   assign rma_ack_o      = lc_ctrl_pkg::Off;
 
-  assign lcmgr_keys_valid = 1'b0;
+  assign lcmgr_keys_valid = 1'b1;
   assign lcmgr_init_done  = 1'b1;
+  assign addr_key         = '0;
+  assign data_key         = '0;
+  assign rand_addr_key    = '0;
+  assign rand_data_key    = '0;
 
   assign hw_lcmgr_req              = 1'b0;
   assign hw_lcmgr_ctrl.start.q     = 1'b0;
@@ -597,8 +624,6 @@ module rram_ctrl
   assign hw_otp_rready           = 1'b0;
   assign hw_otp_wvalid           = 1'b0;
   assign hw_otp_wdata            = '0;
-
-  assign pwrmgr_o.nvm_idle = 1'b1;
 
   ///////////////////////
   // SW/HW ARBITRATION //
@@ -905,26 +930,74 @@ module rram_ctrl
   //////////////
   // RRAM phy //
   //////////////
-  // todo add rram_phy
-  assign phy_wr_intg_err = 1'b0;
-  assign phy_init_done   = 1'b1;
+  rram_phy #(
+    .SecScrambleEn (SecScrambleEn)
+  ) u_rram_phy (
+    .clk_i,
+    .rst_ni,
+    .rram_disable_i    (rram_disable[PhyDisableIdx]),
+    // Scrambling keys
+    .addr_key_i        (addr_key),
+    .data_key_i        (data_key),
+    .rand_addr_key_i   (rand_addr_key),
+    .rand_data_key_i   (rand_data_key),
+    // Ctrl port
+    .ctrl_req_i        (phy_ctrl_req),
+    .ctrl_scramble_en_i(phy_ctrl_scramble_en),
+    .ctrl_ecc_en_i     (phy_ctrl_ecc_en),
+    .ctrl_rd_i         (phy_ctrl_rd),
+    .ctrl_wr_i         (phy_ctrl_wr),
+    .ctrl_part_i       (ctrl_part),
+    .ctrl_addr_i       (phy_ctrl_addr),
+    .ctrl_wr_data_i    (wr_data),
+    .ctrl_wr_last_i    (wr_last),
+    .ctrl_wr_done_o    (phy_ctrl_wr_done),
+    .ctrl_rd_done_o    (phy_ctrl_rd_done),
+    .ctrl_rd_data_o    (phy_ctrl_rd_data),
+    .ctrl_rd_err_o     (phy_ctrl_rd_err),
+    // Host port
+    .host_req_i        (phy_host_req),
+    .host_gnt_o        (phy_host_gnt),
+    .host_scramble_en_i(phy_host_scramble_en),
+    .host_ecc_en_i     (phy_host_ecc_en),
+    .host_addr_i       (host_addr),
+    .host_rd_done_o    (phy_host_rd_done),
+    .host_rd_data_o    (phy_host_rd_data),
+    .host_rd_err_o     (phy_host_rd_err),
+    // Status signals
+    .phy_wr_busy_o     (phy_wr_busy),
+    .phy_init_done_o   (phy_init_done),
+    // Error signals
+    .spurious_done_o   (phy_host_spurious_done),
+    .host_gnt_err_o    (phy_host_gnt_err),
+    .fsm_err_o         (phy_fsm_err),
+    .cnt_err_o         (phy_cnt_err),
+    .wr_intg_err_o     (phy_wr_intg_err),
+    .rd_intg_err_o     (phy_rd_intg_err),
+    .rd_ctrl_err_o     (phy_rd_ctrl_err),
+    .arb_err_o         (phy_arb_err),
+    .fifo_err_o        (phy_fifo_err),
+    .ecc_fatal_err_o   (phy_relbl_err),
+    .ecc_corr_err_o    (phy_ecc_corr_err),
+    .ecc_corr_addr_o   (phy_ecc_corr_addr),
+    .ecc_corr_part_o   (phy_ecc_corr_part),
+    // RRAM macro interface
+    .rram_macro_req_o  (rram_macro_o),
+    .rram_macro_rsp_i  (rram_macro_i)
+  );
 
-  assign phy_ctrl_rd_err  = 1'b0;
-  assign phy_ctrl_rd_data = '0;
-  assign phy_ctrl_rd_done = 1'b0;
-  assign phy_ctrl_wr_done = 1'b0;
+  // The power manager needs to know when it is safe to turn the power off.
+  // This is the case when no write operation is in progress.
+  logic rram_idle_q;
+  assign pwrmgr_o.nvm_idle = rram_idle_q;
 
-  assign phy_host_gnt     = 1'b0;
-  assign phy_host_rd_err  = 1'b0;
-  assign phy_host_rd_done = 1'b0;
-  assign phy_host_rd_data = '0;
-
-  assign rram_macro_o.rd_req  = 1'b0;
-  assign rram_macro_o.wr_req  = 1'b0;
-  assign rram_macro_o.wr_last = 1'b0;
-  assign rram_macro_o.addr    = '0;
-  assign rram_macro_o.wr_data = '0;
-  assign rram_macro_o.part    = RramPartData;
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_idle_reg
+    if (!rst_ni) begin
+      rram_idle_q <= 1'b0;
+    end else begin
+      rram_idle_q <= ~phy_wr_busy;
+    end
+  end
 
   ///////////////////
   // Alert senders //
@@ -1054,7 +1127,7 @@ module rram_ctrl
   assign intr_event[RdLvl]   = reg2hw.fifo_lvl.rd.q <= MaxFifoWidth'(rd_fifo_depth);
   // Event types
   assign intr_event[OpDone]  = sw_ctrl_done;
-  assign intr_event[CorrErr] = 1'b0; // todo connect in future commits
+  assign intr_event[CorrErr] = phy_ecc_corr_err;
 
   prim_intr_hw #(
     .Width(1),
@@ -1198,5 +1271,21 @@ module rram_ctrl
                                        alert_tx_o[1])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(TlProgLcGateFsm_A, u_wr_tl_gate.u_state_regs,
                                        alert_tx_o[1])
+
+  // rram_phy assertions
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(RramPhyWrFsmCheck_A,
+    u_rram_phy.u_rram_phy_wr.u_state_regs, alert_tx_o[1])
+
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PhyWordCntAlertCheck_A,
+    u_rram_phy.u_rram_phy_wr.u_word_cnt, alert_tx_o[1])
+
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(PhyMaskFifo,
+    u_rram_phy.u_rram_phy_rd.u_mask_fifo, alert_tx_o[1])
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(PhyRdFifo,
+    u_rram_phy.u_rram_phy_rd.u_rd_fifo, alert_tx_o[1])
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(PhyRdMetaFifo,
+    u_rram_phy.u_rram_phy_rd.u_meta_fifo, alert_tx_o[1])
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(PhyMetaFifo,
+    u_rram_phy.u_meta_fifo, alert_tx_o[1])
 
 endmodule
