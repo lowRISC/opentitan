@@ -36,6 +36,8 @@ def normalize_public_header(out_dir, headers):
     for header in headers:
         with open(header, "r") as h:
             content = h.read()
+        content = content.replace('OT_WARN_UNUSED_RESULT', '')
+        content = content.replace('OT_NORETURN', '')
         # Remove extra space at start or end
         content = re.sub(r"^\s+", "", content, flags=re.MULTILINE)
         content = re.sub(r"\s+$", "", content, flags=re.MULTILINE)
@@ -176,16 +178,10 @@ def generate_linker_script(out_dir, prefix, address):
     section = """
 SECTIONS
 {
-    .metadata : {
-        _libotcrypto_start_ = .;
-          KEEP(*(.metadata))
-    } > ROM
-
-    .jump_table : {
-        KEEP(*(.jump_table))
-    } > ROM
-
     .text : {
+        _libotcrypto_start_ = .;
+        KEEP(*(.metadata))
+        KEEP(*(.jump_table))
         KEEP(*(.text))
         *(.text*)
         KEEP(*(.rodata*))

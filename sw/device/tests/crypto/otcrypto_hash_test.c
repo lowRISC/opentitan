@@ -10,6 +10,7 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/self_integrity.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -61,6 +62,19 @@ OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   status_t result = OK_STATUS();
   CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+
+#ifdef HASH_SELF_CHECK_ENABLE
+  otcrypto_status_t check_status = otcrypto_integrity_check();
+
+  if (!status_ok(check_status)) {
+    LOG_ERROR("FIPS Library integrity check failed! Code: 0x%08x",
+              check_status.value);
+    return false;
+  }
+
+  LOG_INFO("Integrity check passed! FIPS boundary is verified.");
+#endif
+
   result = hash_test();
   return status_ok(result);
 }

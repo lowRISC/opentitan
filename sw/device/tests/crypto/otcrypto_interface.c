@@ -32,6 +32,9 @@ volatile otcrypto_interface_t otcrypto = {
     .check_word32_buf = &otcrypto_check_word32_buf,
     .check_const_word32_buf = &otcrypto_check_const_word32_buf,
 
+    // Self integrity.
+    .integrity_check = &otcrypto_integrity_check,
+
     // Symmetric key generation.
     .symmetric_keygen = &otcrypto_symmetric_keygen,
     .hw_backed_key = &otcrypto_hw_backed_key,

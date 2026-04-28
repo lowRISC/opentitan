@@ -124,3 +124,5 @@ otcrypto_shake128
 otcrypto_shake256
 otcrypto_cshake128
 otcrypto_cshake256
+otcrypto_init
+otcrypto_integrity_check
