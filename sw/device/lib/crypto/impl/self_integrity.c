@@ -11,7 +11,8 @@
 
 extern const uint8_t _libotcrypto_start_[];
 extern const uint8_t _libotcrypto_end_[];
-extern const uint8_t _libotcrypto_hash_[];
+__attribute__((used, section(".libotcrypto_hash")))
+const uint8_t _libotcrypto_hash_[48] = {0};
 
 otcrypto_status_t otcrypto_integrity_check(void) {
   const size_t lib_len = (size_t)(_libotcrypto_end_ - _libotcrypto_start_);
@@ -26,14 +27,7 @@ otcrypto_status_t otcrypto_integrity_check(void) {
 
   HARDENED_TRY(otcrypto_sha2_init(kOtcryptoHashModeSha384, &ctx));
 
-  // _libotcrypto_start_ evaluates to 0 = NULL, which the API does not accept.
-  // We hash the first byte from the stack to bypass it.
-  uint8_t first_byte = _libotcrypto_start_[0];
-  otcrypto_const_byte_buf_t first_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, &first_byte, 1);
-  HARDENED_TRY(otcrypto_sha2_update(&ctx, &first_buf));
-
-  size_t acc_len = 1;
+  size_t acc_len = 0;
   const size_t kMaxChunkSize = 2048;
 
   while (acc_len < lib_len) {
@@ -54,7 +48,8 @@ otcrypto_status_t otcrypto_integrity_check(void) {
 
   uint32_t diff = 0;
   for (size_t i = 0; i < 48; i++) {
-    diff |= ((uint8_t *)digest.data)[i] ^ _libotcrypto_hash_[i];
+    // launder32 prevents the compiler from optimizing out the comparison.
+    diff |= ((uint8_t *)digest.data)[i] ^ launder32(_libotcrypto_hash_[i]);
   }
 
   if (diff != 0) {

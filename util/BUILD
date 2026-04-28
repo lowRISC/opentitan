@@ -39,8 +39,8 @@ py_binary(
 )
 
 py_binary(
-    name = "generate_jump_table",
-    srcs = ["generate_jump_table.py"],
+    name = "extract_symbols",
+    srcs = ["extract_symbols.py"],
 )
 
 py_binary(

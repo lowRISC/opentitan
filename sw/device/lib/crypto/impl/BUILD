@@ -170,7 +170,7 @@ cc_library(
     srcs = ["self_integrity.c"],
     hdrs = ["//sw/device/lib/crypto/include:self_integrity.h"],
     local_defines = select({
-        "//rules/configs:hashed": ["HASH_SELF_CHECK_ENABLE"],
+        "//sw/device/lib/crypto/configs:hashed": ["HASH_SELF_CHECK_ENABLE"],
         "//conditions:default": [],
     }),
     deps = [

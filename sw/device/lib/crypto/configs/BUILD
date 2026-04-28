@@ -6,14 +6,9 @@ load("@bazel_skylib//rules:common_settings.bzl", "bool_flag", "string_flag")
 
 package(default_visibility = ["//visibility:public"])
 
-exports_files(["fips_all.txt"])
+exports_files(["crypto_fips_all.txt"])
 
-config_setting(
-    name = "pic",
-    flag_values = {
-        ":pic_flag": "True",
-    },
-)
+exports_files(["otcrypto_blob.ld"])
 
 config_setting(
     name = "hashed",
@@ -37,23 +32,10 @@ config_setting(
 )
 
 config_setting(
-    name = "type_relocatable",
+    name = "crypto_fips_all",
     flag_values = {
-        ":type_flag": "relocatable",
+        ":cryptolib_config_flag": "crypto_fips_all",
     },
-)
-
-config_setting(
-    name = "fips_all",
-    flag_values = {
-        ":config_flag": "fips_all",
-    },
-)
-
-# Enable compilation of position-independent code
-bool_flag(
-    name = "pic_flag",
-    build_setting_default = False,
 )
 
 # Indicate how crypto API should be compiled:
@@ -80,10 +62,10 @@ bool_flag(
 )
 
 string_flag(
-    name = "config_flag",
-    build_setting_default = "dev",
+    name = "cryptolib_config_flag",
+    build_setting_default = "crypto_dev",
     values = [
-        "dev",
-        "fips_all",
+        "crypto_dev",
+        "crypto_fips_all",
     ],
 )

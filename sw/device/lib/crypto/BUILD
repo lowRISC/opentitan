@@ -12,16 +12,9 @@ load("//rules:linker.bzl", "ld_library")
 
 cc_library(
     name = "otcrypto_api",
-    copts = select({
-        "//rules/configs:pic": [
-            "-mcmodel=medany",
-            "-mno-relax",
-        ],
-        "//conditions:default": ["-mcmodel=medlow"],
-    }),
     defines =
         select({
-            "//rules/configs:hashed": ["HASH_SELF_CHECK_ENABLE"],
+            "//sw/device/lib/crypto/configs:hashed": ["HASH_SELF_CHECK_ENABLE"],
             "//conditions:default": [],
         }),
     deps = [
@@ -53,7 +46,7 @@ cc_library(
 opentitan_binary_blob(
     name = "otcrypto_binary_blob_api",
     config = select({
-        "//rules/configs:fips_all": "//rules/configs:fips_all.txt",
+        "//sw/device/lib/crypto/configs:crypto_fips_all": "//sw/device/lib/crypto/configs:crypto_fips_all.txt",
         "//conditions:default": None,
     }),
     deps_blob = [
@@ -62,37 +55,6 @@ opentitan_binary_blob(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/runtime:log",
     ],
-    # Public headers so generate_jump_table.py can parse them
-    header = [
-        "//sw/device/lib/crypto/include:aes.h",
-        "//sw/device/lib/crypto/include:aes_gcm.h",
-        "//sw/device/lib/crypto/include:drbg.h",
-        "//sw/device/lib/crypto/include:ecc_curve25519.h",
-        "//sw/device/lib/crypto/include:ecc_p256.h",
-        "//sw/device/lib/crypto/include:ecc_p384.h",
-        "//sw/device/lib/crypto/include:hkdf.h",
-        "//sw/device/lib/crypto/include:hmac.h",
-        "//sw/device/lib/crypto/include:kdf_ctr.h",
-        "//sw/device/lib/crypto/include:key_transport.h",
-        "//sw/device/lib/crypto/include:kmac.h",
-        "//sw/device/lib/crypto/include:integrity.h",
-        "//sw/device/lib/crypto/include:kmac_kdf.h",
-        "//sw/device/lib/crypto/include:otcrypto.h",
-        "//sw/device/lib/crypto/include:rsa.h",
-        "//sw/device/lib/crypto/include:config.h",
-        "//sw/device/lib/crypto/include:sha2.h",
-        "//sw/device/lib/crypto/include:sha3.h",
-        "//sw/device/lib/crypto/include:x25519.h",
-        "//sw/device/lib/crypto/include:self_integrity.h",
-    ],
-    linkopts = select({
-        "//rules/configs:pic": ["-mno-relax"],
-        "//conditions:default": [],
-    }),
-    pic = select({
-        "//rules/configs:pic": True,
-        "//conditions:default": False,
-    }),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/crypto/include:crypto_hdrs",
@@ -103,10 +65,9 @@ opentitan_binary_blob(
 ot_static_library(
     name = "otcrypto",
     deps = select({
-        "//rules/configs:type_static": [":otcrypto_api"],
-        "//rules/configs:type_binary_blob": [":otcrypto_binary_blob_api"],
-        #"//rules/configs:type_relocatable": [":otcrypto_relocatable_api",],
-        "//conditions:default": [],
+        "//sw/device/lib/crypto/configs:type_static": [":otcrypto_api"],
+        "//sw/device/lib/crypto/configs:type_binary_blob": [":otcrypto_binary_blob_api"],
+        "//conditions:default": [":otcrypto_api"],
     }),
 )
 
@@ -159,12 +120,8 @@ pkg_tar(
     extension = "tar.xz",
 )
 
+# Rule to be used to view the dis and elf files for the binary blob
 filegroup(
-    name = "otcrypto_binary_blob_elf",
-    srcs = [":otcrypto_binary_blob_api"],
-)
-
-filegroup(
-    name = "otcrypto_binary_blob_dis",
+    name = "otcrypto_binary_blob_inspection",
     srcs = [":otcrypto_binary_blob_api"],
 )

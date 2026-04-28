@@ -26,6 +26,7 @@ exports_files(glob(["**"]))
         "objcopy",
         "objdump",
         "strip",
+        "nm",
     ]
 ]
 
