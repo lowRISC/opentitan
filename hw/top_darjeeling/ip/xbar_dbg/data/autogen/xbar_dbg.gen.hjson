@@ -33,10 +33,7 @@
     clk_dbg_i: clkmgr_aon_clocks.clk_main_infra
     clk_peri_i: clkmgr_aon_clocks.clk_io_infra
   }
-  domain:
-  [
-    "0"
-  ]
+  domain: "0"
   connections:
   {
     dbg:

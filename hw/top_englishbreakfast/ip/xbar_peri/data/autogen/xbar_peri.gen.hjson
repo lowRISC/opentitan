@@ -40,10 +40,7 @@
     clk_spi_host0_i: clkmgr_aon_clocks.clk_io_infra
     clk_usb_i: clkmgr_aon_clocks.clk_usb_infra
   }
-  domain:
-  [
-    "0"
-  ]
+  domain: "0"
   connections:
   {
     main:

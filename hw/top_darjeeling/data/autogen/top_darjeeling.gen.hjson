@@ -523,10 +523,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: gpio
@@ -660,10 +657,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: spi_device
@@ -846,10 +840,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: i2c0
@@ -986,10 +977,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: rv_timer
@@ -1064,10 +1052,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: otp_ctrl
@@ -1356,10 +1341,7 @@
         }
       ]
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: otp_macro
@@ -1640,10 +1622,7 @@
         }
       ]
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: lc_ctrl
@@ -2306,10 +2285,7 @@
         }
       ]
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: alert_handler
@@ -2445,10 +2421,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: spi_host0
@@ -2565,10 +2538,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: pwrmgr_aon
@@ -2614,11 +2584,7 @@
           domain: Aon
         }
       }
-      domain:
-      [
-        Aon
-        "0"
-      ]
+      domain: Aon
       param_decl:
       {
         EscNumSeverities: AlertHandlerEscNumSeverities
@@ -2983,11 +2949,7 @@
           domain: Aon
         }
       }
-      domain:
-      [
-        Aon
-        "0"
-      ]
+      domain: Aon
       attr: ipgen
       clock_connections:
       {
@@ -3214,10 +3176,7 @@
           domain: Aon
         }
       }
-      domain:
-      [
-        Aon
-      ]
+      domain: Aon
       ipgen_params:
       {
         ext_clk_bypass: false
@@ -3345,10 +3304,7 @@
           domain: Aon
         }
       }
-      domain:
-      [
-        Aon
-      ]
+      domain: Aon
       attr: ipgen
       clock_connections:
       {
@@ -3442,10 +3398,7 @@
           domain: Aon
         }
       }
-      domain:
-      [
-        Aon
-      ]
+      domain: Aon
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_timers
@@ -3607,11 +3560,7 @@
           domain: "0"
         }
       }
-      domain:
-      [
-        Aon
-        "0"
-      ]
+      domain: Aon
       attr: reggen_only
       clock_connections:
       {
@@ -3666,11 +3615,7 @@
           domain: Aon
         }
       }
-      domain:
-      [
-        Aon
-        "0"
-      ]
+      domain: Aon
       base_addrs:
       {
         core:
@@ -4011,10 +3956,7 @@
           domain: Aon
         }
       }
-      domain:
-      [
-        Aon
-      ]
+      domain: Aon
       param_decl:
       {
         InstrExec: "0"
@@ -4701,10 +4643,7 @@
           index: -1
         }
       ]
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: rv_plic
@@ -4796,10 +4735,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: aes
@@ -4991,10 +4927,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: hmac
@@ -5055,10 +4988,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: kmac
@@ -5295,10 +5225,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: otbn
@@ -5603,10 +5530,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: keymgr_dpe
@@ -5813,10 +5737,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: csrng
@@ -5927,10 +5848,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: entropy_src
@@ -6267,10 +6185,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: edn0
@@ -6371,10 +6286,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: edn1
@@ -6474,10 +6386,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: sram_ctrl_main
@@ -6761,10 +6670,7 @@
         }
       ]
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: sram_ctrl_mbox
@@ -7046,10 +6952,7 @@
         }
       ]
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: rom_ctrl0
@@ -7227,10 +7130,7 @@
         }
       ]
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: rom_ctrl1
@@ -7408,10 +7308,7 @@
         }
       ]
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: dma
@@ -7600,10 +7497,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: mbx0
@@ -7787,10 +7681,7 @@
         }
       ]
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: mbx1
@@ -7974,10 +7865,7 @@
         }
       ]
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: mbx2
@@ -8161,10 +8049,7 @@
         }
       ]
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: mbx3
@@ -8348,10 +8233,7 @@
         }
       ]
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: mbx4
@@ -8535,10 +8417,7 @@
         }
       ]
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: mbx5
@@ -8722,10 +8601,7 @@
         }
       ]
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: mbx6
@@ -8909,10 +8785,7 @@
         }
       ]
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: mbx_jtag
@@ -9096,10 +8969,7 @@
         }
       ]
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: mbx_pcie0
@@ -9283,10 +9153,7 @@
         }
       ]
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: mbx_pcie1
@@ -9470,10 +9337,7 @@
         }
       ]
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: soc_dbg_ctrl
@@ -9686,10 +9550,7 @@
         }
       ]
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: racl_ctrl
@@ -9835,10 +9696,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: ac_range_check
@@ -10190,10 +10048,7 @@
           range_mapping: []
         }
       }
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: rv_core_ibex
@@ -10936,10 +10791,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
   ]
   port:
@@ -11831,10 +11683,7 @@
         clk_main_i: clkmgr_aon_clocks.clk_main_infra
         clk_fixed_i: clkmgr_aon_clocks.clk_io_infra
       }
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
       connections:
       {
         rv_core_ibex.corei:
@@ -13558,10 +13407,7 @@
       {
         clk_peri_i: clkmgr_aon_clocks.clk_io_infra
       }
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
       connections:
       {
         main:
@@ -14274,10 +14120,7 @@
       {
         clk_mbx_i: clkmgr_aon_clocks.clk_main_infra
       }
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
       connections:
       {
         mbx:
@@ -14736,10 +14579,7 @@
         clk_dbg_i: clkmgr_aon_clocks.clk_main_infra
         clk_peri_i: clkmgr_aon_clocks.clk_io_infra
       }
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
       connections:
       {
         dbg:

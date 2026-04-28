@@ -26,10 +26,7 @@
   {
     clk_peri_i: clkmgr_aon_clocks.clk_io_div4_infra
   }
-  domain:
-  [
-    "0"
-  ]
+  domain: "0"
   connections:
   {
     main:

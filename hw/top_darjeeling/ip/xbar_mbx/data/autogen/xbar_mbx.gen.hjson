@@ -26,10 +26,7 @@
   {
     clk_mbx_i: clkmgr_aon_clocks.clk_main_infra
   }
-  domain:
-  [
-    "0"
-  ]
+  domain: "0"
   connections:
   {
     mbx:

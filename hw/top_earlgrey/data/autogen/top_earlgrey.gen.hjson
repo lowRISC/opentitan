@@ -714,10 +714,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: uart1
@@ -806,10 +803,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: uart2
@@ -898,10 +892,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: uart3
@@ -990,10 +981,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: gpio
@@ -1121,10 +1109,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: spi_device
@@ -1292,10 +1277,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: i2c0
@@ -1421,10 +1403,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: i2c1
@@ -1550,10 +1529,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: i2c2
@@ -1679,10 +1655,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: pattgen
@@ -1731,10 +1704,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: rv_timer
@@ -1809,10 +1779,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: otp_ctrl
@@ -2113,10 +2080,7 @@
         }
       ]
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: otp_macro
@@ -2391,10 +2355,7 @@
         }
       ]
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: lc_ctrl
@@ -3064,10 +3025,7 @@
         }
       ]
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: alert_handler
@@ -3203,10 +3161,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: spi_host0
@@ -3318,10 +3273,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: spi_host1
@@ -3431,10 +3383,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: usbdev
@@ -3758,10 +3707,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: pwrmgr_aon
@@ -3807,11 +3753,7 @@
           domain: Aon
         }
       }
-      domain:
-      [
-        Aon
-        "0"
-      ]
+      domain: Aon
       param_decl:
       {
         EscNumSeverities: AlertHandlerEscNumSeverities
@@ -4151,11 +4093,7 @@
           domain: Aon
         }
       }
-      domain:
-      [
-        Aon
-        "0"
-      ]
+      domain: Aon
       attr: ipgen
       clock_connections:
       {
@@ -4420,10 +4358,7 @@
           domain: Aon
         }
       }
-      domain:
-      [
-        Aon
-      ]
+      domain: Aon
       attr: ipgen
       clock_connections:
       {
@@ -4682,10 +4617,7 @@
           domain: Aon
         }
       }
-      domain:
-      [
-        Aon
-      ]
+      domain: Aon
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_secure
@@ -4765,10 +4697,7 @@
           domain: Aon
         }
       }
-      domain:
-      [
-        Aon
-      ]
+      domain: Aon
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
@@ -4851,10 +4780,7 @@
           domain: Aon
         }
       }
-      domain:
-      [
-        Aon
-      ]
+      domain: Aon
       attr: ipgen
       clock_connections:
       {
@@ -4943,10 +4869,7 @@
           domain: Aon
         }
       }
-      domain:
-      [
-        Aon
-      ]
+      domain: Aon
       attr: ipgen
       param_decl:
       {
@@ -5407,10 +5330,7 @@
           domain: Aon
         }
       }
-      domain:
-      [
-        Aon
-      ]
+      domain: Aon
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_timers
@@ -5602,11 +5522,7 @@
           domain: "0"
         }
       }
-      domain:
-      [
-        Aon
-        "0"
-      ]
+      domain: Aon
       attr: reggen_only
       clock_connections:
       {
@@ -5664,10 +5580,7 @@
           domain: Aon
         }
       }
-      domain:
-      [
-        Aon
-      ]
+      domain: Aon
       attr: reggen_top
       clock_connections:
       {
@@ -5806,10 +5719,7 @@
           domain: Aon
         }
       }
-      domain:
-      [
-        Aon
-      ]
+      domain: Aon
       param_decl:
       {
         InstrExec: "0"
@@ -6464,10 +6374,7 @@
         }
       ]
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: rv_dm
@@ -6882,10 +6789,7 @@
           index: -1
         }
       ]
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: rv_plic
@@ -6977,10 +6881,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: aes
@@ -7172,10 +7073,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: hmac
@@ -7236,10 +7134,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: kmac
@@ -7462,10 +7357,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: otbn
@@ -7756,10 +7648,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: keymgr
@@ -7991,10 +7880,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: csrng
@@ -8105,10 +7991,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: entropy_src
@@ -8439,10 +8322,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: edn0
@@ -8543,10 +8423,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: edn1
@@ -8646,10 +8523,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: sram_ctrl_main
@@ -8931,10 +8805,7 @@
         }
       ]
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: rom_ctrl
@@ -9113,10 +8984,7 @@
         }
       ]
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: rv_core_ibex
@@ -9846,10 +9714,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
   ]
   port:
@@ -10694,10 +10559,7 @@
         clk_spi_host0_i: clkmgr_aon_clocks.clk_io_infra
         clk_spi_host1_i: clkmgr_aon_clocks.clk_io_div2_infra
       }
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
       connections:
       {
         rv_core_ibex.corei:
@@ -11696,10 +11558,7 @@
       {
         clk_peri_i: clkmgr_aon_clocks.clk_io_div4_infra
       }
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
       connections:
       {
         main:
