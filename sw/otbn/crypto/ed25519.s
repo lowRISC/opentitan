@@ -15,7 +15,7 @@
 .globl ext_double
 .globl ext_add
 .globl ext_to_affine
-
+.globl ext_is_on_curve
 
 /**
  * This library contains an implementation of the Ed25519 signature scheme
@@ -1643,6 +1643,75 @@ ext_add:
   ret
 
 /**
+ * Perform an is-on-curve check.
+ *
+ * Given affine (x, y)-coordinates verify whether they constitute a valid
+ * Ed25519 curve point by comparing the lefthand and righthand side of the
+ * curve equation to each other. In other words, this routine checks that
+ *
+ *  a * x^2 + y^2 = 1 + d * x^2 * y^2.
+ *
+ * This routine runs in constant time.
+ *
+ * @param[in] w10: x-coordinate.
+ * @param[in] w11: y-coordinate.
+ * @param[in] w19: constant, 19.
+ * @param[in] w30: constant, 38.
+ * @param[in] w31: all-zero.
+ * @param[in] MOD: p, modulus = 2^255 - 19.
+ * @param[out] FG0.Z: result, 1 if the point is on the curve, 0 otherwise.
+ *
+ * clobbered registers: w12 to w18, w20 to w22.
+ * clobbered flag groups: FG0.
+ */
+ext_is_on_curve:
+  /* Load the curve constants.
+       w12 <= a
+       w13 <= d. */
+  li x2, 12
+  la x3, ed25519_a
+  bn.lid x2++, 0(x3)
+  la x3, ed25519_d
+  bn.lid x2, 0(x3)
+
+  /* w14 <= w22 * w22 = x^2. */
+  bn.mov w22, w10
+  jal x1, fe_square
+  bn.mov w14, w22
+
+  /* w15 <= w22 * w22 = y^2. */
+  bn.mov w22, w11
+  jal x1, fe_square
+  bn.mov w15, w22
+
+  /* w2 <= w22 * w23 = a * x^2. */
+  bn.mov w22, w12
+  bn.mov w23, w14
+  jal x1, fe_mul
+
+  /* w16 <= w15 + w22 = a * x^2 + y^2. */
+  bn.addm w16, w15, w22
+
+  /* w22 <= w22 * w23 = d * x^2. */
+  bn.mov w22, w13
+  bn.mov w23, w14
+  jal x1, fe_mul
+
+  /* w22 <= w22 * w23 = d * x^2 * y^2. */
+  bn.mov w23, w15
+  jal x1, fe_mul
+
+  /* w17 <= w17 + w22 = 1 + d * x^2 * y^2. */
+  bn.addi w17, w31, 1
+  bn.addm w17, w17, w22
+
+  /* Return 2^256-1 if w16 = w17, i.e., a * x^2 + y^2 = 1 + d * x^2 * y^2. */
+  bn.not w12, w31
+  bn.cmp w16, w17, FG0
+
+  ret
+
+/**
  * Raise a coordinate field element (modulo p) to the power of ((p-5) / 8).
  *
  * Returns c = a^(2^252-3) mod p.
@@ -1901,3 +1970,15 @@ ed25519_d:
   .word 0x8cc74079
   .word 0x2b6ffe73
   .word 0x52036cee
+
+/* Constant a where a=(-1) mod p (from RFC 8032 section 5.1) */
+.balign 32
+ed25519_a:
+  .word 0xffffffec
+  .word 0xffffffff
+  .word 0xffffffff
+  .word 0xffffffff
+  .word 0xffffffff
+  .word 0xffffffff
+  .word 0xffffffff
+  .word 0x7fffffff

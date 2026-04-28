@@ -1,0 +1,23 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+  "entrypoint": "main",
+  "input": {
+    "dmem": {
+      // A random curve point.
+      "_ed25519_ext_is_on_curve_x_pos": "0x55d0e09a2b9d34292297e08d60d0f620c513d47253187c24b12786bd777645ce",
+      "_ed25519_ext_is_on_curve_y_pos": "0x1a5107f7681a02af2523a6daf372e10e3a0764c9d3fe4bd5b70ab18201985ad7",
+      // Random coordinates not on the curve.
+      "_ed25519_ext_is_on_curve_x_neg": "0x17e68428af426ff150575ffda8f0e9358b4913e46b1b393bb0e45096a7fa2a18",
+      "_ed25519_ext_is_on_curve_y_neg": "0x77b757982c0973c3dcba33b71f31dea4e5413b29a560b409767712cc0cb6399c",
+    }
+  },
+  "output": {
+    "dmem": {
+      "_ed25519_ext_is_on_curve_res_pos": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "_ed25519_ext_is_on_curve_res_neg": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    }
+  }
+}
