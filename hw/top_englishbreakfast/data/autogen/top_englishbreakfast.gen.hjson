@@ -574,10 +574,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: uart1
@@ -667,10 +664,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: gpio
@@ -798,10 +792,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: spi_device
@@ -966,10 +957,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: spi_host0
@@ -1082,10 +1070,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: rv_timer
@@ -1161,10 +1146,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: usbdev
@@ -1479,10 +1461,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: pwrmgr_aon
@@ -1524,10 +1503,7 @@
           domain: Aon
         }
       }
-      domain:
-      [
-        Aon
-      ]
+      domain: Aon
       attr: ipgen
       outgoing_alert: englishbreakfast
       clock_connections:
@@ -1842,10 +1818,7 @@
           domain: Aon
         }
       }
-      domain:
-      [
-        Aon
-      ]
+      domain: Aon
       param_decl:
       {
         SecCheck: "0"
@@ -2112,10 +2085,7 @@
           domain: Aon
         }
       }
-      domain:
-      [
-        Aon
-      ]
+      domain: Aon
       attr: ipgen
       outgoing_alert: englishbreakfast
       clock_connections:
@@ -2372,10 +2342,7 @@
           domain: Aon
         }
       }
-      domain:
-      [
-        Aon
-      ]
+      domain: Aon
       attr: ipgen
       outgoing_alert: englishbreakfast
       clock_connections:
@@ -2816,10 +2783,7 @@
           domain: Aon
         }
       }
-      domain:
-      [
-        Aon
-      ]
+      domain: Aon
       outgoing_alert: englishbreakfast
       clock_connections:
       {
@@ -3018,10 +2982,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: flash_ctrl
@@ -3386,10 +3347,7 @@
         }
       ]
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: rv_plic
@@ -3482,10 +3440,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: aes
@@ -3673,10 +3628,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: sram_ctrl_main
@@ -3948,10 +3900,7 @@
         }
       ]
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: rom_ctrl
@@ -4118,10 +4067,7 @@
         }
       ]
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
     {
       name: rv_core_ibex
@@ -4816,10 +4762,7 @@
         }
       }
       generate_dif: true
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
     }
   ]
   port:
@@ -5150,10 +5093,7 @@
         clk_main_i: clkmgr_aon_clocks.clk_main_infra
         clk_fixed_i: clkmgr_aon_clocks.clk_io_div4_infra
       }
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
       connections:
       {
         rv_core_ibex.corei:
@@ -5644,10 +5584,7 @@
         clk_spi_host0_i: clkmgr_aon_clocks.clk_io_infra
         clk_usb_i: clkmgr_aon_clocks.clk_usb_infra
       }
-      domain:
-      [
-        "0"
-      ]
+      domain: "0"
       connections:
       {
         main:

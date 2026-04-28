@@ -54,10 +54,7 @@
     clk_spi_host0_i: clkmgr_aon_clocks.clk_io_infra
     clk_spi_host1_i: clkmgr_aon_clocks.clk_io_div2_infra
   }
-  domain:
-  [
-    "0"
-  ]
+  domain: "0"
   connections:
   {
     rv_core_ibex.corei:

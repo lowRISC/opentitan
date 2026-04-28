@@ -1039,11 +1039,8 @@ def _amend_block_reset_connections(module: ConfigT,
             if "domain" not in module:
                 domain = default_power_domain
             else:
-                if len(module["domain"]) > 1:
-                    raise ValueError(
-                        f"{module['name']} reset connection {reset} "
-                        "has no assigned domain")
-                domain = module["domain"][0]
+                domain = module["domain"]
+
             module["reset_connections"][port] = {
                 'name': reset,
                 'domain': domain,

@@ -448,7 +448,7 @@
           domain: "Aon",
         },
       }
-      domain: ["Aon", "0"],
+      domain: "Aon",
       base_addr: {
         hart: "0x30400000",
       },
@@ -480,7 +480,7 @@
           domain: "Aon"
         },
       }
-      domain: ["Aon", "0"],
+      domain: "Aon",
       base_addr: {
         hart: "0x30410000",
       },
@@ -513,7 +513,7 @@
                           rst_root_io_ni: "por_io",
                           rst_root_main_ni: "por",
                          },
-      domain: ["Aon"],
+      domain: "Aon",
       base_addr: {
         hart: "0x30420000",
       },
@@ -530,7 +530,7 @@
       reset_connections: {rst_ni: "lc_io",
                           rst_aon_ni: "lc_aon",
                          },
-      domain: ["Aon"],
+      domain: "Aon",
       base_addr: {
         hart: "0x30460000",
       },
@@ -541,7 +541,7 @@
       clock_srcs: {clk_i: "io", clk_aon_i: "aon"},
       clock_group: "timers",
       reset_connections: {rst_ni: "lc_io", rst_aon_ni: "lc_aon"},
-      domain: ["Aon"],
+      domain: "Aon",
       base_addr: {
         hart: "0x30470000",
       },
@@ -577,7 +577,7 @@
           domain: "0",
         },
       },
-      domain: ["Aon", "0"],
+      domain: "Aon",
       base_addr: {
         hart: "0x30480000",
       },
@@ -597,7 +597,7 @@
           domain: "Aon",
         },
       },
-      domain: ["Aon", "0"],
+      domain: "Aon",
       base_addrs: {
         core: {hart: "0x22030000"},
         ctn:  {hart: "0x40000000"},
@@ -619,7 +619,7 @@
       clock_srcs: {clk_i: "io", clk_otp_i: "io"},
       clock_group: "infra",
       reset_connections: {rst_ni: "lc_io", rst_otp_ni: "lc_io"}
-      domain: ["Aon"],
+      domain: "Aon",
       param_decl: {
         InstrExec: "0",
         InstSize: 4096
