@@ -223,14 +223,11 @@ bool test_main(void) {
   // instructions
   CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
 
-  // Streaming test only works on low security
-  current_sec_level = kOtcryptoKeySecurityLevelLow;
-  EXECUTE_TEST(test_result, streaming_test);
-
   for (size_t i = 0; i < ARRAYSIZE(available_security_levels); ++i) {
     current_sec_level = available_security_levels[i];
     LOG_INFO("Running HMAC tests with security level: %d", current_sec_level);
 
+    EXECUTE_TEST(test_result, streaming_test);
     EXECUTE_TEST(test_result, simple_test);
     EXECUTE_TEST(test_result, empty_test);
     EXECUTE_TEST(test_result, long_key_test);
