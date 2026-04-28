@@ -49,7 +49,7 @@ module rstmgr_ctrl
   // the non-always-on domains
   // These reset whenever the always on domain reset, to ensure power definition consistency.
   // By extension, they also reset whenever the root (rst_ni) resets
-  assign rst_pd_nd = ~rst_req_i[Domain0Sel +: OffDomains];
+  assign rst_pd_nd = ~rst_req_i[DomainMainSel +: OffDomains];
 
   localparam int DomainPdStartIdx = DomainAonSel + 1;
   for(genvar i = 0; i < OffDomains; i++) begin : gen_rst_pd_n

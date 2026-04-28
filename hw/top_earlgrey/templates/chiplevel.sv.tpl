@@ -580,7 +580,7 @@ module chip_${top["name"]}_${target["name"]} #(
   // reset domain connections
   import rstmgr_pkg::PowerDomains;
   import rstmgr_pkg::DomainAonSel;
-  import rstmgr_pkg::Domain0Sel;
+  import rstmgr_pkg::DomainMainSel;
 
   // Memory configuration connections
   ast_pkg::spm_rm_t ast_ram_1p_cfg;

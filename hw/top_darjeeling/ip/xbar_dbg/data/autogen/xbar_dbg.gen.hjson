@@ -20,12 +20,12 @@
     rst_dbg_ni:
     {
       name: lc
-      domain: "0"
+      domain: Main
     }
     rst_peri_ni:
     {
       name: lc_io
-      domain: "0"
+      domain: Main
     }
   }
   clock_connections:
@@ -33,7 +33,7 @@
     clk_dbg_i: clkmgr_aon_clocks.clk_main_infra
     clk_peri_i: clkmgr_aon_clocks.clk_io_infra
   }
-  domain: "0"
+  domain: Main
   connections:
   {
     dbg:

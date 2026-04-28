@@ -433,9 +433,9 @@ module chip_darjeeling_verilator #(
     .clk_ast_tlul_i (clkmgr_aon_clocks.clk_io_infra),
     .clk_ast_alert_i (clkmgr_aon_clocks.clk_io_secure),
     .clk_ast_rng_i (clkmgr_aon_clocks.clk_main_secure),
-    .rst_ast_tlul_ni (rstmgr_aon_resets.rst_lc_io_n[rstmgr_pkg::Domain0Sel]),
-    .rst_ast_alert_ni (rstmgr_aon_resets.rst_lc_io_n[rstmgr_pkg::Domain0Sel]),
-    .rst_ast_rng_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ast_tlul_ni (rstmgr_aon_resets.rst_lc_io_n[rstmgr_pkg::DomainMainSel]),
+    .rst_ast_alert_ni (rstmgr_aon_resets.rst_lc_io_n[rstmgr_pkg::DomainMainSel]),
+    .rst_ast_rng_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::DomainMainSel]),
 
     // pok test for FPGA
     .vcc_supp_i            ( vcc_supp ),
@@ -539,7 +539,7 @@ module chip_darjeeling_verilator #(
     .NumDmiByteAbits(18)
   ) u_tlul_jtag_dtm (
     .clk_i      (clkmgr_aon_clocks.clk_main_infra),
-    .rst_ni     (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ni     (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::DomainMainSel]),
     .jtag_i     (jtag_req),
     .jtag_o     (jtag_rsp),
     .scan_rst_ni(scan_rst_n),
@@ -585,7 +585,7 @@ module chip_darjeeling_verilator #(
     .DRspDepth (4'd0)
   ) u_ctn_sm1 (
     .clk_i  (clkmgr_aon_clocks.clk_main_infra),
-    .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::DomainMainSel]),
     .tl_h_i (ctn_tl_h2d),
     .tl_h_o (ctn_tl_d2h),
     .tl_d_o (ctn_sm1_to_s1n_tl_h2d),
@@ -631,7 +631,7 @@ module chip_darjeeling_verilator #(
     .N         (1)
   ) u_ctn_s1n (
     .clk_i        (clkmgr_aon_clocks.clk_main_infra),
-    .rst_ni       (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ni       (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::DomainMainSel]),
     .tl_h_i       (ctn_sm1_to_s1n_tl_h2d),
     .tl_h_o       (ctn_sm1_to_s1n_tl_d2h),
     .tl_d_o       (ctn_s1n_tl_h2d),
@@ -651,7 +651,7 @@ module chip_darjeeling_verilator #(
     .SecFifoPtr      (0)
   ) u_tlul_adapter_sram_ctn (
     .clk_i       (clkmgr_aon_clocks.clk_main_infra),
-    .rst_ni      (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ni      (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::DomainMainSel]),
     .tl_i        (ctn_s1n_tl_h2d[0]),
     .tl_o        (ctn_s1n_tl_d2h[0]),
     // Ifetch is explicitly allowed
@@ -686,7 +686,7 @@ module chip_darjeeling_verilator #(
     .EnableOutputPipeline(1)
   ) u_prim_ram_1p_adv_ctn (
     .clk_i    (clkmgr_aon_clocks.clk_main_infra),
-    .rst_ni   (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ni   (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::DomainMainSel]),
     .req_i    (sram_req),
     .write_i  (sram_we),
     .addr_i   (sram_addr),

@@ -21,17 +21,17 @@
     rst_peri_ni:
     {
       name: sys_io_div4
-      domain: "0"
+      domain: Main
     }
     rst_spi_host0_ni:
     {
       name: spi_host0
-      domain: "0"
+      domain: Main
     }
     rst_usb_ni:
     {
       name: usb
-      domain: "0"
+      domain: Main
     }
   }
   clock_connections:
@@ -40,7 +40,7 @@
     clk_spi_host0_i: clkmgr_aon_clocks.clk_io_infra
     clk_usb_i: clkmgr_aon_clocks.clk_usb_infra
   }
-  domain: "0"
+  domain: Main
   connections:
   {
     main:

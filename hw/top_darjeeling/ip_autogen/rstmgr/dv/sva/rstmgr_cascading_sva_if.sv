@@ -161,14 +161,14 @@ interface rstmgr_cascading_sva_if (
   // Controlled by rst_lc_src_n.
   `CASCADED_ASSERTS(CascadeLcToLcAon, rst_lc_src_n[rstmgr_pkg::DomainAonSel],
                     resets_o.rst_lc_aon_n[rstmgr_pkg::DomainAonSel], SysCycles, clk_aon_i)
-  `CASCADED_ASSERTS(CascadeLcToLc, rst_lc_src_n[rstmgr_pkg::Domain0Sel],
-                    resets_o.rst_lc_n[rstmgr_pkg::Domain0Sel], SysCycles, clk_main_i)
+  `CASCADED_ASSERTS(CascadeLcToLc, rst_lc_src_n[rstmgr_pkg::DomainMainSel],
+                    resets_o.rst_lc_n[rstmgr_pkg::DomainMainSel], SysCycles, clk_main_i)
 
   // Controlled by rst_sys_src_n.
-  `CASCADED_ASSERTS(CascadeSysToSys, rst_sys_src_n[rstmgr_pkg::Domain0Sel],
-                    resets_o.rst_sys_n[rstmgr_pkg::Domain0Sel], PeriCycles, clk_main_i)
-  `CASCADED_ASSERTS(CascadeLcToLcShadowed, rst_lc_src_n[rstmgr_pkg::Domain0Sel],
-                    resets_o.rst_lc_shadowed_n[rstmgr_pkg::Domain0Sel], SysCycles, clk_main_i)
+  `CASCADED_ASSERTS(CascadeSysToSys, rst_sys_src_n[rstmgr_pkg::DomainMainSel],
+                    resets_o.rst_sys_n[rstmgr_pkg::DomainMainSel], PeriCycles, clk_main_i)
+  `CASCADED_ASSERTS(CascadeLcToLcShadowed, rst_lc_src_n[rstmgr_pkg::DomainMainSel],
+                    resets_o.rst_lc_shadowed_n[rstmgr_pkg::DomainMainSel], SysCycles, clk_main_i)
 
   `undef FALL_ASSERT
   `undef RISE_ASSERTS

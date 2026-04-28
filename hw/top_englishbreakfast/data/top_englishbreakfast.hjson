@@ -14,10 +14,10 @@
     // Power domains supported by the design
     // Aon represents domain aon
     // 0 represents domain 0
-    domains: ["Aon", "0"],
+    domains: ["Aon", "Main"],
 
     // Default power domain used for the design
-    default: "0"
+    default: "Main"
 
     // Discrete OpenTitan does not need to wait for external resets
     wait_for_external_reset: false

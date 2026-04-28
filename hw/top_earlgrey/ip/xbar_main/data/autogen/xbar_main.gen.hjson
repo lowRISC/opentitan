@@ -23,27 +23,27 @@
     rst_main_ni:
     {
       name: lc
-      domain: "0"
+      domain: Main
     }
     rst_fixed_ni:
     {
       name: lc_io_div4
-      domain: "0"
+      domain: Main
     }
     rst_usb_ni:
     {
       name: lc_usb
-      domain: "0"
+      domain: Main
     }
     rst_spi_host0_ni:
     {
       name: lc_io
-      domain: "0"
+      domain: Main
     }
     rst_spi_host1_ni:
     {
       name: lc_io_div2
-      domain: "0"
+      domain: Main
     }
   }
   clock_connections:
@@ -54,7 +54,7 @@
     clk_spi_host0_i: clkmgr_aon_clocks.clk_io_infra
     clk_spi_host1_i: clkmgr_aon_clocks.clk_io_div2_infra
   }
-  domain: "0"
+  domain: Main
   connections:
   {
     rv_core_ibex.corei:

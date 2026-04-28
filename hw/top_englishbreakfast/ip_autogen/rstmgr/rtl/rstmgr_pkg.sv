@@ -8,7 +8,7 @@ package rstmgr_pkg;
   // Power domain parameters
   parameter int PowerDomains = 2;
   parameter int DomainAonSel = 0;
-  parameter int Domain0Sel = 1;
+  parameter int DomainMainSel = 1;
 
   // Number of non-always-on domains
   parameter int OffDomains = PowerDomains-1;
