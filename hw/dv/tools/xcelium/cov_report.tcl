@@ -24,15 +24,16 @@ set cov_merge_db_dir [string trim $::env(cov_merge_db_dir) " \"'"]
 set dut [string trim $::env(DUT_TOP)]
 set dut_uc [string toupper $dut]
 
-# Generate the text report (summary is sufficient).
-report -summary \
-  -inst uvm_pkg $dut \
+# Generate the text report.
+report -detail \
+  -inst uvm_pkg "$dut..." \
   -metrics all \
   -all \
   -cumulative on \
   -local off \
-  -grading covered \
-  -out $cov_report_dir/cov_report.txt
+  -grading both \
+  -source on \
+  -out $cov_report_dir/cov_report_detailed.txt
 
 # Generate the functional coverage report for tracking.
 report -summary \
