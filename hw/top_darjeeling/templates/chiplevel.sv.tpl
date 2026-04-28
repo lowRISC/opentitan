@@ -412,7 +412,7 @@ module chip_${top["name"]}_${target["name"]} #(
   // reset domain connections
   import rstmgr_pkg::PowerDomains;
   import rstmgr_pkg::DomainAonSel;
-  import rstmgr_pkg::Domain0Sel;
+  import rstmgr_pkg::DomainMainSel;
 
   // Memory configuration connections
   ast_pkg::spm_rm_t ast_ram_1p_cfg;
@@ -623,7 +623,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .NumDmiByteAbits(18)
   ) u_tlul_jtag_dtm (
     .clk_i      (clkmgr_aon_clocks.clk_main_infra),
-    .rst_ni     (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ni     (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::DomainMainSel]),
     .jtag_i     (jtag_req),
     .jtag_o     (jtag_rsp),
     .scan_rst_ni(scan_rst_n),
@@ -669,7 +669,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .DRspDepth (4'd0)
   ) u_ctn_sm1 (
     .clk_i  (clkmgr_aon_clocks.clk_main_infra),
-    .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::DomainMainSel]),
     .tl_h_i (ctn_tl_h2d),
     .tl_h_o (ctn_tl_d2h),
     .tl_d_o (ctn_sm1_to_s1n_tl_h2d),
@@ -715,7 +715,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .N         (1)
   ) u_ctn_s1n (
     .clk_i        (clkmgr_aon_clocks.clk_main_infra),
-    .rst_ni       (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ni       (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::DomainMainSel]),
     .tl_h_i       (ctn_sm1_to_s1n_tl_h2d),
     .tl_h_o       (ctn_sm1_to_s1n_tl_d2h),
     .tl_d_o       (ctn_s1n_tl_h2d),
@@ -735,7 +735,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .SecFifoPtr      (0)
   ) u_tlul_adapter_sram_ctn (
     .clk_i       (clkmgr_aon_clocks.clk_main_infra),
-    .rst_ni      (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ni      (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::DomainMainSel]),
     .tl_i        (ctn_s1n_tl_h2d[0]),
     .tl_o        (ctn_s1n_tl_d2h[0]),
     // Ifetch is explicitly allowed
@@ -770,7 +770,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .EnableOutputPipeline(1)
   ) u_prim_ram_1p_adv_ctn (
     .clk_i    (clkmgr_aon_clocks.clk_main_infra),
-    .rst_ni   (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ni   (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::DomainMainSel]),
     .req_i    (sram_req),
     .write_i  (sram_we),
     .addr_i   (sram_addr),

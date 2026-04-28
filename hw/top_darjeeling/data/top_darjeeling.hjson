@@ -17,10 +17,10 @@
     // Power domains supported by the design
     // Aon represents domain aon
     // 0 represents domain 0
-    domains: ["Aon", "0"],
+    domains: ["Aon", "Main"],
 
     // Default power domain used for the design
-    default: "0"
+    default: "Main"
 
     // Wait for external resets for integrated OpenTitan
     wait_for_external_reset: true
@@ -433,7 +433,7 @@
         },
         rst_main_ni: {
           name: "por_aon",
-          domain: "0"
+          domain: "Main"
         },
         rst_lc_ni: {
           name: "lc_io",
@@ -566,15 +566,15 @@
       reset_connections: {
         rst_ast_tlul_ni: {
           name: "lc_io",
-          domain: "0",
+          domain: "Main",
         }
         rst_ast_alert_ni: {
           name: "lc_io",
-          domain: "0",
+          domain: "Main",
         },
         rst_ast_rng_ni: {
           name: "lc",
-          domain: "0",
+          domain: "Main",
         },
       },
       domain: "Aon",
@@ -590,7 +590,7 @@
       reset_connections: {
         rst_ni: {
           name: "lc",
-          domain: "0",
+          domain: "Main",
         },
         rst_por_ni: {
           name: "por_io",

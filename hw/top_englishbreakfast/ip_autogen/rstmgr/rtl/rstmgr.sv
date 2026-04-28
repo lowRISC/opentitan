@@ -317,10 +317,10 @@ module rstmgr
     u_daon_por.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
   end
-  assign resets_o.rst_por_n[Domain0Sel] = '0;
-  assign cnsty_chk_errs[0][Domain0Sel] = '0;
-  assign fsm_errs[0][Domain0Sel] = '0;
-  assign rst_en_o.por[Domain0Sel] = MuBi4True;
+  assign resets_o.rst_por_n[DomainMainSel] = '0;
+  assign cnsty_chk_errs[0][DomainMainSel] = '0;
+  assign fsm_errs[0][DomainMainSel] = '0;
+  assign rst_en_o.por[DomainMainSel] = MuBi4True;
   assign shadow_cnsty_chk_errs[0] = '0;
   assign shadow_fsm_errs[0] = '0;
 
@@ -351,10 +351,10 @@ module rstmgr
     u_daon_por_io.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
   end
-  assign resets_o.rst_por_io_n[Domain0Sel] = '0;
-  assign cnsty_chk_errs[1][Domain0Sel] = '0;
-  assign fsm_errs[1][Domain0Sel] = '0;
-  assign rst_en_o.por_io[Domain0Sel] = MuBi4True;
+  assign resets_o.rst_por_io_n[DomainMainSel] = '0;
+  assign cnsty_chk_errs[1][DomainMainSel] = '0;
+  assign fsm_errs[1][DomainMainSel] = '0;
+  assign rst_en_o.por_io[DomainMainSel] = MuBi4True;
   assign shadow_cnsty_chk_errs[1] = '0;
   assign shadow_fsm_errs[1] = '0;
 
@@ -385,10 +385,10 @@ module rstmgr
     u_daon_por_io_div2.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
   end
-  assign resets_o.rst_por_io_div2_n[Domain0Sel] = '0;
-  assign cnsty_chk_errs[2][Domain0Sel] = '0;
-  assign fsm_errs[2][Domain0Sel] = '0;
-  assign rst_en_o.por_io_div2[Domain0Sel] = MuBi4True;
+  assign resets_o.rst_por_io_div2_n[DomainMainSel] = '0;
+  assign cnsty_chk_errs[2][DomainMainSel] = '0;
+  assign fsm_errs[2][DomainMainSel] = '0;
+  assign rst_en_o.por_io_div2[DomainMainSel] = MuBi4True;
   assign shadow_cnsty_chk_errs[2] = '0;
   assign shadow_fsm_errs[2] = '0;
 
@@ -419,10 +419,10 @@ module rstmgr
     u_daon_por_io_div4.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
   end
-  assign resets_o.rst_por_io_div4_n[Domain0Sel] = '0;
-  assign cnsty_chk_errs[3][Domain0Sel] = '0;
-  assign fsm_errs[3][Domain0Sel] = '0;
-  assign rst_en_o.por_io_div4[Domain0Sel] = MuBi4True;
+  assign resets_o.rst_por_io_div4_n[DomainMainSel] = '0;
+  assign cnsty_chk_errs[3][DomainMainSel] = '0;
+  assign fsm_errs[3][DomainMainSel] = '0;
+  assign rst_en_o.por_io_div4[DomainMainSel] = MuBi4True;
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
     .SecMaxSyncDelay(SecMaxSyncDelay),
@@ -447,10 +447,10 @@ module rstmgr
     u_daon_por_io_div4_shadowed.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
   end
-  assign resets_o.rst_por_io_div4_shadowed_n[Domain0Sel] = '0;
-  assign shadow_cnsty_chk_errs[3][Domain0Sel] = '0;
-  assign shadow_fsm_errs[3][Domain0Sel] = '0;
-  assign rst_en_o.por_io_div4_shadowed[Domain0Sel] = MuBi4True;
+  assign resets_o.rst_por_io_div4_shadowed_n[DomainMainSel] = '0;
+  assign shadow_cnsty_chk_errs[3][DomainMainSel] = '0;
+  assign shadow_fsm_errs[3][DomainMainSel] = '0;
+  assign rst_en_o.por_io_div4_shadowed[DomainMainSel] = MuBi4True;
 
   // Generating resets for por_usb
   // Power Domains: ['Aon']
@@ -479,15 +479,15 @@ module rstmgr
     u_daon_por_usb.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
   end
-  assign resets_o.rst_por_usb_n[Domain0Sel] = '0;
-  assign cnsty_chk_errs[4][Domain0Sel] = '0;
-  assign fsm_errs[4][Domain0Sel] = '0;
-  assign rst_en_o.por_usb[Domain0Sel] = MuBi4True;
+  assign resets_o.rst_por_usb_n[DomainMainSel] = '0;
+  assign cnsty_chk_errs[4][DomainMainSel] = '0;
+  assign fsm_errs[4][DomainMainSel] = '0;
+  assign rst_en_o.por_usb[DomainMainSel] = MuBi4True;
   assign shadow_cnsty_chk_errs[4] = '0;
   assign shadow_fsm_errs[4] = '0;
 
   // Generating resets for lc
-  // Power Domains: ['0']
+  // Power Domains: ['Main']
   // Shadowed: True
   assign resets_o.rst_lc_n[DomainAonSel] = '0;
   assign cnsty_chk_errs[5][DomainAonSel] = '0;
@@ -497,24 +497,24 @@ module rstmgr
     .SecCheck(SecCheck),
     .SecMaxSyncDelay(SecMaxSyncDelay),
     .SwRstReq(1'b0)
-  ) u_d0_lc (
+  ) u_dmain_lc (
     .clk_i,
     .rst_ni,
     .leaf_clk_i(clk_main_i),
-    .parent_rst_ni(rst_lc_src_n[Domain0Sel]),
+    .parent_rst_ni(rst_lc_src_n[DomainMainSel]),
     .sw_rst_req_ni(1'b1),
     .scan_rst_ni,
     .scanmode_i,
-    .rst_en_o(rst_en_o.lc[Domain0Sel]),
-    .leaf_rst_o(resets_o.rst_lc_n[Domain0Sel]),
-    .err_o(cnsty_chk_errs[5][Domain0Sel]),
-    .fsm_err_o(fsm_errs[5][Domain0Sel])
+    .rst_en_o(rst_en_o.lc[DomainMainSel]),
+    .leaf_rst_o(resets_o.rst_lc_n[DomainMainSel]),
+    .err_o(cnsty_chk_errs[5][DomainMainSel]),
+    .fsm_err_o(fsm_errs[5][DomainMainSel])
   );
 
-  if (SecCheck) begin : gen_d0_lc_assert
+  if (SecCheck) begin : gen_dmain_lc_assert
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
-    D0LcFsmCheck_A,
-    u_d0_lc.gen_rst_chk.u_rst_chk.u_state_regs,
+    DMainLcFsmCheck_A,
+    u_dmain_lc.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
   end
   assign resets_o.rst_lc_shadowed_n[DomainAonSel] = '0;
@@ -525,29 +525,29 @@ module rstmgr
     .SecCheck(SecCheck),
     .SecMaxSyncDelay(SecMaxSyncDelay),
     .SwRstReq(1'b0)
-  ) u_d0_lc_shadowed (
+  ) u_dmain_lc_shadowed (
     .clk_i,
     .rst_ni,
     .leaf_clk_i(clk_main_i),
-    .parent_rst_ni(rst_lc_src_n[Domain0Sel]),
+    .parent_rst_ni(rst_lc_src_n[DomainMainSel]),
     .sw_rst_req_ni(1'b1),
     .scan_rst_ni,
     .scanmode_i,
-    .rst_en_o(rst_en_o.lc_shadowed[Domain0Sel]),
-    .leaf_rst_o(resets_o.rst_lc_shadowed_n[Domain0Sel]),
-    .err_o(shadow_cnsty_chk_errs[5][Domain0Sel]),
-    .fsm_err_o(shadow_fsm_errs[5][Domain0Sel])
+    .rst_en_o(rst_en_o.lc_shadowed[DomainMainSel]),
+    .leaf_rst_o(resets_o.rst_lc_shadowed_n[DomainMainSel]),
+    .err_o(shadow_cnsty_chk_errs[5][DomainMainSel]),
+    .fsm_err_o(shadow_fsm_errs[5][DomainMainSel])
   );
 
-  if (SecCheck) begin : gen_d0_lc_shadowed_assert
+  if (SecCheck) begin : gen_dmain_lc_shadowed_assert
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
-    D0LcShadowedFsmCheck_A,
-    u_d0_lc_shadowed.gen_rst_chk.u_rst_chk.u_state_regs,
+    DMainLcShadowedFsmCheck_A,
+    u_dmain_lc_shadowed.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
   end
 
   // Generating resets for lc_io_div4
-  // Power Domains: ['0', 'Aon']
+  // Power Domains: ['Main', 'Aon']
   // Shadowed: False
   rstmgr_leaf_rst #(
     .SecCheck(0),
@@ -571,25 +571,25 @@ module rstmgr
     .SecCheck(0),
     .SecMaxSyncDelay(SecMaxSyncDelay),
     .SwRstReq(1'b0)
-  ) u_d0_lc_io_div4 (
+  ) u_dmain_lc_io_div4 (
     .clk_i,
     .rst_ni,
     .leaf_clk_i(clk_io_div4_i),
-    .parent_rst_ni(rst_lc_src_n[Domain0Sel]),
+    .parent_rst_ni(rst_lc_src_n[DomainMainSel]),
     .sw_rst_req_ni(1'b1),
     .scan_rst_ni,
     .scanmode_i,
-    .rst_en_o(rst_en_o.lc_io_div4[Domain0Sel]),
-    .leaf_rst_o(resets_o.rst_lc_io_div4_n[Domain0Sel]),
-    .err_o(cnsty_chk_errs[6][Domain0Sel]),
-    .fsm_err_o(fsm_errs[6][Domain0Sel])
+    .rst_en_o(rst_en_o.lc_io_div4[DomainMainSel]),
+    .leaf_rst_o(resets_o.rst_lc_io_div4_n[DomainMainSel]),
+    .err_o(cnsty_chk_errs[6][DomainMainSel]),
+    .fsm_err_o(fsm_errs[6][DomainMainSel])
   );
 
   assign shadow_cnsty_chk_errs[6] = '0;
   assign shadow_fsm_errs[6] = '0;
 
   // Generating resets for sys
-  // Power Domains: ['0']
+  // Power Domains: ['Main']
   // Shadowed: True
   assign resets_o.rst_sys_n[DomainAonSel] = '0;
   assign cnsty_chk_errs[7][DomainAonSel] = '0;
@@ -599,24 +599,24 @@ module rstmgr
     .SecCheck(SecCheck),
     .SecMaxSyncDelay(SecMaxSyncDelay),
     .SwRstReq(1'b0)
-  ) u_d0_sys (
+  ) u_dmain_sys (
     .clk_i,
     .rst_ni,
     .leaf_clk_i(clk_main_i),
-    .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
+    .parent_rst_ni(rst_sys_src_n[DomainMainSel]),
     .sw_rst_req_ni(1'b1),
     .scan_rst_ni,
     .scanmode_i,
-    .rst_en_o(rst_en_o.sys[Domain0Sel]),
-    .leaf_rst_o(resets_o.rst_sys_n[Domain0Sel]),
-    .err_o(cnsty_chk_errs[7][Domain0Sel]),
-    .fsm_err_o(fsm_errs[7][Domain0Sel])
+    .rst_en_o(rst_en_o.sys[DomainMainSel]),
+    .leaf_rst_o(resets_o.rst_sys_n[DomainMainSel]),
+    .err_o(cnsty_chk_errs[7][DomainMainSel]),
+    .fsm_err_o(fsm_errs[7][DomainMainSel])
   );
 
-  if (SecCheck) begin : gen_d0_sys_assert
+  if (SecCheck) begin : gen_dmain_sys_assert
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
-    D0SysFsmCheck_A,
-    u_d0_sys.gen_rst_chk.u_rst_chk.u_state_regs,
+    DMainSysFsmCheck_A,
+    u_dmain_sys.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
   end
   assign resets_o.rst_sys_shadowed_n[DomainAonSel] = '0;
@@ -627,29 +627,29 @@ module rstmgr
     .SecCheck(SecCheck),
     .SecMaxSyncDelay(SecMaxSyncDelay),
     .SwRstReq(1'b0)
-  ) u_d0_sys_shadowed (
+  ) u_dmain_sys_shadowed (
     .clk_i,
     .rst_ni,
     .leaf_clk_i(clk_main_i),
-    .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
+    .parent_rst_ni(rst_sys_src_n[DomainMainSel]),
     .sw_rst_req_ni(1'b1),
     .scan_rst_ni,
     .scanmode_i,
-    .rst_en_o(rst_en_o.sys_shadowed[Domain0Sel]),
-    .leaf_rst_o(resets_o.rst_sys_shadowed_n[Domain0Sel]),
-    .err_o(shadow_cnsty_chk_errs[7][Domain0Sel]),
-    .fsm_err_o(shadow_fsm_errs[7][Domain0Sel])
+    .rst_en_o(rst_en_o.sys_shadowed[DomainMainSel]),
+    .leaf_rst_o(resets_o.rst_sys_shadowed_n[DomainMainSel]),
+    .err_o(shadow_cnsty_chk_errs[7][DomainMainSel]),
+    .fsm_err_o(shadow_fsm_errs[7][DomainMainSel])
   );
 
-  if (SecCheck) begin : gen_d0_sys_shadowed_assert
+  if (SecCheck) begin : gen_dmain_sys_shadowed_assert
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
-    D0SysShadowedFsmCheck_A,
-    u_d0_sys_shadowed.gen_rst_chk.u_rst_chk.u_state_regs,
+    DMainSysShadowedFsmCheck_A,
+    u_dmain_sys_shadowed.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
   end
 
   // Generating resets for sys_io_div4
-  // Power Domains: ['0', 'Aon']
+  // Power Domains: ['Main', 'Aon']
   // Shadowed: False
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
@@ -679,31 +679,31 @@ module rstmgr
     .SecCheck(SecCheck),
     .SecMaxSyncDelay(SecMaxSyncDelay),
     .SwRstReq(1'b0)
-  ) u_d0_sys_io_div4 (
+  ) u_dmain_sys_io_div4 (
     .clk_i,
     .rst_ni,
     .leaf_clk_i(clk_io_div4_i),
-    .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
+    .parent_rst_ni(rst_sys_src_n[DomainMainSel]),
     .sw_rst_req_ni(1'b1),
     .scan_rst_ni,
     .scanmode_i,
-    .rst_en_o(rst_en_o.sys_io_div4[Domain0Sel]),
-    .leaf_rst_o(resets_o.rst_sys_io_div4_n[Domain0Sel]),
-    .err_o(cnsty_chk_errs[8][Domain0Sel]),
-    .fsm_err_o(fsm_errs[8][Domain0Sel])
+    .rst_en_o(rst_en_o.sys_io_div4[DomainMainSel]),
+    .leaf_rst_o(resets_o.rst_sys_io_div4_n[DomainMainSel]),
+    .err_o(cnsty_chk_errs[8][DomainMainSel]),
+    .fsm_err_o(fsm_errs[8][DomainMainSel])
   );
 
-  if (SecCheck) begin : gen_d0_sys_io_div4_assert
+  if (SecCheck) begin : gen_dmain_sys_io_div4_assert
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
-    D0SysIoDiv4FsmCheck_A,
-    u_d0_sys_io_div4.gen_rst_chk.u_rst_chk.u_state_regs,
+    DMainSysIoDiv4FsmCheck_A,
+    u_dmain_sys_io_div4.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
   end
   assign shadow_cnsty_chk_errs[8] = '0;
   assign shadow_fsm_errs[8] = '0;
 
   // Generating resets for sys_aon
-  // Power Domains: ['0', 'Aon']
+  // Power Domains: ['Main', 'Aon']
   // Shadowed: False
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
@@ -733,31 +733,31 @@ module rstmgr
     .SecCheck(SecCheck),
     .SecMaxSyncDelay(SecMaxSyncDelay),
     .SwRstReq(1'b0)
-  ) u_d0_sys_aon (
+  ) u_dmain_sys_aon (
     .clk_i,
     .rst_ni,
     .leaf_clk_i(clk_aon_i),
-    .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
+    .parent_rst_ni(rst_sys_src_n[DomainMainSel]),
     .sw_rst_req_ni(1'b1),
     .scan_rst_ni,
     .scanmode_i,
-    .rst_en_o(rst_en_o.sys_aon[Domain0Sel]),
-    .leaf_rst_o(resets_o.rst_sys_aon_n[Domain0Sel]),
-    .err_o(cnsty_chk_errs[9][Domain0Sel]),
-    .fsm_err_o(fsm_errs[9][Domain0Sel])
+    .rst_en_o(rst_en_o.sys_aon[DomainMainSel]),
+    .leaf_rst_o(resets_o.rst_sys_aon_n[DomainMainSel]),
+    .err_o(cnsty_chk_errs[9][DomainMainSel]),
+    .fsm_err_o(fsm_errs[9][DomainMainSel])
   );
 
-  if (SecCheck) begin : gen_d0_sys_aon_assert
+  if (SecCheck) begin : gen_dmain_sys_aon_assert
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
-    D0SysAonFsmCheck_A,
-    u_d0_sys_aon.gen_rst_chk.u_rst_chk.u_state_regs,
+    DMainSysAonFsmCheck_A,
+    u_dmain_sys_aon.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
   end
   assign shadow_cnsty_chk_errs[9] = '0;
   assign shadow_fsm_errs[9] = '0;
 
   // Generating resets for spi_device
-  // Power Domains: ['0']
+  // Power Domains: ['Main']
   // Shadowed: False
   assign resets_o.rst_spi_device_n[DomainAonSel] = '0;
   assign cnsty_chk_errs[10][DomainAonSel] = '0;
@@ -767,31 +767,31 @@ module rstmgr
     .SecCheck(SecCheck),
     .SecMaxSyncDelay(SecMaxSyncDelay),
     .SwRstReq(1'b1)
-  ) u_d0_spi_device (
+  ) u_dmain_spi_device (
     .clk_i,
     .rst_ni,
     .leaf_clk_i(clk_io_div2_i),
-    .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
+    .parent_rst_ni(rst_sys_src_n[DomainMainSel]),
     .sw_rst_req_ni(reg2hw.sw_rst_ctrl_n[SPI_DEVICE].q),
     .scan_rst_ni,
     .scanmode_i,
-    .rst_en_o(rst_en_o.spi_device[Domain0Sel]),
-    .leaf_rst_o(resets_o.rst_spi_device_n[Domain0Sel]),
-    .err_o(cnsty_chk_errs[10][Domain0Sel]),
-    .fsm_err_o(fsm_errs[10][Domain0Sel])
+    .rst_en_o(rst_en_o.spi_device[DomainMainSel]),
+    .leaf_rst_o(resets_o.rst_spi_device_n[DomainMainSel]),
+    .err_o(cnsty_chk_errs[10][DomainMainSel]),
+    .fsm_err_o(fsm_errs[10][DomainMainSel])
   );
 
-  if (SecCheck) begin : gen_d0_spi_device_assert
+  if (SecCheck) begin : gen_dmain_spi_device_assert
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
-    D0SpiDeviceFsmCheck_A,
-    u_d0_spi_device.gen_rst_chk.u_rst_chk.u_state_regs,
+    DMainSpiDeviceFsmCheck_A,
+    u_dmain_spi_device.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
   end
   assign shadow_cnsty_chk_errs[10] = '0;
   assign shadow_fsm_errs[10] = '0;
 
   // Generating resets for spi_host0
-  // Power Domains: ['0']
+  // Power Domains: ['Main']
   // Shadowed: False
   assign resets_o.rst_spi_host0_n[DomainAonSel] = '0;
   assign cnsty_chk_errs[11][DomainAonSel] = '0;
@@ -801,31 +801,31 @@ module rstmgr
     .SecCheck(SecCheck),
     .SecMaxSyncDelay(SecMaxSyncDelay),
     .SwRstReq(1'b1)
-  ) u_d0_spi_host0 (
+  ) u_dmain_spi_host0 (
     .clk_i,
     .rst_ni,
     .leaf_clk_i(clk_io_i),
-    .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
+    .parent_rst_ni(rst_sys_src_n[DomainMainSel]),
     .sw_rst_req_ni(reg2hw.sw_rst_ctrl_n[SPI_HOST0].q),
     .scan_rst_ni,
     .scanmode_i,
-    .rst_en_o(rst_en_o.spi_host0[Domain0Sel]),
-    .leaf_rst_o(resets_o.rst_spi_host0_n[Domain0Sel]),
-    .err_o(cnsty_chk_errs[11][Domain0Sel]),
-    .fsm_err_o(fsm_errs[11][Domain0Sel])
+    .rst_en_o(rst_en_o.spi_host0[DomainMainSel]),
+    .leaf_rst_o(resets_o.rst_spi_host0_n[DomainMainSel]),
+    .err_o(cnsty_chk_errs[11][DomainMainSel]),
+    .fsm_err_o(fsm_errs[11][DomainMainSel])
   );
 
-  if (SecCheck) begin : gen_d0_spi_host0_assert
+  if (SecCheck) begin : gen_dmain_spi_host0_assert
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
-    D0SpiHost0FsmCheck_A,
-    u_d0_spi_host0.gen_rst_chk.u_rst_chk.u_state_regs,
+    DMainSpiHost0FsmCheck_A,
+    u_dmain_spi_host0.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
   end
   assign shadow_cnsty_chk_errs[11] = '0;
   assign shadow_fsm_errs[11] = '0;
 
   // Generating resets for usb
-  // Power Domains: ['0']
+  // Power Domains: ['Main']
   // Shadowed: False
   assign resets_o.rst_usb_n[DomainAonSel] = '0;
   assign cnsty_chk_errs[12][DomainAonSel] = '0;
@@ -835,24 +835,24 @@ module rstmgr
     .SecCheck(SecCheck),
     .SecMaxSyncDelay(SecMaxSyncDelay),
     .SwRstReq(1'b1)
-  ) u_d0_usb (
+  ) u_dmain_usb (
     .clk_i,
     .rst_ni,
     .leaf_clk_i(clk_usb_i),
-    .parent_rst_ni(rst_sys_src_n[Domain0Sel]),
+    .parent_rst_ni(rst_sys_src_n[DomainMainSel]),
     .sw_rst_req_ni(reg2hw.sw_rst_ctrl_n[USB].q),
     .scan_rst_ni,
     .scanmode_i,
-    .rst_en_o(rst_en_o.usb[Domain0Sel]),
-    .leaf_rst_o(resets_o.rst_usb_n[Domain0Sel]),
-    .err_o(cnsty_chk_errs[12][Domain0Sel]),
-    .fsm_err_o(fsm_errs[12][Domain0Sel])
+    .rst_en_o(rst_en_o.usb[DomainMainSel]),
+    .leaf_rst_o(resets_o.rst_usb_n[DomainMainSel]),
+    .err_o(cnsty_chk_errs[12][DomainMainSel]),
+    .fsm_err_o(fsm_errs[12][DomainMainSel])
   );
 
-  if (SecCheck) begin : gen_d0_usb_assert
+  if (SecCheck) begin : gen_dmain_usb_assert
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
-    D0UsbFsmCheck_A,
-    u_d0_usb.gen_rst_chk.u_rst_chk.u_state_regs,
+    DMainUsbFsmCheck_A,
+    u_dmain_usb.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
   end
   assign shadow_cnsty_chk_errs[12] = '0;

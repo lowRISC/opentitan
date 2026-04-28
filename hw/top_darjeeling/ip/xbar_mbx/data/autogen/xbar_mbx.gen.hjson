@@ -19,14 +19,14 @@
     rst_mbx_ni:
     {
       name: lc
-      domain: "0"
+      domain: Main
     }
   }
   clock_connections:
   {
     clk_mbx_i: clkmgr_aon_clocks.clk_main_infra
   }
-  domain: "0"
+  domain: Main
   connections:
   {
     mbx:

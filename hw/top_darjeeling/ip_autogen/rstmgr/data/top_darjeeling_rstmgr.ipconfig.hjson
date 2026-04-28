@@ -55,7 +55,7 @@
     power_domains:
     [
       Aon
-      "0"
+      Main
     ]
     num_rstreqs: 2
     sw_rsts:
@@ -72,7 +72,7 @@
         type: top
         domains:
         [
-          "0"
+          Main
           Aon
         ]
         shadowed: false
@@ -114,7 +114,7 @@
         type: top
         domains:
         [
-          "0"
+          Main
           Aon
         ]
         shadowed: true
@@ -143,7 +143,7 @@
         type: top
         domains:
         [
-          "0"
+          Main
           Aon
         ]
         shadowed: true
@@ -158,7 +158,7 @@
         type: top
         domains:
         [
-          "0"
+          Main
         ]
         shadowed: false
         sw: false
@@ -172,7 +172,7 @@
         type: top
         domains:
         [
-          "0"
+          Main
         ]
         shadowed: false
         sw: true
@@ -186,7 +186,7 @@
         type: top
         domains:
         [
-          "0"
+          Main
         ]
         shadowed: false
         sw: true
@@ -200,7 +200,7 @@
         type: top
         domains:
         [
-          "0"
+          Main
         ]
         shadowed: false
         sw: true
@@ -245,7 +245,7 @@
         type: top
         domains:
         [
-          "0"
+          Main
           Aon
         ]
         shadowed: true
@@ -274,7 +274,7 @@
         type: top
         domains:
         [
-          "0"
+          Main
           Aon
         ]
         shadowed: true
@@ -289,7 +289,7 @@
         type: top
         domains:
         [
-          "0"
+          Main
         ]
         shadowed: false
         sw: false
@@ -303,7 +303,7 @@
         type: top
         domains:
         [
-          "0"
+          Main
         ]
         shadowed: false
         sw: true
@@ -317,7 +317,7 @@
         type: top
         domains:
         [
-          "0"
+          Main
         ]
         shadowed: false
         sw: true
@@ -331,7 +331,7 @@
         type: top
         domains:
         [
-          "0"
+          Main
         ]
         shadowed: false
         sw: true

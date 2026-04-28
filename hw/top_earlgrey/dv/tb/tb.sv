@@ -265,7 +265,7 @@ module tb;
     .rst_ni(dut.top_earlgrey.u_rstmgr_aon.resets_o_rst_lc_io_div4_n_1_),
 `else
     .clk_i(dut.top_earlgrey.u_clkmgr_aon.clocks_o.clk_io_div4_peri),
-    .rst_ni(dut.top_earlgrey.u_rstmgr_aon.resets_o.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ni(dut.top_earlgrey.u_rstmgr_aon.resets_o.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
 `endif
     .active(u_tb_dpi_if.enable_gpiodpi),
     .gpio_p2d(gpiodpi_p2d),
@@ -357,7 +357,7 @@ module tb;
    .rst_ni(dut.top_earlgrey.u_rstmgr_aon.resets_o_rst_lc_io_div4_n_1_),
 `else
    .clk_i(dut.top_earlgrey.u_clkmgr_aon.clocks_o.clk_io_div4_peri),
-   .rst_ni(dut.top_earlgrey.u_rstmgr_aon.resets_o.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
+   .rst_ni(dut.top_earlgrey.u_rstmgr_aon.resets_o.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
 `endif
     .active(u_tb_dpi_if.enable_uartdpi),
     .tx_o(uartdpi_tx),

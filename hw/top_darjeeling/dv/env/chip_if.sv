@@ -389,7 +389,7 @@ interface chip_if;
   // connect to these signals.
 
   wire mbx_if_clk = `TOP_HIER.clkmgr_aon_clocks.clk_main_infra;
-  wire mbx_if_rst_n = `TOP_HIER.rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel];
+  wire mbx_if_rst_n = `TOP_HIER.rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::DomainMainSel];
   wire mbx_intr_signals_t[NUM_MBXS-1:0] mbx_interrupts;
   mbx_if darjeeling_mbx_if(.clk(mbx_if_clk), .rst_n(mbx_if_rst_n));
   function automatic void connect_mbx_if();

@@ -40,7 +40,7 @@ module tb;
 
   tl_if tl_if (
     .clk,
-    .rst_n(rstmgr_if.resets_o.rst_lc_io_n[rstmgr_pkg::Domain0Sel])
+    .rst_n(rstmgr_if.resets_o.rst_lc_io_n[rstmgr_pkg::DomainMainSel])
   );
 
   rstmgr_if rstmgr_if (
@@ -63,7 +63,7 @@ module tb;
   // This is consistent with rstmgr being the only source of resets.
   rstmgr dut (
     .clk_i        (clk),
-    .rst_ni       (rstmgr_if.resets_o.rst_lc_io_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ni       (rstmgr_if.resets_o.rst_lc_io_n[rstmgr_pkg::DomainMainSel]),
     .clk_aon_i    (clk_aon),
     .clk_io_i     (clk_io),
     .clk_main_i   (clk_main),
@@ -118,7 +118,7 @@ module tb;
     // This may help any code that depends on clk_rst_vif.rst_n in the infrastructure: they won't
     // be able to change but at least the reset value will be true to the environment.
     clk_rst_if.drive_rst_n = 1'b0;
-    force clk_rst_if.rst_n = rstmgr_if.resets_o.rst_lc_io_n[rstmgr_pkg::Domain0Sel];
+    force clk_rst_if.rst_n = rstmgr_if.resets_o.rst_lc_io_n[rstmgr_pkg::DomainMainSel];
   end
 
 endmodule
