@@ -85,6 +85,19 @@ otbn_consttime_test(
 )
 
 otbn_sim_test(
+    name = "ed25519_ext_is_on_curve_test",
+    srcs = [
+        "ed25519_ext_is_on_curve_test.s",
+    ],
+    testcase = "ed25519_ext_is_on_curve_test.hjson",
+    deps = [
+        "//sw/otbn/crypto:ed25519",
+        "//sw/otbn/crypto:ed25519_scalar",
+        "//sw/otbn/crypto:field25519",
+    ],
+)
+
+otbn_sim_test(
     name = "ed25519_encode_decode_test",
     srcs = [
         "ed25519_encode_decode_test.s",
