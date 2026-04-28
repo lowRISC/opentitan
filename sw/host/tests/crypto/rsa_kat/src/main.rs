@@ -14,8 +14,8 @@ use serde::Deserialize;
 use cryptotest_commands::commands::CryptotestCommand;
 use cryptotest_commands::rsa_commands::{
     CryptotestRsaDecrypt, CryptotestRsaDecryptResp, CryptotestRsaEncrypt, CryptotestRsaEncryptResp,
-    CryptotestRsaSign, CryptotestRsaSignResp, CryptotestRsaVerify, CryptotestRsaVerifyResp,
-    RsaSubcommand,
+    CryptotestRsaKeygen, CryptotestRsaKeygenResp, CryptotestRsaSign, CryptotestRsaSignResp,
+    CryptotestRsaVerify, CryptotestRsaVerifyResp, RsaSubcommand,
 };
 
 use opentitanlib::app::TransportWrapper;
@@ -50,6 +50,11 @@ struct Opts {
 
     #[arg(long, num_args = 1..)]
     rsa_json: Vec<String>,
+
+    // Run RSA keygen functional tests (sign-then-verify and encrypt-then-decrypt
+    // round-trips with freshly generated keys).
+    #[arg(long, default_value_t = false)]
+    run_keygen: bool,
 }
 
 #[derive(Debug, Deserialize)]
@@ -302,6 +307,67 @@ fn run_rsa_testcase(
     Ok(())
 }
 
+// (security_level_bits, padding, hash_alg) parameter sets for keygen testing.
+// All three padding modes are covered for each security level. The message is
+// kept short to satisfy the OAEP plaintext bound at the largest hash size.
+const KEYGEN_CASES: &[(usize, &str, &str)] = &[
+    (2048, "pkcs1_1.5", "sha-256"),
+    (2048, "pss", "sha-256"),
+    (2048, "oaep", "sha-256"),
+    (3072, "pkcs1_1.5", "sha-384"),
+    (3072, "pss", "sha-384"),
+    (3072, "oaep", "sha-384"),
+    (4096, "pkcs1_1.5", "sha-512"),
+    (4096, "pss", "sha-512"),
+    (4096, "oaep", "sha-512"),
+];
+
+const KEYGEN_TEST_MESSAGE: &[u8] = &[
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
+];
+
+fn run_rsa_keygen_testcase(
+    security_level: usize,
+    padding: &str,
+    hash_alg: &str,
+    spi_console: &SpiConsoleDevice,
+    timeout: Duration,
+) -> Result<()> {
+    let hashing = match hash_alg {
+        "sha-256" => 0,
+        "sha-384" => 1,
+        "sha-512" => 2,
+        "sha3-256" => 3,
+        "sha3-384" => 4,
+        "sha3-512" => 5,
+        _ => panic!("Invalid hashing mode"),
+    };
+    let padding_code = match padding {
+        "pkcs1_1.5" => 0,
+        "pss" => 1,
+        "oaep" => 2,
+        _ => panic!("Invalid padding mode"),
+    };
+
+    CryptotestCommand::Rsa.send(spi_console)?;
+    RsaSubcommand::RsaKeygen.send(spi_console)?;
+    CryptotestRsaKeygen {
+        security_level,
+        hashing,
+        padding: padding_code,
+        msg: ArrayVec::try_from(KEYGEN_TEST_MESSAGE).unwrap(),
+        msg_len: KEYGEN_TEST_MESSAGE.len(),
+    }
+    .send(spi_console)?;
+
+    let resp = CryptotestRsaKeygenResp::recv(spi_console, timeout, false, false)?;
+    assert!(
+        resp.result,
+        "RSA keygen round-trip failed for {security_level}-bit {padding} {hash_alg}"
+    );
+    Ok(())
+}
+
 fn test_rsa(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let spi = transport.spi("BOOTSTRAP")?;
     let spi_console_device = SpiConsoleDevice::new(
@@ -344,6 +410,25 @@ fn test_rsa(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
             run_rsa_testcase(rsa_test, opts, &spi_console_device)?;
         }
     }
+
+    if opts.run_keygen {
+        for &(security_level, padding, hash_alg) in KEYGEN_CASES {
+            log::info!(
+                "RSA keygen: {}-bit {} {}",
+                security_level,
+                padding,
+                hash_alg
+            );
+            run_rsa_keygen_testcase(
+                security_level,
+                padding,
+                hash_alg,
+                &spi_console_device,
+                opts.timeout,
+            )?;
+        }
+    }
+
     CryptotestCommand::Quit.send(&spi_console_device)?;
     let _ = UartConsole::wait_for(&spi_console_device, r"PASS!|FAIL!", opts.timeout * 10)?;
     Ok(())
