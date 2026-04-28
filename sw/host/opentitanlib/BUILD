@@ -246,6 +246,7 @@ rust_library(
         "@crate_index//:chrono",
         "@crate_index//:clap",
         "@crate_index//:crc",
+        "@crate_index//:derive_more",
         "@crate_index//:deser-hjson",
         "@crate_index//:directories",
         "@crate_index//:ecdsa",
