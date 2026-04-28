@@ -757,6 +757,180 @@ void hmac_hmac_sha512_init(const hmac_key_t key, hmac_ctx_t *ctx) {
   hmac_init(kKeyLength1024, kDigestLengthSha512, ctx);
 }
 
+status_t hmac_hmac_sha256_init_redundant(hmac_key_t key, hmac_ctx_t *ctx) {
+  ctx->msg_block_wordlen = kHmacSha256BlockWords;
+  ctx->digest_wordlen = kHmacSha256DigestWords;
+  sha2_init(kDigestLengthSha256, ctx);
+  // Store key so hmac_hmac_sha256_final_redundant can derive o_key_pad.
+  ctx->key.key_len = key.key_len;
+  ctx->key.checksum = key.checksum;
+  hardened_memcpy(ctx->key.key_block, key.key_block, key.key_len);
+  HARDENED_CHECK_EQ(
+      hardened_memeq(key.key_block, ctx->key.key_block, key.key_len),
+      kHardenedBoolTrue);
+  // Compute i_key_pad = key XOR ipad and absorb it so subsequent hmac_update
+  // calls receive only message bytes.
+  uint32_t i_key_pad[kHmacSha256BlockWords];
+  uint32_t ipad[kHmacSha256BlockWords];
+  memset(i_key_pad, 0, kHmacSha256BlockBytes);
+  memset(ipad, 0x36, kHmacSha256BlockBytes);
+  HARDENED_TRY(
+      hardened_xor(key.key_block, ipad, kHmacSha256BlockWords, i_key_pad));
+  otcrypto_const_byte_buf_t i_key_pad_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (const uint8_t *)i_key_pad,
+                        kHmacSha256BlockBytes);
+  return hmac_update(ctx, &i_key_pad_buf);
+}
+
+status_t hmac_hmac_sha384_init_redundant(hmac_key_t key, hmac_ctx_t *ctx) {
+  ctx->msg_block_wordlen = kHmacSha384BlockWords;
+  ctx->digest_wordlen = kHmacSha384DigestWords;
+  sha2_init(kDigestLengthSha384, ctx);
+  ctx->key.key_len = key.key_len;
+  ctx->key.checksum = key.checksum;
+  hardened_memcpy(ctx->key.key_block, key.key_block, key.key_len);
+  HARDENED_CHECK_EQ(
+      hardened_memeq(key.key_block, ctx->key.key_block, key.key_len),
+      kHardenedBoolTrue);
+  // Compute i_key_pad = key XOR ipad and absorb it so subsequent hmac_update
+  // calls receive only message bytes.
+  uint32_t i_key_pad[kHmacSha384BlockWords];
+  uint32_t ipad[kHmacSha384BlockWords];
+  memset(i_key_pad, 0, kHmacSha384BlockBytes);
+  memset(ipad, 0x36, kHmacSha384BlockBytes);
+  HARDENED_TRY(
+      hardened_xor(key.key_block, ipad, kHmacSha384BlockWords, i_key_pad));
+  otcrypto_const_byte_buf_t i_key_pad_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (const uint8_t *)i_key_pad,
+                        kHmacSha384BlockBytes);
+  return hmac_update(ctx, &i_key_pad_buf);
+}
+
+status_t hmac_hmac_sha512_init_redundant(hmac_key_t key, hmac_ctx_t *ctx) {
+  ctx->msg_block_wordlen = kHmacSha512BlockWords;
+  ctx->digest_wordlen = kHmacSha512DigestWords;
+  sha2_init(kDigestLengthSha512, ctx);
+  ctx->key.key_len = key.key_len;
+  ctx->key.checksum = key.checksum;
+  hardened_memcpy(ctx->key.key_block, key.key_block, key.key_len);
+  HARDENED_CHECK_EQ(
+      hardened_memeq(key.key_block, ctx->key.key_block, key.key_len),
+      kHardenedBoolTrue);
+  // Compute i_key_pad = key XOR ipad and absorb it so subsequent hmac_update
+  // calls receive only message bytes.
+  uint32_t i_key_pad[kHmacSha512BlockWords];
+  uint32_t ipad[kHmacSha512BlockWords];
+  memset(i_key_pad, 0, kHmacSha512BlockBytes);
+  memset(ipad, 0x36, kHmacSha512BlockBytes);
+  HARDENED_TRY(
+      hardened_xor(key.key_block, ipad, kHmacSha512BlockWords, i_key_pad));
+  otcrypto_const_byte_buf_t i_key_pad_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (const uint8_t *)i_key_pad,
+                        kHmacSha512BlockBytes);
+  return hmac_update(ctx, &i_key_pad_buf);
+}
+
+status_t hmac_hmac_sha256_final_redundant(hmac_ctx_t *ctx,
+                                          otcrypto_word32_buf_t *tag) {
+  // Save key before hmac_final wipes the context.
+  hmac_key_t saved_key;
+  saved_key.key_len = ctx->key.key_len;
+  saved_key.checksum = ctx->key.checksum;
+  hardened_memcpy(saved_key.key_block, ctx->key.key_block, ctx->key.key_len);
+  HARDENED_CHECK_EQ(
+      hardened_memeq(saved_key.key_block, ctx->key.key_block, ctx->key.key_len),
+      kHardenedBoolTrue);
+  // Finalize inner hash: H(i_key_pad || msg).
+  uint32_t inner_digest_data[kHmacSha256DigestWords];
+  memset(inner_digest_data, 0, sizeof(inner_digest_data));
+  otcrypto_word32_buf_t inner_digest = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, inner_digest_data, kHmacSha256DigestWords);
+  HARDENED_TRY(hmac_final(ctx, &inner_digest));
+  // Compute o_key_pad = key XOR opad and run the outer hash.
+  uint32_t o_key_pad[kHmacSha256BlockWords];
+  uint32_t opad[kHmacSha256BlockWords];
+  memset(o_key_pad, 0, kHmacSha256BlockBytes);
+  memset(opad, 0x5c5c5c5c, kHmacSha256BlockBytes);
+  HARDENED_TRY(hardened_xor(saved_key.key_block, opad, kHmacSha256BlockWords,
+                            o_key_pad));
+  hmac_hash_sha256_init(ctx);
+  otcrypto_const_byte_buf_t o_key_pad_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (const uint8_t *)o_key_pad,
+                        kHmacSha256BlockBytes);
+  HARDENED_TRY(hmac_update(ctx, &o_key_pad_buf));
+  otcrypto_const_byte_buf_t inner_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, (const uint8_t *)inner_digest_data,
+      kHmacSha256DigestBytes);
+  HARDENED_TRY(hmac_update(ctx, &inner_buf));
+  return hmac_final(ctx, tag);
+}
+
+status_t hmac_hmac_sha384_final_redundant(hmac_ctx_t *ctx,
+                                          otcrypto_word32_buf_t *tag) {
+  // Save key before hmac_final wipes the context.
+  hmac_key_t saved_key;
+  saved_key.key_len = ctx->key.key_len;
+  saved_key.checksum = ctx->key.checksum;
+  hardened_memcpy(saved_key.key_block, ctx->key.key_block, ctx->key.key_len);
+  HARDENED_CHECK_EQ(
+      hardened_memeq(saved_key.key_block, ctx->key.key_block, ctx->key.key_len),
+      kHardenedBoolTrue);
+  uint32_t inner_digest_data[kHmacSha384DigestWords];
+  memset(inner_digest_data, 0, sizeof(inner_digest_data));
+  otcrypto_word32_buf_t inner_digest = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, inner_digest_data, kHmacSha384DigestWords);
+  HARDENED_TRY(hmac_final(ctx, &inner_digest));
+  uint32_t o_key_pad[kHmacSha384BlockWords];
+  uint32_t opad[kHmacSha384BlockWords];
+  memset(o_key_pad, 0, kHmacSha384BlockBytes);
+  memset(opad, 0x5c, kHmacSha384BlockBytes);
+  HARDENED_TRY(hardened_xor(saved_key.key_block, opad, kHmacSha384BlockWords,
+                            o_key_pad));
+  hmac_hash_sha384_init(ctx);
+  otcrypto_const_byte_buf_t o_key_pad_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (const uint8_t *)o_key_pad,
+                        kHmacSha384BlockBytes);
+  HARDENED_TRY(hmac_update(ctx, &o_key_pad_buf));
+  otcrypto_const_byte_buf_t inner_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, (const uint8_t *)inner_digest_data,
+      kHmacSha384DigestBytes);
+  HARDENED_TRY(hmac_update(ctx, &inner_buf));
+  return hmac_final(ctx, tag);
+}
+
+status_t hmac_hmac_sha512_final_redundant(hmac_ctx_t *ctx,
+                                          otcrypto_word32_buf_t *tag) {
+  // Save key before hmac_final wipes the context.
+  hmac_key_t saved_key;
+  saved_key.key_len = ctx->key.key_len;
+  saved_key.checksum = ctx->key.checksum;
+  hardened_memcpy(saved_key.key_block, ctx->key.key_block, ctx->key.key_len);
+  HARDENED_CHECK_EQ(
+      hardened_memeq(saved_key.key_block, ctx->key.key_block, ctx->key.key_len),
+      kHardenedBoolTrue);
+  uint32_t inner_digest_data[kHmacSha512DigestWords];
+  memset(inner_digest_data, 0, sizeof(inner_digest_data));
+  otcrypto_word32_buf_t inner_digest = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, inner_digest_data, kHmacSha512DigestWords);
+  HARDENED_TRY(hmac_final(ctx, &inner_digest));
+  uint32_t o_key_pad[kHmacSha512BlockWords];
+  uint32_t opad[kHmacSha512BlockWords];
+  memset(o_key_pad, 0, kHmacSha512BlockBytes);
+  memset(opad, 0x5c, kHmacSha512BlockBytes);
+  HARDENED_TRY(hardened_xor(saved_key.key_block, opad, kHmacSha512BlockWords,
+                            o_key_pad));
+  hmac_hash_sha512_init(ctx);
+  otcrypto_const_byte_buf_t o_key_pad_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (const uint8_t *)o_key_pad,
+                        kHmacSha512BlockBytes);
+  HARDENED_TRY(hmac_update(ctx, &o_key_pad_buf));
+  otcrypto_const_byte_buf_t inner_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, (const uint8_t *)inner_digest_data,
+      kHmacSha512DigestBytes);
+  HARDENED_TRY(hmac_update(ctx, &inner_buf));
+  return hmac_final(ctx, tag);
+}
+
 uint32_t hmac_key_integrity_checksum(const hmac_key_t *key) {
   uint32_t ctx;
   crc32_init(&ctx);

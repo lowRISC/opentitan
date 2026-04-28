@@ -19,6 +19,17 @@
 extern "C" {
 #endif  // __cplusplus
 
+enum {
+  /**
+   * Size of the HMAC context in words.
+   *
+   * Holds a security-level word, a primary hmac_ctx_t, and a redundant
+   * hmac_ctx_t for medium/high security levels. For the low security
+   * configuration only the primary slot is used.
+   */
+  kOtcryptoHmacCtxStructWords = 1 + 2 * kOtcryptoSha2CtxStructWords,
+};
+
 /**
  * Generic hmac context.
  *
@@ -26,7 +37,7 @@ extern "C" {
  * with #otcrypto_hmac_init.
  */
 typedef struct otcrypto_hmac_context {
-  uint32_t data[kOtcryptoSha2CtxStructWords];
+  uint32_t data[kOtcryptoHmacCtxStructWords];
 } otcrypto_hmac_context_t;
 
 /**

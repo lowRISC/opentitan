@@ -16,11 +16,13 @@
 #define MODULE_ID MAKE_MODULE_ID('h', 'm', 'c')
 
 /**
- * Ensure that the HMAC context is large enough for HMAC driver struct.
+ * Ensure that the HMAC context is large enough. For FI hardening, two redundant
+ * contexts are created as well as a word storing the security level.
  */
 static_assert(
-    sizeof(otcrypto_hmac_context_t) >= sizeof(hmac_ctx_t),
-    "`otcrypto_hmac_context_t` must be big enough to hold `hmac_ctx_t`.");
+    sizeof(otcrypto_hmac_context_t) >=
+        2 * sizeof(hmac_ctx_t) + sizeof(uint32_t),
+    "`otcrypto_hmac_context_t` must hold two `hmac_ctx_t` plus a word.");
 
 /**
  * Ensure that HMAC driver struct is suitable for `hardened_memcpy()`.
@@ -28,6 +30,23 @@ static_assert(
 static_assert(sizeof(hmac_ctx_t) % sizeof(uint32_t) == 0,
               "Size of `hmac_ctx_t` must be a multiple of the word size for "
               "`hardened_memcpy()`");
+
+/**
+ * Ensure kOtcryptoSha2CtxStructWords matches sizeof(hmac_ctx_t) so the
+ * context slot offsets below are correct.
+ */
+static_assert(
+    kOtcryptoSha2CtxStructWords == sizeof(hmac_ctx_t) / sizeof(uint32_t),
+    "`kOtcryptoSha2CtxStructWords` must equal `sizeof(hmac_ctx_t)` in words.");
+
+enum {
+  // Slot 0: security level (otcrypto_key_security_level_t cast to uint32_t).
+  kCtxSecurityLevelOffset = 0,
+  // Slot 1: primary hmac_ctx_t.
+  kCtxPrimaryOffset = 1,
+  // Slot 2: redundant hmac_ctx_t (Medium/High only).
+  kCtxRedundantOffset = 1 + kOtcryptoSha2CtxStructWords,
+};
 
 /**
  * Compute the key block (see FIPS 198-1, Section 4, Steps 1-3) together with
@@ -412,14 +431,8 @@ otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
   // Check the key for null pointers or invalid configurations.
   HARDENED_TRY(check_key(key));
 
-  // Only security level low is supported for the streaming mode.
-  if (key->config.security_level != kOtcryptoKeySecurityLevelLow) {
-    // COVERAGE (NOT IMPL) Not implemented.
-    return OTCRYPTO_NOT_IMPLEMENTED;
-  }
-
-  // Call the appropriate function from the HMAC driver.
-  hmac_ctx_t hmac_ctx;
+  hmac_ctx_t primary_ctx;
+  hmac_ctx_t redundant_ctx;
   hmac_key_t hmac_key;
   otcrypto_hmac_key_mode_t key_mode_used = launder32(0);
   switch (launder32(key->config.key_mode)) {
@@ -427,19 +440,64 @@ otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
       key_mode_used = launder32(key_mode_used) | kOtcryptoKeyModeHmacSha256;
       HARDENED_CHECK_EQ(key->config.key_mode, kOtcryptoKeyModeHmacSha256);
       HARDENED_TRY(hmac_key_construct(key, kHmacSha256BlockWords, &hmac_key));
-      hmac_hmac_sha256_init_cl(hmac_key, &hmac_ctx);
+      hmac_hmac_sha256_init_cl(hmac_key, &primary_ctx);
+      if (launder32(key->config.security_level) ==
+          kOtcryptoKeySecurityLevelLow) {
+        HARDENED_CHECK_EQ(launder32(key->config.security_level),
+                          kOtcryptoKeySecurityLevelLow);
+      } else if (launder32(key->config.security_level) ==
+                 kOtcryptoKeySecurityLevelMedium) {
+        // For a medium security level, call the init function a second time.
+        HARDENED_CHECK_EQ(launder32(key->config.security_level),
+                          kOtcryptoKeySecurityLevelMedium);
+        hmac_hmac_sha256_init_cl(hmac_key, &redundant_ctx);
+      } else {
+        // For a high security level, the redundant init is done using a
+        // different implementation approach.
+        HARDENED_TRY(hmac_hmac_sha256_init_redundant(hmac_key, &redundant_ctx));
+      }
       break;
     case kOtcryptoKeyModeHmacSha384:
       key_mode_used = launder32(key_mode_used) | kOtcryptoKeyModeHmacSha384;
       HARDENED_CHECK_EQ(key->config.key_mode, kOtcryptoKeyModeHmacSha384);
       HARDENED_TRY(hmac_key_construct(key, kHmacSha384BlockWords, &hmac_key));
-      hmac_hmac_sha384_init(hmac_key, &hmac_ctx);
+      hmac_hmac_sha384_init(hmac_key, &primary_ctx);
+      if (launder32(key->config.security_level) ==
+          kOtcryptoKeySecurityLevelLow) {
+        HARDENED_CHECK_EQ(launder32(key->config.security_level),
+                          kOtcryptoKeySecurityLevelLow);
+      } else if (launder32(key->config.security_level) ==
+                 kOtcryptoKeySecurityLevelMedium) {
+        // For a medium security level, call the init function a second time.
+        HARDENED_CHECK_EQ(launder32(key->config.security_level),
+                          kOtcryptoKeySecurityLevelMedium);
+        hmac_hmac_sha384_init(hmac_key, &redundant_ctx);
+      } else {
+        // For a high security level, the redundant init is done using a
+        // different implementation approach.
+        HARDENED_TRY(hmac_hmac_sha384_init_redundant(hmac_key, &redundant_ctx));
+      }
       break;
     case kOtcryptoKeyModeHmacSha512:
       key_mode_used = launder32(key_mode_used) | kOtcryptoKeyModeHmacSha512;
       HARDENED_CHECK_EQ(key->config.key_mode, kOtcryptoKeyModeHmacSha512);
       HARDENED_TRY(hmac_key_construct(key, kHmacSha512BlockWords, &hmac_key));
-      hmac_hmac_sha512_init(hmac_key, &hmac_ctx);
+      hmac_hmac_sha512_init(hmac_key, &primary_ctx);
+      if (launder32(key->config.security_level) ==
+          kOtcryptoKeySecurityLevelLow) {
+        HARDENED_CHECK_EQ(launder32(key->config.security_level),
+                          kOtcryptoKeySecurityLevelLow);
+      } else if (launder32(key->config.security_level) ==
+                 kOtcryptoKeySecurityLevelMedium) {
+        // For a medium security level, call the init function a second time.
+        HARDENED_CHECK_EQ(launder32(key->config.security_level),
+                          kOtcryptoKeySecurityLevelMedium);
+        hmac_hmac_sha512_init(hmac_key, &redundant_ctx);
+      } else {
+        // For a high security level, the redundant init is done using a
+        // different implementation approach.
+        HARDENED_TRY(hmac_hmac_sha512_init_redundant(hmac_key, &redundant_ctx));
+      }
       break;
     default:
       return OTCRYPTO_BAD_ARGS;
@@ -448,10 +506,22 @@ otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
   // avoid that multiple cases were executed.
   HARDENED_CHECK_EQ(launder32(key_mode_used), key->config.key_mode);
 
-  randomized_bytecopy(ctx->data, &hmac_ctx, sizeof(hmac_ctx));
+  ctx->data[kCtxSecurityLevelOffset] = (uint32_t)key->config.security_level;
+  randomized_bytecopy(&ctx->data[kCtxPrimaryOffset], &primary_ctx,
+                      sizeof(hmac_ctx_t));
   HARDENED_CHECK_EQ(
-      consttime_memeq_byte(&hmac_ctx, ctx->data, sizeof(hmac_ctx)),
+      consttime_memeq_byte(&primary_ctx, &ctx->data[kCtxPrimaryOffset],
+                           sizeof(hmac_ctx_t)),
       kHardenedBoolTrue);
+  if (launder32(key->config.security_level) != kOtcryptoKeySecurityLevelLow) {
+    // Check if the redundant init function produced the same context.
+    randomized_bytecopy(&ctx->data[kCtxRedundantOffset], &redundant_ctx,
+                        sizeof(hmac_ctx_t));
+    HARDENED_CHECK_EQ(
+        consttime_memeq_byte(&redundant_ctx, &ctx->data[kCtxRedundantOffset],
+                             sizeof(hmac_ctx_t)),
+        kHardenedBoolTrue);
+  }
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
@@ -467,15 +537,38 @@ otcrypto_status_t otcrypto_hmac_update(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  hmac_ctx_t hmac_ctx;
-  HARDENED_TRY(hardened_memcpy((uint32_t *)&hmac_ctx,
-                               (const uint32_t *)ctx->data,
+  otcrypto_key_security_level_t security_level =
+      (otcrypto_key_security_level_t)ctx->data[kCtxSecurityLevelOffset];
+
+  hmac_ctx_t primary_ctx;
+  HARDENED_TRY(hardened_memcpy((uint32_t *)&primary_ctx,
+                               (const uint32_t *)&ctx->data[kCtxPrimaryOffset],
                                sizeof(hmac_ctx_t) / sizeof(uint32_t)));
-  HARDENED_TRY(hmac_update(&hmac_ctx, input_message));
-  randomized_bytecopy(ctx->data, &hmac_ctx, sizeof(hmac_ctx_t));
+  HARDENED_TRY(hmac_update(&primary_ctx, input_message));
+  randomized_bytecopy(&ctx->data[kCtxPrimaryOffset], &primary_ctx,
+                      sizeof(hmac_ctx_t));
   HARDENED_CHECK_EQ(
-      consttime_memeq_byte(&hmac_ctx, ctx->data, sizeof(hmac_ctx_t)),
+      consttime_memeq_byte(&primary_ctx, &ctx->data[kCtxPrimaryOffset],
+                           sizeof(hmac_ctx_t)),
       kHardenedBoolTrue);
+
+  if (launder32(security_level) != kOtcryptoKeySecurityLevelLow) {
+    // Perform the update a second time and check if the same context got
+    // procuced by both instances.
+    hmac_ctx_t redundant_ctx;
+    HARDENED_TRY(
+        hardened_memcpy((uint32_t *)&redundant_ctx,
+                        (const uint32_t *)&ctx->data[kCtxRedundantOffset],
+                        sizeof(hmac_ctx_t) / sizeof(uint32_t)));
+    HARDENED_TRY(hmac_update(&redundant_ctx, input_message));
+    randomized_bytecopy(&ctx->data[kCtxRedundantOffset], &redundant_ctx,
+                        sizeof(hmac_ctx_t));
+    HARDENED_CHECK_EQ(
+        consttime_memeq_byte(&redundant_ctx, &ctx->data[kCtxRedundantOffset],
+                             sizeof(hmac_ctx_t)),
+        kHardenedBoolTrue);
+  }
+
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
@@ -485,17 +578,68 @@ otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Restore the context into a local copy before operating on it.
-  hmac_ctx_t hmac_ctx;
-  HARDENED_TRY(hardened_memcpy((uint32_t *)&hmac_ctx,
-                               (const uint32_t *)ctx->data,
+  otcrypto_key_security_level_t security_level =
+      (otcrypto_key_security_level_t)ctx->data[kCtxSecurityLevelOffset];
+
+  hmac_ctx_t primary_ctx;
+  HARDENED_TRY(hardened_memcpy((uint32_t *)&primary_ctx,
+                               (const uint32_t *)&ctx->data[kCtxPrimaryOffset],
                                sizeof(hmac_ctx_t) / sizeof(uint32_t)));
 
   // Check the digest length.
-  if (launder32(tag->len) != hmac_ctx.digest_wordlen) {
+  if (launder32(tag->len) != primary_ctx.digest_wordlen) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(tag->len, hmac_ctx.digest_wordlen);
+  HARDENED_CHECK_EQ(tag->len, primary_ctx.digest_wordlen);
 
-  return otcrypto_eval_exit(hmac_final(&hmac_ctx, tag));
+  if (launder32(security_level) == kOtcryptoKeySecurityLevelLow) {
+    HARDENED_CHECK_EQ(launder32(security_level), kOtcryptoKeySecurityLevelLow);
+    return otcrypto_eval_exit(hmac_final(&primary_ctx, tag));
+  }
+
+  // For medium and high security levels, finalize both instances.
+  HARDENED_TRY(hmac_final(&primary_ctx, tag));
+
+  hmac_ctx_t redundant_ctx;
+  HARDENED_TRY(
+      hardened_memcpy((uint32_t *)&redundant_ctx,
+                      (const uint32_t *)&ctx->data[kCtxRedundantOffset],
+                      sizeof(hmac_ctx_t) / sizeof(uint32_t)));
+
+  uint32_t tag_redundant_data[kHmacMaxDigestWords];
+  otcrypto_word32_buf_t tag_redundant =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_redundant_data, tag->len);
+
+  if (launder32(security_level) == kOtcryptoKeySecurityLevelMedium) {
+    HARDENED_CHECK_EQ(launder32(security_level),
+                      kOtcryptoKeySecurityLevelMedium);
+    HARDENED_TRY(hmac_final(&redundant_ctx, &tag_redundant));
+  } else {
+    // For a high security level, the redundant init is done using a
+    // different implementation approach.
+    HARDENED_CHECK_EQ(launder32(security_level), kOtcryptoKeySecurityLevelHigh);
+    switch (launder32(redundant_ctx.digest_wordlen)) {
+      case kHmacSha256DigestWords:
+        HARDENED_CHECK_EQ(redundant_ctx.digest_wordlen, kHmacSha256DigestWords);
+        HARDENED_TRY(
+            hmac_hmac_sha256_final_redundant(&redundant_ctx, &tag_redundant));
+        break;
+      case kHmacSha384DigestWords:
+        HARDENED_CHECK_EQ(redundant_ctx.digest_wordlen, kHmacSha384DigestWords);
+        HARDENED_TRY(
+            hmac_hmac_sha384_final_redundant(&redundant_ctx, &tag_redundant));
+        break;
+      case kHmacSha512DigestWords:
+        HARDENED_CHECK_EQ(redundant_ctx.digest_wordlen, kHmacSha512DigestWords);
+        HARDENED_TRY(
+            hmac_hmac_sha512_final_redundant(&redundant_ctx, &tag_redundant));
+        break;
+      default:
+        return OTCRYPTO_BAD_ARGS;
+    }
+  }
+
+  HARDENED_CHECK_EQ(hardened_memeq(tag->data, tag_redundant.data, tag->len),
+                    kHardenedBoolTrue);
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
