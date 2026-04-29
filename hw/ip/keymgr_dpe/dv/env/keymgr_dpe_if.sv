@@ -108,33 +108,35 @@ interface keymgr_dpe_if(input clk, input rst_n);
   task automatic init(bit rand_otp_key, bit invalid_otp_key);
     // Keymgr_dpe only latches OTP key once, so this scb does not support change OTP key on the
     // fly. Will write a direct sequence to cover otp key change on the fly.
-    otp_ctrl_pkg::otp_keymgr_key_t local_otp_key;
+    keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t local_creator_root_key;
 
     // async delay as these signals are from different clock domain
     #($urandom_range(1000, 0) * 1ns);
     keymgr_dpe_en = lc_ctrl_pkg::On;
     keymgr_dpe_div = 64'h5CFBD765CE33F34E;
     otp_device_id = 'hF0F0;
-    otp_key = otp_ctrl_pkg::OTP_KEYMGR_KEY_DEFAULT;
     for (int i = 0; i < NumRomDigestInputs; ++i) begin
       rom_digests[i].data = 256'hA20A046CF42E6EAC560A3F82BFA76285B5C1D4AEA7C915E49A32D1C89BE0F507;
       rom_digests[i].valid = '1;
     end
+    // Load the default value for all seed's
+    local_creator_root_key = keymgr_dpe_pkg::KEYMGR_DPE_CREATOR_ROOT_KEY_DEFAULT;
+    creator_seed = keymgr_dpe_pkg::KEYMGR_DPE_CREATOR_SEED_DEFAULT;
+    owner_seed = keymgr_dpe_pkg::KEYMGR_DPE_OWNER_SEED_DEFAULT;
+    // If requested randomize the creator_root_key
     if (rand_otp_key) begin
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_otp_key,
-                                         local_otp_key.creator_root_key_share0_valid == 1;
-                                         local_otp_key.creator_root_key_share1_valid == 1;
-                                         !(local_otp_key.creator_root_key_share0 inside {0, '1});
-                                         !(local_otp_key.creator_root_key_share1 inside {0, '1});
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_creator_root_key,
+                                         local_creator_root_key.share0_valid == 1;
+                                         local_creator_root_key.share1_valid == 1;
+                                         !(local_creator_root_key.share0 inside {0, '1});
+                                         !(local_creator_root_key.share1 inside {0, '1});
                                          , , msg_id)
-    end else begin
-      local_otp_key = otp_ctrl_pkg::OTP_KEYMGR_KEY_DEFAULT;
     end
     if (invalid_otp_key) begin
-      local_otp_key.creator_root_key_share0_valid = 0;
-      local_otp_key.creator_root_key_share1_valid = 0;
+      local_creator_root_key.share0_valid = 0;
+      local_creator_root_key.share1_valid = 0;
     end
-    otp_key = local_otp_key;
+    creator_root_key = local_creator_root_key;
   endtask
 
   // reset local exp variables when reset is issued
