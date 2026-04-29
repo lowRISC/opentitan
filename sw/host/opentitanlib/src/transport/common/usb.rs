@@ -212,7 +212,7 @@ impl OtUsbContext for RusbContext {
 }
 
 impl RusbDevice {
-    fn new(
+    pub fn new(
         handle: rusb::DeviceHandle<rusb::Context>,
         serial_number: Option<String>,
         timeout: Duration,
