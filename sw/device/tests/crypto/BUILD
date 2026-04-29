@@ -852,6 +852,7 @@ opentitan_test(
         "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests/crypto/lib:crypto_test_lib",
     ],
 )
 

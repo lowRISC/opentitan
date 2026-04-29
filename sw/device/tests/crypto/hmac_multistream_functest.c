@@ -11,6 +11,7 @@
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/tests/crypto/lib/crypto_test_lib.h"
 
 // The autogen rule that creates this header creates it in a directory named
 // after the rule, then manipulates the include path in the
@@ -21,11 +22,15 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('t', 's', 't')
 
-// We need the following assertion, because we are using hash context struct
-// also for hmac contexts.
-static_assert(sizeof(otcrypto_sha2_context_t) ==
+// The HMAC context is larger than the SHA-2 context. We store
+// `otcrypto_hmac_context_t` in the extended vector and cast to
+// `otcrypto_sha2_context_t *` for SHA-2 calls.
+static_assert(sizeof(otcrypto_sha2_context_t) <=
                   sizeof(otcrypto_hmac_context_t),
-              "Hash and Hmac contexts are expected to be of the same length");
+              "HMAC context must be at least as large as SHA-2 context");
+
+static otcrypto_key_security_level_t current_sec_level =
+    kOtcryptoKeySecurityLevelLow;
 
 /**
  * This enum defines the different stages of a test vector during streaming
@@ -76,7 +81,7 @@ typedef struct hmac_extended_test_vector {
   /* `progess` keeps track of how many message segments are streamed so far. */
   hmac_test_progress_t progress;
   /* `hash_ctx` is used to store context during streaming. */
-  otcrypto_sha2_context_t hash_ctx;
+  otcrypto_hmac_context_t hash_ctx;
 } hmac_extended_test_vector_t;
 
 static hmac_extended_test_vector_t
@@ -177,11 +182,18 @@ static status_t get_hash_mode(hmac_test_vector_t *test_vec,
  * @param hash_ctx Corresponding context for given `current_test_vector`.
  * @param current_test_vector Pointer to the hardcoded test vector.
  */
-static status_t ctx_init(otcrypto_sha2_context_t *hash_ctx,
+static status_t ctx_init(otcrypto_hmac_context_t *ctx,
                          hmac_test_vector_t *current_test_vector) {
-  // Populate `checksum` and `config.security_level` fields.
-  current_test_vector->key.checksum =
-      integrity_blinded_checksum(&current_test_vector->key);
+  // Overwrite the security level of the test vector.
+  otcrypto_key_config_t key_config = current_test_vector->key.config;
+  key_config.security_level = current_sec_level;
+  otcrypto_blinded_key_t key = {
+      .config = key_config,
+      .keyblob = current_test_vector->key.keyblob,
+      .keyblob_length = current_test_vector->key.keyblob_length,
+      .checksum = 0,
+  };
+  key.checksum = integrity_blinded_checksum(&key);
 
   otcrypto_hash_mode_t hash_mode;
 
@@ -192,15 +204,14 @@ static status_t ctx_init(otcrypto_sha2_context_t *hash_ctx,
       OT_FALLTHROUGH_INTENDED;
     case kHmacTestOperationSha512:
       TRY(get_hash_mode(current_test_vector, &hash_mode));
-      TRY(otcrypto_sha2_init(hash_mode, hash_ctx));
+      TRY(otcrypto_sha2_init(hash_mode, (otcrypto_sha2_context_t *)ctx));
       break;
     case kHmacTestOperationHmacSha256:
       OT_FALLTHROUGH_INTENDED;
     case kHmacTestOperationHmacSha384:
       OT_FALLTHROUGH_INTENDED;
     case kHmacTestOperationHmacSha512:
-      TRY(otcrypto_hmac_init((otcrypto_hmac_context_t *)hash_ctx,
-                             &current_test_vector->key));
+      TRY(otcrypto_hmac_init(ctx, &key));
       break;
     default:
       return INVALID_ARGUMENT();
@@ -215,9 +226,16 @@ static status_t ctx_init(otcrypto_sha2_context_t *hash_ctx,
  * @return The result of the operation.
  */
 static status_t hmac_oneshot(hmac_test_vector_t *current_test_vector) {
-  // Populate `checksum` and `config.security_level` fields.
-  current_test_vector->key.checksum =
-      integrity_blinded_checksum(&current_test_vector->key);
+  // Overwrite the security level of the test vector.
+  otcrypto_key_config_t key_config = current_test_vector->key.config;
+  key_config.security_level = current_sec_level;
+  otcrypto_blinded_key_t key = {
+      .config = key_config,
+      .keyblob = current_test_vector->key.keyblob,
+      .keyblob_length = current_test_vector->key.keyblob_length,
+      .checksum = 0,
+  };
+  key.checksum = integrity_blinded_checksum(&key);
 
   // The test vectors already have the correct digest sizes hardcoded.
   size_t digest_len = current_test_vector->digest.len;
@@ -247,7 +265,7 @@ static status_t hmac_oneshot(hmac_test_vector_t *current_test_vector) {
     case kHmacTestOperationHmacSha384:
       OT_FALLTHROUGH_INTENDED;
     case kHmacTestOperationHmacSha512:
-      TRY(otcrypto_hmac(&current_test_vector->key, &msg_buf, &act_tag_buf));
+      TRY(otcrypto_hmac(&key, &msg_buf, &act_tag_buf));
       break;
     default:
       return INVALID_ARGUMENT();
@@ -270,7 +288,7 @@ static status_t hmac_oneshot(hmac_test_vector_t *current_test_vector) {
  * @param segment_len The byte length of the chosen segment.
  * @return The result of the operation.
  */
-static status_t feed_msg(otcrypto_sha2_context_t *hash_ctx,
+static status_t feed_msg(otcrypto_hmac_context_t *ctx,
                          hmac_test_vector_t *current_test_vector,
                          size_t segment_start, size_t segment_len) {
   otcrypto_const_byte_buf_t msg = OTCRYPTO_MAKE_BUF(
@@ -283,14 +301,14 @@ static status_t feed_msg(otcrypto_sha2_context_t *hash_ctx,
     case kHmacTestOperationSha384:
       OT_FALLTHROUGH_INTENDED;
     case kHmacTestOperationSha512:
-      TRY(otcrypto_sha2_update(hash_ctx, &msg));
+      TRY(otcrypto_sha2_update((otcrypto_sha2_context_t *)ctx, &msg));
       break;
     case kHmacTestOperationHmacSha256:
       OT_FALLTHROUGH_INTENDED;
     case kHmacTestOperationHmacSha384:
       OT_FALLTHROUGH_INTENDED;
     case kHmacTestOperationHmacSha512:
-      TRY(otcrypto_hmac_update((otcrypto_hmac_context_t *)hash_ctx, &msg));
+      TRY(otcrypto_hmac_update(ctx, &msg));
       break;
     default:
       return INVALID_ARGUMENT();
@@ -306,7 +324,7 @@ static status_t feed_msg(otcrypto_sha2_context_t *hash_ctx,
  * @param current_test_vector Pointer to the hardcoded test vector.
  * @return The result of the operation.
  */
-static status_t hmac_finalize(otcrypto_sha2_context_t *hash_ctx,
+static status_t hmac_finalize(otcrypto_hmac_context_t *ctx,
                               hmac_test_vector_t *current_test_vector) {
   // The test vectors already have the correct digest sizes hardcoded.
   size_t digest_len = current_test_vector->digest.len;
@@ -324,14 +342,14 @@ static status_t hmac_finalize(otcrypto_sha2_context_t *hash_ctx,
     case kHmacTestOperationSha384:
       OT_FALLTHROUGH_INTENDED;
     case kHmacTestOperationSha512:
-      TRY(otcrypto_sha2_final(hash_ctx, &hash_digest));
+      TRY(otcrypto_sha2_final((otcrypto_sha2_context_t *)ctx, &hash_digest));
       break;
     case kHmacTestOperationHmacSha256:
       OT_FALLTHROUGH_INTENDED;
     case kHmacTestOperationHmacSha384:
       OT_FALLTHROUGH_INTENDED;
     case kHmacTestOperationHmacSha512:
-      TRY(otcrypto_hmac_final((otcrypto_hmac_context_t *)hash_ctx, &tag_buf));
+      TRY(otcrypto_hmac_final(ctx, &tag_buf));
       break;
     default:
       return INVALID_ARGUMENT();
@@ -450,7 +468,22 @@ OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   LOG_INFO("Testing cryptolib SHA-2/HMAC with parallel multiple streams.");
   status_t test_result = OK_STATUS();
+
+  // Testing overall cryptolib low security, i.e., no jittery clock or dummy
+  // instructions
   CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
-  EXECUTE_TEST(test_result, run_test);
+
+  for (size_t i = 0; i < ARRAYSIZE(available_security_levels); ++i) {
+    current_sec_level = available_security_levels[i];
+    LOG_INFO("Running multistream HMAC tests with security level: %d",
+             current_sec_level);
+
+    EXECUTE_TEST(test_result, run_test);
+
+    if (status_err(test_result)) {
+      break;
+    }
+  }
+
   return status_ok(test_result);
 }
