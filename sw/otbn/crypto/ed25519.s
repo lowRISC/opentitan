@@ -1102,7 +1102,7 @@ affine_decode_var:
 
   /* If we get here, then r^2 was not equal to either (u/v) or - (u/v), so we
      are in case 3, (u/v) is nonsquare mod p, and point decoding fails. */
-  li       x22, 0x1d4
+  li       x20, 0x1d4
   bn.mov   w10, w31
   bn.mov   w11, w31
   ret
