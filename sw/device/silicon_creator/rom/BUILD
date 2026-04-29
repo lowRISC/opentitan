@@ -240,6 +240,7 @@ opentitan_binary(
     ],
 )
 
+# 64-bit division is forbidden in the ROM (or needs to use udiv64_slow)
 check_elf_symbols_test(
     name = "mask_rom_symbol_check",
     forbidden = [
