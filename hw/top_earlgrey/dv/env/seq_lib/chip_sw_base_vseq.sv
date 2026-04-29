@@ -112,20 +112,25 @@ class chip_sw_base_vseq extends chip_base_vseq;
 `endif
     end
 
-    if (cfg.sw_images.exists(SwTypeTestSlotA)) begin
-      if (cfg.use_spi_load_bootstrap) begin
-        `uvm_info(`gfn, "Initializing SPI flash bootstrap", UVM_MEDIUM)
-        spi_device_load_bootstrap({cfg.sw_images[SwTypeTestSlotA], ".64.vmem"});
-        cfg.use_spi_load_bootstrap = 1'b0;
-      end else begin
-        cfg.mem_bkdr_util_h[FlashBank0Data].load_mem_from_file(
-            {cfg.sw_images[SwTypeTestSlotA], ".64.scr.vmem"});
+    if (cfg.use_spi_load_bootstrap) begin
+      // If use_spi_load_bootstrap is defined, load the image for slot A
+      if (!cfg.sw_images.exists(SwTypeTestSlotA)) begin
+        `uvm_error(get_name(), "Cannot load slot A over SPI: no SW image defined.")
       end
-    end
-    if (cfg.sw_images.exists(SwTypeTestSlotB)) begin
+      spi_device_load_bootstrap({cfg.sw_images[SwTypeTestSlotA], ".64.vmem"});
+      cfg.use_spi_load_bootstrap = 1'b0;
+
       // TODO: support bootstrapping entire flash address space, not just slot A.
-      cfg.mem_bkdr_util_h[FlashBank1Data].load_mem_from_file(
-          {cfg.sw_images[SwTypeTestSlotB], ".64.scr.vmem"});
+
+    end else begin
+      if (cfg.sw_images.exists(SwTypeTestSlotA)) begin
+        string image_path = {cfg.sw_images[SwTypeTestSlotA], ".64.scr.vmem"};
+        cfg.mem_bkdr_util_h[FlashBank0Data].load_mem_from_file(image_path);
+      end
+      if (cfg.sw_images.exists(SwTypeTestSlotB)) begin
+        string image_path = {cfg.sw_images[SwTypeTestSlotB], ".64.scr.vmem"};
+        cfg.mem_bkdr_util_h[FlashBank1Data].load_mem_from_file(image_path);
+      end
     end
 
     config_jitter();
