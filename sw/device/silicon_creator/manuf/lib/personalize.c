@@ -217,8 +217,7 @@ status_t manuf_personalize_device_secrets(
     return INTERNAL();
   }
 
-  // Re-initialize the entropy complex in continous mode. This also configures
-  // the entropy_src health checks.
+  // Re-initialize the entropy complex in continous mode.
   TRY(entropy_complex_init(kHardenedBoolFalse));
 
   // Provision secret Creator / Owner key seeds in flash.
