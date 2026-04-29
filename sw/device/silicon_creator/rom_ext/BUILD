@@ -18,6 +18,7 @@ load(
 )
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("//rules:signing.bzl", "signature_test")
+load("//rules:symbols.bzl", "check_elf_symbols_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -353,6 +354,20 @@ ROM_EXT_FEATURES = [
             "//sw/device/silicon_creator/lib/rescue:rescue_xmodem",
             "//sw/device/silicon_creator/rom_ext/imm_section:main_section_{}_slot_{}".format(variation_name, slot),
         ],
+    )
+    for variation_name, variation_deps in ROM_EXT_VARIATIONS.items()
+    for slot in SLOTS
+]
+
+# 64-bit division is forbidden in the ROM_EXT (or needs to use udiv64_slow)
+[
+    check_elf_symbols_test(
+        name = "rom_ext_{}_slot_{}_symbol_check".format(variation_name, slot),
+        forbidden = [
+            "__udivdi3",
+            "__divdi3",
+        ],
+        target = ":rom_ext_{}_slot_{}".format(variation_name, slot),
     )
     for variation_name, variation_deps in ROM_EXT_VARIATIONS.items()
     for slot in SLOTS
