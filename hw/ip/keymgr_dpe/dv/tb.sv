@@ -41,23 +41,6 @@ module tb;
   assign keymgr_dpe_if.edn_ack   = edn_if[0].ack;
   assign keymgr_dpe_if.lfsr_en   = dut.lfsr_en;
 
-  // Quick fix to propagate the signal from the keymgr_dpe_if to the dut
-  keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t creator_root_key;
-  keymgr_dpe_pkg::keymgr_dpe_creator_seed_t creator_seed;
-  keymgr_dpe_pkg::keymgr_dpe_owner_seed_t owner_seed;
-  assign creator_root_key.share0 =
-      keymgr_dpe_if.otp_key.creator_root_key_share0;
-  assign creator_root_key.share0_valid =
-      keymgr_dpe_if.otp_key.creator_root_key_share0_valid;
-  assign creator_root_key.share1 =
-      keymgr_dpe_if.otp_key.creator_root_key_share1;
-  assign creator_root_key.share1_valid =
-      keymgr_dpe_if.otp_key.creator_root_key_share1_valid;
-  assign creator_seed.seed = keymgr_dpe_if.otp_key.creator_seed;
-  assign creator_seed.seed_valid = keymgr_dpe_if.otp_key.creator_seed_valid;
-  assign owner_seed.seed = keymgr_dpe_if.otp_key.owner_seed;
-  assign owner_seed.seed_valid = keymgr_dpe_if.otp_key.owner_seed_valid;
-
   // dut
   // TODO(opentitan-integrated/issues/332):
   // need to model the OTP seed input
@@ -75,9 +58,9 @@ module tb;
     .kmac_en_masking_i    (1'b1),
     .lc_keymgr_en_i       (keymgr_dpe_if.keymgr_dpe_en),
     .lc_keymgr_div_i      (keymgr_dpe_if.keymgr_dpe_div),
-    .creator_root_key_i   (creator_root_key),
-    .creator_seed_i       (creator_seed),
-    .owner_seed_i         (owner_seed),
+    .creator_root_key_i   (keymgr_dpe_if.creator_root_key),
+    .creator_seed_i       (keymgr_dpe_if.creator_seed),
+    .owner_seed_i         (keymgr_dpe_if.owner_seed),
     .device_id_i          (keymgr_dpe_if.otp_device_id),
     .rom_digest_i         (keymgr_dpe_if.rom_digests),
     .edn_o                (edn_if[0].req),

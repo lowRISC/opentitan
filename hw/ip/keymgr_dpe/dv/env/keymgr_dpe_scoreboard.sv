@@ -973,10 +973,10 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
   virtual function void latch_otp_key();
     key_shares_t otp_key;
-    if (cfg.keymgr_dpe_vif.otp_key.creator_root_key_share0_valid &&
-        cfg.keymgr_dpe_vif.otp_key.creator_root_key_share1_valid) begin
-      otp_key = {cfg.keymgr_dpe_vif.otp_key.creator_root_key_share1,
-                 cfg.keymgr_dpe_vif.otp_key.creator_root_key_share0};
+    if (cfg.keymgr_dpe_vif.creator_root_key.share0_valid &&
+        cfg.keymgr_dpe_vif.creator_root_key.share1_valid) begin
+      otp_key = {cfg.keymgr_dpe_vif.creator_root_key.share1,
+                 cfg.keymgr_dpe_vif.creator_root_key.share0};
     end else begin
       if (cfg.en_cov) cov.invalid_hw_input_cg.sample(OtpRootKeyValidLow);
       `uvm_info(`gfn, "otp_key valid is low", UVM_LOW)
@@ -1274,7 +1274,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
     if (exp_match) `DV_CHECK_EQ(byte_data_q.size, keymgr_dpe_pkg::DpeAdvDataWidth / 8)
     act = {<<8{byte_data_q}};
-    exp.DiversificationKey = cfg.keymgr_dpe_vif.otp_key.creator_seed;
+    exp.DiversificationKey = cfg.keymgr_dpe_vif.creator_seed.seed;
 
     for (int i = 0; i < keymgr_dpe_reg_pkg::NumRomDigestInputs; ++i) begin
       exp.RomDigests[i] = cfg.keymgr_dpe_vif.rom_digests[i].data;
@@ -1310,7 +1310,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     string str = $sformatf("src_slot: %0d\n", current_key_slot.src_slot);
 
     act = {<<8{byte_data_q}};
-    exp.OwnerRootSecret = cfg.keymgr_dpe_vif.otp_key.owner_seed;
+    exp.OwnerRootSecret = cfg.keymgr_dpe_vif.owner_seed.seed;
     get_sw_binding_mirrored_value(exp.SoftwareBinding);
 
     `CREATE_CMP_STR(unused)
