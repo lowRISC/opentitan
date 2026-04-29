@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Context, Result, bail, ensure};
+use anyhow::{Result, ensure};
 use clap::{Parser, ValueEnum};
 use std::time::Duration;
 
@@ -39,35 +39,6 @@ enum WakeMethod {
     Disconnect,
 }
 
-// Wait for a device to appear and then return the parent device and port number.
-fn wait_for_device_and_get_parent(opts: &Opts) -> Result<(rusb::Device<rusb::Context>, u8)> {
-    // Wait for USB device to appear.
-    log::info!("waiting for device...");
-    let devices = opts.usb.wait_for_device(opts.timeout)?;
-    if devices.is_empty() {
-        bail!("no USB device found");
-    }
-    if devices.len() > 1 {
-        bail!("several USB devices found");
-    }
-    let device = &devices[0];
-    log::info!(
-        "device found at bus={} address={}",
-        device.device().bus_number(),
-        device.device().address()
-    );
-
-    // Important note: here the handle will be dropped and the device handle
-    // will be closed.
-    Ok((
-        device
-            .device()
-            .get_parent()
-            .context("device has no parent, you need to connect it via a hub for this test")?,
-        device.device().port_number(),
-    ))
-}
-
 fn usbdev_aon_wake(opts: &Opts, transport: &TransportWrapper, uart: &dyn Uart) -> Result<()> {
     opts.usb.apply_strappings(transport, true)?;
     // Enable VBUS sense on the board if necessary.
@@ -83,21 +54,10 @@ fn usbdev_aon_wake(opts: &Opts, transport: &TransportWrapper, uart: &dyn Uart) -
     }
 
     // Wait for device to appear.
-    let (parent, port) = wait_for_device_and_get_parent(opts)?;
-    log::info!(
-        "parent hub at bus={}, address={}, port numbers={:?}",
-        parent.bus_number(),
-        parent.address(),
-        parent.port_numbers()?
-    );
-    log::info!("device under test is on port {}", port);
-    // At this point, we are not holding any device handle. If we really want to make sure,
-    // we could unbind the device from the driver but this requires a lot of privileges.
+    let (hub, port) = opts.usb.wait_for_device_and_get_parent(opts.timeout)?;
 
     // Next, we suspend the device by directly accessing the parent hub.
     let _ = UartConsole::wait_for(uart, r"configured, waiting for suspend", opts.timeout)?;
-    let hub = UsbHub::from_device(&parent)
-        .context("For this test, you need to make sure that the program has access the hub")?;
     log::info!("suspend device");
     hub.op(
         UsbHubOp::Suspend,

@@ -10,6 +10,7 @@ use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::transport::common::usb::{RusbDevice, UsbHub};
 
 pub type UsbDevice = rusb::Device<rusb::Context>;
 pub type UsbDeviceHandle = rusb::DeviceHandle<rusb::Context>;
@@ -174,6 +175,33 @@ impl UsbOpts {
             // Wait a bit before polling again.
             std::thread::sleep(self.usb_poll_delay());
         }
+    }
+
+    // Wait for a device to appear and then return the parent device and port number.
+    pub fn wait_for_device_and_get_parent(&self, timeout: Duration) -> Result<(UsbHub, u8)> {
+        // Wait for USB device to appear.
+        log::info!("waiting for device...");
+        let devices = self.wait_for_device(timeout)?;
+        if devices.is_empty() {
+            bail!("no USB device found");
+        }
+        if devices.len() > 1 {
+            bail!("several USB devices found");
+        }
+        let device = devices.into_iter().next().unwrap();
+        log::info!(
+            "device found at bus={} address={}",
+            device.device().bus_number(),
+            device.device().address()
+        );
+        let port = device.device().port_number();
+        let usb_dev = Box::new(RusbDevice::new(device, None, Duration::from_millis(500))?);
+
+        Ok((
+            UsbHub::from_parent_device(&*usb_dev)
+                .context("cannot open parent hub, you need to have permissions for this test")?,
+            port,
+        ))
     }
 
     pub fn usb_poll_delay(&self) -> Duration {
