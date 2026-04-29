@@ -261,7 +261,7 @@ static status_t ed25519_mask_scalar(uint32_t *scalar, size_t scalar_len,
   // can be of different sizes, we resort here to a VLA.
   uint32_t buf[share_len];
   memset(buf, 0, share_len << 2);
-  hardened_memshred(buf, scalar_len);
+  HARDENED_TRY(hardened_memshred(buf, scalar_len));
   HARDENED_TRY(hardened_memcpy(buf, scalar, scalar_len));
 
   // Set share1 to a random value and unset its MSB.
@@ -269,7 +269,8 @@ static status_t ed25519_mask_scalar(uint32_t *scalar, size_t scalar_len,
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, share1, share_len);
   otcrypto_const_byte_buf_t kEmptyBuffer =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
-  hardened_memshred(share1, share_len);
+  HARDENED_TRY(otcrypto_drbg_instantiate(&kEmptyBuffer));
+  HARDENED_TRY(otcrypto_drbg_generate(&kEmptyBuffer, &share1_buf));
   share1[share_len - 1] &= 0x7fffffff;
 
   // Compute share0 = share + share1.
