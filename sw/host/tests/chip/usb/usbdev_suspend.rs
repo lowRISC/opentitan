@@ -14,7 +14,7 @@
 // The above are sub-sections of the following full sequence test:
 // - usbdev_suspend_full_test
 
-use anyhow::{Context, Result, anyhow, bail, ensure};
+use anyhow::{Context, Result, anyhow, ensure};
 use clap::{Parser, ValueEnum};
 use std::time::Duration;
 
@@ -79,35 +79,6 @@ enum SuspendPhase {
     DeepDisconnect,
     // Final test state; device disconnects and test completes.
     Shutdown,
-}
-
-// Wait for a device to appear and then return the parent device and port number.
-fn wait_for_device_and_get_parent(opts: &Opts) -> Result<(rusb::Device<rusb::Context>, u8)> {
-    // Wait for USB device to appear.
-    log::info!("waiting for device...");
-    let devices = opts.usb.wait_for_device(opts.timeout)?;
-    if devices.is_empty() {
-        bail!("no USB device found");
-    }
-    if devices.len() > 1 {
-        bail!("several USB devices found");
-    }
-    let device = &devices[0];
-    log::info!(
-        "device found at bus={} address={}",
-        device.device().bus_number(),
-        device.device().address()
-    );
-
-    // Important note: here the handle will be dropped and the device handle
-    // will be closed.
-    Ok((
-        device
-            .device()
-            .get_parent()
-            .context("device has no parent, you need to connect it via a hub for this test")?,
-        device.device().port_number(),
-    ))
 }
 
 // Delay for the specified number of USB milliseconds (= bus frames).
@@ -222,21 +193,7 @@ fn usbdev_suspend(
     }
 
     // Wait for device to appear.
-    let (parent, port) = wait_for_device_and_get_parent(opts)?;
-    log::info!(
-        "parent hub at bus={}, address={}, port numbers={:?}",
-        parent.bus_number(),
-        parent.address(),
-        parent.port_numbers()?
-    );
-    log::info!("device under test is on port {}", port);
-    // At this point, we are not holding any device handle. If we really want to make sure,
-    // we could unbind the device from the driver but this requires a lot of privileges.
-
-    let _devices = opts.usb.wait_for_device(opts.timeout)?;
-
-    let hub = UsbHub::from_device(&parent)
-        .context("for this test, you need to make sure to access the hub")?;
+    let (hub, port) = opts.usb.wait_for_device_and_get_parent(opts.timeout)?;
 
     // Collect test phases.
     let init_phase = opts.init_phase.clone();
