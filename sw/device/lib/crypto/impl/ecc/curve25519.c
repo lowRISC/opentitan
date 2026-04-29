@@ -80,6 +80,15 @@ static const uint32_t kOtbnCurve25519ModeSignStage2 =
 static const uint32_t kOtbnCurve25519ModeVerify =
     OTBN_ADDR_T_INIT(run_curve25519, MODE_VERIFY);
 
+enum {
+  /*
+   * The expected instruction counts for constant time functions.
+   */
+  kModeKeygenInsCnt = 247815,
+  kModeSignStage1InsCnt = 495691,
+  kModeSignStage2InsCnt = 655,
+};
+
 /**
  * Write a masked scalar to DMEM.
  *
@@ -132,6 +141,7 @@ status_t curve25519_keygen_finalize(
     uint32_t public_key[kCurve25519PointWords]) {
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY(otbn_busy_wait_for_done());
+  HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModeKeygenInsCnt);
 
   // Read the public key A from OTBN dmem.
   HARDENED_TRY(
@@ -166,6 +176,7 @@ status_t curve25519_sign_stage1_finalize(
     curve25519_signature_t *sig, uint32_t public_key[kCurve25519PointWords]) {
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY(otbn_busy_wait_for_done());
+  HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModeSignStage1InsCnt);
 
   // Read the signature commitment R from OTBN dmem.
   HARDENED_TRY(otbn_dmem_read(kCurve25519PointWords, kOtbnVarSigR, sig->r));
@@ -207,6 +218,7 @@ status_t curve25519_sign_stage2_start(
 status_t curve25519_sign_stage2_finalize(curve25519_signature_t *sig) {
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY(otbn_busy_wait_for_done());
+  HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModeSignStage2InsCnt);
 
   // Read the signature response S from OTBN dmem.
   HARDENED_TRY(otbn_dmem_read(kCurve25519ScalarWords, kOtbnVarSigS, sig->s));
