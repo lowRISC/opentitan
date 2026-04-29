@@ -295,7 +295,7 @@ RSA_TESTVECTOR_TARGETS = [
 RSA_TESTVECTOR_ARGS = " ".join([
     "--rsa-json=\"$(rootpath {})\"".format(target)
     for target in RSA_TESTVECTOR_TARGETS
-] + ["--run_keygen"])
+] + ["--run-keygen"])
 
 cryptotest(
     name = "rsa_kat",
