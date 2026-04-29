@@ -718,46 +718,6 @@ ed25519_sign_stage2:
   ret
 
 /**
- * Extract the secret scalar s from a hash (see RFC 8032, section 5.1.5).
- *
- * Returns s = 2^254 + (h[253:3] << 3)
- *
- * This is referred to as "clamping" in some places and is a way of
- * manipulating the hash value to be a number that 1) is a multiple of the
- * cofactor 8 and 2) has the MSB at position 254, while preserving
- * unpredictability.
- *
- * From the RFC:
- *
- *     2.  Prune the buffer: The lowest three bits of the first octet are
- *         cleared, the highest bit of the last octet is cleared, and the
- *         second highest bit of the last octet is set.
- *     3.  Interpret the buffer as [a] little-endian integer, forming a
- *         secret scalar s.
- *
- * This routine runs in constant time.
- *
- * Flags: Flags have no meaning beyond the scope of this subroutine.
- *
- * @param[in]  w16: input h, 256 bits
- * @param[in]  w31: all-zero
- * @param[out] w16: output s
- *
- * clobbered registers: w16, w17
- * clobbered flag groups: FG0
- */
-sc_clamp:
-  /* w16 <= w16 >> 3 = h[255:3] */
-  bn.rshi  w16, w31, w16 >> 3
-  /* w16 <= w16 << 5 = h[253:3] << 5 */
-  bn.rshi  w16, w16, w31 >> 251
-  /* w17 <= 1 */
-  bn.addi  w17, w31, 1
-  /* w16 <= [w17:w16] >> 2 = (1 << 254) + (h[255:3] << 3) */
-  bn.rshi  w16, w17, w16 >> 2
-  ret
-
-/**
  * Convert a point from affine (x, y) to extended (X, Y, Z, T) coordinates.
  *
  * Returns (X, Y, Z, T) = (x, y, 1, (x*y) mod p)
