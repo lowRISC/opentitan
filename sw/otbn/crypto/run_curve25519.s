@@ -164,7 +164,7 @@ mode:
   .zero 4
 
 /* Verification result code (32 bits). Output for verify.
-   If verification is successful, this will be SUCCESS = 0xf77fe650.
+   If verification is successful, this will be SUCCESS = 0x739.
    Otherwise, this will be FAILURE = 0xeda2bfaf. */
 .balign 32
 .globl ed25519_verify_result

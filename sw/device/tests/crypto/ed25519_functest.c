@@ -285,6 +285,62 @@ static status_t sign_verify_test(void) {
 }
 
 /**
+ * Wycheproof Test Case 61: "invalid R"
+ *
+ */
+static status_t run_wycheproof_invalid_r_test(void) {
+  LOG_INFO("Running Wycheproof invalid signature R");
+
+  uint32_t pubkey_data[kEd25519PublicKeyWords] = {
+      0x7f0e4d7d, 0x9ba65361, 0x22b54262, 0x85e6beab,
+      0x0f42a4fd, 0x08b13488, 0x36aebdc3, 0xfa49f59e,
+  };
+  otcrypto_unblinded_key_t valid_pub = {
+      .key_mode = kOtcryptoKeyModeEd25519,
+      .key_length = kEd25519PublicKeyBytes,
+      .key = pubkey_data,
+  };
+  valid_pub.checksum = integrity_unblinded_checksum(&valid_pub);
+
+  const uint8_t wycheproof_msg_bytes[] = {0x31, 0x32, 0x33, 0x34, 0x30, 0x30};
+  otcrypto_const_byte_buf_t msg =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, wycheproof_msg_bytes,
+                        sizeof(wycheproof_msg_bytes));
+
+  uint32_t wycheproof_sig_data[kEd25519SignatureWords] = {
+      // R (Non-canonical, y >= p)
+      0xffffffff,
+      0xffffffff,
+      0xffffffff,
+      0xffffffff,
+      0xffffffff,
+      0xffffffff,
+      0xffffffff,
+      0xffffffff,
+      // S
+      0x08193a46,
+      0xb77e2e38,
+      0xf9ce3a69,
+      0xf97c4f88,
+      0xe015a231,
+      0xbe761879,
+      0xa531c622,
+      0x0efd8198,
+  };
+  otcrypto_const_word32_buf_t signature_verif =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, wycheproof_sig_data,
+                        ARRAYSIZE(wycheproof_sig_data));
+
+  hardened_bool_t verify_res;
+
+  CHECK(otcrypto_ed25519_verify(&valid_pub, &msg, kOtcryptoEddsaSignModeEddsa,
+                                &signature_verif, &verify_res)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  return OTCRYPTO_OK;
+}
+
+/**
  * Execute negative testing.
  */
 static status_t run_negative_tests(void) {
@@ -413,6 +469,7 @@ bool test_main(void) {
   EXECUTE_TEST(result, ed25519_kat_test);
   EXECUTE_TEST(result, hasheddsa_test);
   EXECUTE_TEST(result, sign_verify_test);
+  EXECUTE_TEST(result, run_wycheproof_invalid_r_test);
   EXECUTE_TEST(result, run_negative_tests);
 
   return status_ok(result);

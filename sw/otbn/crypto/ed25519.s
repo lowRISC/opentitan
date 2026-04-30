@@ -904,11 +904,7 @@ affine_decode_var:
   bn.rshi  w11, w11, w31 >> 255
   bn.rshi  w11, w31, w11 >> 1
 
-  /* Defensively reduce y modulo p in case y is non-canonical.
-       w11 <= (w11 + 0) mod p = w11 mod p */
-  bn.addm  w11, w11, w31
-
-  /* Solve the curve equation to get a candidate root. From RFC 8032,
+   /* Solve the curve equation to get a candidate root. From RFC 8032,
      section 5.1.3, step 2:
 
        To recover the x-coordinate, the curve equation implies
@@ -939,6 +935,28 @@ affine_decode_var:
        - If the provided point is valid, then (u/v) = x^2 and (u/v) must be
          square modulo p.
    */
+
+  /* Check that y is strictly less than p.
+     w27 <= MOD = p */
+  bn.wsrr  w27, MOD
+
+  /* FG0.C <= w11 < w27 = y < p */
+  bn.cmp   w11, w27
+
+  /* x2 <= FG0[0] = FG0.C */
+  csrrs    x2, FG0, x0
+  andi     x2, x2, 1
+
+  /* Fail if y >= p */
+  bne      x2, x0, .L_y_is_canonical
+
+  /* Return FAILURE if not canonical */
+  li       x20, 0x1d4
+  bn.mov   w10, w31
+  bn.mov   w11, w31
+  ret
+
+.L_y_is_canonical:
 
    /* Store the constant 1, which will be used to compute u and v.
         w25 <= 1 */
@@ -1109,9 +1127,6 @@ affine_decode_var:
        w10 <= FG0.L ? w10 : w27
                 = if (lsb(x) != lsb(r)) then (-r) mod p else r */
   bn.sel   w10, w10, w27, FG0.L
-
-  /* TODO: add an extra check that the curve equation is satisfied to protect
-     against glitching? */
 
   /* Exit point decoding with SUCCESS. */
   li       x20, 0x739
