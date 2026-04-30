@@ -270,6 +270,7 @@ opentitan_test(
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/tests:otbn_randomness_impl",
     ],
 )
