@@ -27,7 +27,11 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
   extern task body();
   extern task wait_with_bound(int max_clks);
 
-  extern task pick_err_inj_point(bit force_early = 1'b0);
+  // Wait for a random amount of time and then return (at a point when we should inject an error).
+  //
+  // If force_early is true, return at a time before the rom check will be complete.
+  extern local task pick_err_inj_point(bit force_early = 1'b0);
+
   extern function prim_mubi_pkg::mubi4_t get_invalid_mubi4();
 
   // Cover all possible FSM transitions to the invalid state by triggering alerts at opportune times
@@ -124,25 +128,20 @@ endtask: wait_with_bound
 
 task rom_ctrl_corrupt_sig_fatal_chk_vseq::pick_err_inj_point(bit force_early = 1'b0);
   int wait_clks;
-  bit inject_after_done;
-
-  // Pick error injection point. 1 - After ROM check completion. 0 - Before ROM check completion.
-  //
-  // If there is a requirement of injecting error before ROM check completes,then
-  // inject_after_done getting randomized and then set to 0 won't help.
-  //
-  // force_early being true, sets inject_after_done to 0 if there is a requirement to always inject
-  // error before ROM check finishes.
-
-  if (force_early) inject_after_done = 1'b0;
-  else `DV_CHECK_STD_RANDOMIZE_FATAL(inject_after_done)
+  // Pick whether we should wait until after the ROM has been checked. If force_early is true, we
+  // should not. Otherwise, wait until afterwards 50% of the time.
+  bit inject_after_done = ($urandom & 1) && !force_early;
 
   if(inject_after_done) begin
     wait (cfg.rom_ctrl_vif.pwrmgr_data.done == MuBi4True);
     wait_clks = 10;
   end
   else begin
-    wait_clks = 10000;
+    // Pick a time that will finish before the ROM has been checked. As a reference, the shorter
+    // configuration (32kb) generally takes about 8k-12k cycles. Stopping after 1k will be early
+    // enough to finish before that and will also be early enough to finish before the 64kb
+    // configuration, which takes longer.
+    wait_clks = 1000;
   end
   wait_with_bound(wait_clks);
 
