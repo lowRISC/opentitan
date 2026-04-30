@@ -77,10 +77,6 @@ enum {
    */
   kCurve25519MaskedScalarPaddingWords = 4,
   /**
-   * Magic value for verify success response.
-   */
-  kCurve25519VerifySuccess = 0xf77fe650,
-  /**
    * Length of a Curve25519 curve point coordinate in bits.
    */
   kCurve25519CoordBits = 256,
