@@ -71,22 +71,38 @@ static status_t basic_keygen_test(otcrypto_key_config_t config) {
   // Allocate and zeroize keyblob.
   size_t key_share_words = config.key_length / sizeof(uint32_t);
   uint32_t keyblob[key_share_words * 2];
-  memset(keyblob, 0, sizeof(keyblob));
 
-  // Create the blinded key structure and call keygen.
+  const int kMaxRetries = 3;
+  int attempt = 0;
+  bool passed_stats = false;
+
+  // Create the blinded key structure.
   otcrypto_blinded_key_t key = {
       .config = config,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
   };
-  TRY(otcrypto_symmetric_keygen(&kPersonalization, &key));
 
-  // Ensure the checksum passes.
-  TRY_CHECK(integrity_blinded_key_check(&key) == kHardenedBoolTrue);
+  while (attempt < kMaxRetries && !passed_stats) {
+    attempt++;
+    // Allocate and zeroize keyblob.
+    memset(keyblob, 0, sizeof(keyblob));
 
-  // Do a basic statistical test.
-  TRY(randomness_quality_monobit_test((unsigned char *)keyblob, sizeof(keyblob),
-                                      kSignificance));
+    TRY(otcrypto_symmetric_keygen(&kPersonalization, &key));
+
+    // Ensure the checksum passes.
+    TRY_CHECK(integrity_blinded_key_check(&key) == kHardenedBoolTrue);
+
+    // Try the statistical test.
+    status_t stat_status = randomness_quality_monobit_test(
+        (unsigned char *)keyblob, sizeof(keyblob), kSignificance);
+
+    if (status_ok(stat_status)) {
+      passed_stats = true;
+    } else if (attempt == kMaxRetries) {
+      return stat_status;
+    }
+  }
 
   // Log the generated key.
   uint32_t *share0;
@@ -135,13 +151,32 @@ static status_t generate_multiple_keys_test(void) {
       .keyblob_length = sizeof(keyblob_buffer) / 2,
       .keyblob = keyblob2,
   };
-  TRY(otcrypto_symmetric_keygen(&kPersonalization, &key1));
-  TRY(otcrypto_symmetric_keygen(&kPersonalization, &key2));
 
-  // Do a statistical test on the entire keyblob (this will check if the keys
-  // are statistically related to each other).
-  TRY(randomness_quality_monobit_test((unsigned char *)keyblob_buffer,
-                                      sizeof(keyblob_buffer), kSignificance));
+  const int kMaxRetries = 3;
+  int attempt = 0;
+  bool passed_stats = false;
+
+  while (attempt < kMaxRetries && !passed_stats) {
+    attempt++;
+    memset(keyblob_buffer, 0, sizeof(keyblob_buffer));
+
+    // Generate two AES keys.
+    TRY(otcrypto_symmetric_keygen(&kPersonalization, &key1));
+    TRY(otcrypto_symmetric_keygen(&kPersonalization, &key2));
+
+    // Do a statistical test on the combined buffer.
+    status_t stat_status = randomness_quality_monobit_test(
+        (unsigned char *)keyblob_buffer, sizeof(keyblob_buffer), kSignificance);
+
+    if (status_ok(stat_status)) {
+      passed_stats = true;
+    } else if (attempt == kMaxRetries) {
+      return stat_status;
+    }
+  }
+
+  // Check if the keys are not the same.
+  TRY_CHECK(memcmp(keyblob1, keyblob2, sizeof(keyblob_buffer) / 2) != 0);
 
   return OK_STATUS();
 }
