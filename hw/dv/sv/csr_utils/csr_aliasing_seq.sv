@@ -148,8 +148,9 @@ task csr_aliasing_seq::test_chunk(uvm_reg write_list[$], uvm_reg read_list[$]);
   read_back_registers(read_list);
 endtask
 
-function reg_queue_t csr_aliasing_seq::sample_reg_list(int unsigned      sample_size,
-                                                       const ref uvm_reg reg_queue[$]);
+function csr_aliasing_seq::reg_queue_t
+  csr_aliasing_seq::sample_reg_list(int unsigned      sample_size,
+                                    const ref uvm_reg reg_queue[$]);
   uvm_reg ret[$] = reg_queue;
   ret.shuffle();
   return (reg_queue.size() < sample_size) ? ret[0:sample_size - 1] : ret;
