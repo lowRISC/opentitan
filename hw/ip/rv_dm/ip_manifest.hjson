@@ -1,0 +1,19 @@
+{
+  "name": "rv_dm",
+  "sim": [
+    {
+      "variant": "base",
+      "cfg": "dv/rv_dm_base_sim_cfg.hjson"
+    },
+    {
+      "variant": "use_dmi_interface",
+      "cfg": "dv/rv_dm_use_dmi_interface_sim_cfg.hjson"
+    },
+    {
+      "variant": "use_jtag_interface",
+      "cfg": "dv/rv_dm_use_jtag_interface_sim_cfg.hjson"
+    }
+  ],
+  "lint": [],
+  "formal": []
+}

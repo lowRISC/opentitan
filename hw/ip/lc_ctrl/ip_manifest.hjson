@@ -1,0 +1,27 @@
+{
+  "name": "lc_ctrl",
+  "sim": [
+    {
+      "variant": "base",
+      "cfg": "dv/lc_ctrl_base_sim_cfg.hjson"
+    },
+    {
+      "variant": "dmi_volatile_unlock_disabled",
+      "cfg": "dv/lc_ctrl_dmi_volatile_unlock_disabled_sim_cfg.hjson"
+    },
+    {
+      "variant": "dmi_volatile_unlock_enabled",
+      "cfg": "dv/lc_ctrl_dmi_volatile_unlock_enabled_sim_cfg.hjson"
+    },
+    {
+      "variant": "volatile_unlock_disabled",
+      "cfg": "dv/lc_ctrl_volatile_unlock_disabled_sim_cfg.hjson"
+    },
+    {
+      "variant": "volatile_unlock_enabled",
+      "cfg": "dv/lc_ctrl_volatile_unlock_enabled_sim_cfg.hjson"
+    }
+  ],
+  "lint": [],
+  "formal": []
+}

@@ -1,0 +1,19 @@
+{
+  "name": "rom_ctrl",
+  "sim": [
+    {
+      "variant": "32kB",
+      "cfg": "dv/rom_ctrl_32kB_sim_cfg.hjson"
+    },
+    {
+      "variant": "64kB",
+      "cfg": "dv/rom_ctrl_64kB_sim_cfg.hjson"
+    },
+    {
+      "variant": "base",
+      "cfg": "dv/rom_ctrl_base_sim_cfg.hjson"
+    }
+  ],
+  "lint": [],
+  "formal": []
+}

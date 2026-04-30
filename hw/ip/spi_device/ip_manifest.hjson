@@ -1,0 +1,19 @@
+{
+  "name": "spi_device",
+  "sim": [
+    {
+      "variant": "base",
+      "cfg": "dv/base_sim_cfg.hjson"
+    },
+    {
+      "variant": "1r1w",
+      "cfg": "dv/spi_device_1r1w_sim_cfg.hjson"
+    },
+    {
+      "variant": "2p",
+      "cfg": "dv/spi_device_2p_sim_cfg.hjson"
+    }
+  ],
+  "lint": [],
+  "formal": []
+}

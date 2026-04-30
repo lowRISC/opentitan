@@ -1,0 +1,10 @@
+{
+  "name": "soc_dbg_ctrl",
+  "sim": [
+    {
+      "cfg": "dv/soc_dbg_ctrl_sim_cfg.hjson"
+    }
+  ],
+  "lint": [],
+  "formal": []
+}
