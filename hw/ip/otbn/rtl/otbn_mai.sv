@@ -76,21 +76,11 @@ module otbn_mai
     logic                           start;
   } ispr_mai_ctrl_t;
 
-  typedef union packed {
-    ispr_mai_ctrl_t csr;
-    logic [31:0]    bus;
-  } ispr_mai_ctrl_u_t;
-
   typedef struct packed {
     logic [31-2:0] rsvd;
     logic          ready;
     logic          busy;
   } ispr_mai_status_t;
-
-  typedef union packed {
-    ispr_mai_status_t csr;
-    logic [31:0]      bus;
-  } ispr_mai_status_u_t;
 
   localparam int unsigned MaiEccWidth = BaseIntgWidth - 32'd32;
 
@@ -99,10 +89,7 @@ module otbn_mai
     logic [31:0]            word;
   } otbn_base_intg_word_t;
 
-  typedef union packed {
-    logic [ExtWLEN-1:0]                          bus;
-    otbn_base_intg_word_t [BaseWordsPerWLEN-1:0] intgword;
-  } ispr_mai_u_t;
+  typedef otbn_base_intg_word_t [BaseWordsPerWLEN-1:0] ispr_mai_t;
 
   typedef struct packed {
     logic out_cnt;
@@ -143,24 +130,6 @@ module otbn_mai
     logic [321:0]                 urnd;
   } mai_ma_urnd_t;
 
-  localparam int unsigned MaiMaWipeRndRsvdWidth  = UrndLen - 32'd5 * 32'd32;
-
-  typedef struct packed {
-    logic [MaiMaWipeRndRsvdWidth-1:0] rsvd;
-    logic [31:0]                      mod;
-    logic [31:0]                      in1_s1;
-    logic [31:0]                      in1_s0;
-    logic [31:0]                      in0_s1;
-    logic [31:0]                      in0_s0;
-  } mai_ma_wipe_urnd_t;
-
-  typedef union packed {
-    logic [UrndLen-1:0] bus;
-    mai_ispr_urnd_t     ispr;
-    mai_ma_urnd_t       ma;
-    mai_ma_wipe_urnd_t  wipe;
-  } mai_urnd_u_t;
-
   localparam int unsigned MaiCntWidth = prim_util_pkg::vbits(BaseWordsPerWLEN);
 
   typedef logic [MaiCntWidth-1:0] mai_cnt_t;
@@ -171,8 +140,9 @@ module otbn_mai
   /////////////
 
   // PRNG input
-  mai_urnd_u_t mai_urnd;
-  logic        unused_urnd;
+  mai_ispr_urnd_t mai_ispr_urnd;
+  mai_ma_urnd_t   mai_ma_urnd;
+  logic           unused_urnd;
 
   // Error signals
   mai_reg_intg_violation_err_t mai_reg_intg_violation_err;
@@ -189,7 +159,7 @@ module otbn_mai
   logic [31:0] ma_in1[32'd2];
   logic [31:0] ma_remask_rand[32'd2];
   logic [31:0] ma_result[32'd2];
-  ispr_mai_u_t ma_mod;
+  ispr_mai_t   ma_mod;
   logic [31:0] ma_mod_lsw;
 
   // Counter load values
@@ -231,27 +201,28 @@ module otbn_mai
   otbn_base_intg_word_t ispr_mai_res_s1;
 
   // CSRs
-  ispr_mai_ctrl_u_t   ispr_mai_ctrl_r;
-  ispr_mai_ctrl_u_t   ispr_mai_ctrl_w;
-  ispr_mai_status_u_t ispr_mai_status;
-  logic               ma_start;
-  mask_op_e           ma_mask_op_q;
-  ispr_mai_sw_err_t   ispr_mai_sw_err;
+  ispr_mai_ctrl_t   ispr_mai_ctrl_r;
+  ispr_mai_ctrl_t   ispr_mai_ctrl_w;
+  ispr_mai_status_t ispr_mai_status;
+  logic             ma_start;
+  mask_op_e         ma_mask_op_q;
+  ispr_mai_sw_err_t ispr_mai_sw_err;
 
   // WSRs
-  ispr_mai_u_t ispr_mai_in0_s0_d, ispr_mai_in0_s0_q;
-  ispr_mai_u_t ispr_mai_in0_s1_d, ispr_mai_in0_s1_q;
-  ispr_mai_u_t ispr_mai_in1_s0_d, ispr_mai_in1_s0_q;
-  ispr_mai_u_t ispr_mai_in1_s1_d, ispr_mai_in1_s1_q;
-  ispr_mai_u_t ispr_mai_res_s0_d, ispr_mai_res_s0_q;
-  ispr_mai_u_t ispr_mai_res_s1_d, ispr_mai_res_s1_q;
+  ispr_mai_t ispr_mai_in0_s0_d, ispr_mai_in0_s0_q;
+  ispr_mai_t ispr_mai_in0_s1_d, ispr_mai_in0_s1_q;
+  ispr_mai_t ispr_mai_in1_s0_d, ispr_mai_in1_s0_q;
+  ispr_mai_t ispr_mai_in1_s1_d, ispr_mai_in1_s1_q;
+  ispr_mai_t ispr_mai_res_s0_d, ispr_mai_res_s0_q;
+  ispr_mai_t ispr_mai_res_s1_d, ispr_mai_res_s1_q;
 
 
   ////////////
   // Random //
   ////////////
-  assign mai_urnd.bus = urnd_data_i;
-  assign unused_urnd  = ^{mai_urnd.ma.rsvd, mai_urnd.ispr.rsvd, mai_urnd.wipe.rsvd};
+  assign mai_ispr_urnd = urnd_data_i;
+  assign mai_ma_urnd   = urnd_data_i;
+  assign unused_urnd   = ^{mai_ispr_urnd.rsvd, mai_ma_urnd.rsvd};
 
 
   /////////////////////////
@@ -266,7 +237,7 @@ module otbn_mai
     .wready_o       (ma_in_ready),
     .in0_i          (ma_in0),
     .in1_i          (ma_in1),
-    .rand_i         (mai_urnd.ma.urnd),
+    .rand_i         (mai_ma_urnd.urnd),
     .remask_rand_i  (ma_remask_rand),
     .mod_i          (ma_mod_lsw),
     .mask_op_i      (ma_mask_op_q),
@@ -285,21 +256,21 @@ module otbn_mai
   assign ma_in1[0] = ispr_mai_in1_s0_mux_out.word;
   assign ma_in1[1] = ispr_mai_in1_s1_mux_out.word;
 
-  assign ma_mod.bus = ispr_mod_intg_i;
-  assign ma_mod_lsw = ma_mod.intgword[0].word;
+  assign ma_mod     = ispr_mod_intg_i;
+  assign ma_mod_lsw = ma_mod[0].word;
 
   // We only use the lowest word
   logic unused_ma_mod;
-  assign unused_ma_mod = ^ma_mod;
+  assign unused_ma_mod = ^ma_mod[BaseWordsPerWLEN-1:1];
 
-  assign ma_remask_rand[0] = mai_urnd.ma.mask_0;
-  assign ma_remask_rand[1] = mai_urnd.ma.mask_1;
+  assign ma_remask_rand[0] = mai_ma_urnd.mask_0;
+  assign ma_remask_rand[1] = mai_ma_urnd.mask_1;
 
   assign ma_in_consume = ma_in_valid_q & ma_in_ready;
 
   // Integrity check of the lowest word of ispr_mod_intg_i
   prim_secded_inv_39_32_dec u_prim_secded_inv_39_32_dec_mod (
-    .data_i    (ma_mod.intgword[0]),
+    .data_i    (ma_mod[0]),
     .data_o    (/* NOT CONNECTED */),
     .syndrome_o(/* NOT CONNECTED */),
     .err_o     (mai_reg_intg_violation_err.mod)
@@ -372,10 +343,10 @@ module otbn_mai
 
   // Unpack inputs
   for (genvar i = 0; i < BaseWordsPerWLEN; i++) begin : gen_in_mux_connect
-    assign ispr_mai_in0_s0_mux_in[i] = ispr_mai_in0_s0_q.intgword[i];
-    assign ispr_mai_in0_s1_mux_in[i] = ispr_mai_in0_s1_q.intgword[i];
-    assign ispr_mai_in1_s0_mux_in[i] = ispr_mai_in1_s0_q.intgword[i];
-    assign ispr_mai_in1_s1_mux_in[i] = ispr_mai_in1_s1_q.intgword[i];
+    assign ispr_mai_in0_s0_mux_in[i] = ispr_mai_in0_s0_q[i];
+    assign ispr_mai_in0_s1_mux_in[i] = ispr_mai_in0_s1_q[i];
+    assign ispr_mai_in1_s0_mux_in[i] = ispr_mai_in1_s0_q[i];
+    assign ispr_mai_in1_s1_mux_in[i] = ispr_mai_in1_s1_q[i];
   end
 
   prim_onehot_mux #(
@@ -516,27 +487,27 @@ module otbn_mai
   ////////////////////
 
   // Control write
-  assign ispr_mai_ctrl_w.bus = ispr_mai_ctrl_wdata_i;
-  assign ma_start            = ispr_mai_ctrl_wr_i & ispr_mai_ctrl_w.csr.start;
+  assign ispr_mai_ctrl_w = ispr_mai_ctrl_wdata_i;
+  assign ma_start        = ispr_mai_ctrl_wr_i & ispr_mai_ctrl_w.start;
 
   // Status read
-  assign ispr_mai_status.csr.rsvd  = '0;
-  assign ispr_mai_status.csr.ready = !ma_in_valid_q;
-  assign ispr_mai_status.csr.busy  = ma_busy_q;
-  assign ispr_mai_status_rdata_o   = ispr_mai_status.bus;
+  assign ispr_mai_status.rsvd    = '0;
+  assign ispr_mai_status.ready   = !ma_in_valid_q;
+  assign ispr_mai_status.busy    = ma_busy_q;
+  assign ispr_mai_status_rdata_o = ispr_mai_status;
 
   // Control read
-  assign ispr_mai_ctrl_r.csr.rsvd  = '0;
-  assign ispr_mai_ctrl_r.csr.start = 1'b0;
-  assign ispr_mai_ctrl_r.csr.op    = ma_mask_op_q;
-  assign ispr_mai_ctrl_rdata_o     = ispr_mai_ctrl_r.bus;
+  assign ispr_mai_ctrl_r.rsvd  = '0;
+  assign ispr_mai_ctrl_r.start = 1'b0;
+  assign ispr_mai_ctrl_r.op    = ma_mask_op_q;
+  assign ispr_mai_ctrl_rdata_o = ispr_mai_ctrl_r;
 
   // Erroneous control accesses
   assign ispr_mai_sw_err.busy_start     = ma_start & ma_busy_q;
   assign ispr_mai_sw_err.busy_write     = ma_in_valid_q &
                                           |{ ispr_mai_in0_s0_wr_i, ispr_mai_in0_s1_wr_i,
                                              ispr_mai_in1_s0_wr_i, ispr_mai_in1_s1_wr_i };
-  assign ispr_mai_sw_err.rsvd_csr_write = ispr_mai_ctrl_wr_i & (|ispr_mai_ctrl_w.csr.rsvd);
+  assign ispr_mai_sw_err.rsvd_csr_write = ispr_mai_ctrl_wr_i & (|ispr_mai_ctrl_w.rsvd);
   assign ispr_mai_sw_err.invalid_op     = !(ma_mask_op_q inside
                                           {SecAdd, SecAddMod, ArithToBool, BoolToArith}) & ma_start;
 
@@ -574,7 +545,7 @@ module otbn_mai
       if (sec_wipe_mai_i) begin
         ma_mask_op_q <= SecAdd;
       end else if (ispr_mai_ctrl_wr_i) begin
-        ma_mask_op_q <= ispr_mai_ctrl_w.csr.op;
+        ma_mask_op_q <= ispr_mai_ctrl_w.op;
       end
     end
   end
@@ -585,54 +556,54 @@ module otbn_mai
   ////////////////////
 
   // WSR bus write access. Wiping takes priority over writing
-  assign ispr_mai_in0_s0_d.bus = sec_wipe_ispr_mai_in0_s0_i ? mai_urnd.ispr.urnd      :
-                                 ispr_mai_in0_s0_wr_i       ? ispr_mai_in0_s0_wdata_i :
-                                 ispr_mai_in0_s0_q.bus;
+  assign ispr_mai_in0_s0_d = sec_wipe_ispr_mai_in0_s0_i ? mai_ispr_urnd.urnd      :
+                             ispr_mai_in0_s0_wr_i       ? ispr_mai_in0_s0_wdata_i :
+                             ispr_mai_in0_s0_q;
 
-  assign ispr_mai_in0_s1_d.bus = sec_wipe_ispr_mai_in0_s1_i ? mai_urnd.ispr.urnd      :
-                                 ispr_mai_in0_s1_wr_i       ? ispr_mai_in0_s1_wdata_i :
-                                 ispr_mai_in0_s1_q.bus;
+  assign ispr_mai_in0_s1_d = sec_wipe_ispr_mai_in0_s1_i ? mai_ispr_urnd.urnd      :
+                             ispr_mai_in0_s1_wr_i       ? ispr_mai_in0_s1_wdata_i :
+                             ispr_mai_in0_s1_q;
 
-  assign ispr_mai_in1_s0_d.bus = sec_wipe_ispr_mai_in1_s0_i ? mai_urnd.ispr.urnd      :
-                                 ispr_mai_in1_s0_wr_i       ? ispr_mai_in1_s0_wdata_i :
-                                 ispr_mai_in1_s0_q.bus;
+  assign ispr_mai_in1_s0_d = sec_wipe_ispr_mai_in1_s0_i ? mai_ispr_urnd.urnd      :
+                             ispr_mai_in1_s0_wr_i       ? ispr_mai_in1_s0_wdata_i :
+                             ispr_mai_in1_s0_q;
 
-  assign ispr_mai_in1_s1_d.bus = sec_wipe_ispr_mai_in1_s1_i ? mai_urnd.ispr.urnd      :
-                                 ispr_mai_in1_s1_wr_i       ? ispr_mai_in1_s1_wdata_i :
-                                 ispr_mai_in1_s1_q.bus;
+  assign ispr_mai_in1_s1_d = sec_wipe_ispr_mai_in1_s1_i ? mai_ispr_urnd.urnd      :
+                             ispr_mai_in1_s1_wr_i       ? ispr_mai_in1_s1_wdata_i :
+                             ispr_mai_in1_s1_q;
 
   always_comb begin : proc_res_s0_next
     // Bus access
-    ispr_mai_res_s0_d.bus = sec_wipe_ispr_mai_res_s0_i ? mai_urnd.ispr.urnd      :
-                            ispr_mai_res_s0_wr_i       ? ispr_mai_res_s0_wdata_i :
-                            ispr_mai_res_s0_q.bus;
+    ispr_mai_res_s0_d = sec_wipe_ispr_mai_res_s0_i ? mai_ispr_urnd.urnd      :
+                        ispr_mai_res_s0_wr_i       ? ispr_mai_res_s0_wdata_i :
+                        ispr_mai_res_s0_q;
 
     // Accelerator access has prio
     for (int i = 0; i < BaseWordsPerWLEN; i++) begin : gen_word_acc_write_res_s0
-      if (ispr_mai_out_demux_sel_onehot[i]) ispr_mai_res_s0_d.intgword[i] = ispr_mai_res_s0;
+      if (ispr_mai_out_demux_sel_onehot[i]) ispr_mai_res_s0_d[i] = ispr_mai_res_s0;
     end
   end
 
   always_comb begin : proc_res_s1_next
     // Bus access
-    ispr_mai_res_s1_d.bus = sec_wipe_ispr_mai_res_s1_i ? mai_urnd.ispr.urnd      :
-                            ispr_mai_res_s1_wr_i       ? ispr_mai_res_s1_wdata_i :
-                            ispr_mai_res_s1_q.bus;
+    ispr_mai_res_s1_d = sec_wipe_ispr_mai_res_s1_i ? mai_ispr_urnd.urnd      :
+                        ispr_mai_res_s1_wr_i       ? ispr_mai_res_s1_wdata_i :
+                        ispr_mai_res_s1_q;
 
     // Accelerator access has priority
     for (int i = 0; i < BaseWordsPerWLEN; i++) begin : gen_word_acc_write_res_s1
-      if (ispr_mai_out_demux_sel_onehot[i]) ispr_mai_res_s1_d.intgword[i] = ispr_mai_res_s1;
+      if (ispr_mai_out_demux_sel_onehot[i]) ispr_mai_res_s1_d[i] = ispr_mai_res_s1;
     end
   end
 
   // WSR bus read access
   // always present the output of the registers, the ISPR multiplexing logic blanks the signals
-  assign ispr_mai_in0_s0_rdata_o = ispr_mai_in0_s0_q.bus;
-  assign ispr_mai_in0_s1_rdata_o = ispr_mai_in0_s1_q.bus;
-  assign ispr_mai_in1_s0_rdata_o = ispr_mai_in1_s0_q.bus;
-  assign ispr_mai_in1_s1_rdata_o = ispr_mai_in1_s1_q.bus;
-  assign ispr_mai_res_s0_rdata_o = ispr_mai_res_s0_q.bus;
-  assign ispr_mai_res_s1_rdata_o = ispr_mai_res_s1_q.bus;
+  assign ispr_mai_in0_s0_rdata_o = ispr_mai_in0_s0_q;
+  assign ispr_mai_in0_s1_rdata_o = ispr_mai_in0_s1_q;
+  assign ispr_mai_in1_s0_rdata_o = ispr_mai_in1_s0_q;
+  assign ispr_mai_in1_s1_rdata_o = ispr_mai_in1_s1_q;
+  assign ispr_mai_res_s0_rdata_o = ispr_mai_res_s0_q;
+  assign ispr_mai_res_s1_rdata_o = ispr_mai_res_s1_q;
 
   // Non-resettable WSR data store. A known value will be set during secure wiping
   always_ff @(posedge clk_i) begin : proc_wsr_data_store
