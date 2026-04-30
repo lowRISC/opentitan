@@ -62,7 +62,7 @@ extern const char kDoubleFaultSecondAddr[];
 // A handle to the reset manager.
 static dif_rstmgr_t rstmgr;
 
-// This variable is used to ensure loads from an address aren't optimised out.
+// Store into this variable to ensure a predictable last data access address.
 volatile static uint32_t addr_val;
 
 /**
@@ -77,8 +77,10 @@ volatile static bool double_fault;
  */
 void ottf_exception_handler(uint32_t *exc_info) {
   if (double_fault) {
-    OT_ADDRESSABLE_LABEL(kDoubleFaultSecondAddr);
-    mmio_region_write32(mmio_region_from_addr(kIllegalAddr2), 0, 0);
+    asm volatile(
+        "kDoubleFaultSecondAddr:\n"
+        "  sw x0, 0(%0)\n" ::"r"(kIllegalAddr2)
+        : "memory");
   } else {
     CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
     // Write to `addr_val` so that the 'last data access' address is
@@ -201,8 +203,10 @@ bool test_main(void) {
       CHECK_DIF_OK(dif_rstmgr_cpu_info_set_enabled(&rstmgr, kDifToggleEnabled));
 
       double_fault = false;
-      OT_ADDRESSABLE_LABEL(kSingleFaultAddr);
-      addr_val = mmio_region_read32(mmio_region_from_addr(kIllegalAddr0), 0);
+      asm volatile(
+          "kSingleFaultAddr:\n"
+          "  lw x0, 0(%0)\n" ::"r"(kIllegalAddr0)
+          : "memory");
       CHECK(false,
             "This should be unreachable; a single fault should have occurred.");
       break;
@@ -220,7 +224,7 @@ bool test_main(void) {
       check_state(dump.fault_state,
                   (dif_rv_core_ibex_crash_dump_state_t){
                       .mtval = (uint32_t)kIllegalAddr0,
-                      .mpec = (uint32_t)kSingleFaultAddr + 4,
+                      .mpec = (uint32_t)kSingleFaultAddr,
                       .mdaa = (uint32_t)&addr_val,
                       .mcpc = (uint32_t)kSingleFaultAddrCurrentPc,
                       .mnpc = (uint32_t)kSingleFaultAddrNextPc,
@@ -253,8 +257,10 @@ bool test_main(void) {
       CHECK_DIF_OK(dif_rstmgr_cpu_info_set_enabled(&rstmgr, kDifToggleEnabled));
 
       double_fault = true;
-      OT_ADDRESSABLE_LABEL(kDoubleFaultFirstAddr);
-      addr_val = mmio_region_read32(mmio_region_from_addr(kIllegalAddr1), 0);
+      asm volatile(
+          "kDoubleFaultFirstAddr:\n"
+          "  lw x0, 0(%0)\n" ::"r"(kIllegalAddr1)
+          : "memory");
       CHECK(false,
             "This should be unreachable; a double fault should have occured.");
       break;
@@ -287,7 +293,7 @@ bool test_main(void) {
       check_prev_state(dump.previous_fault_state,
                        (dif_rv_core_ibex_previous_crash_dump_state_t){
                            .mtval = (uint32_t)kIllegalAddr1,
-                           .mpec = (uint32_t)kDoubleFaultFirstAddr + 4,
+                           .mpec = (uint32_t)kDoubleFaultFirstAddr,
                        });
 
       return true;
