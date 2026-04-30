@@ -11,7 +11,7 @@
 // complete list of available registers is computed just before the sequence body (in the pre_start
 // task), but a test may wish to check a smaller subset of these registers.
 //
-// To make that possible, there are two plusarg-based mechanisms:
+// To make that possible there is a plusarg-based mechanism:
 //
 //  +num_test_csrs=
 //
@@ -21,15 +21,6 @@
 //
 //     If max_num_test_csrs has been set to a positive number after creating the sequence, it is
 //     used as another upper bound on the number of CSRs in a chunk for the sequence.
-//
-//  +num_csr_chunks=, +test_csr_chunk=
-//
-//     If num_test_csrs is not provided, the list of CSRs in all_csrs can instead be divided into a
-//     requested number of contiguous chunks by setting num_csr_chunks. The index of the chunk to
-//     test is then provided with test_csr_chunk.
-//
-//     It is an error to use these flags if max_num_test_csrs is set to a positive number (because
-//     there's not a nice description of the length of chunks in that situation).
 
 class csr_base_seq extends uvm_reg_sequence #(uvm_sequence #(uvm_reg_item));
   `uvm_object_utils(csr_base_seq)
@@ -62,8 +53,7 @@ class csr_base_seq extends uvm_reg_sequence #(uvm_sequence #(uvm_reg_item));
 
   // A queue of the CSR registers that have been selected for this test. These are contained in
   // all_csrs, but may be a proper subset if set_csr_test_range has picked only some of them (as
-  // instructed by the max_num_test_csrs or the num_test_csrs or num_csr_chunks plusargs). They will
-  // also be shuffled into a random order.
+  // instructed by max_num_test_csrs). They will also be shuffled into a random order.
   //
   // The queue gets populated by set_csr_test_range, which is called by the pre_start task. It is
   // then cleared by post_start, to ensure that it will be re-populated if the sequence is run
@@ -126,10 +116,10 @@ task csr_base_seq::post_start();
 endtask
 
 function void csr_base_seq::set_csr_test_range();
-  bit has_ntc, has_ncc, has_tcc;
+  bit has_ntc, has_tcc;
 
   int unsigned num_csrs;
-  int          num_test_csrs, num_csr_chunks, test_csr_chunk;
+  int          num_test_csrs;
 
   int unsigned start_idx, end_idx;
 
@@ -170,64 +160,7 @@ function void csr_base_seq::set_csr_test_range();
     end
   end
 
-  // Has the num_csr_chunks plusarg been supplied?
-  if ($value$plusargs("num_csr_chunks=%0d", num_csr_chunks)) begin
-    // Check that we want a positive number of CSR chunks (since "splitting the list into -3 chunks"
-    // wouldn't make much sense!). If not, generate a UVM error and ignore the plusarg.
-    if (num_csr_chunks < 1) begin
-      `uvm_error(`gtn, $sformatf("+num_csr_chunks=%0d, which is not positive.", num_csr_chunks))
-    end else begin
-      has_ncc = 1;
-    end
-  end
-
-  // Has the test_csr_chunk plusarg been supplied?
-  if ($value$plusargs("test_csr_chunk=%0d", test_csr_chunk)) begin
-    if (!has_ncc) begin
-      // This argument only makes sense if we *have* specified a number of CSR chunks.
-      `uvm_error(`gtn, "Cannot supply test_csr_chunk without num_csr_chunks")
-    end else if (test_csr_chunk < 0 || test_csr_chunk >= num_csr_chunks) begin
-      // Similarly, it only makes sense if it's a valid index into the list of chunks.
-      `uvm_error(`gtn,
-                 $sformatf("+test_csr_chunk=%0d is invalid when num_csr_chunks=%0d",
-                           test_csr_chunk, num_csr_chunks));
-    end
-    has_tcc = 1;
-  end
-
-  // Check that num_test_csrs and num_csr_chunks haven't both been supplied (because then there
-  // isn't any good chunk size)
-  if (has_ntc && has_ncc) begin
-    `uvm_error(`gtn, "Cannot set both +num_csr_chunks and +num_test_csrs. Using the latter.")
-    has_ncc = 0;
-  end
-
-  // At this point, at most one of has_ntc and has_ncc is true.
-  if (has_ncc) begin
-    int unsigned chunk_idx;
-
-    // If num_csr_chunks has been supplied we can use it to derive a chunk size in the same way as
-    // the has_ntc case.
-    int unsigned chunk_size = (num_csrs + num_csr_chunks - 1) / num_csr_chunks;
-
-    // At this point, we might find that the requested number of chunks is incompatible with
-    // max_num_test_csrs. If so, generate an error and then clip chunk_size (to ensure the test
-    // doesn't run for a silly time)
-    if (max_num_test_csrs > 0 && chunk_size > max_num_test_csrs) begin
-      `uvm_error(`gtn,
-                 $sformatf("chunk_size %0d is too large for max_num_test_csrs %0d",
-                           chunk_size, max_num_test_csrs))
-      chunk_size = max_num_test_csrs;
-    end
-
-    // We might already have a chunk index in test_csr_chunk. If not, we pick one at random in the
-    // allowed range.
-    chunk_idx = has_tcc ? test_csr_chunk : $urandom_range(num_csr_chunks - 1);
-
-    // Again, convert these two into a pair of CSR indices (where end_idx is strictly past the end)
-    start_idx = chunk_idx * chunk_size;
-    end_idx = start_idx + chunk_size - 1;
-  end else if (has_ntc || max_num_test_csrs > 0) begin
+  if (has_ntc || max_num_test_csrs > 0) begin
     int unsigned num_chunks, chunk_size, chunk_idx;
 
     // Take the smaller supplied value of num_test_csrs and max_num_test_csrs to give an upper bound
