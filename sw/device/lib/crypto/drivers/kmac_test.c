@@ -101,7 +101,7 @@ static status_t run_negative_test(void) {
 bool test_main(void) {
   status_t result = OK_STATUS();
 
-  CHECK_STATUS_OK(entropy_complex_init(kHardenedBoolFalse));
+  CHECK_STATUS_OK(entropy_complex_init(kHardenedBoolTrue));
 
   EXECUTE_TEST(result, run_kmac_test);
   EXECUTE_TEST(result, run_negative_test);

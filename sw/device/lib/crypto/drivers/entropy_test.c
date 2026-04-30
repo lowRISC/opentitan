@@ -24,7 +24,7 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 static status_t entropy_complex_init_test(void) {
-  TRY(entropy_complex_init(kHardenedBoolFalse));
+  TRY(entropy_complex_init(kHardenedBoolTrue));
 
   // Check the configuration.
   TRY(entropy_complex_check(kHardenedBoolFalse));
