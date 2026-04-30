@@ -1247,11 +1247,14 @@ opentitan_test(
     srcs = ["edn_boot_mode.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
             "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
         },
+    ),
+    fpga = fpga_params(
+        # We switch to RMA (can be any non-PROD) LC such that RNG health tests are not enabled and we can turn on/off fips
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_rma_manuf_personalized",
     ),
     verilator = verilator_params(
         timeout = "eternal",
@@ -1488,10 +1491,13 @@ opentitan_test(
     srcs = ["entropy_src_fw_observe_many_contiguous.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
         },
+    ),
+    fpga = fpga_params(
+        # We switch to RMA (can be any non-PROD) LC such that RNG health tests are not enabled
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_rma_manuf_personalized",
     ),
     # This test can take > 40 minutes, so mark it manual as it shouldn't run
     # in CI/nightlies.
@@ -3499,13 +3505,14 @@ opentitan_test(
     srcs = ["pwrmgr_random_sleep_all_wake_ups.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
     fpga = fpga_params(
+        # We switch to RMA (can be any non-PROD) LC such that health tests do not cause an wait for interrupt trap
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_rma_manuf_personalized",
         tags = ["coverage_broken"],  # FIXME: broken in coverage mode.
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
     ),
@@ -5697,7 +5704,8 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
-        otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_prod_manuf_personalized",
+        # We switch to RMA (can be any non-PROD) LC such that RNG health tests are not enabled
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_rma_manuf_personalized",
         tags = ["coverage_broken"],  # FIXME: Coverage mode heap is too small.
         test_harness = "//sw/host/tests/chip/power_virus",
     ),

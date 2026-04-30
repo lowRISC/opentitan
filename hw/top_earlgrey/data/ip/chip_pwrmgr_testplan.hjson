@@ -46,7 +46,7 @@
             '''
       stage: V2
       si_stage: SV3
-      lc_states: ["PROD"]
+      lc_states: ["RMA"]
       features: [
         "PWRMGR.LOW_POWER.SYSRST_CTRL_AON_WKUP_REQ_WAKEUP_ENABLE",
         "PWRMGR.LOW_POWER.SYSRST_CTRL_AON_WKUP_REQ_WAKEUP_REQUEST",

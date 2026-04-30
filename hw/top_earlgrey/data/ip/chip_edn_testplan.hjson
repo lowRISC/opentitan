@@ -68,7 +68,7 @@
       ]
       stage: V3
       si_stage: SV3
-      lc_states: ["PROD"]
+      lc_states: ["RMA"]
       tests: ["chip_sw_edn_boot_mode"]
       bazel: ["//sw/device/tests:edn_boot_mode"]
     },

@@ -26,16 +26,8 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_entropy_src_set_enabled(&entropy_src, kDifToggleDisabled));
 
   // Setup fips grade entropy that can be read by firmware
-  const dif_entropy_src_config_t config = {
-      .fips_enable = true,
-      .fips_flag = true,
-      .rng_fips = true,
-      .route_to_firmware = true,
-      .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
-      .health_test_threshold_scope = false, /*default*/
-      .health_test_window_size = 0x0200,    /*default*/
-      .alert_threshold = 2,                 /*default*/
-  };
+  dif_entropy_src_config_t config = entropy_testutils_config_default();
+  config.route_to_firmware = true;
 
   // Re-enable entropy src
   CHECK_DIF_OK(

@@ -689,7 +689,7 @@
       '''
       stage: V3
       si_stage: SV2
-      lc_states: ["PROD"]
+      lc_states: ["RMA"]
       tests: ["chip_sw_power_virus"]
       bazel: ["//sw/device/tests:power_virus_systemtest"]
     }
