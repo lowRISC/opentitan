@@ -140,11 +140,13 @@ cc_library(
         "//hw/ip/edn/data:edn_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
+        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/dif:csrng",
         "//sw/device/lib/dif:csrng_shared",
         "//sw/device/lib/dif:edn",
         "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
     ],
 )
 
