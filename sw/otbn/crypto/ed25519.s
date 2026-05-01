@@ -12,6 +12,7 @@
 .globl affine_decode_var
 .globl ext_scmul
 .globl ext_scmul_sca
+.globl ext_randomize_point
 .globl ext_double
 .globl ext_add
 .globl ext_to_affine
@@ -1329,10 +1330,13 @@ ext_scmul_sca:
   bn.rshi w4, w4, w31 >> 126
 
   /* Iterate over all scalar bits starting at the MSB. */
-  loopi  382, 54
+  loopi  382, 56
     /* Compute Q = 2 * Q.
          [w13:w10] <= [w13:w10] + [w13:w10] = 2 * Q  */
     jal x1, ext_double
+
+    /* Point re-randomization of 2 * Q */
+    jal x1, ext_randomize_point
 
     /* Save the value 2 * Q for later.
          [w17:w14] <= [w13:w10] = 2 * Q. */
@@ -1430,6 +1434,9 @@ ext_scmul_sca:
     /* Clear the flag. */
     bn.sub w31, w31, w31, FG0
 
+    /* Point re-randomization of Q */
+    jal x1, ext_randomize_point
+
     /* Shift both scalars one position to the left and pad with randomness. */
     bn.wsrr w20, URND
 
@@ -1441,6 +1448,57 @@ ext_scmul_sca:
     bn.rshi w5, w5, w4 >> 255
     bn.rshi w4, w4, w20 >> 255
     /* End of loop */
+
+  ret
+
+/**
+ * Point Re-Randomization
+ *
+ * Randomizes a point in extended twisted Edwards coordinates by multiplying
+ * all its coordinates by a random non-zero scalar modulo p.
+ *
+ * This routine runs in constant time.
+ *
+ * @param[in]  MOD: p, modulus = 2^255 - 19
+ * @param[in]  w31: all-zero
+ * @param[in,out] w10: input X, output X * r mod p
+ * @param[in,out] w11: input Y, output Y * r mod p
+ * @param[in,out] w12: input Z, output Z * r mod p
+ * @param[in,out] w13: input T, output T * r mod p
+ *
+ * clobbered registers: w10 to w13, w22, w23, w24, plus fe_mul clobbers
+ * clobbered flag groups: FG0
+ */
+ext_randomize_point:
+  /* Fetch a fresh 256-bit random scalar r */
+  bn.wsrr w24, URND
+
+  /* Reduce r modulo p */
+  bn.addm w24, w24, w31
+
+  /* Randomize X: Q.X = Q.X * r mod p */
+  bn.mov w22, w10
+  bn.mov w23, w24
+  jal x1, fe_mul
+  bn.mov w10, w22
+
+  /* Randomize Y: Q.Y = Q.Y * r mod p */
+  bn.mov w22, w11
+  bn.mov w23, w24
+  jal x1, fe_mul
+  bn.mov w11, w22
+
+  /* Randomize Z: Q.Z = Q.Z * r mod p */
+  bn.mov w22, w12
+  bn.mov w23, w24
+  jal x1, fe_mul
+  bn.mov w12, w22
+
+  /* Randomize T: Q.T = Q.T * r mod p */
+  bn.mov w22, w13
+  bn.mov w23, w24
+  jal x1, fe_mul
+  bn.mov w13, w22
 
   ret
 
