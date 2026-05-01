@@ -592,7 +592,6 @@ genrule(
         "//sw/device/tests/penetrationtests/firmware/sca:sca_headers",
         # We link directly to pentest_lib to pull out the version number
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib.h",
-        "doc/README.md",
     ],
     outs = [
         "Doxyfile_testOS",
@@ -612,15 +611,62 @@ OPTIMIZE_OUTPUT_FOR_C=YES
 EXTRACT_ALL=YES
 JAVADOC_AUTOBRIEF=YES
 STRIP_CODE_COMMENTS=NO
-USE_MDFILE_AS_MAINPAGE=$(location doc/README.md)
 EOF
 
         echo "INPUT = $(locations //sw/device/tests/penetrationtests/firmware/fi:fi_headers)" >> $(location Doxyfile_testOS)
         echo "INPUT += $(locations //sw/device/tests/penetrationtests/firmware/sca:sca_headers)" >> $(location Doxyfile_testOS)
-        echo "INPUT += $(location doc/README.md)" >> $(location Doxyfile_testOS)
 
         doxygen $(location Doxyfile_testOS)
         make -C $(RULEDIR)/latex
         mv $(RULEDIR)/latex/refman.pdf $(location testOS_manual.pdf)
     """,
+)
+
+test_suite(
+    name = "pentest_cryptolib_tests",
+    tests = [
+        "fi_asym_cryptolib",
+        "fi_asym_cryptolib_python_test",
+        "fi_sym_cryptolib",
+        "fi_sym_cryptolib_python_test",
+        "sca_asym_cryptolib",
+        "sca_asym_cryptolib_python_test",
+        "sca_sym_cryptolib",
+        "sca_sym_cryptolib_python_test",
+    ],
+)
+
+test_suite(
+    name = "pentest_hw_tests",
+    tests = [
+        "fi_boot_python_test",
+        "fi_crypto",
+        "fi_crypto_python_test",
+        "fi_ibex",
+        "fi_ibex_python_test",
+        "fi_lc_ctrl",
+        "fi_otbn",
+        "fi_otbn_python_test",
+        "fi_otp",
+        "fi_otp_python_test",
+        "fi_rng",
+        "fi_rng_python_test",
+        "fi_rom",
+        "fi_rom_python_test",
+        "fi_unit_gdb_python_gdb_test",
+        "fi_unit_gdb_python_test",
+        "sca_aes",
+        "sca_aes_python_test",
+        "sca_edn",
+        "sca_hmac",
+        "sca_hmac_python_test",
+        "sca_ibex",
+        "sca_ibex_python_test",
+        "sca_kmac",
+        "sca_kmac_python_test",
+        "sca_otbn",
+        "sca_otbn_python_test",
+        "sca_sha3",
+        "sca_sha3_python_test",
+    ],
 )

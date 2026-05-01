@@ -591,6 +591,8 @@
 
 - [Lightweight Threat Model](./doc/security/threat_model/README.md)
 
+- [Penetrationtest Framework](./doc/security/pentest_framework/README.md)
+
 # Use Cases
 
 - [Use Cases](./doc/use_cases/README.md)
