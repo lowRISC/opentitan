@@ -3,5 +3,4 @@
 This folder contains OpenTitan's OS-visible cryptographic library. The public
 API is under include/; everything else should be considered internal.
 
-Tests are separately stored under sw/device/tests/crypto, except for driver
-tests which are under drivers/.
+For details about the library, see the [API documentation page](//doc/security/cryptolib/cryptolib_api.md).
