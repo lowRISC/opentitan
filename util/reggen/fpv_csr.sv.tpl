@@ -25,11 +25,10 @@
   `include "uvm_macros.svh"
 `endif
 
-`ifndef FPV_ON
-  `define REGWEN_PATH tb.dut.${reg_block_path}
-`else
-  `define REGWEN_PATH ${lblock}.${reg_block_path}
-`endif
+ // An upwards hierarchical reference that starts at the type of the IP block. This will correctly
+ // find the block, as long as the assertion module is bound into the block (rather than sitting
+ // outside of it) in the testbench.
+`define REGWEN_PATH ${lblock}.${reg_block_path}
 
 // Block: ${lblock}
 module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
