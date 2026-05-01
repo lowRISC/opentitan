@@ -100,4 +100,26 @@ interface rv_dm_if(input logic clk, input logic rst_n);
     end
   end
 
+  always @(_disable_counters[LcCopySVAs]) begin
+    if (_disable_counters[LcCopySVAs]) begin
+      $assertoff(0, u_lc_en_sync_copies.gen_no_flops.OutputDelay_A);
+    end else begin
+      $asserton(0, u_lc_en_sync_copies.gen_no_flops.OutputDelay_A);
+    end
+  end
+
+  // Note that the enable checker itself is also bound into rv_dm by the testbench (pulled in by the
+  // rv_dm_sva fusesoc core).
+  always @(_disable_counters[EnableCheckerSVAs]) begin
+    if (_disable_counters[EnableCheckerSVAs]) begin
+      $assertoff(0, enable_checker.DebugRequestNeedsDebug_A);
+      $assertoff(0, enable_checker.MemTLResponseWithoutDebugIsError_A);
+      $assertoff(0, enable_checker.SbaTLRequestNeedsDebug_A);
+    end else begin
+      $asserton(0, enable_checker.DebugRequestNeedsDebug_A);
+      $asserton(0, enable_checker.MemTLResponseWithoutDebugIsError_A);
+      $asserton(0, enable_checker.SbaTLRequestNeedsDebug_A);
+    end
+  end
+
 endinterface

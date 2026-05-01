@@ -173,14 +173,12 @@ class rv_dm_buffered_enable_vseq extends rv_dm_base_vseq;
   // the top-level pin.
   task check_debug_req();
     // If tgt_copy is DebugReq, expect the debug request to be passed through. This will actually
-    // cause an assertion to fail in rv_dm_enable_checker, because that module bases its check on
-    // the initial single debug enable signal and doesn't know that we're overriding this copy.
-    // Disable the assertion.
-    $assertoff(0, "tb.dut.enable_checker.DebugRequestNeedsDebug_A");
-
+    // cause the DebugRequestNeedsDebug_A assertion to fail in rv_dm_enable_checker, because that
+    // module bases its check on the initial single debug enable signal and doesn't know that we're
+    // overriding this copy. Disable the assertion.
+    cfg.rv_dm_vif.disable_assertions(EnableCheckerSVAs);
     check_connection("u_dm_top.debug_req_o", "debug_req_o", 1'b1, tgt_copy == DebugReq);
-
-    $asserton(0, "tb.dut.enable_checker.DebugRequestNeedsDebug_A");
+    cfg.rv_dm_vif.enable_assertions(EnableCheckerSVAs);
   endtask
 
   // Check whether it is possible to send an ndmreset request from the debug module to the rest of
@@ -250,14 +248,14 @@ class rv_dm_buffered_enable_vseq extends rv_dm_base_vseq;
     // The check_fetch and check_rom tasks that we will run might cause TL transactions from the ROM
     // (if tgt_copy is Rom or Fetch) but the entirety of debug is not enabled. This will cause
     // problems with the enable checker, which asserts that the debug module will not give any TL
-    // responses when debug is not enabled. Disable that assertion: this sequence has a more precise
-    // check anyway.
-    $assertoff(0, "tb.dut.enable_checker.MemTLResponseWithoutDebugIsError_A");
-    $assertoff(0, "tb.dut.enable_checker.SbaTLRequestNeedsDebug_A");
+    // responses when debug is not enabled. The assertions that will fail are
+    // MemTLResponseWithoutDebugIsError_A and SbaTLRequestNeedsDebug_A. Disable them: this sequence
+    // has a more precise check anyway.
+    cfg.rv_dm_vif.disable_assertions(EnableCheckerSVAs);
 
     // We are enabling a single copy by forcing a single output of a prim_lc_sync instance. This
     // causes an assertion to fail (which says that all the outputs match). Disable the assertion.
-    $assertoff(0, "tb.dut.u_lc_en_sync_copies");
+    cfg.rv_dm_vif.disable_assertions(LcCopySVAs);
 
     // Force-enable at the given copy
     force_enable_at(tgt_copy);
@@ -277,9 +275,9 @@ class rv_dm_buffered_enable_vseq extends rv_dm_base_vseq;
     // Tidy up forcing and error prediction (in case we want to run other sequences in a stress
     // sequence)
     release_enable_at(tgt_copy);
-    $asserton(0, "tb.dut.u_lc_en_sync_copies");
-    $asserton(0, "tb.dut.enable_checker.SbaTLRequestNeedsDebug_A");
-    $asserton(0, "tb.dut.enable_checker.MemTLResponseWithoutDebugIsError_A");
+    cfg.rv_dm_vif.enable_assertions(LcCopySVAs);
+    cfg.rv_dm_vif.enable_assertions(EnableCheckerSVAs);
+
     cfg.sba_tl_tx_requires_debug = old_sba_tl_check;
     cfg.m_tl_agent_cfgs["rv_dm_mem_reg_block"].check_tl_errs = old_tl_error_check;
     cfg.tl_err_prediction = old_tl_err_pred;
