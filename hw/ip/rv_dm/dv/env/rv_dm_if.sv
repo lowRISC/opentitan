@@ -52,7 +52,42 @@ interface rv_dm_if(input logic clk, input logic rst_n);
     input unavailable;
   endclocking
 
-  // Disable TLUL host SBA assertions when injecting intg errors on the response channel.
-  bit disable_tlul_assert_host_sba_resp_svas;
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  // Functions to enable/disable particular types of assertions in the block
+  //
+  // These assertions need to be disabled when injecting integrity errors.
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+
+  int unsigned _sba_counter;
+
+  // Disable TLUL host SBA assertions (triggered by injecting intg errors on the response channel)
+  function void disable_assertions_sba();
+    _sba_counter++;
+  endfunction
+
+  // Re-enable TLUL host SBA assertions
+  function void enable_assertions_sba();
+    if (!_sba_counter) begin
+      $error(1, "ERROR: Cannot enable SBA assertions: they were not disabled.");
+    end
+    _sba_counter--;
+  endfunction
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  // Enable/disable assertions based on the control knobs
+  //
+  // This is done through upwards hierarchical references, which are connected because the interface
+  // is bound into an instance of the rv_dm module.
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+
+  always @(_sba_counter) begin
+    if (_sba_counter) begin
+      $assertoff(0, tlul_assert_host_sba.gen_host.gen_d2h.respOpcode_M);
+      $assertoff(0, tlul_assert_host_sba.gen_host.gen_d2h.respSzEqReqSz_M);
+    end else begin
+      $asserton(0, tlul_assert_host_sba.gen_host.gen_d2h.respOpcode_M);
+      $asserton(0, tlul_assert_host_sba.gen_host.gen_d2h.respSzEqReqSz_M);
+    end
+  end
 
 endinterface
