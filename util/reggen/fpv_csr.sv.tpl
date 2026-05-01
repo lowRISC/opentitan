@@ -18,8 +18,6 @@
   assert rb.flat_regs
 
 %>\
-<%def name="construct_classes(block)">\
-
 `include "prim_assert.sv"
 `ifdef UVM
   `include "uvm_macros.svh"
@@ -321,5 +319,3 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
 endmodule
 
 `undef REGWEN_PATH
-</%def>\
-${construct_classes(block)}
