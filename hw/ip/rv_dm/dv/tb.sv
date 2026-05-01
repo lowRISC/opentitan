@@ -26,7 +26,6 @@ module tb;
   tl_if mem_tl_if(.clk(clk), .rst_n(rst_n));
   tl_if sba_tl_if(.clk(clk), .rst_n(rst_n));
   jtag_if jtag_if();
-  rv_dm_if rv_dm_if(.clk(clk), .rst_n(rst_n));
   rv_dm_mode_if mode_if(.clk(clk));
 
   // Used for JTAG DTM connections via TL-UL.
@@ -45,7 +44,7 @@ module tb;
     .rst_ni      (rst_n),
     .jtag_i      ({jtag_if.tck, jtag_if.tms, jtag_if.trst_n, jtag_if.tdi}),
     .jtag_o      ({jtag_if.tdo, jtag_tdo_oe}),
-    .scan_rst_ni (rv_dm_if.scan_rst_n),
+    .scan_rst_ni (scan_rst_n),
     .scanmode_i  (mode_if.scanmode),
     .tl_h2d_o    (dbg_tl_h2d),
     .tl_d2h_i    (dbg_tl_d2h)
@@ -83,11 +82,13 @@ module tb;
     .strap_en_override_i       (mode_if.strap_en_override       ),
     .otp_dis_rv_dm_late_debug_i(mode_if.otp_dis_rv_dm_late_debug),
     .scanmode_i                (mode_if.scanmode                ),
-    .scan_rst_ni               (rv_dm_if.scan_rst_n    ),
-    .ndmreset_req_o            (rv_dm_if.ndmreset_req  ),
-    .dmactive_o                (rv_dm_if.dmactive      ),
-    .debug_req_o               (rv_dm_if.debug_req     ),
-    .unavailable_i             (rv_dm_if.unavailable   ),
+
+    // The following ports are connected to a bound-in rv_dm_if below
+    .scan_rst_ni               (),
+    .ndmreset_req_o            (),
+    .dmactive_o                (),
+    .debug_req_o               (),
+    .unavailable_i             (),
 
     .regs_tl_d_i               (regs_tl_if.h2d),
     .regs_tl_d_o               (regs_tl_if.d2h),
@@ -112,6 +113,21 @@ module tb;
     .dbg_tl_d_i                (dbg_tl_h2d),
     .dbg_tl_d_o                (dbg_tl_d2h)
   );
+
+  // Bind an instance of rv_dm_if into the dut (so that it can figure out hierarchical paths inside
+  // the dut).
+  //
+  // After binding in the interface, use continuous assignments to connect its wires to ports of the
+  // dut. Because the interface is in active mode, two of these ports (scan_rst_n, unavailable) are
+  // driven by the interface. The rest are driven by the dut.
+  bind dut rv_dm_if u_rv_dm_if(.clk(clk_i), .rst_n(rst_ni));
+
+  assign dut.scan_rst_ni   = dut.u_rv_dm_if.scan_rst_n;
+  assign dut.unavailable_i = dut.u_rv_dm_if.unavailable;
+
+  assign dut.u_rv_dm_if.ndmreset_req = dut.ndmreset_req_o;
+  assign dut.u_rv_dm_if.dmactive     = dut.dmactive_o;
+  assign dut.u_rv_dm_if.debug_req    = dut.debug_req_o;
 
   jtag_mon_if mon_jtag_if ();
 `ifdef USE_DMI_INTERFACE
@@ -139,8 +155,7 @@ module tb;
     clk_lc_rst_if.set_active();
 
     cfg = rv_dm_env_cfg::type_id::create("cfg");
-
-    cfg.rv_dm_vif = rv_dm_if;
+    cfg.rv_dm_vif = dut.u_rv_dm_if;
     cfg.clk_rst_vif = clk_rst_if;
     cfg.clk_rst_vifs["rv_dm_regs_reg_block"] = clk_rst_if;
     cfg.clk_rst_vifs["rv_dm_mem_reg_block"]  = clk_rst_if;
@@ -166,8 +181,8 @@ module tb;
 
   // Disable TLUL host SBA assertions when injecting intg errors on the response channel.
   initial begin
-    forever @rv_dm_if.disable_tlul_assert_host_sba_resp_svas begin
-      if (rv_dm_if.disable_tlul_assert_host_sba_resp_svas) begin
+    forever @dut.u_rv_dm_if.disable_tlul_assert_host_sba_resp_svas begin
+      if (dut.u_rv_dm_if.disable_tlul_assert_host_sba_resp_svas) begin
         $assertoff(0, dut.tlul_assert_host_sba.gen_host.gen_d2h.respOpcode_M);
         $assertoff(0, dut.tlul_assert_host_sba.gen_host.gen_d2h.respSzEqReqSz_M);
       end else begin
