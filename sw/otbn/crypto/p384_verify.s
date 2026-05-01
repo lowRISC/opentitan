@@ -253,6 +253,34 @@ p384_verify:
   bn.sid    x2++, 832(x26)
   bn.sid    x2++, 864(x26)
 
+  /* Reverse check: We verify that (u2 * s) mod n == r */
+
+  /* u2 was shifted left by 128, so we shift right by 128 to restore it */
+  bn.rshi   w10, w3, w2 >> 128
+  bn.rshi   w11, w31, w3 >> 128
+
+  /* Load original s from dmem (ptr in x7) into [w17, w16] */
+  li        x2, 16
+  bn.lid    x2++, 0(x7)
+  bn.lid    x2++, 32(x7)
+
+  /* Compute [w17, w16] = (u2 * s) mod n */
+  jal       x1, p384_mulmod_n
+
+  /* Load original r from dmem (ptr in x6) into [w11, w10] */
+  li        x2, 10
+  bn.lid    x2++, 0(x6)
+  bn.lid    x2++, 32(x6)
+
+  /* Compare calculated r ([w17, w16]) with original r ([w11, w10]) */
+  bn.cmp    w16, w10
+  bn.cmpb   w17, w11
+
+  /* Abort if they do not match */
+  csrrs     x2, FG0, x0
+  andi      x2, x2, 8
+  beq       x2, x0, p384_invalid_input
+
   /* load domain parameter p (modulus)
      [w13, w12] <= p = dmem[p384_p] */
   li        x2, 12
