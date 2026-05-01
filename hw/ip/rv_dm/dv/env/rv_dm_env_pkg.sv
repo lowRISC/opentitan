@@ -42,6 +42,11 @@ package rv_dm_env_pkg;
     SbaAssertions,
     // FSM state assertions inside lifecycle gates
     LcGateAssertions,
+    // Assertions about copies in the replicated lifecycle enable signal
+    LcCopySVAs,
+    // Assertions in the enable checker (which tracks whether the enable signals are gating
+    // interfaces properly)
+    EnableCheckerSVAs,
 
     NumAssertionTypes
   } assertion_type_e;
