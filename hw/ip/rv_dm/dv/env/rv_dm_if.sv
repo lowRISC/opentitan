@@ -58,19 +58,19 @@ interface rv_dm_if(input logic clk, input logic rst_n);
   // These assertions need to be disabled when injecting integrity errors.
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  int unsigned _sba_counter;
+  int unsigned _disable_counters[assertion_type_e];
 
-  // Disable TLUL host SBA assertions (triggered by injecting intg errors on the response channel)
-  function void disable_assertions_sba();
-    _sba_counter++;
+  // Disable assertions of the given type
+  function static void disable_assertions(assertion_type_e assertion_type);
+    _disable_counters[assertion_type]++;
   endfunction
 
-  // Re-enable TLUL host SBA assertions
-  function void enable_assertions_sba();
-    if (!_sba_counter) begin
+  // Re-enable assertions of the given type
+  function static void enable_assertions(assertion_type_e assertion_type);
+    if (!_disable_counters[assertion_type]) begin
       $error(1, "ERROR: Cannot enable SBA assertions: they were not disabled.");
     end
-    _sba_counter--;
+    _disable_counters[assertion_type]--;
   endfunction
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -80,13 +80,23 @@ interface rv_dm_if(input logic clk, input logic rst_n);
   // is bound into an instance of the rv_dm module.
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  always @(_sba_counter) begin
-    if (_sba_counter) begin
+  always @(_disable_counters[SbaAssertions]) begin
+    if (_disable_counters[SbaAssertions]) begin
       $assertoff(0, tlul_assert_host_sba.gen_host.gen_d2h.respOpcode_M);
       $assertoff(0, tlul_assert_host_sba.gen_host.gen_d2h.respSzEqReqSz_M);
     end else begin
       $asserton(0, tlul_assert_host_sba.gen_host.gen_d2h.respOpcode_M);
       $asserton(0, tlul_assert_host_sba.gen_host.gen_d2h.respSzEqReqSz_M);
+    end
+  end
+
+  always @(_disable_counters[LcGateAssertions]) begin
+    if (_disable_counters[LcGateAssertions]) begin
+      $assertoff(0, u_tlul_lc_gate_sba.u_state_regs_A);
+      $assertoff(0, u_tlul_lc_gate_sba.u_state_regs_A);
+    end else begin
+      $asserton(0, u_tlul_lc_gate_sba.u_state_regs_A);
+      $asserton(0, u_tlul_lc_gate_sba.u_state_regs_A);
     end
   end
 
