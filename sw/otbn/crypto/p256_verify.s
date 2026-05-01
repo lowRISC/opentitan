@@ -129,6 +129,30 @@ p256_verify:
   jal       x1, mod_mul_256x256
   bn.mov    w1, w19
 
+  /* Reverse check: We verify that (u2 * s) mod n == r */
+
+  /* Put u2 into w24 for multiplication */
+  bn.mov    w24, w0
+
+  /* Load original s from dmem directly into w25 */
+  la        x20, s
+  li        x2, 25
+  bn.lid    x2, 0(x20)
+
+  /* Compute w19 = (u2 * s) mod n */
+  jal       x1, mod_mul_256x256
+
+  /* Load original r from dmem into w20 */
+  la        x19, r
+  li        x2, 20
+  bn.lid    x2, 0(x19)
+
+  /* Compare calculated r (w19) with original r (w20) */
+  bn.cmp    w19, w20
+
+  /* Abort if they do not match */
+  jal       x1, trigger_fault_if_fg0_z
+
   /* Set up for coordinate arithmetic.
        MOD <= p
        w28 <= r256
