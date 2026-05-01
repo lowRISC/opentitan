@@ -37,6 +37,15 @@ package rv_dm_env_pkg;
   parameter uint NUM_ALERTS = rv_dm_reg_pkg::NumAlerts;
   parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"fatal_fault"};
 
+  typedef enum {
+    // TLUL host SBA assertions (triggered by injecting intg errors on the response channel)
+    SbaAssertions,
+    // FSM state assertions inside lifecycle gates
+    LcGateAssertions,
+
+    NumAssertionTypes
+  } assertion_type_e;
+
   // package sources
   `include "rv_dm_env_cfg.sv"
   `include "rv_dm_env_cov.sv"
