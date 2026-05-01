@@ -309,7 +309,6 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     fork m_tl_sba_device_seq.start(p_sequencer.tl_sba_sequencer_h); join_none
     // To ensure the seq above starts executing before the code following it starts executing.
     #0;
-    // TODO: sba_tl_device_seq_disable_tlul_assert_host_sba_resp_svas();
   endtask
 
   // Stop running the m_tl_sba_device_seq seq.
@@ -321,23 +320,6 @@ class rv_dm_base_vseq extends cip_base_vseq #(
       m_tl_sba_device_seq.seq_stop();
       `uvm_info(`gfn, "Stopped running m_tl_sba_device_seq", UVM_MEDIUM)
     end
-  endtask
-
-  // Task forked off to disable TLUL host SBA assertions when injecting intg errors on the response
-  // channel.
-  virtual task sba_tl_device_seq_disable_tlul_assert_host_sba_resp_svas();
-    fork
-      begin: isolation_thread
-        fork
-          forever @m_tl_sba_device_seq.inject_d_chan_intg_err begin
-            cfg.rv_dm_vif.disable_tlul_assert_host_sba_resp_svas =
-                m_tl_sba_device_seq.inject_d_chan_intg_err;
-          end
-          m_tl_sba_device_seq.wait_for_sequence_state(UVM_FINISHED);
-        join_any
-        disable fork;
-      end
-    join_none
   endtask
 
   task read_dmcontrol(input bit backdoor, output dmcontrol_t value);
