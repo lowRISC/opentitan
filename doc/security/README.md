@@ -28,6 +28,10 @@ identity concepts are introduced in this document.
 Silicon designs for security devices require special guidelines to protect the designs against myriad attacks.
 To that end, the team established [Secure Hardware Design Guidelines][implementation_guidelines] which are followed when developing OpenTitan security IP.
 
+## [Penetrationtesting Framework][pentest_framework]
+
+To validate these physical security measures and logical guarantees, OpenTitan includes a dedicated [Penetration Testing Framework][pentest_framework]. This framework operates on target devices—both FPGA and silicon implementations—to conduct and automate side-channel analysis (SCA) and fault injection (FI) attacks against hardware components and the crypto library.
+
 ## Functional Guarantees
 
 At the functional level OpenTitan aims to provide the following guarantees:

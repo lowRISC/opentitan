@@ -580,6 +580,8 @@
 
   - [Lightweight Threat Model](./doc/security/threat_model/README.md)
 
+  - [Penetrationtest Framework](./doc/security/pentest_framework/README.md)
+
 - [Software](./doc/sections/software.md)
 
   - [Introduction](./sw/README.md)
