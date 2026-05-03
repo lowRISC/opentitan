@@ -425,7 +425,9 @@ class OTFIAsymCrypto:
         }
         self.target.write(json.dumps(input_data).encode("ascii"))
 
-    def handle_ed25519_verify(self, pubx, puby, r, s, message, message_len, cfg, trigger) -> None:
+    def handle_ed25519_verify(
+        self, pubx, puby, r, s, message, message_len, cfg, trigger
+    ) -> None:
         """Call the cryptolib Ed25519 verify.
 
         Args:
@@ -472,6 +474,28 @@ class OTFIAsymCrypto:
             "r": r,
             "s": s,
             "message": message,
+            "cfg": cfg,
+            "trigger": trigger,
+        }
+        self.target.write(json.dumps(input_data).encode("ascii"))
+
+    def handle_x25519_base_mult(self, scalar, cfg, trigger) -> None:
+        self._ujson_asym_crypto_fi_cmd()
+        self.target.write(json.dumps("X25519BaseMul").encode("ascii"))
+        input_data = {
+            "scalar": scalar,
+            "cfg": cfg,
+            "trigger": trigger,
+        }
+        self.target.write(json.dumps(input_data).encode("ascii"))
+
+    def handle_x25519_ecdh(self, private_key, public_x, public_y, cfg, trigger) -> None:
+        self._ujson_asym_crypto_fi_cmd()
+        self.target.write(json.dumps("X25519Ecdh").encode("ascii"))
+        input_data = {
+            "private_key": private_key,
+            "public_x": public_x,
+            "public_y": public_y,
             "cfg": cfg,
             "trigger": trigger,
         }

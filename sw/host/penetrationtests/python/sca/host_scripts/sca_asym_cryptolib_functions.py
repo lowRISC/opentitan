@@ -42,7 +42,9 @@ def char_rsa_dec(
     ot_prng = OTPRNG(target=target)
     ot_prng.seed_prng([1, 0, 0, 0])
     for _ in range(iterations):
-        asymsca.handle_rsa_dec(data, data_len, e, n, n_len, d, padding, hashing, mode, cfg, trigger)
+        asymsca.handle_rsa_dec(
+            data, data_len, e, n, n_len, d, padding, hashing, mode, cfg, trigger
+        )
         response = target.read_response()
     return response
 
@@ -81,7 +83,9 @@ def char_rsa_sign(
     ot_prng.seed_prng([1, 0, 0, 0])
 
     for _ in range(iterations):
-        asymsca.handle_rsa_sign(data, data_len, e, n, n_len, d, padding, hashing, cfg, trigger)
+        asymsca.handle_rsa_sign(
+            data, data_len, e, n, n_len, d, padding, hashing, cfg, trigger
+        )
         response = target.read_response()
     return response
 
@@ -447,5 +451,72 @@ def char_ed25519_sign(
     ) = asymsca.init()
     for _ in range(iterations):
         asymsca.handle_ed25519_sign(scalar, message, message_len, cfg, trigger)
+        response = target.read_response()
+    return response
+
+
+def char_x25519_base_mult_fvsr(
+    target, iterations, scalar, cfg, trigger, num_iterations, reset=False
+):
+    asymsca = OTAsymCrypto(target)
+    if reset:
+        target.reset_target()
+        target.dump_all()
+    (device_id, owner_page, boot_log, boot_measurements, version, cryptolib_version) = (
+        asymsca.init()
+    )
+    ot_prng = OTPRNG(target=target)
+    ot_prng.seed_prng([1, 0, 0, 0])
+
+    for _ in range(iterations):
+        asymsca.handle_x25519_base_mult_fvsr(scalar, cfg, trigger, num_iterations)
+        response = target.read_response(init_timeout=0.01 * num_iterations)
+    return response
+
+
+def char_x25519_base_mult_daisy(
+    target, iterations, scalar, cfg, trigger, num_iterations, reset=False
+):
+    asymsca = OTAsymCrypto(target)
+    if reset:
+        target.reset_target()
+        target.dump_all()
+    (device_id, owner_page, boot_log, boot_measurements, version, cryptolib_version) = (
+        asymsca.init()
+    )
+    for _ in range(iterations):
+        asymsca.handle_x25519_base_mult_daisy(scalar, cfg, trigger, num_iterations)
+        response = target.read_response(init_timeout=0.01 * num_iterations)
+    return response
+
+
+def char_x25519_point_mult(
+    target, iterations, scalar_alice, scalar_bob, cfg, trigger, reset=False
+):
+    asymsca = OTAsymCrypto(target)
+    if reset:
+        target.reset_target()
+        target.dump_all()
+    (device_id, owner_page, boot_log, boot_measurements, version, cryptolib_version) = (
+        asymsca.init()
+    )
+    for _ in range(iterations):
+        asymsca.handle_x25519_point_mult(scalar_alice, scalar_bob, cfg, trigger)
+        response = target.read_response()
+    return response
+
+
+def char_x25519_ecdh(
+    target, iterations, private_key, public_x, public_y, cfg, trigger, reset=False
+):
+    asymsca = OTAsymCrypto(target)
+    if reset:
+        target.reset_target()
+        target.dump_all()
+    (device_id, owner_page, boot_log, boot_measurements, version, cryptolib_version) = (
+        asymsca.init()
+    )
+    for _ in range(iterations):
+        asymsca.handle_x25519_ecdh(private_key, public_x, public_y, cfg, trigger)
         response = target.read_response()
     return response

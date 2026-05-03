@@ -95,6 +95,7 @@ cc_library(
         "//sw/device/tests/penetrationtests/firmware/lib:cryptolib_asym.h",
     ],
     deps = [
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/dif:rv_core_ibex",

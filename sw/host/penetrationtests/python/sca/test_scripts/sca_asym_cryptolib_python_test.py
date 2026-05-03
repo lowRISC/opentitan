@@ -371,7 +371,55 @@ class AsymCryptoScaTest(unittest.TestCase):
 
         # As the verify is done on the device after the sign, just check if the reported
         # status is valid.
-        utils.compare_json_data(actual_result_json, expected_result_json, sign_ignored_keys_set)
+        utils.compare_json_data(
+            actual_result_json, expected_result_json, sign_ignored_keys_set
+        )
+
+    def test_char_x25519_ecdh(self):
+        # Test vector from RFC 7748, Section 6.1
+        # https://datatracker.ietf.org/doc/html/rfc7748#section-6.1
+        # Alice's Private Key
+        private_key_bytes = bytes.fromhex(
+            "77076d0a7318a57d3c16c17251b26645df4c2f87ebc0992ab177fba51db92c2a"
+        )
+        private_key = list(private_key_bytes)
+
+        # Bob's Public Key
+        public_bob_bytes = bytes.fromhex(
+            "de9edb7d7b7dc1b4d35b61c2ece435373f8343c85b78674dadfc7e146f882b4f"
+        )
+        public_x = list(public_bob_bytes)
+        public_y = [0] * 32  # X25519 ignores Y
+        cfg = 0
+        trigger = 0
+
+        actual_result = sca_asym_cryptolib_functions.char_x25519_ecdh(
+            target,
+            iterations,
+            private_key,
+            public_x,
+            public_y,
+            cfg,
+            trigger,
+        )
+        actual_result_json = json.loads(actual_result)
+
+        # Expected Shared Secret K
+        expected_shared = list(
+            bytes.fromhex(
+                "4a5d9d5ba4ce2de1728e3bf480350f25e07e21c947d19e3376f09b3c1e161742"
+            )
+        )
+
+        expected_result_json = {
+            "status": 0,
+            "shared_key": expected_shared,
+            "cfg": 0,
+        }
+
+        utils.compare_json_data(
+            actual_result_json, expected_result_json, ignored_keys_set
+        )
 
 
 if __name__ == "__main__":

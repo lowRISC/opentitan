@@ -3,11 +3,11 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 /**
- * Entrypoint for 25519 ECDH (X25519) and ECDSA (ed25519) operations.
+ * Entrypoint for 25519 ECDH (X25519) and EdDSA (ed25519) operations.
  *
  * This binary has the following modes of operation:
  * 1. MODE_SIGN_PART1: generate a new keypair
- * 2. MODE_SIGN_PART2: generate an ECDSA signature using caller-provided secret key
+ * 2. MODE_SIGN_PART2: generate an EdDSA signature using caller-provided secret key
  */
 
 /**
@@ -48,13 +48,13 @@ start:
   lw    x2, 0(x2)
 
   addi  x3, x0, MODE_KEYGEN
-  beq   x2, x3, ecdsa_keygen
+  beq   x2, x3, ed25519_keygen
 
   addi  x3, x0, MODE_SIGN_STAGE1
-  beq   x2, x3, ecdsa_sign_compute_r
+  beq   x2, x3, ed25519_sign_compute_r
 
   addi  x3, x0, MODE_SIGN_STAGE2
-  beq   x2, x3, ecdsa_sign_compute_s
+  beq   x2, x3, ed25519_sign_compute_s
 
   addi  x3, x0, MODE_VERIFY
   beq   x2, x3, ed25519_verify
@@ -128,7 +128,7 @@ x25519_keygen:
  * clobbered registers: x2 to x3, w2 to w31
  * clobbered flag groups: FG0
  */
-ecdsa_keygen:
+ed25519_keygen:
   /* Zeroize w31 */
   bn.xor   w31, w31, w31
 
@@ -156,7 +156,7 @@ ecdsa_keygen:
  * clobbered registers: x2 to x3, w2 to w31
  * clobbered flag groups: FG0
  */
-ecdsa_sign_compute_r:
+ed25519_sign_compute_r:
   /* Zeroize w31 */
   bn.xor   w31, w31, w31
 
@@ -179,7 +179,7 @@ ecdsa_sign_compute_r:
  * clobbered registers: x2 to x4, x20 to x23, w2 to w31
  * clobbered flag groups: FG0
  */
-ecdsa_sign_compute_s:
+ed25519_sign_compute_s:
   /* Zeroize w31 */
   bn.xor   w31, w31, w31
 

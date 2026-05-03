@@ -4,6 +4,7 @@
 
 #include "sw/device/tests/penetrationtests/firmware/sca/cryptolib_sca_asym_impl.h"
 
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
@@ -837,6 +838,141 @@ status_t cryptolib_sca_ed25519_sign_impl(
   memset(uj_output->pubx, 0, ED25519_CMD_SCALAR_BYTES);
   memset(uj_output->puby, 0, ED25519_CMD_SCALAR_BYTES);
   memcpy(uj_output->pubx, public_key_data, ED25519_CMD_SCALAR_BYTES);
+
+  return OK_STATUS();
+}
+
+status_t cryptolib_sca_x25519_base_mul_impl(uint8_t scalar[X25519_CMD_BYTES],
+                                            uint8_t x[X25519_CMD_BYTES],
+                                            uint8_t y[X25519_CMD_BYTES],
+                                            size_t cfg_in, size_t *cfg_out,
+                                            size_t trigger) {
+  uint32_t private_keyblob[kPentestEd25519MaskedPrivateKeyWords * 2];
+  memset(private_keyblob, 0, sizeof(private_keyblob));
+  memcpy(private_keyblob, scalar, X25519_CMD_BYTES);
+
+  otcrypto_blinded_key_t private_key = {
+      .config =
+          {
+              .version = kOtcryptoLibVersion1,
+              .key_mode = kOtcryptoKeyModeX25519,
+              .key_length = X25519_CMD_BYTES,
+              .hw_backed = kHardenedBoolFalse,
+              .exportable = kHardenedBoolTrue,
+              .security_level = kOtcryptoKeySecurityLevelHigh,
+          },
+      .keyblob_length = sizeof(private_keyblob),
+      .keyblob = private_keyblob,
+  };
+  private_key.checksum = integrity_blinded_checksum(&private_key);
+
+  uint32_t public_key_buf[X25519_CMD_BYTES / sizeof(uint32_t)];
+  memset(public_key_buf, 0, sizeof(public_key_buf));
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeX25519,
+      .key_length = X25519_CMD_BYTES,
+      .key = public_key_buf,
+  };
+
+  pentest_set_trigger_high();
+  TRY(otcrypto_x25519_keygen(&private_key, &public_key));
+  pentest_set_trigger_low();
+
+  *cfg_out = 0;
+  memset(x, 0, X25519_CMD_BYTES);
+  memset(y, 0, X25519_CMD_BYTES);
+  memcpy(x, public_key.key, X25519_CMD_BYTES);
+
+  return OK_STATUS();
+}
+
+status_t cryptolib_sca_x25519_ecdh_impl(
+    cryptolib_sca_asym_x25519_ecdh_in_t uj_input,
+    cryptolib_sca_asym_x25519_ecdh_out_t *uj_output) {
+  uint32_t private_keyblob[kPentestEd25519MaskedPrivateKeyWords * 2];
+  memset(private_keyblob, 0, sizeof(private_keyblob));
+  memcpy(private_keyblob, uj_input.private_key, X25519_CMD_BYTES);
+
+  otcrypto_blinded_key_t private_key = {
+      .config =
+          {
+              .version = kOtcryptoLibVersion1,
+              .key_mode = kOtcryptoKeyModeX25519,
+              .key_length = X25519_CMD_BYTES,
+              .hw_backed = kHardenedBoolFalse,
+              .exportable = kHardenedBoolTrue,
+              .security_level = kOtcryptoKeySecurityLevelHigh,
+          },
+      .keyblob_length = sizeof(private_keyblob),
+      .keyblob = private_keyblob,
+  };
+  private_key.checksum = integrity_blinded_checksum(&private_key);
+
+  uint32_t public_key_buf[X25519_CMD_BYTES / sizeof(uint32_t)];
+  memcpy(public_key_buf, uj_input.public_x, X25519_CMD_BYTES);
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeX25519,
+      .key_length = sizeof(public_key_buf),
+      .key = public_key_buf,
+  };
+  public_key.checksum = integrity_unblinded_checksum(&public_key);
+
+  uint32_t shared_secretblob[16];
+  memset(shared_secretblob, 0, sizeof(shared_secretblob));
+  otcrypto_blinded_key_t shared_secret = {
+      .config =
+          {
+              .version = kOtcryptoLibVersion1,
+              .key_mode = kOtcryptoKeyModeAesCtr,
+              .key_length = X25519_CMD_BYTES,
+              .hw_backed = kHardenedBoolFalse,
+              .exportable = kHardenedBoolTrue,
+              .security_level = kOtcryptoKeySecurityLevelHigh,
+          },
+      .keyblob_length = sizeof(shared_secretblob),
+      .keyblob = shared_secretblob,
+  };
+
+  pentest_set_trigger_high();
+  TRY(otcrypto_x25519(&private_key, &public_key, &shared_secret));
+  pentest_set_trigger_low();
+
+  uint32_t ss_share0[8];
+  uint32_t ss_share1[8];
+  otcrypto_word32_buf_t ss_share0_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share0, 8);
+  otcrypto_word32_buf_t ss_share1_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share1, 8);
+
+  TRY(otcrypto_export_blinded_key(&shared_secret, &ss_share0_buf,
+                                  &ss_share1_buf));
+
+  uint32_t ss_unmasked[8];
+  TRY(hardened_add(ss_share0, ss_share1, 8, ss_unmasked));
+
+  uj_output->cfg = 0;
+  memset(uj_output->shared_key, 0, X25519_CMD_BYTES);
+  memcpy(uj_output->shared_key, ss_unmasked, X25519_CMD_BYTES);
+
+  return OK_STATUS();
+}
+
+status_t cryptolib_sca_x25519_point_mul_impl(
+    cryptolib_sca_asym_x25519_point_mul_in_t uj_input,
+    cryptolib_sca_asym_x25519_point_mul_out_t *uj_output) {
+  cryptolib_sca_asym_x25519_ecdh_in_t ecdh_in;
+  memcpy(ecdh_in.private_key, uj_input.scalar_alice, X25519_CMD_BYTES);
+  memcpy(ecdh_in.public_x, uj_input.scalar_bob, X25519_CMD_BYTES);
+  memset(ecdh_in.public_y, 0, X25519_CMD_BYTES);
+  ecdh_in.cfg = uj_input.cfg;
+  ecdh_in.trigger = uj_input.trigger;
+
+  cryptolib_sca_asym_x25519_ecdh_out_t ecdh_out;
+  TRY(cryptolib_sca_x25519_ecdh_impl(ecdh_in, &ecdh_out));
+
+  memcpy(uj_output->x, ecdh_out.shared_key, X25519_CMD_BYTES);
+  memset(uj_output->y, 0, X25519_CMD_BYTES);
+  uj_output->cfg = ecdh_out.cfg;
 
   return OK_STATUS();
 }

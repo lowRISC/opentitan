@@ -408,7 +408,17 @@ def char_ed25519_sign(
 
 
 def char_ed25519_verify(
-    target, iterations, pubx, puby, r, s, message, message_len, cfg, trigger, reset=False
+    target,
+    iterations,
+    pubx,
+    puby,
+    r,
+    s,
+    message,
+    message_len,
+    cfg,
+    trigger,
+    reset=False,
 ):
     asymfi = OTFIAsymCrypto(target)
     if reset:
@@ -427,7 +437,9 @@ def char_ed25519_verify(
         cryptolib_version,
     ) = asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
     for _ in range(iterations):
-        asymfi.handle_ed25519_verify(pubx, puby, r, s, message, message_len, cfg, trigger)
+        asymfi.handle_ed25519_verify(
+            pubx, puby, r, s, message, message_len, cfg, trigger
+        )
         response = target.read_response()
     return response
 
@@ -453,5 +465,31 @@ def char_p384_verify(
     ) = asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
     for _ in range(iterations):
         asymfi.handle_p384_verify(pubx, puby, r, s, message, cfg, trigger)
+        response = target.read_response()
+    return response
+
+
+def char_x25519_base_mult(target, iterations, scalar, cfg, trigger, reset=False):
+    asymfi = OTFIAsymCrypto(target)
+    if reset:
+        target.reset_target()
+        target.dump_all()
+    asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
+    for _ in range(iterations):
+        asymfi.handle_x25519_base_mult(scalar, cfg, trigger)
+        response = target.read_response()
+    return response
+
+
+def char_x25519_ecdh(
+    target, iterations, private_key, public_x, public_y, cfg, trigger, reset=False
+):
+    asymfi = OTFIAsymCrypto(target)
+    if reset:
+        target.reset_target()
+        target.dump_all()
+    asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
+    for _ in range(iterations):
+        asymfi.handle_x25519_ecdh(private_key, public_x, public_y, cfg, trigger)
         response = target.read_response()
     return response

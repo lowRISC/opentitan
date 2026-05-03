@@ -374,3 +374,52 @@ class OTAsymCrypto:
             "trigger": trigger,
         }
         self.target.write(json.dumps(input_data).encode("ascii"))
+
+    def handle_x25519_base_mult_fvsr(
+        self, scalar, cfg, trigger, num_iterations
+    ) -> None:
+        self._ujson_asym_crypto_sca_cmd()
+        self.target.write(json.dumps("X25519BaseMulFvsr").encode("ascii"))
+        input_data = {
+            "scalar": scalar,
+            "cfg": cfg,
+            "trigger": trigger,
+            "num_iterations": num_iterations,
+        }
+        self.target.write(json.dumps(input_data).encode("ascii"))
+
+    def handle_x25519_base_mult_daisy(
+        self, scalar, cfg, trigger, num_iterations
+    ) -> None:
+        self._ujson_asym_crypto_sca_cmd()
+        self.target.write(json.dumps("X25519BaseMulDaisy").encode("ascii"))
+        input_data = {
+            "scalar": scalar,
+            "cfg": cfg,
+            "trigger": trigger,
+            "num_iterations": num_iterations,
+        }
+        self.target.write(json.dumps(input_data).encode("ascii"))
+
+    def handle_x25519_point_mult(self, scalar_alice, scalar_bob, cfg, trigger) -> None:
+        self._ujson_asym_crypto_sca_cmd()
+        self.target.write(json.dumps("X25519PointMul").encode("ascii"))
+        input_data = {
+            "scalar_alice": scalar_alice,
+            "scalar_bob": scalar_bob,
+            "cfg": cfg,
+            "trigger": trigger,
+        }
+        self.target.write(json.dumps(input_data).encode("ascii"))
+
+    def handle_x25519_ecdh(self, private_key, public_x, public_y, cfg, trigger) -> None:
+        self._ujson_asym_crypto_sca_cmd()
+        self.target.write(json.dumps("X25519Ecdh").encode("ascii"))
+        input_data = {
+            "private_key": private_key,
+            "public_x": public_x,
+            "public_y": public_y,
+            "cfg": cfg,
+            "trigger": trigger,
+        }
+        self.target.write(json.dumps(input_data).encode("ascii"))
