@@ -272,6 +272,56 @@ status_t curve25519_verify_start(
 OT_WARN_UNUSED_RESULT
 status_t curve25519_verify_finalize(hardened_bool_t *result);
 
+/**
+ * Start an async X25519 key exchange operation on OTBN.
+ *
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * @param private_key The unmasked private key.
+ * @param public_key The public key from the other party.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t curve25519_x25519_start(
+    const uint32_t private_key[kCurve25519ScalarWords],
+    const uint32_t public_key[kCurve25519PointWords]);
+
+/**
+ * Finish an async X25519 key exchange operation on OTBN.
+ *
+ * Blocks until OTBN is idle.
+ *
+ * @param shared_secret Output buffer for the computed shared secret.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t curve25519_x25519_finalize(
+    uint32_t shared_secret[kCurve25519PointWords]);
+
+/**
+ * Start an async X25519 keygen operation on OTBN.
+ *
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * @param private_key The unmasked private key.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t curve25519_x25519_keygen_start(
+    const uint32_t private_key[kCurve25519ScalarWords]);
+
+/**
+ * Finish an async X25519 keygen operation on OTBN.
+ *
+ * Blocks until OTBN is idle.
+ *
+ * @param public_key Output buffer for the generated public key.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t curve25519_x25519_keygen_finalize(
+    uint32_t public_key[kCurve25519PointWords]);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
