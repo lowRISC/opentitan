@@ -25,7 +25,6 @@
 #include "rsa.h"
 #include "sha2.h"
 #include "sha3.h"
-#include "x25519.h"
 
 /**
  * @file

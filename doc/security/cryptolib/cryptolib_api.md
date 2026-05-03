@@ -498,8 +498,8 @@ For Ed25519 (a curve-specialized version of EdDSA, the Edwards curve digital sig
 For x25519 key exchange, the cryptography library supports keypair generation and shared-key generation.
 Each party should generate a key pair, exchange public keys, and then generate the shared key using their own private key and the other party's public key.
 
-{{#header-snippet sw/device/lib/crypto/include/x25519.h otcrypto_x25519_keygen }}
-{{#header-snippet sw/device/lib/crypto/include/x25519.h otcrypto_x25519 }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_x25519_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_x25519 }}
 
 ### ECC Asynchronous API
 
@@ -551,11 +551,11 @@ Each party should generate a key pair, exchange public keys, and then generate t
 
 #### X25519
 
-{{#header-snippet sw/device/lib/crypto/include/x25519.h otcrypto_x25519_keygen_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/x25519.h otcrypto_x25519_keygen_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_x25519_keygen_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_x25519_keygen_async_finalize }}
 
-{{#header-snippet sw/device/lib/crypto/include/x25519.h otcrypto_x25519_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/x25519.h otcrypto_x25519_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_x25519_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_x25519_async_finalize }}
 
 ### Generic ECC Functions
 

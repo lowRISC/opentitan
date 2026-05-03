@@ -3,7 +3,7 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 /**
- * Entrypoint for P-256 ECDH and ECDSA operations.
+ * Entrypoint for 25519 ECDH (X25519) and ECDSA (ed25519) operations.
  *
  * This binary has the following modes of operation:
  * 1. MODE_SIGN_PART1: generate a new keypair
@@ -27,6 +27,8 @@
 .equ MODE_SIGN_STAGE1, 0x77D
 .equ MODE_SIGN_STAGE2, 0x397
 .equ MODE_VERIFY, 0x5F2
+.equ MODE_X25519, 0x4B1
+.equ MODE_X25519_KEYGEN, 0x5A9
 
 /**
  * Make the mode constants visible to Ibex.
@@ -35,6 +37,8 @@
 .globl MODE_SIGN_STAGE1
 .globl MODE_SIGN_STAGE2
 .globl MODE_VERIFY
+.globl MODE_X25519
+.globl MODE_X25519_KEYGEN
 
 .section .text.start
 .globl start
@@ -55,9 +59,61 @@ start:
   addi  x3, x0, MODE_VERIFY
   beq   x2, x3, ed25519_verify
 
+  addi  x3, x0, MODE_X25519
+  beq   x2, x3, x25519
+
+  addi  x3, x0, MODE_X25519_KEYGEN
+  beq   x2, x3, x25519_keygen
+
   /* Invalid mode; fail. */
   unimp
   unimp
+
+x25519:
+  /* Zeroize w31 */
+  bn.xor   w31, w31, w31
+
+  /* Load private key into w8 */
+  li x2, 8
+  la x3, x25519_private_key
+  bn.lid x2, 0(x3)
+
+  /* Load public key into w9 */
+  li x2, 9
+  la x3, x25519_public_key
+  bn.lid x2, 0(x3)
+
+  /* Call x25519 basepoint multiplication */
+  jal x1, X25519
+
+  /* Store shared key from w22 */
+  li x2, 22
+  la x3, x25519_shared_key
+  bn.sid x2, 0(x3)
+
+  ecall
+
+x25519_keygen:
+  /* Zeroize w31 */
+  bn.xor   w31, w31, w31
+
+  /* Load private key into w8 */
+  li x2, 8
+  la x3, x25519_private_key
+  bn.lid x2, 0(x3)
+
+  /* Set public key to 9 */
+  bn.addi w9, w31, 9
+
+  /* Call x25519 */
+  jal x1, X25519
+
+  /* Store public key from w22 */
+  li x2, 22
+  la x3, x25519_public_key
+  bn.sid x2, 0(x3)
+
+  ecall
   unimp
 
 /**
@@ -220,3 +276,21 @@ ed25519_r0:
 .globl ed25519_r1
 ed25519_r1:
   .zero 96
+
+/* X25519 public key */
+.balign 32
+.globl x25519_public_key
+x25519_public_key:
+  .zero 32
+
+/* Shared key (256 bits). Output for ecdh. */
+.balign 32
+.globl x25519_shared_key
+x25519_shared_key:
+  .zero 32
+
+/* X25519 Private Key (256 bits). Input for ecdh and keygen. */
+.balign 32
+.globl x25519_private_key
+x25519_private_key:
+  .zero 32
