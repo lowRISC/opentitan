@@ -25,6 +25,17 @@ main:
   jal     x1, run_rfc_test1
   jal     x1, run_test_negative
 
+  /* Check if there were any failures.
+     If w0 != 0, fail the test deliberately. */
+  bn.cmp  w0, w31
+  csrrs   x2, FG0, x0
+  andi    x2, x2, 8
+  bne     x2, x0, test_pass
+
+  /* Execute an illegal instruction to fail the simulation */
+  unimp
+
+test_pass:
   ecall
 
 /**
@@ -38,30 +49,38 @@ main:
  * @param[in]  dmem[ed25519_sig_R]: R, first half of signature for test
  * @param[in]  dmem[ed25519_sig_S]: S, second half of signature for test
  * @param[in]  dmem[ed25519_public_key]: A, public key for test
- * @param[out] w0: updatedtest failure counter
- *
- * clobbered registers: x2 to x4, x20 to x23, w0, w2 to w30
- * clobbered flag groups: FG0
+ * @param[out] w0: updated test failure counter
  */
 run_rfc_test1:
-  /* Attempt to verify the signature.
-       dmem[ed25519_verify_result] <= SUCCESS or FAILURE */
+  bn.addi  w30, w31, 38
+
   jal      x1, ed25519_verify_var
 
-  /* Load SUCCESS magic value. */
-  li       x21, 0xf77fe650
-
-  /* Load the verification result.
-       x3 <= dmem[ed25519_verify_result] */
+  /* Check that the library didn't fail during point decoding. */
+  li       x21, 0x739
   la       x2, ed25519_verify_result
   lw       x3, 0(x2)
+  bne      x3, x21, test1_fail
 
-  /* Increment failure counter if the test failed.
-     w0 <= w0 if x3 == SUCCESS, else w0 + 1 */
-  beq      x3, x21, test1_success
+  /* Check that the curve equation matches (LHS == RHS).
+     The library writes these to memory but expects the host to compare them. */
+  li       x2, 2
+  la       x3, ed25519_verify_lhs
+  bn.lid   x2, 0(x3)
+
+  li       x2, 3
+  la       x3, ed25519_verify_rhs
+  bn.lid   x2, 0(x3)
+
+  bn.cmp   w2, w3
+  csrrs    x2, FG0, x0
+  andi     x2, x2, 8
+  beq      x2, x0, test1_fail  /* If Z==0 (LHS != RHS), the signature is invalid */
+
+  ret
+
+test1_fail:
   bn.addi  w0, w0, 1
-  test1_success:
-
   ret
 
 /**
@@ -75,10 +94,7 @@ run_rfc_test1:
  * @param[in]  dmem[ed25519_sig_R]: R, first half of signature for test
  * @param[in]  dmem[ed25519_sig_S]: S, second half of signature for test
  * @param[in]  dmem[ed25519_public_key]: A, public key for test
- * @param[out] w0: updatedtest failure counter
- *
- * clobbered registers: x2 to x4, x20 to x23, w0, w2 to w30
- * clobbered flag groups: FG0
+ * @param[out] w0: updated test failure counter
  */
 run_test_negative:
   /* Reverse R (signature point) and A (public key point). This way, both are
@@ -105,24 +121,37 @@ run_test_negative:
   la       x2, ed25519_public_key
   bn.sid   x3, 0(x2)
 
-  /* Attempt to verify the signature.
-       dmem[ed25519_verify_result] <= SUCCESS or FAILURE */
+  /* Ensure w30 is 38. */
+  bn.addi  w30, w31, 38
+
   jal      x1, ed25519_verify_var
 
-  /* Load FAILURE magic value. */
-  li       x22, 0xeda2bfaf
-
-  /* Load the verification result.
-       x3 <= dmem[ed25519_verify_result] */
+  /* Check that the library successfully decoded both points (returns SUCCESS). */
+  li       x21, 0x739
   la       x2, ed25519_verify_result
   lw       x3, 0(x2)
+  bne      x3, x21, test_negative_fail_early
 
-  /* Increment failure counter if the signature passed.
-     w0 <= w0 if x3 == FAILURE, else w0 + 1 */
-  beq      x3, x22, test_negative_success
+  /* Check that the curve equation DOES NOT match (LHS != RHS). */
+  li       x2, 2
+  la       x3, ed25519_verify_lhs
+  bn.lid   x2, 0(x3)
+
+  li       x2, 3
+  la       x3, ed25519_verify_rhs
+  bn.lid   x2, 0(x3)
+
+  bn.cmp   w2, w3
+  csrrs    x2, FG0, x0
+  andi     x2, x2, 8
+  bne      x2, x0, test_negative_fail  /* If Z==1 (LHS == RHS), test failed */
+
+  ret
+
+test_negative_fail_early:
+  /* If the library failed decoding, it's a bug in the test vectors since R and A are valid points. */
+test_negative_fail:
   bn.addi  w0, w0, 1
-  test_negative_success:
-
   ret
 
 .data
