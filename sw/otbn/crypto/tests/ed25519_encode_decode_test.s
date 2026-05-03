@@ -27,11 +27,16 @@ main:
   /* w19 <= 19 */
   bn.addi w19, w31, 19
 
+  /* w30 <= 38. Field arithmetic (fe_mul, fe_square) requires 38
+     in w30 to perform modulo reduction for p = 2^255 - 19. */
+  bn.addi w30, w31, 38
+
   /* Initialize failure counter to 0. */
   bn.mov  w0, w31
 
-  /* w30 <= dmem[ed25519_d] = d (curve parameter) */
-  li      x2, 30
+  /* w29 <= dmem[ed25519_d] = d (curve parameter) */
+  /* affine_decode_var expects d in w29. */
+  li      x2, 29
   la      x3, ed25519_d
   bn.lid  x2, 0(x3)
 
@@ -39,6 +44,17 @@ main:
   jal     x1, run_encode_decode_test
   jal     x1, run_rfc_decode_test
 
+  /* Check if there were any failures.
+     If w0 != 0, fail the test deliberately. */
+  bn.cmp  w0, w31
+  csrrs   x2, FG0, x0
+  andi    x2, x2, 8
+  bne     x2, x0, test_pass
+
+  /* Execute an illegal instruction to fail the simulation */
+  unimp
+
+test_pass:
   ecall
 
 /**
@@ -48,7 +64,8 @@ main:
  *
  * @param[in]     w19: constant, w19 = 19
  * @param[in]     MOD: p, modulus = 2^255 - 19
- * @param[in]     w30: constant, w30 = (2*d) mod p, d = (-121665/121666) mod p
+ * @param[in]     w29: constant, w29 = d mod p, d = (-121665/121666) mod p
+ * @param[in]     w30: constant, 38
  * @param[in]     w31: all-zero
  * @param[in,out] w0:  test failure counter
  *
@@ -78,7 +95,7 @@ run_encode_decode_test:
   jal     x1, affine_decode_var
 
   /* Load the SUCCESS magic value. */
-  li      x2, 0xf77fe650
+  li      x2, 0x739
 
   /* If decoding did not succeed, increment the failure counter and finish. */
   bne     x20, x2, encode_decode_failed
@@ -111,7 +128,8 @@ run_encode_decode_test:
  *
  * @param[in]     w19: constant, w19 = 19
  * @param[in]     MOD: p, modulus = 2^255 - 19
- * @param[in]     w30: constant, w30 = (2*d) mod p, d = (-121665/121666) mod p
+ * @param[in]     w29: constant, w29 = d mod p, d = (-121665/121666) mod p
+ * @param[in]     w30: constant, 38
  * @param[in]     w31: all-zero
  * @param[in,out] w0:  test failure counter
  *
@@ -131,7 +149,7 @@ run_rfc_decode_test:
   jal     x1, affine_decode_var
 
   /* Load the SUCCESS magic value. */
-  li      x2, 0xf77fe650
+  li      x2, 0x739
 
   /* If decoding did not succeed, increment the failure counter and finish. */
   bne     x20, x2, rfc_decode_failed

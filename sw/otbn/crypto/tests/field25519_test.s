@@ -15,6 +15,9 @@ main:
   /* Prepare all-zero register. */
   bn.xor w31, w31, w31
 
+  /* Initialize failure counter to 0. */
+  bn.mov w0, w31
+
   /* MOD <= dmem[modulus] = p */
   li      x2, 2
   la      x3, modulus
@@ -36,6 +39,17 @@ main:
   /* Call inverse test. */
   jal     x1, fe_inv_test
 
+  /* Check if there were any failures.
+     If w0 != 0, fail the test deliberately. */
+  bn.cmp  w0, w31
+  csrrs   x2, FG0, x0
+  andi    x2, x2, 8
+  bne     x2, x0, test_pass
+
+  /* Execute an illegal instruction to fail the simulation */
+  unimp
+
+test_pass:
   ecall
 
 fe_mul_test:
