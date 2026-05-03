@@ -31,7 +31,6 @@ ot_static_library(
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/crypto/impl:sha3",
-        "//sw/device/lib/crypto/impl:x25519",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )

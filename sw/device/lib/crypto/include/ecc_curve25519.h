@@ -237,6 +237,93 @@ OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_verify_async_finalize(
     hardened_bool_t *verification_result);
 
+/**
+ * Generates an X25519 public key from a given private key.
+ *
+ * The private key must be a pre-existing 32-byte X25519 seed with a valid
+ * checksum. The public key is derived by clamping the private key according
+ * to RFC 7748 and multiplying it by the X25519 base point.
+ *
+ * @param private_key Pointer to the blinded private key struct.
+ * @param[out] public_key Pointer to the unblinded public key struct.
+ * @return Result of the X25519 key generation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_x25519_keygen(otcrypto_blinded_key_t *private_key,
+                                         otcrypto_unblinded_key_t *public_key);
+
+/**
+ * Performs X25519 key exchange.
+ *
+ * Computes a shared secret by multiplying the provided public key from the
+ * other party by the caller's private key.
+ *
+ * @param private_key Pointer to the blinded private key struct.
+ * @param public_key Pointer to the unblinded public key struct from the other
+ * party.
+ * @param[out] shared_secret Pointer to the blinded shared secret struct.
+ * @return Result of the X25519 key exchange.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_x25519(const otcrypto_blinded_key_t *private_key,
+                                  const otcrypto_unblinded_key_t *public_key,
+                                  otcrypto_blinded_key_t *shared_secret);
+
+/**
+ * Starts asynchronous key generation for X25519.
+ *
+ * See `otcrypto_x25519_keygen` for requirements on input values.
+ *
+ * @param private_key Pointer to the blinded private key struct.
+ * @return Result of asynchronous X25519 keygen start operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_x25519_keygen_async_start(
+    const otcrypto_blinded_key_t *private_key);
+
+/**
+ * Finalizes asynchronous key generation for X25519.
+ *
+ * See `otcrypto_x25519_keygen` for requirements on input values.
+ *
+ * May block until the operation is complete.
+ *
+ * @param private_key Pointer to the blinded private key struct.
+ * @param[out] public_key Pointer to the unblinded public key struct.
+ * @return Result of asynchronous X25519 keygen finalize operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_x25519_keygen_async_finalize(
+    otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key);
+
+/**
+ * Starts asynchronous X25519 key exchange.
+ *
+ * See `otcrypto_x25519` for requirements on input values.
+ *
+ * @param private_key Pointer to the blinded private key struct.
+ * @param public_key Pointer to the unblinded public key struct.
+ * @return Result of asynchronous X25519 start operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_x25519_async_start(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_unblinded_key_t *public_key);
+
+/**
+ * Finalizes asynchronous X25519 key exchange.
+ *
+ * See `otcrypto_x25519` for requirements on input values.
+ *
+ * May block until the operation is complete.
+ *
+ * @param[out] shared_secret Pointer to the blinded shared secret struct.
+ * @return Result of asynchronous X25519 finalize operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_x25519_async_finalize(
+    otcrypto_blinded_key_t *shared_secret);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

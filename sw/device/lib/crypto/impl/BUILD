@@ -425,17 +425,6 @@ cc_library(
 )
 
 cc_library(
-    name = "x25519",
-    srcs = ["x25519.c"],
-    hdrs = ["//sw/device/lib/crypto/include:x25519.h"],
-    target_compatible_with = [OPENTITAN_CPU],
-    deps = [
-        ":status",
-        "//sw/device/lib/crypto/include:datatypes",
-    ],
-)
-
-cc_library(
     name = "entropy_src",
     srcs = ["entropy_src.c"],
     hdrs = ["//sw/device/lib/crypto/include:entropy_src.h"],

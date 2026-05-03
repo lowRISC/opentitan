@@ -54,7 +54,6 @@ cc_library(
         "rsa.h",
         "sha2.h",
         "sha3.h",
-        "x25519.h",
     ],
     defines = ["OTCRYPTO_IN_REPO=1"] + select({
         ":disable_buf_integrity_checks": ["OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS"],
@@ -93,7 +92,6 @@ cc_library(
         "rsa.h",
         "sha2.h",
         "sha3.h",
-        "x25519.h",
         "//sw/device/lib/crypto/include/freestanding:absl_status.h",
         "//sw/device/lib/crypto/include/freestanding:defs.h",
         "//sw/device/lib/crypto/include/freestanding:hardened.h",

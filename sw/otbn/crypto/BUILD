@@ -63,6 +63,7 @@ otbn_binary(
         ":ed25519",
         ":ed25519_scalar",
         ":field25519",
+        ":x25519",
     ],
 )
 
