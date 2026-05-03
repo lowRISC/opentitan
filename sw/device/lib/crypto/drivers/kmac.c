@@ -613,16 +613,19 @@ static status_t kmac_write_key_block(kmac_blinded_key_t *key) {
  * @param message Input message string.
  * @param message_len Message length in bytes.
  * @param digest The struct to which the result will be written.
- * @param digest_len_words Requested digest length in 32-bit words.
+ * @param digest_len_bytes Requested digest length in bytes.
  * @param masked_digest Whether to return the digest in two shares.
  * @return Error code.
  */
 OT_WARN_UNUSED_RESULT
 static status_t kmac_process_msg_blocks(
     kmac_operation_t operation, const otcrypto_const_byte_buf_t *message,
-    uint32_t *digest, size_t digest_len_words, hardened_bool_t masked_digest) {
+    uint32_t *digest, size_t digest_len_bytes, hardened_bool_t masked_digest) {
   // Block until KMAC is idle.
   HARDENED_TRY(wait_status_bit(KMAC_STATUS_SHA3_IDLE_BIT, 1));
+
+  size_t digest_len_words =
+      (digest_len_bytes + sizeof(uint32_t) - 1) / sizeof(uint32_t);
 
   // Issue the start command, so that messages written to MSG_FIFO are forwarded
   // to Keccak
@@ -660,10 +663,11 @@ static status_t kmac_process_msg_blocks(
 
   // If operation=KMAC, then we need to write `right_encode(digest->len)`
   if (operation == kKmacOperationKmac) {
-    uint32_t digest_len_bits = 8 * sizeof(uint32_t) * digest_len_words;
-    if (digest_len_bits / (8 * sizeof(uint32_t)) != digest_len_words) {
-      // COVERAGE (SW ERR) This is an internal function, we only provide it
-      // valid inputs.
+    uint32_t digest_len_bits = 8 * digest_len_bytes;
+    // Check for overflow, i.e., when the input buffer is too large.
+    if (digest_len_bits / 8 != digest_len_bytes) {
+      // COVERAGE (SW ERR) This is only triggered if the input length exceeds
+      // the uint32_t range.
       return OTCRYPTO_BAD_ARGS;
     }
 
@@ -761,6 +765,16 @@ static status_t kmac_process_msg_blocks(
                                    KMAC_CMD_CMD_VALUE_DONE);
   abs_mmio_write32(kKmacBaseAddr + KMAC_CMD_REG_OFFSET, cmd_reg);
 
+  // Zero out the trailing bytes in the final word.
+  size_t remainder_bytes = digest_len_bytes % sizeof(uint32_t);
+  if (remainder_bytes > 0) {
+    uint32_t mask = (1U << (remainder_bytes * 8)) - 1;
+    digest[digest_len_words - 1] &= mask;
+    if (launder32(masked_digest) == kHardenedBoolTrue) {
+      digest[2 * digest_len_words - 1] &= mask;
+    }
+  }
+
   // Verify the input buffer
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(message));
 
@@ -793,7 +807,8 @@ static status_t hash(kmac_operation_t operation, kmac_security_str_t strength,
   HARDENED_TRY(kmac_init(operation, strength,
                          /*hw_backed=*/kHardenedBoolFalse));
 
-  return kmac_process_msg_blocks(operation, message, digest, digest_wordlen,
+  return kmac_process_msg_blocks(operation, message, digest,
+                                 digest_wordlen * sizeof(uint32_t),
                                  /*masked_digest=*/kHardenedBoolFalse);
 }
 

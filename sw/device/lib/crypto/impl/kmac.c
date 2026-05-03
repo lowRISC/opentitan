@@ -38,8 +38,10 @@ otcrypto_status_t otcrypto_kmac(
   }
 
   // Ensure that tag buffer length and `required_output_len` match each other.
-  if (required_output_len != tag->len * sizeof(uint32_t) ||
-      required_output_len == 0) {
+  size_t required_output_words =
+      (required_output_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
+
+  if (tag->len != required_output_words || required_output_len == 0) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -95,7 +97,7 @@ otcrypto_status_t otcrypto_kmac(
                                  /*masked_digest=*/kHardenedBoolFalse,
                                  input_message, customization_string->data,
                                  customization_string->len, tag->data,
-                                 tag->len));
+                                 required_output_len));
       key_mode_used = launder32(key_mode_used) | kOtcryptoKeyModeKmac128;
       break;
     case kOtcryptoKeyModeKmac256:
@@ -103,7 +105,7 @@ otcrypto_status_t otcrypto_kmac(
                                  /*masked_digest=*/kHardenedBoolFalse,
                                  input_message, customization_string->data,
                                  customization_string->len, tag->data,
-                                 tag->len));
+                                 required_output_len));
       key_mode_used = launder32(key_mode_used) | kOtcryptoKeyModeKmac256;
       break;
     default:

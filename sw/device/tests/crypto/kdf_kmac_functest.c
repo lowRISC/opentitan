@@ -183,6 +183,52 @@ static status_t run_kmac_kdf_negative_tests(void) {
   return OTCRYPTO_OK;
 }
 
+/**
+ * Verify functionality of generating non-word-aligned output keys.
+ */
+static status_t run_kmac_kdf_non_word_aligned_test(void) {
+  LOG_INFO("Running KMAC KDF non-word-aligned length test");
+
+  kdf_kmac_test_vector_t *vec = &kKdfTestVectors[0];
+
+  // Request an odd byte length (e.g. 1 byte less than standard word alignment)
+  size_t exact_byte_len = (vec->expected_output.len * sizeof(uint32_t)) - 1;
+
+  otcrypto_key_config_t okm_config = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeKdfKmac128,
+      .key_length = exact_byte_len,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolTrue,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+
+  size_t keyblob_words = keyblob_num_words(okm_config);
+  uint32_t km_buffer[keyblob_words];
+
+  otcrypto_blinded_key_t output_key = {
+      .config = okm_config,
+      .keyblob = km_buffer,
+      .keyblob_length = sizeof(km_buffer),
+  };
+
+  vec->key_derivation_key.checksum =
+      integrity_blinded_checksum(&vec->key_derivation_key);
+
+  otcrypto_const_byte_buf_t label_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, vec->label.data, vec->label.len);
+  otcrypto_const_byte_buf_t context_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, vec->context.data, vec->context.len);
+
+  TRY(otcrypto_kmac_kdf(&vec->key_derivation_key, &label_buf, &context_buf,
+                        &output_key));
+
+  HARDENED_CHECK_EQ(integrity_blinded_key_check(&output_key),
+                    kHardenedBoolTrue);
+
+  return OTCRYPTO_OK;
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   LOG_INFO("Testing cryptolib KMAC-KDF driver.");
@@ -199,6 +245,10 @@ bool test_main(void) {
              current_test_vector->vector_identifier);
     EXECUTE_TEST(test_result, run_test_vector);
   }
+
+  EXECUTE_TEST(test_result, run_kmac_kdf_non_word_aligned_test);
+
   EXECUTE_TEST(test_result, run_kmac_kdf_negative_tests);
+
   return status_ok(test_result);
 }

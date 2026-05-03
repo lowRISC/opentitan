@@ -235,10 +235,10 @@ status_t kmac_cshake_256(const otcrypto_const_byte_buf_t *message,
  * With SW-provided keys, `key->hw_backed` must be `kHardenedBoolFalse`, `share`
  * pointers must be correctly configured and `len` must match the key length.
  *
- * The caller must ensure that `digest_len` words are allocated at the location
+ * The caller must ensure that `digest_len` bytes are allocated at the location
  * pointed to by `digest`. `cust_str_len` must not exceed
  * `kKmacCustStrMaxSize`. If `masked_digest` is true, the `digest` buffer must
- * have enough space for 2x `digest_len` words.
+ * have enough space for 2x `digest_len` bytes.
  *
  * @param key The KMAC key.
  * @param masked_digest Whether to return the digest in concatenated shares.
@@ -246,7 +246,7 @@ status_t kmac_cshake_256(const otcrypto_const_byte_buf_t *message,
  * @param cust_str The customization string.
  * @param cust_str_len The customization string length in bytes.
  * @param[out] digest Output buffer for the result.
- * @param digest_len Requested digest length in 32-bit words.
+ * @param digest_len Requested digest length in bytes.
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
@@ -267,10 +267,10 @@ status_t kmac_kmac_128(kmac_blinded_key_t *key, hardened_bool_t masked_digest,
  * With SW-provided keys, `key->hw_backed` must be `kHardenedBoolFalse`, `share`
  * pointers must be correctly configured and `len` must match the key length.
  *
- * The caller must ensure that `digest_len` words are allocated at the location
+ * The caller must ensure that `digest_len` bytes are allocated at the location
  * pointed to by `digest`. `cust_str_len` must not exceed
  * `kKmacCustStrMaxSize`. If `masked_digest` is true, the `digest` buffer must
- * have enough space for 2x `digest_len` words.
+ * have enough space for 2x `digest_len` bytes.
  *
  * @param key The KMAC key.
  * @param masked_digest Whether to return the digest in concatenated shares.
@@ -278,7 +278,7 @@ status_t kmac_kmac_128(kmac_blinded_key_t *key, hardened_bool_t masked_digest,
  * @param cust_str The customization string.
  * @param cust_str_len The customization string length in bytes.
  * @param[out] digest Output buffer for the result.
- * @param digest_len Requested digest length in 32-bit words.
+ * @param digest_len Requested digest length in bytes.
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT

@@ -315,8 +315,6 @@ static status_t run_negative_tests(void) {
             .value == OTCRYPTO_BAD_ARGS.value);
 
   // Tag and output length checks
-  CHECK(otcrypto_kmac(&valid_key, &valid_msg, &valid_cust, 31, &valid_tag)
-            .value == OTCRYPTO_BAD_ARGS.value);
   CHECK(
       otcrypto_kmac(&valid_key, &valid_msg, &valid_cust, 0, &valid_tag).value ==
       OTCRYPTO_BAD_ARGS.value);

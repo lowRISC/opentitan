@@ -94,11 +94,6 @@ otcrypto_status_t otcrypto_kmac_kdf(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // At the moment, `kmac_kmac_128/256` only supports word-sized digest lengths.
-  if (output_key_material->config.key_length % sizeof(uint32_t) != 0) {
-    return OTCRYPTO_NOT_IMPLEMENTED;
-  }
-
   // Output key cannot be hardware-backed.
   if (output_key_material->config.hw_backed != kHardenedBoolFalse) {
     return OTCRYPTO_BAD_ARGS;
@@ -122,10 +117,10 @@ otcrypto_status_t otcrypto_kmac_kdf(
       key_mode_used = launder32(key_mode_used) | kOtcryptoKeyModeKdfKmac128;
       // No need to further check key size against security level because
       // `kmac_key_length_check` ensures that the key is at least 128-bit.
-      HARDENED_TRY(kmac_kmac_128(
-          &kmac_key, /*masked_digest=*/kHardenedBoolTrue, context, label->data,
-          label->len, output_key_material->keyblob,
-          output_key_material->config.key_length / sizeof(uint32_t)));
+      HARDENED_TRY(kmac_kmac_128(&kmac_key, /*masked_digest=*/kHardenedBoolTrue,
+                                 context, label->data, label->len,
+                                 output_key_material->keyblob,
+                                 output_key_material->config.key_length));
       break;
     }
     case kOtcryptoKeyModeKdfKmac256: {
@@ -135,10 +130,10 @@ otcrypto_status_t otcrypto_kmac_kdf(
       if (key_derivation_key->config.key_length < 256 / 8) {
         return OTCRYPTO_BAD_ARGS;
       }
-      HARDENED_TRY(kmac_kmac_256(
-          &kmac_key, /*masked_digest=*/kHardenedBoolTrue, context, label->data,
-          label->len, output_key_material->keyblob,
-          output_key_material->config.key_length / sizeof(uint32_t)));
+      HARDENED_TRY(kmac_kmac_256(&kmac_key, /*masked_digest=*/kHardenedBoolTrue,
+                                 context, label->data, label->len,
+                                 output_key_material->keyblob,
+                                 output_key_material->config.key_length));
       break;
     }
     default:
