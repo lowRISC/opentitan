@@ -113,4 +113,27 @@ status_t cryptolib_sca_ed25519_sign_impl(
     cryptolib_sca_asym_ed25519_sign_in_t uj_input,
     cryptolib_sca_asym_ed25519_sign_out_t *uj_output);
 
+/**
+ * Wrapper to X25519 Base Multiplication SCA implementation.
+ */
+status_t cryptolib_sca_x25519_base_mul_impl(uint8_t scalar[X25519_CMD_BYTES],
+                                            uint8_t x[X25519_CMD_BYTES],
+                                            uint8_t y[X25519_CMD_BYTES],
+                                            size_t cfg_in, size_t *cfg_out,
+                                            size_t trigger);
+
+/**
+ * Wrapper to ECDH in X25519 SCA implementation.
+ */
+status_t cryptolib_sca_x25519_ecdh_impl(
+    cryptolib_sca_asym_x25519_ecdh_in_t uj_input,
+    cryptolib_sca_asym_x25519_ecdh_out_t *uj_output);
+
+/**
+ * Wrapper to X25519 Point Multiplication SCA implementation.
+ */
+status_t cryptolib_sca_x25519_point_mul_impl(
+    cryptolib_sca_asym_x25519_point_mul_in_t uj_input,
+    cryptolib_sca_asym_x25519_point_mul_out_t *uj_output);
+
 #endif  // OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_SCA_CRYPTOLIB_SCA_ASYM_IMPL_H_

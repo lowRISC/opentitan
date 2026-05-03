@@ -594,10 +594,9 @@ status_t trigger_cryptolib_sca_asym_x25519_base_mul(
   // Perform a base point multiplication in X25519.
   // Trigger are over the API calls.
 
-  memset(x, 0, X25519_CMD_BYTES);
-  memset(y, 0, X25519_CMD_BYTES);
-  *cfg_out = 0;
-  *status = 0;
+  *status = (size_t)cryptolib_sca_x25519_base_mul_impl(scalar, x, y, cfg_in,
+                                                       cfg_out, trigger)
+                .value;
   /////////////// STUB END ///////////////
 
   return OK_STATUS();
@@ -691,6 +690,8 @@ status_t handle_cryptolib_sca_asym_x25519_point_mul(ujson_t *uj) {
 
   cryptolib_sca_asym_x25519_point_mul_out_t uj_output;
   memset(&uj_output, 0, sizeof(uj_output));
+  uj_output.status =
+      (size_t)cryptolib_sca_x25519_point_mul_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_sca_asym_x25519_point_mul_out_t, uj,
           &uj_output);
@@ -707,6 +708,8 @@ status_t handle_cryptolib_sca_asym_x25519_ecdh(ujson_t *uj) {
 
   cryptolib_sca_asym_x25519_ecdh_out_t uj_output;
   memset(&uj_output, 0, sizeof(uj_output));
+  uj_output.status =
+      (size_t)cryptolib_sca_x25519_ecdh_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_sca_asym_x25519_ecdh_out_t, uj, &uj_output);
 
