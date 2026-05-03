@@ -216,8 +216,8 @@ static status_t check_key(const otcrypto_blinded_key_t *key) {
 
   // The underlying HMAC hardware does not have sideload support.
   if (key->config.hw_backed != kHardenedBoolFalse) {
-    // COVERAGE (NOT IMPL) Not implemented.
-    return OTCRYPTO_NOT_IMPLEMENTED;
+    // COVERAGE (SW ERR) HMAC does not allow sideloading.
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // Check the integrity of the key.
