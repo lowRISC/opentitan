@@ -321,7 +321,9 @@ module keymgr_dpe_ctrl
         key_slots_d[slot_dst_sel_i].key = kmac_data_i;
         key_slots_d[slot_dst_sel_i].max_key_version = max_key_version_i;
         key_slots_d[slot_dst_sel_i].boot_stage =
-          (active_key_slot_o.boot_stage == BootStageCreator) ? BootStageOwner : BootStageRuntime;
+          (active_key_slot_o.boot_stage == BootStageCreator) ? BootStageOwnerInt :
+          (active_key_slot_o.boot_stage == BootStageOwnerInt) ? BootStageOwner :
+          BootStageRuntime;
         key_slots_d[slot_dst_sel_i].key_policy = slot_policy_i;
       end
 
