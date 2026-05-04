@@ -54,7 +54,7 @@ class aes_base_test extends cip_base_test #(
     cfg.ofb_weight                 = 10;
     cfg.cfb_weight                 = 10;
     cfg.ctr_weight                 = 10;
-    cfg.gcm_weight                 = 10;
+    cfg.gcm_weight                 = `EN_GCM ? 10 : 0;
 
   // KEYLEN weights
   // change of selecting 128b key
