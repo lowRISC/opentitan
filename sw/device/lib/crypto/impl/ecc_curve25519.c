@@ -314,8 +314,10 @@ static otcrypto_status_t ed25519_compute_scalar_and_prefix(
     // Memshred the unmasked seed.
     HARDENED_TRY(hardened_memshred(seed_data, ARRAYSIZE(seed_data)));
   } else {
-    // Hardware-backed keys are not supported at the moment.
-    return OTCRYPTO_NOT_IMPLEMENTED;
+    // Hardware backed keys are not possible due to the keys being SHA2 seeds
+    // which does not allow sideloading.
+    // COVERAGE (SW ERR) Sideloading is not allowed with 25519.
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // Immediately clamp the lower half of hash_h to create the secret scalar s.
