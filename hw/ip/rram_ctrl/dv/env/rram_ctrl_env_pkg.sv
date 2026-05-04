@@ -19,6 +19,14 @@ package rram_ctrl_env_pkg;
   import rram_ctrl_bkdr_util_pkg::*;
   import mem_bkdr_util_pkg::*;
 
+  import prim_mubi_pkg::MuBi4True;
+  import prim_mubi_pkg::MuBi4False;
+  import prim_mubi_pkg::mubi4_t;
+  import otp_ctrl_macro_pkg::cmd_e;
+  import lc_ctrl_pkg::lc_tx_t;
+  import lc_ctrl_pkg::On;
+  import lc_ctrl_pkg::Off;
+
   // Macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
@@ -29,8 +37,8 @@ package rram_ctrl_env_pkg;
     "recov_err",
     "fatal_std_err",
     "fatal_err",
-    "fatal_prim_rram_alert",
-    "recov_prim_rram_alert"
+    "fatal_macro_err",
+    "recov_macro_err"
   };
 
   // Types
@@ -53,8 +61,8 @@ package rram_ctrl_env_pkg;
     NumRramCtrlIntr = 6
   } rram_ctrl_intr_e;
 
-  localparam WrFifoDepth = 4;
-  localparam RdFifoDepth = 16;
+  localparam int unsigned WrFifoDepth = 4;
+  localparam int unsigned RdFifoDepth = 16;
 
   // bus addr width
   typedef bit [BusAddrByteW-1:0] addr_t;
@@ -64,12 +72,11 @@ package rram_ctrl_env_pkg;
   typedef data_t data_q_t[$];
 
   typedef struct packed {
-    rram_part_e  partition;   // data or info partition
-    rram_op_e    op;          // read / write
-    logic [9:0]  num_words;   // number of words to read or write (TL_DW)
-    addr_t       addr;        // starting addr for the op
+    rram_part_e partition;   // data or info partition
+    rram_op_e   op;          // read / write
+    logic [9:0] num_words;   // number of words to read or write (TL_DW)
+    addr_t      addr;        // starting addr for the op
   } rram_ctrl_op_t;
-
 
   // Functions
 

@@ -5,10 +5,6 @@
 class rram_ctrl_data_hazard_vseq extends rram_ctrl_base_vseq;
   `uvm_object_utils(rram_ctrl_data_hazard_vseq)
 
-  import prim_mubi_pkg::MuBi4True;
-  import prim_mubi_pkg::MuBi4False;
-  import prim_mubi_pkg::mubi4_t;
-
   localparam int unsigned NumTrans = 20;
 
   rand data_q_t rram_data;
@@ -19,8 +15,8 @@ class rram_ctrl_data_hazard_vseq extends rram_ctrl_base_vseq;
 
   constraint scramble_en_c {
     scramble_en dist {
-      MuBi4False := 50,
-      MuBi4True  := 50
+      MuBi4False := 100, // TODO: enable once scrambling is added
+      MuBi4True  := 0
     };
   }
 
@@ -32,7 +28,6 @@ class rram_ctrl_data_hazard_vseq extends rram_ctrl_base_vseq;
 
   // solve number of words
   constraint rram_ctrl_op_c {
-    solve rram_ctrl_op.addr before rram_ctrl_op.num_words;
     rram_ctrl_op.num_words%4 == 3;
     rram_ctrl_op.num_words <= 15;
     rram_ctrl_op.num_words < (TotalBytes - TotalOtpBytes - rram_ctrl_op.addr) >> 2;
@@ -42,7 +37,7 @@ class rram_ctrl_data_hazard_vseq extends rram_ctrl_base_vseq;
 
   // rram ctrl operation data queue
   constraint rram_data_c {
-    solve rram_ctrl_op.num_words before rram_data;
+    solve rram_ctrl_op before rram_data;
     rram_data.size() == rram_ctrl_op.num_words + 1;
   }
 
@@ -59,16 +54,10 @@ endfunction : new
 task rram_ctrl_data_hazard_vseq::body();
 
   logic completed;
-  uvm_reg_data_t data;
 
   begin
   // 1. initialize rram default region
-  data = 0;
-  data = get_csr_val_with_updated_field(ral.default_region.wr_en, data, MuBi4True);
-  data = get_csr_val_with_updated_field(ral.default_region.rd_en, data, MuBi4True);
-  data = get_csr_val_with_updated_field(ral.default_region.scramble_en, data, scramble_en);
-  data = get_csr_val_with_updated_field(ral.default_region.ecc_en, data, MuBi4False);
-  csr_wr(.ptr(ral.default_region), .value(data));
+  rram_ctrl_base_vseq::update_default_region_cfg(MuBi4True, MuBi4True, scramble_en, MuBi4True);
 
   for (int k = 0; k < NumTrans; k++) begin
     `uvm_info(`gfn, $sformatf("Starting a transaction with: num_words=%d, addr=%08x, partition=%d",

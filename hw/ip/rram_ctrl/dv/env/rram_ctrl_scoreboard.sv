@@ -18,6 +18,34 @@ class rram_ctrl_scoreboard extends cip_base_scoreboard #(
   extern task run_phase(uvm_phase phase);
   extern function void check_phase(uvm_phase phase);
 
+  // Overridden function from cip_base_scoreboard, to handle TL/UL Error seen on Hardware Interface
+  protected virtual function bit predict_tl_err(tl_seq_item item, tl_channels_e channel,
+                                                string ral_name);
+    bit mp_err = 0;
+
+    // check read permissions to current page and return 1 in case of an access violation
+    if (ral_name == cfg.host_ral_name) begin
+      addr_t addr = item.a_addr[BusAddrByteW-1:0];
+      if (cfg.data_pages_cfg[addr[BusAddrByteW-1 -: PageW]].rd_en != prim_mubi_pkg::MuBi4True) begin
+        mp_err = 1;
+      end
+      if (mp_err) begin
+        if (channel == DataChannel) begin
+          `DV_CHECK_EQ(item.d_error, 1,
+              $sformatf({"On interface %0s, TL item: %0s, access blocked because of mem. prot."},
+              ral_name, item.sprint(uvm_default_line_printer)))
+          // In data read phase, check d_data when d_error = 1.
+          if (item.d_error && (item.d_opcode == tlul_pkg::AccessAckData)) begin
+            check_tl_read_value_after_error(item, cfg.ral_models[ral_name]);
+          end
+          return 1;
+        end
+      end
+    end
+
+    return (super.predict_tl_err(item, channel, ral_name));
+  endfunction : predict_tl_err
+
   // Class specific methods
   extern task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
   extern task process_tl_core_access(tl_seq_item item, uvm_reg_addr_t csr_addr,
@@ -101,7 +129,7 @@ task rram_ctrl_scoreboard::process_tl_core_access(
   uvm_reg csr;
 
   // If fifo access
-  if (is_mem_addr(item, ral_name)) begin
+  if (is_mem_addr(item.a_addr, cfg.ral_models[ral_name])) begin
 
   // If access was to a valid CSR, get the CSR handle
   end else if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
@@ -288,9 +316,6 @@ task rram_ctrl_scoreboard::process_tl_core_access(
         // FIXME
       end
       "status": begin
-        // FIXME
-      end
-      "debug_state": begin
         // FIXME
       end
       "err_code": begin

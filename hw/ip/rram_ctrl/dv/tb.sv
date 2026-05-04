@@ -14,32 +14,56 @@ module tb;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
-  // TODO, we should probably get this from a common pkg
-  localparam WrFifoDepth = 4;
-  localparam RdFifoDepth = 16;
-
   wire                          clk;
   wire                          rst_n;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
-  wire rram_test_analog;
+  wire                          rram_test_analog;
 
   // Interfaces
-  clk_rst_if                    clk_rst_if    (.clk(clk), .rst_n(rst_n));
-  pins_if #(NUM_MAX_INTERRUPTS) intr_if       (interrupts);
-  tl_if                         tl_core_if    (.clk(clk), .rst_n(rst_n));
-  tl_if                         tl_host_if    (.clk(clk), .rst_n(rst_n));
-  tl_if                         tl_prim_if    (.clk(clk), .rst_n(rst_n));
-  rram_ctrl_misc_io_if          misc_if       ();
+  clk_rst_if                    clk_rst_if(.clk(clk), .rst_n(rst_n));
+  pins_if #(NUM_MAX_INTERRUPTS) intr_if   (interrupts);
+  tl_if                         tl_core_if(.clk(clk), .rst_n(rst_n));
+  tl_if                         tl_host_if(.clk(clk), .rst_n(rst_n));
+  tl_if                         tl_prim_if(.clk(clk), .rst_n(rst_n));
+  rram_ctrl_misc_io_if          misc_if   (.clk(clk), .rst_n(rst_n));
 
-  rram_ctrl_pkg::prim_rram_req_t rram_req;
-  rram_ctrl_pkg::prim_rram_rsp_t rram_rsp;
+  rram_ctrl_pkg::rram_macro_req_t rram_req;
+  rram_ctrl_pkg::rram_macro_rsp_t rram_rsp;
+
+  otp_ctrl_pkg::nvm_otp_key_req_t          otp_key_req;
+  otp_ctrl_pkg::nvm_otp_key_rsp_t          otp_key_rsp;
+  otp_ctrl_macro_pkg::otp_ctrl_macro_req_t otp_macro_req;
+  otp_ctrl_macro_pkg::otp_ctrl_macro_rsp_t otp_macro_rsp;
+
+  assign misc_if.otp_macro_rsp.ready            = otp_macro_rsp.ready;
+  assign misc_if.otp_macro_rsp.rvalid           = otp_macro_rsp.rvalid;
+  assign misc_if.otp_macro_rsp.rdata            = otp_macro_rsp.rdata;
+  assign misc_if.otp_macro_rsp.err              = otp_macro_rsp.err;
+  assign misc_if.otp_macro_rsp.fatal_lc_fsm_err = otp_macro_rsp.fatal_lc_fsm_err;
+  assign misc_if.otp_macro_rsp.fatal_alert      = otp_macro_rsp.fatal_alert;
+  assign misc_if.otp_macro_rsp.recov_alert      = otp_macro_rsp.recov_alert;
+
+  assign otp_macro_req.valid = misc_if.otp_macro_req.valid;
+  assign otp_macro_req.cmd   = misc_if.otp_macro_req.cmd;
+  assign otp_macro_req.size  = misc_if.otp_macro_req.size;
+  assign otp_macro_req.addr  = misc_if.otp_macro_req.addr;
+  assign otp_macro_req.wdata = misc_if.otp_macro_req.wdata;
+
+  assign misc_if.otp_key_req.addr_req = otp_key_req.addr_req;
+  assign misc_if.otp_key_req.data_req = otp_key_req.data_req;
+
+  assign otp_key_rsp.addr_ack   = misc_if.otp_key_rsp.addr_ack;
+  assign otp_key_rsp.data_ack   = misc_if.otp_key_rsp.data_ack;
+  assign otp_key_rsp.key        = misc_if.otp_key_rsp.key;
+  assign otp_key_rsp.rand_key   = misc_if.otp_key_rsp.rand_key;
+  assign otp_key_rsp.seed_valid = misc_if.otp_key_rsp.seed_valid;
 
   `DV_ALERT_IF_CONNECT()
 
   // DUT
   rram_ctrl #(
-    .WrFifoDepth(WrFifoDepth),
-    .RdFifoDepth(RdFifoDepth)
+    .WrFifoDepth(rram_ctrl_env_pkg::WrFifoDepth),
+    .RdFifoDepth(rram_ctrl_env_pkg::RdFifoDepth)
   ) dut (
     .clk_i          (clk),
     .rst_ni         (rst_n),
@@ -54,39 +78,41 @@ module tb;
     .host_tl_o(tl_host_if.d2h),
 
     // otp interface
-    .otp_i('0),
-    .otp_o(),
+    .otp_macro_i(otp_macro_req),
+    .otp_macro_o(otp_macro_rsp),
+    .otp_key_i  (otp_key_rsp),
+    .otp_key_o  (otp_key_req),
 
     // various life cycle decode signals
-    .lc_creator_seed_sw_rw_en_i(lc_ctrl_pkg::On),
-    .lc_owner_seed_sw_rw_en_i  (lc_ctrl_pkg::On),
-    .lc_iso_part_sw_rd_en_i    (lc_ctrl_pkg::On),
-    .lc_iso_part_sw_wr_en_i    (lc_ctrl_pkg::On),
-    .lc_seed_hw_rd_en_i        (lc_ctrl_pkg::On),
-    .lc_nvm_debug_en_i         (lc_ctrl_pkg::On),
-    .lc_escalate_en_i          (lc_ctrl_pkg::On),
+    .lc_creator_seed_sw_rw_en_i(misc_if.lc_creator_seed_sw_rw_en),
+    .lc_owner_seed_sw_rw_en_i  (misc_if.lc_owner_seed_sw_rw_en),
+    .lc_iso_part_sw_rd_en_i    (misc_if.lc_iso_part_sw_rd_en),
+    .lc_iso_part_sw_wr_en_i    (misc_if.lc_iso_part_sw_wr_en),
+    .lc_seed_hw_rd_en_i        (misc_if.lc_seed_hw_rd_en),
+    .lc_escalate_en_i          (misc_if.lc_escalate_en),
 
     // life cycle rma handling
-    .rma_req_i (lc_ctrl_pkg::Off),
-    .rma_seed_i('0),
-    .rma_ack_o (),
+    .rma_req_i (misc_if.rma_req),
+    .rma_seed_i(misc_if.rma_seed),
+    .rma_ack_o (misc_if.rma_ack),
+
+    .keymgr_o(misc_if.keymgr),
 
     // power manager indication
-    .pwrmgr_o(),
-    .keymgr_o(),
+    .pwrmgr_o(misc_if.pwr_nvm),
 
     // alerts and interrupts
     .intr_wr_empty_o  (interrupts[WrEmpty]),
-    .intr_wr_lvl_o    (interrupts[WrLvl]  ),
-    .intr_rd_full_o   (interrupts[RdFull] ),
-    .intr_rd_lvl_o    (interrupts[RdLvl]  ),
-    .intr_op_done_o   (interrupts[OpDone] ),
+    .intr_wr_lvl_o    (interrupts[WrLvl]),
+    .intr_rd_full_o   (interrupts[RdFull]),
+    .intr_rd_lvl_o    (interrupts[RdLvl]),
+    .intr_op_done_o   (interrupts[OpDone]),
     .intr_corr_err_o  (interrupts[CorrErr]),
     .alert_rx_i       (alert_rx),
     .alert_tx_o       (alert_tx),
 
-    .prim_rram_req_o(rram_req),
-    .prim_rram_rsp_i(rram_rsp)
+    .rram_macro_o(rram_req),
+    .rram_macro_i(rram_rsp)
   );
 
   rram_macro #(
@@ -94,28 +120,26 @@ module tb;
     .DataWidth(rram_ctrl_pkg::DataWidth),
     .WordsPerPage(rram_ctrl_pkg::WordsPerPage),
     .TotalInfoPages(rram_ctrl_pkg::TotalInfoPages),
-    .WrResWords(rram_ctrl_pkg::WrResWords)
+    .MaxWrWords(rram_ctrl_pkg::MaxWrWords)
   ) u_rram_macro (
-    .clk_i(clk),
-    .rst_ni(rst_n),
-    .rram_req_i(rram_req),
-    .rram_rsp_o(rram_rsp),
-    .init_busy_o(init_busy),
-    .tck_i('0),
-    .tdi_i('0),
-    .tms_i('0),
-    .tdo_o(),
-    .bist_enable_i(prim_mubi_pkg::MuBi4False),
-    .scanmode_i(prim_mubi_pkg::MuBi4False),
-    .scan_en_i(1'b0),
-    .scan_rst_ni(1'b0),
+    .clk_i              (clk),
+    .rst_ni             (rst_n),
+    .rram_macro_i       (rram_req),
+    .rram_macro_o       (rram_rsp),
+    .cio_tck_i          ('0),
+    .cio_tdi_i          ('0),
+    .cio_tms_i          ('0),
+    .cio_tdo_o          (),
+    .cio_tdo_en_o       (),
+    .lc_nvm_debug_en_i  (misc_if.lc_nvm_debug_en),
+    .scanmode_i         (prim_mubi_pkg::MuBi4False),
+    .scan_en_i          (1'b0),
+    .scan_rst_ni        (1'b0),
     .rram_test_analog_io(rram_test_analog),
-    .fatal_alert_o(),
-    .recov_alert_o(),
-    .tl_i(tl_prim_if.h2d),
-    .tl_o(tl_prim_if.d2h),
-    .obs_ctrl_i('0),
-    .rram_obs_o()
+    .prim_tl_i          (tl_prim_if.h2d),
+    .prim_tl_o          (tl_prim_if.d2h),
+    .obs_ctrl_i         ('0),
+    .rram_obs_o         ()
   );
 
   // Instantiate the memory backdoor util instances.

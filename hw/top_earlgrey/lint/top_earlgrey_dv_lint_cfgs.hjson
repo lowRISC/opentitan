@@ -164,6 +164,12 @@
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
                   rel_path: "hw/ip/rom_ctrl/dv/lint/{tool}"
              },
+             {    name: rram_ctrl
+                  fusesoc_core: lowrisc:dv:rram_ctrl_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
+                  rel_path: "hw/ip/rram_ctrl/dv/lint/{tool}"
+             },
              {    name: rstmgr
                   fusesoc_core: lowrisc:earlgrey_dv:rstmgr_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
@@ -199,12 +205,6 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
                   rel_path: "hw/ip/sram_ctrl/dv/lint/{tool}"
-             },
-             {    name: rram_ctrl
-                  fusesoc_core: lowrisc:dv:rram_ctrl_sim
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
-                  rel_path: "hw/ip/rram_ctrl/dv/lint/{tool}"
              },
              {    name: sysrst_ctrl
                   fusesoc_core: lowrisc:dv:sysrst_ctrl_sim

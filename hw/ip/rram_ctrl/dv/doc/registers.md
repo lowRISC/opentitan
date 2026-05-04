@@ -148,17 +148,17 @@ Alert Test Register
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "recov_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "fatal_std_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "fatal_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "fatal_prim_rram_alert", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "recov_prim_rram_alert", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 27}], "config": {"lanes": 1, "fontsize": 10, "vspace": 230}}
+{"reg": [{"name": "recov_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "fatal_std_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "fatal_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "fatal_macro_alert", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "recov_macro_alert", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 27}], "config": {"lanes": 1, "fontsize": 10, "vspace": 230}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                  | Description                                      |
-|:------:|:------:|:-------:|:----------------------|:-------------------------------------------------|
-|  31:5  |        |         |                       | Reserved                                         |
-|   4    |   wo   |   0x0   | recov_prim_rram_alert | Write 1 to trigger one alert event of this kind. |
-|   3    |   wo   |   0x0   | fatal_prim_rram_alert | Write 1 to trigger one alert event of this kind. |
-|   2    |   wo   |   0x0   | fatal_err             | Write 1 to trigger one alert event of this kind. |
-|   1    |   wo   |   0x0   | fatal_std_err         | Write 1 to trigger one alert event of this kind. |
-|   0    |   wo   |   0x0   | recov_err             | Write 1 to trigger one alert event of this kind. |
+|  Bits  |  Type  |  Reset  | Name              | Description                                      |
+|:------:|:------:|:-------:|:------------------|:-------------------------------------------------|
+|  31:5  |        |         |                   | Reserved                                         |
+|   4    |   wo   |   0x0   | recov_macro_alert | Write 1 to trigger one alert event of this kind. |
+|   3    |   wo   |   0x0   | fatal_macro_alert | Write 1 to trigger one alert event of this kind. |
+|   2    |   wo   |   0x0   | fatal_err         | Write 1 to trigger one alert event of this kind. |
+|   1    |   wo   |   0x0   | fatal_std_err     | Write 1 to trigger one alert event of this kind. |
+|   0    |   wo   |   0x0   | recov_err         | Write 1 to trigger one alert event of this kind. |
 
 ## DIS
 Disable RRAM functionality
@@ -657,19 +657,20 @@ These represent errors that occur in the standard structures of the design.
 For example fsm integrity, counter integrity and tlul integrity.
 - Offset: `0xe4`
 - Reset default: `0x0`
-- Reset mask: `0x3ff`
+- Reset mask: `0x7ff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "reg_intg_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "wr_intg_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "lcmgr_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "lcmgr_intg_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "otp_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "otp_intg_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "arb_fsm_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "phy_fsm_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ctrl_cnt_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "fifo_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 22}], "config": {"lanes": 1, "fontsize": 10, "vspace": 160}}
+{"reg": [{"name": "reg_intg_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "wr_intg_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "lcmgr_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "lcmgr_intg_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "otp_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "otp_intg_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "arb_fsm_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "phy_fsm_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "phy_arb_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ctrl_cnt_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "fifo_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 21}], "config": {"lanes": 1, "fontsize": 10, "vspace": 160}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name           | Description                                                                                                                                                                               |
 |:------:|:------:|:-------:|:---------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 31:10  |        |         |                | Reserved                                                                                                                                                                                  |
-|   9    |   ro   |   0x0   | fifo_err       | RRAM primitive fifo's have encountered a count error.                                                                                                                                     |
-|   8    |   ro   |   0x0   | ctrl_cnt_err   | RRAM ctrl read/prog has encountered a count error.                                                                                                                                        |
+| 31:11  |        |         |                | Reserved                                                                                                                                                                                  |
+|   10   |   ro   |   0x0   | fifo_err       | RRAM primitive fifo's have encountered a count error.                                                                                                                                     |
+|   9    |   ro   |   0x0   | ctrl_cnt_err   | RRAM ctrl read/write has encountered a count error.                                                                                                                                       |
+|   8    |   ro   |   0x0   | phy_arb_err    | A RRAM phy arbiter has encountered an error.                                                                                                                                              |
 |   7    |   ro   |   0x0   | phy_fsm_err    | A RRAM phy fsm has encountered a sparse encoding error.                                                                                                                                   |
 |   6    |   ro   |   0x0   | arb_fsm_err    | The arbiter fsm has encountered a sparse encoding error.                                                                                                                                  |
 |   5    |   ro   |   0x0   | otp_intg_err   | The otp interface has encountered a transmission integrity error. This is an integrity error on the generated integrity during an OTP read.                                               |

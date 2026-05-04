@@ -12,7 +12,7 @@
   tb: tb
 
   // Simulator used to sign off this block
-  tool: vcs
+  tool: xcelium
 
   // Fusesoc core file used for building the file list.
   fusesoc_core: lowrisc:dv:rram_ctrl_sim:0.1
@@ -55,6 +55,11 @@
       uvm_test_seq: rram_ctrl_smoke_vseq
     }
     {
+      name: rram_ctrl_smoke_mp_err
+      uvm_test_seq: rram_ctrl_smoke_vseq
+      run_opts: ["+reg_en_pct=10", "+rd_en_pct=10", "+wr_en_pct=10"]
+    }
+    {
       name: rram_ctrl_data_hazard
       uvm_test_seq: rram_ctrl_data_hazard_vseq
     }
@@ -62,7 +67,6 @@
       name: rram_ctrl_concurrent_rd_wr
       uvm_test_seq: rram_ctrl_concurrent_rd_wr_vseq
     }
-
     // TODO: add more tests here
   ]
 
@@ -74,7 +78,13 @@
     }
     {
       name: basic
-      tests: ["rram_ctrl_smoke", "rram_ctrl_data_hazard", "rram_ctrl_concurrent_rd_wr"]
+      tests: ["rram_ctrl_smoke", "rram_ctrl_data_hazard", "rram_ctrl_concurrent_rd_wr",
+              "rram_ctrl_otp"]
+    }
+    {
+      name: full_func
+      tests: ["rram_ctrl_smoke", "rram_ctrl_data_hazard", "rram_ctrl_concurrent_rd_wr",
+              "rram_ctrl_smoke_mp_err"]
     }
   ]
 }

@@ -12,7 +12,6 @@ class rram_ctrl_common_vseq extends rram_ctrl_base_vseq;
 
   // Standard SV/UVM methods
   extern function new(string name="");
-  extern task pre_start();
   extern task body();
 endclass : rram_ctrl_common_vseq
 
@@ -24,11 +23,6 @@ constraint rram_ctrl_common_vseq::num_trans_c {
 function rram_ctrl_common_vseq::new(string name="");
   super.new(name);
 endfunction : new
-
-task rram_ctrl_common_vseq::pre_start();
-  do_rram_ctrl_init = 1'b0;
-  super.pre_start();
-endtask : pre_start
 
 task rram_ctrl_common_vseq::body();
   run_common_vseq_wrapper(num_trans);
