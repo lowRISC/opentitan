@@ -13,6 +13,7 @@ load(
     "EARLGREY_TEST_ENVS",
     "fpga_params",
     "opentitan_binary",
+    "opentitan_binary_blob",
     "opentitan_test",
     "qemu_params",
     "silicon_params",
@@ -264,6 +265,78 @@ opentitan_test(
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
         "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
+    ],
+)
+
+# Get a shifted binary blob of the cryptolib API for testing PIC-ness.
+opentitan_binary_blob(
+    name = "otcrypto_binary_blob_api_shifted",
+    collect_code_coverage = 0,
+    config = select({
+        "//sw/device/lib/crypto/configs:crypto_fips_all": "//sw/device/lib/crypto/configs:crypto_fips_all.txt",
+        "//conditions:default": None,
+    }),
+    deps_blob = [
+        "//sw/device/lib/crypto:otcrypto_api",
+        "//sw/device/lib/crypto/include:crypto_hdrs",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/runtime:log",
+    ],
+    rom_origin = "0x10000",
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/crypto/include:crypto_hdrs",
+    ],
+)
+
+filegroup(
+    name = "otcrypto_elf_base",
+    srcs = ["//sw/device/lib/crypto:otcrypto_binary_blob_api"],
+    output_group = "elf_file",
+)
+
+filegroup(
+    name = "otcrypto_dis_base",
+    srcs = ["//sw/device/lib/crypto:otcrypto_binary_blob_api"],
+    output_group = "dis_file",
+)
+
+filegroup(
+    name = "otcrypto_elf_shifted",
+    srcs = [":otcrypto_binary_blob_api_shifted"],
+    output_group = "elf_file",
+)
+
+filegroup(
+    name = "otcrypto_dis_shifted",
+    srcs = [":otcrypto_binary_blob_api_shifted"],
+    output_group = "dis_file",
+)
+
+# Verify whether the binary blob of the cryptolib API is position-independent
+# by checking that the symbol addresses are appropriately shifted when
+# shifting the library in memory.
+py_test(
+    name = "otcrypto_pic_test",
+    srcs = ["otcrypto_pic_test.py"],
+    args = [
+        "--elf-base=$(location :otcrypto_elf_base)",
+        "--elf-offset=$(location :otcrypto_elf_shifted)",
+        "--dis-base=$(location :otcrypto_dis_base)",
+        "--dis-offset=$(location :otcrypto_dis_shifted)",
+        "--objcopy=$(location @lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-objcopy)",
+        "--objdump=$(location @lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-objdump)",
+        "--nm=$(location @lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-nm)",
+    ],
+    data = [
+        ":otcrypto_dis_base",
+        ":otcrypto_dis_shifted",
+        ":otcrypto_elf_base",
+        ":otcrypto_elf_shifted",
+        "@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-nm",
+        "@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-objcopy",
+        "@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-objdump",
+        "@rules_python//python/runfiles",
     ],
 )
 
