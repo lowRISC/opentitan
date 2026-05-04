@@ -150,11 +150,14 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   virtual function void process_kmac_data_req(kmac_app_item item);
     keymgr_dpe_pkg::keymgr_dpe_ops_e op = get_operation();
     bit is_err;
+    bit invalid_hw_input;
+    bit invalid_op;
     logic [keymgr_dpe_pkg::DpeBootStagesWidth-1:0] boot_stage =
       current_internal_key[current_key_slot.src_slot].boot_stage;
 
-    `uvm_info(`gfn, $sformatf("process_kmac_data_req: for op %s in state %s",
-     op.name, current_state.name), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf({"process_kmac_data_req: for op %s in state %s",
+        "with boot_stage set to %0d"},
+        op.name, current_state.name, boot_stage), UVM_MEDIUM)
 
     if (!cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) begin
       compare_invalid_data(item.byte_data_q);
@@ -168,8 +171,11 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       keymgr_dpe_pkg::OpDpeAdvance: begin
         // Invalid outputs and invalid operations should results in random data
         // for message data.
-        is_err = get_hw_invalid_input() || get_invalid_op();
-        `uvm_info(`gfn, $sformatf("What is is_err: %d", is_err), UVM_MEDIUM)
+        invalid_hw_input = get_hw_invalid_input();
+        invalid_op = get_invalid_op();
+        is_err = invalid_hw_input || invalid_op;
+        `uvm_info(`gfn, $sformatf({"Invalid HW Input %0b || Invalid OP %0b",
+            " = is_err %0b"}, invalid_hw_input, invalid_op, is_err), UVM_MEDIUM)
         case (current_state)
           keymgr_dpe_pkg::StWorkDpeAvailable: begin
             if(boot_stage == keymgr_dpe_pkg::BootStageCreator) begin
@@ -985,8 +991,8 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     current_internal_key[current_key_slot.dst_slot].boot_stage = keymgr_dpe_pkg::BootStageCreator;
     current_internal_key[current_key_slot.dst_slot].max_key_version = max_key_version;
     current_internal_key[current_key_slot.dst_slot].key = otp_key;
-    current_internal_key[current_key_slot.dst_slot].key_policy = '0;
-    current_internal_key[current_key_slot.dst_slot].key_policy.allow_child = 1;
+    current_internal_key[current_key_slot.dst_slot].key_policy =
+        keymgr_dpe_pkg::DEFAULT_UDS_POLICY;
     `uvm_info(`gfn,
       $sformatf("latch_otp_key: key %p",
       current_internal_key[current_key_slot.dst_slot]
@@ -1071,11 +1077,10 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     key_policy : current_internal_key[current_key_slot.src_slot].key_policy;
     keymgr_dpe_pkg::keymgr_dpe_ops_e op = get_operation();
     `uvm_info(`gfn,
-    $sformatf({"get_invalid_op: op %s current_state: %s, ",
-        "current_internal_key[%0d] = %p"},
-        op.name, current_state.name, current_key_slot.src_slot,
-       current_internal_key[current_key_slot.src_slot]),
-       UVM_MEDIUM)
+    $sformatf({"get_invalid_op: op %s current_state: %s, src: %0d dst: %0d",
+        "current_internal_key = %p"}, op.name, current_state.name,
+        current_key_slot.src_slot, current_key_slot.dst_slot,
+        current_internal_key[current_key_slot.src_slot]), UVM_MEDIUM)
     case (current_state)
       keymgr_dpe_pkg::StWorkDpeReset : begin
         if (get_operation() != keymgr_dpe_pkg::OpDpeAdvance) begin
@@ -1271,6 +1276,8 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   );
     adv_creator_data_t exp, act;
     string str = $sformatf("src_slot: %0d\n", current_key_slot.src_slot);
+
+    `uvm_info(`gfn, $sformatf("Compare data for boot stage 0"), UVM_MEDIUM)
 
     if (exp_match) `DV_CHECK_EQ(byte_data_q.size, keymgr_dpe_pkg::DpeAdvDataWidth / 8)
     act = {<<8{byte_data_q}};
