@@ -11,7 +11,6 @@
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
-#include "sw/device/lib/crypto/include/drbg.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/sha2.h"
 
@@ -269,8 +268,7 @@ static status_t ed25519_mask_scalar(uint32_t *scalar, size_t scalar_len,
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, share1, share_len);
   otcrypto_const_byte_buf_t kEmptyBuffer =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
-  HARDENED_TRY(otcrypto_drbg_instantiate(&kEmptyBuffer));
-  HARDENED_TRY(otcrypto_drbg_generate(&kEmptyBuffer, &share1_buf));
+  HARDENED_TRY(hardened_memshred(share1, share_len));
   share1[share_len - 1] &= 0x7fffffff;
 
   // Compute share0 = share + share1.
