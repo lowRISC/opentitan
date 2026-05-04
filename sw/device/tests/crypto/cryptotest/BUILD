@@ -172,6 +172,23 @@ cryptotest(
     test_vectors = ECDH_TESTVECTOR_TARGETS,
 )
 
+ED25519_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:wycheproof_ed25519_json",
+]
+
+ED25519_TESTVECTOR_ARGS = " ".join([
+    "--ed25519-json=\"$(rootpath {})\"".format(target)
+    for target in ED25519_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "ed25519_kat",
+    slow_test = True,
+    test_args = ED25519_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/ed25519_kat:harness",
+    test_vectors = ED25519_TESTVECTOR_TARGETS,
+)
+
 RSA_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:wycheproof_rsa_pkcs1_1.5_2048_{}.json".format(hash)
     for hash in [
@@ -680,6 +697,7 @@ test_suite(
         ":drbg_kat",
         ":ecdh_kat",
         ":ecdsa_kat",
+        ":ed25519_kat",
         ":hmac_sha256_acvp",
         ":hmac_sha256_kat",
         ":hmac_sha384_kat",
