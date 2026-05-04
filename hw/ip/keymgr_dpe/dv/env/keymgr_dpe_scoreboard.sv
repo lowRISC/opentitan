@@ -68,6 +68,12 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   bit                                is_kmac_rsp_err;
   bit                                is_kmac_invalid_data;
   bit                                is_sw_share_corrupted;
+  // Indicates if the UDS was fetched by the keymgr_dpe for the first time.
+  // The UDS needs to be xored with randomness to counter SCA, however the
+  // current dv environment cannot replicate this randomness. As a workaround
+  // the generated value (UDS xored with randomness) is loaded by a backdoor
+  // directly from the DUT.
+  bit                                load_uds_with_randomness;
 
   // HW internal key, used for OP in current state
   keymgr_dpe_env_pkg::keymgr_dpe_key_slot_t current_key_slot;
@@ -990,6 +996,12 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     current_internal_key[current_key_slot.dst_slot].valid = 1;
     current_internal_key[current_key_slot.dst_slot].boot_stage = keymgr_dpe_pkg::BootStageCreator;
     current_internal_key[current_key_slot.dst_slot].max_key_version = max_key_version;
+    // This call load the "true" UDS without the randomness present in the
+    // hw slot. The problem is that when this function is called (when writing
+    // the first time into the start register) the randomness in the hw slot
+    // is not yet generated.
+    // The current workaround is to backdoor load on the first advance call
+    // in the available state as the src_slot has the UDS loaded.
     current_internal_key[current_key_slot.dst_slot].key = otp_key;
     current_internal_key[current_key_slot.dst_slot].key_policy =
         keymgr_dpe_pkg::DEFAULT_UDS_POLICY;
@@ -1002,6 +1014,16 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       current_internal_key[current_key_slot.dst_slot].key,
       current_state
     );
+  endfunction
+
+  // Directly access the slot which holds the UDS with the xored randmoness
+  // Otherwise the scorebord would need to manually replicate the randomness
+  // generation.
+  // TODO(#30758): Remove this backdoor load
+  virtual function void backdoor_load_uds(int slot);
+    `uvm_info(`gfn, "Load UDS with randomness via backdoor", UVM_MEDIUM)
+    current_internal_key[slot].key =
+        cfg.keymgr_dpe_ctrl_vif.get_key_of_slot(slot);
   endfunction
 
   virtual function bit [TL_DW-1:0] get_current_max_version(
@@ -1126,6 +1148,13 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
               $sformatf({"get_invalid_op: op %s current_state: %s",
                   "src_slot valid == 0 err"}, op.name, current_state.name), UVM_MEDIUM)
               return 1;
+            end
+            // Workaround to load the UDS with the xored randomness into the
+            // correct internal slot. The first (successful) advance call will
+            // use the UDS per default.
+            if (load_uds_with_randomness == 1'b0) begin
+              load_uds_with_randomness = 1'b1;
+              backdoor_load_uds(current_key_slot.src_slot);
             end
             return 0;
           end
@@ -1534,6 +1563,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     is_kmac_rsp_err       = 0;
     is_kmac_invalid_data  = 0;
     is_sw_share_corrupted = 0;
+    load_uds_with_randomness = 0;
     req_fifo.flush();
     rsp_fifo.flush();
     foreach (current_internal_key[slot]) begin
