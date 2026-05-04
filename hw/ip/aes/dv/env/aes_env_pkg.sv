@@ -18,6 +18,8 @@ package aes_env_pkg;
   import aes_pkg::*;
   import key_sideload_agent_pkg::*;
 
+  // AES-specific RAL extension
+  `include "aes_ral_extension.svh"
 
   // macro includes
   `include "uvm_macros.svh"

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
+class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block_extended));
 
   `uvm_object_utils_begin(aes_env_cfg)
   `uvm_object_utils_end

@@ -187,7 +187,7 @@ class dv_base_reg_block extends uvm_reg_block;
     end
   endfunction
 
-  function void get_shadowed_regs(ref dv_base_reg shadowed_regs[$]);
+  virtual function void get_shadowed_regs(ref dv_base_reg shadowed_regs[$]);
     dv_base_reg all_regs[$];
     this.get_dv_base_regs(all_regs);
     foreach (all_regs[i]) begin

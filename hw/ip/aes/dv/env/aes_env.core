@@ -20,6 +20,7 @@ filesets:
       - lowrisc:dv:aes_test_vectors
     files:
       - aes_env_pkg.sv
+      - aes_ral_extension.svh: {is_include_file: true}
       - aes_seq_item.sv: {is_include_file: true}
       - aes_message_item.sv: {is_include_file: true}
       - aes_env_cfg.sv: {is_include_file: true}
