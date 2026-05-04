@@ -45,6 +45,7 @@ cc_library(
 
 opentitan_binary_blob(
     name = "otcrypto_binary_blob_api",
+    collect_code_coverage = 0,
     config = select({
         "//sw/device/lib/crypto/configs:crypto_fips_all": "//sw/device/lib/crypto/configs:crypto_fips_all.txt",
         "//conditions:default": None,

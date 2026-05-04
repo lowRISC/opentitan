@@ -394,7 +394,7 @@ def _opentitan_binary_blob(ctx):
         "-static",
         "-nostdlib",
         relocatable_o.path,
-        "-Wl,--defsym=_rom_origin=0",
+        "-Wl,--defsym=_rom_origin={}".format(ctx.attr.rom_origin),
         "-Wl,-T,{}".format(template_file.path),
         "-Wl,--no-relax",
     ]
@@ -697,6 +697,10 @@ common_binary_attrs = {
 opentitan_binary_blob = rv_rule(
     implementation = _opentitan_binary_blob,
     attrs = dict(common_binary_attrs.items() + {
+        "rom_origin": attr.string(
+            default = "0",
+            doc = "Base address for the dry-run link.",
+        ),
         "config": attr.label(
             default = None,
             allow_single_file = True,
