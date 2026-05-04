@@ -6,6 +6,7 @@
 #define OPENTITAN_HW_DV_VERILATOR_CPP_SV_SCOPED_H_
 
 #include <cassert>
+#include <mutex>
 #include <stdexcept>
 #include <string>
 #include <svdpi.h>
@@ -32,7 +33,10 @@
 class SVScoped {
  public:
   SVScoped(const std::string &name);
-  ~SVScoped() { svSetScope(prev_scope_); }
+  ~SVScoped() {
+    svSetScope(prev_scope_);
+    global_scope_mutex_.unlock();
+  }
 
   class Error : public std::exception {
    public:
@@ -49,6 +53,7 @@ class SVScoped {
   static std::string join_sv_scopes(const std::string &a, const std::string &b);
 
  private:
+  static std::mutex global_scope_mutex_;
   svScope prev_scope_;
 };
 

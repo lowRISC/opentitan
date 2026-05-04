@@ -5,6 +5,7 @@
 #ifndef OPENTITAN_HW_DV_VERILATOR_SIMUTIL_VERILATOR_CPP_VERILATOR_SIM_CTRL_H_
 #define OPENTITAN_HW_DV_VERILATOR_SIMUTIL_VERILATOR_CPP_VERILATOR_SIM_CTRL_H_
 
+#include <atomic>
 #include <chrono>
 #include <string>
 #include <vector>
@@ -84,7 +85,7 @@ class VerilatorSimCtrl {
   /**
    * Get the simulation result
    */
-  bool WasSimulationSuccessful() const { return simulation_success_; }
+  bool WasSimulationSuccessful() const { return simulation_success_.load(std::memory_order_relaxed); }
 
   /**
    * Set the number of clock cycles (periods) before the reset signal is
@@ -134,8 +135,8 @@ class VerilatorSimCtrl {
   bool tracing_possible_;
   unsigned int initial_reset_delay_cycles_;
   unsigned int reset_duration_cycles_;
-  volatile unsigned int request_stop_;
-  volatile bool simulation_success_;
+  std::atomic<unsigned int> request_stop_;
+  std::atomic<bool> simulation_success_;
   std::chrono::steady_clock::time_point time_begin_;
   std::chrono::steady_clock::time_point time_end_;
   VerilatedTracer tracer_;

@@ -218,8 +218,10 @@ void VerilatorSimCtrl::SetTimeout(unsigned int cycles) {
 }
 
 void VerilatorSimCtrl::RequestStop(bool simulation_success) {
-  request_stop_ = true;
-  simulation_success_ &= simulation_success;
+  request_stop_.store(1, std::memory_order_seq_cst);
+  if (!simulation_success) {
+    simulation_success_.store(false, std::memory_order_relaxed);
+  }
 }
 
 void VerilatorSimCtrl::RegisterExtension(SimCtrlExtension *ext) {
@@ -378,7 +380,7 @@ void VerilatorSimCtrl::Run() {
 
     Trace();
 
-    if (request_stop_) {
+    if (request_stop_.load(std::memory_order_seq_cst)) {
       std::cout << "Received stop request, shutting down simulation."
                 << std::endl;
       break;

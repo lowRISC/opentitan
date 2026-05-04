@@ -7,6 +7,8 @@
 #include <cassert>
 #include <sstream>
 
+std::mutex SVScoped::global_scope_mutex_;
+
 // Set scope by name, returning the old scope. If the name doesn't describe a
 // valid scope, throw an SVScoped::Error.
 static svScope SetAbsScope(const std::string &name) {
@@ -85,7 +87,10 @@ static svScope SetRelScope(const std::string &name) {
   return SetAbsScope(scope_name);
 }
 
-SVScoped::SVScoped(const std::string &name) : prev_scope_(SetRelScope(name)) {}
+SVScoped::SVScoped(const std::string &name) {
+  global_scope_mutex_.lock();
+  prev_scope_ = SetRelScope(name);
+}
 
 SVScoped::Error::Error(const std::string &scope_name)
     : scope_name_(scope_name) {
