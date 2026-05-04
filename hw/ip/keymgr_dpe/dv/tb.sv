@@ -28,6 +28,8 @@ module tb;
   keymgr_dpe_if keymgr_dpe_if(.clk(clk), .rst_n(rst_n));
   kmac_app_if kmac_if(.clk_i(clk), .rst_ni(rst_n), .req(kmac_req), .rsp(kmac_rsp));
 
+  bind dut.u_ctrl keymgr_dpe_ctrl_if u_if (.clk_i, .rst_ni);
+
   // connect KDF interface for assertion check
   assign keymgr_dpe_if.kmac_data_req = kmac_req;
   assign keymgr_dpe_if.kmac_data_rsp = kmac_rsp;
@@ -85,6 +87,8 @@ module tb;
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual keymgr_dpe_if)::set(null, "*.env", "keymgr_dpe_vif", keymgr_dpe_if);
+    uvm_config_db#(virtual keymgr_dpe_ctrl_if)::set(null, "*.env", "keymgr_dpe_ctrl_vif",
+                                                    dut.u_ctrl.u_if);
     uvm_config_db#(virtual kmac_app_if)::set(null, "*env.m_kmac_agent*", "vif", kmac_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
