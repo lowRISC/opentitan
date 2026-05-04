@@ -50,6 +50,74 @@ status_t rsa_keygen_from_cofactor_2048_start(
 status_t rsa_keygen_from_cofactor_2048_finalize(
     rsa_2048_public_key_t *public_key, rsa_2048_private_key_t *private_key);
 
+/**
+ * Starts an RSA-3072 key-from-cofactor operation; returns immediately.
+ *
+ * The key exponent must be F4=65537; no other exponents are supported. This
+ * routine does not perform any checks on the generated keypair (e.g. primality
+ * checks or even range checks).
+ *
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * @param public_key Public key (n, e).
+ * @param cofactor One of the prime cofactors (p or q).
+ * @return Result of the operation (OK or error).
+ */
+status_t rsa_keygen_from_cofactor_3072_start(
+    const rsa_3072_public_key_t *public_key,
+    const rsa_3072_cofactor_t *cofactor);
+
+/**
+ * Waits for an RSA-3072 key-from-cofactor operation to complete.
+ *
+ * Should be invoked only after `rsa_keygen_from_cofactor_3072_start`. Blocks
+ * until OTBN is done processing.
+ *
+ * The public key returned by this function is recomputed by OTBN; callers may
+ * find it helpful to compare the public key modulus returned to the one that
+ * was passed to OTBN originally in order to check for errors.
+ *
+ * @param[out] public_key Generated public key (n, e).
+ * @param[out] private_key Generated private key (d, e).
+ * @return Result of the operation (OK or error).
+ */
+status_t rsa_keygen_from_cofactor_3072_finalize(
+    rsa_3072_public_key_t *public_key, rsa_3072_private_key_t *private_key);
+
+/**
+ * Starts an RSA-4096 key-from-cofactor operation; returns immediately.
+ *
+ * The key exponent must be F4=65537; no other exponents are supported. This
+ * routine does not perform any checks on the generated keypair (e.g. primality
+ * checks or even range checks).
+ *
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * @param public_key Public key (n, e).
+ * @param cofactor One of the prime cofactors (p or q).
+ * @return Result of the operation (OK or error).
+ */
+status_t rsa_keygen_from_cofactor_4096_start(
+    const rsa_4096_public_key_t *public_key,
+    const rsa_4096_cofactor_t *cofactor);
+
+/**
+ * Waits for an RSA-4096 key-from-cofactor operation to complete.
+ *
+ * Should be invoked only after `rsa_keygen_from_cofactor_4096_start`. Blocks
+ * until OTBN is done processing.
+ *
+ * The public key returned by this function is recomputed by OTBN; callers may
+ * find it helpful to compare the public key modulus returned to the one that
+ * was passed to OTBN originally in order to check for errors.
+ *
+ * @param[out] public_key Generated public key (n, e).
+ * @param[out] private_key Generated private key (d, e).
+ * @return Result of the operation (OK or error).
+ */
+status_t rsa_keygen_from_cofactor_4096_finalize(
+    rsa_4096_public_key_t *public_key, rsa_4096_private_key_t *private_key);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

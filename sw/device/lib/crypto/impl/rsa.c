@@ -572,12 +572,34 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
       return otcrypto_eval_exit(OTCRYPTO_OK);
     }
     case kOtcryptoRsaSize3072: {
-      // COVERAGE (NOT IMPL) Not implemented.
-      return OTCRYPTO_NOT_IMPLEMENTED;
+      if (cofactor_share0->len !=
+              sizeof(rsa_3072_cofactor_t) / sizeof(uint32_t) ||
+          modulus->len != kRsa3072NumWords) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      rsa_3072_cofactor_t *cf = (rsa_3072_cofactor_t *)cofactor_share0->data;
+      for (size_t i = 0; i < cofactor_share1->len; i++) {
+        cf->data[i] ^= cofactor_share1->data[i];
+      }
+      rsa_3072_public_key_t pk;
+      HARDENED_TRY(hardened_memcpy(pk.n.data, modulus->data, modulus->len));
+      HARDENED_TRY_WIPE_DMEM(rsa_keygen_from_cofactor_3072_start(&pk, cf));
+      return otcrypto_eval_exit(OTCRYPTO_OK);
     }
     case kOtcryptoRsaSize4096: {
-      // COVERAGE (NOT IMPL) Not implemented.
-      return OTCRYPTO_NOT_IMPLEMENTED;
+      if (cofactor_share0->len !=
+              sizeof(rsa_4096_cofactor_t) / sizeof(uint32_t) ||
+          modulus->len != kRsa4096NumWords) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      rsa_4096_cofactor_t *cf = (rsa_4096_cofactor_t *)cofactor_share0->data;
+      for (size_t i = 0; i < cofactor_share1->len; i++) {
+        cf->data[i] ^= cofactor_share1->data[i];
+      }
+      rsa_4096_public_key_t pk;
+      HARDENED_TRY(hardened_memcpy(pk.n.data, modulus->data, modulus->len));
+      HARDENED_TRY_WIPE_DMEM(rsa_keygen_from_cofactor_4096_start(&pk, cf));
+      return otcrypto_eval_exit(OTCRYPTO_OK);
     }
     default:
       return OTCRYPTO_BAD_ARGS;
@@ -624,13 +646,19 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
     }
     case kOtcryptoRsaSize3072: {
       HARDENED_CHECK_EQ(size, kOtcryptoRsaSize3072);
-      // COVERAGE (NOT IMPL) Not implemented.
-      return OTCRYPTO_NOT_IMPLEMENTED;
+      rsa_3072_public_key_t *pk = (rsa_3072_public_key_t *)public_key->key;
+      rsa_3072_private_key_t *sk =
+          (rsa_3072_private_key_t *)private_key->keyblob;
+      HARDENED_TRY_WIPE_DMEM(rsa_keygen_from_cofactor_3072_finalize(pk, sk));
+      break;
     }
     case kOtcryptoRsaSize4096: {
       HARDENED_CHECK_EQ(size, kOtcryptoRsaSize4096);
-      // COVERAGE (NOT IMPL) Not implemented.
-      return OTCRYPTO_NOT_IMPLEMENTED;
+      rsa_4096_public_key_t *pk = (rsa_4096_public_key_t *)public_key->key;
+      rsa_4096_private_key_t *sk =
+          (rsa_4096_private_key_t *)private_key->keyblob;
+      HARDENED_TRY_WIPE_DMEM(rsa_keygen_from_cofactor_4096_finalize(pk, sk));
+      break;
     }
     default:
       // Invalid key size.
