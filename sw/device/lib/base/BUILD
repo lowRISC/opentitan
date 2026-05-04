@@ -238,6 +238,30 @@ cc_test(
 )
 
 cc_library(
+    name = "memory_aligned",
+    srcs = ["memory_aligned.c"],
+    hdrs = ["memory_aligned.h"],
+    # This library re-exports the inline function from its header; suppress
+    # builtins so LLVM does not rewrite the internal read_32/write_32 calls
+    # into plain lw/sw sequences that it might then optimise away or fold
+    # into a memcpy call.
+    copts = ["-fno-builtin"],
+    deps = [
+        ":macros",
+        ":memory",
+    ],
+)
+
+cc_test(
+    name = "memory_aligned_unittest",
+    srcs = ["memory_aligned_unittest.cc"],
+    deps = [
+        ":memory_aligned",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "hardened",
     srcs = ["hardened.c"],
     hdrs = [
