@@ -26,6 +26,10 @@ class keymgr_dpe_env extends cip_base_env #(
       `uvm_fatal(`gfn, "failed to get keymgr_dpe_vif from uvm_config_db")
     end
     cfg.scb = scoreboard;
+    if (!uvm_config_db#(virtual keymgr_dpe_ctrl_if)::get(this, "", "keymgr_dpe_ctrl_vif",
+                                                         cfg.keymgr_dpe_ctrl_vif)) begin
+      `uvm_fatal(get_full_name(), "Could not get keymgr_dpe_ctrl_vif from uvm_config_db.")
+    end
   endfunction
 
   function void connect_phase(uvm_phase phase);
