@@ -25,31 +25,37 @@ identity concepts are introduced in this document.
 
 ## [Secure Hardware Design Guidelines][implementation_guidelines]
 
-Silicon designs for security devices require special guidelines to protect the designs against myriad attacks.
-To that end, the team established [Secure Hardware Design Guidelines][implementation_guidelines] which are followed when developing OpenTitan security IP.
+Silicon designs for security devices require special guidelines to protect the
+designs against myriad attacks. To that end, the team established
+[Secure Hardware Design Guidelines][implementation_guidelines] which are
+followed when developing OpenTitan security IP.
 
 ## [Penetrationtesting Framework][pentest_framework]
 
-To validate these physical security measures and logical guarantees, OpenTitan includes a dedicated [Penetration Testing Framework][pentest_framework]. This framework operates on target devices—both FPGA and silicon implementations—to conduct and automate side-channel analysis (SCA) and fault injection (FI) attacks against hardware components and the crypto library.
+To validate these physical security measures and logical guarantees, OpenTitan
+includes a dedicated [Penetration Testing Framework][pentest_framework]. This
+framework operates on target devices—both FPGA and silicon implementations—to
+conduct and automate side-channel analysis (SCA) and fault injection (FI)
+attacks against hardware components and the crypto library.
 
 ## Functional Guarantees
 
 At the functional level OpenTitan aims to provide the following guarantees:
 
-*   Silicon Owners shall be able to deploy their own Root of Trust (RoT) Public
-    Key Infrastructure (PKI) after taking ownership of the device.
-*   Silicon Creators shall endorse the authenticity of the hardware. Endorsement
-    is contingent on the silicon adhering to the physical implementation
-    guidelines and standard requirements stipulated by the project. The
-    endorsement shall be measurable via a Transport Certificate.
-*   OpenTitan shall provide full boot attestation measurements to allow Silicon
-    Owners to verify the boot chain configuration. The attestation chain shall
-    be anchored in the Silicon Owner's RoT PKI.
-*   OpenTitan shall provide a key manager implementation strongly bound to the
-    boot chain. Only a boot chain signed with the expected set of keys shall be
-    able to unlock stored keys/secrets.
-*   OpenTitan shall provide a key versioning scheme with support for key
-    migration bound to the firmware versioning and update implementation.
+- Silicon Owners shall be able to deploy their own Root of Trust (RoT) Public
+  Key Infrastructure (PKI) after taking ownership of the device.
+- Silicon Creators shall endorse the authenticity of the hardware. Endorsement
+  is contingent on the silicon adhering to the physical implementation
+  guidelines and standard requirements stipulated by the project. The
+  endorsement shall be measurable via a Transport Certificate.
+- OpenTitan shall provide full boot attestation measurements to allow Silicon
+  Owners to verify the boot chain configuration. The attestation chain shall be
+  anchored in the Silicon Owner's RoT PKI.
+- OpenTitan shall provide a key manager implementation strongly bound to the
+  boot chain. Only a boot chain signed with the expected set of keys shall be
+  able to unlock stored keys/secrets.
+- OpenTitan shall provide a key versioning scheme with support for key migration
+  bound to the firmware versioning and update implementation.
 
 ## Use Cases
 
@@ -63,8 +69,8 @@ the certification strategy for silicon implementations.
 
 All hardware security primitives adhere to the OpenTitan
 [comportable][comportable_ip] peripheral interface specification.
-Implementations for some of these components are available for reference and
-may not meet production or certification criteria yet.
+Implementations for some of these components are available for reference and may
+not meet production or certification criteria yet.
 
 ### [Entropy source][entropy_source]
 
@@ -72,40 +78,40 @@ Digital wrapper for a NIST SP 800-90B compliant entropy source. An additional
 emulated entropy source implementation will be available for FPGA functional
 testing.
 
-### [CSRNG][csrng]
+### [CSRNG]
 
 Cryptographically Secure Random Number Generator (CSRNG) providing support for
 both deterministic (DRBG) and true random number generation (TRNG).
 
-The DRBG is implemented using the `CTR_DRBG` construction specified in
-NIST SP 800-90A.
+The DRBG is implemented using the `CTR_DRBG` construction specified in NIST SP
+800-90A.
 
-### [AES][aes]
+### [AES]
 
 Advanced Encryption Standard (AES) supporting Encryption/Decryption using
 128/192/256 bit key sizes in the following cipher block modes:
 
-*   Electronic Codebook (ECB) mode,
-*   Cipher Block Chaining (CBC) mode,
-*   Cipher Feedback (CFB) mode with fixed data segment size of 128 bits,
-*   Output Feedback (OFB) mode, and
-*   Counter (CTR) mode.
+- Electronic Codebook (ECB) mode,
+- Cipher Block Chaining (CBC) mode,
+- Cipher Feedback (CFB) mode with fixed data segment size of 128 bits,
+- Output Feedback (OFB) mode, and
+- Counter (CTR) mode.
 
 Galois/Counter Mode (GCM) can be implemented by leveraging Ibex for the GHASH
-operation as demonstrated in [OpenTitan's library of cryptographic
-implementations][cryptolib].
+operation as demonstrated in
+[OpenTitan's library of cryptographic implementations][cryptolib].
 
-### [HMAC][hmac]
+### [HMAC]
 
-HMAC with SHA-2 FIPS 180-4 compliant hash function, supporting both
-HMAC-SHA256 and SHA256 modes of operation.
+HMAC with SHA-2 FIPS 180-4 compliant hash function, supporting both HMAC-SHA256
+and SHA256 modes of operation.
 
 ### [Key Manager][keymgr]
 
 Hardware backed symmetric key generation and storage providing key isolation
 from software.
 
-### [OTBN][otbn]
+### [OTBN]
 
 Public key algorithm accelerator with support for bignum operations in hardware.
 
@@ -119,14 +125,14 @@ the assigned severity.
 [aes]: ../../hw/ip/aes/README.md
 [alert_handler]: ../../hw/top_earlgrey/ip_autogen/alert_handler/README.md
 [comportable_ip]: ../contributing/hw/comportability/README.md
+[cryptolib]: https://github.com/lowRISC/opentitan/tree/master/sw/device/lib/crypto
 [csrng]: ../../hw/ip/csrng/README.md
 [entropy_source]: ../../hw/ip/entropy_src/README.md
 [hmac]: ../../hw/ip/hmac/README.md
+[implementation_guidelines]: ./implementation_guidelines/hardware/README.md
 [keymgr]: ../../hw/ip/keymgr/README.md
 [logical_security_model]: ./logical_security_model/README.md
-[implementation_guidelines]: ./implementation_guidelines/hardware/README.md
 [otbn]: ../../hw/ip/otbn/README.md
 [security_model]: ./specs/README.md
-[use_cases]: ../use_cases/README.md
 [threat_model]: ./threat_model/README.md
-[cryptolib]: https://github.com/lowRISC/opentitan/tree/master/sw/device/lib/crypto
+[use_cases]: ../use_cases/README.md
