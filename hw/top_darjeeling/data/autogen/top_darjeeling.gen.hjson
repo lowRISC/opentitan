@@ -5737,12 +5737,17 @@
           domain: Main
         }
       }
+      param_decl:
+      {
+        NumInstHwSlot: "8"
+        NumBootStages: "2"
+        NumRomDigestInputs: "2"
+      }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks_i.clk_main_secure
         clk_edn_i: clkmgr_aon_clocks_i.clk_main_secure
       }
-      param_decl: {}
       memory: {}
       param_list:
       [
@@ -5754,6 +5759,33 @@
           local: "false"
           expose: "true"
           name_top: KeymgrDpeKmacEnMasking
+        }
+        {
+          name: NumInstHwSlot
+          desc: Number of instantiated HW slots
+          type: int
+          default: "8"
+          local: "true"
+          expose: "true"
+          name_top: KeymgrDpeNumInstHwSlot
+        }
+        {
+          name: NumBootStages
+          desc: Number of available boot stage
+          type: int
+          default: "2"
+          local: "true"
+          expose: "true"
+          name_top: KeymgrDpeNumBootStages
+        }
+        {
+          name: NumRomDigestInputs
+          desc: Number of digest inputs from ROM_CTRL
+          type: int
+          default: "2"
+          local: "true"
+          expose: "true"
+          name_top: KeymgrDpeNumRomDigestInputs
         }
       ]
       inter_signal_list:

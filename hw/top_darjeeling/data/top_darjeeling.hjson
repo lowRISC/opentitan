@@ -732,6 +732,11 @@
       base_addr: {
         hart: "0x21140000",
       },
+      param_decl: {
+        NumInstHwSlot: "8",
+        NumBootStages: "2",
+        NumRomDigestInputs: "2",
+      },
     },
     { name: "csrng",
       type: "csrng",
