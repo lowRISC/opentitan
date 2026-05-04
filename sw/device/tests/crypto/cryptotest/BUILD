@@ -295,7 +295,7 @@ RSA_TESTVECTOR_TARGETS = [
 RSA_TESTVECTOR_ARGS = " ".join([
     "--rsa-json=\"$(rootpath {})\"".format(target)
     for target in RSA_TESTVECTOR_TARGETS
-] + ["--run-keygen"])
+])
 
 cryptotest(
     name = "rsa_kat",
@@ -303,6 +303,14 @@ cryptotest(
     test_args = RSA_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/rsa_kat:harness",
     test_vectors = RSA_TESTVECTOR_TARGETS,
+)
+
+cryptotest(
+    name = "rsa_keygen_kat",
+    slow_test = True,
+    test_args = "--run-keygen",
+    test_harness = "//sw/host/tests/crypto/rsa_kat:harness",
+    test_vectors = [],
 )
 
 SHA256_TESTVECTOR_TARGETS = [
