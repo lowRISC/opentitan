@@ -43,6 +43,11 @@ ujson_rust(
 )
 
 ujson_rust(
+    name = "ed25519_commands_rust",
+    srcs = ["//sw/device/tests/crypto/cryptotest/json:ed25519_commands"],
+)
+
+ujson_rust(
     name = "hmac_commands_rust",
     srcs = ["//sw/device/tests/crypto/cryptotest/json:hmac_commands"],
 )
@@ -71,6 +76,7 @@ rust_library(
         "src/drbg_commands.rs",
         "src/ecdh_commands.rs",
         "src/ecdsa_commands.rs",
+        "src/ed25519_commands.rs",
         "src/hash_commands.rs",
         "src/hmac_commands.rs",
         "src/kmac_commands.rs",
@@ -85,6 +91,7 @@ rust_library(
         ":ecdh_commands_rust",
         ":drbg_commands_rust",
         ":ecdsa_commands_rust",
+        ":ed25519_commands_rust",
         ":hash_commands_rust",
         ":hmac_commands_rust",
         ":kmac_commands_rust",
@@ -98,6 +105,7 @@ rust_library(
         "ecdh_commands_loc": "$(execpath :ecdh_commands_rust)",
         "drbg_commands_loc": "$(execpath :drbg_commands_rust)",
         "ecdsa_commands_loc": "$(execpath :ecdsa_commands_rust)",
+        "ed25519_commands_loc": "$(execpath :ed25519_commands_rust)",
         "hash_commands_loc": "$(execpath :hash_commands_rust)",
         "hmac_commands_loc": "$(execpath :hmac_commands_rust)",
         "kmac_commands_loc": "$(execpath :kmac_commands_rust)",
