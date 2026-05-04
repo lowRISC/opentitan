@@ -31,6 +31,8 @@ unit_tests = [
     "mldsa87_sign_decompose_w_test",
     "mldsa87_sign_decode_s_test",
     "mldsa87_sign_compute_z_test",
+    "mldsa87_sign_compute_r0_pos_test",
+    "mldsa87_sign_compute_r0_neg_test",
 ]
 
 [

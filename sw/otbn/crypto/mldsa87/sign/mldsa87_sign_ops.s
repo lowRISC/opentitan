@@ -7,6 +7,7 @@
 .globl compute_w
 .globl decompose_w
 .globl compute_z
+.globl compute_r0
 
 .text
 
@@ -254,8 +255,8 @@ compute_z:
    *   S1_0[s], S1_1[s] = decode_s(S1_0_enc[s], S1_1_enc[s])
    *
    *   A0, A1 = NTT(S1_0[s]), NTT(S1_1[s])
-   *   B0, B1 = NTT(C) * W0, NTT(C) * W1
-   *   C0, C1 = INTT(X0), INTT(X1)
+   *   B0, B1 = NTT(C) * A0, NTT(C) * A1
+   *   C0, C1 = INTT(B0), INTT(B1)
    *   D0, D1 = Y0[s] + C0, Y1[s] + C1
    *   return D0, D1
    * enddef
@@ -395,20 +396,196 @@ _compute_z_kernel:
   addi x3, x12, 0
   jal x1, intt
 
-  /* Z0 = Y0[s] + C0 = Y0[s] + INTT(NTT(C) * S1_0[s]). */
+  /* D0 = Y0[s] + C0 = Y0[s] + INTT(NTT(C) * S1_0[s]). */
   addi x2, x9, 0
   addi x3, x11, 0
   addi x4, x9, 0
   jal x1, poly_add
 
-  /* Z1 = Y1[s] + C1 = Y1[s] + INTT(NTT(C) * S1_1[s]). */
+  /* D1 = Y1[s] + C1 = Y1[s] + INTT(NTT(C) * S1_1[s]). */
   addi x2, x10, 0
   addi x3, x12, 0
   addi x4, x10, 0
   jal x1, poly_add
 
+  ret
+
   /* Failure case, a signature polynomial has failed the infinity norm check. */
 _compute_z_fail:
+  bn.xor w0, w0, w0
+
+  ret
+
+/**
+ * Compute the R0 vector and check its infinity norm.
+ *
+ * This routine computes R0 = W0 - INTT(NTT(C) * NTT(S2)) with arithmetically
+ * shared vectors W0 and S2 with S2 being decoded and converted to arithmetic
+ * shares on-the-fly (see `decode_s`). The S2 vector is assumed to be passed in
+ * encoded form, i.e., as two 768-byte Boolean shares. This routine overwrites
+ * the DMEM locations of the shared W0 polynomials.
+ *
+ * The computation deviates slightly from FIPS-204 as it directly operates on
+ * the lower-bit polynomials W0 of the commitment vector W. This choice makes
+ * it possible to completely unmask R0 after it has passed the bound check. For
+ * more details on this implementation choice see Section 3.2 in Azouaoui et
+ * al.'s paper "Protecting Dilithium against Leakage":
+ * https://tches.iacr.org/index.php/TCHES/article/view/11158/10597.
+ *
+ * Each derived polynomial R0[i] undergoes a secure infinity norm check
+ * |R0[i]|_inf < GAMMA2 - BETA before being unmasked.
+ *
+ * @param[in] x2:  DMEM address of the first share of W0 and the resulting R0.
+ * @param[in] x3:  DMEM address of the second share of W0.
+ * @param[in] x4:  DMEM address of the challenge polynomial C in NTT domain.
+ * @param[in] x5:  DMEM address of the first share of the encoded vector S2.
+ * @param[in] x6:  DMEM address of the second share of the encoded vector S2.
+ * @param[in] x7:  DMEM address of the vectorized bound GAMMA2 - BETA (32 bytes).
+ * @param[in] x8:  DMEM address of the polynomial slot 0.
+ * @param[in] x9:  DMEM address of the polynomial slot 1.
+ * @param[out] w0: 2^256-1 if the norm check passes, 0 otherwise.
+ */
+compute_r0:
+  /* Save DMEM address pointers. */
+  addi x10, x2, 0 /* W0_0 (W0 share 0) */
+  addi x11, x3, 0 /* W0_1 (W0 share 1) */
+  addi x12, x4, 0 /* NTT(C) */
+  addi x13, x5, 0 /* S2_0_enc (encoded S2 share 0) */
+  addi x14, x6, 0 /* S2_1_enc (encoded S2 share 1) */
+
+  /*
+   * Do not save those address pointers which are not overwritten:
+   *   x7: Bound
+   *   x8: Slot 0
+   *   x9: Slot 1
+   */
+
+  /* Loop index. */
+  addi x15, x0, 0 /* r */
+
+  /*
+   * Calculate the individual polynomials of the vector R0 as follows:
+   *
+   * for r in [0, 7]:
+   *   S2_0[r], S2_1[r] = decode_s(S2_0_enc[r], S2_1_enc[r])
+   *
+   *   A0, A1 = NTT(S2_0[s]), NTT(S2_1[s])
+   *   B0, B1 = NTT(C) * A0, NTT(C) * A1
+   *   C0, C1 = INTT(B0), INTT(B1)
+   *   D0, D1 = W0_0[r] - C0, W0_1[r] - C1
+   *
+   *   if |D0, D1|_inf >= bound:
+   *     return 0
+   *   endif
+   * endfor
+   *
+   * for r in [0, 7]:
+   *   R0[r] = D0 + D1 (unmasking)
+   * endfor
+   *
+   * return 2^256 - 1
+   */
+_compute_r0_loop:
+  /* Decode S2_0_enc[r] and S2_1_enc[r] as arithmetic shares into slots 0 and 1. */
+  addi x2, x13, 0
+  addi x3, x14, 0
+  addi x4, x8, 0
+  addi x5, x9, 0
+  jal x1, decode_s
+
+  /* A0 = NTT(S2_0[r]). */
+  addi x2, x8, 0
+  addi x3, x8, 0
+  jal x1, ntt
+
+  /* A1 = NTT(S2_1[r]). */
+  addi x2, x9, 0
+  addi x3, x9, 0
+  jal x1, ntt
+
+  /* B0 = NTT(C) * A0 = NTT(C) * S2_0[r]. */
+  addi x2, x12, 0
+  addi x3, x8, 0
+  addi x4, x8, 0
+  jal x1, poly_mul
+
+  /* B1 = NTT(C) * A1 = NTT(C) * S2_1[r]. */
+  addi x2, x12, 0
+  addi x3, x9, 0
+  addi x4, x9, 0
+  jal x1, poly_mul
+
+  /* C0 = INTT(B0) = INTT(NTT(C) * S2_0[r]). */
+  addi x2, x8, 0
+  addi x3, x8, 0
+  jal x1, intt
+
+  /* C1 = INTT(B1) = INTT(NTT(C) * S2_1[r]). */
+  addi x2, x9, 0
+  addi x3, x9, 0
+  jal x1, intt
+
+  /* D0 = W0_0[r] - C0 = W0_0[r] - INTT(NTT(C) * S2_0[r]). */
+  addi x2, x10, 0
+  addi x3, x8, 0
+  addi x4, x10, 0
+  jal x1, poly_sub
+
+  /* D1 = W0_1[r] - C1 = W0_1[r] - INTT(NTT(C) * S2_1[r]). */
+  addi x2, x11, 0
+  addi x3, x9, 0
+  addi x4, x11, 0
+  jal x1, poly_sub
+
+ /* Compute the infinity norm check on the shared R0[r] polynomial and exit
+    the routine if it fails. */
+  addi x2, x10, 0
+  addi x3, x11, 0
+  addi x4, x7, 0
+  jal x1, sec_bound_check
+
+  /* Fail if w0 = 0. */
+  bn.cmp w0, w31, FG0
+  csrrs x2, FG0, x0
+  andi x2, x2, 0x8
+  bne x2, x0, _compute_r0_fail
+
+  /* Increment r, advance W0 and S2 pointers. */
+  addi x10, x10, 1024
+  addi x11, x11, 1024
+  addi x13, x13, 96
+  addi x14, x14, 96
+  addi x15, x15, 1
+
+  /* Loop until all the R0[r] have been computed. */
+  addi x2, x0, 8
+  bne x15, x2, _compute_r0_loop
+
+  /* Reset the R0[s] address pointers. */
+  li x2, 8192
+  sub x10, x10, x2
+  sub x11, x11, x2
+
+  /* At this point, due to the passed infinity norm check, D0 and D1 are not
+     considered sensitive anymore and can be unmasked (see Section 3.2 in [1]).
+       R0[s] = D0 + D1 (unmasking). */
+  loopi 8, 6
+    addi x2, x10, 0
+    addi x3, x11, 0
+    addi x4, x10, 0
+    jal x1, sec_unmask
+
+    addi x10, x10, 1024
+    addi x11, x11, 1024
+    /* End of loop */
+
+  /* At this point, all the R0 polynomials have been computed and have passed
+     the infinity norm check. */
+  bn.not w0, w31
+  ret
+
+  /* Failure case, a R0 polynomial has failed the infinity norm check. */
+_compute_r0_fail:
   bn.xor w0, w0, w0
 
   ret
