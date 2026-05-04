@@ -24,8 +24,8 @@ class keymgr_dpe_smoke_vseq extends keymgr_dpe_base_vseq;
   // for initial latch of OTP key src slot does not matter
   // it can be completely random
   constraint initial_slot_vals_c {
-    soft src_slot < keymgr_dpe_pkg::DpeNumSlots;
-    soft dst_slot < keymgr_dpe_pkg::DpeNumSlots;
+    soft src_slot < keymgr_dpe_env_pkg::DvNumInstHwSlot;
+    soft dst_slot < keymgr_dpe_env_pkg::DvNumInstHwSlot;
     if (!otp_latched) { soft dst_slot == 0; }
   }
 
@@ -89,7 +89,7 @@ class keymgr_dpe_smoke_vseq extends keymgr_dpe_base_vseq;
     end
 
     // Iterate through all slots and fill them with DPE context
-    for (int iter = 0; iter < (keymgr_dpe_pkg::DpeNumSlots - 1); iter++) begin
+    for (int iter = 0; iter < (keymgr_dpe_env_pkg::DvNumInstHwSlot - 1); iter++) begin
       // set source and destination
       src_slot = dst_slot;
       dst_slot ++;
@@ -104,7 +104,7 @@ class keymgr_dpe_smoke_vseq extends keymgr_dpe_base_vseq;
 
     // Check to make sure all key slots are valid after the advance operations
     // this is checked via the valid bit being set in the key slot
-    for (int slot = 0; slot < keymgr_dpe_pkg::DpeNumSlots; slot++) begin
+    for (int slot = 0; slot < keymgr_dpe_env_pkg::DvNumInstHwSlot; slot++) begin
       `DV_CHECK_EQ(cfg.keymgr_dpe_vif.internal_key_slots[slot].valid, 1)
     end
 
@@ -115,7 +115,7 @@ class keymgr_dpe_smoke_vseq extends keymgr_dpe_base_vseq;
     // only have boot_stage 1, which gives us enough boot_stages to advance and fill
     // key_slots 1-3 again.
     `uvm_info(`gfn, "Key Manager DPE smoke - erase test", UVM_LOW)
-    for (int iter = 1; iter<keymgr_dpe_pkg::DpeNumSlots; iter++) begin
+    for (int iter = 1; iter < keymgr_dpe_env_pkg::DvNumInstHwSlot; iter++) begin
       dst_slot = iter;
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(src_slot)
       keymgr_dpe_erase(.num_adv_op(4));
@@ -123,7 +123,7 @@ class keymgr_dpe_smoke_vseq extends keymgr_dpe_base_vseq;
 
     // To verify the erase operation succeeded, check that the valid bits
     // of the erased key slots are not de-asserted.
-    for (int slot = 1; slot < keymgr_dpe_pkg::DpeNumSlots; slot++) begin
+    for (int slot = 1; slot < keymgr_dpe_env_pkg::DvNumInstHwSlot; slot++) begin
       `DV_CHECK_EQ(cfg.keymgr_dpe_vif.internal_key_slots[slot].valid, 0)
     end
 
@@ -136,17 +136,17 @@ class keymgr_dpe_smoke_vseq extends keymgr_dpe_base_vseq;
     // set dst_slot to 1, to begin filling slot 1-3 again
     src_slot = 0;
     dst_slot = 1;
-    for (int iter = 0; iter<keymgr_dpe_pkg::DpeNumSlots; iter++) begin
+    for (int iter = 0; iter < keymgr_dpe_env_pkg::DvNumInstHwSlot; iter++) begin
       // The boot_stage for key_slot 2 is expected to be 3.
       // This means we can not use it to derive key_slot 3.
       // We have to use either key_slot 0 or 1. So on the final iteration
       // randomize to use either key_slot 0 or 1
-      if (iter == keymgr_dpe_pkg::DpeNumSlots-2) begin
+      if (iter == keymgr_dpe_env_pkg::DvNumInstHwSlot-2) begin
         src_slot = $urandom_range(0, 1);
         // Set retain_parent to 0. So that an additional advance can be done with the same src and dst slot
         policy.retain_parent = 0;
       end
-      if (iter == keymgr_dpe_pkg::DpeNumSlots-1) begin
+      if (iter == keymgr_dpe_env_pkg::DvNumInstHwSlot-1) begin
         src_slot = 3;
         dst_slot = 3;
       end
@@ -157,7 +157,7 @@ class keymgr_dpe_smoke_vseq extends keymgr_dpe_base_vseq;
 
     // Check to make sure all key slots are valid after the advance operations
     // this is checked via the valid bit being set in the key slot
-    for (int slot = 1; slot < keymgr_dpe_pkg::DpeNumSlots; slot++) begin
+    for (int slot = 1; slot < keymgr_dpe_env_pkg::DvNumInstHwSlot; slot++) begin
       `DV_CHECK_EQ(cfg.keymgr_dpe_vif.internal_key_slots[slot].valid, 1)
     end
 

@@ -30,8 +30,8 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
   rand bit do_rand_otp_key;
   rand bit do_invalid_otp_key;
   rand keymgr_dpe_pkg::keymgr_dpe_policy_t policy;
-  rand keymgr_dpe_pkg::keymgr_dpe_slot_idx_e src_slot;
-  rand keymgr_dpe_pkg::keymgr_dpe_slot_idx_e dst_slot;
+  rand keymgr_dpe_env_pkg::dv_keymgr_dpe_slot_idx_e src_slot;
+  rand keymgr_dpe_env_pkg::dv_keymgr_dpe_slot_idx_e dst_slot;
 
   // save DUT returned current state here, rather than using it from RAL,
   // it's needed info to predict operation result in seq
@@ -101,6 +101,15 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     end
 
     `uvm_info(`gfn, "Initializing keymgr dpe", UVM_MEDIUM)
+    `uvm_info(`gfn,
+              $sformatf({"Top dependent dv parameter > # Bootstages: ",
+                         "%0d # HW slots: %0d # ROM Digest values: %0d",
+                         " Size Adv Data: %0d"},
+                         keymgr_dpe_env_pkg::DvBootStages,
+                         keymgr_dpe_env_pkg::DvNumInstHwSlot,
+                         keymgr_dpe_env_pkg::DvNumRomDigestInputs,
+                         keymgr_dpe_env_pkg::DvDpeAdvDataWidth),
+              UVM_LOW)
 
     `DV_CHECK_RANDOMIZE_FATAL(ral.intr_enable)
     csr_update(.csr(ral.intr_enable));
