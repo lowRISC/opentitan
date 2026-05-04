@@ -43,6 +43,14 @@ OTBN_DECLARE_SYMBOL_ADDR(run_rsa_key_from_cofactor, MODE_COFACTOR_RSA_2048);
 static const uint32_t kOtbnRsaModeCofactor2048 =
     OTBN_ADDR_T_INIT(run_rsa_key_from_cofactor, MODE_COFACTOR_RSA_2048);
 
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_key_from_cofactor, MODE_COFACTOR_RSA_3072);
+static const uint32_t kOtbnRsaModeCofactor3072 =
+    OTBN_ADDR_T_INIT(run_rsa_key_from_cofactor, MODE_COFACTOR_RSA_3072);
+
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_key_from_cofactor, MODE_COFACTOR_RSA_4096);
+static const uint32_t kOtbnRsaModeCofactor4096 =
+    OTBN_ADDR_T_INIT(run_rsa_key_from_cofactor, MODE_COFACTOR_RSA_4096);
+
 enum {
   /* Number of words used to represent the application mode. */
   kOtbnRsaModeWords = 1,
@@ -97,5 +105,85 @@ status_t rsa_keygen_from_cofactor_2048_finalize(
                                ARRAYSIZE(private_key->n.data)));
 
   // Wipe DMEM.
+  return otbn_dmem_sec_wipe();
+}
+
+status_t rsa_keygen_from_cofactor_3072_start(
+    const rsa_3072_public_key_t *public_key,
+    const rsa_3072_cofactor_t *cofactor) {
+  HARDENED_TRY(otbn_load_app(kOtbnAppRsaKeygen));
+
+  HARDENED_TRY(otbn_dmem_write(ARRAYSIZE(public_key->n.data),
+                               public_key->n.data, kOtbnVarRsaN));
+  HARDENED_TRY(otbn_dmem_write(ARRAYSIZE(cofactor->data), cofactor->data,
+                               kOtbnVarRsaCofactor));
+
+  uint32_t mode = kOtbnRsaModeCofactor3072;
+  HARDENED_TRY(otbn_dmem_write(kOtbnRsaModeWords, &mode, kOtbnVarRsaMode));
+  return otbn_execute();
+}
+
+status_t rsa_keygen_from_cofactor_3072_finalize(
+    rsa_3072_public_key_t *public_key, rsa_3072_private_key_t *private_key) {
+  HARDENED_TRY_WIPE_DMEM(otbn_busy_wait_for_done());
+
+  uint32_t act_mode = 0;
+  HARDENED_TRY_WIPE_DMEM(
+      otbn_dmem_read(kOtbnRsaModeWords, kOtbnVarRsaMode, &act_mode));
+  if (act_mode != kOtbnRsaModeCofactor3072) {
+    return OTCRYPTO_FATAL_ERR;
+  }
+  HARDENED_CHECK_EQ(launder32(act_mode), kOtbnRsaModeCofactor3072);
+
+  HARDENED_TRY_WIPE_DMEM(
+      otbn_dmem_read(kRsa3072NumWords, kOtbnVarRsaN, private_key->n.data));
+  HARDENED_TRY_WIPE_DMEM(
+      otbn_dmem_read(kRsa3072NumWords, kOtbnVarRsaD0, private_key->d0.data));
+  HARDENED_TRY_WIPE_DMEM(
+      otbn_dmem_read(kRsa3072NumWords, kOtbnVarRsaD1, private_key->d1.data));
+
+  HARDENED_TRY(hardened_memcpy(public_key->n.data, private_key->n.data,
+                               ARRAYSIZE(private_key->n.data)));
+
+  return otbn_dmem_sec_wipe();
+}
+
+status_t rsa_keygen_from_cofactor_4096_start(
+    const rsa_4096_public_key_t *public_key,
+    const rsa_4096_cofactor_t *cofactor) {
+  HARDENED_TRY(otbn_load_app(kOtbnAppRsaKeygen));
+
+  HARDENED_TRY(otbn_dmem_write(ARRAYSIZE(public_key->n.data),
+                               public_key->n.data, kOtbnVarRsaN));
+  HARDENED_TRY(otbn_dmem_write(ARRAYSIZE(cofactor->data), cofactor->data,
+                               kOtbnVarRsaCofactor));
+
+  uint32_t mode = kOtbnRsaModeCofactor4096;
+  HARDENED_TRY(otbn_dmem_write(kOtbnRsaModeWords, &mode, kOtbnVarRsaMode));
+  return otbn_execute();
+}
+
+status_t rsa_keygen_from_cofactor_4096_finalize(
+    rsa_4096_public_key_t *public_key, rsa_4096_private_key_t *private_key) {
+  HARDENED_TRY_WIPE_DMEM(otbn_busy_wait_for_done());
+
+  uint32_t act_mode = 0;
+  HARDENED_TRY_WIPE_DMEM(
+      otbn_dmem_read(kOtbnRsaModeWords, kOtbnVarRsaMode, &act_mode));
+  if (act_mode != kOtbnRsaModeCofactor4096) {
+    return OTCRYPTO_FATAL_ERR;
+  }
+  HARDENED_CHECK_EQ(launder32(act_mode), kOtbnRsaModeCofactor4096);
+
+  HARDENED_TRY_WIPE_DMEM(
+      otbn_dmem_read(kRsa4096NumWords, kOtbnVarRsaN, private_key->n.data));
+  HARDENED_TRY_WIPE_DMEM(
+      otbn_dmem_read(kRsa4096NumWords, kOtbnVarRsaD0, private_key->d0.data));
+  HARDENED_TRY_WIPE_DMEM(
+      otbn_dmem_read(kRsa4096NumWords, kOtbnVarRsaD1, private_key->d1.data));
+
+  HARDENED_TRY(hardened_memcpy(public_key->n.data, private_key->n.data,
+                               ARRAYSIZE(private_key->n.data)));
+
   return otbn_dmem_sec_wipe();
 }
