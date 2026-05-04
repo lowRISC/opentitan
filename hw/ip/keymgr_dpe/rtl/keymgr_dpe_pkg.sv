@@ -7,25 +7,9 @@ package keymgr_dpe_pkg;
   // Most of the parameters are directly reused from keymgr_pkg
   import keymgr_pkg::*;
 
-  parameter int DpeNumSlots = 8;
-  parameter int DpeNumSlotsWidth = prim_util_pkg::vbits(DpeNumSlots);
-
   // Chip Device ID
   parameter int DeviceIdWidth = 256;
   typedef logic [DeviceIdWidth-1:0] keymgr_dpe_device_id_t;
-
-  // keymgr and keymgr_dpe have different maximum KMAC input widths. The below widths correspond to
-  // the following inputs to advance to the creator root key state:
-  //   - Software binding
-  //   - Revision seed
-  //   - OTP device ID
-  //   - LC keymgr diversification value
-  //   - ROM digests
-  //   - Creator seed
-  parameter int DpeAdvDataWidth = SwBindingWidth + KeyWidth + DeviceIdWidth +
-      lc_ctrl_pkg::LcKeymgrDivWidth + KeyWidth*keymgr_dpe_reg_pkg::NumRomDigestInputs + KeyWidth;
-
-  typedef logic [DpeNumSlotsWidth-1:0] keymgr_dpe_slot_idx_e;
 
   // Enumeration for operation
   typedef enum logic [2:0] {
@@ -130,9 +114,10 @@ package keymgr_dpe_pkg;
   // advance calls.
   parameter int DpeBootStagesWidth = 2;
   typedef enum logic [DpeBootStagesWidth-1:0] {
-    BootStageCreator = 0,
-    BootStageOwner   = 1,
-    BootStageRuntime = 2
+    BootStageCreator  = 0,
+    BootStageOwnerInt = 1,
+    BootStageOwner    = 2,
+    BootStageRuntime  = 3
   } keymgr_dpe_boot_stage_e;
 
   // An internal secret key slot

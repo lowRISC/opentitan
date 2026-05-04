@@ -12,7 +12,13 @@ module keymgr_dpe_ctrl
   import keymgr_dpe_pkg::*;
   import keymgr_dpe_reg_pkg::*;
 // TODO(#384): Bring back KmacEnMasking parameter
-(
+#(
+  // Number of instantiated HW slots
+  parameter int unsigned NumInstHwSlot = 4,
+  parameter int unsigned NumInstHwSlotWidth = 2,
+  // Number of available boot stages
+  parameter int unsigned NumBootStages = 3
+) (
   input clk_i,
   input rst_ni,
 
@@ -32,8 +38,8 @@ module keymgr_dpe_ctrl
   input op_start_i,
   input keymgr_dpe_ops_e op_i,
   input load_key_lock_i,
-  input [DpeNumSlotsWidth-1:0] slot_src_sel_i,
-  input [DpeNumSlotsWidth-1:0] slot_dst_sel_i,
+  input [NumInstHwSlotWidth-1:0] slot_src_sel_i,
+  input [NumInstHwSlotWidth-1:0] slot_dst_sel_i,
   input keymgr_dpe_policy_t slot_policy_i,
    // `max_key_version_i` is stored during advance to be compared with `key_version_i` during
    // generate calls
@@ -110,8 +116,8 @@ module keymgr_dpe_ctrl
 
   logic [EntropyRndWidth-1:0] cnt;
 
-  keymgr_dpe_slot_t [DpeNumSlots-1:0] key_slots_q;
-  keymgr_dpe_slot_t [DpeNumSlots-1:0] key_slots_d;
+  keymgr_dpe_slot_t [NumInstHwSlot-1:0] key_slots_q;
+  keymgr_dpe_slot_t [NumInstHwSlot-1:0] key_slots_d;
 
   // error conditions
   logic invalid_kmac_out;
@@ -282,6 +288,20 @@ module keymgr_dpe_ctrl
   logic destination_slot_valid;
   assign destination_slot_valid = key_slots_q[slot_dst_sel_i].valid;
 
+  // Determine the boot stage for the next DPE context derivation.
+  // If there are only two boot stages, BootStageOwnerInt will be omitted
+  keymgr_dpe_boot_stage_e next_boot_stage;
+  if (NumBootStages == 2) begin : gen_two_boot_stage
+    assign next_boot_stage =
+        (active_key_slot_o.boot_stage == BootStageCreator) ? BootStageOwner :
+        BootStageRuntime;
+  end else begin : gen_three_boot_stage
+    assign next_boot_stage =
+        (active_key_slot_o.boot_stage == BootStageCreator) ? BootStageOwnerInt :
+        (active_key_slot_o.boot_stage == BootStageOwnerInt) ? BootStageOwner :
+        BootStageRuntime;
+  end
+
   /////////////////////////
   // Keymgr slots MUX
   /////////////////////////
@@ -320,8 +340,7 @@ module keymgr_dpe_ctrl
         key_slots_d[slot_dst_sel_i].valid = 1;
         key_slots_d[slot_dst_sel_i].key = kmac_data_i;
         key_slots_d[slot_dst_sel_i].max_key_version = max_key_version_i;
-        key_slots_d[slot_dst_sel_i].boot_stage =
-          (active_key_slot_o.boot_stage == BootStageCreator) ? BootStageOwner : BootStageRuntime;
+        key_slots_d[slot_dst_sel_i].boot_stage = next_boot_stage;
         key_slots_d[slot_dst_sel_i].key_policy = slot_policy_i;
       end
 
@@ -346,7 +365,7 @@ module keymgr_dpe_ctrl
       // sideload interfaces, but that is outside the scope of this mux.)
       SlotWipeAll,
       SlotWipeInternalOnly: begin
-        for (int i = 0; i < DpeNumSlots; i++) begin
+        for (int i = 0; i < NumInstHwSlot; i++) begin
           // Note that '0 for `key_policy` is a safe default, as it is the most restrictive policy
           key_slots_d[i] = '0;
           for (int j = 0; j < Shares; j++) begin
@@ -746,6 +765,10 @@ module keymgr_dpe_ctrl
   // qe / re etc.
   `ASSERT_INIT(SameErrCnt_A, $bits(keymgr_dpe_reg2hw_fault_status_reg_t) ==
                              (SyncFaultLastIdx + AsyncFaultLastIdx))
+
+  // verify supported number of boot stage
+  `ASSERT_INIT(InvalidNumOfBootStage_A, NumBootStages inside {2, 3})
+
 
   // // stage select should always be Disable whenever it is not enabled
   // `ASSERT(StageDisableSel_A, !en_i |-> stage_sel_o == Disable)
