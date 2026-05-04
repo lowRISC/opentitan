@@ -58,6 +58,21 @@ cc_library(
 )
 
 cc_library(
+    name = "ed25519",
+    srcs = ["ed25519.c"],
+    hdrs = ["ed25519.h"],
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/tests/crypto/cryptotest/json:ed25519_commands",
+    ],
+)
+
+cc_library(
     name = "ecdh",
     srcs = ["ecdh.c"],
     hdrs = ["ecdh.h"],
@@ -173,6 +188,7 @@ FIRMWARE_DEPS = [
     ":drbg",
     ":ecdh",
     ":ecdsa",
+    ":ed25519",
     ":hash",
     ":hmac",
     ":kmac",

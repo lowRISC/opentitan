@@ -15,6 +15,7 @@ cc_library(
         ":drbg_commands",
         ":ecdh_commands",
         ":ecdsa_commands",
+        ":ed25519_commands",
         ":hash_commands",
         ":hmac_commands",
         ":kmac_commands",
@@ -51,6 +52,14 @@ cc_library(
     name = "ecdsa_commands",
     srcs = ["ecdsa_commands.c"],
     hdrs = ["ecdsa_commands.h"],
+    features = ["-coverage"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
+    name = "ed25519_commands",
+    srcs = ["ed25519_commands.c"],
+    hdrs = ["ed25519_commands.h"],
     features = ["-coverage"],
     deps = ["//sw/device/lib/ujson"],
 )
