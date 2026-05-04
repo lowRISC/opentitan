@@ -341,6 +341,10 @@ module top_darjeeling #(
   localparam int LcCtrlNumRmaAckSigs = 1;
   // local parameters for spi_host0
   localparam int SpiHost0NumCS = 1;
+  // local parameters for keymgr_dpe
+  localparam int KeymgrDpeNumInstHwSlot = 8;
+  localparam int KeymgrDpeNumBootStages = 2;
+  localparam int KeymgrDpeNumRomDigestInputs = 2;
   // local parameters for entropy_src
   localparam int EntropySrcEsFifoDepth = 3;
   localparam int unsigned EntropySrcDistrFifoDepth = 11;
@@ -1700,7 +1704,10 @@ module top_darjeeling #(
     .RndCnstAesSeed(RndCnstKeymgrDpeAesSeed),
     .RndCnstKmacSeed(RndCnstKeymgrDpeKmacSeed),
     .RndCnstOtbnSeed(RndCnstKeymgrDpeOtbnSeed),
-    .RndCnstNoneSeed(RndCnstKeymgrDpeNoneSeed)
+    .RndCnstNoneSeed(RndCnstKeymgrDpeNoneSeed),
+    .NumInstHwSlot(KeymgrDpeNumInstHwSlot),
+    .NumBootStages(KeymgrDpeNumBootStages),
+    .NumRomDigestInputs(KeymgrDpeNumRomDigestInputs)
   ) u_keymgr_dpe (
     // Clock and reset connections
     .clk_i(clkmgr_aon_clocks_i.clk_main_secure),
