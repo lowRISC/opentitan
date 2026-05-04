@@ -295,6 +295,11 @@ p256_verify:
   bn.wsrw   MOD, w0
   bn.addm   w24, w19, w31
 
+  /* Verify that w31 still holds zero */
+  bn.xor w30, w30, w30
+  bn.cmp w31, w30
+  jal x1, trigger_fault_if_fg0_z
+
   /* If we got here the basic validity checks passed, so set `ok` to true. */
   la       x2, ok
   addi     x3, x0, HARDENED_BOOL_TRUE_XOR_COUNTER
