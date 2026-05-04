@@ -466,19 +466,21 @@ module keymgr_dpe
     adv_dvalid = {(2 ** DpeBootStagesWidth){1'b1}};
 
     if (reg2hw.control_shadowed.sw_binding_only.q == 1'b0) begin
-      // For (0 = Creator) and (1 = OwnerInt), check seed validity
-      adv_matrix[BootStageCreator] = DpeAdvDataWidth'({sw_binding,
-                                                      revision_seed,
-                                                      device_id_i,
-                                                      lc_keymgr_div_i,
-                                                      rom_digests,
-                                                      creator_seed});
-      adv_dvalid[BootStageCreator] = creator_seed_vld &
-                                    devid_vld         &
-                                    health_state_vld  &
-                                    rom_digest_vld;
-      adv_matrix[BootStageOwner] = DpeAdvDataWidth'({sw_binding,owner_seed});
-      adv_dvalid[BootStageOwner] = owner_seed_vld;
+      // For (0 = Creator) / (1 = OwnerInt) / (2 = Owner), check seed validity
+      adv_matrix[BootStageCreator]  = DpeAdvDataWidth'({sw_binding,
+                                                        revision_seed,
+                                                        device_id_i,
+                                                        lc_keymgr_div_i,
+                                                        rom_digests});
+      adv_dvalid[BootStageCreator]  = devid_vld        &
+                                      health_state_vld &
+                                      rom_digest_vld;
+      adv_matrix[BootStageOwnerInt] = DpeAdvDataWidth'({sw_binding,
+                                                        creator_seed});
+      adv_dvalid[BootStageOwnerInt] = creator_seed_vld;
+      adv_matrix[BootStageOwner]    = DpeAdvDataWidth'({sw_binding,
+                                                        owner_seed});
+      adv_dvalid[BootStageOwner]    = owner_seed_vld;
     end
   end
 
@@ -541,18 +543,22 @@ module keymgr_dpe
   assign hw2reg.debug.inactive_lc_en.d        = lc_tx_test_false_loose(
                                                   lc_keymgr_en[KeymgrDpeEnDebug]);
 
-  // creator_seed, dev_id, health_state and rom digest are used when boot_stage is incremented from
-  // 0 (= Creator) to 1 (= OwnerInt), so only latch them during consumption.
-  logic is_creator_boot_stage, is_owner_boot_stage;
-  assign is_creator_boot_stage = active_key_slot.boot_stage == BootStageCreator;
-  assign is_owner_boot_stage   = active_key_slot.boot_stage == BootStageOwner;
+  // Only latch required signals to advance the bootstage during consumption.
+  logic is_creator_boot_stage, is_owner_boot_stage, is_owner_int_boot_stage;
+  assign is_creator_boot_stage   = active_key_slot.boot_stage == BootStageCreator;
+  assign is_owner_int_boot_stage = active_key_slot.boot_stage == BootStageOwnerInt;
+  assign is_owner_boot_stage     = active_key_slot.boot_stage == BootStageOwner;
 
-  assign hw2reg.debug.invalid_creator_seed.de = adv_en & is_creator_boot_stage;
+  // dev_id, health_state and rom digest is used when boot_stage is incremented
+  // from 0 (= Creator) to 1 (= OwnerInt)
   assign hw2reg.debug.invalid_dev_id.de       = adv_en & is_creator_boot_stage;
   assign hw2reg.debug.invalid_health_state.de = adv_en & is_creator_boot_stage;
   assign hw2reg.debug.invalid_digest.de       = adv_en & is_creator_boot_stage;
 
-  // owner_seed is used when boot_stage is incremented from 1 (= OwnerInt) to 2 (= Owner).
+  // creator_seed is used when boot_stage is incremented from 1 (= OwnerInt) to 2 (= Owner).
+  assign hw2reg.debug.invalid_creator_seed.de = adv_en & is_owner_int_boot_stage;
+
+  // owner_seed is used when boot_stage is incremented from 2 (= Owner) to 3 (= Runtime).
   assign hw2reg.debug.invalid_owner_seed.de    = adv_en & is_owner_boot_stage;
 
   // key validity and versions are checked regardless of the boot stage, when there is an ongoing

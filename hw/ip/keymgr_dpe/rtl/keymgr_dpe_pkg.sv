@@ -23,7 +23,7 @@ package keymgr_dpe_pkg;
   //   - ROM digests
   //   - Creator seed
   parameter int DpeAdvDataWidth = SwBindingWidth + KeyWidth + DeviceIdWidth +
-      lc_ctrl_pkg::LcKeymgrDivWidth + KeyWidth*keymgr_dpe_reg_pkg::NumRomDigestInputs + KeyWidth;
+      lc_ctrl_pkg::LcKeymgrDivWidth + KeyWidth*keymgr_dpe_reg_pkg::NumRomDigestInputs;
 
   typedef logic [DpeNumSlotsWidth-1:0] keymgr_dpe_slot_idx_e;
 
@@ -130,9 +130,10 @@ package keymgr_dpe_pkg;
   // advance calls.
   parameter int DpeBootStagesWidth = 2;
   typedef enum logic [DpeBootStagesWidth-1:0] {
-    BootStageCreator = 0,
-    BootStageOwner   = 1,
-    BootStageRuntime = 2
+    BootStageCreator  = 0,
+    BootStageOwnerInt = 1,
+    BootStageOwner    = 2,
+    BootStageRuntime  = 3
   } keymgr_dpe_boot_stage_e;
 
   // An internal secret key slot
