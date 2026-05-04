@@ -76,14 +76,6 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  if (launder32(output_key_material->config.security_level) !=
-          kOtcryptoKeySecurityLevelLow ||
-      launder32(key_derivation_key->config.security_level) !=
-          kOtcryptoKeySecurityLevelLow) {
-    // The underlying HMAC implementation is not currently hardened.
-    return OTCRYPTO_NOT_IMPLEMENTED;
-  }
-
   // Check for null label with nonzero length.
   if (label == NULL || (label->data == NULL && label->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
