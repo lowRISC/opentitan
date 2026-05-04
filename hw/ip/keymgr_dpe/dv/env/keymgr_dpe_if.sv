@@ -7,7 +7,6 @@ interface keymgr_dpe_if(input clk, input rst_n);
 
   import uvm_pkg::*;
   import keymgr_dpe_env_pkg::*;
-  import keymgr_dpe_reg_pkg::NumRomDigestInputs;
 
   // Represents the keymgr_dpe sideload state for each sideload interface.
   //
@@ -16,13 +15,13 @@ interface keymgr_dpe_if(input clk, input rst_n);
   // Status can't be directly changed from SideLoadClear to SideLoadAvail.
   // When status is SideLoadClear due to SIDELOAD_CLEAR programmed, need to write CSR to 0 to reset
   // it so that status is changed to SideLoadNotAvail, then we may set it to SideLoadAvail again
-  lc_ctrl_pkg::lc_tx_t                                keymgr_dpe_en;
-  lc_ctrl_pkg::lc_keymgr_div_t                        keymgr_dpe_div;
-  keymgr_dpe_pkg::keymgr_dpe_device_id_t              otp_device_id;
-  keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t       creator_root_key;
-  keymgr_dpe_pkg::keymgr_dpe_creator_seed_t           creator_seed;
-  keymgr_dpe_pkg::keymgr_dpe_owner_seed_t             owner_seed;
-  rom_ctrl_pkg::keymgr_data_t[NumRomDigestInputs-1:0] rom_digests;
+  lc_ctrl_pkg::lc_tx_t                                  keymgr_dpe_en;
+  lc_ctrl_pkg::lc_keymgr_div_t                          keymgr_dpe_div;
+  keymgr_dpe_pkg::keymgr_dpe_device_id_t                otp_device_id;
+  keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t         creator_root_key;
+  keymgr_dpe_pkg::keymgr_dpe_creator_seed_t             creator_seed;
+  keymgr_dpe_pkg::keymgr_dpe_owner_seed_t               owner_seed;
+  rom_ctrl_pkg::keymgr_data_t[DvNumRomDigestInputs-1:0] rom_digests;
 
   keymgr_pkg::hw_key_req_t kmac_key;
   keymgr_pkg::hw_key_req_t aes_key;
@@ -103,7 +102,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
 
   // assigned from the keymgr_dpe.keymgr_dpe_ctrl.key_slots_q signal, which should hold the
   // current value of the keyslots in the dut.
-  keymgr_dpe_pkg::keymgr_dpe_slot_t [keymgr_dpe_pkg::DpeNumSlots-1:0] internal_key_slots;
+  keymgr_dpe_pkg::keymgr_dpe_slot_t [DvNumInstHwSlot-1:0] internal_key_slots;
 
   task automatic init(bit rand_otp_key, bit invalid_otp_key);
     // Keymgr_dpe only latches OTP key once, so this scb does not support change OTP key on the
@@ -115,7 +114,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
     keymgr_dpe_en = lc_ctrl_pkg::On;
     keymgr_dpe_div = 64'h5CFBD765CE33F34E;
     otp_device_id = 'hF0F0;
-    for (int i = 0; i < NumRomDigestInputs; ++i) begin
+    for (int i = 0; i < DvNumRomDigestInputs; ++i) begin
       rom_digests[i].data = 256'hA20A046CF42E6EAC560A3F82BFA76285B5C1D4AEA7C915E49A32D1C89BE0F507;
       rom_digests[i].valid = '1;
     end
@@ -193,14 +192,14 @@ interface keymgr_dpe_if(input clk, input rst_n);
     // as a set of flags / counters.
     bit bad_keymgr_dpe_div = 1'b0;
     bit bad_otp_device_id = 1'b0;
-    bit [NumRomDigestInputs-1:0] bad_rom_data = '0, bad_rom_valid = '0;
+    bit [DvNumRomDigestInputs-1:0] bad_rom_data = '0, bad_rom_valid = '0;
 
     repeat (num_invalid_input) begin
       randcase
         1: bad_keymgr_dpe_div = 1'b1;
         1: bad_otp_device_id = 1'b1;
-        1: bad_rom_data[$urandom % NumRomDigestInputs] = 1'b1;
-        1: bad_rom_valid[$urandom % NumRomDigestInputs] = 1'b1;
+        1: bad_rom_data[$urandom % DvNumRomDigestInputs] = 1'b1;
+        1: bad_rom_valid[$urandom % DvNumRomDigestInputs] = 1'b1;
       endcase
     end
 
@@ -221,7 +220,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
 
       // rom_digests
       begin
-        for (int i = 0; i < NumRomDigestInputs; i++)
+        for (int i = 0; i < DvNumRomDigestInputs; i++)
           fork
             automatic int local_i = i;
             #($urandom_range(1000, 0) * 1ns);
@@ -239,8 +238,8 @@ interface keymgr_dpe_if(input clk, input rst_n);
   function automatic void compare_internal_key_slot(
     keymgr_dpe_pkg::keymgr_dpe_slot_t dst_key_slot,
     keymgr_dpe_pkg::keymgr_dpe_slot_t src_key_slot,
-    keymgr_dpe_pkg::keymgr_dpe_slot_idx_e dst_slot_index,
-    keymgr_dpe_pkg::keymgr_dpe_slot_idx_e src_slot_index,
+    dv_keymgr_dpe_slot_idx_e dst_slot_index,
+    dv_keymgr_dpe_slot_idx_e src_slot_index,
     bit check_parent_retained
   );
     `DV_CHECK_EQ(dst_key_slot, internal_key_slots[dst_slot_index],
