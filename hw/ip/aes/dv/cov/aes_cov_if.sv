@@ -58,7 +58,7 @@ interface aes_cov_if
        bins ctr     = { AES_CTR };
        bins gcm     = { AES_GCM };
        bins none    = { AES_NONE };
-       bins illegal = { [0:$] } with ($countones(item) != 1);
+       bins illegal = { [0:$] } with (($countones(item) != 1) && (item != AES_NONE));
       }
 
     cp_key_len: coverpoint aes_keylen
