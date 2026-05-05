@@ -77,8 +77,59 @@ class rram_ctrl_base_vseq extends cip_base_vseq #(
   // semaphore to prevent multiple concurrent accesses to the control port
   semaphore ctrl_port_task_guard;
 
-endclass : rram_ctrl_base_vseq
+  // Simple model for the OTP key seeds
+  virtual task otp_model();
 
+    `uvm_info(`gfn, "Starting OTP Model ...", UVM_LOW)
+
+    // Initial Values
+    cfg.misc_vif.otp_key_rsp.addr_ack   = 1'b0;
+    cfg.misc_vif.otp_key_rsp.data_ack   = 1'b0;
+    cfg.misc_vif.otp_key_rsp.seed_valid = 1'b0;
+    cfg.misc_vif.otp_key_rsp.key        = '0;
+    cfg.misc_vif.otp_key_rsp.rand_key   = '0;
+    // Note 'some values' appear in both branches of this fork, this is OK because the
+    // branches never run together by design.
+    // The order is always 'addr' followed by 'data'.
+    fork
+      forever begin // addr
+        @(posedge cfg.clk_rst_vif.rst_n);
+        @(posedge cfg.misc_vif.otp_key_req.addr_req);
+        `uvm_info(`gfn, $sformatf("OTP Addr Key Applied to DUT : otp_addr_key : %0x",
+          otp_addr_key), UVM_MEDIUM)
+        `uvm_info(`gfn, $sformatf("OTP Addr Rand Key Applied to DUT : otp_addr_rand_key : %0x",
+          otp_addr_rand_key), UVM_MEDIUM)
+        cfg.misc_vif.otp_key_rsp.key = otp_addr_key;
+        cfg.misc_vif.otp_key_rsp.rand_key = otp_addr_rand_key;
+        cfg.misc_vif.otp_key_rsp.seed_valid = 1'b1;
+        #1ns; // Positive Hold
+        cfg.misc_vif.otp_key_rsp.addr_ack = 1'b1;
+        @(negedge cfg.misc_vif.otp_key_req.addr_req);
+        #1ns; // Positive Hold
+        cfg.misc_vif.otp_key_rsp.addr_ack = 1'b0;
+        cfg.misc_vif.otp_key_rsp.seed_valid = 1'b0;
+      end
+      forever begin // data
+        @(posedge cfg.clk_rst_vif.rst_n);
+        @(posedge cfg.misc_vif.otp_key_req.data_req);
+        cfg.misc_vif.otp_key_rsp.key = otp_data_key;
+        cfg.misc_vif.otp_key_rsp.rand_key = otp_data_rand_key;
+        `uvm_info(`gfn, $sformatf("OTP Data Key Applied to DUT : otp_data_key : %0x",
+          otp_data_key), UVM_MEDIUM)
+        `uvm_info(`gfn, $sformatf("OTP Data Rand Key Applied to DUT : otp_data_rand_key : %0x",
+          otp_data_rand_key), UVM_MEDIUM)
+        cfg.misc_vif.otp_key_rsp.seed_valid = 1'b1;
+        #1ns; // Positive Hold
+        cfg.misc_vif.otp_key_rsp.data_ack = 1'b1;
+        @(negedge cfg.misc_vif.otp_key_req.data_req);
+        #1ns; // Positive Hold
+        cfg.misc_vif.otp_key_rsp.data_ack = 1'b0;
+        cfg.misc_vif.otp_key_rsp.seed_valid = 1'b0;
+      end
+    join_none
+  endtask : otp_model
+
+endclass : rram_ctrl_base_vseq
 
 function rram_ctrl_base_vseq::new(string name="");
   super.new(name);
@@ -99,9 +150,8 @@ task rram_ctrl_base_vseq::pre_start();
     otp_data_key      = {$urandom, $urandom, $urandom, $urandom};
     otp_data_rand_key = {$urandom, $urandom, $urandom, $urandom};
 
-    // todo: provide random data keys once rram_ctrl_lcmgr is added
-    cfg.otp_addr_key = '0;
-    cfg.otp_data_key = '0;
+    cfg.otp_addr_key = otp_addr_key;
+    cfg.otp_data_key = otp_data_key;
 
     cfg.misc_vif.rma_req  <= lc_ctrl_pkg::Off;
     cfg.misc_vif.rma_seed <= lc_ctrl_pkg::LC_NVM_RMA_SEED_DEFAULT;
@@ -111,6 +161,8 @@ task rram_ctrl_base_vseq::pre_start();
     cfg.misc_vif.otp_macro_req.addr  = '0;
     cfg.misc_vif.otp_macro_req.size  = '0;
     cfg.misc_vif.otp_macro_req.wdata = '0;
+
+    otp_model();  // Start OTP Model
 
     super.pre_start();
 
@@ -140,6 +192,18 @@ task rram_ctrl_base_vseq::rram_ctrl_init();
     init_done = get_field_val(ral.phy_status.init_done, reg_data);
     #1us;
   end while (init_done == 1'b0);
+
+  if (cfg.skip_lc_init == 1'b0) begin
+    // initialize controller
+    csr_wr(.ptr(ral.init), .value('b1));
+
+    // poll init_done
+    do begin
+      csr_rd(.ptr(ral.status), .value(reg_data));
+      init_done = get_field_val(ral.status.init_done, reg_data);
+      #1us;
+    end while (init_done == 1'b0);
+  end
 
   init_data = '{(BusWordsPerPage){0}};
   if (cfg.skip_init_data_array == 1'b0) begin

@@ -40,5 +40,6 @@ function void rram_ctrl_base_test::build_phase(uvm_phase phase);
 
   void'($value$plusargs("skip_init_data_array=%0b", cfg.skip_init_data_array));
   void'($value$plusargs("skip_init_info_array=%0b", cfg.skip_init_info_array));
+  void'($value$plusargs("skip_lc_init=%0b", cfg.skip_lc_init));
 
 endfunction

@@ -16,6 +16,7 @@ class rram_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rram_ctrl_core_reg_blo
 
   bit skip_init_data_array = 1'b0;
   bit skip_init_info_array = 1'b0;
+  bit skip_lc_init         = 1'b0;
 
   // Currently used otp keys
   logic [KeyWidth-1:0] otp_addr_key;
