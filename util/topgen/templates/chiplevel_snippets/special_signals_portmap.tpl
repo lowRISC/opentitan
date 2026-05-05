@@ -6,7 +6,9 @@
 <%page args="top, feature_info, domain"/>\
 <%
   clkmgr = lib.find_module(top['module'], 'clkmgr')
+  rstmgr = lib.find_module(top['module'], 'rstmgr')
   domain_clkmgr = clkmgr.get('domain')
+  domain_rstmgr = rstmgr.get('domain')
 %>\
 % if domain_clkmgr == domain:
     // All externally supplied clocks
@@ -17,6 +19,10 @@
 % else:
     .${clkmgr['name']}_clocks_i(${clkmgr['name']}_clocks),
     .${clkmgr['name']}_cg_en_i (${clkmgr['name']}_cg_en),
+% endif
+% if domain_rstmgr != domain:
+    .${rstmgr['name']}_resets_i(${rstmgr['name']}_resets),
+    .${rstmgr['name']}_rst_en_i(${rstmgr['name']}_rst_en),
 % endif
 
 % for name, plic in top["plic_info"].items():

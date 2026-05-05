@@ -685,34 +685,58 @@ def get_clock_lpg_path(top: object,
         return prefixes['lpg'] + clk_name
 
 
+def get_reset_prefixes(top, domain_mod) -> dict:
+    rstmgr = find_module(top['module'], 'rstmgr')
+    domain_rstmgr = rstmgr.get('domain')
+
+    if domain_rstmgr == domain_mod or domain_mod is None:
+        prefixes = {
+            'top': f"{rstmgr['name']}_resets.",
+            'ext': '',
+            'lpg': f"{rstmgr['name']}_rst_en.",
+        }
+    else:
+        prefixes = {
+            'top': f"{rstmgr['name']}_resets_i.",
+            'ext': '',
+            'lpg': f"{rstmgr['name']}_rst_en_i.",
+        }
+
+    return prefixes
+
+
 def get_reset_path(top: object,
                    reset: Union[str, object],
+                   domain_mod: str = None,
                    shadow_sel: bool = False,
                    unmanaged_reset: bool = False) -> str:
     """Return the appropriate reset path given name
     """
+    prefixes = get_reset_prefixes(top, domain_mod)
     if unmanaged_reset:
         return top['unmanaged_resets'].get(reset['name']).signal_name
     else:
-        return top['resets'].get_path(reset['name'], reset['domain'],
+        return top['resets'].get_path(reset['name'], prefixes, reset['domain'],
                                       shadow_sel)
 
 
 def get_reset_lpg_path(top: object,
                        reset: Union[str, object],
+                       domain_mod: str = None,
                        shadow_sel: bool = False,
-                       domain: bool = None,
+                       reset_domain: str = None,
                        unmanaged_reset: bool = False) -> str:
     """Return the appropriate LPG reset path given name
     """
+    prefixes = get_reset_prefixes(top, domain_mod)
     if unmanaged_reset:
         return top['unmanaged_resets'].get(reset['name']).rst_en_signal_name
     else:
-        if domain is not None:
-            return top['resets'].get_lpg_path(reset['name'], domain,
+        if reset_domain is not None:
+            return top['resets'].get_lpg_path(reset['name'], prefixes, reset_domain,
                                               shadow_sel)
         else:
-            return top['resets'].get_lpg_path(reset['name'], reset['domain'],
+            return top['resets'].get_lpg_path(reset['name'], prefixes, reset['domain'],
                                               shadow_sel)
 
 
