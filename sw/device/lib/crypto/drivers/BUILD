@@ -46,16 +46,22 @@ dual_cc_library(
     hdrs = [
         "alert.h",
     ],
-    deps = [
-        "//hw/top:alert_handler_c_regs",
-        "//hw/top:sensor_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:bitfield",
-        "//sw/device/lib/base:hardened_memory",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/base:mmio",
-        "//sw/device/lib/crypto/impl:status",
-    ],
+    # We add the compiler option -fno-jump-tables to prevent the compiler making the code position dependent.
+    features = ["no_jump_tables"],
+    deps = dual_inputs(
+        device = [
+            "//hw/top:alert_handler_c_regs",
+            "//hw/top:sensor_ctrl_c_regs",
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/lib/base:bitfield",
+            "//sw/device/lib/base:hardened_memory",
+            "//sw/device/lib/base:macros",
+            "//sw/device/lib/base:mmio",
+        ],
+        shared = [
+            "//sw/device/lib/crypto/impl:status",
+        ],
+    ),
 )
 
 opentitan_test(
@@ -82,6 +88,8 @@ cc_library(
     name = "aes",
     srcs = ["aes.c"],
     hdrs = ["aes.h"],
+    # We add the compiler option -fno-jump-tables to prevent the compiler making the code position dependent.
+    features = ["no_jump_tables"],
     deps = [
         ":rv_core_ibex",
         "//hw/top:aes_c_regs",
@@ -124,6 +132,8 @@ cc_library(
     hdrs = [
         "keymgr.h",
     ],
+    # We add the compiler option -fno-jump-tables to prevent the compiler making the code position dependent.
+    features = ["no_jump_tables"],
     deps = [
         ":rv_core_ibex",
         "//hw/top:keymgr_c_regs",
@@ -165,6 +175,8 @@ cc_library(
         "kmac.h",
         "//sw/device/lib/crypto/include:datatypes.h",
     ],
+    # We add the compiler option -fno-jump-tables to prevent the compiler making the code position dependent.
+    features = ["no_jump_tables"],
     deps = [
         ":rv_core_ibex",
         "//hw/top:kmac_c_regs",
@@ -209,6 +221,8 @@ dual_cc_library(
         host = ["mock_entropy.cc"],
     ),
     hdrs = ["entropy.h"],
+    # We add the compiler option -fno-jump-tables to prevent the compiler making the code position dependent.
+    features = ["no_jump_tables"],
     deps = dual_inputs(
         device = [
             "//hw/top:csrng_c_regs",
@@ -279,6 +293,8 @@ cc_library(
     name = "hmac",
     srcs = ["hmac.c"],
     hdrs = ["hmac.h"],
+    # We add the compiler option -fno-jump-tables to prevent the compiler making the code position dependent.
+    features = ["no_jump_tables"],
     deps = [
         "//hw/top:hmac_c_regs",
         "//hw/top/dt:hmac",
@@ -327,6 +343,8 @@ dual_cc_library(
     hdrs = dual_inputs(
         shared = ["rv_core_ibex.h"],
     ),
+    # We add the compiler option -fno-jump-tables to prevent the compiler making the code position dependent.
+    features = ["no_jump_tables"],
     deps = dual_inputs(
         device = [
             "//hw/top/dt:rv_core_ibex",
@@ -365,6 +383,8 @@ cc_library(
     name = "otbn",
     srcs = ["otbn.c"],
     hdrs = ["otbn.h"],
+    # We add the compiler option -fno-jump-tables to prevent the compiler making the code position dependent.
+    features = ["no_jump_tables"],
     deps = [
         ":entropy",
         "//hw/top:otbn_c_regs",

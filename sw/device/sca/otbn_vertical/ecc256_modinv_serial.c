@@ -58,20 +58,6 @@ enum {
 };
 
 /**
- * App configuration for p256_mod_inv_sca
- */
-const otbn_app_t kOtbnAppP256ModInv = OTBN_APP_T_INIT(p256_mod_inv_sca);
-
-static const otbn_addr_t kOtbnVarModInvK0 =
-    OTBN_ADDR_T_INIT(p256_mod_inv_sca, k0);
-static const otbn_addr_t kOtbnVarModInvK1 =
-    OTBN_ADDR_T_INIT(p256_mod_inv_sca, k1);
-static const otbn_addr_t kOtbnVarModInvKAplhaInv =
-    OTBN_ADDR_T_INIT(p256_mod_inv_sca, kalpha_inv);
-static const otbn_addr_t kOtbnVarModInvAlpha =
-    OTBN_ADDR_T_INIT(p256_mod_inv_sca, alpha);
-
-/**
  * Callback wrapper for OTBN manual trigger function.
  */
 static void otbn_manual_trigger(void) { SS_CHECK_STATUS_OK(otbn_execute()); }
@@ -85,8 +71,10 @@ static void otbn_manual_trigger(void) { SS_CHECK_STATUS_OK(otbn_execute()); }
  */
 static void p256_run_modinv(uint32_t *k0, uint32_t *k1) {
   // Write input.
+  const otbn_addr_t kOtbnVarModInvK0 = OTBN_ADDR_T_INIT(p256_mod_inv_sca, k0);
   SS_CHECK_STATUS_OK(
       otbn_dmem_write(kEcc256ModInvInputShareNumWords, k0, kOtbnVarModInvK0));
+  const otbn_addr_t kOtbnVarModInvK1 = OTBN_ADDR_T_INIT(p256_mod_inv_sca, k1);
   SS_CHECK_STATUS_OK(
       otbn_dmem_write(kEcc256ModInvInputShareNumWords, k1, kOtbnVarModInvK1));
 
@@ -117,9 +105,13 @@ void ecc256_modinv(const uint8_t *k0_k1, size_t k0_k1_len) {
   // Read result.
   uint32_t modinv_kalpha_inv[kEcc256ModInvOutputKAlphaInvNumWords];
   uint32_t modinv_alpha[kEcc256ModInvOutputAlphaNumWords];
+  const otbn_addr_t kOtbnVarModInvKAplhaInv =
+      OTBN_ADDR_T_INIT(p256_mod_inv_sca, kalpha_inv);
   SS_CHECK_STATUS_OK(otbn_dmem_read(kEcc256ModInvOutputKAlphaInvNumWords,
                                     kOtbnVarModInvKAplhaInv,
                                     modinv_kalpha_inv));
+  const otbn_addr_t kOtbnVarModInvAlpha =
+      OTBN_ADDR_T_INIT(p256_mod_inv_sca, alpha);
   SS_CHECK_STATUS_OK(otbn_dmem_read(kEcc256ModInvOutputAlphaNumWords,
                                     kOtbnVarModInvAlpha, modinv_alpha));
 
