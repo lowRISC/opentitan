@@ -105,7 +105,9 @@
 
 <%
   clkmgr = lib.find_module(top['module'], 'clkmgr')
+  rstmgr = lib.find_module(top['module'], 'rstmgr')
   domain_clkmgr = clkmgr.get('domain')
+  domain_rstmgr = rstmgr.get('domain')
 %>\
 % if domain_clkmgr == domain:
   // Externally supplied clocks
@@ -113,8 +115,15 @@
   input ${clk},
   % endfor
 % else:
+  // Clocks from clkmgr in power domain ${domain_clkmgr}
   input clkmgr_pkg::clkmgr_out_t    ${clkmgr['name']}_clocks_i,
   input clkmgr_pkg::clkmgr_cg_en_t  ${clkmgr['name']}_cg_en_i,
+% endif
+
+% if domain_rstmgr != domain:
+  // Resets from rstmgr in power domain ${domain_rstmgr}
+  input rstmgr_pkg::rstmgr_out_t    ${rstmgr['name']}_resets_i,
+  input rstmgr_pkg::rstmgr_rst_en_t ${rstmgr['name']}_rst_en_i,
 % endif
 
 % if len(top['unmanaged_clocks']._asdict().values()) > 0:
