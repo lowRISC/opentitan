@@ -229,6 +229,10 @@ class aes_scoreboard extends cip_base_scoreboard #(
     if (get_field_val(ral.trigger.start, wdata)) begin
       if (input_item.mode != AES_GCM) begin
         ok_to_fwd = input_item.mode != AES_NONE;
+      end else if (`EN_GCM == 0) begin
+        // We have an AES-GCM item but the hardware doesn't support GCM. This item is treated like
+        // an item with mode AES_NONE.
+        ok_to_fwd = 0;
       end else begin
         // In the AES-GCM mode, when we trigger the block, GCM is in the INIT
         // phase. In this phase, the hash subkey and the encrypted initial counter
@@ -392,27 +396,32 @@ class aes_scoreboard extends cip_base_scoreboard #(
           AES_OFB,
           AES_CTR,
           AES_GCM: begin
-            `uvm_info(`gfn, $sformatf("\n\t ----| AES Mode: %0s", input_item.mode.name()),
-                UVM_MEDIUM)
-            if (input_item.start_item) begin
-              // Verify that all 4 data_in, all 8 initial key, and all 4 IV registers have been
-              // updated.
-              if (input_item.data_in_valid() && input_item.key_clean(0, 0)
-                   && input_item.iv_clean(0, 0)) begin
-                // Clone and add to ref and rec data FIFO.
-                ok_to_fwd = 1;
-                input_item.start_item = 0;
+            if (input_item.mode != AES_GCM || `EN_GCM) begin
+              `uvm_info(`gfn, $sformatf("\n\t ----| AES Mode: %0s", input_item.mode.name()),
+                  UVM_MEDIUM)
+              if (input_item.start_item) begin
+                // Verify that all 4 data_in, all 8 initial key, and all 4 IV registers have been
+                // updated.
+                if (input_item.data_in_valid() && input_item.key_clean(0, 0)
+                     && input_item.iv_clean(0, 0)) begin
+                  // Clone and add to ref and rec data FIFO.
+                  ok_to_fwd = 1;
+                  input_item.start_item = 0;
+                end
+              end else begin
+                // Verify that all 4 data_in, all 8 initial key, and all 4 IV registers are clean.
+                `uvm_info(`gfn, $sformatf("\n\t ----| data_in_vld? %b, key clean? %b, IV clean? %b",
+                    input_item.data_in_valid(), input_item.key_clean(1, 0),
+                    input_item.iv_clean(1, 0)), UVM_MEDIUM)
+                if (input_item.data_in_valid() && input_item.key_clean(1, 0)
+                     && input_item.iv_clean(1, 0)) begin
+                  // Clone and add to ref and rec data FIFO.
+                  ok_to_fwd = 1;
+                end
               end
             end else begin
-              // Verify that all 4 data_in, all 8 initial key, and all 4 IV registers are clean.
-              `uvm_info(`gfn, $sformatf("\n\t ----| data_in_vld? %b, key clean? %b, IV clean? %b",
-                  input_item.data_in_valid(), input_item.key_clean(1, 0),
-                  input_item.iv_clean(1, 0)), UVM_MEDIUM)
-              if (input_item.data_in_valid() && input_item.key_clean(1, 0)
-                   && input_item.iv_clean(1, 0)) begin
-                // Clone and add to ref and rec data FIFO.
-                ok_to_fwd = 1;
-              end
+              `uvm_info(`gfn, "\n\t ----| Received illegal AES_GCM setting, reverting to AES_NONE",
+                  UVM_MEDIUM)
             end
           end
 
@@ -713,7 +722,8 @@ class aes_scoreboard extends cip_base_scoreboard #(
       bit [3:0][31:0] out_tag;
       msg_fifo.get(msg);
 
-      if (msg.aes_mode != AES_NONE && !msg.skip_msg) begin
+      if (msg.aes_mode != AES_NONE && !msg.skip_msg &&
+          (`EN_GCM || msg.aes_mode != AES_GCM)) begin
         msg.alloc_predicted_msg();
 
         operation = msg.aes_operation == AES_ENC ? 1'b0 :
@@ -801,7 +811,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
                 cfg.good_cnt, msg.aes_mode.name()), UVM_MEDIUM)
         cfg.good_cnt++;
 
-        if (input_item.mode == AES_GCM) begin
+        if (msg.aes_mode == AES_GCM) begin
           // As the message and tag matched the predicted output, sample AAD &
           // message length as well as the mode of operation.
           int msg_blocks = msg.message_length / 16;
@@ -827,6 +837,12 @@ class aes_scoreboard extends cip_base_scoreboard #(
               $sformatf("\n\t ----| MESSAGE #%0d was skipped due to start triggered prematurely",
                   cfg.good_cnt), UVM_MEDIUM)
           cfg.skipped_cnt++;
+        end
+        if ((`EN_GCM == 0) && (msg.aes_mode == AES_GCM)) begin
+          `uvm_info(`gfn,
+              $sformatf("\n\t ----| MESSAGE #%0d HAS ILLEGAL MODE MESSAGE IGNORED     |-----",
+                  cfg.good_cnt), UVM_MEDIUM)
+          cfg.corrupt_cnt++;
         end
       end
     end

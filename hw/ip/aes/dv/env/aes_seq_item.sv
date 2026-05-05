@@ -84,8 +84,10 @@ class aes_seq_item extends uvm_sequence_item;
   // bit to select if we clear 1 or more regs
   rand int                          clr_reg_dist_select;
 
-  // this is only used to program dut in illegal mode
+  // AES mode setting used to test illegal mode settings. This is used e.g. in the aes_config_error
+  // test.
   rand bit [$bits(aes_mode_e) -1:0] aes_mode;
+  rand bit                          aes_illegal_mode_gcm;
 
   // clear reg vector
   // [3] output data
@@ -94,10 +96,30 @@ class aes_seq_item extends uvm_sequence_item;
   // [0] key
   rand clear_t                      clear_reg;
 
+  constraint aes_illegal_mode_gcm_c {
+    if (`EN_GCM) {
+      // If the hardware supports GCM, AES_GCM is not an illegal mode setting and we should not use
+      // this to test the DUT's behavior in case of illegal mode settings.
+      aes_illegal_mode_gcm == 0;
+    } else {
+      // If the hardware does NOT support GCM, we should randomly select AES_GCM or any of the
+      // non-one-hot settings.
+      aes_illegal_mode_gcm dist { 0 := 4,
+                                  1 := 1};
+    }
+  }
+
   constraint aes_mode_c {
-   // force to be !onehot
+    solve aes_illegal_mode_gcm before aes_mode;
     if (mode == AES_NONE) {
-      !($countones(aes_mode) == 1);
+      // Enforce an illegal value. This includes values with multiple or no bits set as well as the
+      // value AES_GCM if support for GCM is not enabled. All these should be resolved to AES_NONE
+      // by the hardware.
+      if (aes_illegal_mode_gcm) {
+         aes_mode == AES_GCM;
+      } else {
+        $countones(aes_mode) != 1;
+      }
     } else {
       aes_mode == mode;
     }
