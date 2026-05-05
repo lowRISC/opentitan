@@ -42,14 +42,6 @@ OTBN_DECLARE_APP_SYMBOLS(otbn_load_integrity);
 OTBN_DECLARE_SYMBOL_ADDR(otbn_load_integrity, refval1);
 OTBN_DECLARE_SYMBOL_ADDR(otbn_load_integrity, refval2);
 OTBN_DECLARE_SYMBOL_ADDR(otbn_load_integrity, refval3);
-static const otbn_app_t kOtbnAppLoadIntegrity =
-    OTBN_APP_T_INIT(otbn_load_integrity);
-static const otbn_addr_t kOtbnAppLoadIntegrityRefVal1 =
-    OTBN_ADDR_T_INIT(otbn_load_integrity, refval1);
-static const otbn_addr_t kOtbnAppLoadIntegrityRefVal2 =
-    OTBN_ADDR_T_INIT(otbn_load_integrity, refval2);
-static const otbn_addr_t kOtbnAppLoadIntegrityRefVal3 =
-    OTBN_ADDR_T_INIT(otbn_load_integrity, refval3);
 
 // Indicates whether the key sideloading test is already initialized.
 static bool key_sideloading_init;
@@ -60,15 +52,6 @@ OTBN_DECLARE_SYMBOL_ADDR(otbn_key_sideload, k_s0_l);
 OTBN_DECLARE_SYMBOL_ADDR(otbn_key_sideload, k_s0_h);
 OTBN_DECLARE_SYMBOL_ADDR(otbn_key_sideload, k_s1_l);
 OTBN_DECLARE_SYMBOL_ADDR(otbn_key_sideload, k_s1_h);
-const otbn_app_t kOtbnAppKeySideload = OTBN_APP_T_INIT(otbn_key_sideload);
-static const otbn_addr_t kOtbnAppKeySideloadks0l =
-    OTBN_ADDR_T_INIT(otbn_key_sideload, k_s0_l);
-static const otbn_addr_t kOtbnAppKeySideloadks0h =
-    OTBN_ADDR_T_INIT(otbn_key_sideload, k_s0_h);
-static const otbn_addr_t kOtbnAppKeySideloadks1l =
-    OTBN_ADDR_T_INIT(otbn_key_sideload, k_s1_l);
-static const otbn_addr_t kOtbnAppKeySideloadks1h =
-    OTBN_ADDR_T_INIT(otbn_key_sideload, k_s1_h);
 
 // Config for the otbn.fi.char_mem test.
 static bool char_mem_imem;
@@ -158,8 +141,7 @@ status_t handle_otbn_fi_char_beq(ujson_t *uj) {
   OTBN_DECLARE_APP_SYMBOLS(otbn_char_beq);
   OTBN_DECLARE_SYMBOL_ADDR(otbn_char_beq, res);
   const otbn_app_t kOtbnAppCharBeq = OTBN_APP_T_INIT(otbn_char_beq);
-  static const otbn_addr_t kOtbnAppCharBeqRes =
-      OTBN_ADDR_T_INIT(otbn_char_beq, res);
+  const otbn_addr_t kOtbnAppCharBeqRes = OTBN_ADDR_T_INIT(otbn_char_beq, res);
   otbn_load_app(kOtbnAppCharBeq);
 
   // FI code target.
@@ -222,9 +204,9 @@ status_t handle_otbn_fi_char_bn_rshi(ujson_t *uj) {
   OTBN_DECLARE_SYMBOL_ADDR(otbn_char_bn_rshi, big_num);
   OTBN_DECLARE_SYMBOL_ADDR(otbn_char_bn_rshi, big_num_out);
   const otbn_app_t kOtbnAppCharBnRshi = OTBN_APP_T_INIT(otbn_char_bn_rshi);
-  static const otbn_addr_t kOtbnAppCharBnRshiBigNum =
+  const otbn_addr_t kOtbnAppCharBnRshiBigNum =
       OTBN_ADDR_T_INIT(otbn_char_bn_rshi, big_num);
-  static const otbn_addr_t kOtbnAppCharBnRshiBigNumOut =
+  const otbn_addr_t kOtbnAppCharBnRshiBigNumOut =
       OTBN_ADDR_T_INIT(otbn_char_bn_rshi, big_num_out);
 
   // Load app and write received big_num into DMEM.
@@ -293,9 +275,9 @@ status_t handle_otbn_fi_char_bn_sel(ujson_t *uj) {
   OTBN_DECLARE_SYMBOL_ADDR(otbn_char_bn_sel, big_num);
   OTBN_DECLARE_SYMBOL_ADDR(otbn_char_bn_sel, big_num_out);
   const otbn_app_t kOtbnAppCharBnSel = OTBN_APP_T_INIT(otbn_char_bn_sel);
-  static const otbn_addr_t kOtbnAppCharBnSelBigNum =
+  const otbn_addr_t kOtbnAppCharBnSelBigNum =
       OTBN_ADDR_T_INIT(otbn_char_bn_sel, big_num);
-  static const otbn_addr_t kOtbnAppCharBnSelBigNumOut =
+  const otbn_addr_t kOtbnAppCharBnSelBigNumOut =
       OTBN_ADDR_T_INIT(otbn_char_bn_sel, big_num_out);
 
   // Load app and write received big_num into DMEM.
@@ -359,7 +341,7 @@ status_t handle_otbn_fi_char_bn_wsrr(ujson_t *uj) {
   OTBN_DECLARE_APP_SYMBOLS(otbn_char_bn_wsrr);
   OTBN_DECLARE_SYMBOL_ADDR(otbn_char_bn_wsrr, otbn_res_values_wdr);
   const otbn_app_t kOtbnAppCharBnWsrr = OTBN_APP_T_INIT(otbn_char_bn_wsrr);
-  static const otbn_addr_t kOtbnAppCharBnWsrrResValuesWDR =
+  const otbn_addr_t kOtbnAppCharBnWsrrResValuesWDR =
       OTBN_ADDR_T_INIT(otbn_char_bn_wsrr, otbn_res_values_wdr);
 
   // Load app and write received big_num into DMEM.
@@ -423,8 +405,7 @@ status_t handle_otbn_fi_char_bne(ujson_t *uj) {
   OTBN_DECLARE_APP_SYMBOLS(otbn_char_bne);
   OTBN_DECLARE_SYMBOL_ADDR(otbn_char_bne, res);
   const otbn_app_t kOtbnAppCharBne = OTBN_APP_T_INIT(otbn_char_bne);
-  static const otbn_addr_t kOtbnAppCharBneRes =
-      OTBN_ADDR_T_INIT(otbn_char_bne, res);
+  const otbn_addr_t kOtbnAppCharBneRes = OTBN_ADDR_T_INIT(otbn_char_bne, res);
   otbn_load_app(kOtbnAppCharBne);
 
   // FI code target.
@@ -480,9 +461,9 @@ status_t handle_otbn_fi_char_dmem_access(ujson_t *uj) {
   // Config for the otbn.fi.char_dmem_access test.
   OTBN_DECLARE_APP_SYMBOLS(otbn_char_dmem_access);
   OTBN_DECLARE_SYMBOL_ADDR(otbn_char_dmem_access, values);
-  static const otbn_app_t kOtbnAppCharDmemAccess =
+  const otbn_app_t kOtbnAppCharDmemAccess =
       OTBN_APP_T_INIT(otbn_char_dmem_access);
-  static const otbn_addr_t kOtbnVarCharDmemAccessValues =
+  const otbn_addr_t kOtbnVarCharDmemAccessValues =
       OTBN_ADDR_T_INIT(otbn_char_dmem_access, values);
 
   otbn_load_app(kOtbnAppCharDmemAccess);
@@ -542,9 +523,9 @@ status_t handle_otbn_fi_char_dmem_write(ujson_t *uj) {
   OTBN_DECLARE_APP_SYMBOLS(otbn_char_dmem_write);
   OTBN_DECLARE_SYMBOL_ADDR(otbn_char_dmem_write, mem);
 
-  static const otbn_app_t kOtbnAppCharDmemWrite =
+  const otbn_app_t kOtbnAppCharDmemWrite =
       OTBN_APP_T_INIT(otbn_char_dmem_write);
-  static const otbn_addr_t kOtbnVarCharDmemWriteMem =
+  const otbn_addr_t kOtbnVarCharDmemWriteMem =
       OTBN_ADDR_T_INIT(otbn_char_dmem_write, mem);
 
   // Init application and load reference values into DMEM.
@@ -745,7 +726,7 @@ status_t handle_otbn_fi_char_hardware_dmem_op_loop(ujson_t *uj) {
   OTBN_DECLARE_SYMBOL_ADDR(otbn_char_hardware_dmem_op_loop, lc);
   const otbn_app_t kOtbnAppCharHardwareDmemOpLoop =
       OTBN_APP_T_INIT(otbn_char_hardware_dmem_op_loop);
-  static const otbn_addr_t kOtbnAppCharHardwareDmemOpLoopLC =
+  const otbn_addr_t kOtbnAppCharHardwareDmemOpLoopLC =
       OTBN_ADDR_T_INIT(otbn_char_hardware_dmem_op_loop, lc);
   otbn_load_app(kOtbnAppCharHardwareDmemOpLoop);
 
@@ -804,7 +785,7 @@ status_t handle_otbn_fi_char_hardware_reg_op_loop(ujson_t *uj) {
   OTBN_DECLARE_SYMBOL_ADDR(otbn_char_hardware_reg_op_loop, lc);
   const otbn_app_t kOtbnAppCharHardwareRegOpLoop =
       OTBN_APP_T_INIT(otbn_char_hardware_reg_op_loop);
-  static const otbn_addr_t kOtbnAppCharHardwareRegOpLoopLC =
+  const otbn_addr_t kOtbnAppCharHardwareRegOpLoopLC =
       OTBN_ADDR_T_INIT(otbn_char_hardware_reg_op_loop, lc);
   otbn_load_app(kOtbnAppCharHardwareRegOpLoop);
 
@@ -862,8 +843,7 @@ status_t handle_otbn_fi_char_jal(ujson_t *uj) {
   OTBN_DECLARE_APP_SYMBOLS(otbn_char_jal);
   OTBN_DECLARE_SYMBOL_ADDR(otbn_char_jal, res);
   const otbn_app_t kOtbnAppCharJal = OTBN_APP_T_INIT(otbn_char_jal);
-  static const otbn_addr_t kOtbnAppCharJalRes =
-      OTBN_ADDR_T_INIT(otbn_char_jal, res);
+  const otbn_addr_t kOtbnAppCharJalRes = OTBN_ADDR_T_INIT(otbn_char_jal, res);
   otbn_load_app(kOtbnAppCharJal);
 
   // FI code target.
@@ -922,9 +902,8 @@ status_t handle_otbn_fi_char_lw(ujson_t *uj) {
   OTBN_DECLARE_SYMBOL_ADDR(otbn_char_lw, mem_in);
   OTBN_DECLARE_SYMBOL_ADDR(otbn_char_lw, mem_out);
   const otbn_app_t kOtbnAppCharLw = OTBN_APP_T_INIT(otbn_char_lw);
-  static const otbn_addr_t kOtbnMemIn = OTBN_ADDR_T_INIT(otbn_char_lw, mem_in);
-  static const otbn_addr_t kOtbnMemOut =
-      OTBN_ADDR_T_INIT(otbn_char_lw, mem_out);
+  const otbn_addr_t kOtbnMemIn = OTBN_ADDR_T_INIT(otbn_char_lw, mem_in);
+  const otbn_addr_t kOtbnMemOut = OTBN_ADDR_T_INIT(otbn_char_lw, mem_out);
 
   // Load app and write reference values into mem_in DMEM.
   otbn_load_app(kOtbnAppCharLw);
@@ -1115,12 +1094,12 @@ status_t handle_otbn_fi_char_register_file(ujson_t *uj) {
   OTBN_DECLARE_SYMBOL_ADDR(otbn_char_rf, otbn_res_values_gpr);
   OTBN_DECLARE_SYMBOL_ADDR(otbn_char_rf, otbn_res_values_wdr);
 
-  static const otbn_app_t kOtbnAppCharRF = OTBN_APP_T_INIT(otbn_char_rf);
-  static const otbn_addr_t kOtbnVarCharRFRefValues =
+  const otbn_app_t kOtbnAppCharRF = OTBN_APP_T_INIT(otbn_char_rf);
+  const otbn_addr_t kOtbnVarCharRFRefValues =
       OTBN_ADDR_T_INIT(otbn_char_rf, otbn_ref_values);
-  static const otbn_addr_t kOtbnVarCharRFResValuesGPR =
+  const otbn_addr_t kOtbnVarCharRFResValuesGPR =
       OTBN_ADDR_T_INIT(otbn_char_rf, otbn_res_values_gpr);
-  static const otbn_addr_t kOtbnVarCharRFResValuesWDR =
+  const otbn_addr_t kOtbnVarCharRFResValuesWDR =
       OTBN_ADDR_T_INIT(otbn_char_rf, otbn_res_values_wdr);
 
   // Init application and load reference values into DMEM.
@@ -1210,7 +1189,7 @@ status_t handle_otbn_fi_char_unrolled_dmem_op_loop(ujson_t *uj) {
   OTBN_DECLARE_SYMBOL_ADDR(otbn_char_unrolled_dmem_op_loop, lc);
   const otbn_app_t kOtbnAppCharUnrolledDmemOpLoop =
       OTBN_APP_T_INIT(otbn_char_unrolled_dmem_op_loop);
-  static const otbn_addr_t kOtbnAppCharUnrolledDmemOpLoopLC =
+  const otbn_addr_t kOtbnAppCharUnrolledDmemOpLoopLC =
       OTBN_ADDR_T_INIT(otbn_char_unrolled_dmem_op_loop, lc);
   otbn_load_app(kOtbnAppCharUnrolledDmemOpLoop);
 
@@ -1269,7 +1248,7 @@ status_t handle_otbn_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
   OTBN_DECLARE_SYMBOL_ADDR(otbn_char_unrolled_reg_op_loop, lc);
   const otbn_app_t kOtbnAppCharUnrolledRegOpLoop =
       OTBN_APP_T_INIT(otbn_char_unrolled_reg_op_loop);
-  static const otbn_addr_t kOtbnAppCharUnrolledRegOpLoopLC =
+  const otbn_addr_t kOtbnAppCharUnrolledRegOpLoopLC =
       OTBN_ADDR_T_INIT(otbn_char_unrolled_reg_op_loop, lc);
   otbn_load_app(kOtbnAppCharUnrolledRegOpLoop);
 
@@ -1368,14 +1347,23 @@ status_t handle_otbn_fi_key_sideload(ujson_t *uj) {
 
   if (!key_sideloading_init) {
     // Setup keymanager for sideloading key into OTBN.
+    const otbn_app_t kOtbnAppKeySideload = OTBN_APP_T_INIT(otbn_key_sideload);
     otbn_load_app(kOtbnAppKeySideload);
     // Get reference keys.
     otbn_execute();
     otbn_busy_wait_for_done();
 
+    const otbn_addr_t kOtbnAppKeySideloadks0l =
+        OTBN_ADDR_T_INIT(otbn_key_sideload, k_s0_l);
     otbn_dmem_read(1, kOtbnAppKeySideloadks0l, &key_share_0_l_ref);
+    const otbn_addr_t kOtbnAppKeySideloadks0h =
+        OTBN_ADDR_T_INIT(otbn_key_sideload, k_s0_h);
     otbn_dmem_read(1, kOtbnAppKeySideloadks0h, &key_share_0_h_ref);
+    const otbn_addr_t kOtbnAppKeySideloadks1l =
+        OTBN_ADDR_T_INIT(otbn_key_sideload, k_s1_l);
     otbn_dmem_read(1, kOtbnAppKeySideloadks1l, &key_share_1_l_ref);
+    const otbn_addr_t kOtbnAppKeySideloadks1h =
+        OTBN_ADDR_T_INIT(otbn_key_sideload, k_s1_h);
     otbn_dmem_read(1, kOtbnAppKeySideloadks1h, &key_share_1_h_ref);
 
     key_sideloading_init = true;
@@ -1397,9 +1385,17 @@ status_t handle_otbn_fi_key_sideload(ujson_t *uj) {
   // Read loop counter from OTBN data memory.
   uint32_t key_share_0_l, key_share_0_h;
   uint32_t key_share_1_l, key_share_1_h;
+  const otbn_addr_t kOtbnAppKeySideloadks0l =
+      OTBN_ADDR_T_INIT(otbn_key_sideload, k_s0_l);
   otbn_dmem_read(1, kOtbnAppKeySideloadks0l, &key_share_0_l);
+  const otbn_addr_t kOtbnAppKeySideloadks0h =
+      OTBN_ADDR_T_INIT(otbn_key_sideload, k_s0_h);
   otbn_dmem_read(1, kOtbnAppKeySideloadks0h, &key_share_0_h);
+  const otbn_addr_t kOtbnAppKeySideloadks1l =
+      OTBN_ADDR_T_INIT(otbn_key_sideload, k_s1_l);
   otbn_dmem_read(1, kOtbnAppKeySideloadks1l, &key_share_1_l);
+  const otbn_addr_t kOtbnAppKeySideloadks1h =
+      OTBN_ADDR_T_INIT(otbn_key_sideload, k_s1_h);
   otbn_dmem_read(1, kOtbnAppKeySideloadks1h, &key_share_1_h);
 
   // Read ERR_STATUS register from OTBN.
@@ -1444,6 +1440,7 @@ status_t handle_otbn_fi_load_integrity(ujson_t *uj) {
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
+  const otbn_app_t kOtbnAppLoadIntegrity = OTBN_APP_T_INIT(otbn_load_integrity);
   if (!load_integrity_init) {
     // Load the OTBN app and read the load checksum without FI to retrieve
     // reference value.
@@ -1473,8 +1470,14 @@ status_t handle_otbn_fi_load_integrity(ujson_t *uj) {
 
   // Read loop counter from OTBN data memory.
   uint32_t ref_val1, ref_val2, ref_val3;
+  const otbn_addr_t kOtbnAppLoadIntegrityRefVal1 =
+      OTBN_ADDR_T_INIT(otbn_load_integrity, refval1);
   otbn_dmem_read(1, kOtbnAppLoadIntegrityRefVal1, &ref_val1);
+  const otbn_addr_t kOtbnAppLoadIntegrityRefVal2 =
+      OTBN_ADDR_T_INIT(otbn_load_integrity, refval2);
   otbn_dmem_read(1, kOtbnAppLoadIntegrityRefVal2, &ref_val2);
+  const otbn_addr_t kOtbnAppLoadIntegrityRefVal3 =
+      OTBN_ADDR_T_INIT(otbn_load_integrity, refval3);
   otbn_dmem_read(1, kOtbnAppLoadIntegrityRefVal3, &ref_val3);
 
   // Check if DMEM is corrupted.
@@ -1533,8 +1536,8 @@ status_t handle_otbn_fi_pc(ujson_t *uj) {
   OTBN_DECLARE_SYMBOL_ADDR(otbn_pc, pc);
   OTBN_DECLARE_SYMBOL_ADDR(otbn_pc, pc_out);
   const otbn_app_t kOtbnAppPc = OTBN_APP_T_INIT(otbn_pc);
-  static const otbn_addr_t kOtbnPc = OTBN_ADDR_T_INIT(otbn_pc, pc);
-  static const otbn_addr_t kOtbnPcOut = OTBN_ADDR_T_INIT(otbn_pc, pc_out);
+  const otbn_addr_t kOtbnPc = OTBN_ADDR_T_INIT(otbn_pc, pc);
+  const otbn_addr_t kOtbnPcOut = OTBN_ADDR_T_INIT(otbn_pc, pc_out);
   dif_otbn_status_t otbn_status;
 
   // Load app.

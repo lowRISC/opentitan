@@ -49,9 +49,12 @@ static void ecc256_app_select(const uint8_t *app_cmd, size_t app_cmd_len) {
   SS_CHECK(app_cmd_len == 1);
   if (*app_cmd == 0) {
     // load keygen app
+    const otbn_app_t kOtbnAppP256KeyFromSeed =
+        OTBN_APP_T_INIT(p256_key_from_seed_sca);
     SS_CHECK_STATUS_OK(otbn_load_app(kOtbnAppP256KeyFromSeed));
   } else if (*app_cmd == 1) {
     // load mod inv app
+    const otbn_app_t kOtbnAppP256ModInv = OTBN_APP_T_INIT(p256_mod_inv_sca);
     SS_CHECK_STATUS_OK(otbn_load_app(kOtbnAppP256ModInv));
   } else {
     LOG_ERROR("Wrong app select command.");
@@ -94,6 +97,8 @@ static void simple_serial_main(void) {
 
   // load keygen app as default
   LOG_INFO("Load p256 keygen from seed app into OTBN");
+  const otbn_app_t kOtbnAppP256KeyFromSeed =
+      OTBN_APP_T_INIT(p256_key_from_seed_sca);
   SS_CHECK_STATUS_OK(otbn_load_app(kOtbnAppP256KeyFromSeed));
 
   LOG_INFO("Starting simple serial packet handling.");

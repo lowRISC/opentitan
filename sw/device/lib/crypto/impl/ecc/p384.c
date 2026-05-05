@@ -16,7 +16,6 @@
 
 // Declare the OTBN app.
 OTBN_DECLARE_APP_SYMBOLS(run_p384);
-static const otbn_app_t kOtbnAppP384 = OTBN_APP_T_INIT(run_p384);
 
 // Declare offsets for input and output buffers.
 OTBN_DECLARE_SYMBOL_ADDR(run_p384, mode);   // Mode of operation.
@@ -34,19 +33,6 @@ OTBN_DECLARE_SYMBOL_ADDR(run_p384,
 OTBN_DECLARE_SYMBOL_ADDR(run_p384, x_r);  // ECDSA verification result.
 OTBN_DECLARE_SYMBOL_ADDR(run_p384, ok);   // Status code.
 
-static const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(run_p384, mode);
-static const otbn_addr_t kOtbnVarMsg = OTBN_ADDR_T_INIT(run_p384, msg);
-static const otbn_addr_t kOtbnVarR = OTBN_ADDR_T_INIT(run_p384, r);
-static const otbn_addr_t kOtbnVarS = OTBN_ADDR_T_INIT(run_p384, s);
-static const otbn_addr_t kOtbnVarX = OTBN_ADDR_T_INIT(run_p384, x);
-static const otbn_addr_t kOtbnVarY = OTBN_ADDR_T_INIT(run_p384, y);
-static const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(run_p384, d0_io);
-static const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(run_p384, d1_io);
-static const otbn_addr_t kOtbnVarK0 = OTBN_ADDR_T_INIT(run_p384, k0_io);
-static const otbn_addr_t kOtbnVarK1 = OTBN_ADDR_T_INIT(run_p384, k1_io);
-static const otbn_addr_t kOtbnVarXr = OTBN_ADDR_T_INIT(run_p384, x_r);
-static const otbn_addr_t kOtbnVarOk = OTBN_ADDR_T_INIT(run_p384, ok);
-
 // Declare mode constants.
 OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_KEYGEN);
 OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_SIGN);
@@ -59,24 +45,6 @@ OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_SIDELOAD_ECDH);
 OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_POINTONCRV_CHECK);
 OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_BASE_POINT_MULT);
 OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_ARITH_SHARE_SECRET_KEY);
-static const uint32_t kP384ModeKeygen = OTBN_ADDR_T_INIT(run_p384, MODE_KEYGEN);
-static const uint32_t kP384ModeSign = OTBN_ADDR_T_INIT(run_p384, MODE_SIGN);
-static const uint32_t kP384ModeSignConfigK =
-    OTBN_ADDR_T_INIT(run_p384, MODE_SIGN_CONFIG_K);
-static const uint32_t kP384ModeVerify = OTBN_ADDR_T_INIT(run_p384, MODE_VERIFY);
-static const uint32_t kP384ModeEcdh = OTBN_ADDR_T_INIT(run_p384, MODE_ECDH);
-static const uint32_t kP384ModeSideloadKeygen =
-    OTBN_ADDR_T_INIT(run_p384, MODE_SIDELOAD_KEYGEN);
-static const uint32_t kP384ModeSideloadSign =
-    OTBN_ADDR_T_INIT(run_p384, MODE_SIDELOAD_SIGN);
-static const uint32_t kP384ModeSideloadEcdh =
-    OTBN_ADDR_T_INIT(run_p384, MODE_SIDELOAD_ECDH);
-static const uint32_t kOtbnP384ModePointOnCurveCheck =
-    OTBN_ADDR_T_INIT(run_p384, MODE_POINTONCRV_CHECK);
-static const uint32_t kOtbnP384ModeBasePointMult =
-    OTBN_ADDR_T_INIT(run_p384, MODE_BASE_POINT_MULT);
-static const uint32_t kOtbnP384ModeArithShareSecretKey =
-    OTBN_ADDR_T_INIT(run_p384, MODE_ARITH_SHARE_SECRET_KEY);
 
 enum {
   /*
@@ -128,18 +96,23 @@ enum {
 
 OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t p384_init_otbn(
     uint32_t mode) {
+  const otbn_app_t kOtbnAppP384 = OTBN_APP_T_INIT(run_p384);
   HARDENED_TRY(otbn_load_app(kOtbnAppP384));
+  const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(run_p384, mode);
   return otbn_dmem_write(kP384ModeWords, &mode, kOtbnVarMode);
 }
 
 OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t p384_read_point(
     p384_point_t *point) {
+  const otbn_addr_t kOtbnVarX = OTBN_ADDR_T_INIT(run_p384, x);
+  const otbn_addr_t kOtbnVarY = OTBN_ADDR_T_INIT(run_p384, y);
   HARDENED_TRY(otbn_dmem_read(kP384CoordWords, kOtbnVarX, point->x));
   return otbn_dmem_read(kP384CoordWords, kOtbnVarY, point->y);
 }
 
 OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t p384_check_otbn_status(void) {
   uint32_t ok;
+  const otbn_addr_t kOtbnVarOk = OTBN_ADDR_T_INIT(run_p384, ok);
   HARDENED_TRY(otbn_dmem_read(1, kOtbnVarOk, &ok));
   if (launder32(ok) != kHardenedBoolTrue) {
     HARDENED_TRY(otbn_dmem_sec_wipe());
@@ -188,6 +161,8 @@ OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t p384_scalar_write(
  */
 OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t set_public_key(
     const p384_point_t *p) {
+  const otbn_addr_t kOtbnVarX = OTBN_ADDR_T_INIT(run_p384, x);
+  const otbn_addr_t kOtbnVarY = OTBN_ADDR_T_INIT(run_p384, y);
   HARDENED_TRY(otbn_dmem_write(kP384CoordWords, p->x, kOtbnVarX));
   HARDENED_TRY(otbn_dmem_write(kP384CoordWords, p->y, kOtbnVarY));
 
@@ -257,7 +232,8 @@ hardened_bool_t p384_ecdh_shared_key_checksum_check(
 }
 
 status_t p384_keygen_start(void) {
-  HARDENED_TRY(p384_init_otbn(kP384ModeKeygen));
+  uint32_t mode = OTBN_ADDR_T_INIT(run_p384, MODE_KEYGEN);
+  HARDENED_TRY(p384_init_otbn(mode));
 
   // Start the OTBN routine.
   return otbn_execute();
@@ -270,8 +246,10 @@ status_t p384_keygen_finalize(p384_masked_scalar_t *private_key,
   HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModeKeygenInsCnt);
 
   // Read the masked private key from OTBN dmem.
+  const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(run_p384, d0_io);
   HARDENED_TRY(otbn_dmem_read(kP384MaskedScalarShareWords, kOtbnVarD0,
                               private_key->share0));
+  const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(run_p384, d1_io);
   HARDENED_TRY(otbn_dmem_read(kP384MaskedScalarShareWords, kOtbnVarD1,
                               private_key->share1));
   private_key->checksum = p384_masked_scalar_checksum(private_key);
@@ -284,7 +262,8 @@ status_t p384_keygen_finalize(p384_masked_scalar_t *private_key,
 }
 
 status_t p384_sideload_keygen_start(void) {
-  HARDENED_TRY(p384_init_otbn(kP384ModeSideloadKeygen));
+  uint32_t mode = OTBN_ADDR_T_INIT(run_p384, MODE_SIDELOAD_KEYGEN);
+  HARDENED_TRY(p384_init_otbn(mode));
 
   // Start the OTBN routine.
   return otbn_execute();
@@ -304,12 +283,16 @@ status_t p384_sideload_keygen_finalize(p384_point_t *public_key) {
 
 status_t p384_ecdsa_sign_start(const uint32_t digest[kP384ScalarWords],
                                p384_masked_scalar_t *private_key) {
-  HARDENED_TRY(p384_init_otbn(kP384ModeSign));
+  uint32_t mode = OTBN_ADDR_T_INIT(run_p384, MODE_SIGN);
+  HARDENED_TRY(p384_init_otbn(mode));
 
   // Set the message digest.
+  const otbn_addr_t kOtbnVarMsg = OTBN_ADDR_T_INIT(run_p384, msg);
   HARDENED_TRY(set_message_digest(digest, kOtbnVarMsg));
 
   // Set the private key shares.
+  const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(run_p384, d0_io);
+  const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(run_p384, d1_io);
   HARDENED_TRY(p384_masked_scalar_write(private_key, kOtbnVarD0, kOtbnVarD1));
 
   // Start the OTBN routine.
@@ -319,15 +302,21 @@ status_t p384_ecdsa_sign_start(const uint32_t digest[kP384ScalarWords],
 status_t p384_ecdsa_sign_config_k_start(const uint32_t digest[kP384ScalarWords],
                                         p384_masked_scalar_t *private_key,
                                         p384_masked_scalar_t *secret_scalar) {
-  HARDENED_TRY(p384_init_otbn(kP384ModeSignConfigK));
+  uint32_t mode = OTBN_ADDR_T_INIT(run_p384, MODE_SIGN_CONFIG_K);
+  HARDENED_TRY(p384_init_otbn(mode));
 
   // Set the message digest.
+  const otbn_addr_t kOtbnVarMsg = OTBN_ADDR_T_INIT(run_p384, msg);
   HARDENED_TRY(set_message_digest(digest, kOtbnVarMsg));
 
   // Set the private key shares.
+  const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(run_p384, d0_io);
+  const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(run_p384, d1_io);
   HARDENED_TRY(p384_masked_scalar_write(private_key, kOtbnVarD0, kOtbnVarD1));
 
   // Set the secret scalar shares.
+  const otbn_addr_t kOtbnVarK0 = OTBN_ADDR_T_INIT(run_p384, k0_io);
+  const otbn_addr_t kOtbnVarK1 = OTBN_ADDR_T_INIT(run_p384, k1_io);
   HARDENED_TRY(p384_masked_scalar_write(secret_scalar, kOtbnVarK0, kOtbnVarK1));
 
   // Start the OTBN routine.
@@ -336,9 +325,11 @@ status_t p384_ecdsa_sign_config_k_start(const uint32_t digest[kP384ScalarWords],
 
 status_t p384_ecdsa_sideload_sign_start(
     const uint32_t digest[kP384ScalarWords]) {
-  HARDENED_TRY(p384_init_otbn(kP384ModeSideloadSign));
+  uint32_t mode = OTBN_ADDR_T_INIT(run_p384, MODE_SIDELOAD_SIGN);
+  HARDENED_TRY(p384_init_otbn(mode));
 
   // Set the message digest.
+  const otbn_addr_t kOtbnVarMsg = OTBN_ADDR_T_INIT(run_p384, msg);
   HARDENED_TRY(set_message_digest(digest, kOtbnVarMsg));
 
   // Start the OTBN routine.
@@ -359,9 +350,11 @@ status_t p384_ecdsa_sign_finalize(p384_ecdsa_signature_t *result) {
   }
 
   // Read signature R out of OTBN dmem.
+  const otbn_addr_t kOtbnVarR = OTBN_ADDR_T_INIT(run_p384, r);
   HARDENED_TRY(otbn_dmem_read(kP384ScalarWords, kOtbnVarR, result->r));
 
   // Read signature S out of OTBN dmem.
+  const otbn_addr_t kOtbnVarS = OTBN_ADDR_T_INIT(run_p384, s);
   HARDENED_TRY(otbn_dmem_read(kP384ScalarWords, kOtbnVarS, result->s));
 
   // Wipe DMEM.
@@ -371,15 +364,19 @@ status_t p384_ecdsa_sign_finalize(p384_ecdsa_signature_t *result) {
 status_t p384_ecdsa_verify_start(const p384_ecdsa_signature_t *signature,
                                  const uint32_t digest[kP384ScalarWords],
                                  const p384_point_t *public_key) {
-  HARDENED_TRY(p384_init_otbn(kP384ModeVerify));
+  uint32_t mode = OTBN_ADDR_T_INIT(run_p384, MODE_VERIFY);
+  HARDENED_TRY(p384_init_otbn(mode));
 
   // Set the message digest.
+  const otbn_addr_t kOtbnVarMsg = OTBN_ADDR_T_INIT(run_p384, msg);
   HARDENED_TRY(set_message_digest(digest, kOtbnVarMsg));
 
   // Set the signature R.
+  const otbn_addr_t kOtbnVarR = OTBN_ADDR_T_INIT(run_p384, r);
   HARDENED_TRY(p384_scalar_write(signature->r, kOtbnVarR));
 
   // Set the signature S.
+  const otbn_addr_t kOtbnVarS = OTBN_ADDR_T_INIT(run_p384, s);
   HARDENED_TRY(p384_scalar_write(signature->s, kOtbnVarS));
 
   // Set the public key.
@@ -398,6 +395,7 @@ status_t p384_ecdsa_verify_finalize(const p384_ecdsa_signature_t *signature,
 
   // Read x_r (recovered R) out of OTBN dmem.
   uint32_t x_r[kP384ScalarWords];
+  const otbn_addr_t kOtbnVarXr = OTBN_ADDR_T_INIT(run_p384, x_r);
   HARDENED_TRY(otbn_dmem_read(kP384ScalarWords, kOtbnVarXr, x_r));
 
   *result = hardened_memeq(x_r, signature->r, kP384ScalarWords);
@@ -408,9 +406,12 @@ status_t p384_ecdsa_verify_finalize(const p384_ecdsa_signature_t *signature,
 
 status_t p384_ecdh_start(p384_masked_scalar_t *private_key,
                          const p384_point_t *public_key) {
-  HARDENED_TRY(p384_init_otbn(kP384ModeEcdh));
+  uint32_t mode = OTBN_ADDR_T_INIT(run_p384, MODE_ECDH);
+  HARDENED_TRY(p384_init_otbn(mode));
 
   // Set the private key shares.
+  const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(run_p384, d0_io);
+  const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(run_p384, d1_io);
   HARDENED_TRY(p384_masked_scalar_write(private_key, kOtbnVarD0, kOtbnVarD1));
 
   // Set the public key.
@@ -436,7 +437,9 @@ status_t p384_ecdh_finalize(p384_ecdh_shared_key_t *shared_key) {
   }
 
   // Read the shares of the key from OTBN dmem (at vars x and y).
+  const otbn_addr_t kOtbnVarX = OTBN_ADDR_T_INIT(run_p384, x);
   HARDENED_TRY(otbn_dmem_read(kP384CoordWords, kOtbnVarX, shared_key->share0));
+  const otbn_addr_t kOtbnVarY = OTBN_ADDR_T_INIT(run_p384, y);
   HARDENED_TRY(otbn_dmem_read(kP384CoordWords, kOtbnVarY, shared_key->share1));
 
   shared_key->checksum = p384_ecdh_shared_key_checksum(shared_key);
@@ -446,7 +449,8 @@ status_t p384_ecdh_finalize(p384_ecdh_shared_key_t *shared_key) {
 }
 
 status_t p384_sideload_ecdh_start(const p384_point_t *public_key) {
-  HARDENED_TRY(p384_init_otbn(kP384ModeSideloadEcdh));
+  uint32_t mode = OTBN_ADDR_T_INIT(run_p384, MODE_SIDELOAD_ECDH);
+  HARDENED_TRY(p384_init_otbn(mode));
 
   // Set the public key.
   HARDENED_TRY(set_public_key(public_key));
@@ -457,7 +461,8 @@ status_t p384_sideload_ecdh_start(const p384_point_t *public_key) {
 
 status_t p384_point_on_curve_check(const p384_point_t *point,
                                    hardened_bool_t *result) {
-  HARDENED_TRY(p384_init_otbn(kOtbnP384ModePointOnCurveCheck));
+  uint32_t mode = OTBN_ADDR_T_INIT(run_p384, MODE_POINTONCRV_CHECK);
+  HARDENED_TRY(p384_init_otbn(mode));
 
   // Set the point.
   HARDENED_TRY(set_public_key(point));
@@ -484,6 +489,7 @@ status_t p384_point_on_curve_check(const p384_point_t *point,
   }
 
   // Read the result of the OTBN operation.
+  const otbn_addr_t kOtbnVarOk = OTBN_ADDR_T_INIT(run_p384, ok);
   HARDENED_TRY(otbn_dmem_read(1, kOtbnVarOk, result));
 
   // Wipe DMEM.
@@ -492,9 +498,12 @@ status_t p384_point_on_curve_check(const p384_point_t *point,
 
 status_t p384_base_point_mult(p384_masked_scalar_t *private_key,
                               p384_point_t *public_key) {
-  HARDENED_TRY(p384_init_otbn(kOtbnP384ModeBasePointMult));
+  uint32_t mode = OTBN_ADDR_T_INIT(run_p384, MODE_BASE_POINT_MULT);
+  HARDENED_TRY(p384_init_otbn(mode));
 
   // Set the private key shares.
+  const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(run_p384, d0_io);
+  const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(run_p384, d1_io);
   HARDENED_TRY(p384_masked_scalar_write(private_key, kOtbnVarD0, kOtbnVarD1));
 
   // Start the OTBN routine.
@@ -516,9 +525,12 @@ status_t p384_base_point_mult(p384_masked_scalar_t *private_key,
 OT_WARN_UNUSED_RESULT
 status_t p384_arith_share_private_key(p384_masked_scalar_t *boolean_private_key,
                                       p384_masked_scalar_t *arith_private_key) {
-  HARDENED_TRY(p384_init_otbn(kOtbnP384ModeArithShareSecretKey));
+  uint32_t mode = OTBN_ADDR_T_INIT(run_p384, MODE_ARITH_SHARE_SECRET_KEY);
+  HARDENED_TRY(p384_init_otbn(mode));
 
   // Write the Boolean-shared key to DMEM.
+  const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(run_p384, d0_io);
+  const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(run_p384, d1_io);
   HARDENED_TRY(
       p384_masked_scalar_write(boolean_private_key, kOtbnVarD0, kOtbnVarD1));
 

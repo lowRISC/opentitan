@@ -204,10 +204,27 @@ typedef struct otbn_app {
   })
 
 /**
- * Initializes an `otbn_addr_t`.
+ * Stringification macros for inline assembly.
  */
-#define OTBN_ADDR_T_INIT(app_name, symbol_name) \
-  ((uint32_t)OTBN_SYMBOL_ADDR(app_name, symbol_name))
+#define _OTBN_STR(x) #x
+#define _OTBN_XSTR(x) _OTBN_STR(x)
+
+/**
+ * Initializes an `otbn_addr_t`.
+ *
+ * Uses inline assembly to force an absolute load.
+ * This prevents the compiler from emitting PC-relative instructions
+ * which would break position-independent code (PIC) for the binary blob.
+ */
+#define OTBN_ADDR_T_INIT(app_name, symbol_name)                                       \
+  ({                                                                                  \
+    uint32_t _otbn_addr;                                                              \
+    __asm__ (                                                                       \
+      "lui %0, %%hi(" _OTBN_XSTR(OTBN_SYMBOL_ADDR(app_name, symbol_name)) ")\n"   \
+      "addi %0, %0, %%lo(" _OTBN_XSTR(OTBN_SYMBOL_ADDR(app_name, symbol_name)) ")" \
+      : "=r"(_otbn_addr)); \
+    _otbn_addr;                                                                       \
+  })
 
 /**
  * Write to OTBN's data memory (DMEM)

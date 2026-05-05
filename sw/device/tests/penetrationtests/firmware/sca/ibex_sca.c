@@ -36,8 +36,6 @@ static dif_otbn_t otbn;
 // OTBN symbols used by the combinatorial test.
 OTBN_DECLARE_APP_SYMBOLS(p256_ecdsa_sca);
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, msg);
-static const otbn_app_t kOtbnAppP256Ecdsa = OTBN_APP_T_INIT(p256_ecdsa_sca);
-static const otbn_addr_t kOtbnVarMsg = OTBN_ADDR_T_INIT(p256_ecdsa_sca, msg);
 
 // Enum for the triggers of the combinatorial test.
 typedef enum combi_operations_trigger_t {
@@ -161,6 +159,7 @@ status_t handle_ibex_pentest_init(ujson_t *uj) {
 
   // Load p256 keygen from seed app into OTBN.
   // This is not used, but just set so it receives input,
+  const otbn_app_t kOtbnAppP256Ecdsa = OTBN_APP_T_INIT(p256_ecdsa_sca);
   TRY(otbn_load_app(kOtbnAppP256Ecdsa));
 
   return OK_STATUS();
@@ -171,6 +170,7 @@ static status_t trigger_ibex_sca_combi_operations(uint32_t value1,
                                                   uint32_t result[],
                                                   uint32_t trigger)
     __attribute__((optnone)) {
+  const otbn_addr_t kOtbnVarMsg = OTBN_ADDR_T_INIT(p256_ecdsa_sca, msg);
   if (trigger & kCombiOpsTriggerXor) {
     init_registers(value1, value2, 0, 0, 0, 0);
 
