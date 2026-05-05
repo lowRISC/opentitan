@@ -152,7 +152,7 @@ function automatic data_q_t rram_ctrl_env_cfg::rram_bkdr_mem_read(rram_ctrl_op_t
 
   addr = rram_ctrl_op.addr >> RramDataByteWidth;
 
-  // addr must be aligend to rram word boundaries for the moment
+  // addr must be aligend to RRAM word boundaries
   for (int i = 0; i <= rram_ctrl_op.num_words; i++) begin
     if (i%4 == 0) begin
       rd_data = rram_bkdr_word_read(addr, rram_ctrl_op.partition, descramble, check_cfg);

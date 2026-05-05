@@ -123,6 +123,9 @@ task rram_ctrl_base_vseq::dut_init(string reset_kind = "HARD");
   rram_ctrl_init();
 endtask : dut_init
 
+// Initializes the RRAM controller
+// - polls phy_init_done
+// - initializes RRAM data+info array to 0 (unless skipped)
 task rram_ctrl_base_vseq::rram_ctrl_init();
   uvm_reg_data_t reg_data;
   bit init_done;
@@ -203,6 +206,7 @@ function automatic page_cfg_t rram_ctrl_base_vseq::get_current_page_cfg(addr_t a
   return current_cfg;
 endfunction : get_current_page_cfg
 
+// Configure the default region
 task rram_ctrl_base_vseq::update_default_region_cfg(input prim_mubi_pkg::mubi4_t wr_en,
                                                     input prim_mubi_pkg::mubi4_t rd_en,
                                                     input prim_mubi_pkg::mubi4_t scramble_en,
@@ -223,6 +227,7 @@ task rram_ctrl_base_vseq::update_default_region_cfg(input prim_mubi_pkg::mubi4_t
   update_data_regions();
 endtask : update_default_region_cfg
 
+// update an info page configuration
 task rram_ctrl_base_vseq::update_info_page_cfg(input uint info_page,
                                                input prim_mubi_pkg::mubi4_t en,
                                                input prim_mubi_pkg::mubi4_t wr_en,
@@ -291,6 +296,7 @@ task rram_ctrl_base_vseq::update_mp_region(input uint region,
   update_data_regions();
 endtask : update_mp_region
 
+// Helper task to wait for an operation to have completed (polls op_done)
 task rram_ctrl_base_vseq::rram_ctrl_wait_op_done();
   uvm_reg_data_t reg_data;
   bit op_done;
@@ -305,6 +311,7 @@ task rram_ctrl_base_vseq::rram_ctrl_wait_op_done();
   @(posedge cfg.clk_rst_vif.clk);
 endtask : rram_ctrl_wait_op_done
 
+// Helper task to wait for a write operation to have completed (polls wr_busy)
 task rram_ctrl_base_vseq::rram_ctrl_wait_wr_done();
   uvm_reg_data_t reg_data;
   bit wr_busy;
@@ -315,6 +322,12 @@ task rram_ctrl_base_vseq::rram_ctrl_wait_wr_done();
   end while (wr_busy == 1'b1);
 endtask : rram_ctrl_wait_wr_done
 
+// Software controlled write operation to the RRAM.
+// - writes address to register
+// - writes command field to register
+// - fills wr_fifo
+// - performs bkdr read to check if dat has been written to RRAM if wr_check is set to 1
+// - waits for operation to complete
 task rram_ctrl_base_vseq::rram_ctrl_write(input rram_ctrl_op_t ctrl_op, input data_q_t data,
                                           input logic wr_check = 1'b1);
   uvm_reg_data_t reg_data;
@@ -381,7 +394,10 @@ task rram_ctrl_base_vseq::rram_ctrl_write(input rram_ctrl_op_t ctrl_op, input da
   rram_ctrl_wait_op_done();
 endtask : rram_ctrl_write
 
-
+// Software controlled rewrite operation to the RRAM.
+// - writes address to register
+// - writes command field to register
+// - waits for operation to complete
 task rram_ctrl_base_vseq::rram_ctrl_rewrite(input addr_t addr, input rram_part_e partition);
 
   uvm_reg_data_t reg_data;
@@ -404,6 +420,12 @@ task rram_ctrl_base_vseq::rram_ctrl_rewrite(input addr_t addr, input rram_part_e
   rram_ctrl_wait_op_done();
 endtask : rram_ctrl_rewrite
 
+// Software controlled read operation from the RRAM.
+// - writes address to register
+// - perfoms bkdr read to get initial data in RRAM if rd_check is set to 1
+// - writes command field to register
+// - reads rd_fifo (and compares data to expected values from bkdr read)
+// - waits for operation to complete
 task rram_ctrl_base_vseq::rram_ctrl_read(input rram_ctrl_op_t ctrl_op, ref data_q_t data,
                                          input logic rd_check = 1'b1);
 

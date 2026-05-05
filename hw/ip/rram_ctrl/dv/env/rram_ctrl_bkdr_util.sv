@@ -47,6 +47,7 @@ class rram_ctrl_bkdr_util extends mem_bkdr_util;
     return mult_out;
   endfunction
 
+  // Helper function to compute the GfMult
   static function bit [RramStagesPerCycle-1:0][RramDataWidth-1:0] rram_gen_matrix(
                                                                       bit [RramDataWidth-1:0] seed,
                                                                       bit init);
@@ -61,6 +62,7 @@ class rram_ctrl_bkdr_util extends mem_bkdr_util;
     return matrix_out;
   endfunction
 
+  // Compute the tweak for the xex cipher. tweak = GfMult128(addr, addr_key)
   static function bit [RramDataWidth-1:0] rram_galois_multiply(bit [RramKeySize-1:0] addr_key,
                                                                bit [RramAddrW-1:0] addr);
     bit [RramStagesPerCycle-1:0][RramDataWidth-1:0] current_matrix;
@@ -147,34 +149,6 @@ class rram_ctrl_bkdr_util extends mem_bkdr_util;
     end
 
     return descrambled_data ^ mask;
-  endfunction
-
-  virtual function void rram_write_scrambled(bit [RramDataWidth-1:0] data,
-                                             bit [RramAddrW-1:0] word_addr,
-                                             bit [RramKeySize-1:0] rram_addr_key,
-                                             bit [RramKeySize-1:0] rram_data_key);
-
-    bit [RramDataWidth-1:0] scrambled_data;
-    bit [rram_ctrl_pkg::BusAddrByteW-1:0] byte_addr;
-
-    scrambled_data = rram_scramble_data(data, word_addr, rram_addr_key, rram_data_key);
-
-    byte_addr = word_addr << RramDataByteWidth;
-    write(byte_addr, scrambled_data);
-  endfunction
-
-  virtual function void rram_read_scrambled(ref bit [RramDataWidth-1:0] data,
-                                            bit [RramAddrW-1:0] word_addr,
-                                            bit [RramKeySize-1:0] rram_addr_key,
-                                            bit [RramKeySize-1:0] rram_data_key);
-    bit [RramDataWidth-1:0] scrambled_data;
-    bit [rram_ctrl_pkg::BusAddrByteW-1:0] byte_addr;
-
-    byte_addr = word_addr << RramDataByteWidth;
-    scrambled_data = read(byte_addr);
-
-    data = rram_descramble_data(scrambled_data, word_addr, rram_addr_key, rram_data_key);
-
   endfunction
 
 endclass
