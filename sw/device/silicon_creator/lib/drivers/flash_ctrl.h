@@ -608,6 +608,15 @@ void flash_ctrl_info_cfg_lock(const flash_ctrl_info_page_t *info_page);
 void flash_ctrl_bank_erase_perms_set(hardened_bool_t enable);
 
 /**
+ * Disable and lock bank erase permissions for both flash banks.
+ *
+ * This function disables bank erase and locks the configuration register.
+ * Once locked, the bank erase permissions cannot be changed until the next
+ * reset.
+ */
+void flash_ctrl_bank_erase_disable(void);
+
+/**
  * Enable execution from flash.
  *
  * Note: a ePMP region must also be configured in order to execute code in
