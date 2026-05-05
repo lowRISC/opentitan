@@ -57,13 +57,23 @@ struct Ed25519TestCase {
     operation: String,
     message: Vec<u8>,
     public_key: Vec<u8>,
+    #[serde(default)]
+    private_key: Vec<u8>,
     signature: Vec<u8>,
     result: bool,
 }
 
 // Fixed sizes defined by the Ed25519 algorithm.
 const ED25519_PUBLIC_KEY_BYTES: usize = 32;
+const ED25519_PRIVATE_KEY_SEED_BYTES: usize = 32;
 const ED25519_SIGNATURE_BYTES: usize = 64;
+
+// Fixed mask for additive sharing of the Ed25519 private key seed.
+// seed = d0 + d1 (mod 2^256). Generated randomly for testing purposes.
+const RANDOM_MASK_ED25519: [u8; ED25519_PRIVATE_KEY_SEED_BYTES] = [
+    0x7e, 0x3f, 0x8a, 0x5c, 0x12, 0xd6, 0xb4, 0x90, 0xaf, 0x7e, 0x3d, 0x81, 0xc4, 0xb2, 0x5f, 0x98,
+    0xe0, 0xa1, 0xd7, 0x3c, 0x5b, 0x2e, 0x8f, 0x4a, 0x96, 0xd0, 0xc7, 0x1b, 0x38, 0xe4, 0xf2, 0x5a,
+];
 
 fn run_ed25519_testcase(
     test_case: &Ed25519TestCase,
@@ -77,6 +87,7 @@ fn run_ed25519_testcase(
 
     let operation = match test_case.operation.as_str() {
         "verify" => CryptotestEd25519Operation::Verify,
+        "sign" => CryptotestEd25519Operation::Sign,
         _ => panic!("Unsupported Ed25519 operation: {}", test_case.operation),
     };
 
@@ -102,10 +113,12 @@ fn run_ed25519_testcase(
     }
     .send(spi_console)?;
 
-    // For verify: send the actual signature. For sign: send zeros (unused).
+    // For verify: send the actual signature (R component reversed for device byte
+    // ordering). For sign: the firmware ignores this field; send an empty buffer.
     let mut signature_bytes = test_case.signature.clone();
-    // Reverse the R component (first half of signature) for device byte ordering.
-    if signature_bytes.len() >= ED25519_SIGNATURE_BYTES / 2 {
+    if matches!(operation, CryptotestEd25519Operation::Verify)
+        && signature_bytes.len() >= ED25519_SIGNATURE_BYTES / 2
+    {
         signature_bytes[..ED25519_SIGNATURE_BYTES / 2].reverse();
     }
     CryptotestEd25519Signature {
@@ -115,7 +128,7 @@ fn run_ed25519_testcase(
     }
     .send(spi_console)?;
 
-    // For verify: send the actual public key. For sign: send zeros (unused).
+    // Public key is used by verify; firmware derives it from the private key for sign.
     CryptotestEd25519PublicKey {
         public_key: ArrayVec::try_from(test_case.public_key.as_slice())
             .expect("Ed25519 public key had unexpected length."),
@@ -123,29 +136,49 @@ fn run_ed25519_testcase(
     }
     .send(spi_console)?;
 
-    // For verify: private key is unused by the device; send empty shares.
+    // For sign: additively mask the private key seed (seed = d0 + d1 mod 2^256).
+    // For verify: the firmware ignores the private key; send empty shares.
+    let (d0_bytes, d1_bytes): (Vec<u8>, Vec<u8>) =
+        if matches!(operation, CryptotestEd25519Operation::Sign) {
+            assert_eq!(
+                test_case.private_key.len(),
+                ED25519_PRIVATE_KEY_SEED_BYTES,
+                "Ed25519 private key must be exactly {} bytes (got {})",
+                ED25519_PRIVATE_KEY_SEED_BYTES,
+                test_case.private_key.len(),
+            );
+            let seed = &test_case.private_key;
+            let d0 = RANDOM_MASK_ED25519;
+            let mut d1 = [0u8; ED25519_PRIVATE_KEY_SEED_BYTES];
+            let mut borrow: i16 = 0;
+            for i in 0..ED25519_PRIVATE_KEY_SEED_BYTES {
+                let diff = seed[i] as i16 - d0[i] as i16 - borrow;
+                d1[i] = diff as u8;
+                borrow = if diff < 0 { 1 } else { 0 };
+            }
+            (d0.to_vec(), d1.to_vec())
+        } else {
+            (vec![], vec![])
+        };
     CryptotestEd25519PrivateKey {
-        d0: ArrayVec::try_from(vec![].as_slice()).unwrap(),
-        d0_len: 0,
-        d1: ArrayVec::try_from(vec![].as_slice()).unwrap(),
-        d1_len: 0,
+        d0: ArrayVec::try_from(d0_bytes.as_slice()).unwrap(),
+        d0_len: d0_bytes.len(),
+        d1: ArrayVec::try_from(d1_bytes.as_slice()).unwrap(),
+        d1_len: d1_bytes.len(),
     }
     .send(spi_console)?;
 
     let success = match operation {
-        CryptotestEd25519Operation::Verify => {
+        CryptotestEd25519Operation::Verify | CryptotestEd25519Operation::Sign => {
             let output =
                 CryptotestEd25519VerifyOutput::recv(spi_console, opts.timeout, false, false)?;
             match output {
                 CryptotestEd25519VerifyOutput::Success => true,
                 CryptotestEd25519VerifyOutput::Failure => false,
                 CryptotestEd25519VerifyOutput::IntValue(i) => {
-                    panic!("Invalid Ed25519 verify result: {}", i)
+                    panic!("Invalid Ed25519 result: {}", i)
                 }
             }
-        }
-        CryptotestEd25519Operation::Sign => {
-            unreachable!("Sign operation not yet implemented")
         }
         CryptotestEd25519Operation::IntValue(_) => {
             unreachable!("Should be caught above")
