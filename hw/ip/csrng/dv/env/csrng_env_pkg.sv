@@ -28,7 +28,6 @@ package csrng_env_pkg;
   parameter int unsigned MaxNumHwApps = 4;
 
   // parameters
-  parameter uint     NUM_HW_APPS                = 2;
   parameter uint     HW_APP0                    = 0;
   parameter uint     HW_APP1                    = 1;
   parameter uint     SW_APP                     = 2;

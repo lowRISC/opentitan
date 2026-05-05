@@ -14,8 +14,8 @@ class csrng_regwen_vseq extends csrng_base_vseq;
   int ctrl_int        = 0;
   int chk_int         = 0;
 
-  rand bit [NUM_HW_APPS:0] int_state_read_enable;
-  bit [NUM_HW_APPS:0] chk_int_state_read_enable;
+  rand bit [MaxNumHwApps:0] int_state_read_enable;
+  bit      [MaxNumHwApps:0] chk_int_state_read_enable;
 
   task body();
 

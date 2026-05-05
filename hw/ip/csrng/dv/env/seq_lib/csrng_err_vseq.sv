@@ -40,7 +40,8 @@ class csrng_err_vseq extends csrng_base_vseq;
     fifo_err_value[1] = '{"write": 1'b0, "read": 1'b0, "state": 1'b0};
 
     // Create edn host sequences
-    for (int i = 0; i < NUM_HW_APPS; i++) begin
+    m_edn_push_seq = new[cfg.m_num_hw_apps];
+    for (int i = 0; i < cfg.m_num_hw_apps; i++) begin
       m_edn_push_seq[i] = push_pull_host_seq#(csrng_pkg::CmdBusWidth)::type_id::create
                                               ($sformatf("m_edn_push_seq[%0d]", i));
     end

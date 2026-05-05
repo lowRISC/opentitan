@@ -32,7 +32,7 @@ class csrng_smoke_vseq extends csrng_base_vseq;
 
     // Check internal state
     if (cfg.check_int_state) begin
-      for (int i = 0; i < NUM_HW_APPS + 1; i++)
+      for (int i = 0; i < cfg.m_num_hw_apps + 1; i++)
         cfg.check_internal_state(.app(i), .compare(1));
     end
 

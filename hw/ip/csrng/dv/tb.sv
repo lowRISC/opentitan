@@ -9,6 +9,7 @@ module tb;
   import csrng_env_pkg::*;
   import csrng_test_pkg::*;
   import prim_mubi_pkg::*;
+  import csrng_reg_pkg::NumApps;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -20,11 +21,11 @@ module tb;
   wire   intr_entropy_req;
   wire   intr_hw_inst_exc;
   wire   intr_cs_fatal_err;
-  wire[NUM_MAX_INTERRUPTS-1:0]              interrupts;
-  wire[MuBi8Width - 1:0]                    otp_en_cs_sw_app_read;
-  wire[MuBi4Width - 1:0]                    lc_hw_debug_en;
-  csrng_pkg::csrng_req_t[NUM_HW_APPS-1:0]   csrng_cmd_req;
-  csrng_pkg::csrng_rsp_t[NUM_HW_APPS-1:0]   csrng_cmd_rsp;
+  wire[NUM_MAX_INTERRUPTS-1:0]        interrupts;
+  wire[MuBi8Width - 1:0]              otp_en_cs_sw_app_read;
+  wire[MuBi4Width - 1:0]              lc_hw_debug_en;
+  csrng_pkg::csrng_req_t[NumApps-2:0] csrng_cmd_req;
+  csrng_pkg::csrng_rsp_t[NumApps-2:0] csrng_cmd_rsp;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
@@ -32,7 +33,7 @@ module tb;
   pins_if#(MuBi8Width) otp_en_cs_sw_app_read_if(otp_en_cs_sw_app_read);
   pins_if#(MuBi4Width) lc_hw_debug_en_if(lc_hw_debug_en);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
-  csrng_if  csrng_if[NUM_HW_APPS](.clk(clk), .rst_n(edn_disable === 1'b1 ? 1'b0 : rst_n));
+  csrng_if  csrng_if[NumApps-1](.clk(clk), .rst_n(edn_disable === 1'b1 ? 1'b0 : rst_n));
   csrng_agents_if csrng_agents_if();
   push_pull_if#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))
       entropy_src_if(.clk(clk), .rst_n(entropy_src_disable === 1'b1 ? 1'b0 : rst_n));
@@ -47,8 +48,7 @@ module tb;
   `DV_ALERT_IF_CONNECT()
 
   // dut
-  csrng#(.NHwApps(NUM_HW_APPS),
-         .RndCnstCsKeymgrDivNonProduction(LC_HW_DEBUG_EN_ON_DATA),
+  csrng#(.RndCnstCsKeymgrDivNonProduction(LC_HW_DEBUG_EN_ON_DATA),
          .RndCnstCsKeymgrDivProduction(LC_HW_DEBUG_EN_OFF_DATA))
   dut (
     .clk_i                      (clk      ),
@@ -78,7 +78,7 @@ module tb;
     .intr_cs_fatal_err_o        (intr_cs_fatal_err)
   );
 
-  for (genvar i = 0; i < NUM_HW_APPS; i++) begin : gen_csrng_if
+  for (genvar i = 0; i < NumApps - 1; i++) begin : gen_csrng_if
     assign csrng_cmd_req[i]    = csrng_if[i].cmd_req;
     assign csrng_if[i].cmd_rsp = csrng_cmd_rsp[i];
     initial begin
@@ -117,7 +117,7 @@ module tb;
   end
 
   // Assertions
-  for (genvar i = 0; i < NUM_HW_APPS + 1; i++) begin : gen_cmd_stage_asserts
+  for (genvar i = 0; i < NumApps; i++) begin : gen_cmd_stage_asserts
     `ASSERT(CmdStageFifoNotFullReady,
       $past(rst_n) &&
       (tb.dut.u_csrng_core.gen_cmd_stage[i].u_csrng_cmd_stage.sfifo_cmd_depth != 2'h2) |->

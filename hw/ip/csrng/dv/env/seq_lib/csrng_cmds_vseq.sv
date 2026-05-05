@@ -6,9 +6,9 @@ class csrng_cmds_vseq extends csrng_base_vseq;
   `uvm_object_utils(csrng_cmds_vseq)
   `uvm_object_new
 
-  csrng_item   cs_item, cs_item_q[NUM_HW_APPS + 1][$];
+  csrng_item   cs_item, cs_item_q[][$];
   uint         num_cmds, cmds_gen, cmds_sent;
-  bit          uninstantiate[NUM_HW_APPS + 1];
+  bit          uninstantiate[];
 
   function void gen_seed(uint app);
     bit [entropy_src_pkg::FIPS_BUS_WIDTH - 1:0]    fips;
@@ -68,7 +68,7 @@ class csrng_cmds_vseq extends csrng_base_vseq;
     cmds_gen = 0;
     cmds_sent = 0;
     // Generate queues of csrng commands
-    for (int i = 0; i < NUM_HW_APPS + 1; i++) begin
+    for (int i = 0; i < cfg.m_num_apps; i++) begin
       create_cmds(i);
     end
   endfunction
@@ -98,11 +98,15 @@ class csrng_cmds_vseq extends csrng_base_vseq;
   task body();
     super.body();
 
+    cs_item_q     = new[cfg.m_num_apps];
+    uninstantiate = new[cfg.m_num_apps];
+
     // Create entropy_src sequence
     m_entropy_src_pull_seq = push_pull_device_seq#(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)::
         type_id::create("m_entropy_src_pull_seq");
     // Create edn host sequences
-    for (int i = 0; i < NUM_HW_APPS; i++) begin
+    m_edn_push_seq = new[cfg.m_num_hw_apps];
+    for (int i = 0; i < cfg.m_num_hw_apps; i++) begin
       m_edn_push_seq[i] = push_pull_host_seq#(csrng_pkg::CmdBusWidth)::type_id::create
                                               ($sformatf("m_edn_push_seq[%0d]", i));
     end
@@ -120,7 +124,7 @@ class csrng_cmds_vseq extends csrng_base_vseq;
       fork
         // Generate one thread for each hardware application interface. These will end once all the
         // commands have been sent.
-        for (int i = 0; i < NUM_HW_APPS + 1; i++) begin
+        for (int i = 0; i < cfg.m_num_apps; i++) begin
           automatic int j = i;
           fork
             forever begin
@@ -153,7 +157,7 @@ class csrng_cmds_vseq extends csrng_base_vseq;
           cfg.csrng_agents_vif.drive_edn_disable(1);
 
           // Clear any items that may remain in the command queues.
-          for (int i = 0; i < NUM_HW_APPS + 1; i++) begin
+          for (int i = 0; i < cfg.m_num_apps; i++) begin
             cs_item_q[i].delete();
           end
 
@@ -197,7 +201,7 @@ class csrng_cmds_vseq extends csrng_base_vseq;
 
     // Check internal state, then uninstantiate if not already
     if (cfg.check_int_state) begin
-      for (int i = 0; i < NUM_HW_APPS + 1; i++) begin
+      for (int i = 0; i < cfg.m_num_apps; i++) begin
         cfg.check_internal_state(.app(i), .compare(1));
         if (!uninstantiate[i]) begin
           cs_item = new();
