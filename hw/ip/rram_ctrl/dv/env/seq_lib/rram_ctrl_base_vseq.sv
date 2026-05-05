@@ -99,8 +99,9 @@ task rram_ctrl_base_vseq::pre_start();
     otp_data_key      = {$urandom, $urandom, $urandom, $urandom};
     otp_data_rand_key = {$urandom, $urandom, $urandom, $urandom};
 
-    cfg.otp_addr_key = otp_addr_key;
-    cfg.otp_data_key = otp_data_key;
+    // todo: provide random data keys once rram_ctrl_lcmgr is added
+    cfg.otp_addr_key = '0;
+    cfg.otp_data_key = '0;
 
     cfg.misc_vif.rma_req  <= lc_ctrl_pkg::Off;
     cfg.misc_vif.rma_seed <= lc_ctrl_pkg::LC_NVM_RMA_SEED_DEFAULT;

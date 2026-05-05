@@ -18,8 +18,7 @@ class rram_ctrl_smoke_vseq extends rram_ctrl_base_vseq;
   data_q_t rram_data_rd;
 
   constraint mubi_c {
-    // TODO: enable when scrambling is supported
-    scramble_en dist { MuBi4False := 100,                MuBi4True := 0};
+    scramble_en dist { MuBi4False := 100-cfg.scr_en_pct, MuBi4True := cfg.scr_en_pct};
     region_en dist   { MuBi4False := 100-cfg.reg_en_pct, MuBi4True := cfg.reg_en_pct};
     wr_en dist       { MuBi4False := 100-cfg.wr_en_pct,  MuBi4True := cfg.wr_en_pct};
     rd_en dist       { MuBi4False := 100-cfg.rd_en_pct,  MuBi4True := cfg.rd_en_pct};

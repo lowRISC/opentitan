@@ -15,8 +15,8 @@ class rram_ctrl_concurrent_rd_wr_vseq extends rram_ctrl_base_vseq;
 
   constraint scramble_en_c {
     scramble_en dist {
-      MuBi4False := 100, // TODO: enable once scrambling is added
-      MuBi4True  := 0
+      MuBi4False := 50,
+      MuBi4True  := 50
     };
   }
 
