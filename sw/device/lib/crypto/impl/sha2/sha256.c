@@ -58,13 +58,6 @@ OTBN_DECLARE_SYMBOL_ADDR(run_sha256, msg);    // Input message.
 OTBN_DECLARE_SYMBOL_ADDR(run_sha256,
                          num_msg_chunks);  // Message length in blocks.
 
-static const otbn_app_t kOtbnAppSha256 = OTBN_APP_T_INIT(run_sha256);
-static const otbn_addr_t kOtbnVarSha256State =
-    OTBN_ADDR_T_INIT(run_sha256, state);
-static const otbn_addr_t kOtbnVarSha256Msg = OTBN_ADDR_T_INIT(run_sha256, msg);
-static const otbn_addr_t kOtbnVarSha256NumMsgChunks =
-    OTBN_ADDR_T_INIT(run_sha256, num_msg_chunks);
-
 status_t sha256_init(sha256_state_t *state) {
   // Set the initial state.
   HARDENED_TRY(
@@ -85,6 +78,8 @@ status_t sha256_init(sha256_state_t *state) {
  */
 static status_t process_message_buffer(sha256_otbn_ctx_t *ctx) {
   // Write the number of blocks to DMEM.
+  const otbn_addr_t kOtbnVarSha256NumMsgChunks =
+      OTBN_ADDR_T_INIT(run_sha256, num_msg_chunks);
   HARDENED_TRY(
       otbn_dmem_write(1, &ctx->num_blocks, kOtbnVarSha256NumMsgChunks));
 
@@ -110,6 +105,7 @@ static status_t process_block(sha256_otbn_ctx_t *ctx,
                               const sha256_message_block_t *block) {
   // Calculate the offset within the message buffer.
   size_t offset = ctx->num_blocks * kSha256MessageBlockBytes;
+  const otbn_addr_t kOtbnVarSha256Msg = OTBN_ADDR_T_INIT(run_sha256, msg);
   otbn_addr_t dst = kOtbnVarSha256Msg + offset;
 
   // Copy the message block into DMEM.
@@ -189,6 +185,7 @@ static status_t process_message(sha256_state_t *state, const uint8_t *msg,
                                 size_t msg_len,
                                 hardened_bool_t padding_needed) {
   // Load the SHA-256 app. Fails if OTBN is non-idle.
+  const otbn_app_t kOtbnAppSha256 = OTBN_APP_T_INIT(run_sha256);
   HARDENED_TRY(otbn_load_app(kOtbnAppSha256));
 
   // Check the message length. SHA-256 messages must be less than 2^64 bits
@@ -205,6 +202,7 @@ static status_t process_message(sha256_state_t *state, const uint8_t *msg,
   new_state.total_len = state->total_len + msg_bits;
 
   // Set the initial state if at least one block has been received before now.
+  const otbn_addr_t kOtbnVarSha256State = OTBN_ADDR_T_INIT(run_sha256, state);
   if (state->total_len >= kSha256MessageBlockBytes) {
     HARDENED_TRY(
         otbn_dmem_write(kSha256StateWords, state->H, kOtbnVarSha256State));

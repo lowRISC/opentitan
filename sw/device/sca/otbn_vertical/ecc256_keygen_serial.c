@@ -57,27 +57,6 @@ enum {
 };
 
 /**
- * App configuration for p256_key_from_seed_sca
- */
-const otbn_app_t kOtbnAppP256KeyFromSeed =
-    OTBN_APP_T_INIT(p256_key_from_seed_sca);
-
-static const otbn_addr_t kOtbnVarMode =
-    OTBN_ADDR_T_INIT(p256_key_from_seed_sca, mode);
-static const otbn_addr_t kOtbnVarSeed0 =
-    OTBN_ADDR_T_INIT(p256_key_from_seed_sca, seed0);
-static const otbn_addr_t kOtbnVarSeed1 =
-    OTBN_ADDR_T_INIT(p256_key_from_seed_sca, seed1);
-static const otbn_addr_t kOtbnVarD0 =
-    OTBN_ADDR_T_INIT(p256_key_from_seed_sca, d0);
-static const otbn_addr_t kOtbnVarD1 =
-    OTBN_ADDR_T_INIT(p256_key_from_seed_sca, d1);
-static const otbn_addr_t kOtbnVarX =
-    OTBN_ADDR_T_INIT(p256_key_from_seed_sca, x);
-static const otbn_addr_t kOtbnVarY =
-    OTBN_ADDR_T_INIT(p256_key_from_seed_sca, y);
-
-/**
  * An array of seeds to be used in a batch
  */
 uint32_t batch_share0[kNumBatchOpsMax][kEcc256SeedNumWords];
@@ -194,11 +173,17 @@ static void otbn_manual_trigger(void) { SS_CHECK_STATUS_OK(otbn_execute()); }
 static void p256_run_keygen(uint32_t mode, const uint32_t *share0,
                             const uint32_t *share1) {
   // Write mode.
+  const otbn_addr_t kOtbnVarMode =
+      OTBN_ADDR_T_INIT(p256_key_from_seed_sca, mode);
   SS_CHECK_STATUS_OK(otbn_dmem_write(/*num_words=*/1, &mode, kOtbnVarMode));
 
   // Write seed shares.
+  const otbn_addr_t kOtbnVarSeed0 =
+      OTBN_ADDR_T_INIT(p256_key_from_seed_sca, seed0);
   SS_CHECK_STATUS_OK(
       otbn_dmem_write(kEcc256SeedNumWords, share0, kOtbnVarSeed0));
+  const otbn_addr_t kOtbnVarSeed1 =
+      OTBN_ADDR_T_INIT(p256_key_from_seed_sca, seed1);
   SS_CHECK_STATUS_OK(
       otbn_dmem_write(kEcc256SeedNumWords, share1, kOtbnVarSeed1));
 
@@ -253,8 +238,10 @@ void ecc256_ecdsa_keygen_fvsr_seed_batch(const uint8_t *data, size_t data_len) {
                     batch_share1[i]);
 
     // Read results.
+    const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(p256_key_from_seed_sca, d0);
     SS_CHECK_STATUS_OK(
         otbn_dmem_read(kEcc256SeedNumWords, kOtbnVarD0, d0_batch));
+    const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(p256_key_from_seed_sca, d1);
     SS_CHECK_STATUS_OK(
         otbn_dmem_read(kEcc256SeedNumWords, kOtbnVarD1, d1_batch));
 
@@ -351,8 +338,10 @@ void ecc256_ecdsa_keygen_fvsr_key_batch(const uint8_t *data, size_t data_len) {
                     batch_share1[i]);
 
     // Read results.
+    const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(p256_key_from_seed_sca, d0);
     SS_CHECK_STATUS_OK(
         otbn_dmem_read(kEcc256SeedNumWords, kOtbnVarD0, d0_batch));
+    const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(p256_key_from_seed_sca, d1);
     SS_CHECK_STATUS_OK(
         otbn_dmem_read(kEcc256SeedNumWords, kOtbnVarD1, d1_batch));
 
@@ -393,7 +382,9 @@ static void p256_ecdsa_gen_secret_key(const uint32_t *seed,
   p256_run_keygen(kEcc256ModePrivateKeyOnly, share0, mask);
 
   // Read results.
+  const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(p256_key_from_seed_sca, d0);
   SS_CHECK_STATUS_OK(otbn_dmem_read(kEcc256SeedNumWords, kOtbnVarD0, d0));
+  const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(p256_key_from_seed_sca, d1);
   SS_CHECK_STATUS_OK(otbn_dmem_read(kEcc256SeedNumWords, kOtbnVarD1, d1));
 }
 
@@ -424,9 +415,13 @@ static void p256_ecdsa_gen_keypair(const uint32_t *seed, const uint32_t *mask,
   p256_run_keygen(kEcc256ModeKeypair, share0, mask);
 
   // Read results.
+  const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(p256_key_from_seed_sca, d0);
   SS_CHECK_STATUS_OK(otbn_dmem_read(kEcc256SeedNumWords, kOtbnVarD0, d0));
+  const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(p256_key_from_seed_sca, d1);
   SS_CHECK_STATUS_OK(otbn_dmem_read(kEcc256SeedNumWords, kOtbnVarD1, d1));
+  const otbn_addr_t kOtbnVarX = OTBN_ADDR_T_INIT(p256_key_from_seed_sca, x);
   SS_CHECK_STATUS_OK(otbn_dmem_read(kEcc256CoordNumWords, kOtbnVarX, x));
+  const otbn_addr_t kOtbnVarY = OTBN_ADDR_T_INIT(p256_key_from_seed_sca, y);
   SS_CHECK_STATUS_OK(otbn_dmem_read(kEcc256CoordNumWords, kOtbnVarY, y));
 }
 

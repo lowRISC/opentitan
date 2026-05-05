@@ -70,9 +70,6 @@ enum {
       kKmacBaseAddr + KMAC_STATE_REG_OFFSET + kKmacStateShareSize,
 };
 
-// "KMAC" string in little endian
-static const uint8_t kKmacFuncNameKMAC[] = {0x4b, 0x4d, 0x41, 0x43};
-
 // We need 5 bytes at most for encoding the length of cust_str and func_name.
 // That leaves 39 bytes for the string. We simply truncate it to 36 bytes.
 OT_ASSERT_ENUM_VALUE(kKmacPrefixMaxSize, 4 * KMAC_PREFIX_MULTIREG_COUNT - 8);
@@ -878,6 +875,8 @@ status_t kmac_kmac_128(kmac_blinded_key_t *key, hardened_bool_t masked_digest,
       kmac_init(kKmacOperationKmac, kKmacSecurityStrength128, key->hw_backed));
 
   HARDENED_TRY(kmac_write_key_block(key));
+  // "KMAC" string in little endian
+  const uint8_t kKmacFuncNameKMAC[] = {0x4b, 0x4d, 0x41, 0x43};
   HARDENED_TRY(kmac_set_prefix_regs(
       kKmacFuncNameKMAC, sizeof(kKmacFuncNameKMAC), cust_str, cust_str_len));
 
@@ -893,6 +892,8 @@ status_t kmac_kmac_256(kmac_blinded_key_t *key, hardened_bool_t masked_digest,
       kmac_init(kKmacOperationKmac, kKmacSecurityStrength256, key->hw_backed));
 
   HARDENED_TRY(kmac_write_key_block(key));
+  // "KMAC" string in little endian
+  const uint8_t kKmacFuncNameKMAC[] = {0x4b, 0x4d, 0x41, 0x43};
   HARDENED_TRY(kmac_set_prefix_regs(
       kKmacFuncNameKMAC, sizeof(kKmacFuncNameKMAC), cust_str, cust_str_len));
 

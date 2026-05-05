@@ -63,13 +63,6 @@ OTBN_DECLARE_SYMBOL_ADDR(run_sha512, state);     // Hash state.
 OTBN_DECLARE_SYMBOL_ADDR(run_sha512, msg);       // Input message.
 OTBN_DECLARE_SYMBOL_ADDR(run_sha512, n_chunks);  // Message length in blocks.
 
-static const otbn_app_t kOtbnAppSha512 = OTBN_APP_T_INIT(run_sha512);
-static const otbn_addr_t kOtbnVarSha512State =
-    OTBN_ADDR_T_INIT(run_sha512, state);
-static const otbn_addr_t kOtbnVarSha512Msg = OTBN_ADDR_T_INIT(run_sha512, msg);
-static const otbn_addr_t kOtbnVarSha512NChunks =
-    OTBN_ADDR_T_INIT(run_sha512, n_chunks);
-
 status_t sha512_init(sha512_state_t *state) {
   // Set the initial state.
   HARDENED_TRY(
@@ -137,6 +130,8 @@ static status_t get_new_total_len(const sha512_state_t *state, size_t msg_len,
  */
 static status_t process_message_buffer(sha512_otbn_ctx_t *ctx) {
   // Write the number of blocks to DMEM.
+  const otbn_addr_t kOtbnVarSha512NChunks =
+      OTBN_ADDR_T_INIT(run_sha512, n_chunks);
   HARDENED_TRY(otbn_dmem_write(1, &ctx->num_blocks, kOtbnVarSha512NChunks));
 
   // Run the OTBN program.
@@ -161,6 +156,7 @@ static status_t process_block(sha512_otbn_ctx_t *ctx,
                               const sha512_message_block_t *block) {
   // Calculate the offset within the message buffer.
   size_t offset = ctx->num_blocks * kSha512MessageBlockBytes;
+  const otbn_addr_t kOtbnVarSha512Msg = OTBN_ADDR_T_INIT(run_sha512, msg);
   otbn_addr_t dst = kOtbnVarSha512Msg + offset;
 
   // Copy the message block into DMEM. The SHA-512 app expects 64-bit words
@@ -253,6 +249,7 @@ static status_t process_message(sha512_state_t *state, const uint8_t *msg,
                                 size_t msg_len,
                                 hardened_bool_t padding_needed) {
   // Load the SHA-512 app. Fails if OTBN is non-idle.
+  const otbn_app_t kOtbnAppSha512 = OTBN_APP_T_INIT(run_sha512);
   HARDENED_TRY(otbn_load_app(kOtbnAppSha512));
 
   // Calculate the new value of state->total_len. Do NOT update the state yet
@@ -262,6 +259,7 @@ static status_t process_message(sha512_state_t *state, const uint8_t *msg,
 
   // Set the initial state. The OTBN app expects the state in a pre-processed
   // format, with the 64-bit state words aligned to wide-word boundaries.
+  const otbn_addr_t kOtbnVarSha512State = OTBN_ADDR_T_INIT(run_sha512, state);
   otbn_addr_t state_write_addr = kOtbnVarSha512State;
   for (size_t i = 0; i + 1 < kSha512StateWords; i += 2) {
     HARDENED_TRY(otbn_dmem_write(1, &state->H[i + 1], state_write_addr));
@@ -312,6 +310,7 @@ static status_t process_message(sha512_state_t *state, const uint8_t *msg,
   // Read the final state from OTBN dmem. The state is still in the special
   // form the OTBN app uses, with the 64-bit state words aligned to wide-word
   // boundaries.
+  const otbn_addr_t kOtbnVarSha512State = OTBN_ADDR_T_INIT(run_sha512, state);
   otbn_addr_t state_read_addr = kOtbnVarSha512State;
   for (size_t i = 0; i + 1 < kSha512StateWords; i += 2) {
     HARDENED_TRY_WIPE_DMEM(
