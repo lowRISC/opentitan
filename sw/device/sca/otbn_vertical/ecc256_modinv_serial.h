@@ -17,13 +17,6 @@ OTBN_DECLARE_SYMBOL_ADDR(p256_mod_inv_sca, k1);
 OTBN_DECLARE_SYMBOL_ADDR(p256_mod_inv_sca, kalpha_inv);
 OTBN_DECLARE_SYMBOL_ADDR(p256_mod_inv_sca, alpha);
 
-extern const otbn_app_t kOtbnAppP256ModInv;
-
-static const otbn_addr_t kOtbnVarModInvK0;
-static const otbn_addr_t kOtbnVarModInvK1;
-static const otbn_addr_t kOtbnVarModInvKAplhaInv;
-static const otbn_addr_t kOtbnVarModInvAlpha;
-
 /**
  * Computes the modular inverse of a certain input.
  *

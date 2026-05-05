@@ -110,19 +110,6 @@ OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, d1);
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, k0);
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, k1);
 
-static const otbn_app_t kOtbnAppP384Ecdsa = OTBN_APP_T_INIT(p384_ecdsa_sca);
-
-static const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(p384_ecdsa_sca, mode);
-static const otbn_addr_t kOtbnVarMsg = OTBN_ADDR_T_INIT(p384_ecdsa_sca, msg);
-static const otbn_addr_t kOtbnVarR = OTBN_ADDR_T_INIT(p384_ecdsa_sca, r);
-static const otbn_addr_t kOtbnVarS = OTBN_ADDR_T_INIT(p384_ecdsa_sca, s);
-static const otbn_addr_t kOtbnVarX = OTBN_ADDR_T_INIT(p384_ecdsa_sca, x);
-static const otbn_addr_t kOtbnVarY = OTBN_ADDR_T_INIT(p384_ecdsa_sca, y);
-static const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(p384_ecdsa_sca, d0);
-static const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(p384_ecdsa_sca, d1);
-static const otbn_addr_t kOtbnVarK0 = OTBN_ADDR_T_INIT(p384_ecdsa_sca, k0);
-static const otbn_addr_t kOtbnVarK1 = OTBN_ADDR_T_INIT(p384_ecdsa_sca, k1);
-
 /**
  * Simple serial 'k' (set ephemeral key) command handler.
  *
@@ -216,19 +203,27 @@ static void p384_ecdsa_sign(const uint32_t *msg, const uint32_t *private_key_d,
                             const uint32_t *k) {
   uint32_t mode = 1;  // mode 1 => sign
   // LOG_INFO("Copy data");
+  const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(p384_ecdsa_sca, mode);
   SS_CHECK_STATUS_OK(otbn_dmem_write(/*num_words=*/1, &mode, kOtbnVarMode));
+  const otbn_addr_t kOtbnVarMsg = OTBN_ADDR_T_INIT(p384_ecdsa_sca, msg);
   p384_dmem_write(msg, kOtbnVarMsg);
+  const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(p384_ecdsa_sca, d0);
   p384_dmem_write(private_key_d, kOtbnVarD0);
+  const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(p384_ecdsa_sca, d1);
   p384_dmem_write(private_key_d + kEcc384NumWords, kOtbnVarD1);
 
+  const otbn_addr_t kOtbnVarK0 = OTBN_ADDR_T_INIT(p384_ecdsa_sca, k0);
   SS_CHECK_STATUS_OK(otbn_dmem_write(kEcc384NumWords, k, kOtbnVarK0));
+  const otbn_addr_t kOtbnVarK1 = OTBN_ADDR_T_INIT(p384_ecdsa_sca, k1);
   SS_CHECK_STATUS_OK(
       otbn_dmem_write(kEcc384NumWords, k + kEcc384NumWords, kOtbnVarK1));
 
   SS_CHECK_STATUS_OK(otbn_execute());
   SS_CHECK_STATUS_OK(otbn_busy_wait_for_done());
 
+  const otbn_addr_t kOtbnVarR = OTBN_ADDR_T_INIT(p384_ecdsa_sca, r);
   SS_CHECK_STATUS_OK(otbn_dmem_read(kEcc384NumWords, kOtbnVarR, signature_r));
+  const otbn_addr_t kOtbnVarS = OTBN_ADDR_T_INIT(p384_ecdsa_sca, s);
   SS_CHECK_STATUS_OK(otbn_dmem_read(kEcc384NumWords, kOtbnVarS, signature_s));
 }
 
@@ -248,6 +243,7 @@ static void p384_ecdsa_sign(const uint32_t *msg, const uint32_t *private_key_d,
 static void ecc384_ecdsa(const uint8_t *ecc384_secret_k_bytes,
                          size_t secret_k_len) {
   LOG_INFO("SSECDSA starting...");
+  const otbn_app_t kOtbnAppP384Ecdsa = OTBN_APP_T_INIT(p384_ecdsa_sca);
   SS_CHECK_STATUS_OK(otbn_load_app(kOtbnAppP384Ecdsa));
   LOG_INFO("otbn_status: 0x%08x", abs_mmio_read32(TOP_EARLGREY_OTBN_BASE_ADDR +
                                                   OTBN_STATUS_REG_OFFSET));
@@ -313,9 +309,6 @@ static void simple_serial_main(void) {
 }
 
 bool test_main(void) {
-  (void)kOtbnVarX;
-  (void)kOtbnVarY;
-
   simple_serial_main();
   return true;
 }

@@ -86,6 +86,7 @@ cc_toolchain(
         ":feat_fastbuild",
         ":feat_opt",
         ":feat_rv32_bitmanip",
+        ":feat_no_jump_tables",
     ],
     tool_map = ":tool_map",
 )
@@ -472,4 +473,16 @@ cc_args(
         # Instantiate global variables only once.
         "-fno-common",
     ],
+)
+
+cc_feature(
+    name = "feat_no_jump_tables",
+    args = [":no_jump_tables_args"],
+    feature_name = "no_jump_tables",
+)
+
+cc_args(
+    name = "no_jump_tables_args",
+    actions = ["@rules_cc//cc/toolchains/actions:compile_actions"],
+    args = ["-fno-jump-tables"],
 )

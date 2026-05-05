@@ -16,7 +16,6 @@
 
 // Declare the OTBN app.
 OTBN_DECLARE_APP_SYMBOLS(run_curve25519);  // The OTBN 25519 app.
-static const otbn_app_t kOtbnAppCurve25519 = OTBN_APP_T_INIT(run_curve25519);
 
 // Declare offsets for input and output buffers.
 OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, mode);  // Mode of operation.
@@ -47,36 +46,6 @@ OTBN_DECLARE_SYMBOL_ADDR(run_curve25519,
 OTBN_DECLARE_SYMBOL_ADDR(run_curve25519,
                          x25519_shared_key);  // X25519 shared key.
 
-static const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(run_curve25519, mode);
-static const otbn_addr_t kOtbnVarVerifyRes =
-    OTBN_ADDR_T_INIT(run_curve25519, ed25519_verify_result);
-static const otbn_addr_t kOtbnVarSigR =
-    OTBN_ADDR_T_INIT(run_curve25519, ed25519_sig_R);
-static const otbn_addr_t kOtbnVarSigS =
-    OTBN_ADDR_T_INIT(run_curve25519, ed25519_sig_S);
-static const otbn_addr_t kOtbnVarPubKey =
-    OTBN_ADDR_T_INIT(run_curve25519, ed25519_public_key);
-static const otbn_addr_t kOtbnVarHashK =
-    OTBN_ADDR_T_INIT(run_curve25519, ed25519_hash_k);
-static const otbn_addr_t kOtbnVarVerifyLhs =
-    OTBN_ADDR_T_INIT(run_curve25519, ed25519_verify_lhs);
-static const otbn_addr_t kOtbnVarVerifyRhs =
-    OTBN_ADDR_T_INIT(run_curve25519, ed25519_verify_rhs);
-static const otbn_addr_t kOtbnVarS0 =
-    OTBN_ADDR_T_INIT(run_curve25519, ed25519_s0);
-static const otbn_addr_t kOtbnVarS1 =
-    OTBN_ADDR_T_INIT(run_curve25519, ed25519_s1);
-static const otbn_addr_t kOtbnVarR0 =
-    OTBN_ADDR_T_INIT(run_curve25519, ed25519_r0);
-static const otbn_addr_t kOtbnVarR1 =
-    OTBN_ADDR_T_INIT(run_curve25519, ed25519_r1);
-static const otbn_addr_t kOtbnVarX25519PrivateKey =
-    OTBN_ADDR_T_INIT(run_curve25519, x25519_private_key);
-static const otbn_addr_t kOtbnVarX25519PublicKey =
-    OTBN_ADDR_T_INIT(run_curve25519, x25519_public_key);
-static const otbn_addr_t kOtbnVarX25519SharedKey =
-    OTBN_ADDR_T_INIT(run_curve25519, x25519_shared_key);
-
 // Declare mode constants.
 OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, MODE_KEYGEN);
 OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, MODE_SIGN_STAGE1);
@@ -86,23 +55,6 @@ OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, MODE_X25519);
 OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, MODE_X25519_KEYGEN);
 OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, MODE_X25519_SIDELOAD);
 OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, MODE_X25519_KEYGEN_SIDELOAD);
-
-static const uint32_t kOtbnCurve25519ModeKeygen =
-    OTBN_ADDR_T_INIT(run_curve25519, MODE_KEYGEN);
-static const uint32_t kOtbnCurve25519ModeSignStage1 =
-    OTBN_ADDR_T_INIT(run_curve25519, MODE_SIGN_STAGE1);
-static const uint32_t kOtbnCurve25519ModeSignStage2 =
-    OTBN_ADDR_T_INIT(run_curve25519, MODE_SIGN_STAGE2);
-static const uint32_t kOtbnCurve25519ModeVerify =
-    OTBN_ADDR_T_INIT(run_curve25519, MODE_VERIFY);
-static const uint32_t kOtbnCurve25519ModeX25519 =
-    OTBN_ADDR_T_INIT(run_curve25519, MODE_X25519);
-static const uint32_t kOtbnCurve25519ModeX25519Keygen =
-    OTBN_ADDR_T_INIT(run_curve25519, MODE_X25519_KEYGEN);
-static const uint32_t kOtbnCurve25519ModeX25519Sideload =
-    OTBN_ADDR_T_INIT(run_curve25519, MODE_X25519_SIDELOAD);
-static const uint32_t kOtbnCurve25519ModeX25519KeygenSideload =
-    OTBN_ADDR_T_INIT(run_curve25519, MODE_X25519_KEYGEN_SIDELOAD);
 
 enum {
   /*
@@ -146,13 +98,17 @@ static status_t curve25519_masked_scalar_write(const uint32_t *share0,
 
 status_t curve25519_keygen_start(const curve25519_masked_scalar_s_t *s) {
   // Load the Curve25519 app. Fails if OTBN is non-idle.
+  const otbn_app_t kOtbnAppCurve25519 = OTBN_APP_T_INIT(run_curve25519);
   HARDENED_TRY(otbn_load_app(kOtbnAppCurve25519));
 
   // Set mode so start() will jump into keygen.
-  uint32_t mode = kOtbnCurve25519ModeKeygen;
+  uint32_t mode = OTBN_ADDR_T_INIT(run_curve25519, MODE_KEYGEN);
+  const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(run_curve25519, mode);
   HARDENED_TRY(otbn_dmem_write(kCurve25519ModeWords, &mode, kOtbnVarMode));
 
   // Write the shares of s to DMEM.
+  const otbn_addr_t kOtbnVarS0 = OTBN_ADDR_T_INIT(run_curve25519, ed25519_s0);
+  const otbn_addr_t kOtbnVarS1 = OTBN_ADDR_T_INIT(run_curve25519, ed25519_s1);
   HARDENED_TRY(curve25519_masked_scalar_write(s->share0, s->share1,
                                               kCurve25519MaskedScalarSWords,
                                               kOtbnVarS0, kOtbnVarS1));
@@ -168,6 +124,8 @@ status_t curve25519_keygen_finalize(
   HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModeKeygenInsCnt);
 
   // Read the public key A from OTBN dmem.
+  const otbn_addr_t kOtbnVarPubKey =
+      OTBN_ADDR_T_INIT(run_curve25519, ed25519_public_key);
   HARDENED_TRY(
       otbn_dmem_read(kCurve25519PointWords, kOtbnVarPubKey, public_key));
 
@@ -178,16 +136,22 @@ status_t curve25519_keygen_finalize(
 status_t curve25519_sign_stage1_start(const curve25519_masked_scalar_r_t *r,
                                       const curve25519_masked_scalar_s_t *s) {
   // Load the Curve25519 app. Fails if OTBN is non-idle.
+  const otbn_app_t kOtbnAppCurve25519 = OTBN_APP_T_INIT(run_curve25519);
   HARDENED_TRY(otbn_load_app(kOtbnAppCurve25519));
 
   // Set mode so start() will jump into stage 1 of signing.
-  uint32_t mode = kOtbnCurve25519ModeSignStage1;
+  uint32_t mode = OTBN_ADDR_T_INIT(run_curve25519, MODE_SIGN_STAGE1);
+  const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(run_curve25519, mode);
   HARDENED_TRY(otbn_dmem_write(kCurve25519ModeWords, &mode, kOtbnVarMode));
 
   // Write the shares of r and s to DMEM.
+  const otbn_addr_t kOtbnVarR0 = OTBN_ADDR_T_INIT(run_curve25519, ed25519_r0);
+  const otbn_addr_t kOtbnVarR1 = OTBN_ADDR_T_INIT(run_curve25519, ed25519_r1);
   HARDENED_TRY(curve25519_masked_scalar_write(r->share0, r->share1,
                                               kCurve25519MaskedScalarRWords,
                                               kOtbnVarR0, kOtbnVarR1));
+  const otbn_addr_t kOtbnVarS0 = OTBN_ADDR_T_INIT(run_curve25519, ed25519_s0);
+  const otbn_addr_t kOtbnVarS1 = OTBN_ADDR_T_INIT(run_curve25519, ed25519_s1);
   HARDENED_TRY(curve25519_masked_scalar_write(s->share0, s->share1,
                                               kCurve25519MaskedScalarSWords,
                                               kOtbnVarS0, kOtbnVarS1));
@@ -203,9 +167,13 @@ status_t curve25519_sign_stage1_finalize(
   HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModeSignStage1InsCnt);
 
   // Read the signature commitment R from OTBN dmem.
+  const otbn_addr_t kOtbnVarSigR =
+      OTBN_ADDR_T_INIT(run_curve25519, ed25519_sig_R);
   HARDENED_TRY(otbn_dmem_read(kCurve25519PointWords, kOtbnVarSigR, sig->r));
 
   // Read the public key A from OTBN dmem.
+  const otbn_addr_t kOtbnVarPubKey =
+      OTBN_ADDR_T_INIT(run_curve25519, ed25519_public_key);
   HARDENED_TRY(
       otbn_dmem_read(kCurve25519PointWords, kOtbnVarPubKey, public_key));
 
@@ -218,19 +186,27 @@ status_t curve25519_sign_stage2_start(
     const curve25519_masked_scalar_r_t *r,
     const curve25519_masked_scalar_s_t *s) {
   // Load the Curve25519 app. Fails if OTBN is non-idle.
+  const otbn_app_t kOtbnAppCurve25519 = OTBN_APP_T_INIT(run_curve25519);
   HARDENED_TRY(otbn_load_app(kOtbnAppCurve25519));
 
   // Set mode so start() will jump into stage 2 of signing.
-  uint32_t mode = kOtbnCurve25519ModeSignStage2;
+  uint32_t mode = OTBN_ADDR_T_INIT(run_curve25519, MODE_SIGN_STAGE2);
+  const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(run_curve25519, mode);
   HARDENED_TRY(otbn_dmem_write(kCurve25519ModeWords, &mode, kOtbnVarMode));
 
   // Set challenge hash k.
+  const otbn_addr_t kOtbnVarHashK =
+      OTBN_ADDR_T_INIT(run_curve25519, ed25519_hash_k);
   HARDENED_TRY(otbn_dmem_write(kCurve25519HashWords, hash_k, kOtbnVarHashK));
 
   // Write the shares of r and s to DMEM.
+  const otbn_addr_t kOtbnVarR0 = OTBN_ADDR_T_INIT(run_curve25519, ed25519_r0);
+  const otbn_addr_t kOtbnVarR1 = OTBN_ADDR_T_INIT(run_curve25519, ed25519_r1);
   HARDENED_TRY(curve25519_masked_scalar_write(r->share0, r->share1,
                                               kCurve25519MaskedScalarRWords,
                                               kOtbnVarR0, kOtbnVarR1));
+  const otbn_addr_t kOtbnVarS0 = OTBN_ADDR_T_INIT(run_curve25519, ed25519_s0);
+  const otbn_addr_t kOtbnVarS1 = OTBN_ADDR_T_INIT(run_curve25519, ed25519_s1);
   HARDENED_TRY(curve25519_masked_scalar_write(s->share0, s->share1,
                                               kCurve25519MaskedScalarSWords,
                                               kOtbnVarS0, kOtbnVarS1));
@@ -245,6 +221,8 @@ status_t curve25519_sign_stage2_finalize(curve25519_signature_t *sig) {
   HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModeSignStage2InsCnt);
 
   // Read the signature response S from OTBN dmem.
+  const otbn_addr_t kOtbnVarSigS =
+      OTBN_ADDR_T_INIT(run_curve25519, ed25519_sig_S);
   HARDENED_TRY(otbn_dmem_read(kCurve25519ScalarWords, kOtbnVarSigS, sig->s));
 
   // Wipe DMEM.
@@ -255,22 +233,32 @@ status_t curve25519_verify_start(
     const uint32_t hash_k[kCurve25519HashWords], curve25519_signature_t *sig,
     const uint32_t public_key[kCurve25519PointWords]) {
   // Load the Curve25519 app and set up data pointers
+  const otbn_app_t kOtbnAppCurve25519 = OTBN_APP_T_INIT(run_curve25519);
   HARDENED_TRY(otbn_load_app(kOtbnAppCurve25519));
 
   // Set mode so start() will jump into verifying.
-  uint32_t mode = kOtbnCurve25519ModeVerify;
+  uint32_t mode = OTBN_ADDR_T_INIT(run_curve25519, MODE_VERIFY);
+  const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(run_curve25519, mode);
   HARDENED_TRY(otbn_dmem_write(kCurve25519ModeWords, &mode, kOtbnVarMode));
 
   // Set challenge hash k.
+  const otbn_addr_t kOtbnVarHashK =
+      OTBN_ADDR_T_INIT(run_curve25519, ed25519_hash_k);
   HARDENED_TRY(otbn_dmem_write(kCurve25519HashWords, hash_k, kOtbnVarHashK));
 
   // Set the signature commitment R.
+  const otbn_addr_t kOtbnVarSigR =
+      OTBN_ADDR_T_INIT(run_curve25519, ed25519_sig_R);
   HARDENED_TRY(otbn_dmem_write(kCurve25519PointWords, sig->r, kOtbnVarSigR));
 
   // Set the signature response S.
+  const otbn_addr_t kOtbnVarSigS =
+      OTBN_ADDR_T_INIT(run_curve25519, ed25519_sig_S);
   HARDENED_TRY(otbn_dmem_write(kCurve25519ScalarWords, sig->s, kOtbnVarSigS));
 
   // Set the public key.
+  const otbn_addr_t kOtbnVarPubKey =
+      OTBN_ADDR_T_INIT(run_curve25519, ed25519_public_key);
   HARDENED_TRY(
       otbn_dmem_write(kCurve25519PointWords, public_key, kOtbnVarPubKey));
 
@@ -283,6 +271,8 @@ status_t curve25519_verify_finalize(hardened_bool_t *result) {
   HARDENED_TRY(otbn_busy_wait_for_done());
 
   uint32_t ok;
+  const otbn_addr_t kOtbnVarVerifyRes =
+      OTBN_ADDR_T_INIT(run_curve25519, ed25519_verify_result);
   HARDENED_TRY(otbn_dmem_read(1, kOtbnVarVerifyRes, &ok));
   if (launder32(ok) != kHardenedBoolTrue) {
     HARDENED_TRY(otbn_dmem_sec_wipe());
@@ -293,7 +283,11 @@ status_t curve25519_verify_finalize(hardened_bool_t *result) {
   // Read the computed LHS and RHS out of OTBN dmem.
   uint32_t lhs[kCurve25519PointWords];
   uint32_t rhs[kCurve25519PointWords];
+  const otbn_addr_t kOtbnVarVerifyLhs =
+      OTBN_ADDR_T_INIT(run_curve25519, ed25519_verify_lhs);
   HARDENED_TRY(otbn_dmem_read(kCurve25519PointWords, kOtbnVarVerifyLhs, lhs));
+  const otbn_addr_t kOtbnVarVerifyRhs =
+      OTBN_ADDR_T_INIT(run_curve25519, ed25519_verify_rhs);
   HARDENED_TRY(otbn_dmem_read(kCurve25519PointWords, kOtbnVarVerifyRhs, rhs));
 
   *result = hardened_memeq(lhs, rhs, kCurve25519PointWords);
@@ -306,17 +300,23 @@ status_t curve25519_x25519_start(
     const uint32_t private_key[kCurve25519ScalarWords],
     const uint32_t public_key[kCurve25519PointWords]) {
   // Load the Curve25519 app. Fails if OTBN is non-idle.
+  const otbn_app_t kOtbnAppCurve25519 = OTBN_APP_T_INIT(run_curve25519);
   HARDENED_TRY(otbn_load_app(kOtbnAppCurve25519));
 
   // Set mode so start() will jump into x25519.
-  uint32_t mode = kOtbnCurve25519ModeX25519;
+  uint32_t mode = OTBN_ADDR_T_INIT(run_curve25519, MODE_X25519);
+  const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(run_curve25519, mode);
   HARDENED_TRY(otbn_dmem_write(kCurve25519ModeWords, &mode, kOtbnVarMode));
 
   // Write the private key to DMEM.
+  const otbn_addr_t kOtbnVarX25519PrivateKey =
+      OTBN_ADDR_T_INIT(run_curve25519, x25519_private_key);
   HARDENED_TRY(otbn_dmem_write(kCurve25519ScalarWords, private_key,
                                kOtbnVarX25519PrivateKey));
 
   // Write the public key to DMEM.
+  const otbn_addr_t kOtbnVarX25519PublicKey =
+      OTBN_ADDR_T_INIT(run_curve25519, x25519_public_key);
   HARDENED_TRY(otbn_dmem_write(kCurve25519PointWords, public_key,
                                kOtbnVarX25519PublicKey));
 
@@ -326,10 +326,12 @@ status_t curve25519_x25519_start(
 
 status_t curve25519_x25519_keygen_sideload_start(void) {
   // Load the Curve25519 app.
+  const otbn_app_t kOtbnAppCurve25519 = OTBN_APP_T_INIT(run_curve25519);
   HARDENED_TRY(otbn_load_app(kOtbnAppCurve25519));
 
   // Set mode to jump into the hardware sideload keygen path.
-  uint32_t mode = kOtbnCurve25519ModeX25519KeygenSideload;
+  uint32_t mode = OTBN_ADDR_T_INIT(run_curve25519, MODE_X25519_KEYGEN_SIDELOAD);
+  const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(run_curve25519, mode);
   HARDENED_TRY(otbn_dmem_write(kCurve25519ModeWords, &mode, kOtbnVarMode));
 
   // Start the OTBN routine.
@@ -339,11 +341,15 @@ status_t curve25519_x25519_keygen_sideload_start(void) {
 status_t curve25519_x25519_sideload_start(
     const uint32_t public_key[kCurve25519PointWords]) {
   // Load the Curve25519 app. Fails if OTBN is non-idle.
+  const otbn_app_t kOtbnAppCurve25519 = OTBN_APP_T_INIT(run_curve25519);
   HARDENED_TRY(otbn_load_app(kOtbnAppCurve25519));
 
-  uint32_t mode = kOtbnCurve25519ModeX25519Sideload;
+  uint32_t mode = OTBN_ADDR_T_INIT(run_curve25519, MODE_X25519_SIDELOAD);
+  const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(run_curve25519, mode);
   HARDENED_TRY(otbn_dmem_write(kCurve25519ModeWords, &mode, kOtbnVarMode));
 
+  const otbn_addr_t kOtbnVarX25519PublicKey =
+      OTBN_ADDR_T_INIT(run_curve25519, x25519_public_key);
   HARDENED_TRY(otbn_dmem_write(kCurve25519PointWords, public_key,
                                kOtbnVarX25519PublicKey));
 
@@ -357,6 +363,8 @@ status_t curve25519_x25519_finalize(
   HARDENED_TRY(otbn_busy_wait_for_done());
 
   // Read the shared secret from OTBN dmem.
+  const otbn_addr_t kOtbnVarX25519SharedKey =
+      OTBN_ADDR_T_INIT(run_curve25519, x25519_shared_key);
   HARDENED_TRY(otbn_dmem_read(kCurve25519PointWords, kOtbnVarX25519SharedKey,
                               shared_secret));
 
@@ -367,13 +375,17 @@ status_t curve25519_x25519_finalize(
 status_t curve25519_x25519_keygen_start(
     const uint32_t private_key[kCurve25519ScalarWords]) {
   // Load the Curve25519 app. Fails if OTBN is non-idle.
+  const otbn_app_t kOtbnAppCurve25519 = OTBN_APP_T_INIT(run_curve25519);
   HARDENED_TRY(otbn_load_app(kOtbnAppCurve25519));
 
   // Set mode so start() will jump into x25519_keygen.
-  uint32_t mode = kOtbnCurve25519ModeX25519Keygen;
+  uint32_t mode = OTBN_ADDR_T_INIT(run_curve25519, MODE_X25519_KEYGEN);
+  const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(run_curve25519, mode);
   HARDENED_TRY(otbn_dmem_write(kCurve25519ModeWords, &mode, kOtbnVarMode));
 
   // Write the private key to DMEM.
+  const otbn_addr_t kOtbnVarX25519PrivateKey =
+      OTBN_ADDR_T_INIT(run_curve25519, x25519_private_key);
   HARDENED_TRY(otbn_dmem_write(kCurve25519ScalarWords, private_key,
                                kOtbnVarX25519PrivateKey));
 
@@ -387,6 +399,8 @@ status_t curve25519_x25519_keygen_finalize(
   HARDENED_TRY(otbn_busy_wait_for_done());
 
   // Read the public key from OTBN dmem.
+  const otbn_addr_t kOtbnVarX25519PublicKey =
+      OTBN_ADDR_T_INIT(run_curve25519, x25519_public_key);
   HARDENED_TRY(otbn_dmem_read(kCurve25519PointWords, kOtbnVarX25519PublicKey,
                               public_key));
 

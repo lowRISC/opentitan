@@ -46,6 +46,8 @@ dual_cc_library(
     hdrs = [
         "alert.h",
     ],
+    # We add the compiler option -fno-jump-tables to prevent the compiler making the code position dependent.
+    features = ["no_jump_tables"],
     deps = dual_inputs(
         device = [
             "//hw/top_earlgrey:alert_handler_c_regs",
@@ -86,6 +88,8 @@ cc_library(
     name = "aes",
     srcs = ["aes.c"],
     hdrs = ["aes.h"],
+    # We add the compiler option -fno-jump-tables to prevent the compiler making the code position dependent.
+    features = ["no_jump_tables"],
     deps = [
         ":rv_core_ibex",
         "//hw/ip/aes/data:aes_c_regs",
@@ -128,6 +132,8 @@ cc_library(
     hdrs = [
         "keymgr.h",
     ],
+    # We add the compiler option -fno-jump-tables to prevent the compiler making the code position dependent.
+    features = ["no_jump_tables"],
     deps = [
         ":rv_core_ibex",
         "//hw/ip/keymgr/data:keymgr_c_regs",
@@ -169,6 +175,8 @@ cc_library(
         "kmac.h",
         "//sw/device/lib/crypto/include:datatypes.h",
     ],
+    # We add the compiler option -fno-jump-tables to prevent the compiler making the code position dependent.
+    features = ["no_jump_tables"],
     deps = [
         ":rv_core_ibex",
         "//hw/ip/kmac/data:kmac_c_regs",
@@ -213,6 +221,8 @@ dual_cc_library(
         host = ["mock_entropy.cc"],
     ),
     hdrs = ["entropy.h"],
+    # We add the compiler option -fno-jump-tables to prevent the compiler making the code position dependent.
+    features = ["no_jump_tables"],
     deps = dual_inputs(
         device = [
             "//hw/ip/csrng/data:csrng_c_regs",
@@ -278,6 +288,8 @@ cc_library(
     name = "hmac",
     srcs = ["hmac.c"],
     hdrs = ["hmac.h"],
+    # We add the compiler option -fno-jump-tables to prevent the compiler making the code position dependent.
+    features = ["no_jump_tables"],
     deps = [
         "//hw/ip/hmac/data:hmac_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -325,6 +337,8 @@ dual_cc_library(
     hdrs = dual_inputs(
         shared = ["rv_core_ibex.h"],
     ),
+    # We add the compiler option -fno-jump-tables to prevent the compiler making the code position dependent.
+    features = ["no_jump_tables"],
     deps = dual_inputs(
         device = [
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -364,6 +378,8 @@ cc_library(
     name = "otbn",
     srcs = ["otbn.c"],
     hdrs = ["otbn.h"],
+    # We add the compiler option -fno-jump-tables to prevent the compiler making the code position dependent.
+    features = ["no_jump_tables"],
     deps = [
         "//hw/ip/otbn/data:otbn_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
