@@ -20,18 +20,16 @@ def _bool(v):
     fail("Boolean value must be 'True' or 'False'")
 
 _FLAG_CONVERSIONS = {
-    # TODO: this needs to be the superset of all flags you might want to
+    # This needs to be the superset of all flags you might want to
     # modify during the build and an appropriate type conversion function.
-    #
-    # The transition _also_ has to emit a value for every item specified in
-    # the transition outputs.  We may want to also encode default values
-    # here when this list grows so that users of the `build_with_flags`
-    # rule don't have to supply all the flags.
     str(Label("@lowrisc_opentitan//rules:static_link_host_tools")): _bool,
 }
 
 def _flags_transition_impl(settings, attr):
-    result = {}
+    result = {
+        k: v
+        for (k, v) in settings.items()
+    }
     for label, value in attr.flags.items():
         label = str(Label(label))
         if label not in _FLAG_CONVERSIONS:
@@ -41,7 +39,7 @@ def _flags_transition_impl(settings, attr):
 
 flags_transition = transition(
     implementation = _flags_transition_impl,
-    inputs = [],
+    inputs = _FLAG_CONVERSIONS.keys(),
     outputs = _FLAG_CONVERSIONS.keys(),
 )
 
