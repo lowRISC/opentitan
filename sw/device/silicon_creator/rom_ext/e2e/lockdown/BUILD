@@ -95,3 +95,20 @@ opentitan_test(
         "//sw/device/silicon_creator/lib:dbg_print",
     ],
 )
+
+opentitan_test(
+    name = "bank_erase_lockdown",
+    srcs = ["bank_erase_lockdown.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+    },
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+    ],
+)
