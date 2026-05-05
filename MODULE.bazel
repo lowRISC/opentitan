@@ -14,9 +14,9 @@ bazel_dep(name = "rules_foreign_cc", version = "0.9.0")
 bazel_dep(name = "rules_fuzzing", version = "0.5.2")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
 bazel_dep(name = "rules_python", version = "1.2.0")
-bazel_dep(name = "rules_rust_bindgen", version = "0.59.2")
-bazel_dep(name = "rules_rust_mdbook", version = "0.59.2")
-bazel_dep(name = "rules_rust", version = "0.59.2")
+bazel_dep(name = "rules_rust_bindgen", version = "0.70.0")
+bazel_dep(name = "rules_rust_mdbook", version = "0.70.0")
+bazel_dep(name = "rules_rust", version = "0.70.0")
 bazel_dep(name = "toolchains_llvm", version = "1.1.2")
 
 # Dev dependencies:
@@ -46,21 +46,12 @@ single_version_override(
 )
 
 single_version_override(
-    module_name = "rules_rust",
-    patch_strip = 1,
-    patches = [
-        "@lowrisc_opentitan//third_party/rust/patches:rules_rust.extra_rustc_toolchain_dirs.patch",
-    ],
-    version = "0.59.2",
-)
-
-single_version_override(
     module_name = "rules_rust_bindgen",
     patch_strip = 3,
     patches = [
         "@lowrisc_opentitan//third_party/rust/patches:rules_rust.bindgen_static_lib.patch",
     ],
-    version = "0.59.2",
+    version = "0.70.0",
 )
 
 single_version_override(
@@ -253,6 +244,7 @@ crate.from_cargo(
     manifests = ["//third_party/tock:Cargo.toml"],
     supported_platform_triples = [
         "riscv32imc-unknown-none-elf",
+        "x86_64-unknown-linux-gnu",
     ],
 )
 use_repo(crate, "tock_index")
