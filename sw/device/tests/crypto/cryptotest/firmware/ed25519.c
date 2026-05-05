@@ -116,16 +116,25 @@ status_t handle_ed25519(ujson_t *uj) {
 
       otcrypto_status_t status = otcrypto_ed25519_sign_verify(
           &private_key, &public_key, &message, sign_mode, &signature);
-      if (status.value != kOtcryptoStatusValueOk) {
-        return INTERNAL(status.value);
-      }
 
-      memset(uj_signature.signature, 0, ED25519_CMD_SIGNATURE_BYTES);
-      memcpy(uj_signature.signature, signature_data,
-             ED25519_CMD_SIGNATURE_BYTES);
-      uj_signature.signature_len = ED25519_CMD_SIGNATURE_BYTES;
-      RESP_OK(ujson_serialize_cryptotest_ed25519_signature_t, uj,
-              &uj_signature);
+      cryptotest_ed25519_verify_output_t uj_output;
+      switch (status.value) {
+        case kOtcryptoStatusValueOk:
+          uj_output = kCryptotestEd25519VerifyOutputSuccess;
+          break;
+        case kOtcryptoStatusValueBadArgs:
+          uj_output = kCryptotestEd25519VerifyOutputFailure;
+          break;
+        default:
+          LOG_ERROR(
+              "Unexpected status value returned from "
+              "otcrypto_ed25519_sign_verify: "
+              "0x%x",
+              status.value);
+          return INTERNAL();
+      }
+      RESP_OK(ujson_serialize_cryptotest_ed25519_verify_output_t, uj,
+              &uj_output);
       return OK_STATUS();
     }
     case kCryptotestEd25519OperationVerify: {
