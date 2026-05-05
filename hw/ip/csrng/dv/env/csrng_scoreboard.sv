@@ -9,40 +9,51 @@ class csrng_scoreboard extends cip_base_scoreboard #(
   );
   `uvm_component_utils(csrng_scoreboard)
 
-  csrng_item                                              cs_item[NUM_HW_APPS + 1];
-  push_pull_item#(.HostDataWidth(FIPS_CSRNG_BUS_WIDTH))   es_item[NUM_HW_APPS + 1],
-                                                          es_item_q[NUM_HW_APPS + 1][$];
+  csrng_item                                              cs_item[];
+  push_pull_item#(.HostDataWidth(FIPS_CSRNG_BUS_WIDTH))   es_item[],
+                                                          es_item_q[][$];
   uint                                                    more_cmd_data;
   bit [TL_DW-1:0]                                         hw_genbits_reg_q[$];
   bit [GENBITS_BUS_WIDTH-1:0]                             hw_genbits,
-                                                          prd_genbits_q[NUM_HW_APPS + 1][$];
-  bit [CSRNG_BUS_WIDTH-1:0]                               cs_data[NUM_HW_APPS + 1],
-                                                          es_data[NUM_HW_APPS + 1];
-  bit                                                     fips[NUM_HW_APPS + 1];
+                                                          prd_genbits_q[][$];
+  bit [CSRNG_BUS_WIDTH-1:0]                               cs_data[],
+                                                          es_data[];
+  bit                                                     fips[];
+
   // Sample interrupt pins at read data phase. This is used to compare with intr_state read value.
   bit [3:0] intr_pins;
   bit [SW_APP:0] genbits_fips_previous;
   bit [SW_APP:0] genbits_fips_received = '0;
   mubi4_t [SW_APP:0] cmd_flag0_previous;
-  csrng_pkg::csrng_cmd_sts_e cmd_sts[NUM_HW_APPS + 1] = '{default: CMD_STS_SUCCESS};
+  csrng_pkg::csrng_cmd_sts_e cmd_sts[];
 
   bit [3:0] int_state_num;
-  bit [NUM_HW_APPS:0] int_state_read_enable;
+  bit [MaxNumHwApps:0] int_state_read_enable;
 
   virtual csrng_cov_if                                    cov_vif;
 
   // TLM agent fifos
   uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(FIPS_CSRNG_BUS_WIDTH)))   entropy_src_fifo;
-  uvm_tlm_analysis_fifo#(csrng_item)   csrng_cmd_fifo[NUM_HW_APPS];
+  uvm_tlm_analysis_fifo#(csrng_item)   csrng_cmd_fifo[];
 
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
 
+    cs_item       = new[cfg.m_num_apps];
+    es_item       = new[cfg.m_num_apps];
+    es_item_q     = new[cfg.m_num_apps];
+    prd_genbits_q = new[cfg.m_num_apps];
+    cs_data       = new[cfg.m_num_apps];
+    es_data       = new[cfg.m_num_apps];
+    fips          = new[cfg.m_num_apps];
+    cmd_sts       = new[cfg.m_num_apps]('{default: CMD_STS_SUCCESS});
+
+    csrng_cmd_fifo   = new[cfg.m_num_hw_apps];
     entropy_src_fifo = new("entropy_src_fifo", this);
 
-    for (int i = 0; i < NUM_HW_APPS; i++) begin
+    for (int i = 0; i < cfg.m_num_hw_apps; i++) begin
       csrng_cmd_fifo[i] = new($sformatf("csrng_cmd_fifo[%0d]", i), this);
     end
 
@@ -63,7 +74,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       handle_disable();
     join_none;
 
-    for (int i = 0; i < NUM_HW_APPS; i++) begin
+    for (int i = 0; i < cfg.m_num_hw_apps; i++) begin
       automatic int j = i;
       fork
         begin
@@ -84,7 +95,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       entropy_src_fifo.flush();
       hw_genbits = '0;
       more_cmd_data = 0;
-      for (int i = 0; i < NUM_HW_APPS + 1; i++) begin
+      for (int i = 0; i < cfg.m_num_apps; i++) begin
         if (i != SW_APP) csrng_cmd_fifo[i].flush();
         es_item_q[i].delete();
         hw_genbits_reg_q.delete();
@@ -618,7 +629,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
      end
   endtask
 
-  task process_csrng_cmd_fifo(bit[NUM_HW_APPS-1:0] app);
+  task process_csrng_cmd_fifo(bit[MaxNumHwApps:0] app);
     forever begin
       csrng_cmd_fifo[app].get(cs_item[app]);
       cs_data[app] = '0;

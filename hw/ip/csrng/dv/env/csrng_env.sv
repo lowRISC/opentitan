@@ -12,13 +12,19 @@ class csrng_env extends cip_base_env #(
 
   push_pull_agent#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))
       m_entropy_src_agent;
-  csrng_agent
-      m_edn_agent[NUM_HW_APPS];
+
+  // A CSRNG agent for each HW app
+  csrng_agent m_edn_agent[$];
 
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+
+    // Construct an array of null sequencers inside the virtual sequencer (which was created in
+    // dv_base_env::build_phase). If active, these will be connected to real sequencers in
+    // connect_phase.
+    virtual_sequencer.edn_sequencer_h = new[cfg.m_num_hw_apps]('{default: null});
 
     // create components
     m_entropy_src_agent = push_pull_agent#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))
@@ -29,13 +35,17 @@ class csrng_env extends cip_base_env #(
     cfg.m_entropy_src_agent_cfg.if_mode    = dv_utils_pkg::Device;
     cfg.m_entropy_src_agent_cfg.en_cov     = cfg.en_cov;
 
-    for (int i = 0; i < NUM_HW_APPS; i++) begin
+    for (int i = 0; i < cfg.m_num_hw_apps; i++) begin
       string edn_agent_name = $sformatf("m_edn_agent[%0d]", i);
-      m_edn_agent[i] = csrng_agent::type_id::create(edn_agent_name, this);
-      uvm_config_db#(csrng_agent_cfg)::set(this, $sformatf("%0s*", edn_agent_name), "cfg",
-          cfg.m_edn_agent_cfg[i]);
+      csrng_agent edn_agent = csrng_agent::type_id::create(edn_agent_name, this);
+      m_edn_agent.push_back(edn_agent);
+
       cfg.m_edn_agent_cfg[i].if_mode = dv_utils_pkg::Host;
       cfg.m_edn_agent_cfg[i].en_cov  = cfg.en_cov;
+      uvm_config_db#(csrng_agent_cfg)::set(this,
+                                           $sformatf("%0s*", edn_agent_name),
+                                           "cfg",
+                                           cfg.m_edn_agent_cfg[i]);
     end
 
     if (!uvm_config_db#(virtual pins_if#(MuBi8Width))::get(this, "", "otp_en_cs_sw_app_read_vif",
@@ -65,16 +75,17 @@ class csrng_env extends cip_base_env #(
     if (cfg.en_scb) begin
       m_entropy_src_agent.monitor.analysis_port.connect(
         scoreboard.entropy_src_fifo.analysis_export);
-      for (int i = 0; i < NUM_HW_APPS; i++) begin
+      for (int i = 0; i < cfg.m_num_hw_apps; i++) begin
         m_edn_agent[i].monitor.analysis_port.connect(scoreboard.csrng_cmd_fifo[i].analysis_export);
       end
     end
     if (cfg.is_active) begin
       if (cfg.m_entropy_src_agent_cfg.is_active)
         virtual_sequencer.entropy_src_sequencer_h = m_entropy_src_agent.sequencer;
-      for (int i = 0; i < NUM_HW_APPS; i++) begin
-        if (cfg.m_edn_agent_cfg[i].is_active)
-          virtual_sequencer.edn_sequencer_h[i] = m_edn_agent[i].sequencer;
+      for (int i = 0; i < cfg.m_num_hw_apps; i++) begin
+        virtual_sequencer.edn_sequencer_h[i] = cfg.m_edn_agent_cfg[i].is_active ?
+                                               m_edn_agent[i].sequencer :
+                                               null;
       end
     end
   endfunction
