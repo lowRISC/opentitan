@@ -12,16 +12,19 @@ module rram_phy
   import rram_ctrl_pkg::*;
   import prim_mubi_pkg::mubi4_t;
 #(
-  parameter bit SecScrambleEn = 1'b1
+  parameter rram_key_t RndCnstAddrKey = RndCnstAddrKeyDefault,
+  parameter rram_key_t RndCnstDataKey = RndCnstDataKeyDefault,
+  parameter bit        SecScrambleEn  = 1'b1
 )
 (
   input  logic                    clk_i,
   input  logic                    rst_ni,
   input  mubi4_t                  rram_disable_i,
-  input [KeySize-1:0]             addr_key_i,
-  input [KeySize-1:0]             data_key_i,
-  input [KeySize-1:0]             rand_addr_key_i,
-  input [KeySize-1:0]             rand_data_key_i,
+  input  logic                    keys_valid_i,
+  input  rram_key_t               addr_key_i,
+  input  rram_key_t               data_key_i,
+  input  rram_key_t               rand_addr_key_i,
+  input  rram_key_t               rand_data_key_i,
 
   input  logic                    ctrl_req_i,
   input  logic                    ctrl_scramble_en_i,
@@ -119,7 +122,7 @@ module rram_phy
   typedef enum logic [2:0] {
     HostDisableIdx,
     CtrlDisableIdx,
-    ScrambleDisableIdx,
+    ScrambleKeyDisableIdx,
     WrFsmDisableIdx,
     LastDisableIdx
   } phy_disable_e;
@@ -384,16 +387,24 @@ module rram_phy
   //////////////////////////////
   // Shared scrambling module //
   //////////////////////////////
-  // todo add rram_scramble
-  assign scramble_rsp[0].calc_ack = 1'b0;
-  assign scramble_rsp[0].op_ack   = 1'b0;
-  assign scramble_rsp[0].mask     = '0;
-  assign scramble_rsp[0].data_out = '0;
-  assign scramble_rsp[1].calc_ack = 1'b0;
-  assign scramble_rsp[1].op_ack   = 1'b0;
-  assign scramble_rsp[1].mask     = '0;
-  assign scramble_rsp[1].data_out = '0;
-  assign scramble_arb_err = 1'b0;
+  rram_scramble #(
+    .RndCnstAddrKey(RndCnstAddrKey),
+    .RndCnstDataKey(RndCnstDataKey),
+    .SecScrambleEn(SecScrambleEn),
+    .Interleave(1'b1)
+  ) u_rram_scramble (
+    .clk_i,
+    .rst_ni,
+    .keys_disable_i (rram_disable[ScrambleKeyDisableIdx]),
+    .keys_valid_i   (keys_valid_i),
+    .addr_key_i     (addr_key_i),
+    .data_key_i     (data_key_i),
+    .rand_addr_key_i(rand_addr_key_i),
+    .rand_data_key_i(rand_data_key_i),
+    .scramble_req_i (scramble_req),
+    .scramble_rsp_o (scramble_rsp),
+    .arb_err_o      (scramble_arb_err)
+  );
 
   ///////////////////
   // Error signals //
@@ -410,7 +421,7 @@ module rram_phy
   assign spurious_rd_done      = ctrl_rd_done_o & host_rsp;
   assign spurious_rd_host_done = host_rd_done_o & ctrl_rsp;
 
-  assign spurious_done_o =  spurious_rd_done | spurious_rd_host_done;
+  assign spurious_done_o = spurious_rd_done | spurious_rd_host_done;
   assign host_gnt_err_o  = host_gnt & ((muxed_part_buf != RramPartData) | ~host_req_i);
 
   /////////////////////////////////////////////////
