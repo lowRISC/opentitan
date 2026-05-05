@@ -67,7 +67,12 @@
       name: rram_ctrl_concurrent_rd_wr
       uvm_test_seq: rram_ctrl_concurrent_rd_wr_vseq
     }
-    // TODO: add more tests here
+    {
+      name: rram_ctrl_read_seed
+      uvm_test_seq: rram_ctrl_read_seed_vseq
+      run_opts: ["+skip_lc_init=1"]
+      reseed: 5
+    }
   ]
 
   // List of regressions.
@@ -84,7 +89,7 @@
     {
       name: full_func
       tests: ["rram_ctrl_smoke", "rram_ctrl_data_hazard", "rram_ctrl_concurrent_rd_wr",
-              "rram_ctrl_smoke_mp_err"]
+              "rram_ctrl_smoke_mp_err", "rram_ctrl_read_seed"]
     }
   ]
 }
