@@ -224,14 +224,15 @@ class csrng_intr_vseq extends csrng_base_vseq;
         fifo_base_path = fld_name.substr(0, last_index-1);
 
         foreach (path_exts[i]) begin
-          fifo_forced_paths[i] = cfg.csrng_path_vif.fifo_err_path(cfg.NHwApps, fifo_base_path,
+          fifo_forced_paths[i] = cfg.csrng_path_vif.fifo_err_path(cfg.m_num_hw_apps,
+                                                                  fifo_base_path,
                                                                   path_exts[i]);
         end
         force_all_fifo_errs(fifo_forced_paths, fifo_forced_values, path_exts,
                             ral.intr_state.cs_fatal_err, 1'b1, cfg.which_fifo_err);
       end
       cmd_stage_sm_error, main_sm_error, ctr_drbg_sm_error: begin
-        path = cfg.csrng_path_vif.sm_err_path(fld_name.substr(0, last_index-1), cfg.NHwApps);
+        path = cfg.csrng_path_vif.sm_err_path(fld_name.substr(0, last_index-1), cfg.m_num_hw_apps);
         force_path_err(path, 8'b0, ral.intr_state.cs_fatal_err, 1'b1);
       end
       aes_cipher_sm_error: begin
@@ -284,16 +285,16 @@ class csrng_intr_vseq extends csrng_base_vseq;
         `DV_CHECK_EQ(aes_fsm_state, aes_pkg::CIPHER_CTRL_ERROR)
       end
       ctr_error: begin
-        path = cfg.csrng_path_vif.cmd_gen_cnt_err_path(cfg.NHwApps);
+        path = cfg.csrng_path_vif.cmd_gen_cnt_err_path(cfg.m_num_hw_apps);
         force_path_err(path, 8'h01, ral.intr_state.cs_fatal_err, 1'b1);
       end
       fifo_write_error, fifo_read_error, fifo_state_error: begin
         fifo_name = cfg.which_fifo.name();
         path_key = fld_name.substr(first_index+1, last_index-1);
 
-        path1 = cfg.csrng_path_vif.fifo_err_path(cfg.NHwApps, fifo_name,
+        path1 = cfg.csrng_path_vif.fifo_err_path(cfg.m_num_hw_apps, fifo_name,
                                                  fifo_err_path[0][path_key]);
-        path2 = cfg.csrng_path_vif.fifo_err_path(cfg.NHwApps, fifo_name,
+        path2 = cfg.csrng_path_vif.fifo_err_path(cfg.m_num_hw_apps, fifo_name,
                                                  fifo_err_path[1][path_key]);
         value1 = fifo_err_value[0][path_key];
         value2 = fifo_err_value[1][path_key];

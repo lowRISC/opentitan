@@ -93,6 +93,8 @@ module tb;
   assign interrupts[FifoErr]    = intr_cs_fatal_err;
 
   initial begin
+    uvm_config_db#(int unsigned)::set(null, "uvm_test_top", "num_hw_apps", dut.NumHwApps);
+
     // Drive clk and rst_n from clk_if
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
