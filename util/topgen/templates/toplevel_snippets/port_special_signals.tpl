@@ -2,6 +2,7 @@
 ## Licensed under the Apache License, Version 2.0, see LICENSE for details.
 ## SPDX-License-Identifier: Apache-2.0
 <%import topgen.lib as lib%>\
+<%from topgen.merge import alert_handler_signals%>\
 <%page args="top, feature_info, cio_info, domain"/>\
 % if feature_info["has_pinmux"]:
 % if cio_info["num_mio_pads"] != 0:
@@ -102,12 +103,19 @@
   input  prim_mubi_pkg::mubi4_t     [top_${top["name"]}_pkg::NIncomingLpgs${alert_group.capitalize()}-1:0]   incoming_lpg_rst_en_${alert_group}_i,
 % endfor
 
-% if feature_info["has_ast"]:
-  // All clocks forwarded to ast
-  output clkmgr_pkg::clkmgr_out_t clks_ast_o,
-  output rstmgr_pkg::rstmgr_out_t rsts_ast_o,
-
-% endif\
+<%
+  clkmgr = lib.find_module(top['module'], 'clkmgr')
+  domain_clkmgr = clkmgr.get('domain')
+%>\
+% if domain_clkmgr == domain:
+  // Externally supplied clocks
+  % for clk in top['clocks'].typed_clocks().ast_clks:
+  input ${clk},
+  % endfor
+% else:
+  input clkmgr_pkg::clkmgr_out_t    ${clkmgr['name']}_clocks_i,
+  input clkmgr_pkg::clkmgr_cg_en_t  ${clkmgr['name']}_cg_en_i,
+% endif
 
 % if len(top['unmanaged_clocks']._asdict().values()) > 0:
   // Unmanaged external clocks

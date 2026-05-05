@@ -10,7 +10,7 @@ from collections import OrderedDict
 import topgen.lib as lib
 
 top_hier = 'tb.dut.top_' + top["name"] + '.'
-clk_hier = top_hier + top["clocks"].hier_paths["top"]
+clk_hier = lib.get_clock_prefixes(top)["top"]
 
 clk_src = OrderedDict()
 for xbar in top["xbar"]:
