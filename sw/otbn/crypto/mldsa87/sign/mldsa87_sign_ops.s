@@ -243,9 +243,13 @@ compute_z:
   addi x18, x0, 0 /* s */
 
   /*
-   * Calculate the individual polynomials of the signature vector Z as follows:
+   * Calculate and norm-check the individual polynomials of the signature
+   * vector Z as follows. Importantly, we cannot unmask the polynomials until
+   * the norm check has passed for one of them. This means, due to the DMEM
+   * constraints, we need to calculate the masked Z polynomials effectively
+   * twice, once for the bound check and then to unmask them.
    *
-   * for s in [0, 6]:
+   * def kernel:
    *   Y0[s], Y1[s] = expand_mask(RHO_PRIME_0, RHO_PRIME_1, s)
    *   S1_0[s], S1_1[s] = decode_s(S1_0_enc[s], S1_1_enc[s])
    *
@@ -253,17 +257,97 @@ compute_z:
    *   B0, B1 = NTT(C) * W0, NTT(C) * W1
    *   C0, C1 = INTT(X0), INTT(X1)
    *   D0, D1 = Y0[s] + C0, Y1[s] + C1
+   *   return D0, D1
+   * enddef
+   *
+   * # Loop 1: norm check.
+   *
+   * for s in [0, 6]:
+   *   D0, D1 = kernel()
    *
    *   if |D0, D1|_inf >= bound:
    *     return 0
    *   endif
+   * endfor
    *
+   * # Loop 2: computation of Z.
+   *
+   * for s in [0, 6]:
+   *   D0, D1 = kernel()
    *   Z[s] = D0 + D1 (unmasking)
    * endfor
    *
    * return 2^256 - 1
    */
-_compute_z_loop:
+
+  /*
+   * Part 1: Norm check the Z[s] polynomials.
+   */
+
+  /* XXX: Check whether early abort is fine with regards to hardening. */
+_compute_z_norm_check_loop:
+  /* Compute the arithmetic shares of Z[s]. */
+  jal x1, _compute_z_kernel
+
+  /* Compute the infinity norm check on the shared signature polynomial and
+     exit the routine if it fails. */
+  addi x2, x9, 0
+  addi x3, x10, 0
+  addi x4, x7, 0
+  jal x1, sec_bound_check
+
+  /* Fail if w0 = 0. */
+  bn.cmp w0, w31, FG0
+  csrrs x2, FG0, x0
+  andi x2, x2, 0x8
+  bne x2, x0, _compute_z_fail
+
+  /* Increment s, advance S1 pointers. */
+  addi x18, x18, 1
+  addi x16, x16, 96
+  addi x17, x17, 96
+
+  /* Loop until all the Z[s] have been norm-checked. */
+  addi x2, x0, 7
+  bne x18, x2, _compute_z_norm_check_loop
+
+  /*
+   * Part 2: Compute all the Z[s] polynomials.
+   */
+
+  /* Reset the loop index s and the S1 pointers. */
+  addi x18, x0, 0
+  addi x16, x16, -672
+  addi x17, x17, -672
+
+  loopi 7, 9
+    /* Compute the arithmetic shares of Z[s]. */
+    jal x1, _compute_z_kernel
+
+    /* At this point, due to the passed infinity norm check, Z0 and Z1 are not
+       considered sensitive anymore and can be unmasked (see Section 3.2 in [1]).
+         Z[s] = D0 + D1 (unmasking). */
+    addi x2, x9, 0
+    addi x3, x10, 0
+    addi x4, x8, 0
+    jal x1, sec_unmask
+
+    /* Increment s, advance S1 and Z pointers. */
+    addi x18, x18, 1
+    addi x16, x16, 96
+    addi x17, x17, 96
+    addi x8, x8, 1024
+    /* End of loop */
+
+  /* At this point, all the signature polynomials have been computed and have
+     passed the infinity norm check. */
+  bn.not w0, w31
+  ret
+
+/*
+ * Compute the arithmetic shares of Z[s] (see above pseudocode).
+ */
+_compute_z_kernel:
   /* Expand Y0[s] and Y1[s] as arithmetic shares into slots 0 and 1. */
   addi x2, x9, 0
   addi x3, x10, 0
@@ -322,42 +406,6 @@ _compute_z_loop:
   addi x3, x12, 0
   addi x4, x10, 0
   jal x1, poly_add
-
-  /* Compute the infinity norm check on the shared signature polynomial and
-     exit the routine if it fails. */
-  addi x2, x9, 0
-  addi x3, x10, 0
-  addi x4, x7, 0
-  jal x1, sec_bound_check
-
-  /* Fail if w0 = 0. */
-  bn.cmp w0, w31, FG0
-  csrrs x2, FG0, x0
-  andi x2, x2, 0x8
-  bne x2, x0, _compute_z_fail
-
-  /* At this point, due to the passed infinity norm check, Z0 and Z1 are not
-     considered sensitive anymore and can be unmasked (see Section 3.2 in [1]).
-       Z[s] = Z0 + Z1 (unmasking). */
-  addi x2, x9, 0
-  addi x3, x10, 0
-  addi x4, x8, 0
-  jal x1, sec_unmask
-
-  /* Increment s, advance S1 and Z pointers. */
-  addi x18, x18, 1
-  addi x16, x16, 96
-  addi x17, x17, 96
-  addi x8, x8, 1024
-
-  /* Loop until all the Z[s] have been computed. */
-  addi x2, x0, 7
-  bne x18, x2, _compute_z_loop
-
-  /* At this point, all the signature polynomials have been computed and have
-     passed the infinity norm check. */
-  bn.not w0, w31
-  ret
 
   /* Failure case, a signature polynomial has failed the infinity norm check. */
 _compute_z_fail:
