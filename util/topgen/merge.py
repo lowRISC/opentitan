@@ -688,12 +688,18 @@ def extract_clocks(top: ConfigT):
         # different groups inside clock_srcs.  This is generally not
         # recommended as it is better to stay consistent.  However
         # if needed, the method is available.
-        ep['clock_group'] = 'secure' if 'clock_group' not in ep else ep[
-            'clock_group']
-        ep_grp = ep['clock_group']
+        ep_grp = ep.get('clock_group', 'secure')
+        # Write value to dict in case it was unset before
+        ep['clock_group'] = ep_grp
 
         # end point names and clocks
         ep_name = ep['name']
+
+        # end point power domain
+        ep_domain = ep.get('domain', top['power']['default'])
+
+        # prefixes for all clocks of this endpoint
+        prefixes = lib.get_clock_prefixes(top, ep_domain)
 
         for port, clk in ep['clock_srcs'].items():
             group_name, src_name = _get_clock_group_name(clk, ep_grp)
@@ -707,7 +713,7 @@ def extract_clocks(top: ConfigT):
                 group = clocks.groups[group_name]
 
                 name = ''
-                hier_name = clocks.hier_paths[group.src]
+                hier_name = prefixes[group.src]
 
                 if group.src == 'ext':
                     name = "{}_i".format(src_name)

@@ -650,17 +650,39 @@ def shadow_name(name: str) -> str:
         return 'rst_shadowed_ni'
 
 
+def get_clock_prefixes(top, domain_mod: str = None) -> dict:
+    clkmgr = find_module(top['module'], 'clkmgr')
+    domain_clkmgr = clkmgr.get('domain')
+
+    if domain_clkmgr == domain_mod or domain_mod is None:
+        prefixes = {
+            'top': f"{clkmgr['name']}_clocks.",
+            'ext': '',
+            'lpg': f"{clkmgr['name']}_cg_en.",
+        }
+    else:
+        prefixes = {
+            'top': f"{clkmgr['name']}_clocks_i.",
+            'ext': '',
+            'lpg': f"{clkmgr['name']}_cg_en_i.",
+        }
+
+    return prefixes
+
+
 def get_clock_lpg_path(top: object,
                        clk_name: str,
+                       domain_mod: str = None,
                        unmanaged_clock: bool = False) -> str:
     """Return the appropriate LPG clock path given name
     """
+    prefixes = get_clock_prefixes(top, domain_mod)
     if unmanaged_clock:
         return top['unmanaged_clocks'].get_clock_by_signal_name(
             clk_name).cg_en_signal
     else:
         clk_name = clk_name.split('clk_')[-1]
-        return top['clocks'].hier_paths['lpg'] + clk_name
+        return prefixes['lpg'] + clk_name
 
 
 def get_reset_path(top: object,

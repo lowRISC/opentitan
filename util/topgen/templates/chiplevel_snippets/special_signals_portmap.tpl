@@ -1,7 +1,24 @@
 ## Copyright lowRISC contributors (OpenTitan project).
 ## Licensed under the Apache License, Version 2.0, see LICENSE for details.
 ## SPDX-License-Identifier: Apache-2.0
+<%import topgen.lib as lib%>\
+<%from topgen.merge import alert_handler_signals%>\
 <%page args="top, feature_info, domain"/>\
+<%
+  clkmgr = lib.find_module(top['module'], 'clkmgr')
+  domain_clkmgr = clkmgr.get('domain')
+%>\
+% if domain_clkmgr == domain:
+    // All externally supplied clocks
+    .clk_main_i(ast_base_clks.clk_sys),
+    .clk_io_i  (ast_base_clks.clk_io ),
+    .clk_usb_i (ast_base_clks.clk_usb),
+    .clk_aon_i (ast_base_clks.clk_aon),
+% else:
+    .${clkmgr['name']}_clocks_i(${clkmgr['name']}_clocks),
+    .${clkmgr['name']}_cg_en_i (${clkmgr['name']}_cg_en),
+% endif
+
 % for name, plic in top["plic_info"].items():
 <% prefix = "_" + name if len(top["plic_info"]) > 1 else "" %>\
 % if plic["domain"] == domain:

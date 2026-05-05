@@ -237,12 +237,7 @@ class UnmanagedClocks:
 
 class Clocks:
     '''Clock connections for the chip.'''
-
     def __init__(self, raw: Dict[str, object]):
-        self.hier_paths = {}
-        assert isinstance(raw['hier_paths'], dict)
-        for grp_src, path in raw['hier_paths'].items():
-            self.hier_paths[str(grp_src)] = str(path)
 
         assert isinstance(raw['srcs'], list)
         self.srcs = {}
@@ -268,7 +263,6 @@ class Clocks:
 
     def _asdict(self) -> Dict[str, object]:
         return {
-            'hier_paths': self.hier_paths,
             'srcs': list(self.srcs.values()),
             'derived_srcs': list(self.derived_srcs.values()),
             'groups': list(self.groups.values())
