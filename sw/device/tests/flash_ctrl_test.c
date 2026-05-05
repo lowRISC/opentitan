@@ -304,16 +304,20 @@ bool test_main(void) {
 
   LOG_INFO("flash test!");
 
-  CHECK_DIF_OK(dif_flash_ctrl_set_bank_erase_enablement(&flash, /*bank=*/0,
-                                                        kDifToggleEnabled));
-  CHECK_DIF_OK(dif_flash_ctrl_set_bank_erase_enablement(&flash, /*bank=*/1,
-                                                        kDifToggleEnabled));
   test_basic_io();
   test_memory_protection();
 
-  CHECK_DIF_OK(dif_flash_ctrl_set_bank_erase_enablement(&flash, /*bank=*/0,
-                                                        kDifToggleDisabled));
-  CHECK_DIF_OK(dif_flash_ctrl_set_bank_erase_enablement(&flash, /*bank=*/1,
-                                                        kDifToggleDisabled));
+  // ROM_EXT disables bank erase to protect active slots. Skip these bank erase
+  // tests in owner stage.
+  if (kBootStage != kBootStageOwner) {
+    CHECK_DIF_OK(dif_flash_ctrl_set_bank_erase_enablement(&flash, /*bank=*/0,
+                                                          kDifToggleEnabled));
+    CHECK_DIF_OK(dif_flash_ctrl_set_bank_erase_enablement(&flash, /*bank=*/1,
+                                                          kDifToggleEnabled));
+    CHECK_DIF_OK(dif_flash_ctrl_set_bank_erase_enablement(&flash, /*bank=*/0,
+                                                          kDifToggleDisabled));
+    CHECK_DIF_OK(dif_flash_ctrl_set_bank_erase_enablement(&flash, /*bank=*/1,
+                                                          kDifToggleDisabled));
+  }
   return true;
 }
