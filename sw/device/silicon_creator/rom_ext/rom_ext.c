@@ -545,6 +545,9 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   // Maybe advance the security version.
   HARDENED_RETURN_IF_ERROR(rom_ext_advance_secver(boot_data, self));
 
+  // Disable and lock bank erase.
+  flash_ctrl_bank_erase_disable();
+
   rom_ext_sku_init();
 
   // Fix the boot data if needed
