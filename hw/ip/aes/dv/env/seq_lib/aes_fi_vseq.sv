@@ -17,14 +17,23 @@ class aes_fi_vseq extends aes_base_vseq;
   bit  wait_for_alert_clear = 0;
   bit  alert = 0;
 
-  typedef enum int { main_fsm = 0, cipher_fsm = 1, ctr_fsm = 2, ghash_fsm = 3} fi_t;
+  typedef enum int {
+    main_fsm   = 0,
+    cipher_fsm = 1,
+    ctr_fsm    = 2,
+    ghash_fsm  = 3
+  } fi_t;
 
   localparam bit FORCE   = 0;
   localparam bit RELEASE = 1;
 
   rand bit [StateWidth-1:0] force_state;
   rand int                  if_num;
-  rand fi_t fi_target;
+  rand fi_t                 fi_target;
+  constraint fi_target_c {fi_target dist { main_fsm   := 1,
+                                           cipher_fsm := 1,
+                                           ctr_fsm    := 1,
+                                           ghash_fsm  := `EN_GCM ? 1 : 0};}
 
   task body();
     `uvm_info(`gfn, $sformatf("\n\n\t ----| STARTING AES MAIN SEQUENCE |----\n %s",
