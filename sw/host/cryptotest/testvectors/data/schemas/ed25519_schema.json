@@ -27,7 +27,7 @@
       "operation": {
         "description": "Ed25519 operation",
         "type": "string",
-        "enum": ["verify"]
+        "enum": ["verify", "sign"]
       },
       "message": {
         "description": "Message to be verified",
@@ -41,8 +41,12 @@
         "description": "Signature to verify",
         "$ref": "#/$defs/byte_array"
       },
+      "private_key": {
+        "description": "Private key seed for sign operation",
+        "$ref": "#/$defs/byte_array"
+      },
       "result": {
-        "description": "Verification result",
+        "description": "Expected operation result",
         "type": "boolean"
       }
     }
