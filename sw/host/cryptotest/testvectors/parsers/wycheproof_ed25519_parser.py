@@ -14,35 +14,51 @@ def parse_test_vectors(raw_data):
     test_groups = raw_data["testGroups"]
     test_vectors = list()
     for group in test_groups:
-        # Parse the key for the group
-        key = group["publicKey"]
+        # Support both v1 format (publicKey) and v0 format (key).
+        key = group.get("publicKey") or group.get("key")
         if key["curve"] != "edwards25519":
             logging.info(f"Skipped test group: Unsupported curve type '{key['curve']}'")
             continue
 
+        private_key = list(bytes.fromhex(key["sk"])) if "sk" in key else None
+
         # Parse tests within the group
         for test in group["tests"]:
             logging.debug(f"Parsing tcId {test['tcId']}")
+
+            # Parse the expected result
+            if test["result"] == "valid":
+                result = True
+            elif test["result"] == "invalid":
+                result = False
+            elif test["result"] == "acceptable":
+                # Err on the side of caution and reject "acceptable" signatures
+                result = False
+            else:
+                raise RuntimeError(f"Unexpected result type {test['result']}")
+
             test_vec = {
                 "algorithm": "ed25519",
                 "operation": "verify",
                 "message": list(bytes.fromhex(test["msg"])),
                 "public_key": list(bytes.fromhex(key["pk"])),
                 "signature": list(bytes.fromhex(test["sig"])),
+                "result": result,
             }
-
-            # Parse the expected result
-            if test["result"] == "valid":
-                test_vec["result"] = True
-            elif test["result"] == "invalid":
-                test_vec["result"] = False
-            elif test["result"] == "acceptable":
-                # Err on the side of caution and reject "acceptable" signatures
-                test_vec["result"] = False
-            else:
-                raise RuntimeError(f"Unexpected result type {test['result']}")
-
             test_vectors.append(test_vec)
+
+            # Emit a sign test vector for every valid test that has a private key.
+            if result and private_key is not None:
+                sign_vec = {
+                    "algorithm": "ed25519",
+                    "operation": "sign",
+                    "message": list(bytes.fromhex(test["msg"])),
+                    "public_key": list(bytes.fromhex(key["pk"])),
+                    "private_key": private_key,
+                    "signature": [],
+                    "result": True,
+                }
+                test_vectors.append(sign_vec)
 
     return test_vectors
 
