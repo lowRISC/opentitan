@@ -190,6 +190,9 @@ module rram_ctrl
   logic                          hw_lcmgr_rready;
   logic                          hw_lcmgr_rvalid;
   logic [BusFullWidth-1:0]       hw_lcmgr_rdata;
+  logic                          lcmgr_err;
+  logic                          lcmgr_intg_err;
+  logic                          lcmgr_seed_err;
 
   // hw-otp to arbiter
   rram_ctrl_reg2hw_control_reg_t hw_otp_ctrl;
@@ -335,13 +338,13 @@ module rram_ctrl
 
   // Custom faults - things like hardware interface not working correctly
   assign hw2reg.fault_status.lcmgr_op_err.d     = 1'b1;
-  assign hw2reg.fault_status.lcmgr_op_err.de    = 1'b0;
+  assign hw2reg.fault_status.lcmgr_op_err.de    = hw_lcmgr_err.invalid_op_err;
   assign hw2reg.fault_status.lcmgr_mp_err.d     = 1'b1;
-  assign hw2reg.fault_status.lcmgr_mp_err.de    = 1'b0;
+  assign hw2reg.fault_status.lcmgr_mp_err.de    = hw_lcmgr_err.mp_err;
   assign hw2reg.fault_status.lcmgr_rd_err.d     = 1'b1;
-  assign hw2reg.fault_status.lcmgr_rd_err.de    = 1'b0;
+  assign hw2reg.fault_status.lcmgr_rd_err.de    = hw_lcmgr_err.rd_err;
   assign hw2reg.fault_status.lcmgr_wr_err.d     = 1'b1;
-  assign hw2reg.fault_status.lcmgr_wr_err.de    = 1'b0;
+  assign hw2reg.fault_status.lcmgr_wr_err.de    = hw_lcmgr_err.wr_err;
   assign hw2reg.fault_status.otp_op_err.d       = 1'b1;
   assign hw2reg.fault_status.otp_op_err.de      = 1'b0;
   assign hw2reg.fault_status.otp_mp_err.d       = 1'b1;
@@ -351,7 +354,7 @@ module rram_ctrl
   assign hw2reg.fault_status.otp_wr_err.d       = 1'b1;
   assign hw2reg.fault_status.otp_wr_err.de      = 1'b0;
   assign hw2reg.fault_status.seed_err.d         = 1'b1;
-  assign hw2reg.fault_status.seed_err.de        = 1'b0;
+  assign hw2reg.fault_status.seed_err.de        = lcmgr_seed_err;
   assign hw2reg.fault_status.phy_relbl_err.d    = 1'b1;
   assign hw2reg.fault_status.phy_relbl_err.de   = phy_relbl_err;
   assign hw2reg.fault_status.phy_rd_intg_err.d  = 1'b1;
@@ -369,9 +372,9 @@ module rram_ctrl
                                                      tl_gate_intg_err | tl_wr_gate_intg_err |
                                                      rd_fifo_adapter_intg_err;
   assign hw2reg.std_fault_status.lcmgr_err.d        = 1'b1;
-  assign hw2reg.std_fault_status.lcmgr_err.de       = 1'b0;
+  assign hw2reg.std_fault_status.lcmgr_err.de       = lcmgr_err;
   assign hw2reg.std_fault_status.lcmgr_intg_err.d   = 1'b1;
-  assign hw2reg.std_fault_status.lcmgr_intg_err.de  = 1'b0;
+  assign hw2reg.std_fault_status.lcmgr_intg_err.de  = lcmgr_intg_err;
   assign hw2reg.std_fault_status.otp_err.d          = 1'b1;
   assign hw2reg.std_fault_status.otp_err.de         = 1'b0;
   assign hw2reg.std_fault_status.otp_intg_err.d     = 1'b1;
@@ -583,32 +586,58 @@ module rram_ctrl
   rram_key_t rand_addr_key;
   rram_key_t rand_data_key;
 
-  // todo add rram_ctrl_lcmgr
-  assign otp_key_o.data_req = 1'b0;
-  assign otp_key_o.addr_req = 1'b0;
+  rram_ctrl_lcmgr #(
+    .RndCnstAddrKey  ( RndCnstAddrKey  ),
+    .RndCnstDataKey  ( RndCnstDataKey  ),
+    .RndCnstAllSeeds ( RndCnstAllSeeds ),
+    .RndCnstLfsrSeed ( RndCnstLfsrSeed ),
+    .RndCnstLfsrPerm ( RndCnstLfsrPerm )
+  ) u_rram_ctrl_lcmgr (
+    .clk_i,
+    .rst_ni,
+    .clk_otp_i,
+    .rst_otp_ni,
+    .lc_seed_hw_rd_en_i,
 
-  assign rma_dis_access = lc_ctrl_pkg::Off;
-  assign rma_ack_o      = lc_ctrl_pkg::Off;
-
-  assign lcmgr_keys_valid = 1'b1;
-  assign lcmgr_init_done  = 1'b1;
-  assign addr_key      = '0;
-  assign data_key      = '0;
-  assign rand_addr_key = '0;
-  assign rand_data_key = '0;
-
-  assign hw_lcmgr_req              = 1'b0;
-  assign hw_lcmgr_ctrl.start.q     = 1'b0;
-  assign hw_lcmgr_ctrl.op.q        = RramOpRead;
-  assign hw_lcmgr_ctrl.partition.q = RramPartData;
-  assign hw_lcmgr_ctrl.num.q       = 0;
-  assign hw_lcmgr_phase            = PhaseNone;
-  assign hw_lcmgr_addr             = '0;
-  assign hw_lcmgr_rready           = 1'b0;
-  assign hw_lcmgr_wvalid           = 1'b0;
-  assign hw_lcmgr_wdata            = '0;
-
-  assign keymgr_o = '0;
+    .lcmgr_init_i    (reg2hw.init.q),
+    .disable_i       (rram_disable[LcMgrDisableIdx]),
+    // Control arbiter interface
+    .ctrl_o          (hw_lcmgr_ctrl),
+    .req_o           (hw_lcmgr_req),
+    .addr_o          (hw_lcmgr_addr),
+    .done_i          (hw_lcmgr_done),
+    .err_i           (hw_lcmgr_err),
+    .phase_o         (hw_lcmgr_phase),
+    // Read interface
+    .rready_o        (hw_lcmgr_rready),
+    .rvalid_i        (hw_lcmgr_rvalid),
+    .rdata_i         (hw_lcmgr_rdata),
+    // Write interface
+    .wvalid_o        (hw_lcmgr_wvalid),
+    .wready_i        (hw_lcmgr_wready),
+    .wdata_o         (hw_lcmgr_wdata),
+    // RMA interface
+    .rma_req_i       (rma_req_i),
+    .rma_seed_i      (rma_seed_i),
+    .rma_ack_o       (rma_ack_o),
+    // Output seeds
+    .seeds_o         (keymgr_o.seeds),
+    // Error status
+    .fatal_err_o     (lcmgr_err),
+    .intg_err_o      (lcmgr_intg_err),
+    .seed_err_o      (lcmgr_seed_err),
+    // OTP key interface
+    .otp_key_req_o   (otp_key_o),
+    .otp_key_rsp_i   (otp_key_i),
+    .addr_key_o      (addr_key),
+    .data_key_o      (data_key),
+    .rand_addr_key_o (rand_addr_key),
+    .rand_data_key_o (rand_data_key),
+    // Access controls and status
+    .rma_dis_access_o(rma_dis_access),
+    .keys_valid_o    (lcmgr_keys_valid),
+    .init_done_o     (lcmgr_init_done)
+  );
 
   ///////////////////
   // OTP_HW_ACCESS //
@@ -1280,6 +1309,21 @@ module rram_ctrl
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(TlLcGateFsm_A, u_tl_gate.u_state_regs,
                                        alert_tx_o[1])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(TlProgLcGateFsm_A, u_wr_tl_gate.u_state_regs,
+                                       alert_tx_o[1])
+
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(SeedCntAlertCheck_A, u_rram_ctrl_lcmgr.u_seed_cnt,
+                                         alert_tx_o[1])
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(AddrCntAlertCheck_A, u_rram_ctrl_lcmgr.u_addr_cnt,
+                                         alert_tx_o[1])
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PageCntAlertCheck_A, u_rram_ctrl_lcmgr.u_page_cnt,
+                                         alert_tx_o[1])
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(WordCntAlertCheck_A, u_rram_ctrl_lcmgr.u_word_cnt,
+                                         alert_tx_o[1])
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(WipeIdx_A, u_rram_ctrl_lcmgr.u_wipe_idx_cnt,
+                                         alert_tx_o[1])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(LcCtrlFsmCheck_A, u_rram_ctrl_lcmgr.u_state_regs,
+                                       alert_tx_o[1])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(LcCtrlRmaFsmCheck_A, u_rram_ctrl_lcmgr.u_rma_state_regs,
                                        alert_tx_o[1])
 
   // rram_phy assertions
