@@ -28,7 +28,7 @@ class csrng_cmds_test extends csrng_base_test;
     cfg.min_enable_csrng_before_edn_clks = 10;
     cfg.max_enable_csrng_before_edn_clks = 200;
 
-    for (int i = 0; i < NUM_HW_APPS; i++) begin
+    for (int i = 0; i < cfg.m_num_hw_apps; i++) begin
       // CSRNG has a single AES primitive shared among the three application interfaces. To hit the
       // different genbits_depth_cross coverpoints, the maximum delay for asserting genbits_ready
       // and reading the previously requested bits from the genbits FIFO must be chosen

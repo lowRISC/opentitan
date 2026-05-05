@@ -8,20 +8,27 @@ class csrng_base_test extends cip_base_test #(
   );
 
   `uvm_component_utils(csrng_base_test)
-  `uvm_component_new
 
-   virtual function void build_phase(uvm_phase phase);
-     super.build_phase(phase);
+  function new (string name, uvm_component parent);
+    super.new(name, parent);
+  endfunction
 
-     configure_env();
-   endfunction
+  // A function defined in dv_base_test
+  //
+  // In this extended class, we set the shape of the environment (by calling set_num_hw_apps) before
+  // the base class calls cfg.initialize(), and then follow-up by calling configure_env.
+  virtual function void initialize_env_cfg();
+    int unsigned num_hw_apps;
 
-  // the base class dv_base_test creates the following instances:
-  // csrng_env_cfg: cfg
-  // csrng_env:     env
+    if (!uvm_config_db#(int unsigned)::get(this, "", "num_hw_apps", num_hw_apps)) begin
+      `uvm_fatal(get_full_name(), "Failed to get num_hw_apps from uvm_config_db.")
+    end
+    cfg.set_num_hw_apps(num_hw_apps);
 
-  // the base class also looks up UVM_TEST_SEQ plusarg to create and run that seq in
-  // the run_phase; as such, nothing more needs to be done
+    super.initialize_env_cfg();
+
+    configure_env();
+  endfunction
 
   virtual function void configure_env();
     cfg.otp_en_cs_sw_app_read_pct        = 80;
