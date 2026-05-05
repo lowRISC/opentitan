@@ -69,7 +69,7 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
                    $sformatf("Failed to cast object of type %p to expected CFG_T class.", cfg_type))
       end
 
-      cfg.initialize();
+      initialize_env_cfg();
     end
 
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
@@ -98,6 +98,17 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
     uvm_config_db#(CFG_T)::set(this, "*", "cfg", cfg);
 
   endfunction : build_phase
+
+  // Initialize an env_cfg that has been created in build_phase
+  //
+  // This virtual function allows classes that extend dv_base_test to configure the env_cfg before
+  // or after calling dv_base_test::initialize_env_cfg (which calls initialize on the cfg object).
+  //
+  // The function is not called for cfg objects that are supplied through uvm_config_db (since they
+  // are assumed to have been initialized in the testbench already).
+  virtual function void initialize_env_cfg();
+    cfg.initialize();
+  endfunction
 
   virtual function void end_of_elaboration_phase(uvm_phase phase);
     super.end_of_elaboration_phase(phase);
