@@ -1315,8 +1315,8 @@ class dma_scoreboard extends cip_base_scoreboard #(
         if (cfg.en_cov) begin
           // For bus-specific errors (BusErr, SrcAddrErr and DstAddrErr) let's supply the ASIDs
           // also, so that we can check that we have seem them on _all_ buses.
-          cov.error_code_cg.sample(.error_code(error_code), dma_config.src_asid, 1);
-          cov.error_code_cg.sample(.error_code(error_code), dma_config.dst_asid, 0);
+          cov.error_code_cg.sample(error_code, dma_config.src_asid, 1);
+          cov.error_code_cg.sample(error_code, dma_config.dst_asid, 0);
         end
       end
       // Register read check for lock register
