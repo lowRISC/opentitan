@@ -13,6 +13,10 @@ class csrng_base_test extends cip_base_test #(
     super.new(name, parent);
   endfunction
 
+  function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+  endfunction
+
   // A function defined in dv_base_test
   //
   // In this extended class, we set the shape of the environment (by calling set_num_hw_apps) before
