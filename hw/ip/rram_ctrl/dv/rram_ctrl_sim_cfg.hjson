@@ -73,6 +73,12 @@
       run_opts: ["+skip_lc_init=1"]
       reseed: 5
     }
+    {
+      name: rram_ctrl_rma
+      uvm_test_seq: rram_ctrl_rma_vseq
+      run_opts: ["+test_timeout_ns=300_000_000_000"]
+      reseed: 5
+    }
   ]
 
   // List of regressions.
@@ -89,7 +95,7 @@
     {
       name: full_func
       tests: ["rram_ctrl_smoke", "rram_ctrl_data_hazard", "rram_ctrl_concurrent_rd_wr",
-              "rram_ctrl_smoke_mp_err", "rram_ctrl_read_seed"]
+              "rram_ctrl_smoke_mp_err", "rram_ctrl_read_seed", "rram_ctrl_rma"]
     }
   ]
 }

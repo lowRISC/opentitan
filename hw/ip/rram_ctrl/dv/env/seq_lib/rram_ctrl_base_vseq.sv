@@ -129,6 +129,48 @@ class rram_ctrl_base_vseq extends cip_base_vseq #(
     join_none
   endtask : otp_model
 
+  // Task to send an RMA Request (with a given seed) to the RRAM Controller
+  virtual task rma_req();
+    // Local Variables
+    bit done;
+    int freq = cfg.clk_rst_vif.clk_freq_mhz;
+    // RMA request takes approx. 100ms@100MHz. Setting timeout to 200ms@100MHz
+    time timeout = (20000 / freq) * 1ms;
+
+    // Set Seed and Send Req
+    cfg.misc_vif.rma_seed <= $urandom();
+    cfg.misc_vif.rma_req <= lc_ctrl_pkg::On;
+
+    // Wait for RMA Ack to Rise (NOTE LONG DURATION)
+    `uvm_info(`gfn, "Waiting for RMA to complete ... ", UVM_LOW)
+
+    done = 0;
+    fork
+      begin  // Poll RMA ACK
+        do begin
+          `uvm_info(`gfn, "Polling RMA ACK ...", UVM_LOW)
+          #10ms; // Jump Ahead (Not Sampling Clocks)
+          @(posedge cfg.clk_rst_vif.clk); // Align to Clock
+          if (cfg.misc_vif.rma_ack == lc_ctrl_pkg::On) begin
+            done = 1;
+          end
+        end while (done == 0);
+      end
+      begin  // Timeout - Unexpected
+        `uvm_info(`gfn, "Starting RMA Timeout Check ...", UVM_LOW)
+        #(timeout);
+        `uvm_error(`gfn, {
+                   "RMA ACK NOT seen within the expected time frame, Timeout - FAIL",
+                   $sformatf(" (%0t)", timeout)})
+      end
+    join_any
+    disable fork;
+
+    // Note: After a valid RMA Ack is sent, the RMA State Machine remains in its last state
+    // until reset
+    `uvm_info(`gfn, "RMA complete", UVM_LOW)
+  endtask : rma_req
+
 endclass : rram_ctrl_base_vseq
 
 function rram_ctrl_base_vseq::new(string name="");
