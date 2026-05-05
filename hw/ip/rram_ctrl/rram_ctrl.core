@@ -33,6 +33,7 @@ filesets:
       - rtl/rram_phy_wr.sv
       - rtl/rram_phy_rd_buffer.sv
       - rtl/rram_phy_rd_buf_dep.sv
+      - rtl/rram_scramble.sv
       - rtl/rram_phy.sv
       - rtl/rram_ctrl.sv
     file_type: systemVerilogSource

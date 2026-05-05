@@ -592,10 +592,10 @@ module rram_ctrl
 
   assign lcmgr_keys_valid = 1'b1;
   assign lcmgr_init_done  = 1'b1;
-  assign addr_key         = '0;
-  assign data_key         = '0;
-  assign rand_addr_key    = '0;
-  assign rand_data_key    = '0;
+  assign addr_key      = '0;
+  assign data_key      = '0;
+  assign rand_addr_key = '0;
+  assign rand_data_key = '0;
 
   assign hw_lcmgr_req              = 1'b0;
   assign hw_lcmgr_ctrl.start.q     = 1'b0;
@@ -935,6 +935,8 @@ module rram_ctrl
   // RRAM phy //
   //////////////
   rram_phy #(
+    .RndCnstAddrKey(RndCnstAddrKey),
+    .RndCnstDataKey(RndCnstDataKey),
     .SecScrambleEn (SecScrambleEn)
   ) u_rram_phy (
     .clk_i,
@@ -945,6 +947,7 @@ module rram_ctrl
     .data_key_i        (data_key),
     .rand_addr_key_i   (rand_addr_key),
     .rand_data_key_i   (rand_data_key),
+    .keys_valid_i      (lcmgr_keys_valid),
     // Ctrl port
     .ctrl_req_i        (phy_ctrl_req),
     .ctrl_scramble_en_i(phy_ctrl_scramble_en),
