@@ -7,7 +7,6 @@
 interface csrng_cov_if (
   input logic clk_i
 );
-
   import uvm_pkg::*;
   import dv_utils_pkg::*;
   import csrng_pkg::*;
@@ -15,6 +14,15 @@ interface csrng_cov_if (
   import csrng_env_pkg::*;
   import prim_mubi_pkg::*;
   `include "dv_fcov_macros.svh"
+
+  // The maximum number of HW apps that the types in this interface can support.
+  localparam int unsigned MaxNumHwApps = 4;
+
+  // A bitmask of HW apps (of width governed by the MaxNumHwApps localparam)
+  typedef bit [MaxNumHwApps-1:0] app_mask_t;
+
+  // A queue of app_mask_t items (given a named type so that it can be returned by a function)
+  typedef app_mask_t app_mask_queue_t[$];
 
   bit en_full_cov = 1'b1;
   bit en_intg_cov = 1'b1;
@@ -195,15 +203,26 @@ interface csrng_cov_if (
     sw_app_read_sw_app_enable_cross: cross cp_sw_app_read, cp_sw_app_enable;
   endgroup : csrng_cfg_cg
 
-  covergroup csrng_sts_cg with function sample();
+  // Return a queue of masks that gives all the masks with just a single bit set, with num_hw_apps
+  // apps.
+  function automatic app_mask_queue_t single_masks(int unsigned num_hw_apps);
+    app_mask_queue_t ret;
+    for (int i = 0; i < num_hw_apps; i++) begin
+      ret.push_back(1 << i);
+    end
+    return ret;
+  endfunction
+
+  covergroup csrng_sts_cg (int unsigned num_hw_apps) with function sample();
     option.name         = "csrng_sts_cg";
     option.per_instance = 1;
 
-    cp_hw_inst_exc: coverpoint u_reg.hw_exc_sts_qs[NUM_HW_APPS-1:0] {
-      bins no_exc  = { 0 };
-      bins hw0_exc = { 1 };
-      bins hw1_exc = { 2 };
-      bins sim_exc = { 3 }; // simultaneous exception on both HW app interfaces
+    cp_hw_inst_exc: coverpoint u_reg.hw_exc_sts_qs[MaxNumHwApps-1:0] {
+      bins no_exc       = { '0 };
+      // A bin for an exception on each HW app interface
+      bins single_exc[] = single_masks(num_hw_apps);
+      // Simultaneous exception on all HW app interfaces
+      bins all_exc      = { (1 << num_hw_apps) - 1 };
     }
 
     cp_sw_cmd_sts_cmd_rdy: coverpoint u_reg.sw_cmd_sts_cmd_rdy_qs {
@@ -278,13 +297,12 @@ interface csrng_cov_if (
     cp_recov_alert_sts: coverpoint recov_alert;
   endgroup : csrng_recov_alert_sts_cg
 
-  covergroup csrng_cmds_cg with function sample(bit [NUM_HW_APPS-1:0] app,
-                                                acmd_e                acmd,
-                                                bit [3:0]             clen,
-                                                bit [3:0]             flags,
-                                                bit [11:0]            glen,
-                                                bit [1:0]             flags_transition
-                                               );
+  covergroup csrng_cmds_cg with function sample(bit [MaxNumHwApps-1:0] app,
+                                                acmd_e                 acmd,
+                                                bit [3:0]              clen,
+                                                bit [3:0]              flags,
+                                                bit [11:0]             glen,
+                                                bit [1:0]              flags_transition);
     option.name         = "csrng_cmds_cg";
     option.per_instance = 1;
 
@@ -566,7 +584,6 @@ interface csrng_cov_if (
   `DV_FCOV_INSTANTIATE_CG(csrng_sfifo_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_cfg_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_cmds_cg, en_full_cov)
-  `DV_FCOV_INSTANTIATE_CG(csrng_sts_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_err_code_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_err_code_test_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_recov_alert_sts_cg, en_full_cov)
@@ -574,6 +591,22 @@ interface csrng_cov_if (
   `DV_FCOV_INSTANTIATE_CG(csrng_genbits_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_state_db_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_es_sample_cg, en_full_cov)
+  csrng_sts_cg csrng_sts_cg_inst;
+
+  initial begin
+    // Use an upwards hierarcical reference to the csrng module into which we are bound and pick up
+    // its NumHwApps localparam
+    automatic int unsigned num_hw_apps = csrng.NumHwApps;
+
+    if (num_hw_apps > MaxNumHwApps) begin
+      `uvm_error($sformatf("%m"),
+                 $sformatf({"Interface bound into a csrng instance with NumHwApps = %0d, ",
+                            "but the interface only supports up to %0d HW apps."},
+                           num_hw_apps, MaxNumHwApps))
+    end
+
+    csrng_sts_cg_inst = new(num_hw_apps);
+  end
 
   // Sample functions needed for xcelium
   function automatic void cg_cfg_sample(csrng_env_cfg cfg);
@@ -586,9 +619,9 @@ interface csrng_cov_if (
                             );
   endfunction
 
-  function automatic void cg_cmds_sample(bit [NUM_HW_APPS-1:0] hwapp,
-                                         csrng_item cs_item,
-                                         mubi4_t flags_previous);
+  function automatic void cg_cmds_sample(bit [MaxNumHwApps-1:0] hwapp,
+                                         csrng_item             cs_item,
+                                         mubi4_t                flags_previous);
     bit flags_previous_bit = (flags_previous == MuBi4True) ? 1'b1 : 1'b0;
     bit flags_current_bit = (cs_item.flags == MuBi4True) ? 1'b1 : 1'b0;
     csrng_cmds_cg_inst.sample(hwapp,
