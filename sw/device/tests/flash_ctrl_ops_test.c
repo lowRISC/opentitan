@@ -299,9 +299,6 @@ static void do_bank0_data_partition_test(void) {
  * Tests the interrupts for erase, write and read of
  * the lowest and highest (usable) page of bank 1 data partition.
  * Confirms that the written data is read back correctly.
- * The whole bank is then erased and the interrupt is checked
- * followed by confirmation that the previously written data
- * has been wiped.
  */
 static void do_bank1_data_partition_test(void) {
   uint32_t address = 0;
@@ -376,7 +373,16 @@ static void do_bank1_data_partition_test(void) {
     read_and_check_host_if(kPageSize * page_index, test_data);
     CHECK_ARRAYS_EQ(readback_data, test_data, kDataSize);
   }
+}
 
+/**
+ * Tests the bank erase operation for bank 1.
+ * Erases the entire bank and verifies that the data is cleared
+ * (all bits set to 1) by reading back from the lowest and
+ * highest usable pages.
+ */
+static void do_bank1_erase_test(void) {
+  uint32_t address = 0;
   // Erasing the whole of bank 1.
   CHECK_DIF_OK(dif_flash_ctrl_set_bank_erase_enablement(&flash_state, 1,
                                                         kDifToggleEnabled));
@@ -457,6 +463,7 @@ bool test_main(void) {
     do_info_partition_test(kFlashInfoPageIdOwnerSecret, kRandomData2);
     do_info_partition_test(kFlashInfoPageIdIsoPart, kRandomData3);
     do_bank0_data_partition_test();
+    do_bank1_erase_test();
   }
   do_bank1_data_partition_test();
 
