@@ -909,7 +909,7 @@ task cip_base_vseq::check_not_fatal_alert(string alert_name, alert_esc_agent_cfg
     // ignore it (but print a debug message). If ping_count is unchanged, the alert fired
     // when we didn't expect it to.
     if (alert_cfg.ping_count == ping_count)
-      `uvm_error("Alert %0s fired unexpectedly.", alert_name)
+      `uvm_error(`gfn, $sformatf("Alert %0s fired unexpectedly.", alert_name))
     else
       `uvm_info(`gfn,
                 $sformatf("Unexpected alert %0s, but this may have a ping response.",
