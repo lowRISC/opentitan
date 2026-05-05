@@ -627,6 +627,12 @@ void flash_ctrl_bank_erase_perms_set(hardened_bool_t enable) {
                             reg);
 }
 
+void flash_ctrl_bank_erase_disable(void) {
+  abs_mmio_write32_shadowed(kBase + FLASH_CTRL_MP_BANK_CFG_SHADOWED_REG_OFFSET,
+                            0);
+  abs_mmio_write32(kBase + FLASH_CTRL_BANK_CFG_REGWEN_REG_OFFSET, 0);
+}
+
 /**
  * Information pages that should be locked by ROM_EXT before handing over
  * execution to the first owner boot stage. See
