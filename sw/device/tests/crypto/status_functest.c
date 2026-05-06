@@ -53,10 +53,6 @@ otcrypto_status_t async_incomplete_test(void) {
   otcrypto_status_t result = bad_test(OTCRYPTO_ASYNC_INCOMPLETE);
   return reverse_status(result);
 }
-otcrypto_status_t not_implemented_test(void) {
-  otcrypto_status_t result = bad_test(OTCRYPTO_NOT_IMPLEMENTED);
-  return reverse_status(result);
-}
 
 bool test_main(void) {
   status_t result = OTCRYPTO_OK;
@@ -68,7 +64,6 @@ bool test_main(void) {
   EXECUTE_TEST(result, recov_err_test);
   EXECUTE_TEST(result, fatal_err_test);
   EXECUTE_TEST(result, async_incomplete_test);
-  EXECUTE_TEST(result, not_implemented_test);
 
   return status_ok(result);
 }

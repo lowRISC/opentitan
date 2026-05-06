@@ -77,9 +77,6 @@ typedef enum otcrypto_status_value {
   kOtcryptoStatusValueFatalError = (int32_t)0x80006d80 | kFailedPrecondition,
   // An asynchronous operation is still in progress.
   kOtcryptoStatusValueAsyncIncomplete = (int32_t)0x8000ea40 | kUnavailable,
-  // TODO: remove all instances of this error before release; it is to track
-  // implementations that are not yet complete.
-  kOtcryptoStatusValueNotImplemented = (int32_t)0x80008d20 | kUnimplemented,
 } otcrypto_status_value_t;
 
 /**

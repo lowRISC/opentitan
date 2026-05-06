@@ -42,9 +42,6 @@ extern "C" {
 #define OTCRYPTO_ASYNC_INCOMPLETE                         \
   ((status_t){.value = (int32_t)(0x80000000 | MODULE_ID | \
                                  ((__LINE__ & 0x7ff) << 5) | kUnavailable)})
-#define OTCRYPTO_NOT_IMPLEMENTED                          \
-  ((status_t){.value = (int32_t)(0x80000000 | MODULE_ID | \
-                                 ((__LINE__ & 0x7ff) << 5) | kUnimplemented)})
 #else
 
 #define OTCRYPTO_RECOV_ERR \
@@ -53,8 +50,6 @@ extern "C" {
 #define OTCRYPTO_BAD_ARGS ((status_t){.value = kOtcryptoStatusValueBadArgs})
 #define OTCRYPTO_ASYNC_INCOMPLETE \
   ((status_t){.value = kOtcryptoStatusValueAsyncIncomplete})
-#define OTCRYPTO_NOT_IMPLEMENTED \
-  ((status_t){.value = kOtcryptoStatusValueNotImplemented})
 
 #endif
 

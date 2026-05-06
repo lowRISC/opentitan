@@ -27,9 +27,9 @@ int HammingDistance(int32_t a, int32_t b) {
 // Check the Hamming distances of the top-level error codes.
 constexpr int kMinimumHammingDistance = 5;
 TEST(Status, TopLevelStatusHammingDistance) {
-  std::array<otcrypto_status_t, 5> error_codes = {
+  std::array<otcrypto_status_t, 4> error_codes = {
       OTCRYPTO_BAD_ARGS, OTCRYPTO_RECOV_ERR, OTCRYPTO_FATAL_ERR,
-      OTCRYPTO_ASYNC_INCOMPLETE, OTCRYPTO_NOT_IMPLEMENTED};
+      OTCRYPTO_ASYNC_INCOMPLETE};
 
   // Expect the "OK" code to have a significant Hamming distance from 0.
   EXPECT_GE(HammingDistance(kOtcryptoStatusValueOk, 0), kMinimumHammingDistance)
@@ -66,7 +66,6 @@ TEST(Status, ErrorMacrosNotOk) {
   EXPECT_EQ(status_ok(OTCRYPTO_RECOV_ERR), false);
   EXPECT_EQ(status_ok(OTCRYPTO_FATAL_ERR), false);
   EXPECT_EQ(status_ok(OTCRYPTO_ASYNC_INCOMPLETE), false);
-  EXPECT_EQ(status_ok(OTCRYPTO_NOT_IMPLEMENTED), false);
 }
 
 TEST(Status, ErrorMacrosHaveExpectedValues) {
@@ -75,7 +74,6 @@ TEST(Status, ErrorMacrosHaveExpectedValues) {
   EXPECT_EQ(status_err(OTCRYPTO_RECOV_ERR), kAborted);
   EXPECT_EQ(status_err(OTCRYPTO_FATAL_ERR), kFailedPrecondition);
   EXPECT_EQ(status_err(OTCRYPTO_ASYNC_INCOMPLETE), kUnavailable);
-  EXPECT_EQ(status_err(OTCRYPTO_NOT_IMPLEMENTED), kUnimplemented);
 }
 
 __attribute__((noinline)) status_t do_hardened_try(status_t status) {

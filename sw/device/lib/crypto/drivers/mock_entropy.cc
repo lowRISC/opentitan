@@ -50,14 +50,14 @@ status_t entropy_csrng_generate_start(
 status_t entropy_csrng_generate_data_get(uint32_t *buf, size_t len,
                                          hardened_bool_t fips_check) {
   // This mock does not support actually generating random values.
-  return OTCRYPTO_NOT_IMPLEMENTED;
+  return OTCRYPTO_FATAL_ERR;
 }
 
 status_t entropy_csrng_generate(const entropy_seed_material_t *seed_material,
                                 uint32_t *buf, size_t len,
                                 hardened_bool_t fips_check) {
   // This mock does not support actually generating random values.
-  return OTCRYPTO_NOT_IMPLEMENTED;
+  return OTCRYPTO_FATAL_ERR;
 }
 
 status_t entropy_csrng_uninstantiate(void) { return OTCRYPTO_OK; }

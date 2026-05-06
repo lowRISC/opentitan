@@ -38,7 +38,6 @@ TEST(Status, ErrorMacrosHaveExpectedValues) {
   EXPECT_EQ(status_err(OTCRYPTO_RECOV_ERR), kAborted);
   EXPECT_EQ(status_err(OTCRYPTO_FATAL_ERR), kFailedPrecondition);
   EXPECT_EQ(status_err(OTCRYPTO_ASYNC_INCOMPLETE), kUnavailable);
-  EXPECT_EQ(status_err(OTCRYPTO_NOT_IMPLEMENTED), kUnimplemented);
 }
 
 __attribute__((noinline)) otcrypto_status_t try_interpret(status_t status) {
