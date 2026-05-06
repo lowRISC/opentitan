@@ -9,6 +9,7 @@
 .globl compute_z
 .globl compute_r0
 .globl compute_x0
+.globl make_hint
 
 .text
 
@@ -653,6 +654,162 @@ compute_x0:
     /* Advance address pointers. */
     addi x6, x6, 1024
     addi x8, x8, 416
+    /* End of loop */
+
+  ret
+
+/**
+ * Compute the hint vector H.
+ *
+ * Given the vector X0 = W0 + C * T0 and the encoded vector W1, this routine
+ * derives the hint vector H according to the `MakeHint` function (Algorithm 39)
+ * of FIPS-204. The DMEM location of X0 is overwritten with H.
+ *
+ * @param[in] x2: DMEM addresss of the X0 vector and resulting hint vector H.
+ * @param[in] x3: DMEM address of the encoded W1 vector (1024 bytes).
+ * @param[in] x4: DMEM address of a polynomial slot.
+ */
+make_hint:
+  /* Save DMEM address pointers. */
+  addi x5, x2, 0 /* X0 */
+  addi x6, x3, 0 /* W1 */
+  addi x7, x4, 0 /* Slot */
+
+  /* Set up WDR pointers. */
+  addi x8, x0, 3
+  addi x9, x0, 4
+
+  /*
+   * Hint rationale:
+   *
+   * Assume a ML-DSA variant where the key vector T is *NOT* decomposed into
+   * lower and higher-bit polynomials T0 and T1. It is easy to see that if
+   * the signer computes the W1 vector as HighBits(A * Y) = HighBits(W), then
+   * the verifier can recompute W1 = HighBits(A * Y) as
+   *
+   *   A * Z - C * T
+   *    = A * (Y + C * S1) - C * (A * S1 + S2)
+   *    = A * Y + A * C * S1 - A * C * S1 - C * S2
+   *    = A * Y - C * S2
+   *
+   *   HighBits(A * Y - C * S2) = HighBits(A * Y) = HighBits(W) = W1
+   *
+   * The last relation holds because C * S2 contains only small-norm
+   * coefficients that do not cause any bit flips in the high bits of each
+   * coefficient.
+   *
+   * Now in the standardized variant of ML-DSA, the verifier is not given the
+   * full vector T but only T1, i.e., the vector of the higher-bits of T.
+   * Hence, W1 cannot be recomputed correctly anymore since
+   *
+   *   A * Z - C * (2^D * T1)
+   *     = A * Z - C * T + C * T0
+   *     = A * Y - C * S2 + C * T0
+   *     = W - C * S2 + C * T0
+   *     = (2*GAMMA2 * W1 + W0 - C * S2) + C * T0
+   *     = (2*GAMMA2 * W1 + R0) + C * T0
+   *
+   * In other words, the recomputation of W1 is wrong in all coefficients where
+   * the addition of C * T0 caused an overflow in R0 = W0 - C * S2 that spilled
+   * into W1. The polynomials of the hint vector indidicate which coefficients
+   * have overflown and need to be corrected during the verification.
+   */
+
+  /* Calculate the hint polynomials H[r] for 0 <= r < 8. */
+  loopi 8, 32
+    /* Decode W1[r] into the polynomial slot. */
+    addi x2, x6, 0
+    addi x3, x7, 0
+    jal x1, decode_w1
+
+    /* Prepare some constants for the loop below. */
+
+    /* w0 = GAMMA2 = (Q - 1) / 32 = 0x3ff00. */
+    bn.not w0, w31
+    bn.shv.8s w0, w0 >> 22
+    bn.shv.8s w0, w0 << 8
+
+    /* w1 = Q = 0x7fe001. */
+    bn.not w1, w31
+    bn.shv.8s w2, w1 >> 31
+    bn.shv.8s w1, w1 >> 22
+    bn.shv.8s w1, w1 << 13
+    bn.or w1, w1, w2
+
+    /* w2 = (Q - 1) / 2. */
+    bn.shv.8s w2, w1 >> 1
+
+    /*
+     * A coefficient in the hint polynomial is 1 if at least one of the
+     * conditions met (assuming x0 = x0 mod^+- Q):
+     *
+     *   1. x0 > GAMMA2
+     *   2. x0 < -GAMMA2
+     *   3. x0 == -GAMMA2 && w1 != 0
+     *
+     * In other words, if any of the three conditions is met, then the addition
+     * of C * T0 to W0 W0 caused an overflow in one or more coefficients in W0
+     * that spilled into W1.
+     */
+
+    /*
+     * Iterate over the polynomials X0[r] and W1[r] in steps of 8 coefficients
+     * and process them in a vectorized fashion.
+     */
+    loopi 32, 17
+      /* Load 8 coefficients of X0[r] and W1[r] into w3 and w4. */
+      bn.lid x8, 0(x5)
+      bn.lid x9, 0(x7++)
+
+      /*
+       * Calculate x0 mod^+- Q (reduction):
+       *
+       *   x0 = x0 - (((((Q - 1) / 2) - x0) >>> 31) & Q),
+       *
+       * with >>> being the arithmetic right shift operator.
+       *
+       * XXX: Open question, can the hint be computed without the reduction?
+       */
+      bn.subv.8s w5, w2, w3
+      bn.shv.8s w5, w5 >> 31
+      bn.subv.8s w5, w31, w5
+      bn.and w5, w5, w1
+      bn.subv.8s w3, w3, w5
+
+      /* w5 = 1 if w1 != 0, else 0. */
+      bn.subv.8s w5, w31, w4
+      bn.or w5, w5, w4
+      bn.shv.8s w5, w5 >> 31
+
+      /*
+       * Let t = x0 + GAMMA2, then the following relation holds pertaining to
+       * conditions 2 and 3.
+       *
+       *   Cond2 || Cond3
+       *   <-> (x0 < -GAMMA2) || (x0 == -GAMMA2 && w1 != 0)
+       *   <-> (t < 0) || (t == 0 && w1 != 0)
+       *   <-> (t - (w1 != 0)) < 0
+       */
+
+      /* w6 = 1 if (t - (w1 != 0)) < 0, else 0 (Cond 2 || Cond 3). */
+      bn.addv.8s w6, w3, w0
+      bn.subv.8s w6, w6, w5
+      bn.shv.8s w6, w6 >> 31
+
+      /* w5 = 1 if x0 > GAMMA2, else 0 (Cond 1). */
+      bn.subv.8s w5, w0, w3
+      bn.shv.8s w5, w5 >> 31
+
+      /* w3 = 1, if (Cond 1 || Cond 2 || Cond 3), else 0. */
+      bn.or w3, w5, w6
+
+      /* Store the calculated hint vector back to DMEM. */
+      bn.sid x8, 0(x5++)
+      /* End of loop */
+
+    /* Advance the W1 pointer and reset the slot pointer. */
+    addi x6, x6, 128
+    addi x7, x7, -1024
     /* End of loop */
 
   ret
