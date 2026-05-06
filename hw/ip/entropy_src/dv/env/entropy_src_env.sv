@@ -118,6 +118,17 @@ class entropy_src_env extends cip_base_env #(
          cfg.interrupt_vif)) begin
       `uvm_fatal(`gfn, "failed to get entropy_src_path_vif from uvm_config_db")
     end
+
+    // Disable random CDC delays in alert sender because the scoreboard otherwise could not
+    // accurately predict whether an alert request gets merged with an outstanding request or not
+    // (#18796).
+    cfg.disabled_prim_cdc_rand_delays = new[2];
+    for (int unsigned i = 0; i < 2; i++) begin
+      cfg.disabled_prim_cdc_rand_delays[i] = {cfg.entropy_src_path_vif.dut_path,
+                                              ".gen_alert_tx[0].u_prim_alert_sender.u_decode_ack",
+                                              $sformatf(".gen_async.i_sync_%0s", i ? "p" : "n"),
+                                              ".u_prim_cdc_rand_delay"};
+    end
   endfunction
 
   function void connect_phase(uvm_phase phase);

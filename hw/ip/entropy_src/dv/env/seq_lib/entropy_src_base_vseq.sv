@@ -679,7 +679,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
   task force_fifo_err_exception(string paths [4], bit values [4],
                                 uvm_reg_field reg_field, bit exp_data);
-    string data_path = "tb.dut.u_entropy_src_core.sfifo_esrng_rdata";
+    string data_path = {cfg.entropy_src_path_vif.core_path, ".sfifo_esrng_rdata"};
     foreach (paths[i]) begin
       if (!uvm_hdl_check_path(paths[i])) begin
         `uvm_fatal(`gfn, $sformatf("\n\t ----| PATH NOT FOUND"))
