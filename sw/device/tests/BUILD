@@ -2289,7 +2289,7 @@ opentitan_test(
         "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
-        "//sw/otbn/crypto:x25519_sideload",
+        "//sw/otbn/crypto:run_curve25519",
     ],
 )
 
@@ -2319,7 +2319,7 @@ opentitan_test(
         "//sw/device/lib/testing:sram_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
-        "//sw/otbn/crypto:x25519_sideload",
+        "//sw/otbn/crypto:run_curve25519",
     ],
 )
 
@@ -2522,7 +2522,7 @@ opentitan_test(
         "//sw/device/lib/testing:otbn_testutils",
         "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/otbn/crypto:x25519_sideload",
+        "//sw/otbn/crypto:run_curve25519",
     ],
 )
 
@@ -2553,7 +2553,7 @@ opentitan_test(
         "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing:otbn_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/otbn/crypto:x25519_sideload",
+        "//sw/otbn/crypto:run_curve25519",
     ],
 )
 

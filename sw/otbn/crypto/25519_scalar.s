@@ -7,6 +7,7 @@
 .globl sc_reduce_768
 .globl sc_mul
 .globl sc_blind
+.globl x25519_clamp_shares
 
 /**
  * This library contains arithmetic for the scalar field of the Ed25519
@@ -372,6 +373,43 @@ sc_blind:
        [w17:w16] <= [w17:w16] + w20 = k * L + s. */
   bn.add w16, w16, w20
   bn.addc w17, w17, w31
+
+  ret
+
+/**
+ * Clamps a Curve25519 scalar represented as two Boolean shares.
+ *
+ * To ensure k = w8 ^ w7 is clamped:
+ * - w8 (Share 0) gets bits 0-2 cleared, 255 cleared, 254 SET.
+ * - w7 (Share 1) gets bits 0-2 cleared, 255 cleared, 254 CLEARED.
+ *
+ * This routine runs in constant time.
+ *
+ * @param[in,out] w8: Share 0 of the scalar
+ * @param[in,out] w7: Share 1 of the scalar
+ * @param[in]     w31: all-zero
+ *
+ * clobbered registers: w2, w7, w8
+ * clobbered flag groups: none
+ */
+x25519_clamp_shares:
+  /* --- Clamp Share 0 (w8) --- */
+  /* Clear bottom 3 bits */
+  bn.rshi  w8, w31, w8 >> 3
+  /* Clear top 3 bits (shifts out original bits 253-255) */
+  bn.rshi  w8, w8, w31 >> 251
+  /* Prepare bit 254 = 1 */
+  bn.addi  w2, w31, 1
+  /* Shift right 2: inserts the 1 at bit 254, original bit 253 moves back to 253 */
+  bn.rshi  w8, w2, w8 >> 2
+
+  /* --- Clamp Share 1 (w7) --- */
+  /* Clear bottom 3 bits */
+  bn.rshi  w7, w31, w7 >> 3
+  /* Clear top 3 bits */
+  bn.rshi  w7, w7, w31 >> 251
+  /* Prepare bit 254 = 0 (use w31 instead of w2) */
+  bn.rshi  w7, w31, w7 >> 2
 
   ret
 

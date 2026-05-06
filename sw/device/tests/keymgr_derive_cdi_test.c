@@ -63,14 +63,16 @@ typedef struct cdi_outputs {
 
 // Symbols of the OTBN X22519 public key generation program.
 // See sw/otbn/crypto/x25519_sideload.s for the source code.
-OTBN_DECLARE_APP_SYMBOLS(x25519_sideload);
-OTBN_DECLARE_SYMBOL_ADDR(x25519_sideload, enc_u);
-OTBN_DECLARE_SYMBOL_ADDR(x25519_sideload, enc_result);
-static const otbn_app_t kOtbnAppX25519 = OTBN_APP_T_INIT(x25519_sideload);
-static const otbn_addr_t kOtbnVarEncU =
-    OTBN_ADDR_T_INIT(x25519_sideload, enc_u);
-static const otbn_addr_t kOtbnVarEncResult =
-    OTBN_ADDR_T_INIT(x25519_sideload, enc_result);
+OTBN_DECLARE_APP_SYMBOLS(run_curve25519);
+OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, mode);
+OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, MODE_X25519_KEYGEN_SIDELOAD);
+OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, x25519_public_key);
+static const otbn_app_t kOtbnAppX25519 = OTBN_APP_T_INIT(run_curve25519);
+static const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(run_curve25519, mode);
+static const uint32_t kOtbnCurve25519ModeX25519KeygenSideload =
+    OTBN_ADDR_T_INIT(run_curve25519, MODE_X25519_KEYGEN_SIDELOAD);
+static const otbn_addr_t kOtbnVarX25519PublicKey =
+    OTBN_ADDR_T_INIT(run_curve25519, x25519_public_key);
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -224,18 +226,15 @@ static void derive_sideload_otbn_key(const char *state_name,
   CHECK_STATUS_OK(otbn_testutils_load_app(&otbn, kOtbnAppX25519));
   CHECK_DIF_OK(dif_otbn_set_ctrl_software_errs_fatal(&otbn, false));
 
-  const uint32_t kEncodedU[8] = {
-      // Montgomery u-Coordinate.
-      0x9, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-  };
-  CHECK_STATUS_OK(otbn_testutils_write_data(&otbn, sizeof(kEncodedU),
-                                            &kEncodedU, kOtbnVarEncU));
+  uint32_t mode = kOtbnCurve25519ModeX25519KeygenSideload;
+  CHECK_STATUS_OK(
+      otbn_testutils_write_data(&otbn, sizeof(mode), &mode, kOtbnVarMode));
   LOG_INFO("Starting OTBN program...");
   CHECK_DIF_OK(dif_otbn_set_ctrl_software_errs_fatal(&otbn, false));
   CHECK_STATUS_OK(otbn_testutils_execute(&otbn));
   CHECK_STATUS_OK(otbn_testutils_wait_for_done(&otbn, 0));
   CHECK_STATUS_OK(otbn_testutils_read_data(&otbn, kX2551PublicKeySizeBytes,
-                                           kOtbnVarEncResult, key));
+                                           kOtbnVarX25519PublicKey, key));
 
 #ifndef DERIVE_ATTESTATION
   // If the key version is larger than the permitted maximum version, then

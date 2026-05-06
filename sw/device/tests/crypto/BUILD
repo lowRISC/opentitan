@@ -747,6 +747,33 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "x25519_sideload_functest",
+    srcs = ["x25519_sideload_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "eternal",
+        # This test can take > 60 minutes, so mark it manual as it shouldn't
+        # run in CI/nightlies.
+        tags = ["manual"],
+    ),
+    deps = [
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:ecc_curve25519",
+        "//sw/device/lib/crypto/impl:entropy_src",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:key_transport",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/crypto/impl:sha2",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "entropy_src_functest",
     srcs = ["entropy_src_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,

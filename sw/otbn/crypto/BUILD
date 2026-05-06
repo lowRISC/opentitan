@@ -468,17 +468,6 @@ otbn_library(
     ],
 )
 
-otbn_binary(
-    name = "x25519_sideload",
-    srcs = [
-        "x25519_sideload.s",
-    ],
-    deps = [
-        ":field25519",
-        ":x25519",
-    ],
-)
-
 CRYPTOLIB_OTBN_APPS = [
     "run_curve25519",
     "run_p256",

@@ -287,6 +287,27 @@ status_t curve25519_x25519_start(
     const uint32_t public_key[kCurve25519PointWords]);
 
 /**
+ * Start the X25519 keygen operation on OTBN using a sideloaded hardware key.
+ *
+ * @return Result of the operation.
+ */
+status_t curve25519_x25519_keygen_sideload_start(void);
+
+/**
+ * Start the X25519 operation on OTBN using a sideloaded hardware key.
+ *
+ * This routine writes the public key and mode to OTBN. It assumes the
+ * Key Manager has already programmed the private key into OTBN's
+ * sideload registers (KEY_S0_L and KEY_S1_L).
+ *
+ * @param public_key Public key u-coordinate.
+ * @return Result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t curve25519_x25519_sideload_start(
+    const uint32_t public_key[kCurve25519PointWords]);
+
+/**
  * Finish an async X25519 key exchange operation on OTBN.
  *
  * Blocks until OTBN is idle.
