@@ -73,6 +73,39 @@ class rram_ctrl_smoke_vseq extends rram_ctrl_base_vseq;
     int'(start_page) + int'(page_size) < TotalPages;
   }
 
+  // constraints for OTP
+  rand otp_ctrl_macro_pkg::otp_macro_data_t otp_wdata;
+  rand otp_ctrl_macro_pkg::otp_macro_addr_t otp_addr;
+  rand otp_ctrl_macro_pkg::otp_macro_size_t otp_size;
+  rand cmd_e otp_cmd;
+
+  // legal sizes are 0,1,3 for 16b,32b,64b transactions
+  constraint otp_size_c {
+    otp_size inside {2'b00,2'b01,2'b11};
+  }
+
+  // solve otp_size before otp_data
+  constraint otp_data_c {
+    solve otp_size before otp_wdata;
+    if (otp_size == 0) {
+      // Mask for 16b: e.g., mask out upper bits
+      otp_wdata[otp_ctrl_macro_pkg::OtpIfWidth-1 : 16] == '0;
+    } else if (otp_size == 1) {
+      // Mask for 32b
+      otp_wdata[otp_ctrl_macro_pkg::OtpIfWidth-1 : 32] == '0;
+    }
+  }
+
+  // solve otp_size before otp_addr
+  constraint otp_addr_c {
+    solve otp_size before otp_addr;
+    if (otp_size == 1) {
+      otp_addr[0] == 1'b0;
+    } else if (otp_size == 3) {
+      otp_addr[1:0] == 2'b0;
+    }
+  }
+
   // Standard SV/UVM methods
   extern function new(string name="");
   extern task body();
@@ -142,9 +175,18 @@ task rram_ctrl_smoke_vseq::body();
         automatic addr_t rewrite_addr;
         automatic rram_part_e rewrite_partition;
         repeat ($urandom_range(1, 1000)) @(posedge cfg.clk_rst_vif.clk);
-        rewrite_addr = rram_ctrl_op.addr + $urandom_range(0, int'(rram_ctrl_op.num_words));
-        rewrite_addr[3:0] = '0;
-        rewrite_partition = rram_ctrl_op.partition;
+        // rewrite a word in the OTP partition
+        if (k < NumTrans/10) begin
+          rewrite_addr = TotalBytes - TotalOtpBytes + $urandom_range(0, TotalOtpBytes-1);
+          rewrite_addr[3:0] = '0;
+          rewrite_partition = RramPartData;
+        // rewrite a word that is currently accessed
+        end else begin
+          rewrite_addr = rram_ctrl_op.addr + $urandom_range(0, int'(rram_ctrl_op.num_words));
+          rewrite_addr[3:0] = '0;
+          rewrite_partition = rram_ctrl_op.partition;
+        end
+
         rram_ctrl_base_vseq::rram_ctrl_rewrite(rewrite_addr, rewrite_partition);
       end
 
@@ -176,6 +218,27 @@ task rram_ctrl_smoke_vseq::body();
                                                 .exp_err_rsp(host_exp_err));
           end
           csr_utils_pkg::wait_no_outstanding_access();
+        end
+      end
+
+      // OTP read/write/zeroize commands
+      begin
+        for (int k = 0; k < 10; k++) begin
+          otp_ctrl_macro_pkg::otp_macro_data_t otp_rdata;
+          case (otp_cmd)
+            otp_ctrl_macro_pkg::Write:
+              rram_ctrl_base_vseq::otp_write(otp_addr, otp_size, 1'b0, 1'b1, otp_wdata);
+            otp_ctrl_macro_pkg::Read:
+              rram_ctrl_base_vseq::otp_read(otp_addr, otp_size, 1'b0, 1'b1, otp_rdata);
+            otp_ctrl_macro_pkg::WriteRaw:
+              rram_ctrl_base_vseq::otp_write(otp_addr, otp_size, 1'b1, 1'b1, otp_wdata);
+            otp_ctrl_macro_pkg::ReadRaw:
+              rram_ctrl_base_vseq::otp_read(otp_addr, otp_size, 1'b1, 1'b1, otp_rdata);
+            otp_ctrl_macro_pkg::Zeroize:
+              rram_ctrl_base_vseq::otp_zeroize(otp_addr, otp_size, 1'b1, otp_rdata);
+            default:;
+          endcase
+          repeat ($urandom_range(1, 1000)) @(posedge cfg.clk_rst_vif.clk);
         end
       end
     join
