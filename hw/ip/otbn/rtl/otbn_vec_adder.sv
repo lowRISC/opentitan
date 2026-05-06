@@ -84,7 +84,11 @@ module otbn_vec_adder
 
     // Select the carry in depending on the ELEN. Take previous stage or external carry.
     // Adder 0 always takes the external carry.
-    assign prev_carry_out = i_adder == 0 ? carries_in_i[0] : adders_carry_out[i_adder - 1];
+    if (i_adder == 0) begin : g_carry_adder0
+      assign prev_carry_out = carries_in_i[0];
+    end else begin : g_carry_other_adders
+      assign prev_carry_out = adders_carry_out[i_adder - 1];
+    end
     assign carry_in = use_ext_carry_i[i_adder] ? carries_in_i[i_adder] : prev_carry_out;
 
     // Extract and preprocess the operands
