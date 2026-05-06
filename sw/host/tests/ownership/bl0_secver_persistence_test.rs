@@ -3,16 +3,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #![allow(clippy::bool_assert_comparison)]
-use anyhow::{Result, anyhow, ensure};
+use anyhow::{Result, ensure};
 use clap::Parser;
-use regex::Regex;
 use std::path::PathBuf;
 use std::rc::Rc;
 use std::time::Duration;
 
 use opentitanlib::app::{TransportWrapper, UartRx};
+use opentitanlib::io::uart::Uart;
 use opentitanlib::chip::rom_error::RomError;
-use opentitanlib::ownership::OwnershipKeyAlg;
+use opentitanlib::ownership::{OwnershipKeyAlg, MinSecurityVersion, OwnershipUpdateMode};
 use opentitanlib::rescue::serial::RescueSerial;
 use opentitanlib::rescue::{EntryMode, Rescue};
 use opentitanlib::test_utils::init::InitializeTest;
@@ -31,8 +31,6 @@ struct Opts {
     next_key_alg: OwnershipKeyAlg,
     #[arg(long, help = "Next Owner private key (ECDSA P256)")]
     next_owner_key: Option<PathBuf>,
-    #[arg(long, help = "Next Owner public key (ECDSA P256)")]
-    next_owner_key_pub: Option<PathBuf>,
     #[arg(long, help = "Next Owner activate private key (ECDSA P256)")]
     next_activate_key: Option<PathBuf>,
     #[arg(long, help = "Next Owner unlock private key (ECDSA P256)")]
@@ -42,8 +40,6 @@ struct Opts {
 
     #[arg(long, help = "Next Owner private key (SPX)")]
     next_owner_key_spx: Option<PathBuf>,
-    #[arg(long, help = "Next Owner public key (SPX)")]
-    next_owner_key_spx_pub: Option<PathBuf>,
     #[arg(long, help = "Next Owner activate private key (SPX)")]
     next_activate_key_spx: Option<PathBuf>,
     #[arg(long, help = "Next Owner unlock private key (SPX)")]
@@ -54,41 +50,53 @@ struct Opts {
 
     #[arg(
         long,
-        default_value_t = transfer_lib::TEST_OWNER_CONFIG_VERSION,
-        help = "Configuration version to put in the owner config"
-    )]
-    config_version: u32,
-
-    #[arg(
-        long,
-        help = "Lock the owner config to the device identification number"
-    )]
-    locked_to_din: Option<u64>,
-
-    #[arg(
-        long,
         value_enum,
         default_value = "basic",
         help = "Style of Owner Config for this test"
     )]
     config_kind: transfer_lib::OwnerConfigKind,
-
-    #[arg(long, help = "Expected success conditions")]
-    expect: Vec<String>,
-
-    #[arg(long, help = "Expected error condition")]
-    expected_error: Option<String>,
 }
 
-fn newversion_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+fn wait_for_boot(uart: &dyn Uart, timeout: Duration, expected_ver: u32, expected_min: u32) -> Result<()> {
+    let capture = UartConsole::wait_for(
+        uart,
+        r"(?msR)Running.*PASS!$|BFV:([0-9A-Fa-f]{8})$",
+        timeout,
+    )?;
+    if capture[0].starts_with("BFV") {
+        let err = u32::from_str_radix(&capture[1], 16)?;
+        if err == 0 {
+            log::info!("Detected expected write-and-reboot (BFV:00000000). Waiting for next boot...");
+            // Wait again for the actual boot to PASS!
+            let capture2 = UartConsole::wait_for(
+                uart,
+                r"(?msR)Running.*PASS!$|BFV:([0-9A-Fa-f]{8})$",
+                timeout,
+            )?;
+            if capture2[0].starts_with("BFV") {
+                return RomError(u32::from_str_radix(&capture2[1], 16)?).into();
+            }
+            ensure!(capture2[0].contains(&format!("config_version = {expected_ver}")), "Expected config_version = {expected_ver}");
+            ensure!(capture2[0].contains(&format!("bl0_min_sec_ver = {expected_min}")), "Expected bl0_min_sec_ver = {expected_min}");
+        } else {
+            return RomError(err).into();
+        }
+    } else {
+        ensure!(capture[0].contains(&format!("config_version = {expected_ver}")), "Expected config_version = {expected_ver}");
+        ensure!(capture[0].contains(&format!("bl0_min_sec_ver = {expected_min}")), "Expected bl0_min_sec_ver = {expected_min}");
+    }
+    Ok(())
+}
+
+fn bl0_secver_persistence_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let uart = transport.uart("console")?;
     let rescue = RescueSerial::new(Rc::clone(&uart), opts.rescue_enter_delay);
 
-    log::info!("###### Get Device Info ######");
+    log::info!("###### Get Device Info (1) ######");
     rescue.enter(transport, EntryMode::Reset)?;
-    let (data, devid) = transfer_lib::get_device_info(transport, &rescue)?;
+    let (data, _devid) = transfer_lib::get_device_info(transport, &rescue)?;
 
-    log::info!("###### Upload Owner Block ######");
+    log::info!("###### Upload Owner Block V2 (min_sec_ver = 5) ######");
     transfer_lib::create_owner(
         transport,
         &rescue,
@@ -108,54 +116,30 @@ fn newversion_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         )?,
         &opts.next_application_key,
         opts.config_kind,
-        /*customize=*/
         |owner| {
-            owner.config_version = opts.config_version;
-            if let Some(din) = opts.locked_to_din {
-                let din = match din {
-                    0 => devid.din,
-                    x => x,
-                };
-                owner.lock_constraint = 0x6;
-                owner.device_id[1] = din as u32;
-                owner.device_id[2] = (din >> 32) as u32;
-            }
+            owner.config_version = 2;
+            owner.min_security_version_bl0 = MinSecurityVersion(5);
+            owner.update_mode = OwnershipUpdateMode::NewVersion;
         },
     )?;
 
-    log::info!("###### Boot After Update Complete ######");
+    log::info!("###### Boot After V2 Update (should trigger reboot and persist) ######");
     transport.reset_with_delay(UartRx::Clear, Duration::from_millis(50))?;
-    let mut capture = UartConsole::wait_for(
+    wait_for_boot(&*uart, opts.timeout, 2, 5)?;
+
+    log::info!("###### Reboot again to verify persistence ######");
+    transport.reset_with_delay(UartRx::Clear, Duration::from_millis(50))?;
+
+    let capture = UartConsole::wait_for(
         &*uart,
         r"(?msR)Running.*PASS!$|BFV:([0-9A-Fa-f]{8})$",
         opts.timeout,
     )?;
-    if capture[0].starts_with("BFV") {
-        let err = u32::from_str_radix(&capture[1], 16)?;
-        if err == 0 {
-            log::info!("Detected expected write-and-reboot (BFV:00000000). Waiting for next boot...");
-            // Wait again for the actual boot to PASS!
-            capture = UartConsole::wait_for(
-                &*uart,
-                r"(?msR)Running.*PASS!$|BFV:([0-9A-Fa-f]{8})$",
-                opts.timeout,
-            )?;
-            if capture[0].starts_with("BFV") {
-                return RomError(u32::from_str_radix(&capture[1], 16)?).into();
-            }
-        } else {
-            return RomError(err).into();
-        }
-    }
+    ensure!(!capture[0].starts_with("BFV"), "Boot failed or triggered unexpected reboot");
+    ensure!(capture[0].contains("config_version = 2"), "Expected config_version = 2");
+    ensure!(capture[0].contains("bl0_min_sec_ver = 5"), "Expected bl0_min_sec_ver = 5");
 
-    for exp in opts.expect.iter() {
-        let erx = Regex::new(exp)?;
-        ensure!(
-            erx.is_match(&capture[0]),
-            "Did not find expected output {exp:?}"
-        );
-    }
-
+    log::info!("###### BL0 SecVer Persistence test passed! ######");
     Ok(())
 }
 
@@ -163,22 +147,5 @@ fn main() -> Result<()> {
     let opts = Opts::parse();
     opts.init.init_logging();
     let transport = opts.init.init_target()?;
-
-    let result = newversion_test(&opts, &transport);
-    if let Some(error) = &opts.expected_error {
-        match result {
-            Ok(_) => Err(anyhow!("Ok when expecting {error:?}")),
-            Err(e) => {
-                let re = Regex::new(error).expect("regex");
-                if re.is_match(&e.to_string()) {
-                    log::info!("Got expected error code: {e}");
-                    Ok(())
-                } else {
-                    Err(anyhow!("Expected {error:?} but got {e}"))
-                }
-            }
-        }
-    } else {
-        result
-    }
+    bl0_secver_persistence_test(&opts, &transport)
 }

@@ -70,6 +70,7 @@ static rom_error_t locked_owner_init(boot_data_t *bootdata,
                                      owner_config_t *config,
                                      owner_application_keyring_t *keyring) {
   HARDENED_CHECK_EQ(bootdata->ownership_state, kOwnershipStateLockedOwner);
+  hardened_bool_t bootdata_dirty = kHardenedBoolFalse;
   if (owner_page_valid[0] == kOwnerPageStatusSealed &&
       launder32(owner_page_valid[1]) == kOwnerPageStatusSigned &&
       owner_block_newversion_mode() == kHardenedBoolTrue &&
@@ -86,6 +87,7 @@ static rom_error_t locked_owner_init(boot_data_t *bootdata,
       // redundant backup of the new configuration.
       owner_page_valid[0] = kOwnerPageStatusInvalid;
       owner_page_valid[1] = kOwnerPageStatusSealed;
+      bootdata_dirty = kHardenedBoolTrue;
     } else {
       // If the new page wasn't good, we'll do nothing here and let the next set
       // of validity checks copy page 0 over to page 1 and re-establish a
@@ -129,6 +131,33 @@ static rom_error_t locked_owner_init(boot_data_t *bootdata,
       return kErrorOwnershipBadInfoPage;
     }
   }
+
+  // Self-healing: If the enforced floor in bootdata is less than the
+  // requested floor in the active owner configuration, update bootdata
+  // and trigger a write-and-reboot. This handles the case where a power
+  // cut occurred after the owner page was updated but before bootdata
+  // was persisted.
+  // We only perform this check once both pages are fully validated and sealed.
+  if (launder32(owner_page_valid[0]) == kOwnerPageStatusSealed &&
+      launder32(owner_page_valid[1]) == kOwnerPageStatusSealed) {
+    HARDENED_CHECK_EQ(owner_page_valid[0], kOwnerPageStatusSealed);
+    HARDENED_CHECK_EQ(owner_page_valid[1], kOwnerPageStatusSealed);
+    if (launder32(owner_page[0].min_security_version_bl0) != UINT32_MAX &&
+        launder32(bootdata->min_security_version_bl0) <
+            launder32(owner_page[0].min_security_version_bl0)) {
+      HARDENED_CHECK_NE(owner_page[0].min_security_version_bl0, UINT32_MAX);
+      HARDENED_CHECK_LT(bootdata->min_security_version_bl0,
+                        owner_page[0].min_security_version_bl0);
+      bootdata->min_security_version_bl0 =
+          owner_page[0].min_security_version_bl0;
+      bootdata_dirty = kHardenedBoolTrue;
+    }
+  }
+
+  if (launder32(bootdata_dirty) == kHardenedBoolTrue) {
+    return kErrorWriteBootdataThenReboot;
+  }
+
   HARDENED_RETURN_IF_ERROR(owner_block_parse(
       &owner_page[0], /*check_only=*/kHardenedBoolFalse, config, keyring));
   uint32_t mp_index = 0;
