@@ -121,13 +121,29 @@ fn newversion_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     log::info!("###### Boot After Update Complete ######");
     transport.reset_with_delay(UartRx::Clear, Duration::from_millis(50))?;
-    let capture = UartConsole::wait_for_bytes(
+    let mut capture = UartConsole::wait_for_bytes(
         &*uart,
         r"(?msR)Running.*PASS!$|BFV:([0-9A-Fa-f]{8})$",
         opts.timeout,
     )?;
     if capture[0].starts_with("BFV") {
-        return RomError(u32::from_str_radix(&capture[1], 16)?).into();
+        let err = u32::from_str_radix(&capture[1], 16)?;
+        if err == 0 {
+            log::info!(
+                "Detected expected write-and-reboot (BFV:00000000). Waiting for next boot..."
+            );
+            // Wait again for the actual boot to PASS!
+            capture = UartConsole::wait_for_bytes(
+                &*uart,
+                r"(?msR)Running.*PASS!$|BFV:([0-9A-Fa-f]{8})$",
+                opts.timeout,
+            )?;
+            if capture[0].starts_with("BFV") {
+                return RomError(u32::from_str_radix(&capture[1], 16)?).into();
+            }
+        } else {
+            return RomError(err).into();
+        }
     }
 
     for exp in opts.expect.iter() {
