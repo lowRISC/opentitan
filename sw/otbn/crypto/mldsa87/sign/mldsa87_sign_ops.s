@@ -8,6 +8,7 @@
 .globl decompose_w
 .globl compute_z
 .globl compute_r0
+.globl compute_x0
 
 .text
 
@@ -587,5 +588,71 @@ _compute_r0_loop:
   /* Failure case, a R0 polynomial has failed the infinity norm check. */
 _compute_r0_fail:
   bn.xor w0, w0, w0
+
+  ret
+
+/**
+ * Compute the X0 vector.
+ *
+ * The routine computes X0 = R0 + INTT(NTT(C) * NTT(T0)) through which the hint
+ * vector H is derived (see `make_hint`). The T0 polynomials are assumed to be
+ * passed in encoded form and are decoded on-the-fly (see `decode_t0`). The
+ * DMEM location of R0 is overwritten with X0.
+ *
+ * @param[in] x2: DMEM address of the R0 vector and the resulting X0 vector.
+ * @param[in] x3: DMEM address of the challenge polynomial NTT(C).
+ * @param[in] x4: DMEM address of the encoded T0 vector (3328 bytes).
+ * @param[in] x5: DMEM address of a polynomial slot.
+ */
+compute_x0:
+  /* Save DMEM address pointers. */
+  addi x6, x2, 0 /* R0 */
+  addi x7, x3, 0 /* NTT(C) */
+  addi x8, x4, 0 /* T0_enc */
+  addi x9, x5, 0 /* Slot */
+
+  /*
+   * Compute the X0[r] polynomials for 0 <= r < 8 with the following algorithm:
+   *
+   * for r in [0, 7]:
+   *   T0[r] = decode_t0(T0_enc[r])
+   *   A = NTT(T0[r])
+   *   B = NTT(C) * A
+   *   C = INTT(B)
+   *   X0[r] = R0[r] + C
+   * endfor
+   */
+  loopi 8, 19
+    /* Decode T0[r] into the polynomial slot. */
+    addi x2, x8, 0
+    addi x3, x9, 0
+    jal x1, decode_t0
+
+    /* A = NTT(T0[r]). */
+    addi x2, x9, 0
+    addi x3, x9, 0
+    jal x1, ntt
+
+    /* B = NTT(C) * A = NTT(C) * NTT(T0[r]). */
+    addi x2, x7, 0
+    addi x3, x9, 0
+    addi x4, x9, 0
+    jal x1, poly_mul
+
+    /* C = INTT(B) = INTT(NTT(C) * NTT(T0[r])). */
+    addi x2, x9, 0
+    addi x3, x9, 0
+    jal x1, intt
+
+    /* X0[r] = R0[r] + C = R0[r] + INTT(NTT(C) * NTT(T0[r])). */
+    addi x2, x6, 0
+    addi x3, x9, 0
+    addi x4, x6, 0
+    jal x1, poly_add
+
+    /* Advance address pointers. */
+    addi x6, x6, 1024
+    addi x8, x8, 416
+    /* End of loop */
 
   ret
