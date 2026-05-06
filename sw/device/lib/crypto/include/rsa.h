@@ -119,16 +119,20 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
     otcrypto_unblinded_key_t *public_key);
 
 /**
- * Constructs an RSA private key from the modulus and public/private exponents.
+ * Constructs an RSA private key from the modulus and private exponent.
  *
  * The caller should allocate space for the private key and set the `keyblob`,
- * `keyblob_length`, and `key_length` fields accordingly.
+ * `keyblob_length`, and `key_length` fields accordingly. The public exponent
+ * is implicitly fixed to e=2^16+1 (65537). The private exponent `d` MUST
+ * satisfy d = e^{-1} mod lambda(n) for this fixed e; passing a `d` computed
+ * against a different public exponent will produce incorrect signatures due
+ * to message blinding.
  *
  * @param size RSA size parameter.
  * @param modulus RSA modulus (n).
  * @param d_share0 First share of the RSA private exponent d.
  * @param d_share1 Second share of the RSA private exponent d.
- * @param[out] public_key Destination public key struct.
+ * @param[out] private_key Destination private key struct.
  * @return Result of the RSA key construction.
  */
 otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
@@ -221,7 +225,7 @@ otcrypto_status_t otcrypto_rsa_verify(
  * slower and more fragile than other encryption methods. Consult an expert
  * before using RSA encryption.
  *
- * @param private_key Pointer to public key struct.
+ * @param public_key Pointer to public key struct.
  * @param hash_mode Hash function to use for OAEP encoding.
  * @param message Message to encrypt.
  * @param label Label for OAEP encoding.
