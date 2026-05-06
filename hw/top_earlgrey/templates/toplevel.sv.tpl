@@ -80,6 +80,31 @@ module top_${top["name"]} #(
   % endif
 % endif
 
+<%
+  keymgr_dpe_seed_selector = top.get("keymgr_dpe_seed_selector", "none")
+%>\
+  % if keymgr_dpe_seed_selector == "otp_ctrl":
+  // Otp_ctrl provides the creator / owner seed
+  keymgr_dpe_pkg::keymgr_dpe_creator_seed_t unused_keymgr_creator_seed;
+  keymgr_dpe_pkg::keymgr_dpe_owner_seed_t unused_keymgr_owner_seed;
+  assign keymgr_dpe_creator_seed = otp_ctrl_keymgr_creator_seed;
+  assign keymgr_dpe_owner_seed = otp_ctrl_keymgr_owner_seed;
+  assign unused_keymgr_creator_seed =
+      {flash_ctrl_keymgr.seeds[flash_ctrl_pkg::CreatorSeedIdx], 1'b1};
+  assign unused_keymgr_owner_seed =
+      {flash_ctrl_keymgr.seeds[flash_ctrl_pkg::OwnerSeedIdx], 1'b1};
+  % elif keymgr_dpe_seed_selector == "flash_ctrl":
+  // Flash_ctrl provides the creator / owner seed
+  keymgr_dpe_pkg::keymgr_dpe_creator_seed_t unused_keymgr_creator_seed;
+  keymgr_dpe_pkg::keymgr_dpe_owner_seed_t unused_keymgr_owner_seed;
+  assign keymgr_dpe_creator_seed =
+      {flash_ctrl_keymgr.seeds[flash_ctrl_pkg::CreatorSeedIdx], 1'b1};
+  assign keymgr_dpe_owner_seed =
+      {flash_ctrl_keymgr.seeds[flash_ctrl_pkg::OwnerSeedIdx], 1'b1};
+  assign unused_keymgr_creator_seed = otp_ctrl_keymgr_creator_seed;
+  assign unused_keymgr_owner_seed = otp_ctrl_keymgr_owner_seed;
+  % endif
+
   // Struct breakout module tool-inserted DFT TAP signals
   pinmux_jtag_breakout u_dft_tap_breakout (
     .req_i    (pinmux_aon_dft_jtag_req),

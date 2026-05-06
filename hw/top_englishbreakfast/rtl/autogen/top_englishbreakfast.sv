@@ -353,6 +353,7 @@ module top_englishbreakfast #(
 
   assign rv_core_ibex_boot_addr = tl_main_pkg::ADDR_SPACE_ROM_CTRL__ROM;
 
+
   // Struct breakout module tool-inserted DFT TAP signals
   pinmux_jtag_breakout u_dft_tap_breakout (
     .req_i    (pinmux_aon_dft_jtag_req),

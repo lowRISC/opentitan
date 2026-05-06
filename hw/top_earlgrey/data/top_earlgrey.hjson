@@ -189,6 +189,10 @@
   // will have its alerts sent here
   default_alert_handler: "alert_handler"
 
+  // Select if the creator / owner seed is provided by the otp_ctrl or by the
+  // flash_ctrl.
+  keymgr_dpe_seed_selector: "flash_ctrl"
+
   // `addr_spaces` names the distinct address spaces present in the device.
   // All hosts in the same address space share the same base addresses for
   // all peripherals, though not every peripheral will be accessible to every
@@ -1198,10 +1202,6 @@
 
       // KeyMgr DPE Sideload & KDF function
       'otp_ctrl.keymgr_creator_root_key'  : ['keymgr_dpe.creator_root_key'],
-      // TODO: Temporary seed connection; will be replaced by configuration parameter
-      // in this top description in the future.
-      'otp_ctrl.keymgr_creator_seed'      : ['keymgr_dpe.creator_seed'],
-      'otp_ctrl.keymgr_owner_seed'        : ['keymgr_dpe.owner_seed'],
       'keymgr_dpe.aes_key'                : ['aes.keymgr_key'],
       'keymgr_dpe.kmac_key'               : ['kmac.keymgr_key'],
       'keymgr_dpe.otbn_key'               : ['otbn.keymgr_key'],
@@ -1346,6 +1346,12 @@
         'keymgr_dpe.device_id',
         'sram_ctrl_main.otp_en_sram_ifetch',
         'rv_dm.otp_dis_rv_dm_late_debug',
+        // Select the source of the creator / owner seed per keymgr_dpe parameter
+        'otp_ctrl.keymgr_creator_seed',
+        'otp_ctrl.keymgr_owner_seed',
+        'flash_ctrl.keymgr',
+        'keymgr_dpe.creator_seed',
+        'keymgr_dpe.owner_seed',
     ],
 
     // ext is to create port in the top.

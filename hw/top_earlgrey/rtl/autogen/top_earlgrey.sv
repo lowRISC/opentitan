@@ -630,8 +630,6 @@ module top_earlgrey #(
   otp_ctrl_pkg::otbn_otp_key_req_t       otp_ctrl_otbn_otp_key_req;
   otp_ctrl_pkg::otbn_otp_key_rsp_t       otp_ctrl_otbn_otp_key_rsp;
   keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t       otp_ctrl_keymgr_creator_root_key;
-  keymgr_dpe_pkg::keymgr_dpe_creator_seed_t       otp_ctrl_keymgr_creator_seed;
-  keymgr_dpe_pkg::keymgr_dpe_owner_seed_t       otp_ctrl_keymgr_owner_seed;
   keymgr_pkg::hw_key_req_t       keymgr_dpe_aes_key;
   keymgr_pkg::hw_key_req_t       keymgr_dpe_kmac_key;
   keymgr_pkg::otbn_key_req_t       keymgr_dpe_otbn_key;
@@ -768,6 +766,11 @@ module top_earlgrey #(
   keymgr_dpe_pkg::keymgr_dpe_device_id_t       keymgr_dpe_device_id;
   prim_mubi_pkg::mubi8_t       sram_ctrl_main_otp_en_sram_ifetch;
   prim_mubi_pkg::mubi8_t       rv_dm_otp_dis_rv_dm_late_debug;
+  keymgr_dpe_pkg::keymgr_dpe_creator_seed_t       otp_ctrl_keymgr_creator_seed;
+  keymgr_dpe_pkg::keymgr_dpe_owner_seed_t       otp_ctrl_keymgr_owner_seed;
+  flash_ctrl_pkg::keymgr_flash_t       flash_ctrl_keymgr;
+  keymgr_dpe_pkg::keymgr_dpe_creator_seed_t       keymgr_dpe_creator_seed;
+  keymgr_dpe_pkg::keymgr_dpe_owner_seed_t       keymgr_dpe_owner_seed;
 
   // Create mixed connections to ports
   assign alert_handler_esc_rx[3] = alert_handler_esc_rx_i;
@@ -825,6 +828,16 @@ module top_earlgrey #(
   assign rv_core_ibex_hart_id = '0;
 
   assign rv_core_ibex_boot_addr = tl_main_pkg::ADDR_SPACE_ROM_CTRL__ROM;
+
+  // Flash_ctrl provides the creator / owner seed
+  keymgr_dpe_pkg::keymgr_dpe_creator_seed_t unused_keymgr_creator_seed;
+  keymgr_dpe_pkg::keymgr_dpe_owner_seed_t unused_keymgr_owner_seed;
+  assign keymgr_dpe_creator_seed =
+      {flash_ctrl_keymgr.seeds[flash_ctrl_pkg::CreatorSeedIdx], 1'b1};
+  assign keymgr_dpe_owner_seed =
+      {flash_ctrl_keymgr.seeds[flash_ctrl_pkg::OwnerSeedIdx], 1'b1};
+  assign unused_keymgr_creator_seed = otp_ctrl_keymgr_creator_seed;
+  assign unused_keymgr_owner_seed = otp_ctrl_keymgr_owner_seed;
 
   // Struct breakout module tool-inserted DFT TAP signals
   pinmux_jtag_breakout u_dft_tap_breakout (
@@ -1948,7 +1961,7 @@ module top_earlgrey #(
     .rma_ack_o(lc_ctrl_lc_nvm_rma_ack[0]),
     .rma_seed_i(lc_ctrl_lc_nvm_rma_seed),
     .pwrmgr_o(pwrmgr_aon_pwr_nvm_o),
-    .keymgr_o(),
+    .keymgr_o(flash_ctrl_keymgr),
     .obs_ctrl_i(ast_obs_ctrl),
     .fla_obs_o(flash_obs_o),
     .core_tl_i(flash_ctrl_core_tl_req),
@@ -2236,8 +2249,8 @@ module top_earlgrey #(
     .kmac_data_o(kmac_app_req[0]),
     .kmac_data_i(kmac_app_rsp[0]),
     .creator_root_key_i(otp_ctrl_keymgr_creator_root_key),
-    .creator_seed_i(otp_ctrl_keymgr_creator_seed),
-    .owner_seed_i(otp_ctrl_keymgr_owner_seed),
+    .creator_seed_i(keymgr_dpe_creator_seed),
+    .owner_seed_i(keymgr_dpe_owner_seed),
     .device_id_i(keymgr_dpe_device_id),
     .lc_keymgr_en_i(lc_ctrl_lc_keymgr_en),
     .lc_keymgr_div_i(lc_ctrl_lc_keymgr_div),
