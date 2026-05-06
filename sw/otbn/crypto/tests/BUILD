@@ -57,8 +57,8 @@ otbn_sim_test(
     ],
     exp = "ed25519_ext_add_test.exp",
     deps = [
-        "//sw/otbn/crypto:ed25519",
-        "//sw/otbn/crypto:ed25519_scalar",
+        "//sw/otbn/crypto:25519",
+        "//sw/otbn/crypto:25519_scalar",
         "//sw/otbn/crypto:field25519",
     ],
 )
@@ -70,8 +70,8 @@ otbn_sim_test(
     ],
     testcase = "ed25519_ext_scmul_test.hjson",
     deps = [
-        "//sw/otbn/crypto:ed25519",
-        "//sw/otbn/crypto:ed25519_scalar",
+        "//sw/otbn/crypto:25519",
+        "//sw/otbn/crypto:25519_scalar",
         "//sw/otbn/crypto:field25519",
     ],
 )
@@ -91,8 +91,8 @@ otbn_sim_test(
     ],
     testcase = "ed25519_ext_is_on_curve_test.hjson",
     deps = [
-        "//sw/otbn/crypto:ed25519",
-        "//sw/otbn/crypto:ed25519_scalar",
+        "//sw/otbn/crypto:25519",
+        "//sw/otbn/crypto:25519_scalar",
         "//sw/otbn/crypto:field25519",
     ],
 )
@@ -103,8 +103,8 @@ otbn_sim_test(
         "ed25519_encode_decode_test.s",
     ],
     deps = [
-        "//sw/otbn/crypto:ed25519",
-        "//sw/otbn/crypto:ed25519_scalar",
+        "//sw/otbn/crypto:25519",
+        "//sw/otbn/crypto:25519_scalar",
         "//sw/otbn/crypto:field25519",
     ],
 )
@@ -116,7 +116,7 @@ otbn_sim_test(
     ],
     exp = "ed25519_scalar_test.exp",
     deps = [
-        "//sw/otbn/crypto:ed25519_scalar",
+        "//sw/otbn/crypto:25519_scalar",
     ],
 )
 
@@ -127,7 +127,7 @@ otbn_sim_test(
     ],
     testcase = "ed25519_sc_reduce_test.hjson",
     deps = [
-        "//sw/otbn/crypto:ed25519_scalar",
+        "//sw/otbn/crypto:25519_scalar",
     ],
 )
 
@@ -137,8 +137,8 @@ otbn_sim_test(
         "ed25519_sign_test.s",
     ],
     deps = [
-        "//sw/otbn/crypto:ed25519",
-        "//sw/otbn/crypto:ed25519_scalar",
+        "//sw/otbn/crypto:25519",
+        "//sw/otbn/crypto:25519_scalar",
         "//sw/otbn/crypto:field25519",
     ],
 )
@@ -149,8 +149,8 @@ otbn_sim_test(
         "ed25519_verify_test.s",
     ],
     deps = [
-        "//sw/otbn/crypto:ed25519",
-        "//sw/otbn/crypto:ed25519_scalar",
+        "//sw/otbn/crypto:25519",
+        "//sw/otbn/crypto:25519_scalar",
         "//sw/otbn/crypto:field25519",
     ],
 )
@@ -1099,34 +1099,25 @@ otbn_sim_test(
 )
 
 otbn_sim_test(
-    name = "x25519_test1",
+    name = "x25519_test",
     srcs = [
-        "x25519_test1.s",
+        "x25519_test.s",
     ],
-    exp = "x25519_test1.exp",
     deps = [
+        "//sw/otbn/crypto:25519",
+        "//sw/otbn/crypto:25519_scalar",
         "//sw/otbn/crypto:field25519",
-        "//sw/otbn/crypto:x25519",
-    ],
-)
-
-otbn_sim_test(
-    name = "x25519_test2",
-    srcs = [
-        "x25519_test2.s",
-    ],
-    exp = "x25519_test2.exp",
-    deps = [
-        "//sw/otbn/crypto:field25519",
-        "//sw/otbn/crypto:x25519",
     ],
 )
 
 otbn_consttime_test(
     name = "x25519_consttime",
+    secrets = [
+        "w8",
+    ],
     subroutine = "X25519",
     deps = [
-        ":x25519_test1",
+        ":x25519_test",
     ],
 )
 
@@ -1141,6 +1132,10 @@ test_suite(
         ":ed25519_sc_reduce_test",
         ":ed25519_sign_test",
         ":ed25519_verify_test",
+
+        # X25519,
+        ":x25519_test",
+        ":x25519_consttime",
 
         # P256
         ":p256_base_mult_test",
