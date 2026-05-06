@@ -10,6 +10,7 @@
 .globl compute_r0
 .globl compute_x0
 .globl make_hint
+.globl hw_check_hint
 
 .text
 
@@ -811,5 +812,54 @@ make_hint:
     addi x6, x6, 128
     addi x7, x7, -1024
     /* End of loop */
+
+  ret
+
+/**
+ * Check the Hamming weight of the hint vector H.
+ *
+ * All the hint polynomials must not contain more than OMEGA = 75 coefficients
+ * that are set to 1. This routine calculate this Hamming weight and compares
+ * to the bound OMEGA.
+ *
+ * @param[in] x2: DMEM address of the hint vector H (8 * 1024 bytes).
+ * @param[out] w0, 2^256 - 1 if HW(H) <= OMEGA, else 0.
+ */
+hw_check_hint:
+  bn.addi w1, w31, 0 /* 8 parallel counters. */
+  bn.addi w2, w31, 0x3ff /* Mask */
+
+  /*
+   * Accumulate the eight parallel counters by looping over all H[r] in steps
+   * of eight coefficients at a time.
+   */
+  loopi 8, 4
+    loopi 32, 2
+      bn.lid x0, 0(x2++)
+      bn.addv.8s w1, w1, w0
+      /* End of loop */
+    nop
+    /* End of loop */
+
+  /*
+   * Fold the 8 counters into one.
+   */
+
+  /* Final number of 1-coefficients in H. */
+  bn.addi w0, w31, 0
+  loopi 8, 3
+    bn.and w3, w1, w2
+    bn.add w0, w0, w3
+    bn.rshi w1, w31, w1 >> 32
+    /* End of loop */
+
+  /*
+   * w0 = 2^256 - 1 if 75 - w0 >= 0 (MSB of 75 - w0 not set).
+   */
+  bn.addi w2, w31, 75
+  bn.not w3, w31
+
+  bn.cmp w2, w0, FG0
+  bn.sel w0, w31, w3, FG0.M
 
   ret
