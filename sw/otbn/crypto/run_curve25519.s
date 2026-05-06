@@ -69,53 +69,6 @@ start:
   unimp
   unimp
 
-x25519:
-  /* Zeroize w31 */
-  bn.xor   w31, w31, w31
-
-  /* Load private key into w8 */
-  li x2, 8
-  la x3, x25519_private_key
-  bn.lid x2, 0(x3)
-
-  /* Load public key into w9 */
-  li x2, 9
-  la x3, x25519_public_key
-  bn.lid x2, 0(x3)
-
-  /* Call x25519 basepoint multiplication */
-  jal x1, X25519
-
-  /* Store shared key from w22 */
-  li x2, 22
-  la x3, x25519_shared_key
-  bn.sid x2, 0(x3)
-
-  ecall
-
-x25519_keygen:
-  /* Zeroize w31 */
-  bn.xor   w31, w31, w31
-
-  /* Load private key into w8 */
-  li x2, 8
-  la x3, x25519_private_key
-  bn.lid x2, 0(x3)
-
-  /* Set public key to 9 */
-  bn.addi w9, w31, 9
-
-  /* Call x25519 */
-  jal x1, X25519
-
-  /* Store public key from w22 */
-  li x2, 22
-  la x3, x25519_public_key
-  bn.sid x2, 0(x3)
-
-  ecall
-  unimp
-
 /**
  * Ed25519 key generation operation.
  * Generate the encoded public key A.
@@ -208,6 +161,51 @@ ed25519_verify:
 
   /* Generate the signature. */
   jal      x1, ed25519_verify_var
+
+  ecall
+
+x25519:
+  /* Zeroize w31 */
+  bn.xor   w31, w31, w31
+
+  /* Load private key into w8 */
+  li       x2, 8
+  la       x3, x25519_private_key
+  bn.lid   x2, 0(x3)
+
+  /* Load public key into w9 */
+  li       x2, 9
+  la       x3, x25519_public_key
+  bn.lid   x2, 0(x3)
+
+  /* Call Edwards-mapped X25519 */
+  jal      x1, X25519
+
+  /* Store shared key from w22 */
+  li       x2, 22
+  la       x3, x25519_shared_key
+  bn.sid   x2, 0(x3)
+
+  ecall
+
+x25519_keygen:
+  /* Zeroize w31 */
+  bn.xor   w31, w31, w31
+
+  /* Load private key into w8 */
+  li       x2, 8
+  la       x3, x25519_private_key
+  bn.lid   x2, 0(x3)
+
+  /* Set public key */
+  bn.addi  w9, w31, 9
+
+  jal      x1, X25519
+
+  /* Store public key from w22 */
+  li       x2, 22
+  la       x3, x25519_public_key
+  bn.sid   x2, 0(x3)
 
   ecall
 

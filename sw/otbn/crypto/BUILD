@@ -20,16 +20,16 @@ otbn_binary(
 )
 
 otbn_library(
-    name = "ed25519",
+    name = "25519",
     srcs = [
-        "ed25519.s",
+        "25519.s",
     ],
 )
 
 otbn_library(
-    name = "ed25519_scalar",
+    name = "25519_scalar",
     srcs = [
-        "ed25519_scalar.s",
+        "25519_scalar.s",
     ],
 )
 
@@ -53,10 +53,9 @@ otbn_binary(
         "run_curve25519.s",
     ],
     deps = [
-        ":ed25519",
-        ":ed25519_scalar",
+        ":25519",
+        ":25519_scalar",
         ":field25519",
-        ":x25519",
     ],
 )
 
@@ -453,6 +452,8 @@ otbn_library(
     ],
 )
 
+# Currently unused but implements x25519 accepted twisted curve points.
+# Implements https://datatracker.ietf.org/doc/html/rfc7748#section-5
 otbn_library(
     name = "x25519",
     srcs = [
