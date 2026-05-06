@@ -36,6 +36,7 @@ unit_tests = [
     "mldsa87_sign_compute_x0_test",
     "mldsa87_sign_make_hint_test",
     "mldsa87_sign_hw_check_hint_test",
+    "mldsa87_sign_compress_hint_test",
 ]
 
 [
