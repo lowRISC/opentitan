@@ -82,7 +82,7 @@ static status_t run_test(const uint32_t *key, size_t key_len,
       .keyblob_length = sizeof(keyblob),
       .checksum = 0,
   };
-  blinded_key.checksum = integrity_blinded_checksum(&blinded_key);
+  blinded_key.checksum = otcrypto_integrity_blinded_checksum(&blinded_key);
 
   uint32_t act_tag[kTagLenWords];
   otcrypto_word32_buf_t tag_buf =
@@ -183,7 +183,7 @@ static status_t streaming_test(void) {
       .keyblob_length = sizeof(keyblob),
       .checksum = 0,
   };
-  blinded_key.checksum = integrity_blinded_checksum(&blinded_key);
+  blinded_key.checksum = otcrypto_integrity_blinded_checksum(&blinded_key);
 
   uint32_t act_tag[kTagLenWords];
   otcrypto_word32_buf_t tag_buf =

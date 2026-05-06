@@ -110,7 +110,7 @@ static status_t run_test(hkdf_test_vector_t *test) {
       .keyblob = ikm_keyblob,
       .keyblob_length = sizeof(ikm_keyblob),
   };
-  ikm.checksum = integrity_blinded_checksum(&ikm);
+  ikm.checksum = otcrypto_integrity_blinded_checksum(&ikm);
 
   // Construct a blinded key struct for the intermediate key (PRK).
   otcrypto_key_config_t prk_config = {
@@ -408,7 +408,7 @@ static status_t test_otcrypto_hkdf(void) {
       .keyblob = ikm_keyblob,
       .keyblob_length = sizeof(ikm_keyblob),
   };
-  ikm.checksum = integrity_blinded_checksum(&ikm);
+  ikm.checksum = otcrypto_integrity_blinded_checksum(&ikm);
 
   // Setup OKM
   otcrypto_key_config_t okm_config = {
@@ -481,19 +481,19 @@ static status_t run_negative_tests(void) {
   otcrypto_blinded_key_t valid_ikm = {.config = valid_ikm_cfg,
                                       .keyblob_length = sizeof(ikm_blob),
                                       .keyblob = ikm_blob};
-  valid_ikm.checksum = integrity_blinded_checksum(&valid_ikm);
+  valid_ikm.checksum = otcrypto_integrity_blinded_checksum(&valid_ikm);
 
   uint32_t prk_blob[keyblob_num_words(valid_prk_cfg)];
   otcrypto_blinded_key_t valid_prk = {.config = valid_prk_cfg,
                                       .keyblob_length = sizeof(prk_blob),
                                       .keyblob = prk_blob};
-  valid_prk.checksum = integrity_blinded_checksum(&valid_prk);
+  valid_prk.checksum = otcrypto_integrity_blinded_checksum(&valid_prk);
 
   uint32_t okm_blob[keyblob_num_words(valid_okm_cfg)];
   otcrypto_blinded_key_t valid_okm = {.config = valid_okm_cfg,
                                       .keyblob_length = sizeof(okm_blob),
                                       .keyblob = okm_blob};
-  valid_okm.checksum = integrity_blinded_checksum(&valid_okm);
+  valid_okm.checksum = otcrypto_integrity_blinded_checksum(&valid_okm);
 
   uint8_t dummy_data[] = {0x01};
   otcrypto_const_byte_buf_t valid_buf =
@@ -532,7 +532,7 @@ static status_t run_negative_tests(void) {
   otcrypto_blinded_key_t bad_ikm_mode = {.config = bad_mode_cfg,
                                          .keyblob_length = sizeof(ikm_blob),
                                          .keyblob = ikm_blob};
-  bad_ikm_mode.checksum = integrity_blinded_checksum(&bad_ikm_mode);
+  bad_ikm_mode.checksum = otcrypto_integrity_blinded_checksum(&bad_ikm_mode);
   CHECK(otcrypto_hkdf_extract(&bad_ikm_mode, &valid_buf, &valid_prk).value ==
         OTCRYPTO_BAD_ARGS.value);
 
@@ -541,7 +541,7 @@ static status_t run_negative_tests(void) {
   otcrypto_blinded_key_t bad_prk_mode = {.config = bad_prk_mode_cfg,
                                          .keyblob_length = sizeof(prk_blob),
                                          .keyblob = prk_blob};
-  bad_prk_mode.checksum = integrity_blinded_checksum(&bad_prk_mode);
+  bad_prk_mode.checksum = otcrypto_integrity_blinded_checksum(&bad_prk_mode);
   CHECK(otcrypto_hkdf_extract(&valid_ikm, &valid_buf, &bad_prk_mode).value ==
         OTCRYPTO_BAD_ARGS.value);
 
@@ -551,13 +551,14 @@ static status_t run_negative_tests(void) {
   otcrypto_blinded_key_t bad_prk_len = {.config = bad_prk_len_cfg,
                                         .keyblob_length = sizeof(prk_blob),
                                         .keyblob = prk_blob};
-  bad_prk_len.checksum = integrity_blinded_checksum(&bad_prk_len);
+  bad_prk_len.checksum = otcrypto_integrity_blinded_checksum(&bad_prk_len);
   CHECK(otcrypto_hkdf_extract(&valid_ikm, &valid_buf, &bad_prk_len).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_blinded_key_t bad_prk_blob_len = {
       .config = valid_prk_cfg, .keyblob_length = 99, .keyblob = prk_blob};
-  bad_prk_blob_len.checksum = integrity_blinded_checksum(&bad_prk_blob_len);
+  bad_prk_blob_len.checksum =
+      otcrypto_integrity_blinded_checksum(&bad_prk_blob_len);
   CHECK(
       otcrypto_hkdf_extract(&valid_ikm, &valid_buf, &bad_prk_blob_len).value ==
       OTCRYPTO_BAD_ARGS.value);
@@ -579,7 +580,8 @@ static status_t run_negative_tests(void) {
   // HKDF expand config tests
   otcrypto_blinded_key_t bad_okm_blob_len = {
       .config = valid_okm_cfg, .keyblob_length = 99, .keyblob = okm_blob};
-  bad_okm_blob_len.checksum = integrity_blinded_checksum(&bad_okm_blob_len);
+  bad_okm_blob_len.checksum =
+      otcrypto_integrity_blinded_checksum(&bad_okm_blob_len);
   CHECK(otcrypto_hkdf_expand(&valid_prk, &valid_buf, &bad_okm_blob_len).value ==
         OTCRYPTO_BAD_ARGS.value);
 
@@ -590,7 +592,7 @@ static status_t run_negative_tests(void) {
   otcrypto_blinded_key_t huge_okm = {.config = huge_okm_cfg,
                                      .keyblob_length = sizeof(huge_blob),
                                      .keyblob = huge_blob};
-  huge_okm.checksum = integrity_blinded_checksum(&huge_okm);
+  huge_okm.checksum = otcrypto_integrity_blinded_checksum(&huge_okm);
   CHECK(otcrypto_hkdf_expand(&valid_prk, &valid_buf, &huge_okm).value ==
         OTCRYPTO_BAD_ARGS.value);
 

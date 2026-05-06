@@ -320,7 +320,8 @@ static status_t run_test_vector(void) {
   uint32_t km_buffer2[km_keyblob_len];
 
   current_test_vector->key_derivation_key.checksum =
-      integrity_blinded_checksum(&current_test_vector->key_derivation_key);
+      otcrypto_integrity_blinded_checksum(
+          &current_test_vector->key_derivation_key);
 
   otcrypto_key_config_t km_config = {
       // The following key_mode is a dummy placeholder. It does not
