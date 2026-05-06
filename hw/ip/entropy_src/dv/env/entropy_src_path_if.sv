@@ -2,17 +2,20 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// This interface deals with the force paths in ENTROPY_SRC interrupt and error tests
-
-`define CORE \
-    tb.dut.u_entropy_src_core
-`define REPCNT \
-    u_entropy_src_repcnt_ht.u_prim_max_tree_rep_cntr_max
+// This interface deals with the force paths in ENTROPY_SRC interrupt and error tests.
+//
+// It is bound into an instance of entropy_src, so can address signals inside the dut with upwards
+// hierarchical references.
 
 interface entropy_src_path_if ();
   import uvm_pkg::*;
 
-  string core_path = "tb.dut.u_entropy_src_core";
+  // The hierarchical path to the entropy_src instance into which the interface is bound.
+  string dut_path  = dv_utils_pkg::get_parent_hier($sformatf("%m"));
+
+  // The hierarchical path to the entropy_src_core instance in the entropy_src instance into which
+  // the interface is bound.
+  string core_path = {dut_path, ".u_entropy_src_core"};
 
   function automatic string fifo_err_path(string fifo_name, string path_name);
     return {core_path, ".", fifo_name, "_", path_name};
@@ -45,20 +48,27 @@ interface entropy_src_path_if ();
       end
     endcase // case (cntr_name)
   endfunction // cntr_err_path
-   // Disable assertions that we expect to trigger when injecting errors
+
+// The relative hierarchical path to the entropy_src core from the entropy_src instance into which
+// the interface is bound. This matches the string in the core_path variable.
+`define CORE   entropy_src.u_entropy_src_core
+
+  // Disable assertions that we expect to trigger when injecting errors
+  //
+  // This uses upwards hierarchical references, pointing at the instance into which we are bound.
   task automatic assert_off_err();
-    $assertoff(0, tb.dut.AlertTxKnownO_A);
-    $assertoff(0, tb.dut.IntrEsFifoErrKnownO_A);
-    $assertoff(0, tb.dut.EsHwIfEsAckKnownO_A);
-    $assertoff(0, tb.dut.EsHwIfEsBitsKnownO_A);
-    $assertoff(0, tb.dut.EsHwIfEsFipsKnownO_A);
-    $assertoff(0, tb.dut.EsXhtEntropyBitKnownO_A);
-    $assertoff(0, tb.dut.IntrEsEntropyValidKnownO_A);
-    $assertoff(0, tb.dut.IntrEsHealthTestFailedKnownO_A);
-    $assertoff(0, tb.dut.tlul_assert_device.dKnown_A);
-    $assertoff(0, tb.dut.tlul_assert_device.gen_device.gen_d2h.dDataKnown_A);
-    $assertoff(0, tb.dut.gen_alert_tx[0].u_prim_alert_sender.AlertPKnownO_A);
-    $assertoff(0, tb.dut.gen_alert_tx[0].u_prim_alert_sender.gen_async_assert.DiffEncoding_A);
+    $assertoff(0, entropy_src.AlertTxKnownO_A);
+    $assertoff(0, entropy_src.IntrEsFifoErrKnownO_A);
+    $assertoff(0, entropy_src.EsHwIfEsAckKnownO_A);
+    $assertoff(0, entropy_src.EsHwIfEsBitsKnownO_A);
+    $assertoff(0, entropy_src.EsHwIfEsFipsKnownO_A);
+    $assertoff(0, entropy_src.EsXhtEntropyBitKnownO_A);
+    $assertoff(0, entropy_src.IntrEsEntropyValidKnownO_A);
+    $assertoff(0, entropy_src.IntrEsHealthTestFailedKnownO_A);
+    $assertoff(0, entropy_src.tlul_assert_device.dKnown_A);
+    $assertoff(0, entropy_src.tlul_assert_device.gen_device.gen_d2h.dDataKnown_A);
+    $assertoff(0, entropy_src.gen_alert_tx[0].u_prim_alert_sender.AlertPKnownO_A);
+    $assertoff(0, entropy_src.gen_alert_tx[0].u_prim_alert_sender.gen_async_assert.DiffEncoding_A);
     $assertoff(0, `CORE.AtReset_ValidRngBitsPushedIntoEsrngFifo_A);
     $assertoff(0, `CORE.Final_ValidRngBitsPushedIntoEsrngFifo_A);
     $assertoff(0, `CORE.AtReset_EsrngFifoPushedIntoEsbitOrPosthtFifos_A);
@@ -92,8 +102,10 @@ interface entropy_src_path_if ();
     $assertoff(0, `CORE.u_entropy_src_markov_ht.u_min.ValidInImpliesValidOut_A);
     $assertoff(0, `CORE.u_entropy_src_markov_ht.u_max.ValidInImpliesValidOut_A);
     $assertoff(0, `CORE.u_sha3.u_keccak.gen_unmask_st_chk.UnmaskValidStates_A);
-    $assertoff(0, `CORE.`REPCNT.ValidInImpliesValidOut_A);
+    $assertoff(0,
+               `CORE.u_entropy_src_repcnt_ht.u_prim_max_tree_rep_cntr_max.ValidInImpliesValidOut_A);
   endtask
+
   function automatic void disable_entroy_drop_assertions();
     // Disable assertions which expect that no entropy is dropped between the esrng,
     // esbit and postht FIFOs.
@@ -107,4 +119,3 @@ interface entropy_src_path_if ();
 endinterface // entropy_src_path_if
 
 `undef CORE
-`undef REPCNT

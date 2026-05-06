@@ -39,7 +39,6 @@ module tb;
   push_pull_if#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))
       csrng_if(.clk(clk), .rst_n(csrng_rst_n));
   entropy_src_xht_if xht_if(.clk(clk), .rst_n(rst_n));
-  entropy_src_path_if entropy_src_path_if ();
 
   `DV_ALERT_IF_CONNECT()
 
@@ -89,6 +88,8 @@ module tb;
   assign interrupts[HealthTestFailed] = intr_health_test_failed;
   assign interrupts[ObserveFifoReady] = intr_observe_fifo_ready;
   assign interrupts[FatalErr]         = intr_fatal_err;
+
+  bind dut entropy_src_path_if entropy_src_path_if ();
 
   bind prim_packer_fifo : dut.u_entropy_src_core.u_prim_packer_fifo_precon
     entropy_subsys_fifo_exception_if #(
@@ -150,7 +151,7 @@ module tb;
         set(null, "*.env.m_csrng_agent*", "vif", csrng_if);
     uvm_config_db#(virtual entropy_src_xht_if)::set(null, "*.env.m_xht_agent*", "vif", xht_if);
     uvm_config_db#(virtual entropy_src_path_if)::set(null, "*.env", "entropy_src_path_vif",
-        entropy_src_path_if);
+                                                     dut.entropy_src_path_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
