@@ -32,7 +32,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   bit observe_fifo_overflow = 0;
   int overflow_read_cnt     = 0;
 
-  string es_delayed_enable_path = "tb.dut.u_entropy_src_core.es_delayed_enable";
+  string es_delayed_enable_path;
   bit dut_pipeline_enabled = 0;
   bit regwen_pending = 0;
   bit ht_fips_mode = 0;
@@ -161,8 +161,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   int precon_fifo_cnt = 0;
   bit sha3_msg_ready = 0;
   bit predict_fw_ov_wr_fifo_full = 0;
-  string pad_st_path = "tb.dut.u_entropy_src_core.u_sha3.u_pad.st[6:0]";
-  string pad_st_d_path = "tb.dut.u_entropy_src_core.u_sha3.u_pad.st_d[6:0]";
+  string pad_st_path;
+  string pad_st_d_path;
 
   // Variables used to model entropy propagating through the pipeline.
   int                       post_ht_drops = 0;
@@ -225,6 +225,10 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
+
+    es_delayed_enable_path = {cfg.entropy_src_path_vif.core_path, ".es_delayed_enable"};
+    pad_st_path = {cfg.entropy_src_path_vif.core_path, ".u_sha3.u_pad.st[6:0]"};
+    pad_st_d_path = {cfg.entropy_src_path_vif.core_path, ".u_sha3.u_pad.st_d[6:0]"};
   endfunction
 
   task run_phase(uvm_phase phase);
