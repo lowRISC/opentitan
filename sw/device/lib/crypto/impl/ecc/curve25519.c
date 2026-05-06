@@ -84,6 +84,8 @@ OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, MODE_SIGN_STAGE2);
 OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, MODE_VERIFY);
 OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, MODE_X25519);
 OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, MODE_X25519_KEYGEN);
+OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, MODE_X25519_SIDELOAD);
+OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, MODE_X25519_KEYGEN_SIDELOAD);
 
 static const uint32_t kOtbnCurve25519ModeKeygen =
     OTBN_ADDR_T_INIT(run_curve25519, MODE_KEYGEN);
@@ -97,6 +99,10 @@ static const uint32_t kOtbnCurve25519ModeX25519 =
     OTBN_ADDR_T_INIT(run_curve25519, MODE_X25519);
 static const uint32_t kOtbnCurve25519ModeX25519Keygen =
     OTBN_ADDR_T_INIT(run_curve25519, MODE_X25519_KEYGEN);
+static const uint32_t kOtbnCurve25519ModeX25519Sideload =
+    OTBN_ADDR_T_INIT(run_curve25519, MODE_X25519_SIDELOAD);
+static const uint32_t kOtbnCurve25519ModeX25519KeygenSideload =
+    OTBN_ADDR_T_INIT(run_curve25519, MODE_X25519_KEYGEN_SIDELOAD);
 
 enum {
   /*
@@ -311,6 +317,33 @@ status_t curve25519_x25519_start(
                                kOtbnVarX25519PrivateKey));
 
   // Write the public key to DMEM.
+  HARDENED_TRY(otbn_dmem_write(kCurve25519PointWords, public_key,
+                               kOtbnVarX25519PublicKey));
+
+  // Start the OTBN routine.
+  return otbn_execute();
+}
+
+status_t curve25519_x25519_keygen_sideload_start(void) {
+  // Load the Curve25519 app.
+  HARDENED_TRY(otbn_load_app(kOtbnAppCurve25519));
+
+  // Set mode to jump into the hardware sideload keygen path.
+  uint32_t mode = kOtbnCurve25519ModeX25519KeygenSideload;
+  HARDENED_TRY(otbn_dmem_write(kCurve25519ModeWords, &mode, kOtbnVarMode));
+
+  // Start the OTBN routine.
+  return otbn_execute();
+}
+
+status_t curve25519_x25519_sideload_start(
+    const uint32_t public_key[kCurve25519PointWords]) {
+  // Load the Curve25519 app. Fails if OTBN is non-idle.
+  HARDENED_TRY(otbn_load_app(kOtbnAppCurve25519));
+
+  uint32_t mode = kOtbnCurve25519ModeX25519Sideload;
+  HARDENED_TRY(otbn_dmem_write(kCurve25519ModeWords, &mode, kOtbnVarMode));
+
   HARDENED_TRY(otbn_dmem_write(kCurve25519PointWords, public_key,
                                kOtbnVarX25519PublicKey));
 
