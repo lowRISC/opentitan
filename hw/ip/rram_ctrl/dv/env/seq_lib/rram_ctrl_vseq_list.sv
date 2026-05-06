@@ -9,3 +9,4 @@
 `include "rram_ctrl_concurrent_rd_wr_vseq.sv"
 `include "rram_ctrl_read_seed_vseq.sv"
 `include "rram_ctrl_rma_vseq.sv"
+`include "rram_ctrl_otp_vseq.sv"

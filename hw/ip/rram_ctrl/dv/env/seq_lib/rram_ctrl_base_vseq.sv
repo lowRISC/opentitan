@@ -75,6 +75,33 @@ class rram_ctrl_base_vseq extends cip_base_vseq #(
                              input  bit exp_err_rsp = 0
                             );
 
+  extern task otp_init();
+
+  extern task otp_bkdr_read(input  logic [otp_ctrl_macro_pkg::OtpAddrWidth-1:0] otp_addr,
+                            input  logic [otp_ctrl_macro_pkg::OtpSizeWidth-1:0] otp_size,
+                            output otp_ctrl_macro_pkg::otp_macro_data_t         otp_data,
+                            output logic                                        intg_err);
+
+  extern task otp_zeroize(input  logic [otp_ctrl_macro_pkg::OtpAddrWidth-1:0] otp_addr,
+                          input  logic [otp_ctrl_macro_pkg::OtpSizeWidth-1:0] otp_size,
+                          input  logic                                        rd_check,
+                          output otp_ctrl_macro_pkg::otp_macro_data_t         rdata
+                         );
+
+  extern task otp_read(input  logic [otp_ctrl_macro_pkg::OtpAddrWidth-1:0] otp_addr,
+                       input  logic [otp_ctrl_macro_pkg::OtpSizeWidth-1:0] otp_size,
+                       input  logic                                        raw,
+                       input  logic                                        rd_check,
+                       output otp_ctrl_macro_pkg::otp_macro_data_t         rdata
+                      );
+
+  extern task otp_write(input logic [otp_ctrl_macro_pkg::OtpAddrWidth-1:0] otp_addr,
+                        input logic [otp_ctrl_macro_pkg::OtpSizeWidth-1:0] otp_size,
+                        input logic                                        raw,
+                        input logic                                        wr_check,
+                        input otp_ctrl_macro_pkg::otp_macro_data_t         otp_wdata
+                       );
+
   // semaphore to prevent multiple concurrent accesses to the control port
   semaphore ctrl_port_task_guard;
 
@@ -224,6 +251,8 @@ endtask : pre_start
 task rram_ctrl_base_vseq::dut_init(string reset_kind = "HARD");
 
   super.dut_init();
+
+  rram_ctrl_base_vseq::otp_init();
 
   rram_ctrl_init();
 endtask : dut_init
@@ -620,3 +649,311 @@ task rram_ctrl_base_vseq::rram_host_read(
                     .compare_mask('1), .blocking(blocking), .instr_type(instr_type),
                     .tl_sequencer_h(p_sequencer.tl_sequencer_hs[cfg.host_ral_name]));
 endtask : rram_host_read
+
+// Task to set all otp pages to 0 and send the init command
+task rram_ctrl_base_vseq::otp_init();
+
+  // initialize all OtpPages to 0
+  rram_ctrl_op_t rram_ctrl_op;
+  data_q_t otp_init_data;
+
+  rram_ctrl_op.num_words = TotalOtpBytes / BusBytes - 1;
+  rram_ctrl_op.partition = RramPartData;
+  rram_ctrl_op.addr = OtpStartPage << (BusAddrByteW - PageW);
+  rram_ctrl_op.op = RramOpWrite;
+  otp_init_data = '{(TotalOtpBytes / BusBytes){0}};
+
+  cfg.rram_bkdr_mem_write(rram_ctrl_op, otp_init_data, 1'b0);
+
+  // Pre-stage data one cycle before asserting valid.  prim_sync_reqack_data's chk_flag_q latches
+  // permanently after the first transaction; any data change while src_req_i=1 without a
+  // simultaneous src_ack_o will fire SyncReqAckDataHoldSrc2Dst.
+  cfg.misc_vif.otp_macro_req.addr  = '0;
+  cfg.misc_vif.otp_macro_req.cmd   = otp_ctrl_macro_pkg::Init;
+  cfg.misc_vif.otp_macro_req.size  = '0;
+  cfg.misc_vif.otp_macro_req.wdata = '0;
+  @(posedge cfg.otp_clk_rst_vif.clk);
+  cfg.misc_vif.otp_macro_req.valid = 1'b1;
+  #1ns;  // wait for signals to settle
+  while (cfg.misc_vif.otp_macro_rsp.ready == 1'b0) begin
+    @(posedge cfg.otp_clk_rst_vif.clk);
+    #1ns;
+  end
+  @(posedge cfg.otp_clk_rst_vif.clk);
+  #1ns;
+  cfg.misc_vif.otp_macro_req.valid = 1'b0;
+  cfg.misc_vif.otp_macro_req.addr  = '0;
+  cfg.misc_vif.otp_macro_req.size  = '0;
+  cfg.misc_vif.otp_macro_req.wdata = '0;
+  while (cfg.misc_vif.otp_macro_rsp.rvalid) begin
+    @(posedge cfg.otp_clk_rst_vif.clk);
+    #1ns;
+  end
+  @(posedge cfg.otp_clk_rst_vif.clk);
+endtask : otp_init
+
+// Task to perform a backdoor read to the OTP section
+task rram_ctrl_base_vseq::otp_bkdr_read(
+    input  logic [otp_ctrl_macro_pkg::OtpAddrWidth-1:0] otp_addr,
+    input  logic [otp_ctrl_macro_pkg::OtpSizeWidth-1:0] otp_size,
+    output otp_ctrl_macro_pkg::otp_macro_data_t         otp_data,
+    output logic                                        intg_err);
+
+    localparam int unsigned RramDataWidth    = rram_ctrl_pkg::DataWidth;
+    localparam int unsigned RramOtpWidth     = otp_ctrl_macro_pkg::OtpWidth;
+    localparam int unsigned RramOtpSizeWidth = prim_util_pkg::vbits(RramDataWidth / RramOtpWidth);
+
+    logic [RramDataWidth-1:0]    rram_word, rram_intg_word;
+    logic [AddrW-1:0]            otp_rram_addr, otp_rram_intg_addr;
+    logic [AddrW-1:0]            rram_addr, rram_intg_addr;
+    logic [RramOtpSizeWidth-1:0] offset;
+    logic [OtpIntgWidth-1:0]     intg_mem, intg;
+    logic [OtpIntgDataWidth-1:0] unused_data;
+
+    int intg_ind, word_ind;
+
+    offset = otp_addr[$clog2(RramDataWidth/RramOtpWidth)-1:0];
+
+    // need to shift 1 left for byte address and then 4 right for rram addr
+    otp_rram_addr = (otp_addr << otp_ctrl_macro_pkg::OtpAddrShift) >> (BusAddrByteW - AddrW);
+    rram_addr     = ((OtpStartPage+1) << WordW) + otp_rram_addr;
+
+    // 8 integrity values per 64b
+    otp_rram_intg_addr = otp_rram_addr >> $clog2(OtpIntgDataWidth / OtpIntgWidth);
+    rram_intg_addr     = (OtpStartPage << WordW) + otp_rram_intg_addr;
+
+    // fetch rram data word
+    rram_word = cfg.rram_bkdr_word_read(rram_addr, RramPartData, 1'b0);
+    word_ind  = otp_addr[$clog2(OtpIntgDataWidth / RramOtpWidth) +:
+                         $clog2(RramDataWidth / OtpIntgDataWidth)];
+    // compute intgerity
+    {intg, unused_data} = prim_secded_pkg::prim_secded_hamming_72_64_enc(
+                                      rram_word[OtpIntgDataWidth * word_ind +: OtpIntgDataWidth]);
+
+    // fetch rram intg word
+    rram_intg_word = cfg.rram_bkdr_word_read(rram_intg_addr, RramPartData, 1'b0);
+    intg_ind = otp_addr[$clog2(OtpIntgDataWidth / 8) -
+               otp_ctrl_macro_pkg::OtpAddrShift +: $clog2(RramDataWidth / OtpIntgWidth)];
+    intg_mem = rram_intg_word[intg_ind*OtpIntgWidth +: OtpIntgWidth];
+
+    `uvm_info(`gfn, $sformatf(
+      "OTP bkdr read: otp_addr=0x%x rram_addr=0x%x rram_intg_addr=0x%x word_ind=%0d intg_ind=%0d",
+      otp_addr, otp_rram_addr, otp_rram_intg_addr, word_ind, intg_ind), UVM_MEDIUM)
+
+    // prepare output data
+    otp_data = '0;
+    for (int k = 0; k <= otp_size; k++) begin
+      otp_data[k * RramOtpWidth +: RramOtpWidth] =
+        rram_word[(offset + k) * RramOtpWidth +: RramOtpWidth];
+    end
+    intg_err = (intg_mem !== intg);
+endtask : otp_bkdr_read
+
+// Task to perform an OTP zeroization
+task rram_ctrl_base_vseq::otp_zeroize(
+    input  logic [otp_ctrl_macro_pkg::OtpAddrWidth-1:0] otp_addr,
+    input  logic [otp_ctrl_macro_pkg::OtpSizeWidth-1:0] otp_size,
+    input  logic                                        rd_check,
+    output otp_ctrl_macro_pkg::otp_macro_data_t         rdata
+    );
+
+  logic intg_err;
+  otp_ctrl_macro_pkg::err_e err;
+  cfg.misc_vif.otp_macro_req.addr  = otp_addr;
+  cfg.misc_vif.otp_macro_req.cmd   = otp_ctrl_macro_pkg::Zeroize;
+  cfg.misc_vif.otp_macro_req.size  = otp_size;
+  cfg.misc_vif.otp_macro_req.wdata = '0;
+  @(posedge cfg.otp_clk_rst_vif.clk);
+  cfg.misc_vif.otp_macro_req.valid = 1'b1;
+  #1ns;  // wait for signals to settle
+  while (cfg.misc_vif.otp_macro_rsp.ready == 1'b0) begin
+    @(posedge cfg.otp_clk_rst_vif.clk);
+    #1ns;
+  end
+  @(posedge cfg.otp_clk_rst_vif.clk);
+  #1ns;
+  cfg.misc_vif.otp_macro_req.valid = 1'b0;
+  cfg.misc_vif.otp_macro_req.addr  = '0;
+  cfg.misc_vif.otp_macro_req.size  = '0;
+  cfg.misc_vif.otp_macro_req.wdata = '0;
+  while (cfg.misc_vif.otp_macro_rsp.rvalid == 1'b0) begin
+    @(posedge cfg.otp_clk_rst_vif.clk);
+    #1ns;
+  end
+  rdata = cfg.misc_vif.otp_macro_rsp.rdata;
+  err   = cfg.misc_vif.otp_macro_rsp.err;
+  @(posedge cfg.otp_clk_rst_vif.clk);
+
+  if (rd_check) begin
+    otp_ctrl_macro_pkg::otp_macro_data_t rdata_exp, rdata_rram;
+    otp_ctrl_macro_pkg::err_e err_exp = otp_ctrl_macro_pkg::NoError;
+    rdata_exp = '0;
+    for (int k = 0; k <= otp_size; k++) begin
+      rdata_exp[k*otp_ctrl_macro_pkg::OtpWidth +: otp_ctrl_macro_pkg::OtpWidth] = '1;
+    end
+    rram_ctrl_base_vseq::otp_bkdr_read(otp_addr, otp_size, rdata_rram, intg_err);
+
+    if (err !== err_exp) begin
+      `uvm_error("OTP zeroization unexpected error", $sformatf("addr=0x%x size=%0d exp: %x is: %x",
+                 otp_addr, otp_size, err_exp, err));
+    end
+
+    if (rdata !== rdata_exp) begin
+      `uvm_error("OTP zeroization read-back error", $sformatf("addr=0x%x size=%0d exp: %x is: %x",
+                 otp_addr, otp_size, rdata_exp, rdata));
+    end
+    if (rdata_rram !== rdata_exp) begin
+      `uvm_error("OTP zeroization error", $sformatf("addr=0x%x size=%0d exp: %x is: %x",
+                 otp_addr, otp_size, rdata_exp, rdata));
+    end
+  end
+endtask : otp_zeroize
+
+// Task to perform an OTP read to the RRAM
+task rram_ctrl_base_vseq::otp_read(
+    input  logic [otp_ctrl_macro_pkg::OtpAddrWidth-1:0] otp_addr,
+    input  logic [otp_ctrl_macro_pkg::OtpSizeWidth-1:0] otp_size,
+    input  logic                                        raw,
+    input  logic                                        rd_check,
+    output otp_ctrl_macro_pkg::otp_macro_data_t         rdata);
+
+  logic intg_err;
+  otp_ctrl_macro_pkg::err_e err, err_exp;
+  cfg.misc_vif.otp_macro_req.addr  = otp_addr;
+  cfg.misc_vif.otp_macro_req.cmd   = raw ? otp_ctrl_macro_pkg::ReadRaw : otp_ctrl_macro_pkg::Read;
+  cfg.misc_vif.otp_macro_req.size  = otp_size;
+  cfg.misc_vif.otp_macro_req.wdata = '0;
+  @(posedge cfg.otp_clk_rst_vif.clk);
+  cfg.misc_vif.otp_macro_req.valid = 1'b1;
+  #1ns;  // wait for signals to settle
+  while (cfg.misc_vif.otp_macro_rsp.ready == 1'b0) begin
+    @(posedge cfg.otp_clk_rst_vif.clk);
+    #1ns;
+  end
+  `uvm_info(`gfn, $sformatf("OTP Read: otp_addr=0x%x otp_size=0x%x",
+            otp_addr, otp_size), UVM_MEDIUM)
+  @(posedge cfg.otp_clk_rst_vif.clk);
+  #1ns;
+  cfg.misc_vif.otp_macro_req.valid = 1'b0;
+  cfg.misc_vif.otp_macro_req.addr  = '0;
+  cfg.misc_vif.otp_macro_req.size  = '0;
+  cfg.misc_vif.otp_macro_req.wdata = '0;
+  while (cfg.misc_vif.otp_macro_rsp.rvalid == 1'b0) begin
+    @(posedge cfg.otp_clk_rst_vif.clk);
+    #1ns;
+  end
+  rdata = cfg.misc_vif.otp_macro_rsp.rdata;
+  err   = cfg.misc_vif.otp_macro_rsp.err;
+  @(posedge cfg.otp_clk_rst_vif.clk);
+
+  if (rd_check) begin
+    otp_ctrl_macro_pkg::otp_macro_data_t rdata_exp;
+    rram_ctrl_base_vseq::otp_bkdr_read(otp_addr, otp_size, rdata_exp, intg_err);
+    if (intg_err & ~raw) begin
+      err_exp = otp_ctrl_macro_pkg::MacroEccUncorrError;
+      if (err !== err_exp) begin
+        `uvm_error("OTP read no intg-error", $sformatf("addr=0x%x size=%0d exp: %x is: %x",
+                   otp_addr, otp_size, err_exp, err));
+      end
+    end else begin
+      err_exp = otp_ctrl_macro_pkg::NoError;
+      if (err !== err_exp) begin
+        `uvm_error("OTP read unexpected error", $sformatf("addr=0x%x size=%0d exp: %x is: %x",
+                   otp_addr, otp_size, err_exp, err));
+      end
+    end
+
+    if (rdata !== rdata_exp) begin
+      `uvm_error("OTP read rd-back error", $sformatf("addr=0x%x size=%0d exp: %x is: %x", otp_addr,
+                  otp_size, rdata_exp, rdata));
+    end
+  end
+endtask : otp_read
+
+// Task to perform an OTP write to the RRAM
+task rram_ctrl_base_vseq::otp_write(
+    input  logic [otp_ctrl_macro_pkg::OtpAddrWidth-1:0] otp_addr,
+    input  logic [otp_ctrl_macro_pkg::OtpSizeWidth-1:0] otp_size,
+    input  logic                                        raw,
+    input  logic                                        wr_check,
+    input  otp_ctrl_macro_pkg::otp_macro_data_t         otp_wdata);
+
+  logic intg_err;
+  otp_ctrl_macro_pkg::err_e otp_err;
+  otp_ctrl_macro_pkg::otp_macro_data_t rdata;
+  cfg.misc_vif.otp_macro_req.addr  = otp_addr;
+  cfg.misc_vif.otp_macro_req.cmd   = raw ? otp_ctrl_macro_pkg::WriteRaw : otp_ctrl_macro_pkg::Write;
+  cfg.misc_vif.otp_macro_req.size  = otp_size;
+  cfg.misc_vif.otp_macro_req.wdata = otp_wdata;
+  @(posedge cfg.otp_clk_rst_vif.clk);
+  cfg.misc_vif.otp_macro_req.valid = 1'b1;
+  #1ns;  // wait for signals to settle
+  while (cfg.misc_vif.otp_macro_rsp.ready == 1'b0) begin
+    @(posedge cfg.otp_clk_rst_vif.clk);
+    #1ns;
+  end
+  rram_ctrl_base_vseq::otp_bkdr_read(otp_addr, otp_size, rdata, intg_err);
+  `uvm_info(`gfn, $sformatf("OTP Write: otp_addr=0x%x otp_size=0x%x otp_wdata=0x%x",
+            otp_addr, otp_size, otp_wdata), UVM_MEDIUM)
+  @(posedge cfg.otp_clk_rst_vif.clk);
+  #1ns;
+  cfg.misc_vif.otp_macro_req.valid = 1'b0;
+  cfg.misc_vif.otp_macro_req.addr  = '0;
+  cfg.misc_vif.otp_macro_req.size  = '0;
+  cfg.misc_vif.otp_macro_req.wdata = '0;
+  while (cfg.misc_vif.otp_macro_rsp.rvalid == 1'b0) begin
+    @(posedge cfg.otp_clk_rst_vif.clk);
+    #1ns;
+  end
+  otp_err = cfg.misc_vif.otp_macro_rsp.err;
+  if (wr_check) begin
+    // start background check as soon as current command has finished (ready is high)
+    fork begin
+      automatic logic [otp_ctrl_macro_pkg::OtpAddrWidth-1:0] addr      = otp_addr;
+      automatic logic [otp_ctrl_macro_pkg::OtpSizeWidth-1:0] size      = otp_size;
+      automatic otp_ctrl_macro_pkg::otp_macro_data_t         data_init = rdata;
+      automatic otp_ctrl_macro_pkg::otp_macro_data_t         wdata     = otp_wdata;
+      automatic otp_ctrl_macro_pkg::err_e                    err       = otp_err;
+
+      otp_ctrl_macro_pkg::otp_macro_data_t rdata_post, data_exp;
+      otp_ctrl_macro_pkg::otp_macro_data_t err_exp;
+
+      logic blank_err;
+      blank_err = ((data_init & wdata) != data_init);
+
+      wait(cfg.misc_vif.otp_macro_rsp.ready === 1'b1);
+      repeat(2) @(posedge cfg.otp_clk_rst_vif.clk);
+      rram_ctrl_base_vseq::otp_bkdr_read(addr, size, rdata_post, intg_err);
+
+      if (~raw) begin
+        if (intg_err != '0) begin
+          `uvm_error("OTP write integrity error", $sformatf("addr=0x%x size=%0d intg_err=%x",
+                     otp_addr, otp_size, intg_err));
+        end
+      end
+      if (blank_err) begin
+        err_exp = otp_ctrl_macro_pkg::MacroWriteBlankError;
+        if (err !== err_exp) begin
+          `uvm_error("OTP write no-wr-blank error", $sformatf("addr=0x%x size=%0d exp: %x is: %x",
+                     otp_addr, otp_size, err_exp, err));
+        end
+      end else begin
+        err_exp = otp_ctrl_macro_pkg::NoError;
+        if (err !== err_exp) begin
+          `uvm_error("OTP write unexpected error", $sformatf("addr=0x%x size=%0d exp: %x is: %x",
+                     otp_addr, otp_size, err_exp, err));
+        end
+      end
+      data_exp = data_init | wdata;
+      `uvm_info(`gfn, $sformatf("OTP Write Check: otp_addr=0x%x otp_size=0x%x otp_wdata=0x%x",
+                addr, size, wdata), UVM_MEDIUM)
+      if (rdata_post !== data_exp) begin
+        `uvm_error("OTP write check error", $sformatf("addr=0x%x data=0x%x size=%0d exp: %x is: %x",
+                   addr, wdata, size, data_exp, rdata_post));
+      end
+    end
+    join_none
+    @(posedge cfg.otp_clk_rst_vif.clk);
+  end
+
+endtask : otp_write

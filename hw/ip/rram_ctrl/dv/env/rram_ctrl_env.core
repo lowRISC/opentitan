@@ -29,6 +29,7 @@ filesets:
       - seq_lib/rram_ctrl_concurrent_rd_wr_vseq.sv: {is_include_file: true}
       - seq_lib/rram_ctrl_read_seed_vseq.sv: {is_include_file: true}
       - seq_lib/rram_ctrl_rma_vseq.sv: {is_include_file: true}
+      - seq_lib/rram_ctrl_otp_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:
