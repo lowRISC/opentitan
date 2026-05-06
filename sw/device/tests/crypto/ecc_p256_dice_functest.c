@@ -264,7 +264,7 @@ static status_t run_dice_negative_tests(void) {
       .keyblob_length = sizeof(priv_keyblob),
       .keyblob = priv_keyblob,
   };
-  valid_priv.checksum = integrity_blinded_checksum(&valid_priv);
+  valid_priv.checksum = otcrypto_integrity_blinded_checksum(&valid_priv);
 
   uint32_t digest_data[8] = {0};
   otcrypto_hash_digest_t valid_digest = {
@@ -294,7 +294,7 @@ static status_t run_dice_negative_tests(void) {
       .keyblob_length = sizeof(priv_keyblob),
       .keyblob = priv_keyblob,
   };
-  bad_mode_priv.checksum = integrity_blinded_checksum(&bad_mode_priv);
+  bad_mode_priv.checksum = otcrypto_integrity_blinded_checksum(&bad_mode_priv);
   CHECK(otcrypto_ecdsa_p256_dice_sign_async_start(&bad_mode_priv, valid_digest,
                                                   &attestation_seed)
             .value != OTCRYPTO_OK.value);

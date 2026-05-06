@@ -88,7 +88,7 @@ static status_t run_encrypt(const aes_test_t *test, bool streaming) {
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
   };
-  key.checksum = integrity_blinded_checksum(&key);
+  key.checksum = otcrypto_integrity_blinded_checksum(&key);
 
   // Construct a buffer to hold the IV.
   uint32_t iv_data[kAesBlockWords];
@@ -160,7 +160,7 @@ static status_t run_decrypt(const aes_test_t *test, bool streaming) {
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
   };
-  key.checksum = integrity_blinded_checksum(&key);
+  key.checksum = otcrypto_integrity_blinded_checksum(&key);
 
   // Construct a buffer to hold the IV.
   uint32_t iv_data[kAesBlockWords];
@@ -276,7 +276,7 @@ static status_t run_negative_tests(void) {
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
   };
-  key.checksum = integrity_blinded_checksum(&key);
+  key.checksum = otcrypto_integrity_blinded_checksum(&key);
 
   uint32_t iv_data[kAesBlockWords] = {0};
   otcrypto_word32_buf_t iv =

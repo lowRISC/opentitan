@@ -787,7 +787,7 @@ status_t cryptolib_sca_ed25519_sign_impl(
       .keyblob_length = sizeof(private_keyblob),
       .keyblob = private_keyblob,
   };
-  private_key.checksum = integrity_blinded_checksum(&private_key);
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
 
   // Derive the public key (required by sign_verify).
   uint32_t public_key_data[ED25519_CMD_SCALAR_BYTES / sizeof(uint32_t)];
@@ -864,7 +864,7 @@ status_t cryptolib_sca_x25519_base_mul_impl(uint8_t scalar[X25519_CMD_BYTES],
       .keyblob_length = sizeof(private_keyblob),
       .keyblob = private_keyblob,
   };
-  private_key.checksum = integrity_blinded_checksum(&private_key);
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
 
   uint32_t public_key_buf[X25519_CMD_BYTES / sizeof(uint32_t)];
   memset(public_key_buf, 0, sizeof(public_key_buf));
@@ -906,7 +906,7 @@ status_t cryptolib_sca_x25519_ecdh_impl(
       .keyblob_length = sizeof(private_keyblob),
       .keyblob = private_keyblob,
   };
-  private_key.checksum = integrity_blinded_checksum(&private_key);
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
 
   uint32_t public_key_buf[X25519_CMD_BYTES / sizeof(uint32_t)];
   memcpy(public_key_buf, uj_input.public_x, X25519_CMD_BYTES);
@@ -915,7 +915,7 @@ status_t cryptolib_sca_x25519_ecdh_impl(
       .key_length = sizeof(public_key_buf),
       .key = public_key_buf,
   };
-  public_key.checksum = integrity_unblinded_checksum(&public_key);
+  public_key.checksum = otcrypto_integrity_unblinded_checksum(&public_key);
 
   uint32_t shared_secretblob[16];
   memset(shared_secretblob, 0, sizeof(shared_secretblob));

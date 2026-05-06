@@ -56,7 +56,7 @@ otcrypto_status_t otcrypto_symmetric_keygen(
   HARDENED_TRY(otcrypto_drbg_generate(&empty, &share1_buf));
 
   // Populate the checksum and return.
-  key->checksum = integrity_blinded_checksum(key);
+  key->checksum = otcrypto_integrity_blinded_checksum(key);
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
@@ -86,7 +86,7 @@ otcrypto_status_t otcrypto_hw_backed_key(uint32_t version,
   memcpy(&key->keyblob[1], salt, 7 * sizeof(uint32_t));
 
   // Set the checksum.
-  key->checksum = integrity_blinded_checksum(key);
+  key->checksum = otcrypto_integrity_blinded_checksum(key);
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
@@ -108,7 +108,7 @@ otcrypto_status_t otcrypto_hw_backed_attestation_key(
   memcpy(&key->keyblob[1], salt, 8 * sizeof(uint32_t));
 
   // Set the checksum.
-  key->checksum = integrity_blinded_checksum(key);
+  key->checksum = otcrypto_integrity_blinded_checksum(key);
 
   return OTCRYPTO_OK;
 }
@@ -163,7 +163,7 @@ otcrypto_status_t ot_crypto_hw_backed_keygen(hardened_bool_t attestation,
   // Wipe the sensitive key material.
   HARDENED_TRY(hardened_memshred(output.share0, share_words));
 
-  key->checksum = integrity_blinded_checksum(key);
+  key->checksum = otcrypto_integrity_blinded_checksum(key);
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
@@ -206,10 +206,12 @@ otcrypto_status_t otcrypto_wrapped_key_len(const otcrypto_key_config_t config,
 static status_t aes_kwp_key_construct(const otcrypto_blinded_key_t *key_kek,
                                       aes_key_t *aes_key) {
   // Key integrity check.
-  if (launder32(integrity_blinded_key_check(key_kek)) != kHardenedBoolTrue) {
+  if (launder32(otcrypto_integrity_blinded_key_check(key_kek)) !=
+      kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(integrity_blinded_key_check(key_kek), kHardenedBoolTrue);
+  HARDENED_CHECK_EQ(otcrypto_integrity_blinded_key_check(key_kek),
+                    kHardenedBoolTrue);
 
   // Check the key mode.
   if (launder32((uint32_t)key_kek->config.key_mode) != kOtcryptoKeyModeAesKwp) {
@@ -257,11 +259,11 @@ otcrypto_status_t otcrypto_key_wrap(const otcrypto_blinded_key_t *key_to_wrap,
   }
 
   // Check the integrity of the key material we are wrapping.
-  if (launder32(integrity_blinded_key_check(key_to_wrap)) !=
+  if (launder32(otcrypto_integrity_blinded_key_check(key_to_wrap)) !=
       kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(integrity_blinded_key_check(key_to_wrap),
+  HARDENED_CHECK_EQ(otcrypto_integrity_blinded_key_check(key_to_wrap),
                     kHardenedBoolTrue);
 
   // Check the length of the output buffer.
@@ -363,7 +365,7 @@ otcrypto_status_t otcrypto_key_unwrap(
                                plaintext + config_words + 2, keyblob_words));
 
   // Finally, check the integrity of the key material we unwrapped.
-  *success = integrity_blinded_key_check(unwrapped_key);
+  *success = otcrypto_integrity_blinded_key_check(unwrapped_key);
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
@@ -403,7 +405,7 @@ otcrypto_status_t otcrypto_import_blinded_key(
   // Construct the blinded key.
   HARDENED_TRY(keyblob_from_shares(key_share0->data, key_share1->data,
                                    blinded_key->config, blinded_key->keyblob));
-  blinded_key->checksum = integrity_blinded_checksum(blinded_key);
+  blinded_key->checksum = otcrypto_integrity_blinded_checksum(blinded_key);
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
@@ -417,11 +419,11 @@ otcrypto_status_t otcrypto_export_blinded_key(
   }
 
   // Check key integrity.
-  if (launder32(integrity_blinded_key_check(blinded_key)) !=
+  if (launder32(otcrypto_integrity_blinded_key_check(blinded_key)) !=
       kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(integrity_blinded_key_check(blinded_key),
+  HARDENED_CHECK_EQ(otcrypto_integrity_blinded_key_check(blinded_key),
                     kHardenedBoolTrue);
 
   // Ensure the key is symmetric and not hardware-backed.

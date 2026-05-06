@@ -8,7 +8,8 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
 
-uint32_t integrity_unblinded_checksum(const otcrypto_unblinded_key_t *key) {
+uint32_t otcrypto_integrity_unblinded_checksum(
+    const otcrypto_unblinded_key_t *key) {
   uint32_t ctx;
   crc32_init(&ctx);
   crc32_add32(&ctx, key->key_mode);
@@ -17,7 +18,8 @@ uint32_t integrity_unblinded_checksum(const otcrypto_unblinded_key_t *key) {
   return crc32_finish(&ctx);
 }
 
-uint32_t integrity_blinded_checksum(const otcrypto_blinded_key_t *key) {
+uint32_t otcrypto_integrity_blinded_checksum(
+    const otcrypto_blinded_key_t *key) {
   uint32_t ctx;
   crc32_init(&ctx);
   crc32_add32(&ctx, key->config.version);
@@ -31,16 +33,18 @@ uint32_t integrity_blinded_checksum(const otcrypto_blinded_key_t *key) {
   return crc32_finish(&ctx);
 }
 
-hardened_bool_t integrity_unblinded_key_check(
+hardened_bool_t otcrypto_integrity_unblinded_key_check(
     const otcrypto_unblinded_key_t *key) {
-  if (key->checksum == launder32(integrity_unblinded_checksum(key))) {
-    HARDENED_CHECK_EQ(key->checksum, integrity_unblinded_checksum(key));
+  if (key->checksum == launder32(otcrypto_integrity_unblinded_checksum(key))) {
+    HARDENED_CHECK_EQ(key->checksum,
+                      otcrypto_integrity_unblinded_checksum(key));
     return kHardenedBoolTrue;
   }
   return kHardenedBoolFalse;
 }
 
-hardened_bool_t integrity_blinded_key_check(const otcrypto_blinded_key_t *key) {
+hardened_bool_t otcrypto_integrity_blinded_key_check(
+    const otcrypto_blinded_key_t *key) {
   // Reject keys that come from a newer version of the library (downgrade
   // protection).
   if (launder32(key->config.version) != kOtcryptoLibVersion1) {
@@ -48,17 +52,19 @@ hardened_bool_t integrity_blinded_key_check(const otcrypto_blinded_key_t *key) {
   }
   HARDENED_CHECK_EQ(key->config.version, kOtcryptoLibVersion1);
 
-  if (key->checksum == launder32(integrity_blinded_checksum(key))) {
-    HARDENED_CHECK_EQ(key->checksum, integrity_blinded_checksum(key));
+  if (key->checksum == launder32(otcrypto_integrity_blinded_checksum(key))) {
+    HARDENED_CHECK_EQ(key->checksum, otcrypto_integrity_blinded_checksum(key));
     return kHardenedBoolTrue;
   }
   return kHardenedBoolFalse;
 }
 
 #ifndef OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
+
 OT_NOINLINE
 hardened_bool_t verify_buf_integrity(const otcrypto_generic_buf_t *buf) {
-  uint32_t expected = calculate_buf_checksum(buf->data, buf->len);
+  uint32_t expected = kOtcryptoInitIntegrityChecksum +
+                      (uint32_t)(uintptr_t)buf->data + (uint32_t)buf->len;
 
   if (buf->ptr_checksum == launder32(expected)) {
     HARDENED_CHECK_EQ(buf->ptr_checksum, expected);

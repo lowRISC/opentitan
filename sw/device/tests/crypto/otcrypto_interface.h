@@ -42,6 +42,12 @@ typedef struct otcrypto_interface_t {
   hardened_bool_t (*check_word32_buf)(const otcrypto_word32_buf_t *);
   hardened_bool_t (*check_const_word32_buf)(
       const otcrypto_const_word32_buf_t *);
+  uint32_t (*integrity_unblinded_checksum)(const otcrypto_unblinded_key_t *);
+  uint32_t (*integrity_blinded_checksum)(const otcrypto_blinded_key_t *);
+  hardened_bool_t (*integrity_unblinded_key_check)(
+      const otcrypto_unblinded_key_t *);
+  hardened_bool_t (*integrity_blinded_key_check)(
+      const otcrypto_blinded_key_t *);
 
   // Key utilities
   otcrypto_status_t (*symmetric_keygen)(const otcrypto_const_byte_buf_t *,

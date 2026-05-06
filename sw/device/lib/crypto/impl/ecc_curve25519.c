@@ -62,11 +62,12 @@ static status_t curve25519_private_key_length_check(
   HARDENED_CHECK_EQ(launder32(private_key->config.key_mode), expected_mode);
 
   // Check the integrity of the key.
-  if (integrity_blinded_key_check(private_key) != kHardenedBoolTrue) {
+  if (otcrypto_integrity_blinded_key_check(private_key) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(launder32(integrity_blinded_key_check(private_key)),
-                    kHardenedBoolTrue);
+  HARDENED_CHECK_EQ(
+      launder32(otcrypto_integrity_blinded_key_check(private_key)),
+      kHardenedBoolTrue);
 
   return OTCRYPTO_OK;
 }
@@ -93,10 +94,10 @@ static status_t curve25519_public_key_length_check(
   HARDENED_CHECK_EQ(launder32(key->key_mode), expected_mode);
 
   // Check the integrity of the key.
-  if (integrity_unblinded_key_check(key) != kHardenedBoolTrue) {
+  if (otcrypto_integrity_unblinded_key_check(key) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(launder32(integrity_unblinded_key_check(key)),
+  HARDENED_CHECK_EQ(launder32(otcrypto_integrity_unblinded_key_check(key)),
                     kHardenedBoolTrue);
 
   return OTCRYPTO_OK;
@@ -458,7 +459,7 @@ otcrypto_status_t otcrypto_ed25519_public_key_from_private_async_finalize(
   // Finalize the keygen operation and retrieve the public key.
   HARDENED_TRY_WIPE_DMEM(curve25519_keygen_finalize(public_key->key));
   // Calculate the public key checksum.
-  public_key->checksum = integrity_unblinded_checksum(public_key);
+  public_key->checksum = otcrypto_integrity_unblinded_checksum(public_key);
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
@@ -722,7 +723,7 @@ otcrypto_status_t otcrypto_x25519_keygen_async_start(
 otcrypto_status_t otcrypto_x25519_keygen_async_finalize(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
   HARDENED_TRY_WIPE_DMEM(curve25519_x25519_keygen_finalize(public_key->key));
-  public_key->checksum = integrity_unblinded_checksum(public_key);
+  public_key->checksum = otcrypto_integrity_unblinded_checksum(public_key);
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
@@ -769,6 +770,6 @@ otcrypto_status_t otcrypto_x25519_async_finalize(
   HARDENED_TRY(
       hardened_sub(unmasked_secret, share1, kCurve25519PointWords, share0));
 
-  shared_secret->checksum = integrity_blinded_checksum(shared_secret);
+  shared_secret->checksum = otcrypto_integrity_blinded_checksum(shared_secret);
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }

@@ -46,7 +46,7 @@ static status_t aes_key_construct(otcrypto_blinded_key_t *blinded_key,
                                   const otcrypto_aes_mode_t aes_mode,
                                   aes_key_t *aes_key) {
   // Key integrity check.
-  if (integrity_blinded_key_check(blinded_key) != kHardenedBoolTrue) {
+  if (otcrypto_integrity_blinded_key_check(blinded_key) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -126,8 +126,9 @@ static status_t aes_key_construct(otcrypto_blinded_key_t *blinded_key,
   // Second integrity check of the key we got passed into the cryptolib.
   // This check is placed here to catch any corruptions that might have
   // happen after the first check when assembling the `aes_key`.
-  HARDENED_CHECK_EQ(launder32(integrity_blinded_key_check(blinded_key)),
-                    kHardenedBoolTrue);
+  HARDENED_CHECK_EQ(
+      launder32(otcrypto_integrity_blinded_key_check(blinded_key)),
+      kHardenedBoolTrue);
 
   return OTCRYPTO_OK;
 }

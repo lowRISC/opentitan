@@ -153,7 +153,7 @@ static status_t run_ecdh_negative_tests(void) {
       .keyblob_length = 112,
       .keyblob = priv_keyblob,
   };
-  valid_priv.checksum = integrity_blinded_checksum(&valid_priv);
+  valid_priv.checksum = otcrypto_integrity_blinded_checksum(&valid_priv);
 
   uint32_t pub_key_data[96 / 4] = {0};
   otcrypto_unblinded_key_t valid_pub = {
@@ -161,7 +161,7 @@ static status_t run_ecdh_negative_tests(void) {
       .key_length = 96,
       .key = pub_key_data,
   };
-  valid_pub.checksum = integrity_unblinded_checksum(&valid_pub);
+  valid_pub.checksum = otcrypto_integrity_unblinded_checksum(&valid_pub);
 
   uint32_t shared_keyblob[keyblob_num_words(kEcdhSharedKeyConfig)];
   otcrypto_blinded_key_t valid_shared = {
@@ -169,7 +169,7 @@ static status_t run_ecdh_negative_tests(void) {
       .keyblob_length = sizeof(shared_keyblob),
       .keyblob = shared_keyblob,
   };
-  valid_shared.checksum = integrity_blinded_checksum(&valid_shared);
+  valid_shared.checksum = otcrypto_integrity_blinded_checksum(&valid_shared);
 
   // ECDH keygen negative tests
 
@@ -205,7 +205,7 @@ static status_t run_ecdh_negative_tests(void) {
       .keyblob_length = 112,
       .keyblob = priv_keyblob,
   };
-  bad_priv_mode.checksum = integrity_blinded_checksum(&bad_priv_mode);
+  bad_priv_mode.checksum = otcrypto_integrity_blinded_checksum(&bad_priv_mode);
   CHECK(otcrypto_ecdh_p384_keygen(&bad_priv_mode, &valid_pub).value !=
         OTCRYPTO_OK.value);
   CHECK(otcrypto_ecdh_p384_keygen_async_start(&bad_priv_mode).value !=
@@ -221,7 +221,7 @@ static status_t run_ecdh_negative_tests(void) {
       .keyblob_length = 112,
       .keyblob = priv_keyblob,
   };
-  bad_priv_len.checksum = integrity_blinded_checksum(&bad_priv_len);
+  bad_priv_len.checksum = otcrypto_integrity_blinded_checksum(&bad_priv_len);
   CHECK(otcrypto_ecdh_p384_keygen(&bad_priv_len, &valid_pub).value !=
         OTCRYPTO_OK.value);
   CHECK(otcrypto_ecdh_p384_keygen_async_start(&bad_priv_len).value !=
@@ -235,7 +235,8 @@ static status_t run_ecdh_negative_tests(void) {
       .keyblob_length = 111,  // Should be 112
       .keyblob = priv_keyblob,
   };
-  bad_priv_blob_len.checksum = integrity_blinded_checksum(&bad_priv_blob_len);
+  bad_priv_blob_len.checksum =
+      otcrypto_integrity_blinded_checksum(&bad_priv_blob_len);
   CHECK(otcrypto_ecdh_p384_keygen(&bad_priv_blob_len, &valid_pub).value !=
         OTCRYPTO_OK.value);
   CHECK(otcrypto_ecdh_p384_keygen_async_start(&bad_priv_blob_len).value !=
@@ -251,7 +252,7 @@ static status_t run_ecdh_negative_tests(void) {
       .keyblob_length = 112,
       .keyblob = priv_keyblob,
   };
-  bad_priv_hw.checksum = integrity_blinded_checksum(&bad_priv_hw);
+  bad_priv_hw.checksum = otcrypto_integrity_blinded_checksum(&bad_priv_hw);
   CHECK(otcrypto_ecdh_p384_keygen(&bad_priv_hw, &valid_pub).value !=
         OTCRYPTO_OK.value);
   CHECK(otcrypto_ecdh_p384_keygen_async_start(&bad_priv_hw).value !=
@@ -308,7 +309,7 @@ static status_t run_ecdh_negative_tests(void) {
       .keyblob_length = sizeof(shared_keyblob),
       .keyblob = shared_keyblob,
   };
-  bad_shared_hw.checksum = integrity_blinded_checksum(&bad_shared_hw);
+  bad_shared_hw.checksum = otcrypto_integrity_blinded_checksum(&bad_shared_hw);
   CHECK(otcrypto_ecdh_p384(&valid_priv, &valid_pub, &bad_shared_hw).value !=
         OTCRYPTO_OK.value);
   CHECK(otcrypto_ecdh_p384_async_finalize(&bad_shared_hw).value !=
@@ -322,7 +323,8 @@ static status_t run_ecdh_negative_tests(void) {
       .keyblob_length = sizeof(shared_keyblob),
       .keyblob = shared_keyblob,
   };
-  bad_shared_len.checksum = integrity_blinded_checksum(&bad_shared_len);
+  bad_shared_len.checksum =
+      otcrypto_integrity_blinded_checksum(&bad_shared_len);
   CHECK(otcrypto_ecdh_p384(&valid_priv, &valid_pub, &bad_shared_len).value !=
         OTCRYPTO_OK.value);
   CHECK(otcrypto_ecdh_p384_async_finalize(&bad_shared_len).value !=
@@ -335,7 +337,7 @@ static status_t run_ecdh_negative_tests(void) {
       .keyblob_length = 112,
       .keyblob = priv_keyblob,
   };
-  bad_ecdh_mode.checksum = integrity_blinded_checksum(&bad_ecdh_mode);
+  bad_ecdh_mode.checksum = otcrypto_integrity_blinded_checksum(&bad_ecdh_mode);
   CHECK(otcrypto_ecdh_p384_async_start(&bad_ecdh_mode, &valid_pub).value !=
         OTCRYPTO_OK.value);
 
@@ -346,7 +348,7 @@ static status_t run_ecdh_negative_tests(void) {
       .keyblob_length = 112,
       .keyblob = priv_keyblob,
   };
-  bad_ecdh_hw.checksum = integrity_blinded_checksum(&bad_ecdh_hw);
+  bad_ecdh_hw.checksum = otcrypto_integrity_blinded_checksum(&bad_ecdh_hw);
   CHECK(otcrypto_ecdh_p384_async_start(&bad_ecdh_hw, &valid_pub).value !=
         OTCRYPTO_OK.value);
 
@@ -356,7 +358,7 @@ static status_t run_ecdh_negative_tests(void) {
       .keyblob = valid_shared.keyblob,
   };
   bad_shared_blob_len.checksum =
-      integrity_blinded_checksum(&bad_shared_blob_len);
+      otcrypto_integrity_blinded_checksum(&bad_shared_blob_len);
   CHECK(otcrypto_ecdh_p384_async_finalize(&bad_shared_blob_len).value !=
         OTCRYPTO_OK.value);
 

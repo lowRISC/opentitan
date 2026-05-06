@@ -33,7 +33,7 @@ static hmac_test_vector_t *current_test_vector = NULL;
 static status_t run_test_vector(void) {
   // Populate `checksum` and `config.security_level` fields.
   current_test_vector->key.checksum =
-      integrity_blinded_checksum(&current_test_vector->key);
+      otcrypto_integrity_blinded_checksum(&current_test_vector->key);
 
   // The test vectors already have the correct digest sizes hardcoded.
   size_t digest_len = current_test_vector->digest.len;
@@ -96,7 +96,7 @@ static status_t run_negative_tests(void) {
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
   };
-  valid_key.checksum = integrity_blinded_checksum(&valid_key);
+  valid_key.checksum = otcrypto_integrity_blinded_checksum(&valid_key);
 
   // Base valid buffers
   uint8_t msg_data[] = "test";
@@ -142,7 +142,7 @@ static status_t run_negative_tests(void) {
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
   };
-  bad_key_mode.checksum = integrity_blinded_checksum(&bad_key_mode);
+  bad_key_mode.checksum = otcrypto_integrity_blinded_checksum(&bad_key_mode);
   CHECK(otcrypto_hmac(&bad_key_mode, &msg, &tag).value ==
         OTCRYPTO_BAD_ARGS.value);
 

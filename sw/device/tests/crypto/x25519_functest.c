@@ -103,7 +103,8 @@ status_t x25519_kat_test(void) {
       .keyblob_length = sizeof(keyblob_alice),
       .keyblob = keyblob_alice,
   };
-  private_key_alice.checksum = integrity_blinded_checksum(&private_key_alice);
+  private_key_alice.checksum =
+      otcrypto_integrity_blinded_checksum(&private_key_alice);
 
   // Set up public_key struct for bob.
   uint32_t public_key_buf_bob[kX25519PublicKeyWords];
@@ -113,7 +114,8 @@ status_t x25519_kat_test(void) {
       .key_length = kX25519PublicKeyBytes,
       .key = public_key_buf_bob,
   };
-  public_key_bob.checksum = integrity_unblinded_checksum(&public_key_bob);
+  public_key_bob.checksum =
+      otcrypto_integrity_unblinded_checksum(&public_key_bob);
 
   // Set up shared secret struct.
   uint32_t shared_secret_keyblob[keyblob_num_words(kPrivateKeyConfig)];
@@ -153,7 +155,8 @@ status_t x25519_keygen_test(void) {
       .keyblob_length = sizeof(keyblob_alice),
       .keyblob = keyblob_alice,
   };
-  private_key_alice.checksum = integrity_blinded_checksum(&private_key_alice);
+  private_key_alice.checksum =
+      otcrypto_integrity_blinded_checksum(&private_key_alice);
 
   // Set up public_key struct for alice.
   uint32_t public_key_buf_alice[kX25519PublicKeyWords];
@@ -162,7 +165,8 @@ status_t x25519_keygen_test(void) {
       .key_length = kX25519PublicKeyBytes,
       .key = public_key_buf_alice,
   };
-  public_key_alice.checksum = integrity_unblinded_checksum(&public_key_alice);
+  public_key_alice.checksum =
+      otcrypto_integrity_unblinded_checksum(&public_key_alice);
 
   // Run x25519 key generation.
   CHECK_STATUS_OK(

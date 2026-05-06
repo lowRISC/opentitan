@@ -190,7 +190,7 @@ static status_t run_cshake(otcrypto_hash_digest_t *digest) {
  */
 static status_t run_kmac(otcrypto_word32_buf_t tag) {
   current_test_vector->key.checksum =
-      integrity_blinded_checksum(&current_test_vector->key);
+      otcrypto_integrity_blinded_checksum(&current_test_vector->key);
   otcrypto_const_byte_buf_t input_msg = OTCRYPTO_MAKE_BUF(
       otcrypto_const_byte_buf_t, current_test_vector->input_msg.data,
       current_test_vector->input_msg.len);
@@ -270,7 +270,7 @@ static status_t run_negative_tests(void) {
       .keyblob_length = sizeof(valid_keyblob),
       .keyblob = valid_keyblob,
   };
-  valid_key.checksum = integrity_blinded_checksum(&valid_key);
+  valid_key.checksum = otcrypto_integrity_blinded_checksum(&valid_key);
 
   // Base valid buffers
   uint8_t dummy_data[] = "test";
@@ -337,7 +337,7 @@ static status_t run_negative_tests(void) {
       .keyblob_length = sizeof(valid_keyblob),
       .keyblob = valid_keyblob,
   };
-  bad_key_mode.checksum = integrity_blinded_checksum(&bad_key_mode);
+  bad_key_mode.checksum = otcrypto_integrity_blinded_checksum(&bad_key_mode);
   CHECK(otcrypto_kmac(&bad_key_mode, &valid_msg, &valid_cust, valid_req_len,
                       &valid_tag)
             .value == OTCRYPTO_BAD_ARGS.value);
@@ -348,7 +348,7 @@ static status_t run_negative_tests(void) {
       .keyblob_length = 32,
       .keyblob = valid_keyblob,
   };
-  bad_sw_len.checksum = integrity_blinded_checksum(&bad_sw_len);
+  bad_sw_len.checksum = otcrypto_integrity_blinded_checksum(&bad_sw_len);
   CHECK(otcrypto_kmac(&bad_sw_len, &valid_msg, &valid_cust, valid_req_len,
                       &valid_tag)
             .value == OTCRYPTO_BAD_ARGS.value);
@@ -361,7 +361,7 @@ static status_t run_negative_tests(void) {
       .keyblob_length = sizeof(valid_keyblob),
       .keyblob = valid_keyblob,
   };
-  bad_hw_enum.checksum = integrity_blinded_checksum(&bad_hw_enum);
+  bad_hw_enum.checksum = otcrypto_integrity_blinded_checksum(&bad_hw_enum);
   CHECK(otcrypto_kmac(&bad_hw_enum, &valid_msg, &valid_cust, valid_req_len,
                       &valid_tag)
             .value == OTCRYPTO_BAD_ARGS.value);
@@ -374,7 +374,7 @@ static status_t run_negative_tests(void) {
       .keyblob_length = 32,
       .keyblob = valid_keyblob,
   };
-  bad_hw_len.checksum = integrity_blinded_checksum(&bad_hw_len);
+  bad_hw_len.checksum = otcrypto_integrity_blinded_checksum(&bad_hw_len);
   CHECK(otcrypto_kmac(&bad_hw_len, &valid_msg, &valid_cust, valid_req_len,
                       &valid_tag)
             .value == OTCRYPTO_BAD_ARGS.value);

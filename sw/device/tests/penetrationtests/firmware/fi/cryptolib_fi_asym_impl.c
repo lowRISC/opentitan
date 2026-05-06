@@ -1235,7 +1235,7 @@ status_t cryptolib_fi_ed25519_sign_impl(
       .keyblob_length = sizeof(private_keyblob),
       .keyblob = private_keyblob,
   };
-  private_key.checksum = integrity_blinded_checksum(&private_key);
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
 
   // Derive the public key (required by sign_verify).
   uint32_t public_key_data[ED25519_CMD_SCALAR_BYTES / sizeof(uint32_t)];
@@ -1303,7 +1303,7 @@ status_t cryptolib_fi_ed25519_verify_impl(
       .key_length = ED25519_CMD_SCALAR_BYTES,
       .key = public_key_data,
   };
-  public_key.checksum = integrity_unblinded_checksum(&public_key);
+  public_key.checksum = otcrypto_integrity_unblinded_checksum(&public_key);
 
   // Reconstruct the 64-byte signature from r[0..31] and s[0..31].
   uint32_t signature_data[ED25519_CMD_SIG_BYTES / sizeof(uint32_t)];
@@ -1359,7 +1359,7 @@ status_t cryptolib_fi_x25519_base_mul_impl(
       .keyblob_length = sizeof(private_keyblob),
       .keyblob = private_keyblob,
   };
-  private_key.checksum = integrity_blinded_checksum(&private_key);
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
 
   // Construct public key
   uint32_t public_key_buf[X25519_CMD_BYTES / sizeof(uint32_t)];
@@ -1408,7 +1408,7 @@ status_t cryptolib_fi_x25519_ecdh_impl(
       .keyblob_length = sizeof(private_keyblob),
       .keyblob = private_keyblob,
   };
-  private_key.checksum = integrity_blinded_checksum(&private_key);
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
 
   uint32_t public_key_buf[X25519_CMD_BYTES / sizeof(uint32_t)];
   memset(public_key_buf, 0, sizeof(public_key_buf));
@@ -1418,7 +1418,7 @@ status_t cryptolib_fi_x25519_ecdh_impl(
       .key_length = X25519_CMD_BYTES,
       .key = public_key_buf,
   };
-  public_key.checksum = integrity_unblinded_checksum(&public_key);
+  public_key.checksum = otcrypto_integrity_unblinded_checksum(&public_key);
 
   uint32_t shared_secretblob[16];
   memset(shared_secretblob, 0, sizeof(shared_secretblob));

@@ -582,7 +582,7 @@ static status_t kat_sha256_hmac(void) {
       .keyblob_length = sizeof(keyblob),
       .checksum = 0,
   };
-  blinded_key.checksum = integrity_blinded_checksum(&blinded_key);
+  blinded_key.checksum = otcrypto_integrity_blinded_checksum(&blinded_key);
 
   uint32_t act_tag[128 / 32];
   otcrypto_word32_buf_t tag_buf =
@@ -610,7 +610,7 @@ static status_t kat_sha512_hmac(void) {
       .keyblob_length = sizeof(keyblob),
       .checksum = 0,
   };
-  blinded_key.checksum = integrity_blinded_checksum(&blinded_key);
+  blinded_key.checksum = otcrypto_integrity_blinded_checksum(&blinded_key);
 
   uint32_t act_tag[32 / 4];
   otcrypto_word32_buf_t tag_buf =
@@ -640,7 +640,7 @@ static status_t kat_p256_sign(void) {
       .checksum = 0,
   };
   memcpy(keyblob_sk, p256_d, 32);
-  private_key.checksum = integrity_blinded_checksum(&private_key);
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
 
   uint32_t keyblob_scalar[20] = {0};
   otcrypto_blinded_key_t secret_scalar = {
@@ -650,7 +650,7 @@ static status_t kat_p256_sign(void) {
       .checksum = 0,
   };
   memcpy(keyblob_scalar, p256_k, 32);
-  secret_scalar.checksum = integrity_blinded_checksum(&secret_scalar);
+  secret_scalar.checksum = otcrypto_integrity_blinded_checksum(&secret_scalar);
 
   otcrypto_hash_digest_t digest = {.data = (uint32_t *)p256_msg_digest,
                                    .len = 8};
@@ -676,7 +676,7 @@ static status_t kat_p256_base_point_mul(void) {
       .keyblob = keyblob_sk,
   };
   memcpy(keyblob_sk, p256_d, 32);
-  private_key.checksum = integrity_blinded_checksum(&private_key);
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
 
   uint32_t pk_act[16] = {0};
   otcrypto_unblinded_key_t public_key = {
@@ -702,7 +702,7 @@ static status_t kat_p256_verify(void) {
       .key_length = sizeof(p256_Q),
       .key = (uint32_t *)p256_Q,
   };
-  public_key.checksum = integrity_unblinded_checksum(&public_key);
+  public_key.checksum = otcrypto_integrity_unblinded_checksum(&public_key);
 
   otcrypto_hash_digest_t digest = {.data = (uint32_t *)p256_msg_digest,
                                    .len = 8};
@@ -730,7 +730,7 @@ static status_t kat_p256_point_on_curve(void) {
   otcrypto_unblinded_key_t point = {.key_mode = kOtcryptoKeyModeEcdsaP256,
                                     .key = (uint32_t *)p256_Q,
                                     .key_length = sizeof(p256_Q)};
-  point.checksum = integrity_unblinded_checksum(&point);
+  point.checksum = otcrypto_integrity_unblinded_checksum(&point);
 
   HARDENED_TRY(otcrypto_ecc_p256_point_on_curve(&point, &result));
   HARDENED_CHECK_EQ(result, kHardenedBoolTrue);
@@ -742,7 +742,7 @@ static status_t kat_p256_point_on_curve(void) {
   otcrypto_unblinded_key_t bad_point = {.key_mode = kOtcryptoKeyModeEcdsaP256,
                                         .key = bad_point_data,
                                         .key_length = sizeof(bad_point_data)};
-  bad_point.checksum = integrity_unblinded_checksum(&bad_point);
+  bad_point.checksum = otcrypto_integrity_unblinded_checksum(&bad_point);
 
   HARDENED_TRY(otcrypto_ecc_p256_point_on_curve(&bad_point, &result));
   HARDENED_CHECK_EQ(result, kHardenedBoolFalse);
@@ -760,7 +760,7 @@ static status_t kat_p384_sign(void) {
   };
 
   memcpy(keyblob_sk, p384_d, 48);
-  private_key.checksum = integrity_blinded_checksum(&private_key);
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
 
   uint32_t keyblob_scalar[28] = {0};
   otcrypto_blinded_key_t secret_scalar = {
@@ -770,7 +770,7 @@ static status_t kat_p384_sign(void) {
       .checksum = 0,
   };
   memcpy(keyblob_scalar, p384_k, 48);
-  secret_scalar.checksum = integrity_blinded_checksum(&secret_scalar);
+  secret_scalar.checksum = otcrypto_integrity_blinded_checksum(&secret_scalar);
 
   otcrypto_hash_digest_t digest = {.data = (uint32_t *)p384_msg_digest,
                                    .len = 12};
@@ -797,7 +797,7 @@ static status_t kat_p384_base_point_mul(void) {
       .checksum = 0,
   };
   memcpy(keyblob_sk, p384_d, 48);
-  private_key.checksum = integrity_blinded_checksum(&private_key);
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
 
   uint32_t pk_act[24] = {0};
   otcrypto_unblinded_key_t public_key = {
@@ -823,7 +823,7 @@ static status_t kat_p384_verify(void) {
       .key_length = sizeof(p384_Q),
       .key = (uint32_t *)p384_Q,
   };
-  public_key.checksum = integrity_unblinded_checksum(&public_key);
+  public_key.checksum = otcrypto_integrity_unblinded_checksum(&public_key);
 
   otcrypto_hash_digest_t digest = {.data = (uint32_t *)p384_msg_digest,
                                    .len = 12};
@@ -851,7 +851,7 @@ static status_t kat_p384_point_on_curve(void) {
   otcrypto_unblinded_key_t point = {.key_mode = kOtcryptoKeyModeEcdsaP384,
                                     .key = (uint32_t *)p384_Q,
                                     .key_length = sizeof(p384_Q)};
-  point.checksum = integrity_unblinded_checksum(&point);
+  point.checksum = otcrypto_integrity_unblinded_checksum(&point);
 
   HARDENED_TRY(otcrypto_ecc_p384_point_on_curve(&point, &result));
   HARDENED_CHECK_EQ(result, kHardenedBoolTrue);
@@ -863,7 +863,7 @@ static status_t kat_p384_point_on_curve(void) {
   otcrypto_unblinded_key_t bad_point = {.key_mode = kOtcryptoKeyModeEcdsaP384,
                                         .key = bad_point_data,
                                         .key_length = sizeof(bad_point_data)};
-  bad_point.checksum = integrity_unblinded_checksum(&bad_point);
+  bad_point.checksum = otcrypto_integrity_unblinded_checksum(&bad_point);
 
   HARDENED_TRY(otcrypto_ecc_p384_point_on_curve(&bad_point, &result));
   HARDENED_CHECK_EQ(result, kHardenedBoolFalse);
@@ -972,7 +972,7 @@ static status_t kat_aes_gcm_256_encrypt(void) {
       .keyblob_length = sizeof(keyblob),
       .checksum = 0,
   };
-  key.checksum = integrity_blinded_checksum(&key);
+  key.checksum = otcrypto_integrity_blinded_checksum(&key);
 
   otcrypto_const_byte_buf_t pt_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_byte_buf_t, aes_gcm_256_pt, sizeof(aes_gcm_256_pt));
@@ -1013,7 +1013,7 @@ static status_t kat_aes_ecb_256_decrypt(void) {
       .keyblob_length = sizeof(keyblob),
       .checksum = 0,
   };
-  key.checksum = integrity_blinded_checksum(&key);
+  key.checksum = otcrypto_integrity_blinded_checksum(&key);
 
   otcrypto_const_byte_buf_t ct_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (uint8_t *)aes_256_ct, 16);
@@ -1062,7 +1062,7 @@ static status_t kat_kmac_256(void) {
       .keyblob_length = sizeof(keyblob),
       .checksum = 0,
   };
-  blinded_key.checksum = integrity_blinded_checksum(&blinded_key);
+  blinded_key.checksum = otcrypto_integrity_blinded_checksum(&blinded_key);
 
   otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_byte_buf_t, kmac_256_in, sizeof(kmac_256_in));

@@ -87,7 +87,8 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
   }
 
   // Check the private key checksum.
-  if (integrity_blinded_key_check(key_derivation_key) != kHardenedBoolTrue) {
+  if (otcrypto_integrity_blinded_key_check(key_derivation_key) !=
+      kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -187,7 +188,7 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
                                          output_key_material->keyblob));
 
   output_key_material->checksum =
-      integrity_blinded_checksum(output_key_material);
+      otcrypto_integrity_blinded_checksum(output_key_material);
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }

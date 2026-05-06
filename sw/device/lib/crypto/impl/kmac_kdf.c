@@ -43,11 +43,11 @@ otcrypto_status_t otcrypto_kmac_kdf(
   }
 
   // Check the private key checksum.
-  if (launder32(integrity_blinded_key_check(key_derivation_key)) !=
+  if (launder32(otcrypto_integrity_blinded_key_check(key_derivation_key)) !=
       kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(integrity_blinded_key_check(key_derivation_key),
+  HARDENED_CHECK_EQ(otcrypto_integrity_blinded_key_check(key_derivation_key),
                     kHardenedBoolTrue);
 
   // Check `key_len` is supported by KMAC HWIP.
@@ -145,7 +145,7 @@ otcrypto_status_t otcrypto_kmac_kdf(
                     key_derivation_key->config.key_mode);
 
   output_key_material->checksum =
-      integrity_blinded_checksum(output_key_material);
+      otcrypto_integrity_blinded_checksum(output_key_material);
 
   // Clear the KMAC sideload slot in case the key was sideloaded.
   return otcrypto_eval_exit(keymgr_sideload_clear_kmac());

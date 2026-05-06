@@ -95,7 +95,7 @@ status_t handle_ed25519(ujson_t *uj) {
           .keyblob_length = sizeof(keyblob),
           .keyblob = keyblob,
       };
-      private_key.checksum = integrity_blinded_checksum(&private_key);
+      private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
 
       // Derive the public key from the private key.
       uint32_t public_key_buf[kEd25519PublicKeyWords];
@@ -153,7 +153,7 @@ status_t handle_ed25519(ujson_t *uj) {
           .key_length = ED25519_CMD_PUBLIC_KEY_BYTES,
           .key = public_key_buf,
       };
-      public_key.checksum = integrity_unblinded_checksum(&public_key);
+      public_key.checksum = otcrypto_integrity_unblinded_checksum(&public_key);
 
       uint32_t signature_data[kEd25519MaxSignatureWords];
       memset(signature_data, 0xff, sizeof(signature_data));

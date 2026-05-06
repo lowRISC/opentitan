@@ -93,7 +93,7 @@ static status_t basic_keygen_test(otcrypto_key_config_t config) {
     TRY(otcrypto_symmetric_keygen(&kPersonalization, &key));
 
     // Ensure the checksum passes.
-    TRY_CHECK(integrity_blinded_key_check(&key) == kHardenedBoolTrue);
+    TRY_CHECK(otcrypto_integrity_blinded_key_check(&key) == kHardenedBoolTrue);
 
     // Try the statistical test.
     status_t stat_status = randomness_quality_monobit_test(
@@ -216,7 +216,7 @@ static status_t hw_backed_keygen_test(void) {
 
   // Initialize the hardware-backed keyblob preset.
   TRY(otcrypto_hw_backed_key(version, salt, &key));
-  TRY_CHECK(key.checksum == integrity_blinded_checksum(&key));
+  TRY_CHECK(key.checksum == otcrypto_integrity_blinded_checksum(&key));
 
   // Generate the SW-visible key from the hardware-backed preset.
   TRY(ot_crypto_hw_backed_keygen(kHardenedBoolFalse, &key));
@@ -224,7 +224,7 @@ static status_t hw_backed_keygen_test(void) {
   // Verify the key struct was morphed correctly.
   TRY_CHECK(key.config.hw_backed == kHardenedBoolFalse);
   TRY_CHECK(key.keyblob_length == 16 * sizeof(uint32_t));
-  TRY_CHECK(integrity_blinded_key_check(&key) == kHardenedBoolTrue);
+  TRY_CHECK(otcrypto_integrity_blinded_key_check(&key) == kHardenedBoolTrue);
 
   // We provide a test with CDI set to one, i.e., using the attestation key.
   uint32_t attestation_keyblob[9];
@@ -242,7 +242,7 @@ static status_t hw_backed_keygen_test(void) {
   TRY(otcrypto_hw_backed_attestation_key(attestation_version, attestation_salt,
                                          &attestation_key));
   TRY_CHECK(attestation_key.checksum ==
-            integrity_blinded_checksum(&attestation_key));
+            otcrypto_integrity_blinded_checksum(&attestation_key));
 
   // Generate the SW-visible key from the hardware-backed preset.
   TRY(ot_crypto_hw_backed_keygen(kHardenedBoolTrue, &attestation_key));
@@ -250,7 +250,7 @@ static status_t hw_backed_keygen_test(void) {
   // Verify the key struct was morphed correctly.
   TRY_CHECK(key.config.hw_backed == kHardenedBoolFalse);
   TRY_CHECK(key.keyblob_length == 16 * sizeof(uint32_t));
-  TRY_CHECK(integrity_blinded_key_check(&key) == kHardenedBoolTrue);
+  TRY_CHECK(otcrypto_integrity_blinded_key_check(&key) == kHardenedBoolTrue);
 
   return OK_STATUS();
 }
