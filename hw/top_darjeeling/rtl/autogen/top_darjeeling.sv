@@ -167,20 +167,6 @@ module top_darjeeling #(
   parameter logic [31:0] RvCoreIbexCsrMvendorId = '0,
   parameter logic [31:0] RvCoreIbexCsrMimpId = '0
 ) (
-  // Multiplexed I/O
-  input        [11:0] mio_in_i,
-  output logic [11:0] mio_out_o,
-  output logic [11:0] mio_oe_o,
-  // Dedicated I/O
-  input        [72:0] dio_in_i,
-  output logic [72:0] dio_out_o,
-  output logic [72:0] dio_oe_o,
-
-  // pad attributes to padring
-  output prim_pad_wrapper_pkg::pad_attr_t [pinmux_reg_pkg::NMioPads-1:0] mio_attr_o,
-  output prim_pad_wrapper_pkg::pad_attr_t [pinmux_reg_pkg::NDioPads-1:0] dio_attr_o,
-
-
   // Inter-module Signal External type
   output lc_ctrl_pkg::lc_tx_t       ast_lc_dft_en_o,
   output lc_ctrl_pkg::lc_tx_t       ast_lc_hw_debug_en_o,
@@ -290,6 +276,19 @@ module top_darjeeling #(
   output tlul_pkg::tl_h2d_t       ctn_tl_h2d_o,
   input  tlul_pkg::tl_d2h_t       ctn_tl_d2h_i,
 
+  // Multiplexed I/O
+  input  logic [11:0] mio_in_i,
+  output logic [11:0] mio_out_o,
+  output logic [11:0] mio_oe_o,
+
+  // Dedicated I/O
+  input  logic [72:0] dio_in_i,
+  output logic [72:0] dio_out_o,
+  output logic [72:0] dio_oe_o,
+
+  // Pad attributes to padring
+  output prim_pad_wrapper_pkg::pad_attr_t [pinmux_reg_pkg::NMioPads-1:0] mio_attr_o,
+  output prim_pad_wrapper_pkg::pad_attr_t [pinmux_reg_pkg::NDioPads-1:0] dio_attr_o,
 
   // All externally supplied clocks
   input clk_main_i,
@@ -305,9 +304,6 @@ module top_darjeeling #(
   input prim_mubi_pkg::mubi4_t scanmode_i   // lc_ctrl_pkg::On for Scan
 );
 
-  import tlul_pkg::*;
-  import top_pkg::*;
-  import tl_main_pkg::*;
   import top_darjeeling_pkg::*;
   // Compile-time random constants
   import top_darjeeling_rnd_cnst_pkg::*;
@@ -425,7 +421,6 @@ module top_darjeeling #(
   // ac_range_check
   // rv_core_ibex
 
-
   logic [131:0]  intr_vector;
   // Interrupt source list
   logic intr_uart0_tx_watermark;
@@ -532,7 +527,6 @@ module top_darjeeling #(
   // Alert list
   prim_alert_pkg::alert_tx_t [alert_handler_pkg::NAlerts-1:0]  alert_tx;
   prim_alert_pkg::alert_rx_t [alert_handler_pkg::NAlerts-1:0]  alert_rx;
-
 
   // define inter-module signals
   ast_pkg::ast_obs_ctrl_t       ast_obs_ctrl;
@@ -807,13 +801,12 @@ module top_darjeeling #(
   assign pwrmgr_boot_status_o = pwrmgr_aon_boot_status;
   assign racl_policies_o = racl_ctrl_racl_policies;
 
-  // define partial inter-module tie-off
+  // Define partial inter-module tie-off
   edn_pkg::edn_rsp_t unused_edn0_edn_rsp7;
 
-  // assign partial inter-module tie-off
+  // Assign partial inter-module tie-off
   assign unused_edn0_edn_rsp7 = edn0_edn_rsp[7];
   assign edn0_edn_req[7] = '0;
-
 
   // OTP HW_CFG Broadcast signals.
   // TODO(#6713): The actual struct breakout and mapping currently needs to
@@ -845,7 +838,7 @@ module top_darjeeling #(
   assign clks_ast_o = clkmgr_aon_clocks;
   assign rsts_ast_o = rstmgr_aon_resets;
 
-  // ibex specific assignments
+  // Ibex-specific assignments
   // TODO: This should be further automated in the future.
   assign rv_core_ibex_irq_timer = intr_rv_timer_timer_expired_hart0_timer0;
   assign rv_core_ibex_hart_id = '0;
@@ -853,7 +846,7 @@ module top_darjeeling #(
   // Unconditionally disable the late debug feature and enable early debug
   assign rv_dm_otp_dis_rv_dm_late_debug = prim_mubi_pkg::MuBi8True;
 
-  assign rv_core_ibex_boot_addr = ADDR_SPACE_ROM_CTRL0__ROM;
+  assign rv_core_ibex_boot_addr = tl_main_pkg::ADDR_SPACE_ROM_CTRL0__ROM;
 
   // Wire up alert handler LPGs
   prim_mubi_pkg::mubi4_t [alert_handler_pkg::NLpg-1:0] lpg_cg_en;
@@ -919,52 +912,50 @@ module top_darjeeling #(
 // tie-off unused connections
 //VCS coverage off
 // pragma coverage off
-    prim_mubi_pkg::mubi4_t unused_cg_en_0;
-    assign unused_cg_en_0 = clkmgr_aon_cg_en.aon_powerup;
-    prim_mubi_pkg::mubi4_t unused_cg_en_1;
-    assign unused_cg_en_1 = clkmgr_aon_cg_en.main_powerup;
-    prim_mubi_pkg::mubi4_t unused_cg_en_2;
-    assign unused_cg_en_2 = clkmgr_aon_cg_en.aon_infra;
-    prim_mubi_pkg::mubi4_t unused_cg_en_3;
-    assign unused_cg_en_3 = clkmgr_aon_cg_en.aon_timers;
-    prim_mubi_pkg::mubi4_t unused_rst_en_0;
-    assign unused_rst_en_0 = rstmgr_aon_rst_en.por_aon[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_1;
-    assign unused_rst_en_1 = rstmgr_aon_rst_en.por_aon[rstmgr_pkg::Domain0Sel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_2;
-    assign unused_rst_en_2 = rstmgr_aon_rst_en.por[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_3;
-    assign unused_rst_en_3 = rstmgr_aon_rst_en.por[rstmgr_pkg::Domain0Sel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_4;
-    assign unused_rst_en_4 = rstmgr_aon_rst_en.por_io[rstmgr_pkg::Domain0Sel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_5;
-    assign unused_rst_en_5 = rstmgr_aon_rst_en.lc_shadowed[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_6;
-    assign unused_rst_en_6 = rstmgr_aon_rst_en.lc[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_7;
-    assign unused_rst_en_7 = rstmgr_aon_rst_en.lc_shadowed[rstmgr_pkg::Domain0Sel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_8;
-    assign unused_rst_en_8 = rstmgr_aon_rst_en.lc_aon[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_9;
-    assign unused_rst_en_9 = rstmgr_aon_rst_en.lc_aon[rstmgr_pkg::Domain0Sel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_10;
-    assign unused_rst_en_10 = rstmgr_aon_rst_en.lc_io_shadowed[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_11;
-    assign unused_rst_en_11 = rstmgr_aon_rst_en.lc_io_shadowed[rstmgr_pkg::Domain0Sel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_12;
-    assign unused_rst_en_12 = rstmgr_aon_rst_en.sys[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_13;
-    assign unused_rst_en_13 = rstmgr_aon_rst_en.spi_device[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_14;
-    assign unused_rst_en_14 = rstmgr_aon_rst_en.spi_host0[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_15;
-    assign unused_rst_en_15 = rstmgr_aon_rst_en.i2c0[rstmgr_pkg::DomainAonSel];
+  prim_mubi_pkg::mubi4_t unused_cg_en_0;
+  assign unused_cg_en_0 = clkmgr_aon_cg_en.aon_powerup;
+  prim_mubi_pkg::mubi4_t unused_cg_en_1;
+  assign unused_cg_en_1 = clkmgr_aon_cg_en.main_powerup;
+  prim_mubi_pkg::mubi4_t unused_cg_en_2;
+  assign unused_cg_en_2 = clkmgr_aon_cg_en.aon_infra;
+  prim_mubi_pkg::mubi4_t unused_cg_en_3;
+  assign unused_cg_en_3 = clkmgr_aon_cg_en.aon_timers;
+  prim_mubi_pkg::mubi4_t unused_rst_en_0;
+  assign unused_rst_en_0 = rstmgr_aon_rst_en.por_aon[rstmgr_pkg::DomainAonSel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_1;
+  assign unused_rst_en_1 = rstmgr_aon_rst_en.por_aon[rstmgr_pkg::Domain0Sel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_2;
+  assign unused_rst_en_2 = rstmgr_aon_rst_en.por[rstmgr_pkg::DomainAonSel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_3;
+  assign unused_rst_en_3 = rstmgr_aon_rst_en.por[rstmgr_pkg::Domain0Sel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_4;
+  assign unused_rst_en_4 = rstmgr_aon_rst_en.por_io[rstmgr_pkg::Domain0Sel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_5;
+  assign unused_rst_en_5 = rstmgr_aon_rst_en.lc_shadowed[rstmgr_pkg::DomainAonSel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_6;
+  assign unused_rst_en_6 = rstmgr_aon_rst_en.lc[rstmgr_pkg::DomainAonSel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_7;
+  assign unused_rst_en_7 = rstmgr_aon_rst_en.lc_shadowed[rstmgr_pkg::Domain0Sel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_8;
+  assign unused_rst_en_8 = rstmgr_aon_rst_en.lc_aon[rstmgr_pkg::DomainAonSel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_9;
+  assign unused_rst_en_9 = rstmgr_aon_rst_en.lc_aon[rstmgr_pkg::Domain0Sel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_10;
+  assign unused_rst_en_10 = rstmgr_aon_rst_en.lc_io_shadowed[rstmgr_pkg::DomainAonSel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_11;
+  assign unused_rst_en_11 = rstmgr_aon_rst_en.lc_io_shadowed[rstmgr_pkg::Domain0Sel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_12;
+  assign unused_rst_en_12 = rstmgr_aon_rst_en.sys[rstmgr_pkg::DomainAonSel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_13;
+  assign unused_rst_en_13 = rstmgr_aon_rst_en.spi_device[rstmgr_pkg::DomainAonSel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_14;
+  assign unused_rst_en_14 = rstmgr_aon_rst_en.spi_host0[rstmgr_pkg::DomainAonSel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_15;
+  assign unused_rst_en_15 = rstmgr_aon_rst_en.i2c0[rstmgr_pkg::DomainAonSel];
 //VCS coverage on
 // pragma coverage on
 
   // Peripheral Instantiation
-
-
   uart #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[0:0]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles)
@@ -3011,7 +3002,7 @@ module top_darjeeling #(
     1'b0 // ID 0 is a special case and tied to zero.
   };
 
-  // TL-UL Crossbar
+  // TL-UL Crossbars
   xbar_main u_xbar_main (
     .clk_main_i (clkmgr_aon_clocks.clk_main_infra),
     .clk_fixed_i (clkmgr_aon_clocks.clk_io_infra),
@@ -3622,12 +3613,12 @@ module top_darjeeling #(
   assign dio_en_d2p[DioSocProxySocGpo10] = cio_soc_proxy_soc_gpo_en_d2p[10];
   assign dio_en_d2p[DioSocProxySocGpo11] = cio_soc_proxy_soc_gpo_en_d2p[11];
 
-  // make sure scanmode_i is never X (including during reset)
-  `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_main_i, 0)
-
   // TODO(#26288) : EnCsrngSwAppReadSize should not be present in Darjeeling; presently, this signal
   // must be used to avoid a lint error.
   logic unused_en_csrng;
   assign unused_en_csrng = ^otp_ctrl_otp_broadcast.hw_cfg1_data.en_csrng_sw_app_read;
+
+  // make sure scanmode_i is never X (including during reset)
+  `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_main_i, 0)
 
 endmodule

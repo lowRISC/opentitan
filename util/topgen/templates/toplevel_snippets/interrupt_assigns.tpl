@@ -16,6 +16,7 @@
   else:
     max_namelen += 6
 %>\
+  // Interrupt assignments
   assign ${info["vector"]} = {
   % if plic == default_plic:
   %   for irq_group, irqs in reversed(top['incoming_interrupt'].items()):
