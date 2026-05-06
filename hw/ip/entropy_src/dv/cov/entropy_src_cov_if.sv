@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Implements functional coverage for entropy_src.
+// Implements functional coverage for entropy_src and is bound into the dut
 interface entropy_src_cov_if
   import entropy_src_pkg::*;
   import prim_mubi_pkg::*;
@@ -1185,8 +1185,10 @@ interface entropy_src_cov_if
           es_type_csr, entropy_data_reg_enable_csr, fw_ov_mode_csr, entropy_insert_csr;
   mubi8_t otp_en_es_fw_read_val;
 
-  assign csrng_if_req = tb.dut.entropy_src_hw_if_i.es_req;
-  assign csrng_if_ack = tb.dut.entropy_src_hw_if_o.es_ack;
+  // Assign req/ack signals to track those in the entropy_src_hw_if_i/o ports of the entropy_src
+  // instance into which this interface has been bound.
+  assign csrng_if_req = entropy_src.entropy_src_hw_if_i.es_req;
+  assign csrng_if_ack = entropy_src.entropy_src_hw_if_o.es_ack;
 
   logic enable_q, enable_qq;
 
@@ -1195,37 +1197,43 @@ interface entropy_src_cov_if
       enable_q  <= 1'b0;
       enable_qq <= 1'b0;
     end else begin
+      // Register the enable_i input to u_enable_delay in the entropy_src_core for the entropy_src
+      // instance into which this interface has been bound.
+      enable_q  <= entropy_src.u_entropy_src_core.u_enable_delay.enable_i;
       enable_qq <= enable_q;
-      enable_q  <= tb.dut.u_entropy_src_core.u_enable_delay.enable_i;
 
       if(csrng_if_req && csrng_if_ack) begin
-        cg_csrng_hw_sample(tb.dut.reg2hw.conf.fips_enable.q,
-                           tb.dut.reg2hw.conf.fips_flag.q,
-                           tb.dut.reg2hw.conf.rng_fips.q,
-                           tb.dut.reg2hw.conf.threshold_scope.q,
-                           tb.dut.reg2hw.conf.rng_bit_enable.q,
-                           tb.dut.reg2hw.conf.rng_bit_sel.q,
-                           tb.dut.reg2hw.entropy_control.es_route.q,
-                           tb.dut.reg2hw.entropy_control.es_type.q,
-                           tb.dut.reg2hw.conf.entropy_data_reg_enable.q,
+        // Sample relevant register configuration (based on a hierarchical reference to the dut
+        // containing this interface)
+        cg_csrng_hw_sample(entropy_src.reg2hw.conf.fips_enable.q,
+                           entropy_src.reg2hw.conf.fips_flag.q,
+                           entropy_src.reg2hw.conf.rng_fips.q,
+                           entropy_src.reg2hw.conf.threshold_scope.q,
+                           entropy_src.reg2hw.conf.rng_bit_enable.q,
+                           entropy_src.reg2hw.conf.rng_bit_sel.q,
+                           entropy_src.reg2hw.entropy_control.es_route.q,
+                           entropy_src.reg2hw.entropy_control.es_type.q,
+                           entropy_src.reg2hw.conf.entropy_data_reg_enable.q,
                            otp_en_entropy_src_fw_read_i,
-                           tb.dut.reg2hw.fw_ov_control.fw_ov_mode.q,
+                           entropy_src.reg2hw.fw_ov_control.fw_ov_mode.q,
                            otp_en_entropy_src_fw_over_i,
-                           tb.dut.reg2hw.fw_ov_control.fw_ov_entropy_insert.q);
+                           entropy_src.reg2hw.fw_ov_control.fw_ov_entropy_insert.q);
       end
 
       if (enable_qq != enable_q) begin
         // Only sample this CG when the enable signal changes.
+        //
+        // Samples are based on a hierarchical reference to the dut containing this interface.
         enable_delay_cg_inst.sample(
             enable_q,
-            tb.dut.u_entropy_src_core.u_enable_delay.esrng_fifo_not_empty_i,
-            tb.dut.u_entropy_src_core.u_enable_delay.esbit_fifo_not_empty_i,
-            tb.dut.u_entropy_src_core.u_enable_delay.postht_fifo_not_empty_i,
-            tb.dut.u_entropy_src_core.u_enable_delay.distr_fifo_not_empty_i,
-            tb.dut.u_entropy_src_core.u_enable_delay.sha3_block_busy_i,
-            tb.dut.u_entropy_src_core.u_enable_delay.sha3_block_processed_i,
-            tb.dut.u_entropy_src_core.u_enable_delay.bypass_mode_i,
-            tb.dut.u_entropy_src_core.u_enable_delay.enable_o);
+            entropy_src.u_entropy_src_core.u_enable_delay.esrng_fifo_not_empty_i,
+            entropy_src.u_entropy_src_core.u_enable_delay.esbit_fifo_not_empty_i,
+            entropy_src.u_entropy_src_core.u_enable_delay.postht_fifo_not_empty_i,
+            entropy_src.u_entropy_src_core.u_enable_delay.distr_fifo_not_empty_i,
+            entropy_src.u_entropy_src_core.u_enable_delay.sha3_block_busy_i,
+            entropy_src.u_entropy_src_core.u_enable_delay.sha3_block_processed_i,
+            entropy_src.u_entropy_src_core.u_enable_delay.bypass_mode_i,
+            entropy_src.u_entropy_src_core.u_enable_delay.enable_o);
       end
     end
   end
