@@ -1042,3 +1042,28 @@ ownership_transfer_test(
         "test_harness": "//sw/host/tests/ownership:newversion_test",
     },
 )
+
+manifest({
+    "name": "manifest_secver5",
+    "identifier": hex(CONST.OWNER),
+    "security_version": "5",
+    "visibility": ["//visibility:public"],
+})
+
+ownership_transfer_test(
+    name = "bl0_secver_persistence_test",
+    ecdsa_key = {
+        "//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset": "app_prod_0",
+    },
+    manifest = ":manifest_secver5",
+    shared_params = {
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_owner_update_newversion",
+        "test_cmd": """
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:activate_key)
+            --next-application-key=sw/device/silicon_creator/lib/ownership/keys/fake/app_prod_ecdsa_p256.pub.der
+        """,
+        "test_harness": "//sw/host/tests/ownership:bl0_secver_persistence_test",
+    },
+)
