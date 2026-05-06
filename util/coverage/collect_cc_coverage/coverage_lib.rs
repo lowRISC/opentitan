@@ -8,10 +8,10 @@
 //! - `RUNFILES_DIR`: Location of the test's runfiles.
 //! - `VERBOSE_COVERAGE`: Print debug info from the coverage scripts
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use byteorder::{LittleEndian, ReadBytesExt};
 use object::{Object, ObjectSection};
-use runfiles::{rlocation, Runfiles};
+use runfiles::{Runfiles, rlocation};
 use std::collections::HashMap;
 use std::env;
 use std::fs;
