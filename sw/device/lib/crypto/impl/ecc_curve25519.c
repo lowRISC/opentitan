@@ -702,22 +702,33 @@ otcrypto_status_t otcrypto_x25519_keygen_async_start(
   HARDENED_TRY(
       curve25519_private_key_length_check(private_key, kOtcryptoKeyModeX25519));
 
-  uint32_t private_key_unmasked[kCurve25519ScalarWords];
-  uint32_t *share0 = private_key->keyblob;
-  uint32_t *share1 =
-      private_key->keyblob + keyblob_share_num_words(private_key->config);
-  HARDENED_TRY(hardened_add(share0, share1, kCurve25519ScalarWords,
-                            private_key_unmasked));
+  if (private_key->config.hw_backed == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
+                      kHardenedBoolTrue);
 
-  HARDENED_TRY(ed25519_clamp(private_key_unmasked));
+    HARDENED_TRY(keyblob_sideload_key_otbn(private_key));
 
-  // Start the OTBN key exchange app.
-  HARDENED_TRY(curve25519_x25519_keygen_start(private_key_unmasked));
+    return otcrypto_eval_exit(curve25519_x25519_keygen_sideload_start());
+  } else if (private_key->config.hw_backed == kHardenedBoolFalse) {
+    uint32_t private_key_unmasked[kCurve25519ScalarWords];
+    uint32_t *share0 = private_key->keyblob;
+    uint32_t *share1 =
+        private_key->keyblob + keyblob_share_num_words(private_key->config);
 
-  // Wipe the unmasked private key.
-  HARDENED_TRY(hardened_memshred(private_key_unmasked, kCurve25519ScalarWords));
+    HARDENED_TRY(hardened_add(share0, share1, kCurve25519ScalarWords,
+                              private_key_unmasked));
 
-  return otcrypto_eval_exit(OTCRYPTO_OK);
+    HARDENED_TRY(ed25519_clamp(private_key_unmasked));
+
+    // Start the OTBN key exchange app.
+    HARDENED_TRY(curve25519_x25519_keygen_start(private_key_unmasked));
+
+    // Wipe the unmasked private key.
+    return otcrypto_eval_exit(
+        hardened_memshred(private_key_unmasked, kCurve25519ScalarWords));
+  }
+
+  return OTCRYPTO_BAD_ARGS;
 }
 
 otcrypto_status_t otcrypto_x25519_keygen_async_finalize(
@@ -737,23 +748,36 @@ otcrypto_status_t otcrypto_x25519_async_start(
   HARDENED_TRY(
       curve25519_public_key_length_check(public_key, kOtcryptoKeyModeX25519));
 
-  uint32_t private_key_unmasked[kCurve25519ScalarWords];
-  // Unmask the private key.
-  uint32_t *share0 = private_key->keyblob;
-  uint32_t *share1 =
-      private_key->keyblob + keyblob_share_num_words(private_key->config);
-  HARDENED_TRY(hardened_add(share0, share1, kCurve25519ScalarWords,
-                            private_key_unmasked));
+  if (private_key->config.hw_backed == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
+                      kHardenedBoolTrue);
 
-  HARDENED_TRY(ed25519_clamp(private_key_unmasked));
+    HARDENED_TRY(keyblob_sideload_key_otbn(private_key));
 
-  // Start the OTBN key exchange app.
-  HARDENED_TRY(curve25519_x25519_start(private_key_unmasked, public_key->key));
+    return otcrypto_eval_exit(
+        curve25519_x25519_sideload_start(public_key->key));
 
-  // Wipe the unmasked private key.
-  HARDENED_TRY(hardened_memshred(private_key_unmasked, kCurve25519ScalarWords));
+  } else if (private_key->config.hw_backed == kHardenedBoolFalse) {
+    uint32_t private_key_unmasked[kCurve25519ScalarWords];
 
-  return otcrypto_eval_exit(OTCRYPTO_OK);
+    // Unmask the private key
+    uint32_t *share0 = private_key->keyblob;
+    uint32_t *share1 =
+        private_key->keyblob + keyblob_share_num_words(private_key->config);
+    HARDENED_TRY(hardened_add(share0, share1, kCurve25519ScalarWords,
+                              private_key_unmasked));
+    HARDENED_TRY(ed25519_clamp(private_key_unmasked));
+
+    // Start the standard OTBN key exchange app
+    HARDENED_TRY(
+        curve25519_x25519_start(private_key_unmasked, public_key->key));
+
+    // Wipe the unmasked private key from CPU memory and return
+    return otcrypto_eval_exit(
+        hardened_memshred(private_key_unmasked, kCurve25519ScalarWords));
+  }
+
+  return OTCRYPTO_BAD_ARGS;
 }
 
 otcrypto_status_t otcrypto_x25519_async_finalize(
