@@ -68,7 +68,7 @@ module otbn_mai
   // Types //
   ///////////
 
-  localparam int unsigned IsprMaiCtrlResWidth  = 32'd32 - 32'd1 - MaskOpWidth;
+  localparam int unsigned IsprMaiCtrlResWidth = 32'd32 - 32'd1 - MaskOpWidth;
 
   typedef struct packed {
     logic [IsprMaiCtrlResWidth-1:0] rsvd;
@@ -113,14 +113,14 @@ module otbn_mai
     logic rsvd_csr_write;
   } ispr_mai_sw_err_t;
 
-  localparam int unsigned MaiIsprRndRsvdWidth  = UrndLen - ExtWLEN;
+  localparam int unsigned MaiIsprRndRsvdWidth = UrndLen - ExtWLEN;
 
   typedef struct packed {
     logic [MaiIsprRndRsvdWidth-1:0] rsvd;
     logic [ExtWLEN-1:0]             urnd;
   } mai_ispr_urnd_t;
 
-  localparam int unsigned MaiMaRndRsvdWidth  = UrndLen - MaRndLen - 32'd32 - 32'd32 - 32'd3;
+  localparam int unsigned MaiMaRndRsvdWidth = UrndLen - MaRndLen - 32'd32 - 32'd32 - 32'd3;
 
   typedef struct packed {
     logic [MaiMaRndRsvdWidth-1:0] rsvd;
@@ -173,14 +173,7 @@ module otbn_mai
   logic     in_cnt_set;
 
   // Input multiplexer
-  otbn_base_intg_word_t ispr_mai_in0_s0_mux_in[BaseWordsPerWLEN];
-  otbn_base_intg_word_t ispr_mai_in0_s1_mux_in[BaseWordsPerWLEN];
-  otbn_base_intg_word_t ispr_mai_in1_s0_mux_in[BaseWordsPerWLEN];
-  otbn_base_intg_word_t ispr_mai_in1_s1_mux_in[BaseWordsPerWLEN];
-
-  mai_cnt_t                    ispr_mai_in_mux_sel;
-  logic [BaseWordsPerWLEN-1:0] ispr_mai_in_mux_sel_onehot;
-
+  mai_cnt_t             ispr_mai_in_mux_sel;
   otbn_base_intg_word_t ispr_mai_in0_s0_mux_out;
   otbn_base_intg_word_t ispr_mai_in0_s1_mux_out;
   otbn_base_intg_word_t ispr_mai_in1_s0_mux_out;
@@ -332,67 +325,14 @@ module otbn_mai
   // parameter.
   assign cnt_load_val = SecFixMaiOpSeq ? '0 : mai_ma_urnd.cnt;
 
-  // Input word selection signal to one hot
-  prim_onehot_enc #(
-    .OneHotWidth(BaseWordsPerWLEN)
-  ) u_prim_onehot_enc_input_word_select (
-    .in_i (ispr_mai_in_mux_sel),
-    .en_i (ma_in_valid_q),
-    .out_o(ispr_mai_in_mux_sel_onehot)
-  );
+  // Input word selection and blanking. We are allowed to use a regular multiplexer here, as
+  // we anyway have leakage between the successive words inside of the masking accelerator.
+  assign ispr_mai_in0_s0_mux_out = ma_in_valid_q ? ispr_mai_in0_s0_q[ispr_mai_in_mux_sel] : '0;
+  assign ispr_mai_in0_s1_mux_out = ma_in_valid_q ? ispr_mai_in0_s1_q[ispr_mai_in_mux_sel] : '0;
+  assign ispr_mai_in1_s0_mux_out = ma_in_valid_q ? ispr_mai_in1_s0_q[ispr_mai_in_mux_sel] : '0;
+  assign ispr_mai_in1_s1_mux_out = ma_in_valid_q ? ispr_mai_in1_s1_q[ispr_mai_in_mux_sel] : '0;
 
-  // Unpack inputs
-  for (genvar i = 0; i < BaseWordsPerWLEN; i++) begin : gen_in_mux_connect
-    assign ispr_mai_in0_s0_mux_in[i] = ispr_mai_in0_s0_q[i];
-    assign ispr_mai_in0_s1_mux_in[i] = ispr_mai_in0_s1_q[i];
-    assign ispr_mai_in1_s0_mux_in[i] = ispr_mai_in1_s0_q[i];
-    assign ispr_mai_in1_s1_mux_in[i] = ispr_mai_in1_s1_q[i];
-  end
-
-  prim_onehot_mux #(
-    .Width(BaseIntgWidth),
-    .Inputs(BaseWordsPerWLEN)
-  ) u_prim_onehot_mux_in0_s0 (
-    .clk_i,
-    .rst_ni,
-    .in_i (ispr_mai_in0_s0_mux_in),
-    .sel_i(ispr_mai_in_mux_sel_onehot),
-    .out_o(ispr_mai_in0_s0_mux_out)
-  );
-
-  prim_onehot_mux #(
-    .Width(BaseIntgWidth),
-    .Inputs(BaseWordsPerWLEN)
-  ) u_prim_onehot_mux_in0_s1 (
-    .clk_i,
-    .rst_ni,
-    .in_i (ispr_mai_in0_s1_mux_in),
-    .sel_i(ispr_mai_in_mux_sel_onehot),
-    .out_o(ispr_mai_in0_s1_mux_out)
-  );
-
-  prim_onehot_mux #(
-    .Width(BaseIntgWidth),
-    .Inputs(BaseWordsPerWLEN)
-  ) u_prim_onehot_mux_in1_s0 (
-    .clk_i,
-    .rst_ni,
-    .in_i (ispr_mai_in1_s0_mux_in),
-    .sel_i(ispr_mai_in_mux_sel_onehot),
-    .out_o(ispr_mai_in1_s0_mux_out)
-  );
-
-  prim_onehot_mux #(
-    .Width(BaseIntgWidth),
-    .Inputs(BaseWordsPerWLEN)
-  ) u_prim_onehot_mux_in1_s1 (
-    .clk_i,
-    .rst_ni,
-    .in_i (ispr_mai_in1_s1_mux_in),
-    .sel_i(ispr_mai_in_mux_sel_onehot),
-    .out_o(ispr_mai_in1_s1_mux_out)
-  );
-
+  // Input word ECC checking
   prim_secded_inv_39_32_dec u_prim_secded_inv_39_32_dec_in0_s0 (
     .data_i    (ispr_mai_in0_s0_mux_out),
     .data_o    (/* NOT CONNECTED */),
