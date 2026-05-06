@@ -1,7 +1,8 @@
 ## Copyright lowRISC contributors (OpenTitan project).
 ## Licensed under the Apache License, Version 2.0, see LICENSE for details.
 ## SPDX-License-Identifier: Apache-2.0
-<%page args="lib, top, name_to_block, plic_info"/>\
+<%import topgen.lib as lib%>\
+<%page args="top, name_to_block, plic_info"/>\
 <%
   # Interrupt source 0 is tied to 0 to conform to the RISC-V PLIC spec.
   # The total number of interrupts is the sum of the widths of each entry

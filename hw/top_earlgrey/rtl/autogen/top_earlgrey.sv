@@ -151,20 +151,6 @@ module top_earlgrey #(
   parameter logic [31:0] RvCoreIbexCsrMvendorId = '0,
   parameter logic [31:0] RvCoreIbexCsrMimpId = '0
 ) (
-  // Multiplexed I/O
-  input        [46:0] mio_in_i,
-  output logic [46:0] mio_out_o,
-  output logic [46:0] mio_oe_o,
-  // Dedicated I/O
-  input        [15:0] dio_in_i,
-  output logic [15:0] dio_out_o,
-  output logic [15:0] dio_oe_o,
-
-  // pad attributes to padring
-  output prim_pad_wrapper_pkg::pad_attr_t [pinmux_reg_pkg::NMioPads-1:0] mio_attr_o,
-  output prim_pad_wrapper_pkg::pad_attr_t [pinmux_reg_pkg::NDioPads-1:0] dio_attr_o,
-
-
   // Inter-module Signal External type
   output ast_pkg::adc_ast_req_t       adc_req_o,
   input  ast_pkg::adc_ast_rsp_t       adc_rsp_i,
@@ -225,6 +211,19 @@ module top_earlgrey #(
   output logic       usbdev_usb_ref_val_o,
   output logic       usbdev_usb_ref_pulse_o,
 
+  // Multiplexed I/O
+  input  logic [46:0] mio_in_i,
+  output logic [46:0] mio_out_o,
+  output logic [46:0] mio_oe_o,
+
+  // Dedicated I/O
+  input  logic [15:0] dio_in_i,
+  output logic [15:0] dio_out_o,
+  output logic [15:0] dio_oe_o,
+
+  // Pad attributes to padring
+  output prim_pad_wrapper_pkg::pad_attr_t [pinmux_reg_pkg::NMioPads-1:0] mio_attr_o,
+  output prim_pad_wrapper_pkg::pad_attr_t [pinmux_reg_pkg::NDioPads-1:0] dio_attr_o,
 
   // All externally supplied clocks
   input clk_main_i,
@@ -241,9 +240,6 @@ module top_earlgrey #(
   input prim_mubi_pkg::mubi4_t scanmode_i   // lc_ctrl_pkg::On for Scan
 );
 
-  import tlul_pkg::*;
-  import top_pkg::*;
-  import tl_main_pkg::*;
   import top_earlgrey_pkg::*;
   // Compile-time random constants
   import top_earlgrey_rnd_cnst_pkg::*;
@@ -425,7 +421,6 @@ module top_earlgrey #(
   // rom_ctrl
   // rv_core_ibex
 
-
   logic [185:0]  intr_vector;
   // Interrupt source list
   logic intr_uart0_tx_watermark;
@@ -586,7 +581,6 @@ module top_earlgrey #(
   // Alert list
   prim_alert_pkg::alert_tx_t [alert_handler_pkg::NAlerts-1:0]  alert_tx;
   prim_alert_pkg::alert_rx_t [alert_handler_pkg::NAlerts-1:0]  alert_rx;
-
 
   // define inter-module signals
   ast_pkg::ast_obs_ctrl_t       ast_obs_ctrl;
@@ -821,14 +815,12 @@ module top_earlgrey #(
   assign ast_usb_ram_1p_cfg = usb_ram_1p_cfg_i;
   assign ast_rom_cfg = rom_cfg_i;
 
-  // define partial inter-module tie-off
+  // Define partial inter-module tie-off
   otp_ctrl_pkg::sram_otp_key_rsp_t unused_otp_ctrl_sram_otp_key_rsp3;
 
-  // assign partial inter-module tie-off
-
+  // Assign partial inter-module tie-off
   assign unused_otp_ctrl_sram_otp_key_rsp3 = otp_ctrl_sram_otp_key_rsp[3];
   assign otp_ctrl_sram_otp_key_req[3] = '0;
-
 
   // OTP HW_CFG* Broadcast signals.
   // TODO(#6713): The actual struct breakout and mapping currently needs to
@@ -860,13 +852,12 @@ module top_earlgrey #(
   assign clks_ast_o = clkmgr_aon_clocks;
   assign rsts_ast_o = rstmgr_aon_resets;
 
-  // ibex specific assignments
+  // Ibex-specific assignments
   // TODO: This should be further automated in the future.
   assign rv_core_ibex_irq_timer = intr_rv_timer_timer_expired_hart0_timer0;
   assign rv_core_ibex_hart_id = '0;
 
-  assign rv_core_ibex_boot_addr = ADDR_SPACE_ROM_CTRL__ROM;
-
+  assign rv_core_ibex_boot_addr = tl_main_pkg::ADDR_SPACE_ROM_CTRL__ROM;
 
   // Struct breakout module tool-inserted DFT TAP signals
   pinmux_jtag_breakout u_dft_tap_breakout (
@@ -962,105 +953,104 @@ module top_earlgrey #(
 // tie-off unused connections
 //VCS coverage off
 // pragma coverage off
-    prim_mubi_pkg::mubi4_t unused_cg_en_0;
-    assign unused_cg_en_0 = clkmgr_aon_cg_en.aon_powerup;
-    prim_mubi_pkg::mubi4_t unused_cg_en_1;
-    assign unused_cg_en_1 = clkmgr_aon_cg_en.main_powerup;
-    prim_mubi_pkg::mubi4_t unused_cg_en_2;
-    assign unused_cg_en_2 = clkmgr_aon_cg_en.io_powerup;
-    prim_mubi_pkg::mubi4_t unused_cg_en_3;
-    assign unused_cg_en_3 = clkmgr_aon_cg_en.usb_powerup;
-    prim_mubi_pkg::mubi4_t unused_cg_en_4;
-    assign unused_cg_en_4 = clkmgr_aon_cg_en.io_div2_powerup;
-    prim_mubi_pkg::mubi4_t unused_cg_en_5;
-    assign unused_cg_en_5 = clkmgr_aon_cg_en.aon_secure;
-    prim_mubi_pkg::mubi4_t unused_cg_en_6;
-    assign unused_cg_en_6 = clkmgr_aon_cg_en.aon_peri;
-    prim_mubi_pkg::mubi4_t unused_cg_en_7;
-    assign unused_cg_en_7 = clkmgr_aon_cg_en.aon_timers;
-    prim_mubi_pkg::mubi4_t unused_cg_en_8;
-    assign unused_cg_en_8 = clkmgr_aon_cg_en.usb_infra;
-    prim_mubi_pkg::mubi4_t unused_cg_en_9;
-    assign unused_cg_en_9 = clkmgr_aon_cg_en.io_infra;
-    prim_mubi_pkg::mubi4_t unused_cg_en_10;
-    assign unused_cg_en_10 = clkmgr_aon_cg_en.io_div2_infra;
-    prim_mubi_pkg::mubi4_t unused_rst_en_0;
-    assign unused_rst_en_0 = rstmgr_aon_rst_en.por_aon[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_1;
-    assign unused_rst_en_1 = rstmgr_aon_rst_en.por_aon[rstmgr_pkg::Domain0Sel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_2;
-    assign unused_rst_en_2 = rstmgr_aon_rst_en.por[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_3;
-    assign unused_rst_en_3 = rstmgr_aon_rst_en.por[rstmgr_pkg::Domain0Sel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_4;
-    assign unused_rst_en_4 = rstmgr_aon_rst_en.por_io[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_5;
-    assign unused_rst_en_5 = rstmgr_aon_rst_en.por_io[rstmgr_pkg::Domain0Sel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_6;
-    assign unused_rst_en_6 = rstmgr_aon_rst_en.por_io_div2[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_7;
-    assign unused_rst_en_7 = rstmgr_aon_rst_en.por_io_div2[rstmgr_pkg::Domain0Sel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_8;
-    assign unused_rst_en_8 = rstmgr_aon_rst_en.por_io_div4[rstmgr_pkg::Domain0Sel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_9;
-    assign unused_rst_en_9 = rstmgr_aon_rst_en.por_usb[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_10;
-    assign unused_rst_en_10 = rstmgr_aon_rst_en.por_usb[rstmgr_pkg::Domain0Sel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_11;
-    assign unused_rst_en_11 = rstmgr_aon_rst_en.lc_shadowed[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_12;
-    assign unused_rst_en_12 = rstmgr_aon_rst_en.lc[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_13;
-    assign unused_rst_en_13 = rstmgr_aon_rst_en.lc_shadowed[rstmgr_pkg::Domain0Sel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_14;
-    assign unused_rst_en_14 = rstmgr_aon_rst_en.lc_aon[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_15;
-    assign unused_rst_en_15 = rstmgr_aon_rst_en.lc_aon[rstmgr_pkg::Domain0Sel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_16;
-    assign unused_rst_en_16 = rstmgr_aon_rst_en.lc_io[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_17;
-    assign unused_rst_en_17 = rstmgr_aon_rst_en.lc_io[rstmgr_pkg::Domain0Sel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_18;
-    assign unused_rst_en_18 = rstmgr_aon_rst_en.lc_io_div2[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_19;
-    assign unused_rst_en_19 = rstmgr_aon_rst_en.lc_io_div2[rstmgr_pkg::Domain0Sel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_20;
-    assign unused_rst_en_20 = rstmgr_aon_rst_en.lc_io_div4_shadowed[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_21;
-    assign unused_rst_en_21 = rstmgr_aon_rst_en.lc_io_div4_shadowed[rstmgr_pkg::Domain0Sel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_22;
-    assign unused_rst_en_22 = rstmgr_aon_rst_en.lc_usb[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_23;
-    assign unused_rst_en_23 = rstmgr_aon_rst_en.lc_usb[rstmgr_pkg::Domain0Sel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_24;
-    assign unused_rst_en_24 = rstmgr_aon_rst_en.sys[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_25;
-    assign unused_rst_en_25 = rstmgr_aon_rst_en.sys_io_div4[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_26;
-    assign unused_rst_en_26 = rstmgr_aon_rst_en.sys_io_div4[rstmgr_pkg::Domain0Sel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_27;
-    assign unused_rst_en_27 = rstmgr_aon_rst_en.spi_device[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_28;
-    assign unused_rst_en_28 = rstmgr_aon_rst_en.spi_host0[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_29;
-    assign unused_rst_en_29 = rstmgr_aon_rst_en.spi_host1[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_30;
-    assign unused_rst_en_30 = rstmgr_aon_rst_en.usb[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_31;
-    assign unused_rst_en_31 = rstmgr_aon_rst_en.usb_aon[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_32;
-    assign unused_rst_en_32 = rstmgr_aon_rst_en.usb_aon[rstmgr_pkg::Domain0Sel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_33;
-    assign unused_rst_en_33 = rstmgr_aon_rst_en.i2c0[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_34;
-    assign unused_rst_en_34 = rstmgr_aon_rst_en.i2c1[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_35;
-    assign unused_rst_en_35 = rstmgr_aon_rst_en.i2c2[rstmgr_pkg::DomainAonSel];
+  prim_mubi_pkg::mubi4_t unused_cg_en_0;
+  assign unused_cg_en_0 = clkmgr_aon_cg_en.aon_powerup;
+  prim_mubi_pkg::mubi4_t unused_cg_en_1;
+  assign unused_cg_en_1 = clkmgr_aon_cg_en.main_powerup;
+  prim_mubi_pkg::mubi4_t unused_cg_en_2;
+  assign unused_cg_en_2 = clkmgr_aon_cg_en.io_powerup;
+  prim_mubi_pkg::mubi4_t unused_cg_en_3;
+  assign unused_cg_en_3 = clkmgr_aon_cg_en.usb_powerup;
+  prim_mubi_pkg::mubi4_t unused_cg_en_4;
+  assign unused_cg_en_4 = clkmgr_aon_cg_en.io_div2_powerup;
+  prim_mubi_pkg::mubi4_t unused_cg_en_5;
+  assign unused_cg_en_5 = clkmgr_aon_cg_en.aon_secure;
+  prim_mubi_pkg::mubi4_t unused_cg_en_6;
+  assign unused_cg_en_6 = clkmgr_aon_cg_en.aon_peri;
+  prim_mubi_pkg::mubi4_t unused_cg_en_7;
+  assign unused_cg_en_7 = clkmgr_aon_cg_en.aon_timers;
+  prim_mubi_pkg::mubi4_t unused_cg_en_8;
+  assign unused_cg_en_8 = clkmgr_aon_cg_en.usb_infra;
+  prim_mubi_pkg::mubi4_t unused_cg_en_9;
+  assign unused_cg_en_9 = clkmgr_aon_cg_en.io_infra;
+  prim_mubi_pkg::mubi4_t unused_cg_en_10;
+  assign unused_cg_en_10 = clkmgr_aon_cg_en.io_div2_infra;
+  prim_mubi_pkg::mubi4_t unused_rst_en_0;
+  assign unused_rst_en_0 = rstmgr_aon_rst_en.por_aon[rstmgr_pkg::DomainAonSel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_1;
+  assign unused_rst_en_1 = rstmgr_aon_rst_en.por_aon[rstmgr_pkg::Domain0Sel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_2;
+  assign unused_rst_en_2 = rstmgr_aon_rst_en.por[rstmgr_pkg::DomainAonSel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_3;
+  assign unused_rst_en_3 = rstmgr_aon_rst_en.por[rstmgr_pkg::Domain0Sel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_4;
+  assign unused_rst_en_4 = rstmgr_aon_rst_en.por_io[rstmgr_pkg::DomainAonSel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_5;
+  assign unused_rst_en_5 = rstmgr_aon_rst_en.por_io[rstmgr_pkg::Domain0Sel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_6;
+  assign unused_rst_en_6 = rstmgr_aon_rst_en.por_io_div2[rstmgr_pkg::DomainAonSel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_7;
+  assign unused_rst_en_7 = rstmgr_aon_rst_en.por_io_div2[rstmgr_pkg::Domain0Sel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_8;
+  assign unused_rst_en_8 = rstmgr_aon_rst_en.por_io_div4[rstmgr_pkg::Domain0Sel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_9;
+  assign unused_rst_en_9 = rstmgr_aon_rst_en.por_usb[rstmgr_pkg::DomainAonSel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_10;
+  assign unused_rst_en_10 = rstmgr_aon_rst_en.por_usb[rstmgr_pkg::Domain0Sel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_11;
+  assign unused_rst_en_11 = rstmgr_aon_rst_en.lc_shadowed[rstmgr_pkg::DomainAonSel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_12;
+  assign unused_rst_en_12 = rstmgr_aon_rst_en.lc[rstmgr_pkg::DomainAonSel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_13;
+  assign unused_rst_en_13 = rstmgr_aon_rst_en.lc_shadowed[rstmgr_pkg::Domain0Sel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_14;
+  assign unused_rst_en_14 = rstmgr_aon_rst_en.lc_aon[rstmgr_pkg::DomainAonSel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_15;
+  assign unused_rst_en_15 = rstmgr_aon_rst_en.lc_aon[rstmgr_pkg::Domain0Sel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_16;
+  assign unused_rst_en_16 = rstmgr_aon_rst_en.lc_io[rstmgr_pkg::DomainAonSel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_17;
+  assign unused_rst_en_17 = rstmgr_aon_rst_en.lc_io[rstmgr_pkg::Domain0Sel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_18;
+  assign unused_rst_en_18 = rstmgr_aon_rst_en.lc_io_div2[rstmgr_pkg::DomainAonSel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_19;
+  assign unused_rst_en_19 = rstmgr_aon_rst_en.lc_io_div2[rstmgr_pkg::Domain0Sel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_20;
+  assign unused_rst_en_20 = rstmgr_aon_rst_en.lc_io_div4_shadowed[rstmgr_pkg::DomainAonSel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_21;
+  assign unused_rst_en_21 = rstmgr_aon_rst_en.lc_io_div4_shadowed[rstmgr_pkg::Domain0Sel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_22;
+  assign unused_rst_en_22 = rstmgr_aon_rst_en.lc_usb[rstmgr_pkg::DomainAonSel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_23;
+  assign unused_rst_en_23 = rstmgr_aon_rst_en.lc_usb[rstmgr_pkg::Domain0Sel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_24;
+  assign unused_rst_en_24 = rstmgr_aon_rst_en.sys[rstmgr_pkg::DomainAonSel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_25;
+  assign unused_rst_en_25 = rstmgr_aon_rst_en.sys_io_div4[rstmgr_pkg::DomainAonSel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_26;
+  assign unused_rst_en_26 = rstmgr_aon_rst_en.sys_io_div4[rstmgr_pkg::Domain0Sel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_27;
+  assign unused_rst_en_27 = rstmgr_aon_rst_en.spi_device[rstmgr_pkg::DomainAonSel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_28;
+  assign unused_rst_en_28 = rstmgr_aon_rst_en.spi_host0[rstmgr_pkg::DomainAonSel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_29;
+  assign unused_rst_en_29 = rstmgr_aon_rst_en.spi_host1[rstmgr_pkg::DomainAonSel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_30;
+  assign unused_rst_en_30 = rstmgr_aon_rst_en.usb[rstmgr_pkg::DomainAonSel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_31;
+  assign unused_rst_en_31 = rstmgr_aon_rst_en.usb_aon[rstmgr_pkg::DomainAonSel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_32;
+  assign unused_rst_en_32 = rstmgr_aon_rst_en.usb_aon[rstmgr_pkg::Domain0Sel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_33;
+  assign unused_rst_en_33 = rstmgr_aon_rst_en.i2c0[rstmgr_pkg::DomainAonSel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_34;
+  assign unused_rst_en_34 = rstmgr_aon_rst_en.i2c1[rstmgr_pkg::DomainAonSel];
+  prim_mubi_pkg::mubi4_t unused_rst_en_35;
+  assign unused_rst_en_35 = rstmgr_aon_rst_en.i2c2[rstmgr_pkg::DomainAonSel];
 //VCS coverage on
 // pragma coverage on
 
   // Peripheral Instantiation
-
   uart #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[0:0]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles)
@@ -3149,7 +3139,7 @@ module top_earlgrey #(
     1'b0 // ID 0 is a special case and tied to zero.
   };
 
-  // TL-UL Crossbar
+  // TL-UL Crossbars
   xbar_main u_xbar_main (
     .clk_main_i (clkmgr_aon_clocks.clk_main_infra),
     .clk_fixed_i (clkmgr_aon_clocks.clk_io_div4_infra),
