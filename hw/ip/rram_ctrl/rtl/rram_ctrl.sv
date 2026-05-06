@@ -203,6 +203,8 @@ module rram_ctrl
   logic                          hw_otp_rready;
   logic                          hw_otp_rvalid;
   logic [BusFullWidth-1:0]       hw_otp_rdata;
+  logic                          otp_err;
+  logic                          otp_intg_err;
 
   // Arbiter signals
   rram_sel_e                if_sel;
@@ -295,7 +297,6 @@ module rram_ctrl
     .intg_err_o(intg_err)
   );
 
-  // todo connect in future commits:
   assign hw2reg.ctrl_regwen.d = (sw_sel | hw_loopback_sel) ? ~reg2hw.control.start.q : 1'b1;
 
   assign hw2reg.control.start.d  = 1'b0;
@@ -346,13 +347,13 @@ module rram_ctrl
   assign hw2reg.fault_status.lcmgr_wr_err.d     = 1'b1;
   assign hw2reg.fault_status.lcmgr_wr_err.de    = hw_lcmgr_err.wr_err;
   assign hw2reg.fault_status.otp_op_err.d       = 1'b1;
-  assign hw2reg.fault_status.otp_op_err.de      = 1'b0;
+  assign hw2reg.fault_status.otp_op_err.de      = hw_otp_err.invalid_op_err;
   assign hw2reg.fault_status.otp_mp_err.d       = 1'b1;
-  assign hw2reg.fault_status.otp_mp_err.de      = 1'b0;
+  assign hw2reg.fault_status.otp_mp_err.de      = hw_otp_err.mp_err;
   assign hw2reg.fault_status.otp_rd_err.d       = 1'b1;
-  assign hw2reg.fault_status.otp_rd_err.de      = 1'b0;
+  assign hw2reg.fault_status.otp_rd_err.de      = hw_otp_err.rd_err;
   assign hw2reg.fault_status.otp_wr_err.d       = 1'b1;
-  assign hw2reg.fault_status.otp_wr_err.de      = 1'b0;
+  assign hw2reg.fault_status.otp_wr_err.de      = hw_otp_err.wr_err;
   assign hw2reg.fault_status.seed_err.d         = 1'b1;
   assign hw2reg.fault_status.seed_err.de        = lcmgr_seed_err;
   assign hw2reg.fault_status.phy_relbl_err.d    = 1'b1;
@@ -369,16 +370,16 @@ module rram_ctrl
   // Standard faults - things like FSM / counter / tlul integrity
   assign hw2reg.std_fault_status.reg_intg_err.d     = 1'b1;
   assign hw2reg.std_fault_status.reg_intg_err.de    = intg_err | host_intg_err |
-                                                     tl_gate_intg_err | tl_wr_gate_intg_err |
-                                                     rd_fifo_adapter_intg_err;
+                                                      tl_gate_intg_err | tl_wr_gate_intg_err |
+                                                      rd_fifo_adapter_intg_err;
   assign hw2reg.std_fault_status.lcmgr_err.d        = 1'b1;
   assign hw2reg.std_fault_status.lcmgr_err.de       = lcmgr_err;
   assign hw2reg.std_fault_status.lcmgr_intg_err.d   = 1'b1;
   assign hw2reg.std_fault_status.lcmgr_intg_err.de  = lcmgr_intg_err;
   assign hw2reg.std_fault_status.otp_err.d          = 1'b1;
-  assign hw2reg.std_fault_status.otp_err.de         = 1'b0;
+  assign hw2reg.std_fault_status.otp_err.de         = otp_err;
   assign hw2reg.std_fault_status.otp_intg_err.d     = 1'b1;
-  assign hw2reg.std_fault_status.otp_intg_err.de    = 1'b0;
+  assign hw2reg.std_fault_status.otp_intg_err.de    = otp_intg_err;
   assign hw2reg.std_fault_status.phy_wr_intg_err.d  = 1'b1;
   assign hw2reg.std_fault_status.phy_wr_intg_err.de = phy_wr_intg_err;
   assign hw2reg.std_fault_status.phy_fifo_err.d     = 1'b1;
@@ -402,8 +403,8 @@ module rram_ctrl
   assign hw2reg.corr_err_loc.part.d  = logic'(phy_ecc_corr_part);
   assign hw2reg.corr_err_loc.part.de = phy_ecc_corr_err;
   // corr_err_cnt is saturating
-  assign hw2reg.corr_err_cnt.d       =  &reg2hw.corr_err_cnt.q ? reg2hw.corr_err_cnt.q :
-                                                                 reg2hw.corr_err_cnt.q + 1'b1;
+  assign hw2reg.corr_err_cnt.d       = &reg2hw.corr_err_cnt.q ? reg2hw.corr_err_cnt.q :
+                                                                reg2hw.corr_err_cnt.q + 1'b1;
   assign hw2reg.corr_err_cnt.de = phy_ecc_corr_err;
 
   // Phy status
@@ -641,21 +642,36 @@ module rram_ctrl
   ///////////////////
   // OTP_HW_ACCESS //
   ///////////////////
-  // todo add rram_ctrl_otp
-  assign otp_macro_o.ready  = 1'b0;
-  assign otp_macro_o.rvalid = 1'b0;
-  assign otp_macro_o.rdata  = '0;
-  assign otp_macro_o.err    = otp_ctrl_macro_pkg::NoError;
 
-  assign hw_otp_req              = 1'b0;
-  assign hw_otp_ctrl.start.q     = 1'b0;
-  assign hw_otp_ctrl.op.q        = RramOpRead;
-  assign hw_otp_ctrl.partition.q = RramPartData;
-  assign hw_otp_ctrl.num.q       = 0;
-  assign hw_otp_addr             = '0;
-  assign hw_otp_rready           = 1'b0;
-  assign hw_otp_wvalid           = 1'b0;
-  assign hw_otp_wdata            = '0;
+  rram_ctrl_otp u_rram_ctrl_otp (
+    .clk_i,
+    .rst_ni,
+    .clk_otp_i,
+    .rst_otp_ni,
+    // OTP macro interface (otp clock)
+    .otp_macro_req_i (otp_macro_i),
+    .otp_macro_rsp_o (otp_macro_o),
+    // Control arbiter interface
+    .ctrl_o          (hw_otp_ctrl),
+    .req_o           (hw_otp_req),
+    .addr_o          (hw_otp_addr),
+    .done_i          (hw_otp_done),
+    .err_i           (hw_otp_err),
+    // Read interface
+    .rready_o        (hw_otp_rready),
+    .rvalid_i        (hw_otp_rvalid),
+    .rdata_i         (hw_otp_rdata),
+    // Write interface
+    .wvalid_o        (hw_otp_wvalid),
+    .wready_i        (hw_otp_wready),
+    .wdata_o         (hw_otp_wdata),
+    // Error and status
+    .fatal_err_o     (otp_err),
+    .intg_err_o      (otp_intg_err),
+    .rram_init_done_i(phy_init_done),
+    .rram_wr_busy_i  (phy_wr_busy)
+
+  );
 
   ///////////////////////
   // SW/HW ARBITRATION //
@@ -1323,6 +1339,12 @@ module rram_ctrl
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(LcCtrlFsmCheck_A, u_rram_ctrl_lcmgr.u_state_regs,
                                        alert_tx_o[1])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(LcCtrlRmaFsmCheck_A, u_rram_ctrl_lcmgr.u_rma_state_regs,
+                                       alert_tx_o[1])
+
+
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(OtpCntBusWordCheck_A, u_rram_ctrl_otp.u_bus_wcnt,
+                                         alert_tx_o[1])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(OtpFsmCheck_A, u_rram_ctrl_otp.u_state_regs,
                                        alert_tx_o[1])
 
   // rram_phy assertions

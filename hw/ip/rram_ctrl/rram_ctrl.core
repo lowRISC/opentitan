@@ -27,6 +27,7 @@ filesets:
       - rtl/rram_ctrl_rd.sv
       - rtl/rram_ctrl_arb.sv
       - rtl/rram_ctrl_lcmgr.sv
+      - rtl/rram_ctrl_otp.sv
       - rtl/rram_ctrl_region_cfg.sv
       - rtl/rram_ctrl_mp_region_sel.sv
       - rtl/rram_ctrl_mp.sv
