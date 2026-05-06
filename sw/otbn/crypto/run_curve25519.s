@@ -12,7 +12,7 @@
 
 /**
  * Mode magic values, generated with
- * $ ./util/design/sparse-fsm-encode.py -d 6 -m 3 -n 11 \
+ * $ ./util/design/sparse-fsm-encode.py -d 6 -m 8 -n 11 \
  *     --avoid-zero -s 380925547
  *
  * Call the same utility with the same arguments and a higher -m to generate
@@ -23,12 +23,14 @@
  * as `li`. If support is added, we could use 32-bit values here instead of
  * 11-bit.
  */
-.equ MODE_KEYGEN, 0x6CE
-.equ MODE_SIGN_STAGE1, 0x77D
-.equ MODE_SIGN_STAGE2, 0x397
-.equ MODE_VERIFY, 0x5F2
-.equ MODE_X25519, 0x4B1
-.equ MODE_X25519_KEYGEN, 0x5A9
+.equ MODE_KEYGEN, 0x1F8
+.equ MODE_SIGN_STAGE1, 0x669
+.equ MODE_SIGN_STAGE2, 0x23E
+.equ MODE_VERIFY, 0x54E
+.equ MODE_X25519, 0x695
+.equ MODE_X25519_KEYGEN, 0x7A2
+.equ MODE_X25519_SIDELOAD, 0xE7
+.equ MODE_X25519_KEYGEN_SIDELOAD, 0x353
 
 /**
  * Make the mode constants visible to Ibex.
@@ -39,6 +41,8 @@
 .globl MODE_VERIFY
 .globl MODE_X25519
 .globl MODE_X25519_KEYGEN
+.globl MODE_X25519_SIDELOAD
+.globl MODE_X25519_KEYGEN_SIDELOAD
 
 .section .text.start
 .globl start
@@ -64,6 +68,12 @@ start:
 
   addi  x3, x0, MODE_X25519_KEYGEN
   beq   x2, x3, x25519_keygen
+
+  addi  x3, x0, MODE_X25519_SIDELOAD
+  beq   x2, x3, x25519_sideload
+
+  addi  x3, x0, MODE_X25519_KEYGEN_SIDELOAD
+  beq   x2, x3, x25519_keygen_sideload
 
   /* Invalid mode; fail. */
   unimp
@@ -206,6 +216,60 @@ x25519_keygen:
   li       x2, 22
   la       x3, x25519_public_key
   bn.sid   x2, 0(x3)
+
+  ecall
+
+x25519_sideload:
+  /* Zeroize w31 */
+  bn.xor   w31, w31, w31
+
+  /* Read private key shares */
+  bn.wsrr w7, KEY_S0_L
+  bn.wsrr w8, KEY_S1_L
+
+  /* Clamp the Boolean shares */
+  jal x1, x25519_clamp_shares
+
+  /* Unmask the key */
+  bn.xor  w8, w7, w8
+
+  /* Load public key into w9 */
+  li x2, 9
+  la x3, x25519_public_key
+  bn.lid x2, 0(x3)
+
+  jal x1, X25519
+
+  /* Store shared key from w22 */
+  li x2, 22
+  la x3, x25519_shared_key
+  bn.sid x2, 0(x3)
+
+  ecall
+
+x25519_keygen_sideload:
+  /* Zeroize w31 */
+  bn.xor   w31, w31, w31
+
+  /* Read private key shares */
+  bn.wsrr w7, KEY_S0_L
+  bn.wsrr w8, KEY_S1_L
+
+  /* Clamp the Boolean shares */
+  jal x1, x25519_clamp_shares
+
+  /* Unmask the key */
+  bn.xor  w8, w7, w8
+
+  /* Set Curve25519 basepoint */
+  bn.addi w9, w31, 9
+
+  jal x1, X25519
+
+  /* Store public key from w22 into DMEM */
+  li x2, 22
+  la x3, x25519_public_key
+  bn.sid x2, 0(x3)
 
   ecall
 
