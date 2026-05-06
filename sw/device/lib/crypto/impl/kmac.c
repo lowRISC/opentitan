@@ -51,10 +51,12 @@ otcrypto_status_t otcrypto_kmac(
   HARDENED_TRY(kmac_key_length_check(key_len));
 
   // Check the integrity of the blinded key.
-  if (launder32(integrity_blinded_key_check(key)) != kHardenedBoolTrue) {
+  if (launder32(otcrypto_integrity_blinded_key_check(key)) !=
+      kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(integrity_blinded_key_check(key), kHardenedBoolTrue);
+  HARDENED_CHECK_EQ(otcrypto_integrity_blinded_key_check(key),
+                    kHardenedBoolTrue);
 
   kmac_blinded_key_t kmac_key = {
       .share0 = NULL,

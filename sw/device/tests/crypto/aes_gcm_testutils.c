@@ -145,7 +145,7 @@ status_t aes_gcm_testutils_encrypt(const aes_gcm_test_t *test, bool streaming,
   };
 
   // Set the checksum.
-  key.checksum = integrity_blinded_checksum(&key);
+  key.checksum = otcrypto_integrity_blinded_checksum(&key);
 
   size_t iv_num_words =
       (test->iv_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
@@ -235,7 +235,7 @@ status_t aes_gcm_testutils_decrypt(const aes_gcm_test_t *test,
   };
 
   // Set the checksum.
-  key.checksum = integrity_blinded_checksum(&key);
+  key.checksum = otcrypto_integrity_blinded_checksum(&key);
 
   size_t iv_num_words =
       (test->iv_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);

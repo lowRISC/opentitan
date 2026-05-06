@@ -193,7 +193,7 @@ static status_t ctx_init(otcrypto_hmac_context_t *ctx,
       .keyblob_length = current_test_vector->key.keyblob_length,
       .checksum = 0,
   };
-  key.checksum = integrity_blinded_checksum(&key);
+  key.checksum = otcrypto_integrity_blinded_checksum(&key);
 
   otcrypto_hash_mode_t hash_mode;
 
@@ -235,7 +235,7 @@ static status_t hmac_oneshot(hmac_test_vector_t *current_test_vector) {
       .keyblob_length = current_test_vector->key.keyblob_length,
       .checksum = 0,
   };
-  key.checksum = integrity_blinded_checksum(&key);
+  key.checksum = otcrypto_integrity_blinded_checksum(&key);
 
   // The test vectors already have the correct digest sizes hardcoded.
   size_t digest_len = current_test_vector->digest.len;

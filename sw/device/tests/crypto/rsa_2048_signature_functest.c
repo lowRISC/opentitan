@@ -323,7 +323,7 @@ static status_t run_signature_negative_tests(void) {
       .key_length = kOtcryptoRsa2048PublicKeyBytes,
       .key = pub_data,
   };
-  valid_pub.checksum = integrity_unblinded_checksum(&valid_pub);
+  valid_pub.checksum = otcrypto_integrity_unblinded_checksum(&valid_pub);
 
   uint32_t priv_blob[kOtcryptoRsa2048PrivateKeyblobBytes / 4] = {0};
   otcrypto_blinded_key_t valid_priv = {
@@ -338,7 +338,7 @@ static status_t run_signature_negative_tests(void) {
       .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
       .keyblob = priv_blob,
   };
-  valid_priv.checksum = integrity_blinded_checksum(&valid_priv);
+  valid_priv.checksum = otcrypto_integrity_blinded_checksum(&valid_priv);
 
   uint32_t digest_data[256 / 32] = {0};
   otcrypto_hash_digest_t valid_digest = {.data = digest_data,

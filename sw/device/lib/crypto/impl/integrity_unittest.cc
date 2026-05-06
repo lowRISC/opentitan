@@ -30,9 +30,9 @@ TEST(IntegrityTest, UnblindedKeyValid) {
       .key_length = static_cast<uint32_t>(key_data.size() * sizeof(uint32_t)),
       .key = key_data.data(),
   };
-  key.checksum = integrity_unblinded_checksum(&key);
+  key.checksum = otcrypto_integrity_unblinded_checksum(&key);
 
-  EXPECT_EQ(integrity_unblinded_key_check(&key), kHardenedBoolTrue);
+  EXPECT_EQ(otcrypto_integrity_unblinded_key_check(&key), kHardenedBoolTrue);
 }
 
 TEST(IntegrityTest, UnblindedKeyCorruptedData) {
@@ -43,10 +43,10 @@ TEST(IntegrityTest, UnblindedKeyCorruptedData) {
       .key_length = static_cast<uint32_t>(key_data.size() * sizeof(uint32_t)),
       .key = key_data.data(),
   };
-  key.checksum = integrity_unblinded_checksum(&key);
+  key.checksum = otcrypto_integrity_unblinded_checksum(&key);
 
   key_data[0] ^= 0xFFFFFFFF;
-  EXPECT_EQ(integrity_unblinded_key_check(&key), kHardenedBoolFalse);
+  EXPECT_EQ(otcrypto_integrity_unblinded_key_check(&key), kHardenedBoolFalse);
 }
 
 TEST(IntegrityTest, BlindedKeyValid) {
@@ -59,9 +59,9 @@ TEST(IntegrityTest, BlindedKeyValid) {
       .keyblob = keyblob.data(),
   };
 
-  key.checksum = integrity_blinded_checksum(&key);
+  key.checksum = otcrypto_integrity_blinded_checksum(&key);
 
-  EXPECT_EQ(integrity_blinded_key_check(&key), kHardenedBoolTrue);
+  EXPECT_EQ(otcrypto_integrity_blinded_key_check(&key), kHardenedBoolTrue);
 }
 
 TEST(IntegrityTest, BlindedKeyCorruptedConfig) {
@@ -74,7 +74,7 @@ TEST(IntegrityTest, BlindedKeyCorruptedConfig) {
           static_cast<uint32_t>(keyblob.size() * sizeof(uint32_t)),
       .keyblob = keyblob.data(),
   };
-  uint32_t original_checksum = integrity_blinded_checksum(&valid_key);
+  uint32_t original_checksum = otcrypto_integrity_blinded_checksum(&valid_key);
 
   otcrypto_key_config_t bad_config = kValidConfig;
   bad_config.security_level = kOtcryptoKeySecurityLevelHigh;
@@ -86,7 +86,7 @@ TEST(IntegrityTest, BlindedKeyCorruptedConfig) {
   };
   bad_key.checksum = original_checksum;
 
-  EXPECT_EQ(integrity_blinded_key_check(&bad_key), kHardenedBoolFalse);
+  EXPECT_EQ(otcrypto_integrity_blinded_key_check(&bad_key), kHardenedBoolFalse);
 }
 
 TEST(IntegrityTest, BlindedKeyDowngradeProtection) {
@@ -103,9 +103,9 @@ TEST(IntegrityTest, BlindedKeyDowngradeProtection) {
       .keyblob = keyblob.data(),
   };
 
-  key.checksum = integrity_blinded_checksum(&key);
+  key.checksum = otcrypto_integrity_blinded_checksum(&key);
 
-  EXPECT_EQ(integrity_blinded_key_check(&key), kHardenedBoolFalse);
+  EXPECT_EQ(otcrypto_integrity_blinded_key_check(&key), kHardenedBoolFalse);
 }
 
 TEST(IntegrityTest, BufferCreationAndCheck) {

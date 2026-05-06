@@ -187,7 +187,7 @@ static status_t run_arith_share_negative_tests(void) {
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
   };
-  priv_key.checksum = integrity_blinded_checksum(&priv_key);
+  priv_key.checksum = otcrypto_integrity_blinded_checksum(&priv_key);
 
   // Null inputs
   CHECK(otcrypto_ecc_p384_arith_share_private_key(NULL, &share1, &priv_key)
@@ -210,7 +210,7 @@ static status_t run_arith_share_negative_tests(void) {
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
   };
-  bad_mode_key.checksum = integrity_blinded_checksum(&bad_mode_key);
+  bad_mode_key.checksum = otcrypto_integrity_blinded_checksum(&bad_mode_key);
   CHECK(
       otcrypto_ecc_p384_arith_share_private_key(&share0, &share1, &bad_mode_key)
           .value != OTCRYPTO_OK.value);
@@ -223,7 +223,7 @@ static status_t run_arith_share_negative_tests(void) {
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
   };
-  bad_hw_key.checksum = integrity_blinded_checksum(&bad_hw_key);
+  bad_hw_key.checksum = otcrypto_integrity_blinded_checksum(&bad_hw_key);
   CHECK(otcrypto_ecc_p384_arith_share_private_key(&share0, &share1, &bad_hw_key)
             .value != OTCRYPTO_OK.value);
 

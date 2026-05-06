@@ -113,7 +113,7 @@ status_t gcm_remask_key(aes_gcm_context_t *internal_ctx) {
 static status_t aes_gcm_key_construct(otcrypto_blinded_key_t *blinded_key,
                                       aes_key_t *aes_key) {
   // Key integrity check.
-  if (launder32(integrity_blinded_key_check(blinded_key)) !=
+  if (launder32(otcrypto_integrity_blinded_key_check(blinded_key)) !=
       kHardenedBoolTrue) {
     // COVERAGE (MISSING) The bad integrity input key is not covered.
     return OTCRYPTO_BAD_ARGS;
@@ -168,7 +168,7 @@ static status_t aes_gcm_key_construct(otcrypto_blinded_key_t *blinded_key,
   // Second integrity check of the key we got passed into the cryptolib.
   // This check is placed here to catch any corruptions that might have
   // happen after the first check when assembling the `aes_key`.
-  HARDENED_CHECK_EQ(integrity_blinded_key_check(blinded_key),
+  HARDENED_CHECK_EQ(otcrypto_integrity_blinded_key_check(blinded_key),
                     kHardenedBoolTrue);
 
   return OTCRYPTO_OK;
