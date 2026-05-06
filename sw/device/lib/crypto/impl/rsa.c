@@ -138,7 +138,7 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
   // Verify the input buffer
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(modulus));
 
-  public_key->checksum = integrity_unblinded_checksum(public_key);
+  public_key->checksum = otcrypto_integrity_unblinded_checksum(public_key);
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
@@ -395,7 +395,7 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(modulus));
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(d_share0));
 
-  private_key->checksum = integrity_blinded_checksum(private_key);
+  private_key->checksum = otcrypto_integrity_blinded_checksum(private_key);
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
@@ -526,8 +526,8 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
   HARDENED_CHECK_EQ(launder32(size_used), size);
 
   // Construct checksums for the new keys.
-  public_key->checksum = integrity_unblinded_checksum(public_key);
-  private_key->checksum = integrity_blinded_checksum(private_key);
+  public_key->checksum = otcrypto_integrity_unblinded_checksum(public_key);
+  private_key->checksum = otcrypto_integrity_blinded_checksum(private_key);
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
@@ -667,8 +667,8 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
   }
 
   // Construct checksums for the new keys.
-  public_key->checksum = integrity_unblinded_checksum(public_key);
-  private_key->checksum = integrity_blinded_checksum(private_key);
+  public_key->checksum = otcrypto_integrity_unblinded_checksum(public_key);
+  private_key->checksum = otcrypto_integrity_blinded_checksum(private_key);
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
@@ -732,7 +732,7 @@ otcrypto_status_t otcrypto_rsa_sign_async_start(
       key_mode_padding_check(private_key->config.key_mode, padding_mode));
 
   // Verify the checksum.
-  if (integrity_blinded_key_check(private_key) != kHardenedBoolTrue) {
+  if (otcrypto_integrity_blinded_key_check(private_key) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -829,7 +829,7 @@ otcrypto_status_t otcrypto_rsa_verify_async_start(
   HARDENED_TRY(public_key_structural_check(public_key));
 
   // Verify the checksum.
-  if (integrity_unblinded_key_check(public_key) != kHardenedBoolTrue) {
+  if (otcrypto_integrity_unblinded_key_check(public_key) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -940,7 +940,7 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_start(
   HARDENED_TRY(public_key_structural_check(public_key));
 
   // Verify the checksum.
-  if (integrity_unblinded_key_check(public_key) != kHardenedBoolTrue) {
+  if (otcrypto_integrity_unblinded_key_check(public_key) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -1049,7 +1049,7 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
   HARDENED_TRY(private_key_structural_check(size, private_key));
 
   // Verify the checksum.
-  if (integrity_blinded_key_check(private_key) != kHardenedBoolTrue) {
+  if (otcrypto_integrity_blinded_key_check(private_key) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
 

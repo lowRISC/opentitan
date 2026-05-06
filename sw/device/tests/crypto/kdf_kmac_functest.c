@@ -50,7 +50,8 @@ static status_t run_test_vector(void) {
 
   // Populate `checksum` and `config.security_level` fields.
   current_test_vector->key_derivation_key.checksum =
-      integrity_blinded_checksum(&current_test_vector->key_derivation_key);
+      otcrypto_integrity_blinded_checksum(
+          &current_test_vector->key_derivation_key);
 
   otcrypto_const_byte_buf_t label_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_byte_buf_t, current_test_vector->label.data,
@@ -62,7 +63,7 @@ static status_t run_test_vector(void) {
   TRY(otcrypto_kmac_kdf(&current_test_vector->key_derivation_key, &label_buf,
                         &context_buf, &output_key_material));
 
-  HARDENED_CHECK_EQ(integrity_blinded_key_check(&output_key_material),
+  HARDENED_CHECK_EQ(otcrypto_integrity_blinded_key_check(&output_key_material),
                     kHardenedBoolTrue);
 
   // Export the derived blinded key.
@@ -113,13 +114,13 @@ static status_t run_kmac_kdf_negative_tests(void) {
   otcrypto_blinded_key_t valid_kdk = {.config = kdk_cfg,
                                       .keyblob_length = sizeof(kdk_blob),
                                       .keyblob = kdk_blob};
-  valid_kdk.checksum = integrity_blinded_checksum(&valid_kdk);
+  valid_kdk.checksum = otcrypto_integrity_blinded_checksum(&valid_kdk);
 
   uint32_t km_blob[keyblob_num_words(km_cfg)];
   memset(km_blob, 0, sizeof(km_blob));
   otcrypto_blinded_key_t valid_km = {
       .config = km_cfg, .keyblob_length = sizeof(km_blob), .keyblob = km_blob};
-  valid_km.checksum = integrity_blinded_checksum(&valid_km);
+  valid_km.checksum = otcrypto_integrity_blinded_checksum(&valid_km);
 
   uint8_t dummy_data[] = "test";
   otcrypto_const_byte_buf_t valid_buf =
@@ -159,7 +160,7 @@ static status_t run_kmac_kdf_negative_tests(void) {
   otcrypto_blinded_key_t bad_kdk_mode = {.config = bad_kdk_mode_cfg,
                                          .keyblob_length = sizeof(kdk_blob),
                                          .keyblob = kdk_blob};
-  bad_kdk_mode.checksum = integrity_blinded_checksum(&bad_kdk_mode);
+  bad_kdk_mode.checksum = otcrypto_integrity_blinded_checksum(&bad_kdk_mode);
   CHECK(otcrypto_kmac_kdf(&bad_kdk_mode, &valid_buf, &valid_buf, &valid_km)
             .value == OTCRYPTO_BAD_ARGS.value);
 
@@ -169,14 +170,15 @@ static status_t run_kmac_kdf_negative_tests(void) {
   otcrypto_blinded_key_t bad_km_hw = {.config = bad_km_hw_cfg,
                                       .keyblob_length = sizeof(km_blob),
                                       .keyblob = km_blob};
-  bad_km_hw.checksum = integrity_blinded_checksum(&bad_km_hw);
+  bad_km_hw.checksum = otcrypto_integrity_blinded_checksum(&bad_km_hw);
   CHECK(
       otcrypto_kmac_kdf(&valid_kdk, &valid_buf, &valid_buf, &bad_km_hw).value ==
       OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_blinded_key_t bad_km_bloblen = {
       .config = km_cfg, .keyblob_length = 99, .keyblob = km_blob};
-  bad_km_bloblen.checksum = integrity_blinded_checksum(&bad_km_bloblen);
+  bad_km_bloblen.checksum =
+      otcrypto_integrity_blinded_checksum(&bad_km_bloblen);
   CHECK(otcrypto_kmac_kdf(&valid_kdk, &valid_buf, &valid_buf, &bad_km_bloblen)
             .value == OTCRYPTO_BAD_ARGS.value);
 
@@ -213,7 +215,7 @@ static status_t run_kmac_kdf_non_word_aligned_test(void) {
   };
 
   vec->key_derivation_key.checksum =
-      integrity_blinded_checksum(&vec->key_derivation_key);
+      otcrypto_integrity_blinded_checksum(&vec->key_derivation_key);
 
   otcrypto_const_byte_buf_t label_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_byte_buf_t, vec->label.data, vec->label.len);
@@ -223,7 +225,7 @@ static status_t run_kmac_kdf_non_word_aligned_test(void) {
   TRY(otcrypto_kmac_kdf(&vec->key_derivation_key, &label_buf, &context_buf,
                         &output_key));
 
-  HARDENED_CHECK_EQ(integrity_blinded_key_check(&output_key),
+  HARDENED_CHECK_EQ(otcrypto_integrity_blinded_key_check(&output_key),
                     kHardenedBoolTrue);
 
   return OTCRYPTO_OK;

@@ -406,7 +406,7 @@ TEST(Keyblob, RemaskPassesIntegrity) {
   EXPECT_OK(keyblob_remask(&key));
 
   // Check that the integrity checksum was updated.
-  EXPECT_EQ(integrity_blinded_key_check(&key), kHardenedBoolTrue);
+  EXPECT_EQ(otcrypto_integrity_blinded_key_check(&key), kHardenedBoolTrue);
 }
 
 TEST(Keyblob, ShareNumWordsRsa) {

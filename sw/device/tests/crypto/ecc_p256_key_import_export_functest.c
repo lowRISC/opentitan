@@ -238,7 +238,7 @@ static status_t run_import_export_negative_tests(void) {
       .key_length = sizeof(pk_buf),
       .key = pk_buf,
   };
-  pub_key.checksum = integrity_unblinded_checksum(&pub_key);
+  pub_key.checksum = otcrypto_integrity_unblinded_checksum(&pub_key);
 
   uint32_t share0_data[10] = {0};
   uint32_t share1_data[10] = {0};
@@ -270,7 +270,7 @@ static status_t run_import_export_negative_tests(void) {
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
   };
-  priv_key.checksum = integrity_blinded_checksum(&priv_key);
+  priv_key.checksum = otcrypto_integrity_blinded_checksum(&priv_key);
 
   otcrypto_const_word32_buf_t null_in_buf = {0};
   otcrypto_word32_buf_t null_out_buf = {0};
@@ -326,7 +326,7 @@ static status_t run_import_export_negative_tests(void) {
       OTCRYPTO_OK.value);
 
   // Bad mode & integrity
-  pub_bad_mode.checksum = integrity_unblinded_checksum(&pub_bad_mode);
+  pub_bad_mode.checksum = otcrypto_integrity_unblinded_checksum(&pub_bad_mode);
   CHECK(otcrypto_ecc_p256_public_key_export(&pub_bad_mode, &x_out, &y_out)
             .value != OTCRYPTO_OK.value);
 
@@ -406,12 +406,12 @@ static status_t run_import_export_negative_tests(void) {
             .value != OTCRYPTO_OK.value);
 
   // Bad mode & hw_backed
-  priv_bad_mode.checksum = integrity_blinded_checksum(&priv_bad_mode);
+  priv_bad_mode.checksum = otcrypto_integrity_blinded_checksum(&priv_bad_mode);
   CHECK(otcrypto_ecc_p256_private_key_export(&priv_bad_mode, &share0_out,
                                              &share1_out)
             .value != OTCRYPTO_OK.value);
 
-  priv_bad_hw.checksum = integrity_blinded_checksum(&priv_bad_hw);
+  priv_bad_hw.checksum = otcrypto_integrity_blinded_checksum(&priv_bad_hw);
   CHECK(otcrypto_ecc_p256_private_key_export(&priv_bad_hw, &share0_out,
                                              &share1_out)
             .value != OTCRYPTO_OK.value);
@@ -424,7 +424,8 @@ static status_t run_import_export_negative_tests(void) {
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
   };
-  priv_no_export.checksum = integrity_blinded_checksum(&priv_no_export);
+  priv_no_export.checksum =
+      otcrypto_integrity_blinded_checksum(&priv_no_export);
   CHECK(otcrypto_ecc_p256_private_key_export(&priv_no_export, &share0_out,
                                              &share1_out)
             .value != OTCRYPTO_OK.value);

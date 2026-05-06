@@ -138,7 +138,8 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
   }
 
   // Check the private key checksum.
-  if (launder32(integrity_blinded_key_check(ikm)) != kHardenedBoolTrue) {
+  if (launder32(otcrypto_integrity_blinded_key_check(ikm)) !=
+      kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -200,7 +201,7 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
       .keyblob = salt_keyblob,
       .keyblob_length = sizeof(salt_keyblob),
   };
-  salt_key.checksum = integrity_blinded_checksum(&salt_key);
+  salt_key.checksum = otcrypto_integrity_blinded_checksum(&salt_key);
 
   // Call HMAC(salt, IKM).
   uint32_t tag_data[digest_words];
@@ -214,7 +215,7 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
   memset(prk_mask, 0, sizeof(prk_mask));
   HARDENED_TRY(
       keyblob_from_key_and_mask(tag_data, prk_mask, prk->config, prk->keyblob));
-  prk->checksum = integrity_blinded_checksum(prk);
+  prk->checksum = otcrypto_integrity_blinded_checksum(prk);
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
@@ -294,6 +295,6 @@ otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
   // Construct a blinded key.
   HARDENED_TRY(
       keyblob_from_key_and_mask(okm_data, mask, okm->config, okm->keyblob));
-  okm->checksum = integrity_blinded_checksum(okm);
+  okm->checksum = otcrypto_integrity_blinded_checksum(okm);
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }

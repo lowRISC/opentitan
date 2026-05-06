@@ -133,7 +133,7 @@ status_t ed25519_kat_test(void) {
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
   };
-  private_key.checksum = integrity_blinded_checksum(&private_key);
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
 
   // Set up public_key struct.
   uint32_t public_key_buf[kEd25519PublicKeyWords];
@@ -197,7 +197,7 @@ static status_t hasheddsa_test(void) {
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
   };
-  private_key.checksum = integrity_blinded_checksum(&private_key);
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
 
   uint32_t public_key_buf[kEd25519PublicKeyWords];
   otcrypto_unblinded_key_t public_key = {
@@ -251,7 +251,7 @@ static status_t sign_verify_test(void) {
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
   };
-  private_key.checksum = integrity_blinded_checksum(&private_key);
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
 
   // Set up public_key struct.
   uint32_t public_key_buf[kEd25519PublicKeyWords];
@@ -261,7 +261,7 @@ static status_t sign_verify_test(void) {
       .key_length = kEd25519PublicKeyBytes,
       .key = public_key_buf,
   };
-  public_key.checksum = integrity_unblinded_checksum(&public_key);
+  public_key.checksum = otcrypto_integrity_unblinded_checksum(&public_key);
 
   // Set up input_message struct.
   otcrypto_const_byte_buf_t input_message =
@@ -300,7 +300,7 @@ static status_t run_wycheproof_invalid_r_test(void) {
       .key_length = kEd25519PublicKeyBytes,
       .key = pubkey_data,
   };
-  valid_pub.checksum = integrity_unblinded_checksum(&valid_pub);
+  valid_pub.checksum = otcrypto_integrity_unblinded_checksum(&valid_pub);
 
   const uint8_t wycheproof_msg_bytes[] = {0x31, 0x32, 0x33, 0x34, 0x30, 0x30};
   otcrypto_const_byte_buf_t msg =
@@ -354,7 +354,7 @@ static status_t run_negative_tests(void) {
       .keyblob_length = sizeof(priv_keyblob),
       .keyblob = priv_keyblob,
   };
-  valid_priv.checksum = integrity_blinded_checksum(&valid_priv);
+  valid_priv.checksum = otcrypto_integrity_blinded_checksum(&valid_priv);
 
   uint32_t public_key_buf[kEd25519PublicKeyWords];
   otcrypto_unblinded_key_t valid_pub = {
@@ -362,7 +362,7 @@ static status_t run_negative_tests(void) {
       .key_length = kEd25519PublicKeyBytes,
       .key = public_key_buf,
   };
-  valid_pub.checksum = integrity_unblinded_checksum(&valid_pub);
+  valid_pub.checksum = otcrypto_integrity_unblinded_checksum(&valid_pub);
 
   otcrypto_const_byte_buf_t msg =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (const uint8_t *)kMessage,
@@ -383,7 +383,7 @@ static status_t run_negative_tests(void) {
       .keyblob_length = sizeof(priv_keyblob),
       .keyblob = priv_keyblob,
   };
-  bad_key_len.checksum = integrity_blinded_checksum(&bad_key_len);
+  bad_key_len.checksum = otcrypto_integrity_blinded_checksum(&bad_key_len);
   CHECK(otcrypto_ed25519_public_key_from_private(&bad_key_len, &valid_pub)
             .value == OTCRYPTO_BAD_ARGS.value);
 
@@ -395,7 +395,7 @@ static status_t run_negative_tests(void) {
       .keyblob_length = sizeof(priv_keyblob),
       .keyblob = priv_keyblob,
   };
-  bad_key_mode.checksum = integrity_blinded_checksum(&bad_key_mode);
+  bad_key_mode.checksum = otcrypto_integrity_blinded_checksum(&bad_key_mode);
   CHECK(otcrypto_ed25519_public_key_from_private(&bad_key_mode, &valid_pub)
             .value == OTCRYPTO_BAD_ARGS.value);
 

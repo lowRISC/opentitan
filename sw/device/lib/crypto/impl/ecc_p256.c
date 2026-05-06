@@ -131,8 +131,8 @@ static status_t internal_p256_keygen_finalize(
   }
 
   // Set the key checksums.
-  private_key->checksum = integrity_blinded_checksum(private_key);
-  public_key->checksum = integrity_unblinded_checksum(public_key);
+  private_key->checksum = otcrypto_integrity_blinded_checksum(private_key);
+  public_key->checksum = otcrypto_integrity_unblinded_checksum(public_key);
 
   // Clear the OTBN sideload slot (in case the seed was sideloaded).
   return keymgr_sideload_clear_otbn();
@@ -273,7 +273,7 @@ status_t otcrypto_ecc_p256_base_point_mult(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  HARDENED_CHECK_EQ(integrity_blinded_key_check(private_key),
+  HARDENED_CHECK_EQ(otcrypto_integrity_blinded_key_check(private_key),
                     kHardenedBoolTrue);
 
   p256_masked_scalar_t private_scalar;
@@ -287,7 +287,7 @@ status_t otcrypto_ecc_p256_base_point_mult(
   p256_point_t *pk = (p256_point_t *)public_key->key;
   HARDENED_TRY_WIPE_DMEM(p256_base_point_mult(&private_scalar, pk));
 
-  public_key->checksum = integrity_unblinded_checksum(public_key);
+  public_key->checksum = otcrypto_integrity_unblinded_checksum(public_key);
 
   return OTCRYPTO_OK;
 }
@@ -397,11 +397,12 @@ static otcrypto_status_t otcrypto_ecdsa_p256_sign_async_start_setup(
   }
 
   // Check the integrity of the private key.
-  if (integrity_blinded_key_check(private_key) != kHardenedBoolTrue) {
+  if (otcrypto_integrity_blinded_key_check(private_key) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(launder32(integrity_blinded_key_check(private_key)),
-                    kHardenedBoolTrue);
+  HARDENED_CHECK_EQ(
+      launder32(otcrypto_integrity_blinded_key_check(private_key)),
+      kHardenedBoolTrue);
 
   if (private_key->config.key_mode != kOtcryptoKeyModeEcdsaP256) {
     return OTCRYPTO_BAD_ARGS;
@@ -452,7 +453,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_config_k_async_start(
   // to the ECC implementation, check again its integrity. If the pointer would
   // have been tampered with between the first integrity check we did when
   // entering the CryptoLib and here, we would detect this now.
-  HARDENED_CHECK_EQ(integrity_blinded_key_check(private_key),
+  HARDENED_CHECK_EQ(otcrypto_integrity_blinded_key_check(private_key),
                     kHardenedBoolTrue);
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
@@ -495,7 +496,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_async_start(
   // to the ECC implementation, check again its integrity. If the pointer would
   // have been tampered with between the first integrity check we did when
   // entering the CryptoLib and here, we would detect this now.
-  HARDENED_CHECK_EQ(integrity_blinded_key_check(private_key),
+  HARDENED_CHECK_EQ(otcrypto_integrity_blinded_key_check(private_key),
                     kHardenedBoolTrue);
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
@@ -569,11 +570,12 @@ otcrypto_status_t otcrypto_ecdsa_p256_verify_async_start(
   }
 
   // Check the integrity of the public key.
-  if (integrity_unblinded_key_check(public_key) != kHardenedBoolTrue) {
+  if (otcrypto_integrity_unblinded_key_check(public_key) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(launder32(integrity_unblinded_key_check(public_key)),
-                    kHardenedBoolTrue);
+  HARDENED_CHECK_EQ(
+      launder32(otcrypto_integrity_unblinded_key_check(public_key)),
+      kHardenedBoolTrue);
 
   // Check the public key mode.
   if (public_key->key_mode != kOtcryptoKeyModeEcdsaP256) {
@@ -602,7 +604,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_verify_async_start(
   // to the ECC implementation, check again its integrity. If the pointer would
   // have been tampered with between the first integrity check we did when
   // entering the CryptoLib and here, we would detect this now.
-  HARDENED_CHECK_EQ(integrity_unblinded_key_check(public_key),
+  HARDENED_CHECK_EQ(otcrypto_integrity_unblinded_key_check(public_key),
                     kHardenedBoolTrue);
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
@@ -669,14 +671,16 @@ otcrypto_status_t otcrypto_ecdh_p256_async_start(
   }
 
   // Check the integrity of the keys.
-  if (integrity_blinded_key_check(private_key) != kHardenedBoolTrue ||
-      integrity_unblinded_key_check(public_key) != kHardenedBoolTrue) {
+  if (otcrypto_integrity_blinded_key_check(private_key) != kHardenedBoolTrue ||
+      otcrypto_integrity_unblinded_key_check(public_key) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(launder32(integrity_blinded_key_check(private_key)),
-                    kHardenedBoolTrue);
-  HARDENED_CHECK_EQ(launder32(integrity_unblinded_key_check(public_key)),
-                    kHardenedBoolTrue);
+  HARDENED_CHECK_EQ(
+      launder32(otcrypto_integrity_blinded_key_check(private_key)),
+      kHardenedBoolTrue);
+  HARDENED_CHECK_EQ(
+      launder32(otcrypto_integrity_unblinded_key_check(public_key)),
+      kHardenedBoolTrue);
 
   // Check the key modes.
   if (private_key->config.key_mode != kOtcryptoKeyModeEcdhP256 ||
@@ -718,9 +722,9 @@ otcrypto_status_t otcrypto_ecdh_p256_async_start(
   // to the ECC implementation, check again its integrity. If the pointer would
   // have been tampered with between the first integrity check we did when
   // entering the CryptoLib and here, we would detect this now.
-  HARDENED_CHECK_EQ(integrity_blinded_key_check(private_key),
+  HARDENED_CHECK_EQ(otcrypto_integrity_blinded_key_check(private_key),
                     kHardenedBoolTrue);
-  HARDENED_CHECK_EQ(integrity_unblinded_key_check(public_key),
+  HARDENED_CHECK_EQ(otcrypto_integrity_unblinded_key_check(public_key),
                     kHardenedBoolTrue);
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
@@ -769,7 +773,7 @@ otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
                                    shared_secret->keyblob));
 
   // Set the checksum.
-  shared_secret->checksum = integrity_blinded_checksum(shared_secret);
+  shared_secret->checksum = otcrypto_integrity_blinded_checksum(shared_secret);
 
   // Clear the OTBN sideload slot (in case the seed was sideloaded).
   return otcrypto_eval_exit(keymgr_sideload_clear_otbn());
@@ -806,7 +810,7 @@ otcrypto_status_t otcrypto_ecc_p256_public_key_import(
   HARDENED_TRY(hardened_memcpy(pt->y, y.data, kP256CoordWords));
 
   // Calculate the public key checksum.
-  public_key->checksum = integrity_unblinded_checksum(public_key);
+  public_key->checksum = otcrypto_integrity_unblinded_checksum(public_key);
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
@@ -837,7 +841,7 @@ otcrypto_status_t otcrypto_ecc_p256_public_key_export(
   HARDENED_TRY(p256_public_key_length_check(public_key));
 
   // Check the integrity of the public key.
-  if (integrity_unblinded_key_check(public_key) != kHardenedBoolTrue) {
+  if (otcrypto_integrity_unblinded_key_check(public_key) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -896,7 +900,7 @@ otcrypto_status_t otcrypto_ecc_p256_private_key_import(
                       share1.data, kP256MaskedScalarShareWords));
 
   // Set the blinded key checksum.
-  private_key->checksum = integrity_blinded_checksum(private_key);
+  private_key->checksum = otcrypto_integrity_blinded_checksum(private_key);
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
@@ -943,7 +947,7 @@ otcrypto_status_t otcrypto_ecc_p256_private_key_export(
   HARDENED_TRY(p256_private_key_length_check(private_key));
 
   // Check the integrity of the provided private key.
-  if (integrity_blinded_key_check(private_key) != kHardenedBoolTrue) {
+  if (otcrypto_integrity_blinded_key_check(private_key) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -1022,7 +1026,8 @@ otcrypto_status_t otcrypto_ecc_p256_arith_share_private_key(
                                kP256MaskedScalarTotalShareWords));
 
   // Set the shared key checksum.
-  arith_private_key->checksum = integrity_blinded_checksum(arith_private_key);
+  arith_private_key->checksum =
+      otcrypto_integrity_blinded_checksum(arith_private_key);
 
   HARDENED_CHECK_EQ(OTCRYPTO_CHECK_BUF(bool_private_key_share0),
                     kHardenedBoolTrue);

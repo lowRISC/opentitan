@@ -302,7 +302,7 @@ TEST(KeyTransport, KeyWrapUnwrapNegative) {
       .keyblob = target_keyblob,
       .checksum = 0,
   };
-  target_key.checksum = integrity_blinded_checksum(&target_key);
+  target_key.checksum = otcrypto_integrity_blinded_checksum(&target_key);
 
   uint32_t kek_keyblob[16] = {0};
   otcrypto_blinded_key_t kek_key = {
@@ -311,7 +311,7 @@ TEST(KeyTransport, KeyWrapUnwrapNegative) {
       .keyblob = kek_keyblob,
       .checksum = 0,
   };
-  kek_key.checksum = integrity_blinded_checksum(&kek_key);
+  kek_key.checksum = otcrypto_integrity_blinded_checksum(&kek_key);
 
   uint32_t wrapped_data[64] = {0};
   otcrypto_word32_buf_t wrapped_buf = {
@@ -339,7 +339,7 @@ TEST(KeyTransport, KeyWrapUnwrapNegative) {
       .keyblob = kek_keyblob,
       .checksum = 0,
   };
-  bad_kek_mode.checksum = integrity_blinded_checksum(&bad_kek_mode);
+  bad_kek_mode.checksum = otcrypto_integrity_blinded_checksum(&bad_kek_mode);
   EXPECT_NOT_OK(otcrypto_key_wrap(&target_key, &bad_kek_mode, &wrapped_buf));
 
   // Target key checksum error

@@ -237,7 +237,7 @@ static status_t run_encrypt_negative_tests(void) {
       .key_length = kOtcryptoRsa2048PublicKeyBytes,
       .key = pub_data,
   };
-  valid_pub.checksum = integrity_unblinded_checksum(&valid_pub);
+  valid_pub.checksum = otcrypto_integrity_unblinded_checksum(&valid_pub);
 
   otcrypto_key_config_t priv_cfg = {
       .version = kOtcryptoLibVersion1,
@@ -252,7 +252,7 @@ static status_t run_encrypt_negative_tests(void) {
       .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
       .keyblob = priv_blob,
   };
-  valid_priv.checksum = integrity_blinded_checksum(&valid_priv);
+  valid_priv.checksum = otcrypto_integrity_blinded_checksum(&valid_priv);
 
   // Base valid/invalid buffers
   uint8_t msg_data[] = "test";
@@ -324,7 +324,7 @@ static status_t run_encrypt_negative_tests(void) {
       .key_length = valid_pub.key_length,
       .key = pub_data,
   };
-  bad_pub_mode.checksum = integrity_unblinded_checksum(&bad_pub_mode);
+  bad_pub_mode.checksum = otcrypto_integrity_unblinded_checksum(&bad_pub_mode);
   CHECK(otcrypto_rsa_encrypt(&bad_pub_mode, kTestHashMode, &valid_msg,
                              &valid_msg, &valid_ct)
             .value == OTCRYPTO_BAD_ARGS.value);
@@ -388,7 +388,7 @@ static status_t run_encrypt_negative_tests(void) {
       .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
       .keyblob = priv_blob,
   };
-  bad_priv_mode.checksum = integrity_blinded_checksum(&bad_priv_mode);
+  bad_priv_mode.checksum = otcrypto_integrity_blinded_checksum(&bad_priv_mode);
   CHECK(otcrypto_rsa_decrypt(&bad_priv_mode, kTestHashMode, &valid_const_ct,
                              &valid_msg, &valid_pt, &pt_len)
             .value == OTCRYPTO_BAD_ARGS.value);
@@ -432,7 +432,7 @@ static status_t run_encrypt_negative_tests(void) {
       .key_length = 257,  // Unrecognized length
       .key = pub_data,
   };
-  pub_bad_size.checksum = integrity_unblinded_checksum(&pub_bad_size);
+  pub_bad_size.checksum = otcrypto_integrity_unblinded_checksum(&pub_bad_size);
   CHECK(otcrypto_rsa_encrypt(&pub_bad_size, kTestHashMode, &valid_msg,
                              &valid_msg, &valid_ct)
             .value == OTCRYPTO_BAD_ARGS.value);

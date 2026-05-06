@@ -172,7 +172,7 @@ static status_t sign_kat(void) {
   // We copy over the full random bits
   memcpy(keyblob_scalar + kP384SecretScalarWords, share1,
          kP384SecretScalarBytes);
-  secret_scalar.checksum = integrity_blinded_checksum(&secret_scalar);
+  secret_scalar.checksum = otcrypto_integrity_blinded_checksum(&secret_scalar);
 
   memset(unmasked_val, 0, kP384SecretScalarBytes);
   memcpy(unmasked_val, kKATKey, kP384TestVectorScalarInpBytes);
@@ -195,7 +195,7 @@ static status_t sign_kat(void) {
   };
   memcpy(keyblob_sk, share0, kP384SecretScalarBytes);
   memcpy(keyblob_sk + kP384SecretScalarWords, share1, kP384SecretScalarBytes);
-  private_key.checksum = integrity_blinded_checksum(&private_key);
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
 
   // Hash the message.
   otcrypto_const_byte_buf_t msg =
@@ -233,7 +233,7 @@ static status_t run_ecdsa_negative_tests(void) {
       .keyblob_length = 112,
       .keyblob = priv_keyblob,
   };
-  valid_priv.checksum = integrity_blinded_checksum(&valid_priv);
+  valid_priv.checksum = otcrypto_integrity_blinded_checksum(&valid_priv);
 
   uint32_t pub_key_data[96 / 4] = {0};
   otcrypto_unblinded_key_t valid_pub = {
@@ -241,7 +241,7 @@ static status_t run_ecdsa_negative_tests(void) {
       .key_length = 96,
       .key = pub_key_data,
   };
-  valid_pub.checksum = integrity_unblinded_checksum(&valid_pub);
+  valid_pub.checksum = otcrypto_integrity_unblinded_checksum(&valid_pub);
 
   uint32_t digest_data[48 / 4] = {0};
   otcrypto_hash_digest_t valid_digest = {
@@ -293,7 +293,7 @@ static status_t run_ecdsa_negative_tests(void) {
       .keyblob_length = 112,
       .keyblob = priv_keyblob,
   };
-  bad_priv_mode.checksum = integrity_blinded_checksum(&bad_priv_mode);
+  bad_priv_mode.checksum = otcrypto_integrity_blinded_checksum(&bad_priv_mode);
   CHECK(otcrypto_ecdsa_p384_keygen(&bad_priv_mode, &valid_pub).value !=
         OTCRYPTO_OK.value);
   CHECK(otcrypto_ecdsa_p384_keygen_async_start(&bad_priv_mode).value !=
@@ -307,7 +307,7 @@ static status_t run_ecdsa_negative_tests(void) {
       .key_length = 95,
       .key = pub_key_data,
   };
-  bad_pub_len.checksum = integrity_unblinded_checksum(&bad_pub_len);
+  bad_pub_len.checksum = otcrypto_integrity_unblinded_checksum(&bad_pub_len);
   CHECK(otcrypto_ecdsa_p384_keygen(&valid_priv, &bad_pub_len).value !=
         OTCRYPTO_OK.value);
   CHECK(otcrypto_ecdsa_p384_keygen_async_finalize(&valid_priv, &bad_pub_len)
@@ -319,7 +319,8 @@ static status_t run_ecdsa_negative_tests(void) {
       .keyblob_length = 111,  // Should be 112
       .keyblob = priv_keyblob,
   };
-  bad_priv_blob_len.checksum = integrity_blinded_checksum(&bad_priv_blob_len);
+  bad_priv_blob_len.checksum =
+      otcrypto_integrity_blinded_checksum(&bad_priv_blob_len);
   CHECK(otcrypto_ecdsa_p384_keygen(&bad_priv_blob_len, &valid_pub).value !=
         OTCRYPTO_OK.value);
   CHECK(otcrypto_ecdsa_p384_keygen_async_start(&bad_priv_blob_len).value !=
@@ -336,7 +337,7 @@ static status_t run_ecdsa_negative_tests(void) {
       .keyblob_length = 112,
       .keyblob = priv_keyblob,
   };
-  bad_priv_hw.checksum = integrity_blinded_checksum(&bad_priv_hw);
+  bad_priv_hw.checksum = otcrypto_integrity_blinded_checksum(&bad_priv_hw);
   CHECK(otcrypto_ecdsa_p384_keygen(&bad_priv_hw, &valid_pub).value !=
         OTCRYPTO_OK.value);
   CHECK(otcrypto_ecdsa_p384_keygen_async_start(&bad_priv_hw).value !=
@@ -480,7 +481,7 @@ static status_t run_ecdsa_negative_tests(void) {
       .key_length = valid_pub.key_length,
       .key = valid_pub.key,
   };
-  bad_pub_mode.checksum = integrity_unblinded_checksum(&bad_pub_mode);
+  bad_pub_mode.checksum = otcrypto_integrity_unblinded_checksum(&bad_pub_mode);
   CHECK(otcrypto_ecdsa_p384_keygen_async_finalize(&valid_priv, &bad_pub_mode)
             .value != OTCRYPTO_OK.value);
 
@@ -492,7 +493,7 @@ static status_t run_ecdsa_negative_tests(void) {
       .keyblob_length = 112,
       .keyblob = priv_keyblob,
   };
-  bad_sign_hw.checksum = integrity_blinded_checksum(&bad_sign_hw);
+  bad_sign_hw.checksum = otcrypto_integrity_blinded_checksum(&bad_sign_hw);
   CHECK(
       otcrypto_ecdsa_p384_sign_async_start(&bad_sign_hw, valid_digest).value !=
       OTCRYPTO_OK.value);

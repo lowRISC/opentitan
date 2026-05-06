@@ -281,7 +281,7 @@ static status_t run_test_vector(void) {
   uint32_t digest2[digest_num_words];
 
   current_test_vector->key.checksum =
-      integrity_blinded_checksum(&current_test_vector->key);
+      otcrypto_integrity_blinded_checksum(&current_test_vector->key);
 
   otcrypto_word32_buf_t tag_buf1 =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, digest1, ARRAYSIZE(digest1));
