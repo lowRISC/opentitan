@@ -17,6 +17,7 @@
 .globl ext_add
 .globl ext_to_affine
 .globl ext_is_on_curve
+.globl X25519
 
 /**
  * This library contains an implementation of the Ed25519 signature scheme
@@ -1167,7 +1168,7 @@ affine_decode_var:
  * @param[in]   w8: input Z1 (Z1 < p)
  * @param[in]   w9: input T1 (T1 < p)
  * @param[in]  w19: constant, w19 = 19
- * @param[in]  w28: a, scalar input, a < L
+ * @param[in]  w28: a, 255-bit scalar input (a < 2^255)
  * @param[in]  w29: constant, w29 = (2*d) mod p, d = (-121665/121666) mod p
  * @param[in]  w31: all-zero
  * @param[in]  MOD: p, modulus = 2^255 - 19
@@ -1187,11 +1188,11 @@ ext_scmul:
   bn.addi  w12, w31, 1
   bn.mov   w13, w31
 
-  /* Shift the 253-bit scalar value so the MSB is in position 255.
-       w28 <= w28 << 3 = a << 3 */
-  bn.rshi  w28, w28, w31 >> 253
+  /* Shift the 255-bit scalar value so the MSB is in position 255.
+       w28 <= w28 << 1 = a << 1 */
+  bn.rshi  w28, w28, w31 >> 255
 
-  /* Loop over the 253 bits of the scalar a.
+  /* Loop over the 255 bits of the scalar a.
 
      Loop intermediate values:
        P (intermediate result, starts at P = origin)
@@ -1199,9 +1200,9 @@ ext_scmul:
      Loop invariants (at start of loop iteration i):
        w28 = a << (i + 3)
        [w9:w6] = (X1, Y1, Z1, T1)
-       [w13:w10] = P = (a[252:253-i]) * (X1, Y1, Z1, T1)
+       [w13:w10] = P = (a[252:255-i]) * (X1, Y1, Z1, T1)
     */
-  loopi  253, 20
+  loopi  255, 20
     /* Compute 2P = (P + P).
          [w13:w10] <= [w13:w10] + [w13:w10] = 2P  */
     jal      x1, ext_double
@@ -1935,6 +1936,133 @@ trigger_fault_if_fg0_not_z:
        w31 <= 0 */
   bn.xor    w31, w31, w31
 
+  ret
+
+/**
+ * Convert Montgomery u-coordinate to Twisted Edwards y-coordinate.
+ * Formula: y = (u - 1) * (u + 1)^-1 mod p
+ *
+ * @param[in]  w9: Montgomery u
+ * @param[in]  w31: all-zero
+ * @param[out] w11: Twisted Edwards y
+ *
+ * clobbered registers: w6, w10, w16, w22, w23
+ */
+x25519_mont_u_to_ed_y:
+  bn.addi  w6, w31, 1
+  /* w10 = u - 1 */
+  bn.subm  w10, w9, w6
+  /* w11 = u + 1 */
+  bn.addm  w11, w9, w6
+
+  /* Invert (u + 1) */
+  bn.mov   w16, w11
+  jal      x1, fe_inv
+
+  /* y = (u - 1) * (u + 1)^-1 */
+  bn.mov   w23, w10
+  jal      x1, fe_mul
+
+  /* Store y in w11 */
+  bn.mov   w11, w22
+  ret
+
+/**
+ * Convert Twisted Edwards y-coordinate back to Montgomery u-coordinate.
+ * Formula: u = (1 + y) * (1 - y)^-1 mod p
+ *
+ * @param[in]  w11: Twisted Edwards y
+ * @param[in]  w31: all-zero
+ * @param[out] w22: Montgomery u
+ *
+ * clobbered registers: w6, w10, w16, w23
+ */
+x25519_ed_y_to_mont_u:
+  bn.addi  w6, w31, 1
+  /* w10 = 1 + y */
+  bn.addm  w10, w6, w11
+  /* w16 = 1 - y */
+  bn.subm  w16, w6, w11
+
+  /* Invert (1 - y) */
+  jal      x1, fe_inv
+
+  /* u = (1 + y) * (1 - y)^-1 */
+  bn.mov   w23, w10
+  jal      x1, fe_mul
+
+  /* The resulting u-coordinate is now in w22. */
+  ret
+
+/**
+ * Top-level X25519 function using Twisted Edwards scalar multiplication.
+ *
+ * This routine saves instruction memory by reusing the Ed25519 point arithmetic.
+ * It maps the Montgomery u-coordinate to a Twisted Edwards y-coordinate,
+ * performs the scalar multiplication, and maps the result back.
+ *
+ * @param[in]  w8: scalar (private key, already clamped by host CPU)
+ * @param[in]  w9: Montgomery u-coordinate (public key or base point 9)
+ * @param[out] w22: result, X25519(k, u) as an encoded u-coordinate
+ *
+ * clobbered registers: x2, x3, x20, x21, w2, w6 to w30
+ * clobbered flag groups: FG0
+ */
+X25519:
+  /* Move the private key scalar */
+  bn.mov   w2, w8
+
+  /* Initialize field arithmetic (MOD <= p, w19 <= 19) */
+  jal      x1, fe_init
+  bn.xor   w31, w31, w31
+  bn.addi  w30, w31, 38
+
+  /* Mask MSB of u and reduce modulo p */
+  bn.not   w7, w31
+  bn.rshi  w7, w31, w7 >> 1
+  bn.and   w9, w9, w7
+  bn.addm  w9, w9, w31
+
+  /* Convert Montgomery u to Edwards y */
+  jal      x1, x25519_mont_u_to_ed_y
+
+  /* Load curve constant d into w29 for decoding */
+  li       x2, 29
+  la       x3, ed25519_d
+  bn.lid   x2, 0(x3)
+
+  /* Decode x coordinate using the curve equation. */
+  jal      x1, affine_decode_var
+
+  /* Check for failure (e.g., if the point is on the quadratic twist). */
+  li       x21, 0x739
+  bne      x20, x21, .L_x25519_fail
+
+  /* Convert affine (x, y) to extended (X, Y, Z, T) */
+  bn.mov   w6, w10
+  bn.mov   w7, w11
+  jal      x1, affine_to_ext
+
+  /* Double w29 so it equals (2*d) mod p */
+  bn.addm  w29, w29, w29
+
+  /* Move scalar from w2 to w28 for ext_scmul */
+  bn.mov   w28, w2
+
+  /* Perform scalar multiplication: [w13:w10] = w28 * [w9:w6] */
+  jal      x1, ext_scmul
+
+  /* Convert result back to affine (x, y) */
+  jal      x1, ext_to_affine
+
+  /* Convert Edwards y back to Montgomery u */
+  jal      x1, x25519_ed_y_to_mont_u
+
+  ret
+
+.L_x25519_fail:
+  /* If point decoding fails, return 0 in w22 */
+  bn.xor   w22, w22, w22
   ret
 
 .bss
