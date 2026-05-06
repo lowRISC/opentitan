@@ -11,6 +11,7 @@
 .globl compute_x0
 .globl make_hint
 .globl hw_check_hint
+.globl compress_hint
 
 .text
 
@@ -861,5 +862,117 @@ hw_check_hint:
 
   bn.cmp w2, w0, FG0
   bn.sel w0, w31, w3, FG0.M
+
+  ret
+
+/**
+ * Compress the hint vector H.
+ *
+ * This routine takes the fully expanded hint vector H (8 * 1024 bytes) and
+ * compresses it to 83 bytes in a 96-byte allocated region. This is an
+ * implementation of the `HintBitPack` function (Algorithm 20) of FIPS-204.
+ * For a detailed explanation of this compressed hint format see the
+ * `HintBitUnpack` function (Algorithm 21) of FIPS-204.
+ *
+ * @param[in] x2: DMEM address of the expanded hint vector H (8 * 1024 bytes).
+ * @param[in] x3: DMEM address of the compressed hint 83 bytes in 96-byte region.
+ * @param[in] x4: DMEM address of a polynomial slot (1024 bytes).
+ */
+compress_hint:
+  /* Zeroize the polynomial slot just to be safe. */
+  addi x20, x4, 0
+  addi x21, x0, 32
+  jal x1, zeroize
+
+  /* Indices. */
+  addi x5, x0, 0 /* i */
+  addi x6, x0, 0 /* j */
+  addi x7, x0, 0 /* index */
+
+  /*
+   * Part 1: Compress the hint down to a (83 * 4)-byte region where each of the
+   * 83 entries occupies a 4-byte DMEM word in the slot. The following
+   * algorithm is implemented:
+   *
+   * index = 0
+   * for i in [0, 7]:
+   *   for j in [0, 255]:
+   *     if H[i][j] == 1:
+   *       Slot[index * 4] = j
+   *       index += 1
+   *   endfor
+   *  Slot[(75 + i) * 4] = index
+   * endfor
+   */
+  loopi 8, 17
+    loopi 256, 9
+      /* x8 = H[i][j]. */
+      lw x8, 0(x2)
+
+      /* x9 = j if H[i][j] == 1, else 0. */
+      sub x9, x0, x8
+      and x9, x9, x6
+
+      /* Slot[index * 4] = x9. */
+      slli x10, x7, 2
+      add x10, x4, x10
+      sw x9, 0(x10)
+
+      /* index += H[i][j]. */
+      add x7, x7, x8
+
+      /* Increment j and H address pointer. */
+      addi x6, x6, 1
+      addi x2, x2, 4
+      /* End of loop */
+
+    /* Slot[(75 + i) * 4] = index. */
+    addi x8, x0, 75
+    add x8, x8, x5
+    slli x8, x8, 2
+    add x8, x8, x4
+    sw x7, 0(x8)
+
+    /* Increment i and reset j. */
+    addi x5, x5, 1
+    addi x6, x0, 0
+    /* End of loop */
+
+  /*
+   * Part 2: Compress the (83 * 4)-byte hint further to its final 83-byte form.
+   */
+
+  /* Zeroize the output region just to be safe. */
+  addi x20, x3, 0
+  addi x21, x0, 3
+  jal x1, zeroize
+
+  /* Set up input/output DMEM pointers. */
+  addi x5, x3, 0 /* H_enc */
+  addi x6, x4, 0 /* Slot */
+
+  /* We iterate 21 * 4 = 84 times with the 84th coefficient being ignored in
+     the output. */
+  loopi 21, 9
+    /* 4-byte word accumulator. */
+    addi x7, x0, 0
+
+    /* Load 4 elements and shift them into the accumulator. */
+    loopi 4, 5
+      /* Load one element and place it at the most signficant byte of w8. */
+      lw x8, 0(x6)
+      slli x8, x8, 24
+
+      /* Add the element in w8 to w7. */
+      srli x7, x7, 8
+      or x7, x7, x8
+
+      addi x6, x6, 4
+      /* End of loop */
+
+    /* Store the accumulated 4 elements into the output location. */
+    sw x7, 0(x5)
+    addi x5, x5, 4
+    /* End of loop */
 
   ret
