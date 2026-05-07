@@ -114,6 +114,17 @@
       local:   "false"
       expose:  "true"
     }
+    { name:    "FeatStubMai"
+      type:    "bit"
+      default: "0"
+      desc: '''
+        If enabled (1), MAI and mask accelerator are not preset in the design.
+        Disabled (0) by default.
+        Useful for resource-bound targets only. Can break software setups and DV.
+        '''
+      local:   "false"
+      expose:  "true"
+    }
     { name:    "RndCnstBnMacUrndPerm",
       type:    "otbn_pkg::bn_mac_urnd_perm_t",
       desc:    '''

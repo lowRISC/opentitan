@@ -3217,7 +3217,9 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         DARJEELING_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            # This test cannot be executed on CW310 as MAI is stubbed. See #30062.
+            # We still can execute it on the CW340, where MAI is present.
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),

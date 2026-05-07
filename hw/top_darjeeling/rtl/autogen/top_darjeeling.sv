@@ -81,6 +81,7 @@ module top_darjeeling #(
   parameter bit SecOtbnMuteUrnd = 0,
   parameter bit SecOtbnFixMaiOpSeq = 0,
   parameter bit SecOtbnSkipUrndReseedAtStart = 0,
+  parameter bit OtbnFeatStubMai = 0,
   // parameters for keymgr_dpe
   parameter bit KeymgrDpeKmacEnMasking = 1,
   // parameters for csrng
@@ -1907,6 +1908,7 @@ module top_darjeeling #(
     .SecMuteUrnd(SecOtbnMuteUrnd),
     .SecFixMaiOpSeq(SecOtbnFixMaiOpSeq),
     .SecSkipUrndReseedAtStart(SecOtbnSkipUrndReseedAtStart),
+    .FeatStubMai(OtbnFeatStubMai),
     .RndCnstBnMacUrndPerm(RndCnstOtbnBnMacUrndPerm),
     .RndCnstOtbnKey(RndCnstOtbnOtbnKey),
     .RndCnstOtbnNonce(RndCnstOtbnOtbnNonce)

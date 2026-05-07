@@ -32,6 +32,9 @@ module otbn_core
   // Masking accelerator interface will not randomize operand start indexes.
   parameter bit SecFixMaiOpSeq = 1'b0,
 
+  // Masking accelerator is not present. Useful for resource-bound targets only.
+  parameter bit FeatStubMai = 1'b0,
+
   // Compile-time permutation for URND permutation in BN MAC
   parameter bn_mac_urnd_perm_t RndCnstBnMacUrndPerm = RndCnstBnMacUrndPermDefault,
 
@@ -1033,47 +1036,79 @@ module otbn_core
     .state_err_o(mac_bignum_state_error_d)
   );
 
-  otbn_mai #(
-    .SecFixMaiOpSeq(SecFixMaiOpSeq)
-  ) u_otbn_mai (
-    .clk_i,
-    .rst_ni,
-    .sec_wipe_running_i          (secure_wipe_running_o),
-    .sec_wipe_mai_i              (sec_wipe_zero),
-    .ispr_mai_ctrl_wr_i          (ispr_mai_ctrl_wr),
-    .ispr_mai_ctrl_wdata_i       (ispr_mai_ctrl_wdata),
-    .ispr_mai_ctrl_rdata_o       (ispr_mai_ctrl_rdata),
-    .ispr_mai_status_rdata_o     (ispr_mai_status_rdata),
-    .ispr_mai_in0_s0_wr_i        (ispr_mai_in0_s0_wr),
-    .sec_wipe_ispr_mai_in0_s0_i  (sec_wipe_mai_in0_s0_urnd),
-    .ispr_mai_in0_s0_wdata_i     (ispr_mai_in0_s0_wdata),
-    .ispr_mai_in0_s1_wr_i        (ispr_mai_in0_s1_wr),
-    .sec_wipe_ispr_mai_in0_s1_i  (sec_wipe_mai_in0_s1_urnd),
-    .ispr_mai_in0_s1_wdata_i     (ispr_mai_in0_s1_wdata),
-    .ispr_mai_in1_s0_wr_i        (ispr_mai_in1_s0_wr),
-    .sec_wipe_ispr_mai_in1_s0_i  (sec_wipe_mai_in1_s0_urnd),
-    .ispr_mai_in1_s0_wdata_i     (ispr_mai_in1_s0_wdata),
-    .ispr_mai_in1_s1_wr_i        (ispr_mai_in1_s1_wr),
-    .sec_wipe_ispr_mai_in1_s1_i  (sec_wipe_mai_in1_s1_urnd),
-    .ispr_mai_in1_s1_wdata_i     (ispr_mai_in1_s1_wdata),
-    .ispr_mai_res_s0_wr_i        (ispr_mai_res_s0_wr),
-    .sec_wipe_ispr_mai_res_s0_i  (sec_wipe_mai_res_s0_urnd),
-    .ispr_mai_res_s0_wdata_i     (ispr_mai_res_s0_wdata),
-    .ispr_mai_res_s1_wr_i        (ispr_mai_res_s1_wr),
-    .sec_wipe_ispr_mai_res_s1_i  (sec_wipe_mai_res_s1_urnd),
-    .ispr_mai_res_s1_wdata_i     (ispr_mai_res_s1_wdata),
-    .ispr_mai_in0_s0_rdata_o     (ispr_mai_in0_s0_rdata),
-    .ispr_mai_in0_s1_rdata_o     (ispr_mai_in0_s1_rdata),
-    .ispr_mai_in1_s0_rdata_o     (ispr_mai_in1_s0_rdata),
-    .ispr_mai_in1_s1_rdata_o     (ispr_mai_in1_s1_rdata),
-    .ispr_mai_res_s0_rdata_o     (ispr_mai_res_s0_rdata),
-    .ispr_mai_res_s1_rdata_o     (ispr_mai_res_s1_rdata),
-    .ispr_mod_intg_i             (ispr_mod_intg),
-    .mai_software_error_o        (mai_software_error),
-    .mai_reg_intg_violation_err_o(mai_reg_intg_violation_err),
-    .mai_state_err_o             (mai_state_err),
-    .urnd_data_i                 (urnd_data)
-  );
+  if (FeatStubMai) begin : gen_no_mai
+
+    // Tie-off unused signals
+    logic unused_mai;
+    assign unused_mai = ^{ispr_mai_ctrl_wdata,
+                          sec_wipe_mai_in0_s0_urnd, ispr_mai_in0_s0_wdata,
+                          sec_wipe_mai_in0_s1_urnd, ispr_mai_in0_s1_wdata,
+                          sec_wipe_mai_in1_s0_urnd, ispr_mai_in1_s0_wdata,
+                          sec_wipe_mai_in1_s1_urnd, ispr_mai_in1_s1_wdata,
+                          sec_wipe_mai_res_s0_urnd, ispr_mai_res_s0_wdata,
+                          sec_wipe_mai_res_s1_urnd, ispr_mai_res_s1_wdata};
+
+    // Return MAI software error on ISPR access
+    assign mai_software_error = ispr_mai_in0_s0_wr || ispr_mai_in0_s1_wr ||
+                                ispr_mai_in1_s0_wr || ispr_mai_in1_s1_wr ||
+                                ispr_mai_res_s0_wr || ispr_mai_res_s1_wr ||
+                                ispr_mai_ctrl_wr;
+
+    // Tie-off MAI outputs
+    assign ispr_mai_status_rdata      = '0;
+    assign ispr_mai_ctrl_rdata        = '0;
+    assign ispr_mai_in0_s0_rdata      = '0;
+    assign ispr_mai_in0_s1_rdata      = '0;
+    assign ispr_mai_in1_s0_rdata      = '0;
+    assign ispr_mai_in1_s1_rdata      = '0;
+    assign ispr_mai_res_s0_rdata      = '0;
+    assign ispr_mai_res_s1_rdata      = '0;
+    assign mai_reg_intg_violation_err = '0;
+    assign mai_state_err              = '0;
+
+  end else begin : gen_mai
+    otbn_mai #(
+      .SecFixMaiOpSeq(SecFixMaiOpSeq)
+    ) u_otbn_mai (
+      .clk_i,
+      .rst_ni,
+      .sec_wipe_running_i          (secure_wipe_running_o),
+      .sec_wipe_mai_i              (sec_wipe_zero),
+      .ispr_mai_ctrl_wr_i          (ispr_mai_ctrl_wr),
+      .ispr_mai_ctrl_wdata_i       (ispr_mai_ctrl_wdata),
+      .ispr_mai_ctrl_rdata_o       (ispr_mai_ctrl_rdata),
+      .ispr_mai_status_rdata_o     (ispr_mai_status_rdata),
+      .ispr_mai_in0_s0_wr_i        (ispr_mai_in0_s0_wr),
+      .sec_wipe_ispr_mai_in0_s0_i  (sec_wipe_mai_in0_s0_urnd),
+      .ispr_mai_in0_s0_wdata_i     (ispr_mai_in0_s0_wdata),
+      .ispr_mai_in0_s1_wr_i        (ispr_mai_in0_s1_wr),
+      .sec_wipe_ispr_mai_in0_s1_i  (sec_wipe_mai_in0_s1_urnd),
+      .ispr_mai_in0_s1_wdata_i     (ispr_mai_in0_s1_wdata),
+      .ispr_mai_in1_s0_wr_i        (ispr_mai_in1_s0_wr),
+      .sec_wipe_ispr_mai_in1_s0_i  (sec_wipe_mai_in1_s0_urnd),
+      .ispr_mai_in1_s0_wdata_i     (ispr_mai_in1_s0_wdata),
+      .ispr_mai_in1_s1_wr_i        (ispr_mai_in1_s1_wr),
+      .sec_wipe_ispr_mai_in1_s1_i  (sec_wipe_mai_in1_s1_urnd),
+      .ispr_mai_in1_s1_wdata_i     (ispr_mai_in1_s1_wdata),
+      .ispr_mai_res_s0_wr_i        (ispr_mai_res_s0_wr),
+      .sec_wipe_ispr_mai_res_s0_i  (sec_wipe_mai_res_s0_urnd),
+      .ispr_mai_res_s0_wdata_i     (ispr_mai_res_s0_wdata),
+      .ispr_mai_res_s1_wr_i        (ispr_mai_res_s1_wr),
+      .sec_wipe_ispr_mai_res_s1_i  (sec_wipe_mai_res_s1_urnd),
+      .ispr_mai_res_s1_wdata_i     (ispr_mai_res_s1_wdata),
+      .ispr_mai_in0_s0_rdata_o     (ispr_mai_in0_s0_rdata),
+      .ispr_mai_in0_s1_rdata_o     (ispr_mai_in0_s1_rdata),
+      .ispr_mai_in1_s0_rdata_o     (ispr_mai_in1_s0_rdata),
+      .ispr_mai_in1_s1_rdata_o     (ispr_mai_in1_s1_rdata),
+      .ispr_mai_res_s0_rdata_o     (ispr_mai_res_s0_rdata),
+      .ispr_mai_res_s1_rdata_o     (ispr_mai_res_s1_rdata),
+      .ispr_mod_intg_i             (ispr_mod_intg),
+      .mai_software_error_o        (mai_software_error),
+      .mai_reg_intg_violation_err_o(mai_reg_intg_violation_err),
+      .mai_state_err_o             (mai_state_err),
+      .urnd_data_i                 (urnd_data)
+    );
+  end
 
   otbn_rnd #(
     .RndCnstUrndPrngSeed(RndCnstUrndPrngSeed)
