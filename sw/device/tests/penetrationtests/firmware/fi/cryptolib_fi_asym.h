@@ -51,19 +51,6 @@ status_t handle_cryptolib_fi_asym_rsa_sign(ujson_t *uj);
 status_t handle_cryptolib_fi_asym_rsa_verify(ujson_t *uj);
 
 /**
- * The cryptolib fi drbg handler.
- *
- * This command generates a prime.
- *
- * See cryptolib_fi_asym_commands.h for inputs and outputs.
- * See fi_cryptolib.json for examples of its use.
- *
- * @param uj An initialized uJSON context.
- * @return OK or error.
- */
-status_t handle_cryptolib_fi_asym_prime(ujson_t *uj);
-
-/**
  * The cryptolib fi p256 base mul handler.
  *
  * This command performs a multiplication between a scalar and the base point.
@@ -170,60 +157,6 @@ status_t handle_cryptolib_fi_asym_p384_sign(ujson_t *uj);
  * @return OK or error.
  */
 status_t handle_cryptolib_fi_asym_p384_verify(ujson_t *uj);
-
-/**
- * The cryptolib fi secp256k1 base mul handler.
- *
- * This command performs a multiplication between a scalar and the base point.
- *
- * See cryptolib_fi_asym_commands.h for inputs and outputs.
- * See fi_cryptolib.json for examples of its use.
- *
- * @param uj An initialized uJSON context.
- * @return OK or error.
- */
-status_t handle_cryptolib_fi_asym_secp256k1_base_mul(ujson_t *uj);
-
-/**
- * The cryptolib fi secp256k1 point mul handler.
- *
- * This command performs a multiplication between a scalar and a chosen point.
- * It takes two scalars, the Bob scalar is multiplied by the base point and then
- * multiplied by Alice's scalar.
- *
- * See cryptolib_fi_asym_commands.h for inputs and outputs.
- * See fi_cryptolib.json for examples of its use.
- *
- * @param uj An initialized uJSON context.
- * @return OK or error.
- */
-status_t handle_cryptolib_fi_asym_secp256k1_point_mul(ujson_t *uj);
-
-/**
- * The cryptolib fi secp256k1 sign handler.
- *
- * This command signs on secp256k1.
- *
- * See cryptolib_fi_asym_commands.h for inputs and outputs.
- * See fi_cryptolib.json for examples of its use.
- *
- * @param uj An initialized uJSON context.
- * @return OK or error.
- */
-status_t handle_cryptolib_fi_asym_secp256k1_sign(ujson_t *uj);
-
-/**
- * The cryptolib fi secp256k1 verify handler.
- *
- * This command verifies a signature for secp256k1.
- *
- * See cryptolib_fi_asym_commands.h for inputs and outputs.
- * See fi_cryptolib.json for examples of its use.
- *
- * @param uj An initialized uJSON context.
- * @return OK or error.
- */
-status_t handle_cryptolib_fi_asym_secp256k1_verify(ujson_t *uj);
 
 /**
  * The cryptolib fi x25519 base mul handler.

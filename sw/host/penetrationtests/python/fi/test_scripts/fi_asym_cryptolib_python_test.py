@@ -475,6 +475,39 @@ class SymCryptolibFiTest(unittest.TestCase):
             actual_result_json, expected_result_json, ignored_keys_set
         )
 
+    def test_char_p256_base_mult(self):
+        private_key = ECC.generate(curve="P-256")
+        private_key_array = [x for x in private_key.d.to_bytes(32, "little")]
+        cfg = 0
+        trigger = 0
+
+        actual_result = fi_asym_cryptolib_functions.char_p256_base_mult(
+            target,
+            iterations,
+            private_key_array,
+            cfg,
+            trigger,
+        )
+        actual_result_json = json.loads(actual_result)
+
+        point_x = [x for x in private_key.pointQ.x.to_bytes(32, "little")]
+        point_y = [x for x in private_key.pointQ.y.to_bytes(32, "little")]
+
+        expected_result_json = {
+            "status": 0,
+            "err_status": 0,
+            "alerts": [0, 0, 0],
+            "loc_alerts": 0,
+            "ast_alerts": [0, 0],
+            "x": point_x,
+            "y": point_y,
+            "cfg": 0,
+        }
+
+        utils.compare_json_data(
+            actual_result_json, expected_result_json, ignored_keys_set
+        )
+
     def test_char_p384_ecdh(self):
         private_key = ECC.generate(curve="P-384")
         private_key_array = [x for x in private_key.d.to_bytes(48, "little")]
@@ -603,6 +636,39 @@ class SymCryptolibFiTest(unittest.TestCase):
             "alerts": [0, 0, 0],
             "loc_alerts": 0,
             "ast_alerts": [0, 0],
+            "cfg": 0,
+        }
+
+        utils.compare_json_data(
+            actual_result_json, expected_result_json, ignored_keys_set
+        )
+
+    def test_char_p384_base_mult(self):
+        private_key = ECC.generate(curve="P-384")
+        private_key_array = [x for x in private_key.d.to_bytes(48, "little")]
+        cfg = 0
+        trigger = 0
+
+        actual_result = fi_asym_cryptolib_functions.char_p384_base_mult(
+            target,
+            iterations,
+            private_key_array,
+            cfg,
+            trigger,
+        )
+        actual_result_json = json.loads(actual_result)
+
+        point_x = [x for x in private_key.pointQ.x.to_bytes(48, "little")]
+        point_y = [x for x in private_key.pointQ.y.to_bytes(48, "little")]
+
+        expected_result_json = {
+            "status": 0,
+            "err_status": 0,
+            "alerts": [0, 0, 0],
+            "loc_alerts": 0,
+            "ast_alerts": [0, 0],
+            "x": point_x,
+            "y": point_y,
             "cfg": 0,
         }
 

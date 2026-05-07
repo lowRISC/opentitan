@@ -138,29 +138,6 @@ def char_rsa_verify(
     return response
 
 
-def char_prime_generation(target, iterations, e, cfg, trigger, reset=False):
-    asymfi = OTFIAsymCrypto(target)
-    if reset:
-        target.reset_target()
-        # Clear the output from the reset
-        target.dump_all()
-    # Initialize our chip and catch its output
-    (
-        device_id,
-        sensors,
-        alerts,
-        owner_page,
-        boot_log,
-        boot_measurements,
-        version,
-        cryptolib_version,
-    ) = asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
-    for _ in range(iterations):
-        asymfi.handle_prime_generation(e, cfg, trigger)
-        response = target.read_response()
-    return response
-
-
 def char_p256_base_mult(target, iterations, scalar, cfg, trigger, reset=False):
     asymfi = OTFIAsymCrypto(target)
     if reset:
