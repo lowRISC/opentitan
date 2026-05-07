@@ -6630,5 +6630,51 @@
         ]
       }
     ]
+  },
+  {
+    "vsId": 1,
+    "algorithm": "RSA-sigGen",
+    "revision": "1.0",
+    "isSample": true,
+    "testGroups": [
+      {
+        "tgId": 1,
+        "sigType": "pkcs1v1.5",
+        "modulo": 2048,
+        "hashAlg": "SHA-256",
+        "testType": "GDT",
+        "tests": [
+          {
+            "tcId": 1,
+            "deferred": false,
+            "message": "3e"
+          },
+          {
+            "tcId": 2,
+            "deferred": false,
+            "message": "8f"
+          }
+        ]
+      },
+      {
+        "tgId": 2,
+        "sigType": "pss",
+        "modulo": 2048,
+        "hashAlg": "SHA-256",
+        "testType": "GDT",
+        "tests": [
+          {
+            "tcId": 3,
+            "deferred": false,
+            "message": "3e"
+          },
+          {
+            "tcId": 4,
+            "deferred": false,
+            "message": "8f"
+          }
+        ]
+      }
+    ]
   }
 ]
