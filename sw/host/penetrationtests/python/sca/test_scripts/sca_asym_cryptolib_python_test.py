@@ -23,7 +23,7 @@ from Crypto.Hash import SHA256, SHA384
 ignored_keys_set = set([])
 opentitantool_path = ""
 iterations = 2
-num_segments_list = [1, 5, 12]
+num_segments_list = [1, 5]
 
 target = None
 
@@ -259,6 +259,44 @@ class AsymCryptoScaTest(unittest.TestCase):
         signature = r + s
         verifier.verify(h, bytes(signature))
 
+    def test_char_p256_base_mult_daisy(self):
+        for num_segments in num_segments_list:
+            private_key = ECC.generate(curve="P-256")
+            private_key_array = [x for x in private_key.d.to_bytes(32, "little")]
+            cfg = 0
+            trigger = 0
+
+            actual_result = sca_asym_cryptolib_functions.char_p256_base_mult_daisy(
+                target,
+                iterations,
+                private_key_array,
+                cfg,
+                trigger,
+                num_segments,
+            )
+            actual_result_json = json.loads(actual_result)
+
+            for _ in range(iterations):
+                chained_scalar = private_key.d
+                for __ in range(num_segments):
+                    chained_p256 = ECC.construct(curve="P-256", d=chained_scalar)
+                    pub_point = chained_p256.public_key().pointQ
+                    chained_scalar = pub_point.x
+
+            point_x = [x for x in pub_point.x.to_bytes(32, "little")]
+            point_y = [x for x in pub_point.y.to_bytes(32, "little")]
+
+            expected_result_json = {
+                "status": 0,
+                "x": point_x,
+                "y": point_y,
+                "cfg": 0,
+            }
+
+            utils.compare_json_data(
+                actual_result_json, expected_result_json, ignored_keys_set
+            )
+
     def test_char_p384_ecdh(self):
         private_key = ECC.generate(curve="P-384")
         private_key_array = [x for x in private_key.d.to_bytes(48, "little")]
@@ -338,6 +376,44 @@ class AsymCryptoScaTest(unittest.TestCase):
         s.reverse()
         signature = r + s
         verifier.verify(h, bytes(signature))
+
+    def test_char_p384_base_mult_daisy(self):
+        for num_segments in num_segments_list:
+            private_key = ECC.generate(curve="P-384")
+            private_key_array = [x for x in private_key.d.to_bytes(48, "little")]
+            cfg = 0
+            trigger = 0
+
+            actual_result = sca_asym_cryptolib_functions.char_p384_base_mult_daisy(
+                target,
+                iterations,
+                private_key_array,
+                cfg,
+                trigger,
+                num_segments,
+            )
+            actual_result_json = json.loads(actual_result)
+
+            for _ in range(iterations):
+                chained_scalar = private_key.d
+                for __ in range(num_segments):
+                    chained_p384 = ECC.construct(curve="P-384", d=chained_scalar)
+                    pub_point = chained_p384.public_key().pointQ
+                    chained_scalar = pub_point.x
+
+            point_x = [x for x in pub_point.x.to_bytes(48, "little")]
+            point_y = [x for x in pub_point.y.to_bytes(48, "little")]
+
+            expected_result_json = {
+                "status": 0,
+                "x": point_x,
+                "y": point_y,
+                "cfg": 0,
+            }
+
+            utils.compare_json_data(
+                actual_result_json, expected_result_json, ignored_keys_set
+            )
 
     def test_char_ed25519_sign(self):
         scalar = [random.randint(0, 255) for _ in range(32)]

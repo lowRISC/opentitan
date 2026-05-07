@@ -156,53 +156,6 @@ status_t handle_cryptolib_fi_asym_rsa_verify(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_cryptolib_fi_asym_prime(ujson_t *uj) {
-  cryptolib_fi_asym_prime_in_t uj_input;
-  TRY(ujson_deserialize_cryptolib_fi_asym_prime_in_t(uj, &uj_input));
-
-  /////////////// STUB START ///////////////
-  // Generate a prime.
-  // Trigger are over the API calls.
-
-  // Clear registered alerts in alert handler.
-  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
-  // Clear registered local alerts in alert handler.
-  pentest_registered_loc_alerts_t reg_loc_alerts =
-      pentest_get_triggered_loc_alerts();
-  // Clear the AST recoverable alerts.
-  pentest_clear_sensor_recov_alerts();
-  // Configure Ibex to allow reading ERR_STATUS register.
-  TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
-
-  cryptolib_fi_asym_prime_out_t uj_output;
-  memset(&uj_output, 0, sizeof(uj_output));
-  memset(uj_output.prime, 0, RSA_CMD_MAX_MESSAGE_BYTES);
-  uj_output.prime_len = RSA_CMD_MAX_MESSAGE_BYTES;
-  uj_output.cfg = 0;
-  uj_output.status = 0;
-
-  // Get registered alerts from alert handler.
-  reg_alerts = pentest_get_triggered_alerts();
-  // Get registered local alerts from alert handler.
-  reg_loc_alerts = pentest_get_triggered_loc_alerts();
-  // Get fatal and recoverable AST alerts from sensor controller.
-  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
-  // Read ERR_STATUS register.
-  dif_rv_core_ibex_error_status_t codes;
-  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
-  uj_output.err_status = codes;
-  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
-  uj_output.loc_alerts = reg_loc_alerts.loc_alerts;
-  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
-         sizeof(sensor_alerts.alerts));
-  /////////////// STUB END ///////////////
-  RESP_OK(ujson_serialize_cryptolib_fi_asym_prime_out_t, uj, &uj_output);
-
-  return OK_STATUS();
-}
-
 status_t handle_cryptolib_fi_asym_p256_base_mul(ujson_t *uj) {
   cryptolib_fi_asym_p256_base_mul_in_t uj_input;
   TRY(ujson_deserialize_cryptolib_fi_asym_p256_base_mul_in_t(uj, &uj_input));
@@ -225,6 +178,10 @@ status_t handle_cryptolib_fi_asym_p256_base_mul(ujson_t *uj) {
 
   cryptolib_fi_asym_p256_base_mul_out_t uj_output;
   memset(&uj_output, 0, sizeof(uj_output));
+
+  uj_output.status = kUnknown;
+  uj_output.status =
+      (size_t)cryptolib_fi_p256_base_mul_impl(uj_input, &uj_output).value;
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -449,6 +406,10 @@ status_t handle_cryptolib_fi_asym_p384_base_mul(ujson_t *uj) {
 
   cryptolib_fi_asym_p384_base_mul_out_t uj_output;
   memset(&uj_output, 0, sizeof(uj_output));
+
+  uj_output.status = kUnknown;
+  uj_output.status =
+      (size_t)cryptolib_fi_p384_base_mul_impl(uj_input, &uj_output).value;
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -1081,7 +1042,9 @@ status_t handle_cryptolib_fi_asym_ed25519_sign(ujson_t *uj) {
       &rv_core_ibex));
 
   cryptolib_fi_asym_ed25519_sign_out_t uj_output;
-  memset(&uj_output, 0, sizeof(uj_output));
+  uj_output.status = kUnknown;
+  uj_output.status =
+      (size_t)cryptolib_fi_ed25519_sign_impl(uj_input, &uj_output).value;
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -1124,8 +1087,9 @@ status_t handle_cryptolib_fi_asym_ed25519_verify(ujson_t *uj) {
       &rv_core_ibex));
 
   cryptolib_fi_asym_ed25519_verify_out_t uj_output;
-  memset(&uj_output, 0, sizeof(uj_output));
-  uj_output.result = true;
+  uj_output.status = kUnknown;
+  uj_output.status =
+      (size_t)cryptolib_fi_ed25519_verify_impl(uj_input, &uj_output).value;
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -1193,8 +1157,6 @@ status_t handle_cryptolib_fi_asym(ujson_t *uj) {
       return handle_cryptolib_fi_asym_rsa_sign(uj);
     case kCryptoLibFiAsymSubcommandRsaVerify:
       return handle_cryptolib_fi_asym_rsa_verify(uj);
-    case kCryptoLibFiAsymSubcommandPrime:
-      return handle_cryptolib_fi_asym_prime(uj);
     case kCryptoLibFiAsymSubcommandP256BaseMul:
       return handle_cryptolib_fi_asym_p256_base_mul(uj);
     case kCryptoLibFiAsymSubcommandP256PointMul:
@@ -1215,16 +1177,6 @@ status_t handle_cryptolib_fi_asym(ujson_t *uj) {
       return handle_cryptolib_fi_asym_p384_sign(uj);
     case kCryptoLibFiAsymSubcommandP384Verify:
       return handle_cryptolib_fi_asym_p384_verify(uj);
-    case kCryptoLibFiAsymSubcommandSecp256k1BaseMul:
-      return handle_cryptolib_fi_asym_secp256k1_base_mul(uj);
-    case kCryptoLibFiAsymSubcommandSecp256k1PointMul:
-      return handle_cryptolib_fi_asym_secp256k1_point_mul(uj);
-    case kCryptoLibFiAsymSubcommandSecp256k1Ecdh:
-      return handle_cryptolib_fi_asym_secp256k1_ecdh(uj);
-    case kCryptoLibFiAsymSubcommandSecp256k1Sign:
-      return handle_cryptolib_fi_asym_secp256k1_sign(uj);
-    case kCryptoLibFiAsymSubcommandSecp256k1Verify:
-      return handle_cryptolib_fi_asym_secp256k1_verify(uj);
     case kCryptoLibFiAsymSubcommandX25519BaseMul:
       return handle_cryptolib_fi_asym_x25519_base_mul(uj);
     case kCryptoLibFiAsymSubcommandX25519PointMul:

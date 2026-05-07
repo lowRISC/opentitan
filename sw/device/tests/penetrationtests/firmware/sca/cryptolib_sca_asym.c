@@ -94,22 +94,6 @@ status_t trigger_cryptolib_sca_asym_rsa_sign(
   return OK_STATUS();
 }
 
-status_t handle_cryptolib_sca_asym_prime(ujson_t *uj) {
-  cryptolib_sca_asym_prime_in_t uj_input;
-  TRY(ujson_deserialize_cryptolib_sca_asym_prime_in_t(uj, &uj_input));
-
-  /////////////// STUB START ///////////////
-  // Generates a prime.
-  // Triggers are over the API calls.
-
-  cryptolib_sca_asym_prime_out_t uj_output;
-  memset(&uj_output, 0, sizeof(uj_output));
-  /////////////// STUB END ///////////////
-  RESP_OK(ujson_serialize_cryptolib_sca_asym_prime_out_t, uj, &uj_output);
-
-  return OK_STATUS();
-}
-
 status_t handle_cryptolib_sca_asym_rsa_sign(ujson_t *uj) {
   cryptolib_sca_asym_rsa_sign_in_t uj_input;
   TRY(ujson_deserialize_cryptolib_sca_asym_rsa_sign_in_t(uj, &uj_input));
@@ -155,10 +139,9 @@ status_t trigger_cryptolib_sca_asym_p256_base_mul(
   // Perform a base point multiplication in P256.
   // Trigger are over the API calls.
 
-  memset(x, 0, P256_CMD_BYTES);
-  memset(y, 0, P256_CMD_BYTES);
-  *cfg_out = 0;
-  *status = 0;
+  *status = (size_t)cryptolib_sca_p256_base_mul_impl(scalar, x, y, cfg_in,
+                                                     cfg_out, trigger)
+                .value;
   /////////////// STUB END ///////////////
 
   return OK_STATUS();
@@ -301,10 +284,9 @@ status_t trigger_cryptolib_sca_asym_p384_base_mul(
   // Perform a base point multiplication in p384.
   // Trigger are over the API calls.
 
-  memset(x, 0, P384_CMD_BYTES);
-  memset(y, 0, P384_CMD_BYTES);
-  *cfg_out = 0;
-  *status = 0;
+  *status = (size_t)cryptolib_sca_p384_base_mul_impl(scalar, x, y, cfg_in,
+                                                     cfg_out, trigger)
+                .value;
   /////////////// STUB END ///////////////
 
   return OK_STATUS();
@@ -369,8 +351,8 @@ status_t handle_cryptolib_sca_asym_p384_base_mul_daisy_chaining(ujson_t *uj) {
     TRY(trigger_cryptolib_sca_asym_p384_base_mul(
         scalar, x, y, uj_input.cfg, &cfg_out, &status, uj_input.trigger));
     // Copy out x coordinate to scalar
-    memset(scalar, 0, P256_CMD_BYTES);
-    memcpy(scalar, x, P256_CMD_BYTES);
+    memset(scalar, 0, P384_CMD_BYTES);
+    memcpy(scalar, x, P384_CMD_BYTES);
   }
 
   // Send the last coordinates to host via UART.
@@ -435,154 +417,6 @@ status_t handle_cryptolib_sca_asym_p384_sign(ujson_t *uj) {
   /////////////// STUB END ///////////////
 
   RESP_OK(ujson_serialize_cryptolib_sca_asym_p384_sign_out_t, uj, &uj_output);
-  return OK_STATUS();
-}
-
-status_t trigger_cryptolib_sca_asym_secp256k1_base_mul(
-    uint8_t scalar[SECP256K1_CMD_BYTES], uint8_t x[SECP256K1_CMD_BYTES],
-    uint8_t y[SECP256K1_CMD_BYTES], size_t cfg_in, size_t *cfg_out,
-    size_t *status, size_t trigger) {
-  /////////////// STUB START ///////////////
-  // Perform a base point multiplication in secp256k1.
-  // Trigger are over the API calls.
-
-  memset(x, 0, SECP256K1_CMD_BYTES);
-  memset(y, 0, SECP256K1_CMD_BYTES);
-  *cfg_out = 0;
-  *status = 0;
-  /////////////// STUB END ///////////////
-
-  return OK_STATUS();
-}
-
-status_t handle_cryptolib_sca_asym_secp256k1_base_mul_fvsr(ujson_t *uj) {
-  cryptolib_sca_asym_secp256k1_base_mul_in_t uj_input;
-  TRY(ujson_deserialize_cryptolib_sca_asym_secp256k1_base_mul_in_t(uj,
-                                                                   &uj_input));
-
-  uint8_t batch_scalar[uj_input.num_iterations][SECP256K1_CMD_BYTES];
-
-  // First generate all FvsR data sets. When sample_fixed,
-  // the provided data is used. When
-  // not sample_fixed, random data is generated.
-  bool sample_fixed = true;
-  for (size_t it = 0; it < uj_input.num_iterations; it++) {
-    if (sample_fixed) {
-      memcpy(batch_scalar[it], uj_input.scalar, SECP256K1_CMD_BYTES);
-    } else {
-      prng_rand_bytes(batch_scalar[it], SECP256K1_CMD_BYTES);
-    }
-    sample_fixed = prng_rand_byte() & 0x1;
-  }
-
-  // Invoke point mul for each data set.
-  uint8_t x[SECP256K1_CMD_BYTES];
-  uint8_t y[SECP256K1_CMD_BYTES];
-  size_t cfg_out;
-  size_t status;
-  for (size_t it = 0; it < uj_input.num_iterations; it++) {
-    TRY(trigger_cryptolib_sca_asym_secp256k1_base_mul(
-        batch_scalar[it], x, y, uj_input.cfg, &cfg_out, &status,
-        uj_input.trigger));
-  }
-
-  // Send the last coordinates to host via UART.
-  cryptolib_sca_asym_secp256k1_base_mul_out_t uj_output;
-  memset(&uj_output, 0, sizeof(uj_output));
-  memcpy(uj_output.x, x, SECP256K1_CMD_BYTES);
-  memcpy(uj_output.y, y, SECP256K1_CMD_BYTES);
-  uj_output.cfg = cfg_out;
-  uj_output.status = status;
-  RESP_OK(ujson_serialize_cryptolib_sca_asym_secp256k1_base_mul_out_t, uj,
-          &uj_output);
-
-  return OK_STATUS();
-}
-
-status_t handle_cryptolib_sca_asym_secp256k1_base_mul_daisy_chaining(
-    ujson_t *uj) {
-  cryptolib_sca_asym_secp256k1_base_mul_in_t uj_input;
-  TRY(ujson_deserialize_cryptolib_sca_asym_secp256k1_base_mul_in_t(uj,
-                                                                   &uj_input));
-
-  // Invoke point mul for each data set.
-  uint8_t scalar[SECP256K1_CMD_BYTES];
-  uint8_t x[SECP256K1_CMD_BYTES];
-  uint8_t y[SECP256K1_CMD_BYTES];
-  memset(scalar, 0, SECP256K1_CMD_BYTES);
-  memcpy(scalar, uj_input.scalar, SECP256K1_CMD_BYTES);
-  size_t cfg_out;
-  size_t status;
-  for (size_t it = 0; it < uj_input.num_iterations; it++) {
-    TRY(trigger_cryptolib_sca_asym_secp256k1_base_mul(
-        scalar, x, y, uj_input.cfg, &cfg_out, &status, uj_input.trigger));
-    // Copy out x coordinate to scalar
-    memset(scalar, 0, SECP256K1_CMD_BYTES);
-    memcpy(scalar, x, SECP256K1_CMD_BYTES);
-  }
-
-  // Send the last coordinates to host via UART.
-  cryptolib_sca_asym_secp256k1_base_mul_out_t uj_output;
-  memset(&uj_output, 0, sizeof(uj_output));
-  memcpy(uj_output.x, x, SECP256K1_CMD_BYTES);
-  memcpy(uj_output.y, y, SECP256K1_CMD_BYTES);
-  uj_output.cfg = cfg_out;
-  uj_output.status = status;
-  RESP_OK(ujson_serialize_cryptolib_sca_asym_secp256k1_base_mul_out_t, uj,
-          &uj_output);
-
-  return OK_STATUS();
-}
-
-status_t handle_cryptolib_sca_asym_secp256k1_point_mul(ujson_t *uj) {
-  cryptolib_sca_asym_secp256k1_point_mul_in_t uj_input;
-  TRY(ujson_deserialize_cryptolib_sca_asym_secp256k1_point_mul_in_t(uj,
-                                                                    &uj_input));
-
-  /////////////// STUB START ///////////////
-  // Perform a point multiplication in secp256k1.
-  // The Bob scalar is transformed to a public key to then be multiplied to the
-  // Alice scalar. Trigger are over the API calls.
-
-  cryptolib_sca_asym_secp256k1_point_mul_out_t uj_output;
-  memset(&uj_output, 0, sizeof(uj_output));
-  /////////////// STUB END ///////////////
-  RESP_OK(ujson_serialize_cryptolib_sca_asym_secp256k1_point_mul_out_t, uj,
-          &uj_output);
-
-  return OK_STATUS();
-}
-
-status_t handle_cryptolib_sca_asym_secp256k1_ecdh(ujson_t *uj) {
-  cryptolib_sca_asym_secp256k1_ecdh_in_t uj_input;
-  TRY(ujson_deserialize_cryptolib_sca_asym_secp256k1_ecdh_in_t(uj, &uj_input));
-  /////////////// STUB START ///////////////
-  // Perform ECDH in secp256k1.
-  // Trigger are over the API calls.
-
-  cryptolib_sca_asym_secp256k1_ecdh_out_t uj_output;
-  memset(&uj_output, 0, sizeof(uj_output));
-  /////////////// STUB END ///////////////
-  RESP_OK(ujson_serialize_cryptolib_sca_asym_secp256k1_ecdh_out_t, uj,
-          &uj_output);
-
-  return OK_STATUS();
-}
-
-status_t handle_cryptolib_sca_asym_secp256k1_sign(ujson_t *uj) {
-  cryptolib_sca_asym_secp256k1_sign_in_t uj_input;
-  TRY(ujson_deserialize_cryptolib_sca_asym_secp256k1_sign_in_t(uj, &uj_input));
-
-  /////////////// STUB START ///////////////
-  // Perform a secp256k1 signature.
-  // Trigger are over the API calls.
-
-  cryptolib_sca_asym_secp256k1_sign_out_t uj_output;
-  memset(&uj_output, 0, sizeof(uj_output));
-  /////////////// STUB END ///////////////
-  RESP_OK(ujson_serialize_cryptolib_sca_asym_secp256k1_sign_out_t, uj,
-          &uj_output);
-
   return OK_STATUS();
 }
 
@@ -724,10 +558,9 @@ status_t trigger_cryptolib_sca_asym_ed25519_base_mul(
   // Perform a base point multiplication in ED25519.
   // Trigger are over the API calls.
 
-  memset(x, 0, ED25519_CMD_SCALAR_BYTES);
-  memset(y, 0, ED25519_CMD_SCALAR_BYTES);
-  *cfg_out = 0;
-  *status = 0;
+  *status = (size_t)cryptolib_sca_ed25519_base_mul_impl(scalar, x, y, cfg_in,
+                                                        cfg_out, trigger)
+                .value;
   /////////////// STUB END ///////////////
 
   return OK_STATUS();
@@ -868,8 +701,6 @@ status_t handle_cryptolib_sca_asym(ujson_t *uj) {
       return handle_cryptolib_sca_asym_rsa_dec(uj);
     case kCryptoLibScaAsymSubcommandRsaSign:
       return handle_cryptolib_sca_asym_rsa_sign(uj);
-    case kCryptoLibScaAsymSubcommandPrime:
-      return handle_cryptolib_sca_asym_prime(uj);
     case kCryptoLibScaAsymSubcommandP256BaseMulFvsr:
       return handle_cryptolib_sca_asym_p256_base_mul_fvsr(uj);
     case kCryptoLibScaAsymSubcommandP256BaseMulDaisy:
@@ -890,16 +721,6 @@ status_t handle_cryptolib_sca_asym(ujson_t *uj) {
       return handle_cryptolib_sca_asym_p384_ecdh(uj);
     case kCryptoLibScaAsymSubcommandP384Sign:
       return handle_cryptolib_sca_asym_p384_sign(uj);
-    case kCryptoLibScaAsymSubcommandSecp256k1BaseMulFvsr:
-      return handle_cryptolib_sca_asym_secp256k1_base_mul_fvsr(uj);
-    case kCryptoLibScaAsymSubcommandSecp256k1BaseMulDaisy:
-      return handle_cryptolib_sca_asym_secp256k1_base_mul_daisy_chaining(uj);
-    case kCryptoLibScaAsymSubcommandSecp256k1PointMul:
-      return handle_cryptolib_sca_asym_secp256k1_point_mul(uj);
-    case kCryptoLibScaAsymSubcommandSecp256k1Ecdh:
-      return handle_cryptolib_sca_asym_secp256k1_ecdh(uj);
-    case kCryptoLibScaAsymSubcommandSecp256k1Sign:
-      return handle_cryptolib_sca_asym_secp256k1_sign(uj);
     case kCryptoLibScaAsymSubcommandX25519BaseMulFvsr:
       return handle_cryptolib_sca_asym_x25519_base_mul_fvsr(uj);
     case kCryptoLibScaAsymSubcommandX25519BaseMulDaisy:

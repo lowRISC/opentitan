@@ -136,4 +136,54 @@ status_t cryptolib_sca_x25519_point_mul_impl(
     cryptolib_sca_asym_x25519_point_mul_in_t uj_input,
     cryptolib_sca_asym_x25519_point_mul_out_t *uj_output);
 
+/**
+ * Wrapper to P256 Base Multiplication SCA cryptolib implementation.
+ *
+ * @param scalar The scalar multiplier.
+ * @param x The resulting X coordinate.
+ * @param y The resulting Y coordinate.
+ * @param cfg_in Configuration parameter.
+ * @param cfg_out Return configuration parameter.
+ * @param trigger Value dictating trigger window handling.
+ * @return OK or error.
+ */
+status_t cryptolib_sca_p256_base_mul_impl(uint8_t scalar[P256_CMD_BYTES],
+                                          uint8_t x[P256_CMD_BYTES],
+                                          uint8_t y[P256_CMD_BYTES],
+                                          size_t cfg_in, size_t *cfg_out,
+                                          size_t trigger);
+
+/**
+ * Wrapper to P384 Base Multiplication SCA cryptolib implementation.
+ *
+ * @param scalar The scalar multiplier.
+ * @param x The resulting X coordinate.
+ * @param y The resulting Y coordinate.
+ * @param cfg_in Configuration parameter.
+ * @param cfg_out Return configuration parameter.
+ * @param trigger Value dictating trigger window handling.
+ * @return OK or error.
+ */
+status_t cryptolib_sca_p384_base_mul_impl(uint8_t scalar[P384_CMD_BYTES],
+                                          uint8_t x[P384_CMD_BYTES],
+                                          uint8_t y[P384_CMD_BYTES],
+                                          size_t cfg_in, size_t *cfg_out,
+                                          size_t trigger);
+
+/**
+ * Wrapper to ED25519 Base Multiplication SCA cryptolib implementation.
+ *
+ * @param scalar The scalar multiplier.
+ * @param x The resulting X coordinate.
+ * @param y The resulting Y coordinate.
+ * @param cfg_in Configuration parameter.
+ * @param cfg_out Return configuration parameter.
+ * @param trigger Value dictating trigger window handling.
+ * @return OK or error.
+ */
+status_t cryptolib_sca_ed25519_base_mul_impl(
+    uint8_t scalar[ED25519_CMD_SCALAR_BYTES],
+    uint8_t x[ED25519_CMD_SCALAR_BYTES], uint8_t y[ED25519_CMD_SCALAR_BYTES],
+    size_t cfg_in, size_t *cfg_out, size_t trigger);
+
 #endif  // OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_SCA_CRYPTOLIB_SCA_ASYM_IMPL_H_
