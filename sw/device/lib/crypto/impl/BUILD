@@ -93,6 +93,22 @@ cc_library(
 )
 
 cc_library(
+    name = "cmac",
+    srcs = ["cmac.c"],
+    hdrs = ["//sw/device/lib/crypto/include:cmac.h"],
+    deps = [
+        ":config",
+        ":integrity",
+        ":keyblob",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/crypto/drivers:aes",
+        "//sw/device/lib/crypto/drivers:rv_core_ibex",
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
+cc_library(
     name = "ecc_curve25519",
     srcs = ["ecc_curve25519.c"],
     hdrs = ["//sw/device/lib/crypto/include:ecc_curve25519.h"],
