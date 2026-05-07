@@ -98,6 +98,7 @@ module top_earlgrey #(
   parameter bit SecOtbnMuteUrnd = 0,
   parameter bit SecOtbnFixMaiOpSeq = 0,
   parameter bit SecOtbnSkipUrndReseedAtStart = 0,
+  parameter bit OtbnFeatStubMai = 0,
   // parameters for keymgr
   parameter bit KeymgrUseOtpSeedsInsteadOfFlash = 0,
   parameter bit KeymgrKmacEnMasking = 1,
@@ -2524,6 +2525,7 @@ module top_earlgrey #(
     .SecMuteUrnd(SecOtbnMuteUrnd),
     .SecFixMaiOpSeq(SecOtbnFixMaiOpSeq),
     .SecSkipUrndReseedAtStart(SecOtbnSkipUrndReseedAtStart),
+    .FeatStubMai(OtbnFeatStubMai),
     .RndCnstBnMacUrndPerm(RndCnstOtbnBnMacUrndPerm),
     .RndCnstOtbnKey(RndCnstOtbnOtbnKey),
     .RndCnstOtbnNonce(RndCnstOtbnOtbnNonce)

@@ -29,6 +29,9 @@ module otbn
   // Masking accelerator interface will not randomize operand start indexes.
   parameter bit SecFixMaiOpSeq = 1'b0,
 
+  // Masking accelerator is not present. Useful for resource-bound targets only.
+  parameter bit FeatStubMai = 1'b0,
+
   // Compile-time permutation for URND permutation in BN MAC
   parameter bn_mac_urnd_perm_t RndCnstBnMacUrndPerm = RndCnstBnMacUrndPermDefault,
 
@@ -1119,6 +1122,7 @@ module otbn
     .RndCnstUrndPrngSeed(RndCnstUrndPrngSeed),
     .SecMuteUrnd(SecMuteUrnd),
     .SecFixMaiOpSeq(SecFixMaiOpSeq),
+    .FeatStubMai(FeatStubMai),
     .SecSkipUrndReseedAtStart(SecSkipUrndReseedAtStart),
     .RndCnstBnMacUrndPerm(RndCnstBnMacUrndPerm)
   ) u_otbn_core (
@@ -1513,12 +1517,12 @@ module otbn
   )
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(
     OtbnMaiInputCntAlertCheck_A,
-    u_otbn_core.u_otbn_mai.u_prim_count_input_word_select,
+    u_otbn_core.gen_mai.u_otbn_mai.u_prim_count_input_word_select,
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
   )
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(
     OtbnMaiOutputCntAlertCheck_A,
-    u_otbn_core.u_otbn_mai.u_prim_count_output_word_select,
+    u_otbn_core.gen_mai.u_otbn_mai.u_prim_count_output_word_select,
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
   )
 endmodule

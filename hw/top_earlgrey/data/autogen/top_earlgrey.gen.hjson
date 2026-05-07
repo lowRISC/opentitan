@@ -7577,6 +7577,20 @@
           expose: "true"
           name_top: SecOtbnSkipUrndReseedAtStart
         }
+        {
+          name: FeatStubMai
+          desc:
+            '''
+            If enabled (1), MAI and mask accelerator are not preset in the design.
+            Disabled (0) by default.
+            Useful for resource-bound targets only. Can break software setups and DV.
+            '''
+          type: bit
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: OtbnFeatStubMai
+        }
       ]
       inter_signal_list:
       [

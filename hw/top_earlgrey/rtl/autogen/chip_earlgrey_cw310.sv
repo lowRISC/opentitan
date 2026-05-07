@@ -1060,6 +1060,7 @@ module chip_earlgrey_cw310 #(
 // otherwise Verilator / FPGA will hang.
   top_earlgrey #(
     .SecAesMasking(1'b0), // Disable AES masking on the CW310, where we are constrained by area.
+    .OtbnFeatStubMai(1'b1), // Stub MAI to reduce resource usage on CW310. See #30062.
     .SecAesSBoxImpl(aes_pkg::SBoxImplLut),
     .SecAesStartTriggerDelay(0),
     .SecAesAllowForcingMasks(1'b1),
