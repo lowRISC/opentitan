@@ -14,7 +14,7 @@ import random
 import unittest
 import argparse
 import sys
-from Crypto.Hash import SHA256, HMAC
+from Crypto.Hash import SHA256, HMAC, CMAC
 from Crypto.Cipher import AES
 
 ignored_keys_set = set([])
@@ -522,6 +522,115 @@ class SymCryptoScaTest(unittest.TestCase):
 
             utils.compare_json_data(
                 actual_result_json, expected_result_json, drbg_ignored_key_sets
+            )
+
+    def test_char_cmac_fvsr_plaintext(self):
+        for num_segments in num_segments_list:
+            # For testing, we just take a multiple of the block size
+            data_len = random.randint(1, 3)
+            data_len *= 16
+            data = [random.randint(0, 255) for _ in range(data_len)]
+            key_len_idx = random.randint(0, 2)
+            if key_len_idx == 0:
+                key_len = 16
+            elif key_len_idx == 1:
+                key_len = 24
+            else:
+                key_len = 32
+            key = [random.randint(0, 255) for _ in range(key_len)]
+            iv = [random.randint(0, 255) for _ in range(16)]
+            cfg = 0
+            trigger = 0
+
+            actual_result = sca_sym_cryptolib_functions.char_cmac_fvsr_plaintext(
+                target,
+                iterations,
+                data,
+                data_len,
+                key,
+                key_len,
+                iv,
+                cfg,
+                trigger,
+                num_segments,
+            )
+            actual_result_json = json.loads(actual_result)
+
+            # Set the synchronized randomness
+            batch_prng_seed = 1
+            random.seed(batch_prng_seed)
+            # Generate the batch data
+            for _ in range(iterations):
+                sample_fixed = 1
+                for __ in range(num_segments):
+                    if sample_fixed == 1:
+                        batch_data = data
+                    else:
+                        batch_data = [random.randint(0, 255) for _ in range(len(data))]
+                    sample_fixed = random.randint(0, 255) & 0x1
+
+            cmac = CMAC.new(bytes(key), ciphermod=AES)
+            cmac.update(bytes(batch_data))
+            expected_result = utils.pad_with_zeros([x for x in cmac.digest()], 64)
+            expected_result_json = {
+                "status": 0,
+                "data": expected_result,
+                "data_len": 16,
+                "cfg": 0,
+            }
+
+            utils.compare_json_data(
+                actual_result_json, expected_result_json, ignored_keys_set
+            )
+
+    def test_char_cmac_daisy(self):
+        for num_segments in num_segments_list:
+            # For testing, we just take data_len = 16
+            data_len = 16
+            data = [random.randint(0, 255) for _ in range(data_len)]
+            key_len_idx = random.randint(0, 2)
+            if key_len_idx == 0:
+                key_len = 16
+            elif key_len_idx == 1:
+                key_len = 24
+            else:
+                key_len = 32
+            key = [random.randint(0, 255) for _ in range(key_len)]
+            iv = [random.randint(0, 255) for _ in range(16)]
+            cfg = 0
+            trigger = 0
+
+            actual_result = sca_sym_cryptolib_functions.char_cmac_daisy(
+                target,
+                iterations,
+                data,
+                data_len,
+                key,
+                key_len,
+                iv,
+                cfg,
+                trigger,
+                num_segments,
+            )
+            actual_result_json = json.loads(actual_result)
+
+            for _ in range(iterations):
+                chained_text = data
+                for __ in range(num_segments):
+                    cmac = CMAC.new(bytes(key), ciphermod=AES)
+                    cmac.update(bytes(chained_text))
+                    chained_text = [x for x in cmac.digest()]
+
+            expected_result = utils.pad_with_zeros(chained_text, 64)
+            expected_result_json = {
+                "status": 0,
+                "data": expected_result,
+                "data_len": 16,
+                "cfg": 0,
+            }
+
+            utils.compare_json_data(
+                actual_result_json, expected_result_json, ignored_keys_set
             )
 
 

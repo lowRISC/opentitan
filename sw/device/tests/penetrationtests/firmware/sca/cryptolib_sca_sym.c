@@ -57,7 +57,11 @@ static status_t trigger_cryptolib_cmac(
   memset(data_out, 0, AES_CMD_MAX_MSG_BYTES);
   *data_out_len = AES_CMD_MAX_MSG_BYTES;
   *cfg_out = 0;
-  *status = 0;
+
+  *status = (size_t)cryptolib_sca_cmac_impl(data_in, data_in_len, key, key_len,
+                                            iv, data_out, data_out_len, cfg_in,
+                                            cfg_out, trigger)
+                .value;
   /////////////// STUB END ///////////////
 
   return OK_STATUS();
