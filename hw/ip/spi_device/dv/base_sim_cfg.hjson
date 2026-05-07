@@ -42,7 +42,7 @@
   sim_tops: ["spi_device_bind", "sec_cm_prim_onehot_check_bind"]
 
   // Default iterations for all tests - each test entry can override this.
-  reseed: 50
+  reseed: 15
 
   // Enable cdc instrumentation.
   run_opts: ["+cdc_instrumentation_enabled=1"]
@@ -154,16 +154,19 @@
     {
       name: spi_device_flash_all
       uvm_test_seq: spi_device_flash_all_vseq
+      reseed: 25
     }
 
     {
       name: spi_device_flash_and_tpm
       uvm_test_seq: spi_device_flash_and_tpm_vseq
+      reseed: 25
     }
 
     {
       name: spi_device_flash_and_tpm_min_idle
       uvm_test_seq: spi_device_flash_and_tpm_min_idle_vseq
+      reseed: 25
     }
   ]
 

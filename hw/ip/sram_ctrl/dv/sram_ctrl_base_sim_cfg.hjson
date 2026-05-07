@@ -48,7 +48,7 @@
              "sec_cm_prim_onehot_check_bind", "sec_cm_prim_count_bind"]
 
   // Default iterations for all tests - each test entry can override this.
-  reseed: 5
+  reseed: 8
 
   // Need to override the default output directory
   overrides: [

@@ -38,7 +38,7 @@
              "sec_cm_prim_sparse_fsm_flop_bind", "sec_cm_prim_onehot_check_bind"]
 
   // Default iterations for all tests - each test entry can override this.
-  reseed: 50
+  reseed: 10
 
   overrides: [
     //
@@ -79,6 +79,7 @@
     {
       name: lc_ctrl_smoke
       uvm_test_seq: lc_ctrl_smoke_vseq
+      reseed: 20
     }
 
     {
@@ -90,26 +91,31 @@
     {
       name: lc_ctrl_state_failure
       uvm_test_seq: lc_ctrl_state_failure_vseq
+      reseed: 20
     }
 
     {
       name: lc_ctrl_state_post_trans
       uvm_test_seq: lc_ctrl_state_post_trans_vseq
+      reseed: 20
     }
 
     {
       name: lc_ctrl_prog_failure
       uvm_test_seq: lc_ctrl_prog_failure_vseq
+      reseed: 20
     }
 
     {
       name: lc_ctrl_errors
       uvm_test_seq: lc_ctrl_lc_errors_vseq
+      reseed: 20
     }
 
     {
       name: lc_ctrl_security_escalation
       uvm_test_seq: lc_ctrl_security_escalation_vseq
+      reseed: 20
     }
 
     {

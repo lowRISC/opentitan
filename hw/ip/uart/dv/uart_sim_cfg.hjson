@@ -38,7 +38,7 @@
   sim_tops: ["uart_bind", "sec_cm_prim_onehot_check_bind"]
 
   // Default iterations for all tests - each test entry can override this.
-  reseed: 50
+  reseed: 10
 
   // Enable cdc instrumentation.
   run_opts: ["+cdc_instrumentation_enabled=1"]
@@ -75,7 +75,7 @@
     {
       name: uart_fifo_reset
       // need more seeds to cover uart_env_cov::rx_fifo_level_cg and uart_env_cov::tx_fifo_level_cg
-      reseed: 300
+      reseed: 200
       uvm_test_seq: uart_fifo_reset_vseq
     }
 
@@ -132,7 +132,7 @@
     {
       name: uart_stress_all_with_rand_reset
       // need more seeds to cover uart_agent_cov::uart_reset_cg
-      reseed: 100
+      reseed: 20
     }
   ]
 

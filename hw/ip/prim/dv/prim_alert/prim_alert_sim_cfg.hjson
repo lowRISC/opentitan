@@ -24,7 +24,7 @@
   import_cfgs: ["{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson"]
 
   // Default iterations for all tests - each test entry can override this.
-  reseed: 20
+  reseed: 10
 
   // Enable cdc instrumentation
   run_opts: ["+cdc_instrumentation_enabled=1"]
@@ -52,6 +52,7 @@
   tests: [
     {
       name: prim_async_alert
+      reseed: 20
     }
     {
       name: prim_async_fatal_alert

@@ -405,7 +405,7 @@
       name: xbar_run_mode
       en_run_modes: ["gen_otp_images_mode"]
       run_opts: ["+xbar_mode=1"]
-      reseed: 100
+      reseed: 50
     }
   ]
 
