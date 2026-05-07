@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/include/aes.h"
 #include "sw/device/lib/crypto/include/aes_gcm.h"
+#include "sw/device/lib/crypto/include/cmac.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/drbg.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
@@ -429,6 +430,78 @@ status_t cryptolib_fi_hmac_impl(cryptolib_fi_sym_hmac_in_t uj_input,
   uj_output->data_len = tag_bytes;
   uj_output->cfg = 0;
   memset(uj_output->data, 0, HMAC_CMD_MAX_TAG_BYTES);
+  memcpy(uj_output->data, tag_buf, uj_output->data_len);
+
+  return OK_STATUS();
+}
+
+status_t cryptolib_fi_cmac_impl(cryptolib_fi_sym_cmac_in_t uj_input,
+                                cryptolib_fi_sym_cmac_out_t *uj_output) {
+  // Build the key configuration.
+  otcrypto_key_config_t config = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeAesCmac,
+      .key_length = uj_input.key_len,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+
+  size_t key_words =
+      (uj_input.key_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
+
+  uint32_t key_buf[kPentestAesMaxKeyWords];
+  memset(key_buf, 0, AES_CMD_MAX_KEY_BYTES);
+  memcpy(key_buf, uj_input.key, uj_input.key_len);
+
+  uint32_t cmac_key_mask[kPentestAesMaxKeyWords];
+  memset(cmac_key_mask, 0, AES_CMD_MAX_KEY_BYTES);
+  for (size_t it = 0; it < kPentestAesMaxKeyWords; it++) {
+    cmac_key_mask[it] = pentest_ibex_rnd32_read();
+  }
+
+  for (size_t i = 0; i < key_words; ++i) {
+    key_buf[i] ^= cmac_key_mask[i];
+  }
+
+  otcrypto_const_word32_buf_t share0 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, key_buf, key_words);
+  otcrypto_const_word32_buf_t share1 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, cmac_key_mask, key_words);
+
+  uint32_t keyblob[2 * kPentestAesMaxKeyWords];
+  otcrypto_blinded_key_t key = {
+      .config = config,
+      .keyblob_length = 2 * key_words * sizeof(uint32_t),
+      .keyblob = keyblob,
+  };
+
+  otcrypto_status_t import_status =
+      otcrypto_import_blinded_key(&share0, &share1, &key);
+  if (import_status.value != kOtcryptoStatusValueOk) {
+    return INTERNAL(import_status.value);
+  }
+
+  // Create input message.
+  uint8_t msg_buf[uj_input.data_len];
+  memcpy(msg_buf, uj_input.data, uj_input.data_len);
+  otcrypto_const_byte_buf_t input_message =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg_buf, uj_input.data_len);
+
+  // CMAC generates a 128 bit tag for AES.
+  size_t tag_bytes = 16;
+  uint32_t tag_buf[kPentestAesBlockWords];
+  otcrypto_word32_buf_t tag = OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_buf,
+                                                tag_bytes / sizeof(uint32_t));
+
+  // Trigger window.
+  pentest_set_trigger_high();
+  TRY(otcrypto_cmac(&key, &input_message, &tag));
+  pentest_set_trigger_low();
+
+  // Return data back to host.
+  uj_output->data_len = tag_bytes;
+  uj_output->cfg = uj_input.cfg;
+  memset(uj_output->data, 0, AES_CMD_MAX_MSG_BYTES);
   memcpy(uj_output->data, tag_buf, uj_output->data_len);
 
   return OK_STATUS();

@@ -129,4 +129,28 @@ status_t cryptolib_sca_hmac_impl(uint8_t data_in[HMAC_CMD_MAX_MSG_BYTES],
                                  size_t mode, size_t cfg_in, size_t *cfg_out,
                                  size_t trigger);
 
+/**
+ * Wrapper to CMAC cryptolib implementation.
+ *
+ * @param data_in Input data payload.
+ * @param data_in_len Length of input data.
+ * @param key Key data.
+ * @param key_len Length of the key.
+ * @param iv Initialization vector.
+ * @param data_out Output data buffer.
+ * @param data_out_len Actual length of output data written.
+ * @param cfg_in Context/configuration identifier (in).
+ * @param cfg_out Context/configuration identifier (out).
+ * @param trigger Trigger signal specifier.
+ * @return OK or error.
+ */
+status_t cryptolib_sca_cmac_impl(uint8_t data_in[AES_CMD_MAX_MSG_BYTES],
+                                 size_t data_in_len,
+                                 uint8_t key[AES_CMD_MAX_KEY_BYTES],
+                                 size_t key_len,
+                                 uint8_t iv[AES_CMD_MAX_BLOCK_BYTES],
+                                 uint8_t data_out[AES_CMD_MAX_MSG_BYTES],
+                                 size_t *data_out_len, size_t cfg_in,
+                                 size_t *cfg_out, size_t trigger);
+
 #endif  // OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_SCA_CRYPTOLIB_SCA_SYM_IMPL_H_
