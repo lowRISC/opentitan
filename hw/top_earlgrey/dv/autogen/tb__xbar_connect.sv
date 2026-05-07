@@ -6,17 +6,17 @@
 
 // This file must be `included in `hw/top_<toplevel>/dv/tb/tb.sv.
 
-`define DRIVE_CHIP_TL_HOST_IF(tl_name, inst_name, sig_name) \
-     force ``tl_name``_tl_if.d2h = dut.top_earlgrey.u_``inst_name``.``sig_name``_i; \
-     force dut.top_earlgrey.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.h2d; \
-     force dut.top_earlgrey.u_``inst_name``.clk_i = 0; \
+`define DRIVE_CHIP_TL_HOST_IF(tl_name, inst_name, sig_name, pd_hier = ) \
+     force ``tl_name``_tl_if.d2h = dut.top_earlgrey``pd_hier``.u_``inst_name``.``sig_name``_i; \
+     force dut.top_earlgrey``pd_hier``.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.h2d; \
+     force dut.top_earlgrey``pd_hier``.u_``inst_name``.clk_i = 0; \
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*env.%0s_agent", `"tl_name`"), "vif", \
                                         ``tl_name``_tl_if);
 
-`define DRIVE_CHIP_TL_DEVICE_IF(tl_name, inst_name, sig_name) \
-     force ``tl_name``_tl_if.h2d = dut.top_earlgrey.u_``inst_name``.``sig_name``_i; \
-     force dut.top_earlgrey.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.d2h; \
-     force dut.top_earlgrey.u_``inst_name``.clk_i = 0; \
+`define DRIVE_CHIP_TL_DEVICE_IF(tl_name, inst_name, sig_name, pd_hier = ) \
+     force ``tl_name``_tl_if.h2d = dut.top_earlgrey``pd_hier``.u_``inst_name``.``sig_name``_i; \
+     force dut.top_earlgrey``pd_hier``.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.d2h; \
+     force dut.top_earlgrey``pd_hier``.u_``inst_name``.clk_i = 0; \
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*env.%0s_agent", `"tl_name`"), "vif", \
                                         ``tl_name``_tl_if);
 
@@ -154,24 +154,24 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(i2c1, i2c1, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(i2c2, i2c2, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(pattgen, pattgen, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(pwm_aon, pwm_aon, tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(pwm_aon, pwm_aon, tl, _pd_aon)
     `DRIVE_CHIP_TL_DEVICE_IF(gpio, gpio, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(spi_device, spi_device, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(rv_timer, rv_timer, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(pwrmgr_aon, pwrmgr_aon, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(rstmgr_aon, rstmgr_aon, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(clkmgr_aon, clkmgr_aon, tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(pwrmgr_aon, pwrmgr_aon, tl, _pd_aon)
+    `DRIVE_CHIP_TL_DEVICE_IF(rstmgr_aon, rstmgr_aon, tl, _pd_aon)
+    `DRIVE_CHIP_TL_DEVICE_IF(clkmgr_aon, clkmgr_aon, tl, _pd_aon)
     `DRIVE_CHIP_TL_DEVICE_IF(pinmux_aon, pinmux_aon, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(otp_ctrl__core, otp_ctrl, core_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(otp_macro__prim, otp_macro, prim_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(lc_ctrl__regs, lc_ctrl, regs_tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(sensor_ctrl_aon, sensor_ctrl_aon, tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(sensor_ctrl_aon, sensor_ctrl_aon, tl, _pd_aon)
     `DRIVE_CHIP_TL_DEVICE_IF(alert_handler, alert_handler, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_ret_aon__regs, sram_ctrl_ret_aon, regs_tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_ret_aon__ram, sram_ctrl_ret_aon, ram_tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(aon_timer_aon, aon_timer_aon, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(sysrst_ctrl_aon, sysrst_ctrl_aon, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(adc_ctrl_aon, adc_ctrl_aon, tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_ret_aon__regs, sram_ctrl_ret_aon, regs_tl, _pd_aon)
+    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_ret_aon__ram, sram_ctrl_ret_aon, ram_tl, _pd_aon)
+    `DRIVE_CHIP_TL_DEVICE_IF(aon_timer_aon, aon_timer_aon, tl, _pd_aon)
+    `DRIVE_CHIP_TL_DEVICE_IF(sysrst_ctrl_aon, sysrst_ctrl_aon, tl, _pd_aon)
+    `DRIVE_CHIP_TL_DEVICE_IF(adc_ctrl_aon, adc_ctrl_aon, tl, _pd_aon)
     `DRIVE_CHIP_TL_EXT_DEVICE_IF(ast, ast, tl)
 `endif
 
