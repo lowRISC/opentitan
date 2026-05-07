@@ -50,6 +50,15 @@ struct Opts {
     // ACVP JSON result file containing expected outputs.
     #[arg(long)]
     expected: Option<std::path::PathBuf>,
+
+    // Run RSA sigGen test vectors from the input file.
+    // sigGen results are non-deterministic and are never compared against --expected.
+    #[arg(long, default_value_t = false)]
+    run_siggen: bool,
+
+    // Output ACVP JSON result file for RSA sigGen (implies --run-siggen).
+    #[arg(long)]
+    output_siggen: Option<std::path::PathBuf>,
 }
 
 #[derive(Deserialize, PartialEq, Serialize)]
@@ -63,6 +72,9 @@ enum AcvpVectors {
     },
     Hmac(hmac::HmacTestVectorSet),
     Cshake(cshake::CshakeTestVectorSet),
+    // RsaSigGen must precede Rsa: sigGen test cases have a required `message`
+    // field that sigVer test cases lack, so sigVer vectors will fall through to Rsa.
+    RsaSigGen(rsa::RsaSignGenTestVectorSet),
     Rsa(rsa::RsaTestVectorSet),
 }
 
@@ -77,6 +89,7 @@ enum AcvpResults {
     },
     Hmac(hmac::HmacResultVectorSet),
     Cshake(cshake::CshakeResultVectorSet),
+    RsaSigGen(rsa::RsaSignGenResultVectorSet),
     Rsa(rsa::RsaResultVectorSet),
 }
 
@@ -154,6 +167,7 @@ fn run<R: std::io::Read, W: std::io::Write>(
     input: R,
     expected: Option<R>,
     output: Option<W>,
+    output_siggen: Option<W>,
 ) -> Result<()> {
     let spi = transport.spi("BOOTSTRAP")?;
     let spi_console_device = SpiConsoleDevice::new(
@@ -166,6 +180,7 @@ fn run<R: std::io::Read, W: std::io::Write>(
 
     let acvp_vectors: Vec<AcvpVectors> = serde_json::from_reader(input)?;
     let mut acvp_results: Vec<AcvpResults> = Vec::with_capacity(acvp_vectors.len());
+    let mut siggen_results: Vec<rsa::RsaSignGenResultVectorSet> = Vec::new();
 
     for v in acvp_vectors {
         match v {
@@ -196,17 +211,35 @@ fn run<R: std::io::Read, W: std::io::Write>(
                     opts.seed,
                 )?))
             }
-            AcvpVectors::Rsa(vs) => acvp_results.push(AcvpResults::Rsa(rsa::run_rsa_vector_set(
-                opts.timeout,
-                &spi_console_device,
-                &vs,
-                opts.skip_stride,
-                opts.seed,
-            )?)),
+            AcvpVectors::RsaSigGen(vs) => {
+                if opts.run_siggen || opts.output_siggen.is_some() {
+                    siggen_results.push(rsa::run_rsa_siggen_vector_set(
+                        opts.timeout,
+                        &spi_console_device,
+                        &vs,
+                        opts.skip_stride,
+                        opts.seed,
+                    )?);
+                }
+            }
+            AcvpVectors::Rsa(vs) => {
+                if opts.expected.is_some() || opts.output.is_some() {
+                    acvp_results.push(AcvpResults::Rsa(rsa::run_rsa_vector_set(
+                        opts.timeout,
+                        &spi_console_device,
+                        &vs,
+                        opts.skip_stride,
+                        opts.seed,
+                    )?));
+                }
+            }
         }
     }
     if let Some(w) = output {
         serde_json::to_writer_pretty(w, &acvp_results)?;
+    }
+    if let Some(w) = output_siggen {
+        serde_json::to_writer_pretty(w, &siggen_results)?;
     }
     if let Some(r) = expected {
         let expected_results_json: serde_json::Value = serde_json::from_reader(r)?;
@@ -241,7 +274,11 @@ fn main() -> Result<()> {
         log::warn!("Missing input ACVP JSON file");
         return Ok(());
     };
-    if opts.expected.is_none() && opts.output.is_none() {
+    if opts.expected.is_none()
+        && opts.output.is_none()
+        && !opts.run_siggen
+        && opts.output_siggen.is_none()
+    {
         log::warn!("Missing expected/output ACVP JSON files");
         return Ok(());
     }
@@ -265,6 +302,14 @@ fn main() -> Result<()> {
         }
         None => None,
     };
+    let output_siggen = match &opts.output_siggen {
+        Some(path) => {
+            let f = std::fs::File::create(path)
+                .inspect_err(|e| log::error!("open siggen output file: {e}"))?;
+            Some(std::io::BufWriter::new(f))
+        }
+        None => None,
+    };
 
-    run(&opts, &transport, input, expected, output)
+    run(&opts, &transport, input, expected, output, output_siggen)
 }
