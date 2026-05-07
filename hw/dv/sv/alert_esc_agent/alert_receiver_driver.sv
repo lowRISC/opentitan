@@ -152,6 +152,11 @@ class alert_receiver_driver extends alert_base_driver;
 
   // Perform the alert init handshake, exiting early on reset
   extern task do_alert_rx_init();
+
+  // Wait for num_cycles positive edges of the slower of the two clocks
+  //
+  // Return early on reset.
+  extern task wait_slower_clock(int unsigned num_cycles);
 endclass : alert_receiver_driver
 
 function alert_receiver_driver::new(string name, uvm_component parent);
@@ -442,6 +447,15 @@ task alert_receiver_driver::drive_alert_ping(int unsigned ping_delay,
   // we'll treat as a genuine alert: the end result will be that we and the sender agree on the set
   // of things that happened (one ping response and one genuine alert).
   ack_alert(ack_delay, ack_stable);
+
+  // Before responding to the item, we need to wait for the sender to complete its FSM (so that we
+  // don't send another ping when it's still sitting in PingHsPhase2, Pause0 or Pause1). The ack
+  // that we just sent has to be decoded by a prim_diff_decode (u_decode_ack), which will take at
+  // most 3 posedges of the sender's clock, then we take two more cycles (one in each of Pause0 and
+  // Pause1), for a total of 5 cycles.
+  //
+  // Wait with the slower of vif.clk and vif.async_clk.
+  wait_slower_clock(5);
 endtask
 
 task alert_receiver_driver::ack_alert(int unsigned ack_delay, int unsigned ack_stable);
@@ -538,6 +552,19 @@ task alert_receiver_driver::do_alert_rx_init();
 
         wait (cfg.vif.receiver_cb.alert_tx.alert_p != cfg.vif.receiver_cb.alert_tx.alert_n);
       end
+    join_any
+    disable fork;
+  end join
+endtask
+
+task alert_receiver_driver::wait_slower_clock(int unsigned num_cycles);
+  fork : isolation_fork begin
+    fork
+      wait(cfg.in_reset);
+      fork
+        repeat (num_cycles) @(posedge cfg.vif.clk);
+        repeat (num_cycles) @(posedge cfg.vif.async_clk);
+      join
     join_any
     disable fork;
   end join
