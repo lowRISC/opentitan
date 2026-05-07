@@ -25,7 +25,8 @@ extern "C" {
     value(_, RsaDecrypt) \
     value(_, RsaSign) \
     value(_, RsaVerify) \
-    value(_, RsaKeygenCheck)
+    value(_, RsaKeygenCheck) \
+    value(_, RsaKeygen)
 UJSON_SERDE_ENUM(RsaSubcommand, rsa_subcommand_t, RSA_SUBCOMMAND);
 
 #define RSA_SIGN(field, string) \
@@ -110,6 +111,19 @@ UJSON_SERDE_STRUCT(CryptotestRsaKeygenCheck, cryptotest_rsa_keygen_check_t, RSA_
 #define RSA_KEYGEN_CHECK_RESP(field, string) \
     field(result, bool)
 UJSON_SERDE_STRUCT(CryptotestRsaKeygenCheckResp, cryptotest_rsa_keygen_check_resp_t, RSA_KEYGEN_CHECK_RESP);
+
+#define RSA_KEYGEN(field, string) \
+    field(security_level, size_t) \
+    field(padding, size_t)
+UJSON_SERDE_STRUCT(CryptotestRsaKeygen, cryptotest_rsa_keygen_t, RSA_KEYGEN);
+
+#define RSA_KEYGEN_RESP(field, string) \
+    field(n, uint8_t, RSA_CMD_MAX_N_BYTES) \
+    field(n_len, size_t) \
+    field(d, uint8_t, RSA_CMD_MAX_N_BYTES) \
+    field(d_len, size_t) \
+    field(e, uint32_t)
+UJSON_SERDE_STRUCT(CryptotestRsaKeygenResp, cryptotest_rsa_keygen_resp_t, RSA_KEYGEN_RESP);
 
 #undef MODULE_ID
 
