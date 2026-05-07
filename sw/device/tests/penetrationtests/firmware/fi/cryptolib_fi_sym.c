@@ -93,6 +93,9 @@ status_t handle_cryptolib_fi_sym_cmac(ujson_t *uj) {
   cryptolib_fi_sym_cmac_out_t uj_output;
   memset(&uj_output, 0, sizeof(uj_output));
 
+  uj_output.status = kUnknown;
+  uj_output.status = (size_t)cryptolib_fi_cmac_impl(uj_input, &uj_output).value;
+
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get registered local alerts from alert handler.
