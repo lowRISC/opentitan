@@ -166,6 +166,10 @@ dif_result_t dif_keymgr_dpe_initialize(const dif_keymgr_dpe_t *keymgr_dpe,
     return kDifLocked;
   }
 
+  // TODO(#30667): Verify if the max key version needs to be written here too!
+  //              When loading the UDS the RTL fetches the max key version from
+  //              the SW register. Verify that the lock is released when the
+  //              version register is locked.
   uint32_t reg_control = bitfield_field32_write(
       KEYMGR_DPE_CONTROL_SHADOWED_REG_RESVAL,
       KEYMGR_DPE_CONTROL_SHADOWED_SLOT_DST_SEL_FIELD, slot_dst_sel);
@@ -270,6 +274,28 @@ dif_result_t dif_keymgr_dpe_erase_slot(
   reg_control = bitfield_field32_write(
       reg_control, KEYMGR_DPE_CONTROL_SHADOWED_OPERATION_FIELD,
       KEYMGR_DPE_CONTROL_SHADOWED_OPERATION_VALUE_ERASE_SLOT);
+  mmio_region_write32_shadowed(keymgr_dpe->base_addr,
+                               KEYMGR_DPE_CONTROL_SHADOWED_REG_OFFSET,
+                               reg_control);
+  mmio_region_write32(keymgr_dpe->base_addr, KEYMGR_DPE_START_REG_OFFSET,
+                      1 << KEYMGR_DPE_START_EN_BIT);
+
+  return kDifOk;
+}
+
+dif_result_t dif_keymgr_dpe_disable(const dif_keymgr_dpe_t *keymgr_dpe) {
+  if (keymgr_dpe == NULL) {
+    return kDifBadArg;
+  }
+
+  if (!is_ready(keymgr_dpe)) {
+    return kDifLocked;
+  }
+
+  uint32_t reg_control = bitfield_field32_write(
+      KEYMGR_DPE_CONTROL_SHADOWED_REG_RESVAL,
+      KEYMGR_DPE_CONTROL_SHADOWED_OPERATION_FIELD,
+      KEYMGR_DPE_CONTROL_SHADOWED_OPERATION_VALUE_DISABLE);
   mmio_region_write32_shadowed(keymgr_dpe->base_addr,
                                KEYMGR_DPE_CONTROL_SHADOWED_REG_OFFSET,
                                reg_control);
@@ -403,5 +429,42 @@ dif_result_t dif_keymgr_dpe_get_state(const dif_keymgr_dpe_t *keymgr_dpe,
 
   *state =
       bitfield_field32_read(reg_state, KEYMGR_DPE_WORKING_STATE_STATE_FIELD);
+  return kDifOk;
+}
+
+dif_result_t dif_keymgr_dpe_clear_sideload_key(
+    const dif_keymgr_dpe_t *keymgr_dpe,
+    dif_keymgr_dpe_sideload_clr_t clear_dest) {
+  if (keymgr_dpe == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32(keymgr_dpe->base_addr,
+                      KEYMGR_DPE_SIDELOAD_CLEAR_REG_OFFSET, clear_dest);
+
+  return kDifOk;
+}
+
+dif_result_t dif_keymgr_dpe_configure(const dif_keymgr_dpe_t *keymgr_dpe,
+                                      dif_keymgr_dpe_config_t config) {
+  if (keymgr_dpe == NULL) {
+    return kDifBadArg;
+  }
+
+  // Verify if the register is unlocked
+  uint32_t reseed_regwen = mmio_region_read32(
+      keymgr_dpe->base_addr, KEYMGR_DPE_RESEED_INTERVAL_REGWEN_REG_OFFSET);
+  if (!bitfield_bit32_read(reseed_regwen,
+                           KEYMGR_DPE_RESEED_INTERVAL_REGWEN_EN_BIT)) {
+    return kDifLocked;
+  }
+
+  uint32_t reg_val =
+      bitfield_field32_write(0, KEYMGR_DPE_RESEED_INTERVAL_SHADOWED_VAL_FIELD,
+                             config.entropy_reseed_interval);
+  mmio_region_write32_shadowed(keymgr_dpe->base_addr,
+                               KEYMGR_DPE_RESEED_INTERVAL_SHADOWED_REG_OFFSET,
+                               reg_val);
+
   return kDifOk;
 }
