@@ -36,9 +36,13 @@ mkdir -p "${LOGS}"
 cat "${LCOV_FILES}" | while read -r lcov; do
   test_dir=$(dirname "${lcov}")
   if [[ -f "${test_dir}/test.xml" ]]; then
-    mkdir -p "${LOGS}/${test_dir}"
-    cp "${test_dir}/test.xml" "${LOGS}/${test_dir}/"
-    echo "Copied ${test_dir}/test.xml"
+    if [[ ! -f "${LOGS}/${test_dir}/test.xml" ]]; then
+      mkdir -p "${LOGS}/${test_dir}"
+      cp "${test_dir}/test.xml" "${LOGS}/${test_dir}/"
+      echo "Copied ${test_dir}/test.xml"
+    else
+      echo "Skipping copy of ${test_dir}/test.xml"
+    fi
   fi
 done
 
