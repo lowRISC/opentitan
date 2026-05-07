@@ -90,38 +90,6 @@ def char_rsa_sign(
     return response
 
 
-def char_prime_generation(
-    target,
-    iterations,
-    e,
-    cfg,
-    trigger,
-    reset=False,
-):
-    asymsca = OTAsymCrypto(target)
-    if reset:
-        target.reset_target()
-        # Clear the output from the reset
-        target.dump_all()
-    # Initialize our chip and catch its output
-    (
-        device_id,
-        owner_page,
-        boot_log,
-        boot_measurements,
-        version,
-        cryptolib_version,
-    ) = asymsca.init()
-    for _ in range(iterations):
-        asymsca.handle_prime_generation(
-            e,
-            cfg,
-            trigger,
-        )
-        response = target.read_response()
-    return response
-
-
 def char_p256_base_mult_fvsr(
     target,
     iterations,

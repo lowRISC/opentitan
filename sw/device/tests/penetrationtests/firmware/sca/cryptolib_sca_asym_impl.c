@@ -976,3 +976,178 @@ status_t cryptolib_sca_x25519_point_mul_impl(
 
   return OK_STATUS();
 }
+
+status_t cryptolib_sca_p256_base_mul_impl(uint8_t scalar[P256_CMD_BYTES],
+                                          uint8_t x[P256_CMD_BYTES],
+                                          uint8_t y[P256_CMD_BYTES],
+                                          size_t cfg_in, size_t *cfg_out,
+                                          size_t trigger) {
+  uint32_t private_keyblob[kPentestP256MaskedPrivateKeyWords * 2];
+  otcrypto_blinded_key_t private_key = {
+      .config =
+          {
+              .version = kOtcryptoLibVersion1,
+              .key_mode = kOtcryptoKeyModeEcdsaP256,
+              .key_length = kPentestP256Bytes,
+              .hw_backed = kHardenedBoolFalse,
+              .exportable = kHardenedBoolFalse,
+              .security_level = kOtcryptoKeySecurityLevelHigh,
+          },
+      .keyblob_length = sizeof(private_keyblob),
+      .keyblob = private_keyblob,
+  };
+
+  uint32_t share0[kPentestP256MaskedPrivateKeyWords] = {0};
+  uint32_t share1[kPentestP256MaskedPrivateKeyWords] = {0};
+  memcpy(share0, scalar, P256_CMD_BYTES);
+
+  otcrypto_const_word32_buf_t share0_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, share0, kPentestP256MaskedPrivateKeyWords);
+  otcrypto_const_word32_buf_t share1_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, share1, kPentestP256MaskedPrivateKeyWords);
+
+  TRY(otcrypto_ecc_p256_private_key_import(share0_buf, share1_buf,
+                                           &private_key));
+
+  uint32_t public_key_buf[kPentestP256Words * 2];
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeEcdsaP256,
+      .key_length = sizeof(public_key_buf),
+      .key = public_key_buf,
+  };
+
+  if (trigger) {
+    pentest_set_trigger_high();
+  }
+  TRY(otcrypto_ecc_p256_base_point_mult(&private_key, &public_key));
+  if (trigger) {
+    pentest_set_trigger_low();
+  }
+
+  uint32_t out_pub_x[kPentestP256Words];
+  uint32_t out_pub_y[kPentestP256Words];
+  otcrypto_word32_buf_t out_x_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, out_pub_x, kPentestP256Words);
+  otcrypto_word32_buf_t out_y_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, out_pub_y, kPentestP256Words);
+
+  TRY(otcrypto_ecc_p256_public_key_export(&public_key, &out_x_buf, &out_y_buf));
+
+  *cfg_out = 0;
+  memset(x, 0, P256_CMD_BYTES);
+  memset(y, 0, P256_CMD_BYTES);
+  memcpy(x, out_pub_x, P256_CMD_BYTES);
+  memcpy(y, out_pub_y, P256_CMD_BYTES);
+
+  return OK_STATUS();
+}
+
+status_t cryptolib_sca_p384_base_mul_impl(uint8_t scalar[P384_CMD_BYTES],
+                                          uint8_t x[P384_CMD_BYTES],
+                                          uint8_t y[P384_CMD_BYTES],
+                                          size_t cfg_in, size_t *cfg_out,
+                                          size_t trigger) {
+  uint32_t private_keyblob[kPentestP384MaskedPrivateKeyWords * 2];
+  otcrypto_blinded_key_t private_key = {
+      .config =
+          {
+              .version = kOtcryptoLibVersion1,
+              .key_mode = kOtcryptoKeyModeEcdsaP384,
+              .key_length = kPentestP384Bytes,
+              .hw_backed = kHardenedBoolFalse,
+              .exportable = kHardenedBoolFalse,
+              .security_level = kOtcryptoKeySecurityLevelHigh,
+          },
+      .keyblob_length = sizeof(private_keyblob),
+      .keyblob = private_keyblob,
+  };
+
+  uint32_t share0[kPentestP384MaskedPrivateKeyWords] = {0};
+  uint32_t share1[kPentestP384MaskedPrivateKeyWords] = {0};
+  memcpy(share0, scalar, P384_CMD_BYTES);
+
+  otcrypto_const_word32_buf_t share0_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, share0, kPentestP384MaskedPrivateKeyWords);
+  otcrypto_const_word32_buf_t share1_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, share1, kPentestP384MaskedPrivateKeyWords);
+
+  TRY(otcrypto_ecc_p384_private_key_import(share0_buf, share1_buf,
+                                           &private_key));
+
+  uint32_t public_key_buf[kPentestP384Words * 2];
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeEcdsaP384,
+      .key_length = sizeof(public_key_buf),
+      .key = public_key_buf,
+  };
+
+  if (trigger) {
+    pentest_set_trigger_high();
+  }
+  TRY(otcrypto_ecc_p384_base_point_mult(&private_key, &public_key));
+  if (trigger) {
+    pentest_set_trigger_low();
+  }
+
+  uint32_t out_pub_x[kPentestP384Words];
+  uint32_t out_pub_y[kPentestP384Words];
+  otcrypto_word32_buf_t out_x_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, out_pub_x, kPentestP384Words);
+  otcrypto_word32_buf_t out_y_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, out_pub_y, kPentestP384Words);
+
+  TRY(otcrypto_ecc_p384_public_key_export(&public_key, &out_x_buf, &out_y_buf));
+
+  *cfg_out = 0;
+  memset(x, 0, P384_CMD_BYTES);
+  memset(y, 0, P384_CMD_BYTES);
+  memcpy(x, out_pub_x, P384_CMD_BYTES);
+  memcpy(y, out_pub_y, P384_CMD_BYTES);
+
+  return OK_STATUS();
+}
+
+status_t cryptolib_sca_ed25519_base_mul_impl(
+    uint8_t scalar[ED25519_CMD_SCALAR_BYTES],
+    uint8_t x[ED25519_CMD_SCALAR_BYTES], uint8_t y[ED25519_CMD_SCALAR_BYTES],
+    size_t cfg_in, size_t *cfg_out, size_t trigger) {
+  uint32_t private_keyblob[kPentestEd25519MaskedPrivateKeyWords * 2];
+  memset(private_keyblob, 0, sizeof(private_keyblob));
+  memcpy(private_keyblob, scalar, ED25519_CMD_SCALAR_BYTES);
+  otcrypto_blinded_key_t private_key = {
+      .config =
+          {
+              .version = kOtcryptoLibVersion1,
+              .key_mode = kOtcryptoKeyModeEd25519,
+              .key_length = ED25519_CMD_SCALAR_BYTES,
+              .hw_backed = kHardenedBoolFalse,
+              .exportable = kHardenedBoolFalse,
+              .security_level = kOtcryptoKeySecurityLevelLow,
+          },
+      .keyblob_length = sizeof(private_keyblob),
+      .keyblob = private_keyblob,
+  };
+  private_key.checksum = integrity_blinded_checksum(&private_key);
+
+  uint32_t public_key_data[ED25519_CMD_SCALAR_BYTES / sizeof(uint32_t)];
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeEd25519,
+      .key_length = ED25519_CMD_SCALAR_BYTES,
+      .key = public_key_data,
+  };
+
+  if (trigger) {
+    pentest_set_trigger_high();
+  }
+  TRY(otcrypto_ed25519_public_key_from_private(&private_key, &public_key));
+  if (trigger) {
+    pentest_set_trigger_low();
+  }
+
+  *cfg_out = 0;
+  memset(x, 0, ED25519_CMD_SCALAR_BYTES);
+  memset(y, 0, ED25519_CMD_SCALAR_BYTES);
+  memcpy(x, public_key_data, ED25519_CMD_SCALAR_BYTES);
+
+  return OK_STATUS();
+}

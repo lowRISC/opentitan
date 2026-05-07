@@ -135,23 +135,6 @@ class OTAsymCrypto:
         }
         self.target.write(json.dumps(input_data).encode("ascii"))
 
-    def handle_prime_generation(self, e, cfg, trigger) -> None:
-        """Call the cryptolib to generate prime numbers.
-
-        Args:
-            e: Integer for the public e.
-            cfg: Integer for configuration.
-            trigger: Integer specifying which triggers to set.
-        """
-        self._ujson_asym_crypto_sca_cmd()
-        self.target.write(json.dumps("Prime").encode("ascii"))
-        input_data = {
-            "e": e,
-            "cfg": cfg,
-            "trigger": trigger,
-        }
-        self.target.write(json.dumps(input_data).encode("ascii"))
-
     def handle_p256_base_mult_fvsr(self, scalar, cfg, trigger, num_iterations) -> None:
         """Call the cryptolib p256 base multiplication.
 
