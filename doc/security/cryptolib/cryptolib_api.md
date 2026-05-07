@@ -173,6 +173,7 @@ However, they are essentially scratchpad space for the underlying implementation
 
 {{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_context }}
 {{#header-snippet sw/device/lib/crypto/include/hmac.h otcrypto_hmac_context }}
+{{#header-snippet sw/device/lib/crypto/include/cmac.h otcrypto_cmac_context }}
 
 ## AES
 
@@ -335,24 +336,33 @@ Streaming is supported **only for SHA2** hash modes (SHA256, SHA384, SHA512), be
 OpenTitan supports two kinds of message authentication codes (MACs):
 - HMAC, a simple construction based on cryptographic hash functions
 - KMAC, a Keccak-based MAC
+- AES-CMAC, a block cipher-based MAC
 
 OpenTitan's [HMAC block][hmac] supports HMAC-SHA256 with a key length of 256 bits.
 The [KMAC block][kmac] supports KMAC128 and KMAC256, with a key length of 128, 192, 256, 384, or 512 bits.
+AES-CMAC uses the AES block cipher and supports a key length of 128, 192, or 256 bits, as specified in NIST SP 800-38B. The output tag length must be between 64 and 128 bits (2 to 4 words).
 
 ### One-shot mode
 
 {{#header-snippet sw/device/lib/crypto/include/hmac.h otcrypto_hmac }}
 {{#header-snippet sw/device/lib/crypto/include/kmac.h otcrypto_kmac }}
+{{#header-snippet sw/device/lib/crypto/include/cmac.h otcrypto_cmac }}
 
 ### Streaming mode
 
 The streaming mode API is used for incremental hashing use-case, where the data to be hashed is split and passed in multiple blocks.
 
-To avoid locking up the KMAC hardware, the streaming mode is supported **only for HMAC**.
+To avoid locking up the KMAC hardware, the streaming mode is supported only for HMAC and CMAC.
 
+#### HMAC
 {{#header-snippet sw/device/lib/crypto/include/hmac.h otcrypto_hmac_init }}
 {{#header-snippet sw/device/lib/crypto/include/hmac.h otcrypto_hmac_update }}
 {{#header-snippet sw/device/lib/crypto/include/hmac.h otcrypto_hmac_final }}
+
+#### CMAC
+{{#header-snippet sw/device/lib/crypto/include/cmac.h otcrypto_cmac_init }}
+{{#header-snippet sw/device/lib/crypto/include/cmac.h otcrypto_cmac_update }}
+{{#header-snippet sw/device/lib/crypto/include/cmac.h otcrypto_cmac_final }}
 
 ## RSA
 
@@ -741,6 +751,7 @@ The table below summarizes the security strength for the supported [cryptographi
 | MAC            | HMAC-SHA256    | 256                              |                                                       |
 | MAC            | KMAC128        | 128                              |                                                       |
 | MAC            | KMAC256        | 256                              |                                                       |
+| MAC            | AES-CMAC       | `min(k, tag len)`                | `k` = AES key length, `tag len` = output MAC length   |
 | RSA            | RSA-2048       | 112                              |                                                       |
 | RSA            | RSA-3072       | 128                              |                                                       |
 | RSA            | RSA-4096       | \~144                            |                                                       |
@@ -773,6 +784,7 @@ The table below is a recommendation from [NIST SP800-57 Part 1][nist-sp800-57] a
 2. [IETF RFC 4231][hmac-testvectors-rfc]: Identifiers and Test Vectors for HMAC-SHA-224, HMAC-SHA-256, HMAC-SHA-384, and HMAC-SHA-512
 3. [IETF RFC 4868][hmac-usage-rfc]: Using HMAC-SHA-256, HMAC-SHA-384, and HMAC-SHA-512
 4. [NIST SP800-185][sha3-derived-spec]: SHA-3 Derived Functions: cSHAKE, KMAC, TupleHash, and ParallelHash
+5. [NIST SP800-38B][nist-sp800-38b] Recommendation for Block Cipher Modes of Operation: The CMAC Mode for Authentication
 
 **RSA**
 1. [IETF RFC 8017][rsa-rfc]: PKCS #1: RSA Cryptography Specifications Version 2.2
@@ -833,6 +845,7 @@ The table below is a recommendation from [NIST SP800-57 Part 1][nist-sp800-57] a
 [nist-kdf-key-establishment]: https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-56Cr2.pdf
 [nist-rng-spec]: https://csrc.nist.gov/CSRC/media/Publications/sp/800-90c/draft/documents/sp800_90c_second_draft.pdf
 [nist-sp800-131a]: https://csrc.nist.gov/publications/detail/sp/800-131a/rev-2/final
+[nist-sp800-38b]: https://www.google.com/search?q=https://csrc.nist.gov/publications/detail/sp/800-38b/final
 [nist-sp800-57]: https://csrc.nist.gov/publications/detail/sp/800-57-part-1/rev-5/final
 [otbn]: ../../../hw/ip/otbn/README.md
 [rsa-rfc]: https://datatracker.ietf.org/doc/html/rfc8017

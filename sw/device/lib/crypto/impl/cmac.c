@@ -67,10 +67,12 @@ static status_t check_key(const otcrypto_blinded_key_t *key) {
     return OTCRYPTO_BAD_ARGS;
   }
   // Check the integrity of the key.
-  if (launder32(integrity_blinded_key_check(key)) != kHardenedBoolTrue) {
+  if (launder32(otcrypto_integrity_blinded_key_check(key)) !=
+      kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(integrity_blinded_key_check(key), kHardenedBoolTrue);
+  HARDENED_CHECK_EQ(otcrypto_integrity_blinded_key_check(key),
+                    kHardenedBoolTrue);
   return OTCRYPTO_OK;
 }
 
