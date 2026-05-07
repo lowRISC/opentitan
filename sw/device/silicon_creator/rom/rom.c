@@ -68,22 +68,23 @@
  * restricted to 11-bit to be able use immediate load instructions.
 
  * Encoding generated with
- * $ ./util/design/sparse-fsm-encode.py -d 6 -m 6 -n 11 \
- *     -s 1630646358 --language=c
+ * $ ./util/design/sparse-fsm-encode.py -d 6 -m 7 -n 11 \
+ *     --avoid-zero -s 1630646358
  *
  * Minimum Hamming distance: 6
  * Maximum Hamming distance: 8
- * Minimum Hamming weight: 5
+ * Minimum Hamming weight: 6
  * Maximum Hamming weight: 8
  */
 // clang-format off
 #define ROM_CFI_FUNC_COUNTERS_TABLE(X) \
-  X(kCfiRomMain,         0x14b) \
-  X(kCfiRomInit,         0x7dc) \
-  X(kCfiRomVerify,       0x5a7) \
-  X(kCfiRomTryBoot,      0x235) \
-  X(kCfiRomPreBootCheck, 0x43a) \
-  X(kCfiRomBoot,         0x2e2)
+  X(kCfiRomMain,         0x4ab) \
+  X(kCfiRomInit,         0x1df) \
+  X(kCfiRomVerify,       0x2ec) \
+  X(kCfiRomVerifyImm,    0x565) \
+  X(kCfiRomTryBoot,      0x7b6) \
+  X(kCfiRomPreBootCheck, 0x339) \
+  X(kCfiRomBoot,         0x65a)
 // clang-format on
 
 // Define counters and constant values required by the CFI counter macros.
@@ -640,7 +641,7 @@ static rom_error_t rom_boot(const manifest_t *manifest,
      * Expected value of the `kCfiRomTryBoot` counter when jumping to the second
      * ROM_EXT image.
      */
-    kCfiRomTryBootManifest1Val = 10 * kCfiIncrement + kCfiRomTryBootVal0,
+    kCfiRomTryBootManifest1Val = 14 * kCfiIncrement + kCfiRomTryBootVal0,
   };
   const manifest_t *manifest_check = NULL;
   switch (launder32(rom_counters[kCfiRomTryBoot])) {
@@ -688,6 +689,7 @@ static rom_error_t rom_boot(const manifest_t *manifest,
 static rom_error_t rom_verify_immutable_section(
     rom_error_t verify_result, const manifest_t *manifest,
     uintptr_t *imm_section_entry_point) {
+  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomVerifyImm, 1);
   *imm_section_entry_point = kHardenedBoolFalse;
   // Verify the immutable ROM_EXT section.
   uint32_t rom_ext_immutable_section_enabled =
@@ -736,9 +738,12 @@ static rom_error_t rom_verify_immutable_section(
     if (verify_result == kErrorOk) {
       *imm_section_entry_point = immutable_rom_ext_entry_point;
     }
+    CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomVerifyImm, 2);
   } else {
     HARDENED_CHECK_NE(rom_ext_immutable_section_enabled, kHardenedBoolTrue);
+    CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomVerifyImm, 2);
   }
+  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomVerifyImm, 3);
   return verify_result;
 }
 
@@ -760,13 +765,15 @@ static rom_error_t rom_try_boot(void) {
 
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 2, kCfiRomVerify);
   rom_error_t error = rom_verify(manifests.ordered[0], &flash_exec);
+  CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 4, kCfiRomVerifyImm);
   error = rom_verify_immutable_section(error, manifests.ordered[0],
                                        &imm_section_entry_point);
-  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomTryBoot, 4);
+  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomTryBoot, 6);
 
   if (launder32(error) == kErrorOk) {
     HARDENED_CHECK_EQ(error, kErrorOk);
     CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomVerify, 3);
+    CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomVerifyImm, 4);
     CFI_FUNC_COUNTER_INIT(rom_counters, kCfiRomTryBoot);
     CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 1, kCfiRomBoot);
     HARDENED_RETURN_IF_ERROR(
@@ -774,14 +781,15 @@ static rom_error_t rom_try_boot(void) {
     return kErrorRomBootFailed;
   }
 
-  CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 5, kCfiRomVerify);
+  CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 7, kCfiRomVerify);
   error = rom_verify(manifests.ordered[1], &flash_exec);
+  CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 9, kCfiRomVerifyImm);
   HARDENED_RETURN_IF_ERROR(rom_verify_immutable_section(
       error, manifests.ordered[1], &imm_section_entry_point));
-  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomTryBoot, 7);
+  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomTryBoot, 11);
   CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomVerify, 3);
-
-  CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 8, kCfiRomBoot);
+  CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomVerifyImm, 4);
+  CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 12, kCfiRomBoot);
   HARDENED_RETURN_IF_ERROR(
       rom_boot(manifests.ordered[1], imm_section_entry_point, flash_exec));
   return kErrorRomBootFailed;
