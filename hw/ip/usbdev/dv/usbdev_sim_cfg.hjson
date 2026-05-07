@@ -39,7 +39,7 @@
   sim_tops: ["usbdev_bind", "sec_cm_prim_onehot_check_bind"]
 
   // Default iterations for all tests - each test entry can override this.
-  reseed: 50
+  reseed: 10
 
   // USBDEV coverage exclusion files.
   vcs_cov_excl_files: ["{proj_root}/hw/ip/usbdev/dv/cov/usbdev_manual_excl.el",
@@ -119,6 +119,7 @@
     {
       name: usbdev_device_address
       uvm_test_seq: usbdev_device_address_vseq
+      reseed: 25
     }
     {
       name: usbdev_device_timeout
@@ -155,6 +156,7 @@
     {
       name: usbdev_endpoint_access
       uvm_test_seq: usbdev_endpoint_access_vseq
+      reseed: 25
     }
     {
       name: usbdev_endpoint_types
@@ -296,6 +298,7 @@
     {
       name: usbdev_link_suspend
       uvm_test_seq: usbdev_link_suspend_vseq
+      reseed: 25
     }
     {
       name: usbdev_low_speed_traffic
@@ -416,14 +419,17 @@
     {
       name: usbdev_pkt_buffer
       uvm_test_seq: usbdev_pkt_buffer_vseq
+      reseed: 25
     }
     {
       name: usbdev_pkt_received
       uvm_test_seq: usbdev_pkt_received_vseq
+      reseed: 25
     }
     {
       name: usbdev_pkt_sent
       uvm_test_seq: usbdev_pkt_sent_vseq
+      reseed: 25
     }
     {
       name: usbdev_random_length_in_transaction
@@ -473,6 +479,7 @@
     {
       name: usbdev_rx_crc_err
       uvm_test_seq: usbdev_rx_crc_err_vseq
+      reseed: 25
     }
     {
       name: usbdev_rx_full

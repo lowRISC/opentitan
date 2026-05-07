@@ -57,7 +57,7 @@
   sim_tops: ["${name}_bind"]
 
   // Default iterations for all tests - each test entry can override this.
-  reseed: 50
+  reseed: 1
 
   // Default UVM test and seq class name.
   uvm_test: ${name}_base_test

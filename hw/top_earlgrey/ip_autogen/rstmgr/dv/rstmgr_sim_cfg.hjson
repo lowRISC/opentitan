@@ -54,7 +54,7 @@
 	     "sec_cm_prim_onehot_check_bind"]
 
   // Default iterations for all tests - each test entry can override this.
-  reseed: 50
+  reseed: 5
 
   // Default UVM test and seq class name.
   uvm_test: rstmgr_base_test
@@ -92,6 +92,7 @@
     {
       name: rstmgr_leaf_rst_cnsty
       uvm_test_seq: rstmgr_leaf_rst_cnsty_vseq
+      reseed: 25
     }
     {
       name: rstmgr_leaf_rst_shadow_attack

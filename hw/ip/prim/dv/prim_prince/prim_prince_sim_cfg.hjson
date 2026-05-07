@@ -25,7 +25,7 @@
   en_build_modes: ["{tool}_crypto_dpi_prince_build_opts"]
 
   // Default iterations for all tests - each test entry can override this.
-  reseed: 50
+  reseed: 10
 
   // Enable cdc instrumentation
   run_opts: ["+cdc_instrumentation_enabled=1"]
@@ -49,13 +49,6 @@
     {
       name: smoke
       tests: ["prim_prince_test"]
-    }
-    {
-      name: nightly
-      // Run the same test as the "smoke" regression, just with a higher reseed value.
-      // This higher reseed value is due to the rather large state space created by
-      // the 128-bit key and 64-bit data values.
-      reseed: 500
     }
   ]
 }

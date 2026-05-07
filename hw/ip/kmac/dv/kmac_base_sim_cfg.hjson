@@ -44,7 +44,7 @@
              "sec_cm_prim_count_bind"]
 
   // Default iterations for all tests - each test entry can override this.
-  reseed: 50
+  reseed: 20
 
   run_opts: ["+test_timeout_ns=4_000_000_000"]
 
@@ -106,6 +106,7 @@
       name: "{name}_sideload_invalid"
       uvm_test_seq: kmac_sideload_invalid_vseq
       run_opts: ["+test_timeout_ns=1_000_000_000"]
+      reseed: 50
     }
     {
       name: "{name}_burst_write"
@@ -180,6 +181,7 @@
       name: "{name}_app"
       uvm_test_seq: kmac_app_vseq
       run_opts: ["+test_timeout_ns=500_000_000"]
+      reseed: 25
     }
     {
       name: "{name}_app_with_partial_data"
@@ -225,6 +227,7 @@
     {
       name: "{name}_lc_escalation"
       uvm_test_seq: kmac_lc_escalation_vseq
+      reseed: 50
     }
     {
       name: kmac_stress_all

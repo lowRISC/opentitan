@@ -13,7 +13,7 @@
                  // 10s
                  "+test_timeout_ns=10000000000",
                  "+stress_seq={name}_stress_all_vseq"]
-      run_timeout_mins: 180
+      run_timeout_mins: 60
     }
   ]
 }

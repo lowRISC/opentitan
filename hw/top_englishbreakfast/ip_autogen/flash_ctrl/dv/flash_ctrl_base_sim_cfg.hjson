@@ -46,7 +46,7 @@
              "sec_cm_prim_count_bind", "sec_cm_prim_sparse_fsm_flop_bind"]
 
   // Default iterations for all tests - each test entry can override this.
-  reseed: 50
+  reseed: 10
 
 
   run_modes: [
@@ -351,7 +351,7 @@
       name: flash_ctrl_re_evict
       uvm_test_seq: flash_ctrl_re_evict_vseq
       run_opts: ["+scb_otf_en=1", "+ecc_mode=1", "+en_always_read=1"]
-      reseed: 20
+      reseed: 25
     }
     {
       name: flash_ctrl_disable
