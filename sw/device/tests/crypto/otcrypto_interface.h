@@ -113,6 +113,17 @@ typedef struct otcrypto_interface_t {
       otcrypto_aes_gcm_tag_len_t, otcrypto_byte_buf_t *, size_t *,
       hardened_bool_t *);
 
+  // CMAC
+  otcrypto_status_t (*cmac)(const otcrypto_blinded_key_t *,
+                            const otcrypto_const_byte_buf_t *,
+                            otcrypto_word32_buf_t *);
+  otcrypto_status_t (*cmac_init)(otcrypto_cmac_context_t *,
+                                 const otcrypto_blinded_key_t *);
+  otcrypto_status_t (*cmac_update)(otcrypto_cmac_context_t *const,
+                                   const otcrypto_const_byte_buf_t *);
+  otcrypto_status_t (*cmac_final)(otcrypto_cmac_context_t *const,
+                                  otcrypto_word32_buf_t *);
+
   // DRBG
   otcrypto_status_t (*drbg_instantiate)(const otcrypto_const_byte_buf_t *);
   otcrypto_status_t (*drbg_reseed)(const otcrypto_const_byte_buf_t *);

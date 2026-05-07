@@ -334,6 +334,23 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "cmac_functest",
+    srcs = ["cmac_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "eternal",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/impl:cmac",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests/crypto/lib:crypto_test_lib",
+    ],
+)
+
+opentitan_test(
     name = "drbg_functest",
     srcs = ["drbg_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -1496,6 +1513,7 @@ test_suite(
         ":aes_kwp_kat_functest",
         ":aes_kwp_sideload_functest",
         ":aes_sideload_functest",
+        ":cmac_functest",
         ":config_functest",
         ":drbg_functest",
         ":ecc_p256_arith_share_private_key_functest",
