@@ -66,6 +66,14 @@ volatile otcrypto_interface_t otcrypto = {
     .aes_gcm_encrypt_final = &otcrypto_aes_gcm_encrypt_final,
     .aes_gcm_decrypt_final = &otcrypto_aes_gcm_decrypt_final,
 
+    // CMAC (one-shot).
+    .cmac = &otcrypto_cmac,
+
+    // CMAC (streaming).
+    .cmac_init = &otcrypto_cmac_init,
+    .cmac_update = &otcrypto_cmac_update,
+    .cmac_final = &otcrypto_cmac_final,
+
     // DRBG
     .drbg_instantiate = &otcrypto_drbg_instantiate,
     .drbg_reseed = &otcrypto_drbg_reseed,
