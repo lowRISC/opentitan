@@ -3,6 +3,8 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 .globl zeroize
+.globl unmask_boolean
+.globl unmask_arithmetic
 
 .text
 
