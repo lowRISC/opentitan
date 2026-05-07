@@ -676,9 +676,9 @@ status_t handle_rsa_verify(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_rsa_keygen(ujson_t *uj) {
-  cryptotest_rsa_keygen_t uj_input;
-  TRY(ujson_deserialize_cryptotest_rsa_keygen_t(uj, &uj_input));
+status_t handle_rsa_keygen_check(ujson_t *uj) {
+  cryptotest_rsa_keygen_check_t uj_input;
+  TRY(ujson_deserialize_cryptotest_rsa_keygen_check_t(uj, &uj_input));
 
   size_t rsa_num_words;
   size_t public_key_bytes;
@@ -857,9 +857,9 @@ status_t handle_rsa_keygen(ujson_t *uj) {
     }
   }
 
-  cryptotest_rsa_keygen_resp_t uj_output;
+  cryptotest_rsa_keygen_check_resp_t uj_output;
   uj_output.result = result;
-  RESP_OK(ujson_serialize_cryptotest_rsa_keygen_resp_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_cryptotest_rsa_keygen_check_resp_t, uj, &uj_output);
   return OK_STATUS();
 }
 
@@ -875,8 +875,8 @@ status_t handle_rsa(ujson_t *uj) {
       return handle_rsa_sign(uj);
     case kRsaSubcommandRsaVerify:
       return handle_rsa_verify(uj);
-    case kRsaSubcommandRsaKeygen:
-      return handle_rsa_keygen(uj);
+    case kRsaSubcommandRsaKeygenCheck:
+      return handle_rsa_keygen_check(uj);
     default:
       LOG_ERROR("Unrecognized RSA subcommand: %d", cmd);
       return INVALID_ARGUMENT();
