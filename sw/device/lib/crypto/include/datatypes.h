@@ -215,6 +215,8 @@ typedef enum otcrypto_aes_key_mode {
   kOtcryptoAesKeyModeGcm = 0xaa5,
   // Mode AES KWP.
   kOtcryptoAesKeyModeKwp = 0x7d5,
+  // Mode AES CMAC.
+  kOtcryptoAesKeyModeCmac = 0x1a2,
 } otcrypto_aes_key_mode_t;
 
 /**
@@ -330,6 +332,8 @@ typedef enum otcrypto_key_mode {
   kOtcryptoKeyModeAesGcm = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeGcm,
   // Key is intended for AES KWP mode.
   kOtcryptoKeyModeAesKwp = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeKwp,
+  // Key is intended for AES CMAC mode.
+  kOtcryptoKeyModeAesCmac = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeCmac,
   // Key is intended for HMAC SHA256 mode.
   kOtcryptoKeyModeHmacSha256 =
       kOtcryptoKeyTypeHmac << 16 | kOtcryptoHmacKeyModeSha256,
