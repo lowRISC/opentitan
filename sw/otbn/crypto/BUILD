@@ -332,7 +332,6 @@ otbn_binary(
         ":div",
         ":gcd",
         ":lcm",
-        ":montmul",
         ":mul",
         ":rsa_key_from_cofactor",
         ":rsa_modinv_f4",
