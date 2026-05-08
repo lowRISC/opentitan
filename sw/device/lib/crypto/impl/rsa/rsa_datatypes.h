@@ -37,6 +37,15 @@ enum {
 };
 
 /**
+ * Internal RSA sizes.
+ */
+typedef enum rsa_size {
+  kRsaSize2048 = 0x1e3a,
+  kRsaSize3072 = 0x2b5c,
+  kRsaSize4096 = 0x34d9,
+} rsa_size_t;
+
+/**
  * A type that holds a 2048-bit number.
  *
  * This type can be used for RSA-2048 signatures, moduli, private exponents,
