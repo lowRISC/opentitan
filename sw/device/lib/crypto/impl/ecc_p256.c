@@ -179,10 +179,12 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_config_k(
     const otcrypto_blinded_key_t *secret_scalar,
     const otcrypto_hash_digest_t message_digest,
     otcrypto_word32_buf_t *signature) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (signature->data == NULL || private_key == NULL ||
       private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
   if (!status_ok(p256_signature_length_check(signature->len)) ||
       !status_ok(p256_private_key_length_check(private_key))) {
     return OTCRYPTO_BAD_ARGS;
@@ -196,10 +198,12 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_hash_digest_t message_digest,
     otcrypto_word32_buf_t *signature) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (signature->data == NULL || private_key == NULL ||
       private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
   if (!status_ok(p256_signature_length_check(signature->len)) ||
       !status_ok(p256_private_key_length_check(private_key))) {
     return OTCRYPTO_BAD_ARGS;
@@ -256,9 +260,11 @@ otcrypto_status_t otcrypto_ecdh_p256(const otcrypto_blinded_key_t *private_key,
 
 otcrypto_status_t otcrypto_ecc_p256_point_on_curve(
     const otcrypto_unblinded_key_t *point, hardened_bool_t *check_result) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (point == NULL || point->key == NULL || check_result == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   p256_point_t *pt = (p256_point_t *)point->key;
   HARDENED_TRY(p256_point_on_curve_check(pt, check_result));
@@ -269,9 +275,11 @@ otcrypto_status_t otcrypto_ecc_p256_point_on_curve(
 status_t otcrypto_ecc_p256_base_point_mult(
     const otcrypto_blinded_key_t *private_key,
     otcrypto_unblinded_key_t *public_key) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (private_key == NULL || public_key == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   HARDENED_CHECK_EQ(otcrypto_integrity_blinded_key_check(private_key),
                     kHardenedBoolTrue);
@@ -319,9 +327,11 @@ static status_t internal_p256_keygen_start(
 
 otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_start(
     const otcrypto_blinded_key_t *private_key) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (private_key == NULL || private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Check the key mode.
   if (private_key->config.key_mode != kOtcryptoKeyModeEcdsaP256) {
@@ -337,11 +347,13 @@ otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_start(
 
 otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_finalize(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for any NULL pointers.
   if (private_key == NULL || public_key == NULL ||
       private_key->keyblob == NULL || public_key->key == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Check the key modes.
   if (private_key->config.key_mode != kOtcryptoKeyModeEcdsaP256 ||
@@ -361,9 +373,11 @@ otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_finalize(
 otcrypto_status_t otcrypto_ecdsa_p256_dice_keygen_async_start(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_const_word32_buf_t *attestation_seed) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (private_key == NULL || private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Check the key mode.
   if (private_key->config.key_mode != kOtcryptoKeyModeEcdsaP256) {
@@ -391,10 +405,12 @@ otcrypto_status_t otcrypto_ecdsa_p256_dice_keygen_async_finalize(
 static otcrypto_status_t otcrypto_ecdsa_p256_sign_async_start_setup(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_hash_digest_t message_digest) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (private_key == NULL || private_key->keyblob == NULL ||
       message_digest.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Check the integrity of the private key.
   if (otcrypto_integrity_blinded_key_check(private_key) != kHardenedBoolTrue) {
@@ -504,9 +520,11 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_async_start(
 
 otcrypto_status_t otcrypto_ecdsa_p256_sign_async_finalize(
     otcrypto_word32_buf_t *signature) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (signature->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Verify the input buffer
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(signature));
@@ -526,10 +544,12 @@ otcrypto_status_t otcrypto_ecdsa_p256_dice_sign_async_start(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_hash_digest_t message_digest,
     const otcrypto_const_word32_buf_t *attestation_seed) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (private_key == NULL || private_key->keyblob == NULL ||
       message_digest.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Check the key mode.
   if (private_key->config.key_mode != kOtcryptoKeyModeEcdsaP256) {
@@ -564,10 +584,12 @@ otcrypto_status_t otcrypto_ecdsa_p256_verify_async_start(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
     const otcrypto_const_word32_buf_t *signature) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (public_key == NULL || signature->data == NULL ||
       message_digest.data == NULL || public_key->key == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Check the integrity of the public key.
   if (otcrypto_integrity_unblinded_key_check(public_key) != kHardenedBoolTrue) {
@@ -612,9 +634,11 @@ otcrypto_status_t otcrypto_ecdsa_p256_verify_async_start(
 otcrypto_status_t otcrypto_ecdsa_p256_verify_async_finalize(
     const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (verification_result == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Verify the input buffer
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(signature));
@@ -627,9 +651,11 @@ otcrypto_status_t otcrypto_ecdsa_p256_verify_async_finalize(
 
 otcrypto_status_t otcrypto_ecdh_p256_keygen_async_start(
     const otcrypto_blinded_key_t *private_key) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (private_key == NULL || private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   if (private_key->config.key_mode != kOtcryptoKeyModeEcdhP256) {
     return OTCRYPTO_BAD_ARGS;
@@ -644,11 +670,13 @@ otcrypto_status_t otcrypto_ecdh_p256_keygen_async_start(
 
 otcrypto_status_t otcrypto_ecdh_p256_keygen_async_finalize(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for any NULL pointers.
   if (private_key == NULL || public_key == NULL ||
       private_key->keyblob == NULL || public_key->key == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   if (public_key->key_mode != kOtcryptoKeyModeEcdhP256 ||
       private_key->config.key_mode != kOtcryptoKeyModeEcdhP256) {
@@ -665,10 +693,12 @@ otcrypto_status_t otcrypto_ecdh_p256_keygen_async_finalize(
 otcrypto_status_t otcrypto_ecdh_p256_async_start(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_unblinded_key_t *public_key) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (private_key == NULL || public_key == NULL || public_key->key == NULL ||
       private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Check the integrity of the keys.
   if (otcrypto_integrity_blinded_key_check(private_key) != kHardenedBoolTrue ||
@@ -732,9 +762,11 @@ otcrypto_status_t otcrypto_ecdh_p256_async_start(
 
 otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
     otcrypto_blinded_key_t *shared_secret) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (shared_secret == NULL || shared_secret->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Randomize the output before computing it.
   HARDENED_TRY(hardened_memshred(shared_secret->keyblob, kP256CoordWords));
@@ -782,10 +814,12 @@ otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
 otcrypto_status_t otcrypto_ecc_p256_public_key_import(
     const otcrypto_const_word32_buf_t x, const otcrypto_const_word32_buf_t y,
     otcrypto_unblinded_key_t *public_key) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (x.data == NULL || y.data == NULL || public_key == NULL ||
       public_key->key == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Check the lengths of the input coordinate buffers.
   if (x.len != kP256CoordWords || y.len != kP256CoordWords) {
@@ -818,10 +852,12 @@ otcrypto_status_t otcrypto_ecc_p256_public_key_import(
 otcrypto_status_t otcrypto_ecc_p256_public_key_export(
     const otcrypto_unblinded_key_t *public_key, otcrypto_word32_buf_t *x,
     otcrypto_word32_buf_t *y) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (x == NULL || x->data == NULL || y == NULL || y->data == NULL ||
       public_key == NULL || public_key->key == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Check the lengths of the output coordinate buffers.
   if (x->len != kP256CoordWords || y->len != kP256CoordWords) {
@@ -856,10 +892,12 @@ otcrypto_status_t otcrypto_ecc_p256_public_key_export(
 otcrypto_status_t otcrypto_ecc_p256_private_key_import(
     otcrypto_const_word32_buf_t share0, otcrypto_const_word32_buf_t share1,
     otcrypto_blinded_key_t *private_key) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (share0.data == NULL || share1.data == NULL || private_key == NULL ||
       private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Each share must be 320 bits (256-bit scalar + 64 redundant bits for
   // side-channel protection).
@@ -908,11 +946,13 @@ otcrypto_status_t otcrypto_ecc_p256_private_key_import(
 otcrypto_status_t otcrypto_ecc_p256_private_key_export(
     const otcrypto_blinded_key_t *private_key, otcrypto_word32_buf_t *share0,
     otcrypto_word32_buf_t *share1) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (share0 == NULL || share0->data == NULL || share1 == NULL ||
       share1->data == NULL || private_key == NULL ||
       private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Check the output buffer lengths: each must be exactly 320 bits (256-bit
   // scalar + 64 redundant bits for side-channel protection).
@@ -969,10 +1009,12 @@ otcrypto_status_t otcrypto_ecc_p256_arith_share_private_key(
     const otcrypto_const_word32_buf_t *bool_private_key_share0,
     const otcrypto_const_word32_buf_t *bool_private_key_share1,
     otcrypto_blinded_key_t *arith_private_key) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (bool_private_key_share0 == NULL || bool_private_key_share1 == NULL ||
       arith_private_key == NULL || arith_private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // The key shares must resided in 320-bit buffers.
   if (bool_private_key_share0->len != kP256MaskedScalarShareWords ||

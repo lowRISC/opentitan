@@ -53,6 +53,19 @@ Moreover, the function also checks the entropy complex health test and alert con
 
 {{#header-snippet sw/device/lib/crypto/include/config.h otcrypto_eval_exit }}
 
+## Build Configurations
+
+The OpenTitan cryptography library provides several compile-time configuration settings via Bazel. These flags allow you to optimize code size, enable deep debugging, or mark the library for release.
+
+You can activate these settings during the build process by passing `--define=<setting>=true` to Bazel.
+
+| Configuration Setting | Internal Define | Description |
+|---|---|---|
+| `crypto_status_debug` | `OTCRYPTO_STATUS_DEBUG` | Embeds the module ID and line number directly into `otcrypto_status_t` error codes. This significantly aids debugging but increases the footprint and alters standard error structures. |
+| `release_build` | `CRYPTOLIB_IS_RELEASED` | Marks the build as a frozen release version. This directly updates the `released` boolean flag retrieved when calling `otcrypto_build_info()`. |
+| `disable_null_checks` | `OTCRYPTO_DISABLE_NULL_CHECKS` | Removes `NULL` pointer checks on API inputs throughout the library (e.g., AES-GCM operations). This saves code size, but strictly requires the caller to guarantee no `NULL` pointers are passed. |
+| `disable_buf_integrity_checks` | `OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS` | Disables runtime integrity verification for data buffers. This bypasses `verify_buf_integrity`, removing the check that compares `ptr_checksum` against the data's calculated checksum. |
+
 ## Cryptolib Usage Examples
 
 Examples of how to use the cryptolib API are provided in the [cryptolib test directory][crypto-tests].
