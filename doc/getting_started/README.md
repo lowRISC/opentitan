@@ -189,5 +189,5 @@ If you are interested in these, check out the additional resources below.
 
 ### Software
 * [OpenTitan Software](../../sw/README.md)
-* [Writing and Building Software for OTBN](../contributing/sw/otbn_sw.md)
 * [Rust for Embedded C Programmers](../rust_for_c_devs.md)
+* [OTBN developer's guide](../../hw/ip/otbn/doc/developers_guide.md)
