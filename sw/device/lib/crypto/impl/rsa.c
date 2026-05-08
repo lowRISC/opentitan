@@ -286,13 +286,16 @@ otcrypto_status_t otcrypto_rsa_keygen_async_start(otcrypto_rsa_size_t size) {
   switch (launder32(size)) {
     case kOtcryptoRsaSize2048:
       HARDENED_CHECK_EQ(size, kOtcryptoRsaSize2048);
-      return rsa_keygen_2048_start();
+      HARDENED_TRY(rsa_keygen_start(kRsaSize2048));
+      return otcrypto_eval_exit(OTCRYPTO_OK);
     case kOtcryptoRsaSize3072:
       HARDENED_CHECK_EQ(size, kOtcryptoRsaSize3072);
-      return rsa_keygen_3072_start();
+      HARDENED_TRY(rsa_keygen_start(kRsaSize3072));
+      return otcrypto_eval_exit(OTCRYPTO_OK);
     case kOtcryptoRsaSize4096:
       HARDENED_CHECK_EQ(size, kOtcryptoRsaSize4096);
-      return rsa_keygen_4096_start();
+      HARDENED_TRY(rsa_keygen_start(kRsaSize4096));
+      return otcrypto_eval_exit(OTCRYPTO_OK);
     default:
       return OTCRYPTO_BAD_ARGS;
   }
@@ -492,7 +495,9 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
       rsa_2048_public_key_t *pk = (rsa_2048_public_key_t *)public_key->key;
       rsa_2048_private_key_t *sk =
           (rsa_2048_private_key_t *)private_key->keyblob;
-      HARDENED_TRY_WIPE_DMEM(rsa_keygen_2048_finalize(pk, sk));
+      HARDENED_TRY_WIPE_DMEM(rsa_keygen_finalize_size(
+          kRsaSize2048, sk->n.data, sk->d0.data, sk->d1.data));
+      HARDENED_TRY(hardened_memcpy(pk->n.data, sk->n.data, kRsa2048NumWords));
       size_used = launder32(size_used) | kOtcryptoRsaSize2048;
       break;
     }
@@ -501,7 +506,9 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
       rsa_3072_public_key_t *pk = (rsa_3072_public_key_t *)public_key->key;
       rsa_3072_private_key_t *sk =
           (rsa_3072_private_key_t *)private_key->keyblob;
-      HARDENED_TRY_WIPE_DMEM(rsa_keygen_3072_finalize(pk, sk));
+      HARDENED_TRY_WIPE_DMEM(rsa_keygen_finalize_size(
+          kRsaSize3072, sk->n.data, sk->d0.data, sk->d1.data));
+      HARDENED_TRY(hardened_memcpy(pk->n.data, sk->n.data, kRsa3072NumWords));
       size_used = launder32(size_used) | kOtcryptoRsaSize3072;
       break;
     }
@@ -510,7 +517,9 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
       rsa_4096_public_key_t *pk = (rsa_4096_public_key_t *)public_key->key;
       rsa_4096_private_key_t *sk =
           (rsa_4096_private_key_t *)private_key->keyblob;
-      HARDENED_TRY_WIPE_DMEM(rsa_keygen_4096_finalize(pk, sk));
+      HARDENED_TRY_WIPE_DMEM(rsa_keygen_finalize_size(
+          kRsaSize4096, sk->n.data, sk->d0.data, sk->d1.data));
+      HARDENED_TRY(hardened_memcpy(pk->n.data, sk->n.data, kRsa4096NumWords));
       size_used = launder32(size_used) | kOtcryptoRsaSize4096;
       break;
     }
@@ -553,7 +562,12 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  switch (size) {
+  // TODO: RSA keys are currently unblinded, so combine the shares.
+  for (size_t i = 0; i < cofactor_share1->len; i++) {
+    ((uint32_t *)cofactor_share0->data)[i] ^= cofactor_share1->data[i];
+  }
+
+  switch (launder32(size)) {
     case kOtcryptoRsaSize2048: {
       if (cofactor_share0->len !=
               sizeof(rsa_2048_cofactor_t) / sizeof(uint32_t) ||
@@ -561,14 +575,8 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
         // COVERAGE (MISSING) We do not cover bad size.
         return OTCRYPTO_BAD_ARGS;
       }
-      rsa_2048_cofactor_t *cf = (rsa_2048_cofactor_t *)cofactor_share0->data;
-      // TODO: RSA keys are currently unblinded, so combine the shares.
-      for (size_t i = 0; i < cofactor_share1->len; i++) {
-        cf->data[i] ^= cofactor_share1->data[i];
-      }
-      rsa_2048_public_key_t pk;
-      HARDENED_TRY(hardened_memcpy(pk.n.data, modulus->data, modulus->len));
-      HARDENED_TRY_WIPE_DMEM(rsa_keygen_from_cofactor_2048_start(&pk, cf));
+      HARDENED_TRY_WIPE_DMEM(rsa_keygen_from_cofactor_start(
+          kRsaSize2048, modulus->data, cofactor_share0->data));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     }
     case kOtcryptoRsaSize3072: {
@@ -577,13 +585,8 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
           modulus->len != kRsa3072NumWords) {
         return OTCRYPTO_BAD_ARGS;
       }
-      rsa_3072_cofactor_t *cf = (rsa_3072_cofactor_t *)cofactor_share0->data;
-      for (size_t i = 0; i < cofactor_share1->len; i++) {
-        cf->data[i] ^= cofactor_share1->data[i];
-      }
-      rsa_3072_public_key_t pk;
-      HARDENED_TRY(hardened_memcpy(pk.n.data, modulus->data, modulus->len));
-      HARDENED_TRY_WIPE_DMEM(rsa_keygen_from_cofactor_3072_start(&pk, cf));
+      HARDENED_TRY_WIPE_DMEM(rsa_keygen_from_cofactor_start(
+          kRsaSize3072, modulus->data, cofactor_share0->data));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     }
     case kOtcryptoRsaSize4096: {
@@ -592,13 +595,8 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
           modulus->len != kRsa4096NumWords) {
         return OTCRYPTO_BAD_ARGS;
       }
-      rsa_4096_cofactor_t *cf = (rsa_4096_cofactor_t *)cofactor_share0->data;
-      for (size_t i = 0; i < cofactor_share1->len; i++) {
-        cf->data[i] ^= cofactor_share1->data[i];
-      }
-      rsa_4096_public_key_t pk;
-      HARDENED_TRY(hardened_memcpy(pk.n.data, modulus->data, modulus->len));
-      HARDENED_TRY_WIPE_DMEM(rsa_keygen_from_cofactor_4096_start(&pk, cf));
+      HARDENED_TRY_WIPE_DMEM(rsa_keygen_from_cofactor_start(
+          kRsaSize4096, modulus->data, cofactor_share0->data));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     }
     default:
@@ -641,7 +639,8 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
       rsa_2048_public_key_t *pk = (rsa_2048_public_key_t *)public_key->key;
       rsa_2048_private_key_t *sk =
           (rsa_2048_private_key_t *)private_key->keyblob;
-      HARDENED_TRY_WIPE_DMEM(rsa_keygen_from_cofactor_2048_finalize(pk, sk));
+      HARDENED_TRY_WIPE_DMEM(rsa_keygen_from_cofactor_finalize(
+          kRsaSize2048, pk->n.data, sk->n.data, sk->d0.data, sk->d1.data));
       break;
     }
     case kOtcryptoRsaSize3072: {
@@ -649,7 +648,8 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
       rsa_3072_public_key_t *pk = (rsa_3072_public_key_t *)public_key->key;
       rsa_3072_private_key_t *sk =
           (rsa_3072_private_key_t *)private_key->keyblob;
-      HARDENED_TRY_WIPE_DMEM(rsa_keygen_from_cofactor_3072_finalize(pk, sk));
+      HARDENED_TRY_WIPE_DMEM(rsa_keygen_from_cofactor_finalize(
+          kRsaSize3072, pk->n.data, sk->n.data, sk->d0.data, sk->d1.data));
       break;
     }
     case kOtcryptoRsaSize4096: {
@@ -657,7 +657,8 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
       rsa_4096_public_key_t *pk = (rsa_4096_public_key_t *)public_key->key;
       rsa_4096_private_key_t *sk =
           (rsa_4096_private_key_t *)private_key->keyblob;
-      HARDENED_TRY_WIPE_DMEM(rsa_keygen_from_cofactor_4096_finalize(pk, sk));
+      HARDENED_TRY_WIPE_DMEM(rsa_keygen_from_cofactor_finalize(
+          kRsaSize4096, pk->n.data, sk->n.data, sk->d0.data, sk->d1.data));
       break;
     }
     default:
@@ -742,24 +743,27 @@ otcrypto_status_t otcrypto_rsa_sign_async_start(
       HARDENED_CHECK_EQ(size, kOtcryptoRsaSize2048);
       rsa_2048_private_key_t *sk =
           (rsa_2048_private_key_t *)private_key->keyblob;
-      HARDENED_TRY_WIPE_DMEM(rsa_signature_generate_2048_start(
-          sk, message_digest, (rsa_signature_padding_t)padding_mode));
+      HARDENED_TRY_WIPE_DMEM(rsa_signature_generate_start(
+          kRsaSize2048, sk->d0.data, sk->d1.data, sk->n.data, message_digest,
+          (rsa_signature_padding_t)padding_mode));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     }
     case kOtcryptoRsaSize3072: {
       HARDENED_CHECK_EQ(size, kOtcryptoRsaSize3072);
       rsa_3072_private_key_t *sk =
           (rsa_3072_private_key_t *)private_key->keyblob;
-      HARDENED_TRY_WIPE_DMEM(rsa_signature_generate_3072_start(
-          sk, message_digest, (rsa_signature_padding_t)padding_mode));
+      HARDENED_TRY_WIPE_DMEM(rsa_signature_generate_start(
+          kRsaSize3072, sk->d0.data, sk->d1.data, sk->n.data, message_digest,
+          (rsa_signature_padding_t)padding_mode));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     }
     case kOtcryptoRsaSize4096: {
       HARDENED_CHECK_EQ(size, kOtcryptoRsaSize4096);
       rsa_4096_private_key_t *sk =
           (rsa_4096_private_key_t *)private_key->keyblob;
-      HARDENED_TRY_WIPE_DMEM(rsa_signature_generate_4096_start(
-          sk, message_digest, (rsa_signature_padding_t)padding_mode));
+      HARDENED_TRY_WIPE_DMEM(rsa_signature_generate_start(
+          kRsaSize4096, sk->d0.data, sk->d1.data, sk->n.data, message_digest,
+          (rsa_signature_padding_t)padding_mode));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     }
     default:
@@ -789,19 +793,18 @@ otcrypto_status_t otcrypto_rsa_sign_async_finalize(
   switch (launder32(signature->len)) {
     case kRsa2048NumWords:
       HARDENED_CHECK_EQ(signature->len, kRsa2048NumWords);
-      HARDENED_TRY_WIPE_DMEM(rsa_signature_generate_2048_finalize(
-          (rsa_2048_int_t *)signature->data));
+      HARDENED_TRY_WIPE_DMEM(
+          rsa_signature_generate_finalize(kRsaSize2048, signature->data));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     case kRsa3072NumWords:
       HARDENED_CHECK_EQ(signature->len, kRsa3072NumWords);
-      HARDENED_TRY_WIPE_DMEM(rsa_signature_generate_3072_finalize(
-          (rsa_3072_int_t *)signature->data));
+      HARDENED_TRY_WIPE_DMEM(
+          rsa_signature_generate_finalize(kRsaSize3072, signature->data));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     case kRsa4096NumWords:
       HARDENED_CHECK_EQ(signature->len, kRsa4096NumWords);
       HARDENED_TRY_WIPE_DMEM(
-          otcrypto_eval_exit(rsa_signature_generate_4096_finalize(
-              (rsa_4096_int_t *)signature->data)));
+          rsa_signature_generate_finalize(kRsaSize4096, signature->data));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     default:
       return OTCRYPTO_BAD_ARGS;
@@ -837,53 +840,50 @@ otcrypto_status_t otcrypto_rsa_verify_async_start(
   otcrypto_rsa_size_t size;
   HARDENED_TRY(rsa_size_from_public_key(public_key, &size));
 
-  switch (size) {
+  switch (launder32(size)) {
     case kOtcryptoRsaSize2048: {
+      HARDENED_CHECK_EQ(size, kOtcryptoRsaSize2048);
       if (signature->len != kRsa2048NumWords) {
         return OTCRYPTO_BAD_ARGS;
       }
       rsa_2048_public_key_t *pk = (rsa_2048_public_key_t *)public_key->key;
-      rsa_2048_int_t *sig = (rsa_2048_int_t *)signature->data;
-
       // Check that signature is < n.
-      if (bignum_lt(sig->data, pk->n.data, kRsa2048NumWords) ==
+      if (bignum_lt(signature->data, pk->n.data, kRsa2048NumWords) ==
           kHardenedBoolFalse) {
         return OTCRYPTO_BAD_ARGS;
       }
-
-      HARDENED_TRY_WIPE_DMEM(rsa_signature_verify_2048_start(pk, sig));
+      HARDENED_TRY_WIPE_DMEM(rsa_signature_verify_start(
+          kRsaSize2048, pk->n.data, signature->data));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     }
     case kOtcryptoRsaSize3072: {
+      HARDENED_CHECK_EQ(size, kOtcryptoRsaSize3072);
       if (signature->len != kRsa3072NumWords) {
         return OTCRYPTO_BAD_ARGS;
       }
       rsa_3072_public_key_t *pk = (rsa_3072_public_key_t *)public_key->key;
-      rsa_3072_int_t *sig = (rsa_3072_int_t *)signature->data;
-
       // Check that signature is < n.
-      if (bignum_lt(sig->data, pk->n.data, kRsa3072NumWords) ==
+      if (bignum_lt(signature->data, pk->n.data, kRsa3072NumWords) ==
           kHardenedBoolFalse) {
         return OTCRYPTO_BAD_ARGS;
       }
-
-      HARDENED_TRY_WIPE_DMEM(rsa_signature_verify_3072_start(pk, sig));
+      HARDENED_TRY_WIPE_DMEM(rsa_signature_verify_start(
+          kRsaSize3072, pk->n.data, signature->data));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     }
     case kOtcryptoRsaSize4096: {
+      HARDENED_CHECK_EQ(size, kOtcryptoRsaSize4096);
       if (signature->len != kRsa4096NumWords) {
         return OTCRYPTO_BAD_ARGS;
       }
       rsa_4096_public_key_t *pk = (rsa_4096_public_key_t *)public_key->key;
-      rsa_4096_int_t *sig = (rsa_4096_int_t *)signature->data;
-
       // Check that signature is < n.
-      if (bignum_lt(sig->data, pk->n.data, kRsa4096NumWords) ==
+      if (bignum_lt(signature->data, pk->n.data, kRsa4096NumWords) ==
           kHardenedBoolFalse) {
         return OTCRYPTO_BAD_ARGS;
       }
-
-      HARDENED_TRY_WIPE_DMEM(rsa_signature_verify_4096_start(pk, sig));
+      HARDENED_TRY_WIPE_DMEM(rsa_signature_verify_start(
+          kRsaSize4096, pk->n.data, signature->data));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     }
     default:
@@ -959,25 +959,27 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_start(
       HARDENED_CHECK_EQ(size, kOtcryptoRsaSize2048);
       HARDENED_CHECK_EQ(public_key->key_length, sizeof(rsa_2048_public_key_t));
       rsa_2048_public_key_t *pk = (rsa_2048_public_key_t *)public_key->key;
-      HARDENED_TRY_WIPE_DMEM(rsa_encrypt_2048_start(
-          pk, hash_mode, message->data, message->len, label->data, label->len));
+      HARDENED_TRY_WIPE_DMEM(
+          rsa_encrypt_start(kRsaSize2048, pk->n.data, hash_mode, message->data,
+                            message->len, label->data, label->len));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     }
     case kOtcryptoRsaSize3072: {
       HARDENED_CHECK_EQ(size, kOtcryptoRsaSize3072);
       HARDENED_CHECK_EQ(public_key->key_length, sizeof(rsa_3072_public_key_t));
       rsa_3072_public_key_t *pk = (rsa_3072_public_key_t *)public_key->key;
-      HARDENED_TRY_WIPE_DMEM(otcrypto_eval_exit(
-          rsa_encrypt_3072_start(pk, hash_mode, message->data, message->len,
-                                 label->data, label->len)));
+      HARDENED_TRY_WIPE_DMEM(
+          rsa_encrypt_start(kRsaSize3072, pk->n.data, hash_mode, message->data,
+                            message->len, label->data, label->len));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     }
     case kOtcryptoRsaSize4096: {
       HARDENED_CHECK_EQ(size, kOtcryptoRsaSize4096);
       HARDENED_CHECK_EQ(public_key->key_length, sizeof(rsa_4096_public_key_t));
       rsa_4096_public_key_t *pk = (rsa_4096_public_key_t *)public_key->key;
-      HARDENED_TRY_WIPE_DMEM(rsa_encrypt_4096_start(
-          pk, hash_mode, message->data, message->len, label->data, label->len));
+      HARDENED_TRY_WIPE_DMEM(
+          rsa_encrypt_start(kRsaSize4096, pk->n.data, hash_mode, message->data,
+                            message->len, label->data, label->len));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     }
     default:
@@ -1004,22 +1006,22 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_finalize(
     case kRsa2048NumWords: {
       HARDENED_CHECK_EQ(ciphertext->len * sizeof(uint32_t),
                         sizeof(rsa_2048_int_t));
-      rsa_2048_int_t *ctext = (rsa_2048_int_t *)ciphertext->data;
-      HARDENED_TRY_WIPE_DMEM(rsa_encrypt_2048_finalize(ctext));
+      HARDENED_TRY_WIPE_DMEM(
+          rsa_encrypt_finalize(kRsaSize2048, ciphertext->data));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     }
     case kRsa3072NumWords: {
       HARDENED_CHECK_EQ(ciphertext->len * sizeof(uint32_t),
                         sizeof(rsa_3072_int_t));
-      rsa_3072_int_t *ctext = (rsa_3072_int_t *)ciphertext->data;
-      HARDENED_TRY_WIPE_DMEM(rsa_encrypt_3072_finalize(ctext));
+      HARDENED_TRY_WIPE_DMEM(
+          rsa_encrypt_finalize(kRsaSize3072, ciphertext->data));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     }
     case kRsa4096NumWords: {
       HARDENED_CHECK_EQ(ciphertext->len * sizeof(uint32_t),
                         sizeof(rsa_4096_int_t));
-      rsa_4096_int_t *ctext = (rsa_4096_int_t *)ciphertext->data;
-      HARDENED_TRY_WIPE_DMEM(rsa_encrypt_4096_finalize(ctext));
+      HARDENED_TRY_WIPE_DMEM(
+          rsa_encrypt_finalize(kRsaSize4096, ciphertext->data));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     }
     default:
@@ -1072,15 +1074,16 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
       }
       rsa_2048_private_key_t *sk =
           (rsa_2048_private_key_t *)private_key->keyblob;
-      rsa_2048_int_t *ctext = (rsa_2048_int_t *)ciphertext->data;
 
       // Check that ciphertext is < n.
-      if (bignum_lt(ctext->data, sk->n.data, kRsa2048NumWords) ==
+      if (bignum_lt(ciphertext->data, sk->n.data, kRsa2048NumWords) ==
           kHardenedBoolFalse) {
         return OTCRYPTO_BAD_ARGS;
       }
 
-      HARDENED_TRY_WIPE_DMEM(rsa_decrypt_2048_start(sk, ctext));
+      HARDENED_TRY_WIPE_DMEM(rsa_decrypt_start(kRsaSize2048, sk->d0.data,
+                                               sk->d1.data, sk->n.data,
+                                               ciphertext->data));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     }
     case kOtcryptoRsaSize3072: {
@@ -1092,16 +1095,17 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
       }
       rsa_3072_private_key_t *sk =
           (rsa_3072_private_key_t *)private_key->keyblob;
-      rsa_3072_int_t *ctext = (rsa_3072_int_t *)ciphertext->data;
 
       // Check that ciphertext is < n.
-      if (bignum_lt(ctext->data, sk->n.data, kRsa3072NumWords) ==
+      if (bignum_lt(ciphertext->data, sk->n.data, kRsa3072NumWords) ==
           kHardenedBoolFalse) {
         // COVERAGE (MISSING) We do not cover ciphertexts larger than n
         return OTCRYPTO_BAD_ARGS;
       }
 
-      HARDENED_TRY_WIPE_DMEM(rsa_decrypt_3072_start(sk, ctext));
+      HARDENED_TRY_WIPE_DMEM(rsa_decrypt_start(kRsaSize3072, sk->d0.data,
+                                               sk->d1.data, sk->n.data,
+                                               ciphertext->data));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     }
     case kOtcryptoRsaSize4096: {
@@ -1113,16 +1117,17 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
       }
       rsa_4096_private_key_t *sk =
           (rsa_4096_private_key_t *)private_key->keyblob;
-      rsa_4096_int_t *ctext = (rsa_4096_int_t *)ciphertext->data;
 
       // Check that ciphertext is < n.
-      if (bignum_lt(ctext->data, sk->n.data, kRsa4096NumWords) ==
+      if (bignum_lt(ciphertext->data, sk->n.data, kRsa4096NumWords) ==
           kHardenedBoolFalse) {
         // COVERAGE (MISSING) We do not cover ciphertexts larger than n
         return OTCRYPTO_BAD_ARGS;
       }
 
-      HARDENED_TRY_WIPE_DMEM(rsa_decrypt_4096_start(sk, ctext));
+      HARDENED_TRY_WIPE_DMEM(rsa_decrypt_start(kRsaSize4096, sk->d0.data,
+                                               sk->d1.data, sk->n.data,
+                                               ciphertext->data));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     }
     default:
