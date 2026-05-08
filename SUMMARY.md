@@ -252,9 +252,8 @@
       - [Registers](./hw/top_earlgrey/ip_autogen/rv_core_ibex/doc/registers.md)
       - [Checklist](./hw/top_earlgrey/ip_autogen/rv_core_ibex/doc/checklist.md)
     - [OTBN](./hw/ip/otbn/README.md)
-      - [Theory of Operation](./hw/ip/otbn/doc/theory_of_operation.md)
       - [Introduction to OTBN](./hw/ip/otbn/doc/otbn_intro.md)
-      - [Developing OTBN](./hw/ip/otbn/doc/developing_otbn.md)
+      - [Theory of Operation](./hw/ip/otbn/doc/theory_of_operation.md)
       - [ISA Guide](./hw/ip/otbn/doc/isa.md)
       - [Design Verification](./hw/ip/otbn/dv/README.md)
       - [Random Instruction Generator](./hw/ip/otbn/dv/rig/README.md)
@@ -265,7 +264,7 @@
       - [Tracer](./hw/ip/otbn/dv/tracer/README.md)
       - [Formal Masking Verification Using Alma](./hw/ip/otbn/pre_sca/alma/README.md)
       - [Functional Coverage](./hw/ip/otbn/dv/doc/fcov.md)
-      - [Programmer's Guide](./hw/ip/otbn/doc/programmers_guide.md)
+      - [Developer's Guide](./hw/ip/otbn/doc/developers_guide.md)
       - [Hardware Interfaces](./hw/ip/otbn/doc/interfaces.md)
       - [Registers](./hw/ip/otbn/doc/registers.md)
       - [Checklist](./hw/ip/otbn/doc/checklist.md)
@@ -716,7 +715,6 @@
 
     - [Contributing to Software](./doc/contributing/sw/README.md)
     - [Device Interface Functions](./doc/contributing/sw/device_interface_functions.md)
-    - [Writing and Building Software for OTBN](./doc/contributing/sw/otbn_sw.md)
 
     - [Committers](./doc/project_governance/committers.md)
     - [RFC Process](./doc/project_governance/rfc_process.md)
