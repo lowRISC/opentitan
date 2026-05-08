@@ -36,9 +36,9 @@
   }
   clock_connections:
   {
-    clk_peri_i: clkmgr_aon_clocks.clk_io_div4_infra
-    clk_spi_host0_i: clkmgr_aon_clocks.clk_io_infra
-    clk_usb_i: clkmgr_aon_clocks.clk_usb_infra
+    clk_peri_i: clkmgr_aon_clocks_i.clk_io_div4_infra
+    clk_spi_host0_i: clkmgr_aon_clocks_i.clk_io_infra
+    clk_usb_i: clkmgr_aon_clocks_i.clk_usb_infra
   }
   domain: Main
   connections:
@@ -344,6 +344,7 @@
       inst_name: peri
       width: 1
       default: ""
+      domain: Main
       top_signame: main_tl_peri
       index: -1
     }
@@ -356,6 +357,7 @@
       inst_name: peri
       width: 1
       default: ""
+      domain: Main
       top_signame: uart0_tl
       index: -1
     }
@@ -368,6 +370,7 @@
       inst_name: peri
       width: 1
       default: ""
+      domain: Main
       top_signame: uart1_tl
       index: -1
     }
@@ -380,6 +383,7 @@
       inst_name: peri
       width: 1
       default: ""
+      domain: Main
       top_signame: gpio_tl
       index: -1
     }
@@ -392,6 +396,7 @@
       inst_name: peri
       width: 1
       default: ""
+      domain: Main
       top_signame: spi_device_tl
       index: -1
     }
@@ -404,6 +409,7 @@
       inst_name: peri
       width: 1
       default: ""
+      domain: Main
       top_signame: spi_host0_tl
       index: -1
     }
@@ -416,6 +422,7 @@
       inst_name: peri
       width: 1
       default: ""
+      domain: Main
       top_signame: rv_timer_tl
       index: -1
     }
@@ -428,6 +435,7 @@
       inst_name: peri
       width: 1
       default: ""
+      domain: Main
       top_signame: usbdev_tl
       index: -1
     }
@@ -440,8 +448,11 @@
       inst_name: peri
       width: 1
       default: ""
+      domain: Main
       top_signame: pwrmgr_aon_tl
       index: -1
+      external: true
+      conn_type: false
     }
     {
       name: tl_rstmgr_aon
@@ -452,8 +463,11 @@
       inst_name: peri
       width: 1
       default: ""
+      domain: Main
       top_signame: rstmgr_aon_tl
       index: -1
+      external: true
+      conn_type: false
     }
     {
       name: tl_clkmgr_aon
@@ -464,8 +478,11 @@
       inst_name: peri
       width: 1
       default: ""
+      domain: Main
       top_signame: clkmgr_aon_tl
       index: -1
+      external: true
+      conn_type: false
     }
     {
       name: tl_pinmux_aon
@@ -476,6 +493,7 @@
       inst_name: peri
       width: 1
       default: ""
+      domain: Main
       top_signame: pinmux_aon_tl
       index: -1
     }

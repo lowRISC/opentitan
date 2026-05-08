@@ -29,6 +29,12 @@ module chip_sim_tb (
 
   logic IO_JTCK, IO_JTMS, IO_JTRST_N, IO_JTDI, IO_JTDO;
 
+  // Generated clocks, resets, and enable signals
+  clkmgr_pkg::clkmgr_out_t    clkmgr_aon_clocks;
+  clkmgr_pkg::clkmgr_cg_en_t  clkmgr_aon_cg_en;
+  rstmgr_pkg::rstmgr_out_t    rstmgr_aon_resets;
+  rstmgr_pkg::rstmgr_rst_en_t rstmgr_aon_rst_en;
+
   // TODO: instantiate padring and route these signals through that module
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_in;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_out;
@@ -43,8 +49,8 @@ module chip_sim_tb (
     dio_in[DioUsbdevUsbDn] = cio_usbdev_dn_p2d;
   end
 
-  logic usb_dp_pullup;
-  logic usb_dn_pullup;
+  logic usb_dp_pullup_en;
+  logic usb_dn_pullup_en;
   logic usb_rx_d;
   logic usb_tx_d;
   logic usb_tx_se0;
@@ -57,8 +63,8 @@ module chip_sim_tb (
   assign cio_usbdev_d_d2p  = usb_tx_d;
   assign cio_usbdev_rx_enable_d2p = usb_rx_enable;
   assign cio_usbdev_tx_use_d_se0_d2p = usb_tx_use_d_se0;
-  assign cio_usbdev_dn_pullup_d2p = usb_dn_pullup;
-  assign cio_usbdev_dp_pullup_d2p = usb_dp_pullup;
+  assign cio_usbdev_dn_pullup_d2p = usb_dn_pullup_en;
+  assign cio_usbdev_dp_pullup_d2p = usb_dp_pullup_en;
   assign cio_usbdev_se0_d2p = usb_tx_se0;
   assign cio_spi_device_sdo_d2p = dio_out[DioSpiDeviceSd1];
 
@@ -87,15 +93,15 @@ module chip_sim_tb (
   assign cio_uart_tx_en_d2p = mio_oe[26];
 
   // dummy ast connections
-  pwrmgr_pkg::pwr_ast_rsp_t ast_base_pwr;
+  pwrmgr_pkg::pwr_ast_rsp_t pwrmgr_ast_rsp;
   ast_pkg::ast_alert_req_t ast_base_alerts;
   ast_pkg::ast_status_t ast_base_status;
 
-  assign ast_base_pwr.slow_clk_val = 1'b1;
-  assign ast_base_pwr.core_clk_val = 1'b1;
-  assign ast_base_pwr.io_clk_val   = 1'b1;
-  assign ast_base_pwr.usb_clk_val  = 1'b1;
-  assign ast_base_pwr.main_pok     = 1'b1;
+  assign pwrmgr_ast_rsp.slow_clk_val = 1'b1;
+  assign pwrmgr_ast_rsp.core_clk_val = 1'b1;
+  assign pwrmgr_ast_rsp.io_clk_val   = 1'b1;
+  assign pwrmgr_ast_rsp.usb_clk_val  = 1'b1;
+  assign pwrmgr_ast_rsp.main_pok     = 1'b1;
 
   ast_pkg::ast_dif_t silent_alert = '{
                                        p: 1'b0,
@@ -158,7 +164,27 @@ module chip_sim_tb (
 
   prim_mubi_pkg::mubi4_t all_clk_bypass;
   prim_mubi_pkg::mubi4_t io_clk_bypass;
-  // Top-level design
+
+  // Inter-Power Domain signals
+  logic [2:0] intr_vector_pd_aon;
+  pwrmgr_pkg::pwr_nvm_t       pwrmgr_aon_pwr_nvm;
+  logic       pwrmgr_aon_strap;
+  logic       pwrmgr_aon_low_power;
+  lc_ctrl_pkg::lc_tx_t       pwrmgr_aon_fetch_en;
+  prim_mubi_pkg::mubi4_t       clkmgr_aon_idle;
+  rv_core_ibex_pkg::cpu_crash_dump_t       rv_core_ibex_crash_dump;
+  rv_core_ibex_pkg::cpu_pwrmgr_t       rv_core_ibex_pwrmgr;
+  logic [1:0] pwrmgr_aon_wakeups;
+  tlul_pkg::tl_h2d_t       pwrmgr_aon_tl_req;
+  tlul_pkg::tl_d2h_t       pwrmgr_aon_tl_rsp;
+  tlul_pkg::tl_h2d_t       rstmgr_aon_tl_req;
+  tlul_pkg::tl_d2h_t       rstmgr_aon_tl_rsp;
+  tlul_pkg::tl_h2d_t       clkmgr_aon_tl_req;
+  tlul_pkg::tl_d2h_t       clkmgr_aon_tl_rsp;
+
+  //////////////////////
+  // Top-level design //
+  //////////////////////
   top_englishbreakfast #(
     .SecAesMasking(1'b1),
     .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
@@ -170,52 +196,135 @@ module chip_sim_tb (
     .SramCtrlMainInstrExec(1),
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_englishbreakfast (
-    .por_n_i                      ({rst_ni, rst_ni}  ),
-    .clk_main_i                   (clk_i             ),
-    .clk_io_i                     (clk_i             ),
-    .clk_usb_i                    (clk_i             ),
-    .clk_aon_i                    (clk_aon           ),
-    .clk_main_jitter_en_o         (                  ),
-    .pwrmgr_ast_req_o             (                  ),
-    .pwrmgr_ast_rsp_i             ( ast_base_pwr     ),
-    .usbdev_usb_ref_val_o         (                  ),
-    .usbdev_usb_ref_pulse_o       (                  ),
-    .flash_bist_enable_i          ( lc_ctrl_pkg::Off ),
-    .flash_power_down_h_i         ( 1'b0             ),
-    .flash_power_ready_h_i        ( 1'b1             ),
-    .all_clk_byp_req_o            ( all_clk_bypass    ),
-    .all_clk_byp_ack_i            ( all_clk_bypass    ),
-    .io_clk_byp_req_o             ( io_clk_bypass    ),
-    .io_clk_byp_ack_i             ( io_clk_bypass    ),
+    // Clocks and clock gating control from clkmgr_aon
+    .clkmgr_aon_clocks_i(clkmgr_aon_clocks),
+    .clkmgr_aon_cg_en_i (clkmgr_aon_cg_en),
 
-    // USB signals
-    .usb_dp_pullup_en_o           (usb_dp_pullup),
-    .usb_dn_pullup_en_o           (usb_dn_pullup),
-    .usbdev_usb_rx_d_i            (usb_rx_d),
-    .usbdev_usb_tx_d_o            (usb_tx_d),
-    .usbdev_usb_tx_se0_o          (usb_tx_se0),
-    .usbdev_usb_tx_use_d_se0_o      (usb_tx_use_d_se0),
-    .usbdev_usb_rx_enable_o       (usb_rx_enable),
+    // Resets and reset assert info from rstmgr_aon
+    .rstmgr_aon_resets_i(rstmgr_aon_resets),
+    .rstmgr_aon_rst_en_i(rstmgr_aon_rst_en),
+
+    // Manual DFT signals
+    .scan_rst_ni(1'b1            ),
+    .scan_en_i  (1'b0            ),
+    .scanmode_i (lc_ctrl_pkg::Off),
 
     // Multiplexed I/O
-    .mio_in_i                     (mio_in),
-    .mio_out_o                    (mio_out),
-    .mio_oe_o                     (mio_oe),
+    .mio_in_i (mio_in ),
+    .mio_out_o(mio_out),
+    .mio_oe_o (mio_oe ),
 
     // Dedicated I/O
-    .dio_in_i                     (dio_in),
-    .dio_out_o                    (dio_out),
-    .dio_oe_o                     (dio_oe),
+    .dio_in_i (dio_in ),
+    .dio_out_o(dio_out),
+    .dio_oe_o (dio_oe ),
 
     // Pad attributes
-    .mio_attr_o                   ( ),
-    .dio_attr_o                   ( ),
+    .mio_attr_o(),
+    .dio_attr_o(),
 
-    // DFT signals
-    .scan_rst_ni                  (1'b1),
-    .scan_en_i                    (1'b0),
-    .scanmode_i                   (lc_ctrl_pkg::Off)
+    // Special inter-power domain signals (interrupts, alerts)
+    .intr_vector_pd_aon_i(intr_vector_pd_aon),
+
+    .outgoing_alert_englishbreakfast_tx_o(),
+    .outgoing_alert_englishbreakfast_rx_i(),
+
+    // Ports to and from other power domains
+    .pwrmgr_aon_pwr_nvm_o     (pwrmgr_aon_pwr_nvm     ),
+    .pwrmgr_aon_strap_i       (pwrmgr_aon_strap       ),
+    .pwrmgr_aon_low_power_i   (pwrmgr_aon_low_power   ),
+    .pwrmgr_aon_fetch_en_i    (pwrmgr_aon_fetch_en    ),
+    .clkmgr_aon_idle_o        (clkmgr_aon_idle        ),
+    .rv_core_ibex_crash_dump_o(rv_core_ibex_crash_dump),
+    .rv_core_ibex_pwrmgr_o    (rv_core_ibex_pwrmgr    ),
+    .pwrmgr_aon_wakeups_o     (pwrmgr_aon_wakeups     ),
+    .pwrmgr_aon_tl_req_o      (pwrmgr_aon_tl_req      ),
+    .pwrmgr_aon_tl_rsp_i      (pwrmgr_aon_tl_rsp      ),
+    .rstmgr_aon_tl_req_o      (rstmgr_aon_tl_req      ),
+    .rstmgr_aon_tl_rsp_i      (rstmgr_aon_tl_rsp      ),
+    .clkmgr_aon_tl_req_o      (clkmgr_aon_tl_req      ),
+    .clkmgr_aon_tl_rsp_i      (clkmgr_aon_tl_rsp      ),
+
+    // Regular ports
+    .flash_bist_enable_i      (lc_ctrl_pkg::Off),
+    .flash_power_down_h_i     (1'b0            ),
+    .flash_power_ready_h_i    (1'b1            ),
+    .obs_ctrl_i               ('0        ),
+    .flash_obs_o              (       ),
+    .ast_tl_req_o             (),
+    .ast_tl_rsp_i             (tlul_pkg::TL_D2H_DEFAULT),
+    .dft_strap_test_o         (                 ),
+    .dft_hold_tap_sel_i       ('0               ),
+    .usb_dp_pullup_en_o       (usb_dp_pullup_en ),
+    .usb_dn_pullup_en_o       (usb_dn_pullup_en ),
+    .fpga_info_i              (       ),
+    .usbdev_usb_rx_d_i        (usb_rx_d        ),
+    .usbdev_usb_tx_d_o        (usb_tx_d        ),
+    .usbdev_usb_tx_se0_o      (usb_tx_se0      ),
+    .usbdev_usb_tx_use_d_se0_o(usb_tx_use_d_se0),
+    .usbdev_usb_rx_enable_o   (usb_rx_enable   ),
+    .usbdev_usb_ref_val_o     (     ),
+    .usbdev_usb_ref_pulse_o   (   ),
+    .sck_monitor_o            (     )
   );
+
+
+  //////////////////////
+  // Always-on Domain //
+  //////////////////////
+  top_englishbreakfast_pd_aon top_englishbreakfast_pd_aon (
+    // All externally supplied clocks
+    .clk_main_i(clk_i  ),
+    .clk_io_i  (clk_i  ),
+    .clk_usb_i (clk_i  ),
+    .clk_aon_i (clk_aon),
+
+    // Manual DFT signals
+    .scan_rst_ni(1'b1            ),
+    .scanmode_i (lc_ctrl_pkg::Off),
+
+    // Special inter-power domain signals (interrupts, alerts)
+    .intr_vector_o(intr_vector_pd_aon),
+
+    .outgoing_alert_englishbreakfast_tx_o(),
+    .outgoing_alert_englishbreakfast_rx_i(),
+
+    .outgoing_lpg_cg_en_englishbreakfast_o(),
+    .outgoing_lpg_rst_en_englishbreakfast_o(),
+
+    // Ports to and from other power domains
+    .pwrmgr_aon_pwr_nvm_i     (pwrmgr_aon_pwr_nvm     ),
+    .pwrmgr_aon_strap_o       (pwrmgr_aon_strap       ),
+    .pwrmgr_aon_low_power_o   (pwrmgr_aon_low_power   ),
+    .pwrmgr_aon_fetch_en_o    (pwrmgr_aon_fetch_en    ),
+    .clkmgr_aon_idle_i        (clkmgr_aon_idle        ),
+    .rv_core_ibex_crash_dump_i(rv_core_ibex_crash_dump),
+    .rv_core_ibex_pwrmgr_i    (rv_core_ibex_pwrmgr    ),
+    .pwrmgr_aon_wakeups_i     (pwrmgr_aon_wakeups     ),
+    .pwrmgr_aon_tl_req_i      (pwrmgr_aon_tl_req      ),
+    .pwrmgr_aon_tl_rsp_o      (pwrmgr_aon_tl_rsp      ),
+    .rstmgr_aon_tl_req_i      (rstmgr_aon_tl_req      ),
+    .rstmgr_aon_tl_rsp_o      (rstmgr_aon_tl_rsp      ),
+    .clkmgr_aon_tl_req_i      (clkmgr_aon_tl_req      ),
+    .clkmgr_aon_tl_rsp_o      (clkmgr_aon_tl_rsp      ),
+
+    // Regular ports
+    .clkmgr_aon_clocks_o (clkmgr_aon_clocks),
+    .clkmgr_aon_cg_en_o  (clkmgr_aon_cg_en ),
+    .clk_main_jitter_en_o(                 ),
+    .hi_speed_sel_o      (                 ),
+    .div_step_down_req_i (1'b0             ),
+    .all_clk_byp_req_o   (all_clk_bypass   ),
+    .all_clk_byp_ack_i   (all_clk_bypass   ),
+    .io_clk_byp_req_o    (io_clk_bypass    ),
+    .io_clk_byp_ack_i    (io_clk_bypass    ),
+    .pwrmgr_ast_req_o    (                 ),
+    .pwrmgr_ast_rsp_i    (pwrmgr_ast_rsp   ),
+    .por_n_i             ({rst_ni, rst_ni} ),
+    .rstmgr_aon_resets_o (rstmgr_aon_resets),
+    .rstmgr_aon_rst_en_o (rstmgr_aon_rst_en)
+  );
+
 
   // GPIO DPI
   gpiodpi #(.N_GPIO(32)) u_gpiodpi (
