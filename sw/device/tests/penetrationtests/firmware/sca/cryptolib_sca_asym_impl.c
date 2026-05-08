@@ -1127,7 +1127,7 @@ status_t cryptolib_sca_ed25519_base_mul_impl(
       .keyblob_length = sizeof(private_keyblob),
       .keyblob = private_keyblob,
   };
-  private_key.checksum = integrity_blinded_checksum(&private_key);
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
 
   uint32_t public_key_data[ED25519_CMD_SCALAR_BYTES / sizeof(uint32_t)];
   otcrypto_unblinded_key_t public_key = {
