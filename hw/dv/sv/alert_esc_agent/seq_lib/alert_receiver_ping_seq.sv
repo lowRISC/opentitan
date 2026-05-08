@@ -6,7 +6,7 @@
 // These ping requests are configured with large ping_delay values. Note that if an alert is raised
 // while the driver is waiting at the start of sending a ping request then the driver will complete
 // the item immediately (and the sequencer will then be able to enqueue an alert response item)
-class alert_receiver_ping_seq extends dv_base_seq #(.REQ         (alert_esc_seq_item),
+class alert_receiver_ping_seq extends dv_base_seq #(.REQ         (alert_seq_item),
                                                     .CFG_T       (alert_esc_agent_cfg),
                                                     .SEQUENCER_T (alert_esc_sequencer));
   `uvm_object_utils(alert_receiver_ping_seq)
@@ -20,7 +20,7 @@ endfunction : new
 
 task alert_receiver_ping_seq::body();
   forever begin
-    req = alert_esc_seq_item::type_id::create("req");
+    req = alert_seq_item::type_id::create("req");
     start_item(req);
     // Randomise the item to be a ping request. When driven, the item will "wait around" for
     // ping_delay cycles before it actually sends the ping. Bound this to be in the interval
