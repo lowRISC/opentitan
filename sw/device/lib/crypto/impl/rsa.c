@@ -97,10 +97,12 @@ static hardened_bool_t bignum_lt(const uint32_t *a, const uint32_t *b,
 otcrypto_status_t otcrypto_rsa_public_key_construct(
     otcrypto_rsa_size_t size, const otcrypto_const_word32_buf_t *modulus,
     otcrypto_unblinded_key_t *public_key) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (modulus == NULL || modulus->data == NULL || public_key == NULL ||
       public_key->key == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
   HARDENED_TRY(rsa_mode_check(public_key->key_mode));
 
   switch (size) {
@@ -309,9 +311,11 @@ otcrypto_status_t otcrypto_rsa_keygen_async_start(otcrypto_rsa_size_t size) {
 otcrypto_status_t otcrypto_rsa_keygen(otcrypto_rsa_size_t size,
                                       otcrypto_unblinded_key_t *public_key,
                                       otcrypto_blinded_key_t *private_key) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (public_key == NULL || private_key == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
   // Check the size against the public key.
   otcrypto_rsa_size_t inferred_size;
   if (!status_ok(rsa_size_from_public_key(public_key, &inferred_size)) ||
@@ -328,11 +332,13 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
     const otcrypto_const_word32_buf_t *d_share0,
     const otcrypto_const_word32_buf_t *d_share1,
     otcrypto_blinded_key_t *private_key) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (modulus == NULL || modulus->data == NULL || d_share0 == NULL ||
       d_share0->data == NULL || d_share1 == NULL || d_share1->data == NULL ||
       private_key == NULL || private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
   HARDENED_TRY(rsa_mode_check(private_key->config.key_mode));
 
   // Ensure that the length of the private exponent shares matches the length
@@ -407,9 +413,11 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
     const otcrypto_const_word32_buf_t *cofactor_share0,
     const otcrypto_const_word32_buf_t *cofactor_share1,
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *private_key) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (public_key == NULL || private_key == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
   // Check the size against the public key.
   otcrypto_rsa_size_t inferred_size;
   if (!status_ok(rsa_size_from_public_key(public_key, &inferred_size)) ||
@@ -466,11 +474,13 @@ otcrypto_status_t otcrypto_rsa_decrypt(
 
 otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *private_key) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers.
   if (public_key == NULL || public_key->key == NULL || private_key == NULL ||
       private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Infer the RSA size from the public key modulus.
   otcrypto_rsa_size_t size;
@@ -545,11 +555,13 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
     otcrypto_rsa_size_t size, const otcrypto_const_word32_buf_t *modulus,
     const otcrypto_const_word32_buf_t *cofactor_share0,
     const otcrypto_const_word32_buf_t *cofactor_share1) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (modulus == NULL || modulus->data == NULL || cofactor_share0 == NULL ||
       cofactor_share0->data == NULL || cofactor_share1 == NULL ||
       cofactor_share1->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Verify the input buffers
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(modulus));
@@ -611,11 +623,13 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
 
 otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *private_key) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers.
   if (public_key == NULL || public_key->key == NULL || private_key == NULL ||
       private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Infer the RSA size from the public key modulus.
   otcrypto_rsa_size_t size;
@@ -715,11 +729,13 @@ otcrypto_status_t otcrypto_rsa_sign_async_start(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_hash_digest_t message_digest,
     otcrypto_rsa_padding_t padding_mode) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers.
   if (message_digest.data == NULL || private_key == NULL ||
       private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Infer the RSA size from the private key.
   otcrypto_rsa_size_t size;
@@ -781,10 +797,12 @@ otcrypto_status_t otcrypto_rsa_sign_async_start(
 
 otcrypto_status_t otcrypto_rsa_sign_async_finalize(
     otcrypto_word32_buf_t *signature) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers.
   if (signature == NULL || signature->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Verify the input buffer
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(signature));
@@ -819,11 +837,13 @@ otcrypto_status_t otcrypto_rsa_sign_async_finalize(
 otcrypto_status_t otcrypto_rsa_verify_async_start(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_const_word32_buf_t *signature) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers.
   if (public_key == NULL || public_key->key == NULL || signature == NULL ||
       signature->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Verify the input buffer
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(signature));
@@ -902,10 +922,12 @@ otcrypto_status_t otcrypto_rsa_verify_async_start(
 otcrypto_status_t otcrypto_rsa_verify_async_finalize(
     const otcrypto_hash_digest_t message_digest,
     otcrypto_rsa_padding_t padding_mode, hardened_bool_t *verification_result) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers.
   if (message_digest.data == NULL || verification_result == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Initialize verification result to false by default.
   *verification_result = kHardenedBoolFalse;
@@ -923,6 +945,7 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_start(
     const otcrypto_hash_mode_t hash_mode,
     const otcrypto_const_byte_buf_t *message,
     const otcrypto_const_byte_buf_t *label) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers.
   if (public_key == NULL || public_key->key == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -935,6 +958,7 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_start(
   if (label == NULL || ((label->data == NULL) && (label->len != 0))) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Check the caller-provided public key buffer.
   HARDENED_TRY(public_key_structural_check(public_key));
@@ -997,10 +1021,12 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_start(
 
 otcrypto_status_t otcrypto_rsa_encrypt_async_finalize(
     otcrypto_word32_buf_t *ciphertext) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers.
   if (ciphertext == NULL || ciphertext->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   switch (launder32(ciphertext->len)) {
     case kRsa2048NumWords: {
@@ -1037,11 +1063,13 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_finalize(
 otcrypto_status_t otcrypto_rsa_decrypt_async_start(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_const_word32_buf_t *ciphertext) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers.
   if (private_key == NULL || private_key->keyblob == NULL ||
       ciphertext->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Infer the RSA size from the private key.
   otcrypto_rsa_size_t size;
@@ -1147,10 +1175,12 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_finalize(
     const otcrypto_hash_mode_t hash_mode,
     const otcrypto_const_byte_buf_t *label, otcrypto_byte_buf_t *plaintext,
     size_t *plaintext_bytelen) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (plaintext == NULL || plaintext->data == NULL || label == NULL ||
       label->data == NULL || plaintext_bytelen == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Call the unified `finalize()` operation, which will infer the RSA size
   // from OTBN.

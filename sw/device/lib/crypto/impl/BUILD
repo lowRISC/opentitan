@@ -28,6 +28,13 @@ config_setting(
     },
 )
 
+config_setting(
+    name = "disable_null_checks",
+    define_values = {
+        "disable_null_checks": "true",
+    },
+)
+
 cc_library(
     name = "aes",
     srcs = ["aes.c"],
@@ -377,10 +384,16 @@ cc_library(
     hdrs = [
         "status.h",
     ],
-    # Turn debugging on only if the `crypto_status_debug` command-line option
-    # is set.
     defines = select({
+        # Turn debugging on only if the `crypto_status_debug` command-line option
+        # is set.
         ":crypto_status_debug": ["OTCRYPTO_STATUS_DEBUG"],
+        "//conditions:default": [],
+    }) + select({
+        # This disables NULL checks on API input to save code size
+        # Activate it by building the library with `--define=disable_null_checks=true`
+        # The status header is used in all API functions to pass a bad status hence it propagates to where the flag is needed
+        ":disable_null_checks": ["OTCRYPTO_DISABLE_NULL_CHECKS"],
         "//conditions:default": [],
     }),
     deps = [

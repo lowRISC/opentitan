@@ -72,6 +72,7 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
     const otcrypto_const_byte_buf_t *label,
     const otcrypto_const_byte_buf_t *context,
     otcrypto_blinded_key_t *output_key_material) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check NULL pointers.
   if (output_key_material == NULL || output_key_material->keyblob == NULL ||
       key_derivation_key == NULL || key_derivation_key->keyblob == NULL) {
@@ -87,6 +88,7 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
   if (context == NULL || (context->data == NULL && context->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Check the private key checksum.
   if (otcrypto_integrity_blinded_key_check(key_derivation_key) !=
