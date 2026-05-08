@@ -37,6 +37,7 @@ module rram_ctrl_wr import rram_ctrl_pkg::*; (
   input  logic                    rram_wr_intg_err_i
 );
 
+  // SEC_CM: PHY_WR.FSM.SPARSE
   // Encoding generated at commit 61d4d1cd9e using Python 3.10.19 with:
   // $ ./util/design/sparse-fsm-encode.py --language=sv \
   //     --seed 718361455 --distance 4 --states 2 --bits 5
@@ -72,6 +73,7 @@ module rram_ctrl_wr import rram_ctrl_pkg::*; (
 
   rram_ctrl_err_t op_err_q, op_err_d;
 
+  // SEC_CM: CTR.REDUN
   prim_count #(
     .Width(CtrlMaxWordsW),
     .PossibleActions(prim_count_pkg::Clr |
