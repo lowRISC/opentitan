@@ -29,8 +29,8 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
   )) otp_prog_fifo;
   uvm_tlm_analysis_fifo #(kmac_app_item) kmac_app_req_fifo;
   uvm_tlm_analysis_fifo #(kmac_app_item) kmac_app_rsp_fifo;
-  uvm_tlm_analysis_fifo #(alert_esc_seq_item) esc_wipe_secrets_fifo;
-  uvm_tlm_analysis_fifo #(alert_esc_seq_item) esc_scrap_state_fifo;
+  uvm_tlm_analysis_fifo #(esc_seq_item) esc_wipe_secrets_fifo;
+  uvm_tlm_analysis_fifo #(esc_seq_item) esc_scrap_state_fifo;
   uvm_tlm_analysis_fifo #(jtag_riscv_item) jtag_riscv_fifo;
 
   `uvm_component_new
@@ -608,7 +608,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
   // this function check if the triggered alert is expected
   // to turn off this check, user can set `do_alert_check` to 0
   // We overload this to trigger events in the config object when an alert is triggered
-  virtual function void process_alert(string alert_name, alert_esc_seq_item item);
+  virtual function void process_alert(string alert_name, alert_seq_item item);
     if (item.alert_handshake_sta == AlertReceived) begin
       case (alert_name)
         "fatal_prog_error": begin
