@@ -435,7 +435,7 @@ task alert_monitor::monitor_alert_handshake();
   alert_esc_port.write(req);
 
   if (cfg.en_cov) begin
-    cov.m_alert_handshake_complete_cg.sample(req.alert_esc_type, req.alert_handshake_sta);
+    cov.m_handshake_complete_cg.sample(req.alert_esc_type, req.alert_handshake_sta);
     if (cfg.en_ping_cov) cov.m_alert_trans_cg.sample(req.alert_esc_type);
   end
 endtask
