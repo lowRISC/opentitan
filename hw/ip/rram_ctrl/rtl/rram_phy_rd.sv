@@ -615,6 +615,7 @@ module rram_phy_rd
   // Output response selection //
   ///////////////////////////////
   logic [BusFullWidth-1:0] inv_data;
+  // SEC_CM: MEM.BUS.INTEGRITY
   tlul_data_integ_enc u_bus_intg (
     .data_i     ({BusWidth{1'b1}}),
     .data_intg_o(inv_data)
@@ -674,12 +675,14 @@ module rram_phy_rd
 
   assign cmd_intg_err = data_valid_o ? (cmd_rsp_intg != meta_q_buf.cmd_intg) : 1'b0;
 
+  // SEC_CM: PHY_RD_RSP.CTRL.INTEGRITY
   // Control flow error if any of the above errors is set
   assign ctrl_err_o = valid_err | req_err | cmd_intg_err;
 
   // If any fifo shows an integrity error
   assign fifo_err_o = |{meta_fifo_err, rd_fifo_err, mask_fifo_err};
 
+  // SEC_CM: PHY_RD_BUF.CTRL.INTEGRITY
   // Integrity error if a verify operation found a mismatch
   assign intg_err_o = |buf_intg_err;
 

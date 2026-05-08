@@ -36,6 +36,7 @@ module rram_ctrl_rd import rram_ctrl_pkg::*; (
   input  logic                    rram_mp_err_i
 );
 
+  // SEC_CM: CTRL.FSM.SPARSE
   // Encoding generated at commit 0d4f05ad06 using Python 3.10.19 with:
   // $ ./util/design/sparse-fsm-encode.py --language=sv \
   //     --seed 8913483484 --distance 4 --states 3 --bits 6
@@ -84,6 +85,7 @@ module rram_ctrl_rd import rram_ctrl_pkg::*; (
     end
   end
 
+  // SEC_CM: CTR.REDUN
   prim_count #(
     .Width(CtrlMaxWordsW),
     .PossibleActions(prim_count_pkg::Clr |
@@ -175,6 +177,7 @@ module rram_ctrl_rd import rram_ctrl_pkg::*; (
   // if error, return "empty" data
   assign err_sel = rd_wr & |op_err_o;
 
+  // SEC_CM: MEM.ADDR_INFECTION
   // When there is no error, return the rram data and remove the addr-xor
   // When there is an error, return invalid data with the correct bus integrity
   logic [BusWidth-1:0] addr_xor;
