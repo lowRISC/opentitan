@@ -4,7 +4,7 @@
 
 // Escalation sender driver
 
-class esc_sender_driver extends dv_base_driver#(alert_esc_seq_item, alert_esc_agent_cfg);
+class esc_sender_driver extends alert_esc_base_driver;
   `uvm_component_utils(esc_sender_driver)
 
   extern function new (string name, uvm_component parent);
