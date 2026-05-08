@@ -158,6 +158,7 @@ module rram_phy
                     (wr_busy == 1'b0) & phy_init_done_q &
                     mubi4_test_false_strict(rram_disable[CtrlDisableIdx]);
 
+  // SEC_CM: PHY_ARBITER.CTRL.REDUN
   prim_arbiter_tree_dup #(
     .N(2),
     .DW(2),
@@ -393,6 +394,7 @@ module rram_phy
   //////////////////////////////
   // Shared scrambling module //
   //////////////////////////////
+  // SEC_CM: MEM.SCRAMBLE
   rram_scramble #(
     .RndCnstAddrKey(RndCnstAddrKey),
     .RndCnstDataKey(RndCnstDataKey),
@@ -427,7 +429,9 @@ module rram_phy
   assign spurious_rd_done      = ctrl_rd_done_o & host_rsp;
   assign spurious_rd_host_done = host_rd_done_o & ctrl_rsp;
 
+  // SEC_CM: PHY_RSP.CTRL.CONSISTENCY
   assign spurious_done_o = spurious_rd_done | spurious_rd_host_done;
+  // SEC_CM: PHY_HOST_GRANT.CTRL.CONSISTENCY
   assign host_gnt_err_o  = host_gnt & ((muxed_part_buf != RramPartData) | ~host_req_i);
 
   /////////////////////////////////////////////////

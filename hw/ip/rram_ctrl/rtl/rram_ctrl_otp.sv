@@ -104,6 +104,7 @@ module rram_ctrl_otp
   logic [OtpIntgIndWidth-1:0] intg_ind_d, intg_ind_q;
   logic [BusAddrByteW-1:0]    intg_addr_d, intg_addr_q;
 
+  // SEC_CM: CTRL.FSM.SPARSE
   // Encoding generated with:
   // $ ./util/design/sparse-fsm-encode.py --language=sv \
   //     --seed 99887766 --distance 5 --states 15 --bits 12
