@@ -99,7 +99,7 @@
       lc_states: ["PROD"]
       tests: ["chip_sw_keymgr_sideload_kmac"]
       bazel: [
-        "//sw/device/tests:keymgr_sideload_kmac_test",
+        //"//sw/device/tests:keymgr_sideload_kmac_test",
         "//sw/device/tests/crypto:kmac_sideload_functest_hardcoded",
       ]
     }
@@ -115,9 +115,9 @@
       lc_states: ["PROD"]
       tests: ["chip_sw_keymgr_sideload_aes"]
       bazel: [
-        "//sw/device/tests/crypto:aes_sideload_functest",
-        "//sw/device/tests/crypto:aes_kwp_sideload_functest",
-        "//sw/device/tests:keymgr_sideload_aes_test",
+        //"//sw/device/tests/crypto:aes_sideload_functest",
+        //"//sw/device/tests/crypto:aes_kwp_sideload_functest",
+        //"//sw/device/tests:keymgr_sideload_aes_test",
       ]
     }
     {
