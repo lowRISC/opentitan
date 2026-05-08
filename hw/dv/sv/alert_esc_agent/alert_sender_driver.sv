@@ -203,13 +203,8 @@ task alert_sender_driver::drive_alert_pins(alert_esc_seq_item req);
     reset_alert_pins(ack_delay);
   end else begin
     // Because req.int_err is true, cause the alert signal integrity check to fail.
-    if (req.alert_int_err_type & HasAlertBeforeIntFailOnly) set_alert_pins(alert_delay);
     random_drive_int_fail(req.int_err_cyc);
-    if (req.alert_int_err_type & HasAlertAfterIntFailOnly) begin
-      set_alert_pins(alert_delay);
-    end else begin
-      set_alert(1'b0);
-    end
+    set_alert(1'b0);
   end
 
   // There must be at least two sender clock delays before next alert_handshake
