@@ -80,12 +80,12 @@ module tb;
 
   // TODO: Absorb this functionality into chip_if.
   bind dut ast_supply_if ast_supply_if (
-    .clk(top_earlgrey.clk_aon_i),
+    .clk(ast_base_clks.clk_aon),
 `ifdef GATE_LEVEL
     .core_sleeping_trigger(0),
     .low_power_trigger(0)
 `else
-    .core_sleeping_trigger(top_earlgrey.rv_core_ibex_pwrmgr.core_sleeping),
+    .core_sleeping_trigger(rv_core_ibex_pwrmgr.core_sleeping),
     .low_power_trigger(`PWRMGR_HIER.pwr_rst_o.reset_cause == pwrmgr_pkg::LowPwrEntry)
 `endif
   );
@@ -261,11 +261,11 @@ module tb;
   // The gpiodpi module allows the host to directly control gpio when enabled.
   gpiodpi u_gpiodpi(
 `ifdef GATE_LEVEL
-    .clk_i(dut.top_earlgrey.u_clkmgr_aon.clocks_o_clk_io_div4_peri),
-    .rst_ni(dut.top_earlgrey.u_rstmgr_aon.resets_o_rst_lc_io_div4_n_1_),
+    .clk_i(dut.top_earlgrey_pd_aon.u_clkmgr_aon.clocks_o_clk_io_div4_peri),
+    .rst_ni(dut.top_earlgrey_pd_aon.u_rstmgr_aon.resets_o_rst_lc_io_div4_n_1_),
 `else
-    .clk_i(dut.top_earlgrey.u_clkmgr_aon.clocks_o.clk_io_div4_peri),
-    .rst_ni(dut.top_earlgrey.u_rstmgr_aon.resets_o.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
+    .clk_i(dut.top_earlgrey_pd_aon.u_clkmgr_aon.clocks_o.clk_io_div4_peri),
+    .rst_ni(dut.top_earlgrey_pd_aon.u_rstmgr_aon.resets_o.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
 `endif
     .active(u_tb_dpi_if.enable_gpiodpi),
     .gpio_p2d(gpiodpi_p2d),
@@ -353,11 +353,11 @@ module tb;
     .FREQ('d24_000_000)
   ) u_uartdpi0(
 `ifdef GATE_LEVEL
-   .clk_i(dut.top_earlgrey.u_clkmgr_aon.clocks_o_clk_io_div4_peri),
-   .rst_ni(dut.top_earlgrey.u_rstmgr_aon.resets_o_rst_lc_io_div4_n_1_),
+   .clk_i(dut.top_earlgrey_pd_aon.u_clkmgr_aon.clocks_o_clk_io_div4_peri),
+   .rst_ni(dut.top_earlgrey_pd_aon.u_rstmgr_aon.resets_o_rst_lc_io_div4_n_1_),
 `else
-   .clk_i(dut.top_earlgrey.u_clkmgr_aon.clocks_o.clk_io_div4_peri),
-   .rst_ni(dut.top_earlgrey.u_rstmgr_aon.resets_o.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
+   .clk_i(dut.top_earlgrey_pd_aon.u_clkmgr_aon.clocks_o.clk_io_div4_peri),
+   .rst_ni(dut.top_earlgrey_pd_aon.u_rstmgr_aon.resets_o.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
 `endif
     .active(u_tb_dpi_if.enable_uartdpi),
     .tx_o(uartdpi_tx),
@@ -680,7 +680,7 @@ module tb;
           $assertoff(0, dut.top_earlgrey.u_spi_device);
           $assertoff(0, dut.top_earlgrey.u_spi_host0);
           $assertoff(0, dut.top_earlgrey.u_spi_host1);
-          $assertoff(0, dut.top_earlgrey.u_sysrst_ctrl_aon);
+          $assertoff(0, dut.top_earlgrey_pd_aon.u_sysrst_ctrl_aon);
           $assertoff(0, dut.top_earlgrey.u_uart0);
           $assertoff(0, dut.top_earlgrey.u_uart1);
           $assertoff(0, dut.top_earlgrey.u_uart2);
@@ -696,7 +696,7 @@ module tb;
           $asserton(0, dut.top_earlgrey.u_spi_device);
           $asserton(0, dut.top_earlgrey.u_spi_host0);
           $asserton(0, dut.top_earlgrey.u_spi_host1);
-          $asserton(0, dut.top_earlgrey.u_sysrst_ctrl_aon);
+          $asserton(0, dut.top_earlgrey_pd_aon.u_sysrst_ctrl_aon);
           $asserton(0, dut.top_earlgrey.u_uart0);
           $asserton(0, dut.top_earlgrey.u_uart1);
           $asserton(0, dut.top_earlgrey.u_uart2);
