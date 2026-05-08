@@ -34,11 +34,17 @@ task alert_receiver_alert_rsp_seq::body();
 endtask : body
 
 task alert_receiver_alert_rsp_seq::default_rsp_thread();
-  alert_esc_seq_item req_q[$];
+  alert_seq_item req_q[$];
   fork
     forever begin : get_req
-      p_sequencer.req_analysis_fifo.get(req);
-      if (req.alert_esc_type == AlertEscSigTrans) req_q.push_back(req);
+      alert_esc_seq_item base_item;
+      p_sequencer.req_analysis_fifo.get(base_item);
+
+      if (!$cast(req, base_item)) begin
+        `uvm_fatal(get_full_name(), "Failed to cast item to alert_seq_item.")
+      end
+
+      if (req.m_trans_type == AlertEscSigTrans) req_q.push_back(req);
     end : get_req
     forever begin : send_rsp
       if (cfg.in_reset) begin
