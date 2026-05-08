@@ -129,8 +129,12 @@ status_t keyblob_buffer_to_keymgr_diversification(
 status_t keyblob_to_keymgr_diversification(
     const otcrypto_blinded_key_t *key,
     keymgr_diversification_t *diversification) {
-  if (launder32(key->config.hw_backed) != kHardenedBoolTrue ||
-      key->keyblob == NULL) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+  if (launder32(key->config.hw_backed) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(key->config.hw_backed, kHardenedBoolTrue);
@@ -146,8 +150,12 @@ status_t keyblob_to_keymgr_diversification(
 status_t keyblob_to_keymgr_attestation_diversification(
     const otcrypto_blinded_key_t *key,
     keymgr_diversification_t *diversification) {
-  if (launder32(key->config.hw_backed) != kHardenedBoolTrue ||
-      key->keyblob == NULL) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+  if (launder32(key->config.hw_backed) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(key->config.hw_backed, kHardenedBoolTrue);
@@ -258,9 +266,11 @@ status_t keyblob_remask(otcrypto_blinded_key_t *key) {
 
 status_t keyblob_key_unmask(const otcrypto_blinded_key_t *key,
                             size_t unmasked_key_len, uint32_t *unmasked_key) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (key == NULL || unmasked_key == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
   if (keyblob_share_num_words(key->config) != unmasked_key_len) {
     return OTCRYPTO_BAD_ARGS;
   }

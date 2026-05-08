@@ -20,6 +20,7 @@ otcrypto_status_t otcrypto_kmac(
     size_t required_output_len, otcrypto_word32_buf_t *tag) {
   // TODO (#16410) Revisit/complete error checks
 
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for null pointers.
   if (key == NULL || key->keyblob == NULL || tag == NULL || tag->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -36,6 +37,7 @@ otcrypto_status_t otcrypto_kmac(
       (customization_string->data == NULL && customization_string->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Ensure that tag buffer length and `required_output_len` match each other.
   size_t required_output_words =

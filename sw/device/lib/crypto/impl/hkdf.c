@@ -136,6 +136,7 @@ static status_t hkdf_check_prk(size_t digest_words,
 otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
                                         const otcrypto_const_byte_buf_t *salt,
                                         otcrypto_blinded_key_t *prk) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for null pointers.
   if (ikm == NULL || ikm->keyblob == NULL || prk == NULL ||
       prk->keyblob == NULL) {
@@ -144,6 +145,7 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
   if (salt == NULL || (salt->data == NULL && salt->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Check the private key checksum.
   if (launder32(otcrypto_integrity_blinded_key_check(ikm)) !=
@@ -243,6 +245,7 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
 otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
                                        const otcrypto_const_byte_buf_t *info,
                                        otcrypto_blinded_key_t *okm) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (okm == NULL || okm->keyblob == NULL || prk == NULL ||
       prk->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -250,6 +253,7 @@ otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
   if (info == NULL || (info->data == NULL && info->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Infer the digest size.
   size_t digest_words = 0;

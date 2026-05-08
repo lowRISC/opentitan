@@ -108,10 +108,12 @@ static otcrypto_status_t seed_material_xor(
 
 otcrypto_status_t otcrypto_drbg_instantiate(
     const otcrypto_const_byte_buf_t *perso_string) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers or bad length.
   if (perso_string->len != 0 && perso_string->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   entropy_seed_material_t seed_material;
   HARDENED_TRY(
@@ -125,11 +127,13 @@ otcrypto_status_t otcrypto_drbg_instantiate(
 
 otcrypto_status_t otcrypto_drbg_reseed(
     const otcrypto_const_byte_buf_t *additional_input) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers or bad length.
   if (additional_input == NULL ||
       (additional_input->len != 0 && additional_input->data == NULL)) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   entropy_seed_material_t seed_material;
   HARDENED_TRY(
@@ -143,11 +147,16 @@ otcrypto_status_t otcrypto_drbg_reseed(
 otcrypto_status_t otcrypto_drbg_manual_instantiate(
     const otcrypto_const_byte_buf_t *entropy,
     const otcrypto_const_byte_buf_t *perso_string) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers or bad length.
   if (perso_string->len != 0 && perso_string->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (entropy->data == NULL || entropy->len != kEntropySeedBytes) {
+  if (entropy->data == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+  if (entropy->len != kEntropySeedBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -164,13 +173,17 @@ otcrypto_status_t otcrypto_drbg_manual_instantiate(
 otcrypto_status_t otcrypto_drbg_manual_reseed(
     const otcrypto_const_byte_buf_t *entropy,
     const otcrypto_const_byte_buf_t *additional_input) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers or bad length.
   if (additional_input == NULL ||
       (additional_input->len != 0 && additional_input->data == NULL)) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (entropy == NULL || entropy->data == NULL ||
-      entropy->len != kEntropySeedBytes) {
+  if (entropy == NULL || entropy->data == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+  if (entropy->len != kEntropySeedBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -215,11 +228,13 @@ otcrypto_status_t otcrypto_drbg_generate(
     // Nothing to do.
     return OTCRYPTO_OK;
   }
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (additional_input == NULL ||
       (additional_input->len != 0 && additional_input->data == NULL) ||
       drbg_output == NULL || drbg_output->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Randomize destination buffer.
   HARDENED_TRY(hardened_memshred(drbg_output->data, drbg_output->len));
@@ -235,11 +250,13 @@ otcrypto_status_t otcrypto_drbg_manual_generate(
     // Nothing to do.
     return OTCRYPTO_OK;
   }
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (additional_input == NULL ||
       (additional_input->len != 0 && additional_input->data == NULL) ||
       drbg_output == NULL || drbg_output->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   return otcrypto_eval_exit(generate(/*fips_check=*/kHardenedBoolFalse,
                                      additional_input, drbg_output));

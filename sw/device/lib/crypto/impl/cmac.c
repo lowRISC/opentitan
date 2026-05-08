@@ -63,9 +63,11 @@ enum {
  * Checks for NULL pointers or invalid settings in the blinded key.
  */
 static status_t check_key(const otcrypto_blinded_key_t *key) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (key == NULL || key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
   // Check the integrity of the key.
   if (launder32(otcrypto_integrity_blinded_key_check(key)) !=
       kHardenedBoolTrue) {
@@ -321,10 +323,12 @@ OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_cmac(const otcrypto_blinded_key_t *key,
                                 const otcrypto_const_byte_buf_t *input_message,
                                 otcrypto_word32_buf_t *tag) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (tag == NULL || tag->data == NULL || input_message == NULL ||
       (input_message->data == NULL && input_message->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
   HARDENED_TRY(hardened_memshred(tag->data, tag->len));
   HARDENED_TRY(check_key(key));
 
@@ -401,9 +405,11 @@ otcrypto_status_t otcrypto_cmac(const otcrypto_blinded_key_t *key,
 
 otcrypto_status_t otcrypto_cmac_init(otcrypto_cmac_context_t *ctx,
                                      const otcrypto_blinded_key_t *key) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
   HARDENED_TRY(check_key(key));
 
   if (launder32(key->config.hw_backed) == kHardenedBoolTrue) {
@@ -459,12 +465,14 @@ otcrypto_status_t otcrypto_cmac_init(otcrypto_cmac_context_t *ctx,
 otcrypto_status_t otcrypto_cmac_update(
     otcrypto_cmac_context_t *const ctx,
     const otcrypto_const_byte_buf_t *input_message) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL || input_message == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (input_message->data == NULL && input_message->len != 0) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   otcrypto_key_security_level_t security_level =
       (otcrypto_key_security_level_t)ctx->data[kCtxSecurityLevelOffset];
@@ -507,9 +515,11 @@ otcrypto_status_t otcrypto_cmac_update(
 
 otcrypto_status_t otcrypto_cmac_final(otcrypto_cmac_context_t *const ctx,
                                       otcrypto_word32_buf_t *tag) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL || tag == NULL || tag->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   otcrypto_key_security_level_t security_level =
       (otcrypto_key_security_level_t)ctx->data[kCtxSecurityLevelOffset];
