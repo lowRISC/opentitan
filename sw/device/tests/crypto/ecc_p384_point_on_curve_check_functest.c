@@ -87,6 +87,69 @@ status_t point_valid_test(void) {
   return OTCRYPTO_OK;
 }
 
+status_t point_x_out_of_range_test(void) {
+  // x = p (the field prime): x >= p, so the range check must reject it before
+  // the isoncurve check runs.
+  p384_point_t point_raw = {
+      .x = {0xffffffff, 0x00000000, 0x00000000, 0xffffffff, 0xfffffffe,
+            0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+            0xffffffff, 0xffffffff},
+      // y is a valid coordinate for a different point; irrelevant since x is
+      // rejected first.
+      .y = {0xc181f90f, 0xc31ef079, 0xbf3aff6e, 0xc7e55880, 0xec18818c,
+            0xcea028a9, 0x928c3e92, 0x82b63bf3, 0xd65e905d, 0x68eef2d1,
+            0x03afe2c2, 0xaaafcad2},
+  };
+
+  uint32_t pt_buf[kP384PointWords];
+  memcpy(pt_buf, &point_raw, sizeof(point_raw));
+  otcrypto_unblinded_key_t point = {
+      .key_length = sizeof(pt_buf),
+      .key = pt_buf,
+  };
+
+  hardened_bool_t result;
+  TRY(otcrypto_ecc_p384_point_on_curve(&point, &result));
+
+  if (result != kHardenedBoolFalse) {
+    LOG_ERROR("Point with x >= p passed the point check.");
+    return OTCRYPTO_RECOV_ERR;
+  }
+
+  return OTCRYPTO_OK;
+}
+
+status_t point_y_out_of_range_test(void) {
+  // y = p (the field prime): y >= p, so the range check must reject it after
+  // x passes.
+  p384_point_t point_raw = {
+      // x is a valid in-range coordinate so the x range check passes.
+      .x = {0x4877f3d1, 0x7b829460, 0xb1cac609, 0x5869de54, 0xee0e2beb,
+            0x6c30f2d8, 0x47e80661, 0x394d8b70, 0xcf60d89e, 0x1a9ea916,
+            0xb439d701, 0xca230836},
+      .y = {0xffffffff, 0x00000000, 0x00000000, 0xffffffff, 0xfffffffe,
+            0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+            0xffffffff, 0xffffffff},
+  };
+
+  uint32_t pt_buf[kP384PointWords];
+  memcpy(pt_buf, &point_raw, sizeof(point_raw));
+  otcrypto_unblinded_key_t point = {
+      .key_length = sizeof(pt_buf),
+      .key = pt_buf,
+  };
+
+  hardened_bool_t result;
+  TRY(otcrypto_ecc_p384_point_on_curve(&point, &result));
+
+  if (result != kHardenedBoolFalse) {
+    LOG_ERROR("Point with y >= p passed the point check.");
+    return OTCRYPTO_RECOV_ERR;
+  }
+
+  return OTCRYPTO_OK;
+}
+
 status_t point_partial_collision_test(void) {
   // This constructs a point where (Y^2 % p) and (X^3 - 3X + b % p)
   // share the same lower 256 bits, but differ in the upper 128 bits.
@@ -137,6 +200,22 @@ bool test_main(void) {
   }
 
   err = point_partial_collision_test();
+  if (!status_ok(err)) {
+    LOG_INFO("OTBN error bits: 0x%08x", otbn_err_bits_get());
+    LOG_INFO("OTBN instruction count: 0x%08x", otbn_instruction_count_get());
+    CHECK_STATUS_OK(err);
+    return false;
+  }
+
+  err = point_x_out_of_range_test();
+  if (!status_ok(err)) {
+    LOG_INFO("OTBN error bits: 0x%08x", otbn_err_bits_get());
+    LOG_INFO("OTBN instruction count: 0x%08x", otbn_instruction_count_get());
+    CHECK_STATUS_OK(err);
+    return false;
+  }
+
+  err = point_y_out_of_range_test();
   if (!status_ok(err)) {
     LOG_INFO("OTBN error bits: 0x%08x", otbn_err_bits_get());
     LOG_INFO("OTBN instruction count: 0x%08x", otbn_instruction_count_get());
