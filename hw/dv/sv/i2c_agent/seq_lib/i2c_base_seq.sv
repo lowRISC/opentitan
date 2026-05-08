@@ -137,15 +137,24 @@ class i2c_base_seq extends dv_base_seq #(
     `uvm_info(`gfn, "Got to end of Agent-Target transfer. Now awaiting new transfer.", UVM_DEBUG)
   endtask : send_device_mode_txn
 
+  // Return DevAck by default unless an extended class overrides it.
+  protected virtual function drv_type_e get_ack_nack();
+    return DevAck;
+  endfunction
 
-  virtual task drive_addr_byte_ack();
+  local task drive_ack();
     `uvm_create_obj(REQ, req);
     start_item(req);
-    req.drv_type = DevAck;
+    req.drv_type = get_ack_nack();
+    if (req.drv_type == DevNack)
+      `uvm_info(`gfn, "Nacking the byte!", UVM_HIGH)
     finish_item(req);
+  endtask : drive_ack
+
+  virtual task drive_addr_byte_ack();
+    drive_ack();
     `uvm_info(`gfn, "drive_addr_byte_ack()::finish_item()", UVM_DEBUG)
   endtask : drive_addr_byte_ack
-
 
   virtual task drive_read_byte(bit [7:0] rdata);
     `uvm_create_obj(REQ, req);
@@ -156,12 +165,8 @@ class i2c_base_seq extends dv_base_seq #(
     `uvm_info(`gfn, "drive_read_byte()::finish_item()", UVM_DEBUG)
   endtask : drive_read_byte
 
-
   virtual task drive_write_byte_ack();
-    `uvm_create_obj(REQ, req);
-    start_item(req);
-    req.drv_type = DevAck;
-    finish_item(req);
+    drive_ack();
     `uvm_info(`gfn, "drive_write_byte_ack()::finish_item()", UVM_DEBUG)
   endtask : drive_write_byte_ack
 

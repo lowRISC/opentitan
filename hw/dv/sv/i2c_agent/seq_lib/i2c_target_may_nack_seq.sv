@@ -24,32 +24,8 @@ class i2c_target_may_nack_seq extends i2c_base_seq;
   /////////////
 
   // Return DevAck or DevNack with equal probability
-  local function drv_type_e get_ack_nack();
+  protected virtual function drv_type_e get_ack_nack();
     return ($urandom_range(0,1) ? DevAck : DevNack);
   endfunction
-
-  virtual task drive_addr_byte_ack();
-    `uvm_create_obj(REQ, req);
-    start_item(req);
-
-    req.drv_type = get_ack_nack();
-
-    if (req.drv_type == DevNack) `uvm_info(`gfn, "NACKing the address byte!", UVM_LOW)
-
-    finish_item(req);
-  endtask : drive_addr_byte_ack
-
-
-  virtual task drive_write_byte_ack();
-    `uvm_create_obj(REQ, req);
-    start_item(req);
-
-    req.drv_type = get_ack_nack();
-
-    if (req.drv_type == DevNack) `uvm_info(`gfn, "NACKing a data byte!", UVM_LOW)
-
-    finish_item(req);
-  endtask : drive_write_byte_ack
-
 
 endclass : i2c_target_may_nack_seq
