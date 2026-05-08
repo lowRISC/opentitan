@@ -21,8 +21,8 @@ class alert_receiver_driver extends alert_base_driver;
   // it spawns).
   //
   // When reset is asserted, both of those tasks will exit after flushing their respective queues.
-  local uvm_tlm_analysis_fifo #(alert_esc_seq_item) m_pending_pings;
-  local uvm_tlm_analysis_fifo #(alert_esc_seq_item) m_pending_alert_rsps;
+  local uvm_tlm_analysis_fifo #(alert_seq_item) m_pending_pings;
+  local uvm_tlm_analysis_fifo #(alert_seq_item) m_pending_alert_rsps;
 
   // A map from item transaction ID to the tasks that are pending for that item. If bit 0 is set,
   // the item represents an alert that must be responded to. If bit 1 is set, the item represents a
@@ -66,7 +66,7 @@ class alert_receiver_driver extends alert_base_driver;
 
   // Clear the appropriate bit in m_transaction_tasks for the ID pair of item. If the resulting
   // bitmap is zero, delete the entry from m_transaction_tasks.
-  extern local function void report_done(bit is_ping, alert_esc_seq_item item);
+  extern local function void report_done(bit is_ping, alert_seq_item item);
 
   // Drive any items that were added to m_pending_pings.
   //
@@ -81,7 +81,7 @@ class alert_receiver_driver extends alert_base_driver;
   // Send a ping described by item.
   //
   // Exits early on reset.
-  extern local task send_ping(alert_esc_seq_item item);
+  extern local task send_ping(alert_seq_item item);
 
   // Handle a sequence item that demands an alert response
   //
@@ -89,7 +89,7 @@ class alert_receiver_driver extends alert_base_driver;
   // interface. We will wait a randomised time (in ack_alert) before acknowledging the alert.
   //
   // Exits early on reset.
-  extern local task send_alert_rsp(alert_esc_seq_item item);
+  extern local task send_alert_rsp(alert_seq_item item);
 
   // Wait for a short time to allow an alert to propagate through the clocking blocks in the
   // interface. The max_cycles argument is the maximum number of cycles to wait.
@@ -181,7 +181,7 @@ task alert_receiver_driver::drive_req();
     // that come in.
     while (cfg.in_reset) begin
       fork : isolation_fork begin
-        alert_esc_seq_item item;
+        alert_seq_item item;
         fork
           wait (!cfg.in_reset);
           m_receiver_requests.get(item);
@@ -201,7 +201,7 @@ task alert_receiver_driver::consume_requests_betwen_resets();
     fork
       wait (cfg.in_reset);
       forever begin
-        alert_esc_seq_item item;
+        alert_seq_item item;
         id_pair_t ids;
         bit [1:0] jobs;
 
@@ -264,7 +264,7 @@ task alert_receiver_driver::drive_req_between_resets();
 
 endtask
 
-function void alert_receiver_driver::report_done(bit is_ping, alert_esc_seq_item item);
+function void alert_receiver_driver::report_done(bit is_ping, alert_seq_item item);
   id_pair_t ids;
   ids.transaction_id = item.get_transaction_id();
   ids.sequence_id    = item.get_sequence_id();
@@ -290,7 +290,7 @@ function void alert_receiver_driver::report_done(bit is_ping, alert_esc_seq_item
 endfunction
 
 task alert_receiver_driver::send_pings();
-  alert_esc_seq_item item;
+  alert_seq_item item;
 
   while(!cfg.in_reset) begin
     // Clear the item variable (so that we can tell whether the fork below gets an item or sees a
@@ -322,7 +322,7 @@ task alert_receiver_driver::send_pings();
 endtask
 
 task alert_receiver_driver::send_alert_rsps();
-  alert_esc_seq_item item;
+  alert_seq_item item;
 
   while (!cfg.in_reset) begin
     // Clear the item variable (so that we can tell whether the fork below gets an item or sees a
@@ -353,7 +353,7 @@ task alert_receiver_driver::send_alert_rsps();
   while(m_pending_alert_rsps.try_get(item)) report_done(0, item);
 endtask
 
-task alert_receiver_driver::send_ping(alert_esc_seq_item item);
+task alert_receiver_driver::send_ping(alert_seq_item item);
   `uvm_info(get_full_name(), "Sending ping", UVM_HIGH)
 
   if (item.int_err) begin
@@ -363,7 +363,7 @@ task alert_receiver_driver::send_ping(alert_esc_seq_item item);
   end
 endtask
 
-task alert_receiver_driver::send_alert_rsp(alert_esc_seq_item item);
+task alert_receiver_driver::send_alert_rsp(alert_seq_item item);
   `uvm_info(get_full_name(), "Responding to alert", UVM_HIGH)
 
   // If we get here then something should have been pushed onto the alert queue in response to

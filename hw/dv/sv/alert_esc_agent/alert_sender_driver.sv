@@ -35,13 +35,13 @@ class alert_sender_driver extends alert_base_driver;
   // been driven, mark it done in seq_item_port.
   //
   // This exits immediately on a reset.
-  extern local task send_item(bit is_ping_rsp, alert_esc_seq_item item);
+  extern local task send_item(bit is_ping_rsp, alert_seq_item item);
 
   // Drive the alert_p/alert_n pins for the sequence item. There may be a delay before asserting the
   // alert or before de-asserting it (once an ack has been seen).
   //
   // This is safe to kill.
-  extern local task drive_alert_pins(alert_esc_seq_item req);
+  extern local task drive_alert_pins(alert_seq_item req);
 
   // Assert an alert (alert_p=1; alert_n=0) after alert_delay cycles.
   //
@@ -112,7 +112,7 @@ task alert_sender_driver::drive_req();
       // that come in.
       while (cfg.in_reset) begin
         fork : isolation_fork begin
-          alert_esc_seq_item item;
+          alert_seq_item item;
           fork
             wait(!cfg.in_reset);
             m_sender_requests.get(item);
@@ -140,8 +140,7 @@ endtask
 
 task alert_sender_driver::drive_reqs_with_lpg_mode(bit en_alert_lpg);
   forever begin
-    alert_esc_seq_item item;
-    bit is_alert, is_ping;
+    alert_seq_item item;
 
     // Pick an item to drive, but keep track of resets and any change to the LPG flag.
     fork : isolation_fork begin
@@ -165,8 +164,8 @@ task alert_sender_driver::drive_reqs_with_lpg_mode(bit en_alert_lpg);
   end
 endtask
 
-task alert_sender_driver::send_item(bit is_ping_rsp, alert_esc_seq_item item);
-  alert_esc_seq_item rsp;
+task alert_sender_driver::send_item(bit is_ping_rsp, alert_seq_item item);
+  alert_seq_item rsp;
   `downcast(rsp, item.clone());
   rsp.set_id_info(item);
 
@@ -191,7 +190,7 @@ task alert_sender_driver::send_item(bit is_ping_rsp, alert_esc_seq_item item);
   seq_item_port.put_response(rsp);
 endtask
 
-task alert_sender_driver::drive_alert_pins(alert_esc_seq_item req);
+task alert_sender_driver::drive_alert_pins(alert_seq_item req);
   int unsigned alert_delay, ack_delay;
   alert_delay = (cfg.use_seq_item_alert_delay) ? req.alert_delay :
                 $urandom_range(cfg.alert_delay_max, cfg.alert_delay_min);
