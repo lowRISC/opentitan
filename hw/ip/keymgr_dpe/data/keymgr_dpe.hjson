@@ -331,11 +331,13 @@ countermeasures: [
         Main control fsm is sparsely encoded.
       '''
     }
-    { name: "DATA.FSM.SPARSE",
-      desc: '''
-        Control data fsm (for redundant data control) is sparsely encoded.
-      '''
-    }
+    // TODO(#30721): reenable countermeasures after integrating all keymgr
+    // modules into the keymgr_dpe
+    //{ name: "DATA.FSM.SPARSE",
+    //  desc: '''
+    //    Control data fsm (for redundant data control) is sparsely encoded.
+    //  '''
+    //}
     { name: "CTRL.FSM.LOCAL_ESC",
       desc: '''
         Main control fsm locally escalates based on any detected fault in keymgr.
@@ -343,11 +345,13 @@ countermeasures: [
         further legal operations from executing.
       '''
     }
-    { name: "CTRL.FSM.CONSISTENCY",
-      desc: '''
-        Main and operational fsm transitions are consistent with software commands.
-      '''
-    }
+    // TODO(#30721): reenable countermeasures after integrating all keymgr
+    // modules into the keymgr_dpe
+    //{ name: "CTRL.FSM.CONSISTENCY",
+    //  desc: '''
+    //    Main and operational fsm transitions are consistent with software commands.
+    //  '''
+    //}
     { name: "CTRL.FSM.GLOBAL_ESC",
       desc: '''
         When the system globally escalates, the main control fsm also transitions to invalid state
@@ -359,46 +363,48 @@ countermeasures: [
         Primary count is duplicated.
       '''
     }
-    { name: "KMAC_IF.FSM.SPARSE",
-      desc: '''
-        kmac interface fsm is sparsely encoded.
-      '''
-    }
-    { name: "KMAC_IF.CTR.REDUN",
-      desc: '''
-        Primary count uses cross count.
-      '''
-    }
-    { name: "KMAC_IF_CMD.CTRL.CONSISTENCY",
-      desc: '''
-        One hot check for kmac interface commands.
-        Also, command enable (adv_en, id_en, gen_en) is checked for consistency
-        throughout the operation.
-      '''
-    }
-    { name: "KMAC_IF_DONE.CTRL.CONSISTENCY",
-      desc: '''
-        Spurious kmac done check.
-      '''
-    }
-    { name: "RESEED.CTR.REDUN",
-      desc: '''
-        Primary count is duplicated.
-      '''
-    }
-    { name: "SIDE_LOAD_SEL.CTRL.CONSISTENCY",
-      desc: '''
-        Sideload key slot select is checked for consistency.
-        When a key slot is valid when it should not be, an error is triggered.
-        The reverse case is not checked, since an invalid key cannot be used
-        anyways.
-      '''
-    }
-    { name: "SIDELOAD_CTRL.FSM.SPARSE",
-      desc: '''
-        Sideload control fsm is sparsely encoded.
-      '''
-    }
+    // TODO(#30721): reenable countermeasures after integrating all keymgr
+    // modules into the keymgr_dpe
+    //{ name: "KMAC_IF.FSM.SPARSE",
+    //  desc: '''
+    //    kmac interface fsm is sparsely encoded.
+    //  '''
+    //}
+    //{ name: "KMAC_IF.CTR.REDUN",
+    //  desc: '''
+    //    Primary count uses cross count.
+    //  '''
+    //}
+    //{ name: "KMAC_IF_CMD.CTRL.CONSISTENCY",
+    //  desc: '''
+    //    One hot check for kmac interface commands.
+    //    Also, command enable (adv_en, id_en, gen_en) is checked for consistency
+    //    throughout the operation.
+    //  '''
+    //}
+    //{ name: "KMAC_IF_DONE.CTRL.CONSISTENCY",
+    //  desc: '''
+    //    Spurious kmac done check.
+    //  '''
+    //}
+    //{ name: "RESEED.CTR.REDUN",
+    //  desc: '''
+    //    Primary count is duplicated.
+    //  '''
+    //}
+    //{ name: "SIDE_LOAD_SEL.CTRL.CONSISTENCY",
+    //  desc: '''
+    //    Sideload key slot select is checked for consistency.
+    //    When a key slot is valid when it should not be, an error is triggered.
+    //    The reverse case is not checked, since an invalid key cannot be used
+    //    anyways.
+    //  '''
+    //}
+    //{ name: "SIDELOAD_CTRL.FSM.SPARSE",
+    //  desc: '''
+    //    Sideload control fsm is sparsely encoded.
+    //  '''
+    //}
     { name: "CTRL.KEY.INTEGRITY",
       desc: '''
         Internal secret key is protected with ECC.
