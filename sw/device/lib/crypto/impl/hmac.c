@@ -210,9 +210,11 @@ static status_t hmac_key_construct(const otcrypto_blinded_key_t *key,
  * @return OK or error.
  */
 static status_t check_key(const otcrypto_blinded_key_t *key) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (key == NULL || key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // The underlying HMAC hardware does not have sideload support.
   if (key->config.hw_backed != kHardenedBoolFalse) {
@@ -235,11 +237,13 @@ OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
                                 const otcrypto_const_byte_buf_t *input_message,
                                 otcrypto_word32_buf_t *tag) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for null pointers.
   if (tag == NULL || tag->data == NULL || input_message == NULL ||
       (input_message->data == NULL && input_message->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
   // Preload the tag with randomness.
   HARDENED_TRY(hardened_memshred(tag->data, tag->len));
 
@@ -426,9 +430,11 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
 
 otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
                                      const otcrypto_blinded_key_t *key) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Check the key for null pointers or invalid configurations.
   HARDENED_TRY(check_key(key));
@@ -530,6 +536,7 @@ otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
 otcrypto_status_t otcrypto_hmac_update(
     otcrypto_hmac_context_t *const ctx,
     const otcrypto_const_byte_buf_t *input_message) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL || input_message == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -538,6 +545,7 @@ otcrypto_status_t otcrypto_hmac_update(
   if (input_message->data == NULL && input_message->len != 0) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   otcrypto_key_security_level_t security_level =
       (otcrypto_key_security_level_t)ctx->data[kCtxSecurityLevelOffset];
@@ -576,9 +584,11 @@ otcrypto_status_t otcrypto_hmac_update(
 
 otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,
                                       otcrypto_word32_buf_t *tag) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL || tag == NULL || tag->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   otcrypto_key_security_level_t security_level =
       (otcrypto_key_security_level_t)ctx->data[kCtxSecurityLevelOffset];

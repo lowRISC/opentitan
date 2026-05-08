@@ -457,10 +457,12 @@ static otcrypto_status_t otcrypto_aes_impl(
 otcrypto_status_t otcrypto_aes_padding_strip(
     otcrypto_byte_buf_t *padded_plaintext, otcrypto_aes_padding_t aes_padding,
     size_t *plaintext_len) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (padded_plaintext == NULL || padded_plaintext->data == NULL ||
       plaintext_len == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Input must be a non-zero multiple of the AES block size.
   if (padded_plaintext->len == 0 ||
@@ -543,6 +545,7 @@ otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
                                const otcrypto_const_byte_buf_t *cipher_input,
                                otcrypto_aes_padding_t aes_padding,
                                otcrypto_byte_buf_t *cipher_output) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers in input pointers and data buffers.
   if (key == NULL || key->keyblob == NULL ||
       (aes_mode != kOtcryptoAesModeEcb && (iv == NULL || iv->data == NULL)) ||
@@ -550,6 +553,7 @@ otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
       (cipher_output == NULL || cipher_output->data == NULL)) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   if (launder32(key->config.security_level) == kOtcryptoKeySecurityLevelLow) {
     HARDENED_CHECK_EQ(key->config.security_level, kOtcryptoKeySecurityLevelLow);

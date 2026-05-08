@@ -36,9 +36,11 @@ OT_WARN_UNUSED_RESULT
 static status_t curve25519_private_key_length_check(
     const otcrypto_blinded_key_t *private_key,
     otcrypto_key_mode_t expected_mode) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (private_key == NULL || private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   if (private_key->config.hw_backed == kHardenedBoolTrue) {
     // Skip the length check in this case; if the salt is the wrong length, the
@@ -86,9 +88,14 @@ static status_t curve25519_private_key_length_check(
 OT_WARN_UNUSED_RESULT
 static status_t curve25519_public_key_length_check(
     const otcrypto_unblinded_key_t *key, otcrypto_key_mode_t expected_mode) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (key == NULL || key->key == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
   // Check the key struct and key length.
-  if (key == NULL || key->key_length != kCurve25519KeyBytes ||
-      key->key == NULL || key->key_mode != expected_mode) {
+  if (key->key_length != kCurve25519KeyBytes ||
+      key->key_mode != expected_mode) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(launder32(key->key_mode), expected_mode);
@@ -116,10 +123,14 @@ static status_t curve25519_public_key_length_check(
  */
 OT_WARN_UNUSED_RESULT
 static status_t ed25519_signature_check(otcrypto_word32_buf_t *signature) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (signature == NULL || signature->data == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
   // Check the signature struct and signature length.
-  if (signature == NULL || signature->len > UINT32_MAX / sizeof(uint32_t) ||
-      signature->len * sizeof(uint32_t) != sizeof(curve25519_signature_t) ||
-      signature->data == NULL) {
+  if (signature->len > UINT32_MAX / sizeof(uint32_t) ||
+      signature->len * sizeof(uint32_t) != sizeof(curve25519_signature_t)) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(launder32(signature->len) * sizeof(uint32_t),
@@ -166,10 +177,12 @@ static status_t ed25519_message_prehash(
     otcrypto_eddsa_sign_mode_t sign_mode,
     const otcrypto_const_byte_buf_t *input_message,
     otcrypto_byte_buf_t *message_ph, uint32_t *prehash_buffer) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Only a message of length zero can have NULL as data.
   if (input_message->data == NULL && input_message->len != 0) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Instantiate variable for an FI check on the sign mode used.
   otcrypto_eddsa_sign_mode_t sign_mode_used = launder32(0);
@@ -329,9 +342,11 @@ static otcrypto_status_t ed25519_compute_scalar_and_prefix(
 otcrypto_status_t otcrypto_ed25519_public_key_from_private(
     const otcrypto_blinded_key_t *private_key,
     otcrypto_unblinded_key_t *public_key) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (public_key == NULL || public_key->key == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
   // Start the execution of the key generation.
   HARDENED_TRY(
       otcrypto_ed25519_public_key_from_private_async_start(private_key));
@@ -390,9 +405,11 @@ otcrypto_status_t otcrypto_ed25519_verify(
     otcrypto_eddsa_sign_mode_t sign_mode,
     const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (verification_result == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   uint32_t prehash_buffer[kCurve25519HashWords];
   otcrypto_byte_buf_t message_ph;
@@ -630,9 +647,11 @@ otcrypto_status_t otcrypto_ed25519_verify_async_start(
 
   // Do some signature struct validity checks.
   HARDENED_TRY(ed25519_signature_check((otcrypto_word32_buf_t *)signature));
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (signature->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Compute SHA512(R || A || PH(M)).
   curve25519_signature_t sig_curve25519;

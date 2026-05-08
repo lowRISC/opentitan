@@ -21,9 +21,11 @@ otcrypto_status_t otcrypto_kmac_kdf(
     const otcrypto_const_byte_buf_t *label,
     const otcrypto_const_byte_buf_t *context,
     otcrypto_blinded_key_t *output_key_material) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check NULL pointers.
-  if (key_derivation_key->keyblob == NULL || output_key_material == NULL ||
-      output_key_material->keyblob == NULL) {
+  if (key_derivation_key == NULL || key_derivation_key->keyblob == NULL ||
+      output_key_material == NULL || output_key_material->keyblob == NULL ||
+      label == NULL || context == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -31,16 +33,19 @@ otcrypto_status_t otcrypto_kmac_kdf(
   if (label->data == NULL && label->len != 0) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
   // Because of KMAC HWIPs prefix limitation, `label` should not exceed
   // `kKmacCustStrMaxSize` bytes.
   if (label->len > kKmacCustStrMaxSize) {
     return OTCRYPTO_BAD_ARGS;
   }
 
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for null context with nonzero length.
   if (context->data == NULL && context->len != 0) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Check the private key checksum.
   if (launder32(otcrypto_integrity_blinded_key_check(key_derivation_key)) !=
