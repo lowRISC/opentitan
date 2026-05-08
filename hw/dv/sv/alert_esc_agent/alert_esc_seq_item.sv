@@ -17,7 +17,6 @@ class alert_esc_seq_item extends uvm_sequence_item;
   rand bit int_err;
   rand bit standalone_int_err;
   rand bit ping_timeout;
-  rand alert_sig_int_err_e alert_int_err_type;
 
   // for monitor only
   rand alert_esc_trans_type_e alert_esc_type;
@@ -47,8 +46,6 @@ class alert_esc_seq_item extends uvm_sequence_item;
   // if agent is alert mode, cannot send any esc_rsp signal
   // if agent is esc mode, cannot send any alert related signals
   extern constraint alert_esc_mode_c;
-  // TODO: temp constraint, will support soon
-  extern constraint sig_int_err_c;
 
   `uvm_object_utils_begin(alert_esc_seq_item)
     `uvm_field_int (s_alert_send,      UVM_DEFAULT)
@@ -65,7 +62,6 @@ class alert_esc_seq_item extends uvm_sequence_item;
     `uvm_field_int (alert_delay,       UVM_DEFAULT)
     `uvm_field_int (int_err_cyc,       UVM_DEFAULT)
     `uvm_field_int (sig_cycle_cnt,     UVM_DEFAULT)
-    `uvm_field_enum(alert_sig_int_err_e,    alert_int_err_type,  UVM_DEFAULT)
     `uvm_field_enum(alert_esc_trans_type_e, alert_esc_type,      UVM_DEFAULT)
     `uvm_field_enum(alert_handshake_e,      alert_handshake_sta, UVM_DEFAULT)
     `uvm_field_enum(esc_handshake_e,        esc_handshake_sta,   UVM_DEFAULT)
@@ -89,10 +85,6 @@ constraint alert_esc_seq_item::ping_delay_max_c {
 constraint alert_esc_seq_item::alert_esc_mode_c {
   r_esc_rsp == 1 -> (!s_alert_send && !r_alert_rsp && !r_alert_ping_send && !s_alert_ping_rsp);
   (s_alert_send || r_alert_rsp || r_alert_ping_send || s_alert_ping_rsp) -> !r_esc_rsp;
-}
-
-constraint alert_esc_seq_item::sig_int_err_c {
-  alert_int_err_type == NoAlertBeforeAfterIntFail;
 }
 
 function alert_esc_seq_item::new (string name = "");
