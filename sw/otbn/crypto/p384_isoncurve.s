@@ -222,15 +222,28 @@ p384_isoncurve_check:
   ret
 
 /**
- * Check if a provided point in the affine form is on the P-384 curve.
+ * Check if a provided curve point is valid. Can also be used to check if
+ * a ECDSA / ECDH public key is valid.
+ *
+ * For a given curve point (x, y), check that:
+ * - x and y are both fully reduced mod p (i.e. x, y < p)
+ * - (x, y) is on the P-384 curve.
+ *
+ * Note that, because the point is in affine form, it is not possible that (x,
+ * y) is the point at infinity. In some other forms such as projective
+ * coordinates, we would need to check for this also.
  *
  * This routine sets `ok` to false if the check fails and immediately exits the
  * program. If the check succeeds, `ok` is unmodified.
  *
- * @param[in] dmem[x]: Point x-coordinate.
- * @param[in] dmem[y]: Point y-coordinate.
- * @param[out] dmem[ok]: success/failure of basic checks (32 bits)
+ * @param[in]   dmem[x]: affine x-coordinate of input point in dmem
+ * @param[in]   dmem[y]: affine y-coordinate of input point in dmem
+ * @param[out] dmem[ok]: HARDENED_BOOL_FALSE if the check failed
  *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * clobbered registers: x2, x3, x20 to x23, w0 to w17
+ * clobbered flag groups: FG0
  */
  .globl p384_check_isoncurve
 p384_check_isoncurve:
@@ -256,11 +269,33 @@ p384_check_isoncurve:
   bn.lid    x2++, 0(x20)
   bn.lid    x2, 32(x20)
 
+  /* Compare x to p. FG0.C <= (x < p) */
+  bn.sub    w0, w10, w12
+  bn.subb   w0, w11, w13
+  csrrs     x2, FG0, x0
+  andi      x2, x2, 1
+  bne       x2, x0, _x_valid
+  jal       x0, p384_invalid_input
+  unimp
+
+  _x_valid:
+
   /* Load public key y-coordinate.
-       w2 <= dmem[y] = y */
+     [w9, w8] <= dmem[y] = y */
   li        x2, 8
   bn.lid    x2++, 0(x21)
   bn.lid    x2, 32(x21)
+
+  /* Compare y to p. FG0.C <= (y < p) */
+  bn.sub    w0, w8, w12
+  bn.subb   w0, w9, w13
+  csrrs     x2, FG0, x0
+  andi      x2, x2, 1
+  bne       x2, x0, _y_valid
+  jal       x0, p384_invalid_input
+  unimp
+
+  _y_valid:
 
   /* Fill gpp registers with pointers to variables */
   la        x22, rhs
@@ -295,62 +330,8 @@ p384_check_isoncurve:
   addi     x3, x0, HARDENED_BOOL_TRUE
   sw       x3, 0(x2)
 
-  ret
-
-/**
- * Check if a provided curve point is valid.
- *
- * For a given curve point (x, y), check that:
- * - x and y are both fully reduced mod p
- * - (x, y) is on the P-384 curve.
- *
- * Note that, because the point is in affine form, it is not possible that (x,
- * y) is the point at infinity. In some other forms such as projective
- * coordinates, we would need to check for this also.
- *
- * This routine sets `ok` to false if the check fails and immediately exits the
- * program. If the check succeeds, `ok` is unmodified.
- *
- * @param[in]   dmem[x]: affine x-coordinate of input point in dmem
- * @param[in]   dmem[y]: affine y-coordinate of input point in dmem
- * @param[out] dmem[ok]: HARDENED_BOOL_FALSE if the check failed
- *
- * Flags: Flags have no meaning beyond the scope of this subroutine.
- *
- * clobbered registers: x2, x3, x20 to x23, w0 to w17
- * clobbered flag groups: FG0
- */
- .globl p384_check_public_key
-p384_check_public_key:
-  jal       x0, p384_check_isoncurve
-
-  /* Compare x to p.
-       FG0.C <= (x < p) */
-  bn.sub    w0, w10, w12
-  bn.subb   w0, w11, w13
-
-  /* Fail if FG0.C is false. */
-  csrrs     x2, FG0, x0
-  andi      x2, x2, 1
-  bne       x2, x0, _x_valid
-  jal       x0, p384_invalid_input
-  unimp
-
-  _x_valid:
-
-  /* Compare y to p.
-       FG0.C <= (y < p) */
-  bn.sub    w0, w8, w12
-  bn.subb   w0, w9, w13
-
-  /* Fail if FG0.C is false. */
-  csrrs     x2, FG0, x0
-  andi      x2, x2, 1
-  bne       x2, x0, _y_valid
-  jal       x0, p384_invalid_input
-  unimp
-
-  _y_valid:
+  /* Add a extra instruction to increase the instruction counter. */
+  nop
 
   ret
 
