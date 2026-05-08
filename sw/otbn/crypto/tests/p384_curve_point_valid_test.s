@@ -15,7 +15,7 @@ p384_curve_point_valid_test:
   /* Init all-zero register. */
   bn.xor    w31, w31, w31
 
-  jal       x1, p384_check_public_key
+  jal       x1, p384_check_isoncurve
 
   la        x2, ok
   lw        x2, 0(x2)
