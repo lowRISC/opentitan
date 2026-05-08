@@ -19,7 +19,7 @@ package otbn_pkg;
   parameter int ExtQWLEN = QWLEN * 39 / 32;
 
   // Output width of OTBN's Bivium URND
-  parameter int UrndLen = 512;
+  parameter int UrndLen = 389;
 
   // Width of base (32b) data path with added integrity bits
   parameter int BaseIntgWidth = 39;

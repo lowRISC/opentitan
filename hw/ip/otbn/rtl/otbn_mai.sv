@@ -113,6 +113,10 @@ module otbn_mai
     logic rsvd_csr_write;
   } ispr_mai_sw_err_t;
 
+  localparam int unsigned MaiCntWidth = prim_util_pkg::vbits(BaseWordsPerWLEN);
+
+  typedef logic [MaiCntWidth-1:0] mai_cnt_t;
+
   localparam int unsigned MaiIsprRndRsvdWidth = UrndLen - ExtWLEN;
 
   typedef struct packed {
@@ -120,19 +124,12 @@ module otbn_mai
     logic [ExtWLEN-1:0]             urnd;
   } mai_ispr_urnd_t;
 
-  localparam int unsigned MaiMaRndRsvdWidth = UrndLen - MaRndLen - 32'd32 - 32'd32 - 32'd3;
-
   typedef struct packed {
-    logic [MaiMaRndRsvdWidth-1:0] rsvd;
-    logic [  2:0]                 cnt;
-    logic [ 31:0]                 mask_1;
-    logic [ 31:0]                 mask_0;
-    logic [321:0]                 urnd;
+    logic [MaiCntWidth-1:0] cnt;
+    logic [31:0]            mask_1;
+    logic [31:0]            mask_0;
+    logic [MaRndLen-1:0]    urnd;
   } mai_ma_urnd_t;
-
-  localparam int unsigned MaiCntWidth = prim_util_pkg::vbits(BaseWordsPerWLEN);
-
-  typedef logic [MaiCntWidth-1:0] mai_cnt_t;
 
 
   /////////////
@@ -215,7 +212,7 @@ module otbn_mai
   ////////////
   assign mai_ispr_urnd = urnd_data_i;
   assign mai_ma_urnd   = urnd_data_i;
-  assign unused_urnd   = ^{mai_ispr_urnd.rsvd, mai_ma_urnd.rsvd};
+  assign unused_urnd   = ^mai_ispr_urnd.rsvd;
 
 
   /////////////////////////
